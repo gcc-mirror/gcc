@@ -517,8 +517,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
 					lvalue_locus, rvalue_locus);
 
 	  tree return_stmt
-	    = ctx->get_backend ()->return_statement (fndecl, return_value,
-						     locus);
+	    = Backend::return_statement (fndecl, return_value, locus);
 	  ctx->add_statement (return_stmt);
 	}
       else
@@ -529,7 +528,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
 	  // now just return unit expression
 	  tree unit_expr = unit_expression (ctx, locus);
 	  tree return_stmt
-	    = ctx->get_backend ()->return_statement (fndecl, unit_expr, locus);
+	    = Backend::return_statement (fndecl, unit_expr, locus);
 	  ctx->add_statement (return_stmt);
 	}
     }
@@ -540,7 +539,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
       location_t locus = function_body.get_locus ();
       tree return_value = unit_expression (ctx, locus);
       tree return_stmt
-	= ctx->get_backend ()->return_statement (fndecl, return_value, locus);
+	= Backend::return_statement (fndecl, return_value, locus);
       ctx->add_statement (return_stmt);
     }
 }
@@ -562,8 +561,8 @@ HIRCompileBase::compile_function (
   std::string asm_name = fn_name;
 
   unsigned int flags = 0;
-  tree fndecl = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
-					       "" /* asm_name */, flags, locus);
+  tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
+				   "" /* asm_name */, flags, locus);
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_subsititions_defined (),
 		visibility, qualifiers, outer_attrs);
@@ -620,7 +619,7 @@ HIRCompileBase::compile_function (
 			    compiled_param_var);
     }
 
-  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+  if (!Backend::function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
   // lookup locals
@@ -637,8 +636,8 @@ HIRCompileBase::compile_function (
   location_t start_location = function_body->get_locus ();
   location_t end_location = function_body->get_end_locus ();
 
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-						start_location, end_location);
+  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+				    start_location, end_location);
   ctx->push_block (code_block);
 
   Bvariable *return_address = nullptr;
@@ -647,9 +646,8 @@ HIRCompileBase::compile_function (
   bool address_is_taken = false;
   tree ret_var_stmt = NULL_TREE;
   return_address
-    = ctx->get_backend ()->temporary_variable (fndecl, code_block, return_type,
-					       NULL, address_is_taken, locus,
-					       &ret_var_stmt);
+    = Backend::temporary_variable (fndecl, code_block, return_type, NULL,
+				   address_is_taken, locus, &ret_var_stmt);
 
   ctx->add_statement (ret_var_stmt);
 
@@ -688,11 +686,10 @@ HIRCompileBase::compile_constant_item (
   // make a _fake_ function with a block so it can hold onto temps then
   // use our constexpr code to fold it completely or error_mark_node
   Backend::typed_identifier receiver;
-  tree compiled_fn_type = ctx->get_backend ()->function_type (
+  tree compiled_fn_type = Backend::function_type (
     receiver, {}, {Backend::typed_identifier ("_", const_type, locus)}, NULL,
     locus);
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ident, "", 0, locus);
+  tree fndecl = Backend::function (compiled_fn_type, ident, "", 0, locus);
   TREE_READONLY (fndecl) = 1;
 
   std::vector<Bvariable *> locals;
@@ -714,16 +711,15 @@ HIRCompileBase::compile_constant_item (
       locals = compile_locals_for_block (ctx, *rib, fndecl);
     }
 
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-						start_location, end_location);
+  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+				    start_location, end_location);
   ctx->push_block (code_block);
 
   bool address_is_taken = false;
   tree ret_var_stmt = NULL_TREE;
   Bvariable *return_address
-    = ctx->get_backend ()->temporary_variable (fndecl, code_block, const_type,
-					       NULL, address_is_taken, locus,
-					       &ret_var_stmt);
+    = Backend::temporary_variable (fndecl, code_block, const_type, NULL,
+				   address_is_taken, locus, &ret_var_stmt);
 
   ctx->add_statement (ret_var_stmt);
   ctx->push_fn (fndecl, return_address, resolved_type);
@@ -738,8 +734,9 @@ HIRCompileBase::compile_constant_item (
     {
       tree value = CompileExpr::Compile (const_value_expr, ctx);
 
-      tree return_expr = ctx->get_backend ()->return_statement (
-	fndecl, value, const_value_expr->get_locus ());
+      tree return_expr
+	= Backend::return_statement (fndecl, value,
+				     const_value_expr->get_locus ());
       ctx->add_statement (return_expr);
     }
 
@@ -908,8 +905,7 @@ tree
 HIRCompileBase::unit_expression (Context *ctx, location_t locus)
 {
   tree unit_type = TyTyResolveCompile::get_unit_type (ctx);
-  return ctx->get_backend ()->constructor_expression (unit_type, false, {}, -1,
-						      locus);
+  return Backend::constructor_expression (unit_type, false, {}, -1, locus);
 }
 
 } // namespace Compile

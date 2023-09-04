@@ -218,12 +218,14 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
       vtable_ctor_idx.push_back (i++);
     }
 
-  tree vtable_ctor = ctx->get_backend ()->array_constructor_expression (
-    TREE_TYPE (vtable_field), vtable_ctor_idx, vtable_ctor_elems, locus);
+  tree vtable_ctor
+    = Backend::array_constructor_expression (TREE_TYPE (vtable_field),
+					     vtable_ctor_idx, vtable_ctor_elems,
+					     locus);
 
   std::vector<tree> dyn_ctor = {address_of_compiled_ref, vtable_ctor};
-  return ctx->get_backend ()->constructor_expression (dynamic_object, false,
-						      dyn_ctor, -1, locus);
+  return Backend::constructor_expression (dynamic_object, false, dyn_ctor, -1,
+					  locus);
 }
 
 tree

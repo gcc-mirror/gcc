@@ -55,8 +55,8 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     = compile_locals_for_block (ctx, *rib, fndecl);
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree new_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-					       start_location, end_location);
+  tree new_block = Backend::block (fndecl, enclosing_scope, locals,
+				   start_location, end_location);
   ctx->push_block (new_block);
 
   for (auto &s : expr.get_statements ())
@@ -75,13 +75,11 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       if (result != nullptr)
 	{
 	  location_t locus = expr.get_final_expr ()->get_locus ();
-	  tree result_reference
-	    = ctx->get_backend ()->var_expression (result, locus);
+	  tree result_reference = Backend::var_expression (result, locus);
 
 	  tree assignment
-	    = ctx->get_backend ()->assignment_statement (result_reference,
-							 compiled_expr,
-							 expr.get_locus ());
+	    = Backend::assignment_statement (result_reference, compiled_expr,
+					     expr.get_locus ());
 	  ctx->add_statement (assignment);
 	}
     }
@@ -89,13 +87,11 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     {
       location_t locus = expr.get_locus ();
       tree compiled_expr = unit_expression (ctx, expr.get_locus ());
-      tree result_reference
-	= ctx->get_backend ()->var_expression (result, locus);
+      tree result_reference = Backend::var_expression (result, locus);
 
       tree assignment
-	= ctx->get_backend ()->assignment_statement (result_reference,
-						     compiled_expr,
-						     expr.get_locus ());
+	= Backend::assignment_statement (result_reference, compiled_expr,
+					 expr.get_locus ());
       ctx->add_statement (assignment);
     }
 
@@ -113,9 +109,8 @@ CompileConditionalBlocks::visit (HIR::IfExpr &expr)
   tree then_block
     = CompileBlock::compile (expr.get_if_block ().get (), ctx, result);
 
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 NULL, expr.get_locus ());
+  translated = Backend::if_statement (fndecl, condition_expr, then_block, NULL,
+				      expr.get_locus ());
 }
 
 void
@@ -133,8 +128,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
   location_t start_location = expr.get_else_block ()->get_locus ();
   location_t end_location = expr.get_else_block ()->get_locus (); // FIXME
   tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-						start_location, end_location);
+  tree else_block = Backend::block (fndecl, enclosing_scope, locals,
+				    start_location, end_location);
   ctx->push_block (else_block);
 
   tree else_stmt_decl
@@ -145,9 +140,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
 
   ctx->pop_block ();
 
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 else_block, expr.get_locus ());
+  translated = Backend::if_statement (fndecl, condition_expr, then_block,
+				      else_block, expr.get_locus ());
 }
 
 } // namespace Compile

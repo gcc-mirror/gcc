@@ -218,11 +218,14 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	    for (auto &pattern : items_no_range.get_patterns ())
 	      {
 		tree variant_accessor
-		  = ctx->get_backend ()->struct_field_expression (
-		    match_scrutinee_expr, variant_index, pattern->get_locus ());
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      variant_index,
+						      pattern->get_locus ());
 
-		tree binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, tuple_field_index++, pattern->get_locus ());
+		tree binding
+		  = Backend::struct_field_expression (variant_accessor,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
 		  pattern->get_pattern_mappings ().get_hirid (), binding);
@@ -235,8 +238,10 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	      {
 		tree variant_accessor = match_scrutinee_expr;
 
-		tree binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, tuple_field_index++, pattern->get_locus ());
+		tree binding
+		  = Backend::struct_field_expression (variant_accessor,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
 		  pattern->get_pattern_mappings ().get_hirid (), binding);
@@ -307,19 +312,22 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	    if (adt->is_enum ())
 	      {
 		tree variant_accessor
-		  = ctx->get_backend ()->struct_field_expression (
-		    match_scrutinee_expr, variant_index, ident.get_locus ());
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      variant_index,
+						      ident.get_locus ());
 
 		// we are offsetting by + 1 here since the first field in the
 		// record is always the discriminator
-		binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, offs + 1, ident.get_locus ());
+		binding = Backend::struct_field_expression (variant_accessor,
+							    offs + 1,
+							    ident.get_locus ());
 	      }
 	    else
 	      {
 		tree variant_accessor = match_scrutinee_expr;
-		binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, offs, ident.get_locus ());
+		binding
+		  = Backend::struct_field_expression (variant_accessor, offs,
+						      ident.get_locus ());
 	      }
 
 	    ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (),
@@ -360,14 +368,12 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
       ctx->add_statement (init_expr);
 
       auto unit_type_init_expr = unit_expression (ctx, rval_locus);
-      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
-						    unit_type_init_expr);
+      auto s = Backend::init_statement (fnctx.fndecl, var, unit_type_init_expr);
       ctx->add_statement (s);
     }
   else
     {
-      auto s
-	= ctx->get_backend ()->init_statement (fnctx.fndecl, var, init_expr);
+      auto s = Backend::init_statement (fnctx.fndecl, var, init_expr);
       ctx->add_statement (s);
     }
 }
@@ -378,9 +384,9 @@ CompilePatternLet::visit (HIR::WildcardPattern &pattern)
   tree init_stmt = NULL;
   tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
 
-  ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
-					   stmt_type, init_expr, false,
-					   pattern.get_locus (), &init_stmt);
+  Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE, stmt_type,
+			       init_expr, false, pattern.get_locus (),
+			       &init_stmt);
 
   ctx->add_statement (init_stmt);
 }
@@ -393,12 +399,10 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
   tree tuple_type = TyTyResolveCompile::compile (ctx, ty);
   tree init_stmt;
   Bvariable *tmp_var
-    = ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
-					       NULL_TREE, tuple_type, init_expr,
-					       false, pattern.get_locus (),
-					       &init_stmt);
-  tree access_expr
-    = ctx->get_backend ()->var_expression (tmp_var, pattern.get_locus ());
+    = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+				   tuple_type, init_expr, false,
+				   pattern.get_locus (), &init_stmt);
+  tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
   ctx->add_statement (init_stmt);
 
   switch (pattern.get_items ()->get_pattern_type ())
@@ -418,8 +422,9 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;
@@ -436,8 +441,9 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;
@@ -457,8 +463,9 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;

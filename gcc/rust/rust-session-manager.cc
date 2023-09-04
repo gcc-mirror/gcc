@@ -59,9 +59,6 @@ saw_errors (void);
 extern Linemap *
 rust_get_linemap ();
 
-extern Backend *
-rust_get_backend ();
-
 namespace Rust {
 
 const char *kLexDumpFile = "gccrs.lex.dump";
@@ -167,7 +164,7 @@ Session::init ()
   linemap = rust_get_linemap ();
 
   // setup backend to GCC GIMPLE
-  backend = rust_get_backend ();
+  Backend::init ();
 
   // setup mappings class
   mappings = Analysis::Mappings::get ();
@@ -670,7 +667,7 @@ Session::compile_crate (const char *filename)
     return;
 
   // do compile to gcc generic
-  Compile::Context ctx (backend);
+  Compile::Context ctx;
   Compile::CompileCrate::Compile (hir, &ctx);
 
   // we can't do static analysis if there are errors to worry about

@@ -52,19 +52,20 @@ void
 CompileFnParam::visit (HIR::IdentifierPattern &pattern)
 {
   if (!pattern.is_mut ())
-    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+    decl_type = Backend::immutable_type (decl_type);
 
-  compiled_param = ctx->get_backend ()->parameter_variable (
-    fndecl, pattern.get_identifier ().as_string (), decl_type, locus);
+  compiled_param
+    = Backend::parameter_variable (fndecl,
+				   pattern.get_identifier ().as_string (),
+				   decl_type, locus);
 }
 
 void
 CompileFnParam::visit (HIR::WildcardPattern &pattern)
 {
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
+  decl_type = Backend::immutable_type (decl_type);
 
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
+  compiled_param = Backend::parameter_variable (fndecl, "_", decl_type, locus);
 }
 
 void
@@ -96,10 +97,9 @@ CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
     = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM
       || self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM_REF;
   if (is_immutable)
-    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+    decl_type = Backend::immutable_type (decl_type);
 
-  return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						  locus);
+  return Backend::parameter_variable (fndecl, "self", decl_type, locus);
 }
 
 tree
@@ -109,12 +109,11 @@ CompileFnParam::create_tmp_param_var (tree decl_type)
   tree tmp_ident = create_tmp_var_name ("RSTPRM");
   std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
 
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
-					       decl_type, locus);
+  decl_type = Backend::immutable_type (decl_type);
+  compiled_param = Backend::parameter_variable (fndecl, cpp_str_identifier,
+						decl_type, locus);
 
-  return ctx->get_backend ()->var_expression (compiled_param, locus);
+  return Backend::var_expression (compiled_param, locus);
 }
 
 } // namespace Compile

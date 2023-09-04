@@ -30,8 +30,7 @@ CompileItem::visit (HIR::StaticItem &var)
   Bvariable *static_decl_ref = nullptr;
   if (ctx->lookup_var_decl (var.get_mappings ().get_hirid (), &static_decl_ref))
     {
-      reference
-	= ctx->get_backend ()->var_expression (static_decl_ref, ref_locus);
+      reference = Backend::var_expression (static_decl_ref, ref_locus);
       return;
     }
 
@@ -61,17 +60,16 @@ CompileItem::visit (HIR::StaticItem &var)
   bool in_unique_section = true;
 
   Bvariable *static_global
-    = ctx->get_backend ()->global_variable (name, asm_name, type, is_external,
-					    is_hidden, in_unique_section,
-					    var.get_locus ());
+    = Backend::global_variable (name, asm_name, type, is_external, is_hidden,
+				in_unique_section, var.get_locus ());
 
   tree init = value == error_mark_node ? error_mark_node : DECL_INITIAL (value);
-  ctx->get_backend ()->global_variable_set_init (static_global, init);
+  Backend::global_variable_set_init (static_global, init);
 
   ctx->insert_var_decl (var.get_mappings ().get_hirid (), static_global);
   ctx->push_var (static_global);
 
-  reference = ctx->get_backend ()->var_expression (static_global, ref_locus);
+  reference = Backend::var_expression (static_global, ref_locus);
 }
 
 void

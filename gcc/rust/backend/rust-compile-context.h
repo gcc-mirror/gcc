@@ -41,7 +41,7 @@ struct fncontext
 class Context
 {
 public:
-  Context (::Backend *backend);
+  Context ();
 
   void setup_builtins ();
 
@@ -79,7 +79,6 @@ public:
     return type;
   }
 
-  ::Backend *get_backend () { return backend; }
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
   Analysis::Mappings *get_mappings () { return mappings; }
@@ -98,7 +97,7 @@ public:
     auto stmts = statements.back ();
     statements.pop_back ();
 
-    backend->block_add_statements (block, stmts);
+    Backend::block_add_statements (block, stmts);
 
     return block;
   }
@@ -290,7 +289,7 @@ public:
 
   void write_to_backend ()
   {
-    backend->write_global_definitions (type_decls, const_decls, func_decls,
+    Backend::write_global_definitions (type_decls, const_decls, func_decls,
 				       var_decls);
   }
 
@@ -359,7 +358,6 @@ public:
   static hashval_t type_hasher (tree type);
 
 private:
-  ::Backend *backend;
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
