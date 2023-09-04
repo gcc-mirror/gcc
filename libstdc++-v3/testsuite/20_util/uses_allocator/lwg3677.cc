@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++23" }
+// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target hosted }
 
