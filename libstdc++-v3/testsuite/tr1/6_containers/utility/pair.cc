@@ -17,8 +17,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=c++98" }
-
 // tr1 additions to pair
 
 #include <tr1/utility>
@@ -42,15 +40,14 @@ main()
   tuple_element<1, pair<int ,blank_class> >::type
     blank3 __attribute__((unused)) = blank;
   pair<int,int> test_pair(1, 2);
-  VERIFY(get<0>(test_pair) == 1);
-  VERIFY(get<1>(test_pair) == 2);
-  get<0>(test_pair) = 3;
-  get<1>(test_pair) = 4;
-  VERIFY(get<0>(test_pair) == 3);
-  VERIFY(get<1>(test_pair) == 4);
+  VERIFY(std::tr1::get<0>(test_pair) == 1);
+  VERIFY(std::tr1::get<1>(test_pair) == 2);
+  std::tr1::get<0>(test_pair) = 3;
+  std::tr1::get<1>(test_pair) = 4;
+  VERIFY(std::tr1::get<0>(test_pair) == 3);
+  VERIFY(std::tr1::get<1>(test_pair) == 4);
 
   const pair<int,int> test_pair2(1,2);
-  VERIFY(get<0>(test_pair2) == 1);
-  VERIFY(get<1>(test_pair2) == 2);
+  VERIFY(std::tr1::get<0>(test_pair2) == 1);
+  VERIFY(std::tr1::get<1>(test_pair2) == 2);
 }
-
