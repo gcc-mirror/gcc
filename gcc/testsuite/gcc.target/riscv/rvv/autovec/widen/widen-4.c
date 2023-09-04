@@ -16,8 +16,11 @@
 #define TEST_ALL()                                                             \
   TEST_TYPE (int16_t, int8_t, uint8_t)                                         \
   TEST_TYPE (int32_t, int16_t, uint16_t)                                       \
-  TEST_TYPE (int64_t, int32_t, uint32_t)
+  TEST_TYPE (int64_t, int32_t, uint32_t)                                       \
+  TEST_TYPE (int16_t, uint8_t, int8_t)                                         \
+  TEST_TYPE (int32_t, uint16_t, int16_t)                                       \
+  TEST_TYPE (int64_t, uint32_t, int32_t)
 
 TEST_ALL ()
 
-/* { dg-final { scan-assembler-times {\tvwmulsu\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {\tvwmulsu\.vv} 6 } } */

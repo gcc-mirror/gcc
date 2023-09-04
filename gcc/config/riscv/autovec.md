@@ -419,12 +419,15 @@
 ;; - vadd.vi/vsub.vi/...
 ;; -------------------------------------------------------------------------
 
-(define_expand "<optab><mode>3"
+(define_insn_and_split "<optab><mode>3"
   [(set (match_operand:VI 0 "register_operand")
     (any_int_binop_no_shift:VI
      (match_operand:VI 1 "<binop_rhs1_predicate>")
      (match_operand:VI 2 "<binop_rhs2_predicate>")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				 riscv_vector::BINARY_OP, operands);
@@ -937,11 +940,14 @@
 ;; Includes:
 ;; - vneg.v/vnot.v
 ;; -------------------------------------------------------------------------------
-(define_expand "<optab><mode>2"
+(define_insn_and_split "<optab><mode>2"
   [(set (match_operand:VI 0 "register_operand")
     (any_int_unop:VI
      (match_operand:VI 1 "register_operand")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
@@ -952,10 +958,14 @@
 ;; - [INT] ABS expansion to vmslt and vneg.
 ;; -------------------------------------------------------------------------------
 
-(define_expand "abs<mode>2"
+(define_insn_and_split "abs<mode>2"
   [(set (match_operand:VI 0 "register_operand")
-    (match_operand:VI 1 "register_operand"))]
-  "TARGET_VECTOR"
+     (abs:VI
+       (match_operand:VI 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
   machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode);
@@ -1457,12 +1467,15 @@
 ;; - vfadd.vv/vfsub.vv/...
 ;; - vfadd.vf/vfsub.vf/...
 ;; -------------------------------------------------------------------------
-(define_expand "<optab><mode>3"
-  [(match_operand:VF 0 "register_operand")
-   (any_float_binop:VF
-    (match_operand:VF 1 "register_operand")
-    (match_operand:VF 2 "register_operand"))]
-  "TARGET_VECTOR"
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VF 0 "register_operand")
+        (any_float_binop:VF
+          (match_operand:VF 1 "register_operand")
+          (match_operand:VF 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				    riscv_vector::BINARY_OP_FRM_DYN, operands);
@@ -1474,12 +1487,15 @@
 ;; - vfmin.vv/vfmax.vv
 ;; - vfmin.vf/vfmax.vf
 ;; -------------------------------------------------------------------------
-(define_expand "<optab><mode>3"
-  [(match_operand:VF 0 "register_operand")
-   (any_float_binop_nofrm:VF
-    (match_operand:VF 1 "register_operand")
-    (match_operand:VF 2 "register_operand"))]
-  "TARGET_VECTOR"
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VF 0 "register_operand")
+        (any_float_binop_nofrm:VF
+          (match_operand:VF 1 "register_operand")
+          (match_operand:VF 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				  riscv_vector::BINARY_OP, operands);
@@ -1537,22 +1553,30 @@
 ;; - vmulhu.vv
 ;; -------------------------------------------------------------------------
 
-(define_expand "smul<mode>3_highpart"
-  [(match_operand:VFULLI 0 "register_operand")
-   (match_operand:VFULLI 1 "register_operand")
-   (match_operand:VFULLI 2 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "smul<mode>3_highpart"
+  [(set (match_operand:VFULLI 0 "register_operand")
+        (smul_highpart:VFULLI
+          (match_operand:VFULLI 1 "register_operand")
+          (match_operand:VFULLI 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_mulh (UNSPEC_VMULHS, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
 })
 
-(define_expand "umul<mode>3_highpart"
-  [(match_operand:VFULLI 0 "register_operand")
-   (match_operand:VFULLI 1 "register_operand")
-   (match_operand:VFULLI 2 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "umul<mode>3_highpart"
+  [(set (match_operand:VFULLI 0 "register_operand")
+        (umul_highpart:VFULLI
+          (match_operand:VFULLI 1 "register_operand")
+          (match_operand:VFULLI 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_mulh (UNSPEC_VMULHU, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
