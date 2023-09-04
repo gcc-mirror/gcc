@@ -1,3 +1,22 @@
+2023-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/111066
+	* g++.dg/special/initpri3.C: Fix wording.
+
+2023-09-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New macros.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-5.c: New test.
+
 2023-09-02  chenxiaolong  <chenxiaolong@loongson.cn>
 
 	* gcc.target/loongarch/math-float-128.c: New test.

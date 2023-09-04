@@ -1,3 +1,9 @@
+2023-09-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-vls.md (<optab><mode>3): New pattern for
+	fmax/fmin
+	* config/riscv/vector.md: Add VLS modes to vfmax/vfmin.
+
 2023-09-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* tree-diagnostic.cc (tree_diagnostics_defaults): Delete allocated
