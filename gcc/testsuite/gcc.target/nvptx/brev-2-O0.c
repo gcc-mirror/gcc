@@ -1,5 +1,9 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O0" } */
+/* { dg-additional-options -save-temps } */
+/* { dg-final { check-function-bodies {**} {} } } */
+
+inline __attribute__((always_inline))
 unsigned int bitreverse32(unsigned int x)
 {
   return __builtin_nvptx_brev(x);
@@ -89,6 +93,37 @@ int main(void)
     __builtin_abort();
   if (bitreverse32(0x7d5d7f53) != 0xcafebabe)
     __builtin_abort();
+
   return 0;
 }
+/*
+** main:
+**	...
+**	mov\.u32	(%r[0-9]+), 0;
+**	st\.u32	(\[%frame[+0-9]*\]), \1;
+**	ld\.u32	(%r[0-9]+), \2;
+**	brev\.b32	(%r[0-9]+), \3;
+**	setp\.[^.]+\.u32	%r[0-9]+, \4, 0;
+**	...
+**	mov\.u32	(%r[0-9]+), -1;
+**	st\.u32	(\[%frame[+0-9]*\]), \5;
+**	ld\.u32	(%r[0-9]+), \6;
+**	brev\.b32	(%r[0-9]+), \7;
+**	setp\.[^.]+\.u32	%r[0-9]+, \8, -1;
+**	...
+**	mov\.u32	(%r[0-9]+), 1;
+**	st\.u32	(\[%frame[+0-9]*\]), \9;
+**	ld\.u32	(%r[0-9]+), \10;
+**	brev\.b32	(%r[0-9]+), \11;
+**	setp\.[^.]+\.u32	%r[0-9]+, \12, -2147483648;
+**	...
+**	mov\.u32	(%r[0-9]+), 2;
+**	st\.u32	(\[%frame[+0-9]*\]), \13;
+**	ld\.u32	(%r[0-9]+), \14;
+**	brev\.b32	(%r[0-9]+), \15;
+**	setp\.[^.]+\.u32	%r[0-9]+, \16, 1073741824;
+**	...
+*/
 
+/* { dg-final { scan-assembler-times {\tbrev\.b32\t} 40 } } */
+/* { dg-final { scan-assembler {\mabort\M} } } */
