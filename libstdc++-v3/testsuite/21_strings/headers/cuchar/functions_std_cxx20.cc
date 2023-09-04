@@ -1,4 +1,3 @@
-// { dg-options "-std=c++20" }
 // { dg-do compile { target c++20 } }
 
 #include <cuchar>
