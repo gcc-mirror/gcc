@@ -1978,16 +1978,16 @@ preferred_simd_mode (scalar_mode mode)
      vectorizer when we enable them in this target hook. Currently, we can
      support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
      -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
+  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (autovec_use_vlmax_p ())
     {
-      if (TARGET_MIN_VLEN < 128 && riscv_autovec_lmul < RVV_M2)
+      if (TARGET_MIN_VLEN < 128 && lmul < RVV_M2)
 	return word_mode;
       /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
 	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
 	 get the auto-vectorization mode.  */
       poly_uint64 nunits;
-      poly_uint64 vector_size
-	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
+      poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * lmul;
       poly_uint64 scalar_size = GET_MODE_SIZE (mode);
       gcc_assert (multiple_p (vector_size, scalar_size, &nunits));
       machine_mode rvv_mode;
@@ -2161,10 +2161,10 @@ get_cmp_insn_code (rtx_code code, machine_mode mode)
 unsigned int
 autovectorize_vector_modes (vector_modes *modes, bool)
 {
+  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (autovec_use_vlmax_p ())
     {
-      poly_uint64 full_size
-	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
+      poly_uint64 full_size = BYTES_PER_RISCV_VECTOR * lmul;
 
       /* Start with a RVV<LMUL>QImode where LMUL is the number of units that
 	 fit a whole vector.
@@ -2194,7 +2194,7 @@ autovectorize_vector_modes (vector_modes *modes, bool)
     {
       /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
       unsigned int i = 0;
-      unsigned int base_size = TARGET_MIN_VLEN * riscv_autovec_lmul / 8;
+      unsigned int base_size = TARGET_MIN_VLEN * lmul / 8;
       unsigned int size = base_size;
       machine_mode mode;
       while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
@@ -2219,8 +2219,9 @@ vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode,
 {
   /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
   poly_uint64 min_units;
+  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (autovec_use_vlmax_p () && riscv_v_ext_vector_mode_p (vector_mode)
-      && multiple_p (BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul),
+      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
 		     GET_MODE_SIZE (element_mode), &min_units))
     {
       machine_mode rvv_mode;
