@@ -1341,8 +1341,22 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   ctx->add_statement (ret_var_stmt);
 
   // lets compile the scrutinee expression
-  tree match_scrutinee_expr
+  tree match_scrutinee_rval
     = CompileExpr::Compile (expr.get_scrutinee_expr ().get (), ctx);
+
+  Bvariable *match_scrutinee_tmp_var = ctx->get_backend ()->temporary_variable (
+    fnctx.fndecl, enclosing_scope, TREE_TYPE (match_scrutinee_rval), NULL,
+    is_address_taken, expr.get_locus (), &ret_var_stmt);
+  ctx->add_statement (ret_var_stmt);
+
+  tree match_scrutinee_expr = match_scrutinee_tmp_var->get_tree (
+    expr.get_scrutinee_expr ()->get_locus ());
+
+  tree assignment
+    = ctx->get_backend ()->assignment_statement (match_scrutinee_expr,
+						 match_scrutinee_rval,
+						 expr.get_locus ());
+  ctx->add_statement (assignment);
 
   tree match_scrutinee_expr_qualifier_expr;
   if (TyTy::is_primitive_type_kind (scrutinee_kind))
