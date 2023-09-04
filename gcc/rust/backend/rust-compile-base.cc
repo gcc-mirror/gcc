@@ -133,8 +133,8 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
 static void
 handle_proc_macro_common (tree fndecl, const AST::Attribute &attr)
 {
-  DECL_ATTRIBUTES (fndecl)
-    = tree_cons (get_identifier ("cdecl"), NULL, DECL_ATTRIBUTES (fndecl));
+  DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("gccrs_proc_macro"),
+					NULL, DECL_ATTRIBUTES (fndecl));
 }
 
 void
@@ -591,6 +591,21 @@ HIRCompileBase::compile_function_body (tree fndecl,
     }
 }
 
+static ABI
+get_abi (const AST::AttrVec &outer_attrs,
+	 const HIR::FunctionQualifiers &qualifiers)
+{
+  bool is_proc_macro = std::any_of (outer_attrs.cbegin (), outer_attrs.cend (),
+				    [] (const AST::Attribute &attr) {
+				      auto path = attr.get_path ().as_string ();
+				      return path == "proc_macro"
+					     || path == "proc_macro_derive"
+					     || path == "proc_macro_attribute";
+				    });
+
+  return is_proc_macro ? ABI::CDECL : qualifiers.get_abi ();
+}
+
 tree
 HIRCompileBase::compile_function (
   const std::string &fn_name, HIR::SelfParam &self_param,
@@ -613,7 +628,7 @@ HIRCompileBase::compile_function (
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_substitutions_defined (),
 		visibility, qualifiers, outer_attrs);
-  setup_abi_options (fndecl, qualifiers.get_abi ());
+  setup_abi_options (fndecl, get_abi (outer_attrs, qualifiers));
 
   // conditionally mangle the function name
   bool should_mangle = should_mangle_item (fndecl);
