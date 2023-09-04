@@ -19,10 +19,8 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <vector>
+#define debug 0
 
-// libstdc++26412
-namespace debug
-{
-  int i;
-}
+#include <debug/vector>
+
+// PR libstdc++/26142 global debug namespace clashes everywhere
