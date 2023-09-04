@@ -2469,12 +2469,6 @@ Backend::write_global_definitions (
   delete[] defs;
 }
 
-void
-Backend::write_export_data (const char *bytes, unsigned int size)
-{
-  rust_write_export_data (bytes, size);
-}
-
 // Return the backend generator.
 
 Backend *
