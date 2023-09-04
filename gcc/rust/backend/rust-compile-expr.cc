@@ -68,8 +68,7 @@ CompileExpr::visit (HIR::TupleIndexExpr &expr)
     }
 
   translated
-    = ctx->get_backend ()->struct_field_expression (receiver_ref, index,
-						    expr.get_locus ());
+    = Backend::struct_field_expression (receiver_ref, index, expr.get_locus ());
 }
 
 void
@@ -101,9 +100,8 @@ CompileExpr::visit (HIR::TupleExpr &expr)
       vals.push_back (e);
     }
 
-  translated
-    = ctx->get_backend ()->constructor_expression (tuple_type, false, vals, -1,
-						   expr.get_locus ());
+  translated = Backend::constructor_expression (tuple_type, false, vals, -1,
+						expr.get_locus ());
 }
 
 void
@@ -133,9 +131,8 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
 				    lvalue_locus, rvalue_locus);
     }
 
-  tree return_stmt
-    = ctx->get_backend ()->return_statement (fncontext.fndecl, return_value,
-					     expr.get_locus ());
+  tree return_stmt = Backend::return_statement (fncontext.fndecl, return_value,
+						expr.get_locus ());
   ctx->add_statement (return_stmt);
 }
 
@@ -164,21 +161,22 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
     {
       auto receiver_tmp = NULL_TREE;
       auto receiver
-	= ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
-						   NULL_TREE, TREE_TYPE (lhs),
-						   lhs, true, expr.get_locus (),
-						   &receiver_tmp);
+	= Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+				       TREE_TYPE (lhs), lhs, true,
+				       expr.get_locus (), &receiver_tmp);
       auto check
-	= ctx->get_backend ()->arithmetic_or_logical_expression_checked (
-	  op, lhs, rhs, expr.get_locus (), receiver);
+	= Backend::arithmetic_or_logical_expression_checked (op, lhs, rhs,
+							     expr.get_locus (),
+							     receiver);
 
       ctx->add_statement (check);
       translated = receiver->get_tree (expr.get_locus ());
     }
   else
     {
-      translated = ctx->get_backend ()->arithmetic_or_logical_expression (
-	op, lhs, rhs, expr.get_locus ());
+      translated
+	= Backend::arithmetic_or_logical_expression (op, lhs, rhs,
+						     expr.get_locus ());
     }
 }
 
@@ -211,22 +209,25 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
     {
       auto tmp = NULL_TREE;
       auto receiver
-	= ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
-						   NULL_TREE, TREE_TYPE (lhs),
-						   lhs, true, expr.get_locus (),
-						   &tmp);
+	= Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+				       TREE_TYPE (lhs), lhs, true,
+				       expr.get_locus (), &tmp);
       auto check
-	= ctx->get_backend ()->arithmetic_or_logical_expression_checked (
-	  op, lhs, rhs, expr.get_locus (), receiver);
+	= Backend::arithmetic_or_logical_expression_checked (op, lhs, rhs,
+							     expr.get_locus (),
+							     receiver);
       ctx->add_statement (check);
 
-      translated = ctx->get_backend ()->assignment_statement (
-	lhs, receiver->get_tree (expr.get_locus ()), expr.get_locus ());
+      translated
+	= Backend::assignment_statement (lhs,
+					 receiver->get_tree (expr.get_locus ()),
+					 expr.get_locus ());
     }
   else
     {
-      translated = ctx->get_backend ()->arithmetic_or_logical_expression (
-	op, lhs, rhs, expr.get_locus ());
+      translated
+	= Backend::arithmetic_or_logical_expression (op, lhs, rhs,
+						     expr.get_locus ());
     }
 }
 
@@ -251,8 +252,7 @@ CompileExpr::visit (HIR::NegationExpr &expr)
       return;
     }
 
-  translated
-    = ctx->get_backend ()->negation_expression (op, negated_expr, location);
+  translated = Backend::negation_expression (op, negated_expr, location);
 }
 
 void
@@ -263,8 +263,7 @@ CompileExpr::visit (HIR::ComparisonExpr &expr)
   auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
   auto location = expr.get_locus ();
 
-  translated
-    = ctx->get_backend ()->comparison_expression (op, lhs, rhs, location);
+  translated = Backend::comparison_expression (op, lhs, rhs, location);
 }
 
 void
@@ -275,8 +274,7 @@ CompileExpr::visit (HIR::LazyBooleanExpr &expr)
   auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
   auto location = expr.get_locus ();
 
-  translated
-    = ctx->get_backend ()->lazy_boolean_expression (op, lhs, rhs, location);
+  translated = Backend::lazy_boolean_expression (op, lhs, rhs, location);
 }
 
 void
@@ -340,17 +338,15 @@ CompileExpr::visit (HIR::IfExprConseqElse &expr)
 
   bool is_address_taken = false;
   tree ret_var_stmt = nullptr;
-  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
-						 block_type, NULL,
-						 is_address_taken,
-						 expr.get_locus (),
-						 &ret_var_stmt);
+  tmp = Backend::temporary_variable (fnctx.fndecl, enclosing_scope, block_type,
+				     NULL, is_address_taken, expr.get_locus (),
+				     &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
   auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
   ctx->add_statement (stmt);
 
-  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+  translated = Backend::var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -371,18 +367,16 @@ CompileExpr::visit (HIR::BlockExpr &expr)
 
   bool is_address_taken = false;
   tree ret_var_stmt = nullptr;
-  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
-						 block_type, NULL,
-						 is_address_taken,
-						 expr.get_locus (),
-						 &ret_var_stmt);
+  tmp = Backend::temporary_variable (fnctx.fndecl, enclosing_scope, block_type,
+				     NULL, is_address_taken, expr.get_locus (),
+				     &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
   auto block_stmt = CompileBlock::compile (&expr, ctx, tmp);
   rust_assert (TREE_CODE (block_stmt) == BIND_EXPR);
   ctx->add_statement (block_stmt);
 
-  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+  translated = Backend::var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -527,9 +521,10 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
   for (auto &arg : arguments)
     ctor_arguments.push_back (arg);
 
-  translated = ctx->get_backend ()->constructor_expression (
-    compiled_adt_type, adt->is_enum (), ctor_arguments, union_disriminator,
-    struct_expr.get_locus ());
+  translated
+    = Backend::constructor_expression (compiled_adt_type, adt->is_enum (),
+				       ctor_arguments, union_disriminator,
+				       struct_expr.get_locus ());
 }
 
 void
@@ -585,9 +580,8 @@ CompileExpr::visit (HIR::FieldAccessExpr &expr)
       receiver_ref = indirect;
     }
 
-  translated
-    = ctx->get_backend ()->struct_field_expression (receiver_ref, field_index,
-						    expr.get_locus ());
+  translated = Backend::struct_field_expression (receiver_ref, field_index,
+						 expr.get_locus ());
 }
 
 void
@@ -619,9 +613,10 @@ CompileExpr::visit (HIR::LoopExpr &expr)
 
   bool is_address_taken = false;
   tree ret_var_stmt = NULL_TREE;
-  Bvariable *tmp = ctx->get_backend ()->temporary_variable (
-    fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-    expr.get_locus (), &ret_var_stmt);
+  Bvariable *tmp
+    = Backend::temporary_variable (fnctx.fndecl, enclosing_scope, block_type,
+				   NULL, is_address_taken, expr.get_locus (),
+				   &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
   ctx->push_loop_context (tmp);
 
@@ -629,30 +624,27 @@ CompileExpr::visit (HIR::LoopExpr &expr)
     {
       HIR::LoopLabel &loop_label = expr.get_loop_label ();
       tree label
-	= ctx->get_backend ()->label (fnctx.fndecl,
-				      loop_label.get_lifetime ().get_name (),
-				      loop_label.get_locus ());
-      tree label_decl = ctx->get_backend ()->label_definition_statement (label);
+	= Backend::label (fnctx.fndecl, loop_label.get_lifetime ().get_name (),
+			  loop_label.get_locus ());
+      tree label_decl = Backend::label_definition_statement (label);
       ctx->add_statement (label_decl);
       ctx->insert_label_decl (
 	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
     }
 
-  tree loop_begin_label
-    = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
   tree loop_begin_label_decl
-    = ctx->get_backend ()->label_definition_statement (loop_begin_label);
+    = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
   ctx->push_loop_begin_label (loop_begin_label);
 
   tree code_block
     = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
-  tree loop_expr
-    = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
+  tree loop_expr = Backend::loop_expression (code_block, expr.get_locus ());
   ctx->add_statement (loop_expr);
 
   ctx->pop_loop_context ();
-  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+  translated = Backend::var_expression (tmp, expr.get_locus ());
 
   ctx->pop_loop_begin_label ();
 }
@@ -665,10 +657,9 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
     {
       HIR::LoopLabel &loop_label = expr.get_loop_label ();
       tree label
-	= ctx->get_backend ()->label (fnctx.fndecl,
-				      loop_label.get_lifetime ().get_name (),
-				      loop_label.get_locus ());
-      tree label_decl = ctx->get_backend ()->label_definition_statement (label);
+	= Backend::label (fnctx.fndecl, loop_label.get_lifetime ().get_name (),
+			  loop_label.get_locus ());
+      tree label_decl = Backend::label_definition_statement (label);
       ctx->add_statement (label_decl);
       ctx->insert_label_decl (
 	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
@@ -679,15 +670,13 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
   location_t end_location = expr.get_loop_block ()->get_locus (); // FIXME
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree loop_block
-    = ctx->get_backend ()->block (fnctx.fndecl, enclosing_scope, locals,
-				  start_location, end_location);
+  tree loop_block = Backend::block (fnctx.fndecl, enclosing_scope, locals,
+				    start_location, end_location);
   ctx->push_block (loop_block);
 
-  tree loop_begin_label
-    = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
   tree loop_begin_label_decl
-    = ctx->get_backend ()->label_definition_statement (loop_begin_label);
+    = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
   ctx->push_loop_begin_label (loop_begin_label);
 
@@ -695,8 +684,7 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
     = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
   tree exit_condition = fold_build1_loc (expr.get_locus (), TRUTH_NOT_EXPR,
 					 boolean_type_node, condition);
-  tree exit_expr
-    = ctx->get_backend ()->exit_expression (exit_condition, expr.get_locus ());
+  tree exit_expr = Backend::exit_expression (exit_condition, expr.get_locus ());
   ctx->add_statement (exit_expr);
 
   tree code_block_stmt
@@ -707,8 +695,7 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
   ctx->pop_loop_begin_label ();
   ctx->pop_block ();
 
-  tree loop_expr
-    = ctx->get_backend ()->loop_expression (loop_block, expr.get_locus ());
+  tree loop_expr = Backend::loop_expression (loop_block, expr.get_locus ());
   ctx->add_statement (loop_expr);
 }
 
@@ -721,13 +708,12 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 
       Bvariable *loop_result_holder = ctx->peek_loop_context ();
       tree result_reference
-	= ctx->get_backend ()->var_expression (loop_result_holder,
-					       expr.get_expr ()->get_locus ());
+	= Backend::var_expression (loop_result_holder,
+				   expr.get_expr ()->get_locus ());
 
       tree assignment
-	= ctx->get_backend ()->assignment_statement (result_reference,
-						     compiled_expr,
-						     expr.get_locus ());
+	= Backend::assignment_statement (result_reference, compiled_expr,
+					 expr.get_locus ());
       ctx->add_statement (assignment);
     }
 
@@ -759,15 +745,14 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 	  return;
 	}
 
-      tree goto_label
-	= ctx->get_backend ()->goto_statement (label, expr.get_locus ());
+      tree goto_label = Backend::goto_statement (label, expr.get_locus ());
       ctx->add_statement (goto_label);
     }
   else
     {
-      tree exit_expr = ctx->get_backend ()->exit_expression (
-	ctx->get_backend ()->boolean_constant_expression (true),
-	expr.get_locus ());
+      tree exit_expr
+	= Backend::exit_expression (Backend::boolean_constant_expression (true),
+				    expr.get_locus ());
       ctx->add_statement (exit_expr);
     }
 }
@@ -804,7 +789,7 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
 	}
     }
 
-  translated = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
+  translated = Backend::goto_statement (label, expr.get_locus ());
 }
 
 void
@@ -933,8 +918,7 @@ CompileExpr::visit (HIR::AssignmentExpr &expr)
   // debug_tree (lvalue);
 
   tree assignment
-    = ctx->get_backend ()->assignment_statement (lvalue, rvalue,
-						 expr.get_locus ());
+    = Backend::assignment_statement (lvalue, rvalue, expr.get_locus ());
 
   ctx->add_statement (assignment);
 }
@@ -1333,29 +1317,28 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
   bool is_address_taken = false;
   tree ret_var_stmt = nullptr;
-  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
-						 block_type, NULL,
-						 is_address_taken,
-						 expr.get_locus (),
-						 &ret_var_stmt);
+  tmp = Backend::temporary_variable (fnctx.fndecl, enclosing_scope, block_type,
+				     NULL, is_address_taken, expr.get_locus (),
+				     &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
   // lets compile the scrutinee expression
   tree match_scrutinee_rval
     = CompileExpr::Compile (expr.get_scrutinee_expr ().get (), ctx);
 
-  Bvariable *match_scrutinee_tmp_var = ctx->get_backend ()->temporary_variable (
-    fnctx.fndecl, enclosing_scope, TREE_TYPE (match_scrutinee_rval), NULL,
-    is_address_taken, expr.get_locus (), &ret_var_stmt);
+  Bvariable *match_scrutinee_tmp_var
+    = Backend::temporary_variable (fnctx.fndecl, enclosing_scope,
+				   TREE_TYPE (match_scrutinee_rval), NULL,
+				   is_address_taken, expr.get_locus (),
+				   &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
   tree match_scrutinee_expr = match_scrutinee_tmp_var->get_tree (
     expr.get_scrutinee_expr ()->get_locus ());
 
   tree assignment
-    = ctx->get_backend ()->assignment_statement (match_scrutinee_expr,
-						 match_scrutinee_rval,
-						 expr.get_locus ());
+    = Backend::assignment_statement (match_scrutinee_expr, match_scrutinee_rval,
+				     expr.get_locus ());
   ctx->add_statement (assignment);
 
   tree match_scrutinee_expr_qualifier_expr;
@@ -1369,13 +1352,11 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       // would be DECL_QUALIFIER i think. For now this will just access the
       // first record field and its respective qualifier because it will always
       // be set because this is all a big special union
-      tree scrutinee_first_record_expr
-	= ctx->get_backend ()->struct_field_expression (
-	  match_scrutinee_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
-      match_scrutinee_expr_qualifier_expr
-	= ctx->get_backend ()->struct_field_expression (
-	  scrutinee_first_record_expr, 0,
-	  expr.get_scrutinee_expr ()->get_locus ());
+      tree scrutinee_first_record_expr = Backend::struct_field_expression (
+	match_scrutinee_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
+      match_scrutinee_expr_qualifier_expr = Backend::struct_field_expression (
+	scrutinee_first_record_expr, 0,
+	expr.get_scrutinee_expr ()->get_locus ());
     }
   else if (scrutinee_kind == TyTy::TypeKind::REF)
     {
@@ -1433,11 +1414,11 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 		// because it will always be set because this is all a big
 		// special union
 		tree scrutinee_first_record_expr
-		  = ctx->get_backend ()->struct_field_expression (
+		  = Backend::struct_field_expression (
 		    match_scrutinee_expr, 0,
 		    expr.get_scrutinee_expr ()->get_locus ());
 		match_scrutinee_expr_qualifier_expr
-		  = ctx->get_backend ()->struct_field_expression (
+		  = Backend::struct_field_expression (
 		    scrutinee_first_record_expr, 0,
 		    expr.get_scrutinee_expr ()->get_locus ());
 	      }
@@ -1469,18 +1450,16 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   tree fndecl = fnctx.fndecl;
   location_t end_label_locus = expr.get_locus (); // FIXME
   tree end_label
-    = ctx->get_backend ()->label (fndecl,
-				  "" /* empty creates an artificial label */,
-				  end_label_locus);
+    = Backend::label (fndecl, "" /* empty creates an artificial label */,
+		      end_label_locus);
   tree end_label_decl_statement
-    = ctx->get_backend ()->label_definition_statement (end_label);
+    = Backend::label_definition_statement (end_label);
 
   // setup the switch-body-block
   location_t start_location = UNKNOWN_LOCATION; // FIXME
   location_t end_location = UNKNOWN_LOCATION;	// FIXME
-  tree switch_body_block
-    = ctx->get_backend ()->block (fndecl, enclosing_scope, {}, start_location,
-				  end_location);
+  tree switch_body_block = Backend::block (fndecl, enclosing_scope, {},
+					   start_location, end_location);
   ctx->push_block (switch_body_block);
 
   for (auto &kase : expr.get_match_cases ())
@@ -1491,8 +1470,9 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
       // generate implicit label
       location_t arm_locus = kase_arm.get_locus ();
-      tree case_label = ctx->get_backend ()->label (
-	fndecl, "" /* empty creates an artificial label */, arm_locus);
+      tree case_label
+	= Backend::label (fndecl, "" /* empty creates an artificial label */,
+			  arm_locus);
 
       // setup the bindings for the block
       for (auto &kase_pattern : kase_arm.get_patterns ())
@@ -1508,11 +1488,10 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
       // compile the expr and setup the assignment if required when tmp != NULL
       tree kase_expr_tree = CompileExpr::Compile (kase.get_expr ().get (), ctx);
-      tree result_reference
-	= ctx->get_backend ()->var_expression (tmp, arm_locus);
+      tree result_reference = Backend::var_expression (tmp, arm_locus);
       tree assignment
-	= ctx->get_backend ()->assignment_statement (result_reference,
-						     kase_expr_tree, arm_locus);
+	= Backend::assignment_statement (result_reference, kase_expr_tree,
+					 arm_locus);
       ctx->add_statement (assignment);
 
       // go to end label
@@ -1530,7 +1509,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   ctx->add_statement (match_expr_stmt);
   ctx->add_statement (end_label_decl_statement);
 
-  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+  translated = Backend::var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -1617,9 +1596,10 @@ CompileExpr::visit (HIR::CallExpr &expr)
       for (auto &arg : arguments)
 	ctor_arguments.push_back (arg);
 
-      translated = ctx->get_backend ()->constructor_expression (
-	compiled_adt_type, adt->is_enum (), ctor_arguments, union_disriminator,
-	expr.get_locus ());
+      translated
+	= Backend::constructor_expression (compiled_adt_type, adt->is_enum (),
+					   ctor_arguments, union_disriminator,
+					   expr.get_locus ());
 
       return;
     }
@@ -1709,8 +1689,8 @@ CompileExpr::visit (HIR::CallExpr &expr)
     }
 
   // must be a regular call to a function
-  translated = ctx->get_backend ()->call_expression (fn_address, args, nullptr,
-						     expr.get_locus ());
+  translated
+    = Backend::call_expression (fn_address, args, nullptr, expr.get_locus ());
 }
 
 void
@@ -1806,8 +1786,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       args.push_back (rvalue);
     }
 
-  translated = ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
-						     expr.get_locus ());
+  translated
+    = Backend::call_expression (fn_expr, args, nullptr, expr.get_locus ());
 }
 
 tree
@@ -1841,8 +1821,7 @@ CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
   tree idx = build_int_cst (size_type_node, offs);
 
   tree vtable_ptr
-    = ctx->get_backend ()->struct_field_expression (receiver_ref, 1,
-						    expr_locus);
+    = Backend::struct_field_expression (receiver_ref, 1, expr_locus);
   tree vtable_array_access
     = build4_loc (expr_locus, ARRAY_REF, TREE_TYPE (TREE_TYPE (vtable_ptr)),
 		  vtable_ptr, idx, NULL_TREE, NULL_TREE);
@@ -1860,8 +1839,7 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 				    location_t expr_locus)
 {
   // access the offs + 1 for the fnptr and offs=0 for the reciever obj
-  return ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
-						       expr_locus);
+  return Backend::struct_field_expression (receiver_ref, 0, expr_locus);
 }
 
 tree
@@ -1906,8 +1884,7 @@ CompileExpr::resolve_operator_overload (
   if (rhs != nullptr)	 // can be null for negation_expr (unary ones)
     args.push_back (rhs);
 
-  return ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
-					       expr.get_locus ());
+  return Backend::call_expression (fn_expr, args, nullptr, expr.get_locus ());
 }
 
 tree
@@ -1918,7 +1895,7 @@ CompileExpr::compile_bool_literal (const HIR::LiteralExpr &expr,
 
   const auto literal_value = expr.get_literal ();
   bool bval = literal_value.as_string ().compare ("true") == 0;
-  return ctx->get_backend ()->boolean_constant_expression (bval);
+  return Backend::boolean_constant_expression (bval);
 }
 
 tree
@@ -2009,7 +1986,7 @@ CompileExpr::compile_char_literal (const HIR::LiteralExpr &expr,
 
   // FIXME needs wchar_t
   char c = literal_value.as_string ().c_str ()[0];
-  return ctx->get_backend ()->wchar_constant_expression (c);
+  return Backend::wchar_constant_expression (c);
 }
 
 tree
@@ -2033,8 +2010,7 @@ CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
   rust_assert (expr.get_lit_type () == HIR::Literal::STRING);
   const auto literal_value = expr.get_literal ();
 
-  auto base = ctx->get_backend ()->string_constant_expression (
-    literal_value.as_string ());
+  auto base = Backend::string_constant_expression (literal_value.as_string ());
   tree data = address_expression (base, expr.get_locus ());
 
   TyTy::BaseType *usize = nullptr;
@@ -2044,9 +2020,8 @@ CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
 
   tree size = build_int_cstu (type, literal_value.as_string ().size ());
 
-  return ctx->get_backend ()->constructor_expression (fat_pointer, false,
-						      {data, size}, -1,
-						      expr.get_locus ());
+  return Backend::constructor_expression (fat_pointer, false, {data, size}, -1,
+					  expr.get_locus ());
 }
 
 tree
@@ -2068,16 +2043,15 @@ CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
   for (size_t i = 0; i < value_str.size (); i++)
     {
       char b = value_str.at (i);
-      tree bb = ctx->get_backend ()->char_constant_expression (b);
+      tree bb = Backend::char_constant_expression (b);
       vals.push_back (bb);
       indexes.push_back (i);
     }
 
   tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
   tree constructed
-    = ctx->get_backend ()->array_constructor_expression (array_type, indexes,
-							 vals,
-							 expr.get_locus ());
+    = Backend::array_constructor_expression (array_type, indexes, vals,
+					     expr.get_locus ());
 
   return address_expression (constructed, expr.get_locus ());
 }
@@ -2090,7 +2064,7 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
       || TREE_TYPE (expr_tree) == error_mark_node)
     return error_mark_node;
 
-  if (ctx->get_backend ()->type_size (type_to_cast_to) == 0
+  if (Backend::type_size (type_to_cast_to) == 0
       || TREE_TYPE (expr_tree) == void_type_node)
     {
       // Do not convert zero-sized types.
@@ -2151,8 +2125,7 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
 
       // this is returning the direct raw pointer of the slice an assumes a very
       // specific layout
-      return ctx->get_backend ()->struct_field_expression (expr_tree, 0,
-							   location);
+      return Backend::struct_field_expression (expr_tree, 0, location);
     }
 
   return fold_convert_loc (location, type_to_cast_to, expr_tree);
@@ -2215,9 +2188,8 @@ CompileExpr::array_value_expr (location_t expr_locus,
       indexes.push_back (i++);
     }
 
-  return ctx->get_backend ()->array_constructor_expression (array_type, indexes,
-							    constructor,
-							    expr_locus);
+  return Backend::array_constructor_expression (array_type, indexes,
+						constructor, expr_locus);
 }
 
 tree
@@ -2276,10 +2248,8 @@ CompileExpr::array_copied_expr (location_t expr_locus,
 	  indexes.push_back (idx++);
 	}
 
-      return ctx->get_backend ()->array_constructor_expression (array_type,
-								indexes,
-								constructor,
-								expr_locus);
+      return Backend::array_constructor_expression (array_type, indexes,
+						    constructor, expr_locus);
     }
 
   else
@@ -2291,24 +2261,21 @@ CompileExpr::array_copied_expr (location_t expr_locus,
 
       std::vector<Bvariable *> locals;
       tree enclosing_scope = ctx->peek_enclosing_scope ();
-      tree init_block
-	= ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				      expr_locus, expr_locus);
+      tree init_block = Backend::block (fndecl, enclosing_scope, locals,
+					expr_locus, expr_locus);
       ctx->push_block (init_block);
 
       tree tmp;
-      tree stmts
-	= ctx->get_backend ()->array_initializer (fndecl, init_block,
-						  array_type, capacity_expr,
-						  translated_expr, &tmp,
-						  expr_locus);
+      tree stmts = Backend::array_initializer (fndecl, init_block, array_type,
+					       capacity_expr, translated_expr,
+					       &tmp, expr_locus);
       ctx->add_statement (stmts);
 
       tree block = ctx->pop_block ();
 
       // The result is a compound expression which creates a temporary array,
       // initializes all the elements in a loop, and then yeilds the array.
-      return ctx->get_backend ()->compound_expression (block, tmp, expr_locus);
+      return Backend::compound_expression (block, tmp, expr_locus);
     }
 }
 
@@ -2374,8 +2341,8 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
     }
 
   // make the call
-  return ctx->get_backend ()->call_expression (fn_address, {adjusted_argument},
-					       nullptr, locus);
+  return Backend::call_expression (fn_address, {adjusted_argument}, nullptr,
+				   locus);
 }
 
 tree
@@ -2434,8 +2401,8 @@ HIRCompileBase::resolve_unsized_slice_adjustment (
 	.to_uhwi ();
   tree size = build_int_cstu (size_type_node, array_size);
 
-  return ctx->get_backend ()->constructor_expression (fat_pointer, false,
-						      {data, size}, -1, locus);
+  return Backend::constructor_expression (fat_pointer, false, {data, size}, -1,
+					  locus);
 }
 
 tree
@@ -2476,9 +2443,8 @@ CompileExpr::visit (HIR::RangeFromToExpr &expr)
   tree adt = TyTyResolveCompile::compile (ctx, tyty);
 
   // make the constructor
-  translated
-    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
-						   expr.get_locus ());
+  translated = Backend::constructor_expression (adt, false, {from, to}, -1,
+						expr.get_locus ());
 }
 
 void
@@ -2499,9 +2465,8 @@ CompileExpr::visit (HIR::RangeFromExpr &expr)
   tree adt = TyTyResolveCompile::compile (ctx, tyty);
 
   // make the constructor
-  translated
-    = ctx->get_backend ()->constructor_expression (adt, false, {from}, -1,
-						   expr.get_locus ());
+  translated = Backend::constructor_expression (adt, false, {from}, -1,
+						expr.get_locus ());
 }
 
 void
@@ -2523,8 +2488,7 @@ CompileExpr::visit (HIR::RangeToExpr &expr)
 
   // make the constructor
   translated
-    = ctx->get_backend ()->constructor_expression (adt, false, {to}, -1,
-						   expr.get_locus ());
+    = Backend::constructor_expression (adt, false, {to}, -1, expr.get_locus ());
 }
 
 void
@@ -2536,8 +2500,8 @@ CompileExpr::visit (HIR::RangeFullExpr &expr)
   rust_assert (ok);
 
   tree adt = TyTyResolveCompile::compile (ctx, tyty);
-  translated = ctx->get_backend ()->constructor_expression (adt, false, {}, -1,
-							    expr.get_locus ());
+  translated
+    = Backend::constructor_expression (adt, false, {}, -1, expr.get_locus ());
 }
 
 void
@@ -2559,9 +2523,8 @@ CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
   tree adt = TyTyResolveCompile::compile (ctx, tyty);
 
   // make the constructor
-  translated
-    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
-						   expr.get_locus ());
+  translated = Backend::constructor_expression (adt, false, {from, to}, -1,
+						expr.get_locus ());
 }
 
 void
@@ -2613,9 +2576,8 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 	= indirect_expression (array_reference, expr.get_locus ());
     }
 
-  translated
-    = ctx->get_backend ()->array_index_expression (array_reference, index,
-						   expr.get_locus ());
+  translated = Backend::array_index_expression (array_reference, index,
+						expr.get_locus ());
 }
 
 void
@@ -2659,9 +2621,8 @@ CompileExpr::visit (HIR::ClosureExpr &expr)
       vals.push_back (val);
     }
 
-  translated
-    = ctx->get_backend ()->constructor_expression (compiled_closure_tyty, false,
-						   vals, -1, expr.get_locus ());
+  translated = Backend::constructor_expression (compiled_closure_tyty, false,
+						vals, -1, expr.get_locus ());
 }
 
 tree
@@ -2685,9 +2646,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   std::string asm_name = ctx->mangle_item (&closure_tyty, path);
 
   unsigned int flags = 0;
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
-				     flags, expr.get_locus ());
+  tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name, asm_name,
+				   flags, expr.get_locus ());
 
   // insert into the context
   ctx->insert_function_decl (fn_tyty, fndecl);
@@ -2698,9 +2658,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   // closure self
   Bvariable *self_param
-    = ctx->get_backend ()->parameter_variable (fndecl, "$closure",
-					       compiled_closure_tyty,
-					       expr.get_locus ());
+    = Backend::parameter_variable (fndecl, "$closure", compiled_closure_tyty,
+				   expr.get_locus ());
   DECL_ARTIFICIAL (self_param->get_decl ()) = 1;
   param_vars.push_back (self_param);
 
@@ -2717,8 +2676,9 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
       rust_assert (ok);
 
       // get the assessor
-      tree binding = ctx->get_backend ()->struct_field_expression (
-	self_param->get_tree (expr.get_locus ()), idx, expr.get_locus ());
+      tree binding = Backend::struct_field_expression (self_param->get_tree (
+							 expr.get_locus ()),
+						       idx, expr.get_locus ());
       tree indirection = indirect_expression (binding, expr.get_locus ());
 
       // insert bindings
@@ -2732,8 +2692,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   tree args_type
     = TyTyResolveCompile::compile (ctx, &closure_tyty.get_parameters ());
   Bvariable *args_param
-    = ctx->get_backend ()->parameter_variable (fndecl, "args", args_type,
-					       expr.get_locus ());
+    = Backend::parameter_variable (fndecl, "args", args_type,
+				   expr.get_locus ());
   param_vars.push_back (args_param);
 
   // setup the implicit mappings for the arguments. Since argument passing to
@@ -2746,15 +2706,16 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   size_t i = 0;
   for (auto &closure_param : expr.get_params ())
     {
-      tree compiled_param_var = ctx->get_backend ()->struct_field_expression (
-	args_param_expr, i, closure_param.get_locus ());
+      tree compiled_param_var
+	= Backend::struct_field_expression (args_param_expr, i,
+					    closure_param.get_locus ());
 
       CompilePatternBindings::Compile (closure_param.get_pattern ().get (),
 				       compiled_param_var, ctx);
       i++;
     }
 
-  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+  if (!Backend::function_set_parameters (fndecl, param_vars))
     {
       ctx->pop_closure_context ();
       return error_mark_node;
@@ -2788,8 +2749,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
       end_location = body->get_end_locus ();
     }
 
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-						start_location, end_location);
+  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+				    start_location, end_location);
   ctx->push_block (code_block);
 
   TyTy::BaseType *tyret = &closure_tyty.get_result_type ();
@@ -2800,10 +2761,9 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   tree ret_var_stmt = NULL_TREE;
 
   return_address
-    = ctx->get_backend ()->temporary_variable (fndecl, code_block, return_type,
-					       NULL, address_is_taken,
-					       expr.get_locus (),
-					       &ret_var_stmt);
+    = Backend::temporary_variable (fndecl, code_block, return_type, NULL,
+				   address_is_taken, expr.get_locus (),
+				   &ret_var_stmt);
 
   ctx->add_statement (ret_var_stmt);
 
@@ -2818,8 +2778,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     {
       tree value = CompileExpr::Compile (function_body, ctx);
       tree return_expr
-	= ctx->get_backend ()->return_statement (fndecl, value,
-						 function_body->get_locus ());
+	= Backend::return_statement (fndecl, value,
+				     function_body->get_locus ());
       ctx->add_statement (return_expr);
     }
 
@@ -2931,9 +2891,8 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
   tree tuple_args_tyty = TREE_VALUE (tuple_args_tyty_chain);
 
   tree tuple_args
-    = ctx->get_backend ()->constructor_expression (tuple_args_tyty, false,
-						   tuple_arg_vals, -1,
-						   expr.get_locus ());
+    = Backend::constructor_expression (tuple_args_tyty, false, tuple_arg_vals,
+				       -1, expr.get_locus ());
 
   // args are always self, and the tuple of the args we are passing where
   // self is the path of the call-expr in this case the fn_address
@@ -2942,9 +2901,9 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
   args.push_back (tuple_args);
 
   tree call_address = address_expression (function, expr.get_locus ());
-  *result = ctx->get_backend ()->call_expression (call_address, args,
-						  nullptr /* static chain ?*/,
-						  expr.get_locus ());
+  *result
+    = Backend::call_expression (call_address, args, nullptr /* static chain ?*/,
+				expr.get_locus ());
   return true;
 }
 

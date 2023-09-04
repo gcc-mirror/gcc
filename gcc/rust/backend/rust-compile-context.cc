@@ -22,8 +22,8 @@
 namespace Rust {
 namespace Compile {
 
-Context::Context (::Backend *backend)
-  : backend (backend), resolver (Resolver::Resolver::get ()),
+Context::Context ()
+  : resolver (Resolver::Resolver::get ()),
     tyctx (Resolver::TypeCheckContext::get ()),
     mappings (Analysis::Mappings::get ()), mangler (Mangler ())
 {

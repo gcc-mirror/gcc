@@ -344,9 +344,6 @@ struct Session
    * expansion) */
   std::vector<std::string> extra_files;
 
-  // backend wrapper to GCC GENERIC
-  Backend *backend;
-
   // backend linemap
   Linemap *linemap;
 

@@ -96,10 +96,9 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree folded_discrim_expr = fold_expr (discrim_expr_node);
       tree qualifier = folded_discrim_expr;
 
-      return ctx->get_backend ()->constructor_expression (compiled_adt_type,
-							  true, {qualifier},
-							  union_disriminator,
-							  expr_locus);
+      return Backend::constructor_expression (compiled_adt_type, true,
+					      {qualifier}, union_disriminator,
+					      expr_locus);
     }
 
   HirId ref;
@@ -130,7 +129,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   if (ctx->lookup_var_decl (ref, &var))
     {
       // TREE_USED is setup in the gcc abstraction here
-      return ctx->get_backend ()->var_expression (var, expr_locus);
+      return Backend::var_expression (var, expr_locus);
     }
 
   // might be a match pattern binding

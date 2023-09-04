@@ -99,7 +99,8 @@ get_identifier_from_string (const std::string &str)
 
 // Define the built-in functions that are exposed to GCCRust.
 
-Backend::Backend ()
+void
+Backend::init ()
 {
   /* We need to define the fetch_and_add functions, since we use them
      for ++ and --.  */
@@ -2467,12 +2468,4 @@ Backend::write_global_definitions (
   wrapup_global_declarations (defs, i);
 
   delete[] defs;
-}
-
-// Return the backend generator.
-
-Backend *
-rust_get_backend ()
-{
-  return new Backend ();
 }
