@@ -730,6 +730,26 @@
   DONE;
 })
 
+;; Combine vfsqrt.v and cond_mask
+(define_insn_and_split "*cond_<optab><mode>"
+  [(set (match_operand:VF 0 "register_operand")
+     (if_then_else:VF
+       (match_operand:<VM> 1 "register_operand")
+       (any_float_unop:VF
+         (match_operand:VF 2 "register_operand"))
+       (match_operand:VF 3 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_cond_len_unop (icode, ops);
+  DONE;
+})
+
 ;; Combine vlmax neg and UNSPEC_VCOPYSIGN
 (define_insn_and_split "*copysign<mode>_neg"
   [(set (match_operand:VF 0 "register_operand")

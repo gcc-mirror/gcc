@@ -994,11 +994,14 @@
 ;; Includes:
 ;; - vfsqrt.v
 ;; -------------------------------------------------------------------------------
-(define_expand "<optab><mode>2"
+(define_insn_and_split "<optab><mode>2"
   [(set (match_operand:VF 0 "register_operand")
     (any_float_unop:VF
      (match_operand:VF 1 "register_operand")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP_FRM_DYN, operands);
