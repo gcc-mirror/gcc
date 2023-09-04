@@ -15,13 +15,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=c++98" }
+// { dg-do compile { target c++98_only } }
+// { dg-add-options strict_std }
+// { dg-add-options no_pch }
 
 #include <complex.h>
 
-// Should be equivalent to C99 <complex>, not C++ <complex>
+// Should be equivalent to C99 <complex.h>, not C++ <complex>
+#ifndef complex
+# error "'complex' is not defined as a macro by <complex.h> for -std=c++98"
+#endif
 namespace std
 {
+#undef complex
   struct complex;
 }
 
@@ -48,8 +54,4 @@ namespace test
   using ::cproj;
   using ::creal;
 }
-#endif
-
-#ifndef complex
-# error "'complex' is not defined as a macro by <complex.h> for -std=c++98"
 #endif
