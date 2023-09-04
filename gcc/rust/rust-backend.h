@@ -456,10 +456,6 @@ public:
 			    const std::vector<tree> &function_decls,
 			    const std::vector<Bvariable *> &variable_decls);
 
-  // Write SIZE bytes of export data from BYTES to the proper
-  // section in the output object file.
-  void write_export_data (const char *bytes, unsigned int size);
-
 protected:
   tree fill_in_fields (tree, const std::vector<typed_identifier> &);
 
