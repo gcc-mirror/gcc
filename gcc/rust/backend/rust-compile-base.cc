@@ -83,6 +83,13 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
 	= attr.get_path ().as_string () == Values::Attributes::NO_MANGLE;
       bool is_deprecated
 	= attr.get_path ().as_string () == Values::Attributes::DEPRECATED;
+      bool is_proc_macro
+	= attr.get_path ().as_string () == Values::Attributes::PROC_MACRO;
+      bool is_proc_macro_attribute
+	= attr.get_path ().as_string ()
+	  == Values::Attributes::PROC_MACRO_ATTRIBUTE;
+      bool is_proc_macro_derive = attr.get_path ().as_string ()
+				  == Values::Attributes::PROC_MACRO_DERIVE;
 
       if (is_inline)
 	{
@@ -108,7 +115,47 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
 	{
 	  handle_no_mangle_attribute_on_fndecl (fndecl, attr);
 	}
+      else if (is_proc_macro)
+	{
+	  handle_proc_macro_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (is_proc_macro_attribute)
+	{
+	  handle_proc_macro_attribute_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (is_proc_macro_derive)
+	{
+	  handle_proc_macro_derive_attribute_on_fndecl (fndecl, attr);
+	}
     }
+}
+
+static void
+handle_proc_macro_common (tree fndecl, const AST::Attribute &attr)
+{
+  DECL_ATTRIBUTES (fndecl)
+    = tree_cons (get_identifier ("cdecl"), NULL, DECL_ATTRIBUTES (fndecl));
+}
+
+void
+HIRCompileBase::handle_proc_macro_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  handle_proc_macro_common (fndecl, attr);
+}
+
+void
+HIRCompileBase::handle_proc_macro_attribute_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  handle_proc_macro_common (fndecl, attr);
+}
+
+void
+HIRCompileBase::handle_proc_macro_derive_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  handle_proc_macro_common (fndecl, attr);
 }
 
 void
