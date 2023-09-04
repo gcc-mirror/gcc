@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=c++20" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
+// { dg-add-options strict_std }
 
 #include <ranges>
 #include <limits>
