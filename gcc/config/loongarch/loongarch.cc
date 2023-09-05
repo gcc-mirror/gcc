@@ -5191,6 +5191,20 @@ loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   return true;
 }
 
+static machine_mode
+loongarch_mode_for_move_size (HOST_WIDE_INT size)
+{
+  switch (size)
+    {
+    case 32:
+      return V32QImode;
+    case 16:
+      return V16QImode;
+    }
+
+  return int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
+}
+
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
    Assume that the areas do not overlap.  */
 
@@ -5220,7 +5234,7 @@ loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length,
 
   for (delta_cur = delta, i = 0, offs = 0; offs < length; delta_cur /= 2)
     {
-      mode = int_mode_for_size (delta_cur * BITS_PER_UNIT, 0).require ();
+      mode = loongarch_mode_for_move_size (delta_cur);
 
       for (; offs + delta_cur <= length; offs += delta_cur, i++)
 	{
@@ -5231,7 +5245,7 @@ loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length,
 
   for (delta_cur = delta, i = 0, offs = 0; offs < length; delta_cur /= 2)
     {
-      mode = int_mode_for_size (delta_cur * BITS_PER_UNIT, 0).require ();
+      mode = loongarch_mode_for_move_size (delta_cur);
 
       for (; offs + delta_cur <= length; offs += delta_cur, i++)
 	loongarch_emit_move (adjust_address (dest, mode, offs), regs[i]);
@@ -5326,8 +5340,8 @@ loongarch_expand_block_move (rtx dest, rtx src, rtx r_length, rtx r_align)
 
   HOST_WIDE_INT align = INTVAL (r_align);
 
-  if (!TARGET_STRICT_ALIGN || align > UNITS_PER_WORD)
-    align = UNITS_PER_WORD;
+  if (!TARGET_STRICT_ALIGN || align > LARCH_MAX_MOVE_PER_INSN)
+    align = LARCH_MAX_MOVE_PER_INSN;
 
   if (length <= align * LARCH_MAX_MOVE_OPS_STRAIGHT)
     {
