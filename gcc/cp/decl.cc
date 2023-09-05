@@ -18002,6 +18002,7 @@ begin_function_body (void)
     keep_next_level (true);
 
   tree stmt = begin_compound_stmt (BCS_FN_BODY);
+  current_binding_level->artificial = 1;
 
   if (processing_template_decl)
     /* Do nothing now.  */;

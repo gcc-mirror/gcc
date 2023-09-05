@@ -3146,14 +3146,20 @@ check_local_shadow (tree decl)
 	     them there.  */
 	  cp_binding_level *b = current_binding_level->level_chain;
 
-	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
-	    /* Skip the ctor/dtor cleanup level.  */
+	  if (in_function_try_handler && b->kind == sk_catch)
+	    b = b->level_chain;
+
+	  /* Skip artificially added scopes which aren't present
+	     in the C++ standard, e.g. for function-try-block or
+	     ctor/dtor cleanups.  */
+	  while (b->artificial)
 	    b = b->level_chain;
 
 	  /* [basic.scope.param] A parameter name shall not be redeclared
 	     in the outermost block of the function definition.  */
 	  if (b->kind == sk_function_parms)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (DECL_SOURCE_LOCATION (decl),
 			"declaration of %q#D shadows a parameter", decl);
 	      inform (DECL_SOURCE_LOCATION (old),
@@ -3194,17 +3200,10 @@ check_local_shadow (tree decl)
 	 shall not be redeclared in the outermost block of the handler.
 	 3.3.3/2:  A parameter name shall not be redeclared (...) in
 	 the outermost block of any handler associated with a
-	 function-try-block.
-	 3.4.1/15: The function parameter names shall not be redeclared
-	 in the exception-declaration nor in the outermost block of a
-	 handler for the function-try-block.  */
-      else if ((TREE_CODE (old) == VAR_DECL
-		&& old_scope == current_binding_level->level_chain
-		&& old_scope->kind == sk_catch)
-	       || (TREE_CODE (old) == PARM_DECL
-		   && (current_binding_level->kind == sk_catch
-		       || current_binding_level->level_chain->kind == sk_catch)
-		   && in_function_try_handler))
+	 function-try-block.  */
+      else if (TREE_CODE (old) == VAR_DECL
+	       && old_scope == current_binding_level->level_chain
+	       && old_scope->kind == sk_catch)
 	{
 	  auto_diagnostic_group d;
 	  if (permerror (DECL_SOURCE_LOCATION (decl),
