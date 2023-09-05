@@ -255,6 +255,28 @@
 [(set_attr "type" "vector")]
 )
 
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfsgnj.vv
+;; - vfsgnj.vf
+;; -------------------------------------------------------------------------
+(define_insn_and_split "copysign<mode>3"
+  [(set (match_operand:VLSF 0 "register_operand")
+    (unspec:VLSF
+      [(match_operand:VLSF  1 "register_operand")
+       (match_operand:VLSF  2 "register_operand")] UNSPEC_VCOPYSIGN))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred (UNSPEC_VCOPYSIGN, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vector")]
+)
+
 ;; -------------------------------------------------------------------------------
 ;; ---- [INT] Unary operations
 ;; -------------------------------------------------------------------------------

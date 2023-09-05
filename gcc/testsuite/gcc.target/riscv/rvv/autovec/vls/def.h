@@ -175,6 +175,14 @@ typedef double v512df __attribute__ ((vector_size (4096)));
       a[i] = CALL (b[i], c[i]);                                                \
   }
 
+#define DEF_CALL_VX(PREFIX, NUM, TYPE, CALL)                                   \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE c)            \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = CALL (b[i], c);                                                   \
+  }
+
 #define DEF_CONST(TYPE, VAL, NUM)                                              \
   void const_##TYPE##_##NUM (TYPE *restrict a)                                 \
   {                                                                            \
