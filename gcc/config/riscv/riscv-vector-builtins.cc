@@ -3992,6 +3992,16 @@ mangle_builtin_type (const_tree type)
   return NULL;
 }
 
+/* Return true if TYPE is a built-in RVV type defined by the ABI.  */
+bool
+builtin_type_p (const_tree type)
+{
+  if (!type)
+    return false;
+
+  return lookup_vector_type_attribute (type);
+}
+
 /* Initialize all compiler built-ins related to RVV that should be
    defined at start-up.  */
 void

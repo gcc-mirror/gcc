@@ -366,6 +366,7 @@ enum avl_type
 void init_builtins (void);
 const char *mangle_builtin_type (const_tree);
 tree lookup_vector_type_attribute (const_tree);
+bool builtin_type_p (const_tree);
 #ifdef GCC_TARGET_H
 bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 bool expand_vec_perm_const (machine_mode, machine_mode, rtx, rtx, rtx,

@@ -202,6 +202,18 @@ struct riscv_arg_info {
 
   /* The offset of the first register used, provided num_fprs is nonzero.  */
   unsigned int fpr_offset;
+
+  /* The number of vector registers allocated to this argument.  */
+  unsigned int num_vrs;
+
+  /* The offset of the first register used, provided num_vrs is nonzero.  */
+  unsigned int vr_offset;
+
+  /* The number of mask registers allocated to this argument.  */
+  unsigned int num_mrs;
+
+  /* The offset of the first register used, provided num_mrs is nonzero.  */
+  unsigned int mr_offset;
 };
 
 /* One stage in a constant building sequence.  These sequences have
@@ -4413,6 +4425,11 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
 {
   memset (cum, 0, sizeof (*cum));
 
+  if (fntype)
+    cum->variant_cc = (riscv_cc) fntype_abi (fntype).id ();
+  else
+    cum->variant_cc = RISCV_CC_BASE;
+
   if (fndecl)
     {
       const tree_function_decl &fn
@@ -4423,12 +4440,105 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
     }
 }
 
-/* Fill INFO with information about a single argument, and return an
-   RTL pattern to pass or return the argument.  CUM is the cumulative
-   state for earlier arguments.  MODE is the mode of this argument and
-   TYPE is its type (if known).  NAMED is true if this is a named
-   (fixed) argument rather than a variable one.  RETURN_P is true if
-   returning the argument, or false if passing the argument.  */
+/* Return true if TYPE is a vector type that can be passed in vector registers.
+ */
+
+static bool
+riscv_vector_type_p (const_tree type)
+{
+  /* Currently, only builtin scalabler vector type is allowed, in the future,
+     more vector types may be allowed, such as GNU vector type, etc.  */
+  return riscv_vector::builtin_type_p (type);
+}
+
+static unsigned int
+riscv_hard_regno_nregs (unsigned int regno, machine_mode mode);
+
+/* Subroutine of riscv_get_arg_info.  */
+
+static rtx
+riscv_get_vector_arg (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
+		      machine_mode mode, bool return_p)
+{
+  gcc_assert (riscv_v_ext_mode_p (mode));
+
+  info->mr_offset = cum->num_mrs;
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    {
+      /* For scalable mask return value.  */
+      if (return_p)
+	return gen_rtx_REG (mode, V_REG_FIRST);
+
+      /* For the first scalable mask argument.  */
+      if (info->mr_offset < MAX_ARGS_IN_MASK_REGISTERS)
+	{
+	  info->num_mrs = 1;
+	  return gen_rtx_REG (mode, V_REG_FIRST);
+	}
+      else
+	{
+	  /* Rest scalable mask arguments are treated as scalable data
+	     arguments.  */
+	}
+    }
+
+  /* The number and alignment of vector registers need for this scalable vector
+     argument. When the mode size is less than a full vector, we use 1 vector
+     register to pass. Just call TARGET_HARD_REGNO_NREGS for the number
+     information.  */
+  int nregs = riscv_hard_regno_nregs (V_ARG_FIRST, mode);
+  int LMUL = riscv_v_ext_tuple_mode_p (mode)
+	       ? nregs / riscv_vector::get_nf (mode)
+	       : nregs;
+  int arg_reg_start = V_ARG_FIRST - V_REG_FIRST;
+  int arg_reg_end = V_ARG_LAST - V_REG_FIRST;
+  int aligned_reg_start = ROUND_UP (arg_reg_start, LMUL);
+
+  /* For scalable data and scalable tuple return value.  */
+  if (return_p)
+    return gen_rtx_REG (mode, aligned_reg_start + V_REG_FIRST);
+
+  /* Iterate through the USED_VRS array to find vector register groups that have
+     not been allocated and the first register is aligned with LMUL.  */
+  for (int i = aligned_reg_start; i + nregs - 1 <= arg_reg_end; i += LMUL)
+    {
+      /* The index in USED_VRS array.  */
+      int idx = i - arg_reg_start;
+      /* Find the first register unused.  */
+      if (!cum->used_vrs[idx])
+	{
+	  bool find_set = true;
+	  /* Ensure there are NREGS continuous unused registers.  */
+	  for (int j = 1; j < nregs; j++)
+	    if (cum->used_vrs[idx + j])
+	      {
+		find_set = false;
+		/* Update I to the last aligned register which
+		   cannot be used and the next iteration will add
+		   LMUL step to I.  */
+		i += (j / LMUL) * LMUL;
+		break;
+	      }
+
+	  if (find_set)
+	    {
+	      info->num_vrs = nregs;
+	      info->vr_offset = idx;
+	      return gen_rtx_REG (mode, i + V_REG_FIRST);
+	    }
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Fill INFO with information about a single argument, and return an RTL
+   pattern to pass or return the argument. Return NULL_RTX if argument cannot
+   pass or return in registers, then the argument may be passed by reference or
+   through the stack or  .  CUM is the cumulative state for earlier arguments.
+   MODE is the mode of this argument and TYPE is its type (if known). NAMED is
+   true if this is a named (fixed) argument rather than a variable one. RETURN_P
+   is true if returning the argument, or false if passing the argument.  */
 
 static rtx
 riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
@@ -4450,11 +4560,9 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       riscv_pass_in_vector_p (type);
     }
 
-  /* All current vector arguments and return values are passed through the
-     function stack. Ideally, we should either warn the user not to use an RVV
-     vector type as function argument or support a calling convention
-     with better performance.  */
-  if (riscv_v_ext_mode_p (mode))
+  /* When disable vector_abi or scalable vector argument is anonymous, this
+     argument is passed by reference.  */
+  if (riscv_v_ext_mode_p (mode) && (!riscv_vector_abi || !named))
     return NULL_RTX;
 
   if (named)
@@ -4518,6 +4626,10 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 				      gregno, TYPE_MODE (fields[1].type),
 				      fields[1].offset);
 	}
+
+      /* For scalable vector argument.  */
+      if (riscv_vector_type_p (type) && riscv_v_ext_mode_p (mode))
+	return riscv_get_vector_arg (info, cum, mode, return_p);
     }
 
   /* Work out the size of the argument.  */
@@ -4564,12 +4676,28 @@ riscv_function_arg_advance (cumulative_args_t cum_v,
 
   riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 
+  /* Set the corresponding register in USED_VRS to used status.  */
+  for (unsigned int i = 0; i < info.num_vrs; i++)
+    {
+      gcc_assert (!cum->used_vrs[info.vr_offset + i]);
+      cum->used_vrs[info.vr_offset + i] = true;
+    }
+
+  if ((info.num_vrs > 0 || info.num_mrs > 0) && cum->variant_cc != RISCV_CC_V)
+    {
+      error ("RVV type %qT cannot be passed to an unprototyped function",
+	     arg.type);
+      /* Avoid repeating the message */
+      cum->variant_cc = RISCV_CC_V;
+    }
+
   /* Advance the register count.  This has the effect of setting
      num_gprs to MAX_ARGS_IN_REGISTERS if a doubleword-aligned
      argument required us to skip the final GPR and pass the whole
      argument on the stack.  */
   cum->num_fprs = info.fpr_offset + info.num_fprs;
   cum->num_gprs = info.gpr_offset + info.num_gprs;
+  cum->num_mrs = info.mr_offset + info.num_mrs;
 }
 
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
@@ -4631,20 +4759,23 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   /* ??? std_gimplify_va_arg_expr passes NULL for cum.  Fortunately, we
-     never pass variadic arguments in floating-point registers, so we can
-     avoid the call to riscv_get_arg_info in this case.  */
+     never pass variadic arguments in floating-point and vector registers,
+     so we can avoid the call to riscv_get_arg_info in this case.  */
   if (cum != NULL)
     {
       /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
       if (info.num_fprs)
 	return false;
+
+      /* Don't pass by reference if we can use vector register groups.  */
+      if (info.num_vrs > 0 || info.num_mrs > 0)
+	return false;
     }
 
-  /* All current vector arguments and return values are passed through the
-     function stack. Ideally, we should either warn the user not to use an RVV
-     vector type as function argument or support a calling convention
-     with better performance.  */
+  /* When vector abi disabled(without --param=riscv-vector-abi option) or
+     scalable vector argument is anonymous or cannot be passed through vector
+     registers, this argument is passed by reference. */
   if (riscv_v_ext_mode_p (arg.mode))
     return true;
 
@@ -4700,6 +4831,73 @@ riscv_setup_incoming_varargs (cumulative_args_t cum,
     }
   if (REG_PARM_STACK_SPACE (cfun->decl) == 0)
     cfun->machine->varargs_size = gp_saved * UNITS_PER_WORD;
+}
+
+/* Return the descriptor of the Standard Vector Calling Convention Variant.  */
+
+static const predefined_function_abi &
+riscv_v_abi ()
+{
+  predefined_function_abi &v_abi = function_abis[RISCV_CC_V];
+  if (!v_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers
+	= default_function_abi.full_reg_clobbers ();
+      /* Callee-saved vector registers: v1-v7, v24-v31.  */
+      for (int regno = V_REG_FIRST + 1; regno <= V_REG_FIRST + 7; regno += 1)
+	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      for (int regno = V_REG_FIRST + 24; regno <= V_REG_FIRST + 31; regno += 1)
+	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      v_abi.initialize (RISCV_CC_V, full_reg_clobbers);
+    }
+  return v_abi;
+}
+
+/* Return true if a function with type FNTYPE returns its value in
+   RISC-V V registers.  */
+
+static bool
+riscv_return_value_is_vector_type_p (const_tree fntype)
+{
+  tree return_type = TREE_TYPE (fntype);
+
+  return riscv_vector_type_p (return_type);
+}
+
+/* Return true if a function with type FNTYPE takes arguments in
+   RISC-V V registers.  */
+
+static bool
+riscv_arguments_is_vector_type_p (const_tree fntype)
+{
+  for (tree chain = TYPE_ARG_TYPES (fntype); chain && chain != void_list_node;
+       chain = TREE_CHAIN (chain))
+    {
+      tree arg_type = TREE_VALUE (chain);
+      if (riscv_vector_type_p (arg_type))
+	return true;
+    }
+
+  return false;
+}
+
+/* Implement TARGET_FNTYPE_ABI.  */
+
+static const predefined_function_abi &
+riscv_fntype_abi (const_tree fntype)
+{
+  /* Implementing an experimental vector calling convention, the proposal
+     can be viewed at the bellow link:
+       https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389
+
+     You can enable this feature via the `--param=riscv-vector-abi` compiler
+     option.  */
+  if (riscv_vector_abi
+      && (riscv_return_value_is_vector_type_p (fntype)
+	  || riscv_arguments_is_vector_type_p (fntype)))
+    return riscv_v_abi ();
+
+  return default_function_abi;
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL;
@@ -9159,6 +9357,8 @@ riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 #define TARGET_FUNCTION_ARG_ADVANCE riscv_function_arg_advance
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY riscv_function_arg_boundary
+#undef TARGET_FNTYPE_ABI
+#define TARGET_FNTYPE_ABI riscv_fntype_abi
 
 #undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
 #define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \

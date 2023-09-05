@@ -317,3 +317,8 @@ Enum(riscv_autovec_lmul) String(dynamic) Value(RVV_DYNAMIC)
 -param=riscv-autovec-lmul=
 Target RejectNegative Joined Enum(riscv_autovec_lmul) Var(riscv_autovec_lmul) Init(RVV_M1)
 -param=riscv-autovec-lmul=<string>	Set the RVV LMUL of auto-vectorization in the RISC-V port.
+
+-param=riscv-vector-abi
+Target Undocumented Bool Var(riscv_vector_abi) Init(0)
+Enable the use of vector registers for function arguments and return value.
+This is an experimental switch and may be subject to change in the future.
