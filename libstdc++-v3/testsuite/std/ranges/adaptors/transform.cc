@@ -175,6 +175,24 @@ test08()
   static_assert(!requires { views::all | transform; });
 }
 
+template<auto transform = views::transform>
+void
+test09()
+{
+  extern int x[5];
+  struct move_only {
+    move_only() { }
+    move_only(move_only&&) { }
+    int operator()(int i) const { return i; }
+  };
+#if __cpp_lib_ranges >= 202207L
+  // P2494R2 Relaxing range adaptors to allow for move only types
+  static_assert( requires { transform(x, move_only{}); } );
+#else
+  static_assert( ! requires { transform(x, move_only{}); } );
+#endif
+}
+
 int
 main()
 {
@@ -186,4 +204,5 @@ main()
   test06();
   test07();
   test08();
+  test09();
 }

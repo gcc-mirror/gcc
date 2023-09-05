@@ -123,6 +123,22 @@ test07()
   static_assert(!requires { single(uncopyable{}); });
 }
 
+template<auto single = std::views::single>
+void
+test08()
+{
+  struct move_only {
+    move_only() { }
+    move_only(move_only&&) { }
+  };
+#if __cpp_lib_ranges >= 202207L
+  // P2494R2 Relaxing range adaptors to allow for move only types
+  static_assert( requires { single(move_only{}); } );
+#else
+  static_assert( ! requires { single(move_only{}); } );
+#endif
+}
+
 int main()
 {
   test01();
@@ -132,4 +148,5 @@ int main()
   test05();
   test06();
   test07();
+  test08();
 }

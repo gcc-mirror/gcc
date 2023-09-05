@@ -1290,9 +1290,9 @@
 // from version.def line 1046
 #if !defined(__cpp_lib_ranges)
 # if (__cplusplus >= 202302L) && (__glibcxx_concepts)
-#  define __glibcxx_ranges 202202L
+#  define __glibcxx_ranges 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges)
-#   define __cpp_lib_ranges 202202L
+#   define __cpp_lib_ranges 202207L
 #  endif
 # elif (__cplusplus >= 202002L) && (__glibcxx_concepts)
 #  define __glibcxx_ranges 202110L
