@@ -3096,10 +3096,6 @@ check_local_shadow (tree decl)
   if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
     return;
 
-  /* External decls are something else.  */
-  if (DECL_EXTERNAL (decl))
-    return;
-
   tree old = NULL_TREE;
   cp_binding_level *old_scope = NULL;
   if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))
@@ -3130,11 +3126,9 @@ check_local_shadow (tree decl)
 	      && DECL_CONTEXT (old) == lambda_function (current_lambda_expr ())
 	      && TREE_CODE (old) == PARM_DECL
 	      && DECL_NAME (decl) != this_identifier)
-	    {
-	      error_at (DECL_SOURCE_LOCATION (old),
-			"lambda parameter %qD "
-			"previously declared as a capture", old);
-	    }
+	    error_at (DECL_SOURCE_LOCATION (old),
+		      "lambda parameter %qD "
+		      "previously declared as a capture", old);
 	  return;
 	}
       /* Don't complain if it's from an enclosing function.  */
@@ -3160,10 +3154,17 @@ check_local_shadow (tree decl)
 	  if (b->kind == sk_function_parms)
 	    {
 	      auto_diagnostic_group d;
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"declaration of %q#D shadows a parameter", decl);
-	      inform (DECL_SOURCE_LOCATION (old),
-		      "%q#D previously declared here", old);
+	      bool emit = true;
+	      if (DECL_EXTERNAL (decl))
+		emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+				"declaration of %q#D shadows a parameter",
+				decl);
+	      else
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "declaration of %q#D shadows a parameter", decl);
+	      if (emit)
+		inform (DECL_SOURCE_LOCATION (old),
+			"%q#D previously declared here", old);
 	      return;
 	    }
 	}
@@ -3189,10 +3190,16 @@ check_local_shadow (tree decl)
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "redeclaration of %q#D", decl);
-	  inform (DECL_SOURCE_LOCATION (old),
-		  "%q#D previously declared here", old);
+	  bool emit = true;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "redeclaration of %q#D", decl);
+	  if (emit)
+	    inform (DECL_SOURCE_LOCATION (old),
+		    "%q#D previously declared here", old);
 	  return;
 	}
       /* C++11:
@@ -3206,8 +3213,14 @@ check_local_shadow (tree decl)
 	       && old_scope->kind == sk_catch)
 	{
 	  auto_diagnostic_group d;
-	  if (permerror (DECL_SOURCE_LOCATION (decl),
-			 "redeclaration of %q#D", decl))
+	  bool emit;
+	  if (DECL_EXTERNAL (decl))
+	    emit = pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			    "redeclaration of %q#D", decl);
+	  else
+	    emit = permerror (DECL_SOURCE_LOCATION (decl),
+			      "redeclaration of %q#D", decl);
+	  if (emit)
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
 	  return;
@@ -3311,6 +3324,7 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
+      && !DECL_EXTERNAL (decl)
       && !instantiating_current_function_p ()
       && !warning_suppressed_p (decl, OPT_Wshadow))
     /* XXX shadow warnings in outer-more namespaces */
