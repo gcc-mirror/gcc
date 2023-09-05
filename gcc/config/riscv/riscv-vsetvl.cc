@@ -521,31 +521,6 @@ get_same_bb_set (hash_set<set_info *> &sets, const basic_block cfg_bb)
   return nullptr;
 }
 
-/* Recursively find all predecessor blocks for cfg_bb. */
-static hash_set<basic_block>
-get_all_predecessors (basic_block cfg_bb)
-{
-  hash_set<basic_block> blocks;
-  auto_vec<basic_block> work_list;
-  hash_set<basic_block> visited_list;
-  work_list.safe_push (cfg_bb);
-
-  while (!work_list.is_empty ())
-    {
-      basic_block new_cfg_bb = work_list.pop ();
-      visited_list.add (new_cfg_bb);
-      edge e;
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, new_cfg_bb->preds)
-	{
-	  if (!visited_list.contains (e->src))
-	    work_list.safe_push (e->src);
-	  blocks.add (e->src);
-	}
-    }
-  return blocks;
-}
-
 /* Helper function to get SEW operand. We always have SEW value for
    all RVV instructions that have VTYPE OP.  */
 static uint8_t

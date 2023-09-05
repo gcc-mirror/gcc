@@ -3387,4 +3387,52 @@ expand_fold_extract_last (rtx *ops)
   emit_label (end_label);
 }
 
+hash_set<basic_block>
+get_all_predecessors (basic_block bb)
+{
+  hash_set<basic_block> blocks;
+  auto_vec<basic_block> work_list;
+  hash_set<basic_block> visited_list;
+  work_list.safe_push (bb);
+
+  while (!work_list.is_empty ())
+    {
+      basic_block new_bb = work_list.pop ();
+      visited_list.add (new_bb);
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, new_bb->preds)
+	{
+	  if (!visited_list.contains (e->src))
+	    work_list.safe_push (e->src);
+	  blocks.add (e->src);
+	}
+    }
+  return blocks;
+}
+
+hash_set<basic_block>
+get_all_successors (basic_block bb)
+{
+  hash_set<basic_block> blocks;
+  auto_vec<basic_block> work_list;
+  hash_set<basic_block> visited_list;
+  work_list.safe_push (bb);
+
+  while (!work_list.is_empty ())
+    {
+      basic_block new_bb = work_list.pop ();
+      visited_list.add (new_bb);
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, new_bb->succs)
+	{
+	  if (!visited_list.contains (e->dest))
+	    work_list.safe_push (e->dest);
+	  blocks.add (e->dest);
+	}
+    }
+  return blocks;
+}
+
 } // namespace riscv_vector

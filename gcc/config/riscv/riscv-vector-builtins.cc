@@ -2671,7 +2671,7 @@ sizeless_type_p (const_tree type)
 
 /* If TYPE is an ABI-defined RVV type, return its attribute descriptor,
    otherwise return null.  */
-static tree
+tree
 lookup_vector_type_attribute (const_tree type)
 {
   if (type == error_mark_node)

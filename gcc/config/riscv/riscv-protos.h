@@ -365,6 +365,7 @@ enum avl_type
 /* Routines implemented in riscv-vector-builtins.cc.  */
 void init_builtins (void);
 const char *mangle_builtin_type (const_tree);
+tree lookup_vector_type_attribute (const_tree);
 #ifdef GCC_TARGET_H
 bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 bool expand_vec_perm_const (machine_mode, machine_mode, rtx, rtx, rtx,
@@ -493,6 +494,8 @@ enum floating_point_rounding_mode get_frm_mode (rtx);
 opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 					 poly_uint64);
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
+hash_set<basic_block> get_all_predecessors (basic_block);
+hash_set<basic_block> get_all_successors (basic_block);
 }
 
 /* We classify builtin types into two classes:
