@@ -83,9 +83,9 @@ along with GCC; see the file COPYING3.  If not see
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
 
 #undef CC1_SPEC
-#define CC1_SPEC "\
+#define CC1_SPEC "%{,ada:-gnatea} %{m*} \
 %{G*} \
-%(subtarget_cc1_spec)"
+%(subtarget_cc1_spec) %{,ada:-gnatez}"
 
 /* Preprocessor specs.  */
 
