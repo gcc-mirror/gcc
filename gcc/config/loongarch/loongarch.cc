@@ -5482,6 +5482,42 @@ loongarch_use_ins_ext_p (rtx op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos)
   return true;
 }
 
+/* Predicate for pre-reload splitters with associated instructions,
+   which can match any time before the split1 pass (usually combine),
+   then are unconditionally split in that pass and should not be
+   matched again afterwards.  */
+
+bool loongarch_pre_reload_split (void)
+{
+  return (can_create_pseudo_p ()
+	  && !(cfun->curr_properties & PROP_rtl_split_insns));
+}
+
+/* Check if we can use bstrins.<d> for
+   op0 = (op1 & op2) | (op3 & op4)
+   where op0, op1, op3 are regs, and op2, op4 are integer constants.  */
+int
+loongarch_use_bstrins_for_ior_with_mask (machine_mode mode, rtx *op)
+{
+  unsigned HOST_WIDE_INT mask1 = UINTVAL (op[2]);
+  unsigned HOST_WIDE_INT mask2 = UINTVAL (op[4]);
+
+  if (mask1 != ~mask2 || !mask1 || !mask2)
+    return 0;
+
+  /* Try to avoid a right-shift.  */
+  if (low_bitmask_len (mode, mask1) != -1)
+    return -1;
+
+  if (low_bitmask_len (mode, mask2 >> (ffs_hwi (mask2) - 1)) != -1)
+    return 1;
+
+  if (low_bitmask_len (mode, mask1 >> (ffs_hwi (mask1) - 1)) != -1)
+    return -1;
+
+  return 0;
+}
+
 /* Print the text for PRINT_OPERAND punctation character CH to FILE.
    The punctuation characters are:
 

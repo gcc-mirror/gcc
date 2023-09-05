@@ -56,7 +56,7 @@ enum loongarch_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLSLDM + 1)
 
-/* Routines implemented in loongarch.c.  */
+/* Routines implemented in loongarch.cc.  */
 extern rtx loongarch_emit_move (rtx, rtx);
 extern HOST_WIDE_INT loongarch_initial_elimination_offset (int, int);
 extern void loongarch_expand_prologue (void);
@@ -163,6 +163,8 @@ extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
 extern bool loongarch_use_ins_ext_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern bool loongarch_check_zero_div_p (void);
+extern bool loongarch_pre_reload_split (void);
+extern int loongarch_use_bstrins_for_ior_with_mask (machine_mode, rtx *);
 
 union loongarch_gen_fn_ptrs
 {

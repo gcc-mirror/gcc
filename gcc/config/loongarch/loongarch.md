@@ -1322,6 +1322,97 @@
   [(set_attr "move_type" "pick_ins")
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "*bstrins_<mode>_for_mask"
+  [(set (match_operand:GPR 0 "register_operand")
+	(and:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "ins_zero_bitmask_operand")))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0) (match_dup 1))
+   (set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 3))
+	(const_int 0))]
+  {
+    unsigned HOST_WIDE_INT mask = ~UINTVAL (operands[2]);
+    int lo = ffs_hwi (mask) - 1;
+    int len = low_bitmask_len (<MODE>mode, mask >> lo);
+
+    len = MIN (len, GET_MODE_BITSIZE (<MODE>mode) - lo);
+    operands[2] = GEN_INT (len);
+    operands[3] = GEN_INT (lo);
+  })
+
+(define_insn_and_split "*bstrins_<mode>_for_ior_mask"
+  [(set (match_operand:GPR 0 "register_operand")
+	(ior:GPR (and:GPR (match_operand:GPR 1 "register_operand")
+                          (match_operand:GPR 2 "const_int_operand"))
+		 (and:GPR (match_operand:GPR 3 "register_operand")
+			  (match_operand:GPR 4 "const_int_operand"))))]
+  "loongarch_pre_reload_split () && \
+   loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
+  "#"
+  ""
+  [(set (match_dup 0) (match_dup 1))
+   (set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 4))
+	(match_dup 3))]
+  {
+    if (loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands) < 0)
+      {
+	std::swap (operands[1], operands[3]);
+	std::swap (operands[2], operands[4]);
+      }
+
+    unsigned HOST_WIDE_INT mask = ~UINTVAL (operands[2]);
+    int lo = ffs_hwi (mask) - 1;
+    int len = low_bitmask_len (<MODE>mode, mask >> lo);
+
+    len = MIN (len, GET_MODE_BITSIZE (<MODE>mode) - lo);
+    operands[2] = GEN_INT (len);
+    operands[4] = GEN_INT (lo);
+
+    if (lo)
+      {
+	rtx tmp = gen_reg_rtx (<MODE>mode);
+	emit_move_insn (tmp, gen_rtx_ASHIFTRT(<MODE>mode, operands[3],
+					      GEN_INT (lo)));
+	operands[3] = tmp;
+      }
+  })
+
+;; We always avoid the shift operation in bstrins_<mode>_for_ior_mask
+;; if possible, but the result may be sub-optimal when one of the masks
+;; is (1 << N) - 1 and one of the src register is the dest register.
+;; For example:
+;;     move		t0, a0
+;;     move		a0, a1
+;;     bstrins.d	a0, t0, 42, 0
+;;     ret
+;; using a shift operation would be better:
+;;     srai.d		t0, a1, 43
+;;     bstrins.d	a0, t0, 63, 43
+;;     ret
+;; unfortunately we cannot figure it out in split1: before reload we cannot
+;; know if the dest register is one of the src register.  Fix it up in
+;; peephole2.
+(define_peephole2
+  [(set (match_operand:GPR 0 "register_operand")
+	(match_operand:GPR 1 "register_operand"))
+   (set (match_dup 1) (match_operand:GPR 2 "register_operand"))
+   (set (zero_extract:GPR (match_dup 1)
+			  (match_operand:SI 3 "const_int_operand")
+			  (const_int 0))
+	(match_dup 0))]
+  "peep2_reg_dead_p (3, operands[0])"
+  [(const_int 0)]
+  {
+    int len = GET_MODE_BITSIZE (<MODE>mode) - INTVAL (operands[3]);
+
+    emit_insn (gen_ashr<mode>3 (operands[0], operands[2], operands[3]));
+    emit_insn (gen_insv<mode> (operands[1], GEN_INT (len), operands[3],
+			       operands[0]));
+    DONE;
+  })
+
 (define_insn "*iorhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(ior:HI (match_operand:HI 1 "register_operand" "%r,r")
