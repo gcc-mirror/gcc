@@ -1,3 +1,74 @@
+2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR libstdc++/111238
+	* configure: Regenerate.
+	* configure.ac: Call GLIBCXX_CHECK_LINKER_FEATURES in cross,
+	non-Canadian builds.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/complex/literals/types.cc: Remove
+	dg-options and add target selector instead.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/6_containers/utility/pair.cc: Remove dg-options
+	and qualify ambiguous calls to get.
+	* testsuite/tr1/8_c_compatibility/cmath/pow_cmath.cc: Adjust
+	expected result for std::pow(float, int) as per DR 550.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/auto_ptr/1.cc: Remove dg-options -std=c++03
+	and add dg-warning for deprecation warnings.
+	* testsuite/20_util/auto_ptr/2.cc: Likewise.
+	* testsuite/20_util/auto_ptr/3.cc: Likewise.
+	* testsuite/20_util/auto_ptr/3946.cc: Likewise.
+	* testsuite/20_util/auto_ptr/4.cc: Likewise.
+	* testsuite/20_util/auto_ptr/5.cc: Likewise.
+	* testsuite/20_util/auto_ptr/6.cc: Likewise.
+	* testsuite/20_util/auto_ptr/7.cc: Likewise.
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Likewise.
+	* testsuite/20_util/auto_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_rvalue_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc:
+	Likewise.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/26142
+	* testsuite/23_containers/vector/26412-1.cc: Moved to...
+	* testsuite/23_containers/vector/26142-1.cc: ...here.
+	* testsuite/23_containers/vector/26412-2.cc: Moved to...
+	* testsuite/23_containers/vector/26142-2.cc: ...here.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bitset/107037.cc: Add c++98_only selector.
+	* testsuite/26_numerics/complex/56111.cc: Likewise.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/2.cc:
+	Add dg-options to restrict the test to C++98 mode.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/2.cc:
+	Likewise.
+
+2023-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/expected/bad.cc: Add missing target
+	selector.
+
 2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Adjust

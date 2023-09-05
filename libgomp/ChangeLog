@@ -1,3 +1,8 @@
+2023-09-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/pr100059-1.c: New.
+
 2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0):  Imperfectly-nested loops are done.

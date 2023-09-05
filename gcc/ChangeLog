@@ -1,3 +1,1160 @@
+2023-09-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-opts.h (HAVE_AS_EXPLICIT_RELOCS):
+	Define to 0 if not defined yet.
+
+2023-09-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/linux.h (TARGET_ASM_FILE_END): Move ...
+	* config/riscv/riscv.cc (TARGET_ASM_FILE_END): to here.
+
+2023-09-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-vls.md (copysign<mode>3): New pattern.
+	* config/riscv/vector.md: Extend iterator for VLS.
+
+2023-09-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.gcc: Export the header file lasxintrin.h.
+	* config/loongarch/loongarch-builtins.cc (enum loongarch_builtin_type):
+	Add Loongson ASX builtin functions support.
+	(AVAIL_ALL): Ditto.
+	(LASX_BUILTIN): Ditto.
+	(LASX_NO_TARGET_BUILTIN): Ditto.
+	(LASX_BUILTIN_TEST_BRANCH): Ditto.
+	(CODE_FOR_lasx_xvsadd_b): Ditto.
+	(CODE_FOR_lasx_xvsadd_h): Ditto.
+	(CODE_FOR_lasx_xvsadd_w): Ditto.
+	(CODE_FOR_lasx_xvsadd_d): Ditto.
+	(CODE_FOR_lasx_xvsadd_bu): Ditto.
+	(CODE_FOR_lasx_xvsadd_hu): Ditto.
+	(CODE_FOR_lasx_xvsadd_wu): Ditto.
+	(CODE_FOR_lasx_xvsadd_du): Ditto.
+	(CODE_FOR_lasx_xvadd_b): Ditto.
+	(CODE_FOR_lasx_xvadd_h): Ditto.
+	(CODE_FOR_lasx_xvadd_w): Ditto.
+	(CODE_FOR_lasx_xvadd_d): Ditto.
+	(CODE_FOR_lasx_xvaddi_bu): Ditto.
+	(CODE_FOR_lasx_xvaddi_hu): Ditto.
+	(CODE_FOR_lasx_xvaddi_wu): Ditto.
+	(CODE_FOR_lasx_xvaddi_du): Ditto.
+	(CODE_FOR_lasx_xvand_v): Ditto.
+	(CODE_FOR_lasx_xvandi_b): Ditto.
+	(CODE_FOR_lasx_xvbitsel_v): Ditto.
+	(CODE_FOR_lasx_xvseqi_b): Ditto.
+	(CODE_FOR_lasx_xvseqi_h): Ditto.
+	(CODE_FOR_lasx_xvseqi_w): Ditto.
+	(CODE_FOR_lasx_xvseqi_d): Ditto.
+	(CODE_FOR_lasx_xvslti_b): Ditto.
+	(CODE_FOR_lasx_xvslti_h): Ditto.
+	(CODE_FOR_lasx_xvslti_w): Ditto.
+	(CODE_FOR_lasx_xvslti_d): Ditto.
+	(CODE_FOR_lasx_xvslti_bu): Ditto.
+	(CODE_FOR_lasx_xvslti_hu): Ditto.
+	(CODE_FOR_lasx_xvslti_wu): Ditto.
+	(CODE_FOR_lasx_xvslti_du): Ditto.
+	(CODE_FOR_lasx_xvslei_b): Ditto.
+	(CODE_FOR_lasx_xvslei_h): Ditto.
+	(CODE_FOR_lasx_xvslei_w): Ditto.
+	(CODE_FOR_lasx_xvslei_d): Ditto.
+	(CODE_FOR_lasx_xvslei_bu): Ditto.
+	(CODE_FOR_lasx_xvslei_hu): Ditto.
+	(CODE_FOR_lasx_xvslei_wu): Ditto.
+	(CODE_FOR_lasx_xvslei_du): Ditto.
+	(CODE_FOR_lasx_xvdiv_b): Ditto.
+	(CODE_FOR_lasx_xvdiv_h): Ditto.
+	(CODE_FOR_lasx_xvdiv_w): Ditto.
+	(CODE_FOR_lasx_xvdiv_d): Ditto.
+	(CODE_FOR_lasx_xvdiv_bu): Ditto.
+	(CODE_FOR_lasx_xvdiv_hu): Ditto.
+	(CODE_FOR_lasx_xvdiv_wu): Ditto.
+	(CODE_FOR_lasx_xvdiv_du): Ditto.
+	(CODE_FOR_lasx_xvfadd_s): Ditto.
+	(CODE_FOR_lasx_xvfadd_d): Ditto.
+	(CODE_FOR_lasx_xvftintrz_w_s): Ditto.
+	(CODE_FOR_lasx_xvftintrz_l_d): Ditto.
+	(CODE_FOR_lasx_xvftintrz_wu_s): Ditto.
+	(CODE_FOR_lasx_xvftintrz_lu_d): Ditto.
+	(CODE_FOR_lasx_xvffint_s_w): Ditto.
+	(CODE_FOR_lasx_xvffint_d_l): Ditto.
+	(CODE_FOR_lasx_xvffint_s_wu): Ditto.
+	(CODE_FOR_lasx_xvffint_d_lu): Ditto.
+	(CODE_FOR_lasx_xvfsub_s): Ditto.
+	(CODE_FOR_lasx_xvfsub_d): Ditto.
+	(CODE_FOR_lasx_xvfmul_s): Ditto.
+	(CODE_FOR_lasx_xvfmul_d): Ditto.
+	(CODE_FOR_lasx_xvfdiv_s): Ditto.
+	(CODE_FOR_lasx_xvfdiv_d): Ditto.
+	(CODE_FOR_lasx_xvfmax_s): Ditto.
+	(CODE_FOR_lasx_xvfmax_d): Ditto.
+	(CODE_FOR_lasx_xvfmin_s): Ditto.
+	(CODE_FOR_lasx_xvfmin_d): Ditto.
+	(CODE_FOR_lasx_xvfsqrt_s): Ditto.
+	(CODE_FOR_lasx_xvfsqrt_d): Ditto.
+	(CODE_FOR_lasx_xvflogb_s): Ditto.
+	(CODE_FOR_lasx_xvflogb_d): Ditto.
+	(CODE_FOR_lasx_xvmax_b): Ditto.
+	(CODE_FOR_lasx_xvmax_h): Ditto.
+	(CODE_FOR_lasx_xvmax_w): Ditto.
+	(CODE_FOR_lasx_xvmax_d): Ditto.
+	(CODE_FOR_lasx_xvmaxi_b): Ditto.
+	(CODE_FOR_lasx_xvmaxi_h): Ditto.
+	(CODE_FOR_lasx_xvmaxi_w): Ditto.
+	(CODE_FOR_lasx_xvmaxi_d): Ditto.
+	(CODE_FOR_lasx_xvmax_bu): Ditto.
+	(CODE_FOR_lasx_xvmax_hu): Ditto.
+	(CODE_FOR_lasx_xvmax_wu): Ditto.
+	(CODE_FOR_lasx_xvmax_du): Ditto.
+	(CODE_FOR_lasx_xvmaxi_bu): Ditto.
+	(CODE_FOR_lasx_xvmaxi_hu): Ditto.
+	(CODE_FOR_lasx_xvmaxi_wu): Ditto.
+	(CODE_FOR_lasx_xvmaxi_du): Ditto.
+	(CODE_FOR_lasx_xvmin_b): Ditto.
+	(CODE_FOR_lasx_xvmin_h): Ditto.
+	(CODE_FOR_lasx_xvmin_w): Ditto.
+	(CODE_FOR_lasx_xvmin_d): Ditto.
+	(CODE_FOR_lasx_xvmini_b): Ditto.
+	(CODE_FOR_lasx_xvmini_h): Ditto.
+	(CODE_FOR_lasx_xvmini_w): Ditto.
+	(CODE_FOR_lasx_xvmini_d): Ditto.
+	(CODE_FOR_lasx_xvmin_bu): Ditto.
+	(CODE_FOR_lasx_xvmin_hu): Ditto.
+	(CODE_FOR_lasx_xvmin_wu): Ditto.
+	(CODE_FOR_lasx_xvmin_du): Ditto.
+	(CODE_FOR_lasx_xvmini_bu): Ditto.
+	(CODE_FOR_lasx_xvmini_hu): Ditto.
+	(CODE_FOR_lasx_xvmini_wu): Ditto.
+	(CODE_FOR_lasx_xvmini_du): Ditto.
+	(CODE_FOR_lasx_xvmod_b): Ditto.
+	(CODE_FOR_lasx_xvmod_h): Ditto.
+	(CODE_FOR_lasx_xvmod_w): Ditto.
+	(CODE_FOR_lasx_xvmod_d): Ditto.
+	(CODE_FOR_lasx_xvmod_bu): Ditto.
+	(CODE_FOR_lasx_xvmod_hu): Ditto.
+	(CODE_FOR_lasx_xvmod_wu): Ditto.
+	(CODE_FOR_lasx_xvmod_du): Ditto.
+	(CODE_FOR_lasx_xvmul_b): Ditto.
+	(CODE_FOR_lasx_xvmul_h): Ditto.
+	(CODE_FOR_lasx_xvmul_w): Ditto.
+	(CODE_FOR_lasx_xvmul_d): Ditto.
+	(CODE_FOR_lasx_xvclz_b): Ditto.
+	(CODE_FOR_lasx_xvclz_h): Ditto.
+	(CODE_FOR_lasx_xvclz_w): Ditto.
+	(CODE_FOR_lasx_xvclz_d): Ditto.
+	(CODE_FOR_lasx_xvnor_v): Ditto.
+	(CODE_FOR_lasx_xvor_v): Ditto.
+	(CODE_FOR_lasx_xvori_b): Ditto.
+	(CODE_FOR_lasx_xvnori_b): Ditto.
+	(CODE_FOR_lasx_xvpcnt_b): Ditto.
+	(CODE_FOR_lasx_xvpcnt_h): Ditto.
+	(CODE_FOR_lasx_xvpcnt_w): Ditto.
+	(CODE_FOR_lasx_xvpcnt_d): Ditto.
+	(CODE_FOR_lasx_xvxor_v): Ditto.
+	(CODE_FOR_lasx_xvxori_b): Ditto.
+	(CODE_FOR_lasx_xvsll_b): Ditto.
+	(CODE_FOR_lasx_xvsll_h): Ditto.
+	(CODE_FOR_lasx_xvsll_w): Ditto.
+	(CODE_FOR_lasx_xvsll_d): Ditto.
+	(CODE_FOR_lasx_xvslli_b): Ditto.
+	(CODE_FOR_lasx_xvslli_h): Ditto.
+	(CODE_FOR_lasx_xvslli_w): Ditto.
+	(CODE_FOR_lasx_xvslli_d): Ditto.
+	(CODE_FOR_lasx_xvsra_b): Ditto.
+	(CODE_FOR_lasx_xvsra_h): Ditto.
+	(CODE_FOR_lasx_xvsra_w): Ditto.
+	(CODE_FOR_lasx_xvsra_d): Ditto.
+	(CODE_FOR_lasx_xvsrai_b): Ditto.
+	(CODE_FOR_lasx_xvsrai_h): Ditto.
+	(CODE_FOR_lasx_xvsrai_w): Ditto.
+	(CODE_FOR_lasx_xvsrai_d): Ditto.
+	(CODE_FOR_lasx_xvsrl_b): Ditto.
+	(CODE_FOR_lasx_xvsrl_h): Ditto.
+	(CODE_FOR_lasx_xvsrl_w): Ditto.
+	(CODE_FOR_lasx_xvsrl_d): Ditto.
+	(CODE_FOR_lasx_xvsrli_b): Ditto.
+	(CODE_FOR_lasx_xvsrli_h): Ditto.
+	(CODE_FOR_lasx_xvsrli_w): Ditto.
+	(CODE_FOR_lasx_xvsrli_d): Ditto.
+	(CODE_FOR_lasx_xvsub_b): Ditto.
+	(CODE_FOR_lasx_xvsub_h): Ditto.
+	(CODE_FOR_lasx_xvsub_w): Ditto.
+	(CODE_FOR_lasx_xvsub_d): Ditto.
+	(CODE_FOR_lasx_xvsubi_bu): Ditto.
+	(CODE_FOR_lasx_xvsubi_hu): Ditto.
+	(CODE_FOR_lasx_xvsubi_wu): Ditto.
+	(CODE_FOR_lasx_xvsubi_du): Ditto.
+	(CODE_FOR_lasx_xvpackod_d): Ditto.
+	(CODE_FOR_lasx_xvpackev_d): Ditto.
+	(CODE_FOR_lasx_xvpickod_d): Ditto.
+	(CODE_FOR_lasx_xvpickev_d): Ditto.
+	(CODE_FOR_lasx_xvrepli_b): Ditto.
+	(CODE_FOR_lasx_xvrepli_h): Ditto.
+	(CODE_FOR_lasx_xvrepli_w): Ditto.
+	(CODE_FOR_lasx_xvrepli_d): Ditto.
+	(CODE_FOR_lasx_xvandn_v): Ditto.
+	(CODE_FOR_lasx_xvorn_v): Ditto.
+	(CODE_FOR_lasx_xvneg_b): Ditto.
+	(CODE_FOR_lasx_xvneg_h): Ditto.
+	(CODE_FOR_lasx_xvneg_w): Ditto.
+	(CODE_FOR_lasx_xvneg_d): Ditto.
+	(CODE_FOR_lasx_xvbsrl_v): Ditto.
+	(CODE_FOR_lasx_xvbsll_v): Ditto.
+	(CODE_FOR_lasx_xvfmadd_s): Ditto.
+	(CODE_FOR_lasx_xvfmadd_d): Ditto.
+	(CODE_FOR_lasx_xvfmsub_s): Ditto.
+	(CODE_FOR_lasx_xvfmsub_d): Ditto.
+	(CODE_FOR_lasx_xvfnmadd_s): Ditto.
+	(CODE_FOR_lasx_xvfnmadd_d): Ditto.
+	(CODE_FOR_lasx_xvfnmsub_s): Ditto.
+	(CODE_FOR_lasx_xvfnmsub_d): Ditto.
+	(CODE_FOR_lasx_xvpermi_q): Ditto.
+	(CODE_FOR_lasx_xvpermi_d): Ditto.
+	(CODE_FOR_lasx_xbnz_v): Ditto.
+	(CODE_FOR_lasx_xbz_v): Ditto.
+	(CODE_FOR_lasx_xvssub_b): Ditto.
+	(CODE_FOR_lasx_xvssub_h): Ditto.
+	(CODE_FOR_lasx_xvssub_w): Ditto.
+	(CODE_FOR_lasx_xvssub_d): Ditto.
+	(CODE_FOR_lasx_xvssub_bu): Ditto.
+	(CODE_FOR_lasx_xvssub_hu): Ditto.
+	(CODE_FOR_lasx_xvssub_wu): Ditto.
+	(CODE_FOR_lasx_xvssub_du): Ditto.
+	(CODE_FOR_lasx_xvabsd_b): Ditto.
+	(CODE_FOR_lasx_xvabsd_h): Ditto.
+	(CODE_FOR_lasx_xvabsd_w): Ditto.
+	(CODE_FOR_lasx_xvabsd_d): Ditto.
+	(CODE_FOR_lasx_xvabsd_bu): Ditto.
+	(CODE_FOR_lasx_xvabsd_hu): Ditto.
+	(CODE_FOR_lasx_xvabsd_wu): Ditto.
+	(CODE_FOR_lasx_xvabsd_du): Ditto.
+	(CODE_FOR_lasx_xvavg_b): Ditto.
+	(CODE_FOR_lasx_xvavg_h): Ditto.
+	(CODE_FOR_lasx_xvavg_w): Ditto.
+	(CODE_FOR_lasx_xvavg_d): Ditto.
+	(CODE_FOR_lasx_xvavg_bu): Ditto.
+	(CODE_FOR_lasx_xvavg_hu): Ditto.
+	(CODE_FOR_lasx_xvavg_wu): Ditto.
+	(CODE_FOR_lasx_xvavg_du): Ditto.
+	(CODE_FOR_lasx_xvavgr_b): Ditto.
+	(CODE_FOR_lasx_xvavgr_h): Ditto.
+	(CODE_FOR_lasx_xvavgr_w): Ditto.
+	(CODE_FOR_lasx_xvavgr_d): Ditto.
+	(CODE_FOR_lasx_xvavgr_bu): Ditto.
+	(CODE_FOR_lasx_xvavgr_hu): Ditto.
+	(CODE_FOR_lasx_xvavgr_wu): Ditto.
+	(CODE_FOR_lasx_xvavgr_du): Ditto.
+	(CODE_FOR_lasx_xvmuh_b): Ditto.
+	(CODE_FOR_lasx_xvmuh_h): Ditto.
+	(CODE_FOR_lasx_xvmuh_w): Ditto.
+	(CODE_FOR_lasx_xvmuh_d): Ditto.
+	(CODE_FOR_lasx_xvmuh_bu): Ditto.
+	(CODE_FOR_lasx_xvmuh_hu): Ditto.
+	(CODE_FOR_lasx_xvmuh_wu): Ditto.
+	(CODE_FOR_lasx_xvmuh_du): Ditto.
+	(CODE_FOR_lasx_xvssran_b_h): Ditto.
+	(CODE_FOR_lasx_xvssran_h_w): Ditto.
+	(CODE_FOR_lasx_xvssran_w_d): Ditto.
+	(CODE_FOR_lasx_xvssran_bu_h): Ditto.
+	(CODE_FOR_lasx_xvssran_hu_w): Ditto.
+	(CODE_FOR_lasx_xvssran_wu_d): Ditto.
+	(CODE_FOR_lasx_xvssrarn_b_h): Ditto.
+	(CODE_FOR_lasx_xvssrarn_h_w): Ditto.
+	(CODE_FOR_lasx_xvssrarn_w_d): Ditto.
+	(CODE_FOR_lasx_xvssrarn_bu_h): Ditto.
+	(CODE_FOR_lasx_xvssrarn_hu_w): Ditto.
+	(CODE_FOR_lasx_xvssrarn_wu_d): Ditto.
+	(CODE_FOR_lasx_xvssrln_bu_h): Ditto.
+	(CODE_FOR_lasx_xvssrln_hu_w): Ditto.
+	(CODE_FOR_lasx_xvssrln_wu_d): Ditto.
+	(CODE_FOR_lasx_xvssrlrn_bu_h): Ditto.
+	(CODE_FOR_lasx_xvssrlrn_hu_w): Ditto.
+	(CODE_FOR_lasx_xvssrlrn_wu_d): Ditto.
+	(CODE_FOR_lasx_xvftint_w_s): Ditto.
+	(CODE_FOR_lasx_xvftint_l_d): Ditto.
+	(CODE_FOR_lasx_xvftint_wu_s): Ditto.
+	(CODE_FOR_lasx_xvftint_lu_d): Ditto.
+	(CODE_FOR_lasx_xvsllwil_h_b): Ditto.
+	(CODE_FOR_lasx_xvsllwil_w_h): Ditto.
+	(CODE_FOR_lasx_xvsllwil_d_w): Ditto.
+	(CODE_FOR_lasx_xvsllwil_hu_bu): Ditto.
+	(CODE_FOR_lasx_xvsllwil_wu_hu): Ditto.
+	(CODE_FOR_lasx_xvsllwil_du_wu): Ditto.
+	(CODE_FOR_lasx_xvsat_b): Ditto.
+	(CODE_FOR_lasx_xvsat_h): Ditto.
+	(CODE_FOR_lasx_xvsat_w): Ditto.
+	(CODE_FOR_lasx_xvsat_d): Ditto.
+	(CODE_FOR_lasx_xvsat_bu): Ditto.
+	(CODE_FOR_lasx_xvsat_hu): Ditto.
+	(CODE_FOR_lasx_xvsat_wu): Ditto.
+	(CODE_FOR_lasx_xvsat_du): Ditto.
+	(loongarch_builtin_vectorized_function): Ditto.
+	(loongarch_expand_builtin_insn): Ditto.
+	(loongarch_expand_builtin): Ditto.
+	* config/loongarch/loongarch-ftypes.def (1): Ditto.
+	(2): Ditto.
+	(3): Ditto.
+	(4): Ditto.
+	* config/loongarch/lasxintrin.h: New file.
+
+2023-09-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-modes.def
+	(VECTOR_MODES): Add Loongson ASX instruction support.
+	* config/loongarch/loongarch-protos.h (loongarch_split_256bit_move): Ditto.
+	(loongarch_split_256bit_move_p): Ditto.
+	(loongarch_expand_vector_group_init): Ditto.
+	(loongarch_expand_vec_perm_1): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_symbol_insns): Ditto.
+	(loongarch_valid_offset_p): Ditto.
+	(loongarch_address_insns): Ditto.
+	(loongarch_const_insns): Ditto.
+	(loongarch_legitimize_move): Ditto.
+	(loongarch_builtin_vectorization_cost): Ditto.
+	(loongarch_split_move_p): Ditto.
+	(loongarch_split_move): Ditto.
+	(loongarch_output_move_index_float): Ditto.
+	(loongarch_split_256bit_move_p): Ditto.
+	(loongarch_split_256bit_move): Ditto.
+	(loongarch_output_move): Ditto.
+	(loongarch_print_operand_reloc): Ditto.
+	(loongarch_print_operand): Ditto.
+	(loongarch_hard_regno_mode_ok_uncached): Ditto.
+	(loongarch_hard_regno_nregs): Ditto.
+	(loongarch_class_max_nregs): Ditto.
+	(loongarch_can_change_mode_class): Ditto.
+	(loongarch_mode_ok_for_mov_fmt_p): Ditto.
+	(loongarch_vector_mode_supported_p): Ditto.
+	(loongarch_preferred_simd_mode): Ditto.
+	(loongarch_autovectorize_vector_modes): Ditto.
+	(loongarch_lsx_output_division): Ditto.
+	(loongarch_expand_lsx_shuffle): Ditto.
+	(loongarch_expand_vec_perm): Ditto.
+	(loongarch_expand_vec_perm_interleave): Ditto.
+	(loongarch_try_expand_lsx_vshuf_const): Ditto.
+	(loongarch_expand_vec_perm_even_odd_1): Ditto.
+	(loongarch_expand_vec_perm_even_odd): Ditto.
+	(loongarch_expand_vec_perm_1): Ditto.
+	(loongarch_expand_vec_perm_const_2): Ditto.
+	(loongarch_is_quad_duplicate): Ditto.
+	(loongarch_is_double_duplicate): Ditto.
+	(loongarch_is_odd_extraction): Ditto.
+	(loongarch_is_even_extraction): Ditto.
+	(loongarch_is_extraction_permutation): Ditto.
+	(loongarch_is_center_extraction): Ditto.
+	(loongarch_is_reversing_permutation): Ditto.
+	(loongarch_is_di_misalign_extract): Ditto.
+	(loongarch_is_si_misalign_extract): Ditto.
+	(loongarch_is_lasx_lowpart_interleave): Ditto.
+	(loongarch_is_lasx_lowpart_interleave_2): Ditto.
+	(COMPARE_SELECTOR): Ditto.
+	(loongarch_is_lasx_lowpart_extract): Ditto.
+	(loongarch_is_lasx_highpart_interleave): Ditto.
+	(loongarch_is_lasx_highpart_interleave_2): Ditto.
+	(loongarch_is_elem_duplicate): Ditto.
+	(loongarch_is_op_reverse_perm): Ditto.
+	(loongarch_is_single_op_perm): Ditto.
+	(loongarch_is_divisible_perm): Ditto.
+	(loongarch_is_triple_stride_extract): Ditto.
+	(loongarch_vectorize_vec_perm_const): Ditto.
+	(loongarch_cpu_sched_reassociation_width): Ditto.
+	(loongarch_expand_vector_extract): Ditto.
+	(emit_reduc_half): Ditto.
+	(loongarch_expand_vec_unpack): Ditto.
+	(loongarch_expand_vector_group_init): Ditto.
+	(loongarch_expand_vector_init): Ditto.
+	(loongarch_expand_lsx_cmp): Ditto.
+	(loongarch_builtin_support_vector_misalignment): Ditto.
+	* config/loongarch/loongarch.h (UNITS_PER_LASX_REG): Ditto.
+	(BITS_PER_LASX_REG): Ditto.
+	(STRUCTURE_SIZE_BOUNDARY): Ditto.
+	(LASX_REG_FIRST): Ditto.
+	(LASX_REG_LAST): Ditto.
+	(LASX_REG_NUM): Ditto.
+	(LASX_REG_P): Ditto.
+	(LASX_REG_RTX_P): Ditto.
+	(LASX_SUPPORTED_MODE_P): Ditto.
+	* config/loongarch/loongarch.md: Ditto.
+	* config/loongarch/lasx.md: New file.
+
+2023-09-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.gcc: Export the header file lsxintrin.h.
+	* config/loongarch/loongarch-builtins.cc (LARCH_FTYPE_NAME4): Add builtin function support.
+	(enum loongarch_builtin_type): Ditto.
+	(AVAIL_ALL): Ditto.
+	(LARCH_BUILTIN): Ditto.
+	(LSX_BUILTIN): Ditto.
+	(LSX_BUILTIN_TEST_BRANCH): Ditto.
+	(LSX_NO_TARGET_BUILTIN): Ditto.
+	(CODE_FOR_lsx_vsadd_b): Ditto.
+	(CODE_FOR_lsx_vsadd_h): Ditto.
+	(CODE_FOR_lsx_vsadd_w): Ditto.
+	(CODE_FOR_lsx_vsadd_d): Ditto.
+	(CODE_FOR_lsx_vsadd_bu): Ditto.
+	(CODE_FOR_lsx_vsadd_hu): Ditto.
+	(CODE_FOR_lsx_vsadd_wu): Ditto.
+	(CODE_FOR_lsx_vsadd_du): Ditto.
+	(CODE_FOR_lsx_vadd_b): Ditto.
+	(CODE_FOR_lsx_vadd_h): Ditto.
+	(CODE_FOR_lsx_vadd_w): Ditto.
+	(CODE_FOR_lsx_vadd_d): Ditto.
+	(CODE_FOR_lsx_vaddi_bu): Ditto.
+	(CODE_FOR_lsx_vaddi_hu): Ditto.
+	(CODE_FOR_lsx_vaddi_wu): Ditto.
+	(CODE_FOR_lsx_vaddi_du): Ditto.
+	(CODE_FOR_lsx_vand_v): Ditto.
+	(CODE_FOR_lsx_vandi_b): Ditto.
+	(CODE_FOR_lsx_bnz_v): Ditto.
+	(CODE_FOR_lsx_bz_v): Ditto.
+	(CODE_FOR_lsx_vbitsel_v): Ditto.
+	(CODE_FOR_lsx_vseqi_b): Ditto.
+	(CODE_FOR_lsx_vseqi_h): Ditto.
+	(CODE_FOR_lsx_vseqi_w): Ditto.
+	(CODE_FOR_lsx_vseqi_d): Ditto.
+	(CODE_FOR_lsx_vslti_b): Ditto.
+	(CODE_FOR_lsx_vslti_h): Ditto.
+	(CODE_FOR_lsx_vslti_w): Ditto.
+	(CODE_FOR_lsx_vslti_d): Ditto.
+	(CODE_FOR_lsx_vslti_bu): Ditto.
+	(CODE_FOR_lsx_vslti_hu): Ditto.
+	(CODE_FOR_lsx_vslti_wu): Ditto.
+	(CODE_FOR_lsx_vslti_du): Ditto.
+	(CODE_FOR_lsx_vslei_b): Ditto.
+	(CODE_FOR_lsx_vslei_h): Ditto.
+	(CODE_FOR_lsx_vslei_w): Ditto.
+	(CODE_FOR_lsx_vslei_d): Ditto.
+	(CODE_FOR_lsx_vslei_bu): Ditto.
+	(CODE_FOR_lsx_vslei_hu): Ditto.
+	(CODE_FOR_lsx_vslei_wu): Ditto.
+	(CODE_FOR_lsx_vslei_du): Ditto.
+	(CODE_FOR_lsx_vdiv_b): Ditto.
+	(CODE_FOR_lsx_vdiv_h): Ditto.
+	(CODE_FOR_lsx_vdiv_w): Ditto.
+	(CODE_FOR_lsx_vdiv_d): Ditto.
+	(CODE_FOR_lsx_vdiv_bu): Ditto.
+	(CODE_FOR_lsx_vdiv_hu): Ditto.
+	(CODE_FOR_lsx_vdiv_wu): Ditto.
+	(CODE_FOR_lsx_vdiv_du): Ditto.
+	(CODE_FOR_lsx_vfadd_s): Ditto.
+	(CODE_FOR_lsx_vfadd_d): Ditto.
+	(CODE_FOR_lsx_vftintrz_w_s): Ditto.
+	(CODE_FOR_lsx_vftintrz_l_d): Ditto.
+	(CODE_FOR_lsx_vftintrz_wu_s): Ditto.
+	(CODE_FOR_lsx_vftintrz_lu_d): Ditto.
+	(CODE_FOR_lsx_vffint_s_w): Ditto.
+	(CODE_FOR_lsx_vffint_d_l): Ditto.
+	(CODE_FOR_lsx_vffint_s_wu): Ditto.
+	(CODE_FOR_lsx_vffint_d_lu): Ditto.
+	(CODE_FOR_lsx_vfsub_s): Ditto.
+	(CODE_FOR_lsx_vfsub_d): Ditto.
+	(CODE_FOR_lsx_vfmul_s): Ditto.
+	(CODE_FOR_lsx_vfmul_d): Ditto.
+	(CODE_FOR_lsx_vfdiv_s): Ditto.
+	(CODE_FOR_lsx_vfdiv_d): Ditto.
+	(CODE_FOR_lsx_vfmax_s): Ditto.
+	(CODE_FOR_lsx_vfmax_d): Ditto.
+	(CODE_FOR_lsx_vfmin_s): Ditto.
+	(CODE_FOR_lsx_vfmin_d): Ditto.
+	(CODE_FOR_lsx_vfsqrt_s): Ditto.
+	(CODE_FOR_lsx_vfsqrt_d): Ditto.
+	(CODE_FOR_lsx_vflogb_s): Ditto.
+	(CODE_FOR_lsx_vflogb_d): Ditto.
+	(CODE_FOR_lsx_vmax_b): Ditto.
+	(CODE_FOR_lsx_vmax_h): Ditto.
+	(CODE_FOR_lsx_vmax_w): Ditto.
+	(CODE_FOR_lsx_vmax_d): Ditto.
+	(CODE_FOR_lsx_vmaxi_b): Ditto.
+	(CODE_FOR_lsx_vmaxi_h): Ditto.
+	(CODE_FOR_lsx_vmaxi_w): Ditto.
+	(CODE_FOR_lsx_vmaxi_d): Ditto.
+	(CODE_FOR_lsx_vmax_bu): Ditto.
+	(CODE_FOR_lsx_vmax_hu): Ditto.
+	(CODE_FOR_lsx_vmax_wu): Ditto.
+	(CODE_FOR_lsx_vmax_du): Ditto.
+	(CODE_FOR_lsx_vmaxi_bu): Ditto.
+	(CODE_FOR_lsx_vmaxi_hu): Ditto.
+	(CODE_FOR_lsx_vmaxi_wu): Ditto.
+	(CODE_FOR_lsx_vmaxi_du): Ditto.
+	(CODE_FOR_lsx_vmin_b): Ditto.
+	(CODE_FOR_lsx_vmin_h): Ditto.
+	(CODE_FOR_lsx_vmin_w): Ditto.
+	(CODE_FOR_lsx_vmin_d): Ditto.
+	(CODE_FOR_lsx_vmini_b): Ditto.
+	(CODE_FOR_lsx_vmini_h): Ditto.
+	(CODE_FOR_lsx_vmini_w): Ditto.
+	(CODE_FOR_lsx_vmini_d): Ditto.
+	(CODE_FOR_lsx_vmin_bu): Ditto.
+	(CODE_FOR_lsx_vmin_hu): Ditto.
+	(CODE_FOR_lsx_vmin_wu): Ditto.
+	(CODE_FOR_lsx_vmin_du): Ditto.
+	(CODE_FOR_lsx_vmini_bu): Ditto.
+	(CODE_FOR_lsx_vmini_hu): Ditto.
+	(CODE_FOR_lsx_vmini_wu): Ditto.
+	(CODE_FOR_lsx_vmini_du): Ditto.
+	(CODE_FOR_lsx_vmod_b): Ditto.
+	(CODE_FOR_lsx_vmod_h): Ditto.
+	(CODE_FOR_lsx_vmod_w): Ditto.
+	(CODE_FOR_lsx_vmod_d): Ditto.
+	(CODE_FOR_lsx_vmod_bu): Ditto.
+	(CODE_FOR_lsx_vmod_hu): Ditto.
+	(CODE_FOR_lsx_vmod_wu): Ditto.
+	(CODE_FOR_lsx_vmod_du): Ditto.
+	(CODE_FOR_lsx_vmul_b): Ditto.
+	(CODE_FOR_lsx_vmul_h): Ditto.
+	(CODE_FOR_lsx_vmul_w): Ditto.
+	(CODE_FOR_lsx_vmul_d): Ditto.
+	(CODE_FOR_lsx_vclz_b): Ditto.
+	(CODE_FOR_lsx_vclz_h): Ditto.
+	(CODE_FOR_lsx_vclz_w): Ditto.
+	(CODE_FOR_lsx_vclz_d): Ditto.
+	(CODE_FOR_lsx_vnor_v): Ditto.
+	(CODE_FOR_lsx_vor_v): Ditto.
+	(CODE_FOR_lsx_vori_b): Ditto.
+	(CODE_FOR_lsx_vnori_b): Ditto.
+	(CODE_FOR_lsx_vpcnt_b): Ditto.
+	(CODE_FOR_lsx_vpcnt_h): Ditto.
+	(CODE_FOR_lsx_vpcnt_w): Ditto.
+	(CODE_FOR_lsx_vpcnt_d): Ditto.
+	(CODE_FOR_lsx_vxor_v): Ditto.
+	(CODE_FOR_lsx_vxori_b): Ditto.
+	(CODE_FOR_lsx_vsll_b): Ditto.
+	(CODE_FOR_lsx_vsll_h): Ditto.
+	(CODE_FOR_lsx_vsll_w): Ditto.
+	(CODE_FOR_lsx_vsll_d): Ditto.
+	(CODE_FOR_lsx_vslli_b): Ditto.
+	(CODE_FOR_lsx_vslli_h): Ditto.
+	(CODE_FOR_lsx_vslli_w): Ditto.
+	(CODE_FOR_lsx_vslli_d): Ditto.
+	(CODE_FOR_lsx_vsra_b): Ditto.
+	(CODE_FOR_lsx_vsra_h): Ditto.
+	(CODE_FOR_lsx_vsra_w): Ditto.
+	(CODE_FOR_lsx_vsra_d): Ditto.
+	(CODE_FOR_lsx_vsrai_b): Ditto.
+	(CODE_FOR_lsx_vsrai_h): Ditto.
+	(CODE_FOR_lsx_vsrai_w): Ditto.
+	(CODE_FOR_lsx_vsrai_d): Ditto.
+	(CODE_FOR_lsx_vsrl_b): Ditto.
+	(CODE_FOR_lsx_vsrl_h): Ditto.
+	(CODE_FOR_lsx_vsrl_w): Ditto.
+	(CODE_FOR_lsx_vsrl_d): Ditto.
+	(CODE_FOR_lsx_vsrli_b): Ditto.
+	(CODE_FOR_lsx_vsrli_h): Ditto.
+	(CODE_FOR_lsx_vsrli_w): Ditto.
+	(CODE_FOR_lsx_vsrli_d): Ditto.
+	(CODE_FOR_lsx_vsub_b): Ditto.
+	(CODE_FOR_lsx_vsub_h): Ditto.
+	(CODE_FOR_lsx_vsub_w): Ditto.
+	(CODE_FOR_lsx_vsub_d): Ditto.
+	(CODE_FOR_lsx_vsubi_bu): Ditto.
+	(CODE_FOR_lsx_vsubi_hu): Ditto.
+	(CODE_FOR_lsx_vsubi_wu): Ditto.
+	(CODE_FOR_lsx_vsubi_du): Ditto.
+	(CODE_FOR_lsx_vpackod_d): Ditto.
+	(CODE_FOR_lsx_vpackev_d): Ditto.
+	(CODE_FOR_lsx_vpickod_d): Ditto.
+	(CODE_FOR_lsx_vpickev_d): Ditto.
+	(CODE_FOR_lsx_vrepli_b): Ditto.
+	(CODE_FOR_lsx_vrepli_h): Ditto.
+	(CODE_FOR_lsx_vrepli_w): Ditto.
+	(CODE_FOR_lsx_vrepli_d): Ditto.
+	(CODE_FOR_lsx_vsat_b): Ditto.
+	(CODE_FOR_lsx_vsat_h): Ditto.
+	(CODE_FOR_lsx_vsat_w): Ditto.
+	(CODE_FOR_lsx_vsat_d): Ditto.
+	(CODE_FOR_lsx_vsat_bu): Ditto.
+	(CODE_FOR_lsx_vsat_hu): Ditto.
+	(CODE_FOR_lsx_vsat_wu): Ditto.
+	(CODE_FOR_lsx_vsat_du): Ditto.
+	(CODE_FOR_lsx_vavg_b): Ditto.
+	(CODE_FOR_lsx_vavg_h): Ditto.
+	(CODE_FOR_lsx_vavg_w): Ditto.
+	(CODE_FOR_lsx_vavg_d): Ditto.
+	(CODE_FOR_lsx_vavg_bu): Ditto.
+	(CODE_FOR_lsx_vavg_hu): Ditto.
+	(CODE_FOR_lsx_vavg_wu): Ditto.
+	(CODE_FOR_lsx_vavg_du): Ditto.
+	(CODE_FOR_lsx_vavgr_b): Ditto.
+	(CODE_FOR_lsx_vavgr_h): Ditto.
+	(CODE_FOR_lsx_vavgr_w): Ditto.
+	(CODE_FOR_lsx_vavgr_d): Ditto.
+	(CODE_FOR_lsx_vavgr_bu): Ditto.
+	(CODE_FOR_lsx_vavgr_hu): Ditto.
+	(CODE_FOR_lsx_vavgr_wu): Ditto.
+	(CODE_FOR_lsx_vavgr_du): Ditto.
+	(CODE_FOR_lsx_vssub_b): Ditto.
+	(CODE_FOR_lsx_vssub_h): Ditto.
+	(CODE_FOR_lsx_vssub_w): Ditto.
+	(CODE_FOR_lsx_vssub_d): Ditto.
+	(CODE_FOR_lsx_vssub_bu): Ditto.
+	(CODE_FOR_lsx_vssub_hu): Ditto.
+	(CODE_FOR_lsx_vssub_wu): Ditto.
+	(CODE_FOR_lsx_vssub_du): Ditto.
+	(CODE_FOR_lsx_vabsd_b): Ditto.
+	(CODE_FOR_lsx_vabsd_h): Ditto.
+	(CODE_FOR_lsx_vabsd_w): Ditto.
+	(CODE_FOR_lsx_vabsd_d): Ditto.
+	(CODE_FOR_lsx_vabsd_bu): Ditto.
+	(CODE_FOR_lsx_vabsd_hu): Ditto.
+	(CODE_FOR_lsx_vabsd_wu): Ditto.
+	(CODE_FOR_lsx_vabsd_du): Ditto.
+	(CODE_FOR_lsx_vftint_w_s): Ditto.
+	(CODE_FOR_lsx_vftint_l_d): Ditto.
+	(CODE_FOR_lsx_vftint_wu_s): Ditto.
+	(CODE_FOR_lsx_vftint_lu_d): Ditto.
+	(CODE_FOR_lsx_vandn_v): Ditto.
+	(CODE_FOR_lsx_vorn_v): Ditto.
+	(CODE_FOR_lsx_vneg_b): Ditto.
+	(CODE_FOR_lsx_vneg_h): Ditto.
+	(CODE_FOR_lsx_vneg_w): Ditto.
+	(CODE_FOR_lsx_vneg_d): Ditto.
+	(CODE_FOR_lsx_vshuf4i_d): Ditto.
+	(CODE_FOR_lsx_vbsrl_v): Ditto.
+	(CODE_FOR_lsx_vbsll_v): Ditto.
+	(CODE_FOR_lsx_vfmadd_s): Ditto.
+	(CODE_FOR_lsx_vfmadd_d): Ditto.
+	(CODE_FOR_lsx_vfmsub_s): Ditto.
+	(CODE_FOR_lsx_vfmsub_d): Ditto.
+	(CODE_FOR_lsx_vfnmadd_s): Ditto.
+	(CODE_FOR_lsx_vfnmadd_d): Ditto.
+	(CODE_FOR_lsx_vfnmsub_s): Ditto.
+	(CODE_FOR_lsx_vfnmsub_d): Ditto.
+	(CODE_FOR_lsx_vmuh_b): Ditto.
+	(CODE_FOR_lsx_vmuh_h): Ditto.
+	(CODE_FOR_lsx_vmuh_w): Ditto.
+	(CODE_FOR_lsx_vmuh_d): Ditto.
+	(CODE_FOR_lsx_vmuh_bu): Ditto.
+	(CODE_FOR_lsx_vmuh_hu): Ditto.
+	(CODE_FOR_lsx_vmuh_wu): Ditto.
+	(CODE_FOR_lsx_vmuh_du): Ditto.
+	(CODE_FOR_lsx_vsllwil_h_b): Ditto.
+	(CODE_FOR_lsx_vsllwil_w_h): Ditto.
+	(CODE_FOR_lsx_vsllwil_d_w): Ditto.
+	(CODE_FOR_lsx_vsllwil_hu_bu): Ditto.
+	(CODE_FOR_lsx_vsllwil_wu_hu): Ditto.
+	(CODE_FOR_lsx_vsllwil_du_wu): Ditto.
+	(CODE_FOR_lsx_vssran_b_h): Ditto.
+	(CODE_FOR_lsx_vssran_h_w): Ditto.
+	(CODE_FOR_lsx_vssran_w_d): Ditto.
+	(CODE_FOR_lsx_vssran_bu_h): Ditto.
+	(CODE_FOR_lsx_vssran_hu_w): Ditto.
+	(CODE_FOR_lsx_vssran_wu_d): Ditto.
+	(CODE_FOR_lsx_vssrarn_b_h): Ditto.
+	(CODE_FOR_lsx_vssrarn_h_w): Ditto.
+	(CODE_FOR_lsx_vssrarn_w_d): Ditto.
+	(CODE_FOR_lsx_vssrarn_bu_h): Ditto.
+	(CODE_FOR_lsx_vssrarn_hu_w): Ditto.
+	(CODE_FOR_lsx_vssrarn_wu_d): Ditto.
+	(CODE_FOR_lsx_vssrln_bu_h): Ditto.
+	(CODE_FOR_lsx_vssrln_hu_w): Ditto.
+	(CODE_FOR_lsx_vssrln_wu_d): Ditto.
+	(CODE_FOR_lsx_vssrlrn_bu_h): Ditto.
+	(CODE_FOR_lsx_vssrlrn_hu_w): Ditto.
+	(CODE_FOR_lsx_vssrlrn_wu_d): Ditto.
+	(loongarch_builtin_vector_type): Ditto.
+	(loongarch_build_cvpointer_type): Ditto.
+	(LARCH_ATYPE_CVPOINTER): Ditto.
+	(LARCH_ATYPE_BOOLEAN): Ditto.
+	(LARCH_ATYPE_V2SF): Ditto.
+	(LARCH_ATYPE_V2HI): Ditto.
+	(LARCH_ATYPE_V2SI): Ditto.
+	(LARCH_ATYPE_V4QI): Ditto.
+	(LARCH_ATYPE_V4HI): Ditto.
+	(LARCH_ATYPE_V8QI): Ditto.
+	(LARCH_ATYPE_V2DI): Ditto.
+	(LARCH_ATYPE_V4SI): Ditto.
+	(LARCH_ATYPE_V8HI): Ditto.
+	(LARCH_ATYPE_V16QI): Ditto.
+	(LARCH_ATYPE_V2DF): Ditto.
+	(LARCH_ATYPE_V4SF): Ditto.
+	(LARCH_ATYPE_V4DI): Ditto.
+	(LARCH_ATYPE_V8SI): Ditto.
+	(LARCH_ATYPE_V16HI): Ditto.
+	(LARCH_ATYPE_V32QI): Ditto.
+	(LARCH_ATYPE_V4DF): Ditto.
+	(LARCH_ATYPE_V8SF): Ditto.
+	(LARCH_ATYPE_UV2DI): Ditto.
+	(LARCH_ATYPE_UV4SI): Ditto.
+	(LARCH_ATYPE_UV8HI): Ditto.
+	(LARCH_ATYPE_UV16QI): Ditto.
+	(LARCH_ATYPE_UV4DI): Ditto.
+	(LARCH_ATYPE_UV8SI): Ditto.
+	(LARCH_ATYPE_UV16HI): Ditto.
+	(LARCH_ATYPE_UV32QI): Ditto.
+	(LARCH_ATYPE_UV2SI): Ditto.
+	(LARCH_ATYPE_UV4HI): Ditto.
+	(LARCH_ATYPE_UV8QI): Ditto.
+	(loongarch_builtin_vectorized_function): Ditto.
+	(LARCH_GET_BUILTIN): Ditto.
+	(loongarch_expand_builtin_insn): Ditto.
+	(loongarch_expand_builtin_lsx_test_branch): Ditto.
+	(loongarch_expand_builtin): Ditto.
+	* config/loongarch/loongarch-ftypes.def (1): Ditto.
+	(2): Ditto.
+	(3): Ditto.
+	(4): Ditto.
+	* config/loongarch/lsxintrin.h: New file.
+
+2023-09-05  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/constraints.md (M): Add Loongson LSX base instruction support.
+	(N): Ditto.
+	(O): Ditto.
+	(P): Ditto.
+	(R): Ditto.
+	(S): Ditto.
+	(YG): Ditto.
+	(YA): Ditto.
+	(YB): Ditto.
+	(Yb): Ditto.
+	(Yh): Ditto.
+	(Yw): Ditto.
+	(YI): Ditto.
+	(YC): Ditto.
+	(YZ): Ditto.
+	(Unv5): Ditto.
+	(Uuv5): Ditto.
+	(Usv5): Ditto.
+	(Uuv6): Ditto.
+	(Urv8): Ditto.
+	* config/loongarch/genopts/loongarch.opt.in: Ditto.
+	* config/loongarch/loongarch-builtins.cc (loongarch_gen_const_int_vector): Ditto.
+	* config/loongarch/loongarch-modes.def (VECTOR_MODES): Ditto.
+	(VECTOR_MODE): Ditto.
+	(INT_MODE): Ditto.
+	* config/loongarch/loongarch-protos.h (loongarch_split_move_insn_p): Ditto.
+	(loongarch_split_move_insn): Ditto.
+	(loongarch_split_128bit_move): Ditto.
+	(loongarch_split_128bit_move_p): Ditto.
+	(loongarch_split_lsx_copy_d): Ditto.
+	(loongarch_split_lsx_insert_d): Ditto.
+	(loongarch_split_lsx_fill_d): Ditto.
+	(loongarch_expand_vec_cmp): Ditto.
+	(loongarch_const_vector_same_val_p): Ditto.
+	(loongarch_const_vector_same_bytes_p): Ditto.
+	(loongarch_const_vector_same_int_p): Ditto.
+	(loongarch_const_vector_shuffle_set_p): Ditto.
+	(loongarch_const_vector_bitimm_set_p): Ditto.
+	(loongarch_const_vector_bitimm_clr_p): Ditto.
+	(loongarch_lsx_vec_parallel_const_half): Ditto.
+	(loongarch_gen_const_int_vector): Ditto.
+	(loongarch_lsx_output_division): Ditto.
+	(loongarch_expand_vector_init): Ditto.
+	(loongarch_expand_vec_unpack): Ditto.
+	(loongarch_expand_vec_perm): Ditto.
+	(loongarch_expand_vector_extract): Ditto.
+	(loongarch_expand_vector_reduc): Ditto.
+	(loongarch_ldst_scaled_shift): Ditto.
+	(loongarch_expand_vec_cond_expr): Ditto.
+	(loongarch_expand_vec_cond_mask_expr): Ditto.
+	(loongarch_builtin_vectorized_function): Ditto.
+	(loongarch_gen_const_int_vector_shuffle): Ditto.
+	(loongarch_build_signbit_mask): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_pass_aggregate_num_fpr): Ditto.
+	(loongarch_setup_incoming_varargs): Ditto.
+	(loongarch_emit_move): Ditto.
+	(loongarch_const_vector_bitimm_set_p): Ditto.
+	(loongarch_const_vector_bitimm_clr_p): Ditto.
+	(loongarch_const_vector_same_val_p): Ditto.
+	(loongarch_const_vector_same_bytes_p): Ditto.
+	(loongarch_const_vector_same_int_p): Ditto.
+	(loongarch_const_vector_shuffle_set_p): Ditto.
+	(loongarch_symbol_insns): Ditto.
+	(loongarch_cannot_force_const_mem): Ditto.
+	(loongarch_valid_offset_p): Ditto.
+	(loongarch_valid_index_p): Ditto.
+	(loongarch_classify_address): Ditto.
+	(loongarch_address_insns): Ditto.
+	(loongarch_ldst_scaled_shift): Ditto.
+	(loongarch_const_insns): Ditto.
+	(loongarch_split_move_insn_p): Ditto.
+	(loongarch_subword_at_byte): Ditto.
+	(loongarch_legitimize_move): Ditto.
+	(loongarch_builtin_vectorization_cost): Ditto.
+	(loongarch_split_move_p): Ditto.
+	(loongarch_split_move): Ditto.
+	(loongarch_split_move_insn): Ditto.
+	(loongarch_output_move_index_float): Ditto.
+	(loongarch_split_128bit_move_p): Ditto.
+	(loongarch_split_128bit_move): Ditto.
+	(loongarch_split_lsx_copy_d): Ditto.
+	(loongarch_split_lsx_insert_d): Ditto.
+	(loongarch_split_lsx_fill_d): Ditto.
+	(loongarch_output_move): Ditto.
+	(loongarch_extend_comparands): Ditto.
+	(loongarch_print_operand_reloc): Ditto.
+	(loongarch_print_operand): Ditto.
+	(loongarch_hard_regno_mode_ok_uncached): Ditto.
+	(loongarch_hard_regno_call_part_clobbered): Ditto.
+	(loongarch_hard_regno_nregs): Ditto.
+	(loongarch_class_max_nregs): Ditto.
+	(loongarch_can_change_mode_class): Ditto.
+	(loongarch_mode_ok_for_mov_fmt_p): Ditto.
+	(loongarch_secondary_reload): Ditto.
+	(loongarch_vector_mode_supported_p): Ditto.
+	(loongarch_preferred_simd_mode): Ditto.
+	(loongarch_autovectorize_vector_modes): Ditto.
+	(loongarch_lsx_output_division): Ditto.
+	(loongarch_option_override_internal): Ditto.
+	(loongarch_hard_regno_caller_save_mode): Ditto.
+	(MAX_VECT_LEN): Ditto.
+	(loongarch_spill_class): Ditto.
+	(struct expand_vec_perm_d): Ditto.
+	(loongarch_promote_function_mode): Ditto.
+	(loongarch_expand_vselect): Ditto.
+	(loongarch_starting_frame_offset): Ditto.
+	(loongarch_expand_vselect_vconcat): Ditto.
+	(TARGET_ASM_ALIGNED_DI_OP): Ditto.
+	(TARGET_OPTION_OVERRIDE): Ditto.
+	(TARGET_LEGITIMIZE_ADDRESS): Ditto.
+	(TARGET_ASM_SELECT_RTX_SECTION): Ditto.
+	(TARGET_ASM_FUNCTION_RODATA_SECTION): Ditto.
+	(loongarch_expand_lsx_shuffle): Ditto.
+	(TARGET_SCHED_INIT): Ditto.
+	(TARGET_SCHED_REORDER): Ditto.
+	(TARGET_SCHED_REORDER2): Ditto.
+	(TARGET_SCHED_VARIABLE_ISSUE): Ditto.
+	(TARGET_SCHED_ADJUST_COST): Ditto.
+	(TARGET_SCHED_ISSUE_RATE): Ditto.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Ditto.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): Ditto.
+	(TARGET_VALID_POINTER_MODE): Ditto.
+	(TARGET_REGISTER_MOVE_COST): Ditto.
+	(TARGET_MEMORY_MOVE_COST): Ditto.
+	(TARGET_RTX_COSTS): Ditto.
+	(TARGET_ADDRESS_COST): Ditto.
+	(TARGET_IN_SMALL_DATA_P): Ditto.
+	(TARGET_PREFERRED_RELOAD_CLASS): Ditto.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Ditto.
+	(TARGET_EXPAND_BUILTIN_VA_START): Ditto.
+	(loongarch_expand_vec_perm): Ditto.
+	(TARGET_PROMOTE_FUNCTION_MODE): Ditto.
+	(TARGET_RETURN_IN_MEMORY): Ditto.
+	(TARGET_FUNCTION_VALUE): Ditto.
+	(TARGET_LIBCALL_VALUE): Ditto.
+	(loongarch_try_expand_lsx_vshuf_const): Ditto.
+	(TARGET_ASM_OUTPUT_MI_THUNK): Ditto.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): Ditto.
+	(TARGET_PRINT_OPERAND): Ditto.
+	(TARGET_PRINT_OPERAND_ADDRESS): Ditto.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Ditto.
+	(TARGET_SETUP_INCOMING_VARARGS): Ditto.
+	(TARGET_STRICT_ARGUMENT_NAMING): Ditto.
+	(TARGET_MUST_PASS_IN_STACK): Ditto.
+	(TARGET_PASS_BY_REFERENCE): Ditto.
+	(TARGET_ARG_PARTIAL_BYTES): Ditto.
+	(TARGET_FUNCTION_ARG): Ditto.
+	(TARGET_FUNCTION_ARG_ADVANCE): Ditto.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Ditto.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Ditto.
+	(TARGET_INIT_BUILTINS): Ditto.
+	(loongarch_expand_vec_perm_const_1): Ditto.
+	(loongarch_expand_vec_perm_const_2): Ditto.
+	(loongarch_vectorize_vec_perm_const): Ditto.
+	(loongarch_cpu_sched_reassociation_width): Ditto.
+	(loongarch_sched_reassociation_width): Ditto.
+	(loongarch_expand_vector_extract): Ditto.
+	(emit_reduc_half): Ditto.
+	(loongarch_expand_vector_reduc): Ditto.
+	(loongarch_expand_vec_unpack): Ditto.
+	(loongarch_lsx_vec_parallel_const_half): Ditto.
+	(loongarch_constant_elt_p): Ditto.
+	(loongarch_gen_const_int_vector_shuffle): Ditto.
+	(loongarch_expand_vector_init): Ditto.
+	(loongarch_expand_lsx_cmp): Ditto.
+	(loongarch_expand_vec_cond_expr): Ditto.
+	(loongarch_expand_vec_cond_mask_expr): Ditto.
+	(loongarch_expand_vec_cmp): Ditto.
+	(loongarch_case_values_threshold): Ditto.
+	(loongarch_build_const_vector): Ditto.
+	(loongarch_build_signbit_mask): Ditto.
+	(loongarch_builtin_support_vector_misalignment): Ditto.
+	(TARGET_ASM_ALIGNED_HI_OP): Ditto.
+	(TARGET_ASM_ALIGNED_SI_OP): Ditto.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Ditto.
+	(TARGET_VECTOR_MODE_SUPPORTED_P): Ditto.
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE): Ditto.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Ditto.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Ditto.
+	(TARGET_SCHED_REASSOCIATION_WIDTH): Ditto.
+	(TARGET_CASE_VALUES_THRESHOLD): Ditto.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Ditto.
+	(TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT): Ditto.
+	* config/loongarch/loongarch.h (TARGET_SUPPORTS_WIDE_INT): Ditto.
+	(UNITS_PER_LSX_REG): Ditto.
+	(BITS_PER_LSX_REG): Ditto.
+	(BIGGEST_ALIGNMENT): Ditto.
+	(LSX_REG_FIRST): Ditto.
+	(LSX_REG_LAST): Ditto.
+	(LSX_REG_NUM): Ditto.
+	(LSX_REG_P): Ditto.
+	(LSX_REG_RTX_P): Ditto.
+	(IMM13_OPERAND): Ditto.
+	(LSX_SUPPORTED_MODE_P): Ditto.
+	* config/loongarch/loongarch.md (unknown,add,sub,not,nor,and,or,xor): Ditto.
+	(unknown,add,sub,not,nor,and,or,xor,simd_add): Ditto.
+	(unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FCC): Ditto.
+	(mode" ): Ditto.
+	(DF): Ditto.
+	(SF): Ditto.
+	(sf): Ditto.
+	(DI): Ditto.
+	(SI): Ditto.
+	* config/loongarch/loongarch.opt: Ditto.
+	* config/loongarch/predicates.md (const_lsx_branch_operand): Ditto.
+	(const_uimm3_operand): Ditto.
+	(const_8_to_11_operand): Ditto.
+	(const_12_to_15_operand): Ditto.
+	(const_uimm4_operand): Ditto.
+	(const_uimm6_operand): Ditto.
+	(const_uimm7_operand): Ditto.
+	(const_uimm8_operand): Ditto.
+	(const_imm5_operand): Ditto.
+	(const_imm10_operand): Ditto.
+	(const_imm13_operand): Ditto.
+	(reg_imm10_operand): Ditto.
+	(aq8b_operand): Ditto.
+	(aq8h_operand): Ditto.
+	(aq8w_operand): Ditto.
+	(aq8d_operand): Ditto.
+	(aq10b_operand): Ditto.
+	(aq10h_operand): Ditto.
+	(aq10w_operand): Ditto.
+	(aq10d_operand): Ditto.
+	(aq12b_operand): Ditto.
+	(aq12h_operand): Ditto.
+	(aq12w_operand): Ditto.
+	(aq12d_operand): Ditto.
+	(const_m1_operand): Ditto.
+	(reg_or_m1_operand): Ditto.
+	(const_exp_2_operand): Ditto.
+	(const_exp_4_operand): Ditto.
+	(const_exp_8_operand): Ditto.
+	(const_exp_16_operand): Ditto.
+	(const_exp_32_operand): Ditto.
+	(const_0_or_1_operand): Ditto.
+	(const_0_to_3_operand): Ditto.
+	(const_0_to_7_operand): Ditto.
+	(const_2_or_3_operand): Ditto.
+	(const_4_to_7_operand): Ditto.
+	(const_8_to_15_operand): Ditto.
+	(const_16_to_31_operand): Ditto.
+	(qi_mask_operand): Ditto.
+	(hi_mask_operand): Ditto.
+	(si_mask_operand): Ditto.
+	(d_operand): Ditto.
+	(db4_operand): Ditto.
+	(db7_operand): Ditto.
+	(db8_operand): Ditto.
+	(ib3_operand): Ditto.
+	(sb4_operand): Ditto.
+	(sb5_operand): Ditto.
+	(sb8_operand): Ditto.
+	(sd8_operand): Ditto.
+	(ub4_operand): Ditto.
+	(ub8_operand): Ditto.
+	(uh4_operand): Ditto.
+	(uw4_operand): Ditto.
+	(uw5_operand): Ditto.
+	(uw6_operand): Ditto.
+	(uw8_operand): Ditto.
+	(addiur2_operand): Ditto.
+	(addiusp_operand): Ditto.
+	(andi16_operand): Ditto.
+	(movep_src_register): Ditto.
+	(movep_src_operand): Ditto.
+	(fcc_reload_operand): Ditto.
+	(muldiv_target_operand): Ditto.
+	(const_vector_same_val_operand): Ditto.
+	(const_vector_same_simm5_operand): Ditto.
+	(const_vector_same_uimm5_operand): Ditto.
+	(const_vector_same_ximm5_operand): Ditto.
+	(const_vector_same_uimm6_operand): Ditto.
+	(par_const_vector_shf_set_operand): Ditto.
+	(reg_or_vector_same_val_operand): Ditto.
+	(reg_or_vector_same_simm5_operand): Ditto.
+	(reg_or_vector_same_uimm5_operand): Ditto.
+	(reg_or_vector_same_ximm5_operand): Ditto.
+	(reg_or_vector_same_uimm6_operand): Ditto.
+	* doc/md.texi: Ditto.
+	* config/loongarch/lsx.md: New file.
+
+2023-09-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (lookup_vector_type_attribute): Export global.
+	(get_all_predecessors): New function.
+	(get_all_successors): Ditto.
+	* config/riscv/riscv-v.cc (get_all_predecessors): Ditto.
+	(get_all_successors): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (sizeless_type_p): Export global.
+	* config/riscv/riscv-vsetvl.cc (get_all_predecessors): Remove it.
+
+2023-09-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc-protos.h (arc_output_addsi): Remove declaration.
+	(split_addsi): Likewise.
+	* config/arc/arc.cc (arc_print_operand): Add/repurpose 's', 'S',
+	'N', 'x', and 'J' code letters.
+	(arc_output_addsi): Make it static.
+	(split_addsi): Remove it.
+	* config/arc/arc.h (UNSIGNED_INT*): New defines.
+	(SINNED_INT*): Likewise.
+	* config/arc/arc.md (type): Add add, sub, bxor types.
+	(tst_movb): Change code letter from 's' to 'x'.
+	(andsi3_i): Likewise.
+	(addsi3_mixed): Refurbish the pattern.
+	(call_i): Change code letter from 'S' to 'J'.
+	* config/arc/arc700.md: Add newly introduced types.
+	* config/arc/arcHS.md: Likewsie.
+	* config/arc/arcHS4x.md: Likewise.
+	* config/arc/constraints.md (Cca, CL2, Csp, C2a): Remove it.
+	(CM4): Update description.
+	(CP4, C6u, C6n, CIs, C4p): New constraint.
+
+2023-09-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* common/config/arc/arc-common.cc (arc_option_optimization_table):
+	Remove mbbit_peephole.
+	* config/arc/arc.md (UNSPEC_ARC_DIRECT): Remove.
+	(store_direct): Likewise.
+	(BBIT peephole2): Likewise.
+	* config/arc/arc.opt (mbbit-peephole): Ignore option.
+	* doc/invoke.texi (mbbit-peephole): Update document.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-tail-merge.cc (replace_block_by): Fix a comment typo:
+	avreage -> average.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/loongarch.h (CC1_SPEC): Mark normalized
+	options passed from driver to gnat1 as explicit for multilib.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: add loongarch*-elf target.
+	* config/loongarch/elf.h: New file.
+	Link against newlib by default.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: use -mstrict-align for building libraries
+	if --with-strict-align-lib is given.
+	* doc/install.texi: likewise.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/loongarch-c.cc: Export macros
+	"__loongarch_{arch,tune}" in the preprocessor.
+
+2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Make --with-abi= obsolete, decide the default ABI
+	with target triplet.  Allow specifying multilib library build
+	options with --with-multilib-list and --with-multilib-default.
+	* config/loongarch/t-linux: Likewise.
+	* config/loongarch/genopts/loongarch-strings: Likewise.
+	* config/loongarch/loongarch-str.h: Likewise.
+	* doc/install.texi: Likewise.
+	* config/loongarch/genopts/loongarch.opt.in: Introduce
+	-m[no-]l[a]sx options.  Only process -m*-float and
+	-m[no-]l[a]sx in the GCC driver.
+	* config/loongarch/loongarch.opt: Likewise.
+	* config/loongarch/la464.md: Likewise.
+	* config/loongarch/loongarch-c.cc: Likewise.
+	* config/loongarch/loongarch-cpu.cc: Likewise.
+	* config/loongarch/loongarch-cpu.h: Likewise.
+	* config/loongarch/loongarch-def.c: Likewise.
+	* config/loongarch/loongarch-def.h: Likewise.
+	* config/loongarch/loongarch-driver.cc: Likewise.
+	* config/loongarch/loongarch-driver.h: Likewise.
+	* config/loongarch/loongarch-opts.cc: Likewise.
+	* config/loongarch/loongarch-opts.h: Likewise.
+	* config/loongarch/loongarch.cc: Likewise.
+	* doc/invoke.texi: Likewise.
+
+2023-09-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md: (V8BFH_128): Renamed to ..
+	(VHFBF_128): .. this.
+	(V16BFH_256): Renamed to ..
+	(VHFBF_256): .. this.
+	(avx512f_mov<mode>): Extend to V_128.
+	(vcvtnee<bf16_ph>2ps_<mode>): Changed to VHFBF_128.
+	(vcvtneo<bf16_ph>2ps_<mode>): Ditto.
+	(vcvtnee<bf16_ph>2ps_<mode>): Changed to VHFBF_256.
+	(vcvtneo<bf16_ph>2ps_<mode>): Ditto.
+	* config/i386/i386-expand.cc (expand_vec_perm_blend):
+	Canonicalize vec_merge.
+
+2023-09-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum riscv_autovec_lmul_enum): Fix Dynamic status.
+	* config/riscv/riscv-v.cc (preferred_simd_mode): Ditto.
+	(autovectorize_vector_modes): Ditto.
+	(vectorize_related_mode): Ditto.
+
+2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (LIB_SPEC): Include libSystemStubs for
+	all 32b Darwin PowerPC cases.
+
+2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (static_init_section): Add the
+	__TEXT,__StaticInit section.
+	* config/darwin.cc (darwin_function_section): Use the static init
+	section for global initializers, to match other platform toolchains.
+
+2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (darwin_exception_section): Move to
+	the __TEXT segment.
+	* config/darwin.cc (darwin_emit_except_table_label): Align before
+	the exception table label.
+	* config/darwin.h (ASM_PREFERRED_EH_DATA_FORMAT): Use indirect PC-
+	relative 4byte relocs.
+
+2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (dump_machopic_symref_flags): New.
+	(debug_machopic_symref_flags): New.
+
+2023-09-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat16mf4_t): Add FP16 intrinsic def.
+	(vfloat16mf2_t): Ditto.
+	(vfloat16m1_t): Ditto.
+	(vfloat16m2_t): Ditto.
+	(vfloat16m4_t): Ditto.
+	(vfloat16m8_t): Ditto.
+
+2023-09-04  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/108757
+	* match.pd ((X - N * M) / N): New pattern.
+	((X + N * M) / N): New pattern.
+	((X + C) div_rshift N): New pattern.
+
+2023-09-04  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.md: Support 'G' -> 'k' in
+	movsf_hardfloat and movdf_hardfloat.
+
+2023-09-04  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_extend_comparands):
+	In unsigned QImode test, check for sign extended subreg and/or
+	constant operands, and do a sign extension in that case.
+	* config/loongarch/loongarch.md (TARGET_64BIT): Define
+	template cbranchqi4.
+
+2023-09-04  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md: Allows fixed-point values to be loaded
+	from memory into floating-point registers.
+
 2023-09-03  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec-vls.md (<optab><mode>3): New pattern for

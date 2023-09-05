@@ -1,3 +1,107 @@
+2023-09-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New macro.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnj-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnj-2.c: New test.
+
+2023-09-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	Revert:
+	2023-07-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gnat.dg/unroll3.adb: Adjust.
+
+2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-eqz.c: Disable for -Oz.
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-not.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-eqz.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-not.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-cond.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-nez.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-cond.c: Likewise.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-nez.c: Likewise.
+
+2023-09-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512fp16-vmovsh-1a.c: Remove xfail.
+
+2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/bb-slp-44.c: Remove 'dg-do run'.
+	* gcc.dg/vect/bb-slp-71.c: Likewise.
+	* gcc.dg/vect/bb-slp-72.c: Likewise.
+	* gcc.dg/vect/bb-slp-73.c: Likewise.
+	* gcc.dg/vect/bb-slp-74.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr101207.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr101615-1.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr101615-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr101668.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr54400.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr98516-1.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr98516-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr98544.c: Likewise.
+	* gcc.dg/vect/pr101445.c: Likewise.
+	* gcc.dg/vect/pr105219.c: Likewise.
+	* gcc.dg/vect/pr107160.c: Likewise.
+	* gcc.dg/vect/pr107212-1.c: Likewise.
+	* gcc.dg/vect/pr107212-2.c: Likewise.
+	* gcc.dg/vect/pr109502.c: Likewise.
+	* gcc.dg/vect/pr110381.c: Likewise.
+	* gcc.dg/vect/pr110838.c: Likewise.
+	* gcc.dg/vect/pr88497-1.c: Likewise.
+	* gcc.dg/vect/pr88497-7.c: Likewise.
+	* gcc.dg/vect/pr96783-1.c: Likewise.
+	* gcc.dg/vect/pr96783-2.c: Likewise.
+	* gcc.dg/vect/pr97558-2.c: Likewise.
+	* gcc.dg/vect/pr99253.c: Likewise.
+	* gcc.dg/vect/slp-mask-store-1.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-10.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-11.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-2.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-3.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-4.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-5.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-6.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-8.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-9.c: Likewise.
+	* gcc.dg/vect/vect-cond-13.c: Likewise.
+	* gcc.dg/vect/vect-recurr-1.c: Likewise.
+	* gcc.dg/vect/vect-recurr-2.c: Likewise.
+	* gcc.dg/vect/vect-recurr-3.c: Likewise.
+	* gcc.dg/vect/vect-recurr-4.c: Likewise.
+	* gcc.dg/vect/vect-recurr-5.c: Likewise.
+	* gcc.dg/vect/vect-recurr-6.c: Likewise.
+
+2023-09-04  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	PR testsuite/111071
+	* gcc.target/aarch64/sve/acle/asm/subr_s8.c: Adjust to new code.
+	* gcc.target/aarch64/sve/acle/asm/subr_u8.c: Likewise.
+
+2023-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/intrisinc-vrgatherei16.c: New test.
+
+2023-09-04  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/108757
+	* gcc.dg/pr108757-1.c: New test.
+	* gcc.dg/pr108757-2.c: New test.
+	* gcc.dg/pr108757.h: New test.
+
+2023-09-04  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/const-double-zero-stx.c: New test.
+
+2023-09-04  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/switch-qi.c: New test.
+
+2023-09-04  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/float-load.c: New test.
+
 2023-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR testsuite/111066
