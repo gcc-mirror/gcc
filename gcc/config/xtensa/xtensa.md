@@ -3188,40 +3188,6 @@
 		      (const_int 5)
 		      (const_int 6)))])
 
-
-(define_insn_and_split "*eqne_INT_MIN"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(match_operator:SI 2 "boolean_operator"
-		[(match_operand:SI 1 "register_operand" "r")
-		 (const_int -2147483648)]))]
-  "TARGET_ABS"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(abs:SI (match_dup 1)))
-   (set (match_dup 0)
-	(match_op_dup:SI 2
-		[(match_dup 0)
-		 (const_int 31)]))
-   (match_dup 3)]
-{
-  enum rtx_code code = GET_CODE (operands[2]);
-  operands[2] = gen_rtx_fmt_ee ((code == EQ) ? LSHIFTRT : ASHIFTRT,
-				SImode, XEXP (operands[2], 0),
-				XEXP (operands[2], 1));
-  operands[3] = (code != EQ) ? gen_addsi3 (operands[0],
-					   operands[0], const1_rtx)
-			     : const0_rtx;
-}
-  [(set_attr "type"	"move")
-   (set_attr "mode"	"SI")
-   (set (attr "length")
-	(if_then_else (match_test "GET_CODE (operands[2]) == EQ")
-		      (const_int 3)
-		      (if_then_else (match_test "TARGET_DENSITY")
-				    (const_int 5)
-				    (const_int 6))))])
-
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand")
 	(match_operand:SI 6 "reload_operand"))
