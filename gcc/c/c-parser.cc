@@ -16676,7 +16676,9 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
 	      location_t expr_loc = c_parser_peek_token (parser)->location;
 	      c_expr expr = c_parser_expr_no_commas (parser, NULL);
 	      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
-	      if (strcmp (p, "allocator") == 0)
+	      if (expr.value == error_mark_node)
+		;
+	      else if (strcmp (p, "allocator") == 0)
 		{
 		  allocator = expr.value;
 		  allocator = c_fully_fold (allocator, false, NULL);
