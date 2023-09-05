@@ -8766,7 +8766,12 @@ package body Sem_Ch6 is
          Ovr_Alias : Entity_Id;
 
       begin
-         if Present (Ovr_E) then
+         if Present (Ovr_E)
+           and then Ekind (Ovr_E) = E_Enumeration_Literal
+         then
+            Ovr_E := Empty;
+
+         elsif Present (Ovr_E) then
             Ovr_Alias := Ultimate_Alias (Ovr_E);
 
             --  There is no real overridden subprogram if there is a mutual
@@ -8992,6 +8997,18 @@ package body Sem_Ch6 is
       --  for extra formals.
 
       if Present (Parent_Subp) then
+
+         --  Ensure that the parent subprogram has all its extra formals.
+         --  Required because its return type may have been a private or
+         --  an incomplete type, and the extra formals were not added. We
+         --  protect this call against the weird cases where the parent subp
+         --  renames this primitive (documented in the body of the local
+         --  function Parent_Subprogram).
+
+         if Ultimate_Alias (Parent_Subp) /= Ref_E then
+            Create_Extra_Formals (Parent_Subp);
+         end if;
+
          Parent_Formal := First_Formal (Parent_Subp);
 
          --  For concurrent types, the controlling argument of a dispatching
@@ -9140,13 +9157,13 @@ package body Sem_Ch6 is
       begin
          Ada_Version := Ada_2022;
 
-         if Needs_Result_Accessibility_Extra_Formal (Ref_E)
+         if Needs_Result_Accessibility_Level (Ref_E)
            or else
              (Present (Parent_Subp)
-                and then Needs_Result_Accessibility_Extra_Formal (Parent_Subp))
+                and then Needs_Result_Accessibility_Level (Parent_Subp))
            or else
              (Present (Alias_Subp)
-                and then Needs_Result_Accessibility_Extra_Formal (Alias_Subp))
+                and then Needs_Result_Accessibility_Level (Alias_Subp))
          then
             Set_Extra_Accessibility_Of_Result (E,
               Add_Extra_Formal (E, Standard_Natural, E, "L"));
@@ -9695,7 +9712,7 @@ package body Sem_Ch6 is
       --  Check attribute Extra_Accessibility_Of_Result
 
       if Ekind (E) in E_Function | E_Subprogram_Type
-        and then Needs_Result_Accessibility_Extra_Formal (E)
+        and then Needs_Result_Accessibility_Level (E)
         and then No (Extra_Accessibility_Of_Result (E))
       then
          return False;
