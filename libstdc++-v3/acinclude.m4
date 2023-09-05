@@ -5481,7 +5481,10 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
   AC_MSG_CHECKING([whether to build libbacktrace support])
   if test "$enable_libstdcxx_backtrace" = "auto"; then
-    enable_libstdcxx_backtrace="$is_hosted"
+    case "$host" in
+      avr-*-*) enable_libstdcxx_backtrace=no ;;
+      *) enable_libstdcxx_backtrace="$is_hosted" ;;
+    esac
   fi
   AC_MSG_RESULT($enable_libstdcxx_backtrace)
   if test "$enable_libstdcxx_backtrace" = "yes"; then
