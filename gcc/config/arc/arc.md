@@ -3589,37 +3589,6 @@ archs4x, archs4xd"
    (set_attr "type" "compare")
    (set_attr "length" "*,4")])
 
-; combine suffers from 'simplifications' that replace a one-bit zero
-; extract with a shift if it can prove that the upper bits are zero.
-; arc_reorg sees the code after sched2, which can have caused our
-; inputs to be clobbered even if they were not clobbered before.
-; Therefore, add a third way to convert btst / b{eq,ne} to bbit{0,1}
-; OTOH, this is somewhat marginal, and can leat to out-of-range
-; bbit (i.e. bad scheduling) and missed conditional execution,
-; so make this an option.
-(define_peephole2
-  [(set (reg:CC_ZN CC_REG)
-	(compare:CC_ZN
-	  (zero_extract:SI (match_operand:SI 0 "register_operand" "")
-			   (const_int 1)
-			   (match_operand:SI 1 "nonmemory_operand" ""))
-	  (const_int 0)))
-   (set (pc)
-	(if_then_else (match_operator 3 "equality_comparison_operator"
-				      [(reg:CC_ZN CC_REG) (const_int 0)])
-		      (label_ref (match_operand 2 "" ""))
-		      (pc)))]
-  "TARGET_BBIT_PEEPHOLE && peep2_regno_dead_p (2, CC_REG)"
-  [(parallel [(set (pc)
-		   (if_then_else
-		     (match_op_dup 3
-		       [(zero_extract:SI (match_dup 0)
-					 (const_int 1) (match_dup 1))
-			(const_int 0)])
-		     (label_ref (match_dup 2))
-		     (pc)))
-	      (clobber (reg:CC_ZN CC_REG))])])
-
 (define_insn "*cmpsi_cc_z_insn"
   [(set (reg:CC_Z CC_REG)
 	(compare:CC_Z (match_operand:SI 0 "register_operand"  "q,c")

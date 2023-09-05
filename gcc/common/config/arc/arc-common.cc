@@ -46,7 +46,6 @@ static const struct default_options arc_option_optimization_table[] =
   {
     { OPT_LEVELS_ALL, OPT_msize_level_, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mearly_cbranchsi, NULL, 1 },
-    { OPT_LEVELS_ALL, OPT_mbbit_peephole, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_ftree_loop_optimize, NULL, 0},
     { OPT_LEVELS_SIZE, OPT_fmove_loop_invariants, NULL, 0},
     { OPT_LEVELS_SIZE, OPT_fbranch_count_reg, NULL, 0},

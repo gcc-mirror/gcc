@@ -21603,7 +21603,7 @@ Enable the use of pre/post modify with register displacement.
 
 @opindex mbbit-peephole
 @item -mbbit-peephole
-Enable bbit peephole2.
+Does nothing.  Preserved for backward compatibility.
 
 @opindex mno-brcc
 @item -mno-brcc
