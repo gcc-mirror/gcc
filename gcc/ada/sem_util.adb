@@ -8938,10 +8938,16 @@ package body Sem_Util is
    -- Find_Enclosing_Scope --
    --------------------------
 
-   function Find_Enclosing_Scope (N : Node_Id) return Entity_Id is
+   function Find_Enclosing_Scope (N : Node_Id) return Scope_Kind_Id is
       Par : Node_Id;
 
    begin
+      --  If N is an entity, simply return its Scope
+
+      if Nkind (N) in N_Entity then
+         return Scope (N);
+      end if;
+
       --  Examine the parent chain looking for a construct which defines a
       --  scope.
 

@@ -242,10 +242,10 @@ package Einfo.Utils is
    function Type_Low_Bound (Id : E) return N with Inline;
    function Underlying_Type (Id : E) return Entity_Id;
 
-   function Scope_Depth (Id : E) return U with Inline;
-   function Scope_Depth_Set (Id : E) return B with Inline;
+   function Scope_Depth (Id : Scope_Kind_Id) return U with Inline;
+   function Scope_Depth_Set (Id : Scope_Kind_Id) return B with Inline;
 
-   function Scope_Depth_Default_0 (Id : E) return U;
+   function Scope_Depth_Default_0 (Id : Scope_Kind_Id) return U;
    --  In rare cases, the Scope_Depth_Value (queried by Scope_Depth) is
    --  not correctly set before querying it; this may be used instead of
    --  Scope_Depth in such cases. It returns Uint_0 if the Scope_Depth_Value
