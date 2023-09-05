@@ -303,12 +303,14 @@
 ;; auipc	integer addition to PC
 ;; sfb_alu  SFB ALU instruction
 ;; nop		no operation
+;; trap		trap instruction
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
 ;; clmul    clmul, clmulh, clmulr
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
 ;; condmove	conditional moves
+;; cbo    cache block instructions
 ;; crypto cryptography instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
@@ -417,9 +419,9 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
-   clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,crypto,rdvlenb,rdvl,wrvxrm,wrfrm,rdfrm,vsetvl,
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,trap,ghost,bitmanip,
+   rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
+   atomic,condmove,cbo,crypto,rdvlenb,rdvl,wrvxrm,wrfrm,rdfrm,vsetvl,
    vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
@@ -1652,6 +1654,7 @@
 	(lshiftrt:DI (match_dup 0) (const_int 32)))]
   { operands[1] = gen_lowpart (DImode, operands[1]); }
   [(set_attr "move_type" "shift_shift,load")
+   (set_attr "type" "load")
    (set_attr "mode" "DI")])
 
 (define_expand "zero_extendhi<GPR:mode>2"
@@ -1680,6 +1683,7 @@
     operands[2] = GEN_INT(GET_MODE_BITSIZE(<GPR:MODE>mode) - 16);
   }
   [(set_attr "move_type" "shift_shift,load")
+   (set_attr "type" "load")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "zero_extendqi<SUPERQI:mode>2"
@@ -1691,6 +1695,7 @@
    andi\t%0,%1,0xff
    lbu\t%0,%1"
   [(set_attr "move_type" "andi,load")
+   (set_attr "type" "multi")
    (set_attr "mode" "<SUPERQI:MODE>")])
 
 ;;
@@ -1709,6 +1714,7 @@
    sext.w\t%0,%1
    lw\t%0,%1"
   [(set_attr "move_type" "move,load")
+   (set_attr "type" "multi")
    (set_attr "mode" "DI")])
 
 (define_expand "extend<SHORT:mode><SUPERQI:mode>2"
@@ -1736,6 +1742,7 @@
 			 - GET_MODE_BITSIZE (<SHORT:MODE>mode));
 }
   [(set_attr "move_type" "shift_shift,load")
+   (set_attr "type" "load")
    (set_attr "mode" "SI")])
 
 (define_insn "extendhfsf2"
@@ -1784,6 +1791,7 @@
        || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "HF")])
 
 (define_insn "*movhf_softfloat"
@@ -1794,6 +1802,7 @@
        || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,move,load,store,mtc,mfc")
+   (set_attr "type" "fmove")
    (set_attr "mode" "HF")])
 
 ;;
@@ -1888,6 +1897,7 @@
   ""
   "la\t%0,%1"
    [(set_attr "got" "load")
+    (set_attr "type" "load")
     (set_attr "mode" "<MODE>")])
 
 (define_insn "tls_add_tp_le<mode>"
@@ -1910,6 +1920,7 @@
   ""
   "la.tls.gd\t%0,%1"
   [(set_attr "got" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "got_load_tls_ie<mode>"
@@ -1920,6 +1931,7 @@
   ""
   "la.tls.ie\t%0,%1"
   [(set_attr "got" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "auipc<mode>"
@@ -1989,7 +2001,8 @@
   riscv_move_integer (operands[0], operands[0], INTVAL (operands[1]),
                       <MODE>mode);
   DONE;
-})
+}
+[(set_attr "type" "move")])
 
 ;; 64-bit integer moves
 
@@ -2011,6 +2024,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
    (set_attr "mode" "DI")
+   (set_attr "type" "move")
    (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 (define_insn "*movdi_64bit"
@@ -2022,6 +2036,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
    (set_attr "mode" "DI")
+   (set_attr "type" "move")
    (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 ;; 32-bit Integer moves
@@ -2045,6 +2060,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
    (set_attr "mode" "SI")
+   (set_attr "type" "move")
    (set_attr "ext" "base,base,base,base,f,f,f,f,vector")])
 
 ;; 16-bit Integer moves
@@ -2071,6 +2087,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
    (set_attr "mode" "HI")
+   (set_attr "type" "move")
    (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; HImode constant generation; see riscv_move_integer for details.
@@ -2114,6 +2131,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
    (set_attr "mode" "QI")
+   (set_attr "type" "move")
    (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; 32-bit floating point moves
@@ -2135,6 +2153,7 @@
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "SF")])
 
 (define_insn "*movsf_softfloat"
@@ -2145,6 +2164,7 @@
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "SF")])
 
 ;; 64-bit floating point moves
@@ -2169,6 +2189,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_hardfloat_rv64"
@@ -2179,6 +2200,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_softfloat"
@@ -2189,6 +2211,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,load,store")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "movsidf2_low_rv32"
@@ -2269,17 +2292,20 @@
 (define_insn "fence"
   [(unspec_volatile [(const_int 0)] UNSPECV_FENCE)]
   ""
-  "%|fence%-")
+  "%|fence%-"
+  [(set_attr "type" "atomic")])
 
 (define_insn "fence_i"
   [(unspec_volatile [(const_int 0)] UNSPECV_FENCE_I)]
   "TARGET_ZIFENCEI"
-  "fence.i")
+  "fence.i"
+  [(set_attr "type" "atomic")])
 
 (define_insn "riscv_pause"
   [(unspec_volatile [(const_int 0)] UNSPECV_PAUSE)]
   ""
-  "* return TARGET_ZIHINTPAUSE ? \"pause\" : \".insn\t0x0100000f\";")
+  "* return TARGET_ZIHINTPAUSE ? \"pause\" : \".insn\t0x0100000f\";"
+  [(set_attr "type" "atomic")])
 
 ;;
 ;;  ....................
@@ -2531,7 +2557,8 @@
 
 	operands[6] = GEN_INT (trailing);
 	operands[7] = GEN_INT (mask >> trailing);
-})
+}
+[(set_attr "type" "branch")])
 
 (define_insn_and_split "*branch<ANYI:mode>_shiftedmask_equals_zero"
   [(set (pc)
@@ -2558,7 +2585,8 @@
 
 	operands[6] = GEN_INT (leading);
 	operands[7] = GEN_INT (leading + trailing);
-})
+}
+[(set_attr "type" "branch")])
 
 (define_insn "*branch<mode>"
   [(set (pc)
@@ -2669,7 +2697,8 @@
     operands[0] = gen_rtx_GE (<MODE>mode, operands[4], const0_rtx);
   else
     operands[0] = gen_rtx_LT (<MODE>mode, operands[4], const0_rtx);
-})
+}
+[(set_attr "type" "branch")])
 
 (define_insn_and_split "*branch_on_bit_range<X:mode>"
   [(set (pc)
@@ -2694,7 +2723,8 @@
 	    (pc)))]
 {
   operands[3] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - INTVAL (operands[3]));
-})
+}
+[(set_attr "type" "branch")])
 
 ;;
 ;;  ....................
@@ -2997,13 +3027,15 @@
   [(unspec [(match_operand:SI 0 "register_operand" "r")] UNSPEC_EH_RETURN)
    (clobber (match_scratch:SI 1 "=&r"))]
   "! TARGET_64BIT"
-  "#")
+  "#"
+  [(set_attr "type" "jump")])
 
 (define_insn "eh_set_lr_di"
   [(unspec [(match_operand:DI 0 "register_operand" "r")] UNSPEC_EH_RETURN)
    (clobber (match_scratch:DI 1 "=&r"))]
   "TARGET_64BIT"
-  "#")
+  "#"
+  [(set_attr "type" "jump")])
 
 (define_split
   [(unspec [(match_operand 0 "register_operand")] UNSPEC_EH_RETURN)
@@ -3021,7 +3053,8 @@
   "#"
   "epilogue_completed"
   [(const_int 0)]
-  "riscv_expand_epilogue (EXCEPTION_RETURN); DONE;")
+  "riscv_expand_epilogue (EXCEPTION_RETURN); DONE;"
+  [(set_attr "type" "jump")])
 
 ;;
 ;;  ....................
@@ -3155,7 +3188,8 @@
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
   ""
-  "ebreak")
+  "ebreak"
+  [(set_attr "type" "trap")])
 
 ;; Must use the registers that we save to prevent the rename reg optimization
 ;; pass from using them before the gpr_save pattern when shrink wrapping
@@ -3166,41 +3200,48 @@
      [(unspec_volatile [(match_operand 0 "const_int_operand")]
 	               UNSPECV_GPR_SAVE)])]
   ""
-  "call\tt0,__riscv_save_%0")
+  "call\tt0,__riscv_save_%0"
+  [(set_attr "type" "call")])
 
 (define_insn "gpr_restore"
   [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_RESTORE)]
   ""
-  "tail\t__riscv_restore_%0")
+  "tail\t__riscv_restore_%0"
+  [(set_attr "type" "call")])
 
 (define_insn "gpr_restore_return"
   [(return)
    (use (match_operand 0 "pmode_register_operand" ""))
    (const_int 0)]
   ""
-  "")
+  ""
+  [(set_attr "type" "jump")])
 
 (define_insn "riscv_frcsr"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile [(const_int 0)] UNSPECV_FRCSR))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "frcsr\t%0")
+  "frcsr\t%0"
+  [(set_attr "type" "fmove")])
 
 (define_insn "riscv_fscsr"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_FSCSR)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fscsr\t%0")
+  "fscsr\t%0"
+  [(set_attr "type" "fmove")])
 
 (define_insn "riscv_frflags"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "frflags\t%0")
+  "frflags\t%0"
+  [(set_attr "type" "fmove")])
 
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fsflags%i0\t%0")
+  "fsflags%i0\t%0"
+  [(set_attr "type" "fmove")])
 
 (define_insn "*riscv_fsnvsnan<mode>2"
   [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
@@ -3215,19 +3256,22 @@
   [(return)
    (unspec_volatile [(const_int 0)] UNSPECV_MRET)]
   ""
-  "mret")
+  "mret"
+  [(set_attr "type" "jump")])
 
 (define_insn "riscv_sret"
   [(return)
    (unspec_volatile [(const_int 0)] UNSPECV_SRET)]
   ""
-  "sret")
+  "sret"
+  [(set_attr "type" "jump")])
 
 (define_insn "riscv_uret"
   [(return)
    (unspec_volatile [(const_int 0)] UNSPECV_URET)]
   ""
-  "uret")
+  "uret"
+  [(set_attr "type" "jump")])
 
 (define_insn "stack_tie<mode>"
   [(set (mem:BLK (scratch))
@@ -3236,7 +3280,8 @@
 		    UNSPEC_TIE))]
   ""
   ""
-  [(set_attr "length" "0")]
+  [(set_attr "type" "ghost")
+   (set_attr "length" "0")]
 )
 
 ;; This fixes a failure with gcc.c-torture/execute/pr64242.c at -O2 for a
@@ -3294,7 +3339,8 @@
    (set (match_scratch:GPR 2 "=&r") (const_int 0))]
   ""
   "<load>\t%2, %1\;<store>\t%2, %0\;li\t%2, 0"
-  [(set_attr "length" "12")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 (define_expand "stack_protect_test"
   [(match_operand 0 "memory_operand")
@@ -3333,13 +3379,15 @@
    (clobber (match_scratch:GPR 3 "=&r"))]
   ""
   "<load>\t%3, %1\;<load>\t%0, %2\;xor\t%0, %3, %0\;li\t%3, 0"
-  [(set_attr "length" "12")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 (define_insn "riscv_clean_<mode>"
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")]
     UNSPECV_CLEAN)]
   "TARGET_ZICBOM"
   "cbo.clean\t%a0"
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_flush_<mode>"
@@ -3347,6 +3395,7 @@
     UNSPECV_FLUSH)]
   "TARGET_ZICBOM"
   "cbo.flush\t%a0"
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_inval_<mode>"
@@ -3354,6 +3403,7 @@
     UNSPECV_INVAL)]
   "TARGET_ZICBOM"
   "cbo.inval\t%a0"
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "riscv_zero_<mode>"
@@ -3361,6 +3411,7 @@
     UNSPECV_ZERO)]
   "TARGET_ZICBOZ"
   "cbo.zero\t%a0"
+  [(set_attr "type" "cbo")]
 )
 
 (define_insn "prefetch"
@@ -3375,7 +3426,8 @@
     case 1: return "prefetch.w\t%a0";
     default: gcc_unreachable ();
   }
-})
+}
+  [(set_attr "type" "cbo")])
 
 (define_insn "riscv_prefetchi_<mode>"
   [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
@@ -3383,7 +3435,7 @@
               UNSPECV_PREI)]
   "TARGET_ZICBOP"
   "prefetch.i\t%a0"
-)
+  [(set_attr "type" "cbo")])
 
 (define_expand "extv<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
