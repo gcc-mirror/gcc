@@ -572,10 +572,9 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       int trailing_ones = ctz_hwi (~value);
 
       /* If all bits are one except a few that are zero, and the zero bits
-	 are within a range of 11 bits, and at least one of the upper 32-bits
-	 is a zero, then we can generate a constant by loading a small
-	 negative constant and rotating.  */
-      if (leading_ones < 32
+	 are within a range of 11 bits, then we can synthesize a constant
+	 by loading a small negative constant and rotating.  */
+      if (leading_ones < 64
 	  && ((64 - leading_ones - trailing_ones) < 12))
 	{
 	  codes[0].code = UNKNOWN;
