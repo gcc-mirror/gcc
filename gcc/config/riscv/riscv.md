@@ -79,6 +79,9 @@
   UNSPEC_CLMUL
   UNSPEC_CLMULH
   UNSPEC_CLMULR
+
+  ;; the calling convention of callee
+  UNSPEC_CALLEE_CC
 ])
 
 (define_c_enum "unspecv" [
@@ -3066,18 +3069,22 @@
 (define_expand "sibcall"
   [(parallel [(call (match_operand 0 "")
 		    (match_operand 1 ""))
-	      (use (match_operand 2 ""))	;; next_arg_reg
-	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
+	      (use (unspec:SI [
+		     (match_operand 2 "const_int_operand")
+	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[0], 0));
-  emit_call_insn (gen_sibcall_internal (target, operands[1]));
+  emit_call_insn (gen_sibcall_internal (target, operands[1], operands[2]));
   DONE;
 })
 
 (define_insn "sibcall_internal"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "j,S,U"))
-	 (match_operand 1 "" ""))]
+	 (match_operand 1 "" ""))
+   (use (unspec:SI [
+          (match_operand 2 "const_int_operand")
+        ] UNSPEC_CALLEE_CC))]
   "SIBLING_CALL_P (insn)"
   "@
    jr\t%0
@@ -3089,18 +3096,24 @@
   [(parallel [(set (match_operand 0 "")
 		   (call (match_operand 1 "")
 			 (match_operand 2 "")))
-	      (use (match_operand 3 ""))])]		;; next_arg_reg
+	      (use (unspec:SI [
+		     (match_operand 3 "const_int_operand")
+	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[1], 0));
-  emit_call_insn (gen_sibcall_value_internal (operands[0], target, operands[2]));
+  emit_call_insn (gen_sibcall_value_internal (operands[0], target, operands[2],
+					      operands[3]));
   DONE;
 })
 
 (define_insn "sibcall_value_internal"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_insn_operand" "j,S,U"))
-	      (match_operand 2 "" "")))]
+	      (match_operand 2 "" "")))
+   (use (unspec:SI [
+          (match_operand 3 "const_int_operand")
+        ] UNSPEC_CALLEE_CC))]
   "SIBLING_CALL_P (insn)"
   "@
    jr\t%1
@@ -3111,18 +3124,22 @@
 (define_expand "call"
   [(parallel [(call (match_operand 0 "")
 		    (match_operand 1 ""))
-	      (use (match_operand 2 ""))	;; next_arg_reg
-	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
+	      (use (unspec:SI [
+		     (match_operand 2 "const_int_operand")
+	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[0], 0));
-  emit_call_insn (gen_call_internal (target, operands[1]));
+  emit_call_insn (gen_call_internal (target, operands[1], operands[2]));
   DONE;
 })
 
 (define_insn "call_internal"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "l,S,U"))
 	 (match_operand 1 "" ""))
+   (use (unspec:SI [
+          (match_operand 2 "const_int_operand")
+        ] UNSPEC_CALLEE_CC))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   "@
@@ -3135,11 +3152,14 @@
   [(parallel [(set (match_operand 0 "")
 		   (call (match_operand 1 "")
 			 (match_operand 2 "")))
-	      (use (match_operand 3 ""))])]		;; next_arg_reg
+	      (use (unspec:SI [
+		     (match_operand 3 "const_int_operand")
+	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[1], 0));
-  emit_call_insn (gen_call_value_internal (operands[0], target, operands[2]));
+  emit_call_insn (gen_call_value_internal (operands[0], target, operands[2],
+					   operands[3]));
   DONE;
 })
 
@@ -3147,6 +3167,9 @@
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_insn_operand" "l,S,U"))
 	      (match_operand 2 "" "")))
+   (use (unspec:SI [
+          (match_operand 3 "const_int_operand")
+        ] UNSPEC_CALLEE_CC))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   "@
@@ -3166,7 +3189,9 @@
 {
   int i;
 
-  emit_call_insn (gen_call (operands[0], const0_rtx, NULL, const0_rtx));
+  /* Untyped calls always use the RISCV_CC_BASE calling convention.  */
+  emit_call_insn (gen_call (operands[0], const0_rtx,
+			    gen_int_mode (RISCV_CC_BASE, SImode)));
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {

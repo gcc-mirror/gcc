@@ -447,12 +447,14 @@ riscv_remove_unneeded_save_restore_calls (void)
       && !SIBCALL_REG_P (REGNO (target)))
     return;
 
+  riscv_cc cc = get_riscv_cc (XVECEXP (callpat, 0, 1));
   rtx sibcall = NULL;
   if (set_target != NULL)
-    sibcall
-      = gen_sibcall_value_internal (set_target, target, const0_rtx);
+    sibcall = gen_sibcall_value_internal (set_target, target, const0_rtx,
+					  gen_int_mode (cc, SImode));
   else
-    sibcall = gen_sibcall_internal (target, const0_rtx);
+    sibcall
+      = gen_sibcall_internal (target, const0_rtx, gen_int_mode (cc, SImode));
 
   rtx_insn *before_call = PREV_INSN (call);
   remove_insn (call);

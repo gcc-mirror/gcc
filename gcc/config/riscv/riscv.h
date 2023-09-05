@@ -731,6 +731,9 @@ typedef struct {
   bool used_vrs[MAX_ARGS_IN_VECTOR_REGISTERS];
 } CUMULATIVE_ARGS;
 
+/* Return riscv calling convention of call_insn.  */
+extern enum riscv_cc get_riscv_cc (const rtx use);
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */

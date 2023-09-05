@@ -110,6 +110,9 @@ struct GTY(())  riscv_frame_info {
   /* Likewise FPR X.  */
   unsigned int fmask;
 
+  /* Likewise for vector registers.  */
+  unsigned int vmask;
+
   /* How much the GPR save/restore routines adjust sp (or 0 if unused).  */
   unsigned save_libcall_adjustment;
 
@@ -124,6 +127,10 @@ struct GTY(())  riscv_frame_info {
   /* Offsets of fixed-point and floating-point save areas from frame bottom */
   poly_int64 gp_sp_offset;
   poly_int64 fp_sp_offset;
+
+  /* Top and bottom offsets of vector save areas from frame bottom.  */
+  poly_int64 v_sp_offset_top;
+  poly_int64 v_sp_offset_bottom;
 
   /* Offset of virtual frame pointer from stack pointer/frame bottom */
   poly_int64 frame_pointer_offset;
@@ -278,7 +285,7 @@ unsigned riscv_stack_boundary;
 /* If non-zero, this is an offset to be added to SP to redefine the CFA
    when restoring the FP register from the stack.  Only valid when generating
    the epilogue.  */
-static int epilogue_cfa_sp_offset;
+static poly_int64 epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_param *tune_param;
@@ -450,10 +457,13 @@ void riscv_frame_info::reset(void)
   total_size = 0;
   mask = 0;
   fmask = 0;
+  vmask = 0;
   save_libcall_adjustment = 0;
 
   gp_sp_offset = 0;
   fp_sp_offset = 0;
+  v_sp_offset_top = 0;
+  v_sp_offset_bottom = 0;
 
   frame_pointer_offset = 0;
 
@@ -1892,7 +1902,8 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
   start_sequence ();
 
   emit_insn (riscv_got_load_tls_gd (a0, sym));
-  insn = emit_call_insn (gen_call_value (result, func, const0_rtx, NULL));
+  insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
+					 gen_int_mode (RISCV_CC_BASE, SImode)));
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
   insn = get_insns ();
@@ -4660,7 +4671,8 @@ riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   struct riscv_arg_info info;
 
   if (arg.end_marker_p ())
-    return NULL;
+    /* Return the calling convention that used by the current function. */
+    return gen_int_mode (cum->variant_cc, SImode);
 
   return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
@@ -4898,6 +4910,30 @@ riscv_fntype_abi (const_tree fntype)
     return riscv_v_abi ();
 
   return default_function_abi;
+}
+
+/* Return riscv calling convention of call_insn.  */
+riscv_cc
+get_riscv_cc (const rtx use)
+{
+  gcc_assert (GET_CODE (use) == USE);
+  rtx unspec = XEXP (use, 0);
+  gcc_assert (GET_CODE (unspec) == UNSPEC
+	      && XINT (unspec, 1) == UNSPEC_CALLEE_CC);
+  riscv_cc cc = (riscv_cc) INTVAL (XVECEXP (unspec, 0, 0));
+  gcc_assert (cc < RISCV_CC_UNKNOWN);
+  return cc;
+}
+
+/* Implement TARGET_INSN_CALLEE_ABI.  */
+
+const predefined_function_abi &
+riscv_insn_callee_abi (const rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  riscv_cc cc = get_riscv_cc (XVECEXP (pat, 0, 1));
+  return function_abis[cc];
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL;
@@ -5755,6 +5791,11 @@ riscv_save_reg_p (unsigned int regno)
   if (call_saved && might_clobber)
     return true;
 
+  /* Save callee-saved V registers.  */
+  if (V_REG_P (regno) && !crtl->abi->clobbers_full_reg_p (regno)
+      && might_clobber)
+    return true;
+
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
@@ -5927,6 +5968,12 @@ riscv_stack_align (HOST_WIDE_INT value)
 	|                               |       + UNITS_PER_FP_REG
 	|  FPR save area                |
 	|                               |
+	+-------------------------------+ <-- stack_pointer_rtx
+	|                               |       + v_sp_offset_top
+	|  Vector Registers save area   |
+	|                               |
+	| ----------------------------- | <-- stack_pointer_rtx
+	| padding                       |       + v_sp_offset_bottom
 	+-------------------------------+ <-- frame_pointer_rtx (virtual)
 	|                               |
 	|  local variables              |
@@ -5950,6 +5997,7 @@ riscv_compute_frame_info (void)
   poly_int64 offset;
   bool interrupt_save_prologue_temp = false;
   unsigned int regno, i, num_x_saved = 0, num_f_saved = 0, x_save_size = 0;
+  unsigned int num_v_saved = 0;
 
   frame = &cfun->machine->frame;
 
@@ -5988,6 +6036,15 @@ riscv_compute_frame_info (void)
 	for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
 	  if (riscv_save_reg_p (regno))
 	    frame->fmask |= 1 << (regno - FP_REG_FIRST), num_f_saved++;
+
+      /* Find out which V registers we need to save. */
+      if (TARGET_VECTOR)
+	for (regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
+	  if (riscv_save_reg_p (regno))
+	    {
+	      frame->vmask |= 1 << (regno - V_REG_FIRST);
+	      num_v_saved++;
+	    }
     }
 
   if (frame->mask)
@@ -6034,6 +6091,12 @@ riscv_compute_frame_info (void)
   offset += riscv_stack_align (get_frame_size ());
   /* The virtual frame pointer points above the local variables. */
   frame->frame_pointer_offset = offset;
+  /* Next are the callee-saved VRs.  */
+  if (frame->vmask)
+    offset += riscv_stack_align (num_v_saved * UNITS_PER_V_REG);
+  frame->v_sp_offset_top = offset;
+  frame->v_sp_offset_bottom
+    = frame->v_sp_offset_top - num_v_saved * UNITS_PER_V_REG;
   /* Next are the callee-saved FPRs. */
   if (frame->fmask)
     offset += riscv_stack_align (num_f_saved * UNITS_PER_FP_REG);
@@ -6146,10 +6209,12 @@ riscv_restore_reg (rtx reg, rtx mem)
   rtx dwarf = NULL_RTX;
   dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
 
-  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
+  if (known_gt (epilogue_cfa_sp_offset, 0)
+      && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
     {
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (epilogue_cfa_sp_offset));
+      rtx cfa_adjust_rtx
+	= gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			gen_int_mode (epilogue_cfa_sp_offset, Pmode));
       dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
     }
 
@@ -6331,6 +6396,79 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
       }
 }
 
+/* Call FN for each V register that is saved by the current function.  */
+
+static void
+riscv_for_each_saved_v_reg (poly_int64 &remaining_size,
+			    riscv_save_restore_fn fn, bool prologue)
+{
+  rtx vlen = NULL_RTX;
+  if (cfun->machine->frame.vmask != 0)
+    {
+      if (UNITS_PER_V_REG.is_constant ()
+	  && SMALL_OPERAND (UNITS_PER_V_REG.to_constant ()))
+	vlen = GEN_INT (UNITS_PER_V_REG.to_constant ());
+      else
+	{
+	  vlen = RISCV_PROLOGUE_TEMP (Pmode);
+	  rtx insn
+	    = emit_move_insn (vlen, gen_int_mode (UNITS_PER_V_REG, Pmode));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
+
+  /* Select the mode where LMUL is 1 and SEW is largest.  */
+  machine_mode m1_mode = TARGET_VECTOR_ELEN_64 ? RVVM1DImode : RVVM1SImode;
+
+  if (prologue)
+    {
+      /* This loop must iterate over the same space as its companion in
+	 riscv_compute_frame_info.  */
+      for (unsigned int regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
+	if (BITSET_P (cfun->machine->frame.vmask, regno - V_REG_FIRST))
+	  {
+	    bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
+	    if (handle_reg)
+	      {
+		rtx insn = NULL_RTX;
+		if (CONST_INT_P (vlen))
+		  {
+		    gcc_assert (SMALL_OPERAND (-INTVAL (vlen)));
+		    insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+						     stack_pointer_rtx,
+						     GEN_INT (-INTVAL (vlen))));
+		  }
+		else
+		  insn = emit_insn (
+		    gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, vlen));
+		gcc_assert (insn != NULL_RTX);
+		RTX_FRAME_RELATED_P (insn) = 1;
+		riscv_save_restore_reg (m1_mode, regno, 0, fn);
+		remaining_size -= UNITS_PER_V_REG;
+	      }
+	  }
+    }
+  else
+    {
+      /* This loop must iterate over the same space as its companion in
+	 riscv_compute_frame_info.  */
+      for (unsigned int regno = V_REG_LAST; regno >= V_REG_FIRST; regno--)
+	if (BITSET_P (cfun->machine->frame.vmask, regno - V_REG_FIRST))
+	  {
+	    bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
+	    if (handle_reg)
+	      {
+		riscv_save_restore_reg (m1_mode, regno, 0, fn);
+		rtx insn = emit_insn (
+		  gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, vlen));
+		gcc_assert (insn != NULL_RTX);
+		RTX_FRAME_RELATED_P (insn) = 1;
+		remaining_size -= UNITS_PER_V_REG;
+	      }
+	  }
+    }
+}
+
 /* For stack frames that can't be allocated with a single ADDI instruction,
    compute the best value to initially allocate.  It must at a minimum
    allocate enough space to spill the callee-saved registers.  If TARGET_RVC,
@@ -6347,6 +6485,11 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
 	- riscv_stack_align (remaining_size.coeffs[1]);
   else
     remaining_const_size = remaining_size.to_constant ();
+
+  /* First step must be set to the top of vector registers save area if any
+     vector registers need be preversed.  */
+  if (frame->vmask != 0)
+    return (remaining_size - frame->v_sp_offset_top).to_constant ();
 
   if (SMALL_OPERAND (remaining_const_size))
     return remaining_const_size;
@@ -6541,11 +6684,20 @@ riscv_expand_prologue (void)
   if (riscv_use_multi_push (frame))
     {
       remaining_size -= frame->multi_push_adj_base;
-      if (known_gt (remaining_size, 2 * ZCMP_SP_INC_STEP))
+      /* If there are vector registers that need to be saved, then it can only
+	 be reduced to the frame->v_sp_offset_top position at most, since the
+	 vector registers will need to be saved one by one by decreasing the SP
+	 later.  */
+      poly_int64 remaining_size_above_varea
+	= frame->vmask != 0
+	    ? remaining_size - frame->v_sp_offset_top
+	    : remaining_size;
+
+      if (known_gt (remaining_size_above_varea, 2 * ZCMP_SP_INC_STEP))
 	spimm = 3;
-      else if (known_gt (remaining_size, ZCMP_SP_INC_STEP))
+      else if (known_gt (remaining_size_above_varea, ZCMP_SP_INC_STEP))
 	spimm = 2;
-      else if (known_gt (remaining_size, 0))
+      else if (known_gt (remaining_size_above_varea, 0))
 	spimm = 1;
       else
 	spimm = 0;
@@ -6589,7 +6741,7 @@ riscv_expand_prologue (void)
       REG_NOTES (insn) = dwarf;
     }
 
-  /* Save the registers.  */
+  /* Save the GP, FP registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
       if (known_gt (remaining_size, frame->frame_pointer_offset))
@@ -6616,6 +6768,10 @@ riscv_expand_prologue (void)
 
       riscv_emit_stack_tie ();
     }
+
+  /* Save the V registers.  */
+  if (frame->vmask != 0)
+    riscv_for_each_saved_v_reg (remaining_size, riscv_save_reg, true);
 
   /* Allocate the rest of the frame.  */
   if (known_gt (remaining_size, 0))
@@ -6796,7 +6952,7 @@ riscv_expand_epilogue (int style)
   unsigned mask = frame->mask;
   unsigned fmask = frame->fmask;
   unsigned mask_fprs_push = 0;
-  HOST_WIDE_INT step2 = 0;
+  poly_int64 step2 = 0;
   bool use_multi_pop_normal
     = ((style == NORMAL_RETURN) && riscv_use_multi_push (frame));
   bool use_multi_pop_sibcall
@@ -6901,7 +7057,16 @@ riscv_expand_epilogue (int style)
   if (use_restore_libcall || use_multi_pop)
     frame->mask = mask; /* Undo the above fib.  */
 
-  poly_int64 step1 = frame->total_size - step2 - libcall_size - multipop_size;
+  poly_int64 step1;
+  /* STEP1 must be set to the bottom of vector registers save area if any
+     vector registers need be preversed.  */
+  if (frame->vmask != 0)
+    {
+      step1 = frame->v_sp_offset_bottom;
+      step2 = frame->total_size - step1 - libcall_size - multipop_size;
+    }
+  else
+    step1 = frame->total_size - step2 - libcall_size - multipop_size;
 
   /* Set TARGET to BASE + STEP1.  */
   if (known_gt (step1, 0))
@@ -6937,7 +7102,8 @@ riscv_expand_epilogue (int style)
 	  rtx dwarf = NULL_RTX;
 	  rtx cfa_adjust_rtx
 	    = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			    GEN_INT (step2 + libcall_size + multipop_size));
+			    gen_int_mode (step2 + libcall_size + multipop_size,
+					  Pmode));
 
 	  dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -6966,6 +7132,7 @@ riscv_expand_epilogue (int style)
     frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
 
   /* Restore the registers.  */
+  riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
 			      - multipop_size,
 			    riscv_restore_reg, true, style == EXCEPTION_RETURN);
@@ -6977,10 +7144,10 @@ riscv_expand_epilogue (int style)
     riscv_emit_stack_tie ();
 
   /* Deallocate the final bit of the frame.  */
-  if (step2 > 0)
+  if (step2.to_constant () > 0)
     {
       insn = emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				       GEN_INT (step2)));
+				       GEN_INT (step2.to_constant ())));
 
       rtx dwarf = NULL_RTX;
       rtx cfa_adjust_rtx
@@ -7643,7 +7810,8 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     }
 
   /* Jump to the target function.  */
-  insn = emit_call_insn (gen_sibcall (fnaddr, const0_rtx, NULL, const0_rtx));
+  rtx callee_cc = gen_int_mode (fndecl_abi (function).id (), SImode);
+  insn = emit_call_insn (gen_sibcall (fnaddr, const0_rtx, callee_cc));
   SIBLING_CALL_P (insn) = 1;
 
   /* Run just enough of rest_of_compilation.  This sequence was
@@ -9359,6 +9527,8 @@ riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 #define TARGET_FUNCTION_ARG_BOUNDARY riscv_function_arg_boundary
 #undef TARGET_FNTYPE_ABI
 #define TARGET_FNTYPE_ABI riscv_fntype_abi
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI riscv_insn_callee_abi
 
 #undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
 #define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \
