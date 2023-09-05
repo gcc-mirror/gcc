@@ -60,7 +60,7 @@
                           (match_operand:GPR 2 "register_operand" "r")
                           (match_operand:GPR 3 "register_operand" "1")))]
   "TARGET_ZICOND && rtx_equal_p (operands[1], operands[3])"
-  "czero.nez\t%0,%2,%1"
+  "czero.eqz\t%0,%2,%1"
 )
 
 ;; Combine creates this form in some cases (particularly the coremark
