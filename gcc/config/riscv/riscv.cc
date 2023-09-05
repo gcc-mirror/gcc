@@ -566,7 +566,7 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	}
     }
 
-  if (cost > 2 && TARGET_64BIT && TARGET_ZBB)
+  if (cost > 2 && TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB))
     {
       int leading_ones = clz_hwi (~value);
       int trailing_ones = ctz_hwi (~value);
