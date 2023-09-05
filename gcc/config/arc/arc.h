@@ -615,24 +615,52 @@ extern enum reg_class arc_regno_reg_class[];
 ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 #define SMALL_INT(X) ((unsigned) ((X) + 0x100) < 0x200)
-#define SMALL_INT_RANGE(X, OFFSET, SHIFT) \
-  ((unsigned) (((X) >> (SHIFT)) + 0x100) \
+#define SMALL_INT_RANGE(X, OFFSET, SHIFT)	\
+  ((unsigned) (((X) >> (SHIFT)) + 0x100)	\
    < 0x200 - ((unsigned) (OFFSET) >> (SHIFT)))
-#define SIGNED_INT12(X) ((unsigned) ((X) + 0x800) < 0x1000)
-#define SIGNED_INT16(X) ((unsigned) ((X) + 0x8000) < 0x10000)
-#define LARGE_INT(X) \
-(((X) < 0) \
- ? (X) >= (-(HOST_WIDE_INT) 0x7fffffff - 1) \
- : (unsigned HOST_WIDE_INT) (X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
-#define UNSIGNED_INT3(X) ((unsigned) (X) < 0x8)
-#define UNSIGNED_INT5(X) ((unsigned) (X) < 0x20)
-#define UNSIGNED_INT6(X) ((unsigned) (X) < 0x40)
-#define UNSIGNED_INT7(X) ((unsigned) (X) < 0x80)
-#define UNSIGNED_INT8(X) ((unsigned) (X) < 0x100)
-#define UNSIGNED_INT12(X) ((unsigned) (X) < 0x800)
-#define UNSIGNED_INT16(X) ((unsigned) (X) < 0x10000)
+#define LARGE_INT(X)				\
+  (((X) < 0)					\
+   ? (X) >= (-(HOST_WIDE_INT) 0x7fffffff - 1)				\
+   : (unsigned HOST_WIDE_INT) (X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
+
 #define IS_ONE(X) ((X) == 1)
 #define IS_ZERO(X) ((X) == 0)
+
+#define SIGNED(X,V)							\
+  ((unsigned long long) ((X) + (1ULL << (V - 1))) < (1ULL << V))
+#define UNSIGNED(X,V) ((unsigned long long) (X) < (1ULL << V))
+#define VERIFY_SHIFT(X,S) ((X & ((1 << S) - 1)) == 0)
+
+#define UNSIGNED_INT3(X) (UNSIGNED(X,3))
+#define UNSIGNED_INT5(X) (UNSIGNED(X,5))
+#define UNSIGNED_INT6(X) (UNSIGNED(X,6))
+#define UNSIGNED_INT7(X) (UNSIGNED(X,7))
+#define UNSIGNED_INT8(X) (UNSIGNED(X,8))
+#define UNSIGNED_INT9(X) (UNSIGNED(X,9))
+#define UNSIGNED_INT10(X) (UNSIGNED(X,10))
+#define UNSIGNED_INT12(X) (UNSIGNED(X,12))
+#define UNSIGNED_INT16(X) (UNSIGNED(X,16))
+
+#define SIGNED_INT3(X) (SIGNED(X,3))
+#define SIGNED_INT6(X) (SIGNED(X,6))
+#define SIGNED_INT7(X) (SIGNED(X,7))
+#define SIGNED_INT8(X) (SIGNED(X,8))
+#define SIGNED_INT9(X) (SIGNED(X,9))
+#define SIGNED_INT10(X) (SIGNED(X,10))
+#define SIGNED_INT11(X) (SIGNED(X,11))
+#define SIGNED_INT12(X) (SIGNED(X,12))
+#define SIGNED_INT13(X) (SIGNED(X,13))
+#define SIGNED_INT16(X) (SIGNED(X,16))
+#define SIGNED_INT21(X) (SIGNED(X,21))
+#define SIGNED_INT25(X) (SIGNED(X,25))
+
+#define UNSIGNED_INT7_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && UNSIGNED_INT6(X >> S))
+#define UNSIGNED_INT8_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && UNSIGNED_INT6(X >> S))
+#define UNSIGNED_INT9_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && UNSIGNED_INT6(X >> S))
+
+#define SIGNED_INT13_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && SIGNED_INT12(X >> S))
+#define SIGNED_INT14_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && SIGNED_INT12(X >> S))
+#define SIGNED_INT15_SHIFTED(X,S) (VERIFY_SHIFT(X,S) && SIGNED_INT12(X >> S))
 
 /* Stack layout and stack pointer usage.  */
 
