@@ -7726,6 +7726,54 @@ riscv_emit_attribute ()
            riscv_stack_boundary / 8);
 }
 
+/* Output .variant_cc for function symbol which follows vector calling
+   convention.  */
+
+static void
+riscv_asm_output_variant_cc (FILE *stream, const tree decl, const char *name)
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      riscv_cc cc = (riscv_cc) fndecl_abi (decl).id ();
+      if (cc == RISCV_CC_V)
+	{
+	  fprintf (stream, "\t.variant_cc\t");
+	  assemble_name (stream, name);
+	  fprintf (stream, "\n");
+	}
+    }
+}
+
+/* Implement ASM_DECLARE_FUNCTION_NAME.  */
+
+void
+riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
+{
+  riscv_asm_output_variant_cc (stream, fndecl, name);
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
+  ASM_OUTPUT_LABEL (stream, name);
+}
+
+/* Implement ASM_OUTPUT_DEF_FROM_DECLS.  */
+
+void
+riscv_asm_output_alias (FILE *stream, const tree decl, const tree target)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *value = IDENTIFIER_POINTER (target);
+  riscv_asm_output_variant_cc (stream, decl, name);
+  ASM_OUTPUT_DEF (stream, name, value);
+}
+
+/* Implement ASM_OUTPUT_EXTERNAL.  */
+
+void
+riscv_asm_output_external (FILE *stream, tree decl, const char *name)
+{
+  default_elf_asm_output_external (stream, decl, name);
+  riscv_asm_output_variant_cc (stream, decl, name);
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void

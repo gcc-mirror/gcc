@@ -1049,6 +1049,21 @@ while (0)
 
 #define ASM_COMMENT_START "#"
 
+/* Add output .variant_cc directive for specific function definition.  */
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
+  riscv_declare_function_name (STR, NAME, DECL)
+
+/* Add output .variant_cc directive for specific alias definition.  */
+#undef ASM_OUTPUT_DEF_FROM_DECLS
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
+  riscv_asm_output_alias (STR, DECL, TARGET)
+
+/* Add output .variant_cc directive for specific extern function.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME)                                   \
+  riscv_asm_output_external (STR, DECL, NAME)
+
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
 

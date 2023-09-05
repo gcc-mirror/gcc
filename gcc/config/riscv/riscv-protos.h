@@ -102,6 +102,9 @@ extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
+extern void riscv_declare_function_name (FILE *, const char *, tree);
+extern void riscv_asm_output_alias (FILE *, const tree, const tree);
+extern void riscv_asm_output_external (FILE *, const tree, const char *);
 extern bool
 riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT, int);
 
