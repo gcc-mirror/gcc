@@ -2546,7 +2546,7 @@ build_one_cst (tree type)
     {
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
-    case OFFSET_TYPE:
+    case OFFSET_TYPE: case BITINT_TYPE:
       return build_int_cst (type, 1);
 
     case REAL_TYPE:
@@ -2599,7 +2599,7 @@ build_minus_one_cst (tree type)
     {
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
-    case OFFSET_TYPE:
+    case OFFSET_TYPE: case BITINT_TYPE:
       return build_int_cst (type, -1);
 
     case REAL_TYPE:
