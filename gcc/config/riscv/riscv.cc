@@ -7648,6 +7648,11 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 static bool
 riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
+  /* We don't allow different REG_CLASS modes tieable since it
+     will cause ICE in register allocation (RA).
+     E.g. V2SI and DI are not tieable.  */
+  if (riscv_v_ext_mode_p (mode1) != riscv_v_ext_mode_p (mode2))
+    return false;
   return (mode1 == mode2
 	  || !(GET_MODE_CLASS (mode1) == MODE_FLOAT
 	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
