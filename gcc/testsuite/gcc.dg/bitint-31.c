@@ -255,7 +255,7 @@ main ()
   check_round (testfltu_192 (340282356779733661637539395458142568448uwb), __builtin_inff (), 0xffffffp+104f, __builtin_inff (), 0xffffffp+104f);
   check_round (testfltu_192 (6277101735386680763835789423207666416102355444464034512895uwb), __builtin_inff (), 0xffffffp+104f, __builtin_inff (), 0xffffffp+104f);
 #endif
-#if 0 && __BITINT_MAXWIDTH__ >= 575
+#if __BITINT_MAXWIDTH__ >= 575
   check_round (testflt_575 (10633823015541376812058405359715352575wb), 0xfffffep+99f, 0xfffffep+99f, 0xffffffp+99f, 0xfffffep+99f);
   check_round (testflt_575 (10633823015541376812058405359715352576wb), 0xfffffep+99f, 0xfffffep+99f, 0xffffffp+99f, 0xfffffep+99f);
   check_round (testflt_575 (10633823015541376812058405359715352577wb), 0xffffffp+99f, 0xfffffep+99f, 0xffffffp+99f, 0xfffffep+99f);

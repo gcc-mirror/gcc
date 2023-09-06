@@ -14,6 +14,10 @@ foo (void)
   _BitInt(5) unsigned d = (unsigned _BitInt(5)) 4;
   _BitInt(32) e = (_BitInt(32)) 5;
   _BitInt(32) unsigned f = (unsigned _BitInt(32)) 6;
+  constexpr int g = 43;
+  enum E { F = 44 };
+  _BitInt(g) h;
+  unsigned _BitInt(F) i;
   static_assert (expr_has_type (a, signed _BitInt(42)), "");
   static_assert (expr_has_type (a, _BitInt(42)), "");
   static_assert (!expr_has_type (a, unsigned _BitInt(42)), "");
@@ -66,6 +70,8 @@ foo (void)
   static_assert (expr_has_type (-1UWB, unsigned _BitInt(1)), "");
   static_assert (expr_has_type (1uWB, unsigned _BitInt(1)), "");
   static_assert (expr_has_type (2Uwb, unsigned _BitInt(2)), "");
+  static_assert (expr_has_type (h, signed _BitInt(43)), "");
+  static_assert (expr_has_type (i, unsigned _BitInt(44)), "");
   static_assert (0wb == 0, "");
   static_assert (-1wb == -1, "");
   static_assert (0xffffffffwb == 4294967295wb, "");
