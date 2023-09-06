@@ -4,12 +4,12 @@
 
 #include <stdint-gcc.h>
 
-int32_t foo1(int32_t rs1, int32_t rs2, int bs)
+uint32_t foo1(uint32_t rs1, uint32_t rs2, unsigned bs)
 {
     return __builtin_riscv_aes32esi(rs1, rs2, bs);
 }
 
-int32_t foo2(int32_t rs1, int32_t rs2, int bs)
+uint32_t foo2(uint32_t rs1, uint32_t rs2, unsigned bs)
 {
     return __builtin_riscv_aes32esmi(rs1, rs2, bs);
 }

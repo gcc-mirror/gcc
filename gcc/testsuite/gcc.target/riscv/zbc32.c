@@ -3,17 +3,17 @@
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 #include <stdint-gcc.h>
 
-int32_t foo1(int32_t rs1, int32_t rs2)
+uint32_t foo1(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_clmul(rs1, rs2);
 }
 
-int32_t foo2(int32_t rs1, int32_t rs2)
+uint32_t foo2(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_clmulh(rs1, rs2);
 }
 
-int32_t foo3(int32_t rs1, int32_t rs2)
+uint32_t foo3(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_clmulr(rs1, rs2);
 }

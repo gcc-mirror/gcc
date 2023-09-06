@@ -4,12 +4,12 @@
 
 #include <stdint-gcc.h>
 
-int64_t foo1(int64_t rs1, int64_t rs2, int bs)
+uint64_t foo1(uint64_t rs1, uint64_t rs2, unsigned bs)
 {
     return __builtin_riscv_sm4ks(rs1,rs2,bs);
 }
 
-int64_t foo2(int64_t rs1, int64_t rs2, int bs)
+uint64_t foo2(uint64_t rs1, uint64_t rs2, unsigned bs)
 {
     return __builtin_riscv_sm4ed(rs1,rs2,bs);
 }
