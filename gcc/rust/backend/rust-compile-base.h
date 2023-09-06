@@ -102,24 +102,23 @@ protected:
 
   static tree unit_expression (Context *ctx, location_t locus);
 
-  static void setup_fndecl (tree fndecl, bool is_main_entry_point,
-			    bool is_generic_fn, HIR::Visibility &visibility,
-			    const HIR::FunctionQualifiers &qualifiers,
-			    const AST::AttrVec &attrs);
+  void setup_fndecl (tree fndecl, bool is_main_entry_point, bool is_generic_fn,
+		     HIR::Visibility &visibility,
+		     const HIR::FunctionQualifiers &qualifiers,
+		     const AST::AttrVec &attrs);
 
   static void handle_inline_attribute_on_fndecl (tree fndecl,
 						 const AST::Attribute &attr);
 
-  static void
-  handle_proc_macro_attribute_on_fndecl (tree fndecl,
-					 const AST::Attribute &attr);
-
-  static void
-  handle_proc_macro_attribute_attribute_on_fndecl (tree fndecl,
+  void handle_bang_proc_macro_attribute_on_fndecl (tree fndecl,
 						   const AST::Attribute &attr);
 
-  static void
-  handle_proc_macro_derive_attribute_on_fndecl (tree fndecl,
+  void
+  handle_attribute_proc_macro_attribute_on_fndecl (tree fndecl,
+						   const AST::Attribute &attr);
+
+  void
+  handle_derive_proc_macro_attribute_on_fndecl (tree fndecl,
 						const AST::Attribute &attr);
 
   static void handle_cold_attribute_on_fndecl (tree fndecl,
