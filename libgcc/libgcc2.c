@@ -1640,6 +1640,8 @@ __mulbitint3 (UWtype *ret, SItype retprec,
 #endif
 
 #ifdef L_divmodbitint4
+/* D = -S.  */
+
 static void
 bitint_negate (UWtype *d, const UWtype *s, SItype n)
 {

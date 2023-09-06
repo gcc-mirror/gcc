@@ -218,6 +218,51 @@ These functions return the number of bits set in @var{a}.
 These functions return the @var{a} byteswapped.
 @end deftypefn
 
+@subsection Bit-precise integer arithmetic functions
+
+@code{_BitInt(@var{n})} library functions operate on arrays of limbs, where
+each limb has @code{__LIBGCC_BITINT_LIMB_WIDTH__} bits and the limbs are
+ordered according to @code{__LIBGCC_BITINT_ORDER__} ordering.  The most
+significant limb if @var{n} is not divisible by
+@code{__LIBGCC_BITINT_LIMB_WIDTH__} contains padding bits which should be
+ignored on read (sign or zero extended), but extended on write.  For the
+library functions, all bit-precise integers regardless of @var{n} are
+represented like that, even when the target ABI says that for some small
+@var{n} they should be represented differently in memory.  A pointer
+to the array of limbs argument is always accompanied with a bit size
+argument.  If that argument is positive, it is number of bits and the
+number is assumed to be zero-extended to infinite precision, if that
+argument is negative, it is negated number of bits above which all bits
+are assumed to be sign-extended to infinite precision.  These number of bits
+arguments don't need to match actual @var{n} for the operation used in the
+source, they could be lowered because of sign or zero extensions on the
+input or because value-range optimization figures value will need certain
+lower number of bits.  For big-endian ordering of limbs, when lowering
+the bit size argument the pointer argument needs to be adjusted as well.
+Negative bit size argument should be always smaller or equal to @code{-2},
+because @code{signed _BitInt(1)} is not valid.
+For output arguments, either the corresponding bit size argument should
+be always positive (for multiplication and division), or is negative when
+the output of conversion from floating-point value is signed and positive
+when unsigned.  The arrays of limbs output arguments point to should not
+overlap any inputs, while input arrays of limbs can overlap.
+@code{UBILtype} below stands for unsigned integer type with
+@code{__LIBGCC_BITINT_LIMB_WIDTH__} bit precision.
+
+@deftypefn {Runtime Function} void __mulbitint3 (@code{UBILtype} *@var{ret}, int32_t @var{retprec}, const @code{UBILtype} *u, int32_t @var{uprec}, const @code{UBILtype} *v, int32_t @var{vprec})
+This function multiplies bit-precise integer operands @var{u} and @var{v} and stores
+result into @var{retprec} precision bit-precise integer result @var{ret}.
+@end deftypefn
+
+@deftypefn {Runtime Function} void __divmodbitint4 (@code{UBILtype} *@var{q}, int32_t @var{qprec}, @code{UBILtype} *@var{r}, int32_t @var{rprec},  const @code{UBILtype} *u, int32_t @var{uprec}, const @code{UBILtype} *v, int32_t @var{vprec})
+This function divides bit-precise integer operands @var{u} and @var{v} and stores
+quotient into @var{qprec} precision bit-precise integer result @var{q}
+(unless @var{q} is @code{NULL} and @var{qprec} is 0, in that case quotient
+is not stored anywhere) and remainder into @var{rprec} precision bit-precise
+integer result @var{r} (similarly, unless @var{r} is @code{NULL} and @var{rprec}
+is 0).
+@end deftypefn
+
 @node Soft float library routines
 @section Routines for floating point emulation
 @cindex soft float library
@@ -382,6 +427,27 @@ These functions convert @var{i}, an unsigned long, to floating point.
 @deftypefnx {Runtime Function} {long double} __floatuntitf (unsigned long long @var{i})
 @deftypefnx {Runtime Function} {long double} __floatuntixf (unsigned long long @var{i})
 These functions convert @var{i}, an unsigned long long, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} void __fixsfbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, float @var{a})
+@deftypefnx {Runtime Function} void __fixdfbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, double @var{a})
+@deftypefnx {Runtime Function} void __fixxfbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, __float80 @var{a})
+@deftypefnx {Runtime Function} void __fixtfbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, _Float128 @var{a})
+These functions convert @var{a} to bit-precise integer @var{r}, rounding toward zero.
+If @var{rprec} is positive, it converts to unsigned bit-precise integer and
+negative values all become zero, if @var{rprec} is negative, it converts
+to signed bit-precise integer.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatbitintsf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} double __floatbitintdf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} __float80 __floatbitintxf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} _Float128 __floatbitinttf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} _Float16 __floatbitinthf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} __bf16 __floatbitintbf (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+These functions convert bit-precise integer @var{i} to floating point.  If
+@var{iprec} is positive, it is conversion from unsigned bit-precise integer,
+otherwise from signed bit-precise integer.
 @end deftypefn
 
 @subsection Comparison functions
@@ -705,6 +771,23 @@ These functions convert @var{i}, an unsigned integer, to decimal floating point.
 @deftypefnx {Runtime Function} _Decimal128 __dpd_floatunsditd (unsigned long @var{i})
 @deftypefnx {Runtime Function} _Decimal128 __bid_floatunsditd (unsigned long @var{i})
 These functions convert @var{i}, an unsigned long, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} void __bid_fixsdbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, _Decimal32 @var{a})
+@deftypefnx {Runtime Function} void __bid_fixddbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, _Decimal64 @var{a})
+@deftypefnx {Runtime Function} void __bid_fixtdbitint (@code{UBILtype} *@var{r}, int32_t @var{rprec}, _Decimal128 @var{a})
+These functions convert @var{a} to bit-precise integer @var{r}, rounding toward zero.
+If @var{rprec} is positive, it converts to unsigned bit-precise integer and
+negative values all become zero, if @var{rprec} is negative, it converts
+to signed bit-precise integer.  So far implemented for BID format only.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __bid_floatbitintsd (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatbitintdd (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatbitinttd (@code{UBILtype} *@var{i}, int32_t @var{iprec})
+These functions convert bit-precise integer @var{i} to decimal floating point.  If
+@var{iprec} is positive, it is conversion from unsigned bit-precise integer,
+otherwise from signed bit-precise integer.  So far implemented for BID format only.
 @end deftypefn
 
 @subsection Comparison functions

@@ -160,6 +160,9 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
 # define BITINT_END(be, le) (le)
 #endif
 
+/* Negate N limbs from S into D.  D and S should point to
+   the least significant limb.  */
+
 static inline __attribute__((__always_inline__)) void
 bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 {
@@ -174,6 +177,19 @@ bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
     }
   while (--n);
 }
+
+/* Common final part of __fix?fbitint conversion functions.
+   The A floating point value should have been converted using
+   soft-fp macros into RV, U##DI##type DI##_BITS precise normal
+   integral type and SHIFT, how many bits should that value be
+   shifted to the left.  R is pointer to limbs array passed to the
+   function, RN number of limbs in it, ARPREC absolute value of
+   RPREC argument passed to it, RSIZE number of significant bits in RV.
+   RSIGNED is non-zero if the result is signed bit-precise integer,
+   otherwise zero.  If OVF is true, instead of storing RV shifted left
+   by SHIFT bits and zero or sign extended store minimum or maximum
+   of the signed or unsigned bit-precise integer type or zero depending on if
+   RV contains the minimum or maximum signed or unsigned value or zero.  */
 
 #define FP_TO_BITINT(r, rn, arprec, shift, rv, rsize, rsigned, ovf, DI) \
   if (ovf)								\
@@ -231,6 +247,16 @@ bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 			  BITINT_END (idx + 1, rn - idx)		\
 			  * sizeof (UBILtype));				\
     }
+
+/* Common initial part of __floatbitint?f conversion functions.
+   I and IPREC are arguments passed to those functions, convert that
+   into a pair of DI##type IV integer and SHIFT, such that converting
+   IV to floating point and multiplicating that by pow (2, SHIFT)
+   gives the expected result.  IV size needs to be chosen such that
+   it is larger than number of bits in floating-point mantissa and
+   contains there even at least a two bits below the mantissa for
+   rounding purposes.  If any of the SHIFT bits shifted out is non-zero,
+   the least significant bit should be non-zero.  */
 
 #define FP_FROM_BITINT(i, iprec, iv, shift, DI)				\
   do									\
