@@ -2121,7 +2121,8 @@ classify_argument (machine_mode mode, const_tree type,
 	return 0;
     }
 
-  if (type && AGGREGATE_TYPE_P (type))
+  if (type && (AGGREGATE_TYPE_P (type)
+	       || (TREE_CODE (type) == BITINT_TYPE && words > 1)))
     {
       int i;
       tree field;
@@ -2269,6 +2270,14 @@ classify_argument (machine_mode mode, const_tree type,
 		}
 	    }
 	  break;
+
+	case BITINT_TYPE:
+	  /* _BitInt(N) for N > 64 is passed as structure containing
+	     (N + 63) / 64 64-bit elements.  */
+	  if (words > 2)
+	    return 0;
+	  classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+	  return 2;
 
 	default:
 	  gcc_unreachable ();
@@ -24843,6 +24852,25 @@ ix86_get_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+bool
+ix86_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (!TARGET_64BIT)
+    return false;
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else
+    info->limb_mode = DImode;
+  info->big_endian = false;
+  info->extended = false;
+  return true;
+}
+
 /* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
    decrements by exactly 2 no matter what the position was, there is no pushb.
 
@@ -25447,6 +25475,8 @@ ix86_run_selftests (void)
 
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_PUSH_ARGUMENT
