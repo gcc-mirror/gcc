@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options " -Os -march=rv32e_zca_zcmp -mabi=ilp32e -mcmodel=medlow -fno-shrink-wrap-separate" } */
+/* { dg-options " -Os -march=rv32e_zca_zcmp -mabi=ilp32e -mcmodel=medlow" } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-O1" "-O2" "-Og" "-O3" "-Oz" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

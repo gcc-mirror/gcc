@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
+#include "shrink-wrap.h"
 #include "sel-sched.h"
 #include "sched-int.h"
 #include "fold-const.h"
@@ -395,6 +396,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* use_divmod_expansion */
 };
 
+static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
@@ -5842,7 +5844,9 @@ riscv_avoid_multi_push (const struct riscv_frame_info *frame)
 {
   if (!TARGET_ZCMP || crtl->calls_eh_return || frame_pointer_needed
       || cfun->machine->interrupt_handler_p || cfun->machine->varargs_size != 0
-      || crtl->args.pretend_args_size != 0 || flag_shrink_wrap_separate
+      || crtl->args.pretend_args_size != 0
+      || (use_shrink_wrapping_separate ()
+	  && !riscv_avoid_shrink_wrapping_separate ())
       || (frame->mask & ~MULTI_PUSH_GPR_MASK))
     return true;
 
@@ -7230,6 +7234,17 @@ riscv_epilogue_uses (unsigned int regno)
   return false;
 }
 
+static bool
+riscv_avoid_shrink_wrapping_separate ()
+{
+  if (riscv_use_save_libcall (&cfun->machine->frame)
+      || cfun->machine->interrupt_handler_p
+      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+    return true;
+
+  return false;
+}
+
 /* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
 
 static sbitmap
@@ -7239,9 +7254,7 @@ riscv_get_separate_components (void)
   sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
   bitmap_clear (components);
 
-  if (riscv_use_save_libcall (&cfun->machine->frame)
-      || cfun->machine->interrupt_handler_p
-      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+  if (riscv_avoid_shrink_wrapping_separate ())
     return components;
 
   offset = cfun->machine->frame.gp_sp_offset.to_constant ();
