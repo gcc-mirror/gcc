@@ -1020,6 +1020,21 @@ Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.
 
+@deftypefn {Target Hook} bool TARGET_C_BITINT_TYPE_INFO (int @var{n}, struct bitint_info *@var{info})
+This target hook returns true if @code{_BitInt(@var{N})} is supported and
+provides details on it.  @code{_BitInt(@var{N})} is to be represented as
+series of @code{info->limb_mode}
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,
+ordered from least significant to most significant if
+@code{!info->big_endian}, otherwise from most significant to least
+significant.  If @code{info->extended} is false, the bits above or equal to
+@var{N} are undefined when stored in a register or memory, otherwise they
+are zero or sign extended depending on if it is
+@code{unsigned _BitInt(@var{N})} or one of @code{_BitInt(@var{N})} or
+@code{signed _BitInt(@var{N})}.  Alignment of the type is
+@code{GET_MODE_ALIGNMENT (info->limb_mode)}.
+@end deftypefn
+
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
 function return values.  The target hook should return the new mode

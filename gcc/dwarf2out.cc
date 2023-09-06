@@ -13298,6 +13298,14 @@ base_type_die (tree type, bool reverse)
       encoding = DW_ATE_boolean;
       break;
 
+    case BITINT_TYPE:
+      /* C23 _BitInt(N).  */
+      if (TYPE_UNSIGNED (type))
+	encoding = DW_ATE_unsigned;
+      else
+	encoding = DW_ATE_signed;
+      break;
+
     default:
       /* No other TREE_CODEs are Dwarf fundamental types.  */
       gcc_unreachable ();
@@ -13308,6 +13316,8 @@ base_type_die (tree type, bool reverse)
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
+  if (TREE_CODE (type) == BITINT_TYPE)
+    add_AT_unsigned (base_type_result, DW_AT_bit_size, TYPE_PRECISION (type));
 
   if (need_endianity_attribute_p (reverse))
     add_AT_unsigned (base_type_result, DW_AT_endianity,
@@ -13392,6 +13402,7 @@ is_base_type (tree type)
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
+    case BITINT_TYPE:
       return true;
 
     case VOID_TYPE:
@@ -13990,12 +14001,24 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	name = DECL_NAME (name);
       add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
     }
-  /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
     {
-      name = TYPE_IDENTIFIER (type);
-      add_name_attribute (mod_type_die,
-			  name ? IDENTIFIER_POINTER (name) : "__unknown__");
+      if (TREE_CODE (type) == BITINT_TYPE)
+	{
+	  char name_buf[sizeof ("unsigned _BitInt(2147483647)")];
+	  snprintf (name_buf, sizeof (name_buf),
+		    "%s_BitInt(%d)", TYPE_UNSIGNED (type) ? "unsigned " : "",
+		    TYPE_PRECISION (type));
+	  add_name_attribute (mod_type_die, name_buf);
+	}
+      else
+	{
+	  /* This probably indicates a bug.  */
+	  name = TYPE_IDENTIFIER (type);
+	  add_name_attribute (mod_type_die,
+			      name
+			      ? IDENTIFIER_POINTER (name) : "__unknown__");
+	}
     }
 
   if (qualified_type && !reverse_base_type)
@@ -20523,6 +20546,17 @@ rtl_for_decl_init (tree init, tree type)
 	    return NULL;
 	  }
 
+      /* Large _BitInt BLKmode INTEGER_CSTs would yield a MEM.  */
+      if (TREE_CODE (init) == INTEGER_CST
+	  && TREE_CODE (TREE_TYPE (init)) == BITINT_TYPE
+	  && TYPE_MODE (TREE_TYPE (init)) == BLKmode)
+	{
+	  if (tree_fits_shwi_p (init))
+	    return GEN_INT (tree_to_shwi (init));
+	  else
+	    return NULL;
+	}
+
       rtl = expand_expr (init, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
 
       /* If expand_expr returns a MEM, it wasn't immediate.  */
@@ -26361,6 +26395,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
+    case BITINT_TYPE:
       /* No DIEs needed for fundamental types.  */
       break;
 

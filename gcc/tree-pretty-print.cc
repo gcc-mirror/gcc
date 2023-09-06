@@ -1929,6 +1929,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VECTOR_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
+    case BITINT_TYPE:
     case OPAQUE_TYPE:
       {
 	unsigned int quals = TYPE_QUALS (node);
@@ -2042,6 +2043,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 				: "<signed-boolean:"));
 		pp_decimal_int (pp, TYPE_PRECISION (node));
 		pp_greater (pp);
+	      }
+	    else if (TREE_CODE (node) == BITINT_TYPE)
+	      {
+		if (TYPE_UNSIGNED (node))
+		  pp_string (pp, "unsigned ");
+		pp_string (pp, "_BitInt(");
+		pp_decimal_int (pp, TYPE_PRECISION (node));
+		pp_right_paren (pp);
 	      }
 	    else if (TREE_CODE (node) == VOID_TYPE)
 	      pp_string (pp, "void");
@@ -2239,8 +2248,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	      pp_minus (pp);
 	      val = -val;
 	    }
-	  print_hex (val, pp_buffer (pp)->digit_buffer);
-	  pp_string (pp, pp_buffer (pp)->digit_buffer);
+	  unsigned int prec = val.get_precision ();
+	  if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3)
+	    {
+	      char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
+	      print_hex (val, buf);
+	      pp_string (pp, buf);
+	    }
+	  else
+	    {
+	      print_hex (val, pp_buffer (pp)->digit_buffer);
+	      pp_string (pp, pp_buffer (pp)->digit_buffer);
+	    }
 	}
       if ((flags & TDF_GIMPLE)
 	  && ! (POINTER_TYPE_P (TREE_TYPE (node))

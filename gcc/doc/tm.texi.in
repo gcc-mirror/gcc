@@ -936,6 +936,8 @@ Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.
 
+@hook TARGET_C_BITINT_TYPE_INFO
+
 @hook TARGET_PROMOTE_FUNCTION_MODE
 
 @defmac PARM_BOUNDARY

@@ -6772,6 +6772,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						      - 1)); }))))
      (if (wi::to_wide (cst) == signed_max
 	  && TYPE_UNSIGNED (arg1_type)
+	  && TYPE_MODE (arg1_type) != BLKmode
 	  /* We will flip the signedness of the comparison operator
 	     associated with the mode of @1, so the sign bit is
 	     specified by this mode.  Check that @1 is the signed

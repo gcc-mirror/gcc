@@ -290,6 +290,7 @@ The elements are indexed from zero.
 @tindex INTEGER_TYPE
 @tindex TYPE_MIN_VALUE
 @tindex TYPE_MAX_VALUE
+@tindex BITINT_TYPE
 @tindex REAL_TYPE
 @tindex FIXED_POINT_TYPE
 @tindex COMPLEX_TYPE
@@ -448,6 +449,14 @@ The @code{TYPE_MIN_VALUE} is an @code{INTEGER_CST} for the smallest
 integer that may be represented by this type.  Similarly, the
 @code{TYPE_MAX_VALUE} is an @code{INTEGER_CST} for the largest integer
 that may be represented by this type.
+
+@item BITINT_TYPE
+Used to represent the bit-precise integer types, @code{_BitInt(@var{N})}.
+These types are similar to @code{INTEGER_TYPE}, but can have arbitrary
+user selected precisions and do or can have different alignment, function
+argument and return value passing conventions.
+Larger BITINT_TYPEs can have @code{BLKmode} @code{TYPE_MODE} and need to
+be lowered by a special BITINT_TYPE lowering pass.
 
 @item REAL_TYPE
 Used to represent the @code{float}, @code{double}, and @code{long
