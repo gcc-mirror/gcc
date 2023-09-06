@@ -4251,9 +4251,11 @@ package body Exp_Aggr is
          --  excluding container aggregates as these are transformed into
          --  subprogram calls later.
 
-         (Parent_Kind in
-            N_Component_Association | N_Aggregate | N_Extension_Aggregate
-            and then not Is_Container_Aggregate (Parent_Node))
+         (Parent_Kind = N_Component_Association
+           and then not Is_Container_Aggregate (Parent (Parent_Node)))
+
+         or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
+                   and then not Is_Container_Aggregate (Parent_Node))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
@@ -6122,10 +6124,10 @@ package body Exp_Aggr is
          Parent_Kind := Nkind (Parent_Node);
       end if;
 
-      if ((Parent_Kind = N_Component_Association
-            or else Parent_Kind = N_Aggregate
-            or else Parent_Kind = N_Extension_Aggregate)
-           and then not Is_Container_Aggregate (Parent_Node))
+      if (Parent_Kind = N_Component_Association
+           and then not Is_Container_Aggregate (Parent (Parent_Node)))
+        or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
+                  and then not Is_Container_Aggregate (Parent_Node))
         or else (Parent_Kind = N_Object_Declaration
                   and then (Needs_Finalization (Typ)
                              or else Is_Special_Return_Object
