@@ -901,6 +901,11 @@ public:
     return token_trees;
   }
 
+  const std::vector<std::unique_ptr<TokenTree>> &get_token_trees () const
+  {
+    return token_trees;
+  }
+
   DelimType get_delim_type () const { return delim_type; }
 };
 
