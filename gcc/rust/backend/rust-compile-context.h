@@ -38,6 +38,13 @@ struct fncontext
   TyTy::BaseType *retty;
 };
 
+struct CustomDeriveInfo
+{
+  tree fndecl;
+  std::string trait_name;
+  std::vector<std::string> attributes;
+};
+
 class Context
 {
 public:
@@ -357,6 +364,18 @@ public:
 
   static hashval_t type_hasher (tree type);
 
+  void collect_attribute_proc_macro (tree fndecl)
+  {
+    attribute_macros.push_back (fndecl);
+  }
+
+  void collect_bang_proc_macro (tree fndecl) { bang_macros.push_back (fndecl); }
+
+  void collect_derive_proc_macro (CustomDeriveInfo macro)
+  {
+    custom_derive_macros.push_back (macro);
+  }
+
 private:
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
@@ -380,6 +399,10 @@ private:
     mono_closure_fns;
   std::map<HirId, tree> implicit_pattern_bindings;
   std::map<hashval_t, tree> main_variants;
+
+  std::vector<CustomDeriveInfo> custom_derive_macros;
+  std::vector<tree> attribute_macros;
+  std::vector<tree> bang_macros;
 
   // closure bindings
   std::vector<HirId> closure_scope_bindings;
