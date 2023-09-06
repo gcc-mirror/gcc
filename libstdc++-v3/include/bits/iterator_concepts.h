@@ -97,7 +97,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace ranges
   {
-    namespace __cust_imove
+    /// @cond undocumented
+    namespace __imove
     {
       void iter_move();
 
@@ -106,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = (std::__detail::__class_or_enum<remove_reference_t<_Tp>>)
 	  && requires(_Tp&& __t) { iter_move(static_cast<_Tp&&>(__t)); };
 
-      struct _IMove
+      struct _IterMove
       {
       private:
 	template<typename _Tp>
@@ -153,19 +154,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return *__e;
 	  }
       };
-    } // namespace __cust_imove
+    } // namespace __imove
+    /// @endcond
 
-    inline namespace __cust
-    {
-      inline constexpr __cust_imove::_IMove iter_move{};
-    } // inline namespace __cust
+    inline namespace _Cpo {
+      inline constexpr __imove::_IterMove iter_move{};
+    }
   } // namespace ranges
 
   template<__detail::__dereferenceable _Tp>
-    requires __detail::
-      __can_reference<ranges::__cust_imove::_IMove::__type<_Tp&>>
-    using iter_rvalue_reference_t
-      = ranges::__cust_imove::_IMove::__type<_Tp&>;
+    requires __detail::__can_reference<ranges::__imove::_IterMove::__type<_Tp&>>
+    using iter_rvalue_reference_t = ranges::__imove::_IterMove::__type<_Tp&>;
 
   template<typename> struct incrementable_traits { };
 
@@ -832,7 +831,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace ranges
 {
-  namespace __cust_iswap
+  /// @cond undocumented
+  namespace __iswap
   {
     template<typename _It1, typename _It2>
       void iter_swap(_It1, _It2) = delete;
@@ -873,8 +873,8 @@ namespace ranges
 					 *std::declval<_Up>()));
 	  else
 	    return noexcept(*std::declval<_Tp>()
-		= __iter_exchange_move(std::declval<_Up>(),
-				       std::declval<_Tp>()));
+		= __iswap::__iter_exchange_move(std::declval<_Up>(),
+						    std::declval<_Tp>()));
 	}
 
     public:
@@ -896,15 +896,15 @@ namespace ranges
 	      && swappable_with<iter_reference_t<_Tp>, iter_reference_t<_Up>>)
 	    ranges::swap(*__e1, *__e2);
 	  else
-	    *__e1 = __iter_exchange_move(__e2, __e1);
+	    *__e1 = __iswap::__iter_exchange_move(__e2, __e1);
 	}
     };
-  } // namespace __cust_iswap
+  } // namespace __iswap
+  /// @endcond
 
-  inline namespace __cust
-  {
-    inline constexpr __cust_iswap::_IterSwap iter_swap{};
-  } // inline namespace __cust
+  inline namespace _Cpo {
+    inline constexpr __iswap::_IterSwap iter_swap{};
+  }
 
 } // namespace ranges
 
@@ -960,7 +960,7 @@ namespace ranges
   inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
   // This is the namespace for [range.access] CPOs.
-  namespace ranges::__cust_access
+  namespace ranges::__access
   {
     using std::__detail::__class_or_enum;
 
@@ -1004,14 +1004,14 @@ namespace ranges
 	else
 	  return begin(__t);
       }
-  } // namespace ranges::__cust_access
+  } // namespace ranges::__access
 
   namespace __detail
   {
     // Implementation of std::ranges::iterator_t, without using ranges::begin.
     template<typename _Tp>
       using __range_iter_t
-	= decltype(ranges::__cust_access::__begin(std::declval<_Tp&>()));
+	= decltype(ranges::__access::__begin(std::declval<_Tp&>()));
 
   } // namespace __detail
 
