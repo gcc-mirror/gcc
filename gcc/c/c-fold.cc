@@ -379,7 +379,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret, expr);
       if (code == LSHIFT_EXPR
 	  && TREE_CODE (orig_op0) != INTEGER_CST
-	  && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_op0)) == BITINT_TYPE)
 	  && TREE_CODE (op0) == INTEGER_CST
 	  && c_inhibit_evaluation_warnings == 0
 	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (orig_op0))
@@ -398,6 +399,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 			 ? G_("left shift count is negative")
 			 : G_("right shift count is negative")));
 	  else if ((TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+		    || TREE_CODE (TREE_TYPE (orig_op0)) == BITINT_TYPE
 		    || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
 		   && compare_tree_int (op1,
 					TYPE_PRECISION (TREE_TYPE (orig_op0)))
@@ -418,11 +420,13 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (code == LSHIFT_EXPR
 	  /* If either OP0 has been folded to INTEGER_CST...  */
 	  && ((TREE_CODE (orig_op0) != INTEGER_CST
-	       && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	       && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+		   || TREE_CODE (TREE_TYPE (orig_op0)) == BITINT_TYPE)
 	       && TREE_CODE (op0) == INTEGER_CST)
 	      /* ...or if OP1 has been folded to INTEGER_CST...  */
 	      || (TREE_CODE (orig_op1) != INTEGER_CST
-		  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
+		  && (TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
+		      || TREE_CODE (TREE_TYPE (orig_op1)) == BITINT_TYPE)
 		  && TREE_CODE (op1) == INTEGER_CST))
 	  && c_inhibit_evaluation_warnings == 0)
 	/* ...then maybe we can detect an overflow.  */
@@ -435,8 +439,10 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && TREE_CODE (orig_op1) != INTEGER_CST
 	  && TREE_CODE (op1) == INTEGER_CST
 	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_op0)) == BITINT_TYPE
 	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
-	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE)
+	  && (TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_op1)) == BITINT_TYPE))
 	warn_for_div_by_zero (loc, op1);
       if (code == MEM_REF
 	  && ret != expr

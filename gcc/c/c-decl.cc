@@ -6390,7 +6390,8 @@ check_bitfield_type_and_width (location_t loc, tree *type, tree *width,
   /* Detect invalid bit-field type.  */
   if (TREE_CODE (*type) != INTEGER_TYPE
       && TREE_CODE (*type) != BOOLEAN_TYPE
-      && TREE_CODE (*type) != ENUMERAL_TYPE)
+      && TREE_CODE (*type) != ENUMERAL_TYPE
+      && TREE_CODE (*type) != BITINT_TYPE)
     {
       error_at (loc, "bit-field %qs has invalid type", name);
       *type = unsigned_type_node;
@@ -9330,8 +9331,14 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  tree type = TREE_TYPE (field);
 	  if (width != TYPE_PRECISION (type))
 	    {
-	      TREE_TYPE (field)
-		= c_build_bitfield_integer_type (width, TYPE_UNSIGNED (type));
+	      if (TREE_CODE (type) == BITINT_TYPE
+		  && (width > 1 || TYPE_UNSIGNED (type)))
+		TREE_TYPE (field)
+		  = build_bitint_type (width, TYPE_UNSIGNED (type));
+	      else
+		TREE_TYPE (field)
+		  = c_build_bitfield_integer_type (width,
+						   TYPE_UNSIGNED (type));
 	      SET_DECL_MODE (field, TYPE_MODE (TREE_TYPE (field)));
 	    }
 	  DECL_INITIAL (field) = NULL_TREE;
@@ -11546,13 +11553,17 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<long%> and %<void%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_int_n)
-		  error_at (loc,
-			    ("both %<long%> and %<__int%d%> in "
-			     "declaration specifiers"),
-			    int_n_data[specs->int_n_idx].bitsize);
+		error_at (loc,
+			  ("both %<long%> and %<__int%d%> in "
+			   "declaration specifiers"),
+			  int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<long%> and %<_Bool%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_bitint)
+		error_at (loc,
+			  ("both %<long%> and %<_BitInt%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
@@ -11566,8 +11577,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
@@ -11606,10 +11617,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<__int%d%> in "
 			   "declaration specifiers"),
-			  int_n_data[specs->int_n_idx].bitsize);
+			  int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<short%> and %<_Bool%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_bitint)
+		error_at (loc,
+			  ("both %<short%> and %<_BitInt%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
@@ -11627,8 +11642,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
@@ -11679,8 +11694,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<signed%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
@@ -11731,8 +11746,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
@@ -11769,6 +11784,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<complex%> and %<_Bool%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_bitint)
+		error_at (loc,
+			  ("both %<complex%> and %<_BitInt%> in "
 			   "declaration specifiers"));
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
@@ -11809,7 +11828,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  error_at (loc,
 			    ("both %<_Sat%> and %<__int%d%> in "
 			     "declaration specifiers"),
-			    int_n_data[specs->int_n_idx].bitsize);
+			    int_n_data[specs->u.int_n_idx].bitsize);
 	        }
 	      else if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
@@ -11822,6 +11841,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Bool%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_bitint)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_BitInt%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_char)
 		error_at (loc,
@@ -11843,8 +11866,8 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
@@ -11882,7 +11905,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	{
 	  /* "void", "_Bool", "char", "int", "float", "double",
 	     "_FloatN", "_FloatNx", "_Decimal32", "__intN",
-	     "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
+	     "_Decimal64", "_Decimal128", "_Fract", "_Accum", "_BitInt(N)" or
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
@@ -11927,7 +11950,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_INT_N_1:
 	    case RID_INT_N_2:
 	    case RID_INT_N_3:
-	      specs->int_n_idx = i - RID_INT_N_0;
+	      specs->u.int_n_idx = i - RID_INT_N_0;
 	      if (!in_system_header_at (input_location)
 		  /* If the INT_N type ends in "__", and so is of the format
 		     "__intN__", don't pedwarn.  */
@@ -11935,29 +11958,29 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			       + (IDENTIFIER_LENGTH (type) - 2), "__", 2) != 0))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C does not support %<__int%d%> types",
-			 int_n_data[specs->int_n_idx].bitsize);
+			 int_n_data[specs->u.int_n_idx].bitsize);
 
 	      if (specs->long_p)
 		error_at (loc,
 			  ("both %<__int%d%> and %<long%> in "
 			   "declaration specifiers"),
-			  int_n_data[specs->int_n_idx].bitsize);
+			  int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->saturating_p)
 		error_at (loc,
 			  ("both %<_Sat%> and %<__int%d%> in "
 			   "declaration specifiers"),
-			  int_n_data[specs->int_n_idx].bitsize);
+			  int_n_data[specs->u.int_n_idx].bitsize);
 	      else if (specs->short_p)
 		error_at (loc,
 			  ("both %<__int%d%> and %<short%> in "
 			   "declaration specifiers"),
-			  int_n_data[specs->int_n_idx].bitsize);
-	      else if (! int_n_enabled_p[specs->int_n_idx])
+			  int_n_data[specs->u.int_n_idx].bitsize);
+	      else if (! int_n_enabled_p[specs->u.int_n_idx])
 		{
 		  specs->typespec_word = cts_int_n;
 		  error_at (loc,
 			    "%<__int%d%> is not supported on this target",
-			    int_n_data[specs->int_n_idx].bitsize);
+			    int_n_data[specs->u.int_n_idx].bitsize);
 		}
 	      else
 		{
@@ -12115,13 +12138,13 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		}
 	      return specs;
 	    CASE_RID_FLOATN_NX:
-	      specs->floatn_nx_idx = i - RID_FLOATN_NX_FIRST;
+	      specs->u.floatn_nx_idx = i - RID_FLOATN_NX_FIRST;
 	      if (!in_system_header_at (input_location))
 		pedwarn_c11 (loc, OPT_Wpedantic,
 			     "ISO C does not support the %<_Float%d%s%> type"
 			     " before C2X",
-			     floatn_nx_types[specs->floatn_nx_idx].n,
-			     (floatn_nx_types[specs->floatn_nx_idx].extended
+			     floatn_nx_types[specs->u.floatn_nx_idx].n,
+			     (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			      ? "x"
 			      : ""));
 
@@ -12129,49 +12152,49 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->short_p)
 		error_at (loc,
 			  ("both %<short%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->signed_p)
 		error_at (loc,
 			  ("both %<signed%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->unsigned_p)
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
 	      else if (specs->saturating_p)
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Float%d%s%> in "
 			   "declaration specifiers"),
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			  floatn_nx_types[specs->u.floatn_nx_idx].n,
+			  (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			   ? "x"
 			   : ""));
-	      else if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+	      else if (FLOATN_NX_TYPE_NODE (specs->u.floatn_nx_idx) == NULL_TREE)
 		{
 		  specs->typespec_word = cts_floatn_nx;
 		  error_at (loc,
 			    "%<_Float%d%s%> is not supported on this target",
-			    floatn_nx_types[specs->floatn_nx_idx].n,
-			    (floatn_nx_types[specs->floatn_nx_idx].extended
+			    floatn_nx_types[specs->u.floatn_nx_idx].n,
+			    (floatn_nx_types[specs->u.floatn_nx_idx].extended
 			     ? "x"
 			     : ""));
 		}
@@ -12267,6 +12290,63 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  "fixed-point types not supported for this target");
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C does not support fixed-point types");
+	      return specs;
+	    case RID_BITINT:
+	      if (specs->long_p)
+		error_at (loc,
+			  ("both %<long%> and %<_BitInt%> in "
+			   "declaration specifiers"));
+	      else if (specs->short_p)
+		error_at (loc,
+			  ("both %<short%> and %<_BitInt%> in "
+			   "declaration specifiers"));
+	      else if (specs->complex_p)
+		error_at (loc,
+			  ("both %<complex%> and %<_BitInt%> in "
+			   "declaration specifiers"));
+	      else if (specs->saturating_p)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_BitInt%> in "
+			   "declaration specifiers"));
+	      else
+		{
+		  specs->typespec_word = cts_bitint;
+		  specs->locations[cdw_typespec] = loc;
+		  specs->u.bitint_prec = -1;
+		  if (error_operand_p (spec.expr))
+		    return specs;
+		  if (TREE_CODE (spec.expr) != INTEGER_CST
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (spec.expr)))
+		    {
+		      error_at (loc, "%<_BitInt%> argument is not an integer "
+				     "constant expression");
+		      return specs;
+		    }
+		  if (tree_int_cst_sgn (spec.expr) <= 0)
+		    {
+		      error_at (loc, "%<_BitInt%> argument %qE is not a "
+				     "positive integer constant expression",
+				spec.expr);
+		      return specs;
+		    }
+		  if (wi::to_widest (spec.expr) > WIDE_INT_MAX_PRECISION - 1)
+		    {
+		      error_at (loc, "%<_BitInt%> argument %qE is larger than "
+				     "%<BITINT_MAXWIDTH%> %qd",
+				spec.expr, (int) WIDE_INT_MAX_PRECISION - 1);
+		      return specs;
+		    }
+		  specs->u.bitint_prec = tree_to_uhwi (spec.expr);
+		  struct bitint_info info;
+		  if (!targetm.c.bitint_type_info (specs->u.bitint_prec,
+						   &info))
+		    {
+		      sorry_at (loc, "%<_BitInt(%d)%> is not supported on "
+				     "this target", specs->u.bitint_prec);
+		      specs->u.bitint_prec = -1;
+		      return specs;
+		    }
+		}
 	      return specs;
 	    default:
 	      /* ObjC reserved word "id", handled below.  */
@@ -12669,12 +12749,12 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_int_n:
       gcc_assert (!specs->long_p && !specs->short_p && !specs->long_long_p);
       gcc_assert (!(specs->signed_p && specs->unsigned_p));
-      if (! int_n_enabled_p[specs->int_n_idx])
+      if (! int_n_enabled_p[specs->u.int_n_idx])
 	specs->type = integer_type_node;
       else
 	specs->type = (specs->unsigned_p
-		       ? int_n_trees[specs->int_n_idx].unsigned_type
-		       : int_n_trees[specs->int_n_idx].signed_type);
+		       ? int_n_trees[specs->u.int_n_idx].unsigned_type
+		       : int_n_trees[specs->u.int_n_idx].signed_type);
       if (specs->complex_p)
 	{
 	  pedwarn (specs->locations[cdw_complex], OPT_Wpedantic,
@@ -12734,12 +12814,12 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_floatn_nx:
       gcc_assert (!specs->long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p);
-      if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+      if (FLOATN_NX_TYPE_NODE (specs->u.floatn_nx_idx) == NULL_TREE)
 	specs->type = integer_type_node;
       else if (specs->complex_p)
-	specs->type = COMPLEX_FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
+	specs->type = COMPLEX_FLOATN_NX_TYPE_NODE (specs->u.floatn_nx_idx);
       else
-	specs->type = FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
+	specs->type = FLOATN_NX_TYPE_NODE (specs->u.floatn_nx_idx);
       break;
     case cts_dfloat32:
     case cts_dfloat64:
@@ -12840,6 +12920,22 @@ finish_declspecs (struct c_declspecs *specs)
 			  ? unsigned_accum_type_node
 			  : accum_type_node;
 	}
+      break;
+    case cts_bitint:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->complex_p);
+      if (!specs->unsigned_p && specs->u.bitint_prec == 1)
+	{
+	  error_at (specs->locations[cdw_typespec],
+		    "%<signed _BitInt%> argument must be at least 2");
+	  specs->type = integer_type_node;
+	  break;
+	}
+      if (specs->u.bitint_prec == -1)
+	specs->type = integer_type_node;
+      else
+	specs->type = build_bitint_type (specs->u.bitint_prec,
+					 specs->unsigned_p);
       break;
     default:
       gcc_unreachable ();

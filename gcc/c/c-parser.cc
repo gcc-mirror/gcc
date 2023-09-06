@@ -584,6 +584,7 @@ c_keyword_starts_typename (enum rid keyword)
     case RID_DFLOAT128:
     CASE_RID_FLOATN_NX:
     case RID_BOOL:
+    case RID_BITINT:
     case RID_ENUM:
     case RID_STRUCT:
     case RID_UNION:
@@ -787,6 +788,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_DFLOAT128:
 	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
+	case RID_BITINT:
 	case RID_ENUM:
 	case RID_STRUCT:
 	case RID_UNION:
@@ -3118,6 +3120,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
      _Bool
      _Complex
      [_Imaginary removed in C99 TC2]
+     _BitInt ( constant-expression )
      struct-or-union-specifier
      enum-specifier
      typedef-name
@@ -3125,6 +3128,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 
    (_Bool and _Complex are new in C99.)
    (atomic-type-specifier is new in C11.)
+   (_BitInt is new in C2X.)
 
    C90 6.5.3, C99 6.7.3, C11 6.7.3:
 
@@ -3400,6 +3404,30 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  seen_type = true;
 	  t = c_parser_typeof_specifier (parser);
 	  declspecs_add_type (loc, specs, t);
+	  break;
+	case RID_BITINT:
+	  if (!typespec_ok)
+	    goto out;
+	  else
+	    {
+	      attrs_ok = true;
+	      seen_type = true;
+	      t.kind = ctsk_resword;
+	      t.spec = c_parser_peek_token (parser)->value;
+	      t.expr = error_mark_node;
+	      t.expr_const_operands = true;
+	      t.has_enum_type_specifier = false;
+	      c_parser_consume_token (parser);
+	      matching_parens parens;
+	      if (parens.require_open (parser))
+		{
+		  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+		  t.expr = convert_lvalue_to_rvalue (loc, expr, true,
+						     true).value;
+		  parens.skip_until_found_close (parser);
+		}
+	      declspecs_add_type (loc, specs, t);
+	    }
 	  break;
 	case RID_ATOMIC:
 	  /* C parser handling of Objective-C constructs needs
@@ -5049,6 +5077,7 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
 	case RID_DFLOAT128:
 	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
+	case RID_BITINT:
 	case RID_FRACT:
 	case RID_ACCUM:
 	case RID_SAT:
@@ -16308,7 +16337,8 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
 	error_at (here,
 		  "schedule %<auto%> does not take "
 		  "a %<chunk_size%> parameter");
-      else if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE)
+      else if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	       || TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE)
 	{
 	  /* Attempt to statically determine when the number isn't
 	     positive.  */

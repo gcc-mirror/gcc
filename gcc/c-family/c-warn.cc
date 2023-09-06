@@ -1306,8 +1306,10 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       }
 
     case BIT_AND_EXPR:
-      if (TREE_CODE (expr_type) == INTEGER_TYPE
-	  && TREE_CODE (type) == INTEGER_TYPE)
+      if ((TREE_CODE (expr_type) == INTEGER_TYPE
+	   || TREE_CODE (expr_type) == BITINT_TYPE)
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == BITINT_TYPE))
 	for (int i = 0; i < 2; ++i)
 	  {
 	    tree op = TREE_OPERAND (expr, i);
@@ -1416,6 +1418,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
+	  || TREE_CODE (type) == BITINT_TYPE
 	  || (TREE_CODE (type) == ENUMERAL_TYPE
 	      && TREE_CODE (ENUM_UNDERLYING_TYPE (type)) != BOOLEAN_TYPE))
       && !int_fits_type_p (expr, type))
@@ -1466,9 +1469,10 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	}
       /* No warning for converting 0x80000000 to int.  */
       else if (pedantic
-	       && (TREE_CODE (exprtype) != INTEGER_TYPE
-		   || TYPE_PRECISION (exprtype)
-		   != TYPE_PRECISION (type)))
+	       && ((TREE_CODE (exprtype) != INTEGER_TYPE
+		    && TREE_CODE (exprtype) != BITINT_TYPE)
+		   || (TYPE_PRECISION (exprtype)
+		       != TYPE_PRECISION (type))))
 	{
 	  if (cst)
 	    warning_at (loc, OPT_Woverflow,

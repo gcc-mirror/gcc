@@ -402,6 +402,23 @@ c_pretty_printer::simple_type_specifier (tree t)
 	}
       break;
 
+    case BITINT_TYPE:
+      if (TYPE_NAME (t))
+	{
+	  t = TYPE_NAME (t);
+	  simple_type_specifier (t);
+	}
+      else
+	{
+	  int prec = TYPE_PRECISION (t);
+	  if (TYPE_UNSIGNED (t))
+	    pp_c_ws_string (this, "unsigned");
+	  pp_c_ws_string (this, "_BitInt(");;
+	  pp_decimal_int (this, prec);
+	  pp_right_paren (this);
+	}
+      break;
+
     case TYPE_DECL:
       if (DECL_NAME (t))
 	id_expression (t);
@@ -691,6 +708,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
+    case BITINT_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
     case VECTOR_TYPE:
@@ -811,6 +829,7 @@ c_pretty_printer::direct_declarator (tree t)
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
+    case BITINT_TYPE:
     case UNION_TYPE:
     case RECORD_TYPE:
       break;
@@ -834,6 +853,7 @@ c_pretty_printer::declarator (tree t)
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
+    case BITINT_TYPE:
     case UNION_TYPE:
     case RECORD_TYPE:
       break;
@@ -1022,8 +1042,18 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	  pp_minus (pp);
 	  wi = -wi;
 	}
-      print_hex (wi, pp_buffer (pp)->digit_buffer);
-      pp_string (pp, pp_buffer (pp)->digit_buffer);
+      unsigned int prec = wi.get_precision ();
+      if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3)
+	{
+	  char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
+	  print_hex (wi, buf);
+	  pp_string (pp, buf);
+	}
+      else
+	{
+	  print_hex (wi, pp_buffer (pp)->digit_buffer);
+	  pp_string (pp, pp_buffer (pp)->digit_buffer);
+	}
     }
 }
 
