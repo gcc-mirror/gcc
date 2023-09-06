@@ -1800,7 +1800,7 @@
 	  if ((X##_s = ((r) < 0)))					\
 	    _FP_FROM_INT_ur = -_FP_FROM_INT_ur;				\
 									\
-	  _FP_STATIC_ASSERT ((rsize) <= 2 * _FP_W_TYPE_SIZE,		\
+	  _FP_STATIC_ASSERT ((rsize) <= 4 * _FP_W_TYPE_SIZE,		\
 			     "rsize too large");			\
 	  (void) (((rsize) <= _FP_W_TYPE_SIZE)				\
 		  ? ({							\
@@ -1810,13 +1810,38 @@
 		      X##_e = (_FP_EXPBIAS_##fs + _FP_W_TYPE_SIZE - 1	\
 			       - _FP_FROM_INT_lz);			\
 		    })							\
-		  : ({						\
+		  : ((rsize) <= 2 * _FP_W_TYPE_SIZE)			\
+		  ? ({							\
 		      int _FP_FROM_INT_lz;				\
 		      __FP_CLZ_2 (_FP_FROM_INT_lz,			\
 				  (_FP_W_TYPE) (_FP_FROM_INT_ur		\
 						>> _FP_W_TYPE_SIZE),	\
 				  (_FP_W_TYPE) _FP_FROM_INT_ur);	\
-		      X##_e = (_FP_EXPBIAS_##fs + 2 * _FP_W_TYPE_SIZE - 1 \
+		      X##_e = (_FP_EXPBIAS_##fs				\
+			       + 2 * _FP_W_TYPE_SIZE - 1		\
+			       - _FP_FROM_INT_lz);			\
+		    })							\
+		  : ({							\
+		      int _FP_FROM_INT_lz;				\
+		      if (_FP_FROM_INT_ur >> (2 * _FP_W_TYPE_SIZE))	\
+			{						\
+			  rtype _FP_FROM_INT_uru			\
+			    = _FP_FROM_INT_ur >> (2 * _FP_W_TYPE_SIZE);	\
+			  __FP_CLZ_2 (_FP_FROM_INT_lz,			\
+				      (_FP_W_TYPE) (_FP_FROM_INT_uru	\
+						    >> _FP_W_TYPE_SIZE),\
+				      (_FP_W_TYPE) _FP_FROM_INT_uru);	\
+			}						\
+		      else						\
+			{						\
+			  __FP_CLZ_2 (_FP_FROM_INT_lz,			\
+				      (_FP_W_TYPE) (_FP_FROM_INT_ur	\
+						    >> _FP_W_TYPE_SIZE),\
+				      (_FP_W_TYPE) _FP_FROM_INT_ur);	\
+			  _FP_FROM_INT_lz += 2 * _FP_W_TYPE_SIZE;	\
+			}						\
+		      X##_e = (_FP_EXPBIAS_##fs				\
+			       + 4 * _FP_W_TYPE_SIZE - 1		\
 			       - _FP_FROM_INT_lz);			\
 		    }));						\
 									\

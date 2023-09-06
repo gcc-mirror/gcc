@@ -181,6 +181,12 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define float bogus_type
 #define double bogus_type
 
+#if (defined(__BITINT_MAXWIDTH__) \
+     && (defined(L_mulbitint3) || defined(L_divmodbitint4)))
+#undef LIBGCC2_UNITS_PER_WORD
+#define LIBGCC2_UNITS_PER_WORD (__LIBGCC_BITINT_LIMB_WIDTH__ / __CHAR_BIT__)
+#endif
+
 /* Versions prior to 3.4.4 were not taking into account the word size for
    the 5 trapping arithmetic functions absv, addv, subv, mulv and negv.  As
    a consequence, the si and di variants were always and the only ones emitted.
@@ -388,6 +394,15 @@ extern DWtype __divmoddi4 (DWtype, DWtype, DWtype *);
      !defined (L_umoddi3) && !defined (L_moddi3) && \
      !defined (L_divmoddi4))
 extern UDWtype __udivmoddi4 (UDWtype, UDWtype, UDWtype *);
+#endif
+
+#if (defined(__BITINT_MAXWIDTH__) \
+     && (defined(L_mulbitint3) || defined(L_divmodbitint4)))
+/* _BitInt support.  */
+extern void __mulbitint3 (UWtype *, SItype, const UWtype *, SItype,
+			  const UWtype *, SItype);
+extern void __divmodbitint4 (UWtype *, SItype, UWtype *, SItype,
+			     const UWtype *, SItype, const UWtype *, SItype);
 #endif
 
 /* __negdi2 is static inline when building other libgcc2 portions.  */
