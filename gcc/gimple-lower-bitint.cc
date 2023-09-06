@@ -683,9 +683,10 @@ bitint_large_huge::if_then_else (gimple *cond, profile_probability prob,
   e1->flags = EDGE_FALSE_VALUE;
   e3->probability = prob;
   e1->probability = prob.invert ();
+  bb->count = e1->src->count.apply_probability (prob);
   set_immediate_dominator (CDI_DOMINATORS, bb, e1->src);
   set_immediate_dominator (CDI_DOMINATORS, e2->dest, e1->src);
-  edge_true = make_edge (bb, e2->dest, EDGE_FALLTHRU);
+  edge_true = make_single_succ_edge (bb, e2->dest, EDGE_FALLTHRU);
   edge_false = e2;
   m_gsi = gsi_after_labels (bb);
 }
@@ -741,7 +742,8 @@ bitint_large_huge::if_then_if_then_else (gimple *cond1, gimple *cond2,
   e4->probability = prob2;
   e2->flags = EDGE_FALSE_VALUE;
   e2->probability = prob2.invert ();
-  e4 = make_edge (bb, e3->dest, EDGE_FALLTHRU);
+  bb->count = e2->src->count.apply_probability (prob2);
+  e4 = make_single_succ_edge (bb, e3->dest, EDGE_FALLTHRU);
   e2 = find_edge (e2->dest, e3->dest);
   edge_true_true = e4;
   edge_true_false = e2;
