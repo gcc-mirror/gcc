@@ -252,8 +252,8 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
 	  auto key_value = converted_item->get_name_value_pair ();
 	  if (key_value.first.as_string ().compare ("since") == 0)
 	    {
-	      // valid, but this is handled by Cargo and some third-party audit
-	      // tools
+	      // valid, but this is handled by Cargo and some third-party
+	      // audit tools
 	      continue;
 	    }
 	  else if (key_value.first.as_string ().compare ("note") == 0)
@@ -373,10 +373,10 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
     case Rust::ABI::CDECL:
       // `decl_attributes` function (not the macro) has the side-effect of
       // actually switching the codegen backend to use the ABI we annotated.
-      // However, since `cdecl` is the default ABI GCC will be using, explicitly
-      // specifying that ABI will cause GCC to emit a warning saying the
-      // attribute is useless (which is confusing to the user as the attribute
-      // is added by us).
+      // However, since `cdecl` is the default ABI GCC will be using,
+      // explicitly specifying that ABI will cause GCC to emit a warning
+      // saying the attribute is useless (which is confusing to the user as
+      // the attribute is added by us).
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("cdecl"), NULL, DECL_ATTRIBUTES (fndecl));
 
