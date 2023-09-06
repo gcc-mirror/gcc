@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Aug 31, 2023
+GNAT User's Guide for Native Platforms , Sep 26, 2023
 
 AdaCore
 
@@ -15510,7 +15510,6 @@ Linker to be used. The default is @code{bfd} for @code{ld.bfd}; @code{gold}
 (for @code{ld.gold}) and @code{mold} (for @code{ld.mold}) are more
 recent and faster alternatives, but only available on GNU/Linux
 platforms.
-
 @end table
 
 @node Binding with gnatbind,Linking with gnatlink,Linker Switches,Building Executable Programs with GNAT
@@ -22092,6 +22091,22 @@ Source := Target;
 requires @code{DV(Source)} = @code{DV(Target)}, and analogously for parameter
 passing (the dimension vector for the actual parameter must be equal to the
 dimension vector for the formal parameter).
+
+When using dimensioned types with elementary functions it is necessary to
+instantiate the @code{Ada.Numerics.Generic_Elementary_Functions} package using
+the @code{Mks_Type} and not any of the derived subtypes such as @code{Distance}.
+For functions such as @code{Sqrt} the dimensional analysis will fail when using
+the subtypes because both the parameter and return are of the same type.
+
+An example instantiation
+
+@quotation
+
+@example
+package Mks_Numerics is new
+   Ada.Numerics.Generic_Elementary_Functions (System.Dim.Mks.Mks_Type);
+@end example
+@end quotation
 
 @node Stack Related Facilities,Memory Management Issues,Performing Dimensionality Analysis in GNAT,GNAT and Program Execution
 @anchor{gnat_ugn/gnat_and_program_execution id52}@anchor{14d}@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{1aa}
