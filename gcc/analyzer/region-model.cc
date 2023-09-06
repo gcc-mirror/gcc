@@ -3979,6 +3979,8 @@ region_model::read_bytes (const region *src_reg,
 			  const svalue *num_bytes_sval,
 			  region_model_context *ctxt) const
 {
+  if (num_bytes_sval->get_kind () == SK_UNKNOWN)
+    return m_mgr->get_or_create_unknown_svalue (NULL_TREE);
   const region *sized_src_reg
     = m_mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
   const svalue *src_contents_sval = get_store_value (sized_src_reg, ctxt);

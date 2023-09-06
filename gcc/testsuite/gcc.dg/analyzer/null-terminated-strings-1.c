@@ -144,3 +144,27 @@ void test_casts (void)
   __analyzer_eval (__analyzer_get_strlen (p) == 0); /* { dg-warning "UNKNOWN" } */  
   __analyzer_eval (__analyzer_get_strlen (p + 1) == 0); /* { dg-warning "UNKNOWN" } */  
 }
+
+void test_filled_nonzero (void)
+{
+  char buf[10];
+  __builtin_memset (buf, 'a', 10);
+  __analyzer_get_strlen (buf); /* { dg-warning "stack-based buffer over-read" "" { xfail *-*-* } } */
+}
+
+void test_filled_zero (void)
+{
+  char buf[10];
+  __builtin_memset (buf, 0, 10);
+  __analyzer_eval (__analyzer_get_strlen (buf) == 0); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
+  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
+  __analyzer_eval (__analyzer_get_strlen (buf + 1) == 0); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
+  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
+}
+
+void test_filled_symbolic (int c)
+{
+  char buf[10];
+  __builtin_memset (buf, c, 10);
+  __analyzer_eval (__analyzer_get_strlen (buf) == 0); /* { dg-warning "UNKNOWN" } */  
+}
