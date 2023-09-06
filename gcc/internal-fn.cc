@@ -982,8 +982,38 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
 /* Helper for expand_*_overflow.  Store RES into TARGET.  */
 
 static void
-expand_ubsan_result_store (rtx target, rtx res)
+expand_ubsan_result_store (tree lhs, rtx target, scalar_int_mode mode,
+			   rtx res, rtx_code_label *do_error)
 {
+  if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+      && TYPE_PRECISION (TREE_TYPE (lhs)) < GET_MODE_PRECISION (mode))
+    {
+      int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
+      int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+      int tgtprec = GET_MODE_PRECISION (mode);
+      rtx resc = gen_reg_rtx (mode), lres;
+      emit_move_insn (resc, res);
+      if (uns)
+	{
+	  rtx mask
+	    = immed_wide_int_const (wi::shifted_mask (0, prec, false, tgtprec),
+				    mode);
+	  lres = expand_simple_binop (mode, AND, res, mask, NULL_RTX,
+				      true, OPTAB_LIB_WIDEN);
+	}
+      else
+	{
+	  lres = expand_shift (LSHIFT_EXPR, mode, res, tgtprec - prec,
+			       NULL_RTX, 1);
+	  lres = expand_shift (RSHIFT_EXPR, mode, lres, tgtprec - prec,
+			       NULL_RTX, 0);
+	}
+      if (lres != res)
+	emit_move_insn (res, lres);
+      do_compare_rtx_and_jump (res, resc,
+			       NE, true, mode, NULL_RTX, NULL, do_error,
+			       profile_probability::very_unlikely ());
+    }
   if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
     /* If this is a scalar in a register that is stored in a wider mode   
        than the declared mode, compute the result into its declared mode
@@ -1432,7 +1462,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	{
 	  if (do_xor)
@@ -1529,7 +1559,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }
@@ -2421,7 +2451,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }

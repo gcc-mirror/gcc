@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "varasm.h"
 #include "realmpfr.h"
+#include "target.h"
+#include "langhooks.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -125,6 +127,25 @@ tree
 ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 {
   tree type = TREE_TYPE (t);
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      if (TYPE_PRECISION (type) <= POINTER_SIZE)
+	{
+	  type = pointer_sized_int_node;
+	  t = fold_build1 (NOP_EXPR, type, t);
+	}
+      else
+	{
+	  scalar_int_mode arith_mode
+	    = (targetm.scalar_mode_supported_p (TImode) ? TImode : DImode);
+	  if (TYPE_PRECISION (type) > GET_MODE_PRECISION (arith_mode))
+	    return build_zero_cst (pointer_sized_int_node);
+	  type
+	    = build_nonstandard_integer_type (GET_MODE_PRECISION (arith_mode),
+					      TYPE_UNSIGNED (type));
+	  t = fold_build1 (NOP_EXPR, type, t);
+	}
+    }
   scalar_mode mode = SCALAR_TYPE_MODE (type);
   const unsigned int bitsize = GET_MODE_BITSIZE (mode);
   if (bitsize <= POINTER_SIZE)
@@ -355,14 +376,32 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 {
   /* See through any typedefs.  */
   type = TYPE_MAIN_VARIANT (type);
+  tree type3 = type;
+  if (pstyle == UBSAN_PRINT_FORCE_INT)
+    {
+      /* Temporary hack for -fsanitize=shift with _BitInt(129) and more.
+	 libubsan crashes if it is not TK_Integer type.  */
+      if (TREE_CODE (type) == BITINT_TYPE)
+	{
+	  scalar_int_mode arith_mode
+	    = (targetm.scalar_mode_supported_p (TImode)
+	       ? TImode : DImode);
+	  if (TYPE_PRECISION (type) > GET_MODE_PRECISION (arith_mode))
+	    type3 = build_qualified_type (type, TYPE_QUAL_CONST);
+	}
+      if (type3 == type)
+	pstyle = UBSAN_PRINT_NORMAL;
+    }
 
-  tree decl = decl_for_type_lookup (type);
+  tree decl = decl_for_type_lookup (type3);
   /* It is possible that some of the earlier created DECLs were found
      unused, in that case they weren't emitted and varpool_node::get
      returns NULL node on them.  But now we really need them.  Thus,
      renew them here.  */
   if (decl != NULL_TREE && varpool_node::get (decl))
-    return build_fold_addr_expr (decl);
+    {
+      return build_fold_addr_expr (decl);
+    }
 
   tree dtype = ubsan_get_type_descriptor_type ();
   tree type2 = type;
@@ -370,6 +409,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   pretty_printer pretty_name;
   unsigned char deref_depth = 0;
   unsigned short tkind, tinfo;
+  char tname_bitint[sizeof ("unsigned _BitInt(2147483647)")];
 
   /* Get the name of the type, or the name of the pointer type.  */
   if (pstyle == UBSAN_PRINT_POINTER)
@@ -403,8 +443,18 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     }
 
   if (tname == NULL)
-    /* We weren't able to determine the type name.  */
-    tname = "<unknown>";
+    {
+      if (TREE_CODE (type2) == BITINT_TYPE)
+	{
+	  snprintf (tname_bitint, sizeof (tname_bitint),
+	  	    "%s_BitInt(%d)", TYPE_UNSIGNED (type2) ? "unsigned " : "",
+		    TYPE_PRECISION (type2));
+	  tname = tname_bitint;
+	}
+      else
+	/* We weren't able to determine the type name.  */
+	tname = "<unknown>";
+    }
 
   pp_quote (&pretty_name);
 
@@ -472,6 +522,18 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     case INTEGER_TYPE:
       tkind = 0x0000;
       break;
+    case BITINT_TYPE:
+      {
+	/* FIXME: libubsan right now only supports _BitInts which
+	   fit into DImode or TImode.  */
+	scalar_int_mode arith_mode = (targetm.scalar_mode_supported_p (TImode)
+				      ? TImode : DImode);
+	if (TYPE_PRECISION (eltype) <= GET_MODE_PRECISION (arith_mode))
+	  tkind = 0x0000;
+	else
+	  tkind = 0xffff;
+      }
+      break;
     case REAL_TYPE:
       /* FIXME: libubsan right now only supports float, double and
 	 long double type formats.  */
@@ -486,7 +548,17 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
       tkind = 0xffff;
       break;
     }
-  tinfo = get_ubsan_type_info_for_type (eltype);
+  tinfo = tkind == 0xffff ? 0 : get_ubsan_type_info_for_type (eltype);
+
+  if (pstyle == UBSAN_PRINT_FORCE_INT)
+    {
+      tkind = 0x0000;
+      scalar_int_mode arith_mode = (targetm.scalar_mode_supported_p (TImode)
+				    ? TImode : DImode);
+      tree t = lang_hooks.types.type_for_mode (arith_mode,
+					       TYPE_UNSIGNED (eltype));
+      tinfo = get_ubsan_type_info_for_type (t);
+    }
 
   /* Create a new VAR_DECL of type descriptor.  */
   const char *tmp = pp_formatted_text (&pretty_name);
@@ -522,7 +594,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   varpool_node::finalize_decl (decl);
 
   /* Save the VAR_DECL into the hash table.  */
-  decl_for_type_insert (type, decl);
+  decl_for_type_insert (type3, decl);
 
   return build_fold_addr_expr (decl);
 }
@@ -1604,8 +1676,9 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
      Also punt on bit-fields.  */
   if (!INTEGRAL_TYPE_P (lhsinner)
       || TYPE_OVERFLOW_WRAPS (lhsinner)
-      || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (lhsinner)),
-		   TYPE_PRECISION (lhsinner)))
+      || (TREE_CODE (lhsinner) != BITINT_TYPE
+	  && maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (lhsinner)),
+		       TYPE_PRECISION (lhsinner))))
     return;
 
   switch (code)
