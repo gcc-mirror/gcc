@@ -117,15 +117,15 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
 	}
       else if (is_proc_macro)
 	{
-	  handle_proc_macro_attribute_on_fndecl (fndecl, attr);
+	  handle_bang_proc_macro_attribute_on_fndecl (fndecl, attr);
 	}
       else if (is_proc_macro_attribute)
 	{
-	  handle_proc_macro_attribute_attribute_on_fndecl (fndecl, attr);
+	  handle_attribute_proc_macro_attribute_on_fndecl (fndecl, attr);
 	}
       else if (is_proc_macro_derive)
 	{
-	  handle_proc_macro_derive_attribute_on_fndecl (fndecl, attr);
+	  handle_derive_proc_macro_attribute_on_fndecl (fndecl, attr);
 	}
     }
 }
@@ -138,24 +138,71 @@ handle_proc_macro_common (tree fndecl, const AST::Attribute &attr)
 }
 
 void
-HIRCompileBase::handle_proc_macro_attribute_on_fndecl (
+HIRCompileBase::handle_bang_proc_macro_attribute_on_fndecl (
   tree fndecl, const AST::Attribute &attr)
 {
   handle_proc_macro_common (fndecl, attr);
+  ctx->collect_bang_proc_macro (fndecl);
 }
 
 void
-HIRCompileBase::handle_proc_macro_attribute_attribute_on_fndecl (
+HIRCompileBase::handle_attribute_proc_macro_attribute_on_fndecl (
   tree fndecl, const AST::Attribute &attr)
 {
   handle_proc_macro_common (fndecl, attr);
+  ctx->collect_attribute_proc_macro (fndecl);
+}
+
+static std::vector<std::string>
+get_attributes (const AST::Attribute &attr)
+{
+  std::vector<std::string> result;
+
+  rust_assert (attr.get_attr_input ().get_attr_input_type ()
+	       == Rust::AST::AttrInput::TOKEN_TREE);
+  const auto &tt
+    = static_cast<const AST::DelimTokenTree &> (attr.get_attr_input ());
+
+  // TODO: Should we rely on fixed index ? Should we search for the
+  // attribute tokentree instead ?
+  if (tt.get_token_trees ().size () > 3)
+    {
+      rust_assert (tt.get_token_trees ()[3]->as_string () == "attributes");
+
+      auto attributes = static_cast<const AST::DelimTokenTree *> (
+	tt.get_token_trees ()[4].get ());
+      auto &token_trees = attributes->get_token_trees ();
+
+      for (auto i = token_trees.cbegin () + 1; // Skip opening parenthesis
+	   i < token_trees.cend ();
+	   i += 2) // Skip comma and closing parenthesis
+	{
+	  result.push_back ((*i)->as_string ());
+	}
+    }
+  return result;
+}
+
+static std::string
+get_trait_name (const AST::Attribute &attr)
+{
+  rust_assert (attr.get_attr_input ().get_attr_input_type ()
+	       == Rust::AST::AttrInput::TOKEN_TREE);
+  const auto &tt
+    = static_cast<const AST::DelimTokenTree &> (attr.get_attr_input ());
+  return tt.get_token_trees ()[1]->as_string ();
 }
 
 void
-HIRCompileBase::handle_proc_macro_derive_attribute_on_fndecl (
+HIRCompileBase::handle_derive_proc_macro_attribute_on_fndecl (
   tree fndecl, const AST::Attribute &attr)
 {
   handle_proc_macro_common (fndecl, attr);
+
+  attr.get_attr_input ().parse_to_meta_item ();
+  CustomDeriveInfo macro
+    = {fndecl, get_trait_name (attr), get_attributes (attr)};
+  ctx->collect_derive_proc_macro (macro);
 }
 
 void
