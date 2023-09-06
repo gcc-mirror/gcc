@@ -817,6 +817,12 @@ c_common_type (tree t1, tree t2)
 	return t1;
       else if (code2 == COMPLEX_TYPE && TREE_TYPE (t2) == subtype)
 	return t2;
+      else if (TREE_CODE (subtype) == BITINT_TYPE)
+	{
+	  sorry ("%<_Complex _BitInt(%d)%> unsupported",
+		 TYPE_PRECISION (subtype));
+	  return code1 == COMPLEX_TYPE ? t1 : t2;
+	}
       else
 	return build_complex_type (subtype);
     }

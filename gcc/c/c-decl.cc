@@ -12934,8 +12934,15 @@ finish_declspecs (struct c_declspecs *specs)
       if (specs->u.bitint_prec == -1)
 	specs->type = integer_type_node;
       else
-	specs->type = build_bitint_type (specs->u.bitint_prec,
-					 specs->unsigned_p);
+	{
+	  pedwarn_c11 (specs->locations[cdw_typespec], OPT_Wpedantic,
+		       "ISO C does not support %<%s_BitInt(%d)%> before C2X",
+		       specs->unsigned_p ? "unsigned "
+		       : specs->signed_p ? "signed " : "",
+		       specs->u.bitint_prec);
+	  specs->type = build_bitint_type (specs->u.bitint_prec,
+					   specs->unsigned_p);
+	}
       break;
     default:
       gcc_unreachable ();

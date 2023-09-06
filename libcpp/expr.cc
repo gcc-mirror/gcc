@@ -856,6 +856,29 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 				 virtual_location, 0, message);
        }
 
+      if ((result & CPP_N_BITINT) != 0
+	  && CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) != 0)
+	{
+	  if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	    {
+	      const char *message = N_("ISO C does not support literal "
+				       "%<wb%> suffixes before C2X");
+	      if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
+		cpp_pedwarning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+					  virtual_location, 0, message);
+	      else
+		cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+				       virtual_location, 0, message);
+	    }
+	  else if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
+	    {
+	      const char *message = N_("ISO C does not support literal "
+				       "%<wb%> suffixes before C2X");
+	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+				   message);
+	    }
+	}
+
       result |= CPP_N_INTEGER;
     }
 

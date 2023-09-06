@@ -4366,7 +4366,8 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
       || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
-      || TREE_CODE (type) == BOOLEAN_TYPE)
+      || TREE_CODE (type) == BOOLEAN_TYPE
+      || TREE_CODE (type) == BITINT_TYPE)
     {
       if (error_p)
 	error ("invalid vector type for attribute %qE", atname);
