@@ -12117,12 +12117,13 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    CASE_RID_FLOATN_NX:
 	      specs->floatn_nx_idx = i - RID_FLOATN_NX_FIRST;
 	      if (!in_system_header_at (input_location))
-		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C does not support the %<_Float%d%s%> type",
-			 floatn_nx_types[specs->floatn_nx_idx].n,
-			 (floatn_nx_types[specs->floatn_nx_idx].extended
-			  ? "x"
-			  : ""));
+		pedwarn_c11 (loc, OPT_Wpedantic,
+			     "ISO C does not support the %<_Float%d%s%> type"
+			     " before C2X",
+			     floatn_nx_types[specs->floatn_nx_idx].n,
+			     (floatn_nx_types[specs->floatn_nx_idx].extended
+			      ? "x"
+			      : ""));
 
 	      if (specs->long_p)
 		error_at (loc,

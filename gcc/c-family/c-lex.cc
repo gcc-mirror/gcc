@@ -1021,7 +1021,25 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    error ("unsupported non-standard suffix on floating constant");
 	    return error_mark_node;
 	  }
-	else if (c_dialect_cxx () && !extended)
+	else if (!c_dialect_cxx ())
+	  {
+	    if (warn_c11_c2x_compat > 0)
+	      {
+		if (pedantic && !flag_isoc2x)
+		  pedwarn (input_location, OPT_Wc11_c2x_compat,
+			   "non-standard suffix on floating constant "
+			   "before C2X");
+		else
+		  warning (OPT_Wc11_c2x_compat,
+			   "non-standard suffix on floating constant "
+			   "before C2X");
+	      }
+	    else if (warn_c11_c2x_compat != 0 && pedantic && !flag_isoc2x)
+	      pedwarn (input_location, OPT_Wpedantic,
+		       "non-standard suffix on floating constant "
+		       "before C2X");
+	  }
+	else if (!extended)
 	  {
 	    if (cxx_dialect < cxx23)
 	      pedwarn (input_location, OPT_Wpedantic,
