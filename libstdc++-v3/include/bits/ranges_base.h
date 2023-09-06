@@ -133,9 +133,8 @@ namespace ranges
 	  { __decay_copy(__t.end()) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
-    // Poison pills so that unqualified lookup doesn't find std::end.
-    void end(auto&) = delete;
-    void end(const auto&) = delete;
+    // Poison pill so that unqualified lookup doesn't find std::end.
+    void end() = delete;
 
     template<typename _Tp>
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
@@ -184,8 +183,7 @@ namespace ranges
 	  { __decay_copy(__t.rbegin()) } -> input_or_output_iterator;
 	};
 
-    void rbegin(auto&) = delete;
-    void rbegin(const auto&) = delete;
+    void rbegin() = delete;
 
     template<typename _Tp>
       concept __adl_rbegin = __class_or_enum<remove_reference_t<_Tp>>
@@ -248,8 +246,7 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    void rend(auto&) = delete;
-    void rend(const auto&) = delete;
+    void rend() = delete;
 
     template<typename _Tp>
       concept __adl_rend = __class_or_enum<remove_reference_t<_Tp>>
@@ -306,8 +303,7 @@ namespace ranges
 	  { __decay_copy(__t.size()) } -> __detail::__is_integer_like;
 	};
 
-    void size(auto&) = delete;
-    void size(const auto&) = delete;
+    void size() = delete;
 
     template<typename _Tp>
       concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>

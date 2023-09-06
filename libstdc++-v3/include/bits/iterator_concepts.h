@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// @cond undocumented
     namespace __imove
     {
-      void iter_move();
+      void iter_move() = delete;
 
       template<typename _Tp>
 	concept __adl_imove
@@ -979,9 +979,8 @@ namespace ranges
 	  { __decay_copy(__t.begin()) } -> input_or_output_iterator;
 	};
 
-    // Poison pills so that unqualified lookup doesn't find std::begin.
-    void begin(auto&) = delete;
-    void begin(const auto&) = delete;
+    // Poison pill so that unqualified lookup doesn't find std::begin.
+    void begin() = delete;
 
     template<typename _Tp>
       concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>

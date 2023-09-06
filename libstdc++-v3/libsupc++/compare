@@ -612,6 +612,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	  }
       }
 
+    void strong_order() = delete;
+
     template<typename _Tp, typename _Up>
       concept __adl_strong = requires(_Tp&& __t, _Up&& __u)
 	{
@@ -619,12 +621,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 				       static_cast<_Up&&>(__u)));
 	};
 
+    void weak_order() = delete;
+
     template<typename _Tp, typename _Up>
       concept __adl_weak = requires(_Tp&& __t, _Up&& __u)
 	{
 	  weak_ordering(weak_order(static_cast<_Tp&&>(__t),
 				   static_cast<_Up&&>(__u)));
 	};
+
+    void partial_order() = delete;
 
     template<typename _Tp, typename _Up>
       concept __adl_partial = requires(_Tp&& __t, _Up&& __u)
