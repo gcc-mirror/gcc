@@ -5189,7 +5189,7 @@ case "${target}" in
 				if test x${parse_state} = x"abi-base"; then
 					# Base ABI type
 					case ${component} in
-					lp64d | lp64f | lp64s) elem_tmp="ABI_BASE_$(tr a-z A-Z <<< ${component}),";;
+					lp64d | lp64f | lp64s) elem_tmp="ABI_BASE_$(echo ${component} | tr a-z A-Z),";;
 					*)
 						echo "Unknown base ABI \"${component}\" in --with-multilib-list." 1>&2
 						exit 1
