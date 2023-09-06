@@ -1031,7 +1031,7 @@ kf_PyList_New::impl_call_post (const call_details &cd) const
           const region *ob_item_sized_region
               = model->get_or_create_region_for_heap_alloc (prod_sval,
                                                             cd.get_ctxt ());
-          model->zero_fill_region (ob_item_sized_region);
+          model->zero_fill_region (ob_item_sized_region, cd.get_ctxt ());
           const svalue *ob_item_ptr_sval
               = mgr->get_ptr_svalue (pyobj_ptr_ptr, ob_item_sized_region);
           const svalue *ob_item_unmergeable

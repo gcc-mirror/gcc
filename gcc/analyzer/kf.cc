@@ -358,7 +358,7 @@ kf_calloc::impl_call_pre (const call_details &cd) const
     = model->get_or_create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   const region *sized_reg
     = mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
-  model->zero_fill_region (sized_reg);
+  model->zero_fill_region (sized_reg, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -650,10 +650,7 @@ kf_memset::impl_call_pre (const call_details &cd) const
   const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
 							NULL_TREE,
 							num_bytes_sval);
-  model->check_region_for_write (sized_dest_reg,
-				 nullptr,
-				 cd.get_ctxt ());
-  model->fill_region (sized_dest_reg, fill_value_u8);
+  model->fill_region (sized_dest_reg, fill_value_u8, cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
 }

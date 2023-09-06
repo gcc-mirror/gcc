@@ -1204,7 +1204,7 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 	    /* Any CONSTRUCTOR that survives to this point is either
 	       just a zero-init of everything, or a vector.  */
 	    if (!CONSTRUCTOR_NO_CLEARING (rhs1))
-	      zero_fill_region (lhs_reg);
+	      zero_fill_region (lhs_reg, ctxt);
 	    unsigned ix;
 	    tree index;
 	    tree val;
@@ -3929,19 +3929,28 @@ region_model::purge_region (const region *reg)
   m_store.purge_region (m_mgr->get_store_manager(), reg);
 }
 
-/* Fill REG with SVAL.  */
+/* Fill REG with SVAL.
+   Use CTXT to report any warnings associated with the write
+   (e.g. out-of-bounds).  */
 
 void
-region_model::fill_region (const region *reg, const svalue *sval)
+region_model::fill_region (const region *reg,
+			   const svalue *sval,
+			   region_model_context *ctxt)
 {
+  check_region_for_write (reg, nullptr, ctxt);
   m_store.fill_region (m_mgr->get_store_manager(), reg, sval);
 }
 
-/* Zero-fill REG.  */
+/* Zero-fill REG.
+   Use CTXT to report any warnings associated with the write
+   (e.g. out-of-bounds).  */
 
 void
-region_model::zero_fill_region (const region *reg)
+region_model::zero_fill_region (const region *reg,
+				region_model_context *ctxt)
 {
+  check_region_for_write (reg, nullptr, ctxt);
   m_store.zero_fill_region (m_mgr->get_store_manager(), reg);
 }
 
