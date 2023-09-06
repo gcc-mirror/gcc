@@ -1,3 +1,60 @@
+2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Don't
+	require one zero bit in the upper 32 bits for LI+RORI synthesis.
+
+2023-09-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bswapsi2): Expose for TARGET_64BIT.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/98710
+	* match.pd (`(x | c) & ~(y | c)`, `(x & c) | ~(y & c)`): New pattern.
+	(`x & ~(y | x)`, `x | ~(y & x)`): New patterns.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103536
+	* match.pd (`(x | y) & (x & z)`,
+	`(x & y) | (x | z)`): New patterns.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/107137
+	* match.pd (`(nop_convert)-(convert)a`): New pattern.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/96694
+	* match.pd (`~MAX(~X, Y)`, `~MIN(~X, Y)`): New patterns.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/105832
+	* match.pd (`(1 >> X) != 0`): New pattern
+
+2023-09-05  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.md: Update/Add types
+
+2023-09-05  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/pic.md: Update types
+
+2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Enable constant
+	synthesis with rotate-right for XTheadBb.
+
+2023-09-05  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/zicond.md: Fix op2 pattern.
+
+2023-09-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_RCPC): Remove dup.
+
 2023-09-05  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/loongarch/loongarch-opts.h (HAVE_AS_EXPLICIT_RELOCS):

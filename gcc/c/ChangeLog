@@ -1,3 +1,8 @@
+2023-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_allocate): Handle
+	error_mark_node.
+
 2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-parser.cc (struct c_parser): Add omp_for_parse_state field.

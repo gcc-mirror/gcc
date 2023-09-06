@@ -1,3 +1,67 @@
+2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-li-rotr.c: New tests.
+	* gcc.target/riscv/zbb-li-rotr.c: Likewise.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/98710
+	* gcc.dg/tree-ssa/andor-7.c: New test.
+	* gcc.dg/tree-ssa/andor-8.c: New test.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103536
+	* gcc.dg/tree-ssa/andor-6.c: New test.
+	* gcc.dg/tree-ssa/andor-bool-1.c: New test.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/107137
+	* gcc.dg/tree-ssa/neg-cast-2.c: New test.
+	* gcc.dg/tree-ssa/neg-cast-3.c: New test.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/96694
+	* gcc.dg/tree-ssa/minmax-24.c: New test.
+
+2023-09-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/105832
+	* gcc.dg/tree-ssa/pr105832-1.c: New test.
+	* gcc.dg/tree-ssa/pr105832-2.c: New test.
+	* gcc.dg/tree-ssa/pr105832-3.c: New test.
+
+2023-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91483
+	* g++.dg/diagnostic/constexpr3.C: New test.
+
+2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-li-rotr.c: New test.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* g++.dg/diagnostic/redeclaration-4.C: New test.
+	* g++.dg/diagnostic/redeclaration-5.C: New test.
+	* g++.dg/warn/Wshadow-19.C: New test.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* g++.dg/diagnostic/redeclaration-1.C: Expect different diagnostic
+	wording.
+	* g++.dg/diagnostic/redeclaration-3.C: New test.
+	* g++.dg/parse/pr31952-1.C: Expect different diagnostic wording.
+	* g++.dg/parse/pr31952-3.C: Likewise.
+
+2023-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-13.c: New test.
+
 2023-09-05  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vls/def.h: New macro.

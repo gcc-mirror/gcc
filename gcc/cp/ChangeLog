@@ -1,3 +1,63 @@
+2023-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91483
+	* constexpr.cc (verify_constant_explain_r): New.
+	(verify_constant): Call it.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* name-lookup.cc (check_local_shadow): Don't punt early for
+	DECL_EXTERNAL decls, instead just disable the shadowing of namespace
+	decls check for those and emit a pedwarn rather than error_at or
+	permerror for those.  Formatting fix.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* name-lookup.h (struct cp_binding_level): Add artificial bit-field.
+	Formatting fixes.
+	* name-lookup.cc (check_local_shadow): Skip artificial bindings when
+	checking if parameter scope is parent scope.  Don't special case
+	FUNCTION_NEEDS_BODY_BLOCK.  Diagnose the in_function_try_handler
+	cases in the b->kind == sk_function_parms test and verify no
+	non-artificial intervening scopes.  Add missing auto_diagnostic_group.
+	* decl.cc (begin_function_body): Set
+	current_binding_level->artificial.
+	* semantics.cc (begin_function_try_block): Likewise.
+
+2023-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc (cp_parser_parenthesized_expression_list_elt): Pass
+	nullptr as non_constant_p to cp_parser_braced_list if our
+	non_constant_p is null.
+	(cp_parser_initializer_list): Likewise to
+	cp_parser_initializer_clause.  Avoid inspecting
+	clause_non_constant_p if it's uninitialized.
+
+2023-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (build_user_type_conversion): Free allocated
+	conversions.
+	(build_converted_constant_expr_internal): Use
+	conversion_obstack_sentinel instead.
+	(perform_dguide_overload_resolution): Likewise.
+	(build_new_function_call): Likewise.
+	(build_operator_new_call): Free allocated conversions.
+	(build_op_call): Use conversion_obstack_sentinel instead.
+	(build_conditional_expr): Use conversion_obstack_sentinel
+	instead, and hoist it out to the outermost scope.
+	(build_new_op): Use conversion_obstack_sentinel instead
+	and set it up before the first goto.  Remove second unneeded goto.
+	(build_op_subscript): Use conversion_obstack_sentinel instead.
+	(ref_conv_binds_to_temporary): Likewise.
+	(build_new_method_call): Likewise.
+	(can_convert_arg): Likewise.
+	(can_convert_arg_bad): Likewise.
+	(perform_implicit_conversion_flags): Likewise.
+	(perform_direct_initialization_if_possible): Likewise.
+	(initialize_reference): Likewise.
+
 2023-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/111069
