@@ -1585,6 +1585,100 @@ public:
   }
 };
 
+/* Handler for "strstr" and "__builtin_strstr".
+     extern char *strstr (const char* str, const char* substr);
+   See e.g. https://en.cppreference.com/w/c/string/byte/strstr  */
+
+class kf_strstr : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRSTR;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+    cd.check_for_null_terminated_string_arg (1);
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
+void
+kf_strstr::impl_call_post (const call_details &cd) const
+{
+  class strstr_call_info : public call_info
+  {
+  public:
+    strstr_call_info (const call_details &cd, bool found)
+    : call_info (cd), m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_found)
+	return make_label_text (can_colorize,
+				"when %qE returns non-NULL",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE returns NULL",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      if (tree lhs_type = cd.get_lhs_type ())
+	{
+	  region_model_manager *mgr = model->get_manager ();
+	  const svalue *result;
+	  if (m_found)
+	    {
+	      const svalue *str_sval = cd.get_arg_svalue (0);
+	      const region *str_reg
+		= model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				       cd.get_ctxt ());
+	      /* We want str_sval + OFFSET for some unknown OFFSET.
+		 Use a conjured_svalue to represent the offset,
+		 using the str_reg as the id of the conjured_svalue.  */
+	      const svalue *offset
+		= mgr->get_or_create_conjured_svalue (size_type_node,
+						      cd.get_call_stmt (),
+						      str_reg,
+						      conjured_purge (model,
+								      ctxt));
+	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
+						 str_sval, offset);
+	    }
+	  else
+	    result = mgr->get_or_create_int_cst (lhs_type, 0);
+	  cd.maybe_set_lhs (result);
+	}
+      return true;
+    }
+  private:
+    bool m_found;
+  };
+
+  /* Body of kf_strstr::impl_call_post.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<strstr_call_info> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
+
 class kf_ubsan_bounds : public internal_known_function
 {
   /* Empty.  */
@@ -1806,6 +1900,8 @@ register_known_functions (known_function_manager &kfm)
     kfm.add ("__builtin_strndup", make_unique<kf_strndup> ());
     kfm.add ("strlen", make_unique<kf_strlen> ());
     kfm.add ("__builtin_strlen", make_unique<kf_strlen> ());
+    kfm.add ("strstr", make_unique<kf_strstr> ());
+    kfm.add ("__builtin_strstr", make_unique<kf_strstr> ());
 
     register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);
