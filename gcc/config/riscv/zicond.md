@@ -64,7 +64,7 @@
 )
 
 ;; Combine creates this form in some cases (particularly the coremark
-;; CRC loop.
+;; CRC loop).
 (define_split
   [(set (match_operand:X 0 "register_operand")
 	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
