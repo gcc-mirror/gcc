@@ -975,6 +975,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X+(N*M)" doesn't overflow.  */
        && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && !vr4.undefined_p ()
        /* "X+N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
@@ -995,6 +996,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X - (N*M)" doesn't overflow.  */
        && range_op_handler (MINUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && !vr4.undefined_p ()
        /* "X-N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
@@ -1025,6 +1027,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  /* "X+C" doesn't overflow.  */
 	  && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr1)
 	  && get_range_query (cfun)->range_of_expr (vr3, @3)
+	  && !vr3.undefined_p ()
 	  /* "X+C" and "X" are not of opposite sign.  */
 	  && (TYPE_UNSIGNED (type)
 	      || (vr0.nonnegative_p () && vr3.nonnegative_p ())
