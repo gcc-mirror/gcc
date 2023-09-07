@@ -24,6 +24,18 @@ include $(top_srcdir)/fragment.am
 
 toolexeclib_LTLIBRARIES = libstdc++exp.la
 
+if ENABLE_FILESYSTEM_TS
+filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fs.la
+else
+filesystem_lib =
+endif
+
+if ENABLE_BACKTRACE
+backtrace_lib = $(top_builddir)/src/libbacktrace/libstdc++_libbacktrace.la
+else
+backtrace_lib =
+endif
+
 headers =
 
 sources = \
@@ -32,6 +44,12 @@ sources = \
 # vpath % $(top_srcdir)/src/experimental
 
 libstdc__exp_la_SOURCES = $(sources)
+
+libstdc__exp_la_LIBADD = \
+	$(filesystem_lib) $(backtrace_lib)
+
+libstdc__exp_la_DEPENDENCIES = \
+	$(filesystem_lib) $(backtrace_lib)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

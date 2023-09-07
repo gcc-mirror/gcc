@@ -28,18 +28,20 @@
       </td></tr><tr><td align="left"><code class="literal">-latomic</code></td><td align="left">Linking to <code class="filename">libatomic</code>
         is required for some uses of ISO C++11
         <code class="filename">&lt;atomic&gt;</code>.
-      </td></tr><tr><td align="left"><code class="literal">-lstdc++fs</code></td><td align="left">Linking to <code class="filename">libstdc++fs</code>
-        is required for use of the Filesystem library extensions in
-        <code class="filename">&lt;experimental/filesystem&gt;</code>.
-      </td></tr><tr><td align="left"><code class="literal">-lstdc++exp</code></td><td align="left">Linking to <code class="filename">libstdc++exp</code>
-        is required for use of the C++ Contracts extensions enabled by
-        <code class="literal">-fcontracts</code>.
-      </td></tr><tr><td align="left"><code class="literal">-lstdc++_libbacktrace</code></td><td align="left">Until C++23 support is non-experimental, linking to
-	<code class="filename">libstdc++_libbacktrace.a</code>
-	is required for use of the C++23 type
-	<code class="classname">std::stacktrace</code>
-	and related types in
-	<code class="filename">&lt;stacktrace&gt;</code>.
+      </td></tr><tr><td align="left"><code class="literal">-lstdc++exp</code></td><td align="left">Linking to <code class="filename">libstdc++exp.a</code>
+        is required for use of experimental C++ library features.
+        This currently provides support for the C++23 types defined in the
+        <code class="filename">&lt;stacktrace&gt;</code> header,
+        the Filesystem library extensions defined in the
+        <code class="filename">&lt;experimental/filesystem&gt;</code>
+        header,
+        and the Contracts extensions enabled by <code class="literal">-fcontracts</code>.
+      </td></tr><tr><td align="left"><code class="literal">-lstdc++fs</code></td><td align="left">Linking to <code class="filename">libstdc++fs.a</code>
+        is another way to use the Filesystem library extensions defined in the
+        <code class="filename">&lt;experimental/filesystem&gt;</code>
+        header.
+        The <code class="filename">libstdc++exp.a</code> library
+        also provides all the symbols contained in this library.
       </td></tr><tr><td align="left"><code class="literal">-fopenmp</code></td><td align="left">For <a class="link" href="parallel_mode.html" title="Chapter 18. Parallel Mode">parallel</a> mode.</td></tr><tr><td align="left"><code class="literal">-ltbb</code></td><td align="left">Linking to tbb (Thread Building Blocks) is required for use of the
         Parallel Standard Algorithms and execution policies in
         <code class="filename">&lt;execution&gt;</code>.
