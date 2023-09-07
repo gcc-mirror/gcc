@@ -2393,6 +2393,26 @@
   DONE;
 })
 
+(define_insn "salt"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(lt:SI (match_operand:SI 1 "register_operand" "r")
+	       (match_operand:SI 2 "register_operand" "r")))]
+  "TARGET_SALT"
+  "salt\t%0, %1, %2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "saltu"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(ltu:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "register_operand" "r")))]
+  "TARGET_SALT"
+  "saltu\t%0, %1, %2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
 (define_expand "cstoresf4"
   [(match_operand:SI 0 "register_operand")
    (match_operator:SI 1 "comparison_operator"
