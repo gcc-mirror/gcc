@@ -89,7 +89,8 @@ class GitEmail(GitCommit):
                 t = 'M'
             modified_files.append((target if t != 'D' else source, t))
         git_info = GitInfo(None, date, author, message, modified_files)
-        super().__init__(git_info, commit_to_info_hook=None)
+        super().__init__(git_info,
+                         commit_to_info_hook=lambda x: None)
 
 
 def show_help():
