@@ -44490,7 +44490,10 @@ fixup_blocks_walker (tree *tp, int *walk_subtrees, void *dp)
 {
   tree superblock = *(tree *)dp;
 
-  if (TREE_CODE (*tp) == BIND_EXPR)
+  /* BIND_EXPR_BLOCK may be null if the expression is not a
+     full-expression; if there's no block, no patching is necessary
+     for this node.  */
+  if (TREE_CODE (*tp) == BIND_EXPR && BIND_EXPR_BLOCK (*tp))
     {
       tree block = BIND_EXPR_BLOCK (*tp);
       if (superblock)
