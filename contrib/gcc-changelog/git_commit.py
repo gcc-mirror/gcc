@@ -329,11 +329,15 @@ class GitCommit:
                 self.revert_commit = m.group('hash')
                 break
         if self.revert_commit:
+            # The following happens for get_email.py:
+            if not self.commit_to_info_hook:
+                self.warnings.append(f"Invoked script can not obtain info about "
+                                     f"reverted commits such as '{self.revert_commit}'")
+                return
             self.info = self.commit_to_info_hook(self.revert_commit)
-
-        # The following happens for get_email.py:
-        if not self.info:
-            return
+            if not self.info:
+                self.errors.append(Error('Cannot find to-be-reverted commit', self.revert_commit))
+                return
 
         self.check_commit_email()
 
@@ -796,12 +800,18 @@ class GitCommit:
                 orig_date = self.original_info.date
                 current_timestamp = orig_date.strftime(DATE_FORMAT)
             elif self.cherry_pick_commit:
-                info = self.commit_to_info_hook(self.cherry_pick_commit)
+                info = (self.commit_to_info_hook
+                        and self.commit_to_info_hook(self.cherry_pick_commit))
                 # it can happen that it is a cherry-pick for a different
                 # repository
                 if info:
                     timestamp = info.date.strftime(DATE_FORMAT)
                 else:
+                    if self.commit_to_info_hook:
+                        self.warnings.append(f"Cherry-picked commit not found: '{self.cherry_pick_commit}'")
+                    else:
+                        self.warnings.append(f"Invoked script can not obtain info about "
+                                             f"cherry-picked commits such as '{self.revert_commit}'")
                     timestamp = current_timestamp
             elif not timestamp or use_commit_ts:
                 timestamp = current_timestamp
