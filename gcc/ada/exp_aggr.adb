@@ -1989,7 +1989,10 @@ package body Exp_Aggr is
 
       --  Skip this if no component associations
 
-      if No (Expressions (N)) then
+      if Is_Null_Aggregate (N) then
+         null;
+
+      elsif No (Expressions (N)) then
 
          --  STEP 1 (a): Sort the discrete choices
 

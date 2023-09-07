@@ -2081,7 +2081,10 @@ package body Sem_Aggr is
 
       --  STEP 1: make sure the aggregate is correctly formatted
 
-      if Present (Component_Associations (N)) then
+      if Is_Null_Aggregate (N) then
+         null;
+
+      elsif Present (Component_Associations (N)) then
 
          --  Verify that all or none of the component associations
          --  include an iterator specification.
