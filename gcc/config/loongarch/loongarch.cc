@@ -5225,9 +5225,8 @@ loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length,
      emit two ld.d/st.d pairs, one ld.w/st.w pair, and one ld.b/st.b
      pair.  For each load/store pair we use a dedicated register to keep
      the pipeline as populated as possible.  */
-  HOST_WIDE_INT num_reg = length / delta;
-  for (delta_cur = delta / 2; delta_cur != 0; delta_cur /= 2)
-    num_reg += !!(length & delta_cur);
+  gcc_assert (pow2p_hwi (delta));
+  HOST_WIDE_INT num_reg = length / delta + popcount_hwi (length % delta);
 
   /* Allocate a buffer for the temporary registers.  */
   regs = XALLOCAVEC (rtx, num_reg);
