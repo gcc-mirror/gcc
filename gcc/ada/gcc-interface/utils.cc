@@ -2159,7 +2159,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* If this is a padding record, we never want to make the size smaller
 	 than what was specified in it, if any.  */
       if (TYPE_IS_PADDING_P (record_type) && had_size)
-	size = TYPE_SIZE (record_type);
+	size = round_up (TYPE_SIZE (record_type), BITS_PER_UNIT);
       else
 	size = round_up (size, BITS_PER_UNIT);
 
