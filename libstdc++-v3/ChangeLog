@@ -1,3 +1,9 @@
+2023-09-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Disable by default
+	for freestanding.
+	* configure: Regenerate.
+
 2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR libstdc++/111238

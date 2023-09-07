@@ -1,3 +1,32 @@
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* kf.cc (class kf_strstr): New.
+	(kf_strstr::impl_call_post): New.
+	(register_known_functions): Register it.
+
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* kf.cc (class kf_strncpy): New.
+	(kf_strncpy::impl_call_post): New.
+	(register_known_functions): Register it.
+	* region-model.cc (region_model::read_bytes): Handle unknown
+	number of bytes.
+
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (kf_calloc::impl_call_pre): Pass ctxt to zero_fill_region.
+	(kf_memset::impl_call_pre): Move responsibility for calling
+	check_region_for_write to fill_region.
+	* region-model.cc (region_model::on_assignment): Pass ctxt to
+	zero_fill_region.
+	(region_model::fill_region): Add "ctxt" param, using it to call
+	check_region_for_write.
+	(region_model::zero_fill_region): Likewise.
+	* region-model.h (region_model::fill_region): Add "ctxt" param.
+	(region_model::zero_fill_region): Likewise.
+
 2023-09-01  benjamin priour  <priour.be@gmail.com>
 
 	PR analyzer/105948

@@ -1,3 +1,15 @@
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (cpp_classify_number): Diagnose wb literal suffixes
+	for -pedantic* before C2X or -Wc11-c2x-compat.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (interpret_int_suffix): Handle wb and WB suffixes.
+	* include/cpplib.h (CPP_N_BITINT): Define.
+
 2023-08-07  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

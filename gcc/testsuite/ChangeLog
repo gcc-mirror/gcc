@@ -1,3 +1,271 @@
+2023-09-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/111310
+	* gcc.misc-tests/godump-1.c: Add _BitInt test cases.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gcc.dg/bitint-2.c (foo): Add tests for constexpr var or enumerator
+	arguments of _BitInt.
+	* gcc.dg/bitint-31.c: Remove forgotten 0 &&.
+	* gcc.dg/bitint-32.c: New test.
+	* gcc.dg/bitint-33.c: New test.
+	* gcc.dg/bitint-34.c: New test.
+	* gcc.dg/bitint-35.c: New test.
+	* gcc.dg/bitint-36.c: New test.
+	* gcc.dg/fixed-point/bitint-1.c: New test.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gcc.dg/torture/bitint-21.c (main): Add tests for -1 for signed only,
+	-1 + epsilon, another (-1, 0) range value and -0.
+	* gcc.dg/torture/bitint-22.c (main): Likewise.
+	* gcc.dg/bitint-28.c: New test.
+	* gcc.dg/bitint-29.c: New test.
+	* gcc.dg/bitint-30.c: New test.
+	* gcc.dg/bitint-31.c: New test.
+	* gcc.dg/dfp/bitint-1.c (main): Add tests for -1 for signed only,
+	-1 + epsilon and -0.
+	* gcc.dg/dfp/bitint-2.c (main): Likewise.
+	* gcc.dg/dfp/bitint-3.c (main): Likewise.
+	* gcc.dg/dfp/bitint-7.c: New test.
+	* gcc.dg/dfp/bitint-8.c: New test.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gcc.dg/bitint-19.c: New test.
+	* gcc.dg/bitint-20.c: New test.
+	* gcc.dg/bitint-21.c: New test.
+	* gcc.dg/bitint-22.c: New test.
+	* gcc.dg/bitint-23.c: New test.
+	* gcc.dg/bitint-24.c: New test.
+	* gcc.dg/bitint-25.c: New test.
+	* gcc.dg/bitint-26.c: New test.
+	* gcc.dg/bitint-27.c: New test.
+	* g++.dg/ext/bitint1.C: New test.
+	* g++.dg/ext/bitint2.C: New test.
+	* g++.dg/ext/bitint3.C: New test.
+	* g++.dg/ext/bitint4.C: New test.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gcc.dg/torture/bitint-20.c: New test.
+	* gcc.dg/torture/bitint-21.c: New test.
+	* gcc.dg/torture/bitint-22.c: New test.
+	* gcc.dg/torture/bitint-23.c: New test.
+	* gcc.dg/torture/bitint-24.c: New test.
+	* gcc.dg/torture/bitint-25.c: New test.
+	* gcc.dg/torture/bitint-26.c: New test.
+	* gcc.dg/torture/bitint-27.c: New test.
+	* gcc.dg/torture/bitint-28.c: New test.
+	* gcc.dg/torture/bitint-29.c: New test.
+	* gcc.dg/torture/bitint-30.c: New test.
+	* gcc.dg/torture/bitint-31.c: New test.
+	* gcc.dg/torture/bitint-32.c: New test.
+	* gcc.dg/torture/bitint-33.c: New test.
+	* gcc.dg/torture/bitint-34.c: New test.
+	* gcc.dg/torture/bitint-35.c: New test.
+	* gcc.dg/torture/bitint-36.c: New test.
+	* gcc.dg/torture/bitint-37.c: New test.
+	* gcc.dg/torture/bitint-38.c: New test.
+	* gcc.dg/torture/bitint-39.c: New test.
+	* gcc.dg/torture/bitint-40.c: New test.
+	* gcc.dg/torture/bitint-41.c: New test.
+	* gcc.dg/torture/bitint-42.c: New test.
+	* gcc.dg/atomic/stdatomic-bitint-1.c: New test.
+	* gcc.dg/atomic/stdatomic-bitint-2.c: New test.
+	* gcc.dg/dfp/bitint-1.c: New test.
+	* gcc.dg/dfp/bitint-2.c: New test.
+	* gcc.dg/dfp/bitint-3.c: New test.
+	* gcc.dg/dfp/bitint-4.c: New test.
+	* gcc.dg/dfp/bitint-5.c: New test.
+	* gcc.dg/dfp/bitint-6.c: New test.
+	* gcc.dg/ubsan/bitint-1.c: New test.
+	* gcc.dg/ubsan/bitint-2.c: New test.
+	* gcc.dg/ubsan/bitint-3.c: New test.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* lib/target-supports.exp (check_effective_target_bitint,
+	check_effective_target_bitint128, check_effective_target_bitint575):
+	New effective targets.
+	* gcc.dg/bitint-1.c: New test.
+	* gcc.dg/bitint-2.c: New test.
+	* gcc.dg/bitint-3.c: New test.
+	* gcc.dg/bitint-4.c: New test.
+	* gcc.dg/bitint-5.c: New test.
+	* gcc.dg/bitint-6.c: New test.
+	* gcc.dg/bitint-7.c: New test.
+	* gcc.dg/bitint-8.c: New test.
+	* gcc.dg/bitint-9.c: New test.
+	* gcc.dg/bitint-10.c: New test.
+	* gcc.dg/bitint-11.c: New test.
+	* gcc.dg/bitint-12.c: New test.
+	* gcc.dg/bitint-13.c: New test.
+	* gcc.dg/bitint-14.c: New test.
+	* gcc.dg/bitint-15.c: New test.
+	* gcc.dg/bitint-16.c: New test.
+	* gcc.dg/bitint-17.c: New test.
+	* gcc.dg/bitint-18.c: New test.
+	* gcc.dg/torture/bitint-1.c: New test.
+	* gcc.dg/torture/bitint-2.c: New test.
+	* gcc.dg/torture/bitint-3.c: New test.
+	* gcc.dg/torture/bitint-4.c: New test.
+	* gcc.dg/torture/bitint-5.c: New test.
+	* gcc.dg/torture/bitint-6.c: New test.
+	* gcc.dg/torture/bitint-7.c: New test.
+	* gcc.dg/torture/bitint-8.c: New test.
+	* gcc.dg/torture/bitint-9.c: New test.
+	* gcc.dg/torture/bitint-10.c: New test.
+	* gcc.dg/torture/bitint-11.c: New test.
+	* gcc.dg/torture/bitint-12.c: New test.
+	* gcc.dg/torture/bitint-13.c: New test.
+	* gcc.dg/torture/bitint-14.c: New test.
+	* gcc.dg/torture/bitint-15.c: New test.
+	* gcc.dg/torture/bitint-16.c: New test.
+	* gcc.dg/torture/bitint-17.c: New test.
+	* gcc.dg/torture/bitint-18.c: New test.
+	* gcc.dg/torture/bitint-19.c: New test.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111296
+	* g++.target/riscv/rvv/base/pr111296.C: New test.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111295
+	* gcc.target/riscv/rvv/autovec/pr111295.c: New test.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl1024b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl2048b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl256b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl4096b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl512b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl1024b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl2048b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl256b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl4096b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl512b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64x-1.c: Ditto.
+
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* c-c++-common/analyzer/strstr-1.c: New test.
+
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* c-c++-common/analyzer/null-terminated-strings-2.c: New test.
+	* c-c++-common/analyzer/overlapping-buffers.c: Update dg-bogus
+	directives to avoid clashing with note from <string.h> that might
+	happen to have the same line number.  Add strpncpy test coverage.
+	* c-c++-common/analyzer/strncpy-1.c: New test.
+	* gcc.dg/analyzer/null-terminated-strings-1.c
+	(test_filled_nonzero): New.
+	(void test_filled_zero): New.
+	(test_filled_symbolic): New.
+
+2023-09-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Pass ctxt to
+	zero_fill_region.
+
+2023-09-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/intrisinc-vrgatherei16.c: Moved to...
+	* gcc.target/riscv/rvv/base/intrisinc-vrgatherei16.c: ...here.
+
+2023-09-06  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-li-rotr.c: Don't run for RV32.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111232
+	* gcc.target/riscv/rvv/autovec/widen/widen-4.c: Add more testcases.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111232.c: New test.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/abi-call-variant_cc.c: New test.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-1.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-2.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-save-restore.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-zcmp.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-save-restore.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: New test.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2.c: New test.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/abi-call-args-1-run.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-1.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-2-run.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-2.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-3-run.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-3.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-4-run.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-args-4.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-error-1.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-return-run.c: New test.
+	* gcc.target/riscv/rvv/base/abi-call-return.c: New test.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/c11-floatn-1.c: New test.
+	* gcc.dg/c11-floatn-2.c: New test.
+	* gcc.dg/c11-floatn-3.c: New test.
+	* gcc.dg/c11-floatn-4.c: New test.
+	* gcc.dg/c11-floatn-5.c: New test.
+	* gcc.dg/c11-floatn-6.c: New test.
+	* gcc.dg/c11-floatn-7.c: New test.
+	* gcc.dg/c11-floatn-8.c: New test.
+	* gcc.dg/c2x-floatn-1.c: New test.
+	* gcc.dg/c2x-floatn-2.c: New test.
+	* gcc.dg/c2x-floatn-3.c: New test.
+	* gcc.dg/c2x-floatn-4.c: New test.
+	* gcc.dg/c2x-floatn-5.c: New test.
+	* gcc.dg/c2x-floatn-6.c: New test.
+	* gcc.dg/c2x-floatn-7.c: New test.
+	* gcc.dg/c2x-floatn-8.c: New test.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-2.c: New test.
+
+2023-09-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/no_unique_address8.C: New test.
+	* g++.dg/abi/no_unique_address8a.C: New test.
+
+2023-09-06  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zicond-ice-2.c: New test.  This is based on
+	an ICE at libat_lock_n func on gcc/libatomic/config/posix/lock.c
+	but heavily minimized.
+
 2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* gcc.target/riscv/xtheadbb-li-rotr.c: New tests.

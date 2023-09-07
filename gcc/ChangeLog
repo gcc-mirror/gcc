@@ -1,3 +1,313 @@
+2023-09-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/111310
+	* godump.cc (go_format_type): Handle BITINT_TYPE.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* tree.cc (build_one_cst, build_minus_one_cst): Handle BITINT_TYPE
+	like INTEGER_TYPE.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gimple-lower-bitint.cc (bitint_large_huge::if_then_else,
+	bitint_large_huge::if_then_if_then_else): Use make_single_succ_edge
+	rather than make_edge, initialize bb->count.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* doc/libgcc.texi (Bit-precise integer arithmetic functions):
+	Document general rules for _BitInt support library functions
+	and document __mulbitint3 and __divmodbitint4.
+	(Conversion functions): Document __fix{s,d,x,t}fbitint,
+	__floatbitint{s,d,x,t,h,b}f, __bid_fix{s,d,t}dbitint and
+	__bid_floatbitint{s,d,t}d.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* glimits.h (BITINT_MAXWIDTH): Define if __BITINT_MAXWIDTH__ is
+	predefined.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* internal-fn.cc (expand_ubsan_result_store): Add LHS, MODE and
+	DO_ERROR arguments.  For non-mode precision BITINT_TYPE results
+	check if all padding bits up to mode precision are zeros or sign
+	bit copies and if not, jump to DO_ERROR.
+	(expand_addsub_overflow, expand_neg_overflow, expand_mul_overflow):
+	Adjust expand_ubsan_result_store callers.
+	* ubsan.cc: Include target.h and langhooks.h.
+	(ubsan_encode_value): Pass BITINT_TYPE values which fit into pointer
+	size converted to pointer sized integer, pass BITINT_TYPE values
+	which fit into TImode (if supported) or DImode as those integer types
+	or otherwise for now punt (pass 0).
+	(ubsan_type_descriptor): Handle BITINT_TYPE.  For pstyle of
+	UBSAN_PRINT_FORCE_INT use TK_Integer (0x0000) mode with a
+	TImode/DImode precision rather than TK_Unknown used otherwise for
+	large/huge BITINT_TYPEs.
+	(instrument_si_overflow): Instrument BITINT_TYPE operations even when
+	they don't have mode precision.
+	* ubsan.h (enum ubsan_print_style): New enumerator.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* config/i386/i386.cc (classify_argument): Handle BITINT_TYPE.
+	(ix86_bitint_type_info): New function.
+	(TARGET_C_BITINT_TYPE_INFO): Redefine.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* Makefile.in (OBJS): Add gimple-lower-bitint.o.
+	* passes.def: Add pass_lower_bitint after pass_lower_complex and
+	pass_lower_bitint_O0 after pass_lower_complex_O0.
+	* tree-pass.h (PROP_gimple_lbitint): Define.
+	(make_pass_lower_bitint_O0, make_pass_lower_bitint): Declare.
+	* gimple-lower-bitint.h: New file.
+	* tree-ssa-live.h (struct _var_map): Add bitint member.
+	(init_var_map): Adjust declaration.
+	(region_contains_p): Handle map->bitint like map->outofssa_p.
+	* tree-ssa-live.cc (init_var_map): Add BITINT argument, initialize
+	map->bitint and set map->outofssa_p to false if it is non-NULL.
+	* tree-ssa-coalesce.cc: Include gimple-lower-bitint.h.
+	(build_ssa_conflict_graph): Call build_bitint_stmt_ssa_conflicts if
+	map->bitint.
+	(create_coalesce_list_for_region): For map->bitint ignore SSA_NAMEs
+	not in that bitmap, and allow res without default def.
+	(compute_optimized_partition_bases): In map->bitint mode try hard to
+	coalesce any SSA_NAMEs with the same size.
+	(coalesce_bitint): New function.
+	(coalesce_ssa_name): In map->bitint mode, or map->bitmap into
+	used_in_copies and call coalesce_bitint.
+	* gimple-lower-bitint.cc: New file.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* tree.def (BITINT_TYPE): New type.
+	* tree.h (TREE_CHECK6, TREE_NOT_CHECK6): Define.
+	(NUMERICAL_TYPE_CHECK, INTEGRAL_TYPE_P): Include
+	BITINT_TYPE.
+	(BITINT_TYPE_P): Define.
+	(CONSTRUCTOR_BITFIELD_P): Return true even for BLKmode bit-fields if
+	they have BITINT_TYPE type.
+	(tree_check6, tree_not_check6): New inline functions.
+	(any_integral_type_check): Include BITINT_TYPE.
+	(build_bitint_type): Declare.
+	* tree.cc (tree_code_size, wide_int_to_tree_1, cache_integer_cst,
+	build_zero_cst, type_hash_canon_hash, type_cache_hasher::equal,
+	type_hash_canon): Handle BITINT_TYPE.
+	(bitint_type_cache): New variable.
+	(build_bitint_type): New function.
+	(signed_or_unsigned_type_for, verify_type_variant, verify_type):
+	Handle BITINT_TYPE.
+	(tree_cc_finalize): Free bitint_type_cache.
+	* builtins.cc (type_to_class): Handle BITINT_TYPE.
+	(fold_builtin_unordered_cmp): Handle BITINT_TYPE like INTEGER_TYPE.
+	* cfgexpand.cc (expand_debug_expr): Punt on BLKmode BITINT_TYPE
+	INTEGER_CSTs.
+	* convert.cc (convert_to_pointer_1, convert_to_real_1,
+	convert_to_complex_1): Handle BITINT_TYPE like INTEGER_TYPE.
+	(convert_to_integer_1): Likewise.  For BITINT_TYPE don't check
+	GET_MODE_PRECISION (TYPE_MODE (type)).
+	* doc/generic.texi (BITINT_TYPE): Document.
+	* doc/tm.texi.in (TARGET_C_BITINT_TYPE_INFO): New.
+	* doc/tm.texi: Regenerated.
+	* dwarf2out.cc (base_type_die, is_base_type, modified_type_die,
+	gen_type_die_with_usage): Handle BITINT_TYPE.
+	(rtl_for_decl_init): Punt on BLKmode BITINT_TYPE INTEGER_CSTs or
+	handle those which fit into shwi.
+	* expr.cc (expand_expr_real_1): Define EXTEND_BITINT macro, reduce
+	to bitfield precision reads from BITINT_TYPE vars, parameters or
+	memory locations.  Expand large/huge BITINT_TYPE INTEGER_CSTs into
+	memory.
+	* fold-const.cc (fold_convert_loc, make_range_step): Handle
+	BITINT_TYPE.
+	(extract_muldiv_1): For BITINT_TYPE use TYPE_PRECISION rather than
+	GET_MODE_SIZE (SCALAR_INT_TYPE_MODE).
+	(native_encode_int, native_interpret_int, native_interpret_expr):
+	Handle BITINT_TYPE.
+	* gimple-expr.cc (useless_type_conversion_p): Make BITINT_TYPE
+	to some other integral type or vice versa conversions non-useless.
+	* gimple-fold.cc (gimple_fold_builtin_memset): Punt for BITINT_TYPE.
+	(clear_padding_unit): Mention in comment that _BitInt types don't need
+	to fit either.
+	(clear_padding_bitint_needs_padding_p): New function.
+	(clear_padding_type_may_have_padding_p): Handle BITINT_TYPE.
+	(clear_padding_type): Likewise.
+	* internal-fn.cc (expand_mul_overflow): For unsigned non-mode
+	precision operands force pos_neg? to 1.
+	(expand_MULBITINT, expand_DIVMODBITINT, expand_FLOATTOBITINT,
+	expand_BITINTTOFLOAT): New functions.
+	* internal-fn.def (MULBITINT, DIVMODBITINT, FLOATTOBITINT,
+	BITINTTOFLOAT): New internal functions.
+	* internal-fn.h (expand_MULBITINT, expand_DIVMODBITINT,
+	expand_FLOATTOBITINT, expand_BITINTTOFLOAT): Declare.
+	* match.pd (non-equality compare simplifications from fold_binary):
+	Punt if TYPE_MODE (arg1_type) is BLKmode.
+	* pretty-print.h (pp_wide_int): Handle printing of large precision
+	wide_ints which would buffer overflow digit_buffer.
+	* stor-layout.cc (finish_bitfield_representative): For bit-fields
+	with BITINT_TYPE, prefer representatives with precisions in
+	multiple of limb precision.
+	(layout_type): Handle BITINT_TYPE.  Handle COMPLEX_TYPE with BLKmode
+	element type and assert it is BITINT_TYPE.
+	* target.def (bitint_type_info): New C target hook.
+	* target.h (struct bitint_info): New type.
+	* targhooks.cc (default_bitint_type_info): New function.
+	* targhooks.h (default_bitint_type_info): Declare.
+	* tree-pretty-print.cc (dump_generic_node): Handle BITINT_TYPE.
+	Handle printing large wide_ints which would buffer overflow
+	digit_buffer.
+	* tree-ssa-sccvn.cc: Include target.h.
+	(eliminate_dom_walker::eliminate_stmt): Punt for large/huge
+	BITINT_TYPE.
+	* tree-switch-conversion.cc (jump_table_cluster::emit): For more than
+	64-bit BITINT_TYPE subtract low bound from expression and cast to
+	64-bit integer type both the controlling expression and case labels.
+	* typeclass.h (enum type_class): Add bitint_type_class enumerator.
+	* varasm.cc (output_constant): Handle BITINT_TYPE INTEGER_CSTs.
+	* vr-values.cc (check_for_binary_op_overflow): Use widest2_int rather
+	than widest_int.
+	(simplify_using_ranges::simplify_internal_call_using_ranges): Use
+	unsigned_type_for rather than build_nonstandard_integer_type.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111296
+	* config/riscv/riscv.cc (riscv_modes_tieable_p): Fix incorrect mode
+	tieable for RVV modes.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111295
+	* config/riscv/riscv-vsetvl.cc (insert_vsetvl): Bug fix.
+
+2023-09-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-switch.def (VLS_ENTRY): Remove TARGET_64BIT
+
+2023-09-06  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_scc):
+	Add code for particular constants (only 0 and INT_MIN for now)
+	for EQ/NE boolean evaluation in SImode.
+	* config/xtensa/xtensa.md (*eqne_INT_MIN): Remove because its
+	implementation has been integrated into the above.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111232
+	* config/riscv/autovec-opt.md (@pred_single_widen_mul<any_extend:su><mode>):
+	Delete.
+	(*pred_widen_mulsu<mode>): Delete.
+	(*pred_single_widen_mul<mode>): Delete.
+	(*dual_widen_<any_widen_binop:optab><any_extend:su><mode>):
+	Add new combine patterns.
+	(*single_widen_sub<any_extend:su><mode>): Ditto.
+	(*single_widen_add<any_extend:su><mode>): Ditto.
+	(*single_widen_mult<any_extend:su><mode>): Ditto.
+	(*dual_widen_mulsu<mode>): Ditto.
+	(*dual_widen_mulus<mode>): Ditto.
+	(*dual_widen_<optab><mode>): Ditto.
+	(*single_widen_add<mode>): Ditto.
+	(*single_widen_sub<mode>): Ditto.
+	(*single_widen_mult<mode>): Ditto.
+	* config/riscv/autovec.md (<optab><mode>3):
+	Change define_expand to define_insn_and_split.
+	(<optab><mode>2): Ditto.
+	(abs<mode>2): Ditto.
+	(smul<mode>3_highpart): Ditto.
+	(umul<mode>3_highpart): Ditto.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-protos.h (riscv_declare_function_name): Add protos.
+	(riscv_asm_output_alias): Ditto.
+	(riscv_asm_output_external): Ditto.
+	* config/riscv/riscv.cc (riscv_asm_output_variant_cc):
+	Output .variant_cc directive for vector function.
+	(riscv_declare_function_name): Ditto.
+	(riscv_asm_output_alias): Ditto.
+	(riscv_asm_output_external): Ditto.
+	* config/riscv/riscv.h (ASM_DECLARE_FUNCTION_NAME):
+	Implement ASM_DECLARE_FUNCTION_NAME.
+	(ASM_OUTPUT_DEF_FROM_DECLS): Implement ASM_OUTPUT_DEF_FROM_DECLS.
+	(ASM_OUTPUT_EXTERNAL): Implement ASM_OUTPUT_EXTERNAL.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-sr.cc (riscv_remove_unneeded_save_restore_calls): Pass riscv_cc.
+	* config/riscv/riscv.cc (struct riscv_frame_info): Add new fileds.
+	(riscv_frame_info::reset): Reset new fileds.
+	(riscv_call_tls_get_addr): Pass riscv_cc.
+	(riscv_function_arg): Return riscv_cc for call patterm.
+	(get_riscv_cc): New function return riscv_cc from rtl call_insn.
+	(riscv_insn_callee_abi): Implement TARGET_INSN_CALLEE_ABI.
+	(riscv_save_reg_p): Add vector callee-saved check.
+	(riscv_stack_align): Add vector save area comment.
+	(riscv_compute_frame_info): Ditto.
+	(riscv_restore_reg): Update for type change.
+	(riscv_for_each_saved_v_reg): New function save vector registers.
+	(riscv_first_stack_step): Handle funciton with vector callee-saved registers.
+	(riscv_expand_prologue): Ditto.
+	(riscv_expand_epilogue): Ditto.
+	(riscv_output_mi_thunk): Pass riscv_cc.
+	(TARGET_INSN_CALLEE_ABI): Implement TARGET_INSN_CALLEE_ABI.
+	* config/riscv/riscv.h (get_riscv_cc): Export get_riscv_cc function.
+	* config/riscv/riscv.md: Add CALLEE_CC operand for call pattern.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-protos.h (builtin_type_p): New function for checking vector type.
+	* config/riscv/riscv-vector-builtins.cc (builtin_type_p): Ditto.
+	* config/riscv/riscv.cc (struct riscv_arg_info): New fields.
+	(riscv_init_cumulative_args): Setup variant_cc field.
+	(riscv_vector_type_p): New function for checking vector type.
+	(riscv_hard_regno_nregs): Hoist declare.
+	(riscv_get_vector_arg): Subroutine of riscv_get_arg_info.
+	(riscv_get_arg_info): Support vector cc.
+	(riscv_function_arg_advance): Update cum.
+	(riscv_pass_by_reference): Handle vector args.
+	(riscv_v_abi): New function return vector abi.
+	(riscv_return_value_is_vector_type_p): New function for check vector arguments.
+	(riscv_arguments_is_vector_type_p): New function for check vector returns.
+	(riscv_fntype_abi): Implement TARGET_FNTYPE_ABI.
+	(TARGET_FNTYPE_ABI): Implement TARGET_FNTYPE_ABI.
+	* config/riscv/riscv.h (GCC_RISCV_H): Define macros for vector abi.
+	(MAX_ARGS_IN_VECTOR_REGISTERS): Ditto.
+	(MAX_ARGS_IN_MASK_REGISTERS): Ditto.
+	(V_ARG_FIRST): Ditto.
+	(V_ARG_LAST): Ditto.
+	(enum riscv_cc): Define all RISCV_CC variants.
+	* config/riscv/riscv.opt: Add --param=riscv-vector-abi.
+
+2023-09-06  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_<optab><mode>):
+	Add sqrt + vcond_mask combine pattern.
+	* config/riscv/autovec.md (<optab><mode>2):
+	Change define_expand to define_insn_and_split.
+
+2023-09-06  Jason Merrill  <jason@redhat.com>
+
+	* common.opt: Update -fabi-version=19.
+
+2023-09-06  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/zicond.md: Add closing parent to a comment.
+
+2023-09-06  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Force
+	large constant cons/alt into a register.
+
 2023-09-05  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* config/riscv/riscv.cc (riscv_build_integer_1): Don't

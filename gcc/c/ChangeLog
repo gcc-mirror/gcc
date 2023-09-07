@@ -1,3 +1,47 @@
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-decl.cc (finish_declspecs): Emit pedwarn_c11 on _BitInt.
+	* c-typeck.cc (c_common_type): Emit sorry for common type between
+	_Complex integer and larger _BitInt and return the _Complex integer.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-convert.cc (c_convert): Handle BITINT_TYPE like INTEGER_TYPE.
+	* c-decl.cc (check_bitfield_type_and_width): Allow BITINT_TYPE
+	bit-fields.
+	(finish_struct): Prefer to use BITINT_TYPE for BITINT_TYPE bit-fields
+	if possible.
+	(declspecs_add_type): Formatting fixes.  Handle cts_bitint.  Adjust
+	for added union in *specs.  Handle RID_BITINT.
+	(finish_declspecs): Handle cts_bitint.  Adjust for added union
+	in *specs.
+	* c-parser.cc (c_keyword_starts_typename, c_token_starts_declspecs,
+	c_parser_declspecs, c_parser_gnu_attribute_any_word): Handle
+	RID_BITINT.
+	(c_parser_omp_clause_schedule): Handle BITINT_TYPE like INTEGER_TYPE.
+	* c-tree.h (enum c_typespec_keyword): Mention _BitInt in comment.
+	Add cts_bitint enumerator.
+	(struct c_declspecs): Move int_n_idx and floatn_nx_idx into a union
+	and add bitint_prec there as well.
+	* c-typeck.cc (c_common_type, comptypes_internal):
+	Handle BITINT_TYPE.
+	(perform_integral_promotions): Promote BITINT_TYPE bit-fields to
+	their declared type.
+	(build_array_ref, build_unary_op, build_conditional_expr,
+	build_c_cast, convert_for_assignment, digest_init, build_binary_op):
+	Handle BITINT_TYPE.
+	* c-fold.cc (c_fully_fold_internal): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+	* c-aux-info.cc (gen_type): Handle BITINT_TYPE.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (declspecs_add_type): Use pedwarn_c11 rather than pedwarn
+	for _FloatN{,x} diagnostics and append " before C2X" to the diagnostic
+	text.
+
 2023-09-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_allocate): Handle

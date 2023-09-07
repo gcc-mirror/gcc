@@ -1,3 +1,8 @@
+2023-09-06  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_subobject_offset): Check
+	same_type_ignoring_top_level_qualifiers_p.
+
 2023-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91483
