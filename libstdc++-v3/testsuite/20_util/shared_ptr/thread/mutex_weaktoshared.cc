@@ -17,10 +17,9 @@
 
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
-// { dg-do run }
+// { dg-do run { target c++11 } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-add-options libatomic }
-// { dg-require-effective-target c++11 }
 // { dg-require-gthreads "" }
 // { dg-require-cstdint "" }
 
