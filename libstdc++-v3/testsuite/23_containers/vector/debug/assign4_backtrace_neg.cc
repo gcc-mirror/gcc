@@ -1,5 +1,5 @@
 // { dg-do run { xfail *-*-* } }
-// { dg-options "-D_GLIBCXX_DEBUG_BACKTRACE -lstdc++_libbacktrace" }
+// { dg-options "-D_GLIBCXX_DEBUG_BACKTRACE -lstdc++exp" }
 // { dg-require-effective-target stacktrace }
 
 #include <debug/vector>

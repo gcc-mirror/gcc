@@ -101,29 +101,26 @@
     </row>
 
     <row>
-      <entry><literal>-lstdc++fs</literal></entry>
-      <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
-        is required for use of the Filesystem library extensions in
-        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
-      </entry>
-    </row>
-
-    <row>
       <entry><literal>-lstdc++exp</literal></entry>
-      <entry>Linking to <filename class="libraryfile">libstdc++exp</filename>
-        is required for use of the C++ Contracts extensions enabled by
-        <literal>-fcontracts</literal>.
+      <entry>Linking to <filename class="libraryfile">libstdc++exp.a</filename>
+        is required for use of experimental C++ library features.
+        This currently provides support for the C++23 types defined in the
+        <filename class="headerfile">&lt;stacktrace&gt;</filename> header,
+        the Filesystem library extensions defined in the
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+        header,
+        and the Contracts extensions enabled by <literal>-fcontracts</literal>.
       </entry>
     </row>
 
     <row>
-      <entry><literal>-lstdc++_libbacktrace</literal></entry>
-      <entry>Until C++23 support is non-experimental, linking to
-	<filename class="libraryfile">libstdc++_libbacktrace.a</filename>
-	is required for use of the C++23 type
-	<classname>std::stacktrace</classname>
-	and related types in
-	<filename class="headerfile">&lt;stacktrace&gt;</filename>.
+      <entry><literal>-lstdc++fs</literal></entry>
+      <entry>Linking to <filename class="libraryfile">libstdc++fs.a</filename>
+        is another way to use the Filesystem library extensions defined in the
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+        header.
+        The <filename class="libraryfile">libstdc++exp.a</filename> library
+        also provides all the symbols contained in this library.
       </entry>
     </row>
 
@@ -1710,6 +1707,10 @@ A quick read of the relevant part of the GCC
       and link with <option>-lstdc++fs</option>. The library implementation
       is incomplete on non-POSIX platforms, specifically Windows is only
       partially supported.
+      Since GCC 14, <filename class="libraryfile">libstdc++exp.a</filename>
+      also contains the definitions for this library,
+      so <option>-lstdc++exp</option> can be used instead of
+      <option>-lstdc++fs</option>.
     </para>
 
     <para>

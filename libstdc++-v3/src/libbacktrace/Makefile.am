@@ -31,7 +31,8 @@
 
 include $(top_srcdir)/fragment.am
 
-toolexeclib_LTLIBRARIES = libstdc++_libbacktrace.la
+# Convenience library for C++23 runtime.
+noinst_LTLIBRARIES = libstdc++_libbacktrace.la
 
 ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 

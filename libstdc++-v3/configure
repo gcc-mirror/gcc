@@ -5523,7 +5523,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace src/experimental doc po testsuite python'
+  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/c++23 src/filesystem src/libbacktrace src/experimental doc po testsuite python'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -75026,7 +75026,7 @@ ac_config_files="$ac_config_files src/libbacktrace/backtrace-supported.h"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/filesystem/Makefile src/libbacktrace/Makefile src/experimental/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/c++23/Makefile src/filesystem/Makefile src/libbacktrace/Makefile src/experimental/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -76277,6 +76277,7 @@ do
     "src/c++11/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++11/Makefile" ;;
     "src/c++17/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++17/Makefile" ;;
     "src/c++20/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++20/Makefile" ;;
+    "src/c++23/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++23/Makefile" ;;
     "src/filesystem/Makefile") CONFIG_FILES="$CONFIG_FILES src/filesystem/Makefile" ;;
     "src/libbacktrace/Makefile") CONFIG_FILES="$CONFIG_FILES src/libbacktrace/Makefile" ;;
     "src/experimental/Makefile") CONFIG_FILES="$CONFIG_FILES src/experimental/Makefile" ;;
@@ -77767,6 +77768,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "src/c++20/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/c++23/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$
