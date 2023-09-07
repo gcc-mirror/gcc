@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -808,8 +808,8 @@ proc check_v3_target_c_std { } {
 	# Set up, compile, and execute a C++ test program that tries to use
 	# C99 functionality.
 	# For math bits, could use check_effective_target_c99_math.
-	set src fileio[pid].cc
-	set exe fileio[pid].x
+	set src c_std[pid].cc
+	set exe c_std[pid].x
 
 	set f [open $src "w"]
 	puts $f "#include <tr1/cmath>"
