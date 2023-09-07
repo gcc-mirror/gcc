@@ -589,6 +589,9 @@ private:
 				      const gswitch *switch_stmt,
 				      region_model_context *ctxt,
 				      rejected_constraint **out);
+  bool apply_constraints_for_ggoto (const cfg_superedge &edge,
+				    const ggoto *goto_stmt,
+				    region_model_context *ctxt);
   bool apply_constraints_for_exception (const gimple *last_stmt,
 					region_model_context *ctxt,
 					rejected_constraint **out);

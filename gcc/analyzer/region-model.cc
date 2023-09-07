@@ -4997,7 +4997,7 @@ region_model::maybe_update_for_edge (const superedge &edge,
   if (last_stmt == NULL)
     return true;
 
-  /* Apply any constraints for conditionals/switch statements.  */
+  /* Apply any constraints for conditionals/switch/computed-goto statements.  */
 
   if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
     {
@@ -5011,6 +5011,12 @@ region_model::maybe_update_for_edge (const superedge &edge,
 	= as_a <const switch_cfg_superedge *> (&edge);
       return apply_constraints_for_gswitch (*switch_sedge, switch_stmt,
 					    ctxt, out);
+    }
+
+  if (const ggoto *goto_stmt = dyn_cast <const ggoto *> (last_stmt))
+    {
+      const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
+      return apply_constraints_for_ggoto (*cfg_sedge, goto_stmt, ctxt);
     }
 
   /* Apply any constraints due to an exception being thrown.  */
@@ -5265,6 +5271,37 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
   if (sat && ctxt && !all_cases_ranges->empty_p ())
     ctxt->on_bounded_ranges (*index_sval, *all_cases_ranges);
   return sat;
+}
+
+/* Given an edge reached by GOTO_STMT, determine appropriate constraints
+   for the edge to be taken.
+
+   If they are feasible, add the constraints and return true.
+
+   Return false if the constraints contradict existing knowledge
+   (and so the edge should not be taken).  */
+
+bool
+region_model::apply_constraints_for_ggoto (const cfg_superedge &edge,
+					   const ggoto *goto_stmt,
+					   region_model_context *ctxt)
+{
+  tree dest = gimple_goto_dest (goto_stmt);
+  const svalue *dest_sval = get_rvalue (dest, ctxt);
+
+  /* If we know we were jumping to a specific label.  */
+  if (tree dst_label = edge.m_dest->get_label ())
+    {
+      const label_region *dst_label_reg
+	= m_mgr->get_region_for_label (dst_label);
+      const svalue *dst_label_ptr
+	= m_mgr->get_ptr_svalue (ptr_type_node, dst_label_reg);
+
+      if (!add_constraint (dest_sval, EQ_EXPR, dst_label_ptr, ctxt))
+	return false;
+    }
+
+  return true;
 }
 
 /* Apply any constraints due to an exception being thrown at LAST_STMT.
