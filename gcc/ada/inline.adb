@@ -4105,6 +4105,7 @@ package body Inline is
               Object_Definition   =>
                 New_Copy_Tree (Object_Definition (Parent (Targ1))));
          Replace_Formals (Decl);
+         Set_No_Initialization (Decl);
          Rewrite (Parent (N), Decl);
          Analyze (Parent (N));
 
