@@ -783,7 +783,7 @@ operator_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_NE;
 
   // TRUE = op1 == op2 indicates EQ_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_EQ;
   return VREL_VARYING;
 }
@@ -915,7 +915,7 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_EQ;
 
   // TRUE = op1 != op2  indicates NE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_NE;
   return VREL_VARYING;
 }
@@ -1037,7 +1037,7 @@ operator_lt::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GE;
 
   // TRUE = op1 < op2 indicates LT_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LT;
   return VREL_VARYING;
 }
@@ -1144,7 +1144,7 @@ operator_le::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GT;
 
   // TRUE = op1 <= op2 indicates LE_EXPR.
-  if (lhs.undefined_p () || !contains_zero_p (lhs))
+  if (!contains_zero_p (lhs))
     return VREL_LE;
   return VREL_VARYING;
 }

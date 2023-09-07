@@ -1158,7 +1158,7 @@ inline bool
 contains_zero_p (const irange &r)
 {
   if (r.undefined_p ())
-    return true;
+    return false;
 
   wide_int zero = wi::zero (TYPE_PRECISION (r.type ()));
   return r.contains_p (zero);
