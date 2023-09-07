@@ -22,6 +22,7 @@
 #include "rust-diagnostics.h"
 
 #include "options.h"
+#include "diagnostic-metadata.h"
 
 void
 rust_be_internal_error_at (const Location location, const std::string &errmsg)
@@ -68,6 +69,38 @@ rust_be_error_at (const RichLocation &location, const std::string &errmsg)
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
   rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
   error_at (&gcc_loc, "%s", errmsg.c_str ());
+}
+
+class rust_error_code_rule : public diagnostic_metadata::rule
+{
+public:
+  rust_error_code_rule (const ErrorCode code) : m_code (code) {}
+
+  char *make_description () const final override
+  {
+    return xstrdup (m_code.m_str);
+  }
+
+  char *make_url () const final override
+  {
+    return concat ("https://doc.rust-lang.org/error-index.html#", m_code.m_str,
+		   NULL);
+  }
+
+private:
+  const ErrorCode m_code;
+};
+
+void
+rust_be_error_at (const RichLocation &location, const ErrorCode code,
+		  const std::string &errmsg)
+{
+  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
+  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
 }
 
 void
