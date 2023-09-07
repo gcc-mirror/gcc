@@ -4989,12 +4989,15 @@ package body Exp_Util is
          return False;
 
       --  If we know that we have a small (at most the maximum integer size)
-      --  record or bit-packed array, then everything is fine, since the back
-      --  end can handle these cases correctly, except if a slice is involved.
+      --  bit-packed array or record without variant part, then everything is
+      --  fine, since the back end can handle these cases correctly, except if
+      --  a slice is involved.
 
       elsif Known_Esize (Comp)
         and then Esize (Comp) <= System_Max_Integer_Size
-        and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
+        and then (Is_Bit_Packed_Array (UT)
+                   or else (Is_Record_Type (UT)
+                             and then not Has_Variant_Part (UT)))
         and then not For_Slice
       then
          return False;
