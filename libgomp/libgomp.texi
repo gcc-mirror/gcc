@@ -518,7 +518,7 @@ specification in version 5.2.
 * Timing Routines::
 * Event Routine::
 @c * Interoperability Routines::
-@c * Memory Management Routines::
+* Memory Management Routines::
 @c * Tool Control Routine::
 @c * Environment Display Routine::
 @end menu
@@ -2112,17 +2112,17 @@ event handle that has already been fulfilled is also undefined.
 @c * omp_get_interop_rc_desc:: <fixme>
 @c @end menu
 
-@c @node Memory Management Routines
-@c @section Memory Management Routines
-@c
-@c Routines to manage and allocate memory on the current device.
-@c They have C linkage and do not throw exceptions.
-@c
-@c @menu
-@c * omp_init_allocator:: <fixme>
-@c * omp_destroy_allocator:: <fixme>
-@c * omp_set_default_allocator:: <fixme>
-@c * omp_get_default_allocator:: <fixme>
+@node Memory Management Routines
+@section Memory Management Routines
+
+Routines to manage and allocate memory on the current device.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_init_allocator:: Create an allocator
+* omp_destroy_allocator:: Destroy an allocator
+* omp_set_default_allocator:: Set the default allocator
+* omp_get_default_allocator:: Get the default allocator
 @c * omp_alloc:: <fixme>
 @c * omp_aligned_alloc:: <fixme>
 @c * omp_free:: <fixme>
@@ -2131,7 +2131,136 @@ event handle that has already been fulfilled is also undefined.
 @c * omp_realloc:: <fixme>
 @c * omp_get_memspace_num_resources:: <fixme>/TR11
 @c * omp_get_submemspace:: <fixme>/TR11
-@c @end menu
+@end menu
+
+
+
+@node omp_init_allocator
+@subsection @code{omp_init_allocator} -- Create an allocator
+@table @asis
+@item @emph{Description}:
+Create an allocator that uses the specified memory space and has the specified
+traits; if an allocator that fulfills the requirements cannot be created,
+@code{omp_null_allocator} is returned.
+
+The predefined memory spaces and available traits can be found at
+@ref{OMP_ALLOCATOR}, where the trait names have to be be prefixed by
+@code{omp_atk_} (e.g. @code{omp_atk_pinned}) and the named trait values by
+@code{omp_atv_} (e.g. @code{omp_atv_true}); additionally, @code{omp_atv_default}
+may be used as trait value to specify that the default value should be used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_allocator_handle_t omp_init_allocator(}
+@item                   @tab @code{  omp_memspace_handle_t memspace,}
+@item                   @tab @code{  int ntraits,}
+@item                   @tab @code{  const omp_alloctrait_t traits[]);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{function omp_init_allocator(memspace, ntraits, traits)}
+@item                   @tab @code{integer (kind=omp_allocator_handle_kind) :: omp_init_allocator}
+@item                   @tab @code{integer (kind=omp_memspace_handle_kind), intent(in) :: memspace}
+@item                   @tab @code{integer, intent(in) :: ntraits}
+@item                   @tab @code{type (omp_alloctrait), intent(in) :: traits(*)}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_destroy_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.2
+@end table
+
+
+
+@node omp_destroy_allocator
+@subsection @code{omp_destroy_allocator} -- Destroy an allocator
+@table @asis
+@item @emph{Description}:
+Releases all resources used by a memory allocator, which must not represent
+a predefined memory allocator.  Accessing memory after its allocator has been
+destroyed has unspecified behavior.  Passing @code{omp_null_allocator} to the
+routine is permitted but will have no effect.
+
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_destroy_allocator (omp_allocator_handle_t allocator);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_destroy_allocator(allocator)}
+@item                   @tab @code{integer (kind=omp_allocator_handle_kind), intent(in) :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.3
+@end table
+
+
+
+@node omp_set_default_allocator
+@subsection @code{omp_set_default_allocator} -- Set the default allocator
+@table @asis
+@item @emph{Description}:
+Sets the default allocator that is used when no allocator has been specified
+in the @code{allocate} or @code{allocator} clause or if an OpenMP memory
+routine is invoked with the @code{omp_null_allocator} allocator.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_default_allocator(omp_allocator_handle_t allocator);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_default_allocator(allocator)}
+@item                   @tab @code{integer (kind=omp_allocator_handle_kind), intent(in) :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_default_allocator}, @ref{omp_init_allocator}, @ref{OMP_ALLOCATOR},
+@ref{Memory allocation}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.4
+@end table
+
+
+
+@node omp_get_default_allocator
+@subsection @code{omp_get_default_allocator} -- Get the default allocator
+@table @asis
+@item @emph{Description}:
+The routine returns the default allocator that is used when no allocator has
+been specified in the @code{allocate} or @code{allocator} clause or if an
+OpenMP memory routine is invoked with the @code{omp_null_allocator} allocator.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_allocator_handle_t omp_get_default_allocator();}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{function omp_get_default_allocator()}
+@item                   @tab @code{integer (kind=omp_allocator_handle_kind) :: omp_get_default_allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_default_allocator}, @ref{OMP_ALLOCATOR}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.5
+@end table
+
+
 
 @c @node Tool Control Routine
 @c
@@ -2204,7 +2333,7 @@ variable is not set.
 @section @env{OMP_ALLOCATOR} -- Set the default allocator
 @cindex Environment Variable
 @table @asis
-@item @emph{ICV:} @var{available-devices-var}
+@item @emph{ICV:} @var{def-allocator-var}
 @item @emph{Scope:} data environment
 @item @emph{Description}:
 Sets the default allocator that is used when no allocator has been specified
@@ -2276,7 +2405,8 @@ OMP_ALLOCATOR=omp_low_lat_mem_space:pinned=true,partition=nearest
 @end smallexample
 
 @item @emph{See also}:
-@ref{Memory allocation}
+@ref{Memory allocation}, @ref{omp_get_default_allocator},
+@ref{omp_set_default_allocator}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
