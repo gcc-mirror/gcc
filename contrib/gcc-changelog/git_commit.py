@@ -331,7 +331,7 @@ class GitCommit:
         if self.revert_commit:
             # The following happens for get_email.py:
             if not self.commit_to_info_hook:
-                self.warnings.append(f"Invoked script can technically not obtain info about "
+                self.warnings.append(f"Invoked script can not obtain info about "
                                      f"reverted commits such as '{self.revert_commit}'")
                 return
             self.info = self.commit_to_info_hook(self.revert_commit)
@@ -810,7 +810,7 @@ class GitCommit:
                     if self.commit_to_info_hook:
                         self.warnings.append(f"Cherry-picked commit not found: '{self.cherry_pick_commit}'")
                     else:
-                        self.warnings.append(f"Invoked script can technically not obtain info about "
+                        self.warnings.append(f"Invoked script can not obtain info about "
                                              f"cherry-picked commits such as '{self.revert_commit}'")
                     timestamp = current_timestamp
             elif not timestamp or use_commit_ts:
