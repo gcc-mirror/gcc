@@ -137,8 +137,9 @@ namespace
   }
 
   void
-  locale::_Impl::_M_init_extra(void* cloc, void* clocm,
-                               const char* __s, const char* __smon)
+  locale::_Impl::_M_init_extra(void* cloc, [[maybe_unused]] void* clocm,
+			       const char* __s,
+			       [[maybe_unused]] const char* __smon)
   {
     auto& __cloc = *static_cast<__c_locale*>(cloc);
 
