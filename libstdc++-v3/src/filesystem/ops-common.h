@@ -35,7 +35,7 @@
 # endif
 # if defined(_GLIBCXX_HAVE_SYS_STAT_H) && defined(_GLIBCXX_HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
-#  include <sys/stat.h>
+#  include <sys/stat.h>  // mkdir, chmod
 # endif
 #endif
 #if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
@@ -129,15 +129,19 @@ namespace __gnu_posix
 
   inline int chmod(const wchar_t* path, mode_t mode)
   { return ::_wchmod(path, mode); }
+#define _GLIBCXX_USE_CHMOD 1
 
   inline int mkdir(const wchar_t* path, mode_t)
   { return ::_wmkdir(path); }
+#define _GLIBCXX_USE_MKDIR 1
 
   inline wchar_t* getcwd(wchar_t* buf, size_t size)
   { return ::_wgetcwd(buf, size > (size_t)INT_MAX ? INT_MAX : (int)size); }
+#define _GLIBCXX_USE_GETCWD 1
 
   inline int chdir(const wchar_t* path)
   { return ::_wchdir(path); }
+#define _GLIBCXX_USE_CHDIR 1
 
 #if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
   using utimbuf = _utimbuf;
@@ -186,10 +190,18 @@ namespace __gnu_posix
 #  endif
 # endif
   using ::mode_t;
+# if _GLIBCXX_USE_CHMOD
   using ::chmod;
+# endif
+# if _GLIBCXX_USE_MKDIR
   using ::mkdir;
+# endif
+# if _GLIBCXX_USE_GETCWD
   using ::getcwd;
+# endif
+# if _GLIBCXX_USE_CHDIR
   using ::chdir;
+# endif
 # if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_USE_UTIME
   using ::utimbuf;
   using ::utime;
@@ -491,8 +503,10 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
     if (::fchmod(out.fd, from_st->st_mode))
 #elif defined _GLIBCXX_USE_FCHMODAT && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
     if (::fchmodat(AT_FDCWD, to, from_st->st_mode, 0))
-#else
+#elif defined _GLIBCXX_USE_CHMOD
     if (posix::chmod(to, from_st->st_mode))
+#else
+    if (false)
 #endif
       {
 	ec.assign(errno, std::generic_category());
