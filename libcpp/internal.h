@@ -555,6 +555,9 @@ struct cpp_reader
   /* Identifier hash table.  */
   struct ht *hash_table;
 
+  /* Identifier ancillary data hash table.  */
+  struct ht *extra_hash_table;
+
   /* Expression parser stack.  */
   struct op *op_stack, *op_limit;
 
@@ -566,7 +569,7 @@ struct cpp_reader
   struct spec_nodes spec_nodes;
 
   /* Whether cpplib owns the hashtable.  */
-  bool our_hashtable;
+  bool our_hashtable, our_extra_hashtable;
 
   /* Traditional preprocessing output buffer (a logical line).  */
   struct
@@ -704,7 +707,8 @@ extern void _cpp_push_token_context (cpp_reader *, cpp_hashnode *,
 extern void _cpp_backup_tokens_direct (cpp_reader *, unsigned int);
 
 /* In identifiers.cc */
-extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
+extern void
+_cpp_init_hashtable (cpp_reader *, cpp_hash_table *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.cc */

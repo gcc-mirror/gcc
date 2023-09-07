@@ -1737,6 +1737,9 @@ do_pragma_poison (cpp_reader *pfile)
 		   NODE_NAME (hp));
       _cpp_free_definition (hp);
       hp->flags |= NODE_POISONED | NODE_DIAGNOSTIC;
+      const auto data = (cpp_hashnode_extra *)
+	ht_lookup (pfile->extra_hash_table, hp->ident, HT_ALLOC);
+      data->poisoned_loc = tok->src_loc;
     }
   pfile->state.poisoned_ok = 0;
 }
