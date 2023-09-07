@@ -2152,7 +2152,8 @@ finish_bitfield_representative (tree repr, tree field)
 	{
 	  struct bitint_info info;
 	  unsigned prec = TYPE_PRECISION (TREE_TYPE (field));
-	  gcc_assert (targetm.c.bitint_type_info (prec, &info));
+	  bool ok = targetm.c.bitint_type_info (prec, &info);
+	  gcc_assert (ok);
 	  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
 	  unsigned lprec = GET_MODE_PRECISION (limb_mode);
 	  if (prec > lprec)
@@ -2413,7 +2414,8 @@ layout_type (tree type)
       {
 	struct bitint_info info;
 	int cnt;
-	gcc_assert (targetm.c.bitint_type_info (TYPE_PRECISION (type), &info));
+	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+	gcc_assert (ok);
 	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
 	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	  {

@@ -11039,7 +11039,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  {
 	    unsigned int prec = TYPE_PRECISION (type);
 	    struct bitint_info info;
-	    gcc_assert (targetm.c.bitint_type_info (prec, &info));
+	    bool ok = targetm.c.bitint_type_info (prec, &info);
+	    gcc_assert (ok);
 	    scalar_int_mode limb_mode
 	      = as_a <scalar_int_mode> (info.limb_mode);
 	    unsigned int limb_prec = GET_MODE_PRECISION (limb_mode);

@@ -4602,7 +4602,8 @@ static bool
 clear_padding_bitint_needs_padding_p (tree type)
 {
   struct bitint_info info;
-  gcc_assert (targetm.c.bitint_type_info (TYPE_PRECISION (type), &info));
+  bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+  gcc_assert (ok);
   if (info.extended)
     return false;
   scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
@@ -4880,7 +4881,8 @@ clear_padding_type (clear_padding_struct *buf, tree type,
     case BITINT_TYPE:
       {
 	struct bitint_info info;
-	gcc_assert (targetm.c.bitint_type_info (TYPE_PRECISION (type), &info));
+	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+	gcc_assert (ok);
 	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
 	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	  {

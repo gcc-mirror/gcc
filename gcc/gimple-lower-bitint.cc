@@ -92,7 +92,8 @@ bitint_precision_kind (int prec)
     return bitint_prec_middle;
 
   struct bitint_info info;
-  gcc_assert (targetm.c.bitint_type_info (prec, &info));
+  bool ok = targetm.c.bitint_type_info (prec, &info);
+  gcc_assert (ok);
   scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
   if (prec <= GET_MODE_PRECISION (limb_mode))
     {
