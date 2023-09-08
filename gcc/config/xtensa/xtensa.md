@@ -3188,6 +3188,118 @@
 		      (const_int 5)
 		      (const_int 6)))])
 
+(define_insn_and_split "eq_zero_NSA"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(eq:SI (match_operand:SI 1 "register_operand" "r")
+	       (const_int 0)))]
+  "TARGET_NSA"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(clz:SI (match_dup 1)))
+   (set (match_dup 0)
+	(lshiftrt:SI (match_dup 0)
+		     (const_int 5)))]
+  ""
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
+
+(define_insn_and_split "eqne_zero"
+  [(set (match_operand:SI 0 "register_operand" "=a,&a")
+	(match_operator:SI 2 "boolean_operator"
+		[(match_operand:SI 1 "register_operand" "0,r")
+		 (const_int 0)]))
+   (clobber (match_scratch:SI 3 "=&a,X"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  enum rtx_code code = GET_CODE (operands[2]);
+  int same_p = REGNO (operands[0]) == REGNO (operands[1]);
+  emit_move_insn (same_p ? operands[3] : operands[0],
+		  code == EQ ? constm1_rtx : const1_rtx);
+  emit_insn (gen_movsicc_internal0 (operands[0], operands[1],
+				    same_p ? operands[3] : operands[1],
+				    operands[0],
+				    gen_rtx_fmt_ee (same_p ? NE : EQ,
+						    VOIDmode,
+						    operands[1],
+						    const0_rtx)));
+  if (code == EQ)
+    emit_insn (gen_addsi3 (operands[0], operands[0], const1_rtx));
+  DONE;
+}
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "GET_CODE (operands[2]) == EQ")
+                      (if_then_else (match_test "TARGET_DENSITY")
+				    (const_int 7)
+				    (const_int 9))
+		      (if_then_else (match_test "TARGET_DENSITY")
+				    (const_int 5)
+				    (const_int 6))))])
+
+(define_insn_and_split "*eqne_zero_masked_bits"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(match_operator 3 "boolean_operator"
+		[(and:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "const_int_operand" "i"))
+		 (const_int 0)]))]
+  "IN_RANGE (exact_log2 (INTVAL (operands[2]) + 1), 17, 31)
+   || IN_RANGE (exact_log2 (-INTVAL (operands[2])), 1, 30)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  HOST_WIDE_INT mask = INTVAL (operands[2]);
+  int n;
+  enum rtx_code code = GET_CODE (operands[3]);
+  if (IN_RANGE (n = exact_log2 (mask + 1), 17, 31))
+    emit_insn (gen_ashlsi3 (operands[0], operands[1], GEN_INT (32 - n)));
+  else
+    emit_insn (gen_lshrsi3 (operands[0], operands[1],
+			    GEN_INT (floor_log2 (-mask))));
+  if (TARGET_NSA && code == EQ)
+    emit_insn (gen_eq_zero_NSA (operands[0], operands[0]));
+  else
+    emit_insn (gen_eqne_zero (operands[0], operands[0],
+			      gen_rtx_fmt_ee (code, VOIDmode,
+					      operands[0], const0_rtx)));
+  DONE;
+})
+
+(define_insn_and_split "*eqne_INT_MIN"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(match_operator:SI 2 "boolean_operator"
+		[(match_operand:SI 1 "register_operand" "r")
+		 (const_int -2147483648)]))]
+  "TARGET_ABS"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_abssi2 (operands[0], operands[1]));
+  if (GET_CODE (operands[2]) == EQ)
+    emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (31)));
+  else
+    {
+      emit_insn (gen_ashrsi3 (operands[0], operands[0], GEN_INT (31)));
+      emit_insn (gen_addsi3 (operands[0], operands[0], const1_rtx));
+    }
+  DONE;
+}
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "GET_CODE (operands[2]) == EQ")
+		      (const_int 6)
+		      (if_then_else (match_test "TARGET_DENSITY")
+				    (const_int 8)
+				    (const_int 9))))])
+
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand")
 	(match_operand:SI 6 "reload_operand"))
