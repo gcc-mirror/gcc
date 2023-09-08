@@ -5438,11 +5438,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     }
     (if ((cmp == LT_EXPR || cmp == LE_EXPR)
 	 && code == MIN_EXPR
-         && integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node, @3, @1)))
+         && integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node, @3, @4)))
      (min @2 @4)
      (if ((cmp == GT_EXPR || cmp == GE_EXPR)
 	  && code == MAX_EXPR
-          && integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node, @3, @1)))
+          && integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node, @3, @4)))
       (max @2 @4))))))
 
 #if GIMPLE
