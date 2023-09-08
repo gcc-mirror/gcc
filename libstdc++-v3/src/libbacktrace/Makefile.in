@@ -368,7 +368,7 @@ VTV_CXXFLAGS = @VTV_CXXFLAGS@
 VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
 VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = -W -Wall -Wwrite-strings -Wmissing-format-attribute \
-	     -Wcast-qual -Werror
+	     -Wcast-qual
 
 XMLCATALOG = @XMLCATALOG@
 XMLLINT = @XMLLINT@
