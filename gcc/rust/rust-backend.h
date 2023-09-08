@@ -182,10 +182,6 @@ tree zero_expression (tree);
 tree
 var_expression (Bvariable *var, location_t);
 
-// Return an expression for the multi-precision integer VAL in BTYPE.
-tree
-integer_constant_expression (tree btype, mpz_t val);
-
 // Return an expression for the floating point value VAL in BTYPE.
 tree
 float_constant_expression (tree btype, mpfr_t val);
