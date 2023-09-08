@@ -4414,7 +4414,7 @@ riscv_pass_in_vector_p (const_tree type)
 {
   static int warned = 0;
 
-  if (type && riscv_v_ext_mode_p (TYPE_MODE (type)) && !warned)
+  if (type && riscv_vector::lookup_vector_type_attribute (type) && !warned)
     {
       warning (OPT_Wpsabi,
 	       "ABI for the vector type is currently in experimental stage and "
