@@ -6318,6 +6318,14 @@
 	[(UNSPEC_COMPLEX_FMA_PAIR "fmaddc")
 	 (UNSPEC_COMPLEX_FCMA_PAIR "fcmaddc")])
 
+(define_int_attr int_comm
+	[(UNSPEC_COMPLEX_FMA "")
+	 (UNSPEC_COMPLEX_FMA_PAIR "")
+	 (UNSPEC_COMPLEX_FCMA "")
+	 (UNSPEC_COMPLEX_FCMA_PAIR "")
+	 (UNSPEC_COMPLEX_FMUL "%")
+	 (UNSPEC_COMPLEX_FCMUL "")])
+
 (define_int_attr conj_op
 	[(UNSPEC_COMPLEX_FMA "")
 	 (UNSPEC_COMPLEX_FCMA "_conj")
@@ -6431,7 +6439,7 @@
 (define_insn "fma_<complexopname>_<mode><sdc_maskz_name><round_name>"
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
 	(unspec:VF_AVX512FP16VL
-	  [(match_operand:VF_AVX512FP16VL 1 "<round_nimm_predicate>" "%v")
+	  [(match_operand:VF_AVX512FP16VL 1 "<round_nimm_predicate>" "<int_comm>v")
 	   (match_operand:VF_AVX512FP16VL 2 "<round_nimm_predicate>" "<round_constraint>")
 	   (match_operand:VF_AVX512FP16VL 3 "<round_nimm_predicate>" "0")]
 	   UNSPEC_COMPLEX_F_C_MA))]
@@ -6495,7 +6503,7 @@
 (define_insn "fma_<complexpairopname>_<mode>_pair"
  [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=&v")
        (unspec:VF1_AVX512VL
-	 [(match_operand:VF1_AVX512VL 1 "vector_operand" "%v")
+	 [(match_operand:VF1_AVX512VL 1 "vector_operand" "<int_comm>v")
 	  (match_operand:VF1_AVX512VL 2 "bcst_vector_operand" "vmBr")
 	  (match_operand:VF1_AVX512VL 3 "vector_operand" "0")]
 	  UNSPEC_COMPLEX_F_C_MA_PAIR))]
@@ -6562,7 +6570,7 @@
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
 	(vec_merge:VF_AVX512FP16VL
 	  (unspec:VF_AVX512FP16VL
-	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "%v")
+	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "<int_comm>v")
 	     (match_operand:VF_AVX512FP16VL 2 "nonimmediate_operand" "<round_constraint>")
 	     (match_operand:VF_AVX512FP16VL 3 "register_operand" "0")]
 	     UNSPEC_COMPLEX_F_C_MA)
@@ -6586,7 +6594,7 @@
 (define_insn "<avx512>_<complexopname>_<mode><maskc_name><round_name>"
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
 	  (unspec:VF_AVX512FP16VL
-	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "%v")
+	    [(match_operand:VF_AVX512FP16VL 1 "nonimmediate_operand" "<int_comm>v")
 	     (match_operand:VF_AVX512FP16VL 2 "nonimmediate_operand" "<round_constraint>")]
 	     UNSPEC_COMPLEX_F_C_MUL))]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
