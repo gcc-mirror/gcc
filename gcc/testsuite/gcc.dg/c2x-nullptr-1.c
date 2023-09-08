@@ -1,5 +1,6 @@
 /* Test valid usage of C23 nullptr.  */
 /* { dg-do run } */
+// { dg-require-effective-target thread_fence }
 /* { dg-options "-std=c2x -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
 
 #include <stdarg.h>

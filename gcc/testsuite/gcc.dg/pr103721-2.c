@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-require-effective-target thread_fence }
 // { dg-options "-O2" }
 
 extern void abort ();

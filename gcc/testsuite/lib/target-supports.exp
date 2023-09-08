@@ -9514,6 +9514,18 @@ proc check_effective_target_sync_char_short { } {
 	     || [check_effective_target_mips_llsc] }}]
 }
 
+# Return 1 if thread_fence does not rely on __sync_synchronize
+# library function
+
+proc check_effective_target_thread_fence {} {
+    return [check_no_compiler_messages thread_fence executable {
+	int main () {
+	    __atomic_thread_fence (__ATOMIC_SEQ_CST);
+	    return 0;
+	}
+    } ""]
+}
+
 # Return 1 if the target uses a ColdFire FPU.
 
 proc check_effective_target_coldfire_fpu { } {

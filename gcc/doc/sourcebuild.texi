@@ -2875,6 +2875,10 @@ Compiler has been configured to support link-time optimization (LTO).
 Compiler and linker support link-time optimization relocatable linking
 with @option{-r} and @option{-flto} options.
 
+@item thread_fence
+Target implements @code{__atomic_thread_fence} without relying on
+non-implemented @code{__sync_synchronize()}.
+
 @item naked_functions
 Target supports the @code{naked} function attribute.
 
