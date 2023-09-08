@@ -1,3 +1,14 @@
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* rust-diagnostics.cc (rust_error_at): New overload.
+	* rust-diagnostics.h (struct ErrorCode): New struct.
+	(rust_error_at): New.
+	(rust_be_error_at): Likewise.
+	* rust-gcc-diagnostics.cc (class rust_error_code_rule): New class.
+	(rust_be_error_at): New function.
+	* typecheck/rust-casts.cc (TypeCastRules::emit_cast_error): Emit E0054
+	when reporting invalid cast error.
+
 2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
 	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 

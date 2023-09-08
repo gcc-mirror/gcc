@@ -1,3 +1,86 @@
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110529
+	* c-c++-common/analyzer/computed-goto-1.c: New test.
+	* gcc.dg/analyzer/computed-goto-pr110529.c: New test.
+
+2023-09-07  benjamin priour  <vultkayn@gcc.gnu.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110830
+	* c-c++-common/analyzer/pr110830.c: New test.
+
+2023-09-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110875
+	* gcc.dg/pr110875.c: New.
+
+2023-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/111274
+	* g++.dg/gomp/pr111274.C: New test case.
+
+2023-09-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/111225
+	* gcc.target/i386/pr111225.c: New test.
+
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* rust/compile/bad_as_bool_char.rs: Add error code to testcase.
+
+2023-09-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.target/loongarch/bstrins-compile.C: New test.
+	* g++.target/loongarch/bstrins-run.C: New test.
+
+2023-09-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111313
+	* gcc.target/riscv/rvv/vsetvl/avl_single-13.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-17.c: Skip check for O1.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-17.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111313.c: New test.
+
+2023-09-07  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/xventanacondops-primitiveSemantics.c: New test,
+	* gcc.target/riscv/xventanacondops-primitiveSemantics-rv32.c: New
+	test to make sure that XVentanaCondOps instructions are disabled
+	on RV32.
+	* gcc.target/riscv/xventanacondops-xor-01.c: New test,
+
 2023-09-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/111310

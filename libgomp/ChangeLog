@@ -1,3 +1,10 @@
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Memory Management Routines): New; add documentation for
+	omp_init_allocator, omp_destroy_allocator, omp_set_default_allocator,
+	omp_get_default_allocator.
+	(OMP_ALLOCATOR): Fix ICV var name; add see-also references.
+
 2023-09-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

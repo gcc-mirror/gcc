@@ -1,3 +1,29 @@
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110529
+	* program-point.cc (program_point::on_edge): Don't reject
+	EDGE_ABNORMAL for computed gotos.
+	* region-model.cc (region_model::maybe_update_for_edge): Handle
+	computed goto statements.
+	(region_model::apply_constraints_for_ggoto): New.
+	* region-model.h (region_model::apply_constraints_for_ggoto): New decl.
+	* supergraph.cc (supernode::get_label): New.
+	* supergraph.h (supernode::get_label): New decl.
+
+2023-09-07  benjamin priour  <vultkayn@gcc.gnu.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110830
+	* diagnostic-manager.cc
+	(compatible_epaths_p): New function.
+	(saved_diagnostic::supercedes_p): Now calls the above
+	to determine if the diagnostics do overlap and the superseding
+	may proceed.
+
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.h: fix -Wunused-parameter warnings
+
 2023-09-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

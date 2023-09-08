@@ -1,3 +1,137 @@
+2023-09-07  Bruno Victal  <mirai@makinata.eu>
+
+	* acinclude.m4: Update docbook xsl URI.
+	* configure: Regenerate.
+
+2023-09-07  Bruno Victal  <mirai@makinata.eu>
+
+	* doc/Makefile.am: Fix 'doc-install-info' rule.
+	Fix typo in commment.
+	* doc/Makefile.in: Regenerate.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/concat/94063.cc: Simplify
+	dg-do target selector.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/config/default.exp: Remove trailing whitespace.
+	* testsuite/lib/dg-options.exp: Likewise.
+	* testsuite/lib/prune.exp: Likewise.
+	* testsuite/libstdc++-abi/abi.exp: Likewise.
+	* testsuite/libstdc++-dg/conformance.exp: Likewise.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp:
+	Likewise.
+	* testsuite/libstdc++-xmethods/xmethods.exp: Likewise.
+	* testsuite/lib/libstdc++.exp: Likewise.
+	(check_v3_target_c_std): Fix filename for temporary source file.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for mkdir,
+	chmod, chdir, and getcwd.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++17/fs_ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+	* src/filesystem/ops-common.h [FILESYSTEM_IS_WINDOWS]
+	(chmod, mkdir, getcwd, chdir): Define new macros.
+	[FILESYSTEM_IS_WINDOWS] (chmod, mkdir, getcwd, chdir): Use
+	new macros.
+	* src/filesystem/ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Disable by default
+	for avr.
+	* configure: Regenerate.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/operations/1.cc: Add
+	dg-options for C++20 mode.
+	* testsuite/23_containers/unordered_multimap/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/operations/1.cc:
+	Likewise.
+	* testsuite/std/time/parse.cc: Move dg-options before dg-do.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/ranges/access/cbegin.cc: Adjust for C++23
+	compatibility.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__imove::iter_move): Define
+	poison pill as deleted for consistency.
+	(__access::begin): Replace with a single declaration.
+	* include/bits/ranges_base.h (__access::end, __access::rbegin)
+	(__access::rend, __access::size): Likewise.
+	* include/bits/version.def (ranges): Update value for C++23.
+	* include/bits/version.h: Regenerate.
+	* libsupc++/compare (__compare): Add missing poison pill
+	overloads.
+	* testsuite/std/ranges/version_c++23.cc: Adjust expected value
+	of __cpp_lib_ranges.
+	* testsuite/std/ranges/access/p2602.cc: New test.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (ranges::__cust_imove):
+	Rename to ranges::__imove.
+	(_IMove): Rename to _IterMove.
+	(ranges::__cust_iswap): Rename to ranges::__iswap.
+	(ranges::__cust): Rename to ranges::_Cpo.
+	(ranges::__cust_access): Rename to ranges::__access.
+	* include/bits/ranges_base.h (ranges::__cust_access): Rename to
+	ranges::__access.
+	(ranges::__cust): Rename to ranges::_Cpo.
+	* include/std/concepts (ranges::__cust_swap):  Rename to
+	ranges::__swap.
+	(ranges::__cust): Rename to ranges::_Cpo.
+	* libsupc++/compare (__cmp_cust): Rename to __compare.
+	(__cmp_algo): Rename to _Cpo.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (ranges): Update value.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (__detail::__boxable): Use
+	move_constructible instead of copy_constructible for C++23.
+	(__detail::__box<T>): Adjust constraints for partial
+	specialization.
+	(single_view, transform_view): Use __box_constructible instead
+	of copy_constructible in constraints.
+	(zip_transform_view, adjacent_transform_view, repeat_view): Use
+	move_constructible instead of copy_constructible in constraints.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc: Check
+	construction from move-only argument.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+	* testsuite/std/ranges/repeat/1.cc: Likewise.
+	* testsuite/std/ranges/single_view.cc: Likewise.
+	* testsuite/std/ranges/zip_transform/1.cc: Likewise.
+	* testsuite/std/ranges/version_c++23.cc: Adjust expected value
+	of __cpp_lib_ranges.
+
+2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h (is_customization_point_object):
+	Remove parameter name.
+
 2023-09-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Disable by default

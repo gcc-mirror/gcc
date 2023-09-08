@@ -1,3 +1,136 @@
+2023-09-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/bitmanip.md (*extend<SHORT:mode><SUPERQI:mode>2_zbb):
+	Rename postfix to _bitmanip.
+	(*extend<SHORT:mode><SUPERQI:mode>2_bitmanip): Renamed pattern.
+	(*zero_extendhi<GPR:mode>2_zbb): Remove duplicated pattern.
+
+2023-09-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_pass_in_vector_p): Only allow RVV type.
+
+2023-09-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_hard_regno_nregs): Fix bug.
+
+2023-09-07  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md
+	(<avx512>_vpermt2var<mode>3<sd_maskz_name>): New define_insn.
+	(VHFBF_AVX512VL): New mode iterator.
+	(VI2HFBF_AVX512VL): New mode iterator.
+
+2023-09-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (contains_zero_p): Return false for undefined ranges.
+	* range-op-float.cc (operator_gt::op1_op2_relation): Adjust for
+	contains_zero_p change above.
+	(operator_ge::op1_op2_relation): Same.
+	(operator_equal::op1_op2_relation): Same.
+	(operator_not_equal::op1_op2_relation): Same.
+	(operator_lt::op1_op2_relation): Same.
+	(operator_le::op1_op2_relation): Same.
+	(operator_ge::op1_op2_relation): Same.
+	* range-op.cc (operator_equal::op1_op2_relation): Same.
+	(operator_not_equal::op1_op2_relation): Same.
+	(operator_lt::op1_op2_relation): Same.
+	(operator_le::op1_op2_relation): Same.
+	(operator_cast::op1_range): Same.
+	(set_nonzero_range_from_mask): Same.
+	(operator_bitwise_xor::op1_range): Same.
+	(operator_addr_expr::fold_range): Same.
+	(operator_addr_expr::op1_range): Same.
+
+2023-09-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110875
+	* gimple-range.cc (gimple_ranger::prefill_name): Only invoke
+	cache-prefilling routine when the ssa-name has no global value.
+
+2023-09-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/111225
+	* lra-constraints.cc (goal_reuse_alt_p): New global flag.
+	(process_alt_operands): Set up the flag.  Clear flag for chosen
+	alternative with special memory constraints.
+	(process_alt_operands): Set up used insn alternative depending on the flag.
+
+2023-09-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md: Add VLS mask modes mov patterns.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (error_meta): New decl.
+	* diagnostic.cc (error_meta): New.
+
+2023-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (expand_expr_real_1): Don't call targetm.c.bitint_type_info
+	inside gcc_assert, as later code relies on it filling info variable.
+	* gimple-fold.cc (clear_padding_bitint_needs_padding_p,
+	clear_padding_type): Likewise.
+	* varasm.cc (output_constant): Likewise.
+	* fold-const.cc (native_encode_int, native_interpret_int): Likewise.
+	* stor-layout.cc (finish_bitfield_representative, layout_type):
+	Likewise.
+	* gimple-lower-bitint.cc (bitint_precision_kind): Likewise.
+
+2023-09-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/111252
+	* config/loongarch/loongarch-protos.h
+	(loongarch_pre_reload_split): Declare new function.
+	(loongarch_use_bstrins_for_ior_with_mask): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_pre_reload_split): Implement.
+	(loongarch_use_bstrins_for_ior_with_mask): Likewise.
+	* config/loongarch/predicates.md (ins_zero_bitmask_operand):
+	New predicate.
+	* config/loongarch/loongarch.md (bstrins_<mode>_for_mask):
+	New define_insn_and_split.
+	(bstrins_<mode>_for_ior_mask): Likewise.
+	(define_peephole2): Further optimize code sequence produced by
+	bstrins_<mode>_for_ior_mask if possible.
+
+2023-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lra-eliminations.cc (lra_eliminate_regs_1): Use simplify_gen_binary
+	rather than gen_rtx_PLUS.
+
+2023-09-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111313
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::cleanup_earliest_vsetvls): Remove.
+	(pass_vsetvl::df_post_optimization): Remove incorrect function.
+
+2023-09-07  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_flag_table):
+	Parse 'XVentanaCondOps' extension.
+	* config/riscv/riscv-opts.h (MASK_XVENTANACONDOPS): New.
+	(TARGET_XVENTANACONDOPS): Ditto.
+	(TARGET_ZICOND_LIKE): New to represent targets with conditional
+	moves like 'Zicond'.  It includes RV64 + 'XVentanaCondOps'.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Replace TARGET_ZICOND
+	with TARGET_ZICOND_LIKE.
+	(riscv_expand_conditional_move): Ditto.
+	* config/riscv/riscv.md (mov<mode>cc): Replace TARGET_ZICOND with
+	TARGET_ZICOND_LIKE.
+	* config/riscv/riscv.opt: Add new riscv_xventana_subext.
+	* config/riscv/zicond.md: Modify description.
+	(eqz_ventana): New to match corresponding czero instructions.
+	(nez_ventana): Ditto.
+	(*czero.<eqz>.<GPR><X>): Emit a 'XVentanaCondOps' instruction if
+	'Zicond' is not available but 'XVentanaCondOps' + RV64 is.
+	(*czero.<eqz>.<GPR><X>): Ditto.
+	(*czero.eqz.<GPR><X>.opt1): Ditto.
+	(*czero.nez.<GPR><X>.opt2): Ditto.
+
 2023-09-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/111310
