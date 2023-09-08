@@ -151,7 +151,7 @@ static tree get_partial_spec_bindings (tree, tree, tree);
 static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, unification_kind_t, int,
-					   struct conversion **, bool);
+					   struct conversion **, bool, bool);
 static int maybe_adjust_types_for_deduction (tree, unification_kind_t,
 					     tree*, tree*, tree);
 static int type_unification_real (tree, tree, tree, const tree *,
@@ -22321,7 +22321,8 @@ pack_deducible_p (tree parm, tree fn)
 static int
 check_non_deducible_conversions (tree parms, const tree *args, unsigned nargs,
 				 tree fn, unification_kind_t strict, int flags,
-				 struct conversion **convs, bool explain_p)
+				 struct conversion **convs, bool explain_p,
+				 bool noninst_only_p)
 {
   /* Non-constructor methods need to leave a conversion for 'this', which
      isn't included in nargs here.  */
@@ -22357,7 +22358,7 @@ check_non_deducible_conversions (tree parms, const tree *args, unsigned nargs,
 	  int lflags = conv_flags (ia, nargs, fn, arg, flags);
 
 	  if (check_non_deducible_conversion (parm, arg, strict, lflags,
-					      conv_p, explain_p))
+					      conv_p, explain_p, noninst_only_p))
 	    return 1;
 	}
 
@@ -22657,6 +22658,16 @@ fn_type_unification (tree fn,
 
  deduced:
 
+  /* As a refinement of CWG2369, check first and foremost non-dependent
+     conversions that we know are not going to induce template instantiation
+     (PR99599).  */
+  if (strict == DEDUCE_CALL
+      && incomplete
+      && check_non_deducible_conversions (parms, args, nargs, fn, strict, flags,
+					  convs, explain_p,
+					  /*noninst_only_p=*/true))
+    goto fail;
+
   /* CWG2369: Check satisfaction before non-deducible conversions.  */
   if (!constraints_satisfied_p (fn, targs))
     {
@@ -22670,7 +22681,8 @@ fn_type_unification (tree fn,
      as the standard says that we substitute explicit args immediately.  */
   if (incomplete
       && check_non_deducible_conversions (parms, args, nargs, fn, strict, flags,
-					  convs, explain_p))
+					  convs, explain_p,
+					  /*noninst_only_p=*/false))
     goto fail;
 
   /* All is well so far.  Now, check:
@@ -22897,6 +22909,59 @@ maybe_adjust_types_for_deduction (tree tparms,
   return result;
 }
 
+/* Return true if computing a conversion from FROM to TO might induce template
+   instantiation.  Conversely, if this predicate returns false then computing
+   the conversion definitely won't induce template instantiation.  */
+
+static bool
+conversion_may_instantiate_p (tree to, tree from)
+{
+  to = non_reference (to);
+  from = non_reference (from);
+
+  bool ptr_conv_p = false;
+  if (TYPE_PTR_P (to)
+      && TYPE_PTR_P (from))
+    {
+      to = TREE_TYPE (to);
+      from = TREE_TYPE (from);
+      ptr_conv_p = true;
+    }
+
+  /* If one of the types is a not-yet-instantiated class template
+     specialization, then computing the conversion might instantiate
+     it in order to inspect bases, conversion functions and/or
+     converting constructors.  */
+  if ((CLASS_TYPE_P (to)
+       && !COMPLETE_TYPE_P (to)
+       && CLASSTYPE_TEMPLATE_INSTANTIATION (to))
+      || (CLASS_TYPE_P (from)
+	  && !COMPLETE_TYPE_P (from)
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (from)))
+    return true;
+
+  /* Converting from one pointer type to another, or between
+     reference-related types, always yields a standard conversion.  */
+  if (ptr_conv_p || reference_related_p (to, from))
+    return false;
+
+  /* Converting to a non-aggregate class type will consider its
+     user-declared constructors, which might induce instantiation.  */
+  if (CLASS_TYPE_P (to)
+      && CLASSTYPE_NON_AGGREGATE (to))
+    return true;
+
+  /* Similarly, converting from a class type will consider its conversion
+     functions.  */
+  if (CLASS_TYPE_P (from)
+      && TYPE_HAS_CONVERSION (from))
+    return true;
+
+  /* Otherwise, computing this conversion definitely won't induce
+     template instantiation.  */
+  return false;
+}
+
 /* Subroutine of fn_type_unification.  PARM is a function parameter of a
    template which doesn't contain any deducible template parameters; check if
    ARG is a suitable match for it.  STRICT, FLAGS and EXPLAIN_P are as in
@@ -22905,7 +22970,7 @@ maybe_adjust_types_for_deduction (tree tparms,
 static int
 check_non_deducible_conversion (tree parm, tree arg, unification_kind_t strict,
 				int flags, struct conversion **conv_p,
-				bool explain_p)
+				bool explain_p, bool noninst_only_p)
 {
   tree type;
 
@@ -22925,6 +22990,18 @@ check_non_deducible_conversion (tree parm, tree arg, unification_kind_t strict,
     }
   else if (strict == DEDUCE_CALL)
     {
+      if (conv_p && *conv_p)
+	{
+	  /* This conversion was already computed earlier (when
+	     computing only non-instantiating conversions).  */
+	  gcc_checking_assert (!noninst_only_p);
+	  return unify_success (explain_p);
+	}
+
+      if (noninst_only_p
+	  && conversion_may_instantiate_p (parm, type))
+	return unify_success (explain_p);
+
       bool ok = false;
       tree conv_arg = TYPE_P (arg) ? NULL_TREE : arg;
       if (conv_p)

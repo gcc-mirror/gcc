@@ -1,3 +1,4 @@
+// Verify we diagnose constraint recursion.
 // PR c++/96840
 // { dg-do compile { target c++20 } }
 
@@ -6,6 +7,7 @@ template <class T, class U> concept C = requires(T t, U u) { t * u; };
 // { dg-error "depends on itself" "" { target *-*-* } .-2 }
 
 template <class Rep> struct Int {
+  Int(); // make the class non-aggregate in light of PR99599 fix
   template <class T> requires C<T, Rep> friend void operator*(T, Int) { }
   template <class T> requires C<T, Rep> friend void operator*(Int, T) { }
 };
