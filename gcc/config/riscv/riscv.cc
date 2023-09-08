@@ -7548,7 +7548,7 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
   /* For VLS modes, we allocate registers according to TARGET_MIN_VLEN.  */
   if (riscv_v_ext_vls_mode_p (mode))
     {
-      int size = GET_MODE_SIZE (mode).to_constant ();
+      int size = GET_MODE_BITSIZE (mode).to_constant ();
       if (size < TARGET_MIN_VLEN)
 	return 1;
       else
