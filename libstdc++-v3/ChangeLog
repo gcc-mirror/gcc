@@ -6,6 +6,16 @@
 
 2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	Revert
+	2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR libstdc++/111238
+	* configure: Regenerate.
+	* configure.ac: Call GLIBCXX_CHECK_LINKER_FEATURES in cross,
+	non-Canadian builds.
+
+2023-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	PR libstdc++/111238
 	* configure: Regenerate.
 	* configure.ac: Call GLIBCXX_CHECK_LINKER_FEATURES in cross,
