@@ -800,19 +800,6 @@ Backend::var_expression (Bvariable *var, location_t location)
   return var->get_tree (location);
 }
 
-// Return a typed value as a constant integer.
-// This function does not release the memory of @val
-
-tree
-Backend::integer_constant_expression (tree t, mpz_t val)
-{
-  if (t == error_mark_node)
-    return error_mark_node;
-
-  tree ret = wide_int_to_tree (t, wi::from_mpz (t, val, true));
-  return ret;
-}
-
 // Return a typed value as a constant floating-point number.
 
 tree

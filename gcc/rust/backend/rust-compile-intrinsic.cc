@@ -736,10 +736,7 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
 static tree
 make_unsigned_long_tree (unsigned long value)
 {
-  mpz_t mpz_value;
-  mpz_init_set_ui (mpz_value, value);
-
-  return Backend::integer_constant_expression (integer_type_node, mpz_value);
+  return build_int_cst (integer_type_node, value);
 }
 
 static tree
