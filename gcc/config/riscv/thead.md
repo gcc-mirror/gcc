@@ -90,7 +90,7 @@
    th.extu\t%0,%1,31,0
    lwu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "DI")])
 
 (define_insn "*zero_extendhi<GPR:mode>2_th_extu"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
@@ -100,7 +100,7 @@
    th.extu\t%0,%1,15,0
    lhu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
-   (set_attr "mode" "HI")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*th_clz<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
