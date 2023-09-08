@@ -1213,6 +1213,25 @@ wide_int_binop (wide_int &res,
   return true;
 }
 
+/* Returns true if we know who is smaller or equal, ARG1 or ARG2, and set the
+   min value to RES.  */
+bool
+can_min_p (const_tree arg1, const_tree arg2, poly_wide_int &res)
+{
+  if (known_le (wi::to_poly_widest (arg1), wi::to_poly_widest (arg2)))
+    {
+      res = wi::to_poly_wide (arg1);
+      return true;
+    }
+  else if (known_le (wi::to_poly_widest (arg2), wi::to_poly_widest (arg1)))
+    {
+      res = wi::to_poly_wide (arg2);
+      return true;
+    }
+
+  return false;
+}
+
 /* Combine two poly int's ARG1 and ARG2 under operation CODE to
    produce a new constant in RES.  Return FALSE if we don't know how
    to evaluate CODE at compile-time.  */
@@ -1258,6 +1277,11 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
 			 &res))
+	return false;
+      break;
+
+    case MIN_EXPR:
+      if (!can_min_p (arg1, arg2, res))
 	return false;
       break;
 
