@@ -1312,5 +1312,5 @@ Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
 Enable vectorization for scatter instruction.
 
 mevex512
-Target RejectNegative Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save
 Support 512 bit vector built-in functions and code generation.
