@@ -1676,7 +1676,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
 	      /* We need BOUND <= LARGER.  */
 	      if (!integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node,
-						  bound, larger)))
+						  bound, arg_false)))
 		return false;
 	    }
 	  else if (operand_equal_for_phi_arg_p (arg_false, smaller)
@@ -1707,7 +1707,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
 	      /* We need BOUND >= SMALLER.  */
 	      if (!integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node,
-						  bound, smaller)))
+						  bound, arg_false)))
 		return false;
 	    }
 	  else
@@ -1747,7 +1747,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
 	      /* We need BOUND >= LARGER.  */
 	      if (!integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node,
-						  bound, larger)))
+						  bound, arg_true)))
 		return false;
 	    }
 	  else if (operand_equal_for_phi_arg_p (arg_true, smaller)
@@ -1774,7 +1774,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
 	      /* We need BOUND <= SMALLER.  */
 	      if (!integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node,
-						  bound, smaller)))
+						  bound, arg_true)))
 		return false;
 	    }
 	  else
