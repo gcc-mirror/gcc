@@ -1,5 +1,10 @@
 2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gcc-changelog/git_commit.py (GitCommit.__init__,
+	to_changelog_entries): Fix lost wording fix.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gcc-changelog/git_commit.py (GitCommit.__init__):
 	Handle commit_to_info_hook = None; otherwise, if None,
 	regard it as error.
@@ -8,6 +13,20 @@
 	* gcc-changelog/git_email.py (GitEmail.__init__):
 	call super() with commit_to_info_hook=None instead
 	of a lambda function.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Revert:
+	2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.__init__):
+	Handle commit_to_info_hook = None; otherwise, if None,
+	regard it as error.
+	(to_changelog_entries): Handle commit_to_info_hook = None;
+	if info is None, create a warning for it.
+	* gcc-changelog/git_email.py (GitEmail.__init__):
+	call super() with commit_to_info_hook=None instead
+	of a lamda function.
 
 2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
 

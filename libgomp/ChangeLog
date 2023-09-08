@@ -5,6 +5,10 @@
 	omp_get_default_allocator.
 	(OMP_ALLOCATOR): Fix ICV var name; add see-also references.
 
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_unload_device): Remove tailing whitespace.
+
 2023-09-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
