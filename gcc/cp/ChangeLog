@@ -1,3 +1,15 @@
+2023-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* pt.cc (tsubst_friend_function): Don't check constraints.
+
+2023-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92407
+	* cp-tree.h (struct language_function): Add backward_goto.
+	* decl.cc (check_goto): Set it.
+	* typeck.cc (check_return_expr): Prevent NRV if set.
+
 2023-08-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

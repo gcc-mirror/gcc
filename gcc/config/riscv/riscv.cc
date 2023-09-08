@@ -4391,7 +4391,6 @@ riscv_print_operand (FILE *file, rtx op, int letter)
     }
   machine_mode mode = GET_MODE (op);
   enum rtx_code code = GET_CODE (op);
-  const enum memmodel model = memmodel_base (INTVAL (op));
 
   switch (letter)
     {
@@ -4528,7 +4527,8 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       fputs (GET_RTX_NAME (code), file);
       break;
 
-    case 'A':
+    case 'A': {
+      const enum memmodel model = memmodel_base (INTVAL (op));
       if (riscv_memmodel_needs_amo_acquire (model)
 	  && riscv_memmodel_needs_amo_release (model))
 	fputs (".aqrl", file);
@@ -4537,18 +4537,23 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       else if (riscv_memmodel_needs_amo_release (model))
 	fputs (".rl", file);
       break;
+    }
 
-    case 'I':
+    case 'I': {
+      const enum memmodel model = memmodel_base (INTVAL (op));
       if (model == MEMMODEL_SEQ_CST)
 	fputs (".aqrl", file);
       else if (riscv_memmodel_needs_amo_acquire (model))
 	fputs (".aq", file);
       break;
+    }
 
-    case 'J':
+    case 'J': {
+      const enum memmodel model = memmodel_base (INTVAL (op));
       if (riscv_memmodel_needs_amo_release (model))
 	fputs (".rl", file);
       break;
+    }
 
     case 'i':
       if (code != REG)
