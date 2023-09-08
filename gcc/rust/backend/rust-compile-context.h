@@ -376,6 +376,16 @@ public:
     custom_derive_macros.push_back (macro);
   }
 
+  const std::vector<tree> &get_bang_proc_macros () const { return bang_macros; }
+  const std::vector<tree> &get_attribute_proc_macros () const
+  {
+    return attribute_macros;
+  }
+  const std::vector<CustomDeriveInfo> &get_derive_proc_macros () const
+  {
+    return custom_derive_macros;
+  }
+
 private:
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
