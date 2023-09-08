@@ -45,7 +45,7 @@ libstdc___libbacktrace_la_CPPFLAGS = \
 	$(BACKTRACE_CPPFLAGS)
 
 WARN_FLAGS = -W -Wall -Wwrite-strings -Wmissing-format-attribute \
-	     -Wcast-qual -Werror
+	     -Wcast-qual
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wno-unused-but-set-variable
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
 AM_CFLAGS = \
