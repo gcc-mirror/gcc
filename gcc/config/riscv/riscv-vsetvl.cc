@@ -3438,7 +3438,7 @@ pass_vsetvl::vsetvl_fusion (void)
 			m_vector_manager->vector_kill,
 			m_vector_manager->vector_earliest);
       changed_p |= earliest_fusion ();
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\nEARLIEST fusion %d\n", fusion_no);
 	  m_vector_manager->dump (dump_file);
@@ -3720,7 +3720,7 @@ pass_vsetvl::pre_vsetvl (void)
 
   /* We should dump the information before CFG is changed. Otherwise it will
      produce ICE (internal compiler error).  */
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     m_vector_manager->dump (dump_file);
 
   refine_vsetvls ();
@@ -4250,7 +4250,7 @@ pass_vsetvl::init (void)
   m_vector_manager = new vector_infos_manager ();
   compute_probabilities ();
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\nPrologue: Initialize vector infos\n");
       m_vector_manager->dump (dump_file);
@@ -4334,7 +4334,7 @@ pass_vsetvl::lazy_vsetvl (void)
     fprintf (dump_file, "\nPhase 1: Compute local backward vector infos\n");
   for (const bb_info *bb : crtl->ssa->bbs ())
     compute_local_backward_infos (bb);
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     m_vector_manager->dump (dump_file);
 
   /* Phase 2 - Emit vsetvl instructions within each basic block according to
@@ -4344,7 +4344,7 @@ pass_vsetvl::lazy_vsetvl (void)
 	     "\nPhase 2: Emit vsetvl instruction within each block\n");
   for (const bb_info *bb : crtl->ssa->bbs ())
     emit_local_forward_vsetvls (bb);
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     m_vector_manager->dump (dump_file);
 
   /* Phase 3 - Propagate demanded info across blocks.  */
