@@ -1,3 +1,30 @@
+2023-09-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_ltgt::fold_range): Do not special
+	case VREL_EQ nor call frelop_early_resolve.
+
+2023-09-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.md (*extend<SHORT:mode><SUPERQI:mode>2_th_ext):
+	Remove broken INSN.
+	(*extendhi<SUPERQI:mode>2_th_ext): New INSN.
+	(*extendqi<SUPERQI:mode>2_th_ext): New INSN.
+
+2023-09-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.md: Use more appropriate mode attributes
+	for extensions.
+
+2023-09-08  Guo Jie  <guojie@loongson.cn>
+
+	* common/config/loongarch/loongarch-common.cc:
+	(default_options loongarch_option_optimization_table):
+	Default to -fsched-pressure.
+
+2023-09-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: remove non-POSIX syntax "<<<".
+
 2023-09-08  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* config/riscv/bitmanip.md (*extend<SHORT:mode><SUPERQI:mode>2_zbb):

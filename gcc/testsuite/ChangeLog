@@ -1,3 +1,20 @@
+2023-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-segaddr.c: Adjust for darwin linker warning.
+	* gcc.dg/pie-7.c: Likewise.
+
+2023-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99599
+	* g++.dg/cpp2a/concepts-recursive-sat4.C: Make 'Int' non-aggregate
+	in order to preserve intent of the testcase.
+	* g++.dg/cpp2a/concepts-nondep4.C: New test.
+
+2023-09-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-ext-2.c: New test.
+	* gcc.target/riscv/xtheadbb-ext-3.c: New test.
+
 2023-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110529

@@ -1,3 +1,15 @@
+2023-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99599
+	* pt.cc (check_non_deducible_conversions): Add bool parameter
+	passed down to check_non_deducible_conversion.
+	(fn_type_unification): Call check_non_deducible_conversions
+	an extra time before satisfaction with noninst_only_p=true.
+	(conversion_may_instantiate_p): Define.
+	(check_non_deducible_conversion): Add bool parameter controlling
+	whether to compute only conversions that are guaranteed to
+	not induce template instantiation.
+
 2023-09-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c++/111274

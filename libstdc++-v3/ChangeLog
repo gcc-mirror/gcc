@@ -1,3 +1,56 @@
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Add c++23 directory.
+	* configure: Regenerate.
+	* doc/html/manual/*: Regenerate.
+	* doc/xml/manual/using.xml: Update documentation on linking.
+	* include/std/stacktrace: Remove declarations of libbacktrace
+	APIs.
+	(stacktrace_entry::_S_err_handler, stacktrace_entry::_S_init):
+	Remove.
+	(stacktrace_entry::_Info): New class.
+	(stacktrace_entry::_M_get_info): Use _Info.
+	(__stacktrace_impl): New class.
+	(basic_stacktrace): Derive from __stacktrace_impl.
+	(basic_stacktrace::current): Use __stacktrace_impl::_S_current.
+	* scripts/testsuite_flags.in: Adjust LDFLAGS to find
+	libstdc++exp instead of libstdc++_libbacktrace.
+	* src/Makefile.am (SUBDIRS): Add c++23 directory.
+	* src/Makefile.in: Regenerate.
+	* src/c++20/Makefile.am: Fix comment.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++23/Makefile.am: New file.
+	* src/c++23/Makefile.in: New file.
+	* src/c++23/stacktrace.cc: New file with definitions of
+	stacktrace_entry::_Info and __stacktrace_impl members.
+	* src/experimental/Makefile.am: Use LIBADD to include other
+	libraries.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: Use noinst_LTLIBRARIES.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/19_diagnostics/stacktrace/current.cc: Adjust
+	dg-options to use -lstdc++exp.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign4_backtrace_neg.cc:
+	Likewise.
+
+2023-09-08  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	* src/libbacktrace/Makefile.am: Remove -Werror.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.am (check-DEJAGNU): Use @ in recipe.
+	* testsuite/Makefile.in: Regenerate.
+
+2023-09-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* configure.host: Register t-loongarch in tmake_file.
+	* config/cpu/loongarch/t-loongarch: New file.  Manually refresh
+	MULTISUBDIR with $(shell $(CXX) --print-multi-directory).
+
 2023-09-07  Bruno Victal  <mirai@makinata.eu>
 
 	* acinclude.m4: Update docbook xsl URI.
