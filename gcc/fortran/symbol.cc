@@ -2948,7 +2948,7 @@ gfc_new_symtree (gfc_symtree **root, const char *name)
 
 /* Delete a symbol from the tree.  Does not free the symbol itself!  */
 
-void
+static void
 gfc_delete_symtree (gfc_symtree **root, const char *name)
 {
   gfc_symtree st, *st0;
@@ -2963,10 +2963,8 @@ gfc_delete_symtree (gfc_symtree **root, const char *name)
   else
     p = name;
 
-  st0 = gfc_find_symtree (*root, p);
-
   st.name = gfc_get_string ("%s", p);
-  gfc_delete_bbt (root, &st, compare_symtree);
+  st0 = (gfc_symtree *) gfc_delete_bbt (root, &st, compare_symtree);
 
   free (st0);
 }

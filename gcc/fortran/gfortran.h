@@ -3510,7 +3510,6 @@ bool gfc_reference_st_label (gfc_st_label *, gfc_sl_type);
 gfc_namespace *gfc_get_namespace (gfc_namespace *, int);
 gfc_symtree *gfc_new_symtree (gfc_symtree **, const char *);
 gfc_symtree *gfc_find_symtree (gfc_symtree *, const char *);
-void gfc_delete_symtree (gfc_symtree **, const char *);
 gfc_symtree *gfc_get_unique_symtree (gfc_namespace *);
 gfc_user_op *gfc_get_uop (const char *);
 gfc_user_op *gfc_find_uop (const char *, gfc_namespace *);
@@ -3911,7 +3910,7 @@ bool gfc_inline_intrinsic_function_p (gfc_expr *);
 /* bbt.cc */
 typedef int (*compare_fn) (void *, void *);
 void gfc_insert_bbt (void *, void *, compare_fn);
-void gfc_delete_bbt (void *, void *, compare_fn);
+void * gfc_delete_bbt (void *, void *, compare_fn);
 
 /* dump-parse-tree.cc */
 void gfc_dump_parse_tree (gfc_namespace *, FILE *);
