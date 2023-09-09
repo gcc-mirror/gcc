@@ -264,6 +264,13 @@ struct CompileOptions
   } compile_until
     = CompileStep::End;
 
+  enum class PanicStrategy
+  {
+    Unwind,
+    Abort,
+  } panic_strategy
+    = PanicStrategy::Unwind;
+
   bool dump_option_enabled (DumpOption option) const
   {
     return dump_options.find (option) != dump_options.end ();
@@ -319,6 +326,13 @@ struct CompileOptions
   }
 
   const CompileStep &get_compile_until () const { return compile_until; }
+
+  void set_panic_strategy (int strategy)
+  {
+    panic_strategy = static_cast<PanicStrategy> (strategy);
+  }
+
+  const PanicStrategy &get_panic_strategy () const { return panic_strategy; }
 
   void set_metadata_output (const std::string &path)
   {
