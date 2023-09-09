@@ -3,4 +3,4 @@
 /* { dg-final { scan-assembler-not "vst" } } */
 
 extern char a[], b[];
-void test() { __builtin_memcpy(a, b, 16); }
+void test() { __builtin_memcpy(a, b, 32); }
