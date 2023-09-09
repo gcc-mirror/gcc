@@ -266,6 +266,9 @@ Session::handle_option (
     case OPT_frust_metadata_output_:
       options.set_metadata_output (arg);
       break;
+    case OPT_frust_panic_:
+      options.set_panic_strategy (flag_rust_panic);
+      break;
 
     default:
       break;
