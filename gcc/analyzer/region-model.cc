@@ -4458,6 +4458,10 @@ region_model::add_constraints_from_binop (const svalue *outer_lhs,
 
     case EQ_EXPR:
     case NE_EXPR:
+    case GE_EXPR:
+    case GT_EXPR:
+    case LE_EXPR:
+    case LT_EXPR:
       {
 	/* ...and "(inner_lhs OP inner_rhs) == 0"
 	   then (inner_lhs OP inner_rhs) must have the same

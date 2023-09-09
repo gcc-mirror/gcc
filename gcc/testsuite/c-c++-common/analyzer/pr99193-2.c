@@ -8,7 +8,7 @@
 typedef __SIZE_TYPE__ size_t;
 typedef __builtin_va_list va_list;
 
-#define NULL ((void *)0)
+#include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 extern void free (void *);
 extern void *realloc (void *__ptr, size_t __size)

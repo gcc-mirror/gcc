@@ -1,14 +1,11 @@
-/* C only: C++ exceptions double the fopen leak warnings.
-   Therefore this test has been duplicated as
-   c-c++-common/analyzer/file-pr58237-noexcept.c  */
-
+/* { dg-additional-options "-fno-exceptions" } */
 typedef struct FILE   FILE;
 
 FILE* fopen (const char*, const char*);
 int   fclose (FILE*);
 char *fgets (char *, int, FILE *);
 
-#include "analyzer-decls.h"
+#include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 void f0(const char *str)
 {

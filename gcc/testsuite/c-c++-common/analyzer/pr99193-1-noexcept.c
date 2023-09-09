@@ -1,8 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
-
-/* C only: C++ exceptions cause a Wanalyzer-va-list-leak warning to be emitted
-   at the end of commandrf. Therefore this test has been duplicated as
-   c-c++-common/analyzer/pr99193-1-noexcept.c  */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* Verify absence of false positive from -Wanalyzer-mismatching-deallocation
    on realloc(3).
@@ -12,7 +9,7 @@
 typedef __SIZE_TYPE__ size_t;
 typedef __builtin_va_list va_list;
 
-#include "analyzer-decls.h"
+#include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 extern void *malloc (size_t __size)
   __attribute__ ((__nothrow__ , __leaf__))

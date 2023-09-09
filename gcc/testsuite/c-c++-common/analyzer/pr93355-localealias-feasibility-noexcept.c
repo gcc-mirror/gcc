@@ -3,10 +3,7 @@
    Adapted from intl/localealias.c, with all #includes removed.  */
 
 /* { dg-do "compile" } */
-
-/* C only: C++ exceptions cause another fopen leak warning to be emitted at line 54.
-   Therefore this test has been duplicated as
-   c-c++-common/analyzer/pr93355-localealias-feasibility-noexcept.c  */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* Handle aliases for locale names.
    Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.
