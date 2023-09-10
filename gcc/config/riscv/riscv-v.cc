@@ -2793,14 +2793,9 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   if (!pow2p_hwi (d->perm.encoding().npatterns ()))
     return false;
 
-  /* For constant size indices, we dont't need to handle it here.
-     Just leave it to vec_perm<mode>.  */
-  if (d->perm.length ().is_constant ())
-    return false;
-
   /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
      Otherwise, it could overflow the index range.  */
-  if (GET_MODE_INNER (d->vmode) == QImode
+  if (!nunits.is_constant () && GET_MODE_INNER (d->vmode) == QImode
       && !get_vector_mode (HImode, nunits).exists (&sel_mode))
     return false;
 
@@ -2809,7 +2804,12 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
     return true;
 
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  expand_vec_perm (d->target, d->op0, d->op1, force_reg (sel_mode, sel));
+  /* 'mov<mode>' generte interleave vector.  */
+  if (!nunits.is_constant ())
+    sel = force_reg (sel_mode, sel);
+  /* Some FIXED-VLMAX/VLS vector permutation situations call targethook
+     instead of expand vec_perm<mode>, we handle it directly.  */
+  expand_vec_perm (d->target, d->op0, d->op1, sel);
   return true;
 }
 
