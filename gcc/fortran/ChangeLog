@@ -1,3 +1,14 @@
+2023-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* bbt.cc (delete_treap): Add argument REMOVED, set it to the removed
+	element from the tree.  Change NULL to nullptr.
+	(gfc_delete_bbt): Return the removed element from the tree.
+	* gfortran.h (gfc_delete_symtree): Remove prototype.
+	(gfc_delete_bbt): Set return type to pointer.
+	* symbol.cc (gfc_delete_symtree): Make static.  Get the element to be
+	freed from the result of gfc_delete_bbt.  Remove the preliminary walk to
+	get it.
+
 2023-09-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/31059

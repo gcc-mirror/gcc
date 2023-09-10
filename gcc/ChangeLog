@@ -1,3 +1,42 @@
+2023-09-09  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md (mulsidi3_64bit):
+	Field unsigned extension support.
+	(<u>muldi3_highpart): Modify template name.
+	(<u>mulsi3_highpart): Likewise.
+	(<u>mulsidi3_64bit): Field unsigned extension support.
+	(<su>muldi3_highpart): Modify muldi3_highpart to
+	smuldi3_highpart.
+	(<su>mulsi3_highpart): Modify mulsi3_highpart to
+	smulsi3_highpart.
+
+2023-09-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_block_move_straight):
+	Check precondition (delta must be a power of 2) and use
+	popcount_hwi instead of a homebrew loop.
+
+2023-09-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.h (LARCH_MAX_MOVE_PER_INSN):
+	Define to the maximum amount of bytes able to be loaded or
+	stored with one machine instruction.
+	* config/loongarch/loongarch.cc (loongarch_mode_for_move_size):
+	New static function.
+	(loongarch_block_move_straight): Call
+	loongarch_mode_for_move_size for machine_mode to be moved.
+	(loongarch_expand_block_move): Use LARCH_MAX_MOVE_PER_INSN
+	instead of UNITS_PER_WORD.
+
+2023-09-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Fix floating-point operations predicate.
+
+2023-09-09  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* fold-const.cc (can_min_p): New function.
+	(poly_int_binop): Try fold MIN_EXPR.
+
 2023-09-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op-float.cc (foperator_ltgt::fold_range): Do not special

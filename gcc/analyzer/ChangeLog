@@ -1,3 +1,10 @@
+2023-09-09  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	PR analyzer/96395
+	* region-model.cc
+	(region_model::add_constraints_from_binop): binop_svalues around
+	LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR are now unwrapped.
+
 2023-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110529
