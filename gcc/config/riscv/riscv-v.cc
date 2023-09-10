@@ -2647,7 +2647,8 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
 	    For index = { 0, 2, 5, 6}, we need to slide op1 up before
 	    we apply compress approach.  */
-  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1);
+  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1)
+			&& !const_vec_duplicate_p (d->op1);
 
   /* If we leave it directly be handled by general gather,
      the code sequence will be:
