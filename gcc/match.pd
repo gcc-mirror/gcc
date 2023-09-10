@@ -3942,7 +3942,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min     min     max     max     )
      cmp    (ge      lt      le      gt      )
  (simplify
-  (cmp @0 (minmax:c @0 @1))
+  (cmp:c @0 (minmax:c @0 @1))
   { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
 
 /* Undo fancy ways of writing max/min or other ?: expressions, like
