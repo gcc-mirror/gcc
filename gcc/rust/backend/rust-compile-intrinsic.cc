@@ -734,7 +734,7 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
 }
 
 static tree
-make_unsigned_long_tree (Context *ctx, unsigned long value)
+make_unsigned_long_tree (unsigned long value)
 {
   mpz_t mpz_value;
   mpz_init_set_ui (mpz_value, value);
@@ -767,7 +767,7 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 
   auto addr = Backend::var_expression (args[0], UNDEF_LOCATION);
   auto locality = Backend::var_expression (args[1], UNDEF_LOCATION);
-  auto rw_flag = make_unsigned_long_tree (ctx, kind == Prefetch::Write ? 1 : 0);
+  auto rw_flag = make_unsigned_long_tree (kind == Prefetch::Write ? 1 : 0);
 
   auto prefetch_raw = NULL_TREE;
   auto ok
@@ -852,7 +852,7 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   TREE_READONLY (dst) = 0;
 
   auto value = Backend::var_expression (param_vars[1], UNDEF_LOCATION);
-  auto memorder = make_unsigned_long_tree (ctx, ordering);
+  auto memorder = make_unsigned_long_tree (ordering);
 
   auto monomorphized_type
     = fntype->get_substs ()[0].get_param_ty ()->resolve ();
@@ -911,7 +911,7 @@ atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   enter_intrinsic_block (ctx, fndecl);
 
   auto src = Backend::var_expression (param_vars[0], UNDEF_LOCATION);
-  auto memorder = make_unsigned_long_tree (ctx, ordering);
+  auto memorder = make_unsigned_long_tree (ordering);
 
   auto monomorphized_type
     = fntype->get_substs ()[0].get_param_ty ()->resolve ();
