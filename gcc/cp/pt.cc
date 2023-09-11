@@ -3793,6 +3793,8 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
+      hi = perform_implicit_conversion_flags (integer_type_node, hi, complain,
+					      LOOKUP_IMPLICIT);
       hi = instantiate_non_dependent_expr (hi, complain);
       hi = cxx_constant_value (hi, complain);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
