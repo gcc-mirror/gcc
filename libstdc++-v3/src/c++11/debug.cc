@@ -45,24 +45,6 @@
 
 #include "mutex_pool.h"
 
-#ifdef _GLIBCXX_VERBOSE_ASSERT
-namespace std
-{
-  [[__noreturn__]]
-  void
-  __glibcxx_assert_fail(const char* file, int line,
-			const char* function, const char* condition) noexcept
-  {
-    if (file && function && condition)
-      fprintf(stderr, "%s:%d: %s: Assertion '%s' failed.\n",
-	      file, line, function, condition);
-    else if (function)
-      fprintf(stderr, "%s: Undefined behavior detected.\n", function);
-    abort();
-  }
-}
-#endif
-
 using namespace std;
 
 namespace
