@@ -180,6 +180,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "fmv.w.x\t%0,%2\n\tth.fmv.hw.x\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "th_fmv_x_w"
@@ -189,6 +190,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "fmv.x.w\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "th_fmv_x_hw"
@@ -198,6 +200,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "th.fmv.x.hw\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 ;; XTheadMac
@@ -333,6 +336,7 @@
    && th_mempair_operands_p (operands, true, <GPR:MODE>mode)"
   { return th_mempair_output_move (operands, true, <GPR:MODE>mode, UNKNOWN); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "<GPR:MODE>")])
 
 ;; MEMPAIR store 64/32 bit
@@ -345,6 +349,7 @@
    && th_mempair_operands_p (operands, false, <GPR:MODE>mode)"
   { return th_mempair_output_move (operands, false, <GPR:MODE>mode, UNKNOWN); }
   [(set_attr "move_type" "store")
+   (set_attr "type" "store")
    (set_attr "mode" "<GPR:MODE>")])
 
 ;; MEMPAIR load DI extended signed SI
@@ -357,6 +362,7 @@
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, SIGN_EXTEND); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
 
@@ -370,6 +376,7 @@
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, ZERO_EXTEND); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
 
