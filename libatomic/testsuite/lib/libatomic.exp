@@ -146,6 +146,11 @@ proc libatomic_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global SYSROOT_CFLAGS_FOR_TARGET
+	lappend ALWAYS_CFLAGS "additional_flags=${SYSROOT_CFLAGS_FOR_TARGET}"
+
 	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
 	lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         if [istarget *-*-darwin*] {
