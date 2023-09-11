@@ -3154,6 +3154,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       { constant_boolean_node (true, type); })
      ))))))
 
+/* Optimize (a CMP b) ^ (a CMP b)  */
+/* Optimize (a CMP b) != (a CMP b)  */
+(for op (bit_xor ne)
+ (for cmp1 (lt lt lt le le le)
+      cmp2 (gt eq ne ge eq ne)
+      rcmp (ne le gt ne lt ge)
+  (simplify
+   (op:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+    (rcmp @0 @1)))))
+
+/* Optimize (a CMP b) == (a CMP b)  */
+(for cmp1 (lt lt lt le le le)
+     cmp2 (gt eq ne ge eq ne)
+     rcmp (eq gt le eq ge lt)
+ (simplify
+  (eq:c (cmp1:c @0 @1) (cmp2:c @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
+    (rcmp @0 @1))))
+
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
 
