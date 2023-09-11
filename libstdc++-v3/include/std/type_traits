@@ -1481,7 +1481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __bool_constant<__is_base_of(_Base, _Derived)>
     { };
 
-#if __has_builtin(__is_convertible)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_convertible)
   template<typename _From, typename _To>
     struct is_convertible
     : public __bool_constant<__is_convertible(_From, _To)>
@@ -1531,7 +1531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_is_nothrow_convertible // C++ >= 20
 
-#if __has_builtin(__is_nothrow_convertible)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_nothrow_convertible)
   /// is_nothrow_convertible_v
   template<typename _From, typename _To>
     inline constexpr bool is_nothrow_convertible_v
@@ -1606,7 +1606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { using type = _Tp; };
 
   /// remove_cv
-#if __has_builtin(__remove_cv)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_cv)
   template<typename _Tp>
     struct remove_cv
     { using type = __remove_cv(_Tp); };
@@ -1672,7 +1672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Reference transformations.
 
   /// remove_reference
-#if __has_builtin(__remove_reference)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_reference)
   template<typename _Tp>
     struct remove_reference
     { using type = __remove_reference(_Tp); };
@@ -3537,7 +3537,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
    * @{
    */
 #ifdef __cpp_lib_remove_cvref // C++ >= 20
-# if __has_builtin(__remove_cvref)
+# if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_cvref)
   template<typename _Tp>
     struct remove_cvref
     { using type = __remove_cvref(_Tp); };
