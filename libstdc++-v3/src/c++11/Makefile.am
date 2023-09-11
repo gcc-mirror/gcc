@@ -52,6 +52,7 @@ cxx11_abi_sources =
 endif
 
 sources = \
+	assert_fail.cc \
 	chrono.cc \
 	codecvt.cc \
 	condition_variable.cc \

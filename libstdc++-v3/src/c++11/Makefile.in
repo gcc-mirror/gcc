@@ -127,9 +127,9 @@ libc__11convenience_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.lo cxx11-stdexcept.lo
 am__objects_2 = ctype_configure_char.lo ctype_members.lo
-am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
-	cow-stdexcept.lo ctype.lo debug.lo functexcept.lo \
-	functional.lo futex.lo future.lo hash_c++0x.lo \
+am__objects_3 = assert_fail.lo chrono.lo codecvt.lo \
+	condition_variable.lo cow-stdexcept.lo ctype.lo debug.lo \
+	functexcept.lo functional.lo futex.lo future.lo hash_c++0x.lo \
 	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
 	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
 	system_error.lo thread.lo $(am__objects_1) $(am__objects_2)
@@ -466,6 +466,7 @@ host_sources = \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-stdexcept.cc
 
 sources = \
+	assert_fail.cc \
 	chrono.cc \
 	codecvt.cc \
 	condition_variable.cc \
