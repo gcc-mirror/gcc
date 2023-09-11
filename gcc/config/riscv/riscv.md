@@ -318,6 +318,7 @@
 ;; crypto cryptography instructions
 ;; pushpop    zc push and pop instructions
 ;; mvpair    zc move pair instructions
+;; zicond    zicond instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
 ;; rdvl        vector length vl csrr read
@@ -427,7 +428,7 @@
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,trap,ghost,bitmanip,
    rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,cbo,crypto,pushpop,mvpair,rdvlenb,rdvl,wrvxrm,wrfrm,
+   atomic,condmove,cbo,crypto,pushpop,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
    rdfrm,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
