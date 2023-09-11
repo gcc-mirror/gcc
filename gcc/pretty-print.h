@@ -333,28 +333,6 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
 #define pp_unsigned_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_UNSIGNED, (unsigned HOST_WIDE_INT) I)
-#define pp_wide_int(PP, W, SGN)					\
-  do								\
-    {								\
-      const wide_int_ref &pp_wide_int_ref = (W);		\
-      unsigned int pp_wide_int_prec				\
-	= pp_wide_int_ref.get_precision ();			\
-      if ((pp_wide_int_prec + 3) / 4				\
-	  > sizeof (pp_buffer (PP)->digit_buffer) - 3)		\
-	{							\
-	  char *pp_wide_int_buf					\
-	    = XALLOCAVEC (char, (pp_wide_int_prec + 3) / 4 + 3);\
-	  print_dec (pp_wide_int_ref, pp_wide_int_buf, SGN);	\
-	  pp_string (PP, pp_wide_int_buf);			\
-	}							\
-      else							\
-	{							\
-	  print_dec (pp_wide_int_ref,				\
-		     pp_buffer (PP)->digit_buffer, SGN);	\
-	  pp_string (PP, pp_buffer (PP)->digit_buffer);		\
-	}							\
-    }								\
-  while (0)
 #define pp_vrange(PP, R)					\
   do								\
     {								\
@@ -451,6 +429,19 @@ inline void
 pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
 {
   pp_scalar (pp, HOST_WIDE_INT_PRINT_DEC, i);
+}
+
+inline void
+pp_wide_int (pretty_printer *pp, const wide_int_ref &w, signop sgn)
+{
+  unsigned int prec = w.get_precision ();
+  if (UNLIKELY ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3))
+    pp_wide_int_large (pp, w, sgn);
+  else
+    {
+      print_dec (w, pp_buffer (pp)->digit_buffer, sgn);
+      pp_string (pp, pp_buffer (pp)->digit_buffer);
+    }
 }
 
 template<unsigned int N, typename T>
