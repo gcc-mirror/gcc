@@ -24,6 +24,7 @@
 
 #include <bits/move.h>
 #include <bits/stl_iterator_base_types.h>
+#include <ext/atomicity.h> // __is_single_threaded
 
 #include <debug/formatter.h>
 #include <debug/safe_base.h>
@@ -173,6 +174,31 @@ namespace
 	__old->_M_reset();
       }
   }
+
+  void*
+  acquire_sequence_ptr_for_lock(__gnu_debug::_Safe_sequence_base*& seq)
+  {
+#ifdef __GTHREADS
+    if (!__gnu_cxx::__is_single_threaded())
+      return __atomic_load_n(&seq, __ATOMIC_ACQUIRE);
+#endif
+    return seq;
+  }
+
+  void
+  reset_sequence_ptr(__gnu_debug::_Safe_sequence_base*& seq)
+  {
+#ifdef __GTHREADS
+    if (!__gnu_cxx::__is_single_threaded())
+      {
+	__atomic_store_n(&seq, (__gnu_debug::_Safe_sequence_base*)nullptr,
+			 __ATOMIC_RELEASE);
+	return;
+      }
+#endif
+    seq = nullptr;
+  }
+
 } // anonymous namespace
 
 namespace __gnu_debug
@@ -403,7 +429,7 @@ namespace __gnu_debug
     // If the sequence destructor runs between loading the pointer and
     // locking the mutex, it will detach this iterator and set _M_sequence
     // to null, and then _M_detach_single() will do nothing.
-    if (auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE))
+    if (auto seq = acquire_sequence_ptr_for_lock(_M_sequence))
       {
 	__gnu_cxx::__scoped_lock sentry(get_safe_base_mutex(seq));
 	_M_detach_single();
@@ -425,7 +451,7 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_reset() throw ()
   {
-    __atomic_store_n(&_M_sequence, (_Safe_sequence_base*)0, __ATOMIC_RELEASE);
+    reset_sequence_ptr(_M_sequence);
     _M_version = 0;
     _M_prior = 0;
     _M_next = 0;
@@ -485,7 +511,7 @@ namespace __gnu_debug
   _Safe_local_iterator_base::
   _M_detach()
   {
-    if (auto seq = __atomic_load_n(&_M_sequence, __ATOMIC_ACQUIRE))
+    if (auto seq = acquire_sequence_ptr_for_lock(_M_sequence))
       {
 	__gnu_cxx::__scoped_lock sentry(get_safe_base_mutex(seq));
 	_M_detach_single();
