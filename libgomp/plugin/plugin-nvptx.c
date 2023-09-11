@@ -2703,12 +2703,10 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 	       a following reverse offload does
 	       'GOMP_OFFLOAD_page_locked_host_alloc', and that then runs the
 	       deferred 'cuMemFreeHost's -- which may dead-lock?!
-	       TODO: This may need more considerations for the case that
-	       different host threads do reverse offload?  We could move
-	       'free_host_blocks' into 'aq' (which is separate per reverse
-	       offload) instead of global, like
-	       'page_locked_host_unregister_blocks', but that doesn't seem the
-	       right thing for OpenACC 'async' generally?  */
+	       Note: even though the reverse offload kernels are now run in
+	       multiple backgroud threads, *this* thread (or one of these
+	       threads, anyway) will live the whole time, so polling
+	       free_host_blocks should be effective.  */
 	    if (!nvptx_run_deferred_page_locked_host_free ())
 	      exit (EXIT_FAILURE);
 	  }
