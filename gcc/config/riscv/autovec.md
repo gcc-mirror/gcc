@@ -432,7 +432,8 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				 riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vialu")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Binary shifts by scalar.
@@ -561,6 +562,7 @@
                                    riscv_vector::MERGE_OP, operands);
     DONE;
   }
+  [(set_attr "type" "vector")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -648,7 +650,8 @@
   insn_code icode = code_for_pred_vf4 (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vext")])
 
 (define_insn_and_split "<optab><v_oct_trunc><mode>2"
   [(set (match_operand:VOEXTI 0 "register_operand")
@@ -662,7 +665,8 @@
   insn_code icode = code_for_pred_vf8 (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vext")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Truncation
@@ -818,7 +822,8 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfcvtftoi")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-INT] Conversions
@@ -840,7 +845,8 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfcvtitof")])
 
 ;; =========================================================================
 ;; == Widening/narrowing Conversions
@@ -865,7 +871,8 @@
   insn_code icode = code_for_pred_widen (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfwcvtftoi")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-INT] Widening Conversions
@@ -886,7 +893,8 @@
   insn_code icode = code_for_pred_widen (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfwcvtitof")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT<-FP] Narrowing Conversions
@@ -907,7 +915,8 @@
   insn_code icode = code_for_pred_narrow (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfncvtftoi")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-INT] Narrowing Conversions
@@ -928,7 +937,8 @@
   insn_code icode = code_for_pred_narrow (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfncvtitof")])
 
 ;; =========================================================================
 ;; == Unary arithmetic
@@ -952,7 +962,8 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vialu")])
 
 ;; -------------------------------------------------------------------------------
 ;; - [INT] ABS expansion to vmslt and vneg.
@@ -976,7 +987,8 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (NEG, <MODE>mode),
                                   riscv_vector::UNARY_OP_TAMU, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- [FP] Unary operations
@@ -996,7 +1008,8 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; -------------------------------------------------------------------------------
 ;; - [FP] Square root
@@ -1016,7 +1029,8 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfsqrt")])
 
 ;; =========================================================================
 ;; == Ternary arithmetic
@@ -1480,7 +1494,8 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				    riscv_vector::BINARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfalu")])
 
 ;; -------------------------------------------------------------------------
 ;; Includes:
@@ -1500,7 +1515,8 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				  riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfminmax")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- [FP] Sign copying
@@ -1566,7 +1582,8 @@
   insn_code icode = code_for_pred_mulh (UNSPEC_VMULHS, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vimul")])
 
 (define_insn_and_split "umul<mode>3_highpart"
   [(set (match_operand:VFULLI 0 "register_operand")
@@ -1581,7 +1598,8 @@
   insn_code icode = code_for_pred_mulh (UNSPEC_VMULHU, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vimul")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Conditional unary operations

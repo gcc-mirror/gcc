@@ -628,7 +628,8 @@
 				     gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
 				     const0_rtx));
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine vfsqrt.v and cond_mask
 (define_insn_and_split "*cond_<optab><mode>"
@@ -666,7 +667,8 @@
   riscv_vector::emit_vlmax_insn (code_for_pred_ncopysign (<MODE>mode),
                                   riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine sign_extend/zero_extend(vf2) and vcond_mask
 (define_insn_and_split "*cond_<optab><v_double_trunc><mode>"
@@ -685,7 +687,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine sign_extend/zero_extend(vf4) and vcond_mask
 (define_insn_and_split "*cond_<optab><v_quad_trunc><mode>"
@@ -704,7 +707,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine sign_extend/zero_extend(vf8) and vcond_mask
 (define_insn_and_split "*cond_<optab><v_oct_trunc><mode>"
@@ -723,7 +727,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine trunc(vf2) + vcond_mask
 (define_insn_and_split "*cond_trunc<mode><v_double_trunc>"
@@ -743,7 +748,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine FP extend(vf2) and vcond_mask
 (define_insn_and_split "*cond_extend<v_double_trunc><mode>"
@@ -762,7 +768,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine FP trunc(vf2) + vcond_mask
 (define_insn_and_split "*cond_trunc<mode><v_double_trunc>"
@@ -782,7 +789,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(FP->INT) + vcond_mask
 (define_insn_and_split "*cond_<optab><mode><vconvert>"
@@ -802,7 +810,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(INT->FP) + vcond_mask
 (define_insn_and_split "*cond_<float_cvt><vconvert><mode>"
@@ -822,7 +831,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(FP->2xINT) + vcond_mask
 (define_insn_and_split "*cond_<optab><vnconvert><mode>"
@@ -842,7 +852,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(INT->2xFP) + vcond_mask
 (define_insn_and_split "*cond_<float_cvt><vnconvert><mode>"
@@ -862,7 +873,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(2xFP->INT) + vcond_mask
 (define_insn_and_split "*cond_<optab><mode><vnconvert>"
@@ -882,7 +894,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine convert(2xINT->FP) + vcond_mask
 (define_insn_and_split "*cond_<float_cvt><mode><vnconvert>2"
@@ -902,7 +915,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; =============================================================================
 ;; Combine extend + binop to widen_binop
@@ -925,7 +939,8 @@
                                               <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_insn_and_split "*single_widen_sub<any_extend:su><mode>"
   [(set (match_operand:VWEXTI 0 "register_operand")
@@ -942,7 +957,8 @@
                                                     <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "viwalu")])
 
 (define_insn_and_split "*single_widen_add<any_extend:su><mode>"
   [(set (match_operand:VWEXTI 0 "register_operand")
@@ -959,7 +975,8 @@
                                                     <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "viwalu")])
 
 ;; This combine pattern does not correspond to an single instruction,
 ;; i.e. there is no vwmul.wv instruction. This is a temporary pattern
@@ -985,7 +1002,8 @@
   insn_code icode = code_for_pred (MULT, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
   DONE;
-})
+}
+[(set_attr "type" "viwmul")])
 
 (define_insn_and_split "*dual_widen_mulsu<mode>"
   [(set (match_operand:VWEXTI 0 "register_operand")
@@ -1002,7 +1020,8 @@
   insn_code icode = code_for_pred_widen_mulsu (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_insn_and_split "*dual_widen_mulus<mode>"
   [(set (match_operand:VWEXTI 0 "register_operand")
@@ -1019,7 +1038,8 @@
   insn_code icode = code_for_pred_widen_mulsu (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_insn_and_split "*dual_widen_<optab><mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
@@ -1036,7 +1056,8 @@
   insn_code icode = code_for_pred_dual_widen (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_insn_and_split "*single_widen_add<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
@@ -1052,7 +1073,8 @@
   insn_code icode = code_for_pred_single_widen_add (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfwalu")])
 
 (define_insn_and_split "*single_widen_sub<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
@@ -1068,7 +1090,8 @@
   insn_code icode = code_for_pred_single_widen_sub (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_FRM_DYN, operands);
   DONE;
-})
+}
+[(set_attr "type" "vfwalu")])
 
 ;; This combine pattern does not correspond to an single instruction,
 ;; i.e. there is no vfwmul.wv instruction. This is a temporary pattern
@@ -1094,4 +1117,5 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (MULT, <MODE>mode),
 				 riscv_vector::BINARY_OP_FRM_DYN, ops);
   DONE;
-})
+}
+[(set_attr "type" "vfwmul")])
