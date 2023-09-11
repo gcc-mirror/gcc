@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_vector } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
 
-#include "cond_logical-3.c"
+#include "cond_logical_min_max-5.c"
 
 #define N 99
 
@@ -18,7 +18,7 @@
     test_##TYPE##_##OP (r, a, b, c, N);				\
     for (int i = 0; i < N; ++i)					\
       {								\
-	TYPE expected = a[i] < 20 ? OP (b[i], c[i]) : a[i];	\
+	TYPE expected = a[i] < 20 ? OP (b[i], c[i]) : 0;	\
 	if (r[i] != expected)					\
 	  __builtin_abort ();					\
 	asm volatile ("" ::: "memory");				\
