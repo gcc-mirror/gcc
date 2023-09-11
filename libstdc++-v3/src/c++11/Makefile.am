@@ -56,6 +56,7 @@ sources_freestanding = \
 	placeholders.cc
 
 sources = \
+	assert_fail.cc \
 	chrono.cc \
 	codecvt.cc \
 	condition_variable.cc \

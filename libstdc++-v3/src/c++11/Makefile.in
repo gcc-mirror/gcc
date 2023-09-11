@@ -127,9 +127,9 @@ am__objects_1 = limits.lo placeholders.lo
 @ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.lo cxx11-stdexcept.lo
 am__objects_3 = ctype_configure_char.lo ctype_members.lo
-am__objects_4 = chrono.lo codecvt.lo condition_variable.lo \
-	cow-stdexcept.lo ctype.lo debug.lo functexcept.lo \
-	functional.lo futex.lo future.lo hash_c++0x.lo \
+am__objects_4 = assert_fail.lo chrono.lo codecvt.lo \
+	condition_variable.lo cow-stdexcept.lo ctype.lo debug.lo \
+	functexcept.lo functional.lo futex.lo future.lo hash_c++0x.lo \
 	hashtable_c++0x.lo ios.lo ios_errcat.lo mutex.lo random.lo \
 	regex.lo shared_ptr.lo snprintf_lite.lo system_error.lo \
 	thread.lo $(am__objects_2) $(am__objects_3)
@@ -475,6 +475,7 @@ sources_freestanding = \
 	placeholders.cc
 
 sources = \
+	assert_fail.cc \
 	chrono.cc \
 	codecvt.cc \
 	condition_variable.cc \
