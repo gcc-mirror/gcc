@@ -4054,7 +4054,7 @@ pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
     }
 
   /* Step1: Reshape the VL/VTYPE status to make sure everything compatible.  */
-  hash_set<basic_block> pred_cfg_bbs = get_all_predecessors (cfg_bb);
+  auto_vec<basic_block> pred_cfg_bbs = get_dominated_by (CDI_POST_DOMINATORS, cfg_bb);
   FOR_EACH_EDGE (e, ei, cfg_bb->preds)
     {
       sbitmap avout = m_vector_manager->vector_avout[e->src->index];
@@ -4243,6 +4243,7 @@ pass_vsetvl::init (void)
     {
       /* Initialization of RTL_SSA.  */
       calculate_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_POST_DOMINATORS);
       df_analyze ();
       crtl->ssa = new function_info (cfun);
     }
@@ -4264,6 +4265,7 @@ pass_vsetvl::done (void)
     {
       /* Finalization of RTL_SSA.  */
       free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
       if (crtl->ssa->perform_pending_updates ())
 	cleanup_cfg (0);
       delete crtl->ssa;
