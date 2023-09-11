@@ -158,6 +158,9 @@
 #if !__has_builtin (__is_trivially_copyable)
 # error "__has_builtin (__is_trivially_copyable) failed"
 #endif
+#if !__has_builtin (__is_unbounded_array)
+# error "__has_builtin (__is_unbounded_array) failed"
+#endif
 #if !__has_builtin (__is_union)
 # error "__has_builtin (__is_union) failed"
 #endif
