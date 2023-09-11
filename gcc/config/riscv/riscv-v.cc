@@ -3436,4 +3436,26 @@ get_all_successors (basic_block bb)
   return blocks;
 }
 
+/* Return true if the LMUL of comparison less than or equal to one.  */
+bool
+cmp_lmul_le_one (machine_mode mode)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+    return known_le (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
+  else if (riscv_v_ext_vls_mode_p (mode))
+    return known_le (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
+  return false;
+}
+
+/* Return true if the LMUL of comparison greater than one.  */
+bool
+cmp_lmul_gt_one (machine_mode mode)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+    return known_gt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
+  else if (riscv_v_ext_vls_mode_p (mode))
+    return known_gt (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
+  return false;
+}
+
 } // namespace riscv_vector

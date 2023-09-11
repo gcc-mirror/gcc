@@ -500,6 +500,8 @@ opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
 hash_set<basic_block> get_all_predecessors (basic_block);
 hash_set<basic_block> get_all_successors (basic_block);
+bool cmp_lmul_le_one (machine_mode);
+bool cmp_lmul_gt_one (machine_mode);
 }
 
 /* We classify builtin types into two classes:

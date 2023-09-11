@@ -354,9 +354,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "vec_perm<mode>"
-  [(match_operand:V 0 "register_operand")
-   (match_operand:V 1 "register_operand")
-   (match_operand:V 2 "register_operand")
+  [(match_operand:V_VLS 0 "register_operand")
+   (match_operand:V_VLS 1 "register_operand")
+   (match_operand:V_VLS 2 "register_operand")
    (match_operand:<VINDEX> 3 "vector_perm_operand")]
   "TARGET_VECTOR && GET_MODE_NUNITS (<MODE>mode).is_constant ()"
   {
