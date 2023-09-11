@@ -374,6 +374,13 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "ldflags=$wrap_flags"
     }
 
+    if { $blddirffi != "" } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global SYSROOT_CFLAGS_FOR_TARGET
+	lappend options "additional_flags=${SYSROOT_CFLAGS_FOR_TARGET}"
+    }
+
     # TOOL_OPTIONS must come first, so that it doesn't override testcase
     # specific options.
     if [info exists TOOL_OPTIONS] {

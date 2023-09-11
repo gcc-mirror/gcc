@@ -62,9 +62,10 @@ AC_CHECK_TOOL(READELF, readelf)
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
 
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
+
 cat > local.exp <<EOF
-set CC_FOR_TARGET "$CC"
-set CXX_FOR_TARGET "$CXX"
+set SYSROOT_CFLAGS_FOR_TARGET "$SYSROOT_CFLAGS_FOR_TARGET"
 set compiler_vendor "$ax_cv_c_compiler_vendor"
 EOF
 
