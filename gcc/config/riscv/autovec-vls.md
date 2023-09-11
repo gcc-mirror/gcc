@@ -148,6 +148,14 @@
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*mov<mode>_vls"
+  [(set (match_operand:VLSB 0 "register_operand" "=vr")
+	(match_operand:VLSB 1 "register_operand" " vr"))]
+  "TARGET_VECTOR"
+  "vmv1r.v\t%0,%1"
+  [(set_attr "type" "vmov")
+   (set_attr "mode" "<MODE>")])
+
 (define_expand "movmisalign<mode>"
   [(set (match_operand:VLS 0 "nonimmediate_operand")
 	(match_operand:VLS 1 "general_operand"))]
