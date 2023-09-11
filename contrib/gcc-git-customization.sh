@@ -46,7 +46,11 @@ set_email=$(git config --get "user.email")
 if [ "x$set_user" = "x" ]
 then
     # Try to guess the user's name by looking it up in the password file
-    new_user=$(getent passwd $(whoami) | awk -F: '{ print $5 }')
+    if type getent >/dev/null 2>&1; then
+      new_user=$(getent passwd $(whoami) | awk -F: '{ print $5 }')
+    elif [ $(uname -s) = Darwin ]; then
+      new_user=$(id -F 2>/dev/null)
+    fi
     if [ "x$new_user" = "x" ]
     then
        new_user="(no default)"
