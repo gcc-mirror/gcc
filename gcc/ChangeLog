@@ -1,3 +1,34 @@
+2023-09-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_generic_patterns): Expand
+	fixed-vlmax/vls vector permutation.
+
+2023-09-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_compress_patterns): Avoid unnecessary slideup.
+
+2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* match.pd (`(a CMP CST1) ? max<a,CST2> : a`):
+	Fix the LE/GE comparison to the correct value.
+	* tree-ssa-phiopt.cc (minmax_replacement):
+	Fix the LE/GE comparison for the
+	`(a CMP CST1) ? max<a,CST2> : a` optimization.
+
+2023-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_function_section): Place unlikely
+	executed global init code into the standard cold section.
+
+2023-09-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111311
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::vsetvl_fusion): Add TDF_DETAILS.
+	(pass_vsetvl::pre_vsetvl): Ditto.
+	(pass_vsetvl::init): Ditto.
+	(pass_vsetvl::lazy_vsetvl): Ditto.
+
 2023-09-09  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/loongarch.md (mulsidi3_64bit):

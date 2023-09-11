@@ -1,3 +1,10 @@
+2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* gcc.c-torture/execute/pr111331-1.c: New test.
+	* gcc.c-torture/execute/pr111331-2.c: New test.
+	* gcc.c-torture/execute/pr111331-3.c: New test.
+
 2023-09-09  benjamin priour  <vultkayn@gcc.gnu.org>
 
 	PR analyzer/96395
