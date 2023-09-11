@@ -1318,6 +1318,7 @@ BEGIN
    LogicalOrOp,
    LogicalAndOp,
    LogicalXorOp,
+   LogicalDiffOp,
    CoerceOp,
    ConvertOp,
    CastOp,
@@ -1368,7 +1369,10 @@ BEGIN
    RestorePriorityOp,
    RangeCheckOp,
    ModuleScopeOp,
-   ErrorOp          : |
+   ErrorOp,
+   DummyOp,
+   OptParamOp,
+   InitAddressOp   : |
 
    END ;
    RETURN FALSE
