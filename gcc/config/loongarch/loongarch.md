@@ -72,6 +72,9 @@
   UNSPEC_LUI_H_HI12
   UNSPEC_TLS_LOW
 
+  ;; Fake div.w[u] mod.w[u]
+  UNSPEC_FAKE_ANY_DIV
+
   UNSPEC_SIBCALL_VALUE_MULTIPLE_INTERNAL_1
   UNSPEC_CALL_VALUE_MULTIPLE_INTERNAL_1
 ])
@@ -900,7 +903,7 @@
 		     (match_operand:GPR 2 "register_operand")))]
   ""
 {
- if (GET_MODE (operands[0]) == SImode)
+ if (GET_MODE (operands[0]) == SImode && TARGET_64BIT)
   {
     rtx reg1 = gen_reg_rtx (DImode);
     rtx reg2 = gen_reg_rtx (DImode);
@@ -920,9 +923,9 @@
 })
 
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=r,&r,&r")
-	(any_div:GPR (match_operand:GPR 1 "register_operand" "r,r,0")
-		     (match_operand:GPR 2 "register_operand" "r,r,r")))]
+  [(set (match_operand:X 0 "register_operand" "=r,&r,&r")
+	(any_div:X (match_operand:X 1 "register_operand" "r,r,0")
+		   (match_operand:X 2 "register_operand" "r,r,r")))]
   ""
 {
   return loongarch_output_division ("<insn>.<d><u>\t%0,%1,%2", operands);
@@ -938,9 +941,12 @@
 (define_insn "<optab>di3_fake"
   [(set (match_operand:DI 0 "register_operand" "=r,&r,&r")
 	(sign_extend:DI
-	  (any_div:SI (match_operand:DI 1 "register_operand" "r,r,0")
-		      (match_operand:DI 2 "register_operand" "r,r,r"))))]
-  ""
+	  (unspec:SI
+	   [(subreg:SI
+	     (any_div:DI (match_operand:DI 1 "register_operand" "r,r,0")
+			 (match_operand:DI 2 "register_operand" "r,r,r")) 0)]
+	  UNSPEC_FAKE_ANY_DIV)))]
+  "TARGET_64BIT"
 {
   return loongarch_output_division ("<insn>.w<u>\t%0,%1,%2", operands);
 }
