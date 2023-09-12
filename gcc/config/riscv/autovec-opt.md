@@ -649,7 +649,8 @@
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
   riscv_vector::expand_cond_len_unop (icode, ops);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Combine vlmax neg and UNSPEC_VCOPYSIGN
 (define_insn_and_split "*copysign<mode>_neg"

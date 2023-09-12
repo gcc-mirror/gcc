@@ -7721,11 +7721,9 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   if (get_attr_type (insn) == TYPE_GHOST)
     return 0;
 
-#if 0
   /* If we ever encounter an insn with an unknown type, trip
      an assert so we can find and fix this problem.  */
   gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
-#endif
 
   return more - 1;
 }
