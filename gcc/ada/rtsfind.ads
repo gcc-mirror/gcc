@@ -179,7 +179,6 @@ package Rtsfind is
 
       CUDA_Driver_Types,
       CUDA_Internal,
-      CUDA_Runtime_Api,
       CUDA_Vector_Types,
 
       --  Interfaces
