@@ -1681,6 +1681,7 @@ static bool c_parser_omp_declare (c_parser *, enum pragma_context);
 static void c_parser_omp_requires (c_parser *);
 static bool c_parser_omp_error (c_parser *, enum pragma_context);
 static void c_parser_omp_assumption_clauses (c_parser *, bool);
+static void c_parser_omp_allocate (c_parser *);
 static void c_parser_omp_assumes (c_parser *);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
@@ -13649,6 +13650,10 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_requires (parser);
       return false;
 
+    case PRAGMA_OMP_ALLOCATE:
+      c_parser_omp_allocate (parser);
+      return false;
+
     case PRAGMA_OMP_ASSUMES:
       if (context != pragma_external)
 	{
@@ -19348,10 +19353,13 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
    align (constant-expression)]  */
 
 static void
-c_parser_omp_allocate (location_t loc, c_parser *parser)
+c_parser_omp_allocate (c_parser *parser)
 {
   tree alignment = NULL_TREE;
   tree allocator = NULL_TREE;
+  c_parser_consume_pragma (parser);
+  location_t loc = c_parser_peek_token (parser)->location;
+  location_t allocator_loc = UNKNOWN_LOCATION;
   tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
   do
     {
@@ -19376,7 +19384,9 @@ c_parser_omp_allocate (location_t loc, c_parser *parser)
       c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       expr_loc = c_parser_peek_token (parser)->location;
-      if (p[2] == 'i' && alignment)
+      if (expr.value == error_mark_node)
+	;
+      else if (p[2] == 'i' && alignment)
 	{
 	  error_at (expr_loc, "too many %qs clauses", "align");
 	  break;
@@ -19403,6 +19413,7 @@ c_parser_omp_allocate (location_t loc, c_parser *parser)
       else
 	{
 	  allocator = c_fully_fold (expr.value, false, NULL);
+	  allocator_loc = expr_loc;
 	  tree orig_type
 	    = expr.original_type ? expr.original_type : TREE_TYPE (allocator);
 	  orig_type = TYPE_MAIN_VARIANT (orig_type);
@@ -19422,14 +19433,95 @@ c_parser_omp_allocate (location_t loc, c_parser *parser)
     } while (true);
   c_parser_skip_to_pragma_eol (parser);
 
-  if (allocator || alignment)
-    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
-      {
-	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
-	OMP_CLAUSE_ALLOCATE_ALIGN (c) = alignment;
-      }
-
-  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
+  c_mark_decl_jump_unsafe_in_current_scope ();
+  for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
+    {
+      tree var = OMP_CLAUSE_DECL (c);
+      if (TREE_CODE (var) == PARM_DECL)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+		    "function parameter %qD may not appear as list item in an "
+		    "%<allocate%> directive", var);
+	  continue;
+	}
+      if (!c_check_in_current_scope (var))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+		    "%<allocate%> directive must be in the same scope as %qD",
+		    var);
+	  inform (DECL_SOURCE_LOCATION (var), "declared here");
+	  continue;
+	}
+      if (lookup_attribute ("omp allocate", DECL_ATTRIBUTES (var)))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+		    "%qD already appeared as list item in an "
+		    "%<allocate%> directive", var);
+	  continue;
+	}
+      if (TREE_STATIC (var))
+	{
+	  if (allocator == NULL_TREE && allocator_loc == UNKNOWN_LOCATION)
+	    error_at (loc, "%<allocator%> clause required for "
+			   "static variable %qD", var);
+	  else if (allocator
+		   && (tree_int_cst_sgn (allocator) != 1
+		       || tree_to_shwi (allocator) > 8))
+	    /* 8 = largest predefined memory allocator. */
+	    error_at (allocator_loc,
+		      "%<allocator%> clause requires a predefined allocator as "
+		      "%qD is static", var);
+	  else
+	    sorry_at (OMP_CLAUSE_LOCATION (nl),
+		      "%<#pragma omp allocate%> for static variables like "
+		      "%qD not yet supported", var);
+	  continue;
+	}
+      if (allocator
+	  && TREE_CODE (allocator) == VAR_DECL
+	  && c_check_in_current_scope (var))
+	{
+	  if (linemap_location_before_p (line_table, DECL_SOURCE_LOCATION (var),
+					 DECL_SOURCE_LOCATION (allocator)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (nl),
+			"allocator variable %qD must be declared before %qD",
+			allocator, var);
+	      inform (DECL_SOURCE_LOCATION (allocator),
+		      "allocator declared here");
+	      inform (DECL_SOURCE_LOCATION (var), "declared here");
+	    }
+	  else
+	   {
+	     gcc_assert (cur_stmt_list
+			 && TREE_CODE (cur_stmt_list) == STATEMENT_LIST);
+	     tree_stmt_iterator l = tsi_last (cur_stmt_list);
+	     while (!tsi_end_p (l))
+	       {
+		 if (linemap_location_before_p (line_table, EXPR_LOCATION (*l),
+						DECL_SOURCE_LOCATION (var)))
+		   break;
+		 if (TREE_CODE (*l) == MODIFY_EXPR
+		     && TREE_OPERAND (*l, 0) == allocator)
+		   {
+		     error_at (EXPR_LOCATION (*l),
+			       "allocator variable %qD, used in the "
+			       "%<allocate%> directive for %qD, must not be "
+			       "modified between declaration of %qD and its "
+			       "%<allocate%> directive",
+			       allocator, var, var);
+		     inform (DECL_SOURCE_LOCATION (var), "declared here");
+		     inform (OMP_CLAUSE_LOCATION (nl), "used here");
+		     break;
+		  }
+		--l;
+	     }
+	   }
+	}
+      DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
+					 build_tree_list (allocator, alignment),
+					 DECL_ATTRIBUTES (var));
+    }
 }
 
 /* OpenMP 2.5:
@@ -24926,9 +25018,6 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       strcpy (p_name, "#pragma wait");
       stmt = c_parser_oacc_wait (loc, parser, p_name);
       break;
-    case PRAGMA_OMP_ALLOCATE:
-      c_parser_omp_allocate (loc, parser);
-      return;
     case PRAGMA_OMP_ATOMIC:
       c_parser_omp_atomic (loc, parser, false);
       return;

@@ -1363,6 +1363,46 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       if (VAR_P (t))
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+	  tree attr;
+
+	  if (flag_openmp
+	      && !is_global_var (t)
+	      && DECL_CONTEXT (t) == current_function_decl
+	      && TREE_USED (t)
+	      && (attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
+		 != NULL_TREE)
+	    {
+	      tree alloc = TREE_PURPOSE (TREE_VALUE (attr));
+	      tree align = TREE_VALUE (TREE_VALUE (attr));
+	      /* Allocate directives that appear in a target region must specify
+		 an allocator clause unless a requires directive with the
+		 dynamic_allocators clause is present in the same compilation
+		 unit.  */
+	      bool missing_dyn_alloc = false;
+	      if (alloc == NULL_TREE
+		  && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS)
+		      == 0))
+		{
+		  /* This comes too early for omp_discover_declare_target...,
+		     but should at least catch the most common cases.  */
+		  missing_dyn_alloc
+		    = cgraph_node::get (current_function_decl)->offloadable;
+		  for (struct gimplify_omp_ctx *ctx2 = ctx;
+		       ctx2 && !missing_dyn_alloc; ctx2 = ctx2->outer_context)
+		    if (ctx2->code == OMP_TARGET)
+		      missing_dyn_alloc = true;
+		}
+	      if (missing_dyn_alloc)
+		error_at (DECL_SOURCE_LOCATION (t),
+			  "%<allocate%> directive for %qD inside a target "
+			  "region must specify an %<allocator%> clause", t);
+	      else if (align != NULL_TREE
+		       || alloc == NULL_TREE
+		       || !integer_onep (alloc))
+	        sorry_at (DECL_SOURCE_LOCATION (t),
+			  "OpenMP %<allocate%> directive, used for %qD, not "
+			  "yet supported", t);
+	    }
 
 	  /* Mark variable as local.  */
 	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t))
