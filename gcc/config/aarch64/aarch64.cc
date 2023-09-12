@@ -8517,6 +8517,8 @@ aarch64_layout_frame (void)
   gcc_assert (crtl->is_leaf
 	      || maybe_ne (frame.reg_offset[R30_REGNUM], SLOT_NOT_REQUIRED));
 
+  frame.bytes_below_saved_regs = crtl->outgoing_args_size;
+
   /* Now assign stack slots for the registers.  Start with the predicate
      registers, since predicate LDR and STR have a relatively small
      offset range.  These saves happen below the hard frame pointer.  */
@@ -8621,18 +8623,18 @@ aarch64_layout_frame (void)
 
   poly_int64 varargs_and_saved_regs_size = offset + frame.saved_varargs_size;
 
-  poly_int64 above_outgoing_args
+  poly_int64 saved_regs_and_above
     = aligned_upper_bound (varargs_and_saved_regs_size
 			   + get_frame_size (),
 			   STACK_BOUNDARY / BITS_PER_UNIT);
 
   frame.hard_fp_offset
-    = above_outgoing_args - frame.below_hard_fp_saved_regs_size;
+    = saved_regs_and_above - frame.below_hard_fp_saved_regs_size;
 
   /* Both these values are already aligned.  */
-  gcc_assert (multiple_p (crtl->outgoing_args_size,
+  gcc_assert (multiple_p (frame.bytes_below_saved_regs,
 			  STACK_BOUNDARY / BITS_PER_UNIT));
-  frame.frame_size = above_outgoing_args + crtl->outgoing_args_size;
+  frame.frame_size = saved_regs_and_above + frame.bytes_below_saved_regs;
 
   frame.locals_offset = frame.saved_varargs_size;
 
@@ -8676,7 +8678,7 @@ aarch64_layout_frame (void)
   else if (frame.wb_pop_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
-  HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
+  HOST_WIDE_INT const_size, const_below_saved_regs, const_fp_offset;
   HOST_WIDE_INT const_saved_regs_size;
   if (known_eq (frame.saved_regs_size, 0))
     frame.initial_adjust = frame.frame_size;
@@ -8684,31 +8686,31 @@ aarch64_layout_frame (void)
 	   && const_size < max_push_offset
 	   && known_eq (frame.hard_fp_offset, const_size))
     {
-      /* Simple, small frame with no outgoing arguments:
+      /* Simple, small frame with no data below the saved registers.
 
 	 stp reg1, reg2, [sp, -frame_size]!
 	 stp reg3, reg4, [sp, 16]  */
       frame.callee_adjust = const_size;
     }
-  else if (crtl->outgoing_args_size.is_constant (&const_outgoing_args_size)
+  else if (frame.bytes_below_saved_regs.is_constant (&const_below_saved_regs)
 	   && frame.saved_regs_size.is_constant (&const_saved_regs_size)
-	   && const_outgoing_args_size + const_saved_regs_size < 512
-	   /* We could handle this case even with outgoing args, provided
-	      that the number of args left us with valid offsets for all
-	      predicate and vector save slots.  It's such a rare case that
-	      it hardly seems worth the effort though.  */
-	   && (!saves_below_hard_fp_p || const_outgoing_args_size == 0)
+	   && const_below_saved_regs + const_saved_regs_size < 512
+	   /* We could handle this case even with data below the saved
+	      registers, provided that that data left us with valid offsets
+	      for all predicate and vector save slots.  It's such a rare
+	      case that it hardly seems worth the effort though.  */
+	   && (!saves_below_hard_fp_p || const_below_saved_regs == 0)
 	   && !(cfun->calls_alloca
 		&& frame.hard_fp_offset.is_constant (&const_fp_offset)
 		&& const_fp_offset < max_push_offset))
     {
-      /* Frame with small outgoing arguments:
+      /* Frame with small area below the saved registers:
 
 	 sub sp, sp, frame_size
-	 stp reg1, reg2, [sp, outgoing_args_size]
-	 stp reg3, reg4, [sp, outgoing_args_size + 16]  */
+	 stp reg1, reg2, [sp, bytes_below_saved_regs]
+	 stp reg3, reg4, [sp, bytes_below_saved_regs + 16]  */
       frame.initial_adjust = frame.frame_size;
-      frame.callee_offset = const_outgoing_args_size;
+      frame.callee_offset = const_below_saved_regs;
     }
   else if (saves_below_hard_fp_p
 	   && known_eq (frame.saved_regs_size,
@@ -8718,30 +8720,29 @@ aarch64_layout_frame (void)
 
 	 sub sp, sp, hard_fp_offset + below_hard_fp_saved_regs_size
 	 save SVE registers relative to SP
-	 sub sp, sp, outgoing_args_size  */
+	 sub sp, sp, bytes_below_saved_regs  */
       frame.initial_adjust = (frame.hard_fp_offset
 			      + frame.below_hard_fp_saved_regs_size);
-      frame.final_adjust = crtl->outgoing_args_size;
+      frame.final_adjust = frame.bytes_below_saved_regs;
     }
   else if (frame.hard_fp_offset.is_constant (&const_fp_offset)
 	   && const_fp_offset < max_push_offset)
     {
-      /* Frame with large outgoing arguments or SVE saves, but with
-	 a small local area:
+      /* Frame with large area below the saved registers, or with SVE saves,
+	 but with a small area above:
 
 	 stp reg1, reg2, [sp, -hard_fp_offset]!
 	 stp reg3, reg4, [sp, 16]
 	 [sub sp, sp, below_hard_fp_saved_regs_size]
 	 [save SVE registers relative to SP]
-	 sub sp, sp, outgoing_args_size  */
+	 sub sp, sp, bytes_below_saved_regs  */
       frame.callee_adjust = const_fp_offset;
       frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
-      frame.final_adjust = crtl->outgoing_args_size;
+      frame.final_adjust = frame.bytes_below_saved_regs;
     }
   else
     {
-      /* Frame with large local area and outgoing arguments or SVE saves,
-	 using frame pointer:
+      /* General case:
 
 	 sub sp, sp, hard_fp_offset
 	 stp x29, x30, [sp, 0]
@@ -8749,10 +8750,10 @@ aarch64_layout_frame (void)
 	 stp reg3, reg4, [sp, 16]
 	 [sub sp, sp, below_hard_fp_saved_regs_size]
 	 [save SVE registers relative to SP]
-	 sub sp, sp, outgoing_args_size  */
+	 sub sp, sp, bytes_below_saved_regs  */
       frame.initial_adjust = frame.hard_fp_offset;
       frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
-      frame.final_adjust = crtl->outgoing_args_size;
+      frame.final_adjust = frame.bytes_below_saved_regs;
     }
 
   /* Make sure the individual adjustments add up to the full frame size.  */
@@ -9397,7 +9398,7 @@ aarch64_get_separate_components (void)
 	if (frame_pointer_needed)
 	  offset -= frame.below_hard_fp_saved_regs_size;
 	else
-	  offset += crtl->outgoing_args_size;
+	  offset += frame.bytes_below_saved_regs;
 
 	/* Check that we can access the stack slot of the register with one
 	   direct load with no adjustments needed.  */
@@ -9546,7 +9547,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       if (frame_pointer_needed)
 	offset -= frame.below_hard_fp_saved_regs_size;
       else
-	offset += crtl->outgoing_args_size;
+	offset += frame.bytes_below_saved_regs;
 
       rtx addr = plus_constant (Pmode, ptr_reg, offset);
       rtx mem = gen_frame_mem (mode, addr);
@@ -9600,7 +9601,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       if (frame_pointer_needed)
 	offset2 -= frame.below_hard_fp_saved_regs_size;
       else
-	offset2 += crtl->outgoing_args_size;
+	offset2 += frame.bytes_below_saved_regs;
       rtx addr2 = plus_constant (Pmode, ptr_reg, offset2);
       rtx mem2 = gen_frame_mem (mode, addr2);
       rtx set2 = prologue_p ? gen_rtx_SET (mem2, reg2)
@@ -9684,10 +9685,10 @@ aarch64_emit_stack_tie (rtx reg)
    registers.  If POLY_SIZE is not large enough to require a probe this function
    will only adjust the stack.  When allocating the stack space
    FRAME_RELATED_P is then used to indicate if the allocation is frame related.
-   FINAL_ADJUSTMENT_P indicates whether we are allocating the outgoing
-   arguments.  If we are then we ensure that any allocation larger than the ABI
-   defined buffer needs a probe so that the invariant of having a 1KB buffer is
-   maintained.
+   FINAL_ADJUSTMENT_P indicates whether we are allocating the area below
+   the saved registers.  If we are then we ensure that any allocation
+   larger than the ABI defined buffer needs a probe so that the
+   invariant of having a 1KB buffer is maintained.
 
    We emit barriers after each stack adjustment to prevent optimizations from
    breaking the invariant that we never drop the stack more than a page.  This
@@ -9896,7 +9897,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
   /* Handle any residuals.  Residuals of at least MIN_PROBE_THRESHOLD have to
      be probed.  This maintains the requirement that each page is probed at
      least once.  For initial probing we probe only if the allocation is
-     more than GUARD_SIZE - buffer, and for the outgoing arguments we probe
+     more than GUARD_SIZE - buffer, and below the saved registers we probe
      if the amount is larger than buffer.  GUARD_SIZE - buffer + buffer ==
      GUARD_SIZE.  This works that for any allocation that is large enough to
      trigger a probe here, we'll have at least one, and if they're not large
