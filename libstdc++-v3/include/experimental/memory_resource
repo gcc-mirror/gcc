@@ -549,10 +549,20 @@ namespace pmr {
   // The default memory resource
 
   /// @cond undocumented
-  inline std::atomic<memory_resource*>&
+  inline auto&
   __get_default_resource()
   {
+#ifndef _GLIBCXX_HAS_GTHREADS
+    struct type {
+      using value_type = memory_resource*;
+      explicit type(value_type __r) : _M_r(__r) { }
+      value_type _M_r;
+      value_type load() const { return _M_r; }
+      value_type exchange(value_type __r) { return std::__exchange(_M_r, __r); }
+    };
+#else
     using type = atomic<memory_resource*>;
+#endif
     alignas(type) static unsigned char __buf[sizeof(type)];
     static type* __r = new(__buf) type(new_delete_resource());
     return *__r;

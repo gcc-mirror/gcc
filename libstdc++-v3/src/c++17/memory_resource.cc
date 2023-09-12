@@ -27,9 +27,9 @@
 #include <atomic>
 #include <bit>				// has_single_bit, bit_ceil, bit_width
 #include <new>
+#include <bits/move.h>			// std::__exchange
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
-# include <bits/move.h>		// std::__exchange
 #endif
 
 #if __has_cpp_attribute(clang::require_constant_initialization)
@@ -94,10 +94,31 @@ namespace pmr
 
     __constinit constant_init<newdel_res_t> newdel_res{};
     __constinit constant_init<null_res_t> null_res{};
-#if ATOMIC_POINTER_LOCK_FREE == 2
+
+#ifndef _GLIBCXX_HAS_GTHREADS
+# define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
+    // Single-threaded, no need for synchronization
+    struct atomic_mem_res
+    {
+      constexpr
+      atomic_mem_res(memory_resource* r) : val(r) { }
+
+      memory_resource* val;
+
+      memory_resource* load(std::memory_order) const
+      {
+	return val;
+      }
+
+      memory_resource* exchange(memory_resource* r, std::memory_order)
+      {
+	return std::__exchange(val, r);
+      }
+    };
+#elif ATOMIC_POINTER_LOCK_FREE == 2
     using atomic_mem_res = atomic<memory_resource*>;
 # define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
-#elif defined(_GLIBCXX_HAS_GTHREADS)
+#else
     // Can't use pointer-width atomics, define a type using a mutex instead:
     struct atomic_mem_res
     {
@@ -123,27 +144,7 @@ namespace pmr
 	return std::__exchange(val, r);
       }
     };
-#else
-# define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
-    // Single-threaded, no need for synchronization
-    struct atomic_mem_res
-    {
-      constexpr
-      atomic_mem_res(memory_resource* r) : val(r) { }
-
-      memory_resource* val;
-
-      memory_resource* load(std::memory_order) const
-      {
-	return val;
-      }
-
-      memory_resource* exchange(memory_resource* r, std::memory_order)
-      {
-	return std::__exchange(val, r);
-      }
-    };
-#endif // ATOMIC_POINTER_LOCK_FREE == 2
+#endif
 
 #ifdef _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
     __constinit constant_init<atomic_mem_res> default_res{&newdel_res.obj};
