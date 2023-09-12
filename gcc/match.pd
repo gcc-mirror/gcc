@@ -3947,13 +3947,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (wi::lt_p (wi::to_wide (@1), wi::to_wide (@2),
 		  TYPE_SIGN (TREE_TYPE (@0))))
     (cmp @0 @2)))))
-/* MIN (X, C1) < C2 -> X < C2 || C1 < C2  */
-(for minmax (min     min     max     max     min     min     max     max    )
-     cmp    (lt      le      gt      ge      gt      ge      lt      le     )
-     comb   (bit_ior bit_ior bit_ior bit_ior bit_and bit_and bit_and bit_and)
- (simplify
-  (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
-  (comb (cmp @0 @2) (cmp @1 @2))))
 
 /* X <= MAX(X, Y) -> true
    X > MAX(X, Y) -> false 
@@ -3964,6 +3957,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp:c @0 (minmax:c @0 @1))
   { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
+
+/* MIN (X, C1) < C2 -> X < C2 || C1 < C2  */
+(for minmax (min     min     max     max     min     min     max     max    )
+     cmp    (lt      le      gt      ge      gt      ge      lt      le     )
+     comb   (bit_ior bit_ior bit_ior bit_ior bit_and bit_and bit_and bit_and)
+ (simplify
+  (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
+  (comb (cmp @0 @2) (cmp @1 @2))))
 
 /* Undo fancy ways of writing max/min or other ?: expressions, like
    a - ((a - b) & -(a < b))  and  a - (a - b) * (a < b) into (a < b) ? b : a.
