@@ -1486,14 +1486,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
-  (cmp (trunc_mod @0 @1) @1)
+  (cmp:c (trunc_mod @0 @1) @1)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
    { constant_boolean_node (cmp == LT_EXPR, type); })))
-(for cmp (gt le)
- (simplify
-  (cmp @1 (trunc_mod @0 @1))
-  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
-   { constant_boolean_node (cmp == GT_EXPR, type); })))
 
 /* x | ~0 -> ~0  */
 (simplify
