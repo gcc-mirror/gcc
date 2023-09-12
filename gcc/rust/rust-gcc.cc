@@ -345,8 +345,14 @@ get_identifier_node (const std::string &str)
 tree
 wchar_type ()
 {
-  tree wchar = make_unsigned_type (32);
-  TYPE_STRING_FLAG (wchar) = 1;
+  static tree wchar;
+
+  if (wchar == NULL_TREE)
+    {
+      wchar = make_unsigned_type (32);
+      TYPE_STRING_FLAG (wchar) = 1;
+    }
+
   return wchar;
 }
 
