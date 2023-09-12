@@ -1824,6 +1824,44 @@ public:
   }
 };
 
+class vcreate : public function_base
+{
+public:
+  gimple *fold (gimple_folder &f) const override
+  {
+    unsigned int nargs = gimple_call_num_args (f.call);
+    tree lhs_type = TREE_TYPE (f.lhs);
+
+    /* Replace the call with a clobber of the result (to prevent it from
+       becoming upwards exposed) followed by stores into each individual
+       vector of tuple.
+
+       The fold routines expect the replacement statement to have the
+       same lhs as the original call, so return the clobber statement
+       rather than the final vector store.  */
+    gassign *clobber = gimple_build_assign (f.lhs, build_clobber (lhs_type));
+
+    for (unsigned int i = nargs; i-- > 0; )
+      {
+	tree rhs_vector = gimple_call_arg (f.call, i);
+	tree field = tuple_type_field (TREE_TYPE (f.lhs));
+	tree lhs_array = build3 (COMPONENT_REF, TREE_TYPE (field),
+				 unshare_expr (f.lhs), field, NULL_TREE);
+	tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector),
+				  lhs_array, size_int (i),
+				  NULL_TREE, NULL_TREE);
+	gassign *assign = gimple_build_assign (lhs_vector, rhs_vector);
+	gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
+      }
+    return clobber;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return NULL_RTX;
+  }
+};
+
 class read_vl : public function_base
 {
 public:
@@ -2285,6 +2323,7 @@ static CONSTEXPR const vlmul_ext vlmul_ext_obj;
 static CONSTEXPR const vlmul_trunc vlmul_trunc_obj;
 static CONSTEXPR const vset vset_obj;
 static CONSTEXPR const vget vget_obj;
+static CONSTEXPR const vcreate vcreate_obj;
 static CONSTEXPR const read_vl read_vl_obj;
 static CONSTEXPR const vleff vleff_obj;
 static CONSTEXPR const vlenb vlenb_obj;
@@ -2546,6 +2585,7 @@ BASE (vlmul_ext)
 BASE (vlmul_trunc)
 BASE (vset)
 BASE (vget)
+BASE (vcreate)
 BASE (read_vl)
 BASE (vleff)
 BASE (vlenb)
