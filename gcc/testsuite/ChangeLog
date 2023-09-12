@@ -1,3 +1,15 @@
+2023-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111340
+	* gcc.target/i386/pr111340.c: New test.
+
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111306.c: New test.
+
 2023-08-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751
