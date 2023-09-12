@@ -1150,7 +1150,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(__v);
     }
@@ -1161,7 +1160,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(std::move(__v));
     }
@@ -1172,7 +1170,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(__v);
     }
@@ -1183,7 +1180,6 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
       return std::get<__n>(std::move(__v));
     }
