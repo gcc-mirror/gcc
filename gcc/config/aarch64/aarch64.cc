@@ -8678,9 +8678,11 @@ aarch64_layout_frame (void)
 
   HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
   HOST_WIDE_INT const_saved_regs_size;
-  if (frame.frame_size.is_constant (&const_size)
-      && const_size < max_push_offset
-      && known_eq (frame.hard_fp_offset, const_size))
+  if (known_eq (frame.saved_regs_size, 0))
+    frame.initial_adjust = frame.frame_size;
+  else if (frame.frame_size.is_constant (&const_size)
+	   && const_size < max_push_offset
+	   && known_eq (frame.hard_fp_offset, const_size))
     {
       /* Simple, small frame with no outgoing arguments:
 
