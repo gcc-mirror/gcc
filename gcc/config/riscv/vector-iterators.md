@@ -2354,6 +2354,10 @@
 (define_code_iterator sat_int_plus_binop [ss_plus us_plus])
 (define_code_iterator sat_int_minus_binop [ss_minus us_minus])
 
+(define_code_iterator mulh [smul_highpart umul_highpart])
+(define_code_attr mulh_table [(smul_highpart "smul") (umul_highpart "umul")])
+(define_code_attr MULH_UNSPEC [(smul_highpart "UNSPEC_VMULHS") (umul_highpart "UNSPEC_VMULHU")])
+
 (define_code_iterator any_widen_binop [plus minus mult])
 (define_code_iterator plus_minus [plus minus])
 

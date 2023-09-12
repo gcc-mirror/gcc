@@ -1603,9 +1603,9 @@
 ;; - vmulhu.vv
 ;; -------------------------------------------------------------------------
 
-(define_insn_and_split "smul<mode>3_highpart"
+(define_insn_and_split "<mulh_table><mode>3_highpart"
   [(set (match_operand:VFULLI 0 "register_operand")
-        (smul_highpart:VFULLI
+        (mulh:VFULLI
           (match_operand:VFULLI 1 "register_operand")
           (match_operand:VFULLI 2 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
@@ -1613,23 +1613,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  insn_code icode = code_for_pred_mulh (UNSPEC_VMULHS, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
-  DONE;
-}
-[(set_attr "type" "vimul")])
-
-(define_insn_and_split "umul<mode>3_highpart"
-  [(set (match_operand:VFULLI 0 "register_operand")
-        (umul_highpart:VFULLI
-          (match_operand:VFULLI 1 "register_operand")
-          (match_operand:VFULLI 2 "register_operand")))]
-  "TARGET_VECTOR && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  insn_code icode = code_for_pred_mulh (UNSPEC_VMULHU, <MODE>mode);
+  insn_code icode = code_for_pred_mulh (<MULH_UNSPEC>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
 }

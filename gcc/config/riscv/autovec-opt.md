@@ -972,6 +972,28 @@
 }
  [(set_attr "type" "vnshift")])
 
+;; Combine vmulh.vv/vmulhu.vv + vcond_mask
+(define_insn_and_split "*cond_<mulh_table><mode>3_highpart"
+   [(set (match_operand:VFULLI 0 "register_operand")
+    (if_then_else:VFULLI
+      (match_operand:<VM> 1 "register_operand")
+      (mulh:VFULLI
+        (match_operand:VFULLI 2 "register_operand")
+        (match_operand:VFULLI 3 "register_operand"))
+      (match_operand:VFULLI 4 "register_operand")))]
+   "TARGET_VECTOR && can_create_pseudo_p ()"
+   "#"
+   "&& 1"
+   [(const_int 0)]
+{
+  insn_code icode = code_for_pred_mulh (<MULH_UNSPEC>, <MODE>mode);
+  rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[4],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_cond_len_binop (icode, ops);
+   DONE;
+}
+[(set_attr "type" "vector")])
+
 ;; =============================================================================
 ;; Combine extend + binop to widen_binop
 ;; =============================================================================
@@ -1173,7 +1195,6 @@
   DONE;
 }
 [(set_attr "type" "vfwmul")])
-
 
 ;; =============================================================================
 ;; Misc combine patterns
