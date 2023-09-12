@@ -938,6 +938,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~_Bind_front() = default;
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<_Fd&, _BoundArgs&..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &
@@ -948,6 +949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<const _Fd&, const _BoundArgs&..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &
@@ -959,6 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<_Fd, _BoundArgs..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) &&
@@ -969,6 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _CallArgs>
+	requires true
 	constexpr
 	invoke_result_t<const _Fd, const _BoundArgs..., _CallArgs...>
 	operator()(_CallArgs&&... __call_args) const &&
@@ -978,6 +982,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _S_call(std::move(*this), _BoundIndices(),
 	      std::forward<_CallArgs>(__call_args)...);
 	}
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) & = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) const & = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) && = delete;
+
+      template<typename... _CallArgs>
+	void operator()(_CallArgs&&...) const && = delete;
 
     private:
       using _BoundIndices = index_sequence_for<_BoundArgs...>;
