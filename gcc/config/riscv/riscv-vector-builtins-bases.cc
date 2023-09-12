@@ -1856,9 +1856,9 @@ public:
     return clobber;
   }
 
-  rtx expand (function_expander &e) const override
+  rtx expand (function_expander &) const override
   {
-    return NULL_RTX;
+    gcc_unreachable ();
   }
 };
 
