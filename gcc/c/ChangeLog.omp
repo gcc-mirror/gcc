@@ -3,6 +3,16 @@
 	Backported from master:
 	2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
+	* c-parser.cc (struct c_omp_loc_tree): New.
+	(c_check_omp_allocate_allocator_r): New; checking moved from ...
+	(c_parser_omp_allocate): ... here. Call it via walk_tree. Avoid
+	ICE with tree_to_shwi for invalid too-large value.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
 	* c-parser.cc (c_parser_omp_construct): Move call to
 	c_parser_omp_allocate to ...
 	(c_parser_pragma): ... here.
