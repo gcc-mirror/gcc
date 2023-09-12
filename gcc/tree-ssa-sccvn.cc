@@ -1903,6 +1903,7 @@ struct vn_walk_cb_data
   alias_set_type first_base_set;
   splay_tree known_ranges;
   obstack ranges_obstack;
+  static constexpr HOST_WIDE_INT bufsize = 64;
 };
 
 vn_walk_cb_data::~vn_walk_cb_data ()
@@ -1973,7 +1974,6 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 				   HOST_WIDE_INT offseti,
 				   HOST_WIDE_INT maxsizei)
 {
-  const HOST_WIDE_INT bufsize = 64;
   /* We're using a fixed buffer for encoding so fail early if the object
      we want to interpret is bigger.  */
   if (maxsizei > bufsize * BITS_PER_UNIT
@@ -5414,6 +5414,7 @@ visit_nary_op (tree lhs, gassign *stmt)
 	  && CHAR_BIT == 8
 	  && BITS_PER_UNIT == 8
 	  && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	  && TYPE_PRECISION (type) <= vn_walk_cb_data::bufsize * BITS_PER_UNIT
 	  && !integer_all_onesp (gimple_assign_rhs2 (stmt))
 	  && !integer_zerop (gimple_assign_rhs2 (stmt)))
 	{
