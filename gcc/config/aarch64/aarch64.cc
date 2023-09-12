@@ -8714,11 +8714,10 @@ aarch64_layout_frame (void)
     {
       /* Frame in which all saves are SVE saves:
 
-	 sub sp, sp, hard_fp_offset + below_hard_fp_saved_regs_size
+	 sub sp, sp, frame_size - bytes_below_saved_regs
 	 save SVE registers relative to SP
 	 sub sp, sp, bytes_below_saved_regs  */
-      frame.initial_adjust = (frame.bytes_above_hard_fp
-			      + frame.below_hard_fp_saved_regs_size);
+      frame.initial_adjust = frame.frame_size - frame.bytes_below_saved_regs;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
   else if (frame.bytes_above_hard_fp.is_constant (&const_above_fp)
