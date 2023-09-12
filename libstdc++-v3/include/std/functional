@@ -1061,7 +1061,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // forwarding _M_fn and the function arguments with the same qualifiers,
       // and deducing the return type and exception-specification.
 #define _GLIBCXX_NOT_FN_CALL_OP( _QUALS )				\
-      template<typename... _Args>					\
+      template<typename... _Args,					\
+	       typename = enable_if_t<__is_invocable<_Fn _QUALS, _Args...>::value>> \
 	_GLIBCXX20_CONSTEXPR						\
 	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
 	operator()(_Args&&... __args) _QUALS				\
@@ -1070,7 +1071,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{								\
 	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
 				std::forward<_Args>(__args)...);	\
-	}
+	}								\
+									\
+      template<typename... _Args,					\
+	       typename = enable_if_t<!__is_invocable<_Fn _QUALS, _Args...>::value>> \
+	void operator()(_Args&&... __args) _QUALS = delete;
+
       _GLIBCXX_NOT_FN_CALL_OP( & )
       _GLIBCXX_NOT_FN_CALL_OP( const & )
       _GLIBCXX_NOT_FN_CALL_OP( && )
