@@ -790,10 +790,10 @@ struct GTY (()) aarch64_frame
      always a multiple of STACK_BOUNDARY.  */
   poly_int64 bytes_below_hard_fp;
 
-  /* Offset from the base of the frame (incomming SP) to the
-     top of the locals area.  This value is always a multiple of
+  /* The number of bytes between the top of the locals area and the top
+     of the frame (the incomming SP).  This value is always a multiple of
      STACK_BOUNDARY.  */
-  poly_int64 locals_offset;
+  poly_int64 bytes_above_locals;
 
   /* Offset from the base of the frame (incomming SP) to the
      hard_frame_pointer.  This value is always a multiple of

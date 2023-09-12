@@ -8637,7 +8637,7 @@ aarch64_layout_frame (void)
 			  STACK_BOUNDARY / BITS_PER_UNIT));
   frame.frame_size = saved_regs_and_above + frame.bytes_below_saved_regs;
 
-  frame.locals_offset = frame.saved_varargs_size;
+  frame.bytes_above_locals = frame.saved_varargs_size;
 
   frame.initial_adjust = 0;
   frame.final_adjust = 0;
@@ -12854,13 +12854,13 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
 	return frame.hard_fp_offset;
 
       if (from == FRAME_POINTER_REGNUM)
-	return frame.hard_fp_offset - frame.locals_offset;
+	return frame.hard_fp_offset - frame.bytes_above_locals;
     }
 
   if (to == STACK_POINTER_REGNUM)
     {
       if (from == FRAME_POINTER_REGNUM)
-	return frame.frame_size - frame.locals_offset;
+	return frame.frame_size - frame.bytes_above_locals;
     }
 
   return frame.frame_size;
