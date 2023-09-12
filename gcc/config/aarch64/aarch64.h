@@ -765,6 +765,9 @@ extern enum aarch64_processor aarch64_tune;
 #ifdef HAVE_POLY_INT_H
 struct GTY (()) aarch64_frame
 {
+  /* The offset from the bottom of the static frame (the bottom of the
+     outgoing arguments) of each register save slot, or -2 if no save is
+     needed.  */
   poly_int64 reg_offset[LAST_SAVED_REGNUM + 1];
 
   /* The number of extra stack bytes taken up by register varargs.
