@@ -776,17 +776,10 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
-  /* The size of the callee-save registers with a slot in REG_OFFSET.  */
-  poly_int64 saved_regs_size;
-
   /* The number of bytes between the bottom of the static frame (the bottom
      of the outgoing arguments) and the bottom of the register save area.
      This value is always a multiple of STACK_BOUNDARY.  */
   poly_int64 bytes_below_saved_regs;
-
-  /* The size of the callee-save registers with a slot in REG_OFFSET that
-     are saved below the hard frame pointer.  */
-  poly_int64 below_hard_fp_saved_regs_size;
 
   /* The number of bytes between the bottom of the static frame (the bottom
      of the outgoing arguments) and the hard frame pointer.  This value is
