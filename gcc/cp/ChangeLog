@@ -1,3 +1,20 @@
+2023-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* parser.c (cp_parser_template_name): Skip non-member
+	lookup after the template keyword.
+	(cp_parser_lookup_name): Pass down template_keyword_p.
+
+2023-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106890
+	PR c++/109666
+	* name-lookup.c (maybe_push_to_top_level)
+	(maybe_pop_from_top_level): Split out...
+	* pt.c (instantiate_body): ...from here.
+	* init.c (maybe_instantiate_nsdmi_init): Use them.
+	* name-lookup.h: Declare them..
+
 2023-08-09  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
