@@ -10034,7 +10034,6 @@ aarch64_expand_prologue (void)
   poly_int64 initial_adjust = frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = frame.callee_adjust;
   poly_int64 final_adjust = frame.final_adjust;
-  poly_int64 callee_offset = frame.callee_offset;
   poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
     = frame.below_hard_fp_saved_regs_size;
@@ -10147,8 +10146,7 @@ aarch64_expand_prologue (void)
 	     implicit.  */
 	  if (!find_reg_note (insn, REG_CFA_ADJUST_CFA, NULL_RTX))
 	    {
-	      rtx src = plus_constant (Pmode, stack_pointer_rtx,
-				       callee_offset);
+	      rtx src = plus_constant (Pmode, stack_pointer_rtx, chain_offset);
 	      add_reg_note (insn, REG_CFA_ADJUST_CFA,
 			    gen_rtx_SET (hard_frame_pointer_rtx, src));
 	    }
