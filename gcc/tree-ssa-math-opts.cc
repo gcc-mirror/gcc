@@ -116,6 +116,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "domwalk.h"
 #include "tree-ssa-math-opts.h"
+#include "dbgcnt.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -3364,6 +3365,9 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
      because the result is not a natural FMA chain.  */
   if (ANY_INTEGRAL_TYPE_P (type)
       && !has_single_use (mul_result))
+    return false;
+
+  if (!dbg_cnt (form_fma))
     return false;
 
   /* Make sure that the multiplication statement becomes dead after
