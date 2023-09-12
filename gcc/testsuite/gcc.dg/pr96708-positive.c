@@ -42,6 +42,7 @@ int main()
     return 0;
 }
 
+/* Note main has one `return 0`. */
 /* { dg-final { scan-tree-dump-times "return 0;" 3 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "return 1;" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-not { "MAX_EXPR" } "optimized" } } */
