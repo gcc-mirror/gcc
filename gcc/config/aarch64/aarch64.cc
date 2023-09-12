@@ -8629,7 +8629,7 @@ aarch64_layout_frame (void)
 			   + get_frame_size (),
 			   STACK_BOUNDARY / BITS_PER_UNIT);
 
-  frame.hard_fp_offset
+  frame.bytes_above_hard_fp
     = saved_regs_and_above - frame.below_hard_fp_saved_regs_size;
 
   /* Both these values are already aligned.  */
@@ -8678,13 +8678,13 @@ aarch64_layout_frame (void)
   else if (frame.wb_pop_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
-  HOST_WIDE_INT const_size, const_below_saved_regs, const_fp_offset;
+  HOST_WIDE_INT const_size, const_below_saved_regs, const_above_fp;
   HOST_WIDE_INT const_saved_regs_size;
   if (known_eq (frame.saved_regs_size, 0))
     frame.initial_adjust = frame.frame_size;
   else if (frame.frame_size.is_constant (&const_size)
 	   && const_size < max_push_offset
-	   && known_eq (frame.hard_fp_offset, const_size))
+	   && known_eq (frame.bytes_above_hard_fp, const_size))
     {
       /* Simple, small frame with no data below the saved registers.
 
@@ -8701,8 +8701,8 @@ aarch64_layout_frame (void)
 	      case that it hardly seems worth the effort though.  */
 	   && (!saves_below_hard_fp_p || const_below_saved_regs == 0)
 	   && !(cfun->calls_alloca
-		&& frame.hard_fp_offset.is_constant (&const_fp_offset)
-		&& const_fp_offset < max_push_offset))
+		&& frame.bytes_above_hard_fp.is_constant (&const_above_fp)
+		&& const_above_fp < max_push_offset))
     {
       /* Frame with small area below the saved registers:
 
@@ -8720,12 +8720,12 @@ aarch64_layout_frame (void)
 	 sub sp, sp, hard_fp_offset + below_hard_fp_saved_regs_size
 	 save SVE registers relative to SP
 	 sub sp, sp, bytes_below_saved_regs  */
-      frame.initial_adjust = (frame.hard_fp_offset
+      frame.initial_adjust = (frame.bytes_above_hard_fp
 			      + frame.below_hard_fp_saved_regs_size);
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
-  else if (frame.hard_fp_offset.is_constant (&const_fp_offset)
-	   && const_fp_offset < max_push_offset)
+  else if (frame.bytes_above_hard_fp.is_constant (&const_above_fp)
+	   && const_above_fp < max_push_offset)
     {
       /* Frame with large area below the saved registers, or with SVE saves,
 	 but with a small area above:
@@ -8735,7 +8735,7 @@ aarch64_layout_frame (void)
 	 [sub sp, sp, below_hard_fp_saved_regs_size]
 	 [save SVE registers relative to SP]
 	 sub sp, sp, bytes_below_saved_regs  */
-      frame.callee_adjust = const_fp_offset;
+      frame.callee_adjust = const_above_fp;
       frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
@@ -8750,7 +8750,7 @@ aarch64_layout_frame (void)
 	 [sub sp, sp, below_hard_fp_saved_regs_size]
 	 [save SVE registers relative to SP]
 	 sub sp, sp, bytes_below_saved_regs  */
-      frame.initial_adjust = frame.hard_fp_offset;
+      frame.initial_adjust = frame.bytes_above_hard_fp;
       frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
@@ -10118,7 +10118,7 @@ aarch64_expand_prologue (void)
     {
       /* The offset of the frame chain record (if any) from the current SP.  */
       poly_int64 chain_offset = (initial_adjust + callee_adjust
-				 - frame.hard_fp_offset);
+				 - frame.bytes_above_hard_fp);
       gcc_assert (known_ge (chain_offset, 0));
 
       if (callee_adjust == 0)
@@ -12851,10 +12851,10 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)
-	return frame.hard_fp_offset;
+	return frame.bytes_above_hard_fp;
 
       if (from == FRAME_POINTER_REGNUM)
-	return frame.hard_fp_offset - frame.bytes_above_locals;
+	return frame.bytes_above_hard_fp - frame.bytes_above_locals;
     }
 
   if (to == STACK_POINTER_REGNUM)
