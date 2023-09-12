@@ -7528,9 +7528,8 @@ aarch64_layout_frame (void)
 
   /* OFFSET is now the offset of the hard frame pointer from the bottom
      of the callee save area.  */
-  frame.below_hard_fp_saved_regs_size = offset - frame.bytes_below_saved_regs;
-  bool saves_below_hard_fp_p
-    = maybe_ne (frame.below_hard_fp_saved_regs_size, 0);
+  auto below_hard_fp_saved_regs_size = offset - frame.bytes_below_saved_regs;
+  bool saves_below_hard_fp_p = maybe_ne (below_hard_fp_saved_regs_size, 0);
   gcc_assert (!saves_below_hard_fp_p
 	      || (frame.sve_save_and_probe != INVALID_REGNUM
 		  && known_eq (frame.reg_offset[frame.sve_save_and_probe],
@@ -7600,9 +7599,8 @@ aarch64_layout_frame (void)
 
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
-  frame.saved_regs_size = offset - frame.bytes_below_saved_regs;
-  gcc_assert (known_eq (frame.saved_regs_size,
-			frame.below_hard_fp_saved_regs_size)
+  auto saved_regs_size = offset - frame.bytes_below_saved_regs;
+  gcc_assert (known_eq (saved_regs_size, below_hard_fp_saved_regs_size)
 	      || (frame.hard_fp_save_and_probe != INVALID_REGNUM
 		  && known_eq (frame.reg_offset[frame.hard_fp_save_and_probe],
 			       frame.bytes_below_hard_fp)));
@@ -7611,7 +7609,7 @@ aarch64_layout_frame (void)
      The saving of the bottommost register counts as an implicit probe,
      which allows us to maintain the invariant described in the comment
      at expand_prologue.  */
-  gcc_assert (crtl->is_leaf || maybe_ne (frame.saved_regs_size, 0));
+  gcc_assert (crtl->is_leaf || maybe_ne (saved_regs_size, 0));
 
   offset += get_frame_size ();
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
@@ -7637,7 +7635,7 @@ aarch64_layout_frame (void)
 
   HOST_WIDE_INT const_size, const_below_saved_regs, const_above_fp;
   HOST_WIDE_INT const_saved_regs_size;
-  if (known_eq (frame.saved_regs_size, 0))
+  if (known_eq (saved_regs_size, 0))
     frame.initial_adjust = frame.frame_size;
   else if (frame.frame_size.is_constant (&const_size)
 	   && const_size < max_push_offset
@@ -7650,7 +7648,7 @@ aarch64_layout_frame (void)
       frame.callee_adjust = const_size;
     }
   else if (frame.bytes_below_saved_regs.is_constant (&const_below_saved_regs)
-	   && frame.saved_regs_size.is_constant (&const_saved_regs_size)
+	   && saved_regs_size.is_constant (&const_saved_regs_size)
 	   && const_below_saved_regs + const_saved_regs_size < 512
 	   /* We could handle this case even with data below the saved
 	      registers, provided that that data left us with valid offsets
@@ -7669,8 +7667,7 @@ aarch64_layout_frame (void)
       frame.initial_adjust = frame.frame_size;
     }
   else if (saves_below_hard_fp_p
-	   && known_eq (frame.saved_regs_size,
-			frame.below_hard_fp_saved_regs_size))
+	   && known_eq (saved_regs_size, below_hard_fp_saved_regs_size))
     {
       /* Frame in which all saves are SVE saves:
 
@@ -7692,7 +7689,7 @@ aarch64_layout_frame (void)
 	 [save SVE registers relative to SP]
 	 sub sp, sp, bytes_below_saved_regs  */
       frame.callee_adjust = const_above_fp;
-      frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
+      frame.sve_callee_adjust = below_hard_fp_saved_regs_size;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
   else
@@ -7707,7 +7704,7 @@ aarch64_layout_frame (void)
 	 [save SVE registers relative to SP]
 	 sub sp, sp, bytes_below_saved_regs  */
       frame.initial_adjust = frame.bytes_above_hard_fp;
-      frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
+      frame.sve_callee_adjust = below_hard_fp_saved_regs_size;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
 
@@ -8849,17 +8846,17 @@ aarch64_epilogue_uses (int regno)
 	|  local variables              | <-- frame_pointer_rtx
 	|                               |
 	+-------------------------------+
-	|  padding                      | \
-	+-------------------------------+  |
-	|  callee-saved registers       |  | frame.saved_regs_size
-	+-------------------------------+  |
-	|  LR'                          |  |
-	+-------------------------------+  |
-	|  FP'                          |  |
-	+-------------------------------+  |<- hard_frame_pointer_rtx (aligned)
-	|  SVE vector registers         |  | \
-	+-------------------------------+  |  | below_hard_fp_saved_regs_size
-	|  SVE predicate registers      | /  /
+	|  padding                      |
+	+-------------------------------+
+	|  callee-saved registers       |
+	+-------------------------------+
+	|  LR'                          |
+	+-------------------------------+
+	|  FP'                          |
+	+-------------------------------+ <-- hard_frame_pointer_rtx (aligned)
+	|  SVE vector registers         |
+	+-------------------------------+
+	|  SVE predicate registers      |
 	+-------------------------------+
 	|  dynamic allocation           |
 	+-------------------------------+
