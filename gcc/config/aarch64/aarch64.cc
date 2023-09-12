@@ -8643,7 +8643,6 @@ aarch64_layout_frame (void)
   frame.final_adjust = 0;
   frame.callee_adjust = 0;
   frame.sve_callee_adjust = 0;
-  frame.callee_offset = 0;
 
   frame.wb_pop_candidate1 = frame.wb_push_candidate1;
   frame.wb_pop_candidate2 = frame.wb_push_candidate2;
@@ -8711,7 +8710,6 @@ aarch64_layout_frame (void)
 	 stp reg1, reg2, [sp, bytes_below_saved_regs]
 	 stp reg3, reg4, [sp, bytes_below_saved_regs + 16]  */
       frame.initial_adjust = frame.frame_size;
-      frame.callee_offset = const_below_saved_regs;
     }
   else if (saves_below_hard_fp_p
 	   && known_eq (frame.saved_regs_size,
@@ -9112,12 +9110,13 @@ aarch64_add_cfa_expression (rtx_insn *insn, rtx reg,
 }
 
 /* Emit code to save the callee-saved registers from register number START
-   to LIMIT to the stack at the location starting at offset START_OFFSET,
-   skipping any write-back candidates if SKIP_WB is true.  HARD_FP_VALID_P
-   is true if the hard frame pointer has been set up.  */
+   to LIMIT to the stack.  The stack pointer is currently BYTES_BELOW_SP
+   bytes above the bottom of the static frame.  Skip any write-back
+   candidates if SKIP_WB is true.  HARD_FP_VALID_P is true if the hard
+   frame pointer has been set up.  */
 
 static void
-aarch64_save_callee_saves (poly_int64 start_offset,
+aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 			   unsigned start, unsigned limit, bool skip_wb,
 			   bool hard_fp_valid_p)
 {
@@ -9145,7 +9144,9 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = start_offset + frame.reg_offset[regno];
+      offset = (frame.reg_offset[regno]
+		+ frame.bytes_below_saved_regs
+		- bytes_below_sp);
       rtx base_rtx = stack_pointer_rtx;
       poly_int64 sp_offset = offset;
 
@@ -9156,9 +9157,7 @@ aarch64_save_callee_saves (poly_int64 start_offset,
       else if (GP_REGNUM_P (regno)
 	       && (!offset.is_constant (&const_offset) || const_offset >= 512))
 	{
-	  gcc_assert (known_eq (start_offset, 0));
-	  poly_int64 fp_offset
-	    = frame.below_hard_fp_saved_regs_size;
+	  poly_int64 fp_offset = frame.bytes_below_hard_fp - bytes_below_sp;
 	  if (hard_fp_valid_p)
 	    base_rtx = hard_frame_pointer_rtx;
 	  else
@@ -9222,12 +9221,13 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 }
 
 /* Emit code to restore the callee registers from register number START
-   up to and including LIMIT.  Restore from the stack offset START_OFFSET,
-   skipping any write-back candidates if SKIP_WB is true.  Write the
-   appropriate REG_CFA_RESTORE notes into CFI_OPS.  */
+   up to and including LIMIT.  The stack pointer is currently BYTES_BELOW_SP
+   bytes above the bottom of the static frame.  Skip any write-back
+   candidates if SKIP_WB is true.  Write the appropriate REG_CFA_RESTORE
+   notes into CFI_OPS.  */
 
 static void
-aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
+aarch64_restore_callee_saves (poly_int64 bytes_below_sp, unsigned start,
 			      unsigned limit, bool skip_wb, rtx *cfi_ops)
 {
   aarch64_frame &frame = cfun->machine->frame;
@@ -9253,7 +9253,9 @@ aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = start_offset + frame.reg_offset[regno];
+      offset = (frame.reg_offset[regno]
+		+ frame.bytes_below_saved_regs
+		- bytes_below_sp);
       rtx base_rtx = stack_pointer_rtx;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	aarch64_adjust_sve_callee_save_base (mode, base_rtx, anchor_reg,
@@ -10039,8 +10041,6 @@ aarch64_expand_prologue (void)
   HOST_WIDE_INT callee_adjust = frame.callee_adjust;
   poly_int64 final_adjust = frame.final_adjust;
   poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
-  poly_int64 below_hard_fp_saved_regs_size
-    = frame.below_hard_fp_saved_regs_size;
   unsigned reg1 = frame.wb_push_candidate1;
   unsigned reg2 = frame.wb_push_candidate2;
   bool emit_frame_chain = frame.emit_frame_chain;
@@ -10116,8 +10116,8 @@ aarch64_expand_prologue (void)
 			     - frame.hard_fp_offset);
   gcc_assert (known_ge (chain_offset, 0));
 
-  /* The offset of the bottom of the save area from the current SP.  */
-  poly_int64 saved_regs_offset = chain_offset - below_hard_fp_saved_regs_size;
+  /* The offset of the current SP from the bottom of the static frame.  */
+  poly_int64 bytes_below_sp = frame_size - initial_adjust - callee_adjust;
 
   if (emit_frame_chain)
     {
@@ -10125,7 +10125,7 @@ aarch64_expand_prologue (void)
 	{
 	  reg1 = R29_REGNUM;
 	  reg2 = R30_REGNUM;
-	  aarch64_save_callee_saves (saved_regs_offset, reg1, reg2,
+	  aarch64_save_callee_saves (bytes_below_sp, reg1, reg2,
 				     false, false);
 	}
       else
@@ -10165,7 +10165,7 @@ aarch64_expand_prologue (void)
       aarch64_emit_stack_tie (hard_frame_pointer_rtx);
     }
 
-  aarch64_save_callee_saves (saved_regs_offset, R0_REGNUM, R30_REGNUM,
+  aarch64_save_callee_saves (bytes_below_sp, R0_REGNUM, R30_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain,
 			     emit_frame_chain);
   if (maybe_ne (sve_callee_adjust, 0))
@@ -10175,16 +10175,17 @@ aarch64_expand_prologue (void)
       aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx,
 					      sve_callee_adjust,
 					      !frame_pointer_needed, false);
-      saved_regs_offset += sve_callee_adjust;
+      bytes_below_sp -= sve_callee_adjust;
     }
-  aarch64_save_callee_saves (saved_regs_offset, P0_REGNUM, P15_REGNUM,
+  aarch64_save_callee_saves (bytes_below_sp, P0_REGNUM, P15_REGNUM,
 			     false, emit_frame_chain);
-  aarch64_save_callee_saves (saved_regs_offset, V0_REGNUM, V31_REGNUM,
+  aarch64_save_callee_saves (bytes_below_sp, V0_REGNUM, V31_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain,
 			     emit_frame_chain);
 
   /* We may need to probe the final adjustment if it is larger than the guard
      that is assumed by the called.  */
+  gcc_assert (known_eq (bytes_below_sp, final_adjust));
   aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx, final_adjust,
 					  !frame_pointer_needed, true);
 }
@@ -10219,7 +10220,6 @@ aarch64_expand_epilogue (bool for_sibcall)
   poly_int64 initial_adjust = frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = frame.callee_adjust;
   poly_int64 final_adjust = frame.final_adjust;
-  poly_int64 callee_offset = frame.callee_offset;
   poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
   poly_int64 bytes_below_hard_fp = frame.bytes_below_hard_fp;
   unsigned reg1 = frame.wb_pop_candidate1;
@@ -10289,9 +10289,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   /* Restore the vector registers before the predicate registers,
      so that we can use P4 as a temporary for big-endian SVE frames.  */
-  aarch64_restore_callee_saves (callee_offset, V0_REGNUM, V31_REGNUM,
+  aarch64_restore_callee_saves (final_adjust, V0_REGNUM, V31_REGNUM,
 				callee_adjust != 0, &cfi_ops);
-  aarch64_restore_callee_saves (callee_offset, P0_REGNUM, P15_REGNUM,
+  aarch64_restore_callee_saves (final_adjust, P0_REGNUM, P15_REGNUM,
 				false, &cfi_ops);
   if (maybe_ne (sve_callee_adjust, 0))
     aarch64_add_sp (NULL_RTX, NULL_RTX, sve_callee_adjust, true);
@@ -10299,7 +10299,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   /* When shadow call stack is enabled, the scs_pop in the epilogue will
      restore x30, we don't need to restore x30 again in the traditional
      way.  */
-  aarch64_restore_callee_saves (callee_offset - sve_callee_adjust,
+  aarch64_restore_callee_saves (final_adjust + sve_callee_adjust,
 				R0_REGNUM, last_gpr,
 				callee_adjust != 0, &cfi_ops);
 

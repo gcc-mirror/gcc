@@ -812,10 +812,6 @@ struct GTY (()) aarch64_frame
      It is zero when no push is used.  */
   HOST_WIDE_INT callee_adjust;
 
-  /* The offset from SP to the callee-save registers after initial_adjust.
-     It may be non-zero if no push is used (ie. callee_adjust == 0).  */
-  poly_int64 callee_offset;
-
   /* The size of the stack adjustment before saving or after restoring
      SVE registers.  */
   poly_int64 sve_callee_adjust;
