@@ -19343,6 +19343,61 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
   return stmt;
 }
 
+struct c_omp_loc_tree
+{
+  location_t loc;
+  tree var;
+};
+
+/* Check whether the expression used in the allocator clause is declared or
+   modified between the variable declaration and its allocate directive.  */
+static tree
+c_check_omp_allocate_allocator_r (tree *tp, int *, void *data)
+{
+  tree var = ((struct c_omp_loc_tree *) data)->var;
+  location_t loc = ((struct c_omp_loc_tree *) data)->loc;
+  if (TREE_CODE (*tp) == VAR_DECL && c_check_in_current_scope (*tp))
+    {
+      if (linemap_location_before_p (line_table, DECL_SOURCE_LOCATION (var),
+				     DECL_SOURCE_LOCATION (*tp)))
+	{
+	  error_at (loc, "variable %qD used in the %<allocator%> clause must "
+			 "be declared before %qD", *tp, var);
+	  inform (DECL_SOURCE_LOCATION (*tp), "declared here");
+	  inform (DECL_SOURCE_LOCATION (var),
+		  "to be allocated variable declared here");
+	  return *tp;
+	}
+      else
+	{
+	  gcc_assert (cur_stmt_list
+		      && TREE_CODE (cur_stmt_list) == STATEMENT_LIST);
+
+	  tree_stmt_iterator l = tsi_last (cur_stmt_list);
+	  while (!tsi_end_p (l))
+	    {
+	      if (linemap_location_before_p (line_table, EXPR_LOCATION (*l),
+					     DECL_SOURCE_LOCATION (var)))
+		  break;
+	      if (TREE_CODE (*l) == MODIFY_EXPR
+		  && TREE_OPERAND (*l, 0) == *tp)
+		{
+		  error_at (loc,
+			    "variable %qD used in the %<allocator%> clause "
+			    "must not be modified between declaration of %qD "
+			    "and its %<allocate%> directive", *tp, var);
+		  inform (EXPR_LOCATION (*l), "modified here");
+		  inform (DECL_SOURCE_LOCATION (var),
+			  "to be allocated variable declared here");
+		  return *tp;
+		}
+	      --l;
+	    }
+	}
+    }
+  return NULL_TREE;
+}
+
 /* OpenMP 5.x:
    # pragma omp allocate (list)  clauses
 
@@ -19465,8 +19520,8 @@ c_parser_omp_allocate (c_parser *parser)
 	    error_at (loc, "%<allocator%> clause required for "
 			   "static variable %qD", var);
 	  else if (allocator
-		   && (tree_int_cst_sgn (allocator) != 1
-		       || tree_to_shwi (allocator) > 8))
+		   && (wi::to_widest (allocator) < 1
+		       || wi::to_widest (allocator) > 8))
 	    /* 8 = largest predefined memory allocator. */
 	    error_at (allocator_loc,
 		      "%<allocator%> clause requires a predefined allocator as "
@@ -19477,46 +19532,11 @@ c_parser_omp_allocate (c_parser *parser)
 		      "%qD not yet supported", var);
 	  continue;
 	}
-      if (allocator
-	  && TREE_CODE (allocator) == VAR_DECL
-	  && c_check_in_current_scope (var))
+      if (allocator)
 	{
-	  if (linemap_location_before_p (line_table, DECL_SOURCE_LOCATION (var),
-					 DECL_SOURCE_LOCATION (allocator)))
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (nl),
-			"allocator variable %qD must be declared before %qD",
-			allocator, var);
-	      inform (DECL_SOURCE_LOCATION (allocator),
-		      "allocator declared here");
-	      inform (DECL_SOURCE_LOCATION (var), "declared here");
-	    }
-	  else
-	   {
-	     gcc_assert (cur_stmt_list
-			 && TREE_CODE (cur_stmt_list) == STATEMENT_LIST);
-	     tree_stmt_iterator l = tsi_last (cur_stmt_list);
-	     while (!tsi_end_p (l))
-	       {
-		 if (linemap_location_before_p (line_table, EXPR_LOCATION (*l),
-						DECL_SOURCE_LOCATION (var)))
-		   break;
-		 if (TREE_CODE (*l) == MODIFY_EXPR
-		     && TREE_OPERAND (*l, 0) == allocator)
-		   {
-		     error_at (EXPR_LOCATION (*l),
-			       "allocator variable %qD, used in the "
-			       "%<allocate%> directive for %qD, must not be "
-			       "modified between declaration of %qD and its "
-			       "%<allocate%> directive",
-			       allocator, var, var);
-		     inform (DECL_SOURCE_LOCATION (var), "declared here");
-		     inform (OMP_CLAUSE_LOCATION (nl), "used here");
-		     break;
-		  }
-		--l;
-	     }
-	   }
+	  struct c_omp_loc_tree data
+	    = {EXPR_LOC_OR_LOC (allocator, OMP_CLAUSE_LOCATION (nl)), var};
+	  walk_tree (&allocator, c_check_omp_allocate_allocator_r, &data, NULL);
 	}
       DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
 					 build_tree_list (allocator, alignment),
