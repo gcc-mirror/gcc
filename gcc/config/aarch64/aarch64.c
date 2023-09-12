@@ -7532,26 +7532,34 @@ aarch64_layout_frame (void)
   bool saves_below_hard_fp_p
     = maybe_ne (frame.below_hard_fp_saved_regs_size, 0);
   frame.bytes_below_hard_fp = offset;
+
+  auto allocate_gpr_slot = [&](unsigned int regno)
+    {
+      frame.reg_offset[regno] = offset;
+      if (frame.wb_candidate1 == INVALID_REGNUM)
+	frame.wb_candidate1 = regno;
+      else if (frame.wb_candidate2 == INVALID_REGNUM)
+	frame.wb_candidate2 = regno;
+      offset += UNITS_PER_WORD;
+    };
+
   if (frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
-      frame.reg_offset[R29_REGNUM] = offset;
-      frame.wb_candidate1 = R29_REGNUM;
-      frame.reg_offset[R30_REGNUM] = offset + UNITS_PER_WORD;
-      frame.wb_candidate2 = R30_REGNUM;
-      offset += 2 * UNITS_PER_WORD;
+      allocate_gpr_slot (R29_REGNUM);
+      allocate_gpr_slot (R30_REGNUM);
     }
+  else if (flag_stack_clash_protection
+	   && known_eq (frame.reg_offset[R30_REGNUM], SLOT_REQUIRED))
+    /* Put the LR save slot first, since it makes a good choice of probe
+       for stack clash purposes.  The idea is that the link register usually
+       has to be saved before a call anyway, and so we lose little by
+       stopping it from being individually shrink-wrapped.  */
+    allocate_gpr_slot (R30_REGNUM);
 
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
-      {
-	frame.reg_offset[regno] = offset;
-	if (frame.wb_candidate1 == INVALID_REGNUM)
-	  frame.wb_candidate1 = regno;
-	else if (frame.wb_candidate2 == INVALID_REGNUM)
-	  frame.wb_candidate2 = regno;
-	offset += UNITS_PER_WORD;
-      }
+      allocate_gpr_slot (regno);
 
   poly_int64 max_int_offset = offset;
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
@@ -8570,29 +8578,6 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
     = (final_adjustment_p
        ? guard_used_by_caller + byte_sp_alignment
        : guard_size - guard_used_by_caller);
-  /* When doing the final adjustment for the outgoing arguments, take into
-     account any unprobed space there is above the current SP.  There are
-     two cases:
-
-     - When saving SVE registers below the hard frame pointer, we force
-       the lowest save to take place in the prologue before doing the final
-       adjustment (i.e. we don't allow the save to be shrink-wrapped).
-       This acts as a probe at SP, so there is no unprobed space.
-
-     - When there are no SVE register saves, we use the store of the link
-       register as a probe.  We can't assume that LR was saved at position 0
-       though, so treat any space below it as unprobed.  */
-  if (final_adjustment_p
-      && known_eq (frame.below_hard_fp_saved_regs_size, 0))
-    {
-      poly_int64 lr_offset = (frame.reg_offset[LR_REGNUM]
-			      - frame.bytes_below_saved_regs);
-      if (known_ge (lr_offset, 0))
-	min_probe_threshold -= lr_offset.to_constant ();
-      else
-	gcc_assert (!flag_stack_clash_protection || known_eq (poly_size, 0));
-    }
-
   poly_int64 frame_size = frame.frame_size;
 
   /* We should always have a positive probe threshold.  */
@@ -8772,8 +8757,8 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
       if (final_adjustment_p && rounded_size != 0)
 	min_probe_threshold = 0;
       /* If doing a small final adjustment, we always probe at offset 0.
-	 This is done to avoid issues when LR is not at position 0 or when
-	 the final adjustment is smaller than the probing offset.  */
+	 This is done to avoid issues when the final adjustment is smaller
+	 than the probing offset.  */
       else if (final_adjustment_p && rounded_size == 0)
 	residual_probe_offset = 0;
 
