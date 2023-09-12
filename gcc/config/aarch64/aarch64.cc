@@ -8351,7 +8351,7 @@ aarch64_layout_frame (void)
   frame.is_scs_enabled
     = (!crtl->calls_eh_return
        && sanitize_flags_p (SANITIZE_SHADOW_CALL_STACK)
-       && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0));
+       && known_ge (frame.reg_offset[LR_REGNUM], 0));
 
   /* When shadow call stack is enabled, the scs_pop in the epilogue will
      restore x30, and we don't need to pop x30 again in the traditional
@@ -8763,6 +8763,7 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 			   unsigned start, unsigned limit, bool skip_wb,
 			   bool hard_fp_valid_p)
 {
+  aarch64_frame &frame = cfun->machine->frame;
   rtx_insn *insn;
   unsigned regno;
   unsigned regno2;
@@ -8777,8 +8778,8 @@ aarch64_save_callee_saves (poly_int64 start_offset,
       bool frame_related_p = aarch64_emit_cfi_for_reg_p (regno);
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_push_candidate1
-	      || regno == cfun->machine->frame.wb_push_candidate2))
+	  && (regno == frame.wb_push_candidate1
+	      || regno == frame.wb_push_candidate2))
 	continue;
 
       if (cfun->machine->reg_is_wrapped_separately[regno])
@@ -8786,7 +8787,7 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = start_offset + cfun->machine->frame.reg_offset[regno];
+      offset = start_offset + frame.reg_offset[regno];
       rtx base_rtx = stack_pointer_rtx;
       poly_int64 sp_offset = offset;
 
@@ -8799,7 +8800,7 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 	{
 	  gcc_assert (known_eq (start_offset, 0));
 	  poly_int64 fp_offset
-	    = cfun->machine->frame.below_hard_fp_saved_regs_size;
+	    = frame.below_hard_fp_saved_regs_size;
 	  if (hard_fp_valid_p)
 	    base_rtx = hard_frame_pointer_rtx;
 	  else
@@ -8821,8 +8822,7 @@ aarch64_save_callee_saves (poly_int64 start_offset,
 	  && (regno2 = aarch64_next_callee_save (regno + 1, limit)) <= limit
 	  && !cfun->machine->reg_is_wrapped_separately[regno2]
 	  && known_eq (GET_MODE_SIZE (mode),
-		       cfun->machine->frame.reg_offset[regno2]
-		       - cfun->machine->frame.reg_offset[regno]))
+		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
 	  rtx mem2;
@@ -8872,6 +8872,7 @@ static void
 aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
 			      unsigned limit, bool skip_wb, rtx *cfi_ops)
 {
+  aarch64_frame &frame = cfun->machine->frame;
   unsigned regno;
   unsigned regno2;
   poly_int64 offset;
@@ -8888,13 +8889,13 @@ aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
       rtx reg, mem;
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_pop_candidate1
-	      || regno == cfun->machine->frame.wb_pop_candidate2))
+	  && (regno == frame.wb_pop_candidate1
+	      || regno == frame.wb_pop_candidate2))
 	continue;
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = start_offset + cfun->machine->frame.reg_offset[regno];
+      offset = start_offset + frame.reg_offset[regno];
       rtx base_rtx = stack_pointer_rtx;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	aarch64_adjust_sve_callee_save_base (mode, base_rtx, anchor_reg,
@@ -8905,8 +8906,7 @@ aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
 	  && (regno2 = aarch64_next_callee_save (regno + 1, limit)) <= limit
 	  && !cfun->machine->reg_is_wrapped_separately[regno2]
 	  && known_eq (GET_MODE_SIZE (mode),
-		       cfun->machine->frame.reg_offset[regno2]
-		       - cfun->machine->frame.reg_offset[regno]))
+		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
 	  rtx mem2;
@@ -9011,6 +9011,7 @@ offset_12bit_unsigned_scaled_p (machine_mode mode, poly_int64 offset)
 static sbitmap
 aarch64_get_separate_components (void)
 {
+  aarch64_frame &frame = cfun->machine->frame;
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
@@ -9027,18 +9028,18 @@ aarch64_get_separate_components (void)
 	if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	  continue;
 
-	poly_int64 offset = cfun->machine->frame.reg_offset[regno];
+	poly_int64 offset = frame.reg_offset[regno];
 
 	/* If the register is saved in the first SVE save slot, we use
 	   it as a stack probe for -fstack-clash-protection.  */
 	if (flag_stack_clash_protection
-	    && maybe_ne (cfun->machine->frame.below_hard_fp_saved_regs_size, 0)
+	    && maybe_ne (frame.below_hard_fp_saved_regs_size, 0)
 	    && known_eq (offset, 0))
 	  continue;
 
 	/* Get the offset relative to the register we'll use.  */
 	if (frame_pointer_needed)
-	  offset -= cfun->machine->frame.below_hard_fp_saved_regs_size;
+	  offset -= frame.below_hard_fp_saved_regs_size;
 	else
 	  offset += crtl->outgoing_args_size;
 
@@ -9057,11 +9058,11 @@ aarch64_get_separate_components (void)
   /* If the spare predicate register used by big-endian SVE code
      is call-preserved, it must be saved in the main prologue
      before any saves that use it.  */
-  if (cfun->machine->frame.spare_pred_reg != INVALID_REGNUM)
-    bitmap_clear_bit (components, cfun->machine->frame.spare_pred_reg);
+  if (frame.spare_pred_reg != INVALID_REGNUM)
+    bitmap_clear_bit (components, frame.spare_pred_reg);
 
-  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
+  unsigned reg1 = frame.wb_push_candidate1;
+  unsigned reg2 = frame.wb_push_candidate2;
   /* If registers have been chosen to be stored/restored with
      writeback don't interfere with them to avoid having to output explicit
      stack adjustment instructions.  */
@@ -9170,6 +9171,7 @@ aarch64_get_next_set_bit (sbitmap bmp, unsigned int start)
 static void
 aarch64_process_components (sbitmap components, bool prologue_p)
 {
+  aarch64_frame &frame = cfun->machine->frame;
   rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
 			     ? HARD_FRAME_POINTER_REGNUM
 			     : STACK_POINTER_REGNUM);
@@ -9184,9 +9186,9 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       machine_mode mode = aarch64_reg_save_mode (regno);
       
       rtx reg = gen_rtx_REG (mode, regno);
-      poly_int64 offset = cfun->machine->frame.reg_offset[regno];
+      poly_int64 offset = frame.reg_offset[regno];
       if (frame_pointer_needed)
-	offset -= cfun->machine->frame.below_hard_fp_saved_regs_size;
+	offset -= frame.below_hard_fp_saved_regs_size;
       else
 	offset += crtl->outgoing_args_size;
 
@@ -9211,14 +9213,14 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 	  break;
 	}
 
-      poly_int64 offset2 = cfun->machine->frame.reg_offset[regno2];
+      poly_int64 offset2 = frame.reg_offset[regno2];
       /* The next register is not of the same class or its offset is not
 	 mergeable with the current one into a pair.  */
       if (aarch64_sve_mode_p (mode)
 	  || !satisfies_constraint_Ump (mem)
 	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
 	  || (crtl->abi->id () == ARM_PCS_SIMD && FP_REGNUM_P (regno))
-	  || maybe_ne ((offset2 - cfun->machine->frame.reg_offset[regno]),
+	  || maybe_ne ((offset2 - frame.reg_offset[regno]),
 		       GET_MODE_SIZE (mode)))
 	{
 	  insn = emit_insn (set);
@@ -9240,7 +9242,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       /* REGNO2 can be saved/restored in a pair with REGNO.  */
       rtx reg2 = gen_rtx_REG (mode, regno2);
       if (frame_pointer_needed)
-	offset2 -= cfun->machine->frame.below_hard_fp_saved_regs_size;
+	offset2 -= frame.below_hard_fp_saved_regs_size;
       else
 	offset2 += crtl->outgoing_args_size;
       rtx addr2 = plus_constant (Pmode, ptr_reg, offset2);
@@ -9335,6 +9337,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 					bool frame_related_p,
 					bool final_adjustment_p)
 {
+  aarch64_frame &frame = cfun->machine->frame;
   HOST_WIDE_INT guard_size
     = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
@@ -9355,25 +9358,25 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
        register as a probe.  We can't assume that LR was saved at position 0
        though, so treat any space below it as unprobed.  */
   if (final_adjustment_p
-      && known_eq (cfun->machine->frame.below_hard_fp_saved_regs_size, 0))
+      && known_eq (frame.below_hard_fp_saved_regs_size, 0))
     {
-      poly_int64 lr_offset = cfun->machine->frame.reg_offset[LR_REGNUM];
+      poly_int64 lr_offset = frame.reg_offset[LR_REGNUM];
       if (known_ge (lr_offset, 0))
 	min_probe_threshold -= lr_offset.to_constant ();
       else
 	gcc_assert (!flag_stack_clash_protection || known_eq (poly_size, 0));
     }
 
-  poly_int64 frame_size = cfun->machine->frame.frame_size;
+  poly_int64 frame_size = frame.frame_size;
 
   /* We should always have a positive probe threshold.  */
   gcc_assert (min_probe_threshold > 0);
 
   if (flag_stack_clash_protection && !final_adjustment_p)
     {
-      poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
-      poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
-      poly_int64 final_adjust = cfun->machine->frame.final_adjust;
+      poly_int64 initial_adjust = frame.initial_adjust;
+      poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
+      poly_int64 final_adjust = frame.final_adjust;
 
       if (known_eq (frame_size, 0))
 	{
@@ -9662,17 +9665,18 @@ aarch64_epilogue_uses (int regno)
 void
 aarch64_expand_prologue (void)
 {
-  poly_int64 frame_size = cfun->machine->frame.frame_size;
-  poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
-  HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
-  poly_int64 final_adjust = cfun->machine->frame.final_adjust;
-  poly_int64 callee_offset = cfun->machine->frame.callee_offset;
-  poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
+  aarch64_frame &frame = cfun->machine->frame;
+  poly_int64 frame_size = frame.frame_size;
+  poly_int64 initial_adjust = frame.initial_adjust;
+  HOST_WIDE_INT callee_adjust = frame.callee_adjust;
+  poly_int64 final_adjust = frame.final_adjust;
+  poly_int64 callee_offset = frame.callee_offset;
+  poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
-    = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
-  bool emit_frame_chain = cfun->machine->frame.emit_frame_chain;
+    = frame.below_hard_fp_saved_regs_size;
+  unsigned reg1 = frame.wb_push_candidate1;
+  unsigned reg2 = frame.wb_push_candidate2;
+  bool emit_frame_chain = frame.emit_frame_chain;
   rtx_insn *insn;
 
   if (flag_stack_clash_protection && known_eq (callee_adjust, 0))
@@ -9703,7 +9707,7 @@ aarch64_expand_prologue (void)
     }
 
   /* Push return address to shadow call stack.  */
-  if (cfun->machine->frame.is_scs_enabled)
+  if (frame.is_scs_enabled)
     emit_insn (gen_scs_push ());
 
   if (flag_stack_usage_info)
@@ -9742,7 +9746,7 @@ aarch64_expand_prologue (void)
 
   /* The offset of the frame chain record (if any) from the current SP.  */
   poly_int64 chain_offset = (initial_adjust + callee_adjust
-			     - cfun->machine->frame.hard_fp_offset);
+			     - frame.hard_fp_offset);
   gcc_assert (known_ge (chain_offset, 0));
 
   /* The offset of the bottom of the save area from the current SP.  */
@@ -9845,16 +9849,17 @@ aarch64_use_return_insn_p (void)
 void
 aarch64_expand_epilogue (bool for_sibcall)
 {
-  poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
-  HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
-  poly_int64 final_adjust = cfun->machine->frame.final_adjust;
-  poly_int64 callee_offset = cfun->machine->frame.callee_offset;
-  poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
+  aarch64_frame &frame = cfun->machine->frame;
+  poly_int64 initial_adjust = frame.initial_adjust;
+  HOST_WIDE_INT callee_adjust = frame.callee_adjust;
+  poly_int64 final_adjust = frame.final_adjust;
+  poly_int64 callee_offset = frame.callee_offset;
+  poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
-    = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_pop_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_pop_candidate2;
-  unsigned int last_gpr = (cfun->machine->frame.is_scs_enabled
+    = frame.below_hard_fp_saved_regs_size;
+  unsigned reg1 = frame.wb_pop_candidate1;
+  unsigned reg2 = frame.wb_pop_candidate2;
+  unsigned int last_gpr = (frame.is_scs_enabled
 			   ? R29_REGNUM : R30_REGNUM);
   rtx cfi_ops = NULL;
   rtx_insn *insn;
@@ -9888,7 +9893,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   /* We need to add memory barrier to prevent read from deallocated stack.  */
   bool need_barrier_p
     = maybe_ne (get_frame_size ()
-		+ cfun->machine->frame.saved_varargs_size, 0);
+		+ frame.saved_varargs_size, 0);
 
   /* Emit a barrier to prevent loads from a deallocated stack.  */
   if (maybe_gt (final_adjust, crtl->outgoing_args_size)
@@ -9969,7 +9974,7 @@ aarch64_expand_epilogue (bool for_sibcall)
     }
 
   /* Pop return address from shadow call stack.  */
-  if (cfun->machine->frame.is_scs_enabled)
+  if (frame.is_scs_enabled)
     {
       machine_mode mode = aarch64_reg_save_mode (R30_REGNUM);
       rtx reg = gen_rtx_REG (mode, R30_REGNUM);
@@ -12564,24 +12569,24 @@ aarch64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 poly_int64
 aarch64_initial_elimination_offset (unsigned from, unsigned to)
 {
+  aarch64_frame &frame = cfun->machine->frame;
+
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)
-	return cfun->machine->frame.hard_fp_offset;
+	return frame.hard_fp_offset;
 
       if (from == FRAME_POINTER_REGNUM)
-	return cfun->machine->frame.hard_fp_offset
-	       - cfun->machine->frame.locals_offset;
+	return frame.hard_fp_offset - frame.locals_offset;
     }
 
   if (to == STACK_POINTER_REGNUM)
     {
       if (from == FRAME_POINTER_REGNUM)
-	  return cfun->machine->frame.frame_size
-		 - cfun->machine->frame.locals_offset;
+	return frame.frame_size - frame.locals_offset;
     }
 
-  return cfun->machine->frame.frame_size;
+  return frame.frame_size;
 }
 
 
