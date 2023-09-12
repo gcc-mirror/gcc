@@ -1,3 +1,50 @@
+2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc (acquire_sequence_ptr_for_lock): New
+	function.
+	(reset_sequence_ptr): New function.
+	(_Safe_iterator_base::_M_detach)
+	(_Safe_local_iterator_base::_M_detach): Replace bare atomic_load
+	with acquire_sequence_ptr_for_lock.
+	(_Safe_iterator_base::_M_reset): Replace bare atomic_store with
+	reset_sequence_ptr.
+
+2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Add new file.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): Move to ...
+	* src/c++11/assert_fail.cc: New file.
+
+2023-09-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/bits/c++config (_GLIBCXX_HAS_BUILTIN): Do not undef.
+	(_GLIBCXX_USE_BUILTIN_TRAIT): Define.
+
+2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (__cpp_lib_formatters): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/stacktrace (formatter<stacktrace_entry>)
+	(formatter<basic_stacktrace<Alloc>>): Define.
+	* include/std/thread (formatter<thread::id, charT>): Define.
+	* testsuite/19_diagnostics/stacktrace/output.cc: New test.
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc: Add
+	std::formatter specializations.
+	* testsuite/19_diagnostics/stacktrace/version.cc: Check
+	__cpp_lib_formatters macro.
+	* testsuite/30_threads/thread/id/hash.cc: Remove gthreads
+	dependency.
+	* testsuite/30_threads/thread/id/operators.cc: Likewise.
+	* testsuite/30_threads/thread/id/operators_c++20.cc: Likewise.
+	* testsuite/30_threads/thread/id/output.cc: New test.
+
+2023-09-11  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* src/c++11/cow-locale_init.cc: Add [[maybe_unused]] attribute.
+	* src/c++17/fs_path.cc (path::_S_convert_loc): Likewise.
+	* src/filesystem/path.cc (path::_S_convert_loc): Likewise.
+
 2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CONFIGURE): Add c++23 directory.

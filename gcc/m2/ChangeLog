@@ -1,3 +1,10 @@
+2023-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111330
+	* gm2-compiler/M2SymInit.mod (CheckReadBeforeInitQuad): Add
+	case labels LogicalDiffOp, DummyOp, OptParamOp and
+	InitAddressOp.
+
 2023-08-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111085

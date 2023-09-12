@@ -1,3 +1,145 @@
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111348
+	* match.pd (`(a CMP b) ? minmax<a, c> : minmax<b, c>`): Add :c on
+	the cmp part of the pattern.
+
+2023-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111340
+	* config/i386/i386.cc (output_pic_addr_const): Handle CONST_WIDE_INT.
+	Call output_addr_const for CASE_CONST_SCALAR_INT.
+
+2023-09-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/thead.md: Update types
+
+2023-09-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.md: Update types
+
+2023-09-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.md: Add "zicond" type
+	* config/riscv/zicond.md: Update types
+
+2023-09-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.md: Add "pushpop" and "mvpair" types
+	* config/riscv/zc.md: Update types
+
+2023-09-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/autovec-opt.md: Update types
+	* config/riscv/autovec.md: likewise
+
+2023-09-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (s390_vec_signed_flt): Fix
+	builtin flag.
+	(s390_vec_unsigned_flt): Ditto.
+	(s390_vec_revb_flt): Ditto.
+	(s390_vec_reve_flt): Ditto.
+	(s390_vclfnhs): Fix operand flags.
+	(s390_vclfnls): Ditto.
+	(s390_vcrnfs): Ditto.
+	(s390_vcfn): Ditto.
+	(s390_vcnf): Ditto.
+
+2023-09-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (O_U64): New.
+	(O1_U64): Ditto.
+	(O2_U64): Ditto.
+	(O3_U64): Ditto.
+	(O4_U64): Ditto.
+	(O_M12): Change bit position.
+	(O_S2): Ditto.
+	(O_S3): Ditto.
+	(O_S4): Ditto.
+	(O_S5): Ditto.
+	(O_S8): Ditto.
+	(O_S12): Ditto.
+	(O_S16): Ditto.
+	(O_S32): Ditto.
+	(O_ELEM): Ditto.
+	(O_LIT): Ditto.
+	(OB_DEF_VAR): Add operand constraints.
+	(B_DEF): Ditto.
+	* config/s390/s390.cc (s390_const_operand_ok): Honour 64 bit
+	operands.
+
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111349
+	* match.pd (`(a CMP CST1) ? max<a,CST2> : a`): Add :c on
+	the cmp part of the pattern.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111311
+	* config/riscv/riscv.opt: Set default as scalable vectorization.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (get_all_predecessors): Remove.
+	(get_all_successors): Ditto.
+	* config/riscv/riscv-v.cc (get_all_predecessors): Ditto.
+	(get_all_successors): Ditto.
+
+2023-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111329
+	* pretty-print.h (pp_wide_int): Rewrite from macro into inline
+	function.  For printing values which don't fit into digit_buffer
+	use out-of-line function.
+	* wide-int-print.h (pp_wide_int_large): Declare.
+	* wide-int-print.cc: Include pretty-print.h.
+	(pp_wide_int_large): Define.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::global_eliminate_vsetvl_insn):
+	Use dominance analysis.
+	(pass_vsetvl::init): Ditto.
+	(pass_vsetvl::done): Ditto.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111311
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/riscv-protos.h (cmp_lmul_le_one): New function.
+	(cmp_lmul_gt_one): Ditto.
+	* config/riscv/riscv-v.cc (cmp_lmul_le_one): Ditto.
+	(cmp_lmul_gt_one): Ditto.
+	* config/riscv/riscv.cc (riscv_print_operand): Add VLS modes.
+	(riscv_vectorize_vec_perm_const): Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (*mov<mode>_vls): New pattern.
+	* config/riscv/vector-iterators.md: New iterator
+
+2023-09-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111346
+	* match.pd (`X CMP MINMAX`): Add `:c` on the cmp part
+	of the pattern
+
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/111306
+	PR target/111335
+	* config/i386/sse.md (int_comm): New int_attr.
+	(fma_<complexopname>_<mode><sdc_maskz_name><round_name>):
+	Remove % for Complex conjugate operations since they're not
+	commutative.
+	(fma_<complexpairopname>_<mode>_pair): Ditto.
+	(<avx512>_<complexopname>_<mode>_mask<round_name>): Ditto.
+	(cmul<conj_op><mode>3): Ditto.
+
 2023-09-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-v.cc (shuffle_generic_patterns): Expand
