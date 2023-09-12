@@ -566,6 +566,40 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [BOOL] Select based on masks
+;; -------------------------------------------------------------------------
+;; Includes merging patterns for:
+;; - vmand.mm
+;; - vmor.mm
+;; - vmnot.m
+;; -------------------------------------------------------------------------
+
+(define_expand "vcond_mask_<mode><mode>"
+  [(match_operand:VB 0 "register_operand")
+   (match_operand:VB 1 "register_operand")
+   (match_operand:VB 2 "register_operand")
+   (match_operand:VB 3 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    /* mask1 = operands[3] & operands[1].  */
+    rtx mask1 = expand_binop (<MODE>mode, and_optab, operands[1],
+			      operands[3], NULL_RTX, 0,
+			      OPTAB_DIRECT);
+    /* mask2 = ~operands[3] & operands[2].  */
+    rtx inverse = expand_unop (<MODE>mode, one_cmpl_optab, operands[3],
+			       NULL_RTX, 0);
+    rtx mask2 = expand_binop (<MODE>mode, and_optab, operands[2],
+			      inverse, NULL_RTX, 0,
+			      OPTAB_DIRECT);
+    /* result = mask1 | mask2.  */
+    rtx result = expand_binop (<MODE>mode, ior_optab, mask1,
+			       mask2, NULL_RTX, 0,
+			       OPTAB_DIRECT);
+    emit_move_insn (operands[0], result);
+    DONE;
+  })
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Comparisons
 ;; -------------------------------------------------------------------------
 ;; Includes:
