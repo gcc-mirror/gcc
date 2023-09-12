@@ -4065,7 +4065,7 @@ check_subobject_offset (tree type, tree offset, splay_tree offsets)
 	return 1;
 
       if (cv_check != ignore
-	  && same_type_ignoring_top_level_qualifiers_p (elt, type))
+	  && similar_type_p (elt, type))
 	{
 	  if (cv_check == fast)
 	    return 1;
