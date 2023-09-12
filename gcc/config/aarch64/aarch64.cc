@@ -8625,23 +8625,16 @@ aarch64_layout_frame (void)
 
   frame.saved_regs_size = offset - frame.bytes_below_saved_regs;
 
-  poly_int64 varargs_and_saved_regs_size
-    = frame.saved_regs_size + frame.saved_varargs_size;
+  offset += get_frame_size ();
+  offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+  auto top_of_locals = offset;
 
-  poly_int64 saved_regs_and_above
-    = aligned_upper_bound (varargs_and_saved_regs_size
-			   + get_frame_size (),
-			   STACK_BOUNDARY / BITS_PER_UNIT);
+  offset += frame.saved_varargs_size;
+  gcc_assert (multiple_p (offset, STACK_BOUNDARY / BITS_PER_UNIT));
+  frame.frame_size = offset;
 
-  frame.bytes_above_hard_fp
-    = saved_regs_and_above - frame.below_hard_fp_saved_regs_size;
-
-  /* Both these values are already aligned.  */
-  gcc_assert (multiple_p (frame.bytes_below_saved_regs,
-			  STACK_BOUNDARY / BITS_PER_UNIT));
-  frame.frame_size = saved_regs_and_above + frame.bytes_below_saved_regs;
-
-  frame.bytes_above_locals = frame.saved_varargs_size;
+  frame.bytes_above_hard_fp = frame.frame_size - frame.bytes_below_hard_fp;
+  frame.bytes_above_locals = frame.frame_size - top_of_locals;
 
   frame.initial_adjust = 0;
   frame.final_adjust = 0;
