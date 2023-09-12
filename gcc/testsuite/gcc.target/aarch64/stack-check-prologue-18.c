@@ -9,7 +9,7 @@ void g();
 **	...
 **	str	x30, \[sp\]
 **	sub	sp, sp, #4064
-**	str	xzr, \[sp\]
+**	str	xzr, \[sp, #?1024\]
 **	cbnz	w0, .*
 **	bl	g
 **	...
@@ -50,7 +50,7 @@ int test1(int z) {
 **	...
 **	str	x30, \[sp\]
 **	sub	sp, sp, #1040
-**	str	xzr, \[sp\]
+**	str	xzr, \[sp, #?1024\]
 **	cbnz	w0, .*
 **	bl	g
 **	...
