@@ -8433,6 +8433,20 @@ aarch64_needs_frame_chain (void)
   return aarch64_use_frame_pointer;
 }
 
+/* Return true if the current function should save registers above
+   the locals area, rather than below it.  */
+
+static bool
+aarch64_save_regs_above_locals_p ()
+{
+  /* When using stack smash protection, make sure that the canary slot
+     comes between the locals and the saved registers.  Otherwise,
+     it would be possible for a carefully sized smash attack to change
+     the saved registers (particularly LR and FP) without reaching the
+     canary.  */
+  return crtl->stack_protect_guard;
+}
+
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
    and LR may be omitted).  */
@@ -8444,6 +8458,7 @@ aarch64_layout_frame (void)
   poly_int64 vector_save_size = GET_MODE_SIZE (vector_save_mode);
   bool frame_related_fp_reg_p = false;
   aarch64_frame &frame = cfun->machine->frame;
+  poly_int64 top_of_locals = -1;
 
   frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
@@ -8510,9 +8525,16 @@ aarch64_layout_frame (void)
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       frame.reg_offset[regno] = SLOT_REQUIRED;
 
+  bool regs_at_top_p = aarch64_save_regs_above_locals_p ();
 
   poly_int64 offset = crtl->outgoing_args_size;
   gcc_assert (multiple_p (offset, STACK_BOUNDARY / BITS_PER_UNIT));
+  if (regs_at_top_p)
+    {
+      offset += get_frame_size ();
+      offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+      top_of_locals = offset;
+    }
   frame.bytes_below_saved_regs = offset;
   frame.sve_save_and_probe = INVALID_REGNUM;
 
@@ -8652,15 +8674,18 @@ aarch64_layout_frame (void)
      at expand_prologue.  */
   gcc_assert (crtl->is_leaf || maybe_ne (saved_regs_size, 0));
 
-  offset += get_frame_size ();
-  offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
-  auto top_of_locals = offset;
-
+  if (!regs_at_top_p)
+    {
+      offset += get_frame_size ();
+      offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+      top_of_locals = offset;
+    }
   offset += frame.saved_varargs_size;
   gcc_assert (multiple_p (offset, STACK_BOUNDARY / BITS_PER_UNIT));
   frame.frame_size = offset;
 
   frame.bytes_above_hard_fp = frame.frame_size - frame.bytes_below_hard_fp;
+  gcc_assert (known_ge (top_of_locals, 0));
   frame.bytes_above_locals = frame.frame_size - top_of_locals;
 
   frame.initial_adjust = 0;
@@ -9979,10 +10004,10 @@ aarch64_epilogue_uses (int regno)
 	|  for register varargs         |
 	|                               |
 	+-------------------------------+
-	|  local variables              | <-- frame_pointer_rtx
+	|  local variables (1)          | <-- frame_pointer_rtx
 	|                               |
 	+-------------------------------+
-	|  padding                      |
+	|  padding (1)                  |
 	+-------------------------------+
 	|  callee-saved registers       |
 	+-------------------------------+
@@ -9994,6 +10019,10 @@ aarch64_epilogue_uses (int regno)
 	+-------------------------------+
 	|  SVE predicate registers      |
 	+-------------------------------+
+	|  local variables (2)          |
+	+-------------------------------+
+	|  padding (2)                  |
+	+-------------------------------+
 	|  dynamic allocation           |
 	+-------------------------------+
 	|  padding                      |
@@ -10002,6 +10031,9 @@ aarch64_epilogue_uses (int regno)
         |                               |
 	+-------------------------------+
 	|                               | <-- stack_pointer_rtx (aligned)
+
+   The regions marked (1) and (2) are mutually exclusive.  (2) is used
+   when aarch64_save_regs_above_locals_p is true.
 
    Dynamic stack allocations via alloca() decrease stack_pointer_rtx
    but leave frame_pointer_rtx and hard_frame_pointer_rtx
@@ -10198,6 +10230,8 @@ aarch64_expand_prologue (void)
   gcc_assert (known_eq (bytes_below_sp, final_adjust));
   aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx, final_adjust,
 					  !frame_pointer_needed, true);
+  if (emit_frame_chain && maybe_ne (final_adjust, 0))
+    aarch64_emit_stack_tie (hard_frame_pointer_rtx);
 }
 
 /* Return TRUE if we can use a simple_return insn.
