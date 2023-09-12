@@ -8139,7 +8139,6 @@ aarch64_needs_frame_chain (void)
 static void
 aarch64_layout_frame (void)
 {
-  poly_int64 offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
   machine_mode vector_save_mode = aarch64_reg_save_mode (V8_REGNUM);
   poly_int64 vector_save_size = GET_MODE_SIZE (vector_save_mode);
@@ -8217,7 +8216,9 @@ aarch64_layout_frame (void)
   gcc_assert (crtl->is_leaf
 	      || maybe_ne (frame.reg_offset[R30_REGNUM], SLOT_NOT_REQUIRED));
 
-  frame.bytes_below_saved_regs = crtl->outgoing_args_size;
+  poly_int64 offset = crtl->outgoing_args_size;
+  gcc_assert (multiple_p (offset, STACK_BOUNDARY / BITS_PER_UNIT));
+  frame.bytes_below_saved_regs = offset;
 
   /* Now assign stack slots for the registers.  Start with the predicate
      registers, since predicate LDR and STR have a relatively small
@@ -8229,7 +8230,8 @@ aarch64_layout_frame (void)
 	offset += BYTES_PER_SVE_PRED;
       }
 
-  if (maybe_ne (offset, 0))
+  poly_int64 saved_prs_size = offset - frame.bytes_below_saved_regs;
+  if (maybe_ne (saved_prs_size, 0))
     {
       /* If we have any vector registers to save above the predicate registers,
 	 the offset of the vector register save slots need to be a multiple
@@ -8247,10 +8249,10 @@ aarch64_layout_frame (void)
 	offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
       else
 	{
-	  if (known_le (offset, vector_save_size))
-	    offset = vector_save_size;
-	  else if (known_le (offset, vector_save_size * 2))
-	    offset = vector_save_size * 2;
+	  if (known_le (saved_prs_size, vector_save_size))
+	    offset = frame.bytes_below_saved_regs + vector_save_size;
+	  else if (known_le (saved_prs_size, vector_save_size * 2))
+	    offset = frame.bytes_below_saved_regs + vector_save_size * 2;
 	  else
 	    gcc_unreachable ();
 	}
@@ -8267,9 +8269,10 @@ aarch64_layout_frame (void)
 
   /* OFFSET is now the offset of the hard frame pointer from the bottom
      of the callee save area.  */
-  bool saves_below_hard_fp_p = maybe_ne (offset, 0);
-  frame.below_hard_fp_saved_regs_size = offset;
-  frame.bytes_below_hard_fp = offset + frame.bytes_below_saved_regs;
+  frame.below_hard_fp_saved_regs_size = offset - frame.bytes_below_saved_regs;
+  bool saves_below_hard_fp_p
+    = maybe_ne (frame.below_hard_fp_saved_regs_size, 0);
+  frame.bytes_below_hard_fp = offset;
   if (frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
@@ -8320,9 +8323,10 @@ aarch64_layout_frame (void)
 
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
-  frame.saved_regs_size = offset;
+  frame.saved_regs_size = offset - frame.bytes_below_saved_regs;
 
-  poly_int64 varargs_and_saved_regs_size = offset + frame.saved_varargs_size;
+  poly_int64 varargs_and_saved_regs_size
+    = frame.saved_regs_size + frame.saved_varargs_size;
 
   poly_int64 saved_regs_and_above
     = aligned_upper_bound (varargs_and_saved_regs_size
@@ -8790,9 +8794,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = (frame.reg_offset[regno]
-		+ frame.bytes_below_saved_regs
-		- bytes_below_sp);
+      offset = frame.reg_offset[regno] - bytes_below_sp;
       rtx base_rtx = stack_pointer_rtx;
       poly_int64 sp_offset = offset;
 
@@ -8899,9 +8901,7 @@ aarch64_restore_callee_saves (poly_int64 bytes_below_sp, unsigned start,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       reg = gen_rtx_REG (mode, regno);
-      offset = (frame.reg_offset[regno]
-		+ frame.bytes_below_saved_regs
-		- bytes_below_sp);
+      offset = frame.reg_offset[regno] - bytes_below_sp;
       rtx base_rtx = stack_pointer_rtx;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	aarch64_adjust_sve_callee_save_base (mode, base_rtx, anchor_reg,
@@ -9040,14 +9040,12 @@ aarch64_get_separate_components (void)
 	   it as a stack probe for -fstack-clash-protection.  */
 	if (flag_stack_clash_protection
 	    && maybe_ne (frame.below_hard_fp_saved_regs_size, 0)
-	    && known_eq (offset, 0))
+	    && known_eq (offset, frame.bytes_below_saved_regs))
 	  continue;
 
 	/* Get the offset relative to the register we'll use.  */
 	if (frame_pointer_needed)
-	  offset -= frame.below_hard_fp_saved_regs_size;
-	else
-	  offset += frame.bytes_below_saved_regs;
+	  offset -= frame.bytes_below_hard_fp;
 
 	/* Check that we can access the stack slot of the register with one
 	   direct load with no adjustments needed.  */
@@ -9194,9 +9192,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       rtx reg = gen_rtx_REG (mode, regno);
       poly_int64 offset = frame.reg_offset[regno];
       if (frame_pointer_needed)
-	offset -= frame.below_hard_fp_saved_regs_size;
-      else
-	offset += frame.bytes_below_saved_regs;
+	offset -= frame.bytes_below_hard_fp;
 
       rtx addr = plus_constant (Pmode, ptr_reg, offset);
       rtx mem = gen_frame_mem (mode, addr);
@@ -9248,9 +9244,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
       /* REGNO2 can be saved/restored in a pair with REGNO.  */
       rtx reg2 = gen_rtx_REG (mode, regno2);
       if (frame_pointer_needed)
-	offset2 -= frame.below_hard_fp_saved_regs_size;
-      else
-	offset2 += frame.bytes_below_saved_regs;
+	offset2 -= frame.bytes_below_hard_fp;
       rtx addr2 = plus_constant (Pmode, ptr_reg, offset2);
       rtx mem2 = gen_frame_mem (mode, addr2);
       rtx set2 = prologue_p ? gen_rtx_SET (mem2, reg2)
@@ -9366,7 +9360,8 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
   if (final_adjustment_p
       && known_eq (frame.below_hard_fp_saved_regs_size, 0))
     {
-      poly_int64 lr_offset = frame.reg_offset[LR_REGNUM];
+      poly_int64 lr_offset = (frame.reg_offset[LR_REGNUM]
+			      - frame.bytes_below_saved_regs);
       if (known_ge (lr_offset, 0))
 	min_probe_threshold -= lr_offset.to_constant ();
       else
