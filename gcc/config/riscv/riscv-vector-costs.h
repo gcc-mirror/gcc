@@ -40,13 +40,6 @@ struct autovec_info
   bool end_p;
 };
 
-struct range
-{
-  unsigned int pt;
-  bool start;
-  unsigned int nregs;
-};
-
 /* rvv-specific vector costs.  */
 class costs : public vector_costs
 {
