@@ -406,6 +406,18 @@ for (i = 0; i < n_extra_masks; i++) {
 		print "#define MASK_" extra_masks[i] " (1U << " masknum[""]++ ")"
 }
 
+for (i = 0; i < n_target_vars; i++)
+{
+	if (find_index(target_vars[i], extra_target_vars, n_extra_target_vars) == n_extra_target_vars)
+		continue
+	for (j = 0; j < n_other_mask[i]; j++)
+	{
+		print "#define MASK_" other_masks[i][j] " (1U << " other_masknum[i][""]++ ")"
+	}
+	if (other_masknum[i][""] > 32)
+		print "#error too many target masks for" extra_target_vars[i]
+}
+
 for (var in masknum) {
 	if (var != "" && host_wide_int[var] == "yes") {
 		print "#if defined(HOST_BITS_PER_WIDE_INT) && " masknum[var] " > HOST_BITS_PER_WIDE_INT"
@@ -417,6 +429,16 @@ for (var in masknum) {
 			print "#error too many target masks"
 		else
 			print "#error too many masks for " var
+	}
+}
+for (i = 0; i < n_target_vars; i++)
+{
+	if (find_index(target_vars[i], extra_target_vars, n_extra_target_vars) == n_extra_target_vars)
+		continue
+	for (j = 0; j < n_other_mask[i]; j++)
+	{
+		print "#define TARGET_" other_masks[i][j] \
+		      " ((" target_vars[i] " & MASK_" other_masks[i][j] ") != 0)"
 	}
 }
 print ""

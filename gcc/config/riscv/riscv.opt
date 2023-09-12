@@ -209,56 +209,232 @@ long riscv_stack_protector_guard_offset = 0
 TargetVariable
 int riscv_zi_subext
 
+Mask(ZICSR)       Var(riscv_zi_subext)
+
+Mask(ZIFENCEI)    Var(riscv_zi_subext)
+
+Mask(ZIHINTNTL)   Var(riscv_zi_subext)
+
+Mask(ZIHINTPAUSE) Var(riscv_zi_subext)
+
+Mask(ZICOND)      Var(riscv_zi_subext)
+
 TargetVariable
 int riscv_za_subext
+
+Mask(ZAWRS) Var(riscv_za_subext)
 
 TargetVariable
 int riscv_zb_subext
 
+Mask(ZBA) Var(riscv_zb_subext)
+
+Mask(ZBB) Var(riscv_zb_subext)
+
+Mask(ZBC) Var(riscv_zb_subext)
+
+Mask(ZBS) Var(riscv_zb_subext)
+
 TargetVariable
 int riscv_zinx_subext
+
+Mask(ZFINX)    Var(riscv_zinx_subext)
+
+Mask(ZDINX)    Var(riscv_zinx_subext)
+
+Mask(ZHINX)    Var(riscv_zinx_subext)
+
+Mask(ZHINXMIN) Var(riscv_zinx_subext)
 
 TargetVariable
 int riscv_zk_subext
 
+Mask(ZBKB)  Var(riscv_zk_subext)
+
+Mask(ZBKC)  Var(riscv_zk_subext)
+
+Mask(ZBKX)  Var(riscv_zk_subext)
+
+Mask(ZKNE)  Var(riscv_zk_subext)
+
+Mask(ZKND)  Var(riscv_zk_subext)
+
+Mask(ZKNH)  Var(riscv_zk_subext)
+
+Mask(ZKR)   Var(riscv_zk_subext)
+
+Mask(ZKSED) Var(riscv_zk_subext)
+
+Mask(ZKSH)  Var(riscv_zk_subext)
+
+Mask(ZKT)   Var(riscv_zk_subext)
+
 TargetVariable
 int riscv_vector_elen_flags
+
+Mask(VECTOR_ELEN_32)    Var(riscv_vector_elen_flags)
+
+Mask(VECTOR_ELEN_64)    Var(riscv_vector_elen_flags)
+
+Mask(VECTOR_ELEN_FP_32) Var(riscv_vector_elen_flags)
+
+Mask(VECTOR_ELEN_FP_64) Var(riscv_vector_elen_flags)
+
+Mask(VECTOR_ELEN_FP_16) Var(riscv_vector_elen_flags)
 
 TargetVariable
 int riscv_zvl_flags
 
+Mask(ZVL32B)    Var(riscv_zvl_flags)
+
+Mask(ZVL64B)    Var(riscv_zvl_flags)
+
+Mask(ZVL128B)   Var(riscv_zvl_flags)
+
+Mask(ZVL256B)   Var(riscv_zvl_flags)
+
+Mask(ZVL512B)   Var(riscv_zvl_flags)
+
+Mask(ZVL1024B)  Var(riscv_zvl_flags)
+
+Mask(ZVL2048B)  Var(riscv_zvl_flags)
+
+Mask(ZVL4096B)  Var(riscv_zvl_flags)
+
+Mask(ZVL8192B)  Var(riscv_zvl_flags)
+
+Mask(ZVL16384B) Var(riscv_zvl_flags)
+
+Mask(ZVL32768B) Var(riscv_zvl_flags)
+
+Mask(ZVL65536B) Var(riscv_zvl_flags)
+
 TargetVariable
 int riscv_zvb_subext
+
+Mask(ZVBB) Var(riscv_zvb_subext)
+
+Mask(ZVBC) Var(riscv_zvb_subext)
 
 TargetVariable
 int riscv_zvk_subext
 
+Mask(ZVKG)   Var(riscv_zvk_subext)
+
+Mask(ZVKNED) Var(riscv_zvk_subext)
+
+Mask(ZVKNHA) Var(riscv_zvk_subext)
+
+Mask(ZVKNHB) Var(riscv_zvk_subext)
+
+Mask(ZVKSED) Var(riscv_zvk_subext)
+
+Mask(ZVKSH)  Var(riscv_zvk_subext)
+
+Mask(ZVKN)   Var(riscv_zvk_subext)
+
+Mask(ZVKNC)  Var(riscv_zvk_subext)
+
+Mask(ZVKNG)  Var(riscv_zvk_subext)
+
+Mask(ZVKS)   Var(riscv_zvk_subext)
+
+Mask(ZVKSC)  Var(riscv_zvk_subext)
+
+Mask(ZVKSG)  Var(riscv_zvk_subext)
+
+Mask(ZVKT)   Var(riscv_zvk_subext)
+
 TargetVariable
 int riscv_zicmo_subext
+
+Mask(ZICBOZ) Var(riscv_zicmo_subext)
+
+Mask(ZICBOM) Var(riscv_zicmo_subext)
+
+Mask(ZICBOP) Var(riscv_zicmo_subext)
 
 TargetVariable
 int riscv_zf_subext
 
+Mask(ZFHMIN)  Var(riscv_zf_subext)
+
+Mask(ZFH)     Var(riscv_zf_subext)
+
+Mask(ZVFHMIN) Var(riscv_zf_subext)
+
+Mask(ZVFH)    Var(riscv_zf_subext)
+
 TargetVariable
 int riscv_zfa_subext
+
+Mask(ZFA) Var(riscv_zfa_subext)
 
 TargetVariable
 int riscv_zm_subext
 
+Mask(ZMMUL) Var(riscv_zm_subext)
+
 TargetVariable
 int riscv_zc_subext
+
+Mask(ZCA)  Var(riscv_zc_subext)
+
+Mask(ZCB)  Var(riscv_zc_subext)
+
+Mask(ZCE)  Var(riscv_zc_subext)
+
+Mask(ZCF)  Var(riscv_zc_subext)
+
+Mask(ZCD)  Var(riscv_zc_subext)
+
+Mask(ZCMP) Var(riscv_zc_subext)
+
+Mask(ZCMT) Var(riscv_zc_subext)
 
 TargetVariable
 int riscv_sv_subext
 
+Mask(SVINVAL) Var(riscv_sv_subext)
+
+Mask(SVNAPOT) Var(riscv_sv_subext)
+
 TargetVariable
 int riscv_ztso_subext
+
+Mask(ZTSO) Var(riscv_ztso_subext)
 
 TargetVariable
 int riscv_xthead_subext
 
+Mask(XTHEADBA)      Var(riscv_xthead_subext)
+
+Mask(XTHEADBB)      Var(riscv_xthead_subext)
+
+Mask(XTHEADBS)      Var(riscv_xthead_subext)
+
+Mask(XTHEADCMO)     Var(riscv_xthead_subext)
+
+Mask(XTHEADCONDMOV) Var(riscv_xthead_subext)
+
+Mask(XTHEADFMEMIDX) Var(riscv_xthead_subext)
+
+Mask(XTHEADFMV)     Var(riscv_xthead_subext)
+
+Mask(XTHEADINT)     Var(riscv_xthead_subext)
+
+Mask(XTHEADMAC)     Var(riscv_xthead_subext)
+
+Mask(XTHEADMEMIDX)  Var(riscv_xthead_subext)
+
+Mask(XTHEADMEMPAIR) Var(riscv_xthead_subext)
+
+Mask(XTHEADSYNC)    Var(riscv_xthead_subext)
+
 TargetVariable
 int riscv_xventana_subext
+
+Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
 
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)

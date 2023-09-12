@@ -402,11 +402,12 @@ You may also specify @code{Var} to select a variable other than
 @code{target_flags}.
 
 The options-processing script will automatically allocate a unique bit
-for the option.  If the option is attached to @samp{target_flags},
-the script will set the macro @code{MASK_@var{name}} to the appropriate
-bitmask.  It will also declare a @code{TARGET_@var{name}} macro that has
-the value 1 when the option is active and 0 otherwise.  If you use @code{Var}
-to attach the option to a different variable, the bitmask macro with be
+for the option.  If the option is attached to @samp{target_flags} or @code{Var}
+which is defined by @code{TargetVariable},  the script will set the macro
+@code{MASK_@var{name}} to the appropriate bitmask.  It will also declare a 
+@code{TARGET_@var{name}} macro that has the value 1 when the option is active
+and 0 otherwise.  If you use @code{Var} to attach the option to a different variable
+which is not defined by @code{TargetVariable}, the bitmask macro with be
 called @code{OPTION_MASK_@var{name}}.
 
 @item InverseMask(@var{othername})
