@@ -23,6 +23,30 @@
 
 namespace riscv_vector {
 
+struct stmt_point
+{
+  /* Program point.  */
+  unsigned int point;
+  gimple *stmt;
+};
+
+/* Pair typedef used by live range: <start, end>.  */
+typedef std::pair<unsigned int, unsigned int> pair;
+
+struct autovec_info
+{
+  unsigned int initial_lmul;
+  unsigned int current_lmul;
+  bool end_p;
+};
+
+struct range
+{
+  unsigned int pt;
+  bool start;
+  unsigned int nregs;
+};
+
 /* rvv-specific vector costs.  */
 class costs : public vector_costs
 {
@@ -31,12 +55,16 @@ class costs : public vector_costs
 public:
   costs (vec_info *, bool);
 
+  bool better_main_loop_than_p (const vector_costs *other) const override;
+
 private:
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
 			      stmt_vec_info stmt_info, slp_tree node,
 			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
+
+  bool preferred_new_lmul_p (const vector_costs *) const;
 };
 
 } // namespace riscv_vector
