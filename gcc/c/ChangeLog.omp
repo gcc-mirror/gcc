@@ -1,3 +1,21 @@
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_construct): Move call to
+	c_parser_omp_allocate to ...
+	(c_parser_pragma): ... here.
+	(c_parser_omp_allocate): Avoid ICE is allocator could not be
+	parsed; set 'omp allocate' attribute for stack/automatic variables
+	and only reject static variables; add several additional
+	restriction checks.
+	* c-tree.h (c_mark_decl_jump_unsafe_in_current_scope): New prototype.
+	* c-decl.cc (decl_jump_unsafe): Return true for omp-allocated decls.
+	(c_mark_decl_jump_unsafe_in_current_scope): New.
+	(warn_about_goto, c_check_switch_jump_warnings): Add error for
+	omp-allocated decls.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_variable_list): Support array-shaping

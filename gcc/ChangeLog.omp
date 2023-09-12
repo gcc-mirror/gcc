@@ -1,3 +1,12 @@
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Check for
+	insertion after variable cleanup.  Convert 'omp allocate'
+	var-decl attribute to GOMP_alloc/GOMP_free calls.
+
 2023-07-14  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.cc (lower_omp_target): Reverse iteration over array
