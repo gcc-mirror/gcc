@@ -9697,9 +9697,11 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
   HOST_WIDE_INT guard_size
     = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
+  HOST_WIDE_INT byte_sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+  gcc_assert (multiple_p (poly_size, byte_sp_alignment));
   HOST_WIDE_INT min_probe_threshold
     = (final_adjustment_p
-       ? guard_used_by_caller
+       ? guard_used_by_caller + byte_sp_alignment
        : guard_size - guard_used_by_caller);
   /* When doing the final adjustment for the outgoing arguments, take into
      account any unprobed space there is above the current SP.  There are
