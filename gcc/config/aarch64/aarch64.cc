@@ -10111,16 +10111,16 @@ aarch64_expand_prologue (void)
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
 
-  /* The offset of the frame chain record (if any) from the current SP.  */
-  poly_int64 chain_offset = (initial_adjust + callee_adjust
-			     - frame.hard_fp_offset);
-  gcc_assert (known_ge (chain_offset, 0));
-
   /* The offset of the current SP from the bottom of the static frame.  */
   poly_int64 bytes_below_sp = frame_size - initial_adjust - callee_adjust;
 
   if (emit_frame_chain)
     {
+      /* The offset of the frame chain record (if any) from the current SP.  */
+      poly_int64 chain_offset = (initial_adjust + callee_adjust
+				 - frame.hard_fp_offset);
+      gcc_assert (known_ge (chain_offset, 0));
+
       if (callee_adjust == 0)
 	{
 	  reg1 = R29_REGNUM;
