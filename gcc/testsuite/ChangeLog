@@ -1,3 +1,10 @@
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111306.c: New test.
+
 2023-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
