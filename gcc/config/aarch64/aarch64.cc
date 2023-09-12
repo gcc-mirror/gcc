@@ -8569,6 +8569,7 @@ aarch64_layout_frame (void)
      of the callee save area.  */
   bool saves_below_hard_fp_p = maybe_ne (offset, 0);
   frame.below_hard_fp_saved_regs_size = offset;
+  frame.bytes_below_hard_fp = offset + frame.bytes_below_saved_regs;
   if (frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
@@ -10220,8 +10221,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   poly_int64 final_adjust = frame.final_adjust;
   poly_int64 callee_offset = frame.callee_offset;
   poly_int64 sve_callee_adjust = frame.sve_callee_adjust;
-  poly_int64 below_hard_fp_saved_regs_size
-    = frame.below_hard_fp_saved_regs_size;
+  poly_int64 bytes_below_hard_fp = frame.bytes_below_hard_fp;
   unsigned reg1 = frame.wb_pop_candidate1;
   unsigned reg2 = frame.wb_pop_candidate2;
   unsigned int last_gpr = (frame.is_scs_enabled
@@ -10279,7 +10279,7 @@ aarch64_expand_epilogue (bool for_sibcall)
        is restored on the instruction doing the writeback.  */
     aarch64_add_offset (Pmode, stack_pointer_rtx,
 			hard_frame_pointer_rtx,
-			-callee_offset - below_hard_fp_saved_regs_size,
+			-bytes_below_hard_fp + final_adjust,
 			tmp1_rtx, tmp0_rtx, callee_adjust == 0);
   else
      /* The case where we need to re-use the register here is very rare, so

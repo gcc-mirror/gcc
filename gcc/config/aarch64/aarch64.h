@@ -785,6 +785,11 @@ struct GTY (()) aarch64_frame
      are saved below the hard frame pointer.  */
   poly_int64 below_hard_fp_saved_regs_size;
 
+  /* The number of bytes between the bottom of the static frame (the bottom
+     of the outgoing arguments) and the hard frame pointer.  This value is
+     always a multiple of STACK_BOUNDARY.  */
+  poly_int64 bytes_below_hard_fp;
+
   /* Offset from the base of the frame (incomming SP) to the
      top of the locals area.  This value is always a multiple of
      STACK_BOUNDARY.  */
