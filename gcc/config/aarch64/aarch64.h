@@ -800,8 +800,8 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   poly_int64 bytes_above_hard_fp;
 
-  /* The size of the frame.  This value is the offset from base of the
-     frame (incomming SP) to the stack_pointer.  This value is always
+  /* The size of the frame, i.e. the number of bytes between the bottom
+     of the outgoing arguments and the incoming SP.  This value is always
      a multiple of STACK_BOUNDARY.  */
   poly_int64 frame_size;
 
