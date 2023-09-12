@@ -862,6 +862,14 @@ struct GTY (()) aarch64_frame
      This is the register they should use.  */
   unsigned spare_pred_reg;
 
+  /* An SVE register that is saved below the hard frame pointer and that acts
+     as a probe for later allocations, or INVALID_REGNUM if none.  */
+  unsigned sve_save_and_probe;
+
+  /* A register that is saved at the hard frame pointer and that acts
+     as a probe for later allocations, or INVALID_REGNUM if none.  */
+  unsigned hard_fp_save_and_probe;
+
   bool laid_out;
 
   /* True if shadow call stack should be enabled for the current function.  */

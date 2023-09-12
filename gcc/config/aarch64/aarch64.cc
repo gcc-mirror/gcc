@@ -8510,15 +8510,11 @@ aarch64_layout_frame (void)
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       frame.reg_offset[regno] = SLOT_REQUIRED;
 
-  /* With stack-clash, LR must be saved in non-leaf functions.  The saving of
-     LR counts as an implicit probe which allows us to maintain the invariant
-     described in the comment at expand_prologue.  */
-  gcc_assert (crtl->is_leaf
-	      || maybe_ne (frame.reg_offset[R30_REGNUM], SLOT_NOT_REQUIRED));
 
   poly_int64 offset = crtl->outgoing_args_size;
   gcc_assert (multiple_p (offset, STACK_BOUNDARY / BITS_PER_UNIT));
   frame.bytes_below_saved_regs = offset;
+  frame.sve_save_and_probe = INVALID_REGNUM;
 
   /* Now assign stack slots for the registers.  Start with the predicate
      registers, since predicate LDR and STR have a relatively small
@@ -8526,6 +8522,8 @@ aarch64_layout_frame (void)
   for (regno = P0_REGNUM; regno <= P15_REGNUM; regno++)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
       {
+	if (frame.sve_save_and_probe == INVALID_REGNUM)
+	  frame.sve_save_and_probe = regno;
 	frame.reg_offset[regno] = offset;
 	offset += BYTES_PER_SVE_PRED;
       }
@@ -8563,6 +8561,8 @@ aarch64_layout_frame (void)
     for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
       if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
 	{
+	  if (frame.sve_save_and_probe == INVALID_REGNUM)
+	    frame.sve_save_and_probe = regno;
 	  frame.reg_offset[regno] = offset;
 	  offset += vector_save_size;
 	}
@@ -8572,10 +8572,18 @@ aarch64_layout_frame (void)
   frame.below_hard_fp_saved_regs_size = offset - frame.bytes_below_saved_regs;
   bool saves_below_hard_fp_p
     = maybe_ne (frame.below_hard_fp_saved_regs_size, 0);
+  gcc_assert (!saves_below_hard_fp_p
+	      || (frame.sve_save_and_probe != INVALID_REGNUM
+		  && known_eq (frame.reg_offset[frame.sve_save_and_probe],
+			       frame.bytes_below_saved_regs)));
+
   frame.bytes_below_hard_fp = offset;
+  frame.hard_fp_save_and_probe = INVALID_REGNUM;
 
   auto allocate_gpr_slot = [&](unsigned int regno)
     {
+      if (frame.hard_fp_save_and_probe == INVALID_REGNUM)
+	frame.hard_fp_save_and_probe = regno;
       frame.reg_offset[regno] = offset;
       if (frame.wb_push_candidate1 == INVALID_REGNUM)
 	frame.wb_push_candidate1 = regno;
@@ -8609,6 +8617,8 @@ aarch64_layout_frame (void)
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
       {
+	if (frame.hard_fp_save_and_probe == INVALID_REGNUM)
+	  frame.hard_fp_save_and_probe = regno;
 	/* If there is an alignment gap between integer and fp callee-saves,
 	   allocate the last fp register to it if possible.  */
 	if (regno == last_fp_reg
@@ -8632,6 +8642,17 @@ aarch64_layout_frame (void)
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
   frame.saved_regs_size = offset - frame.bytes_below_saved_regs;
+  gcc_assert (known_eq (frame.saved_regs_size,
+			frame.below_hard_fp_saved_regs_size)
+	      || (frame.hard_fp_save_and_probe != INVALID_REGNUM
+		  && known_eq (frame.reg_offset[frame.hard_fp_save_and_probe],
+			       frame.bytes_below_hard_fp)));
+
+  /* With stack-clash, a register must be saved in non-leaf functions.
+     The saving of the bottommost register counts as an implicit probe,
+     which allows us to maintain the invariant described in the comment
+     at expand_prologue.  */
+  gcc_assert (crtl->is_leaf || maybe_ne (frame.saved_regs_size, 0));
 
   offset += get_frame_size ();
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
@@ -8760,6 +8781,25 @@ aarch64_layout_frame (void)
       frame.initial_adjust = frame.bytes_above_hard_fp;
       frame.sve_callee_adjust = frame.below_hard_fp_saved_regs_size;
       frame.final_adjust = frame.bytes_below_saved_regs;
+    }
+
+  /* The frame is allocated in pieces, with each non-final piece
+     including a register save at offset 0 that acts as a probe for
+     the following piece.  In addition, the save of the bottommost register
+     acts as a probe for callees and allocas.  Roll back any probes that
+     aren't needed.
+
+     A probe isn't needed if it is associated with the final allocation
+     (including callees and allocas) that happens before the epilogue is
+     executed.  */
+  if (crtl->is_leaf
+      && !cfun->calls_alloca
+      && known_eq (frame.final_adjust, 0))
+    {
+      if (maybe_ne (frame.sve_callee_adjust, 0))
+	frame.sve_save_and_probe = INVALID_REGNUM;
+      else
+	frame.hard_fp_save_and_probe = INVALID_REGNUM;
     }
 
   /* Make sure the individual adjustments add up to the full frame size.  */
@@ -9393,13 +9433,6 @@ aarch64_get_separate_components (void)
 
 	poly_int64 offset = frame.reg_offset[regno];
 
-	/* If the register is saved in the first SVE save slot, we use
-	   it as a stack probe for -fstack-clash-protection.  */
-	if (flag_stack_clash_protection
-	    && maybe_ne (frame.below_hard_fp_saved_regs_size, 0)
-	    && known_eq (offset, frame.bytes_below_saved_regs))
-	  continue;
-
 	/* Get the offset relative to the register we'll use.  */
 	if (frame_pointer_needed)
 	  offset -= frame.bytes_below_hard_fp;
@@ -9434,6 +9467,13 @@ aarch64_get_separate_components (void)
 
   bitmap_clear_bit (components, LR_REGNUM);
   bitmap_clear_bit (components, SP_REGNUM);
+  if (flag_stack_clash_protection)
+    {
+      if (frame.sve_save_and_probe != INVALID_REGNUM)
+	bitmap_clear_bit (components, frame.sve_save_and_probe);
+      if (frame.hard_fp_save_and_probe != INVALID_REGNUM)
+	bitmap_clear_bit (components, frame.hard_fp_save_and_probe);
+    }
 
   return components;
 }
@@ -9980,8 +10020,8 @@ aarch64_epilogue_uses (int regno)
    When probing is needed, we emit a probe at the start of the prologue
    and every PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE bytes thereafter.
 
-   We have to track how much space has been allocated and the only stores
-   to the stack we track as implicit probes are the FP/LR stores.
+   We can also use register saves as probes.  These are stored in
+   sve_save_and_probe and hard_fp_save_and_probe.
 
    For outgoing arguments we probe if the size is larger than 1KB, such that
    the ABI specified buffer is maintained for the next callee.
