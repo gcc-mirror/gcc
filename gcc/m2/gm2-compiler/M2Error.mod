@@ -868,7 +868,8 @@ BEGIN
       implementation:   desc := InitString ("In implementation module") |
       program       :   desc := InitString ("In program module") |
       module        :   desc := InitString ("In inner module") |
-      procedure     :   desc := InitString ("In procedure")
+      procedure     :   desc := InitString ("In procedure") |
+      noscope       :   desc := InitString ("Unknown scope")
 
       END
    END ;

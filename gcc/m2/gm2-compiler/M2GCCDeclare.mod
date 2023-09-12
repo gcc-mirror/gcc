@@ -117,7 +117,7 @@ FROM SymbolTable IMPORT NulSym,
 			ForeachOAFamily, GetOAFamily,
                         IsModuleWithinProcedure, IsVariableSSA,
                         IsVariableAtAddress, IsConstructorConstant,
-                        ForeachLocalSymDo, ForeachFieldEnumerationDo,
+                        ForeachLocalSymDo,
       	       	     	ForeachProcedureDo, ForeachModuleDo,
                         ForeachInnerModuleDo, ForeachImportedDo,
                         ForeachExportedDo, PrintInitialized ;
@@ -4935,7 +4935,7 @@ BEGIN
    THEN
       MinEnumerationField := NulSym ;
       MaxEnumerationField := NulSym ;
-      ForeachFieldEnumerationDo(type, FindMinMaxEnum) ;
+      ForeachLocalSymDo (type, FindMinMaxEnum) ;
       RETURN( MinEnumerationField )
    ELSIF IsBaseType(type)
    THEN
@@ -4974,7 +4974,7 @@ BEGIN
    THEN
       MinEnumerationField := NulSym ;
       MaxEnumerationField := NulSym ;
-      ForeachFieldEnumerationDo(type, FindMinMaxEnum) ;
+      ForeachLocalSymDo (type, FindMinMaxEnum) ;
       RETURN( MaxEnumerationField )
    ELSIF IsBaseType(type)
    THEN
@@ -5186,7 +5186,6 @@ END CheckResolveSubrange ;
 PROCEDURE TypeConstFullyDeclared (sym: CARDINAL) : Tree ;
 VAR
    t: Tree ;
-   n: Name ;
 BEGIN
    IF IsEnumeration(sym)
    THEN
@@ -5294,7 +5293,7 @@ PROCEDURE IsEnumerationDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 BEGIN
    action := q ;
    enumDeps := TRUE ;
-   ForeachFieldEnumerationDo(sym, IsFieldEnumerationDependants) ;
+   ForeachLocalSymDo (sym, IsFieldEnumerationDependants) ;
    RETURN( enumDeps )
 END IsEnumerationDependants ;
 
@@ -5305,7 +5304,7 @@ END IsEnumerationDependants ;
 
 PROCEDURE WalkEnumerationDependants (sym: CARDINAL; p: WalkAction) ;
 BEGIN
-   ForeachFieldEnumerationDo(sym, p)
+   ForeachLocalSymDo (sym, p)
 END WalkEnumerationDependants ;
 
 
@@ -5319,7 +5318,7 @@ VAR
    high, low: CARDINAL ;
 BEGIN
    GetSubrange(sym, high, low) ;
-   CheckResolveSubrange(sym) ;
+   CheckResolveSubrange (sym) ;
    type := GetSType(sym) ;
    IF type#NulSym
    THEN

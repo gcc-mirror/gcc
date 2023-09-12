@@ -56,7 +56,7 @@ FROM M2Debug IMPORT Assert ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, PutIndice, GetIndice ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2ALU IMPORT PushIntegerTree, PushInt, ConvertToInt, Equ, Gre, Less, GreEqu ;
-FROM M2Options IMPORT VariantValueChecking ;
+FROM M2Options IMPORT VariantValueChecking, CaseEnumChecking ;
 
 FROM M2Error IMPORT Error, InternalError, ErrorFormat0, ErrorFormat1, ErrorFormat2, FlushErrors,
                     GetAnnounceScope ;
@@ -103,8 +103,9 @@ FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
                    ExceptionParameterBounds,
                    ExceptionNo ;
 
-FROM M2CaseList IMPORT CaseBoundsResolved, OverlappingCaseBounds, WriteCase, MissingCaseBounds, TypeCaseBounds ;
-
+FROM M2CaseList IMPORT CaseBoundsResolved, OverlappingCaseBounds,
+                       WriteCase, MissingCaseBounds, TypeCaseBounds,
+                       MissingCaseStatementBounds ;
 
 TYPE
    TypeOfRange = (assignment, returnassignment, subrangeassignment,
@@ -1915,12 +1916,14 @@ END FoldDynamicArraySubscript ;
 
 PROCEDURE FoldCaseBounds (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
 VAR
-   p: Range ;
+   p             : Range ;
+   errorGenerated: BOOLEAN ;
 BEGIN
    p := GetIndice(RangeIndex, r) ;
    WITH p^ DO
       IF CaseBoundsResolved(tokenno, caseList)
       THEN
+         errorGenerated := FALSE ;
          IF TypeCaseBounds (caseList)
          THEN
             (* nothing to do *)
@@ -1928,14 +1931,26 @@ BEGIN
          IF OverlappingCaseBounds(caseList)
          THEN
             PutQuad(q, ErrorOp, NulSym, NulSym, r) ;
-            IF VariantValueChecking AND MissingCaseBounds(tokenno, caseList)
-            THEN
-               (* nothing to do *)
-            END
-         ELSIF VariantValueChecking AND MissingCaseBounds(tokenno, caseList)
+            errorGenerated := TRUE
+         END ;
+         IF VariantValueChecking AND MissingCaseBounds(tokenno, caseList)
          THEN
-            PutQuad(q, ErrorOp, NulSym, NulSym, r)
-         ELSE
+            IF NOT errorGenerated
+            THEN
+               PutQuad(q, ErrorOp, NulSym, NulSym, r) ;
+               errorGenerated := TRUE
+            END
+         END ;
+         IF CaseEnumChecking AND MissingCaseStatementBounds (tokenno, caseList)
+         THEN
+            IF NOT errorGenerated
+            THEN
+               PutQuad(q, ErrorOp, NulSym, NulSym, r) ;
+               errorGenerated := TRUE
+            END
+         END ;
+         IF NOT errorGenerated
+         THEN
             SubQuad(q)
          END
       END
@@ -1964,6 +1979,10 @@ BEGIN
          (* nothing to do *)
       END ;
       IF MissingCaseBounds (tokenno, caseList)
+      THEN
+         (* nothing to do *)
+      END ;
+      IF CaseEnumChecking AND MissingCaseStatementBounds (tokenno, caseList)
       THEN
          (* nothing to do *)
       END
