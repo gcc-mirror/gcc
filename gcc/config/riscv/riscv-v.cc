@@ -2970,7 +2970,9 @@ needs_fp_rounding (unsigned icode, machine_mode mode)
 	 && icode != maybe_code_for_pred_extend (mode)
 	 /* narrower-INT -> FP */
 	 && icode != maybe_code_for_pred_widen (FLOAT, mode)
-	 && icode != maybe_code_for_pred_widen (UNSIGNED_FLOAT, mode);
+	 && icode != maybe_code_for_pred_widen (UNSIGNED_FLOAT, mode)
+	 /* vfsgnj */
+	 && icode != maybe_code_for_pred (UNSPEC_VCOPYSIGN, mode);
 }
 
 /* Subroutine to expand COND_LEN_* patterns.  */
