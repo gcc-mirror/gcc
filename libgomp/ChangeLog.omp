@@ -1,5 +1,15 @@
 2023-09-19  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (hsa_runtime_fn_info): Add hsa_amd_memory_lock_fn,
+	hsa_amd_memory_unlock_fn, hsa_amd_memory_async_copy_rect_fn function
+	pointers.
+	(init_hsa_runtime_functions): Add above functions, with DLSYM_OPT_FN.
+	(GOMP_OFFLOAD_memcpy2d, GOMP_OFFLOAD_memcpy3d): New functions.
+	* target.c (omp_target_memcpy_rect_worker): Add 1D strided transfer
+	support.
+
+2023-09-19  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to
 	avoid out-of-bounds array checks in CUDA runtime.
 	(GOMP_OFFLOAD_memcpy3d): Likewise.
