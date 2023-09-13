@@ -931,8 +931,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        bool overflowed = true;
        value_range vr0, vr1;
        if (INTEGRAL_TYPE_P (type)
-	   && get_global_range_query ()->range_of_expr (vr0, @0)
-	   && get_global_range_query ()->range_of_expr (vr1, @1)
+	   && get_range_query (cfun)->range_of_expr (vr0, @0)
+	   && get_range_query (cfun)->range_of_expr (vr1, @1)
 	   && !vr0.varying_p () && !vr0.undefined_p ()
 	   && !vr1.varying_p () && !vr1.undefined_p ())
 	 {
