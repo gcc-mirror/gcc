@@ -3762,7 +3762,10 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 static bool
 fold_left_reduction_fn (code_helper code, internal_fn *reduc_fn)
 {
-  if (code == PLUS_EXPR)
+  /* We support MINUS_EXPR by negating the operand.  This also preserves an
+     initial -0.0 since -0.0 - 0.0 (neutral op for MINUS_EXPR) == -0.0 +
+     (-0.0) = -0.0.  */
+  if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
       *reduc_fn = IFN_FOLD_LEFT_PLUS;
       return true;
@@ -3841,23 +3844,29 @@ reduction_fn_for_scalar_code (code_helper code, internal_fn *reduc_fn)
    by the introduction of additional X elements, return that X, otherwise
    return null.  CODE is the code of the reduction and SCALAR_TYPE is type
    of the scalar elements.  If the reduction has just a single initial value
-   then INITIAL_VALUE is that value, otherwise it is null.  */
+   then INITIAL_VALUE is that value, otherwise it is null.
+   If AS_INITIAL is TRUE the value is supposed to be used as initial value.
+   In that case no signed zero is returned.  */
 
 tree
 neutral_op_for_reduction (tree scalar_type, code_helper code,
-			  tree initial_value)
+			  tree initial_value, bool as_initial)
 {
   if (code.is_tree_code ())
     switch (tree_code (code))
       {
-      case WIDEN_SUM_EXPR:
       case DOT_PROD_EXPR:
       case SAD_EXPR:
-      case PLUS_EXPR:
       case MINUS_EXPR:
       case BIT_IOR_EXPR:
       case BIT_XOR_EXPR:
 	return build_zero_cst (scalar_type);
+      case WIDEN_SUM_EXPR:
+      case PLUS_EXPR:
+	if (!as_initial && HONOR_SIGNED_ZEROS (scalar_type))
+	  return build_real (scalar_type, dconstm0);
+	else
+	  return build_zero_cst (scalar_type);
 
       case MULT_EXPR:
 	return build_one_cst (scalar_type);
@@ -4079,12 +4088,37 @@ pop:
       use_operand_p use_p;
       gimple *op_use_stmt;
       unsigned cnt = 0;
+      bool cond_fn_p = op.code.is_internal_fn ()
+	&& (conditional_internal_fn_code (internal_fn (op.code))
+	    != ERROR_MARK);
+
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op.ops[opi])
-	if (!is_gimple_debug (op_use_stmt)
-	    && (*code != ERROR_MARK
-		|| flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt))))
-	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	    cnt++;
+	{
+	/* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
+	   op1 twice (once as definition, once as else) in the same operation.
+	   Allow this.  */
+	  if (cond_fn_p)
+	    {
+	      gcall *call = dyn_cast<gcall *> (use_stmt);
+	      unsigned else_pos
+		= internal_fn_else_index (internal_fn (op.code));
+
+	      for (unsigned int j = 0; j < gimple_call_num_args (call); ++j)
+		{
+		  if (j == else_pos)
+		    continue;
+		  if (gimple_call_arg (call, j) == op.ops[opi])
+		    cnt++;
+		}
+	    }
+	  else if (!is_gimple_debug (op_use_stmt)
+		   && (*code != ERROR_MARK
+		       || flow_bb_inside_loop_p (loop,
+						 gimple_bb (op_use_stmt))))
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	      cnt++;
+	}
+
       if (cnt != 1)
 	{
 	  fail = true;
@@ -4187,8 +4221,14 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           return NULL;
         }
 
-      nphi_def_loop_uses++;
-      phi_use_stmt = use_stmt;
+      /* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
+	 op1 twice (once as definition, once as else) in the same operation.
+	 Only count it as one. */
+      if (use_stmt != phi_use_stmt)
+	{
+	  nphi_def_loop_uses++;
+	  phi_use_stmt = use_stmt;
+	}
     }
 
   tree latch_def = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
@@ -6122,7 +6162,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
       gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) == stmt_info);
     }
-  
+
   scalar_dest = gimple_get_lhs (orig_stmt_info->stmt);
   scalar_type = TREE_TYPE (scalar_dest);
   scalar_results.truncate (0);
@@ -6459,7 +6499,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
 	    initial_value = reduc_info->reduc_initial_values[0];
 	  neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype), code,
-						 initial_value);
+						 initial_value, false);
 	}
       if (neutral_op)
 	vector_identity = gimple_build_vector_from_val (&seq, vectype,
@@ -6941,8 +6981,8 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 			       gimple_stmt_iterator *gsi,
 			       gimple **vec_stmt, slp_tree slp_node,
 			       gimple *reduc_def_stmt,
-			       tree_code code, internal_fn reduc_fn,
-			       tree ops[3], tree vectype_in,
+			       code_helper code, internal_fn reduc_fn,
+			       tree *ops, int num_ops, tree vectype_in,
 			       int reduc_index, vec_loop_masks *masks,
 			       vec_loop_lens *lens)
 {
@@ -6958,17 +6998,48 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 
   gcc_assert (!nested_in_vect_loop_p (loop, stmt_info));
   gcc_assert (ncopies == 1);
-  gcc_assert (TREE_CODE_LENGTH (code) == binary_op);
+
+  bool is_cond_op = false;
+  if (!code.is_tree_code ())
+    {
+      code = conditional_internal_fn_code (internal_fn (code));
+      gcc_assert (code != ERROR_MARK);
+      is_cond_op = true;
+    }
+
+  gcc_assert (TREE_CODE_LENGTH (tree_code (code)) == binary_op);
 
   if (slp_node)
-    gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype_out),
-			  TYPE_VECTOR_SUBPARTS (vectype_in)));
+    {
+      if (is_cond_op)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "fold-left reduction on SLP not supported.\n");
+	  return false;
+	}
 
-  tree op0 = ops[1 - reduc_index];
+      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype_out),
+			    TYPE_VECTOR_SUBPARTS (vectype_in)));
+    }
+
+  /* The operands either come from a binary operation or an IFN_COND operation.
+     The former is a gimple assign with binary rhs and the latter is a
+     gimple call with four arguments.  */
+  gcc_assert (num_ops == 2 || num_ops == 4);
+  tree op0, opmask;
+  if (!is_cond_op)
+    op0 = ops[1 - reduc_index];
+  else
+    {
+      op0 = ops[2];
+      opmask = ops[0];
+      gcc_assert (!slp_node);
+    }
 
   int group_size = 1;
   stmt_vec_info scalar_dest_def_info;
-  auto_vec<tree> vec_oprnds0;
+  auto_vec<tree> vec_oprnds0, vec_opmask;
   if (slp_node)
     {
       auto_vec<vec<tree> > vec_defs (2);
@@ -6984,9 +7055,15 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
 				     op0, &vec_oprnds0);
       scalar_dest_def_info = stmt_info;
+
+      /* For an IFN_COND_OP we also need the vector mask operand.  */
+      if (is_cond_op)
+	  vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
+					 opmask, &vec_opmask);
     }
 
-  tree scalar_dest = gimple_assign_lhs (scalar_dest_def_info->stmt);
+  gimple *sdef = scalar_dest_def_info->stmt;
+  tree scalar_dest = gimple_get_lhs (sdef);
   tree scalar_type = TREE_TYPE (scalar_dest);
   tree reduc_var = gimple_phi_result (reduc_def_stmt);
 
@@ -7020,13 +7097,16 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       tree bias = NULL_TREE;
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	mask = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num, vectype_in, i);
+      else if (is_cond_op)
+	mask = vec_opmask[0];
       if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
 	{
 	  len = vect_get_loop_len (loop_vinfo, gsi, lens, vec_num, vectype_in,
 				   i, 1);
 	  signed char biasval = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
 	  bias = build_int_cst (intQI_type_node, biasval);
-	  mask = build_minus_one_cst (truth_type_for (vectype_in));
+	  if (!is_cond_op)
+	    mask = build_minus_one_cst (truth_type_for (vectype_in));
 	}
 
       /* Handle MINUS by adding the negative.  */
@@ -7038,7 +7118,8 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 	  def0 = negated;
 	}
 
-      if (mask && mask_reduc_fn == IFN_LAST)
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+	  && mask && mask_reduc_fn == IFN_LAST)
 	def0 = merge_with_identity (gsi, mask, vectype_out, def0,
 				    vector_identity);
 
@@ -7069,8 +7150,8 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 	}
       else
 	{
-	  reduc_var = vect_expand_fold_left (gsi, scalar_dest_var, code,
-					     reduc_var, def0);
+	  reduc_var = vect_expand_fold_left (gsi, scalar_dest_var,
+					     tree_code (code), reduc_var, def0);
 	  new_stmt = SSA_NAME_DEF_STMT (reduc_var);
 	  /* Remove the statement, so that we can use the same code paths
 	     as for statements that we've just created.  */
@@ -7521,8 +7602,13 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       if (i == STMT_VINFO_REDUC_IDX (stmt_info))
 	continue;
 
+      /* For an IFN_COND_OP we might hit the reduction definition operand
+	 twice (once as definition, once as else).  */
+      if (op.ops[i] == op.ops[STMT_VINFO_REDUC_IDX (stmt_info)])
+	continue;
+
       /* There should be only one cycle def in the stmt, the one
-         leading to reduc_def.  */
+	 leading to reduc_def.  */
       if (VECTORIZABLE_CYCLE_DEF (dt))
 	return false;
 
@@ -7721,6 +7807,15 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
           when generating the code inside the loop.  */
 
   code_helper orig_code = STMT_VINFO_REDUC_CODE (phi_info);
+
+  /* If conversion might have created a conditional operation like
+     IFN_COND_ADD already.  Use the internal code for the following checks.  */
+  if (orig_code.is_internal_fn ())
+    {
+      tree_code new_code = conditional_internal_fn_code (internal_fn (orig_code));
+      orig_code = new_code != ERROR_MARK ? new_code : orig_code;
+    }
+
   STMT_VINFO_REDUC_CODE (reduc_info) = orig_code;
 
   vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
@@ -7759,7 +7854,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			    "reduction: not commutative/associative");
+			    "reduction: not commutative/associative\n");
 	  return false;
 	}
     }
@@ -8143,9 +8238,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else if (reduction_type == FOLD_LEFT_REDUCTION
-	       && reduc_fn == IFN_LAST
+	       && internal_fn_mask_index (reduc_fn) == -1
 	       && FLOAT_TYPE_P (vectype_in)
-	       && HONOR_SIGNED_ZEROS (vectype_in)
 	       && HONOR_SIGN_DEPENDENT_ROUNDING (vectype_in))
 	{
 	  if (dump_enabled_p ())
@@ -8294,6 +8388,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
   code_helper code = canonicalize_code (op.code, op.type);
   internal_fn cond_fn = get_conditional_internal_fn (code, op.type);
+
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
   bool mask_by_cond_expr = use_mask_by_cond_expr_p (code, cond_fn, vectype_in);
@@ -8312,17 +8407,29 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   if (code == COND_EXPR)
     gcc_assert (ncopies == 1);
 
+  /* A binary COND_OP reduction must have the same definition and else
+     value. */
+  bool cond_fn_p = code.is_internal_fn ()
+    && conditional_internal_fn_code (internal_fn (code)) != ERROR_MARK;
+  if (cond_fn_p)
+    {
+      gcc_assert (code == IFN_COND_ADD || code == IFN_COND_SUB
+		  || code == IFN_COND_MUL || code == IFN_COND_AND
+		  || code == IFN_COND_IOR || code == IFN_COND_XOR);
+      gcc_assert (op.num_ops == 4 && (op.ops[1] == op.ops[3]));
+    }
+
   bool masked_loop_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
 
   vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
   if (reduction_type == FOLD_LEFT_REDUCTION)
     {
       internal_fn reduc_fn = STMT_VINFO_REDUC_FN (reduc_info);
-      gcc_assert (code.is_tree_code ());
+      gcc_assert (code.is_tree_code () || cond_fn_p);
       return vectorize_fold_left_reduction
 	  (loop_vinfo, stmt_info, gsi, vec_stmt, slp_node, reduc_def_phi,
-	   tree_code (code), reduc_fn, op.ops, vectype_in, reduc_index, masks,
-	   lens);
+	   code, reduc_fn, op.ops, op.num_ops, vectype_in,
+	   reduc_index, masks, lens);
     }
 
   bool single_defuse_cycle = STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
@@ -8335,14 +8442,20 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
+  /* Get NCOPIES vector definitions for all operands except the reduction
+     definition.  */
   vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
 		     single_defuse_cycle && reduc_index == 0
 		     ? NULL_TREE : op.ops[0], &vec_oprnds0,
 		     single_defuse_cycle && reduc_index == 1
 		     ? NULL_TREE : op.ops[1], &vec_oprnds1,
-		     op.num_ops == 3
-		     && !(single_defuse_cycle && reduc_index == 2)
+		     op.num_ops == 4
+		     || (op.num_ops == 3
+			 && !(single_defuse_cycle && reduc_index == 2))
 		     ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+
+  /* For single def-use cycles get one copy of the vectorized reduction
+     definition.  */
   if (single_defuse_cycle)
     {
       gcc_assert (!slp_node);
@@ -8382,7 +8495,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	}
       else
 	{
-	  if (op.num_ops == 3)
+	  if (op.num_ops >= 3)
 	    vop[2] = vec_oprnds2[i];
 
 	  if (masked_loop_p && mask_by_cond_expr)
@@ -8395,10 +8508,16 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	  if (emulated_mixed_dot_prod)
 	    new_stmt = vect_emulate_mixed_dot_prod (loop_vinfo, stmt_info, gsi,
 						    vec_dest, vop);
-	  else if (code.is_internal_fn ())
+
+	  else if (code.is_internal_fn () && !cond_fn_p)
 	    new_stmt = gimple_build_call_internal (internal_fn (code),
 						   op.num_ops,
 						   vop[0], vop[1], vop[2]);
+	  else if (code.is_internal_fn () && cond_fn_p)
+	    new_stmt = gimple_build_call_internal (internal_fn (code),
+						   op.num_ops,
+						   vop[0], vop[1], vop[2],
+						   vop[1]);
 	  else
 	    new_stmt = gimple_build_assign (vec_dest, tree_code (op.code),
 					    vop[0], vop[1], vop[2]);

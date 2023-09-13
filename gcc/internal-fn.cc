@@ -4697,6 +4697,67 @@ internal_fn_len_index (internal_fn fn)
     }
 }
 
+/* If FN is an IFN_COND_* or IFN_COND_LEN_* function, return the index of the
+   argument that is used when the condition is false.  Return -1 otherwise.  */
+
+int
+internal_fn_else_index (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_COND_NEG:
+    case IFN_COND_NOT:
+    case IFN_COND_LEN_NEG:
+    case IFN_COND_LEN_NOT:
+      return 2;
+
+    case IFN_COND_ADD:
+    case IFN_COND_SUB:
+    case IFN_COND_MUL:
+    case IFN_COND_DIV:
+    case IFN_COND_MOD:
+    case IFN_COND_MIN:
+    case IFN_COND_MAX:
+    case IFN_COND_FMIN:
+    case IFN_COND_FMAX:
+    case IFN_COND_AND:
+    case IFN_COND_IOR:
+    case IFN_COND_XOR:
+    case IFN_COND_SHL:
+    case IFN_COND_SHR:
+    case IFN_COND_LEN_ADD:
+    case IFN_COND_LEN_SUB:
+    case IFN_COND_LEN_MUL:
+    case IFN_COND_LEN_DIV:
+    case IFN_COND_LEN_MOD:
+    case IFN_COND_LEN_MIN:
+    case IFN_COND_LEN_MAX:
+    case IFN_COND_LEN_FMIN:
+    case IFN_COND_LEN_FMAX:
+    case IFN_COND_LEN_AND:
+    case IFN_COND_LEN_IOR:
+    case IFN_COND_LEN_XOR:
+    case IFN_COND_LEN_SHL:
+    case IFN_COND_LEN_SHR:
+      return 3;
+
+    case IFN_COND_FMA:
+    case IFN_COND_FMS:
+    case IFN_COND_FNMA:
+    case IFN_COND_FNMS:
+    case IFN_COND_LEN_FMA:
+    case IFN_COND_LEN_FMS:
+    case IFN_COND_LEN_FNMA:
+    case IFN_COND_LEN_FNMS:
+      return 4;
+
+    default:
+      return -1;
+    }
+
+  return -1;
+}
+
 /* If FN takes a vector mask argument, return the index of that argument,
    otherwise return -1.  */
 
