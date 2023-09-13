@@ -64,56 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #define NM_FLAGS "-Bn"
 #endif
 
-/* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
-   overridden by subtargets.  */
-
-#ifndef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC ""
-#endif
-
-#undef ASM_SPEC
-#define ASM_SPEC "%{mabi=*} %{subtarget_asm_spec}"
-
-/* Extra switches sometimes passed to the linker.  */
-
-#ifndef LINK_SPEC
-#define LINK_SPEC ""
-#endif /* LINK_SPEC defined  */
-
-/* Specs for the compiler proper.  */
-
-/* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
-
-#undef CC1_SPEC
-#define CC1_SPEC "%{,ada:-gnatea} %{m*} \
-%{G*} \
-%(subtarget_cc1_spec) %{,ada:-gnatez}"
-
-/* Preprocessor specs.  */
-
-/* SUBTARGET_CPP_SPEC is passed to the preprocessor.  It may be
-   overridden by subtargets.  */
-#ifndef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC ""
-#endif
-
-#define CPP_SPEC "%(subtarget_cpp_spec)"
-
-/* This macro defines names of additional specifications to put in the specs
-   that can be used in various specifications like CC1_SPEC.  Its definition
-   is an initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   specification name, and a string constant that used by the GCC driver
-   program.
-
-   Do not define this macro if it does not need to do anything.  */
-
-#define EXTRA_SPECS \
-  {"subtarget_cc1_spec", SUBTARGET_CC1_SPEC}, \
-  {"subtarget_cpp_spec", SUBTARGET_CPP_SPEC}, \
-  {"subtarget_asm_spec", SUBTARGET_ASM_SPEC},
-
 /* Registers may have a prefix which can be ignored when matching
    user asm and register definitions.  */
 #ifndef REGISTER_PREFIX
