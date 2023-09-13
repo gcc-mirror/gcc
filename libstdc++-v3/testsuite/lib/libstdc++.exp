@@ -143,7 +143,8 @@ proc libstdc++_init { testfile } {
     global dg-do-what-default
     set dg-do-what-default run
 
-    # Copy any required data files.
+    # Copy all required data files.
+    # TODO: Use dg-additional-files in individual tests instead of doing this.
     v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"]
     v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"]
 
@@ -518,6 +519,12 @@ proc v3_target_compile { source dest type options } {
 
     lappend options "compiler=$cxx_final"
     lappend options "timeout=[timeout_value]"
+
+    global v3_additional_files
+    foreach file [split $v3_additional_files " "] {
+	global srcdir
+	v3-copy-file "$srcdir/data/$file" $file
+    }
 
     set comp_output [target_compile $source $dest $type $options]
 

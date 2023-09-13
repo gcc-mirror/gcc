@@ -373,3 +373,11 @@ proc dg-additional-options { args } {
         eval lappend extra-tool-flags [lindex $args 1]
     }
 }
+
+set v3_additional_files ""
+
+# Process a { dg-additional-files "filelist" } directive in the test.
+proc dg-additional-files { line filelist } {
+    global v3_additional_files
+    set v3_additional_files $filelist
+}
