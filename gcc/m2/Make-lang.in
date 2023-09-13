@@ -474,18 +474,21 @@ GM2_G=-g -fm2-g
 GM2_CPP=
 # GM2_DEBUG_STRMEM=-fcpp
 GM2_DEBUG_STRMEM=
-GM2_FLAGS=-Wunused-variable -Wuninit-variable-checking \
- -fsoft-check-all \
- -fno-return -Wreturn-type \
+GM2_FLAGS=-fsoft-check-all \
+ -fno-return \
  $(GM2_G) $(GM2_O) \
  -funbounded-by-reference -fpim -fextended-opaque \
- -Wpedantic-cast -Wpedantic-param-names -ffunction-sections \
- -fdata-sections $(GM2_CPP) # -fauto-init
+ -Wcase-enum -Wpedantic-cast -Wpedantic-param-names \
+ -Wreturn-type -Wunused-variable -Wuninit-variable-checking \
+ -ffunction-sections -fdata-sections \
+ $(GM2_CPP) # -fauto-init
 GM2_ISO_FLAGS=-fsoft-check-all $(GM2_G) $(GM2_O) \
- -fno-return -Wreturn-type \
+ -fno-return \
  -funbounded-by-reference -fiso -fextended-opaque \
- -Wpedantic-cast -Wpedantic-param-names -ffunction-sections \
- -fdata-sections $(GM2_CPP)
+ -Wcase-enum -Wpedantic-cast -Wpedantic-param-names -Wreturn-type \
+ -Wunused-variable -Wuninit-variable-checking \
+ -ffunction-sections -fdata-sections \
+ $(GM2_CPP)
 GM2_MIN_FLAGS=$(GM2_G) $(GM2_OS) \
  -funbounded-by-reference -fextended-opaque \
  -Wpedantic-cast -Wpedantic-param-names -fno-exceptions \
