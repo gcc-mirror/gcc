@@ -59,7 +59,7 @@
 
 // We want E0005 to be mapped to the value `5` - this way, we can easily format
 // it in `make_description`. We also want to keep the value "5" only once when
-// defining the error code in rust_error_codes.def, so not have ERROR(E0005, 5)
+// defining the error code in rust-error-codes.def, so not have ERROR(E0005, 5)
 // as that is error prone. If we just use `0005` as the discriminant for the
 // `E0005` enum variant, then we are actually creating octal values (!) as `0`
 // is the C/C++ octal prefix. So this does not work for `E0009` for example,
@@ -75,7 +75,7 @@
 #define ERROR(N) E##N = (1##N - 10000)
 enum class ErrorCode : unsigned int
 {
-#include "rust_error_codes.def"
+#include "rust-error-codes.def"
 };
 #undef ERROR
 
