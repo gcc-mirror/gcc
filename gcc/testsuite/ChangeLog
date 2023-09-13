@@ -1,3 +1,199 @@
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Enable vect_int for RVV.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* g++.dg/ext/integer-pack7.C: New test.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107198
+	* g++.dg/eh/no-exceptions1.C: New test.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-8.c: New test.
+	* gcc.target/aarch64/stack-protector-9.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/stack_clash_3.c: Avoid redundant probes.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: Expect the probe
+	to be at offset 1024 rather than offset 0.
+	* gcc.target/aarch64/stack-check-prologue-18.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-18.c: New test.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-20.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: New test.
+
+2023-09-12  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/107881
+	* gcc.c-torture/execute/pr107881-1.c: New test.
+	* gcc.dg/tree-ssa/cmpeq-4.c: New test.
+	* gcc.dg/tree-ssa/cmpxor-1.c: New test.
+
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-mixed-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-10.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-3.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-4.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-5.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-6.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-7.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-8.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/rvv-costmodel-vect.exp: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-9.c: New file.
+
+2023-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111338
+	* gcc.dg/bitint-37.c: New test.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/case/fail/missingclause.mod: New test.
+	* gm2/switches/case/fail/switches-case-fail.exp: New test.
+	* gm2/switches/case/pass/enumcase.mod: New test.
+	* gm2/switches/case/pass/enumcase2.mod: New test.
+	* gm2/switches/case/pass/switches-case-pass.exp: New test.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_stack_size): For
+	nvptx target, stack size limits are relevant for execution only.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-strcmp.c: New test.
+	* gcc.target/riscv/zbb-strcmp-disabled-2.c: New test.
+	* gcc.target/riscv/zbb-strcmp-disabled.c: New test.
+	* gcc.target/riscv/zbb-strcmp-unaligned.c: New test.
+	* gcc.target/riscv/zbb-strcmp.c: New test.
+	* gcc.target/riscv/zbb-strcmp-limit.c: New file.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-strlen-unaligned.c: New test.
+	* gcc.target/riscv/xtheadbb-strlen.c: New test.
+	* gcc.target/riscv/zbb-strlen-disabled-2.c: New test.
+	* gcc.target/riscv/zbb-strlen-disabled.c: New test.
+	* gcc.target/riscv/zbb-strlen-unaligned.c: New test.
+	* gcc.target/riscv/zbb-strlen.c: New test.
+
+2023-09-12  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-1.c: Add vrem op.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max_run-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-1.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-2.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-3.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-4.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-5.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-9.c: New test.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scanasm.exp (configure_check-function-bodies): New proc.
+	(parse_function_bodies, check-function-bodies): Use it.
+
+2023-09-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110996
+	* gfortran.dg/pr110996.f90: New test.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-5.c: Fix testcase; make some
+	dg-messages for 'sorry' as c++, only.
+	* c-c++-common/gomp/directive-1.c: Make a 'sorry' c++ only.
+	* c-c++-common/gomp/allocate-9.c: New test.
+	* c-c++-common/gomp/allocate-11.c: New test.
+	* c-c++-common/gomp/allocate-12.c: New test.
+	* c-c++-common/gomp/allocate-14.c: New test.
+	* c-c++-common/gomp/allocate-15.c: New test.
+	* c-c++-common/gomp/allocate-16.c: New test.
+
+2023-09-12  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple_create.c: New test.
+
+2023-09-12  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: remove -fno-shrink-wrap-separate
+	* gcc.target/riscv/rv32i_zcmp.c: likewise
+	* gcc.target/riscv/zcmp_push_fpr.c: likewise
+	* gcc.target/riscv/zcmp_stack_alignment.c: likewise
+	* gcc.target/riscv/zcmp_shrink_wrap_separate.c: New test.
+	* gcc.target/riscv/zcmp_shrink_wrap_separate2.c: New test.
+
 2023-09-11  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/111348

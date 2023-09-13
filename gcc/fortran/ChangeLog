@@ -1,3 +1,13 @@
+2023-09-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110996
+	* gfortran.h (gfc_release_symbol): Set return type to bool.
+	* symbol.cc (gfc_release_symbol): Ditto.  Return whether symbol was
+	freed.
+	(delete_symbol_from_ns): New, outline code from...
+	(gfc_restore_last_undo_checkpoint): ... here.  Delete new symbols
+	from two more namespaces.
+
 2023-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* bbt.cc (delete_treap): Add argument REMOVED, set it to the removed

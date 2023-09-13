@@ -1,3 +1,36 @@
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (struct c_omp_loc_tree): New.
+	(c_check_omp_allocate_allocator_r): New; checking moved from ...
+	(c_parser_omp_allocate): ... here. Call it via walk_tree. Avoid
+	ICE with tree_to_shwi for invalid too-large value.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_construct): Move call to
+	c_parser_omp_allocate to ...
+	(c_parser_pragma): ... here.
+	(c_parser_omp_allocate): Avoid ICE is allocator could not be
+	parsed; set 'omp allocate' attribute for stack/automatic variables
+	and only reject static variables; add several additional
+	restriction checks.
+	* c-tree.h (c_mark_decl_jump_unsafe_in_current_scope): New prototype.
+	* c-decl.cc (decl_jump_unsafe): Return true for omp-allocated decls.
+	(c_mark_decl_jump_unsafe_in_current_scope): New.
+	(warn_about_goto, c_check_switch_jump_warnings): Add error for
+	omp-allocated decls.
+
+2023-09-12  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (struct comptypes_data): Add structure.
+	(tagged_types_tu_compatible_p,
+	function_types_compatible_p, type_lists_compatible_p,
+	comptypes_internal): Add structure to interface, change
+	return type to bool, and adapt calls.
+	(comptarget_types): Change return type too bool.
+	(comptypes, comptypes_check_enum_int,
+	comptypes_check_different_types): Adapt calls.
+
 2023-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

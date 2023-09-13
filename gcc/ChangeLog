@@ -1,3 +1,307 @@
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111337
+	* config/riscv/autovec.md (vcond_mask_<mode><mode>): New pattern.
+
+2023-09-12  Martin Jambor  <mjambor@suse.cz>
+
+	* dbgcnt.def (form_fma): New.
+	* tree-ssa-math-opts.cc: Include dbgcnt.h.
+	(convert_mult_to_fma): Bail out if the debug counter say so.
+
+2023-09-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/autovec-opt.md: Update type
+	* config/riscv/riscv.cc (riscv_sched_variable_issue): Enable assert
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_save_regs_above_locals_p):
+	New function.
+	(aarch64_layout_frame): Use it to decide whether locals should
+	go above or below the saved registers.
+	(aarch64_expand_prologue): Update stack layout comment.
+	Emit a stack tie after the final adjustment.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::saved_regs_size)
+	(aarch64_frame::below_hard_fp_saved_regs_size): Delete.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Update accordingly.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::sve_save_and_probe)
+	(aarch64_frame::hard_fp_save_and_probe): New fields.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize them.
+	Rather than asserting that a leaf function saves LR, instead assert
+	that a leaf function saves something.
+	(aarch64_get_separate_components): Prevent the chosen probe
+	registers from being individually shrink-wrapped.
+	(aarch64_allocate_and_probe_stack_space): Remove workaround for
+	probe registers that aren't at the bottom of the previous allocation.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Always probe the residual allocation at offset 1024, asserting
+	that that is in range.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Ensure that
+	the LR save slot is in the first 16 bytes of the register save area.
+	Only form STP/LDP push/pop candidates if both registers are valid.
+	(aarch64_allocate_and_probe_stack_space): Remove workaround for
+	when LR was not in the first 16 bytes.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Don't probe final allocations that are exactly 1KiB in size (after
+	unprobed space above the final allocation has been deducted).
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Tweak
+	calculation of initial_adjust for frames in which all saves
+	are SVE saves.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Simplify
+	the allocation of the top of the frame.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add comment above
+	reg_offset.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Walk offsets
+	from the bottom of the frame, rather than the bottom of the saved
+	register area.  Measure reg_offset from the bottom of the frame
+	rather than the bottom of the saved register area.
+	(aarch64_save_callee_saves): Update accordingly.
+	(aarch64_restore_callee_saves): Likewise.
+	(aarch64_get_separate_components): Likewise.
+	(aarch64_process_components): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::frame_size): Tweak comment.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::hard_fp_offset): Rename
+	to...
+	(aarch64_frame::bytes_above_hard_fp): ...this.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame)
+	(aarch64_expand_prologue): Update accordingly.
+	(aarch64_initial_elimination_offset): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::locals_offset): Rename to...
+	(aarch64_frame::bytes_above_locals): ...this.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame)
+	(aarch64_initial_elimination_offset): Update accordingly.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Move the
+	calculation of chain_offset into the emit_frame_chain block.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::callee_offset): Delete.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Remove
+	callee_offset handling.
+	(aarch64_save_callee_saves): Replace the start_offset parameter
+	with a bytes_below_sp parameter.
+	(aarch64_restore_callee_saves): Likewise.
+	(aarch64_expand_prologue): Update accordingly.
+	(aarch64_expand_epilogue): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::bytes_below_hard_fp): New
+	field.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize it.
+	(aarch64_expand_epilogue): Use it instead of
+	below_hard_fp_saved_regs_size.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::bytes_below_saved_regs): New
+	field.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize it,
+	and use it instead of crtl->outgoing_args_size.
+	(aarch64_get_separate_components): Use bytes_below_saved_regs instead
+	of outgoing_args_size.
+	(aarch64_process_components): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Explicitly
+	allocate the frame in one go if there are no saved registers.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Use
+	chain_offset rather than callee_offset.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_save_callee_saves): Use
+	a local shorthand for cfun->machine->frame.
+	(aarch64_restore_callee_saves, aarch64_get_separate_components):
+	(aarch64_process_components): Likewise.
+	(aarch64_allocate_and_probe_stack_space): Likewise.
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Likewise.
+	(aarch64_layout_frame): Use existing shorthand for one more case.
+
+2023-09-12  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/107881
+	* match.pd (`(a CMP1 b) ^ (a CMP2 b)`): New pattern.
+	(`(a CMP1 b) == (a CMP2 b)`): New pattern.
+
+2023-09-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-costs.h (struct range): Removed.
+
+2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (get_last_live_range): New function.
+	(compute_nregs_for_mode): Ditto.
+	(live_range_conflict_p): Ditto.
+	(max_number_of_live_regs): Ditto.
+	(compute_lmul): Ditto.
+	(costs::prefer_new_lmul_p): Ditto.
+	(costs::better_main_loop_than_p): Ditto.
+	* config/riscv/riscv-vector-costs.h (struct stmt_point): New struct.
+	(struct var_live_range): Ditto.
+	(struct autovec_info): Ditto.
+	* config/riscv/t-riscv: Update makefile for COST model.
+
+2023-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.cc (range_check_type): Handle BITINT_TYPE like
+	OFFSET_TYPE.
+
+2023-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111338
+	* tree-ssa-sccvn.cc (struct vn_walk_cb_data): Add bufsize non-static
+	data member.
+	(vn_walk_cb_data::push_partial_def): Remove bufsize variable.
+	(visit_nary_op): Avoid the BIT_AND_EXPR with constant rhs2
+	optimization if type's precision is too large for
+	vn_walk_cb_data::bufsize.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Compiler options): Document new option
+	-Wcase-enum.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/sourcebuild.texi (stack_size): Update.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/bitmanip.md (*<optab>_not<mode>): Export INSN name.
+	(<optab>_not<mode>3): Likewise.
+	* config/riscv/riscv-protos.h (riscv_expand_strcmp): New
+	prototype.
+	* config/riscv/riscv-string.cc (GEN_EMIT_HELPER3): New helper
+	macros.
+	(GEN_EMIT_HELPER2): Likewise.
+	(emit_strcmp_scalar_compare_byte): New function.
+	(emit_strcmp_scalar_compare_subword): Likewise.
+	(emit_strcmp_scalar_compare_word): Likewise.
+	(emit_strcmp_scalar_load_and_compare): Likewise.
+	(emit_strcmp_scalar_call_to_libc): Likewise.
+	(emit_strcmp_scalar_result_calculation_nonul): Likewise.
+	(emit_strcmp_scalar_result_calculation): Likewise.
+	(riscv_expand_strcmp_scalar): Likewise.
+	(riscv_expand_strcmp): Likewise.
+	* config/riscv/riscv.md (*slt<u>_<X:mode><GPR:mode>): Export
+	INSN name.
+	(@slt<u>_<X:mode><GPR:mode>3): Likewise.
+	(cmpstrnsi): Invoke expansion function for str(n)cmp.
+	(cmpstrsi): Likewise.
+	* config/riscv/riscv.opt: Add new parameter
+	'-mstring-compare-inline-limit'.
+	* doc/invoke.texi: Document new parameter
+	'-mstring-compare-inline-limit'.
+
+2023-09-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config.gcc: Add new object riscv-string.o.
+	riscv-string.cc.
+	* config/riscv/riscv-protos.h (riscv_expand_strlen):
+	New function.
+	* config/riscv/riscv.md (strlen<mode>): New expand INSN.
+	* config/riscv/riscv.opt: New flag 'minline-strlen'.
+	* config/riscv/t-riscv: Add new object riscv-string.o.
+	* config/riscv/thead.md (th_rev<mode>2): Export INSN name.
+	(th_rev<mode>2): Likewise.
+	(th_tstnbz<mode>2): New INSN.
+	* doc/invoke.texi: Document '-minline-strlen'.
+	* emit-rtl.cc (emit_likely_jump_insn): New helper function.
+	(emit_unlikely_jump_insn): Likewise.
+	* rtl.h (emit_likely_jump_insn): New prototype.
+	(emit_unlikely_jump_insn): Likewise.
+	* config/riscv/riscv-string.cc: New file.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (TARGET_USE_LOCAL_THUNK_ALIAS_P)
+	(TARGET_SUPPORTS_ALIASES): Define.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Update.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Check for
+	insertion after variable cleanup.  Convert 'omp allocate'
+	var-decl attribute to GOMP_alloc/GOMP_free calls.
+
+2023-09-12  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: remove unused
+		parameter e and replace NULL_RTX with gcc_unreachable.
+
+2023-09-12  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vcreate): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vcreate): Add vcreate support.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vcreate_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Add args type.
+
+2023-09-12  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc
+	(riscv_avoid_shrink_wrapping_separate): wrap the condition check in
+	riscv_avoid_shrink_wrapping_separate.
+	(riscv_avoid_multi_push):avoid multi push if shrink_wrapping_separate
+	is active.
+	(riscv_get_separate_components):call riscv_avoid_shrink_wrapping_separate
+
+2023-09-12  Fei Gao  <gaofei@eswincomputing.com>
+
+	* shrink-wrap.cc (try_shrink_wrapping_separate):call
+	use_shrink_wrapping_separate.
+	(use_shrink_wrapping_separate): wrap the condition
+	check in use_shrink_wrapping_separate.
+	* shrink-wrap.h (use_shrink_wrapping_separate): add to extern
+
 2023-09-11  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/111348

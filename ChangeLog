@@ -1,3 +1,15 @@
+2023-09-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* MAINTAINERS: Add myself
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR testsuite/109951
+	* Makefile.tpl (BASE_TARGET_EXPORTS): Add
+	'SYSROOT_CFLAGS_FOR_TARGET'.
+	* Makefile.in: Regenerate.
+
 2023-09-05  Yang Yujie  <yangyujie@loongson.cn>
 
 	* config-ml.in: Do not build the multilib library variant

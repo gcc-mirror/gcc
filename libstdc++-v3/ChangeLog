@@ -1,3 +1,30 @@
+2023-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111327
+	* include/std/functional (_GLIBCXX_NOT_FN_CALL_OP): Also define
+	a deleted fallback operator() overload.  Constrain both the
+	enabled and deleted overloads accordingly.
+	* testsuite/20_util/function_objects/not_fn/111327.cc: New test.
+
+2023-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111327
+	* include/std/functional (_Bind_front::operator()): Add deleted
+	fallback overloads for each const/ref qualifier pair.  Give the
+	enabled overloads dummy constraints to make each one more
+	specialized than the corresponding deleted overload.
+	* testsuite/20_util/function_objects/bind_front/111327.cc: New test.
+
+2023-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/functional (_Bind_front0): Remove.
+	(_Bind_front_t): Adjust.
+
+2023-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Reformat.
+	* python/libstdcxx/v6/xmethods.py: Likewise.
+
 2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/debug.cc (acquire_sequence_ptr_for_lock): New
