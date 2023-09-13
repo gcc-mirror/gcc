@@ -628,9 +628,13 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	{
 	  oprnd = gimple_arg (stmt_info->stmt, opno);
 	  if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
-	    backedge = dominated_by_p (CDI_DOMINATORS,
-				       gimple_phi_arg_edge (stmt, opno)->src,
-				       gimple_bb (stmt_info->stmt));
+	    {
+	      edge e = gimple_phi_arg_edge (stmt, opno);
+	      backedge = (is_a <bb_vec_info> (vinfo)
+			  ? e->flags & EDGE_DFS_BACK
+			  : dominated_by_p (CDI_DOMINATORS, e->src,
+					    gimple_bb (stmt_info->stmt)));
+	    }
 	}
       if (TREE_CODE (oprnd) == VIEW_CONVERT_EXPR)
 	oprnd = TREE_OPERAND (oprnd, 0);
@@ -7771,7 +7775,11 @@ vect_slp_function (function *fun)
 {
   bool r = false;
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  unsigned n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+  auto_bitmap exit_bbs;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  edge entry = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  unsigned n = rev_post_order_and_mark_dfs_back_seme (fun, entry, exit_bbs,
+						      true, rpo, NULL);
 
   /* For the moment split the function into pieces to avoid making
      the iteration on the vector mode moot.  Split at points we know
