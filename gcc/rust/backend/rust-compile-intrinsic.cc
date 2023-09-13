@@ -32,6 +32,11 @@
 
 #include "print-tree.h"
 
+// declaration taken from "stringpool.h"
+// the get_identifier macro causes compilation issues
+extern tree
+get_identifier (const char *);
+
 namespace Rust {
 namespace Compile {
 
@@ -83,6 +88,8 @@ static tree
 uninit_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 move_val_init_handler (Context *ctx, TyTy::FnType *fntype);
+static tree
+assume_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -231,6 +238,7 @@ static const std::map<std::string,
     {"move_val_init", move_val_init_handler},
     {"likely", expect_handler (true)},
     {"unlikely", expect_handler (false)},
+    {"assume", assume_handler},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -1168,6 +1176,51 @@ expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely)
     = Backend::return_statement (fndecl, expect_call_bool, BUILTINS_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN expect_handler_inner FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+assume_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  // TODO: make sure this is actually helping the compiler optimize
+
+  rust_assert (fntype->get_params ().size () == 1);
+  rust_assert (fntype->param_at (0).second->get_kind ()
+	       == TyTy::TypeKind::BOOL);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // TODO: make sure these are necessary
+  TREE_READONLY (fndecl) = 0;
+  DECL_DISREGARD_INLINE_LIMITS (fndecl) = 1;
+  DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("always_inline"),
+					NULL_TREE, DECL_ATTRIBUTES (fndecl));
+
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!Backend::function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN assume FN BODY BEGIN
+
+  tree val = Backend::var_expression (param_vars[0], UNDEF_LOCATION);
+
+  tree assume_expr = build_call_expr_internal_loc (UNDEF_LOCATION, IFN_ASSUME,
+						   void_type_node, 1, val);
+  TREE_SIDE_EFFECTS (assume_expr) = 1;
+
+  ctx->add_statement (assume_expr);
+  // BUILTIN size_of FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 
