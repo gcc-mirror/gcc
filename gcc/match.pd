@@ -2707,6 +2707,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TREE_INT_CST_LOW (@1) & 1)
    { constant_boolean_node (cmp == NE_EXPR, type); })))
 
+/*
+   U & N <= U  -> true
+   U & N >  U  -> false
+   U needs to be non-negative.
+
+   U | N <  U  -> false
+   U | N >= U  -> true
+   U and N needs to be non-negative
+
+   U | N <  U  -> true
+   U | N >= U  -> false
+   U needs to be non-negative and N needs to be a negative constant.
+   */
+(for cmp   (lt      ge      le      gt     )
+     bitop (bit_ior bit_ior bit_and bit_and)
+ (simplify
+  (cmp:c (bitop:c tree_expr_nonnegative_p@0 @1) @0)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (if (bitop == BIT_AND_EXPR || tree_expr_nonnegative_p (@1))
+    { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); }
+    /* The sign is opposite now so the comparison is swapped around. */
+    (if (TREE_CODE (@1) == INTEGER_CST && wi::neg_p (wi::to_wide (@1)))
+     { constant_boolean_node (cmp == LT_EXPR, type); })))))
+
 /* Arguments on which one can call get_nonzero_bits to get the bits
    possibly set.  */
 (match with_possible_nonzero_bits
