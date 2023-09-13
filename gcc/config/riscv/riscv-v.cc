@@ -3230,7 +3230,7 @@ expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
 	= code_for_pred_reduc_plus (type == reduction_type::UNORDERED
 				      ? UNSPEC_UNORDERED
 				      : UNSPEC_ORDERED,
-				    vmode, m1_mode);
+				    vmode);
       if (type == reduction_type::MASK_LEN_FOLD_LEFT)
 	{
 	  rtx mask = ops[3];
@@ -3243,7 +3243,7 @@ expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
     }
   else
     {
-      insn_code icode = code_for_pred_reduc (code, vmode, m1_mode);
+      insn_code icode = code_for_pred_reduc (code, vmode);
       emit_vlmax_insn (icode, REDUCE_OP, reduc_ops);
     }
 
