@@ -5215,6 +5215,37 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
       if (__builtin_mul_overflow (span, strides[0], &stride))
 	return EINVAL;
 
+      if (((src_devicep && src_devicep->memcpy2d_func)
+	   || (dst_devicep && dst_devicep->memcpy2d_func))
+	  && (stride % element_size) == 0)
+	{
+	  /* Try using memcpy2d for a 1-dimensional strided access.  Here we
+	     treat the transfer as a 2-dimensional array, where the inner
+	     dimension is calculated to be (stride in bytes) / element_size.
+	     Indices/offsets are adjusted so the source/destination pointers
+	     point to the first element to be transferred, to make the sums
+	     easier.  (There are some configurations of 2D strided accesses
+	     that memcpy3d could handle similarly, but those are probably rare
+	     and are unimplemented for now.)   */
+
+	  /* If stride is element size, this is a contiguous transfer and
+	     should have been handled above.  */
+	  assert (stride > element_size);
+
+	  int dst_id = dst_devicep ? dst_devicep->target_id : -1;
+	  int src_id = src_devicep ? src_devicep->target_id : -1;
+	  void *subarray_src = (char *) src + src_off;
+	  void *subarray_dst = (char *) dst + dst_off;
+
+	  struct gomp_device_descr *devp = dst_devicep ? dst_devicep
+						       : src_devicep;
+	  ret = devp->memcpy2d_func (dst_id, src_id, element_size, volume[0],
+				     subarray_dst, 0, 0, stride, subarray_src,
+				     0, 0, stride);
+	  if (ret != -1)
+	    return ret ? 0 : EINVAL;
+	}
+
       for (i = 0, ret = 1; i < volume[0] && ret; i++)
 	{
 	  if (src_devicep == NULL)
