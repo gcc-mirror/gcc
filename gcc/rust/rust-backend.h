@@ -94,10 +94,6 @@ integer_type (bool is_unsigned, int bits);
 tree
 float_type (int bits);
 
-// Get an unnamed complex type with the given number of bits (64 or 128).
-tree
-complex_type (int bits);
-
 // Get a pointer type.
 tree
 pointer_type (tree to_type);
@@ -186,10 +182,6 @@ var_expression (Bvariable *var, location_t);
 tree
 float_constant_expression (tree btype, mpfr_t val);
 
-// Return an expression for the complex value VAL in BTYPE.
-tree
-complex_constant_expression (tree btype, mpc_t val);
-
 // Return an expression for the string value VAL.
 tree
 string_constant_expression (const std::string &val);
@@ -205,18 +197,6 @@ wchar_constant_expression (wchar_t c);
 // Return an expression for the boolean value VAL.
 tree
 boolean_constant_expression (bool val);
-
-// Return an expression for the real part of BCOMPLEX.
-tree
-real_part_expression (tree bcomplex, location_t);
-
-// Return an expression for the imaginary part of BCOMPLEX.
-tree
-imag_part_expression (tree bcomplex, location_t);
-
-// Return an expression for the complex number (BREAL, BIMAG).
-tree
-complex_expression (tree breal, tree bimag, location_t);
 
 // Return an expression that converts EXPR to TYPE.
 tree
