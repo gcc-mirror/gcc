@@ -420,28 +420,6 @@ float_type (int bits)
   return type;
 }
 
-// Get an unnamed complex type.
-
-tree
-complex_type (int bits)
-{
-  tree type;
-  if (bits == FLOAT_TYPE_SIZE * 2)
-    type = complex_float_type_node;
-  else if (bits == DOUBLE_TYPE_SIZE * 2)
-    type = complex_double_type_node;
-  else if (bits == LONG_DOUBLE_TYPE_SIZE * 2)
-    type = complex_long_double_type_node;
-  else
-    {
-      type = make_node (REAL_TYPE);
-      TYPE_PRECISION (type) = bits / 2;
-      layout_type (type);
-      type = build_complex_type (type);
-    }
-  return type;
-}
-
 // Get a pointer type.
 
 tree
@@ -818,30 +796,6 @@ float_constant_expression (tree t, mpfr_t val)
   return ret;
 }
 
-// Return a typed real and imaginary value as a constant complex number.
-
-tree
-complex_constant_expression (tree t, mpc_t val)
-{
-  tree ret;
-  if (t == error_mark_node)
-    return error_mark_node;
-
-  REAL_VALUE_TYPE r1;
-  real_from_mpfr (&r1, mpc_realref (val), TREE_TYPE (t), GMP_RNDN);
-  REAL_VALUE_TYPE r2;
-  real_convert (&r2, TYPE_MODE (TREE_TYPE (t)), &r1);
-
-  REAL_VALUE_TYPE r3;
-  real_from_mpfr (&r3, mpc_imagref (val), TREE_TYPE (t), GMP_RNDN);
-  REAL_VALUE_TYPE r4;
-  real_convert (&r4, TYPE_MODE (TREE_TYPE (t)), &r3);
-
-  ret = build_complex (t, build_real (TREE_TYPE (t), r2),
-		       build_real (TREE_TYPE (t), r4));
-  return ret;
-}
-
 // Make a constant string expression.
 
 tree
@@ -875,50 +829,6 @@ tree
 boolean_constant_expression (bool val)
 {
   return val ? boolean_true_node : boolean_false_node;
-}
-
-// Return the real part of a complex expression.
-
-tree
-real_part_expression (tree complex_tree, location_t location)
-{
-  if (complex_tree == error_mark_node)
-    return error_mark_node;
-  gcc_assert (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (complex_tree)));
-  tree ret
-    = fold_build1_loc (location, REALPART_EXPR,
-		       TREE_TYPE (TREE_TYPE (complex_tree)), complex_tree);
-  return ret;
-}
-
-// Return the imaginary part of a complex expression.
-
-tree
-imag_part_expression (tree complex_tree, location_t location)
-{
-  if (complex_tree == error_mark_node)
-    return error_mark_node;
-  gcc_assert (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (complex_tree)));
-  tree ret
-    = fold_build1_loc (location, IMAGPART_EXPR,
-		       TREE_TYPE (TREE_TYPE (complex_tree)), complex_tree);
-  return ret;
-}
-
-// Make a complex expression given its real and imaginary parts.
-
-tree
-complex_expression (tree real_tree, tree imag_tree, location_t location)
-{
-  if (real_tree == error_mark_node || imag_tree == error_mark_node)
-    return error_mark_node;
-  gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (real_tree))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (imag_tree)));
-  gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (real_tree)));
-  tree ret = fold_build2_loc (location, COMPLEX_EXPR,
-			      build_complex_type (TREE_TYPE (real_tree)),
-			      real_tree, imag_tree);
-  return ret;
 }
 
 // An expression that converts an expression to a different type.
