@@ -1,6 +1,7 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 // { dg-require-effective-target stacktrace }
+// { dg-require-normal-namespace "" }
 
 #include <stacktrace>
 
