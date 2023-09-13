@@ -926,6 +926,52 @@
 }
 [(set_attr "type" "vector")])
 
+;; Combine vnsra + vcond_mask
+(define_insn_and_split "*cond_v<any_shiftrt:optab><any_extend:optab>trunc<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
+     (if_then_else:<V_DOUBLE_TRUNC>
+       (match_operand:<VM> 1 "register_operand")
+       (truncate:<V_DOUBLE_TRUNC>
+         (any_shiftrt:VWEXTI
+           (match_operand:VWEXTI 2 "register_operand")
+	   (any_extend:VWEXTI
+             (match_operand:<V_DOUBLE_TRUNC> 3 "vector_shift_operand"))))
+       (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred_narrow (<any_shiftrt:CODE>, <MODE>mode);
+  rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[4],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_cond_len_binop (icode, ops);
+  DONE;
+}
+ [(set_attr "type" "vnshift")])
+
+(define_insn_and_split "*cond_<any_shiftrt:optab>trunc<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
+     (if_then_else:<V_DOUBLE_TRUNC>
+       (match_operand:<VM> 1 "register_operand")
+       (truncate:<V_DOUBLE_TRUNC>
+         (any_shiftrt:VWEXTI
+           (match_operand:VWEXTI 2 "register_operand")
+	   (match_operand:<VEL> 3 "csr_operand")))
+       (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred_narrow_scalar (<any_shiftrt:CODE>, <MODE>mode);
+  rtx ops[] = {operands[0], operands[1], operands[2], gen_lowpart (Pmode, operands[3]),
+               operands[4], gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_cond_len_binop (icode, ops);
+  DONE;
+}
+ [(set_attr "type" "vnshift")])
+
 ;; =============================================================================
 ;; Combine extend + binop to widen_binop
 ;; =============================================================================
