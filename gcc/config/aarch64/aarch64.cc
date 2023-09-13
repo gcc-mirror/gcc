@@ -5640,7 +5640,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 				machine_mode mode)
 {
   int i;
-  unsigned HOST_WIDE_INT val, val2, mask;
+  unsigned HOST_WIDE_INT val, val2, val3, mask;
   int one_match, zero_match;
   int num_insns;
 
@@ -5722,6 +5722,35 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 		}
 	      return 3;
 	    }
+
+      /* Try shifting and inserting the bottom 32-bits into the top bits.  */
+      val2 = val & 0xffffffff;
+      val3 = 0xffffffff;
+      val3 = val2 | (val3 << 32);
+      for (i = 17; i < 48; i++)
+	if ((val2 | (val2 << i)) == val)
+	  {
+	    if (generate)
+	      {
+		emit_insn (gen_rtx_SET (dest, GEN_INT (val2 & 0xffff)));
+		emit_insn (gen_insv_immdi (dest, GEN_INT (16),
+					   GEN_INT (val2 >> 16)));
+		emit_insn (gen_ior_ashldi3 (dest, dest, GEN_INT (i), dest));
+	      }
+	    return 3;
+	  }
+	else if ((val3 & ~(val3 << i)) == val)
+	  {
+	    if (generate)
+	      {
+		emit_insn (gen_rtx_SET (dest, GEN_INT (val3 | 0xffff0000)));
+		emit_insn (gen_insv_immdi (dest, GEN_INT (16),
+					   GEN_INT (val2 >> 16)));
+		emit_insn (gen_and_one_cmpl_ashldi3 (dest, dest, GEN_INT (i),
+						      dest));
+	      }
+	    return 3;
+	  }
     }
 
   /* Generate 2-4 instructions, skipping 16 bits of all zeroes or ones which
@@ -25540,8 +25569,6 @@ aarch64_split_dimode_const_store (rtx dst, rtx src)
   rtx lo = gen_lowpart (SImode, src);
   rtx hi = gen_highpart_mode (SImode, DImode, src);
 
-  bool size_p = optimize_function_for_size_p (cfun);
-
   if (!rtx_equal_p (lo, hi))
     return false;
 
@@ -25560,14 +25587,8 @@ aarch64_split_dimode_const_store (rtx dst, rtx src)
      MOV	w1, 49370
      MOVK	w1, 0x140, lsl 16
      STP	w1, w1, [x0]
-   So we want to perform this only when we save two instructions
-   or more.  When optimizing for size, however, accept any code size
-   savings we can.  */
-  if (size_p && orig_cost <= lo_cost)
-    return false;
-
-  if (!size_p
-      && (orig_cost <= lo_cost + 1))
+   So we want to perform this when we save at least one instruction.  */
+  if (orig_cost <= lo_cost)
     return false;
 
   rtx mem_lo = adjust_address (dst, SImode, 0);
