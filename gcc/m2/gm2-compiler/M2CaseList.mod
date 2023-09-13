@@ -36,9 +36,11 @@ FROM DynamicStrings IMPORT InitString, InitStringCharStar, ConCat, Mark, KillStr
 FROM m2tree IMPORT Tree ;
 FROM m2block IMPORT RememberType ;
 FROM m2type IMPORT GetMinFrom ;
+FROM m2expr IMPORT GetIntegerOne ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2Base IMPORT IsExpressionCompatible ;
 FROM M2Printf IMPORT printf1 ;
+FROM M2LexBuf IMPORT TokenToLocation ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType, NoOfElements, GetNth ;
@@ -842,16 +844,22 @@ END appendStr ;
 
 
 (*
-   EnumerateErrors -
+   EnumerateErrors - populate errorString with the contents of enumList.
 *)
 
-PROCEDURE EnumerateErrors (tokenno: CARDINAL; enumList: List) ;
+PROCEDURE EnumerateErrors (enumList: List) ;
 VAR
    i, n: CARDINAL ;
 BEGIN
    n := NoOfItemsInList (enumList) ;
    IF (enumList # NIL) AND (n > 0)
    THEN
+      IF n = 1
+      THEN
+         errorString := InitString ('{%W}the missing enumeration field is: ') ;
+      ELSE
+         errorString := InitString ('{%W}the missing enumeration fields are: ') ;
+      END ;
       appendEnum (GetItemFromList (enumList, 1)) ;
       IF n > 1
       THEN
@@ -869,6 +877,24 @@ BEGIN
       END
    END
 END EnumerateErrors ;
+
+
+(*
+   EmitMissingRangeErrors - emits a singular/plural error message for an enumeration type.
+*)
+
+PROCEDURE EmitMissingRangeErrors (tokenno: CARDINAL; type: CARDINAL; set: SetRange) ;
+BEGIN
+   errorString := NIL ;
+   IF IsEnumeration (type)
+   THEN
+      EnumerateErrors (ErrorRanges (type, set))
+   END ;
+   IF errorString # NIL
+   THEN
+      MetaErrorStringT0 (tokenno, errorString)
+   END
+END EmitMissingRangeErrors ;
 
 
 (*
@@ -902,7 +928,7 @@ BEGIN
                MetaErrorT2 (tokenno,
                             'not all variant record alternatives in the {%kCASE} clause are specified, hint you either need to specify each value of {%2ad} or use an {%kELSE} clause',
                             varient, type) ;
-               EnumerateErrors (tokenno, ErrorRanges (type, set))
+               EmitMissingRangeErrors (tokenno, type, set)
             END ;
             set := DisposeRanges (set)
          END
@@ -944,9 +970,7 @@ BEGIN
                   MetaErrorT1 (tokenno,
                                'not all enumeration values in the {%kCASE} statements are specified, hint you either need to specify each value of {%1Wad} or use an {%kELSE} clause',
                                type) ;
-                  errorString := InitString ('{%W}the missing enumeration fields are: ') ;
-                  EnumerateErrors (tokenno, ErrorRanges (type, set)) ;
-                  MetaErrorStringT0 (tokenno, errorString)
+                  EmitMissingRangeErrors (tokenno, type, set)
                END ;
                set := DisposeRanges (set)
             END

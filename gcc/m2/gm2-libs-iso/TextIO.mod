@@ -68,7 +68,7 @@ END DumpState ;
 *)
 
 PROCEDURE SetNul (cid: IOChan.ChanId; i: CARDINAL;
-                     VAR s: ARRAY OF CHAR; range: BOOLEAN) ;
+                  VAR s: ARRAY OF CHAR; range: BOOLEAN) ;
 BEGIN
    IF DebugState
    THEN
