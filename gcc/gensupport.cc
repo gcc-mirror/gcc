@@ -896,19 +896,6 @@ convert_syntax (rtx x, file_location loc)
 
   parse_section_layout (loc, &templ, "cons:", tconvec, true);
 
-  /* Check for any duplicate cons entries and sort based on i.  */
-  for (auto e : tconvec)
-    {
-      unsigned idx = e.idx;
-      if (idx >= convec.size ())
-	convec.resize (idx + 1);
-
-      if (convec[idx].idx >= 0)
-	fatal_at (loc, "duplicate cons number found: %d", idx);
-      convec[idx] = e;
-    }
-  tconvec.clear ();
-
   if (*templ != ']')
     {
       if (*templ == ';')
@@ -951,13 +938,13 @@ convert_syntax (rtx x, file_location loc)
 	  new_templ += '\n';
 	  new_templ.append (buffer);
 	  /* Parse the constraint list, then the attribute list.  */
-	  if (convec.size () > 0)
-	    parse_section (&templ, convec.size (), alt_no, convec, loc,
+	  if (tconvec.size () > 0)
+	    parse_section (&templ, tconvec.size (), alt_no, tconvec, loc,
 			   "constraint");
 
 	  if (attrvec.size () > 0)
 	    {
-	      if (convec.size () > 0 && !expect_char (&templ, ';'))
+	      if (tconvec.size () > 0 && !expect_char (&templ, ';'))
 		fatal_at (loc, "expected `;' to separate constraints "
 			       "and attributes in alternative %d", alt_no);
 
@@ -1026,6 +1013,19 @@ convert_syntax (rtx x, file_location loc)
 	templ++;
       ++alt_no;
     }
+
+  /* Check for any duplicate cons entries and sort based on i.  */
+  for (auto e : tconvec)
+    {
+      unsigned idx = e.idx;
+      if (idx >= convec.size ())
+	convec.resize (idx + 1);
+
+      if (convec[idx].idx >= 0)
+	fatal_at (loc, "duplicate cons number found: %d", idx);
+      convec[idx] = e;
+    }
+  tconvec.clear ();
 
   /* Write the constraints and attributes into their proper places.  */
   if (convec.size () > 0)
