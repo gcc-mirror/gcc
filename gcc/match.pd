@@ -2970,10 +2970,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    && operand_equal_p (@1, @2)))
     (with
      {
+      bool one_before = false;
+      bool one_after = false;
       int cmp = 0;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
-	cmp = tree_int_cst_compare (@1, @2);
+	{
+	  cmp = tree_int_cst_compare (@1, @2);
+	  if (cmp < 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	    one_before = true;
+	  if (cmp > 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	    one_after = true;
+	}
       bool val;
       switch (code2)
 	 {
@@ -2997,6 +3007,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == NE_EXPR
            && code2 == LE_EXPR
 	   && cmp == 0)
+       (lt @0 @1))
+      /* (a != (b+1)) & (a > b) -> a > (b+1) */
+      (if (code1 == NE_EXPR
+           && code2 == GT_EXPR
+	   && one_after)
+       (gt @0 @1))
+      /* (a != (b-1)) & (a < b) -> a < (b-1) */
+      (if (code1 == NE_EXPR
+           && code2 == LT_EXPR
+	   && one_before)
        (lt @0 @1))
      )
     )
@@ -3069,10 +3089,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    && operand_equal_p (@1, @2)))
     (with
      {
+      bool one_before = false;
+      bool one_after = false;
       int cmp = 0;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
-	cmp = tree_int_cst_compare (@1, @2);
+	{
+	  cmp = tree_int_cst_compare (@1, @2);
+	  if (cmp < 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	    one_before = true;
+	  if (cmp > 0
+	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	    one_after = true;
+	}
       bool val;
       switch (code2)
 	{
@@ -3096,6 +3126,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == EQ_EXPR
            && code2 == LT_EXPR
 	   && cmp == 0)
+       (le @0 @1))
+      /* (a == (b-1)) | (a >= b) -> a >= (b-1) */
+      (if (code1 == EQ_EXPR
+           && code2 == GE_EXPR
+	   && one_before)
+       (ge @0 @1))
+      /* (a == (b+1)) | (a <= b) -> a <= (b-1) */
+      (if (code1 == EQ_EXPR
+           && code2 == LE_EXPR
+	   && one_after)
        (le @0 @1))
      )
     )
