@@ -7726,7 +7726,7 @@
 ;; -------------------------------------------------------------------------------
 
 ;; Integer Reduction (vred(sum|maxu|max|minu|min|and|or|xor).vs)
-(define_insn "@pred_reduc_<reduc><mode>"
+(define_insn "@pred_<reduc_op><mode>"
   [(set (match_operand:<V_LMUL1>          0 "register_operand"      "=vr,     vr")
 	(unspec:<V_LMUL1>
 	  [(unspec:<VM>
@@ -7736,39 +7736,39 @@
 	     (match_operand               7 "const_int_operand"     "    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	   (any_reduc:VI
-	     (vec_duplicate:VI
-	       (vec_select:<VEL>
-		 (match_operand:<V_LMUL1> 4 "register_operand"      "   vr,   vr")
-		 (parallel [(const_int 0)])))
-	     (match_operand:VI           3 "register_operand"      "   vr,   vr"))
+	   (unspec:<V_LMUL1> [
+             (match_operand:VI            3 "register_operand"      "   vr,   vr")
+             (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
+           ] ANY_REDUC)
 	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
   "TARGET_VECTOR"
-  "vred<reduc>.vs\t%0,%3,%4%p1"
+  "v<reduc_op>.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vired")
    (set_attr "mode" "<MODE>")])
 
-;; Integer Reduction Sum Widen (vwredsum[u].vs)
-(define_insn "@pred_widen_reduc_plus<v_su><mode>"
-  [(set (match_operand:<V_EXT_LMUL1>     0 "register_operand"      "=&vr,&vr")
+;; Integer Widen Reduction Sum (vwredsum[u].vs)
+(define_insn "@pred_<reduc_op><mode>"
+  [(set (match_operand:<V_EXT_LMUL1>       0 "register_operand"      "=&vr,&vr")
 	(unspec:<V_EXT_LMUL1>
 	  [(unspec:<VM>
-	    [(match_operand:<VM>         1 "vector_mask_operand"   "vmWc1,vmWc1")
-	     (match_operand              5 "vector_length_operand" "   rK,   rK")
-	     (match_operand              6 "const_int_operand"     "    i,    i")
-	     (match_operand              7 "const_int_operand"     "    i,    i")
+	    [(match_operand:<VM>           1 "vector_mask_operand"   "vmWc1,vmWc1")
+	     (match_operand                5 "vector_length_operand" "   rK,   rK")
+	     (match_operand                6 "const_int_operand"     "    i,    i")
+	     (match_operand                7 "const_int_operand"     "    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	   (match_operand:VI_QHS         3 "register_operand"      "   vr,   vr")
-	   (match_operand:<V_EXT_LMUL1>  4 "register_operand"      "   vr,   vr")
-	   (match_operand:<V_EXT_LMUL1>  2 "vector_merge_operand"  "   vu,    0")] WREDUC))]
+           (unspec:<V_EXT_LMUL1> [
+	     (match_operand:VI_QHS         3 "register_operand"      "   vr,   vr")
+	     (match_operand:<V_EXT_LMUL1>  4 "register_operand"      "   vr,   vr")
+           ] ANY_WREDUC)
+	   (match_operand:<V_EXT_LMUL1>    2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
   "TARGET_VECTOR"
-  "vwredsum<v_su>.vs\t%0,%3,%4%p1"
+  "v<reduc_op>.vs\t%0,%3,%4%p1"
   [(set_attr "type" "viwred")
    (set_attr "mode" "<MODE>")])
 
 ;; Float Reduction (vfred(max|min).vs)
-(define_insn "@pred_reduc_<reduc><mode>"
+(define_insn "@pred_<reduc_op><mode>"
   [(set (match_operand:<V_LMUL1>          0 "register_operand"      "=vr,     vr")
 	(unspec:<V_LMUL1>
 	  [(unspec:<VM>
@@ -7778,65 +7778,61 @@
 	     (match_operand               7 "const_int_operand"     "    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	   (any_freduc:VF
-	     (vec_duplicate:VF
-	       (vec_select:<VEL>
-		 (match_operand:<V_LMUL1> 4 "register_operand"      "   vr,   vr")
-		 (parallel [(const_int 0)])))
-	     (match_operand:VF            3 "register_operand"      "   vr,   vr"))
+           (unspec:<V_LMUL1> [
+             (match_operand:VF            3 "register_operand"      "   vr,   vr")
+             (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
+           ] ANY_FREDUC)
 	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
   "TARGET_VECTOR"
-  "vfred<reduc>.vs\t%0,%3,%4%p1"
+  "vf<reduc_op>.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfredu")
    (set_attr "mode" "<MODE>")])
 
-;; Float Ordered Reduction Sum (vfred[ou]sum.vs)
-(define_insn "@pred_reduc_plus<order><mode>"
+;; Float Reduction Sum (vfred[ou]sum.vs)
+(define_insn "@pred_<reduc_op><mode>"
   [(set (match_operand:<V_LMUL1>           0 "register_operand"      "=vr,vr")
 	(unspec:<V_LMUL1>
-	  [(unspec:<V_LMUL1>
-	    [(unspec:<VM>
-	      [(match_operand:<VM>          1 "vector_mask_operand"   "vmWc1,vmWc1")
-	       (match_operand               5 "vector_length_operand" "   rK,   rK")
-	       (match_operand               6 "const_int_operand"     "    i,    i")
-	       (match_operand               7 "const_int_operand"     "    i,    i")
-	       (match_operand               8 "const_int_operand"     "    i,    i")
-	       (reg:SI VL_REGNUM)
-	       (reg:SI VTYPE_REGNUM)
-	       (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
-	     (plus:VF
-	       (vec_duplicate:VF
-	         (vec_select:<VEL>
-	           (match_operand:<V_LMUL1> 4 "register_operand"      "   vr,   vr")
-	           (parallel [(const_int 0)])))
-	       (match_operand:VF            3 "register_operand"      "   vr,   vr"))
-	     (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC)] ORDER))]
+	  [(unspec:<VM>
+	    [(match_operand:<VM>          1 "vector_mask_operand"   "vmWc1,vmWc1")
+	     (match_operand               5 "vector_length_operand" "   rK,   rK")
+	     (match_operand               6 "const_int_operand"     "    i,    i")
+	     (match_operand               7 "const_int_operand"     "    i,    i")
+	     (match_operand               8 "const_int_operand"     "    i,    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)
+	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+           (unspec:<V_LMUL1> [
+             (match_operand:VF            3 "register_operand"      "   vr,   vr")
+             (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
+           ] ANY_FREDUC_SUM)
+	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
   "TARGET_VECTOR"
-  "vfred<order>sum.vs\t%0,%3,%4%p1"
+  "vf<reduc_op>.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfred<order>")
    (set_attr "mode" "<MODE>")
    (set (attr "frm_mode")
 	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; Float Widen Reduction Sum (vfwred[ou]sum.vs)
-(define_insn "@pred_widen_reduc_plus<order><mode>"
-  [(set (match_operand:<V_EXT_LMUL1>       0 "register_operand"      "=&vr, &vr")
+(define_insn "@pred_<reduc_op><mode>"
+  [(set (match_operand:<V_EXT_LMUL1>         0 "register_operand"      "=&vr, &vr")
 	(unspec:<V_EXT_LMUL1>
-	  [(unspec:<V_EXT_LMUL1>
-	    [(unspec:<VM>
-	      [(match_operand:<VM>         1 "vector_mask_operand"   "vmWc1,vmWc1")
-	       (match_operand              5 "vector_length_operand" "   rK,   rK")
-	       (match_operand              6 "const_int_operand"     "    i,    i")
-	       (match_operand              7 "const_int_operand"     "    i,    i")
-	       (match_operand              8 "const_int_operand"     "    i,    i")
-	       (reg:SI VL_REGNUM)
-	       (reg:SI VTYPE_REGNUM)
-	       (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	  [(unspec:<VM>
+	    [(match_operand:<VM>           1 "vector_mask_operand"   "vmWc1,vmWc1")
+	     (match_operand                5 "vector_length_operand" "   rK,   rK")
+	     (match_operand                6 "const_int_operand"     "    i,    i")
+	     (match_operand                7 "const_int_operand"     "    i,    i")
+	     (match_operand                8 "const_int_operand"     "    i,    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)
+	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+           (unspec:<V_EXT_LMUL1> [
 	     (match_operand:VF_HS          3 "register_operand"      "   vr,   vr")
 	     (match_operand:<V_EXT_LMUL1>  4 "register_operand"      "   vr,   vr")
-	     (match_operand:<V_EXT_LMUL1>  2 "vector_merge_operand"  "   vu,    0")] UNSPEC_WREDUC_SUM)] ORDER))]
+           ] ANY_FWREDUC_SUM)
+	   (match_operand:<V_EXT_LMUL1>    2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
   "TARGET_VECTOR"
-  "vfwred<order>sum.vs\t%0,%3,%4%p1"
+  "vf<reduc_op>.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfwred<order>")
    (set_attr "mode" "<MODE>")
    (set (attr "frm_mode")

@@ -3208,7 +3208,7 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
 
 /* Expand reduction operations.  */
 void
-expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
+expand_reduction (unsigned unspec, rtx *ops, rtx init, reduction_type type)
 {
   rtx vector = type == reduction_type::UNORDERED ? ops[1] : ops[2];
   machine_mode vmode = GET_MODE (vector);
@@ -3224,13 +3224,10 @@ expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
   rtx reduc_ops[] = {m1_tmp2, vector, m1_tmp};
 
-  if (FLOAT_MODE_P (vmode) && code == PLUS)
+  if (unspec == UNSPEC_REDUC_SUM_ORDERED
+      || unspec == UNSPEC_REDUC_SUM_UNORDERED)
     {
-      insn_code icode
-	= code_for_pred_reduc_plus (type == reduction_type::UNORDERED
-				      ? UNSPEC_UNORDERED
-				      : UNSPEC_ORDERED,
-				    vmode);
+      insn_code icode = code_for_pred (unspec, vmode);
       if (type == reduction_type::MASK_LEN_FOLD_LEFT)
 	{
 	  rtx mask = ops[3];
@@ -3243,7 +3240,7 @@ expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
     }
   else
     {
-      insn_code icode = code_for_pred_reduc (code, vmode);
+      insn_code icode = code_for_pred (unspec, vmode);
       emit_vlmax_insn (icode, REDUCE_OP, reduc_ops);
     }
 

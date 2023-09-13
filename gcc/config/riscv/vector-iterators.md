@@ -67,9 +67,6 @@
   UNSPEC_UNSIGNED_VFCVT
   UNSPEC_ROD
 
-  UNSPEC_REDUC
-  UNSPEC_WREDUC_SUM
-  UNSPEC_WREDUC_USUM
   UNSPEC_VSLIDEUP
   UNSPEC_VSLIDEDOWN
   UNSPEC_VSLIDE1UP
@@ -83,6 +80,24 @@
   UNSPEC_MODIFY_VL
 
   UNSPEC_VFFMA
+
+  ;; Integer and Float Reduction
+  UNSPEC_REDUC
+  UNSPEC_REDUC_SUM
+  UNSPEC_REDUC_SUM_ORDERED
+  UNSPEC_REDUC_SUM_UNORDERED
+  UNSPEC_REDUC_MAXU
+  UNSPEC_REDUC_MAX
+  UNSPEC_REDUC_MINU
+  UNSPEC_REDUC_MIN
+  UNSPEC_REDUC_AND
+  UNSPEC_REDUC_OR
+  UNSPEC_REDUC_XOR
+
+  UNSPEC_WREDUC_SUM
+  UNSPEC_WREDUC_SUMU
+  UNSPEC_WREDUC_SUM_ORDERED
+  UNSPEC_WREDUC_SUM_UNORDERED
 ])
 
 (define_c_enum "unspecv" [
@@ -1274,6 +1289,36 @@
   (RVVM8SF "RVVM1DF") (RVVM4SF "RVVM1DF") (RVVM2SF "RVVM1DF") (RVVM1SF "RVVM1DF") (RVVMF2SF "RVVM1DF")
 ])
 
+(define_int_iterator ANY_REDUC [
+  UNSPEC_REDUC_SUM UNSPEC_REDUC_MAXU UNSPEC_REDUC_MAX UNSPEC_REDUC_MINU
+  UNSPEC_REDUC_MIN UNSPEC_REDUC_AND UNSPEC_REDUC_OR UNSPEC_REDUC_XOR
+])
+
+(define_int_iterator ANY_WREDUC [
+  UNSPEC_WREDUC_SUM UNSPEC_WREDUC_SUMU
+])
+
+(define_int_iterator ANY_FREDUC [
+  UNSPEC_REDUC_MAX UNSPEC_REDUC_MIN
+])
+
+(define_int_iterator ANY_FREDUC_SUM [
+  UNSPEC_REDUC_SUM_ORDERED UNSPEC_REDUC_SUM_UNORDERED
+])
+
+(define_int_iterator ANY_FWREDUC_SUM [
+  UNSPEC_WREDUC_SUM_ORDERED UNSPEC_WREDUC_SUM_UNORDERED
+])
+
+(define_int_attr reduc_op [
+  (UNSPEC_REDUC_SUM "redsum")
+  (UNSPEC_REDUC_SUM_ORDERED "redosum") (UNSPEC_REDUC_SUM_UNORDERED "redusum")
+  (UNSPEC_REDUC_MAXU "redmaxu") (UNSPEC_REDUC_MAX "redmax") (UNSPEC_REDUC_MINU "redminu") (UNSPEC_REDUC_MIN "redmin")
+  (UNSPEC_REDUC_AND "redand") (UNSPEC_REDUC_OR "redor") (UNSPEC_REDUC_XOR "redxor")
+  (UNSPEC_WREDUC_SUM "wredsum") (UNSPEC_WREDUC_SUMU "wredsumu")
+  (UNSPEC_WREDUC_SUM_ORDERED "wredosum") (UNSPEC_WREDUC_SUM_UNORDERED "wredusum")
+])
+
 (define_mode_attr VINDEX [
   (RVVM8QI "RVVM8QI") (RVVM4QI "RVVM4QI") (RVVM2QI "RVVM2QI") (RVVM1QI "RVVM1QI")
   (RVVMF2QI "RVVMF2QI") (RVVMF4QI "RVVMF4QI") (RVVMF8QI "RVVMF8QI")
@@ -2271,8 +2316,6 @@
   (RVVM2DF "vector_gs_scale_operand_64") (RVVM1DF "vector_gs_scale_operand_64")
 ])
 
-(define_int_iterator WREDUC [UNSPEC_WREDUC_SUM UNSPEC_WREDUC_USUM])
-
 (define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
 
 (define_int_iterator VMULH [UNSPEC_VMULHS UNSPEC_VMULHU UNSPEC_VMULHSU])
@@ -2301,12 +2344,13 @@
 
 (define_int_attr order [
   (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
+  (UNSPEC_REDUC_SUM_ORDERED "o") (UNSPEC_REDUC_SUM_UNORDERED "u")
+  (UNSPEC_WREDUC_SUM_ORDERED "o") (UNSPEC_WREDUC_SUM_UNORDERED "u")
 ])
 
 (define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
 		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")
-		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")
-		       (UNSPEC_WREDUC_SUM "") (UNSPEC_WREDUC_USUM "u")])
+		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")])
 (define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
 			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
@@ -2392,10 +2436,6 @@
 
 (define_code_iterator any_fix [fix unsigned_fix])
 (define_code_iterator any_float [float unsigned_float])
-(define_code_iterator any_reduc [plus umax smax umin smin and ior xor])
-(define_code_iterator any_freduc [smax smin])
-(define_code_attr reduc [(plus "sum") (umax "maxu") (smax "max") (umin "minu")
-			 (smin "min") (and "and") (ior "or") (xor "xor")])
 
 (define_code_attr fix_cvt [(fix "fix_trunc") (unsigned_fix "fixuns_trunc")])
 (define_code_attr float_cvt [(float "float") (unsigned_float "floatuns")])

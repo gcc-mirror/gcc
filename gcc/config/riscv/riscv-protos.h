@@ -433,7 +433,7 @@ void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
-void expand_reduction (rtx_code, rtx *, rtx,
+void expand_reduction (unsigned, rtx *, rtx,
 		       reduction_type = reduction_type::UNORDERED);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
