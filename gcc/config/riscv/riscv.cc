@@ -9173,7 +9173,7 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
       rtx frm = gen_int_mode (mode, SImode);
 
       if (mode == riscv_vector::FRM_DYN_CALL
-	&& prev_mode != riscv_vector::FRM_DYN)
+	&& prev_mode != riscv_vector::FRM_DYN && STATIC_FRM_P (cfun))
 	/* No need to emit when prev mode is DYN already.  */
 	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
       else if (mode == riscv_vector::FRM_DYN_EXIT && STATIC_FRM_P (cfun)
