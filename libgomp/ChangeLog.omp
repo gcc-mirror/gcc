@@ -1,3 +1,8 @@
+2023-09-19  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (omp_target_memcpy_rect_worker): Add 1D strided transfer
+	support.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/declare-mapper-18.c: New test.
