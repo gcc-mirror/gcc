@@ -45,7 +45,53 @@ typedef int64_t v32di __attribute__ ((vector_size (256)));
 typedef int64_t v64di __attribute__ ((vector_size (512)));
 typedef int64_t v128di __attribute__ ((vector_size (1024)));
 typedef int64_t v256di __attribute__ ((vector_size (2048)));
-typedef int64_t v512di __attribute__ ((vector_size (4096)));
+typedef uint64_t v512di __attribute__ ((vector_size (4096)));
+typedef uint8_t v1uqi __attribute__ ((vector_size (1)));
+typedef uint8_t v2uqi __attribute__ ((vector_size (2)));
+typedef uint8_t v4uqi __attribute__ ((vector_size (4)));
+typedef uint8_t v8uqi __attribute__ ((vector_size (8)));
+typedef uint8_t v16uqi __attribute__ ((vector_size (16)));
+typedef uint8_t v32uqi __attribute__ ((vector_size (32)));
+typedef uint8_t v64uqi __attribute__ ((vector_size (64)));
+typedef uint8_t v128uqi __attribute__ ((vector_size (128)));
+typedef uint8_t v256uqi __attribute__ ((vector_size (256)));
+typedef uint8_t v512uqi __attribute__ ((vector_size (512)));
+typedef uint8_t v1024uqi __attribute__ ((vector_size (1024)));
+typedef uint8_t v2048uqi __attribute__ ((vector_size (2048)));
+typedef uint8_t v4096uqi __attribute__ ((vector_size (4096)));
+typedef uint16_t v1uhi __attribute__ ((vector_size (2)));
+typedef uint16_t v2uhi __attribute__ ((vector_size (4)));
+typedef uint16_t v4uhi __attribute__ ((vector_size (8)));
+typedef uint16_t v8uhi __attribute__ ((vector_size (16)));
+typedef uint16_t v16uhi __attribute__ ((vector_size (32)));
+typedef uint16_t v32uhi __attribute__ ((vector_size (64)));
+typedef uint16_t v64uhi __attribute__ ((vector_size (128)));
+typedef uint16_t v128uhi __attribute__ ((vector_size (256)));
+typedef uint16_t v256uhi __attribute__ ((vector_size (512)));
+typedef uint16_t v512uhi __attribute__ ((vector_size (1024)));
+typedef uint16_t v1024uhi __attribute__ ((vector_size (2048)));
+typedef uint16_t v2048uhi __attribute__ ((vector_size (4096)));
+typedef uint32_t v1usi __attribute__ ((vector_size (4)));
+typedef uint32_t v2usi __attribute__ ((vector_size (8)));
+typedef uint32_t v4usi __attribute__ ((vector_size (16)));
+typedef uint32_t v8usi __attribute__ ((vector_size (32)));
+typedef uint32_t v16usi __attribute__ ((vector_size (64)));
+typedef uint32_t v32usi __attribute__ ((vector_size (128)));
+typedef uint32_t v64usi __attribute__ ((vector_size (256)));
+typedef uint32_t v128usi __attribute__ ((vector_size (512)));
+typedef uint32_t v256usi __attribute__ ((vector_size (1024)));
+typedef uint32_t v512usi __attribute__ ((vector_size (2048)));
+typedef uint32_t v1024usi __attribute__ ((vector_size (4096)));
+typedef uint64_t v1udi __attribute__ ((vector_size (8)));
+typedef uint64_t v2udi __attribute__ ((vector_size (16)));
+typedef uint64_t v4udi __attribute__ ((vector_size (32)));
+typedef uint64_t v8udi __attribute__ ((vector_size (64)));
+typedef uint64_t v16udi __attribute__ ((vector_size (128)));
+typedef uint64_t v32udi __attribute__ ((vector_size (256)));
+typedef uint64_t v64udi __attribute__ ((vector_size (512)));
+typedef uint64_t v128udi __attribute__ ((vector_size (1024)));
+typedef uint64_t v256udi __attribute__ ((vector_size (2048)));
+typedef uint64_t v512udi __attribute__ ((vector_size (4096)));
 typedef _Float16 v1hf __attribute__ ((vector_size (2)));
 typedef _Float16 v2hf __attribute__ ((vector_size (4)));
 typedef _Float16 v4hf __attribute__ ((vector_size (8)));
@@ -108,7 +154,7 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
   {                                                                            \
     for (int i = 0; i < NUM; ++i)                                              \
-      a[i] = b[i] OP -16;                                                      \
+      a[i] = b[i] OP - 16;                                                     \
   }
 
 #define DEF_OP_VI_15(PREFIX, NUM, TYPE, OP)                                    \
@@ -195,4 +241,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   {                                                                            \
     for (TYPE i = 0; i < NUM; ++i)                                             \
       a[i] = (BASE) + i * (STEP);                                              \
+  }
+
+#define DEF_EXTRACT(SCALAR, VECTOR, INDEX)                                     \
+  SCALAR                                                                       \
+  extract_##SCALAR##VECTOR (VECTOR v)                                          \
+  {                                                                            \
+    return v[INDEX];                                                           \
   }

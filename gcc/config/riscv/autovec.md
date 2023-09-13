@@ -1442,10 +1442,10 @@
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Extract a vector element.
 ;; -------------------------------------------------------------------------
-(define_expand "vec_extract<mode><vel>"
+(define_expand "@vec_extract<mode><vel>"
   [(set (match_operand:<VEL>	  0 "register_operand")
      (vec_select:<VEL>
-       (match_operand:V		  1 "register_operand")
+       (match_operand:V_VLS	  1 "register_operand")
        (parallel
 	 [(match_operand	  2 "nonmemory_operand")])))]
   "TARGET_VECTOR"

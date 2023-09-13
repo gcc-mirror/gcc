@@ -8096,7 +8096,7 @@
   [(set (match_operand:<VEL> 0 "register_operand")
 	(unspec:<VEL>
 	  [(vec_select:<VEL>
-	     (match_operand:VI 1 "reg_or_mem_operand")
+	     (match_operand:V_VLSI 1 "reg_or_mem_operand")
 	     (parallel [(const_int 0)]))
 	   (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
   "TARGET_VECTOR"
@@ -8113,7 +8113,7 @@
   [(set (match_operand:<VEL> 0 "register_operand"   "=r")
 	(unspec:<VEL>
 	  [(vec_select:<VEL>
-	     (match_operand:VI 1 "register_operand" "vr")
+	     (match_operand:V_VLSI 1 "register_operand" "vr")
 	     (parallel [(const_int 0)]))
 	   (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
   "TARGET_VECTOR"
@@ -8147,7 +8147,7 @@
         (truncate:SI
 	  (unspec:<VEL>
 	    [(vec_select:<VEL>
-	       (match_operand:VI_D 1 "register_operand" "vr")
+	       (match_operand:V_VLSI_D 1 "register_operand" "vr")
 	       (parallel [(const_int 0)]))
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)))]
   "TARGET_VECTOR"
@@ -8159,7 +8159,7 @@
   [(set (match_operand:<VEL> 0 "register_operand")
 	(unspec:<VEL>
 	  [(vec_select:<VEL>
-	     (match_operand:VF 1 "reg_or_mem_operand")
+	     (match_operand:V_VLSF 1 "reg_or_mem_operand")
 	     (parallel [(const_int 0)]))
 	   (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
   "TARGET_VECTOR"
@@ -8176,7 +8176,7 @@
   [(set (match_operand:<VEL> 0 "register_operand"   "=f")
 	(unspec:<VEL>
 	  [(vec_select:<VEL>
-	     (match_operand:VF 1 "register_operand" "vr")
+	     (match_operand:V_VLSF 1 "register_operand" "vr")
 	     (parallel [(const_int 0)]))
 	   (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE))]
   "TARGET_VECTOR"
