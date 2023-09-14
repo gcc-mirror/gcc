@@ -47,11 +47,8 @@ TopLevel::insert_or_error_out (const Identifier &identifier,
 
   auto result = ctx.insert (identifier, node_id, ns);
 
-  if (!result)
+  if (!result && result.error ().existing != node_id)
     {
-      // can we do something like check if the node id is the same? if it is the
-      // same, it's not an error, just the resolver running multiple times?
-
       rich_location rich_loc (line_table, locus);
       rich_loc.add_range (node_locations[result.error ().existing]);
 
