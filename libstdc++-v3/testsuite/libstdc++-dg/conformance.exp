@@ -44,6 +44,7 @@ if {[info exists blddir]} {
 }
 if {[info exists tests_file] && [file exists $tests_file]} {
     set f [open $tests_file]
+    verbose -log "reading test files from $tests_file" 1
     while { ! [eof $f] } {
 	set t [gets $f]
 	if { [string length "$t"] != 0 } {
