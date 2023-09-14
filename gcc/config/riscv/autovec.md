@@ -2086,14 +2086,20 @@
 ;; - vredxor.vs
 ;; -------------------------------------------------------------------------
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (match_operand:VI 1 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "reduc_plus_scal_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+        (unspec:<VEL> [
+             (match_operand:VI 1 "register_operand")
+        ] UNSPEC_REDUC_SUM))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM, operands, CONST0_RTX (<VEL>mode));
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_expand "reduc_smax_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
@@ -2173,15 +2179,21 @@
 ;; - vfredmin.vs
 ;; -------------------------------------------------------------------------
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (match_operand:VF 1 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "reduc_plus_scal_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+        (unspec:<VEL> [
+             (match_operand:VF 1 "register_operand")
+        ] UNSPEC_REDUC_SUM_UNORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_UNORDERED, operands,
                                   CONST0_RTX (<VEL>mode));
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 (define_expand "reduc_smax_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
@@ -2215,27 +2227,38 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated in-order FP reductions.
-(define_expand "fold_left_plus_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (match_operand:<VEL> 1 "register_operand")
-   (match_operand:VF 2 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "fold_left_plus_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+        (unspec:<VEL> [
+             (match_operand:VF 2 "register_operand")
+             (match_operand:<VEL> 1 "register_operand")
+        ] UNSPEC_REDUC_SUM_ORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   riscv_vector::expand_reduction (UNSPEC_REDUC_SUM_ORDERED, operands,
 				  operands[1],
 				  riscv_vector::reduction_type::FOLD_LEFT);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; Predicated in-order FP reductions.
-(define_expand "mask_len_fold_left_plus_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (match_operand:<VEL> 1 "register_operand")
-   (match_operand:VF 2 "register_operand")
-   (match_operand:<VM> 3 "vector_mask_operand")
-   (match_operand 4 "autovec_length_operand")
-   (match_operand 5 "const_0_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "mask_len_fold_left_plus_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+        (unspec:<VEL> [
+          (match_operand:VF 2 "register_operand")
+          (match_operand:<VEL> 1 "register_operand")
+          (match_operand:<VM> 3 "vector_mask_operand")
+          (match_operand 4 "autovec_length_operand")
+          (match_operand 5 "const_0_operand")
+        ] UNSPEC_REDUC_SUM_ORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   if (rtx_equal_p (operands[4], const0_rtx))
     emit_move_insn (operands[0], operands[1]);
@@ -2244,7 +2267,8 @@
 				    operands[1],
 				    riscv_vector::reduction_type::MASK_LEN_FOLD_LEFT);
   DONE;
-})
+}
+[(set_attr "type" "vector")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Extract active element

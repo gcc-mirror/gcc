@@ -3212,7 +3212,8 @@ expand_reduction (unsigned unspec, rtx *ops, rtx init, reduction_type type)
 {
   rtx vector = type == reduction_type::UNORDERED ? ops[1] : ops[2];
   machine_mode vmode = GET_MODE (vector);
-  machine_mode m1_mode = get_m1_mode (vmode).require ();
+  machine_mode vel_mode = GET_MODE (ops[0]);
+  machine_mode m1_mode = get_m1_mode (vel_mode).require ();
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
@@ -3225,7 +3226,9 @@ expand_reduction (unsigned unspec, rtx *ops, rtx init, reduction_type type)
   rtx reduc_ops[] = {m1_tmp2, vector, m1_tmp};
 
   if (unspec == UNSPEC_REDUC_SUM_ORDERED
-      || unspec == UNSPEC_REDUC_SUM_UNORDERED)
+      || unspec == UNSPEC_WREDUC_SUM_ORDERED
+      || unspec == UNSPEC_REDUC_SUM_UNORDERED
+      || unspec == UNSPEC_WREDUC_SUM_UNORDERED)
     {
       insn_code icode = code_for_pred (unspec, vmode);
       if (type == reduction_type::MASK_LEN_FOLD_LEFT)

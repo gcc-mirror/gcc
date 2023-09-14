@@ -1196,6 +1196,88 @@
 }
 [(set_attr "type" "vfwmul")])
 
+;; Combine extend + vredsum to vwredsum[u]
+(define_insn_and_split "*reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (any_extend:<V_DOUBLE_EXTEND>
+            (match_operand:VI_QHS_NO_M8 1 "register_operand"))
+        ] UNSPEC_REDUC_SUM))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, operands,
+                                  CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine extend + vfredusum to vfwredusum
+(define_insn_and_split "*reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (float_extend:<V_DOUBLE_EXTEND>
+            (match_operand:VF_HS_NO_M8 1 "register_operand"))
+        ] UNSPEC_REDUC_SUM_UNORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED, operands,
+                                  CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine extend + vfredosum to vfwredosum
+(define_insn_and_split "*fold_left_widen_plus_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (float_extend:<V_DOUBLE_EXTEND>
+            (match_operand:VF_HS_NO_M8 2 "register_operand"))
+          (match_operand:<V_DOUBLE_EXTEND_VEL> 1 "register_operand")
+        ] UNSPEC_REDUC_SUM_ORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED, operands,
+				  operands[1],
+				  riscv_vector::reduction_type::FOLD_LEFT);
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine extend + mask vfredosum to mask vfwredosum
+(define_insn_and_split "*mask_len_fold_left_widen_plus_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (float_extend:<V_DOUBLE_EXTEND>
+            (match_operand:VF_HS_NO_M8 2 "register_operand"))
+          (match_operand:<V_DOUBLE_EXTEND_VEL> 1 "register_operand")
+          (match_operand:<VM> 3 "vector_mask_operand")
+          (match_operand 4 "autovec_length_operand")
+          (match_operand 5 "const_0_operand")
+        ] UNSPEC_REDUC_SUM_ORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (rtx_equal_p (operands[4], const0_rtx))
+    emit_move_insn (operands[0], operands[1]);
+  else
+    riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED, operands,
+				    operands[1],
+				    riscv_vector::reduction_type::MASK_LEN_FOLD_LEFT);
+  DONE;
+}
+[(set_attr "type" "vector")])
+
 ;; =============================================================================
 ;; Misc combine patterns
 ;; =============================================================================
