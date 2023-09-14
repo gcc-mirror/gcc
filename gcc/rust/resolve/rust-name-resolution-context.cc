@@ -46,7 +46,7 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
 }
 
 void
-NameResolutionContext::map_usage (NodeId usage, NodeId definition)
+NameResolutionContext::map_usage (Usage usage, Definition definition)
 {
   auto inserted = resolved_nodes.emplace (usage, definition).second;
 
@@ -57,12 +57,12 @@ NameResolutionContext::map_usage (NodeId usage, NodeId definition)
 tl::optional<NodeId>
 NameResolutionContext::lookup (NodeId usage)
 {
-  auto it = resolved_nodes.find (usage);
+  auto it = resolved_nodes.find (Usage (usage));
 
   if (it == resolved_nodes.end ())
     return tl::nullopt;
 
-  return it->second;
+  return it->second.id;
 }
 
 void
