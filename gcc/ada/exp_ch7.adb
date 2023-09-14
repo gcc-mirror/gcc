@@ -4378,6 +4378,32 @@ package body Exp_Ch7 is
    begin
       E := First_Entity (Blk);
 
+      --  The compiler may generate loops with a declare block containing
+      --  nested procedures used for finalization. Recursively search for
+      --  subprograms in such constructs.
+
+      if Ekind (Blk) = E_Loop
+        and then Parent_Kind (Blk) = N_Loop_Statement
+      then
+         declare
+            Stmt : Node_Id := First (Statements (Parent (Blk)));
+         begin
+            while Present (Stmt) loop
+               if Nkind (Stmt) = N_Block_Statement then
+                  declare
+                     Id : constant Entity_Id :=
+                              Entity (Identifier (Stmt));
+                  begin
+                     if Contains_Subprogram (Id) then
+                        return True;
+                     end if;
+                  end;
+               end if;
+               Next (Stmt);
+            end loop;
+         end;
+      end if;
+
       while Present (E) loop
          if Is_Subprogram (E) then
             return True;
@@ -9350,17 +9376,67 @@ package body Exp_Ch7 is
    -----------------
 
    procedure Unnest_Loop (Loop_Stmt : Node_Id) is
+
+      procedure Fixup_Inner_Scopes (Loop_Stmt : Node_Id);
+      --  The loops created by the compiler for array aggregates can have
+      --  nested finalization procedure when the type of the array components
+      --  needs finalization. It has the following form:
+
+      --  for J4b in 10 .. 12 loop
+      --     declare
+      --        procedure __finalizer;
+      --     begin
+      --        procedure __finalizer is
+      --          ...
+      --        end;
+      --        ...
+      --        obj (J4b) := ...;
+
+      --  When the compiler creates the N_Block_Statement, it sets its scope to
+      --  the upper scope (the one containing the loop).
+
+      --  The Unnest_Loop procedure moves the N_Loop_Statement inside a new
+      --  procedure and correctly sets the scopes for both the new procedure
+      --  and the loop entity. The inner block scope is not modified and this
+      --  leaves the Tree in an incoherent state (i.e. the inner procedure must
+      --  have its enclosing procedure in its scope ancestries).
+
+      --  This procedure fixes the scope links.
+
+      --  Another (better) fix would be to have the block scope set to be the
+      --  loop entity earlier (when the block is created or when the loop gets
+      --  an actual entity set). But unfortunately this proved harder to
+      --  implement ???
+
+      procedure Fixup_Inner_Scopes (Loop_Stmt : Node_Id) is
+         Stmt          : Node_Id            := First (Statements (Loop_Stmt));
+         Loop_Stmt_Ent : constant Entity_Id := Entity (Identifier (Loop_Stmt));
+         Ent_To_Fix    : Entity_Id;
+      begin
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Block_Statement
+              and then Is_Abort_Block (Stmt)
+            then
+               Ent_To_Fix := Entity (Identifier (Stmt));
+               Set_Scope (Ent_To_Fix, Loop_Stmt_Ent);
+            elsif Nkind (Stmt) = N_Loop_Statement then
+               Fixup_Inner_Scopes (Stmt);
+            end if;
+            Next (Stmt);
+         end loop;
+      end Fixup_Inner_Scopes;
+
       Loc        : constant Source_Ptr := Sloc (Loop_Stmt);
       Ent        : Entity_Id;
       Local_Body : Node_Id;
       Local_Call : Node_Id;
+      Loop_Ent   : Entity_Id;
       Local_Proc : Entity_Id;
-      Local_Scop : Entity_Id;
       Loop_Copy  : constant Node_Id :=
                      Relocate_Node (Loop_Stmt);
    begin
-      Local_Scop := Entity (Identifier (Loop_Stmt));
-      Ent := First_Entity (Local_Scop);
+      Loop_Ent := Entity (Identifier (Loop_Stmt));
+      Ent := First_Entity (Loop_Ent);
 
       Local_Proc := Make_Temporary (Loc, 'P');
 
@@ -9389,8 +9465,10 @@ package body Exp_Ch7 is
       --  New procedure has the same scope as the original loop, and the scope
       --  of the loop is the new procedure.
 
-      Set_Scope (Local_Proc, Scope (Local_Scop));
-      Set_Scope (Local_Scop, Local_Proc);
+      Set_Scope (Local_Proc, Scope (Loop_Ent));
+      Set_Scope (Loop_Ent, Local_Proc);
+
+      Fixup_Inner_Scopes (Loop_Copy);
 
       --  The entity list of the new procedure is that of the loop
 
