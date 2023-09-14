@@ -2,15 +2,15 @@ MODULE subrangecase4 ;  (*!m2iso+gm2*)
 
 
 TYPE
-   DateRange = [1910..1920] ;
+   DateRange = [1710..1720] ;
 
 
 PROCEDURE init (d: DateRange) ;
 BEGIN
    CASE d OF
 
-   1910: |
-   1913..1918: |
+   1710: |
+   1713..1718: |
 
    END
 END init ;

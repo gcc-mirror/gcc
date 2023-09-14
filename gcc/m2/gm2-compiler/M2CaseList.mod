@@ -511,7 +511,7 @@ END OverlappingCaseBounds ;
 
 
 (*
-   NewRanges -
+   NewRanges - return a new range from the freelist or heap.
 *)
 
 PROCEDURE NewRanges () : SetRange ;
@@ -531,7 +531,8 @@ END NewRanges ;
 
 
 (*
-   NewSet -
+   NewSet - returns a new set based on type with the low and high fields assigned
+            to the min and max values for the type.
 *)
 
 PROCEDURE NewSet (type: CARDINAL) : SetRange ;
@@ -549,7 +550,7 @@ END NewSet ;
 
 
 (*
-   DisposeRanges -
+   DisposeRanges - place set and its list onto the free list.
 *)
 
 PROCEDURE DisposeRanges (set: SetRange) : SetRange ;
@@ -737,7 +738,7 @@ VAR
 
 
 (*
-   IncludeElement -
+   IncludeElement - only include enumeration field into errorString if it lies between low..high.
 *)
 
 PROCEDURE IncludeElement (enumList: List; field: CARDINAL; low, high: Tree) ;
@@ -756,7 +757,7 @@ END IncludeElement ;
 
 
 (*
-   IncludeElements -
+   IncludeElements - only include enumeration field values low..high in errorString.
 *)
 
 PROCEDURE IncludeElements (type: CARDINAL; enumList: List; low, high: Tree) ;
@@ -776,7 +777,7 @@ END IncludeElements ;
 
 
 (*
-   ErrorRangeEnum
+   ErrorRangeEnum - include enumeration fields Low to High in errorString.
 *)
 
 PROCEDURE ErrorRangeEnum (type: CARDINAL; set: SetRange; enumList: List) ;
@@ -824,7 +825,7 @@ END ErrorRanges ;
 
 
 (*
-   appendString -
+   appendString - appends str to errorString.
 *)
 
 PROCEDURE appendString (str: String) ;
@@ -834,7 +835,7 @@ END appendString ;
 
 
 (*
-   appendEnum -
+   appendEnum - appends enum to errorString.
 *)
 
 PROCEDURE appendEnum (enum: CARDINAL) ;
@@ -844,7 +845,7 @@ END appendEnum ;
 
 
 (*
-   appendStr -
+   appendStr - appends str to errorString.
 *)
 
 PROCEDURE appendStr (str: ARRAY OF CHAR) ;
@@ -953,7 +954,8 @@ END isPrintableChar ;
 
 
 (*
-   appendTree -
+   appendTree - append tree value to the errorString.  It attempts to pretty print
+                CHAR constants and will fall back to CHR (x) if necessary.
 *)
 
 PROCEDURE appendTree (value: Tree; type: CARDINAL) ;
@@ -984,7 +986,7 @@ END appendTree ;
 
 
 (*
-   SubrangeErrors -
+   SubrangeErrors - create an errorString containing all set ranges.
 *)
 
 PROCEDURE SubrangeErrors (subrangetype: CARDINAL; set: SetRange) ;
