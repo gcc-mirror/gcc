@@ -4206,8 +4206,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* `(1 >> X) != 0` -> `X == 0` */
  /* `(1 >> X) == 0` -> `X != 0` */
  (simplify
-  (cmp (rshift integer_onep @0) integer_zerop)
-   (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
+  (cmp (rshift integer_onep@1 @0) integer_zerop)
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+    (icmp @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
 /* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
    (CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)
