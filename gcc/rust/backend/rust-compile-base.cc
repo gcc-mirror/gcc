@@ -564,7 +564,7 @@ HIRCompileBase::compile_function (
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
 				   "" /* asm_name */, flags, locus);
 
-  setup_fndecl (fndecl, is_main_fn, fntype->has_subsititions_defined (),
+  setup_fndecl (fndecl, is_main_fn, fntype->has_substitutions_defined (),
 		visibility, qualifiers, outer_attrs);
   setup_abi_options (fndecl, qualifiers.get_abi ());
 
@@ -792,7 +792,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
   HIR::Item *resolved_item = ctx->get_mappings ()->lookup_defid (id);
   if (resolved_item != nullptr)
     {
-      if (!fntype->has_subsititions_defined ())
+      if (!fntype->has_substitutions_defined ())
 	return CompileItem::compile (resolved_item, ctx);
 
       return CompileItem::compile (resolved_item, ctx, fntype);

@@ -290,7 +290,7 @@ check_for_cached_intrinsic (Context *ctx, TyTy::FnType *fntype, tree *lookup)
 static void
 maybe_override_ctx (TyTy::FnType *fntype)
 {
-  if (fntype->has_subsititions_defined ())
+  if (fntype->has_substitutions_defined ())
     fntype->override_context ();
 }
 
