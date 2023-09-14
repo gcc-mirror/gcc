@@ -133,6 +133,28 @@ change?
 correct
 */
 
+// FIXME: Documentation
+class Usage
+{
+public:
+  explicit Usage (NodeId id) : id (id) {}
+
+  // TODO: move to name-resolution-ctx.cc
+  // storing it as a key in a map
+  bool operator< (const Usage other) const { return other.id < id; }
+
+  NodeId id;
+};
+
+// FIXME: Documentation
+class Definition
+{
+public:
+  explicit Definition (NodeId id) : id (id) {}
+
+  NodeId id;
+};
+
 // Now our resolver, which keeps track of all the `ForeverStack`s we could want
 class NameResolutionContext
 {
@@ -182,12 +204,13 @@ public:
 
   // TODO: Rename
   // TODO: Use newtype pattern for Usage and Definition
-  void map_usage (NodeId usage, NodeId definition);
+  void map_usage (Usage usage, Definition definition);
+
   tl::optional<NodeId> lookup (NodeId usage);
 
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */
-  std::map<NodeId, NodeId> resolved_nodes;
+  std::map<Usage, Definition> resolved_nodes;
 };
 
 } // namespace Resolver2_0

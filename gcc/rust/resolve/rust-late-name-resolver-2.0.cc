@@ -142,7 +142,7 @@ Late::visit (AST::IdentifierExpr &expr)
       return;
     }
 
-  ctx.map_usage (expr.get_node_id (), *resolved);
+  ctx.map_usage (Usage (expr.get_node_id ()), Definition (*resolved));
 
   // in the old resolver, resolutions are kept in the resolver, not the mappings
   // :/ how do we deal with that?
@@ -173,7 +173,7 @@ Late::visit (AST::TypePath &type)
 
   auto resolved = ctx.types.get (type.get_segments ().back ()->as_string ());
 
-  ctx.map_usage (type.get_node_id (), *resolved);
+  ctx.map_usage (Usage (type.get_node_id ()), Definition (*resolved));
 }
 
 } // namespace Resolver2_0
