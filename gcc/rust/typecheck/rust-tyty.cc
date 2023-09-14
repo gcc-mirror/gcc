@@ -837,7 +837,7 @@ BaseType::is_concrete () const
 }
 
 bool
-BaseType::has_subsititions_defined () const
+BaseType::has_substitutions_defined () const
 {
   const TyTy::BaseType *x = destructure ();
   switch (x->get_kind ())
@@ -1680,10 +1680,10 @@ ADTType::is_equal (const BaseType &other) const
   if (number_of_variants () != other2.number_of_variants ())
     return false;
 
-  if (has_subsititions_defined () != other2.has_subsititions_defined ())
+  if (has_substitutions_defined () != other2.has_substitutions_defined ())
     return false;
 
-  if (has_subsititions_defined ())
+  if (has_substitutions_defined ())
     {
       if (get_num_substitutions () != other2.get_num_substitutions ())
 	return false;
@@ -1757,7 +1757,7 @@ handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 	    }
 	}
     }
-  else if (fty->has_subsititions_defined () || !fty->is_concrete ())
+  else if (fty->has_substitutions_defined () || !fty->is_concrete ())
     {
       BaseType *concrete
 	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -2001,10 +2001,10 @@ FnType::is_equal (const BaseType &other) const
   if (!get_return_type ()->is_equal (*other2.get_return_type ()))
     return false;
 
-  if (has_subsititions_defined () != other2.has_subsititions_defined ())
+  if (has_substitutions_defined () != other2.has_substitutions_defined ())
     return false;
 
-  if (has_subsititions_defined ())
+  if (has_substitutions_defined ())
     {
       if (get_num_substitutions () != other2.get_num_substitutions ())
 	return false;
@@ -2141,7 +2141,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 		}
 	    }
 	}
-      else if (fty->has_subsititions_defined () || !fty->is_concrete ())
+      else if (fty->has_substitutions_defined () || !fty->is_concrete ())
 	{
 	  BaseType *concrete
 	    = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);

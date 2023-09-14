@@ -283,7 +283,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       // turbo-fish segment path::<ty>
       if (generic_seg.has_generic_args ())
 	{
-	  if (!translated->has_subsititions_defined ())
+	  if (!translated->has_substitutions_defined ())
 	    {
 	      rust_error_at (item_seg->get_locus (),
 			     "substitutions not supported for %s",

@@ -120,7 +120,7 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
 
   // we only need to apply to the bounds manually on types which dont bind
   // generics
-  if (!infer->has_subsititions_defined ())
+  if (!infer->has_substitutions_defined ())
     {
       for (auto &bound : infer->get_specified_bounds ())
 	bound.handle_substitions (*infer_arguments);

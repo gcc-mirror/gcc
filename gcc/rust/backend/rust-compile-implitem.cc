@@ -71,7 +71,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 	}
     }
 
-  if (fntype->has_subsititions_defined ())
+  if (fntype->has_substitutions_defined ())
     {
       // override the Hir Lookups for the substituions in this context
       fntype->override_context ();

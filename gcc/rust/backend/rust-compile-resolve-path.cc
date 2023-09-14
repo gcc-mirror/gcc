@@ -184,7 +184,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
   bool is_fn = lookup->get_kind () == TyTy::TypeKind::FNDEF;
   if (is_hir_item)
     {
-      if (!lookup->has_subsititions_defined ())
+      if (!lookup->has_substitutions_defined ())
 	return CompileItem::compile (resolved_item, ctx, nullptr, true,
 				     expr_locus);
       else
@@ -193,7 +193,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
     }
   else if (is_hir_extern_item)
     {
-      if (!lookup->has_subsititions_defined ())
+      if (!lookup->has_substitutions_defined ())
 	return CompileExternItem::compile (resolved_extern_item, ctx, nullptr,
 					   true, expr_locus);
       else
@@ -222,7 +222,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
       bool is_impl_item = resolved_item != nullptr;
       if (is_impl_item)
 	{
-	  if (!lookup->has_subsititions_defined ())
+	  if (!lookup->has_substitutions_defined ())
 	    return CompileInherentImplItem::Compile (resolved_item, ctx,
 						     nullptr, true, expr_locus);
 	  else
@@ -285,7 +285,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 		impl->get_type ()->get_mappings ().get_hirid (), &self);
 	      rust_assert (ok);
 
-	      if (!lookup->has_subsititions_defined ())
+	      if (!lookup->has_substitutions_defined ())
 		return CompileInherentImplItem::Compile (impl_item, ctx,
 							 nullptr, true,
 							 expr_locus);

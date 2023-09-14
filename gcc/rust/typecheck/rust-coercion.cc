@@ -72,7 +72,7 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
       //     let _: Option<?T> = Some({ return; });
       //
       // here, we would coerce from `!` to `?T`.
-      if (expected->has_subsititions_defined () && !expected->is_concrete ())
+      if (expected->has_substitutions_defined () && !expected->is_concrete ())
 	{
 	  location_t locus = mappings->lookup_location (receiver->get_ref ());
 	  TyTy::TyVar implicit_var

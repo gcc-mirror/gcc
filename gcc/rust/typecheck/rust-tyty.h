@@ -155,7 +155,7 @@ public:
   const RustIdent &get_ident () const;
   location_t get_locus () const;
 
-  bool has_subsititions_defined () const;
+  bool has_substitutions_defined () const;
   bool needs_generic_substitutions () const;
 
   std::string mangle_string () const

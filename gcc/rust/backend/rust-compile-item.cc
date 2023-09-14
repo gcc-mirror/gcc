@@ -118,7 +118,7 @@ CompileItem::visit (HIR::Function &function)
 
   rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-  if (fntype->has_subsititions_defined ())
+  if (fntype->has_substitutions_defined ())
     {
       // we cant do anything for this only when it is used and a concrete type
       // is given
@@ -166,7 +166,7 @@ CompileItem::visit (HIR::Function &function)
       return;
     }
 
-  if (fntype->has_subsititions_defined ())
+  if (fntype->has_substitutions_defined ())
     {
       // override the Hir Lookups for the substituions in this context
       fntype->override_context ();
