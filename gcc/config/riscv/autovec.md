@@ -495,9 +495,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:VB 0 "register_operand"                 "=vr")
-	(any_bitwise:VB (match_operand:VB 1 "register_operand" " vr")
-			(match_operand:VB 2 "register_operand" " vr")))]
+  [(set (match_operand:VB_VLS 0 "register_operand"                 "=vr")
+	(any_bitwise:VB_VLS (match_operand:VB_VLS 1 "register_operand" " vr")
+			    (match_operand:VB_VLS 2 "register_operand" " vr")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -518,8 +518,8 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "one_cmpl<mode>2"
-  [(set (match_operand:VB 0 "register_operand"         "=vr")
-	(not:VB (match_operand:VB 1 "register_operand" " vr")))]
+  [(set (match_operand:VB_VLS 0 "register_operand"         "=vr")
+	(not:VB_VLS (match_operand:VB_VLS 1 "register_operand" " vr")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -545,12 +545,12 @@
 ;; - vfmerge.vf
 ;; -------------------------------------------------------------------------
 
-(define_insn_and_split "@vcond_mask_<mode><vm>"
-  [(set (match_operand:V 0 "register_operand")
-        (if_then_else:V
+(define_insn_and_split "vcond_mask_<mode><vm>"
+  [(set (match_operand:V_VLS 0 "register_operand")
+        (if_then_else:V_VLS
           (match_operand:<VM> 3 "register_operand")
-          (match_operand:V 1 "nonmemory_operand")
-          (match_operand:V 2 "register_operand")))]
+          (match_operand:V_VLS 1 "nonmemory_operand")
+          (match_operand:V_VLS 2 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -609,8 +609,8 @@
 (define_expand "vec_cmp<mode><vm>"
   [(set (match_operand:<VM> 0 "register_operand")
 	(match_operator:<VM> 1 "comparison_operator"
-	  [(match_operand:VI 2 "register_operand")
-	   (match_operand:VI 3 "register_operand")]))]
+	  [(match_operand:V_VLSI 2 "register_operand")
+	   (match_operand:V_VLSI 3 "register_operand")]))]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
@@ -622,8 +622,8 @@
 (define_expand "vec_cmpu<mode><vm>"
   [(set (match_operand:<VM> 0 "register_operand")
 	(match_operator:<VM> 1 "comparison_operator"
-	  [(match_operand:VI 2 "register_operand")
-	   (match_operand:VI 3 "register_operand")]))]
+	  [(match_operand:V_VLSI 2 "register_operand")
+	   (match_operand:V_VLSI 3 "register_operand")]))]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
@@ -635,8 +635,8 @@
 (define_expand "vec_cmp<mode><vm>"
   [(set (match_operand:<VM> 0 "register_operand")
 	(match_operator:<VM> 1 "comparison_operator"
-	  [(match_operand:VF 2 "register_operand")
-	   (match_operand:VF 3 "register_operand")]))]
+	  [(match_operand:V_VLSF 2 "register_operand")
+	   (match_operand:V_VLSF 3 "register_operand")]))]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_cmp_float (operands[0], GET_CODE (operands[1]),

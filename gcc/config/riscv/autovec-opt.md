@@ -67,10 +67,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "*<optab>not<mode>"
-  [(set (match_operand:VB 0 "register_operand"           "=vr")
-	(bitmanip_bitwise:VB
-	  (not:VB (match_operand:VB 2 "register_operand" " vr"))
-	  (match_operand:VB 1 "register_operand"         " vr")))]
+  [(set (match_operand:VB_VLS 0 "register_operand"           "=vr")
+	(bitmanip_bitwise:VB_VLS
+	  (not:VB_VLS (match_operand:VB_VLS 2 "register_operand" " vr"))
+	  (match_operand:VB_VLS 1 "register_operand"         " vr")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -93,11 +93,11 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "*n<optab><mode>"
-  [(set (match_operand:VB 0 "register_operand"     "=vr")
-	(not:VB
-	  (any_bitwise:VB
-	    (match_operand:VB 1 "register_operand" " vr")
-	    (match_operand:VB 2 "register_operand" " vr"))))]
+  [(set (match_operand:VB_VLS 0 "register_operand"     "=vr")
+	(not:VB_VLS
+	  (any_bitwise:VB_VLS
+	    (match_operand:VB_VLS 1 "register_operand" " vr")
+	    (match_operand:VB_VLS 2 "register_operand" " vr"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"

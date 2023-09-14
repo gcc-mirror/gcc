@@ -249,3 +249,12 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   {                                                                            \
     return v[INDEX];                                                           \
   }
+
+#define DEF_MASK_LOGIC(PREFIX, NUM, TYPE, OP)                                  \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d, TYPE *restrict e)                    \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (b[i] > c[i]) OP (d[i] < e[i]);                                   \
+  }
