@@ -966,6 +966,14 @@ compatible_epath_p (const exploded_path *lhs_path,
       /* A superedge was found for only one of the two paths.  */
       return false;
     }
+
+  /* A superedge was found for only one of the two paths.  */
+  if (lhs_eedge_idx >= 0 || rhs_eedge_idx >= 0)
+    return false;
+
+  /* Both paths were drained up entirely.
+     No discriminant was found.  */
+  return true;
 }
 
 
