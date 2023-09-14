@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-require-thread-fence "" }
 // { dg-add-options libatomic }
 
 #include <atomic>
