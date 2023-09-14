@@ -1652,6 +1652,8 @@ avl_info::operator== (const avl_info &other) const
   /* Handle VLMAX AVL.  */
   if (vlmax_avl_p (m_value))
     return vlmax_avl_p (other.get_value ());
+  if (vlmax_avl_p (other.get_value ()))
+    return false;
 
   /* If any source is undef value, we think they are not equal.  */
   if (!m_source || !other.get_source ())
@@ -2258,6 +2260,18 @@ vector_insn_info::global_merge (const vector_insn_info &merge_info,
 	new_info.set_avl_source (first_set);
     }
 
+  /* Make sure VLMAX AVL always has a set_info the get VL.  */
+  if (vlmax_avl_p (new_info.get_avl ()))
+    {
+      if (this->get_avl_source ())
+	new_info.set_avl_source (this->get_avl_source ());
+      else
+	{
+	  gcc_assert (merge_info.get_avl_source ());
+	  new_info.set_avl_source (merge_info.get_avl_source ());
+	}
+    }
+
   new_info.fuse_sew_lmul (*this, merge_info);
   new_info.fuse_tail_policy (*this, merge_info);
   new_info.fuse_mask_policy (*this, merge_info);
@@ -2274,9 +2288,6 @@ vector_insn_info::get_avl_or_vl_reg (void) const
   if (!vlmax_avl_p (get_avl ()))
     return get_avl ();
 
-  if (get_avl_source ())
-    return get_avl_reg_rtx ();
-
   rtx_insn *rinsn = get_insn ()->rtl ();
   if (has_vl_op (rinsn) || vsetvl_insn_p (rinsn))
     {
@@ -2288,14 +2299,9 @@ vector_insn_info::get_avl_or_vl_reg (void) const
 	return vl;
     }
 
-  /* A DIRTY (polluted EMPTY) block if:
-       - get_insn is scalar move (no AVL or VL operand).
-       - get_avl_source is null (no def in the current DIRTY block).
-     Then we trace the previous insn which must be the insn
-     already inserted in Phase 2 to get the VL operand for VLMAX.  */
-  rtx_insn *prev_rinsn = PREV_INSN (rinsn);
-  gcc_assert (prev_rinsn && vsetvl_insn_p (prev_rinsn));
-  return ::get_vl (prev_rinsn);
+  /* We always has avl_source if it is VLMAX AVL.  */
+  gcc_assert (get_avl_source ());
+  return get_avl_reg_rtx ();
 }
 
 bool
