@@ -86,7 +86,7 @@ ggc_mark_roots (void)
 
   for (rt = gt_ggc_deletable_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
-      memset (rti->base, 0, rti->stride);
+      memset (rti->base, 0, rti->stride * rti->nelt);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
     ggc_mark_root_tab (*rt);
@@ -1292,4 +1292,25 @@ report_heap_memory_use ()
     fprintf (stderr, " {heap " PRsa (0) "}",
 	     SIZE_AMOUNT (MALLINFO_FN ().arena));
 #endif
+}
+
+/* Forcibly clear all GTY roots.  */
+
+void
+ggc_common_finalize ()
+{
+  const struct ggc_root_tab *const *rt;
+  const_ggc_root_tab_t rti;
+
+  for (rt = gt_ggc_deletable_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride * rti->nelt);
+
+  for (rt = gt_ggc_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride * rti->nelt);
+
+  for (rt = gt_pch_scalar_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride * rti->nelt);
 }
