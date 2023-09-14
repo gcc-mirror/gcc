@@ -516,7 +516,7 @@ process_worklist_item (feasible_worklist *worklist,
 	}
 
       feasibility_state succ_state (fnode->get_state ());
-      rejected_constraint *rc = NULL;
+      std::unique_ptr<rejected_constraint> rc;
       if (succ_state.maybe_update_for_edge (logger, succ_eedge, &rc))
 	{
 	  gcc_assert (rc == NULL);
@@ -560,7 +560,7 @@ process_worklist_item (feasible_worklist *worklist,
 	  gcc_assert (rc);
 	  fg->add_feasibility_problem (fnode,
 				       succ_eedge,
-				       rc);
+				       std::move (rc));
 
 	  /* Give up if there have been too many infeasible edges.  */
 	  if (fg->get_num_infeasible ()

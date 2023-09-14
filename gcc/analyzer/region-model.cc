@@ -4577,11 +4577,11 @@ region_model::add_constraint (const svalue *lhs,
 bool
 region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 			      region_model_context *ctxt,
-			      rejected_constraint **out)
+			      std::unique_ptr<rejected_constraint> *out)
 {
   bool sat = add_constraint (lhs, op, rhs, ctxt);
   if (!sat && out)
-    *out = new rejected_op_constraint (*this, lhs, op, rhs);
+    *out = make_unique <rejected_op_constraint> (*this, lhs, op, rhs);
   return sat;
 }
 
@@ -4969,7 +4969,7 @@ bool
 region_model::maybe_update_for_edge (const superedge &edge,
 				     const gimple *last_stmt,
 				     region_model_context *ctxt,
-				     rejected_constraint **out)
+				     std::unique_ptr<rejected_constraint> *out)
 {
   /* Handle frame updates for interprocedural edges.  */
   switch (edge.m_kind)
@@ -5139,10 +5139,11 @@ region_model::replay_call_summary (call_summary_replay &r,
    to it.  */
 
 bool
-region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
-					   const gcond *cond_stmt,
-					   region_model_context *ctxt,
-					   rejected_constraint **out)
+region_model::
+apply_constraints_for_gcond (const cfg_superedge &sedge,
+			     const gcond *cond_stmt,
+			     region_model_context *ctxt,
+			     std::unique_ptr<rejected_constraint> *out)
 {
   ::edge cfg_edge = sedge.get_cfg_edge ();
   gcc_assert (cfg_edge != NULL);
@@ -5233,10 +5234,11 @@ has_nondefault_cases_for_all_enum_values_p (const gswitch *switch_stmt)
    to it.  */
 
 bool
-region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
-					     const gswitch *switch_stmt,
-					     region_model_context *ctxt,
-					     rejected_constraint **out)
+region_model::
+apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
+			       const gswitch *switch_stmt,
+			       region_model_context *ctxt,
+			       std::unique_ptr<rejected_constraint> *out)
 {
   tree index  = gimple_switch_index (switch_stmt);
   const svalue *index_sval = get_rvalue (index, ctxt);
@@ -5262,7 +5264,7 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
       && !ctxt->possibly_tainted_p (index_sval))
     {
       if (out)
-	*out = new rejected_default_case (*this);
+	*out = make_unique <rejected_default_case> (*this);
       return false;
     }
 
@@ -5271,7 +5273,7 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
     = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
   bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
   if (!sat && out)
-    *out = new rejected_ranges_constraint (*this, index, all_cases_ranges);
+    *out = make_unique <rejected_ranges_constraint> (*this, index, all_cases_ranges);
   if (sat && ctxt && !all_cases_ranges->empty_p ())
     ctxt->on_bounded_ranges (*index_sval, *all_cases_ranges);
   return sat;
@@ -5318,9 +5320,10 @@ region_model::apply_constraints_for_ggoto (const cfg_superedge &edge,
    to it.  */
 
 bool
-region_model::apply_constraints_for_exception (const gimple *last_stmt,
-					       region_model_context *ctxt,
-					       rejected_constraint **out)
+region_model::
+apply_constraints_for_exception (const gimple *last_stmt,
+				 region_model_context *ctxt,
+				 std::unique_ptr<rejected_constraint> *out)
 {
   gcc_assert (last_stmt);
   if (const gcall *call = dyn_cast <const gcall *> (last_stmt))

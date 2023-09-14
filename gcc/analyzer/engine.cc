@@ -4697,7 +4697,7 @@ exploded_path::feasible_p (logger *logger,
 		     eedge->m_src->m_index,
 		     eedge->m_dest->m_index);
 
-      rejected_constraint *rc = NULL;
+      std::unique_ptr <rejected_constraint> rc;
       if (!state.maybe_update_for_edge (logger, eedge, &rc))
 	{
 	  gcc_assert (rc);
@@ -4707,11 +4707,10 @@ exploded_path::feasible_p (logger *logger,
 	      const program_point &src_point = src_enode.get_point ();
 	      const gimple *last_stmt
 		= src_point.get_supernode ()->get_last_stmt ();
-	      *out = make_unique<feasibility_problem> (edge_idx, *eedge,
-						       last_stmt, rc);
+	      *out = ::make_unique<feasibility_problem> (edge_idx, *eedge,
+							 last_stmt,
+							 std::move (rc));
 	    }
-	  else
-	    delete rc;
 	  return false;
 	}
 
@@ -4837,9 +4836,10 @@ feasibility_state::feasibility_state (const feasibility_state &other)
    Otherwise, return false and write to *OUT_RC.  */
 
 bool
-feasibility_state::maybe_update_for_edge (logger *logger,
-					  const exploded_edge *eedge,
-					  rejected_constraint **out_rc)
+feasibility_state::
+maybe_update_for_edge (logger *logger,
+		       const exploded_edge *eedge,
+		       std::unique_ptr<rejected_constraint> *out_rc)
 {
   const exploded_node &src_enode = *eedge->m_src;
   const program_point &src_point = src_enode.get_point ();
