@@ -2514,6 +2514,70 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
   /* Expand
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Expand this data movement instead of simply forbid it since
+     we can improve the code generation for this following scenario
+     by RVV auto-vectorization:
+       (set (reg:V8QI 149) (vec_duplicate:V8QI (reg:QI))
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Since RVV mode and scalar mode are in different REG_CLASS,
+     we need to explicitly move data from V_REGS to GR_REGS by scalar move.  */
+  if (SUBREG_P (src) && riscv_v_ext_mode_p (GET_MODE (SUBREG_REG (src))))
+    {
+      machine_mode vmode = GET_MODE (SUBREG_REG (src));
+      unsigned int mode_size = GET_MODE_SIZE (mode).to_constant ();
+      unsigned int vmode_size = GET_MODE_SIZE (vmode).to_constant ();
+      unsigned int nunits = vmode_size / mode_size;
+      scalar_mode smode = as_a<scalar_mode> (mode);
+      unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
+      unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+
+      if (num == 2)
+	{
+	  /* If we want to extract 64bit value but ELEN < 64,
+	     we use RVV vector mode with EEW = 32 to extract
+	     the highpart and lowpart.  */
+	  smode = SImode;
+	  nunits = nunits * 2;
+	}
+      vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
+      enum insn_code icode
+	= convert_optab_handler (vec_extract_optab, vmode, smode);
+      gcc_assert (icode != CODE_FOR_nothing);
+      rtx v = gen_lowpart (vmode, SUBREG_REG (src));
+
+      for (unsigned int i = 0; i < num; i++)
+	{
+	  class expand_operand ops[3];
+	  rtx result;
+	  if (num == 1)
+	    result = dest;
+	  else if (i == 0)
+	    result = gen_lowpart (smode, dest);
+	  else
+	    result = gen_reg_rtx (smode);
+	  create_output_operand (&ops[0], result, smode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], v, vmode);
+	  create_integer_operand (&ops[2], index + i);
+	  expand_insn (icode, 3, ops);
+	  if (ops[0].value != result)
+	    emit_move_insn (result, ops[0].value);
+
+	  if (i == 1)
+	    {
+	      rtx tmp
+		= expand_binop (Pmode, ashl_optab, gen_lowpart (Pmode, result),
+				gen_int_mode (32, Pmode), NULL_RTX, 0,
+				OPTAB_DIRECT);
+	      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, dest, NULL_RTX, 0,
+				       OPTAB_DIRECT);
+	      emit_move_insn (dest, tmp2);
+	    }
+	}
+      return true;
+    }
+  /* Expand
        (set (reg:QI target) (mem:QI (address)))
      to
        (set (reg:DI temp) (zero_extend:DI (mem:QI (address))))
