@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" }*/
+/* { dg-options "-O2 -fdump-tree-evrp -fno-tree-forwprop" }*/
 
 typedef __INT32_TYPE__ int32_t;
 
