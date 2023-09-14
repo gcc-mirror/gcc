@@ -2381,9 +2381,9 @@ package body Exp_Ch7 is
                elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                   null;
 
-               --  Return object of a build-in-place function. This case is
-               --  recognized and marked by the expansion of an extended return
-               --  statement (see Expand_N_Extended_Return_Statement).
+               --  Return object of extended return statements. This case is
+               --  recognized and marked by the expansion of extended return
+               --  statements (see Expand_N_Extended_Return_Statement).
 
                elsif Needs_Finalization (Obj_Typ)
                  and then Is_Return_Object (Obj_Id)
