@@ -29247,6 +29247,7 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 	case DW_MACINFO_define:
 	case DW_MACINFO_undef:
 	  if ((!dwarf_strict || dwarf_version >= 5)
+	      && !dwarf_split_debug_info
 	      && HAVE_COMDAT_GROUP
 	      && vec_safe_length (files) != 1
 	      && i > 0
