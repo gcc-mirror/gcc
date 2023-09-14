@@ -2611,11 +2611,18 @@
 )
 
 ;; Duplicate an Advanced SIMD vector to fill an SVE vector (LE version).
+;;
+;; The addressing mode range of LD1RQ does not match the addressing mode
+;; range of LDR Qn.  If the predicate enforced the LD1RQ range, we would
+;; not be able to combine LDR Qns outside that range.  The predicate
+;; therefore accepts all memory operands, with only the constraints
+;; enforcing the actual restrictions.  If the instruction is split
+;; before RA, we need to load invalid addresses into a temporary.
 
 (define_insn_and_split "@aarch64_vec_duplicate_vq<mode>_le"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=w, w")
 	(vec_duplicate:SVE_FULL
-	  (match_operand:<V128> 1 "aarch64_sve_dup_ld1rq_operand" "w, UtQ")))
+	  (match_operand:<V128> 1 "nonimmediate_operand" "w, UtQ")))
    (clobber (match_scratch:VNx16BI 2 "=X, Upl"))]
   "TARGET_SVE && !BYTES_BIG_ENDIAN"
   {
@@ -2633,6 +2640,12 @@
   "&& MEM_P (operands[1])"
   [(const_int 0)]
   {
+    if (can_create_pseudo_p ()
+        && !aarch64_sve_ld1rq_operand (operands[1], <V128>mode))
+      {
+	rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
+	operands[1] = replace_equiv_address (operands[1], addr);
+      }
     if (GET_CODE (operands[2]) == SCRATCH)
       operands[2] = gen_reg_rtx (VNx16BImode);
     emit_move_insn (operands[2], CONSTM1_RTX (VNx16BImode));
