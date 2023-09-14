@@ -4054,7 +4054,8 @@ pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
     }
 
   /* Step1: Reshape the VL/VTYPE status to make sure everything compatible.  */
-  auto_vec<basic_block> pred_cfg_bbs = get_dominated_by (CDI_POST_DOMINATORS, cfg_bb);
+  auto_vec<basic_block> pred_cfg_bbs
+    = get_dominated_by (CDI_POST_DOMINATORS, cfg_bb);
   FOR_EACH_EDGE (e, ei, cfg_bb->preds)
     {
       sbitmap avout = m_vector_manager->vector_avout[e->src->index];
