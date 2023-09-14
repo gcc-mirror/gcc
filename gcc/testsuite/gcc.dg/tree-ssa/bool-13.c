@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-original -fdump-tree-phiopt1 -fdump-tree-forwprop2" } */
+/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-original -fdump-tree-forwprop1 -fdump-tree-forwprop2" } */
 #define bool _Bool
 int maxbool(bool ab, bool bb)
 {
@@ -22,15 +22,10 @@ int minbool(bool ab, bool bb)
 /* { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "if " 0 "original" } } */
 
-/* PHI-OPT1 should have kept it as min/max. */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 1 "phiopt1" } } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "phiopt1" } } */
-/* { dg-final { scan-tree-dump-times "if " 0 "phiopt1" } } */
-
-/* Forwprop2 (after ccp) will convert it into &\| */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 0 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "if " 0 "forwprop2" } } */
+/* Forwprop1 will convert it into &\| as we can detect that the arguments are one_zero. */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 0 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "if " 0 "forwprop1" } } */
 
 /* By optimize there should be no min/max nor if  */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "optimized" } } */
