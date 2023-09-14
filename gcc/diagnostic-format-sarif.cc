@@ -94,6 +94,23 @@ public:
 			  sarif_builder *builder);
 };
 
+/* Subclass of sarif_object for SARIF threadFlow objects
+   (SARIF v2.1.0 section 3.37) for PATH.  */
+
+class sarif_thread_flow : public sarif_object
+{
+public:
+  sarif_thread_flow (const diagnostic_thread &thread);
+
+  void add_location (json::object *thread_flow_loc_obj)
+  {
+    m_locations_arr->append (thread_flow_loc_obj);
+  }
+
+private:
+  json::array *m_locations_arr;
+};
+
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
    and -fdiagnostics-format=sarif-file).
 
@@ -168,9 +185,9 @@ private:
   json::object *
   make_logical_location_object (const logical_location &logical_loc) const;
   json::object *make_code_flow_object (const diagnostic_path &path);
-  json::object *make_thread_flow_object (const diagnostic_path &path);
   json::object *
-  make_thread_flow_location_object (const diagnostic_event &event);
+  make_thread_flow_location_object (const diagnostic_event &event,
+				    int path_event_idx);
   json::array *maybe_make_kinds_array (diagnostic_event::meaning m) const;
   json::object *maybe_make_physical_location_object (location_t loc);
   json::object *make_artifact_location_object (location_t loc);
@@ -363,6 +380,19 @@ sarif_ice_notification::sarif_ice_notification (diagnostic_context *context,
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
   set ("level", new json::string ("error"));
+}
+
+/* class sarif_thread_flow : public sarif_object.  */
+
+sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
+{
+  /* "id" property (SARIF v2.1.0 section 3.37.2).  */
+  label_text name (thread.get_name (false));
+  set ("id", new json::string (name.get ()));
+
+  /* "locations" property (SARIF v2.1.0 section 3.37.6).  */
+  m_locations_arr = new json::array ();
+  set ("locations", m_locations_arr);
 }
 
 /* class sarif_builder.  */
@@ -1091,41 +1121,44 @@ sarif_builder::make_code_flow_object (const diagnostic_path &path)
 {
   json::object *code_flow_obj = new json::object ();
 
-  /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).
-     Currently we only support one thread per result.  */
+  /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).  */
   json::array *thread_flows_arr = new json::array ();
-  json::object *thread_flow_obj = make_thread_flow_object (path);
-  thread_flows_arr->append (thread_flow_obj);
+
+  /* Walk the events, consolidating into per-thread threadFlow objects,
+     using the index with PATH as the overall executionOrder.  */
+  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
+	   sarif_thread_flow *> thread_id_map;
+  for (unsigned i = 0; i < path.num_events (); i++)
+    {
+      const diagnostic_event &event = path.get_event (i);
+      const diagnostic_thread_id_t thread_id = event.get_thread_id ();
+      sarif_thread_flow *thread_flow_obj;
+
+      if (sarif_thread_flow **slot = thread_id_map.get (thread_id))
+	thread_flow_obj = *slot;
+      else
+	{
+	  const diagnostic_thread &thread = path.get_thread (thread_id);
+	  thread_flow_obj = new sarif_thread_flow (thread);
+	  thread_flows_arr->append (thread_flow_obj);
+	  thread_id_map.put (thread_id, thread_flow_obj);
+	}
+
+      /* Add event to thread's threadFlow object.  */
+      json::object *thread_flow_loc_obj
+	= make_thread_flow_location_object (event, i);
+      thread_flow_obj->add_location (thread_flow_loc_obj);
+    }
   code_flow_obj->set ("threadFlows", thread_flows_arr);
 
   return code_flow_obj;
 }
 
-/* Make a threadFlow object (SARIF v2.1.0 section 3.37) for PATH.  */
-
-json::object *
-sarif_builder::make_thread_flow_object (const diagnostic_path &path)
-{
-  json::object *thread_flow_obj = new json::object ();
-
-  /* "locations" property (SARIF v2.1.0 section 3.37.6).  */
-  json::array *locations_arr = new json::array ();
-  for (unsigned i = 0; i < path.num_events (); i++)
-    {
-      const diagnostic_event &event = path.get_event (i);
-      json::object *thread_flow_loc_obj
-	= make_thread_flow_location_object (event);
-      locations_arr->append (thread_flow_loc_obj);
-    }
-  thread_flow_obj->set ("locations", locations_arr);
-
-  return thread_flow_obj;
-}
-
 /* Make a threadFlowLocation object (SARIF v2.1.0 section 3.38) for EVENT.  */
 
 json::object *
-sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev)
+sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
+						 int path_event_idx)
 {
   json::object *thread_flow_loc_obj = new json::object ();
 
@@ -1141,6 +1174,11 @@ sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev)
   /* "nestingLevel" property (SARIF v2.1.0 section 3.38.10).  */
   thread_flow_loc_obj->set ("nestingLevel",
 			    new json::integer_number (ev.get_stack_depth ()));
+
+  /* "executionOrder" property (SARIF v2.1.0 3.38.11).
+     Offset by 1 to match the human-readable values emitted by %@.  */
+  thread_flow_loc_obj->set ("executionOrder",
+			    new json::integer_number (path_event_idx + 1));
 
   /* It might be nice to eventually implement the following for -fanalyzer:
      - the "stack" property (SARIF v2.1.0 section 3.38.5)
