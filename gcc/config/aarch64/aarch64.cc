@@ -16310,22 +16310,6 @@ aarch64_vector_costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
   /* Detect whether we're vectorizing for SVE and should apply the unrolling
      heuristic described above m_unrolled_advsimd_niters.  */
   record_potential_advsimd_unrolling (loop_vinfo);
-
-  /* Record the issue information for any SVE WHILE instructions that the
-     loop needs.  */
-  if (!m_ops.is_empty () && !LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
-    {
-      unsigned int num_masks = 0;
-      rgroup_controls *rgm;
-      unsigned int num_vectors_m1;
-      FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo).rgc_vec,
-			num_vectors_m1, rgm)
-	if (rgm->type)
-	  num_masks += num_vectors_m1 + 1;
-      for (auto &ops : m_ops)
-	if (auto *issue = ops.sve_issue_info ())
-	  ops.pred_ops += num_masks * issue->while_pred_ops;
-    }
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -17507,9 +17491,27 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 void
 aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
 {
+  /* Record the issue information for any SVE WHILE instructions that the
+     loop needs.  */
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
+  if (!m_ops.is_empty ()
+      && loop_vinfo
+      && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      unsigned int num_masks = 0;
+      rgroup_controls *rgm;
+      unsigned int num_vectors_m1;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo).rgc_vec,
+			num_vectors_m1, rgm)
+	if (rgm->type)
+	  num_masks += num_vectors_m1 + 1;
+      for (auto &ops : m_ops)
+	if (auto *issue = ops.sve_issue_info ())
+	  ops.pred_ops += num_masks * issue->while_pred_ops;
+    }
+
   auto *scalar_costs
     = static_cast<const aarch64_vector_costs *> (uncast_scalar_costs);
-  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
   if (loop_vinfo
       && m_vec_flags
       && aarch64_use_new_vector_costs_p ())
