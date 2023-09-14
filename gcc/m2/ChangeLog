@@ -1,3 +1,15 @@
+2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_FLAGS): Add -Wcase-enum.
+	(GM2_ISO_FLAGS): Add -Wcase-enum.
+	* gm2-compiler/M2CaseList.mod (EnumerateErrors): Issue
+	singular or plural start text prior to the enum list.
+	Remove unused parameter tokenno.
+	(EmitMissingRangeErrors): New procedure.
+	(MissingCaseBounds): Call EmitMissingRangeErrors.
+	(MissingCaseStatementBounds): Call EmitMissingRangeErrors.
+	* gm2-libs-iso/TextIO.mod: Fix spacing.
+
 2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2CaseList.def (PushCase): Rename parameters

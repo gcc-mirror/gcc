@@ -1,3 +1,83 @@
+2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vec_extract<mode><vel>): Add VLS modes.
+	(@vec_extract<mode><vel>): Ditto.
+	* config/riscv/vector.md: Ditto
+
+2023-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`X <= MAX(X, Y)`):
+	Move before `MIN (X, C1) < C2` pattern.
+
+2023-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111364
+	* match.pd (`MIN (X, Y) == X`): Extend
+	to min/lt, min/ge, max/gt, max/le.
+
+2023-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111345
+	* match.pd (`Y > (X % Y)`): Merge
+	into ...
+	(`(X % Y) < Y`): Pattern by adding `:c`
+	on the comparison.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111387
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Check
+	EDGE_DFS_BACK when doing BB vectorization.
+	(vect_slp_function): Use rev_post_order_and_mark_dfs_back_seme
+	to compute RPO and mark backedges.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_<mulh_table><mode>3_highpart):
+	New combine pattern.
+	* config/riscv/autovec.md (smul<mode>3_highpart): Mrege smul and umul.
+	(<mulh_table><mode>3_highpart): Merged pattern.
+	(umul<mode>3_highpart): Mrege smul and umul.
+	* config/riscv/vector-iterators.md (umul): New iterators.
+	(UNSPEC_VMULHU): New iterators.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_v<any_shiftrt:optab><any_extend:optab>trunc<mode>):
+	New combine pattern.
+	(*cond_<any_shiftrt:optab>trunc<mode>): Ditto.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*copysign<mode>_neg): Move.
+	(*cond_copysign<mode>): New combine pattern.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Extend.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111397
+	* tree-ssa-propagate.cc (may_propagate_copy): Change optional
+	argument to specify whether the PHI destination doesn't flow in
+	from an abnormal PHI.
+	(propagate_value): Adjust.
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Indicate abnormal
+	PHI dest.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::before_dom_children):
+	Likewise.
+	(process_bb): Likewise.
+
+2023-09-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/111362
+	* config/riscv/riscv.cc (riscv_emit_frm_mode_set): Bugfix.
+
+2023-09-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111303
+	* match.pd ((X - N * M) / N): Add undefined_p checking.
+	((X + N * M) / N): Likewise.
+	((X + C) div_rshift N): Likewise.
+
 2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/111337

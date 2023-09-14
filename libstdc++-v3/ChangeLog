@@ -1,3 +1,8 @@
+2023-09-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/format (std::__format::_Arg_store): Explicit version
+	namespace on make_format_args friend declaration.
+
 2023-09-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/111327

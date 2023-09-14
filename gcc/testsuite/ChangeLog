@@ -1,3 +1,65 @@
+2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add more def.
+	* gcc.target/riscv/rvv/autovec/vls/extract-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/extract-2.c: New test.
+
+2023-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111364
+	* gcc.c-torture/execute/minmaxcmp-1.c: New test.
+	* gcc.dg/tree-ssa/minmaxcmp-2.c: New test.
+	* gcc.dg/pr96708-negative.c: Update testcase.
+	* gcc.dg/pr96708-positive.c: Add comment about `return 0`.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111387
+	* gcc.dg/torture/pr111387.c: New testcase.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_mulh_run-2.c: New test.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-3.c: New test.
+
+2023-09-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-zvfh-run.c: New test.
+
+2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111397
+	* gcc.dg/uninit-pr111397.c: New testcase.
+
+2023-09-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/111362
+	* gcc.target/riscv/rvv/base/no-honor-frm-1.c: New test.
+
+2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vector-abi-9.c: Removed.
+
+2023-09-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111303
+	* gcc.dg/pr111303.c: New test.
+
 2023-09-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* lib/target-supports.exp: Enable vect_int for RVV.
