@@ -173,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __has_builtin(__make_integer_seq)
       = __make_integer_seq<integer_sequence, _Tp, _Num>;
 #else
-      = integer_sequence<_Tp, __integer_pack(_Num)...>;
+      = integer_sequence<_Tp, __integer_pack(_Tp(_Num))...>;
 #endif
 
   /// Alias template index_sequence
