@@ -177,3 +177,8 @@ Enum(cmodel) String(@@STR_CMODEL_EXTREME@@) Value(CMODEL_EXTREME)
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL)
 Specify the code model.
+
+mrelax
+Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION)
+Take advantage of linker relaxations to reduce the number of instructions
+required to materialize symbol addresses.

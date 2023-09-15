@@ -630,6 +630,12 @@
 #endif
 
 
+/* Define if your assembler supports -mrelax option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MRELAX_OPTION
+#endif
+
+
 /* Define if your assembler supports .mspabi_attribute. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MSPABI_ATTRIBUTE
@@ -2211,6 +2217,12 @@
 /* Define if O_CLOEXEC supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_O_CLOEXEC
+#endif
+
+
+/* Define which stat syscall is able to handle 64bit indodes. */
+#ifndef USED_FOR_TARGET
+#undef HOST_STAT_FOR_64BIT_INODES
 #endif
 
 
