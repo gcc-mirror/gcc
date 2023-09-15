@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++20 } }
 // Disable PCH because <bits/stdc++.h> includes <stdatomic.h> which declares
 // memory_order in the global namespace.
