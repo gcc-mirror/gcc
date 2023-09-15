@@ -1,6 +1,5 @@
 // PR libstdc++/111327 - std::bind_front (and std::not_fn) doesn't always
 // perfectly forward according to value category of the call wrapper object
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 #include <functional>

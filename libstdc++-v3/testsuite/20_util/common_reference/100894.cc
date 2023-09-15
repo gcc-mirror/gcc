@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 // PR libstdc++/100894 - common_reference implementation seems to be wrong
 

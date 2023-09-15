@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++20 -fno-lifetime-dse -O0" }
-// { dg-do run { target c++2a } }
+// { dg-options "-fno-lifetime-dse -O0" }
+// { dg-do run { target c++20 } }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 // { dg-require-effective-target hosted }
 

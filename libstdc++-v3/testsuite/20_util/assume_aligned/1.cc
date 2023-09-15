@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -O2" }
-// { dg-do run { target c++2a } }
+// { dg-options "-O2" }
+// { dg-do run { target c++20 } }
 
 #include <memory>
 #include <cstdint>

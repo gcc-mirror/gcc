@@ -17,8 +17,7 @@
 
 // NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #include <type_traits>
 
