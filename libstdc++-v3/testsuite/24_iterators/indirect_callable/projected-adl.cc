@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // P2538R1 ADL-proof std::projected
