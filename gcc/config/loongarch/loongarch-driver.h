@@ -53,7 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{mabi=*} %(subtarget_asm_spec)"
+  "%{mabi=*} %{mno-relax} %(subtarget_asm_spec)"
 
 
 extern const char*

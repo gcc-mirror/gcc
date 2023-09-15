@@ -5370,6 +5370,10 @@ x:
        .cfi_endproc],,
       [AC_DEFINE(HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT, 1,
 	  [Define if your assembler supports eh_frame pcrel encoding.])])
+    gcc_GAS_CHECK_FEATURE([-mrelax option], gcc_cv_as_loongarch_relax,
+      [-mrelax], [.text],,
+      [AC_DEFINE(HAVE_AS_MRELAX_OPTION, 1,
+		[Define if your assembler supports -mrelax option.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
