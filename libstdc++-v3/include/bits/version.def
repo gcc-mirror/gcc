@@ -1599,6 +1599,15 @@ ftms = {
 };
 
 ftms = {
+  name = fstream_native_handle;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = ratio;
   values = {
     v = 202306;

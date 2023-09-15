@@ -1095,6 +1095,9 @@
 /* Defined if Sleep exists. */
 #undef _GLIBCXX_USE_WIN32_SLEEP
 
+/* Define if _get_osfhandle should be used for filebuf::native_handle(). */
+#undef _GLIBCXX_USE__GET_OSFHANDLE
+
 /* Define to 1 if a verbose library is built, or 0 otherwise. */
 #undef _GLIBCXX_VERBOSE
 

@@ -5786,6 +5786,37 @@ AC_LANG_SAVE
   AC_LANG_RESTORE
 ])
 
+dnl
+dnl Check whether the Windows CRT function _get_osfhandle is available.
+dnl
+dnl Defines:
+dnl   _GLIBCXX_USE__GET_OSFHANDLE if _get_osfhandle is in <io.h> for Windows.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_FILEBUF_NATIVE_HANDLES], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether _get_osfhandle is defined in <io.h>])
+  AC_TRY_COMPILE([
+  #if defined(_WIN32) && !defined(__CYGWIN__)
+  # include <stdint.h>
+  # include <io.h>
+  #endif
+  ],[
+    FILE* file = 0;
+    int fd = fileno(file);
+    intptr_t crt_handle = _get_osfhandle(fd);
+    void* win32_handle = reinterpret_cast<void*>(crt_handle);
+  ], [ac_get_osfhandle=yes], [ac_get_osfhandle=no])
+  if test "$ac_objext" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE__GET_OSFHANDLE, 1,
+      [Define if _get_osfhandle should be used for filebuf::native_handle().])
+  fi
+  AC_MSG_RESULT($ac_get_osfhandle)
+
+  AC_LANG_RESTORE
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

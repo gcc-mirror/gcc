@@ -127,20 +127,22 @@ am__objects_1 = limits.lo placeholders.lo
 @ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.lo cxx11-stdexcept.lo
 am__objects_3 = ctype_configure_char.lo ctype_members.lo
-am__objects_4 = assert_fail.lo chrono.lo codecvt.lo \
+am__objects_4 = basic_file.lo
+am__objects_5 = assert_fail.lo chrono.lo codecvt.lo \
 	condition_variable.lo cow-stdexcept.lo ctype.lo debug.lo \
 	functexcept.lo functional.lo futex.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo ios.lo ios_errcat.lo mutex.lo random.lo \
-	regex.lo shared_ptr.lo snprintf_lite.lo system_error.lo \
-	thread.lo $(am__objects_2) $(am__objects_3)
-@ENABLE_DUAL_ABI_TRUE@am__objects_5 = cow-fstream-inst.lo \
+	hashtable_c++0x.lo ios.lo ios_errcat.lo locale_init.lo \
+	localename.lo mutex.lo random.lo regex.lo shared_ptr.lo \
+	snprintf_lite.lo system_error.lo thread.lo $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4)
+@ENABLE_DUAL_ABI_TRUE@am__objects_6 = cow-fstream-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-wstring-io-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-locale-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.lo sso_string.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_6 = $(am__objects_5) \
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_7 = $(am__objects_6) \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.lo fstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo locale-inst.lo \
@@ -152,8 +154,8 @@ am__objects_4 = assert_fail.lo chrono.lo codecvt.lo \
 @GLIBCXX_HOSTED_FALSE@am_libc__11convenience_la_OBJECTS =  \
 @GLIBCXX_HOSTED_FALSE@	$(am__objects_1)
 @GLIBCXX_HOSTED_TRUE@am_libc__11convenience_la_OBJECTS =  \
-@GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_4) \
-@GLIBCXX_HOSTED_TRUE@	$(am__objects_6)
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_5) \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_7)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -461,6 +463,12 @@ host_sources = \
 	ctype_configure_char.cc \
 	ctype_members.cc
 
+
+# Source files linked in via configuration/make substitution for a
+# particular host, but with ad hoc naming rules.
+host_sources_extra = \
+	basic_file.cc
+
 @ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 
 @ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
 @ENABLE_DUAL_ABI_TRUE@	cow-locale_init.cc \
@@ -490,6 +498,8 @@ sources = \
 	hashtable_c++0x.cc \
 	ios.cc \
 	ios_errcat.cc \
+	locale_init.cc \
+	localename.cc \
 	mutex.cc \
 	random.cc \
 	regex.cc  \
@@ -498,7 +508,8 @@ sources = \
 	system_error.cc \
 	thread.cc \
 	${cxx11_abi_sources} \
-	${host_sources}
+	${host_sources} \
+	${host_sources_extra}
 
 @ENABLE_DUAL_ABI_FALSE@extra_string_inst_sources = 
 @ENABLE_DUAL_ABI_TRUE@extra_string_inst_sources = \
@@ -854,6 +865,9 @@ ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char
 ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
+basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
+
 vpath % $(top_srcdir)/src/c++11
 
 # Use special rules for the hashtable.cc file so that all
@@ -872,6 +886,14 @@ limits.lo: limits.cc
 	$(LTCXXCOMPILE) -fchar8_t -c $<
 limits.o: limits.cc
 	$(CXXCOMPILE) -fchar8_t -c $<
+locale_init.lo: locale_init.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+locale_init.o: locale_init.cc
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+localename.lo: localename.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+localename.o: localename.cc
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s

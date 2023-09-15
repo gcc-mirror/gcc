@@ -1956,6 +1956,17 @@
 #undef __glibcxx_want_string_resize_and_overwrite
 
 // from version.def line 1602
+#if !defined(__cpp_lib_fstream_native_handle)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_fstream_native_handle 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_fstream_native_handle)
+#   define __cpp_lib_fstream_native_handle 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_fstream_native_handle) && defined(__glibcxx_want_fstream_native_handle) */
+#undef __glibcxx_want_fstream_native_handle
+
+// from version.def line 1611
 #if !defined(__cpp_lib_ratio)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_ratio 202306L
@@ -1966,7 +1977,7 @@
 #endif /* !defined(__cpp_lib_ratio) && defined(__glibcxx_want_ratio) */
 #undef __glibcxx_want_ratio
 
-// from version.def line 1610
+// from version.def line 1619
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L
