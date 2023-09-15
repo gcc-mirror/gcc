@@ -4352,13 +4352,23 @@ package body Exp_Ch6 is
                --  Generate the accessibility level based on the expression in
                --  the constant's declaration.
 
-               Add_Extra_Actual
-                 (Expr => Accessibility_Level
-                            (Expr            => Expression
-                                                  (Parent (Entity (Prev))),
-                             Level           => Dynamic_Level,
-                             Allow_Alt_Model => False),
-                  EF   => Extra_Accessibility (Formal));
+               declare
+                  Ent : Entity_Id := Entity (Prev);
+
+               begin
+                  --  Handle deferred constants
+
+                  if Present (Full_View (Ent)) then
+                     Ent := Full_View (Ent);
+                  end if;
+
+                  Add_Extra_Actual
+                    (Expr => Accessibility_Level
+                               (Expr            => Expression (Parent (Ent)),
+                                Level           => Dynamic_Level,
+                                Allow_Alt_Model => False),
+                     EF   => Extra_Accessibility (Formal));
+               end;
 
             --  Normal case
 
