@@ -37,6 +37,8 @@ private:
   CompileCrate (HIR::Crate &crate, Context *ctx);
   void go ();
 
+  void add_proc_macro_symbols ();
+
   HIR::Crate &crate;
   Context *ctx;
 };

@@ -23,6 +23,7 @@
 #include "rust-compile-type.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 namespace Compile {
@@ -45,6 +46,183 @@ CompileCrate::go ()
 {
   for (auto &item : crate.get_items ())
     CompileItem::compile (item.get (), ctx);
+  auto crate_type
+    = Rust::Session::get_instance ().options.target_data.get_crate_type ();
+  if (crate_type == TargetOptions::CrateType::PROC_MACRO)
+    add_proc_macro_symbols ();
+}
+
+namespace {
+
+tree
+build_attribute_array (std::vector<std::string> attributes)
+{
+  tree attribute_ptr = build_pointer_type (char_type_node);
+  tree attribute_type = build_qualified_type (attribute_ptr, TYPE_QUAL_CONST);
+  return build_array_type_nelts (attribute_type, attributes.size ());
+}
+
+// We're constructing the following structure:
+//
+// struct {
+//     const char *trait_name;
+//     const char **attributes;
+//     std::uint64_t attr_size;
+//     TokenStream (fndecl*) (TokenStream);
+// }
+tree
+build_derive_proc_macro (std::vector<std::string> attributes)
+{
+  tree char_ptr = build_pointer_type (char_type_node);
+  tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
+  Backend::typed_identifier name_field
+    = Backend::typed_identifier ("trait_name", const_char_type,
+				 BUILTINS_LOCATION);
+
+  // HACK: cannot use TREE_TYPE(fndecl) to retrieve the type, instead we're
+  // using a void pointer. We should probably find another way to achieve this.
+  // We cannot construct the type by ourselves because the function uses
+  // external TokenStream parameters and return type.
+  tree handle_ptr = build_pointer_type (void_type_node);
+  Backend::typed_identifier fndecl_field
+    = Backend::typed_identifier ("fndecl", handle_ptr, BUILTINS_LOCATION);
+
+  tree attribute_ptr = build_pointer_type (build_attribute_array (attributes));
+  tree const_attribute_type
+    = build_qualified_type (attribute_ptr, TYPE_QUAL_CONST);
+
+  Backend::typed_identifier attributes_field
+    = Backend::typed_identifier ("attributes", const_attribute_type,
+				 BUILTINS_LOCATION);
+
+  Backend::typed_identifier size_field
+    = Backend::typed_identifier ("attr_size", unsigned_type_node,
+				 BUILTINS_LOCATION);
+
+  return Backend::struct_type (
+    {name_field, attributes_field, size_field, fndecl_field});
+}
+
+// We're constructing the following structure:
+//
+// struct {
+//     const char *name;
+//     TokenStream (fndecl*) (TokenStream);
+// }
+tree
+build_bang_proc_macro ()
+{
+  tree char_ptr = build_pointer_type (char_type_node);
+  tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
+  Backend::typed_identifier name_field
+    = Backend::typed_identifier ("name", const_char_type, BUILTINS_LOCATION);
+
+  // HACK: cannot use TREE_TYPE(fndecl) to retrieve the type, instead we're
+  // using a void pointer. We should probably find another way to achieve this.
+  // We cannot construct the type by ourselves because the function uses
+  // external TokenStream parameters and return type.
+  tree handle_ptr = build_pointer_type (void_type_node);
+  Backend::typed_identifier fndecl_field
+    = Backend::typed_identifier ("fndecl", handle_ptr, BUILTINS_LOCATION);
+
+  return Backend::struct_type ({name_field, fndecl_field});
+}
+
+// Bang proc macros and attribute proc macros almost have the same members
+// the function pointer type is not the same.
+//
+// We're constructing the following structure:
+//
+// struct {
+//     const char *name;
+//     TokenStream (fndecl*) (TokenStream, TokenStream);
+// }
+tree
+build_attribute_proc_macro ()
+{
+  return build_bang_proc_macro ();
+}
+
+// Build the tagged union proc macro type
+//
+// struct {
+//     unsigned short tag;
+//     union { BangProcMacro , DeriveProcMacro, AttributeProcMacro} payload;
+// }
+tree
+build_proc_macro (tree bang, tree attribute, tree derive)
+{
+  Backend::typed_identifier bang_field
+    = Backend::typed_identifier ("bang", bang, BUILTINS_LOCATION);
+  Backend::typed_identifier attribute_field
+    = Backend::typed_identifier ("attribute", attribute, BUILTINS_LOCATION);
+  Backend::typed_identifier derive_field
+    = Backend::typed_identifier ("custom_derive", derive, BUILTINS_LOCATION);
+
+  tree union_field
+    = Backend::union_type ({bang_field, attribute_field, derive_field});
+
+  Backend::typed_identifier payload_field
+    = Backend::typed_identifier ("payload", union_field, BUILTINS_LOCATION);
+
+  Backend::typed_identifier tag_field
+    = Backend::typed_identifier ("tag", short_unsigned_type_node,
+				 BUILTINS_LOCATION);
+
+  return Backend::struct_type ({tag_field, payload_field});
+}
+
+tree
+build_proc_macro_buffer (tree proc_macro_type, size_t total_macro)
+{
+  return build_array_type_nelts (proc_macro_type, total_macro);
+}
+
+tree
+build_entrypoint (tree proc_macro_buffer)
+{
+  return build_reference_type_for_mode (proc_macro_buffer, E_VOIDmode, false);
+}
+
+} // namespace
+
+void
+CompileCrate::add_proc_macro_symbols ()
+{
+  auto total_macros = ctx->get_attribute_proc_macros ().size ()
+		      + ctx->get_bang_proc_macros ().size ()
+		      + ctx->get_derive_proc_macros ().size ();
+
+  tree custom_derive_type = build_derive_proc_macro ({});
+  tree bang_type = build_bang_proc_macro ();
+  tree attribute_type = build_attribute_proc_macro ();
+  tree proc_macro_type
+    = build_proc_macro (bang_type, attribute_type, custom_derive_type);
+  tree proc_macro_buffer_type
+    = build_proc_macro_buffer (proc_macro_type, total_macros);
+  tree entrypoint_type = build_entrypoint (proc_macro_buffer_type);
+  Bvariable *macro_decls
+    = Backend::global_variable ("__gccrs_proc_macro_decl_",
+				"__gccrs_proc_macro_decls_", entrypoint_type,
+				false, false, false, BUILTINS_LOCATION);
+
+  // tree init = value == error_mark_node ? error_mark_node : DECL_INITIAL
+  // (value);
+  // Backend::global_variable_set_init (macro_decls, error_mark_node);
+  ctx->push_var (macro_decls);
+
+  for (auto &macro : ctx->get_derive_proc_macros ())
+    {
+      rust_debug ("Found one derive macro");
+    }
+  for (auto &macro : ctx->get_attribute_proc_macros ())
+    {
+      rust_debug ("Found one attribute macro");
+    }
+  for (auto &macro : ctx->get_bang_proc_macros ())
+    {
+      rust_debug ("Found one bang macro");
+    }
 }
 
 // Shared methods in compilation
