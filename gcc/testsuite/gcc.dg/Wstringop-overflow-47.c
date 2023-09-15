@@ -65,15 +65,15 @@ void warn_i16_64 (int16_t i)
    like x86_64 it's a series of BIT_FIELD_REFs.  The overflow by
    the former is detected but the latter is not yet.  */
 
- extern char warn_a64[64];   // { dg-message "at offset (1|128) into destination object 'warn_a64' of size (63|64)" "pr97027 note" { xfail { ! aarch64-*-* } } }
+ extern char warn_a64[64];   // { dg-message "at offset (1|128) into destination object 'warn_a64' of size (63|64)" "pr97027 note" { xfail { ! { aarch64-*-* riscv*-*-* } } } }
 
   void *p = warn_a64 + 1;
   I16_64 *q = (I16_64*)p;
-  *q = (I16_64){ i };         // { dg-warning "writing (1 byte|64 bytes) into a region of size (0|63)" "pr97027" { xfail { ! aarch64-*-* } } }
+  *q = (I16_64){ i };         // { dg-warning "writing (1 byte|64 bytes) into a region of size (0|63)" "pr97027" { xfail { ! { aarch64-*-* riscv*-*-* } } } }
 
   char a64[64];
   p = a64 + 1;
   q = (I16_64*)p;
-  *q = (I16_64){ i };         // { dg-warning "writing (1 byte|64 bytes) into a region of size (0|63)" "pr97027" { xfail { ! aarch64-*-* } } }
+  *q = (I16_64){ i };         // { dg-warning "writing (1 byte|64 bytes) into a region of size (0|63)" "pr97027" { xfail { ! { aarch64-*-* riscv*-*-* } } } }
   sink (p);
 }
