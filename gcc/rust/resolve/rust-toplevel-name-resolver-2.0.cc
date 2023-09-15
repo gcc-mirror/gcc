@@ -319,40 +319,48 @@ TopLevel::handle_use_dec (AST::SimplePath path)
 
   auto found = false;
 
-  auto resolve_and_insert = [this, &found, &declared_name,
-			     locus] (Namespace ns,
-				     const AST::SimplePath &path) {
-    tl::optional<NodeId> resolved = tl::nullopt;
+  auto resolve_and_insert
+    = [this, &found, &declared_name, locus] (Namespace ns,
+					     const AST::SimplePath &path) {
+	tl::optional<NodeId> resolved = tl::nullopt;
 
-    // FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
-    // that we can improve it with hints or location or w/ever. and maybe
-    // only emit it the first time.
-    switch (ns)
-      {
-      case Namespace::Values:
-	resolved = ctx.values.resolve_path (path.get_segments ());
-	break;
-      case Namespace::Types:
-	resolved = ctx.types.resolve_path (path.get_segments ());
-	break;
-      case Namespace::Macros:
-	resolved = ctx.macros.resolve_path (path.get_segments ());
-	break;
-      case Namespace::Labels:
-	// TODO: Is that okay?
-	rust_unreachable ();
-      }
+	// FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
+	// that we can improve it with hints or location or w/ever. and maybe
+	// only emit it the first time.
+	switch (ns)
+	  {
+	  case Namespace::Values:
+	    resolved = ctx.values.resolve_path (path.get_segments ());
+	    break;
+	  case Namespace::Types:
+	    resolved = ctx.types.resolve_path (path.get_segments ());
+	    break;
+	  case Namespace::Macros:
+	    resolved = ctx.macros.resolve_path (path.get_segments ());
+	    break;
+	  case Namespace::Labels:
+	    // TODO: Is that okay?
+	    rust_unreachable ();
+	  }
 
-    // FIXME: Ugly
-    (void) resolved.map ([this, &found, &declared_name, locus, ns] (NodeId id) {
-      found = true;
+	// FIXME: Ugly
+	(void) resolved.map (
+	  [this, &found, &declared_name, locus, ns, path] (NodeId id) {
+	    found = true;
 
-      // what do we do with the id?
-      insert_or_error_out (declared_name, locus, id, ns);
+	    // what do we do with the id?
+	    insert_or_error_out (declared_name, locus, id, ns);
+	    auto result = node_forwarding.find (id);
+	    if (result != node_forwarding.cend ()
+		&& result->second != path.get_node_id ())
+	      rust_error_at (path.get_locus (), "%<%s%> defined multiple times",
+			     declared_name.c_str ());
+	    else // No previous thing has inserted this into our scope
+	      node_forwarding.insert ({id, path.get_node_id ()});
 
-      return id;
-    });
-  };
+	    return id;
+	  });
+      };
 
   // do this for all namespaces (even Labels?)
 
