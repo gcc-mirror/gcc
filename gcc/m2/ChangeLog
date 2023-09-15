@@ -1,3 +1,47 @@
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2CaseList.mod (NewRanges): Add block
+	comment.
+	(NewSet): Add block comment.
+	(DisplayRanges): Add block comment.
+	(IncludeElement): Add block comment.
+	(IncludeElements): Add block comment.
+	(appendString): Add block comment.
+	(appendEnum): Add block comment.
+	(appendTree): Add block comment.
+	(SubrangeErrors): Add block comment.
+
+2023-09-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2CaseList.mod (appendString): New procedure.
+	(appendEnum): Re-implement.
+	(NoOfSetElements): New procedure function.
+	(isPrintableChar): New procedure function.
+	(appendTree): New procedure.
+	(SubrangeErrors): New procedure.
+	(EmitMissingRangeErrors): Call SubrangeErrors if appropriate.
+	* gm2-compiler/M2SymInit.mod (SetFieldInitializedNo): Avoid
+	using a temporary variable once.
+	(IsLocalVar): Comment out.
+	(RecordContainsVarient): Remove fieldtype.
+	(GenerateNoteFlow): Remove lst parameter.
+	(CheckDeferredRecordAccess): Remove lst parameter.
+	(CheckUnary): Remove lst parameter.  Remove procSym.
+	(CheckBinary): Remove lst parameter.  Remove procSym.
+	(CheckIndrX): Remove lst parameter.  Remove procSym.
+	(CheckXIndr): Remove bblst and procSym parameters.
+	(CheckRecordField): Remove procSym, op1tok, op2tok and op2.
+	(CheckBecomes): Remove procSym and bblst.
+	(CheckComparison): Remove procSym and bblst.
+	(CheckAddr): Remove procSym parameter.
+	* gm2-gcc/m2expr.cc (m2expr_CSTIntToString): New function.
+	(m2expr_CSTIntToChar): New function.
+	* gm2-gcc/m2expr.def (CSTIntToString): New procedure function
+	declaration.
+	(CSTIntToChar): New procedure function declaration.
+	* gm2-gcc/m2expr.h (m2expr_CSTIntToChar): New prototype.
+	(m2expr_CSTIntToString): New prototype.
+
 2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (GM2_FLAGS): Add -Wcase-enum.

@@ -1,3 +1,45 @@
+2023-09-14  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb (Is_Statically_Disabled): New function to detect a
+	"statically disabled condition which evaluates to a given value",
+	as described in SPARK UG 7.3.2.
+	(Kill_Dead_Code): Call the new function Is_Statically_Disabled for
+	conditions of if statements.
+	* exp_util.ads (Is_Statically_Disabled): New function spec.
+
+2023-09-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Process_Record_Component): Adjust assertion on the
+	availablity of the invariant procedure; required because the
+	invariant procedure is built by the expander, and hence it is not
+	available compiling generic units or when the sources have errors,
+	since expansion is then disabled.
+
+2023-09-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Large_Max_Size_Mutable): Protect access to
+	attribute Is_Array_Type.
+
+2023-09-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Protect
+	access to Entity attribute and add missing code to check function
+	selector in a prefix form call.
+
+2023-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Also do nothing for the
+	expression of a delta aggregate.
+
+2023-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Initialized_By_Aliased_BIP_Func_Call): Make the name
+	matching more robust.
+
+2023-09-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Parent_Subprogram): Complete assertion.
+
 2023-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_to_gnu): Really test Storage_Pool on

@@ -1,3 +1,51 @@
+2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111357
+	* testsuite/20_util/integer_sequence/pr111357.cc: New test.
+
+2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc: Use
+	dg-additional-files. Remove @require@ and @diff@ comments.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-io.cc: Likewise.
+	* testsuite/lib/dg-options.exp (v3_additional_files): New
+	global variable.
+	(dg-additional-files): New proc.
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Copy
+	additional files to test directory.
+
+2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/io_context (io_context) [!_GLIBCXX_HAS_GTHREADS]:
+	Use a plain integer for _M_work_count for single-threaded
+	targets.
+	* include/experimental/memory_resource (__get_default_resource)
+	[!_GLIBCXX_HAS_GTHREADS]: Use unsynchronized type for
+	single-threaded targets.
+	* src/c++17/default_resource.h: Adjust preprocessor conditions
+	to match memory_resource.cc.
+	* src/c++17/memory_resource.cc [!_GLIBCXX_HAS_GTHREADS]
+	(atomic_mem_res): Use unsynchronized type for single-threaded
+	targets.
+
+2023-09-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/value_init.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/value_init.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/value_init.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/integral.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/pointer.cc: Likewise.
+
+2023-09-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc: Add
+	{ dg-require-normal-namespace "" }.
+
 2023-09-13  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/std/format (std::__format::_Arg_store): Explicit version

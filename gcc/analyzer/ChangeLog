@@ -1,3 +1,36 @@
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::get_thread_id): New.
+	* checker-path.h (class checker_path): Implement thread-related
+	vfuncs via a single simple_diagnostic_thread instance named
+	"main".
+
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (compatible_epath_p): Fix missing return.
+
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (process_worklist_item): Use
+	std::unique_ptr rather than plain rejected_constraint *.
+	* engine.cc (exploded_path::feasible_p): Likewise.
+	(feasibility_state::maybe_update_for_edge): Likewise.
+	* exploded-graph.h (feasibility_problem::feasibility_problem):
+	Likewise.
+	(feasibility_problem::~feasibility_problem): Delete.
+	(feasibility_problem::m_rc): Use std::unique_ptr.
+	(feasibility_state::maybe_update_for_edge): Likewise.
+	* feasible-graph.cc (feasible_graph::add_feasibility_problem):
+	Likewise.
+	* feasible-graph.h (class infeasible_node): Likewise.
+	(feasible_graph::add_feasibility_problem): Likewise.
+	* region-model.cc (region_model::add_constraint): Likewise.
+	(region_model::maybe_update_for_edge): Likewise.
+	(region_model::apply_constraints_for_gcond): Likewise.
+	(region_model::apply_constraints_for_gswitch): Likewise.
+	(region_model::apply_constraints_for_exception): Likewise.
+	* region-model.h (class region_model): Likewise for decls.
+
 2023-09-09  benjamin priour  <vultkayn@gcc.gnu.org>
 
 	PR analyzer/96395

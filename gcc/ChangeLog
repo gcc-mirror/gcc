@@ -1,3 +1,208 @@
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-event-id.h (diagnostic_thread_id_t): New typedef.
+	* diagnostic-format-sarif.cc (class sarif_thread_flow): New.
+	(sarif_thread_flow::sarif_thread_flow): New.
+	(sarif_builder::make_code_flow_object): Reimplement, creating
+	per-thread threadFlow objects, populating them with the relevant
+	events.
+	(sarif_builder::make_thread_flow_object): Delete, moving the
+	code into sarif_builder::make_code_flow_object.
+	(sarif_builder::make_thread_flow_location_object): Add
+	"path_event_idx" param.  Use it to set "executionOrder"
+	property.
+	* diagnostic-path.h (diagnostic_event::get_thread_id): New
+	pure-virtual vfunc.
+	(class diagnostic_thread): New.
+	(diagnostic_path::num_threads): New pure-virtual vfunc.
+	(diagnostic_path::get_thread):  New pure-virtual vfunc.
+	(diagnostic_path::multithreaded_p): New decl.
+	(simple_diagnostic_event::simple_diagnostic_event): Add optional
+	thread_id param.
+	(simple_diagnostic_event::get_thread_id): New accessor.
+	(simple_diagnostic_event::m_thread_id): New.
+	(class simple_diagnostic_thread): New.
+	(simple_diagnostic_path::simple_diagnostic_path): Move definition
+	to diagnostic.cc.
+	(simple_diagnostic_path::num_threads): New.
+	(simple_diagnostic_path::get_thread): New.
+	(simple_diagnostic_path::add_thread): New.
+	(simple_diagnostic_path::add_thread_event): New.
+	(simple_diagnostic_path::m_threads): New.
+	* diagnostic-show-locus.cc (layout::layout): Add pretty_printer
+	param for overriding the context's printer.
+	(diagnostic_show_locus): Likwise.
+	* diagnostic.cc (simple_diagnostic_path::simple_diagnostic_path):
+	Move here from diagnostic-path.h.  Add main thread.
+	(simple_diagnostic_path::num_threads): New.
+	(simple_diagnostic_path::get_thread): New.
+	(simple_diagnostic_path::add_thread): New.
+	(simple_diagnostic_path::add_thread_event): New.
+	(simple_diagnostic_event::simple_diagnostic_event): Add thread_id
+	param and use it to initialize m_thread_id.  Reformat.
+	* diagnostic.h: Add pretty_printer param for overriding the
+	context's printer.
+	* tree-diagnostic-path.cc: Add #define INCLUDE_VECTOR.
+	(can_consolidate_events): Compare thread ids.
+	(class per_thread_summary): New.
+	(event_range::event_range): Add per_thread_summary arg.
+	(event_range::print): Add "pp" param and use it rather than dc's
+	printer.
+	(event_range::m_thread_id): New field.
+	(event_range::m_per_thread_summary): New field.
+	(path_summary::multithreaded_p): New.
+	(path_summary::get_events_for_thread_id): New.
+	(path_summary::m_per_thread_summary): New field.
+	(path_summary::m_thread_id_to_events): New field.
+	(path_summary::get_or_create_events_for_thread_id): New.
+	(path_summary::path_summary): Create per_thread_summary instances
+	as needed and associate the event_range instances with them.
+	(base_indent): Move here from print_path_summary_as_text.
+	(per_frame_indent): Likewise.
+	(class thread_event_printer): New, adapted from parts of
+	print_path_summary_as_text.
+	(print_path_summary_as_text): Make static.  Reimplement to
+	moving most of existing code to class thread_event_printer,
+	capturing state as per-thread as appropriate.
+	(default_tree_diagnostic_path_printer): Add missing 'break' on
+	final case.
+
+2023-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* dwarf2cfi.cc (dwarf2cfi_cc_finalize): New.
+	* dwarf2out.h (dwarf2cfi_cc_finalize): New decl.
+	* ggc-common.cc (ggc_mark_roots): Multiply by rti->nelt when
+	clearing the deletable gcc_root_tab_t.
+	(ggc_common_finalize): New.
+	* ggc.h (ggc_common_finalize): New decl.
+	* toplev.cc (toplev::finalize): Call dwarf2cfi_cc_finalize and
+	ggc_common_finalize.
+
+2023-09-14  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/predicates.md (xtensa_cstoresi_operator): Add
+	unsigned comparisons.
+	* config/xtensa/xtensa.cc (xtensa_expand_scc): Add code
+	generation of salt/saltu instructions.
+	* config/xtensa/xtensa.h (TARGET_SALT): New macro.
+	* config/xtensa/xtensa.md (salt, saltu): New instruction
+	patterns.
+
+2023-09-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc (find_costs_and_classes): Decrease memory cost
+	by equiv savings.
+
+2023-09-14  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec.md: Change rtx code to unspec.
+	* config/riscv/riscv-protos.h (expand_reduction): Change prototype.
+	* config/riscv/riscv-v.cc (expand_reduction): Change prototype.
+	* config/riscv/riscv-vector-builtins-bases.cc (class widen_reducop):
+	Removed.
+	(class widen_freducop): Removed.
+	* config/riscv/vector-iterators.md (minu): Add reduc unspec, iterators, attrs.
+	* config/riscv/vector.md (@pred_reduc_<reduc><mode>): Change name.
+	(@pred_<reduc_op><mode>): New name.
+	(@pred_widen_reduc_plus<v_su><mode>): Change name.
+	(@pred_reduc_plus<order><mode>): Change name.
+	(@pred_widen_reduc_plus<order><mode>): Change name.
+
+2023-09-14  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_reduction): Adjust call.
+	* config/riscv/riscv-vector-builtins-bases.cc: Adjust call.
+	* config/riscv/vector-iterators.md: New iterators and attrs.
+	* config/riscv/vector.md (@pred_reduc_<reduc><VQI:mode><VQI_LMUL1:mode>):
+	Removed.
+	(@pred_reduc_<reduc><VHI:mode><VHI_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><VSI:mode><VSI_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><VDI:mode><VDI_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><mode>): Added.
+	(@pred_widen_reduc_plus<v_su><VQI:mode><VHI_LMUL1:mode>): Removed.
+	(@pred_widen_reduc_plus<v_su><VHI:mode><VSI_LMUL1:mode>): Removed.
+	(@pred_widen_reduc_plus<v_su><mode>): Added.
+	(@pred_widen_reduc_plus<v_su><VSI:mode><VDI_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><VHF:mode><VHF_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><VSF:mode><VSF_LMUL1:mode>): Removed.
+	(@pred_reduc_<reduc><VDF:mode><VDF_LMUL1:mode>): Removed.
+	(@pred_reduc_plus<order><VHF:mode><VHF_LMUL1:mode>): Removed.
+	(@pred_reduc_plus<order><VSF:mode><VSF_LMUL1:mode>): Removed.
+	(@pred_reduc_plus<order><mode>): Added.
+	(@pred_reduc_plus<order><VDF:mode><VDF_LMUL1:mode>): Removed.
+	(@pred_widen_reduc_plus<order><VHF:mode><VSF_LMUL1:mode>): Removed.
+	(@pred_widen_reduc_plus<order><VSF:mode><VDF_LMUL1:mode>): Removed.
+	(@pred_widen_reduc_plus<order><mode>): Added.
+
+2023-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::analyze_loop_info):
+	Move WHILELO handling to...
+	(aarch64_vector_costs::finish_cost): ...here.  Check whether the
+	vectorizer has decided to use a predicated loop.
+
+2023-09-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* match.pd (`(X CMP1 CST1) AND/IOR (X CMP2 CST2)`):
+	Expand to support constants that are off by one.
+
+2023-09-14  Andrew Pinski  <apinski@marvell.com>
+
+	* genmatch.cc (parser::parse_result): For an else clause
+	of an if statement inside a switch, error out explictly.
+
+2023-09-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Add VLS mask modes.
+	* config/riscv/autovec.md (@vcond_mask_<mode><vm>): Remove @.
+	(vcond_mask_<mode><vm>): Add VLS mask modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Track
+	operands that eventually become dead and use simple_dce_from_worklist
+	to remove their definitions if they did so.
+
+2023-09-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_vec_duplicate_vq<mode>_le):
+	Accept all nonimmediate_operands, but keep the existing constraints.
+	If the instruction is split before RA, load invalid addresses into
+	a temporary register.
+	* config/aarch64/predicates.md (aarch64_sve_dup_ld1rq_operand): Delete.
+
+2023-09-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111395
+	* config/riscv/riscv-vsetvl.cc (avl_info::operator==): Fix ICE.
+	(vector_insn_info::global_merge): Ditto.
+	(vector_insn_info::get_avl_or_vl_reg): Ditto.
+
+2023-09-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::global_eliminate_vsetvl_insn): Format it.
+
+2023-09-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-def.c: Modify the default value of
+	branch_cost.
+
+2023-09-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_scc):
+	Revert the changes from the last patch, as the work in the RTL
+	expansion pass is too far to determine the physical registers.
+	* config/xtensa/xtensa.md (*eqne_INT_MIN): Ditto.
+	(eq_zero_NSA, eqne_zero, *eqne_zero_masked_bits): New patterns.
+
+2023-09-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/111334
+	* config/loongarch/loongarch.md: Fix bug of '<optab>di3_fake'.
+
 2023-09-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec.md (vec_extract<mode><vel>): Add VLS modes.
