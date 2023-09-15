@@ -84,10 +84,9 @@ template <int MAX_OPERANDS> class insn_expander
 public:
   insn_expander () = delete;
 
-  insn_expander (unsigned insn_flags, bool vlmax_p, machine_mode dest_mode,
-		  machine_mode mask_mode)
+  insn_expander (unsigned insn_flags, bool vlmax_p)
     : m_insn_flags (insn_flags), m_opno (0), m_vlmax_p (vlmax_p),
-      m_dest_mode (dest_mode), m_mask_mode (mask_mode), m_vl_op (NULL_RTX)
+      m_vl_op (NULL_RTX)
   {
     check_insn_flags ();
   }
@@ -150,13 +149,17 @@ public:
     create_input_operand (&m_ops[m_opno++], x, mode);
     gcc_assert (m_opno <= MAX_OPERANDS);
   }
-  void add_all_one_mask_operand ()
+  void add_all_one_mask_operand (machine_mode mask_mode)
   {
-    add_input_operand (CONSTM1_RTX (m_mask_mode), m_mask_mode);
+    add_input_operand (CONSTM1_RTX (mask_mode), mask_mode);
   }
-  void add_vundef_operand ()
+  void add_first_one_true_mask_operand (machine_mode mask_mode)
   {
-    add_input_operand (RVV_VUNDEF (m_dest_mode), m_dest_mode);
+    add_input_operand (gen_scalar_move_mask (mask_mode), mask_mode);
+  }
+  void add_vundef_operand (machine_mode dest_mode)
+  {
+    add_input_operand (RVV_VUNDEF (dest_mode), dest_mode);
   }
   void add_policy_operand ()
   {
@@ -194,9 +197,17 @@ public:
     add_input_operand (frm_rtx, Pmode);
   }
 
-  void add_oprand (rtx *ops, int opno)
+  /* Return the vtype mode based on insn_flags.
+     vtype mode mean the mode vsetvl insn set. */
+  machine_mode
+  get_vtype_mode (rtx *ops)
   {
-
+    machine_mode vtype_mode;
+    if (m_insn_flags & VTYPE_MODE_FROM_OP1_P)
+      vtype_mode = GET_MODE (ops[1]);
+    else
+      vtype_mode = GET_MODE (ops[0]);
+    return vtype_mode;
   }
 
   void emit_insn (enum insn_code icode, rtx *ops)
@@ -206,18 +217,22 @@ public:
     /* It's true if any operand is memory operand.  */
     bool any_mem_p = false;
 
+    machine_mode vtype_mode = get_vtype_mode (ops);
+    machine_mode mask_mode = get_mask_mode (vtype_mode);
+
     /* Add dest operand.  */
     if (m_insn_flags & HAS_DEST_P)
       {
-	any_mem_p |= MEM_P (ops[opno]);
-	add_output_operand (ops[opno++], m_dest_mode);
+	rtx op = ops[opno++];
+	any_mem_p |= MEM_P (op);
+	add_output_operand (op, GET_MODE (op));
       }
 
     /* Add mask operand.  */
     if (m_insn_flags & USE_ONE_TRUE_MASK_P)
-      add_input_operand (gen_scalar_move_mask (m_mask_mode), m_mask_mode);
+      add_first_one_true_mask_operand (mask_mode);
     else if (m_insn_flags & USE_ALL_TRUES_MASK_P)
-      add_all_one_mask_operand ();
+      add_all_one_mask_operand (mask_mode);
     else if (m_insn_flags & HAS_MASK_P)
       {
 	machine_mode mode = insn_data[(int) icode].operand[m_opno].mode;
@@ -227,7 +242,8 @@ public:
 
     /* Add merge operand.  */
     if (m_insn_flags & USE_VUNDEF_MERGE_P)
-      add_vundef_operand ();
+      /* Same as dest operand.  */
+      add_vundef_operand (GET_MODE (ops[0]));
     else if (m_insn_flags & HAS_MERGE_P)
       {
 	machine_mode mode = insn_data[(int) icode].operand[m_opno].mode;
@@ -268,31 +284,30 @@ public:
 
     /* Add vl operand.  */
     rtx len = m_vl_op;
-    machine_mode mode = VECTOR_MODE_P (m_dest_mode) ? m_dest_mode : m_mask_mode;
     if (m_vlmax_p)
       {
-	if (riscv_v_ext_vls_mode_p (mode))
+	if (riscv_v_ext_vls_mode_p (vtype_mode))
 	  {
 	    /* VLS modes always set VSETVL by
 	       "vsetvl zero, rs1/imm".  */
-	    poly_uint64 nunits = GET_MODE_NUNITS (mode);
+	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
 	    len = gen_int_mode (nunits, Pmode);
 	    if (!satisfies_constraint_K (len))
 	      len = force_reg (Pmode, len);
 	    m_vlmax_p = false;
 	  }
-	else if (const_vlmax_p (mode))
+	else if (const_vlmax_p (vtype_mode))
 	  {
 	    /* Optimize VLS-VLMAX code gen, we can use vsetivli instead of
 	       the vsetvli to obtain the value of vlmax.  */
-	    poly_uint64 nunits = GET_MODE_NUNITS (mode);
+	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
 	    len = gen_int_mode (nunits, Pmode);
 	    m_vlmax_p = false;
 	  }
 	else if (can_create_pseudo_p ())
 	  {
 	    len = gen_reg_rtx (Pmode);
-	    emit_vlmax_vsetvl (mode, len);
+	    emit_vlmax_vsetvl (vtype_mode, len);
 	  }
       }
 
@@ -325,26 +340,12 @@ public:
   }
 
 private:
-  int m_insn_flags;
+  unsigned m_insn_flags;
   int m_opno;
   bool m_vlmax_p;
-  machine_mode m_dest_mode;
-  machine_mode m_mask_mode;
   rtx m_vl_op;
   expand_operand m_ops[MAX_OPERANDS];
 };
-
-/* Return the mask mode based on insn_flags */
-static machine_mode
-get_mask_mode_from_insn_flags (unsigned insn_flags, rtx *ops)
-{
-  machine_mode mask_mode;
-  if (insn_flags & MASK_MODE_FROM_OP1_P)
-    mask_mode = get_mask_mode (GET_MODE (ops[1]));
-  else
-    mask_mode = get_mask_mode (GET_MODE (ops[0]));
-  return mask_mode;
-}
 
 /* Emit RVV insn which vl is VLMAX.
    This function can only be used before LRA pass or
@@ -352,11 +353,7 @@ get_mask_mode_from_insn_flags (unsigned insn_flags, rtx *ops)
 void
 emit_vlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops)
 {
-  machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode_from_insn_flags (insn_flags, ops);
-
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true, dest_mode,
-					   mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
@@ -364,10 +361,7 @@ emit_vlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops)
 void
 emit_nonvlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
 {
-  machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode_from_insn_flags (insn_flags, ops);
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false, dest_mode,
-					   mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false);
   e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
@@ -379,10 +373,7 @@ emit_vlmax_insn_lra (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
 {
   gcc_assert (!can_create_pseudo_p ());
 
-  machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode_from_insn_flags (insn_flags, ops);
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true, dest_mode,
-					   mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
   e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }

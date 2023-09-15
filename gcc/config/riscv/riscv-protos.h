@@ -244,8 +244,8 @@ enum insn_flags : unsigned int
   /* Means INSN need two operands to do the operation.  */
   TERNARY_OP_P = 1 << 13,
 
-  /* flags for get mask mode from the index number. default from dest operand.  */
-  MASK_MODE_FROM_OP1_P = 1 << 14,
+  /* flags for get vtype mode from the index number. default from dest operand.  */
+  VTYPE_MODE_FROM_OP1_P = 1 << 14,
 
   /* flags for the floating-point rounding mode.  */
   /* Means INSN has FRM operand and the value is FRM_DYN.  */
@@ -321,7 +321,7 @@ enum insn_type : unsigned int
 
   /* For vcpop.m, no merge operand, no tail and mask policy operands.  */
   CPOP_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | UNARY_OP_P
-	    | MASK_MODE_FROM_OP1_P,
+	    | VTYPE_MODE_FROM_OP1_P,
 
   /* For mask instrunctions, no tail and mask policy operands.  */
   UNARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
@@ -336,10 +336,10 @@ enum insn_type : unsigned int
   = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
 
   /* For vreduce, no mask policy operand. */
-  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | MASK_MODE_FROM_OP1_P,
-  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
   REDUCE_OP_M_FRM_DYN
-  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
 
   /* For vmv.s.x/vfmv.s.f.  */
   SCALAR_MOVE_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P | HAS_MERGE_P
