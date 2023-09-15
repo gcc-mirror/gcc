@@ -729,6 +729,17 @@ region_model::get_gassign_result (const gassign *assign,
 				   region_model_context *ctxt)
 {
   tree lhs = gimple_assign_lhs (assign);
+
+  if (gimple_has_volatile_ops (assign)
+      && !gimple_clobber_p (assign))
+    {
+      conjured_purge p (this, ctxt);
+      return m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs),
+						   assign,
+						   get_lvalue (lhs, ctxt),
+						   p);
+    }
+
   tree rhs1 = gimple_assign_rhs1 (assign);
   enum tree_code op = gimple_assign_rhs_code (assign);
   switch (op)
