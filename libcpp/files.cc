@@ -541,7 +541,9 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
     = (kind == _cpp_FFK_PRE_INCLUDE
        || (pfile->buffer && pfile->buffer->file->implicit_preinclude));
 
-  if (kind != _cpp_FFK_FAKE)
+  if (kind == _cpp_FFK_FAKE)
+    file->dont_read = true;
+  else
     /* Try each path in the include chain.  */
     for (;;)
       {
@@ -1490,7 +1492,12 @@ cpp_clear_file_cache (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, 0, _cpp_FFK_FAKE, 0);
+  /* It does not matter what are the contents of fake_source_dir, it will never
+     be inspected; we just use its address to uniquely signify that this file
+     was added as a fake include, so a later call to _cpp_find_file (to include
+     the file for real) won't find the fake one in the hash table.  */
+  static cpp_dir fake_source_dir;
+  _cpp_find_file (pfile, fname, &fake_source_dir, 0, _cpp_FFK_FAKE, 0);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
