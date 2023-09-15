@@ -26503,11 +26503,9 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   gcc_assert (known_eq (GET_MODE_SIZE (GET_MODE (mem_1)),
 			GET_MODE_SIZE (GET_MODE (mem_2))));
 
-  /* One of the memory accesses must be a mempair operand.
-     If it is not the first one, they need to be swapped by the
-     peephole.  */
-  if (!aarch64_mem_pair_operand (mem_1, GET_MODE (mem_1))
-       && !aarch64_mem_pair_operand (mem_2, GET_MODE (mem_2)))
+  /* The lower memory access must be a mem-pair operand.  */
+  rtx lower_mem = reversed ? mem_2 : mem_1;
+  if (!aarch64_mem_pair_operand (lower_mem, GET_MODE (lower_mem)))
     return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
