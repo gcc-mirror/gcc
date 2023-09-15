@@ -3251,10 +3251,25 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 
 gcc_AC_INITFINI_ARRAY
 
+# Some assemblers (GNU as for LoongArch) generates relocations for
+# leb128 symbol arithmetic for relaxation, we need to disable relaxation
+# probing leb128 support then.
+case $target in
+  loongarch*-*-*)
+    gcc_GAS_CHECK_FEATURE([-mno-relax support],
+      gcc_cv_as_mno_relax,[-mno-relax],[.text],,
+      [check_leb128_asflags=-mno-relax])
+    ;;
+  *)
+    check_leb128_asflags=
+    ;;
+esac
+
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
 # Older versions of GAS and some non-GNU assemblers, have a bugs handling
 # these directives, even when they appear to accept them.
-gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,,
+gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
+[$check_leb128_asflags],
 [	.data
 	.uleb128 L2 - L1
 L1:
