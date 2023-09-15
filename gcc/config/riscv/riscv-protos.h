@@ -414,12 +414,6 @@ enum mask_policy
 /* Return true if VALUE is agnostic or any policy.  */
 #define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
 
-enum class reduction_type
-{
-  UNORDERED,
-  FOLD_LEFT,
-  MASK_LEN_FOLD_LEFT,
-};
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
@@ -433,8 +427,7 @@ void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
-void expand_reduction (unsigned, rtx *, rtx,
-		       reduction_type = reduction_type::UNORDERED);
+void expand_reduction (unsigned, unsigned, rtx *, rtx);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));

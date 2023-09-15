@@ -1208,7 +1208,8 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, operands,
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, riscv_vector::REDUCE_OP,
+                                  operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
 }
@@ -1226,7 +1227,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED, operands,
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+                                  riscv_vector::REDUCE_OP_FRM_DYN,
+                                  operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
 }
@@ -1245,9 +1248,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED, operands,
-				  operands[1],
-				  riscv_vector::reduction_type::FOLD_LEFT);
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
+                                  riscv_vector::REDUCE_OP_FRM_DYN,
+                                  operands, operands[1]);
   DONE;
 }
 [(set_attr "type" "vector")])
@@ -1271,9 +1274,12 @@
   if (rtx_equal_p (operands[4], const0_rtx))
     emit_move_insn (operands[0], operands[1]);
   else
-    riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED, operands,
-				    operands[1],
-				    riscv_vector::reduction_type::MASK_LEN_FOLD_LEFT);
+    {
+      rtx ops[] = {operands[0], operands[2], operands[3], operands[4]};
+      riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
+                                      riscv_vector::REDUCE_OP_M_FRM_DYN,
+                                      ops, operands[1]);
+    }
   DONE;
 }
 [(set_attr "type" "vector")])

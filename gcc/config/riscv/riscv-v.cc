@@ -67,6 +67,18 @@ const_vlmax_p (machine_mode mode)
     : false;
 }
 
+/* Helper functions for insn_flags && insn_types */
+
+/* Return true if caller need pass mask operand for insn pattern with
+   INSN_FLAGS. */
+
+static bool
+need_mask_operand_p (unsigned insn_flags)
+{
+  return (insn_flags & HAS_MASK_P)
+	 && !(insn_flags & (USE_ONE_TRUE_MASK_P | USE_ALL_TRUES_MASK_P));
+}
+
 template <int MAX_OPERANDS> class insn_expander
 {
 public:
@@ -3206,48 +3218,38 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   expand_cond_len_op (icode, TERNARY_OP_P, cond_ops, len);
 }
 
-/* Expand reduction operations.  */
+/* Expand reduction operations.
+     Case 1: ops = {scalar_dest, vector_src}
+     Case 2: ops = {scalar_dest, vector_src, mask, vl}
+*/
 void
-expand_reduction (unsigned unspec, rtx *ops, rtx init, reduction_type type)
+expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
 {
-  rtx vector = type == reduction_type::UNORDERED ? ops[1] : ops[2];
-  machine_mode vmode = GET_MODE (vector);
-  machine_mode vel_mode = GET_MODE (ops[0]);
+  rtx scalar_dest = ops[0];
+  rtx vector_src = ops[1];
+  machine_mode vmode = GET_MODE (vector_src);
+  machine_mode vel_mode = GET_MODE (scalar_dest);
   machine_mode m1_mode = get_m1_mode (vel_mode).require ();
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
   emit_nonvlmax_insn (code_for_pred_broadcast (m1_mode), SCALAR_MOVE_OP,
-		       scalar_move_ops,
-		       type == reduction_type::MASK_LEN_FOLD_LEFT
-			 ? ops[4]
-			 : CONST1_RTX (Pmode));
+		      scalar_move_ops,
+		      need_mask_operand_p (insn_flags) ? ops[3]
+						       : CONST1_RTX (Pmode));
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
-  rtx reduc_ops[] = {m1_tmp2, vector, m1_tmp};
+  rtx reduc_ops[] = {m1_tmp2, vector_src, m1_tmp};
+  insn_code icode = code_for_pred (unspec, vmode);
 
-  if (unspec == UNSPEC_REDUC_SUM_ORDERED
-      || unspec == UNSPEC_WREDUC_SUM_ORDERED
-      || unspec == UNSPEC_REDUC_SUM_UNORDERED
-      || unspec == UNSPEC_WREDUC_SUM_UNORDERED)
+  if (need_mask_operand_p (insn_flags))
     {
-      insn_code icode = code_for_pred (unspec, vmode);
-      if (type == reduction_type::MASK_LEN_FOLD_LEFT)
-	{
-	  rtx mask = ops[3];
-	  rtx mask_len_reduc_ops[] = {m1_tmp2, mask, vector, m1_tmp};
-	  emit_nonvlmax_insn (icode, REDUCE_OP_M_FRM_DYN, mask_len_reduc_ops,
-			       ops[4]);
-	}
-      else
-	emit_vlmax_insn (icode, REDUCE_OP_FRM_DYN, reduc_ops);
+      rtx mask_len_reduc_ops[] = {m1_tmp2, ops[2], vector_src, m1_tmp};
+      emit_nonvlmax_insn (icode, insn_flags, mask_len_reduc_ops, ops[3]);
     }
   else
-    {
-      insn_code icode = code_for_pred (unspec, vmode);
-      emit_vlmax_insn (icode, REDUCE_OP, reduc_ops);
-    }
+    emit_vlmax_insn (icode, insn_flags, reduc_ops);
 
-  emit_insn (gen_pred_extract_first (m1_mode, ops[0], m1_tmp2));
+  emit_insn (gen_pred_extract_first (m1_mode, scalar_dest, m1_tmp2));
 }
 
 /* Prepare ops for ternary operations.
