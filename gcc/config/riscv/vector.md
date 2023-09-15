@@ -1776,40 +1776,40 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_merge<mode>_scalar"
-  [(set (match_operand:VI_QHS 0 "register_operand"   "=vd,vd")
-    (if_then_else:VI_QHS
+  [(set (match_operand:V_VLSI_QHS 0 "register_operand"   "=vd,vd")
+    (if_then_else:V_VLSI_QHS
       (unspec:<VM>
         [(match_operand 5 "vector_length_operand"    " rK,rK")
          (match_operand 6 "const_int_operand"        "  i, i")
          (match_operand 7 "const_int_operand"        "  i, i")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (vec_merge:VI_QHS
-	(vec_duplicate:VI_QHS
+      (vec_merge:V_VLSI_QHS
+	(vec_duplicate:V_VLSI_QHS
           (match_operand:<VEL> 3 "register_operand"  "  r, r"))
-        (match_operand:VI_QHS 2 "register_operand"   " vr,vr")
+        (match_operand:V_VLSI_QHS 2 "register_operand"   " vr,vr")
 	(match_operand:<VM> 4 "register_operand"     " vm,vm"))
-      (match_operand:VI_QHS 1 "vector_merge_operand" " vu, 0")))]
+      (match_operand:V_VLSI_QHS 1 "vector_merge_operand" " vu, 0")))]
   "TARGET_VECTOR"
   "vmerge.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vimerge")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "@pred_merge<mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand")
-    (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand")
+    (if_then_else:V_VLSI_D
       (unspec:<VM>
         [(match_operand 5 "vector_length_operand")
          (match_operand 6 "const_int_operand")
          (match_operand 7 "const_int_operand")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (vec_merge:VI_D
-	(vec_duplicate:VI_D
+      (vec_merge:V_VLSI_D
+	(vec_duplicate:V_VLSI_D
           (match_operand:<VEL> 3 "reg_or_int_operand"))
-        (match_operand:VI_D 2 "register_operand")
+        (match_operand:V_VLSI_D 2 "register_operand")
 	(match_operand:<VM> 4 "register_operand"))
-      (match_operand:VI_D 1 "vector_merge_operand")))]
+      (match_operand:V_VLSI_D 1 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
   if (riscv_vector::sew64_scalar_helper (
@@ -1827,41 +1827,41 @@
 })
 
 (define_insn "*pred_merge<mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"     "=vd,vd")
-    (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"     "=vd,vd")
+    (if_then_else:V_VLSI_D
       (unspec:<VM>
         [(match_operand 5 "vector_length_operand"    " rK,rK")
          (match_operand 6 "const_int_operand"        "  i, i")
          (match_operand 7 "const_int_operand"        "  i, i")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (vec_merge:VI_D
-	(vec_duplicate:VI_D
+      (vec_merge:V_VLSI_D
+	(vec_duplicate:V_VLSI_D
           (match_operand:<VEL> 3 "register_operand"  "  r, r"))
-        (match_operand:VI_D 2 "register_operand"     " vr,vr")
+        (match_operand:V_VLSI_D 2 "register_operand"     " vr,vr")
 	(match_operand:<VM> 4 "register_operand"     " vm,vm"))
-      (match_operand:VI_D 1 "vector_merge_operand"   " vu, 0")))]
+      (match_operand:V_VLSI_D 1 "vector_merge_operand"   " vu, 0")))]
   "TARGET_VECTOR"
   "vmerge.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vimerge")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_merge<mode>_extended_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"         "=vd,vd")
-    (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"         "=vd,vd")
+    (if_then_else:V_VLSI_D
       (unspec:<VM>
         [(match_operand 5 "vector_length_operand"        " rK,rK")
          (match_operand 6 "const_int_operand"            "  i, i")
          (match_operand 7 "const_int_operand"            "  i, i")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (vec_merge:VI_D
-	(vec_duplicate:VI_D
+      (vec_merge:V_VLSI_D
+	(vec_duplicate:V_VLSI_D
 	  (sign_extend:<VEL>
             (match_operand:<VSUBEL> 3 "register_operand" "  r, r")))
-        (match_operand:VI_D 2 "register_operand"         " vr,vr")
+        (match_operand:V_VLSI_D 2 "register_operand"         " vr,vr")
 	(match_operand:<VM> 4 "register_operand"         " vm,vm"))
-      (match_operand:VI_D 1 "vector_merge_operand"       " vu, 0")))]
+      (match_operand:V_VLSI_D 1 "vector_merge_operand"       " vu, 0")))]
   "TARGET_VECTOR"
   "vmerge.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vimerge")
@@ -7591,20 +7591,20 @@
 ;; -------------------------------------------------------------------------------
 
 (define_insn "@pred_merge<mode>_scalar"
-  [(set (match_operand:VF 0 "register_operand"      "=vd,vd")
-    (if_then_else:VF
+  [(set (match_operand:V_VLSF 0 "register_operand"      "=vd,vd")
+    (if_then_else:V_VLSF
       (unspec:<VM>
         [(match_operand 5 "vector_length_operand"   " rK,rK")
          (match_operand 6 "const_int_operand"       "  i, i")
          (match_operand 7 "const_int_operand"       "  i, i")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (vec_merge:VF
-        (vec_duplicate:VF
+      (vec_merge:V_VLSF
+        (vec_duplicate:V_VLSF
           (match_operand:<VEL> 3 "register_operand" "  f, f"))
-        (match_operand:VF 2 "register_operand"      " vr,vr")
+        (match_operand:V_VLSF 2 "register_operand"      " vr,vr")
 	(match_operand:<VM> 4 "register_operand"    " vm,vm"))
-      (match_operand:VF 1 "vector_merge_operand"    " vu, 0")))]
+      (match_operand:V_VLSF 1 "vector_merge_operand"    " vu, 0")))]
   "TARGET_VECTOR"
   "vfmerge.vfm\t%0,%2,%3,%4"
   [(set_attr "type" "vfmerge")
@@ -8213,8 +8213,8 @@
 
 ;; vfslide1 instructions
 (define_insn "@pred_slide<ud><mode>"
-  [(set (match_operand:VF 0 "register_operand"            "<ud_constraint>")
-	(unspec:VF
+  [(set (match_operand:V_VLSF 0 "register_operand"  "<ud_constraint>")
+	(unspec:V_VLSF
 	  [(unspec:<VM>
 	     [(match_operand:<VM> 1 "vector_mask_operand" " vm, vm,Wc1,Wc1")
 	      (match_operand 5 "vector_length_operand"    " rK, rK, rK, rK")
@@ -8223,8 +8223,8 @@
 	      (match_operand 8 "const_int_operand"        "  i,  i,  i,  i")
 	      (reg:SI VL_REGNUM)
 	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	   (match_operand:VF 2 "vector_merge_operand"     " vu,  0, vu,  0")
-	   (match_operand:VF 3 "register_operand"         " vr, vr, vr, vr")
+	   (match_operand:V_VLSF 2 "vector_merge_operand" " vu,  0, vu,  0")
+	   (match_operand:V_VLSF 3 "register_operand"     " vr, vr, vr, vr")
 	   (match_operand:<VEL> 4 "register_operand"      "  f,  f,  f,  f")] VFSLIDES1))]
   "TARGET_VECTOR"
   "vfslide<ud>.vf\t%0,%3,%4%p1"
