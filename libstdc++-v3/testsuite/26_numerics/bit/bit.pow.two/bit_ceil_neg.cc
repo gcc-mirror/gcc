@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -D_GLIBCXX_ASSERTIONS" }
-// { dg-do run { target c++2a } }
+// { dg-options "-D_GLIBCXX_ASSERTIONS" }
+// { dg-do run { target c++20 } }
 // { dg-xfail-run-if "__glibcxx_assert in bit_ceil should fail" { *-*-* } }
 
 #include <bit>

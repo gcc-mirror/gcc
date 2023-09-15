@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do preprocess { target c++2a } }
+// { dg-do preprocess { target c++20 } }
 // { dg-require-effective-target hosted }
 
 #include <version>
