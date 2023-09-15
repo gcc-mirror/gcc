@@ -40,22 +40,34 @@
 
 	.arch	armv8-a+lse
 
-#define ENTRY(name)		\
-	.global name;		\
-	.hidden name;		\
-	.type name,%function;	\
+#define LSE2(NAME) 	NAME##_i1
+#define CORE(NAME) 	NAME
+
+#define ENTRY_FEAT(NAME, FEAT)  \
+	ENTRY (FEAT (NAME))
+
+#define ENTRY(NAME)		\
+	.global NAME;		\
+	.hidden NAME;		\
+	.type NAME,%function;	\
 	.p2align 4;		\
-name:				\
-	.cfi_startproc;		\
+NAME:				\
+	.cfi_startproc;	\
 	hint	34	// bti c
 
-#define END(name)		\
-	.cfi_endproc;		\
-	.size name, .-name;
+#define END_FEAT(NAME, FEAT)	\
+	END (FEAT (NAME))
 
-#define ALIAS(alias,name)	\
-	.global alias;		\
-	.set alias, name;
+#define END(NAME)		\
+	.cfi_endproc;		\
+	.size NAME, .-NAME;
+
+#define ALIAS(NAME, FROM, TO)	\
+	ALIAS1 (FROM (NAME),TO (NAME))
+
+#define ALIAS1(ALIAS, NAME)	\
+	.global ALIAS;		\
+	.set ALIAS, NAME;
 
 #define res0 x0
 #define res1 x1
@@ -108,7 +120,7 @@ ENTRY (libat_load_16)
 END (libat_load_16)
 
 
-ENTRY (libat_load_16_i1)
+ENTRY_FEAT (libat_load_16, LSE2)
 	cbnz	w1, 1f
 
 	/* RELAXED.  */
@@ -128,7 +140,7 @@ ENTRY (libat_load_16_i1)
 	ldp	res0, res1, [x0]
 	dmb	ishld
 	ret
-END (libat_load_16_i1)
+END_FEAT (libat_load_16, LSE2)
 
 
 ENTRY (libat_store_16)
@@ -148,7 +160,7 @@ ENTRY (libat_store_16)
 END (libat_store_16)
 
 
-ENTRY (libat_store_16_i1)
+ENTRY_FEAT (libat_store_16, LSE2)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
@@ -160,7 +172,7 @@ ENTRY (libat_store_16_i1)
 	stlxp	w4, in0, in1, [x0]
 	cbnz	w4, 1b
 	ret
-END (libat_store_16_i1)
+END_FEAT (libat_store_16, LSE2)
 
 
 ENTRY (libat_exchange_16)
@@ -237,7 +249,7 @@ ENTRY (libat_compare_exchange_16)
 END (libat_compare_exchange_16)
 
 
-ENTRY (libat_compare_exchange_16_i1)
+ENTRY_FEAT (libat_compare_exchange_16, LSE2)
 	ldp	exp0, exp1, [x1]
 	mov	tmp0, exp0
 	mov	tmp1, exp1
@@ -270,7 +282,7 @@ ENTRY (libat_compare_exchange_16_i1)
 	/* ACQ_REL/SEQ_CST.  */
 4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
-END (libat_compare_exchange_16_i1)
+END_FEAT (libat_compare_exchange_16, LSE2)
 
 
 ENTRY (libat_fetch_add_16)
@@ -556,21 +568,20 @@ END (libat_test_and_set_16)
 
 /* Alias entry points which are the same in baseline and LSE2.  */
 
-ALIAS (libat_exchange_16_i1, libat_exchange_16)
-ALIAS (libat_fetch_add_16_i1, libat_fetch_add_16)
-ALIAS (libat_add_fetch_16_i1, libat_add_fetch_16)
-ALIAS (libat_fetch_sub_16_i1, libat_fetch_sub_16)
-ALIAS (libat_sub_fetch_16_i1, libat_sub_fetch_16)
-ALIAS (libat_fetch_or_16_i1, libat_fetch_or_16)
-ALIAS (libat_or_fetch_16_i1, libat_or_fetch_16)
-ALIAS (libat_fetch_and_16_i1, libat_fetch_and_16)
-ALIAS (libat_and_fetch_16_i1, libat_and_fetch_16)
-ALIAS (libat_fetch_xor_16_i1, libat_fetch_xor_16)
-ALIAS (libat_xor_fetch_16_i1, libat_xor_fetch_16)
-ALIAS (libat_fetch_nand_16_i1, libat_fetch_nand_16)
-ALIAS (libat_nand_fetch_16_i1, libat_nand_fetch_16)
-ALIAS (libat_test_and_set_16_i1, libat_test_and_set_16)
-
+ALIAS (libat_exchange_16, LSE2, CORE)
+ALIAS (libat_fetch_add_16, LSE2, CORE)
+ALIAS (libat_add_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_sub_16, LSE2, CORE)
+ALIAS (libat_sub_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_or_16, LSE2, CORE)
+ALIAS (libat_or_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_and_16, LSE2, CORE)
+ALIAS (libat_and_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_xor_16, LSE2, CORE)
+ALIAS (libat_xor_fetch_16, LSE2, CORE)
+ALIAS (libat_fetch_nand_16, LSE2, CORE)
+ALIAS (libat_nand_fetch_16, LSE2, CORE)
+ALIAS (libat_test_and_set_16, LSE2, CORE)
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
 #define FEATURE_1_AND 0xc0000000
