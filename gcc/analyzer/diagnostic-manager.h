@@ -73,6 +73,7 @@ public:
   const supernode *m_snode;
   const gimple *m_stmt;
   std::unique_ptr<stmt_finder> m_stmt_finder;
+  location_t m_loc;
   tree m_var;
   const svalue *m_sval;
   state_machine::state_t m_state;
@@ -111,15 +112,31 @@ public:
   : m_enode (enode),
     m_snode (snode),
     m_stmt (stmt),
-    m_finder (finder)
+    m_finder (finder),
+    m_loc (UNKNOWN_LOCATION)
   {
     gcc_assert (m_stmt || m_finder);
+  }
+
+  /* ctor for cases where we have a location_t but there isn't any
+     gimple stmt associated with the diagnostic.  */
+
+  pending_location (exploded_node *enode,
+		    const supernode *snode,
+		    location_t loc)
+  : m_enode (enode),
+    m_snode (snode),
+    m_stmt (nullptr),
+    m_finder (nullptr),
+    m_loc (loc)
+  {
   }
 
   exploded_node *m_enode;
   const supernode *m_snode;
   const gimple *m_stmt;
   const stmt_finder *m_finder;
+  location_t m_loc;
 };
 
 /* A class with responsibility for saving pending diagnostics, so that

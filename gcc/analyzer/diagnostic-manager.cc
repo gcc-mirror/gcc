@@ -678,14 +678,13 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
   /* stmt_finder could be on-stack; we want our own copy that can
      outlive that.  */
   m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : NULL),
+  m_loc (ploc.m_loc),
   m_var (var), m_sval (sval), m_state (state),
   m_d (std::move (d)), m_trailing_eedge (NULL),
   m_idx (idx),
   m_best_epath (NULL), m_problem (NULL),
   m_notes ()
 {
-  gcc_assert (m_stmt || m_stmt_finder);
-
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to this diagnostic.  */
   gcc_assert (m_enode);
@@ -704,6 +703,7 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_snode == other.m_snode
 	  && m_stmt == other.m_stmt
 	  /* We don't compare m_stmt_finder.  */
+	  && m_loc == other.m_loc
 	  && pending_diagnostic::same_tree_p (m_var, other.m_var)
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
@@ -833,8 +833,8 @@ saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
 
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
-   If m_stmt is still NULL, use m_stmt_finder on the epath to populate
-   m_stmt.
+   If we don't have a specific location in m_loc and m_stmt is still NULL,
+   use m_stmt_finder on the epath to populate m_stmt.
    Return true if a best path was found.  */
 
 bool
@@ -853,12 +853,15 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
     return false;
 
   gcc_assert (m_best_epath);
-  if (m_stmt == NULL)
+  if (m_loc == UNKNOWN_LOCATION)
     {
-      gcc_assert (m_stmt_finder);
-      m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+      if (m_stmt == NULL)
+	{
+	  gcc_assert (m_stmt_finder);
+	  m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
+	}
+      gcc_assert (m_stmt);
     }
-  gcc_assert (m_stmt);
 
   return true;
 }
@@ -1212,9 +1215,9 @@ class dedupe_key
 {
 public:
   dedupe_key (const saved_diagnostic &sd)
-  : m_sd (sd), m_stmt (sd.m_stmt)
+  : m_sd (sd), m_stmt (sd.m_stmt), m_loc (sd.m_loc)
   {
-    gcc_assert (m_stmt);
+    gcc_assert (m_stmt || m_loc != UNKNOWN_LOCATION);
   }
 
   hashval_t hash () const
@@ -1227,11 +1230,15 @@ public:
   bool operator== (const dedupe_key &other) const
   {
     return (m_sd == other.m_sd
-	    && m_stmt == other.m_stmt);
+	    && m_stmt == other.m_stmt
+	    && m_loc == other.m_loc);
   }
 
   location_t get_location () const
   {
+    if (m_loc != UNKNOWN_LOCATION)
+      return m_loc;
+    gcc_assert (m_stmt);
     return m_stmt->location;
   }
 
@@ -1260,6 +1267,7 @@ public:
 
   const saved_diagnostic &m_sd;
   const gimple *m_stmt;
+  location_t m_loc;
 };
 
 /* Traits for use by dedupe_winners.  */
@@ -1543,8 +1551,9 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d.get ());
 
-  location_t loc
-    = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
+  location_t loc = sd.m_loc;
+  if (loc == UNKNOWN_LOCATION)
+    loc = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
   /* Allow the pending_diagnostic to fix up the locations of events.  */
   emission_path.fixup_locations (sd.m_d.get ());
