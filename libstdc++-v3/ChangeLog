@@ -1,3 +1,9 @@
+2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111357
+	* include/bits/utility.h (make_integer_sequence): Add cast.
+	* testsuite/20_util/integer_sequence/pr111357.cc: New test.
+
 2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Update reference to -std=gnu++14 as
