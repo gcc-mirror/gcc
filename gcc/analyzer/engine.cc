@@ -129,9 +129,12 @@ impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d,
   if (m_eg)
     {
       bool terminate_path = d->terminate_path_p ();
-      if (m_eg->get_diagnostic_manager ().add_diagnostic
-	  (m_enode_for_diag, m_enode_for_diag->get_supernode (),
-	   m_stmt, curr_stmt_finder, std::move (d)))
+      pending_location ploc (m_enode_for_diag,
+			     m_enode_for_diag->get_supernode (),
+			     m_stmt,
+			     curr_stmt_finder);
+      if (m_eg->get_diagnostic_manager ().add_diagnostic (ploc,
+							  std::move (d)))
 	{
 	  if (m_path_ctxt
 	      && terminate_path
@@ -398,8 +401,9 @@ public:
 	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
 	 : m_old_smap->get_global_state ());
     bool terminate_path = d->terminate_path_p ();
+    pending_location ploc (m_enode_for_diag, snode, stmt, m_stmt_finder);
     m_eg.get_diagnostic_manager ().add_diagnostic
-      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+      (&m_sm, ploc,
        var, var_old_sval, current, std::move (d));
     if (m_path_ctxt
 	&& terminate_path
@@ -418,8 +422,9 @@ public:
 	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
 	 : m_old_smap->get_global_state ());
     bool terminate_path = d->terminate_path_p ();
+    pending_location ploc (m_enode_for_diag, snode, stmt, m_stmt_finder);
     m_eg.get_diagnostic_manager ().add_diagnostic
-      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+      (&m_sm, ploc,
        NULL_TREE, sval, current, std::move (d));
     if (m_path_ctxt
 	&& terminate_path
@@ -898,10 +903,15 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
   tree leaked_tree_for_diag = fixup_tree_for_diagnostic (leaked_tree);
   std::unique_ptr<pending_diagnostic> pd = sm.on_leak (leaked_tree_for_diag);
   if (pd)
-    m_eg->get_diagnostic_manager ().add_diagnostic
-      (&sm, m_enode_for_diag, m_enode_for_diag->get_supernode (),
-       m_stmt, &stmt_finder,
-       leaked_tree_for_diag, sval, state, std::move (pd));
+    {
+      pending_location ploc (m_enode_for_diag,
+			     m_enode_for_diag->get_supernode (),
+			     m_stmt,
+			     &stmt_finder);
+      m_eg->get_diagnostic_manager ().add_diagnostic
+	(&sm, ploc,
+	 leaked_tree_for_diag, sval, state, std::move (pd));
+    }
 }
 
 /* Implementation of region_model_context::on_condition vfunc.

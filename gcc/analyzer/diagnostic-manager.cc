@@ -664,22 +664,20 @@ epath_finder::dump_feasible_path (const exploded_node *target_enode,
 
 /* class saved_diagnostic.  */
 
-/* saved_diagnostic's ctor.
-   Take ownership of D and STMT_FINDER.  */
+/* saved_diagnostic's ctor.  */
 
 saved_diagnostic::saved_diagnostic (const state_machine *sm,
-				    const exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *stmt_finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
 				    std::unique_ptr<pending_diagnostic> d,
 				    unsigned idx)
-: m_sm (sm), m_enode (enode), m_snode (snode), m_stmt (stmt),
- /* stmt_finder could be on-stack; we want our own copy that can
-    outlive that.  */
-  m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
+: m_sm (sm), m_enode (ploc.m_enode), m_snode (ploc.m_snode),
+  m_stmt (ploc.m_stmt),
+  /* stmt_finder could be on-stack; we want our own copy that can
+     outlive that.  */
+  m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : NULL),
   m_var (var), m_sval (sval), m_state (state),
   m_d (std::move (d)), m_trailing_eedge (NULL),
   m_idx (idx),
@@ -1102,9 +1100,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 
 bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
-				    exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+				    const pending_location &ploc,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
@@ -1114,15 +1110,16 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 
   /* We must have an enode in order to be able to look for paths
      through the exploded_graph to the diagnostic.  */
-  gcc_assert (enode);
+  gcc_assert (ploc.m_enode);
 
   /* If this warning is ultimately going to be rejected by a -Wno-analyzer-*
      flag, reject it now.
      We can only do this for diagnostics where we already know the stmt,
      and thus can determine the emission location.  */
-  if (stmt)
+  if (ploc.m_stmt)
     {
-      location_t loc = get_emission_location (stmt, snode->m_fun, *d);
+      location_t loc
+	= get_emission_location (ploc.m_stmt, ploc.m_snode->m_fun, *d);
       int option = d->get_controlling_option ();
       if (!warning_enabled_at (loc, option))
 	{
@@ -1135,14 +1132,14 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     }
 
   saved_diagnostic *sd
-    = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
-			    state, std::move (d), m_saved_diagnostics.length ());
+    = new saved_diagnostic (sm, ploc, var, sval, state, std::move (d),
+			    m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
-  enode->add_diagnostic (sd);
+  ploc.m_enode->add_diagnostic (sd);
   if (get_logger ())
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, enode->m_index, sd->m_d->get_kind ());
+	 ploc.m_snode->m_index, ploc.m_enode->m_index, sd->m_d->get_kind ());
   return true;
 }
 
@@ -1151,14 +1148,11 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
    Take ownership of D (or delete it).  */
 
 bool
-diagnostic_manager::add_diagnostic (exploded_node *enode,
-				    const supernode *snode, const gimple *stmt,
-				    const stmt_finder *finder,
+diagnostic_manager::add_diagnostic (const pending_location &ploc,
 				    std::unique_ptr<pending_diagnostic> d)
 {
-  gcc_assert (enode);
-  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
-			 NULL, 0, std::move (d));
+  gcc_assert (ploc.m_enode);
+  return add_diagnostic (NULL, ploc, NULL_TREE, NULL, 0, std::move (d));
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
