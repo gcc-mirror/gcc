@@ -18,8 +18,8 @@
 // Example from C++ Standard Working Draft N4842, November 2019 Mailing
 // Adapted for testing.
 
-// { dg-options "-std=gnu++2a -include string -include stdexcept" }
-// { dg-do run { target c++2a } }
+// { dg-options "-include string -include stdexcept" }
+// { dg-do run { target c++20 } }
 
 #include <source_location>
 
