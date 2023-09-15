@@ -258,3 +258,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = (b[i] > c[i]) OP (d[i] < e[i]);                                   \
   }
+
+#define DEF_SGNJX_VV(PREFIX, NUM, TYPE, CALL)                                  \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] * CALL (1.0, c[i]);                                          \
+  }
