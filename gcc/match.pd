@@ -926,36 +926,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (TYPE_OVERFLOW_UNDEFINED (type))
     @0
 #if GIMPLE
-    (with
-     {
-       bool overflowed = true;
-       value_range vr0, vr1;
-       if (INTEGRAL_TYPE_P (type)
-	   && get_range_query (cfun)->range_of_expr (vr0, @0)
-	   && get_range_query (cfun)->range_of_expr (vr1, @1)
-	   && !vr0.varying_p () && !vr0.undefined_p ()
-	   && !vr1.varying_p () && !vr1.undefined_p ())
-	 {
-	   wide_int wmin0 = vr0.lower_bound ();
-	   wide_int wmax0 = vr0.upper_bound ();
-	   wide_int wmin1 = vr1.lower_bound ();
-	   wide_int wmax1 = vr1.upper_bound ();
-	   /* If the multiplication can't overflow/wrap around, then
-	      it can be optimized too.  */
-	   wi::overflow_type min_ovf, max_ovf;
-	   wi::mul (wmin0, wmin1, TYPE_SIGN (type), &min_ovf);
-	   wi::mul (wmax0, wmax1, TYPE_SIGN (type), &max_ovf);
-	   if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
-	     {
-	       wi::mul (wmin0, wmax1, TYPE_SIGN (type), &min_ovf);
-	       wi::mul (wmax0, wmin1, TYPE_SIGN (type), &max_ovf);
-	       if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
-		 overflowed = false;
-	     }
-	 }
-     }
-    (if (!overflowed)
-     @0))
+    (with {value_range vr0, vr1;}
+     (if (INTEGRAL_TYPE_P (type)
+	  && get_range_query (cfun)->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
+      @0))
 #endif
    ))))
 
