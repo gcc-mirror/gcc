@@ -1944,7 +1944,27 @@ typedef struct gfc_symbol
      according to the Fortran standard.  */
   unsigned pass_as_value:1;
 
+  /* Reference counter, used for memory management.
+
+     Some symbols may be present in more than one namespace, for example
+     function and subroutine symbols are present both in the outer namespace and
+     the procedure body namespace.  Freeing symbols with the namespaces they are
+     in would result in double free for those symbols.  This field counts
+     references and is used to delay the memory release until the last reference
+     to the symbol is removed.
+
+     Not every symbol pointer is accounted for reference counting.  Fields
+     gfc_symtree::n::sym are, and gfc_finalizer::proc_sym as well.  But most of
+     them (dummy arguments, generic list elements, etc) are "weak" pointers;
+     the reference count isn't updated when they are assigned, and they are
+     ignored when the surrounding structure memory is released.  This is not a
+     problem because there is always a namespace as surrounding context and
+     symbols have a name they can be referred with in that context, so the
+     namespace keeps the symbol from being freed, keeping the pointer valid.
+     When the namespace ceases to exist, and the symbols with it, the other
+     structures referencing symbols cease to exist as well.  */
   int refs;
+
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 
   tree backend_decl;
