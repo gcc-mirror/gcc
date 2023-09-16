@@ -1,3 +1,10 @@
+2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config-ml.in: Remove unneeded loongarch clause.
+	* configure.ac: Register custom makefile fragments mt-loongarch-*
+	for loongarch targets.
+	* configure: Regenerate.
+
 2023-09-12  Edwin Lu  <ewlu@rivosinc.com>
 
 	* MAINTAINERS: Add myself

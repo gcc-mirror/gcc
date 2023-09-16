@@ -1,3 +1,10 @@
+2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
+
+	* mt-loongarch-mlib: New file.  Pass -fmultiflags when building
+	target libraries (FLAGS_FOR_TARGET).
+	* mt-loongarch-elf: New file.
+	* mt-loongarch-gnu: New file.
+
 2023-08-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-plugin.m4 (GCC_ENABLE_PLUGINS): Use

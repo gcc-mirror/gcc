@@ -1,3 +1,47 @@
+2023-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (get_stmt_location): Handle null stmt.
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic): Copy
+	m_loc from ploc.
+	(saved_diagnostic::operator==): Compare m_loc.
+	(saved_diagnostic::calc_best_epath): Only use m_stmt_finder if
+	m_loc is unknown.
+	(dedupe_key::dedupe_key): Initialize m_loc.
+	(dedupe_key::operator==): Compare m_loc.
+	(dedupe_key::get_location): Use m_loc if it's known.
+	(dedupe_key::m_loc): New field.
+	(diagnostic_manager::emit_saved_diagnostic): Only call
+	get_emission_location if m_loc is unknown, preferring to use m_loc
+	if it's available.
+	* diagnostic-manager.h (saved_diagnostic::m_loc): New field.
+	(pending_location::pending_location): Initialize m_loc.  Add
+	overload taking a location_t rather than a stmt/stmt_finder.
+	(pending_location::m_loc): New field.
+
+2023-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (struct pending_location): New forward decl.
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
+	Replace params "enode", "snode", "stmt", and "stmt_finder" with
+	"ploc".
+	(diagnostic_manager::add_diagnostic): Likewise for both overloads.
+	* diagnostic-manager.h (saved_diagnostic::saved_diagnostic):
+	Likewise.
+	(struct pending_location): New.
+	(diagnostic_manager::add_diagnostic): Replace params "enode",
+	"snode", "stmt", and "stmt_finder" with "ploc".
+	* engine.cc (impl_region_model_context::warn): Update call to
+	add_diagnostic for above change.
+	(impl_sm_context::warn): Likewise.
+	(impl_region_model_context::on_state_leak): Likewise.
+	* infinite-recursion.cc
+	(exploded_graph::detect_infinite_recursion): Likewise.
+
+2023-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_gassign_result): Handle
+	volatile ops by using a conjured_svalue.
+
 2023-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.h (checker_event::get_thread_id): New.

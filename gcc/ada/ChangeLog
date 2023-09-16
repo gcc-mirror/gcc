@@ -1,3 +1,126 @@
+2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (finish_record_type): Round the size in
+	the padding case as well.
+
+2023-09-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Don't build aggregate code
+	for null array aggregates.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Don't examine formatting
+	of a null array aggregate.
+
+2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): In the case of a function call
+	that returns an unconstrained type and initializes an object, set
+	the No_Initialization flag on the new declaration of the object.
+
+2023-09-15  Patrick Bernardi  <bernardi@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Do not perform
+	local-exception-to- goto optimization on barrier functions.
+	* exp_ch9.adb (Expand_Entry_Barrier): Simplify the if statement
+	around the simple barrier optimization and remove an old, no
+	longer relevant comment.
+
+2023-09-15  Patrick Bernardi  <bernardi@adacore.com>
+
+	* bindgen.adb (Gen_Adainit): Generate restrictions when standard
+	library is suppressed.
+	(Gen_Output_File_Ada): Ditto.
+	(Gen_Restrictions): Ditto.
+
+2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Do not return false
+	for a small component of a record type with a variant part.
+
+2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): In the case of a
+	component association, call Is_Container_Aggregate on the parent's
+	parent.
+	(Expand_Array_Aggregate): Likewise.
+
+2023-09-15  Kévin Le Gouguec  <legouguec@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Remove
+	extended discussion regarding mold run-time dependencies;
+	packaging changes in GNAT Pro have made them obsolete.
+
+2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Call): When the target is an entity, do not
+	freeze it if the current scope is the inner wrapper function built
+	for an expression function with a Post or Refined_Post aspect.
+
+2023-09-15  Bob Duff  <duff@adacore.com>
+	    Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.adb (Node_Kind_Table): Specify parameter explicitly in
+	GNAT.Table instantiations. Use fully qualified references instead
+	of relying on use clauses.
+	(Get_Field_Value): Remove special case for F_Scope_Depth_Value.
+	That is, enable the Field_Present check in that case.
+	(It was already enabled for all other fields.) Violations of this
+	check were already fixed.
+	(Print_Node_Statistics): Sort the output in decreasing order of
+	frequencies.
+	(Print_Field_Statistics): Likewise (sort).
+	* accessibility.adb (Accessibility_Level): Pass Allow_Alt_Model in
+	recursive calls. Apparently, an oversight.
+	(Innermost_Master_Scope_Depth): Need to special-case the 'Old
+	attribute and allocators.
+	* einfo-utils.ads (Scope_Depth): Use Scope_Kind_Id to get
+	predicate checks.
+	(Scope_Depth_Set): Likewise.
+	(Scope_Depth_Default_0): Likewise.
+	* einfo-utils.adb: As for spec.
+	* frontend.adb (Frontend): Remove unnecessary "return;".
+	* gen_il-types.ads (Scope_Kind): New union type.
+	* gen_il-gen-gen_entities.adb (Scope_Kind): New union type.
+	* sem.ads: Move "with Einfo.Entities;" from body to spec.
+	(Scope_Stack_Entry): Declare Entity to be of Scope_Kind_Id to get
+	predicate checks. We had previously been putting non-scopes on the
+	scope stack; this prevents such anomalies.
+	* sem.adb: Move "with Einfo.Entities;" from body to spec.
+	* sem_ch8.ads: Move "with Einfo.Entities;" from body to spec. Add
+	"with Types;".
+	(Push_Scope): Use Scope_Kind_Id to get predicate checks.
+	* sem_ch8.adb: Move "with Einfo.Entities;" from body to spec. Add
+	"with Types;".
+	(Push_Scope): Use Scope_Kind_Id to get predicate checks.
+	(Pop_Scope): Use Scope_Kind_Id on popped entity to get predicate
+	checks. This prevents anomalies where a scope pushed onto the
+	stack is later mutated to a nonscope before being popped.
+	* sem_util.ads (Find_Enclosing_Scope): Add postcondition to ensure
+	that the enclosing scope of a node N is not the same node N.
+	Clearly, N does not enclose itself.
+	* sem_util.adb (Find_Enclosing_Scope): There were several bugs
+	where Find_Enclosing_Scope(N) = N. For example, if N is an entity,
+	then we would typically go up to its declaration, and then back
+	down to the Defining_Entity of the declaration, which is N itself.
+	There were other cases where Find_Enclosing_Scope of an entity
+	disagreed with Scope. Clearly, Find_Enclosing_Scope and Scope
+	should agree (when both are defined). Such bugs caused latent bugs
+	in accessibility.adb related to 'Old, and fixing bugs here caused
+	such bugs to be revealed. These are fixed by calling Scope when N
+	is an entity.
+
+2023-09-15  Javier Miranda  <miranda@adacore.com>
+
+	* accessibility.ads (Needs_Result_Accessibility_Extra_Formal):
+	Removed.
+	* accessibility.adb (Needs_Result_Accessibility_Level_Param):
+	Removed.
+	(Needs_Result_Accessibility_Extra_Formal): Removed.
+	(Needs_Result_Accessibility_Level): Revert previous patch.
+	* sem_ch6.adb (Parent_Subprogram): Handle function overriding an
+	enumeration literal.
+	(Create_Extra_Formals): Ensure that the parent subprogram has all
+	its extra formals.
+
 2023-09-14  Yannick Moy  <moy@adacore.com>
 
 	* exp_util.adb (Is_Statically_Disabled): New function to detect a

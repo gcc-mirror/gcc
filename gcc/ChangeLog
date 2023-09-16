@@ -1,3 +1,88 @@
+2023-09-15  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/predicates.md: Restrict predicate
+	to allow 'reg' only.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (zero_one_valued_p): Match a cast from a zero_one_valued_p.
+	Also match `a & zero_one_valued_p` too.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111414
+	* match.pd (`(1 >> X) != 0`): Check to see if
+	the integer_onep was an integral type (not a vector type).
+
+2023-09-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Always
+	run phi analysis, and do it before loop analysis.
+
+2023-09-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Fix
+	indentation.
+
+2023-09-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/111407
+	* tree-ssa-math-opts.cc (convert_mult_to_widen): Avoid the transform
+	when one of the operands is subject to abnormal coalescing.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum insn_flags): Change name.
+	(enum insn_type): Ditto.
+	* config/riscv/riscv-v.cc (get_mask_mode_from_insn_flags): Removed.
+	(emit_vlmax_insn): Adjust.
+	(emit_nonvlmax_insn): Adjust.
+	(emit_vlmax_insn_lra): Adjust.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Adjust.
+	* config/riscv/autovec.md: Ditto.
+	* config/riscv/riscv-protos.h (enum class): Delete enum reduction_type.
+	(expand_reduction): Adjust expand_reduction prototype.
+	* config/riscv/riscv-v.cc (need_mask_operand_p): New helper function.
+	(expand_reduction): Refactor expand_reduction.
+
+2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp): Require
+	the lower memory access to a mem-pair operand.
+
+2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Pass the default ABI via TM_MULTILIB_CONFIG.
+	* config/loongarch/loongarch-driver.h: Invoke MLIB_SELF_SPECS
+	before the driver canonicalization routines.
+	* config/loongarch/loongarch.h: Move definitions of CC1_SPEC etc.
+	to loongarch-driver.h
+	* config/loongarch/t-linux: Move multilib-related definitions to
+	t-multilib.
+	* config/loongarch/t-multilib: New file.  Inject library build
+	options obtained from --with-multilib-list.
+	* config/loongarch/t-loongarch: Same.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111381
+	* config/riscv/autovec-opt.md (*reduc_plus_scal_<mode>):
+	New combine pattern.
+	(*fold_left_widen_plus_<mode>): Ditto.
+	(*mask_len_fold_left_widen_plus_<mode>): Ditto.
+	* config/riscv/autovec.md (reduc_plus_scal_<mode>):
+	Change from define_expand to define_insn_and_split.
+	(fold_left_plus_<mode>): Ditto.
+	(mask_len_fold_left_plus_<mode>): Ditto.
+	* config/riscv/riscv-v.cc (expand_reduction):
+	Support widen reduction.
+	* config/riscv/vector-iterators.md (UNSPEC_WREDUC_SUM):
+	Add new iterators and attrs.
+
 2023-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-event-id.h (diagnostic_thread_id_t): New typedef.

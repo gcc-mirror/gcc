@@ -1,3 +1,71 @@
+2023-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/volatile-1.c: New test.
+
+2023-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/30802
+	* gfortran.dg/bounds_check_fail_6.f90: New test.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/bool-13.c: Update testcase as we now do
+	the MIN/MAX during forwprop1.
+
+2023-09-15  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111414
+	* gcc.c-torture/compile/pr111414-1.c: New test.
+
+2023-09-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/111407
+	* gcc.dg/pr111407.c: New test.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/wredsum_vlmax.c: New test.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-35.c: Block SLP check for vect_strided5 targets.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-34.c: Block check for vect_strided5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-34-big-array.c: Block SLP check for vect_strided5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-16.c: Block vect_strided6.
+	* lib/target-supports.exp: Add strided type.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-1.c: Add vect_stried5.
+
+2023-09-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/Wstringop-overflow-47.c: Add riscv.
+
+2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* gcc.dg/rtl/aarch64/pr111411.c: New test.
+
+2023-09-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111381
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_order_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_reduc_run-1.c: New test.
+
 2023-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-inline-events.c:

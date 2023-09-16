@@ -1,3 +1,19 @@
+2023-09-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/30802
+	* trans-array.cc (trans_array_bound_check): Add optional argument
+	COMPNAME for explicit specification of array component name.
+	(array_bound_check_elemental): Helper function for generating
+	bounds-checking code for elemental dimensions.
+	(gfc_conv_expr_descriptor): Use bounds-checking also for elemental
+	dimensions, i.e. those not handled by the scalarizer.
+
+2023-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108957
+	* gfortran.h (gfc_symbol): Add comment documenting reference counting.
+	* parse.cc (parse_interface): Remove reference count incrementation.
+
 2023-09-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/110996
