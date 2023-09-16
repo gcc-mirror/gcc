@@ -32,6 +32,8 @@ namespace rtl_ssa {
 // something that we might do.
 class insn_change
 {
+  friend class function_info;
+
 public:
   enum delete_action { DELETE };
 

@@ -962,4 +962,16 @@ function_info::add_regno_clobber (obstack_watermark &watermark,
   return true;
 }
 
+template<typename T, typename... Ts>
+inline T *
+function_info::change_alloc (obstack_watermark &wm, Ts... args)
+{
+  static_assert (std::is_trivially_destructible<T>::value,
+		 "destructor won't be called");
+  static_assert (alignof (T) <= obstack_alignment,
+		 "too much alignment required");
+  void *addr = XOBNEW (wm, T);
+  return new (addr) T (std::forward<Ts> (args)...);
+}
+
 }

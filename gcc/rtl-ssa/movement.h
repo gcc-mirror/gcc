@@ -182,6 +182,11 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
 {
   for (def_info *def : defs)
     {
+      // Skip fresh defs that are being inserted, as these shouldn't
+      // constrain movement.
+      if (def->is_temporary ())
+	continue;
+
       // If the definition is a clobber, we can move it with respect
       // to other clobbers.
       //
@@ -247,7 +252,8 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
 
   // Make sure that we don't move stores between basic blocks, since we
   // don't have enough information to tell whether it's safe.
-  if (def_info *def = memory_access (defs))
+  def_info *def = memory_access (defs);
+  if (def && !def->is_temporary ())
     {
       move_range = move_later_than (move_range, def->bb ()->head_insn ());
       move_range = move_earlier_than (move_range, def->bb ()->end_insn ());

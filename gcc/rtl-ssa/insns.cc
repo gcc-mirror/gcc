@@ -192,6 +192,11 @@ insn_info::print_full (pretty_printer *pp) const
 	      pp_newline_and_indent (pp, 0);
 	      pp_string (pp, "has volatile refs");
 	    }
+	  if (m_is_temp)
+	    {
+	      pp_newline_and_indent (pp, 0);
+	      pp_string (pp, "temporary");
+	    }
 	}
       pp_indentation (pp) -= 2;
     }

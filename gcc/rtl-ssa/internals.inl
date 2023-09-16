@@ -415,6 +415,7 @@ inline insn_info::insn_info (bb_info *bb, rtx_insn *rtl, int cost_or_uid)
     m_is_asm (false),
     m_has_pre_post_modify (false),
     m_has_volatile_refs (false),
+    m_is_temp (false),
     m_spare (0),
     m_point (0),
     m_cost_or_uid (cost_or_uid),
