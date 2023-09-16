@@ -122,10 +122,10 @@ function_type (const typed_identifier &receiver,
 	       location_t location);
 
 tree
-function_type_varadic (const typed_identifier &receiver,
-		       const std::vector<typed_identifier> &parameters,
-		       const std::vector<typed_identifier> &results,
-		       tree result_struct, location_t location);
+function_type_variadic (const typed_identifier &receiver,
+			const std::vector<typed_identifier> &parameters,
+			const std::vector<typed_identifier> &results,
+			tree result_struct, location_t location);
 
 tree
 function_ptr_type (tree result, const std::vector<tree> &praameters,

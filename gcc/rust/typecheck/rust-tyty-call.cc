@@ -116,7 +116,7 @@ TypeCheckCallExpr::visit (FnType &type)
 {
   if (call.num_params () != type.num_params ())
     {
-      if (type.is_varadic ())
+      if (type.is_variadic ())
 	{
 	  if (call.num_params () < type.num_params ())
 	    {
