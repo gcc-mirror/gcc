@@ -7906,7 +7906,7 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (unspec:<V_LMUL1> [
-             (match_operand:VI            3 "register_operand"      "   vr,   vr")
+             (match_operand:V_VLSI        3 "register_operand"      "   vr,   vr")
              (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
            ] ANY_REDUC)
 	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
@@ -7948,7 +7948,7 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
            (unspec:<V_LMUL1> [
-             (match_operand:VF            3 "register_operand"      "   vr,   vr")
+             (match_operand:V_VLSF        3 "register_operand"      "   vr,   vr")
              (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
            ] ANY_FREDUC)
 	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
@@ -7971,7 +7971,7 @@
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
            (unspec:<V_LMUL1> [
-             (match_operand:VF            3 "register_operand"      "   vr,   vr")
+             (match_operand:V_VLSF        3 "register_operand"      "   vr,   vr")
              (match_operand:<V_LMUL1>     4 "register_operand"      "   vr,   vr")
            ] ANY_FREDUC_SUM)
 	   (match_operand:<V_LMUL1>       2 "vector_merge_operand"  "   vu,    0")] UNSPEC_REDUC))]
