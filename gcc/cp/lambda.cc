@@ -1619,7 +1619,7 @@ compare_lambda_sig (tree fn_a, tree fn_b)
     {
       if (!args_a || !args_b)
 	return false;
-      // This check also deals with differing varadicness
+      // This check also deals with differing variadicness
       if (!same_type_p (TREE_VALUE (args_a), TREE_VALUE (args_b)))
 	return false;
     }
