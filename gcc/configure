@@ -3761,31 +3761,54 @@ gcc_gxx_libcxx_include_dir=
 if test "${with_gxx_libcxx_include_dir+set}" = set; then :
   withval=$with_gxx_libcxx_include_dir; case "${withval}" in
 yes)	as_fn_error $? "bad value ${withval} given for libc++ include directory" "$LINENO" 5 ;;
-no)	;;
 *)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
 esac
 fi
 
 
+# --with-gxx-libcxx-include-dir controls the enabling of the -stdlib option.
+# if --with-gxx-libcxx-include-dir is 'no' we disable the stdlib option.
+# if --with-gxx-libcxx-include-dir is unset we enable the stdlib option
+# based on the platform (to be available on platform versions where it is the
+# default for the system tools). We also use a default path within the compiler
+# install tree.
+# Otherwise, we use the path provided and enable the stdlib option.
 # If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
 # check to see if the latter starts with the former and, upon success, compute
 # gcc_gxx_libcxx_include_dir as relative to the sysroot.
 gcc_gxx_libcxx_include_dir_add_sysroot=0
-
+gcc_enable_stdlib_opt=0
 if test x${gcc_gxx_libcxx_include_dir} != x; then
-
-$as_echo "#define ENABLE_STDLIB_OPTION 1" >>confdefs.h
-
-else
-  $as_echo "#define ENABLE_STDLIB_OPTION 0" >>confdefs.h
-
-fi
-# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
-if test x${gcc_gxx_libcxx_include_dir} = x; then
-  if test x${enable_version_specific_runtime_libs} = xyes; then
-    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  if test x${gcc_gxx_libcxx_include_dir} = xno; then
+    # set defaults for the dir, but the option is disabled anyway.
+    gcc_gxx_libcxx_include_dir=
   else
-    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    gcc_enable_stdlib_opt=1
+  fi
+else
+  case $target in
+    *-darwin1[1-9]* | *-darwin2*)
+       # Default this on for Darwin versions which default to libcxx,
+       # and embed the path in the compiler install so that we get a
+       # self-contained toolchain.
+       gcc_enable_stdlib_opt=1
+       ;;
+    *) ;;
+  esac
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_STDLIB_OPTION $gcc_enable_stdlib_opt
+_ACEOF
+
+
+# Sysroot behaviour as for gxx-include-dir
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  # default path,embedded in the compiler tree.
+  libcxx_incdir='include/c++/v1'
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/$libcxx_incdir'
+  else
     if test x$host != x$target; then
        libcxx_incdir="$target_alias/$libcxx_incdir"
     fi
@@ -19848,7 +19871,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19851 "configure"
+#line 19874 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19954,7 +19977,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19957 "configure"
+#line 19980 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
