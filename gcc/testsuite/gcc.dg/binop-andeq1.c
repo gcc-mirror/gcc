@@ -1,10 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* PR tree-optimization/111431 */
 
 int
-foo (unsigned char a, _Bool b)
+foo (int a)
 {
-  return (!a & a) | (b & !b);
+  int b = a == 2;
+  return (a & b);
 }
 
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized" } } */
