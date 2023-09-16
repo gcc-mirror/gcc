@@ -218,12 +218,13 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
       parameters.push_back (compiled_param);
     }
 
-  if (!type.is_varadic ())
+  if (!type.is_variadic ())
     translated = Backend::function_type (receiver, parameters, results, NULL,
 					 type.get_ident ().locus);
   else
-    translated = Backend::function_type_varadic (receiver, parameters, results,
-						 NULL, type.get_ident ().locus);
+    translated
+      = Backend::function_type_variadic (receiver, parameters, results, NULL,
+					 type.get_ident ().locus);
 }
 
 void

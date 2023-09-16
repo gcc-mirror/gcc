@@ -513,10 +513,10 @@ function_type (const typed_identifier &receiver,
 }
 
 tree
-function_type_varadic (const typed_identifier &receiver,
-		       const std::vector<typed_identifier> &parameters,
-		       const std::vector<typed_identifier> &results,
-		       tree result_struct, location_t)
+function_type_variadic (const typed_identifier &receiver,
+			const std::vector<typed_identifier> &parameters,
+			const std::vector<typed_identifier> &results,
+			tree result_struct, location_t)
 {
   size_t n = parameters.size () + (receiver.type != NULL_TREE ? 1 : 0);
   tree *args = XALLOCAVEC (tree, n);

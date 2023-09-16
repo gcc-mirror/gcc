@@ -1634,11 +1634,11 @@ CompileExpr::visit (HIR::CallExpr &expr)
   if (possible_trait_call)
     return;
 
-  bool is_varadic = false;
+  bool is_variadic = false;
   if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
     {
       const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
-      is_varadic = fn->is_varadic ();
+      is_variadic = fn->is_variadic ();
     }
 
   size_t required_num_args = expr.get_arguments ().size ();
@@ -1659,7 +1659,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
       auto &argument = expr.get_arguments ().at (i);
       auto rvalue = CompileExpr::Compile (argument.get (), ctx);
 
-      if (is_varadic && i >= required_num_args)
+      if (is_variadic && i >= required_num_args)
 	{
 	  args.push_back (rvalue);
 	  continue;
