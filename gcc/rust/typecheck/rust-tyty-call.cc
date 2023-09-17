@@ -184,7 +184,10 @@ TypeCheckCallExpr::visit (FnType &type)
 		if ((int_ty.get_int_kind () == TyTy::IntType::IntKind::I8)
 		    || (int_ty.get_int_kind () == TyTy::IntType::IntKind::I16))
 		  {
-		    rust_error_at (arg_locus,
+		    rich_location richloc (line_table, arg_locus);
+		    richloc.add_fixit_replace (
+		      "cast the value to c_int: as c_int");
+		    rust_error_at (richloc, ErrorCode::E0617,
 				   "expected %<c_int%> variadic argument");
 		    return;
 		  }
@@ -197,7 +200,10 @@ TypeCheckCallExpr::visit (FnType &type)
 		    || (uint_ty.get_uint_kind ()
 			== TyTy::UintType::UintKind::U16))
 		  {
-		    rust_error_at (arg_locus,
+		    rich_location richloc (line_table, arg_locus);
+		    richloc.add_fixit_replace (
+		      "cast the value to c_uint: as c_uint");
+		    rust_error_at (richloc, ErrorCode::E0617,
 				   "expected %<c_uint%> variadic argument");
 		    return;
 		  }
@@ -208,19 +214,28 @@ TypeCheckCallExpr::visit (FnType &type)
 		      .get_float_kind ()
 		    == TyTy::FloatType::FloatKind::F32)
 		  {
-		    rust_error_at (arg_locus,
+		    rich_location richloc (line_table, arg_locus);
+		    richloc.add_fixit_replace (
+		      "cast the value to c_double: as c_double");
+		    rust_error_at (richloc, ErrorCode::E0617,
 				   "expected %<c_double%> variadic argument");
 		    return;
 		  }
 		break;
 	      }
-	    case TyTy::TypeKind::BOOL:
-	      rust_error_at (arg_locus, "expected %<c_int%> variadic argument");
-	      return;
-	    case TyTy::TypeKind::FNDEF:
-	      rust_error_at (arg_locus,
-			     "unexpected function definition type as variadic "
-			     "argument - cast to function pointer");
+	      case TyTy::TypeKind::BOOL: {
+		rich_location richloc (line_table, arg_locus);
+		richloc.add_fixit_replace ("cast the value to c_int: as c_int");
+		rust_error_at (arg_locus, ErrorCode::E0617,
+			       "expected %<c_int%> variadic argument");
+		return;
+	      }
+	      case TyTy::TypeKind::FNDEF: {
+		rust_error_at (
+		  arg_locus, ErrorCode::E0617,
+		  "unexpected function definition type as variadic "
+		  "argument - cast to function pointer");
+	      }
 	      return;
 	    default:
 	      break;
