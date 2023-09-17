@@ -266,3 +266,33 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = b[i] * CALL (1.0, c[i]);                                          \
   }
+
+#define DEF_REDUC_PLUS(TYPE, NUM)                                              \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  reduc_plus_##TYPE##NUM (TYPE *__restrict a)                                  \
+  {                                                                            \
+    TYPE r = 0;                                                                \
+    for (int i = 0; i < NUM; ++i)                                              \
+      r += a[i];                                                               \
+    return r;                                                                  \
+  }
+
+#define DEF_REDUC_MAXMIN(TYPE, NAME, CMP_OP, NUM)                              \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  reduc_##NAME##_##TYPE##_##NUM (TYPE *a)                                      \
+  {                                                                            \
+    TYPE r = 13;                                                               \
+    for (int i = 0; i < NUM; ++i)                                              \
+      r = a[i] CMP_OP r ? a[i] : r;                                            \
+    return r;                                                                  \
+  }
+
+#define DEF_REDUC_BITWISE(TYPE, NAME, BIT_OP, NUM)                             \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  reduc_##NAME##_##TYPE##_##NUM (TYPE *a)                                      \
+  {                                                                            \
+    TYPE r = 13;                                                               \
+    for (int i = 0; i < NUM; ++i)                                              \
+      r BIT_OP a[i];                                                           \
+    return r;                                                                  \
+  }
