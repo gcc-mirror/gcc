@@ -19,7 +19,6 @@
 #include "rust-ast-resolve-expr.h"
 #include "rust-ast-resolve-stmt.h"
 #include "rust-ast-resolve-struct-expr-field.h"
-#include "rust-ast-verify-assignee.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
@@ -101,9 +100,6 @@ ResolveExpr::visit (AST::AssignmentExpr &expr)
 {
   ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
   ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
-
-  // need to verify the assignee
-  VerifyAsignee::go (expr.get_left_expr ().get ());
 }
 
 /* The "break rust" Easter egg.
@@ -191,9 +187,6 @@ ResolveExpr::visit (AST::CompoundAssignmentExpr &expr)
 {
   ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
   ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
-
-  // need to verify the assignee
-  VerifyAsignee::go (expr.get_left_expr ().get ());
 }
 
 void
