@@ -32,9 +32,9 @@
 #include "rust-cfg-parser.h"
 #include "rust-lint-scan-deadcode.h"
 #include "rust-lint-unused-var.h"
+#include "rust-readonly-check.h"
 #include "rust-hir-dump.h"
 #include "rust-ast-dump.h"
-#include "rust-ast-collector.h"
 #include "rust-export-metadata.h"
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
@@ -47,7 +47,6 @@
 #include "rust-unicode.h"
 #include "rust-attribute-values.h"
 
-#include "diagnostic.h"
 #include "input.h"
 #include "selftest.h"
 #include "tm.h"
@@ -676,6 +675,7 @@ Session::compile_crate (const char *filename)
       // lints
       Analysis::ScanDeadcode::Scan (hir);
       Analysis::UnusedVariables::Lint (ctx);
+      Analysis::ReadonlyCheck::Lint (ctx);
 
       // metadata
       bool specified_emit_metadata

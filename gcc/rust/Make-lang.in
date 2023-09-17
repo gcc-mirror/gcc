@@ -86,12 +86,12 @@ GRS_OBJS = \
     rust/rust-compile-resolve-path.o \
     rust/rust-macro-expand.o \
     rust/rust-cfg-strip.o \
-	rust/rust-expand-visitor.o \
-	rust/rust-ast-builder.o \
-	rust/rust-derive.o \
-	rust/rust-derive-clone.o \
-	rust/rust-derive-copy.o \
-	rust/rust-proc-macro.o \
+    rust/rust-expand-visitor.o \
+    rust/rust-ast-builder.o \
+    rust/rust-derive.o \
+    rust/rust-derive-clone.o \
+    rust/rust-derive-copy.o \
+    rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
@@ -101,19 +101,19 @@ GRS_OBJS = \
     rust/rust-attributes.o \
     rust/rust-abi.o \
     rust/rust-token-converter.o \
-	rust/rust-macro.o \
+    rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
     rust/rust-ast-lower-item.o \
     rust/rust-ast-lower-expr.o \
     rust/rust-ast-lower-type.o \
-	rust/rust-ast-lower-stmt.o \
-	rust/rust-rib.o \
-	rust/rust-name-resolution-context.o \
-	rust/rust-default-resolver.o \
+    rust/rust-ast-lower-stmt.o \
+    rust/rust-rib.o \
+    rust/rust-name-resolution-context.o \
+    rust/rust-default-resolver.o \
     rust/rust-toplevel-name-resolver-2.0.o \
-	rust/rust-early-name-resolver-2.0.o \
+    rust/rust-early-name-resolver-2.0.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
@@ -160,6 +160,7 @@ GRS_OBJS = \
     rust/rust-const-checker.o \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
+    rust/rust-readonly-check.o \
     rust/rust-hir-type-check-path.o \
     rust/rust-unsafe-checker.o \
     rust/rust-compile-intrinsic.o \
