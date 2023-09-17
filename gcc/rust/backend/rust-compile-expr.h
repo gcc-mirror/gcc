@@ -72,7 +72,6 @@ public:
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}
   void visit (HIR::RangeToInclExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
 
   // TODO
   // these need to be sugared in the HIR to if statements and a match

@@ -582,13 +582,6 @@ UnsafeChecker::visit (WhileLetLoopExpr &expr)
 }
 
 void
-UnsafeChecker::visit (ForLoopExpr &expr)
-{
-  expr.get_iterator_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
-}
-
-void
 UnsafeChecker::visit (IfExpr &expr)
 {
   expr.get_if_condition ()->accept_vis (*this);

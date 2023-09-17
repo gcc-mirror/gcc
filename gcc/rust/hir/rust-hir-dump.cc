@@ -1385,19 +1385,6 @@ Dump::visit (WhileLetLoopExpr &e)
 }
 
 void
-Dump::visit (ForLoopExpr &e)
-{
-  begin ("ForLoopExpr");
-  do_baseloopexpr (e);
-
-  visit_field ("pattern", e.get_pattern ());
-
-  visit_field ("iterator_expr", *e.get_iterator_expr ());
-
-  end ("ForLoopExpr");
-}
-
-void
 Dump::visit (IfExpr &e)
 {
   begin ("IfExpr");

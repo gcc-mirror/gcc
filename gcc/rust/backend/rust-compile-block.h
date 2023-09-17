@@ -96,7 +96,6 @@ public:
   void visit (HIR::LoopExpr &) override {}
   void visit (HIR::WhileLoopExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
   void visit (HIR::IfLetExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::MatchExpr &) override {}
@@ -180,7 +179,6 @@ public:
   void visit (HIR::LoopExpr &) override {}
   void visit (HIR::WhileLoopExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
   void visit (HIR::IfLetExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::MatchExpr &) override {}

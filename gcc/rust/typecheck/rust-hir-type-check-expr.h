@@ -76,7 +76,8 @@ public:
   void visit (HIR::ErrorPropagationExpr &) override {}
   void visit (HIR::RangeToInclExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
+
+  // lets not worry about async yet....
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
 
