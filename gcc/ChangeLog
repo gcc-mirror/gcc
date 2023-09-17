@@ -1,3 +1,55 @@
+2023-09-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111391
+	* config/riscv/autovec.md (@vec_extract<mode><vel>): Remove @.
+	(vec_extract<mode><vel>): Ditto.
+	* config/riscv/riscv-vsetvl.cc (emit_vsetvl_insn): Fix bug.
+	(pass_vsetvl::local_eliminate_vsetvl_insn): Fix bug.
+	* config/riscv/riscv.cc (riscv_legitimize_move): Expand VLS mode to scalar mode move.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/crypto.md (riscv_sha256sig0_<mode>,
+	riscv_sha256sig1_<mode>, riscv_sha256sum0_<mode>,
+	riscv_sha256sum1_<mode>, riscv_sm3p0_<mode>, riscv_sm3p1_<mode>,
+	riscv_sm4ed_<mode>, riscv_sm4ks_<mode>): Remove and replace with
+	new insn/expansions.
+	(SHA256_OP, SM3_OP, SM4_OP): New iterators.
+	(sha256_op, sm3_op, sm4_op): New attributes for iteration.
+	(*riscv_<sha256_op>_si): New raw instruction for RV32.
+	(*riscv_<sm3_op>_si): Ditto.
+	(*riscv_<sm4_op>_si): Ditto.
+	(riscv_<sha256_op>_di_extended): New base instruction for RV64.
+	(riscv_<sm3_op>_di_extended): Ditto.
+	(riscv_<sm4_op>_di_extended): Ditto.
+	(riscv_<sha256_op>_si): New common instruction expansion.
+	(riscv_<sm3_op>_si): Ditto.
+	(riscv_<sm4_op>_si): Ditto.
+	* config/riscv/riscv-builtins.cc: Add availability "crypto_zknh",
+	"crypto_zksh" and "crypto_zksed".  Remove availability
+	"crypto_zksh{32,64}" and "crypto_zksed{32,64}".
+	* config/riscv/riscv-ftypes.def: Remove unused function type.
+	* config/riscv/riscv-scalar-crypto.def: Make SHA-256, SM3 and SM4
+	intrinsics to operate on uint32_t.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/riscv-builtins.cc (RISCV_ATYPE_UQI): New for
+	uint8_t.  (RISCV_ATYPE_UHI): New for uint16_t.
+	(RISCV_ATYPE_QI, RISCV_ATYPE_HI, RISCV_ATYPE_SI, RISCV_ATYPE_DI):
+	Removed as no longer used.
+	(RISCV_ATYPE_UDI): New for uint64_t.
+	* config/riscv/riscv-cmo.def: Make types unsigned for not working
+	"zicbop_cbo_prefetchi" and working bit manipulation clmul builtin
+	argument/return types.
+	* config/riscv/riscv-ftypes.def: Make bit manipulation, round
+	number and shift amount types unsigned.
+	* config/riscv/riscv-scalar-crypto.def: Ditto.
+
+2023-09-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-vls.md (xorsign<mode>3): New pattern.
+
 2023-09-15  Fei Gao  <gaofei@eswincomputing.com>
 
 	* config/riscv/predicates.md: Restrict predicate

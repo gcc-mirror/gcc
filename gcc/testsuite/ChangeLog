@@ -1,3 +1,46 @@
+2023-09-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111391
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr111391-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr111391-2.c: New test.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zknh-sha256.c: Moved to...
+	* gcc.target/riscv/zknh-sha256-64.c: ...here.  Test RV64.
+	* gcc.target/riscv/zknh-sha256-32.c: New test for RV32.
+	* gcc.target/riscv/zksh64.c: Change the type.
+	* gcc.target/riscv/zksed64.c: Ditto.
+
+2023-09-16  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zbc32.c: Make signed type to unsigned.
+	* gcc.target/riscv/zbc64.c: Ditto.
+	* gcc.target/riscv/zbkb32.c: Ditto.
+	* gcc.target/riscv/zbkb64.c: Ditto.
+	* gcc.target/riscv/zbkc32.c: Ditto.
+	* gcc.target/riscv/zbkc64.c: Ditto.
+	* gcc.target/riscv/zbkx32.c: Ditto.
+	* gcc.target/riscv/zbkx64.c: Ditto.
+	* gcc.target/riscv/zknd32.c: Ditto.
+	* gcc.target/riscv/zknd64.c: Ditto.
+	* gcc.target/riscv/zkne32.c: Ditto.
+	* gcc.target/riscv/zkne64.c: Ditto.
+	* gcc.target/riscv/zknh-sha256.c: Ditto.
+	* gcc.target/riscv/zknh-sha512-32.c: Ditto.
+	* gcc.target/riscv/zknh-sha512-64.c: Ditto.
+	* gcc.target/riscv/zksed32.c: Ditto.
+	* gcc.target/riscv/zksed64.c: Ditto.
+	* gcc.target/riscv/zksh32.c: Ditto.
+	* gcc.target/riscv/zksh64.c: Ditto.
+
+2023-09-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New macro.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnjx-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnjx-2.c: New test.
+
 2023-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/analyzer/volatile-1.c: New test.
