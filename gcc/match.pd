@@ -2183,8 +2183,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (a&1) is always [0,1] too. This is useful again when
    the range is not known. */
+/* Note this can't be recursive due to VN handling of equivalents,
+   VN and would cause an infinite recursion. */
 (match zero_one_valued_p
- (bit_and:c@0 @1 zero_one_valued_p))
+ (bit_and:c@0 @1 integer_onep)
+ (if (INTEGRAL_TYPE_P (type))))
 
 /* A conversion from an zero_one_valued_p is still a [0,1].
    This is useful when the range of a variable is not known */
