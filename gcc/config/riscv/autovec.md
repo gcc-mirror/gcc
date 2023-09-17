@@ -1401,9 +1401,9 @@
   /* If we set the first element, emit an v(f)mv.s.[xf].  */
   if (operands[2] == const0_rtx)
     {
-      rtx ops[] = {operands[0], operands[1]};
+      rtx ops[] = {operands[0], operands[0], operands[1]};
       riscv_vector::emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                         riscv_vector::SCALAR_MOVE_OP, ops, CONST1_RTX (Pmode));
+					riscv_vector::SCALAR_MOVE_MERGED_OP, ops, CONST1_RTX (Pmode));
     }
   else
     {
