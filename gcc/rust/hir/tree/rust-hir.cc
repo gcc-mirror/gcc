@@ -2290,30 +2290,6 @@ GenericArgsBinding::as_string () const
 }
 
 std::string
-ForLoopExpr::as_string () const
-{
-  std::string str ("ForLoopExpr: ");
-
-  str += "\n Label: ";
-  if (!has_loop_label ())
-    {
-      str += "none";
-    }
-  else
-    {
-      str += loop_label.as_string ();
-    }
-
-  str += "\n Pattern: " + pattern->as_string ();
-
-  str += "\n Iterator expr: " + iterator_expr->as_string ();
-
-  str += "\n Loop block: " + loop_block->as_string ();
-
-  return str;
-}
-
-std::string
 RangePattern::as_string () const
 {
   if (has_ellipsis_syntax)
@@ -4093,12 +4069,6 @@ WhileLetLoopExpr::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ForLoopExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 IfExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4778,12 +4748,6 @@ AltPattern::accept_vis (HIRPatternVisitor &vis)
 
 void
 RangePattern::accept_vis (HIRPatternVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ForLoopExpr::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

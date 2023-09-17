@@ -478,13 +478,6 @@ ConstChecker::visit (WhileLetLoopExpr &expr)
 }
 
 void
-ConstChecker::visit (ForLoopExpr &expr)
-{
-  expr.get_iterator_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
-}
-
-void
 ConstChecker::visit (IfExpr &expr)
 {
   expr.get_if_condition ()->accept_vis (*this);

@@ -78,7 +78,6 @@ public:
   virtual void visit (LoopExpr &expr) = 0;
   virtual void visit (WhileLoopExpr &expr) = 0;
   virtual void visit (WhileLetLoopExpr &expr) = 0;
-  virtual void visit (ForLoopExpr &expr) = 0;
   virtual void visit (IfExpr &expr) = 0;
   virtual void visit (IfExprConseqElse &expr) = 0;
   virtual void visit (IfLetExpr &expr) = 0;
@@ -215,7 +214,6 @@ public:
   virtual void visit (LoopExpr &) override {}
   virtual void visit (WhileLoopExpr &) override {}
   virtual void visit (WhileLetLoopExpr &) override {}
-  virtual void visit (ForLoopExpr &) override {}
   virtual void visit (IfExpr &) override {}
   virtual void visit (IfExprConseqElse &) override {}
   virtual void visit (IfLetExpr &) override {}
@@ -442,7 +440,6 @@ public:
   virtual void visit (LoopExpr &expr) = 0;
   virtual void visit (WhileLoopExpr &expr) = 0;
   virtual void visit (WhileLetLoopExpr &expr) = 0;
-  virtual void visit (ForLoopExpr &expr) = 0;
   virtual void visit (IfExpr &expr) = 0;
   virtual void visit (IfExprConseqElse &expr) = 0;
   virtual void visit (IfLetExpr &expr) = 0;

@@ -336,27 +336,24 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 void
 ASTLoweringExprWithBlock::visit (AST::ForLoopExpr &expr)
 {
-  HIR::BlockExpr *loop_block
-    = ASTLoweringBlock::translate (expr.get_loop_block ().get (), &terminated);
-  HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
-  HIR::Expr *iterator_expr
-    = ASTLoweringExpr::translate (expr.get_iterator_expr ().get (),
-				  &terminated);
-  HIR::Pattern *loop_pattern
-    = ASTLoweringPattern::translate (expr.get_pattern ().get ());
+  // TODO FIXME
 
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 UNKNOWN_LOCAL_DEFID);
+  // HIR::BlockExpr *loop_block
+  //   = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
+  //   &terminated);
+  // HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
+  // HIR::Expr *iterator_expr
+  //   = ASTLoweringExpr::translate (expr.get_iterator_expr ().get (),
+  //       			  &terminated);
+  // HIR::Pattern *loop_pattern
+  //   = ASTLoweringPattern::translate (expr.get_pattern ().get ());
 
-  translated
-    = new HIR::ForLoopExpr (mapping,
-			    std::unique_ptr<HIR::Pattern> (loop_pattern),
-			    std::unique_ptr<HIR::Expr> (iterator_expr),
-			    std::unique_ptr<HIR::BlockExpr> (loop_block),
-			    expr.get_locus (), std::move (loop_label),
-			    expr.get_outer_attrs ());
+  // auto crate_num = mappings->get_current_crate ();
+  // Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+  //       			 mappings->get_next_hir_id (crate_num),
+  //       			 UNKNOWN_LOCAL_DEFID);
+
+  gcc_unreachable ();
 }
 
 void

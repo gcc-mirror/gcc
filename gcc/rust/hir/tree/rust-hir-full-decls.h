@@ -111,7 +111,6 @@ class BaseLoopExpr;
 class LoopExpr;
 class WhileLoopExpr;
 class WhileLetLoopExpr;
-class ForLoopExpr;
 class IfExpr;
 class IfExprConseqElse;
 class IfLetExpr;
