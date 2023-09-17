@@ -8512,7 +8512,8 @@ package body Exp_Ch7 is
           Is_Empty_Elmt_List (Discriminant_Constraint (Root_Type (Typ)))
       then
          declare
-            Parent_Typ : Entity_Id;
+            Parent_Typ  : Entity_Id;
+            Parent_Utyp : Entity_Id;
 
          begin
             --  Climb the parent type chain looking for a non-constrained type
@@ -8533,7 +8534,30 @@ package body Exp_Ch7 is
                Parent_Typ := Underlying_Record_View (Parent_Typ);
             end if;
 
-            Desig_Typ := Class_Wide_Type (Underlying_Type (Parent_Typ));
+            Parent_Utyp := Underlying_Type (Parent_Typ);
+
+            --  Handle views created for a synchronized private extension with
+            --  known, non-defaulted discriminants. In that case, parent_typ
+            --  will be the private extension, as it is the first "non
+            --  -constrained" type in the parent chain. Unfortunately, the
+            --  underlying type, being a protected or task type, is not the
+            --  "real" type needing finalization. Rather, the "corresponding
+            --  record type" should be the designated type here. In fact, TSS
+            --  finalizer generation is specifically skipped for the nominal
+            --  class-wide type of (the full view of) a concurrent type (see
+            --  exp_ch7.Expand_Freeze_Class_Wide_Type). If we don't designate
+            --  the underlying record (Tprot_typeVC), we will end up trying to
+            --  dispatch to prot_typeVDF from an incorrectly designated
+            --  Tprot_typeC, which is, of course, not actually a member of
+            --  prot_typeV'Class, and thus incompatible.
+
+            if Ekind (Parent_Utyp) in Concurrent_Kind
+              and then Present (Corresponding_Record_Type (Parent_Utyp))
+            then
+               Parent_Utyp := Corresponding_Record_Type (Parent_Utyp);
+            end if;
+
+            Desig_Typ := Class_Wide_Type (Parent_Utyp);
          end;
 
       --  General case
