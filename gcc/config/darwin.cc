@@ -114,6 +114,19 @@ static bool ld_needs_eh_markers = false;
 /* Emit a section-start symbol for mod init and term sections.  */
 static bool ld_init_term_start_labels = false;
 
+/* The source and version of dsymutil in use.  */
+#ifndef DSYMUTIL_VERSION
+# warning Darwin toolchain without a defined dsymutil.
+# define DSYMUTIL_VERSION DET_UNKNOWN,0,0,0
+#endif
+
+struct {
+  darwin_external_toolchain kind; /* cctools, llvm, clang etc.  */
+  int major; /* version number.  */
+  int minor;
+  int tiny;
+} dsymutil_version = {DSYMUTIL_VERSION};
+
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
@@ -3363,10 +3376,22 @@ darwin_override_options (void)
 		  global_options.x_flag_objc_abi);
     }
 
-  if (!OPTION_SET_P (dwarf_version))
-    dwarf_version = 2;
 
-  if (OPTION_SET_P (dwarf_split_debug_info))
+  if (!OPTION_SET_P (dwarf_version))
+    {
+      /* External toolchains based on LLVM or clang 7+ have support for
+	 dwarf-4.  */
+      if ((dsymutil_version.kind == LLVM && dsymutil_version.major >= 7)
+	  || (dsymutil_version.kind == CLANG && dsymutil_version.major >= 700))
+	dwarf_version = 4;
+      else if (dsymutil_version.kind == DWARFUTILS
+	       && dsymutil_version.major >= 121)
+	dwarf_version = 3;  /* From XC 6.4.  */
+      else
+	dwarf_version = 2;  /* Older cannot safely exceed dwarf-2.  */
+    }
+
+  if (OPTION_SET_P (dwarf_split_debug_info) && dwarf_split_debug_info)
     {
       inform (input_location,
 	      "%<-gsplit-dwarf%> is not supported on this platform, ignored");
