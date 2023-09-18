@@ -3246,15 +3246,15 @@ expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
 /* Prepare ops for ternary operations.
    It can be called before or after RA.  */
 void
-prepare_ternary_operands (rtx *ops, bool split_p)
+prepare_ternary_operands (rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
 
-  if (split_p
-      || (!rtx_equal_p (ops[2], ops[5])
-	  && !rtx_equal_p (ops[3], ops[5])
-	  && !rtx_equal_p (ops[4], ops[5])
-	  && riscv_get_v_regno_alignment (mode) == 8))
+  if (!rtx_equal_p (ops[5], RVV_VUNDEF (mode))
+      && (VECTOR_MODE_P (GET_MODE (ops[2]))
+	  && !rtx_equal_p (ops[2], ops[5]))
+      && !rtx_equal_p (ops[3], ops[5])
+      && !rtx_equal_p (ops[4], ops[5]))
     {
       /* RA will fail to find vector REG and report ICE, so we pre-merge
 	 the ops for LMUL = 8.  */
@@ -3279,6 +3279,8 @@ prepare_ternary_operands (rtx *ops, bool split_p)
       /* TODO: ??? Maybe we could support splitting FMA (a, 4, b)
 	 into PLUS (ASHIFT (a, 2), b) according to uarchs.  */
     }
+  gcc_assert (rtx_equal_p (ops[5], RVV_VUNDEF (mode))
+	      || rtx_equal_p (ops[5], ops[2]) || rtx_equal_p (ops[5], ops[4]));
 }
 
 /* Expand VEC_MASK_LEN_{LOAD_LANES,STORE_LANES}.  */
