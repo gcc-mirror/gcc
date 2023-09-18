@@ -3535,13 +3535,13 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
   gcc_assert (ia == nargs_without_in_chrg);
 
-  if (!obj && explicit_targs)
+  if (!obj)
     {
       /* Check that there's no obvious arity mismatch before proceeding with
 	 deduction.  This avoids substituting explicit template arguments
-	 into the template (which could result in an error outside the
-	 immediate context) when the resulting candidate would be unviable
-	 anyway.  */
+	 into the template or e.g. derived-to-base parm/arg unification
+	 (which could result in an error outside the immediate context) when
+	 the resulting candidate would be unviable anyway.  */
       int min_arity = 0, max_arity = 0;
       tree parms = TYPE_ARG_TYPES (TREE_TYPE (tmpl));
       parms = skip_artificial_parms_for (tmpl, parms);
@@ -3571,11 +3571,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 	  reason = arity_rejection (NULL_TREE, max_arity, ia);
 	  goto fail;
 	}
-    }
 
-  errs = errorcount+sorrycount;
-  if (!obj)
-    {
       convs = alloc_conversions (nargs);
 
       if (shortcut_bad_convs
@@ -3602,6 +3598,8 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 	    }
 	}
     }
+
+  errs = errorcount+sorrycount;
   fn = fn_type_unification (tmpl, explicit_targs, targs,
 			    args_without_in_chrg,
 			    nargs_without_in_chrg,
