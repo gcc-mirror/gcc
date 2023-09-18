@@ -1,3 +1,44 @@
+2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111357
+	* include/bits/utility.h (make_integer_sequence): Add cast.
+	* testsuite/20_util/integer_sequence/pr111357.cc: New test.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Update reference to -std=gnu++14 as
+	the default.
+	* doc/html/manual/test.html: Regenerate.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/uses_allocator/lwg3677.cc: Fix -std in
+	dg-options.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/108636.cc: Add dg-require for
+	filesystem support.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdb::current_zone): Check configure macros
+	for POSIX readlink before using filesystem::read_symlink.
+
+2023-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Sink::_M_reset): Change second
+	argument from iterator to offset.
+
 2023-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

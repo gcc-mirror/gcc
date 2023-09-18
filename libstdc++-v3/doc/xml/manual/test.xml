@@ -767,7 +767,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     be run for a specific standard (and not later standards) using an
     effective target like <literal>c++11_only</literal>. However, this means
     the test will be skipped by default (because the default mode is
-    <literal>gnu++14</literal>), and so will only run when
+    <literal>gnu++17</literal>), and so will only run when
     <option>-std=gnu++11</option> or <option>-std=c++11</option> is used
     explicitly. For tests that require a specific standard it is better to
     use a <literal>dg-options</literal> directive:
@@ -783,13 +783,13 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     Similarly, tests which depend on a newer standard than the default
     must use <literal>dg-options</literal> instead of (or in addition to)
     an effective target, so that they are not skipped by default.
-    For example, tests for C++17 features should use
-<programlisting>    // { dg-options "-std=gnu++17" }</programlisting>
+    For example, tests for C++20 features should use
+<programlisting>    // { dg-options "-std=gnu++20" }</programlisting>
     before any <literal>dg-do</literal> such as:
-<programlisting>    // { dg-do run "c++17" }</programlisting>
+<programlisting>    // { dg-do run { target c++20 } }</programlisting>
     The <literal>dg-options</literal> directive must come first, so that
     the <literal>-std</literal> flag has already been added to the options
-    before checking the <literal>c++17</literal> target.
+    before checking the <literal>c++20</literal> effective target.
   </para>
 
 <section xml:id="tests.dg.examples"><info><title>Examples of Test Directives</title></info>

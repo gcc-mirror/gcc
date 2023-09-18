@@ -137,7 +137,7 @@ EXTERN char *M2Options_GetM2Prefix (void);
 EXTERN void M2Options_SetM2PathName (const char *arg);
 EXTERN char *M2Options_GetM2PathName (void);
 EXTERN int M2Options_SetUninitVariableChecking (bool value, const char *arg);
-
+EXTERN void M2Options_SetCaseEnumChecking (bool value);
 
 #undef EXTERN
 #endif /* m2options_h.  */

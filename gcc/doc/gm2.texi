@@ -659,6 +659,13 @@ zero.
 @item -fwholevalue
 generate code to detect whole number overflow and underflow.
 
+@item -Wcase-enum
+generate a warning if a @code{CASE} statement selects on an enumerated
+type expression and the statement is missing one or more @code{CASE}
+labels.  No warning is issued if the @code{CASE} statement has a default
+@code{ELSE} clause.
+The option @samp{-Wall} will turn on this flag.
+
 @item -Wuninit-variable-checking
 issue a warning if a variable is used before it is initialized.
 The checking only occurs in the first basic block in each procedure.

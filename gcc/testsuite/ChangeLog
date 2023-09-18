@@ -1,3 +1,60 @@
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-8.c: New test.
+	* gcc.target/aarch64/stack-protector-9.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/stack_clash_3.c: Avoid redundant probes.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: Expect the probe
+	to be at offset 1024 rather than offset 0.
+	* gcc.target/aarch64/stack-check-prologue-18.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-18.c: New test.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-20.c: Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-check-prologue-17.c: New test.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/case/fail/missingclause.mod: New test.
+	* gm2/switches/case/fail/switches-case-fail.exp: New test.
+	* gm2/switches/case/pass/enumcase.mod: New test.
+	* gm2/switches/case/pass/enumcase2.mod: New test.
+	* gm2/switches/case/pass/switches-case-pass.exp: New test.
+
+2023-09-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-31  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/96762
+	* gcc.target/powerpc/pr96762.c: New.
+
+2023-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111340
+	* gcc.target/i386/pr111340.c: New test.
+
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111306.c: New test.
+
 2023-08-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751

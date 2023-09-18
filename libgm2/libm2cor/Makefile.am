@@ -117,7 +117,7 @@ libm2cor_la_M2FLAGS = \
     -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-coroutines \
     -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
     -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
-    -fm2-g -g -Wreturn-type -fcase -fm2-prefix=m2cor
+    -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor
 if TARGET_DARWIN
 libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

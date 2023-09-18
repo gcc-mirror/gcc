@@ -479,6 +479,9 @@ gm2_langhook_handle_option (
     case OPT_Wall:
       M2Options_SetWall (value);
       return 1;
+    case OPT_Wcase_enum:
+      M2Options_SetCaseEnumChecking (value);
+      return 1;
 #if 0
     /* Not yet implemented.  */
     case OPT_fxcode:

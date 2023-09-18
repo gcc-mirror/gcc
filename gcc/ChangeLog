@@ -1,3 +1,186 @@
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_save_regs_above_locals_p):
+	New function.
+	(aarch64_layout_frame): Use it to decide whether locals should
+	go above or below the saved registers.
+	(aarch64_expand_prologue): Update stack layout comment.
+	Emit a stack tie after the final adjustment.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::saved_regs_size)
+	(aarch64_frame::below_hard_fp_saved_regs_size): Delete.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Update accordingly.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::sve_save_and_probe)
+	(aarch64_frame::hard_fp_save_and_probe): New fields.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize them.
+	Rather than asserting that a leaf function saves LR, instead assert
+	that a leaf function saves something.
+	(aarch64_get_separate_components): Prevent the chosen probe
+	registers from being individually shrink-wrapped.
+	(aarch64_allocate_and_probe_stack_space): Remove workaround for
+	probe registers that aren't at the bottom of the previous allocation.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Always probe the residual allocation at offset 1024, asserting
+	that that is in range.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Ensure that
+	the LR save slot is in the first 16 bytes of the register save area.
+	Only form STP/LDP push/pop candidates if both registers are valid.
+	(aarch64_allocate_and_probe_stack_space): Remove workaround for
+	when LR was not in the first 16 bytes.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Don't probe final allocations that are exactly 1KiB in size (after
+	unprobed space above the final allocation has been deducted).
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Tweak
+	calculation of initial_adjust for frames in which all saves
+	are SVE saves.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Simplify
+	the allocation of the top of the frame.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add comment above
+	reg_offset.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Walk offsets
+	from the bottom of the frame, rather than the bottom of the saved
+	register area.  Measure reg_offset from the bottom of the frame
+	rather than the bottom of the saved register area.
+	(aarch64_save_callee_saves): Update accordingly.
+	(aarch64_restore_callee_saves): Likewise.
+	(aarch64_get_separate_components): Likewise.
+	(aarch64_process_components): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::frame_size): Tweak comment.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::hard_fp_offset): Rename
+	to...
+	(aarch64_frame::bytes_above_hard_fp): ...this.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame)
+	(aarch64_expand_prologue): Update accordingly.
+	(aarch64_initial_elimination_offset): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::locals_offset): Rename to...
+	(aarch64_frame::bytes_above_locals): ...this.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame)
+	(aarch64_initial_elimination_offset): Update accordingly.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Move the
+	calculation of chain_offset into the emit_frame_chain block.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::callee_offset): Delete.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Remove
+	callee_offset handling.
+	(aarch64_save_callee_saves): Replace the start_offset parameter
+	with a bytes_below_sp parameter.
+	(aarch64_restore_callee_saves): Likewise.
+	(aarch64_expand_prologue): Update accordingly.
+	(aarch64_expand_epilogue): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::bytes_below_hard_fp): New
+	field.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize it.
+	(aarch64_expand_epilogue): Use it instead of
+	below_hard_fp_saved_regs_size.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame::bytes_below_saved_regs): New
+	field.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize it,
+	and use it instead of crtl->outgoing_args_size.
+	(aarch64_get_separate_components): Use bytes_below_saved_regs instead
+	of outgoing_args_size.
+	(aarch64_process_components): Likewise.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Explicitly
+	allocate the frame in one go if there are no saved registers.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_prologue): Use
+	chain_offset rather than callee_offset.
+
+2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_save_callee_saves): Use
+	a local shorthand for cfun->machine->frame.
+	(aarch64_restore_callee_saves, aarch64_get_separate_components):
+	(aarch64_process_components): Likewise.
+	(aarch64_allocate_and_probe_stack_space): Likewise.
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Likewise.
+	(aarch64_layout_frame): Use existing shorthand for one more case.
+
+2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-09-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Compiler options): Document new option
+	-Wcase-enum.
+
+2023-09-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-31  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/96762
+	* config/rs6000/rs6000-string.cc (expand_block_move): Call vector
+	load/store with length only on 64-bit Power10.
+
+2023-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111340
+	* config/i386/i386.cc (output_pic_addr_const): Handle CONST_WIDE_INT.
+	Call output_addr_const for CASE_CONST_SCALAR_INT.
+
+2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/111306
+	PR target/111335
+	* config/i386/sse.md (int_comm): New int_attr.
+	(fma_<complexopname>_<mode><sdc_maskz_name><round_name>):
+	Remove % for Complex conjugate operations since they're not
+	commutative.
+	(fma_<complexpairopname>_<mode>_pair): Ditto.
+	(<avx512>_<complexopname>_<mode>_mask<round_name>): Ditto.
+	(cmul<conj_op><mode>3): Ditto.
+
 2023-09-01  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
