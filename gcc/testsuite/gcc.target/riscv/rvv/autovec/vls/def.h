@@ -439,3 +439,21 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
   }
+
+#define DEF_VEC_SET_IMM_INDEX(PREFIX, VECTOR, TYPE, INDEX)                     \
+  VECTOR __attribute__ ((noinline, noclone))                                   \
+  PREFIX##_##VECTOR##_##INDEX (VECTOR v, TYPE a)                               \
+  {                                                                            \
+    v[INDEX] = a;                                                              \
+                                                                               \
+    return v;                                                                  \
+  }
+
+#define DEF_VEC_SET_SCALAR_INDEX(PREFIX, VECTOR, TYPE)                         \
+  VECTOR __attribute__ ((noinline, noclone))                                   \
+  PREFIX##_##VECTOR##_##TYPE (VECTOR v, TYPE a, unsigned index)                \
+  {                                                                            \
+    v[index] = a;                                                              \
+                                                                               \
+    return v;                                                                  \
+  }

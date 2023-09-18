@@ -1393,9 +1393,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "vec_set<mode>"
-  [(match_operand:V	0 "register_operand")
+  [(match_operand:V_VLS 0 "register_operand")
    (match_operand:<VEL> 1 "register_operand")
-   (match_operand	2 "nonmemory_operand")]
+   (match_operand       2 "nonmemory_operand")]
   "TARGET_VECTOR"
 {
   /* If we set the first element, emit an v(f)mv.s.[xf].  */
