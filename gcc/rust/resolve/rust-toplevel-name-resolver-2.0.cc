@@ -91,7 +91,7 @@ insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
     {
       auto res = ctx.macros.insert (macro.get_name (), macro.get_node_id ());
 
-      if (!res)
+      if (!res && res.error ().existing != macro.get_node_id ())
 	{
 	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
 			 "macro %qs defined multiple times",
@@ -167,7 +167,7 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
     {
       auto res = ctx.macros.insert_at_root (macro.get_rule_name (),
 					    macro.get_node_id ());
-      if (!res)
+      if (!res && res.error ().existing != macro.get_node_id ())
 	{
 	  // TODO: Factor this
 	  rich_location rich_loc (line_table, macro.get_locus ());
