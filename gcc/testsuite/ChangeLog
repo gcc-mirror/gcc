@@ -1,3 +1,11 @@
+2023-09-17  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Remove xfail.
+
+2023-09-17  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* g++.target/powerpc/altivec-19.C: New testcase.
+
 2023-09-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/111391

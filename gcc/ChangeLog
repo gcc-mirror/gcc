@@ -1,3 +1,7 @@
+2023-09-17  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* config/rs6000/vsx.md (*vctzlsbb_zext_<mode>): New define_insn.
+
 2023-09-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/111391
