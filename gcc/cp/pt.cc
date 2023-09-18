@@ -1507,21 +1507,6 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 	      || (TREE_CODE (tmpl) == FIELD_DECL
 		  && TREE_CODE (spec) == NONTYPE_ARGUMENT_PACK));
 
-  if (TREE_CODE (spec) == FUNCTION_DECL
-      && uses_template_parms (DECL_TI_ARGS (spec)))
-    /* This is the FUNCTION_DECL for a partial instantiation.  Don't
-       register it; we want the corresponding TEMPLATE_DECL instead.
-       We use `uses_template_parms (DECL_TI_ARGS (spec))' rather than
-       the more obvious `uses_template_parms (spec)' to avoid problems
-       with default function arguments.  In particular, given
-       something like this:
-
-	  template <class T> void f(T t1, T t = T())
-
-       the default argument expression is not substituted for in an
-       instantiation unless and until it is actually needed.  */
-    return spec;
-
   spec_entry elt;
   elt.tmpl = tmpl;
   elt.args = args;
@@ -14665,7 +14650,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   tree in_decl = t;
   tree spec;
   tree tmpl_args;
-  tree full_args;
+  tree full_args = NULL_TREE;
   tree r;
   hashval_t hash = 0;
 
@@ -14756,7 +14741,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   tree inner = decl;
   ++processing_template_decl;
   if (TREE_CODE (inner) == FUNCTION_DECL)
-    inner = tsubst_function_decl (inner, args, complain, lambda_fntype);
+    inner = tsubst_function_decl (inner, args, complain, lambda_fntype,
+				  /*use_spec_table=*/false);
   else
     {
       if (TREE_CODE (inner) == TYPE_DECL && !TYPE_DECL_ALIAS_P (inner))
@@ -14794,6 +14780,11 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     }
   else
     {
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	/* Set DECL_TI_ARGS to the full set of template arguments, which
+	   tsubst_function_decl didn't do due to use_spec_table=false.  */
+	DECL_TI_ARGS (inner) = full_args;
+
       DECL_TI_TEMPLATE (inner) = r;
       DECL_TI_ARGS (r) = DECL_TI_ARGS (inner);
     }
@@ -14824,9 +14815,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 
   if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
     /* Record this non-type partial instantiation.  */
-    register_specialization (r, t,
-			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
-			     false, hash);
+    register_specialization (r, t, full_args, false, hash);
 
   return r;
 }
