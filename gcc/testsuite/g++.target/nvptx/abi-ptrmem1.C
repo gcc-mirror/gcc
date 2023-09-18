@@ -1,4 +1,4 @@
-// { dg-do compile { target nvptx-*-* } }
+// { dg-do compile }
 // { dg-additional-options "-m64" }
 
 // ptr to member data is like sizeof.
