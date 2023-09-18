@@ -8,7 +8,9 @@ riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(RISCV_BUILTINS_H) \
   $(srcdir)/config/riscv/riscv-ftypes.def \
   $(srcdir)/config/riscv/riscv-vector-builtins-types.def \
-  $(srcdir)/config/riscv/riscv-modes.def
+  $(srcdir)/config/riscv/riscv-modes.def \
+  $(srcdir)/config/riscv/riscv-cmo.def \
+  $(srcdir)/config/riscv/riscv-scalar-crypto.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-builtins.cc
 
