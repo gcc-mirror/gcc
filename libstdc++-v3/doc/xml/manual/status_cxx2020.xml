@@ -572,7 +572,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1466r3.html">
         P1466R3 </link>
       </entry>
-      <entry/>
+      <entry> 11.1 (see Note 2) </entry>
       <entry> <code>__cpp_lib_chrono &gt;= 201907L</code> </entry>
     </row>
 
