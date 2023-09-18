@@ -32,6 +32,8 @@ namespace HIR {
 class Dump : public HIRFullVisitor
 {
 public:
+  static void debug (FullVisitable &v);
+
   Dump (std::ostream &stream);
   void go (HIR::Crate &crate);
 
@@ -247,5 +249,9 @@ private:
 
 } // namespace HIR
 } // namespace Rust
+
+// In the global namespace to make it easier to call from debugger
+void
+debug (Rust::HIR::FullVisitable &v);
 
 #endif // !RUST_HIR_DUMP_H
