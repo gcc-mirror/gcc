@@ -24559,7 +24559,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      even if ARG == PARM, since we won't record unifications for the
      template parameters.  We might need them if we're trying to
      figure out which of two things is more specialized.  */
-  if (arg == parm && !uses_template_parms (parm))
+  if (arg == parm
+      && (DECL_P (parm) || !uses_template_parms (parm)))
     return unify_success (explain_p);
 
   /* Handle init lists early, so the rest of the function can assume
@@ -25278,11 +25279,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 		    strict, explain_p);
 
     case CONST_DECL:
-      if (DECL_TEMPLATE_PARM_P (parm))
-	return unify (tparms, targs, DECL_INITIAL (parm), arg, strict, explain_p);
-      if (arg != scalar_constant_value (parm))
-	return unify_template_argument_mismatch (explain_p, parm, arg);
-      return unify_success (explain_p);
+      /* CONST_DECL should already have been folded to its DECL_INITIAL.  */
+      gcc_unreachable ();
 
     case FIELD_DECL:
     case TEMPLATE_DECL:
