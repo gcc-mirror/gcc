@@ -2356,8 +2356,7 @@ package body Exp_Ch7 is
 
                elsif Ekind (Obj_Id) = E_Variable
                  and then not In_Library_Level_Package_Body (Obj_Id)
-                 and then (Is_Simple_Protected_Type (Obj_Typ)
-                            or else Has_Simple_Protected_Object (Obj_Typ))
+                 and then Has_Simple_Protected_Object (Obj_Typ)
                then
                   Processing_Actions (Is_Protected => True);
                end if;
@@ -3006,7 +3005,9 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Object_Declaration
 
       begin
-         --  Handle the object type and the reference to the object
+         --  Handle the object type and the reference to the object. Note
+         --  that objects having simple protected components must retain
+         --  their original form for the processing below to work.
 
          Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
          Obj_Typ := Base_Type (Etype (Obj_Id));
@@ -3018,6 +3019,7 @@ package body Exp_Ch7 is
 
             elsif Is_Concurrent_Type (Obj_Typ)
               and then Present (Corresponding_Record_Type (Obj_Typ))
+              and then not Is_Protected
             then
                Obj_Typ := Corresponding_Record_Type (Obj_Typ);
                Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
@@ -3180,12 +3182,11 @@ package body Exp_Ch7 is
                   Fin_Stmts := New_List (Fin_Call);
                end if;
 
-            elsif Has_Simple_Protected_Object (Obj_Typ) then
-               if Is_Record_Type (Obj_Typ) then
-                  Fin_Stmts := Cleanup_Record (Decl, Obj_Ref, Obj_Typ);
-               elsif Is_Array_Type (Obj_Typ) then
-                  Fin_Stmts := Cleanup_Array (Decl, Obj_Ref, Obj_Typ);
-               end if;
+            elsif Is_Array_Type (Obj_Typ) then
+               Fin_Stmts := Cleanup_Array (Decl, Obj_Ref, Obj_Typ);
+
+            else
+               Fin_Stmts := Cleanup_Record (Decl, Obj_Ref, Obj_Typ);
             end if;
 
             --  Generate:
