@@ -9,7 +9,7 @@ struct A{};
 typedef int A::*pmd;
 typedef void (A::*pmf) ();
 
-// { dg-final { scan-assembler ".extern .func \\(.param.u64 %out_retval\\) _Z8dcl_rpmdv;" } }
+// { dg-final { scan-assembler ".extern .func \\(.param.u64 %value_out\\) _Z8dcl_rpmdv;" } }
 pmd dcl_rpmd ();
 
 // { dg-final { scan-assembler ".extern .func _Z8dcl_rpmfv \\(.param.u64 %in_ar0\\);" } }
@@ -29,7 +29,7 @@ void test_1 ()
   dcl_apmf (0);
 }
 
-// { dg-final { scan-assembler-times ".visible .func \\(.param.u64 %out_retval\\) _Z8dfn_rpmdv(?:;|\[\r\n\]+\{)" 2 } }
+// { dg-final { scan-assembler-times ".visible .func \\(.param.u64 %value_out\\) _Z8dfn_rpmdv(?:;|\[\r\n\]+\{)" 2 } }
 pmd dfn_rpmd ()
 {
   return 0;
