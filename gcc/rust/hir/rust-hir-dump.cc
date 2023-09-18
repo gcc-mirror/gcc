@@ -68,6 +68,18 @@ BoundPolarityString (BoundPolarity polarity)
   return "unknown";
 }
 
+/**
+ * Static member used to dump HIR from the debugger to stderr.
+ *
+ * @param v The HIR node to dump
+ */
+void
+Dump::debug (FullVisitable &v)
+{
+  Dump dump (std::cerr);
+  v.accept_vis (dump);
+}
+
 void
 Dump::go (HIR::Crate &e)
 {
@@ -2390,3 +2402,10 @@ Dump::visit (BareFunctionType &e)
 
 } // namespace HIR
 } // namespace Rust
+
+// In the global namespace to make it easier to call from debugger
+void
+debug (Rust::HIR::FullVisitable &v)
+{
+  Rust::HIR::Dump::debug (v);
+}
