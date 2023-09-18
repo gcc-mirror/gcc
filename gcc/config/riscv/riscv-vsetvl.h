@@ -418,8 +418,6 @@ public:
   auto_vec<vector_insn_info> vector_insn_infos;
   auto_vec<vector_block_info> vector_block_infos;
   auto_vec<vector_insn_info *> vector_exprs;
-  hash_set<rtx_insn *> to_refine_vsetvls;
-  hash_set<rtx_insn *> to_delete_vsetvls;
 
   struct edge_list *vector_edge_list;
   sbitmap *vector_kill;
