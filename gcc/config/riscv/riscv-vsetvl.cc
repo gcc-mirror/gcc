@@ -1308,6 +1308,14 @@ vlmul_for_first_sew_second_ratio (const vector_insn_info &info1,
   return calculate_vlmul (info1.get_sew (), info2.get_ratio ());
 }
 
+static vlmul_type
+vlmul_for_greatest_sew_second_ratio (const vector_insn_info &info1,
+				     const vector_insn_info &info2)
+{
+  return calculate_vlmul (MAX (info1.get_sew (), info2.get_sew ()),
+			  info2.get_ratio ());
+}
+
 static unsigned
 ratio_for_second_sew_first_vlmul (const vector_insn_info &info1,
 				  const vector_insn_info &info2)
