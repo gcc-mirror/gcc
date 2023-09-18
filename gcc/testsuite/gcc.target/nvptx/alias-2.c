@@ -9,6 +9,6 @@
 /* { dg-final { scan-assembler-not "\\.alias.*;" } } */
 /* { dg-final { scan-assembler-not "\\.visible \\.func f;" } } */
 
-/* Note static and inlined, so still there.  */
+/* Note extern and inlined, so still there.  */
 /* { dg-final { scan-assembler-times "\\.visible \\.func __f;" 1 } } */
 

@@ -1,3 +1,11 @@
+2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from trunk:
+	2024-09-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/104957
+	* gcc.target/nvptx/alias-2.c: Fix comment.
+
 2025-02-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
