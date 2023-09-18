@@ -2852,6 +2852,23 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	  const_string = get_array_ctor_strlen (&outer_loop->pre, c,
 						&ss_info->string_length);
 	  force_new_cl = true;
+
+	  /* Initialize "len" with string length for bounds checking.  */
+	  if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+	      && !typespec_chararray_ctor
+	      && ss_info->string_length)
+	    {
+	      gfc_se length_se;
+
+	      gfc_init_se (&length_se, NULL);
+	      gfc_add_modify (&length_se.pre, first_len_val,
+			      fold_convert (TREE_TYPE (first_len_val),
+					    ss_info->string_length));
+	      ss_info->string_length = gfc_evaluate_now (ss_info->string_length,
+							 &length_se.pre);
+	      gfc_add_block_to_block (&outer_loop->pre, &length_se.pre);
+	      gfc_add_block_to_block (&outer_loop->post, &length_se.post);
+	    }
 	}
 
       /* Complex character array constructors should have been taken care of
