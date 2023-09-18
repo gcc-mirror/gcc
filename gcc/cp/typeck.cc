@@ -9721,13 +9721,13 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
   if (lhs == error_mark_node || rhs == error_mark_node)
     return cp_expr (error_mark_node, loc);
 
+  tree op = build_min (modifycode, void_type_node, NULL_TREE, NULL_TREE);
+
   if (processing_template_decl)
     {
-      if (modifycode == NOP_EXPR
-	  || type_dependent_expression_p (lhs)
+      if (type_dependent_expression_p (lhs)
 	  || type_dependent_expression_p (rhs))
 	{
-	  tree op = build_min_nt_loc (loc, modifycode, NULL_TREE, NULL_TREE);
 	  tree rval = build_min_nt_loc (loc, MODOP_EXPR, lhs, op, rhs);
 	  if (modifycode != NOP_EXPR)
 	    TREE_TYPE (rval)
@@ -9739,29 +9739,24 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
       rhs = build_non_dependent_expr (rhs);
     }
 
-  if (modifycode != NOP_EXPR)
+  tree rval;
+  if (modifycode == NOP_EXPR)
+    rval = cp_build_modify_expr (loc, lhs, modifycode, rhs, complain);
+  else
+    rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL,
+			 lhs, rhs, op, lookups, &overload, complain);
+  if (rval == error_mark_node)
+    return error_mark_node;
+  if (processing_template_decl)
     {
-      tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
-      tree rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL,
-				lhs, rhs, op, lookups, &overload, complain);
-      if (rval)
-	{
-	  if (rval == error_mark_node)
-	    return rval;
-	  suppress_warning (rval /* What warning? */);
-	  if (processing_template_decl)
-	    {
-	      if (overload != NULL_TREE)
-		return (build_min_non_dep_op_overload
-			(MODIFY_EXPR, rval, overload, orig_lhs, orig_rhs));
+      if (overload != NULL_TREE)
+	return (build_min_non_dep_op_overload
+		(MODIFY_EXPR, rval, overload, orig_lhs, orig_rhs));
 
-	      return (build_min_non_dep
-		      (MODOP_EXPR, rval, orig_lhs, op, orig_rhs));
-	    }
-	  return rval;
-	}
+      return (build_min_non_dep
+	      (MODOP_EXPR, rval, orig_lhs, op, orig_rhs));
     }
-  return cp_build_modify_expr (loc, lhs, modifycode, rhs, complain);
+  return rval;
 }
 
 /* Helper function for get_delta_difference which assumes FROM is a base

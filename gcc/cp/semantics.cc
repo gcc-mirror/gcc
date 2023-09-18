@@ -881,13 +881,17 @@ maybe_convert_cond (tree cond)
   /* Do the conversion.  */
   cond = convert_from_reference (cond);
 
-  if ((TREE_CODE (cond) == MODIFY_EXPR || is_assignment_op_expr_p (cond))
+  tree inner = REFERENCE_REF_P (cond) ? TREE_OPERAND (cond, 0) : cond;
+  if ((TREE_CODE (inner) == MODIFY_EXPR
+       || (TREE_CODE (inner) == MODOP_EXPR
+	   && TREE_CODE (TREE_OPERAND (inner, 1)) == NOP_EXPR)
+       || is_assignment_op_expr_p (inner))
       && warn_parentheses
-      && !warning_suppressed_p (cond, OPT_Wparentheses)
-      && warning_at (cp_expr_loc_or_input_loc (cond),
+      && !warning_suppressed_p (inner, OPT_Wparentheses)
+      && warning_at (cp_expr_loc_or_input_loc (inner),
 		     OPT_Wparentheses, "suggest parentheses around "
 				       "assignment used as truth value"))
-    suppress_warning (cond, OPT_Wparentheses);
+    suppress_warning (inner, OPT_Wparentheses);
 
   return condition_conversion (cond);
 }
@@ -2155,8 +2159,11 @@ cp_expr
 finish_parenthesized_expr (cp_expr expr)
 {
   if (EXPR_P (expr))
-    /* This inhibits warnings in c_common_truthvalue_conversion.  */
-    suppress_warning (expr, OPT_Wparentheses);
+    {
+      /* This inhibits warnings in c_common_truthvalue_conversion.  */
+      tree inner = REFERENCE_REF_P (expr) ? TREE_OPERAND (expr, 0) : *expr;
+      suppress_warning (inner, OPT_Wparentheses);
+    }
 
   if (TREE_CODE (expr) == OFFSET_REF
       || TREE_CODE (expr) == SCOPE_REF)

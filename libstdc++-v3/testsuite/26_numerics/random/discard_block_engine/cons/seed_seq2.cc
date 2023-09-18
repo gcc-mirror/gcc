@@ -51,7 +51,7 @@ struct seed_seq
   // T is convertible to the engine's result_type:
   operator T() const noexcept { return T(); }
 
-  bool called = false;
+  mutable bool called = false;
 };
 
 using engine_type

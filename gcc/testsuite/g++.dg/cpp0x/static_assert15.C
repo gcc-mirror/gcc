@@ -5,6 +5,6 @@ template<int x>
 struct a {
   constexpr void b() {
     int c;
-    static_assert(c %= 1, "");
+    static_assert(c %= 1, ""); // { dg-error "constant" }
   }
 };
