@@ -341,8 +341,8 @@
 	C++ includes. If enabled (as by default), and the compiler
 	seems capable of passing the simple sanity checks thrown at
 	it, try to build stdc++.h.gch as part of the make process.
-	In addition, this generated file is used later on (by appending <code>
-	--include bits/stdc++.h </code> to CXXFLAGS) when running the
+	In addition, this generated file is used later on (by appending
+	<code>-include bits/stdc++.h</code> to CXXFLAGS) when running the
 	testsuite.
      </para>
  </listitem></varlistentry>
