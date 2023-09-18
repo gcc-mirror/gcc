@@ -420,10 +420,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand")
-    (any_int_binop_no_shift:VI
-     (match_operand:VI 1 "<binop_rhs1_predicate>")
-     (match_operand:VI 2 "<binop_rhs2_predicate>")))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+    (any_int_binop_no_shift:V_VLSI
+     (match_operand:V_VLSI 1 "<binop_rhs1_predicate>")
+     (match_operand:V_VLSI 2 "<binop_rhs2_predicate>")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -985,9 +985,9 @@
 ;; - vneg.v/vnot.v
 ;; -------------------------------------------------------------------------------
 (define_insn_and_split "<optab><mode>2"
-  [(set (match_operand:VI 0 "register_operand")
-    (any_int_unop:VI
-     (match_operand:VI 1 "register_operand")))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+    (any_int_unop:V_VLSI
+     (match_operand:V_VLSI 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1516,10 +1516,10 @@
 ;; - vfadd.vf/vfsub.vf/...
 ;; -------------------------------------------------------------------------
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:VF 0 "register_operand")
-        (any_float_binop:VF
-          (match_operand:VF 1 "register_operand")
-          (match_operand:VF 2 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (any_float_binop:V_VLSF
+          (match_operand:V_VLSF 1 "register_operand")
+          (match_operand:V_VLSF 2 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1537,10 +1537,10 @@
 ;; - vfmin.vf/vfmax.vf
 ;; -------------------------------------------------------------------------
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:VF 0 "register_operand")
-        (any_float_binop_nofrm:VF
-          (match_operand:VF 1 "register_operand")
-          (match_operand:VF 2 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (any_float_binop_nofrm:V_VLSF
+          (match_operand:V_VLSF 1 "register_operand")
+          (match_operand:V_VLSF 2 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1563,10 +1563,10 @@
 ;; Leave the pattern like this as to still allow combine to match
 ;; a negated copysign (see vector.md) before adding the UNSPEC_VPREDICATE later.
 (define_insn_and_split "copysign<mode>3"
-  [(set (match_operand:VF 0 "register_operand"      "=vd, vd, vr, vr")
-    (unspec:VF
-     [(match_operand:VF 1 "register_operand"        " vr, vr, vr, vr")
-     (match_operand:VF 2 "register_operand"         " vr, vr, vr, vr")] UNSPEC_VCOPYSIGN))]
+  [(set (match_operand:V_VLSF 0 "register_operand"  "=vd, vd, vr, vr")
+    (unspec:V_VLSF
+     [(match_operand:V_VLSF 1 "register_operand"        " vr, vr, vr, vr")
+     (match_operand:V_VLSF 2 "register_operand"         " vr, vr, vr, vr")] UNSPEC_VCOPYSIGN))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1585,9 +1585,9 @@
 ;; - vfsgnjx.vf
 ;; -------------------------------------------------------------------------------
 (define_expand "xorsign<mode>3"
-  [(match_operand:VF 0 "register_operand")
-    (match_operand:VF 1 "register_operand")
-    (match_operand:VF 2 "register_operand")]
+  [(match_operand:V_VLSF 0 "register_operand")
+    (match_operand:V_VLSF 1 "register_operand")
+    (match_operand:V_VLSF 2 "register_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (UNSPEC_VXORSIGN, <MODE>mode),
