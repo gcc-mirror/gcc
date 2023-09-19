@@ -281,18 +281,6 @@ maybe_isnan (const frange &op1, const frange &op2)
 // folded.  For example, when attempting to fold x_3 == y_5, MY_REL is
 // VREL_EQ, and if the statement is dominated by x_3 > y_5, then
 // TRIO.op1_op2() is VREL_GT.
-//
-// Relations in a floating point world are a bit tricky, as TRIO
-// behaves as the corresponding unordered variant if either operand
-// could be a NAN.  For example, when resolving "if (x_5 == x_5)", the
-// relation is VREL_EQ, but it behaves like VREL_UNEQ if NANs are a
-// possibility.  Similarly, the false edge of "if (x >= y)" has a
-// relation of VREL_LT, but behaves as VREL_UNLT unless we can prove
-// neither operand can be NAN.
-//
-// ?? It is unclear whether providing unordered VREL relations would
-// simplify things, as we'd have to add more entries to various
-// tables, tweak all the op1_op2_relation() entries, etc.
 
 static inline bool
 frelop_early_resolve (irange &r, tree type,
@@ -301,14 +289,6 @@ frelop_early_resolve (irange &r, tree type,
 {
   relation_kind rel = trio.op1_op2 ();
 
-  if (maybe_isnan (op1, op2))
-    {
-      // There's not much we can do for VREL_EQ if NAN is a
-      // possibility.  It is up to the caller to deal with these
-      // special cases.
-      if (rel == VREL_EQ)
-	return empty_range_varying (r, type, op1, op2);
-    }
   // If known relation is a complete subset of this relation, always
   // return true.  However, avoid doing this when NAN is a possibility
   // as we'll incorrectly fold conditions:
@@ -319,7 +299,7 @@ frelop_early_resolve (irange &r, tree type,
   //     ;; With NANs the relation here is basically VREL_UNLT, so we
   //     ;; can't fold the following:
   //     if (x_3 < y_5)
-  else if (relation_union (rel, my_rel) == my_rel)
+  if (!maybe_isnan (op1, op2) && relation_union (rel, my_rel) == my_rel)
     {
       r = range_true (type);
       return true;
@@ -801,7 +781,13 @@ operator_not_equal::fold_range (irange &r, tree type,
       r = range_true (type);
       return true;
     }
-  if (frelop_early_resolve (r, type, op1, op2, trio, VREL_NE))
+  if (rel == VREL_EQ && maybe_isnan (op1, op2))
+    {
+      // Avoid frelop_early_resolve() below as it could fold to FALSE
+      // without regards to NANs.  This would be incorrect if trying
+      // to fold x_5 != x_5 without prior knowledge of NANs.
+    }
+  else if (frelop_early_resolve (r, type, op1, op2, trio, VREL_NE))
     return true;
 
   // x != NAN is always TRUE.
@@ -933,14 +919,6 @@ operator_lt::fold_range (irange &r, tree type,
 			 const frange &op1, const frange &op2,
 			 relation_trio trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-
-  // VREL_EQ & LT_EXPR is impossible, even with NANs.
-  if (rel == VREL_EQ)
-    {
-      r = range_false (type);
-      return true;
-    }
   if (frelop_early_resolve (r, type, op1, op2, trio, VREL_LT))
     return true;
 
@@ -1162,14 +1140,6 @@ operator_gt::fold_range (irange &r, tree type,
 			 const frange &op1, const frange &op2,
 			 relation_trio trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-
-  // VREL_EQ & GT_EXPR is impossible, even with NANs.
-  if (rel == VREL_EQ)
-    {
-      r = range_false (type);
-      return true;
-    }
   if (frelop_early_resolve (r, type, op1, op2, trio, VREL_GT))
     return true;
 
@@ -2129,10 +2099,7 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    if (op1.known_isnan () || op2.known_isnan ()
-	|| rel == VREL_EQ)
+    if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_true (type);
 	return true;
