@@ -834,8 +834,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
       tree c2 = get_constraints (fndecl);
 
       /* While finding a match, same types and params are not enough
-	 if the function is versioned.  Also check version ("target")
-	 attributes.  */
+	 if the function is versioned.  Also check for different target
+	 specific attributes.  */
       if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
 		       TREE_TYPE (TREE_TYPE (fndecl)))
 	  && compparms (p1, p2)

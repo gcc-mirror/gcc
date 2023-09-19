@@ -146,14 +146,16 @@ static const struct attribute_spec::exclusions attr_noinline_exclusions[] =
 
 static const struct attribute_spec::exclusions attr_target_exclusions[] =
 {
-  { "target_clones", true, true, true },
+  { "target_clones", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+    TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE },
   { NULL, false, false, false },
 };
 
 static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
 {
   { "always_inline", true, true, true },
-  { "target", true, true, true },
+  { "target", TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+    TARGET_HAS_FMV_TARGET_ATTRIBUTE },
   { NULL, false, false, false },
 };
 

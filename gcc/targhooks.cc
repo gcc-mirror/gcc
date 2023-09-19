@@ -1799,7 +1799,19 @@ default_target_option_valid_attribute_p (tree ARG_UNUSED (fndecl),
 					 int ARG_UNUSED (flags))
 {
   warning (OPT_Wattributes,
-	   "target attribute is not supported on this machine");
+	   "%<target%> attribute is not supported on this machine");
+
+  return false;
+}
+
+bool
+default_target_option_valid_version_attribute_p (tree ARG_UNUSED (fndecl),
+						 tree ARG_UNUSED (name),
+						 tree ARG_UNUSED (args),
+						 int ARG_UNUSED (flags))
+{
+  warning (OPT_Wattributes,
+	   "%<target_version%> attribute is not supported on this machine");
 
   return false;
 }

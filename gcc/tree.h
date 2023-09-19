@@ -3510,8 +3510,8 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    (FUNCTION_DECL_CHECK (NODE)->function_decl.function_specific_optimization)
 
 /* In FUNCTION_DECL, this is set if this function has other versions generated
-   using "target" attributes.  The default version is the one which does not
-   have any "target" attribute set. */
+   to support different architecture feature sets, e.g. using "target" or
+   "target_version" attributes.  */
 #define DECL_FUNCTION_VERSIONED(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->function_decl.versioned_function)
 
