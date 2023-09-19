@@ -90,6 +90,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -187,11 +188,16 @@ C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
 
 libm2isodir = libm2iso
 libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_SOURCES)))
-libm2iso_la_CFLAGS = $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
+libm2iso_la_CFLAGS = \
+   $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
+   -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include \
+   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include \
+   $(TARGET_LONGDOUBLE_ABI)
 libm2iso_la_M2FLAGS = \
   -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
   -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
-  -fiso -fextended-opaque -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2iso
+  -fiso -fextended-opaque -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2iso \
+   $(TARGET_LONGDOUBLE_ABI)
 if TARGET_DARWIN
 libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -213,13 +219,17 @@ SYSTEM.def: Makefile
              "$(GM2_FOR_TARGET)" $@
 
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
+	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+                   $(GM2_FOR_TARGET) -c \
+                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
 
 .cc.lo:
-	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
+                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 .c.lo:
-	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) \
+                   $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

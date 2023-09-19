@@ -1135,6 +1135,31 @@ END ConCatChar ;
 
 
 (*
+   ReplaceChar - returns string s after it has changed all occurances of from to to.
+*)
+
+PROCEDURE ReplaceChar (s: String; from, to: CHAR) : String ;
+VAR
+   t: String ;
+   i: CARDINAL ;
+BEGIN
+   t := s ;
+   WHILE t # NIL DO
+      i := 0 ;
+      WHILE i < t^.contents.len DO
+         IF t^.contents.buf[i] = from
+         THEN
+            t^.contents.buf[i] := to
+         END ;
+         INC (i)
+      END ;
+      t := t^.contents.next
+   END ;
+   RETURN s
+END ReplaceChar ;
+
+
+(*
    Assign - assigns the contents of, b, into, a.
             String, a, is returned.
 *)

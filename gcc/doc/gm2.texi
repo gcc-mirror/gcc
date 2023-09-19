@@ -392,7 +392,7 @@ implementation modules which are parsed will be prepossessed by
 @item -fdebug-builtins
 call a real function, rather than the builtin equivalent.  This can
 be useful for debugging parameter values to a builtin function as
-it allows users to single step code into a real function.
+it allows users to single step code into an intrinsic function.
 
 @c fd
 @c Modula-2

@@ -125,6 +125,13 @@ EXTERN DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_String a,
 EXTERN DynamicStrings_String DynamicStrings_Assign (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
+   ReplaceChar - returns string s after it has changed all
+                 occurances of from to to.
+*/
+
+EXTERN DynamicStrings_String DynamicStrings_ReplaceChar (DynamicStrings_String s, char from, char to);
+
+/*
    Dup - duplicate a String, s, returning the copy of s.
 */
 

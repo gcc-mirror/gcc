@@ -48,6 +48,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* use __float128 for LONGREAL */
+#undef M2C_LONGREAL_FLOAT128
+
+/* target is ppc64le */
+#undef M2C_LONGREAL_PPC64LE
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 

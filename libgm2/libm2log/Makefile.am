@@ -90,6 +90,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -136,7 +137,8 @@ libm2log_la_M2FLAGS = \
  -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
- -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log
+ -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2log \
+ $(TARGET_LONGDOUBLE_ABI)
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -151,7 +153,9 @@ M2LIBDIR = /m2/m2log/
 	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) SYSTEM.def
 
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
+	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+                   $(GM2_FOR_TARGET) -c \
+                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

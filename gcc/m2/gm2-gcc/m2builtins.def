@@ -28,7 +28,7 @@ FROM m2linemap IMPORT location_t ;
 EXPORT QUALIFIED GetBuiltinConst, GetBuiltinConstType,
                  GetBuiltinTypeInfoType, GetBuiltinTypeInfo,
                  BuiltinExists, BuildBuiltinTree,
-                 BuiltInMemCopy, BuiltInAlloca,
+                 BuiltinMemCopy, BuiltinMemSet, BuiltInAlloca,
 		 BuiltInIsfinite ;
 
 
@@ -98,7 +98,14 @@ PROCEDURE BuildBuiltinTree (location: location_t; name: ADDRESS) : Tree ;
    BuiltinMemCopy and BuiltinAlloca - are called by M2GenGCC to implement open arrays.
 *)
 
-PROCEDURE BuiltInMemCopy (location: location_t; dest, src, n: Tree) : Tree ;
+PROCEDURE BuiltinMemCopy (location: location_t; dest, src, n: Tree) : Tree ;
+
+
+(*
+   BuiltinMemSet is called by M2GenGCC to implement the set type.
+*)
+
+PROCEDURE BuiltinMemSet (location: location_t; dest, bytevalue, nbytes: Tree) : Tree ;
 
 
 (*

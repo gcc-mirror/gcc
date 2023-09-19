@@ -34,7 +34,8 @@ FROM StringConvert IMPORT CardinalToString, ostoc ;
 FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ,
                       getExtendedOpaque, writeGPLheader, getGccConfigSystem,
                       getScaffoldDynamic, getScaffoldMain, getSuppressNoReturn,
-                      useBool ;
+                      useBool, getCRealType, getCShortRealType,
+                      getCLongRealType ;
 
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM libc IMPORT printf, memset ;
@@ -6355,10 +6356,10 @@ BEGIN
       adr             :  doAdrC (p, n) |
       size,
       tsize           :  doSizeC (p, n) |
-      float           :  doConvertC (p, n, "(double)") |
-      trunc           :  doConvertC (p, n, "(int)") |
-      ord             :  doConvertC (p, n, "(unsigned int)") |
-      chr             :  doConvertC (p, n, "(char)") |
+      float           :  doConvertSC (p, n, getCRealType ()) |
+      trunc           :  doConvertC (p, n, "int") |
+      ord             :  doConvertC (p, n, "unsigned int") |
+      chr             :  doConvertC (p, n, "char") |
       cap             :  doCapC (p, n) |
       abs             :  doAbsC (p, n) |
       high            :  doFuncHighC (p, n^.unaryF.arg) |
@@ -7878,9 +7879,9 @@ BEGIN
    complex     :  outText (p, 'double complex') |
    longcomplex :  outText (p, 'long double complex') |
    shortcomplex:  outText (p, 'float complex') |
-   real        :  outText (p, 'double') |
-   longreal    :  outText (p, 'long double') |
-   shortreal   :  outText (p, 'float') |
+   real        :  outTextS (p, getCRealType ()) |
+   longreal    :  outTextS (p, getCLongRealType ()) |
+   shortreal   :  outTextS (p, getCShortRealType ()) |
    bitset      :  outText (p, 'unsigned int') |
    boolean     :  doBoolC (p) |
    proc        :  outText (p, 'PROC')
@@ -11026,16 +11027,31 @@ END doSizeC ;
 *)
 
 PROCEDURE doConvertC (p: pretty; n: node; conversion: ARRAY OF CHAR) ;
+VAR
+   s: String ;
+BEGIN
+   s := InitString (conversion) ;
+   doConvertSC (p, n, s) ;
+   s := KillString (s)
+END doConvertC ;
+
+
+(*
+   doConvertSC -
+*)
+
+PROCEDURE doConvertSC (p: pretty; n: node; conversion: String) ;
 BEGIN
    assert (isUnary (n)) ;
    setNeedSpace (p) ;
-   outText (p, "(") ;
-   outText (p, conversion) ;
+   outText (p, "((") ;
+   outTextS (p, conversion) ;
+   outText (p, ")") ;
    setNeedSpace (p) ;
    outText (p, "(") ;
    doExprC (p, n^.unaryF.arg) ;
    outText (p, "))")
-END doConvertC ;
+END doConvertSC ;
 
 
 (*  not needed?

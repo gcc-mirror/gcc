@@ -427,6 +427,9 @@ gm2_langhook_handle_option (
     case OPT_fd:
       M2Options_SetCompilerDebugging (value);
       return 1;
+    case OPT_fdebug_builtins:
+      M2Options_SetDebugBuiltins (value);
+      return 1;
     case OPT_fdebug_trace_quad:
       M2Options_SetDebugTraceQuad (value);
       return 1;
@@ -809,14 +812,25 @@ gm2_langhook_type_for_mode (machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_double_type_node))
     return long_double_type_node;
 
+  if ((float128_type_node != NULL) && (mode == TYPE_MODE (float128_type_node)))
+    return float128_type_node;
+
   if (COMPLEX_MODE_P (mode))
     {
+      machine_mode inner_mode;
+      tree inner_type;
+
       if (mode == TYPE_MODE (complex_float_type_node))
 	return complex_float_type_node;
       if (mode == TYPE_MODE (complex_double_type_node))
 	return complex_double_type_node;
       if (mode == TYPE_MODE (complex_long_double_type_node))
 	return complex_long_double_type_node;
+
+      inner_mode = GET_MODE_INNER (mode);
+      inner_type = gm2_langhook_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+	return build_complex_type (inner_type);
     }
 
 #if HOST_BITS_PER_WIDE_INT >= 64

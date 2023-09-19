@@ -28,6 +28,7 @@ IMPLEMENTATION MODULE Builtins ;
 
 IMPORT cbuiltin, wrapc ;
 
+
 PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_alloca)) alloca (i: CARDINAL) : ADDRESS ;
 BEGIN
    (* This routine will never be called as it allocates memory on

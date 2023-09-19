@@ -28,7 +28,7 @@ FROM decl IMPORT setLangC, setLangCP, setLangM2 ;
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
-                           Dup, string, char ;
+                           Dup, string, char, ReplaceChar ;
 
 IMPORT FIO ;
 IMPORT SFIO ;
@@ -55,6 +55,9 @@ VAR
    internalDebugging,
    verbose,
    quiet            : BOOLEAN ;
+   CReal,
+   CLongReal,
+   CShortReal,
    projectContents,
    summaryContents,
    contributedContents,
@@ -594,6 +597,83 @@ END useBool ;
 
 
 (*
+   getCRealType - returns the string representing the REAL type
+                  used by C.  By default this is "double".
+*)
+
+PROCEDURE getCRealType () : String ;
+BEGIN
+   RETURN CReal
+END getCRealType ;
+
+
+(*
+   getCLongRealType - returns the string representing the REAL type
+                      used by C.  By default this is "long double".
+*)
+
+PROCEDURE getCLongRealType () : String ;
+BEGIN
+   RETURN CLongReal
+END getCLongRealType ;
+
+
+(*
+   getCShortRealType - returns the string representing the REAL type
+                       used by C.  By default this is "float".
+*)
+
+PROCEDURE getCShortRealType () : String ;
+BEGIN
+   RETURN CShortReal
+END getCShortRealType ;
+
+
+(*
+   toCType - returns a new string which has all occurences of '-'
+             replaced by ' '.
+*)
+
+PROCEDURE toCType (namedType: String) : String ;
+BEGIN
+   RETURN ReplaceChar (Dup (namedType), '-', ' ')
+END toCType ;
+
+
+(*
+   setCReal - assigns CReal to namedType after it has been transformed by
+              toCType.
+*)
+
+PROCEDURE setCReal (namedType: String) ;
+BEGIN
+   CReal := toCType (namedType)
+END setCReal ;
+
+
+(*
+   setCShortReal - assigns CShortReal to namedType after it has been
+                   transformed by toCType.
+*)
+
+PROCEDURE setCShortReal (namedType: String) ;
+BEGIN
+   CShortReal := toCType (namedType)
+END setCShortReal ;
+
+
+(*
+   setCLongReal - assigns CLongReal to namedType after it has been
+                  transformed by toCType.
+*)
+
+PROCEDURE setCLongReal (namedType: String) ;
+BEGIN
+   CLongReal := toCType (namedType)
+END setCLongReal ;
+
+
+(*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 *)
@@ -711,6 +791,15 @@ BEGIN
    ELSIF optionIs ('--suppress-noreturn', arg)
    THEN
       suppressNoReturn := TRUE
+   ELSIF optionIs ("--real=", arg)
+   THEN
+      setCReal (Slice (arg, 7, 0))
+   ELSIF optionIs ("--longreal=", arg)
+   THEN
+      setCLongReal (Slice (arg, 11, 0))
+   ELSIF optionIs ("--shortreal=", arg)
+   THEN
+      setCShortReal (Slice (arg, 12, 0))
    END
 END handleOption ;
 
@@ -777,5 +866,8 @@ BEGIN
    outputFile := InitString ('-') ;
    summaryContents := InitString ('') ;
    contributedContents := InitString ('') ;
-   projectContents := InitString ('GNU Modula-2')
+   projectContents := InitString ('GNU Modula-2') ;
+   CReal := InitString ('double') ;
+   CLongReal := InitString ('long double') ;
+   CShortReal := InitString ('float')
 END mcOptions.

@@ -1308,6 +1308,33 @@ m2pp_complex (pretty *s, tree t ATTRIBUTE_UNUSED)
 }
 #endif
 
+void
+m2pp_real_type (pretty *s, tree t)
+{
+  if (t == m2type_GetRealType ())
+    m2pp_print (s, "C double");
+  else if (t == m2type_GetShortRealType ())
+    m2pp_print (s, "C float");
+  else if (t == m2type_GetLongRealType ())
+    m2pp_print (s, "C long double");
+  else if (t == m2type_GetM2RealType ())
+    m2pp_print (s, "REAL");
+  else if (t == m2type_GetM2ShortRealType ())
+    m2pp_print (s, "SHORTREAL");
+  else if (t == m2type_GetM2LongRealType ())
+    m2pp_print (s, "LONGREAL");
+  else if (t == m2type_GetM2Real128 ())
+    m2pp_print (s, "REAL128");
+  else if (t == m2type_GetM2Real64 ())
+    m2pp_print (s, "REAL64");
+  else if (t == m2type_GetM2Real32 ())
+    m2pp_print (s, "REAL32");
+  else if (t == m2type_GetM2RType ())
+    m2pp_print (s, "R Type");
+  else
+    m2pp_print (s, "unknown REAL");
+}
+
 /* m2pp_type prints a full type.  */
 
 void
@@ -1326,7 +1353,7 @@ m2pp_type (pretty *s, tree t)
       m2pp_integer (s, t);
       break;
     case REAL_TYPE:
-      m2pp_print (s, "REAL");
+      m2pp_real_type (s, t);
       break;
     case ENUMERAL_TYPE:
       m2pp_enum (s, t);
@@ -1593,6 +1620,22 @@ m2pp_union_type (pretty *s, tree t)
   pop ();
 }
 
+/* m2pp_print_mode.  */
+
+static void
+m2pp_print_mode (pretty *s, tree t)
+{
+  int mode = SCALAR_FLOAT_TYPE_MODE (t);
+  char buf[100];
+
+  snprintf (buf, sizeof (buf), "%d", mode);
+  m2pp_print (s, "<*");
+  m2pp_needspace (s);
+  m2pp_print (s, buf);
+  m2pp_needspace (s);
+  m2pp_print (s, "*>");
+}
+
 /* m2pp_simple_type.  */
 
 static void
@@ -1611,7 +1654,8 @@ m2pp_simple_type (pretty *s, tree t)
       m2pp_integer (s, t);
       break;
     case REAL_TYPE:
-      m2pp_print (s, "REAL");
+      m2pp_real_type (s, t);
+      m2pp_print_mode (s, t);
       break;
     case BOOLEAN_TYPE:
       m2pp_print (s, "BOOLEAN");
@@ -1642,6 +1686,19 @@ m2pp_simple_type (pretty *s, tree t)
     }
 }
 
+/* m2pp_float issue a VAL (type, expr) expression.  */
+
+static void
+m2pp_float (pretty *s, tree t)
+{
+  m2pp_needspace (s);
+  m2pp_print (s, "VAL (");
+  m2pp_simple_type (s, TREE_TYPE (t));
+  m2pp_print (s, ", ");
+  m2pp_expression (s, TREE_OPERAND (t, 0));
+  m2pp_print (s, ")");
+}
+
 /* m2pp_expression display an expression.  */
 
 static void
@@ -1668,6 +1725,9 @@ m2pp_expression (pretty *s, tree t)
       break;
     case GT_EXPR:
       m2pp_relop (s, t, ">");
+      break;
+    case FLOAT_EXPR:
+      m2pp_float (s, t);
       break;
     default:
       m2pp_simple_expression (s, t);

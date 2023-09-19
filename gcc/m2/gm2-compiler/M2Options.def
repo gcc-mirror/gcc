@@ -97,7 +97,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetGenModuleList, GetGenModuleFilename, SharedFlag,
                  SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
                  GetMQ, SetMQ, SetM2Prefix, GetM2Prefix,
-                 SetM2PathName, GetM2PathName, SetCaseEnumChecking ;
+                 SetM2PathName, GetM2PathName, SetCaseEnumChecking,
+                 SetDebugBuiltins ;
 
 
 VAR
@@ -943,6 +944,13 @@ PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
 *)
 
 PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
+
+
+(*
+   SetDebugBuiltins - sets the DebugBuiltins to value.
+*)
+
+PROCEDURE SetDebugBuiltins (value: BOOLEAN) ;
 
 
 (*

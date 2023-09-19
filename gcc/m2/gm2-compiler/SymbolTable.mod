@@ -32,7 +32,7 @@ FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice, PutIndice, GetI
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 FROM m2linemap IMPORT location_t ;
 
-FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic ;
+FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic, DebugBuiltins ;
 
 FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo,
                      FindFileNameFromToken, TokenToLocation ;
@@ -80,6 +80,7 @@ FROM m2decl IMPORT ConstantStringExceedsZType ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
+FROM m2builtins IMPORT BuiltinExists ;
 
 FROM M2Comp IMPORT CompilingDefinitionModule,
                    CompilingImplementationModule ;
@@ -5785,6 +5786,30 @@ BEGIN
       END
    END
 END IsProcedureBuiltin ;
+
+
+(*
+   CanUseBuiltin - returns TRUE if the procedure, Sym, can be
+                   inlined via a builtin function.
+*)
+
+PROCEDURE CanUseBuiltin (Sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN( (NOT DebugBuiltins) AND
+           (BuiltinExists (KeyToCharStar (GetProcedureBuiltin (Sym))) OR
+            BuiltinExists (KeyToCharStar (GetSymName (Sym)))) )
+END CanUseBuiltin ;
+
+
+(*
+   IsProcedureBuiltinAvailable - return TRUE if procedure is available as a builtin
+                                 for the target architecture.
+*)
+
+PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedureBuiltin (procedure) AND CanUseBuiltin (procedure)
+END IsProcedureBuiltinAvailable ;
 
 
 (*

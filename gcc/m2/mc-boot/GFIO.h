@@ -135,7 +135,7 @@ EXTERN void FIO_FlushBuffer (FIO_File f);
 EXTERN unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 */
@@ -153,7 +153,7 @@ EXTERN void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high);
 EXTERN unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void * src);
 
 /*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 */

@@ -1111,7 +1111,7 @@ SetOrDesignatorOrFunction := Qualident
                                                                              THEN
                                                                                 BuildConstFunctionCall
                                                                              ELSE
-                                                                                BuildFunctionCall
+                                                                                BuildFunctionCall (FALSE)
                                                                              END %
                                                              ]
                               ]                                |
@@ -1158,7 +1158,7 @@ AssignmentOrProcedureCall :=                                               % VAR
                                   ( ActualParameters |                     % BuildNulParam (* in epsilon *) %
                                   )                                        % IF isFunc
                                                                              THEN
-                                                                                BuildFunctionCall ;
+                                                                                BuildFunctionCall (FALSE) ;
                                                                                 BuildAssignment (tokno)
                                                                              ELSE
                                                                                 BuildProcedureCall (tokno - 1)

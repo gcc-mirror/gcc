@@ -151,6 +151,27 @@ EXTERN bool mcOptions_getSuppressNoReturn (void);
 */
 
 EXTERN bool mcOptions_useBool (void);
+
+/*
+   getCRealType - returns the string representing the REAL type
+                  used by C.  By default this is "double".
+*/
+
+EXTERN DynamicStrings_String mcOptions_getCRealType (void);
+
+/*
+   getCLongRealType - returns the string representing the REAL type
+                      used by C.  By default this is "long double".
+*/
+
+EXTERN DynamicStrings_String mcOptions_getCLongRealType (void);
+
+/*
+   getCShortRealType - returns the string representing the REAL type
+                       used by C.  By default this is "float".
+*/
+
+EXTERN DynamicStrings_String mcOptions_getCShortRealType (void);
 #   ifdef __cplusplus
 }
 #   endif
