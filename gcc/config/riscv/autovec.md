@@ -1031,9 +1031,9 @@
 ;; - vfneg.v/vfabs.v
 ;; -------------------------------------------------------------------------------
 (define_insn_and_split "<optab><mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-    (any_float_unop_nofrm:VF
-     (match_operand:VF 1 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+    (any_float_unop_nofrm:V_VLSF
+     (match_operand:V_VLSF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1052,9 +1052,9 @@
 ;; - vfsqrt.v
 ;; -------------------------------------------------------------------------------
 (define_insn_and_split "<optab><mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-    (any_float_unop:VF
-     (match_operand:VF 1 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+    (any_float_unop:V_VLSF
+     (match_operand:V_VLSF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
