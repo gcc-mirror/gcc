@@ -3292,6 +3292,22 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
     }
 }
 
+/* Implicitly declare T().  */
+
+static void
+add_implicit_default_ctor (tree t)
+{
+  TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
+  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+  if (cxx_dialect >= cxx11)
+    TYPE_HAS_CONSTEXPR_CTOR (t)
+      /* Don't force the declaration to get a hard answer; if the
+	 definition would have made the class non-literal, it will still be
+	 non-literal because of the base or member in question, and that
+	 gives a better diagnostic.  */
+      = type_maybe_constexpr_default_constructor (t);
+}
+
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.  CANT_HAVE_CONST_CTOR,
    and CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason,
@@ -3320,17 +3336,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
      If there is no user-declared constructor for a class, a default
      constructor is implicitly declared.  */
   if (! TYPE_HAS_USER_CONSTRUCTOR (t))
-    {
-      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
-      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
-      if (cxx_dialect >= cxx11)
-	TYPE_HAS_CONSTEXPR_CTOR (t)
-	  /* Don't force the declaration to get a hard answer; if the
-	     definition would have made the class non-literal, it will still be
-	     non-literal because of the base or member in question, and that
-	     gives a better diagnostic.  */
-	  = type_maybe_constexpr_default_constructor (t);
-    }
+    add_implicit_default_ctor (t);
 
   /* [class.ctor]
 
@@ -3394,7 +3400,13 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
 	  for (tree fn : ovl_range (ctor_list))
-	    one_inherited_ctor (fn, t, using_decl);
+	    {
+	      if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t) && default_ctor_p (fn))
+		/* CWG2799: Inheriting a default constructor gives us a default
+		   constructor, not just an inherited constructor.  */
+		add_implicit_default_ctor (t);
+	      one_inherited_ctor (fn, t, using_decl);
+	    }
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}
