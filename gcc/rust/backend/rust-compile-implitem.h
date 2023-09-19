@@ -24,7 +24,7 @@
 namespace Rust {
 namespace Compile {
 
-// this is a proxy for HIR::ImplItem's back to use the normel HIR::Item path
+// this is a proxy for HIR::ImplItem's back to use the normal HIR::Item path
 class CompileInherentImplItem : public CompileItem
 {
 public:
