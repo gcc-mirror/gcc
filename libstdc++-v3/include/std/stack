@@ -62,4 +62,7 @@
 #include <deque>
 #include <bits/stl_stack.h>
 
+#define __glibcxx_want_adaptor_iterator_pair_constructor
+#include <bits/version.h>
+
 #endif /* _GLIBCXX_STACK */

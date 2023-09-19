@@ -34,6 +34,7 @@
 #include <bits/requires_hosted.h> // for std::string
 
 #define __glibcxx_want_format
+#define __glibcxx_want_format_ranges
 #include <bits/version.h>
 
 #ifdef __cpp_lib_format // C++ >= 20 && HOSTED
@@ -2041,7 +2042,7 @@ namespace __format
     };
 #endif
 
-#if defined __cpp_lib_to_chars
+#if defined __glibcxx_to_chars
   /// Format a floating-point value.
   template<__format::__formattable_float _Tp, __format::__char _CharT>
     struct formatter<_Tp, _CharT>
@@ -3246,7 +3247,7 @@ namespace __format
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ll);
 	    case _Arg_ull:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ull);
-#if __cpp_lib_to_chars // FIXME: need to be able to format these types!
+#if __glibcxx_to_chars // FIXME: need to be able to format these types!
 	    case _Arg_flt:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_flt);
 	    case _Arg_dbl:

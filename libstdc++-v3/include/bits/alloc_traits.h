@@ -40,10 +40,6 @@
 # endif
 #endif
 
-#define __glibcxx_want_constexpr_dynamic_alloc
-#define __glibcxx_want_allocator_traits_is_always_equal
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

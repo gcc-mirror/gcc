@@ -65,9 +65,6 @@
 #include <ext/aligned_buffer.h>
 #endif
 
-#define __glibcxx_want_list_remove_return_type
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1764,7 +1761,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
     private:
-#ifdef __cpp_lib_list_remove_return_type // C++ >= 20 && HOSTED
+#ifdef __glibcxx_list_remove_return_type // C++ >= 20 && HOSTED
       typedef size_type __remove_return_type;
 # define _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG \
       __attribute__((__abi_tag__("__cxx20")))

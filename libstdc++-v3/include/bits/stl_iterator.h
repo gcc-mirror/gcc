@@ -70,12 +70,6 @@
 # include <type_traits>
 #endif
 
-#define __glibcxx_want_constexpr_iterator
-#define __glibcxx_want_array_constexpr
-#define __glibcxx_want_make_reverse_iterator
-#define __glibcxx_want_move_iterator_concept
-#include <bits/version.h>
-
 #if __cplusplus >= 202002L
 # include <compare>
 # include <new>
@@ -93,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
   namespace __detail
   {
     // Weaken iterator_category _Cat to _Limit if it is derived from that,
@@ -142,7 +136,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Iter>
 	friend class reverse_iterator;
 
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3435. three_way_comparable_with<reverse_iterator<int*>, [...]>
       template<typename _Iter>
@@ -158,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Iterator					iterator_type;
       typedef typename __traits_type::pointer		pointer;
-#if ! __cpp_lib_concepts
+#if ! __glibcxx_concepts
       typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::reference		reference;
 #else
@@ -214,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  underlying %iterator can be converted to the type of @c current.
       */
       template<typename _Iter>
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
 	requires __convertible<_Iter>
 #endif
 	_GLIBCXX17_CONSTEXPR
@@ -225,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
       template<typename _Iter>
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
 	requires __convertible<_Iter>
 	  && assignable_from<_Iterator&, const _Iter&>
 #endif
@@ -392,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator[](difference_type __n) const
       { return *(*this + __n); }
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       [[nodiscard]]
       friend constexpr iter_rvalue_reference_t<_Iterator>
       iter_move(const reverse_iterator& __i)
@@ -440,7 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  iterators.
    *
   */
-#if __cplusplus <= 201703L || ! defined __cpp_lib_concepts
+#if __cplusplus <= 201703L || ! defined __glibcxx_concepts
   template<typename _Iterator>
     _GLIBCXX_NODISCARD
     inline _GLIBCXX17_CONSTEXPR bool
@@ -641,7 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
 
-# ifdef __cpp_lib_make_reverse_iterator // C++ >= 14
+# ifdef __glibcxx_make_reverse_iterator // C++ >= 14
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 2285. make_reverse_iterator
   /// Generator function for reverse_iterator.
@@ -651,14 +645,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_reverse_iterator(_Iterator __i)
     { return reverse_iterator<_Iterator>(__i); }
 
-#  if __cplusplus > 201703L && defined __cpp_lib_concepts
+#  if __cplusplus > 201703L && defined __glibcxx_concepts
   template<typename _Iterator1, typename _Iterator2>
     requires (!sized_sentinel_for<_Iterator1, _Iterator2>)
     inline constexpr bool
     disable_sized_sentinel_for<reverse_iterator<_Iterator1>,
 			       reverse_iterator<_Iterator2>> = true;
 #  endif // C++20
-# endif // __cpp_lib_make_reverse_iterator
+# endif // __glibcxx_make_reverse_iterator
 
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
@@ -901,7 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class insert_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
-#if __cplusplus > 201703L && defined __cpp_lib_concepts
+#if __cplusplus > 201703L && defined __glibcxx_concepts
       using _Iter = std::__detail::__range_iter_t<_Container>;
 #else
       typedef typename _Container::iterator		_Iter;
@@ -914,7 +908,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// A nested typedef for the type of whatever container you used.
       typedef _Container          container_type;
 
-#if __cplusplus > 201703L && defined __cpp_lib_concepts
+#if __cplusplus > 201703L && defined __glibcxx_concepts
       using difference_type = ptrdiff_t;
 #endif
 
@@ -1010,7 +1004,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  template parameter deduction, making the compiler match the correct
    *  types for you.
   */
-#if __cplusplus > 201703L && defined __cpp_lib_concepts
+#if __cplusplus > 201703L && defined __glibcxx_concepts
   template<typename _Container>
     [[nodiscard]]
     constexpr insert_iterator<_Container>
@@ -1062,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::reference 	reference;
       typedef typename __traits_type::pointer   	pointer;
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       using iterator_concept = std::__detail::__iter_concept<_Iterator>;
 #endif
 
@@ -1373,7 +1367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
   template<semiregular _Sent>
     class move_sentinel
     {
@@ -1417,7 +1411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     template<typename _Iterator>
       struct __move_iter_cat
       { };
@@ -1444,21 +1438,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Iterator>
     class move_iterator
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       : public __detail::__move_iter_cat<_Iterator>
 #endif
     {
       _Iterator _M_current;
 
       using __traits_type = iterator_traits<_Iterator>;
-#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
+#if ! (__cplusplus > 201703L && __glibcxx_concepts)
       using __base_ref = typename __traits_type::reference;
 #endif
 
       template<typename _Iter2>
 	friend class move_iterator;
 
-#if __cpp_lib_concepts // C++20 && concepts
+#if __glibcxx_concepts // C++20 && concepts
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3435. three_way_comparable_with<reverse_iterator<int*>, [...]>
       template<typename _Iter2>
@@ -1466,7 +1460,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    && convertible_to<const _Iter2&, _Iterator>;
 #endif
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       static auto
       _S_iter_concept()
       {
@@ -1484,7 +1478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using iterator_type = _Iterator;
 
-#ifdef __cpp_lib_move_iterator_concept // C++ >= 20 && lib_concepts
+#ifdef __glibcxx_move_iterator_concept // C++ >= 20 && lib_concepts
       using iterator_concept = decltype(_S_iter_concept());
 
       // iterator_category defined in __move_iter_cat
@@ -1515,7 +1509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_current(std::move(__i)) { }
 
       template<typename _Iter>
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
 	requires __convertible<_Iter>
 #endif
 	_GLIBCXX17_CONSTEXPR
@@ -1523,7 +1517,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_current(__i._M_current) { }
 
       template<typename _Iter>
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
 	requires __convertible<_Iter>
 	  && assignable_from<_Iterator&, const _Iter&>
 #endif
@@ -1554,7 +1548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reference
       operator*() const
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       { return ranges::iter_move(_M_current); }
 #else
       { return static_cast<reference>(*_M_current); }
@@ -1580,7 +1574,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
-#if __cpp_lib_concepts
+#if __glibcxx_concepts
       constexpr void
       operator++(int) requires (!forward_iterator<_Iterator>)
       { ++_M_current; }
@@ -1628,13 +1622,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reference
       operator[](difference_type __n) const
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       { return ranges::iter_move(_M_current + __n); }
 #else
       { return std::move(_M_current[__n]); }
 #endif
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
       template<sentinel_for<_Iterator> _Sent>
 	[[nodiscard]]
 	friend constexpr bool
@@ -1672,7 +1666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
 #endif
     { return __x.base() == __y.base(); }
@@ -1699,7 +1693,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator<(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
 #endif
     { return __x.base() < __y.base(); }
@@ -1709,7 +1703,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator<=(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
 #endif
     { return !(__y < __x); }
@@ -1719,7 +1713,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator>(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     requires requires { { __y.base() < __x.base() } -> convertible_to<bool>; }
 #endif
     { return __y < __x; }
@@ -1729,7 +1723,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator>=(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
     requires requires { { __x.base() < __y.base() } -> convertible_to<bool>; }
 #endif
     { return !(__x < __y); }
@@ -1827,7 +1821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus > 201703L && __glibcxx_concepts
   // [iterators.common] Common iterators
 
   namespace __detail

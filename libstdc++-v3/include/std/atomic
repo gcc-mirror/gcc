@@ -39,9 +39,12 @@
 #else
 
 #define __glibcxx_want_atomic_is_always_lock_free
+#define __glibcxx_want_atomic_flag_test
 #define __glibcxx_want_atomic_float
 #define __glibcxx_want_atomic_ref
 #define __glibcxx_want_atomic_lock_free_type_aliases
+#define __glibcxx_want_atomic_value_initialization
+#define __glibcxx_want_atomic_wait
 #include <bits/version.h>
 
 #include <bits/atomic_base.h>

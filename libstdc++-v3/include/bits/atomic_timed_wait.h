@@ -34,7 +34,7 @@
 
 #include <bits/atomic_wait.h>
 
-#if __cpp_lib_atomic_wait
+#if __glibcxx_atomic_wait
 #include <bits/functional_hash.h>
 #include <bits/this_thread_sleep.h>
 #include <bits/chrono.h>

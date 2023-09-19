@@ -34,7 +34,7 @@
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
 
-#ifdef __cpp_lib_ranges
+#ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

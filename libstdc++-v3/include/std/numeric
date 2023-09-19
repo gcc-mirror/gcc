@@ -85,6 +85,7 @@
 #define __glibcxx_want_interpolate
 #define __glibcxx_want_lcm
 #define __glibcxx_want_parallel_algorithm
+#define __glibcxx_want_ranges_iota
 #include <bits/version.h>
 
 /**

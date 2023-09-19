@@ -45,6 +45,8 @@
 #include <bits/utility.h>      // std::index_sequence, std::tuple_size
 #include <debug/assertions.h>
 
+#define __glibcxx_want_array_constexpr
+#define __glibcxx_want_nonmember_container_access
 #define __glibcxx_want_to_array
 #include <bits/version.h>
 

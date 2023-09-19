@@ -566,7 +566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __n;
     }
 
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
   template<typename _CharT, typename _Traits, typename _Alloc>
   template<typename _Operation>
     [[__gnu__::__always_inline__]]
@@ -581,7 +581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Operation>
     _GLIBCXX20_CONSTEXPR void
     basic_string<_CharT, _Traits, _Alloc>::
-#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+#ifdef __glibcxx_string_resize_and_overwrite // C++ >= 23
     resize_and_overwrite(const size_type __n, _Operation __op)
 #else
     __resize_and_overwrite(const size_type __n, _Operation __op)
@@ -615,7 +615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif  // _GLIBCXX_USE_CXX11_ABI
    
-#if __cpp_lib_constexpr_string >= 201907L
+#if __glibcxx_constexpr_string >= 201907L
 # define _GLIBCXX_STRING_CONSTEXPR constexpr
 #else
 # define _GLIBCXX_STRING_CONSTEXPR

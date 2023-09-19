@@ -50,6 +50,10 @@
 # include <bits/unique_ptr.h>
 #endif
 
+#define __glibcxx_want_chrono
+#define __glibcxx_want_chrono_udls
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

@@ -39,9 +39,6 @@
 #include <initializer_list>
 #endif
 
-#define __glibcxx_want_constexpr_algorithms
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

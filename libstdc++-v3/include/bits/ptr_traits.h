@@ -34,10 +34,6 @@
 
 #include <bits/move.h>
 
-#define __glibcxx_want_constexpr_memory
-#define __glibcxx_want_to_address
-#include <bits/version.h>
-
 #if __cplusplus > 201703L
 #include <concepts>
 namespace __gnu_debug { struct _Safe_iterator_base; }
@@ -212,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ptr;
     }
 
-#ifndef __cpp_lib_to_address // C++ < 20
+#ifndef __glibcxx_to_address // C++ < 20
   template<typename _Ptr>
     constexpr typename std::pointer_traits<_Ptr>::element_type*
     __to_address(const _Ptr& __ptr)
@@ -256,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr auto
     to_address(const _Ptr& __ptr) noexcept
     { return std::__to_address(__ptr); }
-#endif // __cpp_lib_to_address
+#endif // __glibcxx_to_address
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

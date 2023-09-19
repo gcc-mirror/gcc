@@ -63,9 +63,6 @@
 #include <tuple>
 #endif
 
-#define __glibcxx_want_map_try_emplace
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -699,7 +696,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ merge(__source); }
 #endif // C++17
 
-#ifdef __cpp_lib_map_try_emplace // C++ >= 17 && HOSTED
+#ifdef __glibcxx_map_try_emplace // C++ >= 17 && HOSTED
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
        *

@@ -41,9 +41,6 @@
 #include <ext/alloc_traits.h>
 #include <ext/aligned_buffer.h>
 
-#define __glibcxx_want_list_remove_return_type
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1183,7 +1180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// @}
 
     private:
-#ifdef __cpp_lib_list_remove_return_type // C++20 && HOSTED
+#ifdef __glibcxx_list_remove_return_type // C++20 && HOSTED
       using __remove_return_type = size_type;
 # define _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG \
       __attribute__((__abi_tag__("__cxx20")))

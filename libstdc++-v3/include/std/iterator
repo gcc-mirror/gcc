@@ -67,7 +67,14 @@
 #endif
 #include <bits/range_access.h>
 
+#define __glibcxx_want_array_constexpr
+#define __glibcxx_want_constexpr_iterator
+#define __glibcxx_want_make_reverse_iterator
+#define __glibcxx_want_move_iterator_concept
+#define __glibcxx_want_nonmember_container_access
 #define __glibcxx_want_null_iterators
+#define __glibcxx_want_ranges
+#define __glibcxx_want_ssize
 #include <bits/version.h>
 
 #if __cplusplus >= 202002L

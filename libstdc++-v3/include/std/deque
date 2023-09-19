@@ -69,6 +69,7 @@
 #include <bits/deque.tcc>
 
 #define __glibcxx_want_erase_if
+#define __glibcxx_want_nonmember_container_access
 #include <bits/version.h>
 
 #ifdef _GLIBCXX_DEBUG

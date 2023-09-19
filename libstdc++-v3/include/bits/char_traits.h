@@ -61,9 +61,6 @@
 # define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
-#define __glibcxx_want_constexpr_char_traits
-#include <bits/version.h>
-
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

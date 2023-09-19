@@ -46,6 +46,12 @@
 # include <debug/unordered_set>
 #endif
 
+#define __glibcxx_want_erase_if
+#define __glibcxx_want_generic_unordered_lookup
+#define __glibcxx_want_node_extract
+#define __glibcxx_want_nonmember_container_access
+#include <bits/version.h>
+
 #if __cplusplus >= 201703L
 #include <bits/memory_resource.h>
 namespace std _GLIBCXX_VISIBILITY(default)

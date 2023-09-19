@@ -35,9 +35,6 @@
 #include <bits/functional_hash.h> // hash
 #include <bits/stl_function.h>    // equal_to
 
-#define __glibcxx_want_unordered_map_try_emplace
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -454,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_h._M_reinsert_node(std::move(__nh)).position; }
 #endif // C++17
 
-#ifdef __cpp_lib_unordered_map_try_emplace // C++ >= 17 && HOSTED
+#ifdef __glibcxx_unordered_map_try_emplace // C++ >= 17 && HOSTED
       /**
        *  @brief Attempts to build and insert a std::pair into the
        *  %unordered_map.
@@ -538,7 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return _M_h.try_emplace(__hint, std::move(__k),
 				  std::forward<_Args>(__args)...).first;
 	}
-#endif // __cpp_lib_unordered_map_try_emplace
+#endif // __glibcxx_unordered_map_try_emplace
 
       ///@{
       /**

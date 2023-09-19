@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       this_thread::yield();
     }
 
-#ifndef __cpp_lib_semaphore
+#ifndef __glibcxx_semaphore
     struct binary_semaphore
     {
       explicit binary_semaphore(int __d) : _M_counter(__d > 0) { }

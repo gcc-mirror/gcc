@@ -62,9 +62,6 @@
 # include <bits/uses_allocator.h>
 #endif
 
-#define __glibcxx_want_adaptor_iterator_pair_constructor
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -199,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: c(std::move(__q.c), __a) { }
 #endif
 
-#ifdef __cpp_lib_adaptor_iterator_pair_constructor // C++ >= 23 && HOSTED
+#ifdef __glibcxx_adaptor_iterator_pair_constructor // C++ >= 23 && HOSTED
       template<typename _InputIterator,
 	       typename = _RequireInputIter<_InputIterator>>
 	queue(_InputIterator __first, _InputIterator __last)
@@ -347,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     queue(_Container, _Allocator)
     -> queue<typename _Container::value_type, _Container>;
 
-#ifdef __cpp_lib_adaptor_iterator_pair_constructor
+#ifdef __glibcxx_adaptor_iterator_pair_constructor
   template<typename _InputIterator,
 	   typename _ValT
 	     = typename iterator_traits<_InputIterator>::value_type,

@@ -30,9 +30,6 @@
 #ifndef _RANGES_CMP_H
 #define _RANGES_CMP_H 1
 
-#define __glibcxx_want_ranges
-#include <bits/version.h>
-
 #if __cplusplus > 201703L
 # include <bits/move.h>
 # include <concepts>
@@ -58,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using is_transparent = __is_transparent;
   };
 
-#ifdef __cpp_lib_ranges // C++ >= 20
+#ifdef __glibcxx_ranges // C++ >= 20
 namespace ranges
 {
   namespace __detail
@@ -175,7 +172,7 @@ namespace ranges
   };
 
 } // namespace ranges
-#endif // __cpp_lib_ranges
+#endif // __glibcxx_ranges
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20

@@ -196,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __outermost_alloc_traits
 	  = allocator_traits<typename __outermost_type<_Alloc>::type>;
 
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
       template<typename _Tp, typename... _Args>
         void
         _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
@@ -373,7 +373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const
       { return __traits::max_size(outer_allocator()); }
 
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
       template<typename _Tp, typename... _Args>
 	typename __not_pair<_Tp>::type
 	construct(_Tp* __p, _Args&&... __args)
@@ -473,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept;
 
     private:
-#if ! __cpp_lib_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator
       template<typename _Ind, typename... _Args>
 	tuple<_Args&&...>
 	_M_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)

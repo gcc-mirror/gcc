@@ -44,10 +44,6 @@
 # endif
 #endif
 
-#define __glibcxx_want_constexpr_memory
-#define __glibcxx_want_make_unique
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1027,7 +1023,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
     { };
 
-#ifdef __cpp_lib_make_unique // C++ >= 14 && HOSTED
+#ifdef __glibcxx_make_unique // C++ >= 14 && HOSTED
   /// @cond undocumented
 namespace __detail
 {

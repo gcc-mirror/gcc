@@ -34,9 +34,7 @@
 
 #include <bits/c++config.h>
 
-#define __glibcxx_want_erase_if
-#include <bits/version.h>
-
+// Used by C++17 containers and Library Fundamentals v2 headers.
 #if __cplusplus >= 201402L
 namespace std
 {

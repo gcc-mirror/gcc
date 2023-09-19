@@ -33,10 +33,9 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_node_extract
 #include <bits/version.h>
 
-#ifdef __cpp_lib_node_extract // C++ >= 17 && HOSTED
+#ifdef __glibcxx_node_extract // C++ >= 17 && HOSTED
 
 #include <new>
 #include <bits/alloc_traits.h>
@@ -392,5 +391,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // __cpp_lib_node_extract
+#endif // __glibcxx_node_extract
 #endif

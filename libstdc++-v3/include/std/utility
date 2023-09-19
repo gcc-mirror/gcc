@@ -68,15 +68,6 @@
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
-#define __glibcxx_want_as_const
-#define __glibcxx_want_constexpr_algorithms
-#define __glibcxx_want_exchange_function
-#define __glibcxx_want_forward_like
-#define __glibcxx_want_integer_comparison_functions
-#define __glibcxx_want_to_underlying
-#define __glibcxx_want_unreachable
-#include <bits/version.h>
-
 #if __cplusplus >= 201103L
 
 #include <initializer_list>
@@ -87,6 +78,21 @@
 #if __cplusplus >= 202002L
 #include <ext/numeric_traits.h> // __is_standard_integer, __int_traits
 #endif
+
+#define __glibcxx_want_addressof_constexpr
+#define __glibcxx_want_as_const
+#define __glibcxx_want_constexpr_algorithms
+#define __glibcxx_want_constexpr_utility
+#define __glibcxx_want_exchange_function
+#define __glibcxx_want_forward_like
+#define __glibcxx_want_integer_comparison_functions
+#define __glibcxx_want_integer_sequence
+#define __glibcxx_want_ranges_zip
+#define __glibcxx_want_to_underlying
+#define __glibcxx_want_tuple_element_t
+#define __glibcxx_want_tuples_by_type
+#define __glibcxx_want_unreachable
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

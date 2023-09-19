@@ -65,10 +65,6 @@
 # include <compare>
 #endif
 
-#define __glibcxx_want_constexpr_utility
-#define __glibcxx_want_tuples_by_type
-#include <bits/version.h>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1054,7 +1050,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
 
 
-#ifdef __cpp_lib_tuples_by_type // C++ >= 14
+#ifdef __glibcxx_tuples_by_type // C++ >= 14
   template <typename _Tp, typename _Up>
     constexpr _Tp&
     get(pair<_Tp, _Up>& __p) noexcept
@@ -1094,7 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&&
     get(const pair<_Up, _Tp>&& __p) noexcept
     { return std::move(__p.second); }
-#endif // __cpp_lib_tuples_by_type
+#endif // __glibcxx_tuples_by_type
 
 
 #if __cplusplus > 202002L
