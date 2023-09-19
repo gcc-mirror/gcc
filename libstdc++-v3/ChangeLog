@@ -1,3 +1,13 @@
+2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Use conventional option name.
+	* doc/xml/manual/status_cxx2020.xml: Update.
+	* doc/xml/manual/status_cxx2023.xml: Update.
+	* doc/html/*: Regenerate.
+
 2023-09-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/111357
