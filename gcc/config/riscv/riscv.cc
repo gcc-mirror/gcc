@@ -2173,16 +2173,14 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
 	 (const_poly_int:DI [16, 16]) // <- op_1
      ))
    */
-  rtx src_op_0 = XEXP (src, 0);
-
-  if (GET_CODE (src) == CONST && GET_CODE (src_op_0) == PLUS
-    && CONST_POLY_INT_P (XEXP (src_op_0, 1)))
+  if (GET_CODE (src) == CONST && GET_CODE (XEXP (src, 0)) == PLUS
+      && CONST_POLY_INT_P (XEXP (XEXP (src, 0), 1)))
     {
       rtx dest_tmp = gen_reg_rtx (mode);
       rtx tmp = gen_reg_rtx (mode);
 
-      riscv_emit_move (dest, XEXP (src_op_0, 0));
-      riscv_legitimize_poly_move (mode, dest_tmp, tmp, XEXP (src_op_0, 1));
+      riscv_emit_move (dest, XEXP (XEXP (src, 0), 0));
+      riscv_legitimize_poly_move (mode, dest_tmp, tmp, XEXP (XEXP (src, 0), 1));
 
       emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, dest, dest_tmp)));
       return;
