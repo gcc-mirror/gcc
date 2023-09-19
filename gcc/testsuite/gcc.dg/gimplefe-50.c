@@ -14,6 +14,7 @@ foo (float a, float b)
   x_7 = a_1(D) __UNEQ b_2(D);
   x_8 = a_1(D) __UNORDERED b_2(D);
   x_9 = a_1(D) __ORDERED b_2(D);
+  x_10 = a_1(D) __LTGT b_2(D);
   if (a_1(D) __UNEQ b_2(D))
     goto __BB4;
   else

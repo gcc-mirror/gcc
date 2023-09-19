@@ -480,7 +480,7 @@ dump_binary_rhs (pretty_printer *buffer, const gassign *gs, int spc,
       else
 	dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
       pp_space (buffer);
-      pp_string (buffer, op_symbol_code (gimple_assign_rhs_code (gs)));
+      pp_string (buffer, op_symbol_code (gimple_assign_rhs_code (gs), flags));
       pp_space (buffer);
       if (op_prio (gimple_assign_rhs2 (gs)) <= op_code_prio (code))
 	{
@@ -1092,7 +1092,7 @@ dump_gimple_cond (pretty_printer *buffer, const gcond *gs, int spc,
 			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
 			 false);
       pp_space (buffer);
-      pp_string (buffer, op_symbol_code (gimple_cond_code (gs)));
+      pp_string (buffer, op_symbol_code (gimple_cond_code (gs), flags));
       pp_space (buffer);
       dump_generic_node (buffer, gimple_cond_rhs (gs), spc,
 			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),

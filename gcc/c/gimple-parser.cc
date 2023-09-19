@@ -1044,6 +1044,11 @@ c_parser_gimple_binary_expression (gimple_parser &parser, tree ret_type)
 	    code = ORDERED_EXPR;
 	    break;
 	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__LTGT") == 0)
+	  {
+	    code = LTGT_EXPR;
+	    break;
+	  }
       }
       /* Fallthru.  */
     default:

@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Local functions, macros and variables.  */
-static const char *op_symbol (const_tree);
+static const char *op_symbol (const_tree, dump_flags_t = TDF_NONE);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, dump_flags_t);
@@ -4327,7 +4327,7 @@ op_prio (const_tree op)
 /* Return the symbol associated with operator CODE.  */
 
 const char *
-op_symbol_code (enum tree_code code)
+op_symbol_code (enum tree_code code, dump_flags_t flags)
 {
   switch (code)
     {
@@ -4354,14 +4354,14 @@ op_symbol_code (enum tree_code code)
       return "&";
 
     case ORDERED_EXPR:
-      return "ord";
+      return (flags & TDF_GIMPLE) ? "__ORDERED" : "ord";
     case UNORDERED_EXPR:
-      return "unord";
+      return (flags & TDF_GIMPLE) ? "__UNORDERED" : "unord";
 
     case EQ_EXPR:
       return "==";
     case UNEQ_EXPR:
-      return "u==";
+      return (flags & TDF_GIMPLE) ? "__UNEQ" : "u==";
 
     case NE_EXPR:
       return "!=";
@@ -4369,25 +4369,25 @@ op_symbol_code (enum tree_code code)
     case LT_EXPR:
       return "<";
     case UNLT_EXPR:
-      return "u<";
+      return (flags & TDF_GIMPLE) ? "__UNLT" : "u<";
 
     case LE_EXPR:
       return "<=";
     case UNLE_EXPR:
-      return "u<=";
+      return (flags & TDF_GIMPLE) ? "__UNLE" : "u<=";
 
     case GT_EXPR:
       return ">";
     case UNGT_EXPR:
-      return "u>";
+      return (flags & TDF_GIMPLE) ? "__UNGT" : "u>";
 
     case GE_EXPR:
       return ">=";
     case UNGE_EXPR:
-      return "u>=";
+      return (flags & TDF_GIMPLE) ? "__UNGE" : "u>=";
 
     case LTGT_EXPR:
-      return "<>";
+      return (flags & TDF_GIMPLE) ? "__LTGT" : "<>";
 
     case LSHIFT_EXPR:
       return "<<";
@@ -4417,7 +4417,7 @@ op_symbol_code (enum tree_code code)
       return "w*";
 
     case MULT_HIGHPART_EXPR:
-      return "h*";
+      return (flags & TDF_GIMPLE) ? "__MULT_HIGHPART" : "h*";
 
     case NEGATE_EXPR:
     case MINUS_EXPR:
@@ -4488,9 +4488,9 @@ op_symbol_code (enum tree_code code)
 /* Return the symbol associated with operator OP.  */
 
 static const char *
-op_symbol (const_tree op)
+op_symbol (const_tree op, dump_flags_t flags)
 {
-  return op_symbol_code (TREE_CODE (op));
+  return op_symbol_code (TREE_CODE (op), flags);
 }
 
 /* Prints the name of a call.  NODE is the CALL_EXPR_FN of a CALL_EXPR or
