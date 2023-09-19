@@ -5,8 +5,9 @@
 int ismod (int a, int b) { return a%b; }
 unsigned int iumod (unsigned int a, unsigned int b) { return a%b; }
 
-/* { dg-final { scan-assembler-times "modsw " 1 } } */
-/* { dg-final { scan-assembler-times "moduw " 1 } } */
-/* { dg-final { scan-assembler-not   "mullw "   } } */
-/* { dg-final { scan-assembler-not   "divw "    } } */
-/* { dg-final { scan-assembler-not   "divwu "   } } */
+/* { Fail due to RS6000_DISABLE_SCALAR_MODULO. */
+/* { dg-final { scan-assembler-times {\mmodsw\M} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\mmoduw\M} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not   {\mmullw\M}   { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not   {\mdivw\M}    { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not   {\mdivwu\M}   { xfail *-*-* } } } */
