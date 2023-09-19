@@ -4172,7 +4172,7 @@ builtin_decl (unsigned int code, bool)
   return (*registered_functions)[code]->decl;
 }
 
-/* Attempt to fold STMT, given that it's a call to the SVE function
+/* Attempt to fold STMT, given that it's a call to the RVV function
    with subcode CODE.  Return the new statement on success and null
    on failure.  Insert any other new statements at GSI.  */
 gimple *
@@ -4192,7 +4192,7 @@ expand_builtin (unsigned int code, tree exp, rtx target)
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }
 
-/* Perform any semantic checks needed for a call to the SVE function
+/* Perform any semantic checks needed for a call to the RVV function
    with subcode CODE, such as testing for integer constant expressions.
    The call occurs at location LOCATION and has NARGS arguments,
    given by ARGS.  FNDECL is the original function decl, before
