@@ -1474,6 +1474,19 @@ fwd_jt_path_registry::thread_block_1 (basic_block bb,
 	  || ((*path)[1]->type == EDGE_COPY_SRC_BLOCK && joiners))
 	continue;
 
+      /* When a NO_COPY_SRC block became non-empty cancel the path.  */
+      if (path->last ()->type == EDGE_NO_COPY_SRC_BLOCK)
+	{
+	  auto gsi = gsi_start_nondebug_bb (path->last ()->e->src);
+	  if (!gsi_end_p (gsi)
+	      && !is_ctrl_stmt (gsi_stmt (gsi)))
+	    {
+	      cancel_thread (path, "Non-empty EDGE_NO_COPY_SRC_BLOCK");
+	      e->aux = NULL;
+	      continue;
+	    }
+	}
+
       e2 = path->last ()->e;
       if (!e2 || noloop_only)
 	{
