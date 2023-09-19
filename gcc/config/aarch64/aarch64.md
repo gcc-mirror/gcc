@@ -533,23 +533,23 @@
   "")
 
 (define_insn "@ccmp<CC_ONLY:mode><GPI:mode>"
-  [(set (match_operand:CC_ONLY 1 "cc_register" "")
+  [(set (match_operand:CC_ONLY 1 "cc_register")
 	(if_then_else:CC_ONLY
 	  (match_operator 4 "aarch64_comparison_operator"
-	   [(match_operand 0 "cc_register" "")
+	   [(match_operand 0 "cc_register")
 	    (const_int 0)])
 	  (compare:CC_ONLY
-	    (match_operand:GPI 2 "register_operand" "r,r,r")
-	    (match_operand:GPI 3 "aarch64_ccmp_operand" "r,Uss,Usn"))
+	    (match_operand:GPI 2 "register_operand")
+	    (match_operand:GPI 3 "aarch64_ccmp_operand"))
 	  (unspec:CC_ONLY
 	    [(match_operand 5 "immediate_operand")]
 	    UNSPEC_NZCV)))]
   ""
-  "@
-   ccmp\\t%<w>2, %<w>3, %k5, %m4
-   ccmp\\t%<w>2, %3, %k5, %m4
-   ccmn\\t%<w>2, #%n3, %k5, %m4"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: 2 , 3   ; attrs: type ]
+     [ r       , r   ; alus_sreg   ] ccmp\t%<w>2, %<w>3, %k5, %m4
+     [ r       , Uss ; alus_imm    ] ccmp\t%<w>2, %3, %k5, %m4
+     [ r       , Usn ; alus_imm    ] ccmn\t%<w>2, #%n3, %k5, %m4
+  }
 )
 
 (define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>"
@@ -570,23 +570,23 @@
 )
 
 (define_insn "@ccmp<CC_ONLY:mode><GPI:mode>_rev"
-  [(set (match_operand:CC_ONLY 1 "cc_register" "")
+  [(set (match_operand:CC_ONLY 1 "cc_register")
 	(if_then_else:CC_ONLY
 	  (match_operator 4 "aarch64_comparison_operator"
-	   [(match_operand 0 "cc_register" "")
+	   [(match_operand 0 "cc_register")
 	    (const_int 0)])
 	  (unspec:CC_ONLY
 	    [(match_operand 5 "immediate_operand")]
 	    UNSPEC_NZCV)
 	  (compare:CC_ONLY
-	    (match_operand:GPI 2 "register_operand" "r,r,r")
-	    (match_operand:GPI 3 "aarch64_ccmp_operand" "r,Uss,Usn"))))]
+	    (match_operand:GPI 2 "register_operand")
+	    (match_operand:GPI 3 "aarch64_ccmp_operand"))))]
   ""
-  "@
-   ccmp\\t%<w>2, %<w>3, %k5, %M4
-   ccmp\\t%<w>2, %3, %k5, %M4
-   ccmn\\t%<w>2, #%n3, %k5, %M4"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: 2 , 3   ; attrs: type ]
+     [ r       , r   ; alus_sreg   ] ccmp\t%<w>2, %<w>3, %k5, %M4
+     [ r       , Uss ; alus_imm    ] ccmp\t%<w>2, %3, %k5, %M4
+     [ r       , Usn ; alus_imm    ] ccmn\t%<w>2, #%n3, %k5, %M4
+  }
 )
 
 (define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>_rev"
@@ -1056,15 +1056,16 @@
 )
 
 (define_insn "*call_insn"
-  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucr, Usf"))
+  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand"))
 	 (match_operand 1 "" ""))
    (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
-  "@
-  * return aarch64_indirect_call_asm (operands[0]);
-  bl\\t%c0"
-  [(set_attr "type" "call, call")])
+  {@ [ cons: 0 ; attrs: type ]
+     [ Ucr     ; call        ] << aarch64_indirect_call_asm (operands[0]);
+     [ Usf     ; call        ] bl\t%c0
+  }
+)
 
 (define_expand "call_value"
   [(parallel
@@ -1083,15 +1084,15 @@
 
 (define_insn "*call_value_insn"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand" "Ucr, Usf"))
+	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand"))
 		      (match_operand 2 "" "")))
    (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
-  "@
-  * return aarch64_indirect_call_asm (operands[1]);
-  bl\\t%c1"
-  [(set_attr "type" "call, call")]
+  {@ [ cons: 1 ; attrs: type ]
+     [ Ucr     ; call        ] << aarch64_indirect_call_asm (operands[1]);
+     [ Usf     ; call        ] bl\t%c1
+  }
 )
 
 (define_expand "sibcall"
@@ -1459,78 +1460,69 @@
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=w,w  ,w ,w  ,?r,?r,w,w,w  ,w  ,w,m,r,m ,r")
-	(match_operand:HFBF 1 "general_operand"      "Y ,?rY,?r,?rY, w, w,w,w,Ufc,Uvi,m,w,m,rY,r"))]
+  [(set (match_operand:HFBF 0 "nonimmediate_operand")
+	(match_operand:HFBF 1 "general_operand"))]
   "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
-  "@
-   movi\\t%0.4h, #0
-   fmov\\t%h0, %w1
-   dup\\t%w0.4h, %w1
-   fmov\\t%s0, %w1
-   umov\\t%w0, %1.h[0]
-   fmov\\t%w0, %s1
-   mov\\t%0.h[0], %1.h[0]
-   fmov\\t%s0, %s1
-   fmov\\t%h0, %1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], HImode);
-   ldr\\t%h0, %1
-   str\\t%h1, %0
-   ldrh\\t%w0, %1
-   strh\\t%w1, %0
-   mov\\t%w0, %w1"
-  [(set_attr "type" "neon_move,f_mcr,neon_move,f_mcr,neon_to_gp,f_mrc,
-		     neon_move,fmov,fconsts,neon_move,f_loads,f_stores,
-		     load_4,store_4,mov_reg")
-   (set_attr "arch" "simd,fp16,simd,*,simd,*,simd,*,fp16,simd,*,*,*,*,*")]
+  {@ [ cons: =0 , 1   ; attrs: type , arch  ]
+     [ w        , Y   ; neon_move   , simd  ] movi\t%0.4h, #0
+     [ w        , ?rY ; f_mcr       , fp16  ] fmov\t%h0, %w1
+     [ w        , ?r  ; neon_move   , simd  ] dup\t%w0.4h, %w1
+     [ w        , ?rY ; f_mcr       , *     ] fmov\t%s0, %w1
+     [ ?r       , w   ; neon_to_gp  , simd  ] umov\t%w0, %1.h[0]
+     [ ?r       , w   ; f_mrc       , *     ] fmov\t%w0, %s1
+     [ w        , w   ; neon_move   , simd  ] mov\t%0.h[0], %1.h[0]
+     [ w        , w   ; fmov        , *     ] fmov\t%s0, %s1
+     [ w        , Ufc ; fconsts     , fp16  ] fmov\t%h0, %1
+     [ w        , Uvi ; neon_move   , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], HImode);
+     [ w        , m   ; f_loads     , *     ] ldr\t%h0, %1
+     [ m        , w   ; f_stores    , *     ] str\t%h1, %0
+     [ r        , m   ; load_4      , *     ] ldrh\t%w0, %1
+     [ m        , rY  ; store_4     , *     ] strh\t%w1, %0
+     [ r        , r   ; mov_reg     , *     ] mov\t%w0, %w1
+  }
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:SFD 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:SFD 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
+  [(set (match_operand:SFD 0 "nonimmediate_operand")
+	(match_operand:SFD 1 "general_operand"))]
   "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
-  "@
-   movi\\t%0.2s, #0
-   fmov\\t%s0, %w1
-   fmov\\t%w0, %s1
-   fmov\\t%s0, %s1
-   fmov\\t%s0, %1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
-   ldr\\t%s0, %1
-   str\\t%s1, %0
-   ldr\\t%w0, %1
-   str\\t%w1, %0
-   mov\\t%w0, %w1
-   mov\\t%w0, %1"
-  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconsts,neon_move,\
-		     f_loads,f_stores,load_4,store_4,mov_reg,\
-		     fconsts")
-   (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
+  {@ [ cons: =0 , 1   ; attrs: type , arch  ]
+     [ w        , Y   ; neon_move   , simd  ] movi\t%0.2s, #0
+     [ w        , ?rY ; f_mcr       , *     ] fmov\t%s0, %w1
+     [ ?r       , w   ; f_mrc       , *     ] fmov\t%w0, %s1
+     [ w        , w   ; fmov        , *     ] fmov\t%s0, %s1
+     [ w        , Ufc ; fconsts     , *     ] fmov\t%s0, %1
+     [ w        , Uvi ; neon_move   , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
+     [ w        , m   ; f_loads     , *     ] ldr\t%s0, %1
+     [ m        , w   ; f_stores    , *     ] str\t%s1, %0
+     [ r        , m   ; load_4      , *     ] ldr\t%w0, %1
+     [ m        , rY  ; store_4     , *     ] str\t%w1, %0
+     [ r        , r   ; mov_reg     , *     ] mov\t%w0, %w1
+     [ r        , M   ; fconsts     , *     ] mov\t%w0, %1
+  }
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:DFD 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:DFD 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,O"))]
+  [(set (match_operand:DFD 0 "nonimmediate_operand")
+	(match_operand:DFD 1 "general_operand"))]
   "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
-  "@
-   movi\\t%d0, #0
-   fmov\\t%d0, %x1
-   fmov\\t%x0, %d1
-   fmov\\t%d0, %d1
-   fmov\\t%d0, %1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
-   ldr\\t%d0, %1
-   str\\t%d1, %0
-   ldr\\t%x0, %1
-   str\\t%x1, %0
-   mov\\t%x0, %x1
-   * return aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? \"mov\\t%x0, %1\" : \"mov\\t%w0, %1\";"
-  [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,neon_move,\
-		     f_loadd,f_stored,load_8,store_8,mov_reg,\
-		     fconstd")
-   (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
+  {@ [ cons: =0 , 1   ; attrs: type , arch  ]
+     [ w        , Y   ; neon_move   , simd  ] movi\t%d0, #0
+     [ w        , ?rY ; f_mcr       , *     ] fmov\t%d0, %x1
+     [ ?r       , w   ; f_mrc       , *     ] fmov\t%x0, %d1
+     [ w        , w   ; fmov        , *     ] fmov\t%d0, %d1
+     [ w        , Ufc ; fconstd     , *     ] fmov\t%d0, %1
+     [ w        , Uvi ; neon_move   , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+     [ w        , m   ; f_loadd     , *     ] ldr\t%d0, %1
+     [ m        , w   ; f_stored    , *     ] str\t%d1, %0
+     [ r        , m   ; load_8      , *     ] ldr\t%x0, %1
+     [ m        , rY  ; store_8     , *     ] str\t%x1, %0
+     [ r        , r   ; mov_reg     , *     ] mov\t%x0, %x1
+     [ r        , O   ; fconstd     , *     ] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
+  }
 )
 
 (define_split
@@ -1735,36 +1727,34 @@
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "load_pair_sw_<SX:mode><SX2:mode>"
-  [(set (match_operand:SX 0 "register_operand" "=r,w")
-	(match_operand:SX 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:SX2 2 "register_operand" "=r,w")
-	(match_operand:SX2 3 "memory_operand" "m,m"))]
+  [(set (match_operand:SX 0 "register_operand")
+	(match_operand:SX 1 "aarch64_mem_pair_operand"))
+   (set (match_operand:SX2 2 "register_operand")
+	(match_operand:SX2 3 "memory_operand"))]
    "rtx_equal_p (XEXP (operands[3], 0),
 		 plus_constant (Pmode,
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
-  "@
-   ldp\\t%w0, %w2, %z1
-   ldp\\t%s0, %s2, %z1"
-  [(set_attr "type" "load_8,neon_load1_2reg")
-   (set_attr "arch" "*,fp")]
+  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
+     [ r        , Ump , r  , m ; load_8          , *    ] ldp\t%w0, %w2, %z1
+     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%s0, %s2, %z1
+  }
 )
 
 ;; Storing different modes that can still be merged
 (define_insn "load_pair_dw_<DX:mode><DX2:mode>"
-  [(set (match_operand:DX 0 "register_operand" "=r,w")
-	(match_operand:DX 1 "aarch64_mem_pair_operand" "Ump,Ump"))
-   (set (match_operand:DX2 2 "register_operand" "=r,w")
-	(match_operand:DX2 3 "memory_operand" "m,m"))]
+  [(set (match_operand:DX 0 "register_operand")
+	(match_operand:DX 1 "aarch64_mem_pair_operand"))
+   (set (match_operand:DX2 2 "register_operand")
+	(match_operand:DX2 3 "memory_operand"))]
    "rtx_equal_p (XEXP (operands[3], 0),
 		 plus_constant (Pmode,
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
-  "@
-   ldp\\t%x0, %x2, %z1
-   ldp\\t%d0, %d2, %z1"
-  [(set_attr "type" "load_16,neon_load1_2reg")
-   (set_attr "arch" "*,fp")]
+  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
+     [ r        , Ump , r  , m ; load_16         , *    ] ldp\t%x0, %x2, %z1
+     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%d0, %d2, %z1
+  }
 )
 
 (define_insn "load_pair_dw_tftf"
@@ -1785,36 +1775,34 @@
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pair_sw_<SX:mode><SX2:mode>"
-  [(set (match_operand:SX 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SX 1 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))
-   (set (match_operand:SX2 2 "memory_operand" "=m,m")
-	(match_operand:SX2 3 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))]
+  [(set (match_operand:SX 0 "aarch64_mem_pair_operand")
+	(match_operand:SX 1 "aarch64_reg_zero_or_fp_zero"))
+   (set (match_operand:SX2 2 "memory_operand")
+	(match_operand:SX2 3 "aarch64_reg_zero_or_fp_zero"))]
    "rtx_equal_p (XEXP (operands[2], 0),
 		 plus_constant (Pmode,
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
-  "@
-   stp\\t%w1, %w3, %z0
-   stp\\t%s1, %s3, %z0"
-  [(set_attr "type" "store_8,neon_store1_2reg")
-   (set_attr "arch" "*,fp")]
+  {@ [ cons: =0 , 1   , =2 , 3   ; attrs: type      , arch ]
+     [ Ump      , rYZ , m  , rYZ ; store_8          , *    ] stp\t%w1, %w3, %z0
+     [ Ump      , w   , m  , w   ; neon_store1_2reg , fp   ] stp\t%s1, %s3, %z0
+  }
 )
 
 ;; Storing different modes that can still be merged
 (define_insn "store_pair_dw_<DX:mode><DX2:mode>"
-  [(set (match_operand:DX 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DX 1 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))
-   (set (match_operand:DX2 2 "memory_operand" "=m,m")
-	(match_operand:DX2 3 "aarch64_reg_zero_or_fp_zero" "rYZ,w"))]
+  [(set (match_operand:DX 0 "aarch64_mem_pair_operand")
+	(match_operand:DX 1 "aarch64_reg_zero_or_fp_zero"))
+   (set (match_operand:DX2 2 "memory_operand")
+	(match_operand:DX2 3 "aarch64_reg_zero_or_fp_zero"))]
    "rtx_equal_p (XEXP (operands[2], 0),
 		 plus_constant (Pmode,
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
-  "@
-   stp\\t%x1, %x3, %z0
-   stp\\t%d1, %d3, %z0"
-  [(set_attr "type" "store_16,neon_store1_2reg")
-   (set_attr "arch" "*,fp")]
+  {@ [ cons: =0 , 1   , =2 , 3   ; attrs: type      , arch ]
+     [ Ump      , rYZ , m  , rYZ ; store_16         , *    ] stp\t%x1, %x3, %z0
+     [ Ump      , w   , m  , w   ; neon_store1_2reg , fp   ] stp\t%d1, %d3, %z0
+  }
 )
 
 (define_insn "store_pair_dw_tftf"
@@ -1942,13 +1930,13 @@
 )
 
 (define_insn "*extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-        (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
   ""
-  "@
-   sxtw\t%0, %w1
-   ldrsw\t%0, %1"
-  [(set_attr "type" "extend,load_4")]
+  {@ [ cons: =0 , 1 ; attrs: type ]
+     [ r        , r ; extend      ] sxtw\t%0, %w1
+     [ r        , m ; load_4      ] ldrsw\t%0, %1
+  }
 )
 
 (define_insn "*load_pair_extendsidi2_aarch64"
@@ -1965,34 +1953,32 @@
 )
 
 (define_insn "*zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,w,w,r,w")
-        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,r,m,w,w")))]
+  [(set (match_operand:DI 0 "register_operand")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
   ""
-  "@
-   uxtw\t%0, %w1
-   ldr\t%w0, %1
-   fmov\t%s0, %w1
-   ldr\t%s0, %1
-   fmov\t%w0, %s1
-   fmov\t%s0, %s1"
-  [(set_attr "type" "mov_reg,load_4,f_mcr,f_loads,f_mrc,fmov")
-   (set_attr "arch" "*,*,fp,fp,fp,fp")]
+  {@ [ cons: =0 , 1 ; attrs: type , arch ]
+     [ r        , r ; mov_reg     , *    ] uxtw\t%0, %w1
+     [ r        , m ; load_4      , *    ] ldr\t%w0, %1
+     [ w        , r ; f_mcr       , fp   ] fmov\t%s0, %w1
+     [ w        , m ; f_loads     , fp   ] ldr\t%s0, %1
+     [ r        , w ; f_mrc       , fp   ] fmov\t%w0, %s1
+     [ w        , w ; fmov        , fp   ] fmov\t%s0, %s1
+  }
 )
 
 (define_insn "*load_pair_zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r,w")
-	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump,Ump")))
-   (set (match_operand:DI 2 "register_operand" "=r,w")
-	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m,m")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand")))
+   (set (match_operand:DI 2 "register_operand")
+	(zero_extend:DI (match_operand:SI 3 "memory_operand")))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
-  "@
-   ldp\t%w0, %w2, %z1
-   ldp\t%s0, %s2, %z1"
-  [(set_attr "type" "load_8,neon_load1_2reg")
-   (set_attr "arch" "*,fp")]
+  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
+     [ r        , Ump , r  , m ; load_8          , *    ] ldp\t%w0, %w2, %z1
+     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%s0, %s2, %z1
+  }
 )
 
 (define_expand "<ANY_EXTEND:optab><SHORT:mode><GPI:mode>2"
@@ -2002,28 +1988,26 @@
 )
 
 (define_insn "*extend<SHORT:mode><GPI:mode>2_aarch64"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,r")
-        (sign_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+        (sign_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
-  "@
-   sxt<SHORT:size>\t%<GPI:w>0, %w1
-   ldrs<SHORT:size>\t%<GPI:w>0, %1
-   smov\t%<GPI:w>0, %1.<SHORT:size>[0]"
-  [(set_attr "type" "extend,load_4,neon_to_gp")
-   (set_attr "arch" "*,*,fp")]
+  {@ [ cons: =0 , 1 ; attrs: type , arch ]
+     [ r        , r ; extend      , *    ] sxt<SHORT:size>\t%<GPI:w>0, %w1
+     [ r        , m ; load_4      , *    ] ldrs<SHORT:size>\t%<GPI:w>0, %1
+     [ r        , w ; neon_to_gp  , fp   ] smov\t%<GPI:w>0, %1.<SHORT:size>[0]
+  }
 )
 
 (define_insn "*zero_extend<SHORT:mode><GPI:mode>2_aarch64"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,w,r")
-        (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,m,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+        (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
-  "@
-   and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
-   ldr<SHORT:size>\t%w0, %1
-   ldr\t%<SHORT:size>0, %1
-   umov\t%w0, %1.<SHORT:size>[0]"
-  [(set_attr "type" "logic_imm,load_4,f_loads,neon_to_gp")
-   (set_attr "arch" "*,*,fp,fp")]
+  {@ [ cons: =0 , 1 ; attrs: type , arch ]
+     [ r        , r ; logic_imm   , *    ] and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
+     [ r        , m ; load_4      , *    ] ldr<SHORT:size>\t%w0, %1
+     [ w        , m ; f_loads     , fp   ] ldr\t%<SHORT:size>0, %1
+     [ r        , w ; neon_to_gp  , fp   ] umov\t%w0, %1.<SHORT:size>[0]
+  }
 )
 
 (define_expand "<optab>qihi2"
@@ -2033,23 +2017,23 @@
 )
 
 (define_insn "*extendqihi2_aarch64"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:HI 0 "register_operand")
+	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
-  "@
-   sxtb\t%w0, %w1
-   ldrsb\t%w0, %1"
-  [(set_attr "type" "extend,load_4")]
+  {@ [ cons: =0 , 1 ; attrs: type ]
+     [ r        , r ; extend      ] sxtb\t%w0, %w1
+     [ r        , m ; load_4      ] ldrsb\t%w0, %1
+  }
 )
 
 (define_insn "*zero_extendqihi2_aarch64"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:HI 0 "register_operand")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
-  "@
-   and\t%w0, %w1, 255
-   ldrb\t%w0, %1"
-  [(set_attr "type" "logic_imm,load_4")]
+  {@ [ cons: =0 , 1 ; attrs: type ]
+     [ r        , r ; logic_imm   ] and\t%w0, %w1, 255
+     [ r        , m ; load_4      ] ldrb\t%w0, %1
+  }
 )
 
 ;; -------------------------------------------------------------------
@@ -2095,38 +2079,37 @@
 
 (define_insn "*add<mode>3_aarch64"
   [(set
-    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r,r,rk")
+    (match_operand:GPI 0 "register_operand")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk,0,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa,Uai,Uav")))]
+     (match_operand:GPI 1 "register_operand")
+     (match_operand:GPI 2 "aarch64_pluslong_operand")))]
   ""
-  "@
-  add\\t%<w>0, %<w>1, %2
-  add\\t%<w>0, %<w>1, %<w>2
-  add\\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
-  sub\\t%<w>0, %<w>1, #%n2
-  #
-  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
-  * return aarch64_output_sve_addvl_addpl (operands[2]);"
+  {@ [ cons: =0 , 1   , 2   ; attrs: type , arch  ]
+     [ rk       , %rk , I   ; alu_imm     , *     ] add\t%<w>0, %<w>1, %2
+     [ rk       , rk  , r   ; alu_sreg    , *     ] add\t%<w>0, %<w>1, %<w>2
+     [ w        , w   , w   ; neon_add    , simd  ] add\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
+     [ rk       , rk  , J   ; alu_imm     , *     ] sub\t%<w>0, %<w>1, #%n2
+     [ r        , rk  , Uaa ; multiple    , *     ] #
+     [ r        , 0   , Uai ; alu_imm     , sve   ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
+     [ rk       , rk  , Uav ; alu_imm     , sve   ] << aarch64_output_sve_addvl_addpl (operands[2]);
+  }
   ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
-  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm,alu_imm")
-   (set_attr "arch" "*,*,simd,*,*,sve,sve")]
 )
 
 ;; zero_extend version of above
 (define_insn "*addsi3_aarch64_uxtw"
   [(set
-    (match_operand:DI 0 "register_operand" "=rk,rk,rk,r")
+    (match_operand:DI 0 "register_operand")
     (zero_extend:DI
-     (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk,rk")
-	      (match_operand:SI 2 "aarch64_pluslong_operand" "I,r,J,Uaa"))))]
+     (plus:SI (match_operand:SI 1 "register_operand")
+	      (match_operand:SI 2 "aarch64_pluslong_operand"))))]
   ""
-  "@
-  add\\t%w0, %w1, %2
-  add\\t%w0, %w1, %w2
-  sub\\t%w0, %w1, #%n2
-  #"
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple")]
+  {@ [ cons: =0 , 1   , 2   ; attrs: type ]
+     [ rk       , %rk , I   ; alu_imm     ] add\t%w0, %w1, %2
+     [ rk       , rk  , r   ; alu_sreg    ] add\t%w0, %w1, %w2
+     [ rk       , rk  , J   ; alu_imm     ] sub\t%w0, %w1, #%n2
+     [ r        , rk  , Uaa ; multiple    ] #
+  }
 )
 
 ;; If there's a free register, and we can load the constant with a
@@ -2189,19 +2172,20 @@
 ;; this pattern.
 (define_insn_and_split "*add<mode>3_poly_1"
   [(set
-    (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,r,&r")
+    (match_operand:GPI 0 "register_operand")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,0,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uai,Uav,Uat")))]
+     (match_operand:GPI 1 "register_operand")
+     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand")))]
   "TARGET_SVE && operands[0] != stack_pointer_rtx"
-  "@
-  add\\t%<w>0, %<w>1, %2
-  add\\t%<w>0, %<w>1, %<w>2
-  sub\\t%<w>0, %<w>1, #%n2
-  #
-  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
-  * return aarch64_output_sve_addvl_addpl (operands[2]);
-  #"
+  {@ [ cons: =0 , 1   , 2   ; attrs: type ]
+     [ r        , %rk , I   ; alu_imm     ] add\t%<w>0, %<w>1, %2
+     [ r        , rk  , r   ; alu_sreg    ] add\t%<w>0, %<w>1, %<w>2
+     [ r        , rk  , J   ; alu_imm     ] sub\t%<w>0, %<w>1, #%n2
+     [ r        , rk  , Uaa ; multiple    ] #
+     [ r        , 0   , Uai ; alu_imm     ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
+     [ r        , rk  , Uav ; alu_imm     ] << aarch64_output_sve_addvl_addpl (operands[2]);
+     [ &r       , rk  , Uat ; multiple    ] #
+  }
   "&& epilogue_completed
    && !reg_overlap_mentioned_p (operands[0], operands[1])
    && aarch64_split_add_offset_immediate (operands[2], <MODE>mode)"
@@ -2212,7 +2196,6 @@
     DONE;
   }
   ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple,alu_imm,alu_imm,multiple")]
 )
 
 (define_split
@@ -2367,82 +2350,83 @@
 (define_insn "add<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:GPI (match_operand:GPI 1 "register_operand" "%rk,rk,rk")
-		   (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
+	 (plus:GPI (match_operand:GPI 1 "register_operand")
+		   (match_operand:GPI 2 "aarch64_plus_operand"))
 	 (const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r,r,r")
+   (set (match_operand:GPI 0 "register_operand")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "@
-  adds\\t%<w>0, %<w>1, %<w>2
-  adds\\t%<w>0, %<w>1, %2
-  subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: =0 , 1   , 2 ; attrs: type ]
+     [ r        , %rk , r ; alus_sreg   ] adds\t%<w>0, %<w>1, %<w>2
+     [ r        , rk  , I ; alus_imm    ] adds\t%<w>0, %<w>1, %2
+     [ r        , rk  , J ; alus_imm    ] subs\t%<w>0, %<w>1, #%n2
+  }
 )
 
 ;; zero_extend version of above
 (define_insn "*addsi3_compare0_uxtw"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk")
-		  (match_operand:SI 2 "aarch64_plus_operand" "r,I,J"))
+	 (plus:SI (match_operand:SI 1 "register_operand")
+		  (match_operand:SI 2 "aarch64_plus_operand"))
 	 (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r,r,r")
+   (set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (plus:SI (match_dup 1) (match_dup 2))))]
   ""
-  "@
-  adds\\t%w0, %w1, %w2
-  adds\\t%w0, %w1, %2
-  subs\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: =0 , 1   , 2 ; attrs: type ]
+     [ r        , %rk , r ; alus_sreg   ] adds\t%w0, %w1, %w2
+     [ r        , rk  , I ; alus_imm    ] adds\t%w0, %w1, %2
+     [ r        , rk  , J ; alus_imm    ] subs\t%w0, %w1, #%n2
+  }
 )
 
 (define_insn "*add<mode>3_compareC_cconly"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	  (plus:GPI
-	    (match_operand:GPI 0 "register_operand" "r,r,r")
-	    (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J"))
+	    (match_operand:GPI 0 "register_operand")
+	    (match_operand:GPI 1 "aarch64_plus_operand"))
 	  (match_dup 0)))]
   ""
-  "@
-  cmn\\t%<w>0, %<w>1
-  cmn\\t%<w>0, %1
-  cmp\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: 0 , 1 ; attrs: type ]
+     [ r       , r ; alus_sreg   ] cmn\t%<w>0, %<w>1
+     [ r       , I ; alus_imm    ] cmn\t%<w>0, %1
+     [ r       , J ; alus_imm    ] cmp\t%<w>0, #%n1
+  }
 )
 
 (define_insn "add<mode>3_compareC"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	  (plus:GPI
-	    (match_operand:GPI 1 "register_operand" "rk,rk,rk")
-	    (match_operand:GPI 2 "aarch64_plus_operand" "r,I,J"))
+	    (match_operand:GPI 1 "register_operand")
+	    (match_operand:GPI 2 "aarch64_plus_operand"))
 	  (match_dup 1)))
-   (set (match_operand:GPI 0 "register_operand" "=r,r,r")
+   (set (match_operand:GPI 0 "register_operand")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "@
-  adds\\t%<w>0, %<w>1, %<w>2
-  adds\\t%<w>0, %<w>1, %2
-  subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: =0 , 1  , 2 ; attrs: type ]
+     [ r        , rk , r ; alus_sreg   ] adds\t%<w>0, %<w>1, %<w>2
+     [ r        , rk , I ; alus_imm    ] adds\t%<w>0, %<w>1, %2
+     [ r        , rk , J ; alus_imm    ] subs\t%<w>0, %<w>1, #%n2
+  }
 )
 
 (define_insn "*add<mode>3_compareV_cconly_imm"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
 	  (plus:<DWI>
-	    (sign_extend:<DWI> (match_operand:GPI 0 "register_operand" "r,r"))
-	    (match_operand:<DWI> 1 "const_scalar_int_operand" ""))
+	    (sign_extend:<DWI> (match_operand:GPI 0 "register_operand"))
+	    (match_operand:<DWI> 1 "const_scalar_int_operand"))
 	  (sign_extend:<DWI>
 	   (plus:GPI
 	    (match_dup 0)
-	    (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))))]
+	    (match_operand:GPI 2 "aarch64_plus_immediate")))))]
   "INTVAL (operands[1]) == INTVAL (operands[2])"
-  "@
-  cmn\\t%<w>0, %<w>1
-  cmp\\t%<w>0, #%n1"
+  {@ [ cons: 0 , 2  ]
+     [ r       , I  ] cmn\t%<w>0, %<w>1
+     [ r       , J  ] cmp\t%<w>0, #%n1
+  }
   [(set_attr "type" "alus_imm")]
 )
 
@@ -2463,17 +2447,17 @@
 	(compare:CC_V
 	  (plus:<DWI>
 	    (sign_extend:<DWI>
-	      (match_operand:GPI 1 "register_operand" "rk,rk"))
-	    (match_operand:GPI 2 "aarch64_plus_immediate" "I,J"))
+	      (match_operand:GPI 1 "register_operand"))
+	    (match_operand:GPI 2 "aarch64_plus_immediate"))
 	  (sign_extend:<DWI>
 	    (plus:GPI (match_dup 1) (match_dup 2)))))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
+   (set (match_operand:GPI 0 "register_operand")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
    ""
-   "@
-   adds\\t%<w>0, %<w>1, %<w>2
-   subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_imm,alus_imm")]
+   {@ [ cons: =0 , 1  , 2 ; attrs: type ]
+      [ r        , rk , I ; alus_imm    ] adds\t%<w>0, %<w>1, %<w>2
+      [ r        , rk , J ; alus_imm    ] subs\t%<w>0, %<w>1, #%n2
+  }
 )
 
 (define_insn "add<mode>3_compareV"
@@ -2589,15 +2573,15 @@
 (define_insn "*add<mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:GPI (match_operand:GPI 0 "register_operand" "%r,r,r")
-		   (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J"))
+	 (plus:GPI (match_operand:GPI 0 "register_operand")
+		   (match_operand:GPI 1 "aarch64_plus_operand"))
 	 (const_int 0)))]
   ""
-  "@
-  cmn\\t%<w>0, %<w>1
-  cmn\\t%<w>0, %1
-  cmp\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: 0 , 1 ; attrs: type ]
+     [ %r      , r ; alus_sreg   ] cmn\t%<w>0, %<w>1
+     [ r       , I ; alus_imm    ] cmn\t%<w>0, %1
+     [ r       , J ; alus_imm    ] cmp\t%<w>0, #%n1
+  }
 )
 
 (define_insn "aarch64_sub<mode>_compare0"
@@ -2909,15 +2893,14 @@
 )
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=rk,w")
-	(minus:DI (match_operand:DI 1 "register_operand" "rk,w")
-		  (match_operand:DI 2 "register_operand" "r,w")))]
+  [(set (match_operand:DI 0 "register_operand")
+	(minus:DI (match_operand:DI 1 "register_operand")
+		  (match_operand:DI 2 "register_operand")))]
   ""
-  "@
-   sub\\t%x0, %x1, %x2
-   sub\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_sreg, neon_sub")
-   (set_attr "arch" "*,simd")]
+  {@ [ cons: =0 , 1  , 2 ; attrs: type , arch  ]
+     [ rk       , rk , r ; alu_sreg    , *     ] sub\t%x0, %x1, %x2
+     [ w        , w  , w ; neon_sub    , simd  ] sub\t%d0, %d1, %d2
+  }
 )
 
 (define_expand "subv<GPI:mode>4"
@@ -2957,16 +2940,17 @@
 	(compare:CC_V
 	 (sign_extend:<DWI>
 	  (minus:GPI
-	   (match_operand:GPI 1 "register_operand" "rk,rk")
-	   (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))
+	   (match_operand:GPI 1 "register_operand")
+	   (match_operand:GPI 2 "aarch64_plus_immediate")))
 	 (minus:<DWI> (sign_extend:<DWI> (match_dup 1))
 		      (match_dup 2))))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
+   (set (match_operand:GPI 0 "register_operand")
 	(minus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "@
-   subs\\t%<w>0, %<w>1, %2
-   adds\\t%<w>0, %<w>1, #%n2"
+  {@ [ cons: =0 , 1  , 2  ]
+     [ r        , rk , I  ] subs\t%<w>0, %<w>1, %2
+     [ r        , rk , J  ] adds\t%<w>0, %<w>1, #%n2
+  }
   [(set_attr "type" "alus_sreg")]
 )
 
@@ -3011,15 +2995,16 @@
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
 	 (sign_extend:<DWI>
-	  (minus:GPI (match_operand:GPI 0 "register_operand" "r,r,r")
-		     (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J")))
+	  (minus:GPI (match_operand:GPI 0 "register_operand")
+		     (match_operand:GPI 1 "aarch64_plus_operand")))
 	 (minus:<DWI> (sign_extend:<DWI> (match_dup 0))
 		    (sign_extend:<DWI> (match_dup 1)))))]
   ""
-  "@
-   cmp\\t%<w>0, %<w>1
-   cmp\\t%<w>0, %1
-   cmp\\t%<w>0, #%n1"
+  {@ [ cons: 0 , 1  ]
+     [ r       , r  ] cmp\t%<w>0, %<w>1
+     [ r       , I  ] cmp\t%<w>0, %1
+     [ r       , J  ] cmp\t%<w>0, #%n1
+  }
   [(set_attr "type" "alus_sreg")]
 )
 
@@ -3166,16 +3151,17 @@
 (define_insn "sub<mode>3_compare1_imm"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
-	  (match_operand:GPI 1 "register_operand" "rk,rk")
-	  (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:GPI 2 "aarch64_plus_immediate")))
+   (set (match_operand:GPI 0 "register_operand")
 	(plus:GPI
 	  (match_dup 1)
-	  (match_operand:GPI 3 "aarch64_plus_immediate" "J,I")))]
+	  (match_operand:GPI 3 "aarch64_plus_immediate")))]
   "UINTVAL (operands[2]) == -UINTVAL (operands[3])"
-  "@
-  subs\\t%<w>0, %<w>1, %2
-  adds\\t%<w>0, %<w>1, #%n2"
+  {@ [ cons: =0 , 1  , 2 , 3  ]
+     [ r        , rk , I , J  ] subs\t%<w>0, %<w>1, %2
+     [ r        , rk , J , I  ] adds\t%<w>0, %<w>1, #%n2
+  }
   [(set_attr "type" "alus_imm")]
 )
 
@@ -3616,14 +3602,13 @@
 )
 
 (define_insn "neg<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r,w")
-	(neg:GPI (match_operand:GPI 1 "register_operand" "r,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(neg:GPI (match_operand:GPI 1 "register_operand")))]
   ""
-  "@
-   neg\\t%<w>0, %<w>1
-   neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
-  [(set_attr "type" "alu_sreg, neon_neg<q>")
-   (set_attr "arch" "*,simd")]
+  {@ [ cons: =0 , 1 ; attrs: type , arch  ]
+     [ r        , r ; alu_sreg    , *     ] neg\t%<w>0, %<w>1
+     [ w        , w ; neon_neg<q> , simd  ] neg\t%<rtn>0<vas>, %<rtn>1<vas>
+  }
 )
 
 ;; zero_extend version of above
@@ -3938,35 +3923,37 @@
 
 (define_insn "cmp<mode>"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:GPI 0 "register_operand" "rk,rk,rk")
-		    (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J")))]
+	(compare:CC (match_operand:GPI 0 "register_operand")
+		    (match_operand:GPI 1 "aarch64_plus_operand")))]
   ""
-  "@
-   cmp\\t%<w>0, %<w>1
-   cmp\\t%<w>0, %1
-   cmn\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+  {@ [ cons: 0 , 1 ; attrs: type ]
+     [ rk      , r ; alus_sreg   ] cmp\t%<w>0, %<w>1
+     [ rk      , I ; alus_imm    ] cmp\t%<w>0, %1
+     [ rk      , J ; alus_imm    ] cmn\t%<w>0, #%n1
+  }
 )
 
 (define_insn "fcmp<mode>"
   [(set (reg:CCFP CC_REGNUM)
-        (compare:CCFP (match_operand:GPF 0 "register_operand" "w,w")
-		      (match_operand:GPF 1 "aarch64_fp_compare_operand" "Y,w")))]
+        (compare:CCFP (match_operand:GPF 0 "register_operand")
+		      (match_operand:GPF 1 "aarch64_fp_compare_operand")))]
    "TARGET_FLOAT"
-   "@
-    fcmp\\t%<s>0, #0.0
-    fcmp\\t%<s>0, %<s>1"
+   {@ [ cons: 0 , 1  ]
+      [ w       , Y  ] fcmp\t%<s>0, #0.0
+      [ w       , w  ] fcmp\t%<s>0, %<s>1
+  }
   [(set_attr "type" "fcmp<s>")]
 )
 
 (define_insn "fcmpe<mode>"
   [(set (reg:CCFPE CC_REGNUM)
-        (compare:CCFPE (match_operand:GPF 0 "register_operand" "w,w")
-		       (match_operand:GPF 1 "aarch64_fp_compare_operand" "Y,w")))]
+        (compare:CCFPE (match_operand:GPF 0 "register_operand")
+		       (match_operand:GPF 1 "aarch64_fp_compare_operand")))]
    "TARGET_FLOAT"
-   "@
-    fcmpe\\t%<s>0, #0.0
-    fcmpe\\t%<s>0, %<s>1"
+   {@ [ cons: 0 , 1  ]
+      [ w       , Y  ] fcmpe\t%<s>0, #0.0
+      [ w       , w  ] fcmpe\t%<s>0, %<s>1
+  }
   [(set_attr "type" "fcmp<s>")]
 )
 
@@ -4153,47 +4140,47 @@
 )
 
 (define_insn "*cmov<mode>_insn"
-  [(set (match_operand:ALLI 0 "register_operand" "=r,r,r,r,r,r,r")
+  [(set (match_operand:ALLI 0 "register_operand")
 	(if_then_else:ALLI
 	 (match_operator 1 "aarch64_comparison_operator"
-	  [(match_operand 2 "cc_register" "") (const_int 0)])
-	 (match_operand:ALLI 3 "aarch64_reg_zero_or_m1_or_1" "rZ,rZ,UsM,rZ,Ui1,UsM,Ui1")
-	 (match_operand:ALLI 4 "aarch64_reg_zero_or_m1_or_1" "rZ,UsM,rZ,Ui1,rZ,UsM,Ui1")))]
+	  [(match_operand 2 "cc_register") (const_int 0)])
+	 (match_operand:ALLI 3 "aarch64_reg_zero_or_m1_or_1")
+	 (match_operand:ALLI 4 "aarch64_reg_zero_or_m1_or_1")))]
   "!((operands[3] == const1_rtx && operands[4] == constm1_rtx)
      || (operands[3] == constm1_rtx && operands[4] == const1_rtx))"
   ;; Final two alternatives should be unreachable, but included for completeness
-  "@
-   csel\\t%<w>0, %<w>3, %<w>4, %m1
-   csinv\\t%<w>0, %<w>3, <w>zr, %m1
-   csinv\\t%<w>0, %<w>4, <w>zr, %M1
-   csinc\\t%<w>0, %<w>3, <w>zr, %m1
-   csinc\\t%<w>0, %<w>4, <w>zr, %M1
-   mov\\t%<w>0, -1
-   mov\\t%<w>0, 1"
-  [(set_attr "type" "csel, csel, csel, csel, csel, mov_imm, mov_imm")]
+  {@ [ cons: =0 , 3   , 4   ; attrs: type ]
+     [ r        , rZ  , rZ  ; csel        ] csel\t%<w>0, %<w>3, %<w>4, %m1
+     [ r        , rZ  , UsM ; csel        ] csinv\t%<w>0, %<w>3, <w>zr, %m1
+     [ r        , UsM , rZ  ; csel        ] csinv\t%<w>0, %<w>4, <w>zr, %M1
+     [ r        , rZ  , Ui1 ; csel        ] csinc\t%<w>0, %<w>3, <w>zr, %m1
+     [ r        , Ui1 , rZ  ; csel        ] csinc\t%<w>0, %<w>4, <w>zr, %M1
+     [ r        , UsM , UsM ; mov_imm     ] mov\t%<w>0, -1
+     [ r        , Ui1 , Ui1 ; mov_imm     ] mov\t%<w>0, 1
+  }
 )
 
 ;; zero_extend version of above
 (define_insn "*cmovsi_insn_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r,r")
+  [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI
 	 (if_then_else:SI
 	  (match_operator 1 "aarch64_comparison_operator"
-	   [(match_operand 2 "cc_register" "") (const_int 0)])
-	  (match_operand:SI 3 "aarch64_reg_zero_or_m1_or_1" "rZ,rZ,UsM,rZ,Ui1,UsM,Ui1")
-	  (match_operand:SI 4 "aarch64_reg_zero_or_m1_or_1" "rZ,UsM,rZ,Ui1,rZ,UsM,Ui1"))))]
+	   [(match_operand 2 "cc_register") (const_int 0)])
+	  (match_operand:SI 3 "aarch64_reg_zero_or_m1_or_1")
+	  (match_operand:SI 4 "aarch64_reg_zero_or_m1_or_1"))))]
   "!((operands[3] == const1_rtx && operands[4] == constm1_rtx)
      || (operands[3] == constm1_rtx && operands[4] == const1_rtx))"
   ;; Final two alternatives should be unreachable, but included for completeness
-  "@
-   csel\\t%w0, %w3, %w4, %m1
-   csinv\\t%w0, %w3, wzr, %m1
-   csinv\\t%w0, %w4, wzr, %M1
-   csinc\\t%w0, %w3, wzr, %m1
-   csinc\\t%w0, %w4, wzr, %M1
-   mov\\t%w0, -1
-   mov\\t%w0, 1"
-  [(set_attr "type" "csel, csel, csel, csel, csel, mov_imm, mov_imm")]
+  {@ [ cons: =0 , 3   , 4   ; attrs: type ]
+     [ r        , rZ  , rZ  ; csel        ] csel\t%w0, %w3, %w4, %m1
+     [ r        , rZ  , UsM ; csel        ] csinv\t%w0, %w3, wzr, %m1
+     [ r        , UsM , rZ  ; csel        ] csinv\t%w0, %w4, wzr, %M1
+     [ r        , rZ  , Ui1 ; csel        ] csinc\t%w0, %w3, wzr, %m1
+     [ r        , Ui1 , rZ  ; csel        ] csinc\t%w0, %w4, wzr, %M1
+     [ r        , UsM , UsM ; mov_imm     ] mov\t%w0, -1
+     [ r        , Ui1 , Ui1 ; mov_imm     ] mov\t%w0, 1
+  }
 )
 
 ;; There are two canonical forms for `cmp ? -1 : a`.
@@ -4548,60 +4535,59 @@
 )
 
 (define_insn "<optab><mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,rk,w")
-	(LOGICAL:GPI (match_operand:GPI 1 "register_operand" "%r,r,w")
-		     (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL:GPI (match_operand:GPI 1 "register_operand")
+		     (match_operand:GPI 2 "aarch64_logical_operand")))]
   ""
-  "@
-  <logical>\\t%<w>0, %<w>1, %<w>2
-  <logical>\\t%<w>0, %<w>1, %2
-  <logical>\\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
-  [(set_attr "type" "logic_reg,logic_imm,neon_logic")
-   (set_attr "arch" "*,*,simd")]
+  {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
+     [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
+     [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+  }
 )
 
 ;; zero_extend version of above
 (define_insn "*<optab>si3_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r,rk")
+  [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI
-         (LOGICAL:SI (match_operand:SI 1 "register_operand" "%r,r")
-		     (match_operand:SI 2 "aarch64_logical_operand" "r,K"))))]
+         (LOGICAL:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "aarch64_logical_operand"))))]
   ""
-  "@
-   <logical>\\t%w0, %w1, %w2
-   <logical>\\t%w0, %w1, %2"
-  [(set_attr "type" "logic_reg,logic_imm")]
+  {@ [ cons: =0 , 1  , 2 ; attrs: type ]
+     [ r        , %r , r ; logic_reg   ] <logical>\t%w0, %w1, %w2
+     [ rk       , r  , K ; logic_imm   ] <logical>\t%w0, %w1, %2
+  }
 )
 
 (define_insn "*and<mode>3_compare0"
   [(set (reg:CC_NZV CC_REGNUM)
 	(compare:CC_NZV
-	 (and:GPI (match_operand:GPI 1 "register_operand" "%r,r")
-		  (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>"))
+	 (and:GPI (match_operand:GPI 1 "register_operand")
+		  (match_operand:GPI 2 "aarch64_logical_operand"))
 	 (const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r,r")
+   (set (match_operand:GPI 0 "register_operand")
 	(and:GPI (match_dup 1) (match_dup 2)))]
   ""
-  "@
-   ands\\t%<w>0, %<w>1, %<w>2
-   ands\\t%<w>0, %<w>1, %2"
-  [(set_attr "type" "logics_reg,logics_imm")]
+  {@ [ cons: =0 , 1  , 2        ; attrs: type ]
+     [ r        , %r , r        ; logics_reg  ] ands\t%<w>0, %<w>1, %<w>2
+     [ r        , r  , <lconst> ; logics_imm  ] ands\t%<w>0, %<w>1, %2
+  }
 )
 
 ;; zero_extend version of above
 (define_insn "*andsi3_compare0_uxtw"
   [(set (reg:CC_NZV CC_REGNUM)
 	(compare:CC_NZV
-	 (and:SI (match_operand:SI 1 "register_operand" "%r,r")
-		 (match_operand:SI 2 "aarch64_logical_operand" "r,K"))
+	 (and:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "aarch64_logical_operand"))
 	 (const_int 0)))
-   (set (match_operand:DI 0 "register_operand" "=r,r")
+   (set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (and:SI (match_dup 1) (match_dup 2))))]
   ""
-  "@
-   ands\\t%w0, %w1, %w2
-   ands\\t%w0, %w1, %2"
-  [(set_attr "type" "logics_reg,logics_imm")]
+  {@ [ cons: =0 , 1  , 2 ; attrs: type ]
+     [ r        , %r , r ; logics_reg  ] ands\t%w0, %w1, %w2
+     [ r        , r  , K ; logics_imm  ] ands\t%w0, %w1, %2
+  }
 )
 
 (define_insn "*and_<SHIFT:optab><mode>3_compare0"
@@ -4766,14 +4752,13 @@
 )
 
 (define_insn "one_cmpl<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r,w")
-	(not:GPI (match_operand:GPI 1 "register_operand" "r,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(not:GPI (match_operand:GPI 1 "register_operand")))]
   ""
-  "@
-  mvn\\t%<w>0, %<w>1
-  mvn\\t%0.8b, %1.8b"
-  [(set_attr "type" "logic_reg,neon_logic")
-   (set_attr "arch" "*,simd")]
+  {@ [ cons: =0 , 1 ; attrs: type , arch  ]
+     [ r        , r ; logic_reg   , *     ] mvn\t%<w>0, %<w>1
+     [ w        , w ; neon_logic  , simd  ] mvn\t%0.8b, %1.8b
+  }
 )
 
 (define_insn "*one_cmpl_zero_extend"
@@ -4801,15 +4786,14 @@
 ;; Binary logical operators negating one operand, i.e. (a & !b), (a | !b).
 
 (define_insn "*<NLOGICAL:optab>_one_cmpl<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,w")
-	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand" "r,w"))
-		     (match_operand:GPI 2 "register_operand" "r,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand"))
+		     (match_operand:GPI 2 "register_operand")))]
   ""
-  "@
-  <NLOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1
-  <NLOGICAL:nlogical>\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
-  [(set_attr "type" "logic_reg,neon_logic")
-   (set_attr "arch" "*,simd")]
+  {@ [ cons: =0 , 1 , 2 ; attrs: type , arch  ]
+     [ r        , r , r ; logic_reg   , *     ] <NLOGICAL:nlogical>\t%<w>0, %<w>2, %<w>1
+     [ w        , w , w ; neon_logic  , simd  ] <NLOGICAL:nlogical>\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
+  }
 )
 
 (define_insn "*<NLOGICAL:optab>_one_cmplsidi3_ze"
@@ -5148,14 +5132,14 @@
 (define_insn "*and<mode>3nr_compare0"
   [(set (reg:CC_NZV CC_REGNUM)
 	(compare:CC_NZV
-	 (and:GPI (match_operand:GPI 0 "register_operand" "%r,r")
-		  (match_operand:GPI 1 "aarch64_logical_operand" "r,<lconst>"))
+	 (and:GPI (match_operand:GPI 0 "register_operand")
+		  (match_operand:GPI 1 "aarch64_logical_operand"))
 	 (const_int 0)))]
   ""
-  "@
-   tst\\t%<w>0, %<w>1
-   tst\\t%<w>0, %1"
-  [(set_attr "type" "logics_reg,logics_imm")]
+  {@ [ cons: 0 , 1        ; attrs: type ]
+     [ %r      , r        ; logics_reg  ] tst\t%<w>0, %<w>1
+     [ r       , <lconst> ; logics_imm  ] tst\t%<w>0, %1
+  }
 )
 
 (define_split
@@ -5438,36 +5422,33 @@
 
 ;; Logical left shift using SISD or Integer instruction
 (define_insn "*aarch64_ashl_sisd_or_int_<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,w,w")
+  [(set (match_operand:GPI 0 "register_operand")
 	(ashift:GPI
-	  (match_operand:GPI 1 "register_operand" "r,r,w,w")
-	  (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "Us<cmode>,r,Us<cmode>,w")))]
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>")))]
   ""
-  "@
-   lsl\t%<w>0, %<w>1, %2
-   lsl\t%<w>0, %<w>1, %<w>2
-   shl\t%<rtn>0<vas>, %<rtn>1<vas>, %2
-   ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>"
-  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>, neon_shift_reg<q>")
-   (set_attr "arch" "*,*,simd,simd")]
+  {@ [ cons: =0 , 1 , 2         ; attrs: type       , arch  ]
+     [ r        , r , Us<cmode> ; bfx               , *     ] lsl\t%<w>0, %<w>1, %2
+     [ r        , r , r         ; shift_reg         , *     ] lsl\t%<w>0, %<w>1, %<w>2
+     [ w        , w , Us<cmode> ; neon_shift_imm<q> , simd  ] shl\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+     [ w        , w , w         ; neon_shift_reg<q> , simd  ] ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
+  }
 )
 
 ;; Logical right shift using SISD or Integer instruction
 (define_insn "*aarch64_lshr_sisd_or_int_<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,w,&w,&w")
+  [(set (match_operand:GPI 0 "register_operand")
 	(lshiftrt:GPI
-	 (match_operand:GPI 1 "register_operand" "r,r,w,w,w")
-	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>"
-			      "Us<cmode>,r,Us<cmode_simd>,w,0")))]
+	 (match_operand:GPI 1 "register_operand")
+	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>")))]
   ""
-  "@
-   lsr\t%<w>0, %<w>1, %2
-   lsr\t%<w>0, %<w>1, %<w>2
-   ushr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
-   #
-   #"
-  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")
-   (set_attr "arch" "*,*,simd,simd,simd")]
+  {@ [ cons: =0 , 1 , 2              ; attrs: type       , arch  ]
+     [ r        , r , Us<cmode>      ; bfx               , *     ] lsr\t%<w>0, %<w>1, %2
+     [ r        , r , r              ; shift_reg         , *     ] lsr\t%<w>0, %<w>1, %<w>2
+     [ w        , w , Us<cmode_simd> ; neon_shift_imm<q> , simd  ] ushr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+     [ &w       , w , w              ; neon_shift_reg<q> , simd  ] #
+     [ &w       , w , 0              ; neon_shift_reg<q> , simd  ] #
+  }
 )
 
 (define_split
@@ -5502,20 +5483,18 @@
 
 ;; Arithmetic right shift using SISD or Integer instruction
 (define_insn "*aarch64_ashr_sisd_or_int_<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,w,&w,&w")
+  [(set (match_operand:GPI 0 "register_operand")
 	(ashiftrt:GPI
-	  (match_operand:GPI 1 "register_operand" "r,r,w,w,w")
-	  (match_operand:QI 2 "aarch64_reg_or_shift_imm_di"
-			       "Us<cmode>,r,Us<cmode_simd>,w,0")))]
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:QI 2 "aarch64_reg_or_shift_imm_di")))]
   ""
-  "@
-   asr\t%<w>0, %<w>1, %2
-   asr\t%<w>0, %<w>1, %<w>2
-   sshr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
-   #
-   #"
-  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")
-   (set_attr "arch" "*,*,simd,simd,simd")]
+  {@ [ cons: =0 , 1 , 2              ; attrs: type       , arch  ]
+     [ r        , r , Us<cmode>      ; bfx               , *     ] asr\t%<w>0, %<w>1, %2
+     [ r        , r , r              ; shift_reg         , *     ] asr\t%<w>0, %<w>1, %<w>2
+     [ w        , w , Us<cmode_simd> ; neon_shift_imm<q> , simd  ] sshr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+     [ &w       , w , w              ; neon_shift_reg<q> , simd  ] #
+     [ &w       , w , 0              ; neon_shift_reg<q> , simd  ] #
+  }
 )
 
 (define_split
@@ -5599,15 +5578,15 @@
 
 ;; Rotate right
 (define_insn "*ror<mode>3_insn"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+  [(set (match_operand:GPI 0 "register_operand")
      (rotatert:GPI
-       (match_operand:GPI 1 "register_operand" "r,r")
-       (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "Us<cmode>,r")))]
+       (match_operand:GPI 1 "register_operand")
+       (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>")))]
   ""
-  "@
-   ror\\t%<w>0, %<w>1, %2
-   ror\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "rotate_imm,shift_reg")]
+  {@ [ cons: =0 , 1 , 2         ; attrs: type ]
+     [ r        , r , Us<cmode> ; rotate_imm  ] ror\t%<w>0, %<w>1, %2
+     [ r        , r , r         ; shift_reg   ] ror\t%<w>0, %<w>1, %<w>2
+  }
 )
 
 (define_insn "*rol<mode>3_insn"
@@ -5624,15 +5603,15 @@
 
 ;; zero_extend version of shifts
 (define_insn "*<optab>si3_insn_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
+  [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (SHIFT_no_rotate:SI
-	 (match_operand:SI 1 "register_operand" "r,r")
-	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_si" "Uss,r"))))]
+	 (match_operand:SI 1 "register_operand")
+	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_si"))))]
   ""
-  "@
-   <shift>\\t%w0, %w1, %2
-   <shift>\\t%w0, %w1, %w2"
-  [(set_attr "type" "bfx,shift_reg")]
+  {@ [ cons: =0 , 1 , 2   ; attrs: type ]
+     [ r        , r , Uss ; bfx         ] <shift>\t%w0, %w1, %2
+     [ r        , r , r   ; shift_reg   ] <shift>\t%w0, %w1, %w2
+  }
 )
 
 ;; zero_extend version of rotate right
@@ -6497,14 +6476,13 @@
 ;; and making r = w more expensive
 
 (define_insn "<optab>_trunc<fcvt_target><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=w,?r")
-	(FIXUORS:GPI (match_operand:<FCVT_TARGET> 1 "register_operand" "w,w")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(FIXUORS:GPI (match_operand:<FCVT_TARGET> 1 "register_operand")))]
   "TARGET_FLOAT"
-  "@
-   fcvtz<su>\t%<s>0, %<s>1
-   fcvtz<su>\t%<w>0, %<s>1"
-  [(set_attr "type" "neon_fp_to_int_s,f_cvtf2i")
-   (set_attr "arch" "simd,fp")]
+  {@ [ cons: =0 , 1 ; attrs: type      , arch  ]
+     [ w        , w ; neon_fp_to_int_s , simd  ] fcvtz<su>\t%<s>0, %<s>1
+     [ ?r       , w ; f_cvtf2i         , fp    ] fcvtz<su>\t%<w>0, %<s>1
+  }
 )
 
 ;; Convert HF -> SI or DI
@@ -6577,14 +6555,13 @@
 
 ;; Equal width integer to fp conversion.
 (define_insn "<optab><fcvt_target><GPF:mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w,w")
-        (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r")))]
+  [(set (match_operand:GPF 0 "register_operand")
+        (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand")))]
   "TARGET_FLOAT"
-  "@
-   <su_optab>cvtf\t%<GPF:s>0, %<s>1
-   <su_optab>cvtf\t%<GPF:s>0, %<w1>1"
-  [(set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")
-   (set_attr "arch" "simd,fp")]
+  {@ [ cons: =0 , 1  ; attrs: type             , arch  ]
+     [ w        , w  ; neon_int_to_fp_<Vetype> , simd  ] <su_optab>cvtf\t%<GPF:s>0, %<s>1
+     [ w        , ?r ; f_cvti2f                , fp    ] <su_optab>cvtf\t%<GPF:s>0, %<w1>1
+  }
 )
 
 ;; Unequal width integer to fp conversions.
@@ -6661,29 +6638,27 @@
 ;; Convert between fixed-point and floating-point (scalar modes)
 
 (define_insn "<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3"
-  [(set (match_operand:<GPF:FCVT_TARGET> 0 "register_operand" "=r, w")
-	(unspec:<GPF:FCVT_TARGET> [(match_operand:GPF 1 "register_operand" "w, w")
-				   (match_operand:SI 2 "immediate_operand" "i, i")]
+  [(set (match_operand:<GPF:FCVT_TARGET> 0 "register_operand")
+	(unspec:<GPF:FCVT_TARGET> [(match_operand:GPF 1 "register_operand")
+				   (match_operand:SI 2 "immediate_operand")]
 	 FCVT_F2FIXED))]
   ""
-  "@
-   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:w1>0, %<GPF:s>1, #%2
-   <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:s>0, %<GPF:s>1, #%2"
-  [(set_attr "type" "f_cvtf2i, neon_fp_to_int_<GPF:Vetype>")
-   (set_attr "arch" "fp,simd")]
+  {@ [ cons: =0 , 1 , 2 ; attrs: type                 , arch  ]
+     [ r        , w , i ; f_cvtf2i                    , fp    ] <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:w1>0, %<GPF:s>1, #%2
+     [ w        , w , i ; neon_fp_to_int_<GPF:Vetype> , simd  ] <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:s>0, %<GPF:s>1, #%2
+  }
 )
 
 (define_insn "<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3"
-  [(set (match_operand:<GPI:FCVT_TARGET> 0 "register_operand" "=w, w")
-	(unspec:<GPI:FCVT_TARGET> [(match_operand:GPI 1 "register_operand" "r, w")
-				   (match_operand:SI 2 "immediate_operand" "i, i")]
+  [(set (match_operand:<GPI:FCVT_TARGET> 0 "register_operand")
+	(unspec:<GPI:FCVT_TARGET> [(match_operand:GPI 1 "register_operand")
+				   (match_operand:SI 2 "immediate_operand")]
 	 FCVT_FIXED2F))]
   ""
-  "@
-   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:w>1, #%2
-   <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:v>1, #%2"
-  [(set_attr "type" "f_cvti2f, neon_int_to_fp_<GPI:Vetype>")
-   (set_attr "arch" "fp,simd")]
+  {@ [ cons: =0 , 1 , 2 ; attrs: type                 , arch  ]
+     [ w        , r , i ; f_cvti2f                    , fp    ] <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:w>1, #%2
+     [ w        , w , i ; neon_int_to_fp_<GPI:Vetype> , simd  ] <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:v>1, #%2
+  }
 )
 
 (define_insn "<FCVT_F2FIXED:fcvt_fixed_insn>hf<mode>3"
@@ -6856,14 +6831,14 @@
 )
 
 (define_insn "*aarch64_<optab><mode>3_cssc"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r")
-        (MAXMIN:GPI (match_operand:GPI 1 "register_operand" "r,r")
-		(match_operand:GPI 2 "aarch64_<su>minmax_operand" "r,U<su>m")))]
+  [(set (match_operand:GPI 0 "register_operand")
+        (MAXMIN:GPI (match_operand:GPI 1 "register_operand")
+		(match_operand:GPI 2 "aarch64_<su>minmax_operand")))]
   "TARGET_CSSC"
-  "@
-   <optab>\\t%<w>0, %<w>1, %<w>2
-   <optab>\\t%<w>0, %<w>1, %2"
-  [(set_attr "type" "alu_sreg,alu_imm")]
+  {@ [ cons: =0 , 1 , 2      ; attrs: type ]
+     [ r        , r , r      ; alu_sreg    ] <optab>\t%<w>0, %<w>1, %<w>2
+     [ r        , r , U<su>m ; alu_imm     ] <optab>\t%<w>0, %<w>1, %2
+  }
 )
 
 (define_insn "*aarch64_<optab><mode>3_zero"
@@ -6956,18 +6931,18 @@
 )
 
 (define_insn "copysign<GPF:mode>3_insn"
-  [(set (match_operand:GPF 0 "register_operand" "=w,w,w,r")
-	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w,0,w,r")
-		     (match_operand:GPF 2 "register_operand" "w,w,0,0")
-		     (match_operand:<V_INT_EQUIV> 3 "register_operand" "0,w,w,X")]
+  [(set (match_operand:GPF 0 "register_operand")
+	(unspec:GPF [(match_operand:GPF 1 "register_operand")
+		     (match_operand:GPF 2 "register_operand")
+		     (match_operand:<V_INT_EQUIV> 3 "register_operand")]
 	 UNSPEC_COPYSIGN))]
   "TARGET_SIMD"
-  "@
-   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
-   bit\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
-   bif\\t%0.<Vbtype>, %1.<Vbtype>, %3.<Vbtype>
-   bfxil\\t%<w1>0, %<w1>1, #0, <sizem1>"
-  [(set_attr "type" "neon_bsl<q>,neon_bsl<q>,neon_bsl<q>,bfm")]
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: type  ]
+     [ w        , w , w , 0 ; neon_bsl<q>  ] bsl\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
+     [ w        , 0 , w , w ; neon_bsl<q>  ] bit\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
+     [ w        , w , 0 , w ; neon_bsl<q>  ] bif\t%0.<Vbtype>, %1.<Vbtype>, %3.<Vbtype>
+     [ r        , r , 0 , X ; bfm          ] bfxil\t%<w1>0, %<w1>1, #0, <sizem1>
+  }
 )
 
 
