@@ -4123,9 +4123,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (INTEGRAL_TYPE_P (type))
     (with {
       int width = element_precision (type) - tree_to_uhwi (@1);
-      tree stype = build_nonstandard_integer_type (width, 0);
+      tree stype = NULL_TREE;
+      scalar_int_mode mode = (targetm.scalar_mode_supported_p (TImode)
+			      ? TImode : DImode);
+      if (width <= GET_MODE_PRECISION (mode))
+	stype = build_nonstandard_integer_type (width, 0);
      }
-     (if (width == 1 || type_has_mode_precision_p (stype))
+     (if (stype && (width == 1 || type_has_mode_precision_p (stype)))
       (convert (convert:stype @0))))))))
 
 /* Optimize x >> x into 0 */
@@ -5101,49 +5105,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* a ? -1 : 0 -> -a.  No need to check the TYPE_PRECISION not being 1
        here as the powerof2cst case above will handle that case correctly.  */
     (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@1))
-     (with {
-       auto prec = TYPE_PRECISION (type);
-       auto unsign = TYPE_UNSIGNED (type);
-       tree inttype = build_nonstandard_integer_type (prec, unsign);
-      }
-      (convert (negate (convert:inttype (convert:boolean_type_node @0))))))))
+     (negate (convert:type (convert:boolean_type_node @0))))))
   (if (integer_zerop (@1))
-   (with {
-      tree booltrue = constant_boolean_node (true, boolean_type_node);
-    }
-    (switch
-     /* a ? 0 : 1 -> !a. */
-     (if (integer_onep (@2))
-      (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } )))
-     /* a ? powerof2cst : 0 -> (!a) << (log2(powerof2cst)) */
-     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2))
-      (with {
-	tree shift = build_int_cst (integer_type_node, tree_log2 (@2));
-       }
-       (lshift (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } ))
-        { shift; })))
-     /* a ? -1 : 0 -> -(!a).  No need to check the TYPE_PRECISION not being 1
+   (switch
+    /* a ? 0 : 1 -> !a. */
+    (if (integer_onep (@2))
+     (convert (bit_xor (convert:boolean_type_node @0) { boolean_true_node; })))
+    /* a ? powerof2cst : 0 -> (!a) << (log2(powerof2cst)) */
+    (if (INTEGRAL_TYPE_P (type) && integer_pow2p (@2))
+     (with {
+       tree shift = build_int_cst (integer_type_node, tree_log2 (@2));
+      }
+      (lshift (convert (bit_xor (convert:boolean_type_node @0)
+				{ boolean_true_node; })) { shift; })))
+    /* a ? -1 : 0 -> -(!a).  No need to check the TYPE_PRECISION not being 1
        here as the powerof2cst case above will handle that case correctly.  */
-     (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@2))
-      (with {
-	auto prec = TYPE_PRECISION (type);
-	auto unsign = TYPE_UNSIGNED (type);
-	tree inttype = build_nonstandard_integer_type (prec, unsign);
-       }
-       (convert
-	(negate
-         (convert:inttype
-	  (bit_xor (convert:boolean_type_node @0) { booltrue; } )
-	 )
-	)
-       )
-      )
-     )
-    )
-   )
-  )
- )
-)
+    (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@2))
+     (negate (convert:type (bit_xor (convert:boolean_type_node @0)
+				    { boolean_true_node; }))))))))
 
 /* (a > 1) ? 0 : (cast)a is the same as (cast)(a == 1)
    for unsigned types. */
