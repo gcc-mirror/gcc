@@ -141,7 +141,7 @@ struct GTY ((for_user)) rust_constexpr_call
   /* Result of the call.
        NULL means the call is being evaluated.
        error_mark_node means that the evaluation was erroneous;
-       otherwise, the actuall value of the call.  */
+       otherwise, the actual value of the call.  */
   tree result;
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
