@@ -1414,24 +1414,26 @@ package body Ada.Directories is
 
                   elsif Exists = 1 then
                      if Is_Regular_File_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (Ordinary_File)
                      then
-                        Found := True;
-                        Kind := Ordinary_File;
-                        Size :=
-                          File_Size
-                            (File_Length_Attr
-                               (-1, Path_C'Address, Attr'Access));
+                        if Filter (Ordinary_File) then
+                           Found := True;
+                           Kind := Ordinary_File;
+                           Size :=
+                             File_Size
+                               (File_Length_Attr
+                                  (-1, Path_C'Address, Attr'Access));
 
+                        end if;
                      elsif Is_Directory_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (File_Kind'First)
                      then
-                        Found := True;
-                        Kind := File_Kind'First;
-                        --  File_Kind'First is used instead of Directory due
-                        --  to a name overload issue with the procedure
-                        --  parameter Directory.
-                        Size := 0;
+                        if Filter (File_Kind'First) then
+                           Found := True;
+                           Kind := File_Kind'First;
+                           --  File_Kind'First is used instead of Directory due
+                           --  to a name overload issue with the procedure
+                           --  parameter Directory.
+                           Size := 0;
+                        end if;
 
                      elsif Filter (Special_File) then
                         Found := True;
