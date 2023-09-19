@@ -103,12 +103,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_COND_FMIN IFN_COND_FMAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR
   IFN_COND_SHL IFN_COND_SHR)
+(define_operator_list COND_LEN_BINARY
+  IFN_COND_LEN_ADD IFN_COND_LEN_SUB
+  IFN_COND_LEN_MUL IFN_COND_LEN_DIV
+  IFN_COND_LEN_MOD IFN_COND_LEN_RDIV
+  IFN_COND_LEN_MIN IFN_COND_LEN_MAX
+  IFN_COND_LEN_FMIN IFN_COND_LEN_FMAX
+  IFN_COND_LEN_AND IFN_COND_LEN_IOR IFN_COND_LEN_XOR
+  IFN_COND_LEN_SHL IFN_COND_LEN_SHR)
 
 /* Same for ternary operations.  */
 (define_operator_list UNCOND_TERNARY
   IFN_FMA IFN_FMS IFN_FNMA IFN_FNMS)
 (define_operator_list COND_TERNARY
   IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
+(define_operator_list COND_LEN_TERNARY
+  IFN_COND_LEN_FMA IFN_COND_LEN_FMS IFN_COND_LEN_FNMA IFN_COND_LEN_FNMS)
 
 /* __atomic_fetch_or_*, __atomic_fetch_xor_*, __atomic_xor_fetch_*  */
 (define_operator_list ATOMIC_FETCH_OR_XOR_N
@@ -9045,6 +9055,35 @@ and,
    (if (inverse_conditions_p (@0, @2)
         && element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @2 @3 @4 @5 (view_convert:op_type @1)))))))
+
+/* Detect cases in which a VEC_COND_EXPR effectively replaces the
+   "else" value of an IFN_COND_LEN_*.  */
+(for cond_len_op (COND_LEN_BINARY)
+ (simplify
+  (vec_cond @0 (view_convert? (cond_len_op @0 @1 @2 @3 @4 @5)) @6)
+  (with { tree op_type = TREE_TYPE (@3); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @0 @1 @2 (view_convert:op_type @6) @4 @5)))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (cond_len_op @2 @3 @4 @5 @6 @7)))
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (inverse_conditions_p (@0, @2)
+        && element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @2 @3 @4 (view_convert:op_type @1) @6 @7))))))
+
+/* Same for ternary operations.  */
+(for cond_len_op (COND_LEN_TERNARY)
+ (simplify
+  (vec_cond @0 (view_convert? (cond_len_op @0 @1 @2 @3 @4 @5 @6)) @7)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @0 @1 @2 @3 (view_convert:op_type @7) @5 @6)))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (cond_len_op @2 @3 @4 @5 @6 @7 @8)))
+  (with { tree op_type = TREE_TYPE (@6); }
+   (if (inverse_conditions_p (@0, @2)
+        && element_precision (type) == element_precision (op_type))
+    (view_convert (cond_len_op @2 @3 @4 @5 (view_convert:op_type @1) @7 @8))))))
 
 /* Detect simplication for a conditional reduction where
 
