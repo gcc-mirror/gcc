@@ -1,3 +1,9 @@
+2023-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* team.c (gomp_team_start): Assert alloca size to avoid false
+	positive alloc-size diagnostic.
+
 2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

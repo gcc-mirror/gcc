@@ -1,3 +1,42 @@
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/63198
+	PR c++/18474
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed_seq2.cc:
+	Make data member seed_seq::called mutable.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/seed_seq2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/seed_seq2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/seed_seq2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/seed_seq2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/seed_seq2.cc:
+	Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/cons/seed_seq2.cc:
+	Likewise.
+
+2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Tweak P1466R3 status.
+	* doc/html/manual/status.html: Regenerate.
+
+2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Use conventional option name.
+	* doc/xml/manual/status_cxx2020.xml: Update.
+	* doc/xml/manual/status_cxx2023.xml: Update.
+	* doc/html/*: Regenerate.
+
+2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Clarify that building libstdc++
+	separately from GCC is not supported.
+	* doc/xml/manual/prerequisites.xml: Note msgfmt prerequisite for
+	testing.
+	* doc/html/manual/setup.html: Regenerate.
+
 2023-09-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Do not

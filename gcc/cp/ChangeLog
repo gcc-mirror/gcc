@@ -1,3 +1,52 @@
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89231
+	* pt.cc (try_class_unification): Strengthen TI_TEMPLATE equality
+	test by not calling most_general_template.  Only unify the
+	innermost levels of template arguments.
+	(unify) <case CLASS_TYPE>: Only unify the innermost levels of
+	template arguments, and only if the template is primary.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/63198
+	PR c++/18474
+	* semantics.cc (maybe_convert_cond): Look through implicit
+	INDIRECT_REF when deciding whether to issue a -Wparentheses
+	warning, and consider templated assignment expressions as well.
+	(finish_parenthesized_expr): Look through implicit INDIRECT_REF
+	when suppressing -Wparentheses warning.
+	* typeck.cc (build_x_modify_expr): Check simple assignments
+	ahead time too, not just compound assignments.  Give the second
+	operand of MODOP_EXPR a non-null type so that it's not considered
+	always instantiation-dependent.  Don't call suppress_warning.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108347
+	* pt.cc (unify): Return unify_success for identical dependent
+	DECL_P 'arg' and 'parm'.
+	<case CONST_DECL>: Remove handling.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (add_template_candidate_real): Check arity even
+	when there are no explicit template arguments.  Combine the
+	two adjacent '!obj' tests into one.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (register_specialization): Remove now-unnecessary
+	early exit for FUNCTION_DECL partial instantiation.
+	(tsubst_template_decl): Pass use_spec_table=false to
+	tsubst_function_decl.  Set DECL_TI_ARGS of a non-lambda
+	FUNCTION_DECL specialization to the full set of arguments.
+	Simplify register_specialization call accordingly.
+
+2023-09-18  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_subobject_offset): Use similar_type_p.
+
 2023-09-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/111357

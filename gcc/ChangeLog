@@ -1,3 +1,123 @@
+2023-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Extend to vls mode.
+
+2023-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Bugfix.
+	* config/riscv/riscv-protos.h (SCALAR_MOVE_MERGED_OP): New enum.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111442
+	* match.pd (zero_one_valued_p): Have the bit_and match not be
+	recursive.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111435
+	* match.pd (zero_one_valued_p): Don't do recursion
+	on converts.
+
+2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (enum darwin_external_toolchain): New.
+	* config/darwin.cc (DSYMUTIL_VERSION): New.
+	(darwin_override_options): Choose the default debug DWARF version
+	depending on the configured dsymutil version.
+
+2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle explict disable of stdlib option, set
+	defaults for Darwin.
+
+2023-09-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111431
+	* match.pd (`(a == CST) & a`): New pattern.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-selftests.cc (run_broadcast_selftests): Adapt selftests.
+	* config/riscv/vector.md (@vec_duplicate<mode>): Remove.
+
+2023-09-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/105928
+	* config/aarch64/aarch64.cc (aarch64_internal_mov_immediate)
+	Add support for immediates using shifted ORR/BIC.
+	(aarch64_split_dimode_const_store): Apply if we save one instruction.
+	* config/aarch64/aarch64.md (<LOGICAL:optab>_<SHIFT:optab><mode>3):
+	Make pattern global.
+
+2023-09-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-n1): Place before ares.
+	(neoverse-v1): Place before zeus.
+	(neoverse-v2): Place before demeter.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vlmul_for_greatest_sew_second_ratio): New function.
+	* config/riscv/riscv-vsetvl.def (DEF_SEW_LMUL_FUSE_RULE): Fix bug.
+
+2023-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* tree-ssa-threadbackward.cc (back_threader_profitability::m_name):
+	Remove
+	(back_threader::find_paths_to_names): Adjust.
+	(back_threader::maybe_thread_block): Likewise.
+	(back_threader_profitability::possibly_profitable_path_p): Remove
+	code applying extra costs to copies PHIs.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md (mov<mode>): New pattern.
+	(*mov<mode>_mem_to_mem): Ditto.
+	(*mov<mode>): Ditto.
+	(@mov<VLS_AVL_REG:mode><P:mode>_lra): Ditto.
+	(*mov<VLS_AVL_REG:mode><P:mode>_lra): Ditto.
+	(*mov<mode>_vls): Ditto.
+	(movmisalign<mode>): Ditto.
+	(@vec_duplicate<mode>): Ditto.
+	* config/riscv/autovec-vls.md: Removed.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111153
+	* config/riscv/autovec.md: Add VLS modes.
+
+2023-09-18  Jason Merrill  <jason@redhat.com>
+
+	* doc/gty.texi: Add discussion of cache vs. deletable.
+
+2023-09-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (<optab><mode>3): Deleted.
+	(copysign<mode>3): Ditto.
+	(xorsign<mode>3): Ditto.
+	(<optab><mode>2): Ditto.
+	* config/riscv/autovec.md: Extend VLS modes.
+
+2023-09-18  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR middle-end/111303
+	* match.pd ((t * 2) / 2): Update pattern.
+
 2023-09-17  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
 
 	* config/rs6000/vsx.md (*vctzlsbb_zext_<mode>): New define_insn.
