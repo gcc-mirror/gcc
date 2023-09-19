@@ -2211,6 +2211,25 @@ autovectorize_vector_modes (vector_modes *modes, bool)
   return VECT_COMPARE_COSTS;
 }
 
+/* Return true if we can find the related MODE according to default LMUL. */
+static bool
+can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
+			 poly_uint64 *nunits)
+{
+  if (!autovec_use_vlmax_p ())
+    return false;
+  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
+  if (riscv_v_ext_vector_mode_p (vector_mode)
+      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
+		     GET_MODE_SIZE (element_mode), nunits))
+    return true;
+  if (riscv_v_ext_vls_mode_p (vector_mode)
+      && multiple_p (TARGET_MIN_VLEN * lmul, GET_MODE_SIZE (element_mode),
+		     nunits))
+    return true;
+  return false;
+}
+
 /* If the given VECTOR_MODE is an RVV mode,  first get the largest number
    of units that fit into a full vector at the given ELEMENT_MODE.
    We will have the vectorizer call us with a successively decreasing
@@ -2222,10 +2241,7 @@ vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode,
 {
   /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
   poly_uint64 min_units;
-  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
-  if (autovec_use_vlmax_p () && riscv_v_ext_vector_mode_p (vector_mode)
-      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
-		     GET_MODE_SIZE (element_mode), &min_units))
+  if (can_find_related_mode_p (vector_mode, element_mode, &min_units))
     {
       machine_mode rvv_mode;
       if (maybe_ne (nunits, 0U))

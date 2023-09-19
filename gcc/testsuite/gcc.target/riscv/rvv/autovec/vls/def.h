@@ -494,3 +494,28 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = -(b[i] * c[i]) - d[i];                                            \
   }
+
+#define DEF_CONVERT(PREFIX, TYPE1, TYPE2, NUM)                                 \
+  __attribute__ ((                                                             \
+    noipa)) void PREFIX##_##TYPE1##TYPE2##_##NUM (TYPE2 *__restrict dst,       \
+						  TYPE1 *__restrict a)         \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = (TYPE2) a[i];                                                   \
+  }
+
+#define DEF_AVG_FLOOR(TYPE, TYPE2, NUM)                                        \
+  __attribute__ ((noipa)) void vavg_##TYPE##_##TYPE2##NUM (                    \
+    TYPE *__restrict dst, TYPE *__restrict a, TYPE *__restrict b, int n)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = ((TYPE2) a[i] + b[i]) >> 1;                                     \
+  }
+
+#define DEF_AVG_CEIL(TYPE, TYPE2, NUM)                                         \
+  __attribute__ ((noipa)) void vavg2_##TYPE##_##TYPE2##NUM (                   \
+    TYPE *__restrict dst, TYPE *__restrict a, TYPE *__restrict b, int n)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; i++)                                              \
+      dst[i] = ((TYPE2) a[i] + b[i] + 1) >> 1;                                 \
+  }
