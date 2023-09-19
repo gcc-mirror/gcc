@@ -67,3 +67,11 @@ handle_contract_violation (const std::experimental::contract_violation &violatio
   std::cerr << std::endl;
 #endif
 }
+
+#if _GLIBCXX_INLINE_VERSION
+// Provide symbol without version namespace decoration for gcc.
+extern "C" __attribute__ ((weak)) void
+_Z25handle_contract_violationRKNSt12experimental18contract_violationE
+(const std::experimental::contract_violation &violation)
+{ handle_contract_violation(violation); }
+#endif
