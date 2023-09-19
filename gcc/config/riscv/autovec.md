@@ -1135,12 +1135,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fma<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-        (plus:VF
-	  (mult:VF
-	    (match_operand:VF 1 "register_operand")
-	    (match_operand:VF 2 "register_operand"))
-	  (match_operand:VF 3 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (plus:V_VLSF
+	  (mult:V_VLSF
+	    (match_operand:V_VLSF 1 "register_operand")
+	    (match_operand:V_VLSF 2 "register_operand"))
+	  (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1163,12 +1163,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fnma<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-        (minus:VF
-          (match_operand:VF 3 "register_operand")
-	  (mult:VF
-	    (match_operand:VF 1 "register_operand")
-	    (match_operand:VF 2 "register_operand"))))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (minus:V_VLSF
+          (match_operand:V_VLSF 3 "register_operand")
+	  (mult:V_VLSF
+	    (match_operand:V_VLSF 1 "register_operand")
+	    (match_operand:V_VLSF 2 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1191,12 +1191,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fms<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-        (minus:VF
-	  (mult:VF
-	    (match_operand:VF 1 "register_operand")
-	    (match_operand:VF 2 "register_operand"))
-	  (match_operand:VF 3 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (minus:V_VLSF
+	  (mult:V_VLSF
+	    (match_operand:V_VLSF 1 "register_operand")
+	    (match_operand:V_VLSF 2 "register_operand"))
+	  (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1219,13 +1219,13 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fnms<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-        (minus:VF
-          (neg:VF
-	    (mult:VF
-	      (match_operand:VF 1 "register_operand")
-	      (match_operand:VF 2 "register_operand")))
-	  (match_operand:VF 3 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (minus:V_VLSF
+          (neg:V_VLSF
+	    (mult:V_VLSF
+	      (match_operand:V_VLSF 1 "register_operand")
+	      (match_operand:V_VLSF 2 "register_operand")))
+	  (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
