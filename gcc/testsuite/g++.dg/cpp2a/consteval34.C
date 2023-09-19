@@ -7,6 +7,7 @@ constexpr int
 foo (bool b)
 {
   return b ? bar (3) : 2; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
 }
 
 static_assert (foo (false) == 2);
@@ -22,13 +23,20 @@ void
 g ()
 {
   __extension__ int a1[bar(3)]; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
   int a2[sizeof (bar(3))];
 
   int a3 = false ? (1 + bar (8)) : 1; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
   a3 += false ? (1 + bar (8)) : 1; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
 
   __extension__ int a4 = false ?: (1 + bar (8)); // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
   __extension__ int a5 = true ?: (1 + bar (8)); // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
   int a6 = bar (2) ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
   int a7 = bar (2) - 1 ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+// { dg-error "call to consteval function" "" { target *-*-* } .-1 }
 }

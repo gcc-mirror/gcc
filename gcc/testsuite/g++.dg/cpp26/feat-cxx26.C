@@ -480,8 +480,8 @@
 
 #ifndef __cpp_consteval
 #  error "__cpp_consteval"
-#elif __cpp_consteval != 201811
-#  error "__cpp_consteval != 201811"
+#elif __cpp_consteval != 202211L
+#  error "__cpp_consteval != 202211L"
 #endif
 
 #ifndef __cpp_concepts

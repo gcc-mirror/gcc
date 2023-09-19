@@ -169,7 +169,9 @@ typedef hash_map<unsigned/*Priority*/, tree/*List*/,
    one for init.  The fini table is only ever used when !cxa_atexit.  */
 static GTY(()) priority_map_t *static_init_fini_fns[2];
 
-/* Nonzero if we're done parsing and into end-of-file activities.  */
+/* Nonzero if we're done parsing and into end-of-file activities.
+   2 if all templates have been instantiated.
+   3 if we're done with front-end processing.  */
 
 int at_eof;
 
@@ -4987,6 +4989,7 @@ c_parse_final_cleanups (void)
   tree decl;
 
   locus_at_end_of_parsing = input_location;
+  /* We're done parsing.  */
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
@@ -5252,6 +5255,9 @@ c_parse_final_cleanups (void)
 	reconsider = true;
     }
 
+  /* All templates have been instantiated.  */
+  at_eof = 2;
+
   void *module_cookie = finish_module_processing (parse_in);
 
   lower_var_init ();
@@ -5294,7 +5300,11 @@ c_parse_final_cleanups (void)
   if (static_init_fini_fns[true])
     for (auto iter : *static_init_fini_fns[true])
       iter.second = nreverse (iter.second);
-  
+
+  /* Now we've instantiated all templates.  Now we can escalate the functions
+     we squirreled away earlier.  */
+  process_and_check_pending_immediate_escalating_fns ();
+
   /* Then, do the Objective-C stuff.  This is where all the
      Objective-C module stuff gets generated (symtab,
      class/protocol/selector lists etc).  This must be done after C++
@@ -5376,7 +5386,7 @@ c_parse_final_cleanups (void)
   timevar_start (TV_PHASE_PARSING);
 
   /* Indicate that we're done with front end processing.  */
-  at_eof = 2;
+  at_eof = 3;
 }
 
 /* Perform any post compilation-proper cleanups for the C++ front-end.

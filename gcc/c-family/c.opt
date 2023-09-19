@@ -1898,6 +1898,10 @@ fhuge-objects
 C++ ObjC++ WarnRemoved
 No longer supported.
 
+fimmediate-escalation
+C++ ObjC++ Var(flag_immediate_escalation) Init(1)
+Implement P2564 for consteval propagation.
+
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
 Export functions even if they can be inlined.

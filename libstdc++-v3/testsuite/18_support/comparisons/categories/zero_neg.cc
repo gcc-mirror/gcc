@@ -52,3 +52,4 @@ test01()
 
 // { dg-prune-output "reinterpret_cast.* is not a constant expression" }
 // { dg-prune-output "cast from 'void.' is not allowed" }
+// { dg-prune-output "not a constant expression" }

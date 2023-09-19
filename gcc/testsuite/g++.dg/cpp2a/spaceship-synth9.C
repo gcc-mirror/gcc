@@ -22,6 +22,6 @@ struct Z: Y<int>
 int main()
 {
   X<char>() == X<char>();	// { dg-error "no match" }
-  X<int> x; x == x;		// { dg-error "x' is not usable in a constant expression" }
+  X<int> x; x == x;		// { dg-error "x' is not usable in a constant expression|call to consteval function" }
   Y<int>()  == Y<int>();	// { dg-warning "nodiscard" }
 }
