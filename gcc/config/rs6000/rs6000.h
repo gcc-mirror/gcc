@@ -2492,3 +2492,9 @@ while (0)
        rs6000_asm_output_opcode (STREAM);				\
     }									\
   while (0)
+
+/* Disable generation of scalar modulo instructions due to performance issues
+   with certain input values.  This can be removed in the future when the
+   issues have been resolved.  */
+#define RS6000_DISABLE_SCALAR_MODULO 1
+
