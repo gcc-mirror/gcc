@@ -1,3 +1,14 @@
+2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_defaultmap_category):
+	Add OMP_DEFAULTMAP_CAT_ALL.
+	* openmp.cc (gfc_match_omp_clauses): Parse
+	'all' as category.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle it.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* openmp.cc (gfc_match_motion_var_list): Add parsing for mapper

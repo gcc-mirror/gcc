@@ -378,6 +378,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       sentinel is warned for with with @code{-Wsurprising} (enabled by
       @code{-Wall}).  Unknown clauses are always rejected with an error.}
 @item Clauses on @code{end} directive can be on directive @tab Y @tab
+@item @code{destroy} clause with destroy-var argument on @code{depobj}
+      @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
 @item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
@@ -426,7 +428,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
 @item Initial value of @var{default-device-var} ICV with
       @code{OMP_TARGET_OFFLOAD=mandatory} @tab Y @tab
-@item @code{all} as @emph{implicit-behavior} for @code{defaultmap} @tab N @tab
+@item @code{all} as @emph{implicit-behavior} for @code{defaultmap} @tab Y @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
       of the @code{interop} construct @tab N @tab
 @end multitable

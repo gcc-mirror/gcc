@@ -1,3 +1,13 @@
+2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* tree-core.h (enum omp_clause_defaultmap_kind): Add
+	OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL.
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle it.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+
 2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
