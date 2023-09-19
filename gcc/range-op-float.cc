@@ -981,7 +981,7 @@ operator_lt::op1_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of x < NAN, we know nothing about x.
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else
 	build_ge (r, type, op2);
@@ -1018,7 +1018,7 @@ operator_lt::op2_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of NAN < x, we know nothing about x.
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else
 	build_le (r, type, op1);
@@ -1091,7 +1091,7 @@ operator_le::op1_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of x <= NAN, we know nothing about x.
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else
 	build_gt (r, type, op2);
@@ -1124,7 +1124,7 @@ operator_le::op2_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of NAN <= x, we know nothing about x.
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -1210,7 +1210,7 @@ operator_gt::op1_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of x > NAN, we know nothing about x.
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -1249,7 +1249,7 @@ operator_gt::op2_range (frange &r,
 
     case BRS_FALSE:
       // On The FALSE side of NAN > x, we know nothing about x.
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -1323,7 +1323,7 @@ operator_ge::op1_range (frange &r,
 
     case BRS_FALSE:
       // On the FALSE side of x >= NAN, we know nothing about x.
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -1357,7 +1357,7 @@ operator_ge::op2_range (frange &r, tree type,
 
     case BRS_FALSE:
       // On the FALSE side of NAN >= x, we know nothing about x.
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -1720,7 +1720,7 @@ foperator_unordered_lt::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -1754,7 +1754,7 @@ foperator_unordered_lt::op2_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -1832,7 +1832,7 @@ foperator_unordered_le::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -1865,7 +1865,7 @@ foperator_unordered_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -1945,7 +1945,7 @@ foperator_unordered_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -1980,7 +1980,7 @@ foperator_unordered_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
@@ -2060,7 +2060,7 @@ foperator_unordered_ge::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op2.known_isnan () || op2.maybe_isnan ())
+      if (op2.maybe_isnan ())
 	r.set_varying (type);
       else if (op2.undefined_p ())
 	return false;
@@ -2094,7 +2094,7 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      if (op1.known_isnan () || op1.maybe_isnan ())
+      if (op1.maybe_isnan ())
 	r.set_varying (type);
       else if (op1.undefined_p ())
 	return false;
