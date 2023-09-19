@@ -2059,138 +2059,139 @@ initialize_env (void)
   none = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_NO_SUFFIX);
   initialize_icvs (&none->icvs);
 
-  for (env = environ; *env != 0; env++)
-    {
-      if (!startswith (*env, "OMP_"))
-	continue;
-
-     /* Name of the environment variable without suffix "OMP_".  */
-     char *name = *env + sizeof ("OMP_") - 1;
-     for (omp_var = 0; omp_var < OMP_VAR_CNT; omp_var++)
-	{
-	  if (startswith (name, envvars[omp_var].name))
-	    {
-	      pos = envvars[omp_var].name_len;
-	      if (name[pos] == '=')
-		{
-		  pos++;
-		  flag_var_addr
-		    = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_NO_SUFFIX,
-					       envvars[omp_var].flag_vars[0],
-					       params);
-		}
-	      else if (startswith (&name[pos], "_DEV=")
-		       && envvars[omp_var].flag & GOMP_ENV_SUFFIX_DEV)
-		{
-		  pos += 5;
-		  flag_var_addr
-		    = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_DEV,
-					       envvars[omp_var].flag_vars[0],
-					       params);
-		}
-	      else if (startswith (&name[pos], "_ALL=")
-		       && envvars[omp_var].flag & GOMP_ENV_SUFFIX_ALL)
-		{
-		  pos += 5;
-		  flag_var_addr
-		    = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_ALL,
-					       envvars[omp_var].flag_vars[0],
-					       params);
-		}
-	      else if (startswith (&name[pos], "_DEV_")
-		       && envvars[omp_var].flag & GOMP_ENV_SUFFIX_DEV_X)
-		{
-		  pos += 5;
-		  if (!get_device_num (*env, &name[pos], &dev_num,
-				       &dev_num_len))
-		    break;
-
-		  pos += dev_num_len + 1;
-		  flag_var_addr
-		    = add_initial_icv_to_list (dev_num,
-					       envvars[omp_var].flag_vars[0],
-					       params);
-		}
-	      else
-		{
-		  gomp_error ("Invalid environment variable in %s", *env);
-		  break;
-		}
-	      env_val = &name[pos];
-
-	      if (envvars[omp_var].parse_func (*env, env_val, params))
-		{
-		  for (i = 0; i < 3; ++i)
-		    if (envvars[omp_var].flag_vars[i])
-		      gomp_set_icv_flag (flag_var_addr,
-					 envvars[omp_var].flag_vars[i]);
-		    else
-		      break;
-		}
-
-	      break;
-	    }
-	}
-    }
-
-    all = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_ALL);
-    for (omp_var = 0; omp_var < OMP_HOST_VAR_CNT; omp_var++)
+  if (environ)
+    for (env = environ; *env != 0; env++)
       {
-	if (none != NULL
-	    && gomp_get_icv_flag (none->flags, host_envvars[omp_var].flag_var))
-	  get_icv_member_addr (&none->icvs,
-			       host_envvars[omp_var].flag_var, params);
-	else if (all != NULL
-		 && gomp_get_icv_flag (all->flags,
-				       host_envvars[omp_var].flag_var))
-	  get_icv_member_addr (&all->icvs, host_envvars[omp_var].flag_var,
-			       params);
-	else
+	if (!startswith (*env, "OMP_"))
 	  continue;
 
-	switch (host_envvars[omp_var].type_code)
+       /* Name of the environment variable without suffix "OMP_".  */
+       char *name = *env + sizeof ("OMP_") - 1;
+       for (omp_var = 0; omp_var < OMP_VAR_CNT; omp_var++)
 	  {
-	  case PARSE_INT:
-	    for (i = 0; i < 3; ++i)
-	      if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
-		*(int *) (host_envvars[omp_var].dest[i]) = *(int *) params[i];
-	    break;
-	  case PARSE_BOOL:
-	    for (i = 0; i < 3; ++i)
-	      if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
-		*(bool *) (host_envvars[omp_var].dest[i]) = *(bool *) params[i];
-	    break;
-	  case PARSE_UINT:
-	    for (i = 0; i < 3; ++i)
-	      if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
-		*(unsigned int *) (host_envvars[omp_var].dest[i])
-		  = *(unsigned int *) params[i];
-	    break;
-	  case PARSE_ULONG:
-	    for (i = 0; i < 3; ++i)
-	      if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
-		*(unsigned long *) (host_envvars[omp_var].dest[i])
-		  = *(unsigned long *) params[i];
-	    break;
-	  case PARSE_UCHAR:
-	    for (i = 0; i < 3; ++i)
-	      if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
-		*(unsigned char *) (host_envvars[omp_var].dest[i])
-		  = *(unsigned char *) params[i];
-	    break;
-	  case PARSE_SCHEDULE:
-	    *(enum gomp_schedule_type *) (host_envvars[omp_var].dest[0])
-	      = *(enum gomp_schedule_type *) params[0];
-	    *(int *) (host_envvars[omp_var].dest[1]) = *(int *) params[1];
-	    break;
-	  case PARSE_BIND:
-	    *(char *) (host_envvars[omp_var].dest[0]) = *(char *) params[0];
-	    *(char **) (host_envvars[omp_var].dest[1]) = *(char **) params[1];
-	    *(unsigned long *) (host_envvars[omp_var].dest[2])
-	      = *(unsigned long *) params[2];
-	    break;
+	    if (startswith (name, envvars[omp_var].name))
+	      {
+		pos = envvars[omp_var].name_len;
+		if (name[pos] == '=')
+		  {
+		    pos++;
+		    flag_var_addr
+		      = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_NO_SUFFIX,
+						 envvars[omp_var].flag_vars[0],
+						 params);
+		  }
+		else if (startswith (&name[pos], "_DEV=")
+			 && envvars[omp_var].flag & GOMP_ENV_SUFFIX_DEV)
+		  {
+		    pos += 5;
+		    flag_var_addr
+		      = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_DEV,
+						 envvars[omp_var].flag_vars[0],
+						 params);
+		  }
+		else if (startswith (&name[pos], "_ALL=")
+			 && envvars[omp_var].flag & GOMP_ENV_SUFFIX_ALL)
+		  {
+		    pos += 5;
+		    flag_var_addr
+		      = add_initial_icv_to_list (GOMP_DEVICE_NUM_FOR_ALL,
+						 envvars[omp_var].flag_vars[0],
+						 params);
+		  }
+		else if (startswith (&name[pos], "_DEV_")
+			 && envvars[omp_var].flag & GOMP_ENV_SUFFIX_DEV_X)
+		  {
+		    pos += 5;
+		    if (!get_device_num (*env, &name[pos], &dev_num,
+					 &dev_num_len))
+		      break;
+
+		    pos += dev_num_len + 1;
+		    flag_var_addr
+		      = add_initial_icv_to_list (dev_num,
+						 envvars[omp_var].flag_vars[0],
+						 params);
+		  }
+		else
+		  {
+		    gomp_error ("Invalid environment variable in %s", *env);
+		    break;
+		  }
+		env_val = &name[pos];
+
+		if (envvars[omp_var].parse_func (*env, env_val, params))
+		  {
+		    for (i = 0; i < 3; ++i)
+		      if (envvars[omp_var].flag_vars[i])
+			gomp_set_icv_flag (flag_var_addr,
+					   envvars[omp_var].flag_vars[i]);
+		      else
+			break;
+		  }
+
+		break;
+	      }
 	  }
       }
+
+  all = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_ALL);
+  for (omp_var = 0; omp_var < OMP_HOST_VAR_CNT; omp_var++)
+    {
+      if (none != NULL
+	  && gomp_get_icv_flag (none->flags, host_envvars[omp_var].flag_var))
+	get_icv_member_addr (&none->icvs,
+			     host_envvars[omp_var].flag_var, params);
+      else if (all != NULL
+	       && gomp_get_icv_flag (all->flags,
+				     host_envvars[omp_var].flag_var))
+	get_icv_member_addr (&all->icvs, host_envvars[omp_var].flag_var,
+			     params);
+      else
+	continue;
+
+      switch (host_envvars[omp_var].type_code)
+	{
+	case PARSE_INT:
+	  for (i = 0; i < 3; ++i)
+	    if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
+	      *(int *) (host_envvars[omp_var].dest[i]) = *(int *) params[i];
+	  break;
+	case PARSE_BOOL:
+	  for (i = 0; i < 3; ++i)
+	    if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
+	      *(bool *) (host_envvars[omp_var].dest[i]) = *(bool *) params[i];
+	  break;
+	case PARSE_UINT:
+	  for (i = 0; i < 3; ++i)
+	    if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
+	      *(unsigned int *) (host_envvars[omp_var].dest[i])
+		= *(unsigned int *) params[i];
+	  break;
+	case PARSE_ULONG:
+	  for (i = 0; i < 3; ++i)
+	    if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
+	      *(unsigned long *) (host_envvars[omp_var].dest[i])
+		= *(unsigned long *) params[i];
+	  break;
+	case PARSE_UCHAR:
+	  for (i = 0; i < 3; ++i)
+	    if (host_envvars[omp_var].dest[i] != NULL && params[i] != NULL)
+	      *(unsigned char *) (host_envvars[omp_var].dest[i])
+		= *(unsigned char *) params[i];
+	  break;
+	case PARSE_SCHEDULE:
+	  *(enum gomp_schedule_type *) (host_envvars[omp_var].dest[0])
+	    = *(enum gomp_schedule_type *) params[0];
+	  *(int *) (host_envvars[omp_var].dest[1]) = *(int *) params[1];
+	  break;
+	case PARSE_BIND:
+	  *(char *) (host_envvars[omp_var].dest[0]) = *(char *) params[0];
+	  *(char **) (host_envvars[omp_var].dest[1]) = *(char **) params[1];
+	  *(unsigned long *) (host_envvars[omp_var].dest[2])
+	    = *(unsigned long *) params[2];
+	  break;
+	}
+    }
 
   if (((none != NULL && gomp_get_icv_flag (none->flags, GOMP_ICV_BIND))
        || (all != NULL && gomp_get_icv_flag (all->flags, GOMP_ICV_BIND)))
