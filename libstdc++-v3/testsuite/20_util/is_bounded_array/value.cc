@@ -1,4 +1,5 @@
 // { dg-do compile { target c++20 } }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2019-2023 Free Software Foundation, Inc.
 //
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_tr1.h>
 
 #ifndef __cpp_lib_bounded_array_traits
-# error "Feature test macro for is_bounded_array is missing"
+# error "Feature test macro for is_bounded_array is missing in <type_traits>"
 #elif __cpp_lib_bounded_array_traits < 201902L
-# error "Feature test macro for is_bounded_array has wrong value"
+# error "Feature test macro for is_bounded_array has wrong value in <type_traits>"
 #endif
+
+#include <testsuite_tr1.h>
 
 void test01()
 {

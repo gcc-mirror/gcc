@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++20 } }
 // { dg-require-thread-fence "" }
+// { dg-add-options no_pch }
 
 #include <atomic>
 

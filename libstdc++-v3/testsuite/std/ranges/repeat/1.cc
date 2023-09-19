@@ -1,13 +1,15 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <ranges>
-#include <algorithm>
-#include <memory>
-#include <testsuite_hooks.h>
 
 #if __cpp_lib_ranges_repeat != 202207L
 # error "Feature-test macro __cpp_lib_ranges_repeat has wrong value in <ranges>"
 #endif
+
+#include <algorithm>
+#include <memory>
+#include <testsuite_hooks.h>
 
 namespace ranges = std::ranges;
 namespace views = std::views;

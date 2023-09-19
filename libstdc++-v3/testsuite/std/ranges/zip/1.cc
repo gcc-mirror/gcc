@@ -1,15 +1,17 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <ranges>
+
+#if __cpp_lib_ranges_zip != 202110L
+# error "Feature-test macro __cpp_lib_ranges_zip has wrong value in <ranges>"
+#endif
+
 #include <algorithm>
 #include <utility>
 #include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
-
-#if __cpp_lib_ranges_zip != 202110L
-# error "Feature-test macro __cpp_lib_ranges_zip has wrong value in <ranges>"
-#endif
 
 namespace ranges = std::ranges;
 namespace views = std::views;

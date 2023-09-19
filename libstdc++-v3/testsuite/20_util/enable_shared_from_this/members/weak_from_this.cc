@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 #include <memory>
 #include <testsuite_hooks.h>

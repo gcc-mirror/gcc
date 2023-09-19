@@ -20,6 +20,7 @@
 
 // { dg-options "-include string -include stdexcept" }
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <source_location>
 
@@ -125,7 +126,7 @@ int main ()
     member_defaulted_sl.member.file_name());
   std::string_view member_defaulted_sl_fn_name(
     member_defaulted_sl.member.function_name());
-  VERIFY(member_defaulted_sl.member.line() == 46);
+  VERIFY(member_defaulted_sl.member.line() == 47);
   // closing paren of constructor declaration
   VERIFY(member_defaulted_sl.member.column() == 25);
   VERIFY(member_defaulted_sl_fn_name.starts_with("s::s(int)"sv));

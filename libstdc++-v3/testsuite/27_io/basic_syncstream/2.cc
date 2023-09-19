@@ -18,6 +18,7 @@
 // { dg-do compile { target c++20 } }
 // { dg-require-effective-target cxx11_abi }
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 #include <version>
 

@@ -1,4 +1,5 @@
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <set>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_erase_if
 # error "Feature-test macro for erase_if missing in <set>"
 #elif __cpp_lib_erase_if < 202002
 # error "Feature-test macro for erase_if has wrong value in <set>"
 #endif
+
+#include <testsuite_hooks.h>
 
 auto is_odd = [](const int i) { return i % 2 != 0; };
 

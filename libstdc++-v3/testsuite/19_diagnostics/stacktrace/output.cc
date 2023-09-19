@@ -1,5 +1,6 @@
 // { dg-do compile { target c++23 } }
 // { dg-require-effective-target stacktrace }
+// { dg-add-options no_pch }
 
 #include <stacktrace>
 #include <sstream>

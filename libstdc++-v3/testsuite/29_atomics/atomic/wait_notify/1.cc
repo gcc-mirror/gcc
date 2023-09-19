@@ -18,6 +18,7 @@
 // { dg-do compile { target c++20 } }
 // { dg-require-effective-target gthreads }
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 #include <atomic>
 

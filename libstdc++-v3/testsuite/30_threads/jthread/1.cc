@@ -17,6 +17,7 @@
 
 // { dg-do compile { target c++20 } }
 // { dg-require-gthreads "" }
+// { dg-add-options no_pch }
 
 #include <thread>
 

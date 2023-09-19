@@ -1,4 +1,5 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <string>
 
@@ -9,7 +10,6 @@
 # error "Feature test macro for resize_and_overwrite has wrong value in <string>"
 #endif
 #endif
-
 
 #include <cstring>
 #include <testsuite_hooks.h>

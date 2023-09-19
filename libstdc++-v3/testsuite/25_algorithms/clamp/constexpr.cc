@@ -1,4 +1,5 @@
 // { dg-do compile { target c++17 } }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <algorithm>
-#include <functional>
 
 #ifndef __cpp_lib_clamp
-# error "Feature-test macro for clamp missing"
+# error "Feature-test macro for clamp missing in <algorithm>"
 #elif __cpp_lib_clamp != 201603
-# error "Feature-test macro for clamp has wrong value"
+# error "Feature-test macro for clamp has wrong value in <algorithm>"
 #endif
+
+#include <functional>
 
 static_assert(std::clamp(2, 0, 1) == 1);
 static_assert(std::clamp(2, 1, 0, std::greater<int>()) == 1);

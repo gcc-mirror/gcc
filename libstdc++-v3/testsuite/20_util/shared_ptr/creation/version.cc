@@ -1,5 +1,6 @@
 // { dg-do preprocess { target c++20 } }
 // { dg-require-effective-target hosted }
+// { dg-add-options no_pch }
 
 // C++20 20.11.3.7 shared_ptr Creation [util.smartptr.shared.create]
 

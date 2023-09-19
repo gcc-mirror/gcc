@@ -1,6 +1,7 @@
 // { dg-options "-frtti" }
 // { dg-do compile { target c++23 } }
 // { dg-additional-options "-fdelete-null-pointer-checks" }
+// { dg-add-options no_pch }
 
 #include <typeinfo>
 

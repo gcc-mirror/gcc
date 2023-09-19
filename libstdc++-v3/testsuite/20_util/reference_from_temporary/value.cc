@@ -16,15 +16,17 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <type_traits>
-#include <testsuite_tr1.h>
 
 #ifndef __cpp_lib_reference_from_temporary
-# error "Feature test macro for reference_from_temporary is missing in <version>"
+# error "Feature test macro for reference_from_temporary is missing in <type_traits>"
 #elif __cpp_lib_reference_from_temporary < 202202L
-# error "Feature test macro for reference_from_temporary has wrong value in <version>"
+# error "Feature test macro for reference_from_temporary has wrong value in <type_traits>"
 #endif
+
+#include <testsuite_tr1.h>
 
 void test01()
 {

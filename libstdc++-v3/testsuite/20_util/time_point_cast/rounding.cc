@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++17 } }
+// { dg-add-options no_pch }
 
 #include <chrono>
 

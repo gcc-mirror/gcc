@@ -16,13 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++17 } }
+// { dg-add-options no_pch }
 
 #include <tuple>
-#include <testsuite_hooks.h>
 
 #if  __cpp_lib_apply < 201603
 #  error "__cpp_lib_apply < 201603"
 #endif
+
+#include <testsuite_hooks.h>
 
 void
 test01()

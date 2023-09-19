@@ -1,4 +1,5 @@
 // { dg-do preprocess { target c++23 } }
+// { dg-add-options no_pch }
 
 // <stdatomic.h> is not freestanding.
 // { dg-require-effective-target hosted }

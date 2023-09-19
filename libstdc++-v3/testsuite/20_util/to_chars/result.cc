@@ -1,11 +1,13 @@
 // { dg-do run { target c++26 } }
+// { dg-add-options no_pch }
 
 #include <charconv>
-#include <testsuite_hooks.h>
 
 #if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars < 202306L
 # error "Feature-test macro for std::to_chars has wrong value in <charconv>"
 #endif
+
+#include <testsuite_hooks.h>
 
 void
 test_result()
