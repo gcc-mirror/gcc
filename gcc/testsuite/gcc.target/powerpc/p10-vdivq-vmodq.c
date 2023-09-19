@@ -23,5 +23,6 @@ __int128 s_mod(__int128 a, __int128 b)
 
 /* { dg-final { scan-assembler {\mvdivsq\M} } } */
 /* { dg-final { scan-assembler {\mvdivuq\M} } } */
-/* { dg-final { scan-assembler {\mvmodsq\M} } } */
-/* { dg-final { scan-assembler {\mvmoduq\M} } } */
+/* { Fail due to RS6000_DISABLE_SCALAR_MODULO. */
+/* { dg-final { scan-assembler {\mvmodsq\M} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler {\mvmoduq\M} { xfail *-*-* } } } */
