@@ -1543,6 +1543,14 @@ ftms = {
 };
 
 ftms = {
+  name = forward_like;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = ios_noreplace;
   values = {
     v = 202207;

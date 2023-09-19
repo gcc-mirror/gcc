@@ -89,6 +89,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return static_cast<_Tp&&>(__t);
     }
 
+#if __glibcxx_forward_like // C++ >= 23
+  template<typename _Tp, typename _Up>
+  [[nodiscard]]
+  constexpr decltype(auto)
+  forward_like(_Up&& __x) noexcept
+  {
+    constexpr bool __as_rval = is_rvalue_reference_v<_Tp&&>;
+
+    if constexpr (is_const_v<remove_reference_t<_Tp>>)
+      {
+	using _Up2 = remove_reference_t<_Up>;
+	if constexpr (__as_rval)
+	  return static_cast<const _Up2&&>(__x);
+	else
+	  return static_cast<const _Up2&>(__x);
+      }
+    else
+      {
+	if constexpr (__as_rval)
+	  return static_cast<remove_reference_t<_Up>&&>(__x);
+	else
+	  return static_cast<_Up&>(__x);
+      }
+  }
+#endif
+
   /**
    *  @brief  Convert a value to an rvalue.
    *  @param  __t  A thing of arbitrary type.
