@@ -457,3 +457,21 @@ typedef double v512df __attribute__ ((vector_size (4096)));
                                                                                \
     return v;                                                                  \
   }
+
+#define DEF_FMA_VV(PREFIX, NUM, TYPE)                                          \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] * c[i] + d[i];                                               \
+  }
+
+#define DEF_FNMA_VV(PREFIX, NUM, TYPE)                                         \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c,  \
+			TYPE *restrict d)                                      \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = d[i] - b[i] * c[i];                                               \
+  }

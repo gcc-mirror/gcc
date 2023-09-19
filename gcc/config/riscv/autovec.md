@@ -1079,12 +1079,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fma<mode>4"
-  [(set (match_operand:VI 0 "register_operand")
-	(plus:VI
-	  (mult:VI
-	    (match_operand:VI 1 "register_operand")
-	    (match_operand:VI 2 "register_operand"))
-	  (match_operand:VI 3 "register_operand")))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+	(plus:V_VLSI
+	  (mult:V_VLSI
+	    (match_operand:V_VLSI 1 "register_operand")
+	    (match_operand:V_VLSI 2 "register_operand"))
+	  (match_operand:V_VLSI 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1107,12 +1107,12 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "fnma<mode>4"
-  [(set (match_operand:VI 0 "register_operand")
-        (minus:VI
-          (match_operand:VI 3 "register_operand")
-          (mult:VI
-            (match_operand:VI 1 "register_operand")
-            (match_operand:VI 2 "register_operand"))))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+        (minus:V_VLSI
+          (match_operand:V_VLSI 3 "register_operand")
+          (mult:V_VLSI
+            (match_operand:V_VLSI 1 "register_operand")
+            (match_operand:V_VLSI 2 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
