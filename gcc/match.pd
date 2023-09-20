@@ -1009,7 +1009,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      || (vr0.nonnegative_p () && vr3.nonnegative_p ())
 	      || (vr0.nonpositive_p () && vr3.nonpositive_p ())))
        (plus (op @0 @2) { wide_int_to_tree (type, plus_op1 (c)); })
-       (if (TYPE_UNSIGNED (type) && c.sign_mask () < 0
+       (if (!vr0.undefined_p () && TYPE_UNSIGNED (type) && c.sign_mask () < 0
 	    && exact_mod (-c)
 	    /* unsigned "X-(-C)" doesn't underflow.  */
 	    && wi::geu_p (vr0.lower_bound (), -c))
