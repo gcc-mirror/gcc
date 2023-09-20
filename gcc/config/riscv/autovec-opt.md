@@ -957,7 +957,8 @@
     riscv_vector::emit_vlmax_insn (extend_icode, riscv_vector::UNARY_OP,
                                    extend_ops);
 
-    rtx ops[] = {operands[0], tmp, operands[3], operands[1]};
+    rtx ops[] = {operands[0], tmp, operands[3], operands[1],
+                 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_plus (<MODE>mode),
 				   riscv_vector::TERNARY_OP, ops);
     DONE;
@@ -1008,7 +1009,8 @@
     rtx ext_ops[] = {tmp, operands[2]};
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
-    rtx ops[] = {operands[0], tmp, operands[3], operands[1]};
+    rtx ops[] = {operands[0], tmp, operands[3], operands[1],
+                 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul (PLUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;
@@ -1059,7 +1061,8 @@
     rtx ext_ops[] = {tmp, operands[2]};
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
-    rtx ops[] = {operands[0], tmp, operands[3], operands[1]};
+    rtx ops[] = {operands[0], tmp, operands[3], operands[1],
+                 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_neg (PLUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;
@@ -1110,7 +1113,8 @@
     rtx ext_ops[] = {tmp, operands[2]};
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
-    rtx ops[] = {operands[0], tmp, operands[3], operands[1]};
+    rtx ops[] = {operands[0], tmp, operands[3], operands[1],
+                 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul (MINUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;
@@ -1163,7 +1167,8 @@
     rtx ext_ops[] = {tmp, operands[2]};
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
-    rtx ops[] = {operands[0], tmp, operands[3], operands[1]};
+    rtx ops[] = {operands[0], tmp, operands[3], operands[1],
+                 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_neg (MINUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;
