@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile.h"
+#include "libproc_macro_internal/proc_macro.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-hir-type-bounds.h"
@@ -27,6 +28,8 @@
 
 namespace Rust {
 namespace Compile {
+
+const std::string GCCRS_PROC_MACRO_SYMBOL_PREFIX = "__gccrs_proc_macro_";
 
 CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
   : crate (crate), ctx (ctx)
@@ -52,6 +55,8 @@ CompileCrate::go ()
     add_proc_macro_symbols ();
 }
 
+// This namespace brings multiple function to build and initialize multiple
+// structures that needs to get exposed in the final shared object binary.
 namespace {
 
 tree
@@ -71,7 +76,7 @@ build_attribute_array (std::vector<std::string> attributes)
 //     TokenStream (fndecl*) (TokenStream);
 // }
 tree
-build_derive_proc_macro (std::vector<std::string> attributes)
+build_derive_proc_macro ()
 {
   tree char_ptr = build_pointer_type (char_type_node);
   tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
@@ -79,20 +84,13 @@ build_derive_proc_macro (std::vector<std::string> attributes)
     = Backend::typed_identifier ("trait_name", const_char_type,
 				 BUILTINS_LOCATION);
 
-  // HACK: cannot use TREE_TYPE(fndecl) to retrieve the type, instead we're
-  // using a void pointer. We should probably find another way to achieve this.
-  // We cannot construct the type by ourselves because the function uses
-  // external TokenStream parameters and return type.
   tree handle_ptr = build_pointer_type (void_type_node);
   Backend::typed_identifier fndecl_field
     = Backend::typed_identifier ("fndecl", handle_ptr, BUILTINS_LOCATION);
 
-  tree attribute_ptr = build_pointer_type (build_attribute_array (attributes));
-  tree const_attribute_type
-    = build_qualified_type (attribute_ptr, TYPE_QUAL_CONST);
-
+  tree attribute_ptr = build_pointer_type (const_ptr_type_node);
   Backend::typed_identifier attributes_field
-    = Backend::typed_identifier ("attributes", const_attribute_type,
+    = Backend::typed_identifier ("attributes", attribute_ptr,
 				 BUILTINS_LOCATION);
 
   Backend::typed_identifier size_field
@@ -117,11 +115,7 @@ build_bang_proc_macro ()
   Backend::typed_identifier name_field
     = Backend::typed_identifier ("name", const_char_type, BUILTINS_LOCATION);
 
-  // HACK: cannot use TREE_TYPE(fndecl) to retrieve the type, instead we're
-  // using a void pointer. We should probably find another way to achieve this.
-  // We cannot construct the type by ourselves because the function uses
-  // external TokenStream parameters and return type.
-  tree handle_ptr = build_pointer_type (void_type_node);
+  tree handle_ptr = ptr_type_node;
   Backend::typed_identifier fndecl_field
     = Backend::typed_identifier ("fndecl", handle_ptr, BUILTINS_LOCATION);
 
@@ -143,15 +137,13 @@ build_attribute_proc_macro ()
   return build_bang_proc_macro ();
 }
 
-// Build the tagged union proc macro type
-//
-// struct {
-//     unsigned short tag;
-//     union { BangProcMacro , DeriveProcMacro, AttributeProcMacro} payload;
-// }
 tree
-build_proc_macro (tree bang, tree attribute, tree derive)
+build_proc_macro_payload ()
 {
+  tree bang = build_bang_proc_macro ();
+  tree attribute = build_attribute_proc_macro ();
+  tree derive = build_derive_proc_macro ();
+
   Backend::typed_identifier bang_field
     = Backend::typed_identifier ("bang", bang, BUILTINS_LOCATION);
   Backend::typed_identifier attribute_field
@@ -159,9 +151,29 @@ build_proc_macro (tree bang, tree attribute, tree derive)
   Backend::typed_identifier derive_field
     = Backend::typed_identifier ("custom_derive", derive, BUILTINS_LOCATION);
 
-  tree union_field
-    = Backend::union_type ({bang_field, attribute_field, derive_field});
+  // We rely on the tag to represent the index of any union member. This means
+  // we should keep those fields in the same order as the tag representation for
+  // it to be kept in sync.
+  // Hence why the following code exist: to keep in sync the field vector and
+  // the tag enumeration.
+  std::vector<Backend::typed_identifier> fields;
+  fields.insert (fields.begin () + ProcMacro::CUSTOM_DERIVE, derive_field);
+  fields.insert (fields.begin () + ProcMacro::ATTR, attribute_field);
+  fields.insert (fields.begin () + ProcMacro::BANG, bang_field);
 
+  return Backend::union_type (fields);
+}
+
+// Build the tagged union proc macro type
+//
+// struct {
+//     unsigned short tag;
+//     union { BangProcMacro , DeriveProcMacro, AttributeProcMacro} payload;
+// }
+tree
+build_proc_macro ()
+{
+  auto union_field = build_proc_macro_payload ();
   Backend::typed_identifier payload_field
     = Backend::typed_identifier ("payload", union_field, BUILTINS_LOCATION);
 
@@ -184,6 +196,147 @@ build_entrypoint (tree proc_macro_buffer)
   return build_reference_type_for_mode (proc_macro_buffer, E_VOIDmode, false);
 }
 
+tree
+init_derive_proc_macro (Context *ctx, CustomDeriveInfo infos)
+{
+  tree derive_proc_macro_type = build_derive_proc_macro ();
+  tree trait_name = build_string_literal (infos.trait_name.c_str ());
+
+  tree attribute_ptr;
+  if (infos.attributes.size () == 0)
+    {
+      attribute_ptr = HIRCompileBase::address_expression (null_pointer_node,
+							  BUILTINS_LOCATION);
+    }
+  else
+    {
+      tree attribute_array_type = build_attribute_array (infos.attributes);
+
+      std::vector<tree> attr_ctors;
+      std::vector<unsigned long> indices;
+
+      size_t index = 0;
+      for (auto &attr : infos.attributes)
+	{
+	  attr_ctors.push_back (build_string_literal (attr.c_str ()));
+	  indices.push_back (index);
+	  index++;
+	}
+
+      tree attributes
+	= Backend::array_constructor_expression (attribute_array_type, indices,
+						 attr_ctors, BUILTINS_LOCATION);
+
+      std::string attribute_var_name
+	= GCCRS_PROC_MACRO_SYMBOL_PREFIX + infos.trait_name;
+      Bvariable *attributes_var
+	= Backend::global_variable (attribute_var_name.c_str (),
+				    attribute_var_name.c_str (),
+				    attribute_array_type, false /* internal */,
+				    true /* hidden */, false /* no gc */,
+				    BUILTINS_LOCATION);
+      Backend::global_variable_set_init (attributes_var, attributes);
+      ctx->push_var (attributes_var);
+
+      attribute_ptr
+	= HIRCompileBase::address_expression (attributes_var->get_decl (),
+					      BUILTINS_LOCATION);
+    }
+
+  tree attr_size = build_int_cst (unsigned_type_node, infos.attributes.size ());
+
+  tree handle
+    = HIRCompileBase::address_expression (infos.fndecl, BUILTINS_LOCATION);
+
+  return Backend::constructor_expression (derive_proc_macro_type, false,
+					  {trait_name, attribute_ptr, attr_size,
+					   handle},
+					  -1 /* Structure: no index */,
+					  BUILTINS_LOCATION);
+}
+
+tree
+init_attribute_proc_macro (tree macro)
+{
+  tree attribute_proc_macro_type = build_attribute_proc_macro ();
+  tree macro_name
+    = build_string_literal (IDENTIFIER_POINTER (DECL_NAME (macro)));
+  tree handle = HIRCompileBase::address_expression (macro, BUILTINS_LOCATION);
+
+  return Backend::constructor_expression (attribute_proc_macro_type, false,
+					  {macro_name, handle},
+					  -1 /* Structure: No index */,
+					  BUILTINS_LOCATION);
+}
+
+tree
+init_bang_proc_macro (tree macro)
+{
+  // Attribute and bang proc macros have the same structure, they can be
+  // initialized with the same code.
+  return init_attribute_proc_macro (macro);
+}
+
+tree
+init_proc_macro (tree payload, tree proc_macro_type,
+		 ProcMacro::ProcmacroTag tag)
+{
+  auto discriminant = static_cast<int> (tag);
+
+  tree macro_tag = build_int_cst (short_unsigned_type_node, discriminant);
+
+  tree payload_union
+    = Backend::constructor_expression (build_proc_macro_payload (), false,
+				       {payload},
+				       discriminant /* Union: member index */,
+				       BUILTINS_LOCATION);
+
+  return Backend::constructor_expression (proc_macro_type,
+					  false /* invariant */,
+					  {macro_tag, payload_union},
+					  -1 /* Structure: No index */,
+					  BUILTINS_LOCATION);
+}
+
+tree
+initialize_proc_macro_array (Context *ctx, tree proc_macro_buffer_type,
+			     tree proc_macro_type)
+{
+  std::vector<unsigned long> indexes;
+  std::vector<tree> ctors;
+  size_t index = 0;
+  for (auto &macro : ctx->get_derive_proc_macros ())
+    {
+      tree proc_macro = init_derive_proc_macro (ctx, macro);
+      ctors.push_back (
+	init_proc_macro (proc_macro, proc_macro_type,
+			 ProcMacro::ProcmacroTag::CUSTOM_DERIVE));
+      indexes.push_back (index);
+      index++;
+    }
+  for (auto &macro : ctx->get_attribute_proc_macros ())
+    {
+      tree proc_macro = init_attribute_proc_macro (macro);
+
+      ctors.push_back (init_proc_macro (proc_macro, proc_macro_type,
+					ProcMacro::ProcmacroTag::ATTR));
+      indexes.push_back (index);
+      index++;
+    }
+  for (auto &macro : ctx->get_bang_proc_macros ())
+    {
+      tree proc_macro = init_bang_proc_macro (macro);
+
+      ctors.push_back (init_proc_macro (proc_macro, proc_macro_type,
+					ProcMacro::ProcmacroTag::BANG));
+      indexes.push_back (index);
+      index++;
+    }
+
+  return Backend::array_constructor_expression (proc_macro_buffer_type, indexes,
+						ctors, BUILTINS_LOCATION);
+}
+
 } // namespace
 
 void
@@ -193,36 +346,39 @@ CompileCrate::add_proc_macro_symbols ()
 		      + ctx->get_bang_proc_macros ().size ()
 		      + ctx->get_derive_proc_macros ().size ();
 
-  tree custom_derive_type = build_derive_proc_macro ({});
-  tree bang_type = build_bang_proc_macro ();
-  tree attribute_type = build_attribute_proc_macro ();
-  tree proc_macro_type
-    = build_proc_macro (bang_type, attribute_type, custom_derive_type);
+  tree proc_macro_type = build_proc_macro ();
   tree proc_macro_buffer_type
     = build_proc_macro_buffer (proc_macro_type, total_macros);
   tree entrypoint_type = build_entrypoint (proc_macro_buffer_type);
+
+  std::string decl_symbol_name = generate_proc_macro_decls_symbol (
+    0 /* FIXME: Change to stable crate id */);
+
   Bvariable *macro_decls
-    = Backend::global_variable ("__gccrs_proc_macro_decl_",
-				"__gccrs_proc_macro_decls_", entrypoint_type,
-				false, false, false, BUILTINS_LOCATION);
+    = Backend::global_variable (decl_symbol_name.c_str (),
+				decl_symbol_name.c_str (), entrypoint_type,
+				false /* internal */, false /* not hidden */,
+				false /* no gc */, BUILTINS_LOCATION);
 
-  // tree init = value == error_mark_node ? error_mark_node : DECL_INITIAL
-  // (value);
-  // Backend::global_variable_set_init (macro_decls, error_mark_node);
+  std::string buffer_name
+    = GCCRS_PROC_MACRO_SYMBOL_PREFIX + "proc_macro_buffer";
+
+  Bvariable *proc_macro_buffer
+    = Backend::global_variable (buffer_name.c_str (), buffer_name.c_str (),
+				proc_macro_buffer_type, false /* internal */,
+				true /* hidden */, false /* no gc */,
+				BUILTINS_LOCATION);
+  Backend::global_variable_set_init (
+    proc_macro_buffer,
+    initialize_proc_macro_array (ctx, proc_macro_buffer_type, proc_macro_type));
+  ctx->push_var (proc_macro_buffer);
+
+  Backend::global_variable_set_init (
+    macro_decls,
+    HIRCompileBase::address_expression (proc_macro_buffer->get_decl (),
+					BUILTINS_LOCATION));
+
   ctx->push_var (macro_decls);
-
-  for (auto &macro : ctx->get_derive_proc_macros ())
-    {
-      rust_debug ("Found one derive macro");
-    }
-  for (auto &macro : ctx->get_attribute_proc_macros ())
-    {
-      rust_debug ("Found one attribute macro");
-    }
-  for (auto &macro : ctx->get_bang_proc_macros ())
-    {
-      rust_debug ("Found one bang macro");
-    }
 }
 
 // Shared methods in compilation
