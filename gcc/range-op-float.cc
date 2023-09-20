@@ -1644,10 +1644,7 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    if (op1.known_isnan () || op2.known_isnan ()
-	|| rel == VREL_LT)
+    if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_true (type);
 	return true;
@@ -1759,10 +1756,7 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    if (op1.known_isnan () || op2.known_isnan ()
-	|| rel == VREL_LE)
+    if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_true (type);
 	return true;
@@ -1870,10 +1864,7 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    if (op1.known_isnan () || op2.known_isnan ()
-	|| rel == VREL_GT)
+    if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_true (type);
 	return true;
@@ -1985,10 +1976,7 @@ public:
 		   const frange &op1, const frange &op2,
 		   relation_trio trio = TRIO_VARYING) const final override
   {
-    relation_kind rel = trio.op1_op2 ();
-
-    if (op1.known_isnan () || op2.known_isnan ()
-	|| rel == VREL_GE)
+    if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_true (type);
 	return true;
