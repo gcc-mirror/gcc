@@ -847,7 +847,7 @@
 (define_insn_and_split "<optab><mode><vconvert>2"
   [(set (match_operand:<VCONVERT> 0 "register_operand")
 	(any_fix:<VCONVERT>
-	  (match_operand:VF 1 "register_operand")))]
+	  (match_operand:V_VLSF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -868,8 +868,8 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "<float_cvt><vconvert><mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-	(any_float:VF
+  [(set (match_operand:V_VLSF 0 "register_operand")
+	(any_float:V_VLSF
 	  (match_operand:<VCONVERT> 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -916,8 +916,8 @@
 ;; - vfwcvt.f.x.v
 ;; -------------------------------------------------------------------------
 (define_insn_and_split "<float_cvt><vnconvert><mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-	(any_float:VF
+  [(set (match_operand:V_VLSF 0 "register_operand")
+	(any_float:V_VLSF
 	  (match_operand:<VNCONVERT> 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -940,7 +940,7 @@
 (define_insn_and_split "<optab><mode><vnconvert>2"
   [(set (match_operand:<VNCONVERT> 0 "register_operand")
 	(any_fix:<VNCONVERT>
-	  (match_operand:VF 1 "register_operand")))]
+	  (match_operand:V_VLSF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
