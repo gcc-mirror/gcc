@@ -100,21 +100,19 @@ bitint_precision_kind (int prec)
       small_max_prec = prec;
       return bitint_prec_small;
     }
-  scalar_int_mode arith_mode = (targetm.scalar_mode_supported_p (TImode)
-				? TImode : DImode);
   if (!large_min_prec
-      && GET_MODE_PRECISION (arith_mode) > GET_MODE_PRECISION (limb_mode))
-    large_min_prec = GET_MODE_PRECISION (arith_mode) + 1;
+      && GET_MODE_PRECISION (limb_mode) < MAX_FIXED_MODE_SIZE)
+    large_min_prec = MAX_FIXED_MODE_SIZE + 1;
   if (!limb_prec)
     limb_prec = GET_MODE_PRECISION (limb_mode);
   if (!huge_min_prec)
     {
-      if (4 * limb_prec >= GET_MODE_PRECISION (arith_mode))
+      if (4 * limb_prec >= MAX_FIXED_MODE_SIZE)
 	huge_min_prec = 4 * limb_prec;
       else
-	huge_min_prec = GET_MODE_PRECISION (arith_mode) + 1;
+	huge_min_prec = MAX_FIXED_MODE_SIZE + 1;
     }
-  if (prec <= GET_MODE_PRECISION (arith_mode))
+  if (prec <= MAX_FIXED_MODE_SIZE)
     {
       if (!mid_min_prec || prec < mid_min_prec)
 	mid_min_prec = prec;

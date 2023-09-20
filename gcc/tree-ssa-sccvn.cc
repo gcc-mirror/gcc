@@ -7004,10 +7004,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  && !type_has_mode_precision_p (TREE_TYPE (lhs)))
 	{
 	  if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-	      && (TYPE_PRECISION (TREE_TYPE (lhs))
-		  > (targetm.scalar_mode_supported_p (TImode)
-		     ? GET_MODE_PRECISION (TImode)
-		     : GET_MODE_PRECISION (DImode))))
+	      && TYPE_PRECISION (TREE_TYPE (lhs)) > MAX_FIXED_MODE_SIZE)
 	    lookup_lhs = NULL_TREE;
 	  else if (TREE_CODE (lhs) == COMPONENT_REF
 		   || TREE_CODE (lhs) == MEM_REF)
