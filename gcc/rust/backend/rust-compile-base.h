@@ -29,6 +29,8 @@ class HIRCompileBase
 public:
   virtual ~HIRCompileBase () {}
 
+  static tree address_expression (tree expr, location_t locus);
+
 protected:
   HIRCompileBase (Context *ctx) : ctx (ctx) {}
 
@@ -138,8 +140,6 @@ protected:
 						    const AST::Attribute &attr);
 
   static void setup_abi_options (tree fndecl, ABI abi);
-
-  static tree address_expression (tree expr, location_t locus);
 
   static tree indirect_expression (tree expr, location_t locus);
 
