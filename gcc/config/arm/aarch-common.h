@@ -23,7 +23,7 @@
 #define GCC_AARCH_COMMON_H
 
 /* Enum describing the various ways that the
-   aarch*_parse_{arch,tune,cpu,extension} functions can fail.
+   aarch*_parse_{arch,tune,cpu,extension,fmv_extension} functions can fail.
    This way their callers can choose what kind of error to give.  */
 
 enum aarch_parse_opt_result
@@ -31,7 +31,8 @@ enum aarch_parse_opt_result
   AARCH_PARSE_OK,			/* Parsing was successful.  */
   AARCH_PARSE_MISSING_ARG,		/* Missing argument.  */
   AARCH_PARSE_INVALID_FEATURE,		/* Invalid feature modifier.  */
-  AARCH_PARSE_INVALID_ARG		/* Invalid arch, tune, cpu arg.  */
+  AARCH_PARSE_INVALID_ARG,		/* Invalid arch, tune, cpu arg.  */
+  AARCH_PARSE_DUPLICATE_FEATURE		/* Duplicate feature modifier.  */
 };
 
 /* Function types -msign-return-address should sign.  */

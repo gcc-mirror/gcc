@@ -17,16 +17,21 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* This is a list of ISA extentsions in AArch64.
+/* This is a list of ISA extensions in AArch64.
 
-   Before using #include to read this file, define a macro:
+   Before using #include to read this file, define one of the following
+   macros:
 
       AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON,
 			    EXPLICIT_OFF, FEATURE_STRING)
 
+      AARCH64_FMV_FEATURE(NAME, FEAT_NAME, IDENT)
+
    - NAME is the name of the extension, represented as a string constant.
 
    - IDENT is the canonical internal name for this flag.
+
+   - FEAT_NAME is the unprefixed name used in the CPUFeatures enum.
 
    - REQUIRES is a list of features that must be enabled whenever this
      feature is enabled.  The relationship is implicitly transitive:
@@ -58,45 +63,96 @@
      that are required.  Their order is not important.  An empty string means
      do not detect this feature during auto detection.
 
-   The list of features must follow topological order wrt REQUIRES
-   and EXPLICIT_ON.  For example, if A is in B's REQUIRES list, A must
-   come before B.  This is enforced by aarch64-feature-deps.h.
+   - OPT_FLAGS is a list of feature IDENTS that should be enabled (along with
+     their transitive dependencies) when the specified FMV feature is present.
+
+   Where a feature is present as both an extension and a function
+   multiversioning feature, and IDENT matches the FEAT_NAME suffix, then these
+   can be listed here simultaneously using the macro:
+
+      AARCH64_OPT_FMV_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON,
+				EXPLICIT_OFF, FEATURE_STRING)
+
+   The list of features extensions must follow topological order wrt REQUIRES
+   and EXPLICIT_ON.  For example, if A is in B's REQUIRES list, A must come
+   before B.  This is enforced by aarch64-feature-deps.h.
+
+   The list of multiversioning features must be ordered by increasing priority,
+   as defined in https://github.com/ARM-software/acle/blob/main/main/acle.md
 
    NOTE: Any changes to the AARCH64_OPT_EXTENSION macro need to be mirrored in
    config.gcc.  */
+
+#ifndef AARCH64_OPT_EXTENSION
+#define AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON, \
+			      EXPLICIT_OFF, FEATURE_STRING)
+#endif
+
+#ifndef AARCH64_FMV_FEATURE
+#define AARCH64_FMV_FEATURE(NAME, FEAT_NAME, OPT_FLAGS)
+#endif
+
+#define AARCH64_OPT_FMV_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON,   \
+				  EXPLICIT_OFF, FEATURE_STRING)		\
+AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON, EXPLICIT_OFF,	\
+		      FEATURE_STRING)					\
+AARCH64_FMV_FEATURE(NAME, IDENT, (IDENT))
+
 
 AARCH64_OPT_EXTENSION("fp", FP, (), (), (), "fp")
 
 AARCH64_OPT_EXTENSION("simd", SIMD, (FP), (), (), "asimd")
 
-AARCH64_OPT_EXTENSION("crc", CRC, (), (), (), "crc32")
+AARCH64_OPT_FMV_EXTENSION("rng", RNG, (), (), (), "rng")
 
-AARCH64_OPT_EXTENSION("lse", LSE, (), (), (), "atomics")
+AARCH64_OPT_FMV_EXTENSION("flagm", FLAGM, (), (), (), "flagm")
 
-/* +nofp16 disables an implicit F16FML, even though an implicit F16FML
-   does not imply F16.  See F16FML for more details.  */
-AARCH64_OPT_EXTENSION("fp16", F16, (FP), (), (F16FML), "fphp asimdhp")
+AARCH64_FMV_FEATURE("flagm2", FLAGM2, (FLAGM))
 
-AARCH64_OPT_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
+AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
+
+AARCH64_OPT_FMV_EXTENSION("dotprod", DOTPROD, (SIMD), (), (), "asimddp")
+
+AARCH64_OPT_FMV_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
 
 /* An explicit +rdma implies +simd, but +rdma+nosimd still enables scalar
    RDMA instructions.  */
 AARCH64_OPT_EXTENSION("rdma", RDMA, (), (SIMD), (), "asimdrdm")
 
-AARCH64_OPT_EXTENSION("dotprod", DOTPROD, (SIMD), (), (), "asimddp")
+AARCH64_FMV_FEATURE("rmd", RDM, (RDMA))
 
-AARCH64_OPT_EXTENSION("aes", AES, (SIMD), (), (), "aes")
+AARCH64_OPT_FMV_EXTENSION("lse", LSE, (), (), (), "atomics")
 
-AARCH64_OPT_EXTENSION("sha2", SHA2, (SIMD), (), (), "sha1 sha2")
+AARCH64_FMV_FEATURE("fp", FP, (FP))
+
+AARCH64_FMV_FEATURE("simd", SIMD, (SIMD))
+
+AARCH64_OPT_FMV_EXTENSION("crc", CRC, (), (), (), "crc32")
+
+AARCH64_FMV_FEATURE("sha1", SHA1, ())
+
+AARCH64_OPT_FMV_EXTENSION("sha2", SHA2, (SIMD), (), (), "sha1 sha2")
+
+AARCH64_FMV_FEATURE("sha3", SHA3, (SHA3))
+
+AARCH64_OPT_FMV_EXTENSION("aes", AES, (SIMD), (), (), "aes")
+
+AARCH64_FMV_FEATURE("pmull", PMULL, ())
 
 /* +nocrypto disables AES, SHA2 and SM4, and anything that depends on them
    (such as SHA3 and the SVE2 crypto extensions).  */
 AARCH64_OPT_EXTENSION("crypto", CRYPTO, (AES, SHA2), (), (AES, SHA2, SM4),
 		      "aes pmull sha1 sha2")
 
+/* Listing sha3 after crypto means we pass "+aes+sha3" to the assembler
+   instead of "+sha3+crypto".  */
 AARCH64_OPT_EXTENSION("sha3", SHA3, (SHA2), (), (), "sha3 sha512")
 
-AARCH64_OPT_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
+/* +nofp16 disables an implicit F16FML, even though an implicit F16FML
+   does not imply F16.  See F16FML for more details.  */
+AARCH64_OPT_EXTENSION("fp16", F16, (FP), (), (F16FML), "fphp asimdhp")
+
+AARCH64_FMV_FEATURE("fp16", FP16, (F16))
 
 /* An explicit +fp16fml implies +fp16, but a dependence on it does not.
    Thus -march=armv8.4-a implies F16FML but not F16.  -march=armv8.4-a+fp16
@@ -104,60 +160,120 @@ AARCH64_OPT_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
    -march=armv8.4-a+nofp16+fp16 enables F16 but not F16FML.  */
 AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
 
-AARCH64_OPT_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
+AARCH64_FMV_FEATURE("dit", DIT, ())
 
-AARCH64_OPT_EXTENSION("profile", PROFILE, (), (), (), "")
+AARCH64_FMV_FEATURE("dpb", DPB, ())
 
-AARCH64_OPT_EXTENSION("rng", RNG, (), (), (), "rng")
+AARCH64_FMV_FEATURE("dpb2", DPB2, ())
 
-AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
+AARCH64_FMV_FEATURE("jscvt", JSCVT, ())
 
-AARCH64_OPT_EXTENSION("sb", SB, (), (), (), "sb")
+AARCH64_FMV_FEATURE("fcma", FCMA, (SIMD))
 
-AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
+AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
-AARCH64_OPT_EXTENSION("predres", PREDRES, (), (), (), "")
+AARCH64_FMV_FEATURE("rcpc2", RCPC2, (RCPC))
 
-AARCH64_OPT_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
+AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (), (), (), "rcpc3")
 
-AARCH64_OPT_EXTENSION("sve2-sm4", SVE2_SM4, (SVE2, SM4), (), (), "svesm4")
+AARCH64_FMV_FEATURE("frintts", FRINTTS, ())
+
+AARCH64_FMV_FEATURE("dgh", DGH, ())
+
+AARCH64_OPT_FMV_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
+
+/* An explicit +bf16 implies +simd, but +bf16+nosimd still enables scalar BF16
+   instructions.  */
+AARCH64_OPT_FMV_EXTENSION("bf16", BF16, (FP), (SIMD), (), "bf16")
+
+AARCH64_FMV_FEATURE("ebf16", EBF16, (BF16))
+
+AARCH64_FMV_FEATURE("rpres", RPRES, ())
+
+AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
+
+AARCH64_FMV_FEATURE("sve-bf16", SVE_BF16, (SVE, BF16))
+
+AARCH64_FMV_FEATURE("sve-ebf16", SVE_EBF16, (SVE, BF16))
+
+AARCH64_FMV_FEATURE("sve-i8mm", SVE_I8MM, (SVE, I8MM))
+
+AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "f32mm")
+
+AARCH64_FMV_FEATURE("f32mm", SVE_F32MM, (F32MM))
+
+AARCH64_OPT_EXTENSION("f64mm", F64MM, (SVE), (), (), "f64mm")
+
+AARCH64_FMV_FEATURE("f64mm", SVE_F64MM, (F64MM))
+
+AARCH64_OPT_FMV_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
 
 AARCH64_OPT_EXTENSION("sve2-aes", SVE2_AES, (SVE2, AES), (), (), "sveaes")
 
-AARCH64_OPT_EXTENSION("sve2-sha3", SVE2_SHA3, (SVE2, SHA3), (), (), "svesha3")
+AARCH64_FMV_FEATURE("sve2-aes", SVE_AES, (SVE2_AES))
+
+AARCH64_FMV_FEATURE("sve2-pmull128", SVE_PMULL128, (SVE2))
 
 AARCH64_OPT_EXTENSION("sve2-bitperm", SVE2_BITPERM, (SVE2), (), (),
 		      "svebitperm")
 
+AARCH64_FMV_FEATURE("sve2-bitperm", SVE_BITPERM, (SVE2_BITPERM))
+
+AARCH64_OPT_EXTENSION("sve2-sha3", SVE2_SHA3, (SVE2, SHA3), (), (), "svesha3")
+
+AARCH64_FMV_FEATURE("sve2-sha3", SVE_SHA3, (SVE2_SHA3))
+
+AARCH64_OPT_EXTENSION("sve2-sm4", SVE2_SM4, (SVE2, SM4), (), (), "svesm4")
+
+AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2_SM4))
+
+AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
+
+AARCH64_OPT_FMV_EXTENSION("memtag", MEMTAG, (), (), (), "")
+
+AARCH64_FMV_FEATURE("memtag2", MEMTAG2, (MEMTAG))
+
+AARCH64_FMV_FEATURE("memtag3", MEMTAG3, (MEMTAG))
+
+AARCH64_OPT_FMV_EXTENSION("sb", SB, (), (), (), "sb")
+
+AARCH64_OPT_FMV_EXTENSION("predres", PREDRES, (), (), (), "")
+
+AARCH64_OPT_FMV_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
+
+AARCH64_FMV_FEATURE("ssbs2", SSBS2, (SSBS))
+
+AARCH64_FMV_FEATURE("bti", BTI, ())
+
+AARCH64_OPT_EXTENSION("profile", PROFILE, (), (), (), "")
+
 AARCH64_OPT_EXTENSION("tme", TME, (), (), (), "")
-
-AARCH64_OPT_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
-
-AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "f32mm")
-
-AARCH64_OPT_EXTENSION("f64mm", F64MM, (SVE), (), (), "f64mm")
-
-/* An explicit +bf16 implies +simd, but +bf16+nosimd still enables scalar BF16
-   instructions.  */
-AARCH64_OPT_EXTENSION("bf16", BF16, (FP), (SIMD), (), "bf16")
-
-AARCH64_OPT_EXTENSION("flagm", FLAGM, (), (), (), "flagm")
 
 AARCH64_OPT_EXTENSION("pauth", PAUTH, (), (), (), "paca pacg")
 
 AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
-AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
+AARCH64_FMV_FEATURE("ls64", LS64, ())
 
-AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
+AARCH64_FMV_FEATURE("ls64_v", LS64_V, ())
 
-AARCH64_OPT_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
+AARCH64_FMV_FEATURE("ls64_accdata", LS64_ACCDATA, (LS64))
 
-AARCH64_OPT_EXTENSION("sme-i16i64", SME_I16I64, (SME), (), (), "")
+AARCH64_FMV_FEATURE("wfxt", WFXT, ())
 
 AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "")
 
-AARCH64_OPT_EXTENSION("sme2", SME2, (SME), (), (), "sme2")
+AARCH64_FMV_FEATURE("sme-f64f64", SME_F64, (SME_F64F64))
+
+AARCH64_OPT_EXTENSION("sme-i16i64", SME_I16I64, (SME), (), (), "")
+
+AARCH64_FMV_FEATURE("sme-i16i64", SME_I64, (SME_I16I64))
+
+AARCH64_OPT_FMV_EXTENSION("sme2", SME2, (SME), (), (), "sme2")
+
+AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
+
+AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
 AARCH64_OPT_EXTENSION("d128", D128, (), (), (), "d128")
 
@@ -165,5 +281,6 @@ AARCH64_OPT_EXTENSION("the", THE, (), (), (), "the")
 
 AARCH64_OPT_EXTENSION("gcs", GCS, (), (), (), "gcs")
 
-AARCH64_OPT_EXTENSION("rcpc3", RCPC3, (), (), (), "rcpc3")
+#undef AARCH64_OPT_FMV_EXTENSION
 #undef AARCH64_OPT_EXTENSION
+#undef AARCH64_FMV_FEATURE
