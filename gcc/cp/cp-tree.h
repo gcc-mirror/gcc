@@ -7341,6 +7341,7 @@ extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &);
 extern void cp_finish_omp_range_for (tree, tree);
+extern bool cp_maybe_parse_omp_decl (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_function_declarator ();
 extern bool parsing_default_capturing_generic_lambda_in_template (void);

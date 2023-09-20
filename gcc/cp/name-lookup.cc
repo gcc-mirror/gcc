@@ -8402,12 +8402,24 @@ finish_using_directive (tree target, tree attribs)
 	else if ((flag_openmp || flag_openmp_simd)
 		 && get_attribute_namespace (a) == omp_identifier
 		 && (is_attribute_p ("directive", name)
-		     || is_attribute_p ("sequence", name)))
+		     || is_attribute_p ("sequence", name)
+		     || is_attribute_p ("decl", name)))
 	  {
 	    if (!diagnosed)
-	      error ("%<omp::%E%> not allowed to be specified in this "
-		     "context", name);
-	    diagnosed = true;
+	      {
+		if (tree ar = TREE_VALUE (a))
+		  {
+		    tree d = TREE_VALUE (ar);
+		    gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
+		    error ("%<omp::%s%> not allowed to be specified in "
+			   "this context",
+			   TREE_PUBLIC (d) ? "decl" : "directive");
+		  }
+		else
+		  error ("%<omp::%E%> not allowed to be specified in this "
+			 "context", name);
+		diagnosed = true;
+	      }
 	  }
 	else
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);

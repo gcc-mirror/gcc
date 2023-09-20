@@ -12001,6 +12001,12 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 		parser->omp_attrs_forbidden_p = false;
 		bad = true;
 	      }
+	    else if (TREE_PUBLIC (d))
+	      {
+		error_at (first->location,
+			  "OpenMP %<omp::decl%> attribute on a statement");
+		bad = true;
+	      }
 	    const char *directive[3] = {};
 	    for (int i = 0; i < 3; i++)
 	      {
@@ -12022,8 +12028,9 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 	    if (dir == NULL)
 	      {
 		error_at (first->location,
-			  "unknown OpenMP directive name in %<omp::directive%>"
-			  " attribute argument");
+			  "unknown OpenMP directive name in %qs attribute "
+			  "argument",
+			  TREE_PUBLIC (d) ? "omp::decl" : "omp::directive");
 		continue;
 	      }
 	    c_omp_directive_kind kind = dir->kind;
@@ -29366,7 +29373,7 @@ cp_parser_gnu_attribute_list (cp_parser* parser, bool exactly_one /* = false */)
    parsing.  */
 
 static void
-cp_parser_omp_directive_args (cp_parser *parser, tree attribute)
+cp_parser_omp_directive_args (cp_parser *parser, tree attribute, bool decl_p)
 {
   cp_token *first = cp_lexer_peek_nth_token (parser->lexer, 2);
   if (first->type == CPP_CLOSE_PAREN)
@@ -29393,6 +29400,8 @@ cp_parser_omp_directive_args (cp_parser *parser, tree attribute)
   tree arg = make_node (DEFERRED_PARSE);
   DEFPARSE_TOKENS (arg) = cp_token_cache_new (first, last);
   DEFPARSE_INSTANTIATIONS (arg) = nullptr;
+  if (decl_p)
+    TREE_PUBLIC (arg) = 1;
   TREE_VALUE (attribute) = tree_cons (NULL_TREE, arg, TREE_VALUE (attribute));
 }
 
@@ -29440,7 +29449,7 @@ cp_parser_omp_sequence_args (cp_parser *parser, tree attribute)
 	cp_parser_required_error (parser, RT_OPEN_PAREN, false,
 				  UNKNOWN_LOCATION);
       else if (directive)
-	cp_parser_omp_directive_args (parser, attribute);
+	cp_parser_omp_directive_args (parser, attribute, false);
       else
 	cp_parser_omp_sequence_args (parser, attribute);
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
@@ -29592,7 +29601,8 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       if ((flag_openmp || flag_openmp_simd)
 	  && attr_ns == omp_identifier
 	  && (is_attribute_p ("directive", attr_id)
-	      || is_attribute_p ("sequence", attr_id)))
+	      || is_attribute_p ("sequence", attr_id)
+	      || is_attribute_p ("decl", attr_id)))
 	{
 	  error_at (token->location, "%<omp::%E%> attribute requires argument",
 		    attr_id);
@@ -29636,7 +29646,14 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	  {
 	    if (is_attribute_p ("directive", attr_id))
 	      {
-		cp_parser_omp_directive_args (parser, attribute);
+		cp_parser_omp_directive_args (parser, attribute, false);
+		return attribute;
+	      }
+	    else if (is_attribute_p ("decl", attr_id))
+	      {
+		TREE_VALUE (TREE_PURPOSE (attribute))
+		  = get_identifier ("directive");
+		cp_parser_omp_directive_args (parser, attribute, true);
 		return attribute;
 	      }
 	    else if (is_attribute_p ("sequence", attr_id))
@@ -37912,6 +37929,21 @@ static tree
 cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
 			bool allow_deref = false)
 {
+  if (parser->lexer->in_omp_decl_attribute)
+    {
+      if (kind)
+	{
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  tree u = build_omp_clause (loc, kind);
+	  OMP_CLAUSE_DECL (u) = parser->lexer->in_omp_decl_attribute;
+	  OMP_CLAUSE_CHAIN (u) = list;
+	  return u;
+	}
+      else
+	return tree_cons (parser->lexer->in_omp_decl_attribute, NULL_TREE,
+			  list);
+    }
+
   if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return cp_parser_omp_var_list_no_open (parser, kind, list, NULL,
 					   allow_deref);
@@ -47843,7 +47875,9 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
 		  {
 		    error_at (first->location,
 			      "unknown OpenMP directive name in "
-			      "%<omp::directive%> attribute argument");
+			      "%qs attribute argument",
+			      TREE_PUBLIC (d)
+			      ? "omp::decl" : "omp::directive");
 		    continue;
 		  }
 		if (dir->id != PRAGMA_OMP_DECLARE
@@ -47949,6 +47983,89 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
   return attrs;
 }
 
+/* D should be DEFERRED_PARSE from omp::decl attribute.  If it contains
+   a threadprivate, groupprivate, allocate or declare target directive,
+   return true and parse it for DECL.  */
+
+bool
+cp_maybe_parse_omp_decl (tree decl, tree d)
+{
+  gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
+  cp_token *first = DEFPARSE_TOKENS (d)->first;
+  cp_token *last = DEFPARSE_TOKENS (d)->last;
+  const char *directive[3] = {};
+  for (int j = 0; j < 3; j++)
+    {
+      tree id = NULL_TREE;
+      if (first + j == last)
+	break;
+      if (first[j].type == CPP_NAME)
+	id = first[j].u.value;
+      else if (first[j].type == CPP_KEYWORD)
+	id = ridpointers[(int) first[j].keyword];
+      else
+	break;
+      directive[j] = IDENTIFIER_POINTER (id);
+    }
+  const c_omp_directive *dir = NULL;
+  if (directive[0])
+    dir = c_omp_categorize_directive (directive[0], directive[1],
+				      directive[2]);
+  if (dir == NULL)
+    {
+      error_at (first->location,
+		"unknown OpenMP directive name in "
+		"%qs attribute argument", "omp::decl");
+      return false;
+    }
+  if (dir->id != PRAGMA_OMP_THREADPRIVATE
+      /* && dir->id != PRAGMA_OMP_GROUPPRIVATE */
+      && dir->id != PRAGMA_OMP_ALLOCATE
+      && (dir->id != PRAGMA_OMP_DECLARE
+	  || strcmp (directive[1], "target") != 0))
+    return false;
+
+  if (!flag_openmp && !dir->simd)
+    return true;
+
+  cp_parser *parser = the_parser;
+  cp_lexer *lexer = cp_lexer_alloc ();
+  lexer->debugging_p = parser->lexer->debugging_p;
+  lexer->in_omp_decl_attribute = decl;
+  vec_safe_reserve (lexer->buffer, last - first + 3, true);
+  cp_token tok = {};
+  tok.type = CPP_PRAGMA;
+  tok.keyword = RID_MAX;
+  tok.u.value = build_int_cst (NULL, dir->id);
+  tok.location = first->location;
+  lexer->buffer->quick_push (tok);
+  while (++first < last)
+    lexer->buffer->quick_push (*first);
+  tok = {};
+  tok.type = CPP_PRAGMA_EOL;
+  tok.keyword = RID_MAX;
+  tok.location = last->location;
+  lexer->buffer->quick_push (tok);
+  tok = {};
+  tok.type = CPP_EOF;
+  tok.keyword = RID_MAX;
+  tok.location = last->location;
+  lexer->buffer->quick_push (tok);
+  lexer->next = parser->lexer;
+  lexer->next_token = lexer->buffer->address ();
+  lexer->last_token = lexer->next_token
+		      + lexer->buffer->length ()
+		      - 1;
+  lexer->in_omp_attribute_pragma = true;
+  parser->lexer = lexer;
+  /* Move the current source position to that of the first token in the
+     new lexer.  */
+  cp_lexer_set_source_position_from_token (lexer->next_token);
+  cp_parser_pragma (parser, pragma_external, NULL);
+
+  return true;
+}
+
 /* Helper for cp_parser_omp_declare_target, handle one to or link clause
    on #pragma omp declare target.  Return false if errors were reported.  */
 
@@ -48048,7 +48165,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     clauses
       = cp_parser_omp_all_clauses (parser, OMP_DECLARE_TARGET_CLAUSE_MASK,
 				   "#pragma omp declare target", pragma_tok);
-  else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+  else if (parser->lexer->in_omp_decl_attribute
+	   || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
       clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_ENTER,
 					clauses);

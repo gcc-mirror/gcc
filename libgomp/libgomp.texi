@@ -444,7 +444,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item Features deprecated in versions 5.2, 5.1 and 5.0 were removed
       @tab N/A @tab Backward compatibility
 @item The @code{decl} attribute was added to the C++ attribute syntax
-      @tab N @tab
+      @tab Y @tab
 @item @code{_ALL} suffix to the device-scope environment variables
       @tab P @tab Host device number wrongly accepted
 @item For Fortran, @emph{locator list} can be also function reference with

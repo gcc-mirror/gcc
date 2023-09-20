@@ -3306,6 +3306,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "for", nullptr, nullptr, PRAGMA_OMP_FOR,
     C_OMP_DIR_CONSTRUCT, true },
+  /* { "groupprivate", nullptr, nullptr, PRAGMA_OMP_GROUPPRIVATE,
+    C_OMP_DIR_DECLARATIVE, false },  */
   /* { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
     C_OMP_DIR_STANDALONE, false },  */
   { "loop", nullptr, nullptr, PRAGMA_OMP_LOOP,
