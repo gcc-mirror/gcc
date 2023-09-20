@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/known-headers.h"
 #include "contracts.h"
 #include "bitmap.h"
+#include "builtins.h"
 
 
 /* The lexer.  */
@@ -7905,6 +7906,47 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		saved_non_integral_constant_expression_p
 		  = parser->non_integral_constant_expression_p;
 		parser->integral_constant_expression_p = false;
+	      }
+	    else if (TREE_CODE (stripped_expression) == FUNCTION_DECL
+		     && fndecl_built_in_p (stripped_expression,
+					   BUILT_IN_CLASSIFY_TYPE))
+	      {
+		/* __builtin_classify_type (type)  */
+		auto cl1 = make_temp_override
+			     (parser->type_definition_forbidden_message,
+			      G_("types may not be defined in "
+				 "%<__builtin_classify_type%> calls"));
+		auto cl2 = make_temp_override
+			     (parser->type_definition_forbidden_message_arg,
+			      NULL);
+		auto cl3 = make_temp_override (parser->in_type_id_in_expr_p,
+					       true);
+		cp_unevaluated uev;
+		cp_parser_parse_tentatively (parser);
+		matching_parens parens;
+		parens.consume_open (parser);
+		tree type = cp_parser_type_id (parser);
+		parens.require_close (parser);
+		if (cp_parser_parse_definitely (parser))
+		  {
+		    if (dependent_type_p (type))
+		      {
+			postfix_expression = build_vl_exp (CALL_EXPR, 4);
+			CALL_EXPR_FN (postfix_expression)
+			  = stripped_expression;
+			CALL_EXPR_STATIC_CHAIN (postfix_expression) = type;
+			CALL_EXPR_ARG (postfix_expression, 0)
+			  = build_min (SIZEOF_EXPR, size_type_node, type);
+			TREE_TYPE (postfix_expression) = integer_type_node;
+		      }
+		    else
+		      {
+			postfix_expression
+			  = build_int_cst (integer_type_node,
+					   type_to_class (type));
+		      }
+		    break;
+		  }
 	      }
 	    args = (cp_parser_parenthesized_expression_list
 		    (parser, non_attr,

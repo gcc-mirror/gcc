@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "selftest.h"
 #include "target.h"
+#include "builtins.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -21036,6 +21037,25 @@ tsubst_copy_and_build (tree t,
 	    function = tsubst_qualified_id (function, args, complain, in_decl,
 					    /*done=*/false,
 					    /*address_p=*/false);
+	  }
+	else if (CALL_EXPR_STATIC_CHAIN (t)
+		 && TREE_CODE (function) == FUNCTION_DECL
+		 && fndecl_built_in_p (function, BUILT_IN_CLASSIFY_TYPE))
+	  {
+	    tree type = tsubst (CALL_EXPR_STATIC_CHAIN (t), args, complain,
+				in_decl);
+	    if (dependent_type_p (type))
+	      {
+		ret = build_vl_exp (CALL_EXPR, 4);
+		CALL_EXPR_FN (ret) = function;
+		CALL_EXPR_STATIC_CHAIN (ret) = type;
+		CALL_EXPR_ARG (ret, 0)
+		  = build_min (SIZEOF_EXPR, size_type_node, type);
+		TREE_TYPE (ret) = integer_type_node;
+	      }
+	    else
+	      ret = build_int_cst (integer_type_node, type_to_class (type));
+	    RETURN (ret);
 	  }
 	else if (koenig_p
 		 && (identifier_p (function)
