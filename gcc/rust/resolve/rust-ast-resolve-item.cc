@@ -565,6 +565,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   // FIXME this needs to be protected behind nominal type-checks see:
   // rustc --explain E0118
+  // issue #2634
   ResolveType::go (impl_block.get_type ().get ());
 
   // Setup paths
@@ -576,13 +577,15 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 	      self_cpath.get ().c_str ());
 
   CanonicalPath impl_type = self_cpath;
-  CanonicalPath impl_prefix = prefix.append (impl_type);
+  CanonicalPath impl_type_seg
+    = CanonicalPath::inherent_impl_seg (impl_block.get_node_id (), impl_type);
+  CanonicalPath impl_prefix = prefix.append (impl_type_seg);
 
   // see https://godbolt.org/z/a3vMbsT6W
   CanonicalPath cpath = CanonicalPath::create_empty ();
   if (canonical_prefix.size () <= 1)
     {
-      cpath = self_cpath;
+      cpath = impl_prefix;
     }
   else
     {
