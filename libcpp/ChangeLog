@@ -1,3 +1,16 @@
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* include/cpplib.h: Add cpp_fdeps_format enum.
+	(cpp_options): Add fdeps_format field
+	(cpp_finish): Add structured dependency fdeps_stream parameter.
+	* include/mkdeps.h (deps_add_module_target): Add flag for
+	whether a module is exported or not.
+	(fdeps_add_target): Add function.
+	(deps_write_p1689r5): Add function.
+	* init.cc (cpp_finish): Add new preprocessor parameter used for C++
+	module tracking.
+	* mkdeps.cc (mkdeps): Implement P1689R5 output.
+
 2023-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

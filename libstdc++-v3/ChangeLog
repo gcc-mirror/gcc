@@ -1,3 +1,7 @@
+2023-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/20_util/allocator/105975.cc: Add dg-error.
+
 2023-09-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/63198

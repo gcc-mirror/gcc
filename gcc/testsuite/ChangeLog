@@ -1,3 +1,220 @@
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* g++.dg/modules/depreport-2.modmap: New test.
+	* g++.dg/modules/depreport-2_a.C: New test.
+	* g++.dg/modules/depreport-2_b.C: New test.
+	* g++.dg/modules/test-depfile.py: Support `:|` syntax output
+	when generating modules.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* g++.dg/modules/depreport-1_a.C: New test.
+	* g++.dg/modules/depreport-1_b.C: New test.
+	* g++.dg/modules/test-depfile.py: New tool for validating depfile
+	information.
+	* lib/modules.exp: Support for validating depfile contents.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* g++.dg/modules/depflags-f-MD.C: New test.
+	* g++.dg/modules/depflags-f.C: New test.
+	* g++.dg/modules/depflags-fi.C: New test.
+	* g++.dg/modules/depflags-fj-MD.C: New test.
+	* g++.dg/modules/depflags-fj.C: New test.
+	* g++.dg/modules/depflags-fjo-MD.C: New test.
+	* g++.dg/modules/depflags-fjo.C: New test.
+	* g++.dg/modules/depflags-fo-MD.C: New test.
+	* g++.dg/modules/depflags-fo.C: New test.
+	* g++.dg/modules/depflags-j-MD.C: New test.
+	* g++.dg/modules/depflags-j.C: New test.
+	* g++.dg/modules/depflags-jo-MD.C: New test.
+	* g++.dg/modules/depflags-jo.C: New test.
+	* g++.dg/modules/depflags-o-MD.C: New test.
+	* g++.dg/modules/depflags-o.C: New test.
+	* g++.dg/modules/p1689-1.C: New test.
+	* g++.dg/modules/p1689-1.exp.ddi: New test expectation.
+	* g++.dg/modules/p1689-2.C: New test.
+	* g++.dg/modules/p1689-2.exp.ddi: New test expectation.
+	* g++.dg/modules/p1689-3.C: New test.
+	* g++.dg/modules/p1689-3.exp.ddi: New test expectation.
+	* g++.dg/modules/p1689-4.C: New test.
+	* g++.dg/modules/p1689-4.exp.ddi: New test expectation.
+	* g++.dg/modules/p1689-5.C: New test.
+	* g++.dg/modules/p1689-5.exp.ddi: New test expectation.
+	* g++.dg/modules/modules.exp: Load new P1689 library routines.
+	* g++.dg/modules/test-p1689.py: New tool for validating P1689 output.
+	* lib/modules.exp: Support for validating P1689 outputs.
+	* g++.dg/modules/depflags-fj-MF-share.C: New file.
+	* g++.dg/modules/p1689-file-default.C: New file.
+	* g++.dg/modules/p1689-file-default.exp.ddi: New file.
+	* g++.dg/modules/p1689-target-default.C: New file.
+	* g++.dg/modules/p1689-target-default.exp.ddi: New file.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-12.c: Moved to...
+	* gcc.dg/tree-ssa/vrp-float-relations-1.c: ...here.
+	* gcc.dg/tree-ssa/vrp-float-relations-2.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-relations-3.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-relations-4.c: New test.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* g++.dg/ext/attr-hotness.C: New test.
+
+2023-09-19  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/clone1.c: Add xfails.
+	* gcc.target/powerpc/clone3.c: Likewise.
+	* gcc.target/powerpc/mod-1.c: Update scan strings and add xfails.
+	* gcc.target/powerpc/mod-2.c: Likewise.
+	* gcc.target/powerpc/p10-vdivq-vmodq.c: Add xfails.
+
+2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/extensions/pass/libc.def: Add spacing.
+	* gm2/pimlib/logitech/run/pass/realconv.mod: Add debugging print.
+	* gm2/switches/uninit-variable-checking/cascade/fail/switches-uninit-variable-checking-cascade-fail.exp:
+	Add -fdebug-builtins flag.
+	* lib/gm2.exp (gm2_target_compile_default): Add
+	-mabi=ieeelongdouble if the target is powerpc.
+	(gm2_link_flags): Add
+	-mabi=ieeelongdouble if the target is powerpc.
+	* gm2/pim/intrinsic/run/pass/cstub.c: New test.
+	* gm2/pim/intrinsic/run/pass/cstub.def: New test.
+	* gm2/pim/intrinsic/run/pass/pim-intrinsic-run-pass.exp: New test.
+	* gm2/pim/intrinsic/run/pass/test.mod: New test.
+	* gm2/pim/run/pass/builtins.mod: New test.
+	* gm2/pim/run/pass/convert1.mod: New test.
+	* gm2/pim/run/pass/longint1.mod: New test.
+	* gm2/pim/run/pass/longint2.mod: New test.
+	* gm2/pim/run/pass/longint3.mod: New test.
+	* gm2/pim/run/pass/longint4.mod: New test.
+	* gm2/pim/run/pass/longint5.mod: New test.
+	* gm2/pim/run/pass/longint6.mod: New test.
+	* gm2/pim/run/pass/longint7.mod: New test.
+	* gm2/pim/run/pass/longint8.mod: New test.
+
+2023-09-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70231
+	* gfortran.dg/bounds_check_fail_7.f90: New test.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-13.c: New test.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/111377
+	* c-c++-common/analyzer/compound-assignment-1.c (test_5b): Move
+	closing } to the same line as the call to work-around differences in
+	diagnostics line.
+
+2023-09-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2799
+	* g++.dg/cpp0x/inh-ctor38.C: New test.
+
+2023-09-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110080
+	PR tree-optimization/110249
+	* g++.dg/pr110249.C: New.
+	* gcc.dg/pr110080.c: New.
+	* gcc.dg/pr93917.c: Adjust.
+
+2023-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp23/consteval-if2.C: Add xfail.
+	* g++.dg/cpp2a/consteval-memfn1.C: Adjust.
+	* g++.dg/cpp2a/consteval11.C: Remove dg-message.
+	* g++.dg/cpp2a/consteval3.C: Remove dg-message and dg-error.
+	* g++.dg/cpp2a/consteval9.C: Remove dg-message.
+	* g++.dg/cpp2a/consteval32.C: New test.
+	* g++.dg/cpp2a/consteval33.C: New test.
+	* g++.dg/cpp2a/consteval34.C: New test.
+	* g++.dg/cpp2a/consteval35.C: New test.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gcc.dg/gimplefe-50.c: Amend.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111419
+	* g++.dg/cpp2a/concepts-requires36.C: New test.
+	* g++.dg/expr/discarded1.C: New test.
+	* g++.dg/expr/discarded1a.C: New test.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* g++.dg/cpp2a/nontype-class60.C: New test.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add FNMS VLS modes tests.
+	* gcc.target/riscv/rvv/autovec/vls/fnms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnms-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnms-3.c: New test.
+
+2023-09-19  Richard Wai  <richard@annexi-strayline.com>
+
+	* gnat.dg/sync_tag_finalize.adb: New test.
+
+2023-09-19  Richard Wai  <richard@annexi-strayline.com>
+
+	* gnat.dg/sync_tag_discriminals.adb: New test.
+	* gnat.dg/sync_tag_limited.adb: New test.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add unary test.
+	* gcc.target/riscv/rvv/autovec/vls/neg-2.c: New test.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111465
+	* g++.dg/torture/pr111465.C: New testcase.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gcc.dg/gimplefe-50.c: New testcase.
+	* gcc.dg/gimplefe-51.c: Likewise.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add FMS tests.
+	* gcc.target/riscv/rvv/autovec/vls/fma-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fms-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fms-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-7.c: New test.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS FMA/FNMA test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fma-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/fnma-4.c: New test.
+
+2023-09-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/vect_copy_lane_1.c: Scan for zip1 instead
+	of ins for float32x2_t, int32x2_t and uint32x2_t tests.
+
 2023-09-18  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vls/def.h: New macros.

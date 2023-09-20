@@ -1,3 +1,73 @@
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* mapper-client.cc, mapper-client.h (open_module_client): Accept
+	dependency tracking and track module mapper files as
+	dependencies.
+	* module.cc (make_mapper, get_mapper): Pass the dependency
+	tracking class down.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (do_import): Report imported CMI files as
+	dependencies.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (preprocessed_module): Pass whether the module is
+	exported to dependency tracking.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* class.cc (propagate_class_warmth_attribute): New function.
+	(check_bases_and_members): propagate hot and cold attributes
+	to all FUNCTION_DECL when the record is marked hot or cold.
+	* cp-tree.h (maybe_propagate_warmth_attributes): New function.
+	* decl2.cc (maybe_propagate_warmth_attributes): New function.
+	* method.cc (lazily_declare_fn): propagate hot and cold
+	attributes to lazily declared functions when the record is
+	marked hot or cold.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.cc (cxx_print_type): Remove TYPE_LANG_SPECIFIC
+	test guarding TYPE_TEMPLATE_INFO.
+
+2023-09-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2799
+	* class.cc (add_implicit_default_ctor): Split out...
+	(add_implicitly_declared_members): ...from here.
+	Also call it when inheriting a default ctor.
+
+2023-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (build_over_call): Set ADDR_EXPR_DENOTES_CALL_P.  Don't handle
+	immediate_invocation_p here.
+	* constexpr.cc (cxx_eval_call_expression): Use mce_true for
+	DECL_IMMEDIATE_FUNCTION_P.
+	(cxx_eval_conditional_expression): Call cp_fold_immediate.
+	* cp-gimplify.cc (enum fold_flags): Add ff_fold_immediate.
+	(maybe_replace_decl): Make static.
+	(cp_fold_r): Expand immediate invocations.
+	(cp_fold_immediate_r): New.
+	(cp_fold_immediate): New.
+	* cp-tree.h (ADDR_EXPR_DENOTES_CALL_P): Define.
+	(cp_fold_immediate): Declare.
+	* tree.cc (bot_replace): Don't handle immediate invocations here.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111419
+	* cvt.cc (convert_to_void) <case INDIRECT_REF>: Only call
+	complete_type if the type is volatile.
+	<case VAR_DECL>: Likewise.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* semantics.cc (finish_decltype_type): For an NTTP object,
+	return its type modulo cv-quals.
+
 2023-09-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/89231

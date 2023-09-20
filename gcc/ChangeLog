@@ -1,3 +1,226 @@
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* doc/invoke.texi: Document -fdeps-format=, -fdeps-file=, and
+	-fdeps-target= flags.
+	* gcc.cc: add defaults for -fdeps-target= and -fdeps-file= when
+	only -fdeps-format= is specified.
+	* json.h: Add a TODO item to refactor out to share with
+	`libcpp/mkdeps.cc`.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* gcc.cc (join_spec_func): Add a spec function to join all
+	arguments.
+
+2023-09-19  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_const_move): Eliminate
+	src_op_0 var to avoid rtl check error.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frelop_early_resolve): Clean-up and remove
+	special casing.
+	(operator_not_equal::fold_range): Handle VREL_EQ.
+	(operator_lt::fold_range): Remove special casing for VREL_EQ.
+	(operator_gt::fold_range): Same.
+	(foperator_unordered_equal::fold_range): Same.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* doc/extend.texi: Document attributes hot, cold on C++ types.
+
+2023-09-19  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_rtx_costs): Check whether the
+	modulo instruction is disabled.
+	* config/rs6000/rs6000.h (RS6000_DISABLE_SCALAR_MODULO): New.
+	* config/rs6000/rs6000.md (mod<mode>3, *mod<mode>3): Check it.
+	(define_expand umod<mode>3): New.
+	(define_insn umod<mode>3): Rename to *umod<mode>3 and check if the modulo
+	instruction is disabled.
+	(umodti3, modti3): Check if the modulo instruction is disabled.
+
+2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (fdebug-builtins): Correct description.
+
+2023-09-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/iq2000/predicates.md (uns_arith_constant): New predicate.
+	* config/iq2000/iq2000.md (rotrsi3): Use it.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (operator_lt::op1_range): Remove known_isnan check.
+	(operator_lt::op2_range): Same.
+	(operator_le::op1_range): Same.
+	(operator_le::op2_range): Same.
+	(operator_gt::op1_range): Same.
+	(operator_gt::op2_range): Same.
+	(operator_ge::op1_range): Same.
+	(operator_ge::op2_range): Same.
+	(foperator_unordered_lt::op1_range): Same.
+	(foperator_unordered_lt::op2_range): Same.
+	(foperator_unordered_le::op1_range): Same.
+	(foperator_unordered_le::op2_range): Same.
+	(foperator_unordered_gt::op1_range): Same.
+	(foperator_unordered_gt::op2_range): Same.
+	(foperator_unordered_ge::op1_range): Same.
+	(foperator_unordered_ge::op2_range): Same.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::update_nan): New.
+
+2023-09-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (operator_not_equal::op2_range): New.
+	* range-op-mixed.h: Add operator_not_equal::op2_range.
+
+2023-09-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110080
+	PR tree-optimization/110249
+	* tree-vrp.cc (remove_unreachable::final_p): New.
+	(remove_unreachable::maybe_register): Rename from
+	maybe_register_block and call early or final routine.
+	(fully_replaceable): New.
+	(remove_unreachable::handle_early): New.
+	(remove_unreachable::remove_and_update_globals): Remove
+	non-final processing.
+	(rvrp_folder::rvrp_folder): Add final flag to constructor.
+	(rvrp_folder::post_fold_bb): Remove unreachable registration.
+	(rvrp_folder::pre_fold_stmt): Move unreachable processing to here.
+	(execute_ranger_vrp): Adjust some call parameters.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* tree-pretty-print.h (op_symbol_code): Add defaulted flags
+	argument.
+	* tree-pretty-print.cc (op_symbol): Likewise.
+	(op_symbol_code): Print TDF_GIMPLE variant if requested.
+	* gimple-pretty-print.cc (dump_binary_rhs): Pass flags to
+	op_symbol_code.
+	(dump_gimple_cond): Likewise.
+
+2023-09-19  Thomas Schwinge  <thomas@codesourcery.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* tree-streamer.h (bp_unpack_machine_mode): If
+	'ib->file_data->mode_table' not available, apply 1-to-1 mapping.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_can_change_mode_class): Block unordered VLA and VLS modes.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111465
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::thread_block_1):
+	Cancel the path when a EDGE_NO_COPY_SRC_BLOCK became non-empty.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS floating-point modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd ((x << c) >> c): Don't call build_nonstandard_integer_type
+	nor check type_has_mode_precision_p for width larger than [TD]Imode
+	precision.
+	(a ? CST1 : CST2): Don't use build_nonstandard_type, just convert
+	to type.  Use boolean_true_node instead of
+	constant_boolean_node (true, boolean_type_node).  Formatting fixes.
+
+2023-09-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/vector.md: Ditto.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (build_bitint_type): Assert precision is not 0, or
+	for signed types 1.
+	(signed_or_unsigned_type_for): Return INTEGER_TYPE for signed variant
+	of unsigned _BitInt(1).
+
+2023-09-19  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>_fma<mode>):
+	Removed old combine patterns.
+	(*single_<optab>mult_plus<mode>): Ditto.
+	(*double_<optab>mult_plus<mode>): Ditto.
+	(*sign_zero_extend_fma): Ditto.
+	(*zero_sign_extend_fma): Ditto.
+	(*double_widen_fma<mode>): Ditto.
+	(*single_widen_fma<mode>): Ditto.
+	(*double_widen_fnma<mode>): Ditto.
+	(*single_widen_fnma<mode>): Ditto.
+	(*double_widen_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*double_widen_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+	(*reduc_plus_scal_<mode>): Adjust name.
+	(*widen_reduc_plus_scal_<mode>): Adjust name.
+	(*dual_widen_fma<mode>): New combine pattern.
+	(*dual_widen_fmasu<mode>): Ditto.
+	(*dual_widen_fmaus<mode>): Ditto.
+	(*dual_fma<mode>): Ditto.
+	(*single_fma<mode>): Ditto.
+	(*dual_fnma<mode>): Ditto.
+	(*single_fnma<mode>): Ditto.
+	(*dual_fms<mode>): Ditto.
+	(*single_fms<mode>): Ditto.
+	(*dual_fnms<mode>): Ditto.
+	(*single_fnms<mode>): Ditto.
+	* config/riscv/autovec.md (fma<mode>4):
+	Reafctor fma pattern.
+	(*fma<VI:mode><P:mode>): Removed.
+	(fnma<mode>4): Reafctor.
+	(*fnma<VI:mode><P:mode>): Removed.
+	(*fma<VF:mode><P:mode>):  Removed.
+	(*fnma<VF:mode><P:mode>):  Removed.
+	(fms<mode>4):  Reafctor.
+	(*fms<VF:mode><P:mode>):  Removed.
+	(fnms<mode>4): Reafctor.
+	(*fnms<VF:mode><P:mode>): Removed.
+	* config/riscv/riscv-protos.h (prepare_ternary_operands):
+	Adjust prototype.
+	* config/riscv/riscv-v.cc (prepare_ternary_operands): Refactor.
+	* config/riscv/vector.md (*pred_mul_plus<mode>_undef): New pattern.
+	(*pred_mul_plus<mode>): Removed.
+	(*pred_mul_plus<mode>_scalar): Removed.
+	(*pred_mul_plus<mode>_extended_scalar): Removed.
+	(*pred_minus_mul<mode>_undef):  New pattern.
+	(*pred_minus_mul<mode>): Removed.
+	(*pred_minus_mul<mode>_scalar): Removed.
+	(*pred_minus_mul<mode>_extended_scalar): Removed.
+	(*pred_mul_<optab><mode>_undef):  New pattern.
+	(*pred_mul_<optab><mode>): Removed.
+	(*pred_mul_<optab><mode>_scalar): Removed.
+	(*pred_mul_neg_<optab><mode>_undef):  New pattern.
+	(*pred_mul_neg_<optab><mode>): Removed.
+	(*pred_mul_neg_<optab><mode>_scalar): Removed.
+
+2023-09-19  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(builtin_decl, expand_builtin): Replace SVE with RVV.
+
+2023-09-19  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* config/riscv/t-riscv: Add dependencies for riscv-builtins.cc,
+	riscv-cmo.def and riscv-scalar-crypto.def.
+
 2023-09-18  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md: Extend to vls mode.

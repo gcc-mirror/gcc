@@ -1,3 +1,9 @@
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/111413
+	* env.c (initialize_env): Don't dereference environ if it is NULL.
+	Reindent.
+
 2023-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/111294

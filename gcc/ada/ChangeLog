@@ -1,3 +1,33 @@
+2023-09-19  Richard Wai  <richard@annexi-strayline.com>
+
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Expanded comments
+	explaining why TSS Finalize_Address is not generated for
+	concurrent class-wide types.
+	* exp_ch7.adb (Make_Finalize_Address_Stmts): Handle cases where the
+	underlying non-constrained parent type is a concurrent type, and
+	adjust the designated type to be the corresponding record’s
+	class-wide type.
+
+2023-09-19  Richard Wai  <richard@annexi-strayline.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Treat presence of
+	keyword "synchronized" the same as "limited" when determining if a
+	private extension is limited.
+
+2023-09-19  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/utils.cc (max_value): New.
+	* gcc-interface/gigi.h (max_value): New.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Subtype>:
+	When computing gnu_min/gnu_max, try to use max_value if there is
+	an initial expression.
+
+2023-09-19  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb
+	(Has_Public_Visibility_Of_Subprogram): Add missing support for
+	child subprograms.
+
 2023-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.cc (finish_record_type): Round the size in

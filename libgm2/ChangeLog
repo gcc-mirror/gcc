@@ -1,3 +1,35 @@
+2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.am (TARGET_LONGDOUBLE_ABI): New variable set to
+	-mabi=ieeelongdouble if the target is powerpc64le.
+	(AM_MAKEFLAGS): Append TARGET_LONGDOUBLE_ABI.
+	* Makefile.in: Rebuild.
+	* libm2cor/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2cor_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2cor_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2iso_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2iso_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2iso/Makefile.in: Rebuild.
+	* libm2log/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2log_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2log_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2log/Makefile.in: Rebuild.
+	* libm2min/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2min_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2min_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2min/Makefile.in: Rebuild.
+	* libm2pim/Makefile.am (AM_MAKEFLAGS): Add CFLAGS_LONGDOUBLE and
+	TARGET_LONGDOUBLE_ABI.
+	(libm2pim_la_CFLAGS): Add TARGET_LONGDOUBLE_ABI.
+	(libm2pim_la_M2FLAGS): Add TARGET_LONGDOUBLE_ABI.
+	* libm2pim/Makefile.in: Rebuild.
+
 2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add
