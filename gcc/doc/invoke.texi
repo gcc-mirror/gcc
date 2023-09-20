@@ -16348,6 +16348,13 @@ crossing a loop backedge when comparing to
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
 
+@item uninit-max-chain-len
+Maximum number of predicates anded for each predicate ored in the normalized
+predicate chain.
+
+@item uninit-max-num-chains
+Maximum number of predicates ored in the normalized predicate chain.
+
 @item sched-autopref-queue-depth
 Hardware autoprefetcher scheduler model control flag.
 Number of lookahead cycles the model looks into; at '
