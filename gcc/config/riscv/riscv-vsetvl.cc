@@ -1799,10 +1799,11 @@ vector_insn_info::operator== (const vector_insn_info &other) const
     if (m_demands[i] != other.demand_p ((enum demand_type) i))
       return false;
 
-  if (vector_config_insn_p (m_insn->rtl ())
-      || vector_config_insn_p (other.get_insn ()->rtl ()))
-    if (m_insn != other.get_insn ())
-      return false;
+  /* We should consider different INSN demands as different
+     expression.  Otherwise, we will be doing incorrect vsetvl
+     elimination.  */
+  if (m_insn != other.get_insn ())
+    return false;
 
   if (!same_avl_p (other))
     return false;
