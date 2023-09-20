@@ -69,6 +69,12 @@ public:
 					 + trait_seg.get () + ">");
   }
 
+  static CanonicalPath inherent_impl_seg (NodeId id,
+					  const CanonicalPath &impl_type_seg)
+  {
+    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + ">");
+  }
+
   std::string get () const
   {
     std::string buf;

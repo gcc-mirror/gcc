@@ -344,10 +344,14 @@ public:
   void visit (AST::InherentImpl &impl_block) override
   {
     std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
-    CanonicalPath impl_type
+    CanonicalPath impl_type_seg
       = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
 				raw_impl_type_path);
-    CanonicalPath impl_prefix = prefix.append (impl_type);
+
+    CanonicalPath impl_type
+      = CanonicalPath::inherent_impl_seg (impl_block.get_node_id (),
+					  impl_type_seg);
+    CanonicalPath impl_prefix = prefix.append (impl_type_seg);
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
