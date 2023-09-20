@@ -40,8 +40,9 @@ aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
       const struct dwarf_cie *cie = get_cie (fde);
       if (cie != NULL)
 	{
-	  char *aug_str = cie->augmentation;
-	  return strchr (aug_str, 'B') == NULL ? 0 : 1;
+	  const unsigned char *aug_str = cie->augmentation;
+	  return __builtin_strchr ((const char *) aug_str,
+				   'B') == NULL ? 0 : 1;
 	}
     }
   return 0;
