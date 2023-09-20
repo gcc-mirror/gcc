@@ -284,3 +284,8 @@ LIBGCCJIT_ABI_26 {
     gcc_jit_lvalue_add_string_attribute;
     gcc_jit_function_add_integer_array_attribute;
 } LIBGCCJIT_ABI_25;
+
+LIBGCCJIT_ABI_27 {
+  global:
+    gcc_jit_context_new_sizeof;
+} LIBGCCJIT_ABI_26;

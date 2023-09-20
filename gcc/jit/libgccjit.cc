@@ -2076,6 +2076,24 @@ gcc_jit_context_null (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_sizeof method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_sizeof (gcc_jit_context *ctxt,
+			    gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  RETURN_NULL_IF_FAIL (type, ctxt, NULL, "NULL type");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_sizeof (type));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::new_string_literal method in
    jit-recording.cc.  */
 
