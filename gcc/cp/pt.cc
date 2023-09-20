@@ -14370,7 +14370,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 
       /* Calculate the complete set of arguments used to
 	 specialize R.  */
-      if (use_spec_table)
+      if (use_spec_table && !lambda_fntype)
 	{
 	  argvec = tsubst_template_args (DECL_TI_ARGS
 					 (DECL_TEMPLATE_RESULT
@@ -14380,14 +14380,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	    return error_mark_node;
 
 	  /* Check to see if we already have this specialization.  */
-	  if (!lambda_fntype)
-	    {
-	      hash = spec_hasher::hash (gen_tmpl, argvec);
-	      if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-		/* The spec for these args might be a partial instantiation of the
-		   template, but here what we want is the FUNCTION_DECL.  */
-		return STRIP_TEMPLATE (spec);
-	    }
+	  hash = spec_hasher::hash (gen_tmpl, argvec);
+	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
+	    /* The spec for these args might be a partial instantiation of the
+	       template, but here what we want is the FUNCTION_DECL.  */
+	    return STRIP_TEMPLATE (spec);
 	}
       else
 	argvec = args;
@@ -14704,6 +14701,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 	    /* Type partial instantiations are stored as the type by
 	       lookup_template_class_1, not here as the template.  */
 	    spec = CLASSTYPE_TI_TEMPLATE (spec);
+	  else if (TREE_CODE (spec) != TEMPLATE_DECL)
+	    spec = DECL_TI_TEMPLATE (spec);
 	  return spec;
 	}
     }
@@ -14754,7 +14753,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 	inner = tsubst_aggr_type (inner, args, complain,
 				  in_decl, /*entering*/1);
       else
-	inner = tsubst (inner, args, complain, in_decl);
+	inner = tsubst_decl (inner, args, complain, /*use_spec_table=*/false);
     }
   --processing_template_decl;
   if (inner == error_mark_node)
@@ -14780,12 +14779,11 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     }
   else
     {
-      if (TREE_CODE (inner) == FUNCTION_DECL)
-	/* Set DECL_TI_ARGS to the full set of template arguments, which
-	   tsubst_function_decl didn't do due to use_spec_table=false.  */
-	DECL_TI_ARGS (inner) = full_args;
-
       DECL_TI_TEMPLATE (inner) = r;
+      /* Set DECL_TI_ARGS to the full set of template arguments,
+	 which tsubst_function_decl / tsubst_decl didn't do due to
+	 use_spec_table=false.  */
+      DECL_TI_ARGS (inner) = full_args;
       DECL_TI_ARGS (r) = DECL_TI_ARGS (inner);
     }
 
@@ -14813,9 +14811,17 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
-    /* Record this non-type partial instantiation.  */
-    register_specialization (r, t, full_args, false, hash);
+  if (!lambda_fntype && !class_p)
+    {
+      /* Record this non-type partial instantiation.  */
+      /* FIXME we'd like to always register the TEMPLATE_DECL, or always
+	 the DECL_TEMPLATE_RESULT, but it seems the modules code relies
+	 on this current behavior.  */
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	register_specialization (r, t, full_args, false, hash);
+      else
+	register_specialization (inner, t, full_args, false, hash);
+    }
 
   return r;
 }
