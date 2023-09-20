@@ -50,8 +50,8 @@
 
 /* In our predicate normal form we have MAX_NUM_CHAINS or predicates
    and in those MAX_CHAIN_LEN (inverted) and predicates.  */
-#define MAX_NUM_CHAINS 8
-#define MAX_CHAIN_LEN 5
+#define MAX_NUM_CHAINS (unsigned)param_uninit_max_num_chains
+#define MAX_CHAIN_LEN (unsigned)param_uninit_max_chain_len
 
 /* Return true if X1 is the negation of X2.  */
 
@@ -1162,11 +1162,12 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 			   vec<edge> cd_chains[], unsigned *num_chains,
 			   unsigned in_region = 0)
 {
-  auto_vec<edge, MAX_CHAIN_LEN + 1> cur_cd_chain;
+  auto_vec<edge, 10> cur_cd_chain;
   unsigned num_calls = 0;
   unsigned depth = 0;
   bool complete_p = true;
   /* Walk the post-dominator chain.  */
+  cur_cd_chain.reserve (MAX_CHAIN_LEN + 1);
   compute_control_dep_chain_pdom (dom_bb, dep_bb, NULL, cd_chains,
 				  num_chains, cur_cd_chain, &num_calls,
 				  in_region, depth, &complete_p);
@@ -2034,7 +2035,7 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      are logical conjunctions.  Together, the DEP_CHAINS vector is
      used below to initialize an OR expression of the conjunctions.  */
   unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge> *dep_chains = new auto_vec<edge>[MAX_NUM_CHAINS];
 
   if (!dfs_mark_dominating_region (use_bb, cd_root, in_region, region)
       || !compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
@@ -2059,6 +2060,7 @@ uninit_analysis::init_use_preds (predicate &use_preds, basic_block def_bb,
      Each OR subexpression is represented by one element of DEP_CHAINS,
      where each element consists of a series of AND subexpressions.  */
   use_preds.init_from_control_deps (dep_chains, num_chains, true);
+  delete[] dep_chains;
   return !use_preds.is_empty ();
 }
 
@@ -2143,7 +2145,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
       break;
 
   unsigned num_chains = 0;
-  auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
+  auto_vec<edge> *dep_chains = new auto_vec<edge>[MAX_NUM_CHAINS];
   for (unsigned i = 0; i < nedges; i++)
     {
       edge e = def_edges[i];
@@ -2174,6 +2176,7 @@ uninit_analysis::init_from_phi_def (gphi *phi)
      which the PHI operands are defined to values for which M_EVAL is
      false.  */
   m_phi_def_preds.init_from_control_deps (dep_chains, num_chains, false);
+  delete[] dep_chains;
   return !m_phi_def_preds.is_empty ();
 }
 
