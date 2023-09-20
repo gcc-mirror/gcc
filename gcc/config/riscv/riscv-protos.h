@@ -250,6 +250,9 @@ enum insn_flags : unsigned int
   /* flags for the floating-point rounding mode.  */
   /* Means INSN has FRM operand and the value is FRM_DYN.  */
   FRM_DYN_P = 1 << 15,
+
+  /* Means INSN has FRM operand and the value is FRM_RUP.  */
+  FRM_RUP_P = 1 << 16,
 };
 
 enum insn_type : unsigned int
@@ -290,6 +293,7 @@ enum insn_type : unsigned int
   UNARY_OP_TAMA = __MASK_OP_TAMA | UNARY_OP_P,
   UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
   UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
+  UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
 
   /* Binary operator.  */
   BINARY_OP = __NORMAL_OP | BINARY_OP_P,
@@ -432,6 +436,7 @@ bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_unop (unsigned, rtx *);
 void expand_cond_len_binop (unsigned, rtx *);
 void expand_reduction (unsigned, unsigned, rtx *, rtx);
+void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));

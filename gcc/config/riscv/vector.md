@@ -7438,7 +7438,7 @@
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:<VCONVERT>
-	     [(match_operand:VF 3 "register_operand"         " vr, vr, vr, vr")] VFCVTS)
+	     [(match_operand:V_VLSF 3 "register_operand"     " vr, vr, vr, vr")] VFCVTS)
 	  (match_operand:<VCONVERT> 2 "vector_merge_operand" " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "vfcvt.x<v_su>.f.v\t%0,%3%p1"
