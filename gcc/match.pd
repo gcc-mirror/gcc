@@ -2966,7 +2966,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
   (gt @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))
 
-/* Convert (X == CST1) && (X OP2 CST2) to a known value
+/* Convert (X == CST1) && ((other)X OP2 CST2) to a known value
    based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
 /* Convert (X == Y) && (X OP2 Y) to a known value if X is an integral type.
    Similarly for (X != Y).  */
@@ -2974,26 +2974,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_and:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (bit_and:c (code1:c@3 @0 @1) (code2:c@4 (convert?@c0 @0) @2))
    (if ((TREE_CODE (@1) == INTEGER_CST
 	 && TREE_CODE (@2) == INTEGER_CST)
 	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
 	     || POINTER_TYPE_P (TREE_TYPE (@1)))
-	    && operand_equal_p (@1, @2)))
+	    && bitwise_equal_p (@1, @2)))
     (with
      {
       bool one_before = false;
       bool one_after = false;
       int cmp = 0;
+      bool allbits = true;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
 	{
-	  cmp = tree_int_cst_compare (@1, @2);
+	  allbits = TYPE_PRECISION (TREE_TYPE (@1)) <= TYPE_PRECISION (TREE_TYPE (@2));
+	  auto t1 = wi::to_wide (fold_convert (TREE_TYPE (@2), @1));
+	  auto t2 = wi::to_wide (@2);
+	  cmp = wi::cmp (t1, t2, TYPE_SIGN (TREE_TYPE (@2)));
 	  if (cmp < 0
-	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	      && t1 == t2 - 1)
 	    one_before = true;
 	  if (cmp > 0
-	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	      && t1 == t2 + 1)
 	    one_after = true;
 	}
       bool val;
@@ -3011,25 +3015,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @3)
       (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
-      (if (code1 == NE_EXPR && !val) @4)
+      (if (code1 == NE_EXPR && !val && allbits) @4)
       (if (code1 == NE_EXPR
            && code2 == GE_EXPR
-	   && cmp == 0)
-       (gt @0 @1))
+	   && cmp == 0
+	   && allbits)
+       (gt @c0 (convert @1)))
       (if (code1 == NE_EXPR
            && code2 == LE_EXPR
-	   && cmp == 0)
-       (lt @0 @1))
+	   && cmp == 0
+	   && allbits)
+       (lt @c0 (convert @1)))
       /* (a != (b+1)) & (a > b) -> a > (b+1) */
       (if (code1 == NE_EXPR
            && code2 == GT_EXPR
-	   && one_after)
-       (gt @0 @1))
+	   && one_after
+	   && allbits)
+       (gt @c0 (convert @1)))
       /* (a != (b-1)) & (a < b) -> a < (b-1) */
       (if (code1 == NE_EXPR
            && code2 == LT_EXPR
-	   && one_before)
-       (lt @0 @1))
+	   && one_before
+	   && allbits)
+       (lt @c0 (convert @1)))
      )
     )
    )
@@ -3093,26 +3101,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_ior:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (bit_ior:c (code1:c@3 @0 @1) (code2:c@4 (convert?@c0 @0) @2))
    (if ((TREE_CODE (@1) == INTEGER_CST
 	 && TREE_CODE (@2) == INTEGER_CST)
 	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
 	    || POINTER_TYPE_P (TREE_TYPE (@1)))
-	    && operand_equal_p (@1, @2)))
+	    && bitwise_equal_p (@1, @2)))
     (with
      {
       bool one_before = false;
       bool one_after = false;
       int cmp = 0;
+      bool allbits = true;
       if (TREE_CODE (@1) == INTEGER_CST
 	  && TREE_CODE (@2) == INTEGER_CST)
 	{
-	  cmp = tree_int_cst_compare (@1, @2);
+	  allbits = TYPE_PRECISION (TREE_TYPE (@1)) <= TYPE_PRECISION (TREE_TYPE (@2));
+	  auto t1 = wi::to_wide (fold_convert (TREE_TYPE (@2), @1));
+	  auto t2 = wi::to_wide (@2);
+	  cmp = wi::cmp (t1, t2, TYPE_SIGN (TREE_TYPE (@2)));
 	  if (cmp < 0
-	      && wi::to_wide (@1) == wi::to_wide (@2) - 1)
+	      && t1 == t2 - 1)
 	    one_before = true;
 	  if (cmp > 0
-	      && wi::to_wide (@1) == wi::to_wide (@2) + 1)
+	      && t1 == t2 + 1)
 	    one_after = true;
 	}
       bool val;
@@ -3129,26 +3141,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      }
      (switch
       (if (code1 == EQ_EXPR && val) @4)
-      (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
-      (if (code1 == NE_EXPR && !val) @3)
+      (if (code1 == NE_EXPR && val && allbits) { constant_boolean_node (true, type); })
+      (if (code1 == NE_EXPR && !val && allbits) @3)
       (if (code1 == EQ_EXPR
            && code2 == GT_EXPR
-	   && cmp == 0)
-       (ge @0 @1))
+	   && cmp == 0
+	   && allbits)
+       (ge @c0 @2))
       (if (code1 == EQ_EXPR
            && code2 == LT_EXPR
-	   && cmp == 0)
-       (le @0 @1))
+	   && cmp == 0
+	   && allbits)
+       (le @c0 @2))
       /* (a == (b-1)) | (a >= b) -> a >= (b-1) */
       (if (code1 == EQ_EXPR
            && code2 == GE_EXPR
-	   && one_before)
-       (ge @0 @1))
+	   && one_before
+	   && allbits)
+       (ge @c0 (convert @1)))
       /* (a == (b+1)) | (a <= b) -> a <= (b-1) */
       (if (code1 == EQ_EXPR
            && code2 == LE_EXPR
-	   && one_after)
-       (le @0 @1))
+	   && one_after
+	   && allbits)
+       (le @c0 (convert @1)))
      )
     )
    )
