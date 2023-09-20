@@ -1107,7 +1107,7 @@ Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) Integer
 Maximum number of nested calls to search for control dependencies during uninitialized variable analysis.
 
 -param=uninit-max-chain-len=
-Common Joined UInteger Var(param_uninit_max_chain_len) Init(5) IntegerRange(1, 128) Param Optimization
+Common Joined UInteger Var(param_uninit_max_chain_len) Init(8) IntegerRange(1, 128) Param Optimization
 Maximum number of predicates anded for each predicate ored in the normalized
 predicate chain.
 
