@@ -1,5 +1,4 @@
 #include <stdint-gcc.h>
-#include <math.h>
 
 typedef int8_t v1qi __attribute__ ((vector_size (1)));
 typedef int8_t v2qi __attribute__ ((vector_size (2)));
