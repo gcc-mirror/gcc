@@ -1,3 +1,11 @@
+2023-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2023-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/111274
+	* parser.cc (fixup_blocks_walker): Check for null BIND_EXPR_BLOCK.
+
 2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,14 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as
+	implemented for C only.
+	* testsuite/libgomp.c/allocate-4.c: New test.
+	* testsuite/libgomp.c/allocate-5.c: New test.
+	* testsuite/libgomp.c/allocate-6.c: New test.
+
 2023-09-19  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (hsa_runtime_fn_info): Add hsa_amd_memory_lock_fn,

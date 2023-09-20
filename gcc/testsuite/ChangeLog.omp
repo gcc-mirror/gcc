@@ -1,3 +1,24 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-11.c: Remove C-only dg-message
+	for 'sorry, unimplemented'.
+	* c-c++-common/gomp/allocate-12.c: Likewise.
+	* c-c++-common/gomp/allocate-15.c: Likewise.
+	* c-c++-common/gomp/allocate-9.c: Likewise.
+	* c-c++-common/gomp/allocate-10.c: New test.
+	* c-c++-common/gomp/allocate-17.c: New test.
+
+2023-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2023-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/111274
+	* g++.dg/gomp/pr111274.C: New test case.
+
 2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

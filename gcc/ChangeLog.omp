@@ -1,3 +1,15 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Call GOMP_alloc/free for
+	'omp allocate' variables; move stack cleanup after other
+	cleanup.
+	(omp_notice_variable): Process original decl when decl
+	of the value-expression for a 'omp allocate' variable is passed.
+	* omp-low.cc (scan_omp_1_op): Handle 'omp allocate' variables
+
 2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
