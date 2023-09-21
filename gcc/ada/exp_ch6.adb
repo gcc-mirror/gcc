@@ -194,10 +194,6 @@ package body Exp_Ch6 is
    --  the activation Chain. Note: Master_Actual can be Empty, but only if
    --  there are no tasks.
 
-   function Build_Flag_For_Function (Func_Id : Entity_Id) return Entity_Id;
-   --  Generate code to declare a boolean flag initialized to False in the
-   --  function Func_Id and return the entity for the flag.
-
    function Caller_Known_Size
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean;
@@ -910,53 +906,6 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
    end BIP_Suffix_Kind;
-
-   -----------------------------
-   -- Build_Flag_For_Function --
-   -----------------------------
-
-   function Build_Flag_For_Function (Func_Id : Entity_Id) return Entity_Id is
-      Flag_Decl : Node_Id;
-      Flag_Id   : Entity_Id;
-      Func_Bod  : Node_Id;
-      Loc       : Source_Ptr;
-
-   begin
-      --  Recover the function body
-
-      Func_Bod := Unit_Declaration_Node (Func_Id);
-
-      if Nkind (Func_Bod) = N_Subprogram_Declaration then
-         Func_Bod := Parent (Parent (Corresponding_Body (Func_Bod)));
-      end if;
-
-      if Nkind (Func_Bod) = N_Function_Specification then
-         Func_Bod := Parent (Func_Bod); -- one more level for child units
-      end if;
-
-      pragma Assert (Nkind (Func_Bod) = N_Subprogram_Body);
-
-      Loc := Sloc (Func_Bod);
-
-      --  Create a flag to track the function state
-
-      Flag_Id := Make_Temporary (Loc, 'F');
-
-      --  Insert the flag at the beginning of the function declarations,
-      --  generate:
-      --    Fnn : Boolean := False;
-
-      Flag_Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Flag_Id,
-            Object_Definition => New_Occurrence_Of (Standard_Boolean, Loc),
-            Expression        => New_Occurrence_Of (Standard_False, Loc));
-
-      Prepend_To (Declarations (Func_Bod), Flag_Decl);
-      Analyze (Flag_Decl);
-
-      return Flag_Id;
-   end Build_Flag_For_Function;
 
    ---------------------------
    -- Build_In_Place_Formal --
@@ -5622,20 +5571,6 @@ package body Exp_Ch6 is
 
       HSS := Handled_Statement_Sequence (N);
 
-      --  If the returned object needs finalization actions, the function must
-      --  perform the appropriate cleanup should it fail to return. The state
-      --  of the function itself is tracked through a flag which is coupled
-      --  with the scope finalizer. There is one flag per each return object
-      --  in case of multiple extended returns. Note that the flag has already
-      --  been created if the extended return contains a nested return.
-
-      if Needs_Finalization (Etype (Ret_Obj_Id))
-        and then No (Status_Flag_Or_Transient_Decl (Ret_Obj_Id))
-      then
-         Set_Status_Flag_Or_Transient_Decl
-           (Ret_Obj_Id, Build_Flag_For_Function (Func_Id));
-      end if;
-
       --  Build a simple_return_statement that returns the return object when
       --  there is a statement sequence, or no expression, or the analysis of
       --  the return object declaration generated extra actions, or the result
@@ -5689,25 +5624,12 @@ package body Exp_Ch6 is
             end if;
          end if;
 
-         --  Update the state of the function right before the object is
-         --  returned.
+         --  If the returned object needs finalization actions, the function
+         --  must perform the appropriate cleanup should it fail to return.
 
          if Needs_Finalization (Etype (Ret_Obj_Id)) then
-            declare
-               Flag_Id : constant Entity_Id :=
-                           Status_Flag_Or_Transient_Decl (Ret_Obj_Id);
-
-            begin
-               pragma Assert (Present (Flag_Id));
-
-               --  Generate:
-               --    Fnn := True;
-
-               Append_To (Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Occurrence_Of (Flag_Id, Loc),
-                   Expression => New_Occurrence_Of (Standard_True, Loc)));
-            end;
+            Append_To
+              (Stmts, Make_Suppress_Object_Finalize_Call (Loc, Ret_Obj_Id));
          end if;
 
          HSS := Make_Handled_Sequence_Of_Statements (Loc, Stmts);
@@ -6368,8 +6290,6 @@ package body Exp_Ch6 is
          declare
             Ret_Obj_Id : constant Entity_Id := First_Entity (Scope_Id);
 
-            Flag_Id : Entity_Id;
-
          begin
             --  Apply the same processing as Expand_N_Extended_Return_Statement
             --  if the returned object needs finalization actions. Note that we
@@ -6377,22 +6297,8 @@ package body Exp_Ch6 is
             --  may be multiple nested returns within the extended one.
 
             if Needs_Finalization (Etype (Ret_Obj_Id)) then
-               if Present (Status_Flag_Or_Transient_Decl (Ret_Obj_Id)) then
-                  Flag_Id := Status_Flag_Or_Transient_Decl (Ret_Obj_Id);
-               else
-                  Flag_Id :=
-                    Build_Flag_For_Function (Return_Applies_To (Scope_Id));
-                  Set_Status_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
-               end if;
-
-               --  Generate:
-               --    Fnn := True;
-
-               Insert_Action (N,
-                 Make_Assignment_Statement (Loc,
-                   Name       =>
-                     New_Occurrence_Of (Flag_Id, Loc),
-                   Expression => New_Occurrence_Of (Standard_True, Loc)));
+               Insert_Action
+                 (N, Make_Suppress_Object_Finalize_Call (Loc, Ret_Obj_Id));
             end if;
 
             Rewrite (N,

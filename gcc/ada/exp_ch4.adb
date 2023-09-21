@@ -14927,25 +14927,17 @@ package body Exp_Ch4 is
          Obj_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
 
          Hook_Context : constant Node_Id := Find_Hook_Context (Expr);
-         --  The node on which to insert the hook as an action. This is usually
-         --  the innermost enclosing non-transient construct.
-
-         Fin_Call    : Node_Id;
-         Hook_Assign : Node_Id;
-         Hook_Clear  : Node_Id;
-         Hook_Decl   : Node_Id;
-         Hook_Insert : Node_Id;
-         Ptr_Decl    : Node_Id;
+         --  The node after which to insert deferred finalization actions. This
+         --  is usually the innermost enclosing non-transient construct.
 
          Fin_Context : Node_Id;
-         --  The node after which to insert the finalization actions of the
-         --  transient object.
+         --  The node after which to insert the finalization actions
+
+         Master_Node_Decl : Node_Id;
+         Master_Node_Id   : Entity_Id;
+         --  Declaration and entity of the Master_Node respectively
 
       begin
-         pragma Assert (Nkind (Expr) in N_Case_Expression
-                                      | N_Expression_With_Actions
-                                      | N_If_Expression);
-
          --  When the context is a Boolean evaluation, all three nodes capture
          --  the result of their computation in a local temporary:
 
@@ -14979,78 +14971,30 @@ package body Exp_Ch4 is
             Fin_Context := Hook_Context;
          end if;
 
-         --  Mark the transient object as successfully processed to avoid
-         --  double finalization.
+         --  Create the declaration of the Master_Node for the object and
+         --  insert it before the context. It will later be picked up by
+         --  the general finalization mechanism (see Build_Finalizer).
 
-         Set_Is_Finalized_Transient (Obj_Id);
+         Master_Node_Id := Make_Temporary (Loc, 'N');
+         Master_Node_Decl :=
+           Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
+         Insert_Action (Hook_Context, Master_Node_Decl);
 
-         --  Construct all the pieces necessary to hook and finalize a
-         --  transient object.
-
-         Build_Transient_Object_Statements
-           (Obj_Decl     => Obj_Decl,
-            Fin_Call     => Fin_Call,
-            Hook_Assign  => Hook_Assign,
-            Hook_Clear   => Hook_Clear,
-            Hook_Decl    => Hook_Decl,
-            Ptr_Decl     => Ptr_Decl,
-            Finalize_Obj => False);
-
-         --  Add the access type which provides a reference to the transient
-         --  object. Generate:
-
-         --    type Ptr_Typ is access all Desig_Typ;
-
-         Insert_Action (Hook_Context, Ptr_Decl);
-
-         --  Add the temporary which acts as a hook to the transient object.
-         --  Generate:
-
-         --    Hook : Ptr_Id := null;
-
-         Insert_Action (Hook_Context, Hook_Decl);
-
-         --  When the transient object is initialized by an aggregate, the hook
-         --  must capture the object after the last aggregate assignment takes
-         --  place. Only then is the object considered initialized. Generate:
-
-         --    Hook := Ptr_Typ (Obj_Id);
-         --      <or>
-         --    Hook := Obj_Id'Unrestricted_Access;
-
-         if Ekind (Obj_Id) in E_Constant | E_Variable
-           and then Present (Last_Aggregate_Assignment (Obj_Id))
-         then
-            Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
-
-         --  Otherwise the hook seizes the related object immediately
-
-         else
-            Hook_Insert := Obj_Decl;
-         end if;
-
-         Insert_After_And_Analyze (Hook_Insert, Hook_Assign);
-
-         --  When the node is part of a return statement, there is no need to
-         --  insert a finalization call, as the general finalization mechanism
-         --  (see Build_Finalizer) would take care of the transient object on
-         --  subprogram exit. Note that it would also be impossible to insert
-         --  the finalization code after the return statement as this will
-         --  render it unreachable.
+         --  When the node is part of a return statement, there is no need
+         --  to insert a finalization call, as the general finalization
+         --  mechanism (see Build_Finalizer) would take care of the master
+         --  on subprogram exit. Note that it would also be impossible to
+         --  insert the finalization call after the return statement as
+         --  this will render it unreachable.
 
          if Nkind (Fin_Context) = N_Simple_Return_Statement then
             null;
 
-         --  Finalize the hook after the context has been evaluated. Generate:
+         --  Finalize the object after the context has been evaluated
 
-         --    if Hook /= null then
-         --       [Deep_]Finalize (Hook.all);
-         --       Hook := null;
-         --    end if;
-
-         --  But the node returned by Find_Hook_Context may be an operator,
-         --  which is not a list member. We must locate the proper node
-         --  in the tree after which to insert the finalization code.
+         --  Note that the node returned by Find_Hook_Context above may be an
+         --  operator, which is not a list member. We must locate the proper
+         --  node in the tree after which to insert the finalization call.
 
          else
             while not Is_List_Member (Fin_Context) loop
@@ -15060,17 +15004,16 @@ package body Exp_Ch4 is
             pragma Assert (Present (Fin_Context));
 
             Insert_Action_After (Fin_Context,
-              Make_Implicit_If_Statement (Obj_Decl,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd  =>
-                      New_Occurrence_Of (Defining_Entity (Hook_Decl), Loc),
-                   Right_Opnd => Make_Null (Loc)),
-
-                Then_Statements => New_List (
-                 Fin_Call,
-                  Hook_Clear)));
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Occurrence_Of (RTE (RE_Finalize_Object), Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (Master_Node_Id, Loc))));
          end if;
+
+         --  Mark the transient object to avoid double finalization
+
+         Set_Is_Finalized_Transient (Obj_Id);
       end Process_Transient_In_Expression;
 
       --  Local variables

@@ -74,127 +74,212 @@ package body Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
-   --  This part describes how Initialization/Adjustment/Finalization
+   --  This paragraph describes how Initialization/Adjustment/Finalization
    --  procedures are generated and called. Two cases must be considered: types
-   --  that are Controlled (Is_Controlled flag set) and composite types that
+   --  that are controlled (Is_Controlled flag set) and composite types that
    --  contain controlled components (Has_Controlled_Component flag set). In
    --  the first case the procedures to call are the user-defined primitive
-   --  operations Initialize/Adjust/Finalize. In the second case, GNAT
+   --  operations Initialize/Adjust/Finalize. In the second case, the compiler
    --  generates Deep_Initialize, Deep_Adjust and Deep_Finalize that are in
    --  charge of calling the former procedures on the controlled components.
 
-   --  For records with Has_Controlled_Component set, a hidden "controller"
-   --  component is inserted. This controller component contains its own
-   --  finalization list on which all controlled components are attached
-   --  creating an indirection on the upper-level Finalization list. This
-   --  technique facilitates the management of objects whose number of
-   --  controlled components changes during execution. This controller
-   --  component is itself controlled and is attached to the upper-level
-   --  finalization chain. Its adjust primitive is in charge of calling adjust
-   --  on the components and adjusting the finalization pointer to match their
-   --  new location (see a-finali.adb).
-
-   --  It is not possible to use a similar technique for arrays that have
-   --  Has_Controlled_Component set. In this case, deep procedures are
-   --  generated that call initialize/adjust/finalize + attachment or
-   --  detachment on the finalization list for all component.
-
-   --  Initialize calls: they are generated for declarations or dynamic
-   --  allocations of Controlled objects with no initial value. They are always
-   --  followed by an attachment to the current Finalization Chain. For the
-   --  dynamic allocation case this the chain attached to the scope of the
-   --  access type definition otherwise, this is the chain of the current
+   --  Initialize calls: they are generated for either declarations or dynamic
+   --  allocations of controlled objects with no initial value. They are always
+   --  followed by an attachment to the current finalization chain. For the
+   --  dynamic allocation case, this is the chain attached to the scope of the
+   --  access type definition; otherwise, this is the chain of the current
    --  scope.
 
-   --  Adjust Calls: They are generated on 2 occasions: (1) for declarations
-   --  or dynamic allocations of Controlled objects with an initial value.
-   --  (2) after an assignment. In the first case they are followed by an
-   --  attachment to the final chain, in the second case they are not.
+   --  Adjust calls: they are generated on two occasions: (1) for declarations
+   --  or dynamic allocations of controlled objects with an initial value (with
+   --  the exception of function calls), (2) after an assignment. In the first
+   --  case they are followed by an attachment to the finalization chain, in
+   --  the second case they are not.
 
-   --  Finalization Calls: They are generated on (1) scope exit, (2)
-   --  assignments, (3) unchecked deallocations. In case (3) they have to
-   --  be detached from the final chain, in case (2) they must not and in
-   --  case (1) this is not important since we are exiting the scope anyway.
+   --  Finalization calls: they are generated on three occasions: (1) on scope
+   --  exit, (2) assignments, (3) unchecked deallocations. In case (3) objects
+   --  have to be detached from the finalization chain, in case (2) they must
+   --  not and in case (1) this is optional as we are exiting the scope anyway.
 
-   --  Other details:
-
-   --    Type extensions will have a new record controller at each derivation
-   --    level containing controlled components. The record controller for
-   --    the parent/ancestor is attached to the finalization list of the
-   --    extension's record controller (i.e. the parent is like a component
-   --    of the extension).
-
-   --    For types that are both Is_Controlled and Has_Controlled_Components,
-   --    the record controller and the object itself are handled separately.
-   --    It could seem simpler to attach the object at the end of its record
-   --    controller but this would not tackle view conversions properly.
-
-   --    A classwide type can always potentially have controlled components
-   --    but the record controller of the corresponding actual type may not
-   --    be known at compile time so the dispatch table contains a special
-   --    field that allows computation of the offset of the record controller
-   --    dynamically. See s-finimp.Deep_Tag_Attach and a-tags.RC_Offset.
-
-   --  Here is a simple example of the expansion of a controlled block :
+   --  Here is a simple example of the expansion of a controlled block:
 
    --    declare
-   --       X : Controlled;
-   --       Y : Controlled := Init;
-   --
-   --       type R is record
-   --          C : Controlled;
+   --       X : Ctrl;
+   --       Y : Ctrl := Init;
+
+   --       type Rec is record
+   --          C : Ctrl;
    --       end record;
-   --       W : R;
-   --       Z : R := (C => X);
+
+   --       W : Rec;
+   --       Z : Rec := Init;
 
    --    begin
    --       X := Y;
    --       W := Z;
    --    end;
    --
-   --  is expanded into
+   --  is expanded into:
    --
    --    declare
-   --       _L : System.FI.Finalizable_Ptr;
+   --       Mnn : System.Finalization_Primitives.Finalization_Scope_Master;
 
-   --       procedure _Clean is
-   --       begin
-   --          Abort_Defer;
-   --          System.FI.Finalize_List (_L);
-   --          Abort_Undefer;
-   --       end _Clean;
-
-   --       X : Controlled;
-   --       begin
+   --       XMN : aliased System.Finalization_Primitives.Master_Node;
+   --       X : Ctrl;
+   --       Bnn : begin
    --          Abort_Defer;
    --          Initialize (X);
-   --          Attach_To_Final_List (_L, Finalizable (X), 1);
-   --       at end: Abort_Undefer;
-   --       Y : Controlled := Init;
-   --       Adjust (Y);
-   --       Attach_To_Final_List (_L, Finalizable (Y), 1);
-   --
-   --       type R is record
-   --          C : Controlled;
+   --          System.Finalization_Primitives.Attach_To_Master
+   --            (X'address,
+   --             CtrlFD'unrestricted_access,
+   --             XMN'unrestricted_access,
+   --             Mnn);
+   --       at end
+   --          Abort_Undefer;
+   --       end Bnn;
+
+   --       YMN : aliased System.Finalization_Primitives.Master_Node;
+   --       Y : Ctrl := Init;
+   --       System.Finalization_Primitives.Attach_To_Master
+   --         (Y'address,
+   --          CtrlFD'unrestricted_access,
+   --          YMN'unrestricted_access,
+   --          Mnn);
+
+   --       type Rec is record
+   --          C : Ctrl;
    --       end record;
-   --       W : R;
+
+   --       WMN : aliased System.Finalization_Primitives.Master_Node;
+   --       W : Rec;
+   --       Bnn : begin
+   --          Abort_Defer;
+   --          Bnn : begin
+   --             Deep_Initialize (W);
+   --             System.Finalization_Primitives.Attach_To_Master
+   --               (W'address,
+   --                Rec_FD'unrestricted_access,
+   --                WMN'unrestricted_access,
+   --                Mnn);
+   --          exception
+   --             when others =>
+   --                Deep_Finalize (W);
+   --          end Bnn;
+   --       at end
+   --          Abort_Undefer;
+   --       end Bnn;
+
+   --       ZMN : aliaed System.Finalization_Primitives.Master_Node;
+   --       Z : Rec := Init;
+   --       System.Finalization_Primitives.Attach_To_Master
+   --         (Z'address,
+   --          Rec_FD'unrestricted_access,
+   --          ZMN'unrestricted_access,
+   --          Mnn);
+
+   --       procedure _Finalizer is
+   --          Ann : constant Boolean := Ada.Exceptions.Triggered_By_Abort;
+   --          Rnn : boolean := False;
    --       begin
    --          Abort_Defer;
-   --          Deep_Initialize (W, _L, 1);
-   --       at end: Abort_Under;
-   --       Z : R := (C => X);
-   --       Deep_Adjust (Z, _L, 1);
+   --          Bnn : begin
+   --             System.Finalization_Primitives.Finalize_Master (Mnn);
+   --          exceptions
+   --             when others =>
+   --                Rnn := True;
+   --          end Bnn;
+   --          Abort_Undefer;
+   --          if Rnn and then not Ann then
+   --             [program_error "finalize raised exception"]
+   --          end if;
+   --       end _Finalizer;
 
    --    begin
    --       _Assign (X, Y);
-   --       Deep_Finalize (W, False);
-   --       <save W's final pointers>
+   --       Deep_Finalize (W);
    --       W := Z;
-   --       <restore W's final pointers>
-   --       Deep_Adjust (W, _L, 0);
-   --    at end
-   --       _Clean;
+   --       Deep_Adjust (W);
    --    end;
+   --    at end
+   --       _Finalizer;
+
+   --  In the case of a block containing a single controlled object, the scope
+   --  master degenerates into a single master node:
+
+   --    declare
+   --       X : Ctrl := Init;
+
+   --    begin
+   --       null;
+   --    end;
+
+   --  is expanded into:
+
+   --    declare
+   --       XMN : aliased System.Finalization_Primitives.Master_Node;
+   --       X : Ctrl := Init;
+   --       System.Finalization_Primitives.Attach_To_Node
+   --         (X'address,
+   --          CtrlFD'unrestricted_access,
+   --          XMN'unrestricted_access);
+
+   --       procedure _Finalizer is
+   --          Ann : constant Boolean := Ada.Exceptions.Triggered_By_Abort;
+   --          Rnn : boolean := False;
+   --       begin
+   --          Abort_Defer;
+   --          Bnn : begin
+   --              System.Finalization_Primitives.Finalize_Object (XMN);
+   --          exceptions
+   --             when others =>
+   --                Rnn := True;
+   --          end Bnn;
+   --          Abort_Undefer;
+   --          if Rnn and then not Ann then
+   --             [program_error "finalize raised exception"]
+   --          end if;
+   --       end _Finalizer;
+
+   --    begin
+   --       null;
+   --    end;
+   --    at end
+   --       _Finalizer;
+
+   --  The implementation uses two different strategies for the finalization
+   --  of (statically) declared objects and of dynamically allocated objects.
+
+   --  For (statically) declared objects, the attachment to the finalization
+   --  chain of the current scope and the call to the finalization procedure
+   --  are generated during a post-processing phase of the expansion. These
+   --  objects are first spotted in declarative parts and statement lists by
+   --  Requires_Cleanup_Actions; then Build_Finalizer is called on the parent
+   --  node to generate both the attachment and the finalization actions.
+
+   --  This post processing is fully transparent for the rest of the expansion
+   --  activities, in other words those have nothing to do or to care about.
+   --  However this default processing may not be sufficient in specific cases,
+   --  e.g. for the return object of an extended return statement in a function
+   --  whose result type is controlled: in this case, the return object must be
+   --  finalized only if the function returns abnormally. In order to deal with
+   --  these cases, it is possible to directly generate detachment actions (for
+   --  the return object case) or finalization actions (for transient objects)
+   --  during the rest of expansion activities.
+
+   --  These direct actions must be signalled to the post-processing machinery
+   --  and this is achieved through the handling of Master_Node objects, which
+   --  are the items actually chained in finalization chains of scope masters.
+   --  With the default processing, they are created by Build_Finalizer for the
+   --  controlled objects spotted by Requires_Cleanup_Actions. But when direct
+   --  actions are carried out, they are generated by these actions and later
+   --  recognized by Requires_Cleanup_Actions and picked up by Build_Finalizer.
+
+   --  For dynamically allocated objects, there is no post-processing phase and
+   --  the objects are automatically attached and detached when they are being
+   --  allocated or deallocated. In other words, there are no direct attachment
+   --  or detachment actions generated by the compiler; instead they are fully
+   --  carried out by the run-time library when it is invoked by the allocation
+   --  and deallocation actions generated by the compiler.
 
    type Final_Primitives is
      (Initialize_Case, Adjust_Case, Finalize_Case, Address_Case);
@@ -397,6 +482,10 @@ package body Exp_Ch7 is
    --  the same library-level declarative list, to replicate the semantics of
    --  the original loop. Such loops can occur due to aggregate expansions and
    --  other constructs.
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -1284,6 +1373,13 @@ package body Exp_Ch7 is
          elsif Is_Frozen (Desig_Typ)
            and then Present (Finalize_Address (Desig_Typ))
 
+           --  The Finalize_Address procedure for a class-wide type may exist
+           --  at this point (as created by Expand_Freeze_Record_Type), but
+           --  may not have been analyzed yet, so the Set_Finalize_Address call
+           --  generation must be deferred (to Freeze_Type) in that case.
+
+           and then Analyzed (Finalize_Address (Desig_Typ))
+
            --  The finalization master of an anonymous access type may need
            --  to be inserted in a specific place in the tree. For instance:
 
@@ -1404,17 +1500,8 @@ package body Exp_Ch7 is
       --  structures right from the start. Entities and lists are created once
       --  it has been established that N has at least one controlled object.
 
-      Components_Built : Boolean := False;
-      --  A flag used to avoid double initialization of entities and lists. If
-      --  the flag is set then the following variables have been initialized:
-      --    Counter_Id
-      --    Finalizer_Decls
-      --    Finalizer_Stmts
-      --    Jump_Alts
-
-      Counter_Id  : Entity_Id := Empty;
-      Counter_Val : Nat       := 0;
-      --  Name and value of the state counter
+      Counter_Val : Nat := 0;
+      --  Holds the number of controlled objects encountered so far
 
       Decls : List_Id := No_List;
       --  Declarative region of N (if available). If N is a package declaration
@@ -1424,29 +1511,13 @@ package body Exp_Ch7 is
       --  Data for the exception
 
       Finalizer_Decls : List_Id := No_List;
-      --  Local variable declarations. This list holds the label declarations
-      --  of all jump block alternatives as well as the declaration of the
-      --  local exception occurrence and the raised flag:
-      --     E : Exception_Occurrence;
-      --     Raised : Boolean := False;
-      --     L<counter value> : label;
+      --  Local variable declarations
 
-      Finalizer_Insert_Nod : Node_Id := Empty;
-      --  Insertion point for the finalizer body. Depending on the context
-      --  (Nkind of N) and the individual grouping of controlled objects, this
-      --  node may denote a package declaration or body, package instantiation,
-      --  block statement or a counter update statement.
+      Finalization_Scope_Master : Entity_Id;
+      --  The Finalization Scope Master object
 
       Finalizer_Stmts : List_Id := No_List;
-      --  The statement list of the finalizer body. It contains the following:
-      --
-      --    Abort_Defer;               --  Added if abort is allowed
-      --    <call to Prev_At_End>      --  Added if exists
-      --    <cleanup statements>       --  Added if Acts_As_Clean
-      --    <jump block>               --  Added if Has_Ctrl_Objs
-      --    <finalization statements>  --  Added if Has_Ctrl_Objs
-      --    <stack release>            --  Added if Mark_Id exists
-      --    Abort_Undefer;             --  Added if abort is allowed
+      --  The statement list of the finalizer body
 
       Has_Ctrl_Objs : Boolean := False;
       --  A general flag which denotes whether N has at least one controlled
@@ -1458,23 +1529,6 @@ package body Exp_Ch7 is
 
       HSS : Node_Id := Empty;
       --  The sequence of statements of N (if available)
-
-      Jump_Alts : List_Id := No_List;
-      --  Jump block alternatives. Depending on the value of the state counter,
-      --  the control flow jumps to a sequence of finalization statements. This
-      --  list contains the following:
-      --
-      --     when <counter value> =>
-      --        goto L<counter value>;
-
-      Jump_Block_Insert_Nod : Node_Id := Empty;
-      --  Specific point in the finalizer statements where the jump block is
-      --  inserted.
-
-      Last_Top_Level_Ctrl_Construct : Node_Id := Empty;
-      --  The last controlled construct encountered when processing the top
-      --  level lists of N. This can be a nested package, an instantiation or
-      --  an object declaration.
 
       Prev_At_End : Entity_Id := Empty;
       --  The previous at end procedure of the handled statements block of N
@@ -1509,23 +1563,18 @@ package body Exp_Ch7 is
 
       procedure Process_Declarations
         (Decls      : List_Id;
-         Preprocess : Boolean := False;
-         Top_Level  : Boolean := False);
+         Preprocess : Boolean := False);
       --  Inspect a list of declarations or statements which may contain
       --  objects that need finalization. When flag Preprocess is set, the
       --  routine will simply count the total number of controlled objects in
-      --  Decls and set Counter_Val accordingly. Top_Level is only relevant
-      --  when Preprocess is set and if True, the processing is performed for
-      --  objects in nested package declarations or instances.
+      --  Decls and set Counter_Val accordingly.
 
       procedure Process_Object_Declaration
         (Decl         : Node_Id;
-         Has_No_Init  : Boolean := False;
          Is_Protected : Boolean := False);
       --  Generate all the machinery associated with the finalization of a
-      --  single object. Flag Has_No_Init is used to denote certain contexts
-      --  where Decl does not have initialization call(s). Flag Is_Protected
-      --  is set when Decl denotes a simple protected object.
+      --  single object. Flag Is_Protected is set when Decl denotes a simple
+      --  protected object.
 
       procedure Process_Tagged_Type_Declaration (Decl : Node_Id);
       --  Generate all the code necessary to unregister the external tag of a
@@ -1536,97 +1585,75 @@ package body Exp_Ch7 is
       ----------------------
 
       procedure Build_Components is
-         Counter_Decl     : Node_Id;
-         Counter_Typ      : Entity_Id;
-         Counter_Typ_Decl : Node_Id;
+         Constraints       : List_Id;
+         Scope_Master_Decl : Node_Id;
+         Scope_Master_Name : Name_Id;
 
       begin
          pragma Assert (Present (Decls));
 
-         --  This routine might be invoked several times when dealing with
-         --  constructs that have two lists (either two declarative regions
-         --  or declarations and statements). Avoid double initialization.
-
-         if Components_Built then
-            return;
-         end if;
-
-         Components_Built := True;
+         --  If the context contains controlled objects, then we create the
+         --  finalization scope master, unless there is a single such object;
+         --  in this common case, we'll directly finalize the object.
 
          if Has_Ctrl_Objs then
+            if Counter_Val > 1 then
+               if For_Package_Spec then
+                  Scope_Master_Name :=
+                    New_External_Name (Name_uMaster, Suffix => "_spec");
+               elsif For_Package_Body then
+                  Scope_Master_Name :=
+                    New_External_Name (Name_uMaster, Suffix => "_body");
+               else
+                  Scope_Master_Name := New_Internal_Name ('M');
+               end if;
 
-            --  Create entities for the counter, its type, the local exception
-            --  and the raised flag.
+               Finalization_Scope_Master :=
+                 Make_Defining_Identifier (Loc, Scope_Master_Name);
 
-            Counter_Id  := Make_Temporary (Loc, 'C');
-            Counter_Typ := Make_Temporary (Loc, 'T');
+               --  The scope master is statically parameterized by the context
 
-            Finalizer_Decls := New_List;
+               Constraints := New_List;
+               Append_To (Constraints,
+                 New_Occurrence_Of (Boolean_Literals (Exceptions_OK), Loc));
+               Append_To (Constraints,
+                 New_Occurrence_Of
+                  (Boolean_Literals (Exception_Extra_Info), Loc));
+               Append_To (Constraints,
+                 New_Occurrence_Of (Boolean_Literals (For_Package), Loc));
 
-            Build_Object_Declarations
-              (Finalizer_Data, Finalizer_Decls, Loc, For_Package);
+               Scope_Master_Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Finalization_Scope_Master,
+                   Object_Definition   =>
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of
+                           (RTE (RE_Finalization_Scope_Master), Loc),
+                       Constraint  =>
+                         Make_Index_Or_Discriminant_Constraint (Loc,
+                           Constraints => Constraints)));
 
-            --  Since the total number of controlled objects is always known,
-            --  build a subtype of Natural with precise bounds. This allows
-            --  the backend to optimize the case statement. Generate:
-            --
-            --    subtype Tnn is Natural range 0 .. Counter_Val;
-
-            Counter_Typ_Decl :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Counter_Typ,
-                Subtype_Indication  =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark => New_Occurrence_Of (Standard_Natural, Loc),
-                    Constraint   =>
-                      Make_Range_Constraint (Loc,
-                        Range_Expression =>
-                          Make_Range (Loc,
-                            Low_Bound  =>
-                              Make_Integer_Literal (Loc, Uint_0),
-                            High_Bound =>
-                              Make_Integer_Literal (Loc, Counter_Val)))));
-
-            --  Generate the declaration of the counter itself:
-            --
-            --    Counter : Integer := 0;
-
-            Counter_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Counter_Id,
-                Object_Definition   => New_Occurrence_Of (Counter_Typ, Loc),
-                Expression          => Make_Integer_Literal (Loc, 0));
-
-            --  Set the type of the counter explicitly to prevent errors when
-            --  examining object declarations later on.
-
-            Set_Etype (Counter_Id, Counter_Typ);
-
-            if Debug_Generated_Code then
-               Set_Debug_Info_Needed (Counter_Id);
+               Prepend_To (Decls, Scope_Master_Decl);
+               Analyze (Scope_Master_Decl, Suppress => All_Checks);
             end if;
 
-            --  The counter and its type are inserted before the source
-            --  declarations of N.
+            if Exceptions_OK then
+               Finalizer_Decls := New_List;
 
-            Prepend_To (Decls, Counter_Decl);
-            Prepend_To (Decls, Counter_Typ_Decl);
+               Build_Object_Declarations
+                 (Finalizer_Data, Finalizer_Decls, Loc, For_Package);
 
-            --  The counter and its associated type must be manually analyzed
-            --  since N has already been analyzed.
-
-            Analyze (Counter_Typ_Decl);
-            Analyze (Counter_Decl);
-
-            Jump_Alts := New_List;
+            else
+               Finalizer_Decls := No_List;
+            end if;
          end if;
 
          --  If the context requires additional cleanup, the finalization
          --  machinery is added after the cleanup code.
 
          if Acts_As_Clean then
-            Finalizer_Stmts       := Clean_Stmts;
-            Jump_Block_Insert_Nod := Last (Finalizer_Stmts);
+            Finalizer_Stmts := Clean_Stmts;
          else
             Finalizer_Stmts := New_List;
          end if;
@@ -1643,10 +1670,8 @@ package body Exp_Ch7 is
       procedure Create_Finalizer is
          Body_Id    : Entity_Id;
          Fin_Body   : Node_Id;
+         Fin_Call   : Node_Id;
          Fin_Spec   : Node_Id;
-         Jump_Block : Node_Id;
-         Label      : Node_Id;
-         Label_Id   : Entity_Id;
 
       begin
          --  Step 1: Creation of the finalizer name
@@ -1674,37 +1699,6 @@ package body Exp_Ch7 is
             Fin_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Name_uFinalizer));
-
-            --  The visibility semantics of AT_END handlers force a strange
-            --  separation of spec and body for stack-related finalizers:
-
-            --     declare : Enclosing_Scope
-            --        procedure _finalizer;
-            --     begin
-            --        <controlled objects>
-            --        procedure _finalizer is
-            --           ...
-            --     at end
-            --        _finalizer;
-            --     end;
-
-            --  Both spec and body are within the same construct and scope, but
-            --  the body is part of the handled sequence of statements. This
-            --  placement confuses the elaboration mechanism on targets where
-            --  AT_END handlers are expanded into "when all others" handlers:
-
-            --     exception
-            --        when all others =>
-            --           _finalizer;  --  appears to require elab checks
-            --     at end
-            --        _finalizer;
-            --     end;
-
-            --  Since the compiler guarantees that the body of a _finalizer is
-            --  always inserted in the same construct where the AT_END handler
-            --  resides, there is no need for elaboration checks.
-
-            Set_Kill_Elaboration_Checks (Fin_Id);
 
             --  Inlining the finalizer produces a substantial speedup at -O2.
             --  It is inlined by default at -O3. Either way, it is called
@@ -1738,69 +1732,16 @@ package body Exp_Ch7 is
 
          --  Step 3: Creation of the finalizer body
 
-        --  Has_Ctrl_Objs might be set because of a generic package body having
-        --  controlled objects. In this case, Jump_Alts may be empty and no
-        --  case nor goto statements are needed.
-
-         if Has_Ctrl_Objs
-           and then not Is_Empty_List (Jump_Alts)
-         then
-            --  Add L0, the default destination to the jump block
-
-            Label_Id := Make_Identifier (Loc, New_External_Name ('L', 0));
-            Set_Entity (Label_Id,
-              Make_Defining_Identifier (Loc, Chars (Label_Id)));
-            Label := Make_Label (Loc, Label_Id);
-
-            --  Generate:
-            --    L0 : label;
-
-            Prepend_To (Finalizer_Decls,
-              Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier => Entity (Label_Id),
-                Label_Construct     => Label));
-
-            --  Generate:
-            --    when others =>
-            --       goto L0;
-
-            Append_To (Jump_Alts,
-              Make_Case_Statement_Alternative (Loc,
-                Discrete_Choices => New_List (Make_Others_Choice (Loc)),
-                Statements       => New_List (
-                  Make_Goto_Statement (Loc,
-                    Name => New_Occurrence_Of (Entity (Label_Id), Loc)))));
-
-            --  Generate:
-            --    <<L0>>
-
-            Append_To (Finalizer_Stmts, Label);
-
-            --  Create the jump block which controls the finalization flow
-            --  depending on the value of the state counter.
-
-            Jump_Block :=
-              Make_Case_Statement (Loc,
-                Expression   => Make_Identifier (Loc, Chars (Counter_Id)),
-                Alternatives => Jump_Alts);
-
-            if Acts_As_Clean and then Present (Jump_Block_Insert_Nod) then
-               Insert_After (Jump_Block_Insert_Nod, Jump_Block);
-            else
-               Prepend_To (Finalizer_Stmts, Jump_Block);
-            end if;
-         end if;
-
          --  Add the library-level tagged type unregistration machinery before
-         --  the jump block circuitry. This ensures that external tags will be
-         --  removed even if a finalization exception occurs at some point.
+         --  the finalization circuitry. This ensures that external tags will
+         --  be removed even if a finalization exception occurs at some point.
 
          if Has_Tagged_Types then
             Prepend_List_To (Finalizer_Stmts, Tagged_Type_Stmts);
          end if;
 
          --  Add a call to the previous At_End handler if it exists. The call
-         --  must always precede the jump block.
+         --  must always precede the finalization circuitry.
 
          if Present (Prev_At_End) then
             Prepend_To (Finalizer_Stmts,
@@ -1810,6 +1751,69 @@ package body Exp_Ch7 is
             --  proper replacement call for it.
 
             Set_At_End_Proc (HSS, Empty);
+         end if;
+
+         --   If there are no controlled objects to be finalized, generate;
+
+         --    procedure Fin_Id is
+         --    begin
+         --       Abort_Defer;               --  Added if abort is allowed
+         --       <call to Prev_At_End>      --  Added if exists
+         --       <tag unregistration>       --  Added if Has_Tagged_Types
+         --       <cleanup statements>       --  Added if Acts_As_Clean
+         --       <stack release>            --  Added if Mark_Id exists
+         --       Abort_Undefer;             --  Added if abort is allowed
+         --    end Fin_Id;
+
+         --  If there are controlled objects to be finalized, generate:
+
+         --    procedure Fin_Id is
+         --       Abort  : constant Boolean := Triggered_By_Abort;
+         --       E      : Exception_Occurrence;
+         --       Raised : Boolean := False;
+         --    begin
+         --       Abort_Defer;               --  Added if abort is allowed
+         --       <call to Prev_At_End>      --  Added if exists
+         --       <tag unregistration>       --  Added if Has_Tagged_Types
+         --       <cleanup statements>       --  Added if Acts_As_Clean
+         --       <finalization statements>
+         --       <stack release>            --  Added if Mark_Id exists
+         --       Abort_Undefer;             --  Added if abort is allowed
+         --    end Fin_Id;
+
+         if Has_Ctrl_Objs and then Counter_Val > 1 then
+            Fin_Call :=
+              Make_Procedure_Call_Statement (Loc,
+               Name                   =>
+                 New_Occurrence_Of (RTE (RE_Finalize_Master), Loc),
+                 Parameter_Associations =>
+                   New_List
+                     (New_Occurrence_Of (Finalization_Scope_Master, Loc)));
+
+            --  For CodePeer, the exception handlers normally generated here
+            --  generate complex flowgraphs which result in capacity problems.
+            --  Omitting these handlers for CodePeer is justified as follows:
+
+            --    If a handler is dead, then omitting it is surely ok
+
+            --    If a handler is live, then CodePeer should flag the
+            --      potentially-exception-raising construct that causes it
+            --      to be live. That is what we are interested in, not what
+            --      happens after the exception is raised.
+
+            if Exceptions_OK and not CodePeer_Mode then
+               Fin_Call :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (Fin_Call),
+
+                    Exception_Handlers => New_List (
+                      Build_Exception_Handler
+                        (Finalizer_Data, For_Package))));
+            end if;
+
+            Append_To (Finalizer_Stmts, Fin_Call);
          end if;
 
          --  Release the secondary stack
@@ -1866,7 +1870,7 @@ package body Exp_Ch7 is
          --  Protect the statements with abort defer/undefer. This is only when
          --  aborts are allowed and the cleanup statements require deferral or
          --  there are controlled objects to be finalized. Note that the abort
-         --  defer/undefer pair does not require an extra block because each
+         --  defer/undefer pair does not require an extra block because the
          --  finalization exception is caught in its corresponding finalization
          --  block. As a result, the call to Abort_Defer always takes place.
 
@@ -1890,29 +1894,6 @@ package body Exp_Ch7 is
             Append_To (Finalizer_Stmts,
               Build_Raise_Statement (Finalizer_Data));
          end if;
-
-         --  Generate:
-         --    procedure Fin_Id is
-         --       Abort  : constant Boolean := Triggered_By_Abort;
-         --         <or>
-         --       Abort  : constant Boolean := False;  --  no abort
-
-         --       E      : Exception_Occurrence;  --  All added if flag
-         --       Raised : Boolean := False;      --  Has_Ctrl_Objs is set
-         --       L0     : label;
-         --       ...
-         --       Lnn    : label;
-
-         --    begin
-         --       Abort_Defer;               --  Added if abort is allowed
-         --       <call to Prev_At_End>      --  Added if exists
-         --       <cleanup statements>       --  Added if Acts_As_Clean
-         --       <jump block>               --  Added if Has_Ctrl_Objs
-         --       <finalization statements>  --  Added if Has_Ctrl_Objs
-         --       <stack release>            --  Added if Mark_Id exists
-         --       Abort_Undefer;             --  Added if abort is allowed
-         --       <exception propagation>    --  Added if Has_Ctrl_Objs
-         --    end Fin_Id;
 
          --  Create the body of the finalizer
 
@@ -1941,123 +1922,32 @@ package body Exp_Ch7 is
 
          if For_Package then
 
-            --  If the package spec has private declarations, the finalizer
-            --  body must be added to the end of the list in order to have
-            --  visibility of all private controlled objects.
+            --  If a package spec has private declarations, both the finalizer
+            --  spec and body are inserted at the end of this list.
 
-            if For_Package_Spec then
-               if Present (Priv_Decls) then
-                  Append_To (Priv_Decls, Fin_Spec);
-                  Append_To (Priv_Decls, Fin_Body);
-               else
-                  Append_To (Decls, Fin_Spec);
-                  Append_To (Decls, Fin_Body);
-               end if;
+            if For_Package_Spec and then Present (Priv_Decls) then
+               Append_To (Priv_Decls, Fin_Spec);
+               Append_To (Priv_Decls, Fin_Body);
 
-            --  For package bodies, both the finalizer spec and body are
-            --  inserted at the end of the package declarations.
+            --  Otherwise, and for a package body, both the finalizer spec and
+            --  body are inserted at the end of the package declarations.
 
             else
                Append_To (Decls, Fin_Spec);
                Append_To (Decls, Fin_Body);
             end if;
 
-            Analyze (Fin_Spec);
-            Analyze (Fin_Body);
-
          --  Non-package case
 
          else
-            --  Create the spec for the finalizer. The At_End handler must be
-            --  able to call the body which resides in a nested structure.
-
-            --  Generate:
-            --    declare
-            --       procedure Fin_Id;                  --  Spec
-            --    begin
-            --       <objects and possibly statements>
-            --       procedure Fin_Id is ...            --  Body
-            --       <statements>
-            --    at end
-            --       Fin_Id;                            --  At_End handler
-            --    end;
-
             pragma Assert (Present (Spec_Decls));
 
-            --  It maybe possible that we are finalizing 'Old objects which
-            --  exist in the spec declarations. When this is the case the
-            --  Finalizer_Insert_Node will come before the end of the
-            --  Spec_Decls. So, to mitigate this, we insert the finalizer spec
-            --  earlier at the Finalizer_Insert_Nod instead of appending to the
-            --  end of Spec_Decls to prevent its body appearing before its
-            --  corresponding spec.
-
-            if Present (Finalizer_Insert_Nod)
-              and then List_Containing (Finalizer_Insert_Nod) = Spec_Decls
-            then
-               Insert_After_And_Analyze (Finalizer_Insert_Nod, Fin_Spec);
-               Finalizer_Insert_Nod := Fin_Spec;
-
-            --  Otherwise, Finalizer_Insert_Nod is not in Spec_Decls
-
-            else
-               Append_To (Spec_Decls, Fin_Spec);
-               Analyze (Fin_Spec);
-            end if;
-
-            --  When the finalizer acts solely as a cleanup routine, the body
-            --  is inserted right after the spec.
-
-            if Acts_As_Clean and not Has_Ctrl_Objs then
-               Insert_After (Fin_Spec, Fin_Body);
-
-            --  In all other cases the body is inserted after either:
-            --
-            --    1) The counter update statement of the last controlled object
-            --    2) The last top level nested controlled package
-            --    3) The last top level controlled instantiation
-
-            else
-               --  Manually freeze the spec. This is somewhat of a hack because
-               --  a subprogram is frozen when its body is seen and the freeze
-               --  node appears right before the body. However, in this case,
-               --  the spec must be frozen earlier since the At_End handler
-               --  must be able to call it.
-               --
-               --    declare
-               --       procedure Fin_Id;               --  Spec
-               --       [Fin_Id]                        --  Freeze node
-               --    begin
-               --       ...
-               --    at end
-               --       Fin_Id;                         --  At_End handler
-               --    end;
-
-               Ensure_Freeze_Node (Fin_Id);
-               Insert_After (Fin_Spec, Freeze_Node (Fin_Id));
-               Set_Is_Frozen (Fin_Id);
-
-               --  In the case where the last construct to contain a controlled
-               --  object is either a nested package, an instantiation or a
-               --  freeze node, the body must be inserted directly after the
-               --  construct, except if the insertion point is already placed
-               --  after the construct, typically in the statement list.
-
-               if Nkind (Last_Top_Level_Ctrl_Construct) in
-                    N_Freeze_Entity | N_Package_Declaration | N_Package_Body
-                 and then not
-                  (List_Containing (Last_Top_Level_Ctrl_Construct) = Spec_Decls
-                    and then Present (Stmts)
-                    and then List_Containing (Finalizer_Insert_Nod) = Stmts)
-               then
-                  Finalizer_Insert_Nod := Last_Top_Level_Ctrl_Construct;
-               end if;
-
-               Insert_After (Finalizer_Insert_Nod, Fin_Body);
-            end if;
-
-            Analyze (Fin_Body, Suppress => All_Checks);
+            Append_To (Spec_Decls, Fin_Spec);
+            Append_To (Spec_Decls, Fin_Body);
          end if;
+
+         Analyze (Fin_Spec, Suppress => All_Checks);
+         Analyze (Fin_Body, Suppress => All_Checks);
 
          --  Never consider that the finalizer procedure is enabled Ghost, even
          --  when the corresponding unit is Ghost, as this would lead to an
@@ -2121,34 +2011,19 @@ package body Exp_Ch7 is
 
       procedure Process_Declarations
         (Decls      : List_Id;
-         Preprocess : Boolean := False;
-         Top_Level  : Boolean := False)
+         Preprocess : Boolean := False)
       is
-         Decl    : Node_Id;
-         Expr    : Node_Id;
-         Obj_Id  : Entity_Id;
-         Obj_Typ : Entity_Id;
-         Pack_Id : Entity_Id;
-         Spec    : Node_Id;
-         Typ     : Entity_Id;
-
-         Old_Counter_Val : Nat;
-         --  This variable is used to determine whether a nested package or
-         --  instance contains at least one controlled object.
-
          procedure Process_Package_Body (Decl : Node_Id);
          --  Process an N_Package_Body node
 
          procedure Processing_Actions
-           (Has_No_Init  : Boolean := False;
+           (Decl         : Node_Id;
             Is_Protected : Boolean := False);
          --  Depending on the mode of operation of Process_Declarations, either
          --  increment the controlled object counter, set the controlled object
          --  flag and store the last top level construct or process the current
-         --  declaration. Flag Has_No_Init is used to propagate scenarios where
-         --  the current declaration may not have initialization proc(s). Flag
-         --  Is_Protected should be set when the current declaration denotes a
-         --  simple protected object.
+         --  declaration. Flag Is_Protected is set when the current declaration
+         --  denotes a simple protected object.
 
          --------------------------
          -- Process_Package_Body --
@@ -2163,19 +2038,7 @@ package body Exp_Ch7 is
                null;
 
             elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package then
-               Old_Counter_Val := Counter_Val;
                Process_Declarations (Declarations (Decl), Preprocess);
-
-               --  The nested package body is the last construct to contain
-               --  a controlled object.
-
-               if Preprocess
-                 and then Top_Level
-                 and then No (Last_Top_Level_Ctrl_Construct)
-                 and then Counter_Val > Old_Counter_Val
-               then
-                  Last_Top_Level_Ctrl_Construct := Decl;
-               end if;
             end if;
          end Process_Package_Body;
 
@@ -2184,7 +2047,7 @@ package body Exp_Ch7 is
          ------------------------
 
          procedure Processing_Actions
-           (Has_No_Init  : Boolean := False;
+           (Decl         : Node_Id;
             Is_Protected : Boolean := False)
          is
          begin
@@ -2193,10 +2056,6 @@ package body Exp_Ch7 is
             if Nkind (Decl) = N_Full_Type_Declaration then
                if Preprocess then
                   Has_Tagged_Types := True;
-
-                  if Top_Level and then No (Last_Top_Level_Ctrl_Construct) then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
 
                --  Unregister tagged type, unless No_Tagged_Type_Registration
                --  is active.
@@ -2212,15 +2071,21 @@ package body Exp_Ch7 is
                   Counter_Val   := Counter_Val + 1;
                   Has_Ctrl_Objs := True;
 
-                  if Top_Level and then No (Last_Top_Level_Ctrl_Construct) then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
-
                else
-                  Process_Object_Declaration (Decl, Has_No_Init, Is_Protected);
+                  Process_Object_Declaration (Decl, Is_Protected);
                end if;
             end if;
          end Processing_Actions;
+
+         --  Local variables
+
+         Decl    : Node_Id;
+         Expr    : Node_Id;
+         Obj_Id  : Entity_Id;
+         Obj_Typ : Entity_Id;
+         Pack_Id : Entity_Id;
+         Spec    : Node_Id;
+         Typ     : Entity_Id;
 
       --  Start of processing for Process_Declarations
 
@@ -2253,7 +2118,7 @@ package body Exp_Ch7 is
                  and then not Restriction_Active (No_Tagged_Type_Registration)
                  and then RTE_Available (RE_Register_Tag)
                then
-                  Processing_Actions;
+                  Processing_Actions (Decl);
                end if;
 
             --  Regular object declarations
@@ -2285,6 +2150,15 @@ package body Exp_Ch7 is
                elsif Is_Ignored_For_Finalization (Obj_Id) then
                   null;
 
+               --  Conversely, if one of the above cases created a Master_Node,
+               --  finalization actions are required for the associated object.
+               --  Note that we need to make sure that we will not process both
+               --  the Master_Node and the associated object here.
+
+               elsif Present (Finalization_Master_Node_Or_Object (Obj_Id)) then
+                  pragma Assert (Is_RTE (Obj_Typ, RE_Master_Node));
+                  Processing_Actions (Decl);
+
                --  Ignored Ghost objects do not need any cleanup actions
                --  because they will not appear in the final tree.
 
@@ -2305,7 +2179,7 @@ package body Exp_Ch7 is
                                 and then not Has_Completion (Obj_Id)
                                 and then No (BIP_Initialization_Call (Obj_Id)))
                then
-                  Processing_Actions;
+                  Processing_Actions (Decl);
 
                --  The object is of the form:
                --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
@@ -2323,29 +2197,7 @@ package body Exp_Ch7 is
                        (Is_Non_BIP_Func_Call (Expr)
                          and then not Is_Related_To_Func_Return (Obj_Id)))
                then
-                  Processing_Actions (Has_No_Init => True);
-
-               --  Processing for "hook" objects generated for transient
-               --  objects declared inside an Expression_With_Actions.
-
-               elsif Is_Access_Type (Obj_Typ)
-                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
-                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                       N_Object_Declaration
-               then
-                  Processing_Actions (Has_No_Init => True);
-
-               --  Process intermediate results of an if expression with one
-               --  of the alternatives using a controlled function call.
-
-               elsif Is_Access_Type (Obj_Typ)
-                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
-                 and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                       N_Defining_Identifier
-                 and then Present (Expr)
-                 and then Nkind (Expr) = N_Null
-               then
-                  Processing_Actions (Has_No_Init => True);
+                  Processing_Actions (Decl);
 
                --  Simple protected objects which use type System.Tasking.
                --  Protected_Objects.Protection to manage their locks should
@@ -2383,7 +2235,7 @@ package body Exp_Ch7 is
                  and then not In_Library_Level_Package_Body (Obj_Id)
                  and then Has_Simple_Protected_Object (Obj_Typ)
                then
-                  Processing_Actions (Is_Protected => True);
+                  Processing_Actions (Decl, Is_Protected => True);
                end if;
 
             --  Specific cases of object renamings
@@ -2404,16 +2256,6 @@ package body Exp_Ch7 is
 
                elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                   null;
-
-               --  Return object of extended return statements. This case is
-               --  recognized and marked by the expansion of extended return
-               --  statements (see Expand_N_Extended_Return_Statement).
-
-               elsif Needs_Finalization (Obj_Typ)
-                 and then Is_Return_Object (Obj_Id)
-                 and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
-               then
-                  Processing_Actions (Has_No_Init => True);
                end if;
 
             --  Inspect the freeze node of an access-to-controlled type and
@@ -2443,24 +2285,12 @@ package body Exp_Ch7 is
                                    (Available_View (Designated_Type (Typ))))
                       or else (Is_Type (Typ) and then Needs_Finalization (Typ))
                then
-                  Old_Counter_Val := Counter_Val;
-
                   --  Freeze nodes are considered to be identical to packages
                   --  and blocks in terms of nesting. The difference is that
                   --  a finalization master created inside the freeze node is
                   --  at the same nesting level as the node itself.
 
                   Process_Declarations (Actions (Decl), Preprocess);
-
-                  --  The freeze node contains a finalization master
-
-                  if Preprocess
-                    and then Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                    and then Counter_Val > Old_Counter_Val
-                  then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
                end if;
 
             --  Nested package declarations, avoid generics
@@ -2476,23 +2306,10 @@ package body Exp_Ch7 is
                   null;
 
                elsif Ekind (Pack_Id) /= E_Generic_Package then
-                  Old_Counter_Val := Counter_Val;
                   Process_Declarations
                     (Private_Declarations (Spec), Preprocess);
                   Process_Declarations
                     (Visible_Declarations (Spec), Preprocess);
-
-                  --  Either the visible or the private declarations contain a
-                  --  controlled object. The nested package declaration is the
-                  --  last such construct.
-
-                  if Preprocess
-                    and then Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                    and then Counter_Val > Old_Counter_Val
-                  then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
                end if;
 
             --  Nested package bodies, avoid generics
@@ -2516,11 +2333,19 @@ package body Exp_Ch7 is
 
       procedure Process_Object_Declaration
         (Decl         : Node_Id;
-         Has_No_Init  : Boolean := False;
          Is_Protected : Boolean := False)
       is
-         Loc    : constant Source_Ptr := Sloc (Decl);
-         Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+         Def_Id   : constant Entity_Id := Defining_Identifier (Decl);
+         Obj_Id   : constant Entity_Id :=
+           (if Is_RTE (Etype (Def_Id), RE_Master_Node)
+            then Finalization_Master_Node_Or_Object (Def_Id)
+            else Def_Id);
+         Obj_Decl : constant Entity_Id := Declaration_Node (Obj_Id);
+         Func_Id  : constant Entity_Id :=
+                      (if Is_Return_Object (Obj_Id)
+                       then Return_Applies_To (Scope (Obj_Id))
+                       else Empty);
+         Loc      : constant Source_Ptr := Sloc (Obj_Decl);
 
          Init_Typ : Entity_Id;
          --  The initialization type of the related object declaration. Note
@@ -2530,7 +2355,9 @@ package body Exp_Ch7 is
          Obj_Typ : Entity_Id;
          --  The type of the related object declaration
 
-         function Build_BIP_Cleanup_Stmts (Func_Id : Entity_Id) return Node_Id;
+         function Build_BIP_Cleanup_Stmts
+            (Func_Id  : Entity_Id;
+             Obj_Addr : Node_Id) return Node_Id;
          --  Func_Id denotes a build-in-place function. Generate the following
          --  cleanup code:
          --
@@ -2538,16 +2365,15 @@ package body Exp_Ch7 is
          --      and then BIPfinalizationmaster /= null
          --    then
          --       declare
-         --          type Ptr_Typ is access Obj_Typ;
+         --          type Ptr_Typ is access Fun_Typ;
          --          for Ptr_Typ'Storage_Pool
          --            use Base_Pool (BIPfinalizationmaster);
          --       begin
-         --          Free (Ptr_Typ (Temp));
+         --          Free (Ptr_Typ (Obj_Addr));
          --       end;
          --    end if;
          --
-         --  Obj_Typ is the type of the current object, Temp is the original
-         --  allocation which Obj_Id renames.
+         --  Fun_Typ is the return type of the Func_Id.
 
          procedure Find_Last_Init
            (Last_Init   : out Node_Id;
@@ -2557,20 +2383,26 @@ package body Exp_Ch7 is
          --  Decl. Body_Insert denotes a node where the finalizer body could be
          --  potentially inserted after (if blocks are involved).
 
+         function Make_Address_For_Finalize
+           (Loc     : Source_Ptr;
+            Obj_Ref : Node_Id;
+            Obj_Typ : Entity_Id) return Node_Id;
+         --  Build the address of an object denoted by Obj_Ref and Obj_Typ for
+         --  use as actual parameter in a call to a Finalize_Address procedure.
+
          -----------------------------
          -- Build_BIP_Cleanup_Stmts --
          -----------------------------
 
          function Build_BIP_Cleanup_Stmts
-           (Func_Id : Entity_Id) return Node_Id
+           (Func_Id  : Entity_Id;
+            Obj_Addr : Node_Id) return Node_Id
          is
             Decls      : constant List_Id := New_List;
             Fin_Mas_Id : constant Entity_Id :=
                            Build_In_Place_Formal
                              (Func_Id, BIP_Finalization_Master);
             Func_Typ   : constant Entity_Id := Etype (Func_Id);
-            Temp_Id    : constant Entity_Id :=
-                           Entity (Prefix (Name (Parent (Obj_Id))));
 
             Cond      : Node_Id;
             Free_Blk  : Node_Id;
@@ -2632,8 +2464,7 @@ package body Exp_Ch7 is
             Free_Stmt :=
               Make_Free_Statement (Loc,
                 Expression =>
-                  Unchecked_Convert_To (Ptr_Typ,
-                    New_Occurrence_Of (Temp_Id, Loc)));
+                  Unchecked_Convert_To (Ptr_Typ, Obj_Addr));
 
             Set_Storage_Pool (Free_Stmt, Pool_Id);
 
@@ -2644,7 +2475,7 @@ package body Exp_Ch7 is
             --    declare
             --       <Decls>
             --    begin
-            --       Free (Ptr_Typ (Temp_Id));
+            --       Free (Ptr_Typ (Obj_Addr));
             --    end;
 
             Free_Blk :=
@@ -2865,17 +2696,24 @@ package body Exp_Ch7 is
          --  Start of processing for Find_Last_Init
 
          begin
-            Last_Init   := Decl;
+            Last_Init   := Obj_Decl;
             Body_Insert := Empty;
 
-            --  Object renamings and objects associated with controlled
-            --  function results do not require initialization.
+            --  Objects that capture controlled function results do not require
+            --  initialization.
 
-            if Has_No_Init then
+            if Nkind (Obj_Decl) = N_Object_Declaration
+              and then Nkind (Expression (Obj_Decl)) = N_Reference
+            then
                return;
             end if;
 
-            Stmt := Next_Suitable_Statement (Decl);
+            if Present (Freeze_Node (Obj_Id)) then
+               Stmt := First (Actions (Freeze_Node (Obj_Id)));
+               Body_Insert := Freeze_Node (Obj_Id);
+            else
+               Stmt := Next_Suitable_Statement (Obj_Decl);
+            end if;
 
             --  For an object with suppressed initialization, we check whether
             --  there is in fact no initialization expression. If there is not,
@@ -2883,11 +2721,13 @@ package body Exp_Ch7 is
             --  different object declaration that calls the build-in-place
             --  function in a 'Reference attribute, as in "F(...)'Reference".
             --  We search for that later object declaration, so that the
-            --  Inc_Decl will be inserted after the call. Otherwise, if the
+            --  attachment will be inserted after the call. Otherwise, if the
             --  call raises an exception, we will finalize the (uninitialized)
             --  object, which is wrong.
 
-            if No_Initialization (Decl) then
+            if Nkind (Obj_Decl) = N_Object_Declaration
+              and then No_Initialization (Obj_Decl)
+            then
                if No (Expression (Last_Init)) then
                   loop
                      Next (Last_Init);
@@ -2971,55 +2811,89 @@ package body Exp_Ch7 is
             end if;
          end Find_Last_Init;
 
+         -------------------------------
+         -- Make_Address_For_Finalize --
+         -------------------------------
+
+         function Make_Address_For_Finalize
+           (Loc     : Source_Ptr;
+            Obj_Ref : Node_Id;
+            Obj_Typ : Entity_Id) return Node_Id
+         is
+            Obj_Addr : Node_Id;
+
+         begin
+            Obj_Addr :=
+              Make_Attribute_Reference (Loc,
+                Prefix => Obj_Ref,
+                Attribute_Name => Name_Address);
+
+            --  If the type of a constrained array has an unconstrained first
+            --  subtype, its Finalize_Address primitive expects the address of
+            --  an object with a dope vector (see Make_Finalize_Address_Stmts).
+            --  This is achieved by setting Is_Constr_Subt_For_UN_Aliased, but
+            --  the address of the object is still that of its elements, so we
+            --  need to shift it.
+
+            if Is_Array_Type (Obj_Typ)
+              and then not Is_Constrained (First_Subtype (Obj_Typ))
+            then
+               --  Shift the address from the start of the elements to the
+               --  start of the dope vector:
+
+               --    V - (Obj_Typ'Descriptor_Size / Storage_Unit)
+
+               --  Note that this is done through a wrapper routine as  RTSfind
+               --  cannot retrieve operations with string name of the form "+".
+
+               Obj_Addr :=
+                 Make_Function_Call (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Add_Offset_To_Address), Loc),
+                   Parameter_Associations => New_List (
+                     Obj_Addr,
+                     Make_Op_Minus (Loc,
+                       Make_Op_Divide (Loc,
+                         Left_Opnd  =>
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Obj_Typ, Loc),
+                             Attribute_Name => Name_Descriptor_Size),
+                         Right_Opnd =>
+                           Make_Integer_Literal (Loc, System_Storage_Unit)))));
+            end if;
+
+            return Obj_Addr;
+         end Make_Address_For_Finalize;
+
          --  Local variables
 
-         Body_Ins  : Node_Id;
-         Count_Ins : Node_Id;
-         Fin_Call  : Node_Id;
-         Fin_Stmts : List_Id := No_List;
-         Inc_Decl  : Node_Id;
-         Label     : Node_Id;
-         Label_Id  : Entity_Id;
-         Obj_Ref   : Node_Id;
+         Body_Ins           : Node_Id;
+         Fin_Call           : Node_Id;
+         Fin_Id             : Entity_Id;
+         Master_Node_Attach : Node_Id;
+         Master_Node_Decl   : Node_Id;
+         Master_Node_Id     : Entity_Id;
+         Master_Node_Ins    : Node_Id;
+         Obj_Ref            : Node_Id;
 
       --  Start of processing for Process_Object_Declaration
 
       begin
          --  Handle the object type and the reference to the object. Note
-         --  that objects having simple protected components must retain
-         --  their original form for the processing below to work.
+         --  that objects having simple protected components or of a CW type
+         --  must retain their original type for the processing below to work.
 
          Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
-         Obj_Typ := Base_Type (Etype (Obj_Id));
+         Obj_Typ := Etype (Obj_Id);
+         if not Is_Protected and then not Is_Class_Wide_Type (Obj_Typ) then
+            Obj_Typ := Base_Type (Obj_Typ);
+         end if;
 
-         loop
-            if Is_Access_Type (Obj_Typ) then
-               Obj_Typ := Directly_Designated_Type (Obj_Typ);
-               Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
-
-            elsif Is_Concurrent_Type (Obj_Typ)
-              and then Present (Corresponding_Record_Type (Obj_Typ))
-              and then not Is_Protected
-            then
-               Obj_Typ := Corresponding_Record_Type (Obj_Typ);
-               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
-
-            elsif Is_Private_Type (Obj_Typ)
-              and then Present (Full_View (Obj_Typ))
-            then
-               Obj_Typ := Full_View (Obj_Typ);
-               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
-
-            elsif Obj_Typ /= Base_Type (Obj_Typ) then
-               Obj_Typ := Base_Type (Obj_Typ);
-               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         Set_Etype (Obj_Ref, Obj_Typ);
+         if Is_Access_Type (Obj_Typ) then
+            Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+            Obj_Typ := Available_View (Designated_Type (Obj_Typ));
+         end if;
 
          --  Handle the initialization type of the object declaration
 
@@ -3038,189 +2912,316 @@ package body Exp_Ch7 is
             end if;
          end loop;
 
-         --  Set a new value for the state counter and insert the statement
-         --  after the object declaration. Generate:
+         --  Create the declaration of the Master_Node for the object and
+         --  insert it before the declaration of the object itself, except
+         --  for the case where it is the only object because it will play
+         --  the role of a degenerated scope master and therefore needs to
+         --  inserted at the same place the scope master would have been.
 
-         --    Counter := <value>;
+         if Present (Finalization_Master_Node_Or_Object (Obj_Id)) then
+            Master_Node_Id := Finalization_Master_Node_Or_Object (Obj_Id);
 
-         Inc_Decl :=
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Counter_Id, Loc),
-             Expression => Make_Integer_Literal (Loc, Counter_Val));
+            --  Move declaration, call marker if any and initialization call
+            --  and mark the Master_Node to avoid double processing
 
-         --  Insert the counter after all initialization has been done. The
+            if Counter_Val = 1 then
+               Master_Node_Decl := Declaration_Node (Master_Node_Id);
+               if Nkind (Next (Master_Node_Decl)) = N_Call_Marker then
+                  Prepend_To (Decls, Remove_Next (Next (Master_Node_Decl)));
+               end if;
+               Prepend_To (Decls, Remove_Next (Master_Node_Decl));
+               Remove (Master_Node_Decl);
+               Prepend_To (Decls, Master_Node_Decl);
+               Set_Is_Ignored_For_Finalization (Master_Node_Id);
+            end if;
+
+         else
+            Master_Node_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Obj_Id), Suffix => "MN"));
+            Master_Node_Decl :=
+              Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
+
+            Push_Scope (Scope (Obj_Id));
+            if Counter_Val = 1 then
+               Prepend_To (Decls, Master_Node_Decl);
+            else
+               Insert_Before (Obj_Decl, Master_Node_Decl);
+            end if;
+            Analyze (Master_Node_Decl);
+            Pop_Scope;
+
+            --  Mark the Master_Node to avoid double processing
+
+            Set_Is_Ignored_For_Finalization (Master_Node_Id);
+         end if;
+
+         --  Attach the Master_Node after all initialization has been done. The
          --  place of insertion depends on the context.
 
          if Ekind (Obj_Id) in E_Constant | E_Variable then
 
             --  The object is initialized by a build-in-place function call.
-            --  The counter insertion point is after the function call.
+            --  The Master_Node insertion point is after the function call.
 
             if Present (BIP_Initialization_Call (Obj_Id)) then
-               Count_Ins := BIP_Initialization_Call (Obj_Id);
+               Master_Node_Ins := BIP_Initialization_Call (Obj_Id);
                Body_Ins  := Empty;
 
-            --  The object is initialized by an aggregate. Insert the counter
-            --  after the last aggregate assignment.
+            --  The object is initialized by an aggregate. The Master_Node
+            --  insertion point is after the last aggregate assignment.
 
             elsif Present (Last_Aggregate_Assignment (Obj_Id)) then
-               Count_Ins := Last_Aggregate_Assignment (Obj_Id);
+               Master_Node_Ins := Last_Aggregate_Assignment (Obj_Id);
                Body_Ins  := Empty;
 
-            --  In all other cases the counter is inserted after the last call
+            --  In other cases the Master_Node is inserted after the last call
             --  to either [Deep_]Initialize or the type-specific init proc.
 
             else
-               Find_Last_Init (Count_Ins, Body_Ins);
+               Find_Last_Init (Master_Node_Ins, Body_Ins);
             end if;
 
-         --  In all other cases the counter is inserted after the last call to
-         --  either [Deep_]Initialize or the type-specific init proc.
+         --  In all other cases the Master_Node is inserted after the last call
+         --  to either [Deep_]Initialize or the type-specific init proc.
 
          else
-            Find_Last_Init (Count_Ins, Body_Ins);
+            Find_Last_Init (Master_Node_Ins, Body_Ins);
          end if;
 
          --  If the Initialize function is null or trivial, the call will have
-         --  been replaced with a null statement, in which case place counter
-         --  declaration after object declaration itself.
+         --  been replaced with a null statement and we place the attachment
+         --  of the Master_Node after the declaration of the object itself.
 
-         if No (Count_Ins) then
-            Count_Ins := Decl;
-         end if;
-
-         Insert_After (Count_Ins, Inc_Decl);
-         Analyze (Inc_Decl);
-
-         --  If the current declaration is the last in the list, the finalizer
-         --  body needs to be inserted after the set counter statement for the
-         --  current object declaration. This is complicated by the fact that
-         --  the set counter statement may appear in abort deferred block. In
-         --  that case, the proper insertion place is after the block.
-
-         if No (Finalizer_Insert_Nod) then
-
-            --  Insertion after an abort deferred block
-
-            if Present (Body_Ins) then
-               Finalizer_Insert_Nod := Body_Ins;
-            else
-               Finalizer_Insert_Nod := Inc_Decl;
-            end if;
-         end if;
-
-         --  Create the associated label with this object, generate:
-
-         --    L<counter> : label;
-
-         Label_Id :=
-           Make_Identifier (Loc, New_External_Name ('L', Counter_Val));
-         Set_Entity
-           (Label_Id, Make_Defining_Identifier (Loc, Chars (Label_Id)));
-         Label := Make_Label (Loc, Label_Id);
-
-         Prepend_To (Finalizer_Decls,
-           Make_Implicit_Label_Declaration (Loc,
-             Defining_Identifier => Entity (Label_Id),
-             Label_Construct     => Label));
-
-         --  Create the associated jump with this object, generate:
-
-         --    when <counter> =>
-         --       goto L<counter>;
-
-         Prepend_To (Jump_Alts,
-           Make_Case_Statement_Alternative (Loc,
-             Discrete_Choices => New_List (
-               Make_Integer_Literal (Loc, Counter_Val)),
-             Statements       => New_List (
-               Make_Goto_Statement (Loc,
-                 Name => New_Occurrence_Of (Entity (Label_Id), Loc)))));
-
-         --  Insert the jump destination, generate:
-
-         --     <<L<counter>>>
-
-         Append_To (Finalizer_Stmts, Label);
-
-         --  Disable warnings on Obj_Id. This works around an issue where GCC
-         --  is not able to detect that Obj_Id is protected by a counter and
-         --  emits spurious warnings.
-
-         if not Comes_From_Source (Obj_Id) then
-            Set_Warnings_Off (Obj_Id);
+         if No (Master_Node_Ins) then
+            Master_Node_Ins := Obj_Decl;
          end if;
 
          --  Processing for simple protected objects. Such objects require
-         --  manual finalization of their lock managers.
+         --  manual finalization of their lock managers. Generate:
 
-         if Is_Protected then
-            if Is_Simple_Protected_Type (Obj_Typ) then
-               Fin_Call := Cleanup_Protected_Object (Decl, Obj_Ref);
+         --    procedure obj_type_nnFD (v :system__address) is
+         --       type Ptr_Typ is access all Obj_Typ;
+         --       Rnn : Obj_Typ renames Ptr_Typ!(v).all;
+         --    begin
+         --       $system__tasking__protected_objects__finalize_protection
+         --          (Obj_TypV!(Rnn)._object);
+         --    exception
+         --       when others =>
+         --          null;
+         --    end obj_type_nnFD;
 
-               if Present (Fin_Call) then
-                  Fin_Stmts := New_List (Fin_Call);
+         if Is_Protected
+           or else (Has_Simple_Protected_Object (Obj_Typ)
+                     and then No (Finalize_Address (Obj_Typ)))
+         then
+            declare
+               Param   : constant Entity_Id :=
+                           Make_Defining_Identifier (Loc, Name_V);
+               Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'P');
+               Ren_Id  : constant Entity_Id := Make_Temporary (Loc, 'R');
+               Ren_Ref : constant Node_Id   := New_Occurrence_Of (Ren_Id, Loc);
+
+               Fin_Body  : Node_Id;
+               Fin_Call  : Node_Id;
+               Fin_Stmts : List_Id := No_List;
+               HSS       : Node_Id;
+
+            begin
+               Set_Etype (Ren_Ref, Obj_Typ);
+
+               if Is_Simple_Protected_Type (Obj_Typ) then
+                  Fin_Call := Cleanup_Protected_Object (Obj_Decl, Ren_Ref);
+
+                  if Present (Fin_Call) then
+                     Fin_Stmts := New_List (Fin_Call);
+                  end if;
+
+               elsif Is_Array_Type (Obj_Typ) then
+                  Fin_Stmts := Cleanup_Array (Obj_Decl, Ren_Ref, Obj_Typ);
+
+               else
+                  Fin_Stmts := Cleanup_Record (Obj_Decl, Ren_Ref, Obj_Typ);
                end if;
 
-            elsif Is_Array_Type (Obj_Typ) then
-               Fin_Stmts := Cleanup_Array (Decl, Obj_Ref, Obj_Typ);
+               if No (Fin_Stmts) then
+                  return;
+               end if;
 
-            else
-               Fin_Stmts := Cleanup_Record (Decl, Obj_Ref, Obj_Typ);
-            end if;
+               HSS :=
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements => Fin_Stmts);
 
-            --  Generate:
-            --    begin
-            --       System.Tasking.Protected_Objects.Finalize_Protection
-            --         (Obj._object);
+               if Exceptions_OK then
+                  Set_Exception_Handlers (HSS, New_List (
+                    Make_Exception_Handler (Loc,
+                      Exception_Choices => New_List (
+                        Make_Others_Choice (Loc)),
+                      Statements        => New_List (
+                        Make_Null_Statement (Loc)))));
+               end if;
 
-            --    exception
-            --       when others =>
-            --          null;
-            --    end;
+               Fin_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Make_TSS_Name_Local (Obj_Typ, TSS_Finalize_Address));
 
-            if Present (Fin_Stmts) and then Exceptions_OK then
-               Fin_Stmts := New_List (
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements         => Fin_Stmts,
+               Fin_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name => Fin_Id,
 
-                       Exception_Handlers => New_List (
-                         Make_Exception_Handler (Loc,
-                           Exception_Choices => New_List (
-                             Make_Others_Choice (Loc)),
+                       Parameter_Specifications => New_List (
+                         Make_Parameter_Specification (Loc,
+                           Defining_Identifier => Param,
+                           Parameter_Type =>
+                             New_Occurrence_Of (RTE (RE_Address), Loc)))),
 
-                           Statements     => New_List (
-                             Make_Null_Statement (Loc)))))));
-            end if;
+                   Declarations => New_List (
+                     Make_Full_Type_Declaration (Loc,
+                       Defining_Identifier => Ptr_Typ,
+                       Type_Definition     =>
+                         Make_Access_To_Object_Definition (Loc,
+                           All_Present        => True,
+                           Subtype_Indication =>
+                             New_Occurrence_Of (Obj_Typ, Loc))),
 
-         --  Processing for regular controlled objects
+                     Make_Object_Renaming_Declaration (Loc,
+                       Defining_Identifier => Ren_Id,
+                       Subtype_Mark        =>
+                         New_Occurrence_Of (Obj_Typ, Loc),
+                         Name              =>
+                         Make_Explicit_Dereference (Loc,
+                           Prefix =>
+                             Unchecked_Convert_To
+                               (Ptr_Typ, New_Occurrence_Of (Param, Loc))))),
+
+                   Handled_Statement_Sequence => HSS);
+
+               Push_Scope (Scope (Obj_Id));
+               Insert_After_And_Analyze
+                 (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
+               Pop_Scope;
+
+               Master_Node_Ins := Fin_Body;
+            end;
+
+         --  If we are dealing with a return object of a build-in-place
+         --  function, generate the following cleanup statements:
+
+         --    if BIPallocfrom > Secondary_Stack'Pos
+         --      and then BIPfinalizationmaster /= null
+         --    then
+         --       declare
+         --          type Ptr_Typ is access Obj_Typ;
+         --          for Ptr_Typ'Storage_Pool use
+         --                Base_Pool (BIPfinalizationmaster.all).all;
+         --       begin
+         --          Free (Ptr_Typ (Obj'Address));
+         --       end;
+         --    end if;
+
+         --  The generated code effectively detaches the temporary from the
+         --  caller finalization master and deallocates the object.
+
+         elsif Present (Func_Id)
+           and then Is_Build_In_Place_Function (Func_Id)
+           and then Needs_BIP_Finalization_Master (Func_Id)
+         then
+            declare
+               Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
+               Param     : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_V);
+
+               Fin_Body  : Node_Id;
+               Fin_Stmts : List_Id;
+
+            begin
+               Fin_Stmts := Make_Finalize_Address_Stmts (Obj_Typ);
+
+               Append_To (Fin_Stmts,
+                 Build_BIP_Cleanup_Stmts
+                   (Func_Id, New_Occurrence_Of (Param, Loc)));
+
+               Fin_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Make_TSS_Name_Local
+                     (Obj_Typ, TSS_Finalize_Address));
+
+               Fin_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification =>
+                    Make_Procedure_Specification (Loc,
+                      Defining_Unit_Name => Fin_Id,
+
+                      Parameter_Specifications => New_List (
+                        Make_Parameter_Specification (Loc,
+                          Defining_Identifier => Param,
+                          Parameter_Type =>
+                            New_Occurrence_Of (RTE (RE_Address), Loc)))),
+
+                Declarations => New_List (
+                  Make_Full_Type_Declaration (Loc,
+                    Defining_Identifier => Ptr_Typ,
+                    Type_Definition     =>
+                      Make_Access_To_Object_Definition (Loc,
+                        All_Present        => True,
+                        Subtype_Indication =>
+                          New_Occurrence_Of (Obj_Typ, Loc)))),
+
+                  Handled_Statement_Sequence =>
+                    Make_Handled_Sequence_Of_Statements (Loc,
+                      Statements => Fin_Stmts));
+
+               Push_Scope (Scope (Obj_Id));
+               Insert_After_And_Analyze
+                 (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
+               Pop_Scope;
+
+               Master_Node_Ins := Fin_Body;
+            end;
 
          else
-            --  Generate:
-            --    begin
-            --       [Deep_]Finalize (Obj);
+            Fin_Id := Finalize_Address (Obj_Typ);
 
-            --    exception
-            --       when Id : others =>
-            --          if not Raised then
-            --             Raised := True;
-            --             Save_Occurrence (E, Id);
-            --          end if;
-            --    end;
+            if No (Fin_Id) and then Ekind (Obj_Typ) = E_Class_Wide_Subtype then
+               Fin_Id := TSS (Obj_Typ, TSS_Finalize_Address);
+            end if;
+         end if;
+
+         --  Now build the attachment call that will initialize the object's
+         --  Master_Node using the object's address and type's finalization
+         --  procedure and then attach the Master_Node to the master, unless
+         --  there is a single controlled object.
+
+         if Counter_Val = 1 then
+            --  Finalize_Address is not generated in CodePeer mode because the
+            --  body contains address arithmetic. So we don't want to generate
+            --  the attach in this case.
+
+            if CodePeer_Mode then
+               Master_Node_Attach := Make_Null_Statement (Loc);
+            else
+               Master_Node_Attach :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Attach_Object_To_Node), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Address_For_Finalize (Loc, Obj_Ref, Obj_Typ),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Fin_Id, Loc),
+                       Attribute_Name => Name_Unrestricted_Access),
+                     New_Occurrence_Of (Master_Node_Id, Loc)));
+            end if;
+
+            --  We also generate the direct finalization call here
 
             Fin_Call :=
-              Make_Final_Call (
-                Obj_Ref => Obj_Ref,
-                Typ     => Obj_Typ);
-
-            --  Guard against a missing [Deep_]Finalize when the object type
-            --  was not properly frozen.
-
-            if No (Fin_Call) then
-               Fin_Call := Make_Null_Statement (Loc);
-            end if;
+              Make_Procedure_Call_Statement (Loc,
+                Name               =>
+                  New_Occurrence_Of (RTE (RE_Finalize_Object), Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (Master_Node_Id, Loc)));
 
             --  For CodePeer, the exception handlers normally generated here
             --  generate complex flowgraphs which result in capacity problems.
@@ -3234,7 +3235,7 @@ package body Exp_Ch7 is
             --      happens after the exception is raised.
 
             if Exceptions_OK and not CodePeer_Mode then
-               Fin_Stmts := New_List (
+               Fin_Call :=
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
@@ -3242,119 +3243,37 @@ package body Exp_Ch7 is
 
                     Exception_Handlers => New_List (
                       Build_Exception_Handler
-                        (Finalizer_Data, For_Package)))));
+                        (Finalizer_Data, For_Package))));
+            end if;
 
-            --  When exception handlers are prohibited, the finalization call
-            --  appears unprotected. Any exception raised during finalization
-            --  will bypass the circuitry which ensures the cleanup of all
-            --  remaining objects.
+            Append_To (Finalizer_Stmts, Fin_Call);
+         else
+            --  Finalize_Address is not generated in CodePeer mode because the
+            --  body contains address arithmetic. So we don't want to generate
+            --  the attach in this case.
 
+            if CodePeer_Mode then
+               Master_Node_Attach := Make_Null_Statement (Loc);
             else
-               Fin_Stmts := New_List (Fin_Call);
-            end if;
-
-            --  If we are dealing with a return object of a build-in-place
-            --  function, generate the following cleanup statements:
-
-            --    if BIPallocfrom > Secondary_Stack'Pos
-            --      and then BIPfinalizationmaster /= null
-            --    then
-            --       declare
-            --          type Ptr_Typ is access Obj_Typ;
-            --          for Ptr_Typ'Storage_Pool use
-            --                Base_Pool (BIPfinalizationmaster.all).all;
-            --       begin
-            --          Free (Ptr_Typ (Temp));
-            --       end;
-            --    end if;
-
-            --  The generated code effectively detaches the temporary from the
-            --  caller finalization master and deallocates the object.
-
-            if Is_Return_Object (Obj_Id) then
-               declare
-                  Func_Id : constant Entity_Id :=
-                              Return_Applies_To (Scope (Obj_Id));
-
-               begin
-                  if Is_Build_In_Place_Function (Func_Id)
-                    and then Needs_BIP_Finalization_Master (Func_Id)
-                  then
-                     Append_To (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id));
-                  end if;
-               end;
-            end if;
-
-            if Ekind (Obj_Id) in E_Constant | E_Variable
-              and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
-            then
-               --  Temporaries created for the purpose of "exporting" a
-               --  transient object out of an Expression_With_Actions (EWA)
-               --  need guards. The following illustrates the usage of such
-               --  temporaries.
-
-               --    Access_Typ : access [all] Obj_Typ;
-               --    Temp       : Access_Typ := null;
-               --    <Counter>  := ...;
-
-               --    do
-               --       Ctrl_Trans : [access [all]] Obj_Typ := ...;
-               --       Temp := Access_Typ (Ctrl_Trans);  --  when a pointer
-               --         <or>
-               --       Temp := Ctrl_Trans'Unchecked_Access;
-               --    in ... end;
-
-               --  The finalization machinery does not process EWA nodes as
-               --  this may lead to premature finalization of expressions. Note
-               --  that Temp is marked as being properly initialized regardless
-               --  of whether the initialization of Ctrl_Trans succeeded. Since
-               --  a failed initialization may leave Temp with a value of null,
-               --  add a guard to handle this case:
-
-               --    if Obj /= null then
-               --       <object finalization statements>
-               --    end if;
-
-               if Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                      N_Object_Declaration
-               then
-                  Fin_Stmts := New_List (
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  => New_Occurrence_Of (Obj_Id, Loc),
-                          Right_Opnd => Make_Null (Loc)),
-                      Then_Statements => Fin_Stmts));
-
-               --  Return objects use a flag to aid in processing their
-               --  potential finalization when the enclosing function fails
-               --  to return properly. Generate:
-
-               --    if not Flag then
-               --       <object finalization statements>
-               --    end if;
-
-               else
-                  Fin_Stmts := New_List (
-                    Make_If_Statement (Loc,
-                      Condition     =>
-                        Make_Op_Not (Loc,
-                          Right_Opnd =>
-                            New_Occurrence_Of
-                              (Status_Flag_Or_Transient_Decl (Obj_Id), Loc)),
-
-                    Then_Statements => Fin_Stmts));
-               end if;
+               Master_Node_Attach :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Attach_Object_To_Master), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Address_For_Finalize (Loc, Obj_Ref, Obj_Typ),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Fin_Id, Loc),
+                       Attribute_Name => Name_Unrestricted_Access),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Master_Node_Id, Loc),
+                       Attribute_Name => Name_Unrestricted_Access),
+                     New_Occurrence_Of (Finalization_Scope_Master, Loc)));
             end if;
          end if;
 
-         Append_List_To (Finalizer_Stmts, Fin_Stmts);
-
-         --  Since the declarations are examined in reverse, the state counter
-         --  must be decremented in order to keep with the true position of
-         --  objects.
-
-         Counter_Val := Counter_Val - 1;
+         Insert_After_And_Analyze
+           (Master_Node_Ins, Master_Node_Attach, Suppress => All_Checks);
       end Process_Object_Declaration;
 
       -------------------------------------
@@ -3453,14 +3372,13 @@ package body Exp_Ch7 is
          --  correct number of controlled object by the time the private
          --  declarations are processed.
 
-         Process_Declarations (Decls, Preprocess => True, Top_Level => True);
+         Process_Declarations (Decls, Preprocess => True);
 
          --  From all the possible contexts, only package specifications may
          --  have private declarations.
 
          if For_Package_Spec then
-            Process_Declarations
-              (Priv_Decls, Preprocess => True, Top_Level => True);
+            Process_Declarations (Priv_Decls, Preprocess => True);
          end if;
 
          --  The current context may lack controlled objects, but require some
@@ -3468,14 +3386,14 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
+         if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
             Build_Components;
          end if;
 
          --  The preprocessing has determined that the context has controlled
          --  objects or library-level tagged types.
 
-         if Has_Ctrl_Objs or Has_Tagged_Types then
+         if Has_Ctrl_Objs or else Has_Tagged_Types then
 
             --  Private declarations are processed first in order to preserve
             --  possible dependencies between public and private objects.
@@ -3492,8 +3410,8 @@ package body Exp_Ch7 is
       else
          --  Preprocess both declarations and statements
 
-         Process_Declarations (Decls, Preprocess => True, Top_Level => True);
-         Process_Declarations (Stmts, Preprocess => True, Top_Level => True);
+         Process_Declarations (Decls, Preprocess => True);
+         Process_Declarations (Stmts, Preprocess => True);
 
          --  At this point it is known that N has controlled objects. Ensure
          --  that N has a declarative list since the finalizer spec will be
@@ -3510,11 +3428,11 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
+         if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
             Build_Components;
          end if;
 
-         if Has_Ctrl_Objs or Has_Tagged_Types then
+         if Has_Ctrl_Objs or else Has_Tagged_Types then
             Process_Declarations (Stmts);
             Process_Declarations (Decls);
          end if;
@@ -3522,7 +3440,7 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
+      if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
          Create_Finalizer;
       end if;
 
@@ -5395,10 +5313,6 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Must_Hook : Boolean;
-         --  Flag denoting whether the context requires transient object
-         --  export to the outer finalizer.
-
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
          --  Return Abandon if arbitrary node denotes a subprogram call
 
@@ -5406,13 +5320,11 @@ package body Exp_Ch7 is
            new Traverse_Func (Is_Subprogram_Call);
 
          procedure Process_Transient_In_Scope
-           (Obj_Decl  : Node_Id;
-            Blk_Data  : Finalization_Exception_Data;
-            Blk_Stmts : List_Id);
+           (Obj_Decl    : Node_Id;
+            Insert_Nod  : Node_Id;
+            Must_Export : Boolean);
          --  Generate finalization actions for a single transient object
-         --  denoted by object declaration Obj_Decl. Blk_Data is the
-         --  exception data of the enclosing block. Blk_Stmts denotes the
-         --  statements of the enclosing block.
+         --  denoted by object declaration Obj_Decl.
 
          ------------------------
          -- Is_Subprogram_Call --
@@ -5453,202 +5365,84 @@ package body Exp_Ch7 is
          --------------------------------
 
          procedure Process_Transient_In_Scope
-           (Obj_Decl  : Node_Id;
-            Blk_Data  : Finalization_Exception_Data;
-            Blk_Stmts : List_Id)
+           (Obj_Decl    : Node_Id;
+            Insert_Nod  : Node_Id;
+            Must_Export : Boolean)
          is
-            Loc         : constant Source_Ptr := Sloc (Obj_Decl);
-            Obj_Id      : constant Entity_Id  := Defining_Entity (Obj_Decl);
-            Fin_Call    : Node_Id;
-            Fin_Stmts   : List_Id;
-            Hook_Assign : Node_Id;
-            Hook_Clear  : Node_Id;
-            Hook_Decl   : Node_Id;
-            Hook_Insert : Node_Id;
-            Ptr_Decl    : Node_Id;
+            Loc    : constant Source_Ptr := Sloc (Obj_Decl);
+            Obj_Id : constant Entity_Id  := Defining_Entity (Obj_Decl);
+
+            Master_Node_Id   : Entity_Id;
+            Master_Node_Decl : Node_Id;
+            Obj_Ref          : Node_Id;
+            Obj_Typ          : Entity_Id;
 
          begin
-            --  Mark the transient object as successfully processed to avoid
-            --  double finalization.
+            --  If the object needs to be exported to the outer finalizer,
+            --  create the declaration of the Master_Node for the object,
+            --  which will later be picked up by Build_Finalizer. Then add
+            --  the finalization call for the object.
 
-            Set_Is_Finalized_Transient (Obj_Id);
+            if Must_Export then
+               Master_Node_Id := Make_Temporary (Loc, 'N');
+               Master_Node_Decl :=
+                 Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
+               Insert_Before_And_Analyze (Obj_Decl, Master_Node_Decl);
 
-            --  Construct all the pieces necessary to hook and finalize the
-            --  transient object.
+               Insert_After_And_Analyze (Insert_Nod,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name               =>
+                     New_Occurrence_Of (RTE (RE_Finalize_Object), Loc),
+                   Parameter_Associations => New_List (
+                     New_Occurrence_Of (Master_Node_Id, Loc))));
 
-            Build_Transient_Object_Statements
-              (Obj_Decl    => Obj_Decl,
-               Fin_Call    => Fin_Call,
-               Hook_Assign => Hook_Assign,
-               Hook_Clear  => Hook_Clear,
-               Hook_Decl   => Hook_Decl,
-               Ptr_Decl    => Ptr_Decl);
-
-            --  The context contains at least one subprogram call which may
-            --  raise an exception. This scenario employs "hooking" to pass
-            --  transient objects to the enclosing finalizer in case of an
-            --  exception.
-
-            if Must_Hook then
-
-               --  Add the access type which provides a reference to the
-               --  transient object. Generate:
-
-               --    type Ptr_Typ is access all Desig_Typ;
-
-               Insert_Action (Obj_Decl, Ptr_Decl);
-
-               --  Add the temporary which acts as a hook to the transient
-               --  object. Generate:
-
-               --    Hook : Ptr_Typ := null;
-
-               Insert_Action (Obj_Decl, Hook_Decl);
-
-               --  When the transient object is initialized by an aggregate,
-               --  the hook must capture the object after the last aggregate
-               --  assignment takes place. Only then is the object considered
-               --  fully initialized. Generate:
-
-               --    Hook := Ptr_Typ (Obj_Id);
-               --      <or>
-               --    Hook := Obj_Id'Unrestricted_Access;
-
-               --  Similarly if we have a build in place call: we must
-               --  initialize Hook only after the call has happened, otherwise
-               --  Obj_Id will not be initialized yet.
-
-               if Ekind (Obj_Id) in E_Constant | E_Variable then
-                  if Present (Last_Aggregate_Assignment (Obj_Id)) then
-                     Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
-                  elsif Present (BIP_Initialization_Call (Obj_Id)) then
-                     Hook_Insert := BIP_Initialization_Call (Obj_Id);
-                  else
-                     Hook_Insert := Obj_Decl;
-                  end if;
-
-               --  Otherwise the hook seizes the related object immediately
-
-               else
-                  Hook_Insert := Obj_Decl;
-               end if;
-
-               Insert_After_And_Analyze (Hook_Insert, Hook_Assign);
-            end if;
-
-            --  When exception propagation is enabled wrap the hook clear
-            --  statement and the finalization call into a block to catch
-            --  potential exceptions raised during finalization. Generate:
-
-            --    begin
-            --       [Hook := null;]
-            --       [Deep_]Finalize (Obj_Ref);
-
-            --    exception
-            --       when others =>
-            --          if not Raised then
-            --             Raised := True;
-            --             Save_Occurrence
-            --               (Enn, Get_Current_Excep.all.all);
-            --          end if;
-            --    end;
-
-            if Exceptions_OK then
-               Fin_Stmts := New_List;
-
-               if Must_Hook then
-                  Append_To (Fin_Stmts, Hook_Clear);
-               end if;
-
-               Append_To (Fin_Stmts, Fin_Call);
-
-               Prepend_To (Blk_Stmts,
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements         => Fin_Stmts,
-                       Exception_Handlers => New_List (
-                         Build_Exception_Handler (Blk_Data)))));
-
-            --  Otherwise generate:
-
-            --    [Hook := null;]
-            --    [Deep_]Finalize (Obj_Ref);
-
-            --  Note that the statements are inserted in reverse order to
-            --  achieve the desired final order outlined above.
+            --  Otherwise generate a direct finalization call for the object
 
             else
-               Prepend_To (Blk_Stmts, Fin_Call);
+               --  Handle the object type and the reference to the object
 
-               if Must_Hook then
-                  Prepend_To (Blk_Stmts, Hook_Clear);
+               Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
+               Obj_Typ := Base_Type (Etype (Obj_Id));
+
+               if Is_Access_Type (Obj_Typ) then
+                  Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+                  Obj_Typ := Available_View (Designated_Type (Obj_Typ));
                end if;
+
+               Insert_After_And_Analyze (Insert_Nod,
+                 Make_Final_Call (Obj_Ref => Obj_Ref, Typ => Obj_Typ));
             end if;
+
+            --  Mark the transient object to avoid double finalization
+
+            Set_Is_Finalized_Transient (Obj_Id);
          end Process_Transient_In_Scope;
 
          --  Local variables
 
-         Built     : Boolean := False;
-         Blk_Data  : Finalization_Exception_Data;
-         Blk_Decl  : Node_Id := Empty;
-         Blk_Decls : List_Id := No_List;
-         Blk_Ins   : Node_Id;
-         Blk_Stmts : List_Id := No_List;
-         Loc       : Source_Ptr := No_Location;
-         Obj_Decl  : Node_Id;
+         Insert_Nod : Node_Id;
+         --  Insertion node for the finalization actions
+
+         Must_Export : Boolean;
+         --  Flag denoting whether the context requires transient object
+         --  export to the outer finalizer.
+
+         Obj_Decl : Node_Id;
 
       --  Start of processing for Process_Transients_In_Scope
 
       begin
          --  The expansion performed by this routine is as follows:
 
-         --    type Ptr_Typ_1 is access all Ctrl_Trans_Obj_1_Typ;
-         --    Hook_1 : Ptr_Typ_1 := null;
+         --    Ctrl_Trans_Obj_1MN : Master_Node;
          --    Ctrl_Trans_Obj_1 : ...;
-         --    Hook_1 := Ctrl_Trans_Obj_1'Unrestricted_Access;
          --    . . .
-         --    type Ptr_Typ_N is access all Ctrl_Trans_Obj_N_Typ;
-         --    Hook_N : Ptr_Typ_N := null;
+         --    Ctrl_Trans_Obj_NMN : Master_Node;
          --    Ctrl_Trans_Obj_N : ...;
-         --    Hook_N := Ctrl_Trans_Obj_N'Unrestricted_Access;
 
-         --    declare
-         --       Abrt   : constant Boolean := ...;
-         --       Ex     : Exception_Occurrence;
-         --       Raised : Boolean := False;
-
-         --    begin
-         --       Abort_Defer;
-
-         --       begin
-         --          Hook_N := null;
-         --          [Deep_]Finalize (Ctrl_Trans_Obj_N);
-
-         --       exception
-         --          when others =>
-         --             if not Raised then
-         --                Raised := True;
-         --                Save_Occurrence (Ex, Get_Current_Excep.all.all);
-         --       end;
-         --       . . .
-         --       begin
-         --          Hook_1 := null;
-         --          [Deep_]Finalize (Ctrl_Trans_Obj_1);
-
-         --       exception
-         --          when others =>
-         --             if not Raised then
-         --                Raised := True;
-         --                Save_Occurrence (Ex, Get_Current_Excep.all.all);
-         --       end;
-
-         --       Abort_Undefer;
-
-         --       if Raised and not Abrt then
-         --          Raise_From_Controlled_Operation (Ex);
-         --       end if;
-         --    end;
+         --    Finalize_Object (Ctrl_Trans_Obj_NMN);
+         --    . . .
+         --    Finalize_Object (Ctrl_Trans_Obj_1MN);
 
          --  Recognize a scenario where the transient context is an object
          --  declaration initialized by a build-in-place function call:
@@ -5667,114 +5461,38 @@ package body Exp_Ch7 is
          if Nkind (N) = N_Object_Declaration
            and then Present (BIP_Initialization_Call (Defining_Identifier (N)))
          then
-            Must_Hook := True;
-            Blk_Ins   := BIP_Initialization_Call (Defining_Identifier (N));
+            Must_Export := True;
+            Insert_Nod  := BIP_Initialization_Call (Defining_Identifier (N));
 
          --  Search the context for at least one subprogram call. If found, the
          --  machinery exports all transient objects to the enclosing finalizer
          --  due to the possibility of abnormal call termination.
 
          else
-            Must_Hook := Has_Subprogram_Call (N) = Abandon;
-            Blk_Ins   := Last_Object;
+            Must_Export := Has_Subprogram_Call (N) = Abandon;
+            Insert_Nod  := Last_Object;
          end if;
 
-         Insert_List_After_And_Analyze (Blk_Ins, Act_Cleanup);
+         Insert_List_After_And_Analyze (Insert_Nod, Act_Cleanup);
 
-         --  Examine all objects in the list First_Object .. Last_Object
+         --  Examine all the objects in the list First_Object .. Last_Object
+         --  but skip the node to be wrapped because it is not transient as
+         --  far as this scope is concerned.
 
          Obj_Decl := First_Object;
          while Present (Obj_Decl) loop
-            if Nkind (Obj_Decl) = N_Object_Declaration
+            if Obj_Decl /= Related_Node
+              and then Nkind (Obj_Decl) = N_Object_Declaration
               and then Analyzed (Obj_Decl)
               and then Is_Finalizable_Transient (Obj_Decl, N)
-
-              --  Do not process the node to be wrapped since it will be
-              --  handled by the enclosing finalizer.
-
-              and then Obj_Decl /= Related_Node
             then
-               Loc := Sloc (Obj_Decl);
-
-               --  Before generating the cleanup code for the first transient
-               --  object, create a wrapper block which houses all hook clear
-               --  statements and finalization calls. This wrapper is needed by
-               --  the back end.
-
-               if not Built then
-                  Built     := True;
-                  Blk_Stmts := New_List;
-
-                  --  Generate:
-                  --    Abrt   : constant Boolean := ...;
-                  --    Ex     : Exception_Occurrence;
-                  --    Raised : Boolean := False;
-
-                  if Exceptions_OK then
-                     Blk_Decls := New_List;
-                     Build_Object_Declarations (Blk_Data, Blk_Decls, Loc);
-                  end if;
-
-                  Blk_Decl :=
-                    Make_Block_Statement (Loc,
-                      Declarations               => Blk_Decls,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => Blk_Stmts));
-               end if;
-
-               --  Construct all necessary circuitry to hook and finalize a
-               --  single transient object.
-
-               pragma Assert (Present (Blk_Stmts));
-               Process_Transient_In_Scope
-                 (Obj_Decl  => Obj_Decl,
-                  Blk_Data  => Blk_Data,
-                  Blk_Stmts => Blk_Stmts);
+               Process_Transient_In_Scope (Obj_Decl, Insert_Nod, Must_Export);
             end if;
 
-            --  Terminate the scan after the last object has been processed to
-            --  avoid touching unrelated code.
-
-            if Obj_Decl = Last_Object then
-               exit;
-            end if;
+            exit when Obj_Decl = Last_Object;
 
             Next (Obj_Decl);
          end loop;
-
-         --  Complete the decoration of the enclosing finalization block and
-         --  insert it into the tree.
-
-         if Present (Blk_Decl) then
-
-            pragma Assert (Present (Blk_Stmts));
-            pragma Assert (Loc /= No_Location);
-
-            --  Note that this Abort_Undefer does not require a extra block or
-            --  an AT_END handler because each finalization exception is caught
-            --  in its own corresponding finalization block. As a result, the
-            --  call to Abort_Defer always takes place.
-
-            if Abort_Allowed then
-               Prepend_To (Blk_Stmts,
-                 Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-               Append_To (Blk_Stmts,
-                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
-            end if;
-
-            --  Generate:
-            --    if Raised and then not Abrt then
-            --       Raise_From_Controlled_Operation (Ex);
-            --    end if;
-
-            if Exceptions_OK then
-               Append_To (Blk_Stmts, Build_Raise_Statement (Blk_Data));
-            end if;
-
-            Insert_After_And_Analyze (Blk_Ins, Blk_Decl);
-         end if;
       end Process_Transients_In_Scope;
 
       --  Local variables
@@ -8347,6 +8065,7 @@ package body Exp_Ch7 is
          else
             raise Program_Error;
          end if;
+
       else
          raise Program_Error;
       end if;
@@ -8905,6 +8624,29 @@ package body Exp_Ch7 is
               Statements => Make_Deep_Record_Body (Finalize_Case, Typ, True)));
    end Make_Local_Deep_Finalize;
 
+   ----------------------------------
+   -- Make_Master_Node_Declaration --
+   ----------------------------------
+
+   function Make_Master_Node_Declaration
+     (Loc         : Source_Ptr;
+      Master_Node : Entity_Id;
+      Obj         : Entity_Id) return Node_Id
+   is
+   begin
+      Set_Finalization_Master_Node_Or_Object (Obj, Master_Node);
+
+      Mutate_Ekind (Master_Node, E_Variable);
+      Set_Finalization_Master_Node_Or_Object (Master_Node, Obj);
+
+      return
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Master_Node,
+          Aliased_Present     => True,
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Master_Node), Loc));
+   end Make_Master_Node_Declaration;
+
    ------------------------------------
    -- Make_Set_Finalize_Address_Call --
    ------------------------------------
@@ -8946,6 +8688,43 @@ package body Exp_Ch7 is
               Prefix         => New_Occurrence_Of (Fin_Addr, Loc),
               Attribute_Name => Name_Unrestricted_Access)));
    end Make_Set_Finalize_Address_Call;
+
+   ----------------------------------------
+   -- Make_Suppress_Object_Finalize_Call --
+   ----------------------------------------
+
+   function Make_Suppress_Object_Finalize_Call
+     (Loc : Source_Ptr;
+      Obj : Entity_Id) return Node_Id
+   is
+      Master_Node_Decl : Node_Id;
+      Master_Node_Id   : Entity_Id;
+
+   begin
+      --  Create the declaration of the Master_Node for the object and
+      --  insert it before the declaration of the object itself.
+
+      if Present (Finalization_Master_Node_Or_Object (Obj)) then
+         Master_Node_Id := Finalization_Master_Node_Or_Object (Obj);
+
+      else
+         Master_Node_Id := Make_Temporary (Loc, 'N');
+         Master_Node_Decl :=
+           Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj);
+         Insert_Before_And_Analyze (Declaration_Node (Obj), Master_Node_Decl);
+
+         --  Mark the object to avoid double finalization
+
+         Set_Is_Ignored_For_Finalization (Obj);
+      end if;
+
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_Suppress_Object_Finalize_At_End), Loc),
+          Parameter_Associations => New_List (
+            New_Occurrence_Of (Master_Node_Id, Loc)));
+   end Make_Suppress_Object_Finalize_Call;
 
    --------------------------
    -- Make_Transient_Block --

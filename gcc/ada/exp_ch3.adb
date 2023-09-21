@@ -5021,7 +5021,9 @@ package body Exp_Ch3 is
       --  Create the body of TSS primitive Finalize_Address. This automatically
       --  sets the TSS entry for the class-wide type.
 
-      Make_Finalize_Address_Body (Typ);
+      if not Present (Finalize_Address (Typ)) then
+         Make_Finalize_Address_Body (Typ);
+      end if;
    end Expand_Freeze_Class_Wide_Type;
 
    ------------------------------------
@@ -5919,12 +5921,7 @@ package body Exp_Ch3 is
          then
             null;
 
-         --  Do not add the body of the predefined primitives if we are
-         --  compiling under restriction No_Dispatching_Calls or if we are
-         --  compiling a CPP tagged type.
-
-         elsif not Restriction_Active (No_Dispatching_Calls) then
-
+         else
             --  Create the body of TSS primitive Finalize_Address. This must
             --  be done before the bodies of all predefined primitives are
             --  created. If Typ is limited, Stream_Input and Stream_Read may
@@ -5932,14 +5929,35 @@ package body Exp_Ch3 is
             --  needs Finalize_Address.
 
             Make_Finalize_Address_Body (Typ);
-            Predef_List := Predefined_Primitive_Bodies (Typ, Renamed_Eq);
-            Append_Freeze_Actions (Typ, Predef_List);
+
+            --  Do not add the body of the predefined primitives if we are
+            --  compiling under restriction No_Dispatching_Calls.
+
+            if not Restriction_Active (No_Dispatching_Calls) then
+               --  Create the body of the class-wide type's TSS primitive
+               --  Finalize_Address. This must be done before any class-wide
+               --  precondition functions are created.
+
+               Make_Finalize_Address_Body (Class_Wide_Type (Typ));
+
+               Predef_List := Predefined_Primitive_Bodies (Typ, Renamed_Eq);
+               Append_Freeze_Actions (Typ, Predef_List);
+            end if;
          end if;
 
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
          --  inherited functions, then add their bodies to the freeze actions.
 
          Append_Freeze_Actions (Typ, Wrapper_Body_List);
+
+      --  Create body of an interface type's class-wide type's TSS primitive
+      --  Finalize_Address.
+
+      elsif Is_Tagged_Type (Typ)
+        and then Is_Interface (Typ)
+        and then not Restriction_Active (No_Dispatching_Calls)
+      then
+         Make_Finalize_Address_Body (Class_Wide_Type (Typ));
       end if;
 
       --  Create extra formals for the primitive operations of the type.

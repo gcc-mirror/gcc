@@ -2701,13 +2701,14 @@ package body Exp_Attr is
          --  activation record object where the component corresponds to
          --  prefix of the attribute (for back ends that require "unnesting"
          --  of nested subprograms), since the address needs to be assigned
-         --  as-is to such components.
+         --  as-is to such components. Likewise for a return object.
 
          elsif Tagged_Type_Expansion
            and then Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
-           and then not (Nkind (Pref) in N_Has_Entity
-                          and then Is_Subprogram (Entity (Pref)))
+           and then not (Is_Entity_Name (Pref)
+                          and then (Is_Subprogram (Entity (Pref))
+                                     or else Is_Return_Object (Entity (Pref))))
            and then not Is_Unnested_Component_Init (N)
          then
             Rewrite (N,

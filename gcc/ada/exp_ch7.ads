@@ -231,6 +231,12 @@ package Exp_Ch7 is
    --  Create a special version of Deep_Finalize with identifier Nam. The
    --  routine has state information and can perform partial finalization.
 
+   function Make_Master_Node_Declaration
+     (Loc         : Source_Ptr;
+      Master_Node : Entity_Id;
+      Obj         : Entity_Id) return Node_Id;
+   --  Build the declaration of the Master_Node for the object Obj
+
    function Make_Set_Finalize_Address_Call
      (Loc     : Source_Ptr;
       Ptr_Typ : Entity_Id) return Node_Id;
@@ -239,6 +245,12 @@ package Exp_Ch7 is
    --
    --    Set_Finalize_Address
    --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
+
+   function Make_Suppress_Object_Finalize_Call
+     (Loc : Source_Ptr;
+      Obj : Entity_Id) return Node_Id;
+   --  Build a call to suppress the finalization of the object Obj, only after
+   --  creating the Master_Node of Obj if it does not already exist.
 
    --------------------------------------------
    -- Task and Protected Object finalization --

@@ -335,12 +335,12 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Activation_Record_Component, Node_Id),
         Sm (Alignment, Unat),
         Sm (Esize, Uint),
+        Sm (Finalization_Master_Node_Or_Object, Node_Id),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Finalized_Transient, Flag),
         Sm (Is_Ignored_For_Finalization, Flag),
         Sm (Linker_Section_Pragma, Node_Id),
-        Sm (Related_Expression, Node_Id),
-        Sm (Status_Flag_Or_Transient_Decl, Node_Id)));
+        Sm (Related_Expression, Node_Id)));
 
    Ab (Constant_Or_Variable_Kind, Allocatable_Kind,
        (Sm (Actual_Subtype, Node_Id),

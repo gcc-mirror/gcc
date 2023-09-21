@@ -1305,6 +1305,16 @@ package Einfo is
 --       type. Empty for access-to-subprogram types. Empty for access types
 --       whose designated type does not need finalization actions.
 
+--    Finalization_Master_Node_Or_Object
+--       Defined in variables and constants that require finalization actions.
+--       The field contains the entity of an object (called a Master_Node) that
+--       contains the address of the finalizable object, along with an access
+--       value denoting the finalizable object's finalization procedure. The
+--       Master_Node may be attached to a finalization list associated with
+--       either the global scope or some dynamic scope (block or subprogram).
+--       Conversely, for a Master_Node entity, the field contains the entity
+--       of the finalizable object.
+
 --    Finalize_Storage_Only [base type only]
 --       Defined in all types. Set on direct controlled types to which a
 --       valid Finalize_Storage_Only pragma applies. This flag is also set on
@@ -4513,15 +4523,6 @@ package Einfo is
 --       from another predicate but does not add a predicate of its own, the
 --       expression may consist of the above xxxPredicate call on its own.
 
---    Status_Flag_Or_Transient_Decl
---       Defined in constant, loop, and variable entities. Applies to objects
---       that require special treatment by the finalization machinery, such as
---       extended return objects, conditional expression results, and objects
---       inside N_Expression_With_Actions nodes. The attribute contains the
---       entity of a flag which specifies a particular behavior over a region
---       of the extended return for the return objects, or the declaration of a
---       hook object for conditional expressions and N_Expression_With_Actions.
-
 --    Storage_Size_Variable [implementation base type only]
 --       Defined in access types and task type entities. This flag is set
 --       if a valid and effective pragma Storage_Size applies to the base
@@ -5294,7 +5295,6 @@ package Einfo is
    --    Esize
    --    Extra_Accessibility                   (constants only)
    --    Alignment
-   --    Status_Flag_Or_Transient_Decl
    --    Actual_Subtype
    --    Renamed_Object
    --    Renamed_Entity $$$
@@ -5304,6 +5304,7 @@ package Einfo is
    --    Related_Type                          (constants only)
    --    Initialization_Statements
    --    BIP_Initialization_Call
+   --    Finalization_Master_Node_Or_Object
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State                   (constants only)
@@ -6174,7 +6175,6 @@ package Einfo is
    --    Esize
    --    Extra_Accessibility
    --    Alignment
-   --    Status_Flag_Or_Transient_Decl        (transient object only)
    --    Unset_Reference
    --    Actual_Subtype
    --    Renamed_Object
@@ -6191,6 +6191,7 @@ package Einfo is
    --    Related_Type
    --    Initialization_Statements
    --    BIP_Initialization_Call
+   --    Finalization_Master_Node_Or_Object
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State

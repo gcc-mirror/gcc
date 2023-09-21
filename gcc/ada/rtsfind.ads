@@ -255,6 +255,7 @@ package Rtsfind is
       System_Fat_LLF,
       System_Fat_SFlt,
       System_Finalization_Masters,
+      System_Finalization_Primitives,
       System_Finalization_Root,
       System_Fore_Decimal_32,
       System_Fore_Decimal_64,
@@ -923,6 +924,14 @@ package Rtsfind is
      RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
      RE_Set_Base_Pool,                   -- System.Finalization_Masters
      RE_Set_Finalize_Address,            -- System.Finalization_Masters
+
+     RE_Attach_Object_To_Master,         -- System.Finalization_Primitives
+     RE_Attach_Object_To_Node,           -- System.Finalization_Primitives
+     RE_Finalize_Master,                 -- System.Finalization_Primitives
+     RE_Finalize_Object,                 -- System.Finalization_Primitives
+     RE_Finalization_Scope_Master,       -- System.Finalization_Primitives
+     RE_Master_Node,                     -- System.Finalization_Primitives
+     RE_Suppress_Object_Finalize_At_End, -- System.Finalization_Primitives
 
      RE_Root_Controlled,                 -- System.Finalization_Root
 
@@ -2567,6 +2576,14 @@ package Rtsfind is
      RE_Finalization_Master_Ptr          => System_Finalization_Masters,
      RE_Set_Base_Pool                    => System_Finalization_Masters,
      RE_Set_Finalize_Address             => System_Finalization_Masters,
+
+     RE_Attach_Object_To_Master          => System_Finalization_Primitives,
+     RE_Attach_Object_To_Node            => System_Finalization_Primitives,
+     RE_Finalize_Master                  => System_Finalization_Primitives,
+     RE_Finalize_Object                  => System_Finalization_Primitives,
+     RE_Finalization_Scope_Master        => System_Finalization_Primitives,
+     RE_Master_Node                      => System_Finalization_Primitives,
+     RE_Suppress_Object_Finalize_At_End  => System_Finalization_Primitives,
 
      RE_Root_Controlled                  => System_Finalization_Root,
 

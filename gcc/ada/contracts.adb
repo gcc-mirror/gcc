@@ -4176,13 +4176,13 @@ package body Contracts is
          Helper_Decl := Build_Call_Helper_Decl;
          Mutate_Ekind (Helper_Id, Ekind (Subp_Id));
 
-         --  Add the helper to the freezing actions of the tagged type
+         --  Add the helper to the freezing actions of the class-wide type
 
-         Append_Freeze_Action (Tagged_Type, Helper_Decl);
+         Append_Freeze_Action (Class_Wide_Type (Tagged_Type), Helper_Decl);
          Analyze (Helper_Decl);
 
          Helper_Body := Build_Call_Helper_Body;
-         Append_Freeze_Action (Tagged_Type, Helper_Body);
+         Append_Freeze_Action (Class_Wide_Type (Tagged_Type), Helper_Body);
 
          --  If this helper is built as part of building the DTW at the
          --  freezing point of its tagged type then we cannot defer
