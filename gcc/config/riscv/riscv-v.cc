@@ -347,33 +347,42 @@ private:
   expand_operand m_ops[MAX_OPERANDS];
 };
 
-/* Emit RVV insn which vl is VLMAX.
-   This function can only be used before LRA pass or
-   for VLS_AVL_IMM modes.  */
+/* Emit an RVV insn with a vector length that equals the number of units of the
+   vector mode.  For VLA modes this corresponds to VLMAX.
+
+   Unless the vector length can be encoded in the vsetivl[i] instruction this
+   function must only be used as long as we can create pseudo registers. This is
+   because it will set a pseudo register to VLMAX using vsetvl and use this as
+   definition for the vector length.  */
 void
 emit_vlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops)
 {
   insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
+  gcc_assert (can_create_pseudo_p () || const_vlmax_p (e.get_vtype_mode (ops)));
+
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
-/* Emit RVV insn which vl is VL.  */
-void
-emit_nonvlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
-{
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false);
-  e.set_vl (vl);
-  e.emit_insn ((enum insn_code) icode, ops);
-}
-
-/* Emit RVV insn which vl is VL but the AVL_TYPE insn attr is VLMAX.
-   This function used after LRA pass that cann't create pseudo register.  */
+/* Like emit_vlmax_insn but must only be used when we cannot create pseudo
+   registers anymore.  This function, however, takes a predefined vector length
+   from the value in VL. */
 void
 emit_vlmax_insn_lra (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
 {
   gcc_assert (!can_create_pseudo_p ());
 
   insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit an RVV insn with a predefined vector length.  Contrary to
+   emit_vlmax_insn the instruction's vector length is not deduced from its mode
+   but taken from  the value in VL.  */
+void
+emit_nonvlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
+{
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false);
   e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
