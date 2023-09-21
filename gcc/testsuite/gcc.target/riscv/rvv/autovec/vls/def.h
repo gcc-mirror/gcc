@@ -518,3 +518,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; i++)                                              \
       dst[i] = ((TYPE2) a[i] + b[i] + 1) >> 1;                                 \
   }
+
+#define DEF_MULH(TYPE, NUM)                                                    \
+  void __attribute__ ((noipa))                                                 \
+  mod_##TYPE##_##NUM (TYPE *__restrict dst, TYPE *__restrict src)              \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      dst[i] = src[i] % 19;                                                    \
+  }
