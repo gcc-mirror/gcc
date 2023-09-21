@@ -10199,300 +10199,344 @@ loongarch_expand_vector_group_init (rtx target, rtx vals)
 						      ops[1])));
 }
 
+/* Expand initialization of a vector which has all same elements.  */
+
+void
+loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
+{
+  machine_mode vmode = GET_MODE (target);
+  machine_mode imode = GET_MODE_INNER (vmode);
+  rtx same = XVECEXP (vals, 0, 0);
+  rtx temp, temp2;
+
+  if (CONST_INT_P (same) && nvar == 0
+      && loongarch_signed_immediate_p (INTVAL (same), 10, 0))
+    {
+      switch (vmode)
+	{
+	case E_V32QImode:
+	case E_V16HImode:
+	case E_V8SImode:
+	case E_V4DImode:
+	case E_V16QImode:
+	case E_V8HImode:
+	case E_V4SImode:
+	case E_V2DImode:
+	  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
+	  emit_move_insn (target, temp);
+	  return;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  temp = gen_reg_rtx (imode);
+  if (imode == GET_MODE (same))
+    temp2 = same;
+  else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
+    {
+      if (GET_CODE (same) == MEM)
+	{
+	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
+	  loongarch_emit_move (reg_tmp, same);
+	  temp2 = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
+	}
+      else
+	temp2 = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
+    }
+  else
+    {
+      if (GET_CODE (same) == MEM)
+	{
+	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
+	  loongarch_emit_move (reg_tmp, same);
+	  temp2 = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
+	}
+      else
+	temp2 = lowpart_subreg (imode, same, GET_MODE (same));
+    }
+  emit_move_insn (temp, temp2);
+
+  switch (vmode)
+    {
+    case E_V32QImode:
+    case E_V16HImode:
+    case E_V8SImode:
+    case E_V4DImode:
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
+      loongarch_emit_move (target, gen_rtx_VEC_DUPLICATE (vmode, temp));
+      break;
+
+    case E_V8SFmode:
+      emit_insn (gen_lasx_xvreplve0_w_f_scalar (target, temp));
+      break;
+
+    case E_V4DFmode:
+      emit_insn (gen_lasx_xvreplve0_d_f_scalar (target, temp));
+      break;
+
+    case E_V4SFmode:
+      emit_insn (gen_lsx_vreplvei_w_f_scalar (target, temp));
+      break;
+
+    case E_V2DFmode:
+      emit_insn (gen_lsx_vreplvei_d_f_scalar (target, temp));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Expand a vector initialization.  */
+
 void
 loongarch_expand_vector_init (rtx target, rtx vals)
 {
   machine_mode vmode = GET_MODE (target);
   machine_mode imode = GET_MODE_INNER (vmode);
   unsigned i, nelt = GET_MODE_NUNITS (vmode);
-  unsigned nvar = 0;
-  bool all_same = true;
-  rtx x;
+  /* VALS is divided into high and low half-part.  */
+  /* Number of non constant elements in corresponding parts of VALS.  */
+  unsigned nvar = 0, hi_nvar = 0, lo_nvar = 0;
+  /* all_same : true if all elements of VALS are the same.
+     hi_same : true if all elements of the high half-part are the same.
+     lo_same : true if all elements of the low half-part are the same.
+     half_same : true if the high half-part is the same as the low one.  */
+  bool all_same = false, hi_same = true, lo_same = true, half_same = true;
+  rtx val[32], val_hi[32], val_lo[16];
+  rtx x, op0, op1;
+  /* Copy one element of vals to per element of target vector.  */
+  typedef rtx (*loongarch_vec_repl1_fn) (rtx, rtx);
+  /* Copy two elements of vals to target vector.  */
+  typedef rtx (*loongarch_vec_repl2_fn) (rtx, rtx, rtx);
+  /* Insert scalar operands into the specified position of the vector.  */
+  typedef rtx (*loongarch_vec_set_fn) (rtx, rtx, rtx);
+  /* Copy 64bit lowpart to highpart.  */
+  typedef rtx (*loongarch_vec_mirror_fn) (rtx, rtx, rtx);
+  /* Merge lowpart and highpart into target.  */
+  typedef rtx (*loongarch_vec_merge_fn) (rtx, rtx, rtx, rtx);
 
-  for (i = 0; i < nelt; ++i)
+  loongarch_vec_repl1_fn loongarch_vec_repl1_128 = NULL,
+			 loongarch_vec_repl1_256 = NULL;
+  loongarch_vec_repl2_fn loongarch_vec_repl2_128 = NULL,
+			 loongarch_vec_repl2_256 = NULL;
+  loongarch_vec_set_fn loongarch_vec_set128 = NULL, loongarch_vec_set256 = NULL;
+  loongarch_vec_mirror_fn loongarch_vec_mirror = NULL;
+  loongarch_vec_merge_fn loongarch_lasx_vecinit_merge = NULL;
+  machine_mode half_mode = VOIDmode;
+
+  /* Check whether elements of each part are the same.  */
+  for (i = 0; i < nelt / 2; ++i)
     {
-      x = XVECEXP (vals, 0, i);
-      if (!loongarch_constant_elt_p (x))
-	nvar++;
-      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
-	all_same = false;
+      val_hi[i] = val_hi[i + nelt / 2] = val[i + nelt / 2]
+	= XVECEXP (vals, 0, i + nelt / 2);
+      val_lo[i] = val[i] = XVECEXP (vals, 0, i);
+      if (!loongarch_constant_elt_p (val_hi[i]))
+	hi_nvar++;
+      if (!loongarch_constant_elt_p (val_lo[i]))
+	lo_nvar++;
+      if (i > 0 && !rtx_equal_p (val_hi[i], val_hi[0]))
+	hi_same = false;
+      if (i > 0 && !rtx_equal_p (val_lo[i], val_lo[0]))
+	lo_same = false;
+      if (!rtx_equal_p (val_hi[i], val_lo[i]))
+	half_same = false;
+    }
+
+  /* If all elements are the same, set all_same true.  */
+  if (hi_same && lo_same && half_same)
+    all_same = true;
+
+  nvar = hi_nvar + lo_nvar;
+
+  switch (vmode)
+    {
+    case E_V32QImode:
+      half_mode = E_V16QImode;
+      loongarch_vec_set256 = gen_vec_setv32qi_internal;
+      loongarch_vec_repl1_256 = gen_lasx_xvreplgr2vr_b;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v32qi : gen_lasx_vecinit_merge_v32qi;
+      /* FALLTHRU.  */
+    case E_V16QImode:
+      loongarch_vec_set128 = gen_vec_setv16qi;
+      loongarch_vec_repl1_128 = gen_lsx_vreplgr2vr_b;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_b;
+      break;
+
+    case E_V16HImode:
+      half_mode = E_V8HImode;
+      loongarch_vec_set256 = gen_vec_setv16hi_internal;
+      loongarch_vec_repl1_256 = gen_lasx_xvreplgr2vr_h;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v16hi : gen_lasx_vecinit_merge_v16hi;
+      /* FALLTHRU.  */
+    case E_V8HImode:
+      loongarch_vec_set128 = gen_vec_setv8hi;
+      loongarch_vec_repl1_128 = gen_lsx_vreplgr2vr_h;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_h;
+      break;
+
+    case E_V8SImode:
+      half_mode = V4SImode;
+      loongarch_vec_set256 = gen_vec_setv8si;
+      loongarch_vec_repl1_256 = gen_lasx_xvreplgr2vr_w;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v8si : gen_lasx_vecinit_merge_v8si;
+      /* FALLTHRU.  */
+    case E_V4SImode:
+      loongarch_vec_set128 = gen_vec_setv4si;
+      loongarch_vec_repl1_128 = gen_lsx_vreplgr2vr_w;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_w;
+      break;
+
+    case E_V4DImode:
+      half_mode = E_V2DImode;
+      loongarch_vec_set256 = gen_vec_setv4di;
+      loongarch_vec_repl1_256 = gen_lasx_xvreplgr2vr_d;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v4di : gen_lasx_vecinit_merge_v4di;
+      /* FALLTHRU.  */
+    case E_V2DImode:
+      loongarch_vec_set128 = gen_vec_setv2di;
+      loongarch_vec_repl1_128 = gen_lsx_vreplgr2vr_d;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_d;
+      break;
+
+    case E_V8SFmode:
+      half_mode = E_V4SFmode;
+      loongarch_vec_set256 = gen_vec_setv8sf;
+      loongarch_vec_repl1_128 = gen_lsx_vreplvei_w_f_scalar;
+      loongarch_vec_repl2_256 = gen_lasx_xvilvl_w_f_internal;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v8sf : gen_lasx_vecinit_merge_v8sf;
+      /* FALLTHRU.  */
+    case E_V4SFmode:
+      loongarch_vec_set128 = gen_vec_setv4sf;
+      loongarch_vec_repl2_128 = gen_lsx_vilvl_w_f_internal;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_w_f;
+      break;
+
+    case E_V4DFmode:
+      half_mode = E_V2DFmode;
+      loongarch_vec_set256 = gen_vec_setv4df;
+      loongarch_vec_repl1_128 = gen_lsx_vreplvei_d_f_scalar;
+      loongarch_vec_repl2_256 = gen_lasx_xvilvl_d_f_internal;
+      loongarch_lasx_vecinit_merge
+	= half_same ? gen_lasx_xvpermi_q_v4df : gen_lasx_vecinit_merge_v4df;
+      /* FALLTHRU.  */
+    case E_V2DFmode:
+      loongarch_vec_set128 = gen_vec_setv2df;
+      loongarch_vec_repl2_128 = gen_lsx_vilvl_d_f_internal;
+      loongarch_vec_mirror = gen_lsx_vreplvei_mirror_d_f;
+      break;
+
+    default:
+      gcc_unreachable ();
     }
 
   if (ISA_HAS_LASX && GET_MODE_SIZE (vmode) == 32)
     {
+      /* If all elements are the same, just do a broadcost.  */
       if (all_same)
-	{
-	  rtx same = XVECEXP (vals, 0, 0);
-	  rtx temp, temp2;
-
-	  if (CONST_INT_P (same) && nvar == 0
-	      && loongarch_signed_immediate_p (INTVAL (same), 10, 0))
-	    {
-	      switch (vmode)
-		{
-		case E_V32QImode:
-		case E_V16HImode:
-		case E_V8SImode:
-		case E_V4DImode:
-		  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
-		  emit_move_insn (target, temp);
-		  return;
-
-		default:
-		  gcc_unreachable ();
-		}
-	    }
-
-	  temp = gen_reg_rtx (imode);
-	  if (imode == GET_MODE (same))
-	    temp2 = same;
-	  else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
-	    {
-	      if (GET_CODE (same) == MEM)
-		{
-		  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-		  loongarch_emit_move (reg_tmp, same);
-		  temp2 = simplify_gen_subreg (imode, reg_tmp,
-					       GET_MODE (reg_tmp), 0);
-		}
-	      else
-		temp2 = simplify_gen_subreg (imode, same,
-					     GET_MODE (same), 0);
-	    }
-	  else
-	    {
-	      if (GET_CODE (same) == MEM)
-		{
-		  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-		  loongarch_emit_move (reg_tmp, same);
-		  temp2 = lowpart_subreg (imode, reg_tmp,
-					  GET_MODE (reg_tmp));
-		}
-	      else
-		temp2 = lowpart_subreg (imode, same, GET_MODE (same));
-	    }
-	  emit_move_insn (temp, temp2);
-
-	  switch (vmode)
-	    {
-	    case E_V32QImode:
-	    case E_V16HImode:
-	    case E_V8SImode:
-	    case E_V4DImode:
-	      loongarch_emit_move (target,
-				   gen_rtx_VEC_DUPLICATE (vmode, temp));
-	      break;
-
-	    case E_V8SFmode:
-	      emit_insn (gen_lasx_xvreplve0_w_f_scalar (target, temp));
-	      break;
-
-	    case E_V4DFmode:
-	      emit_insn (gen_lasx_xvreplve0_d_f_scalar (target, temp));
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
+	loongarch_expand_vector_init_same (target, vals, nvar);
       else
 	{
-	  rtvec vec = shallow_copy_rtvec (XVEC (vals, 0));
+	  gcc_assert (nelt >= 4);
 
-	  for (i = 0; i < nelt; ++i)
-	    RTVEC_ELT (vec, i) = CONST0_RTX (imode);
-
-	  emit_move_insn (target, gen_rtx_CONST_VECTOR (vmode, vec));
-
-	  machine_mode half_mode = VOIDmode;
 	  rtx target_hi, target_lo;
+	  /* Write elements of high half-part in target directly.  */
+	  target_hi = target;
+	  target_lo = gen_reg_rtx (half_mode);
 
-	  switch (vmode)
+	  /* If all elements of high half-part are the same,
+	     just do a broadcost.  Also applicable to low half-part.  */
+	  if (hi_same)
 	    {
-	    case E_V32QImode:
-	      half_mode=E_V16QImode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_b_scalar (target_hi,
-							    temp_hi));
-		      emit_insn (gen_lsx_vreplvei_b_scalar (target_lo,
-							    temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv16qi (target_hi, temp_hi,
-						   GEN_INT (i)));
-		      emit_insn (gen_vec_setv16qi (target_lo, temp_lo,
-						   GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    case E_V16HImode:
-	      half_mode=E_V8HImode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_h_scalar (target_hi,
-							    temp_hi));
-		      emit_insn (gen_lsx_vreplvei_h_scalar (target_lo,
-							    temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv8hi (target_hi, temp_hi,
-						  GEN_INT (i)));
-		      emit_insn (gen_vec_setv8hi (target_lo, temp_lo,
-						  GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    case E_V8SImode:
-	      half_mode=V4SImode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_w_scalar (target_hi,
-							    temp_hi));
-		      emit_insn (gen_lsx_vreplvei_w_scalar (target_lo,
-							    temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv4si (target_hi, temp_hi,
-						  GEN_INT (i)));
-		      emit_insn (gen_vec_setv4si (target_lo, temp_lo,
-						  GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    case E_V4DImode:
-	      half_mode=E_V2DImode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_d_scalar (target_hi,
-							    temp_hi));
-		      emit_insn (gen_lsx_vreplvei_d_scalar (target_lo,
-							    temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv2di (target_hi, temp_hi,
-						  GEN_INT (i)));
-		      emit_insn (gen_vec_setv2di (target_lo, temp_lo,
-						  GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    case E_V8SFmode:
-	      half_mode=E_V4SFmode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_w_f_scalar (target_hi,
-							      temp_hi));
-		      emit_insn (gen_lsx_vreplvei_w_f_scalar (target_lo,
-							      temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv4sf (target_hi, temp_hi,
-						  GEN_INT (i)));
-		      emit_insn (gen_vec_setv4sf (target_lo, temp_lo,
-						  GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    case E_V4DFmode:
-	      half_mode=E_V2DFmode;
-	      target_hi = gen_reg_rtx (half_mode);
-	      target_lo = gen_reg_rtx (half_mode);
-	      for (i = 0; i < nelt/2; ++i)
-		{
-		  rtx temp_hi = gen_reg_rtx (imode);
-		  rtx temp_lo = gen_reg_rtx (imode);
-		  emit_move_insn (temp_hi, XVECEXP (vals, 0, i+nelt/2));
-		  emit_move_insn (temp_lo, XVECEXP (vals, 0, i));
-		  if (i == 0)
-		    {
-		      emit_insn (gen_lsx_vreplvei_d_f_scalar (target_hi,
-							      temp_hi));
-		      emit_insn (gen_lsx_vreplvei_d_f_scalar (target_lo,
-							      temp_lo));
-		    }
-		  else
-		    {
-		      emit_insn (gen_vec_setv2df (target_hi, temp_hi,
-						  GEN_INT (i)));
-		      emit_insn (gen_vec_setv2df (target_lo, temp_lo,
-						  GEN_INT (i)));
-		    }
-		}
-	      emit_insn (gen_rtx_SET (target,
-				      gen_rtx_VEC_CONCAT (vmode, target_hi,
-							  target_lo)));
-	      break;
-
-	    default:
-	      gcc_unreachable ();
+	      rtx vtmp = gen_rtx_PARALLEL (vmode, gen_rtvec_v (nelt, val_hi));
+	      loongarch_expand_vector_init_same (target_hi, vtmp, hi_nvar);
+	    }
+	  if (lo_same)
+	    {
+	      rtx vtmp
+		= gen_rtx_PARALLEL (half_mode, gen_rtvec_v (nelt / 2, val_lo));
+	      loongarch_expand_vector_init_same (target_lo, vtmp, lo_nvar);
 	    }
 
+	  for (i = 0; i < nelt / 2; ++i)
+	    {
+	      if (!hi_same)
+		{
+		  if (vmode == E_V8SFmode || vmode == E_V4DFmode)
+		    {
+		      /* Using xvilvl to load lowest 2 elements simultaneously
+			 to reduce the number of instructions.  */
+		      if (i == 1)
+			{
+			  op0 = gen_reg_rtx (imode);
+			  emit_move_insn (op0, val_hi[0]);
+			  op1 = gen_reg_rtx (imode);
+			  emit_move_insn (op1, val_hi[1]);
+			  emit_insn (
+			    loongarch_vec_repl2_256 (target_hi, op0, op1));
+			}
+		      else if (i > 1)
+			{
+			  op0 = gen_reg_rtx (imode);
+			  emit_move_insn (op0, val_hi[i]);
+			  emit_insn (
+			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
+			}
+		    }
+		  else
+		    {
+		      /* Assign the lowest element of val_hi to all elements
+			 of target_hi.  */
+		      if (i == 0)
+			{
+			  op0 = gen_reg_rtx (imode);
+			  emit_move_insn (op0, val_hi[0]);
+			  emit_insn (loongarch_vec_repl1_256 (target_hi, op0));
+			}
+		      else if (!rtx_equal_p (val_hi[i], val_hi[0]))
+			{
+			  op0 = gen_reg_rtx (imode);
+			  emit_move_insn (op0, val_hi[i]);
+			  emit_insn (
+			    loongarch_vec_set256 (target_hi, op0, GEN_INT (i)));
+			}
+		    }
+		}
+	      if (!lo_same && !half_same)
+		{
+		  /* Assign the lowest element of val_lo to all elements
+		     of target_lo.  */
+		  if (i == 0)
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val_lo[0]);
+		      emit_insn (loongarch_vec_repl1_128 (target_lo, op0));
+		    }
+		  else if (!rtx_equal_p (val_lo[i], val_lo[0]))
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val_lo[i]);
+		      emit_insn (
+			loongarch_vec_set128 (target_lo, op0, GEN_INT (i)));
+		    }
+		}
+	    }
+	  if (half_same)
+	    {
+	      emit_insn (loongarch_lasx_vecinit_merge (target, target_hi,
+						       target_hi, const0_rtx));
+	      return;
+	    }
+	  emit_insn (loongarch_lasx_vecinit_merge (target, target_hi, target_lo,
+						   GEN_INT (0x20)));
 	}
       return;
     }
@@ -10500,130 +10544,54 @@ loongarch_expand_vector_init (rtx target, rtx vals)
   if (ISA_HAS_LSX)
     {
       if (all_same)
-	{
-	  rtx same = XVECEXP (vals, 0, 0);
-	  rtx temp, temp2;
-
-	  if (CONST_INT_P (same) && nvar == 0
-	      && loongarch_signed_immediate_p (INTVAL (same), 10, 0))
-	    {
-	      switch (vmode)
-		{
-		case E_V16QImode:
-		case E_V8HImode:
-		case E_V4SImode:
-		case E_V2DImode:
-		  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
-		  emit_move_insn (target, temp);
-		  return;
-
-		default:
-		  gcc_unreachable ();
-		}
-	    }
-	  temp = gen_reg_rtx (imode);
-	  if (imode == GET_MODE (same))
-	    temp2 = same;
-	  else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
-	    {
-	      if (GET_CODE (same) == MEM)
-		{
-		  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-		  loongarch_emit_move (reg_tmp, same);
-		  temp2 = simplify_gen_subreg (imode, reg_tmp,
-					       GET_MODE (reg_tmp), 0);
-		}
-	      else
-		temp2 = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
-	    }
-	  else
-	    {
-	      if (GET_CODE (same) == MEM)
-		{
-		  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-		  loongarch_emit_move (reg_tmp, same);
-		  temp2 = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
-		}
-	      else
-		temp2 = lowpart_subreg (imode, same, GET_MODE (same));
-	    }
-	  emit_move_insn (temp, temp2);
-
-	  switch (vmode)
-	    {
-	    case E_V16QImode:
-	    case E_V8HImode:
-	    case E_V4SImode:
-	    case E_V2DImode:
-	      loongarch_emit_move (target, gen_rtx_VEC_DUPLICATE (vmode, temp));
-	      break;
-
-	    case E_V4SFmode:
-	      emit_insn (gen_lsx_vreplvei_w_f_scalar (target, temp));
-	      break;
-
-	    case E_V2DFmode:
-	      emit_insn (gen_lsx_vreplvei_d_f_scalar (target, temp));
-	      break;
-
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
+	loongarch_expand_vector_init_same (target, vals, nvar);
       else
 	{
-	  emit_move_insn (target, CONST0_RTX (vmode));
-
 	  for (i = 0; i < nelt; ++i)
 	    {
-	      rtx temp = gen_reg_rtx (imode);
-	      emit_move_insn (temp, XVECEXP (vals, 0, i));
-	      switch (vmode)
+	      if (vmode == E_V4SFmode || vmode == E_V2DFmode)
 		{
-		case E_V16QImode:
+		  /* Using vilvl to load lowest 2 elements simultaneously to
+		     reduce the number of instructions.  */
+		  if (i == 1)
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val[0]);
+		      op1 = gen_reg_rtx (imode);
+		      emit_move_insn (op1, val[1]);
+		      emit_insn (loongarch_vec_repl2_128 (target, op0, op1));
+		    }
+		  else if (i > 1)
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val[i]);
+		      emit_insn (
+			loongarch_vec_set128 (target, op0, GEN_INT (i)));
+		    }
+		}
+	      else
+		{
+		  if (half_same && i == nelt / 2)
+		    {
+		      emit_insn (
+			loongarch_vec_mirror (target, target, const0_rtx));
+		      return;
+		    }
+		  /* Assign the lowest element of val to all elements of
+		     target.  */
 		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_b_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv16qi (target, temp, GEN_INT (i)));
-		  break;
-
-		case E_V8HImode:
-		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_h_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv8hi (target, temp, GEN_INT (i)));
-		  break;
-
-		case E_V4SImode:
-		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_w_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv4si (target, temp, GEN_INT (i)));
-		  break;
-
-		case E_V2DImode:
-		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_d_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv2di (target, temp, GEN_INT (i)));
-		  break;
-
-		case E_V4SFmode:
-		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_w_f_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv4sf (target, temp, GEN_INT (i)));
-		  break;
-
-		case E_V2DFmode:
-		  if (i == 0)
-		    emit_insn (gen_lsx_vreplvei_d_f_scalar (target, temp));
-		  else
-		    emit_insn (gen_vec_setv2df (target, temp, GEN_INT (i)));
-		  break;
-
-		default:
-		  gcc_unreachable ();
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val[0]);
+		      emit_insn (loongarch_vec_repl1_128 (target, op0));
+		    }
+		  else if (!rtx_equal_p (val[i], val[0]))
+		    {
+		      op0 = gen_reg_rtx (imode);
+		      emit_move_insn (op0, val[i]);
+		      emit_insn (
+			loongarch_vec_set128 (target, op0, GEN_INT (i)));
+		    }
 		}
 	    }
 	}
@@ -10640,8 +10608,8 @@ loongarch_expand_vector_init (rtx target, rtx vals)
   /* For two-part initialization, always use CONCAT.  */
   if (nelt == 2)
     {
-      rtx op0 = force_reg (imode, XVECEXP (vals, 0, 0));
-      rtx op1 = force_reg (imode, XVECEXP (vals, 0, 1));
+      rtx op0 = force_reg (imode, val[0]);
+      rtx op1 = force_reg (imode, val[1]);
       x = gen_rtx_VEC_CONCAT (vmode, op0, op1);
       emit_insn (gen_rtx_SET (target, x));
       return;
