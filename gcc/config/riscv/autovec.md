@@ -1004,9 +1004,9 @@
 ;; -------------------------------------------------------------------------------
 
 (define_insn_and_split "abs<mode>2"
-  [(set (match_operand:VI 0 "register_operand")
-     (abs:VI
-       (match_operand:VI 1 "register_operand")))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+     (abs:V_VLSI
+       (match_operand:V_VLSI 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
