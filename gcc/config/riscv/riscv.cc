@@ -2525,7 +2525,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       machine_mode vmode = GET_MODE (SUBREG_REG (src));
       unsigned int mode_size = GET_MODE_SIZE (mode).to_constant ();
       unsigned int vmode_size = GET_MODE_SIZE (vmode).to_constant ();
-      unsigned int nunits = vmode_size / mode_size;
+      /* We should be able to handle both partial and paradoxical subreg.  */
+      unsigned int nunits = vmode_size > mode_size ? vmode_size / mode_size : 1;
       scalar_mode smode = as_a<scalar_mode> (mode);
       unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
       unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
