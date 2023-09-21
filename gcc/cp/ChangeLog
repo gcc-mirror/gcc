@@ -1,3 +1,57 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Parse
+	__builtin_classify_type call with typename as argument.
+	* pt.cc (tsubst_copy_and_build): Handle __builtin_classify_type
+	with dependent typename as argument.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	<case VAR_DECL>: Handle class NTTP objects by printing
+	their type and value.
+	<case VIEW_CONVERT_EXPR>: Strip const VIEW_CONVERT_EXPR
+	wrappers for class NTTPs.
+	(pp_cxx_template_argument_list): Don't handle class NTTP
+	objects here.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_function_decl): Don't bother computing 'argvec'
+	when 'lambda_fntype' is set.
+	(tsubst_template_decl): Make sure we return a TEMPLATE_DECL
+	during specialization lookup.  In the non-class non-function
+	template case, use tsubst_decl directly with use_spec_table=false,
+	update DECL_TI_ARGS and call register_specialization like
+	tsubst_decl would have done if use_spec_table=true.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* parser.h (struct cp_lexer): Add in_omp_decl_attribute member.
+	* cp-tree.h (cp_maybe_parse_omp_decl): Declare.
+	* parser.cc (cp_parser_handle_statement_omp_attributes): Diagnose
+	omp::decl attribute on statements.  Adjust diagnostic wording for
+	omp::decl.
+	(cp_parser_omp_directive_args): Add DECL_P argument, set TREE_PUBLIC
+	to it on the DEFERRED_PARSE tree.
+	(cp_parser_omp_sequence_args): Adjust caller.
+	(cp_parser_std_attribute): Handle omp::decl attribute.
+	(cp_parser_omp_var_list): If parser->lexer->in_omp_decl_attribute
+	don't expect any arguments, instead create clause or TREE_LIST for
+	that decl.
+	(cp_parser_late_parsing_omp_declare_simd): Adjust diagnostic wording
+	for omp::decl.
+	(cp_maybe_parse_omp_decl): New function.
+	(cp_parser_omp_declare_target): If
+	parser->lexer->in_omp_decl_attribute and first token isn't name or
+	comma invoke cp_parser_omp_var_list.
+	* decl2.cc (cplus_decl_attributes): Adjust diagnostic wording for
+	omp::decl.  Handle omp::decl on declarations.
+	* name-lookup.cc (finish_using_directive): Adjust diagnostic wording
+	for omp::decl.
+
 2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* mapper-client.cc, mapper-client.h (open_module_client): Accept

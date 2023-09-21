@@ -1,3 +1,9 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* c-omp.cc (c_omp_directives): Add commented out groupprivate
+	directive entry.
+
 2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* c-opts.cc (c_common_handle_option): Add fdeps_file variable and

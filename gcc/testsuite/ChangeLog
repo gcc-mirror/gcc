@@ -1,3 +1,159 @@
+2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/90400
+	* c-c++-common/cpp/pr90400.c: New test.
+
+2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/61474
+	* c-c++-common/cpp/pr61474-2.h: New test.
+	* c-c++-common/cpp/pr61474.c: New test.
+	* c-c++-common/cpp/pr61474.h: New test.
+
+2023-09-20  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Remove unneeded math.h
+	import.
+
+2023-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-relations-5.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-relations-6.c: New test.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-classify-type-1.c: New test.
+	* g++.dg/ext/builtin-classify-type-1.C: New test.
+	* g++.dg/ext/builtin-classify-type-2.C: New test.
+	* gcc.dg/builtin-classify-type-1.c: New test.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* g++.dg/concepts/diagnostic19.C: New test.
+
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-11.c: Remove C-only dg-message
+	for 'sorry, unimplemented'.
+	* c-c++-common/gomp/allocate-12.c: Likewise.
+	* c-c++-common/gomp/allocate-15.c: Likewise.
+	* c-c++-common/gomp/allocate-9.c: Likewise.
+	* c-c++-common/gomp/allocate-10.c: New test.
+	* c-c++-common/gomp/allocate-17.c: New test.
+
+2023-09-20  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/rvv/base/simplify-vdiv.c: New test.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-10.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/ext-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ext-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-5.c: New test.
+
+2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* gcc.dg/uninit-pr111489.c: New testcase.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* g++.dg/gomp/attrs-19.C: New test.
+	* g++.dg/gomp/attrs-20.C: New test.
+	* g++.dg/gomp/attrs-21.C: New test.
+
+2023-09-20  Omar Sandoval  <osandov@osandov.com>
+
+	PR debug/111409
+	* gcc.dg/pr111409.c: New test.
+
+2023-09-20  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr111303.c: Rename to ...
+	* gcc.dg/tree-ssa/pr111324.c: ... this.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/narrow-1.c: Adapt testcase.
+	* gcc.target/riscv/rvv/autovec/binop/narrow-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/narrow-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr110950.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/div-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/shift-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/avg-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ext-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ext-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ext-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-3.c: New test.
+
+2023-09-20  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/110071
+	* gcc.target/powerpc/pr110071.c: New test.
+
 2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* g++.dg/modules/depreport-2.modmap: New test.

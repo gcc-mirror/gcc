@@ -1,3 +1,17 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as
+	implemented for C only.
+	* testsuite/libgomp.c/allocate-4.c: New test.
+	* testsuite/libgomp.c/allocate-5.c: New test.
+	* testsuite/libgomp.c/allocate-6.c: New test.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* libgomp.texi: Mark decl attribute was added to the C++ attribute
+	syntax as implemented.
+
 2023-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/111413

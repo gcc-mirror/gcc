@@ -1,3 +1,8 @@
+2023-09-20  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key):
+	Use const unsigned type and a builtin.
+
 2023-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

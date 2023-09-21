@@ -1,3 +1,175 @@
+2023-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::merge_range): Change meaning
+	of the return value.
+	(ssa_cache::dump): Don't print GLOBAL RANGE header.
+	(ssa_lazy_cache::merge_range): Adjust return value meaning.
+	(ranger_cache::dump): Print GLOBAL RANGE header.
+
+2023-09-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered_ge::fold_range): Remove
+	special casing.
+	(foperator_unordered_gt::fold_range): Same.
+	(foperator_unordered_lt::fold_range): Same.
+	(foperator_unordered_le::fold_range): Same.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.h (type_to_class): Declare.
+	* builtins.cc (type_to_class): No longer static.  Return
+	int rather than enum.
+	* doc/extend.texi (__builtin_classify_type): Document.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110751
+	* internal-fn.cc (expand_fn_using_insn): Support undefined rtx value.
+	* optabs.cc (maybe_legitimize_operand): Ditto.
+	(can_reuse_operands_p): Ditto.
+	* optabs.h (enum expand_operand_type): Ditto.
+	(create_undefined_input_operand): Ditto.
+
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Call GOMP_alloc/free for
+	'omp allocate' variables; move stack cleanup after other
+	cleanup.
+	(omp_notice_variable): Process original decl when decl
+	of the value-expression for a 'omp allocate' variable is passed.
+	* omp-low.cc (scan_omp_1_op): Handle 'omp allocate' variables
+
+2023-09-20  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	support simplifying vector int not only scalar int.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS floating-point.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::operator==): Fix bug.
+
+2023-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h:
+	(SUBTARGET_DRIVER_SELF_SPECS): Move handling of 'shared' into the same
+	specs as 'dynamiclib'. (STARTFILE_SPEC): Handle 'shared'.
+
+2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* params.opt (-param uninit-max-chain-len=): Raise default to 8.
+
+2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* doc/invoke.texi (--param uninit-max-chain-len): Document.
+	(--param uninit-max-num-chains): Likewise.
+	* params.opt (-param=uninit-max-chain-len=): New.
+	(-param=uninit-max-num-chains=): Likewise.
+	* gimple-predicate-analysis.cc (MAX_NUM_CHAINS): Define to
+	param_uninit_max_num_chains.
+	(MAX_CHAIN_LEN): Define to param_uninit_max_chain_len.
+	(uninit_analysis::init_use_preds): Avoid VLA.
+	(uninit_analysis::init_from_phi_def): Likewise.
+	(compute_control_dep_chain): Avoid using MAX_CHAIN_LEN in
+	template parameter.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd ((x << c) >> c): Use MAX_FIXED_MODE_SIZE instead of
+	GET_MODE_PRECISION of TImode or DImode depending on whether
+	TImode is supported scalar mode.
+	* gimple-lower-bitint.cc (bitint_precision_kind): Likewise.
+	* expr.cc (expand_expr_real_1): Likewise.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): Likewise.
+	* ubsan.cc (ubsan_encode_value, ubsan_type_descriptor): Likewise.
+
+2023-09-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>not<mode>): Move and rename.
+	(*n<optab><mode>): Ditto.
+	(*v<any_shiftrt:optab><any_extend:optab>trunc<mode>): Ditto.
+	(*<any_shiftrt:optab>trunc<mode>): Ditto.
+	(*narrow_<any_shiftrt:optab><any_extend:optab><mode>): Ditto.
+	(*narrow_<any_shiftrt:optab><mode>_scalar): Ditto.
+	(*single_widen_mult<any_extend:su><mode>): Ditto.
+	(*single_widen_mul<any_extend:su><mode>): Ditto.
+	(*single_widen_mult<mode>): Ditto.
+	(*single_widen_mul<mode>): Ditto.
+	(*dual_widen_fma<mode>): Ditto.
+	(*dual_widen_fma<su><mode>): Ditto.
+	(*single_widen_fma<mode>): Ditto.
+	(*single_widen_fma<su><mode>): Ditto.
+	(*dual_fma<mode>): Ditto.
+	(*single_fma<mode>): Ditto.
+	(*dual_fnma<mode>): Ditto.
+	(*dual_widen_fnma<mode>): Ditto.
+	(*single_fnma<mode>): Ditto.
+	(*single_widen_fnma<mode>): Ditto.
+	(*dual_fms<mode>): Ditto.
+	(*dual_widen_fms<mode>): Ditto.
+	(*single_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*dual_fnms<mode>): Ditto.
+	(*dual_widen_fnms<mode>): Ditto.
+	(*single_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* attribs.cc (decl_attributes): Don't warn on omp::directive attribute
+	on vars or function decls if -fopenmp or -fopenmp-simd.
+
+2023-09-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111488
+	* config/riscv/autovec-opt.md: Add missed operand.
+
+2023-09-20  Omar Sandoval  <osandov@osandov.com>
+
+	PR debug/111409
+	* dwarf2out.cc (output_macinfo): Don't call optimize_macinfo_range if
+	dwarf_split_debug_info.
+
+2023-09-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (can_find_related_mode_p): New function.
+	(vectorize_related_mode): Add VLS related modes.
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-20  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/110071
+	* ira-color.cc (improve_allocation): Consider cost of callee
+	save registers.
+
+2023-09-20  mengqinggang  <mengqinggang@loongson.cn>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* configure: Regenerate.
+	* configure.ac: Checking assembler for -mno-relax support.
+	Disable relaxation when probing leb128 support.
+
+2023-09-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.in: Regenerate.
+	* config/loongarch/genopts/loongarch.opt.in: Add compilation option
+	mrelax. And set the initial value of explicit-relocs according to the
+	detection status.
+	* config/loongarch/gnu-user.h: When compiling with -mno-relax, pass the
+	--no-relax option to the linker.
+	* config/loongarch/loongarch-driver.h (ASM_SPEC): When compiling with
+	-mno-relax, pass the -mno-relax option to the assembler.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_MRELAX_OPTION): Define macro.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add detection of support for binutils relax function.
+
 2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* doc/invoke.texi: Document -fdeps-format=, -fdeps-file=, and

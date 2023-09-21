@@ -1,3 +1,8 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Parse
+	__builtin_classify_type call with typename as argument.
+
 2023-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR c/111468
