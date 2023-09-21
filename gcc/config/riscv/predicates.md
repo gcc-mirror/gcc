@@ -514,6 +514,24 @@
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "pmode_register_operand")))
 
+;; [1, 2, 4, 8] means strided load/store with stride == element width
+(define_special_predicate "vector_eew8_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 1 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew16_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 2 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew32_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 4 || INTVAL (op) == 0"))))
+(define_special_predicate "vector_eew64_stride_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) == 8 || INTVAL (op) == 0"))))
+
 ;; A special predicate that doesn't match a particular mode.
 (define_special_predicate "vector_any_register_operand"
   (match_code "reg"))

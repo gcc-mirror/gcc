@@ -2893,6 +2893,93 @@
   (V512DI "V512BI")
 ])
 
+(define_mode_attr stride_predicate [
+  (RVVM8QI "vector_eew8_stride_operand") (RVVM4QI "vector_eew8_stride_operand")
+  (RVVM2QI "vector_eew8_stride_operand") (RVVM1QI "vector_eew8_stride_operand")
+  (RVVMF2QI "vector_eew8_stride_operand") (RVVMF4QI "vector_eew8_stride_operand")
+  (RVVMF8QI "vector_eew8_stride_operand")
+
+  (RVVM8HI "vector_eew16_stride_operand") (RVVM4HI "vector_eew16_stride_operand")
+  (RVVM2HI "vector_eew16_stride_operand") (RVVM1HI "vector_eew16_stride_operand")
+  (RVVMF2HI "vector_eew16_stride_operand") (RVVMF4HI "vector_eew16_stride_operand")
+
+  (RVVM8HF "vector_eew16_stride_operand") (RVVM4HF "vector_eew16_stride_operand")
+  (RVVM2HF "vector_eew16_stride_operand") (RVVM1HF "vector_eew16_stride_operand")
+  (RVVMF2HF "vector_eew16_stride_operand") (RVVMF4HF "vector_eew16_stride_operand")
+
+  (RVVM8SI "vector_eew32_stride_operand") (RVVM4SI "vector_eew32_stride_operand")
+  (RVVM2SI "vector_eew32_stride_operand") (RVVM1SI "vector_eew32_stride_operand")
+  (RVVMF2SI "vector_eew32_stride_operand")
+
+  (RVVM8SF "vector_eew32_stride_operand") (RVVM4SF "vector_eew32_stride_operand")
+  (RVVM2SF "vector_eew32_stride_operand") (RVVM1SF "vector_eew32_stride_operand")
+  (RVVMF2SF "vector_eew32_stride_operand")
+
+  (RVVM8DI "vector_eew64_stride_operand") (RVVM4DI "vector_eew64_stride_operand")
+  (RVVM2DI "vector_eew64_stride_operand") (RVVM1DI "vector_eew64_stride_operand")
+
+  (RVVM8DF "vector_eew64_stride_operand") (RVVM4DF "vector_eew64_stride_operand")
+  (RVVM2DF "vector_eew64_stride_operand") (RVVM1DF "vector_eew64_stride_operand")
+])
+
+(define_mode_attr stride_load_constraint [
+  (RVVM8QI "rJ,rJ,rJ,c01,c01,c01") (RVVM4QI "rJ,rJ,rJ,c01,c01,c01")
+  (RVVM2QI "rJ,rJ,rJ,c01,c01,c01") (RVVM1QI "rJ,rJ,rJ,c01,c01,c01")
+  (RVVMF2QI "rJ,rJ,rJ,c01,c01,c01") (RVVMF4QI "rJ,rJ,rJ,c01,c01,c01")
+  (RVVMF8QI "rJ,rJ,rJ,c01,c01,c01")
+
+  (RVVM8HI "rJ,rJ,rJ,c02,c02,c02") (RVVM4HI "rJ,rJ,rJ,c02,c02,c02")
+  (RVVM2HI "rJ,rJ,rJ,c02,c02,c02") (RVVM1HI "rJ,rJ,rJ,c02,c02,c02")
+  (RVVMF2HI "rJ,rJ,rJ,c02,c02,c02") (RVVMF4HI "rJ,rJ,rJ,c02,c02,c02")
+
+  (RVVM8HF "rJ,rJ,rJ,c02,c02,c02") (RVVM4HF "rJ,rJ,rJ,c02,c02,c02")
+  (RVVM2HF "rJ,rJ,rJ,c02,c02,c02") (RVVM1HF "rJ,rJ,rJ,c02,c02,c02")
+  (RVVMF2HF "rJ,rJ,rJ,c02,c02,c02") (RVVMF4HF "rJ,rJ,rJ,c02,c02,c02")
+
+  (RVVM8SI "rJ,rJ,rJ,c04,c04,c04") (RVVM4SI "rJ,rJ,rJ,c04,c04,c04")
+  (RVVM2SI "rJ,rJ,rJ,c04,c04,c04") (RVVM1SI "rJ,rJ,rJ,c04,c04,c04")
+  (RVVMF2SI "rJ,rJ,rJ,c04,c04,c04")
+
+  (RVVM8SF "rJ,rJ,rJ,c04,c04,c04") (RVVM4SF "rJ,rJ,rJ,c04,c04,c04")
+  (RVVM2SF "rJ,rJ,rJ,c04,c04,c04") (RVVM1SF "rJ,rJ,rJ,c04,c04,c04")
+  (RVVMF2SF "rJ,rJ,rJ,c04,c04,c04")
+
+  (RVVM8DI "rJ,rJ,rJ,c08,c08,c08") (RVVM4DI "rJ,rJ,rJ,c08,c08,c08")
+  (RVVM2DI "rJ,rJ,rJ,c08,c08,c08") (RVVM1DI "rJ,rJ,rJ,c08,c08,c08")
+
+  (RVVM8DF "rJ,rJ,rJ,c08,c08,c08") (RVVM4DF "rJ,rJ,rJ,c08,c08,c08")
+  (RVVM2DF "rJ,rJ,rJ,c08,c08,c08") (RVVM1DF "rJ,rJ,rJ,c08,c08,c08")
+])
+
+(define_mode_attr stride_store_constraint [
+  (RVVM8QI "rJ,c01") (RVVM4QI "rJ,c01")
+  (RVVM2QI "rJ,c01") (RVVM1QI "rJ,c01")
+  (RVVMF2QI "rJ,c01") (RVVMF4QI "rJ,c01")
+  (RVVMF8QI "rJ,c01")
+
+  (RVVM8HI "rJ,c02") (RVVM4HI "rJ,c02")
+  (RVVM2HI "rJ,c02") (RVVM1HI "rJ,c02")
+  (RVVMF2HI "rJ,c02") (RVVMF4HI "rJ,c02")
+
+  (RVVM8HF "rJ,c02") (RVVM4HF "rJ,c02")
+  (RVVM2HF "rJ,c02") (RVVM1HF "rJ,c02")
+  (RVVMF2HF "rJ,c02") (RVVMF4HF "rJ,c02")
+
+  (RVVM8SI "rJ,c04") (RVVM4SI "rJ,c04")
+  (RVVM2SI "rJ,c04") (RVVM1SI "rJ,c04")
+  (RVVMF2SI "rJ,c04")
+
+  (RVVM8SF "rJ,c04") (RVVM4SF "rJ,c04")
+  (RVVM2SF "rJ,c04") (RVVM1SF "rJ,c04")
+  (RVVMF2SF "rJ,c04")
+
+  (RVVM8DI "rJ,c08") (RVVM4DI "rJ,c08")
+  (RVVM2DI "rJ,c08") (RVVM1DI "rJ,c08")
+
+  (RVVM8DF "rJ,c08") (RVVM4DF "rJ,c08")
+  (RVVM2DF "rJ,c08") (RVVM1DF "rJ,c08")
+])
+
 (define_mode_attr gs_extension [
   (RVVM8QI "const_1_operand") (RVVM4QI "vector_gs_extension_operand")
   (RVVM2QI "immediate_operand") (RVVM1QI "immediate_operand") (RVVMF2QI "immediate_operand")
