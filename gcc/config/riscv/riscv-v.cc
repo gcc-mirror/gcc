@@ -3024,6 +3024,13 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
     emit_nonvlmax_insn (icode, insn_flags, ops, len);
 }
 
+/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
+static rtx
+get_else_operand (rtx op)
+{
+  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
+}
+
 /* Expand unary ops COND_LEN_*.  */
 void
 expand_cond_len_unop (unsigned icode, rtx *ops)
@@ -3031,7 +3038,7 @@ expand_cond_len_unop (unsigned icode, rtx *ops)
   rtx dest = ops[0];
   rtx mask = ops[1];
   rtx src = ops[2];
-  rtx merge = ops[3];
+  rtx merge = get_else_operand (ops[3]);
   rtx len = ops[4];
 
   rtx cond_ops[] = {dest, mask, merge, src};
@@ -3046,7 +3053,7 @@ expand_cond_len_binop (unsigned icode, rtx *ops)
   rtx mask = ops[1];
   rtx src1 = ops[2];
   rtx src2 = ops[3];
-  rtx merge = ops[4];
+  rtx merge = get_else_operand (ops[4]);
   rtx len = ops[5];
 
   rtx cond_ops[] = {dest, mask, merge, src1, src2};
@@ -3218,7 +3225,7 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   rtx src1 = ops[2];
   rtx src2 = ops[3];
   rtx src3 = ops[4];
-  rtx merge = ops[5];
+  rtx merge = get_else_operand (ops[5]);
   rtx len = ops[6];
 
   rtx cond_ops[] = {dest, mask, src1, src2, src3, merge};

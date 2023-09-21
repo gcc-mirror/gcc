@@ -1496,7 +1496,7 @@
    (match_operand:<VM> 1 "vector_mask_operand")
    (any_int_unop:VI
      (match_operand:VI 2 "register_operand"))
-   (match_operand:VI 3 "register_operand")]
+   (match_operand:VI 3 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1512,7 +1512,7 @@
    (match_operand:<VM> 1 "vector_mask_operand")
    (any_int_unop:VI
      (match_operand:VI 2 "register_operand"))
-   (match_operand:VI 3 "register_operand")
+   (match_operand:VI 3 "autovec_else_operand")
    (match_operand 4 "autovec_length_operand")
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1534,7 +1534,7 @@
    (match_operand:<VM> 1 "vector_mask_operand")
    (any_float_unop_nofrm:VF
      (match_operand:VF 2 "register_operand"))
-   (match_operand:VF 3 "register_operand")]
+   (match_operand:VF 3 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1550,7 +1550,7 @@
    (match_operand:<VM> 1 "vector_mask_operand")
    (any_float_unop_nofrm:VF
      (match_operand:VF 2 "register_operand"))
-   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 3 "autovec_else_operand")
    (match_operand 4 "autovec_length_operand")
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1573,7 +1573,7 @@
    (any_shift:VI
      (match_operand:VI 2 "register_operand")
      (match_operand:VI 3 "vector_shift_operand"))
-   (match_operand:VI 4 "register_operand")]
+   (match_operand:VI 4 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1590,7 +1590,7 @@
    (any_shift:VI
      (match_operand:VI 2 "register_operand")
      (match_operand:VI 3 "vector_shift_operand"))
-   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1614,7 +1614,7 @@
    (any_int_binop_no_shift:VI
      (match_operand:VI 2 "<binop_rhs1_predicate>")
      (match_operand:VI 3 "<binop_rhs2_predicate>"))
-   (match_operand:VI 4 "register_operand")]
+   (match_operand:VI 4 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1631,7 +1631,7 @@
    (any_int_binop_no_shift:VI
      (match_operand:VI 2 "<binop_rhs1_predicate>")
      (match_operand:VI 3 "<binop_rhs2_predicate>"))
-   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1655,7 +1655,7 @@
    (any_float_binop:VF
      (match_operand:VF 2 "register_operand")
      (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "register_operand")]
+   (match_operand:VF 4 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1672,7 +1672,7 @@
    (any_float_binop:VF
      (match_operand:VF 2 "register_operand")
      (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1694,7 +1694,7 @@
    (any_float_binop_nofrm:VF
      (match_operand:VF 2 "register_operand")
      (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "register_operand")]
+   (match_operand:VF 4 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1711,7 +1711,7 @@
    (any_float_binop_nofrm:VF
      (match_operand:VF 2 "register_operand")
      (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1734,7 +1734,7 @@
    (match_operand:VI 2 "register_operand")
    (match_operand:VI 3 "register_operand")
    (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "register_operand")]
+   (match_operand:VI 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1751,7 +1751,7 @@
    (match_operand:VI 2 "register_operand")
    (match_operand:VI 3 "register_operand")
    (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "register_operand")
+   (match_operand:VI 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1767,7 +1767,7 @@
    (match_operand:VI 2 "register_operand")
    (match_operand:VI 3 "register_operand")
    (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "register_operand")]
+   (match_operand:VI 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1784,7 +1784,7 @@
    (match_operand:VI 2 "register_operand")
    (match_operand:VI 3 "register_operand")
    (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "register_operand")
+   (match_operand:VI 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1807,7 +1807,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")]
+   (match_operand:VF 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1824,7 +1824,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")
+   (match_operand:VF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1840,7 +1840,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")]
+   (match_operand:VF 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1857,7 +1857,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")
+   (match_operand:VF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1873,7 +1873,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")]
+   (match_operand:VF 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1890,7 +1890,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")
+   (match_operand:VF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1906,7 +1906,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")]
+   (match_operand:VF 5 "autovec_else_operand")]
   "TARGET_VECTOR"
 {
   /* Normalize into cond_len_* operations.  */
@@ -1923,7 +1923,7 @@
    (match_operand:VF 2 "register_operand")
    (match_operand:VF 3 "register_operand")
    (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "register_operand")
+   (match_operand:VF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"

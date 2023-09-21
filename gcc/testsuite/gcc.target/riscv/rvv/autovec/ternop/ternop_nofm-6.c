@@ -4,3 +4,4 @@
 #include "ternop-6.c"
 
 /* { dg-final { scan-tree-dump-times "COND_LEN_FNMA" 3 "optimized" } } */
+/* { dg-final { scan-assembler-times {\tvmv} 11 } } */

@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "tree-vectorizer.h"
 #include "gcse.h"
+#include "tree-dfa.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -9585,6 +9586,18 @@ riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
   return new vector_costs (vinfo, costing_for_scalar);
 }
 
+/* Implement TARGET_PREFERRED_ELSE_VALUE.  */
+
+static tree
+riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
+			    tree *ops)
+{
+  if (riscv_v_ext_mode_p (TYPE_MODE (vectype)))
+    return get_or_create_ssa_default_def (cfun, create_tmp_var (vectype));
+
+  return default_preferred_else_value (ifn, vectype, nops, ops);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -9900,6 +9913,9 @@ riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 
 #undef TARGET_VECTORIZE_CREATE_COSTS
 #define TARGET_VECTORIZE_CREATE_COSTS riscv_vectorize_create_costs
+
+#undef TARGET_PREFERRED_ELSE_VALUE
+#define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
