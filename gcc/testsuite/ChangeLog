@@ -1,3 +1,11 @@
+2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* gcc.dg/rtl/aarch64/pr111411.c: New test.
+
 2023-09-18  xuli  <xuli1@eswincomputing.com>
 
 	PR target/111412
