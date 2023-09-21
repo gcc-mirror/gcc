@@ -429,24 +429,25 @@ ForeverStack<N>::resolve_segments (
 }
 
 template <Namespace N>
-template <typename P>
+template <typename S>
 tl::optional<NodeId>
-ForeverStack<N>::resolve_path (const P &path)
+ForeverStack<N>::resolve_path (const std::vector<S> &segments)
 {
+  // TODO: What to do if segments.empty() ?
+
   // if there's only one segment, we just use `get`
-  if (path.get_segments ().size () == 1)
-    return get (path.get_final_segment ().as_string ());
+  if (segments.size () == 1)
+    return get (segments.back ().as_string ());
 
   auto starting_point = cursor ();
-  auto &segments = path.get_segments ();
 
   return find_starting_point (segments, starting_point)
     .and_then ([this, &segments, &starting_point] (
-		 std::vector<AST::SimplePathSegment>::const_iterator iterator) {
+		 typename std::vector<S>::const_iterator iterator) {
       return resolve_segments (starting_point, segments, iterator);
     })
-    .and_then ([&path] (Node final_node) {
-      return final_node.rib.get (path.get_final_segment ().as_string ());
+    .and_then ([&segments] (Node final_node) {
+      return final_node.rib.get (segments.back ().as_string ());
     });
 }
 
