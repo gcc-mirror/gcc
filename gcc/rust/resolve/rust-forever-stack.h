@@ -470,10 +470,13 @@ public:
   /**
    * Resolve a path to its definition in the current `ForeverStack`
    *
+   * // TODO: Add documentation for `segments`
+   *
    * @return a valid option with the NodeId if the path is present in the
    *         current map, an empty one otherwise.
    */
-  template <typename P> tl::optional<NodeId> resolve_path (const P &path);
+  template <typename S>
+  tl::optional<NodeId> resolve_path (const std::vector<S> &segments);
 
   std::string as_debug_string ();
 
