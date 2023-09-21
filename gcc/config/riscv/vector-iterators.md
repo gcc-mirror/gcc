@@ -2925,18 +2925,18 @@
   (RVVMF4QI "const_1_operand") (RVVMF8QI "const_1_operand")
 
   (RVVM8HI "const_1_operand") (RVVM4HI "vector_gs_scale_operand_16_rv32")
-  (RVVM2HI "vector_gs_scale_operand_16") (RVVM1HI "vector_gs_scale_operand_16")
-  (RVVMF2HI "vector_gs_scale_operand_16") (RVVMF4HI "vector_gs_scale_operand_16")
+  (RVVM2HI "const_1_or_2_operand") (RVVM1HI "const_1_or_2_operand")
+  (RVVMF2HI "const_1_or_2_operand") (RVVMF4HI "const_1_or_2_operand")
 
   (RVVM8HF "const_1_operand") (RVVM4HF "vector_gs_scale_operand_16_rv32")
-  (RVVM2HF "vector_gs_scale_operand_16") (RVVM1HF "vector_gs_scale_operand_16")
-  (RVVMF2HF "vector_gs_scale_operand_16") (RVVMF4HF "vector_gs_scale_operand_16")
+  (RVVM2HF "const_1_or_2_operand") (RVVM1HF "const_1_or_2_operand")
+  (RVVMF2HF "const_1_or_2_operand") (RVVMF4HF "const_1_or_2_operand")
 
-  (RVVM8SI "vector_gs_scale_operand_32_rv32") (RVVM4SI "vector_gs_scale_operand_32") (RVVM2SI "vector_gs_scale_operand_32")
-  (RVVM1SI "vector_gs_scale_operand_32") (RVVMF2SI "vector_gs_scale_operand_32")
+  (RVVM8SI "vector_gs_scale_operand_32_rv32") (RVVM4SI "const_1_or_4_operand") (RVVM2SI "const_1_or_4_operand")
+  (RVVM1SI "const_1_or_4_operand") (RVVMF2SI "const_1_or_4_operand")
 
-  (RVVM8SF "vector_gs_scale_operand_32_rv32") (RVVM4SF "vector_gs_scale_operand_32") (RVVM2SF "vector_gs_scale_operand_32")
-  (RVVM1SF "vector_gs_scale_operand_32") (RVVMF2SF "vector_gs_scale_operand_32")
+  (RVVM8SF "vector_gs_scale_operand_32_rv32") (RVVM4SF "const_1_or_4_operand") (RVVM2SF "const_1_or_4_operand")
+  (RVVM1SF "const_1_or_4_operand") (RVVMF2SF "const_1_or_4_operand")
 
   (RVVM8DI "vector_gs_scale_operand_64") (RVVM4DI "vector_gs_scale_operand_64")
   (RVVM2DI "vector_gs_scale_operand_64") (RVVM1DI "vector_gs_scale_operand_64")
