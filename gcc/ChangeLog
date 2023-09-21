@@ -1,3 +1,21 @@
+2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp): Require
+	the lower memory access to a mem-pair operand.
+
+2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-08-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (untyped_call): Emit a call_value
+	rather than a call.  List each possible destination register
+	in the call pattern.
+
 2023-09-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/111340
