@@ -1,3 +1,179 @@
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-21  Lehua Ding  <lehua.ding@rivai.ai>
+	    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_insn): Adjust comments.
+	(emit_nonvlmax_insn): Adjust comments.
+	(emit_vlmax_insn_lra): Adjust comments.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*linux*): Set rust target_objs, and
+	target_has_targetrustm,
+	* config/t-linux (linux-rust.o): New rule.
+	* config/linux-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (i[34567]86-*-mingw* | x86_64-*-mingw*): Set
+	rust_target_objs and target_has_targetrustm.
+	* config/t-winnt (winnt-rust.o): New rule.
+	* config/winnt-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-fuchsia): Set tmake_rule, rust_target_objs,
+	and target_has_targetrustm.
+	* config/fuchsia-rust.cc: New file.
+	* config/t-fuchsia: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-vxworks*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-vxworks (vxworks-rust.o): New rule.
+	* config/vxworks-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-dragonfly*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-dragonfly (dragonfly-rust.o): New rule.
+	* config/dragonfly-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-solaris2*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-sol2 (sol2-rust.o): New rule.
+	* config/sol2-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-openbsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-openbsd (openbsd-rust.o): New rule.
+	* config/openbsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-netbsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-netbsd (netbsd-rust.o): New rule.
+	* config/netbsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-freebsd*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-freebsd (freebsd-rust.o): New rule.
+	* config/freebsd-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-darwin*): Set rust_target_objs and
+	target_has_targetrustm.
+	* config/t-darwin (darwin-rust.o): New rule.
+	* config/darwin-rust.cc: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/i386/t-i386 (i386-rust.o): New rule.
+	* config/i386/i386-rust.cc: New file.
+	* config/i386/i386-rust.h: New file.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Document TARGET_RUST_OS_INFO.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add @node for Rust language and ABI, and document
+	TARGET_RUST_CPU_INFO.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (tm_rust_file_list, tm_rust_include_list, TM_RUST_H,
+	RUST_TARGET_DEF, RUST_TARGET_H, RUST_TARGET_OBJS): New variables.
+	(tm_rust.h, cs-tm_rust.h, default-rust.o,
+	rust/rust-target-hooks-def.h, s-rust-target-hooks-def-h): New rules.
+	(s-tm-texi): Also check timestamp on rust-target.def.
+	(generated_files): Add TM_RUST_H and rust-target-hooks-def.h.
+	(build/genhooks.o): Also depend on RUST_TARGET_DEF.
+	* config.gcc (tm_rust_file, rust_target_objs, target_has_targetrustm):
+	New variables.
+	* configure: Regenerate.
+	* configure.ac (tm_rust_file_list, tm_rust_include_list,
+	rust_target_objs): Add substitutes.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (targetrustm): Document.
+	(target_has_targetrustm): Document.
+	* genhooks.cc: Include rust/rust-target.def.
+	* config/default-rust.cc: New file.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110751
+	* config/riscv/autovec.md: Enable scratch rtx in ELSE operand.
+	* config/riscv/predicates.md (autovec_else_operand): New predicate.
+	* config/riscv/riscv-v.cc (get_else_operand): New function.
+	(expand_cond_len_unop): Adapt ELSE value.
+	(expand_cond_len_binop): Ditto.
+	(expand_cond_len_ternop): Ditto.
+	* config/riscv/riscv.cc (riscv_preferred_else_value): New function.
+	(TARGET_PREFERRED_ELSE_VALUE): New targethook.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111486
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix bug.
+
+2023-09-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111355
+	* match.pd ((X + C) / N): Update pattern.
+
+2023-09-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* match.pd ((t * 2) / 2): Update to use overflow_free_p.
+
+2023-09-21  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111450
+	* config/riscv/constraints.md (c01): const_int 1.
+	(c02): const_int 2.
+	(c04): const_int 4.
+	(c08): const_int 8.
+	* config/riscv/predicates.md (vector_eew8_stride_operand): New predicate for stride operand.
+	(vector_eew16_stride_operand): Ditto.
+	(vector_eew32_stride_operand): Ditto.
+	(vector_eew64_stride_operand): Ditto.
+	* config/riscv/vector-iterators.md: New iterator for stride operand.
+	* config/riscv/vector.md: Add stride = element width constraint.
+
+2023-09-21  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/predicates.md (const_1_or_2_operand): Rename.
+	(const_1_or_4_operand): Ditto.
+	(vector_gs_scale_operand_16): Ditto.
+	(vector_gs_scale_operand_32): Ditto.
+	* config/riscv/vector-iterators.md: Adjust.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Extend VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
 2023-09-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ssa_cache::merge_range): Change meaning

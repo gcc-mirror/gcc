@@ -1,3 +1,70 @@
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/abs-2.c: New test.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/abs-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/not-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/sqrt-1.c: New test.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS mult high.
+	* gcc.target/riscv/rvv/autovec/vls/mulh-1.c: New test.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110751
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv-nofm.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-9.c: Ditto.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111486
+	* gcc.target/riscv/rvv/autovec/pr111486.c: New test.
+
+2023-09-21  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/111355
+	* gcc.dg/pr111355.c: New test.
+
+2023-09-21  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111450
+	* gcc.target/riscv/rvv/base/pr111450.c: New test.
+
+2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/convert-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/convert-9.c: New test.
+
 2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/90400

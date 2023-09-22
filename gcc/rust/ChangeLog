@@ -1,3 +1,24 @@
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-session-manager.cc (Session::init): Call
+	targetrustm.rust_os_info.
+	* rust-target.def (rust_os_info): New hook.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-lang.cc (rust_add_target_info): Remove sorry.
+	* rust-session-manager.cc: Replace include of target.h with
+	include of tm.h and rust-target.h.
+	(Session::init): Call targetrustm.rust_cpu_info.
+	* rust-target.def (rust_cpu_info): New hook.
+	* rust-target.h (rust_add_target_info): Declare.
+
+2023-09-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* rust-target-def.h: New file.
+	* rust-target.def: New file.
+	* rust-target.h: New file.
+
 2023-09-11  Parthib  <94271200+Parthib314@users.noreply.github.com>
 
 	* Make-lang.in: Removed rust-gcc-diagnostics object file.
