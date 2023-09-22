@@ -9,7 +9,7 @@ _Float16 in[ARRAY_SIZE];
 _Float16 out[ARRAY_SIZE];
 _Float16 ref[ARRAY_SIZE];
 
-TEST_CEIL (_Float16, __builtin_ceilf16)
+TEST_UNARY_CALL (_Float16, __builtin_ceilf16)
 TEST_ASSERT (_Float16)
 
 TEST_INIT (_Float16, 1.2, 2.0, 1)

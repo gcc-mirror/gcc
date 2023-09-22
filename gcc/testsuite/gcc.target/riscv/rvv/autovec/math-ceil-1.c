@@ -23,4 +23,4 @@
 **   fsrm\s+[atx][0-9]+
 **   ...
 */
-TEST_CEIL(float, __builtin_ceilf)
+TEST_UNARY_CALL (float, __builtin_ceilf)

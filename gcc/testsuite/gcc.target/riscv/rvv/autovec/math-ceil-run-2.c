@@ -9,7 +9,7 @@ double in[ARRAY_SIZE];
 double out[ARRAY_SIZE];
 double ref[ARRAY_SIZE];
 
-TEST_CEIL (double, __builtin_ceil)
+TEST_UNARY_CALL (double, __builtin_ceil)
 TEST_ASSERT (double)
 
 TEST_INIT (double, 1.2, 2.0, 1)

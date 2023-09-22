@@ -1,11 +1,11 @@
-#define TEST_CEIL(TYPE, CALL) \
+#define TEST_UNARY_CALL(TYPE, CALL)                               \
   void test_##TYPE##_##CALL (TYPE *out, TYPE *in, unsigned count) \
   {                                                               \
     for (unsigned i = 0; i < count; i++)                          \
       out[i] = CALL (in[i]);                                      \
   }
 
-#define TEST_COND_CEIL(TYPE, CALL)                                           \
+#define TEST_COND_UNARY_CALL(TYPE, CALL)                                     \
   void test_##TYPE##_##CALL (TYPE *out, int *cond, TYPE *in, unsigned count) \
   {                                                                          \
     for (unsigned i = 0; i < count; i++)                                     \

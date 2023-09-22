@@ -9,7 +9,7 @@ float in[ARRAY_SIZE];
 float out[ARRAY_SIZE];
 float ref[ARRAY_SIZE];
 
-TEST_CEIL (float, __builtin_ceilf)
+TEST_UNARY_CALL (float, __builtin_ceilf)
 TEST_ASSERT (float)
 
 TEST_INIT (float, 1.2, 2.0, 1)
