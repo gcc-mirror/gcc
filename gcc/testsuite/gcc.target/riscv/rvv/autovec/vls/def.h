@@ -623,3 +623,50 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = (TYPE3) b[i] OP (TYPE3) c[i];                                     \
   }
+
+#define DEF_FMA_WVV(PREFIX, NUM, TYPE1, TYPE2)                                 \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] * (TYPE2) c[i] + d[i];                               \
+  }
+
+#define DEF_FMA_WVV_SU(PREFIX, NUM, TYPE1, TYPE2, TYPE3)                       \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##_##TYPE3##NUM (TYPE3 *restrict a,                \
+					     TYPE1 *restrict b,                \
+					     TYPE2 *restrict c,                \
+					     TYPE3 *restrict d)                \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE3) b[i] * (TYPE3) c[i] + d[i];                               \
+  }
+
+#define DEF_FNMA_WVV(PREFIX, NUM, TYPE1, TYPE2)                                \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = d[i] - (TYPE2) b[i] * (TYPE2) c[i];                               \
+  }
+
+#define DEF_FMS_WVV(PREFIX, NUM, TYPE1, TYPE2)                                 \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] * (TYPE2) c[i] - d[i];                               \
+  }
+
+#define DEF_FNMS_WVV(PREFIX, NUM, TYPE1, TYPE2)                                \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE1##_##TYPE2##NUM (TYPE2 *restrict a, TYPE1 *restrict b,       \
+				   TYPE1 *restrict c, TYPE2 *restrict d)       \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = -((TYPE2) b[i] * (TYPE2) c[i]) - d[i];                            \
+  }
