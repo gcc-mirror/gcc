@@ -351,6 +351,10 @@ v0_identifier (const std::string &identifier)
   // <undisambiguated-identifier>, right under the <identifier> one. If the
   // identifier contains unicode values, then an extra "u" needs to be added to
   // the mangling string and `punycode` must be used to encode the characters.
+
+  if (!is_ascii_only (identifier))
+    mangled << "u";
+
   tl::optional<Utf8String> uident_opt
     = Utf8String::make_utf8_string (identifier);
   rust_assert (uident_opt.has_value ());
@@ -358,28 +362,19 @@ v0_identifier (const std::string &identifier)
     = encode_punycode (uident_opt.value ());
   rust_assert (punycode_opt.has_value ());
 
-  bool is_ascii_ident = true;
-  for (auto c : uident_opt.value ().get_chars ())
-    if (c.value > 127)
-      {
-	is_ascii_ident = false;
-	break;
-      }
-
   std::string punycode = punycode_opt.value ();
-  // remove tailing hyphen
+
+  // remove a tailing hyphen
   if (punycode.back () == '-')
     punycode.pop_back ();
-  // replace hyphens in punycode with underscores
+
+  // replace a hyphen in punycode with a underscore
   std::replace (punycode.begin (), punycode.end (), '-', '_');
 
-  if (!is_ascii_ident)
-    mangled << "u";
-
   mangled << std::to_string (punycode.size ());
-  // If the first character of the identifier is a digit or an underscore, we
-  // add an extra underscore
-  if (punycode[0] == '_')
+
+  // Add extra '_'
+  if (punycode[0] == '_' || ('0' <= punycode[0] && punycode[0] <= '9'))
     mangled << "_";
 
   mangled << punycode;
@@ -417,11 +412,11 @@ v0_function_path (V0Path path, Rust::Compile::Context *ctx,
 }
 
 static V0Path
-v0_scope_path (V0Path path, std::string ident)
+v0_scope_path (V0Path path, std::string ident, std::string ns)
 {
   V0Path v0path;
   v0path.prefix = "N";
-  v0path.ns = "v";
+  v0path.ns = ns;
   v0path.path = path.as_string ();
   v0path.ident = ident;
   return v0path;
@@ -507,7 +502,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    }
 	    break;
 	  case HIR::ImplItem::CONSTANT:
-	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()), "v");
 	    break;
 	  default:
 	    rust_internal_error_at (UNDEF_LOCATION, "Attempt to mangle '%s'",
@@ -526,7 +521,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    }
 	    break;
 	  case HIR::TraitItem::CONST:
-	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()), "v");
 	    break;
 	  default:
 	    rust_internal_error_at (UNDEF_LOCATION, "Attempt to mangle '%s'",
@@ -544,10 +539,12 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	  }
 	  break;
 	case HIR::Item::ItemKind::Module:
-	case HIR::Item::ItemKind::Trait:
+	  v0path = v0_scope_path (v0path, v0_identifier (seg.get ()), "t");
+	  break;
+	case HIR::Item::ItemKind::Trait: // FIXME: correct?
 	case HIR::Item::ItemKind::Static:
 	case HIR::Item::ItemKind::Constant:
-	  v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	  v0path = v0_scope_path (v0path, v0_identifier (seg.get ()), "v");
 	  break;
 	case HIR::Item::ItemKind::Struct:
 	case HIR::Item::ItemKind::Enum:
