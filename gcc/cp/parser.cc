@@ -11695,11 +11695,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      an opening angle if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
-      if (cxx_dialect < cxx14)
-	pedwarn (parser->lexer->next_token->location, OPT_Wc__14_extensions,
-		 "lambda templates are only available with "
-		 "%<-std=c++14%> or %<-std=gnu++14%>");
-      else if (pedantic && cxx_dialect < cxx20)
+      if (cxx_dialect < cxx20
+	  && (pedantic || cxx_dialect < cxx14))
 	pedwarn (parser->lexer->next_token->location, OPT_Wc__20_extensions,
 		 "lambda templates are only available with "
 		 "%<-std=c++20%> or %<-std=gnu++20%>");

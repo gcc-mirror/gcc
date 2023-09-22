@@ -19913,13 +19913,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				    templated_operator_saved_lookups (t),
 				    complain));
 
-    case ANNOTATE_EXPR:
-      tmp = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (tmp), tmp,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
-
     case PREDICT_EXPR:
       RETURN (add_stmt (copy_node (t)));
 
@@ -21867,6 +21860,13 @@ tsubst_copy_and_build (tree t,
 	  }
 	RETURN (op);
       }
+
+    case ANNOTATE_EXPR:
+      op1 = RECUR (TREE_OPERAND (t, 0));
+      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			  TREE_TYPE (op1), op1,
+			  RECUR (TREE_OPERAND (t, 1)),
+			  RECUR (TREE_OPERAND (t, 2))));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
