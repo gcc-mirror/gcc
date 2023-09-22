@@ -284,6 +284,7 @@ public:
 
     /* Add vl operand.  */
     rtx len = m_vl_op;
+    bool vls_p = false;
     if (m_vlmax_p)
       {
 	if (riscv_v_ext_vls_mode_p (vtype_mode))
@@ -294,7 +295,7 @@ public:
 	    len = gen_int_mode (nunits, Pmode);
 	    if (!satisfies_constraint_K (len))
 	      len = force_reg (Pmode, len);
-	    m_vlmax_p = false;
+	    vls_p = true;
 	  }
 	else if (const_vlmax_p (vtype_mode))
 	  {
@@ -302,7 +303,7 @@ public:
 	       the vsetvli to obtain the value of vlmax.  */
 	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
 	    len = gen_int_mode (nunits, Pmode);
-	    m_vlmax_p = false;
+	    vls_p = true;
 	  }
 	else if (can_create_pseudo_p ())
 	  {
@@ -318,7 +319,9 @@ public:
     add_policy_operand ();
 
     /* Add avl_type operand.  */
-    add_avl_type_operand (m_vlmax_p ? avl_type::VLMAX : avl_type::NONVLMAX);
+    add_avl_type_operand (
+      vls_p ? avl_type::VLS
+	    : (m_vlmax_p ? avl_type::VLMAX : avl_type::NONVLMAX));
 
     /* Add rounding mode operand.  */
     if (m_insn_flags & FRM_DYN_P)
@@ -768,22 +771,6 @@ autovec_use_vlmax_p (void)
   return (riscv_autovec_preference == RVV_SCALABLE
 	  || riscv_autovec_preference == RVV_FIXED_VLMAX);
 }
-
-/* The RISC-V vsetvli pass uses "known vlmax" operations for optimization.
-   Whether or not an instruction actually is a vlmax operation is not
-   recognizable from the length operand alone but the avl_type operand
-   is used instead.  In general, there are two cases:
-
-    - Emit a vlmax operation by passing a NULL length.  Here we emit
-      a vsetvli with vlmax configuration and set the avl_type to VLMAX.
-    - Emit an operation that uses the existing (last-set) length and
-      set the avl_type to NONVLMAX.
-
-    Sometimes we also need to set the VLMAX avl_type to an operation that
-    already uses a given length register.  This can happen during or after
-    register allocation when we are not allowed to create a new register.
-    For that case we also allow to set the avl_type to VLMAX.
-*/
 
 /* This function emits VLMAX vrgather instruction. Emit vrgather.vx/vi when sel
    is a const duplicate vector. Otherwise, emit vrgather.vv.  */
