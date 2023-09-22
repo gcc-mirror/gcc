@@ -788,6 +788,24 @@ emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
       icode = code_for_pred_gather_scalar (data_mode);
       sel = elt;
     }
+  else if (CONST_VECTOR_P (sel)
+           && GET_MODE_BITSIZE (GET_MODE_INNER (sel_mode)) > 16
+           && riscv_get_v_regno_alignment (data_mode) > 1)
+    {
+      /* If the inner mode of data is not QI or HI and data_lmul > 1,
+         emitting vrgatherei16.vv instruction will lower register
+         pressure.
+         data_mode  sel_mode  ei16
+         RVVM1QI    RVVM1QI   RVVM2HI  not needed
+         RVVM2QI    RVVM2QI   RVVM4HI  not needed
+         RVVM2HI    RVVM2HI   RVVM2HI  not needed
+         RVVM2SI    RVVM2SI   RVVM1HI  need
+         RVVM4SI    RVVM4SI   RVVM2HI  need
+         RVVM8DI    RVVM8DI   RVVM2HI  need */
+      PUT_MODE (sel, get_vector_mode (HImode,
+                GET_MODE_NUNITS (data_mode)).require ());
+      icode = code_for_pred_gatherei16 (data_mode);
+    }
   else
     icode = code_for_pred_gather (data_mode);
   rtx ops[] = {target, op, sel};
