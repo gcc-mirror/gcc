@@ -205,18 +205,18 @@ Expression::report_error(const char* msg)
 // child class.
 
 void
-Expression::determine_type(const Type_context* context)
+Expression::determine_type(Gogo* gogo, const Type_context* context)
 {
-  this->do_determine_type(context);
+  this->do_determine_type(gogo, context);
 }
 
 // Set types when there is no context.
 
 void
-Expression::determine_type_no_context()
+Expression::determine_type_no_context(Gogo* gogo)
 {
   Type_context context;
-  this->do_determine_type(&context);
+  this->do_determine_type(gogo, &context);
 }
 
 // Return true if two expressions refer to the same variable or struct
@@ -842,7 +842,7 @@ class Error_expression : public Expression
   { return Type::make_error_type(); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -897,7 +897,7 @@ Type_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   void
@@ -998,10 +998,10 @@ Var_expression::do_type()
 // Determine the type of a reference to a variable.
 
 void
-Var_expression::do_determine_type(const Type_context*)
+Var_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
   if (this->variable_->is_variable())
-    this->variable_->var_value()->determine_type();
+    this->variable_->var_value()->determine_type(gogo);
 }
 
 // Something takes the address of this variable.  This means that we
@@ -1303,9 +1303,10 @@ Set_and_use_temporary_expression::do_type()
 
 void
 Set_and_use_temporary_expression::do_determine_type(
+    Gogo* gogo,
     const Type_context* context)
 {
-  this->expr_->determine_type(context);
+  this->expr_->determine_type(gogo, context);
 }
 
 // Take the address.
@@ -1378,7 +1379,7 @@ class Sink_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1410,7 +1411,7 @@ Sink_expression::do_type()
 // Determine the type of a sink expression.
 
 void
-Sink_expression::do_determine_type(const Type_context* context)
+Sink_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (context->type != NULL)
     this->type_ = context->type;
@@ -1805,7 +1806,7 @@ class Func_code_reference_expression : public Expression
   { return Type::make_pointer_type(Type::make_void_type()); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -1983,7 +1984,7 @@ class Boolean_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -2035,7 +2036,7 @@ Boolean_expression::do_type()
 // Set the type from the context.
 
 void
-Boolean_expression::do_determine_type(const Type_context* context)
+Boolean_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (this->type_ != NULL && !this->type_->is_abstract())
     ;
@@ -2108,7 +2109,7 @@ String_expression::do_type()
 // Set the type from the context.
 
 void
-String_expression::do_determine_type(const Type_context* context)
+String_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (this->type_ != NULL && !this->type_->is_abstract())
     ;
@@ -2278,7 +2279,7 @@ class String_info_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   Expression*
@@ -2390,7 +2391,7 @@ class String_value_expression : public Expression
   { return Type::make_string_type(); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   Expression*
@@ -2499,7 +2500,7 @@ class Integer_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context* context);
+  do_determine_type(Gogo*, const Type_context* context);
 
   void
   do_check_types(Gogo*);
@@ -2587,7 +2588,7 @@ Integer_expression::do_type()
 // abstract type to a real type.
 
 void
-Integer_expression::do_determine_type(const Type_context* context)
+Integer_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (this->type_ != NULL && !this->type_->is_abstract())
     ;
@@ -2934,7 +2935,7 @@ class Float_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2993,7 +2994,7 @@ Float_expression::do_type()
 // abstract type to a real type.
 
 void
-Float_expression::do_determine_type(const Type_context* context)
+Float_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (this->type_ != NULL && !this->type_->is_abstract())
     ;
@@ -3158,7 +3159,7 @@ class Complex_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3219,7 +3220,7 @@ Complex_expression::do_type()
 // abstract type to a real type.
 
 void
-Complex_expression::do_determine_type(const Type_context* context)
+Complex_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   if (this->type_ != NULL && !this->type_->is_abstract())
     ;
@@ -3507,7 +3508,7 @@ Const_expression::do_type()
 // Set the type of the const reference.
 
 void
-Const_expression::do_determine_type(const Type_context* context)
+Const_expression::do_determine_type(Gogo*, const Type_context* context)
 {
   Type* ctype = this->constant_->const_value()->type();
   Type* cetype = (ctype != NULL
@@ -3719,7 +3720,7 @@ class Nil_expression : public Expression
   { return Type::make_nil_type(); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -4137,10 +4138,10 @@ Type_conversion_expression::do_boolean_constant_value(bool* val) const
 // Determine the resulting type of the conversion.
 
 void
-Type_conversion_expression::do_determine_type(const Type_context*)
+Type_conversion_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
   Type_context subcontext(this->type_, false);
-  this->expr_->determine_type(&subcontext);
+  this->expr_->determine_type(gogo, &subcontext);
 }
 
 // Check that types are convertible.
@@ -5087,7 +5088,7 @@ Unary_expression::do_type()
 // Determine abstract types for a unary expression.
 
 void
-Unary_expression::do_determine_type(const Type_context* context)
+Unary_expression::do_determine_type(Gogo* gogo, const Type_context* context)
 {
   switch (this->op_)
     {
@@ -5095,7 +5096,7 @@ Unary_expression::do_determine_type(const Type_context* context)
     case OPERATOR_MINUS:
     case OPERATOR_NOT:
     case OPERATOR_XOR:
-      this->expr_->determine_type(context);
+      this->expr_->determine_type(gogo, context);
       break;
 
     case OPERATOR_AND:
@@ -5105,7 +5106,7 @@ Unary_expression::do_determine_type(const Type_context* context)
 			 ? NULL
 			 : context->type->points_to());
 	Type_context subcontext(subtype, false);
-	this->expr_->determine_type(&subcontext);
+	this->expr_->determine_type(gogo, &subcontext);
       }
       break;
 
@@ -5116,7 +5117,7 @@ Unary_expression::do_determine_type(const Type_context* context)
 			 ? NULL
 			 : Type::make_pointer_type(context->type));
 	Type_context subcontext(subtype, false);
-	this->expr_->determine_type(&subcontext);
+	this->expr_->determine_type(gogo, &subcontext);
       }
       break;
 
@@ -6705,7 +6706,7 @@ Binary_expression::do_type()
 // Set type for a binary expression.
 
 void
-Binary_expression::do_determine_type(const Type_context* context)
+Binary_expression::do_determine_type(Gogo* gogo, const Type_context* context)
 {
   Type* tleft = this->left_->type();
   Type* tright = this->right_->type();
@@ -6782,7 +6783,7 @@ Binary_expression::do_determine_type(const Type_context* context)
 	subcontext.type = subcontext.type->make_non_abstract_type();
     }
 
-  this->left_->determine_type(&subcontext);
+  this->left_->determine_type(gogo, &subcontext);
 
   if (is_shift_op)
     {
@@ -6802,7 +6803,7 @@ Binary_expression::do_determine_type(const Type_context* context)
       subcontext.may_be_abstract = false;
     }
 
-  this->right_->determine_type(&subcontext);
+  this->right_->determine_type(gogo, &subcontext);
 
   if (is_comparison)
     {
@@ -7689,7 +7690,8 @@ String_concat_expression::do_type()
 }
 
 void
-String_concat_expression::do_determine_type(const Type_context* context)
+String_concat_expression::do_determine_type(Gogo* gogo,
+					    const Type_context* context)
 {
   Type_context subcontext(*context);
   for (Expression_list::iterator pe = this->exprs_->begin();
@@ -7708,7 +7710,7 @@ String_concat_expression::do_determine_type(const Type_context* context)
   for (Expression_list::iterator pe = this->exprs_->begin();
        pe != this->exprs_->end();
        ++pe)
-    (*pe)->determine_type(&subcontext);
+    (*pe)->determine_type(gogo, &subcontext);
 }
 
 void
@@ -7862,7 +7864,7 @@ Bound_method_expression::do_type()
 // Determine the types of a method expression.
 
 void
-Bound_method_expression::do_determine_type(const Type_context*)
+Bound_method_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
   Named_object* fn = this->method_->named_object();
   Function_type* fntype;
@@ -7873,11 +7875,11 @@ Bound_method_expression::do_determine_type(const Type_context*)
   else
     fntype = NULL;
   if (fntype == NULL || !fntype->is_method())
-    this->expr_->determine_type_no_context();
+    this->expr_->determine_type_no_context(gogo);
   else
     {
       Type_context subcontext(fntype->receiver()->type(), false);
-      this->expr_->determine_type(&subcontext);
+      this->expr_->determine_type(gogo, &subcontext);
     }
 }
 
@@ -8310,7 +8312,7 @@ Builtin_call_expression::do_set_recover_arg(Expression* arg)
 // specific expressions.  We also convert to a constant if we can.
 
 Expression*
-Builtin_call_expression::do_lower(Gogo*, Named_object* function,
+Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 				  Statement_inserter* inserter, int)
 {
   if (this->is_error_expression())
@@ -8388,7 +8390,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
       break;
 
     case BUILTIN_MAKE:
-      return this->lower_make(inserter);
+      return this->lower_make(gogo, inserter);
 
     case BUILTIN_RECOVER:
       if (function != NULL)
@@ -8840,7 +8842,7 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 // Lower a make expression.
 
 Expression*
-Builtin_call_expression::lower_make(Statement_inserter* inserter)
+Builtin_call_expression::lower_make(Gogo* gogo, Statement_inserter* inserter)
 {
   Location loc = this->location();
 
@@ -8899,7 +8901,7 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   else
     {
       len_arg = *parg;
-      len_arg->determine_type(&int_context);
+      len_arg->determine_type(gogo, &int_context);
       if (len_arg->type()->integer_type() == NULL)
 	{
 	  go_error_at(len_arg->location(), "non-integer len argument in make");
@@ -8919,7 +8921,7 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
-      cap_arg->determine_type(&int_context);
+      cap_arg->determine_type(gogo, &int_context);
       if (cap_arg->type()->integer_type() == NULL)
 	{
 	  go_error_at(cap_arg->location(), "non-integer cap argument in make");
@@ -9709,7 +9711,8 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 	  // We may be replacing this expression with a constant
 	  // during lowering, so verify the type to report any errors.
 	  // It's OK to verify an array type more than once.
-	  arg_type->verify();
+	  // FIXME: Remove this reference to go_get_gogo.
+	  arg_type->verify(go_get_gogo());
 	  if (!arg_type->is_error())
 	    {
 	      Expression* e = arg_type->array_type()->length();
@@ -10048,12 +10051,13 @@ Builtin_call_expression::do_type()
 // Determine the type.
 
 void
-Builtin_call_expression::do_determine_type(const Type_context* context)
+Builtin_call_expression::do_determine_type(Gogo* gogo,
+					   const Type_context* context)
 {
   if (!this->determining_types())
     return;
 
-  this->fn()->determine_type_no_context();
+  this->fn()->determine_type_no_context(gogo);
 
   const Expression_list* args = this->args();
 
@@ -10113,16 +10117,16 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
       if (args != NULL && args->size() == 2)
 	{
 	  if (this->code_ == BUILTIN_SLICE)
-	    args->front()->determine_type_no_context();
+	    args->front()->determine_type_no_context(gogo);
 	  else
 	    {
 	      Type* pointer = Type::make_pointer_type(Type::make_void_type());
 	      Type_context subcontext(pointer, false);
-	      args->front()->determine_type(&subcontext);
+	      args->front()->determine_type(gogo, &subcontext);
 	    }
 	  Type* int_type = Type::lookup_integer_type("int");
 	  Type_context subcontext(int_type, false);
-	  args->back()->determine_type(&subcontext);
+	  args->back()->determine_type(gogo, &subcontext);
 	  return;
 	}
       is_print = false;
@@ -10183,7 +10187,7 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 		}
 	    }
 
-	  (*pa)->determine_type(&subcontext);
+	  (*pa)->determine_type(gogo, &subcontext);
 
 	  if (trailing_arg_types != NULL)
 	    {
@@ -12513,12 +12517,12 @@ Call_expression::do_type()
 // parameter types to set the types of the arguments.
 
 void
-Call_expression::do_determine_type(const Type_context* context)
+Call_expression::do_determine_type(Gogo* gogo, const Type_context* context)
 {
   if (!this->determining_types())
     return;
 
-  this->fn_->determine_type_no_context();
+  this->fn_->determine_type_no_context(gogo);
   Function_type* fntype = this->get_function_type();
   const Typed_identifier_list* parameters = NULL;
   if (fntype != NULL)
@@ -12545,7 +12549,7 @@ Call_expression::do_determine_type(const Type_context* context)
 		  if (rtype->points_to() == NULL)
 		    rtype = Type::make_pointer_type(rtype);
 		  Type_context subcontext(rtype, false);
-		  (*pa)->determine_type(&subcontext);
+		  (*pa)->determine_type(gogo, &subcontext);
 		  continue;
 		}
 	    }
@@ -12553,11 +12557,11 @@ Call_expression::do_determine_type(const Type_context* context)
 	  if (parameters != NULL && pt != parameters->end())
 	    {
 	      Type_context subcontext(pt->type(), false);
-	      (*pa)->determine_type(&subcontext);
+	      (*pa)->determine_type(gogo, &subcontext);
 	      ++pt;
 	    }
 	  else
-	    (*pa)->determine_type_no_context();
+	    (*pa)->determine_type_no_context(gogo);
 	}
     }
 
@@ -13110,9 +13114,9 @@ Call_result_expression::do_check_types(Gogo*)
 // needs to pass down to the caller.
 
 void
-Call_result_expression::do_determine_type(const Type_context*)
+Call_result_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
-  this->call_->determine_type_no_context();
+  this->call_->determine_type_no_context(gogo);
 }
 
 // Return the backend representation.  We just refer to the temporary set by the
@@ -13358,16 +13362,16 @@ Array_index_expression::do_type()
 // Set the type of an array index.
 
 void
-Array_index_expression::do_determine_type(const Type_context*)
+Array_index_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
-  this->array_->determine_type_no_context();
+  this->array_->determine_type_no_context(gogo);
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  this->start_->determine_type(&index_context);
+  this->start_->determine_type(gogo, &index_context);
   if (this->end_ != NULL)
-    this->end_->determine_type(&index_context);
+    this->end_->determine_type(gogo, &index_context);
   if (this->cap_ != NULL)
-    this->cap_->determine_type(&index_context);
+    this->cap_->determine_type(gogo, &index_context);
 }
 
 // Check types of an array index.
@@ -14031,14 +14035,14 @@ String_index_expression::do_type()
 // Determine the type of a string index.
 
 void
-String_index_expression::do_determine_type(const Type_context*)
+String_index_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
-  this->string_->determine_type_no_context();
+  this->string_->determine_type_no_context(gogo);
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  this->start_->determine_type(&index_context);
+  this->start_->determine_type(gogo, &index_context);
   if (this->end_ != NULL)
-    this->end_->determine_type(&index_context);
+    this->end_->determine_type(gogo, &index_context);
 }
 
 // Check types of a string index.
@@ -14331,13 +14335,13 @@ Map_index_expression::do_type()
 // Fix the type of a map index.
 
 void
-Map_index_expression::do_determine_type(const Type_context*)
+Map_index_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
-  this->map_->determine_type_no_context();
+  this->map_->determine_type_no_context(gogo);
   Map_type* mt = this->get_map_type();
   Type* key_type = mt == NULL ? NULL : mt->key_type();
   Type_context subcontext(key_type, false);
-  this->index_->determine_type(&subcontext);
+  this->index_->determine_type(gogo, &subcontext);
 }
 
 // Check types of a map index.
@@ -14770,9 +14774,10 @@ Interface_field_reference_expression::do_type()
 // Determine types.
 
 void
-Interface_field_reference_expression::do_determine_type(const Type_context*)
+Interface_field_reference_expression::do_determine_type(Gogo* gogo,
+							const Type_context*)
 {
-  this->expr_->determine_type_no_context();
+  this->expr_->determine_type_no_context(gogo);
 }
 
 // Check the types for an interface field reference.
@@ -15541,7 +15546,8 @@ Struct_construction_expression::do_is_static_initializer() const
 // Final type determination.
 
 void
-Struct_construction_expression::do_determine_type(const Type_context*)
+Struct_construction_expression::do_determine_type(Gogo* gogo,
+						  const Type_context*)
 {
   if (this->vals() == NULL)
     return;
@@ -15556,13 +15562,13 @@ Struct_construction_expression::do_determine_type(const Type_context*)
       if (*pv != NULL)
 	{
 	  Type_context subcontext(pf->type(), false);
-	  (*pv)->determine_type(&subcontext);
+	  (*pv)->determine_type(gogo, &subcontext);
 	}
     }
   // Extra values are an error we will report elsewhere; we still want
   // to determine the type to avoid knockon errors.
   for (; pv != this->vals()->end(); ++pv)
-    (*pv)->determine_type_no_context();
+    (*pv)->determine_type_no_context(gogo);
 }
 
 // Check types.
@@ -15827,7 +15833,8 @@ Array_construction_expression::do_is_static_initializer() const
 // Final type determination.
 
 void
-Array_construction_expression::do_determine_type(const Type_context*)
+Array_construction_expression::do_determine_type(Gogo* gogo,
+						 const Type_context*)
 {
   if (this->is_error_expression())
     {
@@ -15850,7 +15857,7 @@ Array_construction_expression::do_determine_type(const Type_context*)
        ++pv)
     {
       if (*pv != NULL)
-	(*pv)->determine_type(&subcontext);
+	(*pv)->determine_type(gogo, &subcontext);
     }
 }
 
@@ -16378,7 +16385,7 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
 // Final type determination.
 
 void
-Map_construction_expression::do_determine_type(const Type_context*)
+Map_construction_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
   if (this->vals_ == NULL)
     return;
@@ -16390,9 +16397,9 @@ Map_construction_expression::do_determine_type(const Type_context*)
        pv != this->vals_->end();
        ++pv)
     {
-      (*pv)->determine_type(&key_context);
+      (*pv)->determine_type(gogo, &key_context);
       ++pv;
-      (*pv)->determine_type(&val_context);
+      (*pv)->determine_type(gogo, &val_context);
     }
 }
 
@@ -17910,7 +17917,7 @@ class Type_descriptor_expression : public Expression
   { return true; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -17978,7 +17985,7 @@ class GC_symbol_expression : public Expression
   { return true; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -18037,7 +18044,7 @@ class Ptrmask_symbol_expression : public Expression
   { return true; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -18124,7 +18131,7 @@ class Type_info_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -18311,11 +18318,11 @@ Slice_value_expression::do_traverse(Traverse* traverse)
 // Determine type of a slice value.
 
 void
-Slice_value_expression::do_determine_type(const Type_context*)
+Slice_value_expression::do_determine_type(Gogo* gogo, const Type_context*)
 {
-  this->valmem_->determine_type_no_context();
-  this->len_->determine_type_no_context();
-  this->cap_->determine_type_no_context();
+  this->valmem_->determine_type_no_context(gogo);
+  this->len_->determine_type_no_context(gogo);
+  this->cap_->determine_type_no_context(gogo);
 }
 
 Expression*
@@ -18421,7 +18428,7 @@ class Interface_info_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -18591,7 +18598,7 @@ class Interface_value_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   Expression*
@@ -18686,7 +18693,7 @@ class Interface_mtable_expression : public Expression
   { return true; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   Expression*
@@ -18932,7 +18939,7 @@ class Struct_field_offset_expression : public Expression
   { return Type::lookup_integer_type("uintptr"); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -19017,7 +19024,7 @@ class Label_addr_expression : public Expression
   { return Type::make_pointer_type(Type::make_void_type()); }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -19080,11 +19087,12 @@ Conditional_expression::do_type()
 // Determine type for a conditional expression.
 
 void
-Conditional_expression::do_determine_type(const Type_context* context)
+Conditional_expression::do_determine_type(Gogo* gogo,
+					  const Type_context* context)
 {
-  this->cond_->determine_type_no_context();
-  this->then_->determine_type(context);
-  this->else_->determine_type(context);
+  this->cond_->determine_type_no_context(gogo);
+  this->then_->determine_type(gogo, context);
+  this->else_->determine_type(gogo, context);
 }
 
 // Get the backend representation of a conditional expression.
@@ -19150,10 +19158,10 @@ Compound_expression::do_type()
 // Determine type for a compound expression.
 
 void
-Compound_expression::do_determine_type(const Type_context* context)
+Compound_expression::do_determine_type(Gogo* gogo, const Type_context* context)
 {
-  this->init_->determine_type_no_context();
-  this->expr_->determine_type(context);
+  this->init_->determine_type_no_context(gogo);
+  this->expr_->determine_type(gogo, context);
 }
 
 // Get the backend representation of a compound expression.

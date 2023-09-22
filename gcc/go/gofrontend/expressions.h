@@ -1002,7 +1002,7 @@ class Expression
   // floating point, or complex type.  TYPE_CONTEXT describes the
   // expected type.
   void
-  determine_type(const Type_context*);
+  determine_type(Gogo*, const Type_context*);
 
   // Check types in an expression.
   void
@@ -1011,7 +1011,7 @@ class Expression
 
   // Determine the type when there is no context.
   void
-  determine_type_no_context();
+  determine_type_no_context(Gogo*);
 
   // Return the current type of the expression.  This may be changed
   // by determine_type.  This should not be called before the lowering
@@ -1208,7 +1208,7 @@ class Expression
 
   // Child class implements determining type information.
   virtual void
-  do_determine_type(const Type_context*) = 0;
+  do_determine_type(Gogo*, const Type_context*) = 0;
 
   // Child class implements type checking if needed.
   virtual void
@@ -1456,7 +1456,7 @@ class Parser_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { go_unreachable(); }
 
   void
@@ -1522,7 +1522,7 @@ class Const_expression : public Expression
 
   // The type of a const is set by the declaration, not the use.
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -1581,7 +1581,7 @@ class Var_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1649,8 +1649,8 @@ class Enclosed_var_expression : public Expression
   { return this->reference_->type(); }
 
   void
-  do_determine_type(const Type_context* context)
-  { return this->reference_->determine_type(context); }
+  do_determine_type(Gogo* gogo, const Type_context* context)
+  { return this->reference_->determine_type(gogo, context); }
 
   Expression*
   do_copy()
@@ -1707,7 +1707,7 @@ class Temporary_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -1772,7 +1772,7 @@ class Set_and_use_temporary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1849,7 +1849,7 @@ class String_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -1954,7 +1954,7 @@ class Type_conversion_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2021,8 +2021,8 @@ class Unsafe_type_conversion_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy();
@@ -2149,7 +2149,7 @@ class Unary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2309,7 +2309,7 @@ class Binary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2425,7 +2425,7 @@ class String_concat_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2599,7 +2599,7 @@ class Call_expression : public Expression
   do_type();
 
   virtual void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   virtual void
   do_check_types(Gogo*);
@@ -2777,7 +2777,7 @@ class Builtin_call_expression : public Call_expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2815,7 +2815,7 @@ class Builtin_call_expression : public Call_expression
   complex_type(Type*);
 
   Expression*
-  lower_make(Statement_inserter*);
+  lower_make(Gogo*, Statement_inserter*);
 
   bool
   check_int_value(Expression*, bool is_length, bool* small);
@@ -2874,7 +2874,7 @@ class Call_result_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -2955,10 +2955,10 @@ class Func_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo* gogo, const Type_context*)
   {
     if (this->closure_ != NULL)
-      this->closure_->determine_type_no_context();
+      this->closure_->determine_type_no_context(gogo);
   }
 
   Expression*
@@ -3015,7 +3015,7 @@ class Func_descriptor_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*
@@ -3207,7 +3207,7 @@ class Array_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3312,7 +3312,7 @@ class String_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3408,7 +3408,7 @@ class Map_index_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3511,7 +3511,7 @@ class Bound_method_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3601,8 +3601,8 @@ class Field_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -3697,7 +3697,7 @@ class Interface_field_reference_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3759,7 +3759,7 @@ class Allocation_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   void
@@ -3925,7 +3925,7 @@ class Struct_construction_expression : public Expression,
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -3992,7 +3992,7 @@ protected:
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -4124,7 +4124,7 @@ class Map_construction_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   void
   do_check_types(Gogo*);
@@ -4187,8 +4187,8 @@ class Type_guard_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -4238,8 +4238,8 @@ class Heap_expression : public Expression
   Type*
   do_type();
   void
-  do_determine_type(const Type_context*)
-  { this->expr_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->expr_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy()
@@ -4301,8 +4301,8 @@ class Receive_expression : public Expression
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   void
-  do_determine_type(const Type_context*)
-  { this->channel_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->channel_->determine_type_no_context(gogo); }
 
   void
   do_check_types(Gogo*);
@@ -4364,7 +4364,7 @@ class Slice_value_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy();
@@ -4417,8 +4417,8 @@ class Slice_info_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
-  { this->slice_->determine_type_no_context(); }
+  do_determine_type(Gogo* gogo, const Type_context*)
+  { this->slice_->determine_type_no_context(gogo); }
 
   Expression*
   do_copy()
@@ -4475,7 +4475,7 @@ class Conditional_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -4524,7 +4524,7 @@ class Compound_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*);
+  do_determine_type(Gogo*, const Type_context*);
 
   Expression*
   do_copy()
@@ -4571,7 +4571,7 @@ class Backend_expression : public Expression
   { return this->type_; }
 
   void
-  do_determine_type(const Type_context*)
+  do_determine_type(Gogo*, const Type_context*)
   { }
 
   Expression*

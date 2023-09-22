@@ -1555,7 +1555,7 @@ Type::convert_builtin_named_types(Gogo* gogo)
        p != Type::named_builtin_types.end();
        ++p)
     {
-      bool r = (*p)->verify();
+      bool r = (*p)->verify(gogo);
       go_assert(r);
       (*p)->convert(gogo);
     }
@@ -5950,7 +5950,7 @@ Struct_type::do_traverse(Traverse* traverse)
 // Verify that the struct type is complete and valid.
 
 bool
-Struct_type::do_verify()
+Struct_type::do_verify(Gogo*)
 {
   Struct_field_list* fields = this->fields_;
   if (fields == NULL)
@@ -7337,13 +7337,13 @@ Array_type::do_traverse(Traverse* traverse)
 // Check that the length is valid.
 
 bool
-Array_type::verify_length()
+Array_type::verify_length(Gogo* gogo)
 {
   if (this->length_ == NULL)
     return true;
 
   Type_context context(Type::lookup_integer_type("int"), false);
-  this->length_->determine_type(&context);
+  this->length_->determine_type(gogo, &context);
 
   if (this->length_->is_error_expression()
       || this->length_->type()->is_error())
@@ -7421,14 +7421,14 @@ Array_type::verify_length()
 // Verify the type.
 
 bool
-Array_type::do_verify()
+Array_type::do_verify(Gogo* gogo)
 {
   if (this->element_type()->is_error_type())
     {
       this->set_is_error();
       return false;
     }
-  if (!this->verify_length())
+  if (!this->verify_length(gogo))
     {
       this->length_ = Expression::make_error(this->length_->location());
       this->set_is_error();
@@ -8225,7 +8225,7 @@ Map_type::do_traverse(Traverse* traverse)
 // Check that the map type is OK.
 
 bool
-Map_type::do_verify()
+Map_type::do_verify(Gogo*)
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
@@ -8768,7 +8768,7 @@ Type::make_map_type(Type* key_type, Type* val_type, Location location)
 // Verify.
 
 bool
-Channel_type::do_verify()
+Channel_type::do_verify(Gogo*)
 {
   // We have no location for this error, but this is not something the
   // ordinary user will see.
@@ -10833,7 +10833,7 @@ Find_alias::type(Type* type)
 // Verify that a named type does not refer to itself.
 
 bool
-Named_type::do_verify()
+Named_type::do_verify(Gogo*)
 {
   if (this->is_verified_)
     return true;
@@ -11016,7 +11016,7 @@ Named_type::convert(Gogo* gogo)
   // If we are called to turn unsafe.Sizeof into a constant, we may
   // not have verified the type yet.  We have to make sure it is
   // verified, since that sets the list of dependencies.
-  this->verify();
+  this->verify(gogo);
 
   // Convert all the dependencies.  If they refer indirectly back to
   // this type, they will pick up the intermediate representation we just
@@ -12791,7 +12791,7 @@ Forward_declaration_type::do_traverse(Traverse* traverse)
 // Verify the type.
 
 bool
-Forward_declaration_type::do_verify()
+Forward_declaration_type::do_verify(Gogo*)
 {
   if (!this->is_defined() && !this->is_nil_constant_as_type())
     {

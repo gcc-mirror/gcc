@@ -584,8 +584,8 @@ class Type
   // returns false if the type is invalid and we should not continue
   // traversing it.
   bool
-  verify()
-  { return this->do_verify(); }
+  verify(Gogo* gogo)
+  { return this->do_verify(gogo); }
 
   // Bit flags to pass to are_identical and friends.
 
@@ -1101,7 +1101,7 @@ class Type
 
   // Verify the type.
   virtual bool
-  do_verify()
+  do_verify(Gogo*)
   { return true; }
 
   virtual bool
@@ -2297,8 +2297,8 @@ class Pointer_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify()
-  { return this->to_type_->verify(); }
+  do_verify(Gogo* gogo)
+  { return this->to_type_->verify(gogo); }
 
   // If this is a pointer to a type that can't be in the heap, then
   // the garbage collector does not have to look at this, so pretend
@@ -2675,7 +2675,7 @@ class Struct_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -2855,7 +2855,7 @@ class Array_type : public Type
   do_traverse(Traverse* traverse);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -2901,7 +2901,7 @@ class Array_type : public Type
 
  private:
   bool
-  verify_length();
+  verify_length(Gogo*);
 
   Expression*
   array_type_descriptor(Gogo*, Named_type*);
@@ -3003,7 +3003,7 @@ class Map_type : public Type
   do_traverse(Traverse*);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const
@@ -3123,7 +3123,7 @@ class Channel_type : public Type
   { return Type::traverse(this->element_type_, traverse); }
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const
@@ -3604,7 +3604,7 @@ class Named_type : public Type
   { return Type::traverse(this->type_, traverse); }
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const;
@@ -3762,7 +3762,7 @@ class Forward_declaration_type : public Type
   do_traverse(Traverse* traverse);
 
   bool
-  do_verify();
+  do_verify(Gogo*);
 
   bool
   do_has_pointer() const

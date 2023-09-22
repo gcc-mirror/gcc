@@ -321,7 +321,7 @@ class Statement
 
   // Set type information for unnamed constants.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Check types in a statement.  This simply checks that any
   // expressions used by the statement have the right type.
@@ -508,7 +508,7 @@ class Statement
   // constants.  Any statement which includes an expression needs to
   // implement this.
   virtual void
-  do_determine_types()
+  do_determine_types(Gogo*)
   { }
 
   // Implemented by child class: check types of expressions used in a
@@ -640,7 +640,7 @@ class Assignment_statement : public Statement
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -757,7 +757,7 @@ class Temporary_statement : public Statement
   do_traverse_assignments(Traverse_assignments*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -916,7 +916,7 @@ class Expression_statement : public Statement
   { return this->traverse_expression(traverse, &this->expr_); }
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -983,8 +983,8 @@ class Block_statement : public Statement
   { return this->block_->traverse(traverse); }
 
   void
-  do_determine_types()
-  { this->block_->determine_types(); }
+  do_determine_types(Gogo* gogo)
+  { this->block_->determine_types(gogo); }
 
   int
   do_inlining_cost()
@@ -1033,7 +1033,7 @@ class Send_statement : public Statement
   do_traverse(Traverse* traverse);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1106,7 +1106,7 @@ class Select_clauses
 
   // Determine types.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Check types.
   void
@@ -1157,7 +1157,7 @@ class Select_clauses
 
     // Determine types.
     void
-    determine_types();
+    determine_types(Gogo*);
 
     // Check types.
     void
@@ -1326,8 +1326,8 @@ class Select_statement : public Statement
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
-  do_determine_types()
-  { this->clauses_->determine_types(); }
+  do_determine_types(Gogo* gogo)
+  { this->clauses_->determine_types(gogo); }
 
   void
   do_check_types(Gogo*)
@@ -1387,7 +1387,7 @@ class Thunk_statement : public Statement
   do_traverse_assignments(Traverse_assignments*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1655,7 +1655,7 @@ class If_statement : public Statement
   do_traverse(Traverse*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1894,7 +1894,7 @@ class Case_clauses
   // Determine types of expressions.  The Type parameter is the type
   // of the switch value.
   void
-  determine_types(Type*);
+  determine_types(Gogo*, Type*);
 
   // Check types.  The Type parameter is the type of the switch value.
   bool
@@ -1968,7 +1968,7 @@ class Case_clauses
 
     // Determine types.
     void
-    determine_types(Type*);
+    determine_types(Gogo*, Type*);
 
     // Check types.
     bool

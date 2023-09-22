@@ -317,7 +317,7 @@ Runtime::convert_types(Gogo* gogo)
       Type* t = runtime_function_types[i];
       if (t != NULL && t->named_type() != NULL)
 	{
-	  bool r = t->verify();
+	  bool r = t->verify(gogo);
 	  go_assert(r);
 	  t->named_type()->convert(gogo);
 	}
