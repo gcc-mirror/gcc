@@ -1119,6 +1119,78 @@
   }
   [(set_attr "type" "vfwmuladd")])
 
+;; Combine mask_extend + vredsum to mask_vwredsum[u]
+;; where the mrege of mask_extend is vector const 0
+(define_insn_and_split "*cond_widen_reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (if_then_else:<V_DOUBLE_EXTEND>
+            (match_operand:<VM> 1 "register_operand")
+            (any_extend:<V_DOUBLE_EXTEND>
+              (match_operand:VI_QHS_NO_M8 2 "register_operand"))
+            (if_then_else:<V_DOUBLE_EXTEND>
+              (unspec:<VM> [
+                (match_operand:<VM> 3 "vector_all_trues_mask_operand")
+                (match_operand 6 "vector_length_operand")
+                (match_operand 7 "const_int_operand")
+                (match_operand 8 "const_int_operand")
+                (match_operand 9 "const_1_or_2_operand")
+                (reg:SI VL_REGNUM)
+                (reg:SI VTYPE_REGNUM)
+              ] UNSPEC_VPREDICATE)
+              (match_operand:<V_DOUBLE_EXTEND> 5 "vector_const_0_operand")
+              (match_operand:<V_DOUBLE_EXTEND> 4 "vector_merge_operand")))
+        ] UNSPEC_REDUC_SUM))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx ops[] = {operands[0], operands[2], operands[1],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
+                                  riscv_vector::REDUCE_OP_M,
+                                  ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
+;; Combine mask_extend + vfredsum to mask_vfwredusum
+;; where the mrege of mask_extend is vector const 0
+(define_insn_and_split "*cond_widen_reduc_plus_scal_<mode>"
+  [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
+        (unspec:<V_DOUBLE_EXTEND_VEL> [
+          (if_then_else:<V_DOUBLE_EXTEND>
+            (match_operand:<VM> 1 "register_operand")
+            (float_extend:<V_DOUBLE_EXTEND>
+              (match_operand:VF_HS_NO_M8 2 "register_operand"))
+            (if_then_else:<V_DOUBLE_EXTEND>
+              (unspec:<VM> [
+                (match_operand:<VM> 3 "vector_all_trues_mask_operand")
+                (match_operand 6 "vector_length_operand")
+                (match_operand 7 "const_int_operand")
+                (match_operand 8 "const_int_operand")
+                (match_operand 9 "const_1_or_2_operand")
+                (reg:SI VL_REGNUM)
+                (reg:SI VTYPE_REGNUM)
+              ] UNSPEC_VPREDICATE)
+              (match_operand:<V_DOUBLE_EXTEND> 5 "vector_const_0_operand")
+              (match_operand:<V_DOUBLE_EXTEND> 4 "vector_merge_operand")))
+        ] UNSPEC_REDUC_SUM_UNORDERED))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx ops[] = {operands[0], operands[2], operands[1],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
+                                  riscv_vector::REDUCE_OP_M_FRM_DYN,
+                                  ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
+  DONE;
+}
+[(set_attr "type" "vector")])
+
 ;; =============================================================================
 ;; Misc combine patterns
 ;; =============================================================================
