@@ -11310,7 +11310,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cxx_dialect < cxx14)
 	pedwarn (parser->lexer->next_token->location, 0,
 		 "lambda templates are only available with "
-		 "%<-std=c++14%> or %<-std=gnu++14%>");
+		 "%<-std=c++20%> or %<-std=gnu++20%>");
       else if (cxx_dialect < cxx20)
 	pedwarn (parser->lexer->next_token->location, OPT_Wpedantic,
 		 "lambda templates are only available with "

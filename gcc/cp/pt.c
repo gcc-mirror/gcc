@@ -19367,13 +19367,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 				    RECUR (TREE_OPERAND (t, 1)),
 				    complain));
 
-    case ANNOTATE_EXPR:
-      tmp = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (tmp), tmp,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
-
     case PREDICT_EXPR:
       RETURN (add_stmt (copy_node (t)));
 
@@ -21122,6 +21115,13 @@ tsubst_copy_and_build (tree t,
       /* No need to substitute further, a RANGE_EXPR will always be built
 	 with constant operands.  */
       RETURN (t);
+
+    case ANNOTATE_EXPR:
+      op1 = RECUR (TREE_OPERAND (t, 0));
+      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			  TREE_TYPE (op1), op1,
+			  RECUR (TREE_OPERAND (t, 1)),
+			  RECUR (TREE_OPERAND (t, 2))));
 
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
