@@ -526,3 +526,73 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       dst[i] = src[i] % 19;                                                    \
   }
+
+#define DEF_COND_UNOP(PREFIX, NUM, TYPE, OP)                                   \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE cond)                             \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? OP (a[i]) : b[i];                                       \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_BINOP(PREFIX, NUM, TYPE, OP)                                  \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] OP b[i] : c[i];                                    \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_MINMAX(PREFIX, NUM, TYPE, OP)                                 \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? ((a[i]) OP (b[i]) ? (a[i]) : (b[i])) : c[i];            \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FMA_VV(PREFIX, NUM, TYPE)                                     \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] * b[i] + c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FNMA_VV(PREFIX, NUM, TYPE)                                    \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] - b[i] * c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FMS_VV(PREFIX, NUM, TYPE)                                     \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? a[i] * b[i] - c[i] : b[i];                              \
+    return v;                                                                  \
+  }
+
+#define DEF_COND_FNMS_VV(PREFIX, NUM, TYPE)                                    \
+  TYPE __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE a, TYPE b, TYPE c, TYPE cond)                     \
+  {                                                                            \
+    TYPE v;                                                                    \
+    for (int i = 0; i < NUM; ++i)                                              \
+      v[i] = cond[i] ? -(a[i] * b[i]) - c[i] : b[i];                           \
+    return v;                                                                  \
+  }
