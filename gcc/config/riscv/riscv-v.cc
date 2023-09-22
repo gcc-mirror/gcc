@@ -696,9 +696,7 @@ gen_const_vector_dup (machine_mode mode, poly_int64 val)
     {
       /* When VAL is const_poly_int value, we need to explicitly broadcast
 	 it into a vector using RVV broadcast instruction.  */
-      rtx dup = gen_reg_rtx (mode);
-      emit_insn (gen_vec_duplicate (mode, dup, c));
-      return dup;
+      return expand_vector_broadcast (mode, c);
     }
    return gen_const_vec_duplicate (mode, c);
 }
