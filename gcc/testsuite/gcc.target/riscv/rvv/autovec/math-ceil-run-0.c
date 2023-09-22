@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
-/* { dg-additional-options "-march=rv64gcv_zvfh -std=c2x -mabi=lp64d -O3 -ftree-vectorize -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-std=c2x -O3 -ftree-vectorize -fno-vect-cost-model -ffast-math" } */
 
 #include "test-math.h"
 
