@@ -3557,36 +3557,27 @@ gen_ceil_const_fp (machine_mode inner_mode)
 }
 
 static rtx
-expand_vec_float_cmp_mask (rtx fp_vector, rtx_code code, rtx fp_scalar,
-			   machine_mode vec_fp_mode)
+emit_vec_float_cmp_mask (rtx fp_vector, rtx_code code, rtx fp_scalar,
+			 machine_mode vec_fp_mode)
 {
-  /* Step-1: Get the abs float value for mask generation.  */
-  rtx tmp = gen_reg_rtx (vec_fp_mode);
-  rtx abs_ops[] = {tmp, fp_vector};
-  insn_code icode = code_for_pred (ABS, vec_fp_mode);
-  emit_vlmax_insn (icode, UNARY_OP, abs_ops);
-
-  /* Step-2: Prepare the scalar float compare register.  */
+  /* Step-1: Prepare the scalar float compare register.  */
   rtx fp_reg = gen_reg_rtx (GET_MODE_INNER (vec_fp_mode));
   emit_insn (gen_move_insn (fp_reg, fp_scalar));
 
-  /* Step-3: Prepare the vector float compare register.  */
-  rtx vec_dup = gen_reg_rtx (vec_fp_mode);
-  icode = code_for_pred_broadcast (vec_fp_mode);
-  rtx vfmv_ops[] = {vec_dup, fp_reg};
-  emit_vlmax_insn (icode, UNARY_OP, vfmv_ops);
-
-  /* Step-4: Generate the mask.  */
+  /* Step-2: Generate the mask.  */
   machine_mode mask_mode = get_mask_mode (vec_fp_mode);
   rtx mask = gen_reg_rtx (mask_mode);
-  expand_vec_cmp (mask, code, tmp, vec_dup);
+  rtx cmp = gen_rtx_fmt_ee (code, mask_mode, fp_vector, fp_reg);
+  rtx cmp_ops[] = {mask, cmp, fp_vector, fp_reg};
+  insn_code icode = code_for_pred_cmp_scalar (vec_fp_mode);
+  emit_vlmax_insn (icode, COMPARE_OP, cmp_ops);
 
   return mask;
 }
 
 static void
-expand_vec_copysign (rtx op_dest, rtx op_src_0, rtx op_src_1,
-		     machine_mode vec_mode)
+emit_vec_copysign (rtx op_dest, rtx op_src_0, rtx op_src_1,
+		   machine_mode vec_mode)
 {
   rtx sgnj_ops[] = {op_dest, op_src_0, op_src_1};
   insn_code icode = code_for_pred (UNSPEC_VCOPYSIGN, vec_mode);
@@ -3594,30 +3585,58 @@ expand_vec_copysign (rtx op_dest, rtx op_src_0, rtx op_src_1,
   emit_vlmax_insn (icode, BINARY_OP, sgnj_ops);
 }
 
+static void
+emit_vec_abs (rtx op_dest, rtx op_src, machine_mode vec_mode)
+{
+  rtx abs_ops[] = {op_dest, op_src};
+  insn_code icode = code_for_pred (ABS, vec_mode);
+
+  emit_vlmax_insn (icode, UNARY_OP, abs_ops);
+}
+
+static void
+emit_vec_cvt_x_f (rtx op_dest, rtx op_src, rtx mask,
+		  insn_type type, machine_mode vec_mode)
+{
+  rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
+  insn_code icode = code_for_pred_fcvt_x_f (UNSPEC_VFCVT, vec_mode);
+
+  emit_vlmax_insn (icode, type, cvt_x_ops);
+}
+
+static void
+emit_vec_cvt_f_x (rtx op_dest, rtx op_src, rtx mask,
+		  insn_type type, machine_mode vec_mode)
+{
+  rtx cvt_fp_ops[] = {op_dest, mask, op_dest, op_src};
+  insn_code icode = code_for_pred (FLOAT, vec_mode);
+
+  emit_vlmax_insn (icode, type, cvt_fp_ops);
+}
+
 void
 expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 		 machine_mode vec_int_mode)
 {
-  /* Step-1: Generate the mask on const fp.  */
+  /* Step-1: Get the abs float value for mask generation.  */
+  emit_vec_abs (op_0, op_1, vec_fp_mode);
+
+  /* Step-2: Generate the mask on const fp.  */
   rtx const_fp = gen_ceil_const_fp (GET_MODE_INNER (vec_fp_mode));
-  rtx mask = expand_vec_float_cmp_mask (op_1, LT, const_fp, vec_fp_mode);
+  rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
 
-  /* Step-2: Convert to integer on mask, with rounding up (aka ceil).  */
+  /* Step-3: Convert to integer on mask, with rounding up (aka ceil).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  rtx cvt_x_ops[] = {tmp, mask, tmp, op_1};
-  insn_code icode = code_for_pred_fcvt_x_f (UNSPEC_VFCVT, vec_fp_mode);
-  emit_vlmax_insn (icode, UNARY_OP_TAMU_FRM_RUP, cvt_x_ops);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RUP, vec_fp_mode);
 
-  /* Step-3: Convert to floating-point on mask for the final result.
+  /* Step-4: Convert to floating-point on mask for the final result.
      To avoid unnecessary frm register access, we use RUP here and it will
      never do the rounding up because the tmp rtx comes from the float
      to int conversion.  */
-  rtx cvt_fp_ops[] = {op_0, mask, op_1, tmp};
-  icode = code_for_pred (FLOAT, vec_fp_mode);
-  emit_vlmax_insn (icode, UNARY_OP_TAMU_FRM_RUP, cvt_fp_ops);
+  emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RUP, vec_fp_mode);
 
-  /* Step-4: Retrieve the sign bit.  */
-  expand_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
+  /* Step-5: Retrieve the sign bit.  */
+  emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
 }
 
 } // namespace riscv_vector
