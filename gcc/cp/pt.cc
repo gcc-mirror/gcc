@@ -8361,7 +8361,7 @@ canonicalize_expr_argument (tree arg, tsubst_flags_t complain)
    constrained than the parameter.  */
 
 static bool
-is_compatible_template_arg (tree parm, tree arg)
+is_compatible_template_arg (tree parm, tree arg, tree args)
 {
   tree parm_cons = get_constraints (parm);
 
@@ -8382,6 +8382,7 @@ is_compatible_template_arg (tree parm, tree arg)
     {
       tree aparms = DECL_INNERMOST_TEMPLATE_PARMS (arg);
       new_args = template_parms_level_to_args (aparms);
+      new_args = add_to_template_args (args, new_args);
       ++processing_template_decl;
       parm_cons = tsubst_constraint_info (parm_cons, new_args,
 					  tf_none, NULL_TREE);
@@ -8636,7 +8637,7 @@ convert_template_argument (tree parm,
               // Check that the constraints are compatible before allowing the
               // substitution.
               if (val != error_mark_node)
-                if (!is_compatible_template_arg (parm, arg))
+		if (!is_compatible_template_arg (parm, arg, args))
                   {
 		    if (in_decl && (complain & tf_error))
                       {
