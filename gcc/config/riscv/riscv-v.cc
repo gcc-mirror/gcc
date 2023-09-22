@@ -326,8 +326,10 @@ public:
     /* Add rounding mode operand.  */
     if (m_insn_flags & FRM_DYN_P)
       add_rounding_mode_operand (FRM_DYN);
-    if (m_insn_flags & FRM_RUP_P)
+    else if (m_insn_flags & FRM_RUP_P)
       add_rounding_mode_operand (FRM_RUP);
+    else if (m_insn_flags & FRM_RDN_P)
+      add_rounding_mode_operand (FRM_RDN);
 
     gcc_assert (insn_data[(int) icode].n_operands == m_opno);
     expand (icode, any_mem_p);
@@ -3557,6 +3559,13 @@ gen_ceil_const_fp (machine_mode inner_mode)
 }
 
 static rtx
+gen_floor_const_fp (machine_mode inner_mode)
+{
+  /* The floor needs the same floating point const as ceil.  */
+  return gen_ceil_const_fp (inner_mode);
+}
+
+static rtx
 emit_vec_float_cmp_mask (rtx fp_vector, rtx_code code, rtx fp_scalar,
 			 machine_mode vec_fp_mode)
 {
@@ -3635,7 +3644,29 @@ expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
      to int conversion.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RUP, vec_fp_mode);
 
-  /* Step-5: Retrieve the sign bit.  */
+  /* Step-5: Retrieve the sign bit for -0.0.  */
+  emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
+}
+
+void
+expand_vec_floor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
+		  machine_mode vec_int_mode)
+{
+  /* Step-1: Get the abs float value for mask generation.  */
+  emit_vec_abs (op_0, op_1, vec_fp_mode);
+
+  /* Step-2: Generate the mask on const fp.  */
+  rtx const_fp = gen_floor_const_fp (GET_MODE_INNER (vec_fp_mode));
+  rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
+
+  /* Step-3: Convert to integer on mask, with rounding down (aka floor).  */
+  rtx tmp = gen_reg_rtx (vec_int_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RDN, vec_fp_mode);
+
+  /* Step-4: Convert to floating-point on mask for the floor result.  */
+  emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RDN, vec_fp_mode);
+
+  /* Step-5: Retrieve the sign bit for -0.0.  */
   emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
 }
 

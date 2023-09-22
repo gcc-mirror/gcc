@@ -2209,6 +2209,7 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - ceil/ceilf
+;; - floor/floorf
 ;; -------------------------------------------------------------------------
 (define_expand "ceil<mode>2"
   [(match_operand:V_VLSF 0 "register_operand")
@@ -2216,6 +2217,16 @@
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
     riscv_vector::expand_vec_ceil (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "floor<mode>2"
+  [(match_operand:V_VLSF 0 "register_operand")
+   (match_operand:V_VLSF 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_floor (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
     DONE;
   }
 )
