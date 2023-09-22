@@ -27,7 +27,6 @@ with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
@@ -423,6 +422,9 @@ package body Sem_Aggr is
 
    procedure Resolve_Delta_Array_Aggregate  (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Delta_Record_Aggregate (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Deep_Delta_Assoc (N : Node_Id; Typ : Entity_Id);
+   --  Resolve the names/expressions in a component association for
+   --  a deep delta aggregate. Typ is the type of the enclosing object.
 
    ------------------------
    -- Array_Aggr_Subtype --
@@ -759,6 +761,28 @@ package body Sem_Aggr is
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
 
+   --------------------
+   -- Is_Deep_Choice --
+   --------------------
+
+   function Is_Deep_Choice
+     (Choice    : Node_Id;
+      Aggr_Type : Type_Kind_Id) return Boolean
+   is
+      Pref : Node_Id := Choice;
+   begin
+      while not Is_Root_Prefix_Of_Deep_Choice (Pref) loop
+         Pref := Prefix (Pref);
+      end loop;
+
+      if Is_Array_Type (Aggr_Type) then
+         return Paren_Count (Pref) > 0
+           and then Pref /= Choice;
+      else
+         return Pref /= Choice;
+      end if;
+   end Is_Deep_Choice;
+
    -------------------------
    -- Is_Others_Aggregate --
    -------------------------
@@ -770,6 +794,17 @@ package body Sem_Aggr is
       return No (Expressions (Aggr))
         and then Nkind (First (Choice_List (First (Assoc)))) = N_Others_Choice;
    end Is_Others_Aggregate;
+
+   -----------------------------------
+   -- Is_Root_Prefix_Of_Deep_Choice --
+   -----------------------------------
+
+   function Is_Root_Prefix_Of_Deep_Choice (Pref : Node_Id) return Boolean is
+   begin
+      return Paren_Count (Pref) > 0
+        or else Nkind (Pref) not in N_Indexed_Component
+                                  | N_Selected_Component;
+   end Is_Root_Prefix_Of_Deep_Choice;
 
    -------------------------
    -- Is_Single_Aggregate --
@@ -3713,31 +3748,38 @@ package body Sem_Aggr is
          else
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
-               Analyze (Choice);
+               if Is_Deep_Choice (Choice, Typ) then
+                  pragma Assert (All_Extensions_Allowed);
 
-               if Nkind (Choice) = N_Others_Choice then
-                  Error_Msg_N
-                    ("OTHERS not allowed in delta aggregate", Choice);
-
-               elsif Is_Entity_Name (Choice)
-                 and then Is_Type (Entity (Choice))
-               then
-                  --  Choice covers a range of values
-
-                  if Base_Type (Entity (Choice)) /=
-                     Base_Type (Index_Type)
-                  then
-                     Error_Msg_NE
-                       ("choice does not match index type of &",
-                        Choice, Typ);
-                  end if;
-
-               elsif Nkind (Choice) = N_Subtype_Indication then
-                  Resolve_Discrete_Subtype_Indication
-                    (Choice, Base_Type (Index_Type));
-
+                  --  a deep delta aggregate
+                  Resolve_Deep_Delta_Assoc (Assoc, Typ);
                else
-                  Resolve (Choice, Index_Type);
+                  Analyze (Choice);
+
+                  if Nkind (Choice) = N_Others_Choice then
+                     Error_Msg_N
+                       ("OTHERS not allowed in delta aggregate", Choice);
+
+                  elsif Is_Entity_Name (Choice)
+                    and then Is_Type (Entity (Choice))
+                  then
+                     --  Choice covers a range of values
+
+                     if Base_Type (Entity (Choice)) /=
+                        Base_Type (Index_Type)
+                     then
+                        Error_Msg_NE
+                          ("choice does not match index type of &",
+                           Choice, Typ);
+                     end if;
+
+                  elsif Nkind (Choice) = N_Subtype_Indication then
+                     Resolve_Discrete_Subtype_Indication
+                       (Choice, Base_Type (Index_Type));
+
+                  else
+                     Resolve (Choice, Index_Type);
+                  end if;
                end if;
 
                Next (Choice);
@@ -3773,14 +3815,15 @@ package body Sem_Aggr is
       Comp_Ref : Entity_Id := Empty; -- init to avoid warning
       Variant  : Node_Id;
 
-      procedure Check_Variant (Id : Entity_Id);
+      procedure Check_Variant (Id : Node_Id);
       --  If a given component of the delta aggregate appears in a variant
       --  part, verify that it is within the same variant as that of previous
       --  specified variant components of the delta.
 
-      function Get_Component (Nam : Node_Id) return Entity_Id;
-      --  Locate component with a given name and return it. If none found then
-      --  report error and return Empty.
+      function Get_Component_Type
+        (Selector : Node_Id; Enclosing_Type : Entity_Id) return Entity_Id;
+      --  Locate component with a given name and return its type.
+      --  If none found then report error and return Empty.
 
       function Nested_In (V1 : Node_Id; V2 : Node_Id) return Boolean;
       --  Determine whether variant V1 is within variant V2
@@ -3792,7 +3835,7 @@ package body Sem_Aggr is
       --  Check_Variant --
       --------------------
 
-      procedure Check_Variant (Id : Entity_Id) is
+      procedure Check_Variant (Id : Node_Id) is
          Comp         : Entity_Id;
          Comp_Variant : Node_Id;
 
@@ -3843,30 +3886,80 @@ package body Sem_Aggr is
          end if;
       end Check_Variant;
 
-      -------------------
-      -- Get_Component --
-      -------------------
+      ------------------------
+      -- Get_Component_Type --
+      ------------------------
 
-      function Get_Component (Nam : Node_Id) return Entity_Id is
+      function Get_Component_Type
+        (Selector : Node_Id; Enclosing_Type : Entity_Id) return Entity_Id
+      is
          Comp : Entity_Id;
-
       begin
-         Comp := First_Entity (Typ);
+         case Nkind (Selector) is
+            when N_Selected_Component | N_Indexed_Component =>
+               --  a deep delta aggregate choice
+
+               declare
+                  Prefix_Type : constant Entity_Id :=
+                    Get_Component_Type (Prefix (Selector), Enclosing_Type);
+               begin
+                  if not Present (Prefix_Type) then
+                     pragma Assert (Serious_Errors_Detected > 0);
+                     return Empty;
+                  end if;
+
+                  --  Set the type of the prefix for GNATprove
+
+                  Set_Etype (Prefix (Selector), Prefix_Type);
+
+                  if Nkind (Selector) = N_Selected_Component then
+                     return Get_Component_Type
+                              (Selector_Name (Selector),
+                               Enclosing_Type => Prefix_Type);
+                  elsif not Is_Array_Type (Prefix_Type) then
+                     Error_Msg_NE
+                       ("type& is not an array type",
+                        Selector, Prefix_Type);
+                  elsif Number_Dimensions (Prefix_Type) /= 1 then
+                     Error_Msg_NE
+                       ("array type& not one-dimensional",
+                        Selector, Prefix_Type);
+                  elsif List_Length (Expressions (Selector)) /= 1 then
+                     Error_Msg_NE
+                       ("wrong number of indices for array type&",
+                        Selector, Prefix_Type);
+                  else
+                     Analyze_And_Resolve
+                       (First (Expressions (Selector)),
+                        Etype (First_Index (Prefix_Type)));
+                     return Component_Type (Prefix_Type);
+                  end if;
+               end;
+
+            when others =>
+               null;
+         end case;
+
+         Comp := First_Entity (Enclosing_Type);
          while Present (Comp) loop
-            if Chars (Comp) = Chars (Nam) then
+            if Chars (Comp) = Chars (Selector) then
                if Ekind (Comp) = E_Discriminant then
-                  Error_Msg_N ("delta cannot apply to discriminant", Nam);
+                  Error_Msg_N ("delta cannot apply to discriminant", Selector);
                end if;
 
-               return Comp;
+               Set_Entity (Selector, Comp);
+               Set_Etype  (Selector, Etype (Comp));
+
+               return Etype (Comp);
             end if;
 
             Next_Entity (Comp);
          end loop;
 
-         Error_Msg_NE ("type& has no component with this name", Nam, Typ);
+         Error_Msg_NE
+           ("type& has no component with this name", Selector, Enclosing_Type);
          return Empty;
-      end Get_Component;
+      end Get_Component_Type;
 
       ---------------
       -- Nested_In --
@@ -3911,10 +4004,10 @@ package body Sem_Aggr is
 
       Deltas : constant List_Id := Component_Associations (N);
 
-      Assoc     : Node_Id;
-      Choice    : Node_Id;
-      Comp      : Entity_Id;
-      Comp_Type : Entity_Id := Empty; -- init to avoid warning
+      Assoc       : Node_Id;
+      Choice      : Node_Id;
+      Comp_Type   : Entity_Id := Empty; -- init to avoid warning
+      Deep_Choice : Boolean;
 
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
@@ -3925,19 +4018,27 @@ package body Sem_Aggr is
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
-            Comp := Get_Component (Choice);
+            Deep_Choice := Nkind (Choice) /= N_Identifier;
+            if Deep_Choice then
+               Error_Msg_GNAT_Extension
+                 ("deep delta aggregate", Sloc (Choice));
+            end if;
 
-            if Present (Comp) then
-               Check_Variant (Choice);
+            Comp_Type := Get_Component_Type
+                          (Selector => Choice, Enclosing_Type => Typ);
 
-               Comp_Type := Etype (Comp);
+            --  Set the type of the choice for GNATprove
 
-               --  Decorate the component reference by setting its entity and
-               --  type, as otherwise backends like GNATprove would have to
-               --  rediscover this information by themselves.
+            if Deep_Choice then
+               Set_Etype (Choice, Comp_Type);
+            end if;
 
-               Set_Entity (Choice, Comp);
-               Set_Etype  (Choice, Comp_Type);
+            if Present (Comp_Type) then
+               if not Deep_Choice then
+                  --  ??? Not clear yet how RM 4.3.1(17.7) applies to a
+                  --  deep delta aggregate.
+                  Check_Variant (Choice);
+               end if;
             else
                Comp_Type := Any_Type;
             end if;
@@ -3972,6 +4073,95 @@ package body Sem_Aggr is
          Next (Assoc);
       end loop;
    end Resolve_Delta_Record_Aggregate;
+
+   ------------------------------
+   -- Resolve_Deep_Delta_Assoc --
+   ------------------------------
+
+   procedure Resolve_Deep_Delta_Assoc (N : Node_Id; Typ : Entity_Id) is
+      Choice         : constant Node_Id := First (Choice_List (N));
+      Enclosing_Type : Entity_Id := Typ;
+
+      procedure Resolve_Choice_Prefix
+        (Choice_Prefix : Node_Id; Enclosing_Type : in out Entity_Id);
+      --  Recursively analyze selectors. Enclosing_Type is set to
+      --  type of the last component.
+
+      ---------------------------
+      -- Resolve_Choice_Prefix --
+      ---------------------------
+
+      procedure Resolve_Choice_Prefix
+        (Choice_Prefix : Node_Id; Enclosing_Type : in out Entity_Id)
+      is
+         Selector : Node_Id := Choice_Prefix;
+      begin
+         if not Is_Root_Prefix_Of_Deep_Choice (Choice_Prefix) then
+            Resolve_Choice_Prefix (Prefix (Choice_Prefix), Enclosing_Type);
+
+            if Nkind (Choice_Prefix) = N_Selected_Component then
+               Selector := Selector_Name (Choice_Prefix);
+            else
+               pragma Assert (Nkind (Choice_Prefix) = N_Indexed_Component);
+               Selector := First (Expressions (Choice_Prefix));
+            end if;
+         end if;
+
+         if Is_Array_Type (Enclosing_Type) then
+            Analyze_And_Resolve (Selector,
+                                 Etype (First_Index (Enclosing_Type)));
+            Enclosing_Type := Component_Type (Enclosing_Type);
+         else
+            declare
+               Comp : Entity_Id := First_Entity (Enclosing_Type);
+               Found : Boolean := False;
+            begin
+               while Present (Comp) and not Found loop
+                  if Chars (Comp) = Chars (Selector) then
+                     if Ekind (Comp) = E_Discriminant then
+                        Error_Msg_N ("delta cannot apply to discriminant",
+                                     Selector);
+                     end if;
+                     Found := True;
+                     Set_Entity (Selector, Comp);
+                     Set_Etype (Selector, Etype (Comp));
+                     Set_Analyzed (Selector);
+                     Enclosing_Type := Etype (Comp);
+                  else
+                     Next_Entity (Comp);
+                  end if;
+               end loop;
+               if not Found then
+                  Error_Msg_NE
+                    ("type& has no component with this name",
+                     Selector, Enclosing_Type);
+               end if;
+            end;
+         end if;
+
+         --  Set the type of the prefix for GNATprove, except for the root
+         --  prefix, whose type is already the expected one for a record
+         --  delta aggregate, or the type of the array index for an
+         --  array delta aggregate (the only case here really since
+         --  Resolve_Deep_Delta_Assoc is only called for array delta
+         --  aggregates).
+
+         if Selector /= Choice_Prefix then
+            Set_Etype (Choice_Prefix, Enclosing_Type);
+         end if;
+      end Resolve_Choice_Prefix;
+   begin
+      declare
+         Unimplemented : exception; -- TEMPORARY
+      begin
+         if Present (Next (Choice)) then
+            raise Unimplemented;
+         end if;
+      end;
+
+      Resolve_Choice_Prefix (Choice, Enclosing_Type);
+      Analyze_And_Resolve (Expression (N), Enclosing_Type);
+   end Resolve_Deep_Delta_Assoc;
 
    ---------------------------------
    -- Resolve_Extension_Aggregate --

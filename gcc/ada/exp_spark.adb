@@ -43,6 +43,7 @@ with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
@@ -186,14 +187,46 @@ package body Exp_SPARK is
      (Typ  : Entity_Id;
       Aggr : Node_Id)
    is
+      procedure Apply_Range_Checks (Choice : Node_Id);
+      --  Apply range checks on indexes from a deep choice
+
+      ------------------------
+      -- Apply_Range_Checks --
+      ------------------------
+
+      procedure Apply_Range_Checks (Choice : Node_Id) is
+         Pref  : Node_Id := Choice;
+         Index : N_Subexpr_Id;
+      begin
+         loop
+            if Nkind (Pref) = N_Indexed_Component then
+               Index := First (Expressions (Choice));
+               Apply_Scalar_Range_Check (Index, Etype (Index));
+
+            elsif Is_Array_Type (Typ)
+              and then Is_Root_Prefix_Of_Deep_Choice (Pref)
+            then
+               Index := Pref;
+               Apply_Scalar_Range_Check (Index, Etype (Index));
+            end if;
+
+            exit when Is_Root_Prefix_Of_Deep_Choice (Pref);
+
+            Pref := Prefix (Pref);
+         end loop;
+      end Apply_Range_Checks;
+
+      --  Local variables
+
       Assoc     : Node_Id;
       Comp      : Node_Id;
-      Comp_Id   : Entity_Id;
       Comp_Type : Entity_Id;
       Expr      : Node_Id;
       Index     : Node_Id;
       Index_Typ : Entity_Id;
       New_Assoc : Node_Id;
+
+   --  Start of processing for Expand_SPARK_Delta_Or_Update
 
    begin
       --  Apply scalar range checks on the updated components, if needed
@@ -277,6 +310,9 @@ package body Exp_SPARK is
                   if Nkind (Index) in N_Range | N_Subtype_Indication then
                      null;
 
+                  elsif Is_Deep_Choice (Index, Typ) then
+                     Apply_Range_Checks (Index);
+
                   --  Otherwise the index denotes a single expression where
                   --  range checks need to be applied or a subtype name
                   --  (without range constraints) where applying checks is
@@ -346,15 +382,16 @@ package body Exp_SPARK is
             Comp := First (Choices (Assoc));
 
             while Present (Comp) loop
-               Comp_Id   := Entity (Comp);
-               Comp_Type := Etype (Comp_Id);
+               if Is_Deep_Choice (Comp, Typ) then
+                  Comp_Type := Etype (Comp);
+               else
+                  Comp_Type := Etype (Entity (Comp));
+               end if;
 
                New_Assoc :=
                  Make_Component_Association
                    (Sloc       => Sloc (Assoc),
-                    Choices    =>
-                      New_List
-                        (New_Occurrence_Of (Comp_Id, Sloc (Comp))),
+                    Choices    => New_List (New_Copy_Tree (Comp)),
                     Expression => New_Copy_Tree (Expr));
 
                --  New association must be attached to the aggregate before we
@@ -363,6 +400,10 @@ package body Exp_SPARK is
                Append (New_Assoc, Component_Associations (Aggr));
 
                Analyze_And_Resolve (Expression (New_Assoc), Comp_Type);
+
+               if Is_Deep_Choice (Comp, Typ) then
+                  Apply_Range_Checks (First (Choices (New_Assoc)));
+               end if;
 
                if Is_Scalar_Type (Comp_Type) then
                   Apply_Scalar_Range_Check

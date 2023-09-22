@@ -76,6 +76,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  Variable used to save values of config switches while we parse the
    --  new unit, to be restored on exit for proper recursive behavior.
 
+   Inside_Delta_Aggregate : Boolean := False;
+   --  True within a delta aggregate (but only after the "delta" token has
+   --  been scanned). Used to distinguish syntax errors from syntactically
+   --  correct "deep" delta aggregates (enabled via -gnatX0).
+
    --------------------
    -- Error Recovery --
    --------------------
