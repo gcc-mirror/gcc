@@ -596,3 +596,30 @@ typedef double v512df __attribute__ ((vector_size (4096)));
       v[i] = cond[i] ? -(a[i] * b[i]) - c[i] : b[i];                           \
     return v;                                                                  \
   }
+
+#define DEF_OP_WVV(PREFIX, NUM, TYPE, TYPE2, OP)                               \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE2 *restrict a, TYPE *restrict b,         \
+				  TYPE *restrict c)                            \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE2) b[i] OP (TYPE2) c[i];                                     \
+  }
+
+#define DEF_OP_WWV(PREFIX, NUM, TYPE, TYPE2, OP)                               \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE2 *restrict a, TYPE2 *restrict b,        \
+				  TYPE *restrict c)                            \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP (TYPE2) c[i];                                             \
+  }
+
+#define DEF_OP_WVV_SU(PREFIX, NUM, TYPE1, TYPE2, TYPE3, OP)                    \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##_##TYPE2##NUM (TYPE3 *restrict a, TYPE1 *restrict b,        \
+				  TYPE2 *restrict c)                           \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = (TYPE3) b[i] OP (TYPE3) c[i];                                     \
+  }
