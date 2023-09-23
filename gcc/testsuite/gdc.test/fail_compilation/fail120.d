@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail120.d(12): Error: need `this` for `nodes` of type `int[2]`
-fail_compilation/fail120.d(13): Error: need `this` for `nodes` of type `int[2]`
+fail_compilation/fail120.d(12): Error: accessing non-static variable `nodes` requires an instance of `Foo`
+fail_compilation/fail120.d(13): Error: accessing non-static variable `nodes` requires an instance of `Foo`
 ---
 */
 

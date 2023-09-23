@@ -530,12 +530,10 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             }
 
             RootObject o = (*tup.objects)[cast(size_t)d];
-            if (o.dyncast() != DYNCAST.type)
-            {
-                .error(loc, "`%s` is not a type", mtype.toChars());
-                return error();
-            }
-            return (cast(Type)o).addMod(mtype.mod);
+            if (auto tt = o.isType())
+                return tt.addMod(mtype.mod);
+            .error(loc, "`%s` is not a type", mtype.toChars());
+            return error();
         }
 
         if (t && t.ty == Terror)
@@ -2006,7 +2004,7 @@ extern (C++) Type merge(Type type)
         OutBuffer buf;
         buf.reserve(32);
 
-        mangleToBuffer(type, &buf);
+        mangleToBuffer(type, buf);
 
         auto sv = type.stringtable.update(buf[]);
         if (sv.value)
@@ -5015,7 +5013,10 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     }
     if (p.token.value != TOK.endOfFile)
     {
-        .error(loc, "incomplete mixin type `%s`", str.ptr);
+        .error(loc, "unexpected token `%s` after type `%s`",
+            p.token.toChars(), o.toChars());
+        .errorSupplemental(loc, "while parsing string mixin type `%s`",
+            str.ptr);
         return null;
     }
 

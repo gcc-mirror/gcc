@@ -7697,6 +7697,15 @@ public:
             static assert(false, "No operation "~op~" defined for Grapheme");
     }
 
+    // This is not a good `opEquals`, but formerly the automatically generated
+    // opEquals was used, which was inferred `@safe` because of bugzilla 20655:
+    // https://issues.dlang.org/show_bug.cgi?id=20655
+    // This `@trusted opEquals` is only here to prevent breakage.
+    bool opEquals(R)(const auto ref R other) const @trusted
+    {
+        return this.tupleof == other.tupleof;
+    }
+
     /++
         True if this object contains valid extended grapheme cluster.
         Decoding primitives of this module always return a valid `Grapheme`.

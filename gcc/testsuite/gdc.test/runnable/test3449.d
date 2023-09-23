@@ -12,11 +12,11 @@ immutable int ig1;
 static this()
 {
     mg1 = 10;
-    cg1 = 10;
 }
 
 shared static this()
 {
+    cg1 = 10;
     ig1 = 10;
 }
 static assert(!__traits(compiles, { static assert(mg1 == 0); }));

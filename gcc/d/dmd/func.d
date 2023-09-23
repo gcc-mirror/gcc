@@ -2509,7 +2509,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *      true    found an 'out' contract
      */
-    static bool needsFensure(FuncDeclaration fd)
+    static bool needsFensure(FuncDeclaration fd) @safe
     {
         if (fd.fensures)
             return true;
@@ -4558,9 +4558,10 @@ bool setUnsafe(Scope* sc,
                 .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
                 return true;
             }
-            else if (!(sc.varDecl.storage_class & STC.system))
+            else if (!(sc.varDecl.storage_class & STC.trusted))
             {
                 sc.varDecl.storage_class |= STC.system;
+                sc.varDecl.systemInferred = true;
             }
         }
         return false;
@@ -4606,6 +4607,7 @@ bool setUnsafe(Scope* sc,
 bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
     RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
+    //printf("setUnsafePreview() fs:%d %s\n", fs, msg);
     with (FeatureState) final switch (fs)
     {
       case disabled:
@@ -4620,9 +4622,10 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         if (sc.func.isSafeBypassingInference())
         {
             if (!gag)
-                previewErrorFunc(sc.isDeprecated(), fs)(
-                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : ""
-                );
+            {
+                if (!sc.isDeprecated() && global.params.obsolete)
+                    warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            }
         }
         else if (!sc.func.safetyViolation)
         {
@@ -4706,9 +4709,9 @@ void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprec
                     s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
             }
         }
-        else if (s.arg0.dyncast() == DYNCAST.dsymbol)
+        else if (auto sa = s.arg0.isDsymbol())
         {
-            if (FuncDeclaration fd2 = (cast(Dsymbol) s.arg0).isFuncDeclaration())
+            if (FuncDeclaration fd2 = sa.isFuncDeclaration())
             {
                 if (maxDepth > 0)
                 {

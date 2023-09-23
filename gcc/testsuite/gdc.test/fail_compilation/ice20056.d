@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice20056.d(19): Error: need `this` for `iter` of type `void()`
+fail_compilation/ice20056.d(19): Error: calling non-static function `iter` requires an instance of type `RangeWrapper`
 ---
 */
 struct Def(alias fn)

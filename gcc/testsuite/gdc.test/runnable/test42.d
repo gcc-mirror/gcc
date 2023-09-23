@@ -6167,7 +6167,7 @@ void test5332()
 
 const int x11472 = void;
 
-static this() { x11472 = 10; }
+shared static this() { x11472 = 10; }
 
 void test11472()
 {

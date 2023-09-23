@@ -64,13 +64,13 @@ nothrow:
     }
 
     /// ditto
-    extern (D) this(const(char)[] name, int value)
+    extern (D) this(const(char)[] name, int value) @safe
     {
         //printf("Identifier('%.*s', %d)\n", cast(int)name.length, name.ptr, value);
         this(name, value, false);
     }
 
-    extern (D) private this(const(char)[] name, int value, bool isAnonymous)
+    extern (D) private this(const(char)[] name, int value, bool isAnonymous) @safe
     {
         //printf("Identifier('%.*s', %d, %d)\n", cast(int)name.length, name.ptr, value, isAnonymous);
         this.name = name;
@@ -315,7 +315,7 @@ nothrow:
     /**********************************
      * ditto
      */
-    extern (D) static bool isValidIdentifier(const(char)[] str)
+    extern (D) static bool isValidIdentifier(const(char)[] str) @safe
     {
         if (str.length == 0 ||
             (str[0] >= '0' && str[0] <= '9')) // beware of isdigit() on signed chars

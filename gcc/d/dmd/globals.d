@@ -133,7 +133,7 @@ extern (C++) struct Param
     bool useModuleInfo = true;   // generate runtime module information
     bool useTypeInfo = true;     // generate runtime type information
     bool useExceptions = true;   // support exception handling
-    bool useGC = true;           // support features that require the GC
+    bool useGC = true;           // support features that require the D runtime GC
     bool betterC;           // be a "better C" compiler; no dependency on D runtime
     bool addMain;           // add a default main() function
     bool allInst;           // generate code for all template instantiations
@@ -297,7 +297,7 @@ extern (C++) struct Global
      *
      * Returns: the current number of gagged errors, which should later be passed to `endGagging`
      */
-    extern (C++) uint startGagging()
+    extern (C++) uint startGagging() @safe
     {
         ++gag;
         gaggedWarnings = 0;
@@ -311,7 +311,7 @@ extern (C++) struct Global
      *   oldGagged = the previous number of errors, as returned by `startGagging`
      * Returns: true if errors occurred while gagged.
      */
-    extern (C++) bool endGagging(uint oldGagged)
+    extern (C++) bool endGagging(uint oldGagged) @safe
     {
         bool anyErrs = (gaggedErrors != oldGagged);
         --gag;
@@ -327,7 +327,7 @@ extern (C++) struct Global
      *
      * An error message may or may not have been printed.
      */
-    extern (C++) void increaseErrorCount()
+    extern (C++) void increaseErrorCount() @safe
     {
         if (gag)
             ++gaggedErrors;
@@ -344,8 +344,8 @@ extern (C++) struct Global
             compileEnv.vendor = "Digital Mars D";
 
             // -color=auto is the default value
-            import dmd.console : detectTerminal;
-            params.color = detectTerminal();
+            import dmd.console : detectTerminal, detectColorPreference;
+            params.color = detectTerminal() && detectColorPreference();
         }
         else version (IN_GCC)
         {
@@ -397,7 +397,7 @@ extern (C++) struct Global
     /**
      * Computes the version number __VERSION__ from the compiler version string.
      */
-    extern (D) private static uint parseVersionNumber(string version_)
+    extern (D) private static uint parseVersionNumber(string version_) @safe
     {
         //
         // parse _version
@@ -429,7 +429,7 @@ extern (C++) struct Global
     /**
     Returns: the version as the number that would be returned for __VERSION__
     */
-    extern(C++) uint versionNumber()
+    extern(C++) uint versionNumber() @safe
     {
         return compileEnv.versionNumber;
     }
@@ -437,7 +437,7 @@ extern (C++) struct Global
     /**
     Returns: compiler version string.
     */
-    extern(D) string versionString()
+    extern(D) string versionString() @safe
     {
         return _version;
     }

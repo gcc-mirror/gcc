@@ -1,13 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=11294
 
-/*
-TEST_OUTPUT:
----
-runnable/testaliascast.d(29): Deprecation: alias this for classes/interfaces is deprecated
-runnable/testaliascast.d(58): Deprecation: alias this for classes/interfaces is deprecated
----
-*/
-
 string result;
 
 extern(C) void rt_finalize(void *ptr, bool det=true);

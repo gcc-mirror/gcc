@@ -3,7 +3,7 @@
 /**
  * Contains the elementary mathematical functions (powers, roots,
  * and trigonometric functions), and low-level floating-point operations.
- * Mathematical special functions are available in `std.mathspecial`.
+ * Mathematical special functions are available in $(MREF std, mathspecial).
  *
 $(SCRIPT inhibitQuickIndex = 1;)
 

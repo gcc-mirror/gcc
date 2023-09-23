@@ -1384,7 +1384,7 @@ if (Ranges.length > 0 &&
                     // force staticMap type conversion to Rebindable
                     static struct ResultRanges
                     {
-                        staticMap!(Rebindable, Ranges) fields;
+                        staticMap!(Rebindable, typeof(source)) fields;
                     }
                     auto sourceI(size_t i)() => rebindable(this.source[i]);
                     auto resultRanges = ResultRanges(staticMap!(sourceI, aliasSeqOf!(R.length.iota))).fields;
@@ -1670,6 +1670,17 @@ pure @safe unittest
 
     auto range = chain(only(S(5)), only(S(6)));
     assert(range.array == [S(5), S(6)]);
+}
+
+/// https://issues.dlang.org/show_bug.cgi?id=24064
+pure @safe nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.typecons : Nullable;
+
+    immutable Nullable!string foo = "b";
+    string[] bar = ["a"];
+    assert(chain(bar, foo).equal(["a", "b"]));
 }
 
 pure @safe nothrow @nogc unittest

@@ -2529,35 +2529,37 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
         enum right = ")";
 
         put(w, left);
-        foreach (i, e; val.tupleof)
-        {
+        static foreach (i; 0 .. T.tupleof.length)
+        {{
             static if (__traits(identifier, val.tupleof[i]) == "this")
-                continue;
-            else static if (0 < i && val.tupleof[i-1].offsetof == val.tupleof[i].offsetof)
             {
-                static if (i == val.tupleof.length - 1 || val.tupleof[i].offsetof != val.tupleof[i+1].offsetof)
+                // ignore hidden context pointer
+            }
+            else static if (0 < i && T.tupleof[i-1].offsetof == T.tupleof[i].offsetof)
+            {
+                static if (i == T.tupleof.length - 1 || T.tupleof[i].offsetof != T.tupleof[i+1].offsetof)
                 {
-                    enum el = separator ~ val.tupleof[i].stringof[4 .. $] ~ "}";
+                    enum el = separator ~ __traits(identifier, T.tupleof[i]) ~ "}";
                     put(w, el);
                 }
                 else
                 {
-                    enum el = separator ~ val.tupleof[i].stringof[4 .. $];
+                    enum el = separator ~ __traits(identifier, T.tupleof[i]);
                     put(w, el);
                 }
             }
-            else static if (i+1 < val.tupleof.length && val.tupleof[i].offsetof == val.tupleof[i+1].offsetof)
+            else static if (i+1 < T.tupleof.length && T.tupleof[i].offsetof == T.tupleof[i+1].offsetof)
             {
-                enum el = (i > 0 ? separator : "") ~ "#{overlap " ~ val.tupleof[i].stringof[4 .. $];
+                enum el = (i > 0 ? separator : "") ~ "#{overlap " ~ __traits(identifier, T.tupleof[i]);
                 put(w, el);
             }
             else
             {
                 static if (i > 0)
                     put(w, separator);
-                formatElement(w, e, f);
+                formatElement(w, val.tupleof[i], f);
             }
-        }
+        }}
         put(w, right);
     }
     else
@@ -2660,7 +2662,7 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
     {
         int n;
         string s;
-        string toString() const { return s; }
+        string toString() @trusted const { return s; }
     }
     U2 u2;
     () @trusted { u2.s = "hello"; } ();

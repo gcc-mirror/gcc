@@ -21,7 +21,6 @@ import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
-import dmd.ast_node;
 import dmd.attrib;
 import dmd.blockexit;
 import dmd.clone;
@@ -39,7 +38,6 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
-import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -57,7 +55,6 @@ import dmd.mustuse;
 import dmd.nogc;
 import dmd.opover;
 import dmd.parse;
-import dmd.printast;
 import dmd.common.outbuffer;
 import dmd.root.string;
 import dmd.semantic2;
@@ -68,7 +65,6 @@ import dmd.target;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
-import dmd.compiler;
 
 version (DMDLIB)
 {
@@ -109,7 +105,7 @@ private Identifier fixupLabelName(Scope* sc, Identifier ident)
  * Returns:
  *      if `true`, then the `LabelStatement`, otherwise `null`
  */
-private LabelStatement checkLabeledLoop(Scope* sc, Statement statement)
+private LabelStatement checkLabeledLoop(Scope* sc, Statement statement) @safe
 {
     if (sc.slabel && sc.slabel.statement == statement)
     {
@@ -142,6 +138,8 @@ private Expression checkAssignmentAsCondition(Expression e, Scope* sc)
 // Performs semantic analysis in Statement AST nodes
 extern(C++) Statement statementSemantic(Statement s, Scope* sc)
 {
+    import dmd.compiler;
+
     version (CallbackAPI)
         Compiler.onStatementSemanticStart(s, sc);
 
@@ -2758,6 +2756,12 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 {
                     if (e0)
                         rs.error("expected return type of `%s`, not `%s`", tret.toChars(), resType.toChars());
+                    else if (tbret.isTypeNoreturn())
+                    {
+                        rs.error("cannot return from `noreturn` function");
+                        .errorSupplemental(rs.loc,
+                            "Consider adding an endless loop, `assert(0)`, or another `noreturn` expression");
+                    }
                     else
                         rs.error("`return` expression expected");
                 }
@@ -3547,9 +3551,19 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         ls.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
 
         LabelDsymbol ls2 = fd.searchLabel(ls.ident, ls.loc);
-        if (ls2.statement)
+        if (ls2.statement && !ls2.duplicated)
         {
-            ls.error("label `%s` already defined", ls2.toChars());
+            if (ls.loc == ls2.loc)
+            {
+                ls2.duplicated = true;
+                ls.error("label `%s` is duplicated", ls2.toChars());
+                .errorSupplemental(ls2.loc, "labels cannot be used in a static foreach with more than 1 iteration");
+            }
+            else
+            {
+                ls.error("label `%s` is already defined", ls2.toChars());
+                .errorSupplemental(ls2.loc, "first definition is here");
+            }
             return setError();
         }
         else
@@ -4068,8 +4082,8 @@ void catchSemantic(Catch c, Scope* sc)
     }
     else if (!c.type.isNaked() && !c.type.isConst())
     {
-        // @@@DEPRECATED_2.113@@@
-        // Deprecated in 2.103, change into an error & uncomment in 2.113
+        // @@@DEPRECATED_2.115@@@
+        // Deprecated in 2.105, change into an error & uncomment assign in 2.115
         deprecation(c.loc, "can only catch mutable or const qualified types, not `%s`", c.type.toChars());
         //c.errors = true;
     }

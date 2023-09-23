@@ -3,18 +3,18 @@ REQUIRED_ARGS: -w -o-
 
 TEST_OUTPUT:
 ---
-fail_compilation\noreturn.d(38): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(38): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(42):        called from here: `assign()`
-fail_compilation\noreturn.d(49): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(49): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(49):        called from here: `foo(n)`
 fail_compilation\noreturn.d(53):        called from here: `calling()`
-fail_compilation\noreturn.d(59): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(59): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(62):        called from here: `nested()`
-fail_compilation\noreturn.d(68): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(68): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(78):        called from here: `casting(0)`
-fail_compilation\noreturn.d(69): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(69): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(79):        called from here: `casting(1)`
-fail_compilation\noreturn.d(72): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation\noreturn.d(72): Error: Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(80):        called from here: `casting(2)`
 fail_compilation/noreturn.d(120): Error: uncaught CTFE exception `object.Exception("")`
 ---
@@ -125,7 +125,7 @@ https://issues.dlang.org/show_bug.cgi?id=23063
 
 TEST_OUTPUT:
 ---
-fail_compilation/noreturn.d(135): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation/noreturn.d(135): Error: Accessed expression of type `noreturn`
 fail_compilation/noreturn.d(138):        called from here: `func()`
 ---
 */

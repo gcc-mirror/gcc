@@ -52,7 +52,7 @@ private Expression expType(Type type, Expression e)
  * Returns:
  *    true if e is a constant
  */
-int isConst(Expression e)
+int isConst(Expression e) @safe
 {
     //printf("Expression::isConst(): %s\n", e.toChars());
     switch (e.op)
@@ -1286,7 +1286,7 @@ UnionExp Slice(Type type, Expression e1, Expression lwr, Expression upr)
 
 /* Check whether slice `[newlwr .. newupr]` is in the range `[lwr .. upr]`
  */
-bool sliceBoundsCheck(uinteger_t lwr, uinteger_t upr, uinteger_t newlwr, uinteger_t newupr) pure
+bool sliceBoundsCheck(uinteger_t lwr, uinteger_t upr, uinteger_t newlwr, uinteger_t newupr) pure @safe
 {
     assert(lwr <= upr);
     return !(newlwr <= newupr &&

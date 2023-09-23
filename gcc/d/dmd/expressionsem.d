@@ -875,6 +875,13 @@ Lagain:
                 if (sc.setUnsafePreview(global.params.systemVariables, false, loc,
                     "cannot access `@system` variable `%s` in @safe code", sd))
                 {
+                    if (auto v = sd.isVarDeclaration())
+                    {
+                        if (v.systemInferred)
+                            errorSupplemental(v.loc, "`%s` is inferred to be `@system` from its initializer here", v.toChars());
+                        else
+                            errorSupplemental(v.loc, "`%s` is declared here", v.toChars());
+                    }
                     return ErrorExp.get();
                 }
             }
@@ -1582,7 +1589,7 @@ private Type arrayExpressionToCommonType(Scope* sc, ref Expressions exps)
     return t0;
 }
 
-private Expression opAssignToOp(const ref Loc loc, EXP op, Expression e1, Expression e2)
+private Expression opAssignToOp(const ref Loc loc, EXP op, Expression e1, Expression e2) @safe
 {
     Expression e;
     switch (op)
@@ -2609,7 +2616,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
     Scope* sc;
     Expression result;
 
-    this(Scope* sc) scope
+    this(Scope* sc) scope @safe
     {
         this.sc = sc;
     }
@@ -2617,6 +2624,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
     private void setError()
     {
         result = ErrorExp.get();
+    }
+
+    private void needThisError(Loc loc, FuncDeclaration f)
+    {
+        auto t = f.isThis();
+        assert(t);
+        .error(loc, "calling non-static function `%s` requires an instance of type `%s`", f.toChars(), t.toChars());
+        setError();
     }
 
     /**************************
@@ -3721,12 +3736,13 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             if (cd.isAbstract())
             {
                 exp.error("cannot create instance of abstract class `%s`", cd.toChars());
+                errorSupplemental(cd.loc, "class `%s` is declared here", cd.toChars());
                 for (size_t i = 0; i < cd.vtbl.length; i++)
                 {
                     FuncDeclaration fd = cd.vtbl[i].isFuncDeclaration();
                     if (fd && fd.isAbstract())
                     {
-                        errorSupplemental(exp.loc, "function `%s` is not implemented",
+                        errorSupplemental(fd.loc, "function `%s` is not implemented",
                             fd.toFullSignature());
                     }
                 }
@@ -5242,8 +5258,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
                     else if (isNeedThisScope(sc, exp.f))
                     {
-                        exp.error("need `this` for `%s` of type `%s`", exp.f.toChars(), exp.f.type.toChars());
-                        return setError();
+                        return needThisError(exp.loc, exp.f);
                     }
                 }
                 exp.e1 = new VarExp(exp.e1.loc, exp.f, false);
@@ -5386,8 +5401,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                     // If no error is printed, it means that `f` is the single matching overload
                     // and it needs `this`.
-                    exp.error("need `this` for `%s` of type `%s`", exp.f.toChars(), exp.f.type.toChars());
-                    return setError();
+                    return needThisError(exp.loc, exp.f);
                 }
             }
 
@@ -5958,18 +5972,20 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 break;
 
             case TOK.function_:
+                if (e.targ.ty != Tfunction)
+                    return no();
+                goto case;
             case TOK.parameters:
                 {
-                    if (e.targ.ty != Tfunction)
+                    if (auto tf = e.targ.isFunction_Delegate_PtrToFunction())
+                        tded = tf;
+                    else
                         return no();
-                    tded = e.targ;
 
                     /* Generate tuple from function parameter types.
                      */
-                    assert(tded.ty == Tfunction);
-                    auto tdedf = tded.isTypeFunction();
                     auto args = new Parameters();
-                    foreach (i, arg; tdedf.parameterList)
+                    foreach (i, arg; tded.isTypeFunction().parameterList)
                     {
                         assert(arg && arg.type);
                         /* If one of the default arguments was an error,
@@ -6267,7 +6283,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (p.token.value != TOK.endOfFile)
         {
-            exp.error("incomplete mixin expression `%s`", str.ptr);
+            e.error("unexpected token `%s` after %s expression",
+                p.token.toChars(), EXPtoString(e.op).ptr);
+            e.errorSupplemental("while parsing string mixin expression `%s`",
+                str.ptr);
             return null;
         }
         return e;
@@ -6632,7 +6651,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             else
             {
                 OutBuffer buf;
-                buf.printf("%s failed", exp.toChars());
+                buf.printf("`%s` failed", exp.toChars());
                 exp.msg = new StringExp(Loc.initial, buf.extractSlice());
                 goto LSkip;
             }
@@ -12911,7 +12930,7 @@ private Expression dotIdSemanticPropX(DotIdExp exp, Scope* sc)
                 }
             }
             OutBuffer buf;
-            mangleToBuffer(ds, &buf);
+            mangleToBuffer(ds, buf);
             Expression e = new StringExp(loc, buf.extractSlice());
             return e.expressionSemantic(sc);
         }

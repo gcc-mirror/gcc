@@ -4700,24 +4700,16 @@ unittest
 }
 
 /++
-Constructs a static array from `a`.
-The type of elements can be specified implicitly so that $(D [1, 2].staticArray) results in `int[2]`,
-or explicitly, e.g. $(D [1, 2].staticArray!float) returns `float[2]`.
-When `a` is a range whose length is not known at compile time, the number of elements must be
-given as template argument (e.g. `myrange.staticArray!2`).
-Size and type can be combined, if the source range elements are implicitly
-convertible to the requested element type (eg: `2.iota.staticArray!(long[2])`).
-When the range `a` is known at compile time, it can also be specified as a
-template argument to avoid having to specify the number of elements
-(e.g.: `staticArray!(2.iota)` or `staticArray!(double, 2.iota)`).
+Constructs a static array from a dynamic array whose length is known at compile-time.
+The element type can be inferred or specified explicitly:
+
+* $(D [1, 2].staticArray) returns `int[2]`
+* $(D [1, 2].staticArray!float) returns `float[2]`
 
 Note: `staticArray` returns by value, so expressions involving large arrays may be inefficient.
 
 Params:
-    a = The input elements. If there are less elements than the specified length of the static array,
-    the rest of it is default-initialized. If there are more than specified, the first elements
-    up to the specified length are used.
-    rangeLength = outputs the number of elements used from `a` to it. Optional.
+    a = The input array.
 
 Returns: A static array constructed from `a`.
 +/
@@ -4774,7 +4766,23 @@ nothrow pure @safe @nogc unittest
     [cast(byte) 1, cast(byte) 129].staticArray.checkStaticArray!byte([1, -127]);
 }
 
-/// ditto
+/**
+Constructs a static array from a range.
+When `a.length` is not known at compile time, the number of elements must be
+given as a template argument (e.g. `myrange.staticArray!2`).
+Size and type can be combined, if the source range elements are implicitly
+convertible to the requested element type (eg: `2.iota.staticArray!(long[2])`).
+
+When the range `a` is known at compile time, it can be given as a
+template argument to avoid having to specify the number of elements
+(e.g.: `staticArray!(2.iota)` or `staticArray!(double, 2.iota)`).
+
+Params:
+    a = The input range. If there are less elements than the specified length of the static array,
+    the rest of it is default-initialized. If there are more than specified, the first elements
+    up to the specified length are used.
+    rangeLength = Output for the number of elements used from `a`. Optional.
+*/
 auto staticArray(size_t n, T)(scope T a)
 if (isInputRange!T)
 {

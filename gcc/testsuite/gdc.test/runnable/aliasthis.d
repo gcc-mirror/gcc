@@ -1,16 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-runnable/aliasthis.d(103): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(291): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(292): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(294): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(465): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(466): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(477): Deprecation: alias this for classes/interfaces is deprecated
-runnable/aliasthis.d(1013): Deprecation: alias this for classes/interfaces is deprecated
 false
-runnable/aliasthis.d(2100): Deprecation: alias this for classes/interfaces is deprecated
 [] = int
 [] = string
 [0] = int
@@ -19,7 +10,6 @@ runnable/aliasthis.d(2100): Deprecation: alias this for classes/interfaces is de
 [] = int
 [1] = string
 [0] = int
-runnable/aliasthis.d(741): Deprecation: alias this for classes/interfaces is deprecated
 ---
 
 RUN_OUTPUT:

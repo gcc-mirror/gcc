@@ -11,7 +11,7 @@
 
 module dmd.root.utf;
 
-nothrow pure @nogc:
+@nogc nothrow pure @safe:
 
 /// The Unicode code space is the range of code points [0x000000,0x10FFFF]
 /// except the UTF-16 surrogate pairs in the range [0xD800,0xDFFF]
@@ -337,7 +337,7 @@ int utf_codeLength(int sz, dchar c)
     return 1;
 }
 
-void utf_encodeChar(char* s, dchar c)
+void utf_encodeChar(char* s, dchar c) @system
 {
     assert(s !is null);
     assert(utf_isValidDchar(c));
@@ -367,7 +367,7 @@ void utf_encodeChar(char* s, dchar c)
         assert(0);
 }
 
-void utf_encodeWchar(wchar* s, dchar c)
+void utf_encodeWchar(wchar* s, dchar c) @system
 {
     assert(s !is null);
     assert(utf_isValidDchar(c));
@@ -382,7 +382,7 @@ void utf_encodeWchar(wchar* s, dchar c)
     }
 }
 
-void utf_encode(int sz, void* s, dchar c)
+void utf_encode(int sz, void* s, dchar c) @system
 {
     if (sz == 1)
         utf_encodeChar(cast(char*)s, c);
@@ -399,7 +399,7 @@ void utf_encode(int sz, void* s, dchar c)
  * Checks whether an Unicode code point is a bidirectional
  * control character.
  */
-@safe bool isBidiControl(dchar c)
+bool isBidiControl(dchar c)
 {
     // Source: https://www.unicode.org/versions/Unicode15.0.0, table 23-3.
     switch(c)

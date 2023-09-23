@@ -1,8 +1,9 @@
-/* TEST_OUTPUT:
+/* REQUIRED_ARGS: -wo -wi
+TEST_OUTPUT:
 ---
-compilable/test23145.d(117): Deprecation: `scope` allocation of `c` requires that constructor be annotated with `scope`
+compilable/test23145.d(117): Warning: `scope` allocation of `c` requires that constructor be annotated with `scope`
 compilable/test23145.d(111):        is the location of the constructor
-compilable/test23145.d(124): Deprecation: `scope` allocation of `c` requires that constructor be annotated with `scope`
+compilable/test23145.d(124): Warning: `scope` allocation of `c` requires that constructor be annotated with `scope`
 compilable/test23145.d(111):        is the location of the constructor
 ---
 */
@@ -24,7 +25,7 @@ class C
     this(D d) @safe @nogc;
 }
 
-C foo(D d)@nogc @safe
+C foo(D d) @nogc @safe
 {
     scope e = new C(1);  // ok
     scope c = new C(d);  // deprecation
@@ -36,4 +37,9 @@ C bax(D d) @safe
     scope e = new C(1);  // ok
     scope c = new C(d);  // deprecation
     return c.d.c;
+}
+
+void inferred(D d)
+{
+    scope c = new C(d);  // ok
 }

@@ -128,7 +128,7 @@ struct Param
     d_bool useModuleInfo; // generate runtime module information
     d_bool useTypeInfo;   // generate runtime type information
     d_bool useExceptions; // support exception handling
-    d_bool useGC;         // support features that require the GC
+    d_bool useGC;         // support features that require the D runtime GC
     d_bool betterC;       // be a "better C" compiler; no dependency on D runtime
     d_bool addMain;       // add a default main() function
     d_bool allInst;       // generate code for all template instantiations

@@ -37,7 +37,7 @@ private extern (C++) final class PostorderStatementVisitor : StoppableVisitor
 public:
     StoppableVisitor v;
 
-    extern (D) this(StoppableVisitor v) scope
+    extern (D) this(StoppableVisitor v) scope @safe
     {
         this.v = v;
     }

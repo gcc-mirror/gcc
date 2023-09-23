@@ -1104,7 +1104,7 @@ class C60
     {
     }
 
-    static this()
+    shared static this()
     {
         x = 5;
     }
@@ -1117,7 +1117,7 @@ class C60
 
 const int z60;
 
-static this()
+shared static this()
 {
     z60 = 3;
 }

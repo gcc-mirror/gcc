@@ -23,7 +23,6 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
-import dmd.opover;
 import dmd.tokens;
 import dmd.visitor;
 
@@ -38,7 +37,7 @@ extern (C++) final class AliasThis : Dsymbol
     /// Whether this `alias this` is deprecated or not
     bool isDeprecated_;
 
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         super(loc, null);    // it's anonymous (no identifier)
         this.ident = ident;

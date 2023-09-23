@@ -650,7 +650,9 @@ struct SHA(uint hashBlockSize, uint digestSize)
         void put(scope const(ubyte)[] input...) @trusted pure nothrow @nogc
         {
             enum blockSizeInBytes = blockSize/8;
-            uint i, index, partLen;
+
+            size_t i;
+            uint index, partLen;
             auto inputLen = input.length;
 
             /* Compute number of bytes mod block size (64 or 128 bytes) */
