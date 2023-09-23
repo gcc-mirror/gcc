@@ -1,3 +1,11 @@
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* g++.dg/concepts/diagnostic19.C: New test.
+
 2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
