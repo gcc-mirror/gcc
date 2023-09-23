@@ -1,3 +1,154 @@
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/constexpr-union7.C: New test.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111529
+	* g++.dg/ext/unroll-4.C: New test.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-0.c: Adjust body check.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-3.c: Ditto.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS modes.
+	* gcc.target/riscv/rvv/autovec/vls/wfma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wfma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wfma-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wfms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wfnma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wfnms-1.c: New test.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS modes cond tests.
+	* gcc.target/riscv/rvv/autovec/vls/wadd-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wadd-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wadd-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wadd-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wmul-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wmul-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wmul-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wsub-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wsub-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wsub-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wsub-4.c: New test.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* g++.dg/cpp23/subscript15.C: New test.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* g++.dg/cpp2a/concepts-ttp5.C: New test.
+	* g++.dg/cpp2a/concepts-ttp6.C: New test.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/math-ceil-0.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-0.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-0.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-0.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/test-math.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/unop/test-math.h: ...here.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS conditional tests.
+	* gcc.target/riscv/rvv/autovec/vls/cond_add-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_add-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_and-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_div-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_div-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fnma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fnma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_fnms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ior-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_max-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_max-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_min-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_min-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_mod-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_mul-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_mul-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_neg-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_neg-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_not-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_shift-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_shift-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_sub-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_sub-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_xor-1.c: New test.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/test-math.h: Rename.
+	* gcc.target/riscv/rvv/autovec/math-ceil-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-2.c: Ditto.
+
+2023-09-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111451
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Adjust case.
+	* gcc.target/riscv/rvv/autovec/vls/perm-4.c: Ditto.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-0.c: Remove arch and abi.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-2.c: Ditto.
+
+2023-09-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc_run-2.c: New test.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-max-5.c:
+	Remove reference to math.h.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-min-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sgnjx-2.c: Ditto.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/math-ceil-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/math-ceil-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/test-math.h: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-ceil-1.c: New test.
+
 2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/vls/abs-2.c: New test.

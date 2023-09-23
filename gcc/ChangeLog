@@ -1,3 +1,63 @@
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vec_float_cmp_mask): Refactor.
+	(emit_vec_float_cmp_mask): Rename.
+	(expand_vec_copysign): Ditto.
+	(emit_vec_copysign): Ditto.
+	(emit_vec_abs): New function impl.
+	(emit_vec_cvt_x_f): Ditto.
+	(emit_vec_cvt_f_x): Ditto.
+	(expand_vec_ceil): Ditto.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Extend VLS modes.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (gen_const_vector_dup): Use global expand function.
+	* config/riscv/vector.md (@vec_duplicate<mode>): Remove @.
+	(vec_duplicate<mode>): Ditto.
+
+2023-09-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS conditional patterns.
+	* config/riscv/riscv-protos.h (expand_cond_unop): Ditto.
+	(expand_cond_binop): Ditto.
+	(expand_cond_ternop): Ditto.
+	* config/riscv/riscv-v.cc (expand_cond_unop): Ditto.
+	(expand_cond_binop): Ditto.
+	(expand_cond_ternop): Ditto.
+
+2023-09-22  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111451
+	* config/riscv/riscv-v.cc (emit_vlmax_gather_insn): Optimization of vrgather.vv
+							into vrgatherei16.vv.
+
+2023-09-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_widen_reduc_plus_scal_<mode>):
+	New combine patterns.
+	* config/riscv/riscv-protos.h (enum insn_type): New insn_type.
+
+2023-09-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum avl_type): New VLS avl_type.
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): Move comments.
+
+2023-09-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (ceil<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_ceil): New function decl.
+	* config/riscv/riscv-v.cc (gen_ceil_const_fp): New function impl.
+	(expand_vec_float_cmp_mask): Ditto.
+	(expand_vec_copysign): Ditto.
+	(expand_vec_ceil): Ditto.
+	* config/riscv/vector.md: Add VLS mode support.
+
 2023-09-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec.md: Extend VLS modes.
