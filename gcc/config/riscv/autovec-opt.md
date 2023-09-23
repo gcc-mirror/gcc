@@ -99,41 +99,37 @@
 ;; Currently supported operations:
 ;;   abs(FP)
 (define_insn_and_split "*cond_abs<mode>"
-  [(set (match_operand:VF 0 "register_operand")
-        (if_then_else:VF
-          (match_operand:<VM> 3 "register_operand")
-          (abs:VF (match_operand:VF 1 "nonmemory_operand"))
-          (match_operand:VF 2 "register_operand")))]
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (if_then_else:V_VLSF
+          (match_operand:<VM> 1 "register_operand")
+          (abs:V_VLSF (match_operand:V_VLSF 2 "nonmemory_operand"))
+          (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
 {
-  emit_insn (gen_cond_len_abs<mode> (operands[0], operands[3], operands[1],
-				     operands[2],
-				     gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
-				     const0_rtx));
+  insn_code icode = code_for_pred (ABS, <MODE>mode);
+  riscv_vector::expand_cond_unop (icode, operands);
   DONE;
 }
 [(set_attr "type" "vector")])
 
 ;; Combine vfsqrt.v and cond_mask
 (define_insn_and_split "*cond_<optab><mode>"
-  [(set (match_operand:VF 0 "register_operand")
-     (if_then_else:VF
+  [(set (match_operand:V_VLSF 0 "register_operand")
+     (if_then_else:V_VLSF
        (match_operand:<VM> 1 "register_operand")
-       (any_float_unop:VF
-         (match_operand:VF 2 "register_operand"))
-       (match_operand:VF 3 "register_operand")))]
+       (any_float_unop:V_VLSF
+         (match_operand:V_VLSF 2 "register_operand"))
+       (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
-  rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
-               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
-  riscv_vector::expand_cond_len_unop (icode, ops);
+  riscv_vector::expand_cond_unop (icode, operands);
   DONE;
 }
 [(set_attr "type" "vector")])
