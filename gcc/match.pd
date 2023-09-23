@@ -1806,6 +1806,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_xor:c (convert1? (bit_xor:c @0 @@1)) (convert2? @1))
  (convert @0))
+
+/* (X & ~Y) & Y -> 0 */
+(simplify
+ (bit_and:c (bit_and @0 @1) @2)
+ (with { bool wascmp; }
+  (if (bitwise_inverted_equal_p (@0, @2, wascmp)
+       || bitwise_inverted_equal_p (@1, @2, wascmp))
+   { wascmp ? constant_boolean_node (false, type) : build_zero_cst (type); })))
+/* (X | ~Y) | Y -> -1 */
+(simplify
+ (bit_ior:c (bit_ior @0 @1) @2)
+ (with { bool wascmp; }
+  (if ((bitwise_inverted_equal_p (@0, @2, wascmp)
+        || bitwise_inverted_equal_p (@1, @2, wascmp))
+       && (!wascmp || element_precision (type) == 1))
+   { build_all_ones_cst (TREE_TYPE (@0)); })))
+
 /* (X & Y) & (X & Z) -> (X & Y) & Z
    (X | Y) | (X | Z) -> (X | Y) | Z  */
 (for op (bit_and bit_ior)
