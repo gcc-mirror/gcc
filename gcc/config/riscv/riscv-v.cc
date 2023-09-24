@@ -2054,12 +2054,17 @@ static void
 expand_vector_init_merge_repeating_sequence (rtx target,
 					     const rvv_builder &builder)
 {
-  machine_mode dup_mode = get_repeating_sequence_dup_machine_mode (builder);
-  machine_mode mask_mode = get_mask_mode (builder.mode ());
+  /* We can't use BIT mode (BI) directly to generate mask = 0b01010...
+     since we don't have such instruction in RVV.
+     Instead, we should use INT mode (QI/HI/SI/DI) with integer move
+     instruction to generate the mask data we want.  */
+  machine_mode mask_int_mode
+    = get_repeating_sequence_dup_machine_mode (builder);
+  machine_mode mask_bit_mode = get_mask_mode (builder.mode ());
   uint64_t full_nelts = builder.full_nelts ().to_constant ();
 
   /* Step 1: Broadcast the first pattern.  */
-  rtx ops[] = {target, force_reg (GET_MODE_INNER (dup_mode), builder.elt (0))};
+  rtx ops[] = {target, force_reg (builder.inner_mode (), builder.elt (0))};
   emit_vlmax_insn (code_for_pred_broadcast (builder.mode ()),
 		    UNARY_OP, ops);
   /* Step 2: Merge the rest iteration of pattern.  */
@@ -2067,8 +2072,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
     {
       /* Step 2-1: Generate mask register v0 for each merge.  */
       rtx merge_mask = builder.get_merge_scalar_mask (i);
-      rtx mask = gen_reg_rtx (mask_mode);
-      rtx dup = gen_reg_rtx (dup_mode);
+      rtx mask = gen_reg_rtx (mask_bit_mode);
+      rtx dup = gen_reg_rtx (mask_int_mode);
 
       if (full_nelts <= builder.inner_bits_size ()) /* vmv.s.x.  */
 	{
@@ -2078,14 +2083,15 @@ expand_vector_init_merge_repeating_sequence (rtx target,
 	}
       else /* vmv.v.x.  */
 	{
-	  rtx ops[] = {dup, force_reg (GET_MODE_INNER (dup_mode), merge_mask)};
+	  rtx ops[] = {dup,
+		       force_reg (GET_MODE_INNER (mask_int_mode), merge_mask)};
 	  rtx vl = gen_int_mode (CEIL (full_nelts, builder.inner_bits_size ()),
 				 Pmode);
-	  emit_nonvlmax_insn (code_for_pred_broadcast (dup_mode), UNARY_OP,
+	  emit_nonvlmax_insn (code_for_pred_broadcast (mask_int_mode), UNARY_OP,
 			       ops, vl);
 	}
 
-      emit_move_insn (mask, gen_lowpart (mask_mode, dup));
+      emit_move_insn (mask, gen_lowpart (mask_bit_mode, dup));
 
       /* Step 2-2: Merge pattern according to the mask.  */
       rtx ops[] = {target, target, builder.elt (i), mask};
