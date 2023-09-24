@@ -1,3 +1,8 @@
+2023-09-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 4574d1728d.
+	* src/MERGE: Merge upstream phobos d7e79f024.
+
 2023-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 26f049fb26.

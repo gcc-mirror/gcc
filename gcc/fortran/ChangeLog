@@ -1,3 +1,12 @@
+2023-09-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95710
+	* class.cc (gfc_build_class_symbol): Do not try to build class
+	container for invalid typespec.
+	* resolve.cc (resolve_fl_var_and_proc): Prevent NULL pointer
+	dereference.
+	(resolve_symbol): Likewise.
+
 2023-09-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/70231

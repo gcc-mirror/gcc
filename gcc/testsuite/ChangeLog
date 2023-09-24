@@ -1,3 +1,83 @@
+2023-09-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h:
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_copysign-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ext-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ext-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ext-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ext-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_ext-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_mulh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_narrow-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_narrow-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wadd-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wadd-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wadd-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wadd-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wfma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wfma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wfms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wfnma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wmul-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wmul-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wmul-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wsub-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wsub-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wsub-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_wsub-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/narrow-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/narrow-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/narrow-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wred-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wred-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/wred-3.c: New test.
+
+2023-09-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95710
+	* gfortran.dg/pr95710.f90: New test.
+
+2023-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111455
+	* g++.dg/ext/integer-pack8.C: New test.
+
+2023-09-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/cond_abs-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cond_sqrt-1.c: New test.
+
+2023-09-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-floor-1.c: New test.
+
+2023-09-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-0.c: Remove.
+
 2023-09-22  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/constexpr-union7.C: New test.

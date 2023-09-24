@@ -1,3 +1,21 @@
+2023-09-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Extend VLS modes
+	* config/riscv/vector-iterators.md: Ditto.
+
+2023-09-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md: Add VLS modes for conditional ABS/SQRT.
+
+2023-09-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (floor<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_floor): New function decl.
+	* config/riscv/riscv-v.cc (gen_floor_const_fp): New function impl.
+	(expand_vec_floor): Ditto.
+
 2023-09-22  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-v.cc (expand_vec_float_cmp_mask): Refactor.
