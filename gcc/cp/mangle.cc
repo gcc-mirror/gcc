@@ -275,6 +275,17 @@ static tree mangle_special_for_type (const tree, const char *);
 #define write_unsigned_number(NUMBER)					\
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
+/* Check for -fabi-version dependent mangling and also set the need_abi_warning
+   flag as appropriate.  */
+
+static bool
+abi_check (int ver)
+{
+  if (abi_warn_or_compat_version_crosses (ver))
+    G.need_abi_warning = true;
+  return abi_version_at_least (ver);
+}
+
 /* If DECL is a template instance (including the uninstantiated template
    itself), return its TEMPLATE_INFO.  Otherwise return NULL.  */
 
@@ -1267,9 +1278,7 @@ write_prefix (const tree node)
 	  /* Before ABI 18, we did not count these as substitution
 	     candidates.  This leads to incorrect demanglings (and
 	     ABI divergence to other compilers).  */
-	  if (abi_warn_or_compat_version_crosses (18))
-	    G.need_abi_warning = true;
-	  if (!abi_version_at_least (18))
+	  if (!abi_check (18))
 	    return;
 	}
     }
@@ -1542,9 +1551,7 @@ write_unqualified_name (tree decl)
       && any_abi_below (11))
     if (tree mtags = missing_abi_tags (decl))
       {
-	if (abi_warn_or_compat_version_crosses (11))
-	  G.need_abi_warning = true;
-	if (!abi_version_at_least (11))
+	if (!abi_check (11))
 	  tags = chainon (mtags, tags);
       }
   write_abi_tags (tags);
@@ -2094,9 +2101,7 @@ write_discriminator (const int discriminator)
       write_char ('_');
       if (discriminator - 1 >= 10)
 	{
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = 1;
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    write_char ('_');
 	}
       write_unsigned_number (discriminator - 1);
@@ -2425,9 +2430,7 @@ write_type (tree type)
 
 		  if (etype && !type_uses_auto (etype))
 		    {
-		      if (abi_warn_or_compat_version_crosses (5))
-			G.need_abi_warning = 1;
-		      if (!abi_version_at_least (5))
+		      if (!abi_check (5))
 			{
 			  write_type (etype);
 			  return;
@@ -2448,10 +2451,8 @@ write_type (tree type)
 
 	    case NULLPTR_TYPE:
 	      write_string ("Dn");
-	      if (abi_version_at_least (7))
+	      if (abi_check (7))
 		++is_builtin_type;
-	      if (abi_warn_or_compat_version_crosses (7))
-		G.need_abi_warning = 1;
 	      break;
 
 	    case TYPEOF_TYPE:
@@ -2935,10 +2936,8 @@ write_member_name (tree member)
     {
       if (IDENTIFIER_ANY_OP_P (member))
 	{
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (member);
     }
@@ -3108,7 +3107,7 @@ write_expression (tree expr)
       write_char ('f');
       if (delta != 0)
 	{
-	  if (abi_version_at_least (5))
+	  if (abi_check (5))
 	    {
 	      /* Let L be the number of function prototype scopes from the
 		 innermost one (in which the parameter reference occurs) up
@@ -3120,8 +3119,6 @@ write_expression (tree expr)
 	      write_char ('L');
 	      write_unsigned_number (delta - 1);
 	    }
-	  if (abi_warn_or_compat_version_crosses (5))
-	    G.need_abi_warning = true;
 	}
       write_char ('p');
       write_compact_number (index - 1);
@@ -3138,9 +3135,7 @@ write_expression (tree expr)
 
       if (PACK_EXPANSION_P (op))
 	{
-	  if (abi_warn_or_compat_version_crosses (11))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (11))
+	  if (abi_check (11))
 	    {
 	      /* sZ rather than szDp.  */
 	      write_string ("sZ");
@@ -3158,9 +3153,7 @@ write_expression (tree expr)
 	{
 	  tree args = ARGUMENT_PACK_ARGS (op);
 	  int length = TREE_VEC_LENGTH (args);
-	  if (abi_warn_or_compat_version_crosses (10))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (10))
+	  if (abi_check (10))
 	    {
 	      /* sP <template-arg>* E # sizeof...(T), size of a captured
 		 template parameter pack from an alias template */
@@ -3198,9 +3191,7 @@ write_expression (tree expr)
     {
       if (!ALIGNOF_EXPR_STD_P (expr))
 	{
-	  if (abi_warn_or_compat_version_crosses (16))
-	    G.need_abi_warning = true;
-	  if (abi_version_at_least (16))
+	  if (abi_check (16))
 	    {
 	      /* We used to mangle __alignof__ like alignof.  */
 	      write_string ("u11__alignof__");
@@ -3445,10 +3436,8 @@ write_expression (tree expr)
       tree name = dependent_name (expr);
       if (IDENTIFIER_ANY_OP_P (name))
 	{
-	  if (abi_version_at_least (16))
+	  if (abi_check (16))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (16))
-	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (name);
     }
@@ -3507,9 +3496,7 @@ write_expression (tree expr)
       if (code == CONST_CAST_EXPR
 	  || code == STATIC_CAST_EXPR)
 	{
-	  if (abi_warn_or_compat_version_crosses (6))
-	    G.need_abi_warning = 1;
-	  if (!abi_version_at_least (6))
+	  if (!abi_check (6))
 	    name = OVL_OP_INFO (false, CAST_EXPR)->mangled_name;
 	}
 
@@ -3578,10 +3565,8 @@ write_expression (tree expr)
 
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
-	  if (abi_version_at_least (6))
+	  if (abi_check (6))
 	    write_char ('_');
-	  if (abi_warn_or_compat_version_crosses (6))
-	    G.need_abi_warning = 1;
 	  /* Fall through.  */
 
 	default:
@@ -3776,11 +3761,9 @@ write_template_arg (tree node)
   if (TREE_CODE (node) == BASELINK
       && !type_unknown_p (node))
     {
-      if (abi_version_at_least (6))
+      /* Before v6 we wrongly wrapped a class-scope function in X/E.  */
+      if (abi_check (6))
 	node = BASELINK_FUNCTIONS (node);
-      if (abi_warn_or_compat_version_crosses (6))
-	/* We wrongly wrapped a class-scope function in X/E.  */
-	G.need_abi_warning = 1;
     }
 
   if (ARGUMENT_PACK_P (node))
@@ -3788,12 +3771,10 @@ write_template_arg (tree node)
       /* Expand the template argument pack. */
       tree args = ARGUMENT_PACK_ARGS (node);
       int i, length = TREE_VEC_LENGTH (args);
-      if (abi_version_at_least (6))
+      if (abi_check (6))
 	write_char ('J');
       else
 	write_char ('I');
-      if (abi_warn_or_compat_version_crosses (6))
-	G.need_abi_warning = 1;
       for (i = 0; i < length; ++i)
         write_template_arg (TREE_VEC_ELT (args, i));
       write_char ('E');
@@ -3816,12 +3797,10 @@ write_template_arg (tree node)
       write_char ('L');
       /* Until ABI version 3, the underscore before the mangled name
 	 was incorrectly omitted.  */
-      if (!abi_version_at_least (3))
+      if (!abi_check (3))
 	write_char ('Z');
       else
 	write_string ("_Z");
-      if (abi_warn_or_compat_version_crosses (3))
-	G.need_abi_warning = 1;
       write_encoding (node);
       write_char ('E');
     }
@@ -3946,9 +3925,7 @@ write_template_param (const tree parm)
   write_char ('T');
   if (level > 1)
     {
-      if (abi_warn_or_compat_version_crosses (19))
-	G.need_abi_warning = 1;
-      if (abi_version_at_least (19))
+      if (abi_check (19))
 	{
 	  write_char ('L');
 	  write_compact_number (level - 1);
@@ -4007,10 +3984,8 @@ write_substitution (const int seq_id)
 static inline void
 start_mangling (const tree entity)
 {
+  G = {};
   G.entity = entity;
-  G.need_abi_warning = false;
-  G.need_cxx17_warning = false;
-  G.mod = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
