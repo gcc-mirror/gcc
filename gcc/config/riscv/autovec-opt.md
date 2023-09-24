@@ -262,7 +262,7 @@
         (if_then_else:<VCONVERT>
           (match_operand:<VM> 1 "register_operand")
           (any_fix:<VCONVERT>
-            (match_operand:VF 2 "register_operand"))
+            (match_operand:V_VLSF 2 "register_operand"))
           (match_operand:<VCONVERT> 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -279,12 +279,12 @@
 
 ;; Combine convert(INT->FP) + vcond_mask
 (define_insn_and_split "*cond_<float_cvt><vconvert><mode>"
-  [(set (match_operand:VF 0 "register_operand")
-        (if_then_else:VF
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (if_then_else:V_VLSF
           (match_operand:<VM> 1 "register_operand")
-          (any_float:VF
+          (any_float:V_VLSF
             (match_operand:<VCONVERT> 2 "register_operand"))
-          (match_operand:VF 3 "register_operand")))]
+          (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -321,12 +321,12 @@
 
 ;; Combine convert(INT->2xFP) + vcond_mask
 (define_insn_and_split "*cond_<float_cvt><vnconvert><mode>"
-  [(set (match_operand:VF 0 "register_operand")
-        (if_then_else:VF
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (if_then_else:V_VLSF
           (match_operand:<VM> 1 "register_operand")
-          (any_float:VF
+          (any_float:V_VLSF
             (match_operand:<VNCONVERT> 2 "register_operand"))
-          (match_operand:VF 3 "register_operand")))]
+          (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -346,7 +346,7 @@
         (if_then_else:<VNCONVERT>
           (match_operand:<VM> 1 "register_operand")
           (any_fix:<VNCONVERT>
-            (match_operand:VF 2 "register_operand"))
+            (match_operand:V_VLSF 2 "register_operand"))
           (match_operand:<VNCONVERT> 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -384,13 +384,13 @@
 
 ;; Combine vfsgnj.vv + vcond_mask
 (define_insn_and_split "*cond_copysign<mode>"
-   [(set (match_operand:VF 0 "register_operand")
-    (if_then_else:VF
+   [(set (match_operand:V_VLSF 0 "register_operand")
+    (if_then_else:V_VLSF
       (match_operand:<VM> 1 "register_operand")
-      (unspec:VF
-       [(match_operand:VF 2 "register_operand")
-        (match_operand:VF 3 "register_operand")] UNSPEC_VCOPYSIGN)
-      (match_operand:VF 4 "register_operand")))]
+      (unspec:V_VLSF
+       [(match_operand:V_VLSF 2 "register_operand")
+        (match_operand:V_VLSF 3 "register_operand")] UNSPEC_VCOPYSIGN)
+      (match_operand:V_VLSF 4 "register_operand")))]
    "TARGET_VECTOR && can_create_pseudo_p ()"
    "#"
    "&& 1"
@@ -760,8 +760,8 @@
   [(set (match_operand:<V_DOUBLE_EXTEND_VEL> 0 "register_operand")
         (unspec:<V_DOUBLE_EXTEND_VEL> [
           (float_extend:<V_DOUBLE_EXTEND>
-            (match_operand:VF_HS_NO_M8 2 "register_operand"))
-          (match_operand:<V_DOUBLE_EXTEND_VEL> 1 "register_operand")
+            (match_operand:VF_HS_NO_M8 1 "register_operand"))
+          (match_operand:<V_DOUBLE_EXTEND_VEL> 2 "register_operand")
         ] UNSPEC_REDUC_SUM_ORDERED))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -770,7 +770,7 @@
 {
   riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
-                                  operands, operands[1]);
+                                  operands, operands[2]);
   DONE;
 }
 [(set_attr "type" "vector")])
