@@ -1131,13 +1131,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 
       gfc_add_modify (&parmse->pre, ctree, fold_convert (TREE_TYPE (ctree), tmp));
     }
-  else if (unlimited_poly)
-    {
-      ctree = gfc_class_len_get (var);
-      gfc_add_modify (&parmse->pre, ctree,
-		      fold_convert (TREE_TYPE (ctree),
-				    integer_zero_node));
-    }
+
   /* Pass the address of the class object.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, var);
 }
