@@ -1514,7 +1514,6 @@ earliest_pred_can_be_fused_p (const bb_info *earliest_pred,
 			      const vector_insn_info &earliest_info,
 			      const vector_insn_info &expr, rtx *vlmax_vl)
 {
-  rtx vl = NULL_RTX;
   /* Backward VLMAX VL:
        bb 3:
 	 vsetivli zero, 1 ... -> vsetvli t1, zero
@@ -1526,10 +1525,9 @@ earliest_pred_can_be_fused_p (const bb_info *earliest_pred,
        We should forward "t1".  */
   if (!earliest_info.has_avl_reg () && expr.has_avl_reg ())
     {
-      rtx avl = expr.get_avl ();
+      rtx avl_or_vl_reg = expr.get_avl_or_vl_reg ();
+      gcc_assert (avl_or_vl_reg);
       const insn_info *last_insn = earliest_info.get_insn ();
-      if (vlmax_avl_p (avl))
-	vl = get_vl (expr.get_insn ()->rtl ());
       /* To fuse demand on earlest edge, we make sure AVL/VL
 	 didn't change from the consume insn to the predecessor
 	 of the edge.  */
@@ -1538,17 +1536,15 @@ earliest_pred_can_be_fused_p (const bb_info *earliest_pred,
 	   && after_or_same_p (i, last_insn);
 	   i = i->prev_nondebug_insn ())
 	{
-	  if (!vl && find_access (i->defs (), REGNO (avl)))
+	  if (find_access (i->defs (), REGNO (avl_or_vl_reg)))
 	    return false;
-	  if (vl && find_access (i->defs (), REGNO (vl)))
-	    return false;
-	  if (vl && find_access (i->uses (), REGNO (vl)))
+	  if (find_access (i->uses (), REGNO (avl_or_vl_reg)))
 	    return false;
 	}
+      if (vlmax_vl && vlmax_avl_p (expr.get_avl ()))
+	*vlmax_vl = avl_or_vl_reg;
     }
 
-  if (vlmax_vl)
-    *vlmax_vl = vl;
   return true;
 }
 
