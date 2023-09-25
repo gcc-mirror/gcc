@@ -85,17 +85,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __detail
 {
-  template<typename _Tp>
-    using __integer_to_chars_result_type
-      = enable_if_t<__or_<__is_signed_integer<_Tp>,
-			  __is_unsigned_integer<_Tp>,
-#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
-			  is_same<_Tp, signed __int128>,
-			  is_same<_Tp, unsigned __int128>,
-#endif
-			  is_same<char, remove_cv_t<_Tp>>>::value,
-		    to_chars_result>;
-
   // Pick an unsigned type of suitable size. This is used to reduce the
   // number of specializations of __to_chars_len, __to_chars etc. that
   // get instantiated. For example, to_chars<char> and to_chars<short>
@@ -168,7 +157,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    constexpr __integer_to_chars_result_type<_Tp>
+    constexpr to_chars_result
     __to_chars_16(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
@@ -214,7 +203,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    constexpr __integer_to_chars_result_type<_Tp>
+    constexpr to_chars_result
     __to_chars_10(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
@@ -237,7 +226,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    constexpr __integer_to_chars_result_type<_Tp>
+    constexpr to_chars_result
     __to_chars_8(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
@@ -290,7 +279,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    constexpr __integer_to_chars_result_type<_Tp>
+    constexpr to_chars_result
     __to_chars_2(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
@@ -326,7 +315,7 @@ namespace __detail
 } // namespace __detail
 
   template<typename _Tp>
-    constexpr __detail::__integer_to_chars_result_type<_Tp>
+    constexpr to_chars_result
     __to_chars_i(char* __first, char* __last, _Tp __value, int __base = 10)
     {
       __glibcxx_assert(2 <= __base && __base <= 36);
@@ -553,18 +542,13 @@ namespace __detail
       return true;
     }
 
-  template<typename _Tp>
-    using __integer_from_chars_result_type
-      = enable_if_t<__or_<__is_signed_integer<_Tp>,
-			  __is_unsigned_integer<_Tp>,
-			  is_same<char, remove_cv_t<_Tp>>>::value,
-		    from_chars_result>;
-
 } // namespace __detail
 
   /// std::from_chars for integral types.
-  template<typename _Tp>
-    _GLIBCXX23_CONSTEXPR __detail::__integer_from_chars_result_type<_Tp>
+  template<typename _Tp,
+	   enable_if_t<__or_<__is_standard_integer<_Tp>,
+			     is_same<char, remove_cv_t<_Tp>>>::value, int> = 0>
+    _GLIBCXX23_CONSTEXPR from_chars_result
     from_chars(const char* __first, const char* __last, _Tp& __value,
 	       int __base = 10)
     {
