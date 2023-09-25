@@ -880,6 +880,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 	res = false;
       if (idx)
 	tracer.trailer (idx, "logical_combine", res, NULL_TREE, r);
+      return res;
     }
 
   switch (code)
