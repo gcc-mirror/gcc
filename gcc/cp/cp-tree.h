@@ -3799,6 +3799,12 @@ struct GTY(()) lang_decl {
   : TREE_VEC_LENGTH (INNERMOST_TEMPLATE_ARGS (NODE))
 #endif
 
+/* True iff NODE represents the template args for a type-constraint,
+   in which case the first one represents the constrained type.
+   Currently only set during mangling.  */
+#define TEMPLATE_ARGS_TYPE_CONSTRAINT_P(NODE) \
+  TREE_PRIVATE (TREE_VEC_CHECK (NODE))
+
 /* The list of access checks that were deferred during parsing
    which need to be performed at template instantiation time.
 
@@ -8509,6 +8515,7 @@ struct processing_constraint_expression_sentinel
 extern bool processing_constraint_expression_p	();
 
 extern tree unpack_concept_check		(tree);
+extern tree get_concept_check_template		(tree);
 extern tree evaluate_concept_check              (tree);
 extern bool constraints_satisfied_p		(tree, tree = NULL_TREE);
 extern bool* lookup_subsumption_result          (tree, tree);

@@ -427,8 +427,8 @@ namespace __variant
       ~_Variadic_union() = default;
 
       constexpr ~_Variadic_union()
-	requires (!__has_trivial_destructor(_First))
-	      || (!__has_trivial_destructor(_Variadic_union<_Rest...>))
+	requires (!is_trivially_destructible_v<_First>)
+	      || (!is_trivially_destructible_v<_Variadic_union<_Rest...>>)
       { }
 #endif
 

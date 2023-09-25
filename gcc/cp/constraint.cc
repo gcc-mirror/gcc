@@ -240,7 +240,9 @@ combine_constraint_expressions (tree lhs, tree rhs)
     return rhs;
   if (!rhs)
     return lhs;
-  return finish_constraint_and_expr (input_location, lhs, rhs);
+  /* Use UNKNOWN_LOCATION so write_template_args can tell the difference
+     between this and a && the user wrote.  */
+  return finish_constraint_and_expr (UNKNOWN_LOCATION, lhs, rhs);
 }
 
 /* Extract the template-id from a concept check. For standard and variable
@@ -1605,9 +1607,11 @@ finish_shorthand_constraint (tree decl, tree constr)
     check = ovl_make (tmpl);
   check = build_concept_check (check, arg, args, tf_warning_or_error);
 
-  /* Make the check a fold-expression if needed.  */
+  /* Make the check a fold-expression if needed.
+     Use UNKNOWN_LOCATION so write_template_args can tell the
+     difference between this and a fold the user wrote.  */
   if (apply_to_each_p && declared_pack_p)
-    check = finish_left_unary_fold_expr (DECL_SOURCE_LOCATION (decl),
+    check = finish_left_unary_fold_expr (UNKNOWN_LOCATION,
 					 check, TRUTH_ANDIF_EXPR);
 
   return check;

@@ -1692,3 +1692,11 @@ X<float>::operator Z<int><int>()::y
 
 _ZN1SILi1EEF3barIiEEiR4Base
 int S<1>::bar[friend]<int>(Base&)
+
+# requires on template-head
+_Z1fIiQ1CIT_EEvv
+void f<int>() requires C<int>
+
+# requires after ()
+_Z1fIiEvvQ1CIT_E
+void f<int>() requires C<int>

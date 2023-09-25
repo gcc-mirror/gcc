@@ -30951,7 +30951,9 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
 	{
 	  tree id = unpack_concept_check (constr);
 	  TREE_VEC_ELT (TREE_OPERAND (id, 1), 0) = t;
-	  location_t loc = DECL_SOURCE_LOCATION (TYPE_NAME (t));
+	  /* Use UNKNOWN_LOCATION so write_template_args can tell the
+	     difference between this and a fold the user wrote.  */
+	  location_t loc = UNKNOWN_LOCATION;
 	  tree fold = finish_left_unary_fold_expr (loc, constr,
 						   TRUTH_ANDIF_EXPR);
 	  TEMPLATE_PARM_CONSTRAINTS (node) = fold;
