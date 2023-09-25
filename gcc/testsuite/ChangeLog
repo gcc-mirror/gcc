@@ -1,3 +1,13 @@
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68155
+	* gfortran.dg/pr68155.f90: New test.
+
+2023-09-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111543
+	* gcc.dg/tree-ssa/bitops-4.c: New test.
+
 2023-09-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/vls/def.h:

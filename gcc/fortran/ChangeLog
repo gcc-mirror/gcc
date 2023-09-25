@@ -1,3 +1,13 @@
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68155
+	PR fortran/111271
+	* decl.cc (fix_initializer_charlen): New function broken out of
+	add_init_expr_to_sym.
+	(add_init_expr_to_sym, build_struct): Call the new function.
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): Remove repeated
+	condition.
+
 2023-09-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95710

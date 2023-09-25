@@ -1,3 +1,14 @@
+2023-09-24  Pan Li  <pan2.li@intel.com>
+
+	PR target/111546
+	* config/riscv/riscv-v.cc
+	(expand_vector_init_merge_repeating_sequence): Bugfix
+
+2023-09-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111543
+	* match.pd (`(X & ~Y) & Y`, `(X | ~Y) | Y`): New patterns.
+
 2023-09-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec-opt.md: Extend VLS modes
