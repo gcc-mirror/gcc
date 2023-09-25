@@ -2535,9 +2535,8 @@ lra (FILE *f)
   if (inserted_p)
     commit_edge_insertions ();
 
-  /* Replacing pseudos with their memory equivalents might have
-     created shared rtx.  Subsequent passes would get confused
-     by this, so unshare everything here.  */
+  /* Subsequent passes expect that rtl is unshared, so unshare everything
+     here.  */
   unshare_all_rtl_again (get_insns ());
 
   if (flag_checking)

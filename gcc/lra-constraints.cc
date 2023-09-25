@@ -5271,6 +5271,11 @@ lra_constraints (bool first_p)
 					   loc_equivalence_callback, curr_insn);
 	      if (old != *curr_id->operand_loc[0])
 		{
+		  /* If we substitute pseudo by shared equivalence, we can fail
+		     to update LRA reg info and this can result in many
+		     unexpected consequences.  So keep rtl unshared:  */
+		  *curr_id->operand_loc[0]
+		    = copy_rtx (*curr_id->operand_loc[0]);
 		  lra_update_insn_regno_info (curr_insn);
 		  changed_p = true;
 		}
