@@ -82,12 +82,6 @@ package Sinfo is
    --                 for this purpose, so e.g. in X := (if A then B else C);
    --                 Paren_Count for the right side will be 1.
 
-   --   Comes_From_Check_Or_Contract
-   --                 This flag is present in all N_If_Statement nodes and
-   --                 gets set when an N_If_Statement is generated as part of
-   --                 the expansion of a Check, Assert, or contract-related
-   --                 pragma.
-
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if
@@ -952,6 +946,12 @@ package Sinfo is
    --    check for range checks being suppressed at the point where the
    --    attribute definition clause is given, rather than testing this at the
    --    freeze point.
+
+   --  Comes_From_Check_Or_Contract
+   --    This flag is present in all N_If_Statement nodes and
+   --    gets set when an N_If_Statement is generated as part of
+   --    the expansion of a Check, Assert, or contract-related
+   --    pragma.
 
    --  Comes_From_Extended_Return_Statement
    --    Present in N_Simple_Return_Statement nodes. True if this node was
@@ -2809,12 +2809,6 @@ package Sinfo is
       --  fields are defined (and access subprograms declared) in package
       --  Einfo.
 
-      --  Note: N_Defining_Identifier is an extended node whose fields are
-      --  deliberately laid out to match the layout of fields in an ordinary
-      --  N_Identifier node allowing for easy alteration of an identifier
-      --  node into a defining identifier node. For details, see procedure
-      --  Sinfo.CN.Change_Identifier_To_Defining_Identifier.
-
       --  N_Defining_Identifier
       --  Sloc points to identifier
       --  Chars contains the Name_Id for the identifier
@@ -3155,12 +3149,6 @@ package Sinfo is
       --  fields depending on the setting of the Ekind field. These
       --  additional fields are defined (and access subprograms declared)
       --  in package Einfo.
-
-      --  Note: N_Defining_Character_Literal is an extended node whose fields
-      --  are deliberately laid out to match layout of fields in an ordinary
-      --  N_Character_Literal node, allowing for easy alteration of a character
-      --  literal node into a defining character literal node. For details, see
-      --  Sinfo.CN.Change_Character_Literal_To_Defining_Character_Literal.
 
       --  N_Defining_Character_Literal
       --  Sloc points to literal
@@ -5415,13 +5403,6 @@ package Sinfo is
       --  fields depending on the setting of the Ekind field. These
       --  additional fields are defined (and access subprograms declared)
       --  in package Einfo.
-
-      --  Note: N_Defining_Operator_Symbol is an extended node whose fields
-      --  are deliberately laid out to match the layout of fields in an
-      --  ordinary N_Operator_Symbol node allowing for easy alteration of
-      --  an operator symbol node into a defining operator symbol node.
-      --  See Sinfo.CN.Change_Operator_Symbol_To_Defining_Operator_Symbol
-      --  for further details.
 
       --  N_Defining_Operator_Symbol
       --  Sloc points to literal
