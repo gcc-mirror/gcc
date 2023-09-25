@@ -36,3 +36,36 @@
   test_##TYPE##_init_##NUM (IN, REF, SIZE);           \
   test_##TYPE##_##CALL (OUT, IN, SIZE);               \
   test_##TYPE##_assert (OUT, REF, SIZE);
+
+#define FRM_RNE 0
+#define FRM_RTZ 1
+#define FRM_RDN 2
+#define FRM_RUP 3
+#define FRM_RMM 4
+#define FRM_DYN 7
+
+static inline void
+set_rm (unsigned rm)
+{
+  __asm__ volatile (
+    "fsrm %0"
+    :
+    :"r"(rm)
+    :
+  );
+}
+
+static inline unsigned
+get_fflags ()
+{
+  unsigned fflags = 0;
+
+  __asm__ volatile (
+    "frflags %0"
+    :"=r"(fflags)
+    :
+    :
+  );
+
+  return fflags;
+}
