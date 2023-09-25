@@ -10104,7 +10104,7 @@ package body Sem_Util is
       --  formal, or a variable or constant object, then we get the actual
       --  subtype from the referenced entity if one has been built.
 
-      if Nkind (N) = N_Identifier
+      if Nkind (N) in N_Identifier | N_Expanded_Name
         and then
           (Is_Formal (Entity (N))
             or else Ekind (Entity (N)) = E_Constant
@@ -10225,7 +10225,7 @@ package body Sem_Util is
       --  formal, or a variable or constant object, then we get the actual
       --  subtype from the referenced entity if one has been built.
 
-      if Nkind (N) = N_Identifier
+      if Nkind (N) in N_Identifier | N_Expanded_Name
         and then
           (Is_Formal (Entity (N))
             or else Ekind (Entity (N)) = E_Constant
