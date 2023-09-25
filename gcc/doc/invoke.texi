@@ -26159,10 +26159,12 @@ The default code model is @code{normal}.
 @itemx -mno-explicit-relocs
 Use or do not use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
-limit optimization.  The default value for the option is determined during
-GCC build-time by detecting corresponding assembler support:
-@code{-mexplicit-relocs} if said support is present,
-@code{-mno-explicit-relocs} otherwise.  This option is mostly useful for
+limit instruction scheduling but allow linker relaxation.  The default
+value for the option is determined during GCC build-time by detecting
+corresponding assembler support:
+@code{-mno-explicit-relocs} if the assembler supports relaxation or it
+does not support relocation operators at all,
+@code{-mexplicit-relocs} otherwise.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
 
