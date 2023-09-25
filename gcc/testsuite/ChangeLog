@@ -1,3 +1,38 @@
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* g++.dg/cpp23/subscript15.C: New test.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* g++.dg/cpp2a/concepts-ttp5.C: New test.
+	* g++.dg/cpp2a/concepts-ttp6.C: New test.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* g++.dg/cpp2a/nontype-class60.C: New test.
+
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92586
+	* gfortran.dg/pr92586.f90 : New test
+
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68155
+	* gfortran.dg/pr68155.f90: New test.
+
 2023-09-22  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
