@@ -25477,9 +25477,12 @@ rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
   /* Assume inline asm can use any instruction features.  */
   if (gimple_code (stmt) == GIMPLE_ASM)
     {
-      /* Should set any bits we concerned, for now OPTION_MASK_HTM is
-	 the only bit we care about.  */
-      info |= RS6000_FN_TARGET_INFO_HTM;
+      const char *asm_str = gimple_asm_string (as_a<const gasm *> (stmt));
+      /* Ignore empty inline asm string.  */
+      if (strlen (asm_str) > 0)
+	/* Should set any bits we concerned, for now OPTION_MASK_HTM is
+	   the only bit we care about.  */
+	info |= RS6000_FN_TARGET_INFO_HTM;
       return false;
     }
   else if (gimple_code (stmt) == GIMPLE_CALL)
