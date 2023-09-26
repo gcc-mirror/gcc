@@ -8866,6 +8866,21 @@ and,
   (IFN_COND_ADD @0 @1 (vec_cond @2 @3 integer_zerop) @1)
    (IFN_COND_ADD (bit_and @0 @2) @1 @3 @1))
 
+/* Detect simplication for a conditional length reduction where
+
+   a = mask ? b : 0
+   c = i < len + bias ? d + a : d
+
+   is turned into
+
+   c = mask && i < len + bias ? d + b : d.  */
+(simplify
+  (IFN_COND_LEN_ADD integer_truep @0 (vec_cond @1 @2 zerop@5) @0 @3 @4)
+   (if (ANY_INTEGRAL_TYPE_P (type)
+	|| (FLOAT_TYPE_P (type)
+	    && fold_real_zero_addition_p (type, NULL_TREE, @5, 0)))
+    (IFN_COND_LEN_ADD @1 @0 @2 @0 @3 @4)))
+
 /* For pointers @0 and @2 and nonnegative constant offset @1, look for
    expressions like:
 
