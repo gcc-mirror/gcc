@@ -877,6 +877,9 @@ Session::expansion (AST::Crate &crate)
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
       CfgStrip ().go (crate);
+      // Errors might happen during cfg strip pass
+      if (saw_errors ())
+	break;
 
       auto ctx = Resolver2_0::NameResolutionContext ();
 
