@@ -1733,7 +1733,8 @@ find_shift_sequence (poly_int64 access_size,
   /* If a constant was stored into memory, try to simplify it here,
      otherwise the cost of the shift might preclude this optimization
      e.g. at -Os, even when no actual shift will be needed.  */
-  if (store_info->const_rhs)
+  if (store_info->const_rhs
+      && known_le (access_size, GET_MODE_SIZE (MAX_MODE_INT)))
     {
       auto new_mode = smallest_int_mode_for_size (access_size * BITS_PER_UNIT);
       auto byte = subreg_lowpart_offset (new_mode, store_mode);
