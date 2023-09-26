@@ -462,6 +462,7 @@ void expand_reduction (unsigned, unsigned, rtx *, rtx);
 void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
