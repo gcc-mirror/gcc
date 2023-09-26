@@ -25313,10 +25313,11 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
   *dst = aarch64_progress_pointer (*dst);
 }
 
-/* Expand a cpymem using the MOPS extension.  OPERANDS are taken
-   from the cpymem pattern.  Return true iff we succeeded.  */
-static bool
-aarch64_expand_cpymem_mops (rtx *operands)
+/* Expand a cpymem/movmem using the MOPS extension.  OPERANDS are taken
+   from the cpymem/movmem pattern.  IS_MEMMOVE is true if this is a memmove
+   rather than memcpy.  Return true iff we succeeded.  */
+bool
+aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
 {
   if (!TARGET_MOPS)
     return false;
@@ -25328,8 +25329,10 @@ aarch64_expand_cpymem_mops (rtx *operands)
   rtx dst_mem = replace_equiv_address (operands[0], dst_addr);
   rtx src_mem = replace_equiv_address (operands[1], src_addr);
   rtx sz_reg = copy_to_mode_reg (DImode, operands[2]);
-  emit_insn (gen_aarch64_cpymemdi (dst_mem, src_mem, sz_reg));
-
+  if (is_memmove)
+    emit_insn (gen_aarch64_movmemdi (dst_mem, src_mem, sz_reg));
+  else
+    emit_insn (gen_aarch64_cpymemdi (dst_mem, src_mem, sz_reg));
   return true;
 }
 
