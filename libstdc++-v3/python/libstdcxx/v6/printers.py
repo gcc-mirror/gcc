@@ -2019,14 +2019,6 @@ class StdFormatArgsPrinter(printer_base):
         return "%s with %d arguments" % (typ, size)
 
 
-def std_ratio_t_tuple(ratio_type):
-    # TODO use reduced period i.e. duration::period
-    period = self._val.type.template_argument(1)
-    num = period.template_argument(0)
-    den = period.template_argument(1)
-    return (num, den)
-
-
 class StdChronoDurationPrinter(printer_base):
     """Print a std::chrono::duration."""
 
