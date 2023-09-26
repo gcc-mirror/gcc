@@ -184,7 +184,7 @@ vrange_allocator::alloc_irange (unsigned num_pairs)
   // Allocate the irange and required memory for the vector.
   void *r = alloc (sizeof (irange));
   tree *mem = static_cast <tree *> (alloc (nbytes));
-  return new (r) irange (mem, num_pairs);
+  return new (r) irange (mem, num_pairs, /*resizable=*/false);
 }
 
 inline frange *
