@@ -3548,7 +3548,7 @@ cmp_lmul_gt_one (machine_mode mode)
       greater than and equal to 4503599627370496.
  */
 static rtx
-gen_ceil_const_fp (machine_mode inner_mode)
+get_fp_rounding_coefficient (machine_mode inner_mode)
 {
   REAL_VALUE_TYPE real;
 
@@ -3562,13 +3562,6 @@ gen_ceil_const_fp (machine_mode inner_mode)
     gcc_unreachable ();
 
   return const_double_from_real_value (real, inner_mode);
-}
-
-static rtx
-gen_floor_const_fp (machine_mode inner_mode)
-{
-  /* The floor needs the same floating point const as ceil.  */
-  return gen_ceil_const_fp (inner_mode);
 }
 
 static rtx
@@ -3637,7 +3630,7 @@ expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
   emit_vec_abs (op_0, op_1, vec_fp_mode);
 
   /* Step-2: Generate the mask on const fp.  */
-  rtx const_fp = gen_ceil_const_fp (GET_MODE_INNER (vec_fp_mode));
+  rtx const_fp = get_fp_rounding_coefficient (GET_MODE_INNER (vec_fp_mode));
   rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
 
   /* Step-3: Convert to integer on mask, with rounding up (aka ceil).  */
@@ -3662,7 +3655,7 @@ expand_vec_floor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
   emit_vec_abs (op_0, op_1, vec_fp_mode);
 
   /* Step-2: Generate the mask on const fp.  */
-  rtx const_fp = gen_floor_const_fp (GET_MODE_INNER (vec_fp_mode));
+  rtx const_fp = get_fp_rounding_coefficient (GET_MODE_INNER (vec_fp_mode));
   rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
 
   /* Step-3: Convert to integer on mask, with rounding down (aka floor).  */
