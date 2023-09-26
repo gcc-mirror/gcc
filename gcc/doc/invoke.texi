@@ -2766,8 +2766,9 @@ can be omitted, to use a target-specific default value.
 @cindex OpenMP parallel
 @item -fopenmp
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
-@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++ and
-@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
+When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
@@ -2779,11 +2780,14 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 @cindex SIMD
 @item -fopenmp-simd
 Enable handling of OpenMP's @code{simd}, @code{declare simd},
-@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan},
-@code{loop} directives and combined or composite directives with
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
+and @code{loop} directive, and of combined or composite directives with
 @code{simd} as constituent with @code{#pragma omp} in C/C++,
-@code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++
-and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
+Other OpenMP directives are ignored.  Unless @option{-fopenmp} is
+additionally specified, the @code{loop} region binds to the current
+task region, independent of the specified @code{bind} clause.
 
 @opindex fopenmp-target-simd-clone
 @cindex OpenMP target SIMD clone
