@@ -8816,6 +8816,8 @@ proc check_effective_target_vect_int_mod { } {
       expr { ([istarget powerpc*-*-*]
 	      && [check_effective_target_has_arch_pwr10])
              || [istarget amdgcn-*-*]
+             || ([istarget loongarch*-*-*]
+		 && [check_effective_target_loongarch_sx])
              || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v]) }}]
 }
@@ -12948,6 +12950,14 @@ proc check_effective_target_cv_alu { } {
     } "-march=rv32i_xcvalu" ]
 }
 
+proc check_effective_target_loongarch_sx { } {
+    return [check_no_compiler_messages loongarch_lsx assembly {
+       #if !defined(__loongarch_sx)
+       #error "LSX not defined"
+       #endif
+    }]
+}
+
 proc check_effective_target_loongarch_sx_hw { } {
     return [check_runtime loongarch_sx_hw {
 	#include <lsxintrin.h>
@@ -12958,6 +12968,14 @@ proc check_effective_target_loongarch_sx_hw { } {
 	  return 0;
 	}
     } "-mlsx"]
+}
+
+proc check_effective_target_loongarch_asx { } {
+    return [check_no_compiler_messages loongarch_asx assembly {
+       #if !defined(__loongarch_asx)
+       #error "LASX not defined"
+       #endif
+    }]
 }
 
 proc check_effective_target_loongarch_asx_hw { } {
