@@ -16512,6 +16512,26 @@ Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
 @end table
 The default value is 0.
 
+@item aarch64-ldp-policy
+Fine-grained policy for load pairs.
+With @option{--param=aarch64-ldp-policy=default}, use the policy of the
+tuning structure.  This is the current default.
+With @option{--param=aarch64-ldp-policy=always}, emit ldp regardless
+of alignment.
+With @option{--param=aarch64-ldp-policy=never}, do not emit ldp.
+With @option{--param=aarch64-ldp-policy=aligned}, emit ldp only if the
+source pointer is aligned to at least double the alignment of the type.
+
+@item aarch64-stp-policy
+Fine-grained policy for store pairs.
+With @option{--param=aarch64-stp-policy=default}, use the policy of the
+tuning structure.  This is the current default.
+With @option{--param=aarch64-stp-policy=always}, emit stp regardless
+of alignment.
+With @option{--param=aarch64-stp-policy=never}, do not emit stp.
+With @option{--param=aarch64-stp-policy=aligned}, emit stp only if the
+source pointer is aligned to at least double the alignment of the type.
+
 @item aarch64-loop-vect-issue-rate-niters
 The tuning for some AArch64 CPUs tries to take both latencies and issue
 rates into account when deciding whether a loop should be vectorized

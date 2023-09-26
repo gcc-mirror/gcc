@@ -337,3 +337,41 @@ Constant memset size in bytes from which to start using MOPS sequence.
 -param=aarch64-vect-unroll-limit=
 Target Joined UInteger Var(aarch64_vect_unroll_limit) Init(4) Param
 Limit how much the autovectorizer may unroll a loop.
+
+-param=aarch64-ldp-policy=
+Target Joined Var(aarch64_ldp_policy_param) Enum(aarch64_ldp_policy) Init(LDP_POLICY_DEFAULT) Param
+--param=aarch64-ldp-policy=[default|always|never|aligned] Fine-grained policy for load pairs.
+
+Enum
+Name(aarch64_ldp_policy) Type(enum aarch64_ldp_policy) UnknownError(unknown aarch64_ldp_policy mode %qs)
+
+EnumValue
+Enum(aarch64_ldp_policy) String(default) Value(LDP_POLICY_DEFAULT)
+
+EnumValue
+Enum(aarch64_ldp_policy) String(always) Value(LDP_POLICY_ALWAYS)
+
+EnumValue
+Enum(aarch64_ldp_policy) String(never) Value(LDP_POLICY_NEVER)
+
+EnumValue
+Enum(aarch64_ldp_policy) String(aligned) Value(LDP_POLICY_ALIGNED)
+
+-param=aarch64-stp-policy=
+Target Joined Var(aarch64_stp_policy_param) Enum(aarch64_stp_policy) Init(STP_POLICY_DEFAULT) Param
+--param=aarch64-stp-policy=[default|always|never|aligned] Fine-grained policy for store pairs.
+
+Enum
+Name(aarch64_stp_policy) Type(enum aarch64_stp_policy) UnknownError(unknown aarch64_stp_policy mode %qs)
+
+EnumValue
+Enum(aarch64_stp_policy) String(default) Value(STP_POLICY_DEFAULT)
+
+EnumValue
+Enum(aarch64_stp_policy) String(always) Value(STP_POLICY_ALWAYS)
+
+EnumValue
+Enum(aarch64_stp_policy) String(never) Value(STP_POLICY_NEVER)
+
+EnumValue
+Enum(aarch64_stp_policy) String(aligned) Value(STP_POLICY_ALIGNED)
