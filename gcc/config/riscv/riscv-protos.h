@@ -256,6 +256,9 @@ enum insn_flags : unsigned int
 
   /* Means INSN has FRM operand and the value is FRM_RDN.  */
   FRM_RDN_P = 1 << 17,
+
+  /* Means INSN has FRM operand and the value is FRM_RMM.  */
+  FRM_RMM_P = 1 << 18,
 };
 
 enum insn_type : unsigned int
@@ -299,6 +302,7 @@ enum insn_type : unsigned int
   UNARY_OP_TAMU_FRM_DYN = UNARY_OP_TAMU | FRM_DYN_P,
   UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
   UNARY_OP_TAMU_FRM_RDN = UNARY_OP_TAMU | FRM_RDN_P,
+  UNARY_OP_TAMU_FRM_RMM = UNARY_OP_TAMU | FRM_RMM_P,
 
   /* Binary operator.  */
   BINARY_OP = __NORMAL_OP | BINARY_OP_P,
@@ -463,6 +467,7 @@ void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));

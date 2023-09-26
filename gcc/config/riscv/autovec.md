@@ -2251,3 +2251,13 @@
     DONE;
   }
 )
+
+(define_expand "round<mode>2"
+  [(match_operand:V_VLSF 0 "register_operand")
+   (match_operand:V_VLSF 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_round (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    DONE;
+  }
+)
