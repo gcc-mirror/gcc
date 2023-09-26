@@ -1,3 +1,40 @@
+2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* g++.target/i386/pr111497.C: new test.
+
+2023-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt102.adb:New test.
+	* gnat.dg/opt102_pkg.adb, gnat.dg/opt102_pkg.ads: New helper.
+
+2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gcc.c-torture/compile/pr110386-1.c: New test.
+	* gcc.c-torture/compile/pr110386-2.c: New test.
+
+2023-09-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111548
+	* gcc.target/riscv/rvv/autovec/pr111548.c: New test.
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* g++.target/powerpc/pr111366.C: New test.
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* gcc.target/powerpc/pr111380-1.c: New test.
+	* gcc.target/powerpc/pr111380-2.c: New test.
+
+2023-09-25  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vec-construct-opt.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vec-construct-opt.c: New test.
+
 2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68155

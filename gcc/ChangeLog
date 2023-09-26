@@ -1,3 +1,59 @@
+2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* lra-constraints.cc (lra_constraints): Copy substituted
+	equivalence.
+	* lra.cc (lra): Change comment for calling unshare_all_rtl_again.
+
+2023-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-range-gori.cc (gori_compute::logical_combine): Add missing
+	return statement in the varying case.
+
+2023-09-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/invoke.texi: Update -m[no-]explicit-relocs for r14-4160.
+
+2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gimple-ssa-backprop.cc (strip_sign_op_1): Remove ABSU_EXPR.
+
+2023-09-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111548
+	* config/riscv/riscv-vsetvl.cc (earliest_pred_can_be_fused_p): Bugfix
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* config/rs6000/rs6000.cc (rs6000_update_ipa_fn_target_info): Skip
+	empty inline asm.
+
+2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Adopt
+	target_option_default_node when the callee has no option
+	attributes, also simplify the existing code accordingly.
+
+2023-09-25  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_vecinit_merge_<LASX:mode>): New
+	pattern for vector construction.
+	(vec_set<mode>_internal): Ditto.
+	(lasx_xvinsgr2vr_<mode256_i_half>_internal): Ditto.
+	(lasx_xvilvl_<lasxfmt_f>_internal): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_init):
+	Optimized the implementation of vector construction.
+	(loongarch_expand_vector_init_same): New function.
+	* config/loongarch/lsx.md (lsx_vilvl_<lsxfmt_f>_internal): New
+	pattern for vector construction.
+	(lsx_vreplvei_mirror_<lsxfmt_f>): New pattern for vector
+	construction.
+	(vec_concatv2df): Ditto.
+	(vec_concatv4sf): Ditto.
+
 2023-09-24  Pan Li  <pan2.li@intel.com>
 
 	PR target/111546

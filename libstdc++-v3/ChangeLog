@@ -1,3 +1,39 @@
+2023-09-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/charconv (__detail::__integer_to_chars_result_type):
+	Remove.
+	(__detail::__to_chars_16): Use to_chars_result as return type.
+	(__detail::__to_chars_10): Likewise.
+	(__detail::__to_chars_8): Likewise.
+	(__detail::__to_chars_2): Likewise.
+	(__detail::__to_chars_i): Likewise.
+	(__detail::__integer_from_chars_result_type): Inline the
+	constraint into ...
+	(from_chars): ... here.  Use __is_standard_integer in the
+	constraint.  Encode constraint as a defaulted non-type template
+	parameter instead of within the return type.
+
+2023-09-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2023-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111511
+	PR c++/111512
+	* include/std/array (to_array): Cast memcpy arguments to void*.
+	* testsuite/23_containers/array/creation/111512.cc: New test.
+
+2023-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward_list): Define for C++23.
+	* include/bits/version.def (forward_like): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/utility (__glibcxx_want_forward_like): Define.
+	* testsuite/20_util/forward_like/1.cc: New test.
+	* testsuite/20_util/forward_like/2_neg.cc: New test.
+	* testsuite/20_util/forward_like/version.cc: New test.
+
 2023-09-19  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/20_util/allocator/105975.cc: Add dg-error.
