@@ -5,14 +5,14 @@
 void foo(void);
 static int i;
 static int *j = &i;
-static char l;
-static void(a)(char) {}
+static signed char l;
+static void(a)(signed char) {}
 static short(b)(short c, short d) { return c - d; }
 static short(e)(short f, int g) {
     return f < 0 || g < 0 || g >= 32 ? f : f >> g;
 }
 static short(h)(short f, int g) { return g >= 2 ?: f >> g; }
-static char k(char m, short n) {
+static signed char k(signed char m, short n) {
     short o;
     int *p = &i;
     if (!(((m) >= 1) && ((m) <= 1))) {
