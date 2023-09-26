@@ -8863,8 +8863,11 @@ and,
 
    c = mask1 && mask2 ? d + b : d.  */
 (simplify
-  (IFN_COND_ADD @0 @1 (vec_cond @2 @3 integer_zerop) @1)
-   (IFN_COND_ADD (bit_and @0 @2) @1 @3 @1))
+  (IFN_COND_ADD @0 @1 (vec_cond @2 @3 zerop@4) @1)
+   (if (ANY_INTEGRAL_TYPE_P (type)
+	|| (FLOAT_TYPE_P (type)
+	    && fold_real_zero_addition_p (type, NULL_TREE, @4, 0)))
+   (IFN_COND_ADD (bit_and @0 @2) @1 @3 @1)))
 
 /* Detect simplication for a conditional length reduction where
 
