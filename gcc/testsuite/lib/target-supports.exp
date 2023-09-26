@@ -11432,6 +11432,13 @@ proc check_vect_support_and_set_flags { } {
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default compile
 	}
+    } elseif [istarget loongarch*-*-*] {
+      lappend DEFAULT_VECTCFLAGS "-mdouble-float" "-mlasx"
+      if [check_effective_target_loongarch_asx_hw] {
+	  set dg-do-what-default run
+      } else {
+	  set dg-do-what-default compile
+      }
     } else {
         return 0
     }
@@ -12939,6 +12946,30 @@ proc check_effective_target_cv_alu { } {
           asm ("cv.addn t0, t1, t2, 0");
         }
     } "-march=rv32i_xcvalu" ]
+}
+
+proc check_effective_target_loongarch_sx_hw { } {
+    return [check_runtime loongarch_sx_hw {
+	#include <lsxintrin.h>
+	int main (void)
+	{
+	  __m128i a, b, c;
+	  c = __lsx_vand_v (a, b);
+	  return 0;
+	}
+    } "-mlsx"]
+}
+
+proc check_effective_target_loongarch_asx_hw { } {
+    return [check_runtime loongarch_asx_hw {
+	#include <lasxintrin.h>
+	int main (void)
+	{
+	  __m256i a, b, c;
+	  c = __lasx_xvand_v (a, b);
+	  return 0;
+	}
+    } "-mlasx"]
 }
 
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.
