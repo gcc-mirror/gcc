@@ -24,7 +24,8 @@ enum processor_type
   PROCESSOR_VEGA10,  // gfx900
   PROCESSOR_VEGA20,  // gfx906
   PROCESSOR_GFX908,
-  PROCESSOR_GFX90a
+  PROCESSOR_GFX90a,
+  PROCESSOR_GFX1030
 };
 
 #define TARGET_FIJI (gcn_arch == PROCESSOR_FIJI)
@@ -32,12 +33,14 @@ enum processor_type
 #define TARGET_VEGA20 (gcn_arch == PROCESSOR_VEGA20)
 #define TARGET_GFX908 (gcn_arch == PROCESSOR_GFX908)
 #define TARGET_GFX90a (gcn_arch == PROCESSOR_GFX90a)
+#define TARGET_GFX1030 (gcn_arch == PROCESSOR_GFX1030)
 
 /* Set in gcn_option_override.  */
 extern enum gcn_isa {
   ISA_UNKNOWN,
   ISA_GCN3,
   ISA_GCN5,
+  ISA_RDNA2,
   ISA_CDNA1,
   ISA_CDNA2
 } gcn_isa;
@@ -50,6 +53,8 @@ extern enum gcn_isa {
 #define TARGET_CDNA1_PLUS (gcn_isa >= ISA_CDNA1)
 #define TARGET_CDNA2 (gcn_isa == ISA_CDNA2)
 #define TARGET_CDNA2_PLUS (gcn_isa >= ISA_CDNA2)
+#define TARGET_RDNA2 (gcn_isa == ISA_RDNA2)
+
 
 #define TARGET_M0_LDS_LIMIT (TARGET_GCN3)
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS)

@@ -28,6 +28,8 @@
 	builtin_define ("__CDNA1__");                                          \
       else if (TARGET_CDNA2)                                                   \
 	builtin_define ("__CDNA2__");                                          \
+      else if (TARGET_RDNA2)                                                   \
+	builtin_define ("__RDNA2__");                                          \
       if (TARGET_FIJI)                                                         \
 	{                                                                      \
 	  builtin_define ("__fiji__");                                         \
@@ -42,6 +44,8 @@
       else if (TARGET_GFX90a)                                                  \
 	builtin_define ("__gfx90a__");                                         \
   } while (0)
+
+#define ASSEMBLER_DIALECT (TARGET_RDNA2 ? 1 : 0)
 
 /* Support for a compile-time default architecture and tuning.
    The rules are:

@@ -253,8 +253,7 @@ gomp_free_pool_helper (void *thread_pool)
 #elif defined(__nvptx__)
   asm ("exit;");
 #elif defined(__AMDGCN__)
-  asm ("s_dcache_wb\n\t"
-       "s_endpgm");
+  asm ("s_endpgm");
 #else
 #error gomp_free_pool_helper must terminate the thread
 #endif

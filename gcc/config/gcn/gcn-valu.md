@@ -1412,7 +1412,7 @@
 	  [(match_operand:V_noHI 1 "register_operand" " v")
 	   (match_operand:SI 2 "const_int_operand"    " n")]
 	  UNSPEC_MOV_DPP_SHR))]
-  ""
+  "!TARGET_RDNA2"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_mov_b32",
 				    UNSPEC_MOV_DPP_SHR, INTVAL (operands[2]));
@@ -1548,7 +1548,7 @@
 			  (match_dup 1))
 			(match_dup 1))))]
   ""
-  "v_addc%^_u32\t%0, %4, %2, %1, %3"
+  "{v_addc%^_u32|v_add_co_ci_u32}\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b")
    (set_attr "length" "4,8")])
 
@@ -1613,10 +1613,10 @@
 			(match_dup 1))))]
   ""
   "@
-   v_subb%^_u32\t%0, %4, %1, %2, %3
-   v_subb%^_u32\t%0, %4, %1, %2, %3
-   v_subbrev%^_u32\t%0, %4, %2, %1, %3
-   v_subbrev%^_u32\t%0, %4, %2, %1, %3"
+   {v_subb%^_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
+   {v_subb%^_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
+   {v_subbrev%^_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3
+   {v_subbrev%^_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b,vop2,vop3b")
    (set_attr "length" "4,8,4,8")])
 
@@ -3667,11 +3667,11 @@
 ;; {{{ Vector comparison/merge
 
 (define_insn "vec_cmp<mode>di"
-  [(set (match_operand:DI 0 "register_operand"	      "=cV,cV,  e, e,Sg,Sg")
+  [(set (match_operand:DI 0 "register_operand"	      "=cV,cV,  e, e,Sg,Sg,  e, e")
 	(match_operator:DI 1 "gcn_fp_compare_operator"
-	  [(match_operand:V_noQI 2 "gcn_alu_operand"  "vSv, B,vSv, B, v,vA")
-	   (match_operand:V_noQI 3 "gcn_vop3_operand" "  v, v,  v, v,vA, v")]))
-   (clobber (match_scratch:DI 4			      "= X, X, cV,cV, X, X"))]
+	  [(match_operand:V_noQI 2 "gcn_alu_operand"  "vSv, B,vSv, B, v,vA,vSv, B")
+	   (match_operand:V_noQI 3 "gcn_vop3_operand" "  v, v,  v, v,vA, v,  v, v")]))
+   (clobber (match_scratch:DI 4			      "= X, X, cV,cV, X, X,  X, X"))]
   ""
   "@
    v_cmp%E1\tvcc, %2, %3
@@ -3679,9 +3679,12 @@
    v_cmpx%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
    v_cmp%E1\t%0, %2, %3
-   v_cmp%E1\t%0, %2, %3"
-  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a")
-   (set_attr "length" "4,8,4,8,8,8")])
+   v_cmp%E1\t%0, %2, %3
+   v_cmpx%E1\t%2, %3
+   v_cmpx%E1\t%2, %3"
+  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a,vopc,vopc")
+   (set_attr "length" "4,8,4,8,8,8,4,8")
+   (set_attr "rdna" "*,*,no,no,*,*,yes,yes")])
 
 (define_expand "vec_cmpu<mode>di"
   [(match_operand:DI 0 "register_operand")
@@ -3716,13 +3719,13 @@
   })
 
 (define_insn "vec_cmp<mode>di_exec"
-  [(set (match_operand:DI 0 "register_operand"	       "=cV,cV,  e, e,Sg,Sg")
+  [(set (match_operand:DI 0 "register_operand"	       "=cV,cV,  e, e,Sg,Sg,  e, e")
 	(and:DI
 	  (match_operator 1 "gcn_fp_compare_operator"
-	    [(match_operand:V_noQI 2 "gcn_alu_operand" "vSv, B,vSv, B, v,vA")
-	     (match_operand:V_noQI 3 "gcn_vop3_operand" " v, v,  v, v,vA, v")])
-	  (match_operand:DI 4 "gcn_exec_reg_operand"   "  e, e,  e, e, e, e")))
-   (clobber (match_scratch:DI 5			       "= X, X, cV,cV, X, X"))]
+	    [(match_operand:V_noQI 2 "gcn_alu_operand" "vSv, B,vSv, B, v,vA,vSv, B")
+	     (match_operand:V_noQI 3 "gcn_vop3_operand" " v, v,  v, v,vA, v,  v, v")])
+	  (match_operand:DI 4 "gcn_exec_reg_operand"   "  e, e,  e, e, e, e,  e, e")))
+   (clobber (match_scratch:DI 5			       "= X, X, cV,cV, X, X,  X, X"))]
   ""
   "@
    v_cmp%E1\tvcc, %2, %3
@@ -3730,9 +3733,12 @@
    v_cmpx%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
    v_cmp%E1\t%0, %2, %3
-   v_cmp%E1\t%0, %2, %3"
-  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a")
-   (set_attr "length" "4,8,4,8,8,8")])
+   v_cmp%E1\t%0, %2, %3
+   v_cmpx%E1\t%2, %3
+   v_cmpx%E1\t%2, %3"
+  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a,vopc,vopc")
+   (set_attr "length" "4,8,4,8,8,8,4,8")
+   (set_attr "rdna" "*,*,no,no,*,*,yes,yes")])
 
 (define_expand "vec_cmpu<mode>di_exec"
   [(match_operand:DI 0 "register_operand")
@@ -3772,42 +3778,48 @@
   })
 
 (define_insn "vec_cmp<mode>di_dup"
-  [(set (match_operand:DI 0 "register_operand"		   "=cV,cV, e,e,Sg")
+  [(set (match_operand:DI 0 "register_operand"		   "=cV,cV, e,e,Sg, e,e")
 	(match_operator:DI 1 "gcn_fp_compare_operator"
 	  [(vec_duplicate:V_noQI
 	     (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"
-							   " Sv, B,Sv,B, A"))
-	   (match_operand:V_noQI 3 "gcn_vop3_operand"	   "  v, v, v,v, v")]))
-   (clobber (match_scratch:DI 4				   "= X,X,cV,cV, X"))]
+							   " Sv, B,Sv,B, A,Sv,B"))
+	   (match_operand:V_noQI 3 "gcn_vop3_operand"	   "  v, v, v,v, v, v,v")]))
+   (clobber (match_scratch:DI 4				   "= X,X,cV,cV, X, X,X"))]
   ""
   "@
    v_cmp%E1\tvcc, %2, %3
    v_cmp%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
-   v_cmp%E1\t%0, %2, %3"
-  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a")
-   (set_attr "length" "4,8,4,8,8")])
+   v_cmp%E1\t%0, %2, %3
+   v_cmpx%E1\t%2, %3
+   v_cmpx%E1\t%2, %3"
+  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vopc,vopc")
+   (set_attr "length" "4,8,4,8,8,4,8")
+   (set_attr "rdna" "*,*,no,no,*,yes,yes")])
 
 (define_insn "vec_cmp<mode>di_dup_exec"
-  [(set (match_operand:DI 0 "register_operand"		    "=cV,cV, e,e,Sg")
+  [(set (match_operand:DI 0 "register_operand"		    "=cV,cV, e,e,Sg, e,e")
 	(and:DI
 	  (match_operator 1 "gcn_fp_compare_operator"
 	    [(vec_duplicate:V_noQI
 	       (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"
-							    " Sv, B,Sv,B, A"))
-	     (match_operand:V_noQI 3 "gcn_vop3_operand"	    "  v, v, v,v, v")])
-	  (match_operand:DI 4 "gcn_exec_reg_operand"	    "  e, e, e,e, e")))
-   (clobber (match_scratch:DI 5				    "= X,X,cV,cV, X"))]
+							    " Sv, B,Sv,B, A,Sv,B"))
+	     (match_operand:V_noQI 3 "gcn_vop3_operand"	    "  v, v, v,v, v, v,v")])
+	  (match_operand:DI 4 "gcn_exec_reg_operand"	    "  e, e, e,e, e, e,e")))
+   (clobber (match_scratch:DI 5				    "= X,X,cV,cV, X, X,X"))]
   ""
   "@
    v_cmp%E1\tvcc, %2, %3
    v_cmp%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
    v_cmpx%E1\tvcc, %2, %3
-   v_cmp%E1\t%0, %2, %3"
-  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a")
-   (set_attr "length" "4,8,4,8,8")])
+   v_cmp%E1\t%0, %2, %3
+   v_cmpx%E1\t%2, %3
+   v_cmpx%E1\t%2, %3"
+  [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vopc,vopc")
+   (set_attr "length" "4,8,4,8,8,4,8")
+   (set_attr "rdna" "*,*,no,no,*,yes,yes")])
 
 (define_expand "vcond_mask_<mode>di"
   [(parallel
@@ -4176,7 +4188,7 @@
 	(unspec:<SCALAR_MODE>
 	  [(match_operand:V_ALL 1 "register_operand")]
 	  REDUC_UNSPEC))]
-  ""
+  "!TARGET_RDNA2"
   {
     rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1],
 				       <reduc_unspec>);
@@ -4229,7 +4241,8 @@
 	  REDUC_UNSPEC))]
   ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
-     && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)"
+     && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)
+   && !TARGET_RDNA2"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "<reduc_insn>",
 				    <reduc_unspec>, INTVAL (operands[3]));
@@ -4274,7 +4287,7 @@
 	   (match_operand:SI 3 "const_int_operand"	  "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  ""
+  "!TARGET_RDNA2"
   {
     return gcn_expand_dpp_shr_insn (<VnSI>mode, "v_add%^_u32",
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
@@ -4292,7 +4305,7 @@
 	   (match_operand:DI 4 "register_operand"   "cV")]
 	  UNSPEC_PLUS_CARRY_IN_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  ""
+  "!TARGET_RDNA2"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_addc%^_u32",
 				    UNSPEC_PLUS_CARRY_IN_DPP_SHR,
