@@ -307,7 +307,7 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
-  "%<dynamic %<force_cpusubtype_ALL %<multiply_defined* "
+  "%<dynamic %<force_cpusubtype_ALL %<multiply_defined* %<dynamiclib"
 
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\
