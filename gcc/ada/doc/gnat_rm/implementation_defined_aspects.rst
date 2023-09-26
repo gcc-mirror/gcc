@@ -525,6 +525,12 @@ Aspect Shared
 This boolean aspect is equivalent to :ref:`pragma Shared<Pragma-Shared>`
 and is thus a synonym for aspect ``Atomic``.
 
+Aspect Side_Effects
+===================
+.. index:: Side_Effects
+
+This aspect is equivalent to :ref:`pragma Side_Effects<Pragma-Side_Effects>`.
+
 Aspect Simple_Storage_Pool
 ==========================
 .. index:: Simple_Storage_Pool

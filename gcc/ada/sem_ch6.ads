@@ -51,6 +51,10 @@ package Sem_Ch6 is
    --  and body declarations. Returns the defining entity for the
    --  specification N.
 
+   procedure Analyze_SPARK_Subprogram_Specification (N : Node_Id);
+   --  Check SPARK legality rules that require that the specification has been
+   --  analyzed already.
+
    function Can_Override_Operator (Subp : Entity_Id) return Boolean;
    --  Returns true if Subp can override a predefined operator
 

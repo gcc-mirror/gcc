@@ -145,6 +145,7 @@ package Aspects is
       Aspect_Relaxed_Initialization,        -- GNAT
       Aspect_Scalar_Storage_Order,          -- GNAT
       Aspect_Secondary_Stack_Size,          -- GNAT
+      Aspect_Side_Effects,                  -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
@@ -295,6 +296,7 @@ package Aspects is
       Aspect_Scalar_Storage_Order       => True,
       Aspect_Secondary_Stack_Size       => True,
       Aspect_Shared                     => True,
+      Aspect_Side_Effects               => True,
       Aspect_Simple_Storage_Pool        => True,
       Aspect_Simple_Storage_Pool_Type   => True,
       Aspect_Subprogram_Variant         => True,
@@ -445,6 +447,7 @@ package Aspects is
       Aspect_Relaxed_Initialization     => Optional_Expression,
       Aspect_Scalar_Storage_Order       => Expression,
       Aspect_Secondary_Stack_Size       => Expression,
+      Aspect_Side_Effects               => Optional_Expression,
       Aspect_Simple_Storage_Pool        => Name,
       Aspect_Size                       => Expression,
       Aspect_Small                      => Expression,
@@ -556,6 +559,7 @@ package Aspects is
       Aspect_Relaxed_Initialization       => False,
       Aspect_Scalar_Storage_Order         => True,
       Aspect_Secondary_Stack_Size         => True,
+      Aspect_Side_Effects                 => False,
       Aspect_Simple_Storage_Pool          => True,
       Aspect_Size                         => True,
       Aspect_Small                        => True,
@@ -741,6 +745,7 @@ package Aspects is
       Aspect_Secondary_Stack_Size         => Name_Secondary_Stack_Size,
       Aspect_Shared                       => Name_Shared,
       Aspect_Shared_Passive               => Name_Shared_Passive,
+      Aspect_Side_Effects                 => Name_Side_Effects,
       Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
       Aspect_Simple_Storage_Pool_Type     => Name_Simple_Storage_Pool_Type,
       Aspect_Size                         => Name_Size,
@@ -1023,6 +1028,7 @@ package Aspects is
       Aspect_Refined_Post                 => Never_Delay,
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
+      Aspect_Side_Effects                 => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static                       => Never_Delay,

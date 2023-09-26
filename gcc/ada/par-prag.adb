@@ -1488,6 +1488,7 @@ begin
          | Pragma_Rename_Pragma
          | Pragma_Restricted_Run_Time
          | Pragma_Reviewable
+         | Pragma_Side_Effects
          | Pragma_SPARK_Mode
          | Pragma_Secondary_Stack_Size
          | Pragma_Share_Generic

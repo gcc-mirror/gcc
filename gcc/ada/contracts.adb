@@ -235,6 +235,7 @@ package body Contracts is
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Side_Effects
       --    Subprogram_Variant
       --    Test_Case
       --    Volatile_Function
@@ -253,6 +254,7 @@ package body Contracts is
          elsif Prag_Nam in Name_Depends
                          | Name_Extensions_Visible
                          | Name_Global
+                         | Name_Side_Effects
          then
             Add_Classification;
 
@@ -3786,6 +3788,7 @@ package body Contracts is
         and then Present (Contract (From_Subp))
       then
          Inherit_Pragma (Pragma_Extensions_Visible);
+         Inherit_Pragma (Pragma_Side_Effects);
       end if;
    end Inherit_Subprogram_Contract;
 

@@ -672,6 +672,7 @@ package Snames is
    Name_Share_Generic                  : constant Name_Id := N + $; -- GNAT
    Name_Shared                         : constant Name_Id := N + $; -- Ada 83
    Name_Shared_Passive                 : constant Name_Id := N + $;
+   Name_Side_Effects                   : constant Name_Id := N + $; -- GNAT
    Name_Simple_Storage_Pool_Type       : constant Name_Id := N + $; -- GNAT
 
    --  Note: Storage_Size is not in this list because its name matches the name
@@ -1938,6 +1939,7 @@ package Snames is
       Pragma_Share_Generic,
       Pragma_Shared,
       Pragma_Shared_Passive,
+      Pragma_Side_Effects,
       Pragma_Simple_Storage_Pool_Type,
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,

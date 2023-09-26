@@ -1438,6 +1438,7 @@ package body Sem_Ch13 is
       --    Refined_Global
       --    Refined_Post
       --    Refined_State
+      --    Side_Effects
       --    SPARK_Mode
       --    Secondary_Stack_Size
       --    Subprogram_Variant
@@ -3932,6 +3933,21 @@ package body Sem_Ch13 is
                         Aspect, Id);
                   end if;
 
+                  goto Continue;
+
+               --  Aspect Side_Effects is never delayed because it is
+               --  equivalent to a source pragma which appears after
+               --  the related subprogram.
+
+               when Aspect_Side_Effects =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Side_Effects);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  SPARK_Mode
@@ -11374,6 +11390,7 @@ package body Sem_Ch13 is
             | Aspect_Postcondition
             | Aspect_Pre
             | Aspect_Precondition
+            | Aspect_Side_Effects
             | Aspect_Refined_Depends
             | Aspect_Refined_Global
             | Aspect_Refined_Post

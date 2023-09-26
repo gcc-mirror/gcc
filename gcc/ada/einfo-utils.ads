@@ -461,6 +461,7 @@ package Einfo.Utils is
    --    Refined_Global
    --    Refined_Post
    --    Refined_State
+   --    Side_Effects
    --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function

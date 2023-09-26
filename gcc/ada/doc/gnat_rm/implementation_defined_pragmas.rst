@@ -5816,6 +5816,20 @@ Syntax:
 This pragma is provided for compatibility with other Ada implementations. It
 is recognized but ignored by all current versions of GNAT.
 
+.. _Pragma-Side_Effects:
+
+Pragma Side_Effects
+===================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Side_Effects [ (static_boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+``Side_Effects`` in the SPARK Reference Manual, section 6.1.11.
+
 .. _Pragma-Simple_Storage_Pool_Type:
 
 Pragma Simple_Storage_Pool_Type

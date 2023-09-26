@@ -1012,6 +1012,7 @@ package body Einfo.Utils is
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else
                  Id = Pragma_Refined_State              or else
+                 Id = Pragma_Side_Effects               or else
                  Id = Pragma_Volatile_Function;
 
       --  Contract / subprogram variant / test case pragmas

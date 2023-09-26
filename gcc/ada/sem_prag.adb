@@ -186,6 +186,14 @@ package body Sem_Prag is
    --  to Uppercase or Lowercase, then a new string literal with appropriate
    --  casing is constructed.
 
+   procedure Analyze_If_Present_Internal
+     (N        : Node_Id;
+      Id       : Pragma_Id;
+      Included : Boolean);
+   --  Inspect the remainder of the list containing pragma N and look for a
+   --  pragma that matches Id. If found, analyze the pragma. If Included is
+   --  True, N is included in the search.
+
    procedure Analyze_Part_Of
      (Indic    : Node_Id;
       Item_Id  : Entity_Id;
@@ -1097,10 +1105,14 @@ package body Sem_Prag is
                      --  and attribute 'Result are still valid items.
 
                      if Ekind (Spec_Id) in E_Function | E_Generic_Function
+                       and then not Is_Function_With_Side_Effects (Spec_Id)
                        and then not Is_Input
                      then
+                        Error_Msg_Code :=
+                          GEC_Output_In_Function_Global_Or_Depends;
                         SPARK_Msg_N
-                          ("output item is not applicable to function", Item);
+                          ("output item is not applicable to function '[[]']",
+                           Item);
                      end if;
 
                      --  The item denotes a concurrent type. Note that single
@@ -3080,9 +3092,12 @@ package body Sem_Prag is
 
          procedure Check_Mode_Restriction_In_Function (Mode : Node_Id) is
          begin
-            if Ekind (Spec_Id) in E_Function | E_Generic_Function then
+            if Ekind (Spec_Id) in E_Function | E_Generic_Function
+              and then not Is_Function_With_Side_Effects (Spec_Id)
+            then
+               Error_Msg_Code := GEC_Output_In_Function_Global_Or_Depends;
                SPARK_Msg_N
-                 ("global mode & is not applicable to functions", Mode);
+                 ("global mode & is not applicable to function '[[]']", Mode);
             end if;
          end Check_Mode_Restriction_In_Function;
 
@@ -3262,6 +3277,46 @@ package body Sem_Prag is
 
       Set_Is_Analyzed_Pragma (N);
    end Analyze_Global_In_Decl_Part;
+
+   ---------------------------------
+   -- Analyze_If_Present_Internal --
+   ---------------------------------
+
+   procedure Analyze_If_Present_Internal
+     (N        : Node_Id;
+      Id       : Pragma_Id;
+      Included : Boolean)
+   is
+      Stmt : Node_Id;
+
+   begin
+      pragma Assert (Is_List_Member (N));
+
+      --  Inspect the declarations or statements following pragma N looking
+      --  for another pragma whose Id matches the caller's request. If it is
+      --  available, analyze it.
+
+      if Included then
+         Stmt := N;
+      else
+         Stmt := Next (N);
+      end if;
+
+      while Present (Stmt) loop
+         if Nkind (Stmt) = N_Pragma and then Get_Pragma_Id (Stmt) = Id then
+            Analyze_Pragma (Stmt);
+            exit;
+
+         --  The first source declaration or statement immediately following
+         --  N ends the region where a pragma may appear.
+
+         elsif Comes_From_Source (Stmt) then
+            exit;
+         end if;
+
+         Next (Stmt);
+      end loop;
+   end Analyze_If_Present_Internal;
 
    --------------------------------------------
    -- Analyze_Initial_Condition_In_Decl_Part --
@@ -4558,9 +4613,9 @@ package body Sem_Prag is
       procedure Check_Static_Boolean_Expression (Expr : Node_Id);
       --  Subsidiary to the analysis of pragmas Async_Readers, Async_Writers,
       --  Constant_After_Elaboration, Effective_Reads, Effective_Writes,
-      --  Extensions_Visible and Volatile_Function. Ensure that expression Expr
-      --  is an OK static boolean expression. Emit an error if this is not the
-      --  case.
+      --  Extensions_Visible, Side_Effects and Volatile_Function. Ensure
+      --  that expression Expr is an OK static boolean expression. Emit an
+      --  error if this is not the case.
 
       procedure Check_Static_Constraint (Constr : Node_Id);
       --  Constr is a constraint from an N_Subtype_Indication node from a
@@ -5017,30 +5072,8 @@ package body Sem_Prag is
       ------------------------
 
       procedure Analyze_If_Present (Id : Pragma_Id) is
-         Stmt : Node_Id;
-
       begin
-         pragma Assert (Is_List_Member (N));
-
-         --  Inspect the declarations or statements following pragma N looking
-         --  for another pragma whose Id matches the caller's request. If it is
-         --  available, analyze it.
-
-         Stmt := Next (N);
-         while Present (Stmt) loop
-            if Nkind (Stmt) = N_Pragma and then Get_Pragma_Id (Stmt) = Id then
-               Analyze_Pragma (Stmt);
-               exit;
-
-            --  The first source declaration or statement immediately following
-            --  N ends the region where a pragma may appear.
-
-            elsif Comes_From_Source (Stmt) then
-               exit;
-            end if;
-
-            Next (Stmt);
-         end loop;
+         Analyze_If_Present_Internal (N, Id, Included => False);
       end Analyze_If_Present;
 
       --------------------------------
@@ -13325,7 +13358,7 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
-            --  Ensure the proper placement of the pragma. Exceptional_Cases
+            --  Ensure the proper placement of the pragma. Always_Terminates
             --  must be associated with a subprogram declaration or a body that
             --  acts as a spec.
 
@@ -13386,17 +13419,29 @@ package body Sem_Prag is
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
 
-            --  Pragma Always_Terminates is not allowed on functions
+            --  In order to call Is_Function_With_Side_Effects, analyze pragma
+            --  Side_Effects if present.
 
-            if Ekind (Spec_Id) = E_Function then
-               Error_Msg_N (Fix_Error
-                 ("pragma % cannot apply to function"), N);
+            Analyze_If_Present (Pragma_Side_Effects);
+
+            --  Pragma Always_Terminates is not allowed on functions without
+            --  side-effects.
+
+            if Ekind (Spec_Id) in E_Function | E_Generic_Function
+              and then not Is_Function_With_Side_Effects (Spec_Id)
+            then
+               Error_Msg_Code := GEC_Always_Terminates_On_Function;
+
+               if Ekind (Spec_Id) = E_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to function '[[]']"), N);
+                     return;
+
+               elsif Ekind (Spec_Id) = E_Generic_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to generic function '[[]']"), N);
                   return;
-
-            elsif Ekind (Spec_Id) = E_Generic_Function then
-               Error_Msg_N (Fix_Error
-                 ("pragma % cannot apply to generic function"), N);
-               return;
+               end if;
             end if;
 
             --  Pragma Always_Terminates applied to packages doesn't allow any
@@ -16248,6 +16293,7 @@ package body Sem_Prag is
 
                   Analyze_If_Present (Pragma_SPARK_Mode);
                   Analyze_If_Present (Pragma_Volatile_Function);
+                  Analyze_If_Present (Pragma_Side_Effects);
                   Analyze_If_Present (Pragma_Global);
                   Analyze_Depends_In_Decl_Part (N);
                end if;
@@ -16936,6 +16982,31 @@ package body Sem_Prag is
             end if;
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  In order to call Is_Function_With_Side_Effects, analyze pragma
+            --  Side_Effects if present.
+
+            Analyze_If_Present (Pragma_Side_Effects);
+
+            --  Pragma Exceptional_Cases is not allowed on functions without
+            --  side-effects.
+
+            if Ekind (Spec_Id) in E_Function | E_Generic_Function
+              and then not Is_Function_With_Side_Effects (Spec_Id)
+            then
+               Error_Msg_Sloc := GEC_Exceptional_Cases_On_Function;
+
+               if Ekind (Spec_Id) = E_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to function '[[]']"), N);
+                     return;
+
+               elsif Ekind (Spec_Id) = E_Generic_Function then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to generic function '[[]']"), N);
+                  return;
+               end if;
+            end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
@@ -17990,6 +18061,7 @@ package body Sem_Prag is
 
                   Analyze_If_Present (Pragma_SPARK_Mode);
                   Analyze_If_Present (Pragma_Volatile_Function);
+                  Analyze_If_Present (Pragma_Side_Effects);
                   Analyze_Global_In_Decl_Part (N);
                   Analyze_If_Present (Pragma_Depends);
                end if;
@@ -22998,6 +23070,16 @@ package body Sem_Prag is
 
             E := Entity (E_Id);
 
+            Analyze_If_Present (Pragma_Side_Effects);
+
+            --  A function with side-effects shall not have a Pure_Function
+            --  aspect or pragma (SPARK RM 6.1.11(5)).
+
+            if Is_Function_With_Side_Effects (E) then
+               Error_Pragma
+                 ("pragma % incompatible with ""Side_Effects""");
+            end if;
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
@@ -23171,6 +23253,7 @@ package body Sem_Prag is
 
                Analyze_If_Present (Pragma_SPARK_Mode);
                Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_If_Present (Pragma_Side_Effects);
                Analyze_If_Present (Pragma_Refined_Global);
                Analyze_Refined_Depends_In_Decl_Part (N);
             end if;
@@ -23239,6 +23322,7 @@ package body Sem_Prag is
 
                Analyze_If_Present (Pragma_SPARK_Mode);
                Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_If_Present (Pragma_Side_Effects);
                Analyze_Refined_Global_In_Decl_Part (N);
                Analyze_If_Present (Pragma_Refined_Depends);
             end if;
@@ -23773,6 +23857,129 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
+
+         ------------------
+         -- Side_Effects --
+         ------------------
+
+         --  pragma Side_Effects [ (boolean_EXPRESSION) ];
+
+         --  Characteristics:
+
+         --    * Analysis - The annotation is fully analyzed immediately upon
+         --    elaboration as its expression must be static.
+
+         --    * Expansion - None.
+
+         --    * Template - The annotation utilizes the generic template of the
+         --    related subprogram [body] when it is:
+
+         --       aspect on subprogram declaration
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
+
+         --    The annotation must prepare its own template when it is:
+
+         --       pragma on subprogram declaration
+
+         --    * Globals - Capture of global references must occur after full
+         --    analysis.
+
+         --    * Instance - The annotation is instantiated automatically when
+         --    the related generic subprogram [body] is instantiated except for
+         --    the "pragma on subprogram declaration" case. In that scenario
+         --    the annotation must instantiate itself.
+
+         when Pragma_Side_Effects => Side_Effects : declare
+            Subp_Decl : Node_Id;
+            Spec_Id   : Entity_Id;
+            Over_Id   : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Most_N_Arguments (1);
+
+            Subp_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Abstract subprogram declaration
+
+            if Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration then
+               null;
+
+            --  Generic subprogram declaration
+
+            elsif Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram declaration
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            --  Otherwise the pragma is associated with an illegal construct
+
+            else
+               Error_Pragma ("pragma % must apply to a subprogram");
+            end if;
+
+            if Nkind (Specification (Subp_Decl)) /= N_Function_Specification
+            then
+               Error_Pragma ("pragma % must apply to a function");
+            end if;
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  Chain the pragma on the contract for completeness
+
+            Add_Contract_Item (N, Spec_Id);
+
+            --  A function with side-effects cannot override a function without
+            --  side-effects (SPARK RM 7.1.2(16)). Overriding checks are
+            --  usually performed in New_Overloaded_Entity, however at
+            --  that point the pragma has not been processed yet.
+
+            Over_Id := Overridden_Operation (Spec_Id);
+
+            if Present (Over_Id)
+              and then not Is_Function_With_Side_Effects (Over_Id)
+            then
+               Error_Msg_N
+                 ("incompatible declaration of side-effects for function",
+                  Spec_Id);
+
+               Error_Msg_Sloc := Sloc (Over_Id);
+               Error_Msg_N
+                 ("\& declared # with Side_Effects value False",
+                  Spec_Id);
+
+               Error_Msg_Sloc := Sloc (Spec_Id);
+               Error_Msg_N
+                 ("\overridden # with Side_Effects value True",
+                  Spec_Id);
+            end if;
+
+            --  Analyze the Boolean expression (if any)
+
+            if Present (Arg1) then
+               Check_Static_Boolean_Expression (Get_Pragma_Arg (Arg1));
+            end if;
+         end Side_Effects;
 
          ------------------------------
          -- Simple_Storage_Pool_Type --
@@ -26780,6 +26987,25 @@ package body Sem_Prag is
    exception
       when Pragma_Exit => null;
    end Analyze_Pragma;
+
+   --------------------------------
+   -- Analyze_Pragmas_If_Present --
+   --------------------------------
+
+   procedure Analyze_Pragmas_If_Present (Decl : Node_Id; Id : Pragma_Id) is
+      Prag : Node_Id;
+   begin
+      if Nkind (Parent (Decl)) = N_Compilation_Unit then
+         Prag := First (Pragmas_After (Aux_Decls_Node (Parent (Decl))));
+      else
+         pragma Assert (Is_List_Member (Decl));
+         Prag := Next (Decl);
+      end if;
+
+      if Present (Prag) then
+         Analyze_If_Present_Internal (Prag, Id, Included => True);
+      end if;
+   end Analyze_Pragmas_If_Present;
 
    ---------------------------------------------
    -- Analyze_Pre_Post_Condition_In_Decl_Part --
@@ -32407,6 +32633,7 @@ package body Sem_Prag is
       Pragma_Restriction_Warnings           =>  0,
       Pragma_Restrictions                   =>  0,
       Pragma_Reviewable                     => -1,
+      Pragma_Side_Effects                   =>  0,
       Pragma_Secondary_Stack_Size           => -1,
       Pragma_Share_Generic                  =>  0,
       Pragma_Shared                         =>  0,
