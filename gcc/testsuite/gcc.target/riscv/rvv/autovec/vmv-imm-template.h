@@ -1,5 +1,4 @@
 #include <stdint-gcc.h>
-#include <assert.h>
 
 #define VMV_POS(TYPE,VAL)				\
   __attribute__ ((noipa))                               \
