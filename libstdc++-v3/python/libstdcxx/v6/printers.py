@@ -19,7 +19,6 @@ import gdb
 import itertools
 import re
 import sys
-import os
 import errno
 import datetime
 
