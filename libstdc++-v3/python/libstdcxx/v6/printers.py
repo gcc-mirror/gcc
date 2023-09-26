@@ -174,7 +174,7 @@ def lookup_node_type(nodename, containertype):
     valtype = valtype.strip_typedefs()
     try:
         return lookup_templ_spec(nodename, valtype)
-    except gdb.error as e:
+    except gdb.error:
         # For debug mode containers the node is in std::__cxx1998.
         if is_member_of_namespace(nodename, 'std'):
             if is_member_of_namespace(containertype, 'std::__cxx1998',
@@ -1449,7 +1449,6 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
     """Print a std::optional or std::experimental::optional."""
 
     def __init__(self, typename, val):
-        valtype = self._recognize(val.type.template_argument(0))
         typename = strip_versioned_namespace(typename)
         self._typename = re.sub(
             r'^std::(experimental::|)(fundamentals_v\d::|)(.*)',
