@@ -46,6 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * direct branch.  The choice of LSE vs non-LSE is done via one byte load
  * followed by a well-predicted direct branch.  The functions are compiled
  * separately to minimize code size.
+ *
+ * Since these functions have hidden visibility and are never called
+ * indirectly, they do not need to start with a BTI instruction.
  */
 
 #include "auto-target.h"
@@ -161,8 +164,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define tmp1	17
 #define tmp2	15
 
-#define BTI_C	hint	34
-
 /* Start and end a function.  */
 .macro	STARTFN name
 	.text
@@ -172,7 +173,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.type	\name, %function
 	.cfi_startproc
 \name:
-	BTI_C
 .endm
 
 .macro	ENDFN name
