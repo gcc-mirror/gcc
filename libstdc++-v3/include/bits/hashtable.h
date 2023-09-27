@@ -152,6 +152,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  _M_before_begin, if any, is updated to point to its new before
    *  begin node.
    *
+   *  Note that all equivalent values, if any, are next to each other, if
+   *  we find a non-equivalent value after an equivalent one it means that
+   *  we won't find any new equivalent value.
+   *
    *  On erase, the simple iterator design requires using the hash
    *  functor to get the index of the bucket to update. For this
    *  reason, when __cache_hash_code is set to false the hash functor must
@@ -1049,10 +1053,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    __glibcxx_assert(get_allocator() == __nh.get_allocator());
 
+	    __node_ptr __n = nullptr;
 	    const key_type& __k = __nh._M_key();
-	    __hash_code __code = this->_M_hash_code(__k);
-	    size_type __bkt = _M_bucket_index(__code);
-	    if (__node_ptr __n = _M_find_node(__bkt, __k, __code))
+	    const size_type __size = size();
+	    if (__size <= __small_size_threshold())
+	      {
+		for (__n = _M_begin(); __n; __n = __n->_M_next())
+		  if (this->_M_key_equals(__k, *__n))
+		    break;
+	      }
+
+	    __hash_code __code;
+	    size_type __bkt;
+	    if (!__n)
+	      {
+		__code = this->_M_hash_code(__k);
+		__bkt = _M_bucket_index(__code);
+		if (__size > __small_size_threshold())
+		  __n = _M_find_node(__bkt, __k, __code);
+	      }
+
+	    if (__n)
 	      {
 		__ret.node = std::move(__nh);
 		__ret.position = iterator(__n);
@@ -1156,11 +1177,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
+	      const size_type __size = size();
 	      const key_type& __k = _ExtractKey{}(*__pos);
+	      if (__size <= __small_size_threshold())
+		{
+		  bool __found = false;
+		  for (auto __n = _M_begin(); __n; __n = __n->_M_next())
+		    if (this->_M_key_equals(__k, *__n))
+		      {
+			__found = true;
+			break;
+		      }
+
+		  if (__found)
+		    {
+		      if (__n_elt != 1)
+			--__n_elt;
+		      continue;
+		    }
+		}
+
 	      __hash_code __code
 		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
 	      size_type __bkt = _M_bucket_index(__code);
-	      if (_M_find_node(__bkt, __k, __code) == nullptr)
+	      if (__size <= __small_size_threshold()
+		  || _M_find_node(__bkt, __k, __code) == nullptr)
 		{
 		  auto __nh = __src.extract(__pos);
 		  _M_insert_unique_node(__bkt, __code, __nh._M_ptr, __n_elt);
@@ -1737,6 +1778,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_find_tr(const _Kt& __k)
       -> iterator
       {
+	if (size() <= __small_size_threshold())
+	  {
+	    for (auto __n = _M_begin(); __n; __n = __n->_M_next())
+	      if (this->_M_key_equals_tr(__k, *__n))
+		return iterator(__n);
+	    return end();
+	  }
+
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	std::size_t __bkt = _M_bucket_index(__code);
 	return iterator(_M_find_node_tr(__bkt, __k, __code));
@@ -1753,6 +1802,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_find_tr(const _Kt& __k) const
       -> const_iterator
       {
+	if (size() <= __small_size_threshold())
+	  {
+	    for (auto __n = _M_begin(); __n; __n = __n->_M_next())
+	      if (this->_M_key_equals_tr(__k, *__n))
+		return const_iterator(__n);
+	    return end();
+	  }
+
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	std::size_t __bkt = _M_bucket_index(__code);
 	return const_iterator(_M_find_node_tr(__bkt, __k, __code));
@@ -1776,9 +1833,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__unique_keys::value)
 	return 1;
 
-      // All equivalent values are next to each other, if we find a
-      // non-equivalent value after an equivalent one it means that we won't
-      // find any new equivalent value.
       size_type __result = 1;
       for (auto __ref = __it++;
 	   __it._M_cur && this->_M_node_equals(*__ref._M_cur, *__it._M_cur);
@@ -1800,15 +1854,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_count_tr(const _Kt& __k) const
       -> size_type
       {
+	if (size() <= __small_size_threshold())
+	  {
+	    size_type __result = 0;
+	    for (auto __n = _M_begin(); __n; __n = __n->_M_next())
+	      {
+		if (this->_M_key_equals_tr(__k, *__n))
+		  {
+		    ++__result;
+		    continue;
+		  }
+
+		if (__result)
+		  break;
+	      }
+
+	    return __result;
+	  }
+
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	std::size_t __bkt = _M_bucket_index(__code);
 	auto __n = _M_find_node_tr(__bkt, __k, __code);
 	if (!__n)
 	  return 0;
 
-	// All equivalent values are next to each other, if we find a
-	// non-equivalent value after an equivalent one it means that we won't
-	// find any new equivalent value.
 	iterator __it(__n);
 	size_type __result = 1;
 	for (++__it;
@@ -1838,9 +1907,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__unique_keys::value)
 	return { __beg, __ite };
 
-      // All equivalent values are next to each other, if we find a
-      // non-equivalent value after an equivalent one it means that we won't
-      // find any new equivalent value.
       while (__ite._M_cur && this->_M_node_equals(*__beg._M_cur, *__ite._M_cur))
 	++__ite;
 
@@ -1865,9 +1931,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__unique_keys::value)
 	return { __beg, __ite };
 
-      // All equivalent values are next to each other, if we find a
-      // non-equivalent value after an equivalent one it means that we won't
-      // find any new equivalent value.
       while (__ite._M_cur && this->_M_node_equals(*__beg._M_cur, *__ite._M_cur))
 	++__ite;
 
@@ -1886,6 +1949,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_equal_range_tr(const _Kt& __k)
       -> pair<iterator, iterator>
       {
+	if (size() <= __small_size_threshold())
+	  {
+	    __node_ptr __n, __beg = nullptr;
+	    for (__n = _M_begin(); __n; __n = __n->_M_next())
+	      {
+		if (this->_M_key_equals_tr(__k, *__n))
+		  {
+		    if (!__beg)
+		      __beg = __n;
+		    continue;
+		  }
+
+		if (__beg)
+		  break;
+	      }
+
+	    return { iterator(__beg), iterator(__n) };
+	  }
+
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	std::size_t __bkt = _M_bucket_index(__code);
 	auto __n = _M_find_node_tr(__bkt, __k, __code);
@@ -1893,9 +1975,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!__n)
 	  return { __ite, __ite };
 
-	// All equivalent values are next to each other, if we find a
-	// non-equivalent value after an equivalent one it means that we won't
-	// find any new equivalent value.
 	auto __beg = __ite++;
 	while (__ite._M_cur && this->_M_equals_tr(__k, __code, *__ite._M_cur))
 	  ++__ite;
@@ -1914,6 +1993,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_equal_range_tr(const _Kt& __k) const
       -> pair<const_iterator, const_iterator>
       {
+	if (size() <= __small_size_threshold())
+	  {
+	    __node_ptr __n, __beg = nullptr;
+	    for (__n = _M_begin(); __n; __n = __n->_M_next())
+	      {
+		if (this->_M_key_equals_tr(__k, *__n))
+		  {
+		    if (!__beg)
+		      __beg = __n;
+		    continue;
+		  }
+
+		if (__beg)
+		  break;
+	      }
+
+	    return { const_iterator(__beg), const_iterator(__n) };
+	  }
+
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	std::size_t __bkt = _M_bucket_index(__code);
 	auto __n = _M_find_node_tr(__bkt, __k, __code);
@@ -1921,9 +2019,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (!__n)
 	  return { __ite, __ite };
 
-	// All equivalent values are next to each other, if we find a
-	// non-equivalent value after an equivalent one it means that we won't
-	// find any new equivalent value.
 	auto __beg = __ite++;
 	while (__ite._M_cur && this->_M_equals_tr(__k, __code, *__ite._M_cur))
 	  ++__ite;
@@ -2052,7 +2147,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// First build the node to get access to the hash code
 	_Scoped_node __node { this, std::forward<_Args>(__args)...  };
 	const key_type& __k = _ExtractKey{}(__node._M_node->_M_v());
-	if (size() <= __small_size_threshold())
+	const size_type __size = size();
+	if (__size <= __small_size_threshold())
 	  {
 	    for (auto __it = _M_begin(); __it; __it = __it->_M_next())
 	      if (this->_M_key_equals(__k, *__it))
@@ -2062,7 +2158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	__hash_code __code = this->_M_hash_code(__k);
 	size_type __bkt = _M_bucket_index(__code);
-	if (size() > __small_size_threshold())
+	if (__size > __small_size_threshold())
 	  if (__node_ptr __p = _M_find_node(__bkt, __k, __code))
 	    // There is already an equivalent node, no insertion
 	    return { iterator(__p), false };
@@ -2225,7 +2321,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       const _NodeGenerator& __node_gen)
       -> pair<iterator, bool>
       {
-	if (size() <= __small_size_threshold())
+	const size_type __size = size();
+	if (__size <= __small_size_threshold())
 	  for (auto __it = _M_begin(); __it; __it = __it->_M_next())
 	    if (this->_M_key_equals_tr(__k, *__it))
 	      return { iterator(__it), false };
@@ -2233,7 +2330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__hash_code __code = this->_M_hash_code_tr(__k);
 	size_type __bkt = _M_bucket_index(__code);
 
-	if (size() > __small_size_threshold())
+	if (__size > __small_size_threshold())
 	  if (__node_ptr __node = _M_find_node_tr(__bkt, __k, __code))
 	    return { iterator(__node), false };
 
