@@ -332,6 +332,8 @@ public:
       add_rounding_mode_operand (FRM_RDN);
     else if (m_insn_flags & FRM_RMM_P)
       add_rounding_mode_operand (FRM_RMM);
+    else if (m_insn_flags & FRM_RNE_P)
+      add_rounding_mode_operand (FRM_RNE);
 
     gcc_assert (insn_data[(int) icode].n_operands == m_opno);
     expand (icode, any_mem_p);
@@ -3771,6 +3773,28 @@ expand_vec_trunc (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-4: Convert to floating-point on mask for the rint result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
+
+  /* Step-5: Retrieve the sign bit for -0.0.  */
+  emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
+}
+
+void
+expand_vec_roundeven (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
+		      machine_mode vec_int_mode)
+{
+  /* Step-1: Get the abs float value for mask generation.  */
+  emit_vec_abs (op_0, op_1, vec_fp_mode);
+
+  /* Step-2: Generate the mask on const fp.  */
+  rtx const_fp = get_fp_rounding_coefficient (GET_MODE_INNER (vec_fp_mode));
+  rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
+
+  /* Step-3: Convert to integer on mask, rounding to nearest, ties to even.  */
+  rtx tmp = gen_reg_rtx (vec_int_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RNE, vec_fp_mode);
+
+  /* Step-4: Convert to floating-point on mask for the rint result.  */
+  emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RNE, vec_fp_mode);
 
   /* Step-5: Retrieve the sign bit for -0.0.  */
   emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
