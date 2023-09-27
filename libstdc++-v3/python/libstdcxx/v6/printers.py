@@ -2355,7 +2355,7 @@ class Printer(object):
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
     def add_version(self, base, name, function):
         self.add(base + name, function)
-        if _versioned_namespace and not '__cxx11' in base:
+        if _versioned_namespace and '__cxx11' not in base:
             vbase = re.sub('^(std|__gnu_cxx)::', r'\g<0>%s' %
                            _versioned_namespace, base)
             self.add(vbase + name, function)
@@ -2527,7 +2527,7 @@ def add_one_template_type_printer(obj, name, defargs):
     printer = TemplateTypePrinter('std::__debug::' + name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
-    if _versioned_namespace and not '__cxx11' in name:
+    if _versioned_namespace and '__cxx11' not in name:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace
         # PR 86112 Cannot use dict comprehension here:
@@ -2628,7 +2628,7 @@ class FilteringTypePrinter(object):
 def add_one_type_printer(obj, template, name, targ1=None):
     printer = FilteringTypePrinter('std::' + template, 'std::' + name, targ1)
     gdb.types.register_type_printer(obj, printer)
-    if _versioned_namespace and not '__cxx11' in template:
+    if _versioned_namespace and '__cxx11' not in template:
         ns = 'std::' + _versioned_namespace
         printer = FilteringTypePrinter(ns + template, ns + name, targ1)
         gdb.types.register_type_printer(obj, printer)
