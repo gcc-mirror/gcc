@@ -3624,6 +3624,16 @@ emit_vec_cvt_f_x (rtx op_dest, rtx op_src, rtx mask,
   emit_vlmax_insn (icode, type, cvt_fp_ops);
 }
 
+static void
+emit_vec_cvt_x_f_rtz (rtx op_dest, rtx op_src, rtx mask,
+		      machine_mode vec_mode)
+{
+  rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
+  insn_code icode = code_for_pred (FIX, vec_mode);
+
+  emit_vlmax_insn (icode, UNARY_OP_TAMU, cvt_x_ops);
+}
+
 void
 expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 		 machine_mode vec_int_mode)
@@ -3739,6 +3749,28 @@ expand_vec_round (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-4: Convert to floating-point on mask for the round result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RMM, vec_fp_mode);
+
+  /* Step-5: Retrieve the sign bit for -0.0.  */
+  emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
+}
+
+void
+expand_vec_trunc (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
+		  machine_mode vec_int_mode)
+{
+  /* Step-1: Get the abs float value for mask generation.  */
+  emit_vec_abs (op_0, op_1, vec_fp_mode);
+
+  /* Step-2: Generate the mask on const fp.  */
+  rtx const_fp = get_fp_rounding_coefficient (GET_MODE_INNER (vec_fp_mode));
+  rtx mask = emit_vec_float_cmp_mask (op_0, LT, const_fp, vec_fp_mode);
+
+  /* Step-3: Convert to integer on mask, rounding to zero (aka truncate).  */
+  rtx tmp = gen_reg_rtx (vec_int_mode);
+  emit_vec_cvt_x_f_rtz (tmp, op_1, mask, vec_fp_mode);
+
+  /* Step-4: Convert to floating-point on mask for the rint result.  */
+  emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
 
   /* Step-5: Retrieve the sign bit for -0.0.  */
   emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
