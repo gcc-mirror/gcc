@@ -30710,7 +30710,7 @@ $as_echo_n "checking dsymutil version \"$dsymutil_temp\"... " >&6; }
       dsymutil_kind=LLVM
       dsymutil_vers=`echo $dsymutil_temp | sed 's/.*LLVM\ version\ \([0-9\.]*\).*/\1/'`
     else
-      dsymutil_kind=UNKNOWN
+      dsymutil_kind=DET_UNKNOWN
       dsymutil_vers="0.0"
     fi
     dsymutil_major=`expr "$dsymutil_vers" : '\([0-9]*\)'`

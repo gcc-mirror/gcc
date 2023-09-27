@@ -6351,7 +6351,7 @@ if test x"$dsymutil_flag" = x"yes"; then
       dsymutil_kind=LLVM
       dsymutil_vers=`echo $dsymutil_temp | sed 's/.*LLVM\ version\ \([[0-9\.]]*\).*/\1/'`
     else
-      dsymutil_kind=UNKNOWN
+      dsymutil_kind=DET_UNKNOWN
       dsymutil_vers="0.0"
     fi
     dsymutil_major=`expr "$dsymutil_vers" : '\([[0-9]]*\)'`
