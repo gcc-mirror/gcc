@@ -649,7 +649,7 @@ package body Impunit is
 
    type Aunit_Record is record
       Fname : String (1 .. 6);
-      Aname : String_Ptr_Const;
+      Aname : not null String_Ptr_Const;
    end record;
 
    --  Array of alternative unit names

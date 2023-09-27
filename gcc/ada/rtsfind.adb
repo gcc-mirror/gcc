@@ -153,7 +153,7 @@ package body Rtsfind is
 
    --    packed component size of 43 is not supported
 
-   type CString_Ptr is access constant String;
+   type CString_Ptr is not null access constant String;
 
    type PRE_Id_Entry is record
       Str : CString_Ptr;

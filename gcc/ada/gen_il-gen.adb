@@ -2214,7 +2214,7 @@ package body Gen_IL.Gen is
               Field_Enum_Type_Name & "_Index range <>) of " &
               Field_Enum_Type_Name & ";" & LF);
          Put (S, "type " & Field_Enum_Type_Name &
-              "_Array_Ref is access constant " & Field_Enum_Type_Name &
+              "_Array_Ref is not null access constant " & Field_Enum_Type_Name &
               "_Array;" & LF);
          Put (S, "subtype A is " & Field_Enum_Type_Name & "_Array;" & LF);
          --  Short name to make allocators below more readable
