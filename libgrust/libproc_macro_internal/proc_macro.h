@@ -66,7 +66,7 @@ struct Bang
 
 enum ProcmacroTag
 {
-  CUSTOM_DERIVE,
+  CUSTOM_DERIVE = 0,
   ATTR,
   BANG,
 };
