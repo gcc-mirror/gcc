@@ -1747,11 +1747,11 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 
      and convert to
 
-     reduc_2 = PHI <0, reduc_3>
-     tmp1 = (unsigned type)reduce_1;
+     reduc_2 = PHI <0, reduc_1>
+     tmp1 = (unsigned type)reduc_1;
      ifcvt = cond_expr ? rhs2 : 0
      tmp2 = tmp1 +/- ifcvt;
-     reduce_1 = (signed type)tmp2;  */
+     reduc_1 = (signed type)tmp2;  */
 
   if (CONVERT_EXPR_CODE_P (reduction_op))
     {
