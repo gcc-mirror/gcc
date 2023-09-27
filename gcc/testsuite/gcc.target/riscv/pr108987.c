@@ -6,4 +6,4 @@ unsigned long long f5(unsigned long long i)
   return i * 0x0202020202020202ULL;
 }
 
-/* { dg-final { scan-assembler-times "mul" 1 } } */
+/* { dg-final { scan-assembler-times {\mmul} 1 } } */

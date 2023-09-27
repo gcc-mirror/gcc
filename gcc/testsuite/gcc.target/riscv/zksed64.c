@@ -15,5 +15,5 @@ uint32_t foo2(uint32_t rs1, uint32_t rs2, unsigned bs)
 }
 
 
-/* { dg-final { scan-assembler-times "sm4ks" 1 } } */
-/* { dg-final { scan-assembler-times "sm4ed" 1 } } */
+/* { dg-final { scan-assembler-times {\msm4ks} 1 } } */
+/* { dg-final { scan-assembler-times {\msm4ed} 1 } } */

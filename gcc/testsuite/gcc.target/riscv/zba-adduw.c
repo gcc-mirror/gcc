@@ -10,4 +10,4 @@ int foo(int n, unsigned char *arr, unsigned y){
   return s;
 }
 
-/* { dg-final { scan-assembler "add.uw" } } */
+/* { dg-final { scan-assembler {\madd\.uw\M} } } */

@@ -15,5 +15,5 @@ uint32_t foo2(uint32_t rs1)
 }
 
 
-/* { dg-final { scan-assembler-times "sm3p0" 1 } } */
-/* { dg-final { scan-assembler-times "sm3p1" 1 } } */
+/* { dg-final { scan-assembler-times {\msm3p0} 1 } } */
+/* { dg-final { scan-assembler-times {\msm3p1} 1 } } */

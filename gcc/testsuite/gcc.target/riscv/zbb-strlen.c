@@ -13,7 +13,7 @@ my_str_len (const char *s)
 }
 
 /* { dg-final { scan-assembler "orc.b\t" } } */
-/* { dg-final { scan-assembler-not "jalr" } } */
-/* { dg-final { scan-assembler-not "call" } } */
-/* { dg-final { scan-assembler-not "jr" } } */
-/* { dg-final { scan-assembler-not "tail" } } */
+/* { dg-final { scan-assembler-not {\mjalr} } } */
+/* { dg-final { scan-assembler-not {\mcall} } } */
+/* { dg-final { scan-assembler-not {\mjr} } } */
+/* { dg-final { scan-assembler-not {\mtail} } } */

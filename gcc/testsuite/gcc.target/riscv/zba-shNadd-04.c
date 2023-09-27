@@ -19,5 +19,5 @@ long long sub3(unsigned long long a, unsigned long long b)
   return (a + (b << 1)) & ~0u;
 }
 
-/* { dg-final { scan-assembler-times "sh1add" 3 } } */
+/* { dg-final { scan-assembler-times {\msh1add} 3 } } */
 /* { dg-final { scan-assembler-times "zext.w\t" 3 } } */

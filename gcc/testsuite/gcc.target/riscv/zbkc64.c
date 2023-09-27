@@ -14,4 +14,4 @@ uint64_t foo2(uint64_t rs1, uint64_t rs2)
 }
 
 /* { dg-final { scan-assembler-times "clmul\t" 1 } } */
-/* { dg-final { scan-assembler-times "clmulh" 1 } } */
+/* { dg-final { scan-assembler-times {\mclmulh} 1 } } */

@@ -8,5 +8,5 @@ ctz (int i)
   return res&0xffff;
 }
 
-/* { dg-final { scan-assembler-times "ctzw" 1 } } */
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-times {\mctzw} 1 } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

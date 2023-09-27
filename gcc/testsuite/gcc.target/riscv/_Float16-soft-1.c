@@ -6,4 +6,4 @@ _Float16 test_soft_move (_Float16 a, _Float16 b)
     return b;
 }
 
-/* { dg-final { scan-assembler-not "fmv.h" } } */
+/* { dg-final { scan-assembler-not {\mfmv\.h\M} } } */

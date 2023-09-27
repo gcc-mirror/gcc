@@ -37,5 +37,5 @@ core_list_find(list_head *list, list_data *info)
 /* There is only one legitimate unconditional jump, so test for that,
    which will catch the case where bb-reorder leaves a jump to a ret
    in the IL.  */
-/* { dg-final { scan-assembler-times "jump" 1 } } */
+/* { dg-final { scan-assembler-times {\mjump} 1 } } */
 

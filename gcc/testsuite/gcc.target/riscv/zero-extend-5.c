@@ -5,4 +5,4 @@ sub (unsigned int i, unsigned int j, unsigned int k, int *array)
 {
   return array[i] + array[j] + array[k];
 }
-/* { dg-final { scan-assembler-times "slli" 3 } } */
+/* { dg-final { scan-assembler-times {\mslli} 3 } } */

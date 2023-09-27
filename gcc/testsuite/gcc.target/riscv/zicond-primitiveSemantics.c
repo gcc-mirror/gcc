@@ -43,7 +43,7 @@ int primitiveSemantics_11(int a, int b) {
   return b;
 }
 
-/* { dg-final { scan-assembler-times "czero.eqz" 6 } } */
-/* { dg-final { scan-assembler-times "czero.nez" 6 } } */
-/* { dg-final { scan-assembler-not "beq" } } */
-/* { dg-final { scan-assembler-not "bne" } } */
+/* { dg-final { scan-assembler-times {\mczero\.eqz\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mczero\.nez\M} 6 } } */
+/* { dg-final { scan-assembler-not {\mbeq} } } */
+/* { dg-final { scan-assembler-not {\mbne} } } */

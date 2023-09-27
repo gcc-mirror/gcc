@@ -5,4 +5,4 @@ sub1 (unsigned int i)
 {
   return i >> 1;
 }
-/* { dg-final { scan-assembler-times "srliw" 1 } } */
+/* { dg-final { scan-assembler-times {\msrliw} 1 } } */

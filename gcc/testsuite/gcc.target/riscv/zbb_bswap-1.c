@@ -7,5 +7,5 @@ int foo(int n)
   return __builtin_bswap32(n);
 }
 
-/* { dg-final { scan-assembler "rev8" } } */
+/* { dg-final { scan-assembler {\mrev8} } } */
 

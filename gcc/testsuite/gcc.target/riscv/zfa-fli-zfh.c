@@ -39,4 +39,4 @@ void foo_float16 ()
   a = __builtin_nanf16 ("");
 }
 
-/* { dg-final { scan-assembler-times "fli.h" 32 } } */
+/* { dg-final { scan-assembler-times {\mfli\.h\M} 32 } } */
