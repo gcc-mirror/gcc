@@ -1077,7 +1077,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		/* We need to detect the case where a temporary is created to
 		   hold the return value, since we cannot safely rename it at
 		   top level as it lives only in the elaboration routine.  */
-		|| (TREE_CODE (inner) == VAR_DECL
+		|| (VAR_P (inner)
 		    && DECL_RETURN_VALUE_P (inner))
 		/* We also need to detect the case where the front-end creates
 		   a dangling 'reference to a function call at top level and
@@ -1093,10 +1093,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 		   We cannot safely rename the rewritten expression since the
 		   underlying object lives only in the elaboration routine.  */
-		|| (TREE_CODE (inner) == INDIRECT_REF
+		|| (INDIRECT_REF_P (inner)
 		    && (inner
 			= remove_conversions (TREE_OPERAND (inner, 0), true))
-		    && TREE_CODE (inner) == VAR_DECL
+		    && VAR_P (inner)
 		    && DECL_RETURN_VALUE_P (inner)))
 	      ;
 
