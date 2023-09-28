@@ -69,7 +69,7 @@ else:
 
     # Python 2 does not provide the datetime.UTC singleton.
     class UTC(datetime.tzinfo):
-        """Concrete tzinfo class representing the UTC time zone"""
+        """Concrete tzinfo class representing the UTC time zone."""
 
         def utcoffset(self, dt):
             return datetime.timedelta(0)
@@ -126,7 +126,7 @@ _versioned_namespace = '__8::'
 
 def lookup_templ_spec(templ, *args):
     """
-    Lookup template specialization templ<args...>
+    Lookup template specialization templ<args...>.
     """
     t = '{}<{}>'.format(templ, ', '.join([str(a) for a in args]))
     try:
@@ -146,17 +146,23 @@ def lookup_templ_spec(templ, *args):
 # Use this to find container node types instead of find_type,
 # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91997 for details.
 
-
 def lookup_node_type(nodename, containertype):
     """
-    Lookup specialization of template NODENAME corresponding to CONTAINERTYPE.
-    e.g. if NODENAME is '_List_node' and CONTAINERTYPE is std::list<int>
-    then return the type std::_List_node<int>.
-    Returns None if not found.
+    Lookup specialization of template nodename corresponding to containertype.
+
+    nodename - The name of a class template, as a String
+    containertype - The container, as a gdb.Type
+
+    Return a gdb.Type for the corresponding specialization of nodename,
+    or None if the type cannot be found.
+
+    e.g. lookup_node_type('_List_node', gdb.lookup_type('std::list<int>'))
+    will return a gdb.Type for the type std::_List_node<int>.
     """
     # If nodename is unqualified, assume it's in namespace std.
     if '::' not in nodename:
         nodename = 'std::' + nodename
+    # Use either containertype's value_type or its first template argument.
     try:
         valtype = find_type(containertype, 'value_type')
     except:
@@ -214,7 +220,7 @@ def strip_versioned_namespace(typename):
 
 
 def strip_inline_namespaces(type_str):
-    "Remove known inline namespaces from the canonical name of a type."
+    """Remove known inline namespaces from the canonical name of a type."""
     type_str = strip_versioned_namespace(type_str)
     type_str = type_str.replace('std::__cxx11::', 'std::')
     expt_ns = 'std::experimental::'
@@ -226,7 +232,7 @@ def strip_inline_namespaces(type_str):
 
 
 def get_template_arg_list(type_obj):
-    "Return a type's template arguments as a list"
+    """Return a type's template arguments as a list."""
     n = 0
     template_args = []
     while True:
@@ -238,7 +244,7 @@ def get_template_arg_list(type_obj):
 
 
 class SmartPtrIterator(Iterator):
-    "An iterator for smart pointer types with a single 'child' value"
+    """An iterator for smart pointer types with a single 'child' value."""
 
     def __init__(self, val):
         self.val = val
@@ -254,7 +260,9 @@ class SmartPtrIterator(Iterator):
 
 
 class SharedPointerPrinter:
-    "Print a shared_ptr, weak_ptr, atomic<shared_ptr>, or atomic<weak_ptr>"
+    """
+    Print a shared_ptr, weak_ptr, atomic<shared_ptr>, or atomic<weak_ptr>.
+    """
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -292,7 +300,7 @@ class SharedPointerPrinter:
 
 
 def _tuple_impl_get(val):
-    "Return the tuple element stored in a _Tuple_impl<N, T> base class."
+    """Return the tuple element stored in a _Tuple_impl<N, T> base class."""
     bases = val.type.fields()
     if not bases[-1].is_base_class:
         raise ValueError(
@@ -316,7 +324,7 @@ def _tuple_impl_get(val):
 
 
 def tuple_get(n, val):
-    "Return the result of std::get<n>(val) on a std::tuple"
+    """Return the result of std::get<n>(val) on a std::tuple."""
     tuple_size = len(get_template_arg_list(val.type))
     if n > tuple_size:
         raise ValueError("Out of range index for std::get<N> on std::tuple")
@@ -330,7 +338,7 @@ def tuple_get(n, val):
 
 
 def unique_ptr_get(val):
-    "Return the result of val.get() on a std::unique_ptr"
+    """Return the result of val.get() on a std::unique_ptr."""
     # std::unique_ptr<T, D> contains a std::tuple<D::pointer, D>,
     # either as a direct data member _M_t (the old implementation)
     # or within a data member of type __uniq_ptr_data.
@@ -348,7 +356,7 @@ def unique_ptr_get(val):
 
 
 class UniquePointerPrinter:
-    "Print a unique_ptr"
+    """Print a unique_ptr."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -361,12 +369,12 @@ class UniquePointerPrinter:
 
 
 def get_value_from_aligned_membuf(buf, valtype):
-    """Returns the value held in a __gnu_cxx::__aligned_membuf."""
+    """Return the value held in a __gnu_cxx::__aligned_membuf."""
     return buf['_M_storage'].address.cast(valtype.pointer()).dereference()
 
 
 def get_value_from_list_node(node):
-    """Returns the value held in an _List_node<_Val>"""
+    """Return the value held in an _List_node<_Val>."""
     try:
         member = node.type.fields()[1].name
         if member == '_M_data':
@@ -382,7 +390,7 @@ def get_value_from_list_node(node):
 
 
 class StdListPrinter:
-    "Print a std::list"
+    """Print a std::list."""
 
     class _iterator(Iterator):
         def __init__(self, nodetype, head):
@@ -434,14 +442,14 @@ class NodeIteratorPrinter:
 
 
 class StdListIteratorPrinter(NodeIteratorPrinter):
-    "Print std::list::iterator"
+    """Print std::list::iterator."""
 
     def __init__(self, typename, val):
         NodeIteratorPrinter.__init__(self, typename, val, 'list', '_List_node')
 
 
 class StdFwdListIteratorPrinter(NodeIteratorPrinter):
-    "Print std::forward_list::iterator"
+    """Print std::forward_list::iterator."""
 
     def __init__(self, typename, val):
         NodeIteratorPrinter.__init__(self, typename, val, 'forward_list',
@@ -449,7 +457,7 @@ class StdFwdListIteratorPrinter(NodeIteratorPrinter):
 
 
 class StdSlistPrinter:
-    "Print a __gnu_cxx::slist"
+    """Print a __gnu_cxx::slist."""
 
     class _iterator(Iterator):
         def __init__(self, nodetype, head):
@@ -483,7 +491,7 @@ class StdSlistPrinter:
 
 
 class StdSlistIteratorPrinter:
-    "Print __gnu_cxx::slist::iterator"
+    """Print __gnu_cxx::slist::iterator."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -497,7 +505,7 @@ class StdSlistIteratorPrinter:
 
 
 class StdVectorPrinter:
-    "Print a std::vector"
+    """Print a std::vector."""
 
     class _iterator(Iterator):
         def __init__(self, start, finish, bitvec):
@@ -569,7 +577,7 @@ class StdVectorPrinter:
 
 
 class StdVectorIteratorPrinter:
-    "Print std::vector::iterator"
+    """Print std::vector::iterator."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -581,7 +589,7 @@ class StdVectorIteratorPrinter:
 
 
 class StdBitIteratorPrinter:
-    "Print std::vector<bool>'s _Bit_iterator and _Bit_const_iterator"
+    """Print std::vector<bool>'s _Bit_iterator and _Bit_const_iterator."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -593,7 +601,7 @@ class StdBitIteratorPrinter:
 
 
 class StdBitReferencePrinter:
-    "Print std::vector<bool>::reference"
+    """Print std::vector<bool>::reference."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -605,7 +613,7 @@ class StdBitReferencePrinter:
 
 
 class StdTuplePrinter:
-    "Print a std::tuple"
+    """Print a std::tuple."""
 
     class _iterator(Iterator):
         @staticmethod
@@ -690,7 +698,7 @@ class StdTuplePrinter:
 
 
 class StdStackOrQueuePrinter:
-    "Print a std::stack or std::queue"
+    """Print a std::stack or std::queue."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -750,7 +758,7 @@ class RbtreeIterator(Iterator):
 
 
 def get_value_from_Rb_tree_node(node):
-    """Returns the value held in an _Rb_tree_node<_Val>"""
+    """Return the value held in an _Rb_tree_node<_Val>."""
     try:
         member = node.type.fields()[1].name
         if member == '_M_value_field':
@@ -770,7 +778,7 @@ def get_value_from_Rb_tree_node(node):
 
 
 class StdRbtreeIteratorPrinter:
-    "Print std::map::iterator, std::set::iterator, etc."
+    """Print std::map::iterator, std::set::iterator, etc."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -785,7 +793,7 @@ class StdRbtreeIteratorPrinter:
 
 
 class StdDebugIteratorPrinter:
-    "Print a debug enabled version of an iterator"
+    """Print a debug enabled version of an iterator."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -809,7 +817,7 @@ def num_elements(num):
 
 
 class StdMapPrinter:
-    "Print a std::map or std::multimap"
+    """Print a std::map or std::multimap."""
 
     # Turn an RbtreeIterator into a pretty-print iterator.
     class _iter(Iterator):
@@ -851,7 +859,7 @@ class StdMapPrinter:
 
 
 class StdSetPrinter:
-    "Print a std::set or std::multiset"
+    """Print a std::set or std::multiset."""
 
     # Turn an RbtreeIterator into a pretty-print iterator.
     class _iter(Iterator):
@@ -887,7 +895,7 @@ class StdSetPrinter:
 
 
 class StdBitsetPrinter:
-    "Print a std::bitset"
+    """Print a std::bitset."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -934,7 +942,7 @@ class StdBitsetPrinter:
 
 
 class StdDequePrinter:
-    "Print a std::deque"
+    """Print a std::deque."""
 
     class _iter(Iterator):
         def __init__(self, node, start, end, last, buffer_size):
@@ -999,7 +1007,7 @@ class StdDequePrinter:
 
 
 class StdDequeIteratorPrinter:
-    "Print std::deque::iterator"
+    """Print std::deque::iterator."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1011,7 +1019,7 @@ class StdDequeIteratorPrinter:
 
 
 class StdStringPrinter:
-    "Print a std::basic_string of some kind"
+    """Print a std::basic_string of some kind."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1045,7 +1053,7 @@ class StdStringPrinter:
 
 
 def access_streambuf_ptrs(streambuf):
-    "Access the streambuf put area pointers"
+    """Access the streambuf put area pointers."""
     pbase = streambuf['_M_out_beg']
     pptr = streambuf['_M_out_cur']
     egptr = streambuf['_M_in_end']
@@ -1053,7 +1061,7 @@ def access_streambuf_ptrs(streambuf):
 
 
 class StdStringBufPrinter:
-    "Print a std::basic_stringbuf"
+    """Print a std::basic_stringbuf."""
 
     def __init__(self, _, val):
         self.val = val
@@ -1073,7 +1081,7 @@ class StdStringBufPrinter:
 
 
 class StdStringStreamPrinter:
-    "Print a std::basic_stringstream"
+    """Print a std::basic_stringstream."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1153,7 +1161,7 @@ class StdHashtableIterator(Iterator):
 
 
 class Tr1UnorderedSetPrinter:
-    "Print a std::unordered_set or tr1::unordered_set"
+    """Print a std::unordered_set or tr1::unordered_set."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1180,7 +1188,7 @@ class Tr1UnorderedSetPrinter:
 
 
 class Tr1UnorderedMapPrinter:
-    "Print a std::unordered_map or tr1::unordered_map"
+    """Print a std::unordered_map or tr1::unordered_map."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1227,7 +1235,7 @@ class Tr1UnorderedMapPrinter:
 
 
 class StdForwardListPrinter:
-    "Print a std::forward_list"
+    """Print a std::forward_list."""
 
     class _iterator(Iterator):
         def __init__(self, nodetype, head):
@@ -1264,7 +1272,7 @@ class StdForwardListPrinter:
 
 
 class SingleObjContainerPrinter(object):
-    "Base class for printers of containers of single objects"
+    """Base class for printers of containers of single objects."""
 
     def __init__(self, val, viz, hint=None):
         self.contained_value = val
@@ -1272,7 +1280,7 @@ class SingleObjContainerPrinter(object):
         self.hint = hint
 
     def _recognize(self, type):
-        """Return TYPE as a string after applying type printers"""
+        """Return type as a string after applying type printers."""
         global _use_type_printing
         if not _use_type_printing:
             return str(type)
@@ -1308,8 +1316,8 @@ class SingleObjContainerPrinter(object):
 
 
 def function_pointer_to_name(f):
-    "Find the name of the function referred to by the gdb.Value f, "
-    " which should contain a function pointer from the program."
+    """Find the name of the function referred to by the gdb.Value f,
+    which should contain a function pointer from the program."""
 
     # Turn the function pointer into an actual address.
     # This is needed to unpack ppc64 function descriptors.
@@ -1332,7 +1340,7 @@ def function_pointer_to_name(f):
 
 
 class StdExpAnyPrinter(SingleObjContainerPrinter):
-    "Print a std::any or std::experimental::any"
+    """Print a std::any or std::experimental::any."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1413,7 +1421,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
 
 
 class StdExpOptionalPrinter(SingleObjContainerPrinter):
-    "Print a std::optional or std::experimental::optional"
+    """Print a std::optional or std::experimental::optional."""
 
     def __init__(self, typename, val):
         valtype = self._recognize(val.type.template_argument(0))
@@ -1448,7 +1456,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
 
 class StdVariantPrinter(SingleObjContainerPrinter):
-    "Print a std::variant"
+    """Print a std::variant."""
 
     def __init__(self, typename, val):
         alternatives = get_template_arg_list(val.type)
@@ -1477,7 +1485,7 @@ class StdVariantPrinter(SingleObjContainerPrinter):
 
 
 class StdNodeHandlePrinter(SingleObjContainerPrinter):
-    "Print a container node handle"
+    """Print a container node handle."""
 
     def __init__(self, typename, val):
         self.value_type = val.type.template_argument(1)
@@ -1521,7 +1529,9 @@ class StdNodeHandlePrinter(SingleObjContainerPrinter):
 
 
 class StdExpStringViewPrinter:
-    "Print a std::basic_string_view or std::experimental::basic_string_view"
+    """
+    Print a std::basic_string_view or std::experimental::basic_string_view
+    """
 
     def __init__(self, typename, val):
         self.val = val
@@ -1538,7 +1548,7 @@ class StdExpStringViewPrinter:
 
 
 class StdExpPathPrinter:
-    "Print a std::experimental::filesystem::path"
+    """Print a std::experimental::filesystem::path."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1591,7 +1601,7 @@ class StdExpPathPrinter:
 
 
 class StdPathPrinter:
-    "Print a std::filesystem::path"
+    """Print a std::filesystem::path."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1664,13 +1674,13 @@ class StdPathPrinter:
 
 
 class StdPairPrinter:
-    "Print a std::pair object, with 'first' and 'second' as children"
+    """Print a std::pair object, with 'first' and 'second' as children."""
 
     def __init__(self, typename, val):
         self.val = val
 
     class _iter(Iterator):
-        "An iterator for std::pair types. Returns 'first' then 'second'."
+        """An iterator for std::pair types. Returns 'first' then 'second'."""
 
         def __init__(self, val):
             self.val = val
@@ -1697,7 +1707,7 @@ class StdPairPrinter:
 
 
 class StdCmpCatPrinter:
-    "Print a comparison category object"
+    """Print a comparison category object."""
 
     def __init__(self, typename, val):
         self.typename = typename[typename.rfind(':')+1:]
@@ -1713,7 +1723,7 @@ class StdCmpCatPrinter:
 
 
 class StdErrorCodePrinter:
-    "Print a std::error_code or std::error_condition"
+    """Print a std::error_code or std::error_condition."""
 
     _system_is_posix = None  # Whether std::system_category() use errno values.
 
@@ -1803,7 +1813,9 @@ class StdErrorCodePrinter:
 
     @staticmethod
     def _unqualified_name(name):
-        "Strip any nested-name-specifier from NAME to give an unqualified name"
+        """
+        Strip any nested-name-specifier from name to give an unqualified name.
+        """
         return name.split('::')[-1]
 
     def to_string(self):
@@ -1833,7 +1845,7 @@ class StdErrorCodePrinter:
 
 
 class StdRegexStatePrinter:
-    "Print a state node in the NFA for a std::regex"
+    """Print a state node in the NFA for a std::regex."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -1862,7 +1874,7 @@ class StdRegexStatePrinter:
 
 
 class StdSpanPrinter:
-    "Print a std::span"
+    """Print a std::span."""
 
     class iterator(Iterator):
         def __init__(self, begin, size):
@@ -1900,7 +1912,7 @@ class StdSpanPrinter:
 
 
 class StdInitializerListPrinter:
-    "Print a std::initializer_list"
+    """Print a std::initializer_list."""
 
     def __init__(self, typename, val):
         self.typename = typename
@@ -1918,7 +1930,7 @@ class StdInitializerListPrinter:
 
 
 class StdAtomicPrinter:
-    "Print a std:atomic"
+    """Print a std:atomic."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -1953,7 +1965,7 @@ class StdAtomicPrinter:
 
 
 class StdFormatArgsPrinter:
-    "Print a std::basic_format_args"
+    """Print a std::basic_format_args."""
     # TODO: add printer for basic_format_arg<Context> and print out children.
     # TODO: add printer for __format::_ArgStore<Context, Args...>.
 
@@ -1988,7 +2000,7 @@ def std_ratio_t_tuple(ratio_type):
 
 
 class StdChronoDurationPrinter:
-    "Print a std::chrono::duration"
+    """Print a std::chrono::duration."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2030,7 +2042,7 @@ class StdChronoDurationPrinter:
 
 
 class StdChronoTimePointPrinter:
-    "Print a std::chrono::time_point"
+    """Print a std::chrono::time_point."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2077,7 +2089,7 @@ class StdChronoTimePointPrinter:
 
 
 class StdChronoZonedTimePrinter:
-    "Print a std::chrono::zoned_time"
+    """Print a std::chrono::zoned_time."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2099,7 +2111,7 @@ weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
 
 
 class StdChronoCalendarPrinter:
-    "Print a std::chrono::day, std::chrono::month, std::chrono::year etc."
+    """Print a std::chrono::day, std::chrono::month, std::chrono::year etc."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2162,7 +2174,7 @@ class StdChronoCalendarPrinter:
 
 
 class StdChronoTimeZonePrinter:
-    "Print a chrono::time_zone or chrono::time_zone_link"
+    """Print a chrono::time_zone or chrono::time_zone_link."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2176,7 +2188,7 @@ class StdChronoTimeZonePrinter:
 
 
 class StdChronoLeapSecondPrinter:
-    "Print a chrono::leap_second"
+    """Print a chrono::leap_second."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2189,7 +2201,7 @@ class StdChronoLeapSecondPrinter:
 
 
 class StdChronoTzdbPrinter:
-    "Print a chrono::tzdb"
+    """Print a chrono::tzdb."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2200,7 +2212,7 @@ class StdChronoTzdbPrinter:
 
 
 class StdChronoTimeZoneRulePrinter:
-    "Print a chrono::time_zone rule"
+    """Print a chrono::time_zone rule."""
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -2234,7 +2246,7 @@ class StdChronoTimeZoneRulePrinter:
 
 
 class StdLocalePrinter:
-    "Print a std::locale"
+    """Print a std::locale."""
 
     def __init__(self, typename, val):
         self.val = val
@@ -2372,14 +2384,14 @@ libstdcxx_printer = None
 
 
 class TemplateTypePrinter(object):
-    r"""
+    """
     A type printer for class templates with default template arguments.
 
     Recognizes specializations of class templates and prints them without
     any template arguments that use a default template argument.
     Type printers are recursively applied to the template arguments.
 
-    e.g. replace "std::vector<T, std::allocator<T> >" with "std::vector<T>".
+    e.g. replace 'std::vector<T, std::allocator<T> >' with 'std::vector<T>'.
     """
 
     def __init__(self, name, defargs):
@@ -2388,7 +2400,7 @@ class TemplateTypePrinter(object):
         self.enabled = True
 
     class _recognizer(object):
-        "The recognizer class for TemplateTypePrinter."
+        """The recognizer class for TemplateTypePrinter."""
 
         def __init__(self, name, defargs):
             self.name = name
@@ -2468,12 +2480,12 @@ class TemplateTypePrinter(object):
             return str(type_obj)
 
     def instantiate(self):
-        "Return a recognizer object for this type printer."
+        """Return a recognizer object for this type printer."""
         return self._recognizer(self.name, self.defargs)
 
 
 def add_one_template_type_printer(obj, name, defargs):
-    r"""
+    """
     Add a type printer for a class template with default template arguments.
 
     Args:
@@ -2487,7 +2499,6 @@ def add_one_template_type_printer(obj, name, defargs):
     { 2: 'std::hash<{0}>',
       3: 'std::equal_to<{0}>',
       4: 'std::allocator<std::pair<const {0}, {1}> >' }
-
     """
     printer = TemplateTypePrinter('std::'+name, defargs)
     gdb.types.register_type_printer(obj, printer)
@@ -2511,7 +2522,7 @@ def add_one_template_type_printer(obj, name, defargs):
 
 
 class FilteringTypePrinter(object):
-    r"""
+    """
     A type printer that uses typedef names for common template specializations.
 
     Args:
@@ -2539,7 +2550,7 @@ class FilteringTypePrinter(object):
         self.enabled = True
 
     class _recognizer(object):
-        "The recognizer class for FilteringTypePrinter."
+        """The recognizer class for FilteringTypePrinter."""
 
         def __init__(self, template, name, targ1):
             self.template = template
@@ -2583,7 +2594,7 @@ class FilteringTypePrinter(object):
             return None
 
     def instantiate(self):
-        "Return a recognizer object for this type printer."
+        """Return a recognizer object for this type printer."""
         return self._recognizer(self.template, self.name, self.targ1)
 
 
@@ -2708,7 +2719,7 @@ def register_type_printers(obj):
 
 
 def register_libstdcxx_printers(obj):
-    "Register libstdc++ pretty-printers with objfile Obj."
+    """Register libstdc++ pretty-printers with objfile Obj."""
 
     global _use_gdb_pp
     global libstdcxx_printer

@@ -607,7 +607,9 @@ class AssociativeContainerMethodsMatcher(gdb.xmethod.XMethodMatcher):
 
 
 class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
-    "Implements std::unique_ptr<T>::get() and std::unique_ptr<T>::operator->()"
+    """
+    Implement std::unique_ptr<T>::get() and std::unique_ptr<T>::operator->().
+    """
 
     def __init__(self, elem_type):
         self._is_array = elem_type.code == gdb.TYPE_CODE_ARRAY
@@ -623,7 +625,7 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
         return self._elem_type.pointer()
 
     def _supports(self, method_name):
-        "operator-> is not supported for unique_ptr<T[]>"
+        # operator-> is not supported for unique_ptr<T[]>
         return method_name == 'get' or not self._is_array
 
     def __call__(self, obj):
@@ -647,7 +649,7 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
 
 
 class UniquePtrDerefWorker(UniquePtrGetWorker):
-    "Implements std::unique_ptr<T>::operator*()"
+    """Implement std::unique_ptr<T>::operator*()."""
 
     def __init__(self, elem_type):
         UniquePtrGetWorker.__init__(self, elem_type)
@@ -656,7 +658,7 @@ class UniquePtrDerefWorker(UniquePtrGetWorker):
         return self._elem_type
 
     def _supports(self, method_name):
-        "operator* is not supported for unique_ptr<T[]>"
+        # operator* is not supported for unique_ptr<T[]>
         return not self._is_array
 
     def __call__(self, obj):
@@ -664,7 +666,7 @@ class UniquePtrDerefWorker(UniquePtrGetWorker):
 
 
 class UniquePtrSubscriptWorker(UniquePtrGetWorker):
-    "Implements std::unique_ptr<T>::operator[](size_t)"
+    """Implement std::unique_ptr<T>::operator[](size_t)."""
 
     def __init__(self, elem_type):
         UniquePtrGetWorker.__init__(self, elem_type)
@@ -676,7 +678,7 @@ class UniquePtrSubscriptWorker(UniquePtrGetWorker):
         return self._elem_type
 
     def _supports(self, method_name):
-        "operator[] is only supported for unique_ptr<T[]>"
+        # operator[] is only supported for unique_ptr<T[]>
         return self._is_array
 
     def __call__(self, obj, index):
@@ -710,7 +712,9 @@ class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
 
 
 class SharedPtrGetWorker(gdb.xmethod.XMethodWorker):
-    "Implements std::shared_ptr<T>::get() and std::shared_ptr<T>::operator->()"
+    """
+    Implements std::shared_ptr<T>::get() and std::shared_ptr<T>::operator->().
+    """
 
     def __init__(self, elem_type):
         self._is_array = elem_type.code == gdb.TYPE_CODE_ARRAY
@@ -726,7 +730,7 @@ class SharedPtrGetWorker(gdb.xmethod.XMethodWorker):
         return self._elem_type.pointer()
 
     def _supports(self, method_name):
-        "operator-> is not supported for shared_ptr<T[]>"
+        # operator-> is not supported for shared_ptr<T[]>
         return method_name == 'get' or not self._is_array
 
     def __call__(self, obj):
@@ -734,7 +738,7 @@ class SharedPtrGetWorker(gdb.xmethod.XMethodWorker):
 
 
 class SharedPtrDerefWorker(SharedPtrGetWorker):
-    "Implements std::shared_ptr<T>::operator*()"
+    """Implement std::shared_ptr<T>::operator*()."""
 
     def __init__(self, elem_type):
         SharedPtrGetWorker.__init__(self, elem_type)
@@ -743,7 +747,7 @@ class SharedPtrDerefWorker(SharedPtrGetWorker):
         return self._elem_type
 
     def _supports(self, method_name):
-        "operator* is not supported for shared_ptr<T[]>"
+        # operator* is not supported for shared_ptr<T[]>
         return not self._is_array
 
     def __call__(self, obj):
@@ -751,7 +755,7 @@ class SharedPtrDerefWorker(SharedPtrGetWorker):
 
 
 class SharedPtrSubscriptWorker(SharedPtrGetWorker):
-    "Implements std::shared_ptr<T>::operator[](size_t)"
+    """Implement std::shared_ptr<T>::operator[](size_t)."""
 
     def __init__(self, elem_type):
         SharedPtrGetWorker.__init__(self, elem_type)
@@ -763,7 +767,7 @@ class SharedPtrSubscriptWorker(SharedPtrGetWorker):
         return self._elem_type
 
     def _supports(self, method_name):
-        "operator[] is only supported for shared_ptr<T[]>"
+        # operator[] is only supported for shared_ptr<T[]>
         return self._is_array
 
     def __call__(self, obj, index):
@@ -776,7 +780,7 @@ class SharedPtrSubscriptWorker(SharedPtrGetWorker):
 
 
 class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
-    "Implements std::shared_ptr<T>::use_count()"
+    """Implement std::shared_ptr<T>::use_count()."""
 
     def __init__(self, elem_type):
         pass
@@ -796,7 +800,7 @@ class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
 
 
 class SharedPtrUniqueWorker(SharedPtrUseCountWorker):
-    "Implements std::shared_ptr<T>::unique()"
+    """Implement std::shared_ptr<T>::unique()."""
 
     def __init__(self, elem_type):
         SharedPtrUseCountWorker.__init__(self, elem_type)
