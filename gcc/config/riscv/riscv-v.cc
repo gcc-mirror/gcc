@@ -1149,8 +1149,9 @@ expand_const_vector (rtx target, rtx src)
 	      for (unsigned int i = 0; i < v.npatterns (); ++i)
 		{
 		  /* Calculate the diff between the target sequence and
-		     vid sequence.  */
-		  HOST_WIDE_INT diff = INTVAL (builder.elt (i)) - i;
+		     vid sequence.  The elt (i) can be either const_int or
+		     const_poly_int. */
+		  poly_int64 diff = rtx_to_poly_int64 (builder.elt (i)) - i;
 		  v.quick_push (gen_int_mode (diff, v.inner_mode ()));
 		}
 	      /* Step 2: Generate result = VID + diff.  */
