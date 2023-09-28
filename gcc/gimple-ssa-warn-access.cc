@@ -2143,7 +2143,7 @@ private:
   void check_dangling_uses (tree, tree, bool = false, bool = false);
   void check_dangling_uses ();
   void check_dangling_stores ();
-  void check_dangling_stores (basic_block, hash_set<tree> &, auto_bitmap &);
+  bool check_dangling_stores (basic_block, hash_set<tree> &);
 
   void warn_invalid_pointer (tree, gimple *, gimple *, tree, bool, bool = false);
 
@@ -4526,17 +4526,13 @@ pass_waccess::check_dangling_uses (tree var, tree decl, bool maybe /* = false */
 
 /* Diagnose stores in BB and (recursively) its predecessors of the addresses
    of local variables into nonlocal pointers that are left dangling after
-   the function returns.  BBS is a bitmap of basic blocks visited.  */
+   the function returns.  Returns true when we can continue walking
+   the CFG to predecessors.  */
 
-void
+bool
 pass_waccess::check_dangling_stores (basic_block bb,
-				     hash_set<tree> &stores,
-				     auto_bitmap &bbs)
+				     hash_set<tree> &stores)
 {
-  if (!bitmap_set_bit (bbs, bb->index))
-    /* Avoid cycles. */
-    return;
-
   /* Iterate backwards over the statements looking for a store of
      the address of a local variable into a nonlocal pointer.  */
   for (auto gsi = gsi_last_nondebug_bb (bb); ; gsi_prev_nondebug (&gsi))
@@ -4552,7 +4548,7 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
 	/* Avoid looking before nonconst, nonpure calls since those might
 	   use the escaped locals.  */
-	return;
+	return false;
 
       if (!is_gimple_assign (stmt) || gimple_clobber_p (stmt)
 	  || !gimple_store_p (stmt))
@@ -4578,7 +4574,7 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
 	  if (!gimple_nop_p (def_stmt))
 	    /* Avoid looking at or before stores into unknown objects.  */
-	    return;
+	    return false;
 
 	  lhs_ref.ref = SSA_NAME_VAR (lhs_ref.ref);
 	}
@@ -4622,13 +4618,7 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	}
     }
 
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      basic_block pred = e->src;
-      check_dangling_stores (pred, stores, bbs);
-    }
+  return true;
 }
 
 /* Diagnose stores of the addresses of local variables into nonlocal
@@ -4637,9 +4627,32 @@ pass_waccess::check_dangling_stores (basic_block bb,
 void
 pass_waccess::check_dangling_stores ()
 {
+  if (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (m_func)->preds) == 0)
+    return;
+
   auto_bitmap bbs;
   hash_set<tree> stores;
-  check_dangling_stores (EXIT_BLOCK_PTR_FOR_FN (m_func), stores, bbs);
+  auto_vec<edge_iterator, 8> worklist (n_basic_blocks_for_fn (cfun) + 1);
+  worklist.quick_push (ei_start (EXIT_BLOCK_PTR_FOR_FN (m_func)->preds));
+  do
+    {
+      edge_iterator ei = worklist.last ();
+      basic_block src = ei_edge (ei)->src;
+      if (bitmap_set_bit (bbs, src->index))
+	{
+	  if (check_dangling_stores (src, stores)
+	      && EDGE_COUNT (src->preds) > 0)
+	    worklist.quick_push (ei_start (src->preds));
+	}
+      else
+	{
+	  if (ei_one_before_end_p (ei))
+	    worklist.pop ();
+	  else
+	    ei_next (&worklist.last ());
+	}
+    }
+  while (!worklist.is_empty ());
 }
 
 /* Check for and diagnose uses of dangling pointers to auto objects
