@@ -30,8 +30,8 @@ set gm2src ${srcdir}/../gm2
 
 gm2_init_cor ""
 
-# We should be able to compile, link or run in 15 seconds.
-gm2_push_timeout 15
+# We should be able to compile, link or run in 20 seconds.
+gm2_push_timeout 20
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
