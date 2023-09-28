@@ -1,3 +1,8 @@
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt102.adb:New test.
+	* gnat.dg/opt102_pkg.adb, gnat.dg/opt102_pkg.ads: New helper.
+
 2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

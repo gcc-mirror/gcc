@@ -1,3 +1,8 @@
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-range-gori.cc (gori_compute::logical_combine): Add missing
+	return statement in the varying case.
+
 2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
