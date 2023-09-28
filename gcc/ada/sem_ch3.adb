@@ -5961,17 +5961,10 @@ package body Sem_Ch3 is
       --  If this is a subtype declaration for an actual in an instance,
       --  inherit static and dynamic predicates if any.
 
-      --  If declaration has no aspect specifications, inherit predicate
-      --  info as well. Unclear how to handle the case of both specified
-      --  and inherited predicates ??? Other inherited aspects, such as
-      --  invariants, should be OK, but the combination with later pragmas
-      --  may also require special merging.
-
       if Has_Predicates (T)
         and then Present (Predicate_Function (T))
-        and then
-          ((In_Instance and then not Comes_From_Source (N))
-             or else No (Aspect_Specifications (N)))
+        and then In_Instance
+        and then not Comes_From_Source (N)
       then
          --  Inherit Subprograms_For_Type from the full view, if present
 

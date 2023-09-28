@@ -14612,10 +14612,17 @@ package body Sem_Util is
       --  A named subtype does not inherit the predicate function of its
       --  parent but an itype declared for a loop index needs the discrete
       --  predicate information of its parent to execute the loop properly.
+      --  Moreover, a named private subtype whose full view is an itype also
+      --  needs to inherit a predicate function because it will not be frozen.
       --  A non-discrete type may has a static predicate (for example True)
       --  but has no static_discrete_predicate.
 
-      if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
+      if (Is_Itype (Subt)
+           or else (Ekind (Subt) = E_Private_Subtype
+                     and then Present (Full_View (Subt))
+                     and then Is_Itype (Full_View (Subt))))
+        and then Present (Predicate_Function (Par))
+      then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
 
          if Has_Static_Predicate (Par) and then Is_Discrete_Type (Par) then
