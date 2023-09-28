@@ -15967,7 +15967,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   enum dwarf_location_atom op;
   dw_loc_descr_ref op0, op1;
   rtx inner = NULL_RTX;
-  poly_int64 offset;
 
   if (mode == VOIDmode)
     mode = GET_MODE (rtl);
