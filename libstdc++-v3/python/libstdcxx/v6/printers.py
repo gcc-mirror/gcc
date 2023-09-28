@@ -129,7 +129,6 @@ def lookup_templ_spec(templ, *args):
 
 # Use this to find container node types instead of find_type,
 # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91997 for details.
-
 def lookup_node_type(nodename, containertype):
     """
     Lookup specialization of template nodename corresponding to containertype.
@@ -172,7 +171,7 @@ def is_member_of_namespace(typ, *namespaces):
     Test whether a type is a member of one of the specified namespaces.
     The type can be specified as a string or a gdb.Type object.
     """
-    if type(typ) is gdb.Type:
+    if isinstance(typ, gdb.Type):
         typ = str(typ)
     typ = strip_versioned_namespace(typ)
     for namespace in namespaces:
@@ -184,10 +183,10 @@ def is_member_of_namespace(typ, *namespaces):
 def is_specialization_of(x, template_name):
     "Test if a type is a given template instantiation."
     global _versioned_namespace
-    if type(x) is gdb.Type:
+    if isinstance(x, gdb.Type):
         x = x.tag
     if _versioned_namespace:
-        return re.match('^std::(%s)?%s<.*>$' % (_versioned_namespace, template_name), x) is not None
+        template_name = '(%s)?%s' % (_versioned_namespace, template_name)
     return re.match('^std::%s<.*>$' % template_name, x) is not None
 
 
@@ -204,9 +203,9 @@ def strip_inline_namespaces(type_str):
     type_str = type_str.replace('std::__cxx11::', 'std::')
     expt_ns = 'std::experimental::'
     for lfts_ns in ('fundamentals_v1', 'fundamentals_v2'):
-        type_str = type_str.replace(expt_ns+lfts_ns+'::', expt_ns)
+        type_str = type_str.replace(expt_ns + lfts_ns + '::', expt_ns)
     fs_ns = expt_ns + 'filesystem::'
-    type_str = type_str.replace(fs_ns+'v1::', fs_ns)
+    type_str = type_str.replace(fs_ns + 'v1::', fs_ns)
     return type_str
 
 
@@ -344,7 +343,8 @@ class UniquePointerPrinter:
         return SmartPtrIterator(unique_ptr_get(self.val))
 
     def to_string(self):
-        return ('std::unique_ptr<%s>' % (str(self.val.type.template_argument(0))))
+        t = self.val.type.template_argument(0)
+        return 'std::unique_ptr<{}>'.format(str(t))
 
 
 def get_value_from_aligned_membuf(buf, valtype):
@@ -576,7 +576,8 @@ class StdBitIteratorPrinter:
     def to_string(self):
         if not self.val['_M_p']:
             return 'non-dereferenceable iterator for std::vector<bool>'
-        return bool(self.val['_M_p'].dereference() & (1 << self.val['_M_offset']))
+        return bool(self.val['_M_p'].dereference()
+                    & (1 << self.val['_M_offset']))
 
 
 class StdBitReferencePrinter:
@@ -1233,8 +1234,9 @@ class SingleObjContainerPrinter(object):
         return self._contained(self.contained_value)
 
     def display_hint(self):
-        # if contained value is a map we want to display in the same way
-        if hasattr(self.visualizer, 'children') and hasattr(self.visualizer, 'display_hint'):
+        if (hasattr(self.visualizer, 'children')
+                and hasattr(self.visualizer, 'display_hint')):
+            # If contained value is a map we want to display in the same way.
             return self.visualizer.display_hint()
         return self.hint
 
@@ -1268,8 +1270,8 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
-        self.typename = re.sub(
-            '^std::experimental::fundamentals_v\d::', 'std::experimental::', self.typename, 1)
+        self.typename = re.sub(r'^std::experimental::fundamentals_v\d::',
+                               'std::experimental::', self.typename, 1)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -1280,7 +1282,16 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             if not func:
                 raise ValueError(
                     "Invalid function pointer in %s" % (self.typename))
-            rx = r"""({0}::_Manager_\w+<.*>)::_S_manage\((enum )?{0}::_Op, (const {0}|{0} const) ?\*, (union )?{0}::_Arg ?\*\)""".format(typename)
+            # We want to use this regular expression:
+            # T::_Manager_xxx<.*>::_S_manage\(T::_Op, const T\*, T::_Arg\*\)
+            # where T is std::any or std::experimental::any.
+            # But we need to account for variances in demangled names
+            # between GDB versions, e.g. 'enum T::_Op' instead of 'T::_Op'.
+            rx = (
+                r"({0}::_Manager_\w+<.*>)::_S_manage\("
+                r"(enum )?{0}::_Op, (const {0}|{0} const) ?\*, "
+                r"(union )?{0}::_Arg ?\*\)"
+            ).format(typename)
             m = re.match(rx, func)
             if not m:
                 raise ValueError(
@@ -1289,23 +1300,13 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             mgrname = m.group(1)
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
             if 'std::string' in mgrname:
-                # This lookup for std::string might return the __cxx11 version,
-                # but that's not necessarily the one used by the std::any
-                # manager function we're trying to find.
-                strings = {
-                    str(gdb.lookup_type('std::string').strip_typedefs())}
-                # So also consider all the other possible std::string types!
-                s = 'basic_string<char, std::char_traits<char>, std::allocator<char> >'
-                quals = ['std::', 'std::__cxx11::',
-                         'std::' + _versioned_namespace]
-                strings |= {q+s for q in quals}  # set of unique strings
                 mgrtypes = []
-                for s in strings:
+                for s in _string_types():
                     try:
-                        x = re.sub("std::string(?!\w)", s, m.group(1))
+                        x = re.sub(r"std::string(?!\w)", s, m.group(1))
                         # The following lookup might raise gdb.error if the
-                        # manager function was never instantiated for 's' in the
-                        # program, because there will be no such type.
+                        # manager function was never instantiated for 's' in
+                        # the program, because there will be no such type.
                         mgrtypes.append(gdb.lookup_type(x))
                     except gdb.error:
                         pass
@@ -1316,7 +1317,9 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
                     # Maybe find the address of each type's _S_manage and
                     # compare to the address stored in _M_manager?
                     raise ValueError(
-                        'Cannot uniquely determine std::string type used in std::any')
+                        'Cannot uniquely determine std::string type '
+                        'used in std::any'
+                    )
                 mgrtype = mgrtypes[0]
             else:
                 mgrtype = gdb.lookup_type(mgrname)
@@ -1343,6 +1346,19 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
         valtype = self._recognize(self.contained_type)
         return desc + strip_versioned_namespace(str(valtype))
 
+    @staticmethod
+    def _string_types():
+        # This lookup for std::string might return the __cxx11 version,
+        # but that's not necessarily the one used by the std::any
+        # manager function we're trying to find.
+        strings = {str(gdb.lookup_type('std::string').strip_typedefs())}
+        # So also consider all the other possible std::string types!
+        s = 'basic_string<char, std::char_traits<char>, std::allocator<char> >'
+        quals = ['std::', 'std::__cxx11::',
+                 'std::' + _versioned_namespace]
+        strings |= {q + s for q in quals}  # set of unique strings
+        return strings
+
 
 class StdExpOptionalPrinter(SingleObjContainerPrinter):
     """Print a std::optional or std::experimental::optional."""
@@ -1351,7 +1367,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
         valtype = self._recognize(val.type.template_argument(0))
         typename = strip_versioned_namespace(typename)
         self.typename = re.sub(
-            '^std::(experimental::|)(fundamentals_v\d::|)(.*)',
+            r'^std::(experimental::|)(fundamentals_v\d::|)(.*)',
             r'std::\1\3<%s>' % valtype, typename, 1)
         payload = val['_M_payload']
         if self.typename.startswith('std::experimental'):
@@ -1562,7 +1578,7 @@ class StdPathPrinter:
                 # We can't access _Impl::_M_size because _Impl is incomplete
                 # so cast to int* to access the _M_size member at offset zero,
                 int_type = gdb.lookup_type('int')
-                cmpt_type = gdb.lookup_type(pathtype+'::_Cmpt')
+                cmpt_type = gdb.lookup_type(pathtype + '::_Cmpt')
                 char_type = gdb.lookup_type('char')
                 impl = impl.cast(int_type.pointer())
                 size = impl.dereference()
@@ -1636,7 +1652,7 @@ class StdCmpCatPrinter:
     """Print a comparison category object."""
 
     def __init__(self, typename, val):
-        self.typename = typename[typename.rfind(':')+1:]
+        self.typename = typename[typename.rfind(':') + 1:]
         self.val = val['_M_value']
 
     def to_string(self):
@@ -1697,14 +1713,15 @@ class StdErrorCodePrinter:
 
     @classmethod
     def _category_info(cls, cat):
-        "Return details of a std::error_category"
+        """Return details of a std::error_category."""
 
         name = None
         enum = None
         is_errno = False
 
         # Try these first, or we get "warning: RTTI symbol not found" when
-        # using cat.dynamic_type on the local class types for Net TS categories.
+        # using cat.dynamic_type on the local class types for Net TS
+        # categories.
         func, enum = cls._match_net_ts_category(cat)
         if func is not None:
             return (None, func, enum, is_errno)
@@ -1822,7 +1839,8 @@ class StdSpanPrinter:
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
         self.val = val
-        if val.type.template_argument(1) == gdb.parse_and_eval('static_cast<std::size_t>(-1)'):
+        size_max = gdb.parse_and_eval('static_cast<std::size_t>(-1)')
+        if val.type.template_argument(1) == size_max:
             self.size = val['_M_extent']['_M_extent_value']
         else:
             self.size = val.type.template_argument(1)
@@ -1865,7 +1883,8 @@ class StdAtomicPrinter:
         self.value_type = self.val.type.template_argument(0)
         if self.value_type.tag is not None:
             typ = strip_versioned_namespace(self.value_type.tag)
-            if typ.startswith('std::shared_ptr<') or typ.startswith('std::weak_ptr<'):
+            if (typ.startswith('std::shared_ptr<')
+                    or typ.startswith('std::weak_ptr<')):
                 impl = val['_M_impl']
                 self.shptr_printer = SharedPointerPrinter(typename, impl)
                 self.children = self._shptr_children
@@ -2099,11 +2118,11 @@ def add_one_template_type_printer(obj, name, defargs):
       3: 'std::equal_to<{0}>',
       4: 'std::allocator<std::pair<const {0}, {1}> >' }
     """
-    printer = TemplateTypePrinter('std::'+name, defargs)
+    printer = TemplateTypePrinter('std::' + name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
     # Add type printer for same type in debug namespace:
-    printer = TemplateTypePrinter('std::__debug::'+name, defargs)
+    printer = TemplateTypePrinter('std::__debug::' + name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
     if _versioned_namespace and not '__cxx11' in name:
@@ -2112,7 +2131,7 @@ def add_one_template_type_printer(obj, name, defargs):
         # PR 86112 Cannot use dict comprehension here:
         defargs = dict((n, d.replace('std::', ns))
                        for (n, d) in defargs.items())
-        printer = TemplateTypePrinter(ns+name, defargs)
+        printer = TemplateTypePrinter(ns + name, defargs)
         gdb.types.register_type_printer(obj, printer)
 
 class FilteringTypePrinter(object):
@@ -2159,7 +2178,8 @@ class FilteringTypePrinter(object):
 
             if self.type_obj is None:
                 if self.targ1 is not None:
-                    if not type_obj.tag.startswith('{}<{}'.format(self.template, self.targ1)):
+                    s = '{}<{}'.format(self.template, self.targ1)
+                    if not type_obj.tag.startswith(s):
                         # Filter didn't match.
                         return None
                 elif not type_obj.tag.startswith(self.template):
@@ -2174,12 +2194,17 @@ class FilteringTypePrinter(object):
             if self.type_obj is None:
                 return None
 
-            if gdb.types.get_basic_type(self.type_obj) == gdb.types.get_basic_type(type_obj):
+            t1 = gdb.types.get_basic_type(self.type_obj)
+            t2 = gdb.types.get_basic_type(type_obj)
+            if t1 == t2:
                 return strip_inline_namespaces(self.name)
 
-            # Workaround ambiguous typedefs matching both std:: and std::__cxx11:: symbols.
+            # Workaround ambiguous typedefs matching both std:: and
+            # std::__cxx11:: symbols.
             if self.template.split('::')[-1] == 'basic_string':
-                if self.type_obj.tag.replace('__cxx11::', '') == type_obj.tag.replace('__cxx11::', ''):
+                s1 = self.type_obj.tag.replace('__cxx11::', '')
+                s2 = type_obj.tag.replace('__cxx11::', '')
+                if s1 == s2:
                     return strip_inline_namespaces(self.name)
 
             return None
