@@ -9320,6 +9320,12 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
+  /* Still having a descriptor array of rank == 0 here, indicates an
+     allocatable coarrays.  Dereference it correctly.  */
+  if (GFC_DESCRIPTOR_TYPE_P (decl_type))
+    {
+      decl = build_fold_indirect_ref (gfc_conv_array_data (decl));
+    }
   /* Otherwise, act on the components or recursively call self to
      act on a chain of components.  */
   for (c = der_type->components; c; c = c->next)
@@ -11507,7 +11513,11 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
     {
       int rank;
       rank = sym->as ? sym->as->rank : 0;
-      tmp = gfc_deallocate_alloc_comp (sym->ts.u.derived, descriptor, rank);
+      tmp = gfc_deallocate_alloc_comp (sym->ts.u.derived, descriptor, rank,
+				       (sym->attr.codimension
+					&& flag_coarray == GFC_FCOARRAY_LIB)
+				       ? GFC_STRUCTURE_CAF_MODE_IN_COARRAY
+				       : 0);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
@@ -11521,9 +11531,11 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 					NULL_TREE, NULL_TREE, true, e,
 					sym->attr.codimension
 					? GFC_CAF_COARRAY_DEREGISTER
-					: GFC_CAF_COARRAY_NOCOARRAY);
+					: GFC_CAF_COARRAY_NOCOARRAY,
+					NULL_TREE, gfc_finish_block (&cleanup));
       if (e)
 	gfc_free_expr (e);
+      gfc_init_block (&cleanup);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
