@@ -1,3 +1,73 @@
+2023-09-27  Paul Dreik  <gccpatches@pauldreik.se>
+
+	Backported from master:
+	2023-08-24  Paul Dreik  <gccpatches@pauldreik.se>
+
+	PR libstdc++/111102
+	* testsuite/std/format/string.cc: Check wide character format
+	strings with out-of-range widths.
+
+2023-09-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2023-09-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/format (std::__format::_Arg_store): Explicit version
+	namespace on make_format_args friend declaration.
+
+2023-09-27  Paul Dreik  <gccpatches@pauldreik.se>
+
+	Backported from master:
+	2023-08-24  Paul Dreik  <gccpatches@pauldreik.se>
+
+	PR libstdc++/111102
+	* include/std/format (__format::__parse_integer): Check for
+	non-null pointer.
+
+2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Fix some warnings.
+	(__format::__write(Ctx&, basic_string_view<CharT>)): Remove
+	unused function template.
+
+2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108046
+	* include/std/format (__formatter_fp::format): Ensure __expc is
+	always set for all presentation types. Set __z correctly for
+	zero precision.
+	* testsuite/std/format/functions/format.cc: Check problem cases.
+
+2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration_cast): Do not use braces
+	around statements for C++11 constexpr rules.
+	* include/bits/stl_algobase.h (__lg): Rewrite as a single
+	statement for C++11 constexpr rules.
+	* include/experimental/bits/fs_path.h (path::string): Use
+	_GLIBCXX17_CONSTEXPR not _GLIBCXX_CONSTEXPR for 'if constexpr'.
+	* include/std/charconv (__to_chars_8): Initialize variable for
+	C++17 constexpr rules.
+
+2023-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111511
+	PR c++/111512
+	* include/std/array (to_array): Qualify calls to __to_array.
+	* testsuite/23_containers/array/creation/111512.cc: New test.
+
 2023-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
