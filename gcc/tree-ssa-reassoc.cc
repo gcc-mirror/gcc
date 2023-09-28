@@ -2102,12 +2102,24 @@ undistribute_bitref_for_vector (enum tree_code opcode,
 	{
 	  sum = build_and_add_sum (vec_type, sum_vec,
 				   valid_vecs[i + 1], opcode);
+	  /* Update the operands only after build_and_add_sum,
+	     so that we don't have to repeat the placement algorithm
+	     of build_and_add_sum.  */
+	  if (sum_vec == tvec
+	      && !useless_type_conversion_p (vec_type, TREE_TYPE (sum_vec)))
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (sum);
+	      tree vce = build1 (VIEW_CONVERT_EXPR, vec_type, sum_vec);
+	      tree lhs = make_ssa_name (vec_type);
+	      gimple *g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
+	      gimple_set_uid (g, gimple_uid (sum));
+	      gsi_insert_before (&gsi, g, GSI_NEW_STMT);
+	      gimple_assign_set_rhs1 (sum, lhs);
+	      update_stmt (sum);
+	    }
 	  if (!useless_type_conversion_p (vec_type,
 					  TREE_TYPE (valid_vecs[i + 1])))
 	    {
-	      /* Update the operands only after build_and_add_sum,
-		 so that we don't have to repeat the placement algorithm
-		 of build_and_add_sum.  */
 	      gimple_stmt_iterator gsi = gsi_for_stmt (sum);
 	      tree vce = build1 (VIEW_CONVERT_EXPR, vec_type,
 				 valid_vecs[i + 1]);
@@ -2116,15 +2128,6 @@ undistribute_bitref_for_vector (enum tree_code opcode,
 	      gimple_set_uid (g, gimple_uid (sum));
 	      gsi_insert_before (&gsi, g, GSI_NEW_STMT);
 	      gimple_assign_set_rhs2 (sum, lhs);
-	      if (sum_vec == tvec)
-		{
-		  vce = build1 (VIEW_CONVERT_EXPR, vec_type, sum_vec);
-		  lhs = make_ssa_name (vec_type);
-		  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
-		  gimple_set_uid (g, gimple_uid (sum));
-		  gsi_insert_before (&gsi, g, GSI_NEW_STMT);
-		  gimple_assign_set_rhs1 (sum, lhs);
-		}
 	      update_stmt (sum);
 	    }
 	  sum_vec = gimple_get_lhs (sum);
