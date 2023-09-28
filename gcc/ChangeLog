@@ -1,3 +1,176 @@
+2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111614
+	* tree-ssa-reassoc.cc (undistribute_bitref_for_vector): Properly
+	convert the first vector when required.
+
+2023-09-28  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111533
+	* config/riscv/riscv-v.cc (expand_const_vector): Fix bug.
+	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p): Fix bug.
+
+2023-09-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gimple.cc (gimple_copy): Add case GIMPLE_OMP_STRUCTURED_BLOCK.
+
+2023-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/111610
+	* configure: Regenerate.
+	* configure.ac: Rename the missing dsymutil case to "DET_UNKNOWN".
+
+2023-09-27  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/aarch64/aarch64-opts.h (enum aarch64_ldp_policy): New
+	enum type.
+	(enum aarch64_stp_policy): New enum type.
+	* config/aarch64/aarch64-protos.h (struct tune_params): Add
+	appropriate enums for the policies.
+	(aarch64_mem_ok_with_ldpstp_policy_model): New declaration.
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNING_OPTION): Remove superseded tuning
+	options.
+	* config/aarch64/aarch64.cc (aarch64_parse_ldp_policy): New
+	function to parse ldp-policy parameter.
+	(aarch64_parse_stp_policy): New function to parse stp-policy parameter.
+	(aarch64_override_options_internal): Call parsing functions.
+	(aarch64_mem_ok_with_ldpstp_policy_model): New function.
+	(aarch64_operands_ok_for_ldpstp): Add call to
+	aarch64_mem_ok_with_ldpstp_policy_model for parameter-value
+	check and alignment check and remove superseded ones.
+	(aarch64_operands_adjust_ok_for_ldpstp): Add call to
+	aarch64_mem_ok_with_ldpstp_policy_model for parameter-value
+	check and alignment check and remove superseded ones.
+	* config/aarch64/aarch64.opt (aarch64-ldp-policy): New param.
+	(aarch64-stp-policy): New param.
+	* doc/invoke.texi: Document the parameters accordingly.
+
+2023-09-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-data-ref.cc (include calls.h): Add new include.
+	(get_references_in_stmt): Correctly handle IFN_MASK_CALL.
+
+2023-09-27  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (abs (copysign (x, y)) -> abs (x)): New pattern.
+
+2023-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105606
+	* system.h (BROKEN_VALUE_INITIALIZATION): Don't define.
+	* vec.h (vec_default_construct): Remove BROKEN_VALUE_INITIALIZATION
+	workaround.
+	* function.cc (assign_parm_find_data_types): Likewise.
+
+2023-09-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (roundeven<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_roundeven): New func decl.
+	* config/riscv/riscv-v.cc (expand_vec_roundeven): New func impl.
+
+2023-09-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111590
+	* dse.cc (find_shift_sequence): Check the mode with access_size exist on the target.
+
+2023-09-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-if-conv.cc (is_cond_scalar_reduction): Fix comments.
+
+2023-09-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (btrunc<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (expand_vec_trunc): New func decl.
+	* config/riscv/riscv-v.cc (emit_vec_cvt_x_f_rtz): New func impl.
+	(expand_vec_trunc): Ditto.
+
+2023-09-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/107567
+	PR target/109166
+	* builtins.cc (expand_builtin) <case BUILT_IN_ATOMIC_TEST_AND_SET>:
+	Handle failure from expand_builtin_atomic_test_and_set.
+	* optabs.cc (expand_atomic_test_and_set): When all attempts fail to
+	generate atomic code through target support, return NULL
+	instead of emitting non-atomic code.  Also, for code handling
+	targetm.atomic_test_and_set_trueval != 1, gcc_assert result
+	from calling emit_store_flag_force instead of returning NULL.
+
+2023-09-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111599
+	* value-relation.cc (relation_oracle::valid_equivs): Ensure
+	ssa_name is valid.
+
+2023-09-26  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	PR tree-optimization/111456
+	* match.pd (`(A ==/!= B) & (A CMP C)`):
+	Support an optional cast on the second A.
+	(`(A ==/!= B) | (A CMP C)`): Likewise.
+
+2023-09-26  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111469
+	* tree-ssa-phiopt.cc (minmax_replacement): Fix
+	the assumption for the `non-diamond` handling cases
+	of diamond code.
+
+2023-09-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* match.pd: Optimize COND_ADD reduction pattern.
+
+2023-09-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/111594
+	PR tree-optimization/110660
+	* match.pd: Optimize COND_LEN_ADD reduction.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (round<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_flags): New enum type.
+	(enum insn_type): Ditto.
+	(expand_vec_round): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_round): New function impl.
+
+2023-09-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_CC1_SPEC): Remove -dynamiclib.
+
+2023-09-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/111547
+	* doc/invoke.texi (-fopenmp): Mention C++11 [[omp::decl(...)]] syntax.
+	(-fopenmp-simd): Likewise. Clarify 'loop' directive semantic.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (rint<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (expand_vec_rint): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_rint): New function impl.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (nearbyint<mode>2): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_vec_nearbyint): New function decl.
+	* config/riscv/riscv-v.cc (expand_vec_nearbyint): New func impl.
+
+2023-09-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (gen_ceil_const_fp): Remove.
+	(get_fp_rounding_coefficient): Rename.
+	(gen_floor_const_fp): Remove.
+	(expand_vec_ceil): Take renamed func.
+	(expand_vec_floor): Ditto.
+
 2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/111497

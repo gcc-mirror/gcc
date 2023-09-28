@@ -1,3 +1,13 @@
+2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoTimeZoneRulePrinter):
+	Fix incorrect number of replacement fields.
+
+2023-09-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/29_atomics/atomic_flag/cons/value_init.cc: Add
+	dg-require-thread-fence.
+
 2023-09-25  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/charconv (__detail::__integer_to_chars_result_type):

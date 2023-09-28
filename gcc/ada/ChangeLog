@@ -1,3 +1,83 @@
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Remove call
+	to Is_Simple_Protected_Type as redundant.
+	(Build_Finalizer.Process_Object_Declaration): Do not retrieve the
+	corresponding record type for simple protected objects. Make the
+	flow of control more explicit in their specific processing.
+	* exp_util.adb (Requires_Cleanup_Actions): Return false for simple
+	protected objects present in library-level package bodies for the
+	sake of consistency with Build_Finalizer and remove call to
+	Is_Simple_Protected_Type as redundant.
+
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/110488
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not build a default
+	subtype for a deferred constant in the definite case too.
+
+2023-09-26  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch7.adb (Contains_Subprogram): Recursively search for subp
+	in loop's statements.
+	(Unnest_Loop)<Fixup_Inner_Scopes>: New.
+	(Unnest_Loop): Rename local variable for more clarity.
+	* exp_unst.ads: Refresh comment.
+
+2023-09-26  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): When computing the
+	accessibility level of an actual parameter based on the
+	expresssion of a constant declaration, add missing support for
+	deferred constants
+
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Status_Flag_Or_Transient_Decl): Remove ??? comment.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Extend the
+	handling of finalizable return objects to the non-BIP case.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Adjust the
+	comment accordingly.
+	* exp_util.adb (Requires_Cleanup_Actions): Likewise.
+
+2023-09-26  Daniel King  <dmking@adacore.com>
+
+	* raise-gcc.c (get_ip_from_context): Adapt for CHERI purecap
+	(get_call_site_action_for): Adapt for CHERI purecap
+
+2023-09-26  Daniel King  <dmking@adacore.com>
+
+	* libgnat/a-tags.adb (To_Tag): Use System.Storage_Elements for
+	integer to address conversion.
+	* libgnat/s-putima.adb (Put_Image_Pointer): Likewise.
+
+2023-09-26  Daniel King  <dmking@adacore.com>
+
+	* libgnat/s-stratt__cheri.adb: New file
+
+2023-09-26  Daniel King  <dmking@adacore.com>
+
+	* libgnat/i-cheri.ads (Capability_Bound_Error)
+	(Capability_Permission_Error, Capability_Sealed_Error)
+	(Capability_Tag_Error): New, define CHERI exception types.
+
+2023-09-26  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_prag.adb: Make minor corrections in comments.
+	* rtsfind.ads: Remove unused element from RTU_Id definition.
+
+2023-09-26  Derek Schacht  <schacht@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Add more details on
+	using Generic Elementary Functions with dimensional analysis.
+	* gnat_ugn.texi: Regenerate.
+
+2023-09-26  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): Reference both sections
+	of the Ada RM that deal with case statements and case expressions
+	to justify the insertion of a runtime check.
+
 2023-09-19  Richard Wai  <richard@annexi-strayline.com>
 
 	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Expanded comments

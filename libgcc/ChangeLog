@@ -1,3 +1,7 @@
+2023-09-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/lse.S (BTI_C): Remove define.
+
 2023-09-20  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
 
 	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key):
