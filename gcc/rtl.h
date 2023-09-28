@@ -4108,8 +4108,11 @@ extern int epilogue_completed;
 
 extern int reload_in_progress;
 
-/* Set to 1 while in lra.  */
-extern int lra_in_progress;
+/* Set to true while in IRA.  */
+extern bool ira_in_progress;
+
+/* Set to true while in LRA.  */
+extern bool lra_in_progress;
 
 /* This macro indicates whether you may create a new
    pseudo-register.  */
