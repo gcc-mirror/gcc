@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "--param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math" } */
 
 #include "cond_widen_reduc-1.c"

@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_v } } } */
 
 
 #include "gather_load-12.c"

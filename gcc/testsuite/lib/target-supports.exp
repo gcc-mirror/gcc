@@ -1812,18 +1812,6 @@ proc check_linker_plugin_available { } {
   } "-flto -fuse-linker-plugin"]
 }
 
-# Return 1 if the target has RISC-V vector extension, 0 otherwise.
-# Cache the result.
-
-proc check_effective_target_riscv_vector { } {
-    # Check that we are compiling for v by checking the __riscv_v marco.
-    return [check_no_compiler_messages riscv_vector assembly {
-       #if !defined(__riscv_v)
-       #error "__riscv_v not defined!"
-       #endif
-    }]
-}
-
 # Return 1 if the we can build a vector example with proper -march flags
 # and the current target can execute it, 0 otherwise.  Cache the result.
 
@@ -8121,7 +8109,7 @@ proc check_effective_target_vect_check_ptrs { } {
 proc check_effective_target_vect_fully_masked { } {
     return [expr { [check_effective_target_aarch64_sve]
 	           || [istarget amdgcn*-*-*]
-		   || [check_effective_target_riscv_vector] }]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return true if the target supports the @code{len_load} and
@@ -8130,7 +8118,7 @@ proc check_effective_target_vect_fully_masked { } {
 proc check_effective_target_vect_len_load_store { } {
     return [expr { [check_effective_target_has_arch_pwr9]
       || [check_effective_target_s390_vx]
-      || [check_effective_target_riscv_vector] }]
+      || [check_effective_target_riscv_v] }]
 }
 
 # Return the value of parameter vect-partial-vector-usage specified for
@@ -8193,7 +8181,7 @@ proc check_effective_target_vect_partial_vectors { } {
 proc check_effective_target_vect_element_align_preferred { } {
     return [expr { ([check_effective_target_aarch64_sve]
 		   && [check_effective_target_vect_variable_length])
-		   || [check_effective_target_riscv_vector] }]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return true if vectorization of v2qi/v4qi/v8qi/v16qi/v2hi store is enabed.
@@ -8616,7 +8604,7 @@ proc check_effective_target_vect_masked_store { } {
     return [expr { [check_avx_available]
 		   || [check_effective_target_aarch64_sve]
 		   || [istarget amdgcn*-*-*]
-		   || [check_effective_target_riscv_vector] }]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports vector gather loads via internal functions.
@@ -8836,7 +8824,7 @@ proc available_vector_sizes { } {
         # 6 different lane counts, and 4 element sizes
 	lappend result 4096 2048 1024 512 256 128 64 32 16 8 4 2
     } elseif { [istarget riscv*-*-*] } {
-	if { [check_effective_target_riscv_vector] } {
+	if { [check_effective_target_riscv_v] } {
 	    lappend result 0 32
 	}
 	lappend result 128
