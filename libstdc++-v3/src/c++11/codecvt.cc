@@ -284,6 +284,8 @@ namespace
 	return invalid_mb_sequence;
       if (c1 == 0xE0 && c2 < 0xA0) [[unlikely]] // overlong
 	return invalid_mb_sequence;
+      if (c1 == 0xED && c2 >= 0xA0) [[unlikely]] // surrogate
+	return invalid_mb_sequence;
       if (avail < 3) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c3 = (unsigned char) from[2];
@@ -484,6 +486,8 @@ namespace
     while (from.size())
       {
 	const char32_t c = from[0];
+	if (0xD800 <= c && c <= 0xDFFF) [[unlikely]]
+	  return codecvt_base::error;
 	if (c > maxcode) [[unlikely]]
 	  return codecvt_base::error;
 	if (!write_utf8_code_point(to, c)) [[unlikely]]
@@ -508,7 +512,7 @@ namespace
 	  return codecvt_base::error;
 	to = codepoint;
       }
-    return from.size() ? codecvt_base::partial : codecvt_base::ok;
+    return from.nbytes() ? codecvt_base::partial : codecvt_base::ok;
   }
 
   // ucs4 -> utf16
@@ -521,6 +525,8 @@ namespace
     while (from.size())
       {
 	const char32_t c = from[0];
+	if (0xD800 <= c && c <= 0xDFFF) [[unlikely]]
+	  return codecvt_base::error;
 	if (c > maxcode) [[unlikely]]
 	  return codecvt_base::error;
 	if (!write_utf16_code_point(to, c, mode)) [[unlikely]]
@@ -653,7 +659,7 @@ namespace
     while (from.size() && to.size())
       {
 	char16_t c = from[0];
-	if (is_high_surrogate(c))
+	if (0xD800 <= c && c <= 0xDFFF)
 	  return codecvt_base::error;
 	if (c > maxcode)
 	  return codecvt_base::error;
@@ -680,7 +686,7 @@ namespace
 	  return codecvt_base::error;
 	to = c;
       }
-    return from.size() == 0 ? codecvt_base::ok : codecvt_base::partial;
+    return from.nbytes() == 0 ? codecvt_base::ok : codecvt_base::partial;
   }
 
   const char16_t*
@@ -1344,8 +1350,6 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
   auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = to.next;
-  if (res == codecvt_base::ok && __from_next != __from_end)
-    res = codecvt_base::error;
   return res;
 }
 
@@ -1419,8 +1423,6 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
   auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = to.next;
-  if (res == codecvt_base::ok && __from_next != __from_end)
-    res = codecvt_base::error;
   return res;
 }
 
@@ -1521,8 +1523,6 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 #endif
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = reinterpret_cast<wchar_t*>(to.next);
-  if (res == codecvt_base::ok && __from_next != __from_end)
-    res = codecvt_base::error;
   return res;
 }
 

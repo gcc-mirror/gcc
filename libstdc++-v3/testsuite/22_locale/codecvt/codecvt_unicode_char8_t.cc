@@ -16,62 +16,33 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-require-cstdint "" }
+// { dg-options "-fchar8_t" }
 
 #include "codecvt_unicode.h"
-
-#include <codecvt>
 
 using namespace std;
 
 void
 test_utf8_utf32_codecvts ()
 {
-#if __SIZEOF_WCHAR_T__ == 4
-  codecvt_utf8<wchar_t> cvt;
+  using codecvt_c32_c8 = codecvt<char32_t, char8_t, mbstate_t>;
+  auto &loc_c = locale::classic ();
+  VERIFY (has_facet<codecvt_c32_c8> (loc_c));
+
+  auto &cvt = use_facet<codecvt_c32_c8> (loc_c);
   test_utf8_utf32_cvt (cvt);
-#endif
 }
 
 void
 test_utf8_utf16_codecvts ()
 {
-#if __SIZEOF_WCHAR_T__ >= 2
-  codecvt_utf8_utf16<wchar_t> cvt;
+  using codecvt_c16_c8 = codecvt<char16_t, char8_t, mbstate_t>;
+  auto &loc_c = locale::classic ();
+  VERIFY (has_facet<codecvt_c16_c8> (loc_c));
+
+  auto &cvt = use_facet<codecvt_c16_c8> (loc_c);
   test_utf8_utf16_cvt (cvt);
-#endif
-}
-
-void
-test_utf8_ucs2_codecvts ()
-{
-#if __SIZEOF_WCHAR_T__ == 2
-  codecvt_utf8<wchar_t> cvt;
-  test_utf8_ucs2_cvt (cvt);
-#endif
-}
-
-void
-test_utf16_utf32_codecvts ()
-{
-#if __SIZEOF_WCHAR_T__ == 4
-  codecvt_utf16<wchar_t> cvt3;
-  test_utf16_utf32_cvt (cvt3, utf16_big_endian);
-
-  codecvt_utf16<wchar_t, 0x10FFFF, codecvt_mode::little_endian> cvt4;
-  test_utf16_utf32_cvt (cvt4, utf16_little_endian);
-#endif
-}
-
-void
-test_utf16_ucs2_codecvts ()
-{
-#if __SIZEOF_WCHAR_T__ == 2
-  codecvt_utf16<wchar_t> cvt3;
-  test_utf16_ucs2_cvt (cvt3, utf16_big_endian);
-
-  codecvt_utf16<wchar_t, 0x10FFFF, codecvt_mode::little_endian> cvt4;
-  test_utf16_ucs2_cvt (cvt4, utf16_little_endian);
-#endif
 }
 
 int
@@ -79,7 +50,4 @@ main ()
 {
   test_utf8_utf32_codecvts ();
   test_utf8_utf16_codecvts ();
-  test_utf8_ucs2_codecvts ();
-  test_utf16_utf32_codecvts ();
-  test_utf16_ucs2_codecvts ();
 }
