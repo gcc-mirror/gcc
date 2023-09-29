@@ -215,6 +215,18 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
+(define_insn_and_split "*<optab>_not_const<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+       (bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
+              (match_operand:X 2 "const_arith_operand" "I")))
+  (clobber (match_scratch:X 3 "=&r"))]
+  "(TARGET_ZBB || TARGET_ZBKB) && !TARGET_ZCB
+   && !optimize_function_for_size_p (cfun)"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0) (bitmanip_bitwise:X (not:X (match_dup 1)) (match_dup 3)))])
+
 ;; '(a >= 0) ? b : 0' is emitted branchless (from if-conversion).  Without a
 ;; bit of extra help for combine (i.e., the below split), we end up emitting
 ;; not/srai/and instead of combining the not into an andn.
