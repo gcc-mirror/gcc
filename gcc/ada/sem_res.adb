@@ -111,10 +111,9 @@ package body Sem_Res is
    function Has_Applicable_User_Defined_Literal
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
-   --  If N is a literal or a named number, check whether Typ
-   --  has a user-defined literal aspect that can apply to N.
-   --  If present, replace N with a call to the corresponding
-   --  function and return True.
+   --  Check whether N is a literal or a named number, and whether Typ has a
+   --  user-defined literal aspect that may apply to N. In this case, replace
+   --  N with a call to the corresponding function and return True.
 
    procedure Check_Discriminant_Use (N : Node_Id);
    --  Enforce the restrictions on the use of discriminants when constraining
@@ -306,11 +305,20 @@ package body Sem_Res is
    function Try_User_Defined_Literal
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
-   --  If an operator node has a literal operand, check whether the type
-   --  of the context, or the type of the other operand has a user-defined
-   --  literal aspect that can be applied to the literal to resolve the node.
-   --  If such aspect exists, replace literal with a call to the
-   --  corresponding function and return True, return false otherwise.
+   --  If the node is a literal or a named number or a conditional expression
+   --  whose dependent expressions are all literals or named numbers, and the
+   --  context type has a user-defined literal aspect, then rewrite the node
+   --  or its leaf nodes as calls to the corresponding function, which plays
+   --  the role of an implicit conversion.
+
+   function Try_User_Defined_Literal_For_Operator
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   --  If an operator node has a literal operand, check whether the type of the
+   --  context, or that of the other operand has a user-defined literal aspect
+   --  that can be applied to the literal to resolve the node. If such aspect
+   --  exists, replace literal with a call to the corresponding function and
+   --  return True, return false otherwise.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
    --  A universal_fixed expression in an universal context is unambiguous if
@@ -492,7 +500,6 @@ package body Sem_Res is
          Name := Make_Identifier (Loc, Chars (Callee));
 
          if Is_Derived_Type (Typ)
-           and then Is_Tagged_Type (Typ)
            and then Base_Type (Etype (Callee)) /= Base_Type (Typ)
          then
             Callee :=
@@ -601,6 +608,7 @@ package body Sem_Res is
 
          Analyze_And_Resolve (N, Typ);
          return True;
+
       else
          return False;
       end if;
@@ -2484,10 +2492,17 @@ package body Sem_Res is
          Expr_Type := Etype (Parent (N));
 
       --  If not overloaded, then we know the type, and all that needs doing
-      --  is to check that this type is compatible with the context.
+      --  is to check that this type is compatible with the context. But note
+      --  that we may have an operator with no interpretation in Ada 2022 for
+      --  the case of possible user-defined literals as operands.
 
       elsif not Is_Overloaded (N) then
-         Found := Covers (Typ, Etype (N));
+         if Nkind (N) in N_Op and then No (Entity (N)) then
+            pragma Assert (Ada_Version >= Ada_2022);
+            Found := False;
+         else
+            Found := Covers (Typ, Etype (N));
+         end if;
          Expr_Type := Etype (N);
 
       --  In the overloaded case, we must select the interpretation that
@@ -3055,15 +3070,11 @@ package body Sem_Res is
                end;
             end if;
 
-            --  If node is a literal and context type has a user-defined
-            --  literal aspect, rewrite node as a call to the corresponding
-            --  function, which plays the role of an implicit conversion.
+            --  Check whether the node is a literal or a named number or a
+            --  conditional expression whose dependent expressions are all
+            --  literals or named numbers.
 
-            if Nkind (N) in
-                N_Numeric_Or_String_Literal | N_Identifier
-              and then Has_Applicable_User_Defined_Literal (N, Typ)
-            then
-               Analyze_And_Resolve (N, Typ);
+            if Try_User_Defined_Literal (N, Typ) then
                return;
             end if;
 
@@ -3170,13 +3181,15 @@ package body Sem_Res is
                           (First (Component_Associations (N))));
                   end if;
 
-               --  For an operator with no interpretation, check whether
-               --  one of its operands may be a user-defined literal.
+               --  For an operator with no interpretation, check whether one of
+               --  its operands may be a user-defined literal.
 
-               elsif Nkind (N) in N_Op
-                 and then Try_User_Defined_Literal (N, Typ)
-               then
-                  return;
+               elsif Nkind (N) in N_Op and then No (Entity (N)) then
+                  if Try_User_Defined_Literal_For_Operator (N, Typ) then
+                     return;
+                  else
+                     Unresolved_Operator (N);
+                  end if;
 
                else
                   Wrong_Type (N, Typ);
@@ -6565,6 +6578,9 @@ package body Sem_Res is
       if Is_Entity_Name (Subp)
         and then not In_Spec_Expression
         and then not Is_Expression_Function_Or_Completion (Current_Scope)
+        and then not (Chars (Current_Scope) = Name_uWrapped_Statements
+                       and then Is_Expression_Function_Or_Completion
+                                  (Scope (Current_Scope)))
         and then
           (not Is_Expression_Function_Or_Completion (Entity (Subp))
             or else Expander_Active)
@@ -6910,65 +6926,62 @@ package body Sem_Res is
          return;
       end if;
 
-      --  Create a transient scope if the resulting type requires it
+      --  Create a transient scope if the expander is active and the resulting
+      --  type requires it.
 
       --  There are several notable exceptions:
 
-      --  a) In init procs, the transient scope overhead is not needed, and is
-      --  even incorrect when the call is a nested initialization call for a
-      --  component whose expansion may generate adjust calls. However, if the
-      --  call is some other procedure call within an initialization procedure
-      --  (for example a call to Create_Task in the init_proc of the task
-      --  run-time record) a transient scope must be created around this call.
-
-      --  b) Enumeration literal pseudo-calls need no transient scope
-
-      --  c) Intrinsic subprograms (Unchecked_Conversion and source info
+      --  a) Intrinsic subprograms (Unchecked_Conversion and source info
       --  functions) do not use the secondary stack even though the return
       --  type may be unconstrained.
 
-      --  d) Calls to a build-in-place function, since such functions may
+      --  b) Subprograms that are ignored ghost entities do not return anything
+
+      --  c) Calls to a build-in-place function, since such functions may
       --  allocate their result directly in a target object, and cases where
       --  the result does get allocated in the secondary stack are checked for
       --  within the specialized Exp_Ch6 procedures for expanding those
       --  build-in-place calls.
 
-      --  e) Calls to inlinable expression functions do not use the secondary
+      --  d) Calls to inlinable expression functions do not use the secondary
       --  stack (since the call will be replaced by its returned object).
 
-      --  f) If the subprogram is marked Inline_Always, then even if it returns
+      --  e) If the subprogram is marked Inline, then even if it returns
       --  an unconstrained type the call does not require use of the secondary
       --  stack. However, inlining will only take place if the body to inline
       --  is already present. It may not be available if e.g. the subprogram is
       --  declared in a child instance.
 
-      --  g) If the subprogram is a static expression function and the call is
+      --  f) If the subprogram is a static expression function and the call is
       --  a static call (the actuals are all static expressions), then we never
       --  want to create a transient scope (this could occur in the case of a
       --  static string-returning call).
 
-      if Is_Inlined (Nam)
-        and then Has_Pragma_Inline (Nam)
-        and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
-        and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
-      then
-         null;
+      --  g) If the call is the expression of a simple return statement that
+      --  returns on the same stack, since it will be handled as a tail call
+      --  by Expand_Simple_Function_Return.
 
-      elsif Ekind (Nam) = E_Enumeration_Literal
-        or else Is_Build_In_Place_Function (Nam)
-        or else Is_Intrinsic_Subprogram (Nam)
-        or else Is_Inlinable_Expression_Function (Nam)
-        or else Is_Static_Function_Call (N)
-      then
-         null;
-
-      --  A return statement from an ignored Ghost function does not use the
-      --  secondary stack (or any other one).
-
-      elsif Expander_Active
+      if Expander_Active
         and then Ekind (Nam) in E_Function | E_Subprogram_Type
         and then Requires_Transient_Scope (Etype (Nam))
+        and then not Is_Intrinsic_Subprogram (Nam)
         and then not Is_Ignored_Ghost_Entity (Nam)
+        and then not Is_Build_In_Place_Function (Nam)
+        and then not Is_Inlinable_Expression_Function (Nam)
+        and then not (Is_Inlined (Nam)
+                       and then Has_Pragma_Inline (Nam)
+                       and then Nkind (Unit_Declaration_Node (Nam)) =
+                                                       N_Subprogram_Declaration
+                       and then
+                        Present (Body_To_Inline (Unit_Declaration_Node (Nam))))
+        and then not Is_Static_Function_Call (N)
+        and then not (Nkind (Parent (N)) = N_Simple_Return_Statement
+                       and then
+                         Needs_Secondary_Stack
+                           (Etype
+                             (Return_Applies_To
+                               (Return_Statement_Entity (Parent (N))))) =
+                         Needs_Secondary_Stack (Etype (Nam)))
       then
          Establish_Transient_Scope (N, Needs_Secondary_Stack (Etype (Nam)));
 
@@ -13202,32 +13215,107 @@ package body Sem_Res is
       Typ : Entity_Id) return Boolean
    is
    begin
-      if Nkind (N) in N_Op_Add | N_Op_Divide | N_Op_Mod | N_Op_Multiply
-        | N_Op_Rem | N_Op_Subtract
-      then
+      if Has_Applicable_User_Defined_Literal (N, Typ) then
+         return True;
 
-         --  Both operands must have the same type as the context.
+      elsif Nkind (N) = N_If_Expression then
+         --  Both dependent expressions must have the same type as the context
+
+         declare
+            Condition : constant Node_Id := First (Expressions (N));
+            Then_Expr : constant Node_Id := Next (Condition);
+            Else_Expr : constant Node_Id := Next (Then_Expr);
+
+         begin
+            if Has_Applicable_User_Defined_Literal (Then_Expr, Typ) then
+               Resolve (Else_Expr, Typ);
+               Analyze_And_Resolve (N, Typ);
+               return True;
+
+            elsif Has_Applicable_User_Defined_Literal (Else_Expr, Typ) then
+               Resolve (Then_Expr, Typ);
+               Analyze_And_Resolve (N, Typ);
+               return True;
+            end if;
+         end;
+
+      elsif Nkind (N) = N_Case_Expression then
+         --  All dependent expressions must have the same type as the context
+
+         declare
+            Alt : Node_Id;
+
+         begin
+            Alt := First (Alternatives (N));
+
+            while Present (Alt) loop
+               if Has_Applicable_User_Defined_Literal (Expression (Alt), Typ)
+               then
+                  declare
+                     Other_Alt : Node_Id;
+
+                  begin
+                     Other_Alt := First (Alternatives (N));
+
+                     while Present (Other_Alt) loop
+                        if Other_Alt /= Alt then
+                           Resolve (Expression (Other_Alt), Typ);
+                        end if;
+
+                        Next (Other_Alt);
+                     end loop;
+
+                     Analyze_And_Resolve (N, Typ);
+                     return True;
+                  end;
+               end if;
+
+               Next (Alt);
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Try_User_Defined_Literal;
+
+   -------------------------------------------
+   -- Try_User_Defined_Literal_For_Operator --
+   -------------------------------------------
+
+   function Try_User_Defined_Literal_For_Operator
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+   begin
+      if Nkind (N) in N_Op_Add
+                    | N_Op_Divide
+                    | N_Op_Mod
+                    | N_Op_Multiply
+                    | N_Op_Rem
+                    | N_Op_Subtract
+      then
+         --  Both operands must have the same type as the context
          --  (ignoring for now fixed-point and exponentiation ops).
 
-         if Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ) then
+         if Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
+           or else (Nkind (Left_Opnd (N)) in N_Op
+                     and then Covers (Typ, Etype (Right_Opnd (N))))
+         then
             Resolve (Left_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
-         end if;
 
-         if
-           Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ)
+         elsif Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ)
+           or else (Nkind (Right_Opnd (N)) in N_Op
+                     and then Covers (Typ, Etype (Left_Opnd (N))))
          then
             Resolve (Right_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
-
-         else
-            return False;
          end if;
 
       elsif Nkind (N) in N_Binary_Op then
-         --  For other operators the context does not impose a type on
+         --  For other binary operators the context does not impose a type on
          --  the operands, but their types must match.
 
          if (Nkind (Left_Opnd (N))
@@ -13247,21 +13335,17 @@ package body Sem_Res is
          then
             Analyze_And_Resolve (N, Typ);
             return True;
-         else
-            return False;
          end if;
 
       elsif Nkind (N) in N_Unary_Op
-        and then
-          Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
+        and then Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
       then
          Analyze_And_Resolve (N, Typ);
          return True;
-
-      else   --  Other operators
-         return False;
       end if;
-   end Try_User_Defined_Literal;
+
+      return False;
+   end Try_User_Defined_Literal_For_Operator;
 
    -----------------------------
    -- Unique_Fixed_Point_Type --

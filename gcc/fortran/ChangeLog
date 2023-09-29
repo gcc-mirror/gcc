@@ -1,3 +1,16 @@
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92586
+	* trans-expr.cc (gfc_trans_arrayfunc_assign): Supply a missing
+	dereference for the call to gfc_deallocate_alloc_comp_no_caf.
+
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68155
+	* decl.cc (fix_initializer_charlen): New function broken out of
+	add_init_expr_to_sym.
+	(add_init_expr_to_sym, build_struct): Call the new function.
+
 2023-08-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87477

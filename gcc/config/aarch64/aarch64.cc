@@ -24851,10 +24851,11 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
   *dst = aarch64_progress_pointer (*dst);
 }
 
-/* Expand a cpymem using the MOPS extension.  OPERANDS are taken
-   from the cpymem pattern.  Return true iff we succeeded.  */
-static bool
-aarch64_expand_cpymem_mops (rtx *operands)
+/* Expand a cpymem/movmem using the MOPS extension.  OPERANDS are taken
+   from the cpymem/movmem pattern.  IS_MEMMOVE is true if this is a memmove
+   rather than memcpy.  Return true iff we succeeded.  */
+bool
+aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
 {
   if (!TARGET_MOPS)
     return false;
@@ -24866,8 +24867,10 @@ aarch64_expand_cpymem_mops (rtx *operands)
   rtx dst_mem = replace_equiv_address (operands[0], dst_addr);
   rtx src_mem = replace_equiv_address (operands[1], src_addr);
   rtx sz_reg = copy_to_mode_reg (DImode, operands[2]);
-  emit_insn (gen_aarch64_cpymemdi (dst_mem, src_mem, sz_reg));
-
+  if (is_memmove)
+    emit_insn (gen_aarch64_movmemdi (dst_mem, src_mem, sz_reg));
+  else
+    emit_insn (gen_aarch64_cpymemdi (dst_mem, src_mem, sz_reg));
   return true;
 }
 
@@ -26154,11 +26157,9 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   gcc_assert (known_eq (GET_MODE_SIZE (GET_MODE (mem_1)),
 			GET_MODE_SIZE (GET_MODE (mem_2))));
 
-  /* One of the memory accesses must be a mempair operand.
-     If it is not the first one, they need to be swapped by the
-     peephole.  */
-  if (!aarch64_mem_pair_operand (mem_1, GET_MODE (mem_1))
-       && !aarch64_mem_pair_operand (mem_2, GET_MODE (mem_2)))
+  /* The lower memory access must be a mem-pair operand.  */
+  rtx lower_mem = reversed ? mem_2 : mem_1;
+  if (!aarch64_mem_pair_operand (lower_mem, GET_MODE (lower_mem)))
     return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))

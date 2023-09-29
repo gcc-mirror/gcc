@@ -309,11 +309,12 @@ package body Sem_Util is
    --------------------------
 
    procedure Add_Block_Identifier
-       (N : Node_Id;
-        Id : out Entity_Id;
-        Scope : Entity_Id := Current_Scope)
+     (N     : Node_Id;
+      Id    : out Entity_Id;
+      Scope : Entity_Id := Current_Scope)
    is
       Loc : constant Source_Ptr := Sloc (N);
+
    begin
       pragma Assert (Nkind (N) = N_Block_Statement);
 
@@ -328,7 +329,6 @@ package body Sem_Util is
          Id := New_Internal_Entity (E_Block, Scope, Loc, 'B');
          Set_Etype  (Id, Standard_Void_Type);
          Set_Parent (Id, N);
-
          Set_Identifier (N, New_Occurrence_Of (Id, Loc));
          Set_Block_Node (Id, Identifier (N));
       end if;
@@ -6480,15 +6480,42 @@ package body Sem_Util is
      (Ancestor_Op     : Entity_Id;
       Descendant_Type : Entity_Id) return Entity_Id
    is
-      Typ  : constant Entity_Id := Find_Dispatching_Type (Ancestor_Op);
-      Elmt : Elmt_Id;
-      Subp : Entity_Id;
+      function Find_Untagged_Type_Of (Prim : Entity_Id) return Entity_Id;
+      --  Search for the untagged type of the primitive operation Prim.
 
       function Profile_Matches_Ancestor (S : Entity_Id) return Boolean;
       --  Returns True if subprogram S has the proper profile for an
       --  overriding of Ancestor_Op (that is, corresponding formals either
       --  have the same type, or are corresponding controlling formals,
       --  and similarly for result types).
+
+      ---------------------------
+      -- Find_Untagged_Type_Of --
+      ---------------------------
+
+      function Find_Untagged_Type_Of (Prim : Entity_Id) return Entity_Id is
+         E : Entity_Id := First_Entity (Scope (Prim));
+
+      begin
+         while Present (E) and then E /= Prim loop
+            if not Is_Tagged_Type (E)
+              and then Present (Direct_Primitive_Operations (E))
+              and then Contains (Direct_Primitive_Operations (E), Prim)
+            then
+               return E;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         pragma Assert (False);
+         return Empty;
+      end Find_Untagged_Type_Of;
+
+      Typ  : constant Entity_Id :=
+               (if Is_Dispatching_Operation (Ancestor_Op)
+                 then Find_Dispatching_Type (Ancestor_Op)
+                 else Find_Untagged_Type_Of (Ancestor_Op));
 
       ------------------------------
       -- Profile_Matches_Ancestor --
@@ -6526,10 +6553,14 @@ package body Sem_Util is
                       or else Is_Ancestor (Typ, Etype (S)));
       end Profile_Matches_Ancestor;
 
+      --  Local variables
+
+      Elmt : Elmt_Id;
+      Subp : Entity_Id;
+
    --  Start of processing for Corresponding_Primitive_Op
 
    begin
-      pragma Assert (Is_Dispatching_Operation (Ancestor_Op));
       pragma Assert (Is_Ancestor (Typ, Descendant_Type)
                       or else Is_Progenitor (Typ, Descendant_Type));
 
@@ -12163,32 +12194,25 @@ package body Sem_Util is
    begin
       --  For selected components, the subtype of the selector must be a
       --  constrained Unchecked_Union. If the component is subject to a
-      --  per-object constraint, then the enclosing object must have inferable
-      --  discriminants.
+      --  per-object constraint, then the enclosing object must either be
+      --  a regular discriminated type or must have inferable discriminants.
 
       if Nkind (N) = N_Selected_Component then
-         if Has_Per_Object_Constraint (Entity (Selector_Name (N))) then
-
-            --  A small hack. If we have a per-object constrained selected
-            --  component of a formal parameter, return True since we do not
-            --  know the actual parameter association yet.
-
-            if Prefix_Is_Formal_Parameter (N) then
-               return True;
-
-            --  Otherwise, check the enclosing object and the selector
-
-            else
-               return Has_Inferable_Discriminants (Prefix (N))
-                 and then Has_Inferable_Discriminants (Selector_Name (N));
-            end if;
-
          --  The call to Has_Inferable_Discriminants will determine whether
          --  the selector has a constrained Unchecked_Union nominal type.
 
-         else
-            return Has_Inferable_Discriminants (Selector_Name (N));
+         if not Has_Inferable_Discriminants (Selector_Name (N)) then
+            return False;
          end if;
+
+         --  A small hack. If we have a per-object constrained selected
+         --  component of a formal parameter, return True since we do not
+         --  know the actual parameter association yet.
+
+         return not Has_Per_Object_Constraint (Entity (Selector_Name (N)))
+           or else not Is_Unchecked_Union (Etype (Prefix (N)))
+           or else Has_Inferable_Discriminants (Prefix (N))
+           or else Prefix_Is_Formal_Parameter (N);
 
       --  A qualified expression has inferable discriminants if its subtype
       --  mark is a constrained Unchecked_Union subtype.
@@ -12201,7 +12225,7 @@ package body Sem_Util is
       --  Unchecked_Union nominal subtype.
 
       else
-         return Is_Unchecked_Union (Base_Type (Etype (N)))
+         return Is_Unchecked_Union (Etype (N))
            and then Is_Constrained (Etype (N));
       end if;
    end Has_Inferable_Discriminants;
@@ -29206,6 +29230,13 @@ package body Sem_Util is
             return Typ;
          end if;
 
+      elsif From_Limited_With (Typ) then
+         if Has_Non_Limited_View (Typ) then
+            return Validated_View (Non_Limited_View (Typ));
+         else
+            return Typ;
+         end if;
+
       else
          return Typ;
       end if;
@@ -29366,7 +29397,11 @@ package body Sem_Util is
    -- Wrong_Type --
    ----------------
 
-   procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id) is
+   procedure Wrong_Type
+     (Expr          : Node_Id;
+      Expected_Type : Entity_Id;
+      Multiple      : Boolean := False)
+   is
       Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
@@ -29453,13 +29488,14 @@ package body Sem_Util is
 
    begin
       --  Don't output message if either type is Any_Type, or if a message
-      --  has already been posted for this node. We need to do the latter
-      --  check explicitly (it is ordinarily done in Errout), because we
-      --  are using ! to force the output of the error messages.
+      --  has already been posted for this node and we do not want multiple
+      --  error messages. We need to do the latter check explicitly (it is
+      --  ordinarily done in Errout) because we are using '!' to force the
+      --  output of the error messages.
 
       if Expec_Type = Any_Type
         or else Found_Type = Any_Type
-        or else Error_Posted (Expr)
+        or else (Error_Posted (Expr) and then not Multiple)
       then
          return;
 

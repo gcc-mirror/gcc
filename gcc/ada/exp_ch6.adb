@@ -5126,8 +5126,16 @@ package body Exp_Ch6 is
       --  Optimization: if the returned value is returned again, then no need
       --  to copy/readjust/finalize, we can just pass the value through (see
       --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
+      --  Note that simple return statements are distributed into conditional
+      --  expressions but we may be invoked before this distribution is done.
 
-      if Nkind (Par) = N_Simple_Return_Statement then
+      if Nkind (Par) = N_Simple_Return_Statement
+        or else (Nkind (Par) = N_If_Expression
+                  and then Nkind (Parent (Par)) = N_Simple_Return_Statement)
+        or else (Nkind (Par) = N_Case_Expression_Alternative
+                  and then
+                    Nkind (Parent (Parent (Par))) = N_Simple_Return_Statement)
+      then
          return;
       end if;
 
@@ -5135,9 +5143,13 @@ package body Exp_Ch6 is
       --  object, then no need to copy/readjust/finalize, we can initialize it
       --  in place. However, if the call returns on the secondary stack, then
       --  we need the expansion because we'll be renaming the temporary as the
-      --  (permanent) object.
+      --  (permanent) object. We also apply it in the case of the expression of
+      --  a delta aggregate, since it is used only to initialize a temporary.
 
-      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
+      if Nkind (Par) in N_Object_Declaration | N_Delta_Aggregate
+        and then Expression (Par) = N
+        and then not Use_Sec_Stack
+      then
          return;
       end if;
 
@@ -5314,7 +5326,7 @@ package body Exp_Ch6 is
       --  with the scope finalizer. There is one flag per each return object
       --  in case of multiple returns.
 
-      if Is_BIP_Func and then Needs_Finalization (Etype (Ret_Obj_Id)) then
+      if Needs_Finalization (Etype (Ret_Obj_Id)) then
          declare
             Flag_Decl : Node_Id;
             Flag_Id   : Entity_Id;
@@ -5413,7 +5425,7 @@ package body Exp_Ch6 is
          --  Update the state of the function right before the object is
          --  returned.
 
-         if Is_BIP_Func and then Needs_Finalization (Etype (Ret_Obj_Id)) then
+         if Needs_Finalization (Etype (Ret_Obj_Id)) then
             declare
                Flag_Id : constant Entity_Id :=
                            Status_Flag_Or_Transient_Decl (Ret_Obj_Id);
@@ -6568,6 +6580,13 @@ package body Exp_Ch6 is
       if Is_Boolean_Type (Exp_Typ) and then Nonzero_Is_True (Exp_Typ) then
          Adjust_Condition (Exp);
          Adjust_Result_Type (Exp, Exp_Typ);
+
+         --  The adjustment of the expression may have rewritten the return
+         --  statement itself, e.g. when it is turned into an if expression.
+
+         if Nkind (N) /= N_Simple_Return_Statement then
+            return;
+         end if;
       end if;
 
       --  Do validity check if enabled for returns
@@ -6815,7 +6834,7 @@ package body Exp_Ch6 is
 
                Temp := Make_Temporary (Loc, 'R', Alloc_Node);
 
-               Insert_List_Before_And_Analyze (N, New_List (
+               Insert_Actions (Exp, New_List (
                  Make_Full_Type_Declaration (Loc,
                    Defining_Identifier => Acc_Typ,
                    Type_Definition     =>

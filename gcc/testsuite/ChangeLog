@@ -1,3 +1,82 @@
+2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt102.adb:New test.
+	* gnat.dg/opt102_pkg.adb, gnat.dg/opt102_pkg.ads: New helper.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* g++.dg/cpp23/subscript15.C: New test.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* g++.dg/cpp2a/concepts-ttp5.C: New test.
+	* g++.dg/cpp2a/concepts-ttp6.C: New test.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* g++.dg/cpp2a/nontype-class60.C: New test.
+
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92586
+	* gfortran.dg/pr92586.f90 : New test
+
+2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68155
+	* gfortran.dg/pr68155.f90: New test.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* g++.dg/concepts/diagnostic19.C: New test.
+
+2023-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-09-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111411
+	* gcc.dg/rtl/aarch64/pr111411.c: New test.
+
+2023-09-18  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111412
+	* gcc.target/riscv/rvv/vsetvl/avl_single-79.c: Adjust case.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-80.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-86.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-87.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-88.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-89.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-90.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr111412.c: New test.
+
 2023-09-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/stack-protector-8.c: New test.

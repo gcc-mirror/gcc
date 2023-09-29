@@ -763,6 +763,7 @@ bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
 tree aarch64_vector_load_decl (tree);
 void aarch64_expand_call (rtx, rtx, rtx, bool);
+bool aarch64_expand_cpymem_mops (rtx *, bool);
 bool aarch64_expand_cpymem (rtx *);
 bool aarch64_expand_setmem (rtx *);
 bool aarch64_float_const_zero_rtx_p (rtx);

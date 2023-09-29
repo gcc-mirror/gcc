@@ -1,3 +1,46 @@
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* decl2.cc (grok_array_decl): Guard diagnostic and backward
+	compatibility fallback code paths with tf_error.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* pt.cc (is_compatible_template_arg): New parameter 'args'.
+	Add the outer template arguments 'args' to 'new_args'.
+	(convert_template_argument): Pass 'args' to
+	is_compatible_template_arg.
+
+2023-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* semantics.cc (finish_decltype_type): For an NTTP object,
+	return its type modulo cv-quals.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	<case VAR_DECL>: Handle class NTTP objects by printing
+	their type and value.
+	<case VIEW_CONVERT_EXPR>: Strip const VIEW_CONVERT_EXPR
+	wrappers for class NTTPs.
+	(pp_cxx_template_argument_list): Don't handle class NTTP
+	objects here.
+
 2023-08-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751

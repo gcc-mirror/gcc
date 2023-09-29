@@ -38,6 +38,7 @@ with Exp_Ch3;          use Exp_Ch3;
 with Exp_Disp;         use Exp_Disp;
 with Exp_Tss;          use Exp_Tss;
 with Exp_Util;         use Exp_Util;
+with Expander;         use Expander;
 with Freeze;           use Freeze;
 with Ghost;            use Ghost;
 with Lib;              use Lib;
@@ -132,9 +133,7 @@ package body Sem_Ch13 is
    function Build_Predicate_Function_Declaration
       (Typ : Entity_Id) return Node_Id;
    --  Build the declaration for a predicate function. The declaration is built
-   --  at the end of the declarative part containing the type definition, which
-   --  may be before the freeze point of the type. The predicate expression is
-   --  preanalyzed at this point, to catch visibility errors.
+   --  at the same time as the body but inserted before, as explained below.
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
@@ -1409,19 +1408,33 @@ package body Sem_Ch13 is
       --  Subsidiary to the analysis of aspects
       --    Abstract_State
       --    Attach_Handler
+      --    Async_Readers
+      --    Async_Writers
+      --    Constant_After_Elaboration
       --    Contract_Cases
+      --    Convention
+      --    Default_Initial_Condition
+      --    Default_Storage_Pool
       --    Depends
       --    Ghost
       --    Global
       --    Initial_Condition
       --    Initializes
+      --    Max_Entry_Queue_Depth
+      --    Max_Entry_Queue_Length
+      --    Max_Queue_Length
+      --    No_Caching
+      --    Part_Of
       --    Post
       --    Pre
       --    Refined_Depends
       --    Refined_Global
+      --    Refined_Post
       --    Refined_State
       --    SPARK_Mode
+      --    Secondary_Stack_Size
       --    Subprogram_Variant
+      --    Volatile_Function
       --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
       --  pragma of the same kind. Flag Is_Generic should be set when the
@@ -3062,16 +3075,11 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Linker_Section);
 
-                  --  Linker_Section does not need delaying, as its argument
-                  --  must be a static string. Furthermore, if applied to
-                  --  an object with an explicit initialization, the object
-                  --  must be frozen in order to elaborate the initialization
-                  --  code. (This is already done for types with implicit
-                  --  initialization, such as protected types.)
+                  --  No need to delay the processing if the entity is already
+                  --  frozen. This should only happen for subprogram bodies.
 
-                  if Nkind (N) = N_Object_Declaration
-                    and then Has_Init_Expression (N)
-                  then
+                  if Is_Frozen (E) then
+                     pragma Assert (Nkind (N) = N_Subprogram_Body);
                      Delay_Required := False;
                   end if;
 
@@ -4725,9 +4733,7 @@ package body Sem_Ch13 is
             --  For an aspect that applies to a type, indicate whether it
             --  appears on a partial view of the type.
 
-            if Is_Type (E)
-              and then Is_Private_Type (E)
-            then
+            if Is_Type (E) and then Is_Private_Type (E) then
                Set_Aspect_On_Partial_View (Aspect);
             end if;
 
@@ -9853,6 +9859,10 @@ package body Sem_Ch13 is
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
       Expr : Node_Id;
       --  This is the expression for the result of the function. It is
       --  is build by connecting the component predicates with AND THEN.
@@ -9870,6 +9880,9 @@ package body Sem_Ch13 is
 
       SId : Entity_Id;
       --  Its entity
+
+      Restore_Scope : Boolean;
+      --  True if the current scope must be restored on exit
 
       Ancestor_Predicate_Function_Called : Boolean := False;
       --  Does this predicate function include a call to the
@@ -10122,12 +10135,6 @@ package body Sem_Ch13 is
          Replace_Type_References (N, Typ);
       end Replace_Current_Instance_References;
 
-      --  Local variables
-
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
-      --  Save the Ghost-related attributes to restore on exit
-
    --  Start of processing for Build_Predicate_Function
 
    begin
@@ -10164,6 +10171,15 @@ package body Sem_Ch13 is
         and then not Has_Static_Predicate_Aspect (Typ)
       then
          return;
+      end if;
+
+      --  Ensure that the declarations are added to the scope of the type
+
+      if Scope (Typ) /= Current_Scope then
+         Push_Scope (Scope (Typ));
+         Restore_Scope := True;
+      else
+         Restore_Scope := False;
       end if;
 
       --  The related type may be subject to pragma Ghost. Set the mode now to
@@ -10584,6 +10600,10 @@ package body Sem_Ch13 is
       end if;
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
+
+      if Restore_Scope then
+         Pop_Scope;
+      end if;
    end Build_Predicate_Function;
 
    ------------------------------------------
@@ -15419,15 +15439,11 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id is
          E : Entity_Id;
-      begin
-         --  Types with nameable components are record, task, and protected
-         --  types, and discriminated private types.
 
-         if Ekind (T) in E_Record_Type
-                       | E_Task_Type
-                       | E_Protected_Type
-           or else (Is_Private_Type (T) and then Has_Discriminants (T))
-         then
+      begin
+         --  Types with nameable components are record, task, protected types
+
+         if Ekind (T) in E_Record_Type | E_Task_Type | E_Protected_Type then
             --  This is a sequential search, which seems acceptable
             --  efficiency-wise, given the typical size of component
             --  lists, protected operation lists, task item lists, and
@@ -15441,6 +15457,46 @@ package body Sem_Ch13 is
 
                Next_Entity (E);
             end loop;
+
+         --  Private discriminated types may have visible discriminants
+
+         elsif Is_Private_Type (T) and then Has_Discriminants (T) then
+            declare
+               Decl : constant Node_Id := Declaration_Node (T);
+
+               Discr : Node_Id;
+
+            begin
+               --  Loop over the discriminants listed in the discriminant part
+               --  of the private type declaration to find one with a matching
+               --  name; then, if it exists, return the discriminant entity of
+               --  the same name in the type, which is that of its full view.
+
+               if Nkind (Decl) in N_Private_Extension_Declaration
+                                | N_Private_Type_Declaration
+                 and then Present (Discriminant_Specifications (Decl))
+               then
+                  Discr := First (Discriminant_Specifications (Decl));
+
+                  while Present (Discr) loop
+                     if Chars (Defining_Identifier (Discr)) = Comp then
+                        Discr := First_Discriminant (T);
+
+                        while Present (Discr) loop
+                           if Chars (Discr) = Comp then
+                              return Discr;
+                           end if;
+
+                           Next_Discriminant (Discr);
+                        end loop;
+
+                        pragma Assert (False);
+                     end if;
+
+                     Next (Discr);
+                  end loop;
+               end if;
+            end;
          end if;
 
          --  Nothing by that name
@@ -15556,15 +15612,29 @@ package body Sem_Ch13 is
                      --  Preanalyze expression after type replacement to catch
                      --  name resolution errors if the predicate function has
                      --  not been built yet.
+
                      --  Note that we cannot use Preanalyze_Spec_Expression
-                     --  because of the special handling required for
-                     --  quantifiers, see comments on Resolve_Aspect_Expression
-                     --  above.
+                     --  directly because of the special handling required for
+                     --  quantifiers (see comments on Resolve_Aspect_Expression
+                     --  above) but we need to emulate it properly.
 
                      if No (Predicate_Function (E)) then
-                        Push_Type (E);
-                        Resolve_Aspect_Expression (Expr);
-                        Pop_Type (E);
+                        declare
+                           Save_In_Spec_Expression : constant Boolean :=
+                                                       In_Spec_Expression;
+                           Save_Full_Analysis : constant Boolean :=
+                                                  Full_Analysis;
+                        begin
+                           In_Spec_Expression := True;
+                           Full_Analysis := False;
+                           Expander_Mode_Save_And_Set (False);
+                           Push_Type (E);
+                           Resolve_Aspect_Expression (Expr);
+                           Pop_Type (E);
+                           Expander_Mode_Restore;
+                           Full_Analysis := Save_Full_Analysis;
+                           In_Spec_Expression := Save_In_Spec_Expression;
+                        end;
                      end if;
 
                   when Pre_Post_Aspects =>

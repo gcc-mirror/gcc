@@ -115,8 +115,8 @@ AARCH64_CORE("cortex-a65",  cortexa65, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, S
 AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd43, -1)
 AARCH64_CORE("cortex-x1",  cortexx1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd44, -1)
 AARCH64_CORE("cortex-x1c",  cortexx1c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE, PAUTH), neoversen1, 0x41, 0xd4c, -1)
-AARCH64_CORE("ares",  ares, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
+AARCH64_CORE("ares",  ares, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd4a, -1)
 
 /* Cavium ('C') cores. */
@@ -143,8 +143,8 @@ AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, V8_3A,  (CRYPTO, S
 /* ARMv8.4-A Architecture Processors.  */
 
 /* Arm ('A') cores.  */
-AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
 AARCH64_CORE("neoverse-v1", neoversev1, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
+AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
 AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
 
 /* Qualcomm ('Q') cores. */
@@ -180,7 +180,7 @@ AARCH64_CORE("cortex-x3",  cortexx3, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8M
 
 AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x41, 0xd49, -1)
 
-AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 #undef AARCH64_CORE

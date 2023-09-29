@@ -328,7 +328,7 @@ package body Exp_Aggr is
    --  N is the N_Aggregate node to be expanded.
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean;
-   --  For two-dimensional packed aggregates with constant bounds and constant
+   --  For 2D packed array aggregates with constant bounds and constant scalar
    --  components, it is preferable to pack the inner aggregates because the
    --  whole matrix can then be presented to the back-end as a one-dimensional
    --  list of literals. This is much more efficient than expanding into single
@@ -2234,21 +2234,32 @@ package body Exp_Aggr is
       -- Get_Assoc_Expr --
       --------------------
 
+      --  Duplicate the expression in case we will be generating several loops.
+      --  As a result the expression is no longer shared between the loops and
+      --  is reevaluated for each such loop.
+
       function Get_Assoc_Expr (Assoc : Node_Id) return Node_Id is
          Typ : constant Entity_Id := Base_Type (Etype (N));
 
       begin
          if Box_Present (Assoc) then
             if Present (Default_Aspect_Component_Value (Typ)) then
-               return Default_Aspect_Component_Value (Typ);
+               return New_Copy_Tree (Default_Aspect_Component_Value (Typ));
             elsif Needs_Simple_Initialization (Ctype) then
-               return Get_Simple_Init_Val (Ctype, N);
+               return New_Copy_Tree (Get_Simple_Init_Val (Ctype, N));
             else
                return Empty;
             end if;
 
          else
-            return Expression (Assoc);
+            --  The expression will be passed to Gen_Loop, which immediately
+            --  calls Parent_Kind on it, so we set Parent when it matters.
+
+            return
+               Expr : constant Node_Id := New_Copy_Tree (Expression (Assoc))
+            do
+               Copy_Parent (To => Expr, From => Expression (Assoc));
+            end return;
          end if;
       end Get_Assoc_Expr;
 
@@ -2415,8 +2426,7 @@ package body Exp_Aggr is
 
          if Present (Others_Assoc) then
             declare
-               First    : Boolean := True;
-               Dup_Expr : Node_Id;
+               First : Boolean := True;
 
             begin
                for J in 0 .. Nb_Choices loop
@@ -2450,23 +2460,11 @@ package body Exp_Aggr is
                      end if;
                   end if;
 
-                  if First
-                    or else not Empty_Range (Low, High)
-                  then
+                  if First or else not Empty_Range (Low, High) then
                      First := False;
-
-                     --  Duplicate the expression in case we will be generating
-                     --  several loops. As a result the expression is no longer
-                     --  shared between the loops and is reevaluated for each
-                     --  such loop.
-
-                     Expr := Get_Assoc_Expr (Others_Assoc);
-                     Dup_Expr := New_Copy_Tree (Expr);
-                     Copy_Parent (To => Dup_Expr, From => Expr);
-
                      Set_Loop_Actions (Others_Assoc, New_List);
-                     Append_List
-                       (Gen_Loop (Low, High, Dup_Expr), To => New_Code);
+                     Expr := Get_Assoc_Expr (Others_Assoc);
+                     Append_List (Gen_Loop (Low, High, Expr), To => New_Code);
                   end if;
                end loop;
             end;
@@ -5020,9 +5018,11 @@ package body Exp_Aggr is
          --  excluding container aggregates as these are transformed into
          --  subprogram calls later.
 
-         (Parent_Kind in
-            N_Component_Association | N_Aggregate | N_Extension_Aggregate
-            and then not Is_Container_Aggregate (Parent_Node))
+         (Parent_Kind = N_Component_Association
+           and then not Is_Container_Aggregate (Parent (Parent_Node)))
+
+         or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
+                   and then not Is_Container_Aggregate (Parent_Node))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
@@ -6900,10 +6900,10 @@ package body Exp_Aggr is
          Parent_Kind := Nkind (Parent_Node);
       end if;
 
-      if ((Parent_Kind = N_Component_Association
-            or else Parent_Kind = N_Aggregate
-            or else Parent_Kind = N_Extension_Aggregate)
-           and then not Is_Container_Aggregate (Parent_Node))
+      if (Parent_Kind = N_Component_Association
+           and then not Is_Container_Aggregate (Parent (Parent_Node)))
+        or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
+                  and then not Is_Container_Aggregate (Parent_Node))
         or else (Parent_Kind = N_Object_Declaration
                   and then (Needs_Finalization (Typ)
                              or else Is_Special_Return_Object
@@ -9219,9 +9219,11 @@ package body Exp_Aggr is
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean is
       C : constant Uint := Component_Size (Typ);
+
    begin
       return Number_Dimensions (Typ) = 2
         and then Is_Bit_Packed_Array (Typ)
+        and then Is_Scalar_Type (Component_Type (Typ))
         and then C in Uint_1 | Uint_2 | Uint_4; -- False if No_Uint
    end Is_Two_Dim_Packed_Array;
 

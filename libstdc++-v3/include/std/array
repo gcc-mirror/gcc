@@ -436,7 +436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_constructible_v<_Tp, _Tp&>);
       if constexpr (is_constructible_v<_Tp, _Tp&>)
-	return __to_array(__a, make_index_sequence<_Nm>{});
+	return std::__to_array(__a, make_index_sequence<_Nm>{});
       __builtin_unreachable(); // FIXME: see PR c++/91388
     }
 
@@ -449,7 +449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_move_constructible_v<_Tp>);
       if constexpr (is_move_constructible_v<_Tp>)
-	return __to_array<1>(__a, make_index_sequence<_Nm>{});
+	return std::__to_array<1>(__a, make_index_sequence<_Nm>{});
       __builtin_unreachable(); // FIXME: see PR c++/91388
     }
 #endif // C++20

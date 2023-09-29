@@ -3894,8 +3894,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     gnu_return_var_elmt = NULL_TREE;
 
   /* If the function returns by invisible reference, make it explicit in the
-     function body.  See gnat_to_gnu_subprog_type for more details.  */
-  if (TREE_ADDRESSABLE (gnu_subprog_type))
+     function body, but beware that maybe_make_gnu_thunk may already have done
+     it if the function is inlined across units.  See gnat_to_gnu_subprog_type
+     for more details.  */
+  if (TREE_ADDRESSABLE (gnu_subprog_type)
+      && TREE_CODE (TREE_TYPE (gnu_result_decl)) != REFERENCE_TYPE)
     {
       TREE_TYPE (gnu_result_decl)
 	= build_reference_type (TREE_TYPE (gnu_result_decl));
@@ -8475,8 +8478,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
        5. If this is a reference to an unconstrained array which is used either
 	  as the prefix of an attribute reference that requires an lvalue or in
-	  a return statement, then return the result unmodified because we want
-	  to return the original bounds.
+	  a return statement without storage pool, return the result unmodified
+	  because we want to return the original bounds.
 
        6. Finally, if the type of the result is already correct.  */
 
@@ -8542,7 +8545,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && Present (Parent (gnat_node))
 	   && ((Nkind (Parent (gnat_node)) == N_Attribute_Reference
 	        && lvalue_required_for_attribute_p (Parent (gnat_node)))
-	       || Nkind (Parent (gnat_node)) == N_Simple_Return_Statement))
+	       || (Nkind (Parent (gnat_node)) == N_Simple_Return_Statement
+		   && No (Storage_Pool (Parent (gnat_node))))))
     ;
 
   else if (TREE_TYPE (gnu_result) != gnu_result_type)
@@ -11047,7 +11051,7 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
      same transformation as Subprogram_Body_to_gnu here.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (gnu_target))
       && DECL_EXTERNAL (gnu_target)
-      && !POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (gnu_target))))
+      && TREE_CODE (TREE_TYPE (DECL_RESULT (gnu_target))) != REFERENCE_TYPE)
     {
       TREE_TYPE (DECL_RESULT (gnu_target))
 	= build_reference_type (TREE_TYPE (DECL_RESULT (gnu_target)));

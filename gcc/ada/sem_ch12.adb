@@ -7966,11 +7966,11 @@ package body Sem_Ch12 is
 
       --  Special casing for identifiers and other entity names and operators
 
-      if Nkind (New_N) in N_Character_Literal
-                        | N_Expanded_Name
-                        | N_Identifier
-                        | N_Operator_Symbol
-                        | N_Op
+      if Nkind (N) in N_Character_Literal
+                    | N_Expanded_Name
+                    | N_Identifier
+                    | N_Operator_Symbol
+                    | N_Op
       then
          if not Instantiating then
 
@@ -8174,6 +8174,15 @@ package body Sem_Ch12 is
                   then
                      Set_Entity (New_N, Assoc);
 
+                  --  Cope with the rewriting into expanded name that may have
+                  --  occurred in between, e.g. in Check_Generic_Child_Unit for
+                  --  generic renaming declarations.
+
+                  elsif Nkind (Assoc) = N_Expanded_Name then
+                     Rewrite (N, New_Copy_Tree (Assoc));
+                     Set_Associated_Node (N, Assoc);
+                     return Copy_Generic_Node (N, Parent_Id, Instantiating);
+
                   --  The name in the call may be a selected component if the
                   --  call has not been analyzed yet, as may be the case for
                   --  pre/post conditions in a generic unit.
@@ -8184,10 +8193,10 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
                   elsif Nkind (Assoc) in N_Entity
-                    and then (Expander_Active or
-                                (GNATprove_Mode
-                                  and then not In_Spec_Expression
-                                  and then not Inside_A_Generic))
+                    and then (Expander_Active
+                               or else (GNATprove_Mode
+                                         and then not In_Spec_Expression
+                                         and then not Inside_A_Generic))
                   then
                      --  Inlining case: we are copying a tree that contains
                      --  global entities, which are preserved in the copy to be
@@ -11924,12 +11933,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The package being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12041,6 +12044,12 @@ package body Sem_Ch12 is
       else
          Instantiation_Node := Inst_Node;
       end if;
+
+      --  The package being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Save_Env (Gen_Unit, Act_Decl_Id);
@@ -12484,12 +12493,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The subprogram being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12526,6 +12529,12 @@ package body Sem_Ch12 is
       end if;
 
       Instantiation_Node := Inst_Node;
+
+      --  The subprogram being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);

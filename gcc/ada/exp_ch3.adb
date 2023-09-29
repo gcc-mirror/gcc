@@ -2082,8 +2082,8 @@ package body Exp_Ch3 is
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := Default;
-         Kind     : Node_Kind := Nkind (Default);
+         Exp      : Node_Id;
+         Exp_Q    : Node_Id;
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -2094,13 +2094,14 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Take a copy of Exp to ensure that later copies of this component
+         --  Take copy of Default to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
          declare
             Map : Elist_Id := No_Elist;
+
          begin
             if Has_Late_Init_Comp then
                --  Map the type to the _Init parameter in order to
@@ -2131,7 +2132,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+            Exp := New_Copy_Tree (Default, New_Scope => Proc_Id, Map => Map);
          end;
 
          Res := New_List (
@@ -2141,6 +2142,8 @@ package body Exp_Ch3 is
 
          Set_No_Ctrl_Actions (First (Res));
 
+         Exp_Q := Unqualify (Exp);
+
          --  Adjust the tag if tagged (because of possible view conversions).
          --  Suppress the tag adjustment when not Tagged_Type_Expansion because
          --  tags are represented implicitly in objects, and when the record is
@@ -2148,9 +2151,7 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ)
            and then Tagged_Type_Expansion
-           and then Nkind (Exp) /= N_Raise_Expression
-           and then (Nkind (Exp) /= N_Qualified_Expression
-                       or else Nkind (Expression (Exp)) /= N_Raise_Expression)
+           and then Nkind (Exp_Q) /= N_Raise_Expression
          then
             Append_To (Res,
               Make_Assignment_Statement (Default_Loc,
@@ -2173,12 +2174,8 @@ package body Exp_Ch3 is
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
-         if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (Default));
-         end if;
-
          if Needs_Finalization (Typ)
-           and then Kind not in N_Aggregate | N_Extension_Aggregate
+           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -2192,16 +2189,6 @@ package body Exp_Ch3 is
             if Present (Adj_Call) then
                Append_To (Res, Adj_Call);
             end if;
-         end if;
-
-         --  If a component type has a predicate, add check to the component
-         --  assignment. Discriminants are handled at the point of the call,
-         --  which provides for a better error message.
-
-         if Comes_From_Source (Exp)
-           and then Predicate_Enabled (Typ)
-         then
-            Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
          return Res;
@@ -7154,8 +7141,64 @@ package body Exp_Ch3 is
       function Make_Allocator_For_Return (Expr : Node_Id) return Node_Id is
          Alloc      : Node_Id;
          Alloc_Expr : Entity_Id;
+         Alloc_Typ  : Entity_Id;
 
       begin
+         --  If the return object's declaration does not include an expression,
+         --  then we use its subtype for the allocation. Likewise in the case
+         --  of a degenerate expression like a raise expression.
+
+         if No (Expr)
+           or else Nkind (Original_Node (Expr)) = N_Raise_Expression
+         then
+            Alloc_Typ := Typ;
+
+         --  If the return object's declaration includes an expression, then
+         --  there are two cases: either the nominal subtype of the object is
+         --  definite and we can use it for the allocation directly, or it is
+         --  not and Analyze_Object_Declaration should have built an actual
+         --  subtype from the expression.
+
+         --  However, there are exceptions in the latter case for interfaces
+         --  (see Analyze_Object_Declaration), as well as class-wide types and
+         --  types with unknown discriminants if they are additionally limited
+         --  (see Expand_Subtype_From_Expr), so we must cope with them.
+
+         elsif Is_Interface (Typ) then
+            pragma Assert (Is_Class_Wide_Type (Typ));
+
+            --  For interfaces, we use the type of the expression, except if
+            --  we need to put back a conversion that we have removed earlier
+            --  in the processing.
+
+            if Is_Class_Wide_Type (Etype (Expr)) then
+               Alloc_Typ := Typ;
+            else
+               Alloc_Typ := Etype (Expr);
+            end if;
+
+         elsif Is_Class_Wide_Type (Typ) then
+
+            --  For class-wide types, we have to make sure that we use the
+            --  dynamic type of the expression for the allocation, either by
+            --  means of its (static) subtype or through the actual subtype.
+
+            if Has_Tag_Of_Type (Expr) then
+               Alloc_Typ := Etype (Expr);
+
+            else pragma Assert (Ekind (Typ) = E_Class_Wide_Subtype
+              and then Present (Equivalent_Type (Typ)));
+
+               Alloc_Typ := Typ;
+            end if;
+
+         else pragma Assert (Is_Definite_Subtype (Typ)
+           or else (Has_Unknown_Discriminants (Typ)
+                     and then Is_Limited_View (Typ)));
+
+            Alloc_Typ := Typ;
+         end if;
+
          --  If the return object's declaration includes an expression and the
          --  declaration isn't marked as No_Initialization, then we generate an
          --  allocator with a qualified expression. Although this is necessary
@@ -7181,35 +7224,22 @@ package body Exp_Ch3 is
 
             Alloc_Expr := New_Copy_Tree (Expr);
 
-            --  In the constrained array case, deal with a potential sliding.
-            --  In the interface case, put back a conversion that we may have
-            --  removed earlier in the processing.
-
-            if (Ekind (Typ) = E_Array_Subtype
-                 or else (Is_Interface (Typ)
-                           and then Is_Class_Wide_Type (Etype (Alloc_Expr))))
-              and then Typ /= Etype (Alloc_Expr)
-            then
-               Alloc_Expr := Convert_To (Typ, Alloc_Expr);
+            if Etype (Alloc_Expr) /= Alloc_Typ then
+               Alloc_Expr := Convert_To (Alloc_Typ, Alloc_Expr);
             end if;
-
-            --  We always use the type of the expression for the qualified
-            --  expression, rather than the return object's type. We cannot
-            --  always use the return object's type because the expression
-            --  might be of a specific type and the return object mignt not.
 
             Alloc :=
               Make_Allocator (Loc,
                 Expression =>
                   Make_Qualified_Expression (Loc,
                     Subtype_Mark =>
-                      New_Occurrence_Of (Etype (Alloc_Expr), Loc),
+                      New_Occurrence_Of (Alloc_Typ, Loc),
                     Expression   => Alloc_Expr));
 
          else
             Alloc :=
               Make_Allocator (Loc,
-                Expression => New_Occurrence_Of (Typ, Loc));
+                Expression => New_Occurrence_Of (Alloc_Typ, Loc));
 
             --  If the return object requires default initialization, then it
             --  will happen later following the elaboration of the renaming.
@@ -9251,9 +9281,13 @@ package body Exp_Ch3 is
          --  this is indeed the case, associate the Finalize_Address routine
          --  of the full view with the finalization masters of all pending
          --  access types. This scenario applies to anonymous access types as
-         --  well.
+         --  well. But the Finalize_Address routine is missing if the type is
+         --  class-wide and we are under restriction No_Dispatching_Calls, see
+         --  Expand_Freeze_Class_Wide_Type above for the rationale.
 
          elsif Needs_Finalization (Typ)
+           and then (not Is_Class_Wide_Type (Typ)
+                      or else not Restriction_Active (No_Dispatching_Calls))
            and then Present (Pending_Access_Types (Typ))
          then
             E := First_Elmt (Pending_Access_Types (Typ));
@@ -11105,9 +11139,10 @@ package body Exp_Ch3 is
                 Null_Record_Present => True);
 
             --  GNATprove will use expression of an expression function as an
-            --  implicit postcondition. GNAT will not benefit from expression
-            --  function (and would struggle if we add an expression function
-            --  to freezing actions).
+            --  implicit postcondition. GNAT will also benefit from expression
+            --  function to avoid premature freezing, but would struggle if we
+            --  added an expression function to freezing actions, so we create
+            --  the expanded form directly.
 
             if GNATprove_Mode then
                Func_Body :=
@@ -11126,6 +11161,7 @@ package body Exp_Ch3 is
                        Statements => New_List (
                          Make_Simple_Return_Statement (Loc,
                            Expression => Ext_Aggr))));
+               Set_Was_Expression_Function (Func_Body);
             end if;
 
             Append_To (Body_List, Func_Body);

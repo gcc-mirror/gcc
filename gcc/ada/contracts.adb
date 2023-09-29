@@ -62,6 +62,11 @@ with Warnsw;         use Warnsw;
 
 package body Contracts is
 
+   Contract_Error : exception;
+   --  This exception is raised by Add_Contract_Item when it is invoked on an
+   --  invalid pragma. Note that clients of the package must filter them out
+   --  before invoking Add_Contract_Item, so it should not escape the package.
+
    procedure Analyze_Package_Instantiation_Contract (Inst_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of package
    --  instantiation Inst_Id as if they appear at the end of a declarative
@@ -197,7 +202,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry bodies, the applicable pragmas are:
@@ -215,7 +220,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry or subprogram declarations, the applicable pragmas are:
@@ -264,7 +269,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Packages or instantiations, the applicable pragmas are:
@@ -288,7 +293,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Package bodies, the applicable pragmas are:
@@ -301,7 +306,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  The four volatility refinement pragmas are ok for all types.
@@ -329,7 +334,7 @@ package body Contracts is
 
                --  The pragma is not a proper contract item
 
-               raise Program_Error;
+               raise Contract_Error;
             end if;
          end;
 
@@ -353,7 +358,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task bodies, the applicable pragmas are:
@@ -367,7 +372,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task units, the applicable pragmas are:
@@ -402,11 +407,11 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       else
-         raise Program_Error;
+         raise Contract_Error;
       end if;
    end Add_Contract_Item;
 
@@ -584,6 +589,22 @@ package body Contracts is
          else
             Set_Analyzed (Items);
          end if;
+
+      --  When this is a subprogram body not coming from source, for example an
+      --  expression function, it does not cause freezing of previous contracts
+      --  (see Analyze_Subprogram_Body_Helper), in particular not of those on
+      --  its spec if it exists. In this case make sure they have been properly
+      --  analyzed before being expanded below, as we may be invoked during the
+      --  freezing of the subprogram in the middle of its enclosing declarative
+      --  part because the declarative part contains e.g. the declaration of a
+      --  variable initialized by means of a call to the subprogram.
+
+      elsif Nkind (Body_Decl) = N_Subprogram_Body
+        and then not Comes_From_Source (Original_Node (Body_Decl))
+        and then Present (Corresponding_Spec (Body_Decl))
+        and then Present (Contract (Corresponding_Spec (Body_Decl)))
+      then
+         Analyze_Entry_Or_Subprogram_Contract (Corresponding_Spec (Body_Decl));
       end if;
 
       --  Due to the timing of contract analysis, delayed pragmas may be
@@ -2180,6 +2201,12 @@ package body Contracts is
          else
             Add_Contract_Item (Prag, Templ_Id);
          end if;
+
+      exception
+         --  We do not stop the compilation at this point in the case of an
+         --  invalid pragma because it will be properly diagnosed afterward.
+
+         when Contract_Error => null;
       end Add_Generic_Contract_Pragma;
 
       --  Local variables
