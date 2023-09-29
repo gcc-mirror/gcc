@@ -2,8 +2,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag9635.d(17): Error: need `this` for `i` of type `int`
-fail_compilation/diag9635.d(18): Error: need `this` for `foo` of type `pure nothrow @nogc @safe void()`
+fail_compilation/diag9635.d(17): Error: accessing non-static variable `i` requires an instance of `Foo`
+fail_compilation/diag9635.d(18): Error: calling non-static function `foo` requires an instance of type `Foo`
 ---
 */
 

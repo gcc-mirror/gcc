@@ -1,10 +1,5 @@
 // REQUIRED_ARGS: -w -dw
 // PERMUTE_ARGS:
-/* TEST_OUTPUT:
----
-runnable/sctor2.d(12): Deprecation: `scope` as a type constraint is deprecated.  Use `scope` at the usage site.
----
-*/
 
 /***************************************************/
 // 15665

@@ -1,8 +1,4 @@
-/* TEST_OUTPUT:
----
-compilable/test7172.d(14): Deprecation: `scope` as a type constraint is deprecated.  Use `scope` at the usage site.
----
-*/
+
 void main()
 {
     abstract class AbstractC{}

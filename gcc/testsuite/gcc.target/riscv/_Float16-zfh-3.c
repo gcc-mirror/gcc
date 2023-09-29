@@ -3,6 +3,6 @@
 
 int foo1 (_Float16 a, _Float16 b)
 {
-    /* { dg-final { scan-assembler-times "fgt.h" 1 } } */
+    /* { dg-final { scan-assembler-times {\mfgt\.h\M} 1 } } */
     return a > b;
 }

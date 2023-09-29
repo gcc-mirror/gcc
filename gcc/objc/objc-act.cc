@@ -3314,7 +3314,7 @@ objc_build_string_object (tree string)
   length = TREE_STRING_LENGTH (string) - 1;
 
   /* The target may have different ideas on how to construct an ObjC string
-     literal.  On Darwin (Mac OS X), for example, we may wish to obtain a
+     literal.  On Darwin / macOS, for example, we may wish to obtain a
      constant CFString reference instead.
      At present, this is only supported for the NeXT runtime.  */
   if (flag_next_runtime

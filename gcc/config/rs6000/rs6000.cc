@@ -22164,7 +22164,9 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    *total = rs6000_cost->divsi;
 	}
       /* Add in shift and subtract for MOD unless we have a mod instruction. */
-      if (!TARGET_MODULO && (code == MOD || code == UMOD))
+      if ((!TARGET_MODULO
+	   || (RS6000_DISABLE_SCALAR_MODULO && SCALAR_INT_MODE_P (mode)))
+	 && (code == MOD || code == UMOD))
 	*total += COSTS_N_INSNS (2);
       return false;
 
@@ -25475,9 +25477,12 @@ rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
   /* Assume inline asm can use any instruction features.  */
   if (gimple_code (stmt) == GIMPLE_ASM)
     {
-      /* Should set any bits we concerned, for now OPTION_MASK_HTM is
-	 the only bit we care about.  */
-      info |= RS6000_FN_TARGET_INFO_HTM;
+      const char *asm_str = gimple_asm_string (as_a<const gasm *> (stmt));
+      /* Ignore empty inline asm string.  */
+      if (strlen (asm_str) > 0)
+	/* Should set any bits we concerned, for now OPTION_MASK_HTM is
+	   the only bit we care about.  */
+	info |= RS6000_FN_TARGET_INFO_HTM;
       return false;
     }
   else if (gimple_code (stmt) == GIMPLE_CALL)
@@ -25508,49 +25513,44 @@ rs6000_can_inline_p (tree caller, tree callee)
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
-  /* If the callee has no option attributes, then it is ok to inline.  */
+  /* If the caller/callee has option attributes, then use them.
+     Otherwise, use the command line options.  */
   if (!callee_tree)
-    ret = true;
+    callee_tree = target_option_default_node;
+  if (!caller_tree)
+    caller_tree = target_option_default_node;
 
-  else
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+  struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+
+  HOST_WIDE_INT callee_isa = callee_opts->x_rs6000_isa_flags;
+  HOST_WIDE_INT caller_isa = caller_opts->x_rs6000_isa_flags;
+  HOST_WIDE_INT explicit_isa = callee_opts->x_rs6000_isa_flags_explicit;
+
+  cgraph_node *callee_node = cgraph_node::get (callee);
+  if (ipa_fn_summaries && ipa_fn_summaries->get (callee_node) != NULL)
     {
-      HOST_WIDE_INT caller_isa;
-      struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
-      HOST_WIDE_INT callee_isa = callee_opts->x_rs6000_isa_flags;
-      HOST_WIDE_INT explicit_isa = callee_opts->x_rs6000_isa_flags_explicit;
-
-      /* If the caller has option attributes, then use them.
-	 Otherwise, use the command line options.  */
-      if (caller_tree)
-	caller_isa = TREE_TARGET_OPTION (caller_tree)->x_rs6000_isa_flags;
-      else
-	caller_isa = rs6000_isa_flags;
-
-      cgraph_node *callee_node = cgraph_node::get (callee);
-      if (ipa_fn_summaries && ipa_fn_summaries->get (callee_node) != NULL)
+      unsigned int info = ipa_fn_summaries->get (callee_node)->target_info;
+      if ((info & RS6000_FN_TARGET_INFO_HTM) == 0)
 	{
-	  unsigned int info = ipa_fn_summaries->get (callee_node)->target_info;
-	  if ((info & RS6000_FN_TARGET_INFO_HTM) == 0)
-	    {
-	      callee_isa &= ~OPTION_MASK_HTM;
-	      explicit_isa &= ~OPTION_MASK_HTM;
-	    }
+	  callee_isa &= ~OPTION_MASK_HTM;
+	  explicit_isa &= ~OPTION_MASK_HTM;
 	}
-
-      /* Ignore -mpower8-fusion and -mpower10-fusion options for inlining
-	 purposes.  */
-      callee_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
-      explicit_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
-
-      /* The callee's options must be a subset of the caller's options, i.e.
-	 a vsx function may inline an altivec function, but a no-vsx function
-	 must not inline a vsx function.  However, for those options that the
-	 callee has explicitly enabled or disabled, then we must enforce that
-	 the callee's and caller's options match exactly; see PR70010.  */
-      if (((caller_isa & callee_isa) == callee_isa)
-	  && (caller_isa & explicit_isa) == (callee_isa & explicit_isa))
-	ret = true;
     }
+
+  /* Ignore -mpower8-fusion and -mpower10-fusion options for inlining
+     purposes.  */
+  callee_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
+  explicit_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
+
+  /* The callee's options must be a subset of the caller's options, i.e.
+     a vsx function may inline an altivec function, but a no-vsx function
+     must not inline a vsx function.  However, for those options that the
+     callee has explicitly enabled or disabled, then we must enforce that
+     the callee's and caller's options match exactly; see PR70010.  */
+  if (((caller_isa & callee_isa) == callee_isa)
+      && (caller_isa & explicit_isa) == (callee_isa & explicit_isa))
+    ret = true;
 
   if (TARGET_DEBUG_TARGET)
     fprintf (stderr, "rs6000_can_inline_p:, caller %s, callee %s, %s inline\n",

@@ -13,7 +13,6 @@ void test (int m, int n)
 	}
 	while (i<10);
 }
-/* { dg-final { scan-tree-dump-times "Duplicating bb . is a win" 2 "ch2" } } */
-/* { dg-final { scan-tree-dump-times "Duplicating bb . is a win. it has zero" 1 "ch2" } } */
+/* { dg-final { scan-tree-dump-times "Duplicating bb . is a win" 1 "ch2" } } */
 /* { dg-final { scan-tree-dump-times "Will duplicate bb" 2 "ch2" } } */
 /* { dg-final { scan-tree-dump "is now do-while loop" "ch2" } } */

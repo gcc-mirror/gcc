@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-incompatible-pointer-types" } */
+/* C only: Wno-incompatible-pointer-types is not valid for C++. */
 
 #include <stdlib.h>
 
@@ -7,7 +8,7 @@ struct bar;
 void *hv (struct foo **tm)
 {
   void *p = __builtin_malloc (4);
-  *tm = p;
+  *tm = (struct foo *) p;
   if (!p)
     abort ();
   return p;
@@ -16,5 +17,5 @@ void *hv (struct foo **tm)
 void a5 (void)
 {
   struct bar *qb = NULL;
-  hv (&qb);
+  hv ((struct foo **) &qb);
 } /* { dg-warning "leak of 'qb'" } */

@@ -5667,7 +5667,7 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
     ops[2] = force_reg (imode, CONST0_RTX (imode));
   else
     ops[2] = ix86_expand_sse_cmp (gen_reg_rtx (imode), GT, CONST0_RTX (imode),
-				  src, pc_rtx, pc_rtx);
+				  ops[1], pc_rtx, pc_rtx);
 
   ix86_split_mmx_punpck (ops, false);
   emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), ops[0], imode));
@@ -12755,8 +12755,6 @@ ix86_check_builtin_isa_match (unsigned int fcode,
 		 OPTION_MASK_ISA2_AVXNECONVERT);
   SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, OPTION_MASK_ISA_AVX512VL,
 		 OPTION_MASK_ISA2_VAES);
-  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VL, 0, 0, OPTION_MASK_ISA2_AVX10_1);
-  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512DQ, 0, 0, OPTION_MASK_ISA2_AVX10_1);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 
@@ -19435,6 +19433,23 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
       mmode = VOIDmode;
     }
 
+  /* Canonicalize vec_merge.  */
+  if (swap_commutative_operands_p (op1, op0)
+      /* Two operands have same precedence, then
+	 first bit of mask select first operand.  */
+      || (!swap_commutative_operands_p (op0, op1)
+	  && !(mask & 1)))
+    {
+      unsigned n_elts = GET_MODE_NUNITS (vmode);
+      std::swap (op0, op1);
+      unsigned HOST_WIDE_INT mask_all = HOST_WIDE_INT_1U;
+      if (n_elts == HOST_BITS_PER_WIDE_INT)
+	mask_all  = -1;
+      else
+	mask_all = (HOST_WIDE_INT_1U << n_elts) - 1;
+      mask = ~mask & mask_all;
+    }
+
   if (mmode != VOIDmode)
     maskop = force_reg (mmode, gen_int_mode (mask, mmode));
   else
@@ -23988,11 +24003,9 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
   if (TARGET_AVX512DQ && mode == V8DImode)
     emit_insn (gen_avx512dq_mulv8di3 (op0, op1, op2));
-  else if (((TARGET_AVX512DQ && TARGET_AVX512VL) || TARGET_AVX10_1)
-	   && mode == V4DImode)
+  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V4DImode)
     emit_insn (gen_avx512dq_mulv4di3 (op0, op1, op2));
-  else if (((TARGET_AVX512DQ && TARGET_AVX512VL) || TARGET_AVX10_1)
-	   && mode == V2DImode)
+  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V2DImode)
     emit_insn (gen_avx512dq_mulv2di3 (op0, op1, op2));
   else if (TARGET_XOP && mode == V2DImode)
     {

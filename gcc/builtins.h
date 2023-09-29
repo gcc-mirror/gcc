@@ -105,7 +105,7 @@ struct c_strlen_data
 };
 
 extern tree c_strlen (tree, int, c_strlen_data * = NULL, unsigned = 1);
-extern rtx c_readstr (const char *, scalar_int_mode, bool = true);
+extern rtx c_readstr (const char *, fixed_size_mode, bool = true);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
@@ -156,5 +156,6 @@ extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
 extern bool builtin_with_linkage_p (tree);
+extern int type_to_class (tree);
 
 #endif /* GCC_BUILTINS_H */

@@ -15,4 +15,4 @@ int t(void)
 /* { dg-final { scan-rtl-dump "upper bound: 999999" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump "realistic bound: 999999" "loop2_unroll" } } */
 /* { dg-final { scan-rtl-dump "considering unrolling loop with constant number of iterations" "loop2_unroll" } } */
-/* { dg-final { scan-rtl-dump-not "Invalid sum" "loop2_unroll" {xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-not "Invalid sum" "loop2_unroll" } } */

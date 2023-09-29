@@ -34,5 +34,6 @@ extern void print_decu (const wide_int_ref &wi, char *buf);
 extern void print_decu (const wide_int_ref &wi, FILE *file);
 extern void print_hex (const wide_int_ref &wi, char *buf);
 extern void print_hex (const wide_int_ref &wi, FILE *file);
+extern void pp_wide_int_large (pretty_printer *, const wide_int_ref &, signop);
 
 #endif /* WIDE_INT_PRINT_H */

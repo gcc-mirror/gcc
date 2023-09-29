@@ -7,7 +7,7 @@ void f2 (int8_t * restrict in, int8_t * restrict out, int n, int m, unsigned con
 {
   vbool64_t mask = *(vbool64_t*) (in + 1000000);
 
-  vl = 101;
+  vl = vl + 10000;
   if (cond > 0) {
     vint8mf8_t v = __riscv_vle8_v_i8mf8 (in, vl);
     __riscv_vse8_v_i8mf8 (out, v, vl);

@@ -1213,6 +1213,25 @@ wide_int_binop (wide_int &res,
   return true;
 }
 
+/* Returns true if we know who is smaller or equal, ARG1 or ARG2, and set the
+   min value to RES.  */
+bool
+can_min_p (const_tree arg1, const_tree arg2, poly_wide_int &res)
+{
+  if (known_le (wi::to_poly_widest (arg1), wi::to_poly_widest (arg2)))
+    {
+      res = wi::to_poly_wide (arg1);
+      return true;
+    }
+  else if (known_le (wi::to_poly_widest (arg2), wi::to_poly_widest (arg1)))
+    {
+      res = wi::to_poly_wide (arg2);
+      return true;
+    }
+
+  return false;
+}
+
 /* Combine two poly int's ARG1 and ARG2 under operation CODE to
    produce a new constant in RES.  Return FALSE if we don't know how
    to evaluate CODE at compile-time.  */
@@ -1258,6 +1277,11 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
 			 &res))
+	return false;
+      break;
+
+    case MIN_EXPR:
+      if (!can_min_p (arg1, arg2, res))
 	return false;
       break;
 
@@ -2558,7 +2582,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       /* fall through */
 
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
-    case OFFSET_TYPE:
+    case OFFSET_TYPE: case BITINT_TYPE:
       if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  tem = fold_convert_const (NOP_EXPR, type, arg);
@@ -2598,7 +2622,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE:
+	case INTEGER_TYPE: case BITINT_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	  return fold_build1_loc (loc, FLOAT_EXPR, type, arg);
@@ -2633,6 +2657,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 	case ENUMERAL_TYPE:
 	case BOOLEAN_TYPE:
 	case REAL_TYPE:
+	case BITINT_TYPE:
 	  return fold_build1_loc (loc, FIXED_CONVERT_EXPR, type, arg);
 
 	case COMPLEX_TYPE:
@@ -2646,7 +2671,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
     case COMPLEX_TYPE:
       switch (TREE_CODE (orig))
 	{
-	case INTEGER_TYPE:
+	case INTEGER_TYPE: case BITINT_TYPE:
 	case BOOLEAN_TYPE: case ENUMERAL_TYPE:
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	case REAL_TYPE:
@@ -5325,6 +5350,8 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 	    equiv_type
 	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type),
 						TYPE_SATURATING (arg0_type));
+	  else if (TREE_CODE (arg0_type) == BITINT_TYPE)
+	    equiv_type = arg0_type;
 	  else
 	    equiv_type
 	      = lang_hooks.types.type_for_mode (TYPE_MODE (arg0_type), 1);
@@ -5538,7 +5565,12 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
-  else if (POINTER_TYPE_P (etype) || TREE_CODE (etype) == OFFSET_TYPE)
+  else if (POINTER_TYPE_P (etype)
+	   || TREE_CODE (etype) == OFFSET_TYPE
+	   /* Right now all BITINT_TYPEs satisfy
+	      (unsigned) max + 1 == (unsigned) min, so no need to verify
+	      that like for INTEGER_TYPEs.  */
+	   || TREE_CODE (etype) == BITINT_TYPE)
     etype = unsigned_type_for (etype);
   return etype;
 }
@@ -6851,10 +6883,19 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 {
   tree type = TREE_TYPE (t);
   enum tree_code tcode = TREE_CODE (t);
-  tree ctype = (wide_type != 0
-		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
-		    > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
-		? wide_type : type);
+  tree ctype = type;
+  if (wide_type)
+    {
+      if (TREE_CODE (type) == BITINT_TYPE
+	  || TREE_CODE (wide_type) == BITINT_TYPE)
+	{
+	  if (TYPE_PRECISION (wide_type) > TYPE_PRECISION (type))
+	    ctype = wide_type;
+	}
+      else if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
+	       > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
+	ctype = wide_type;
+    }
   tree t1, t2;
   bool same_p = tcode == code;
   tree op0 = NULL_TREE, op1 = NULL_TREE;
@@ -7715,7 +7756,29 @@ static int
 native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+  int total_bytes;
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      struct bitint_info info;
+      bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+      scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+      if (TYPE_PRECISION (type) > GET_MODE_PRECISION (limb_mode))
+	{
+	  total_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  /* More work is needed when adding _BitInt support to PDP endian
+	     if limb is smaller than word, or if _BitInt limb ordering doesn't
+	     match target endianity here.  */
+	  gcc_checking_assert (info.big_endian == WORDS_BIG_ENDIAN
+			       && (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+				   || (GET_MODE_SIZE (limb_mode)
+				       >= UNITS_PER_WORD)));
+	}
+      else
+	total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+    }
+  else
+    total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
@@ -8623,7 +8686,29 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 static tree
 native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+  int total_bytes;
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      struct bitint_info info;
+      bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+      gcc_assert (ok);
+      scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+      if (TYPE_PRECISION (type) > GET_MODE_PRECISION (limb_mode))
+	{
+	  total_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  /* More work is needed when adding _BitInt support to PDP endian
+	     if limb is smaller than word, or if _BitInt limb ordering doesn't
+	     match target endianity here.  */
+	  gcc_checking_assert (info.big_endian == WORDS_BIG_ENDIAN
+			       && (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+				   || (GET_MODE_SIZE (limb_mode)
+				       >= UNITS_PER_WORD)));
+	}
+      else
+	total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
+    }
+  else
+    total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
   if (total_bytes > len
       || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
@@ -8825,6 +8910,7 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
+    case BITINT_TYPE:
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
@@ -10599,7 +10685,7 @@ valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
       /* Ensure that the stepped sequence always selects from the same
 	 input pattern.  */
       unsigned arg_npatterns
-	= ((q1 & 0) == 0) ? VECTOR_CST_NPATTERNS (arg0)
+	= ((q1 & 1) == 0) ? VECTOR_CST_NPATTERNS (arg0)
 			  : VECTOR_CST_NPATTERNS (arg1);
 
       if (!multiple_p (step, arg_npatterns))
@@ -10625,11 +10711,6 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
   unsigned res_npatterns, res_nelts_per_pattern;
   unsigned HOST_WIDE_INT res_nelts;
 
-  if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
-    {
-      res_npatterns = res_nelts;
-      res_nelts_per_pattern = 1;
-    }
   /* (1) If SEL is a suitable mask as determined by
      valid_mask_for_fold_vec_perm_cst_p, then:
      res_npatterns = max of npatterns between ARG0, ARG1, and SEL
@@ -10639,7 +10720,7 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
      res_npatterns = nelts in result vector.
      res_nelts_per_pattern = 1.
      This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
-  else if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
+  if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
     {
       res_npatterns
 	= std::max (VECTOR_CST_NPATTERNS (arg0),
@@ -10652,6 +10733,11 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
 			      sel.encoding ().nelts_per_pattern ()));
 
       res_nelts = res_npatterns * res_nelts_per_pattern;
+    }
+  else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
+    {
+      res_npatterns = res_nelts;
+      res_nelts_per_pattern = 1;
     }
   else
     return NULL_TREE;
@@ -17517,6 +17603,36 @@ test_nunits_min_4 (machine_mode vmode)
 	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(0),
 				ARG0(1), ARG0(0), ARG0(2) };
 	validate_res (2, 3, res, expected_res);
+      }
+
+      /* Case 7: PR111048: Check that we set arg_npatterns correctly,
+	 when arg0, arg1 and sel have different number of patterns.
+	 arg0 is of shape (1, 1)
+	 arg1 is of shape (4, 1)
+	 sel is of shape (2, 3) = {1, len, 2, len+1, 3, len+2, ...}
+
+	 In this case the pattern: {len, len+1, len+2, ...} chooses arg1.
+	 However,
+	 step = (len+2) - (len+1) = 1
+	 arg_npatterns = VECTOR_CST_NPATTERNS (arg1) = 4
+	 Since step is not a multiple of arg_npatterns,
+	 valid_mask_for_fold_vec_perm_cst should return false,
+	 and thus fold_vec_perm_cst should return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 4, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1, 2, len + 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
       }
     }
 }

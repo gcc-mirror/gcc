@@ -234,6 +234,17 @@ const char cc_v1;
 cc_t cc_v2;
 /* { dg-final { scan-file godump-1.out "(?n)^var _cc_v2 _cc_t$" } } */
 
+_BitInt(32) b32_v;
+/* { dg-final { scan-file godump-1.out "(?n)^var _b32_v int32$" } } */
+
+_BitInt(64) b64_v;
+/* { dg-final { scan-file godump-1.out "(?n)^var _b64_v int64$" } } */
+
+unsigned _BitInt(32) b32u_v;
+/* { dg-final { scan-file godump-1.out "(?n)^var _b32u_v uint32$" } } */
+
+_BitInt(33) b33_v;
+/* { dg-final { scan-file godump-1.out "(?n)^// var _b33_v INVALID-bitint-33$" } } */
 
 /*** pointer and array types ***/
 typedef void *vp_t;

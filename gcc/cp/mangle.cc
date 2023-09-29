@@ -963,6 +963,9 @@ decl_mangling_context (tree decl)
 
   tcontext = CP_DECL_CONTEXT (decl);
 
+  if (member_like_constrained_friend_p (decl))
+    tcontext = DECL_FRIEND_CONTEXT (decl);
+
   /* Ignore the artificial declare reduction functions.  */
   if (tcontext
       && TREE_CODE (tcontext) == FUNCTION_DECL
@@ -1344,51 +1347,6 @@ write_template_prefix (const tree node)
   add_substitution (substitution);
 }
 
-/* As the list of identifiers for the structured binding declaration
-   DECL is likely gone, try to recover the DC <source-name>+ E portion
-   from its mangled name.  Return pointer to the DC and set len to
-   the length up to and including the terminating E.  On failure
-   return NULL.  */
-
-static const char *
-find_decomp_unqualified_name (tree decl, size_t *len)
-{
-  const char *p = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  const char *end = p + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
-  bool nested = false;
-  if (!startswith (p, "_Z"))
-    return NULL;
-  p += 2;
-  if (startswith (p, "St"))
-    p += 2;
-  else if (*p == 'N')
-    {
-      nested = true;
-      ++p;
-      while (ISDIGIT (p[0]))
-	{
-	  char *e;
-	  long num = strtol (p, &e, 10);
-	  if (num >= 1 && num < end - e)
-	    p = e + num;
-	  else
-	    break;
-	}
-    }
-  if (!startswith (p, "DC"))
-    return NULL;
-  if (nested)
-    {
-      if (end[-1] != 'E')
-	return NULL;
-      --end;
-    }
-  if (end[-1] != 'E')
-    return NULL;
-  *len = end - p;
-  return p;
-}
-
 /* "For the purposes of mangling, the name of an anonymous union is considered
    to be the name of the first named data member found by a pre-order,
    depth-first, declaration-order walk of the data members of the anonymous
@@ -1419,6 +1377,7 @@ anon_aggr_naming_decl (tree type)
 			::= [<module-name>] <source-name>
 			::= [<module-name>] <unnamed-type-name>
 			::= <local-source-name> 
+			::= F <source-name> # member-like constrained friend
 
     <local-source-name>	::= L <source-name> <discriminator> */
 
@@ -1461,21 +1420,17 @@ write_unqualified_name (tree decl)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-      const char *decomp_str = NULL;
-      size_t decomp_len = 0;
-      if (VAR_P (decl)
-	  && DECL_DECOMPOSITION_P (decl)
-	  && DECL_NAME (decl) == NULL_TREE
-	  && DECL_NAMESPACE_SCOPE_P (decl))
-	decomp_str = find_decomp_unqualified_name (decl, &decomp_len);
-      if (decomp_str)
-	write_chars (decomp_str, decomp_len);
-      else
-	write_source_name (DECL_ASSEMBLER_NAME (decl));
+      write_source_name (DECL_ASSEMBLER_NAME (decl));
     }
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
       found = true;
+
+      /* A constrained hidden friend is mangled like a member function, with
+	 the name prefixed by 'F'.  */
+      if (member_like_constrained_friend_p (decl))
+	write_char ('F');
+
       if (DECL_CONSTRUCTOR_P (decl))
 	write_special_name_constructor (decl);
       else if (DECL_DESTRUCTOR_P (decl))
@@ -4363,6 +4318,7 @@ mangle_decomp (const tree decl, vec<tree> &decls)
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
 
+  check_abi_tags (decl);
   start_mangling (decl);
   write_string ("_Z");
 
@@ -4370,13 +4326,21 @@ mangle_decomp (const tree decl, vec<tree> &decls)
   gcc_assert (context != NULL_TREE);
 
   bool nested = false;
+  bool local = false;
   if (DECL_NAMESPACE_STD_P (context))
     write_string ("St");
+  else if (TREE_CODE (context) == FUNCTION_DECL)
+    {
+      local = true;
+      write_char ('Z');
+      write_encoding (context);
+      write_char ('E');
+    }
   else if (context != global_namespace)
     {
       nested = true;
       write_char ('N');
-      write_prefix (decl_mangling_context (decl));
+      write_prefix (context);
     }
 
   write_string ("DC");
@@ -4386,8 +4350,22 @@ mangle_decomp (const tree decl, vec<tree> &decls)
     write_unqualified_name (d);
   write_char ('E');
 
+  if (tree tags = get_abi_tags (decl))
+    {
+      /* We didn't emit ABI tags for structured bindings before ABI 19.  */
+      if (!G.need_abi_warning
+	  && TREE_PUBLIC (decl)
+	  && abi_warn_or_compat_version_crosses (19))
+	G.need_abi_warning = 1;
+
+      if (abi_version_at_least (19))
+	write_abi_tags (tags);
+    }
+
   if (nested)
     write_char ('E');
+  else if (local && DECL_DISCRIMINATOR_P (decl))
+    write_discriminator (discriminator_for_local_entity (decl));
 
   tree id = finish_mangling_get_identifier ();
   if (DEBUG_MANGLE)
@@ -4395,6 +4373,37 @@ mangle_decomp (const tree decl, vec<tree> &decls)
              IDENTIFIER_POINTER (id));
 
   input_location = saved_loc;
+
+  if (warn_abi && G.need_abi_warning)
+    {
+      const char fabi_version[] = "-fabi-version";
+      tree id2 = id;
+      int save_ver = flag_abi_version;
+
+      if (flag_abi_version != warn_abi_version)
+	{
+	  flag_abi_version = warn_abi_version;
+	  id2 = mangle_decomp (decl, decls);
+	  flag_abi_version = save_ver;
+	}
+
+      if (id2 == id)
+	/* OK.  */;
+      else if (warn_abi_version != 0
+	       && abi_version_at_least (warn_abi_version))
+	warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+		    "the mangled name of %qD changed between "
+		    "%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+		    G.entity, fabi_version, warn_abi_version, id2,
+		    fabi_version, save_ver, id);
+      else
+	warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
+		    "the mangled name of %qD changes between "
+		    "%<%s=%d%> (%qD) and %<%s=%d%> (%qD)",
+		    G.entity, fabi_version, save_ver, id,
+		    fabi_version, warn_abi_version, id2);
+    }
+
   return id;
 }
 
@@ -4564,6 +4573,13 @@ write_guarded_var_name (const tree variable)
     /* The name of a guard variable for a reference temporary should refer
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
+  else if (DECL_DECOMPOSITION_P (variable)
+	   && DECL_NAME (variable) == NULL_TREE
+	   && startswith (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (variable)),
+			  "_Z"))
+    /* The name of a guard variable for a structured binding needs special
+       casing.  */
+    write_string (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (variable)) + 2);
   else
     write_name (variable, /*ignore_local_scope=*/0);
 }
@@ -4630,7 +4646,7 @@ mangle_ref_init_variable (const tree variable)
   start_mangling (variable);
   write_string ("_ZGR");
   check_abi_tags (variable);
-  write_name (variable, /*ignore_local_scope=*/0);
+  write_guarded_var_name (variable);
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
   write_compact_number (current_ref_temp_count++);

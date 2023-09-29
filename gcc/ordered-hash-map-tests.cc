@@ -152,7 +152,7 @@ test_map_of_int_to_strings ()
   ASSERT_EQ (*m.get (6), ant);
   ASSERT_EQ (*m.get (8), spider);
   ASSERT_EQ (m.get_or_insert (750, &existed), millipede);
-  ASSERT_EQ (existed, TRUE);
+  ASSERT_EQ (existed, true);
   ASSERT_EQ (*m.get (3), eric);
 
   /* Verify that the order of insertion is preserved.  */

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++2b" }
 // { dg-do compile { target c++23 } }
 
 // Copyright (C) 2022-2023 Free Software Foundation, Inc.

@@ -31,4 +31,7 @@ extern struct edge_list *pre_edge_rev_lcm (int, sbitmap *,
 					   sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap **,
 					   sbitmap **);
+extern void compute_antinout_edge (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
+extern void compute_earliest (struct edge_list *, int, sbitmap *, sbitmap *,
+			      sbitmap *, sbitmap *, sbitmap *);
 #endif /* GCC_LCM_H */

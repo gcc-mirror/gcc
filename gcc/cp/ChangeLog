@@ -1,3 +1,449 @@
+2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* constexpr.cc (cxx_fold_indirect_ref): Remove unused variables.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* pt.cc (expand_integer_pack): Use IMPLICIT_CONV_EXPR.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (free_constructor): Handle null ce->value.
+
+2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111529
+	* parser.cc (cp_parser_lambda_declarator_opt): Don't suggest
+	-std=c++14 for lambda templates.
+	* pt.cc (tsubst_expr): Move ANNOTATE_EXPR handling...
+	(tsubst_copy_and_build): ...here.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111493
+	* decl2.cc (grok_array_decl): Guard diagnostic and backward
+	compatibility fallback code paths with tf_error.
+
+2023-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111485
+	* pt.cc (is_compatible_template_arg): New parameter 'args'.
+	Add the outer template arguments 'args' to 'new_args'.
+	(convert_template_argument): Pass 'args' to
+	is_compatible_template_arg.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Parse
+	__builtin_classify_type call with typename as argument.
+	* pt.cc (tsubst_copy_and_build): Handle __builtin_classify_type
+	with dependent typename as argument.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111471
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression)
+	<case VAR_DECL>: Handle class NTTP objects by printing
+	their type and value.
+	<case VIEW_CONVERT_EXPR>: Strip const VIEW_CONVERT_EXPR
+	wrappers for class NTTPs.
+	(pp_cxx_template_argument_list): Don't handle class NTTP
+	objects here.
+
+2023-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_function_decl): Don't bother computing 'argvec'
+	when 'lambda_fntype' is set.
+	(tsubst_template_decl): Make sure we return a TEMPLATE_DECL
+	during specialization lookup.  In the non-class non-function
+	template case, use tsubst_decl directly with use_spec_table=false,
+	update DECL_TI_ARGS and call register_specialization like
+	tsubst_decl would have done if use_spec_table=true.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* parser.h (struct cp_lexer): Add in_omp_decl_attribute member.
+	* cp-tree.h (cp_maybe_parse_omp_decl): Declare.
+	* parser.cc (cp_parser_handle_statement_omp_attributes): Diagnose
+	omp::decl attribute on statements.  Adjust diagnostic wording for
+	omp::decl.
+	(cp_parser_omp_directive_args): Add DECL_P argument, set TREE_PUBLIC
+	to it on the DEFERRED_PARSE tree.
+	(cp_parser_omp_sequence_args): Adjust caller.
+	(cp_parser_std_attribute): Handle omp::decl attribute.
+	(cp_parser_omp_var_list): If parser->lexer->in_omp_decl_attribute
+	don't expect any arguments, instead create clause or TREE_LIST for
+	that decl.
+	(cp_parser_late_parsing_omp_declare_simd): Adjust diagnostic wording
+	for omp::decl.
+	(cp_maybe_parse_omp_decl): New function.
+	(cp_parser_omp_declare_target): If
+	parser->lexer->in_omp_decl_attribute and first token isn't name or
+	comma invoke cp_parser_omp_var_list.
+	* decl2.cc (cplus_decl_attributes): Adjust diagnostic wording for
+	omp::decl.  Handle omp::decl on declarations.
+	* name-lookup.cc (finish_using_directive): Adjust diagnostic wording
+	for omp::decl.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* mapper-client.cc, mapper-client.h (open_module_client): Accept
+	dependency tracking and track module mapper files as
+	dependencies.
+	* module.cc (make_mapper, get_mapper): Pass the dependency
+	tracking class down.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (do_import): Report imported CMI files as
+	dependencies.
+
+2023-09-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* module.cc (preprocessed_module): Pass whether the module is
+	exported to dependency tracking.
+
+2023-09-19  Javier Martinez  <javier.martinez.bugzilla@gmail.com>
+
+	* class.cc (propagate_class_warmth_attribute): New function.
+	(check_bases_and_members): propagate hot and cold attributes
+	to all FUNCTION_DECL when the record is marked hot or cold.
+	* cp-tree.h (maybe_propagate_warmth_attributes): New function.
+	* decl2.cc (maybe_propagate_warmth_attributes): New function.
+	* method.cc (lazily_declare_fn): propagate hot and cold
+	attributes to lazily declared functions when the record is
+	marked hot or cold.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.cc (cxx_print_type): Remove TYPE_LANG_SPECIFIC
+	test guarding TYPE_TEMPLATE_INFO.
+
+2023-09-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2799
+	* class.cc (add_implicit_default_ctor): Split out...
+	(add_implicitly_declared_members): ...from here.
+	Also call it when inheriting a default ctor.
+
+2023-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (build_over_call): Set ADDR_EXPR_DENOTES_CALL_P.  Don't handle
+	immediate_invocation_p here.
+	* constexpr.cc (cxx_eval_call_expression): Use mce_true for
+	DECL_IMMEDIATE_FUNCTION_P.
+	(cxx_eval_conditional_expression): Call cp_fold_immediate.
+	* cp-gimplify.cc (enum fold_flags): Add ff_fold_immediate.
+	(maybe_replace_decl): Make static.
+	(cp_fold_r): Expand immediate invocations.
+	(cp_fold_immediate_r): New.
+	(cp_fold_immediate): New.
+	* cp-tree.h (ADDR_EXPR_DENOTES_CALL_P): Define.
+	(cp_fold_immediate): Declare.
+	* tree.cc (bot_replace): Don't handle immediate invocations here.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111419
+	* cvt.cc (convert_to_void) <case INDIRECT_REF>: Only call
+	complete_type if the type is volatile.
+	<case VAR_DECL>: Likewise.
+
+2023-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99631
+	* semantics.cc (finish_decltype_type): For an NTTP object,
+	return its type modulo cv-quals.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89231
+	* pt.cc (try_class_unification): Strengthen TI_TEMPLATE equality
+	test by not calling most_general_template.  Only unify the
+	innermost levels of template arguments.
+	(unify) <case CLASS_TYPE>: Only unify the innermost levels of
+	template arguments, and only if the template is primary.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/63198
+	PR c++/18474
+	* semantics.cc (maybe_convert_cond): Look through implicit
+	INDIRECT_REF when deciding whether to issue a -Wparentheses
+	warning, and consider templated assignment expressions as well.
+	(finish_parenthesized_expr): Look through implicit INDIRECT_REF
+	when suppressing -Wparentheses warning.
+	* typeck.cc (build_x_modify_expr): Check simple assignments
+	ahead time too, not just compound assignments.  Give the second
+	operand of MODOP_EXPR a non-null type so that it's not considered
+	always instantiation-dependent.  Don't call suppress_warning.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108347
+	* pt.cc (unify): Return unify_success for identical dependent
+	DECL_P 'arg' and 'parm'.
+	<case CONST_DECL>: Remove handling.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (add_template_candidate_real): Check arity even
+	when there are no explicit template arguments.  Combine the
+	two adjacent '!obj' tests into one.
+
+2023-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (register_specialization): Remove now-unnecessary
+	early exit for FUNCTION_DECL partial instantiation.
+	(tsubst_template_decl): Pass use_spec_table=false to
+	tsubst_function_decl.  Set DECL_TI_ARGS of a non-lambda
+	FUNCTION_DECL specialization to the full set of arguments.
+	Simplify register_specialization call accordingly.
+
+2023-09-18  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_subobject_offset): Use similar_type_p.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111357
+	* pt.cc (expand_integer_pack): Convert argument to int.
+
+2023-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107198
+	* typeck2.cc (process_init_constructor_array): Use VEC_INIT_EXPR
+	regardless of seen_error.
+
+2023-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99599
+	* pt.cc (check_non_deducible_conversions): Add bool parameter
+	passed down to check_non_deducible_conversion.
+	(fn_type_unification): Call check_non_deducible_conversions
+	an extra time before satisfaction with noninst_only_p=true.
+	(conversion_may_instantiate_p): Define.
+	(check_non_deducible_conversion): Add bool parameter controlling
+	whether to compute only conversions that are guaranteed to
+	not induce template instantiation.
+
+2023-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/111274
+	* parser.cc (fixup_blocks_walker): Check for null BIND_EXPR_BLOCK.
+
+2023-09-06  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_subobject_offset): Check
+	same_type_ignoring_top_level_qualifiers_p.
+
+2023-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91483
+	* constexpr.cc (verify_constant_explain_r): New.
+	(verify_constant): Call it.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* name-lookup.cc (check_local_shadow): Don't punt early for
+	DECL_EXTERNAL decls, instead just disable the shadowing of namespace
+	decls check for those and emit a pedwarn rather than error_at or
+	permerror for those.  Formatting fix.
+
+2023-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/52953
+	* name-lookup.h (struct cp_binding_level): Add artificial bit-field.
+	Formatting fixes.
+	* name-lookup.cc (check_local_shadow): Skip artificial bindings when
+	checking if parameter scope is parent scope.  Don't special case
+	FUNCTION_NEEDS_BODY_BLOCK.  Diagnose the in_function_try_handler
+	cases in the b->kind == sk_function_parms test and verify no
+	non-artificial intervening scopes.  Add missing auto_diagnostic_group.
+	* decl.cc (begin_function_body): Set
+	current_binding_level->artificial.
+	* semantics.cc (begin_function_try_block): Likewise.
+
+2023-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc (cp_parser_parenthesized_expression_list_elt): Pass
+	nullptr as non_constant_p to cp_parser_braced_list if our
+	non_constant_p is null.
+	(cp_parser_initializer_list): Likewise to
+	cp_parser_initializer_clause.  Avoid inspecting
+	clause_non_constant_p if it's uninitialized.
+
+2023-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (build_user_type_conversion): Free allocated
+	conversions.
+	(build_converted_constant_expr_internal): Use
+	conversion_obstack_sentinel instead.
+	(perform_dguide_overload_resolution): Likewise.
+	(build_new_function_call): Likewise.
+	(build_operator_new_call): Free allocated conversions.
+	(build_op_call): Use conversion_obstack_sentinel instead.
+	(build_conditional_expr): Use conversion_obstack_sentinel
+	instead, and hoist it out to the outermost scope.
+	(build_new_op): Use conversion_obstack_sentinel instead
+	and set it up before the first goto.  Remove second unneeded goto.
+	(build_op_subscript): Use conversion_obstack_sentinel instead.
+	(ref_conv_binds_to_temporary): Likewise.
+	(build_new_method_call): Likewise.
+	(can_convert_arg): Likewise.
+	(can_convert_arg_bad): Likewise.
+	(perform_implicit_conversion_flags): Likewise.
+	(perform_direct_initialization_if_possible): Likewise.
+	(initialize_reference): Likewise.
+
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* cp-tree.h (determine_local_discriminator): Add NAME argument with
+	NULL_TREE default.
+	(struct cp_decomp): New type.
+	(cp_finish_decl): Add DECOMP argument defaulted to nullptr.
+	(cp_maybe_mangle_decomp): Remove declaration.
+	(cp_finish_decomp): Add cp_decomp * argument, remove tree and unsigned
+	args.
+	(cp_convert_range_for): Likewise.
+	* decl.cc (determine_local_discriminator): Add NAME argument, use it
+	if non-NULL, otherwise compute it the old way.
+	(maybe_commonize_var): Don't return early for structured bindings.
+	(cp_finish_decl): Add DECOMP argument, if non-NULL, call
+	cp_maybe_mangle_decomp.
+	(cp_maybe_mangle_decomp): Make it static with a forward declaration.
+	Call determine_local_discriminator.  Replace FIRST and COUNT arguments
+	with DECOMP argument.
+	(cp_finish_decomp): Replace FIRST and COUNT arguments with DECOMP
+	argument.
+	* mangle.cc (find_decomp_unqualified_name): Remove.
+	(write_unqualified_name): Don't call find_decomp_unqualified_name.
+	(mangle_decomp): Handle mangling of static function/block scope
+	structured bindings.  Don't call decl_mangling_context twice.  Call
+	check_abi_tags, call write_abi_tags for abi version >= 19 and emit
+	-Wabi warnings if needed.
+	(write_guarded_var_name): Handle structured bindings.
+	(mangle_ref_init_variable): Use write_guarded_var_name.
+	* parser.cc (cp_parser_range_for): Adjust do_range_for_auto_deduction
+	and cp_convert_range_for callers.
+	(do_range_for_auto_deduction): Replace DECOMP_FIRST_NAME and
+	DECOMP_CNT arguments with DECOMP.  Adjust cp_finish_decomp caller.
+	(cp_convert_range_for): Replace DECOMP_FIRST_NAME and
+	DECOMP_CNT arguments with DECOMP.  Don't call cp_maybe_mangle_decomp,
+	adjust cp_finish_decl and cp_finish_decomp callers.
+	(cp_parser_decomposition_declaration): Don't call
+	cp_maybe_mangle_decomp, adjust cp_finish_decl and cp_finish_decomp
+	callers.
+	(cp_convert_omp_range_for): Adjust do_range_for_auto_deduction
+	and cp_finish_decomp callers.
+	(cp_finish_omp_range_for): Don't call cp_maybe_mangle_decomp,
+	adjust cp_finish_decl and cp_finish_decomp callers.
+	* pt.cc (tsubst_omp_for_iterator): Adjust tsubst_decomp_names
+	caller.
+	(tsubst_decomp_names): Replace FIRST and CNT arguments with DECOMP.
+	(tsubst_expr): Don't call cp_maybe_mangle_decomp, adjust
+	tsubst_decomp_names, cp_finish_decl, cp_finish_decomp and
+	cp_convert_range_for callers.
+
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91319
+	* parser.cc (cp_parser_initializer_list): Set CONSTRUCTOR_IS_DIRECT_INIT
+	when the designated initializer is of the .x{} form.
+
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111173
+	* decl.cc (grokdeclarator): Disallow constinit on functions.
+
+2023-08-29  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (convert_like_internal): Show where the conversion function
+	was declared.
+	(maybe_show_nonconverting_candidate): New.
+	* cp-tree.h (maybe_show_nonconverting_candidate): Declare.
+	* typeck.cc (convert_for_assignment): Call it.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cp-tree.h (cp_convert_omp_range_for): Adjust declaration.
+	* parser.cc (struct omp_for_parse_data): New.
+	(cp_parser_postfix_expression): Diagnose calls to OpenMP runtime
+	in intervening code.
+	(check_omp_intervening_code): New.
+	(cp_parser_statement_seq_opt): Special-case nested loops, blocks,
+	and other constructs for OpenMP loops.
+	(cp_parser_iteration_statement): Reject loops in intervening code.
+	(cp_parser_omp_for_loop_init): Expand comments and tweak the
+	interface slightly to better distinguish input/output parameters.
+	(cp_convert_omp_range_for): Likewise.
+	(cp_parser_omp_loop_nest): New, split from cp_parser_omp_for_loop
+	and largely rewritten.  Add more comments.
+	(insert_structured_blocks): New.
+	(find_structured_blocks): New.
+	(struct sit_data, substitute_in_tree_walker, substitute_in_tree):
+	New.
+	(fixup_blocks_walker): New.
+	(cp_parser_omp_for_loop): Rewrite to use recursive descent instead
+	of a loop.  Add logic to reshuffle the bits of code collected
+	during parsing so intervening code gets moved to the loop body.
+	(cp_parser_omp_loop): Remove call to finish_omp_for_block, which
+	is now redundant.
+	(cp_parser_omp_simd): Likewise.
+	(cp_parser_omp_for): Likewise.
+	(cp_parser_omp_distribute): Likewise.
+	(cp_parser_oacc_loop): Likewise.
+	(cp_parser_omp_taskloop): Likewise.
+	(cp_parser_pragma): Reject OpenMP pragmas in intervening code.
+	* parser.h (struct cp_parser): Add omp_for_parse_state field.
+	* pt.cc (tsubst_omp_for_iterator): Adjust call to
+	cp_convert_omp_range_for.
+	* semantics.cc (finish_omp_for): Try harder to preserve location
+	of loop variable init expression for use in diagnostics.
+	(struct fofb_data, finish_omp_for_block_walker): New.
+	(finish_omp_for_block): Allow variables to be bound in a BIND_EXPR
+	nested inside BIND instead of directly in BIND itself.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): Handle
+	OMP_STRUCTURED_BLOCK.
+	* pt.cc (tsubst_expr): Likewise.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* call.cc (build_conditional_expr):
+	Rename TRUE/FALSE to true/false.
+	(build_new_op): Ditto.
+
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (outer_template_args): Handle non-template argument.
+	* constraint.cc (maybe_substitute_reqs_for): Pass decl to it.
+	* cp-tree.h (outer_template_args): Adjust.
+
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* cp-tree.h (member_like_constrained_friend_p): Declare.
+	* decl.cc (member_like_constrained_friend_p): New.
+	(function_requirements_equivalent_p): Check it.
+	(duplicate_decls): Check it.
+	(grokfndecl): Check friend template constraints.
+	* mangle.cc (decl_mangling_context): Check it.
+	(write_unqualified_name): Check it.
+	* pt.cc (uses_outer_template_parms_in_constraints): Fix for friends.
+	(tsubst_friend_function): Don't check satisfaction.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_defaultmap): Parse
+	'all' as category.
+
 2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

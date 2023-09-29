@@ -17,8 +17,7 @@
 
 // 29.8.5.4  basic_stringstream member functions  [stringstream.members]
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 // { dg-require-effective-target cxx11_abi }
 
 #include <sstream>

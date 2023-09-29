@@ -314,6 +314,18 @@ add_vrange (const vrange &v, inchash::hash &hstate,
 } //namespace inchash
 
 bool
+irange::nonnegative_p () const
+{
+  return wi::ge_p (lower_bound (), 0, TYPE_SIGN (type ()));
+}
+
+bool
+irange::nonpositive_p () const
+{
+  return wi::le_p (upper_bound (), 0, TYPE_SIGN (type ()));
+}
+
+bool
 irange::supports_type_p (const_tree type) const
 {
   return supports_p (type);
@@ -540,16 +552,26 @@ frange::union_nans (const frange &r)
 {
   gcc_checking_assert (known_isnan () || r.known_isnan ());
 
-  if (known_isnan ())
+  bool changed = false;
+  if (known_isnan () && m_kind != r.m_kind)
     {
       m_kind = r.m_kind;
       m_min = r.m_min;
       m_max = r.m_max;
+      changed = true;
     }
-  m_pos_nan |= r.m_pos_nan;
-  m_neg_nan |= r.m_neg_nan;
-  normalize_kind ();
-  return true;
+  if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
+    {
+      m_pos_nan |= r.m_pos_nan;
+      m_neg_nan |= r.m_neg_nan;
+      changed = true;
+    }
+  if (changed)
+    {
+      normalize_kind ();
+      return true;
+    }
+  return false;
 }
 
 bool
@@ -2715,6 +2737,22 @@ range_tests_nan ()
   ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
   ASSERT_TRUE (!r0.signbit_p (signbit));
   ASSERT_TRUE (r0.maybe_isnan ());
+
+  // NAN U NAN shouldn't change anything.
+  r0.set_nan (float_type_node);
+  r1.set_nan (float_type_node);
+  ASSERT_FALSE (r0.union_ (r1));
+
+  // [3,5] NAN U NAN shouldn't change anything.
+  r0 = frange_float ("3", "5");
+  r1.set_nan (float_type_node);
+  ASSERT_FALSE (r0.union_ (r1));
+
+  // [3,5] U NAN *does* trigger a change.
+  r0 = frange_float ("3", "5");
+  r0.clear_nan ();
+  r1.set_nan (float_type_node);
+  ASSERT_TRUE (r0.union_ (r1));
 }
 
 static void

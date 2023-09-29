@@ -2484,15 +2484,6 @@ Target supports compiling @code{avx} instructions.
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
 
-@item avx10.1
-Target supports the execution of @code{avx10.1} instructions.
-
-@item avx10.1-256
-Target supports the execution of @code{avx10.1} instructions.
-
-@item avx10.1-512
-Target supports the execution of @code{avx10.1-512} instructions.
-
 @item avx2
 Target supports compiling @code{avx2} instructions.
 
@@ -2941,6 +2932,10 @@ Target has limited stack size.  The stack size limit can be obtained using the
 STACK_SIZE macro defined by @ref{stack_size_ao,,@code{dg-add-options} feature
 @code{stack_size}}.
 
+Note that for certain targets, stack size limits are relevant for
+execution only, and therefore considered only if @code{dg-do run} is
+in effect, otherwise unlimited.
+
 @item static
 Target supports @option{-static}.
 
@@ -3336,9 +3331,12 @@ The first line of the expected output for a function @var{fn} has the form:
 Subsequent lines of the expected output also start with @var{prefix}.
 In both cases, whitespace after @var{prefix} is not significant.
 
-The test discards assembly directives such as @code{.cfi_startproc}
-and local label definitions such as @code{.LFB0} from the compiler's
-assembly output.  It then matches the result against the expected
+Depending on the configuration (see
+@code{configure_check-function-bodies} in
+@file{gcc/testsuite/lib/scanasm.exp}), the test may discard from the
+compiler's assembly output directives such as @code{.cfi_startproc},
+local label definitions such as @code{.LFB0}, and more.
+It then matches the result against the expected
 output for a function as a single regular expression.  This means that
 later lines can use backslashes to refer back to @samp{(@dots{})}
 captures on earlier lines.  For example:

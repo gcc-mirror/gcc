@@ -3171,7 +3171,14 @@ namespace __detail
 		    {
 		      auto __v = __read_signed(__num ? __num : 2);
 		      if (!__is_failed(__err))
-			__century = __v * 100;
+			{
+			  int __cmin = (int)year::min() / 100;
+			  int __cmax = (int)year::max() / 100;
+			  if (__cmin <= __v && __v <= __cmax)
+			    __century = __v * 100;
+			  else
+			    __century = -2; // This prevents guessing century.
+			}
 		    }
 		  else if (__mod == 'E')
 		    {
@@ -3320,7 +3327,16 @@ namespace __detail
 			  __h = __bad_h;
 			}
 		      else if (__c == 'H' && __val >= 0 && __val <= 23)
-			__h = hours(__val);
+			{
+			  __h = hours(__val);
+			  __h12 = __bad_h;
+			}
+		      else
+			{
+			  if (_M_need & _ChronoParts::_TimeOfDay)
+			    __err |= ios_base::failbit;
+			  break;
+			}
 		    }
 		  __parts |= _ChronoParts::_TimeOfDay;
 		  break;
@@ -3385,9 +3401,8 @@ namespace __detail
 			__min = minutes(__val);
 		      else
 			{
-			  __h = __bad_h;
-			  __min = __bad_min;
-			  __s = __bad_sec;
+			  if (_M_need & _ChronoParts::_TimeOfDay)
+			    __err |= ios_base::failbit;
 			  break;
 			}
 		    }
@@ -3474,33 +3489,31 @@ namespace __detail
 		  else
 		    {
 		      auto __val = __read_unsigned(2);
-		      if (__val == -1 || __val > 23)
+		      if (__val == -1 || __val > 23) [[unlikely]]
 			{
-			  __h = __bad_h;
-			  __min = __bad_min;
-			  __s = __bad_sec;
+			  if (_M_need & _ChronoParts::_TimeOfDay)
+			    __err |= ios_base::failbit;
 			  break;
 			}
-		      if (!__read_chr(':'))
-			{
-			  __err |= ios_base::failbit;
-			  break;
-			}
+		      if (!__read_chr(':')) [[unlikely]]
+			break;
 		      __h = hours(__val);
 
 		      __val = __read_unsigned(2);
-		      if (__val == -1 || __val > 60)
+		      if (__val == -1 || __val > 60) [[unlikely]]
 			{
-			  __h = __bad_h;
-			  __min = __bad_min;
-			  __s = __bad_sec;
+			  if (_M_need & _ChronoParts::_TimeOfDay)
+			    __err |= ios_base::failbit;
 			  break;
 			}
 		      __min = minutes(__val);
 
-		      __parts |= _ChronoParts::_TimeOfDay;
-
-		      if (__c != 'T' || !__read_chr(':'))
+		      if (__c == 'R')
+			{
+			  __parts |= _ChronoParts::_TimeOfDay;
+			  break;
+			}
+		      else if (!__read_chr(':')) [[unlikely]]
 			break;
 		    }
 		  [[fallthrough]];
@@ -3520,13 +3533,12 @@ namespace __detail
 						   ratio<1>>)
 		    {
 		      auto __val = __read_unsigned(__num ? __num : 2);
-		      if (0 <= __val && __val <= 59)
+		      if (0 <= __val && __val <= 59) [[likely]]
 			__s = seconds(__val);
 		      else
 			{
-			  __h = __bad_h;
-			  __min = __bad_min;
-			  __s = __bad_sec;
+			  if (_M_need & _ChronoParts::_TimeOfDay)
+			    __err |= ios_base::failbit;
 			  break;
 			}
 		    }

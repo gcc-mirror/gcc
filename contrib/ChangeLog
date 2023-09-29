@@ -1,3 +1,64 @@
+2023-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/111360
+	* gcc_update: Quote variable.
+
+2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/111359
+	* gcc-git-customization.sh: Check for getent before using it.
+	Use id on macOS.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.__init__,
+	to_changelog_entries): Fix lost wording fix.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.__init__):
+	Handle commit_to_info_hook = None; otherwise, if None,
+	regard it as error.
+	(to_changelog_entries): Handle commit_to_info_hook = None;
+	if info is None, create a warning for it.
+	* gcc-changelog/git_email.py (GitEmail.__init__):
+	call super() with commit_to_info_hook=None instead
+	of a lambda function.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Revert:
+	2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.__init__):
+	Handle commit_to_info_hook = None; otherwise, if None,
+	regard it as error.
+	(to_changelog_entries): Handle commit_to_info_hook = None;
+	if info is None, create a warning for it.
+	* gcc-changelog/git_email.py (GitEmail.__init__):
+	call super() with commit_to_info_hook=None instead
+	of a lamda function.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (GitCommit.__init__):
+	Handle commit_to_info_hook = None; otherwise, if None,
+	regard it as error.
+	(to_changelog_entries): Handle commit_to_info_hook = None;
+	if info is None, create a warning for it.
+	* gcc-changelog/git_email.py (GitEmail.__init__):
+	call super() with commit_to_info_hook=None instead
+	of a lamda function.
+
+2023-09-04  Marc Poulhiès  <dkm@kataplop.net>
+
+	* mklog.py: Leave SOB lines after changelog.
+	* prepare-commit-msg: Apply most shellcheck suggestions.
+
+2023-08-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* mklog.py: Fix bugs.
+
 2023-08-16  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc_update: Add libstdc++-v3/include/bits/version.h.

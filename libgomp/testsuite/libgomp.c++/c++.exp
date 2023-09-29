@@ -15,6 +15,10 @@ if { $blddir != "" } {
     verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
     return
 }
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[cC]$}
+    set lang_include_flags [exec sh ${blddir}/../libstdc++-v3/scripts/testsuite_flags --build-includes]
+}
 lappend ALWAYS_CFLAGS "compiler=$GXX_UNDER_TEST"
 
 # If a testcase doesn't have special options, use these.
@@ -44,6 +48,8 @@ set_ld_library_path_env_vars
 dg-runtest $tests "" $DEFAULT_CFLAGS
 
 if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
     unset libstdc++_library_path
     unset lang_library_paths
 }

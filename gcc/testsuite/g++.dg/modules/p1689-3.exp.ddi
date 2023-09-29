@@ -1,0 +1,16 @@
+{
+    "rules": [
+        {
+            "primary-output": "p1689-3.o",
+            "provides": [
+                {
+                    "logical-name": "foo:part2",
+                    "is-interface": false
+                }
+            ],
+            "requires": []
+        }
+    ],
+    "version": 0,
+    "revision": 0
+}

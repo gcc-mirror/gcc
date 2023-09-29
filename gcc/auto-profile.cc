@@ -1578,6 +1578,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
     }
   update_max_bb_count ();
   profile_status_for_fn (cfun) = PROFILE_READ;
+  cfun->cfg->full_profile = true;
   if (flag_value_profile_transformations)
     {
       gimple_value_profile_transformations ();

@@ -22,7 +22,7 @@
 
 include $(top_srcdir)/fragment.am
 
-# Convenience library for C++17 runtime.
+# Convenience library for C++20 runtime.
 noinst_LTLIBRARIES = libc++20convenience.la
 
 headers =

@@ -41,6 +41,8 @@ namespace ana {
 location_t
 get_stmt_location (const gimple *stmt, function *fun)
 {
+  if (!stmt)
+    return UNKNOWN_LOCATION;
   if (get_pure_location (stmt->location) == UNKNOWN_LOCATION)
     {
       /* Workaround for missing location information for clobber

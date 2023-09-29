@@ -985,7 +985,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using _Val = typename remove_volatile<_Tp>::type;
 
-    template<typename _Tp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+
+    template<bool _AtomicRef = false, typename _Tp>
       _GLIBCXX_ALWAYS_INLINE bool
       __compare_exchange(_Tp& __val, _Val<_Tp>& __e, _Val<_Tp>& __i,
 			 bool __is_weak,
@@ -994,27 +997,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
 
 	using _Vp = _Val<_Tp>;
+	_Tp* const __pval = std::__addressof(__val);
 
-	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Vp>())
+	if constexpr (!__atomic_impl::__maybe_has_padding<_Vp>())
 	  {
-	    // We must not modify __e on success, so cannot clear its padding.
-	    // Copy into a buffer and clear that, then copy back on failure.
-	    alignas(_Vp) unsigned char __buf[sizeof(_Vp)];
-	    _Vp* __exp = ::new((void*)__buf) _Vp(__e);
-	    __atomic_impl::__clear_padding(*__exp);
-	    if (__atomic_compare_exchange(std::__addressof(__val), __exp,
-					  __atomic_impl::__clear_padding(__i),
+	    return __atomic_compare_exchange(__pval, std::__addressof(__e),
+					     std::__addressof(__i), __is_weak,
+					     int(__s), int(__f));
+	  }
+	else if constexpr (!_AtomicRef) // std::atomic<T>
+	  {
+	    // Clear padding of the value we want to set:
+	    _Vp* const __pi = __atomic_impl::__clear_padding(__i);
+	    // Only allowed to modify __e on failure, so make a copy:
+	    _Vp __exp = __e;
+	    // Clear padding of the expected value:
+	    _Vp* const __pexp = __atomic_impl::__clear_padding(__exp);
+
+	    // For std::atomic<T> we know that the contained value will already
+	    // have zeroed padding, so trivial memcmp semantics are OK.
+	    if (__atomic_compare_exchange(__pval, __pexp, __pi,
 					  __is_weak, int(__s), int(__f)))
 	      return true;
-	    __builtin_memcpy(std::__addressof(__e), __exp, sizeof(_Vp));
+	    // Value bits must be different, copy from __exp back to __e:
+	    __builtin_memcpy(std::__addressof(__e), __pexp, sizeof(_Vp));
 	    return false;
 	  }
-	else
-	  return __atomic_compare_exchange(std::__addressof(__val),
-					   std::__addressof(__e),
-					   std::__addressof(__i),
-					   __is_weak, int(__s), int(__f));
+	else // std::atomic_ref<T> where T has padding bits.
+	  {
+	    // Clear padding of the value we want to set:
+	    _Vp* const __pi = __atomic_impl::__clear_padding(__i);
+
+	    // Only allowed to modify __e on failure, so make a copy:
+	    _Vp __exp = __e;
+	    // Optimistically assume that a previous store had zeroed padding
+	    // so that zeroing it in the expected value will match first time.
+	    _Vp* const __pexp = __atomic_impl::__clear_padding(__exp);
+
+	    // compare_exchange is specified to compare value representations.
+	    // Need to check whether a failure is 'real' or just due to
+	    // differences in padding bits. This loop should run no more than
+	    // three times, because the worst case scenario is:
+	    // First CAS fails because the actual value has non-zero padding.
+	    // Second CAS fails because another thread stored the same value,
+	    // but now with padding cleared. Third CAS succeeds.
+	    // We will never need to loop a fourth time, because any value
+	    // written by another thread (whether via store, exchange or
+	    // compare_exchange) will have had its padding cleared.
+	    while (true)
+	      {
+		// Copy of the expected value so we can clear its padding.
+		_Vp __orig = __exp;
+
+		if (__atomic_compare_exchange(__pval, __pexp, __pi,
+					      __is_weak, int(__s), int(__f)))
+		  return true;
+
+		// Copy of the actual value so we can clear its padding.
+		_Vp __curr = __exp;
+
+		// Compare value representations (i.e. ignoring padding).
+		if (__builtin_memcmp(__atomic_impl::__clear_padding(__orig),
+				     __atomic_impl::__clear_padding(__curr),
+				     sizeof(_Vp)))
+		  {
+		    // Value representations compare unequal, real failure.
+		    __builtin_memcpy(std::__addressof(__e), __pexp,
+				     sizeof(_Vp));
+		    return false;
+		  }
+	      }
+	  }
       }
+#pragma GCC diagnostic pop
   } // namespace __atomic_impl
 
 #if __cplusplus > 201703L
@@ -1061,24 +1116,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *__dest;
       }
 
-    template<typename _Tp>
+    template<bool _AtomicRef = false, typename _Tp>
       _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_weak(_Tp* __ptr, _Val<_Tp>& __expected,
 			    _Val<_Tp> __desired, memory_order __success,
-			    memory_order __failure) noexcept
+			    memory_order __failure,
+			    bool __check_padding = false) noexcept
       {
-	return __atomic_impl::__compare_exchange(*__ptr, __expected, __desired,
-						 true, __success, __failure);
+	return __atomic_impl::__compare_exchange<_AtomicRef>(
+		   *__ptr, __expected, __desired, true, __success, __failure);
       }
 
-    template<typename _Tp>
+    template<bool _AtomicRef = false, typename _Tp>
       _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_strong(_Tp* __ptr, _Val<_Tp>& __expected,
 			      _Val<_Tp> __desired, memory_order __success,
-			      memory_order __failure) noexcept
+			      memory_order __failure,
+			      bool __ignore_padding = false) noexcept
       {
-	return __atomic_impl::__compare_exchange(*__ptr, __expected, __desired,
-						 false, __success, __failure);
+	return __atomic_impl::__compare_exchange<_AtomicRef>(
+		   *__ptr, __expected, __desired, false, __success, __failure);
       }
 
 #if __cpp_lib_atomic_wait
@@ -1485,9 +1542,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_weak(_M_ptr,
-						    __expected, __desired,
-						    __success, __failure);
+	return __atomic_impl::compare_exchange_weak<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1495,9 +1551,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_strong(_M_ptr,
-						      __expected, __desired,
-						      __success, __failure);
+	return __atomic_impl::compare_exchange_strong<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1600,9 +1655,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_weak(_M_ptr,
-						    __expected, __desired,
-						    __success, __failure);
+	return __atomic_impl::compare_exchange_weak<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1610,9 +1664,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __success,
 			      memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_strong(_M_ptr,
-						      __expected, __desired,
-						      __success, __failure);
+	return __atomic_impl::compare_exchange_strong<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1775,19 +1828,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_weak(_M_ptr,
-						    __expected, __desired,
-						    __success, __failure);
+	return __atomic_impl::compare_exchange_weak<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
       compare_exchange_strong(_Fp& __expected, _Fp __desired,
-			    memory_order __success,
-			    memory_order __failure) const noexcept
+			      memory_order __success,
+			      memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_strong(_M_ptr,
-						      __expected, __desired,
-						      __success, __failure);
+	return __atomic_impl::compare_exchange_strong<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1904,9 +1955,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_weak(_M_ptr,
-						    __expected, __desired,
-						    __success, __failure);
+	return __atomic_impl::compare_exchange_weak<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool
@@ -1914,9 +1964,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __success,
 			    memory_order __failure) const noexcept
       {
-	return __atomic_impl::compare_exchange_strong(_M_ptr,
-						      __expected, __desired,
-						      __success, __failure);
+	return __atomic_impl::compare_exchange_strong<true>(
+		 _M_ptr, __expected, __desired, __success, __failure);
       }
 
       bool

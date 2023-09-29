@@ -1,3 +1,124 @@
+2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as
+	implemented for C only.
+	* testsuite/libgomp.c/allocate-4.c: New test.
+	* testsuite/libgomp.c/allocate-5.c: New test.
+	* testsuite/libgomp.c/allocate-6.c: New test.
+
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111392
+	* libgomp.texi: Mark decl attribute was added to the C++ attribute
+	syntax as implemented.
+
+2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/111413
+	* env.c (initialize_env): Don't dereference environ if it is NULL.
+	Reindent.
+
+2023-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111294
+	* team.c (gomp_team_start): Assert alloca size to avoid false
+	positive alloc-size diagnostic.
+
+2023-09-12  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR testsuite/91884
+	PR testsuite/109951
+	* configure.ac: Revert earlier changes, instead
+	'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libgomp.exp (libgomp_init): Remove
+	"Fix up '-funconfigured-libstdc++-v3' in 'GXX_UNDER_TEST'" code.
+	If '--with-build-sysroot=[...]' was specified, use it for
+	build-tree testing.
+	* testsuite/libgomp-site-extra.exp.in (GCC_UNDER_TEST)
+	(GXX_UNDER_TEST, GFORTRAN_UNDER_TEST): Don't set.
+	(SYSROOT_CFLAGS_FOR_TARGET): Set.
+	* testsuite/libgomp.c++/c++.exp (lang_source_re)
+	(lang_include_flags): Set for build-tree testing.
+	* testsuite/libgomp.oacc-c++/c++.exp (lang_source_re)
+	(lang_include_flags): Likewise.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Memory Management Routines): New; add documentation for
+	omp_init_allocator, omp_destroy_allocator, omp_set_default_allocator,
+	omp_get_default_allocator.
+	(OMP_ALLOCATOR): Fix ICV var name; add see-also references.
+
+2023-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_unload_device): Remove tailing whitespace.
+
+2023-09-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/pr100059-1.c: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0):  Imperfectly-nested loops are done.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.fortran/imperfect-destructor.f90: New.
+	* testsuite/libgomp.fortran/imperfect1.f90: New.
+	* testsuite/libgomp.fortran/imperfect2.f90: New.
+	* testsuite/libgomp.fortran/imperfect3.f90: New.
+	* testsuite/libgomp.fortran/imperfect4.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect1.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect2.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect3.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect4.f90: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/imperfect1.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect2.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect3.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect4.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect5.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect6.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect1.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect2.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect3.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect4.c: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c++/attrs-imperfect1.C: New test.
+	* testsuite/libgomp.c++/attrs-imperfect2.C: New test.
+	* testsuite/libgomp.c++/attrs-imperfect3.C: New test.
+	* testsuite/libgomp.c++/attrs-imperfect4.C: New test.
+	* testsuite/libgomp.c++/attrs-imperfect5.C: New test.
+	* testsuite/libgomp.c++/attrs-imperfect6.C: New test.
+	* testsuite/libgomp.c++/imperfect-class-1.C: New test.
+	* testsuite/libgomp.c++/imperfect-class-2.C: New test.
+	* testsuite/libgomp.c++/imperfect-class-3.C: New test.
+	* testsuite/libgomp.c++/imperfect-destructor.C: New test.
+	* testsuite/libgomp.c++/imperfect-template-1.C: New test.
+	* testsuite/libgomp.c++/imperfect-template-2.C: New test.
+	* testsuite/libgomp.c++/imperfect-template-3.C: New test.
+
+2023-08-22  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* testsuite/lib/libgomp.exp: Add effective target.
+	* testsuite/libgomp.c/simd-math-1.c: Avoid calling nonstandard
+	functions.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2 status): Add depobj with
+	destroy-var argument as 'N'. Mark defaultmap with
+	'all' category as 'Y'.
+
 2023-08-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/111017

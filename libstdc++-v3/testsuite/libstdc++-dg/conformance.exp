@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -20,6 +20,7 @@
 
 # Initialization.
 dg-init
+
 
 # Build the support objects.
 v3-build_support
@@ -43,12 +44,13 @@ if {[info exists blddir]} {
 }
 if {[info exists tests_file] && [file exists $tests_file]} {
     set f [open $tests_file]
+    verbose -log "reading test files from $tests_file" 1
     while { ! [eof $f] } {
 	set t [gets $f]
 	if { [string length "$t"] != 0 } {
 	    lappend tests ${srcdir}/${t}
 	}
-    } 
+    }
     close $f
 } else {
     # Find directories that might have tests.
@@ -76,7 +78,7 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 
 	# Filter out tests that should not be run.
 	foreach t $subdir_tests {
-	    # The DejaGNU "find" procedure sometimes returns a list 
+	    # The DejaGNU "find" procedure sometimes returns a list
 	    # containing an empty string, when it should really return
 	    # an empty list.
 	    if { $t == "" } {
@@ -87,13 +89,13 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 	    # 1. interactive tests.
 	    # 2. performance tests.
 	    # 3. wchar_t tests, if not supported.
-	    # 4. thread tests, if not supported. 
+	    # 4. thread tests, if not supported.
 	    # 5. *_filebuf, if file I/O is not supported.
 	    # 6. simd tests.
 	    if { [string first _xin $t] == -1
 		 && [string first performance $t] == -1
-		 && (${v3-wchar_t} || [string first wchar_t $t] == -1) 
-		 && (${v3-threads} || [string first thread $t] == -1)  
+		 && (${v3-wchar_t} || [string first wchar_t $t] == -1)
+		 && (${v3-threads} || [string first thread $t] == -1)
 		 && ([string first "_filebuf" $t] == -1
 		     || [check_v3_target_fileio])
 		 && [string first "/experimental/simd/" $t] == -1 } {
@@ -107,7 +109,8 @@ set tests [lsort $tests]
 # Main loop.
 global DEFAULT_CXXFLAGS
 global PCH_CXXFLAGS
-dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+# Modified version of dg-runtest
+v3-dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
 
 # Finally run simd tests with extra SIMD-relevant flags
 global DEFAULT_VECTCFLAGS

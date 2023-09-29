@@ -77,10 +77,11 @@ var_map_base_fini (var_map map)
 }
 /* Create a variable partition map of SIZE for region, initialize and return
    it.  Region is a loop if LOOP is non-NULL, otherwise is the current
-   function.  */
+   function.  If BITINT is non-NULL, only SSA_NAMEs from that bitmap
+   will be coalesced.  */
 
 var_map
-init_var_map (int size, class loop *loop)
+init_var_map (int size, class loop *loop, bitmap bitint)
 {
   var_map map;
 
@@ -109,7 +110,8 @@ init_var_map (int size, class loop *loop)
   else
     {
       map->bmp_bbs = NULL;
-      map->outofssa_p = true;
+      map->outofssa_p = bitint == NULL;
+      map->bitint = bitint;
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
 	map->vec_bbs.safe_push (bb);
@@ -1359,7 +1361,7 @@ compute_live_vars (struct function *fn, live_vars_map *vars)
      We then do a mostly classical bitmap liveness algorithm.  */
 
   active.create (last_basic_block_for_fn (fn));
-  active.quick_grow (last_basic_block_for_fn (fn));
+  active.quick_grow_cleared (last_basic_block_for_fn (fn));
   for (int i = 0; i < last_basic_block_for_fn (fn); i++)
     bitmap_initialize (&active[i], &bitmap_default_obstack);
 

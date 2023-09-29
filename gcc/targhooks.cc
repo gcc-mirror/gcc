@@ -2597,6 +2597,14 @@ default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 }
 
+/* Return true if _BitInt(N) is supported and fill details about it into
+   *INFO.  */
+bool
+default_bitint_type_info (int, struct bitint_info *)
+{
+  return false;
+}
+
 /* Default implementation for
   TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE.  */
 HOST_WIDE_INT

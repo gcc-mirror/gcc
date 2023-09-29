@@ -155,4 +155,28 @@ PROCEDURE getSuppressNoReturn () : BOOLEAN ;
 PROCEDURE useBool () : BOOLEAN ;
 
 
+(*
+   getCRealType - returns the string representing the REAL type
+                  used by C.  By default this is "double".
+*)
+
+PROCEDURE getCRealType () : String ;
+
+
+(*
+   getCLongRealType - returns the string representing the REAL type
+                      used by C.  By default this is "long double".
+*)
+
+PROCEDURE getCLongRealType () : String ;
+
+
+(*
+   getCShortRealType - returns the string representing the REAL type
+                       used by C.  By default this is "float".
+*)
+
+PROCEDURE getCShortRealType () : String ;
+
+
 END mcOptions.

@@ -1106,6 +1106,15 @@ Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) IntegerRange(1, 65536) Param Optimization
 Maximum number of nested calls to search for control dependencies during uninitialized variable analysis.
 
+-param=uninit-max-chain-len=
+Common Joined UInteger Var(param_uninit_max_chain_len) Init(8) IntegerRange(1, 128) Param Optimization
+Maximum number of predicates anded for each predicate ored in the normalized
+predicate chain.
+
+-param=uninit-max-num-chains=
+Common Joined UInteger Var(param_uninit_max_num_chains) Init(8) IntegerRange(1, 128) Param Optimization
+Maximum number of predicates ored in the normalized predicate chain.
+
 -param=uninlined-function-insns=
 Common Joined UInteger Var(param_uninlined_function_insns) Init(2) Optimization IntegerRange(0, 1000000) Param
 Instruction accounted for function prologue, epilogue and other overhead.

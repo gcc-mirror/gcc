@@ -1,3 +1,23 @@
+2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* jit-playback.cc: Change spelling to macOS.
+
+2023-08-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* docs/topics/compatibility.rst: Add documentation for LIBGCCJIT_ABI_25.
+	* docs/topics/types.rst: Add documentation for gcc_jit_type_get_restrict.
+
+2023-08-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* jit-playback.cc: Remove trailing whitespace characters.
+	* jit-playback.h: Add get_restrict method.
+	* jit-recording.cc: Add get_restrict methods.
+	* jit-recording.h: Add get_restrict methods.
+	* libgccjit++.h: Add get_restrict methods.
+	* libgccjit.cc: Add gcc_jit_type_get_restrict.
+	* libgccjit.h: Declare gcc_jit_type_get_restrict.
+	* libgccjit.map: Declare gcc_jit_type_get_restrict.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* jit-dejagnu.h: Mechanically drop static from static inline

@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config/loongarch/loongarch-opts.h"
 
+#define TARGET_SUPPORTS_WIDE_INT 1
+
 /* Macros to silence warnings about numbers being signed in traditional
    C and unsigned in ISO C when compiled on 32-bit hosts.  */
 
@@ -61,56 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef NM_FLAGS
 #define NM_FLAGS "-Bn"
 #endif
-
-/* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
-   overridden by subtargets.  */
-
-#ifndef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC ""
-#endif
-
-#undef ASM_SPEC
-#define ASM_SPEC "%{mabi=*} %{subtarget_asm_spec}"
-
-/* Extra switches sometimes passed to the linker.  */
-
-#ifndef LINK_SPEC
-#define LINK_SPEC ""
-#endif /* LINK_SPEC defined  */
-
-/* Specs for the compiler proper.  */
-
-/* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
-
-#undef CC1_SPEC
-#define CC1_SPEC "\
-%{G*} \
-%(subtarget_cc1_spec)"
-
-/* Preprocessor specs.  */
-
-/* SUBTARGET_CPP_SPEC is passed to the preprocessor.  It may be
-   overridden by subtargets.  */
-#ifndef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC ""
-#endif
-
-#define CPP_SPEC "%(subtarget_cpp_spec)"
-
-/* This macro defines names of additional specifications to put in the specs
-   that can be used in various specifications like CC1_SPEC.  Its definition
-   is an initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   specification name, and a string constant that used by the GCC driver
-   program.
-
-   Do not define this macro if it does not need to do anything.  */
-
-#define EXTRA_SPECS \
-  {"subtarget_cc1_spec", SUBTARGET_CC1_SPEC}, \
-  {"subtarget_cpp_spec", SUBTARGET_CPP_SPEC}, \
-  {"subtarget_asm_spec", SUBTARGET_ASM_SPEC},
 
 /* Registers may have a prefix which can be ignored when matching
    user asm and register definitions.  */
@@ -179,6 +131,16 @@ along with GCC; see the file COPYING3.  If not see
 #define MIN_UNITS_PER_WORD 4
 #endif
 
+/* Width of a LSX vector register in bytes.  */
+#define UNITS_PER_LSX_REG 16
+/* Width of a LSX vector register in bits.  */
+#define BITS_PER_LSX_REG (UNITS_PER_LSX_REG * BITS_PER_UNIT)
+
+/* Width of a LASX vector register in bytes.  */
+#define UNITS_PER_LASX_REG 32
+/* Width of a LASX vector register in bits.  */
+#define BITS_PER_LASX_REG (UNITS_PER_LASX_REG * BITS_PER_UNIT)
+
 /* For LARCH, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 
@@ -241,8 +203,11 @@ along with GCC; see the file COPYING3.  If not see
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than
-   LONG_DOUBLE_TYPE_SIZE.  */
-#define BIGGEST_ALIGNMENT (LONG_DOUBLE_TYPE_SIZE)
+   LONG_DOUBLE_TYPE_SIZE, unless under LSX/LASX the bigggest alignment is
+   BITS_PER_LSX_REG/BITS_PER_LASX_REG/..  */
+#define BIGGEST_ALIGNMENT \
+  (ISA_HAS_LASX? BITS_PER_LASX_REG \
+   : (ISA_HAS_LSX ? BITS_PER_LSX_REG : LONG_DOUBLE_TYPE_SIZE))
 
 /* All accesses must be aligned.  */
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
@@ -378,6 +343,13 @@ along with GCC; see the file COPYING3.  If not see
 #define FP_REG_FIRST 32
 #define FP_REG_LAST 63
 #define FP_REG_NUM (FP_REG_LAST - FP_REG_FIRST + 1)
+#define LSX_REG_FIRST FP_REG_FIRST
+#define LSX_REG_LAST  FP_REG_LAST
+#define LSX_REG_NUM   FP_REG_NUM
+
+#define LASX_REG_FIRST FP_REG_FIRST
+#define LASX_REG_LAST  FP_REG_LAST
+#define LASX_REG_NUM   FP_REG_NUM
 
 /* The DWARF 2 CFA column which tracks the return address from a
    signal handler context.  This means that to maintain backwards
@@ -395,8 +367,14 @@ along with GCC; see the file COPYING3.  If not see
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define FCC_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - FCC_REG_FIRST) < FCC_REG_NUM)
+#define LSX_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - LSX_REG_FIRST) < LSX_REG_NUM)
+#define LASX_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - LASX_REG_FIRST) < LASX_REG_NUM)
 
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
+#define LSX_REG_RTX_P(X) (REG_P (X) && LSX_REG_P (REGNO (X)))
+#define LASX_REG_RTX_P(X) (REG_P (X) && LASX_REG_P (REGNO (X)))
 
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
@@ -577,6 +555,11 @@ enum reg_class
 #define IMM12_OPERAND(VALUE) \
   ((unsigned HOST_WIDE_INT) (VALUE) + IMM_REACH / 2 < IMM_REACH)
 
+/* True if VALUE is a signed 13-bit number.  */
+
+#define IMM13_OPERAND(VALUE) \
+  ((unsigned HOST_WIDE_INT) (VALUE) + 0x1000 < 0x2000)
+
 /* True if VALUE is a signed 16-bit number.  */
 
 #define IMM16_OPERAND(VALUE) \
@@ -705,6 +688,20 @@ enum reg_class
 #define GP_ARG_LAST (GP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 #define FP_ARG_FIRST (FP_REG_FIRST + 0)
 #define FP_ARG_LAST (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
+
+/* True if MODE is vector and supported in a LSX vector register.  */
+#define LSX_SUPPORTED_MODE_P(MODE)			\
+  (ISA_HAS_LSX						\
+   && GET_MODE_SIZE (MODE) == UNITS_PER_LSX_REG		\
+   && (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
+       || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT))
+
+#define LASX_SUPPORTED_MODE_P(MODE)			\
+  (ISA_HAS_LASX						\
+   && (GET_MODE_SIZE (MODE) == UNITS_PER_LSX_REG	\
+       ||GET_MODE_SIZE (MODE) == UNITS_PER_LASX_REG)	\
+   && (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
+       || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT))
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
@@ -926,7 +923,71 @@ typedef struct {
   { "s7",	30 + GP_REG_FIRST },					\
   { "s8",	31 + GP_REG_FIRST },					\
   { "v0",	 4 + GP_REG_FIRST },					\
-  { "v1",	 5 + GP_REG_FIRST }					\
+  { "v1",	 5 + GP_REG_FIRST },					\
+  { "vr0",	 0 + FP_REG_FIRST },					\
+  { "vr1",	 1 + FP_REG_FIRST },					\
+  { "vr2",	 2 + FP_REG_FIRST },					\
+  { "vr3",	 3 + FP_REG_FIRST },					\
+  { "vr4",	 4 + FP_REG_FIRST },					\
+  { "vr5",	 5 + FP_REG_FIRST },					\
+  { "vr6",	 6 + FP_REG_FIRST },					\
+  { "vr7",	 7 + FP_REG_FIRST },					\
+  { "vr8",	 8 + FP_REG_FIRST },					\
+  { "vr9",	 9 + FP_REG_FIRST },					\
+  { "vr10",	10 + FP_REG_FIRST },					\
+  { "vr11",	11 + FP_REG_FIRST },					\
+  { "vr12",	12 + FP_REG_FIRST },					\
+  { "vr13",	13 + FP_REG_FIRST },					\
+  { "vr14",	14 + FP_REG_FIRST },					\
+  { "vr15",	15 + FP_REG_FIRST },					\
+  { "vr16",	16 + FP_REG_FIRST },					\
+  { "vr17",	17 + FP_REG_FIRST },					\
+  { "vr18",	18 + FP_REG_FIRST },					\
+  { "vr19",	19 + FP_REG_FIRST },					\
+  { "vr20",	20 + FP_REG_FIRST },					\
+  { "vr21",	21 + FP_REG_FIRST },					\
+  { "vr22",	22 + FP_REG_FIRST },					\
+  { "vr23",	23 + FP_REG_FIRST },					\
+  { "vr24",	24 + FP_REG_FIRST },					\
+  { "vr25",	25 + FP_REG_FIRST },					\
+  { "vr26",	26 + FP_REG_FIRST },					\
+  { "vr27",	27 + FP_REG_FIRST },					\
+  { "vr28",	28 + FP_REG_FIRST },					\
+  { "vr29",	29 + FP_REG_FIRST },					\
+  { "vr30",	30 + FP_REG_FIRST },					\
+  { "vr31",	31 + FP_REG_FIRST },					\
+  { "xr0",	 0 + FP_REG_FIRST },					\
+  { "xr1",	 1 + FP_REG_FIRST },					\
+  { "xr2",	 2 + FP_REG_FIRST },					\
+  { "xr3",	 3 + FP_REG_FIRST },					\
+  { "xr4",	 4 + FP_REG_FIRST },					\
+  { "xr5",	 5 + FP_REG_FIRST },					\
+  { "xr6",	 6 + FP_REG_FIRST },					\
+  { "xr7",	 7 + FP_REG_FIRST },					\
+  { "xr8",	 8 + FP_REG_FIRST },					\
+  { "xr9",	 9 + FP_REG_FIRST },					\
+  { "xr10",	10 + FP_REG_FIRST },					\
+  { "xr11",	11 + FP_REG_FIRST },					\
+  { "xr12",	12 + FP_REG_FIRST },					\
+  { "xr13",	13 + FP_REG_FIRST },					\
+  { "xr14",	14 + FP_REG_FIRST },					\
+  { "xr15",	15 + FP_REG_FIRST },					\
+  { "xr16",	16 + FP_REG_FIRST },					\
+  { "xr17",	17 + FP_REG_FIRST },					\
+  { "xr18",	18 + FP_REG_FIRST },					\
+  { "xr19",	19 + FP_REG_FIRST },					\
+  { "xr20",	20 + FP_REG_FIRST },					\
+  { "xr21",	21 + FP_REG_FIRST },					\
+  { "xr22",	22 + FP_REG_FIRST },					\
+  { "xr23",	23 + FP_REG_FIRST },					\
+  { "xr24",	24 + FP_REG_FIRST },					\
+  { "xr25",	25 + FP_REG_FIRST },					\
+  { "xr26",	26 + FP_REG_FIRST },					\
+  { "xr27",	27 + FP_REG_FIRST },					\
+  { "xr28",	28 + FP_REG_FIRST },					\
+  { "xr29",	29 + FP_REG_FIRST },					\
+  { "xr30",	30 + FP_REG_FIRST },					\
+  { "xr31",	31 + FP_REG_FIRST }					\
 }
 
 /* Globalizing directive for a label.  */
@@ -1069,6 +1130,9 @@ typedef struct {
    to make sure that any loop-based implementation will iterate at
    least twice.  */
 #define LARCH_MAX_MOVE_OPS_STRAIGHT (LARCH_MAX_MOVE_OPS_PER_LOOP_ITER * 2)
+
+#define LARCH_MAX_MOVE_PER_INSN \
+  (ISA_HAS_LASX ? 32 : (ISA_HAS_LSX ? 16 : UNITS_PER_WORD))
 
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.

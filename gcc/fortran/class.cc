@@ -647,6 +647,10 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   gcc_assert (as);
 
+  /* We cannot build the class container now.  */
+  if (attr->class_ok && (!ts->u.derived || !ts->u.derived->components))
+    return false;
+
   /* Class container has already been built with same name.  */
   if (attr->class_ok
       && ts->u.derived->components->attr.dimension >= attr->dimension

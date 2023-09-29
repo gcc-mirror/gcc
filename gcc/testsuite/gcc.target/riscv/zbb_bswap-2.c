@@ -7,6 +7,6 @@ int foo(int n)
   return __builtin_bswap16(n);
 }
 
-/* { dg-final { scan-assembler "rev8" } } */
-/* { dg-final { scan-assembler "srli" } } */
+/* { dg-final { scan-assembler {\mrev8} } } */
+/* { dg-final { scan-assembler {\msrli} } } */
 

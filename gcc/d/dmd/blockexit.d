@@ -27,7 +27,6 @@ import dmd.location;
 import dmd.mtype;
 import dmd.statement;
 import dmd.tokens;
-import dmd.visitor;
 
 /**
  * BE stands for BlockExit.

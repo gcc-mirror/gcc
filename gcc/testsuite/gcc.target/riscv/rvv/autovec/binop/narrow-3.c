@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
 
 #include <stdint-gcc.h>
 
@@ -27,5 +27,5 @@
 
 TEST_ALL ()
 
-/* { dg-final { scan-assembler-times {\tvnsra\.wx} 4 } } */
+/* { dg-final { scan-assembler-times {\tvnsra\.wx} 8 } } */
 /* { dg-final { scan-assembler-times {\tvnsrl\.wx} 4 } } */

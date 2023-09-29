@@ -759,7 +759,7 @@ public:
     override
   {
     if (change.m_old_state == m_sm.get_start_state ()
-	&& unchecked_p (change.m_new_state))
+	&& (unchecked_p (change.m_new_state) || nonnull_p (change.m_new_state)))
       // TODO: verify that it's the allocation stmt, not a copy
       return label_text::borrow ("allocated here");
     if (unchecked_p (change.m_old_state)
@@ -1178,6 +1178,21 @@ public:
   label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("dereference of NULL %qE", ev.m_expr);
+  }
+
+  /* Implementation of pending_diagnostic::supercedes_p for
+     null-deref.
+
+     We want null-deref to supercede use-of-unitialized-value,
+     so that if we have these at the same stmt, we don't emit
+     a use-of-uninitialized, just the null-deref.  */
+
+  bool supercedes_p (const pending_diagnostic &other) const final override
+  {
+    if (other.use_of_uninit_p ())
+      return true;
+
+    return false;
   }
 };
 
@@ -1915,12 +1930,20 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    return true;
 	  }
 
-	if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	  on_allocator_call (sm_ctxt, call, &m_scalar_delete);
-	else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	  on_allocator_call (sm_ctxt, call, &m_vector_delete);
-	else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-		 || is_named_call_p (callee_fndecl, "operator delete", call, 2))
+	if (!is_placement_new_p (call))
+	  {
+	    bool returns_nonnull = !TREE_NOTHROW (callee_fndecl)
+				   && flag_exceptions;
+	    if (is_named_call_p (callee_fndecl, "operator new"))
+	      on_allocator_call (sm_ctxt, call,
+				 &m_scalar_delete, returns_nonnull);
+	    else if (is_named_call_p (callee_fndecl, "operator new []"))
+	      on_allocator_call (sm_ctxt, call,
+				 &m_vector_delete, returns_nonnull);
+	  }
+
+	if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	    || is_named_call_p (callee_fndecl, "operator delete", call, 2))
 	  {
 	    on_deallocator_call (sm_ctxt, node, call,
 				 &m_scalar_delete.m_deallocator, 0);
@@ -1965,71 +1988,88 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	malloc_state_machine *mutable_this
 	  = const_cast <malloc_state_machine *> (this);
 
-	/* Handle "__attribute__((malloc(FOO)))".   */
-	if (const deallocator_set *deallocators
+	/* Handle interesting attributes of the callee_fndecl,
+	   or prioritize those of the builtin that callee_fndecl is expected
+	   to be.
+	   Might want this to be controlled by a flag.  */
+	{
+	  tree fndecl = callee_fndecl;
+	  /* If call is recognized as a builtin known_function, use that
+	     builtin's function_decl.  */
+	  if (const region_model *old_model = sm_ctxt->get_old_region_model ())
+	    if (const builtin_known_function *builtin_kf
+		= old_model->get_builtin_kf (call))
+	      fndecl = builtin_kf->builtin_decl ();
+
+	  /* Handle "__attribute__((malloc(FOO)))".   */
+	  if (const deallocator_set *deallocators
 	      = mutable_this->get_or_create_custom_deallocator_set
-		  (callee_fndecl))
+		  (fndecl))
+	    {
+	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+	      bool returns_nonnull
+		= lookup_attribute ("returns_nonnull", attrs);
+	      on_allocator_call (sm_ctxt, call, deallocators, returns_nonnull);
+	    }
+
 	  {
-	    tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (callee_fndecl));
-	    bool returns_nonnull
-	      = lookup_attribute ("returns_nonnull", attrs);
-	    on_allocator_call (sm_ctxt, call, deallocators, returns_nonnull);
+	    /* Handle "__attribute__((nonnull))".   */
+	    tree fntype = TREE_TYPE (fndecl);
+	    bitmap nonnull_args = get_nonnull_args (fntype);
+	    if (nonnull_args)
+	      {
+		for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+		  {
+		    tree arg = gimple_call_arg (stmt, i);
+		    if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+		      continue;
+		    /* If we have a nonnull-args, and either all pointers, or
+		       just the specified pointers.  */
+		    if (bitmap_empty_p (nonnull_args)
+			|| bitmap_bit_p (nonnull_args, i))
+		      {
+			state_t state = sm_ctxt->get_state (stmt, arg);
+			/* Can't use a switch as the states are non-const.  */
+			/* Do use the fndecl that caused the warning so that the
+			   misused attributes are printed and the user not
+			   confused.  */
+			if (unchecked_p (state))
+			  {
+			    tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+			    sm_ctxt->warn (node, stmt, arg,
+					  make_unique<possible_null_arg>
+					    (*this, diag_arg, fndecl, i));
+			    const allocation_state *astate
+			      = as_a_allocation_state (state);
+			    sm_ctxt->set_next_state (stmt, arg,
+						    astate->get_nonnull ());
+			  }
+			else if (state == m_null)
+			  {
+			    tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+			    sm_ctxt->warn (node, stmt, arg,
+					  make_unique<null_arg>
+					    (*this, diag_arg, fndecl, i));
+			    sm_ctxt->set_next_state (stmt, arg, m_stop);
+			  }
+			else if (state == m_start)
+			  maybe_assume_non_null (sm_ctxt, arg, stmt);
+		      }
+		  }
+		BITMAP_FREE (nonnull_args);
+	      }
 	  }
 
-	/* Handle "__attribute__((nonnull))".   */
-	{
-	  tree fntype = TREE_TYPE (callee_fndecl);
-	  bitmap nonnull_args = get_nonnull_args (fntype);
-	  if (nonnull_args)
+	  /* Check for this after nonnull, so that if we have both
+	     then we transition to "freed", rather than "checked".  */
+	  unsigned dealloc_argno = fndecl_dealloc_argno (fndecl);
+	  if (dealloc_argno != UINT_MAX)
 	    {
-	      for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
-		{
-		  tree arg = gimple_call_arg (stmt, i);
-		  if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
-		    continue;
-		  /* If we have a nonnull-args, and either all pointers, or just
-		     the specified pointers.  */
-		  if (bitmap_empty_p (nonnull_args)
-		      || bitmap_bit_p (nonnull_args, i))
-		    {
-		      state_t state = sm_ctxt->get_state (stmt, arg);
-		      /* Can't use a switch as the states are non-const.  */
-		      if (unchecked_p (state))
-			{
-			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-			  sm_ctxt->warn (node, stmt, arg,
-					 make_unique<possible_null_arg>
-					   (*this, diag_arg, callee_fndecl, i));
-			  const allocation_state *astate
-			    = as_a_allocation_state (state);
-			  sm_ctxt->set_next_state (stmt, arg,
-						   astate->get_nonnull ());
-			}
-		      else if (state == m_null)
-			{
-			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-			  sm_ctxt->warn (node, stmt, arg,
-					 make_unique<null_arg>
-					   (*this, diag_arg, callee_fndecl, i));
-			  sm_ctxt->set_next_state (stmt, arg, m_stop);
-			}
-		      else if (state == m_start)
-			maybe_assume_non_null (sm_ctxt, arg, stmt);
-		    }
-		}
-	      BITMAP_FREE (nonnull_args);
+	      const deallocator *d
+		= mutable_this->get_or_create_deallocator (fndecl);
+	      on_deallocator_call (sm_ctxt, node, call, d, dealloc_argno);
 	    }
 	}
-
-	/* Check for this after nonnull, so that if we have both
-	   then we transition to "freed", rather than "checked".  */
-	unsigned dealloc_argno = fndecl_dealloc_argno (callee_fndecl);
-	if (dealloc_argno != UINT_MAX)
-	  {
-	    const deallocator *d
-	      = mutable_this->get_or_create_deallocator (callee_fndecl);
-	    on_deallocator_call (sm_ctxt, node, call, d, dealloc_argno);
-	  }
       }
 
   /* Look for pointers explicitly being compared against zero

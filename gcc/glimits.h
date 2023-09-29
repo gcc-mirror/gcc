@@ -157,6 +157,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # undef BOOL_WIDTH
 # define BOOL_WIDTH 1
 
+# ifdef __BITINT_MAXWIDTH__
+#  undef BITINT_MAXWIDTH
+#  define BITINT_MAXWIDTH __BITINT_MAXWIDTH__
+# endif
+
 # define __STDC_VERSION_LIMITS_H__	202311L
 #endif
 

@@ -32,7 +32,7 @@ EXPORT QUALIFIED String,
                  InitStringChar, Index, RIndex,
                  Mark, Length, ConCat, ConCatChar, Assign, Dup, Add,
                  Equal, EqualCharStar, EqualArray, ToUpper, ToLower,
-                 CopyOut, Mult, Slice,
+                 CopyOut, Mult, Slice, ReplaceChar,
                  RemoveWhitePrefix, RemoveWhitePostfix, RemoveComment,
                  char, string,
                  InitStringDB, InitStringCharStarDB, InitStringCharDB,
@@ -120,6 +120,14 @@ PROCEDURE ConCatChar (a: String; ch: CHAR) : String ;
 *)
 
 PROCEDURE Assign (a, b: String) : String ;
+
+
+(*
+   ReplaceChar - returns string s after it has changed all
+                 occurances of from to to.
+*)
+
+PROCEDURE ReplaceChar (s: String; from, to: CHAR) : String ;
 
 
 (*

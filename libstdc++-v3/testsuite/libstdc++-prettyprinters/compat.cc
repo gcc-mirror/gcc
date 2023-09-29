@@ -102,13 +102,13 @@ main()
   using std::optional;
 
   optional<int> o;
-// { dg-final { note-test o {std::optional<int> [no contained value]} } }
+// { dg-final { note-test o {std::optional [no contained value]} } }
   optional<bool> ob{false};
-// { dg-final { note-test ob {std::optional<bool> = {[contained value] = false}} } }
+// { dg-final { note-test ob {std::optional = {[contained value] = false}} } }
   optional<int> oi{5};
-// { dg-final { note-test oi {std::optional<int> = {[contained value] = 5}} } }
+// { dg-final { note-test oi {std::optional = {[contained value] = 5}} } }
   optional<void*> op{nullptr};
-// { dg-final { note-test op {std::optional<void *> = {[contained value] = 0x0}} } }
+// { dg-final { note-test op {std::optional = {[contained value] = 0x0}} } }
 
   __builtin_puts("");
   return 0;			// Mark SPOT

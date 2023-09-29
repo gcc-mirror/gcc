@@ -53,6 +53,7 @@ through the macros defined in the @file{.h} file.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
 * D Language and ABI::  Controlling D ABI changes.
+* Rust Language and ABI:: Controlling Rust ABI changes.
 * Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
@@ -114,6 +115,14 @@ This is declared in @file{d/d-target.h}, the initializer
 initialize @code{targetdm} themselves, they should set
 @code{target_has_targetdm=yes} in @file{config.gcc}; otherwise a default
 definition is used.
+
+Similarly, there is a @code{targetrustm} variable for hooks that are
+specific to the Rust language front end, documented as ``Rust Target
+Hook''.  This is declared in @file{rust/rust-target.h}, the initializer
+@code{TARGETRUSTM_INITIALIZER} in @file{rust/rust-target-def.h}.
+If targets initialize @code{targetrustm} themselves, they should set
+@code{target_has_targetrustm=yes} in @file{config.gcc}; otherwise a
+default definition is used.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -1019,6 +1028,21 @@ when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},
 Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.
+
+@deftypefn {Target Hook} bool TARGET_C_BITINT_TYPE_INFO (int @var{n}, struct bitint_info *@var{info})
+This target hook returns true if @code{_BitInt(@var{N})} is supported and
+provides details on it.  @code{_BitInt(@var{N})} is to be represented as
+series of @code{info->limb_mode}
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,
+ordered from least significant to most significant if
+@code{!info->big_endian}, otherwise from most significant to least
+significant.  If @code{info->extended} is false, the bits above or equal to
+@var{N} are undefined when stored in a register or memory, otherwise they
+are zero or sign extended depending on if it is
+@code{unsigned _BitInt(@var{N})} or one of @code{_BitInt(@var{N})} or
+@code{signed _BitInt(@var{N})}.  Alignment of the type is
+@code{GET_MODE_ALIGNMENT (info->limb_mode)}.
+@end deftypefn
 
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
@@ -5791,7 +5815,7 @@ many ulps below or above those boundaries result could be.
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
 and the method arguments all at once to the method-lookup library function.
-This is the usual setting when targeting Darwin/Mac OS X systems, which have
+This is the usual setting when targeting Darwin / macOS systems, which have
 the NeXT runtime installed.
 
 If the macro is set to 0, the "GNU" Objective-C message sending convention
@@ -10939,6 +10963,23 @@ if they have external linkage.  If this flag is false, then instantiated
 decls will be emitted as weak symbols.  The default is @code{false}.
 @end deftypevr
 
+@node Rust Language and ABI
+@section Rust ABI parameters
+@cindex parameters, rust abi
+
+@deftypefn {Rust Target Hook} void TARGET_RUST_CPU_INFO (void)
+Declare all environmental CPU info and features relating to the target CPU
+using the function @code{rust_add_target_info}, which takes a string
+representing the feature key and a string representing the feature value.
+Configuration pairs predefined by this hook apply to all files that are being
+compiled.
+@end deftypefn
+
+@deftypefn {Rust Target Hook} void TARGET_RUST_OS_INFO (void)
+Similar to @code{TARGET_RUST_CPU_INFO}, but is used for configuration info
+relating to the target operating system.
+@end deftypefn
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
@@ -12013,7 +12054,7 @@ This target hook is required only when the target has several different
 modes and they have different conditional execution capability, such as ARM.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, int @var{code}, tree @var{op0}, tree @var{op1})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx_code @var{code}, tree @var{op0}, tree @var{op1})
 This function prepares to emit a comparison insn for the first compare in a
  sequence of conditional comparisions.  It returns an appropriate comparison
  with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
@@ -12023,7 +12064,7 @@ This function prepares to emit a comparison insn for the first compare in a
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, int @var{cmp_code}, tree @var{op0}, tree @var{op1}, int @var{bit_code})
+@deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, rtx_code @var{cmp_code}, tree @var{op0}, tree @var{op1}, rtx_code @var{bit_code})
 This function prepares to emit a conditional comparison within a sequence
  of conditional comparisons.  It returns an appropriate comparison with
  @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.

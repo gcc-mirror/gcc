@@ -86,4 +86,8 @@ f9 (unsigned char c)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "Optimizing range tests c_\[0-9\]*.D. -.0, 31. and -.32, 32.\[\n\r\]* into" 6 "reassoc1" } }  */
+/* Note with match being able to simplify this, optimizing range tests is no longer needed here. */
+/* Equivalence: _7 | _2 -> c_5(D) <= 32 */
+/* old test: dg-final  scan-tree-dump-times "Optimizing range tests c_\[0-9\]*.D. -.0, 31. and -.32, 32.\[\n\r\]* into" 6 "reassoc1"   */
+/* { dg-final { scan-tree-dump-times "Equivalence: _\[0-9\]+ \\\| _\[0-9\]+ -> c_\[0-9\]+.D. <= 32" 5 "reassoc1" } }  */
+/* { dg-final { scan-tree-dump-times "Equivalence: _\[0-9\]+ \& _\[0-9\]+ -> c_\[0-9\]+.D. > 32" 1 "reassoc1" } }  */

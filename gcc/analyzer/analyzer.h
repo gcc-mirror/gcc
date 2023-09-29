@@ -90,6 +90,7 @@ class reachable_regions;
 class bounded_ranges;
 class bounded_ranges_manager;
 
+struct pending_location;
 class pending_diagnostic;
 class pending_note;
 struct event_loc_info;
@@ -127,6 +128,10 @@ struct per_function_data;
 struct interesting_t;
 
 class feasible_node;
+
+class known_function;
+  class builtin_known_function;
+  class internal_known_function;
 
 /* Forward decls of functions.  */
 
@@ -279,6 +284,24 @@ public:
   {
     return;
   }
+
+  virtual const builtin_known_function *
+  dyn_cast_builtin_kf () const { return NULL; }
+};
+
+/* Subclass of known_function for builtin functions.  */
+
+class builtin_known_function : public known_function
+{
+public:
+  virtual enum built_in_function builtin_code () const = 0;
+  tree builtin_decl () const {
+    gcc_assert (builtin_code () < END_BUILTINS);
+    return builtin_info[builtin_code ()].decl;
+  }
+
+  const builtin_known_function *
+  dyn_cast_builtin_kf () const final override { return this; }
 };
 
 /* Subclass of known_function for IFN_* functions.  */
@@ -401,6 +424,7 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+extern bool is_placement_new_p (const gcall *call);
 
 extern const char *get_user_facing_name (const gcall *call);
 

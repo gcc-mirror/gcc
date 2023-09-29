@@ -1214,8 +1214,8 @@ check_function_format (const_tree fn, tree attrs, int nargs,
 		    skipped_default_format = true;
 		    break;
 		  }
-		if (skipped_default_format)
-		  continue;
+	       if (skipped_default_format)
+		 continue;
 	    }
 
 	  if (warn_format)
@@ -2325,13 +2325,13 @@ read_any_format_width (tree &params,
     {
       /* Possibly read a numeric width.  If the width is zero,
 	 we complain if appropriate.  */
-      int non_zero_width_char = FALSE;
-      int found_width = FALSE;
+      int non_zero_width_char = false;
+      int found_width = false;
       while (ISDIGIT (*format_chars))
 	{
-	  found_width = TRUE;
+	  found_width = true;
 	  if (*format_chars != '0')
-	    non_zero_width_char = TRUE;
+	    non_zero_width_char = true;
 	  ++format_chars;
 	}
       if (found_width && !non_zero_width_char &&

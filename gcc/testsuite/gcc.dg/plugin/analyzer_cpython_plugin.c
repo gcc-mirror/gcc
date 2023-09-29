@@ -44,6 +44,7 @@
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
+#include "analyzer/exploded-graph.h"
 #include "make-unique.h"
 
 int plugin_is_GPL_compatible;
@@ -188,6 +189,381 @@ public:
         model->set_value (cd.get_lhs_region (), zero, cd.get_ctxt ());
       }
     return true;
+  }
+};
+
+/* This is just a copy of leak_stmt_finder for now (subject to change if
+ * necssary)  */
+
+class refcnt_stmt_finder : public stmt_finder
+{
+public:
+  refcnt_stmt_finder (const exploded_graph &eg, tree var)
+      : m_eg (eg), m_var (var)
+  {
+  }
+
+  std::unique_ptr<stmt_finder>
+  clone () const final override
+  {
+    return make_unique<refcnt_stmt_finder> (m_eg, m_var);
+  }
+
+  const gimple *
+  find_stmt (const exploded_path &epath) final override
+  {
+    logger *const logger = m_eg.get_logger ();
+    LOG_FUNC (logger);
+
+    if (m_var && TREE_CODE (m_var) == SSA_NAME)
+      {
+	/* Locate the final write to this SSA name in the path.  */
+	const gimple *def_stmt = SSA_NAME_DEF_STMT (m_var);
+
+	int idx_of_def_stmt;
+	bool found = epath.find_stmt_backwards (def_stmt, &idx_of_def_stmt);
+	if (!found)
+	  goto not_found;
+
+	/* What was the next write to the underlying var
+	   after the SSA name was set? (if any).  */
+
+	for (unsigned idx = idx_of_def_stmt + 1; idx < epath.m_edges.length ();
+	     ++idx)
+	  {
+	    const exploded_edge *eedge = epath.m_edges[idx];
+	    if (logger)
+		    logger->log ("eedge[%i]: EN %i -> EN %i", idx,
+				 eedge->m_src->m_index,
+				 eedge->m_dest->m_index);
+	    const exploded_node *dst_node = eedge->m_dest;
+	    const program_point &dst_point = dst_node->get_point ();
+	    const gimple *stmt = dst_point.get_stmt ();
+	    if (!stmt)
+		    continue;
+	    if (const gassign *assign = dyn_cast<const gassign *> (stmt))
+		    {
+			    tree lhs = gimple_assign_lhs (assign);
+			    if (TREE_CODE (lhs) == SSA_NAME
+				&& SSA_NAME_VAR (lhs) == SSA_NAME_VAR (m_var))
+				    return assign;
+		    }
+	  }
+      }
+
+  not_found:
+
+    /* Look backwards for the first statement with a location.  */
+    int i;
+    const exploded_edge *eedge;
+    FOR_EACH_VEC_ELT_REVERSE (epath.m_edges, i, eedge)
+    {
+      if (logger)
+	logger->log ("eedge[%i]: EN %i -> EN %i", i, eedge->m_src->m_index,
+		     eedge->m_dest->m_index);
+      const exploded_node *dst_node = eedge->m_dest;
+      const program_point &dst_point = dst_node->get_point ();
+      const gimple *stmt = dst_point.get_stmt ();
+      if (stmt)
+	if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
+	  return stmt;
+    }
+
+    gcc_unreachable ();
+    return NULL;
+  }
+
+private:
+  const exploded_graph &m_eg;
+  tree m_var;
+};
+
+class refcnt_mismatch : public pending_diagnostic_subclass<refcnt_mismatch>
+{
+public:
+  refcnt_mismatch (const region *base_region,
+				const svalue *ob_refcnt,
+				const svalue *actual_refcnt,
+        tree reg_tree)
+      : m_base_region (base_region), m_ob_refcnt (ob_refcnt),
+	m_actual_refcnt (actual_refcnt), m_reg_tree(reg_tree)
+  {
+  }
+
+  const char *
+  get_kind () const final override
+  {
+    return "refcnt_mismatch";
+  }
+
+  bool
+  operator== (const refcnt_mismatch &other) const
+  {
+    return (m_base_region == other.m_base_region
+	    && m_ob_refcnt == other.m_ob_refcnt
+	    && m_actual_refcnt == other.m_actual_refcnt);
+  }
+
+  int get_controlling_option () const final override
+  {
+    return 0;
+  }
+
+  bool
+  emit (rich_location *rich_loc, logger *) final override
+  {
+    diagnostic_metadata m;
+    bool warned;
+    // just assuming constants for now
+    auto actual_refcnt
+	= m_actual_refcnt->dyn_cast_constant_svalue ()->get_constant ();
+    auto ob_refcnt = m_ob_refcnt->dyn_cast_constant_svalue ()->get_constant ();
+    warned = warning_meta (rich_loc, m, get_controlling_option (),
+			   "expected %qE to have "
+			   "reference count: %qE but ob_refcnt field is: %qE",
+			   m_reg_tree, actual_refcnt, ob_refcnt);
+
+    // location_t loc = rich_loc->get_loc ();
+    // foo (loc);
+    return warned;
+  }
+
+  void mark_interesting_stuff (interesting_t *interest) final override
+  {
+    if (m_base_region)
+      interest->add_region_creation (m_base_region);
+  }
+
+private:
+
+  void foo(location_t loc) const 
+  {
+    inform(loc, "something is up right here");
+  }
+  const region *m_base_region;
+  const svalue *m_ob_refcnt;
+  const svalue *m_actual_refcnt;
+  tree m_reg_tree;
+};
+
+/* Retrieves the svalue associated with the ob_refcnt field of the base region.
+ */
+static const svalue *
+retrieve_ob_refcnt_sval (const region *base_reg, const region_model *model,
+			 region_model_context *ctxt)
+{
+  region_model_manager *mgr = model->get_manager ();
+  tree ob_refcnt_tree = get_field_by_name (pyobj_record, "ob_refcnt");
+  const region *ob_refcnt_region
+      = mgr->get_field_region (base_reg, ob_refcnt_tree);
+  const svalue *ob_refcnt_sval
+      = model->get_store_value (ob_refcnt_region, ctxt);
+  return ob_refcnt_sval;
+}
+
+static void
+increment_region_refcnt (hash_map<const region *, int> &map, const region *key)
+{
+  bool existed;
+  auto &refcnt = map.get_or_insert (key, &existed);
+  refcnt = existed ? refcnt + 1 : 1;
+}
+
+
+/* Recursively fills in region_to_refcnt with the references owned by
+   pyobj_ptr_sval.  */
+static void
+count_pyobj_references (const region_model *model,
+			hash_map<const region *, int> &region_to_refcnt,
+			const svalue *pyobj_ptr_sval,
+			hash_set<const region *> &seen)
+{
+  if (!pyobj_ptr_sval)
+    return;
+
+  const auto *pyobj_region_sval = pyobj_ptr_sval->dyn_cast_region_svalue ();
+  const auto *pyobj_initial_sval = pyobj_ptr_sval->dyn_cast_initial_svalue ();
+  if (!pyobj_region_sval && !pyobj_initial_sval)
+    return;
+
+  // todo: support initial sval (e.g passed in as parameter)
+  if (pyobj_initial_sval)
+    {
+      //     increment_region_refcnt (region_to_refcnt,
+      // 		       pyobj_initial_sval->get_region ());
+      return;
+    }
+
+  const region *pyobj_region = pyobj_region_sval->get_pointee ();
+  if (!pyobj_region || seen.contains (pyobj_region))
+    return;
+
+  seen.add (pyobj_region);
+
+  if (pyobj_ptr_sval->get_type () == pyobj_ptr_tree)
+    increment_region_refcnt (region_to_refcnt, pyobj_region);
+
+  const auto *curr_store = model->get_store ();
+  const auto *retval_cluster = curr_store->get_cluster (pyobj_region);
+  if (!retval_cluster)
+    return;
+
+  const auto &retval_binding_map = retval_cluster->get_map ();
+
+  for (const auto &binding : retval_binding_map)
+    {
+      const svalue *binding_sval = binding.second;
+      const svalue *unwrapped_sval = binding_sval->unwrap_any_unmergeable ();
+      const region *pointee = unwrapped_sval->maybe_get_region ();
+
+      if (pointee && pointee->get_kind () == RK_HEAP_ALLOCATED)
+	count_pyobj_references (model, region_to_refcnt, binding_sval, seen);
+    }
+}
+
+/* Compare ob_refcnt field vs the actual reference count of a region */
+static void
+check_refcnt (const region_model *model,
+	      const region_model *old_model,
+	      region_model_context *ctxt,
+	      const hash_map<const ana::region *,
+			     int>::iterator::reference_pair region_refcnt)
+{
+  region_model_manager *mgr = model->get_manager ();
+  const auto &curr_region = region_refcnt.first;
+  const auto &actual_refcnt = region_refcnt.second;
+  const svalue *ob_refcnt_sval
+      = retrieve_ob_refcnt_sval (curr_region, model, ctxt);
+  const svalue *actual_refcnt_sval = mgr->get_or_create_int_cst (
+      ob_refcnt_sval->get_type (), actual_refcnt);
+
+  if (ob_refcnt_sval != actual_refcnt_sval)
+    {
+      const svalue *curr_reg_sval
+	  = mgr->get_ptr_svalue (pyobj_ptr_tree, curr_region);
+      tree reg_tree = old_model->get_representative_tree (curr_reg_sval);
+      if (!reg_tree)
+	return;
+
+      const auto &eg = ctxt->get_eg ();
+      refcnt_stmt_finder finder (*eg, reg_tree);
+      auto pd = make_unique<refcnt_mismatch> (curr_region, ob_refcnt_sval,
+					      actual_refcnt_sval, reg_tree);
+      if (pd && eg)
+	ctxt->warn (std::move (pd), &finder);
+    }
+}
+
+static void
+check_refcnts (const region_model *model,
+	       const region_model *old_model,
+	       const svalue *retval,
+	       region_model_context *ctxt,
+	       hash_map<const region *, int> &region_to_refcnt)
+{
+  for (const auto &region_refcnt : region_to_refcnt)
+    {
+      check_refcnt (model, old_model, ctxt, region_refcnt);
+    }
+}
+
+/* Validates the reference count of all Python objects. */
+void
+pyobj_refcnt_checker (const region_model *model,
+		      const region_model *old_model,
+		      const svalue *retval,
+		      region_model_context *ctxt)
+{
+  if (!ctxt)
+    return;
+
+  hash_map<const region *, int> region_to_refcnt;
+  hash_set<const region *> seen_regions;
+
+  count_pyobj_references (model, region_to_refcnt, retval, seen_regions);
+  check_refcnts (model, old_model, retval, ctxt, region_to_refcnt);
+}
+
+/* Counts the actual pyobject references from all clusters in the model's
+ * store. */
+static void
+count_all_references (const region_model *model,
+		      hash_map<const region *, int> &region_to_refcnt)
+{
+  for (const auto &cluster : *model->get_store ())
+    {
+      auto curr_region = cluster.first;
+      if (curr_region->get_kind () != RK_HEAP_ALLOCATED)
+	continue;
+
+      increment_region_refcnt (region_to_refcnt, curr_region);
+
+      auto binding_cluster = cluster.second;
+      for (const auto &binding : binding_cluster->get_map ())
+	{
+	  const svalue *binding_sval = binding.second;
+
+	  const svalue *unwrapped_sval
+	      = binding_sval->unwrap_any_unmergeable ();
+	  // if (unwrapped_sval->get_type () != pyobj_ptr_tree)
+	  // continue;
+
+	  const region *pointee = unwrapped_sval->maybe_get_region ();
+	  if (!pointee || pointee->get_kind () != RK_HEAP_ALLOCATED)
+	    continue;
+
+	  increment_region_refcnt (region_to_refcnt, pointee);
+	}
+    }
+}
+
+static void
+dump_refcnt_info (const hash_map<const region *, int> &region_to_refcnt,
+		  const region_model *model,
+		  region_model_context *ctxt)
+{
+  region_model_manager *mgr = model->get_manager ();
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+
+  for (const auto &region_refcnt : region_to_refcnt)
+    {
+      auto region = region_refcnt.first;
+      auto actual_refcnt = region_refcnt.second;
+      const svalue *ob_refcnt_sval
+	  = retrieve_ob_refcnt_sval (region, model, ctxt);
+      const svalue *actual_refcnt_sval = mgr->get_or_create_int_cst (
+	  ob_refcnt_sval->get_type (), actual_refcnt);
+
+      region->dump_to_pp (&pp, true);
+      pp_string (&pp, " — ob_refcnt: ");
+      ob_refcnt_sval->dump_to_pp (&pp, true);
+      pp_string (&pp, " actual refcnt: ");
+      actual_refcnt_sval->dump_to_pp (&pp, true);
+      pp_newline (&pp);
+    }
+  pp_string (&pp, "~~~~~~~~\n");
+  pp_flush (&pp);
+}
+
+class kf_analyzer_cpython_dump_refcounts : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
+    hash_map<const region *, int> region_to_refcnt;
+    count_all_references(model, region_to_refcnt);
+    dump_refcnt_info(region_to_refcnt, model, ctxt);
   }
 };
 
@@ -655,7 +1031,7 @@ kf_PyList_New::impl_call_post (const call_details &cd) const
           const region *ob_item_sized_region
               = model->get_or_create_region_for_heap_alloc (prod_sval,
                                                             cd.get_ctxt ());
-          model->zero_fill_region (ob_item_sized_region);
+          model->zero_fill_region (ob_item_sized_region, cd.get_ctxt ());
           const svalue *ob_item_ptr_sval
               = mgr->get_ptr_svalue (pyobj_ptr_ptr, ob_item_sized_region);
           const svalue *ob_item_unmergeable
@@ -927,6 +1303,10 @@ cpython_analyzer_init_cb (void *gcc_data, void * /*user_data */)
   iface->register_known_function ("PyList_New", make_unique<kf_PyList_New> ());
   iface->register_known_function ("PyLong_FromLong",
                                   make_unique<kf_PyLong_FromLong> ());
+
+  iface->register_known_function (
+      "__analyzer_cpython_dump_refcounts",
+      make_unique<kf_analyzer_cpython_dump_refcounts> ());
 }
 } // namespace ana
 
@@ -940,8 +1320,9 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  ana::register_finish_translation_unit_callback (&stash_named_types);
-  ana::register_finish_translation_unit_callback (&stash_global_vars);
+  register_finish_translation_unit_callback (&stash_named_types);
+  register_finish_translation_unit_callback (&stash_global_vars);
+  region_model::register_pop_frame_callback(pyobj_refcnt_checker);
   register_callback (plugin_info->base_name, PLUGIN_ANALYZER_INIT,
                      ana::cpython_analyzer_init_cb,
                      NULL); /* void *user_data */

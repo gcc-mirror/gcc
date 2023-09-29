@@ -97,7 +97,7 @@ const(void)*          InterpreterInfo;
 }
 alias RPC_CLIENT_INTERFACE* PRPC_CLIENT_INTERFACE;
 
-alias TypeDef!(void*) I_RPC_MUTEX;
+alias void* I_RPC_MUTEX;
 
 struct RPC_TRANSFER_SYNTAX {
     GUID   Uuid;

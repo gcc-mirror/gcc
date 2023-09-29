@@ -1193,7 +1193,8 @@ BEGIN
    UninitVariableChecking := value ;
    PedanticCast := value ;
    PedanticParamNames := value ;
-   StyleChecking := value
+   StyleChecking := value ;
+   CaseEnumChecking := value
 END SetWall ;
 
 
@@ -1325,7 +1326,7 @@ END SetRuntimeModuleOverride ;
 
 PROCEDURE GetRuntimeModuleOverride () : ADDRESS ;
 BEGIN
-   RETURN RuntimeModuleOverride
+   RETURN string (RuntimeModuleOverride)
 END GetRuntimeModuleOverride ;
 
 
@@ -1366,7 +1367,11 @@ END SetShared ;
 
 
 (*
-   SetUninitVariableChecking - sets the UninitVariableChecking flag to value.
+   SetUninitVariableChecking - sets the UninitVariableChecking and
+                               UninitVariableConditionalChecking flags to value
+                               depending upon arg string.  The arg string
+                               can be: "all", "known,cond", "cond,known", "known"
+                               or "cond".
 *)
 
 PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
@@ -1385,8 +1390,7 @@ BEGIN
    s := InitStringCharStar (arg) ;
    IF EqualArray (s, "all") OR
       EqualArray (s, "known,cond") OR
-      EqualArray (s, "cond,known") OR
-      EqualArray (s, "cond")
+      EqualArray (s, "cond,known")
    THEN
       UninitVariableChecking := value ;
       UninitVariableConditionalChecking := value ;
@@ -1395,7 +1399,11 @@ BEGIN
    ELSIF EqualArray (s, "known")
    THEN
       UninitVariableChecking := value ;
-      UninitVariableConditionalChecking := NOT value ;
+      s := KillString (s) ;
+      RETURN 1
+   ELSIF EqualArray (s, "cond")
+   THEN
+      UninitVariableConditionalChecking := value ;
       s := KillString (s) ;
       RETURN 1
    ELSE
@@ -1403,6 +1411,26 @@ BEGIN
       RETURN 0
    END
 END SetUninitVariableChecking ;
+
+
+(*
+   SetCaseEnumChecking - sets the CaseEnumChecking to value.
+*)
+
+PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
+BEGIN
+   CaseEnumChecking := value
+END SetCaseEnumChecking ;
+
+
+(*
+   SetDebugBuiltins - sets the DebugBuiltins to value.
+*)
+
+PROCEDURE SetDebugBuiltins (value: BOOLEAN) ;
+BEGIN
+   DebugBuiltins := value
+END SetDebugBuiltins ;
 
 
 BEGIN
@@ -1477,6 +1505,7 @@ BEGIN
    DumpDir                           := NIL ;
    UninitVariableChecking            := FALSE ;
    UninitVariableConditionalChecking := FALSE ;
+   CaseEnumChecking                  := FALSE ;
    M2Prefix                          := InitString ('') ;
    M2PathName                        := InitString ('')
 END M2Options.

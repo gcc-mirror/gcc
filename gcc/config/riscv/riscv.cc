@@ -64,15 +64,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
+#include "shrink-wrap.h"
 #include "sel-sched.h"
+#include "sched-int.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "gimple-expr.h"
 #include "tree-vectorizer.h"
 #include "gcse.h"
+#include "tree-dfa.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
+#include "riscv-vector-costs.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -108,12 +112,27 @@ struct GTY(())  riscv_frame_info {
   /* Likewise FPR X.  */
   unsigned int fmask;
 
+  /* Likewise for vector registers.  */
+  unsigned int vmask;
+
   /* How much the GPR save/restore routines adjust sp (or 0 if unused).  */
   unsigned save_libcall_adjustment;
+
+  /* the minimum number of bytes, in multiples of 16-byte address increments,
+     required to cover the registers in a multi push & pop.  */
+  unsigned multi_push_adj_base;
+
+  /* the number of additional 16-byte address increments allocated for the stack
+     frame in a multi push & pop.  */
+  unsigned multi_push_adj_addi;
 
   /* Offsets of fixed-point and floating-point save areas from frame bottom */
   poly_int64 gp_sp_offset;
   poly_int64 fp_sp_offset;
+
+  /* Top and bottom offsets of vector save areas from frame bottom.  */
+  poly_int64 v_sp_offset_top;
+  poly_int64 v_sp_offset_bottom;
 
   /* Offset of virtual frame pointer from stack pointer/frame bottom */
   poly_int64 frame_pointer_offset;
@@ -192,6 +211,18 @@ struct riscv_arg_info {
 
   /* The offset of the first register used, provided num_fprs is nonzero.  */
   unsigned int fpr_offset;
+
+  /* The number of vector registers allocated to this argument.  */
+  unsigned int num_vrs;
+
+  /* The offset of the first register used, provided num_vrs is nonzero.  */
+  unsigned int vr_offset;
+
+  /* The number of mask registers allocated to this argument.  */
+  unsigned int num_mrs;
+
+  /* The offset of the first register used, provided num_mrs is nonzero.  */
+  unsigned int mr_offset;
 };
 
 /* One stage in a constant building sequence.  These sequences have
@@ -247,13 +278,16 @@ struct riscv_tune_info {
 /* Whether unaligned accesses execute very slowly.  */
 bool riscv_slow_unaligned_access_p;
 
+/* Whether user explicitly passed -mstrict-align.  */
+bool riscv_user_wants_strict_align;
+
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
 
 /* If non-zero, this is an offset to be added to SP to redefine the CFA
    when restoring the FP register from the stack.  Only valid when generating
    the epilogue.  */
-static int epilogue_cfa_sp_offset;
+static poly_int64 epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_param *tune_param;
@@ -363,8 +397,10 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* use_divmod_expansion */
 };
 
+static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
+static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec riscv_attribute_table[] =
@@ -408,15 +444,29 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
    function.  */
 static bool riscv_save_frame_pointer;
 
+typedef enum
+{
+  PUSH_IDX = 0,
+  POP_IDX,
+  POPRET_IDX,
+  POPRETZ_IDX,
+  ZCMP_OP_NUM
+} riscv_zcmp_op_t;
+
+typedef insn_code (*code_for_push_pop_t) (machine_mode);
+
 void riscv_frame_info::reset(void)
 {
   total_size = 0;
   mask = 0;
   fmask = 0;
+  vmask = 0;
   save_libcall_adjustment = 0;
 
   gp_sp_offset = 0;
   fp_sp_offset = 0;
+  v_sp_offset_top = 0;
+  v_sp_offset_bottom = 0;
 
   frame_pointer_offset = 0;
 
@@ -541,16 +591,15 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	}
     }
 
-  if (cost > 2 && TARGET_64BIT && TARGET_ZBB)
+  if (cost > 2 && TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB))
     {
       int leading_ones = clz_hwi (~value);
       int trailing_ones = ctz_hwi (~value);
 
       /* If all bits are one except a few that are zero, and the zero bits
-	 are within a range of 11 bits, and at least one of the upper 32-bits
-	 is a zero, then we can generate a constant by loading a small
-	 negative constant and rotating.  */
-      if (leading_ones < 32
+	 are within a range of 11 bits, then we can synthesize a constant
+	 by loading a small negative constant and rotating.  */
+      if (leading_ones < 64
 	  && ((64 - leading_ones - trailing_ones) < 12))
 	{
 	  codes[0].code = UNKNOWN;
@@ -804,6 +853,138 @@ static int riscv_symbol_insns (enum riscv_symbol_type type)
     }
 }
 
+/* Immediate values loaded by the FLI.S instruction in Chapter 25 of the latest RISC-V ISA
+   Manual draft. For details, please see:
+   https://github.com/riscv/riscv-isa-manual/releases/tag/isa-449cd0c  */
+
+static unsigned HOST_WIDE_INT fli_value_hf[32] =
+{
+  0xbcp8, 0x4p8, 0x1p8, 0x2p8, 0x1cp8, 0x20p8, 0x2cp8, 0x30p8,
+  0x34p8, 0x35p8, 0x36p8, 0x37p8, 0x38p8, 0x39p8, 0x3ap8, 0x3bp8,
+  0x3cp8, 0x3dp8, 0x3ep8, 0x3fp8, 0x40p8, 0x41p8, 0x42p8, 0x44p8,
+  0x48p8, 0x4cp8, 0x58p8, 0x5cp8, 0x78p8,
+  /* Only used for filling, ensuring that 29 and 30 of HF are the same.  */
+  0x78p8,
+  0x7cp8, 0x7ep8
+};
+
+static unsigned HOST_WIDE_INT fli_value_sf[32] =
+{
+  0xbf8p20, 0x008p20, 0x378p20, 0x380p20, 0x3b8p20, 0x3c0p20, 0x3d8p20, 0x3e0p20,
+  0x3e8p20, 0x3eap20, 0x3ecp20, 0x3eep20, 0x3f0p20, 0x3f2p20, 0x3f4p20, 0x3f6p20,
+  0x3f8p20, 0x3fap20, 0x3fcp20, 0x3fep20, 0x400p20, 0x402p20, 0x404p20, 0x408p20,
+  0x410p20, 0x418p20, 0x430p20, 0x438p20, 0x470p20, 0x478p20, 0x7f8p20, 0x7fcp20
+};
+
+static unsigned HOST_WIDE_INT fli_value_df[32] =
+{
+  0xbff0p48, 0x10p48, 0x3ef0p48, 0x3f00p48,
+  0x3f70p48, 0x3f80p48, 0x3fb0p48, 0x3fc0p48,
+  0x3fd0p48, 0x3fd4p48, 0x3fd8p48, 0x3fdcp48,
+  0x3fe0p48, 0x3fe4p48, 0x3fe8p48, 0x3fecp48,
+  0x3ff0p48, 0x3ff4p48, 0x3ff8p48, 0x3ffcp48,
+  0x4000p48, 0x4004p48, 0x4008p48, 0x4010p48,
+  0x4020p48, 0x4030p48, 0x4060p48, 0x4070p48,
+  0x40e0p48, 0x40f0p48, 0x7ff0p48, 0x7ff8p48
+};
+
+/* Display floating-point values at the assembly level, which is consistent
+   with the zfa extension of llvm:
+   https://reviews.llvm.org/D145645.  */
+
+const char *fli_value_print[32] =
+{
+  "-1.0", "min", "1.52587890625e-05", "3.0517578125e-05", "0.00390625", "0.0078125", "0.0625", "0.125",
+  "0.25", "0.3125", "0.375", "0.4375", "0.5", "0.625", "0.75", "0.875",
+  "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0", "4.0",
+  "8.0", "16.0", "128.0", "256.0", "32768.0", "65536.0", "inf", "nan"
+};
+
+/* Return index of the FLI instruction table if rtx X is an immediate constant that can
+   be moved using a single FLI instruction in zfa extension. Return -1 if not found.  */
+
+int
+riscv_float_const_rtx_index_for_fli (rtx x)
+{
+  unsigned HOST_WIDE_INT *fli_value_array;
+
+  machine_mode mode = GET_MODE (x);
+
+  if (!TARGET_ZFA
+      || !CONST_DOUBLE_P(x)
+      || mode == VOIDmode
+      || (mode == HFmode && !(TARGET_ZFH || TARGET_ZVFH))
+      || (mode == SFmode && !TARGET_HARD_FLOAT)
+      || (mode == DFmode && !TARGET_DOUBLE_FLOAT))
+    return -1;
+
+  if (!SCALAR_FLOAT_MODE_P (mode)
+      || GET_MODE_BITSIZE (mode).to_constant () > HOST_BITS_PER_WIDE_INT
+      /* Only support up to DF mode.  */
+      || GET_MODE_BITSIZE (mode).to_constant () > GET_MODE_BITSIZE (DFmode))
+    return -1;
+
+  unsigned HOST_WIDE_INT ival = 0;
+
+  long res[2];
+  real_to_target (res,
+		  CONST_DOUBLE_REAL_VALUE (x),
+		  REAL_MODE_FORMAT (mode));
+
+  if (mode == DFmode)
+    {
+      int order = BYTES_BIG_ENDIAN ? 1 : 0;
+      ival = zext_hwi (res[order], 32);
+      ival |= (zext_hwi (res[1 - order], 32) << 32);
+
+      /* When the lower 32 bits are not all 0, it is impossible to be in the table.  */
+      if (ival & (unsigned HOST_WIDE_INT)0xffffffff)
+	return -1;
+    }
+  else
+      ival = zext_hwi (res[0], 32);
+
+  switch (mode)
+    {
+      case E_HFmode:
+	fli_value_array = fli_value_hf;
+	break;
+      case E_SFmode:
+	fli_value_array = fli_value_sf;
+	break;
+      case E_DFmode:
+	fli_value_array = fli_value_df;
+	break;
+      default:
+	return -1;
+    }
+
+  if (fli_value_array[0] == ival)
+    return 0;
+
+  if (fli_value_array[1] == ival)
+    return 1;
+
+  /* Perform a binary search to find target index.  */
+  unsigned l, r, m;
+
+  l = 2;
+  r = 31;
+
+  while (l <= r)
+    {
+      m = (l + r) / 2;
+      if (fli_value_array[m] == ival)
+	return m;
+      else if (fli_value_array[m] < ival)
+	l = m+1;
+      else
+	r = m-1;
+    }
+
+  return -1;
+}
+
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
 static bool
@@ -830,6 +1011,9 @@ riscv_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
      high part.  */
   if (GET_CODE (x) == HIGH)
     return true;
+
+  if (satisfies_constraint_zfli (x))
+   return true;
 
   split_const (x, &base, &offset);
   if (riscv_symbolic_constant_p (base, &type))
@@ -1323,6 +1507,10 @@ riscv_const_insns (rtx x)
       }
 
     case CONST_DOUBLE:
+      /* See if we can use FMV directly.  */
+      if (satisfies_constraint_zfli (x))
+	return 1;
+
       /* We can use x0 to load floating-point zero.  */
       return x == CONST0_RTX (GET_MODE (x)) ? 1 : 0;
     case CONST_VECTOR:
@@ -1717,7 +1905,8 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
   start_sequence ();
 
   emit_insn (riscv_got_load_tls_gd (a0, sym));
-  insn = emit_call_insn (gen_call_value (result, func, const0_rtx, NULL));
+  insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
+					 gen_int_mode (RISCV_CC_BASE, SImode)));
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
   insn = get_insns ();
@@ -1945,6 +2134,12 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
       return;
     }
 
+  if (satisfies_constraint_zfli (src))
+    {
+      riscv_emit_set (dest, src);
+      return;
+    }
+
   /* Split moves of symbolic constants into high/low pairs.  */
   if (riscv_split_symbol (dest, src, MAX_MACHINE_MODE, &src))
     {
@@ -1969,6 +2164,26 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
     {
       base = riscv_force_temporary (dest, base);
       riscv_emit_move (dest, riscv_add_offset (NULL, base, INTVAL (offset)));
+      return;
+    }
+
+  /* Handle below format.
+     (const:DI
+       (plus:DI
+	 (symbol_ref:DI ("ic") [flags 0x2] <var_decl 0x7fe57740be10 ic>) <- op_0
+	 (const_poly_int:DI [16, 16]) // <- op_1
+     ))
+   */
+  if (GET_CODE (src) == CONST && GET_CODE (XEXP (src, 0)) == PLUS
+      && CONST_POLY_INT_P (XEXP (XEXP (src, 0), 1)))
+    {
+      rtx dest_tmp = gen_reg_rtx (mode);
+      rtx tmp = gen_reg_rtx (mode);
+
+      riscv_emit_move (dest, XEXP (XEXP (src, 0), 0));
+      riscv_legitimize_poly_move (mode, dest_tmp, tmp, XEXP (XEXP (src, 0), 1));
+
+      emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, dest, dest_tmp)));
       return;
     }
 
@@ -2298,6 +2513,71 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
   /* Expand
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Expand this data movement instead of simply forbid it since
+     we can improve the code generation for this following scenario
+     by RVV auto-vectorization:
+       (set (reg:V8QI 149) (vec_duplicate:V8QI (reg:QI))
+       (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
+     Since RVV mode and scalar mode are in different REG_CLASS,
+     we need to explicitly move data from V_REGS to GR_REGS by scalar move.  */
+  if (SUBREG_P (src) && riscv_v_ext_mode_p (GET_MODE (SUBREG_REG (src))))
+    {
+      machine_mode vmode = GET_MODE (SUBREG_REG (src));
+      unsigned int mode_size = GET_MODE_SIZE (mode).to_constant ();
+      unsigned int vmode_size = GET_MODE_SIZE (vmode).to_constant ();
+      /* We should be able to handle both partial and paradoxical subreg.  */
+      unsigned int nunits = vmode_size > mode_size ? vmode_size / mode_size : 1;
+      scalar_mode smode = as_a<scalar_mode> (mode);
+      unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
+      unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+
+      if (num == 2)
+	{
+	  /* If we want to extract 64bit value but ELEN < 64,
+	     we use RVV vector mode with EEW = 32 to extract
+	     the highpart and lowpart.  */
+	  smode = SImode;
+	  nunits = nunits * 2;
+	}
+      vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
+      enum insn_code icode
+	= convert_optab_handler (vec_extract_optab, vmode, smode);
+      gcc_assert (icode != CODE_FOR_nothing);
+      rtx v = gen_lowpart (vmode, SUBREG_REG (src));
+
+      for (unsigned int i = 0; i < num; i++)
+	{
+	  class expand_operand ops[3];
+	  rtx result;
+	  if (num == 1)
+	    result = dest;
+	  else if (i == 0)
+	    result = gen_lowpart (smode, dest);
+	  else
+	    result = gen_reg_rtx (smode);
+	  create_output_operand (&ops[0], result, smode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], v, vmode);
+	  create_integer_operand (&ops[2], index + i);
+	  expand_insn (icode, 3, ops);
+	  if (ops[0].value != result)
+	    emit_move_insn (result, ops[0].value);
+
+	  if (i == 1)
+	    {
+	      rtx tmp
+		= expand_binop (Pmode, ashl_optab, gen_lowpart (Pmode, result),
+				gen_int_mode (32, Pmode), NULL_RTX, 0,
+				OPTAB_DIRECT);
+	      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, dest, NULL_RTX, 0,
+				       OPTAB_DIRECT);
+	      emit_move_insn (dest, tmp2);
+	    }
+	}
+      return true;
+    }
+  /* Expand
        (set (reg:QI target) (mem:QI (address)))
      to
        (set (reg:DI temp) (zero_extend:DI (mem:QI (address))))
@@ -2489,6 +2769,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
   switch (GET_CODE (x))
     {
     case CONST_INT:
+      /* trivial constants checked using OUTER_CODE in case they are
+	 encodable in insn itself w/o need for additional insn(s).  */
       if (riscv_immediate_operand_p (outer_code, INTVAL (x)))
 	{
 	  *total = 0;
@@ -2506,17 +2788,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       /* Fall through.  */
 
     case CONST:
+      /* Non trivial CONST_INT Fall through: check if need multiple insns.  */
       if ((cost = riscv_const_insns (x)) > 0)
 	{
-	  /* If the constant is likely to be stored in a GPR, SETs of
-	     single-insn constants are as cheap as register sets; we
-	     never want to CSE them.  */
-	  if (cost == 1 && outer_code == SET)
-	    *total = 0;
-	  /* When we load a constant more than once, it usually is better
-	     to duplicate the last operation in the sequence than to CSE
-	     the constant itself.  */
-	  else if (outer_code == SET || GET_MODE (x) == VOIDmode)
+	  /* 1. Hoist will GCSE constants only if TOTAL returned is non-zero.
+	     2. For constants loaded more than once, the approach so far has
+		been to duplicate the operation than to CSE the constant.
+	     3. TODO: make cost more accurate specially if riscv_const_insns
+		returns > 1.  */
+	  if (outer_code == SET || GET_MODE (x) == VOIDmode)
 	    *total = COSTS_N_INSNS (1);
 	}
       else /* The instruction will be fetched from the constant pool.  */
@@ -2553,7 +2833,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      else if (TARGET_ZICOND
+      else if (TARGET_ZICOND_LIKE
 	       && outer_code == SET
 	       && ((GET_CODE (XEXP (x, 1)) == REG
 		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
@@ -2994,6 +3274,10 @@ riscv_split_64bit_move_p (rtx dest, rtx src)
   if (TARGET_64BIT)
     return false;
 
+  /* There is no need to split if the FLI instruction in the `Zfa` extension can be used.  */
+  if (satisfies_constraint_zfli (src))
+    return false;
+
   /* Allow FPR <-> FPR and FPR <-> MEM moves, and permit the special case
      of zeroing an FPR with FCVT.D.W.  */
   if (TARGET_DOUBLE_FLOAT
@@ -3013,22 +3297,36 @@ riscv_split_64bit_move_p (rtx dest, rtx src)
 void
 riscv_split_doubleword_move (rtx dest, rtx src)
 {
-  /* XTheadFmv has instructions for accessing the upper bits of a double.  */
-  if (!TARGET_64BIT && TARGET_XTHEADFMV)
+  /* ZFA or XTheadFmv has instructions for accessing the upper bits of a double.  */
+  if (!TARGET_64BIT && (TARGET_ZFA || TARGET_XTHEADFMV))
     {
       if (FP_REG_RTX_P (dest))
 	{
 	  rtx low_src = riscv_subword (src, false);
 	  rtx high_src = riscv_subword (src, true);
-	  emit_insn (gen_th_fmv_hw_w_x (dest, high_src, low_src));
+
+	  if (TARGET_ZFA)
+	    emit_insn (gen_movdfsisi3_rv32 (dest, high_src, low_src));
+	  else
+	    emit_insn (gen_th_fmv_hw_w_x (dest, high_src, low_src));
 	  return;
 	}
       if (FP_REG_RTX_P (src))
 	{
 	  rtx low_dest = riscv_subword (dest, false);
 	  rtx high_dest = riscv_subword (dest, true);
-	  emit_insn (gen_th_fmv_x_w (low_dest, src));
-	  emit_insn (gen_th_fmv_x_hw (high_dest, src));
+
+	  if (TARGET_ZFA)
+	    {
+	      emit_insn (gen_movsidf2_low_rv32 (low_dest, src));
+	      emit_insn (gen_movsidf2_high_rv32 (high_dest, src));
+	      return;
+	    }
+	  else
+	    {
+	      emit_insn (gen_th_fmv_x_w (low_dest, src));
+	      emit_insn (gen_th_fmv_x_hw (high_dest, src));
+	    }
 	  return;
 	}
     }
@@ -3191,6 +3489,17 @@ riscv_output_move (rtx dest, rtx src)
 	    return "flw\t%0,%1";
 	  case 8:
 	    return "fld\t%0,%1";
+	  }
+
+      if (src_code == CONST_DOUBLE && satisfies_constraint_zfli (src))
+	switch (width)
+	  {
+	    case 2:
+	      return "fli.h\t%0,%1";
+	    case 4:
+	      return "fli.s\t%0,%1";
+	    case 8:
+	      return "fli.d\t%0,%1";
 	  }
     }
   if (dest_code == REG && GP_REG_P (REGNO (dest)) && src_code == CONST_POLY_INT)
@@ -3621,7 +3930,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 							  cond, cons, alt)));
       return true;
     }
-  else if (TARGET_ZICOND
+  else if (TARGET_ZICOND_LIKE
 	   && GET_MODE_CLASS (mode) == MODE_INT)
     {
       /* The comparison must be comparing WORD_MODE objects.   We must
@@ -3696,6 +4005,11 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 				  gen_rtx_IF_THEN_ELSE (mode, cond,
 							CONST0_RTX (mode),
 							alt)));
+	  /* CONS might not fit into a signed 12 bit immediate suitable
+	     for an addi instruction.  If that's the case, force it
+	     into a register.  */
+	  if (!SMALL_OPERAND (INTVAL (cons)))
+	    cons = force_reg (mode, cons);
 	  riscv_emit_binary (PLUS, dest, dest, cons);
 	  return true;
 	}
@@ -3719,11 +4033,13 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  rtx temp1 = gen_reg_rtx (mode);
 	  rtx temp2 = gen_int_mode (-1 * INTVAL (cons), mode);
 
-	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
-	     for an addi instruction.  If that's the case, force it into
-	     a register.  */
+	  /* TEMP2 and/or CONS might not fit into a signed 12 bit immediate
+	     suitable for an addi instruction.  If that's the case, force it
+	     into a register.  */
 	  if (!SMALL_OPERAND (INTVAL (temp2)))
 	    temp2 = force_reg (mode, temp2);
+	  if (!SMALL_OPERAND (INTVAL (cons)))
+	    cons = force_reg (mode, cons);
 
 	  riscv_emit_binary (PLUS, temp1, alt, temp2);
 	  emit_insn (gen_rtx_SET (dest,
@@ -3765,11 +4081,13 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  rtx temp1 = gen_reg_rtx (mode);
 	  rtx temp2 = gen_int_mode (-1 * INTVAL (alt), mode);
 
-	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
-	     for an addi instruction.  If that's the case, force it into
-	     a register.  */
+	  /* TEMP2 and/or ALT might not fit into a signed 12 bit immediate
+	     suitable for an addi instruction.  If that's the case, force it
+	     into a register.  */
 	  if (!SMALL_OPERAND (INTVAL (temp2)))
 	    temp2 = force_reg (mode, temp2);
+	  if (!SMALL_OPERAND (INTVAL (alt)))
+	    alt = force_reg (mode, alt);
 
 	  riscv_emit_binary (PLUS, temp1, cons, temp2);
 	  emit_insn (gen_rtx_SET (dest,
@@ -4162,7 +4480,7 @@ riscv_pass_in_vector_p (const_tree type)
 {
   static int warned = 0;
 
-  if (type && riscv_v_ext_mode_p (TYPE_MODE (type)) && !warned)
+  if (type && riscv_vector::lookup_vector_type_attribute (type) && !warned)
     {
       warning (OPT_Wpsabi,
 	       "ABI for the vector type is currently in experimental stage and "
@@ -4184,6 +4502,11 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
 {
   memset (cum, 0, sizeof (*cum));
 
+  if (fntype)
+    cum->variant_cc = (riscv_cc) fntype_abi (fntype).id ();
+  else
+    cum->variant_cc = RISCV_CC_BASE;
+
   if (fndecl)
     {
       const tree_function_decl &fn
@@ -4194,12 +4517,105 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum,
     }
 }
 
-/* Fill INFO with information about a single argument, and return an
-   RTL pattern to pass or return the argument.  CUM is the cumulative
-   state for earlier arguments.  MODE is the mode of this argument and
-   TYPE is its type (if known).  NAMED is true if this is a named
-   (fixed) argument rather than a variable one.  RETURN_P is true if
-   returning the argument, or false if passing the argument.  */
+/* Return true if TYPE is a vector type that can be passed in vector registers.
+ */
+
+static bool
+riscv_vector_type_p (const_tree type)
+{
+  /* Currently, only builtin scalabler vector type is allowed, in the future,
+     more vector types may be allowed, such as GNU vector type, etc.  */
+  return riscv_vector::builtin_type_p (type);
+}
+
+static unsigned int
+riscv_hard_regno_nregs (unsigned int regno, machine_mode mode);
+
+/* Subroutine of riscv_get_arg_info.  */
+
+static rtx
+riscv_get_vector_arg (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
+		      machine_mode mode, bool return_p)
+{
+  gcc_assert (riscv_v_ext_mode_p (mode));
+
+  info->mr_offset = cum->num_mrs;
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    {
+      /* For scalable mask return value.  */
+      if (return_p)
+	return gen_rtx_REG (mode, V_REG_FIRST);
+
+      /* For the first scalable mask argument.  */
+      if (info->mr_offset < MAX_ARGS_IN_MASK_REGISTERS)
+	{
+	  info->num_mrs = 1;
+	  return gen_rtx_REG (mode, V_REG_FIRST);
+	}
+      else
+	{
+	  /* Rest scalable mask arguments are treated as scalable data
+	     arguments.  */
+	}
+    }
+
+  /* The number and alignment of vector registers need for this scalable vector
+     argument. When the mode size is less than a full vector, we use 1 vector
+     register to pass. Just call TARGET_HARD_REGNO_NREGS for the number
+     information.  */
+  int nregs = riscv_hard_regno_nregs (V_ARG_FIRST, mode);
+  int LMUL = riscv_v_ext_tuple_mode_p (mode)
+	       ? nregs / riscv_vector::get_nf (mode)
+	       : nregs;
+  int arg_reg_start = V_ARG_FIRST - V_REG_FIRST;
+  int arg_reg_end = V_ARG_LAST - V_REG_FIRST;
+  int aligned_reg_start = ROUND_UP (arg_reg_start, LMUL);
+
+  /* For scalable data and scalable tuple return value.  */
+  if (return_p)
+    return gen_rtx_REG (mode, aligned_reg_start + V_REG_FIRST);
+
+  /* Iterate through the USED_VRS array to find vector register groups that have
+     not been allocated and the first register is aligned with LMUL.  */
+  for (int i = aligned_reg_start; i + nregs - 1 <= arg_reg_end; i += LMUL)
+    {
+      /* The index in USED_VRS array.  */
+      int idx = i - arg_reg_start;
+      /* Find the first register unused.  */
+      if (!cum->used_vrs[idx])
+	{
+	  bool find_set = true;
+	  /* Ensure there are NREGS continuous unused registers.  */
+	  for (int j = 1; j < nregs; j++)
+	    if (cum->used_vrs[idx + j])
+	      {
+		find_set = false;
+		/* Update I to the last aligned register which
+		   cannot be used and the next iteration will add
+		   LMUL step to I.  */
+		i += (j / LMUL) * LMUL;
+		break;
+	      }
+
+	  if (find_set)
+	    {
+	      info->num_vrs = nregs;
+	      info->vr_offset = idx;
+	      return gen_rtx_REG (mode, i + V_REG_FIRST);
+	    }
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Fill INFO with information about a single argument, and return an RTL
+   pattern to pass or return the argument. Return NULL_RTX if argument cannot
+   pass or return in registers, then the argument may be passed by reference or
+   through the stack or  .  CUM is the cumulative state for earlier arguments.
+   MODE is the mode of this argument and TYPE is its type (if known). NAMED is
+   true if this is a named (fixed) argument rather than a variable one. RETURN_P
+   is true if returning the argument, or false if passing the argument.  */
 
 static rtx
 riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
@@ -4221,11 +4637,9 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       riscv_pass_in_vector_p (type);
     }
 
-  /* All current vector arguments and return values are passed through the
-     function stack. Ideally, we should either warn the user not to use an RVV
-     vector type as function argument or support a calling convention
-     with better performance.  */
-  if (riscv_v_ext_mode_p (mode))
+  /* When disable vector_abi or scalable vector argument is anonymous, this
+     argument is passed by reference.  */
+  if (riscv_v_ext_mode_p (mode) && (!riscv_vector_abi || !named))
     return NULL_RTX;
 
   if (named)
@@ -4289,6 +4703,10 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 				      gregno, TYPE_MODE (fields[1].type),
 				      fields[1].offset);
 	}
+
+      /* For scalable vector argument.  */
+      if (riscv_vector_type_p (type) && riscv_v_ext_mode_p (mode))
+	return riscv_get_vector_arg (info, cum, mode, return_p);
     }
 
   /* Work out the size of the argument.  */
@@ -4319,7 +4737,8 @@ riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   struct riscv_arg_info info;
 
   if (arg.end_marker_p ())
-    return NULL;
+    /* Return the calling convention that used by the current function. */
+    return gen_int_mode (cum->variant_cc, SImode);
 
   return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
@@ -4335,12 +4754,28 @@ riscv_function_arg_advance (cumulative_args_t cum_v,
 
   riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 
+  /* Set the corresponding register in USED_VRS to used status.  */
+  for (unsigned int i = 0; i < info.num_vrs; i++)
+    {
+      gcc_assert (!cum->used_vrs[info.vr_offset + i]);
+      cum->used_vrs[info.vr_offset + i] = true;
+    }
+
+  if ((info.num_vrs > 0 || info.num_mrs > 0) && cum->variant_cc != RISCV_CC_V)
+    {
+      error ("RVV type %qT cannot be passed to an unprototyped function",
+	     arg.type);
+      /* Avoid repeating the message */
+      cum->variant_cc = RISCV_CC_V;
+    }
+
   /* Advance the register count.  This has the effect of setting
      num_gprs to MAX_ARGS_IN_REGISTERS if a doubleword-aligned
      argument required us to skip the final GPR and pass the whole
      argument on the stack.  */
   cum->num_fprs = info.fpr_offset + info.num_fprs;
   cum->num_gprs = info.gpr_offset + info.num_gprs;
+  cum->num_mrs = info.mr_offset + info.num_mrs;
 }
 
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
@@ -4402,20 +4837,23 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   /* ??? std_gimplify_va_arg_expr passes NULL for cum.  Fortunately, we
-     never pass variadic arguments in floating-point registers, so we can
-     avoid the call to riscv_get_arg_info in this case.  */
+     never pass variadic arguments in floating-point and vector registers,
+     so we can avoid the call to riscv_get_arg_info in this case.  */
   if (cum != NULL)
     {
       /* Don't pass by reference if we can use a floating-point register.  */
       riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
       if (info.num_fprs)
 	return false;
+
+      /* Don't pass by reference if we can use vector register groups.  */
+      if (info.num_vrs > 0 || info.num_mrs > 0)
+	return false;
     }
 
-  /* All current vector arguments and return values are passed through the
-     function stack. Ideally, we should either warn the user not to use an RVV
-     vector type as function argument or support a calling convention
-     with better performance.  */
+  /* When vector abi disabled(without --param=riscv-vector-abi option) or
+     scalable vector argument is anonymous or cannot be passed through vector
+     registers, this argument is passed by reference. */
   if (riscv_v_ext_mode_p (arg.mode))
     return true;
 
@@ -4471,6 +4909,97 @@ riscv_setup_incoming_varargs (cumulative_args_t cum,
     }
   if (REG_PARM_STACK_SPACE (cfun->decl) == 0)
     cfun->machine->varargs_size = gp_saved * UNITS_PER_WORD;
+}
+
+/* Return the descriptor of the Standard Vector Calling Convention Variant.  */
+
+static const predefined_function_abi &
+riscv_v_abi ()
+{
+  predefined_function_abi &v_abi = function_abis[RISCV_CC_V];
+  if (!v_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers
+	= default_function_abi.full_reg_clobbers ();
+      /* Callee-saved vector registers: v1-v7, v24-v31.  */
+      for (int regno = V_REG_FIRST + 1; regno <= V_REG_FIRST + 7; regno += 1)
+	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      for (int regno = V_REG_FIRST + 24; regno <= V_REG_FIRST + 31; regno += 1)
+	CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      v_abi.initialize (RISCV_CC_V, full_reg_clobbers);
+    }
+  return v_abi;
+}
+
+/* Return true if a function with type FNTYPE returns its value in
+   RISC-V V registers.  */
+
+static bool
+riscv_return_value_is_vector_type_p (const_tree fntype)
+{
+  tree return_type = TREE_TYPE (fntype);
+
+  return riscv_vector_type_p (return_type);
+}
+
+/* Return true if a function with type FNTYPE takes arguments in
+   RISC-V V registers.  */
+
+static bool
+riscv_arguments_is_vector_type_p (const_tree fntype)
+{
+  for (tree chain = TYPE_ARG_TYPES (fntype); chain && chain != void_list_node;
+       chain = TREE_CHAIN (chain))
+    {
+      tree arg_type = TREE_VALUE (chain);
+      if (riscv_vector_type_p (arg_type))
+	return true;
+    }
+
+  return false;
+}
+
+/* Implement TARGET_FNTYPE_ABI.  */
+
+static const predefined_function_abi &
+riscv_fntype_abi (const_tree fntype)
+{
+  /* Implementing an experimental vector calling convention, the proposal
+     can be viewed at the bellow link:
+       https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389
+
+     You can enable this feature via the `--param=riscv-vector-abi` compiler
+     option.  */
+  if (riscv_vector_abi
+      && (riscv_return_value_is_vector_type_p (fntype)
+	  || riscv_arguments_is_vector_type_p (fntype)))
+    return riscv_v_abi ();
+
+  return default_function_abi;
+}
+
+/* Return riscv calling convention of call_insn.  */
+riscv_cc
+get_riscv_cc (const rtx use)
+{
+  gcc_assert (GET_CODE (use) == USE);
+  rtx unspec = XEXP (use, 0);
+  gcc_assert (GET_CODE (unspec) == UNSPEC
+	      && XINT (unspec, 1) == UNSPEC_CALLEE_CC);
+  riscv_cc cc = (riscv_cc) INTVAL (XVECEXP (unspec, 0, 0));
+  gcc_assert (cc < RISCV_CC_UNKNOWN);
+  return cc;
+}
+
+/* Implement TARGET_INSN_CALLEE_ABI.  */
+
+const predefined_function_abi &
+riscv_insn_callee_abi (const rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  riscv_cc cc = get_riscv_cc (XVECEXP (pat, 0, 1));
+  return function_abis[cc];
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL;
@@ -4924,7 +5453,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	   1. If the operand is VECTOR REG, we print 'v'(vnsrl.wv).
 	   2. If the operand is CONST_INT/CONST_VECTOR, we print 'i'(vnsrl.wi).
 	   3. If the operand is SCALAR REG, we print 'x'(vnsrl.wx).  */
-	if (riscv_v_ext_vector_mode_p (mode))
+	if (riscv_v_ext_mode_p (mode))
 	  {
 	    if (REG_P (op))
 	      asm_fprintf (file, "v");
@@ -4954,7 +5483,8 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	    else if (satisfies_constraint_Wc0 (op))
 	      asm_fprintf (file, "0");
 	    else if (satisfies_constraint_vi (op)
-		     || satisfies_constraint_vj (op))
+		     || satisfies_constraint_vj (op)
+		     || satisfies_constraint_vk (op))
 	      asm_fprintf (file, "%wd", INTVAL (elt));
 	    else
 	      output_operand_lossage ("invalid vector constant");
@@ -5025,8 +5555,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	else if (code == CONST_INT)
 	  {
 	    /* Tail && Mask policy.  */
-	    bool agnostic_p = UINTVAL (op) & 0x1;
-	    asm_fprintf (file, "%s", agnostic_p ? "a" : "u");
+	    asm_fprintf (file, "%s", IS_AGNOSTIC (UINTVAL (op)) ? "a" : "u");
 	  }
 	else
 	  output_operand_lossage ("invalid vector constant");
@@ -5119,6 +5648,24 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	  else
 	    output_address (mode, XEXP (op, 0));
 	  break;
+
+	case CONST_DOUBLE:
+	  {
+	    if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
+	      {
+		fputs (reg_names[GP_REG_FIRST], file);
+		break;
+	      }
+
+	    int fli_index = riscv_float_const_rtx_index_for_fli (op);
+	    if (fli_index == -1 || fli_index > 31)
+	      {
+		output_operand_lossage ("invalid use of '%%%c'", letter);
+		break;
+	      }
+	    asm_fprintf (file, "%s", fli_value_print[fli_index]);
+	    break;
+	  }
 
 	default:
 	  if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
@@ -5310,6 +5857,11 @@ riscv_save_reg_p (unsigned int regno)
   if (call_saved && might_clobber)
     return true;
 
+  /* Save callee-saved V registers.  */
+  if (V_REG_P (regno) && !crtl->abi->clobbers_full_reg_p (regno)
+      && might_clobber)
+    return true;
+
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
@@ -5343,6 +5895,36 @@ riscv_save_reg_p (unsigned int regno)
     }
 
   return false;
+}
+
+/* Return TRUE if Zcmp push and pop insns should be
+   avoided. FALSE otherwise.
+   Only use multi push & pop if all GPRs masked can be covered,
+   and stack access is SP based,
+   and GPRs are at top of the stack frame,
+   and no conflicts in stack allocation with other features  */
+static bool
+riscv_avoid_multi_push (const struct riscv_frame_info *frame)
+{
+  if (!TARGET_ZCMP || crtl->calls_eh_return || frame_pointer_needed
+      || cfun->machine->interrupt_handler_p || cfun->machine->varargs_size != 0
+      || crtl->args.pretend_args_size != 0
+      || (use_shrink_wrapping_separate ()
+	  && !riscv_avoid_shrink_wrapping_separate ())
+      || (frame->mask & ~MULTI_PUSH_GPR_MASK))
+    return true;
+
+  return false;
+}
+
+/* Determine whether to use multi push insn.  */
+static bool
+riscv_use_multi_push (const struct riscv_frame_info *frame)
+{
+  if (riscv_avoid_multi_push (frame))
+    return false;
+
+  return (frame->multi_push_adj_base != 0);
 }
 
 /* Return TRUE if a libcall to save/restore GPRs should be
@@ -5382,6 +5964,50 @@ riscv_save_libcall_count (unsigned mask)
   abort ();
 }
 
+/* calculate number of s regs in multi push and pop.
+   Note that {s0-s10} is not valid in Zcmp, use {s0-s11} instead.  */
+static unsigned
+riscv_multi_push_sregs_count (unsigned mask)
+{
+  unsigned num = riscv_save_libcall_count (mask);
+  return (num == ZCMP_INVALID_S0S10_SREGS_COUNTS) ? ZCMP_S0S11_SREGS_COUNTS
+						  : num;
+}
+
+/* calculate number of regs(ra, s0-sx) in multi push and pop.  */
+static unsigned
+riscv_multi_push_regs_count (unsigned mask)
+{
+  /* 1 is for ra  */
+  return riscv_multi_push_sregs_count (mask) + 1;
+}
+
+/* Handle 16 bytes align for poly_int.  */
+static poly_int64
+riscv_16bytes_align (poly_int64 value)
+{
+  return aligned_upper_bound (value, 16);
+}
+
+static HOST_WIDE_INT
+riscv_16bytes_align (HOST_WIDE_INT value)
+{
+  return ROUND_UP (value, 16);
+}
+
+/* Handle stack align for poly_int.  */
+static poly_int64
+riscv_stack_align (poly_int64 value)
+{
+  return aligned_upper_bound (value, PREFERRED_STACK_BOUNDARY / 8);
+}
+
+static HOST_WIDE_INT
+riscv_stack_align (HOST_WIDE_INT value)
+{
+  return RISCV_STACK_ALIGN (value);
+}
+
 /* Populate the current function's riscv_frame_info structure.
 
    RISC-V stack frames grown downward.  High addresses are at the top.
@@ -5407,9 +6033,15 @@ riscv_save_libcall_count (unsigned mask)
 	|  GPR save area                |       + UNITS_PER_WORD
 	|                               |
 	+-------------------------------+ <-- stack_pointer_rtx + fp_sp_offset
-	|                               |       + UNITS_PER_HWVALUE
+	|                               |       + UNITS_PER_FP_REG
 	|  FPR save area                |
 	|                               |
+	+-------------------------------+ <-- stack_pointer_rtx
+	|                               |       + v_sp_offset_top
+	|  Vector Registers save area   |
+	|                               |
+	| ----------------------------- | <-- stack_pointer_rtx
+	| padding                       |       + v_sp_offset_bottom
 	+-------------------------------+ <-- frame_pointer_rtx (virtual)
 	|                               |
 	|  local variables              |
@@ -5426,19 +6058,6 @@ riscv_save_libcall_count (unsigned mask)
 
 static HOST_WIDE_INT riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_size);
 
-/* Handle stack align for poly_int.  */
-static poly_int64
-riscv_stack_align (poly_int64 value)
-{
-  return aligned_upper_bound (value, PREFERRED_STACK_BOUNDARY / 8);
-}
-
-static HOST_WIDE_INT
-riscv_stack_align (HOST_WIDE_INT value)
-{
-  return RISCV_STACK_ALIGN (value);
-}
-
 static void
 riscv_compute_frame_info (void)
 {
@@ -5446,6 +6065,7 @@ riscv_compute_frame_info (void)
   poly_int64 offset;
   bool interrupt_save_prologue_temp = false;
   unsigned int regno, i, num_x_saved = 0, num_f_saved = 0, x_save_size = 0;
+  unsigned int num_v_saved = 0;
 
   frame = &cfun->machine->frame;
 
@@ -5484,13 +6104,23 @@ riscv_compute_frame_info (void)
 	for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
 	  if (riscv_save_reg_p (regno))
 	    frame->fmask |= 1 << (regno - FP_REG_FIRST), num_f_saved++;
+
+      /* Find out which V registers we need to save. */
+      if (TARGET_VECTOR)
+	for (regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
+	  if (riscv_save_reg_p (regno))
+	    {
+	      frame->vmask |= 1 << (regno - V_REG_FIRST);
+	      num_v_saved++;
+	    }
     }
 
   if (frame->mask)
     {
       x_save_size = riscv_stack_align (num_x_saved * UNITS_PER_WORD);
-      unsigned num_save_restore = 1 + riscv_save_libcall_count (frame->mask);
 
+      /* 1 is for ra  */
+      unsigned num_save_restore = 1 + riscv_save_libcall_count (frame->mask);
       /* Only use save/restore routines if they don't alter the stack size.  */
       if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
           && !riscv_avoid_save_libcall ())
@@ -5501,6 +6131,14 @@ riscv_compute_frame_info (void)
 	    x_save_size = 3 * UNITS_PER_WORD;
 
 	  frame->save_libcall_adjustment = x_save_size;
+	}
+
+      if (!riscv_avoid_multi_push (frame))
+	{
+	  /* num(ra, s0-sx)  */
+	  unsigned num_multi_push = riscv_multi_push_regs_count (frame->mask);
+	  x_save_size = riscv_stack_align (num_multi_push * UNITS_PER_WORD);
+	  frame->multi_push_adj_base = riscv_16bytes_align (x_save_size);
 	}
     }
 
@@ -5521,13 +6159,27 @@ riscv_compute_frame_info (void)
   offset += riscv_stack_align (get_frame_size ());
   /* The virtual frame pointer points above the local variables. */
   frame->frame_pointer_offset = offset;
+  /* Next are the callee-saved VRs.  */
+  if (frame->vmask)
+    offset += riscv_stack_align (num_v_saved * UNITS_PER_V_REG);
+  frame->v_sp_offset_top = offset;
+  frame->v_sp_offset_bottom
+    = frame->v_sp_offset_top - num_v_saved * UNITS_PER_V_REG;
   /* Next are the callee-saved FPRs. */
   if (frame->fmask)
     offset += riscv_stack_align (num_f_saved * UNITS_PER_FP_REG);
   frame->fp_sp_offset = offset - UNITS_PER_FP_REG;
   /* Next are the callee-saved GPRs. */
   if (frame->mask)
-    offset += x_save_size;
+    {
+      offset += x_save_size;
+      /* align to 16 bytes and add paddings to GPR part to honor
+	 both stack alignment and zcmp pus/pop size alignment. */
+      if (riscv_use_multi_push (frame)
+	  && known_lt (offset, frame->multi_push_adj_base
+				 + ZCMP_SP_INC_STEP * ZCMP_MAX_SPIMM))
+	offset = riscv_16bytes_align (offset);
+    }
   frame->gp_sp_offset = offset - UNITS_PER_WORD;
   /* The hard frame pointer points above the callee-saved GPRs. */
   frame->hard_frame_pointer_offset = offset;
@@ -5625,10 +6277,12 @@ riscv_restore_reg (rtx reg, rtx mem)
   rtx dwarf = NULL_RTX;
   dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
 
-  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
+  if (known_gt (epilogue_cfa_sp_offset, 0)
+      && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
     {
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (epilogue_cfa_sp_offset));
+      rtx cfa_adjust_rtx
+	= gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			gen_int_mode (epilogue_cfa_sp_offset, Pmode));
       dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
     }
 
@@ -5706,8 +6360,8 @@ static void
 riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 			  bool epilogue, bool maybe_eh_return)
 {
-  HOST_WIDE_INT offset;
-  unsigned int regno;
+  HOST_WIDE_INT offset, first_fp_offset;
+  unsigned int regno, num_masked_fp = 0;
   unsigned int start = GP_REG_FIRST;
   unsigned int limit = GP_REG_LAST;
 
@@ -5793,17 +6447,94 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 
   /* This loop must iterate over the same space as its companion in
      riscv_compute_frame_info.  */
-  offset = (cfun->machine->frame.fp_sp_offset - sp_offset).to_constant ();
+  first_fp_offset
+    = (cfun->machine->frame.fp_sp_offset - sp_offset).to_constant ();
   for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
 	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
-
+	unsigned int slot = (riscv_use_multi_push (&cfun->machine->frame))
+			      ? CALLEE_SAVED_FREG_NUMBER (regno)
+			      : num_masked_fp;
+	offset = first_fp_offset - slot * GET_MODE_SIZE (mode).to_constant ();
 	if (handle_reg)
 	  riscv_save_restore_reg (mode, regno, offset, fn);
-	offset -= GET_MODE_SIZE (mode).to_constant ();
+	num_masked_fp++;
       }
+}
+
+/* Call FN for each V register that is saved by the current function.  */
+
+static void
+riscv_for_each_saved_v_reg (poly_int64 &remaining_size,
+			    riscv_save_restore_fn fn, bool prologue)
+{
+  rtx vlen = NULL_RTX;
+  if (cfun->machine->frame.vmask != 0)
+    {
+      if (UNITS_PER_V_REG.is_constant ()
+	  && SMALL_OPERAND (UNITS_PER_V_REG.to_constant ()))
+	vlen = GEN_INT (UNITS_PER_V_REG.to_constant ());
+      else
+	{
+	  vlen = RISCV_PROLOGUE_TEMP (Pmode);
+	  rtx insn
+	    = emit_move_insn (vlen, gen_int_mode (UNITS_PER_V_REG, Pmode));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
+
+  /* Select the mode where LMUL is 1 and SEW is largest.  */
+  machine_mode m1_mode = TARGET_VECTOR_ELEN_64 ? RVVM1DImode : RVVM1SImode;
+
+  if (prologue)
+    {
+      /* This loop must iterate over the same space as its companion in
+	 riscv_compute_frame_info.  */
+      for (unsigned int regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
+	if (BITSET_P (cfun->machine->frame.vmask, regno - V_REG_FIRST))
+	  {
+	    bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
+	    if (handle_reg)
+	      {
+		rtx insn = NULL_RTX;
+		if (CONST_INT_P (vlen))
+		  {
+		    gcc_assert (SMALL_OPERAND (-INTVAL (vlen)));
+		    insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+						     stack_pointer_rtx,
+						     GEN_INT (-INTVAL (vlen))));
+		  }
+		else
+		  insn = emit_insn (
+		    gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, vlen));
+		gcc_assert (insn != NULL_RTX);
+		RTX_FRAME_RELATED_P (insn) = 1;
+		riscv_save_restore_reg (m1_mode, regno, 0, fn);
+		remaining_size -= UNITS_PER_V_REG;
+	      }
+	  }
+    }
+  else
+    {
+      /* This loop must iterate over the same space as its companion in
+	 riscv_compute_frame_info.  */
+      for (unsigned int regno = V_REG_LAST; regno >= V_REG_FIRST; regno--)
+	if (BITSET_P (cfun->machine->frame.vmask, regno - V_REG_FIRST))
+	  {
+	    bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
+	    if (handle_reg)
+	      {
+		riscv_save_restore_reg (m1_mode, regno, 0, fn);
+		rtx insn = emit_insn (
+		  gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, vlen));
+		gcc_assert (insn != NULL_RTX);
+		RTX_FRAME_RELATED_P (insn) = 1;
+		remaining_size -= UNITS_PER_V_REG;
+	      }
+	  }
+    }
 }
 
 /* For stack frames that can't be allocated with a single ADDI instruction,
@@ -5822,6 +6553,11 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
 	- riscv_stack_align (remaining_size.coeffs[1]);
   else
     remaining_const_size = remaining_size.to_constant ();
+
+  /* First step must be set to the top of vector registers save area if any
+     vector registers need be preversed.  */
+  if (frame->vmask != 0)
+    return (remaining_size - frame->v_sp_offset_top).to_constant ();
 
   if (SMALL_OPERAND (remaining_const_size))
     return remaining_const_size;
@@ -5899,6 +6635,41 @@ riscv_adjust_libcall_cfi_prologue ()
   return dwarf;
 }
 
+static rtx
+riscv_adjust_multi_push_cfi_prologue (int saved_size)
+{
+  rtx dwarf = NULL_RTX;
+  rtx adjust_sp_rtx, reg, mem, insn;
+  unsigned int mask = cfun->machine->frame.mask;
+  int offset;
+  int saved_cnt = 0;
+
+  if (mask & S10_MASK)
+    mask |= S11_MASK;
+
+  for (int regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
+    if (BITSET_P (mask & MULTI_PUSH_GPR_MASK, regno - GP_REG_FIRST))
+      {
+	/* The save order is s11-s0, ra
+	   from high to low addr.  */
+	offset = saved_size - UNITS_PER_WORD * (++saved_cnt);
+
+	reg = gen_rtx_REG (Pmode, regno);
+	mem = gen_frame_mem (Pmode,
+			     plus_constant (Pmode, stack_pointer_rtx, offset));
+
+	insn = gen_rtx_SET (mem, reg);
+	dwarf = alloc_reg_note (REG_CFA_OFFSET, insn, dwarf);
+      }
+
+  /* Debug info for adjust sp.  */
+  adjust_sp_rtx
+    = gen_rtx_SET (stack_pointer_rtx,
+		   plus_constant (Pmode, stack_pointer_rtx, -saved_size));
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx, dwarf);
+  return dwarf;
+}
+
 static void
 riscv_emit_stack_tie (void)
 {
@@ -5906,6 +6677,57 @@ riscv_emit_stack_tie (void)
     emit_insn (gen_stack_tiesi (stack_pointer_rtx, hard_frame_pointer_rtx));
   else
     emit_insn (gen_stack_tiedi (stack_pointer_rtx, hard_frame_pointer_rtx));
+}
+
+/*zcmp multi push and pop code_for_push_pop function ptr array  */
+static const code_for_push_pop_t code_for_push_pop[ZCMP_MAX_GRP_SLOTS][ZCMP_OP_NUM]
+  = {{code_for_gpr_multi_push_up_to_ra, code_for_gpr_multi_pop_up_to_ra,
+      code_for_gpr_multi_popret_up_to_ra, code_for_gpr_multi_popretz_up_to_ra},
+     {code_for_gpr_multi_push_up_to_s0, code_for_gpr_multi_pop_up_to_s0,
+      code_for_gpr_multi_popret_up_to_s0, code_for_gpr_multi_popretz_up_to_s0},
+     {code_for_gpr_multi_push_up_to_s1, code_for_gpr_multi_pop_up_to_s1,
+      code_for_gpr_multi_popret_up_to_s1, code_for_gpr_multi_popretz_up_to_s1},
+     {code_for_gpr_multi_push_up_to_s2, code_for_gpr_multi_pop_up_to_s2,
+      code_for_gpr_multi_popret_up_to_s2, code_for_gpr_multi_popretz_up_to_s2},
+     {code_for_gpr_multi_push_up_to_s3, code_for_gpr_multi_pop_up_to_s3,
+      code_for_gpr_multi_popret_up_to_s3, code_for_gpr_multi_popretz_up_to_s3},
+     {code_for_gpr_multi_push_up_to_s4, code_for_gpr_multi_pop_up_to_s4,
+      code_for_gpr_multi_popret_up_to_s4, code_for_gpr_multi_popretz_up_to_s4},
+     {code_for_gpr_multi_push_up_to_s5, code_for_gpr_multi_pop_up_to_s5,
+      code_for_gpr_multi_popret_up_to_s5, code_for_gpr_multi_popretz_up_to_s5},
+     {code_for_gpr_multi_push_up_to_s6, code_for_gpr_multi_pop_up_to_s6,
+      code_for_gpr_multi_popret_up_to_s6, code_for_gpr_multi_popretz_up_to_s6},
+     {code_for_gpr_multi_push_up_to_s7, code_for_gpr_multi_pop_up_to_s7,
+      code_for_gpr_multi_popret_up_to_s7, code_for_gpr_multi_popretz_up_to_s7},
+     {code_for_gpr_multi_push_up_to_s8, code_for_gpr_multi_pop_up_to_s8,
+      code_for_gpr_multi_popret_up_to_s8, code_for_gpr_multi_popretz_up_to_s8},
+     {code_for_gpr_multi_push_up_to_s9, code_for_gpr_multi_pop_up_to_s9,
+      code_for_gpr_multi_popret_up_to_s9, code_for_gpr_multi_popretz_up_to_s9},
+     {nullptr, nullptr, nullptr, nullptr},
+     {code_for_gpr_multi_push_up_to_s11, code_for_gpr_multi_pop_up_to_s11,
+      code_for_gpr_multi_popret_up_to_s11,
+      code_for_gpr_multi_popretz_up_to_s11}};
+
+static rtx
+riscv_gen_multi_push_pop_insn (riscv_zcmp_op_t op, HOST_WIDE_INT adj_size,
+			       unsigned int regs_num)
+{
+  gcc_assert (op < ZCMP_OP_NUM);
+  gcc_assert (regs_num <= ZCMP_MAX_GRP_SLOTS
+	      && regs_num != ZCMP_INVALID_S0S10_SREGS_COUNTS + 1); /* 1 for ra*/
+  rtx stack_adj = GEN_INT (adj_size);
+  return GEN_FCN (code_for_push_pop[regs_num - 1][op](Pmode)) (stack_adj);
+}
+
+static unsigned
+get_multi_push_fpr_mask (unsigned max_fprs_push)
+{
+  unsigned mask_fprs_push = 0, num_f_pushed = 0;
+  for (unsigned regno = FP_REG_FIRST;
+       regno <= FP_REG_LAST && num_f_pushed < max_fprs_push; regno++)
+    if (riscv_save_reg_p (regno))
+      mask_fprs_push |= 1 << (regno - FP_REG_FIRST), num_f_pushed++;
+  return mask_fprs_push;
 }
 
 /* Expand the "prologue" pattern.  */
@@ -5916,7 +6738,9 @@ riscv_expand_prologue (void)
   struct riscv_frame_info *frame = &cfun->machine->frame;
   poly_int64 remaining_size = frame->total_size;
   unsigned mask = frame->mask;
-  rtx insn;
+  unsigned fmask = frame->fmask;
+  int spimm, multi_push_additional, stack_adj;
+  rtx insn, dwarf = NULL_RTX;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = constant_lower_bound (remaining_size);
@@ -5924,8 +6748,55 @@ riscv_expand_prologue (void)
   if (cfun->machine->naked_p)
     return;
 
+  /* prefer muti-push to save-restore libcall.  */
+  if (riscv_use_multi_push (frame))
+    {
+      remaining_size -= frame->multi_push_adj_base;
+      /* If there are vector registers that need to be saved, then it can only
+	 be reduced to the frame->v_sp_offset_top position at most, since the
+	 vector registers will need to be saved one by one by decreasing the SP
+	 later.  */
+      poly_int64 remaining_size_above_varea
+	= frame->vmask != 0
+	    ? remaining_size - frame->v_sp_offset_top
+	    : remaining_size;
+
+      if (known_gt (remaining_size_above_varea, 2 * ZCMP_SP_INC_STEP))
+	spimm = 3;
+      else if (known_gt (remaining_size_above_varea, ZCMP_SP_INC_STEP))
+	spimm = 2;
+      else if (known_gt (remaining_size_above_varea, 0))
+	spimm = 1;
+      else
+	spimm = 0;
+      multi_push_additional = spimm * ZCMP_SP_INC_STEP;
+      frame->multi_push_adj_addi = multi_push_additional;
+      remaining_size -= multi_push_additional;
+
+      /* emit multi push insn & dwarf along with it.  */
+      stack_adj = frame->multi_push_adj_base + multi_push_additional;
+      insn = emit_insn (riscv_gen_multi_push_pop_insn (
+	PUSH_IDX, -stack_adj, riscv_multi_push_regs_count (frame->mask)));
+      dwarf = riscv_adjust_multi_push_cfi_prologue (stack_adj);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = dwarf;
+
+      /* Temporarily fib that we need not save GPRs.  */
+      frame->mask = 0;
+
+      /* push FPRs into the addtional reserved space by cm.push. */
+      if (fmask)
+	{
+	  unsigned mask_fprs_push
+	    = get_multi_push_fpr_mask (multi_push_additional / UNITS_PER_WORD);
+	  frame->fmask &= mask_fprs_push;
+	  riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false,
+				    false);
+	  frame->fmask = fmask & ~mask_fprs_push; /* mask for the rest FPRs.  */
+	}
+    }
   /* When optimizing for size, call a subroutine to save the registers.  */
-  if (riscv_use_save_libcall (frame))
+  else if (riscv_use_save_libcall (frame))
     {
       rtx dwarf = NULL_RTX;
       dwarf = riscv_adjust_libcall_cfi_prologue ();
@@ -5938,20 +6809,23 @@ riscv_expand_prologue (void)
       REG_NOTES (insn) = dwarf;
     }
 
-  /* Save the registers.  */
+  /* Save the GP, FP registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
-      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
-
-      insn = gen_add3_insn (stack_pointer_rtx,
-			    stack_pointer_rtx,
-			    GEN_INT (-step1));
-      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-      remaining_size -= step1;
+      if (known_gt (remaining_size, frame->frame_pointer_offset))
+	{
+	  HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
+	  remaining_size -= step1;
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (-step1));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	}
       riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false, false);
     }
 
-  frame->mask = mask; /* Undo the above fib.  */
+  /* Undo the above fib.  */
+  frame->mask = mask;
+  frame->fmask = fmask;
 
   /* Set up the frame pointer, if we're using one.  */
   if (frame_pointer_needed)
@@ -5962,6 +6836,10 @@ riscv_expand_prologue (void)
 
       riscv_emit_stack_tie ();
     }
+
+  /* Save the V registers.  */
+  if (frame->vmask != 0)
+    riscv_for_each_saved_v_reg (remaining_size, riscv_save_reg, true);
 
   /* Allocate the rest of the frame.  */
   if (known_gt (remaining_size, 0))
@@ -6005,6 +6883,32 @@ riscv_expand_prologue (void)
 }
 
 static rtx
+riscv_adjust_multi_pop_cfi_epilogue (int saved_size)
+{
+  rtx dwarf = NULL_RTX;
+  rtx adjust_sp_rtx, reg;
+  unsigned int mask = cfun->machine->frame.mask;
+
+  if (mask & S10_MASK)
+    mask |= S11_MASK;
+
+  /* Debug info for adjust sp.  */
+  adjust_sp_rtx
+    = gen_rtx_SET (stack_pointer_rtx,
+		   plus_constant (Pmode, stack_pointer_rtx, saved_size));
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx, dwarf);
+
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (mask, regno - GP_REG_FIRST))
+      {
+	reg = gen_rtx_REG (Pmode, regno);
+	dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+      }
+
+  return dwarf;
+}
+
+static rtx
 riscv_adjust_libcall_cfi_epilogue ()
 {
   rtx dwarf = NULL_RTX;
@@ -6014,7 +6918,7 @@ riscv_adjust_libcall_cfi_epilogue ()
   /* Debug info for adjust sp.  */
   adjust_sp_rtx =
     gen_rtx_SET (stack_pointer_rtx,
-		 gen_rtx_PLUS (GET_MODE(stack_pointer_rtx), stack_pointer_rtx, GEN_INT (saved_size)));
+		 gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (saved_size)));
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx,
 			  dwarf);
 
@@ -6026,6 +6930,78 @@ riscv_adjust_libcall_cfi_epilogue ()
       }
 
   return dwarf;
+}
+
+/* return true if popretz pattern can be matched.
+   set (reg 10 a0) (const_int 0)
+   use (reg 10 a0)
+   NOTE_INSN_EPILOGUE_BEG  */
+static rtx_insn *
+riscv_zcmp_can_use_popretz (void)
+{
+  rtx_insn *insn = NULL, *use = NULL, *clear = NULL;
+
+  /* sequence stack for NOTE_INSN_EPILOGUE_BEG*/
+  struct sequence_stack *outer_seq = get_current_sequence ()->next;
+  if (!outer_seq)
+    return NULL;
+  insn = outer_seq->first;
+  if (!insn || !NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_EPILOGUE_BEG)
+    return NULL;
+
+  /* sequence stack for the insn before NOTE_INSN_EPILOGUE_BEG*/
+  outer_seq = outer_seq->next;
+  if (outer_seq)
+    insn = outer_seq->last;
+
+  /* skip notes  */
+  while (insn && NOTE_P (insn))
+    {
+      insn = PREV_INSN (insn);
+    }
+  use = insn;
+
+  /* match use (reg 10 a0)  */
+  if (use == NULL || !INSN_P (use) || GET_CODE (PATTERN (use)) != USE
+      || !REG_P (XEXP (PATTERN (use), 0))
+      || REGNO (XEXP (PATTERN (use), 0)) != A0_REGNUM)
+    return NULL;
+
+  /* match set (reg 10 a0) (const_int 0 [0])  */
+  clear = PREV_INSN (use);
+  if (clear != NULL && INSN_P (clear) && GET_CODE (PATTERN (clear)) == SET
+      && REG_P (SET_DEST (PATTERN (clear)))
+      && REGNO (SET_DEST (PATTERN (clear))) == A0_REGNUM
+      && SET_SRC (PATTERN (clear)) == const0_rtx)
+    return clear;
+
+  return NULL;
+}
+
+static void
+riscv_gen_multi_pop_insn (bool use_multi_pop_normal, unsigned mask,
+			  unsigned multipop_size)
+{
+  rtx insn;
+  unsigned regs_count = riscv_multi_push_regs_count (mask);
+
+  if (!use_multi_pop_normal)
+    insn = emit_insn (
+      riscv_gen_multi_push_pop_insn (POP_IDX, multipop_size, regs_count));
+  else if (rtx_insn *clear_a0_insn = riscv_zcmp_can_use_popretz ())
+    {
+      delete_insn (NEXT_INSN (clear_a0_insn));
+      delete_insn (clear_a0_insn);
+      insn = emit_jump_insn (
+	riscv_gen_multi_push_pop_insn (POPRETZ_IDX, multipop_size, regs_count));
+    }
+  else
+    insn = emit_jump_insn (
+      riscv_gen_multi_push_pop_insn (POPRET_IDX, multipop_size, regs_count));
+
+  rtx dwarf = riscv_adjust_multi_pop_cfi_epilogue (multipop_size);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = dwarf;
 }
 
 /* Expand an "epilogue", "sibcall_epilogue", or "eh_return_internal" pattern;
@@ -6042,11 +7018,24 @@ riscv_expand_epilogue (int style)
      Start off by assuming that no registers need to be restored.  */
   struct riscv_frame_info *frame = &cfun->machine->frame;
   unsigned mask = frame->mask;
-  HOST_WIDE_INT step2 = 0;
-  bool use_restore_libcall = ((style == NORMAL_RETURN)
-			      && riscv_use_save_libcall (frame));
-  unsigned libcall_size = (use_restore_libcall
-			   ? frame->save_libcall_adjustment : 0);
+  unsigned fmask = frame->fmask;
+  unsigned mask_fprs_push = 0;
+  poly_int64 step2 = 0;
+  bool use_multi_pop_normal
+    = ((style == NORMAL_RETURN) && riscv_use_multi_push (frame));
+  bool use_multi_pop_sibcall
+    = ((style == SIBCALL_RETURN) && riscv_use_multi_push (frame));
+  bool use_multi_pop = use_multi_pop_normal || use_multi_pop_sibcall;
+
+  bool use_restore_libcall
+    = !use_multi_pop
+      && ((style == NORMAL_RETURN) && riscv_use_save_libcall (frame));
+  unsigned libcall_size = use_restore_libcall && !use_multi_pop
+			    ? frame->save_libcall_adjustment
+			    : 0;
+  unsigned multipop_size
+    = use_multi_pop ? frame->multi_push_adj_base + frame->multi_push_adj_addi
+		    : 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx insn;
 
@@ -6117,18 +7106,35 @@ riscv_expand_epilogue (int style)
       REG_NOTES (insn) = dwarf;
     }
 
-  if (use_restore_libcall)
-    frame->mask = 0; /* Temporarily fib for GPRs.  */
+  if (use_restore_libcall || use_multi_pop)
+    frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
 
   /* If we need to restore registers, deallocate as much stack as
      possible in the second step without going out of range.  */
-  if ((frame->mask | frame->fmask) != 0)
+  if (use_multi_pop)
+    {
+      if (frame->fmask
+	  && known_gt (frame->total_size - multipop_size,
+		       frame->frame_pointer_offset))
+	step2
+	  = riscv_first_stack_step (frame, frame->total_size - multipop_size);
+    }
+  else if ((frame->mask | frame->fmask) != 0)
     step2 = riscv_first_stack_step (frame, frame->total_size - libcall_size);
 
-  if (use_restore_libcall)
+  if (use_restore_libcall || use_multi_pop)
     frame->mask = mask; /* Undo the above fib.  */
 
-  poly_int64 step1 = frame->total_size - step2 - libcall_size;
+  poly_int64 step1;
+  /* STEP1 must be set to the bottom of vector registers save area if any
+     vector registers need be preversed.  */
+  if (frame->vmask != 0)
+    {
+      step1 = frame->v_sp_offset_bottom;
+      step2 = frame->total_size - step1 - libcall_size - multipop_size;
+    }
+  else
+    step1 = frame->total_size - step2 - libcall_size - multipop_size;
 
   /* Set TARGET to BASE + STEP1.  */
   if (known_gt (step1, 0))
@@ -6162,8 +7168,10 @@ riscv_expand_epilogue (int style)
 					   stack_pointer_rtx,
 					   adjust));
 	  rtx dwarf = NULL_RTX;
-	  rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					     GEN_INT (step2 + libcall_size));
+	  rtx cfa_adjust_rtx
+	    = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			    gen_int_mode (step2 + libcall_size + multipop_size,
+					  Pmode));
 
 	  dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -6178,36 +7186,65 @@ riscv_expand_epilogue (int style)
       epilogue_cfa_sp_offset = step2;
     }
 
-  if (use_restore_libcall)
-    frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
+  if (use_multi_pop)
+    {
+      frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
+      if (fmask)
+	{
+	  mask_fprs_push = get_multi_push_fpr_mask (frame->multi_push_adj_addi
+						    / UNITS_PER_WORD);
+	  frame->fmask &= ~mask_fprs_push; /* FPRs not saved by cm.push  */
+	}
+    }
+  else if (use_restore_libcall)
+    frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
 
   /* Restore the registers.  */
-  riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size,
-			    riscv_restore_reg,
-			    true, style == EXCEPTION_RETURN);
+  riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
+  riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
+			      - multipop_size,
+			    riscv_restore_reg, true, style == EXCEPTION_RETURN);
 
   if (use_restore_libcall)
-      frame->mask = mask; /* Undo the above fib.  */
+    frame->mask = mask; /* Undo the above fib.  */
 
   if (need_barrier_p)
     riscv_emit_stack_tie ();
 
   /* Deallocate the final bit of the frame.  */
-  if (step2 > 0)
+  if (step2.to_constant () > 0)
     {
       insn = emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				       GEN_INT (step2)));
+				       GEN_INT (step2.to_constant ())));
 
       rtx dwarf = NULL_RTX;
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (libcall_size));
+      rtx cfa_adjust_rtx
+	= gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			GEN_INT (libcall_size + multipop_size));
       dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
       RTX_FRAME_RELATED_P (insn) = 1;
 
       REG_NOTES (insn) = dwarf;
     }
 
-  if (use_restore_libcall)
+  if (use_multi_pop)
+    {
+      /* restore FPRs pushed by cm.push. */
+      frame->fmask = fmask & mask_fprs_push;
+      if (frame->fmask)
+	riscv_for_each_saved_reg (frame->total_size - libcall_size
+				    - multipop_size,
+				  riscv_restore_reg, true,
+				  style == EXCEPTION_RETURN);
+      /* Undo the above fib.  */
+      frame->mask = mask;
+      frame->fmask = fmask;
+      riscv_gen_multi_pop_insn (use_multi_pop_normal, frame->mask,
+				multipop_size);
+      if (use_multi_pop_normal)
+	return;
+    }
+  else if (use_restore_libcall)
     {
       rtx dwarf = riscv_adjust_libcall_cfi_epilogue ();
       insn = emit_insn (gen_gpr_restore (GEN_INT (riscv_save_libcall_count (mask))));
@@ -6261,6 +7298,17 @@ riscv_epilogue_uses (unsigned int regno)
   return false;
 }
 
+static bool
+riscv_avoid_shrink_wrapping_separate ()
+{
+  if (riscv_use_save_libcall (&cfun->machine->frame)
+      || cfun->machine->interrupt_handler_p
+      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+    return true;
+
+  return false;
+}
+
 /* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
 
 static sbitmap
@@ -6270,9 +7318,7 @@ riscv_get_separate_components (void)
   sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
   bitmap_clear (components);
 
-  if (riscv_use_save_libcall (&cfun->machine->frame)
-      || cfun->machine->interrupt_handler_p
-      || !cfun->machine->frame.gp_sp_offset.is_constant ())
+  if (riscv_avoid_shrink_wrapping_separate ())
     return components;
 
   offset = cfun->machine->frame.gp_sp_offset.to_constant ();
@@ -6528,7 +7574,8 @@ riscv_secondary_memory_needed (machine_mode mode, reg_class_t class1,
   return (!riscv_v_ext_mode_p (mode)
 	  && GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD
 	  && (class1 == FP_REGS) != (class2 == FP_REGS)
-	  && !TARGET_XTHEADFMV);
+	  && !TARGET_XTHEADFMV
+	  && !TARGET_ZFA);
 }
 
 /* Implement TARGET_REGISTER_MOVE_COST.  */
@@ -6578,7 +7625,7 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
   /* For VLS modes, we allocate registers according to TARGET_MIN_VLEN.  */
   if (riscv_v_ext_vls_mode_p (mode))
     {
-      int size = GET_MODE_SIZE (mode).to_constant ();
+      int size = GET_MODE_BITSIZE (mode).to_constant ();
       if (size < TARGET_MIN_VLEN)
 	return 1;
       else
@@ -6678,6 +7725,11 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 static bool
 riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
+  /* We don't allow different REG_CLASS modes tieable since it
+     will cause ICE in register allocation (RA).
+     E.g. V2SI and DI are not tieable.  */
+  if (riscv_v_ext_mode_p (mode1) != riscv_v_ext_mode_p (mode2))
+    return false;
   return (mode1 == mode2
 	  || !(GET_MODE_CLASS (mode1) == MODE_FLOAT
 	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
@@ -6733,11 +7785,9 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   if (get_attr_type (insn) == TYPE_GHOST)
     return 0;
 
-#if 0
   /* If we ever encounter an insn with an unknown type, trip
      an assert so we can find and fix this problem.  */
   gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
-#endif
 
   return more - 1;
 }
@@ -6754,6 +7804,54 @@ riscv_emit_attribute ()
 
   fprintf (asm_out_file, "\t.attribute stack_align, %d\n",
            riscv_stack_boundary / 8);
+}
+
+/* Output .variant_cc for function symbol which follows vector calling
+   convention.  */
+
+static void
+riscv_asm_output_variant_cc (FILE *stream, const tree decl, const char *name)
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      riscv_cc cc = (riscv_cc) fndecl_abi (decl).id ();
+      if (cc == RISCV_CC_V)
+	{
+	  fprintf (stream, "\t.variant_cc\t");
+	  assemble_name (stream, name);
+	  fprintf (stream, "\n");
+	}
+    }
+}
+
+/* Implement ASM_DECLARE_FUNCTION_NAME.  */
+
+void
+riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
+{
+  riscv_asm_output_variant_cc (stream, fndecl, name);
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
+  ASM_OUTPUT_LABEL (stream, name);
+}
+
+/* Implement ASM_OUTPUT_DEF_FROM_DECLS.  */
+
+void
+riscv_asm_output_alias (FILE *stream, const tree decl, const tree target)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *value = IDENTIFIER_POINTER (target);
+  riscv_asm_output_variant_cc (stream, decl, name);
+  ASM_OUTPUT_DEF (stream, name, value);
+}
+
+/* Implement ASM_OUTPUT_EXTERNAL.  */
+
+void
+riscv_asm_output_external (FILE *stream, tree decl, const char *name)
+{
+  default_elf_asm_output_external (stream, decl, name);
+  riscv_asm_output_variant_cc (stream, decl, name);
 }
 
 /* Implement TARGET_ASM_FILE_START.  */
@@ -6840,7 +7938,8 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     }
 
   /* Jump to the target function.  */
-  insn = emit_call_insn (gen_sibcall (fnaddr, const0_rtx, NULL, const0_rtx));
+  rtx callee_cc = gen_int_mode (fndecl_abi (function).id (), SImode);
+  insn = emit_call_insn (gen_sibcall (fnaddr, const0_rtx, callee_cc));
   SIBLING_CALL_P (insn) = 1;
 
   /* Run just enough of rest_of_compilation.  This sequence was
@@ -6962,6 +8061,12 @@ riscv_option_override (void)
      -m[no-]strict-align is left unspecified, heed -mtune's advice.  */
   riscv_slow_unaligned_access_p = (cpu->tune_param->slow_unaligned_access
 				   || TARGET_STRICT_ALIGN);
+
+  /* Make a note if user explicity passed -mstrict-align for later
+     builtin macro generation.  Can't use target_flags_explicitly since
+     it is set even for -mno-strict-align.  */
+  riscv_user_wants_strict_align = TARGET_STRICT_ALIGN;
+
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
     target_flags |= MASK_STRICT_ALIGN;
@@ -7094,6 +8199,10 @@ riscv_option_override (void)
   if (TARGET_MIN_VLEN > 4096)
     sorry (
       "Current RISC-V GCC cannot support VLEN greater than 4096bit for 'V' Extension");
+
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_pressure_algorithm,
+		       SCHED_PRESSURE_MODEL);
 
   /* Convert -march to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_bits ();
@@ -7427,11 +8536,25 @@ riscv_slow_unaligned_access (machine_mode, unsigned int)
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
-riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
+riscv_can_change_mode_class (machine_mode from, machine_mode to,
+			     reg_class_t rclass)
 {
+  /* We have RVV VLS modes and VLA modes sharing same REG_CLASS.
+     In 'cprop_hardreg' stage, we will try to do hard reg copy propagation
+     between wider mode (FROM) and narrow mode (TO).
+
+     E.g. We should not allow copy propagation
+	- RVVMF8BI (precision = [16, 16]) -> V32BI (precision = [32, 0])
+     since we can't order their size which will cause ICE in regcprop.
+
+     TODO: Even though they are have different size, they always change
+     the whole register.  We may enhance such case in regcprop to optimize
+     it in the future.  */
+  if (reg_classes_intersect_p (V_REGS, rclass)
+      && !ordered_p (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to)))
+    return false;
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
-
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
@@ -7543,6 +8666,27 @@ riscv_gen_gpr_save_insn (struct riscv_frame_info *frame)
 	      BITSET_P (frame->mask, gpr_save_reg_order[veclen - 1]));
 
   return gen_rtx_PARALLEL (VOIDmode, vec);
+}
+
+static HOST_WIDE_INT
+zcmp_base_adj (int regs_num)
+{
+  return riscv_16bytes_align ((regs_num) *GET_MODE_SIZE (word_mode));
+}
+
+static HOST_WIDE_INT
+zcmp_additional_adj (HOST_WIDE_INT total, int regs_num)
+{
+  return total - zcmp_base_adj (regs_num);
+}
+
+bool
+riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT total, int regs_num)
+{
+  HOST_WIDE_INT additioanl_bytes = zcmp_additional_adj (total, regs_num);
+  return additioanl_bytes == 0 || additioanl_bytes == 1 * ZCMP_SP_INC_STEP
+	 || additioanl_bytes == 2 * ZCMP_SP_INC_STEP
+	 || additioanl_bytes == ZCMP_MAX_SPIMM * ZCMP_SP_INC_STEP;
 }
 
 /* Return true if it's valid gpr_save pattern.  */
@@ -7864,12 +9008,18 @@ riscv_support_vector_misalignment (machine_mode mode,
 				   int misalignment,
 				   bool is_packed ATTRIBUTE_UNUSED)
 {
-  /* TODO: For RVV scalable vector auto-vectorization, we should allow
-     movmisalign<mode> pattern to handle misalign data movement to unblock
-     possible auto-vectorization.
+  /* Only enable misalign data movements for VLS modes.  */
+  if (TARGET_VECTOR_VLS && STRICT_ALIGNMENT)
+    {
+      /* Return if movmisalign pattern is not supported for this mode.  */
+      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
+	return false;
 
-     RVV VLS auto-vectorization or SIMD auto-vectorization can be supported here
-     in the future.  */
+      /* Misalignment factor is unknown at compile time.  */
+      if (misalignment == -1)
+	return false;
+    }
+  /* Disable movmisalign for VLA auto-vectorization.  */
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
 }
@@ -7947,8 +9097,8 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	    }
 
 	  rtx ops[] = {target, CONST0_RTX (mode)};
-	  riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode),
-					 riscv_vector::RVV_UNOP, ops, vl);
+	  riscv_vector::emit_vlmax_insn_lra (code_for_pred_mov (mode),
+					      riscv_vector::UNARY_OP, ops, vl);
 
 	  SET_HARD_REG_BIT (zeroed_hardregs, regno);
 	}
@@ -8101,7 +9251,7 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
       rtx frm = gen_int_mode (mode, SImode);
 
       if (mode == riscv_vector::FRM_DYN_CALL
-	&& prev_mode != riscv_vector::FRM_DYN)
+	&& prev_mode != riscv_vector::FRM_DYN && STATIC_FRM_P (cfun))
 	/* No need to emit when prev mode is DYN already.  */
 	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
       else if (mode == riscv_vector::FRM_DYN_EXIT && STATIC_FRM_P (cfun)
@@ -8412,35 +9562,40 @@ riscv_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 				rtx target, rtx op0, rtx op1,
 				const vec_perm_indices &sel)
 {
-  if (TARGET_VECTOR && riscv_v_ext_vector_mode_p (vmode))
+  if (TARGET_VECTOR && riscv_v_ext_mode_p (vmode))
     return riscv_vector::expand_vec_perm_const (vmode, op_mode, target, op0,
 						op1, sel);
 
   return false;
 }
 
-/* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
-   prefer to use the first arithmetic operand as the else value if
-   the else value doesn't matter, since that exactly matches the RVV
-   destructive merging form.  For ternary operations we could either
-   pick the first operand and use VMADD-like instructions or the last
-   operand and use VMACC-like instructions; the latter seems more
-   natural.
-
-   TODO: Currently, the return value is not ideal for RVV since it will
-   let VSETVL PASS use MU or TU. We will suport undefine value that allows
-   VSETVL PASS use TA/MA in the future.  */
-
-static tree
-riscv_preferred_else_value (unsigned, tree, unsigned int nops, tree *ops)
-{
-  return nops == 3 ? ops[2] : ops[0];
-}
-
 static bool
 riscv_frame_pointer_required (void)
 {
   return riscv_save_frame_pointer && !crtl->is_leaf;
+}
+
+/* Implement targetm.vectorize.create_costs.  */
+
+static vector_costs *
+riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
+{
+  if (TARGET_VECTOR)
+    return new riscv_vector::costs (vinfo, costing_for_scalar);
+  /* Default vector costs.  */
+  return new vector_costs (vinfo, costing_for_scalar);
+}
+
+/* Implement TARGET_PREFERRED_ELSE_VALUE.  */
+
+static tree
+riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
+			    tree *ops)
+{
+  if (riscv_v_ext_mode_p (TYPE_MODE (vectype)))
+    return get_or_create_ssa_default_def (cfun, create_tmp_var (vectype));
+
+  return default_preferred_else_value (ifn, vectype, nops, ops);
 }
 
 /* Initialize the GCC target structure.  */
@@ -8482,6 +9637,8 @@ riscv_frame_pointer_required (void)
 #define TARGET_ASM_FILE_START riscv_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START riscv_va_start
@@ -8522,6 +9679,10 @@ riscv_frame_pointer_required (void)
 #define TARGET_FUNCTION_ARG_ADVANCE riscv_function_arg_advance
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY riscv_function_arg_boundary
+#undef TARGET_FNTYPE_ABI
+#define TARGET_FNTYPE_ABI riscv_fntype_abi
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI riscv_insn_callee_abi
 
 #undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
 #define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \
@@ -8747,11 +9908,14 @@ riscv_frame_pointer_required (void)
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST riscv_vectorize_vec_perm_const
 
-#undef TARGET_PREFERRED_ELSE_VALUE
-#define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
-
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED riscv_frame_pointer_required
+
+#undef TARGET_VECTORIZE_CREATE_COSTS
+#define TARGET_VECTORIZE_CREATE_COSTS riscv_vectorize_create_costs
+
+#undef TARGET_PREFERRED_ELSE_VALUE
+#define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

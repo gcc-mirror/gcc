@@ -39,6 +39,9 @@ set tests [lsort [glob -nocomplain $srcdir/$subdir/*.C]]
 
 g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS
 
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/analyzer/*.\[cS\]]] \
+	"" $DEFAULT_CXXFLAGS
+
 # All done.
 dg-finish
 

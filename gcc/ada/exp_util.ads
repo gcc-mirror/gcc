@@ -25,6 +25,7 @@
 
 --  Package containing utility procedures used throughout the expander
 
+with Einfo.Utils;    use Einfo.Utils;
 with Exp_Tss;        use Exp_Tss;
 with Namet;          use Namet;
 with Rtsfind;        use Rtsfind;
@@ -855,6 +856,22 @@ package Exp_Util is
    --  Determine whether Id denotes a secondary stack thunk
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Is_Statically_Disabled
+     (N             : Node_Id;
+      Value         : Boolean;
+      Include_Valid : Boolean)
+      return Boolean
+   with Pre => Nkind (N) in N_Subexpr and then Is_Boolean_Type (Etype (N));
+   --  Returns whether N is a "statically disabled" condition which evaluates
+   --  to Value, as described in section 7.3.2 of SPARK User's Guide.
+   --
+   --  If Include_Valid is True, a reference to 'Valid or 'Valid_Scalar is
+   --  considered as disabled for Value=True, which is useful in GNATprove, as
+   --  proof considers that these attributes always return the value True. In
+   --  general, Include_Valid is set to True in the proof phase of GNATprove,
+   --  as 'Valid is assumed to always evaluate to True, but not in the flow
+   --  analysis phase of GNATprove, which does not make this assumption.
 
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,

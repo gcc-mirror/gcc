@@ -1776,16 +1776,13 @@ insert_prologue_epilogue_for_components (sbitmap components)
   commit_edge_insertions ();
 }
 
-/* The main entry point to this subpass.  FIRST_BB is where the prologue
-   would be normally put.  */
-void
-try_shrink_wrapping_separate (basic_block first_bb)
+bool
+use_shrink_wrapping_separate (void)
 {
-  if (!(SHRINK_WRAPPING_ENABLED
-	&& flag_shrink_wrap_separate
+  if (!(SHRINK_WRAPPING_ENABLED && flag_shrink_wrap_separate
 	&& optimize_function_for_speed_p (cfun)
 	&& targetm.shrink_wrap.get_separate_components))
-    return;
+    return false;
 
   /* We don't handle "strange" functions.  */
   if (cfun->calls_alloca
@@ -1794,6 +1791,17 @@ try_shrink_wrapping_separate (basic_block first_bb)
       || crtl->calls_eh_return
       || crtl->has_nonlocal_goto
       || crtl->saves_all_registers)
+    return false;
+
+  return true;
+}
+
+/* The main entry point to this subpass.  FIRST_BB is where the prologue
+   would be normally put.  */
+void
+try_shrink_wrapping_separate (basic_block first_bb)
+{
+  if (!use_shrink_wrapping_separate ())
     return;
 
   /* Ask the target what components there are.  If it returns NULL, don't

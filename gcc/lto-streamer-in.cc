@@ -1030,6 +1030,7 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
   basic_block p_bb;
   unsigned int i;
   int index;
+  bool full_profile = false;
 
   init_empty_tree_cfg_for_function (fn);
 
@@ -1071,6 +1072,8 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
 	  data_in->location_cache.input_location_and_block (&e->goto_locus,
 							    &bp, ib, data_in);
 	  e->probability = profile_probability::stream_in (ib);
+	  if (!e->probability.initialized_p ())
+	    full_profile = false;
 
 	}
 
@@ -1145,6 +1148,7 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
 
   /* Rebuild the loop tree.  */
   flow_loops_find (loops);
+  cfun->cfg->full_profile = full_profile;
 }
 
 

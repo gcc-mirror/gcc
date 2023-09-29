@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <ranges>
 #include <utility> // as_const
@@ -42,7 +41,7 @@ struct R
   int a[4] = { 0, 1, 2, 3 };
 
   const int* begin() const { return nullptr; }
-  friend const int* begin(const R&& r) noexcept { return nullptr; }
+  friend const int* begin(const R&&) noexcept { return nullptr; }
 
   // Should be ignored because it doesn't return a sentinel for int*
   const long* end() const { return nullptr; }
@@ -52,6 +51,15 @@ struct R
   friend const int* end(const R& r) noexcept { return r.a + 2; }
   friend const int* end(const R&& r) noexcept { return r.a + 3; }
 };
+
+#if __cpp_lib_ranges_as_const
+struct R2 : R
+{
+  // This overload means constant_range<const R2> will be satisfied:
+  friend const int* begin(const R2&) noexcept;
+  friend const int* end(const R2& r2) noexcept { return r2.a + 2; }
+};
+#endif
 
 struct RV // view on an R
 {
@@ -71,12 +79,28 @@ test03()
 {
   R r;
   const R& c = r;
+#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cend(r) == std::ranges::end(c) );
+#else
+  // constant_range<const R> is not satisfied, so cend(r) == end(r) instead.
+  VERIFY( std::ranges::cend(r) == std::ranges::end(r) );
+  R2 r2;
+  const R& c2 = r2;
+  // But constant_range<const R2> is satisfied, so cend(r2) == end(c2).
+  VERIFY( std::ranges::cend(r2) == std::ranges::end(c2) );
+  VERIFY( std::ranges::cend(r2) == std::ranges::end((const R&)c2) );
+#endif
   VERIFY( std::ranges::cend(c) == std::ranges::end(c) );
 
   RV v{r};
-  const RV cv{r};
+#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cend(std::move(v)) == std::ranges::end(c) );
+#else
+  // constant_range<RV> is already satisfied, so cend(v) == end(r) instead.
+  VERIFY( std::ranges::cend(std::move(v)) == std::ranges::end(r) );
+#endif
+
+  const RV cv{r};
   VERIFY( std::ranges::cend(std::move(cv)) == std::ranges::end(c) );
 }
 

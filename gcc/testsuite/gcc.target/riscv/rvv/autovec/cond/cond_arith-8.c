@@ -26,6 +26,8 @@
   TEST (DATA_TYPE, OTHER_TYPE, mul, *)                                         \
   TEST (DATA_TYPE, OTHER_TYPE, div, /)
 
+#define TEST_TYPE2(DATA_TYPE, OTHER_TYPE) TEST (DATA_TYPE, OTHER_TYPE, rem, %)
+
 #define TEST_ALL                                                               \
   TEST_TYPE (int32_t, int8_t)                                                  \
   TEST_TYPE (int32_t, int16_t)                                                 \
@@ -37,6 +39,16 @@
   TEST_TYPE (uint64_t, int8_t)                                                 \
   TEST_TYPE (uint64_t, int16_t)                                                \
   TEST_TYPE (uint64_t, int32_t)                                                \
+  TEST_TYPE2 (int32_t, int8_t)                                                 \
+  TEST_TYPE2 (int32_t, int16_t)                                                \
+  TEST_TYPE2 (uint32_t, int8_t)                                                \
+  TEST_TYPE2 (uint32_t, int16_t)                                               \
+  TEST_TYPE2 (int64_t, int8_t)                                                 \
+  TEST_TYPE2 (int64_t, int16_t)                                                \
+  TEST_TYPE2 (int64_t, int32_t)                                                \
+  TEST_TYPE2 (uint64_t, int8_t)                                                \
+  TEST_TYPE2 (uint64_t, int16_t)                                               \
+  TEST_TYPE2 (uint64_t, int32_t)                                               \
   TEST_TYPE (_Float16, int8_t)                                                 \
   TEST_TYPE (float, int8_t)                                                    \
   TEST_TYPE (float, int16_t)                                                   \
@@ -53,11 +65,14 @@ TEST_ALL
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_SUB" 22 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_MUL" 22 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_DIV" 40 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.COND_LEN_MOD" 40 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_RDIV" 22 "optimized" } } */
-/* { dg-final { scan-assembler-times {vadd\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+} 104 } } */
+/* { dg-final { scan-assembler-times {vadd\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+} 114 } } */
 /* { dg-final { scan-assembler-times {vsub\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 40 } } */
 /* { dg-final { scan-assembler-times {vmul\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 40 } } */
 /* { dg-final { scan-assembler-times {vdivu?\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 40 } } */
+/* { dg-final { scan-assembler-times {vrem\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 20 } } */
+/* { dg-final { scan-assembler-times {vremu\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 20 } } */
 /* { dg-final { scan-assembler-times {vfadd\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */
 /* { dg-final { scan-assembler-times {vfsub\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */
 /* { dg-final { scan-assembler-times {vfmul\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 22 } } */

@@ -290,6 +290,7 @@ The elements are indexed from zero.
 @tindex INTEGER_TYPE
 @tindex TYPE_MIN_VALUE
 @tindex TYPE_MAX_VALUE
+@tindex BITINT_TYPE
 @tindex REAL_TYPE
 @tindex FIXED_POINT_TYPE
 @tindex COMPLEX_TYPE
@@ -448,6 +449,14 @@ The @code{TYPE_MIN_VALUE} is an @code{INTEGER_CST} for the smallest
 integer that may be represented by this type.  Similarly, the
 @code{TYPE_MAX_VALUE} is an @code{INTEGER_CST} for the largest integer
 that may be represented by this type.
+
+@item BITINT_TYPE
+Used to represent the bit-precise integer types, @code{_BitInt(@var{N})}.
+These types are similar to @code{INTEGER_TYPE}, but can have arbitrary
+user selected precisions and do or can have different alignment, function
+argument and return value passing conventions.
+Larger BITINT_TYPEs can have @code{BLKmode} @code{TYPE_MODE} and need to
+be lowered by a special BITINT_TYPE lowering pass.
 
 @item REAL_TYPE
 Used to represent the @code{float}, @code{double}, and @code{long
@@ -2487,6 +2496,20 @@ In some cases, @code{OMP_CONTINUE} is placed right before
 @code{OMP_RETURN}.  But if there are cleanups that need to
 occur right after the looping body, it will be emitted between
 @code{OMP_CONTINUE} and @code{OMP_RETURN}.
+
+@item OMP_STRUCTURED_BLOCK
+
+This is another statement that doesn't correspond to an OpenMP directive.
+It is used to mark sections of code in another directive that must
+be structured block sequences, in particular for sequences of intervening code
+in the body of an @code{OMP_FOR}.  It is not necessary to use this when the
+entire body of a directive is required to be a structured block sequence,
+since that is implicit in the representation of the corresponding node.
+
+This tree node is used only to allow error checking transfers of control
+in/out of the structured block sequence after gimplification.
+It has a single operand (@code{OMP_STRUCTURED_BLOCK_BODY}) that is
+the code within the structured block sequence.
 
 @item OMP_ATOMIC
 

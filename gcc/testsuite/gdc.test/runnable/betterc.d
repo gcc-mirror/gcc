@@ -210,3 +210,14 @@ int test20737()
     tlsVar = 123;
     return 0;
 }
+
+/*******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22427
+void test22427()
+{
+    if("a" == "a")
+        return;
+
+    char[] p;
+    auto a = cast(int[])p;
+}

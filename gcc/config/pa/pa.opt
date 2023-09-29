@@ -50,7 +50,7 @@ Target Mask(CALLER_COPIES)
 Caller copies function arguments passed by hidden reference.
 
 mcoherent-ldcw
-Target Var(TARGET_COHERENT_LDCW) Init(1)
+Target Var(TARGET_COHERENT_LDCW) Init(0)
 Use ldcw/ldcd coherent cache-control hint.
 
 mdisable-fpregs

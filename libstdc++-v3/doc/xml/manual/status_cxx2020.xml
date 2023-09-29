@@ -251,14 +251,13 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>  Improving Completeness Requirements for Type Traits </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1285r0.pdf">
         P1285R0 </link>
       </entry>
-      <entry align="center"> Partial </entry>
-      <entry />
+      <entry align="center"> &#x2014; </entry>
+      <entry> Most misuses are diagnosed, but not all. </entry>
     </row>
 
     <row>
@@ -541,13 +540,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Avoid template bloat for <code>safe_ranges</code> in combination with ‘subrange-y’ view adaptors.</entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1739r4.html">
         P1739R4 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry />
     </row>
 
@@ -559,24 +557,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Extending chrono to Calendars and Time Zones </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0355r7.html">
         P0355R7 </link>
       </entry>
-      <entry/>
+      <entry> 14.1 (see Note 2) </entry>
       <entry> <code>__cpp_lib_chrono &gt;= 201803L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Miscellaneous minor fixes for chrono </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1466r3.html">
         P1466R3 </link>
       </entry>
-      <entry/>
+      <entry> 11.1 (see Note 2) </entry>
       <entry> <code>__cpp_lib_chrono &gt;= 201907L</code> </entry>
     </row>
 
@@ -667,39 +663,36 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Text formatting </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html">
         P0645R10 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry>
         <code>__cpp_lib_format &gt;= 201907L</code>
       </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Integration of chrono with text formatting </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1361r2.pdf">
         P1361R2 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry>
         <code>__cpp_lib_format &gt;= 201907L</code>
       </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Printf corner cases in <code>std::format</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1652r1.html">
         P1652R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry>
         <code>__cpp_lib_format &gt;= 201907L</code>
       </entry>
@@ -716,13 +709,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Update The Reference To The Unicode Standard </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1025r1.html">
         P1025R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> &#x2014;</entry>
       <entry />
     </row>
 
@@ -796,13 +788,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Comparing Unordered Containers </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0809r0.pdf">
         P0809R0 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> &#x2014; </entry>
       <entry />
     </row>
 
@@ -1039,7 +1030,7 @@ or any notes about the implementation.
         P0551R3 </link>
       </entry>
       <entry align="center"> </entry>
-      <entry />
+      <entry>These changes will not be implemented.</entry>
     </row>
 
     <row>
@@ -1113,13 +1104,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Standard Library Specification in a Concepts and Contracts World </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0788r3.pdf">
         P0788R3 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> &#x2014; </entry>
       <entry />
     </row>
 
@@ -1244,13 +1234,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Cleaning up Clause 20 </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1148r0.pdf">
         P1148R0 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> &#x2014; </entry>
       <entry />
     </row>
 
@@ -1341,7 +1330,6 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
         Mandating the Standard Library:
         Clause 22 - Iterators library
@@ -1350,7 +1338,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1464r1.pdf">
         P1464R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> &#x2014; </entry>
       <entry />
     </row>
 
@@ -1457,6 +1445,12 @@ or any notes about the implementation.
 Note 1: This feature is supported in older releases but the
 <code>__cpp_lib</code> macro is not defined to the right value
 (or not defined at all) until the version shown in parentheses.
+</para>
+
+<para>
+Note 2: The C++20 calendar types are supported since 11.1,
+time zones and UTC are supported since 13.1,
+and <function>chrono::parse</function> is supported since 14.1.
 </para>
 
 </section>

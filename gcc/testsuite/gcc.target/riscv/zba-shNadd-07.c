@@ -25,7 +25,7 @@ f4 (unsigned long i)
   return i * 1574;
 }
 
-/* { dg-final { scan-assembler-times "sh2add" 2 } } */
-/* { dg-final { scan-assembler-times "sh1add" 1 } } */
-/* { dg-final { scan-assembler-times "slli" 3 } } */
-/* { dg-final { scan-assembler-times "mul" 2 } } */
+/* { dg-final { scan-assembler-times {\msh2add} 2 } } */
+/* { dg-final { scan-assembler-times {\msh1add} 1 } } */
+/* { dg-final { scan-assembler-times {\mslli} 3 } } */
+/* { dg-final { scan-assembler-times {\mmul} 2 } } */

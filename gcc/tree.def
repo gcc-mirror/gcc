@@ -113,7 +113,7 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
    compiler.  OFFSET_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE,
-   REAL_TYPE, POINTER_TYPE.  */
+   BITINT_TYPE, REAL_TYPE, POINTER_TYPE.  */
 
 /* An offset is a pointer relative to an object.
    The TREE_TYPE field is the type of the object at the offset.
@@ -143,6 +143,13 @@ DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
    Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
    and TYPE_PRECISION (number of bits used by this type).  */
 DEFTREECODE (INTEGER_TYPE, "integer_type", tcc_type, 0)
+
+/* Bit-precise integer type.  These are similar to INTEGER_TYPEs, but
+   can have arbitrary user selected precisions and do or can have different
+   alignment, function argument and return value passing conventions.
+   Larger BITINT_TYPEs can have BLKmode TYPE_MODE and need to be lowered
+   by a special BITINT_TYPE lowering pass.  */
+DEFTREECODE (BITINT_TYPE, "bitint_type", tcc_type, 0)
 
 /* C's float and double.  Different floating types are distinguished
    by machine mode and by the TYPE_SIZE and the TYPE_PRECISION.  */
@@ -1286,6 +1293,15 @@ DEFTREECODE (OMP_SCAN, "omp_scan", tcc_statement, 2)
 /* OpenMP - #pragma omp section
    Operand 0: OMP_SECTION_BODY: Section body.  */
 DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
+
+/* OpenMP structured block sequences that don't correspond to the body
+   another directive.  This is used for code fragments within the body
+   of a directive that are separately required to be structured block
+   sequence; in particular, for intervening code sequences in
+   imperfectly-nested loops.
+   Operand 0: BODY: contains the statement(s) within the structured block
+   sequence.  */
+DEFTREECODE (OMP_STRUCTURED_BLOCK, "omp_structured_block", tcc_statement, 1)
 
 /* OpenMP - #pragma omp master
    Operand 0: OMP_MASTER_BODY: Master section body.  */

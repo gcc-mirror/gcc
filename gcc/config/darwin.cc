@@ -114,6 +114,19 @@ static bool ld_needs_eh_markers = false;
 /* Emit a section-start symbol for mod init and term sections.  */
 static bool ld_init_term_start_labels = false;
 
+/* The source and version of dsymutil in use.  */
+#ifndef DSYMUTIL_VERSION
+# warning Darwin toolchain without a defined dsymutil.
+# define DSYMUTIL_VERSION DET_UNKNOWN,0,0,0
+#endif
+
+struct {
+  darwin_external_toolchain kind; /* cctools, llvm, clang etc.  */
+  int major; /* version number.  */
+  int minor;
+  int tiny;
+} dsymutil_version = {DSYMUTIL_VERSION};
+
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
@@ -256,6 +269,45 @@ name_needs_quotes (const char *name)
 	  && c != '.' && c != '$' && c != '_' )
       return 1;
   return 0;
+}
+
+DEBUG_FUNCTION void
+dump_machopic_symref_flags (FILE *dump, rtx sym_ref)
+{
+  unsigned long flags = SYMBOL_REF_FLAGS (sym_ref);
+
+  fprintf (dump, "flags: %08lx %c%c%c%c%c%c%c",
+	   flags,
+	   (MACHO_SYMBOL_STATIC_P (sym_ref) ? 's' : '-'),
+	   (MACHO_SYMBOL_INDIRECTION_P (sym_ref) ? 'I' : '-'),
+	   (MACHO_SYMBOL_LINKER_VIS_P (sym_ref) ? 'l' : '-'),
+	   (MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref) ? 'h' : '-'),
+	   (MACHO_SYMBOL_DEFINED_P (sym_ref) ? 'd' : '-'),
+	   (MACHO_SYMBOL_MUST_INDIRECT_P (sym_ref) ? 'i' : '-'),
+	   (MACHO_SYMBOL_VARIABLE_P (sym_ref) ? 'v' : '-'));
+
+#if (DARWIN_X86)
+  fprintf (dump, "%c%c%c%c",
+	 (SYMBOL_REF_STUBVAR_P (sym_ref) ? 'S' : '-'),
+	 (SYMBOL_REF_DLLEXPORT_P (sym_ref) ? 'X' : '-'),
+	 (SYMBOL_REF_DLLIMPORT_P (sym_ref) ? 'I' : '-'),
+	 (SYMBOL_REF_FAR_ADDR_P (sym_ref) ? 'F' : '-'));
+#endif
+
+  fprintf (dump, "%c%c%c%03u%c%c%c\n",
+	   (SYMBOL_REF_ANCHOR_P (sym_ref) ? 'a' : '-'),
+	   (SYMBOL_REF_HAS_BLOCK_INFO_P (sym_ref) ? 'b' : '-'),
+	   (SYMBOL_REF_EXTERNAL_P (sym_ref) ? 'e' : '-'),
+	   (unsigned)SYMBOL_REF_TLS_MODEL (sym_ref),
+	   (SYMBOL_REF_SMALL_P (sym_ref) ? 'm' : '-'),
+	   (SYMBOL_REF_LOCAL_P (sym_ref) ? 'l' : '-'),
+	   (SYMBOL_REF_FUNCTION_P (sym_ref) ? 'f' : '-'));
+}
+
+DEBUG_FUNCTION void
+debug_machopic_symref_flags (rtx sym_ref)
+{
+  dump_machopic_symref_flags (stderr, sym_ref);
 }
 
 /* Return true if SYM_REF can be used without an indirection.  */
@@ -2232,6 +2284,7 @@ darwin_emit_except_table_label (FILE *file)
 {
   char section_start_label[30];
 
+  fputs ("\t.p2align\t2\n", file);
   ASM_GENERATE_INTERNAL_LABEL (section_start_label, "GCC_except_table",
 			       except_table_label_num++);
   ASM_OUTPUT_LABEL (file, section_start_label);
@@ -3317,14 +3370,26 @@ darwin_override_options (void)
 		  global_options.x_flag_objc_abi);
     }
 
-  /* Don't emit DWARF3/4 unless specifically selected.  This is a
-     workaround for tool bugs.  */
+  /* Limit DWARF to the chosen version, the linker and debug linker might not
+     be able to consume newer structures.  */
   if (!OPTION_SET_P (dwarf_strict))
     dwarf_strict = 1;
-  if (!OPTION_SET_P (dwarf_version))
-    dwarf_version = 2;
 
-  if (OPTION_SET_P (dwarf_split_debug_info))
+  if (!OPTION_SET_P (dwarf_version))
+    {
+      /* External toolchains based on LLVM or clang 7+ have support for
+	 dwarf-4.  */
+      if ((dsymutil_version.kind == LLVM && dsymutil_version.major >= 7)
+	  || (dsymutil_version.kind == CLANG && dsymutil_version.major >= 7))
+	dwarf_version = 4;
+      else if (dsymutil_version.kind == DWARFUTILS
+	       && dsymutil_version.major >= 121)
+	dwarf_version = 3;  /* From XC 6.4.  */
+      else
+	dwarf_version = 2;  /* Older cannot safely exceed dwarf-2.  */
+    }
+
+  if (OPTION_SET_P (dwarf_split_debug_info) && dwarf_split_debug_info)
     {
       inform (input_location,
 	      "%<-gsplit-dwarf%> is not supported on this platform, ignored");
@@ -3853,10 +3918,21 @@ darwin_function_section (tree decl, enum node_frequency freq,
   if (decl && DECL_SECTION_NAME (decl) != NULL)
     return get_named_section (decl, NULL, 0);
 
-  /* We always put unlikely executed stuff in the cold section.  */
+  /* We always put unlikely executed stuff in the cold section; we have to put
+     this ahead of the global init section, since partitioning within a section
+     breaks some assumptions made in the DWARF handling.  */
   if (freq == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return (use_coal) ? darwin_sections[text_cold_coal_section]
 		      : darwin_sections[text_cold_section];
+
+  /* Intercept functions in global init; these are placed in separate sections.
+     FIXME: there should be some neater way to do this, FIXME we should be able
+     to partition within a section.  */
+  if (DECL_NAME (decl)
+      && (startswith (IDENTIFIER_POINTER (DECL_NAME (decl)), "_GLOBAL__sub_I")
+	  || startswith (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			 "__static_initialization_and_destruction")))
+    return  darwin_sections[static_init_section];
 
   /* If we have LTO *and* feedback information, then let LTO handle
      the function ordering, it makes a better job (for normal, hot,

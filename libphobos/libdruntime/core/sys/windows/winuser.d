@@ -3421,7 +3421,7 @@ align(4) LUID  luid;
     }
     alias BSMINFO* PBSMINFO;
 
-    alias TypeDef!(HANDLE) HRAWINPUT;
+    alias HANDLE HRAWINPUT;
 
     struct RAWINPUTHEADER {
         DWORD dwType;
@@ -4155,7 +4155,7 @@ extern (C) {
 
 
 // These shouldn't be necessary for D.
-alias TypeDef!(char*) va_list_;
+alias char* va_list_;
 int wvsprintfA(LPSTR, LPCSTR, va_list_ arglist);
 int wvsprintfW(LPWSTR, LPCWSTR, va_list_ arglist);
 

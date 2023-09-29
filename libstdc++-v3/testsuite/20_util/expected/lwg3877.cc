@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 
 // LWG 3877. Incorrect constraints on const-qualified monadic overloads

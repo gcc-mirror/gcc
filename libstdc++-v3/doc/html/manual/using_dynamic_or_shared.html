@@ -138,6 +138,10 @@ A quick read of the relevant part of the GCC
       and link with <code class="option">-lstdc++fs</code>. The library implementation
       is incomplete on non-POSIX platforms, specifically Windows is only
       partially supported.
+      Since GCC 14, <code class="filename">libstdc++exp.a</code>
+      also contains the definitions for this library,
+      so <code class="option">-lstdc++exp</code> can be used instead of
+      <code class="option">-lstdc++fs</code>.
     </p><p>
       GCC 13 includes an implementation of the C++ Contracts library defined by
       <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1429r3.pdf" target="_top">P1429R3</a>.

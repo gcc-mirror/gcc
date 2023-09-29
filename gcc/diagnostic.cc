@@ -2108,6 +2108,21 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* Same as above, but with metadata.  */
+
+void
+error_meta (rich_location *richloc, const diagnostic_metadata &metadata,
+	    const char *gmsgid, ...)
+{
+  gcc_assert (richloc);
+
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  diagnostic_impl (richloc, &metadata, -1, gmsgid, &ap, DK_ERROR);
+  va_end (ap);
+}
+
 /* "Sorry, not implemented."  Use for a language feature which is
    required by the relevant specification but not implemented by GCC.
    An object file will not be produced.  */
@@ -2389,6 +2404,14 @@ diagnostics_text_art_charset_init (diagnostic_context *context,
     }
 }
 
+/* class simple_diagnostic_path : public diagnostic_path.  */
+
+simple_diagnostic_path::simple_diagnostic_path (pretty_printer *event_pp)
+  : m_event_pp (event_pp)
+{
+  add_thread ("main");
+}
+
 /* Implementation of diagnostic_path::num_events vfunc for
    simple_diagnostic_path: simply get the number of events in the vec.  */
 
@@ -2405,6 +2428,25 @@ const diagnostic_event &
 simple_diagnostic_path::get_event (int idx) const
 {
   return *m_events[idx];
+}
+
+unsigned
+simple_diagnostic_path::num_threads () const
+{
+  return m_threads.length ();
+}
+
+const diagnostic_thread &
+simple_diagnostic_path::get_thread (diagnostic_thread_id_t idx) const
+{
+  return *m_threads[idx];
+}
+
+diagnostic_thread_id_t
+simple_diagnostic_path::add_thread (const char *name)
+{
+  m_threads.safe_push (new simple_diagnostic_thread (name));
+  return m_threads.length () - 1;
 }
 
 /* Add an event to this path at LOC within function FNDECL at
@@ -2449,15 +2491,56 @@ simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
   return diagnostic_event_id_t (m_events.length () - 1);
 }
 
+diagnostic_event_id_t
+simple_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
+					  location_t loc,
+					  tree fndecl,
+					  int depth,
+					  const char *fmt, ...)
+{
+  pretty_printer *pp = m_event_pp;
+  pp_clear_output_area (pp);
+
+  text_info ti;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  va_list ap;
+
+  va_start (ap, fmt);
+
+  ti.format_spec = _(fmt);
+  ti.args_ptr = &ap;
+  ti.err_no = 0;
+  ti.x_data = NULL;
+  ti.m_richloc = &rich_loc;
+
+  pp_format (pp, &ti);
+  pp_output_formatted_text (pp);
+
+  va_end (ap);
+
+  simple_diagnostic_event *new_event
+    = new simple_diagnostic_event (loc, fndecl, depth, pp_formatted_text (pp),
+				   thread_id);
+  m_events.safe_push (new_event);
+
+  pp_clear_output_area (pp);
+
+  return diagnostic_event_id_t (m_events.length () - 1);
+}
+
 /* struct simple_diagnostic_event.  */
 
 /* simple_diagnostic_event's ctor.  */
 
-simple_diagnostic_event::simple_diagnostic_event (location_t loc,
-						  tree fndecl,
-						  int depth,
-						  const char *desc)
-: m_loc (loc), m_fndecl (fndecl), m_depth (depth), m_desc (xstrdup (desc))
+simple_diagnostic_event::
+simple_diagnostic_event (location_t loc,
+			 tree fndecl,
+			 int depth,
+			 const char *desc,
+			 diagnostic_thread_id_t thread_id)
+: m_loc (loc), m_fndecl (fndecl), m_depth (depth), m_desc (xstrdup (desc)),
+  m_thread_id (thread_id)
 {
 }
 

@@ -2494,7 +2494,7 @@ read_state_files_list (void)
       build_headers = XCNEWVEC (const char *, num_build_headers);
       for (i = 0; i < (int) num_gt_files; i++)
 	{
-	  bool issrcfile = FALSE;
+	  bool issrcfile = false;
 	  t0 = t1 = t2 = NULL;
 	  t0 = peek_state_token (0);
 	  t1 = peek_state_token (1);

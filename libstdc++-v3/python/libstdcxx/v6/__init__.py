@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gdb
-
 # Load the xmethods if GDB supports them.
 def gdb_has_xmethods():
     try:

@@ -2148,6 +2148,23 @@ finish_bitfield_representative (tree repr, tree field)
       || GET_MODE_BITSIZE (mode) > maxbitsize
       || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE)
     {
+      if (TREE_CODE (TREE_TYPE (field)) == BITINT_TYPE)
+	{
+	  struct bitint_info info;
+	  unsigned prec = TYPE_PRECISION (TREE_TYPE (field));
+	  bool ok = targetm.c.bitint_type_info (prec, &info);
+	  gcc_assert (ok);
+	  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	  unsigned lprec = GET_MODE_PRECISION (limb_mode);
+	  if (prec > lprec)
+	    {
+	      /* For middle/large/huge _BitInt prefer bitsize being a multiple
+		 of limb precision.  */
+	      unsigned HOST_WIDE_INT bsz = CEIL (bitsize, lprec) * lprec;
+	      if (bsz <= maxbitsize)
+		bitsize = bsz;
+	    }
+	}
       /* We really want a BLKmode representative only as a last resort,
          considering the member b in
 	   struct { int a : 7; int b : 17; int c; } __attribute__((packed));
@@ -2393,6 +2410,65 @@ layout_type (tree type)
 	break;
       }
 
+    case BITINT_TYPE:
+      {
+	struct bitint_info info;
+	int cnt;
+	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+	gcc_assert (ok);
+	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
+	  {
+	    SET_TYPE_MODE (type, limb_mode);
+	    cnt = 1;
+	  }
+	else
+	  {
+	    SET_TYPE_MODE (type, BLKmode);
+	    cnt = CEIL (TYPE_PRECISION (type), GET_MODE_PRECISION (limb_mode));
+	  }
+	TYPE_SIZE (type) = bitsize_int (cnt * GET_MODE_BITSIZE (limb_mode));
+	TYPE_SIZE_UNIT (type) = size_int (cnt * GET_MODE_SIZE (limb_mode));
+	SET_TYPE_ALIGN (type, GET_MODE_ALIGNMENT (limb_mode));
+	if (cnt > 1)
+	  {
+	    /* Use same mode as compute_record_mode would use for a structure
+	       containing cnt limb_mode elements.  */
+	    machine_mode mode = mode_for_size_tree (TYPE_SIZE (type),
+						    MODE_INT, 1).else_blk ();
+	    if (mode == BLKmode)
+	      break;
+	    finalize_type_size (type);
+	    SET_TYPE_MODE (type, mode);
+	    if (STRICT_ALIGNMENT
+		&& !(TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
+		     || TYPE_ALIGN (type) >= GET_MODE_ALIGNMENT (mode)))
+	      {
+		/* If this is the only reason this type is BLKmode, then
+		   don't force containing types to be BLKmode.  */
+		TYPE_NO_FORCE_BLK (type) = 1;
+		SET_TYPE_MODE (type, BLKmode);
+	      }
+	    if (TYPE_NEXT_VARIANT (type) || type != TYPE_MAIN_VARIANT (type))
+	      for (tree variant = TYPE_MAIN_VARIANT (type);
+		   variant != NULL_TREE;
+		   variant = TYPE_NEXT_VARIANT (variant))
+		{
+		  SET_TYPE_MODE (variant, mode);
+		  if (STRICT_ALIGNMENT
+		      && !(TYPE_ALIGN (variant) >= BIGGEST_ALIGNMENT
+			   || (TYPE_ALIGN (variant)
+			       >= GET_MODE_ALIGNMENT (mode))))
+		    {
+		      TYPE_NO_FORCE_BLK (variant) = 1;
+		      SET_TYPE_MODE (variant, BLKmode);
+		    }
+		}
+	    return;
+	  }
+	break;
+      }
+
     case REAL_TYPE:
       {
 	/* Allow the caller to choose the type mode, which is how decimal
@@ -2417,6 +2493,18 @@ layout_type (tree type)
 
     case COMPLEX_TYPE:
       TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
+      if (TYPE_MODE (TREE_TYPE (type)) == BLKmode)
+	{
+	  gcc_checking_assert (TREE_CODE (TREE_TYPE (type)) == BITINT_TYPE);
+	  SET_TYPE_MODE (type, BLKmode);
+	  TYPE_SIZE (type)
+	    = int_const_binop (MULT_EXPR, TYPE_SIZE (TREE_TYPE (type)),
+			       bitsize_int (2));
+	  TYPE_SIZE_UNIT (type)
+	    = int_const_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (type)),
+			       bitsize_int (2));
+	  break;
+	}
       SET_TYPE_MODE (type,
 		     GET_MODE_COMPLEX_MODE (TYPE_MODE (TREE_TYPE (type))));
 

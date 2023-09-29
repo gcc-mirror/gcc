@@ -190,8 +190,9 @@ Conversions from string _to numeric types differ from the C equivalents
 `atoi()` and `atol()` by checking for overflow and not allowing whitespace.
 
 For conversion of strings _to signed types, the grammar recognized is:
-$(PRE $(I Integer): $(I Sign UnsignedInteger)
-$(I UnsignedInteger)
+$(PRE $(I Integer):
+    $(I Sign UnsignedInteger)
+    $(I UnsignedInteger)
 $(I Sign):
     $(B +)
     $(B -))
@@ -260,7 +261,7 @@ template to(T)
 }
 
 /**
- * When converting strings _to numeric types, note that the D hexadecimal and binary
+ * When converting strings _to numeric types, note that D hexadecimal and binary
  * literals are not handled. Neither the prefixes that indicate the base, nor the
  * horizontal bar used _to separate groups of digits are recognized. This also
  * applies to the suffixes that indicate the type.
@@ -397,7 +398,7 @@ template to(T)
  *   $(LI Pointer to string conversions convert the pointer to a `size_t` value.
  *        If pointer is `char*`, treat it as C-style strings.
  *        In that case, this function is `@system`.))
- * See $(REF formatValue, std,format) on how toString should be defined.
+ * See $(REF formatValue, std,format) on how `toString` should be defined.
  */
 @system pure unittest // @system due to cast and ptr
 {
@@ -421,6 +422,22 @@ template to(T)
 
     auto c = to!(wchar[])(b);
     assert(c == "abcx");
+}
+
+/**
+ * Strings can be converted to enum types. The enum member with the same name as the
+ * input string is returned. The comparison is case-sensitive.
+ *
+ * A $(LREF ConvException) is thrown if the enum does not have the specified member.
+ */
+@safe pure unittest
+{
+    import std.exception : assertThrown;
+
+    enum E { a, b, c }
+    assert(to!E("a") == E.a);
+    assert(to!E("b") == E.b);
+    assertThrown!ConvException(to!E("A"));
 }
 
 // Tests for https://issues.dlang.org/show_bug.cgi?id=6175
@@ -2247,19 +2264,21 @@ template roundTo(Target)
 }
 
 /**
-The `parse` family of functions works quite like the `to`
+$(PANEL
+The `parse` family of functions works quite like the $(LREF to)
 family, except that:
 $(OL
     $(LI It only works with character ranges as input.)
-    $(LI It takes the input by reference. (This means that rvalues - such
-    as string literals - are not accepted: use `to` instead.))
+    $(LI It takes the input by reference. This means that rvalues (such
+    as string literals) are not accepted: use `to` instead.)
     $(LI It advances the input to the position following the conversion.)
     $(LI It does not throw if it could not convert the entire input.))
+)
 
-This overload converts a character input range to a `bool`.
+This overload parses a `bool` from a character input range.
 
 Params:
-    Target = the type to convert to
+    Target = the boolean type to convert to
     source = the lvalue of an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
     doCount = the flag for deciding to report the number of consumed characters
 
@@ -2276,9 +2295,9 @@ Note:
     to `parse` and do not require lvalues.
 */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
-if (isInputRange!Source &&
-    isSomeChar!(ElementType!Source) &&
-    is(immutable Target == immutable bool))
+if (is(immutable Target == immutable bool) &&
+    isInputRange!Source &&
+    isSomeChar!(ElementType!Source))
 {
     import std.ascii : toLower;
 
@@ -2377,8 +2396,7 @@ Lerr:
 }
 
 /**
-Parses a character $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
-to an integral value.
+Parses an integer from a character $(REF_ALTTEXT input range, isInputRange, std,range,primitives).
 
 Params:
     Target = the integral type to convert to
@@ -2395,8 +2413,8 @@ Throws:
     if no character of the input was meaningfully converted.
 */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref scope Source s)
-if (isSomeChar!(ElementType!Source) &&
-    isIntegral!Target && !is(Target == enum))
+if (isIntegral!Target && !is(Target == enum) &&
+    isSomeChar!(ElementType!Source))
 {
     static if (Target.sizeof < int.sizeof)
     {
@@ -2817,8 +2835,8 @@ Lerr:
 
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source, uint radix)
-if (isSomeChar!(ElementType!Source) &&
-    isIntegral!Target && !is(Target == enum))
+if (isIntegral!Target && !is(Target == enum) &&
+    isSomeChar!(ElementType!Source))
 in
 {
     assert(radix >= 2 && radix <= 36, "radix must be in range [2,36]");
@@ -2969,7 +2987,7 @@ do
 }
 
 /**
- * Takes a string representing an `enum` type and returns that type.
+ * Parses an `enum` type from a string representing an enum member name.
  *
  * Params:
  *     Target = the `enum` type to convert to
@@ -2986,8 +3004,7 @@ do
  *     represented by `s`.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isSomeString!Source && !is(Source == enum) &&
-    is(Target == enum))
+if (is(Target == enum) && isSomeString!Source && !is(Source == enum))
 {
     import std.algorithm.searching : startsWith;
     import std.traits : Unqual, EnumMembers;
@@ -3079,7 +3096,7 @@ if (isSomeString!Source && !is(Source == enum) &&
 }
 
 /**
- * Parses a character range to a floating point number.
+ * Parses a floating point number from a character range.
  *
  * Params:
  *     Target = a floating point type
@@ -3097,8 +3114,8 @@ if (isSomeString!Source && !is(Source == enum) &&
  *     parsed, or if an overflow occurred.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
-if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum) &&
-    isFloatingPoint!Target && !is(Target == enum))
+if (isFloatingPoint!Target && !is(Target == enum) &&
+    isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum))
 {
     import std.ascii : isDigit, isAlpha, toLower, toUpper, isHexDigit;
     import std.exception : enforce;
@@ -3790,7 +3807,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
 }
 
 /**
-Parsing one character off a range returns the first element and calls `popFront`.
+Parses one character from a character range.
 
 Params:
     Target = the type to convert to
@@ -3806,8 +3823,8 @@ Throws:
     A $(LREF ConvException) if the range is empty.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isSomeString!Source && !is(Source == enum) &&
-    staticIndexOf!(immutable Target, immutable dchar, immutable ElementEncodingType!Source) >= 0)
+if (staticIndexOf!(immutable Target, immutable dchar, immutable ElementEncodingType!Source) >= 0 &&
+    isSomeString!Source && !is(Source == enum))
 {
     if (s.empty)
         throw convError!(Source, Target)(s);
@@ -3863,8 +3880,8 @@ if (isSomeString!Source && !is(Source == enum) &&
 
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (!isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Source) &&
-    isSomeChar!Target && Target.sizeof >= ElementType!Source.sizeof && !is(Target == enum))
+if (isSomeChar!Target && Target.sizeof >= ElementType!Source.sizeof && !is(Target == enum) &&
+    !isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Source))
 {
     if (s.empty)
         throw convError!(Source, Target)(s);
@@ -3931,7 +3948,7 @@ if (!isSomeString!Source && isInputRange!Source && isSomeChar!(ElementType!Sourc
 }
 
 /**
-Parsing a character range to `typeof(null)` returns `null` if the range
+Parses `typeof(null)` from a character range if the range
 spells `"null"`. This function is case insensitive.
 
 Params:
@@ -3948,9 +3965,9 @@ Throws:
     A $(LREF ConvException) if the range doesn't represent `null`.
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
-if (isInputRange!Source &&
-    isSomeChar!(ElementType!Source) &&
-    is(immutable Target == immutable typeof(null)))
+if (is(immutable Target == immutable typeof(null)) &&
+    isInputRange!Source &&
+    isSomeChar!(ElementType!Source))
 {
     import std.ascii : toLower;
     foreach (c; "null")
@@ -4062,8 +4079,8 @@ package auto skipWS(R, Flag!"doCount" doCount = No.doCount)(ref R r)
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
     dchar rbracket = ']', dchar comma = ',')
-if (isSomeString!Source && !is(Source == enum) &&
-    isDynamicArray!Target && !is(Target == enum))
+if (isDynamicArray!Target && !is(Target == enum) &&
+    isSomeString!Source && !is(Source == enum))
 {
     import std.array : appender;
 
@@ -4249,8 +4266,8 @@ if (isSomeString!Source && !is(Source == enum) &&
 /// ditto
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
     dchar rbracket = ']', dchar comma = ',')
-if (isExactSomeString!Source &&
-    isStaticArray!Target && !is(Target == enum))
+if (isStaticArray!Target && !is(Target == enum) &&
+    isExactSomeString!Source)
 {
     static if (hasIndirections!Target)
         Target result = Target.init[0].init;
@@ -4358,8 +4375,8 @@ Lfewerr:
  */
 auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s, dchar lbracket = '[',
                              dchar rbracket = ']', dchar keyval = ':', dchar comma = ',')
-if (isSomeString!Source && !is(Source == enum) &&
-    isAssociativeArray!Target && !is(Target == enum))
+if (isAssociativeArray!Target && !is(Target == enum) &&
+    isSomeString!Source && !is(Source == enum))
 {
     alias KeyType = typeof(Target.init.keys[0]);
     alias ValType = typeof(Target.init.values[0]);

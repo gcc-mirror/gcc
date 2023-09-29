@@ -137,6 +137,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-coboho$(objext) \
   a-cobove$(objext) \
   a-cogeso$(objext) \
+  a-cohama$(objext) \
+  a-cohase$(objext) \
   a-cohata$(objext) \
   a-coinho$(objext) \
   a-coinve$(objext) \
@@ -2117,6 +2119,55 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   soext = .dll
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+
+# LoongArch Linux
+ifeq ($(strip $(filter-out loongarch% linux%,$(target_cpu) $(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<libgnarl/a-exetim__posix.adb \
+  a-exetim.ads<libgnarl/a-exetim__default.ads \
+  a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  a-synbar.adb<libgnarl/a-synbar__posix.adb \
+  a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__posix.adb \
+  s-linux.ads<libgnarl/s-linux__loongarch.ads \
+  s-mudido.adb<libgnarl/s-mudido__affinity.adb \
+  s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-taprop.adb<libgnarl/s-taprop__linux.adb \
+  s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
+  s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
+  s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  g-sercom.adb<libgnat/g-sercom__linux.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  $(GNATRTL_128BIT_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<libgnat/system-linux-loongarch.ads
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+  EXTRA_GNATRTL_TASKING_OBJS = s-linux.o a-exetim.o
+
+  EH_MECHANISM = -gcc
+  THREADSLIB = -lpthread
+  MISCLIB = -ldl
+  GNATLIB_SHARED = gnatlib-shared-dual
+  GMEM_LIB = gmemlib
+  LIBRARY_VERSION := $(LIB_VERSION)
+  # Temporarily disable strict alignment -- for some reason, it causes
+  # infinite loops during stack unwinding (libgcc) and indefinite hang
+  # in some futex system calls.
+  GNATLIBCFLAGS += -mno-strict-align
+  GNATLIBCFLAGS_FOR_C += -mno-strict-align
+endif
+
 
 # Mips Linux
 ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)

@@ -2336,6 +2336,7 @@ toplev::finalize (void)
   cgraph_cc_finalize ();
   cgraphunit_cc_finalize ();
   symtab_thunks_cc_finalize ();
+  dwarf2cfi_cc_finalize ();
   dwarf2out_cc_finalize ();
   gcse_cc_finalize ();
   ipa_cp_cc_finalize ();
@@ -2349,6 +2350,8 @@ toplev::finalize (void)
   XDELETEVEC (save_decoded_options);
   save_decoded_options = NULL;
   save_decoded_options_count = 0;
+
+  ggc_common_finalize ();
 
   /* Clean up the context (and pass_manager etc). */
   delete g;

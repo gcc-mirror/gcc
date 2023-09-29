@@ -52,7 +52,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         IsExportQualified,
                         IsExported,
                         IsSubrange, IsPointer,
-                        IsProcedureBuiltin, IsProcedureInline,
+                        IsProcedureBuiltinAvailable, IsProcedureInline,
                         IsParameter, IsParameterVar,
                         IsValueSolved, IsSizeSolved,
                         IsProcedureNested, IsInnerModule, IsArrayLarge,
@@ -83,7 +83,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
 FROM M2Batch IMPORT MakeDefinitionSource ;
 
 FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToLocation,
-                     MakeVirtualTok, UnknownTokenNo ;
+                     MakeVirtualTok, UnknownTokenNo, BuiltinTokenNo ;
 
 FROM M2Code IMPORT CodeBlock ;
 FROM M2Debug IMPORT Assert ;
@@ -158,7 +158,8 @@ FROM M2GCCDeclare IMPORT WalkAction,
 
 FROM M2Range IMPORT CodeRangeCheck, FoldRangeCheck, CodeErrorCheck, GetMinMax ;
 
-FROM m2builtins IMPORT BuiltInMemCopy, BuiltInAlloca,
+FROM m2builtins IMPORT BuiltInAlloca,
+                       BuiltinMemSet, BuiltinMemCopy,
                        GetBuiltinConst, GetBuiltinTypeInfo,
                        BuiltinExists, BuildBuiltinTree ;
 
@@ -228,6 +229,7 @@ FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunct
                         BuildReturnValueCode, SetLastFunction,
                         BuildIncludeVarConst, BuildIncludeVarVar,
                         BuildExcludeVarConst, BuildExcludeVarVar,
+                        BuildBuiltinCallTree,
 			GetParamTree, BuildCleanUp,
 			BuildTryFinally,
 			GetLastFunction, SetLastFunction,
@@ -270,6 +272,7 @@ TYPE
    DoUnaryProcedure = PROCEDURE (CARDINAL) ;
 
 VAR
+   Memset, Memcpy           : CARDINAL ;
    CurrentQuadToken         : CARDINAL ;
    UnboundedLabelNo         : CARDINAL ;
    LastLine                 : CARDINAL ;(* The Last Line number emitted with the  *)
@@ -388,7 +391,7 @@ BEGIN
    IF WholeProgram
    THEN
       scope := GetScope (sym) ;
-      WHILE scope#NulSym DO
+      WHILE scope # NulSym DO
          IF IsDefImp (scope)
          THEN
             RETURN IsExported (scope, sym)
@@ -444,6 +447,7 @@ VAR
    op1, op2, op3: CARDINAL ;
    location     : location_t ;
 BEGIN
+   InitBuiltinSyms (BuiltinTokenNo) ;
    GetQuad(q, op, op1, op2, op3) ;
    IF op=StatementNoteOp
    THEN
@@ -572,6 +576,7 @@ VAR
    op3pos : CARDINAL ;
    Changed: BOOLEAN ;
 BEGIN
+   InitBuiltinSyms (BuiltinTokenNo) ;
    Changed  := FALSE ;
    REPEAT
       NoChange := TRUE ;
@@ -766,7 +771,7 @@ VAR
    tree: Tree ;
 BEGIN
    tree := Tree (NIL) ;
-   IF sym#NulSym
+   IF sym # NulSym
    THEN
       i := 1 ;
       REPEAT
@@ -1310,18 +1315,25 @@ END GetSizeOfHighFromUnbounded ;
 
 PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: Tree) : Tree ;
 VAR
-   func: Tree ;
+   call,
+   memptr,
+   func  : Tree ;
 BEGIN
    IF DebugBuiltins
    THEN
-      func := Mod2Gcc(FromModuleGetSym(tok,
-                                       MakeKey('alloca_trace'),
-                                       MakeDefinitionSource(tok,
-                                       MakeKey('Builtins')))) ;
-      RETURN( BuildCall2(location, func, GetPointerType(), BuiltInAlloca(location, high), high) )
+      func := Mod2Gcc (FromModuleGetSym (tok,
+                                         MakeKey ('alloca_trace'),
+                                         MakeDefinitionSource (tok,
+                                                               MakeKey ('Builtins')))) ;
+      call := BuiltInAlloca (location, high) ;
+      SetLastFunction (call) ;
+      memptr := BuildFunctValue (location, call) ;
+      call := BuildCall2 (location, func, GetPointerType(), memptr, high) ;
    ELSE
-      RETURN( BuiltInAlloca(location, high) )
-   END
+      call := BuiltInAlloca (location, high)
+   END ;
+   SetLastFunction (call) ;
+   RETURN BuildFunctValue (location, call)
 END MaybeDebugBuiltinAlloca ;
 
 
@@ -1331,19 +1343,41 @@ END MaybeDebugBuiltinAlloca ;
 
 PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; tok: CARDINAL; src, dest, nbytes: Tree) : Tree ;
 VAR
+   call,
    func: Tree ;
 BEGIN
    IF DebugBuiltins
    THEN
-      func := Mod2Gcc(FromModuleGetSym(tok,
-                                       MakeKey('memcpy'),
-                                       MakeDefinitionSource(tok,
-                                       MakeKey('Builtins')))) ;
-      RETURN( BuildCall3(location, func, GetPointerType(), src, dest, nbytes) )
+      func := Mod2Gcc (Memcpy) ;
+      call := BuildCall3 (location, func, GetPointerType (), src, dest, nbytes) ;
    ELSE
-      RETURN( BuiltInMemCopy(location, src, dest, nbytes) )
-   END
+      call := BuiltinMemCopy (location, src, dest, nbytes)
+   END ;
+   SetLastFunction (call) ;
+   RETURN BuildFunctValue (location, call)
 END MaybeDebugBuiltinMemcpy ;
+
+
+(*
+   MaybeDebugBuiltinMemset -
+*)
+
+PROCEDURE MaybeDebugBuiltinMemset (location: location_t; tok: CARDINAL;
+                                   ptr, bytevalue, nbytes: Tree) : Tree ;
+VAR
+   call,
+   func: Tree ;
+BEGIN
+   IF DebugBuiltins
+   THEN
+      func := Mod2Gcc (Memset) ;
+      call := BuildCall3 (location, func, GetPointerType (), ptr, bytevalue, nbytes) ;
+   ELSE
+      call := BuiltinMemSet (location, ptr, bytevalue, nbytes)
+   END ;
+   SetLastFunction (call) ;
+   RETURN BuildFunctValue (location, call)
+END MaybeDebugBuiltinMemset ;
 
 
 (*
@@ -1368,7 +1402,7 @@ VAR
    High,
    NewArray     : Tree ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
+   location := TokenToLocation (tokenno) ;
    UnboundedType := GetType (param) ;
    Assert (IsUnbounded (UnboundedType)) ;
 
@@ -1397,20 +1431,20 @@ VAR
    sym,
    type: CARDINAL ;
 BEGIN
-   IF IsParameter(param)
+   IF IsParameter (param)
    THEN
-      type := GetType(param) ;
-      sym := GetLocalSym(proc, GetSymName(param)) ;
-      IF IsUnbounded(type)
+      type := GetType (param) ;
+      sym := GetLocalSym (proc, GetSymName (param)) ;
+      IF IsUnbounded (type)
       THEN
-         RETURN( GetAddressOfUnbounded(location, sym) )
+         RETURN( GetAddressOfUnbounded (location, sym) )
       ELSE
-         Assert(GetMode(sym)=LeftValue) ;
-         RETURN( Mod2Gcc(sym) )
+         Assert (GetMode (sym) = LeftValue) ;
+         RETURN( Mod2Gcc (sym) )
       END
    ELSE
-      Assert(IsVar(param)) ;
-      Assert(GetMode(param)=LeftValue) ;
+      Assert (IsVar (param)) ;
+      Assert (GetMode (param) = LeftValue) ;
       RETURN( Mod2Gcc(param) )
    END
 END GetParamAddress ;
@@ -1927,31 +1961,18 @@ END CodeCall ;
 
 
 (*
-   CanUseBuiltin - returns TRUE if the procedure, Sym, can be
-                   inlined via a builtin function.
-*)
-
-PROCEDURE CanUseBuiltin (Sym: CARDINAL) : BOOLEAN ;
-BEGIN
-   RETURN( (NOT DebugBuiltins) AND
-           (BuiltinExists(KeyToCharStar(GetProcedureBuiltin(Sym))) OR
-            BuiltinExists(KeyToCharStar(GetSymName(Sym)))) )
-END CanUseBuiltin ;
-
-
-(*
    UseBuiltin - returns a Tree containing the builtin function
                 and parameters. It should only be called if
-                CanUseBuiltin returns TRUE.
+                CanUseBuiltin or IsProcedureBuiltinAvailable returns TRUE.
 *)
 
 PROCEDURE UseBuiltin (tokenno: CARDINAL; Sym: CARDINAL) : Tree ;
 BEGIN
    IF BuiltinExists(KeyToCharStar(GetProcedureBuiltin(Sym)))
    THEN
-      RETURN( BuildBuiltinTree(TokenToLocation (tokenno), KeyToCharStar(GetProcedureBuiltin(Sym))) )
+      RETURN( BuildBuiltinTree(TokenToLocation (tokenno), KeyToCharStar (GetProcedureBuiltin (Sym))) )
    ELSE
-      RETURN( BuildBuiltinTree(TokenToLocation (tokenno), KeyToCharStar(GetSymName(Sym))) )
+      RETURN( BuildBuiltinTree(TokenToLocation (tokenno), KeyToCharStar (GetSymName (Sym))) )
    END
 END UseBuiltin ;
 
@@ -1963,19 +1984,35 @@ END UseBuiltin ;
 PROCEDURE CodeDirectCall (tokenno: CARDINAL; procedure: CARDINAL) : Tree ;
 VAR
    location: location_t ;
+   call    : Tree ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   IF IsProcedureBuiltin(procedure) AND CanUseBuiltin(procedure)
+   location := TokenToLocation (tokenno) ;
+   IF IsProcedureBuiltinAvailable (procedure)
    THEN
-      RETURN UseBuiltin (tokenno, procedure)
-   ELSE
-      IF GetType(procedure)=NulSym
+      call := UseBuiltin (tokenno, procedure) ;
+      IF call # NIL
       THEN
-         RETURN BuildProcedureCallTree(location, Mod2Gcc(procedure), NIL)
-      ELSE
-         RETURN BuildProcedureCallTree(location, Mod2Gcc(procedure), Mod2Gcc(GetType(procedure)))
+         call := BuildBuiltinCallTree (location, call)
       END
-   END
+   ELSE
+      call := NIL
+   END ;
+   IF call = NIL
+   THEN
+      IF GetType (procedure) = NulSym
+      THEN
+         call := BuildProcedureCallTree (location, Mod2Gcc (procedure), NIL)
+      ELSE
+         call := BuildProcedureCallTree (location, Mod2Gcc (procedure), Mod2Gcc (GetType (procedure)))
+      END
+   END ;
+   IF GetType (procedure) = NulSym
+   THEN
+      SetLastFunction (NIL)
+   ELSE
+      SetLastFunction (call)
+   END ;
+   RETURN call
 END CodeDirectCall ;
 
 
@@ -2208,43 +2245,43 @@ BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
    n := q ;
    REPEAT
-      IF op1>0
+      IF op1 > 0
       THEN
-         DeclareConstant(CurrentQuadToken, op3)
+         DeclareConstant (CurrentQuadToken, op3)
       END ;
-      n := GetNextQuad(n) ;
-      GetQuad(n, op, r, op2, op3)
-   UNTIL op=FunctValueOp ;
+      n := GetNextQuad (n) ;
+      GetQuad (n, op, r, op2, op3)
+   UNTIL op = FunctValueOp ;
 
    n := q ;
-   GetQuad(n, op, op1, op2, op3) ;
-   res := Mod2Gcc(r) ;
-   max := GetSizeOfInBits(Mod2Gcc(Address)) ;
-   bits := GetIntegerZero(location) ;
-   val := GetPointerZero(location) ;
+   GetQuad (n, op, op1, op2, op3) ;
+   res := Mod2Gcc (r) ;
+   max := GetSizeOfInBits (Mod2Gcc(Address)) ;
+   bits := GetIntegerZero (location) ;
+   val := GetPointerZero (location) ;
    REPEAT
-      location := TokenToLocation(CurrentQuadToken) ;
-      IF (op=ParamOp) AND (op1>0)
+      location := TokenToLocation (CurrentQuadToken) ;
+      IF (op = ParamOp) AND (op1 > 0)
       THEN
-         IF GetType(op3)=NulSym
+         IF GetType (op3) = NulSym
          THEN
-            WriteFormat0('must supply typed constants to MAKEADR')
+            WriteFormat0 ('must supply typed constants to MAKEADR')
          ELSE
-            type := GetType(op3) ;
-            tmp := BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE) ;
-            IF CompareTrees(bits, GetIntegerZero(location))>0
+            type := GetType (op3) ;
+            tmp := BuildConvert (location, GetPointerType (), Mod2Gcc (op3), FALSE) ;
+            IF CompareTrees (bits, GetIntegerZero (location)) > 0
             THEN
-               tmp := BuildLSL(location, tmp, bits, FALSE)
+               tmp := BuildLSL (location, tmp, bits, FALSE)
             END ;
-            bits := BuildAdd(location, bits, GetSizeOfInBits(Mod2Gcc(type)), FALSE) ;
-            val := BuildLogicalOrAddress(location, val, tmp, FALSE)
+            bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
+            val := BuildLogicalOrAddress (location, val, tmp, FALSE)
          END
       END ;
-      SubQuad(n) ;
-      n := GetNextQuad(n) ;
-      GetQuad(n, op, op1, op2, op3)
+      SubQuad (n) ;
+      n := GetNextQuad (n) ;
+      GetQuad (n, op, op1, op2, op3)
    UNTIL op=FunctValueOp ;
-   IF CompareTrees(bits, max)>0
+   IF CompareTrees(bits, max) > 0
    THEN
       MetaErrorT0 (CurrentQuadToken,
                    'total number of bits specified as parameters to {%kMAKEADR} exceeds address width')
@@ -2259,11 +2296,15 @@ END CodeMakeAdr ;
                          inlines the SYSTEM function MAKEADR.
 *)
 
-PROCEDURE CodeBuiltinFunction (q: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeBuiltinFunction (q: CARDINAL; nth, func, parameter: CARDINAL) ;
 BEGIN
-   IF (op1=0) AND (op3=MakeAdr)
+   IF nth = 0
    THEN
-      CodeMakeAdr (q, op1, op2, op3)
+      InitBuiltinSyms (BuiltinTokenNo) ;
+      IF func = MakeAdr
+      THEN
+         CodeMakeAdr (q, nth, func, parameter)
+      END
    END
 END CodeBuiltinFunction ;
 
@@ -2294,55 +2335,55 @@ BEGIN
       IF r>0
       THEN
          TryDeclareConstant (tokenno, op3) ;
-         IF NOT GccKnowsAbout(op3)
+         IF NOT GccKnowsAbout (op3)
          THEN
             resolved := FALSE
          END
       END ;
-      n := GetNextQuad(n) ;
-      GetQuad(n, op, r, op2, op3)
-   UNTIL op=FunctValueOp ;
+      n := GetNextQuad (n) ;
+      GetQuad (n, op, r, op2, op3)
+   UNTIL op = FunctValueOp ;
 
-   IF resolved AND IsConst(r)
+   IF resolved AND IsConst (r)
    THEN
       n := q ;
-      GetQuad(n, op, op1, op2, op3) ;
-      max := GetSizeOfInBits(Mod2Gcc(Address)) ;
-      bits := GetIntegerZero(location) ;
-      val := GetPointerZero(location) ;
+      GetQuad (n, op, op1, op2, op3) ;
+      max := GetSizeOfInBits (Mod2Gcc(Address)) ;
+      bits := GetIntegerZero (location) ;
+      val := GetPointerZero (location) ;
       REPEAT
-         location := TokenToLocation(tokenno) ;
-         IF (op=ParamOp) AND (op1>0)
+         location := TokenToLocation (tokenno) ;
+         IF (op = ParamOp) AND (op1 > 0)
          THEN
-            IF GetType(op3)=NulSym
+            IF GetType (op3) = NulSym
             THEN
                MetaErrorT0 (tokenno,
                             'constants passed to {%kMAKEADR} must be typed')
             ELSE
-               type := GetType(op3) ;
-               tmp := BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE) ;
-               IF CompareTrees(bits, GetIntegerZero(location))>0
+               type := GetType (op3) ;
+               tmp := BuildConvert (location, GetPointerType (), Mod2Gcc (op3), FALSE) ;
+               IF CompareTrees (bits, GetIntegerZero (location)) > 0
                THEN
-                  tmp := BuildLSL(location, tmp, bits, FALSE)
+                  tmp := BuildLSL (location, tmp, bits, FALSE)
                END ;
-	       bits := BuildAdd(location, bits, GetSizeOfInBits(Mod2Gcc(type)), FALSE) ;
-               val := BuildLogicalOrAddress(location, val, tmp, FALSE)
+	       bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
+               val := BuildLogicalOrAddress (location, val, tmp, FALSE)
             END
          END ;
-         SubQuad(n) ;
-         n := GetNextQuad(n) ;
-         GetQuad(n, op, op1, op2, op3)
-      UNTIL op=FunctValueOp ;
-      IF CompareTrees(bits, max)>0
+         SubQuad (n) ;
+         n := GetNextQuad (n) ;
+         GetQuad (n, op, op1, op2, op3)
+      UNTIL op = FunctValueOp ;
+      IF CompareTrees (bits, max) > 0
       THEN
          MetaErrorT0 (tokenno,
                       'total number of bits specified as parameters to {%kMAKEADR} exceeds address width')
       END ;
-      PutConst(r, Address) ;
-      AddModGcc(r, DeclareKnownConstant(location, Mod2Gcc(Address), val)) ;
-      p(r) ;
+      PutConst (r, Address) ;
+      AddModGcc (r, DeclareKnownConstant (location, Mod2Gcc (Address), val)) ;
+      p (r) ;
       NoChange := FALSE ;
-      SubQuad(n)
+      SubQuad (n)
    END
 END FoldMakeAdr ;
 
@@ -2376,7 +2417,7 @@ VAR
    op1, op2,
    op3       : CARDINAL ;
    op        : QuadOperator ;
-   val       : Tree ;
+   val, call : Tree ;
    location  : location_t ;
 BEGIN
    GetQuad (q, op, op1, op2, op3) ;
@@ -2419,10 +2460,12 @@ BEGIN
          GetQuad(n, op, op1, op2, op3)
       UNTIL op=FunctValueOp ;
 
-      IF IsProcedureBuiltin(procedure) AND CanUseBuiltin(procedure)
+      IF IsProcedureBuiltinAvailable (procedure)
       THEN
          location := TokenToLocation(tokenno) ;
-         val := FoldAndStrip (UseBuiltin (tokenno, procedure)) ;
+         call := UseBuiltin (tokenno, procedure) ;
+         val := BuildFunctValue (location, call) ;
+         val := FoldAndStrip (val) ;
          PutConst(r, GetType(procedure)) ;
          AddModGcc(r, DeclareKnownConstant(location, Mod2Gcc(GetType(procedure)), val)) ;
          p(r) ;
@@ -2450,7 +2493,7 @@ BEGIN
       IF op3=MakeAdr
       THEN
          FoldMakeAdr (tokenno, p, q, op1, op2, op3)
-      ELSIF IsProcedure (op3) AND IsProcedureBuiltin (op3) AND CanUseBuiltin (op3)
+      ELSIF IsProcedure (op3) AND IsProcedureBuiltinAvailable (op3)
       THEN
          FoldBuiltin (tokenno, p, q)
       END
@@ -7262,7 +7305,26 @@ BEGIN
 END CodeXIndr ;
 
 
+(*
+   InitBuiltinSyms -
+*)
+
+PROCEDURE InitBuiltinSyms (tok: CARDINAL) ;
 BEGIN
+   IF Memset = NulSym
+   THEN
+      Memset := FromModuleGetSym (tok, MakeKey ('memset'), MakeDefinitionSource (tok, MakeKey ('Builtins')))
+   END ;
+   IF Memcpy = NulSym
+   THEN
+      Memcpy := FromModuleGetSym (tok, MakeKey ('memcpy'), MakeDefinitionSource (tok, MakeKey ('Builtins')))
+   END ;
+END InitBuiltinSyms ;
+
+
+BEGIN
+   Memset := NulSym ;
+   Memcpy := NulSym ;
    UnboundedLabelNo := 0 ;
    CurrentQuadToken := 0 ;
    ScopeStack := InitStackWord ()

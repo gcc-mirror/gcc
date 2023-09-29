@@ -1,12 +1,12 @@
-// REQUIRED_ARGS: -dw
+// REQUIRED_ARGS:
 // PERMUTE_ARGS:
 class C
 {
     void bug()
     {
-        autoref(this);  // 'auto ref' becomes non-ref parameter
-        autoref(super); // 'auto ref' becomes non-ref parameter
+        autoref!(true, C)(this);  // 'auto ref' becomes ref parameter
+        autoref!(false, Object)(super); // 'auto ref' becomes non-ref parameter
     }
 }
 
-void autoref(T)(auto ref T t) { static assert(__traits(isRef, t) == false); }
+void autoref(bool result, T)(auto ref T t) { static assert(__traits(isRef, t) == result); }

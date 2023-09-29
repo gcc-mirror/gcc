@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 -march=rv64gcv_zvfh -mabi=lp64d -fno-vect-cost-model --param=riscv-autovec-preference=scalable" } */
 
 #include "vfcvt_rtz-template.h"
@@ -61,4 +61,36 @@ main ()
   RUN2 (_Float16, uint32_t, 3989)
   RUN2 (_Float16, uint32_t, 4096)
   RUN2 (_Float16, uint32_t, 5975)
+
+  RUN (_Float16, int64_t, 3)
+  RUN (_Float16, int64_t, 4)
+  RUN (_Float16, int64_t, 7)
+  RUN (_Float16, int64_t, 99)
+  RUN (_Float16, int64_t, 119)
+  RUN (_Float16, int64_t, 128)
+  RUN (_Float16, int64_t, 256)
+  RUN (_Float16, int64_t, 279)
+  RUN (_Float16, int64_t, 555)
+  RUN (_Float16, int64_t, 1024)
+  RUN (_Float16, int64_t, 1389)
+  RUN (_Float16, int64_t, 2048)
+  RUN (_Float16, int64_t, 3989)
+  RUN (_Float16, int64_t, 4096)
+  RUN (_Float16, int64_t, 5975)
+
+  RUN2 (_Float16, uint64_t, 3)
+  RUN2 (_Float16, uint64_t, 4)
+  RUN2 (_Float16, uint64_t, 7)
+  RUN2 (_Float16, uint64_t, 99)
+  RUN2 (_Float16, uint64_t, 119)
+  RUN2 (_Float16, uint64_t, 128)
+  RUN2 (_Float16, uint64_t, 256)
+  RUN2 (_Float16, uint64_t, 279)
+  RUN2 (_Float16, uint64_t, 555)
+  RUN2 (_Float16, uint64_t, 1024)
+  RUN2 (_Float16, uint64_t, 1389)
+  RUN2 (_Float16, uint64_t, 2048)
+  RUN2 (_Float16, uint64_t, 3989)
+  RUN2 (_Float16, uint64_t, 4096)
+  RUN2 (_Float16, uint64_t, 5975)
 }

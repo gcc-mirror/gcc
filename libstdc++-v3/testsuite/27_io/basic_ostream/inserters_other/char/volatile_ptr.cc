@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++23 -fno-inline" }
+// { dg-options "-fno-inline" }
 // { dg-do run { target c++23 } }
 
 #include <sstream>

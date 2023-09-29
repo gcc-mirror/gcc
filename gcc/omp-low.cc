@@ -3951,6 +3951,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   omp_context *ctx = (omp_context *) wi->info;
   tree t = *tp;
+  tree tmp;
 
   switch (TREE_CODE (t))
     {
@@ -3960,11 +3961,36 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
     case RESULT_DECL:
       if (ctx)
 	{
+	  tmp = NULL_TREE;
+	  if (TREE_CODE (t) == VAR_DECL
+	      && (tmp = lookup_attribute ("omp allocate var",
+					  DECL_ATTRIBUTES (t))) != NULL_TREE)
+	    t = TREE_VALUE (TREE_VALUE (tmp));
 	  tree repl = remap_decl (t, &ctx->cb);
 	  gcc_checking_assert (TREE_CODE (repl) != ERROR_MARK);
-	  *tp = repl;
+	  if (tmp != NULL_TREE  && t != repl)
+	    *tp = build_fold_addr_expr (repl);
+	  else if (tmp == NULL_TREE)
+	    *tp = repl;
 	}
       break;
+
+    case INDIRECT_REF:
+    case MEM_REF:
+      if (ctx
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
+	  && ((tmp = lookup_attribute ("omp allocate var",
+				       DECL_ATTRIBUTES (TREE_OPERAND (t, 0))))
+	       != NULL_TREE))
+	{
+	  tmp = TREE_VALUE (TREE_VALUE (tmp));
+	  tree repl = remap_decl (tmp, &ctx->cb);
+	  gcc_checking_assert (TREE_CODE (repl) != ERROR_MARK);
+	  if (tmp != repl)
+	    *tp = repl;
+	  break;
+	}
+      gcc_fallthrough ();
 
     default:
       if (ctx && TYPE_P (t))
@@ -4007,135 +4033,6 @@ setjmp_or_longjmp_p (const_tree fndecl)
 
   const char *name = IDENTIFIER_POINTER (declname);
   return !strcmp (name, "setjmp") || !strcmp (name, "longjmp");
-}
-
-/* Return true if FNDECL is an omp_* runtime API call.  */
-
-static bool
-omp_runtime_api_call (const_tree fndecl)
-{
-  tree declname = DECL_NAME (fndecl);
-  if (!declname
-      || (DECL_CONTEXT (fndecl) != NULL_TREE
-          && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
-      || !TREE_PUBLIC (fndecl))
-    return false;
-
-  const char *name = IDENTIFIER_POINTER (declname);
-  if (!startswith (name, "omp_"))
-    return false;
-
-  static const char *omp_runtime_apis[] =
-    {
-      /* This array has 3 sections.  First omp_* calls that don't
-	 have any suffixes.  */
-      "aligned_alloc",
-      "aligned_calloc",
-      "alloc",
-      "calloc",
-      "free",
-      "get_mapped_ptr",
-      "realloc",
-      "target_alloc",
-      "target_associate_ptr",
-      "target_disassociate_ptr",
-      "target_free",
-      "target_is_accessible",
-      "target_is_present",
-      "target_memcpy",
-      "target_memcpy_async",
-      "target_memcpy_rect",
-      "target_memcpy_rect_async",
-      NULL,
-      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
-	 DECL_NAME is always omp_* without tailing underscore.  */
-      "capture_affinity",
-      "destroy_allocator",
-      "destroy_lock",
-      "destroy_nest_lock",
-      "display_affinity",
-      "fulfill_event",
-      "get_active_level",
-      "get_affinity_format",
-      "get_cancellation",
-      "get_default_allocator",
-      "get_default_device",
-      "get_device_num",
-      "get_dynamic",
-      "get_initial_device",
-      "get_level",
-      "get_max_active_levels",
-      "get_max_task_priority",
-      "get_max_teams",
-      "get_max_threads",
-      "get_nested",
-      "get_num_devices",
-      "get_num_places",
-      "get_num_procs",
-      "get_num_teams",
-      "get_num_threads",
-      "get_partition_num_places",
-      "get_place_num",
-      "get_proc_bind",
-      "get_supported_active_levels",
-      "get_team_num",
-      "get_teams_thread_limit",
-      "get_thread_limit",
-      "get_thread_num",
-      "get_wtick",
-      "get_wtime",
-      "in_explicit_task",
-      "in_final",
-      "in_parallel",
-      "init_lock",
-      "init_nest_lock",
-      "is_initial_device",
-      "pause_resource",
-      "pause_resource_all",
-      "set_affinity_format",
-      "set_default_allocator",
-      "set_lock",
-      "set_nest_lock",
-      "test_lock",
-      "test_nest_lock",
-      "unset_lock",
-      "unset_nest_lock",
-      NULL,
-      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
-	 as DECL_NAME only omp_* and omp_*_8 appear.  */
-      "display_env",
-      "get_ancestor_thread_num",
-      "init_allocator",
-      "get_partition_place_nums",
-      "get_place_num_procs",
-      "get_place_proc_ids",
-      "get_schedule",
-      "get_team_size",
-      "set_default_device",
-      "set_dynamic",
-      "set_max_active_levels",
-      "set_nested",
-      "set_num_teams",
-      "set_num_threads",
-      "set_schedule",
-      "set_teams_thread_limit"
-    };
-
-  int mode = 0;
-  for (unsigned i = 0; i < ARRAY_SIZE (omp_runtime_apis); i++)
-    {
-      if (omp_runtime_apis[i] == NULL)
-	{
-	  mode++;
-	  continue;
-	}
-      size_t len = strlen (omp_runtime_apis[i]);
-      if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
-	  && (name[4 + len] == '\0'
-	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
-	return true;
-    }
-  return false;
 }
 
 /* Helper function for scan_omp.
@@ -4300,6 +4197,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	}
       /* FALLTHRU */
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
@@ -14499,6 +14397,14 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gcc_assert (ctx);
       lower_omp_single (gsi_p, ctx);
       break;
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
+      /* We have already done error checking at this point, so these nodes
+	 can be completely removed and replaced with their body.  */
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp (gimple_omp_body_ptr (stmt), ctx);
+      gsi_replace_with_seq (gsi_p, gimple_omp_body (stmt), true);
+      break;
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
       ctx = maybe_lookup_ctx (stmt);
@@ -14886,6 +14792,7 @@ diagnose_sb_1 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
@@ -14949,6 +14856,7 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:

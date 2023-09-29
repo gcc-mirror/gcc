@@ -20,7 +20,7 @@ module dmd.imphint;
  * Not meant to be a comprehensive list of names in each module,
  * just the most common ones.
  */
-const(char)[] importHint(const(char)[] s)
+const(char)[] importHint(const(char)[] s) @safe
 {
     if (auto entry = s in hints)
         return *entry;

@@ -83,7 +83,7 @@ int __cmp(T)(scope const T[] lhs, scope const T[] rhs) @trusted
 // This function is called by the compiler when dealing with array
 // comparisons in the semantic analysis phase of CmpExp. The ordering
 // comparison is lowered to a call to this template.
-int __cmp(T1, T2)(T1[] s1, T2[] s2)
+auto __cmp(T1, T2)(T1[] s1, T2[] s2)
 if (!__traits(isScalar, T1) && !__traits(isScalar, T2))
 {
     import core.internal.traits : Unqual;
@@ -236,4 +236,27 @@ if (!__traits(isScalar, T1) && !__traits(isScalar, T2))
     auto va = [cast(immutable void[])a[0], a[1]];
     auto vb = [cast(void[])b[0], b[1]];
     assert(less2(va, vb));
+}
+
+// custom aggregate types
+@safe unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=24044
+    // Support float opCmp(...) with array
+    static struct F
+    {
+        float f;
+        float opCmp(F other) const { return this.f - other.f; }
+    }
+
+    F[2] a = [F(1.0f), F(float.nan)];
+    F[2] b = [F(1.0f), F(1.0f)];
+    F[1] c = [F(1.0f)];
+
+    bool isNan(float f) { return f != f; }
+
+    assert(isNan(__cmp(a, b)));
+    assert(isNan(__cmp(a, a)));
+    assert(__cmp(b, b) == 0);
+    assert(__cmp(a, c) > 0);
 }

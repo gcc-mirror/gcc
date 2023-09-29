@@ -226,3 +226,13 @@ GCC_13.0.0 {
   __truncxfbf2
   __trunchfbf2
 }
+
+%inherit GCC_14.0.0 GCC_13.0.0
+GCC_14.0.0 {
+  __PFX__fixxfbitint
+  __PFX__fixtfbitint
+  __PFX__floatbitintbf
+  __PFX__floatbitinthf
+  __PFX__floatbitintxf
+  __PFX__floatbitinttf
+}

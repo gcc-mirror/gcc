@@ -1944,3 +1944,13 @@ GCC_7.0.0 {
   __PFX__divmoddi4
   __PFX__divmodti4
 }
+
+%inherit GCC_14.0.0 GCC_7.0.0
+GCC_14.0.0 {
+  __PFX__mulbitint3
+  __PFX__divmodbitint4
+  __PFX__fixsfbitint
+  __PFX__fixdfbitint
+  __PFX__floatbitintsf
+  __PFX__floatbitintdf
+}

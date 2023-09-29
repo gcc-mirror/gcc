@@ -2735,7 +2735,7 @@ DEFHOOK
  insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
  compares in the conditional comparision are generated without error.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
- rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, int code, tree op0, tree op1),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx_code code, tree op0, tree op1),
  NULL)
 
 DEFHOOK
@@ -2752,7 +2752,7 @@ DEFHOOK
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
- rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, rtx_code cmp_code, tree op0, tree op1, rtx_code bit_code),
  NULL)
 
 /* Return a new value for loop unroll size.  */
@@ -6248,6 +6248,25 @@ when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},\n\
 @code{EXCESS_PRECISION_TYPE_FAST}.",
  enum flt_eval_method, (enum excess_precision_type type),
  default_excess_precision)
+
+/* Return true if _BitInt(N) is supported and fill details about it into
+   *INFO.  */
+DEFHOOK
+(bitint_type_info,
+ "This target hook returns true if @code{_BitInt(@var{N})} is supported and\n\
+provides details on it.  @code{_BitInt(@var{N})} is to be represented as\n\
+series of @code{info->limb_mode}\n\
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,\n\
+ordered from least significant to most significant if\n\
+@code{!info->big_endian}, otherwise from most significant to least\n\
+significant.  If @code{info->extended} is false, the bits above or equal to\n\
+@var{N} are undefined when stored in a register or memory, otherwise they\n\
+are zero or sign extended depending on if it is\n\
+@code{unsigned _BitInt(@var{N})} or one of @code{_BitInt(@var{N})} or\n\
+@code{signed _BitInt(@var{N})}.  Alignment of the type is\n\
+@code{GET_MODE_ALIGNMENT (info->limb_mode)}.",
+ bool, (int n, struct bitint_info *info),
+ default_bitint_type_info)
 
 HOOK_VECTOR_END (c)
 

@@ -1,5 +1,7 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
+// Disable PCH because <bits/stdc++.h> includes <stdatomic.h> which declares
+// memory_order in the global namespace.
+// { dg-add-options no_pch }
 
 // Copyright (C) 2019-2023 Free Software Foundation, Inc.
 //
@@ -23,7 +25,7 @@
 void test01()
 {
   // Not global scoped, only namespace std.
-  using memory_order; // { dg-error "expected nested-name-specifier" }
+  using ::memory_order; // { dg-error "has not been declared" }
   constexpr auto relaxed = memory_order::relaxed; // { dg-error "has not been declared" }
   constexpr auto consume = memory_order::consume; // { dg-error "has not been declared" }
   constexpr auto acquire = memory_order::acquire; // { dg-error "has not been declared" }

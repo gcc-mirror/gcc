@@ -1960,6 +1960,45 @@ gfc_free_enum_history (void)
 }
 
 
+/* Function to fix initializer character length if the length of the
+   symbol or component is constant.  */
+
+static bool
+fix_initializer_charlen (gfc_typespec *ts, gfc_expr *init)
+{
+  if (!gfc_specification_expr (ts->u.cl->length))
+    return false;
+
+  int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
+
+  /* resolve_charlen will complain later on if the length
+     is too large.  Just skip the initialization in that case.  */
+  if (mpz_cmp (ts->u.cl->length->value.integer,
+	       gfc_integer_kinds[k].huge) <= 0)
+    {
+      HOST_WIDE_INT len
+		= gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
+
+      if (init->expr_type == EXPR_CONSTANT)
+	gfc_set_constant_character_len (len, init, -1);
+      else if (init->expr_type == EXPR_ARRAY)
+	{
+	  gfc_constructor *cons;
+
+	  /* Build a new charlen to prevent simplification from
+	     deleting the length before it is resolved.  */
+	  init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+	  init->ts.u.cl->length = gfc_copy_expr (ts->u.cl->length);
+	  cons = gfc_constructor_first (init->value.constructor);
+	  for (; cons; cons = gfc_constructor_next (cons))
+	    gfc_set_constant_character_len (len, cons->expr, -1);
+	}
+    }
+
+  return true;
+}
+
+
 /* Function called by variable_decl() that adds an initialization
    expression to a symbol.  */
 
@@ -2073,40 +2112,10 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 				gfc_copy_expr (init->ts.u.cl->length);
 		}
 	    }
-	  /* Update initializer character length according symbol.  */
-	  else if (sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    {
-	      if (!gfc_specification_expr (sym->ts.u.cl->length))
-		return false;
-
-	      int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind,
-					 false);
-	      /* resolve_charlen will complain later on if the length
-		 is too large.  Just skeep the initialization in that case.  */
-	      if (mpz_cmp (sym->ts.u.cl->length->value.integer,
-			   gfc_integer_kinds[k].huge) <= 0)
-		{
-		  HOST_WIDE_INT len
-		    = gfc_mpz_get_hwi (sym->ts.u.cl->length->value.integer);
-
-		  if (init->expr_type == EXPR_CONSTANT)
-		    gfc_set_constant_character_len (len, init, -1);
-		  else if (init->expr_type == EXPR_ARRAY)
-		    {
-		      gfc_constructor *c;
-
-		      /* Build a new charlen to prevent simplification from
-			 deleting the length before it is resolved.  */
-		      init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-		      init->ts.u.cl->length
-			= gfc_copy_expr (sym->ts.u.cl->length);
-
-		      for (c = gfc_constructor_first (init->value.constructor);
-			   c; c = gfc_constructor_next (c))
-			gfc_set_constant_character_len (len, c->expr, -1);
-		    }
-		}
-	    }
+	  /* Update initializer character length according to symbol.  */
+	  else if (sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+		   && !fix_initializer_charlen (&sym->ts, init))
+	    return false;
 	}
 
       if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension && sym->as
@@ -2368,6 +2377,13 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   c->initializer = *init;
   *init = NULL;
+
+  /* Update initializer character length according to component.  */
+  if (c->ts.type == BT_CHARACTER && c->ts.u.cl->length
+      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT
+      && c->initializer && c->initializer->ts.type == BT_CHARACTER
+      && !fix_initializer_charlen (&c->ts, c->initializer))
+    return false;
 
   c->as = *as;
   if (c->as != NULL)

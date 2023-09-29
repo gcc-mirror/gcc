@@ -45,7 +45,7 @@ class predefined_function_abi;
 /* Register Transfer Language EXPRESSIONS CODES */
 
 #define RTX_CODE	enum rtx_code
-enum rtx_code  {
+enum rtx_code : unsigned {
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   ENUM ,
 #include "rtl.def"		/* rtl expressions are documented here */
@@ -3347,6 +3347,8 @@ extern rtx_note *emit_note_after (enum insn_note, rtx_insn *);
 extern rtx_insn *emit_insn (rtx);
 extern rtx_insn *emit_debug_insn (rtx);
 extern rtx_insn *emit_jump_insn (rtx);
+extern rtx_insn *emit_likely_jump_insn (rtx);
+extern rtx_insn *emit_unlikely_jump_insn (rtx);
 extern rtx_insn *emit_call_insn (rtx);
 extern rtx_code_label *emit_label (rtx);
 extern rtx_jump_table_data *emit_jump_table_data (rtx);
@@ -4106,8 +4108,11 @@ extern int epilogue_completed;
 
 extern int reload_in_progress;
 
-/* Set to 1 while in lra.  */
-extern int lra_in_progress;
+/* Set to true while in IRA.  */
+extern bool ira_in_progress;
+
+/* Set to true while in LRA.  */
+extern bool lra_in_progress;
 
 /* This macro indicates whether you may create a new
    pseudo-register.  */

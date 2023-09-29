@@ -32,14 +32,27 @@ struct big
   char c[64];
 };
 
+bool started = false;
+
 void*
 operator new(size_t n) THROW(std::bad_alloc)
 {
-  static bool first = true;
-  if (!first)
-    throw std::bad_alloc();
-  first = false;
+  if (started)
+    {
+      static bool first = true;
+      if (!first)
+	throw std::bad_alloc();
+      first = false;
+    }
+
   return std::malloc(n);
+}
+
+void
+operator delete(void* p) throw()
+{
+  if (p)
+    std::free(p);
 }
 
 // http://gcc.gnu.org/ml/libstdc++/2004-10/msg00098.html
@@ -59,5 +72,7 @@ void test01()
 
 int main()
 {
+  started = true;
   test01();
+  started = false;
 }

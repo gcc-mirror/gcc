@@ -582,6 +582,13 @@ package body Sem_Ch12 is
    --  Recurse on an actual that is a formal package whose declaration has
    --  a box.
 
+   function Component_Type_For_Private_View (T : Entity_Id) return Entity_Id;
+   --  Return the component type of array type T, with the following addition:
+   --  if this component type itself is an array type which has not been first
+   --  declared as private, then recurse on it. This makes it possible to deal
+   --  with arrays of arrays the same way as multi-dimensional arrays in the
+   --  mechanism handling private views.
+
    function Contains_Instance_Of
      (Inner : Entity_Id;
       Outer : Entity_Id;
@@ -7084,10 +7091,27 @@ package body Sem_Ch12 is
            and then Scope (Etype (E)) /= Instance
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
-            --  Restore the proper view of the actual from the information
-            --  saved earlier by Instantiate_Type.
+            declare
+               Indic : constant Node_Id := Subtype_Indication (Parent (E));
 
-            Check_Private_View (Subtype_Indication (Parent (E)));
+            begin
+               --  Restore the proper view of the actual from the information
+               --  saved earlier by Instantiate_Type.
+
+               Check_Private_View (Indic);
+
+               --  If this view is an array type, check its component type.
+               --  This handles the case of an array type whose component
+               --  type is private, used as the actual in an instantiation
+               --  of a generic construct declared in the same package as
+               --  the component type and taking an array type with this
+               --  component type as formal type parameter.
+
+               if Is_Array_Type (Etype (Indic)) then
+                  Check_Actual_Type
+                    (Component_Type_For_Private_View (Etype (Indic)));
+               end if;
+            end;
 
             --  If the actual is itself the formal of a parent instance,
             --  then also restore the proper view of its actual and so on.
@@ -7759,7 +7783,8 @@ package body Sem_Ch12 is
 
             elsif Is_Array_Type (Typ) then
                Check_Private_Type
-                 (Component_Type (Typ), Has_Secondary_Private_View (N));
+                 (Component_Type_For_Private_View (Typ),
+                  Has_Secondary_Private_View (N));
 
             elsif (Is_Record_Type (Typ) or else Is_Concurrent_Type (Typ))
               and then Has_Discriminants (Typ)
@@ -7820,6 +7845,21 @@ package body Sem_Ch12 is
 
       return Result;
    end Check_Hidden_Primitives;
+
+   -------------------------------------
+   -- Component_Type_For_Private_View --
+   -------------------------------------
+
+   function Component_Type_For_Private_View (T : Entity_Id) return Entity_Id is
+      Typ : constant Entity_Id := Component_Type (T);
+
+   begin
+      if Is_Array_Type (Typ) and then not Has_Private_Declaration (Typ) then
+         return Component_Type_For_Private_View (Typ);
+      else
+         return Typ;
+      end if;
+   end Component_Type_For_Private_View;
 
    --------------------------
    -- Contains_Instance_Of --
@@ -14373,7 +14413,8 @@ package body Sem_Ch12 is
       elsif (Is_Access_Type (Act_T)
               and then Is_Private_Type (Designated_Type (Act_T)))
         or else (Is_Array_Type (Act_T)
-                  and then Is_Private_Type (Component_Type (Act_T)))
+                  and then
+                 Is_Private_Type (Component_Type_For_Private_View (Act_T)))
       then
          Set_Has_Secondary_Private_View (Subtype_Indication (Decl_Node));
       end if;
@@ -16899,7 +16940,8 @@ package body Sem_Ch12 is
             if (Is_Access_Type (Typ)
                  and then Is_Private_Type (Designated_Type (Typ)))
               or else (Is_Array_Type (Typ)
-                        and then Is_Private_Type (Component_Type (Typ)))
+                        and then
+                       Is_Private_Type (Component_Type_For_Private_View (Typ)))
             then
                Set_Has_Secondary_Private_View (N);
             end if;

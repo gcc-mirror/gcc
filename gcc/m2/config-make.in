@@ -4,3 +4,7 @@ TARGET_SUBDIR = @target_subdir@
 PYTHON = @PYTHON@
 # Does Python3 exist?  (yes/no).
 HAVE_PYTHON = @HAVE_PYTHON@
+# target cpu
+TEST_TARGET_CPU_DEFAULT = @target@
+# host cpu
+TEST_HOST_CPU_DEFAULT = @host@

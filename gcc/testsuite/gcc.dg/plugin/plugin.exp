@@ -108,6 +108,9 @@ set plugin_test_list [list \
 	  diagnostic-test-paths-3.c \
 	  diagnostic-test-paths-4.c \
 	  diagnostic-test-paths-5.c \
+	  diagnostic-test-paths-multithreaded-inline-events.c \
+	  diagnostic-test-paths-multithreaded-sarif.c \
+	  diagnostic-test-paths-multithreaded-separate-events.c \
 	  diagnostic-path-format-plain.c \
 	  diagnostic-path-format-none.c \
 	  diagnostic-path-format-separate-events.c \
@@ -161,8 +164,10 @@ set plugin_test_list [list \
 	  taint-CVE-2011-0521-6.c \
 	  taint-antipatterns-1.c } \
     { analyzer_cpython_plugin.c \
-	  cpython-plugin-test-1.c \
-	  cpython-plugin-test-2.c } \
+	  cpython-plugin-test-no-Python-h.c \
+	  cpython-plugin-test-PyList_Append.c \
+	  cpython-plugin-test-PyList_New.c \
+	  cpython-plugin-test-PyLong_FromLong.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

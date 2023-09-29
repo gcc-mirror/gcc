@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_H
 #define GCC_RISCV_H
 
+#include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
 
 /* Target CPU builtins.  */
@@ -420,6 +421,29 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
 
+#define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
+#define S0_MASK (1 << S0_REGNUM)
+#define S1_MASK (1 << S1_REGNUM)
+#define S2_MASK (1 << S2_REGNUM)
+#define S3_MASK (1 << S3_REGNUM)
+#define S4_MASK (1 << S4_REGNUM)
+#define S5_MASK (1 << S5_REGNUM)
+#define S6_MASK (1 << S6_REGNUM)
+#define S7_MASK (1 << S7_REGNUM)
+#define S8_MASK (1 << S8_REGNUM)
+#define S9_MASK (1 << S9_REGNUM)
+#define S10_MASK (1 << S10_REGNUM)
+#define S11_MASK (1 << S11_REGNUM)
+
+#define MULTI_PUSH_GPR_MASK                                                    \
+  (RETURN_ADDR_MASK | S0_MASK | S1_MASK | S2_MASK | S3_MASK | S4_MASK          \
+   | S5_MASK | S6_MASK | S7_MASK | S8_MASK | S9_MASK | S10_MASK | S11_MASK)
+#define ZCMP_MAX_SPIMM 3
+#define ZCMP_SP_INC_STEP 16
+#define ZCMP_INVALID_S0S10_SREGS_COUNTS 11
+#define ZCMP_S0S11_SREGS_COUNTS 12
+#define ZCMP_MAX_GRP_SLOTS 13
+
 #define MCOUNT_NAME "_mcount"
 
 #define NO_PROFILE_COUNTERS 1
@@ -643,6 +667,9 @@ enum reg_class
 
 #define MAX_ARGS_IN_REGISTERS (riscv_abi == ABI_ILP32E ? 6 : 8)
 
+#define MAX_ARGS_IN_VECTOR_REGISTERS (16)
+#define MAX_ARGS_IN_MASK_REGISTERS (1)
+
 /* Symbolic macros for the first/last argument registers.  */
 
 #define GP_ARG_FIRST (GP_REG_FIRST + 10)
@@ -650,10 +677,14 @@ enum reg_class
 #define GP_TEMP_FIRST (GP_REG_FIRST + 5)
 #define FP_ARG_FIRST (FP_REG_FIRST + 10)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
+#define V_ARG_FIRST (V_REG_FIRST + 8)
+#define V_ARG_LAST (V_ARG_FIRST + MAX_ARGS_IN_VECTOR_REGISTERS - 1)
 
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
    (REGNO) >= 18 && (REGNO) <= 27 ? (REGNO) - 16 : -1)
+
+#define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
 #define LIBCALL_VALUE(MODE) \
   riscv_function_value (NULL_TREE, NULL_TREE, MODE)
@@ -671,7 +702,19 @@ enum reg_class
   (IN_RANGE ((N), GP_ARG_FIRST, GP_ARG_LAST)				\
    || (UNITS_PER_FP_ARG && IN_RANGE ((N), FP_ARG_FIRST, FP_ARG_LAST)))
 
+/* Define the standard RISC-V calling convention and variants.  */
+
+enum riscv_cc
+{
+  RISCV_CC_BASE = 0, /* Base standard RISC-V ABI.  */
+  RISCV_CC_V, /* For functions that pass or return values in V registers.  */
+  RISCV_CC_UNKNOWN
+};
+
 typedef struct {
+  /* The calling convention that current function used.  */
+  enum riscv_cc variant_cc;
+
   /* Number of integer registers used so far, up to MAX_ARGS_IN_REGISTERS. */
   unsigned int num_gprs;
 
@@ -679,7 +722,17 @@ typedef struct {
   unsigned int num_fprs;
 
   int rvv_psabi_warning;
+
+  /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
+  unsigned int num_mrs;
+
+  /* The used state of args in vector registers, true for used by prev arg,
+     initial to false.  */
+  bool used_vrs[MAX_ARGS_IN_VECTOR_REGISTERS];
 } CUMULATIVE_ARGS;
+
+/* Return riscv calling convention of call_insn.  */
+extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -996,6 +1049,21 @@ while (0)
 
 #define ASM_COMMENT_START "#"
 
+/* Add output .variant_cc directive for specific function definition.  */
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
+  riscv_declare_function_name (STR, NAME, DECL)
+
+/* Add output .variant_cc directive for specific alias definition.  */
+#undef ASM_OUTPUT_DEF_FROM_DECLS
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
+  riscv_asm_output_alias (STR, DECL, TARGET)
+
+/* Add output .variant_cc directive for specific extern function.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME)                                   \
+  riscv_asm_output_external (STR, DECL, NAME)
+
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
 
@@ -1036,6 +1104,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;

@@ -78,14 +78,14 @@ case ${query} in
       ;;
     --cxxldflags)
       FS_LDFLAGS=
-      BT_LDFLAGS=
+      EXP_LDFLAGS=
       if [ -d ${BUILD_DIR}/src/filesystem/.libs ]; then
         FS_LDFLAGS=-L${BUILD_DIR}/src/filesystem/.libs
       fi
-      if [ -d ${BUILD_DIR}/src/libbacktrace/.libs ]; then
-        BT_LDFLAGS=-L${BUILD_DIR}/src/libbacktrace/.libs
+      if [ -d ${BUILD_DIR}/src/experimental/.libs ]; then
+        EXP_LDFLAGS=-L${BUILD_DIR}/src/experimental/.libs
       fi
-      SECTIONLDFLAGS="@SECTION_LDFLAGS@ @LIBICONV@ $FS_LDFLAGS $BT_LDFLAGS"
+      SECTIONLDFLAGS="@SECTION_LDFLAGS@ @LIBICONV@ $FS_LDFLAGS $EXP_LDFLAGS"
       echo ${SECTIONLDFLAGS}
       ;;
     *)

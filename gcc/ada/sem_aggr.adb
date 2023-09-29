@@ -1065,6 +1065,19 @@ package body Sem_Aggr is
 
          Resolve_Container_Aggregate (N, Typ);
 
+      --  Check Ada 2022 empty aggregate [] initializing a record type that has
+      --  aspect aggregate; the empty aggregate will be expanded into a call to
+      --  the empty function specified in the aspect aggregate.
+
+      elsif Has_Aspect (Typ, Aspect_Aggregate)
+        and then Ekind (Typ) = E_Record_Type
+        and then Is_Homogeneous_Aggregate (N)
+        and then Is_Empty_List (Expressions (N))
+        and then Is_Empty_List (Component_Associations (N))
+        and then Ada_Version >= Ada_2022
+      then
+         Resolve_Container_Aggregate (N, Typ);
+
       elsif Is_Record_Type (Typ) then
          Resolve_Record_Aggregate (N, Typ);
 
@@ -2068,7 +2081,10 @@ package body Sem_Aggr is
 
       --  STEP 1: make sure the aggregate is correctly formatted
 
-      if Present (Component_Associations (N)) then
+      if Is_Null_Aggregate (N) then
+         null;
+
+      elsif Present (Component_Associations (N)) then
 
          --  Verify that all or none of the component associations
          --  include an iterator specification.
@@ -3328,6 +3344,7 @@ package body Sem_Aggr is
 
       if Present (Add_Unnamed_Subp)
         and then No (New_Indexed_Subp)
+        and then Present (Etype (Add_Unnamed_Subp))
         and then Etype (Add_Unnamed_Subp) /= Any_Type
       then
          declare

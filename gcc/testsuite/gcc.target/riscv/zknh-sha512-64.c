@@ -4,22 +4,22 @@
 
 #include <stdint-gcc.h>
 
-int64_t foo1(int64_t rs1)
+uint64_t foo1(uint64_t rs1)
 {
     return __builtin_riscv_sha512sig0(rs1);
 }
 
-int64_t foo2(int64_t rs1)
+uint64_t foo2(uint64_t rs1)
 {
     return __builtin_riscv_sha512sig1(rs1);
 }
 
-int64_t foo3(int64_t rs1)
+uint64_t foo3(uint64_t rs1)
 {
     return __builtin_riscv_sha512sum0(rs1);
 }
 
-int64_t foo4(int64_t rs1)
+uint64_t foo4(uint64_t rs1)
 {
     return __builtin_riscv_sha512sum1(rs1);
 }

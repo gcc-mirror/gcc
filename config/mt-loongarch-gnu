@@ -1,0 +1,2 @@
+include $(srcdir)/config/mt-gnu
+include $(srcdir)/config/mt-loongarch-mlib

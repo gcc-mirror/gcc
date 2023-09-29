@@ -1,6 +1,8 @@
 /* PR tree-optimization/61839.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" } */
+/* Disable jump threading, we want to avoid separating the division/modulo
+   by zero paths - we'd isolate those only later.  */
+/* { dg-options "-O2 -fno-thread-jumps -fdump-tree-evrp" } */
 /* { dg-require-effective-target int32plus } */
 
 __attribute__ ((noinline))

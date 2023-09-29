@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-add-options using-deprecated }
+// { dg-warning "auto_ptr. is deprecated" "" { target c++11 } 0 }
 
 // Copyright (C) 2002-2023 Free Software Foundation, Inc.
 //
@@ -17,9 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.5 Template class auto_ptr negative tests [lib.auto.ptr]
-
-// { dg-options "-std=c++98" }
+// C++03 20.4.5 Template class auto_ptr negative tests [lib.auto.ptr]
 
 #include <memory>
 #include <testsuite_hooks.h>

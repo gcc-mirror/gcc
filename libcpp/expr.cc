@@ -327,9 +327,9 @@ static unsigned int
 interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
   size_t orig_len = len;
-  size_t u, l, i, z;
+  size_t u, l, i, z, wb;
 
-  u = l = i = z = 0;
+  u = l = i = z = wb = 0;
 
   while (len--)
     switch (s[len])
@@ -343,11 +343,23 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	if (l == 2 && s[len] != s[len + 1])
 	  return 0;
 	break;
+      case 'b':
+	if (len == 0 || s[len - 1] != 'w')
+	  return 0;
+	wb++;
+	len--;
+	break;
+      case 'B':
+	if (len == 0 || s[len - 1] != 'W')
+	  return 0;
+	wb++;
+	len--;
+	break;
       default:
 	return 0;
       }
 
-  if (l > 2 || u > 1 || i > 1 || z > 1)
+  if (l > 2 || u > 1 || i > 1 || z > 1 || wb > 1)
     return 0;
 
   if (z)
@@ -355,6 +367,14 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
       if (l > 0 || i > 0)
 	return 0;
       if (!CPP_OPTION (pfile, cplusplus))
+	return 0;
+    }
+
+  if (wb)
+    {
+      if (CPP_OPTION (pfile, cplusplus))
+	return 0;
+      if (l > 0 || i > 0 || z > 0)
 	return 0;
     }
 
@@ -376,7 +396,8 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	  | (u ? CPP_N_UNSIGNED : 0)
 	  | ((l == 0) ? CPP_N_SMALL
 	     : (l == 1) ? CPP_N_MEDIUM : CPP_N_LARGE)
-	  | (z ? CPP_N_SIZE_T : 0));
+	  | (z ? CPP_N_SIZE_T : 0)
+	  | (wb ? CPP_N_BITINT : 0));
 }
 
 /* Return the classification flags for an int suffix.  */
@@ -834,6 +855,29 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  cpp_warning_with_line (pfile, CPP_W_SIZE_T_LITERALS,
 				 virtual_location, 0, message);
        }
+
+      if ((result & CPP_N_BITINT) != 0
+	  && CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) != 0)
+	{
+	  if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	    {
+	      const char *message = N_("ISO C does not support literal "
+				       "%<wb%> suffixes before C2X");
+	      if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
+		cpp_pedwarning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+					  virtual_location, 0, message);
+	      else
+		cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+				       virtual_location, 0, message);
+	    }
+	  else if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
+	    {
+	      const char *message = N_("ISO C does not support literal "
+				       "%<wb%> suffixes before C2X");
+	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+				   message);
+	    }
+	}
 
       result |= CPP_N_INTEGER;
     }

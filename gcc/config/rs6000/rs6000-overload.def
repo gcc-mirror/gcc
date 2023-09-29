@@ -195,6 +195,16 @@
   unsigned long long __builtin_cmpb (unsigned long long, unsigned long long);
     CMPB
 
+[DFPQUAN, dfp_quantize, __builtin_dfp_quantize]
+  _Decimal64 __builtin_dfp_quantize (_Decimal64, _Decimal64, const int);
+    DFPQUAN_64
+  _Decimal64 __builtin_dfp_quantize (const int, _Decimal64, const int);
+    DFPQUAN_64i
+  _Decimal128 __builtin_dfp_quantize (_Decimal128, _Decimal128, const int);
+    DFPQUAN_128
+  _Decimal128 __builtin_dfp_quantize (const int, _Decimal128, const int);
+    DFPQUAN_128i
+
 [VEC_ABS, vec_abs, __builtin_vec_abs]
   vsc __builtin_vec_abs (vsc);
     ABS_V16QI

@@ -28,11 +28,11 @@
 #ifndef _AVX512VLDQINTRIN_H_INCLUDED
 #define _AVX512VLDQINTRIN_H_INCLUDED
 
-#if !defined(__AVX2__)
+#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
 #pragma GCC push_options
-#pragma GCC target("avx2")
-#define __DISABLE_AVX2__
-#endif /* __AVX2__ */
+#pragma GCC target("avx512vl,avx512dq")
+#define __DISABLE_AVX512VLDQ__
+#endif /* __AVX512VLDQ__ */
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -2008,9 +2008,9 @@ _mm256_maskz_insertf64x2 (__mmask8 __U, __m256d __A, __m128d __B,
 
 #endif
 
-#ifdef __DISABLE_AVX2__
-#undef __DISABLE_AVX2__
+#ifdef __DISABLE_AVX512VLDQ__
+#undef __DISABLE_AVX512VLDQ__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX2__ */
+#endif /* __DISABLE_AVX512VLDQ__ */
 
 #endif /* _AVX512VLDQINTRIN_H_INCLUDED */

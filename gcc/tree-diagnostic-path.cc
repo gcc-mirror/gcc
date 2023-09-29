@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -83,6 +84,9 @@ can_consolidate_events (const diagnostic_event &e1,
 			const diagnostic_event &e2,
 			bool check_locations)
 {
+  if (e1.get_thread_id () != e2.get_thread_id ())
+    return false;
+
   if (e1.get_fndecl () != e2.get_fndecl ())
     return false;
 
@@ -109,20 +113,67 @@ can_consolidate_events (const diagnostic_event &e1,
   return true;
 }
 
-/* A range of consecutive events within a diagnostic_path,
-   all with the same fndecl and stack_depth, and which are suitable
+struct event_range;
+struct path_summary;
+class thread_event_printer;
+
+/* A bundle of information about all of the events in a diagnostic_path
+   relating to a specific path, for use by path_summary.  */
+
+class per_thread_summary
+{
+public:
+  per_thread_summary (label_text name, unsigned swimlane_idx)
+  : m_name (std::move (name)),
+    m_swimlane_idx (swimlane_idx),
+    m_min_depth (INT_MAX),
+    m_max_depth (INT_MIN)
+  {}
+
+  void update_depth_limits (int stack_depth)
+  {
+    if (stack_depth < m_min_depth)
+      m_min_depth = stack_depth;
+    if (stack_depth > m_max_depth)
+      m_max_depth = stack_depth;
+  }
+
+  const char *get_name () const { return m_name.get (); }
+  unsigned get_swimlane_index () const { return m_swimlane_idx; }
+
+private:
+  friend struct path_summary;
+  friend class thread_event_printer;
+
+  const label_text m_name;
+
+  /* The "swimlane index" is the order in which this per_thread_summary
+     was created, for use when printing the events.  */
+  const unsigned m_swimlane_idx;
+
+  // The event ranges specific to this thread:
+  auto_vec<event_range *> m_event_ranges;
+  int m_min_depth;
+  int m_max_depth;
+};
+
+/* A range of consecutive events within a diagnostic_path, all within the
+   same thread, and with the same fndecl and stack_depth, and which are suitable
    to print with a single call to diagnostic_show_locus.  */
 struct event_range
 {
   event_range (const diagnostic_path *path, unsigned start_idx,
-	       const diagnostic_event &initial_event)
+	       const diagnostic_event &initial_event,
+	       const per_thread_summary &t)
   : m_path (path),
     m_initial_event (initial_event),
     m_fndecl (initial_event.get_fndecl ()),
     m_stack_depth (initial_event.get_stack_depth ()),
     m_start_idx (start_idx), m_end_idx (start_idx),
     m_path_label (path, start_idx),
-    m_richloc (initial_event.get_location (), &m_path_label)
+    m_richloc (initial_event.get_location (), &m_path_label),
+    m_thread_id (initial_event.get_thread_id ()),
+    m_per_thread_summary (t)
   {}
 
   bool maybe_add_event (const diagnostic_event &new_ev, unsigned idx,
@@ -142,7 +193,7 @@ struct event_range
   /* Print the events in this range to DC, typically as a single
      call to the printer's diagnostic_show_locus.  */
 
-  void print (diagnostic_context *dc)
+  void print (diagnostic_context *dc, pretty_printer *pp)
   {
     location_t initial_loc = m_initial_event.get_location ();
 
@@ -172,7 +223,6 @@ struct event_range
 	    const diagnostic_event &iter_event = m_path->get_event (i);
 	    diagnostic_event_id_t event_id (i);
 	    label_text event_text (iter_event.get_desc (true));
-	    pretty_printer *pp = dc->printer;
 	    pp_printf (pp, " %@: %s", &event_id, event_text.get ());
 	    pp_newline (pp);
 	  }
@@ -180,7 +230,7 @@ struct event_range
       }
 
     /* Call diagnostic_show_locus to show the events using labels.  */
-    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH);
+    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH, pp);
 
     /* If we have a macro expansion, show the expansion to the user.  */
     if (linemap_location_from_macro_expansion_p (line_table, initial_loc))
@@ -198,19 +248,49 @@ struct event_range
   unsigned m_end_idx;
   path_label m_path_label;
   gcc_rich_location m_richloc;
+  diagnostic_thread_id_t m_thread_id;
+  const per_thread_summary &m_per_thread_summary;
 };
 
 /* A struct for grouping together the events in a diagnostic_path into
-   ranges of events, partitioned by stack frame (i.e. by fndecl and
-   stack depth).  */
+   ranges of events, partitioned by thread and by stack frame (i.e. by fndecl
+   and stack depth).  */
 
 struct path_summary
 {
   path_summary (const diagnostic_path &path, bool check_rich_locations);
 
   unsigned get_num_ranges () const { return m_ranges.length (); }
+  bool multithreaded_p () const { return m_per_thread_summary.length () > 1; }
+
+  const per_thread_summary &get_events_for_thread_id (diagnostic_thread_id_t tid)
+  {
+    per_thread_summary **slot = m_thread_id_to_events.get (tid);
+    gcc_assert (slot);
+    gcc_assert (*slot);
+    return **slot;
+  }
 
   auto_delete_vec <event_range> m_ranges;
+  auto_delete_vec <per_thread_summary> m_per_thread_summary;
+  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
+	   per_thread_summary *> m_thread_id_to_events;
+
+private:
+  per_thread_summary &
+  get_or_create_events_for_thread_id (const diagnostic_path &path,
+				      diagnostic_thread_id_t tid)
+  {
+    if (per_thread_summary **slot = m_thread_id_to_events.get (tid))
+      return **slot;
+
+    const diagnostic_thread &thread = path.get_thread (tid);
+    per_thread_summary *pts = new per_thread_summary (thread.get_name (false),
+						m_per_thread_summary.length ());
+    m_thread_id_to_events.put (tid, pts);
+    m_per_thread_summary.safe_push (pts);
+    return *pts;
+  }
 };
 
 /* path_summary's ctor.  */
@@ -224,12 +304,19 @@ path_summary::path_summary (const diagnostic_path &path,
   for (unsigned idx = 0; idx < num_events; idx++)
     {
       const diagnostic_event &event = path.get_event (idx);
+      const diagnostic_thread_id_t thread_id = event.get_thread_id ();
+      per_thread_summary &pts
+	= get_or_create_events_for_thread_id (path, thread_id);
+
+      pts.update_depth_limits (event.get_stack_depth ());
+
       if (cur_event_range)
 	if (cur_event_range->maybe_add_event (event, idx, check_rich_locations))
 	  continue;
 
-      cur_event_range = new event_range (&path, idx, event);
+      cur_event_range = new event_range (&path, idx, event, pts);
       m_ranges.safe_push (cur_event_range);
+      pts.m_event_ranges.safe_push (cur_event_range);
     }
 }
 
@@ -258,6 +345,184 @@ print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
   else
     pp_string (pp, n);
 }
+
+static const int base_indent = 2;
+static const int per_frame_indent = 2;
+
+/* A bundle of state for printing event_range instances for a particular
+   thread.  */
+
+class thread_event_printer
+{
+public:
+  thread_event_printer (const per_thread_summary &t, bool show_depths)
+  : m_per_thread_summary (t),
+    m_show_depths (show_depths),
+    m_cur_indent (base_indent),
+    m_vbar_column_for_depth (),
+    m_num_printed (0)
+  {
+  }
+
+  /* Get the previous event_range within this thread, if any.  */
+  const event_range *get_any_prev_range () const
+  {
+    if (m_num_printed > 0)
+      return m_per_thread_summary.m_event_ranges[m_num_printed - 1];
+    else
+      return nullptr;
+  }
+
+  /* Get the next event_range within this thread, if any.  */
+  const event_range *get_any_next_range () const
+  {
+    if (m_num_printed < m_per_thread_summary.m_event_ranges.length () - 1)
+      return m_per_thread_summary.m_event_ranges[m_num_printed + 1];
+    else
+      return nullptr;
+  }
+
+  void print_swimlane_for_event_range (diagnostic_context *dc,
+				       pretty_printer *pp,
+				       event_range *range)
+  {
+    const char *const line_color = "path";
+    const char *start_line_color
+      = colorize_start (pp_show_color (pp), line_color);
+    const char *end_line_color = colorize_stop (pp_show_color (pp));
+
+    write_indent (pp, m_cur_indent);
+    if (const event_range *prev_range = get_any_prev_range ())
+      {
+	if (range->m_stack_depth > prev_range->m_stack_depth)
+	  {
+	    /* Show pushed stack frame(s).  */
+	    const char *push_prefix = "+--> ";
+	    pp_string (pp, start_line_color);
+	    pp_string (pp, push_prefix);
+	    pp_string (pp, end_line_color);
+	    m_cur_indent += strlen (push_prefix);
+	  }
+      }
+    if (range->m_fndecl)
+      {
+	print_fndecl (pp, range->m_fndecl, true);
+	pp_string (pp, ": ");
+      }
+    if (range->m_start_idx == range->m_end_idx)
+      pp_printf (pp, "event %i",
+		 range->m_start_idx + 1);
+    else
+      pp_printf (pp, "events %i-%i",
+		 range->m_start_idx + 1, range->m_end_idx + 1);
+    if (m_show_depths)
+      pp_printf (pp, " (depth %i)", range->m_stack_depth);
+    pp_newline (pp);
+
+    /* Print a run of events.  */
+    {
+      write_indent (pp, m_cur_indent + per_frame_indent);
+      pp_string (pp, start_line_color);
+      pp_string (pp, "|");
+      pp_string (pp, end_line_color);
+      pp_newline (pp);
+
+      char *saved_prefix = pp_take_prefix (pp);
+      char *prefix;
+      {
+	pretty_printer tmp_pp;
+	write_indent (&tmp_pp, m_cur_indent + per_frame_indent);
+	pp_string (&tmp_pp, start_line_color);
+	pp_string (&tmp_pp, "|");
+	pp_string (&tmp_pp, end_line_color);
+	prefix = xstrdup (pp_formatted_text (&tmp_pp));
+      }
+      pp_set_prefix (pp, prefix);
+      pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+      range->print (dc, pp);
+      pp_set_prefix (pp, saved_prefix);
+
+      write_indent (pp, m_cur_indent + per_frame_indent);
+      pp_string (pp, start_line_color);
+      pp_string (pp, "|");
+      pp_string (pp, end_line_color);
+      pp_newline (pp);
+    }
+
+    if (const event_range *next_range = get_any_next_range ())
+      {
+	if (range->m_stack_depth > next_range->m_stack_depth)
+	  {
+	    if (m_vbar_column_for_depth.get (next_range->m_stack_depth))
+	      {
+		/* Show returning from stack frame(s), by printing
+		   something like:
+		   "                   |\n"
+		   "     <------------ +\n"
+		   "     |\n".  */
+		int vbar_for_next_frame
+		  = *m_vbar_column_for_depth.get (next_range->m_stack_depth);
+
+		int indent_for_next_frame
+		  = vbar_for_next_frame - per_frame_indent;
+		write_indent (pp, vbar_for_next_frame);
+		pp_string (pp, start_line_color);
+		pp_character (pp, '<');
+		for (int i = indent_for_next_frame + per_frame_indent;
+		     i < m_cur_indent + per_frame_indent - 1; i++)
+		  pp_character (pp, '-');
+		pp_character (pp, '+');
+		pp_string (pp, end_line_color);
+		pp_newline (pp);
+		m_cur_indent = indent_for_next_frame;
+
+		write_indent (pp, vbar_for_next_frame);
+		pp_string (pp, start_line_color);
+		pp_character (pp, '|');
+		pp_string (pp, end_line_color);
+		pp_newline (pp);
+	      }
+	    else
+	      {
+		/* Handle disjoint paths (e.g. a callback at some later
+		   time).  */
+		m_cur_indent = base_indent;
+	      }
+	  }
+	else if (range->m_stack_depth < next_range->m_stack_depth)
+	  {
+	    /* Prepare to show pushed stack frame.  */
+	    gcc_assert (range->m_stack_depth != EMPTY);
+	    gcc_assert (range->m_stack_depth != DELETED);
+	    m_vbar_column_for_depth.put (range->m_stack_depth,
+					 m_cur_indent + per_frame_indent);
+	    m_cur_indent += per_frame_indent;
+	  }
+      }
+
+    m_num_printed++;
+  }
+
+  int get_cur_indent () const { return m_cur_indent; }
+
+private:
+  const per_thread_summary &m_per_thread_summary;
+  bool m_show_depths;
+
+  /* Print the ranges.  */
+  int m_cur_indent;
+
+  /* Keep track of column numbers of existing '|' characters for
+     stack depths we've already printed.  */
+  static const int EMPTY = -1;
+  static const int DELETED = -2;
+  typedef int_hash <int, EMPTY, DELETED> vbar_hash;
+  hash_map <vbar_hash, int> m_vbar_column_for_depth;
+
+  /* How many event ranges within this swimlane have we printed.
+     This is the index of the next event_range to print.  */
+  unsigned  m_num_printed;
+};
 
 /* Print path_summary PS to DC, giving an overview of the interprocedural
    calls and returns.
@@ -292,145 +557,33 @@ print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
 
    For events with UNKNOWN_LOCATION, print a summary of each the event.  */
 
-void
+static void
 print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 			    bool show_depths)
 {
   pretty_printer *pp = dc->printer;
 
-  const int per_frame_indent = 2;
+  std::vector<thread_event_printer> thread_event_printers;
+  for (auto t : ps->m_per_thread_summary)
+    thread_event_printers.push_back (thread_event_printer (*t, show_depths));
 
-  const char *const line_color = "path";
-  const char *start_line_color
-    = colorize_start (pp_show_color (pp), line_color);
-  const char *end_line_color = colorize_stop (pp_show_color (pp));
-
-  /* Keep track of column numbers of existing '|' characters for
-     stack depths we've already printed.  */
-  const int EMPTY = -1;
-  const int DELETED = -2;
-  typedef int_hash <int, EMPTY, DELETED> vbar_hash;
-  hash_map <vbar_hash, int> vbar_column_for_depth;
-
-  /* Print the ranges.  */
-  const int base_indent = 2;
-  int cur_indent = base_indent;
   unsigned i;
   event_range *range;
   FOR_EACH_VEC_ELT (ps->m_ranges, i, range)
     {
-      write_indent (pp, cur_indent);
-      if (i > 0)
-	{
-	  const event_range *prev_range = ps->m_ranges[i - 1];
-	  if (range->m_stack_depth > prev_range->m_stack_depth)
-	    {
-	      /* Show pushed stack frame(s).  */
-	      const char *push_prefix = "+--> ";
-	      pp_string (pp, start_line_color);
-	      pp_string (pp, push_prefix);
-	      pp_string (pp, end_line_color);
-	      cur_indent += strlen (push_prefix);
-	    }
-	}
-      if (range->m_fndecl)
-	{
-	  print_fndecl (pp, range->m_fndecl, true);
-	  pp_string (pp, ": ");
-	}
-      if (range->m_start_idx == range->m_end_idx)
-	pp_printf (pp, "event %i",
-		   range->m_start_idx + 1);
-      else
-	pp_printf (pp, "events %i-%i",
-		   range->m_start_idx + 1, range->m_end_idx + 1);
-      if (show_depths)
-	pp_printf (pp, " (depth %i)", range->m_stack_depth);
-      pp_newline (pp);
-
-      /* Print a run of events.  */
-      {
-	write_indent (pp, cur_indent + per_frame_indent);
-	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
-	pp_string (pp, end_line_color);
-	pp_newline (pp);
-
-	char *saved_prefix = pp_take_prefix (pp);
-	char *prefix;
-	{
-	  pretty_printer tmp_pp;
-	  write_indent (&tmp_pp, cur_indent + per_frame_indent);
-	  pp_string (&tmp_pp, start_line_color);
-	  pp_string (&tmp_pp, "|");
-	  pp_string (&tmp_pp, end_line_color);
-	  prefix = xstrdup (pp_formatted_text (&tmp_pp));
-	}
-	pp_set_prefix (pp, prefix);
-	pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-	range->print (dc);
-	pp_set_prefix (pp, saved_prefix);
-
-	write_indent (pp, cur_indent + per_frame_indent);
-	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
-	pp_string (pp, end_line_color);
-	pp_newline (pp);
-      }
-
-      if (i < ps->m_ranges.length () - 1)
-	{
-	  const event_range *next_range = ps->m_ranges[i + 1];
-
-	  if (range->m_stack_depth > next_range->m_stack_depth)
-	    {
-	      if (vbar_column_for_depth.get (next_range->m_stack_depth))
-		{
-		  /* Show returning from stack frame(s), by printing
-		     something like:
-		     "                   |\n"
-		     "     <------------ +\n"
-		     "     |\n".  */
-		  int vbar_for_next_frame
-		    = *vbar_column_for_depth.get (next_range->m_stack_depth);
-
-		  int indent_for_next_frame
-		    = vbar_for_next_frame - per_frame_indent;
-		  write_indent (pp, vbar_for_next_frame);
-		  pp_string (pp, start_line_color);
-		  pp_character (pp, '<');
-		  for (int i = indent_for_next_frame + per_frame_indent;
-		       i < cur_indent + per_frame_indent - 1; i++)
-		    pp_character (pp, '-');
-		  pp_character (pp, '+');
-		  pp_string (pp, end_line_color);
-		  pp_newline (pp);
-		  cur_indent = indent_for_next_frame;
-
-		  write_indent (pp, vbar_for_next_frame);
-		  pp_string (pp, start_line_color);
-		  pp_character (pp, '|');
-		  pp_string (pp, end_line_color);
-		  pp_newline (pp);
-		}
-	      else
-		{
-		  /* Handle disjoint paths (e.g. a callback at some later
-		     time).  */
-		  cur_indent = base_indent;
-		}
-	    }
-	  else if (range->m_stack_depth < next_range->m_stack_depth)
-	    {
-	      /* Prepare to show pushed stack frame.  */
-	      gcc_assert (range->m_stack_depth != EMPTY);
-	      gcc_assert (range->m_stack_depth != DELETED);
-	      vbar_column_for_depth.put (range->m_stack_depth,
-					 cur_indent + per_frame_indent);
-	      cur_indent += per_frame_indent;
-	    }
-
-	}
+      const int swimlane_idx
+	= range->m_per_thread_summary.get_swimlane_index ();
+      if (ps->multithreaded_p ())
+	if (i == 0 || ps->m_ranges[i - 1]->m_thread_id != range->m_thread_id)
+	  {
+	    if (i > 0)
+	      pp_newline (pp);
+	    pp_printf (pp, "Thread: %qs",
+		       range->m_per_thread_summary.get_name ());
+	    pp_newline (pp);
+	  }
+      thread_event_printer &tep = thread_event_printers[swimlane_idx];
+      tep.print_swimlane_for_event_range (dc, pp, range);
     }
 }
 
@@ -497,6 +650,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	pp_flush (context->printer);
 	pp_set_prefix (context->printer, saved_prefix);
       }
+      break;
     }
 }
 

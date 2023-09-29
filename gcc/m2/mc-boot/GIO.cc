@@ -286,12 +286,13 @@ static void dononraw (termios_TERMIOS term)
 
 static void Init (void)
 {
-  fdState.array[0].IsEof = false;
-  fdState.array[0].IsRaw = false;
-  fdState.array[1].IsEof = false;
-  fdState.array[1].IsRaw = false;
-  fdState.array[2].IsEof = false;
-  fdState.array[2].IsRaw = false;
+  unsigned int fdi;
+
+  for (fdi=0; fdi<=MaxDefaultFd; fdi++)
+    {
+      fdState.array[fdi].IsEof = false;
+      fdState.array[fdi].IsRaw = false;
+    }
 }
 
 

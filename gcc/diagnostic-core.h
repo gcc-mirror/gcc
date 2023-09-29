@@ -92,6 +92,9 @@ extern void error_n (location_t, unsigned HOST_WIDE_INT, const char *,
 extern void error_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void error_at (rich_location *, const char *, ...)
   ATTRIBUTE_GCC_DIAG(2,3);
+extern void error_meta (rich_location *, const diagnostic_metadata &,
+			const char *, ...)
+  ATTRIBUTE_GCC_DIAG(3,4);
 extern void fatal_error (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3)
      ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the second parameter.  */

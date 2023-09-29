@@ -10593,6 +10593,10 @@ expand_omp (struct omp_region *region)
 	     parent GIMPLE_OMP_SECTIONS region.  */
 	  break;
 
+	case GIMPLE_OMP_STRUCTURED_BLOCK:
+	  /* We should have gotten rid of these in gimple lowering.  */
+	  gcc_unreachable ();
+
 	case GIMPLE_OMP_SINGLE:
 	case GIMPLE_OMP_SCOPE:
 	  expand_omp_single (region);

@@ -58,14 +58,25 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*extend<SHORT:mode><SUPERQI:mode>2_th_ext"
+(define_insn "*extendhi<SUPERQI:mode>2_th_ext"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r,r")
 	(sign_extend:SUPERQI
-	    (match_operand:SHORT 1 "nonimmediate_operand" "r,m")))]
+	    (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_XTHEADBB"
   "@
    th.ext\t%0,%1,15,0
-   l<SHORT:size>\t%0,%1"
+   lh\t%0,%1"
+  [(set_attr "type" "bitmanip,load")
+   (set_attr "mode" "<SUPERQI:MODE>")])
+
+(define_insn "*extendqi<SUPERQI:mode>2_th_ext"
+  [(set (match_operand:SUPERQI 0 "register_operand" "=r,r")
+	(sign_extend:SUPERQI
+	    (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_XTHEADBB"
+  "@
+   th.ext\t%0,%1,7,0
+   lb\t%0,%1"
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
 
@@ -90,7 +101,7 @@
    th.extu\t%0,%1,31,0
    lwu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "DI")])
 
 (define_insn "*zero_extendhi<GPR:mode>2_th_extu"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
@@ -100,7 +111,7 @@
    th.extu\t%0,%1,15,0
    lhu\t%0,%1"
   [(set_attr "type" "bitmanip,load")
-   (set_attr "mode" "HI")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*th_clz<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -110,7 +121,7 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn "*th_rev<mode>2"
+(define_insn "th_rev<mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(bswap:GPR (match_operand:GPR 1 "register_operand" "r")))]
   "TARGET_XTHEADBB && (TARGET_64BIT || <MODE>mode == SImode)"
@@ -120,6 +131,13 @@
   }
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "th_tstnbz<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
+  "TARGET_XTHEADBB"
+  "th.tstnbz\t%0,%1"
+  [(set_attr "type" "bitmanip")])
 
 ;; XTheadBs
 
@@ -169,6 +187,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "fmv.w.x\t%0,%2\n\tth.fmv.hw.x\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "th_fmv_x_w"
@@ -178,6 +197,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "fmv.x.w\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 (define_insn "th_fmv_x_hw"
@@ -187,6 +207,7 @@
   "!TARGET_64BIT && TARGET_XTHEADFMV"
   "th.fmv.x.hw\t%0,%1"
   [(set_attr "move_type" "move")
+   (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
 ;; XTheadMac
@@ -322,6 +343,7 @@
    && th_mempair_operands_p (operands, true, <GPR:MODE>mode)"
   { return th_mempair_output_move (operands, true, <GPR:MODE>mode, UNKNOWN); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "<GPR:MODE>")])
 
 ;; MEMPAIR store 64/32 bit
@@ -334,6 +356,7 @@
    && th_mempair_operands_p (operands, false, <GPR:MODE>mode)"
   { return th_mempair_output_move (operands, false, <GPR:MODE>mode, UNKNOWN); }
   [(set_attr "move_type" "store")
+   (set_attr "type" "store")
    (set_attr "mode" "<GPR:MODE>")])
 
 ;; MEMPAIR load DI extended signed SI
@@ -346,6 +369,7 @@
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, SIGN_EXTEND); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
 
@@ -359,6 +383,7 @@
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, ZERO_EXTEND); }
   [(set_attr "move_type" "load")
+   (set_attr "type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
 

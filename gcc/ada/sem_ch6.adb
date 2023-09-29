@@ -8766,7 +8766,12 @@ package body Sem_Ch6 is
          Ovr_Alias : Entity_Id;
 
       begin
-         if Present (Ovr_E) then
+         if Present (Ovr_E)
+           and then Ekind (Ovr_E) = E_Enumeration_Literal
+         then
+            Ovr_E := Empty;
+
+         elsif Present (Ovr_E) then
             Ovr_Alias := Ultimate_Alias (Ovr_E);
 
             --  There is no real overridden subprogram if there is a mutual
@@ -8789,7 +8794,8 @@ package body Sem_Ch6 is
                      and then Has_Controlling_Result (Subp_Id))
                    or else Has_Suffix (Ovr_E, 'P')
                    or else Is_RACW_Stub_Type
-                             (Find_Dispatching_Type (Subp_Id)));
+                             (Find_Dispatching_Type (Subp_Id))
+                   or else No (Overridden_Operation (Ovr_E)));
 
                if Present (Overridden_Operation (Ovr_E)) then
                   Ovr_E := Overridden_Operation (Ovr_E);
@@ -8991,6 +8997,18 @@ package body Sem_Ch6 is
       --  for extra formals.
 
       if Present (Parent_Subp) then
+
+         --  Ensure that the parent subprogram has all its extra formals.
+         --  Required because its return type may have been a private or
+         --  an incomplete type, and the extra formals were not added. We
+         --  protect this call against the weird cases where the parent subp
+         --  renames this primitive (documented in the body of the local
+         --  function Parent_Subprogram).
+
+         if Ultimate_Alias (Parent_Subp) /= Ref_E then
+            Create_Extra_Formals (Parent_Subp);
+         end if;
+
          Parent_Formal := First_Formal (Parent_Subp);
 
          --  For concurrent types, the controlling argument of a dispatching

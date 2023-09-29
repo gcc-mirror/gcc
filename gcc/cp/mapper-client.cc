@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "mapper-client.h"
 #include "intl.h"
+#include "mkdeps.h"
 
 #include "../../c++tools/resolver.h"
 
@@ -132,6 +133,7 @@ spawn_mapper_program (char const **errmsg, std::string &name,
 
 module_client *
 module_client::open_module_client (location_t loc, const char *o,
+				   class mkdeps *deps,
 				   void (*set_repo) (const char *),
 				   char const *full_program_name)
 {
@@ -285,6 +287,9 @@ module_client::open_module_client (location_t loc, const char *o,
 	  errmsg = "opening";
 	else
 	  {
+	    /* Add the mapper file to the dependency tracking. */
+	    if (deps)
+	      deps_add_dep (deps, name.c_str ());
 	    if (int l = r->read_tuple_file (fd, ident, false))
 	      {
 		if (l > 0)

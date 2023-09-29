@@ -3535,13 +3535,13 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
   gcc_assert (ia == nargs_without_in_chrg);
 
-  if (!obj && explicit_targs)
+  if (!obj)
     {
       /* Check that there's no obvious arity mismatch before proceeding with
 	 deduction.  This avoids substituting explicit template arguments
-	 into the template (which could result in an error outside the
-	 immediate context) when the resulting candidate would be unviable
-	 anyway.  */
+	 into the template or e.g. derived-to-base parm/arg unification
+	 (which could result in an error outside the immediate context) when
+	 the resulting candidate would be unviable anyway.  */
       int min_arity = 0, max_arity = 0;
       tree parms = TYPE_ARG_TYPES (TREE_TYPE (tmpl));
       parms = skip_artificial_parms_for (tmpl, parms);
@@ -3571,11 +3571,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 	  reason = arity_rejection (NULL_TREE, max_arity, ia);
 	  goto fail;
 	}
-    }
 
-  errs = errorcount+sorrycount;
-  if (!obj)
-    {
       convs = alloc_conversions (nargs);
 
       if (shortcut_bad_convs
@@ -3602,6 +3598,8 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 	    }
 	}
     }
+
+  errs = errorcount+sorrycount;
   fn = fn_type_unification (tmpl, explicit_targs, targs,
 			    args_without_in_chrg,
 			    nargs_without_in_chrg,
@@ -4646,6 +4644,9 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   tree ret;
 
   auto_cond_timevar tv (TV_OVERLOAD);
+
+  conversion_obstack_sentinel cos;
+
   cand = build_user_type_conversion_1 (totype, expr, flags, complain);
 
   if (cand)
@@ -4698,15 +4699,13 @@ build_converted_constant_expr_internal (tree type, tree expr,
 					int flags, tsubst_flags_t complain)
 {
   conversion *conv;
-  void *p;
   tree t;
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      /*c_cast_p=*/false, flags, complain);
@@ -4814,9 +4813,6 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	implicit_conversion_error (loc, type, expr);
       expr = error_mark_node;
     }
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return expr;
 }
@@ -4985,8 +4981,7 @@ perform_dguide_overload_resolution (tree dguides, const vec<tree, va_gc> *args,
 
   gcc_assert (deduction_guide_p (OVL_FIRST (dguides)));
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  void *p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   z_candidate *cand = perform_overload_resolution (dguides, args, &candidates,
 						   &any_viable_p, complain);
@@ -4998,9 +4993,6 @@ perform_dguide_overload_resolution (tree dguides, const vec<tree, va_gc> *args,
     }
   else
     result = cand->fn;
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return result;
 }
@@ -5015,7 +5007,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
 {
   struct z_candidate *candidates, *cand;
   bool any_viable_p;
-  void *p;
   tree result;
 
   if (args != NULL && *args != NULL)
@@ -5028,8 +5019,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
   if (flag_tm)
     tm_malloc_replacement (fn);
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   cand = perform_overload_resolution (fn, *args, &candidates, &any_viable_p,
 				      complain);
@@ -5060,9 +5050,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
       && DECL_BUILT_IN_CLASS (TREE_OPERAND (CALL_EXPR_FN (result), 0))
 	  == BUILT_IN_NORMAL)
    result = coro_validate_builtin_call (result);
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return result;
 }
@@ -5107,6 +5094,8 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
   *args = resolve_args (*args, complain);
   if (*args == NULL)
     return error_mark_node;
+
+  conversion_obstack_sentinel cos;
 
   /* Based on:
 
@@ -5234,7 +5223,6 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
   tree fns, convs, first_mem_arg = NULL_TREE;
   bool any_viable_p;
   tree result = NULL_TREE;
-  void *p;
 
   auto_cond_timevar tv (TV_OVERLOAD);
 
@@ -5273,8 +5261,7 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   if (fns)
     {
@@ -5376,9 +5363,6 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	  result = cp_build_function_call_vec (obj, args, complain);
 	}
     }
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return result;
 }
@@ -5587,7 +5571,6 @@ build_conditional_expr (const op_location_t &loc,
   bool is_glvalue = true;
   struct z_candidate *candidates = 0;
   struct z_candidate *cand;
-  void *p;
   tree orig_arg2, orig_arg3;
 
   auto_cond_timevar tv (TV_OVERLOAD);
@@ -5630,6 +5613,8 @@ build_conditional_expr (const op_location_t &loc,
       || error_operand_p (arg2)
       || error_operand_p (arg3))
     return error_mark_node;
+
+  conversion_obstack_sentinel cos;
 
   orig_arg2 = arg2;
   orig_arg3 = arg3;
@@ -5911,9 +5896,6 @@ build_conditional_expr (const op_location_t &loc,
       conversion *conv3;
       bool converted = false;
 
-      /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-      p = conversion_obstack_alloc (0);
-
       conv2 = conditional_conversion (arg2, arg3, complain);
       conv3 = conditional_conversion (arg3, arg2, complain);
 
@@ -5968,9 +5950,6 @@ build_conditional_expr (const op_location_t &loc,
 	    result = error_mark_node;
 	  converted = true;
 	}
-
-      /* Free all the conversions we allocated.  */
-      obstack_free (&conversion_obstack, p);
 
       if (result)
 	return result;
@@ -6058,7 +6037,7 @@ build_conditional_expr (const op_location_t &loc,
           if (complain & tf_error)
             {
               auto_diagnostic_group d;
-              op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
+	      op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, false);
               print_z_candidates (loc, candidates);
             }
 	  return error_mark_node;
@@ -6961,7 +6940,6 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
   enum tree_code code2 = ERROR_MARK;
   enum tree_code code_orig_arg1 = ERROR_MARK;
   enum tree_code code_orig_arg2 = ERROR_MARK;
-  void *p;
   bool strict_p;
   bool any_viable_p;
 
@@ -6971,6 +6949,8 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
       || error_operand_p (arg2)
       || error_operand_p (arg3))
     return error_mark_node;
+
+  conversion_obstack_sentinel cos;
 
   bool ismodop = code == MODIFY_EXPR;
   if (ismodop)
@@ -7042,13 +7022,10 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
   if (arg3 != NULL_TREE)
     arglist->quick_push (arg3);
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
-
   result = add_operator_candidates (&candidates, code, code2, arglist,
 				    lookups, flags, complain);
   if (result == error_mark_node)
-    goto user_defined_result_ready;
+    return error_mark_node;
 
   switch (code)
     {
@@ -7129,7 +7106,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		    /* ... Otherwise, report the more generic
 		       "no matching operator found" error */
 		    auto_diagnostic_group d;
-		    op_error (loc, code, code2, arg1, arg2, arg3, FALSE);
+		    op_error (loc, code, code2, arg1, arg2, arg3, false);
 		    print_z_candidates (loc, candidates);
 		  }
 	    }
@@ -7145,7 +7122,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	  if (complain & tf_error)
 	    {
 	      auto_diagnostic_group d;
-	      op_error (loc, code, code2, arg1, arg2, arg3, TRUE);
+	      op_error (loc, code, code2, arg1, arg2, arg3, true);
 	      print_z_candidates (loc, candidates);
 	    }
 	  result = error_mark_node;
@@ -7343,11 +7320,6 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	}
     }
 
- user_defined_result_ready:
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
-
   if (result || result_valid_p)
     return result;
 
@@ -7443,7 +7415,6 @@ build_op_subscript (const op_location_t &loc, tree obj,
   tree fns, first_mem_arg = NULL_TREE;
   bool any_viable_p;
   tree result = NULL_TREE;
-  void *p;
 
   auto_cond_timevar tv (TV_OVERLOAD);
 
@@ -7473,8 +7444,7 @@ build_op_subscript (const op_location_t &loc, tree obj,
 	return error_mark_node;
     }
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   if (fns)
     {
@@ -7541,9 +7511,6 @@ build_op_subscript (const op_location_t &loc, tree obj,
       else
 	gcc_unreachable ();
     }
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return result;
 }
@@ -8459,12 +8426,21 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 		if (pedwarn (loc, 0, "converting to %qT from initializer list "
 			     "would use explicit constructor %qD",
 			     totype, convfn))
-		  inform (loc, "in C++11 and above a default constructor "
-			  "can be explicit");
+		  {
+		    inform (DECL_SOURCE_LOCATION (convfn), "%qD declared here",
+			    convfn);
+		    inform (loc, "in C++11 and above a default constructor "
+			    "can be explicit");
+		  }
 	      }
 	    else
-	      error ("converting to %qT from initializer list would use "
-		     "explicit constructor %qD", totype, convfn);
+	      {
+		auto_diagnostic_group d;
+		error ("converting to %qT from initializer list would use "
+		       "explicit constructor %qD", totype, convfn);
+		inform (DECL_SOURCE_LOCATION (convfn), "%qD declared here",
+			convfn);
+	      }
 	  }
 
 	/* If we're initializing from {}, it's value-initialization.  */
@@ -9687,8 +9663,7 @@ ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  void *p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   const int flags = direct_init_p ? LOOKUP_NORMAL : LOOKUP_IMPLICIT;
   conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
@@ -9696,9 +9671,6 @@ ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
   tristate ret (tristate::TS_UNKNOWN);
   if (conv && !conv->bad_p)
     ret = tristate (conv_binds_ref_to_temporary (conv));
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return ret;
 }
@@ -10462,6 +10434,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       fn = build_addr_func (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;
+
+      /* We're actually invoking the function.  (Immediate functions get an
+	 & when invoking it even though the user didn't use &.)  */
+      ADDR_EXPR_DENOTES_CALL_P (fn) = true;
     }
 
   tree call = build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
@@ -10479,41 +10455,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (TREE_CODE (c) == CALL_EXPR)
 	suppress_warning (c /* Suppress all warnings.  */);
     }
-  if (TREE_CODE (fn) == ADDR_EXPR)
-    {
-      tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (immediate_invocation_p (fndecl))
-	{
-	  tree obj_arg = NULL_TREE;
-	  /* Undo convert_from_reference called by build_cxx_call.  */
-	  if (REFERENCE_REF_P (call))
-	    call = TREE_OPERAND (call, 0);
-	  if (DECL_CONSTRUCTOR_P (fndecl))
-	    obj_arg = cand->first_arg ? cand->first_arg : (*args)[0];
-	  if (obj_arg && is_dummy_object (obj_arg))
-	    {
-	      call = build_cplus_new (DECL_CONTEXT (fndecl), call, complain);
-	      obj_arg = NULL_TREE;
-	    }
-	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
-	    {
-	      tree addr = TREE_OPERAND (obj_arg, 0);
-	      STRIP_NOPS (addr);
-	      if (TREE_CODE (addr) == ADDR_EXPR)
-		{
-		  tree typeo = TREE_TYPE (obj_arg);
-		  tree typei = TREE_TYPE (TREE_OPERAND (addr, 0));
-		  if (same_type_ignoring_top_level_qualifiers_p (typeo, typei))
-		    obj_arg = TREE_OPERAND (addr, 0);
-		}
-	    }
-	  call = cxx_constant_value (call, obj_arg, complain);
-	  if (obj_arg && !error_operand_p (call))
-	    call = cp_build_init_expr (obj_arg, call);
-	  call = convert_from_reference (call);
-	}
-    }
+
   return call;
 }
 
@@ -11423,7 +11365,6 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
   tree orig_instance;
   tree orig_fns;
   vec<tree, va_gc> *orig_args = NULL;
-  void *p;
 
   auto_cond_timevar tv (TV_OVERLOAD);
 
@@ -11550,8 +11491,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
   else
     first_mem_arg = maybe_resolve_dummy (instance, false);
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   /* The number of arguments artificial parms in ARGS; we subtract one because
      there's no 'this' in ARGS.  */
@@ -11815,9 +11755,6 @@ skip_prune:
       if (cast_to_void)
 	call = build_nop (void_type_node, call);
     }
-
- /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   if (orig_args != NULL)
     release_tree_vector (orig_args);
@@ -13335,11 +13272,9 @@ can_convert_arg (tree to, tree from, tree arg, int flags,
 		 tsubst_flags_t complain)
 {
   conversion *t;
-  void *p;
   bool ok_p;
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
   /* We want to discard any access checks done for this test,
      as we might not be in the appropriate access context and
      we'll do the check again when we actually perform the
@@ -13352,8 +13287,6 @@ can_convert_arg (tree to, tree from, tree arg, int flags,
 
   /* Discard the access checks now.  */
   pop_deferring_access_checks ();
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return ok_p;
 }
@@ -13365,15 +13298,11 @@ can_convert_arg_bad (tree to, tree from, tree arg, int flags,
 		     tsubst_flags_t complain)
 {
   conversion *t;
-  void *p;
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
   /* Try to perform the conversion.  */
   t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
 			    flags, complain);
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return t != NULL;
 }
@@ -13408,7 +13337,6 @@ perform_implicit_conversion_flags (tree type, tree expr,
 				   tsubst_flags_t complain, int flags)
 {
   conversion *conv;
-  void *p;
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (TYPE_REF_P (type))
@@ -13419,8 +13347,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      /*c_cast_p=*/false,
@@ -13440,9 +13367,6 @@ perform_implicit_conversion_flags (tree type, tree expr,
       iloc_sentinel il (loc);
       expr = convert_like (conv, expr, complain);
     }
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return expr;
 }
@@ -13469,7 +13393,6 @@ perform_direct_initialization_if_possible (tree type,
                                            tsubst_flags_t complain)
 {
   conversion *conv;
-  void *p;
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
@@ -13496,8 +13419,7 @@ perform_direct_initialization_if_possible (tree type,
       return build_cplus_new (type, expr, complain);
     }
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      c_cast_p,
@@ -13518,9 +13440,6 @@ perform_direct_initialization_if_possible (tree type,
     expr = convert_like (conv, expr, NULL_TREE, 0,
 			 /*issue_conversion_warnings=*/false,
 			 c_cast_p, /*nested_p=*/false, complain);
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return expr;
 }
@@ -13760,14 +13679,12 @@ initialize_reference (tree type, tree expr,
 		      int flags, tsubst_flags_t complain)
 {
   conversion *conv;
-  void *p;
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
-  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
-  p = conversion_obstack_alloc (0);
+  conversion_obstack_sentinel cos;
 
   conv = reference_binding (type, TREE_TYPE (expr), expr, /*c_cast_p=*/false,
 			    flags, complain);
@@ -13813,9 +13730,6 @@ initialize_reference (tree type, tree expr,
     expr = error_mark_node;
   else
     gcc_unreachable ();
-
-  /* Free all the conversions we allocated.  */
-  obstack_free (&conversion_obstack, p);
 
   return expr;
 }
@@ -14321,6 +14235,30 @@ is_list_ctor (tree decl)
     return false;
 
   return true;
+}
+
+/* We know that can_convert_arg_bad already said "no" when trying to convert
+   FROM to TO with ARG and FLAGS.  Try to figure out if it was because
+   an explicit conversion function was skipped when looking for a way to
+   perform the conversion.  At this point we've already printed an error.  */
+
+void
+maybe_show_nonconverting_candidate (tree to, tree from, tree arg, int flags)
+{
+  if (!(flags & LOOKUP_ONLYCONVERTING))
+    return;
+
+  conversion_obstack_sentinel cos;
+  conversion *c = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
+				       flags & ~LOOKUP_ONLYCONVERTING, tf_none);
+  if (c && !c->bad_p && c->user_conv_p)
+    /* Ay, the conversion would have worked in direct-init context.  */
+    for (; c; c = next_conversion (c))
+      if (c->kind == ck_user
+	  && DECL_P (c->cand->fn)
+	  && DECL_NONCONVERTING_P (c->cand->fn))
+	inform (DECL_SOURCE_LOCATION (c->cand->fn), "explicit conversion "
+		"function was not considered");
 }
 
 #include "gt-cp-call.h"

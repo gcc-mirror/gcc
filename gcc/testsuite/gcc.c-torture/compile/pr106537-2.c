@@ -23,9 +23,11 @@ int xdp_context (struct xdp_md *xdp)
     return 3;
   if (metadata + 1 <= data) /* { dg-warning "comparison of distinct pointer types" } */
     return 4;
-  if (metadata + 1 == data) /* { dg-warning "comparison of distinct pointer types" } */
+  /* Note that it is ok to check for equality or inequality betewen void
+     pointers and any other non-function pointers.  */
+  if ((int*) (metadata + 1) == (long*) data) /* { dg-warning "comparison of distinct pointer types" } */
     return 5;
-  if (metadata + 1 != data) /* { dg-warning "comparison of distinct pointer types" } */
+  if ((int*) metadata + 1 != (long*) data) /* { dg-warning "comparison of distinct pointer types" } */
     return 5;
 
   return 1;

@@ -395,7 +395,7 @@ public:
         if (s)
         {
             OutBuffer mangledName;
-            mangleToBuffer(s, &mangledName);
+            mangleToBuffer(s, mangledName);
             buf.writestring(mangledName[]);
             buf.writeByte('_');
         }

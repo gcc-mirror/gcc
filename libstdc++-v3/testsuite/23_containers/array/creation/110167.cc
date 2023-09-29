@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // PR libstdc++/110167 - excessive compile time when optimizing std::to_array

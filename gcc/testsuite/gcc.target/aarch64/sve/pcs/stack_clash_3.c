@@ -11,11 +11,10 @@
 **	mov	x11, sp
 **	...
 **	sub	sp, sp, x13
-**	str	p4, \[sp\]
 **	cbz	w0, [^\n]*
+**	str	p4, \[sp\]
 **	...
 **	ptrue	p0\.b, all
-**	ldr	p4, \[sp\]
 **	addvl	sp, sp, #1
 **	ldr	x24, \[sp\], 32
 **	ret
@@ -39,13 +38,12 @@ test_1 (int n)
 **	mov	x11, sp
 **	...
 **	sub	sp, sp, x13
-**	str	p4, \[sp\]
 **	cbz	w0, [^\n]*
+**	str	p4, \[sp\]
 **	str	p5, \[sp, #1, mul vl\]
 **	str	p6, \[sp, #2, mul vl\]
 **	...
 **	ptrue	p0\.b, all
-**	ldr	p4, \[sp\]
 **	addvl	sp, sp, #1
 **	ldr	x24, \[sp\], 32
 **	ret

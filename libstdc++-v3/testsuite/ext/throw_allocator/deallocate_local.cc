@@ -30,6 +30,7 @@ typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
 
 int main()
 {
+  __gnu_test::counter::scope s;
   {
     string_t s;
     s += "bayou bend";

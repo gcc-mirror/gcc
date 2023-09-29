@@ -873,6 +873,10 @@ static CONSTEXPR const rvv_arg_type_info tuple_vset_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_size),
      rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info tuple_vcreate_args[]
+  = {rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
+
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
   = {PRED_TYPE_none, NUM_PRED_TYPES};
@@ -2497,6 +2501,14 @@ static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_size_ptr_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      scalar_const_ptr_size_ptr_args /* Args */};
 
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_tuple_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     tuple_vcreate_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \
@@ -2671,7 +2683,7 @@ sizeless_type_p (const_tree type)
 
 /* If TYPE is an ABI-defined RVV type, return its attribute descriptor,
    otherwise return null.  */
-static tree
+tree
 lookup_vector_type_attribute (const_tree type)
 {
   if (type == error_mark_node)
@@ -3471,7 +3483,14 @@ function_expander::function_expander (const function_instance &instance,
     exp (exp_in), target (target_in), opno (0)
 {
   if (!function_returns_void_p ())
-    create_output_operand (&m_ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
+    {
+      if (target != NULL_RTX && MEM_P (target))
+	/* Since there is no intrinsic where target is a mem operand, it
+	   should be converted to reg if it is a mem operand.  */
+	target = force_reg (GET_MODE (target), target);
+      create_output_operand (&m_ops[opno++], target,
+			     TYPE_MODE (TREE_TYPE (exp)));
+    }
 }
 
 /* Take argument ARGNO from EXP's argument list and convert it into
@@ -3985,6 +4004,16 @@ mangle_builtin_type (const_tree type)
   return NULL;
 }
 
+/* Return true if TYPE is a built-in RVV type defined by the ABI.  */
+bool
+builtin_type_p (const_tree type)
+{
+  if (!type)
+    return false;
+
+  return lookup_vector_type_attribute (type);
+}
+
 /* Initialize all compiler built-ins related to RVV that should be
    defined at start-up.  */
 void
@@ -4143,7 +4172,7 @@ builtin_decl (unsigned int code, bool)
   return (*registered_functions)[code]->decl;
 }
 
-/* Attempt to fold STMT, given that it's a call to the SVE function
+/* Attempt to fold STMT, given that it's a call to the RVV function
    with subcode CODE.  Return the new statement on success and null
    on failure.  Insert any other new statements at GSI.  */
 gimple *
@@ -4163,7 +4192,7 @@ expand_builtin (unsigned int code, tree exp, rtx target)
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }
 
-/* Perform any semantic checks needed for a call to the SVE function
+/* Perform any semantic checks needed for a call to the RVV function
    with subcode CODE, such as testing for integer constant expressions.
    The call occurs at location LOCATION and has NARGS arguments,
    given by ARGS.  FNDECL is the original function decl, before

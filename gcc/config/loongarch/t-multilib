@@ -1,0 +1,68 @@
+# Copyright (C) 2023 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Helper definitions
+comma=,
+null  :=
+space := $(null) #
+exclude_1st = $(wordlist 2,$(words $1),$1)
+
+# Common definitions
+mlib_all := lp64d lp64f lp64s
+$(foreach i,$(mlib_all),$(eval MULTISUBDIR_$i := base/$i))
+
+mlib_default := $(firstword $(subst $(comma), ,$(TM_MULTILIB_CONFIG)))
+mlib_all := $(filter-out $(mlib_default),$(mlib_all))
+
+MULTILIB_OPTIONS := $(subst $(space),/,$(foreach i,$(mlib_all),mabi=$(i)))
+MULTILIB_DIRNAMES := $(foreach i,$(mlib_all),$(MULTISUBDIR_$(i)))
+
+# Customize builds with --with-multilib-list
+MULTILIB_REQUIRED := $(foreach i,$(call exclude_1st,\
+	$(subst $(comma), ,$(TM_MULTILIB_CONFIG))),\
+	$(firstword $(subst /, ,$(i))))
+
+## spec rules for building libraries, triggered by -fmultiflags
+gen_mlib_spec = $(if $(word 2,$1),\
+	%{$(firstword $1):$(patsubst %,-%,$(call exclude_1st,$1)}))
+
+lib_build_spec = $(foreach mlib,\
+	$(call exclude_1st,$(subst $(comma), ,$(TM_MULTILIB_CONFIG))),\
+	$(call gen_mlib_spec,$(subst /, ,$(mlib))))
+
+default_mlib_spec := %{fmultiflags:%{!mabi=*:-mabi=$(mlib_default)}}
+lib_build_spec    := %{fmultiflags:$(lib_build_spec)}
+
+ifneq ($(TM_MULTILIB_CONFIG),)
+loongarch-multilib.h:
+	@echo "#define MLIB_SELF_SPECS" \
+	      "\"$(default_mlib_spec)\"," \
+	      "\"$(lib_build_spec)\"," > $@
+else
+loongarch-multilib.h: ; @touch $@
+endif
+
+# Multiarch
+ifneq ($(call if_multiarch,yes),yes)
+    # Define LA_DISABLE_MULTIARCH if multiarch is disabled.
+    tm_defines += LA_DISABLE_MULTIARCH
+else
+    # Only define MULTIARCH_DIRNAME when multiarch is enabled,
+    # or it would always introduce ${target} into the search path.
+    MULTIARCH_DIRNAME = $(LA_MULTIARCH_TRIPLET)
+endif

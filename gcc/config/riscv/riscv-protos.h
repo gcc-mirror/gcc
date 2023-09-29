@@ -83,6 +83,7 @@ struct riscv_address_info {
 /* Routines implemented in riscv.cc.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
+extern int riscv_float_const_rtx_index_for_fli (rtx);
 extern int riscv_regno_mode_ok_for_base_p (int, machine_mode, bool);
 extern enum reg_class riscv_index_reg_class ();
 extern int riscv_regno_ok_for_index_p (int);
@@ -101,6 +102,11 @@ extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
+extern void riscv_declare_function_name (FILE *, const char *, tree);
+extern void riscv_asm_output_alias (FILE *, const tree, const tree);
+extern void riscv_asm_output_external (FILE *, const tree, const char *);
+extern bool
+riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT, int);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
@@ -180,32 +186,189 @@ namespace riscv_vector {
 #define RVV_VUNDEF(MODE)                                                       \
   gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
 		  UNSPEC_VUNDEF)
-enum insn_type
+
+/* These flags describe how to pass the operands to a rvv insn pattern.
+   e.g.:
+     If a insn has this flags:
+       HAS_DEST_P | HAS_MASK_P | USE_VUNDEF_MERGE_P
+	 | TU_POLICY_P | BINARY_OP_P | FRM_DYN_P
+     that means:
+       operands[0] is the dest operand
+       operands[1] is the mask operand
+       operands[2] is the merge operand
+       operands[3] and operands[4] is the two operand to do the operation.
+       operands[5] is the vl operand
+       operands[6] is the tail policy operand
+       operands[7] is the mask policy operands
+       operands[8] is the rounding mode operands
+
+     Then you can call `emit_vlmax_insn (flags, icode, ops)` to emit a insn.
+     and ops[0] is the dest operand (operands[0]), ops[1] is the mask
+     operand (operands[1]), ops[2] and ops[3] is the two
+     operands (operands[3], operands[4]) to do the operation. Other operands
+     will be created by emit_vlmax_insn according to the flags information.
+*/
+enum insn_flags : unsigned int
 {
-  RVV_MISC_OP = 1,
-  RVV_UNOP = 2,
-  RVV_BINOP = 3,
-  RVV_BINOP_MU = RVV_BINOP + 2,
-  RVV_BINOP_TU = RVV_BINOP + 2,
-  RVV_BINOP_TUMU = RVV_BINOP + 2,
-  RVV_MERGE_OP = 4,
-  RVV_CMP_OP = 4,
-  RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
-  RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
-  RVV_UNOP_M = RVV_UNOP + 2,	  /* Likewise.  */
-  RVV_TERNOP = 5,
-  RVV_TERNOP_MU = RVV_TERNOP + 1,
-  RVV_TERNOP_TU = RVV_TERNOP + 1,
-  RVV_TERNOP_TUMU = RVV_TERNOP + 1,
-  RVV_WIDEN_TERNOP = 4,
-  RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
-  RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
-  RVV_COMPRESS_OP = 4,
-  RVV_GATHER_M_OP = 5,
-  RVV_SCATTER_M_OP = 4,
-  RVV_REDUCTION_OP = 3,
-  RVV_REDUCTION_TU_OP = RVV_REDUCTION_OP + 2,
+  /* flags for dest, mask, merge operands.  */
+  /* Means INSN has dest operand. False for STORE insn.  */
+  HAS_DEST_P = 1 << 0,
+  /* Means INSN has mask operand.  */
+  HAS_MASK_P = 1 << 1,
+  /* Means using ALL_TRUES for mask operand.  */
+  USE_ALL_TRUES_MASK_P = 1 << 2,
+  /* Means using ONE_TRUE for mask operand.  */
+  USE_ONE_TRUE_MASK_P = 1 << 3,
+  /* Means INSN has merge operand.  */
+  HAS_MERGE_P = 1 << 4,
+  /* Means using VUNDEF for merge operand.  */
+  USE_VUNDEF_MERGE_P = 1 << 5,
+
+  /* flags for tail policy and mask plicy operands.  */
+  /* Means the tail policy is TAIL_UNDISTURBED.  */
+  TU_POLICY_P = 1 << 6,
+  /* Means the tail policy is default (return by get_prefer_tail_policy).  */
+  TDEFAULT_POLICY_P = 1 << 7,
+  /* Means the mask policy is MASK_UNDISTURBED.  */
+  MU_POLICY_P = 1 << 8,
+  /* Means the mask policy is default (return by get_prefer_mask_policy).  */
+  MDEFAULT_POLICY_P = 1 << 9,
+
+  /* flags for the number operands to do the operation.  */
+  /* Means INSN need zero operand to do the operation. e.g. vid.v */
+  NULLARY_OP_P = 1 << 10,
+  /* Means INSN need one operand to do the operation.  */
+  UNARY_OP_P = 1 << 11,
+  /* Means INSN need two operands to do the operation.  */
+  BINARY_OP_P = 1 << 12,
+  /* Means INSN need two operands to do the operation.  */
+  TERNARY_OP_P = 1 << 13,
+
+  /* flags for get vtype mode from the index number. default from dest operand.  */
+  VTYPE_MODE_FROM_OP1_P = 1 << 14,
+
+  /* flags for the floating-point rounding mode.  */
+  /* Means INSN has FRM operand and the value is FRM_DYN.  */
+  FRM_DYN_P = 1 << 15,
+
+  /* Means INSN has FRM operand and the value is FRM_RUP.  */
+  FRM_RUP_P = 1 << 16,
+
+  /* Means INSN has FRM operand and the value is FRM_RDN.  */
+  FRM_RDN_P = 1 << 17,
+
+  /* Means INSN has FRM operand and the value is FRM_RMM.  */
+  FRM_RMM_P = 1 << 18,
+
+  /* Means INSN has FRM operand and the value is FRM_RNE.  */
+  FRM_RNE_P = 1 << 19,
 };
+
+enum insn_type : unsigned int
+{
+  /* some flags macros.  */
+  /* For non-mask insn with tama.  */
+  __NORMAL_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		| USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P,
+  /* For non-mask insn with ta, without mask policy operand.  */
+  __NORMAL_OP_TA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P,
+  /* For non-mask insn with ta, without mask operand and mask policy operand. */
+  __NORMAL_OP_TA2
+  = HAS_DEST_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P,
+  /* For non-mask insn with ma, without tail policy operand.  */
+  __NORMAL_OP_MA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | MDEFAULT_POLICY_P,
+  /* For mask insn with tama.  */
+  __MASK_OP_TAMA = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P
+		   | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P,
+  /* For mask insn with tamu.  */
+  __MASK_OP_TAMU
+  = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | TDEFAULT_POLICY_P | MU_POLICY_P,
+  /* For mask insn with tuma.  */
+  __MASK_OP_TUMA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | TU_POLICY_P | MDEFAULT_POLICY_P,
+  /* For mask insn with mu.  */
+  __MASK_OP_MU = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | MU_POLICY_P,
+  /* For mask insn with ta, without mask policy operand.  */
+  __MASK_OP_TA = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P
+		 | TDEFAULT_POLICY_P,
+
+  /* Nullary operator. e.g. vid.v  */
+  NULLARY_OP = __NORMAL_OP | NULLARY_OP_P,
+
+  /* Unary operator.  */
+  UNARY_OP = __NORMAL_OP | UNARY_OP_P,
+  UNARY_OP_TAMA = __MASK_OP_TAMA | UNARY_OP_P,
+  UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
+  UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
+  UNARY_OP_TAMU_FRM_DYN = UNARY_OP_TAMU | FRM_DYN_P,
+  UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
+  UNARY_OP_TAMU_FRM_RDN = UNARY_OP_TAMU | FRM_RDN_P,
+  UNARY_OP_TAMU_FRM_RMM = UNARY_OP_TAMU | FRM_RMM_P,
+  UNARY_OP_TAMU_FRM_RNE = UNARY_OP_TAMU | FRM_RNE_P,
+
+  /* Binary operator.  */
+  BINARY_OP = __NORMAL_OP | BINARY_OP_P,
+  BINARY_OP_TAMA = __MASK_OP_TAMA | BINARY_OP_P,
+  BINARY_OP_TAMU = __MASK_OP_TAMU | BINARY_OP_P,
+  BINARY_OP_TUMA = __MASK_OP_TUMA | BINARY_OP_P,
+  BINARY_OP_FRM_DYN = BINARY_OP | FRM_DYN_P,
+
+  /* Ternary operator. Always have real merge operand.  */
+  TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+	       | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P | TERNARY_OP_P,
+  TERNARY_OP_FRM_DYN = TERNARY_OP | FRM_DYN_P,
+
+  /* For vwmacc, no merge operand.  */
+  WIDEN_TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P
+		     | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P | TERNARY_OP_P,
+  WIDEN_TERNARY_OP_FRM_DYN = WIDEN_TERNARY_OP | FRM_DYN_P,
+
+  /* For vmerge, no mask operand, no mask policy operand.  */
+  MERGE_OP = __NORMAL_OP_TA2 | TERNARY_OP_P,
+
+  /* For vm<compare>, no tail policy operand.  */
+  COMPARE_OP = __NORMAL_OP_MA | TERNARY_OP_P,
+  COMPARE_OP_MU = __MASK_OP_MU | TERNARY_OP_P,
+
+  /* For scatter insn: no dest operand, no merge operand, no tail and mask
+     policy operands.  */
+  SCATTER_OP_M = HAS_MASK_P | TERNARY_OP_P,
+
+  /* For vcpop.m, no merge operand, no tail and mask policy operands.  */
+  CPOP_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | UNARY_OP_P
+	    | VTYPE_MODE_FROM_OP1_P,
+
+  /* For mask instrunctions, no tail and mask policy operands.  */
+  UNARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		  | USE_VUNDEF_MERGE_P | UNARY_OP_P,
+  BINARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | BINARY_OP_P,
+
+  /* For vcompress.vm */
+  COMPRESS_OP = __NORMAL_OP_TA2 | BINARY_OP_P,
+  /* has merge operand but use ta.  */
+  COMPRESS_OP_MERGE
+  = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
+
+  /* For vreduce, no mask policy operand. */
+  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_M = __MASK_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
+  REDUCE_OP_M_FRM_DYN
+  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | VTYPE_MODE_FROM_OP1_P,
+
+  /* For vmv.s.x/vfmv.s.f.  */
+  SCALAR_MOVE_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+		   | UNARY_OP_P,
+
+  SCALAR_MOVE_MERGED_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P
+			  | HAS_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+			  | UNARY_OP_P,
+};
+
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -219,14 +382,33 @@ enum vlmul_type
   NUM_LMUL = 8
 };
 
+/* The RISC-V vsetvli pass uses "known vlmax" operations for optimization.
+   Whether or not an instruction actually is a vlmax operation is not
+   recognizable from the length operand alone but the avl_type operand
+   is used instead.  In general, there are two cases:
+
+    - Emit a vlmax operation by calling emit_vlmax_insn[_lra].  Here we emit
+      a vsetvli with vlmax configuration and set the avl_type to VLMAX for
+      VLA modes or VLS for VLS modes.
+    - Emit an operation that uses the existing (last-set) length and
+      set the avl_type to NONVLMAX.
+
+    Sometimes we also need to set the VLMAX or VLS avl_type to an operation that
+    already uses a given length register.  This can happen during or after
+    register allocation when we are not allowed to create a new register.
+    For that case we also allow to set the avl_type to VLMAX or VLS.
+*/
 enum avl_type
 {
-  NONVLMAX,
-  VLMAX,
+  NONVLMAX = 0,
+  VLMAX = 1,
+  VLS = 2,
 };
 /* Routines implemented in riscv-vector-builtins.cc.  */
 void init_builtins (void);
 const char *mangle_builtin_type (const_tree);
+tree lookup_vector_type_attribute (const_tree);
+bool builtin_type_p (const_tree);
 #ifdef GCC_TARGET_H
 bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 bool expand_vec_perm_const (machine_mode, machine_mode, rtx, rtx, rtx,
@@ -242,20 +424,11 @@ bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
-void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_fp_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_fp_ternary_insn (unsigned, int, rtx *, rtx = 0);
-void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
-void emit_vlmax_slide_insn (unsigned, rtx *);
-void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);
-void emit_vlmax_merge_insn (unsigned, int, rtx *);
-void emit_vlmax_cmp_insn (unsigned, rtx *);
-void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
-void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
-void emit_scalar_move_insn (unsigned, rtx *, rtx = 0);
-void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
+void emit_vlmax_insn (unsigned, unsigned, rtx *);
+void emit_nonvlmax_insn (unsigned, unsigned, rtx *, rtx);
+void emit_vlmax_insn_lra (unsigned, unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
+rtx get_vlmax_rtx (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);
 machine_mode get_subpart_mode (machine_mode);
@@ -277,12 +450,9 @@ enum mask_policy
   MASK_ANY = 2,
 };
 
-enum class reduction_type
-{
-  UNORDERED,
-  FOLD_LEFT,
-  MASK_LEN_FOLD_LEFT,
-};
+/* Return true if VALUE is agnostic or any policy.  */
+#define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
+
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
@@ -294,9 +464,16 @@ bool neg_simm5_p (rtx);
 bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
-void expand_cond_len_binop (rtx_code, rtx *);
-void expand_reduction (rtx_code, rtx *, rtx,
-		       reduction_type = reduction_type::UNORDERED);
+void expand_cond_len_unop (unsigned, rtx *);
+void expand_cond_len_binop (unsigned, rtx *);
+void expand_reduction (unsigned, unsigned, rtx *, rtx);
+void expand_vec_ceil (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_floor (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_nearbyint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -324,8 +501,12 @@ void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);
 void expand_gather_scatter (rtx *, bool);
 void expand_cond_len_ternop (unsigned, rtx *);
-void prepare_ternary_operands (rtx *, bool = false);
+void prepare_ternary_operands (rtx *);
 void expand_lanes_load_store (rtx *, bool);
+void expand_fold_extract_last (rtx *);
+void expand_cond_unop (unsigned, rtx *);
+void expand_cond_binop (unsigned, rtx *);
+void expand_cond_ternop (unsigned, rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode
@@ -359,6 +540,8 @@ enum floating_point_rounding_mode get_frm_mode (rtx);
 opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 					 poly_uint64);
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
+bool cmp_lmul_le_one (machine_mode);
+bool cmp_lmul_gt_one (machine_mode);
 }
 
 /* We classify builtin types into two classes:
@@ -375,6 +558,10 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 
 /* Mask that selects the riscv_builtin_class part of a function code.  */
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
+
+/* Routines implemented in riscv-string.cc.  */
+extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
+extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Routines implemented in thead.cc.  */
 extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);

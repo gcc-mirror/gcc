@@ -15,8 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <ranges>
 #include <testsuite_hooks.h>
@@ -41,15 +40,43 @@ test01()
   static_assert( has_cdata<R&> );
   static_assert( has_cdata<const R&> );
   R r;
-  const R& c = r;
+#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cdata(r) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(r)) );
+#else
+  // constant_range<const R> is not satisfied, so cdata(r) == data(r).
+  VERIFY( std::ranges::cdata(r) == &r.j );
+  static_assert( ! noexcept(std::ranges::cdata(r)) );
+#endif
+  const R& c = r;
   VERIFY( std::ranges::cdata(c) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(c)) );
 
   // not lvalues and not borrowed ranges
   static_assert( !has_cdata<R> );
   static_assert( !has_cdata<const R> );
+
+  struct R2
+  {
+    // These overloads mean that range<R2> and range<const R2> are satisfied.
+    int* begin();
+    int* end();
+    const int* begin() const;
+    const int* end() const;
+
+    int i = 0;
+    int j = 0;
+    int* data() { return &j; }
+    const R2* data() const noexcept { return nullptr; }
+  };
+  static_assert( has_cdata<R2&> );
+  static_assert( has_cdata<const R2&> );
+  R2 r2;
+  VERIFY( std::ranges::cdata(r2) == (R2*)nullptr );
+  static_assert( noexcept(std::ranges::cdata(r2)) );
+  const R2& c2 = r2;
+  VERIFY( std::ranges::cdata(c2) == (R2*)nullptr );
+  static_assert( noexcept(std::ranges::cdata(c2)) );
 }
 
 void
@@ -71,6 +98,14 @@ struct R3
   friend long* begin(R3&& r); // not defined
   friend const long* begin(const R3& r) { return &r.l; }
   friend const short* begin(const R3&&); // not defined
+
+#if __cpp_lib_ranges_as_const
+  // C++23 needs these so that range<R3> is satisfied and so that
+  // possibly-const-range<R3> is not the same type as R3.
+  friend long* begin(R3&);
+  friend long* end(R3&);
+  friend const long* end(const R3& r);
+#endif
 };
 
 template<> constexpr bool std::ranges::enable_borrowed_range<R3> = true;

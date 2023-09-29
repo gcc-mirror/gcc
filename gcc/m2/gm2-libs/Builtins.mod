@@ -28,6 +28,7 @@ IMPLEMENTATION MODULE Builtins ;
 
 IMPORT cbuiltin, wrapc ;
 
+
 PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_alloca)) alloca (i: CARDINAL) : ADDRESS ;
 BEGIN
    (* This routine will never be called as it allocates memory on
@@ -267,12 +268,12 @@ BEGIN
    RETURN cbuiltin.nextafterl (x, y)
 END nextafterl ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_nexttoward)) nexttoward (x, y: REAL) : LONGREAL ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_nexttoward)) nexttoward (x: REAL; y: LONGREAL) : REAL ;
 BEGIN
    RETURN cbuiltin.nexttoward (x, y)
 END nexttoward ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_nexttowardf)) nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_nexttowardf)) nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 BEGIN
    RETURN cbuiltin.nexttowardf (x, y)
 END nexttowardf ;

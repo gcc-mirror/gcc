@@ -21,7 +21,6 @@ import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.expression;
-import dmd.globals;
 import dmd.location;
 import dmd.tokens;
 

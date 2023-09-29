@@ -18,6 +18,6 @@ unsigned f3(unsigned x, unsigned y) {
 /* { dg-final { scan-assembler-not "li\t" } } */
 /* { dg-final { scan-assembler-times "maxu\t" 1 } } */
 /* { dg-final { scan-assembler-times "minu\t" 1 } } */
-/* { dg-final { scan-assembler-not "zext.w" } } */
-/* { dg-final { scan-assembler-not "sext.w" } } */
+/* { dg-final { scan-assembler-not {\mzext\.w\M} } } */
+/* { dg-final { scan-assembler-not {\msext\.w\M} } } */
 

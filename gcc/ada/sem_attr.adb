@@ -5921,7 +5921,9 @@ package body Sem_Attr is
             --  When a qualified name is used for the prefix, homonyms may come
             --  before the current function in the homonym chain.
 
-            elsif Has_Homonym (Pref_Id) then
+            elsif Has_Homonym (Pref_Id)
+              and then Present (Homonym (Pref_Id))
+            then
                return Denote_Same_Function (Homonym (Pref_Id), Spec_Id);
             end if;
 

@@ -28,6 +28,7 @@
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
 
 load_lib g++-dg.exp
+load_lib modules.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS

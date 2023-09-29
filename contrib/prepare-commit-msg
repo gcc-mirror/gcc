@@ -32,11 +32,11 @@ if ! [ -f "$COMMIT_MSG_FILE" ]; then exit 0; fi
 # Don't do anything unless requested to.
 if [ -z "$GCC_FORCE_MKLOG" ]; then exit 0; fi
 
-if [ -z "$COMMIT_SOURCE" ] || [ $COMMIT_SOURCE = template ]; then
+if [ -z "$COMMIT_SOURCE" ] || [ "$COMMIT_SOURCE" = template ]; then
     # No source or "template" means new commit.
     cmd="diff --cached"
 
-elif [ $COMMIT_SOURCE = message ]; then
+elif [ "$COMMIT_SOURCE" = message ]; then
     # "message" means -m; assume a new commit if there are any changes staged.
     if ! git diff --cached --quiet; then
 	cmd="diff --cached"
@@ -44,23 +44,23 @@ elif [ $COMMIT_SOURCE = message ]; then
 	cmd="diff --cached HEAD^"
     fi
 
-elif [ $COMMIT_SOURCE = commit ]; then
+elif [ "$COMMIT_SOURCE" = commit ]; then
     # The message of an existing commit.  If it's HEAD, assume --amend;
     # otherwise, assume a new commit with -C.
-    if [ $SHA1 = HEAD ]; then
+    if [ "$SHA1" = HEAD ]; then
 	cmd="diff --cached HEAD^"
 	if [ "$(git config gcc-config.mklog-hook-type)" = "smart-amend" ]; then
 	    # Check if the existing message still describes the staged changes.
 	    f=$(mktemp /tmp/git-commit.XXXXXX) || exit 1
-	    git log -1 --pretty=email HEAD > $f
-	    printf '\n---\n\n' >> $f
-	    git $cmd >> $f
+	    git log -1 --pretty=email HEAD > "$f"
+	    printf '\n---\n\n' >> "$f"
+	    git $cmd >> "$f"
 	    if contrib/gcc-changelog/git_email.py "$f" >/dev/null 2>&1; then
 		# Existing commit message is still OK for amended commit.
-		rm $f
+		rm "$f"
 		exit 0
 	    fi
-	    rm $f
+	    rm "$f"
 	fi
     else
 	cmd="diff --cached"
@@ -72,7 +72,7 @@ fi
 
 # Save diff to a file if requested.
 DIFF_FILE=$(git config gcc-config.diff-file)
-if ! [ -z "$DIFF_FILE" ]; then
+if [ -n "$DIFF_FILE" ]; then
     tee="tee $DIFF_FILE"
 else
     tee="cat"

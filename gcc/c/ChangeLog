@@ -1,3 +1,139 @@
+2023-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Parse
+	__builtin_classify_type call with typename as argument.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gimple-parser.cc (c_parser_gimple_binary_expression): Handle __LTGT.
+
+2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR c/111468
+	* gimple-parser.cc (c_parser_gimple_binary_expression): Add
+	return type argument.
+	(c_parser_gimple_statement): Adjust.
+	(c_parser_gimple_paren_condition): Likewise.
+	(c_parser_gimple_binary_expression): Use passed in return type,
+	add support for - as POINTER_DIFF_EXPR, __UN{LT,LE,GT,GE,EQ},
+	__UNORDERED and __ORDERED.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (struct c_omp_loc_tree): New.
+	(c_check_omp_allocate_allocator_r): New; checking moved from ...
+	(c_parser_omp_allocate): ... here. Call it via walk_tree. Avoid
+	ICE with tree_to_shwi for invalid too-large value.
+
+2023-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_construct): Move call to
+	c_parser_omp_allocate to ...
+	(c_parser_pragma): ... here.
+	(c_parser_omp_allocate): Avoid ICE is allocator could not be
+	parsed; set 'omp allocate' attribute for stack/automatic variables
+	and only reject static variables; add several additional
+	restriction checks.
+	* c-tree.h (c_mark_decl_jump_unsafe_in_current_scope): New prototype.
+	* c-decl.cc (decl_jump_unsafe): Return true for omp-allocated decls.
+	(c_mark_decl_jump_unsafe_in_current_scope): New.
+	(warn_about_goto, c_check_switch_jump_warnings): Add error for
+	omp-allocated decls.
+
+2023-09-12  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (struct comptypes_data): Add structure.
+	(tagged_types_tu_compatible_p,
+	function_types_compatible_p, type_lists_compatible_p,
+	comptypes_internal): Add structure to interface, change
+	return type to bool, and adapt calls.
+	(comptarget_types): Change return type too bool.
+	(comptypes, comptypes_check_enum_int,
+	comptypes_check_different_types): Adapt calls.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-decl.cc (finish_declspecs): Emit pedwarn_c11 on _BitInt.
+	* c-typeck.cc (c_common_type): Emit sorry for common type between
+	_Complex integer and larger _BitInt and return the _Complex integer.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-convert.cc (c_convert): Handle BITINT_TYPE like INTEGER_TYPE.
+	* c-decl.cc (check_bitfield_type_and_width): Allow BITINT_TYPE
+	bit-fields.
+	(finish_struct): Prefer to use BITINT_TYPE for BITINT_TYPE bit-fields
+	if possible.
+	(declspecs_add_type): Formatting fixes.  Handle cts_bitint.  Adjust
+	for added union in *specs.  Handle RID_BITINT.
+	(finish_declspecs): Handle cts_bitint.  Adjust for added union
+	in *specs.
+	* c-parser.cc (c_keyword_starts_typename, c_token_starts_declspecs,
+	c_parser_declspecs, c_parser_gnu_attribute_any_word): Handle
+	RID_BITINT.
+	(c_parser_omp_clause_schedule): Handle BITINT_TYPE like INTEGER_TYPE.
+	* c-tree.h (enum c_typespec_keyword): Mention _BitInt in comment.
+	Add cts_bitint enumerator.
+	(struct c_declspecs): Move int_n_idx and floatn_nx_idx into a union
+	and add bitint_prec there as well.
+	* c-typeck.cc (c_common_type, comptypes_internal):
+	Handle BITINT_TYPE.
+	(perform_integral_promotions): Promote BITINT_TYPE bit-fields to
+	their declared type.
+	(build_array_ref, build_unary_op, build_conditional_expr,
+	build_c_cast, convert_for_assignment, digest_init, build_binary_op):
+	Handle BITINT_TYPE.
+	* c-fold.cc (c_fully_fold_internal): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+	* c-aux-info.cc (gen_type): Handle BITINT_TYPE.
+
+2023-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (declspecs_add_type): Use pedwarn_c11 rather than pedwarn
+	for _FloatN{,x} diagnostics and append " before C2X" to the diagnostic
+	text.
+
+2023-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_allocate): Handle
+	error_mark_node.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (struct c_parser): Add omp_for_parse_state field.
+	(struct omp_for_parse_data): New.
+	(check_omp_intervening_code): New.
+	(add_structured_block_stmt): New.
+	(c_parser_compound_statement_nostart): Recognize intervening code,
+	nested loops, and other things that need special handling in
+	OpenMP loop constructs.
+	(c_parser_while_statement): Error on loop in intervening code.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_postfix_expression_after_primary): Error on calls to
+	the OpenMP runtime in intervening code.
+	(c_parser_pragma): Error on OpenMP pragmas in intervening code.
+	(c_parser_omp_loop_nest): New.
+	(c_parser_omp_for_loop): Rewrite to use recursive descent, calling
+	c_parser_omp_loop_nest to do the heavy lifting.
+
+2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-parser.cc (c_parser_std_attribute): Conditionally allow
+	two colons to be used in place of ::.
+	(c_parser_std_attribute_list): New function, split out from...
+	(c_parser_std_attribute_specifier): ...here.  Allow the attribute-list
+	to start with __extension__.  When it does, also allow two colons
+	to be used in place of ::.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_defaultmap): Parse
+	'all' as category.
+
 2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR c/106537

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 
 #include <format>
@@ -69,14 +68,14 @@ test_move_only()
 {
   std::string str;
   move_only_iterator mo(std::back_inserter(str));
-  auto res = std::format_to(std::move(mo), "for{:.3} that{:c}",
-				     "matte", (int)'!');
+  [[maybe_unused]] auto res
+    = std::format_to(std::move(mo), "for{:.3} that{:c}", "matte", (int)'!');
   VERIFY( str == "format that!" );
 
   std::vector<wchar_t> vec;
   move_only_iterator wmo(std::back_inserter(vec));
-  auto wres = std::format_to(std::move(wmo), L"for{:.3} hat{:c}",
-				       L"matte", (long)L'!');
+  [[maybe_unused]] auto wres
+    = std::format_to(std::move(wmo), L"for{:.3} hat{:c}", L"matte", (long)L'!');
   VERIFY( std::wstring_view(vec.data(), vec.size()) == L"format hat!" );
 }
 

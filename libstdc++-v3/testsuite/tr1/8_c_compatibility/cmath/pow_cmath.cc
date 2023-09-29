@@ -17,8 +17,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=c++98" }
-
 #include <cmath>
 using std::pow;
 #include <tr1/cmath>
@@ -30,6 +28,11 @@ test01()
   using namespace __gnu_test;
 
   float x = 2080703.375F;
+#if __cplusplus < 201103L
   check_ret_type<float>(std::pow(x, 2));
+#else
+  // LWG 550 What should the return type of pow(float,int) be?
+  check_ret_type<double>(std::pow(x, 2));
+#endif
   check_ret_type<double>(std::tr1::pow(x, 2));
 }

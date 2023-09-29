@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-ssa.h"
 #include "gimple-range.h"
+#include "tree-ssa-dce.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -3502,8 +3503,9 @@ pass_forwprop::execute (function *fun)
     |= EDGE_EXECUTABLE;
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
+  auto_bitmap simple_dce_worklist;
+  auto_bitmap need_ab_cleanup;
   to_purge = BITMAP_ALLOC (NULL);
-  bitmap need_ab_cleanup = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
@@ -3902,10 +3904,14 @@ pass_forwprop::execute (function *fun)
 	    {
 	      tree use = USE_FROM_PTR (usep);
 	      tree val = fwprop_ssa_val (use);
-	      if (val && val != use && may_propagate_copy (use, val))
+	      if (val && val != use)
 		{
-		  propagate_value (usep, val);
-		  substituted_p = true;
+		  bitmap_set_bit (simple_dce_worklist, SSA_NAME_VERSION (use));
+		  if (may_propagate_copy (use, val))
+		    {
+		      propagate_value (usep, val);
+		      substituted_p = true;
+		    }
 		}
 	    }
 	  if (substituted_p
@@ -3925,6 +3931,11 @@ pass_forwprop::execute (function *fun)
 				   && gimple_call_noreturn_p (stmt));
 	      changed = false;
 
+	      auto_vec<tree, 8> uses;
+	      FOR_EACH_SSA_USE_OPERAND (usep, stmt, iter, SSA_OP_USE)
+		if (uses.space (1))
+		  uses.quick_push (USE_FROM_PTR (usep));
+
 	      if (fold_stmt (&gsi, fwprop_ssa_val))
 		{
 		  changed = true;
@@ -3935,6 +3946,12 @@ pass_forwprop::execute (function *fun)
 		    if (gimple_cond_true_p (cond)
 			|| gimple_cond_false_p (cond))
 		      cfg_changed = true;
+		  /* Queue old uses for simple DCE.  */
+		  for (tree use : uses)
+		    if (TREE_CODE (use) == SSA_NAME
+			&& !SSA_NAME_IS_DEFAULT_DEF (use))
+		      bitmap_set_bit (simple_dce_worklist,
+				      SSA_NAME_VERSION (use));
 		}
 
 	      if (changed || substituted_p)
@@ -4070,7 +4087,7 @@ pass_forwprop::execute (function *fun)
 	      continue;
 	    tree val = fwprop_ssa_val (arg);
 	    if (val != arg
-		&& may_propagate_copy (arg, val))
+		&& may_propagate_copy (arg, val, !(e->flags & EDGE_ABNORMAL)))
 	      propagate_value (use_p, val);
 	  }
 
@@ -4115,6 +4132,7 @@ pass_forwprop::execute (function *fun)
 	  release_defs (stmt);
 	}
     }
+  simple_dce_from_worklist (simple_dce_worklist, to_purge);
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the walk.  Do this
@@ -4135,7 +4153,6 @@ pass_forwprop::execute (function *fun)
   cfg_changed |= gimple_purge_all_dead_eh_edges (to_purge);
   cfg_changed |= gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
   BITMAP_FREE (to_purge);
-  BITMAP_FREE (need_ab_cleanup);
 
   if (get_range_query (fun) != get_global_range_query ())
     disable_ranger (fun);

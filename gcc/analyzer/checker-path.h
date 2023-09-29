@@ -30,7 +30,11 @@ namespace ana {
 class checker_path : public diagnostic_path
 {
 public:
-  checker_path (logger *logger) : diagnostic_path (), m_logger (logger) {}
+  checker_path (logger *logger)
+  : diagnostic_path (),
+    m_thread ("main"),
+    m_logger (logger)
+  {}
 
   /* Implementation of diagnostic_path vfuncs.  */
 
@@ -42,6 +46,15 @@ public:
   const diagnostic_event & get_event (int idx) const final override
   {
     return *m_events[idx];
+  }
+  unsigned num_threads () const final override
+  {
+    return 1;
+  }
+  const diagnostic_thread &
+  get_thread (diagnostic_thread_id_t) const final override
+  {
+    return m_thread;
   }
 
   checker_event *get_checker_event (int idx)
@@ -119,6 +132,8 @@ public:
 
 private:
   DISABLE_COPY_AND_ASSIGN(checker_path);
+
+  simple_diagnostic_thread m_thread;
 
   /* The events that have occurred along this path.  */
   auto_delete_vec<checker_event> m_events;

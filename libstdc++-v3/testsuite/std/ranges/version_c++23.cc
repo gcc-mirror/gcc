@@ -1,10 +1,9 @@
-// { dg-options "-std=gnu++23" }
 // { dg-do preprocess { target c++23 } }
 
 #include <version>
 
 #if __STDC_HOSTED__
-# if __cpp_lib_ranges != 202202L
+# if __cpp_lib_ranges != 202211L
 #  error "Feature-test macro __cpp_lib_ranges has wrong value in <version>"
 # endif
 #endif

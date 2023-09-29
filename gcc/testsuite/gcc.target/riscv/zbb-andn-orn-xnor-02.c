@@ -17,6 +17,6 @@ unsigned int foo3(unsigned int rs1, unsigned int rs2)
 return rs1 ^ ~rs2;
 }
 
-/* { dg-final { scan-assembler-times "andn" 2 } } */
-/* { dg-final { scan-assembler-times "orn" 2 } } */
-/* { dg-final { scan-assembler-times "xnor" 2 } } */
+/* { dg-final { scan-assembler-times {\mandn} 2 } } */
+/* { dg-final { scan-assembler-times {\morn} 2 } } */
+/* { dg-final { scan-assembler-times {\mxnor} 2 } } */

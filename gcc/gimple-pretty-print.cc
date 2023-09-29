@@ -480,7 +480,7 @@ dump_binary_rhs (pretty_printer *buffer, const gassign *gs, int spc,
       else
 	dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
       pp_space (buffer);
-      pp_string (buffer, op_symbol_code (gimple_assign_rhs_code (gs)));
+      pp_string (buffer, op_symbol_code (gimple_assign_rhs_code (gs), flags));
       pp_space (buffer);
       if (op_prio (gimple_assign_rhs2 (gs)) <= op_code_prio (code))
 	{
@@ -1092,7 +1092,7 @@ dump_gimple_cond (pretty_printer *buffer, const gcond *gs, int spc,
 			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
 			 false);
       pp_space (buffer);
-      pp_string (buffer, op_symbol_code (gimple_cond_code (gs)));
+      pp_string (buffer, op_symbol_code (gimple_cond_code (gs), flags));
       pp_space (buffer);
       dump_generic_node (buffer, gimple_cond_rhs (gs), spc,
 			 flags | ((flags & TDF_GIMPLE) ? TDF_GIMPLE_VAL : TDF_NONE),
@@ -1896,7 +1896,7 @@ dump_gimple_omp_sections (pretty_printer *buffer, const gomp_sections *gs,
     }
 }
 
-/* Dump a GIMPLE_OMP_{MASTER,ORDERED,SECTION} tuple on the
+/* Dump a GIMPLE_OMP_{MASTER,ORDERED,SECTION,STRUCTURED_BLOCK} tuple on the
    pretty_printer BUFFER.  */
 
 static void
@@ -1915,6 +1915,9 @@ dump_gimple_omp_block (pretty_printer *buffer, const gimple *gs, int spc,
 	  break;
 	case GIMPLE_OMP_SECTION:
 	  pp_string (buffer, "#pragma omp section");
+	  break;
+	case GIMPLE_OMP_STRUCTURED_BLOCK:
+	  pp_string (buffer, "#pragma omp __structured_block");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -2801,6 +2804,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
 
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
       dump_gimple_omp_block (buffer, gs, spc, flags);
       break;
 

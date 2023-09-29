@@ -406,7 +406,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 		elimination_fp2sp_occured_p = true;
 
 	      if (! update_p && ! full_p)
-		return gen_rtx_PLUS (Pmode, to, XEXP (x, 1));
+		return simplify_gen_binary (PLUS, Pmode, to, XEXP (x, 1));
 
 	      if (maybe_ne (update_sp_offset, 0))
 		offset = ep->to_rtx == stack_pointer_rtx ? update_sp_offset : 0;
@@ -926,6 +926,18 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
       /* First see if the source is of the form (plus (...) CST).  */
       if (plus_src && poly_int_rtx_p (XEXP (plus_src, 1), &offset))
 	plus_cst_src = plus_src;
+      /* If we are doing initial offset computation, then utilize
+	 eqivalences to discover a constant for the second term
+	 of PLUS_SRC.  */
+      else if (plus_src && REG_P (XEXP (plus_src, 1)))
+	{
+	  int regno = REGNO (XEXP (plus_src, 1));
+	  if (regno < ira_reg_equiv_len
+	      && ira_reg_equiv[regno].constant != NULL_RTX
+	      && !replace_p
+	      && poly_int_rtx_p (ira_reg_equiv[regno].constant, &offset))
+	    plus_cst_src = plus_src;
+	}
       /* Check that the first operand of the PLUS is a hard reg or
 	 the lowpart subreg of one.  */
       if (plus_cst_src)
@@ -1282,14 +1294,14 @@ init_elim_table (void)
      will cause, e.g., gen_rtx_REG (Pmode, STACK_POINTER_REGNUM) to
      equal stack_pointer_rtx.  We depend on this. Threfore we switch
      off that we are in LRA temporarily.  */
-  lra_in_progress = 0;
+  lra_in_progress = false;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       ep->from_rtx = gen_rtx_REG (Pmode, ep->from);
       ep->to_rtx = gen_rtx_REG (Pmode, ep->to);
       eliminable_reg_rtx[ep->from] = ep->from_rtx;
     }
-  lra_in_progress = 1;
+  lra_in_progress = true;
 }
 
 /* Function for initialization of elimination once per function.  It

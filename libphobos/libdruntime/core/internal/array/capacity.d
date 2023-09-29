@@ -36,7 +36,7 @@ template _d_arraysetlengthTImpl(Tarr : T[], T)
      */
     size_t _d_arraysetlengthT(return scope ref Tarr arr, size_t newlength) @trusted pure nothrow
     {
-        pragma(inline, false);
+        version (DigitalMars) pragma(inline, false);
         version (D_TypeInfo)
         {
             auto ti = typeid(Tarr);

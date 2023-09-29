@@ -73,7 +73,7 @@ d_mangle_decl (Dsymbol *decl)
   else
     {
       OutBuffer buf;
-      mangleToBuffer (decl, &buf);
+      mangleToBuffer (decl, buf);
       return buf.extractChars ();
     }
 }

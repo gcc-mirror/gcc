@@ -1130,7 +1130,7 @@ extern (C++) final class InterfaceDeclaration : ClassDeclaration
  * Returns:
  *    true if the `bc` implements `id`, false otherwise
  **/
-private bool baseClassImplementsInterface(InterfaceDeclaration id, BaseClass* bc, int* poffset) pure nothrow @nogc
+private bool baseClassImplementsInterface(InterfaceDeclaration id, BaseClass* bc, int* poffset) pure nothrow @nogc @safe
 {
     //printf("%s.InterfaceDeclaration.isBaseOf(bc = '%s')\n", id.toChars(), bc.sym.toChars());
     for (size_t j = 0; j < bc.baseInterfaces.length; j++)

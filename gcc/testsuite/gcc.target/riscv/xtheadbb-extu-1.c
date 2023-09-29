@@ -63,5 +63,5 @@ unsigned char zext8_16(unsigned short u16)
     return u16;
 }
 
-/* { dg-final { scan-assembler-not "slli" } } */
-/* { dg-final { scan-assembler-not "srli" } } */
+/* { dg-final { scan-assembler-not {\mslli} } } */
+/* { dg-final { scan-assembler-not {\msrli} } } */

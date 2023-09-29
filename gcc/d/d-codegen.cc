@@ -2850,7 +2850,7 @@ get_frameinfo (FuncDeclaration *fd)
       /* This can shift due to templates being expanded that access alias
          symbols, give it a decent error for now.  */
       if (requiresClosure != fd->requiresClosure
-	  && (fd->nrvo_var || global.params.betterC))
+	  && (fd->nrvo_var || !global.params.useGC))
 	fd->checkClosure ();
 
       /* Set-up a closure frame, this will be allocated on the heap.  */

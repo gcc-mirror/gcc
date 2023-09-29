@@ -3457,6 +3457,7 @@ package body Exp_Ch9 is
       Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Corresponding_Spec (N)));
 
       Reset_Scopes_To (First (Bod_Stmts), Block_Id);
+      Set_At_End_Proc (First (Bod_Stmts), At_End_Proc (N));
 
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
@@ -3553,7 +3554,6 @@ package body Exp_Ch9 is
          --  Establish link between subprogram body and source entry body
 
          Set_Corresponding_Entry_Body (Proc_Body, N);
-         Set_At_End_Proc (Proc_Body, At_End_Proc (N));
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
@@ -6124,7 +6124,6 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Cond_Id    : Entity_Id;
       Entry_Body : Node_Id;
       Func_Body  : Node_Id := Empty;
 
@@ -6191,30 +6190,21 @@ package body Exp_Ch9 is
          Check_Unprotected_Barrier (Cond);
       end if;
 
-      if Is_Entity_Name (Cond) then
-         Cond_Id := Entity (Cond);
+      --  Perform a small optimization of simple barrier functions. If the
+      --  scope of the condition's entity is not the barrier function, then
+      --  the condition does not depend on any of the generated renamings.
+      --  If this is the case, eliminate the renamings as they are useless.
+      --  This optimization is not performed when the condition was folded
+      --  and validity checks are in effect because the original condition
+      --  may have produced at least one check that depends on the generated
+      --  renamings.
 
-         --  Perform a small optimization of simple barrier functions. If the
-         --  scope of the condition's entity is not the barrier function, then
-         --  the condition does not depend on any of the generated renamings.
-         --  If this is the case, eliminate the renamings as they are useless.
-         --  This optimization is not performed when the condition was folded
-         --  and validity checks are in effect because the original condition
-         --  may have produced at least one check that depends on the generated
-         --  renamings.
-
-         if Expander_Active
-           and then Scope (Cond_Id) /= Func_Id
-           and then not Validity_Check_Operands
-         then
-            Set_Declarations (Func_Body, Empty_List);
-         end if;
-
-         --  Note that after analysis variables in this context will be
-         --  replaced by the corresponding prival, that is to say a renaming
-         --  of a selected component of the form _Object.Var. If expansion is
-         --  disabled, as within a generic, we check that the entity appears in
-         --  the current scope.
+      if Expander_Active
+        and then Is_Entity_Name (Cond)
+        and then Scope (Entity (Cond)) /= Func_Id
+        and then not Validity_Check_Operands
+      then
+         Set_Declarations (Func_Body, Empty_List);
       end if;
    end Expand_Entry_Barrier;
 

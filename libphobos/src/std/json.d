@@ -6,6 +6,10 @@ Implements functionality to read and write JavaScript Object Notation values.
 JavaScript Object Notation is a lightweight data interchange format commonly used in web services and configuration files.
 It's easy for humans to read and write, and it's easy for machines to parse and generate.
 
+$(RED Warning: While $(LREF JSONValue) is fine for small-scale use, at the range of hundreds of megabytes it is
+known to cause and exacerbate GC problems. If you encounter problems, try replacing it with a stream parser. See
+also $(LINK https://forum.dlang.org/post/dzfyaxypmkdrpakmycjv@forum.dlang.org).)
+
 Copyright: Copyright Jeremie Pelletier 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   Jeremie Pelletier, David Herberth
@@ -66,25 +70,25 @@ String literals used to represent special float values within JSON strings.
 */
 enum JSONFloatLiteral : string
 {
-    nan         = "NaN",       /// string representation of floating-point NaN
-    inf         = "Infinite",  /// string representation of floating-point Infinity
-    negativeInf = "-Infinite", /// string representation of floating-point negative Infinity
+    nan         = "NaN",       /// String representation of floating-point NaN
+    inf         = "Infinite",  /// String representation of floating-point Infinity
+    negativeInf = "-Infinite", /// String representation of floating-point negative Infinity
 }
 
 /**
-Flags that control how json is encoded and parsed.
+Flags that control how JSON is encoded and parsed.
 */
 enum JSONOptions
 {
-    none,                       /// standard parsing
-    specialFloatLiterals = 0x1, /// encode NaN and Inf float values as strings
-    escapeNonAsciiChars = 0x2,  /// encode non ascii characters with an unicode escape sequence
-    doNotEscapeSlashes = 0x4,   /// do not escape slashes ('/')
+    none,                       /// Standard parsing and encoding
+    specialFloatLiterals = 0x1, /// Encode NaN and Inf float values as strings
+    escapeNonAsciiChars = 0x2,  /// Encode non-ASCII characters with a Unicode escape sequence
+    doNotEscapeSlashes = 0x4,   /// Do not escape slashes ('/')
     strictParsing = 0x8,        /// Strictly follow RFC-8259 grammar when parsing
 }
 
 /**
-JSON type enumeration
+Enumeration of JSON types
 */
 enum JSONType : byte
 {
@@ -271,7 +275,7 @@ struct JSONValue
      * Value getter/setter for `JSONType.object`.
      * Throws: `JSONException` for read access if `type` is not
      * `JSONType.object`.
-     * Note: this is @system because of the following pattern:
+     * Note: This is @system because of the following pattern:
        ---
        auto a = &(json.object());
        json.uinteger = 0;        // overwrite AA pointer
@@ -293,9 +297,11 @@ struct JSONValue
 
     /***
      * Value getter for `JSONType.object`.
-     * Unlike `object`, this retrieves the object by value and can be used in @safe code.
+     * Unlike `object`, this retrieves the object by value
+     * and can be used in @safe code.
      *
-     * A caveat is that, if the returned value is null, modifications will not be visible:
+     * One possible caveat is that, if the returned value is null,
+     * modifications will not be visible:
      * ---
      * JSONValue json;
      * json.object = null;
@@ -317,7 +323,7 @@ struct JSONValue
      * Value getter/setter for `JSONType.array`.
      * Throws: `JSONException` for read access if `type` is not
      * `JSONType.array`.
-     * Note: this is @system because of the following pattern:
+     * Note: This is @system because of the following pattern:
        ---
        auto a = &(json.array());
        json.uinteger = 0;  // overwrite array pointer
@@ -341,8 +347,8 @@ struct JSONValue
      * Value getter for `JSONType.array`.
      * Unlike `array`, this retrieves the array by value and can be used in @safe code.
      *
-     * A caveat is that, if you append to the returned array, the new values aren't visible in the
-     * JSONValue:
+     * One possible caveat is that, if you append to the returned array,
+     * the new values aren't visible in the `JSONValue`:
      * ---
      * JSONValue json;
      * json.array = [JSONValue("hello")];
@@ -367,9 +373,8 @@ struct JSONValue
     }
 
     /***
-     * Generic type value getter
      * A convenience getter that returns this `JSONValue` as the specified D type.
-     * Note: only numeric, `bool`, `string`, `JSONValue[string]` and `JSONValue[]` types are accepted
+     * Note: Only numeric types, `bool`, `string`, `JSONValue[string]`, and `JSONValue[]` types are accepted
      * Throws: `JSONException` if `T` cannot hold the contents of this `JSONValue`
      *         `ConvException` in case of integer overflow when converting to `T`
      */
@@ -655,7 +660,7 @@ struct JSONValue
     }
 
     /***
-     * Array syntax for json arrays.
+     * Array syntax for JSON arrays.
      * Throws: `JSONException` if `type` is not `JSONType.array`.
      */
     ref inout(JSONValue) opIndex(size_t i) inout pure @safe
@@ -674,7 +679,7 @@ struct JSONValue
     }
 
     /***
-     * Hash syntax for json objects.
+     * Hash syntax for JSON objects.
      * Throws: `JSONException` if `type` is not `JSONType.object`.
      */
     ref inout(JSONValue) opIndex(return scope string k) inout pure @safe
@@ -691,10 +696,12 @@ struct JSONValue
     }
 
     /***
-     * Operator sets `value` for element of JSON object by `key`.
+     * Provides support for index assignments, which sets the
+     * corresponding value of the JSON object's `key` field to `value`.
      *
-     * If JSON value is null, then operator initializes it with object and then
-     * sets `value` for it.
+     * If the `JSONValue` is `JSONType.null_`, then this function
+     * initializes it with a JSON object and then performs
+     * the index assignment.
      *
      * Throws: `JSONException` if `type` is not `JSONType.object`
      * or `JSONType.null_`.
@@ -773,12 +780,12 @@ struct JSONValue
     }
 
     /**
-     * Support for the `in` operator.
+     * Provides support for the `in` operator.
      *
-     * Tests wether a key can be found in an object.
+     * Tests whether a key can be found in an object.
      *
      * Returns:
-     *      when found, the `inout(JSONValue)*` that matches to the key,
+     *      When found, the `inout(JSONValue)*` that matches to the key,
      *      otherwise `null`.
      *
      * Throws: `JSONException` if the right hand side argument `JSONType`

@@ -14,5 +14,6 @@ int func()
 {
     thebar +=1;
     packagebar += 1;
+    thebar +=1;
     return 0;
 }

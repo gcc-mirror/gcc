@@ -57,6 +57,26 @@ static tree m2expr_Build4TruthAndIf (location_t location, tree a, tree b,
 static int label_count = 0;
 static GTY (()) tree set_full_complement;
 
+/* Return an integer string using base 10 and no padding.  The string returned
+   will have been malloc'd.  */
+
+char *
+m2expr_CSTIntToString (tree t)
+{
+  char val[100];
+
+  snprintf (val, 100, HOST_WIDE_INT_PRINT_UNSIGNED, TREE_INT_CST_LOW (t));
+  return xstrndup (val, 100);
+}
+
+/* Return the char representation of tree t.  */
+
+char
+m2expr_CSTIntToChar (tree t)
+{
+  return (char) (TREE_INT_CST_LOW (t));
+}
+
 /* CompareTrees returns -1 if e1 < e2, 0 if e1 == e2, and 1 if e1 > e2.  */
 
 int

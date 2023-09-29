@@ -512,6 +512,8 @@ graphite_transform_loops (void)
 
   if (changed)
     {
+      /* FIXME: Graphite does not update profile meaningfully currently.  */
+      cfun->cfg->full_profile = false;
       cleanup_tree_cfg ();
       profile_status_for_fn (cfun) = PROFILE_ABSENT;
       release_recorded_exits (cfun);

@@ -1010,6 +1010,10 @@ Driver Undocumented
 ; 18: Corrects errors in mangling of lambdas with additional context.
 ;     Default in G++ 13.
 ;
+; 19: Emits ABI tags if needed in structured binding mangled names.
+;     Ignores cv-quals on [[no_unique_object]] members.
+;     Default in G++ 14.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=

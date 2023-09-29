@@ -2818,11 +2818,13 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       case IFN_MASK_LEN_STORE:
 	return false;
       case IFN_MASK_STORE_LANES:
+      case IFN_MASK_LEN_STORE_LANES:
 	goto process_args;
       case IFN_MASK_LOAD:
       case IFN_LEN_LOAD:
       case IFN_MASK_LEN_LOAD:
       case IFN_MASK_LOAD_LANES:
+      case IFN_MASK_LEN_LOAD_LANES:
 	{
 	  ao_ref rhs_ref;
 	  tree lhs = gimple_call_lhs (call);
@@ -3072,6 +3074,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       case IFN_LEN_STORE:
       case IFN_MASK_LEN_STORE:
       case IFN_MASK_STORE_LANES:
+      case IFN_MASK_LEN_STORE_LANES:
 	{
 	  tree rhs = gimple_call_arg (call,
 				      internal_fn_stored_value_index (fn));

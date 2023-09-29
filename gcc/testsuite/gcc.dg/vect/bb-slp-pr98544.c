@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 double a[2], b[2], c[2], d[2];
 
 void __attribute__((noipa))

@@ -5788,7 +5788,7 @@ gfc_match_equivalence (void)
 	goto syntax;
 
       set = eq;
-      common_flag = FALSE;
+      common_flag = false;
       cnt = 0;
 
       for (;;)
@@ -5829,7 +5829,7 @@ gfc_match_equivalence (void)
 
 	  if (sym->attr.in_common)
 	    {
-	      common_flag = TRUE;
+	      common_flag = true;
 	      common_head = sym->common_head;
 	    }
 

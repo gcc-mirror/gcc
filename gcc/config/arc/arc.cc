@@ -4501,8 +4501,8 @@ static int output_sdata = 0;
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-/* In final.cc:output_asm_insn:
+   For `%' followed by punctuation, CODE is the punctuation and X is null.
+   In final.cc:output_asm_insn:
     'l' : label
     'a' : address
     'c' : constant address if CONSTANT_ADDRESS_P
@@ -4512,7 +4512,10 @@ static int output_sdata = 0;
     'z': log2
     'M': log2(~x)
     'p': bit Position of lsb
-    's': size of bit field
+    's': scalled immediate
+    'S': Scalled immediate, to be used in pair with 's'.
+    'N': Negative immediate, to be used in pair with 's'.
+    'x': size of bit field
     '#': condbranch delay slot suffix
     '*': jump delay slot suffix
     '?' : nonjump-insn suffix for conditional execution or short instruction
@@ -4521,7 +4524,7 @@ static int output_sdata = 0;
     'd'
     'D'
     'R': Second word
-    'S': JLI instruction
+    'J': JLI instruction
     'j': used by mov instruction to properly emit jli related labels.
     'B': Branch comparison operand - suppress sda reference
     'H': Most significant word
@@ -4538,6 +4541,10 @@ static int output_sdata = 0;
 void
 arc_print_operand (FILE *file, rtx x, int code)
 {
+  HOST_WIDE_INT ival;
+  unsigned scalled = 0;
+  int sign = 1;
+
   switch (code)
     {
     case 'Z':
@@ -4580,6 +4587,56 @@ arc_print_operand (FILE *file, rtx x, int code)
       return;
 
     case 's':
+      if (REG_P (x))
+	return;
+      if (!CONST_INT_P (x))
+	{
+	  output_operand_lossage ("invalid operand for %%s code");
+	  return;
+	}
+      ival = INTVAL (x);
+      if ((ival & 0x07) == 0)
+	  scalled = 3;
+      else if ((ival & 0x03) == 0)
+	  scalled = 2;
+      else if ((ival & 0x01) == 0)
+	  scalled = 1;
+
+      if (scalled)
+	asm_fprintf (file, "%d", scalled);
+      return;
+
+    case 'N':
+      if (REG_P (x))
+	{
+	  output_operand_lossage ("invalid operand for %%N code");
+	  return;
+	}
+      sign = -1;
+      /* fall through */
+    case 'S':
+      if (REG_P (x))
+	{
+	  asm_fprintf (file, "%s", reg_names [REGNO (x)]);
+	  return;
+	}
+      if (!CONST_INT_P (x))
+	{
+	  output_operand_lossage ("invalid operand for %%N or %%S code");
+	  return;
+	}
+      ival = sign * INTVAL (x);
+      if ((ival & 0x07) == 0)
+	  scalled = 3;
+      else if ((ival & 0x03) == 0)
+	  scalled = 2;
+      else if ((ival & 0x01) == 0)
+	  scalled = 1;
+
+      asm_fprintf (file, "%wd", (ival >> scalled));
+      return;
+
+    case 'x':
       if (GET_CODE (x) == CONST_INT)
 	{
 	  HOST_WIDE_INT i = INTVAL (x);
@@ -4738,7 +4795,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid operand to %%R code");
       return;
     case 'j':
-    case 'S' :
+    case 'J' :
       if (GET_CODE (x) == SYMBOL_REF
 	  && arc_is_jli_call_p (x))
 	{
@@ -8989,7 +9046,7 @@ arc_register_move_cost (machine_mode,
    Return the length of the instruction.
    If OUTPUT_P is false, don't actually output the instruction, just return
    its length.  */
-int
+static int
 arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 {
   char format[35];
@@ -10014,31 +10071,6 @@ void
 arc_toggle_unalign (void)
 {
   cfun->machine->unalign ^= 2;
-}
-
-/* Operands 0..2 are the operands of a addsi which uses a 12 bit
-   constant in operand 2, but which would require a LIMM because of
-   operand mismatch.
-   operands 3 and 4 are new SET_SRCs for operands 0.  */
-
-void
-split_addsi (rtx *operands)
-{
-  int val = INTVAL (operands[2]);
-
-  /* Try for two short insns first.  Lengths being equal, we prefer
-     expansions with shorter register lifetimes.  */
-  if (val > 127 && val <= 255
-      && arc_check_short_reg_p (operands[0]))
-    {
-      operands[3] = operands[2];
-      operands[4] = gen_rtx_PLUS (SImode, operands[0], operands[1]);
-    }
-  else
-    {
-      operands[3] = operands[1];
-      operands[4] = gen_rtx_PLUS (SImode, operands[0], operands[2]);
-    }
 }
 
 /* Operands 0..2 are the operands of a subsi which uses a 12 bit
@@ -11647,7 +11679,7 @@ arc_split_mov_const (rtx *operands)
     }
 
   /* 3. Check if we can just shift by 16 to fit into the u6 of LSL16.  */
-  if (TARGET_BARREL_SHIFTER && TARGET_V2
+  if (TARGET_SWAP && TARGET_V2
       && ((ival & ~0x3f0000) == 0))
     {
       shimm = (ival >> 16) & 0x3f;

@@ -274,9 +274,12 @@ relation_oracle::valid_equivs (bitmap b, const_bitmap equivs, basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
     {
       tree ssa = ssa_name (i);
-      const_bitmap ssa_equiv = equiv_set (ssa, bb);
-      if (ssa_equiv == equivs)
-	bitmap_set_bit (b, i);
+      if (ssa && !SSA_NAME_IN_FREE_LIST (ssa))
+	{
+	  const_bitmap ssa_equiv = equiv_set (ssa, bb);
+	  if (ssa_equiv == equivs)
+	    bitmap_set_bit (b, i);
+	}
     }
 }
 

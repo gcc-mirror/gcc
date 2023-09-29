@@ -61,7 +61,7 @@ struct OutBuffer
     /**
     Construct given size.
     */
-    this(size_t initialSize) nothrow
+    this(size_t initialSize) nothrow @safe
     {
         reserve(initialSize);
     }
@@ -527,7 +527,7 @@ struct OutBuffer
      * Returns:
      *  slice of the allocated space to be filled in
      */
-    extern (D) char[] allocate(size_t nbytes) pure nothrow
+    extern (D) char[] allocate(size_t nbytes) pure nothrow @safe
     {
         reserve(nbytes);
         offset += nbytes;
@@ -711,8 +711,14 @@ struct OutBuffer
         return cast(char*)data.ptr;
     }
 
+    // Peek at slice of data without taking ownership
+    extern (D) ubyte[] peekSlice() pure nothrow
+    {
+        return data[0 .. offset];
+    }
+
     // Append terminating null if necessary and take ownership of data
-    extern (C++) char* extractChars() pure nothrow
+    extern (C++) char* extractChars() pure nothrow @safe
     {
         if (!offset || data[offset - 1] != '\0')
             writeByte(0);

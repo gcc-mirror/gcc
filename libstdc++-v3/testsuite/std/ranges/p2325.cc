@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 // { dg-require-effective-target hosted }
 // P2325R3 "Views should not be required to be default constructible"

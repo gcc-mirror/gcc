@@ -3024,7 +3024,7 @@ invoke_driver (const char *ctxt_progname,
   ADD_ARG ("-fno-use-linker-plugin");
 
 #if defined (DARWIN_X86) || defined (DARWIN_PPC)
-  /* OS X's linker defaults to treating undefined symbols as errors.
+  /* macOS's linker defaults to treating undefined symbols as errors.
      If the context has any imported functions or globals they will be
      undefined until the .so is dynamically-linked into the process.
      Ensure that the driver passes in "-undefined dynamic_lookup" to the
@@ -3393,7 +3393,7 @@ if (t) \
   NAME_TYPE (complex_float_type_node, "complex float");
   NAME_TYPE (complex_double_type_node, "complex double");
   NAME_TYPE (complex_long_double_type_node, "complex long double");
-  
+
   m_const_char_ptr = build_pointer_type(
     build_qualified_type (char_type_node, TYPE_QUAL_CONST));
 

@@ -513,8 +513,8 @@ ix86_conditional_register_usage (void)
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
     accessible_reg_set &= ~reg_class_contents[FLOAT_REGS];
 
-  /* If AVX512F and AVX10 is disabled, disable the registers.  */
-  if (!TARGET_AVX512F && !TARGET_AVX10_1)
+  /* If AVX512F is disabled, disable the registers.  */
+  if (! TARGET_AVX512F)
     {
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
 	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
@@ -2121,7 +2121,8 @@ classify_argument (machine_mode mode, const_tree type,
 	return 0;
     }
 
-  if (type && AGGREGATE_TYPE_P (type))
+  if (type && (AGGREGATE_TYPE_P (type)
+	       || (TREE_CODE (type) == BITINT_TYPE && words > 1)))
     {
       int i;
       tree field;
@@ -2269,6 +2270,14 @@ classify_argument (machine_mode mode, const_tree type,
 		}
 	    }
 	  break;
+
+	case BITINT_TYPE:
+	  /* _BitInt(N) for N > 64 is passed as structure containing
+	     (N + 63) / 64 64-bit elements.  */
+	  if (words > 2)
+	    return 0;
+	  classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+	  return 2;
 
 	default:
 	  gcc_unreachable ();
@@ -5316,8 +5325,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_V4DF:
 	  if (!EXT_REX_SSE_REG_P (operands[0]))
 	    return "vxorpd\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ || TARGET_AVX10_1)
-	    return ((TARGET_AVX512VL || TARGET_AVX10_1)
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
 		    ? "vxorpd\t%x0, %x0, %x0"
 		    : "vxorpd\t%g0, %g0, %g0");
 	  else
@@ -5333,8 +5342,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_V8SF:
 	  if (!EXT_REX_SSE_REG_P (operands[0]))
 	    return "vxorps\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ || TARGET_AVX10_1)
-	    return ((TARGET_AVX512VL || TARGET_AVX10_1)
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
 		    ? "vxorps\t%x0, %x0, %x0"
 		    : "vxorps\t%g0, %g0, %g0");
 	  else
@@ -5490,7 +5499,6 @@ ix86_get_ssemov (rtx *operands, unsigned size,
      we can only use zmm register move without memory operand.  */
   if (evex_reg_p
       && !TARGET_AVX512VL
-      && !TARGET_AVX10_1
       && GET_MODE_SIZE (mode) < 64)
     {
       /* NB: Even though ix86_hard_regno_mode_ok doesn't allow
@@ -12336,8 +12344,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       assemble_name (asm_out_file, buf);
       break;
 
-    case CONST_INT:
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+    CASE_CONST_SCALAR_INT:
+      output_addr_const (file, x);
       break;
 
     case CONST:
@@ -20261,8 +20269,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
       return ((TARGET_AVX512F && VALID_MASK_REG_MODE (mode))
 	      || (TARGET_AVX512BW
-		  && VALID_MASK_AVX512BW_MODE (mode))
-	      || (TARGET_AVX10_1 && VALID_MASK_AVX10_MODE (mode)));
+		  && VALID_MASK_AVX512BW_MODE (mode)));
     }
 
   if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
@@ -20295,13 +20302,6 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (TARGET_AVX512VL
 	  && (VALID_AVX256_REG_OR_OI_MODE (mode)
 	      || VALID_AVX512VL_128_REG_MODE (mode)))
-	return true;
-
-      /* AVX10_1 allows sse regs16+ for 256 bit modes.  */
-      if (TARGET_AVX10_1
-	  && (VALID_AVX256_REG_OR_OI_MODE (mode)
-	      || VALID_AVX512VL_128_REG_MODE (mode)
-	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
       /* xmm16-xmm31 are only available for AVX-512.  */
@@ -21594,8 +21594,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       mask = XEXP (x, 2);
       /* This is masked instruction, assume the same cost,
 	 as nonmasked variant.  */
-      if ((TARGET_AVX512F || TARGET_AVX10_1)
-	  && register_operand (mask, GET_MODE (mask)))
+      if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
 	*total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed);
       else
 	*total = cost->sse_op;
@@ -22899,7 +22898,7 @@ ix86_invalid_conversion (const_tree fromtype, const_tree totype)
 	  || (TYPE_MODE (totype) == BFmode
 	      && TYPE_MODE (fromtype) == HImode))
 	warning (0, "%<__bfloat16%> is redefined from typedef %<short%> "
-		"to real %<__bf16%> since GCC V13, be careful of "
+		"to real %<__bf16%> since GCC 13.1, be careful of "
 		 "implicit conversion between %<__bf16%> and %<short%>; "
 		 "an explicit bitcast may be needed here");
     }
@@ -24853,6 +24852,25 @@ ix86_get_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+bool
+ix86_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (!TARGET_64BIT)
+    return false;
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else
+    info->limb_mode = DImode;
+  info->big_endian = false;
+  info->extended = false;
+  return true;
+}
+
 /* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
    decrements by exactly 2 no matter what the position was, there is no pushb.
 
@@ -25457,6 +25475,8 @@ ix86_run_selftests (void)
 
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_PUSH_ARGUMENT

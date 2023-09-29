@@ -1,0 +1,33 @@
+// { dg-do compile { target c++20 } }
+
+consteval int bar (int i) { if (i != 1) throw 1; return 0; }	// { dg-error "is not a constant expression" }
+
+constexpr int
+foo (bool b)
+{
+  return b ? bar (3) : 2; // { dg-message "in .constexpr. expansion" }
+}
+
+static_assert (foo (false) == 2);
+
+__extension__ constexpr int g1 = false ?: bar (2); // { dg-message "in .constexpr. expansion" }
+__extension__ constexpr int g2 = false ?: (1 + bar (2)); // { dg-message "in .constexpr. expansion" }
+__extension__ constexpr int g3 = true ?: bar (2);
+__extension__ constexpr int g4 = true ?: (1 + bar (2));
+constexpr int g5 = bar (2) ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+constexpr int g6 = bar (2) - 1 ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+
+void
+g ()
+{
+  __extension__ int a1[bar(3)]; // { dg-message "in .constexpr. expansion" }
+  int a2[sizeof (bar(3))];
+
+  int a3 = false ? (1 + bar (8)) : 1; // { dg-message "in .constexpr. expansion" }
+  a3 += false ? (1 + bar (8)) : 1; // { dg-message "in .constexpr. expansion" }
+
+  __extension__ int a4 = false ?: (1 + bar (8)); // { dg-message "in .constexpr. expansion" }
+  __extension__ int a5 = true ?: (1 + bar (8)); // { dg-message "in .constexpr. expansion" }
+  int a6 = bar (2) ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+  int a7 = bar (2) - 1 ? 1 : 2; // { dg-message "in .constexpr. expansion" }
+}

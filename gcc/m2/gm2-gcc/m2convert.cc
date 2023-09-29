@@ -478,7 +478,7 @@ m2convert_BuildConvert (location_t location, tree type, tree value,
   if (checkOverflow)
     return convert_and_check (location, type, value);
   else
-    return convert (type, value);
+    return convert_loc (location, type, value);
 }
 
 /* const_to_ISO_type - perform VAL (iso_type, expr).  */

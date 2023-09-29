@@ -3,6 +3,6 @@
 
 _Float16 foo1 (_Float16 a, _Float16 b)
 {
-    /* { dg-final { scan-assembler-times "fmv.h" 1 } } */
+    /* { dg-final { scan-assembler-times {\mfmv\.h\M} 1 } } */
     return b;
 }

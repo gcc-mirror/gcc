@@ -4,16 +4,16 @@
 
 #include <stdint-gcc.h>
 
-int64_t foo1(int64_t rs1, int64_t rs2, int bs)
+uint32_t foo1(uint32_t rs1, uint32_t rs2, unsigned bs)
 {
     return __builtin_riscv_sm4ks(rs1,rs2,bs);
 }
 
-int64_t foo2(int64_t rs1, int64_t rs2, int bs)
+uint32_t foo2(uint32_t rs1, uint32_t rs2, unsigned bs)
 {
     return __builtin_riscv_sm4ed(rs1,rs2,bs);
 }
 
 
-/* { dg-final { scan-assembler-times "sm4ks" 1 } } */
-/* { dg-final { scan-assembler-times "sm4ed" 1 } } */
+/* { dg-final { scan-assembler-times {\msm4ks} 1 } } */
+/* { dg-final { scan-assembler-times {\msm4ed} 1 } } */

@@ -35,7 +35,7 @@ template _d_arrayappendcTXImpl(Tarr : T[], T)
     ref Tarr _d_arrayappendcTX(return ref scope Tarr px, size_t n) @trusted pure nothrow
     {
         // needed for CTFE: https://github.com/dlang/druntime/pull/3870#issuecomment-1178800718
-        pragma(inline, false);
+        version (DigitalMars) pragma(inline, false);
         version (D_TypeInfo)
         {
             auto ti = typeid(Tarr);
@@ -70,7 +70,7 @@ template _d_arrayappendcTXImpl(Tarr : T[], T)
 /// Implementation of `_d_arrayappendT`
 ref Tarr _d_arrayappendT(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y) @trusted
 {
-    pragma(inline, false);
+    version (DigitalMars) pragma(inline, false);
 
     import core.stdc.string : memcpy;
     import core.internal.traits : hasElaborateCopyConstructor, Unqual;

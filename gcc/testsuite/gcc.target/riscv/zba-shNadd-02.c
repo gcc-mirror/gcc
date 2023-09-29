@@ -15,6 +15,6 @@ long test_3(long a, long b)
   return a + (b << 3);
 }
 
-/* { dg-final { scan-assembler-times "sh1add" 1 } } */
-/* { dg-final { scan-assembler-times "sh2add" 1 } } */
-/* { dg-final { scan-assembler-times "sh3add" 1 } } */
+/* { dg-final { scan-assembler-times {\msh1add} 1 } } */
+/* { dg-final { scan-assembler-times {\msh2add} 1 } } */
+/* { dg-final { scan-assembler-times {\msh3add} 1 } } */

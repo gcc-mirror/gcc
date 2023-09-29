@@ -23,7 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Types; use Types;
+with Einfo.Entities; use Einfo.Entities;
+with Types;          use Types;
 package Sem_Ch8 is
 
    -----------------------------------
@@ -148,7 +149,7 @@ package Sem_Ch8 is
    --  Mark a given entity or node Id's relevant use clauses as effective,
    --  including redundant ones and ones outside of the current scope.
 
-   procedure Push_Scope (S : Entity_Id);
+   procedure Push_Scope (S : Scope_Kind_Id);
    --  Make new scope stack entry, pushing S, the entity for a scope onto the
    --  top of the scope table. The current setting of the scope suppress flags
    --  is saved for restoration on exit.

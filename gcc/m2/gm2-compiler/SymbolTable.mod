@@ -32,7 +32,7 @@ FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice, PutIndice, GetI
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 FROM m2linemap IMPORT location_t ;
 
-FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic ;
+FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic, DebugBuiltins ;
 
 FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo,
                      FindFileNameFromToken, TokenToLocation ;
@@ -80,6 +80,7 @@ FROM m2decl IMPORT ConstantStringExceedsZType ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
+FROM m2builtins IMPORT BuiltinExists ;
 
 FROM M2Comp IMPORT CompilingDefinitionModule,
                    CompilingImplementationModule ;
@@ -292,7 +293,8 @@ TYPE
                                               (* of enumeration.             *)
                    NoOfElements: CARDINAL ;   (* No elements in enumeration  *)
                    LocalSymbols: SymbolTree ; (* Contains all enumeration    *)
-                                              (* fields.                     *)
+                                              (* fields (alphabetical).      *)
+                   ListOfFields: List ;       (* Ordered as declared.        *)
                    Size        : PtrToValue ; (* Size at runtime of symbol.  *)
                    packedInfo  : PackedInfo ; (* the equivalent packed type  *)
                    oafamily    : CARDINAL ;   (* The oafamily for this sym   *)
@@ -4644,6 +4646,7 @@ BEGIN
                                            (* enumeration type.      *)
             Size := InitValue () ;         (* Size at runtime of sym *)
             InitTree (LocalSymbols) ;      (* Enumeration fields.    *)
+            InitList (ListOfFields) ;      (* Ordered as declared.   *)
             InitPacked (packedInfo) ;      (* not packed and no      *)
                                            (* equivalent (yet).      *)
             oafamily := oaf ;              (* The open array family  *)
@@ -5786,6 +5789,30 @@ END IsProcedureBuiltin ;
 
 
 (*
+   CanUseBuiltin - returns TRUE if the procedure, Sym, can be
+                   inlined via a builtin function.
+*)
+
+PROCEDURE CanUseBuiltin (Sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN( (NOT DebugBuiltins) AND
+           (BuiltinExists (KeyToCharStar (GetProcedureBuiltin (Sym))) OR
+            BuiltinExists (KeyToCharStar (GetSymName (Sym)))) )
+END CanUseBuiltin ;
+
+
+(*
+   IsProcedureBuiltinAvailable - return TRUE if procedure is available as a builtin
+                                 for the target architecture.
+*)
+
+PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedureBuiltin (procedure) AND CanUseBuiltin (procedure)
+END IsProcedureBuiltinAvailable ;
+
+
+(*
    PutProcedureInline - determines that procedure, Sym, has been requested to be inlined.
 *)
 
@@ -6636,8 +6663,9 @@ END GetNthFromComponent ;
 
 
 (*
-   GetNth - returns the n th symbol in the list of father Sym.
-            Sym may be a Module, DefImp, Procedure or Record symbol.
+   GetNth - returns the n th symbol in the list associated with the scope
+            of Sym.  Sym may be a Module, DefImp, Procedure, Record or
+            Enumeration symbol.
 *)
 
 PROCEDURE GetNth (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
@@ -6649,14 +6677,15 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      RecordSym       : i := GetItemFromList(Record.ListOfSons, n) |
-      VarientSym      : i := GetItemFromList(Varient.ListOfSons, n) |
-      VarientFieldSym : i := GetItemFromList(VarientField.ListOfSons, n) |
-      ProcedureSym    : i := GetItemFromList(Procedure.ListOfVars, n) |
-      DefImpSym       : i := GetItemFromList(DefImp.ListOfVars, n) |
-      ModuleSym       : i := GetItemFromList(Module.ListOfVars, n) |
-      TupleSym        : i := GetFromIndex(Tuple.list, n) |
-      VarSym          : i := GetNthFromComponent(Sym, n)
+      RecordSym       : i := GetItemFromList (Record.ListOfSons, n) |
+      VarientSym      : i := GetItemFromList (Varient.ListOfSons, n) |
+      VarientFieldSym : i := GetItemFromList (VarientField.ListOfSons, n) |
+      ProcedureSym    : i := GetItemFromList (Procedure.ListOfVars, n) |
+      DefImpSym       : i := GetItemFromList (DefImp.ListOfVars, n) |
+      ModuleSym       : i := GetItemFromList (Module.ListOfVars, n) |
+      TupleSym        : i := GetFromIndex (Tuple.list, n) |
+      VarSym          : i := GetNthFromComponent (Sym, n) |
+      EnumerationSym  : i := GetItemFromList (Enumeration.ListOfFields, n)
 
       ELSE
          InternalError ('cannot GetNth from this symbol')
@@ -7528,7 +7557,8 @@ BEGIN
                                                     FieldName,
                                                     GetDeclaredMod(GetSymKey(LocalSymbols, FieldName)))
                             ELSE
-                               PutSymKey(LocalSymbols, FieldName, Field)
+                               PutSymKey(LocalSymbols, FieldName, Field) ;
+                               IncludeItemIntoList (ListOfFields, Field)
                             END
                          END
 
@@ -12333,6 +12363,7 @@ VAR
    pSym: PtrToSymbol ;
    s   : CARDINAL ;
 BEGIN
+   s := NulSym ;
    IF IsModule (sym) OR IsDefImp (sym)
    THEN
       RETURN( CollectSymbolFrom (tok, sym, n) )
@@ -12355,10 +12386,9 @@ BEGIN
             END
          END ;
          s := CollectUnknown (tok, GetScope (sym), n)
-      END ;
-      RETURN( s )
+      END
    END ;
-   InternalError ('expecting sym should be a module, defimp or procedure symbol')
+   RETURN( s )
 END CollectUnknown ;
 
 
@@ -13662,7 +13692,9 @@ END ForeachModuleDo ;
 
 (*
    ForeachFieldEnumerationDo - for each field in enumeration, Sym,
-                               do procedure, P.
+                               do procedure, P.  Each call to P contains
+                               an enumeration field, the order is alphabetical.
+                               Use ForeachLocalSymDo for declaration order.
 *)
 
 PROCEDURE ForeachFieldEnumerationDo (Sym: CARDINAL; P: PerformOperation) ;
@@ -13673,7 +13705,7 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      EnumerationSym: ForeachNodeDo( Enumeration.LocalSymbols, P)
+      EnumerationSym: ForeachNodeDo (Enumeration.LocalSymbols, P)
 
       ELSE
          InternalError ('expecting Enumeration symbol')

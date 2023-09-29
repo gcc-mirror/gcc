@@ -9,4 +9,4 @@ flef (float x, float y)
 }
 
 /* { dg-final { scan-assembler "\tfrflags\t(\[^\n\]*)\n\tfle\\.s\t\[^\n\]*\n\tfsflags\t\\1\n" } } */
-/* { dg-final { scan-assembler-not "snez" } } */
+/* { dg-final { scan-assembler-not {\msnez} } } */

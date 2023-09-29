@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-core.h"
+#include "diagnostic.h"		/* For errorcount.  */
 #include "alias.h"
 #include "fold-const.h"
 #include "calls.h"
@@ -1363,6 +1364,91 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       if (VAR_P (t))
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+	  tree attr;
+
+	  if (flag_openmp
+	      && !is_global_var (t)
+	      && DECL_CONTEXT (t) == current_function_decl
+	      && TREE_USED (t)
+	      && (attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
+		 != NULL_TREE)
+	    {
+	      gcc_assert (!DECL_HAS_VALUE_EXPR_P (t));
+	      tree alloc = TREE_PURPOSE (TREE_VALUE (attr));
+	      tree align = TREE_VALUE (TREE_VALUE (attr));
+	      /* Allocate directives that appear in a target region must specify
+		 an allocator clause unless a requires directive with the
+		 dynamic_allocators clause is present in the same compilation
+		 unit.  */
+	      bool missing_dyn_alloc = false;
+	      if (alloc == NULL_TREE
+		  && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS)
+		      == 0))
+		{
+		  /* This comes too early for omp_discover_declare_target...,
+		     but should at least catch the most common cases.  */
+		  missing_dyn_alloc
+		    = cgraph_node::get (current_function_decl)->offloadable;
+		  for (struct gimplify_omp_ctx *ctx2 = ctx;
+		       ctx2 && !missing_dyn_alloc; ctx2 = ctx2->outer_context)
+		    if (ctx2->code == OMP_TARGET)
+		      missing_dyn_alloc = true;
+		}
+	      if (missing_dyn_alloc)
+		error_at (DECL_SOURCE_LOCATION (t),
+			  "%<allocate%> directive for %qD inside a target "
+			  "region must specify an %<allocator%> clause", t);
+	      /* Skip for omp_default_mem_alloc (= 1),
+		 unless align is present. */
+	      else if (!errorcount
+		       && (align != NULL_TREE
+			   || alloc == NULL_TREE
+			   || !integer_onep (alloc)))
+		{
+		  tree tmp = build_pointer_type (TREE_TYPE (t));
+		  tree v = create_tmp_var (tmp, get_name (t));
+		  DECL_IGNORED_P (v) = 0;
+		  tmp = remove_attribute ("omp allocate", DECL_ATTRIBUTES (t));
+		  DECL_ATTRIBUTES (v)
+		    = tree_cons (get_identifier ("omp allocate var"),
+				 build_tree_list (NULL_TREE, t), tmp);
+		  tmp = build_fold_indirect_ref (v);
+		  TREE_THIS_NOTRAP (tmp) = 1;
+		  SET_DECL_VALUE_EXPR (t, tmp);
+		  DECL_HAS_VALUE_EXPR_P (t) = 1;
+		  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (t));
+		  if (alloc == NULL_TREE)
+		    alloc = build_zero_cst (ptr_type_node);
+		  if (align == NULL_TREE)
+		    align = build_int_cst (size_type_node, DECL_ALIGN_UNIT (t));
+		  else
+		    align = build_int_cst (size_type_node,
+					   MAX (tree_to_uhwi (align),
+						DECL_ALIGN_UNIT (t)));
+		  tmp = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+		  tmp = build_call_expr_loc (DECL_SOURCE_LOCATION (t), tmp,
+					     3, align, sz, alloc);
+		  tmp = fold_build2_loc (DECL_SOURCE_LOCATION (t), MODIFY_EXPR,
+					 TREE_TYPE (v), v,
+					 fold_convert (TREE_TYPE (v), tmp));
+		  gcc_assert (BIND_EXPR_BODY (bind_expr) != NULL_TREE
+			      && (TREE_CODE (BIND_EXPR_BODY (bind_expr))
+				  == STATEMENT_LIST));
+		  tree_stmt_iterator e = tsi_start (BIND_EXPR_BODY (bind_expr));
+		  while (!tsi_end_p (e))
+		    {
+		      if ((TREE_CODE (*e) == DECL_EXPR
+			   && TREE_OPERAND (*e, 0) == t)
+			  || (TREE_CODE (*e) == CLEANUP_POINT_EXPR
+			      && TREE_CODE (TREE_OPERAND (*e, 0)) == DECL_EXPR
+			      && TREE_OPERAND (TREE_OPERAND (*e, 0), 0) == t))
+		      break;
+		      ++e;
+		    }
+		  gcc_assert (!tsi_end_p (e));
+		  tsi_link_before (&e, tmp, TSI_SAME_STMT);
+		}
+	    }
 
 	  /* Mark variable as local.  */
 	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t))
@@ -1446,22 +1532,6 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   cleanup = NULL;
   stack_save = NULL;
 
-  /* If the code both contains VLAs and calls alloca, then we cannot reclaim
-     the stack space allocated to the VLAs.  */
-  if (gimplify_ctxp->save_stack && !gimplify_ctxp->keep_stack)
-    {
-      gcall *stack_restore;
-
-      /* Save stack on entry and restore it on exit.  Add a try_finally
-	 block to achieve this.  */
-      build_stack_save_restore (&stack_save, &stack_restore);
-
-      gimple_set_location (stack_save, start_locus);
-      gimple_set_location (stack_restore, end_locus);
-
-      gimplify_seq_add_stmt (&cleanup, stack_restore);
-    }
-
   /* Add clobbers for all variables that go out of scope.  */
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = DECL_CHAIN (t))
     {
@@ -1469,6 +1539,17 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  && !is_global_var (t)
 	  && DECL_CONTEXT (t) == current_function_decl)
 	{
+	  if (flag_openmp
+	      && DECL_HAS_VALUE_EXPR_P (t)
+	      && TREE_USED (t)
+	      && lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
+	    {
+	      tree tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+	      tmp = build_call_expr_loc (end_locus, tmp, 2,
+					 TREE_OPERAND (DECL_VALUE_EXPR (t), 0),
+					 build_zero_cst (ptr_type_node));
+	      gimplify_and_add (tmp, &cleanup);
+	    }
 	  if (!DECL_HARD_REGISTER (t)
 	      && !TREE_THIS_VOLATILE (t)
 	      && !DECL_HAS_VALUE_EXPR_P (t)
@@ -1523,6 +1604,22 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       if (gimplify_ctxp->live_switch_vars != NULL
 	  && gimplify_ctxp->live_switch_vars->contains (t))
 	gimplify_ctxp->live_switch_vars->remove (t);
+    }
+
+  /* If the code both contains VLAs and calls alloca, then we cannot reclaim
+     the stack space allocated to the VLAs.  */
+  if (gimplify_ctxp->save_stack && !gimplify_ctxp->keep_stack)
+    {
+      gcall *stack_restore;
+
+      /* Save stack on entry and restore it on exit.  Add a try_finally
+	 block to achieve this.  */
+      build_stack_save_restore (&stack_save, &stack_restore);
+
+      gimple_set_location (stack_save, start_locus);
+      gimple_set_location (stack_restore, end_locus);
+
+      gimplify_seq_add_stmt (&cleanup, stack_restore);
     }
 
   if (ret_clauses)
@@ -3663,7 +3760,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 
       case BUILT_IN_VA_START:
         {
-	  builtin_va_start_p = TRUE;
+	  builtin_va_start_p = true;
 	  if (call_expr_nargs (*expr_p) < 2)
 	    {
 	      error ("too few arguments to function %<va_start%>");
@@ -5980,6 +6077,7 @@ is_gimple_stmt (tree t)
     case OMP_SCOPE:
     case OMP_SECTIONS:
     case OMP_SECTION:
+    case OMP_STRUCTURED_BLOCK:
     case OMP_SINGLE:
     case OMP_MASTER:
     case OMP_MASKED:
@@ -7852,6 +7950,13 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 
   if (error_operand_p (decl))
     return false;
+
+  if (DECL_ARTIFICIAL (decl))
+    {
+      tree attr = lookup_attribute ("omp allocate var", DECL_ATTRIBUTES (decl));
+      if (attr)
+	decl = TREE_VALUE (TREE_VALUE (attr));
+    }
 
   if (ctx->region_type == ORT_NONE)
     return lang_hooks.decls.omp_disregard_value_expr (decl, false);
@@ -12037,6 +12142,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  switch (OMP_CLAUSE_DEFAULTMAP_CATEGORY (c))
 	    {
 	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL:
 	      gdmkmin = GDMK_SCALAR;
 	      gdmkmax = GDMK_POINTER;
 	      break;
@@ -17036,6 +17142,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case OMP_SECTION:
+	case OMP_STRUCTURED_BLOCK:
 	case OMP_MASTER:
 	case OMP_MASKED:
 	case OMP_ORDERED:
@@ -17054,6 +17161,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      case OMP_SECTION:
 	        g = gimple_build_omp_section (body);
 	        break;
+	      case OMP_STRUCTURED_BLOCK:
+		g = gimple_build_omp_structured_block (body);
+		break;
 	      case OMP_MASTER:
 		g = gimple_build_omp_master (body);
 		break;
@@ -17454,6 +17564,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != OMP_SCAN
 		  && code != OMP_SECTIONS
 		  && code != OMP_SECTION
+		  && code != OMP_STRUCTURED_BLOCK
 		  && code != OMP_SINGLE
 		  && code != OMP_SCOPE);
     }

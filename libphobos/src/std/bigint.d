@@ -323,7 +323,15 @@ public:
         else static if (op=="^^")
         {
             sign = (y & 1) ? sign : false;
-            data = BigUint.pow(data, u);
+            if (y < 0)
+            {
+                checkDivByZero();
+                data = cast(ulong) (data == 1);
+            }
+            else
+            {
+                data = BigUint.pow(data, u);
+            }
         }
         else static if (op=="&")
         {
@@ -409,6 +417,19 @@ public:
     `479552708416124555462530834668011570929850407031109157206202741051573633443` ~
     `58105600`
         ));
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=24028
+    @system unittest
+    {
+        import std.exception : assertThrown;
+        import core.exception : AssertError;
+
+        assert(BigInt(100) ^^ -1 == BigInt(0));
+        assert(BigInt(1) ^^ -1 == BigInt(1));
+        assert(BigInt(-1) ^^ -1 == BigInt(-1));
+        assert(BigInt(-1) ^^ -2 == BigInt(1));
+        assertThrown!AssertError(BigInt(0) ^^ -1);
     }
 
     /**

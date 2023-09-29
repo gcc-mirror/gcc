@@ -1,0 +1,81 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -O3 --param=riscv-autovec-lmul=m8" } */
+
+#include "def.h"
+
+DEF_REDUC_BITWISE (int8_t, and, &=, 4)
+DEF_REDUC_BITWISE (int8_t, and, &=, 8)
+DEF_REDUC_BITWISE (int8_t, and, &=, 16)
+DEF_REDUC_BITWISE (int8_t, and, &=, 32)
+DEF_REDUC_BITWISE (int8_t, and, &=, 64)
+DEF_REDUC_BITWISE (int8_t, and, &=, 128)
+DEF_REDUC_BITWISE (int8_t, and, &=, 256)
+DEF_REDUC_BITWISE (int8_t, and, &=, 512)
+DEF_REDUC_BITWISE (int8_t, and, &=, 1024)
+DEF_REDUC_BITWISE (int8_t, and, &=, 2048)
+DEF_REDUC_BITWISE (int8_t, and, &=, 4096)
+
+DEF_REDUC_BITWISE (uint8_t, and, &=, 4)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 8)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 16)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 32)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 64)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 128)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 256)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 512)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 1024)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 2048)
+DEF_REDUC_BITWISE (uint8_t, and, &=, 4096)
+
+DEF_REDUC_BITWISE (int8_t, ior, |=, 4)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 8)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 16)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 32)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 64)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 128)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 256)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 512)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 1024)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 2048)
+DEF_REDUC_BITWISE (int8_t, ior, |=, 4096)
+
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 4)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 8)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 16)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 32)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 64)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 128)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 256)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 512)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 1024)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 2048)
+DEF_REDUC_BITWISE (uint8_t, ior, |=, 4096)
+
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 4)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 8)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 16)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 32)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 64)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 128)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 256)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 512)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 1024)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 2048)
+DEF_REDUC_BITWISE (int8_t, xor, ^=, 4096)
+
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 4)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 8)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 16)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 32)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 64)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 128)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 256)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 512)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 1024)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 2048)
+DEF_REDUC_BITWISE (uint8_t, xor, ^=, 4096)
+
+/* { dg-final { scan-assembler-times {vredand\.vs} 22 } } */
+/* { dg-final { scan-assembler-times {vredor\.vs} 22 } } */
+/* { dg-final { scan-assembler-times {vredxor\.vs} 22 } } */
+/* { dg-final { scan-assembler-not {csrr} } } */

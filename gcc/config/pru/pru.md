@@ -1489,6 +1489,68 @@
     gcc_unreachable ();
 })
 
+;; Emit efficient code for two specific cstore cases:
+;;   X == 0
+;;   X != 0
+;;
+;; These can be efficiently compiled on the PRU using the umin
+;; instruction.
+;;
+;; This expansion does not handle "X > 0 unsigned" and "X >= 1 unsigned"
+;; because it is assumed that those would have been replaced with the
+;; canonical "X != 0".
+(define_expand "cstore<mode>4"
+  [(set (match_operand:QISI 0 "register_operand")
+	(match_operator:QISI 1 "pru_cstore_comparison_operator"
+	  [(match_operand:QISI 2 "register_operand")
+	   (match_operand:QISI 3 "const_0_operand")]))]
+  ""
+{
+  const enum rtx_code op1code = GET_CODE (operands[1]);
+
+  /* Crash if OP1 is GTU.  It would mean that "X > 0 unsigned"
+     had not been canonicalized before calling this expansion.  */
+  gcc_assert (op1code == NE || op1code == EQ);
+  gcc_assert (CONST_INT_P (operands[3]) && INTVAL (operands[3]) == 0);
+
+  if (op1code == NE)
+    {
+      emit_insn (gen_umin<mode>3 (operands[0], operands[2], const1_rtx));
+      DONE;
+    }
+  else if (op1code == EQ)
+    {
+      rtx tmpval = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_umin<mode>3 (tmpval, operands[2], const1_rtx));
+      emit_insn (gen_xor<mode>3 (operands[0], tmpval, const1_rtx));
+      DONE;
+    }
+
+  gcc_unreachable ();
+})
+
+(define_expand "cstoredi4"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "pru_cstore_comparison_operator"
+	  [(match_operand:DI 2 "register_operand")
+	   (match_operand:DI 3 "const_0_operand")]))]
+  ""
+{
+  /* Combining the two SImode suboperands with IOR works only for
+     the currently supported set of cstoresi3 operations.  */
+  const enum rtx_code op1code = GET_CODE (operands[1]);
+  gcc_assert (op1code == NE || op1code == EQ);
+  gcc_assert (CONST_INT_P (operands[3]) && INTVAL (operands[3]) == 0);
+
+  rtx tmpval = gen_reg_rtx (SImode);
+  rtx src_lo = simplify_gen_subreg (SImode, operands[2], DImode, 0);
+  rtx src_hi = simplify_gen_subreg (SImode, operands[2], DImode, 4);
+  emit_insn (gen_iorsi3 (tmpval, src_lo, src_hi));
+  emit_insn (gen_cstoresi4 (operands[0], operands[1], tmpval, const0_rtx));
+
+  DONE;
+})
+
 ;
 ; Bit test branch
 

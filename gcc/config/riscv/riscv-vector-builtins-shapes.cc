@@ -706,6 +706,55 @@ struct vget_def : public misc_def
   }
 };
 
+/* vcreate_def class.  */
+struct vcreate_def : public build_base
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    for (unsigned int vec_type_idx = 0;
+	 group.ops_infos.types[vec_type_idx].index != NUM_VECTOR_TYPES;
+	 ++vec_type_idx)
+      {
+	  auto_vec<tree, 8> argument_types;
+	  function_instance function_instance (group.base_name, *group.base,
+					      *group.shape,
+					      group.ops_infos.types[vec_type_idx],
+					      group.preds[0], &group.ops_infos);
+
+	  tree return_type = group.ops_infos.ret.get_tree_type (
+	    group.ops_infos.types[vec_type_idx].index);
+
+	  if (!return_type)
+	    continue;
+
+	  machine_mode mode = TYPE_MODE (return_type);
+	  unsigned int nf = get_nf (mode);
+
+	  for (unsigned int i = 0; i < nf; i++)
+	    argument_types.quick_push (
+	      function_instance.op_info->args[0].get_tree_type (
+	        function_instance.type.index));
+
+	  b.add_unique_function (function_instance, (*group.shape), return_type,
+	    argument_types);
+     }
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    b.append_name (operand_suffixes[instance.op_info->op]);
+    vector_type_index ret_type_idx
+      = instance.op_info->ret.get_function_type_index (instance.type.index);
+    b.append_name (type_suffixes[ret_type_idx].vector);
+    return b.finish_name ();
+  }
+};
+
 /* read_vl_def class.  */
 struct read_vl_def : public function_shape
 {
@@ -942,6 +991,7 @@ SHAPE(vundefined, vundefined)
 SHAPE(misc, misc)
 SHAPE(vset, vset)
 SHAPE(vget, vget)
+SHAPE(vcreate, vcreate)
 SHAPE(read_vl, read_vl)
 SHAPE(fault_load, fault_load)
 SHAPE(vlenb, vlenb)

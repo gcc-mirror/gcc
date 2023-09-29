@@ -8938,10 +8938,16 @@ package body Sem_Util is
    -- Find_Enclosing_Scope --
    --------------------------
 
-   function Find_Enclosing_Scope (N : Node_Id) return Entity_Id is
+   function Find_Enclosing_Scope (N : Node_Id) return Scope_Kind_Id is
       Par : Node_Id;
 
    begin
+      --  If N is an entity, simply return its Scope
+
+      if Nkind (N) in N_Entity then
+         return Scope (N);
+      end if;
+
       --  Examine the parent chain looking for a construct which defines a
       --  scope.
 
@@ -16509,8 +16515,13 @@ package body Sem_Util is
             --  False (it could be a function selector in a prefix form call
             --  occurring in an iterator specification).
 
-            if Ekind (Entity (Selector_Name (Object))) not in
-                 E_Component | E_Discriminant
+            if (Present (Entity (Selector_Name (Object)))
+                  and then Ekind (Entity (Selector_Name (Object))) not in
+                             E_Component | E_Discriminant)
+              or else
+                (Inside_A_Generic
+                   and then Nkind (Parent (Selector_Name (Object)))
+                              = N_Function_Call)
             then
                return False;
             end if;
@@ -22575,7 +22586,9 @@ package body Sem_Util is
                      Ityp : Entity_Id;
 
                   begin
-                     if Is_Array_Type (Comp_Type) then
+                     if Present (Comp_Type)
+                       and then Is_Array_Type (Comp_Type)
+                     then
                         Indx := First_Index (Comp_Type);
 
                         while Present (Indx) loop

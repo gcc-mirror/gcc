@@ -10,7 +10,7 @@ softfp_extensions := hfsf hfdf hftf hfxf sfdf sftf dftf xftf bfsf
 softfp_truncations := tfhf xfhf dfhf sfhf tfsf dfsf tfdf tfxf \
 		      tfbf xfbf dfbf sfbf hfbf
 
-softfp_extras += eqhf2
+softfp_extras += eqhf2 fixxfbitint $(foreach m,hf bf xf,floatbitint$(m))
 
 CFLAGS-extendhfsf2.c += -msse2
 CFLAGS-extendhfdf2.c += -msse2
@@ -27,6 +27,9 @@ CFLAGS-truncdfbf2.c += -msse2
 CFLAGS-truncxfbf2.c += -msse2
 CFLAGS-trunctfbf2.c += -msse2
 CFLAGS-trunchfbf2.c += -msse2
+
+CFLAGS-floatbitintbf.c += -msse2
+CFLAGS-floatbitinthf.c += -msse2
 
 CFLAGS-eqhf2.c += -msse2
 CFLAGS-_divhc3.c += -msse2

@@ -6,12 +6,15 @@
 			      TYPE1 *restrict a, int n)		  \
   {								  \
     for (int i = 0; i < n; i++)					  \
-      dst[i] = (TYPE2) a[i];                                      \
+      dst[i] = (TYPE2) (a[i] & 0x7ffffffful);			  \
   }
+
 
 #define TEST_ALL()						  \
   TEST (int64_t, float)						  \
   TEST (uint64_t, float)					  \
+  TEST (int64_t, _Float16)					  \
+  TEST (uint64_t, _Float16)					  \
   TEST (int32_t, _Float16)					  \
   TEST (uint32_t, _Float16)					  \
 

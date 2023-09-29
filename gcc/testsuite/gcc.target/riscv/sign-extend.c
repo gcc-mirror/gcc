@@ -69,13 +69,13 @@ foo11 (unsigned x)
   return x & (15 + x);
 }
 
-/* { dg-final { scan-assembler-times "subw" 2 } } */
-/* { dg-final { scan-assembler-times "addw" 1 } } */
-/* { dg-final { scan-assembler-times "addiw" 1 } } */
-/* { dg-final { scan-assembler-times "mulw" 2 } } */
-/* { dg-final { scan-assembler-times "divw" 1 } } */
-/* { dg-final { scan-assembler-times "divuw" 1 } } */
-/* { dg-final { scan-assembler-times "remw" 1 } } */
-/* { dg-final { scan-assembler-times "remuw" 1 } } */
-/* { dg-final { scan-assembler-times "negw" 1 } } */
-/* { dg-final { scan-assembler-not "sext.w" } } */
+/* { dg-final { scan-assembler-times {\msubw} 2 } } */
+/* { dg-final { scan-assembler-times {\maddw} 1 } } */
+/* { dg-final { scan-assembler-times {\maddiw} 1 } } */
+/* { dg-final { scan-assembler-times {\mmulw} 2 } } */
+/* { dg-final { scan-assembler-times {\mdivw} 1 } } */
+/* { dg-final { scan-assembler-times {\mdivuw} 1 } } */
+/* { dg-final { scan-assembler-times {\mremw} 1 } } */
+/* { dg-final { scan-assembler-times {\mremuw} 1 } } */
+/* { dg-final { scan-assembler-times {\mnegw} 1 } } */
+/* { dg-final { scan-assembler-not {\msext\.w\M} } } */

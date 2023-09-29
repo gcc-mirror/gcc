@@ -1,3 +1,12 @@
+2023-09-19  Thomas Schwinge  <thomas@codesourcery.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* lto-common.cc (lto_mode_identity_table): Remove.
+	(lto_file_finalize) [!ACCEL_COMPILER]: 'NULL'-intialize
+	'file_data->mode_table'.
+	(lto_fe_init): Don't initialize 'lto_mode_identity_table'.
+	* lto-common.h (lto_mode_identity_table): Remove.
+
 2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
 	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 

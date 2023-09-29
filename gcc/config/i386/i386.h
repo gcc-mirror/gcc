@@ -1080,9 +1080,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_MASK_AVX10_MODE(MODE) ((MODE) == SImode || (MODE) == HImode \
-				       || (MODE) == QImode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
    || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)
@@ -2203,7 +2200,7 @@ extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Which processor to tune code generation for.  These must be in sync
-   with processor_target_table in i386.cc.  */ 
+   with processor_cost_table in i386-options.cc.  */
 
 enum processor_type
 {
@@ -2240,7 +2237,9 @@ enum processor_type
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
   PROCESSOR_GRANITERAPIDS,
+  PROCESSOR_GRANITERAPIDS_D,
   PROCESSOR_ARROWLAKE,
+  PROCESSOR_ARROWLAKE_S,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,

@@ -2983,6 +2983,21 @@
   const unsigned long long __builtin_unpack_dec128 (_Decimal128, const int<1>);
     UNPACK_TD unpacktd {}
 
+  const _Decimal64 __builtin_dfp_dqua (_Decimal64, _Decimal64, \
+				       const int<2>);
+    DFPQUAN_64 dfp_dqua_dd {}
+
+  const _Decimal64 __builtin_dfp_dquai (const int<5>, _Decimal64, \
+					const int<2>);
+    DFPQUAN_64i dfp_dquai_dd {}
+
+  const _Decimal128 __builtin_dfp_dquaq (_Decimal128, _Decimal128, \
+					 const int<2>);
+    DFPQUAN_128 dfp_dqua_td {}
+
+  const _Decimal128 __builtin_dfp_dquaqi (const int<5>, _Decimal128, \
+					  const int<2>);
+    DFPQUAN_128i dfp_dquai_td {}
 
 [crypto]
   const vull __builtin_crypto_vcipher (vull, vull);

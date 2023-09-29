@@ -342,7 +342,7 @@ new_saved_hard_reg (int regno, int call_freq)
   saved_reg->num = saved_regs_num++;
   saved_reg->hard_regno = regno;
   saved_reg->call_freq = call_freq;
-  saved_reg->first_p = FALSE;
+  saved_reg->first_p = false;
   saved_reg->next = -1;
 }
 
@@ -558,7 +558,7 @@ setup_save_areas (void)
 					+ saved_reg2->num]
 		      = saved_reg_conflicts[saved_reg2->num * saved_regs_num
 					    + saved_reg->num]
-		      = TRUE;
+		      = true;
 		  }
 	    }
 	}
@@ -608,7 +608,7 @@ setup_save_areas (void)
 	    }
 	  if (j == i)
 	    {
-	      saved_reg->first_p = TRUE;
+	      saved_reg->first_p = true;
 	      for (best_slot_num = -1, j = 0; j < prev_save_slots_num; j++)
 		{
 		  slot = prev_save_slots[j];

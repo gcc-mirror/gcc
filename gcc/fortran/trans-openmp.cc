@@ -4443,6 +4443,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_DEFAULTMAP_CAT_UNCATEGORIZED:
 	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 	  break;
+	case OMP_DEFAULTMAP_CAT_ALL:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL;
+	  break;
 	case OMP_DEFAULTMAP_CAT_SCALAR:
 	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR;
 	  break;

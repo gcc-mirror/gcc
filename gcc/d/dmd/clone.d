@@ -1263,7 +1263,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
         // block to destroy any prior successfully postblitted fields should
         // this field's postblit fail.
         // Don't generate it for betterC code since it cannot throw exceptions.
-        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow && !global.params.betterC)
+        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow && global.params.useExceptions)
         {
              // create a list of destructors that need to be called
             Expression[] dtorCalls;

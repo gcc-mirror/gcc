@@ -41,7 +41,8 @@
     else
 	gcc_unreachable ();
   }
-  [(set (attr "length") (const_int 4))])
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 4))])
 
 ;; Atomic memory operations.
 
@@ -66,7 +67,7 @@
     else
       return "l<amo>\t%0,%1";
   }
-  [(set_attr "type" "atomic")
+  [(set_attr "type" "multi")
    (set (attr "length") (const_int 12))])
 
 ;; Implement atomic stores with conservative fences.
@@ -92,5 +93,5 @@
     else
       return "s<amo>\t%z1,%0";
   }
-  [(set_attr "type" "atomic")
+  [(set_attr "type" "multi")
    (set (attr "length") (const_int 12))])

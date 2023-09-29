@@ -8519,7 +8519,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && ((Nkind (Parent (gnat_node)) == N_Attribute_Reference
 	        && lvalue_required_for_attribute_p (Parent (gnat_node)))
 	       || (Nkind (Parent (gnat_node)) == N_Simple_Return_Statement
-		   && No (Storage_Pool (gnat_node)))))
+		   && No (Storage_Pool (Parent (gnat_node))))))
     ;
 
   else if (TREE_TYPE (gnu_result) != gnu_result_type)

@@ -295,7 +295,8 @@ struct MD5
          */
         void put(scope const(ubyte)[] data...) @trusted pure nothrow @nogc
         {
-            uint i, index, partLen;
+            size_t i;
+            uint index, partLen;
             auto inputLen = data.length;
 
             //Compute number of bytes mod 64

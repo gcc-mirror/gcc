@@ -2944,7 +2944,7 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   /* Check the operands.  */
   unsigned int nops = gimple_num_ops (last_stmt) - first_op;
   auto_vec <vect_unpromoted_value, 3> unprom (nops);
-  unprom.quick_grow (nops);
+  unprom.quick_grow_cleared (nops);
   unsigned int min_precision = 0;
   bool single_use_p = false;
   for (unsigned int i = 0; i < nops; ++i)
@@ -3121,7 +3121,7 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 	    = gimple_build_assign (new_var, MIN_EXPR, ops[1],
 				   build_int_cst (op_type, new_precision - 1));
 	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
-	  if (unprom[1].dt == vect_external_def)
+	  if (ops[1] == unprom[1].op && unprom[1].dt == vect_external_def)
 	    {
 	      if (edge e = vect_get_external_def_edge (vinfo, ops[1]))
 		{

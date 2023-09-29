@@ -111,6 +111,24 @@ extern void *ggc_realloc (void *, size_t MEM_STAT_DECL);
    the 'space' predicate will tell you whether there is spare capacity
    in the vector.  You will not normally need to use these two functions.
 
+   Not all vector operations support non-POD types and such restrictions
+   are enforced through static assertions.  Some operations which often use
+   memmove to move elements around like quick_insert, safe_insert,
+   ordered_remove, unordered_remove, block_remove etc. require trivially
+   copyable types.  Sorting operations, qsort, sort and stablesort, require
+   those too but as an extension allow also std::pair of 2 trivially copyable
+   types which happens to work even when std::pair itself isn't trivially
+   copyable.  The quick_grow and safe_grow operations require trivially
+   default constructible types.  One can use quick_grow_cleared or
+   safe_grow_cleared for non-trivially default constructible types if needed
+   (but of course such operation is more expensive then).  The pop operation
+   returns reference to the last element only for trivially destructible
+   types, for non-trivially destructible types one should use last operation
+   followed by pop which in that case returns void.
+   And finally, the GC and GC atomic vectors should always be used with
+   trivially destructible types, as nothing will invoke destructors when they
+   are freed during GC.
+
    Notes on the different layout strategies
 
    * Embeddable vectors (vec<T, A, vl_embed>)
@@ -184,6 +202,16 @@ extern void dump_vec_loc_statistics (void);
 
 /* Hashtable mapping vec addresses to descriptors.  */
 extern htab_t vec_mem_usage_hash;
+
+/* Destruct N elements in DST.  */
+
+template <typename T>
+inline void
+vec_destruct (T *dst, unsigned n)
+{
+  for ( ; n; ++dst, --n)
+    dst->~T ();
+}
 
 /* Control data for vectors.  This contains the number of allocated
    and used slots inside a vector.  */
@@ -309,6 +337,9 @@ va_heap::release (vec<T, va_heap, vl_embed> *&v)
   size_t elt_size = sizeof (T);
   if (v == NULL)
     return;
+
+  if (!std::is_trivially_destructible <T>::value)
+    vec_destruct (v->address (), v->length ());
 
   if (GATHER_STATISTICS)
     v->m_vecpfx.release_overhead (v, elt_size * v->allocated (),
@@ -512,21 +543,6 @@ template <typename T>
 inline void
 vec_default_construct (T *dst, unsigned n)
 {
-#ifdef BROKEN_VALUE_INITIALIZATION
-  /* Versions of GCC before 4.4 sometimes leave certain objects
-     uninitialized when value initialized, though if the type has
-     user defined default ctor, that ctor is invoked.  As a workaround
-     perform clearing first and then the value initialization, which
-     fixes the case when value initialization doesn't initialize due to
-     the bugs and should initialize to all zeros, but still allows
-     vectors for types with user defined default ctor that initializes
-     some or all elements to non-zero.  If T has no user defined
-     default ctor and some non-static data members have user defined
-     default ctors that initialize to non-zero the workaround will
-     still not work properly; in that case we just need to provide
-     user defined default ctor.  */
-  memset (dst, '\0', sizeof (T) * n);
-#endif
   for ( ; n; ++dst, --n)
     ::new (static_cast<void*>(dst)) T ();
 }
@@ -603,7 +619,10 @@ public:
   void splice (const vec &);
   void splice (const vec *src);
   T *quick_push (const T &);
-  T &pop (void);
+  using pop_ret_type
+    = typename std::conditional <std::is_trivially_destructible <T>::value,
+				 T &, void>::type;
+  pop_ret_type pop (void);
   void truncate (unsigned);
   void quick_insert (unsigned, const T &);
   void ordered_remove (unsigned);
@@ -750,8 +769,9 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len,
 		       bool exact = false CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
-  vec_safe_grow (v, len, exact PASS_MEM_STAT);
-  vec_default_construct (v->address () + oldlen, len - oldlen);
+  gcc_checking_assert (len >= oldlen);
+  vec_safe_reserve (v, len - oldlen, exact PASS_MEM_STAT);
+  v->quick_grow_cleared (len);
 }
 
 
@@ -1020,19 +1040,24 @@ vec<T, A, vl_embed>::quick_push (const T &obj)
 {
   gcc_checking_assert (space (1));
   T *slot = &address ()[m_vecpfx.m_num++];
-  *slot = obj;
+  ::new (static_cast<void*>(slot)) T (obj);
   return slot;
 }
 
 
-/* Pop and return the last element off the end of the vector.  */
+/* Pop and return a reference to the last element off the end of the
+   vector.  If T has non-trivial destructor, this method just pops
+   the element and returns void type.  */
 
 template<typename T, typename A>
-inline T &
+inline typename vec<T, A, vl_embed>::pop_ret_type
 vec<T, A, vl_embed>::pop (void)
 {
   gcc_checking_assert (length () > 0);
-  return address ()[--m_vecpfx.m_num];
+  T &last = address ()[--m_vecpfx.m_num];
+  if (!std::is_trivially_destructible <T>::value)
+    last.~T ();
+  return static_cast <pop_ret_type> (last);
 }
 
 
@@ -1043,13 +1068,17 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::truncate (unsigned size)
 {
-  gcc_checking_assert (length () >= size);
+  unsigned l = length ();
+  gcc_checking_assert (l >= size);
+  if (!std::is_trivially_destructible <T>::value)
+    vec_destruct (address () + size, l - size);
   m_vecpfx.m_num = size;
 }
 
 
 /* Insert an element, OBJ, at the IXth position of this vector.  There
-   must be sufficient space.  */
+   must be sufficient space.  This operation is not suitable for non-trivially
+   copyable types.  */
 
 template<typename T, typename A>
 inline void
@@ -1057,6 +1086,12 @@ vec<T, A, vl_embed>::quick_insert (unsigned ix, const T &obj)
 {
   gcc_checking_assert (length () < allocated ());
   gcc_checking_assert (ix <= length ());
+#if GCC_VERSION >= 5000
+  /* GCC 4.8 and 4.9 only implement std::is_trivially_destructible,
+     but not std::is_trivially_copyable nor
+     std::is_trivially_default_constructible.  */
+  static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   memmove (slot + 1, slot, (m_vecpfx.m_num++ - ix) * sizeof (T));
   *slot = obj;
@@ -1065,13 +1100,16 @@ vec<T, A, vl_embed>::quick_insert (unsigned ix, const T &obj)
 
 /* Remove an element from the IXth position of this vector.  Ordering of
    remaining elements is preserved.  This is an O(N) operation due to
-   memmove.  */
+   memmove.  Not suitable for non-trivially copyable types.  */
 
 template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
+#if GCC_VERSION >= 5000
+  static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   memmove (slot, slot + 1, (--m_vecpfx.m_num - ix) * sizeof (T));
 }
@@ -1119,6 +1157,9 @@ inline void
 vec<T, A, vl_embed>::unordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
+#if GCC_VERSION >= 5000
+  static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *p = address ();
   p[ix] = p[--m_vecpfx.m_num];
 }
@@ -1132,11 +1173,35 @@ inline void
 vec<T, A, vl_embed>::block_remove (unsigned ix, unsigned len)
 {
   gcc_checking_assert (ix + len <= length ());
+#if GCC_VERSION >= 5000
+  static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   m_vecpfx.m_num -= len;
   memmove (slot, slot + len, (m_vecpfx.m_num - ix) * sizeof (T));
 }
 
+
+#if GCC_VERSION >= 5000
+namespace vec_detail
+{
+  /* gcc_{qsort,qsort_r,stablesort_r} implementation under the hood
+     uses memcpy/memmove to reorder the array elements.
+     We want to assert these methods aren't used on types for which
+     that isn't appropriate, but unfortunately std::pair of 2 trivially
+     copyable types isn't trivially copyable and we use qsort on many
+     such std::pair instantiations.  Let's allow both trivially
+     copyable types and std::pair of 2 trivially copyable types as
+     exception for qsort/sort/stablesort.  */
+  template<typename T>
+  struct is_trivially_copyable_or_pair : std::is_trivially_copyable<T> { };
+
+  template<typename T, typename U>
+  struct is_trivially_copyable_or_pair<std::pair<T, U> >
+  : std::integral_constant<bool, std::is_trivially_copyable<T>::value
+    && std::is_trivially_copyable<U>::value> { };
+}
+#endif
 
 /* Sort the contents of this vector with qsort.  CMP is the comparison
    function to pass to qsort.  */
@@ -1145,6 +1210,9 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::qsort (int (*cmp) (const void *, const void *))
 {
+#if GCC_VERSION >= 5000
+  static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_qsort (address (), length (), sizeof (T), cmp);
 }
@@ -1157,6 +1225,9 @@ inline void
 vec<T, A, vl_embed>::sort (int (*cmp) (const void *, const void *, void *),
 			   void *data)
 {
+#if GCC_VERSION >= 5000
+  static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_sort_r (address (), length (), sizeof (T), cmp, data);
 }
@@ -1169,6 +1240,9 @@ inline void
 vec<T, A, vl_embed>::stablesort (int (*cmp) (const void *, const void *,
 					     void *), void *data)
 {
+#if GCC_VERSION >= 5000
+  static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_stablesort_r (address (), length (), sizeof (T), cmp, data);
 }
@@ -1341,6 +1415,9 @@ inline void
 vec<T, A, vl_embed>::quick_grow (unsigned len)
 {
   gcc_checking_assert (length () <= len && len <= m_vecpfx.m_alloc);
+#if GCC_VERSION >= 5000
+//  static_assert (std::is_trivially_default_constructible <T>::value, "");
+#endif
   m_vecpfx.m_num = len;
 }
 
@@ -1354,7 +1431,8 @@ vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
 {
   unsigned oldlen = length ();
   size_t growby = len - oldlen;
-  quick_grow (len);
+  gcc_checking_assert (length () <= len && len <= m_vecpfx.m_alloc);
+  m_vecpfx.m_num = len;
   if (growby != 0)
     vec_default_construct (address () + oldlen, growby);
 }
@@ -1365,6 +1443,7 @@ template<typename T>
 void
 gt_ggc_mx (vec<T, va_gc> *v)
 {
+  static_assert (std::is_trivially_destructible <T>::value, "");
   extern void gt_ggc_mx (T &);
   for (unsigned i = 0; i < v->length (); i++)
     gt_ggc_mx ((*v)[i]);
@@ -1374,6 +1453,7 @@ template<typename T>
 void
 gt_ggc_mx (vec<T, va_gc_atomic, vl_embed> *v ATTRIBUTE_UNUSED)
 {
+  static_assert (std::is_trivially_destructible <T>::value, "");
   /* Nothing to do.  Vectors of atomic types wrt GC do not need to
      be traversed.  */
 }
@@ -1533,7 +1613,10 @@ public:
   void safe_splice (const vec & CXX_MEM_STAT_INFO);
   T *quick_push (const T &);
   T *safe_push (const T &CXX_MEM_STAT_INFO);
-  T &pop (void);
+  using pop_ret_type
+    = typename std::conditional <std::is_trivially_destructible <T>::value,
+				 T &, void>::type;
+  pop_ret_type pop (void);
   void truncate (unsigned);
   void safe_grow (unsigned, bool = false CXX_MEM_STAT_INFO);
   void safe_grow_cleared (unsigned, bool = false CXX_MEM_STAT_INFO);
@@ -1642,8 +1725,8 @@ public:
 
   auto_vec& operator= (vec<T, va_heap>&& r)
     {
-	    if (this == &r)
-		    return *this;
+      if (this == &r)
+	return *this;
 
       gcc_assert (!r.using_auto_storage ());
       this->release ();
@@ -1654,8 +1737,8 @@ public:
 
   auto_vec& operator= (auto_vec<T> &&r)
     {
-	    if (this == &r)
-		    return *this;
+      if (this == &r)
+	return *this;
 
       gcc_assert (!r.using_auto_storage ());
       this->release ();
@@ -1675,7 +1758,7 @@ public:
   // You probably don't want to copy a vector, so these are deleted to prevent
   // unintentional use.  If you really need a copy of the vectors contents you
   // can use copy ().
-  auto_vec(const auto_vec &) = delete;
+  auto_vec (const auto_vec &) = delete;
   auto_vec &operator= (const auto_vec &) = delete;
 };
 
@@ -2001,10 +2084,12 @@ vec<T, va_heap, vl_ptr>::safe_push (const T &obj MEM_STAT_DECL)
 }
 
 
-/* Pop and return the last element off the end of the vector.  */
+/* Pop and return a reference to the last element off the end of the
+   vector.  If T has non-trivial destructor, this method just pops
+   last element and returns void.  */
 
 template<typename T>
-inline T &
+inline typename vec<T, va_heap, vl_ptr>::pop_ret_type
 vec<T, va_heap, vl_ptr>::pop (void)
 {
   return m_vec->pop ();
@@ -2053,10 +2138,12 @@ vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len, bool exact
 					    MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
-  size_t growby = len - oldlen;
-  safe_grow (len, exact PASS_MEM_STAT);
-  if (growby != 0)
-    vec_default_construct (address () + oldlen, growby);
+  gcc_checking_assert (oldlen <= len);
+  reserve (len - oldlen, exact PASS_MEM_STAT);
+  if (m_vec)
+    m_vec->quick_grow_cleared (len);
+  else
+    gcc_checking_assert (len == 0);
 }
 
 

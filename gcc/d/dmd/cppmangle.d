@@ -139,7 +139,7 @@ private struct Context
      * Returns:
      *   The previous state of this `Context` object
      */
-    private Context push(lazy RootObject next)
+    private Context push(lazy RootObject next) @safe
     {
         auto r = this.res;
         if (r !is null)
@@ -150,7 +150,7 @@ private struct Context
     /**
      * Reset the context to a previous one, making any adjustment necessary
      */
-    private void pop(ref Context prev)
+    private void pop(ref Context prev) @safe
     {
         this.res = prev.res;
     }
@@ -236,7 +236,7 @@ private final class CppMangleVisitor : Visitor
      * See-Also:
      *  https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.seq-id
      */
-    private void writeSequenceFromIndex(size_t idx)
+    private void writeSequenceFromIndex(size_t idx) @safe
     {
         if (idx)
         {
@@ -1597,7 +1597,7 @@ private final class CppMangleVisitor : Visitor
      *   or `params.length` if there wasn't any match.
      */
     private static size_t templateParamIndex(
-        const ref Identifier ident, TemplateParameters* params)
+        const ref Identifier ident, TemplateParameters* params) @safe
     {
         foreach (idx, param; *params)
             if (param.ident == ident)
@@ -2131,7 +2131,7 @@ private void visitObject(V : Visitor)(RootObject o, V this_)
 }
 
 /// Helper function to safely get a type out of a `RootObject`
-private Type asType(RootObject o)
+private Type asType(RootObject o) @safe
 {
     if (Type ta = isType(o))
         return ta;
@@ -2143,7 +2143,7 @@ private Type asType(RootObject o)
 }
 
 /// Helper function to safely get a `FuncDeclaration` out of a `RootObject`
-private FuncDeclaration asFuncDecl(RootObject o)
+private FuncDeclaration asFuncDecl(RootObject o) @safe
 {
     Dsymbol d = isDsymbol(o);
     assert(d !is null);
@@ -2177,7 +2177,7 @@ private extern(C++) final class ComponentVisitor : Visitor
     /// Set to the result of the comparison
     private bool result;
 
-    public this(RootObject base)
+    public this(RootObject base) @safe
     {
         switch (base.dyncast())
         {
@@ -2353,7 +2353,7 @@ private bool isNamespaceEqual (CPPNamespaceDeclaration a, Nspace b, size_t idx =
 
 /// Returns:
 ///   Whether  two `CPPNamespaceDeclaration` are equals
-private bool isNamespaceEqual (CPPNamespaceDeclaration a, CPPNamespaceDeclaration b)
+private bool isNamespaceEqual (CPPNamespaceDeclaration a, CPPNamespaceDeclaration b) @safe
 {
     if (a is null || b is null)
         return false;
@@ -2558,7 +2558,7 @@ void leftOver(TypeFunction tf, const(Array!StringExp)* previous, Array!StringExp
         private const(Array!StringExp)* ignore;
 
         ///
-        public this(const(Array!StringExp)* previous, Array!StringExp* toWrite)
+        public this(const(Array!StringExp)* previous, Array!StringExp* toWrite) @safe
         {
             this.ignore = previous;
             this.toWrite = toWrite;

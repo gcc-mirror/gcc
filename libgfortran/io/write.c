@@ -1179,6 +1179,15 @@ xtoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   uint8_t h, l;
   int i;
 
+  /* write_z, which calls xtoa_big, is called from transfer.c,
+     formatted_transfer_scalar_write.  There it is passed the kind as
+     'len' argument, which means a maximum of 16.  The buffer is large
+     enough, but the compiler does not know that, so shut up the
+     warning here.  */
+
+  if (len > 16)
+    __builtin_unreachable ();
+
   q = buffer;
 
   if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
@@ -1212,15 +1221,7 @@ xtoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 	}
     }
 
-  /* write_z, which calls xtoa_big, is called from transfer.c,
-     formatted_transfer_scalar_write.  There it is passed the kind as
-     argument, which means a maximum of 16.  The buffer is large
-     enough, but the compiler does not know that, so shut up the
-     warning here.  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
   *q = '\0';
-#pragma GCC diagnostic pop
 
   if (*n == 0)
     return "0";

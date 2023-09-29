@@ -34,6 +34,7 @@ public:
   /* Build an unconditional op.  */
   gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE) {}
   gimple_match_cond (tree, tree);
+  gimple_match_cond (tree, tree, tree, tree);
 
   gimple_match_cond any_else () const;
 
@@ -44,6 +45,13 @@ public:
   /* The value to use when the condition is false.  This is NULL_TREE if
      the operation is unconditional or if the value doesn't matter.  */
   tree else_value;
+
+  /* The length and bias parameters to be applied to a vector operation,
+     so that the condition is forced to false when the element index is
+     >= LEN + BIAS.  These are NULL_TREE if the operation isn't applied
+     to vectors, or if no such length limit is in use.  */
+  tree len;
+  tree bias;
 };
 
 inline
@@ -51,6 +59,12 @@ gimple_match_cond::gimple_match_cond (tree cond_in, tree else_value_in)
   : cond (cond_in), else_value (else_value_in)
 {
 }
+
+inline
+gimple_match_cond::gimple_match_cond (tree cond_in, tree else_value_in,
+				      tree len_in, tree bias_in)
+  : cond (cond_in), else_value (else_value_in), len (len_in), bias (bias_in)
+{}
 
 /* Return a gimple_match_cond with the same condition but with an
    arbitrary ELSE_VALUE.  */
@@ -93,7 +107,7 @@ public:
   bool resimplify (gimple_seq *, tree (*)(tree));
 
   /* The maximum value of NUM_OPS.  */
-  static const unsigned int MAX_NUM_OPS = 5;
+  static const unsigned int MAX_NUM_OPS = 7;
 
   /* The conditions under which the operation is performed, and the value to
      use as a fallback.  */

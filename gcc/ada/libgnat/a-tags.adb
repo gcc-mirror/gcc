@@ -93,7 +93,10 @@ package body Ada.Tags is
    --  Disable warnings on possible aliasing problem
 
    function To_Tag is
-     new Unchecked_Conversion (Integer_Address, Tag);
+     new Unchecked_Conversion (System.Address, Tag);
+
+   function To_Tag (S : Integer_Address) return Tag is
+     (To_Tag (To_Address (S)));
 
    function To_Dispatch_Table_Ptr is
       new Ada.Unchecked_Conversion (Tag, Dispatch_Table_Ptr);

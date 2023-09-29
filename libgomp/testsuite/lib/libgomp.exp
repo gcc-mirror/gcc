@@ -91,19 +91,6 @@ proc libgomp_init { args } {
       setenv LANG C.ASCII
     }
 
-    if { $blddir != "" } {
-	# Fix up '-funconfigured-libstdc++-v3' in 'GXX_UNDER_TEST' (see
-	# '../../configure.ac').
-	set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
-	if { [file exists $flags_file] } {
-	    set flags [exec sh $flags_file --build-includes]
-	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
-	    set GXX_UNDER_TEST [string map [list \
-	      " -funconfigured-libstdc++-v3 " " $flags " \
-					   ] $GXX_UNDER_TEST]
-	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
-	}
-    }
     if ![info exists GCC_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
@@ -185,6 +172,11 @@ proc libgomp_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global SYSROOT_CFLAGS_FOR_TARGET
+	lappend ALWAYS_CFLAGS "additional_flags=${SYSROOT_CFLAGS_FOR_TARGET}"
+
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
         # targets that use libgomp.a%s in their specs need a -B option
         # for uninstalled testing.
@@ -375,6 +367,25 @@ proc offload_target_to_openacc_device_type { offload_target } {
 	    error "Unknown offload target: $offload_target"
 	}
     }
+}
+
+# Return 1 if certain nonstandard math functions are available
+# on the target: gamma, scalb, significand, and their float variants.
+proc check_effective_target_nonstandard_math_functions { } {
+    return [check_no_compiler_messages nonstandard_math_functions executable {
+      #include <math.h>
+      int main() {
+        float x = 42;
+        double y = 42;
+        x = gammaf (x);
+        x = __builtin_scalbf (x, 2.f);
+        x =__builtin_significandf (x);
+        y = gamma (y);
+        y = __builtin_scalb (y, 2.);
+        y =__builtin_significand (y);
+        return 0;
+      }
+    } "-lm" ]
 }
 
 # Return 1 if compiling for the specified offload target

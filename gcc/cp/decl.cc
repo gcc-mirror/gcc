@@ -911,15 +911,16 @@ static GTY((deletable)) vec<tree, va_gc> *local_entities;
    generally very few of these in any particular function.  */
 
 void
-determine_local_discriminator (tree decl)
+determine_local_discriminator (tree decl, tree name)
 {
   auto_cond_timevar tv (TV_NAME_LOOKUP);
   retrofit_lang_decl (decl);
   tree ctx = DECL_CONTEXT (decl);
-  tree name = (TREE_CODE (decl) == TYPE_DECL
-	       && TYPE_UNNAMED_P (TREE_TYPE (decl))
-	       ? NULL_TREE : DECL_NAME (decl));
   size_t nelts = vec_safe_length (local_entities);
+  if (name == NULL_TREE)
+    name = (TREE_CODE (decl) == TYPE_DECL
+	    && TYPE_UNNAMED_P (TREE_TYPE (decl))
+	    ? NULL_TREE : DECL_NAME (decl));
   for (size_t i = 0; i < nelts; i += 2)
     {
       tree *pair = &(*local_entities)[i];
@@ -951,6 +952,30 @@ determine_local_discriminator (tree decl)
 }
 
 
+/* True if DECL is a constrained hidden friend as per [temp.friend]/9:
+
+   A non-template friend declaration with a requires-clause shall be a
+   definition. A friend function template with a constraint that depends on a
+   template parameter from an enclosing template shall be a definition. Such a
+   constrained friend function or function template declaration does not
+   declare the same function or function template as a declaration in any other
+   scope.
+
+   The ABI calls this a "member-like constrained friend" and mangles it like a
+   member function to avoid collisions.  */
+
+bool
+member_like_constrained_friend_p (tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_UNIQUE_FRIEND_P (decl)
+	  && DECL_FRIEND_CONTEXT (decl)
+	  && get_constraints (decl)
+	  && (!DECL_TEMPLATE_INFO (decl)
+	      || !PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
+	      || (uses_outer_template_parms_in_constraints
+		  (most_general_template (decl)))));
+}
 
 /* Returns true if functions FN1 and FN2 have equivalent trailing
    requires clauses.  */
@@ -967,6 +992,13 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
       tree req2 = ci2 ? CI_ASSOCIATED_CONSTRAINTS (ci2) : NULL_TREE;
       return cp_tree_equal (req1, req2);
     }
+
+  /* [temp.friend]/9 "Such a constrained friend function does not declare the
+     same function as a declaration in any other scope."  So no need to
+     actually compare the requirements.  */
+  if (member_like_constrained_friend_p (newfn)
+      || member_like_constrained_friend_p (oldfn))
+    return false;
 
   /* Compare only trailing requirements.  */
   tree reqs1 = get_trailing_function_requirements (newfn);
@@ -1936,6 +1968,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     are not ambiguous.  */
 	  else if ((!DECL_FUNCTION_VERSIONED (newdecl)
 		    && !DECL_FUNCTION_VERSIONED (olddecl))
+		   /* Let constrained hidden friends coexist for now, we'll
+		      check satisfaction later.  */
+		   && !member_like_constrained_friend_p (newdecl)
+		   && !member_like_constrained_friend_p (olddecl)
                    // The functions have the same parameter types.
 		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 				 TYPE_ARG_TYPES (TREE_TYPE (olddecl)))
@@ -6382,8 +6418,9 @@ layout_var_decl (tree decl)
 void
 maybe_commonize_var (tree decl)
 {
-  /* Don't mess with __FUNCTION__ and similar.  */
-  if (DECL_ARTIFICIAL (decl))
+  /* Don't mess with __FUNCTION__ and similar.  But do handle structured
+     bindings.  */
+  if (DECL_ARTIFICIAL (decl) && !DECL_DECOMPOSITION_P (decl))
     return;
 
   /* Static data in a function with comdat linkage also has comdat
@@ -8177,6 +8214,8 @@ omp_declare_variant_finalize (tree decl, tree attr)
     }
 }
 
+static void cp_maybe_mangle_decomp (tree, cp_decomp *);
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -8186,11 +8225,14 @@ omp_declare_variant_finalize (tree decl, tree attr)
    true, then INIT is an integral constant expression.
 
    FLAGS is LOOKUP_ONLYCONVERTING if the = init syntax was used, else 0
-   if the (init) syntax was used.  */
+   if the (init) syntax was used.
+
+   DECOMP is first identifier's DECL and identifier count in a structured
+   bindings, nullptr if not a structured binding.  */
 
 void
 cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
-		tree asmspec_tree, int flags)
+		tree asmspec_tree, int flags, cp_decomp *decomp)
 {
   vec<tree, va_gc> *cleanups = NULL;
   const char *asmspec = NULL;
@@ -8564,6 +8606,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		    "static or thread storage duration");
 	  return;
 	}
+
+      if (decomp)
+	cp_maybe_mangle_decomp (decl, decomp);
 
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
@@ -9035,18 +9080,37 @@ lookup_decomp_type (tree v)
 /* Mangle a decomposition declaration if needed.  Arguments like
    in cp_finish_decomp.  */
 
-void
-cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
+static void
+cp_maybe_mangle_decomp (tree decl, cp_decomp *decomp)
 {
   if (!processing_template_decl
       && !error_operand_p (decl)
       && TREE_STATIC (decl))
     {
       auto_vec<tree, 16> v;
-      v.safe_grow (count, true);
-      tree d = first;
-      for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
-	v[count - i - 1] = d;
+      v.safe_grow (decomp->count, true);
+      tree d = decomp->decl;
+      for (unsigned int i = 0; i < decomp->count; i++, d = DECL_CHAIN (d))
+	v[decomp->count - i - 1] = d;
+      if (DECL_FUNCTION_SCOPE_P (decl))
+	{
+	  size_t sz = 3;
+	  for (unsigned int i = 0; i < decomp->count; ++i)
+	    sz += IDENTIFIER_LENGTH (DECL_NAME (v[i])) + 1;
+	  char *name = XALLOCAVEC (char, sz);
+	  name[0] = 'D';
+	  name[1] = 'C';
+	  char *p = name + 2;
+	  for (unsigned int i = 0; i < decomp->count; ++i)
+	    {
+	      size_t len = IDENTIFIER_LENGTH (DECL_NAME (v[i]));
+	      *p++ = ' ';
+	      memcpy (p, IDENTIFIER_POINTER (DECL_NAME (v[i])), len);
+	      p += len;
+	    }
+	  *p = '\0';
+	  determine_local_discriminator (decl, get_identifier (name));
+	}
       SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
       maybe_apply_pragma_weak (decl);
     }
@@ -9058,8 +9122,10 @@ cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
    those decls.  */
 
 void
-cp_finish_decomp (tree decl, tree first, unsigned int count)
+cp_finish_decomp (tree decl, cp_decomp *decomp)
 {
+  tree first = decomp->decl;
+  unsigned count = decomp->count;
   if (error_operand_p (decl))
     {
      error_out:
@@ -10305,16 +10371,28 @@ grokfndecl (tree ctype,
           ci = NULL_TREE;
         }
       /* C++20 CA378: Remove non-templated constrained functions.  */
+      /* [temp.friend]/9 A non-template friend declaration with a
+	 requires-clause shall be a definition. A friend function template with
+	 a constraint that depends on a template parameter from an enclosing
+	 template shall be a definition. */
       if (ci
 	  && (block_local
 	      || (!flag_concepts_ts
 		  && (!processing_template_decl
 		      || (friendp && !memtmpl && !funcdef_flag)))))
 	{
-	  error_at (location, "constraints on a non-templated function");
+	  if (!friendp || !processing_template_decl)
+	    error_at (location, "constraints on a non-templated function");
+	  else
+	    error_at (location, "constrained non-template friend declaration"
+		      " must be a definition");
 	  ci = NULL_TREE;
 	}
       set_constraints (decl, ci);
+      if (ci && friendp && memtmpl && !funcdef_flag
+	  && uses_outer_template_parms_in_constraints (decl, ctx))
+	error_at (location, "friend function template with constraints that "
+		  "depend on outer template parameters must be a definition");
     }
 
   if (TREE_CODE (type) == METHOD_TYPE)
@@ -14592,6 +14670,9 @@ grokdeclarator (const cp_declarator *declarator,
 			"storage class %<thread_local%> invalid for "
 			"function %qs", name);
 	  }
+	else if (constinit_p)
+	  error_at (declspecs->locations[ds_constinit],
+		    "%<constinit%> specifier invalid for function %qs", name);
 
         if (virt_specifiers)
           error ("virt-specifiers in %qs not allowed outside a class "
@@ -17921,6 +18002,7 @@ begin_function_body (void)
     keep_next_level (true);
 
   tree stmt = begin_compound_stmt (BCS_FN_BODY);
+  current_binding_level->artificial = 1;
 
   if (processing_template_decl)
     /* Do nothing now.  */;

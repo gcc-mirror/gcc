@@ -341,7 +341,6 @@ END TrySetInitialized ;
 PROCEDURE SetFieldInitializedNo (desc: InitDesc;
                                  fieldlist: List; level: CARDINAL) : BOOLEAN ;
 VAR
-   init : BOOLEAN ;
    nsym : CARDINAL ;
    fdesc: InitDesc ;
 BEGIN
@@ -360,7 +359,9 @@ BEGIN
          TrySetInitialized (desc) ;
          RETURN desc^.initialized
       ELSE
-         init := SetFieldInitializedNo (fdesc, fieldlist, level + 1) ;
+         IF SetFieldInitializedNo (fdesc, fieldlist, level + 1)
+         THEN
+         END ;
          TrySetInitialized (desc) ;
          RETURN desc^.initialized
       END
@@ -416,12 +417,12 @@ END IsGlobalVar ;
 
 (*
    IsLocalVar -
-*)
 
 PROCEDURE IsLocalVar (procsym, varsym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN IsVar (varsym) AND (GetVarScope (varsym) = procsym)
 END IsLocalVar ;
+*)
 
 
 (*
@@ -446,8 +447,7 @@ END RecordFieldContainsVarient ;
 PROCEDURE RecordContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
 VAR
    i,
-   fieldsym,
-   fieldtype: CARDINAL ;
+   fieldsym: CARDINAL ;
 BEGIN
    Assert (IsRecord (sym)) ;
    i := 1 ;
@@ -597,7 +597,7 @@ END IssueConditional ;
    GenerateNoteFlow -
 *)
 
-PROCEDURE GenerateNoteFlow (lst: List; n: CARDINAL; warning: BOOLEAN) ;
+PROCEDURE GenerateNoteFlow (n: CARDINAL; warning: BOOLEAN) ;
 VAR
    i     : CARDINAL ;
    ip1Ptr,
@@ -666,10 +666,10 @@ END IsUniqueWarning ;
    CheckDeferredRecordAccess -
 *)
 
-PROCEDURE CheckDeferredRecordAccess (procsym: CARDINAL; tok: CARDINAL;
+PROCEDURE CheckDeferredRecordAccess (tok: CARDINAL;
                                      sym: CARDINAL;
                                      canDereference, warning: BOOLEAN;
-                                     lst: List; i: CARDINAL) ;
+                                     i: CARDINAL) ;
 VAR
    unique: BOOLEAN ;
 BEGIN
@@ -701,7 +701,7 @@ BEGIN
          Trace ("checkReadInit IsComponent (%d) is true)", sym) ;
          IF (NOT GetVarComponentInitialized (sym, tok)) AND IsUniqueWarning (tok)
          THEN
-            GenerateNoteFlow (lst, i, warning) ;
+            GenerateNoteFlow (i, warning) ;
             IssueWarning (tok,
                           'attempting to access ',
                           ' before it has been initialized',
@@ -716,7 +716,7 @@ BEGIN
             unique := IsUniqueWarning (tok) ;
             IF unique
             THEN
-               GenerateNoteFlow (lst, i, warning) ;
+               GenerateNoteFlow (i, warning) ;
                IssueWarning (tok,
                              'attempting to access the address of ',
                              ' before it has been initialized',
@@ -727,7 +727,7 @@ BEGIN
          THEN
             IF unique
             THEN
-               GenerateNoteFlow (lst, i, warning) ;
+               GenerateNoteFlow (i, warning) ;
                IssueWarning (tok,
                              'attempting to access ', ' before it has been initialized',
                              sym, warning)
@@ -737,7 +737,7 @@ BEGIN
          Trace ("checkReadInit call VarCheckReadInit using GetMode (%d)", sym) ;
          IF (NOT VarCheckReadInit (sym, GetMode (sym))) AND IsUniqueWarning (tok)
          THEN
-            GenerateNoteFlow (lst, i, warning) ;
+            GenerateNoteFlow (i, warning) ;
             IssueWarning (tok,
                           'attempting to access ',
                           ' before it has been initialized',
@@ -1065,14 +1065,13 @@ END IsExempt ;
    CheckBinary -
 *)
 
-PROCEDURE CheckBinary (procSym,
-                       op1tok, op1,
+PROCEDURE CheckBinary (op1tok, op1,
                        op2tok, op2,
                        op3tok, op3: CARDINAL; warning: BOOLEAN;
-                       lst: List; i: CARDINAL) ;
+                       i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
-   CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
+   CheckDeferredRecordAccess (op2tok, op2, FALSE, warning, i) ;
+   CheckDeferredRecordAccess (op3tok, op3, FALSE, warning, i) ;
    SetVarInitialized (op1, FALSE, op1tok)
 END CheckBinary ;
 
@@ -1081,12 +1080,11 @@ END CheckBinary ;
    CheckUnary -
 *)
 
-PROCEDURE CheckUnary (procSym,
-                      lhstok, lhs,
+PROCEDURE CheckUnary (lhstok, lhs,
                       rhstok, rhs: CARDINAL; warning: BOOLEAN;
-                      lst: List; i: CARDINAL) ;
+                      i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
+   CheckDeferredRecordAccess (rhstok, rhs, FALSE, warning, i) ;
    SetVarInitialized (lhs, FALSE, lhstok)
 END CheckUnary ;
 
@@ -1095,15 +1093,15 @@ END CheckUnary ;
    CheckXIndr -
 *)
 
-PROCEDURE CheckXIndr (procSym, lhstok, lhs, type,
+PROCEDURE CheckXIndr (lhstok, lhs, type,
                       rhstok, rhs: CARDINAL; warning: BOOLEAN;
-                      bblst: List; i: CARDINAL) ;
+                      i: CARDINAL) ;
 VAR
    lst    : List ;
    content: CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, bblst, i) ;
-   CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE, warning, bblst, i) ;
+   CheckDeferredRecordAccess (rhstok, rhs, FALSE, warning, i) ;
+   CheckDeferredRecordAccess (lhstok, lhs, FALSE, warning, i) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
    content := getContent (getLAlias (lhs), lhs, lhstok) ;
    IF (content # NulSym) AND (content # lhs) AND (GetSType (content) = type)
@@ -1132,19 +1130,19 @@ END CheckXIndr ;
    CheckIndrX -
 *)
 
-PROCEDURE CheckIndrX (procSym, lhstok, lhs, type, rhstok, rhs: CARDINAL;
+PROCEDURE CheckIndrX (lhstok, lhs, rhstok, rhs: CARDINAL;
                       warning: BOOLEAN;
-                      lst: List; i: CARDINAL) ;
+                      i: CARDINAL) ;
 VAR
    content: CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
+   CheckDeferredRecordAccess (rhstok, rhs, FALSE, warning, i) ;
    content := getContent (getLAlias (rhs), rhs, rhstok) ;
    IF content = NulSym
    THEN
       IncludeItemIntoList (ignoreList, lhs)
    ELSE
-      CheckDeferredRecordAccess (procSym, rhstok, content, TRUE, warning, lst, i) ;
+      CheckDeferredRecordAccess (rhstok, content, TRUE, warning, i) ;
       SetVarInitialized (lhs, VarCheckReadInit (content, RightValue), lhstok) ;
       IF IsReallyPointer (content)
       THEN
@@ -1158,7 +1156,7 @@ END CheckIndrX ;
    CheckRecordField -
 *)
 
-PROCEDURE CheckRecordField (procSym, op1tok, op1, op2tok, op2: CARDINAL) ;
+PROCEDURE CheckRecordField (op1: CARDINAL) ;
 BEGIN
    PutVarInitialized (op1, LeftValue)
 END CheckRecordField ;
@@ -1168,14 +1166,14 @@ END CheckRecordField ;
    CheckBecomes -
 *)
 
-PROCEDURE CheckBecomes (procSym, destok, des, exprtok, expr: CARDINAL;
-                        warning: BOOLEAN; bblst: List; i: CARDINAL) ;
+PROCEDURE CheckBecomes (destok, des, exprtok, expr: CARDINAL;
+                        warning: BOOLEAN; i: CARDINAL) ;
 VAR
    lvalue: BOOLEAN ;
    lst   : List ;
    vsym  : CARDINAL ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, exprtok, expr, FALSE, warning, bblst, i) ;
+   CheckDeferredRecordAccess (exprtok, expr, FALSE, warning, i) ;
    SetupLAlias (des, expr) ;
    SetVarInitialized (des, FALSE, destok) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
@@ -1200,11 +1198,11 @@ END CheckBecomes ;
    CheckComparison -
 *)
 
-PROCEDURE CheckComparison (procSym, op1tok, op1, op2tok, op2: CARDINAL;
-                           warning: BOOLEAN; lst: List; i: CARDINAL) ;
+PROCEDURE CheckComparison (op1tok, op1, op2tok, op2: CARDINAL;
+                           warning: BOOLEAN; i: CARDINAL) ;
 BEGIN
-   CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) ;
-   CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i)
+   CheckDeferredRecordAccess (op1tok, op1, FALSE, warning, i) ;
+   CheckDeferredRecordAccess (op2tok, op2, FALSE, warning, i)
 END CheckComparison ;
 
 
@@ -1212,7 +1210,7 @@ END CheckComparison ;
    CheckAddr -
 *)
 
-PROCEDURE CheckAddr (procSym, ptrtok, ptr, contenttok, content: CARDINAL) ;
+PROCEDURE CheckAddr (ptrtok, ptr, contenttok, content: CARDINAL) ;
 BEGIN
    SetVarInitialized (ptr, GetVarInitialized (content, contenttok), ptrtok) ;
    SetupIndr (ptr, content)
@@ -1279,7 +1277,7 @@ BEGIN
    IfLessOp,
    IfLessEquOp,
    IfGreOp,
-   IfGreEquOp        : CheckComparison (procSym, op1tok, op1, op2tok, op2, warning, lst, i) |
+   IfGreEquOp        : CheckComparison (op1tok, op1, op2tok, op2, warning, i) |
    TryOp,
    ReturnOp,
    CallOp,
@@ -1290,34 +1288,35 @@ BEGIN
    (* Variable references.  *)
 
    InclOp,
-   ExclOp            : CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) ;
-                       CheckDeferredRecordAccess (procSym, op1tok, op1, TRUE, warning, lst, i) ;
-                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) |
-   NegateOp          : CheckUnary (procSym, op1tok, op1, op3tok, op3, warning, lst, i) |
-   BecomesOp         : CheckBecomes (procSym, op1tok, op1, op3tok, op3, warning, lst, i) |
+   ExclOp            : CheckDeferredRecordAccess (op1tok, op1, FALSE, warning, i) ;
+                       CheckDeferredRecordAccess (op1tok, op1, TRUE, warning, i) ;
+                       CheckDeferredRecordAccess (op3tok, op3, FALSE, warning, i) |
+   NegateOp          : CheckUnary (op1tok, op1, op3tok, op3, warning, i) |
+   BecomesOp         : CheckBecomes (op1tok, op1, op3tok, op3, warning, i) |
    UnboundedOp,
    FunctValueOp,
    StandardFunctionOp,
    HighOp,
    SizeOp            : SetVarInitialized (op1, FALSE, op1tok) |
-   AddrOp            : CheckAddr (procSym, op1tok, op1, op3tok, op3) |
+   AddrOp            : CheckAddr (op1tok, op1, op3tok, op3) |
    ReturnValueOp     : SetVarInitialized (op1, FALSE, op1tok) |
    NewLocalVarOp     : |
-   ParamOp           : CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
-                       CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
+   ParamOp           : CheckDeferredRecordAccess (op2tok, op2, FALSE, warning, i) ;
+                       CheckDeferredRecordAccess (op3tok, op3, FALSE, warning, i) ;
                        IF (op1 > 0) AND (op1 <= NoOfParam (op2)) AND
                           IsVarParam (op2, op1)
                        THEN
                           SetVarInitialized (op3, TRUE, op3tok)
                        END |
-   ArrayOp           : CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
+   ArrayOp           : CheckDeferredRecordAccess (op3tok, op3, FALSE, warning, i) ;
                        SetVarInitialized (op1, TRUE, op1tok) |
-   RecordFieldOp     : CheckRecordField (procSym, op1tok, op1, op2tok, op2) |
+   RecordFieldOp     : CheckRecordField (op1) |
    LogicalShiftOp,
    LogicalRotateOp,
    LogicalOrOp,
    LogicalAndOp,
    LogicalXorOp,
+   LogicalDiffOp,
    CoerceOp,
    ConvertOp,
    CastOp,
@@ -1332,12 +1331,11 @@ BEGIN
    ModCeilOp,
    DivFloorOp,
    ModTruncOp,
-   DivTruncOp        : CheckBinary (procSym,
-                                    op1tok, op1, op2tok, op2, op3tok, op3, warning, lst, i) |
-   XIndrOp           : CheckXIndr (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
-   IndrXOp           : CheckIndrX (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
+   DivTruncOp        : CheckBinary (op1tok, op1, op2tok, op2, op3tok, op3, warning, i) |
+   XIndrOp           : CheckXIndr (op1tok, op1, op2, op3tok, op3, warning, i) |
+   IndrXOp           : CheckIndrX (op1tok, op1, op3tok, op3, warning, i) |
    SaveExceptionOp   : SetVarInitialized (op1, FALSE, op1tok) |
-   RestoreExceptionOp: CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) |
+   RestoreExceptionOp: CheckDeferredRecordAccess (op1tok, op1, FALSE, warning, i) |
 
    SubrangeLowOp,
    SubrangeHighOp    : InternalError ('quadruples should have been resolved') |
@@ -1368,7 +1366,10 @@ BEGIN
    RestorePriorityOp,
    RangeCheckOp,
    ModuleScopeOp,
-   ErrorOp          : |
+   ErrorOp,
+   DummyOp,
+   OptParamOp,
+   InitAddressOp   : |
 
    END ;
    RETURN FALSE
@@ -1510,7 +1511,7 @@ END DumpBBArray ;
    DumpBBSequence -
 *)
 
-PROCEDURE DumpBBSequence (procSym: CARDINAL; lst: List) ;
+PROCEDURE DumpBBSequence (lst: List) ;
 VAR
    arrayindex,
    listindex, n: CARDINAL ;
@@ -1521,7 +1522,7 @@ BEGIN
    printf0 (" checking sequence:");
    WHILE listindex <= n DO
       arrayindex := GetItemFromList (lst, listindex) ;
-      printf1 (" [%d]", listindex) ;
+      printf2 (" lst[%d] -> %d", listindex, arrayindex) ;
       INC (listindex)
    END ;
    printf0 ("\n")
@@ -1616,7 +1617,7 @@ VAR
 BEGIN
    IF Debugging
    THEN
-      DumpBBSequence (procSym, lst)
+      DumpBBSequence (lst)
    END ;
    initBlock ;
    ForeachLocalSymDo (procSym, SetVarUninitialized) ;

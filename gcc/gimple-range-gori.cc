@@ -876,6 +876,7 @@ gori_compute::logical_combine (vrange &r, enum tree_code code,
 	  r.dump (dump_file);
 	  fputc ('\n', dump_file);
 	}
+      return res;
     }
 
   switch (code)

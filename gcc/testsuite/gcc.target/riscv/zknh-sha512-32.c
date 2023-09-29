@@ -4,32 +4,32 @@
 
 #include <stdint-gcc.h>
 
-int32_t foo1(int32_t rs1, int32_t rs2)
+uint32_t foo1(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sig0h(rs1,rs2);
 }
 
-int32_t foo2(int32_t rs1, int32_t rs2)
+uint32_t foo2(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sig0l(rs1,rs2);
 }
 
-int32_t foo3(int32_t rs1, int32_t rs2)
+uint32_t foo3(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sig1h(rs1,rs2);
 }
 
-int32_t foo4(int32_t rs1, int32_t rs2)
+uint32_t foo4(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sig1l(rs1,rs2);
 }
 
-int32_t foo5(int32_t rs1, int32_t rs2)
+uint32_t foo5(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sum0r(rs1,rs2);
 }
 
-int32_t foo6(int32_t rs1, int32_t rs2)
+uint32_t foo6(uint32_t rs1, uint32_t rs2)
 {
     return __builtin_riscv_sha512sum1r(rs1,rs2);
 }

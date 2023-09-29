@@ -122,17 +122,12 @@ alias KeepTerminator = Flag!"keepTerminator";
 
 version (CRuntime_Microsoft)
 {
-    version = MICROSOFT_STDIO;
 }
 else version (CRuntime_DigitalMars)
 {
-    // Specific to the way Digital Mars C does stdio
-    version = DIGITAL_MARS_STDIO;
 }
 else version (CRuntime_Glibc)
 {
-    // Specific to the way Gnu C does stdio
-    version = GCC_IO;
 }
 else version (CRuntime_Bionic)
 {
@@ -220,7 +215,7 @@ version (Posix)
     static import core.sys.posix.stdio; // getdelim, flockfile
 }
 
-version (DIGITAL_MARS_STDIO)
+version (CRuntime_DigitalMars)
 {
     private alias _FPUTC = _fputc_nlock;
     private alias _FPUTWC = _fputwc_nlock;
@@ -229,7 +224,7 @@ version (DIGITAL_MARS_STDIO)
     private alias _FLOCK = __fp_lock;
     private alias _FUNLOCK = __fp_unlock;
 
-    // Alias for MICROSOFT_STDIO compatibility.
+    // Alias for CRuntime_Microsoft compatibility.
     // @@@DEPRECATED_2.107@@@
     // Rename this back to _setmode once the deprecation phase has ended.
     private alias __setmode = setmode;
@@ -267,7 +262,7 @@ version (DIGITAL_MARS_STDIO)
                ~ "std.stdio and will be removed afer 2.107")
     fileno_t _fileno(FILE* f) { return f._file; }
 }
-else version (MICROSOFT_STDIO)
+else version (CRuntime_Microsoft)
 {
     private alias _FPUTC = _fputc_nolock;
     private alias _FPUTWC = _fputwc_nolock;
@@ -277,7 +272,7 @@ else version (MICROSOFT_STDIO)
     private alias _FUNLOCK = _unlock_file;
 
     // @@@DEPRECATED_2.107@@@
-    // Remove this once the deprecation phase for DIGITAL_MARS_STDIO has ended.
+    // Remove this once the deprecation phase for CRuntime_DigitalMars has ended.
     private alias __setmode = _setmode;
 
     // @@@DEPRECATED_2.107@@@
@@ -305,7 +300,7 @@ else version (MICROSOFT_STDIO)
                ~ "std.stdio and will be removed afer 2.107")
     alias FUNLOCK = _unlock_file;
 }
-else version (GCC_IO)
+else version (CRuntime_Glibc)
 {
     private alias _FPUTC = fputc_unlocked;
     private alias _FPUTWC = fputwc_unlocked;
@@ -419,25 +414,10 @@ private extern (C) @nogc nothrow
 {
     pragma(mangle, _FPUTC.mangleof) int trustedFPUTC(int ch, _iobuf* h) @trusted;
 
-    version (DIGITAL_MARS_STDIO)
+    version (CRuntime_DigitalMars)
         pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(int ch, _iobuf* h) @trusted;
     else
         pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(wchar_t ch, _iobuf* h) @trusted;
-}
-
-static if (__traits(compiles, core.sys.posix.stdio.getdelim))
-{
-    extern(C) nothrow @nogc
-    {
-        // @@@DEPRECATED_2.104@@@
-        deprecated("To be removed after 2.104. Use core.sys.posix.stdio.getdelim instead.")
-        ptrdiff_t getdelim(char**, size_t*, int, FILE*);
-
-        // @@@DEPRECATED_2.104@@@
-        // getline() always comes together with getdelim()
-        deprecated("To be removed after 2.104. Use core.sys.posix.stdio.getline instead.")
-        ptrdiff_t getline(char**, size_t*, FILE*);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -613,7 +593,7 @@ Throws: `ErrnoException` if the file could not be opened.
                 name);
 
         // MSVCRT workaround (https://issues.dlang.org/show_bug.cgi?id=14422)
-        version (MICROSOFT_STDIO)
+        version (CRuntime_Microsoft)
         {
             setAppendWin(stdioOpenmode);
         }
@@ -741,7 +721,7 @@ Throws: `ErrnoException` in case of error.
         }
         _p = cast(Impl*) enforce(malloc(Impl.sizeof), "Out of memory");
         initImpl(handle, name, 1, isPopened);
-        version (MICROSOFT_STDIO)
+        version (CRuntime_Microsoft)
         {
             setAppendWin(stdioOpenmode);
         }
@@ -776,7 +756,7 @@ Throws: `ErrnoException` in case of error.
         }
     }
 
-    version (MICROSOFT_STDIO)
+    version (CRuntime_Microsoft)
     {
         private void setAppendWin(scope const(char)[] stdioOpenmode) @safe
         {
@@ -909,7 +889,7 @@ Params:
         auto modez = stdioOpenmode.tempCString();
         detach();
 
-        version (DIGITAL_MARS_STDIO)
+        version (CRuntime_DigitalMars)
         {
             // This is a re-implementation of DMC's fdopen, but without the
             // mucking with the file descriptor.  POSIX standard requires the
@@ -924,17 +904,20 @@ Params:
             iob._flag &= ~_IOTRAN;
             _FUNLOCK(fp);
         }
-        else
+        else version (CRuntime_Microsoft)
         {
-            version (Windows) // MSVCRT
-                auto fp = _fdopen(fd, modez);
-            else version (Posix)
-            {
-                import core.sys.posix.stdio : fdopen;
-                auto fp = fdopen(fd, modez);
-            }
+            auto fp = _fdopen(fd, modez);
             errnoEnforce(fp);
         }
+        else version (Posix)
+        {
+            import core.sys.posix.stdio : fdopen;
+            auto fp = fdopen(fd, modez);
+            errnoEnforce(fp);
+        }
+        else
+            static assert(0, "no fdopen() available");
+
         this = File(fp, name);
     }
 
@@ -960,7 +943,7 @@ Throws: `ErrnoException` in case of error.
         import std.format : format;
 
         // Create file descriptors from the handles
-        version (DIGITAL_MARS_STDIO)
+        version (CRuntime_DigitalMars)
             auto fd = _handleToFD(handle, FHND_DEVICE);
         else // MSVCRT
         {
@@ -1205,7 +1188,7 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
             immutable fileno_t fd = .fileno(_p.handle);
             immutable mode = .__setmode(fd, _O_BINARY);
             scope(exit) .__setmode(fd, mode);
-            version (DIGITAL_MARS_STDIO)
+            version (CRuntime_DigitalMars)
             {
                 import core.atomic : atomicOp;
 
@@ -1303,7 +1286,7 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
                 .__setmode(fd, _O_BINARY);
             }
 
-            version (DIGITAL_MARS_STDIO)
+            version (CRuntime_DigitalMars)
             {
                 import core.atomic : atomicOp;
 
@@ -2366,7 +2349,7 @@ Returns the underlying operating system `HANDLE` (Windows only).
     version (Windows)
     @property HANDLE windowsHandle()
     {
-        version (DIGITAL_MARS_STDIO)
+        version (CRuntime_DigitalMars)
             return _fdToHandle(fileno);
         else
             return cast(HANDLE)_get_osfhandle(fileno);
@@ -3162,7 +3145,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
             file_ = f;
             FILE* fps = f._p.handle;
 
-            version (MICROSOFT_STDIO)
+            version (CRuntime_Microsoft)
             {
                 // Microsoft doesn't implement fwide. Instead, there's the
                 // concept of ANSI/UNICODE mode. fputc doesn't work in UNICODE
@@ -3403,7 +3386,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
         {
             fileno_t fd;
             int oldMode;
-            version (DIGITAL_MARS_STDIO)
+            version (CRuntime_DigitalMars)
                 ubyte oldInfo;
         }
 
@@ -3425,7 +3408,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
                 .fflush(fps); // before changing translation mode
                 fd = .fileno(fps);
                 oldMode = .__setmode(fd, _O_BINARY);
-                version (DIGITAL_MARS_STDIO)
+                version (CRuntime_DigitalMars)
                 {
                     import core.atomic : atomicOp;
 
@@ -3446,7 +3429,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
             version (Windows)
             {
                 .fflush(fps); // before restoring translation mode
-                version (DIGITAL_MARS_STDIO)
+                version (CRuntime_DigitalMars)
                 {
                     // https://issues.dlang.org/show_bug.cgi?id=4243
                     __fhnd_info[fd] = oldInfo;
@@ -3904,7 +3887,7 @@ void main()
         return setlocale(LC_CTYPE, loc.ptr).fromStringz.endsWith(loc);
     });
     scope(exit) () @trusted { setlocale(LC_CTYPE, oldCt); } ();
-    version (DIGITAL_MARS_STDIO) // DM can't handle Unicode above U+07FF.
+    version (CRuntime_DigitalMars) // DM can't handle Unicode above U+07FF.
     {
         alias strs = AliasSeq!("xä\u07FE", "yö\u07FF"w);
     }
@@ -3914,7 +3897,7 @@ void main()
     }
     {
         auto f = File(deleteme, "w");
-        version (MICROSOFT_STDIO)
+        version (CRuntime_Microsoft)
         {
             () @trusted { __setmode(fileno(f.getFP()), _O_U8TEXT); } ();
         }
@@ -5554,7 +5537,7 @@ private struct LockedFile
 // Private implementation of readln
 private size_t readlnImpl(FILE* fps, ref char[] buf, dchar terminator, File.Orientation orientation) @safe
 {
-    version (DIGITAL_MARS_STDIO)
+    version (CRuntime_DigitalMars)
     return () @trusted {
         auto lf = LockedFile(fps);
         ReadlnAppender app;
@@ -5667,7 +5650,7 @@ private size_t readlnImpl(FILE* fps, ref char[] buf, dchar terminator, File.Orie
         buf = app.data;
         return buf.length;
     }();
-    else version (MICROSOFT_STDIO)
+    else version (CRuntime_Microsoft)
     {
         auto lf = LockedFile(fps);
 

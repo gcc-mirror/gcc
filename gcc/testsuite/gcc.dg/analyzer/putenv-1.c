@@ -112,6 +112,15 @@ void test_outer (void)
 void test_unterminated (void)
 {
   char buf[3] = "abc";
-  putenv (buf); /* { dg-warning "passing pointer to unterminated string" } */
-  /* { dg-warning "'putenv' on a pointer to automatic variable 'buf'" "POS34-C" { target *-*-* } .-1 } */
+  putenv (buf); /* { dg-warning "stack-based buffer over-read" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'putenv'..." "event" { target *-*-* } .-1 } */
+  /* { dg-warning "'putenv' on a pointer to automatic variable 'buf'" "POS34-C" { target *-*-* } .-2 } */
+}
+
+void test_uninitialized (void)
+{
+  char buf[16];
+  putenv (buf); /* { dg-warning "use of uninitialized value 'buf\\\[0\\\]'" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'putenv'..." "event" { target *-*-* } .-1 } */
+  /* { dg-warning "'putenv' on a pointer to automatic variable 'buf'" "POS34-C" { target *-*-* } .-2 } */
 }

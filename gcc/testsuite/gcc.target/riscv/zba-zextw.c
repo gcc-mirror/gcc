@@ -8,4 +8,4 @@ foo (long i)
   return (long)(unsigned int)i;
 }
 /* XXX: This pattern require combine improvement.   */
-/* { dg-final { scan-assembler-not "slli.uw" } } */
+/* { dg-final { scan-assembler-not {\mslli\.uw\M} } } */

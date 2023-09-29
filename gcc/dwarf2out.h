@@ -419,6 +419,7 @@ struct fixed_point_type_info
     } scale_factor;
 };
 
+void dwarf2cfi_cc_finalize (void);
 void dwarf2out_cc_finalize (void);
 
 /* Some DWARF internals are exposed for the needs of DWARF-based debug

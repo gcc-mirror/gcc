@@ -154,6 +154,10 @@ Wanalyzer-out-of-bounds
 Common Var(warn_analyzer_out_of_bounds) Init(1) Warning
 Warn about code paths in which a write or read to a buffer is out-of-bounds.
 
+Wanalyzer-overlapping-buffers
+Common Var(warn_analyzer_overlapping_buffers) Init(1) Warning
+Warn about code paths in which undefined behavior would occur due to overlapping buffers.
+
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
 Warn about code paths in which a possibly-NULL value is passed to a must-not-be-NULL function argument.
@@ -213,10 +217,6 @@ Warn about code paths in which an unsanitized value is used as a pointer offset.
 Wanalyzer-tainted-size
 Common Var(warn_analyzer_tainted_size) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as a size.
-
-Wanalyzer-unterminated-string
-Common Var(warn_analyzer_unterminated_string) Init(1) Warning
-Warn about code paths which attempt to find the length of an unterminated string.
 
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning

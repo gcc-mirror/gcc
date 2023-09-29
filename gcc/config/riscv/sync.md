@@ -136,7 +136,8 @@
 	   "sc.w%J3\t%6, %7, %1\;"
 	   "bnez\t%6, 1b";
   }
-  [(set (attr "length") (const_int 28))])
+  [(set_attr "type" "multi")
+   (set (attr "length") (const_int 28))])
 
 (define_expand "atomic_fetch_nand<mode>"
   [(match_operand:SHORT 0 "register_operand")			      ;; old value at mem
@@ -203,7 +204,8 @@
 	   "sc.w%J3\t%6, %7, %1\;"
 	   "bnez\t%6, 1b";
   }
-  [(set (attr "length") (const_int 32))])
+  [(set_attr "type" "multi")
+   (set (attr "length") (const_int 32))])
 
 (define_expand "atomic_fetch_<atomic_optab><mode>"
   [(match_operand:SHORT 0 "register_operand")			 ;; old value at mem
@@ -310,7 +312,8 @@
 	   "sc.w%J3\t%5, %5, %1\;"
 	   "bnez\t%5, 1b";
   }
-  [(set (attr "length") (const_int 20))])
+  [(set_attr "type" "multi")
+   (set (attr "length") (const_int 20))])
 
 (define_insn "atomic_cas_value_strong<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -336,7 +339,7 @@
 	   "bnez\t%6,1b\;"
 	   "1:";
   }
-  [(set_attr "type" "atomic")
+  [(set_attr "type" "multi")
    (set (attr "length") (const_int 16))])
 
 (define_expand "atomic_compare_and_swap<mode>"
@@ -497,7 +500,8 @@
 	   "bnez\t%7, 1b\;"
 	   "1:";
   }
-  [(set (attr "length") (const_int 28))])
+  [(set_attr "type" "multi")
+   (set (attr "length") (const_int 28))])
 
 (define_expand "atomic_test_and_set"
   [(match_operand:QI 0 "register_operand" "")     ;; bool output

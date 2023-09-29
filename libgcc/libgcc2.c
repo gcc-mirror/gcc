@@ -1301,6 +1301,689 @@ __udivdi3 (UDWtype n, UDWtype d)
 }
 #endif
 
+#if (defined(__BITINT_MAXWIDTH__) \
+     && (defined(L_mulbitint3) || defined(L_divmodbitint4)))
+/* _BitInt support.  */
+
+/* If *P is zero or sign extended (the latter only for PREC < 0) from
+   some narrower _BitInt value, reduce precision.  */
+
+static inline __attribute__((__always_inline__)) SItype
+bitint_reduce_prec (const UWtype **p, SItype prec)
+{
+  UWtype mslimb;
+  SItype i;
+  if (prec < 0)
+    {
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+      i = 0;
+#else
+      i = ((USItype) -1 - prec) / W_TYPE_SIZE;
+#endif
+      mslimb = (*p)[i];
+      if (mslimb & ((UWtype) 1 << (((USItype) -1 - prec) % W_TYPE_SIZE)))
+	{
+	  SItype n = ((USItype) -prec) % W_TYPE_SIZE;
+	  if (n)
+	    {
+	      mslimb |= ((UWtype) -1 << (((USItype) -1 - prec) % W_TYPE_SIZE));
+	      if (mslimb == (UWtype) -1)
+		{
+		  prec += n;
+		  if (prec >= -1)
+		    return -2;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+		  ++p;
+#else
+		  --i;
+#endif
+		  mslimb = (*p)[i];
+		  n = 0;
+		}
+	    }
+	  while (mslimb == (UWtype) -1)
+	    {
+	      prec += W_TYPE_SIZE;
+	      if (prec >= -1)
+		return -2;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	      ++p;
+#else
+	      --i;
+#endif
+	      mslimb = (*p)[i];
+	    }
+	  if (n == 0)
+	    {
+	      if ((Wtype) mslimb >= 0)
+		{
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+		  --p;
+#endif
+		  return prec - 1;
+		}
+	    }
+	  return prec;
+	}
+      else
+	prec = -prec;
+    }
+  else
+    {
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+      i = 0;
+#else
+      i = ((USItype) prec - 1) / W_TYPE_SIZE;
+#endif
+      mslimb = (*p)[i];
+    }
+  SItype n = ((USItype) prec) % W_TYPE_SIZE;
+  if (n)
+    {
+      mslimb &= ((UWtype) 1 << (((USItype) prec) % W_TYPE_SIZE)) - 1;
+      if (mslimb == 0)
+	{
+	  prec -= n;
+	  if (prec == 0)
+	    return 1;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	  ++p;
+#else
+	  --i;
+#endif
+	  mslimb = (*p)[i];
+	}
+    }
+  while (mslimb == 0)
+    {
+      prec -= W_TYPE_SIZE;
+      if (prec == 0)
+	return 1;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+      ++p;
+#else
+      --i;
+#endif
+      mslimb = (*p)[i];
+    }
+  return prec;
+}
+
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+# define BITINT_INC -1
+# define BITINT_END(be, le) (be)
+#else
+# define BITINT_INC 1
+# define BITINT_END(be, le) (le)
+#endif
+
+#ifdef L_mulbitint3
+/* D = S * L.  */
+
+static UWtype
+bitint_mul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+{
+  UWtype sv, hi, lo, c = 0;
+  do
+    {
+      sv = *s;
+      s += BITINT_INC;
+      umul_ppmm (hi, lo, sv, l);
+      c = __builtin_add_overflow (lo, c, &lo) + hi;
+      *d = lo;
+      d += BITINT_INC;
+    }
+  while (--n);
+  return c;
+}
+
+/* D += S * L.  */
+
+static UWtype
+bitint_addmul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+{
+  UWtype sv, hi, lo, c = 0;
+  do
+    {
+      sv = *s;
+      s += BITINT_INC;
+      umul_ppmm (hi, lo, sv, l);
+      hi += __builtin_add_overflow (lo, *d, &lo);
+      c = __builtin_add_overflow (lo, c, &lo) + hi;
+      *d = lo;
+      d += BITINT_INC;
+    }
+  while (--n);
+  return c;
+}
+
+/* If XPREC is positive, it is precision in bits
+   of an unsigned _BitInt operand (which has XPREC/W_TYPE_SIZE
+   full limbs and if Xprec%W_TYPE_SIZE one partial limb.
+   If Xprec is negative, -XPREC is precision in bits
+   of a signed _BitInt operand.  RETPREC should be always
+   positive.  */
+
+void
+__mulbitint3 (UWtype *ret, SItype retprec,
+	      const UWtype *u, SItype uprec,
+	      const UWtype *v, SItype vprec)
+{
+  uprec = bitint_reduce_prec (&u, uprec);
+  vprec = bitint_reduce_prec (&v, vprec);
+  USItype auprec = uprec < 0 ? -uprec : uprec;
+  USItype avprec = vprec < 0 ? -vprec : vprec;
+
+  /* Prefer non-negative U.
+     Otherwise make sure V doesn't have higher precision than U.  */
+  if ((uprec < 0 && vprec >= 0)
+      || (avprec > auprec && !(uprec >= 0 && vprec < 0)))
+    {
+      SItype p;
+      const UWtype *t;
+      p = uprec; uprec = vprec; vprec = p;
+      p = auprec; auprec = avprec; avprec = p;
+      t = u; u = v; v = t;
+    }
+
+  USItype un = auprec / W_TYPE_SIZE;
+  USItype un2 = (auprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype vn = avprec / W_TYPE_SIZE;
+  USItype vn2 = (avprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype retn = ((USItype) retprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype retidx, uidx, vidx;
+  UWtype vv;
+  /* Indexes of least significant limb.  */
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+  retidx = retn - 1;
+  uidx = un2 - 1;
+  vidx = vn2 - 1;
+#else
+  retidx = 0;
+  uidx = 0;
+  vidx = 0;
+#endif
+  if (__builtin_expect (auprec <= W_TYPE_SIZE, 0) && vprec < 0)
+    {
+      UWtype uu = u[uidx];
+      if (__builtin_expect (auprec < W_TYPE_SIZE, 0))
+	uu &= ((UWtype) 1 << (auprec % W_TYPE_SIZE)) - 1;
+      if (uu == 0)
+	{
+	  /* 0 * negative would be otherwise mishandled below, so
+	     handle it specially.  */
+	  __builtin_memset (ret, 0, retn * sizeof (UWtype));
+	  return;
+	}
+    }
+  vv = v[vidx];
+  if (__builtin_expect (avprec < W_TYPE_SIZE, 0))
+    {
+      if (vprec > 0)
+	vv &= ((UWtype) 1 << (avprec % W_TYPE_SIZE)) - 1;
+      else
+	vv |= (UWtype) -1 << (avprec % W_TYPE_SIZE);
+    }
+
+  USItype n = un > retn ? retn : un;
+  USItype n2 = n;
+  USItype retidx2 = retidx + n * BITINT_INC;
+  UWtype c = 0, uv = 0;
+  if (n)
+    c = bitint_mul_1 (ret + retidx, u + uidx, vv, n);
+  if (retn > un && un2 != un)
+    {
+      UWtype hi, lo;
+      uv = u[uidx + n * BITINT_INC];
+      if (uprec > 0)
+	uv &= ((UWtype) 1 << (auprec % W_TYPE_SIZE)) - 1;
+      else
+	uv |= (UWtype) -1 << (auprec % W_TYPE_SIZE);
+      umul_ppmm (hi, lo, uv, vv);
+      c = __builtin_add_overflow (lo, c, &lo) + hi;
+      ret[retidx2] = lo;
+      retidx2 += BITINT_INC;
+      ++n2;
+    }
+  if (retn > un2)
+    {
+      if (uprec < 0)
+	{
+	  while (n2 < retn)
+	    {
+	      if (n2 >= un2 + vn2)
+		break;
+	      UWtype hi, lo;
+	      umul_ppmm (hi, lo, (UWtype) -1, vv);
+	      c = __builtin_add_overflow (lo, c, &lo) + hi;
+	      ret[retidx2] = lo;
+	      retidx2 += BITINT_INC;
+	      ++n2;
+	    }
+	}
+      else
+	{
+	  ret[retidx2] = c;
+	  retidx2 += BITINT_INC;
+	  ++n2;
+	}
+      /* If RET has more limbs than U after precision reduction,
+	 fill in the remaining limbs.  */
+      while (n2 < retn)
+	{
+	  if (n2 < un2 + vn2 || (uprec ^ vprec) >= 0)
+	    c = 0;
+	  else
+	    c = (UWtype) -1;
+	  ret[retidx2] = c;
+	  retidx2 += BITINT_INC;
+	  ++n2;
+	}
+    }
+  /* N is now number of possibly non-zero limbs in RET (ignoring
+     limbs above UN2 + VN2 which if any have been finalized already).  */
+  USItype end = vprec < 0 ? un2 + vn2 : vn2;
+  if (retn > un2 + vn2) retn = un2 + vn2;
+  if (end > retn) end = retn;
+  for (USItype m = 1; m < end; ++m)
+    {
+      retidx += BITINT_INC;
+      vidx += BITINT_INC;
+      if (m < vn2)
+	{
+	  vv = v[vidx];
+	  if (__builtin_expect (m == vn, 0))
+	    {
+	      if (vprec > 0)
+		vv &= ((UWtype) 1 << (avprec % W_TYPE_SIZE)) - 1;
+	      else
+		vv |= (UWtype) -1 << (avprec % W_TYPE_SIZE);
+	    }
+	}
+      else
+	vv = (UWtype) -1;
+      if (m + n > retn)
+	n = retn - m;
+      c = 0;
+      if (n)
+	c = bitint_addmul_1 (ret + retidx, u + uidx, vv, n);
+      n2 = m + n;
+      retidx2 = retidx + n * BITINT_INC;
+      if (n2 < retn && un2 != un)
+	{
+	  UWtype hi, lo;
+	  umul_ppmm (hi, lo, uv, vv);
+	  hi += __builtin_add_overflow (lo, ret[retidx2], &lo);
+	  c = __builtin_add_overflow (lo, c, &lo) + hi;
+	  ret[retidx2] = lo;
+	  retidx2 += BITINT_INC;
+	  ++n2;
+	}
+      if (uprec < 0)
+	while (n2 < retn)
+	  {
+	    UWtype hi, lo;
+	    umul_ppmm (hi, lo, (UWtype) -1, vv);
+	    hi += __builtin_add_overflow (lo, ret[retidx2], &lo);
+	    c = __builtin_add_overflow (lo, c, &lo) + hi;
+	    ret[retidx2] = lo;
+	    retidx2 += BITINT_INC;
+	    ++n2;
+	  }
+      else if (n2 < retn)
+	{
+	  ret[retidx2] = c;
+	  retidx2 += BITINT_INC;
+	}
+    }
+}
+#endif
+
+#ifdef L_divmodbitint4
+/* D = -S.  */
+
+static void
+bitint_negate (UWtype *d, const UWtype *s, SItype n)
+{
+  UWtype c = 1;
+  do
+    {
+      UWtype sv = *s, lo;
+      s += BITINT_INC;
+      c = __builtin_add_overflow (~sv, c, &lo);
+      *d = lo;
+      d += BITINT_INC;
+    }
+  while (--n);
+}
+
+/* D -= S * L.  */
+
+static UWtype
+bitint_submul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+{
+  UWtype sv, hi, lo, c = 0;
+  do
+    {
+      sv = *s;
+      s += BITINT_INC;
+      umul_ppmm (hi, lo, sv, l);
+      hi += __builtin_sub_overflow (*d, lo, &lo);
+      c = __builtin_sub_overflow (lo, c, &lo) + hi;
+      *d = lo;
+      d += BITINT_INC;
+    }
+  while (--n);
+  return c;
+}
+
+/* If XPREC is positive, it is precision in bits
+   of an unsigned _BitInt operand (which has XPREC/W_TYPE_SIZE
+   full limbs and if Xprec%W_TYPE_SIZE one partial limb.
+   If Xprec is negative, -XPREC is precision in bits
+   of a signed _BitInt operand.  QPREC and RPREC should be
+   always non-negative.  If either Q or R is NULL (at least
+   one should be non-NULL), then corresponding QPREC or RPREC
+   should be 0.  */
+
+void
+__divmodbitint4 (UWtype *q, SItype qprec,
+		 UWtype *r, SItype rprec,
+		 const UWtype *u, SItype uprec,
+		 const UWtype *v, SItype vprec)
+{
+  uprec = bitint_reduce_prec (&u, uprec);
+  vprec = bitint_reduce_prec (&v, vprec);
+  USItype auprec = uprec < 0 ? -uprec : uprec;
+  USItype avprec = vprec < 0 ? -vprec : vprec;
+  USItype un = (auprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype vn = (avprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype qn = ((USItype) qprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype rn = ((USItype) rprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
+  USItype up = auprec % W_TYPE_SIZE;
+  USItype vp = avprec % W_TYPE_SIZE;
+  if (__builtin_expect (un < vn, 0))
+    {
+      /* If abs(v) > abs(u), then q is 0 and r is u.  */
+      if (q)
+	__builtin_memset (q, 0, qn * sizeof (UWtype));
+      if (r == NULL)
+	return;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+      r += rn - 1;
+      u += un - 1;
+#endif
+      if (up)
+	--un;
+      if (rn < un)
+	un = rn;
+      for (rn -= un; un; --un)
+	{
+	  *r = *u;
+	  r += BITINT_INC;
+	  u += BITINT_INC;
+	}
+      if (!rn)
+	return;
+      if (up)
+	{
+	  if (uprec > 0)
+	    *r = *u & (((UWtype) 1 << up) - 1);
+	  else
+	    *r = *u | ((UWtype) -1 << up);
+	  r += BITINT_INC;
+	  if (!--rn)
+	    return;
+	}
+      UWtype c = uprec < 0 ? (UWtype) -1 : (UWtype) 0;
+      for (; rn; --rn)
+	{
+	  *r = c;
+	  r += BITINT_INC;
+	}
+      return;
+    }
+  USItype qn2 = un - vn + 1;
+  if (qn >= qn2)
+    qn2 = 0;
+  USItype sz = un + 1 + vn + qn2;
+  UWtype *buf = __builtin_alloca (sz * sizeof (UWtype));
+  USItype uidx, vidx;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+  uidx = un - 1;
+  vidx = vn - 1;
+#else
+  uidx = 0;
+  vidx = 0;
+#endif
+  if (uprec < 0)
+    bitint_negate (buf + BITINT_END (uidx + 1, 0), u + uidx, un);
+  else
+    __builtin_memcpy (buf + BITINT_END (1, 0), u, un * sizeof (UWtype));
+  if (up)
+    buf[BITINT_END (1, un - 1)] &= (((UWtype) 1 << up) - 1);
+  if (vprec < 0)
+    bitint_negate (buf + un + 1 + vidx, v + vidx, vn);
+  else
+    __builtin_memcpy (buf + un + 1, v, vn * sizeof (UWtype));
+  if (vp)
+    buf[un + 1 + BITINT_END (0, vn - 1)] &= (((UWtype) 1 << vp) - 1);
+  UWtype *u2 = buf;
+  UWtype *v2 = u2 + un + 1;
+  UWtype *q2 = v2 + vn;
+  if (!qn2)
+    q2 = q + BITINT_END (qn - (un - vn + 1), 0);
+
+  /* Knuth's algorithm.  See also ../gcc/wide-int.cc (divmod_internal_2).  */
+
+#ifndef UDIV_NEEDS_NORMALIZATION
+  /* Handle single limb divisor first.  */
+  if (vn == 1)
+    {
+      UWtype vv = v2[0];
+      if (vv == 0)
+	vv = 1 / vv; /* Divide intentionally by zero.  */
+      UWtype k = 0;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+      for (SItype i = 0; i <= un - 1; ++i)
+#else
+      for (SItype i = un - 1; i >= 0; --i)
+#endif
+	udiv_qrnnd (q2[i], k, k, u2[BITINT_END (i + 1, i)], vv);
+      if (r != NULL)
+	r[BITINT_END (rn - 1, 0)] = k;
+    }
+  else
+#endif
+    {
+      SItype s;
+#ifdef UDIV_NEEDS_NORMALIZATION
+      if (vn == 1 && v2[0] == 0)
+	s = 0;
+      else
+#endif
+      if (sizeof (0U) == sizeof (UWtype))
+	s = __builtin_clz (v2[BITINT_END (0, vn - 1)]);
+      else if (sizeof (0UL) == sizeof (UWtype))
+	s = __builtin_clzl (v2[BITINT_END (0, vn - 1)]);
+      else
+	s = __builtin_clzll (v2[BITINT_END (0, vn - 1)]);
+      if (s)
+	{
+	  /* Normalize by shifting v2 left so that it has msb set.  */
+	  const SItype n = sizeof (UWtype) * __CHAR_BIT__;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	  for (SItype i = 0; i < vn - 1; ++i)
+#else
+	  for (SItype i = vn - 1; i > 0; --i)
+#endif
+	    v2[i] = (v2[i] << s) | (v2[i - BITINT_INC] >> (n - s));
+	  v2[vidx] = v2[vidx] << s;
+	  /* And shift u2 left by the same amount.  */
+	  u2[BITINT_END (0, un)] = u2[BITINT_END (1, un - 1)] >> (n - s);
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	  for (SItype i = 1; i < un; ++i)
+#else
+	  for (SItype i = un - 1; i > 0; --i)
+#endif
+	    u2[i] = (u2[i] << s) | (u2[i - BITINT_INC] >> (n - s));
+	  u2[BITINT_END (un, 0)] = u2[BITINT_END (un, 0)] << s;
+	}
+      else
+	u2[BITINT_END (0, un)] = 0;
+#ifdef UDIV_NEEDS_NORMALIZATION
+      /* Handle single limb divisor first.  */
+      if (vn == 1)
+	{
+	  UWtype vv = v2[0];
+	  if (vv == 0)
+	    vv = 1 / vv; /* Divide intentionally by zero.  */
+	  UWtype k = u2[BITINT_END (0, un)];
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	  for (SItype i = 0; i <= un - 1; ++i)
+#else
+	  for (SItype i = un - 1; i >= 0; --i)
+#endif
+	    udiv_qrnnd (q2[i], k, k, u2[BITINT_END (i + 1, i)], vv);
+	  if (r != NULL)
+	    r[BITINT_END (rn - 1, 0)] = k >> s;
+	}
+      else
+#endif
+	{
+	  UWtype vv1 = v2[BITINT_END (0, vn - 1)];
+	  UWtype vv0 = v2[BITINT_END (1, vn - 2)];
+	  /* Main loop.  */
+	  for (SItype j = un - vn; j >= 0; --j)
+	    {
+	      /* Compute estimate in qhat.  */
+	      UWtype uv1 = u2[BITINT_END (un - j - vn, j + vn)];
+	      UWtype uv0 = u2[BITINT_END (un - j - vn + 1, j + vn - 1)];
+	      UWtype qhat, rhat, hi, lo, c;
+	      if (uv1 >= vv1)
+		{
+		  /* udiv_qrnnd doesn't support quotients which don't
+		     fit into UWtype, so subtract from uv1:uv0 vv1
+		     first.  */
+		  uv1 -= vv1 + __builtin_sub_overflow (uv0, vv1, &uv0);
+		  udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		  if (!__builtin_add_overflow (rhat, vv1, &rhat))
+		    goto again;
+		}
+	      else
+		{
+		  udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		again:
+		  umul_ppmm (hi, lo, qhat, vv0);
+		  if (hi > rhat
+		      || (hi == rhat
+			  && lo > u2[BITINT_END (un - j - vn + 2,
+						 j + vn - 2)]))
+		    {
+		      --qhat;
+		      if (!__builtin_add_overflow (rhat, vv1, &rhat))
+			goto again;
+		    }
+		}
+
+	      c = bitint_submul_1 (u2 + BITINT_END (un - j, j),
+				   v2 + BITINT_END (vn - 1, 0), qhat, vn);
+	      u2[BITINT_END (un - j - vn, j + vn)] -= c;
+	      /* If we've subtracted too much, decrease qhat and
+		 and add back.  */
+	      if ((Wtype) u2[BITINT_END (un - j - vn, j + vn)] < 0)
+		{
+		  --qhat;
+		  c = 0;
+		  for (USItype i = 0; i < vn; ++i)
+		    {
+		      UWtype s = v2[BITINT_END (vn - 1 - i, i)];
+		      UWtype d = u2[BITINT_END (un - i - j, i + j)];
+		      UWtype c1 = __builtin_add_overflow (d, s, &d);
+		      UWtype c2 = __builtin_add_overflow (d, c, &d);
+		      c = c1 + c2;
+		      u2[BITINT_END (un - i - j, i + j)] = d;
+		    }
+		  u2[BITINT_END (un - j - vn, j + vn)] += c;
+		}
+	      q2[BITINT_END (un - vn - j, j)] = qhat;
+	    }
+	  if (r != NULL)
+	    {
+	      if (s)
+		{
+		  const SItype n = sizeof (UWtype) * __CHAR_BIT__;
+		  /* Unnormalize remainder.  */
+		  USItype i;
+		  for (i = 0; i < vn && i < rn; ++i)
+		    r[BITINT_END (rn - 1 - i, i)]
+		      = ((u2[BITINT_END (un - i, i)] >> s)
+			 | (u2[BITINT_END (un - i - 1, i + 1)] << (n - s)));
+		  if (i < rn)
+		    r[BITINT_END (rn - vn, vn - 1)]
+		      = u2[BITINT_END (un - vn + 1, vn - 1)] >> s;
+		}
+	      else if (rn > vn)
+		__builtin_memcpy (&r[BITINT_END (rn - vn, 0)],
+				  &u2[BITINT_END (un + 1 - vn, 0)],
+				  vn * sizeof (UWtype));
+	      else
+		__builtin_memcpy (&r[0], &u2[BITINT_END (un + 1 - rn, 0)],
+				  rn * sizeof (UWtype));
+	    }
+	}
+    }
+  if (q != NULL)
+    {
+      if ((uprec < 0) ^ (vprec < 0))
+	{
+	  /* Negative quotient.  */
+	  USItype n;
+	  if (un - vn + 1 > qn)
+	    n = qn;
+	  else
+	    n = un - vn + 1;
+	  bitint_negate (q + BITINT_END (qn - 1, 0),
+			 q2 + BITINT_END (un - vn, 0), n);
+	  if (qn > n)
+	    __builtin_memset (q + BITINT_END (0, n), -1,
+			      (qn - n) * sizeof (UWtype));
+	}
+      else
+	{
+	  /* Positive quotient.  */
+	  if (qn2)
+	    __builtin_memcpy (q, q2 + BITINT_END (un - vn + 1 - qn, 0),
+			      qn * sizeof (UWtype));
+	  else if (qn > un - vn + 1)
+	    __builtin_memset (q + BITINT_END (0, un - vn + 1), 0,
+			      (qn - (un - vn + 1)) * sizeof (UWtype));
+	}
+    }
+  if (r != NULL)
+    {
+      if (uprec < 0)
+	{
+	  /* Negative remainder.  */
+	  bitint_negate (r + BITINT_END (rn - 1, 0),
+			 r + BITINT_END (rn - 1, 0),
+			 rn > vn ? vn : rn);
+	  if (rn > vn)
+	    __builtin_memset (r + BITINT_END (0, vn), -1,
+			      (rn - vn) * sizeof (UWtype));
+	}
+      else
+	{
+	  /* Positive remainder.  */
+	  if (rn > vn)
+	    __builtin_memset (r + BITINT_END (0, vn), 0,
+			      (rn - vn) * sizeof (UWtype));
+	}
+    }
+}
+#endif
+#endif
+
 #ifdef L_cmpdi2
 cmp_return_type
 __cmpdi2 (DWtype a, DWtype b)

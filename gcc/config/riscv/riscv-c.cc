@@ -108,6 +108,13 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 
     }
 
+  if (riscv_user_wants_strict_align)
+    builtin_define_with_int_value ("__riscv_unaligned_avoid", 1);
+  else if (riscv_slow_unaligned_access_p)
+    builtin_define_with_int_value ("__riscv_unaligned_slow", 1);
+  else
+    builtin_define_with_int_value ("__riscv_unaligned_fast", 1);
+
   if (TARGET_MIN_VLEN != 0)
     builtin_define_with_int_value ("__riscv_v_min_vlen", TARGET_MIN_VLEN);
 

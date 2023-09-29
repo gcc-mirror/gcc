@@ -898,7 +898,7 @@ extern (C++) struct Token
 
 nothrow:
 
-    int isKeyword() const
+    int isKeyword() const @safe
     {
         foreach (kw; keywords)
         {

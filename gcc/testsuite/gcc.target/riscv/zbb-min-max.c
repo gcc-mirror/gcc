@@ -26,7 +26,7 @@ foo4 (unsigned long i, unsigned long j)
   return i > j ? i : j;
 }
 
-/* { dg-final { scan-assembler-times "min" 3 } } */
-/* { dg-final { scan-assembler-times "max" 3 } } */
-/* { dg-final { scan-assembler-times "minu" 1 } } */
-/* { dg-final { scan-assembler-times "maxu" 1 } } */
+/* { dg-final { scan-assembler-times {\mmin} 3 } } */
+/* { dg-final { scan-assembler-times {\mmax} 3 } } */
+/* { dg-final { scan-assembler-times {\mminu} 1 } } */
+/* { dg-final { scan-assembler-times {\mmaxu} 1 } } */

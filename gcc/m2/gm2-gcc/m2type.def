@@ -983,4 +983,11 @@ PROCEDURE BuildStartArrayType (index_type: Tree; elt_type: Tree; type: INTEGER) 
 PROCEDURE IsAddress (type: Tree) : BOOLEAN ;
 
 
+(*
+   SameRealType - return true if real types a and b are the same.
+*)
+
+PROCEDURE SameRealType (a, b: Tree) : BOOLEAN ;
+
+
 END m2type.

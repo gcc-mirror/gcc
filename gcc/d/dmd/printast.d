@@ -39,7 +39,7 @@ extern (C++) final class PrintASTVisitor : Visitor
 
     int indent;
 
-    extern (D) this(int indent) scope
+    extern (D) this(int indent) scope @safe
     {
         this.indent = indent;
     }

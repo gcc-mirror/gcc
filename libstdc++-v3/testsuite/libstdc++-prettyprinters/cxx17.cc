@@ -50,18 +50,18 @@ main()
 // { dg-final { note-test str "\"string\"" } }
 
   optional<int> o;
-// { dg-final { note-test o {std::optional<int> [no contained value]} } }
+// { dg-final { note-test o {std::optional [no contained value]} } }
   optional<bool> ob{false};
-// { dg-final { note-test ob {std::optional<bool> = {[contained value] = false}} } }
+// { dg-final { note-test ob {std::optional = {[contained value] = false}} } }
   optional<int> oi{5};
-// { dg-final { note-test oi {std::optional<int> = {[contained value] = 5}} } }
+// { dg-final { note-test oi {std::optional = {[contained value] = 5}} } }
   optional<void*> op{nullptr};
-// { dg-final { note-test op {std::optional<void *> = {[contained value] = 0x0}} } }
+// { dg-final { note-test op {std::optional = {[contained value] = 0x0}} } }
   optional<std::map<int, double>> om;
   om = std::map<int, double>{ {1, 2.}, {3, 4.}, {5, 6.} };
-// { dg-final { regexp-test om {std::optional<std::(__debug::)?map<int, double>> containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
+// { dg-final { regexp-test om {std::optional containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
   optional<std::string> os{ "stringy" };
-// { dg-final { note-test os {std::optional<std::string> = {[contained value] = "stringy"}} } }
+// { dg-final { note-test os {std::optional = {[contained value] = "stringy"}} } }
 
   any a;
 // { dg-final { note-test a {std::any [no contained value]} } }
@@ -83,18 +83,18 @@ main()
 
   struct S { operator int() { throw 42; }};
   variant<float, int, string_view> v0;
-// { dg-final { note-test v0 {std::variant<float, int, std::string_view> [index 0] = {0}} } }
+// { dg-final { note-test v0 {std::variant [index 0] = {0}} } }
   variant<float, int, string_view> v1{ 0.5f };
-// { dg-final { note-test v1 {std::variant<float, int, std::string_view> [index 0] = {0.5}} } }
+// { dg-final { note-test v1 {std::variant [index 0] = {0.5}} } }
   variant<float, X, string_view> v2;
   try {
     v2.emplace<1>(S());
   } catch (int) { }
-// { dg-final { note-test v2 {std::variant<float, X, std::string_view> [no contained value]} } }
+// { dg-final { note-test v2 {std::variant [no contained value]} } }
   variant<float, int, string_view> v3{ 3 };
-// { dg-final { note-test v3 {std::variant<float, int, std::string_view> [index 1] = {3}} } }
+// { dg-final { note-test v3 {std::variant [index 1] = {3}} } }
   variant<float, int, string_view> v4{ str };
-// { dg-final { note-test v4 {std::variant<float, int, std::string_view> [index 2] = {"string"}} } }
+// { dg-final { note-test v4 {std::variant [index 2] = {"string"}} } }
 
   map<int, string_view> m{ {1, "one"} };
   map<int, string_view>::node_type n0;

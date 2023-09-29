@@ -118,8 +118,8 @@ PROCEDURE nextafter (x, y: REAL) : REAL ;
 PROCEDURE nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE nextafterl (x, y: LONGREAL) : LONGREAL ;
 
-PROCEDURE nexttoward (x, y: REAL) : REAL ;
-PROCEDURE nexttowardf (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE nexttoward (x: REAL; y: LONGREAL) : REAL ;
+PROCEDURE nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 PROCEDURE nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
 PROCEDURE scalb (x, n: REAL) : REAL ;

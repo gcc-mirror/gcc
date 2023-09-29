@@ -61,11 +61,10 @@
 (define_subst_attr "mask_operand19" "mask" "" "%{%20%}%N19")
 (define_subst_attr "mask_codefor" "mask" "*" "")
 (define_subst_attr "mask_operand_arg34" "mask" "" ", operands[3], operands[4]")
-(define_subst_attr "mask_mode512bit_condition" "mask" "1" "(<MODE_SIZE> == 64 || TARGET_AVX512VL
-							    || TARGET_AVX10_1)")
-(define_subst_attr "mask_avx512vl_condition" "mask" "1" "(TARGET_AVX512VL || TARGET_AVX10_1)")
+(define_subst_attr "mask_mode512bit_condition" "mask" "1" "(<MODE_SIZE> == 64 || TARGET_AVX512VL)")
+(define_subst_attr "mask_avx512vl_condition" "mask" "1" "TARGET_AVX512VL")
 (define_subst_attr "mask_avx512bw_condition" "mask" "1" "TARGET_AVX512BW")
-(define_subst_attr "mask_avx512dq_condition" "mask" "1" "(TARGET_AVX512DQ || TARGET_AVX10_1)")
+(define_subst_attr "mask_avx512dq_condition" "mask" "1" "TARGET_AVX512DQ")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
@@ -82,7 +81,7 @@
 (define_subst "mask"
   [(set (match_operand:SUBST_V 0)
         (match_operand:SUBST_V 1))]
-  "TARGET_AVX512F || TARGET_AVX10_1"
+  "TARGET_AVX512F"
   [(set (match_dup 0)
         (vec_merge:SUBST_V
 	  (match_dup 1)
@@ -120,7 +119,7 @@
 (define_subst "mask_scalar_merge"
   [(set (match_operand:SUBST_S 0)
         (match_operand:SUBST_S 1))]
-  "TARGET_AVX512F || TARGET_AVX10_1"
+  "TARGET_AVX512F"
   [(set (match_dup 0)
         (and:SUBST_S
 	  (match_dup 1)

@@ -37,6 +37,13 @@ gfc_st_label *gfc_statement_label;
 static locus label_locus;
 static jmp_buf eof_buf;
 
+/* Respectively pointer and content of the current interface body being parsed
+   as they were at the beginning of decode_statement.  Used to restore the
+   interface to its previous state in case a parsed statement is rejected after
+   some symbols have been added to the interface.  */
+static gfc_interface **current_interface_ptr = nullptr;
+static gfc_interface *previous_interface_head = nullptr;
+
 gfc_state_data *gfc_state_stack;
 static bool last_was_use_stmt = false;
 bool in_exec_part;
@@ -291,6 +298,46 @@ end_of_block:
   return ST_GET_FCN_CHARACTERISTICS;
 }
 
+
+/* Tells whether gfc_get_current_interface_head can be used safely.  */
+
+static bool
+current_interface_valid_p ()
+{
+  switch (current_interface.type)
+    {
+    case INTERFACE_INTRINSIC_OP:
+      return current_interface.ns != nullptr;
+
+    case INTERFACE_GENERIC:
+    case INTERFACE_DTIO:
+      return current_interface.sym != nullptr;
+
+    case INTERFACE_USER_OP:
+      return current_interface.uop != nullptr;
+
+    default:
+      return false;
+    }
+}
+
+
+/* Return a pointer to the interface currently being parsed, or nullptr if
+   we are not currently parsing an interface body.  */
+
+static gfc_interface **
+get_current_interface_ptr ()
+{
+  if (current_interface_valid_p ())
+    {
+      gfc_interface *& ifc_ptr = gfc_current_interface_head ();
+      return &ifc_ptr;
+    }
+  else
+    return nullptr;
+}
+
+
 static bool in_specification_block;
 
 /* This is the primary 'decode_statement'.  */
@@ -306,6 +353,11 @@ decode_statement (void)
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
+
+  current_interface_ptr = get_current_interface_ptr ();
+  previous_interface_head = current_interface_ptr == nullptr
+			    ? nullptr
+			    : *current_interface_ptr;
 
   gfc_matching_function = false;
 
@@ -3042,6 +3094,8 @@ reject_statement (void)
 {
   gfc_free_equiv_until (gfc_current_ns->equiv, gfc_current_ns->old_equiv);
   gfc_current_ns->equiv = gfc_current_ns->old_equiv;
+  gfc_drop_interface_elements_before (current_interface_ptr,
+				      previous_interface_head);
 
   gfc_reject_data (gfc_current_ns);
 
@@ -4010,9 +4064,6 @@ loop:
   accept_statement (st);
   prog_unit = gfc_new_block;
   prog_unit->formal_ns = gfc_current_ns;
-  if (prog_unit == prog_unit->formal_ns->proc_name
-      && prog_unit->ns != prog_unit->formal_ns)
-    prog_unit->refs++;
 
 decl:
   /* Read data declaration statements.  */

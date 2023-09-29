@@ -1,7 +1,4 @@
-// Use -std=c++14 explicitly, because -std=gnu++14 enables GNU extension for
-// complex literals, so 1.0if is __complex__ float not std::complex<float>.
-// { dg-options "-std=c++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //

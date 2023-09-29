@@ -36,7 +36,7 @@ import core.internal.traits : Unqual;
  */
 Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* makeWeaklyPure = null) @trusted
 {
-    pragma(inline, false);
+    version (DigitalMars) pragma(inline, false);
     import core.internal.traits : hasElaborateCopyConstructor;
     import core.lifetime : copyEmplace;
     import core.stdc.string : memcpy;
@@ -200,7 +200,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
  */
 void _d_arraysetctor(Tarr : T[], T)(scope Tarr p, scope ref T value) @trusted
 {
-    pragma(inline, false);
+    version (DigitalMars) pragma(inline, false);
     import core.lifetime : copyEmplace;
 
     size_t i;

@@ -242,11 +242,12 @@
 ; via r12.
 
 (define_attr "type"
-  "move,load,store,cmove,unary,binary,compare,shift,uncond_branch,jump,branch,
-   brcc,brcc_no_delay_slot,call,sfunc,call_no_delay_slot,rtie,
-   multi,umulti, two_cycle_core,lr,sr,divaw,loop_setup,loop_end,return,
-   misc,spfp,dpfp_mult,dpfp_addsub,mulmac_600,cc_arith,
-   simd_vload, simd_vload128, simd_vstore, simd_vmove, simd_vmove_else_zero,
+  "add,sub,bxor,move,load,store,cmove,unary,binary,compare,shift,uncond_branch,
+   jump,branch,brcc,brcc_no_delay_slot,call,sfunc,call_no_delay_slot,rtie,
+   multi,umulti,
+   two_cycle_core,lr,sr,divaw,loop_setup,loop_end,return,
+   misc,spfp,dpfp_mult,dpfp_addsub,mulmac_600,cc_arith, simd_vload,
+   simd_vload128, simd_vstore, simd_vmove, simd_vmove_else_zero,
    simd_vmove_with_acc, simd_varith_1cycle, simd_varith_2cycle,
    simd_varith_with_acc, simd_vlogic, simd_vlogic_with_acc,
    simd_vcompare, simd_vpermute, simd_vpack, simd_vpack_with_acc,
@@ -1004,7 +1005,7 @@ archs4x, archs4xd"
 	(const_int 0)]))
    (clobber (match_scratch:SI 3 "=X,X,X,X,X,X,Rrq,1,c"))]
   "TARGET_NPS_BITOPS"
-  "movb.f.cl %3,%1,%p2,%p2,%s2"
+  "movb.f.cl %3,%1,%p2,%p2,%x2"
   "TARGET_NPS_BITOPS && reload_completed
    && (extract_constrain_insn_cached (insn), (which_alternative & ~1) != 6)"
   [(set (match_dup 0) (match_dup 4))])
@@ -2018,44 +2019,40 @@ archs4x, archs4xd"
 
 ;; Arithmetic instructions.
 
-; We say an insn can be conditionalized if this doesn't introduce a long
-; immediate.  We set the type such that we still have good scheduling if the
-; insn is conditionalized.
-; ??? It would make sense to allow introduction of long immediates, but
-;     we'd need to communicate to the ccfsm machinery the extra cost.
 ; The alternatives in the constraints still serve three purposes:
 ; - estimate insn size assuming conditional execution
 ; - guide reload to re-order the second and third operand to get a better fit.
 ; - give tentative insn type to guide scheduling
 ;   N.B. "%" for commutativity doesn't help when there is another matching
 ;   (but longer) alternative.
-; We avoid letting this pattern use LP_COUNT as a register by specifying
-;  register class 'W' instead of 'w'.
-(define_insn_and_split "*addsi3_mixed"
-  ;;                                                      0  1    2     3   4   5   6  7  8  9 a    b     c   d e   f  10  11  12
-  [(set (match_operand:SI 0 "dest_reg_operand"           "=q,q,   h,!*Rsd,  q,Rcb,  q, q, q, r,r,   r,    W,  W,W,  W,  q,  r,  W")
-	(plus:SI (match_operand:SI 1 "register_operand"  "%0,c,   0,    q,  0,  0,Rcb, q, 0, 0,r,   0,    c,  c,0,  0,  0,  0,  c")
-		 (match_operand:SI 2 "nonmemory_operand" "cL,0, Cm1,    L,CL2,Csp,CM4,qK,cO,rL,0,rCca,cLCmL,Cca,I,C2a,Cal,Cal,Cal")))]
+(define_insn "*addsi3_mixed"
+  ;;                                                      0    1     2   3   4   5  6  7  8  9   a   b   c   d   e   f  10
+  [(set (match_operand:SI 0 "register_operand"           "=q,  h,!*Rsd,Rcb,Rcb,  q, q, q, r,r,   r,  r,  r,  r,  q,  r,  r")
+	(plus:SI (match_operand:SI 1 "register_operand"  "%0,  0,    q,  0,  0,Rcb, q, 0, 0,r,   r,  r,  0,  r,  0,  0,  r")
+		 (match_operand:SI 2 "nonmemory_operand" "hL,Cm1,    L,CP4,CM4,CM4,qK, O,rL,0,rC6u,C6n,CIs,C4p,Cal,Cal,Cal")))]
   ""
-{
-  arc_output_addsi (operands, arc_ccfsm_cond_exec_p (), true);
-  return "";
-}
-  "&& reload_completed && get_attr_length (insn) == 8
-   && satisfies_constraint_I (operands[2])
-   && GET_CODE (PATTERN (insn)) != COND_EXEC"
-  [(set (match_dup 0) (match_dup 3)) (set (match_dup 0) (match_dup 4))]
-  "split_addsi (operands);"
-  [(set_attr "type" "*,*,*,*,two_cycle_core,two_cycle_core,*,*,*,*,*,two_cycle_core,*,two_cycle_core,*,two_cycle_core,*,*,*")
-   (set (attr "iscompact")
-	(cond [(match_test "~arc_output_addsi (operands, false, false) & 2")
-	       (const_string "false")
-	       (match_operand 2 "long_immediate_operand" "")
-	       (const_string "maybe_limm")]
-	      (const_string "maybe")))
-   (set_attr "length"     "*,*,*,*,*,*,*,*,*,4,4,4,4,4,4,4,*,8,8")
-   (set_attr "predicable" "no,no,no,no,no,no,no,no,no,yes,yes,yes,no,no,no,no,no,yes,no")
-   (set_attr "cond"       "canuse,nocond,nocond,nocond,canuse,canuse,nocond,nocond,nocond,canuse,canuse,canuse,nocond,nocond,canuse_limm,canuse_limm,canuse,canuse,nocond")
+  "@
+  add_s\\t%0,%1,%2   ;b,b,h
+  add_s\\t%0,%1,%2   ;h,h,s3
+  add_s\\t%0,%1,%2   ;R0/R1,b,u6
+  sub_s\\t%0,%1,%n2  ;sp,sp,u7
+  add_s\\t%0,%1,%2   ;sp,sp,u7
+  add_s\\t%0,%1,%2   ;b,sp,u7
+  add_s\\t%0,%1,%2   ;a,b,c/u3
+  add_s\\t%0,%1,%2   ;b,b,u7
+  add%?\\t%0,%1,%2   ;(p)b,b,c/u6
+  add%?\\t%0,%2,%1   ;(p)b,b,c
+  add%s2\\t%0,%1,%S2 ;a,b,c/u6
+  sub%s2\\t%0,%1,%N2 ;a,b,u6
+  add%s2\\t%0,%1,%S2 ;b,b,s12
+  bxor\\t%0,%1,31
+  add_s\\t%0,%1,%2   ;b,b,limm
+  add%?\\t%0,%1,%2   ;(p)b,b,limm
+  add\\t%0,%1,%2     ;a,b,limm"
+  [(set_attr "type"       "add,add,add,sub,add,add,add,add,add,add,add,sub,add,bxor,add,add,add")
+   (set_attr "iscompact"  "true,true,true,true,true,true,true,true,false,false,false,false,false,false,true_limm,false,false")
+   (set_attr "length"     "2,2,2,2,2,2,2,2,4,4,4,4,4,4,6,8,8")
+   (set_attr "predicable" "no,no,no,no,no,no,no,no,yes,yes,no,no,no,no,no,yes,no")
 ])
 
 ;; ARCv2 MPYW and MPYUW
@@ -3236,7 +3233,7 @@ archs4x, archs4xd"
 	      ? "extb%? %0,%1%&" : "ext%_%? %0,%1%&");
     case 9: case 14: return \"bic%? %0,%1,%n2-1\";
     case 15:
-      return "movb.cl %0,%1,%p2,%p2,%s2";
+      return "movb.cl %0,%1,%p2,%p2,%x2";
 
     case 19:
       const char *tmpl;
@@ -3588,37 +3585,6 @@ archs4x, archs4xd"
    (set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "*,4")])
-
-; combine suffers from 'simplifications' that replace a one-bit zero
-; extract with a shift if it can prove that the upper bits are zero.
-; arc_reorg sees the code after sched2, which can have caused our
-; inputs to be clobbered even if they were not clobbered before.
-; Therefore, add a third way to convert btst / b{eq,ne} to bbit{0,1}
-; OTOH, this is somewhat marginal, and can leat to out-of-range
-; bbit (i.e. bad scheduling) and missed conditional execution,
-; so make this an option.
-(define_peephole2
-  [(set (reg:CC_ZN CC_REG)
-	(compare:CC_ZN
-	  (zero_extract:SI (match_operand:SI 0 "register_operand" "")
-			   (const_int 1)
-			   (match_operand:SI 1 "nonmemory_operand" ""))
-	  (const_int 0)))
-   (set (pc)
-	(if_then_else (match_operator 3 "equality_comparison_operator"
-				      [(reg:CC_ZN CC_REG) (const_int 0)])
-		      (label_ref (match_operand 2 "" ""))
-		      (pc)))]
-  "TARGET_BBIT_PEEPHOLE && peep2_regno_dead_p (2, CC_REG)"
-  [(parallel [(set (pc)
-		   (if_then_else
-		     (match_op_dup 3
-		       [(zero_extract:SI (match_dup 0)
-					 (const_int 1) (match_dup 1))
-			(const_int 0)])
-		     (label_ref (match_dup 2))
-		     (pc)))
-	      (clobber (reg:CC_ZN CC_REG))])])
 
 (define_insn "*cmpsi_cc_z_insn"
   [(set (reg:CC_Z CC_REG)
@@ -4121,8 +4087,8 @@ archs4x, archs4xd"
   "@
    jl%!%* [%0]%&
    jl%!%* [%0]
-   jli_s %S0
-   sjli  %S0
+   jli_s %J0
+   sjli  %J0
    bl%!%* %P0
    bl%!%* %P0
    jl%!%* %0
@@ -4165,8 +4131,8 @@ archs4x, archs4xd"
   "@
    jl%!%* [%1]%&
    jl%!%* [%1]
-   jli_s %S1
-   sjli  %S1
+   jli_s %J1
+   sjli  %J1
    bl%!%* %P1;1
    bl%!%* %P1;1
    jl%!%* %1
@@ -5991,7 +5957,7 @@ archs4x, archs4xd"
   [(set (match_operand:SI 0 "register_operand"            "=r")
 	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
 		   (const_int 16)))]
-  "TARGET_BARREL_SHIFTER && TARGET_V2"
+  "TARGET_SWAP && TARGET_V2"
   "lsl16\\t%0,%1"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "false")

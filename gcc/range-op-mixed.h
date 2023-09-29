@@ -164,6 +164,9 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (frange &r, tree type,
+		  const irange &lhs, const frange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
 
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
@@ -403,6 +406,10 @@ public:
 				  relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+
+  virtual bool overflow_free_p (const irange &lh, const irange &rh,
+				relation_trio = TRIO_VARYING) const;
+
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -468,6 +475,10 @@ public:
 				relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+
+  virtual bool overflow_free_p (const irange &lh, const irange &rh,
+				relation_trio = TRIO_VARYING) const;
+
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -547,6 +558,9 @@ public:
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind kind) const final override;
+  virtual bool overflow_free_p (const irange &lh, const irange &rh,
+				relation_trio = TRIO_VARYING) const;
+
 };
 
 class operator_addr_expr : public range_operator

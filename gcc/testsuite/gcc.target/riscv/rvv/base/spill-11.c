@@ -9,7 +9,7 @@ void fn3 (char*);
 
 /*
 ** stack_save_restore_2:
-**	call\tt0,__riscv_save_2
+**	call\tt0,__riscv_save_1
 **	csrr\tt0,vlenb
 **	slli\tt1,t0,1
 **	sub\tsp,sp,t1
@@ -23,7 +23,7 @@ void fn3 (char*);
 **	li\tt0,8192
 **	addi\tt0,t0,-192
 **	add\tsp,sp,t0
-**	tail\t__riscv_restore_2
+**	tail\t__riscv_restore_1
 */
 int stack_save_restore_2 (float a1, float a2, float a3, float a4,
                       float a5, float a6, float a7, float a8,

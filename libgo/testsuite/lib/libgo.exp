@@ -53,5 +53,13 @@ load_gcc_lib timeout.exp
 load_gcc_lib go.exp
 
 proc libgo_init { args } {
+    global TESTING_IN_BUILD_TREE
+    if { [info exists TESTING_IN_BUILD_TREE] } {
+	# If '--with-build-sysroot=[...]' was specified, use it for build-tree
+	# testing.
+	global TEST_ALWAYS_FLAGS SYSROOT_CFLAGS_FOR_TARGET
+	set TEST_ALWAYS_FLAGS $SYSROOT_CFLAGS_FOR_TARGET
+    }
+
     go_init $args
 }

@@ -779,6 +779,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_Wall:
       if (value)
 	global.params.warnings = DIAGNOSTICinform;
+      global.params.obsolete = value;
       break;
 
     case OPT_Wdeprecated:
@@ -894,6 +895,7 @@ d_post_options (const char ** fn)
 	  flag_exceptions = false;
 	}
 
+      global.params.useGC = false;
       global.params.checkAction = CHECKACTION_C;
     }
 
@@ -939,6 +941,7 @@ d_post_options (const char ** fn)
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.shortenedMethods = global.params.shortenedMethods;
+  global.compileEnv.obsolete = global.params.obsolete;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)
@@ -1098,7 +1101,7 @@ d_parse_file (void)
 
       if (m->filetype == FileType::ddoc)
 	{
-	  gendocfile (m);
+	  gendocfile (m, global.errorSink);
 	  /* Remove M from list of modules.  */
 	  modules.remove (i);
 	  i--;
@@ -1253,7 +1256,7 @@ d_parse_file (void)
       /* Declare the name of the root module as the first global name in order
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
-      mangleToBuffer (Module::rootModule, &buf);
+      mangleToBuffer (Module::rootModule, buf);
       first_global_object_name = buf.extractChars ();
     }
 
@@ -1334,7 +1337,7 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  gendocfile (m);
+	  gendocfile (m, global.errorSink);
 	}
     }
 

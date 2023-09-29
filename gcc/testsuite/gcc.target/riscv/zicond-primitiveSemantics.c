@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zicond -mabi=lp64d" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zicond -mabi=ilp32f" { target { rv32 } } } */
-/* { dg-skip-if "" { *-*-* } {"-O0"} } */
+/* { dg-skip-if "" { *-*-* } {"-O0" "-Og"} } */
 
 long primitiveSemantics_00(long a, long b) { return a == 0 ? 0 : b; }
 
@@ -43,7 +43,7 @@ int primitiveSemantics_11(int a, int b) {
   return b;
 }
 
-/* { dg-final { scan-assembler-times "czero.eqz" 6 } } */
-/* { dg-final { scan-assembler-times "czero.nez" 6 } } */
-/* { dg-final { scan-assembler-not "beq" } } */
-/* { dg-final { scan-assembler-not "bne" } } */
+/* { dg-final { scan-assembler-times {\mczero\.eqz\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mczero\.nez\M} 6 } } */
+/* { dg-final { scan-assembler-not {\mbeq} } } */
+/* { dg-final { scan-assembler-not {\mbne} } } */

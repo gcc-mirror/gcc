@@ -51,6 +51,7 @@ struct CompileEnv
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
     bool shortenedMethods = true;   /// allow => in normal function declarations
+    bool obsolete;           /// warn on use of legacy code
 }
 
 /***********************************************************
@@ -192,7 +193,7 @@ class Lexer
     /******************
      * Used for unittests for a mock Lexer
      */
-    this(ErrorSink errorSink) scope { assert(errorSink); this.eSink = errorSink; }
+    this(ErrorSink errorSink) scope @safe { assert(errorSink); this.eSink = errorSink; }
 
     /**************************************
      * Reset lexer to lex #define's

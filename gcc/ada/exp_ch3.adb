@@ -5000,6 +5000,10 @@ package body Exp_Ch3 is
       --  Do not create TSS routine Finalize_Address for concurrent class-wide
       --  types. Ignore C, C++, CIL and Java types since it is assumed that the
       --  non-Ada side will handle their destruction.
+      --
+      --  Concurrent Ada types are functionally represented by an associated
+      --  "corresponding record type" (typenameV), which owns the actual TSS
+      --  finalize bodies for the type (and technically class-wide type).
 
       elsif Is_Concurrent_Type (Root)
         or else Is_C_Derivation (Root)

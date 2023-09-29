@@ -648,6 +648,7 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 	  ? PROFILE_READ : PROFILE_GUESSED;
       /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
       TREE_ASM_WRITTEN (thunk_fndecl) = false;
+      cfun->cfg->full_profile = true;
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
       checking_verify_flow_info ();

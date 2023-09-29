@@ -117,6 +117,7 @@ c_convert (tree type, tree expr, bool init_const)
       gcc_fallthrough ();
 
     case INTEGER_TYPE:
+    case BITINT_TYPE:
       if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
 	  && current_function_decl != NULL_TREE
 	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (expr))

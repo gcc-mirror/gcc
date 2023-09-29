@@ -48,7 +48,7 @@ struct SmallBuffer(Element)
         }
         else
         {
-            assert(len < sizeof.max / Element.sizeof);
+            assert(len < sizeof.max / (2 * Element.sizeof));
             _extent = (cast(typeof(_extent.ptr)) malloc(len * Element.sizeof))[0 .. len];
             _extent.ptr || assert(0, "Out of memory.");
             needsFree = true;
@@ -135,9 +135,8 @@ but is guaranteed to follow it.
 */
 version(Windows) wchar[] toWStringz(const(char)[] narrow, ref SmallBuffer!wchar buffer) nothrow
 {
-    import core.sys.windows.winnls : CP_ACP, MultiByteToWideChar;
-    // assume filenames encoded in system default Windows ANSI code page
-    enum CodePage = CP_ACP;
+    import core.sys.windows.winnls : MultiByteToWideChar;
+    import dmd.common.file : CodePage;
 
     if (narrow is null)
         return null;

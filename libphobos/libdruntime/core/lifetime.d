@@ -1570,7 +1570,11 @@ template forward(args...)
             alias fwd = arg;
         // (r)value
         else
-            @property auto fwd(){ pragma(inline, true); return move(arg); }
+            @property auto fwd()
+            {
+                version (DigitalMars) { /* @@BUG 23890@@ */ } else pragma(inline, true);
+                return move(arg);
+            }
     }
 
     alias Result = AliasSeq!();

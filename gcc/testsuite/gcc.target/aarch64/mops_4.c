@@ -51,6 +51,54 @@ copy3 (int *x, int *y, long z, long *res)
 }
 
 /*
+** move1:
+**	mov	(x[0-9]+), x0
+**	cpyp	\[\1\]!, \[x1\]!, x2!
+**	cpym	\[\1\]!, \[x1\]!, x2!
+**	cpye	\[\1\]!, \[x1\]!, x2!
+**	str	x0, \[x3\]
+**	ret
+*/
+void
+move1 (int *x, int *y, long z, int **res)
+{
+  __builtin_memmove (x, y, z);
+  *res = x;
+}
+
+/*
+** move2:
+**	mov	(x[0-9]+), x1
+**	cpyp	\[x0\]!, \[\1\]!, x2!
+**	cpym	\[x0\]!, \[\1\]!, x2!
+**	cpye	\[x0\]!, \[\1\]!, x2!
+**	str	x1, \[x3\]
+**	ret
+*/
+void
+move2 (int *x, int *y, long z, int **res)
+{
+  __builtin_memmove (x, y, z);
+  *res = y;
+}
+
+/*
+** move3:
+**	mov	(x[0-9]+), x2
+**	cpyp	\[x0\]!, \[x1\]!, \1!
+**	cpym	\[x0\]!, \[x1\]!, \1!
+**	cpye	\[x0\]!, \[x1\]!, \1!
+**	str	x2, \[x3\]
+**	ret
+*/
+void
+move3 (int *x, int *y, long z, long *res)
+{
+  __builtin_memmove (x, y, z);
+  *res = z;
+}
+
+/*
 ** set1:
 **	mov	(x[0-9]+), x0
 **	setp	\[\1\]!, x2!, x1

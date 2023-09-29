@@ -4052,7 +4052,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
     }
   fprintf (stderr, "removed %u duplicate tails\n", rcnt);
 
-  for (unsigned n = 1; n <= 5; ++n)
+  for (unsigned n = 1; n <= 7; ++n)
     {
       bool has_kids_p = false;
 
@@ -4891,6 +4891,8 @@ parser::parse_result (operand *result, predicate_id *matcher)
 		    ife->trueexpr = parse_result (result, matcher);
 		  else
 		    ife->trueexpr = parse_op ();
+		  if (peek ()->type == CPP_OPEN_PAREN)
+		    fatal_at (peek(), "if inside switch cannot have an else");
 		  eat_token (CPP_CLOSE_PAREN);
 		}
 	      else

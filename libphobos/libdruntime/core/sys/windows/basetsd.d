@@ -10,39 +10,10 @@
 module core.sys.windows.basetsd;
 version (Windows):
 
-/*  This template is used in these modules to declare constant pointer types,
- *  in order to support both D 1.x and 2.x.
- *  Since removed - now supporting only D2
- */
-/*template CPtr(T) {
-    version (D_Version2) {
-        // must use mixin so that it doesn't cause a syntax error under D1
-        mixin("alias const(T)* CPtr;");
-    } else {
-        alias T* CPtr;
-    }
-}*/
-
-/*  [CyberShadow VP 2011.12.22] typedef is now deprecated in D2.
- */
-template TypeDef(T) {
-    version (D_Version2) {
-        alias T TypeDef;
-    } else {
-        // must use mixin so that it doesn't cause a deprecation error under D2
-        mixin("typedef T TypeDef;");
-    }
-}
-
 // [SnakE 2009-02-23] Moved HANDLE definition here from winnt.d to avoid
 // 'forwatd template reference' to CPtr from winnt.d caused by a circular
 // import.
-
-alias TypeDef!(void*) HANDLE;
-/+struct HANDLE {
-const(void)* h;
-    alias h this;
-}+/
+alias HANDLE = void*;
 
 package template DECLARE_HANDLE(string name, base = HANDLE) {
     mixin ("alias " ~ base.stringof ~ " " ~ name ~ ";");

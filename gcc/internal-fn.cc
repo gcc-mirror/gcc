@@ -188,6 +188,7 @@ init_internal_fns ()
 #define cond_len_ternary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
+#define fold_len_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
 #define mask_len_fold_left_direct { 1, 1, false }
@@ -246,6 +247,10 @@ expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
 	create_convert_operand_from (&ops[opno], rhs_rtx,
 				     TYPE_MODE (rhs_type),
 				     TYPE_UNSIGNED (rhs_type));
+      else if (TREE_CODE (rhs) == SSA_NAME
+	       && SSA_NAME_IS_DEFAULT_DEF (rhs)
+	       && VAR_P (SSA_NAME_VAR (rhs)))
+	create_undefined_input_operand (&ops[opno], TYPE_MODE (rhs_type));
       else
 	create_input_operand (&ops[opno], rhs_rtx, TYPE_MODE (rhs_type));
       opno += 1;
@@ -981,8 +986,38 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
 /* Helper for expand_*_overflow.  Store RES into TARGET.  */
 
 static void
-expand_ubsan_result_store (rtx target, rtx res)
+expand_ubsan_result_store (tree lhs, rtx target, scalar_int_mode mode,
+			   rtx res, rtx_code_label *do_error)
 {
+  if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+      && TYPE_PRECISION (TREE_TYPE (lhs)) < GET_MODE_PRECISION (mode))
+    {
+      int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
+      int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+      int tgtprec = GET_MODE_PRECISION (mode);
+      rtx resc = gen_reg_rtx (mode), lres;
+      emit_move_insn (resc, res);
+      if (uns)
+	{
+	  rtx mask
+	    = immed_wide_int_const (wi::shifted_mask (0, prec, false, tgtprec),
+				    mode);
+	  lres = expand_simple_binop (mode, AND, res, mask, NULL_RTX,
+				      true, OPTAB_LIB_WIDEN);
+	}
+      else
+	{
+	  lres = expand_shift (LSHIFT_EXPR, mode, res, tgtprec - prec,
+			       NULL_RTX, 1);
+	  lres = expand_shift (RSHIFT_EXPR, mode, lres, tgtprec - prec,
+			       NULL_RTX, 0);
+	}
+      if (lres != res)
+	emit_move_insn (res, lres);
+      do_compare_rtx_and_jump (res, resc,
+			       NE, true, mode, NULL_RTX, NULL, do_error,
+			       profile_probability::very_unlikely ());
+    }
   if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
     /* If this is a scalar in a register that is stored in a wider mode   
        than the declared mode, compute the result into its declared mode
@@ -1431,7 +1466,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	{
 	  if (do_xor)
@@ -1528,7 +1563,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }
@@ -1646,6 +1681,12 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 
   int pos_neg0 = get_range_pos_neg (arg0);
   int pos_neg1 = get_range_pos_neg (arg1);
+  /* Unsigned types with smaller than mode precision, even if they have most
+     significant bit set, are still zero-extended.  */
+  if (uns0_p && TYPE_PRECISION (TREE_TYPE (arg0)) < GET_MODE_PRECISION (mode))
+    pos_neg0 = 1;
+  if (uns1_p && TYPE_PRECISION (TREE_TYPE (arg1)) < GET_MODE_PRECISION (mode))
+    pos_neg1 = 1;
 
   /* s1 * u2 -> ur  */
   if (!uns0_p && uns1_p && unsr_p)
@@ -2414,7 +2455,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   if (lhs)
     {
       if (is_ubsan)
-	expand_ubsan_result_store (target, res);
+	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
 	expand_arith_overflow_result_store (lhs, target, mode, res);
     }
@@ -3863,6 +3904,9 @@ expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
+#define expand_fold_len_extract_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 5)
+
 #define expand_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
@@ -3980,6 +4024,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_len_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
+#define direct_fold_len_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_fold_left_optab_supported_p direct_optab_supported_p
@@ -4443,8 +4488,11 @@ get_unconditional_internal_fn (internal_fn ifn)
 {
   switch (ifn)
     {
-#define CASE(NAME) case IFN_COND_##NAME: return IFN_##NAME;
-      FOR_EACH_COND_FN_PAIR(CASE)
+#define CASE(NAME)                                                             \
+    case IFN_COND_##NAME:                                                      \
+    case IFN_COND_LEN_##NAME:                                                  \
+      return IFN_##NAME;
+FOR_EACH_COND_FN_PAIR (CASE)
 #undef CASE
     default:
       return IFN_LAST;
@@ -4897,4 +4945,105 @@ expand_MASK_CALL (internal_fn, gcall *)
 {
   /* This IFN should only exist between ifcvt and vect passes.  */
   gcc_unreachable ();
+}
+
+void
+expand_MULBITINT (internal_fn, gcall *stmt)
+{
+  rtx_mode_t args[6];
+  for (int i = 0; i < 6; i++)
+    args[i] = rtx_mode_t (expand_normal (gimple_call_arg (stmt, i)),
+			  (i & 1) ? SImode : ptr_mode);
+  rtx fun = init_one_libfunc ("__mulbitint3");
+  emit_library_call_value_1 (0, fun, NULL_RTX, LCT_NORMAL, VOIDmode, 6, args);
+}
+
+void
+expand_DIVMODBITINT (internal_fn, gcall *stmt)
+{
+  rtx_mode_t args[8];
+  for (int i = 0; i < 8; i++)
+    args[i] = rtx_mode_t (expand_normal (gimple_call_arg (stmt, i)),
+			  (i & 1) ? SImode : ptr_mode);
+  rtx fun = init_one_libfunc ("__divmodbitint4");
+  emit_library_call_value_1 (0, fun, NULL_RTX, LCT_NORMAL, VOIDmode, 8, args);
+}
+
+void
+expand_FLOATTOBITINT (internal_fn, gcall *stmt)
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (gimple_call_arg (stmt, 2)));
+  rtx arg0 = expand_normal (gimple_call_arg (stmt, 0));
+  rtx arg1 = expand_normal (gimple_call_arg (stmt, 1));
+  rtx arg2 = expand_normal (gimple_call_arg (stmt, 2));
+  const char *mname = GET_MODE_NAME (mode);
+  unsigned mname_len = strlen (mname);
+  int len = 12 + mname_len;
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    len += 4;
+  char *libfunc_name = XALLOCAVEC (char, len);
+  char *p = libfunc_name;
+  const char *q;
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    {
+#if ENABLE_DECIMAL_BID_FORMAT
+      memcpy (p, "__bid_fix", 9);
+#else
+      memcpy (p, "__dpd_fix", 9);
+#endif
+      p += 9;
+    }
+  else
+    {
+      memcpy (p, "__fix", 5);
+      p += 5;
+    }
+  for (q = mname; *q; q++)
+    *p++ = TOLOWER (*q);
+  memcpy (p, "bitint", 7);
+  rtx fun = init_one_libfunc (libfunc_name);
+  emit_library_call (fun, LCT_NORMAL, VOIDmode, arg0, ptr_mode, arg1,
+		     SImode, arg2, mode);
+}
+
+void
+expand_BITINTTOFLOAT (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  rtx arg0 = expand_normal (gimple_call_arg (stmt, 0));
+  rtx arg1 = expand_normal (gimple_call_arg (stmt, 1));
+  const char *mname = GET_MODE_NAME (mode);
+  unsigned mname_len = strlen (mname);
+  int len = 14 + mname_len;
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    len += 4;
+  char *libfunc_name = XALLOCAVEC (char, len);
+  char *p = libfunc_name;
+  const char *q;
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    {
+#if ENABLE_DECIMAL_BID_FORMAT
+      memcpy (p, "__bid_floatbitint", 17);
+#else
+      memcpy (p, "__dpd_floatbitint", 17);
+#endif
+      p += 17;
+    }
+  else
+    {
+      memcpy (p, "__floatbitint", 13);
+      p += 13;
+    }
+  for (q = mname; *q; q++)
+    *p++ = TOLOWER (*q);
+  *p = '\0';
+  rtx fun = init_one_libfunc (libfunc_name);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx val = emit_library_call_value (fun, target, LCT_PURE, mode,
+				     arg0, ptr_mode, arg1, SImode);
+  if (val != target)
+    emit_move_insn (target, val);
 }

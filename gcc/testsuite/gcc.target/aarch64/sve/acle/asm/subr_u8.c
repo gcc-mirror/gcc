@@ -76,8 +76,7 @@ TEST_UNIFORM_Z (subr_1_u8_m_untied, svuint8_t,
 
 /*
 ** subr_m1_u8_m:
-**	mov	(z[0-9]+\.b), #-1
-**	subr	z0\.b, p0/m, z0\.b, \1
+**	not	z0\.b, p0/m, z0\.b
 **	ret
 */
 TEST_UNIFORM_Z (subr_m1_u8_m, svuint8_t,

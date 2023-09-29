@@ -109,7 +109,7 @@ private void lambdaSetParent(Expression e, FuncDeclaration fd)
         }
 
     public:
-        extern (D) this(FuncDeclaration fd) scope
+        extern (D) this(FuncDeclaration fd) scope @safe
         {
             this.fd = fd;
         }
@@ -205,7 +205,7 @@ bool lambdaCheckForNestedRef(Expression e, Scope* sc)
         Scope* sc;
         bool result;
 
-        extern (D) this(Scope* sc) scope
+        extern (D) this(Scope* sc) scope @safe
         {
             this.sc = sc;
         }

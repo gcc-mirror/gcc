@@ -17,4 +17,4 @@ foo (struct bar *s)
 }
 
 /* { dg-final { scan-assembler "th.ext\t" } } */
-/* { dg-final { scan-assembler-not "andi" } } */
+/* { dg-final { scan-assembler-not {\mandi} } } */

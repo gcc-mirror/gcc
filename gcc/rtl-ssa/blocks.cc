@@ -57,7 +57,7 @@ function_info::build_info::build_info (unsigned int num_regs,
   // write to an entry before reading from it.  But poison the contents
   // when checking, just to make sure we don't accidentally use an
   // uninitialized value.
-  bb_phis.quick_grow (num_bb_indices);
+  bb_phis.quick_grow_cleared (num_bb_indices);
   bb_mem_live_out.quick_grow (num_bb_indices);
   bb_to_rpo.quick_grow (num_bb_indices);
   if (flag_checking)
@@ -614,7 +614,7 @@ function_info::place_phis (build_info &bi)
 
   // Calculate dominance frontiers.
   auto_vec<bitmap_head> frontiers;
-  frontiers.safe_grow (num_bb_indices);
+  frontiers.safe_grow_cleared (num_bb_indices);
   for (unsigned int i = 0; i < num_bb_indices; ++i)
     bitmap_initialize (&frontiers[i], &bitmap_default_obstack);
   compute_dominance_frontiers (frontiers.address ());
@@ -626,7 +626,7 @@ function_info::place_phis (build_info &bi)
   // they are live on entry to the corresponding block, but do not need
   // phi nodes otherwise.
   auto_vec<bitmap_head> unfiltered;
-  unfiltered.safe_grow (num_bb_indices);
+  unfiltered.safe_grow_cleared (num_bb_indices);
   for (unsigned int i = 0; i < num_bb_indices; ++i)
     bitmap_initialize (&unfiltered[i], &bitmap_default_obstack);
 

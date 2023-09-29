@@ -35,7 +35,8 @@
     else
 	gcc_unreachable ();
   }
-  [(set (attr "length") (const_int 4))])
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 4))])
 
 ;; Atomic memory operations.
 
@@ -52,11 +53,11 @@
 
     if (model == MEMMODEL_SEQ_CST)
       return "fence\trw,rw\;"
-	     "l<amo>\t%0,%1\;";
+	     "l<amo>\t%0,%1";
     else
       return "l<amo>\t%0,%1";
   }
-  [(set_attr "type" "atomic")
+  [(set_attr "type" "multi")
    (set (attr "length") (const_int 12))])
 
 (define_insn "atomic_store_ztso<mode>"
@@ -76,5 +77,5 @@
     else
       return "s<amo>\t%z1,%0";
   }
-  [(set_attr "type" "atomic")
+  [(set_attr "type" "multi")
    (set (attr "length") (const_int 8))])

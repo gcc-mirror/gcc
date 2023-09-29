@@ -297,6 +297,8 @@ class supernode : public dnode<supergraph_traits>
 
   unsigned int get_stmt_index (const gimple *stmt) const;
 
+  tree get_label () const;
+
   function * const m_fun; // alternatively could be stored as runs of indices within the supergraph
   const basic_block m_bb;
   gcall * const m_returning_call; // for handling the result of a returned call

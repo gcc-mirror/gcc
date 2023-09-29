@@ -101,8 +101,6 @@ struct GTY (()) language_function
 void
 rust_add_target_info (const char *key, const char *value)
 {
-  sorry ("TODO");
-
   Rust::Session::get_instance ().options.target_data.insert_key_value_pair (
     key, value);
 }

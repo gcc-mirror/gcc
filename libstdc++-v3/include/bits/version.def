@@ -256,6 +256,13 @@ ftms = {
 ftms = {
   name = to_chars;
   values = {
+    v = 202306;
+    cxxmin = 26;
+    extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
+    "&& _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 "
+    "&& __SIZE_WIDTH__ >= 32";
+  };
+  values = {
     v = 201611;
     cxxmin = 14;
     extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
@@ -1045,7 +1052,7 @@ ftms = {
 ftms = {
   name = ranges;
   values = {
-    v = 202202;
+    v = 202211;
     cxxmin = 23;
     extra_cond = "__glibcxx_concepts";
   };
@@ -1527,6 +1534,23 @@ ftms = {
 };
 
 ftms = {
+  name = formatters;
+  values = {
+    v = 202302;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = forward_like;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = ios_noreplace;
   values = {
     v = 202207;
@@ -1579,6 +1603,23 @@ ftms = {
     v = 202110;
     cxxmin = 23;
     hosted = yes;
+  };
+};
+
+ftms = {
+  name = fstream_native_handle;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = ratio;
+  values = {
+    v = 202306;
+    cxxmin = 26;
   };
 };
 
