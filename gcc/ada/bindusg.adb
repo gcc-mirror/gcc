@@ -234,7 +234,7 @@ package body Bindusg is
       --  Line for Q switch
 
       Write_Line
-        ("  -Qnnn     Generate nnn default-sized secondary stacks");
+        ("  -Qnnn     Generate nnn additional default-sized secondary stacks");
 
       --  Line for -r switch
 
