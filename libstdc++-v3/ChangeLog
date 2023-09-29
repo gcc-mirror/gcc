@@ -1,3 +1,72 @@
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py (Printer.add_version)
+	(add_one_template_type_printer)
+	(FilteringTypePrinter.add_one_type_printer): Use Python
+	"not in" operator.
+
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py (std_ratio_t_tuple):
+	Remove.
+
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py
+	(StdExpOptionalPrinter.__init__, lookup_node_type):
+	Remove unused variables.
+
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py: Don't import 'os'.
+	* python/libstdcxx/v6/__init__.py: Don't import 'gdb'.
+
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py: Use gdb.ValuePrinter
+	everywhere.  Rename members to start with "_".
+
+2023-09-28  Tom Tromey  <tromey@adacore.com>
+
+	* testsuite/lib/gdb-test.exp (gdb-test): Enable Python
+	stack traces from gdb.
+
+2023-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/xmethods.py (is_specialization_of): Define
+	new function.
+	(ArrayMethodsMatcher, DequeMethodsMatcher)
+	(ForwardListMethodsMatcher, ListMethodsMatcher)
+	(VectorMethodsMatcher, AssociativeContainerMethodsMatcher)
+	(UniquePtrGetWorker, UniquePtrMethodsMatcher)
+	(SharedPtrSubscriptWorker, SharedPtrMethodsMatcher): Use
+	is_specialization_of instead of re.match.
+
+2023-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Break long lines. Use raw
+	strings for regular expressions. Add whitespace around
+	operators.
+	(is_member_of_namespace): Use isinstance to check type.
+	(is_specialization_of): Likewise. Adjust template_name
+	for versioned namespace instead of duplicating the re.match
+	call.
+	(StdExpAnyPrinter._string_types): New static method.
+	(StdExpAnyPrinter.to_string): Use _string_types.
+
+2023-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Format docstrings according
+	to PEP 257.
+	* python/libstdcxx/v6/xmethods.py: Likewise.
+
+2023-09-28  Tim Song  <t.canens.cpp@gmail.com>
+
+	PR libstdc++/111050
+	* include/bits/hashtable_policy.h
+	(_Hash_node_value_base<>::_M_valptr(), _Hash_node_value_base<>::_M_v())
+	Add [[__gnu__::__always_inline__]].
+
 2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdChronoTimeZoneRulePrinter):

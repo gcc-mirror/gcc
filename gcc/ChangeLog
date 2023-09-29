@@ -1,3 +1,85 @@
+2023-09-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2023-09-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc (find_costs_and_classes): Decrease memory cost
+	by equiv savings.
+
+2023-09-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111121
+	* config/aarch64/aarch64.md (aarch64_movmemdi): Add new expander.
+	(movmemdi): Call aarch64_expand_cpymem_mops for correct expansion.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem_mops): Add support
+	for memmove.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_cpymem_mops): Add new
+	function.
+
+2023-09-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/111506
+	* config/riscv/autovec.md (<float_cvt><mode><vnnconvert>2):
+	New pattern.
+	* config/riscv/vector-iterators.md: New iterator.
+
+2023-09-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* rtl.h (lra_in_progress): Change type to bool.
+	(ira_in_progress): Add new extern.
+	* ira.cc (ira_in_progress): New global.
+	(pass_ira::execute): Set up ira_in_progress.
+	* lra.cc: (lra_in_progress): Change type to bool and initialize.
+	(lra): Use bool values for lra_in_progress.
+	* lra-eliminations.cc (init_elim_table): Ditto.
+
+2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR target/111600
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores):
+	Use a heap allocated worklist for CFG traversal instead of
+	recursion.
+
+2023-09-28  Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* vec.h: Mention in file comment limited support for non-POD types
+	in some operations.
+	(vec_destruct): New function template.
+	(release): Use it for non-trivially destructible T.
+	(truncate): Likewise.
+	(quick_push): Perform a placement new into slot
+	instead of assignment.
+	(pop): For non-trivially destructible T return void
+	rather than T & and destruct the popped element.
+	(quick_insert, ordered_remove): Note that they aren't suitable
+	for non-trivially copyable types.  Add static_asserts for that.
+	(block_remove): Assert T is trivially copyable.
+	(vec_detail::is_trivially_copyable_or_pair): New trait.
+	(qsort, sort, stablesort): Assert T is trivially copyable or
+	std::pair with both trivally copyable types.
+	(quick_grow): Add assert T is trivially default constructible,
+	for now commented out.
+	(quick_grow_cleared): Don't call quick_grow, instead inline it
+	by hand except for the new static_assert.
+	(gt_ggc_mx): Assert T is trivially destructable.
+	(auto_vec::operator=): Formatting fixes.
+	(auto_vec::auto_vec): Likewise.
+	(vec_safe_grow_cleared): Don't call vec_safe_grow, instead inline
+	it manually and call quick_grow_cleared method rather than quick_grow.
+	(safe_grow_cleared): Likewise.
+	* edit-context.cc (class line_event): Move definition earlier.
+	* tree-ssa-loop-im.cc (seq_entry::seq_entry): Make default ctor
+	defaulted.
+	* ipa-fnsummary.cc (evaluate_properties_for_edge): Use
+	safe_grow_cleared instead of safe_grow followed by placement new
+	constructing the elements.
+
+2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dwarf2out.cc (mem_loc_descriptor): Remove unused variables.
+	* tree-affine.cc (expr_to_aff_combination): Likewise.
+
 2023-09-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/111614

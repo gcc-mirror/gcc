@@ -1,3 +1,30 @@
+2023-09-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp:
+	Add load_lib timeout-dg.exp and increase timeout to 60
+	seconds.
+	* gm2/pimlib/base/run/pass/pimlib-base-run-pass.exp: Add
+	load_lib timeout-dg.exp and increase timeout to 60 seconds.
+	* gm2/projects/iso/run/pass/halma/projects-iso-run-pass-halma.exp:
+	Increase timeout to 45 seconds.
+	* gm2/switches/whole-program/pass/run/switches-whole-program-pass-run.exp:
+	Add load_lib timeout-dg.exp and increase timeout to 120 seconds.
+	Remove unnecessary compile of mystrlib.mod.
+	* gm2/iso/run/pass/iso-run-pass.exp: Add load_lib
+	timeout-dg.exp and set timeout to 60 seconds.
+
+2023-09-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111121
+	* gcc.target/aarch64/mops_4.c: Add memmove testcases.
+
+2023-09-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/111506
+	* gcc.target/riscv/rvv/autovec/unop/cvt-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/cvt-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/cvt-0.c: New test.
+
 2023-09-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/111614
