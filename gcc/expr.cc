@@ -6083,13 +6083,10 @@ string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
       size_t l = TREE_STRING_LENGTH (str) - offset;
       memcpy (p, TREE_STRING_POINTER (str) + offset, l);
       memset (p + l, '\0', GET_MODE_SIZE (mode) - l);
-      return c_readstr (p, as_a <scalar_int_mode> (mode), false);
+      return c_readstr (p, mode, false);
     }
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for storing STRING_CST.  */
-  return c_readstr (TREE_STRING_POINTER (str) + offset,
-		    as_a <scalar_int_mode> (mode), false);
+  return c_readstr (TREE_STRING_POINTER (str) + offset, mode, false);
 }
 
 /* Generate code for computing expression EXP,

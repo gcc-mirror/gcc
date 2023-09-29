@@ -743,39 +743,22 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
    as needed.  */
 
 rtx
-c_readstr (const char *str, scalar_int_mode mode,
+c_readstr (const char *str, fixed_size_mode mode,
 	   bool null_terminated_p/*=true*/)
 {
-  HOST_WIDE_INT ch;
-  unsigned int i, j;
-  HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
+  auto_vec<target_unit, MAX_BITSIZE_MODE_ANY_INT / BITS_PER_UNIT> bytes;
 
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
-  unsigned int len = (GET_MODE_PRECISION (mode) + HOST_BITS_PER_WIDE_INT - 1)
-    / HOST_BITS_PER_WIDE_INT;
+  bytes.reserve (GET_MODE_SIZE (mode));
 
-  gcc_assert (len <= MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT);
-  for (i = 0; i < len; i++)
-    tmp[i] = 0;
-
-  ch = 1;
-  for (i = 0; i < GET_MODE_SIZE (mode); i++)
+  target_unit ch = 1;
+  for (unsigned int i = 0; i < GET_MODE_SIZE (mode); ++i)
     {
-      j = i;
-      if (WORDS_BIG_ENDIAN)
-	j = GET_MODE_SIZE (mode) - i - 1;
-      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
-	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
-	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
-      j *= BITS_PER_UNIT;
-
       if (ch || !null_terminated_p)
 	ch = (unsigned char) str[i];
-      tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
+      bytes.quick_push (ch);
     }
 
-  wide_int c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
-  return immed_wide_int_const (c, mode);
+  return native_decode_rtx (mode, bytes, 0);
 }
 
 /* Cast a target constant CST to target CHAR and if that value fits into
@@ -3530,10 +3513,7 @@ builtin_memcpy_read_str (void *data, void *, HOST_WIDE_INT offset,
      string but the caller guarantees it's large enough for MODE.  */
   const char *rep = (const char *) data;
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for memcpy expansion.  */
-  return c_readstr (rep + offset, as_a <scalar_int_mode> (mode),
-		    /*nul_terminated=*/false);
+  return c_readstr (rep + offset, mode, /*nul_terminated=*/false);
 }
 
 /* LEN specify length of the block of memcpy/memset operation.
@@ -3994,9 +3974,7 @@ builtin_strncpy_read_str (void *data, void *, HOST_WIDE_INT offset,
   if ((unsigned HOST_WIDE_INT) offset > strlen (str))
     return const0_rtx;
 
-  /* The by-pieces infrastructure does not try to pick a vector mode
-     for strncpy expansion.  */
-  return c_readstr (str + offset, as_a <scalar_int_mode> (mode));
+  return c_readstr (str + offset, mode);
 }
 
 /* Helper to check the sizes of sequences and the destination of calls
@@ -4227,8 +4205,7 @@ builtin_memset_read_str (void *data, void *prev,
 
   memset (p, *c, size);
 
-  /* Vector modes should be handled above.  */
-  return c_readstr (p, as_a <scalar_int_mode> (mode));
+  return c_readstr (p, mode);
 }
 
 /* Callback routine for store_by_pieces.  Return the RTL of a register
@@ -4275,8 +4252,7 @@ builtin_memset_gen_str (void *data, void *prev,
 
   p = XALLOCAVEC (char, size);
   memset (p, 1, size);
-  /* Vector modes should be handled above.  */
-  coeff = c_readstr (p, as_a <scalar_int_mode> (mode));
+  coeff = c_readstr (p, mode);
 
   target = convert_to_mode (mode, (rtx) data, 1);
   target = expand_mult (mode, target, coeff, NULL_RTX, 1);
