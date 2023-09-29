@@ -55,42 +55,6 @@ class Bstatement;
 class Bvariable;
 class Ast_dump_context;
 
-// This class is used to traverse assignments made by a statement
-// which makes assignments.
-
-class Traverse_assignments
-{
- public:
-  Traverse_assignments()
-  { }
-
-  virtual ~Traverse_assignments()
-  { }
-
-  // This is called for a variable initialization.
-  virtual void
-  initialize_variable(Named_object*) = 0;
-
-  // This is called for each assignment made by the statement.  PLHS
-  // points to the left hand side, and PRHS points to the right hand
-  // side.  PRHS may be NULL if there is no associated expression, as
-  // in the bool set by a non-blocking receive.
-  virtual void
-  assignment(Expression** plhs, Expression** prhs) = 0;
-
-  // This is called for each expression which is not passed to the
-  // assignment function.  This is used for some of the statements
-  // which assign two values, for which there is no expression which
-  // describes the value.  For ++ and -- the value is passed to both
-  // the assignment method and the rhs method.  IS_STORED is true if
-  // this value is being stored directly.  It is false if the value is
-  // computed but not stored.  IS_LOCAL is true if the value is being
-  // stored in a local variable or this is being called by a return
-  // statement.
-  virtual void
-  value(Expression**, bool is_stored, bool is_local) = 0;
-};
-
 // A single statement.
 
 class Statement
@@ -292,13 +256,6 @@ class Statement
   int
   traverse_contents(Traverse*);
 
-  // If this statement assigns some values, it calls a function for
-  // each value to which this statement assigns a value, and returns
-  // true.  If this statement does not assign any values, it returns
-  // false.
-  bool
-  traverse_assignments(Traverse_assignments* tassign);
-
   // Lower a statement.  This is called immediately after parsing to
   // simplify statements for further processing.  It returns the same
   // Statement or a new one.  FUNCTION is the function containing this
@@ -486,12 +443,6 @@ class Statement
   virtual int
   do_traverse(Traverse*) = 0;
 
-  // Implemented by child class: traverse assignments.  Any statement
-  // which includes an assignment should implement this.
-  virtual bool
-  do_traverse_assignments(Traverse_assignments*)
-  { return false; }
-
   // Implemented by the child class: lower this statement to a simpler
   // one.
   virtual Statement*
@@ -633,9 +584,6 @@ class Assignment_statement : public Statement
   int
   do_traverse(Traverse* traverse);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   virtual Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -753,9 +701,6 @@ class Temporary_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   void
   do_determine_types(Gogo*);
 
@@ -820,9 +765,6 @@ class Variable_declaration_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -868,9 +810,6 @@ class Return_statement : public Statement
   int
   do_traverse(Traverse* traverse)
   { return this->traverse_expression_list(traverse, this->vals_); }
-
-  bool
-  do_traverse_assignments(Traverse_assignments*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -1383,9 +1322,6 @@ class Thunk_statement : public Statement
   int
   do_traverse(Traverse* traverse);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   void
   do_determine_types(Gogo*);
 
@@ -1719,10 +1655,6 @@ class For_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -1782,10 +1714,6 @@ class For_range_statement : public Statement
  protected:
   int
   do_traverse(Traverse*);
-
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);

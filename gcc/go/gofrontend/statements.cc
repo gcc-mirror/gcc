@@ -64,16 +64,6 @@ Statement::traverse_contents(Traverse* traverse)
   return this->do_traverse(traverse);
 }
 
-// Traverse assignments.
-
-bool
-Statement::traverse_assignments(Traverse_assignments* tassign)
-{
-  if (this->classification_ == STATEMENT_ERROR)
-    return false;
-  return this->do_traverse_assignments(tassign);
-}
-
 // Traverse an expression in a statement.  This is a helper function
 // for child classes.
 
@@ -288,17 +278,6 @@ Variable_declaration_statement::do_traverse(Traverse*)
   return TRAVERSE_CONTINUE;
 }
 
-// Traverse the assignments in a variable declaration.  Note that this
-// traversal is different from the usual traversal.
-
-bool
-Variable_declaration_statement::do_traverse_assignments(
-    Traverse_assignments* tassign)
-{
-  tassign->initialize_variable(this->var_);
-  return true;
-}
-
 // Lower the variable's initialization expression.
 
 Statement*
@@ -508,17 +487,6 @@ Temporary_statement::do_traverse(Traverse* traverse)
     return TRAVERSE_CONTINUE;
   else
     return this->traverse_expression(traverse, &this->init_);
-}
-
-// Traverse assignments.
-
-bool
-Temporary_statement::do_traverse_assignments(Traverse_assignments* tassign)
-{
-  if (this->init_ == NULL)
-    return false;
-  tassign->value(&this->init_, true, true);
-  return true;
 }
 
 // Determine types.
@@ -889,13 +857,6 @@ Assignment_statement::do_traverse(Traverse* traverse)
   return this->traverse_expression(traverse, &this->rhs_);
 }
 
-bool
-Assignment_statement::do_traverse_assignments(Traverse_assignments* tassign)
-{
-  tassign->assignment(&this->lhs_, &this->rhs_);
-  return true;
-}
-
 // Lower an assignment to a map index expression to a runtime function
 // call.  Mark some slice assignments as not requiring a write barrier.
 
@@ -1212,10 +1173,6 @@ class Assignment_operation_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -1365,10 +1322,6 @@ class Tuple_assignment_statement : public Statement
   int
   do_traverse(Traverse* traverse);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -1510,10 +1463,6 @@ public:
  protected:
   int
   do_traverse(Traverse* traverse);
-
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -1719,10 +1668,6 @@ class Tuple_receive_assignment_statement : public Statement
   int
   do_traverse(Traverse* traverse);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -1861,10 +1806,6 @@ class Tuple_type_guard_assignment_statement : public Statement
  protected:
   int
   do_traverse(Traverse*);
-
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -2277,10 +2218,6 @@ class Inc_dec_statement : public Statement
   do_traverse(Traverse* traverse)
   { return this->traverse_expression(traverse, &this->expr_); }
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -2410,18 +2347,6 @@ int
 Thunk_statement::do_traverse(Traverse* traverse)
 {
   return this->traverse_expression(traverse, &this->call_);
-}
-
-// We implement traverse_assignment for a thunk statement because it
-// effectively copies the function call.
-
-bool
-Thunk_statement::do_traverse_assignments(Traverse_assignments* tassign)
-{
-  Expression* fn = this->call_->call_expression()->fn();
-  Expression* fn2 = fn;
-  tassign->value(&fn2, true, false);
-  return true;
 }
 
 // Determine types in a thunk statement.
@@ -3147,23 +3072,6 @@ Statement::make_defer_statement(Call_expression* call,
 }
 
 // Class Return_statement.
-
-// Traverse assignments.  We treat each return value as a top level
-// RHS in an expression.
-
-bool
-Return_statement::do_traverse_assignments(Traverse_assignments* tassign)
-{
-  Expression_list* vals = this->vals_;
-  if (vals != NULL)
-    {
-      for (Expression_list::iterator p = vals->begin();
-	   p != vals->end();
-	   ++p)
-	tassign->value(&*p, true, true);
-    }
-  return true;
-}
 
 // Lower a return statement.  If we are returning a function call
 // which returns multiple values which match the current function,
