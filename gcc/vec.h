@@ -1086,7 +1086,12 @@ vec<T, A, vl_embed>::quick_insert (unsigned ix, const T &obj)
 {
   gcc_checking_assert (length () < allocated ());
   gcc_checking_assert (ix <= length ());
+#if GCC_VERSION >= 5000
+  /* GCC 4.8 and 4.9 only implement std::is_trivially_destructible,
+     but not std::is_trivially_copyable nor
+     std::is_trivially_default_constructible.  */
   static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   memmove (slot + 1, slot, (m_vecpfx.m_num++ - ix) * sizeof (T));
   *slot = obj;
@@ -1102,7 +1107,9 @@ inline void
 vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
+#if GCC_VERSION >= 5000
   static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   memmove (slot, slot + 1, (--m_vecpfx.m_num - ix) * sizeof (T));
 }
@@ -1150,7 +1157,9 @@ inline void
 vec<T, A, vl_embed>::unordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
+#if GCC_VERSION >= 5000
   static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *p = address ();
   p[ix] = p[--m_vecpfx.m_num];
 }
@@ -1164,13 +1173,16 @@ inline void
 vec<T, A, vl_embed>::block_remove (unsigned ix, unsigned len)
 {
   gcc_checking_assert (ix + len <= length ());
+#if GCC_VERSION >= 5000
   static_assert (std::is_trivially_copyable <T>::value, "");
+#endif
   T *slot = &address ()[ix];
   m_vecpfx.m_num -= len;
   memmove (slot, slot + len, (m_vecpfx.m_num - ix) * sizeof (T));
 }
 
 
+#if GCC_VERSION >= 5000
 namespace vec_detail
 {
   /* gcc_{qsort,qsort_r,stablesort_r} implementation under the hood
@@ -1189,6 +1201,7 @@ namespace vec_detail
   : std::integral_constant<bool, std::is_trivially_copyable<T>::value
     && std::is_trivially_copyable<U>::value> { };
 }
+#endif
 
 /* Sort the contents of this vector with qsort.  CMP is the comparison
    function to pass to qsort.  */
@@ -1197,7 +1210,9 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::qsort (int (*cmp) (const void *, const void *))
 {
+#if GCC_VERSION >= 5000
   static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_qsort (address (), length (), sizeof (T), cmp);
 }
@@ -1210,7 +1225,9 @@ inline void
 vec<T, A, vl_embed>::sort (int (*cmp) (const void *, const void *, void *),
 			   void *data)
 {
+#if GCC_VERSION >= 5000
   static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_sort_r (address (), length (), sizeof (T), cmp, data);
 }
@@ -1223,7 +1240,9 @@ inline void
 vec<T, A, vl_embed>::stablesort (int (*cmp) (const void *, const void *,
 					     void *), void *data)
 {
+#if GCC_VERSION >= 5000
   static_assert (vec_detail::is_trivially_copyable_or_pair <T>::value, "");
+#endif
   if (length () > 1)
     gcc_stablesort_r (address (), length (), sizeof (T), cmp, data);
 }
@@ -1396,7 +1415,9 @@ inline void
 vec<T, A, vl_embed>::quick_grow (unsigned len)
 {
   gcc_checking_assert (length () <= len && len <= m_vecpfx.m_alloc);
+#if GCC_VERSION >= 5000
 //  static_assert (std::is_trivially_default_constructible <T>::value, "");
+#endif
   m_vecpfx.m_num = len;
 }
 
