@@ -372,9 +372,9 @@ get_or_create_ssa_default_def (struct function *fn, tree var)
    true, the storage order of the reference is reversed.  */
 
 tree
-get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
-			 poly_int64_pod *psize,
-			 poly_int64_pod *pmax_size,
+get_ref_base_and_extent (tree exp, poly_int64 *poffset,
+			 poly_int64 *psize,
+			 poly_int64 *pmax_size,
 			 bool *preverse)
 {
   poly_offset_int bitsize = -1;
@@ -765,7 +765,7 @@ get_ref_base_and_extent_hwi (tree exp, HOST_WIDE_INT *poffset,
    its argument or a constant if the argument is known to be constant.  */
 
 tree
-get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
+get_addr_base_and_unit_offset_1 (tree exp, poly_int64 *poffset,
 				 tree (*valueize) (tree))
 {
   poly_int64 byte_offset = 0;
@@ -907,7 +907,7 @@ done:
    is not BITS_PER_UNIT-aligned.  */
 
 tree
-get_addr_base_and_unit_offset (tree exp, poly_int64_pod *poffset)
+get_addr_base_and_unit_offset (tree exp, poly_int64 *poffset)
 {
   return get_addr_base_and_unit_offset_1 (exp, poffset, NULL);
 }

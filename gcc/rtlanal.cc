@@ -945,7 +945,7 @@ split_const (rtx x, rtx *base_out, rtx *offset_out)
    to a new rtx).  Return the Y and store the offset in *OFFSET_OUT.  */
 
 rtx
-strip_offset (rtx x, poly_int64_pod *offset_out)
+strip_offset (rtx x, poly_int64 *offset_out)
 {
   rtx base = const0_rtx;
   rtx test = x;

@@ -412,7 +412,7 @@ struct iv_use
   tree *op_p;		/* The place where it occurs.  */
 
   tree addr_base;	/* Base address with const offset stripped.  */
-  poly_uint64_pod addr_offset;
+  poly_uint64 addr_offset;
 			/* Const offset stripped from base address.  */
 };
 
@@ -2956,7 +2956,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
 static tree
-strip_offset (tree expr, poly_uint64_pod *offset)
+strip_offset (tree expr, poly_uint64 *offset)
 {
   poly_int64 off;
   tree core = strip_offset_1 (expr, false, false, &off);

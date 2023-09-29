@@ -5234,7 +5234,6 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("REAL_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("double_int", &pos));
-      POS_HERE (do_scalar_typedef ("poly_int64_pod", &pos));
       POS_HERE (do_scalar_typedef ("offset_int", &pos));
       POS_HERE (do_scalar_typedef ("widest_int", &pos));
       POS_HERE (do_scalar_typedef ("int64_t", &pos));

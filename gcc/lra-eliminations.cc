@@ -166,7 +166,7 @@ static class lra_elim_table self_elim_table;
 /* Offsets should be used to restore original offsets for eliminable
    hard register which just became not eliminable.  Zero,
    otherwise.  */
-static poly_int64_pod self_elim_offsets[FIRST_PSEUDO_REGISTER];
+static poly_int64 self_elim_offsets[FIRST_PSEUDO_REGISTER];
 
 /* Map: hard regno -> RTL presentation.	 RTL presentations of all
    potentially eliminable hard registers are stored in the map.	 */

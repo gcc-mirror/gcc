@@ -4974,7 +4974,7 @@ extern tree max_object_size ();
    without loss of precision.  Store the value in *VALUE if so.  */
 
 inline bool
-poly_int_tree_p (const_tree t, poly_int64_pod *value)
+poly_int_tree_p (const_tree t, poly_int64 *value)
 {
   if (tree_fits_poly_int64_p (t))
     {
@@ -4988,7 +4988,7 @@ poly_int_tree_p (const_tree t, poly_int64_pod *value)
    without loss of precision.  Store the value in *VALUE if so.  */
 
 inline bool
-poly_int_tree_p (const_tree t, poly_uint64_pod *value)
+poly_int_tree_p (const_tree t, poly_uint64 *value)
 {
   if (tree_fits_poly_uint64_p (t))
     {
@@ -5617,7 +5617,7 @@ bit_field_offset (const_tree t)
 
 extern tree strip_float_extensions (tree);
 extern bool really_constant_p (const_tree);
-extern bool ptrdiff_tree_p (const_tree, poly_int64_pod *);
+extern bool ptrdiff_tree_p (const_tree, poly_int64 *);
 extern bool decl_address_invariant_p (const_tree);
 extern bool decl_address_ip_invariant_p (const_tree);
 extern bool int_fits_type_p (const_tree, const_tree)
@@ -6637,7 +6637,7 @@ extern bool complete_ctor_at_level_p (const_tree, HOST_WIDE_INT, const_tree);
 /* Given an expression EXP that is a handled_component_p,
    look for the ultimate containing object, which is returned and specify
    the access position and size.  */
-extern tree get_inner_reference (tree, poly_int64_pod *, poly_int64_pod *,
+extern tree get_inner_reference (tree, poly_int64 *, poly_int64 *,
 				 tree *, machine_mode *, int *, int *, int *);
 
 extern tree build_personality_function (const char *);

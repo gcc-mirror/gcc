@@ -227,7 +227,7 @@ struct symbolic_number {
   tree type;
   tree base_addr;
   tree offset;
-  poly_int64_pod bytepos;
+  poly_int64 bytepos;
   tree src;
   tree alias_set;
   tree vuse;

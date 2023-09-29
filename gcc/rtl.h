@@ -204,7 +204,7 @@ union rtunion
 {
   int rt_int;
   unsigned int rt_uint;
-  poly_uint16_pod rt_subreg;
+  poly_uint16 rt_subreg;
   const char *rt_str;
   rtx rt_rtx;
   rtvec rt_rtvec;
@@ -2402,7 +2402,7 @@ rtx_to_poly_int64 (const_rtx x)
    otherwise leave it unmodified.  */
 
 inline bool
-poly_int_rtx_p (const_rtx x, poly_int64_pod *res)
+poly_int_rtx_p (const_rtx x, poly_int64 *res)
 {
   if (CONST_INT_P (x))
     {
@@ -3630,7 +3630,7 @@ extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
 extern void split_const (rtx, rtx *, rtx *);
-extern rtx strip_offset (rtx, poly_int64_pod *);
+extern rtx strip_offset (rtx, poly_int64 *);
 extern poly_int64 get_args_size (const_rtx);
 extern bool unsigned_reg_p (rtx);
 extern bool reg_mentioned_p (const_rtx, const_rtx);
@@ -4586,7 +4586,7 @@ load_extend_op (machine_mode mode)
    and return the base.  Return X otherwise.  */
 
 inline rtx
-strip_offset_and_add (rtx x, poly_int64_pod *offset)
+strip_offset_and_add (rtx x, poly_int64 *offset)
 {
   if (GET_CODE (x) == PLUS)
     {

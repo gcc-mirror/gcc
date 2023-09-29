@@ -4547,7 +4547,7 @@ public:
   tree lastlane;
   vec<tree, va_heap> simt_eargs;
   gimple_seq simt_dlist;
-  poly_uint64_pod max_vf;
+  poly_uint64 max_vf;
   bool is_simt;
 };
 

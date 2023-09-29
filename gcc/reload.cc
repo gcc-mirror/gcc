@@ -168,8 +168,8 @@ struct decomposition
   int reg_flag;		/* Nonzero if referencing a register.  */
   int safe;		/* Nonzero if this can't conflict with anything.  */
   rtx base;		/* Base address for MEM.  */
-  poly_int64_pod start;	/* Starting offset or register number.  */
-  poly_int64_pod end;	/* Ending offset or register number.  */
+  poly_int64 start;	/* Starting offset or register number.  */
+  poly_int64 end;	/* Ending offset or register number.  */
 };
 
 /* Save MEMs needed to copy from one class of registers to another.  One MEM

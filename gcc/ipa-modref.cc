@@ -1331,7 +1331,7 @@ modref_access_analysis::merge_call_side_effects
 	  if (parm_map[i].parm_offset_known)
 	    {
 	      fprintf (dump_file, " offset:");
-	      print_dec ((poly_int64_pod)parm_map[i].parm_offset,
+	      print_dec ((poly_int64)parm_map[i].parm_offset,
 			 dump_file, SIGNED);
 	    }
 	}
@@ -1347,7 +1347,7 @@ modref_access_analysis::merge_call_side_effects
 	  if (chain_map.parm_offset_known)
 	    {
 	      fprintf (dump_file, " offset:");
-	      print_dec ((poly_int64_pod)chain_map.parm_offset,
+	      print_dec ((poly_int64)chain_map.parm_offset,
 			 dump_file, SIGNED);
 	    }
 	}

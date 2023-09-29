@@ -196,7 +196,7 @@ static int last_spill_reg;
 static rtx spill_stack_slot[FIRST_PSEUDO_REGISTER];
 
 /* Width allocated so far for that stack slot.  */
-static poly_uint64_pod spill_stack_slot_width[FIRST_PSEUDO_REGISTER];
+static poly_uint64 spill_stack_slot_width[FIRST_PSEUDO_REGISTER];
 
 /* Record which pseudos needed to be spilled.  */
 static regset_head spilled_pseudos;
@@ -257,13 +257,13 @@ struct elim_table
 {
   int from;			/* Register number to be eliminated.  */
   int to;			/* Register number used as replacement.  */
-  poly_int64_pod initial_offset; /* Initial difference between values.  */
+  poly_int64 initial_offset; /* Initial difference between values.  */
   int can_eliminate;		/* Nonzero if this elimination can be done.  */
   int can_eliminate_previous;	/* Value returned by TARGET_CAN_ELIMINATE
 				   target hook in previous scan over insns
 				   made by reload.  */
-  poly_int64_pod offset;	/* Current offset between the two regs.  */
-  poly_int64_pod previous_offset; /* Offset at end of previous insn.  */
+  poly_int64 offset;		/* Current offset between the two regs.  */
+  poly_int64 previous_offset;	/* Offset at end of previous insn.  */
   int ref_outside_mem;		/* "to" has been referenced outside a MEM.  */
   rtx from_rtx;			/* REG rtx for the register to be eliminated.
 				   We cannot simply compare the number since
@@ -309,7 +309,7 @@ static int num_eliminable_invariants;
 
 static int first_label_num;
 static char *offsets_known_at;
-static poly_int64_pod (*offsets_at)[NUM_ELIMINABLE_REGS];
+static poly_int64 (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 vec<reg_equivs_t, va_gc> *reg_equivs;
 
@@ -4020,7 +4020,7 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 
   /* Allocate the tables used to store offset information at labels.  */
   offsets_known_at = XNEWVEC (char, num_labels);
-  offsets_at = (poly_int64_pod (*)[NUM_ELIMINABLE_REGS])
+  offsets_at = (poly_int64 (*)[NUM_ELIMINABLE_REGS])
     xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (poly_int64));
 
 /* Look for REG_EQUIV notes; record what each pseudo is equivalent

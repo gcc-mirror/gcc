@@ -811,7 +811,7 @@ pp_clear_state (pretty_printer *pp)
 /* Print X to PP in decimal.  */
 template<unsigned int N, typename T>
 void
-pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &x)
+pp_wide_integer (pretty_printer *pp, const poly_int<N, T> &x)
 {
   if (x.is_constant ())
     pp_wide_integer (pp, x.coeffs[0]);
@@ -828,9 +828,9 @@ pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &x)
     }
 }
 
-template void pp_wide_integer (pretty_printer *, const poly_uint16_pod &);
-template void pp_wide_integer (pretty_printer *, const poly_int64_pod &);
-template void pp_wide_integer (pretty_printer *, const poly_uint64_pod &);
+template void pp_wide_integer (pretty_printer *, const poly_uint16 &);
+template void pp_wide_integer (pretty_printer *, const poly_int64 &);
+template void pp_wide_integer (pretty_printer *, const poly_uint64 &);
 
 /* Flush the formatted text of PRETTY-PRINTER onto the attached stream.  */
 void

@@ -7857,7 +7857,7 @@ gimple_fold_stmt_to_constant (gimple *stmt, tree (*valueize) (tree))
    is not explicitly available, but it is known to be zero
    such as 'static const int a;'.  */
 static tree
-get_base_constructor (tree base, poly_int64_pod *bit_offset,
+get_base_constructor (tree base, poly_int64 *bit_offset,
 		      tree (*valueize)(tree))
 {
   poly_int64 bit_offset2, size, max_size;

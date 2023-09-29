@@ -16564,7 +16564,7 @@ round_down_loc (location_t loc, tree value, int divisor)
 
 static tree
 split_address_to_core_and_offset (tree exp,
-				  poly_int64_pod *pbitpos, tree *poffset)
+				  poly_int64 *pbitpos, tree *poffset)
 {
   tree core;
   machine_mode mode;
@@ -16614,7 +16614,7 @@ split_address_to_core_and_offset (tree exp,
    otherwise.  If they do, E1 - E2 is stored in *DIFF.  */
 
 bool
-ptr_difference_const (tree e1, tree e2, poly_int64_pod *diff)
+ptr_difference_const (tree e1, tree e2, poly_int64 *diff)
 {
   tree core1, core2;
   poly_int64 bitpos1, bitpos2;

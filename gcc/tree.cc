@@ -3289,7 +3289,7 @@ really_constant_p (const_tree exp)
    like sizetype is used to encode a value that is actually negative.  */
 
 bool
-ptrdiff_tree_p (const_tree t, poly_int64_pod *value)
+ptrdiff_tree_p (const_tree t, poly_int64 *value)
 {
   if (!t)
     return false;
