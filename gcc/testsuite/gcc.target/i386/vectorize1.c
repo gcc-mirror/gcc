@@ -1,6 +1,6 @@
 /* PR middle-end/28915 */
 /* { dg-do compile } */
-/* { dg-options "-msse -O2 -ftree-vectorize -fdump-tree-vect" } */
+/* { dg-options "-msse -O2 -ftree-vectorize -fdump-tree-vect-optimized" } */
 
 extern char lanip[3][40];
 typedef struct
@@ -17,4 +17,4 @@ int set_names (void)
       tt1.t[ln] = lanip[1];
 }
 
-/* { dg-final { scan-tree-dump "vect_cst" "vect" } } */
+/* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" } } */

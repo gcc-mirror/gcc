@@ -8355,10 +8355,12 @@ vectorizable_store (vec_info *vinfo,
       return vectorizable_scan_store (vinfo, stmt_info, gsi, vec_stmt, ncopies);
     }
 
-  if (grouped_store)
+  if (grouped_store || slp)
     {
       /* FORNOW */
-      gcc_assert (!loop || !nested_in_vect_loop_p (loop, stmt_info));
+      gcc_assert (!grouped_store
+		  || !loop
+		  || !nested_in_vect_loop_p (loop, stmt_info));
 
       if (slp)
         {
@@ -8367,8 +8369,9 @@ vectorizable_store (vec_info *vinfo,
              group.  */
           vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
-	  gcc_assert (DR_GROUP_FIRST_ELEMENT (first_stmt_info)
-		      == first_stmt_info);
+	  gcc_assert (!STMT_VINFO_GROUPED_ACCESS (first_stmt_info)
+		      || (DR_GROUP_FIRST_ELEMENT (first_stmt_info)
+			  == first_stmt_info));
 	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 	  op = vect_get_store_rhs (first_stmt_info);
         } 
