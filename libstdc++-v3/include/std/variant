@@ -320,6 +320,33 @@ namespace __variant
     __get(_Variant&& __v) noexcept
     { return __variant::__get_n<_Np>(std::forward<_Variant>(__v)._M_u); }
 
+  // Gets the _Uninitialized to construct into for __u.
+  template<size_t _Np, typename _Union>
+    constexpr decltype(auto)
+    __construct_n(_Union& __u) noexcept
+    {
+      if constexpr (_Np == 0)
+	return &__u._M_first;
+      else if constexpr (_Np == 1)
+	{
+	  std::_Construct(&__u._M_rest);
+	  return &__u._M_rest._M_first;
+	}
+      else if constexpr (_Np == 2)
+	{
+	  std::_Construct(&__u._M_rest);
+	  std::_Construct(&__u._M_rest._M_rest);
+	  return &__u._M_rest._M_rest._M_first;
+	}
+      else
+	{
+	  std::_Construct(&__u._M_rest);
+	  std::_Construct(&__u._M_rest._M_rest);
+	  std::_Construct(&__u._M_rest._M_rest._M_rest);
+	  return __variant::__construct_n<_Np - 3>(__u._M_rest._M_rest._M_rest);
+	}
+    }
+
   template<typename... _Types>
     struct _Traits
     {
@@ -536,8 +563,9 @@ namespace __variant
     __emplace(_Variant_storage<_Triv, _Types...>& __v, _Args&&... __args)
     {
       __v._M_reset();
-      auto* __addr = std::__addressof(__variant::__get_n<_Np>(__v._M_u));
-      std::_Construct(__addr, std::forward<_Args>(__args)...);
+      auto* __addr = __variant::__construct_n<_Np>(__v._M_u);
+      std::_Construct(__addr, in_place_index<0>,
+		      std::forward<_Args>(__args)...);
       // Construction didn't throw, so can set the new index now:
       __v._M_index = _Np;
     }
