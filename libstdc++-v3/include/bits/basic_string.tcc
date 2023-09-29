@@ -79,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else if (__s.length())
 	      {
+		(void)_M_use_local_data();
 		traits_type::copy(_M_local_buf, __s._M_local_buf,
 				  __s.length() + 1);
 		_M_length(__s.length());
@@ -87,6 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else if (length())
 	      {
+		(void)__s._M_use_local_data();
 		traits_type::copy(__s._M_local_buf, _M_local_buf,
 				  length() + 1);
 		__s._M_length(length());
@@ -97,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else
 	  {
 	    const size_type __tmp_capacity = __s._M_allocated_capacity;
+	    (void)__s._M_use_local_data();
 	    traits_type::copy(__s._M_local_buf, _M_local_buf,
 			      length() + 1);
 	    _M_data(__s._M_data());
@@ -108,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const size_type __tmp_capacity = _M_allocated_capacity;
 	  if (__s._M_is_local())
 	    {
+	      (void)_M_use_local_data();
 	      traits_type::copy(_M_local_buf, __s._M_local_buf,
 				__s.length() + 1);
 	      __s._M_data(_M_data());
