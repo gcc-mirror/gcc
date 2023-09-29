@@ -4932,7 +4932,7 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
     }
 
   Type_switch_statement* statement =
-      Statement::make_type_switch_statement(var_name, init, location);
+      Statement::make_type_switch_statement(init, location);
   this->push_break_statement(statement, label);
 
   Type_case_clauses* case_clauses = new Type_case_clauses();

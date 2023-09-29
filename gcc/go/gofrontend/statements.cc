@@ -5046,8 +5046,6 @@ Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 {
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "switch ";
-  if (!this->name_.empty())
-    ast_dump_context->ostream() << this->name_ << " = ";
   ast_dump_context->dump_expression(this->expr_);
   ast_dump_context->ostream() << " .(type)";
   if (ast_dump_context->dump_subblocks())
@@ -5062,10 +5060,9 @@ Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 // Make a type switch statement.
 
 Type_switch_statement*
-Statement::make_type_switch_statement(const std::string& name, Expression* expr,
-				      Location location)
+Statement::make_type_switch_statement(Expression* expr, Location location)
 {
-  return new Type_switch_statement(name, expr, location);
+  return new Type_switch_statement(expr, location);
 }
 
 // Class Send_statement.
