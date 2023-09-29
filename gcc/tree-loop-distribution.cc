@@ -1574,6 +1574,7 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 
   basic_block bb_ld = NULL;
   basic_block bb_st = NULL;
+  edge exit = single_exit (loop);
 
   if (single_ld)
     {
@@ -1589,6 +1590,14 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
       bb_ld = gimple_bb (DR_STMT (single_ld));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_ld))
 	return false;
+
+      /* The data reference must also be executed before possibly exiting
+	 the loop as otherwise we'd for example unconditionally execute
+	 memset (ptr, 0, n) which even with n == 0 implies ptr is non-NULL.  */
+      if (bb_ld != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_ld)))
+	return false;
     }
 
   if (single_st)
@@ -1603,6 +1612,12 @@ find_single_drs (class loop *loop, struct graph *rdg, const bitmap &partition_st
 	 loop.  */
       bb_st = gimple_bb (DR_STMT (single_st));
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_st))
+	return false;
+
+      /* And before exiting the loop.  */
+      if (bb_st != loop->header
+	  && (!exit
+	      || !dominated_by_p (CDI_DOMINATORS, exit->src, bb_st)))
 	return false;
     }
 
