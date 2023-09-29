@@ -1,6 +1,13 @@
 2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (print_operand): Adjust xcode type to fix warning.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
 	Tamar Christina <tamar.christina@arm.com>
 
 	* gensupport.cc (class conlist, add_constraints, add_attributes,
