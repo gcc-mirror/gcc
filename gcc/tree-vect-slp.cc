@@ -1725,21 +1725,26 @@ vect_build_slp_tree (vec_info *vinfo,
   SLP_TREE_SCALAR_STMTS (res) = stmts;
   bst_map->put (stmts.copy (), res);
 
-  if (*limit == 0)
+  /* Single-lane SLP doesn't have the chance of run-away, do not account
+     it to the limit.  */
+  if (stmts.length () > 1)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "SLP discovery limit exceeded\n");
-      /* Mark the node invalid so we can detect those when still in use
-	 as backedge destinations.  */
-      SLP_TREE_SCALAR_STMTS (res) = vNULL;
-      SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
-      res->failed = XNEWVEC (bool, group_size);
-      memset (res->failed, 0, sizeof (bool) * group_size);
-      memset (matches, 0, sizeof (bool) * group_size);
-      return NULL;
+      if (*limit == 0)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "SLP discovery limit exceeded\n");
+	  /* Mark the node invalid so we can detect those when still in use
+	     as backedge destinations.  */
+	  SLP_TREE_SCALAR_STMTS (res) = vNULL;
+	  SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
+	  res->failed = XNEWVEC (bool, group_size);
+	  memset (res->failed, 0, sizeof (bool) * group_size);
+	  memset (matches, 0, sizeof (bool) * group_size);
+	  return NULL;
+	}
+      --*limit;
     }
-  --*limit;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
