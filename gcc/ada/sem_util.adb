@@ -27792,15 +27792,6 @@ package body Sem_Util is
       end if;
    end Set_Rep_Info;
 
-   ----------------------------
-   -- Set_Scope_Is_Transient --
-   ----------------------------
-
-   procedure Set_Scope_Is_Transient (V : Boolean := True) is
-   begin
-      Scope_Stack.Table (Scope_Stack.Last).Is_Transient := V;
-   end Set_Scope_Is_Transient;
-
    -------------------
    -- Set_Size_Info --
    -------------------
