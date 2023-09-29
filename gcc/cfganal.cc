@@ -468,7 +468,7 @@ control_dependences::control_dependences ()
 
   bitmap_obstack_initialize (&m_bitmaps);
   control_dependence_map.create (last_basic_block_for_fn (cfun));
-  control_dependence_map.quick_grow (last_basic_block_for_fn (cfun));
+  control_dependence_map.quick_grow_cleared (last_basic_block_for_fn (cfun));
   for (int i = 0; i < last_basic_block_for_fn (cfun); ++i)
     bitmap_initialize (&control_dependence_map[i], &m_bitmaps);
   for (int i = 0; i < num_edges; ++i)
