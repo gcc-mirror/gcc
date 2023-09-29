@@ -63,3 +63,8 @@ ENTRY (__arm_za_disable)
 L(end):
 	ret
 END (__arm_za_disable)
+
+/* Hidden alias used by the unwinder.  */
+.global __libgcc_arm_za_disable
+.hidden __libgcc_arm_za_disable
+.set __libgcc_arm_za_disable, __arm_za_disable
