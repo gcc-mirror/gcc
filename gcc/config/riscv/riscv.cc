@@ -2768,6 +2768,19 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
   switch (GET_CODE (x))
     {
+    case SET:
+      /* If we are called for an INSN that's a simple set of a register,
+	 then cost based on the SET_SRC alone.  */
+      if (outer_code == INSN && REG_P (SET_DEST (x)))
+	{
+	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
+	  return true;
+	}
+
+      /* Otherwise return FALSE indicating we should recurse into both the
+	 SET_DEST and SET_SRC combining the cost of both.  */
+      return false;
+
     case CONST_INT:
       /* trivial constants checked using OUTER_CODE in case they are
 	 encodable in insn itself w/o need for additional insn(s).  */
