@@ -3468,12 +3468,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  return true;
 	}
     }
-  else
-    {
-      /* Failed to SLP.  */
-      /* Free the allocated memory.  */
-      scalar_stmts.release ();
-    }
+  /* Failed to SLP.  */
 
   stmt_vec_info stmt_info = stmt_info_;
   /* Try to break the group up into pieces.  */
@@ -3491,6 +3486,9 @@ vect_build_slp_instance (vec_info *vinfo,
       if (is_a <bb_vec_info> (vinfo)
 	  && (i > 1 && i < group_size))
 	{
+	  /* Free the allocated memory.  */
+	  scalar_stmts.release ();
+
 	  tree scalar_type
 	    = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
 	  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
@@ -3535,38 +3533,236 @@ vect_build_slp_instance (vec_info *vinfo,
 	    }
 	}
 
-      /* For loop vectorization split into arbitrary pieces of size > 1.  */
-      if (is_a <loop_vec_info> (vinfo)
-	  && (i > 1 && i < group_size)
-	  && !vect_slp_prefer_store_lanes_p (vinfo, stmt_info, group_size, i))
+      /* For loop vectorization split the RHS into arbitrary pieces of
+	 size >= 1.  */
+      else if (is_a <loop_vec_info> (vinfo)
+	       && (i > 0 && i < group_size)
+	       && !vect_slp_prefer_store_lanes_p (vinfo,
+						  stmt_info, group_size, i))
 	{
-	  unsigned group1_size = i;
-
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Splitting SLP group at stmt %u\n", i);
 
-	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
-							   group1_size);
-	  /* Loop vectorization cannot handle gaps in stores, make sure
-	     the split group appears as strided.  */
-	  STMT_VINFO_STRIDED_P (rest) = 1;
-	  DR_GROUP_GAP (rest) = 0;
-	  STMT_VINFO_STRIDED_P (stmt_info) = 1;
-	  DR_GROUP_GAP (stmt_info) = 0;
+	  /* Analyze the stored values and pinch them together with
+	     a permute node so we can preserve the whole store group.  */
+	  auto_vec<slp_tree> rhs_nodes;
 
-	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
-						kind, max_tree_size, limit);
-	  if (i + 1 < group_size)
-	    res |= vect_analyze_slp_instance (vinfo, bst_map,
-					      rest, kind, max_tree_size, limit);
+	  /* Calculate the unrolling factor based on the smallest type.  */
+	  poly_uint64 unrolling_factor = 1;
 
-	  return res;
+	  unsigned int start = 0, end = i;
+	  while (start < group_size)
+	    {
+	      gcc_assert (end - start >= 1);
+	      vec<stmt_vec_info> substmts;
+	      substmts.create (end - start);
+	      for (unsigned j = start; j < end; ++j)
+		substmts.quick_push (scalar_stmts[j]);
+	      max_nunits = 1;
+	      node = vect_build_slp_tree (vinfo, substmts, end - start,
+					  &max_nunits,
+					  matches, limit, &tree_size, bst_map);
+	      if (node)
+		{
+		  /* ???  Possibly not safe, but not sure how to check
+		     and fail SLP build?  */
+		  unrolling_factor
+		    = force_common_multiple (unrolling_factor,
+					     calculate_unrolling_factor
+					       (max_nunits, end - start));
+		  rhs_nodes.safe_push (node);
+		  start = end;
+		  end = group_size;
+		}
+	      else
+		{
+		  substmts.release ();
+		  if (end - start == 1)
+		    {
+		      /* Single-lane discovery failed.  Free ressources.  */
+		      for (auto node : rhs_nodes)
+			vect_free_slp_tree (node);
+		      scalar_stmts.release ();
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "SLP discovery failed\n");
+		      return false;
+		    }
+
+		  /* ???  It really happens that we soft-fail SLP
+		     build at a mismatch but the matching part hard-fails
+		     later.  As we know we arrived here with a group
+		     larger than one try a group of size one!  */
+		  if (!matches[0])
+		    end = start + 1;
+		  else
+		    for (unsigned j = start; j < end; j++)
+		      if (!matches[j - start])
+			{
+			  end = j;
+			  break;
+			}
+		}
+	    }
+
+	  /* Now we assume we can build the root SLP node from all
+	     stores.  */
+	  node = vect_create_new_slp_node (scalar_stmts,
+					   SLP_TREE_CHILDREN
+					     (rhs_nodes[0]).length ());
+	  SLP_TREE_VECTYPE (node) = SLP_TREE_VECTYPE (rhs_nodes[0]);
+	  for (unsigned l = 0;
+	       l < SLP_TREE_CHILDREN (rhs_nodes[0]).length (); ++l)
+	    {
+	      /* And a permute merging all RHS SLP trees.  */
+	      slp_tree perm = vect_create_new_slp_node (rhs_nodes.length (),
+							VEC_PERM_EXPR);
+	      SLP_TREE_CHILDREN (node).quick_push (perm);
+	      SLP_TREE_LANE_PERMUTATION (perm).create (group_size);
+	      SLP_TREE_VECTYPE (perm) = SLP_TREE_VECTYPE (node);
+	      SLP_TREE_LANES (perm) = group_size;
+	      /* ???  We should set this NULL but that's not expected.  */
+	      SLP_TREE_REPRESENTATIVE (perm)
+		= SLP_TREE_REPRESENTATIVE (SLP_TREE_CHILDREN (rhs_nodes[0])[l]);
+	      for (unsigned j = 0; j < rhs_nodes.length (); ++j)
+		{
+		  SLP_TREE_CHILDREN (perm)
+		    .quick_push (SLP_TREE_CHILDREN (rhs_nodes[j])[l]);
+		  for (unsigned k = 0;
+		       k < SLP_TREE_SCALAR_STMTS (rhs_nodes[j]).length (); ++k)
+		    {
+		      /* ???  We should populate SLP_TREE_SCALAR_STMTS
+			 or SLP_TREE_SCALAR_OPS but then we might have
+			 a mix of both in our children.  */
+		      SLP_TREE_LANE_PERMUTATION (perm)
+			.quick_push (std::make_pair (j, k));
+		    }
+		}
+
+	      /* Now we have a single permute node but we cannot code-generate
+		 the case with more than two inputs.
+		 Perform pairwise reduction, reducing the two inputs
+		 with the least number of lanes to one and then repeat until
+		 we end up with two inputs.  That scheme makes sure we end
+		 up with permutes satisfying the restriction of requiring at
+		 most two vector inputs to produce a single vector output.  */
+	      while (SLP_TREE_CHILDREN (perm).length () > 2)
+		{
+		  /* Pick the two nodes with the least number of lanes,
+		     prefer the earliest candidate and maintain ai < bi.  */
+		  int ai = -1;
+		  int bi = -1;
+		  for (unsigned ci = 0;
+		       ci < SLP_TREE_CHILDREN (perm).length (); ++ci)
+		    {
+		      if (ai == -1)
+			ai = ci;
+		      else if (bi == -1)
+			bi = ci;
+		      else if ((SLP_TREE_LANES (SLP_TREE_CHILDREN (perm)[ci])
+				< SLP_TREE_LANES (SLP_TREE_CHILDREN (perm)[ai]))
+			       || (SLP_TREE_LANES (SLP_TREE_CHILDREN (perm)[ci])
+				   < SLP_TREE_LANES
+				       (SLP_TREE_CHILDREN (perm)[bi])))
+			{
+			  if (SLP_TREE_LANES (SLP_TREE_CHILDREN (perm)[ai])
+			      <= SLP_TREE_LANES (SLP_TREE_CHILDREN (perm)[bi]))
+			    bi = ci;
+			  else
+			    {
+			      ai = bi;
+			      bi = ci;
+			    }
+			}
+		    }
+
+		  /* Produce a merge of nodes ai and bi.  */
+		  slp_tree a = SLP_TREE_CHILDREN (perm)[ai];
+		  slp_tree b = SLP_TREE_CHILDREN (perm)[bi];
+		  unsigned n = SLP_TREE_LANES (a) + SLP_TREE_LANES (b);
+		  slp_tree permab = vect_create_new_slp_node (2, VEC_PERM_EXPR);
+		  SLP_TREE_LANES (permab) = n;
+		  SLP_TREE_LANE_PERMUTATION (permab).create (n);
+		  SLP_TREE_VECTYPE (permab) = SLP_TREE_VECTYPE (perm);
+		  /* ???  We should set this NULL but that's not expected.  */
+		  SLP_TREE_REPRESENTATIVE (permab)
+		    = SLP_TREE_REPRESENTATIVE (perm);
+		  SLP_TREE_CHILDREN (permab).quick_push (a);
+		  for (unsigned k = 0; k < SLP_TREE_LANES (a); ++k)
+		    SLP_TREE_LANE_PERMUTATION (permab)
+		      .quick_push (std::make_pair (0, k));
+		  SLP_TREE_CHILDREN (permab).quick_push (b);
+		  for (unsigned k = 0; k < SLP_TREE_LANES (b); ++k)
+		    SLP_TREE_LANE_PERMUTATION (permab)
+		      .quick_push (std::make_pair (1, k));
+
+		  /* Put the merged node into 'perm', in place of a.  */
+		  SLP_TREE_CHILDREN (perm)[ai] = permab;
+		  /* Adjust the references to b in the permutation
+		     of perm and to the later children which we'll
+		     remove.  */
+		  for (unsigned k = 0; k < SLP_TREE_LANES (perm); ++k)
+		    {
+		      std::pair<unsigned, unsigned> &p
+			  = SLP_TREE_LANE_PERMUTATION (perm)[k];
+		      if (p.first == (unsigned) bi)
+			{
+			  p.first = ai;
+			  p.second += SLP_TREE_LANES (a);
+			}
+		      else if (p.first > (unsigned) bi)
+			p.first--;
+		    }
+		  SLP_TREE_CHILDREN (perm).ordered_remove (bi);
+		}
+	    }
+
+	  /* Create a new SLP instance.  */
+	  slp_instance new_instance = XNEW (class _slp_instance);
+	  SLP_INSTANCE_TREE (new_instance) = node;
+	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
+	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
+	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
+	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
+	  SLP_INSTANCE_KIND (new_instance) = kind;
+	  new_instance->reduc_phis = NULL;
+	  new_instance->cost_vec = vNULL;
+	  new_instance->subgraph_entries = vNULL;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "SLP size %u vs. limit %u.\n",
+			     tree_size, max_tree_size);
+
+	  vinfo->slp_instances.safe_push (new_instance);
+
+	  /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
+	     the number of scalar stmts in the root in a few places.
+	     Verify that assumption holds.  */
+	  gcc_assert (SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (new_instance))
+			.length () == group_size);
+
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "Final SLP tree for instance %p:\n",
+			       (void *) new_instance);
+	      vect_print_slp_graph (MSG_NOTE, vect_location,
+				    SLP_INSTANCE_TREE (new_instance));
+	    }
+	  return true;
 	}
+      else
+	/* Free the allocated memory.  */
+	scalar_stmts.release ();
 
       /* Even though the first vector did not all match, we might be able to SLP
 	 (some) of the remainder.  FORNOW ignore this possibility.  */
     }
+  else
+    /* Free the allocated memory.  */
+    scalar_stmts.release ();
 
   /* Failed to SLP.  */
   if (dump_enabled_p ())

@@ -36,6 +36,5 @@ f3 (int *restrict y, int *restrict x, int *restrict indices)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "Loop contains only SLP stmts" vect } } */
 /* { dg-final { scan-tree-dump "different gather base" vect { target { ! vect_gather_load_ifn } } } } */
 /* { dg-final { scan-tree-dump "different gather scale" vect { target { ! vect_gather_load_ifn } } } } */

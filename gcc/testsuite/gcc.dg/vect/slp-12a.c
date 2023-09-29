@@ -40,6 +40,10 @@ main1 ()
       out[i*8 + 3] = b3 - 1;
       out[i*8 + 4] = b4 - 8;
       out[i*8 + 5] = b5 - 7;
+      /* Due to the use in the ia[i] store we keep the feeding expression
+         in the form ((in[i*8 + 6] + 11) * 3 - 3) while other expressions
+	 got associated as for example (in[i*5 + 5] * 4 + 33).  That
+	 causes SLP discovery to fail.  */
       out[i*8 + 6] = b6 - 3;
       out[i*8 + 7] = b7 - 7;
 
@@ -76,5 +80,5 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_strided8 && vect_int_mult } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { vect_strided8 && vect_int_mult } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { { vect_strided8 && {! vect_load_lanes } } && vect_int_mult } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { { vect_strided8 && {! vect_load_lanes } } && vect_int_mult } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! { vect_strided8 && vect_int_mult } } } } } */

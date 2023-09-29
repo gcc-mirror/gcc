@@ -13,7 +13,8 @@ main1 ()
   unsigned int in[N*8] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63};
   float out[N*8];
 
-  /* Different operations - not SLPable.  */
+  /* Different operations - we SLP the store and split the group to two
+     single-lane branches.  */
   for (i = 0; i < N*4; i++)
     {
       out[i*2] = ((float) in[i*2] * 2 + 6) ;
@@ -44,4 +45,5 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { { vect_uintfloat_cvt && vect_strided2 } && vect_int_mult } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { { vect_uintfloat_cvt && vect_strided2 } && vect_int_mult } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0  "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { ! vect_load_lanes } } } } */
