@@ -344,13 +344,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // Ensure that _M_local_buf is the active member of the union.
       __attribute__((__always_inline__))
       _GLIBCXX14_CONSTEXPR
-      pointer
-      _M_use_local_data() _GLIBCXX_NOEXCEPT
+      void
+      _M_init_local_buf() _GLIBCXX_NOEXCEPT
       {
 #if __cpp_lib_is_constant_evaluated
 	if (std::is_constant_evaluated())
 	  for (size_type __i = 0; __i <= _S_local_capacity; ++__i)
 	    _M_local_buf[__i] = _CharT();
+#endif
+      }
+
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
+      pointer
+      _M_use_local_data() _GLIBCXX_NOEXCEPT
+      {
+#if __cpp_lib_is_constant_evaluated
+	_M_init_local_buf();
 #endif
 	return _M_local_data();
       }
@@ -513,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT_IF(is_nothrow_default_constructible<_Alloc>::value)
       : _M_dataplus(_M_local_data())
       {
-	_M_use_local_data();
+	_M_init_local_buf();
 	_M_set_length(0);
       }
 
@@ -525,7 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string(const _Alloc& __a) _GLIBCXX_NOEXCEPT
       : _M_dataplus(_M_local_data(), __a)
       {
-	_M_use_local_data();
+	_M_init_local_buf();
 	_M_set_length(0);
       }
 
@@ -669,7 +679,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__str._M_is_local())
 	  {
-	    (void)_M_use_local_data();
+	    _M_init_local_buf();
 	    traits_type::copy(_M_local_buf, __str._M_local_buf,
 			      __str.length() + 1);
 	  }
@@ -709,7 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__str._M_is_local())
 	  {
-	    (void)_M_use_local_data();
+	    _M_init_local_buf();
 	    traits_type::copy(_M_local_buf, __str._M_local_buf,
 			      __str.length() + 1);
 	    _M_length(__str.length());
