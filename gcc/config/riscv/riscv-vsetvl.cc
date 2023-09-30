@@ -2417,8 +2417,8 @@ vector_infos_manager::vector_infos_manager ()
   vector_antin = nullptr;
   vector_antout = nullptr;
   vector_earliest = nullptr;
-  vector_insn_infos.safe_grow (get_max_uid ());
-  vector_block_infos.safe_grow (last_basic_block_for_fn (cfun));
+  vector_insn_infos.safe_grow_cleared (get_max_uid ());
+  vector_block_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   if (!optimize)
     {
       basic_block cfg_bb;
