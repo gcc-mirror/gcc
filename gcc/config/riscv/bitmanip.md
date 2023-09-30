@@ -225,7 +225,9 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 3) (match_dup 2))
-   (set (match_dup 0) (bitmanip_bitwise:X (not:X (match_dup 1)) (match_dup 3)))])
+   (set (match_dup 0) (bitmanip_bitwise:X (not:X (match_dup 1)) (match_dup 3)))]
+  ""
+  [(set_attr "type" "bitmanip")])
 
 ;; '(a >= 0) ? b : 0' is emitted branchless (from if-conversion).  Without a
 ;; bit of extra help for combine (i.e., the below split), we end up emitting
