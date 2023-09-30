@@ -2247,7 +2247,7 @@
   [(set (match_operand:P 0 "register_operand" "=r")
  (lo_sum:P (match_operand:P 1 "register_operand" " r")
      (match_operand:P 2 "symbolic_operand" "")))]
-  "TARGET_EXPLICIT_RELOCS"
+  ""
   "addi.<d>\t%0,%1,%L2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
@@ -2275,7 +2275,7 @@
 				(match_operand:P 1 "register_operand" "r")
 				(match_operand:P 2 "symbolic_operand")))]
 	UNSPEC_LOAD_FROM_GOT))]
-  "TARGET_EXPLICIT_RELOCS"
+  ""
   "ld.<d>\t%0,%1,%L2"
   [(set_attr "type" "move")]
 )
