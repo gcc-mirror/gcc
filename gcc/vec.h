@@ -1416,7 +1416,7 @@ vec<T, A, vl_embed>::quick_grow (unsigned len)
 {
   gcc_checking_assert (length () <= len && len <= m_vecpfx.m_alloc);
 #if GCC_VERSION >= 5000
-//  static_assert (std::is_trivially_default_constructible <T>::value, "");
+  static_assert (std::is_trivially_default_constructible <T>::value, "");
 #endif
   m_vecpfx.m_num = len;
 }
