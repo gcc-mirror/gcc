@@ -11412,7 +11412,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 					sym->attr.codimension
 					? GFC_CAF_COARRAY_DEREGISTER
 					: GFC_CAF_COARRAY_NOCOARRAY,
-					NULL_TREE, gfc_finish_block (&cleanup));
+					gfc_finish_block (&cleanup));
       if (e)
 	gfc_free_expr (e);
       gfc_init_block (&cleanup);
