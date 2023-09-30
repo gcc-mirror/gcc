@@ -1,3 +1,26 @@
+2023-09-29  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2023-09-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-n1): Place before ares.
+	(neoverse-v1): Place before zeus.
+	(neoverse-v2): Place before demeter.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2023-09-29  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2023-09-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111121
+	* config/aarch64/aarch64.md (aarch64_movmemdi): Add new expander.
+	(movmemdi): Call aarch64_expand_cpymem_mops for correct expansion.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem_mops): Add support
+	for memmove.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_cpymem_mops): Add new
+	function.
+
 2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-range-gori.cc (gori_compute::logical_combine): Add missing
