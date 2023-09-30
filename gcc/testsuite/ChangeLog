@@ -1,3 +1,11 @@
+2023-09-29  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2023-09-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111121
+	* gcc.target/aarch64/mops_4.c: Add memmove testcases.
+
 2023-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt102.adb:New test.
