@@ -1,3 +1,74 @@
+2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/run/pass/m2date.mod (DayName): Reordered.
+
+2023-09-29  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm.c: New test.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_0_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg.c: Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_0_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics.c: Tighten expected regexp.
+	* gcc.target/riscv/zicond-primitiveSemantics_return_0_imm.c: Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_return_imm_imm.c: Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_return_imm_reg.c: Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_return_reg_reg.c: Likewise.
+	* gcc.target/riscv/zicond-xor-01.c: Likewise.
+
+2023-09-29  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/vsetvl/wredsum_vlmax.c: Specify -mabi=lp64d.
+
+2023-09-29  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* gcc.target/riscv/zbb-andn-orn-01.c: New test.
+	* gcc.target/riscv/zbb-andn-orn-02.c: Likewise.
+
+2023-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/plugin/poly-int-tests.h (test_num_coeffs_extra): Use
+	poly_int rather than poly_int_pod.
+
+2023-09-29  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/debug/dwarf2/inline4.c: Ajdust regexp to match darwin
+	output.
+
+2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/37336
+	* gfortran.dg/coarray/alloc_comp_6.f90: New test.
+	* gfortran.dg/coarray/alloc_comp_7.f90: New test.
+
+2023-09-29  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+
+	* gcc.target/aarch64/ldp_aligned.c: Splitted into this and
+	ldp_unaligned.
+	* gcc.target/aarch64/stp_aligned.c: Splitted into this and
+	stp_unaligned.
+	* gcc.target/aarch64/ldp_unaligned.c: New test.
+	* gcc.target/aarch64/stp_unaligned.c: New test.
+
+2023-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111583
+	* gcc.dg/tree-ssa/pr111583-1.c: New testcase.
+	* gcc.dg/tree-ssa/pr111583-2.c: Likewise.
+
 2023-09-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp:

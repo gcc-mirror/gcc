@@ -1,3 +1,10 @@
+2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/37336
+	* trans-array.cc (structure_alloc_comps): Deref coarray.
+	(gfc_trans_deferred_array): Add freeing of components after
+	check for allocated coarray.
+
 2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68155

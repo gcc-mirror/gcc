@@ -1,3 +1,164 @@
+2023-09-29  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Better handle costing
+	SETs when the outer code is INSN.
+
+2023-09-29  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/bitmanip.md (*<optab>_not_const<mode>): New split
+	pattern.
+
+2023-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* poly-int.h (poly_int_pod): Delete.
+	(poly_coeff_traits::init_cast): New type.
+	(poly_int_full, poly_int_hungry, poly_int_fullness): New structures.
+	(poly_int): Replace constructors that take 1 and 2 coefficients with
+	a general one that takes an arbitrary number of coefficients.
+	Delegate initialization to two new private constructors, one of
+	which uses the coefficients as-is and one of which adds an extra
+	zero of the appropriate type (and precision, where applicable).
+	(gt_ggc_mx, gt_pch_nx): Operate on poly_ints rather than poly_int_pods.
+	* poly-int-types.h (poly_uint16_pod, poly_int64_pod, poly_uint64_pod)
+	(poly_offset_int_pod, poly_wide_int_pod, poly_widest_int_pod): Delete.
+	* gengtype.cc (main): Don't register poly_int64_pod.
+	* calls.cc (initialize_argument_information): Use poly_int rather
+	than poly_int_pod.
+	(combine_pending_stack_adjustment_and_call): Likewise.
+	* config/aarch64/aarch64.cc (pure_scalable_type_info): Likewise.
+	* data-streamer.h (bp_unpack_poly_value): Likewise.
+	* dwarf2cfi.cc (struct dw_trace_info): Likewise.
+	(struct queued_reg_save): Likewise.
+	* dwarf2out.h (struct dw_cfa_location): Likewise.
+	* emit-rtl.h (struct incoming_args): Likewise.
+	(struct rtl_data): Likewise.
+	* expr.cc (get_bit_range): Likewise.
+	(get_inner_reference): Likewise.
+	* expr.h (get_bit_range): Likewise.
+	* fold-const.cc (split_address_to_core_and_offset): Likewise.
+	(ptr_difference_const): Likewise.
+	* fold-const.h (ptr_difference_const): Likewise.
+	* function.cc (try_fit_stack_local): Likewise.
+	(instantiate_new_reg): Likewise.
+	* function.h (struct expr_status): Likewise.
+	(struct args_size): Likewise.
+	* genmodes.cc (ZERO_COEFFS): Likewise.
+	(mode_size_inline): Likewise.
+	(mode_nunits_inline): Likewise.
+	(emit_mode_precision): Likewise.
+	(emit_mode_size): Likewise.
+	(emit_mode_nunits): Likewise.
+	* gimple-fold.cc (get_base_constructor): Likewise.
+	* gimple-ssa-store-merging.cc (struct symbolic_number): Likewise.
+	* inchash.h (class hash): Likewise.
+	* ipa-modref-tree.cc (modref_access_node::dump): Likewise.
+	* ipa-modref.cc (modref_access_analysis::merge_call_side_effects):
+	Likewise.
+	* ira-int.h (ira_spilled_reg_stack_slot): Likewise.
+	* lra-eliminations.cc (self_elim_offsets): Likewise.
+	* machmode.h (mode_size, mode_precision, mode_nunits): Likewise.
+	* omp-low.cc (omplow_simd_context): Likewise.
+	* pretty-print.cc (pp_wide_integer): Likewise.
+	* pretty-print.h (pp_wide_integer): Likewise.
+	* reload.cc (struct decomposition): Likewise.
+	* reload.h (struct reload): Likewise.
+	* reload1.cc (spill_stack_slot_width): Likewise.
+	(struct elim_table): Likewise.
+	(offsets_at): Likewise.
+	(init_eliminable_invariants): Likewise.
+	* rtl.h (union rtunion): Likewise.
+	(poly_int_rtx_p): Likewise.
+	(strip_offset): Likewise.
+	(strip_offset_and_add): Likewise.
+	* rtlanal.cc (strip_offset): Likewise.
+	* tree-dfa.cc (get_ref_base_and_extent): Likewise.
+	(get_addr_base_and_unit_offset_1): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-dfa.h (get_ref_base_and_extent): Likewise.
+	(get_addr_base_and_unit_offset_1): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-ssa-loop-ivopts.cc (struct iv_use): Likewise.
+	(strip_offset): Likewise.
+	* tree-ssa-sccvn.h (struct vn_reference_op_struct): Likewise.
+	* tree.cc (ptrdiff_tree_p): Likewise.
+	* tree.h (poly_int_tree_p): Likewise.
+	(ptrdiff_tree_p): Likewise.
+	(get_inner_reference): Likewise.
+
+2023-09-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (memory_barrier): Revise comment.
+	(memory_barrier_64, memory_barrier_32): Use ldcw,co on PA 2.0.
+	* config/pa/pa.opt (coherent-ldcw): Change default to disabled.
+
+2023-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (quick_insert, ordered_remove, unordered_remove,
+	block_remove, qsort, sort, stablesort, quick_grow): Guard
+	std::is_trivially_{copyable,default_constructible} and
+	vec_detail::is_trivially_copyable_or_pair static assertions
+	with GCC_VERSION >= 5000.
+	(vec_detail::is_trivially_copyable_or_pair): Guard definition
+	with GCC_VERSION >= 5000.
+
+2023-09-29  Manos Anagnostakis  <manos.anagnostakis@vrull.eu>
+
+	* config/aarch64/aarch64-opts.h (enum aarch64_ldp_policy): Removed.
+	(enum aarch64_ldp_stp_policy): Merged enums aarch64_ldp_policy
+	and aarch64_stp_policy to aarch64_ldp_stp_policy.
+	(enum aarch64_stp_policy): Removed.
+	* config/aarch64/aarch64-protos.h (struct tune_params): Removed
+	aarch64_ldp_policy_model and aarch64_stp_policy_model enum types
+	and left only the definitions to the aarch64-opts one.
+	* config/aarch64/aarch64.cc (aarch64_parse_ldp_policy): Removed.
+	(aarch64_parse_stp_policy): Removed.
+	(aarch64_override_options_internal): Removed calls to parsing
+	functions and added obvious direct assignments.
+	(aarch64_mem_ok_with_ldpstp_policy_model): Improved
+	code quality based on the new changes.
+	* config/aarch64/aarch64.opt: Use single enum type
+	aarch64_ldp_stp_policy for both ldp and stp options.
+
+2023-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111583
+	* tree-loop-distribution.cc (find_single_drs): Ensure the
+	load/store are always executed.
+
+2023-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Use
+	quick_grow_cleared method on unprom rather than quick_grow.
+
+2023-09-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR middle-end/111505
+	* ggc-common.cc (ggc_zero_out_root_pointers, ggc_common_finalize):
+	Add new helper. Use helper instead of memset() to wipe out pointers.
+
+2023-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.h (c_readstr): Take a fixed_size_mode rather than a
+	scalar_int_mode.
+	* builtins.cc (c_readstr): Likewise.  Build a local array of
+	bytes and use native_decode_rtx to get the rtx image.
+	(builtin_memcpy_read_str): Simplify accordingly.
+	(builtin_strncpy_read_str): Likewise.
+	(builtin_memset_read_str): Likewise.
+	(builtin_memset_gen_str): Likewise.
+	* expr.cc (string_cst_read_str): Likewise.
+
+2023-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-loop-im.cc (tree_ssa_lim_initialize): Use quick_grow_cleared
+	instead of quick_grow on vec<bitmap_head> members.
+	* cfganal.cc (control_dependences::control_dependences): Likewise.
+	* rtl-ssa/blocks.cc (function_info::build_info::build_info): Likewise.
+	(function_info::place_phis): Use safe_grow_cleared instead of safe_grow
+	on auto_vec<bitmap_head> vars.
+	* tree-ssa-live.cc (compute_live_vars): Use quick_grow_cleared instead
+	of quick_grow on vec<bitmap_head> var.
+
 2023-09-28  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	Revert:

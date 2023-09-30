@@ -1,3 +1,10 @@
+2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (EndBuildFor): Improve
+	block comments.
+	* gm2-libs-iso/SysClock.mod (ExtractDate): Replace
+	testDays with yearOfDays.  New local variable monthOfDays.
+
 2023-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111510

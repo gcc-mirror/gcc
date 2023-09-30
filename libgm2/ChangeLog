@@ -1,3 +1,11 @@
+2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/wrapclock.cc (longint_t): New declaration.
+	(GetTimespec): Replace types for sec and nano with
+	longint_t.
+	(SetTimespec): Replace types for sec and nano with
+	longint_t.
+
 2023-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Makefile.am (TARGET_LONGDOUBLE_ABI): New variable set to

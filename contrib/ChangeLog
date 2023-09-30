@@ -1,3 +1,12 @@
+2023-09-29  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* check_GNU_style_lib.py: Skip machine description file bracket linting.
+
+2023-09-29  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* dg-extract-results.py: Print the "Test run" line.
+	* dg-extract-results.sh: Print the "Host" line.
+
 2023-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/111360
