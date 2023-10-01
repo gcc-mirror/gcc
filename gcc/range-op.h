@@ -185,9 +185,9 @@ protected:
   virtual void update_bitmask (irange &, const irange &, const irange &) const;
 
   // Perform an float operation between 2 ranges and return it.
-  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+  virtual void rv_fold (frange &r, tree type,
+			REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
 			bool &maybe_nan,
-			tree type,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,

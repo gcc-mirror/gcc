@@ -62,9 +62,11 @@ range_operator::fold_range (frange &r, tree type,
       return true;
     }
 
+  frange res;
   REAL_VALUE_TYPE lb, ub;
   bool maybe_nan;
-  rv_fold (lb, ub, maybe_nan, type,
+  rv_fold (res, type,
+	   lb, ub, maybe_nan,
 	   op1.lower_bound (), op1.upper_bound (),
 	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
 
@@ -75,6 +77,7 @@ range_operator::fold_range (frange &r, tree type,
   if (lb_nan && ub_nan)
     {
       r.set_nan (type);
+      gcc_checking_assert (r == res);
       return true;
     }
   if (lb_nan)
@@ -91,6 +94,10 @@ range_operator::fold_range (frange &r, tree type,
     ;
   else
     r.clear_nan ();
+
+  if (op1.maybe_isnan () || op2.maybe_isnan ())
+    res.update_nan ();
+  gcc_checking_assert (r == res);
 
   // If the result has overflowed and flag_trapping_math, folding this
   // operation could elide an overflow or division by zero exception.
@@ -122,19 +129,19 @@ range_operator::fold_range (frange &r, tree type,
 // MAYBE_NAN is set to TRUE if, in addition to any result in LB or
 // UB, the final range has the possibility of a NAN.
 void
-range_operator::rv_fold (REAL_VALUE_TYPE &lb,
-			       REAL_VALUE_TYPE &ub,
-			       bool &maybe_nan,
-			       tree type ATTRIBUTE_UNUSED,
-			       const REAL_VALUE_TYPE &lh_lb ATTRIBUTE_UNUSED,
-			       const REAL_VALUE_TYPE &lh_ub ATTRIBUTE_UNUSED,
-			       const REAL_VALUE_TYPE &rh_lb ATTRIBUTE_UNUSED,
-			       const REAL_VALUE_TYPE &rh_ub ATTRIBUTE_UNUSED,
-			       relation_kind) const
+range_operator::rv_fold (frange &r, tree type,
+			 REAL_VALUE_TYPE &lb,
+			 REAL_VALUE_TYPE &ub,
+			 bool &maybe_nan,
+			 const REAL_VALUE_TYPE &,
+			 const REAL_VALUE_TYPE &,
+			 const REAL_VALUE_TYPE &,
+			 const REAL_VALUE_TYPE &, relation_kind) const
 {
   lb = dconstninf;
   ub = dconstinf;
   maybe_nan = true;
+  r.set (type, dconstninf, dconstinf, nan_state (true));
 }
 
 bool
@@ -2471,8 +2478,9 @@ operator_plus::op2_range (frange &r, tree type,
 }
 
 void
-operator_plus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan, tree type,
+operator_plus::rv_fold (frange &r, tree type,
+			REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
@@ -2490,6 +2498,21 @@ operator_plus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
     maybe_nan = true;
   else
     maybe_nan = false;
+
+  // Handle possible NANs by saturating to the appropriate INF if only
+  // one end is a NAN.  If both ends are a NAN, just return a NAN.
+  bool lb_nan = real_isnan (&lb);
+  bool ub_nan = real_isnan (&ub);
+  if (lb_nan && ub_nan)
+    {
+      r.set_nan (type);
+      return;
+    }
+  if (lb_nan)
+    lb = dconstninf;
+  else if (ub_nan)
+    ub = dconstinf;
+  r.set (type, lb, ub, nan_state (maybe_nan));
 }
 
 
@@ -2519,8 +2542,9 @@ operator_minus::op2_range (frange &r, tree type,
 }
 
 void
-operator_minus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			 bool &maybe_nan, tree type,
+operator_minus::rv_fold (frange &r, tree type,
+			 REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			 bool &maybe_nan,
 			 const REAL_VALUE_TYPE &lh_lb,
 			 const REAL_VALUE_TYPE &lh_ub,
 			 const REAL_VALUE_TYPE &rh_lb,
@@ -2538,6 +2562,21 @@ operator_minus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
     maybe_nan = true;
   else
     maybe_nan = false;
+
+  // Handle possible NANs by saturating to the appropriate INF if only
+  // one end is a NAN.  If both ends are a NAN, just return a NAN.
+  bool lb_nan = real_isnan (&lb);
+  bool ub_nan = real_isnan (&ub);
+  if (lb_nan && ub_nan)
+    {
+      r.set_nan (type);
+      return;
+    }
+  if (lb_nan)
+    lb = dconstninf;
+  else if (ub_nan)
+    ub = dconstinf;
+  r.set (type, lb, ub, nan_state (maybe_nan));
 }
 
 
@@ -2612,8 +2651,9 @@ operator_mult::op2_range (frange &r, tree type,
 }
 
 void
-operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan, tree type,
+operator_mult::rv_fold (frange &r, tree type,
+			REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
@@ -2639,6 +2679,7 @@ operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
 	  real_nan (&lb, "", 0, TYPE_MODE (type));
 	  ub = lb;
 	  maybe_nan = true;
+	  r.set_nan (type);
 	  return;
 	}
 
@@ -2660,12 +2701,20 @@ operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
 	  // is INF.
 	  if (singleton_inf_p (lh_lb, lh_ub)
 	      || singleton_inf_p (rh_lb, rh_ub))
-	    return inf_range (lb, ub, signbit_known);
+	    {
+	      inf_range (lb, ub, signbit_known);
+	      r.set (type, lb, ub, nan_state (true));
+	      return;
+	    }
 
 	  // If one of the multiplicands must be zero, the resulting
 	  // range is +-0 and NAN.
 	  if (zero_p (lh_lb, lh_ub) || zero_p (rh_lb, rh_ub))
-	    return zero_range (lb, ub, signbit_known);
+	    {
+	      zero_range (lb, ub, signbit_known);
+	      r.set (type, lb, ub, nan_state (true));
+	      return;
+	    }
 
 	  // Otherwise one of the multiplicands could be
 	  // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
@@ -2673,7 +2722,9 @@ operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
 	  // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
 	  // so if the signs are always the same or always different,
 	  // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
-	  return zero_to_inf_range (lb, ub, signbit_known);
+	  zero_to_inf_range (lb, ub, signbit_known);
+	  r.set (type, lb, ub, nan_state (true));
+	  return;
 	}
     }
 
@@ -2713,6 +2764,10 @@ operator_mult::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
   frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
 
   find_range (lb, ub, cp);
+
+  gcc_checking_assert (!real_isnan (&lb));
+  gcc_checking_assert (!real_isnan (&ub));
+  r.set (type, lb, ub, nan_state (maybe_nan));
 }
 
 
@@ -2785,8 +2840,8 @@ public:
     return float_binary_op_range_finish (ret, r, type, wlhs, true);
   }
 private:
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
-		tree type,
+  void rv_fold (frange &r, tree type,
+		REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		const REAL_VALUE_TYPE &lh_lb,
 		const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb,
@@ -2800,6 +2855,7 @@ private:
 	real_nan (&lb, "", 0, TYPE_MODE (type));
 	ub = lb;
 	maybe_nan = true;
+	r.set_nan (type);
 	return;
       }
 
@@ -2820,14 +2876,22 @@ private:
     // If divisor must be +-INF, the range is just +-0
     // (including if the dividend is zero).
     if (zero_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub))
-      return zero_range (lb, ub, signbit_known);
+      {
+	zero_range (lb, ub, signbit_known);
+	r.set (type, lb, ub, nan_state (maybe_nan));
+	return;
+      }
 
     // If divisor must be zero, the range is just +-INF
     // (including if the dividend is +-INF).
     // If dividend must be +-INF, the range is just +-INF
     // (including if the dividend is zero).
     if (zero_p (rh_lb, rh_ub) || singleton_inf_p (lh_lb, lh_ub))
-      return inf_range (lb, ub, signbit_known);
+      {
+	inf_range (lb, ub, signbit_known);
+	r.set (type, lb, ub, nan_state (maybe_nan));
+	return;
+      }
 
     // Otherwise if both operands may be zero, divisor could be
     // nextafter(0.0, +-1.0) and dividend +-0.0
@@ -2843,7 +2907,11 @@ private:
     // [+0.0, +INF], if they are always different we have
     // [-INF, -0.0].  If they vary, VARYING.
     if (maybe_nan)
-      return zero_to_inf_range (lb, ub, signbit_known);
+      {
+	zero_to_inf_range (lb, ub, signbit_known);
+	r.set (type, lb, ub, nan_state (maybe_nan));
+	return;
+      }
 
     REAL_VALUE_TYPE cp[8];
     // Do a cross-division.  At this point none of the divisions should
@@ -2869,6 +2937,10 @@ private:
 	if (signbit_known >= 0)
 	  real_inf (&ub, false);
       }
+
+    gcc_checking_assert (!real_isnan (&lb));
+    gcc_checking_assert (!real_isnan (&ub));
+    r.set (type, lb, ub, nan_state (maybe_nan));
   }
 } fop_div;
 
