@@ -1,3 +1,7 @@
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_cc1 target not .PHONY
+
 2023-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_postfix_expression_after_primary): Parse

@@ -1,3 +1,7 @@
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_cc1plus target not .PHONY
+
 2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* constexpr.cc (cxx_fold_indirect_ref): Remove unused variables.

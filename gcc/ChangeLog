@@ -1,3 +1,31 @@
+2023-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111649
+	* config/riscv/riscv-vsetvl.cc (vector_infos_manager::vector_infos_manager):
+	Replace safe_grow with safe_grow_cleared.
+
+2023-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-match-head.cc (gimple_bitwise_inverted_equal_p): Fix a pasto
+	in function comment.
+
+2023-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111625
+	PR middle-end/111637
+	* gimple-lower-bitint.cc (range_to_prec): Use prec or -prec if
+	r.undefined_p ().
+	(bitint_large_huge::handle_operand_addr): For uninitialized operands
+	use limb_prec or -limb_prec precision.
+
+2023-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (quick_grow): Uncomment static_assert.
+
+2023-09-30  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/bitmanip.md (*<optab>_not_const<mode>): Added type attribute
+
 2023-09-29  Xiao Zeng  <zengxiao@eswincomputing.com>
 
 	* config/riscv/riscv.cc (riscv_rtx_costs): Better handle costing
