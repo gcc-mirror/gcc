@@ -8136,10 +8136,11 @@ riscv_init_machine_status (void)
 /* Return the VLEN value associated with -march.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
-riscv_convert_vector_bits (void)
+riscv_convert_vector_bits (struct gcc_options *opts)
 {
   int chunk_num;
-  if (TARGET_MIN_VLEN > 32)
+  int min_vlen = TARGET_MIN_VLEN_OPTS (opts);
+  if (min_vlen > 32)
     {
       /* When targetting minimum VLEN > 32, we should use 64-bit chunk size.
 	 Otherwise we can not include SEW = 64bits.
@@ -8157,7 +8158,7 @@ riscv_convert_vector_bits (void)
 	   - TARGET_MIN_VLEN = 2048bit: [256,256]
 	   - TARGET_MIN_VLEN = 4096bit: [512,512]
 	   FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096bit.  */
-      chunk_num = TARGET_MIN_VLEN / 64;
+      chunk_num = min_vlen / 64;
     }
   else
     {
@@ -8176,10 +8177,10 @@ riscv_convert_vector_bits (void)
      to set RVV mode size. The RVV machine modes size are run-time constant if
      TARGET_VECTOR is enabled. The RVV machine modes size remains default
      compile-time constant if TARGET_VECTOR is disabled.  */
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR_OPTS_P (opts))
     {
-      if (riscv_autovec_preference == RVV_FIXED_VLMAX)
-	return (int) TARGET_MIN_VLEN / (riscv_bytes_per_vector_chunk * 8);
+      if (opts->x_riscv_autovec_preference == RVV_FIXED_VLMAX)
+	return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
       else
 	return poly_uint16 (chunk_num, chunk_num);
     }
@@ -8187,40 +8188,33 @@ riscv_convert_vector_bits (void)
     return 1;
 }
 
-/* Implement TARGET_OPTION_OVERRIDE.  */
-
-static void
-riscv_option_override (void)
+/* 'Unpack' up the internal tuning structs and update the options
+    in OPTS.  The caller must have set up selected_tune and selected_arch
+    as all the other target-specific codegen decisions are
+    derived from them.  */
+void
+riscv_override_options_internal (struct gcc_options *opts)
 {
   const struct riscv_tune_info *cpu;
 
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
-
-  flag_pcc_struct_return = 0;
-
-  if (flag_pic)
-    g_switch_value = 0;
-
   /* The presence of the M extension implies that division instructions
      are present, so include them unless explicitly disabled.  */
-  if (TARGET_MUL && (target_flags_explicit & MASK_DIV) == 0)
-    target_flags |= MASK_DIV;
-  else if (!TARGET_MUL && TARGET_DIV)
+  if (TARGET_MUL_OPTS_P (opts) && (target_flags_explicit & MASK_DIV) == 0)
+    opts->x_target_flags |= MASK_DIV;
+  else if (!TARGET_MUL_OPTS_P (opts) && TARGET_DIV_OPTS_P (opts))
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
   if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && (target_flags_explicit & MASK_FDIV) == 0)
-    target_flags |= MASK_FDIV;
+    opts->x_target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
      if both -mtune and -mcpu are not given.  */
-  cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
-			  (riscv_cpu_string ? riscv_cpu_string :
+  cpu = riscv_parse_tune (opts->x_riscv_tune_string ? opts->x_riscv_tune_string :
+			  (opts->x_riscv_cpu_string ? opts->x_riscv_cpu_string :
 			   RISCV_TUNE_STRING_DEFAULT));
   riscv_microarchitecture = cpu->microarchitecture;
-  tune_param = optimize_size ? &optimize_size_tune_info : cpu->tune_param;
+  tune_param = opts->x_optimize_size ? &optimize_size_tune_info : cpu->tune_param;
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
@@ -8236,15 +8230,38 @@ riscv_option_override (void)
 
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
-    target_flags |= MASK_STRICT_ALIGN;
+    opts->x_target_flags |= MASK_STRICT_ALIGN;
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
-  if (riscv_branch_cost == 0)
-    riscv_branch_cost = tune_param->branch_cost;
+  if (opts->x_riscv_branch_cost == 0)
+    opts->x_riscv_branch_cost = tune_param->branch_cost;
 
-  /* Function to allocate machine-dependent function status.  */
-  init_machine_status = &riscv_init_machine_status;
+  /* FIXME: We don't allow TARGET_MIN_VLEN > 4096 since the datatypes of
+     both GET_MODE_SIZE and GET_MODE_BITSIZE are poly_uint16.
+
+     We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
+  if (TARGET_MIN_VLEN_OPTS (opts) > 4096)
+    sorry ("Current RISC-V GCC cannot support VLEN greater than 4096bit for "
+	   "'V' Extension");
+
+  /* Convert -march to a chunks count.  */
+  riscv_vector_chunks = riscv_convert_vector_bits (opts);
+}
+
+/* Implement TARGET_OPTION_OVERRIDE.  */
+
+static void
+riscv_option_override (void)
+{
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
+  flag_pcc_struct_return = 0;
+
+  if (flag_pic)
+    g_switch_value = 0;
 
   if (flag_pic)
     riscv_cmodel = CM_PIC;
@@ -8359,20 +8376,14 @@ riscv_option_override (void)
       riscv_stack_protector_guard_offset = offs;
     }
 
-  /* FIXME: We don't allow TARGET_MIN_VLEN > 4096 since the datatypes of
-     both GET_MODE_SIZE and GET_MODE_BITSIZE are poly_uint16.
-
-     We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
-  if (TARGET_MIN_VLEN > 4096)
-    sorry (
-      "Current RISC-V GCC cannot support VLEN greater than 4096bit for 'V' Extension");
-
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_sched_pressure_algorithm,
 		       SCHED_PRESSURE_MODEL);
 
-  /* Convert -march to a chunks count.  */
-  riscv_vector_chunks = riscv_convert_vector_bits ();
+  /* Function to allocate machine-dependent function status.  */
+  init_machine_status = &riscv_init_machine_status;
+
+  riscv_override_options_internal (&global_options);
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
