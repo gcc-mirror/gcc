@@ -978,6 +978,30 @@ d_add_builtin_module (Module *m)
   builtin_modules.push (m);
 }
 
+/* Writes to FILENAME.  DATA is the full content of the file to be written.  */
+
+static void
+d_write_file (const char *filename, const char *data)
+{
+  FILE *stream;
+
+  if (filename && (filename[0] != '-' || filename[1] != '\0'))
+    stream = fopen (filename, "w");
+  else
+    stream = stdout;
+
+  if (!stream)
+    {
+      error ("unable to open %s for writing: %m", filename);
+      return;
+    }
+
+  fprintf (stream, "%s", data);
+
+  if (stream != stdout && (ferror (stream) || fclose (stream)))
+    error ("writing output file %s: %m", filename);
+}
+
 /* Implements the lang_hooks.parse_file routine for language D.  */
 
 static void
@@ -1264,8 +1288,6 @@ d_parse_file (void)
   if (d_option.deps)
     {
       obstack buffer;
-      FILE *deps_stream;
-
       gcc_obstack_init (&buffer);
 
       for (size_t i = 0; i < modules.length; i++)
@@ -1275,27 +1297,8 @@ d_parse_file (void)
       if (d_option.deps_filename_user)
 	d_option.deps_filename = d_option.deps_filename_user;
 
-      if (d_option.deps_filename)
-	{
-	  deps_stream = fopen (d_option.deps_filename, "w");
-	  if (!deps_stream)
-	    {
-	      fatal_error (input_location, "opening dependency file %s: %m",
-			   d_option.deps_filename);
-	      goto had_errors;
-	    }
-	}
-      else
-	deps_stream = stdout;
-
-      fprintf (deps_stream, "%s", (char *) obstack_finish (&buffer));
-
-      if (deps_stream != stdout
-	  && (ferror (deps_stream) || fclose (deps_stream)))
-	{
-	  fatal_error (input_location, "closing dependency file %s: %m",
-		       d_option.deps_filename);
-	}
+      d_write_file (d_option.deps_filename,
+		    (char *) obstack_finish (&buffer));
     }
 
   if (global.params.vtemplates)
@@ -1306,29 +1309,7 @@ d_parse_file (void)
     {
       OutBuffer buf;
       json_generate (&buf, &modules);
-
-      const char *name = global.params.json.name.ptr;
-      FILE *json_stream;
-
-      if (name && (name[0] != '-' || name[1] != '\0'))
-	{
-	  const char *nameext
-	    = FileName::defaultExt (name, json_ext.ptr);
-	  json_stream = fopen (nameext, "w");
-	  if (!json_stream)
-	    {
-	      fatal_error (input_location, "opening json file %s: %m", nameext);
-	      goto had_errors;
-	    }
-	}
-      else
-	json_stream = stdout;
-
-      fprintf (json_stream, "%s", buf.peekChars ());
-
-      if (json_stream != stdout
-	  && (ferror (json_stream) || fclose (json_stream)))
-	fatal_error (input_location, "closing json file %s: %m", name);
+      d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
   /* Generate Ddoc files.  */
@@ -1391,22 +1372,8 @@ d_parse_file (void)
   /* We want to write the mixin expansion file also on error.  */
   if (global.params.mixinOut.doOutput)
     {
-      FILE *mixin_stream = fopen (global.params.mixinOut.name.ptr, "w");
-
-      if (mixin_stream)
-	{
-	  OutBuffer *buf = global.params.mixinOut.buffer;
-	  fprintf (mixin_stream, "%s", buf->peekChars ());
-
-	  if (ferror (mixin_stream) || fclose (mixin_stream))
-	    fatal_error (input_location, "closing mixin file %s: %m",
-			 global.params.mixinOut.name.ptr);
-	}
-      else
-	{
-	  fatal_error (input_location, "opening mixin file %s: %m",
-		       global.params.mixinOut.name.ptr);
-	}
+      d_write_file (global.params.mixinOut.name.ptr,
+		    global.params.mixinOut.buffer->peekChars ());
     }
 
   /* Remove generated .di files on error.  */
