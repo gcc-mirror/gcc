@@ -1217,10 +1217,12 @@ get_frm_mode (rtx operand)
 }
 
 /* Expand a pre-RA RVV data move from SRC to DEST.
-   It expands move for RVV fractional vector modes.  */
+   It expands move for RVV fractional vector modes.
+   Return true if the move as already been emitted.  */
 bool
-legitimize_move (rtx dest, rtx src)
+legitimize_move (rtx dest, rtx *srcp)
 {
+  rtx src = *srcp;
   machine_mode mode = GET_MODE (dest);
   if (CONST_VECTOR_P (src))
     {
@@ -1238,7 +1240,7 @@ legitimize_move (rtx dest, rtx src)
 	    {
 	      /* Need to force register if mem <- !reg.  */
 	      if (MEM_P (dest) && !REG_P (src))
-		src = force_reg (mode, src);
+		*srcp = force_reg (mode, src);
 
 	      return false;
 	    }
@@ -1269,7 +1271,7 @@ legitimize_move (rtx dest, rtx src)
 	{
 	  /* Need to force register if mem <- !reg.  */
 	  if (MEM_P (dest) && !REG_P (src))
-	    src = force_reg (mode, src);
+	    *srcp = force_reg (mode, src);
 
 	  return false;
 	}

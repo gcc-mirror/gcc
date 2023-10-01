@@ -5,42 +5,6 @@
 #include "def.h"
 
 /*
-** mov0:
-**	flh\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	fsh\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov0 (_Float16 *in, _Float16 *out)
-{
-  v1hf v = *(v1hf*)in;
-  *(v1hf*)out = v;
-}
-
-/*
-** mov1:
-**	flw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	fsw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov1 (_Float16 *in, _Float16 *out)
-{
-  v2hf v = *(v2hf*)in;
-  *(v2hf*)out = v;
-}
-
-/*
-** mov2:
-**	fld\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	fsd\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov2 (_Float16 *in, _Float16 *out)
-{
-  v4hf v = *(v4hf*)in;
-  *(v4hf*)out = v;
-}
-
-/*
 ** mov3:
 **	vsetivli\s+zero,\s*8,\s*e16,\s*mf4,\s*t[au],\s*m[au]
 **	vle16\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)

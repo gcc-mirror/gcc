@@ -1037,7 +1037,7 @@
 	 before spilling. The clobber scratch is used by spilling fractional
 	 registers in IRA/LRA so it's too early.  */
 
-  if (riscv_vector::legitimize_move (operands[0], operands[1]))
+  if (riscv_vector::legitimize_move (operands[0], &operands[1]))
     DONE;
 })
 
@@ -1093,7 +1093,7 @@
 	(match_operand:VB 1 "general_operand"))]
   "TARGET_VECTOR"
 {
-  if (riscv_vector::legitimize_move (operands[0], operands[1]))
+  if (riscv_vector::legitimize_move (operands[0], &operands[1]))
     DONE;
 })
 
@@ -1218,46 +1218,9 @@
 	(match_operand:VLS_AVL_IMM 1 "general_operand"))]
   "TARGET_VECTOR"
 {
-  if (riscv_vector::legitimize_move (operands[0], operands[1]))
+  if (riscv_vector::legitimize_move (operands[0], &operands[1]))
     DONE;
 })
-
-(define_insn_and_split "*mov<mode>_mem_to_mem"
-  [(set (match_operand:VLS_AVL_IMM 0 "memory_operand")
-	(match_operand:VLS_AVL_IMM 1 "memory_operand"))]
-  "TARGET_VECTOR && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-  {
-    if (GET_MODE_BITSIZE (<MODE>mode).to_constant () <= MAX_BITS_PER_WORD)
-      {
-        /* Opitmize the following case:
-
-	    typedef int8_t v2qi __attribute__ ((vector_size (2)));
-	    v2qi v = *(v2qi*)in;
-	    *(v2qi*)out = v;
-
-	    We prefer scalar load/store instead of vle.v/vse.v when
-	    the VLS modes size is smaller scalar mode.  */
-        machine_mode mode;
-        unsigned size = GET_MODE_BITSIZE (<MODE>mode).to_constant ();
-        if (FLOAT_MODE_P (<MODE>mode))
-	  mode = mode_for_size (size, MODE_FLOAT, 0).require ();
-        else
-	  mode = mode_for_size (size, MODE_INT, 0).require ();
-        emit_move_insn (gen_lowpart (mode, operands[0]),
-		        gen_lowpart (mode, operands[1]));
-      }
-    else
-      {
-	operands[1] = force_reg (<MODE>mode, operands[1]);
-	emit_move_insn (operands[0], operands[1]);
-      }
-    DONE;
-  }
-  [(set_attr "type" "vmov")]
-)
 
 (define_insn_and_split "*mov<mode>"
   [(set (match_operand:VLS_AVL_IMM 0 "reg_or_mem_operand" "=vr, m, vr")
@@ -1274,7 +1237,7 @@
        || !register_operand (operands[1], <MODE>mode))"
   [(const_int 0)]
   {
-    bool ok_p = riscv_vector::legitimize_move (operands[0], operands[1]);
+    bool ok_p = riscv_vector::legitimize_move (operands[0], &operands[1]);
     gcc_assert (ok_p);
     DONE;
   }
@@ -1286,7 +1249,7 @@
 	(match_operand:VLS_AVL_REG 1 "general_operand"))]
   "TARGET_VECTOR"
 {
-  bool ok_p = riscv_vector::legitimize_move (operands[0], operands[1]);
+  bool ok_p = riscv_vector::legitimize_move (operands[0], &operands[1]);
   gcc_assert (ok_p);
   DONE;
 })
