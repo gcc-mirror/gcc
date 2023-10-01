@@ -563,6 +563,13 @@
   return loongarch_symbolic_constant_p (op, &type);
 })
 
+(define_predicate "symbolic_pcrel_operand"
+  (match_code "const,symbol_ref,label_ref")
+{
+  enum loongarch_symbol_type type;
+  return loongarch_symbolic_constant_p (op, &type) && type == SYMBOL_PCREL;
+})
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
 
