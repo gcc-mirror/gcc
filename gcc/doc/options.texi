@@ -404,18 +404,27 @@ You may also specify @code{Var} to select a variable other than
 The options-processing script will automatically allocate a unique bit
 for the option.  If the option is attached to @samp{target_flags} or @code{Var}
 which is defined by @code{TargetVariable},  the script will set the macro
-@code{MASK_@var{name}} to the appropriate bitmask.  It will also declare a 
-@code{TARGET_@var{name}} macro that has the value 1 when the option is active
-and 0 otherwise.  If you use @code{Var} to attach the option to a different variable
-which is not defined by @code{TargetVariable}, the bitmask macro with be
-called @code{OPTION_MASK_@var{name}}.
+@code{MASK_@var{name}} to the appropriate bitmask.  It will also declare a
+@code{TARGET_@var{name}}, @code{TARGET_@var{name}_P} and
+@code{TARGET_@var{name}_OPTS_P}: @code{TARGET_@var{name}} macros that has the
+value 1 when the option is active and 0 otherwise, @code{TARGET_@var{name}_P} is
+similar to @code{TARGET_@var{name}} but take an argument as @samp{target_flags}
+or @code{TargetVariable}, and @code{TARGET_@var{name}_OPTS_P} also similar to
+@code{TARGET_@var{name}} but take an argument as @code{gcc_options}.
+If you use @code{Var} to attach the option to a different variable which is not
+defined by @code{TargetVariable}, the bitmask macro with be called
+@code{OPTION_MASK_@var{name}}.
 
 @item InverseMask(@var{othername})
 @itemx InverseMask(@var{othername}, @var{thisname})
 The option is the inverse of another option that has the
 @code{Mask(@var{othername})} property.  If @var{thisname} is given,
-the options-processing script will declare a @code{TARGET_@var{thisname}}
-macro that is 1 when the option is active and 0 otherwise.
+the options-processing script will declare @code{TARGET_@var{thisname}},
+@code{TARGET_@var{name}_P} and @code{TARGET_@var{name}_OPTS_P} macros:
+@code{TARGET_@var{thisname}} is 1 when the option is active and 0 otherwise,
+@code{TARGET_@var{name}_P} is similar to @code{TARGET_@var{name}} but take an
+argument as @samp{target_flags}, and and @code{TARGET_@var{name}_OPTS_P} also
+similar to @code{TARGET_@var{name}} but take an argument as @code{gcc_options}.
 
 @item Enum(@var{name})
 The option's argument is a string from the set of strings associated
