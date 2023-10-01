@@ -2021,7 +2021,7 @@ proc riscv_get_arch { } {
 proc add_options_for_riscv_d { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	return [regsub -all -- {((?^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
     }
     if { [check_effective_target_riscv_d] } {
 	return "$flags"
@@ -2032,7 +2032,7 @@ proc add_options_for_riscv_d { flags } {
 proc add_options_for_riscv_v { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	return [regsub -all -- {((?^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
     }
     if { [check_effective_target_riscv_v] } {
 	return "$flags"
@@ -2043,8 +2043,8 @@ proc add_options_for_riscv_v { flags } {
 proc add_options_for_riscv_zfh { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zfh ]
-	return [regsub -all -- {((?^|[[:space:]])-march=[[:alnum:]_.]*_zfh[[:alnum:]_.]*)_zfh} $flags \\1 ]
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zfh ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zfh[[:alnum:]_.]*)_zfh} $flags \\1 ]
     }
     if { [check_effective_target_riscv_zfh] } {
 	return "$flags"
