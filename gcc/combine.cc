@@ -12003,14 +12003,15 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       && !MEM_VOLATILE_P (op0)
       /* The optimization makes only sense for constants which are big enough
 	 so that we have a chance to chop off something at all.  */
-      && (unsigned HOST_WIDE_INT) const_op > 0xff
-      /* Bail out, if the constant does not fit into INT_MODE.  */
-      && (unsigned HOST_WIDE_INT) const_op
-	 < ((HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1) << 1) - 1)
+      && ((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode)) > 0xff
       /* Ensure that we do not overflow during normalization.  */
-      && (code != GTU || (unsigned HOST_WIDE_INT) const_op < HOST_WIDE_INT_M1U))
+      && (code != GTU
+	  || ((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode))
+	     < HOST_WIDE_INT_M1U)
+      && trunc_int_for_mode (const_op, int_mode) == const_op)
     {
-      unsigned HOST_WIDE_INT n = (unsigned HOST_WIDE_INT) const_op;
+      unsigned HOST_WIDE_INT n
+	= (unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode);
       enum rtx_code adjusted_code;
 
       /* Normalize code to either LEU or GEU.  */
@@ -12051,15 +12052,15 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 		HOST_WIDE_INT_PRINT_HEX ") to (MEM %s "
 		HOST_WIDE_INT_PRINT_HEX ").\n", GET_MODE_NAME (int_mode),
 		GET_MODE_NAME (narrow_mode_iter), GET_RTX_NAME (code),
-		(unsigned HOST_WIDE_INT)const_op, GET_RTX_NAME (adjusted_code),
-		n);
+		(unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode),
+		GET_RTX_NAME (adjusted_code), n);
 	    }
 	  poly_int64 offset = (BYTES_BIG_ENDIAN
 			       ? 0
 			       : (GET_MODE_SIZE (int_mode)
 				  - GET_MODE_SIZE (narrow_mode_iter)));
 	  *pop0 = adjust_address_nv (op0, narrow_mode_iter, offset);
-	  *pop1 = GEN_INT (n);
+	  *pop1 = gen_int_mode (n, narrow_mode_iter);
 	  return adjusted_code;
 	}
     }
