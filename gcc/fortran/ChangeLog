@@ -1,3 +1,8 @@
+2023-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.cc (gfc_trans_deferred_array): Use correct
+	position for statements to add to guarded block.
+
 2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:
