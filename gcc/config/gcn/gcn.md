@@ -542,87 +542,76 @@
 ; 32bit move pattern
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:SISF 0 "nonimmediate_operand"
-		  "=SD,SD,SD,SD,RB,Sm,RS,v,Sg, v, v,RF,v,RLRG,   v,SD, v,RM")
-	(match_operand:SISF 1 "gcn_load_operand"
-		  "SSA, J, B,RB,Sm,RS,Sm,v, v,Sv,RF, v,B,   v,RLRG, Y,RM, v"))]
+  [(set (match_operand:SISF 0 "nonimmediate_operand")
+	(match_operand:SISF 1 "gcn_load_operand"))]
   ""
-  "@
-  s_mov_b32\t%0, %1
-  s_movk_i32\t%0, %1
-  s_mov_b32\t%0, %1
-  s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
-  s_buffer_store%s1\t%1, s[0:3], %0
-  s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  s_store_dword\t%1, %A0
-  v_mov_b32\t%0, %1
-  v_readlane_b32\t%0, %1, 0
-  v_writelane_b32\t%0, %1, 0
-  flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store_dword\t%A0, %1%O0%g0
-  v_mov_b32\t%0, %1
-  ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  s_mov_b32\t%0, %1
-  global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store_dword\t%A0, %1%O0%g0"
-  [(set_attr "type" "sop1,sopk,sop1,smem,smem,smem,smem,vop1,vop3a,vop3a,flat,
-		     flat,vop1,ds,ds,sop1,flat,flat")
-   (set_attr "exec" "*,*,*,*,*,*,*,*,none,none,*,*,*,*,*,*,*,*")
-   (set_attr "length" "4,4,8,12,12,12,12,4,8,8,12,12,8,12,12,8,12,12")])
+  {@ [cons: =0, 1; attrs: type, exec, length]
+   [SD  ,SSA ;sop1 ,*   ,4 ] s_mov_b32\t%0, %1
+   [SD  ,J   ;sopk ,*   ,4 ] s_movk_i32\t%0, %1
+   [SD  ,B   ;sop1 ,*   ,8 ] s_mov_b32\t%0, %1
+   [SD  ,RB  ;smem ,*   ,12] s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
+   [RB  ,Sm  ;smem ,*   ,12] s_buffer_store%s1\t%1, s[0:3], %0
+   [Sm  ,RS  ;smem ,*   ,12] s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+   [RS  ,Sm  ;smem ,*   ,12] s_store_dword\t%1, %A0
+   [v   ,v   ;vop1 ,*   ,4 ] v_mov_b32\t%0, %1
+   [Sg  ,v   ;vop3a,none,8 ] v_readlane_b32\t%0, %1, 0
+   [v   ,Sv  ;vop3a,none,8 ] v_writelane_b32\t%0, %1, 0
+   [v   ,RF  ;flat ,*   ,12] flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
+   [RF  ,v   ;flat ,*   ,12] flat_store_dword\t%A0, %1%O0%g0
+   [v   ,B   ;vop1 ,*   ,8 ] v_mov_b32\t%0, %1
+   [RLRG,v   ;ds   ,*   ,12] ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+   [v   ,RLRG;ds   ,*   ,12] ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+   [SD  ,Y   ;sop1 ,*   ,8 ] s_mov_b32\t%0, %1
+   [v   ,RM  ;flat ,*   ,12] global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+   [RM  ,v   ;flat ,*   ,12] global_store_dword\t%A0, %1%O0%g0
+  })
 
 ; 8/16bit move pattern
 ; TODO: implement combined load and zero_extend, but *only* for -msram-ecc=on
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:QIHI 0 "nonimmediate_operand"
-				 "=SD,SD,SD,v,Sg, v, v,RF,v,RLRG,   v, v,RM")
-	(match_operand:QIHI 1 "gcn_load_operand"
-				 "SSA, J, B,v, v,Sv,RF, v,B,   v,RLRG,RM, v"))]
+  [(set (match_operand:QIHI 0 "nonimmediate_operand")
+	(match_operand:QIHI 1 "gcn_load_operand"))]
   "gcn_valid_move_p (<MODE>mode, operands[0], operands[1])"
-  "@
-  s_mov_b32\t%0, %1
-  s_movk_i32\t%0, %1
-  s_mov_b32\t%0, %1
-  v_mov_b32\t%0, %1
-  v_readlane_b32\t%0, %1, 0
-  v_writelane_b32\t%0, %1, 0
-  flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store%s0\t%A0, %1%O0%g0
-  v_mov_b32\t%0, %1
-  ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store%s0\t%A0, %1%O0%g0"
-  [(set_attr "type"
-	     "sop1,sopk,sop1,vop1,vop3a,vop3a,flat,flat,vop1,ds,ds,flat,flat")
-   (set_attr "exec" "*,*,*,*,none,none,*,*,*,*,*,*,*")
-   (set_attr "length" "4,4,8,4,4,4,12,12,8,12,12,12,12")])
+  {@ [cons: =0, 1; attrs: type, exec, length]
+  [SD  ,SSA ;sop1 ,*   ,4 ] s_mov_b32\t%0, %1
+  [SD  ,J   ;sopk ,*   ,4 ] s_movk_i32\t%0, %1
+  [SD  ,B   ;sop1 ,*   ,8 ] s_mov_b32\t%0, %1
+  [v   ,v   ;vop1 ,*   ,4 ] v_mov_b32\t%0, %1
+  [Sg  ,v   ;vop3a,none,4 ] v_readlane_b32\t%0, %1, 0
+  [v   ,Sv  ;vop3a,none,4 ] v_writelane_b32\t%0, %1, 0
+  [v   ,RF  ;flat ,*   ,12] flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [RF  ,v   ;flat ,*   ,12] flat_store%s0\t%A0, %1%O0%g0
+  [v   ,B   ;vop1 ,*   ,8 ] v_mov_b32\t%0, %1
+  [RLRG,v   ;ds   ,*   ,12] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds   ,*   ,12] ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RM  ;flat ,*   ,12] global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [RM  ,v   ;flat ,*   ,12] global_store%s0\t%A0, %1%O0%g0
+  })
 
 ; 64bit move pattern
 
 (define_insn_and_split "*mov<mode>_insn"
-  [(set (match_operand:DIDF 0 "nonimmediate_operand"
-			  "=SD,SD,SD,RS,Sm,v, v,Sg, v, v,RF,RLRG,   v, v,RM")
-	(match_operand:DIDF 1 "general_operand"
-			  "SSA, C,DB,Sm,RS,v,DB, v,Sv,RF, v,   v,RLRG,RM, v"))]
+  [(set (match_operand:DIDF 0 "nonimmediate_operand")
+	(match_operand:DIDF 1 "general_operand"))]
   "GET_CODE(operands[1]) != SYMBOL_REF"
-  "@
-  s_mov_b64\t%0, %1
-  s_mov_b64\t%0, %1
-  #
-  s_store_dwordx2\t%1, %A0
-  s_load_dwordx2\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  #
-  #
-  #
-  #
-  flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store_dwordx2\t%A0, %1%O0%g0
-  ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store_dwordx2\t%A0, %1%O0%g0"
+  {@ [cons: =0, 1; attrs: type, length]
+  [SD  ,SSA ;sop1 ,4 ] s_mov_b64\t%0, %1
+  [SD  ,C   ;sop1 ,8 ] ^
+  [SD  ,DB  ;mult ,* ] #
+  [RS  ,Sm  ;smem ,12] s_store_dwordx2\t%1, %A0
+  [Sm  ,RS  ;smem ,12] s_load_dwordx2\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,v   ;vmult,* ] #
+  [v   ,DB  ;vmult,* ] #
+  [Sg  ,v   ;vmult,* ] #
+  [v   ,Sv  ;vmult,* ] #
+  [v   ,RF  ;flat ,12] flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [RF  ,v   ;flat ,12] flat_store_dwordx2\t%A0, %1%O0%g0
+  [RLRG,v   ;ds   ,12] ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds   ,12] ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RM  ;flat ,12] global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [RM  ,v   ;flat ,12] global_store_dwordx2\t%A0, %1%O0%g0
+  }
   "reload_completed
    && ((!MEM_P (operands[0]) && !MEM_P (operands[1])
         && !gcn_sgpr_move_p (operands[0], operands[1]))
@@ -651,32 +640,28 @@
 	operands[2] = outhi;
 	operands[3] = inhi;
       }
-  }
-  [(set_attr "type" "sop1,sop1,mult,smem,smem,vmult,vmult,vmult,vmult,flat,
-		     flat,ds,ds,flat,flat")
-   (set_attr "length" "4,8,*,12,12,*,*,*,*,12,12,12,12,12,12")])
+  })
 
 ; 128-bit move.
 
 (define_insn_and_split "*movti_insn"
-  [(set (match_operand:TI 0 "nonimmediate_operand"
-				      "=SD,RS,Sm,RF, v,v, v,SD,RM, v,RL, v")
-	(match_operand:TI 1 "general_operand"  
-				      "SSB,Sm,RS, v,RF,v,Sv, v, v,RM, v,RL"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand")
+	(match_operand:TI 1 "general_operand"  ))]
   ""
-  "@
-  #
-  s_store_dwordx4\t%1, %A0
-  s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  flat_store_dwordx4\t%A0, %1%O0%g0
-  flat_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\t0
-  #
-  #
-  #
-  global_store_dwordx4\t%A0, %1%O0%g0
-  global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)"
+  {@ [cons: =0, 1; attrs: type, delayeduse, length]
+  [SD,SSB;mult ,*  ,* ] #
+  [RS,Sm ;smem ,*  ,12] s_store_dwordx4\t%1, %A0
+  [Sm,RS ;smem ,yes,12] s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+  [RF,v  ;flat ,*  ,12] flat_store_dwordx4\t%A0, %1%O0%g0
+  [v ,RF ;flat ,*  ,12] flat_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [v ,v  ;vmult,*  ,* ] #
+  [v ,Sv ;vmult,*  ,* ] #
+  [SD,v  ;vmult,*  ,* ] #
+  [RM,v  ;flat ,yes,12] global_store_dwordx4\t%A0, %1%O0%g0
+  [v ,RM ;flat ,*  ,12] global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [RL,v  ;ds   ,*  ,12] ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v ,RL ;ds   ,*  ,12] ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  }
   "reload_completed
    && REG_P (operands[0])
    && (REG_P (operands[1]) || GET_CODE (operands[1]) == CONST_INT)"
@@ -695,11 +680,7 @@
     operands[3] = gcn_operand_part (TImode, operands[1], 1);
     operands[0] = gcn_operand_part (TImode, operands[0], 0);
     operands[1] = gcn_operand_part (TImode, operands[1], 0);
-  }
-  [(set_attr "type" "mult,smem,smem,flat,flat,vmult,vmult,vmult,flat,flat,\
-		     ds,ds")
-   (set_attr "delayeduse" "*,*,yes,*,*,*,*,*,yes,*,*,*")
-   (set_attr "length" "*,12,12,12,12,*,*,*,12,12,12,12")])
+  })
 
 ;; }}}
 ;; {{{ Prologue/Epilogue
