@@ -2257,7 +2257,7 @@
 	(unspec:P [(mem:P (lo_sum:P (match_operand:P 1 "register_operand" "r")
 				    (match_operand:P 2 "symbolic_operand" "")))]
 	UNSPEC_TLS_LOW))]
-  "TARGET_EXPLICIT_RELOCS"
+  ""
   "addi.<d>\t%0,%1,%L2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
