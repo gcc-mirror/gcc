@@ -3,6 +3,17 @@
 	Backport from mainline:
 	Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (*mov<mode>): Convert to compact syntax.
+	(mov<mode>_exec): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	* config/gcn/gcn.md (*mov<mode>_insn): Likewise.
+	(*movti_insn): Likewise.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn.cc (print_operand): Adjust xcode type to fix warning.
 
 2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
