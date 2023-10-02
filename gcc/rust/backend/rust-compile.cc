@@ -115,8 +115,8 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
       if (!valid_coercion)
 	return error_mark_node;
 
-      const TyTy::ReferenceType *exp
-	= static_cast<const TyTy::ReferenceType *> (expected);
+      const TyTy::PointerType *exp
+	= static_cast<const TyTy::PointerType *> (expected);
 
       TyTy::BaseType *actual_base = nullptr;
       if (actual->get_kind () == TyTy::TypeKind::REF)
