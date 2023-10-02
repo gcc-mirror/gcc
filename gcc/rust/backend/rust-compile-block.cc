@@ -42,20 +42,9 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   tree fndecl = fnctx.fndecl;
   location_t start_location = expr.get_locus ();
   location_t end_location = expr.get_end_locus ();
-  auto body_mappings = expr.get_mappings ();
-
-  Resolver::Rib *rib = nullptr;
-  if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (), &rib))
-    {
-      rust_fatal_error (expr.get_locus (), "failed to setup locals per block");
-      return;
-    }
-
-  std::vector<Bvariable *> locals
-    = compile_locals_for_block (ctx, *rib, fndecl);
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree new_block = Backend::block (fndecl, enclosing_scope, locals,
+  tree new_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
 				   start_location, end_location);
   ctx->push_block (new_block);
 

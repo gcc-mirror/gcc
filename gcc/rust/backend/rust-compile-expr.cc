@@ -2310,7 +2310,6 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   bool is_block_expr
     = function_body->get_expression_type () == HIR::Expr::ExprType::Block;
 
-  std::vector<Bvariable *> locals = {};
   if (is_block_expr)
     {
       auto body_mappings = function_body->get_mappings ();
@@ -2319,8 +2318,6 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 	= ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
 					       &rib);
       rust_assert (ok);
-
-      locals = compile_locals_for_block (ctx, *rib, fndecl);
     }
 
   tree enclosing_scope = NULL_TREE;
@@ -2333,7 +2330,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
       end_location = body->get_end_locus ();
     }
 
-  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+  tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
 				    start_location, end_location);
   ctx->push_block (code_block);
 

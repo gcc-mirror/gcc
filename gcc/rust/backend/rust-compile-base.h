@@ -145,9 +145,6 @@ protected:
 
   static bool mark_addressable (tree, location_t);
 
-  static std::vector<Bvariable *>
-  compile_locals_for_block (Context *ctx, Resolver::Rib &rib, tree fndecl);
-
   static tree named_constant_expression (tree type_tree,
 					 const std::string &name,
 					 tree const_val, location_t location);
