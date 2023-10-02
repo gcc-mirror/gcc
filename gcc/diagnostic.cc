@@ -147,7 +147,7 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   if (value <= 0) 
     value = INT_MAX;
 
-  context->caret_max_width = value;
+  context->m_source_printing.max_width = value;
 }
 
 /* Default implementation of final_cb.  */
@@ -189,10 +189,10 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
   for (i = 0; i < n_opts; i++)
     context->classify_diagnostic[i] = DK_UNSPECIFIED;
-  context->show_caret = false;
+  context->m_source_printing.enabled = false;
   diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
   for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
-    context->caret_chars[i] = '^';
+    context->m_source_printing.caret_chars[i] = '^';
   context->show_cwe = false;
   context->show_rules = false;
   context->path_format = DPF_NONE;
@@ -220,11 +220,11 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->x_data = NULL;
   context->lock = 0;
   context->inhibit_notes_p = false;
-  context->colorize_source_p = false;
-  context->show_labels_p = false;
-  context->show_line_numbers_p = false;
-  context->min_margin_width = 0;
-  context->show_ruler_p = false;
+  context->m_source_printing.colorize_source_p = false;
+  context->m_source_printing.show_labels_p = false;
+  context->m_source_printing.show_line_numbers_p = false;
+  context->m_source_printing.min_margin_width = 0;
+  context->m_source_printing.show_ruler_p = false;
   context->report_bug = false;
 
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))

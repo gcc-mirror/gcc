@@ -1222,7 +1222,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
     ? gfc_diagnostic_build_locus_prefix (context, s1)
     : gfc_diagnostic_build_locus_prefix (context, s1, s2);
 
-  if (!context->show_caret
+  if (!context->m_source_printing.enabled
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->last_location)
     {
@@ -1640,8 +1640,8 @@ gfc_diagnostics_init (void)
   global_dc->start_span = gfc_diagnostic_start_span;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
-  global_dc->caret_chars[0] = '1';
-  global_dc->caret_chars[1] = '2';
+  global_dc->m_source_printing.caret_chars[0] = '1';
+  global_dc->m_source_printing.caret_chars[1] = '2';
   pp_warning_buffer = new (XNEW (output_buffer)) output_buffer ();
   pp_warning_buffer->flush_p = false;
   /* pp_error_buffer is statically allocated.  This simplifies memory
@@ -1658,6 +1658,6 @@ gfc_diagnostics_finish (void)
      defaults.  */
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
-  global_dc->caret_chars[0] = '^';
-  global_dc->caret_chars[1] = '^';
+  global_dc->m_source_printing.caret_chars[0] = '^';
+  global_dc->m_source_printing.caret_chars[1] = '^';
 }

@@ -200,7 +200,7 @@ struct event_range
     /* Emit a span indicating the filename (and line/column) if the
        line has changed relative to the last call to
        diagnostic_show_locus.  */
-    if (dc->show_caret)
+    if (dc->m_source_printing.enabled)
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point

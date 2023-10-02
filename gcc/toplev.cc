@@ -1023,11 +1023,11 @@ general_init (const char *argv0, bool init_signals)
      override it later.  */
   tree_diagnostics_defaults (global_dc);
 
-  global_dc->show_caret
+  global_dc->m_source_printing.enabled
     = global_options_init.x_flag_diagnostics_show_caret;
-  global_dc->show_labels_p
+  global_dc->m_source_printing.show_labels_p
     = global_options_init.x_flag_diagnostics_show_labels;
-  global_dc->show_line_numbers_p
+  global_dc->m_source_printing.show_line_numbers_p
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_cwe
     = global_options_init.x_flag_diagnostics_show_cwe;
@@ -1039,7 +1039,7 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_path_depths;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
-  global_dc->min_margin_width
+  global_dc->m_source_printing.min_margin_width
     = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
