@@ -1039,6 +1039,41 @@ riscv_subset_list::parse_std_ext (const char *p)
   return p;
 }
 
+/* Parsing function for one standard extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.  */
+
+const char *
+riscv_subset_list::parse_single_std_ext (const char *p)
+{
+  if (*p == 'x' || *p == 's' || *p == 'z')
+    {
+      error_at (m_loc,
+		"%<-march=%s%>: Not single-letter extension. "
+		"%<%c%>",
+		m_arch, *p);
+      return nullptr;
+    }
+
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  bool explicit_version_p = false;
+  char subset[2] = {0, 0};
+
+  subset[0] = *p;
+
+  p++;
+
+  p = parsing_subset_version (subset, p, &major_version, &minor_version,
+			      /* std_ext_p= */ true, &explicit_version_p);
+
+  add (subset, major_version, minor_version, explicit_version_p, false);
+  return p;
+}
 
 /* Check any implied extensions for EXT.  */
 void
@@ -1139,6 +1174,105 @@ riscv_subset_list::handle_combine_ext ()
 	    }
 	}
     }
+}
+
+/* Parsing function for multi-letter extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
+     `ext_type_str`: Full name for kind of extension.  */
+
+
+const char *
+riscv_subset_list::parse_single_multiletter_ext (const char *p,
+						 const char *ext_type,
+						 const char *ext_type_str)
+{
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  size_t ext_type_len = strlen (ext_type);
+
+  if (strncmp (p, ext_type, ext_type_len) != 0)
+    return NULL;
+
+  char *subset = xstrdup (p);
+  const char *end_of_version;
+  bool explicit_version_p = false;
+  char *ext;
+  char backup;
+  size_t len = strlen (p);
+  size_t end_of_version_pos, i;
+  bool found_any_number = false;
+  bool found_minor_version = false;
+
+  end_of_version_pos = len;
+  /* Find the begin of version string.  */
+  for (i = len -1; i > 0; --i)
+    {
+      if (ISDIGIT (subset[i]))
+	{
+	  found_any_number = true;
+	  continue;
+	}
+      /* Might be version seperator, but need to check one more char,
+	 we only allow <major>p<minor>, so we could stop parsing if found
+	 any more `p`.  */
+      if (subset[i] == 'p' &&
+	  !found_minor_version &&
+	  found_any_number && ISDIGIT (subset[i-1]))
+	{
+	  found_minor_version = true;
+	  continue;
+	}
+
+      end_of_version_pos = i + 1;
+      break;
+    }
+
+  backup = subset[end_of_version_pos];
+  subset[end_of_version_pos] = '\0';
+  ext = xstrdup (subset);
+  subset[end_of_version_pos] = backup;
+
+  end_of_version
+    = parsing_subset_version (ext, subset + end_of_version_pos, &major_version,
+			      &minor_version, /* std_ext_p= */ false,
+			      &explicit_version_p);
+  free (ext);
+
+  if (end_of_version == NULL)
+    {
+      free (subset);
+      return NULL;
+    }
+
+  subset[end_of_version_pos] = '\0';
+
+  if (strlen (subset) == 1)
+    {
+      error_at (m_loc, "%<-march=%s%>: name of %s must be more than 1 letter",
+		m_arch, ext_type_str);
+      free (subset);
+      return NULL;
+    }
+
+  add (subset, major_version, minor_version, explicit_version_p, false);
+  p += end_of_version - subset;
+  free (subset);
+
+  if (*p != '\0' && *p != '_')
+    {
+      error_at (m_loc, "%<-march=%s%>: %s must separate with %<_%>",
+		m_arch, ext_type_str);
+      return NULL;
+    }
+
+  return p;
+
 }
 
 /* Parsing function for multi-letter extensions.
@@ -1253,6 +1387,30 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
   return p;
 }
 
+/* Parsing function for a single-letter or multi-letter extensions.
+
+   Return Value:
+     Points to the end of extensions.
+
+   Arguments:
+     `p`: Current parsing position.  */
+
+const char *
+riscv_subset_list::parse_single_ext (const char *p)
+{
+  switch (p[0])
+    {
+    case 'x':
+      return parse_single_multiletter_ext (p, "x", "non-standard extension");
+    case 'z':
+      return parse_single_multiletter_ext (p, "z", "sub-extension");
+    case 's':
+      return parse_single_multiletter_ext (p, "s", "supervisor extension");
+    default:
+      return parse_single_std_ext (p);
+    }
+}
+
 /* Parsing arch string to subset list, return NULL if parsing failed.  */
 
 riscv_subset_list *
@@ -1343,6 +1501,26 @@ fail:
   delete subset_list;
   riscv_subset_list::parse_failed = true;
   return NULL;
+}
+
+/* Clone whole subset list.  */
+
+riscv_subset_list *
+riscv_subset_list::clone () const
+{
+  riscv_subset_list *new_list = new riscv_subset_list (m_arch, m_loc);
+  for (riscv_subset_t *itr = m_head; itr != NULL; itr = itr->next)
+    new_list->add (itr->name.c_str (), itr->major_version, itr->minor_version,
+		   itr->explicit_version_p, true);
+
+  new_list->m_xlen = m_xlen;
+  return new_list;
+}
+
+void
+riscv_subset_list::set_loc (location_t loc)
+{
+  m_loc = loc;
 }
 
 /* Return the current arch string.  */
@@ -1503,6 +1681,37 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {NULL, NULL, 0}
 };
+
+/* Apply SUBSET_LIST to OPTS if OPTS is not null, also set CURRENT_SUBSET_LIST
+   to SUBSET_LIST, just note this WON'T delete old CURRENT_SUBSET_LIST.  */
+
+void
+riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
+			       struct gcc_options *opts)
+{
+  if (opts)
+    {
+      const riscv_ext_flag_table_t *arch_ext_flag_tab;
+      /* Clean up target flags before we set.  */
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
+
+      if (subset_list->xlen () == 32)
+	opts->x_target_flags &= ~MASK_64BIT;
+      else if (subset_list->xlen () == 64)
+	opts->x_target_flags |= MASK_64BIT;
+
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	{
+	  if (subset_list->lookup (arch_ext_flag_tab->ext))
+	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
+	}
+    }
+
+  current_subset_list = subset_list;
+}
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
