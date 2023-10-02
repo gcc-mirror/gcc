@@ -215,6 +215,9 @@ private:
   json::object *
   make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id);
   json::object *make_artifact_object (const char *filename);
+  char *get_source_lines (const char *filename,
+			  int start_line,
+			  int end_line) const;
   json::object *maybe_make_artifact_content_object (const char *filename) const;
   json::object *maybe_make_artifact_content_object (const char *filename,
 						    int start_line,
@@ -247,8 +250,6 @@ private:
 
   int m_tabstop;
 };
-
-static sarif_builder *the_builder;
 
 /* class sarif_object : public json::object.  */
 
@@ -1540,7 +1541,8 @@ json::object *
 sarif_builder::maybe_make_artifact_content_object (const char *filename) const
 {
   /* Let input.cc handle any charset conversion.  */
-  char_span utf8_content = get_source_file_content (filename);
+  char_span utf8_content
+    = m_context->m_file_cache->get_source_file_content (filename);
   if (!utf8_content)
     return NULL;
 
@@ -1558,16 +1560,17 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename) const
 /* Attempt to read the given range of lines from FILENAME; return
    a freshly-allocated 0-terminated buffer containing them, or NULL.  */
 
-static char *
-get_source_lines (const char *filename,
-		  int start_line,
-		  int end_line)
+char *
+sarif_builder::get_source_lines (const char *filename,
+				 int start_line,
+				 int end_line) const
 {
   auto_vec<char> result;
 
   for (int line = start_line; line <= end_line; line++)
     {
-      char_span line_content = location_get_source_line (filename, line);
+      char_span line_content
+	= m_context->m_file_cache->get_source_line (filename, line);
       if (!line_content.get_buffer ())
 	return NULL;
       result.reserve (line_content.length () + 1);
@@ -1680,82 +1683,6 @@ sarif_builder::make_artifact_content_object (const char *text) const
   return content_obj;
 }
 
-/* No-op implementation of "begin_diagnostic" for SARIF output.  */
-
-static void
-sarif_begin_diagnostic (diagnostic_context *, diagnostic_info *)
-{
-}
-
-/* Implementation of "end_diagnostic" for SARIF output.  */
-
-static void
-sarif_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
-		      diagnostic_t orig_diag_kind)
-{
-  gcc_assert (the_builder);
-  the_builder->end_diagnostic (context, diagnostic, orig_diag_kind);
-}
-
-/* No-op implementation of "begin_group_cb" for SARIF output.  */
-
-static void
-sarif_begin_group (diagnostic_context *)
-{
-}
-
-/* Implementation of "end_group_cb" for SARIF output.  */
-
-static void
-sarif_end_group (diagnostic_context *)
-{
-  gcc_assert (the_builder);
-  the_builder->end_group ();
-}
-
-/* Flush the top-level array to OUTF.  */
-
-static void
-sarif_flush_to_file (FILE *outf)
-{
-  gcc_assert (the_builder);
-  the_builder->flush_to_file (outf);
-  delete the_builder;
-  the_builder = NULL;
-}
-
-/* Callback for final cleanup for SARIF output to stderr.  */
-
-static void
-sarif_stderr_final_cb (diagnostic_context *)
-{
-  gcc_assert (the_builder);
-  sarif_flush_to_file (stderr);
-}
-
-static char *sarif_output_base_file_name;
-
-/* Callback for final cleanup for SARIF output to a file.  */
-
-static void
-sarif_file_final_cb (diagnostic_context *)
-{
-  char *filename = concat (sarif_output_base_file_name, ".sarif", NULL);
-  FILE *outf = fopen (filename, "w");
-  if (!outf)
-    {
-      const char *errstr = xstrerror (errno);
-      fnotice (stderr, "error: unable to open '%s' for writing: %s\n",
-	       filename, errstr);
-      free (filename);
-      return;
-    }
-  gcc_assert (the_builder);
-  sarif_flush_to_file (outf);
-  fclose (outf);
-  free (filename);
-}
-
 /* Callback for diagnostic_context::ice_handler_cb for when an ICE
    occurs.  */
 
@@ -1773,15 +1700,89 @@ sarif_ice_handler (diagnostic_context *context)
   fnotice (stderr, "Internal compiler error:\n");
 }
 
-/* Callback for diagnostic_context::m_diagrams.m_emission_cb.  */
-
-static void
-sarif_emit_diagram (diagnostic_context *context,
-		    const diagnostic_diagram &diagram)
+class sarif_output_format : public diagnostic_output_format
 {
-  gcc_assert (the_builder);
-  the_builder->emit_diagram (context, diagram);
-}
+public:
+  void on_begin_group () final override
+  {
+    /* No-op,  */
+  }
+  void on_end_group () final override
+  {
+    m_builder.end_group ();
+  }
+  void
+  on_begin_diagnostic (diagnostic_info *) final override
+  {
+    /* No-op,  */
+  }
+  void
+  on_end_diagnostic (diagnostic_info *diagnostic,
+		     diagnostic_t orig_diag_kind) final override
+  {
+    m_builder.end_diagnostic (&m_context, diagnostic, orig_diag_kind);
+  }
+  void on_diagram (const diagnostic_diagram &diagram) final override
+  {
+    m_builder.emit_diagram (&m_context, diagram);
+  }
+
+protected:
+  sarif_output_format (diagnostic_context &context)
+  : diagnostic_output_format (context),
+    m_builder (&context)
+  {}
+
+  sarif_builder m_builder;
+};
+
+class sarif_stream_output_format : public sarif_output_format
+{
+public:
+  sarif_stream_output_format (diagnostic_context &context, FILE *stream)
+  : sarif_output_format (context),
+    m_stream (stream)
+  {
+  }
+  ~sarif_stream_output_format ()
+  {
+    m_builder.flush_to_file (m_stream);
+  }
+private:
+  FILE *m_stream;
+};
+
+class sarif_file_output_format : public sarif_output_format
+{
+public:
+  sarif_file_output_format (diagnostic_context &context,
+			   const char *base_file_name)
+  : sarif_output_format (context),
+    m_base_file_name (xstrdup (base_file_name))
+  {
+  }
+  ~sarif_file_output_format ()
+  {
+    char *filename = concat (m_base_file_name, ".sarif", NULL);
+    free (m_base_file_name);
+    m_base_file_name = nullptr;
+    FILE *outf = fopen (filename, "w");
+    if (!outf)
+      {
+	const char *errstr = xstrerror (errno);
+	fnotice (stderr, "error: unable to open '%s' for writing: %s\n",
+		 filename, errstr);
+	free (filename);
+	return;
+      }
+    m_builder.flush_to_file (outf);
+    fclose (outf);
+    free (filename);
+  }
+
+private:
+  char *m_base_file_name;
+};
 
 /* Populate CONTEXT in preparation for SARIF output (either to stderr, or
    to a file).  */
@@ -1789,16 +1790,9 @@ sarif_emit_diagram (diagnostic_context *context,
 static void
 diagnostic_output_format_init_sarif (diagnostic_context *context)
 {
-  the_builder = new sarif_builder (context);
-
   /* Override callbacks.  */
-  context->begin_diagnostic = sarif_begin_diagnostic;
-  context->end_diagnostic = sarif_end_diagnostic;
-  context->begin_group_cb = sarif_begin_group;
-  context->end_group_cb =  sarif_end_group;
   context->print_path = NULL; /* handled in sarif_end_diagnostic.  */
   context->ice_handler_cb = sarif_ice_handler;
-  context->m_diagrams.m_emission_cb = sarif_emit_diagram;
 
   /* The metadata is handled in SARIF format, rather than as text.  */
   context->show_cwe = false;
@@ -1817,7 +1811,8 @@ void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context *context)
 {
   diagnostic_output_format_init_sarif (context);
-  context->final_cb = sarif_stderr_final_cb;
+  delete context->m_output_format;
+  context->m_output_format = new sarif_stream_output_format (*context, stderr);
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
@@ -1825,9 +1820,22 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context *context)
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context *context,
-					 const char *base_file_name)
+					  const char *base_file_name)
 {
   diagnostic_output_format_init_sarif (context);
-  context->final_cb = sarif_file_final_cb;
-  sarif_output_base_file_name = xstrdup (base_file_name);
+  delete context->m_output_format;
+  context->m_output_format = new sarif_file_output_format (*context,
+							   base_file_name);
+}
+
+/* Populate CONTEXT in preparation for SARIF output to STREAM.  */
+
+void
+diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+					    FILE *stream)
+{
+  diagnostic_output_format_init_sarif (context);
+  delete context->m_output_format;
+  context->m_output_format = new sarif_stream_output_format (*context,
+							     stream);
 }

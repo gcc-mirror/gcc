@@ -39,7 +39,7 @@ test_diagnostic_context::test_diagnostic_context ()
   m_source_printing.enabled = true;
   m_source_printing.show_labels_p = true;
   show_column = true;
-  start_span = start_span_cb;
+  m_text_callbacks.start_span = start_span_cb;
   m_source_printing.min_margin_width = 6;
   m_source_printing.max_width = 80;
 }

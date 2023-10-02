@@ -177,6 +177,51 @@ class diagnostic_client_data_hooks;
 class logical_location;
 class diagnostic_diagram;
 
+/* Abstract base class for a particular output format for diagnostics;
+   each value of -fdiagnostics-output-format= will have its own
+   implementation.  */
+
+class diagnostic_output_format
+{
+public:
+  virtual ~diagnostic_output_format () {}
+
+  virtual void on_begin_group () = 0;
+  virtual void on_end_group () = 0;
+  virtual void on_begin_diagnostic (diagnostic_info *) = 0;
+  virtual void on_end_diagnostic (diagnostic_info *,
+				  diagnostic_t orig_diag_kind) = 0;
+  virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
+
+protected:
+  diagnostic_output_format (diagnostic_context &context)
+  : m_context (context)
+  {}
+
+  diagnostic_context &m_context;
+};
+
+/* Subclass of diagnostic_output_format for classic text-based output
+   to stderr.
+
+   Uses diagnostic_context.m_text_callbacks to provide client-specific
+   textual output (e.g. include paths, macro expansions, etc).  */
+
+class diagnostic_text_output_format : public diagnostic_output_format
+{
+public:
+  diagnostic_text_output_format (diagnostic_context &context)
+  : diagnostic_output_format (context)
+  {}
+  ~diagnostic_text_output_format ();
+  void on_begin_group () override {}
+  void on_end_group () override {}
+  void on_begin_diagnostic (diagnostic_info *) override;
+  void on_end_diagnostic (diagnostic_info *,
+			  diagnostic_t orig_diag_kind) override;
+  void on_diagram (const diagnostic_diagram &diagram) override;
+};
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 struct diagnostic_context
@@ -264,22 +309,25 @@ struct diagnostic_context
   /* Maximum number of errors to report.  */
   int max_errors;
 
-  /* This function is called before any message is printed out.  It is
-     responsible for preparing message prefix and such.  For example, it
-     might say:
-     In file included from "/usr/local/include/curses.h:5:
-                      from "/home/gdr/src/nifty_printer.h:56:
-                      ...
-  */
-  diagnostic_starter_fn begin_diagnostic;
+  /* Client-supplied callbacks for use in text output.  */
+  struct {
+    /* This function is called before any message is printed out.  It is
+       responsible for preparing message prefix and such.  For example, it
+       might say:
+       In file included from "/usr/local/include/curses.h:5:
+       from "/home/gdr/src/nifty_printer.h:56:
+       ...
+    */
+    diagnostic_starter_fn begin_diagnostic;
 
-  /* This function is called by diagnostic_show_locus in between
-     disjoint spans of source code, so that the context can print
-     something to indicate that a new span of source code has begun.  */
-  diagnostic_start_span_fn start_span;
+    /* This function is called by diagnostic_show_locus in between
+       disjoint spans of source code, so that the context can print
+       something to indicate that a new span of source code has begun.  */
+    diagnostic_start_span_fn start_span;
 
-  /* This function is called after the diagnostic message is printed.  */
-  diagnostic_finalizer_fn end_diagnostic;
+    /* This function is called after the diagnostic message is printed.  */
+    diagnostic_finalizer_fn end_diagnostic;
+  } m_text_callbacks;
 
   /* Client hook to report an internal error.  */
   void (*internal_error) (diagnostic_context *, const char *, va_list *);
@@ -402,18 +450,9 @@ struct diagnostic_context
      diagnostic_group was pushed.  */
   int diagnostic_group_emission_count;
 
-  /* Optional callbacks for handling diagnostic groups.  */
-
-  /* If non-NULL, this will be called immediately before the first
-     time a diagnostic is emitted within a stack of groups.  */
-  void (*begin_group_cb) (diagnostic_context * context);
-
-  /* If non-NULL, this will be called when a stack of groups is
-     popped if any diagnostics were emitted within that group.  */
-  void (*end_group_cb) (diagnostic_context * context);
-
-  /* Callback for final cleanup.  */
-  void (*final_cb) (diagnostic_context *context);
+  /* How to output diagnostics (text vs a structured format such as JSON).
+     Must be non-NULL; owned by context.  */
+  diagnostic_output_format *m_output_format;
 
   /* Callback to set the locations of call sites along the inlining
      stack corresponding to a diagnostic location.  Needed to traverse
@@ -441,9 +480,6 @@ struct diagnostic_context
        Can be NULL (if text art is disabled).  */
     text_art::theme *m_theme;
 
-    /* Callback for emitting diagrams.  */
-    void (*m_emission_cb) (diagnostic_context *context,
-			   const diagnostic_diagram &diagram);
   } m_diagrams;
 };
 
@@ -454,12 +490,13 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 }
 
 
-/* Client supplied function to announce a diagnostic.  */
-#define diagnostic_starter(DC) (DC)->begin_diagnostic
+/* Client supplied function to announce a diagnostic
+   (for text-based diagnostic output).  */
+#define diagnostic_starter(DC) (DC)->m_text_callbacks.begin_diagnostic
 
 /* Client supplied function called after a diagnostic message is
-   displayed.  */
-#define diagnostic_finalizer(DC) (DC)->end_diagnostic
+   displayed (for text-based diagnostic output).  */
+#define diagnostic_finalizer(DC) (DC)->m_text_callbacks.end_diagnostic
 
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->x_data
@@ -638,6 +675,8 @@ extern void diagnostic_output_format_init_json_file (diagnostic_context *context
 extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context);
 extern void diagnostic_output_format_init_sarif_file (diagnostic_context *context,
 						      const char *base_file_name);
+extern void diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+							FILE *stream);
 
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);

@@ -946,7 +946,7 @@ file_cache_slot::read_line_num (size_t line_num,
    If the function fails, a NULL char_span is returned.  */
 
 char_span
-location_get_source_line (const char *file_path, int line)
+file_cache::get_source_line (const char *file_path, int line)
 {
   char *buffer = NULL;
   ssize_t len;
@@ -957,9 +957,7 @@ location_get_source_line (const char *file_path, int line)
   if (file_path == NULL)
     return char_span (NULL, 0);
 
-  diagnostic_file_cache_init ();
-
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  file_cache_slot *c = lookup_or_add_file (file_path);
   if (c == NULL)
     return char_span (NULL, 0);
 
@@ -968,6 +966,13 @@ location_get_source_line (const char *file_path, int line)
     return char_span (NULL, 0);
 
   return char_span (buffer, len);
+}
+
+char_span
+location_get_source_line (const char *file_path, int line)
+{
+  diagnostic_file_cache_init ();
+  return global_dc->m_file_cache->get_source_line (file_path, line);
 }
 
 /* Return a NUL-terminated copy of the source text between two locations, or
@@ -1062,6 +1067,15 @@ get_source_text_between (location_t start, location_t end)
   return xstrdup (buf);
 }
 
+
+char_span
+file_cache::get_source_file_content (const char *file_path)
+{
+  file_cache_slot *c = lookup_or_add_file (file_path);
+  return c->get_full_file_content ();
+}
+
+
 /* Get a borrowed char_span to the full content of FILE_PATH
    as decoded according to the input charset, encoded as UTF-8.  */
 
@@ -1069,9 +1083,7 @@ char_span
 get_source_file_content (const char *file_path)
 {
   diagnostic_file_cache_init ();
-
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
-  return c->get_full_file_content ();
+  return global_dc->m_file_cache->get_source_file_content (file_path);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.

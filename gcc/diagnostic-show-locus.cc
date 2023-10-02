@@ -2876,7 +2876,7 @@ diagnostic_show_locus (diagnostic_context * context,
 	    {
 	      expanded_location exploc
 		= layout.get_expanded_location (line_span);
-	      context->start_span (context, exploc);
+	      context->m_text_callbacks.start_span (context, exploc);
 	    }
 	}
       /* Iterate over the lines within this span (using linenum_arith_t to
