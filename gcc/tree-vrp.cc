@@ -1092,6 +1092,106 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   return 0;
 }
 
+// Implement a Fast VRP folder.  Not quite as effective but faster.
+
+class fvrp_folder : public substitute_and_fold_engine
+{
+public:
+  fvrp_folder (dom_ranger *dr) : substitute_and_fold_engine (),
+				 m_simplifier (dr)
+  { m_dom_ranger = dr; }
+
+  ~fvrp_folder () { }
+
+  tree value_of_expr (tree name, gimple *s = NULL) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_of_expr (name, s);
+  }
+
+  tree value_on_edge (edge e, tree name) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_on_edge (e, name);
+  }
+
+  tree value_of_stmt (gimple *s, tree name = NULL) override
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_dom_ranger->value_of_stmt (s, name);
+  }
+
+  void pre_fold_bb (basic_block bb) override
+  {
+    m_dom_ranger->pre_bb (bb);
+    // Now process the PHIs in advance.
+    gphi_iterator psi = gsi_start_phis (bb);
+    for ( ; !gsi_end_p (psi); gsi_next (&psi))
+      {
+	tree name = gimple_range_ssa_p (PHI_RESULT (psi.phi ()));
+	if (name)
+	  {
+	    Value_Range vr(TREE_TYPE (name));
+	    m_dom_ranger->range_of_stmt (vr, psi.phi (), name);
+	  }
+      }
+  }
+
+  void post_fold_bb (basic_block bb) override
+  {
+    m_dom_ranger->post_bb (bb);
+  }
+
+  void pre_fold_stmt (gimple *s) override
+  {
+    // Ensure range_of_stmt has been called.
+    tree type = gimple_range_type (s);
+    if (type)
+      {
+	Value_Range vr(type);
+	m_dom_ranger->range_of_stmt (vr, s);
+      }
+  }
+
+  bool fold_stmt (gimple_stmt_iterator *gsi) override
+  {
+    bool ret = m_simplifier.simplify (gsi);
+    if (!ret)
+      ret = ::fold_stmt (gsi, follow_single_use_edges);
+    return ret;
+  }
+
+private:
+  DISABLE_COPY_AND_ASSIGN (fvrp_folder);
+  simplify_using_ranges m_simplifier;
+  dom_ranger *m_dom_ranger;
+};
+
+
+// Main entry point for a FAST VRP pass using a dom ranger.
+
+unsigned int
+execute_fast_vrp (struct function *fun)
+{
+  calculate_dominance_info (CDI_DOMINATORS);
+  dom_ranger dr;
+  fvrp_folder folder (&dr);
+
+  gcc_checking_assert (!fun->x_range_query);
+  fun->x_range_query = &dr;
+
+  folder.substitute_and_fold ();
+
+  fun->x_range_query = NULL;
+  return 0;
+}
+
 namespace {
 
 const pass_data pass_data_vrp =
@@ -1120,6 +1220,20 @@ const pass_data pass_data_early_vrp =
   ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
 };
 
+const pass_data pass_data_fast_vrp =
+{
+  GIMPLE_PASS, /* type */
+  "fvrp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_FAST_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+};
+
+
 class pass_vrp : public gimple_opt_pass
 {
 public:
@@ -1139,6 +1253,10 @@ public:
   bool gate (function *) final override { return flag_tree_vrp != 0; }
   unsigned int execute (function *fun) final override
     {
+      // Check for fast vrp.
+      if (&data == &pass_data_fast_vrp)
+	return execute_fast_vrp (fun);
+
       return execute_ranger_vrp (fun, warn_array_bounds_p, final_p);
     }
 
@@ -1222,6 +1340,12 @@ gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt, pass_data_early_vrp, false);
+}
+
+gimple_opt_pass *
+make_pass_fast_vrp (gcc::context *ctxt)
+{
+  return new pass_vrp (ctxt, pass_data_fast_vrp, false);
 }
 
 gimple_opt_pass *
