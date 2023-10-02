@@ -245,6 +245,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
   context->final_cb = default_diagnostic_final_cb;
+  context->set_locations_cb = nullptr;
   context->ice_handler_cb = NULL;
   context->includes_seen = NULL;
   context->m_client_data_hooks = NULL;
