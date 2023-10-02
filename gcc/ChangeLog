@@ -1,3 +1,21 @@
+2023-10-01  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* tree-ssa-phiopt.cc (minmax_replacement):
+	Fix the LE/GE comparison for the
+	`(a CMP CST1) ? max<a,CST2> : a` optimization.
+
+2023-10-01  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gimple-ssa-backprop.cc (strip_sign_op_1): Remove ABSU_EXPR.
+
 2023-09-29  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:

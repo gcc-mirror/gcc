@@ -1,3 +1,22 @@
+2023-10-01  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* gcc.c-torture/execute/pr111331-1.c: New test.
+	* gcc.c-torture/execute/pr111331-2.c: New test.
+	* gcc.c-torture/execute/pr111331-3.c: New test.
+
+2023-10-01  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gcc.c-torture/compile/pr110386-1.c: New test.
+	* gcc.c-torture/compile/pr110386-2.c: New test.
+
 2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:
