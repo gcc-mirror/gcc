@@ -1,3 +1,27 @@
+2023-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* lib/target-supports.exp (add_options_for_riscv_v):
+	Fix typo in first regexp.
+	(add_options_for_riscv_zfh): Likewise.
+	(add_options_for_riscv_d): Likewise.
+
+2023-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Juzhe-Zhong   <juzhe.zhong@rivai.ai>
+
+	PR target/111566
+	* gcc.target/riscv/rvv/autovec/vls/mov-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/mov-9.c: Ditto.1
+	* gcc.target/riscv/rvv/autovec/vls/mov-2.c: Removed.
+	* gcc.target/riscv/rvv/autovec/vls/mov-4.c: Removed.
+	* gcc.target/riscv/rvv/autovec/vls/mov-6.c: Removed.
+	* gcc.target/riscv/rvv/fortran/pr111566.f90: New test.
+
 2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/iso/run/pass/m2date.mod (DayName): Reordered.

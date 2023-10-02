@@ -1,3 +1,206 @@
+2023-10-01  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* combine.cc (simplify_compare_const): Properly handle unsigned
+	constants while narrowing comparison of memory and constants.
+
+2023-10-01  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-opts.h (MASK_ZICSR): Delete.
+	(MASK_ZIFENCEI): Delete;
+	(MASK_ZIHINTNTL): Ditto.
+	(MASK_ZIHINTPAUSE): Ditto.
+	(TARGET_ZICSR): Ditto.
+	(TARGET_ZIFENCEI): Ditto.
+	(TARGET_ZIHINTNTL): Ditto.
+	(TARGET_ZIHINTPAUSE): Ditto.
+	(MASK_ZAWRS): Ditto.
+	(TARGET_ZAWRS): Ditto.
+	(MASK_ZBA): Ditto.
+	(MASK_ZBB): Ditto.
+	(MASK_ZBC): Ditto.
+	(MASK_ZBS): Ditto.
+	(TARGET_ZBA): Ditto.
+	(TARGET_ZBB): Ditto.
+	(TARGET_ZBC): Ditto.
+	(TARGET_ZBS): Ditto.
+	(MASK_ZFINX): Ditto.
+	(MASK_ZDINX): Ditto.
+	(MASK_ZHINX): Ditto.
+	(MASK_ZHINXMIN): Ditto.
+	(TARGET_ZFINX): Ditto.
+	(TARGET_ZDINX): Ditto.
+	(TARGET_ZHINX): Ditto.
+	(TARGET_ZHINXMIN): Ditto.
+	(MASK_ZBKB): Ditto.
+	(MASK_ZBKC): Ditto.
+	(MASK_ZBKX): Ditto.
+	(MASK_ZKNE): Ditto.
+	(MASK_ZKND): Ditto.
+	(MASK_ZKNH): Ditto.
+	(MASK_ZKR): Ditto.
+	(MASK_ZKSED): Ditto.
+	(MASK_ZKSH): Ditto.
+	(MASK_ZKT): Ditto.
+	(TARGET_ZBKB): Ditto.
+	(TARGET_ZBKC): Ditto.
+	(TARGET_ZBKX): Ditto.
+	(TARGET_ZKNE): Ditto.
+	(TARGET_ZKND): Ditto.
+	(TARGET_ZKNH): Ditto.
+	(TARGET_ZKR): Ditto.
+	(TARGET_ZKSED): Ditto.
+	(TARGET_ZKSH): Ditto.
+	(TARGET_ZKT): Ditto.
+	(MASK_ZTSO): Ditto.
+	(TARGET_ZTSO): Ditto.
+	(MASK_VECTOR_ELEN_32): Ditto.
+	(MASK_VECTOR_ELEN_64): Ditto.
+	(MASK_VECTOR_ELEN_FP_32): Ditto.
+	(MASK_VECTOR_ELEN_FP_64): Ditto.
+	(MASK_VECTOR_ELEN_FP_16): Ditto.
+	(TARGET_VECTOR_ELEN_32): Ditto.
+	(TARGET_VECTOR_ELEN_64): Ditto.
+	(TARGET_VECTOR_ELEN_FP_32): Ditto.
+	(TARGET_VECTOR_ELEN_FP_64): Ditto.
+	(TARGET_VECTOR_ELEN_FP_16): Ditto.
+	(MASK_ZVBB): Ditto.
+	(MASK_ZVBC): Ditto.
+	(TARGET_ZVBB): Ditto.
+	(TARGET_ZVBC): Ditto.
+	(MASK_ZVKG): Ditto.
+	(MASK_ZVKNED): Ditto.
+	(MASK_ZVKNHA): Ditto.
+	(MASK_ZVKNHB): Ditto.
+	(MASK_ZVKSED): Ditto.
+	(MASK_ZVKSH): Ditto.
+	(MASK_ZVKN): Ditto.
+	(MASK_ZVKNC): Ditto.
+	(MASK_ZVKNG): Ditto.
+	(MASK_ZVKS): Ditto.
+	(MASK_ZVKSC): Ditto.
+	(MASK_ZVKSG): Ditto.
+	(MASK_ZVKT): Ditto.
+	(TARGET_ZVKG): Ditto.
+	(TARGET_ZVKNED): Ditto.
+	(TARGET_ZVKNHA): Ditto.
+	(TARGET_ZVKNHB): Ditto.
+	(TARGET_ZVKSED): Ditto.
+	(TARGET_ZVKSH): Ditto.
+	(TARGET_ZVKN): Ditto.
+	(TARGET_ZVKNC): Ditto.
+	(TARGET_ZVKNG): Ditto.
+	(TARGET_ZVKS): Ditto.
+	(TARGET_ZVKSC): Ditto.
+	(TARGET_ZVKSG): Ditto.
+	(TARGET_ZVKT): Ditto.
+	(MASK_ZVL32B): Ditto.
+	(MASK_ZVL64B): Ditto.
+	(MASK_ZVL128B): Ditto.
+	(MASK_ZVL256B): Ditto.
+	(MASK_ZVL512B): Ditto.
+	(MASK_ZVL1024B): Ditto.
+	(MASK_ZVL2048B): Ditto.
+	(MASK_ZVL4096B): Ditto.
+	(MASK_ZVL8192B): Ditto.
+	(MASK_ZVL16384B): Ditto.
+	(MASK_ZVL32768B): Ditto.
+	(MASK_ZVL65536B): Ditto.
+	(TARGET_ZVL32B): Ditto.
+	(TARGET_ZVL64B): Ditto.
+	(TARGET_ZVL128B): Ditto.
+	(TARGET_ZVL256B): Ditto.
+	(TARGET_ZVL512B): Ditto.
+	(TARGET_ZVL1024B): Ditto.
+	(TARGET_ZVL2048B): Ditto.
+	(TARGET_ZVL4096B): Ditto.
+	(TARGET_ZVL8192B): Ditto.
+	(TARGET_ZVL16384B): Ditto.
+	(TARGET_ZVL32768B): Ditto.
+	(TARGET_ZVL65536B): Ditto.
+	(MASK_ZICBOZ): Ditto.
+	(MASK_ZICBOM): Ditto.
+	(MASK_ZICBOP): Ditto.
+	(TARGET_ZICBOZ): Ditto.
+	(TARGET_ZICBOM): Ditto.
+	(TARGET_ZICBOP): Ditto.
+	(MASK_ZICOND): Ditto.
+	(TARGET_ZICOND): Ditto.
+	(MASK_ZFA): Ditto.
+	(TARGET_ZFA): Ditto.
+	(MASK_ZFHMIN): Ditto.
+	(MASK_ZFH): Ditto.
+	(MASK_ZVFHMIN): Ditto.
+	(MASK_ZVFH): Ditto.
+	(TARGET_ZFHMIN): Ditto.
+	(TARGET_ZFH): Ditto.
+	(TARGET_ZVFHMIN): Ditto.
+	(TARGET_ZVFH): Ditto.
+	(MASK_ZMMUL): Ditto.
+	(TARGET_ZMMUL): Ditto.
+	(MASK_ZCA): Ditto.
+	(MASK_ZCB): Ditto.
+	(MASK_ZCE): Ditto.
+	(MASK_ZCF): Ditto.
+	(MASK_ZCD): Ditto.
+	(MASK_ZCMP): Ditto.
+	(MASK_ZCMT): Ditto.
+	(TARGET_ZCA): Ditto.
+	(TARGET_ZCB): Ditto.
+	(TARGET_ZCE): Ditto.
+	(TARGET_ZCF): Ditto.
+	(TARGET_ZCD): Ditto.
+	(TARGET_ZCMP): Ditto.
+	(TARGET_ZCMT): Ditto.
+	(MASK_SVINVAL): Ditto.
+	(MASK_SVNAPOT): Ditto.
+	(TARGET_SVINVAL): Ditto.
+	(TARGET_SVNAPOT): Ditto.
+	(MASK_XTHEADBA): Ditto.
+	(MASK_XTHEADBB): Ditto.
+	(MASK_XTHEADBS): Ditto.
+	(MASK_XTHEADCMO): Ditto.
+	(MASK_XTHEADCONDMOV): Ditto.
+	(MASK_XTHEADFMEMIDX): Ditto.
+	(MASK_XTHEADFMV): Ditto.
+	(MASK_XTHEADINT): Ditto.
+	(MASK_XTHEADMAC): Ditto.
+	(MASK_XTHEADMEMIDX): Ditto.
+	(MASK_XTHEADMEMPAIR): Ditto.
+	(MASK_XTHEADSYNC): Ditto.
+	(TARGET_XTHEADBA): Ditto.
+	(TARGET_XTHEADBB): Ditto.
+	(TARGET_XTHEADBS): Ditto.
+	(TARGET_XTHEADCMO): Ditto.
+	(TARGET_XTHEADCONDMOV): Ditto.
+	(TARGET_XTHEADFMEMIDX): Ditto.
+	(TARGET_XTHEADFMV): Ditto.
+	(TARGET_XTHEADINT): Ditto.
+	(TARGET_XTHEADMAC): Ditto.
+	(TARGET_XTHEADMEMIDX): Ditto.
+	(TARGET_XTHEADMEMPAIR): Ditto.
+	(TARGET_XTHEADSYNC): Ditto.
+	(MASK_XVENTANACONDOPS): Ditto.
+	(TARGET_XVENTANACONDOPS): Ditto.
+	* config/riscv/riscv.opt: Add new Mask defination.
+	* doc/options.texi: Add explanation for this new usage.
+	* opt-functions.awk: Add new function to find the index
+	of target variable from extra_target_vars.
+	* opt-read.awk: Add new function to store the Mask flags.
+	* opth-gen.awk: Add new function to output the defination of
+	Mask Macro and Target Macro.
+
+2023-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Juzhe-Zhong   <juzhe.zhong@rivai.ai>
+
+	PR target/111566
+	* config/riscv/riscv-protos.h (riscv_vector::legitimize_move):
+	Change second parameter to rtx *.
+	* config/riscv/riscv-v.cc (risv_vector::legitimize_move): Likewise.
+	* config/riscv/vector.md: Changed callers of
+	riscv_vector::legitimize_move.
+	(*mov<mode>_mem_to_mem): Remove.
+
 2023-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/111649
