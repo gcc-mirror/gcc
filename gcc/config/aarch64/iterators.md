@@ -1428,7 +1428,8 @@
 			 (V4HF "V8HF") (V8HF "V8HF")
 			 (V2SF "V4SF") (V4SF "V4SF")
 			 (V2DF "V2DF") (SI   "V4SI")
-			 (HI   "V8HI") (QI   "V16QI")])
+			 (HI   "V8HI") (QI   "V16QI")
+			 (SF   "V4SF") (DF   "V2DF")])
 
 ;; Half modes of all vector modes.
 (define_mode_attr VHALF [(V8QI "V4QI")  (V16QI "V8QI")

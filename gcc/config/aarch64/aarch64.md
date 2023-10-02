@@ -6978,31 +6978,18 @@
 ;; EOR   v0.8B, v0.8B, v3.8B
 ;;
 
-(define_expand "xorsign<mode>3"
+(define_expand "@xorsign<mode>3"
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
    (match_operand:GPF 2 "register_operand")]
   "TARGET_SIMD"
 {
-
-  machine_mode imode = <V_INT_EQUIV>mode;
-  rtx mask = gen_reg_rtx (imode);
-  rtx op1x = gen_reg_rtx (imode);
-  rtx op2x = gen_reg_rtx (imode);
-
-  int bits = GET_MODE_BITSIZE (<MODE>mode) - 1;
-  emit_move_insn (mask, GEN_INT (trunc_int_for_mode (HOST_WIDE_INT_M1U << bits,
-						     imode)));
-
-  emit_insn (gen_and<v_int_equiv>3 (op2x, mask,
-				    lowpart_subreg (imode, operands[2],
-						    <MODE>mode)));
-  emit_insn (gen_xor<v_int_equiv>3 (op1x,
-				    lowpart_subreg (imode, operands[1],
-						    <MODE>mode),
-				    op2x));
+  rtx tmp = gen_reg_rtx (<VCONQ>mode);
+  rtx op1 = lowpart_subreg (<VCONQ>mode, operands[1], <MODE>mode);
+  rtx op2 = lowpart_subreg (<VCONQ>mode, operands[2], <MODE>mode);
+  emit_insn (gen_xorsign3 (<VCONQ>mode, tmp, op1, op2));
   emit_move_insn (operands[0],
-		  lowpart_subreg (<MODE>mode, op1x, imode));
+		  lowpart_subreg (<MODE>mode, tmp, <VCONQ>mode));
   DONE;
 }
 )

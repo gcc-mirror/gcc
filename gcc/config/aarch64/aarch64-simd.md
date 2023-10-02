@@ -500,7 +500,7 @@
   }
 )
 
-(define_expand "xorsign<mode>3"
+(define_expand "@xorsign<mode>3"
   [(match_operand:VHSDF 0 "register_operand")
    (match_operand:VHSDF 1 "register_operand")
    (match_operand:VHSDF 2 "register_operand")]
