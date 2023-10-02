@@ -19,6 +19,8 @@
 #include "rust-compile-pattern.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-type.h"
+#include "rust-compile-var-decl.h"
 
 namespace Rust {
 namespace Compile {
@@ -44,10 +46,6 @@ CompileStmt::visit (HIR::ExprStmt &stmt)
 void
 CompileStmt::visit (HIR::LetStmt &stmt)
 {
-  // nothing to do
-  if (!stmt.has_init_expr ())
-    return;
-
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   HirId stmt_id = stmt_pattern.get_mappings ().get_hirid ();
 
@@ -59,6 +57,16 @@ CompileStmt::visit (HIR::LetStmt &stmt)
 			"failed to lookup variable declaration type");
       return;
     }
+
+  // setup var decl nodes
+  fncontext fnctx = ctx->peek_fn ();
+  tree fndecl = fnctx.fndecl;
+  tree translated_type = TyTyResolveCompile::compile (ctx, ty);
+  CompileVarDecl::compile (fndecl, translated_type, &stmt_pattern, ctx);
+
+  // nothing to do
+  if (!stmt.has_init_expr ())
+    return;
 
   tree init = CompileExpr::Compile (stmt.get_init_expr ().get (), ctx);
   // FIXME use error_mark_node, check that CompileExpr returns error_mark_node

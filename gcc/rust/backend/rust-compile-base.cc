@@ -564,35 +564,6 @@ HIRCompileBase::indirect_expression (tree expr, location_t locus)
   return build_fold_indirect_ref_loc (locus, expr);
 }
 
-std::vector<Bvariable *>
-HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
-					  tree fndecl)
-{
-  std::vector<Bvariable *> locals;
-  for (auto it : rib.get_declarations ())
-    {
-      NodeId node_id = it.first;
-      HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ()->lookup_node_to_hir (node_id, &ref))
-	continue;
-
-      // we only care about local patterns
-      HIR::Pattern *pattern = ctx->get_mappings ()->lookup_hir_pattern (ref);
-      if (pattern == nullptr)
-	continue;
-
-      // lookup the type
-      TyTy::BaseType *tyty = nullptr;
-      if (!ctx->get_tyctx ()->lookup_type (ref, &tyty))
-	continue;
-
-      // compile the local
-      tree type = TyTyResolveCompile::compile (ctx, tyty);
-      CompileVarDecl::compile (fndecl, type, pattern, locals, ctx);
-    }
-  return locals;
-}
-
 void
 HIRCompileBase::compile_function_body (tree fndecl,
 				       HIR::BlockExpr &function_body,
@@ -750,21 +721,11 @@ HIRCompileBase::compile_function (
   if (!Backend::function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
-  // lookup locals
-  auto body_mappings = function_body->get_mappings ();
-  Resolver::Rib *rib = nullptr;
-  bool ok
-    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (), &rib);
-  rust_assert (ok);
-
-  std::vector<Bvariable *> locals
-    = compile_locals_for_block (ctx, *rib, fndecl);
-
   tree enclosing_scope = NULL_TREE;
   location_t start_location = function_body->get_locus ();
   location_t end_location = function_body->get_end_locus ();
 
-  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+  tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
 				    start_location, end_location);
   ctx->push_block (code_block);
 
@@ -820,7 +781,6 @@ HIRCompileBase::compile_constant_item (
   tree fndecl = Backend::function (compiled_fn_type, ident, "", 0, locus);
   TREE_READONLY (fndecl) = 1;
 
-  std::vector<Bvariable *> locals;
   tree enclosing_scope = NULL_TREE;
   location_t start_location = const_value_expr->get_locus ();
   location_t end_location = const_value_expr->get_locus ();
@@ -830,16 +790,9 @@ HIRCompileBase::compile_constant_item (
 	= static_cast<HIR::BlockExpr *> (const_value_expr);
       start_location = function_body->get_locus ();
       end_location = function_body->get_end_locus ();
-
-      Resolver::Rib *rib = nullptr;
-      bool ok = ctx->get_resolver ()->find_name_rib (
-	function_body->get_mappings ().get_nodeid (), &rib);
-      rust_assert (ok);
-
-      locals = compile_locals_for_block (ctx, *rib, fndecl);
     }
 
-  tree code_block = Backend::block (fndecl, enclosing_scope, locals,
+  tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
 				    start_location, end_location);
   ctx->push_block (code_block);
 
