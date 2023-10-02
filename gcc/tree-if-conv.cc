@@ -80,7 +80,6 @@ along with GCC; see the file COPYING3.  If not see
      <L18>:;
 */
 
-#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2045,6 +2044,28 @@ gen_phi_nest_statement (gphi *phi, gimple_stmt_iterator *gsi,
   return lhs;
 }
 
+typedef std::pair <tree, std::pair <unsigned, unsigned>> ArgEntry;
+static int
+cmp_arg_entry (const void *p1, const void *p2)
+{
+  const ArgEntry sval1 = *(const ArgEntry *)p1;
+  const ArgEntry sval2 = *(const ArgEntry *)p2;
+  auto x1 = sval1.second;
+  auto x2 = sval2.second;
+
+  if (x1.first < x2.first)
+    return -1;
+  else if (x1.first > x2.first)
+    return 1;
+
+  if (x1.second < x2.second)
+    return -1;
+  else if (x1.second > x2.second)
+    return 1;
+
+  return 0;
+}
+
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
    This routine can handle PHI nodes with more than two arguments.
 
@@ -2186,7 +2207,6 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   /* Determine element with max number of occurrences and complexity.  Looking at only
      number of occurrences as a measure for complexity isn't enough as all usages can
      be unique but the comparisons to reach the PHI node differ per branch.  */
-  typedef std::pair <tree, std::pair <unsigned, unsigned>> ArgEntry;
   auto_vec<ArgEntry> argsKV;
   for (i = 0; i < args.length (); i++)
     {
@@ -2204,10 +2224,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
     }
 
   /* Sort elements based on rankings ARGS.  */
-  std::sort(argsKV.begin(), argsKV.end(), [](const ArgEntry &left,
-					     const ArgEntry &right) {
-    return left.second < right.second;
-  });
+  argsKV.qsort (cmp_arg_entry);
 
   for (i = 0; i < args.length (); i++)
     args[i] = argsKV[i].first;
