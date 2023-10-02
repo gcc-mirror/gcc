@@ -123,7 +123,7 @@ BEGIN {
 			}
 			else {
 				target_var = opt_args("Var", $0)
-                                if (target_var)
+				if (target_var)
 				{
 					target_var = opt_args("Var", $1)
 					var_index = find_index(target_var, target_vars, n_target_vars)
@@ -131,7 +131,7 @@ BEGIN {
 					{
 						target_vars[n_target_vars++] = target_var
 					}
-					other_masks[var_index][n_other_mask[var_index]++] = name
+					other_masks[var_index "," n_other_mask[var_index]++] = name
 				}
 				else
 				{
