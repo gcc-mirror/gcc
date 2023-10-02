@@ -492,6 +492,7 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 			  machine_mode, rtx *);
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (rtx *);
+bool expand_block_move (rtx, rtx, rtx);
 machine_mode preferred_simd_mode (scalar_mode);
 machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
