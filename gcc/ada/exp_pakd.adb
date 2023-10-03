@@ -153,11 +153,11 @@ package body Exp_Pakd is
    --  reference the corresponding packed array type.
 
    procedure Setup_Inline_Packed_Array_Reference
-     (N      : Node_Id;
-      Atyp   : Entity_Id;
-      Obj    : in out Node_Id;
-      Cmask  : out Uint;
-      Shift  : out Node_Id);
+     (N     : Node_Id;
+      Atyp  : Entity_Id;
+      Obj   : in out Node_Id;
+      Cmask : out Uint;
+      Shift : out Node_Id);
    --  This procedure performs common processing on the N_Indexed_Component
    --  parameter given as N, whose prefix is a reference to a packed array.
    --  This is used for the get and set when the component size is 1, 2, 4,
@@ -2472,11 +2472,11 @@ package body Exp_Pakd is
    -----------------------------------------
 
    procedure Setup_Inline_Packed_Array_Reference
-     (N      : Node_Id;
-      Atyp   : Entity_Id;
-      Obj    : in out Node_Id;
-      Cmask  : out Uint;
-      Shift  : out Node_Id)
+     (N     : Node_Id;
+      Atyp  : Entity_Id;
+      Obj   : in out Node_Id;
+      Cmask : out Uint;
+      Shift : out Node_Id)
    is
       Loc  : constant Source_Ptr := Sloc (N);
       PAT  : Entity_Id;
