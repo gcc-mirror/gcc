@@ -2010,6 +2010,9 @@ Any @code{symbol_ref} or @code{label_ref}
 @item v
 VGPR register
 
+@item a
+Accelerator VGPR register (CDNA1 onwards)
+
 @item Sg
 SGPR register
 

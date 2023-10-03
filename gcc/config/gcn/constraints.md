@@ -77,6 +77,9 @@
 (define_register_constraint "v" "VGPR_REGS"
   "VGPR registers")
 
+(define_register_constraint "a" "TARGET_CDNA1_PLUS ? AVGPR_REGS : NO_REGS"
+  "Accumulator VGPR registers")
+
 (define_register_constraint "Sg" "SGPR_REGS"
   "SGPR registers")
 

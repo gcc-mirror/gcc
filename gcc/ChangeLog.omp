@@ -3,6 +3,65 @@
 	Backport from mainline:
 	Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/constraints.md: Add "a" AVGPR constraint.
+	* config/gcn/gcn-valu.md (*mov<mode>): Add AVGPR alternatives.
+	(*mov<mode>_4reg): Likewise.
+	(@mov<mode>_sgprbase): Likewise.
+	(gather<mode>_insn_1offset<exec>): Likewise.
+	(gather<mode>_insn_1offset_ds<exec>): Likewise.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+	(scatter<mode>_expr<exec_scatter>): Likewise.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.cc (MAX_NORMAL_AVGPR_COUNT): Define.
+	(gcn_class_max_nregs): Handle AVGPR_REGS and ALL_VGPR_REGS.
+	(gcn_hard_regno_mode_ok): Likewise.
+	(gcn_regno_reg_class): Likewise.
+	(gcn_spill_class): Allow spilling to AVGPRs on TARGET_CDNA1_PLUS.
+	(gcn_sgpr_move_p): Handle AVGPRs.
+	(gcn_secondary_reload): Reload AVGPRs via VGPRs.
+	(gcn_conditional_register_usage): Handle AVGPRs.
+	(gcn_vgpr_equivalent_register_operand): New function.
+	(gcn_valid_move_p): Check for validity of AVGPR moves.
+	(gcn_compute_frame_offsets): Handle AVGPRs.
+	(gcn_memory_move_cost): Likewise.
+	(gcn_register_move_cost): Likewise.
+	(gcn_vmem_insn_p): Handle TYPE_VOP3P_MAI.
+	(gcn_md_reorg): Handle AVGPRs.
+	(gcn_hsa_declare_function_name): Likewise.
+	(print_reg): Likewise.
+	(gcn_dwarf_register_number): Likewise.
+	* config/gcn/gcn.h (FIRST_AVGPR_REG): Define.
+	(AVGPR_REGNO): Define.
+	(LAST_AVGPR_REG): Define.
+	(SOFT_ARG_REG): Update.
+	(FRAME_POINTER_REGNUM): Update.
+	(DWARF_LINK_REGISTER): Update.
+	(FIRST_PSEUDO_REGISTER): Update.
+	(AVGPR_REGNO_P): Define.
+	(enum reg_class): Add AVGPR_REGS and ALL_VGPR_REGS.
+	(REG_CLASS_CONTENTS): Add new register classes and add entries for
+	AVGPRs to all classes.
+	(REGISTER_NAMES): Add AVGPRs.
+	* config/gcn/gcn.md (FIRST_AVGPR_REG, LAST_AVGPR_REG): Define.
+	(AP_REGNUM, FP_REGNUM): Update.
+	(define_attr "type"): Add vop3p_mai.
+	(define_attr "unit"): Handle vop3p_mai.
+	(define_attr "gcn_version"): Add "cdna2".
+	(define_attr "enabled"): Handle cdna2.
+	(*mov<mode>_insn): Add AVGPR alternatives.
+	(*movti_insn): Likewise.
+	* config/gcn/mkoffload.cc (isa_has_combined_avgprs): New.
+	(process_asm): Process avgpr_count.
+	* config/gcn/predicates.md (gcn_avgpr_register_operand): New.
+	(gcn_avgpr_hard_register_operand): New.
+	* doc/md.texi: Document the "a" constraint.
+
+2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (mov<mode>_sgprbase): Add @ modifier.
 	(reload_in<mode>): Delete.
 	(reload_out<mode>): Delete.

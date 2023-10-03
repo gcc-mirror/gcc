@@ -1,3 +1,11 @@
+2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (max_isa_vgprs): New.
+	(run_kernel): CDNA2 devices have more VGPRs.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-8a.f90: New test.
