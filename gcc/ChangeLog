@@ -1,3 +1,233 @@
+2023-10-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (UNSPEC_COPYSIGN): Delete.
+	(copysign<mode>3_fcpsg): Use copysign RTL instead of UNSPEC.
+	(copysign<mode>3_hard): Likewise.
+	(copysign<mode>3_soft): Likewise.
+	* config/rs6000/vector.md (vector_copysign<mode>3): Use copysign RTL
+	instead of UNSPEC.
+	* config/rs6000/vsx.md (vsx_copysign<mode>3): Use copysign RTL instead
+	of UNSPEC.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (toplevel_array): Remove global in
+	favor of json_output_format::m_top_level_array.
+	(cur_group): Likewise, for json_output_format::m_cur_group.
+	(cur_children_array): Likewise, for
+	json_output_format::m_cur_children_array.
+	(class json_output_format): New.
+	(json_begin_diagnostic): Remove, in favor of
+	json_output_format::on_begin_diagnostic.
+	(json_end_diagnostic): Convert to...
+	(json_output_format::on_end_diagnostic): ...this.
+	(json_begin_group): Remove, in favor of
+	json_output_format::on_begin_group.
+	(json_end_group): Remove, in favor of
+	json_output_format::on_end_group.
+	(json_flush_to_file): Remove, in favor of
+	json_output_format::flush_to_file.
+	(json_stderr_final_cb): Remove, in favor of json_output_format
+	dtor.
+	(json_output_base_file_name): Remove global.
+	(class json_stderr_output_format): New.
+	(json_file_final_cb): Remove.
+	(class json_file_output_format): New.
+	(json_emit_diagram): Remove.
+	(diagnostic_output_format_init_json): Update.
+	(diagnostic_output_format_init_json_file): Update.
+	* diagnostic-format-sarif.cc (the_builder): Remove this global,
+	moving to a field of the sarif_output_format.
+	(sarif_builder::maybe_make_artifact_content_object): Use the
+	context's m_file_cache.
+	(get_source_lines): Convert to...
+	(sarif_builder::get_source_lines): ...this, using context's
+	m_file_cache.
+	(sarif_begin_diagnostic): Remove, in favor of
+	sarif_output_format::on_begin_diagnostic.
+	(sarif_end_diagnostic): Remove, in favor of
+	sarif_output_format::on_end_diagnostic.
+	(sarif_begin_group): Remove, in favor of
+	sarif_output_format::on_begin_group.
+	(sarif_end_group): Remove, in favor of
+	sarif_output_format::on_end_group.
+	(sarif_flush_to_file): Delete.
+	(sarif_stderr_final_cb): Delete.
+	(sarif_output_base_file_name): Delete.
+	(sarif_file_final_cb): Delete.
+	(class sarif_output_format): New.
+	(sarif_emit_diagram): Delete.
+	(class sarif_stream_output_format): New.
+	(class sarif_file_output_format): New.
+	(diagnostic_output_format_init_sarif): Update.
+	(diagnostic_output_format_init_sarif_stderr): Update.
+	(diagnostic_output_format_init_sarif_file): Update.
+	(diagnostic_output_format_init_sarif_stream): Update.
+	* diagnostic-show-locus.cc (diagnostic_show_locus): Update.
+	* diagnostic.cc (default_diagnostic_final_cb): Delete, moving to
+	diagnostic_text_output_format's dtor.
+	(diagnostic_initialize): Update, making a new instance of
+	diagnostic_text_output_format.
+	(diagnostic_finish): Delete m_output_format, rather than calling
+	final_cb.
+	(diagnostic_report_diagnostic): Assert that m_output_format is
+	non-NULL.  Replace call to begin_group_cb with call to
+	m_output_format->on_begin_group.  Replace call to
+	diagnostic_starter with call to
+	m_output_format->on_begin_diagnostic.  Replace call to
+	diagnostic_finalizer with call to
+	m_output_format->on_end_diagnostic.
+	(diagnostic_emit_diagram): Replace both optional call to
+	m_diagrams.m_emission_cb and default implementation with call to
+	m_output_format->on_diagram.  Move default implementation to
+	diagnostic_text_output_format::on_diagram.
+	(auto_diagnostic_group::~auto_diagnostic_group): Replace call to
+	end_group_cb with call to m_output_format->on_end_group.
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	New, based on default_diagnostic_final_cb.
+	(diagnostic_text_output_format::on_begin_diagnostic): New, based
+	on code from diagnostic_report_diagnostic.
+	(diagnostic_text_output_format::on_end_diagnostic): Likewise.
+	(diagnostic_text_output_format::on_diagram): New, based on code
+	from diagnostic_emit_diagram.
+	* diagnostic.h (class diagnostic_output_format): New.
+	(class diagnostic_text_output_format): New.
+	(diagnostic_context::begin_diagnostic): Move to...
+	(diagnostic_context::m_text_callbacks::begin_diagnostic): ...here.
+	(diagnostic_context::start_span): Move to...
+	(diagnostic_context::m_text_callbacks::start_span): ...here.
+	(diagnostic_context::end_diagnostic): Move to...
+	(diagnostic_context::m_text_callbacks::end_diagnostic): ...here.
+	(diagnostic_context::begin_group_cb): Remove, in favor of
+	m_output_format->on_begin_group.
+	(diagnostic_context::end_group_cb): Remove, in favor of
+	m_output_format->on_end_group.
+	(diagnostic_context::final_cb): Remove, in favor of
+	m_output_format's dtor.
+	(diagnostic_context::m_output_format): New field.
+	(diagnostic_context::m_diagrams.m_emission_cb): Remove, in favor
+	of m_output_format->on_diagram.
+	(diagnostic_starter): Update.
+	(diagnostic_finalizer): Update.
+	(diagnostic_output_format_init_sarif_stream): New.
+	* input.cc (location_get_source_line): Move implementation apart from
+	call to diagnostic_file_cache_init to...
+	(file_cache::get_source_line): ...this new function...
+	(location_get_source_line): ...and reintroduce, rewritten in terms of
+	file_cache::get_source_line.
+	(get_source_file_content): Likewise, refactor into...
+	(file_cache::get_source_file_content): ...this new function.
+	* input.h (file_cache::get_source_line): New decl.
+	(file_cache::get_source_file_content): New decl.
+	* selftest-diagnostic.cc
+	(test_diagnostic_context::test_diagnostic_context): Update.
+	* tree-diagnostic-path.cc (event_range::print): Update for
+	change to diagnostic_context's start_span callback.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc: Update for reorganization of
+	source-printing fields of diagnostic_context.
+	* diagnostic.cc (diagnostic_set_caret_max_width): Likewise.
+	(diagnostic_initialize): Likewise.
+	* diagnostic.h (diagnostic_context::show_caret): Move to...
+	(diagnostic_context::m_source_printing::enabled): ...here.
+	(diagnostic_context::caret_max_width): Move to...
+	(diagnostic_context::m_source_printing::max_width): ...here.
+	(diagnostic_context::caret_chars): Move to...
+	(diagnostic_context::m_source_printing::caret_chars): ...here.
+	(diagnostic_context::colorize_source_p): Move to...
+	(diagnostic_context::m_source_printing::colorize_source_p): ...here.
+	(diagnostic_context::show_labels_p): Move to...
+	(diagnostic_context::m_source_printing::show_labels_p): ...here.
+	(diagnostic_context::show_line_numbers_p): Move to...
+	(diagnostic_context::m_source_printing::show_line_numbers_p): ...here.
+	(diagnostic_context::min_margin_width): Move to...
+	(diagnostic_context::m_source_printing::min_margin_width): ...here.
+	(diagnostic_context::show_ruler_p): Move to...
+	(diagnostic_context::m_source_printing::show_ruler_p): ...here.
+	(diagnostic_same_line): Update for above changes.
+	* opts.cc (common_handle_option): Update for reorganization of
+	source-printing fields of diagnostic_context.
+	* selftest-diagnostic.cc
+	(test_diagnostic_context::test_diagnostic_context): Likewise.
+	* toplev.cc (general_init): Likewise.
+	* tree-diagnostic-path.cc (struct event_range): Likewise.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_initialize): Initialize
+	set_locations_cb to nullptr.
+
+2023-10-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111235
+	* config/arm/constraints.md: Remove Pf constraint.
+	* config/arm/sync.md (arm_atomic_load<mode>): Add new pattern.
+	(arm_atomic_load_acquire<mode>): Likewise.
+	(arm_atomic_store<mode>): Likewise.
+	(arm_atomic_store_release<mode>): Likewise.
+	(atomic_load<mode>): Switch patterns to define_expand.
+	(atomic_store<mode>): Likewise.
+	(arm_atomic_loaddi2_ldrd): Remove predication.
+	(arm_load_exclusive<mode>): Likewise.
+	(arm_load_acquire_exclusive<mode>): Likewise.
+	(arm_load_exclusivesi): Likewise.
+	(arm_load_acquire_exclusivesi): Likewise.
+	(arm_load_exclusivedi): Likewise.
+	(arm_load_acquire_exclusivedi): Likewise.
+	(arm_store_exclusive<mode>): Likewise.
+	(arm_store_release_exclusivedi): Likewise.
+	(arm_store_release_exclusive<mode>): Likewise.
+	* config/arm/unspecs.md: Add VUNSPEC_LDR and VUNSPEC_STR.
+
+2023-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2023-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (INCLUDE_ALGORITHM): Remove.
+	(cmp_arg_entry): New.
+	(predicate_scalar_phi): Use it.
+
+2023-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (xorsign<mode>3): Renamed to..
+	(@xorsign<mode>3): ...This.
+	* config/aarch64/aarch64.md (xorsign<mode>3): Renamed to...
+	(@xorsign<mode>3): ..This and emit vectors directly
+	* config/aarch64/iterators.md (VCONQ): Add SF and DF.
+
+2023-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* emit-rtl.cc (validate_subreg): Relax subreg rule.
+
+2023-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (INCLUDE_ALGORITHM): Remove.
+	(cmp_arg_entry): New.
+	(predicate_scalar_phi): Use it.
+
+2023-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR bootstrap/111642
+	* rtl-tests.cc (const_poly_int_tests<N>::run): Use a local
+	poly_int64 typedef.
+	* simplify-rtx.cc (simplify_const_poly_int_tests<N>::run): Likewise.
+
+2023-10-02  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (riscv_vector::expand_block_move):
+	Declare.
+	* config/riscv/riscv-v.cc (riscv_vector::expand_block_move):
+	New function.
+	* config/riscv/riscv.md (cpymemsi): Use riscv_vector::expand_block_move.
+	Change to ..
+	(cpymem<P:mode>) .. this.
+
 2023-10-01  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* combine.cc (simplify_compare_const): Properly handle unsigned

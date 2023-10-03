@@ -1,3 +1,8 @@
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc: Update for grouping of source printing fields
+	within diagnostic_context.
+
 2023-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.cc (get_stmt_location): Handle null stmt.

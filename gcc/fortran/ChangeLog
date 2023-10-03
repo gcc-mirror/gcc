@@ -1,3 +1,14 @@
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostics_init): Update for change to start_span.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostic_starter): Update for reorganization of
+	source-printing fields of diagnostic_context.
+	(gfc_diagnostics_init): Likewise.
+	(gfc_diagnostics_finish): Likewise.
+
 2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/37336

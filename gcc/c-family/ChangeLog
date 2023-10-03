@@ -1,3 +1,11 @@
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (maybe_add_include_fixit): Update for renaming of
+	diagnostic_context's show_caret to m_source_printing.enabled.
+	* c-opts.cc (c_common_init_options): Update for renaming of
+	diagnostic_context's colorize_source_p to
+	m_source_printing.colorize_source_p.
+
 2023-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/111392
