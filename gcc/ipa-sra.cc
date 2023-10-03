@@ -185,6 +185,13 @@ struct GTY(()) isra_param_desc
   unsigned split_candidate : 1;
   /* Is this a parameter passing stuff by reference?  */
   unsigned by_ref : 1;
+  /* If set, this parameter can only be a candidate for removal if the function
+     is going to loose its return value.  */
+  unsigned remove_only_when_retval_removed : 1;
+  /* If set, this parameter can only be a candidate for splitting if the
+     function is going to loose its return value.  Can only be meaningfully set
+     for by_ref parameters.  */
+  unsigned split_only_when_retval_removed : 1;
   /* Parameter hint set during IPA analysis when there is a caller which does
      not construct the argument just to pass it to calls.  Only meaningful for
      by_ref parameters.  */
@@ -206,7 +213,8 @@ struct gensum_param_desc
   /* Number of accesses in the access tree rooted in field accesses.  */
   unsigned access_count;
 
-  /* If the below is non-zero, this is the number of uses as actual arguments.  */
+  /* If the below is non-zero, this is the number of uses as actual
+     arguments.  */
   int call_uses;
   /* Number of times this parameter has been directly passed to.  */
   unsigned ptr_pt_count;
@@ -230,6 +238,13 @@ struct gensum_param_desc
      without performing further checks (for example because it is a
      REFERENCE_TYPE)?  */
   bool safe_ref;
+  /* If set, this parameter can only be a candidate for removal if the function
+     is going to loose its return value.  */
+  bool remove_only_when_retval_removed;
+  /* If set, this parameter can only be a candidate for splitting if the
+     function is going to loose its return value.  Can only be meaningfully set
+     for by_ref parameters.  */
+  bool split_only_when_retval_removed;
   /* Only meaningful for by_ref parameters.  If set, this parameter can only be
      a split candidate if all callers pass pointers that are known to point to
      a chunk of memory large enough to contain all accesses.  */
@@ -445,6 +460,8 @@ ipa_sra_function_summaries::duplicate (cgraph_node *, cgraph_node *,
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
+      d->remove_only_when_retval_removed = s->remove_only_when_retval_removed;
+      d->split_only_when_retval_removed = s->split_only_when_retval_removed;
       d->not_specially_constructed = s->not_specially_constructed;
       d->conditionally_dereferenceable = s->conditionally_dereferenceable;
       d->safe_size_set = s->safe_size_set;
@@ -732,17 +749,21 @@ static void
 dump_gensum_param_descriptor (FILE *f, gensum_param_desc *desc)
 {
   if (desc->locally_unused)
-    fprintf (f, "    unused with %i call_uses\n", desc->call_uses);
+    fprintf (f, "    unused with %i call_uses%s\n", desc->call_uses,
+	     desc->remove_only_when_retval_removed ?
+	     " remove_only_when_retval_removed" : "");
   if (!desc->split_candidate)
     {
       fprintf (f, "    not a candidate\n");
       return;
     }
   if (desc->by_ref)
-    fprintf (f, "    %s%s by_ref with %u pass throughs\n",
+    fprintf (f, "    %s%s%s by_ref with %u pass throughs\n",
 	     desc->safe_ref ? "safe" : "unsafe",
 	     desc->conditionally_dereferenceable
-	     ? " conditionally_dereferenceable" : " ok",
+	     ? " conditionally_dereferenceable" : "",
+	     desc->split_only_when_retval_removed
+	     ? " split_only_when_retval_removed" : "",
 	     desc->ptr_pt_count);
 
   for (gensum_param_access *acc = desc->accesses; acc; acc = acc->next_sibling)
@@ -790,6 +811,10 @@ dump_isra_param_descriptor (FILE *f, isra_param_desc *desc, bool hints)
   fprintf (f, "    param_size_limit: %u, size_reached: %u%s",
 	   desc->param_size_limit, desc->size_reached,
 	   desc->by_ref ? ", by_ref" : "");
+  if (desc->remove_only_when_retval_removed)
+    fprintf (f, ", remove_only_when_retval_removed");
+  if (desc->split_only_when_retval_removed)
+    fprintf (f, ", split_only_when_retval_removed");
   if (desc->by_ref && desc->conditionally_dereferenceable)
     fprintf (f, ", conditionally_dereferenceable");
   if (hints)
@@ -881,16 +906,18 @@ get_single_param_flow_source (const isra_param_flow *param_flow)
 
 /* Inspect all uses of NAME and simple arithmetic calculations involving NAME
    in FUN represented with NODE and return a negative number if any of them is
-   used for something else than either an actual call argument, simple
-   arithmetic operation or debug statement.  If there are no such uses, return
-   the number of actual arguments that this parameter eventually feeds to (or
-   zero if there is none).  For any such parameter, mark PARM_NUM as one of its
-   sources.  ANALYZED is a bitmap that tracks which SSA names we have already
-   started investigating.  */
+   used for something else than either an actual call argument, simple return,
+   simple arithmetic operation or debug statement.  If there are no such uses,
+   return the number of actual arguments that this parameter eventually feeds
+   to (or zero if there is none).  If there are any simple return uses, set
+   DESC->remove_only_when_retval_removed.  For any such parameter, mark
+   PARM_NUM as one of its sources.  ANALYZED is a bitmap that tracks which SSA
+   names we have already started investigating.  */
 
 static int
 isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
-			      int parm_num, bitmap analyzed)
+			      int parm_num, bitmap analyzed,
+			      gensum_param_desc *desc)
 {
   int res = 0;
   imm_use_iterator imm_iter;
@@ -964,7 +991,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs)))
 	    {
 	      int tmp = isra_track_scalar_value_uses (fun, node, lhs, parm_num,
-						      analyzed);
+						      analyzed, desc);
 	      if (tmp < 0)
 		{
 		  res = tmp;
@@ -972,6 +999,16 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 		}
 	      res += tmp;
 	    }
+	}
+      else if (greturn *gr = dyn_cast<greturn *>(stmt))
+	{
+	  tree rv = gimple_return_retval (gr);
+	  if (rv != name)
+	    {
+	      res = -1;
+	      break;
+	    }
+	  desc->remove_only_when_retval_removed = true;
 	}
       else
 	{
@@ -985,11 +1022,12 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 /* Inspect all uses of PARM, which must be a gimple register, in FUN (which is
    also described by NODE) and simple arithmetic calculations involving PARM
    and return false if any of them is used for something else than either an
-   actual call argument, simple arithmetic operation or debug statement.  If
-   there are no such uses, return true and store the number of actual arguments
-   that this parameter eventually feeds to (or zero if there is none) to
-   *CALL_USES_P.  For any such parameter, mark PARM_NUM as one of its
-   sources.
+   actual call argument, simple return, simple arithmetic operation or debug
+   statement.  If there are no such uses, return true and store the number of
+   actual arguments that this parameter eventually feeds to (or zero if there
+   is none) to DESC->call_uses and set DESC->remove_only_when_retval_removed if
+   there are any uses in return statemens.  For any such parameter, mark
+   PARM_NUM as one of its sources.
 
    This function is similar to ptr_parm_has_nonarg_uses but its results are
    meant for unused parameter removal, as opposed to splitting of parameters
@@ -997,14 +1035,14 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 
 static bool
 isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
-				    int parm_num, int *call_uses_p)
+				    int parm_num, gensum_param_desc *desc)
 {
   gcc_checking_assert (is_gimple_reg (parm));
 
   tree name = ssa_default_def (fun, parm);
   if (!name || has_zero_uses (name))
     {
-      *call_uses_p = 0;
+      desc->call_uses = 0;
       return false;
     }
 
@@ -1014,11 +1052,11 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
 
   bitmap analyzed = BITMAP_ALLOC (NULL);
   int call_uses = isra_track_scalar_value_uses (fun, node, name, parm_num,
-						analyzed);
+						analyzed, desc);
   BITMAP_FREE (analyzed);
   if (call_uses < 0)
     return true;
-  *call_uses_p = call_uses;
+  desc->call_uses = call_uses;
   return false;
 }
 
@@ -1026,9 +1064,11 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
    examine whether there are any nonarg uses that are not actual arguments or
    otherwise infeasible uses.  If so, return true, otherwise return false.
    Create pass-through IPA flow records for any direct uses as argument calls
-   and if returning false, store their number into *PT_COUNT_P.  NODE and FUN
-   must represent the function that is currently analyzed, PARM_NUM must be the
-   index of the analyzed parameter.
+   and if returning false, store their number into DESC->ptr_pt_count.  If
+   removal of return value would still allow splitting, return true but set
+   DESC->split_only_when_retval_removed.  NODE and FUN must represent the
+   function that is currently analyzed, PARM_NUM must be the index of the
+   analyzed parameter.
 
    This function is similar to isra_track_scalar_param_local_uses but its
    results are meant for splitting of parameters passed by reference or turning
@@ -1037,7 +1077,7 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
 
 static bool
 ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
-			  int parm_num, unsigned *pt_count_p)
+			  int parm_num, gensum_param_desc *desc)
 {
   imm_use_iterator ui;
   gimple *stmt;
@@ -1121,6 +1161,19 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
 		}
 	    }
 	}
+      else if (greturn *gr = dyn_cast<greturn *>(stmt))
+	{
+	  tree rv = gimple_return_retval (gr);
+	  if (rv == name)
+	    {
+	      uses_ok++;
+	      /* Analysis for feasibility of removal must have already reached
+		 the conclusion that the flag must be set if it completed.  */
+	      gcc_assert (!desc->locally_unused
+			  || desc->remove_only_when_retval_removed);
+	      desc->split_only_when_retval_removed = true;
+	    }
+	}
 
       /* If the number of valid uses does not match the number of
          uses in this stmt there is an unhandled use.  */
@@ -1136,7 +1189,7 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
 	}
     }
 
-  *pt_count_p = pt_count;
+  desc->ptr_pt_count = pt_count;
   return ret;
 }
 
@@ -1166,7 +1219,6 @@ create_parameter_descriptors (cgraph_node *node,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	print_generic_expr (dump_file, parm, TDF_UID);
 
-      int scalar_call_uses;
       tree type = TREE_TYPE (parm);
       if (TREE_THIS_VOLATILE (parm))
 	{
@@ -1194,15 +1246,15 @@ create_parameter_descriptors (cgraph_node *node,
 	}
 
       if (is_gimple_reg (parm)
-	  && !isra_track_scalar_param_local_uses (fun, node, parm, num,
-						  &scalar_call_uses))
+	  && !isra_track_scalar_param_local_uses (fun, node, parm, num, desc))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, " is a scalar with only %i call uses\n",
-		     scalar_call_uses);
-
 	  desc->locally_unused = true;
-	  desc->call_uses = scalar_call_uses;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " is a scalar with only %i call uses%s\n",
+		     desc->call_uses,
+		     desc->remove_only_when_retval_removed
+		     ? " and return uses": "");
 	}
 
       if (POINTER_TYPE_P (type))
@@ -1253,8 +1305,7 @@ create_parameter_descriptors (cgraph_node *node,
 			 "a va list\n");
 	      continue;
 	    }
-	  if (ptr_parm_has_nonarg_uses (node, fun, parm, num,
-					&desc->ptr_pt_count))
+	  if (ptr_parm_has_nonarg_uses (node, fun, parm, num, desc))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, " not a candidate, reference has "
@@ -2628,6 +2679,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
+      d->remove_only_when_retval_removed = s->remove_only_when_retval_removed;
+      d->split_only_when_retval_removed = s->split_only_when_retval_removed;
       d->conditionally_dereferenceable = s->conditionally_dereferenceable;
 
       for (gensum_param_access *acc = s->accesses;
@@ -2789,6 +2842,8 @@ isra_write_node_summary (output_block *ob, cgraph_node *node)
       bp_pack_value (&bp, desc->split_candidate, 1);
       bp_pack_value (&bp, desc->by_ref, 1);
       gcc_assert (!desc->not_specially_constructed);
+      bp_pack_value (&bp, desc->remove_only_when_retval_removed, 1);
+      bp_pack_value (&bp, desc->split_only_when_retval_removed, 1);
       bp_pack_value (&bp, desc->conditionally_dereferenceable, 1);
       gcc_assert (!desc->safe_size_set);
       streamer_write_bitpack (&bp);
@@ -2913,6 +2968,8 @@ isra_read_node_info (struct lto_input_block *ib, cgraph_node *node,
       desc->split_candidate = bp_unpack_value (&bp, 1);
       desc->by_ref = bp_unpack_value (&bp, 1);
       desc->not_specially_constructed = 0;
+      desc->remove_only_when_retval_removed = bp_unpack_value (&bp, 1);
+      desc->split_only_when_retval_removed = bp_unpack_value (&bp, 1);
       desc->conditionally_dereferenceable = bp_unpack_value (&bp, 1);
       desc->safe_size_set = 0;
     }
@@ -4256,8 +4313,32 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 	{
 	  desc->locally_unused = false;
 	  desc->split_candidate = false;
+	  continue;
 	}
-      else if (check_surviving
+
+      if (desc->split_only_when_retval_removed
+	       && !ifs->m_return_ignored)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS)
+	      && (desc->locally_unused || desc->split_candidate))
+	    dump_bad_cond_indices.safe_push (i);
+
+	  gcc_checking_assert (!desc->locally_unused
+			       || desc->remove_only_when_retval_removed);
+	  desc->locally_unused = false;
+	  desc->split_candidate = false;
+	  continue;
+	}
+      if (desc->remove_only_when_retval_removed
+	       && !ifs->m_return_ignored)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS)
+	      && (desc->locally_unused || desc->split_candidate))
+	    dump_bad_cond_indices.safe_push (i);
+
+	  desc->locally_unused = false;
+	}
+      if (check_surviving
 	       && (i >= surviving_params.length ()
 		   || !surviving_params[i]))
 	{
@@ -4269,67 +4350,65 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    dump_dead_indices.safe_push (i);
 	}
-      else
+
+      if (desc->split_candidate && desc->conditionally_dereferenceable)
 	{
-	  if (desc->split_candidate && desc->conditionally_dereferenceable)
-	    {
-	      gcc_assert (desc->safe_size_set);
-	      for (param_access *pa : *desc->accesses)
-		if ((pa->unit_offset + pa->unit_size) > desc->safe_size)
-		  {
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      dump_bad_cond_indices.safe_push (i);
-		    desc->split_candidate = false;
-		    break;
-		  }
-	    }
-
-	  if (desc->split_candidate)
-	    {
-	      if (desc->by_ref && !desc->not_specially_constructed)
-		{
-		  int extra_factor
-		    = opt_for_fn (node->decl,
-				  param_ipa_sra_ptrwrap_growth_factor);
-		  desc->param_size_limit = extra_factor * desc->param_size_limit;
-		}
-	      if (size_would_violate_limit_p (desc, desc->size_reached))
+	  gcc_assert (desc->safe_size_set);
+	  for (param_access *pa : *desc->accesses)
+	    if ((pa->unit_offset + pa->unit_size) > desc->safe_size)
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  dump_bad_cond_indices.safe_push (i);
 		desc->split_candidate = false;
-	    }
+		break;
+	      }
+	}
 
-	  /* Avoid ICEs on size-mismatched VIEW_CONVERT_EXPRs when callers and
-	     callees don't agree on types in aggregates and we try to do both
-	     IPA-CP and IPA-SRA.  */
-	  if (ipcp_ts && desc->split_candidate)
+      if (desc->split_candidate)
+	{
+	  if (desc->by_ref && !desc->not_specially_constructed)
 	    {
-	      ipa_argagg_value_list avl (ipcp_ts);
-	      for (const param_access *pa : desc->accesses)
+	      int extra_factor
+		= opt_for_fn (node->decl,
+			      param_ipa_sra_ptrwrap_growth_factor);
+	      desc->param_size_limit = extra_factor * desc->param_size_limit;
+	    }
+	  if (size_would_violate_limit_p (desc, desc->size_reached))
+	    desc->split_candidate = false;
+	}
+
+      /* Avoid ICEs on size-mismatched VIEW_CONVERT_EXPRs when callers and
+	 callees don't agree on types in aggregates and we try to do both
+	 IPA-CP and IPA-SRA.  */
+      if (ipcp_ts && desc->split_candidate)
+	{
+	  ipa_argagg_value_list avl (ipcp_ts);
+	  for (const param_access *pa : desc->accesses)
+	    {
+	      if (!pa->certain)
+		continue;
+	      tree value = avl.get_value (i, pa->unit_offset);
+	      if (value
+		  && ((tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)))
+		       / BITS_PER_UNIT)
+		      != pa->unit_size))
 		{
-		  if (!pa->certain)
-		    continue;
-		  tree value = avl.get_value (i, pa->unit_offset);
-		  if (value
-		      && ((tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)))
-			   / BITS_PER_UNIT)
-			  != pa->unit_size))
-		    {
-		      desc->split_candidate = false;
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			dump_dead_indices.safe_push (i);
-		      break;
-		    }
+		  desc->split_candidate = false;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    dump_dead_indices.safe_push (i);
+		  break;
 		}
 	    }
-
-	  if (desc->locally_unused || desc->split_candidate)
-	    ret = false;
 	}
+
+      if (desc->locally_unused || desc->split_candidate)
+	ret = false;
     }
 
   dump_list_of_param_indices (node, "are dead on arrival or have a type "
 			      "mismatch with IPA-CP", dump_dead_indices);
-  dump_list_of_param_indices (node, "are not safe to dereference in all "
-			      "callers", dump_bad_cond_indices);
+  dump_list_of_param_indices (node, "fail additional requirements ",
+			      dump_bad_cond_indices);
 
   return ret;
 }

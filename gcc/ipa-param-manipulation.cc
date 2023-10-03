@@ -1207,6 +1207,8 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
 		    stack.safe_push (lhs);
 		}
 	    }
+	  else if (gimple_code (stmt) == GIMPLE_RETURN)
+	    gcc_assert (m_adjustments && m_adjustments->m_skip_return);
 	  else
 	    /* IPA-SRA does not analyze other types of statements.  */
 	    gcc_unreachable ();
@@ -1226,7 +1228,8 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
 }
 
 /* Put all clobbers of of dereference of default definition of PARAM into
-   m_dead_stmts.  */
+   m_dead_stmts.  If there are returns among uses of the default definition of
+   PARAM, verify they will be stripped off the return value.  */
 
 void
 ipa_param_body_adjustments::mark_clobbers_dead (tree param)
@@ -1244,6 +1247,8 @@ ipa_param_body_adjustments::mark_clobbers_dead (tree param)
      gimple *stmt = USE_STMT (use_p);
      if (gimple_clobber_p (stmt))
        m_dead_stmts.add (stmt);
+     else if (gimple_code (stmt) == GIMPLE_RETURN)
+       gcc_assert (m_adjustments && m_adjustments->m_skip_return);
    }
 }
 
