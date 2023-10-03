@@ -1063,7 +1063,7 @@ static const char *get_end_url_string (pretty_printer *);
    A format string can have at most 30 arguments.  */
 
 /* Formatting phases 1 and 2: render TEXT->format_spec plus
-   TEXT->args_ptr into a series of chunks in pp_buffer (PP)->args[].
+   text->m_args_ptr into a series of chunks in pp_buffer (PP)->args[].
    Phase 3 is in pp_output_formatted_text.  */
 
 void
@@ -1093,7 +1093,7 @@ pp_format (pretty_printer *pp, text_info *text)
 
   memset (formatters, 0, sizeof formatters);
 
-  for (p = text->format_spec; *p; )
+  for (p = text->m_format_spec; *p; )
     {
       while (*p != '\0' && *p != '%')
 	{
@@ -1157,7 +1157,7 @@ pp_format (pretty_printer *pp, text_info *text)
 
 	case 'm':
 	  {
-	    const char *errstr = xstrerror (text->err_no);
+	    const char *errstr = xstrerror (text->m_err_no);
 	    obstack_grow (&buffer->chunk_obstack, errstr, strlen (errstr));
 	  }
 	  p++;
@@ -1316,7 +1316,7 @@ pp_format (pretty_printer *pp, text_info *text)
 	{
 	case 'r':
 	  pp_string (pp, colorize_start (pp_show_color (pp),
-					 va_arg (*text->args_ptr,
+					 va_arg (*text->m_args_ptr,
 						 const char *)));
 	  break;
 
@@ -1325,7 +1325,7 @@ pp_format (pretty_printer *pp, text_info *text)
 	    /* When quoting, print alphanumeric, punctuation, and the space
 	       character unchanged, and all others in hexadecimal with the
 	       "\x" prefix.  Otherwise print them all unchanged.  */
-	    int chr = va_arg (*text->args_ptr, int);
+	    int chr = va_arg (*text->m_args_ptr, int);
 	    if (ISPRINT (chr) || !quote)
 	      pp_character (pp, chr);
 	    else
@@ -1339,49 +1339,49 @@ pp_format (pretty_printer *pp, text_info *text)
 	case 'd':
 	case 'i':
 	  if (wide)
-	    pp_wide_integer (pp, va_arg (*text->args_ptr, HOST_WIDE_INT));
+	    pp_wide_integer (pp, va_arg (*text->m_args_ptr, HOST_WIDE_INT));
 	  else
 	    pp_integer_with_precision
-	      (pp, *text->args_ptr, precision, int, "d");
+	      (pp, *text->m_args_ptr, precision, int, "d");
 	  break;
 
 	case 'o':
 	  if (wide)
 	    pp_scalar (pp, "%" HOST_WIDE_INT_PRINT "o",
-		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
 	    pp_integer_with_precision
-	      (pp, *text->args_ptr, precision, unsigned, "o");
+	      (pp, *text->m_args_ptr, precision, unsigned, "o");
 	  break;
 
 	case 's':
 	  if (quote)
-	    pp_quoted_string (pp, va_arg (*text->args_ptr, const char *));
+	    pp_quoted_string (pp, va_arg (*text->m_args_ptr, const char *));
 	  else
-	    pp_string (pp, va_arg (*text->args_ptr, const char *));
+	    pp_string (pp, va_arg (*text->m_args_ptr, const char *));
 	  break;
 
 	case 'p':
-	  pp_pointer (pp, va_arg (*text->args_ptr, void *));
+	  pp_pointer (pp, va_arg (*text->m_args_ptr, void *));
 	  break;
 
 	case 'u':
 	  if (wide)
 	    pp_scalar (pp, HOST_WIDE_INT_PRINT_UNSIGNED,
-		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
 	    pp_integer_with_precision
-	      (pp, *text->args_ptr, precision, unsigned, "u");
+	      (pp, *text->m_args_ptr, precision, unsigned, "u");
 	  break;
 
 	case 'f':
-	  pp_double (pp, va_arg (*text->args_ptr, double));
+	  pp_double (pp, va_arg (*text->m_args_ptr, double));
 	  break;
 
 	case 'Z':
 	  {
-	    int *v = va_arg (*text->args_ptr, int *);
-	    unsigned len = va_arg (*text->args_ptr, unsigned); 
+	    int *v = va_arg (*text->m_args_ptr, int *);
+	    unsigned len = va_arg (*text->m_args_ptr, unsigned);
 
 	    for (unsigned i = 0; i < len; ++i)
 	      {
@@ -1398,10 +1398,10 @@ pp_format (pretty_printer *pp, text_info *text)
 	case 'x':
 	  if (wide)
 	    pp_scalar (pp, HOST_WIDE_INT_PRINT_HEX,
-		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+		       va_arg (*text->m_args_ptr, unsigned HOST_WIDE_INT));
 	  else
 	    pp_integer_with_precision
-	      (pp, *text->args_ptr, precision, unsigned, "x");
+	      (pp, *text->m_args_ptr, precision, unsigned, "x");
 	  break;
 
 	case '.':
@@ -1425,14 +1425,14 @@ pp_format (pretty_printer *pp, text_info *text)
 		gcc_assert (*p == '*');
 		p++;
 		gcc_assert (*p == 's');
-		n = va_arg (*text->args_ptr, int);
+		n = va_arg (*text->m_args_ptr, int);
 
 		/* This consumes a second entry in the formatters array.  */
 		gcc_assert (formatters[argno] == formatters[argno+1]);
 		argno++;
 	      }
 
-	    s = va_arg (*text->args_ptr, const char *);
+	    s = va_arg (*text->m_args_ptr, const char *);
 
 	    /* Append the lesser of precision and strlen (s) characters
 	       from the array (which need not be a nul-terminated string).
@@ -1447,7 +1447,7 @@ pp_format (pretty_printer *pp, text_info *text)
 	  {
 	    /* diagnostic_event_id_t *.  */
 	    diagnostic_event_id_ptr event_id
-	      = va_arg (*text->args_ptr, diagnostic_event_id_ptr);
+	      = va_arg (*text->m_args_ptr, diagnostic_event_id_ptr);
 	    gcc_assert (event_id->known_p ());
 
 	    pp_string (pp, colorize_start (pp_show_color (pp), "path"));
@@ -1459,7 +1459,7 @@ pp_format (pretty_printer *pp, text_info *text)
 	  break;
 
 	case '{':
-	  pp_begin_url (pp, va_arg (*text->args_ptr, const char *));
+	  pp_begin_url (pp, va_arg (*text->m_args_ptr, const char *));
 	  break;
 
 	default:
@@ -1763,13 +1763,10 @@ pp_remaining_character_count_for_line (pretty_printer *pp)
 void
 pp_printf (pretty_printer *pp, const char *msg, ...)
 {
-  text_info text;
   va_list ap;
 
   va_start (ap, msg);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = msg;
+  text_info text (msg, &ap, errno);
   pp_format (pp, &text);
   pp_output_formatted_text (pp);
   va_end (ap);
@@ -1780,13 +1777,10 @@ pp_printf (pretty_printer *pp, const char *msg, ...)
 void
 pp_verbatim (pretty_printer *pp, const char *msg, ...)
 {
-  text_info text;
   va_list ap;
 
   va_start (ap, msg);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = msg;
+  text_info text (msg, &ap, errno);
   pp_format_verbatim (pp, &text);
   va_end (ap);
 }
@@ -2290,14 +2284,9 @@ assert_pp_format_va (const location &loc, const char *expected,
 		     bool show_color, const char *fmt, va_list *ap)
 {
   pretty_printer pp;
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
-  ti.format_spec = fmt;
-  ti.args_ptr = ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
+  text_info ti (fmt, ap, 0, nullptr, &rich_loc);
 
   pp_show_color (&pp) = show_color;
   pp_format (&pp, &ti);

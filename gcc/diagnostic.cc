@@ -348,9 +348,9 @@ diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
 				diagnostic_t kind)
 {
   gcc_assert (richloc);
-  diagnostic->message.err_no = errno;
-  diagnostic->message.args_ptr = args;
-  diagnostic->message.format_spec = msg;
+  diagnostic->message.m_err_no = errno;
+  diagnostic->message.m_args_ptr = args;
+  diagnostic->message.m_format_spec = msg;
   diagnostic->message.m_richloc = richloc;
   diagnostic->richloc = richloc;
   diagnostic->metadata = NULL;
@@ -1529,7 +1529,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       && diagnostic->kind == DK_WARNING)
     diagnostic->kind = DK_ERROR;
 
-  diagnostic->message.x_data = &diagnostic->x_data;
+  diagnostic->message.m_data = &diagnostic->x_data;
 
   /* Check to see if the diagnostic is enabled at the location and
      not disabled by #pragma GCC diagnostic anywhere along the inlining
@@ -1565,8 +1565,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	}
       if (context->internal_error)
 	(*context->internal_error) (context,
-				    diagnostic->message.format_spec,
-				    diagnostic->message.args_ptr);
+				    diagnostic->message.m_format_spec,
+				    diagnostic->message.m_args_ptr);
     }
   if (diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
     ++diagnostic_kind_count (context, DK_WERROR);
@@ -1678,14 +1678,10 @@ trim_filename (const char *name)
 void
 verbatim (const char *gmsgid, ...)
 {
-  text_info text;
   va_list ap;
 
   va_start (ap, gmsgid);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = _(gmsgid);
-  text.x_data = NULL;
+  text_info text (_(gmsgid), &ap, errno);
   pp_format_verbatim (global_dc->printer, &text);
   pp_newline_and_flush (global_dc->printer);
   va_end (ap);
@@ -2470,19 +2466,13 @@ simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
   pretty_printer *pp = m_event_pp;
   pp_clear_output_area (pp);
 
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_list ap;
 
   va_start (ap, fmt);
 
-  ti.format_spec = _(fmt);
-  ti.args_ptr = &ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
-
+  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);
 
@@ -2507,18 +2497,13 @@ simple_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
   pretty_printer *pp = m_event_pp;
   pp_clear_output_area (pp);
 
-  text_info ti;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_list ap;
 
   va_start (ap, fmt);
 
-  ti.format_spec = _(fmt);
-  ti.args_ptr = &ap;
-  ti.err_no = 0;
-  ti.x_data = NULL;
-  ti.m_richloc = &rich_loc;
+  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
 
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);

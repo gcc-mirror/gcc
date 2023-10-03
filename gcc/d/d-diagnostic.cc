@@ -205,11 +205,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
   else
     {
       /* Write verbatim messages with no location direct to stream.  */
-      text_info text;
-      text.err_no = errno;
-      text.args_ptr = &argp;
-      text.format_spec = expand_d_format (format);
-      text.x_data = NULL;
+      text_info text (expand_d_format (format), &argp, errno, nullptr);
 
       pp_format_verbatim (global_dc->printer, &text);
       pp_newline_and_flush (global_dc->printer);

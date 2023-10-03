@@ -1074,7 +1074,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	if (*spec == 'C')
 	  loc = &gfc_current_locus;
 	else
-	  loc = va_arg (*text->args_ptr, locus *);
+	  loc = va_arg (*text->m_args_ptr, locus *);
 	gcc_assert (loc->nextc - loc->lb->line >= 0);
 	unsigned int offset = loc->nextc - loc->lb->line;
 	if (*spec == 'C' && *loc->nextc != '\0')
