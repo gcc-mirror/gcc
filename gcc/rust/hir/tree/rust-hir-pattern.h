@@ -777,8 +777,8 @@ protected:
   }
 };
 
-// Base abstract class for patterns used in TupleStructPattern
-class TupleStructItems : public FullVisitable
+// Base abstract class for TupleStructItems and TuplePatternItems
+class TupleItems : public FullVisitable
 {
 public:
   enum ItemType
@@ -787,25 +787,38 @@ public:
     RANGED,
   };
 
-  virtual ~TupleStructItems () {}
+  virtual ~TupleItems () {}
 
   // TODO: should this store location data?
 
+  // Unique pointer custom clone function
+  std::unique_ptr<TupleItems> clone_tuple_items () const
+  {
+    return std::unique_ptr<TupleItems> (clone_tuple_items_impl ());
+  }
+
+  virtual ItemType get_item_type () const = 0;
+
+  virtual std::string as_string () const = 0;
+
+protected:
+  // pure virtual clone implementation
+  virtual TupleItems *clone_tuple_items_impl () const = 0;
+};
+
+// Base abstract class for patterns used in TupleStructPattern
+class TupleStructItems : public TupleItems
+{
+public:
   // Unique pointer custom clone function
   std::unique_ptr<TupleStructItems> clone_tuple_struct_items () const
   {
     return std::unique_ptr<TupleStructItems> (clone_tuple_items_impl ());
   }
 
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
-
-  virtual ItemType get_item_type () const = 0;
-
 protected:
   // pure virtual clone implementation
-  virtual TupleStructItems *clone_tuple_items_impl () const = 0;
+  virtual TupleStructItems *clone_tuple_items_impl () const override = 0;
 };
 
 // Class for non-ranged tuple struct pattern patterns
@@ -1011,32 +1024,18 @@ protected:
 };
 
 // Base abstract class representing TuplePattern patterns
-class TuplePatternItems : public FullVisitable
+class TuplePatternItems : public TupleItems
 {
 public:
-  enum ItemType
-  {
-    MULTIPLE,
-    RANGED,
-  };
-
-  virtual ~TuplePatternItems () {}
-
-  // TODO: should this store location data?
-
   // Unique pointer custom clone function
   std::unique_ptr<TuplePatternItems> clone_tuple_pattern_items () const
   {
     return std::unique_ptr<TuplePatternItems> (clone_tuple_items_impl ());
   }
 
-  virtual std::string as_string () const = 0;
-
-  virtual ItemType get_item_type () const = 0;
-
 protected:
   // pure virtual clone implementation
-  virtual TuplePatternItems *clone_tuple_items_impl () const = 0;
+  virtual TuplePatternItems *clone_tuple_items_impl () const override = 0;
 };
 
 // Class representing TuplePattern patterns where there are multiple patterns
