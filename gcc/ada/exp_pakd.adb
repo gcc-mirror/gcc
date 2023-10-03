@@ -1137,14 +1137,12 @@ package body Exp_Pakd is
 
       if Nkind (Rhs) = N_String_Literal then
          declare
-            Decl : Node_Id;
-         begin
-            Decl :=
+            Decl : constant Node_Id :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Make_Temporary (Loc, 'T', Rhs),
                 Object_Definition   => New_Occurrence_Of (Ctyp, Loc),
                 Expression          => New_Copy_Tree (Rhs));
-
+         begin
             Insert_Actions (N, New_List (Decl));
             Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
          end;
@@ -2481,12 +2479,10 @@ package body Exp_Pakd is
       Loc  : constant Source_Ptr := Sloc (N);
       PAT  : Entity_Id;
       Otyp : Entity_Id;
-      Csiz : Uint;
+      Csiz : constant Uint := Component_Size (Atyp);
       Osiz : Uint;
 
    begin
-      Csiz := Component_Size (Atyp);
-
       Convert_To_PAT_Type (Obj);
       PAT := Etype (Obj);
 
