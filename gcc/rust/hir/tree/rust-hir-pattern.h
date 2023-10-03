@@ -1033,7 +1033,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual TuplePatternItemType get_pattern_type () const = 0;
+  virtual TuplePatternItemType get_item_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1078,7 +1078,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_pattern_type () const override
+  TuplePatternItemType get_item_type () const override
   {
     return TuplePatternItemType::MULTIPLE;
   }
@@ -1148,7 +1148,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_pattern_type () const override
+  TuplePatternItemType get_item_type () const override
   {
     return TuplePatternItemType::RANGED;
   }

@@ -296,7 +296,7 @@ void
 TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 {
   std::unique_ptr<HIR::TuplePatternItems> items;
-  switch (pattern.get_items ()->get_pattern_type ())
+  switch (pattern.get_items ()->get_item_type ())
     {
       case HIR::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
 	HIR::TuplePatternItemsMultiple &ref
