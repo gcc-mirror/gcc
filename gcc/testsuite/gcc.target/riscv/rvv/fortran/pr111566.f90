@@ -1,11 +1,11 @@
 ! { dg-do compile }
-! { dg-options &quot;-march=rv64gcv -mabi=lp64d -Ofast -fallow-argument-mismatch -fmax-stack-var-size=65536 -S  -std=legacy -w&quot; }
+! { dg-options "-march=rv64gcv -mabi=lp64d -Ofast -fallow-argument-mismatch -fmax-stack-var-size=65536 -S  -std=legacy -w" }
 
 module a
   integer,parameter :: SHR_KIND_R8 = selected_real_kind(12)
 end module a
 module b
-  use a,  c =&gt; shr_kind_r8
+  use a,  c => shr_kind_r8
 contains
   subroutine d(cg , km, i1, i2)
     real (c) ch(i2,km)
@@ -22,7 +22,7 @@ contains
     enddo
     if ( cq == 0 ) then
        do i=i1,i2
-          if( cr &lt;=  cs ) then
+          if( cr <=  cs ) then
              cg= sign( min(ct,   cg),  cg)
           endif
        enddo
