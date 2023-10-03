@@ -39,8 +39,7 @@ def is_specialization_of(x, template_name):
     """
     if isinstance(x, gdb.Type):
         x = x.tag
-    if _versioned_namespace:
-        template_name = '(%s)?%s' % (_versioned_namespace, template_name)
+    template_name = '(%s)?%s' % (_versioned_namespace, template_name)
     return re.match(r'^std::(__\d::)?%s<.*>$' % template_name, x) is not None
 
 class LibStdCxxXMethod(gdb.xmethod.XMethod):
