@@ -5,6 +5,11 @@
 template <typename T, typename U> struct is_same { static constexpr bool value = false; };
 template <typename T> struct is_same<T, T> { static constexpr bool value = true; };
 
+/* { dg-begin-multiline-output "" }
+  f(0, 1.3);
+  ~^~~~~~~~
+   { dg-end-multiline-output "" } */
+
 template <typename T, typename U>
 void f(T, U)
 {
@@ -32,5 +37,5 @@ void f(T, U)
 
 void g()
 {
- f(0, 1.3);
+ f(0, 1.3); // { dg-message " required from here" }
 }

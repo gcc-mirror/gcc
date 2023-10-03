@@ -3774,6 +3774,8 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 		   ? _("recursively required from here\n")
 		   : _("required from here\n"));
     }
+  gcc_rich_location rich_loc (loc);
+  diagnostic_show_locus (context, &rich_loc, DK_NOTE);
 }
 
 /* Same as print_instantiation_full_context but less verbose.  */
