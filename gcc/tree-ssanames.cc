@@ -420,15 +420,11 @@ set_range_info (tree name, const vrange &r)
 
   // Pick up the current range, or VARYING if none.
   tree type = TREE_TYPE (name);
-  Value_Range tmp (type);
-  if (range_info_p (name))
-    range_info_get_range (name, tmp);
-  else
-    tmp.set_varying (type);
-
   if (POINTER_TYPE_P (type))
     {
-      if (r.nonzero_p () && !tmp.nonzero_p ())
+      struct ptr_info_def *pi = get_ptr_info (name);
+      // If R is nonnull and pi is not, set nonnull.
+      if (r.nonzero_p () && (!pi || pi->pt.null))
 	{
 	  set_ptr_nonnull (name);
 	  return true;
@@ -436,6 +432,11 @@ set_range_info (tree name, const vrange &r)
       return false;
     }
 
+  Value_Range tmp (type);
+  if (range_info_p (name))
+    range_info_get_range (name, tmp);
+  else
+    tmp.set_varying (type);
   // If the result doesn't change, or is undefined, return false.
   if (!tmp.intersect (r) || tmp.undefined_p ())
     return false;
