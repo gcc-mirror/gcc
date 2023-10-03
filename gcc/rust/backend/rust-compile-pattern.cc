@@ -416,7 +416,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
   tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
   ctx->add_statement (init_stmt);
 
-  switch (pattern.get_items ()->get_pattern_type ())
+  switch (pattern.get_items ()->get_item_type ())
     {
       case HIR::TuplePatternItems::TuplePatternItemType::RANGED: {
 	size_t tuple_idx = 0;

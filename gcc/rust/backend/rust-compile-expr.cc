@@ -1038,7 +1038,7 @@ sort_tuple_patterns (HIR::MatchExpr &expr)
 
       auto items
 	= HIR::TuplePattern (ref).get_items ()->clone_tuple_pattern_items ();
-      if (items->get_pattern_type ()
+      if (items->get_item_type ()
 	  == HIR::TuplePatternItems::TuplePatternItemType::MULTIPLE)
 	{
 	  auto items_ref
