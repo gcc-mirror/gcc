@@ -408,5 +408,5 @@ package body System.Pool_Size is
          pragma Warnings (On);
       end Size;
 
-   end  Variable_Size_Management;
+   end Variable_Size_Management;
 end System.Pool_Size;

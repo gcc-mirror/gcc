@@ -10045,7 +10045,7 @@ package body Sem_Util is
            ("value of discriminant & is out of range", Discrim_Value, Discrim);
          Report_Errors := True;
          return;
-      end  if;
+      end if;
 
       --  If we have found the corresponding choice, recursively add its
       --  components to the Into list. The nested components are part of

@@ -2203,7 +2203,7 @@ package body Exp_Pakd is
          end loop;
 
          return False;
-      end  In_Partially_Packed_Record;
+      end In_Partially_Packed_Record;
 
    --  Start of processing for Known_Aligned_Enough
 
