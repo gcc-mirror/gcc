@@ -3658,12 +3658,24 @@ archs4x, archs4xd"
 (define_expand "scc_insn"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w") (match_operand:SI 1 ""))])
 
+(define_mode_iterator CC_ltu [CC_C CC])
+
+(define_insn "scc_ltu_<mode>"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=w")
+        (ltu:SI (reg:CC_ltu CC_REG) (const_int 0)))]
+  ""
+  "rlc\\t%0,0"
+  [(set_attr "type" "shift")
+   (set_attr "predicable" "no")
+   (set_attr "length" "4")])
+
 (define_insn_and_split "*scc_insn"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(match_operator:SI 1 "proper_comparison_operator" [(reg CC_REG) (const_int 0)]))]
   ""
   "#"
-  "reload_completed"
+  "reload_completed
+   && GET_CODE (operands[1]) != LTU"
   [(set (match_dup 0) (const_int 1))
    (cond_exec
      (match_dup 1)
