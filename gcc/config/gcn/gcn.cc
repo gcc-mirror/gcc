@@ -96,6 +96,7 @@ static hash_map<tree, int> lds_allocs;
 
 #define MAX_NORMAL_SGPR_COUNT	62  // i.e. 64 with VCC
 #define MAX_NORMAL_VGPR_COUNT	24
+#define MAX_NORMAL_AVGPR_COUNT	24
 
 /* }}}  */
 /* {{{ Initialization and options.  */
@@ -483,7 +484,8 @@ gcn_class_max_nregs (reg_class_t rclass, machine_mode mode)
 {
   /* Scalar registers are 32bit, vector registers are in fact tuples of
      64 lanes.  */
-  if (rclass == VGPR_REGS)
+  if (rclass == VGPR_REGS || rclass == AVGPR_REGS
+      || rclass == ALL_VGPR_REGS)
     {
       if (vgpr_1reg_mode_p (mode))
 	return 1;
@@ -583,7 +585,7 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return (sgpr_1reg_mode_p (mode)
 	    || (!((regno - FIRST_SGPR_REG) & 1) && sgpr_2reg_mode_p (mode))
 	    || (((regno - FIRST_SGPR_REG) & 3) == 0 && mode == TImode));
-  if (VGPR_REGNO_P (regno))
+  if (VGPR_REGNO_P (regno) || (AVGPR_REGNO_P (regno) && TARGET_CDNA1_PLUS))
     /* Vector instructions do not care about the alignment of register
        pairs, but where there is no 64-bit instruction, many of the
        define_split do not work if the input and output registers partially
@@ -623,6 +625,8 @@ gcn_regno_reg_class (int regno)
     }
   if (VGPR_REGNO_P (regno))
     return VGPR_REGS;
+  if (AVGPR_REGNO_P (regno))
+    return AVGPR_REGS;
   if (SGPR_REGNO_P (regno))
     return SGPR_REGS;
   if (regno < FIRST_VGPR_REG)
@@ -813,7 +817,7 @@ gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
       || c == VCC_CONDITIONAL_REG || c == EXEC_MASK_REG)
     return SGPR_REGS;
   else
-    return NO_REGS;
+    return c == VGPR_REGS && TARGET_CDNA1_PLUS ? AVGPR_REGS : NO_REGS;
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
@@ -2348,12 +2352,15 @@ gcn_sgpr_move_p (rtx op0, rtx op1)
     return true;
   if (MEM_P (op1) && AS_SCALAR_FLAT_P (MEM_ADDR_SPACE (op1)))
     return true;
-  if (!REG_P (op0) || REGNO (op0) >= FIRST_PSEUDO_REGISTER
-      || VGPR_REGNO_P (REGNO (op0)))
+  if (!REG_P (op0)
+      || REGNO (op0) >= FIRST_PSEUDO_REGISTER
+      || VGPR_REGNO_P (REGNO (op0))
+      || AVGPR_REGNO_P (REGNO (op0)))
     return false;
   if (REG_P (op1)
       && REGNO (op1) < FIRST_PSEUDO_REGISTER
-      && !VGPR_REGNO_P (REGNO (op1)))
+      && !VGPR_REGNO_P (REGNO (op1))
+      && !AVGPR_REGNO_P (REGNO (op1)))
     return true;
   return immediate_operand (op1, VOIDmode) || memory_operand (op1, VOIDmode);
 }
@@ -2424,6 +2431,11 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 	  result = (rclass == VGPR_REGS ? NO_REGS : VGPR_REGS);
 	  break;
 	}
+
+      /* CDNA1 doesn't have an instruction for going between the accumulator
+	 registers and memory.  Go via a VGPR in this case.  */
+      if (TARGET_CDNA1 && rclass == AVGPR_REGS && result != VGPR_REGS)
+	result = VGPR_REGS;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2445,7 +2457,8 @@ gcn_conditional_register_usage (void)
 
   if (cfun->machine->normal_function)
     {
-      /* Restrict the set of SGPRs and VGPRs used by non-kernel functions.  */
+      /* Restrict the set of SGPRs, VGPRs and AVGPRs used by non-kernel
+	 functions.  */
       for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT);
 	   i <= LAST_SGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
@@ -2454,6 +2467,9 @@ gcn_conditional_register_usage (void)
 	   i <= LAST_VGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
+      for (int i = AVGPR_REGNO (MAX_NORMAL_AVGPR_COUNT);
+	   i <= LAST_AVGPR_REG; i++)
+	fixed_regs[i] = 1, call_used_regs[i] = 1;
       return;
     }
 
@@ -2507,6 +2523,16 @@ gcn_conditional_register_usage (void)
     fixed_regs[cfun->machine->args.reg[WORK_ITEM_ID_Z_ARG]] = 1;
 }
 
+static bool
+gcn_vgpr_equivalent_register_operand (rtx x, machine_mode mode)
+{
+  if (gcn_vgpr_register_operand (x, mode))
+    return true;
+  if (TARGET_CDNA2_PLUS && gcn_avgpr_register_operand (x, mode))
+    return true;
+  return false;
+}
+
 /* Determine if a load or store is valid, according to the register classes
    and address space.  Used primarily by the machine description to decide
    when to split a move into two steps.  */
@@ -2515,21 +2541,36 @@ bool
 gcn_valid_move_p (machine_mode mode, rtx dest, rtx src)
 {
   if (!MEM_P (dest) && !MEM_P (src))
-    return true;
+    {
+      if (gcn_vgpr_register_operand (src, mode)
+	  && gcn_avgpr_register_operand (dest, mode))
+	return true;
+      if (gcn_avgpr_register_operand (src, mode)
+	  && gcn_vgpr_register_operand (dest, mode))
+	return true;
+      if (TARGET_CDNA2_PLUS
+	  && gcn_avgpr_register_operand (src, mode)
+	  && gcn_avgpr_register_operand (dest, mode))
+	return true;
+      if (gcn_avgpr_hard_register_operand (src, mode)
+	  || gcn_avgpr_hard_register_operand (dest, mode))
+	return false;
+      return true;
+    }
 
   if (MEM_P (dest)
       && AS_FLAT_P (MEM_ADDR_SPACE (dest))
       && (gcn_flat_address_p (XEXP (dest, 0), mode)
 	  || GET_CODE (XEXP (dest, 0)) == SYMBOL_REF
 	  || GET_CODE (XEXP (dest, 0)) == LABEL_REF)
-      && gcn_vgpr_register_operand (src, mode))
+      && gcn_vgpr_equivalent_register_operand (src, mode))
     return true;
   else if (MEM_P (src)
 	   && AS_FLAT_P (MEM_ADDR_SPACE (src))
 	   && (gcn_flat_address_p (XEXP (src, 0), mode)
 	       || GET_CODE (XEXP (src, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (src, 0)) == LABEL_REF)
-	   && gcn_vgpr_register_operand (dest, mode))
+	   && gcn_vgpr_equivalent_register_operand (dest, mode))
     return true;
 
   if (MEM_P (dest)
@@ -2537,14 +2578,14 @@ gcn_valid_move_p (machine_mode mode, rtx dest, rtx src)
       && (gcn_global_address_p (XEXP (dest, 0))
 	  || GET_CODE (XEXP (dest, 0)) == SYMBOL_REF
 	  || GET_CODE (XEXP (dest, 0)) == LABEL_REF)
-      && gcn_vgpr_register_operand (src, mode))
+      && gcn_vgpr_equivalent_register_operand (src, mode))
     return true;
   else if (MEM_P (src)
 	   && AS_GLOBAL_P (MEM_ADDR_SPACE (src))
 	   && (gcn_global_address_p (XEXP (src, 0))
 	       || GET_CODE (XEXP (src, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (src, 0)) == LABEL_REF)
-	   && gcn_vgpr_register_operand (dest, mode))
+	   && gcn_vgpr_equivalent_register_operand (dest, mode))
     return true;
 
   if (MEM_P (dest)
@@ -2565,12 +2606,12 @@ gcn_valid_move_p (machine_mode mode, rtx dest, rtx src)
   if (MEM_P (dest)
       && AS_ANY_DS_P (MEM_ADDR_SPACE (dest))
       && gcn_ds_address_p (XEXP (dest, 0))
-      && gcn_vgpr_register_operand (src, mode))
+      && gcn_vgpr_equivalent_register_operand (src, mode))
     return true;
   else if (MEM_P (src)
 	   && AS_ANY_DS_P (MEM_ADDR_SPACE (src))
 	   && gcn_ds_address_p (XEXP (src, 0))
-	   && gcn_vgpr_register_operand (dest, mode))
+	   && gcn_vgpr_equivalent_register_operand (dest, mode))
     return true;
 
   return false;
@@ -3006,7 +3047,8 @@ gcn_compute_frame_offsets (void)
     if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| ((regno & ~1) == HARD_FRAME_POINTER_REGNUM
 	    && frame_pointer_needed))
-      offsets->callee_saves += (VGPR_REGNO_P (regno) ? 256 : 4);
+      offsets->callee_saves += (VGPR_REGNO_P (regno)
+			       	|| AVGPR_REGNO_P (regno) ? 256 : 4);
 
   /* Round up to 64-bit boundary to maintain stack alignment.  */
   offsets->callee_saves = (offsets->callee_saves + 7) & ~7;
@@ -3949,6 +3991,11 @@ gcn_memory_move_cost (machine_mode mode, reg_class_t regclass, bool in)
       if (in)
 	return (LOAD_COST + 2) * nregs;
       return STORE_COST * nregs;
+    case AVGPR_REGS:
+    case ALL_VGPR_REGS:
+      if (in)
+	return (LOAD_COST + (TARGET_CDNA2_PLUS ? 2 : 4)) * nregs;
+      return (STORE_COST + (TARGET_CDNA2_PLUS ? 0 : 2)) * nregs;
     case ALL_REGS:
     case ALL_GPR_REGS:
     case SRCDST_REGS:
@@ -3968,6 +4015,15 @@ gcn_memory_move_cost (machine_mode mode, reg_class_t regclass, bool in)
 static int
 gcn_register_move_cost (machine_mode, reg_class_t dst, reg_class_t src)
 {
+  if (src == AVGPR_REGS)
+    {
+      if (dst == AVGPR_REGS)
+	return TARGET_CDNA1 ? 6 : 2;
+      if (dst != VGPR_REGS)
+	return 6;
+    }
+  if (dst == AVGPR_REGS && src != VGPR_REGS)
+    return 6;
   /* Increase cost of moving from and to vector registers.  While this is
      fast in hardware (I think), it has hidden cost of setting up the exec
      flags.  */
@@ -5674,6 +5730,7 @@ gcn_vmem_insn_p (attr_type type)
     case TYPE_MUBUF:
     case TYPE_MTBUF:
     case TYPE_FLAT:
+    case TYPE_VOP3P_MAI:
       return true;
     case TYPE_UNKNOWN:
     case TYPE_SOP1:
@@ -5913,7 +5970,8 @@ gcn_md_reorg (void)
 		FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
 		  {
 		    const_rtx x = *iter;
-		    if (REG_P (x) && VGPR_REGNO_P (REGNO (x)))
+		    if (REG_P (x) && (VGPR_REGNO_P (REGNO (x))
+				      || AVGPR_REGNO_P (REGNO (x))))
 		      {
 			if (VECTOR_MODE_P (GET_MODE (x)))
 			  {
@@ -6069,17 +6127,16 @@ gcn_md_reorg (void)
 	  if (!prev_insn->insn)
 	    continue;
 
+	  HARD_REG_SET depregs = prev_insn->writes & ireads;
+
 	  /* VALU writes SGPR followed by VMEM reading the same SGPR
 	     requires 5 wait states.  */
 	  if ((prev_insn->age + nops_rqd) < 5
 	      && prev_insn->unit == UNIT_VECTOR
-	      && gcn_vmem_insn_p (itype))
-	    {
-	      HARD_REG_SET regs = prev_insn->writes & ireads;
-	      if (hard_reg_set_intersect_p
-		  (regs, reg_class_contents[(int) SGPR_REGS]))
-		nops_rqd = 5 - prev_insn->age;
-	    }
+	      && gcn_vmem_insn_p (itype)
+	      && hard_reg_set_intersect_p
+		   (depregs, reg_class_contents[(int) SGPR_REGS]))
+	    nops_rqd = 5 - prev_insn->age;
 
 	  /* VALU sets VCC/EXEC followed by VALU uses VCCZ/EXECZ
 	     requires 5 wait states.  */
@@ -6101,15 +6158,12 @@ gcn_md_reorg (void)
 	     SGPR/VCC as lane select requires 4 wait states.  */
 	  if ((prev_insn->age + nops_rqd) < 4
 	      && prev_insn->unit == UNIT_VECTOR
-	      && get_attr_laneselect (insn) == LANESELECT_YES)
-	    {
-	      HARD_REG_SET regs = prev_insn->writes & ireads;
-	      if (hard_reg_set_intersect_p
-		  (regs, reg_class_contents[(int) SGPR_REGS])
+	      && get_attr_laneselect (insn) == LANESELECT_YES
+	      && (hard_reg_set_intersect_p
+		    (depregs, reg_class_contents[(int) SGPR_REGS])
 		  || hard_reg_set_intersect_p
-		     (regs, reg_class_contents[(int) VCC_CONDITIONAL_REG]))
-		nops_rqd = 4 - prev_insn->age;
-	    }
+		       (depregs, reg_class_contents[(int) VCC_CONDITIONAL_REG])))
+	    nops_rqd = 4 - prev_insn->age;
 
 	  /* VALU writes VGPR followed by VALU_DPP reading that VGPR
 	     requires 2 wait states.  */
@@ -6117,9 +6171,8 @@ gcn_md_reorg (void)
 	      && prev_insn->unit == UNIT_VECTOR
 	      && itype == TYPE_VOP_DPP)
 	    {
-	      HARD_REG_SET regs = prev_insn->writes & ireads;
 	      if (hard_reg_set_intersect_p
-		  (regs, reg_class_contents[(int) VGPR_REGS]))
+		  (depregs, reg_class_contents[(int) VGPR_REGS]))
 		nops_rqd = 2 - prev_insn->age;
 	    }
 
@@ -6138,6 +6191,35 @@ gcn_md_reorg (void)
 		  (prev_insn->writes,
 		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
 	    nops_rqd = ivccwait - prev_insn->age;
+
+	  /* CDNA1: write VGPR before v_accvgpr_write reads it.  */
+	  if (TARGET_CDNA1
+	      && (prev_insn->age + nops_rqd) < 2
+	      && hard_reg_set_intersect_p
+		  (depregs, reg_class_contents[(int) VGPR_REGS])
+	      && hard_reg_set_intersect_p
+		  (iwrites, reg_class_contents[(int) AVGPR_REGS]))
+	    nops_rqd = 2 - prev_insn->age;
+
+	  /* CDNA1: v_accvgpr_write writes AVGPR before v_accvgpr_read.  */
+	  if (TARGET_CDNA1
+	      && (prev_insn->age + nops_rqd) < 3
+	      && hard_reg_set_intersect_p
+		  (depregs, reg_class_contents[(int) AVGPR_REGS])
+	      && hard_reg_set_intersect_p
+		  (iwrites, reg_class_contents[(int) VGPR_REGS]))
+	    nops_rqd = 3 - prev_insn->age;
+
+	  /* CDNA1: Undocumented(?!) read-after-write when restoring values
+	     from AVGPRs to VGPRS.  Observed problem was for address register
+	     of flat_load instruction, but others may be affected?  */
+	  if (TARGET_CDNA1
+	      && (prev_insn->age + nops_rqd) < 2
+	      && hard_reg_set_intersect_p
+		   (prev_insn->reads, reg_class_contents[(int) AVGPR_REGS])
+	      && hard_reg_set_intersect_p
+		   (depregs, reg_class_contents[(int) VGPR_REGS]))
+	    nops_rqd = 2 - prev_insn->age;
 	}
 
       /* Insert the required number of NOPs.  */
@@ -6429,7 +6511,7 @@ output_file_start (void)
 void
 gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 {
-  int sgpr, vgpr;
+  int sgpr, vgpr, avgpr;
   bool xnack_enabled = TARGET_XNACK;
 
   fputs ("\n\n", file);
@@ -6454,6 +6536,12 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
     if (df_regs_ever_live_p (FIRST_VGPR_REG + vgpr))
       break;
   vgpr++;
+  for (avgpr = 255; avgpr >= 0; avgpr--)
+    if (df_regs_ever_live_p (FIRST_AVGPR_REG + avgpr))
+      break;
+  avgpr++;
+  vgpr = (vgpr + 3) & ~3;
+  avgpr = (avgpr + 3) & ~3;
 
   if (!leaf_function_p ())
     {
@@ -6462,6 +6550,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	vgpr = MAX_NORMAL_VGPR_COUNT;
       if (sgpr < MAX_NORMAL_SGPR_COUNT)
 	sgpr = MAX_NORMAL_SGPR_COUNT;
+      if (avgpr < MAX_NORMAL_AVGPR_COUNT)
+	avgpr = MAX_NORMAL_AVGPR_COUNT;
     }
 
   /* The gfx90a accum_offset field can't represent 0 registers.  */
@@ -6519,6 +6609,11 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   ? 2
 	   : cfun->machine->args.requested & (1 << WORK_ITEM_ID_Y_ARG)
 	   ? 1 : 0);
+  int next_free_vgpr = vgpr;
+  if (TARGET_CDNA1 && avgpr > vgpr)
+    next_free_vgpr = avgpr;
+  if (TARGET_CDNA2_PLUS)
+    next_free_vgpr += avgpr;
   fprintf (file,
 	   "\t  .amdhsa_next_free_vgpr\t%i\n"
 	   "\t  .amdhsa_next_free_sgpr\t%i\n"
@@ -6529,7 +6624,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t  .amdhsa_group_segment_fixed_size\t%u\n"
 	   "\t  .amdhsa_float_denorm_mode_32\t3\n"
 	   "\t  .amdhsa_float_denorm_mode_16_64\t3\n",
-	   vgpr,
+	   next_free_vgpr,
 	   sgpr,
 	   xnack_enabled,
 	   LDS_SIZE);
@@ -6537,7 +6632,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
     fprintf (file,
 	     "\t  .amdhsa_accum_offset\t%i\n"
 	     "\t  .amdhsa_tg_split\t0\n",
-	     (vgpr+3)&~3); // I think this means the AGPRs come after the VGPRs
+	     vgpr); /* The AGPRs come after the VGPRs.  */
   fputs ("\t.end_amdhsa_kernel\n", file);
 
 #if 1
@@ -6564,9 +6659,9 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   cfun->machine->kernarg_segment_byte_size,
 	   cfun->machine->kernarg_segment_alignment,
 	   LDS_SIZE,
-	   sgpr, vgpr);
-  if (gcn_arch == PROCESSOR_GFX90a)
-    fprintf (file, "            .agpr_count: 0\n"); // AGPRs are not used, yet
+	   sgpr, next_free_vgpr);
+  if (gcn_arch == PROCESSOR_GFX90a || gcn_arch == PROCESSOR_GFX908)
+    fprintf (file, "            .agpr_count: %i\n", avgpr);
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif
 
@@ -6662,6 +6757,9 @@ print_reg (FILE *file, rtx x)
       else if (VGPR_REGNO_P (REGNO (x)))
 	fprintf (file, "v[%i:%i]", REGNO (x) - FIRST_VGPR_REG,
 		 REGNO (x) - FIRST_VGPR_REG + 1);
+      else if (AVGPR_REGNO_P (REGNO (x)))
+	fprintf (file, "a[%i:%i]", REGNO (x) - FIRST_AVGPR_REG,
+		 REGNO (x) - FIRST_AVGPR_REG + 1);
       else if (REGNO (x) == FLAT_SCRATCH_REG)
 	fprintf (file, "flat_scratch");
       else if (REGNO (x) == EXEC_REG)
@@ -6680,6 +6778,9 @@ print_reg (FILE *file, rtx x)
       else if (VGPR_REGNO_P (REGNO (x)))
 	fprintf (file, "v[%i:%i]", REGNO (x) - FIRST_VGPR_REG,
 		 REGNO (x) - FIRST_VGPR_REG + 3);
+      else if (AVGPR_REGNO_P (REGNO (x)))
+	fprintf (file, "a[%i:%i]", REGNO (x) - FIRST_AVGPR_REG,
+		 REGNO (x) - FIRST_AVGPR_REG + 3);
       else
 	gcc_unreachable ();
     }
@@ -7603,6 +7704,8 @@ gcn_dwarf_register_number (unsigned int regno)
     }
   else if (VGPR_REGNO_P (regno))
     return (regno - FIRST_VGPR_REG + 2560);
+  else if (AVGPR_REGNO_P (regno))
+    return (regno - FIRST_AVGPR_REG + 3072);
 
   /* Otherwise, there's nothing sensible to do.  */
   return regno + 100000;

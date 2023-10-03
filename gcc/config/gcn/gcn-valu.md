@@ -449,12 +449,16 @@
    (set_attr "length" "0")])
 
 (define_insn "*mov<mode>"
-  [(set (match_operand:V_1REG 0 "nonimmediate_operand" "=v,v")
-	(match_operand:V_1REG 1 "general_operand"      "vA,B"))]
+  [(set (match_operand:V_1REG 0 "nonimmediate_operand")
+	(match_operand:V_1REG 1 "general_operand"))]
   ""
-  "v_mov_b32\t%0, %1"
-  [(set_attr "type" "vop1,vop1")
-   (set_attr "length" "4,8")])
+  {@ [cons: =0, 1; attrs: type, length, gcn_version]
+  [v  ,vA;vop1     ,4,*    ] v_mov_b32\t%0, %1
+  [v  ,B ;vop1     ,8,*    ] ^
+  [v  ,a ;vop3p_mai,8,*    ] v_accvgpr_read_b32\t%0, %1
+  [$a ,v ;vop3p_mai,8,*    ] v_accvgpr_write_b32\t%0, %1
+  [a  ,a ;vop1     ,4,cdna2] v_accvgpr_mov_b32\t%0, %1
+  })
 
 (define_insn "mov<mode>_exec"
   [(set (match_operand:V_1REG 0 "nonimmediate_operand")
@@ -493,17 +497,29 @@
 ;   (set_attr "length" "4,8,16,16")])
 
 (define_insn "*mov<mode>"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "=v")
-	(match_operand:V_2REG 1 "general_operand"      "vDB"))]
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "=v, v,$a,a")
+	(match_operand:V_2REG 1 "general_operand"      "vDB,a, v,a"))]
   ""
-  {
-    if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1]))
-      return "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1";
-    else
-      return "v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1";
-  }
-  [(set_attr "type" "vmult")
-   (set_attr "length" "16")])
+  "@
+   * if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1])) \
+       return \"v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\"; \
+     else \
+       return \"v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\";
+   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
+       return \"v_accvgpr_read_b32\t%L0, %L1\;v_accvgpr_read_b32\t%H0, %H1\"; \
+     else \
+       return \"v_accvgpr_read_b32\t%H0, %H1\;v_accvgpr_read_b32\t%L0, %L1\";
+   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
+       return \"v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\"; \
+     else \
+       return \"v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%L0, %L1\";
+   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
+       return \"v_accvgpr_mov_b32\t%L0, %L1\;v_accvgpr_mov_b32\t%H0, %H1\"; \
+     else \
+       return \"v_accvgpr_mov_b32\t%H0, %H1\;v_accvgpr_mov_b32\t%L0, %L1\";"
+  [(set_attr "type" "vmult,vmult,vmult,vmult")
+   (set_attr "length" "16,16,16,8")
+   (set_attr "gcn_version" "*,*,*,cdna2")])
 
 (define_insn "mov<mode>_exec"
   [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
@@ -546,17 +562,15 @@
    (set_attr "length" "16,16,16,16,16")])
 
 (define_insn "*mov<mode>_4reg"
-  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "=v")
-	(match_operand:V_4REG 1 "general_operand"      "vDB"))]
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand")
+	(match_operand:V_4REG 1 "general_operand"))]
   ""
-  {
-    return "v_mov_b32\t%L0, %L1\;"
-           "v_mov_b32\t%H0, %H1\;"
-           "v_mov_b32\t%J0, %J1\;"
-           "v_mov_b32\t%K0, %K1\;";
-  }
-  [(set_attr "type" "vmult")
-   (set_attr "length" "16")])
+  {@ [cons: =0, 1; attrs: type, length, gcn_version]
+  [v,vDB;vmult,16,*    ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
+  [v,a  ;vmult,32,*    ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
+  [a,v  ;vmult,32,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
+  [a,a  ;vmult,32,cdna2]   v_accvgpr_mov_b32\t%L0, %L1\;  v_accvgpr_mov_b32\t%H0, %H1\;  v_accvgpr_mov_b32\t%J0, %J1\;  v_accvgpr_mov_b32\t%K0, %K1
+  })
 
 (define_insn "mov<mode>_exec"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
@@ -648,19 +662,21 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  {@ [cons: =0, 1, =2; attrs: type, length]
-  [v,vA,&v;vop1,4 ] v_mov_b32\t%0, %1
-  [v,vB,&v;vop1,8 ] ^
-  [v,m ,&v;*   ,12] #
-  [m,v ,&v;*   ,12] #
+  {@ [cons: =0, 1, =2; attrs: type, length, gcn_version]
+  [v,vA,&v;vop1,4 ,*    ] v_mov_b32\t%0, %1
+  [v,vB,&v;vop1,8 ,*    ] ^
+  [v,m ,&v;*   ,12,*    ] #
+  [m,v ,&v;*   ,12,*    ] #
+  [a,m ,&v;*   ,12,cdna2] #
+  [m,a ,&v;*   ,12,cdna2] #
   })
 
 (define_insn "@mov<mode>_sgprbase"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v, v, m")
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v, v, m, a, m")
 	(unspec:V_2REG
-	  [(match_operand:V_2REG 1 "general_operand"   "vDB, m, v")]
+	  [(match_operand:V_2REG 1 "general_operand"   "vDB, m, v, m, a")]
 	  UNSPEC_SGPRBASE))
-   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v"))]
+   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v,&v,&v"))]
   "lra_in_progress || reload_completed"
   "@
    * if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1])) \
@@ -668,9 +684,12 @@
      else \
        return \"v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\";
    #
+   #
+   #
    #"
-  [(set_attr "type" "vmult,*,*")
-   (set_attr "length" "8,12,12")])
+  [(set_attr "type" "vmult,*,*,*,*")
+   (set_attr "length" "8,12,12,12,12")
+   (set_attr "gcn_version" "*,*,*,cdna2,cdna2")])
 
 (define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
@@ -1126,13 +1145,13 @@
     {})
 
 (define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		   "=v")
+  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a")
 	(unspec:V_MOV
-	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v")
+	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v,v")
 			(vec_duplicate:<VnDI>
-			  (match_operand 2 "immediate_operand"	   " n")))
-	   (match_operand 3 "immediate_operand"			   " n")
-	   (match_operand 4 "immediate_operand"			   " n")
+			  (match_operand 2 "immediate_operand"	   " n,n")))
+	   (match_operand 3 "immediate_operand"			   " n,n")
+	  (match_operand 4 "immediate_operand"			   " n,n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
@@ -1162,16 +1181,17 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		   "=v")
+  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a")
 	(unspec:V_MOV
-	  [(plus:<VnSI> (match_operand:<VnSI> 1 "register_operand" " v")
+	  [(plus:<VnSI> (match_operand:<VnSI> 1 "register_operand" " v,v")
 			(vec_duplicate:<VnSI>
-			  (match_operand 2 "immediate_operand"	   " n")))
-	   (match_operand 3 "immediate_operand"			   " n")
-	   (match_operand 4 "immediate_operand"			   " n")
+			  (match_operand 2 "immediate_operand"	   " n,n")))
+	   (match_operand 3 "immediate_operand"			   " n,n")
+	   (match_operand 4 "immediate_operand"			   " n,n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_ANY_DS_P (INTVAL (operands[3]))
@@ -1184,20 +1204,22 @@
     return buf;
   }
   [(set_attr "type" "ds")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"			"=v")
+  [(set (match_operand:V_MOV 0 "register_operand"		      "=v,a")
 	(unspec:V_MOV
 	  [(plus:<VnDI>
 	     (plus:<VnDI>
 	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 1 "register_operand"			"Sv"))
+		 (match_operand:DI 1 "register_operand"		      "Sv,Sv"))
 	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 2 "register_operand"		" v")))
-	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand" " n")))
-	   (match_operand 4 "immediate_operand"				" n")
-	   (match_operand 5 "immediate_operand"				" n")
+		 (match_operand:<VnSI> 2 "register_operand"	      " v,v")))
+	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand"
+								      " n,n")))
+	   (match_operand 4 "immediate_operand"			      " n,n")
+	   (match_operand 5 "immediate_operand"			      " n,n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_GLOBAL_P (INTVAL (operands[4]))
@@ -1216,7 +1238,8 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 (define_expand "scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")
@@ -1255,12 +1278,12 @@
 (define_insn "scatter<mode>_insn_1offset<exec_scatter>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
-	  [(plus:<VnDI> (match_operand:<VnDI> 0 "register_operand" "v")
+	  [(plus:<VnDI> (match_operand:<VnDI> 0 "register_operand" "v,v")
 			(vec_duplicate:<VnDI>
-			  (match_operand 1 "immediate_operand"	   "n")))
-	   (match_operand:V_MOV 2 "register_operand"		   "v")
-	   (match_operand 3 "immediate_operand"			   "n")
-	   (match_operand 4 "immediate_operand"			   "n")]
+			  (match_operand 1 "immediate_operand"	   "n,n")))
+	   (match_operand:V_MOV 2 "register_operand"		   "v,a")
+	   (match_operand 3 "immediate_operand"			   "n,n")
+	   (match_operand 4 "immediate_operand"			   "n,n")]
 	  UNSPEC_SCATTER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
     && (INTVAL(operands[1]) == 0
@@ -1288,17 +1311,18 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 (define_insn "scatter<mode>_insn_1offset_ds<exec_scatter>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
-	  [(plus:<VnSI> (match_operand:<VnSI> 0 "register_operand" "v")
+	  [(plus:<VnSI> (match_operand:<VnSI> 0 "register_operand" "v,v")
 			(vec_duplicate:<VnSI>
-			  (match_operand 1 "immediate_operand"	   "n")))
-	   (match_operand:V_MOV 2 "register_operand"		   "v")
-	   (match_operand 3 "immediate_operand"			   "n")
-	   (match_operand 4 "immediate_operand"			   "n")]
+			  (match_operand 1 "immediate_operand"	   "n,n")))
+	   (match_operand:V_MOV 2 "register_operand"		   "v,a")
+	   (match_operand 3 "immediate_operand"			   "n,n")
+	   (match_operand 4 "immediate_operand"			   "n,n")]
 	  UNSPEC_SCATTER))]
   "(AS_ANY_DS_P (INTVAL (operands[3]))
     && ((unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x10000))"
@@ -1310,7 +1334,8 @@
     return buf;
   }
   [(set_attr "type" "ds")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 (define_insn "scatter<mode>_insn_2offsets<exec_scatter>"
   [(set (mem:BLK (scratch))
@@ -1318,13 +1343,13 @@
 	  [(plus:<VnDI>
 	     (plus:<VnDI>
 	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 0 "register_operand"			"Sv"))
+		 (match_operand:DI 0 "register_operand"		       "Sv,Sv"))
 	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 1 "register_operand"		" v")))
-	     (vec_duplicate:<VnDI> (match_operand 2 "immediate_operand" " n")))
-	   (match_operand:V_MOV 3 "register_operand"			" v")
-	   (match_operand 4 "immediate_operand"				" n")
-	   (match_operand 5 "immediate_operand"				" n")]
+		 (match_operand:<VnSI> 1 "register_operand"		"v,v")))
+	     (vec_duplicate:<VnDI> (match_operand 2 "immediate_operand" "n,n")))
+	   (match_operand:V_MOV 3 "register_operand"			"v,a")
+	   (match_operand 4 "immediate_operand"				"n,n")
+	   (match_operand 5 "immediate_operand"				"n,n")]
 	  UNSPEC_SCATTER))]
   "(AS_GLOBAL_P (INTVAL (operands[4]))
     && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
@@ -1341,7 +1366,8 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "gcn_version" "*,cdna2")])
 
 ;; }}}
 ;; {{{ Permutations
