@@ -2404,9 +2404,8 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     }
   else
     {
-      /* FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096.  */
-      int max_power = exact_log2 (4096 / 128);
-      for (int i = 0; i < max_power; i++)
+      int max_power = exact_log2 (MAX_POLY_VARIANT);
+      for (int i = 0; i <= max_power; i++)
 	{
 	  int possible_div_factor = 1 << i;
 	  if (factor % (vlenb / possible_div_factor) == 0)
