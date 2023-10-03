@@ -1,3 +1,17 @@
+2023-10-02  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	Backported from master:
+	2023-09-19  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_rtx_costs): Check whether the
+	modulo instruction is disabled.
+	* config/rs6000/rs6000.h (RS6000_DISABLE_SCALAR_MODULO): New.
+	* config/rs6000/rs6000.md (mod<mode>3, *mod<mode>3): Check it.
+	(define_expand umod<mode>3): New.
+	(define_insn umod<mode>3): Rename to *umod<mode>3 and check if the modulo
+	instruction is disabled.
+	(umodti3, modti3): Check if the modulo instruction is disabled.
+
 2023-09-29  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:

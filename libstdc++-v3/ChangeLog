@@ -1,3 +1,13 @@
+2023-10-02  Tim Song  <t.canens.cpp@gmail.com>
+
+	Backported from master:
+	2023-09-28  Tim Song  <t.canens.cpp@gmail.com>
+
+	PR libstdc++/111050
+	* include/bits/hashtable_policy.h
+	(_Hash_node_value_base<>::_M_valptr(), _Hash_node_value_base<>::_M_v())
+	Add [[__gnu__::__always_inline__]].
+
 2023-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
