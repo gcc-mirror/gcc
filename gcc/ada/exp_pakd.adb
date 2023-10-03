@@ -1143,9 +1143,10 @@ package body Exp_Pakd is
             Insert_Actions (N, New_List (Decl));
             Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
          end;
+      else
+         Rhs := Convert_To (Ctyp, Rhs);
       end if;
 
-      Rhs := Convert_To (Ctyp, Rhs);
       Set_Parent (Rhs, N);
 
       --  If we are building the initialization procedure for a packed array,
