@@ -1059,9 +1059,11 @@ package body Exp_Pakd is
       Obj   : Node_Id;
       Atyp  : Entity_Id;
       PAT   : Entity_Id;
-      Ctyp  : Entity_Id;
-      Csiz  : Int;
       Cmask : Uint;
+
+      Arr_Typ : constant Entity_Id := Etype (Prefix (Lhs));
+      Ctyp    : constant Entity_Id := Component_Type (Arr_Typ);
+      Csiz    : constant Int := UI_To_Int (Component_Size (Arr_Typ));
 
       Shift : Node_Id;
       --  The expression for the shift value that is required
@@ -1111,8 +1113,6 @@ package body Exp_Pakd is
       Convert_To_Actual_Subtype (Obj);
       Atyp := Etype (Obj);
       PAT  := Packed_Array_Impl_Type (Atyp);
-      Ctyp := Component_Type (Atyp);
-      Csiz := UI_To_Int (Component_Size (Atyp));
 
       --  We remove side effects, in case the rhs modifies the lhs, because we
       --  are about to transform the rhs into an expression that first READS
