@@ -1,0 +1,17 @@
+(define_insn "*add<mode>3_compareV_cconly_imm"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (sign_extend:<DWI> (match_operand:GPI 0 "register_operand"))
+	    (match_operand:<DWI> 1 "const_scalar_int_operand"))
+	  (sign_extend:<DWI>
+	   (plus:GPI
+	    (match_dup 0)
+	    (match_operand:GPI 2 "aarch64_plus_immediate")))))]
+  "INTVAL (operands[1]) == INTVAL (operands[2])"
+  {@ [ cons: 0 , 2  ]
+     [ r       , I  ] cmn\t%<w>0, %<w>1
+     [ r       , J  ] cmp\t%<w>0, #%n1
+  }
+  [(set_attr "type" "alus_imm")]
+)
