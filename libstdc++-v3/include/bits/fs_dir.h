@@ -433,7 +433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3719. Directory iterators should be usable with default sentinel
       bool operator==(default_sentinel_t) const noexcept
-      { return !_M_dir; }
+      { return *this == directory_iterator(); }
 #endif
 
 #if __cpp_impl_three_way_comparison < 201907L
@@ -541,7 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3719. Directory iterators should be usable with default sentinel
       bool operator==(default_sentinel_t) const noexcept
-      { return !_M_dirs; }
+      { return *this == recursive_directory_iterator(); }
 #endif
 
 #if __cpp_impl_three_way_comparison < 201907L
