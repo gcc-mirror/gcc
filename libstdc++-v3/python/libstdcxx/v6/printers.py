@@ -139,7 +139,7 @@ def lookup_templ_spec(templ, *args):
     except gdb.error as e:
         # Type not found, try again in versioned namespace.
         global _versioned_namespace
-        if _versioned_namespace and _versioned_namespace not in templ:
+        if _versioned_namespace not in templ:
             t = t.replace('::', '::' + _versioned_namespace, 1)
             try:
                 return gdb.lookup_type(t)
@@ -211,16 +211,13 @@ def is_specialization_of(x, template_name):
     global _versioned_namespace
     if isinstance(x, gdb.Type):
         x = x.tag
-    if _versioned_namespace:
-        template_name = '(%s)?%s' % (_versioned_namespace, template_name)
+    template_name = '(%s)?%s' % (_versioned_namespace, template_name)
     return re.match('^std::%s<.*>$' % template_name, x) is not None
 
 
 def strip_versioned_namespace(typename):
     global _versioned_namespace
-    if _versioned_namespace:
-        return typename.replace(_versioned_namespace, '')
-    return typename
+    return typename.replace(_versioned_namespace, '')
 
 
 def strip_inline_namespaces(type_str):
@@ -2355,7 +2352,7 @@ class Printer(object):
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
     def add_version(self, base, name, function):
         self.add(base + name, function)
-        if _versioned_namespace and '__cxx11' not in base:
+        if '__cxx11' not in base:
             vbase = re.sub('^(std|__gnu_cxx)::', r'\g<0>%s' %
                            _versioned_namespace, base)
             self.add(vbase + name, function)
@@ -2527,7 +2524,7 @@ def add_one_template_type_printer(obj, name, defargs):
     printer = TemplateTypePrinter('std::__debug::' + name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
-    if _versioned_namespace and '__cxx11' not in name:
+    if '__cxx11' not in name:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace
         # PR 86112 Cannot use dict comprehension here:
@@ -2628,7 +2625,7 @@ class FilteringTypePrinter(object):
 def add_one_type_printer(obj, template, name, targ1=None):
     printer = FilteringTypePrinter('std::' + template, 'std::' + name, targ1)
     gdb.types.register_type_printer(obj, printer)
-    if _versioned_namespace and '__cxx11' not in template:
+    if '__cxx11' not in template:
         ns = 'std::' + _versioned_namespace
         printer = FilteringTypePrinter(ns + template, ns + name, targ1)
         gdb.types.register_type_printer(obj, printer)
