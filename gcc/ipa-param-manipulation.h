@@ -224,7 +224,8 @@ public:
 
   /* Modify a call statement arguments (and possibly remove the return value)
      as described in the data fields of this class.  */
-  gcall *modify_call (cgraph_edge *cs, bool update_references);
+  gcall *modify_call (cgraph_edge *cs, bool update_references,
+		      hash_set <tree> *killed_ssas);
   /* Return if the first parameter is left intact.  */
   bool first_param_intact_p ();
   /* Build a function type corresponding to the modified call.  */
