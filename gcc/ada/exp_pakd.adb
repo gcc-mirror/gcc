@@ -1073,12 +1073,9 @@ package body Exp_Pakd is
       New_Lhs : Node_Id;
       New_Rhs : Node_Id;
 
-      Rhs_Val_Known : Boolean;
-      Rhs_Val       : Uint;
+      Rhs_Val : Uint;
       --  If the value of the right hand side as an integer constant is
-      --  known at compile time, Rhs_Val_Known is set True, and Rhs_Val
-      --  contains the value. Otherwise Rhs_Val_Known is set False, and
-      --  the Rhs_Val is undefined.
+      --  known at compile time, Rhs_Val contains the value.
 
       function Get_Shift return Node_Id;
       --  Function used to get the value of Shift, making sure that it
@@ -1230,8 +1227,7 @@ package body Exp_Pakd is
          --  Determine if right side is all 0 bits or all 1 bits
 
          if Compile_Time_Known_Value (Rhs) then
-            Rhs_Val       := Expr_Rep_Value (Rhs);
-            Rhs_Val_Known := True;
+            Rhs_Val := Expr_Rep_Value (Rhs);
 
          --  The following test catches the case of an unchecked conversion of
          --  an integer literal. This results from optimizing aggregates of
@@ -1240,19 +1236,17 @@ package body Exp_Pakd is
          elsif Nkind (Rhs) = N_Unchecked_Type_Conversion
            and then Compile_Time_Known_Value (Expression (Rhs))
          then
-            Rhs_Val       := Expr_Rep_Value (Expression (Rhs));
-            Rhs_Val_Known := True;
+            Rhs_Val := Expr_Rep_Value (Expression (Rhs));
 
          else
-            Rhs_Val       := No_Uint;
-            Rhs_Val_Known := False;
+            Rhs_Val := No_Uint;
          end if;
 
          --  Some special checks for the case where the right hand value is
          --  known at compile time. Basically we have to take care of the
          --  implicit conversion to the subtype of the component object.
 
-         if Rhs_Val_Known then
+         if Present (Rhs_Val) then
 
             --  If we have a biased component type then we must manually do the
             --  biasing, since we are taking responsibility in this case for
@@ -1289,7 +1283,7 @@ package body Exp_Pakd is
 
          --  First we deal with the "and"
 
-         if not Rhs_Val_Known or else Rhs_Val /= Cmask then
+         if No (Rhs_Val) or else Rhs_Val /= Cmask then
             declare
                Mask1 : Node_Id;
                Lit   : Node_Id;
@@ -1319,7 +1313,7 @@ package body Exp_Pakd is
 
          --  Then deal with the "or"
 
-         if not Rhs_Val_Known or else Rhs_Val /= 0 then
+         if No (Rhs_Val) or else Rhs_Val /= 0 then
             declare
                Or_Rhs : Node_Id;
 
@@ -1359,7 +1353,7 @@ package body Exp_Pakd is
                end Fixup_Rhs;
 
             begin
-               if Rhs_Val_Known
+               if Present (Rhs_Val)
                  and then Compile_Time_Known_Value (Get_Shift)
                then
                   Or_Rhs :=
@@ -1387,7 +1381,7 @@ package body Exp_Pakd is
                   --  which will be properly retyped when we analyze and
                   --  resolve the expression.
 
-                  elsif Rhs_Val_Known then
+                  elsif Present (Rhs_Val) then
 
                      --  Note that Rhs_Val has already been normalized to
                      --  be an unsigned value with the proper number of bits.
