@@ -3109,7 +3109,9 @@ file descriptor opened with @code{O_RDONLY}.
 @cindex @code{flatten} function attribute
 @item flatten
 Generally, inlining into a function is limited.  For a function marked with
-this attribute, every call inside this function is inlined, if possible.
+this attribute, every call inside this function is inlined including the
+calls such inlining introduces to the function (but not recursive calls
+to the function itself), if possible.
 Functions declared with attribute @code{noinline} and similar are not
 inlined.  Whether the function itself is considered for inlining depends
 on its size and the current inlining parameters.
