@@ -8209,9 +8209,9 @@ extern void maybe_warn_about_useless_cast       (location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 
-extern tree finish_left_unary_fold_expr      (tree, int);
-extern tree finish_right_unary_fold_expr     (tree, int);
-extern tree finish_binary_fold_expr          (tree, tree, int);
+extern tree finish_left_unary_fold_expr      (location_t, tree, int);
+extern tree finish_right_unary_fold_expr     (location_t, tree, int);
+extern tree finish_binary_fold_expr          (location_t, tree, tree, int);
 extern tree treat_lvalue_as_rvalue_p	     (tree, bool);
 extern bool decl_in_std_namespace_p	     (tree);
 extern void maybe_warn_pessimizing_move	     (tree, tree, bool);
