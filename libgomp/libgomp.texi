@@ -4982,18 +4982,27 @@ smaller number.  On non-host devices, the value of the
 
 @code{vendor} is always @code{gnu}. References are to the GCC manual.
 
-@multitable @columnfractions .60 .10 .25
-@headitem @code{arch} @tab @code{kind} @tab @code{isa}
+@c NOTE: Only the following selectors have been implemented. To add
+@c additional traits for target architecture, TARGET_OMP_DEVICE_KIND_ARCH_ISA
+@c has to be implemented; cf. also PR target/105640.
+@c For offload devices, add *additionally* gcc/config/*/t-omp-device.
+
+For the host compiler, @code{kind} always matches @code{host}; for the
+offloading architectures AMD GCN and Nvidia PTX, @code{kind} always matches
+@code{gpu}.  For the x86 family of computers, AMD GCN and Nvidia PTX
+the following traits are supported in addition; while OpenMP is supported
+on more architectures, GCC currently does not match any @code{arch} or
+@code{isa} traits for those.
+
+@multitable @columnfractions .65 .30
+@headitem @code{arch} @tab @code{isa}
 @item @code{x86}, @code{x86_64}, @code{i386}, @code{i486},
       @code{i586}, @code{i686}, @code{ia32}
-      @tab @code{host}
       @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
 @item @code{amdgcn}, @code{gcn}
-      @tab @code{gpu}
       @tab See @code{-march=} in ``AMD GCN Options''@footnote{Additionally,
       @code{gfx803} is supported as an alias for @code{fiji}.}
 @item @code{nvptx}
-      @tab @code{gpu}
       @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
 
