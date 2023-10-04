@@ -1,3 +1,52 @@
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h (directory_iterator::operator==):
+	Define without using a non-exported shared_ptr symbol.
+	(recursive_directory_iterator::operator==): Likewise.
+
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/108636.cc: Add dg-require for
+	filesystem support.
+
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108178
+	* src/filesystem/ops-common.h (do_copy_file): Check for empty
+	files by trying to read a character.
+	* testsuite/27_io/filesystem/operations/copy_file_108178.cc:
+	New test.
+
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (do_copy_file) [O_CLOEXEC]: Set
+	close-on-exec flag on file descriptors.
+
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (get_temp_directory_from_env): Fix
+	formatting.
+
+2023-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h [AVR] (__unsupported): Always use
+	errc::function_not_supported instead of errc::not_supported.
+
 2023-10-02  Tim Song  <t.canens.cpp@gmail.com>
 
 	Backported from master:
