@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fno-inline -O2 -fomit-frame-pointer -ffixed-x2 -ffixed-x3 -ffixed-x4 -ffixed-x5 -ffixed-x6 -ffixed-x7 -ffixed-x8 -ffixed-x9 -ffixed-x10 -ffixed-x11 -ffixed-x12 -ffixed-x13 -ffixed-x14 -ffixed-x15 -ffixed-x16 -ffixed-x17 -ffixed-x18 -ffixed-x19 -ffixed-x20 -ffixed-x21 -ffixed-x22 -ffixed-x23 -ffixed-x24 -ffixed-x25 -ffixed-x26 -ffixed-x27 -ffixed-28 -ffixed-29 --save-temps -mgeneral-regs-only -fno-ipa-cp -fno-schedule-fusion -fno-peephole2" } */
+/* { dg-options "-fno-inline -O2 -fomit-frame-pointer -ffixed-x2 -ffixed-x3 -ffixed-x4 -ffixed-x5 -ffixed-x6 -ffixed-x7 -ffixed-x8 -ffixed-x9 -ffixed-x10 -ffixed-x11 -ffixed-x12 -ffixed-x13 -ffixed-x14 -ffixed-x15 -ffixed-x16 -ffixed-x17 -ffixed-x18 -ffixed-x19 -ffixed-x20 -ffixed-x21 -ffixed-x22 -ffixed-x23 -ffixed-x24 -ffixed-x25 -ffixed-x26 -ffixed-x27 -ffixed-28 -ffixed-29 --save-temps -mgeneral-regs-only -fno-ipa-cp -fno-schedule-fusion -fno-peephole2 --param=aarch64-stp-policy=never" } */
 
 extern void abort ();
 
