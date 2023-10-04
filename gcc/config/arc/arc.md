@@ -5943,15 +5943,15 @@ archs4x, archs4xd"
    (set_attr "predicable" "no")
    (set_attr "length" "4")])
 
-(define_insn "*ashlsi2_cnt1"
+(define_insn "ashlsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"           "=q,w")
 	(ashift:SI (match_operand:SI 1 "register_operand" "q,c")
 		   (const_int 1)))]
   ""
   "asl%? %0,%1%&"
-  [(set_attr "type" "shift")
+  [(set_attr "type" "unary")
    (set_attr "iscompact" "maybe,false")
-   (set_attr "length" "4")
+   (set_attr "length" "*,4")
    (set_attr "predicable" "no,no")])
 
 (define_insn "*ashlsi2_cnt8"
@@ -5976,23 +5976,23 @@ archs4x, archs4xd"
    (set_attr "length" "4")
    (set_attr "predicable" "no")])
 
-(define_insn "*lshrsi3_cnt1"
+(define_insn "lshrsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"             "=q,w")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "q,c")
 		     (const_int 1)))]
   ""
   "lsr%? %0,%1%&"
-  [(set_attr "type" "shift")
+  [(set_attr "type" "unary")
    (set_attr "iscompact" "maybe,false")
    (set_attr "predicable" "no,no")])
 
-(define_insn "*ashrsi3_cnt1"
+(define_insn "ashrsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"             "=q,w")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "q,c")
 		     (const_int 1)))]
   ""
   "asr%? %0,%1%&"
-  [(set_attr "type" "shift")
+  [(set_attr "type" "unary")
    (set_attr "iscompact" "maybe,false")
    (set_attr "predicable" "no,no")])
 
