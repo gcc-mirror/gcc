@@ -13411,27 +13411,43 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 
   if (REG_P (dest))
     {
-      /* If we are setting the whole register, we know its value.  Otherwise
-	 show that we don't know the value.  We can handle a SUBREG if it's
-	 the low part, but we must be careful with paradoxical SUBREGs on
-	 RISC architectures because we cannot strip e.g. an extension around
-	 a load and record the naked load since the RTL middle-end considers
-	 that the upper bits are defined according to LOAD_EXTEND_OP.  */
+      /* If we are setting the whole register, we know its value.  */
       if (GET_CODE (setter) == SET && dest == SET_DEST (setter))
 	record_value_for_reg (dest, record_dead_insn, SET_SRC (setter));
+      /* We can handle a SUBREG if it's the low part, but we must be
+	 careful with paradoxical SUBREGs on RISC architectures because
+	 we cannot strip e.g. an extension around a load and record the
+	 naked load since the RTL middle-end considers that the upper bits
+	 are defined according to LOAD_EXTEND_OP.  */
       else if (GET_CODE (setter) == SET
 	       && GET_CODE (SET_DEST (setter)) == SUBREG
 	       && SUBREG_REG (SET_DEST (setter)) == dest
 	       && known_le (GET_MODE_PRECISION (GET_MODE (dest)),
 			    BITS_PER_WORD)
 	       && subreg_lowpart_p (SET_DEST (setter)))
-	record_value_for_reg (dest, record_dead_insn,
-			      WORD_REGISTER_OPERATIONS
-			      && word_register_operation_p (SET_SRC (setter))
-			      && paradoxical_subreg_p (SET_DEST (setter))
-			      ? SET_SRC (setter)
-			      : gen_lowpart (GET_MODE (dest),
-					     SET_SRC (setter)));
+	{
+	  if (WORD_REGISTER_OPERATIONS
+	      && word_register_operation_p (SET_SRC (setter))
+	      && paradoxical_subreg_p (SET_DEST (setter)))
+	    record_value_for_reg (dest, record_dead_insn, SET_SRC (setter));
+	  else if (!partial_subreg_p (SET_DEST (setter)))
+	    record_value_for_reg (dest, record_dead_insn,
+				  gen_lowpart (GET_MODE (dest),
+					       SET_SRC (setter)));
+	  else
+	    {
+	      record_value_for_reg (dest, record_dead_insn,
+				    gen_lowpart (GET_MODE (dest),
+						 SET_SRC (setter)));
+
+	      unsigned HOST_WIDE_INT mask;
+	      reg_stat_type *rsp = &reg_stat[REGNO (dest)];
+	      mask = GET_MODE_MASK (GET_MODE (SET_DEST (setter)));
+	      rsp->last_set_nonzero_bits |= ~mask;
+	      rsp->last_set_sign_bit_copies = 1;
+	    }
+	}
+      /* Otherwise show that we don't know the value.  */
       else
 	record_value_for_reg (dest, record_dead_insn, NULL_RTX);
     }
