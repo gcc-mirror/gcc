@@ -1,3 +1,8 @@
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_format_decoder): Update for "m_" prefixes to
+	text_info fields.
+
 2023-10-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc (gfc_diagnostics_init): Update for change to start_span.

@@ -1,3 +1,8 @@
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	* mklog.py (skip_line_in_changelog): Compare to None using is instead
+	of ==, add an extra newline after the function.
+
 2023-10-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config-list.mk: Add newer Darwin versions, trim one older.

@@ -1,3 +1,307 @@
+2023-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (set_range_info): Use get_ptr_info for
+	pointers rather than range_info_get_range.
+
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-modref.h (modref_summary::dump): Make const.
+	* ipa-modref.cc (modref_summary::dump): Likewise.
+	(dump_lto_records): Dump to out instead of dump_file.
+
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110378
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::mark_dead_statements): Verify that any
+	return uses of PARAM will be removed.
+	(ipa_param_body_adjustments::mark_clobbers_dead): Likewise.
+	* ipa-sra.cc (isra_param_desc): New fields
+	remove_only_when_retval_removed and split_only_when_retval_removed.
+	(struct gensum_param_desc): Likewise.  Fix comment long line.
+	(ipa_sra_function_summaries::duplicate): Copy the new flags.
+	(dump_gensum_param_descriptor): Dump the new flags.
+	(dump_isra_param_descriptor): Likewise.
+	(isra_track_scalar_value_uses): New parameter desc.  Set its flag
+	remove_only_when_retval_removed when encountering a simple return.
+	(isra_track_scalar_param_local_uses): Replace parameter call_uses_p
+	with desc.  Pass it to isra_track_scalar_value_uses and set its
+	call_uses.
+	(ptr_parm_has_nonarg_uses): Accept parameter descriptor as a
+	parameter.  If there is a direct return use, mark any..
+	(create_parameter_descriptors): Pass the whole parameter descriptor to
+	isra_track_scalar_param_local_uses and ptr_parm_has_nonarg_uses.
+	(process_scan_results): Copy the new flags.
+	(isra_write_node_summary): Stream the new flags.
+	(isra_read_node_info): Likewise.
+	(adjust_parameter_descriptions): Check that transformations
+	requring return removal only happen when return value is removed.
+	Restructure main loop.  Adjust dump message.
+
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	* cgraph.h (cgraph_edge): Add a parameter to
+	redirect_call_stmt_to_callee.
+	* ipa-param-manipulation.h (ipa_param_adjustments): Add a
+	parameter to modify_call.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): New
+	parameter killed_ssas, pass it to padjs->modify_call.
+	* ipa-param-manipulation.cc (purge_transitive_uses): New function.
+	(ipa_param_adjustments::modify_call): New parameter killed_ssas.
+	Instead of substituting uses, invoke purge_transitive_uses.  If
+	hash of killed SSAs has not been provided, create a temporary one
+	and release SSAs that have been added to it.
+	* tree-inline.cc (redirect_all_calls): Create
+	id->killed_new_ssa_names earlier, pass it to edge redirection,
+	adjust a comment.
+	(copy_body): Release SSAs in id->killed_new_ssa_names.
+
+2023-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* passes.def (pass_vrp): Pass "final pass" flag as parameter.
+	* tree-vrp.cc (vrp_pass_num): Remove.
+	(pass_vrp::my_pass): Remove.
+	(pass_vrp::pass_vrp): Add warn_p as a parameter.
+	(pass_vrp::final_p): New.
+	(pass_vrp::set_pass_param): Set final_p param.
+	(pass_vrp::execute): Call execute_range_vrp with no conditions.
+	(make_pass_vrp): Pass additional parameter.
+	(make_pass_early_vrp): Ditto.
+
+2023-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (set_range_info): Return true only if the
+	current value changes.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_set_info_translated): Update for "m_"
+	prefixes to text_info fields.
+	(diagnostic_report_diagnostic): Likewise.
+	(verbatim): Use text_info ctor.
+	(simple_diagnostic_path::add_event): Likewise.
+	(simple_diagnostic_path::add_thread_event): Likewise.
+	* dumpfile.cc (dump_pretty_printer::decode_format): Update for
+	"m_" prefixes to text_info fields.
+	(dump_context::dump_printf_va): Use text_info ctor.
+	* graphviz.cc (graphviz_out::graphviz_out): Use text_info ctor.
+	(graphviz_out::print): Likewise.
+	* opt-problem.cc (opt_problem::opt_problem): Likewise.
+	* pretty-print.cc (pp_format): Update for "m_" prefixes to
+	text_info fields.
+	(pp_printf): Use text_info ctor.
+	(pp_verbatim): Likewise.
+	(assert_pp_format_va): Likewise.
+	* pretty-print.h (struct text_info): Add ctors.  Add "m_" prefix
+	to all fields.
+	* text-art/styled-string.cc (styled_string::from_fmt_va): Use
+	text_info ctor.
+	* tree-diagnostic.cc (default_tree_printer): Update for "m_"
+	prefixes to text_info fields.
+	* tree-pretty-print.h (pp_ti_abstract_origin): Likewise.
+
+2023-10-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (CC_ltu): New mode iterator for CC and CC_C.
+	(scc_ltu_<mode>): New define_insn to handle LTU form of scc_insn.
+	(*scc_insn): Don't split to a conditional move sequence for LTU.
+
+2023-10-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64.md (@ccmp<CC_ONLY:mode><GPI:mode>)
+	(@ccmp<CC_ONLY:mode><GPI:mode>_rev, *call_insn, *call_value_insn)
+	(*mov<mode>_aarch64, load_pair_sw_<SX:mode><SX2:mode>)
+	(load_pair_dw_<DX:mode><DX2:mode>)
+	(store_pair_sw_<SX:mode><SX2:mode>)
+	(store_pair_dw_<DX:mode><DX2:mode>, *extendsidi2_aarch64)
+	(*zero_extendsidi2_aarch64, *load_pair_zero_extendsidi2_aarch64)
+	(*extend<SHORT:mode><GPI:mode>2_aarch64)
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64)
+	(*extendqihi2_aarch64, *zero_extendqihi2_aarch64)
+	(*add<mode>3_aarch64, *addsi3_aarch64_uxtw, *add<mode>3_poly_1)
+	(add<mode>3_compare0, *addsi3_compare0_uxtw)
+	(*add<mode>3_compareC_cconly, add<mode>3_compareC)
+	(*add<mode>3_compareV_cconly_imm, add<mode>3_compareV_imm)
+	(*add<mode>3nr_compare0, subdi3, subv<GPI:mode>_imm)
+	(*cmpv<GPI:mode>_insn, sub<mode>3_compare1_imm, neg<mode>2)
+	(cmp<mode>, fcmp<mode>, fcmpe<mode>, *cmov<mode>_insn)
+	(*cmovsi_insn_uxtw, <optab><mode>3, *<optab>si3_uxtw)
+	(*and<mode>3_compare0, *andsi3_compare0_uxtw, one_cmpl<mode>2)
+	(*<NLOGICAL:optab>_one_cmpl<mode>3, *and<mode>3nr_compare0)
+	(*aarch64_ashl_sisd_or_int_<mode>3)
+	(*aarch64_lshr_sisd_or_int_<mode>3)
+	(*aarch64_ashr_sisd_or_int_<mode>3, *ror<mode>3_insn)
+	(*<optab>si3_insn_uxtw, <optab>_trunc<fcvt_target><GPI:mode>2)
+	(<optab><fcvt_target><GPF:mode>2)
+	(<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3)
+	(<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3)
+	(*aarch64_<optab><mode>3_cssc, copysign<GPF:mode>3_insn): Update
+	to new syntax.
+	* config/aarch64/aarch64-sve2.md (@aarch64_scatter_stnt<mode>)
+	(@aarch64_scatter_stnt_<SVE_FULL_SDI:mode><SVE_PARTIAL_I:mode>)
+	(*aarch64_mul_unpredicated_<mode>)
+	(@aarch64_pred_<sve_int_op><mode>, *cond_<sve_int_op><mode>_2)
+	(*cond_<sve_int_op><mode>_3, *cond_<sve_int_op><mode>_any)
+	(*cond_<sve_int_op><mode>_z, @aarch64_pred_<sve_int_op><mode>)
+	(*cond_<sve_int_op><mode>_2, *cond_<sve_int_op><mode>_3)
+	(*cond_<sve_int_op><mode>_any, @aarch64_sve_<sve_int_op><mode>)
+	(@aarch64_sve_<sve_int_op>_lane_<mode>)
+	(@aarch64_sve_add_mul_lane_<mode>)
+	(@aarch64_sve_sub_mul_lane_<mode>, @aarch64_sve2_xar<mode>)
+	(*aarch64_sve2_bcax<mode>, @aarch64_sve2_eor3<mode>)
+	(*aarch64_sve2_nor<mode>, *aarch64_sve2_nand<mode>)
+	(*aarch64_sve2_bsl<mode>, *aarch64_sve2_nbsl<mode>)
+	(*aarch64_sve2_bsl1n<mode>, *aarch64_sve2_bsl2n<mode>)
+	(*aarch64_sve2_sra<mode>, @aarch64_sve_add_<sve_int_op><mode>)
+	(*aarch64_sve2_<su>aba<mode>, @aarch64_sve_add_<sve_int_op><mode>)
+	(@aarch64_sve_add_<sve_int_op>_lane_<mode>)
+	(@aarch64_sve_qadd_<sve_int_op><mode>)
+	(@aarch64_sve_qadd_<sve_int_op>_lane_<mode>)
+	(@aarch64_sve_sub_<sve_int_op><mode>)
+	(@aarch64_sve_sub_<sve_int_op>_lane_<mode>)
+	(@aarch64_sve_qsub_<sve_int_op><mode>)
+	(@aarch64_sve_qsub_<sve_int_op>_lane_<mode>)
+	(@aarch64_sve_<sve_fp_op><mode>, @aarch64_<sve_fp_op>_lane_<mode>)
+	(@aarch64_pred_<sve_int_op><mode>)
+	(@aarch64_pred_<sve_fp_op><mode>, *cond_<sve_int_op><mode>_2)
+	(*cond_<sve_int_op><mode>_z, @aarch64_sve_<optab><mode>)
+	(@aarch64_<optab>_lane_<mode>, @aarch64_sve_<optab><mode>)
+	(@aarch64_<optab>_lane_<mode>, @aarch64_pred_<sve_fp_op><mode>)
+	(*cond_<sve_fp_op><mode>_any_relaxed)
+	(*cond_<sve_fp_op><mode>_any_strict)
+	(@aarch64_pred_<sve_int_op><mode>, *cond_<sve_int_op><mode>)
+	(@aarch64_pred_<sve_fp_op><mode>, *cond_<sve_fp_op><mode>)
+	(*cond_<sve_fp_op><mode>_strict): Update to new syntax.
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_mov<mode>_ldr_str)
+	(*aarch64_sve_mov<mode>_no_ldr_str, @aarch64_pred_mov<mode>)
+	(*aarch64_sve_mov<mode>, aarch64_wrffr)
+	(mask_scatter_store<mode><v_int_container>)
+	(*mask_scatter_store<mode><v_int_container>_<su>xtw_unpacked)
+	(*mask_scatter_store<mode><v_int_container>_sxtw)
+	(*mask_scatter_store<mode><v_int_container>_uxtw)
+	(@aarch64_scatter_store_trunc<VNx4_NARROW:mode><VNx4_WIDE:mode>)
+	(@aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_sxtw)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_uxtw)
+	(*vec_duplicate<mode>_reg, vec_shl_insert_<mode>)
+	(vec_series<mode>, @extract_<last_op>_<mode>)
+	(@aarch64_pred_<optab><mode>, *cond_<optab><mode>_2)
+	(*cond_<optab><mode>_any, @aarch64_pred_<optab><mode>)
+	(@aarch64_sve_revbhw_<SVE_ALL:mode><PRED_HSD:mode>)
+	(@cond_<optab><mode>)
+	(*<optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2)
+	(@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>)
+	(@aarch64_cond_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>)
+	(*cond_uxt<mode>_2, *cond_uxt<mode>_any, *cnot<mode>)
+	(*cond_cnot<mode>_2, *cond_cnot<mode>_any)
+	(@aarch64_pred_<optab><mode>, *cond_<optab><mode>_2_relaxed)
+	(*cond_<optab><mode>_2_strict, *cond_<optab><mode>_any_relaxed)
+	(*cond_<optab><mode>_any_strict, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_2, *cond_<optab><mode>_3)
+	(*cond_<optab><mode>_any, add<mode>3, sub<mode>3)
+	(@aarch64_pred_<su>abd<mode>, *aarch64_cond_<su>abd<mode>_2)
+	(*aarch64_cond_<su>abd<mode>_3, *aarch64_cond_<su>abd<mode>_any)
+	(@aarch64_sve_<optab><mode>, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_2, *cond_<optab><mode>_z)
+	(@aarch64_pred_<optab><mode>, *cond_<optab><mode>_2)
+	(*cond_<optab><mode>_3, *cond_<optab><mode>_any, <optab><mode>3)
+	(*cond_bic<mode>_2, *cond_bic<mode>_any)
+	(@aarch64_pred_<optab><mode>, *cond_<optab><mode>_2_const)
+	(*cond_<optab><mode>_any_const, *cond_<sve_int_op><mode>_m)
+	(*cond_<sve_int_op><mode>_z, *sdiv_pow2<mode>3)
+	(*cond_<sve_int_op><mode>_2, *cond_<sve_int_op><mode>_any)
+	(@aarch64_pred_<optab><mode>, *cond_<optab><mode>_2_relaxed)
+	(*cond_<optab><mode>_2_strict, *cond_<optab><mode>_any_relaxed)
+	(*cond_<optab><mode>_any_strict, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_2_relaxed, *cond_<optab><mode>_2_strict)
+	(*cond_<optab><mode>_2_const_relaxed)
+	(*cond_<optab><mode>_2_const_strict)
+	(*cond_<optab><mode>_3_relaxed, *cond_<optab><mode>_3_strict)
+	(*cond_<optab><mode>_any_relaxed, *cond_<optab><mode>_any_strict)
+	(*cond_<optab><mode>_any_const_relaxed)
+	(*cond_<optab><mode>_any_const_strict)
+	(@aarch64_pred_<optab><mode>, *cond_add<mode>_2_const_relaxed)
+	(*cond_add<mode>_2_const_strict)
+	(*cond_add<mode>_any_const_relaxed)
+	(*cond_add<mode>_any_const_strict, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_2_relaxed, *cond_<optab><mode>_2_strict)
+	(*cond_<optab><mode>_any_relaxed, *cond_<optab><mode>_any_strict)
+	(@aarch64_pred_<optab><mode>, *cond_sub<mode>_3_const_relaxed)
+	(*cond_sub<mode>_3_const_strict, *cond_sub<mode>_const_relaxed)
+	(*cond_sub<mode>_const_strict, *aarch64_pred_abd<mode>_relaxed)
+	(*aarch64_pred_abd<mode>_strict)
+	(*aarch64_cond_abd<mode>_2_relaxed)
+	(*aarch64_cond_abd<mode>_2_strict)
+	(*aarch64_cond_abd<mode>_3_relaxed)
+	(*aarch64_cond_abd<mode>_3_strict)
+	(*aarch64_cond_abd<mode>_any_relaxed)
+	(*aarch64_cond_abd<mode>_any_strict, @aarch64_pred_<optab><mode>)
+	(@aarch64_pred_fma<mode>, *cond_fma<mode>_2, *cond_fma<mode>_4)
+	(*cond_fma<mode>_any, @aarch64_pred_fnma<mode>)
+	(*cond_fnma<mode>_2, *cond_fnma<mode>_4, *cond_fnma<mode>_any)
+	(<sur>dot_prod<vsi2qi>, @aarch64_<sur>dot_prod_lane<vsi2qi>)
+	(@<sur>dot_prod<vsi2qi>, @aarch64_<sur>dot_prod_lane<vsi2qi>)
+	(@aarch64_sve_add_<optab><vsi2qi>, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_2_relaxed, *cond_<optab><mode>_2_strict)
+	(*cond_<optab><mode>_4_relaxed, *cond_<optab><mode>_4_strict)
+	(*cond_<optab><mode>_any_relaxed, *cond_<optab><mode>_any_strict)
+	(@aarch64_<optab>_lane_<mode>, @aarch64_pred_<optab><mode>)
+	(*cond_<optab><mode>_4_relaxed, *cond_<optab><mode>_4_strict)
+	(*cond_<optab><mode>_any_relaxed, *cond_<optab><mode>_any_strict)
+	(@aarch64_<optab>_lane_<mode>, @aarch64_sve_tmad<mode>)
+	(@aarch64_sve_<sve_fp_op>vnx4sf)
+	(@aarch64_sve_<sve_fp_op>_lanevnx4sf)
+	(@aarch64_sve_<sve_fp_op><mode>, *vcond_mask_<mode><vpred>)
+	(@aarch64_sel_dup<mode>, @aarch64_pred_cmp<cmp_op><mode>)
+	(*cmp<cmp_op><mode>_cc, *cmp<cmp_op><mode>_ptest)
+	(@aarch64_pred_fcm<cmp_op><mode>, @fold_extract_<last_op>_<mode>)
+	(@aarch64_fold_extract_vector_<last_op>_<mode>)
+	(@aarch64_sve_splice<mode>)
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>)
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>)
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_relaxed)
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_strict)
+	(*cond_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>)
+	(@aarch64_sve_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>)
+	(@aarch64_sve_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>)
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_relaxed)
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_strict)
+	(*cond_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>)
+	(@aarch64_sve_<optab>_trunc<SVE_FULL_SDF:mode><SVE_FULL_HSF:mode>)
+	(*cond_<optab>_trunc<SVE_FULL_SDF:mode><SVE_FULL_HSF:mode>)
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>)
+	(*cond_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>)
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_HSF:mode><SVE_FULL_SDF:mode>)
+	(*cond_<optab>_nontrunc<SVE_FULL_HSF:mode><SVE_FULL_SDF:mode>)
+	(@aarch64_brk<brk_op>, *aarch64_sve_<inc_dec><mode>_cntp): Update
+	to new syntax.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>)
+	(load_pair<DREG:mode><DREG2:mode>)
+	(vec_store_pair<DREG:mode><DREG2:mode>, aarch64_simd_stp<mode>)
+	(aarch64_simd_mov_from_<mode>low)
+	(aarch64_simd_mov_from_<mode>high, and<mode>3<vczle><vczbe>)
+	(ior<mode>3<vczle><vczbe>, aarch64_simd_ashr<mode><vczle><vczbe>)
+	(aarch64_simd_bsl<mode>_internal<vczle><vczbe>)
+	(*aarch64_simd_bsl<mode>_alt<vczle><vczbe>)
+	(aarch64_simd_bsldi_internal, aarch64_simd_bsldi_alt)
+	(store_pair_lanes<mode>, *aarch64_combine_internal<mode>)
+	(*aarch64_combine_internal_be<mode>, *aarch64_combinez<mode>)
+	(*aarch64_combinez_be<mode>)
+	(aarch64_cm<optab><mode><vczle><vczbe>, *aarch64_cm<optab>di)
+	(aarch64_cm<optab><mode><vczle><vczbe>, *aarch64_mov<mode>)
+	(*aarch64_be_mov<mode>, *aarch64_be_movoi): Update to new syntax.
+
+2023-10-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gensupport.cc (convert_syntax): Skip spaces before "cons:"
+	in new compact pattern syntax.
+
+2023-10-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gensupport.cc (convert_syntax): Updated to support unordered
+	constraints in compact syntax.
+
 2023-10-02  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (UNSPEC_COPYSIGN): Delete.

@@ -1,3 +1,35 @@
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/static_assert3.C: Add directives for
+	additional source printing.
+	* g++.dg/template/error60.C: New test.
+
+2023-10-03  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/fortran/pr111566.f90: Restore escaped
+	characters.
+
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110378
+	* gcc.dg/ipa/ipa-sra-32.c: New test.
+	* gcc.dg/ipa/pr110378-4.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-4.c: Use a return value.
+
+2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	* gcc.dg/ipa/pr108007.c: New test.
+
+2023-10-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr93917.c: Check for ranges in final optimized listing.
+	* gcc.dg/tree-ssa/vrp-unreachable.c: Ditto.
+
+2023-10-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/scc-ltu.c: New test case.
+
 2023-10-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gfortran.dg/pr95690.f90: Add hppa*-*-* to dg-error targets at line 5.

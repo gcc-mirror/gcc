@@ -1,3 +1,8 @@
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (c_tree_printer): Update for "m_" prefixes to
+	text_info fields.
+
 2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Make-lang.in: Make create_fdas_for_cc1 target not .PHONY

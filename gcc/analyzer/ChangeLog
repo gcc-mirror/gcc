@@ -1,3 +1,12 @@
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-logging.cc (logger::log_va_partial): Use text_info
+	ctor.
+	* analyzer.cc (make_label_text): Likewise.
+	(make_label_text_n): Likewise.
+	* pending-diagnostic.cc (evdesc::event_desc::formatted_print):
+	Likewise.
+
 2023-10-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-point.cc: Update for grouping of source printing fields

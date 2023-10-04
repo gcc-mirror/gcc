@@ -1,3 +1,12 @@
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (print_instantiation_partial_context_line): Call
+	diagnostic_show_locus.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for "m_" prefixes to text_info fields.
+
 2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Make-lang.in: Make create_fdas_for_cc1plus target not .PHONY
