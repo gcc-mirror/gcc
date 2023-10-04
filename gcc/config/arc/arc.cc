@@ -4239,18 +4239,16 @@ arc_unspec_offset (rtx loc, int unspec)
 					       unspec));
 }
 
-/* !TARGET_BARREL_SHIFTER support.  */
-/* Emit a shift insn to set OP0 to OP1 shifted by OP2; CODE specifies what
-   kind of shift.  */
+/* Predicate for pre-reload splitters with associated instructions,
+   which can match any time before the split1 pass (usually combine),
+   then are unconditionally split in that pass and should not be
+   matched again afterwards.  */
 
-void
-emit_shift (enum rtx_code code, rtx op0, rtx op1, rtx op2)
+bool
+arc_pre_reload_split (void)
 {
-  rtx shift = gen_rtx_fmt_ee (code, SImode, op1, op2);
-  rtx pat
-    = ((shift4_operator (shift, SImode) ?  gen_shift_si3 : gen_shift_si3_loop)
-	(op0, op1, op2, shift));
-  emit_insn (pat);
+  return (can_create_pseudo_p ()
+	  && !(cfun->curr_properties & PROP_rtl_split_insns));
 }
 
 /* Output the assembler code for doing a shift.

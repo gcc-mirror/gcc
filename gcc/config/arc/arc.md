@@ -3401,70 +3401,19 @@ archs4x, archs4xd"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
 		   (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
-  "
-{
-  if (!TARGET_BARREL_SHIFTER)
-    {
-      emit_shift (ASHIFT, operands[0], operands[1], operands[2]);
-      DONE;
-    }
-}")
+  "")
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "")
 		     (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
-  "
-{
-  if (!TARGET_BARREL_SHIFTER)
-    {
-      emit_shift (ASHIFTRT, operands[0], operands[1], operands[2]);
-      DONE;
-    }
-}")
+  "")
 
 (define_expand "lshrsi3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
 		     (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
-  "
-{
-  if (!TARGET_BARREL_SHIFTER)
-    {
-      emit_shift (LSHIFTRT, operands[0], operands[1], operands[2]);
-      DONE;
-    }
-}")
-
-(define_insn "shift_si3"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=r")
-	(match_operator:SI 3 "shift4_operator"
-			   [(match_operand:SI 1 "register_operand" "0")
-			    (match_operand:SI 2 "const_int_operand" "n")]))
-   (clobber (match_scratch:SI 4 "=&r"))
-   (clobber (reg:CC CC_REG))
-  ]
-  "!TARGET_BARREL_SHIFTER"
-  "* return output_shift (operands);"
-  [(set_attr "type" "shift")
-   (set_attr "length" "16")])
-
-(define_insn "shift_si3_loop"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r")
-	(match_operator:SI 3 "shift_operator"
-			   [(match_operand:SI 1 "register_operand" "0,0")
-			    (match_operand:SI 2 "nonmemory_operand" "rn,Cal")]))
-   (clobber (match_scratch:SI 4 "=X,X"))
-   (clobber (reg:SI LP_COUNT))
-   (clobber (reg:CC CC_REG))
-  ]
-  "!TARGET_BARREL_SHIFTER"
-  "* return output_shift (operands);"
-  [(set_attr "type" "shift")
-   (set_attr "length" "16,20")])
+  "")
 
 ; asl, asr, lsr patterns:
 ; There is no point in including an 'I' alternative since only the lowest 5
@@ -3511,6 +3460,183 @@ archs4x, archs4xd"
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
+
+(define_insn_and_split "*ashlsi3_nobs"
+  [(set (match_operand:SI 0 "dest_reg_operand")
+	(ashift:SI (match_operand:SI 1 "register_operand")
+		   (match_operand:SI 2 "nonmemory_operand")))]
+  "!TARGET_BARREL_SHIFTER
+   && operands[2] != const1_rtx
+   && arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 9)
+	{
+	  if (n == 0)
+	    emit_move_insn (operands[0], operands[1]);
+	  else if (n <= 2)
+	    {
+	      emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[1]));
+	      if (n == 2)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    {
+	      rtx zero = gen_reg_rtx (SImode);
+	      emit_move_insn (zero, const0_rtx);
+	      emit_insn (gen_add_shift (operands[0], operands[1],
+					GEN_INT (3), zero));
+	      for (n -= 3; n >= 3; n -= 3)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  GEN_INT (3), zero));
+	      if (n == 2)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  const2_rtx, zero));
+	      else if (n)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  DONE;
+	}
+      else if (n >= 29)
+	{
+	  if (n < 31)
+	    {
+	      if (n == 29)
+		{
+		  emit_insn (gen_andsi3_i (operands[0], operands[1],
+					   GEN_INT (7)));
+		  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+		}
+	      else
+		emit_insn (gen_andsi3_i (operands[0], operands[1],
+					 GEN_INT (3)));
+	      emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_insn (gen_andsi3_i (operands[0], operands[1], const1_rtx));
+	  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  DONE;
+	}
+    }
+
+  rtx shift = gen_rtx_fmt_ee (ASHIFT, SImode, operands[1], operands[2]);
+  emit_insn (gen_shift_si3_loop (operands[0], operands[1],
+				 operands[2], shift));
+  DONE;
+})
+
+(define_insn_and_split "*ashlri3_nobs"
+  [(set (match_operand:SI 0 "dest_reg_operand")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "nonmemory_operand")))]
+  "!TARGET_BARREL_SHIFTER
+   && operands[2] != const1_rtx
+   && arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else 
+	    emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+    }
+
+  rtx pat;
+  rtx shift = gen_rtx_fmt_ee (ASHIFTRT, SImode, operands[1], operands[2]);
+  if (shiftr4_operator (shift, SImode))
+    pat = gen_shift_si3 (operands[0], operands[1], operands[2], shift);
+  else
+    pat = gen_shift_si3_loop (operands[0], operands[1], operands[2], shift);
+  emit_insn (pat);
+  DONE;
+})
+
+(define_insn_and_split "*lshrsi3_nobs"
+  [(set (match_operand:SI 0 "dest_reg_operand")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand")
+		     (match_operand:SI 2 "nonmemory_operand")))]
+  "!TARGET_BARREL_SHIFTER
+   && operands[2] != const1_rtx
+   && arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else 
+	    emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+    }
+
+  rtx pat;
+  rtx shift = gen_rtx_fmt_ee (LSHIFTRT, SImode, operands[1], operands[2]);
+  if (shiftr4_operator (shift, SImode))
+    pat = gen_shift_si3 (operands[0], operands[1], operands[2], shift);
+  else
+    pat = gen_shift_si3_loop (operands[0], operands[1], operands[2], shift);
+  emit_insn (pat);
+  DONE;
+})
+
+;; shift_si3 appears after {ashr,lshr}si3_nobs
+(define_insn "shift_si3"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r")
+	(match_operator:SI 3 "shiftr4_operator"
+			   [(match_operand:SI 1 "register_operand" "0")
+			    (match_operand:SI 2 "const_int_operand" "n")]))
+   (clobber (match_scratch:SI 4 "=&r"))
+   (clobber (reg:CC CC_REG))
+  ]
+  "!TARGET_BARREL_SHIFTER
+   && operands[2] != const1_rtx"
+  "* return output_shift (operands);"
+  [(set_attr "type" "shift")
+   (set_attr "length" "16")])
+
+;; shift_si3_loop appears after {ashl,ashr,lshr}si3_nobs
+(define_insn "shift_si3_loop"
+  [(set (match_operand:SI 0 "dest_reg_operand" "=r,r")
+	(match_operator:SI 3 "shift_operator"
+			   [(match_operand:SI 1 "register_operand" "0,0")
+			    (match_operand:SI 2 "nonmemory_operand" "rn,Cal")]))
+   (clobber (reg:SI LP_COUNT))
+   (clobber (reg:CC CC_REG))
+  ]
+  "!TARGET_BARREL_SHIFTER
+   && operands[2] != const1_rtx"
+  "* return output_shift (operands);"
+  [(set_attr "type" "shift")
+   (set_attr "length" "16,20")])
+
+;; Rotate instructions.
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "dest_reg_operand"                    "=r, r,   r")
@@ -5923,7 +6049,7 @@ archs4x, archs4xd"
 		   (zero_extract:SI (match_dup 1) (match_dup 5) (match_dup 7)))])
    (match_dup 1)])
 
-(define_insn "*rotrsi3_cnt1"
+(define_insn "rotrsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"              "=r")
 	(rotatert:SI (match_operand:SI 1 "nonmemory_operand" "rL")
 		     (const_int 1)))]
@@ -6342,7 +6468,7 @@ archs4x, archs4xd"
    (set_attr "type" "multi")
    (set_attr "predicable" "yes")])
 
-(define_insn "*add_shift"
+(define_insn "add_shift"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
 	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			    (match_operand:SI 2 "_1_2_3_operand" ""))
