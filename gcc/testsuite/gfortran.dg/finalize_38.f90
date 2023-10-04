@@ -4,6 +4,8 @@
 ! With -std=gnu, no finalization of array or structure constructors should occur.
 ! See finalize_38a.f90 for the result with f2008.
 ! Tests fix for PR64290 as well.
+! Extended to test that nonfinalizable types with allocatable finalizable components
+! are finalized before deallocation (PR111674).
 !
 module testmode
   implicit none
@@ -19,6 +21,10 @@ module testmode
   contains
     final :: destructor3, destructor4
   end type complicated
+
+  type :: notfinalizable
+    type(simple), allocatable :: aa
+  end type
 
   integer :: check_scalar
   integer :: check_array(4)
@@ -114,6 +120,7 @@ program test_final
   type(simple), allocatable :: MyType, MyType2
   type(simple), allocatable :: MyTypeArray(:)
   type(simple) :: ThyType = simple(21), ThyType2 = simple(22)
+  type(notfinalizable) :: MyNf
   class(simple), allocatable :: MyClass
   class(simple), allocatable :: MyClassArray(:)
 
@@ -213,6 +220,15 @@ program test_final
 ! parent component.
   deallocate (MyClassArray)
   call test(2, 0, [10, 20], 170, rarray = [10.0,20.0])
+
+!******************
+! Test for PR111674
+!******************
+  final_count = 0
+  MyNf = notfinalizable (simple (42)) ! Allocatable component not finalized
+  if (final_count .ne. 0) stop 171
+  MyNf = notfinalizable (simple (84)) ! Component finalized before deallocation
+  call test(1, 42, [0,0], 180)
 
 ! Clean up for valgrind testing
   if (allocated (MyType)) deallocate (MyType)
