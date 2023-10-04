@@ -5178,7 +5178,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Optimize
    # x_5 in range [cst1, cst2] where cst2 = cst1 + 1
-   x_5 ? cstN ? cst4 : cst3
+   x_5 == cstN ? cst4 : cst3
    # op is == or != and N is 1 or 2
    to r_6 = x_5 + (min (cst3, cst4) - cst1) or
    r_6 = (min (cst3, cst4) + cst1) - x_5 depending on op, N and which
@@ -5214,7 +5214,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 type1 = type;
        auto prec = TYPE_PRECISION (type1);
        auto unsign = TYPE_UNSIGNED (type1);
-       type1 = build_nonstandard_integer_type (prec, unsign);
+       if (TREE_CODE (type1) == BOOLEAN_TYPE)
+	type1 = build_nonstandard_integer_type (prec, unsign);
        min = wide_int::from (min, prec,
 			     TYPE_SIGN (TREE_TYPE (@0)));
        wide_int a = wide_int::from (wi::to_wide (arg0), prec,
@@ -5253,14 +5254,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       }
       (if (code == PLUS_EXPR)
        (convert (plus (convert:type1 @0) { arg; }))
-       (convert (minus { arg; } (convert:type1 @0)))
-      )
-     )
-    )
-   )
-  )
- )
-)
+       (convert (minus { arg; } (convert:type1 @0))))))))))
 #endif
 
 (simplify
@@ -6758,13 +6752,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (with { bool wascmp; }
   (if (INTEGRAL_TYPE_P (type)
        && bitwise_inverted_equal_p (@1, @2, wascmp)
-       && (!wascmp || element_precision (type) == 1))
-   (with {
-     auto prec = TYPE_PRECISION (type);
-     auto unsign = TYPE_UNSIGNED (type);
-     tree inttype = build_nonstandard_integer_type (prec, unsign);
-    }
-    (convert (bit_xor (negate (convert:inttype @0)) (convert:inttype @2)))))))
+       && (!wascmp || TYPE_PRECISION (type) == 1))
+   (if ((!TYPE_UNSIGNED (type) && TREE_CODE (type) == BOOLEAN_TYPE)
+	|| TYPE_PRECISION (type) == 1)
+    (bit_xor (convert:type @0) @2)
+    (bit_xor (negate (convert:type @0)) @2)))))
 #endif
 
 /* Simplify pointer equality compares using PTA.  */
