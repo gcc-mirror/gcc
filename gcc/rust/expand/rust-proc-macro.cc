@@ -14,12 +14,14 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-diagnostics.h"
 #include "rust-proc-macro.h"
 #include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-token-converter.h"
 #include "rust-attributes.h"
+
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -44,8 +46,6 @@ CustomDeriveProcMacro::CustomDeriveProcMacro (ProcMacro::CustomDerive macro)
     node_id (Analysis::Mappings::get ()->get_next_node_id ()),
     macro (macro.macro)
 {}
-
-const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
 
 namespace {
 
@@ -150,8 +150,10 @@ load_macros_array (std::string path)
 
   // FIXME: Add CrateStableId handling, right now all versions may be loaded,
   // even incompatible ones.
+  auto symbol_name = generate_proc_macro_decls_symbol (0 /* FIXME */);
+
   return *reinterpret_cast<const ProcMacro::ProcmacroArray **> (
-    dlsym (handle, PROC_MACRO_DECL_PREFIX.c_str ()));
+    dlsym (handle, symbol_name.c_str ()));
 #else
   rust_sorry_at (UNDEF_LOCATION,
 		 "Procedural macros are not yet supported on windows host");
@@ -173,6 +175,16 @@ load_macros (std::string path)
 
   return std::vector<ProcMacro::Procmacro> (array->macros,
 					    array->macros + array->length);
+}
+
+std::string
+generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id)
+{
+  std::ostringstream stream;
+  stream << "__gccrs_proc_macro_decls_" << std::setfill ('0') << std::hex
+	 << std::setw (8) << stable_crate_id << "__";
+
+  return stream.str ();
 }
 
 } // namespace Rust

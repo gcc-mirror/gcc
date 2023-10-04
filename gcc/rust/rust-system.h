@@ -54,6 +54,7 @@
  * before the macro magic of safe-ctype.h, which is included by
  * system.h. */
 #include <iostream>
+#include <iomanip>
 
 #include "system.h"
 #include "ansidecl.h"
