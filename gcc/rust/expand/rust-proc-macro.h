@@ -85,6 +85,9 @@ public:
 const std::vector<ProcMacro::Procmacro>
 load_macros (std::string path);
 
+std::string
+generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id);
+
 } // namespace Rust
 
 #endif /* ! RUST_PROC_MACRO_H */

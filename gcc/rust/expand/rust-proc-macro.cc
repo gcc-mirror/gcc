@@ -45,8 +45,6 @@ CustomDeriveProcMacro::CustomDeriveProcMacro (ProcMacro::CustomDerive macro)
     macro (macro.macro)
 {}
 
-const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
-
 namespace {
 
 ProcMacro::Literal
@@ -150,8 +148,10 @@ load_macros_array (std::string path)
 
   // FIXME: Add CrateStableId handling, right now all versions may be loaded,
   // even incompatible ones.
+  auto symbol_name = generate_proc_macro_decls_symbol (0 /* FIXME */);
+
   return *reinterpret_cast<const ProcMacro::ProcmacroArray **> (
-    dlsym (handle, PROC_MACRO_DECL_PREFIX.c_str ()));
+    dlsym (handle, symbol_name.c_str ()));
 #else
   rust_sorry_at (UNDEF_LOCATION,
 		 "Procedural macros are not yet supported on windows host");
@@ -173,6 +173,21 @@ load_macros (std::string path)
 
   return std::vector<ProcMacro::Procmacro> (array->macros,
 					    array->macros + array->length);
+}
+
+std::string
+generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id)
+{
+#define PROC_MACRO_DECLS_FMT_ARGS                                              \
+  "__gccrs_proc_macro_decls_%08x__", stable_crate_id
+  // Size could be hardcoded since we know the input size but I elected to
+  // calculate it everytime so we won't have any desync between code and data.
+  int size = std::snprintf (nullptr, 0, PROC_MACRO_DECLS_FMT_ARGS);
+  std::vector<char> buf (size + 1);
+  std::sprintf (buf.data (), PROC_MACRO_DECLS_FMT_ARGS);
+#undef PROC_MACRO_DECLS_FMT_ARGS
+
+  return std::string (buf.cbegin (), buf.cend ());
 }
 
 } // namespace Rust
