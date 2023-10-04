@@ -1383,7 +1383,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
             if 'std::string' in mgrname:
                 mgrtypes = []
-                for s in _string_types():
+                for s in StdExpAnyPrinter._string_types():
                     try:
                         x = re.sub(r"std::string(?!\w)", s, m.group(1))
                         # The following lookup might raise gdb.error if the
