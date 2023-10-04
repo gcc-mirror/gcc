@@ -1014,7 +1014,7 @@ expand_const_vector (rtx target, rtx src)
   rtx base, step;
   if (const_vec_series_p (src, &base, &step))
     {
-      emit_insn (gen_vec_series (mode, target, base, step));
+      expand_vec_series (target, base, step);
       return;
     }
 
@@ -1171,7 +1171,7 @@ expand_const_vector (rtx target, rtx src)
 	  rtx step = CONST_VECTOR_ELT (src, 2);
 	  /* Step 1 - { base1, base1 + step, base1 + step * 2, ... }  */
 	  rtx tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_vec_series (mode, tmp, base1, step));
+	  expand_vec_series (tmp, base1, step);
 	  /* Step 2 - { base0, base1, base1 + step, base1 + step * 2, ... }  */
 	  scalar_mode elem_mode = GET_MODE_INNER (mode);
 	  if (!rtx_equal_p (base0, const0_rtx))
@@ -3020,7 +3020,7 @@ shuffle_decompress_patterns (struct expand_vec_perm_d *d)
   /* Generate { 0, 1, .... } mask.  */
   rtx vid = gen_reg_rtx (sel_mode);
   rtx vid_repeat = gen_reg_rtx (sel_mode);
-  emit_insn (gen_vec_series (sel_mode, vid, const0_rtx, const1_rtx));
+  expand_vec_series (vid, const0_rtx, const1_rtx);
   rtx and_ops[] = {vid_repeat, vid, const1_rtx};
   emit_vlmax_insn (code_for_pred_scalar (AND, sel_mode), BINARY_OP, and_ops);
   rtx const_vec = gen_const_vector_dup (sel_mode, 1);

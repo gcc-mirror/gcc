@@ -336,7 +336,7 @@
 ;; - vadd.vx/vadd.vi
 ;; -------------------------------------------------------------------------
 
-(define_expand "@vec_series<mode>"
+(define_expand "vec_series<mode>"
   [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VEL> 1 "reg_or_int_operand")
    (match_operand:<VEL> 2 "reg_or_int_operand")]
