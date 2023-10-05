@@ -2229,12 +2229,16 @@
 })
 
 ;; -------------------------------------------------------------------------
-;; ---- [FP] Math.h.
+;; ---- [FP] Rounding.
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - ceil/ceilf
 ;; - floor/floorf
 ;; - nearbyint/nearbyintf
+;; - rint/rintf
+;; - round/roundf
+;; - trunc/truncf
+;; - roundeven/roundevenf
 ;; -------------------------------------------------------------------------
 (define_expand "ceil<mode>2"
   [(match_operand:V_VLSF 0 "register_operand")
