@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 typedef int8_t vnx2qi __attribute__ ((vector_size (2)));
 typedef int8_t vnx4qi __attribute__ ((vector_size (4)));

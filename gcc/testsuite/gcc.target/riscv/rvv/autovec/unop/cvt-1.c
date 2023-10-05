@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -O3 -ftree-vectorize -ffast-math -fno-vect-cost-model -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 /*
 ** test_uint65_to_fp16:

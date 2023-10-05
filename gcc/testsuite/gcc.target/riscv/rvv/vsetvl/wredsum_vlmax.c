@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -O3" } */
 
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 int16_t foo (int8_t *restrict a)
 {

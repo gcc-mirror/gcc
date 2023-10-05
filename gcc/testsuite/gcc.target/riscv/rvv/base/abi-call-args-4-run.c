@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <stdint-gcc.h>
 #include "riscv_vector.h"
 
 vint64m8_t

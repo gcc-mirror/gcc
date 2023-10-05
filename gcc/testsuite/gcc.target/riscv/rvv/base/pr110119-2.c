@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gczve32x -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -Wno-psabi" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 #include "riscv_vector.h"
 
 __attribute__ ((noipa)) vint32m1x3_t

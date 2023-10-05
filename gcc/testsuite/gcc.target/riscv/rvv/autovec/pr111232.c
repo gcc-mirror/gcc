@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -Ofast -fno-schedule-insns -fno-schedule-insns2" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 int16_t
 foo (int8_t *restrict x, int8_t *restrict y, int n)
