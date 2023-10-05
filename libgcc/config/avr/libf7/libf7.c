@@ -1527,6 +1527,9 @@ void f7_horner (f7_t *cc, const f7_t *xx, uint8_t n_coeff, const f7_t *coeff,
 
   f7_copy_flash (yy, pcoeff);
 
+  if (yy->flags & F7_FLAG_plusx)
+    f7_Iadd (yy, xx);
+
   while (1)
     {
       --pcoeff;

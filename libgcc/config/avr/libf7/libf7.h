@@ -47,6 +47,11 @@
        --  f7_t.is_nan (NaN)
        --  f7_t.is_inf (+Inf or -Inf)
        --  f7_t.sign (negative or -Inf).
+       --  _plusx: This flag is used by f7_horner.  Is is set in some
+	   polynomial coefficients from libf7-const.def to indicate that
+	   the respective polynomial has a leading coefficient of 1.
+	   The flag is set in the second-highest coefficient, and the leading
+	   coefficient is omitted.
 
    B)  The flags that are returned by f7_classify().  This are the
        flags from A) together with
@@ -56,6 +61,7 @@
 #define F7_FLAGNO_sign  0
 #define F7_FLAGNO_zero  1
 #define F7_FLAGNO_nan   2
+#define F7_FLAGNO_plusx 3
 #define F7_FLAGNO_inf   7
 
 #define F7_HAVE_Inf 1
@@ -64,6 +70,7 @@
 #define F7_FLAG_sign            (1 << F7_FLAGNO_sign)
 #define F7_FLAG_zero            (1 << F7_FLAGNO_zero)
 #define F7_FLAG_nan             (1 << F7_FLAGNO_nan)
+#define F7_FLAG_plusx           (1 << F7_FLAGNO_plusx)
 #define F7_FLAG_inf   (F7_HAVE_Inf << F7_FLAGNO_inf)
 
 // Flags that might be set in f7_t.flags.
