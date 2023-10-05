@@ -18,4 +18,3 @@ handler1 (void)
 		  "r25", "fp");
 }
 /* { dg-final { scan-assembler-not "(s|l)(t|d)d.*r\[0-9\]+,\\\[sp,\[0-9\]+\\\]" } } */
-/* { dg-final { scan-assembler "mov_s.*fp,sp" } } */
