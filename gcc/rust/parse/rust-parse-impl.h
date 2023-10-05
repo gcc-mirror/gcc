@@ -11452,6 +11452,8 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (
 	std::string index_str = t->get_str ();
 	int index = atoi (index_str.c_str ());
 
+	lexer.skip_token ();
+
 	if (!skip_token (COLON))
 	  {
 	    return nullptr;
