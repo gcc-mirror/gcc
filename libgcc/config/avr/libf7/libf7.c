@@ -352,7 +352,7 @@ float f7_get_float (const f7_t *aa)
 
   return make_float (mant);
 }
-F7_PURE ALIAS (f7_get_float, f7_truncdfsf2)
+ALIAS (f7_get_float, f7_truncdfsf2)
 #endif // F7MOD_get_float_
 
 #define DBL_DIG_EXP   11
@@ -572,7 +572,7 @@ int32_t f7_get_s32 (const f7_t *aa)
   extern int32_t to_s32 (const f7_t*, uint8_t) F7ASM(f7_to_integer_asm);
   return to_s32 (aa, 0x1f);
 }
-F7_PURE ALIAS (f7_get_s32, f7_fixdfsi)
+ALIAS (f7_get_s32, f7_fixdfsi)
 #endif // F7MOD_get_s32_
 
 
@@ -583,7 +583,7 @@ F7_PURE ALIAS (f7_get_s32, f7_fixdfsi)
   extern int64_t to_s64 (const f7_t*, uint8_t) F7ASM(f7_to_integer_asm);
   return to_s64 (aa, 0x3f);
 }
-F7_PURE ALIAS (f7_get_s64, f7_fixdfdi)
+ALIAS (f7_get_s64, f7_fixdfdi)
 #endif // F7MOD_get_s64_
 
 #ifdef F7MOD_get_u16_
@@ -603,7 +603,7 @@ uint32_t f7_get_u32 (const f7_t *aa)
   extern uint32_t to_u32 (const f7_t*, uint8_t) F7ASM(f7_to_unsigned_asm);
   return to_u32 (aa, 0x1f);
 }
-F7_PURE ALIAS (f7_get_u32, f7_fixunsdfsi)
+ALIAS (f7_get_u32, f7_fixunsdfsi)
 #endif // F7MOD_get_u32_
 
 
@@ -614,7 +614,7 @@ uint64_t f7_get_u64 (const f7_t *aa)
   extern int64_t to_u64 (const f7_t*, uint8_t) F7ASM(f7_to_unsigned_asm);
   return to_u64 (aa, 0x3f);
 }
-F7_PURE ALIAS (f7_get_u64, f7_fixunsdfdi)
+ALIAS (f7_get_u64, f7_fixunsdfdi)
 #endif // F7MOD_get_u64_
 
 

@@ -36,7 +36,7 @@
     --  Inline asm
     --  Setting assembler names by means of __asm (GNU-C).
     --  Attributes: alias, always_inline, const, noinline, unused,
-                    progmem, pure, weak, warning
+		    progmem, weak, warning
     --  GCC built-ins: __builtin_abort, __builtin_constant_p
     --  AVR built-ins: __builtin_avr_bitsr, __builtin_avr_rbits
 */
@@ -112,7 +112,6 @@ extern "C" {
 #define F7_INLINE   inline __attribute__((__always_inline__))
 #define F7_NOINLINE __attribute__((__noinline__))
 #define F7_WEAK     __attribute__((__weak__))
-#define F7_PURE     __attribute__((__pure__))
 #define F7_UNUSED   __attribute__((__unused__))
 #define F7_CONST    __attribute__((__const__))
 
@@ -150,7 +149,7 @@ typedef uint64_t f7_double_t;
 #define F7_MANT_HI2(X) \
   (*(uint16_t*) & (X)->mant[F7_MANT_BYTES - 2])
 
-static F7_INLINE F7_PURE
+static F7_INLINE
 uint8_t f7_classify (const f7_t *aa)
 {
   extern void f7_classify_asm (void);
@@ -361,14 +360,14 @@ f7_t* f7_abs (f7_t *cc, const f7_t *aa)
 }
 
 
-F7_PURE extern int8_t f7_cmp (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_lt_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_le_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_gt_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_ge_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_ne_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_eq_impl (const f7_t*, const f7_t*);
-F7_PURE extern bool f7_unord_impl (const f7_t*, const f7_t*);
+extern int8_t f7_cmp (const f7_t*, const f7_t*);
+extern bool f7_lt_impl (const f7_t*, const f7_t*);
+extern bool f7_le_impl (const f7_t*, const f7_t*);
+extern bool f7_gt_impl (const f7_t*, const f7_t*);
+extern bool f7_ge_impl (const f7_t*, const f7_t*);
+extern bool f7_ne_impl (const f7_t*, const f7_t*);
+extern bool f7_eq_impl (const f7_t*, const f7_t*);
+extern bool f7_unord_impl (const f7_t*, const f7_t*);
 
 static F7_INLINE
 bool f7_lt (const f7_t *aa, const f7_t *bb)
@@ -541,14 +540,14 @@ extern f7_t* f7_set_u32 (f7_t*, uint32_t);
 extern void f7_set_float (f7_t*, float);
 extern void f7_set_pdouble (f7_t*, const f7_double_t*);
 
-F7_PURE extern int16_t f7_get_s16 (const f7_t*);
-F7_PURE extern int32_t f7_get_s32 (const f7_t*);
-F7_PURE extern int64_t f7_get_s64 (const f7_t*);
-F7_PURE extern uint16_t f7_get_u16 (const f7_t*);
-F7_PURE extern uint32_t f7_get_u32 (const f7_t*);
-F7_PURE extern uint64_t f7_get_u64 (const f7_t*);
-F7_PURE extern float f7_get_float (const f7_t*);
-F7_PURE extern f7_double_t f7_get_double (const f7_t*);
+extern int16_t f7_get_s16 (const f7_t*);
+extern int32_t f7_get_s32 (const f7_t*);
+extern int64_t f7_get_s64 (const f7_t*);
+extern uint16_t f7_get_u16 (const f7_t*);
+extern uint32_t f7_get_u32 (const f7_t*);
+extern uint64_t f7_get_u64 (const f7_t*);
+extern float f7_get_float (const f7_t*);
+extern f7_double_t f7_get_double (const f7_t*);
 
 #if USE_LPM == 1
   #define F7_PGMSPACE     __attribute__((__progmem__))
@@ -639,10 +638,10 @@ extern void f7_horner (f7_t*, const f7_t*, uint8_t, const f7_t *coeff, f7_t*);
 extern void f7_mul_noround (f7_t*, const f7_t*, const f7_t*);
 extern void f7_clr_mant_lsbs (f7_t*, const f7_t*, uint8_t) F7ASM(f7_clr_mant_lsbs_asm);
 
-F7_PURE extern int8_t f7_cmp_unordered (const f7_t*, const f7_t*, bool);
-F7_PURE extern int8_t f7_cmp_abs (const f7_t*, const f7_t*);
+extern int8_t f7_cmp_unordered (const f7_t*, const f7_t*, bool);
+extern int8_t f7_cmp_abs (const f7_t*, const f7_t*);
 
-F7_PURE extern bool f7_abscmp_msb_ge (const f7_t*, uint8_t msb, int16_t expo);
+extern bool f7_abscmp_msb_ge (const f7_t*, uint8_t msb, int16_t expo);
 extern void f7_addsub (f7_t*, const f7_t*, const f7_t*, bool neg_b);
 extern void f7_madd_msub (f7_t*, const f7_t*, const f7_t*, const f7_t*, bool);
 extern void f7_madd (f7_t*, const f7_t*, const f7_t*, const f7_t*);
