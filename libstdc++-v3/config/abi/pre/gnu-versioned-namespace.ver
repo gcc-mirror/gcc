@@ -318,6 +318,15 @@ CXXABI_2.0 {
     _ZTIPD[fde];
     _ZTIPKD[fde];
 
+    # typeinfo for _Float{16,32,64,128,32x,64x,128x} and
+    # __bf16
+    _ZTIDF[0-9]*[_bx];
+    _ZTIPDF[0-9]*[_bx];
+    _ZTIPKDF[0-9]*[_bx];
+    _ZTIu6__bf16;
+    _ZTIPu6__bf16;
+    _ZTIPKu6__bf16;
+
     # typeinfo for decltype(nullptr)
     _ZTIDn;
     _ZTIPDn;
