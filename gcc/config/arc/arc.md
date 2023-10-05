@@ -3934,9 +3934,9 @@ archs4x, archs4xd"
     {
       arc_ccfsm_record_condition (operands[1], false, insn, 0);
       if (get_attr_length (insn) == 2)
-	 return \"b%d1%? %^%l0\";
+	 return \"b%d1%?\\t%l0\";
       else
-	 return \"b%d1%# %^%l0\";
+	 return \"b%d1%#\\t%l0\";
     }
 }"
   [(set_attr "type" "branch")
@@ -3984,9 +3984,9 @@ archs4x, archs4xd"
     {
       arc_ccfsm_record_condition (operands[1], true, insn, 0);
       if (get_attr_length (insn) == 2)
-	 return \"b%D1%? %^%l0\";
+	 return \"b%D1%?\\t%l0\";
       else
-	 return \"b%D1%# %^%l0\";
+	 return \"b%D1%#\\t%l0\";
     }
 }"
   [(set_attr "type" "branch")
@@ -4026,7 +4026,7 @@ archs4x, archs4xd"
 (define_insn "jump_i"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   "!TARGET_LONG_CALLS_SET || !CROSSING_JUMP_P (insn)"
-  "b%!%* %^%l0"
+  "b%!%*\\t%l0"
   [(set_attr "type" "uncond_branch")
    (set (attr "iscompact")
 	(if_then_else (match_test "get_attr_length (insn) == 2")
@@ -4990,13 +4990,13 @@ archs4x, archs4xd"
    "*
      switch (get_attr_length (insn))
      {
-       case 2: return \"br%d0%? %1, %2, %^%l3\";
-       case 4: return \"br%d0%* %1, %B2, %^%l3\";
+       case 2: return \"br%d0%?\\t%1,%2,%l3\";
+       case 4: return \"br%d0%*\\t%1,%B2,%l3\";
        case 8: if (!brcc_nolimm_operator (operands[0], VOIDmode))
-		 return \"br%d0%* %1, %B2, %^%l3\";
+		 return \"br%d0%*\\t%1,%B2,%l3\";
        /* FALLTHRU */
        case 6: case 10:
-       case 12:return \"cmp%? %1, %B2\\n\\tb%d0%* %^%l3 ;br%d0 out of range\";
+       case 12:return \"cmp%? %1, %B2\\n\\tb%d0%*\\t%l3 ;br%d0 out of range\";
        default: fprintf (stderr, \"unexpected length %d\\n\", get_attr_length (insn)); fflush (stderr); gcc_unreachable ();
      }
    "

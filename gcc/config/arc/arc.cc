@@ -1130,7 +1130,6 @@ arc_init (void)
   arc_punct_chars['*'] = 1;
   arc_punct_chars['?'] = 1;
   arc_punct_chars['!'] = 1;
-  arc_punct_chars['^'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
 }
@@ -4529,7 +4528,6 @@ static int output_sdata = 0;
     'V': cache bypass indicator for volatile
     'P'
     'F'
-    '^'
     'O': Operator
     'o': original symbol - no @ prepending.  */
 
@@ -4953,14 +4951,7 @@ arc_print_operand (FILE *file, rtx x, int code)
     case 'F':
       fputs (reg_names[REGNO (x)]+1, file);
       return;
-    case '^':
-	/* This punctuation character is needed because label references are
-	printed in the output template using %l. This is a front end
-	character, and when we want to emit a '@' before it, we have to use
-	this '^'.  */
 
-	fputc('@',file);
-	return;
     case 'O':
       /* Output an operator.  */
       switch (GET_CODE (x))
