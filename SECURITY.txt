@@ -173,33 +173,33 @@ Security features implemented in GCC
 Reporting private security bugs
 ===============================
 
-   *All bugs reported in the GCC Bugzilla are public.*
+    *All bugs reported in the GCC Bugzilla are public.*
 
-   In order to report a private security bug that is not immediately
-   public, please contact one of the downstream distributions with
-   security teams.  The following teams have volunteered to handle
-   such bugs:
+    In order to report a private security bug that is not immediately
+    public, please contact one of the downstream distributions with
+    security teams.  The following teams have volunteered to handle
+    such bugs:
 
       Debian:  security@debian.org
       Red Hat: secalert@redhat.com
       SUSE:    security@suse.de
       AdaCore: product-security@adacore.com
 
-   Please report the bug to just one of these teams.  It will be shared
-   with other teams as necessary.
+    Please report the bug to just one of these teams.  It will be shared
+    with other teams as necessary.
 
-   The team contacted will take care of details such as vulnerability
-   rating and CVE assignment (http://cve.mitre.org/about/).  It is likely
-   that the team will ask to file a public bug because the issue is
-   sufficiently minor and does not warrant an embargo.  An embargo is not
-   a requirement for being credited with the discovery of a security
-   vulnerability.
+    The team contacted will take care of details such as vulnerability
+    rating and CVE assignment (http://cve.mitre.org/about/).  It is likely
+    that the team will ask to file a public bug because the issue is
+    sufficiently minor and does not warrant an embargo.  An embargo is not
+    a requirement for being credited with the discovery of a security
+    vulnerability.
 
 Reporting public security bugs
 ==============================
 
-   It is expected that critical security bugs will be rare, and that most
-   security bugs can be reported in GCC, thus making
-   them public immediately.  The system can be found here:
+    It is expected that critical security bugs will be rare, and that most
+    security bugs can be reported in GCC, thus making
+    them public immediately.  The system can be found here:
 
       https://gcc.gnu.org/bugzilla/
