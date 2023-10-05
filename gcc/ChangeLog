@@ -1,3 +1,73 @@
+2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc-protos.h (emit_shift): Delete prototype.
+	(arc_pre_reload_split): New function prototype.
+	* config/arc/arc.cc (emit_shift): Delete function.
+	(arc_pre_reload_split): New predicate function, copied from i386,
+	to schedule define_insn_and_split splitters to the split1 pass.
+	* config/arc/arc.md (ashlsi3): Expand RTL template unconditionally.
+	(ashrsi3): Likewise.
+	(lshrsi3): Likewise.
+	(shift_si3): Move after other shift patterns, and disable when
+	operands[2] is one (which is handled by its own define_insn).
+	Use shiftr4_operator, instead of shift4_operator, as this is no
+	longer used for left shifts.
+	(shift_si3_loop): Likewise.  Additionally remove match_scratch.
+	(*ashlsi3_nobs): New pre-reload define_insn_and_split.
+	(*ashrsi3_nobs): Likewise.
+	(*lshrsi3_nobs): Likewise.
+	(rotrsi3_cnt1): Rename define_insn from *rotrsi3_cnt1.
+	(add_shift): Rename define_insn from *add_shift.
+	* config/arc/predicates.md (shiftl4_operator): Delete.
+	(shift4_operator): Delete.
+
+2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (ashlsi3_cnt1): Rename define_insn *ashlsi2_cnt1.
+	Change type attribute to "unary", as this doesn't have operands[2].
+	Change length attribute to "*,4" to allow compact representation.
+	(lshrsi3_cnt1): Rename define_insn from *lshrsi3_cnt1.  Change
+	insn type attribute to "unary", as this doesn't have operands[2].
+	(ashrsi3_cnt1): Rename define_insn from *ashrsi3_cnt1.  Change
+	insn type attribute to "unary", as this doesn't have operands[2].
+
+2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/110701
+	* combine.cc (record_dead_and_set_regs_1): Split comment into
+	pieces placed before the relevant clauses.  When the SET_DEST
+	is a partial_subreg_p, mark the bits outside of the updated
+	portion of the destination as undefined.
+
+2023-10-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR bootstrap/111664
+	* opt-read.awk: Drop multidimensional arrays.
+	* opth-gen.awk: Ditto.
+
+2023-10-04  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FCOPYSIGN): Delete.
+	(copysign<mode>3): Use copysign RTL instead of UNSPEC.
+
+2023-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111369
+	* match.pd (x == cstN ? cst4 : cst3): Use
+	build_nonstandard_integer_type only if type1 is BOOLEAN_TYPE.
+	Fix comment typo.  Formatting fix.
+	(a?~t:t -> (-(a))^t): Always convert to type rather
+	than using build_nonstandard_integer_type.  Perform negation
+	only if type has precision > 1 and is not signed BOOLEAN_TYPE.
+
+2023-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111668
+	* match.pd (a ? CST1 : CST2): Handle the a ? -1 : 0 and
+	a ? 0 : -1 cases before the powerof2cst cases and differentiate
+	between 1-bit precision types, larger precision boolean types
+	and other integral types.  Fix comment pastos and formatting.
+
 2023-10-03  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssanames.cc (set_range_info): Use get_ptr_info for

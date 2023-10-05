@@ -1,3 +1,8 @@
+2023-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Clarify 'kind' trait
+	and that other target archs have no 'arch'/'isa' traits implemented.
+
 2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as

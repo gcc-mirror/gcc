@@ -1,3 +1,21 @@
+2023-10-04  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py
+	(StdExpAnyPrinter.__init__): Qualify call to
+	_string_types.
+
+2023-10-04  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py: Assume that
+	_versioned_namespace is non-None.
+	* python/libstdcxx/v6/xmethods.py (is_specialization_of):
+	Assume that _versioned_namespace is non-None.
+
+2023-10-04  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/xmethods.py (_versioned_namespace):
+	Define.
+
 2023-09-29  Dimitrij Mijoski  <dmjpp@hotmail.com>
 
 	PR libstdc++/108976

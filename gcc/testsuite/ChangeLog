@@ -1,3 +1,34 @@
+2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/ashrsi-1.c: New TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/ashrsi-2.c: New !TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/ashrsi-3.c: Likewise.
+	* gcc.target/arc/ashrsi-4.c: Likewise.
+	* gcc.target/arc/ashrsi-5.c: Likewise.
+	* gcc.target/arc/lshrsi-1.c: New TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/lshrsi-2.c: New !TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/lshrsi-3.c: Likewise.
+	* gcc.target/arc/lshrsi-4.c: Likewise.
+	* gcc.target/arc/lshrsi-5.c: Likewise.
+	* gcc.target/arc/shlsi-1.c: New TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/shlsi-2.c: New !TARGET_BARREL_SHIFTER test case.
+	* gcc.target/arc/shlsi-3.c: Likewise.
+	* gcc.target/arc/shlsi-4.c: Likewise.
+	* gcc.target/arc/shlsi-5.c: Likewise.
+
+2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/110701
+	* gcc.target/i386/pr110701.c: New test case.
+
+2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37336
+	PR fortran/111674
+	* gfortran.dg/allocate_with_source_25.f90: Final count in tree
+	dump reverts from 4 to original 6.
+	* gfortran.dg/finalize_38.f90: Add test for fix of PR111674.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/diagnostic/static_assert3.C: Add directives for
