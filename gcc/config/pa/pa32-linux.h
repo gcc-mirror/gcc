@@ -68,11 +68,6 @@ call_ ## FUNC (void)					\
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-/* POSIX types such as pthread_mutex_t require 16-byte alignment to retain
-   layout compatibility with the original linux thread implementation.  */
-#undef MALLOC_ABI_ALIGNMENT
-#define MALLOC_ABI_ALIGNMENT 128
-
 /* Place jump tables in the text section except when generating non-PIC
    code.  When generating non-PIC code, the relocations needed to load the
    address of the jump table result in a text label in the final executable
