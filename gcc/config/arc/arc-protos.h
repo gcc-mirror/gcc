@@ -52,8 +52,6 @@ extern bool arc_can_use_return_insn (void);
 extern bool arc_split_move_p (rtx *);
 #endif /* RTX_CODE */
 
-extern bool arc_ccfsm_branch_deleted_p (void);
-extern void arc_ccfsm_record_branch_deleted (void);
 
 void arc_asm_output_aligned_decl_local (FILE *, tree, const char *,
 					unsigned HOST_WIDE_INT,
@@ -67,7 +65,6 @@ extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
 extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
 extern bool valid_brcc_with_delay_p (rtx *);
-extern bool arc_ccfsm_cond_exec_p (void);
 extern rtx disi_highpart (rtx);
 extern int arc_adjust_insn_length (rtx_insn *, int, bool);
 extern int arc_corereg_hazard (rtx, rtx);
@@ -76,9 +73,6 @@ extern int arc_write_ext_corereg (rtx);
 extern rtx gen_acc1 (void);
 extern rtx gen_acc2 (void);
 extern bool arc_branch_size_unknown_p (void);
-struct arc_ccfsm;
-extern void arc_ccfsm_record_condition (rtx, bool, rtx_insn *,
-					struct arc_ccfsm *);
 extern void arc_expand_prologue (void);
 extern void arc_expand_epilogue (int);
 extern void arc_init_expanders (void);
@@ -104,5 +98,4 @@ extern bool arc_is_jli_call_p (rtx);
 extern void arc_file_end (void);
 extern bool arc_is_secure_call_p (rtx);
 
-rtl_opt_pass * make_pass_arc_ifcvt (gcc::context *ctxt);
 rtl_opt_pass * make_pass_arc_predicate_delay_insns (gcc::context *ctxt);

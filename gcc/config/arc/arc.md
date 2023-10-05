@@ -547,16 +547,6 @@
 	 (const_string "false")]
 	(const_string "true")))
 
-;; Instructions that we can put into a delay slot and conditionalize.
-(define_attr "cond_delay_insn" "no,yes"
-  (cond [(eq_attr "cond" "!canuse") (const_string "no")
-	 (eq_attr "type" "call,branch,uncond_branch,jump,brcc")
-	 (const_string "no")
-	 (match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (2))")
-	 (const_string "no")
-	 (eq_attr "length" "2,4") (const_string "yes")]
-	(const_string "no")))
-
 (define_attr "in_ret_delay_slot" "no,yes"
   (cond [(eq_attr "in_delay_slot" "false")
 	 (const_string "no")
@@ -564,19 +554,6 @@
 			(RETURN_ADDR_REGNUM, insn, SImode, 1)")
 	 (const_string "no")]
 	(const_string "yes")))
-
-(define_attr "cond_ret_delay_insn" "no,yes"
-  (cond [(eq_attr "in_ret_delay_slot" "no") (const_string "no")
-	 (eq_attr "cond_delay_insn" "no") (const_string "no")]
-	(const_string "yes")))
-
-(define_attr "annul_ret_delay_insn" "no,yes"
-  (cond [(eq_attr "cond_ret_delay_insn" "yes") (const_string "yes")
-	 (match_test "TARGET_AT_DBR_CONDEXEC") (const_string "no")
-	 (eq_attr "type" "!call,branch,uncond_branch,jump,brcc,return,sfunc")
-	   (const_string "yes")]
-   (const_string "no")))
-
 
 ;; Delay slot definition for ARCompact ISA
 ;; ??? FIXME:
@@ -590,14 +567,7 @@
    (eq_attr "in_call_delay_slot" "true")
    (nil)])
 
-(define_delay (and (match_test "!TARGET_AT_DBR_CONDEXEC")
-		   (eq_attr "type" "brcc"))
-  [(eq_attr "in_delay_slot" "true")
-   (eq_attr "in_delay_slot" "true")
-   (nil)])
-
-(define_delay (and (match_test "TARGET_AT_DBR_CONDEXEC")
-		   (eq_attr "type" "brcc"))
+(define_delay (eq_attr "type" "brcc")
   [(eq_attr "in_delay_slot" "true")
    (nil)
    (nil)])
@@ -605,39 +575,26 @@
 (define_delay
   (eq_attr "type" "return")
   [(eq_attr "in_ret_delay_slot" "yes")
-   (eq_attr "annul_ret_delay_insn" "yes")
-   (eq_attr "cond_ret_delay_insn" "yes")])
+   (nil)
+   (nil)])
 
 (define_delay (eq_attr "type" "loop_end")
   [(eq_attr "in_delay_slot" "true")
-   (eq_attr "in_delay_slot" "true")
+   (nil)
    (nil)])
 
-;; For ARC600, unexposing the delay sloy incurs a penalty also in the
-;; non-taken case, so the only meaningful way to have an annull-true
+;; The only meaningful way to have an annull-true
 ;; filled delay slot is to conditionalize the delay slot insn.
-(define_delay (and (match_test "TARGET_AT_DBR_CONDEXEC")
-		   (eq_attr "type" "branch,uncond_branch,jump")
+(define_delay (and (eq_attr "type" "branch,uncond_branch,jump")
 		   (match_test "!optimize_size"))
   [(eq_attr "in_delay_slot" "true")
-   (eq_attr "cond_delay_insn" "yes")
-   (eq_attr "cond_delay_insn" "yes")])
-
-;; For ARC700, anything goes for annulled-true insns, since there is no
-;; penalty for the unexposed delay slot when the branch is not taken,
-;; however, we must avoid things that have a delay slot themselvese to
-;; avoid confusing gcc.
-(define_delay (and (match_test "!TARGET_AT_DBR_CONDEXEC")
-		   (eq_attr "type" "branch,uncond_branch,jump")
-		   (match_test "!optimize_size"))
-  [(eq_attr "in_delay_slot" "true")
-   (eq_attr "type" "!call,branch,uncond_branch,jump,brcc,return,sfunc")
-   (eq_attr "cond_delay_insn" "yes")])
+   (nil)
+   (nil)])
 
 ;; -mlongcall -fpic sfuncs use r12 to load the function address
 (define_delay (eq_attr "type" "sfunc")
   [(eq_attr "in_sfunc_delay_slot" "true")
-   (eq_attr "in_sfunc_delay_slot" "true")
+   (nil)
    (nil)])
 ;; ??? need to use a working strategy for canuse_limm:
 ;; - either canuse_limm is not eligible for delay slots, and has no
@@ -3448,18 +3405,22 @@ archs4x, archs4xd"
    (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn "*lshrsi3_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand"               "=q,q, q, r, r,   r")
-	(lshiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,q, 0, 0, r,rCal")
-		     (match_operand:SI 2 "nonmemory_operand"  "N,N,qM,rL,rL,rCal")))]
+  [(set (match_operand:SI 0 "dest_reg_operand"               "=q, q, r, r,   r")
+	(lshiftrt:SI (match_operand:SI 1 "nonmemory_operand"  "q, 0, 0, r,rCal")
+		     (match_operand:SI 2 "nonmemory_operand"  "N,qM,rL,rL,rCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
        || register_operand (operands[2], SImode))"
-  "*return (which_alternative <= 1 && !arc_ccfsm_cond_exec_p ()
-	    ?  \"lsr%?\\t%0,%1\" : \"lsr%?\\t%0,%1,%2\");"
+  "@
+   lsr_s\\t%0,%1
+   lsr_s\\t%0,%1,%2
+   lsr%?\\t%0,%1,%2
+   lsr%?\\t%0,%1,%2
+   lsr%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
-   (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
-   (set_attr "predicable" "no,no,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
+   (set_attr "iscompact" "maybe,maybe,false,false,false")
+   (set_attr "predicable" "no,no,yes,no,no")
+   (set_attr "cond" "nocond,canuse,canuse,nocond,nocond")])
 
 (define_insn_and_split "*ashlsi3_nobs"
   [(set (match_operand:SI 0 "dest_reg_operand")
@@ -3925,19 +3886,10 @@ archs4x, archs4xd"
   ""
   "*
 {
-  if (arc_ccfsm_branch_deleted_p ())
-    {
-      arc_ccfsm_record_branch_deleted ();
-      return \"; branch deleted, next insns conditionalized\";
-    }
-  else
-    {
-      arc_ccfsm_record_condition (operands[1], false, insn, 0);
       if (get_attr_length (insn) == 2)
 	 return \"b%d1%?\\t%l0\";
       else
-	 return \"b%d1%#\\t%l0\";
-    }
+	 return \"b%d1%*\\t%l0\";
 }"
   [(set_attr "type" "branch")
    (set
@@ -3973,22 +3925,7 @@ archs4x, archs4xd"
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "REVERSIBLE_CC_MODE (GET_MODE (XEXP (operands[1], 0)))"
-  "*
-{
-  if (arc_ccfsm_branch_deleted_p ())
-    {
-      arc_ccfsm_record_branch_deleted ();
-      return \"; branch deleted, next insns conditionalized\";
-    }
-  else
-    {
-      arc_ccfsm_record_condition (operands[1], true, insn, 0);
-      if (get_attr_length (insn) == 2)
-	 return \"b%D1%?\\t%l0\";
-      else
-	 return \"b%D1%#\\t%l0\";
-    }
-}"
+  "b%D1%?\\t%l0"
   [(set_attr "type" "branch")
    (set
      (attr "length")
@@ -4946,12 +4883,7 @@ archs4x, archs4xd"
 				      [(reg CC_REG) (const_int 0)])
 		      (simple_return) (pc)))]
   "reload_completed"
-{
-  output_asm_insn (\"j%d0%!%#\\t[blink]\", operands);
-  /* record the condition in case there is a delay insn.  */
-  arc_ccfsm_record_condition (operands[0], false, insn, 0);
-  return \"\";
-}
+  "j%d0%!%*\\t[blink]"
   [(set_attr "type" "return")
    (set_attr "cond" "use")
    (set_attr "iscompact" "maybe" )
@@ -5175,7 +5107,7 @@ archs4x, archs4xd"
    (clobber (match_scratch:SI 2 "=X,r"))]
   "TARGET_DBNZ"
   "@
-   dbnz%#\\t%0,%l1
+   dbnz%*\\t%0,%l1
    #"
   "TARGET_DBNZ && reload_completed && memory_operand (operands[0], SImode)"
   [(set (match_dup 2) (match_dup 0))

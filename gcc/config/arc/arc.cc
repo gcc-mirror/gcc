@@ -101,16 +101,6 @@ HARD_REG_SET overrideregs;
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
 
-/* State used by arc_ccfsm_advance to implement conditional execution.  */
-struct GTY (()) arc_ccfsm
-{
-  int state;
-  int cc;
-  rtx cond;
-  rtx_insn *target_insn;
-  int target_label;
-};
-
 /* Status of the IRQ_CTRL_AUX register.  */
 typedef struct irq_ctrl_saved_t
 {
@@ -142,36 +132,6 @@ static irq_ctrl_saved_t irq_ctrl_saved;
 
 /* Number of registers in second bank for FIRQ support.  */
 static int rgf_banked_register_count;
-
-#define arc_ccfsm_current cfun->machine->ccfsm_current
-
-#define ARC_CCFSM_BRANCH_DELETED_P(STATE) \
-  ((STATE)->state == 1 || (STATE)->state == 2)
-
-/* Indicate we're conditionalizing insns now.  */
-#define ARC_CCFSM_RECORD_BRANCH_DELETED(STATE) \
-  ((STATE)->state += 2)
-
-#define ARC_CCFSM_COND_EXEC_P(STATE) \
-  ((STATE)->state == 3 || (STATE)->state == 4 || (STATE)->state == 5 \
-   || current_insn_predicate)
-
-/* Check if INSN has a 16 bit opcode considering struct arc_ccfsm *STATE.  */
-#define CCFSM_ISCOMPACT(INSN,STATE) \
-  (ARC_CCFSM_COND_EXEC_P (STATE) \
-   ? (get_attr_iscompact (INSN) == ISCOMPACT_TRUE \
-      || get_attr_iscompact (INSN) == ISCOMPACT_TRUE_LIMM) \
-   : get_attr_iscompact (INSN) != ISCOMPACT_FALSE)
-
-/* Likewise, but also consider that INSN might be in a delay slot of JUMP.  */
-#define CCFSM_DBR_ISCOMPACT(INSN,JUMP,STATE) \
-  ((ARC_CCFSM_COND_EXEC_P (STATE) \
-    || (JUMP_P (JUMP) \
-	&& INSN_ANNULLED_BRANCH_P (JUMP) \
-	&& (TARGET_AT_DBR_CONDEXEC || INSN_FROM_TARGET_P (INSN)))) \
-   ? (get_attr_iscompact (INSN) == ISCOMPACT_TRUE \
-      || get_attr_iscompact (INSN) == ISCOMPACT_TRUE_LIMM) \
-   : get_attr_iscompact (INSN) != ISCOMPACT_FALSE)
 
 /* Start enter/leave register range.  */
 #define ENTER_LEAVE_START_REG 13
@@ -217,11 +177,6 @@ static int rgf_banked_register_count;
 
 /* ARC600 MULHI register.  */
 #define AUX_MULHI 0x12
-
-/* A nop is needed between a 4 byte insn that sets the condition codes and
-   a branch that uses them (the same isn't true for an 8 byte insn that sets
-   the condition codes).  Set by arc_ccfsm_advance.  Used by
-   arc_print_operand.  */
 
 static int get_arc_condition_code (rtx);
 
@@ -423,9 +378,6 @@ typedef struct GTY (()) machine_function
 {
   unsigned int fn_type;
   struct arc_frame_info frame_info;
-  struct arc_ccfsm ccfsm_current;
-  /* Map from uid to ccfsm state during branch shortening.  */
-  rtx ccfsm_current_insn;
   char arc_reorg_started;
   char prescan_initialized;
 } machine_function;
@@ -962,53 +914,6 @@ arc_secondary_reload_conv (rtx reg, rtx mem, rtx scratch, bool store_p)
   return;
 }
 
-static unsigned arc_ifcvt (void);
-
-namespace {
-
-const pass_data pass_data_arc_ifcvt =
-{
-  RTL_PASS,
-  "arc_ifcvt",				/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  TV_IFCVT2,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_df_finish			/* todo_flags_finish */
-};
-
-class pass_arc_ifcvt : public rtl_opt_pass
-{
- public:
- pass_arc_ifcvt (gcc::context *ctxt)
-   : rtl_opt_pass (pass_data_arc_ifcvt, ctxt)
-    {}
-
-  /* opt_pass methods: */
-  opt_pass * clone ()
-    {
-      return new pass_arc_ifcvt (m_ctxt);
-    }
-  virtual unsigned int execute (function *)
-  {
-    return arc_ifcvt ();
-  }
-  virtual bool gate (function *)
-  {
-    return (optimize > 1 && !TARGET_NO_COND_EXEC);
-  }
-};
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_arc_ifcvt (gcc::context *ctxt)
-{
-  return new pass_arc_ifcvt (ctxt);
-}
-
 static unsigned arc_predicate_delay_insns (void);
 
 namespace {
@@ -1126,7 +1031,6 @@ arc_init (void)
 
   /* Initialize array for PRINT_OPERAND_PUNCT_VALID_P.  */
   memset (arc_punct_chars, 0, sizeof (arc_punct_chars));
-  arc_punct_chars['#'] = 1;
   arc_punct_chars['*'] = 1;
   arc_punct_chars['?'] = 1;
   arc_punct_chars['!'] = 1;
@@ -4510,11 +4414,8 @@ static int output_sdata = 0;
     'S': Scalled immediate, to be used in pair with 's'.
     'N': Negative immediate, to be used in pair with 's'.
     'x': size of bit field
-    '#': condbranch delay slot suffix
     '*': jump delay slot suffix
     '?' : nonjump-insn suffix for conditional execution or short instruction
-    '!' : jump / call suffix for conditional execution or short instruction
-    '`': fold constant inside unary o-perator, re-recognize, and emit.
     'd'
     'D'
     'R': Second word
@@ -4640,48 +4541,26 @@ arc_print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid operand to %%s code");
       return;
 
-    case '#' :
-      /* Conditional branches depending on condition codes.
-	 Note that this is only for branches that were known to depend on
-	 condition codes before delay slot scheduling;
-	 out-of-range brcc / bbit expansions should use '*'.
-	 This distinction is important because of the different
-	 allowable delay slot insns and the output of the delay suffix
-	 for TARGET_AT_DBR_COND_EXEC.  */
     case '*' :
       /* Unconditional branches / branches not depending on condition codes.
 	 This could also be a CALL_INSN.
 	 Output the appropriate delay slot suffix.  */
       if (final_sequence && final_sequence->len () != 1)
 	{
-	  rtx_insn *jump = final_sequence->insn (0);
 	  rtx_insn *delay = final_sequence->insn (1);
 
 	  /* For TARGET_PAD_RETURN we might have grabbed the delay insn.  */
 	  if (delay->deleted ())
 	    return;
-	  if (JUMP_P (jump) && INSN_ANNULLED_BRANCH_P (jump))
-	    fputs (INSN_FROM_TARGET_P (delay) ? ".d"
-		   : TARGET_AT_DBR_CONDEXEC && code == '#' ? ".d"
-		   : get_attr_type (jump) == TYPE_RETURN && code == '#' ? ""
-		   : ".nd",
-		   file);
-	  else
-	    fputs (".d", file);
+	  fputs (".d", file);
 	}
       return;
+
     case '?' : /* with leading "." */
     case '!' : /* without leading "." */
-      /* This insn can be conditionally executed.  See if the ccfsm machinery
-	 says it should be conditionalized.
-	 If it shouldn't, we'll check the compact attribute if this insn
-	 has a short variant, which may be used depending on code size and
-	 alignment considerations.  */
       if (current_insn_predicate)
-	arc_ccfsm_current.cc
-	  = get_arc_condition_code (current_insn_predicate);
-      if (ARC_CCFSM_COND_EXEC_P (&arc_ccfsm_current))
 	{
+	  int cc = get_arc_condition_code (current_insn_predicate);
 	  /* Is this insn in a delay slot sequence?  */
 	  if (!final_sequence || XVECLEN (final_sequence, 0) < 2
 	      || current_insn_predicate
@@ -4691,19 +4570,16 @@ arc_print_operand (FILE *file, rtx x, int code)
 	      /* This insn isn't in a delay slot sequence, or conditionalized
 		 independently of its position in a delay slot.  */
 	      fprintf (file, "%s%s",
-		       code == '?' ? "." : "",
-		       arc_condition_codes[arc_ccfsm_current.cc]);
+		       code == '?' ? "." : "", arc_condition_codes[cc]);
 	      /* If this is a jump, there are still short variants.  However,
 		 only beq_s / bne_s have the same offset range as b_s,
 		 and the only short conditional returns are jeq_s and jne_s.  */
 	      if (code == '!'
-		  && (arc_ccfsm_current.cc == ARC_CC_EQ
-		      || arc_ccfsm_current.cc == ARC_CC_NE
-		      || 0 /* FIXME: check if branch in 7 bit range.  */))
+		  && (cc == ARC_CC_EQ || cc == ARC_CC_NE))
 		output_short_suffix (file);
 	    }
 	  else if (code == '!') /* Jump with delay slot.  */
-	    fputs (arc_condition_codes[arc_ccfsm_current.cc], file);
+	    fputs (arc_condition_codes[cc], file);
 	  else /* An Instruction in a delay slot of a jump or call.  */
 	    {
 	      rtx jump = XVECEXP (final_sequence, 0, 0);
@@ -4716,27 +4592,24 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  if (INSN_FROM_TARGET_P (insn))
 		    fprintf (file, "%s%s",
 			     code == '?' ? "." : "",
-			     arc_condition_codes[ARC_INVERSE_CONDITION_CODE (arc_ccfsm_current.cc)]);
+			     arc_condition_codes[ARC_INVERSE_CONDITION_CODE (cc)]);
 		  else
 		    fprintf (file, "%s%s",
 			     code == '?' ? "." : "",
-			     arc_condition_codes[arc_ccfsm_current.cc]);
-		  if (arc_ccfsm_current.state == 5)
-		    arc_ccfsm_current.state = 0;
+			     arc_condition_codes[cc]);
 		}
 	      else
-		/* This insn is executed for either path, so don't
-		   conditionalize it at all.  */
-		output_short_suffix (file);
-
+		{
+		  /* This insn is executed for either path, so don't
+		     conditionalize it at all.  */
+		  output_short_suffix (file);
+		}
 	    }
 	}
       else
 	output_short_suffix (file);
       return;
-    case'`':
-      /* FIXME: fold constant inside unary operator, re-recognize, and emit.  */
-      gcc_unreachable ();
+
     case 'd' :
       fputs (arc_condition_codes[get_arc_condition_code (x)], file);
       return;
@@ -5170,498 +5043,6 @@ arc_print_operand_address (FILE *file , rtx addr)
     }
 }
 
-/* Conditional execution support.
-
-   This is based on the ARM port but for now is much simpler.
-
-   A finite state machine takes care of noticing whether or not instructions
-   can be conditionally executed, and thus decrease execution time and code
-   size by deleting branch instructions.  The fsm is controlled by
-   arc_ccfsm_advance (called by arc_final_prescan_insn), and controls the
-   actions of PRINT_OPERAND.  The patterns in the .md file for the branch
-   insns also have a hand in this.  */
-/* The way we leave dealing with non-anulled or annull-false delay slot
-   insns to the consumer is awkward.  */
-
-/* The state of the fsm controlling condition codes are:
-   0: normal, do nothing special
-   1: don't output this insn
-   2: don't output this insn
-   3: make insns conditional
-   4: make insns conditional
-   5: make insn conditional (only for outputting anulled delay slot insns)
-
-   special value for cfun->machine->uid_ccfsm_state:
-   6: return with but one insn before it since function start / call
-
-   State transitions (state->state by whom, under what condition):
-   0 -> 1 arc_ccfsm_advance, if insn is a conditional branch skipping over
-          some instructions.
-   0 -> 2 arc_ccfsm_advance, if insn is a conditional branch followed
-          by zero or more non-jump insns and an unconditional branch with
-	  the same target label as the condbranch.
-   1 -> 3 branch patterns, after having not output the conditional branch
-   2 -> 4 branch patterns, after having not output the conditional branch
-   0 -> 5 branch patterns, for anulled delay slot insn.
-   3 -> 0 ASM_OUTPUT_INTERNAL_LABEL, if the `target' label is reached
-          (the target label has CODE_LABEL_NUMBER equal to
-	  arc_ccfsm_target_label).
-   4 -> 0 arc_ccfsm_advance, if `target' unconditional branch is reached
-   3 -> 1 arc_ccfsm_advance, finding an 'else' jump skipping over some insns.
-   5 -> 0 when outputting the delay slot insn
-
-   If the jump clobbers the conditions then we use states 2 and 4.
-
-   A similar thing can be done with conditional return insns.
-
-   We also handle separating branches from sets of the condition code.
-   This is done here because knowledge of the ccfsm state is required,
-   we may not be outputting the branch.  */
-
-/* arc_final_prescan_insn calls arc_ccfsm_advance to adjust arc_ccfsm_current,
-   before letting final output INSN.  */
-
-static void
-arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
-{
-  /* BODY will hold the body of INSN.  */
-  rtx body;
-
-  /* This will be 1 if trying to repeat the trick (ie: do the `else' part of
-     an if/then/else), and things need to be reversed.  */
-  int reverse = 0;
-
-  /* If we start with a return insn, we only succeed if we find another one.  */
-  int seeking_return = 0;
-
-  /* START_INSN will hold the insn from where we start looking.  This is the
-     first insn after the following code_label if REVERSE is true.  */
-  rtx_insn *start_insn = insn;
-
-  /* Type of the jump_insn. Brcc insns don't affect ccfsm changes,
-     since they don't rely on a cmp preceding the.  */
-  enum attr_type jump_insn_type;
-
-  /* Allow -mdebug-ccfsm to turn this off so we can see how well it does.
-     We can't do this in macro FINAL_PRESCAN_INSN because its called from
-     final_scan_insn which has `optimize' as a local.  */
-  if (optimize < 2 || TARGET_NO_COND_EXEC)
-    return;
-
-  /* Ignore notes and labels.  */
-  if (!INSN_P (insn))
-    return;
-  body = PATTERN (insn);
-  /* If in state 4, check if the target branch is reached, in order to
-     change back to state 0.  */
-  if (state->state == 4)
-    {
-      if (insn == state->target_insn)
-	{
-	  state->target_insn = NULL;
-	  state->state = 0;
-	}
-      return;
-    }
-
-  /* If in state 3, it is possible to repeat the trick, if this insn is an
-     unconditional branch to a label, and immediately following this branch
-     is the previous target label which is only used once, and the label this
-     branch jumps to is not too far off.  Or in other words "we've done the
-     `then' part, see if we can do the `else' part."  */
-  if (state->state == 3)
-    {
-      if (simplejump_p (insn))
-	{
-	  start_insn = next_nonnote_insn (start_insn);
-	  if (GET_CODE (start_insn) == BARRIER)
-	    {
-	      /* ??? Isn't this always a barrier?  */
-	      start_insn = next_nonnote_insn (start_insn);
-	    }
-	  if (GET_CODE (start_insn) == CODE_LABEL
-	      && CODE_LABEL_NUMBER (start_insn) == state->target_label
-	      && LABEL_NUSES (start_insn) == 1)
-	    reverse = TRUE;
-	  else
-	    return;
-	}
-      else if (GET_CODE (body) == SIMPLE_RETURN)
-	{
-	  start_insn = next_nonnote_insn (start_insn);
-	  if (GET_CODE (start_insn) == BARRIER)
-	    start_insn = next_nonnote_insn (start_insn);
-	  if (GET_CODE (start_insn) == CODE_LABEL
-	      && CODE_LABEL_NUMBER (start_insn) == state->target_label
-	      && LABEL_NUSES (start_insn) == 1)
-	    {
-	      reverse = TRUE;
-	      seeking_return = 1;
-	    }
-	  else
-	    return;
-	}
-      else
-	return;
-    }
-
-  if (GET_CODE (insn) != JUMP_INSN
-      || GET_CODE (PATTERN (insn)) == ADDR_VEC
-      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-    return;
-
- /* We can't predicate BRCC or loop ends.
-    Also, when generating PIC code, and considering a medium range call,
-    we can't predicate the call.  */
-  jump_insn_type = get_attr_type (insn);
-  if (jump_insn_type == TYPE_BRCC
-      || jump_insn_type == TYPE_BRCC_NO_DELAY_SLOT
-      || jump_insn_type == TYPE_LOOP_END
-      || (jump_insn_type == TYPE_CALL && !get_attr_predicable (insn)))
-    return;
-
-  /* This jump might be paralleled with a clobber of the condition codes,
-     the jump should always come first.  */
-  if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
-    body = XVECEXP (body, 0, 0);
-
-  if (reverse
-      || (GET_CODE (body) == SET && GET_CODE (SET_DEST (body)) == PC
-	  && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE))
-    {
-      int insns_skipped = 0, fail = FALSE, succeed = FALSE;
-      /* Flag which part of the IF_THEN_ELSE is the LABEL_REF.  */
-      int then_not_else = TRUE;
-      /* Nonzero if next insn must be the target label.  */
-      int next_must_be_target_label_p;
-      rtx_insn *this_insn = start_insn;
-      rtx label = 0;
-
-      /* Register the insn jumped to.  */
-      if (reverse)
-	{
-	  if (!seeking_return)
-	    label = XEXP (SET_SRC (body), 0);
-	}
-      else if (GET_CODE (XEXP (SET_SRC (body), 1)) == LABEL_REF)
-	label = XEXP (XEXP (SET_SRC (body), 1), 0);
-      else if (GET_CODE (XEXP (SET_SRC (body), 2)) == LABEL_REF)
-	{
-	  label = XEXP (XEXP (SET_SRC (body), 2), 0);
-	  then_not_else = FALSE;
-	}
-      else if (GET_CODE (XEXP (SET_SRC (body), 1)) == SIMPLE_RETURN)
-	seeking_return = 1;
-      else if (GET_CODE (XEXP (SET_SRC (body), 2)) == SIMPLE_RETURN)
-	{
-	  seeking_return = 1;
-	  then_not_else = FALSE;
-	}
-      else
-	gcc_unreachable ();
-
-      /* If this is a non-annulled branch with a delay slot, there is
-	 no need to conditionalize the delay slot.  */
-      if ((GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) == SEQUENCE)
-	  && state->state == 0 && !INSN_ANNULLED_BRANCH_P (insn))
-	{
-	  this_insn = NEXT_INSN (this_insn);
-	}
-      /* See how many insns this branch skips, and what kind of insns.  If all
-	 insns are okay, and the label or unconditional branch to the same
-	 label is not too far away, succeed.  */
-      for (insns_skipped = 0, next_must_be_target_label_p = FALSE;
-	   !fail && !succeed && insns_skipped < MAX_INSNS_SKIPPED;
-	   insns_skipped++)
-	{
-	  rtx scanbody;
-
-	  this_insn = next_nonnote_insn (this_insn);
-	  if (!this_insn)
-	    break;
-
-	  if (next_must_be_target_label_p)
-	    {
-	      if (GET_CODE (this_insn) == BARRIER)
-		continue;
-	      if (GET_CODE (this_insn) == CODE_LABEL
-		  && this_insn == label)
-		{
-		  state->state = 1;
-		  succeed = TRUE;
-		}
-	      else
-		fail = TRUE;
-	      break;
-	    }
-
-	  switch (GET_CODE (this_insn))
-	    {
-	    case CODE_LABEL:
-	      /* Succeed if it is the target label, otherwise fail since
-		 control falls in from somewhere else.  */
-	      if (this_insn == label)
-		{
-		  state->state = 1;
-		  succeed = TRUE;
-		}
-	      else
-		fail = TRUE;
-	      break;
-
-	    case BARRIER:
-	      /* Succeed if the following insn is the target label.
-		 Otherwise fail.
-		 If return insns are used then the last insn in a function
-		 will be a barrier.  */
-	      next_must_be_target_label_p = TRUE;
-	      break;
-
-	    case CALL_INSN:
-	      /* Can handle a call insn if there are no insns after it.
-		 IE: The next "insn" is the target label.  We don't have to
-		 worry about delay slots as such insns are SEQUENCE's inside
-		 INSN's.  ??? It is possible to handle such insns though.  */
-	      if (get_attr_cond (this_insn) == COND_CANUSE)
-		next_must_be_target_label_p = TRUE;
-	      else
-		fail = TRUE;
-	      break;
-
-	    case JUMP_INSN:
-	      scanbody = PATTERN (this_insn);
-
-	      /* If this is an unconditional branch to the same label, succeed.
-		 If it is to another label, do nothing.  If it is conditional,
-		 fail.  */
-	      /* ??? Probably, the test for the SET and the PC are
-		 unnecessary.  */
-
-	      if (GET_CODE (scanbody) == SET
-		  && GET_CODE (SET_DEST (scanbody)) == PC)
-		{
-		  if (GET_CODE (SET_SRC (scanbody)) == LABEL_REF
-		      && XEXP (SET_SRC (scanbody), 0) == label && !reverse)
-		    {
-		      state->state = 2;
-		      succeed = TRUE;
-		    }
-		  else if (GET_CODE (SET_SRC (scanbody)) == IF_THEN_ELSE)
-		    fail = TRUE;
-		  else if (get_attr_cond (this_insn) != COND_CANUSE)
-		    fail = TRUE;
-		}
-	      else if (GET_CODE (scanbody) == SIMPLE_RETURN
-		       && seeking_return)
-		{
-		  state->state = 2;
-		  succeed = TRUE;
-		}
-	      else if (GET_CODE (scanbody) == PARALLEL)
-		{
-		  if (get_attr_cond (this_insn) != COND_CANUSE)
-		    fail = TRUE;
-		}
-	      break;
-
-	    case INSN:
-	      scanbody = PATTERN (this_insn);
-
-	      /* We can only do this with insns that can use the condition
-		 codes (and don't set them).  */
-	      if (GET_CODE (scanbody) == SET
-		  || GET_CODE (scanbody) == PARALLEL)
-		{
-		  if (get_attr_cond (this_insn) != COND_CANUSE)
-		    fail = TRUE;
-		}
-	      /* We can't handle other insns like sequences.  */
-	      else
-		fail = TRUE;
-	      break;
-
-	    default:
-	      break;
-	    }
-	}
-
-      if (succeed)
-	{
-	  if ((!seeking_return) && (state->state == 1 || reverse))
-	    state->target_label = CODE_LABEL_NUMBER (label);
-	  else if (seeking_return || state->state == 2)
-	    {
-	      while (this_insn && GET_CODE (PATTERN (this_insn)) == USE)
-		{
-		  this_insn = next_nonnote_insn (this_insn);
-
-		  gcc_assert (!this_insn ||
-			      (GET_CODE (this_insn) != BARRIER
-			       && GET_CODE (this_insn) != CODE_LABEL));
-		}
-	      if (!this_insn)
-		{
-		  /* Oh dear! we ran off the end, give up.  */
-		  extract_insn_cached (insn);
-		  state->state = 0;
-		  state->target_insn = NULL;
-		  return;
-		}
-	      state->target_insn = this_insn;
-	    }
-	  else
-	    gcc_unreachable ();
-
-	  /* If REVERSE is true, ARM_CURRENT_CC needs to be inverted from
-	     what it was.  */
-	  if (!reverse)
-	    {
-	      state->cond = XEXP (SET_SRC (body), 0);
-	      state->cc = get_arc_condition_code (XEXP (SET_SRC (body), 0));
-	    }
-
-	  if (reverse || then_not_else)
-	    state->cc = ARC_INVERSE_CONDITION_CODE (state->cc);
-	}
-
-      /* Restore recog_operand.  Getting the attributes of other insns can
-	 destroy this array, but final.cc assumes that it remains intact
-	 across this call; since the insn has been recognized already we
-	 call insn_extract direct.  */
-      extract_insn_cached (insn);
-    }
-}
-
-/* Record that we are currently outputting label NUM with prefix PREFIX.
-   It it's the label we're looking for, reset the ccfsm machinery.
-
-   Called from ASM_OUTPUT_INTERNAL_LABEL.  */
-
-static void
-arc_ccfsm_at_label (const char *prefix, int num, struct arc_ccfsm *state)
-{
-  if (state->state == 3 && state->target_label == num
-      && !strcmp (prefix, "L"))
-    {
-      state->state = 0;
-      state->target_insn = NULL;
-    }
-}
-
-/* We are considering a conditional branch with the condition COND.
-   Check if we want to conditionalize a delay slot insn, and if so modify
-   the ccfsm state accordingly.
-   REVERSE says branch will branch when the condition is false.  */
-void
-arc_ccfsm_record_condition (rtx cond, bool reverse, rtx_insn *jump,
-			    struct arc_ccfsm *state)
-{
-  rtx_insn *seq_insn = NEXT_INSN (PREV_INSN (jump));
-  if (!state)
-    state = &arc_ccfsm_current;
-
-  gcc_assert (state->state == 0);
-  if (seq_insn != jump)
-    {
-      rtx insn = XVECEXP (PATTERN (seq_insn), 0, 1);
-
-      if (!as_a<rtx_insn *> (insn)->deleted ()
-	  && INSN_ANNULLED_BRANCH_P (jump)
-	  && (TARGET_AT_DBR_CONDEXEC || INSN_FROM_TARGET_P (insn)))
-	{
-	  state->cond = cond;
-	  state->cc = get_arc_condition_code (cond);
-	  if (!reverse)
-	    arc_ccfsm_current.cc
-	      = ARC_INVERSE_CONDITION_CODE (state->cc);
-	  rtx pat = PATTERN (insn);
-	  if (GET_CODE (pat) == COND_EXEC)
-	    gcc_assert ((INSN_FROM_TARGET_P (insn)
-			 ? ARC_INVERSE_CONDITION_CODE (state->cc) : state->cc)
-			== get_arc_condition_code (XEXP (pat, 0)));
-	  else
-	    state->state = 5;
-	}
-    }
-}
-
-/* Update *STATE as we would when we emit INSN.  */
-
-static void
-arc_ccfsm_post_advance (rtx_insn *insn, struct arc_ccfsm *state)
-{
-  enum attr_type type;
-
-  if (LABEL_P (insn))
-    arc_ccfsm_at_label ("L", CODE_LABEL_NUMBER (insn), state);
-  else if (JUMP_P (insn)
-	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
-	   && ((type = get_attr_type (insn)) == TYPE_BRANCH
-	       || ((type == TYPE_UNCOND_BRANCH
-		    || type == TYPE_RETURN)
-		   && ARC_CCFSM_BRANCH_DELETED_P (state))))
-    {
-      if (ARC_CCFSM_BRANCH_DELETED_P (state))
-	ARC_CCFSM_RECORD_BRANCH_DELETED (state);
-      else
-	{
-	  rtx src = SET_SRC (PATTERN (insn));
-	  arc_ccfsm_record_condition (XEXP (src, 0), XEXP (src, 1) == pc_rtx,
-				      insn, state);
-	}
-    }
-  else if (arc_ccfsm_current.state == 5)
-    arc_ccfsm_current.state = 0;
-}
-
-/* Return true if the current insn, which is a conditional branch, is to be
-   deleted.  */
-
-bool
-arc_ccfsm_branch_deleted_p (void)
-{
-  return ARC_CCFSM_BRANCH_DELETED_P (&arc_ccfsm_current);
-}
-
-/* Record a branch isn't output because subsequent insns can be
-   conditionalized.  */
-
-void
-arc_ccfsm_record_branch_deleted (void)
-{
-  ARC_CCFSM_RECORD_BRANCH_DELETED (&arc_ccfsm_current);
-}
-
-/* During insn output, indicate if the current insn is predicated.  */
-
-bool
-arc_ccfsm_cond_exec_p (void)
-{
-  return (cfun->machine->prescan_initialized
-	  && ARC_CCFSM_COND_EXEC_P (&arc_ccfsm_current));
-}
-
-/* When deciding if an insn should be output short, we want to know something
-   about the following insns:
-   - if another insn follows which we know we can output as a short insn
-     before an alignment-sensitive point, we can output this insn short:
-     the decision about the eventual alignment can be postponed.
-   - if a to-be-aligned label comes next, we should output this insn such
-     as to get / preserve 4-byte alignment.
-   - if a likely branch without delay slot insn, or a call with an immediately
-     following short insn comes next, we should out output this insn such as to
-     get / preserve 2 mod 4 unalignment.
-   - do the same for a not completely unlikely branch with a short insn
-     following before any other branch / label.
-   - in order to decide if we are actually looking at a branch, we need to
-     call arc_ccfsm_advance.
-   - in order to decide if we are looking at a short insn, we should know
-     if it is conditionalized.  To a first order of approximation this is
-     the case if the state from arc_ccfsm_advance from before this insn
-     indicates the insn is conditionalized.  However, a further refinement
-     could be to not conditionalize an insn if the destination register(s)
-     is/are dead in the non-executed case.  */
 /* Return non-zero if INSN should be output as a short insn.  UNALIGN is
    zero if the current insn is aligned to a 4-byte-boundary, two otherwise.
    If CHECK_ATTR is greater than 0, check the iscompact attribute first.  */
@@ -5707,14 +5088,6 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 {
   if (TARGET_DUMPISIZE)
     fprintf (asm_out_file, "\n; at %04x\n", INSN_ADDRESSES (INSN_UID (insn)));
-
-  if (!cfun->machine->prescan_initialized)
-    {
-      /* Clear lingering state from branch shortening.  */
-      memset (&arc_ccfsm_current, 0, sizeof arc_ccfsm_current);
-      cfun->machine->prescan_initialized = 1;
-    }
-  arc_ccfsm_advance (insn, &arc_ccfsm_current);
 }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
@@ -5847,8 +5220,6 @@ arc_encode_section_info (tree decl, rtx rtl, int first)
 
 static void arc_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
 {
-  if (cfun)
-    arc_ccfsm_at_label (prefix, labelno, &arc_ccfsm_current);
   default_internal_label (stream, prefix, labelno);
 }
 
@@ -8527,17 +7898,7 @@ arc_reorg (void)
   jli_call_scan ();
   pad_return ();
 
-/* FIXME: should anticipate ccfsm action, generate special patterns for
-   to-be-deleted branches that have no delay slot and have at least the
-   length of the size increase forced on other insns that are conditionalized.
-   This can also have an insn_list inside that enumerates insns which are
-   not actually conditionalized because the destinations are dead in the
-   not-execute case.
-   Could also tag branches that we want to be unaligned if they get no delay
-   slot, or even ones that we don't want to do delay slot sheduling for
-   because we can unalign them.
-
-   However, there are cases when conditional execution is only possible after
+/* There are cases when conditional execution is only possible after
    delay slot scheduling:
 
    - If a delay slot is filled with a nocond/set insn from above, the previous
@@ -8566,22 +7927,8 @@ arc_reorg (void)
       init_insn_lengths();
       changed = 0;
 
-      if (optimize > 1 && !TARGET_NO_COND_EXEC)
-	{
-	  arc_ifcvt ();
-	  unsigned int flags = pass_data_arc_ifcvt.todo_flags_finish;
-	  df_finish_pass ((flags & TODO_df_verify) != 0);
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, ";; After if conversion:\n\n");
-	      print_rtl (dump_file, get_insns ());
-	    }
-	}
-
       /* Call shorten_branches to calculate the insn lengths.  */
       shorten_branches (get_insns());
-      cfun->machine->ccfsm_current_insn = NULL_RTX;
 
       if (!INSN_ADDRESSES_SET_P())
 	  fatal_error (input_location,
@@ -9450,8 +8797,7 @@ arc_output_libcall (const char *fname)
   static char buf[64];
 
   gcc_assert (len < sizeof buf - 35);
-  if (TARGET_LONG_CALLS_SET
-     || (TARGET_MEDIUM_CALLS && arc_ccfsm_cond_exec_p ()))
+  if (TARGET_LONG_CALLS_SET)
     {
       if (flag_pic)
 	sprintf (buf, "add r12,pcl,@%s@pcl\n\tjl%%!%%* [r12]", fname);
@@ -9551,31 +8897,6 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
   return len;
 }
 
-/* Return a copy of COND from *STATEP, inverted if that is indicated by the
-   CC field of *STATEP.  */
-
-static rtx
-arc_get_ccfsm_cond (struct arc_ccfsm *statep, bool reverse)
-{
-  rtx cond = statep->cond;
-  int raw_cc = get_arc_condition_code (cond);
-  if (reverse)
-    raw_cc = ARC_INVERSE_CONDITION_CODE (raw_cc);
-
-  if (statep->cc == raw_cc)
-    return copy_rtx (cond);
-
-  gcc_assert (ARC_INVERSE_CONDITION_CODE (raw_cc) == statep->cc);
-
-  machine_mode ccm = GET_MODE (XEXP (cond, 0));
-  enum rtx_code code = reverse_condition (GET_CODE (cond));
-  if (code == UNKNOWN || ccm == CC_FP_GTmode || ccm == CC_FP_GEmode)
-    code = reverse_condition_maybe_unordered (GET_CODE (cond));
-
-  return gen_rtx_fmt_ee (code, GET_MODE (cond),
-			 copy_rtx (XEXP (cond, 0)), copy_rtx (XEXP (cond, 1)));
-}
-
 /* Return version of PAT conditionalized with COND, which is part of INSN.
    ANNULLED indicates if INSN is an annulled delay-slot insn.
    Register further changes if necessary.  */
@@ -9620,125 +8941,6 @@ conditionalize_nonjump (rtx pat, rtx cond, rtx insn, bool annulled)
   return pat;
 }
 
-/* Use the ccfsm machinery to do if conversion.  */
-
-static unsigned
-arc_ifcvt (void)
-{
-  struct arc_ccfsm *statep = &cfun->machine->ccfsm_current;
-
-  memset (statep, 0, sizeof *statep);
-  for (rtx_insn *insn = get_insns (); insn; insn = next_insn (insn))
-    {
-      arc_ccfsm_advance (insn, statep);
-
-      switch (statep->state)
-	{
-	case 0:
-	  break;
-	case 1: case 2:
-	  {
-	    /* Deleted branch.  */
-	    arc_ccfsm_post_advance (insn, statep);
-	    gcc_assert (!IN_RANGE (statep->state, 1, 2));
-	    rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
-	    if (GET_CODE (PATTERN (seq)) == SEQUENCE)
-	      {
-		rtx slot = XVECEXP (PATTERN (seq), 0, 1);
-		rtx pat = PATTERN (slot);
-		if (INSN_ANNULLED_BRANCH_P (insn))
-		  {
-		    rtx cond
-		      = arc_get_ccfsm_cond (statep, INSN_FROM_TARGET_P (slot));
-		    pat = gen_rtx_COND_EXEC (VOIDmode, cond, pat);
-		  }
-		if (!validate_change (seq, &PATTERN (seq), pat, 0))
-		  gcc_unreachable ();
-		PUT_CODE (slot, NOTE);
-		NOTE_KIND (slot) = NOTE_INSN_DELETED;
-	      }
-	    else
-	      {
-		set_insn_deleted (insn);
-	      }
-	    continue;
-	  }
-	case 3:
-	  if (LABEL_P (insn)
-	      && statep->target_label == CODE_LABEL_NUMBER (insn))
-	    {
-	      arc_ccfsm_post_advance (insn, statep);
-	      if (--LABEL_NUSES (insn) == 0)
-		delete_insn (insn);
-	      continue;
-	    }
-	  /* Fall through.  */
-	case 4: case 5:
-	  if (!NONDEBUG_INSN_P (insn))
-	    break;
-
-	  /* Conditionalized insn.  */
-
-	  rtx_insn *prev, *pprev;
-	  rtx *patp, pat, cond;
-	  bool annulled; annulled = false;
-
-	  /* If this is a delay slot insn in a non-annulled branch,
-	     don't conditionalize it.  N.B., this should be fine for
-	     conditional return too.  However, don't do this for
-	     unconditional branches, as these would be encountered when
-	     processing an 'else' part.  */
-	  prev = PREV_INSN (insn);
-	  pprev = PREV_INSN (prev);
-	  if (pprev && NEXT_INSN (NEXT_INSN (pprev)) == NEXT_INSN (insn)
-	      && JUMP_P (prev) && get_attr_cond (prev) == COND_USE)
-	    {
-	      if (!INSN_ANNULLED_BRANCH_P (prev))
-		break;
-	      annulled = true;
-	    }
-
-	  patp = &PATTERN (insn);
-	  pat = *patp;
-	  cond = arc_get_ccfsm_cond (statep, INSN_FROM_TARGET_P (insn));
-	  if (NONJUMP_INSN_P (insn) || CALL_P (insn))
-	    {
-	      /* ??? don't conditionalize if all side effects are dead
-		 in the not-execute case.  */
-
-	      pat = conditionalize_nonjump (pat, cond, insn, annulled);
-	    }
-	  else if (simplejump_p (insn))
-	    {
-	      patp = &SET_SRC (pat);
-	      pat = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, *patp, pc_rtx);
-	    }
-	  else if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
-	    {
-	      pat = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, pat, pc_rtx);
-	      pat = gen_rtx_SET (pc_rtx, pat);
-	    }
-	  else
-	    gcc_unreachable ();
-	  validate_change (insn, patp, pat, 1);
-	  if (!apply_change_group ())
-	    gcc_unreachable ();
-	  if (JUMP_P (insn))
-	    {
-	      rtx_insn *next = next_nonnote_insn (insn);
-	      if (GET_CODE (next) == BARRIER)
-		delete_insn (next);
-	      if (statep->state == 3)
-		continue;
-	    }
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-      arc_ccfsm_post_advance (insn, statep);
-    }
-  return 0;
-}
 
 /* Find annulled delay insns and convert them to use the appropriate predicate.
    This allows branch shortening to size up these insns properly.  */
