@@ -3,12 +3,12 @@ What is a GCC security bug?
 
     A security bug is one that threatens the security of a system or
     network, or might compromise the security of data stored on it.
-    In the context of GCC there are multiple ways in which this might
+    In the context of GCC, there are multiple ways in which this might
     happen and some common scenarios are detailed below.
 
     If you're reporting a security issue and feel like it does not fit
     into any of the descriptions below, you're encouraged to reach out
-    through the GCC bugzilla or if needed, privately, by following the
+    through the GCC bugzilla or, if needed, privately, by following the
     instructions in the last two sections of this document.
 
 Compiler drivers, programs, libgccjit and support libraries
@@ -24,11 +24,11 @@ Compiler drivers, programs, libgccjit and support libraries
 
     The libgccjit library can, despite the name, be used both for
     ahead-of-time compilation and for just-in-compilation.  In both
-    cases it can be used to translate input representations (such as
-    source code) in the application context; in the latter case the
+    cases, it can be used to translate input representations (such as
+    source code) in the application context; in the latter case, the
     generated code is also run in the application context.
 
-    Limitations that apply to the compiler driver, apply here too in
+    Limitations that apply to the compiler driver apply here too in
     terms of trusting inputs and it is recommended that both the
     compilation *and* execution context of the code are appropriately
     sandboxed to contain the effects of any bugs in libgccjit, the
@@ -43,7 +43,7 @@ Compiler drivers, programs, libgccjit and support libraries
 
     Libraries such as zlib that are bundled with GCC to build it will be
     treated the same as the compiler drivers and programs as far as
-    security coverage is concerned.  However if you find an issue in
+    security coverage is concerned.  However, if you find an issue in
     these libraries independent of their use in GCC, you should reach
     out to their upstream projects to report them.
 
@@ -97,7 +97,7 @@ Language runtime libraries
     * libssp
     * libstdc++
 
-    These libraries are intended to be used in arbitrary contexts and as
+    These libraries are intended to be used in arbitrary contexts and, as
     a result, bugs in these libraries may be evaluated for security
     impact.  However, some of these libraries, e.g. libgo, libphobos,
     etc.  are not maintained in the GCC project, due to which the GCC
@@ -145,7 +145,7 @@ GCC plugins
 
     It should be noted that GCC may execute arbitrary code loaded by a
     user through the GCC plugin mechanism or through system preloading
-    mechanism.  Such custom code should be vetted by the user for safety
+    mechanism.  Such custom code should be vetted by the user for safety,
     as bugs exposed through such code will not be considered security
     issues.
 
