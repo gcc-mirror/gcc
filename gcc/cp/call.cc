@@ -13227,10 +13227,11 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
      been compared to.  */
 
   for (challenger = candidates;
-       challenger != champ
-	 && challenger != champ_compared_to_predecessor;
+       challenger != champ;
        challenger = challenger->next)
     {
+      if (challenger == champ_compared_to_predecessor)
+	continue;
       fate = joust (champ, challenger, 0, complain);
       if (fate != 1)
 	return NULL;
