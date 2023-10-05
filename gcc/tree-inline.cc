@@ -2988,19 +2988,20 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
-	      if (!id->killed_new_ssa_names)
-		id->killed_new_ssa_names = new hash_set<tree> (16);
 	      gimple *new_stmt
-		= cgraph_edge::redirect_call_stmt_to_callee (edge,
-		    id->killed_new_ssa_names);
+		= cgraph_edge::redirect_call_stmt_to_callee (edge);
+	      /* If IPA-SRA transformation, run as part of edge redirection,
+		 removed the LHS because it is unused, save it to
+		 killed_new_ssa_names so that we can prune it from debug
+		 statements.  */
 	      if (old_lhs
 		  && TREE_CODE (old_lhs) == SSA_NAME
 		  && !gimple_call_lhs (new_stmt))
-		/* In case of IPA-SRA removing the LHS, the name should have
-		   been already added to the hash.  But in case of redirecting
-		   to builtin_unreachable it was not and the name still should
-		   be pruned from debug statements.  */
-		id->killed_new_ssa_names->add (old_lhs);
+		{
+		  if (!id->killed_new_ssa_names)
+		    id->killed_new_ssa_names = new hash_set<tree> (16);
+		  id->killed_new_ssa_names->add (old_lhs);
+		}
 
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);
@@ -3327,13 +3328,8 @@ copy_body (copy_body_data *id,
   body = copy_cfg_body (id, entry_block_map, exit_block_map,
 			new_entry);
   copy_debug_stmts (id);
-  if (id->killed_new_ssa_names)
-    {
-      for (tree sn : *id->killed_new_ssa_names)
-	release_ssa_name (sn);
-      delete id->killed_new_ssa_names;
-      id->killed_new_ssa_names = NULL;
-    }
+  delete id->killed_new_ssa_names;
+  id->killed_new_ssa_names = NULL;
 
   return body;
 }

@@ -593,66 +593,14 @@ isra_get_ref_base_and_offset (tree expr, tree *base_p, unsigned *unit_offset_p)
   return true;
 }
 
-/* Remove all statements that use NAME and transitively those that use the
-   result of such statements.  KILLED_SSAS contains the SSA_NAMEs that are
-   already being or have been processed and new ones need to be added to it.
-   The funtction only has to process situations handled by
-   ssa_name_only_returned_p in ipa-sra.cc with the exception that it can assume
-   it must never reach a use in a return statement.  */
-
-static void
-purge_transitive_uses (tree name, hash_set <tree> *killed_ssas)
-{
-  imm_use_iterator imm_iter;
-  gimple *stmt;
-  auto_vec <tree, 4> worklist;
-
-  worklist.safe_push (name);
-  while (!worklist.is_empty ())
-    {
-      tree cur_name = worklist.pop ();
-      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, cur_name)
-	{
-	  if (gimple_debug_bind_p (stmt))
-	    {
-	      /* When runing within tree-inline, we will never end up here but
-		 adding the SSAs to killed_ssas will do the trick in this case
-		 and the respective debug statements will get reset. */
-	      gimple_debug_bind_reset_value (stmt);
-	      update_stmt (stmt);
-	      continue;
-	    }
-
-	  tree lhs = NULL_TREE;
-	  if (is_gimple_assign (stmt))
-	    lhs = gimple_assign_lhs (stmt);
-	  else if (gimple_code (stmt) == GIMPLE_PHI)
-	    lhs = gimple_phi_result (stmt);
-	  gcc_assert (lhs
-		      && (TREE_CODE (lhs) == SSA_NAME)
-		      && !gimple_vdef (stmt));
-	  if (!killed_ssas->add (lhs))
-	    {
-	      worklist.safe_push (lhs);
-	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-	      gsi_remove (&gsi, true);
-	    }
-	}
-    }
-}
-
 /* Modify actual arguments of a function call in statement currently belonging
    to CS, and make it call CS->callee->decl.  Return the new statement that
    replaced the old one.  When invoked, cfun and current_function_decl have to
-   be set to the caller.  When called from within tree-inline, KILLED_SSAs has
-   to contain the pointer to killed_new_ssa_names within the copy_body_data
-   structure and SSAs discovered to be useless (if LHS is removed) will be
-   added to it, otherwise it needs to be NULL.  */
+   be set to the caller.  */
 
 gcall *
 ipa_param_adjustments::modify_call (cgraph_edge *cs,
-				    bool update_references,
-				    hash_set <tree> *killed_ssas)
+				    bool update_references)
 {
   gcall *stmt = cs->call_stmt;
   tree callee_decl = cs->callee->decl;
@@ -962,20 +910,32 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
 
   gcall *new_stmt = gimple_build_call_vec (callee_decl, vargs);
 
-  hash_set <tree> *ssas_to_remove = NULL;
+  tree ssa_to_remove = NULL;
   if (tree lhs = gimple_call_lhs (stmt))
     {
       if (!m_skip_return)
 	gimple_call_set_lhs (new_stmt, lhs);
       else if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  if (!killed_ssas)
+	  /* LHS should now by a default-def SSA.  Unfortunately default-def
+	     SSA_NAMEs need a backing variable (or at least some code examining
+	     SSAs assumes it is non-NULL).  So we either have to re-use the
+	     decl we have at hand or introdice a new one.  */
+	  tree repl = create_tmp_var (TREE_TYPE (lhs), "removed_return");
+	  repl = get_or_create_ssa_default_def (cfun, repl);
+	  SSA_NAME_IS_DEFAULT_DEF (repl) = true;
+	  imm_use_iterator ui;
+	  use_operand_p use_p;
+	  gimple *using_stmt;
+	  FOR_EACH_IMM_USE_STMT (using_stmt, ui, lhs)
 	    {
-	      ssas_to_remove = new hash_set<tree> (8);
-	      killed_ssas = ssas_to_remove;
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, ui)
+		{
+		  SET_USE (use_p, repl);
+		}
+	      update_stmt (using_stmt);
 	    }
-	  killed_ssas->add (lhs);
-	  purge_transitive_uses (lhs, killed_ssas);
+	  ssa_to_remove = lhs;
 	}
     }
 
@@ -994,12 +954,8 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
       fprintf (dump_file, "\n");
     }
   gsi_replace (&gsi, new_stmt, true);
-  if (ssas_to_remove)
-    {
-      for (tree sn : *ssas_to_remove)
-	release_ssa_name (sn);
-      delete ssas_to_remove;
-    }
+  if (ssa_to_remove)
+    release_ssa_name (ssa_to_remove);
   if (update_references)
     do
       {
