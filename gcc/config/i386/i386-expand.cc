@@ -8320,6 +8320,11 @@ alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
 {
   if (alg == no_stringop)
     return false;
+  /* It is not possible to use a library call if we have non-default
+     address space.  We can do better than the generic byte-at-a-time
+     loop, used as a fallback.  */
+  if (alg == libcall && have_as)
+    return false;
   if (alg == vector_loop)
     return TARGET_SSE || TARGET_AVX;
   /* Algorithms using the rep prefix want at least edi and ecx;
@@ -8494,8 +8499,12 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	gcc_assert (alg != libcall);
       return alg;
     }
+
+  /* Try to use some reasonable fallback algorithm.  Note that for
+     non-default address spaces we default to a loop instead of
+     a libcall.  */
   return (alg_usable_p (algs->unknown_size, memset, have_as)
-	  ? algs->unknown_size : libcall);
+	  ? algs->unknown_size : have_as ? loop : libcall);
 }
 
 /* Decide on alignment.  We know that the operand is already aligned to ALIGN
