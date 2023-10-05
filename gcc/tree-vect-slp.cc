@@ -1084,7 +1084,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      ldst_p = true;
 	      rhs_code = CFN_MASK_STORE;
 	    }
-	  else if ((internal_fn_p (cfn)
+	  else if ((cfn != CFN_LAST
+		    && internal_fn_p (cfn)
 		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
 		   || gimple_call_tail_p (call_stmt)
 		   || gimple_call_noreturn_p (call_stmt)
