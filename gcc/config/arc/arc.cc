@@ -423,8 +423,6 @@ typedef struct GTY (()) machine_function
 {
   unsigned int fn_type;
   struct arc_frame_info frame_info;
-  /* To keep track of unalignment caused by short insns.  */
-  int unalign;
   struct arc_ccfsm ccfsm_current;
   /* Map from uid to ccfsm state during branch shortening.  */
   rtx ccfsm_current_insn;
@@ -1133,7 +1131,6 @@ arc_init (void)
   arc_punct_chars['?'] = 1;
   arc_punct_chars['!'] = 1;
   arc_punct_chars['^'] = 1;
-  arc_punct_chars['&'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
 }
@@ -5011,10 +5008,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  return;
 	}
       break;
-    case '&':
-      if (TARGET_ANNOTATE_ALIGN)
-	fprintf (file, "; unalign: %d", cfun->machine->unalign);
-      return;
+
     case '+':
       if (TARGET_V2)
 	fputs ("m", file);
@@ -5682,7 +5676,7 @@ arc_ccfsm_cond_exec_p (void)
    If CHECK_ATTR is greater than 0, check the iscompact attribute first.  */
 
 static int
-arc_verify_short (rtx_insn *insn, int, int check_attr)
+arc_verify_short (rtx_insn *insn, int check_attr)
 {
   enum attr_iscompact iscompact;
 
@@ -5697,8 +5691,7 @@ arc_verify_short (rtx_insn *insn, int, int check_attr)
 }
 
 /* When outputting an instruction (alternative) that can potentially be short,
-   output the short suffix if the insn is in fact short, and update
-   cfun->machine->unalign accordingly.  */
+   output the short suffix if the insn is in fact short.  */
 
 static void
 output_short_suffix (FILE *file)
@@ -5707,10 +5700,9 @@ output_short_suffix (FILE *file)
   if (!insn)
     return;
 
-  if (arc_verify_short (insn, cfun->machine->unalign, 1))
+  if (arc_verify_short (insn, 1))
     {
       fprintf (file, "_s");
-      cfun->machine->unalign ^= 2;
     }
   /* Restore recog_operand.  */
   extract_insn_cached (insn);
@@ -10056,21 +10048,6 @@ arc_check_millicode (rtx op, int offset, int load_p)
   return 1;
 }
 
-/* Accessor functions for cfun->machine->unalign.  */
-
-void
-arc_clear_unalign (void)
-{
-  if (cfun)
-    cfun->machine->unalign = 0;
-}
-
-void
-arc_toggle_unalign (void)
-{
-  cfun->machine->unalign ^= 2;
-}
-
 /* Operands 0..2 are the operands of a subsi which uses a 12 bit
    constant in operand 1, but which would require a LIMM because of
    operand mismatch.
@@ -10309,7 +10286,7 @@ arc_split_move (rtx *operands)
 const char *
 arc_short_long (rtx_insn *insn, const char *s_tmpl, const char *l_tmpl)
 {
-  int is_short = arc_verify_short (insn, cfun->machine->unalign, -1);
+  int is_short = arc_verify_short (insn, -1);
 
   extract_constrain_insn_cached (insn);
   return is_short ? s_tmpl : l_tmpl;

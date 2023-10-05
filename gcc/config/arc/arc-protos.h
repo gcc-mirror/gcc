@@ -83,8 +83,6 @@ extern void arc_expand_prologue (void);
 extern void arc_expand_epilogue (int);
 extern void arc_init_expanders (void);
 extern int arc_check_millicode (rtx op, int offset, int load_p);
-extern void arc_clear_unalign (void);
-extern void arc_toggle_unalign (void);
 extern void split_subsi (rtx *);
 extern void arc_split_move (rtx *);
 extern const char *arc_short_long (rtx_insn *insn, const char *, const char *);
