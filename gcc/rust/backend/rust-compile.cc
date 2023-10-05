@@ -207,8 +207,14 @@ proc_macro ()
 tree
 proc_macro_buffer (tree proc_macro_type, size_t total_macro)
 {
-  // FIXME: Add the array length, build a structure containing an array
-  return build_array_type_nelts (proc_macro_type, total_macro);
+  auto length_field = Backend::typed_identifier ("length", unsigned_type_node,
+						 BUILTINS_LOCATION);
+
+  auto array_type = build_array_type_nelts (proc_macro_type, total_macro);
+  auto macros_field
+    = Backend::typed_identifier ("macros", array_type, BUILTINS_LOCATION);
+
+  return Backend::struct_type ({length_field, macros_field});
 }
 
 // The entrypoint of a proc macro crate is a reference to the proc macro buffer
@@ -374,8 +380,15 @@ proc_macro_array (Context *ctx, tree proc_macro_buffer_type,
       index++;
     }
 
-  return Backend::array_constructor_expression (proc_macro_buffer_type, indexes,
-						ctors, BUILTINS_LOCATION);
+  auto length = build_int_cst (unsigned_type_node, ctors.size ());
+  auto array = Backend::array_constructor_expression (
+    build_array_type_nelts (proc_macro_type, ctors.size ()), indexes, ctors,
+    BUILTINS_LOCATION);
+  return Backend::constructor_expression (proc_macro_buffer_type,
+					  false /* invariant */,
+					  {length, array},
+					  -1 /* Structure: No index */,
+					  BUILTINS_LOCATION);
 }
 } // namespace init
 
