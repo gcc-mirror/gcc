@@ -1,3 +1,14 @@
+2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37336
+	PR fortran/111674
+	* gfortran.dg/allocate_with_source_25.f90: Final count in tree
+	dump reverts from 4 to original 6.
+	* gfortran.dg/finalize_38.f90: Add test for fix of PR111674.
+
 2023-10-02  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	Backported from master:
