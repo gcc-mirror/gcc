@@ -6342,6 +6342,18 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
 	  if (count > half_width)
 	    ix86_expand_ashl_const (high[0], count - half_width, mode);
 	}
+      else if (count == 1)
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  rtx x3 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  rtx x4 = gen_rtx_LTU (mode, x3, const0_rtx);
+	  half_mode = mode == DImode ? SImode : DImode;
+	  emit_insn (gen_add3_cc_overflow_1 (half_mode, low[0],
+					     low[0], low[0]));
+	  emit_insn (gen_add3_carry (half_mode, high[0], high[0], high[0],
+				     x3, x4));
+	}
       else
 	{
 	  gen_shld = mode == DImode ? gen_x86_shld : gen_x86_64_shld;
