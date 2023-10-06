@@ -694,7 +694,6 @@ strip_sign_op_1 (tree rhs)
     switch (gimple_assign_rhs_code (assign))
       {
       case ABS_EXPR:
-      case ABSU_EXPR:
       case NEGATE_EXPR:
 	return gimple_assign_rhs1 (assign);
 
