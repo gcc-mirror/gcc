@@ -1,3 +1,17 @@
+2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_sgprbase): Add @ modifier.
+	(reload_in<mode>): Delete.
+	(reload_out<mode>): Delete.
+	* config/gcn/gcn.cc (CODE_FOR): Delete.
+	(get_code_for_##PREFIX##vN##SUFFIX): Delete.
+	(CODE_FOR_OP): Delete.
+	(get_code_for_##PREFIX): Delete.
+	(gcn_secondary_reload): Replace "get_code_for" with "code_for".
+
 2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
