@@ -1997,13 +1997,16 @@
 
 ;; Pretend to have the ability to load complex const_int in order to get
 ;; better code generation around them.
-;;
 ;; But avoid constants that are special cased elsewhere.
+;;
+;; Hide it from IRA register equiv recog* () to elide potential undoing of split
+;;
 (define_insn_and_split "*mvconst_internal"
   [(set (match_operand:GPR 0 "register_operand" "=r")
         (match_operand:GPR 1 "splittable_const_int_operand" "i"))]
-  "!(p2m1_shift_operand (operands[1], <MODE>mode)
-     || high_mask_shift_operand (operands[1], <MODE>mode))"
+  "!ira_in_progress
+   && !(p2m1_shift_operand (operands[1], <MODE>mode)
+        || high_mask_shift_operand (operands[1], <MODE>mode))"
   "#"
   "&& 1"
   [(const_int 0)]
