@@ -514,7 +514,7 @@ specification in version 5.2.
 * Tasking Routines::
 @c * Resource Relinquishing Routines::
 * Device Information Routines::
-@c * Device Memory Routines::
+* Device Memory Routines::
 * Lock Routines::
 * Timing Routines::
 * Event Routine::
@@ -1658,25 +1658,298 @@ For OpenMP 5.1, this must be equal to the value returned by the
 
 
 
-@c @node Device Memory Routines
-@c @section Device Memory Routines
-@c
-@c Routines related to memory allocation and managing corresponding
-@c pointers on devices. They have C linkage and do not throw exceptions.
-@c 
-@c @menu
-@c * omp_target_alloc:: <fixme>
-@c * omp_target_free:: <fixme>
-@c * omp_target_is_present:: <fixme>
+@node Device Memory Routines
+@section Device Memory Routines
+
+Routines related to memory allocation and managing corresponding
+pointers on devices. They have C linkage and do not throw exceptions.
+
+@menu
+* omp_target_alloc:: Allocate device memory
+* omp_target_free:: Free device memory
+* omp_target_is_present:: Check whether storage is mapped
 @c * omp_target_is_accessible:: <fixme>
 @c * omp_target_memcpy:: <fixme>
 @c * omp_target_memcpy_rect:: <fixme>
 @c * omp_target_memcpy_async:: <fixme>
 @c * omp_target_memcpy_rect_async:: <fixme>
-@c * omp_target_associate_ptr:: <fixme>
-@c * omp_target_disassociate_ptr:: <fixme>
-@c * omp_get_mapped_ptr:: <fixme>
-@c @end menu
+@c * omp_target_memset:: <fixme>/TR12
+@c * omp_target_memset_async:: <fixme>/TR12
+* omp_target_associate_ptr:: Associate a device pointer with a host pointer
+* omp_target_disassociate_ptr:: Remove device--host pointer association
+* omp_get_mapped_ptr:: Return device pointer to a host pointer
+@end menu
+
+
+
+@node omp_target_alloc
+@subsection @code{omp_target_alloc} -- Allocate device memory
+@table @asis
+@item @emph{Description}:
+This routine allocates @var{size} bytes of memory in the device environment
+associated with the device number @var{device_num}.  If successful, a device
+pointer is returned, otherwise a null pointer.
+
+In GCC, when the device is the host or the device shares memory with the host,
+the memory is allocated on the host; in that case, when @var{size} is zero,
+either NULL or a unique pointer value that can later be successfully passed to
+@code{omp_target_free} is returned.  When the allocation is not performed on
+the host, a null pointer is returned when @var{size} is zero; in that case,
+additionally a diagnostic might be printed to standard error (stderr).
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_alloc(size_t size, int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_alloc(size, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t}
+@item                   @tab @code{integer(c_size_t), value :: size}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_free}, @ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.1
+@end table
+
+
+
+@node omp_target_free
+@subsection @code{omp_target_free} -- Free device memory
+@table @asis
+@item @emph{Description}:
+This routine frees memory allocated by the @code{omp_target_alloc} routine.
+The @var{device_ptr} argument must be either a null pointer or a device pointer
+returned by @code{omp_target_alloc} for the specified @code{device_num}.  The
+device number @var{device_num} must be a conforming device number.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_target_free(void *device_ptr, int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_target_free(device_ptr, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: device_ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_alloc}, @ref{omp_target_disassociate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.2
+@end table
+
+
+
+@node omp_target_is_present
+@subsection @code{omp_target_is_present} -- Check whether storage is mapped
+@table @asis
+@item @emph{Description}:
+This routine tests whether storage, identified by the host pointer @var{ptr}
+is mapped to the device specified by @var{device_num}.  If so, it returns
+@emph{true} and otherwise @emph{false}.
+
+In GCC, this includes self mapping such that @code{omp_target_is_present}
+returns @emph{true} when @var{device_num} specifies the host or when the host
+and the device share memory.  If @var{ptr} is a null pointer, @var{true} is
+returned and if @var{device_num} is an invalid device number, @var{false} is
+returned.
+
+If those conditions do not apply, @emph{true} is returned if the association has
+been established by an explicit or implicit @code{map} clause, the
+@code{declare target} directive or a call to the @code{omp_target_associate_ptr}
+routine.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_is_present(const void *ptr,}
+@item                   @tab @code{                          int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_is_present(ptr, &}
+@item                   @tab @code{    device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.3
+@end table
+
+
+
+@node omp_target_associate_ptr
+@subsection @code{omp_target_associate_ptr} -- Associate a device pointer with a host pointer
+@table @asis
+@item @emph{Description}:
+This routine associates storage on the host with storage on a device identified
+by @var{device_num}.  The device pointer is usually obtained by calling
+@code{omp_target_alloc} or by other means (but not by using the @code{map}
+clauses or the @code{declare target} directive).  The host pointer should point
+to memory that has a storage size of at least @var{size}.
+
+The @var{device_offset} parameter specifies the offset into @var{device_ptr}
+that is used as the base address for the device side of the mapping; the
+storage size should be at least @var{device_offset} plus @var{size}.
+
+After the association, the host pointer can be used in a @code{map} clause and
+in the @code{to} and @code{from} clauses of the @code{target update} directive
+to transfer data between the associated pointers. The reference count of such
+associated storage is infinite.  The association can be removed by calling
+@code{omp_target_disassociate_ptr} which should be done before the lifetime
+of either either storage ends.
+
+The routine returns nonzero (@code{EINVAL}) when the @var{device_num} invalid,
+for when the initial device or the associated device shares memory with the
+host.  @code{omp_target_associate_ptr} returns zero if @var{host_ptr} points
+into already associated storage that is fully inside of a previously associated
+memory.  Otherwise, if the association was successful zero is returned; if none
+of the cases above apply, nonzero (@code{EINVAL}) is returned.
+
+The @code{omp_target_is_present} routine can be used to test whether
+associated storage for a device pointer exists.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_associate_ptr(const void *host_ptr,}
+@item                   @tab @code{                             const void *device_ptr,}
+@item                   @tab @code{                             size_t size,}
+@item                   @tab @code{                             size_t device_offset,}
+@item                   @tab @code{                             int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_associate_ptr(host_ptr, &}
+@item                   @tab @code{    device_ptr, size, device_offset, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t}
+@item                   @tab @code{type(c_ptr), value :: host_ptr, device_ptr}
+@item                   @tab @code{integer(c_size_t), value :: size, device_offset}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_disassociate_ptr}, @ref{omp_target_is_present},
+@ref{omp_target_alloc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.9
+@end table
+
+
+
+@node omp_target_disassociate_ptr
+@subsection @code{omp_target_disassociate_ptr} -- Remove device--host pointer association
+@table @asis
+@item @emph{Description}:
+This routine removes the storage association established by calling
+@code{omp_target_associate_ptr} and sets the reference count to zero,
+even if @code{omp_target_associate_ptr} was invoked multiple times for
+for host pointer @code{ptr}.  If applicable, the device memory needs
+to be freed by the user.
+
+If an associated device storage location for the @var{device_num} was
+found and has infinite reference count, the association is removed and
+zero is returned.  In all other cases, nonzero (@code{EINVAL}) is returned
+and no other action is taken.
+
+Note that passing a host pointer where the association to the device pointer
+was established with the @code{declare target} directive yields undefined
+behavior.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_target_disassociate_ptr(const void *ptr,}
+@item                   @tab @code{                                int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_int) function omp_target_disassociate_ptr(ptr, &}
+@item                   @tab @code{    device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.10
+@end table
+
+
+
+@node omp_get_mapped_ptr
+@subsection @code{omp_get_mapped_ptr} -- Return device pointer to a host pointer
+@table @asis
+@item @emph{Description}:
+If the device number is refers to the initial device or to a device with
+memory accessible from the host (shared memory), the @code{omp_get_mapped_ptr}
+routines returnes the value of the passed @var{ptr}.  Otherwise, if associated
+storage to the passed host pointer @var{ptr} exists on device associated with
+@var{device_num}, it returns that pointer. In all other cases and in cases of
+an error, a null pointer is returned.
+
+The association of storage location is established either via an explicit or
+implicit @code{map} clause, the @code{declare target} directive or the
+@code{omp_target_associate_ptr} routine.
+
+Running this routine in a @code{target} region except on the initial device
+is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_get_mapped_ptr(const void *ptr, int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_get_mapped_ptr(ptr, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_int), value :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_associate_ptr}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 18.8.11
+@end table
+
+
 
 @node Lock Routines
 @section Lock Routines
