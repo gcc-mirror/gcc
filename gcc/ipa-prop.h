@@ -292,18 +292,6 @@ public:
   array_slice<const ipa_argagg_value> m_elts;
 };
 
-/* Information about zero/non-zero bits.  */
-class GTY(()) ipa_bits
-{
-public:
-  /* The propagated value.  */
-  widest_int value;
-  /* Mask corresponding to the value.
-     Similar to ccp_lattice_t, if xth bit of mask is 0,
-     implies xth bit of value is constant.  */
-  widest_int mask;
-};
-
 /* Info about value ranges.  */
 
 class GTY(()) ipa_vr
@@ -341,11 +329,6 @@ struct GTY (()) ipa_jump_func
   /* Aggregate jump function description.  See struct ipa_agg_jump_function
      and its description.  */
   struct ipa_agg_jump_function agg;
-
-  /* Information about zero/non-zero bits.  The pointed to structure is shared
-     betweed different jump functions.  Use ipa_set_jfunc_bits to set this
-     field.  */
-  class ipa_bits *bits;
 
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
@@ -940,15 +923,13 @@ struct GTY(()) ipcp_transformation
 {
   /* Default constructor.  */
   ipcp_transformation ()
-    : m_agg_values (nullptr), bits (nullptr), m_vr (nullptr),
-    m_uid_to_idx (nullptr)
+    : m_agg_values (nullptr), m_vr (nullptr), m_uid_to_idx (nullptr)
   { }
 
   /* Default destructor.  */
   ~ipcp_transformation ()
   {
     vec_free (m_agg_values);
-    vec_free (bits);
     vec_free (m_vr);
   }
 
@@ -968,8 +949,6 @@ struct GTY(()) ipcp_transformation
 
   /* Known aggregate values.  */
   vec<ipa_argagg_value, va_gc>  *m_agg_values;
-  /* Known bits information.  */
-  vec<ipa_bits *, va_gc> *bits;
   /* Value range information.  */
   vec<ipa_vr, va_gc> *m_vr;
   /* If there are many parameters, this is a vector sorted by their DECL_UIDs
@@ -1172,8 +1151,6 @@ tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
-ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
-				      const widest_int &mask);
 
 
 /* Functions related to both.  */
