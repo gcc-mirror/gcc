@@ -783,8 +783,8 @@ class TupleStructItems : public FullVisitable
 public:
   enum ItemType
   {
-    RANGE,
-    NO_RANGE
+    MULTIPLE,
+    RANGED,
   };
 
   virtual ~TupleStructItems () {}
@@ -852,7 +852,7 @@ public:
     return patterns;
   }
 
-  ItemType get_item_type () const override final { return ItemType::NO_RANGE; }
+  ItemType get_item_type () const override final { return ItemType::MULTIPLE; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -931,7 +931,7 @@ public:
     return upper_patterns;
   }
 
-  ItemType get_item_type () const override final { return ItemType::RANGE; }
+  ItemType get_item_type () const override final { return ItemType::RANGED; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1014,7 +1014,7 @@ protected:
 class TuplePatternItems : public FullVisitable
 {
 public:
-  enum TuplePatternItemType
+  enum ItemType
   {
     MULTIPLE,
     RANGED,
@@ -1032,7 +1032,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual TuplePatternItemType get_item_type () const = 0;
+  virtual ItemType get_item_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1077,10 +1077,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_item_type () const override
-  {
-    return TuplePatternItemType::MULTIPLE;
-  }
+  ItemType get_item_type () const override { return ItemType::MULTIPLE; }
 
   std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
   const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
@@ -1147,10 +1144,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_item_type () const override
-  {
-    return TuplePatternItemType::RANGED;
-  }
+  ItemType get_item_type () const override { return ItemType::RANGED; }
 
   std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
   {

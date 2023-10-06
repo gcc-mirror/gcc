@@ -260,7 +260,7 @@ public:
     size_t index = 0;
     switch (pattern.get_items ()->get_item_type ())
       {
-	case HIR::TupleStructItems::RANGE: {
+	case HIR::TupleStructItems::RANGED: {
 	  auto &items
 	    = static_cast<HIR::TupleStructItemsRange &> (*pattern.get_items ());
 
@@ -278,7 +278,7 @@ public:
 	  visit_tuple_fields (items.get_upper_patterns (), saved, index);
 	  break;
 	}
-	case HIR::TupleStructItems::NO_RANGE: {
+	case HIR::TupleStructItems::MULTIPLE: {
 	  auto &items = static_cast<HIR::TupleStructItemsNoRange &> (
 	    *pattern.get_items ());
 	  visit_tuple_fields (items.get_patterns (), saved, index);
