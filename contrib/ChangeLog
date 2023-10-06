@@ -1,3 +1,22 @@
+2023-10-05  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* mdcompact/mdcompact-testsuite.el: New file.
+	* mdcompact/mdcompact.el: Likewise.
+	* mdcompact/tests/1.md: Likewise.
+	* mdcompact/tests/1.md.out: Likewise.
+	* mdcompact/tests/2.md: Likewise.
+	* mdcompact/tests/2.md.out: Likewise.
+	* mdcompact/tests/3.md: Likewise.
+	* mdcompact/tests/3.md.out: Likewise.
+	* mdcompact/tests/4.md: Likewise.
+	* mdcompact/tests/4.md.out: Likewise.
+	* mdcompact/tests/5.md: Likewise.
+	* mdcompact/tests/5.md.out: Likewise.
+	* mdcompact/tests/6.md: Likewise.
+	* mdcompact/tests/6.md.out: Likewise.
+	* mdcompact/tests/7.md: Likewise.
+	* mdcompact/tests/7.md.out: Likewise.
+
 2023-10-03  Martin Jambor  <mjambor@suse.cz>
 
 	* mklog.py (skip_line_in_changelog): Compare to None using is instead

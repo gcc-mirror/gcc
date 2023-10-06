@@ -1,3 +1,52 @@
+2023-10-05  Patrick O'Neill  <patrick@rivosinc.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/pr90263.c: Skip riscv_v targets.
+	* gcc.target/riscv/rvv/base/pr90263.c: New test.
+
+2023-10-05  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/111283
+	PR gcov-profile/111559
+	* gcc.dg/tree-prof/pr111559.c: New test.
+
+2023-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* gcc.target/i386/pr111657.c: New test.
+
+2023-10-05  Martin Jambor  <mjambor@suse.cz>
+
+	Revert:
+	2023-10-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	* gcc.dg/ipa/pr108007.c: New test.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/enter-dw2-1.c: Remove tests when using linux
+	build.
+	* gcc.target/arc/tls-ld.c: Update test.
+	* gcc.target/arc/tls-le.c: Likewise.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/loop-3.c: Update test.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/add_n-combine.c: Recognize add2 instruction.
+	* gcc.target/arc/firq-4.c: FP register is a temp reg. Update test.
+	* gcc.target/arc/firq-6.c: Likewise.
+	* gcc.target/arc/mtune-ARC600.c: Remove test.
+	* gcc.target/arc/mtune-ARC601.c: Likewise.
+	* gcc.target/arc/mtune-ARC700-xmac: Likewise.
+	* gcc.target/arc/mtune-ARC700.c: Likewise.
+	* gcc.target/arc/mtune-ARC725D.c: Likewise.
+	* gcc.target/arc/mtune-ARC750D.c: Likewise.
+	* gcc.target/arc/uncached-7.c: Set it to XFAIL.
+
 2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/arc/ashrsi-1.c: New TARGET_BARREL_SHIFTER test case.

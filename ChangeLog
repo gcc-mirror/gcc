@@ -1,3 +1,11 @@
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up indentation.
+
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up commas.
+
 2023-10-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* SECURITY.txt: New file.

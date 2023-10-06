@@ -1,3 +1,175 @@
+2023-10-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa32-linux.h (MALLOC_ABI_ALIGNMENT): Delete.
+
+2023-10-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* timevar.def (TV_TREE_FAST_VRP): New.
+	* tree-pass.h (make_pass_fast_vrp): New prototype.
+	* tree-vrp.cc (class fvrp_folder): New.
+	(fvrp_folder::fvrp_folder): New.
+	(fvrp_folder::~fvrp_folder): New.
+	(fvrp_folder::value_of_expr): New.
+	(fvrp_folder::value_on_edge): New.
+	(fvrp_folder::value_of_stmt): New.
+	(fvrp_folder::pre_fold_bb): New.
+	(fvrp_folder::post_fold_bb): New.
+	(fvrp_folder::pre_fold_stmt): New.
+	(fvrp_folder::fold_stmt): New.
+	(execute_fast_vrp): New.
+	(pass_data_fast_vrp): New.
+	(pass_vrp:execute): Check for fast VRP pass.
+	(make_pass_fast_vrp): New.
+
+2023-10-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (dom_ranger::dom_ranger): New.
+	(dom_ranger::~dom_ranger): New.
+	(dom_ranger::range_of_expr): New.
+	(dom_ranger::edge_range): New.
+	(dom_ranger::range_on_edge): New.
+	(dom_ranger::range_in_bb): New.
+	(dom_ranger::range_of_stmt): New.
+	(dom_ranger::maybe_push_edge): New.
+	(dom_ranger::pre_bb): New.
+	(dom_ranger::post_bb): New.
+	* gimple-range.h (class dom_ranger): New.
+
+2023-10-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_stmt_info::gori_stmt_info): New.
+	(gori_calc_operands): New.
+	(gori_on_edge): New.
+	(gori_name_helper): New.
+	(gori_name_on_edge): New.
+	* gimple-range-gori.h (gori_on_edge): New prototype.
+	(gori_name_on_edge): New prototype.
+
+2023-10-05  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/111283
+	PR gcov-profile/111559
+	* ipa-utils.cc (ipa_merge_profiles): Avoid producing
+	uninitialized probabilities when merging counters with zero
+	denominators.
+
+2023-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* config/i386/i386-expand.cc (alg_usable_p): Reject libcall
+	strategy for non-default address spaces.
+	(decide_alg): Use loop strategy as a fallback strategy for
+	non-default address spaces.
+
+2023-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* sreal.cc (verify_aritmetics): Rename to ...
+	(verify_arithmetics): ... this.
+	(sreal_verify_arithmetics): Adjust caller.
+
+2023-10-05  Martin Jambor  <mjambor@suse.cz>
+
+	Revert:
+	2023-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108007
+	* cgraph.h (cgraph_edge): Add a parameter to
+	redirect_call_stmt_to_callee.
+	* ipa-param-manipulation.h (ipa_param_adjustments): Add a
+	parameter to modify_call.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): New
+	parameter killed_ssas, pass it to padjs->modify_call.
+	* ipa-param-manipulation.cc (purge_transitive_uses): New function.
+	(ipa_param_adjustments::modify_call): New parameter killed_ssas.
+	Instead of substituting uses, invoke purge_transitive_uses.  If
+	hash of killed SSAs has not been provided, create a temporary one
+	and release SSAs that have been added to it.
+	* tree-inline.cc (redirect_all_calls): Create
+	id->killed_new_ssa_names earlier, pass it to edge redirection,
+	adjust a comment.
+	(copy_body): Release SSAs in id->killed_new_ssa_names.
+
+2023-10-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (@vec_series<mode>): Remove @.
+	(vec_series<mode>): Ditto.
+	* config/riscv/riscv-v.cc (expand_const_vector): Ditto.
+	(shuffle_decompress_patterns): Ditto.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc-passes.def: Remove arc_ifcvt pass.
+	* config/arc/arc-protos.h (arc_ccfsm_branch_deleted_p): Remove.
+	(arc_ccfsm_record_branch_deleted): Likewise.
+	(arc_ccfsm_cond_exec_p): Likewise.
+	(arc_ccfsm): Likewise.
+	(arc_ccfsm_record_condition): Likewise.
+	(make_pass_arc_ifcvt): Likewise.
+	* config/arc/arc.cc (arc_ccfsm): Remove.
+	(arc_ccfsm_current): Likewise.
+	(ARC_CCFSM_BRANCH_DELETED_P): Likewise.
+	(ARC_CCFSM_RECORD_BRANCH_DELETED): Likewise.
+	(ARC_CCFSM_COND_EXEC_P): Likewise.
+	(CCFSM_ISCOMPACT): Likewise.
+	(CCFSM_DBR_ISCOMPACT): Likewise.
+	(machine_function): Remove ccfsm related fields.
+	(arc_ifcvt): Remove pass.
+	(arc_print_operand): Remove `#` punct operand and other ccfsm
+	related code.
+	(arc_ccfsm_advance): Remove.
+	(arc_ccfsm_at_label): Likewise.
+	(arc_ccfsm_record_condition): Likewise.
+	(arc_ccfsm_post_advance): Likewise.
+	(arc_ccfsm_branch_deleted_p): Likewise.
+	(arc_ccfsm_record_branch_deleted): Likewise.
+	(arc_ccfsm_cond_exec_p): Likewise.
+	(arc_get_ccfsm_cond): Likewise.
+	(arc_final_prescan_insn): Remove ccfsm references.
+	(arc_internal_label): Likewise.
+	(arc_reorg): Likewise.
+	(arc_output_libcall): Likewise.
+	* config/arc/arc.md: Remove ccfsm references and update related
+	instruction patterns.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_init): Remove '^' punct char.
+	(arc_print_operand): Remove related code.
+	* config/arc/arc.md: Update patterns which uses '%&'.
+
+2023-10-05  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc-protos.h (arc_clear_unalign): Remove.
+	(arc_toggle_unalign): Likewise.
+	* config/arc/arc.cc (machine_function) Remove unalign.
+	(arc_init): Remove `&` punct character.
+	(arc_print_operand): Remove `&` related functions.
+	(arc_verify_short): Update function's number of parameters.
+	(output_short_suffix): Update function.
+	(arc_short_long): Likewise.
+	(arc_clear_unalign): Remove.
+	(arc_toggle_unalign): Likewise.
+	* config/arc/arc.h (ASM_OUTPUT_CASE_END): Remove.
+	(ASM_OUTPUT_ALIGN): Update.
+	* config/arc/arc.md: Remove all `%&` references.
+	* config/arc/arc.opt (mannotate-align): Ignore option.
+	* doc/invoke.texi (mannotate-align): Update description.
+
+2023-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Do not
+	ask for internal_fn_p (CFN_LAST).
+
+2023-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (rpo_elim::eliminate_avail): Not
+	visited value numbers are available itself.
+
+2023-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111643
+	* doc/extend.texi (attribute flatten): Clarify.
+
 2023-10-04  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/arc/arc-protos.h (emit_shift): Delete prototype.

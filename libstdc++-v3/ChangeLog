@@ -1,3 +1,8 @@
+2023-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add missing symbols
+	for _Float{16,32,64,128,32x,64x,128x}.
+
 2023-10-04  Tom Tromey  <tromey@adacore.com>
 
 	* python/libstdcxx/v6/printers.py

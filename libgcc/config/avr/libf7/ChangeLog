@@ -1,3 +1,16 @@
+2023-10-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7.h (F7_PURE): Remove all occurrences.
+	* libf7.c: Same.
+
+2023-10-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7.h (F7_FLAGNO_plusx, F7_FLAG_plusx): New macros.
+	* libf7.c (f7_horner): Handle F7_FLAG_plusx in highest coefficient.
+	* libf7-const.def [F7MOD_atan_]: Denominator: Set F7_FLAG_plusx
+	and omit highest term.
+	[F7MOD_asinacos_]: Use rational function with normalized denominator.
+
 2022-09-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/99184
