@@ -15543,6 +15543,13 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
       && (regno0 == regno1 || regno0 == regno2))
     return true;
 
+  /* Split with -Oz if the encoding requires fewer bytes.  */
+  if (optimize_size > 1
+      && parts.scale > 1
+      && !parts.base
+      && (!parts.disp || parts.disp == const0_rtx)) 
+    return true;
+
   /* Check we need to optimize.  */
   if (!TARGET_AVOID_LEA_FOR_ADDR || optimize_function_for_size_p (cfun))
     return false;
