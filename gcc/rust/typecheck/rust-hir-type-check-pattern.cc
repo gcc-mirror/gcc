@@ -101,13 +101,13 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
   switch (items->get_item_type ())
     {
-      case HIR::TupleStructItems::RANGE: {
+      case HIR::TupleStructItems::RANGED: {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::NO_RANGE: {
+      case HIR::TupleStructItems::MULTIPLE: {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
 
@@ -297,7 +297,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
   std::unique_ptr<HIR::TuplePatternItems> items;
   switch (pattern.get_items ()->get_item_type ())
     {
-      case HIR::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
 	HIR::TuplePatternItemsMultiple &ref
 	  = *static_cast<HIR::TuplePatternItemsMultiple *> (
 	    pattern.get_items ().get ());
@@ -336,7 +336,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
       }
       break;
 
-      case HIR::TuplePatternItems::TuplePatternItemType::RANGED: {
+      case HIR::TuplePatternItems::ItemType::RANGED: {
 	// HIR::TuplePatternItemsRanged &ref
 	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
 	//     pattern.get_items ().get ());
