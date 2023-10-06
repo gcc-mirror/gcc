@@ -641,7 +641,7 @@
 ;   vT += Sv
 ;   flat_load v, vT
 
-(define_insn "mov<mode>_sgprbase"
+(define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_1REG 0 "nonimmediate_operand")
 	(unspec:V_1REG
 	  [(match_operand:V_1REG 1 "general_operand")]
@@ -655,7 +655,7 @@
   [m,v ,&v;*   ,12] #
   })
 
-(define_insn "mov<mode>_sgprbase"
+(define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v, v, m")
 	(unspec:V_2REG
 	  [(match_operand:V_2REG 1 "general_operand"   "vDB, m, v")]
@@ -672,7 +672,7 @@
   [(set_attr "type" "vmult,*,*")
    (set_attr "length" "8,12,12")])
 
-(define_insn "mov<mode>_sgprbase"
+(define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(unspec:V_4REG
 	  [(match_operand:V_4REG 1 "general_operand")]
@@ -683,31 +683,6 @@
   [v,vDB,&v;vmult,8 ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
   [v,m  ,&v;*    ,12] #
   [m,v  ,&v;*    ,12] #
-  })
-
-; reload_in was once a standard name, but here it's only referenced by
-; gcn_secondary_reload.  It allows a reload with a scratch register.
-
-(define_expand "reload_in<mode>"
-  [(set (match_operand:V_MOV 0 "register_operand"     "= v")
-	(match_operand:V_MOV 1 "memory_operand"	      "  m"))
-   (clobber (match_operand:<VnDI> 2 "register_operand" "=&v"))]
-  ""
-  {
-    emit_insn (gen_mov<mode>_sgprbase (operands[0], operands[1], operands[2]));
-    DONE;
-  })
-
-; reload_out is similar to reload_in, above.
-
-(define_expand "reload_out<mode>"
-  [(set (match_operand:V_MOV 0 "memory_operand"	      "= m")
-	(match_operand:V_MOV 1 "register_operand"     "  v"))
-   (clobber (match_operand:<VnDI> 2 "register_operand" "=&v"))]
-  ""
-  {
-    emit_insn (gen_mov<mode>_sgprbase (operands[0], operands[1], operands[2]));
-    DONE;
   })
 
 ; Expand scalar addresses into gather/scatter patterns

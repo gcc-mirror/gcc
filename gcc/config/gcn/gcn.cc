@@ -1388,64 +1388,6 @@ GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 #undef GET_VN_FN
 #undef A
 
-/* Get icode for vector instructions without an optab.  */
-
-#define CODE_FOR(PREFIX, SUFFIX) \
-static int \
-get_code_for_##PREFIX##vN##SUFFIX (int nunits) \
-{ \
-  switch (nunits) \
-    { \
-    case 2: return CODE_FOR_##PREFIX##v2##SUFFIX; \
-    case 4: return CODE_FOR_##PREFIX##v4##SUFFIX; \
-    case 8: return CODE_FOR_##PREFIX##v8##SUFFIX; \
-    case 16: return CODE_FOR_##PREFIX##v16##SUFFIX; \
-    case 32: return CODE_FOR_##PREFIX##v32##SUFFIX; \
-    case 64: return CODE_FOR_##PREFIX##v64##SUFFIX; \
-    } \
-  \
-  gcc_unreachable (); \
-  return CODE_FOR_nothing; \
-}
-
-#define CODE_FOR_OP(PREFIX) \
-	  CODE_FOR (PREFIX, qi) \
-	CODE_FOR (PREFIX, hi) \
-	CODE_FOR (PREFIX, hf) \
-	CODE_FOR (PREFIX, si) \
-	CODE_FOR (PREFIX, sf) \
-	CODE_FOR (PREFIX, di) \
-	CODE_FOR (PREFIX, df) \
-	CODE_FOR (PREFIX, ti) \
-static int \
-get_code_for_##PREFIX (machine_mode mode) \
-{ \
-  int vf = GET_MODE_NUNITS (mode); \
-  machine_mode smode = GET_MODE_INNER (mode); \
-  \
-  switch (smode) \
-    { \
-    case E_QImode: return get_code_for_##PREFIX##vNqi (vf); \
-    case E_HImode: return get_code_for_##PREFIX##vNhi (vf); \
-    case E_HFmode: return get_code_for_##PREFIX##vNhf (vf); \
-    case E_SImode: return get_code_for_##PREFIX##vNsi (vf); \
-    case E_SFmode: return get_code_for_##PREFIX##vNsf (vf); \
-    case E_DImode: return get_code_for_##PREFIX##vNdi (vf); \
-    case E_DFmode: return get_code_for_##PREFIX##vNdf (vf); \
-    case E_TImode: return get_code_for_##PREFIX##vNti (vf); \
-    default: break; \
-    } \
-  \
-  gcc_unreachable (); \
-  return CODE_FOR_nothing; \
-}
-
-CODE_FOR_OP (reload_in)
-CODE_FOR_OP (reload_out)
-
-#undef CODE_FOR_OP
-#undef CODE_FOR
-
 /* Return true if OP is a PARALLEL of CONST_INTs that form a linear
    series with step STEP.  */
 
@@ -2472,10 +2414,7 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 	  if (GET_MODE_CLASS (reload_mode) == MODE_VECTOR_INT
 	      || GET_MODE_CLASS (reload_mode) == MODE_VECTOR_FLOAT)
 	    {
-	      if (in_p)
-		sri->icode = get_code_for_reload_in (reload_mode);
-	      else
-		sri->icode = get_code_for_reload_out (reload_mode);
+	      sri->icode = code_for_mov_sgprbase (reload_mode);
 	      break;
 	    }
 	  /* Fallthrough.  */
