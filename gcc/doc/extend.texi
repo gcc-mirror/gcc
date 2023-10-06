@@ -2537,13 +2537,14 @@ for each target.  However, a considerable number of attributes are
 supported by most, if not all targets.  Those are described in
 the @ref{Common Function Attributes} section.
 
-Function attributes are introduced by the @code{__attribute__} keyword
-in the declaration of a function, followed by an attribute specification
-enclosed in double parentheses.  You can specify multiple attributes in
-a declaration by separating them by commas within the double parentheses
-or by immediately following one attribute specification with another.
-@xref{Attribute Syntax}, for the exact rules on attribute syntax and
-placement.  Compatible attribute specifications on distinct declarations
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
+
+Compatible attribute specifications on distinct declarations
 of the same function are merged.  An attribute specification that is not
 compatible with attributes already applied to a declaration of the same
 function is ignored with a warning.
@@ -7435,10 +7436,9 @@ when this attribute is present.
 @cindex attribute of variables
 @cindex variable attributes
 
-The keyword @code{__attribute__} allows you to specify special properties
+You can use attributes to specify special properties
 of variables, function parameters, or structure, union, and, in C++, class
-members.  This @code{__attribute__} keyword is followed by an attribute
-specification enclosed in double parentheses.  Some attributes are currently
+members.  Some attributes are currently
 defined generically for variables.  Other attributes are defined for
 variables on particular target systems.  Other attributes are available
 for functions (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
@@ -7447,8 +7447,12 @@ enumerators (@pxref{Enumerator Attributes}), statements
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
-@xref{Attribute Syntax}, for details of the exact syntax for using
-attributes.
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
 
 @menu
 * Common Variable Attributes::
@@ -8510,7 +8514,7 @@ placed in either the @code{.bss_below100} section or the
 @cindex attribute of types
 @cindex type attributes
 
-The keyword @code{__attribute__} allows you to specify various special
+You can use attributes to specify various special
 properties of types.  Some type attributes apply only to structure and
 union types, and in C++, also class types, while others can apply to
 any type defined via a @code{typedef} declaration.  Unless otherwise
@@ -8523,19 +8527,20 @@ labels (@pxref{Label  Attributes}), enumerators (@pxref{Enumerator
 Attributes}), statements (@pxref{Statement Attributes}), and for variables
 (@pxref{Variable Attributes}).
 
-The @code{__attribute__} keyword is followed by an attribute specification
-enclosed in double parentheses.
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
 @code{struct}, @code{union} or @code{enum} keyword.  You can also place
 them just past the closing curly brace of the definition, but this is less
 preferred because logically the type should be fully defined at 
-the closing brace.
-
-You can also include type attributes in a @code{typedef} declaration.
-@xref{Attribute Syntax}, for details of the exact syntax for using
-attributes.
+the closing brace.  You can also include type attributes in a
+@code{typedef} declaration.
 
 @menu
 * Common Type Attributes::
@@ -9349,9 +9354,34 @@ have to optimize it to just @code{return 42 + 42;}.
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
+@cindex C standard attributes
+@cindex C++ standard attributes
+@cindex standard attribute syntax
+@cindex GNU attribute syntax
 
-This section describes the syntax with which @code{__attribute__} may be
-used, and the constructs to which attribute specifiers bind, for the C
+GCC provides two different ways to specify attributes: the standard C
+and C++ syntax using double square brackets, and the older GNU
+extension syntax using the @code{@w{__attribute__}} keyword, which predates
+the adoption of the standard syntax and is still widely used in older
+code.
+
+The standard @samp{[[]]} attribute syntax is recognized by GCC's
+default language dialect for both C and C++.  More specifically, this
+syntax was first introduced in the C++11 language standard
+(@pxref{Standards}), and is supported by GCC in C++ code with
+@option{-std=c++11} or @option{-std=gnu++11} or later.  It is also
+part of the C2x language standard and is supported when compiling C
+code with @option{-std=c2x} or @option{-std=gnu17} or later.
+
+When using GNU-specific attributes in the standard syntax, you must
+prefix their names with @samp{gnu::}, such as @code{gnu::section}.
+Refer to the relevant language standards for exact details on the
+placement of @samp{[[]]} attributes within your code, as they differ
+in some details from the rules for the GNU attribute syntax.
+
+The remainder of this section describes the details of the GNU extension
+@code{__attribute__} syntax,
+and the constructs to which attribute specifiers bind, for the C
 language.  Some details may vary for C++ and Objective-C@.  Because of
 limitations in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
