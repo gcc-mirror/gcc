@@ -319,6 +319,9 @@
 
 (define_mode_iterator TX [TI TF TD])
 
+;; Duplicate of the above
+(define_mode_iterator TX2 [TI TF TD])
+
 (define_mode_iterator VTX [TI TF TD V16QI V8HI V4SI V2DI V8HF V4SF V2DF V8BF])
 
 ;; Advanced SIMD opaque structure modes.
