@@ -1,3 +1,7 @@
+2023-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Device Memory Routines): New.
+
 2023-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Context Selectors): Clarify 'kind' trait

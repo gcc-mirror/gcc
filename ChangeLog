@@ -1,3 +1,9 @@
+2023-10-06  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/111663
+	* Makefile.tpl (STAGEfeedback_CONFIGURE_FLAGS): Disable -Werror.
+	* Makefile.in: Regenerate.
+
 2023-10-05  Jan Engelhardt  <jengelh@inai.de>
 
 	* SECURITY.txt: Fix up indentation.

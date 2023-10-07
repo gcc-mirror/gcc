@@ -1,3 +1,91 @@
+2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_split_ashl): Split shifts by
+	one into add3_cc_overflow_1 followed by add3_carry.
+	* config/i386/i386.md (@add<mode>3_cc_overflow_1): Renamed from
+	"*add<mode>3_cc_overflow_1" to provide generator function.
+
+2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_avoid_lea_for_addr): Split LEAs used
+	to perform left shifts into shorter instructions with -Oz.
+
+2023-10-06  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.md (mvconst_internal): Add !ira_in_progress.
+
+2023-10-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes): Mention standard attribute
+	syntax.
+	(Variable Attributes): Likewise.
+	(Type Attributes): Likewise.
+	(Attribute Syntax): Likewise.
+
+2023-10-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (*mov<mode>): Convert to compact syntax.
+	(mov<mode>_exec): Likewise.
+	(mov<mode>_sgprbase): Likewise.
+	* config/gcn/gcn.md (*mov<mode>_insn): Likewise.
+	(*movti_insn): Likewise.
+
+2023-10-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (print_operand): Adjust xcode type to fix warning.
+
+2023-10-06  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111699
+	* match.pd ((c ? a : b) op d, (c ? a : b) op (c ? d : e),
+	(v ? w : 0) ? a : b, c1 ? c2 ? a : b : b): Enable only for GIMPLE.
+
+2023-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.h (ipa_bits): Remove.
+	(struct ipa_jump_func): Remove bits member.
+	(struct ipcp_transformation): Remove bits member, adjust
+	ctor and dtor.
+	(ipa_get_ipa_bits_for_value): Remove.
+	* ipa-prop.cc (struct ipa_bit_ggc_hash_traits): Remove.
+	(ipa_bits_hash_table): Remove.
+	(ipa_print_node_jump_functions_for_edge): Don't print bits.
+	(ipa_get_ipa_bits_for_value): Remove.
+	(ipa_set_jfunc_bits): Remove.
+	(ipa_compute_jump_functions_for_edge): For pointers query
+	pointer alignment before ipa_set_jfunc_vr and update_bitmask
+	in there.  For integral types, just rely on bitmask already
+	being handled in value ranges.
+	(ipa_check_create_edge_args): Don't create ipa_bits_hash_table.
+	(ipcp_transformation_initialize): Neither here.
+	(ipcp_transformation_t::duplicate): Don't copy bits vector.
+	(ipa_write_jump_function): Don't stream bits here.
+	(ipa_read_jump_function): Neither here.
+	(useful_ipcp_transformation_info_p): Don't test bits vec.
+	(write_ipcp_transformation_info): Don't stream bits here.
+	(read_ipcp_transformation_info): Neither here.
+	(ipcp_get_parm_bits): Get mask and value from m_vr rather
+	than bits.
+	(ipcp_update_bits): Remove.
+	(ipcp_update_vr): For pointers, set_ptr_info_alignment from
+	bitmask stored in value range.
+	(ipcp_transform_function): Don't test bits vector, don't call
+	ipcp_update_bits.
+	* ipa-cp.cc (propagate_bits_across_jump_function): Don't use
+	jfunc->bits, instead get mask and value from jfunc->m_vr.
+	(ipcp_store_bits_results): Remove.
+	(ipcp_store_vr_results): Incorporate parts of
+	ipcp_store_bits_results here, merge the bitmasks with value
+	range if both are supplied.
+	(ipcp_driver): Don't call ipcp_store_bits_results.
+	* ipa-sra.cc (zap_useless_ipcp_results): Remove *ts->bits
+	clearing.
+
+2023-10-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Update comments.
+
 2023-10-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa32-linux.h (MALLOC_ABI_ALIGNMENT): Delete.

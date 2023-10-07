@@ -1,3 +1,57 @@
+2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/ashldi3-2.c: New 32-bit test case.
+	* gcc.target/i386/ashlti3-3.c: New 64-bit test case.
+
+2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/lea-2.c: New test case.
+
+2023-10-06  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111699
+	* gcc.c-torture/compile/pr111699-1.c: New test.
+
+2023-10-06  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-1.h:
+	Replace stdint.h with stdint-gcc.h.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-2.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-1.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-2.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-1.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-2.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-1.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-2.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111232.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/cvt-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/cvt-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm.h: Ditto.
+	* gcc.target/riscv/rvv/base/abi-call-args-4-run.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110119-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr111255.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/wredsum_vlmax.c: Ditto.
+
 2023-10-05  Patrick O'Neill  <patrick@rivosinc.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
