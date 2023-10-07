@@ -794,7 +794,7 @@ public:
   // Unique pointer custom clone function
   std::unique_ptr<TupleStructItems> clone_tuple_struct_items () const
   {
-    return std::unique_ptr<TupleStructItems> (clone_tuple_struct_items_impl ());
+    return std::unique_ptr<TupleStructItems> (clone_tuple_items_impl ());
   }
 
   virtual std::string as_string () const = 0;
@@ -805,7 +805,7 @@ public:
 
 protected:
   // pure virtual clone implementation
-  virtual TupleStructItems *clone_tuple_struct_items_impl () const = 0;
+  virtual TupleStructItems *clone_tuple_items_impl () const = 0;
 };
 
 // Class for non-ranged tuple struct pattern patterns
@@ -857,7 +857,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TupleStructItemsNoRange *clone_tuple_struct_items_impl () const override
+  TupleStructItemsNoRange *clone_tuple_items_impl () const override
   {
     return new TupleStructItemsNoRange (*this);
   }
@@ -936,7 +936,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TupleStructItemsRange *clone_tuple_struct_items_impl () const override
+  TupleStructItemsRange *clone_tuple_items_impl () const override
   {
     return new TupleStructItemsRange (*this);
   }
@@ -1027,8 +1027,7 @@ public:
   // Unique pointer custom clone function
   std::unique_ptr<TuplePatternItems> clone_tuple_pattern_items () const
   {
-    return std::unique_ptr<TuplePatternItems> (
-      clone_tuple_pattern_items_impl ());
+    return std::unique_ptr<TuplePatternItems> (clone_tuple_items_impl ());
   }
 
   virtual std::string as_string () const = 0;
@@ -1037,7 +1036,7 @@ public:
 
 protected:
   // pure virtual clone implementation
-  virtual TuplePatternItems *clone_tuple_pattern_items_impl () const = 0;
+  virtual TuplePatternItems *clone_tuple_items_impl () const = 0;
 };
 
 // Class representing TuplePattern patterns where there are multiple patterns
@@ -1092,7 +1091,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TuplePatternItemsMultiple *clone_tuple_pattern_items_impl () const override
+  TuplePatternItemsMultiple *clone_tuple_items_impl () const override
   {
     return new TuplePatternItemsMultiple (*this);
   }
@@ -1174,7 +1173,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TuplePatternItemsRanged *clone_tuple_pattern_items_impl () const override
+  TuplePatternItemsRanged *clone_tuple_items_impl () const override
   {
     return new TuplePatternItemsRanged (*this);
   }
