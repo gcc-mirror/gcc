@@ -30,10 +30,10 @@ if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
 
-set gcc_march "rv64gcv_zfh"
+set gcc_march "rv64gcv_zfa_zfh"
 set gcc_mabi  "lp64d"
 if [istarget riscv32-*-*] then {
-  set gcc_march "rv32gcv_zfh"
+  set gcc_march "rv32gcv_zfa_zfh"
   set gcc_mabi  "ilp32d"
 }
 
