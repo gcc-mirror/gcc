@@ -2042,7 +2042,7 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	{
 	  rtx index = XEXP (base, 0);
 	  rtx fp = XEXP (base, 1);
-	  if (REGNO (fp) == VIRTUAL_STACK_VARS_REGNUM)
+	  if (REG_P (fp) && REGNO (fp) == VIRTUAL_STACK_VARS_REGNUM)
 	    {
 
 	      /* If we were given a MULT, we must fix the constant
