@@ -12418,7 +12418,7 @@ resolve_omp_target (gfc_code *code)
     return;
   gfc_code *c = code->block->next;
   if (c->op == EXEC_BLOCK)
-    c = c->next;
+    c = c->ext.block.ns->code;
   if (code->ext.omp_clauses->target_first_st_is_teams_or_meta)
     {
       if (c->op == EXEC_OMP_METADIRECTIVE)
