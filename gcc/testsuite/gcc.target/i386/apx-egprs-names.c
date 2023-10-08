@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mapxf -m64" } */
 /* { dg-final { scan-assembler "r31" } } */
 /* { dg-final { scan-assembler "r30" } } */

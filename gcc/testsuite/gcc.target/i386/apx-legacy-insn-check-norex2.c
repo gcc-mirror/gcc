@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O3 -mapxf -m64 -DDTYPE32" } */
 
 #include <immintrin.h>

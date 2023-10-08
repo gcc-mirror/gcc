@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mapxf -m64" } */
 
 typedef unsigned int u32;
