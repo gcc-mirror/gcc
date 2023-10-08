@@ -1082,8 +1082,8 @@ general_init (const char *argv0, bool init_signals)
   input_location = UNKNOWN_LOCATION;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  line_table->reallocator = realloc_for_line_map;
-  line_table->round_alloc_size = ggc_round_alloc_size;
+  line_table->m_reallocator = realloc_for_line_map;
+  line_table->m_round_alloc_size = ggc_round_alloc_size;
   line_table->default_range_bits = 5;
   init_ttree ();
 

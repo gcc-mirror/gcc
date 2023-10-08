@@ -53,8 +53,8 @@ extern unsigned num_macro_tokens_counter;
 
 line_maps::~line_maps ()
 {
-  if (location_adhoc_data_map.htab)
-    htab_delete (location_adhoc_data_map.htab);
+  if (m_location_adhoc_data_map.htab)
+    htab_delete (m_location_adhoc_data_map.htab);
 }
 
 /* Hash function for location_adhoc_data hashtable.  */
@@ -109,14 +109,14 @@ location_adhoc_data_update (void **slot_v, void *param_v)
 void
 rebuild_location_adhoc_htab (line_maps *set)
 {
-  set->location_adhoc_data_map.htab =
+  set->m_location_adhoc_data_map.htab =
       htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
-  for (auto p = set->location_adhoc_data_map.data,
-	    end = p + set->location_adhoc_data_map.curr_loc;
+  for (auto p = set->m_location_adhoc_data_map.data,
+	    end = p + set->m_location_adhoc_data_map.curr_loc;
       p != end; ++p)
     {
       const auto slot = reinterpret_cast<location_adhoc_data **>
-	(htab_find_slot (set->location_adhoc_data_map.htab, p, INSERT));
+	(htab_find_slot (set->m_location_adhoc_data_map.htab, p, INSERT));
       *slot = p;
     }
 }
@@ -125,12 +125,11 @@ rebuild_location_adhoc_htab (line_maps *set)
    Can the given LOCUS + SRC_RANGE and DATA pointer be stored compactly
    within a location_t, without needing to use an ad-hoc location.  */
 
-static bool
-can_be_stored_compactly_p (const line_maps *set,
-			   location_t locus,
-			   source_range src_range,
-			   void *data,
-			   unsigned discriminator)
+bool
+line_maps::can_be_stored_compactly_p (location_t locus,
+				      source_range src_range,
+				      void *data,
+				      unsigned discriminator) const
 {
   /* If there's an ad-hoc pointer, we can't store it directly in the
      location_t, we need the lookaside.  */
@@ -156,7 +155,7 @@ can_be_stored_compactly_p (const line_maps *set,
 
   /* All 3 locations must be within ordinary maps, typically, the same
      ordinary map.  */
-  location_t lowest_macro_loc = LINEMAPS_MACRO_LOWEST_LOCATION (set);
+  location_t lowest_macro_loc = LINEMAPS_MACRO_LOWEST_LOCATION (this);
   if (locus >= lowest_macro_loc)
     return false;
   if (src_range.m_start >= lowest_macro_loc)
@@ -171,17 +170,16 @@ can_be_stored_compactly_p (const line_maps *set,
 /* Combine LOCUS and DATA to a combined adhoc loc.  */
 
 location_t
-get_combined_adhoc_loc (line_maps *set,
-			location_t locus,
-			source_range src_range,
-			void *data,
-			unsigned discriminator)
+line_maps::get_or_create_combined_loc (location_t locus,
+				       source_range src_range,
+				       void *data,
+				       unsigned discriminator)
 {
   struct location_adhoc_data lb;
   struct location_adhoc_data **slot;
 
   if (IS_ADHOC_LOC (locus))
-    locus = get_location_from_adhoc_loc (set, locus);
+    locus = get_location_from_adhoc_loc (this, locus);
   if (locus == 0 && data == NULL)
     return 0;
 
@@ -189,22 +187,22 @@ get_combined_adhoc_loc (line_maps *set,
      compressed ranges.  */
   linemap_assert (locus < RESERVED_LOCATION_COUNT
 		  || locus >= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
-		  || locus >= LINEMAPS_MACRO_LOWEST_LOCATION (set)
-		  || pure_location_p (set, locus));
+		  || locus >= LINEMAPS_MACRO_LOWEST_LOCATION (this)
+		  || pure_location_p (locus));
 
   /* Consider short-range optimization.  */
-  if (can_be_stored_compactly_p (set, locus, src_range, data, discriminator))
+  if (can_be_stored_compactly_p (locus, src_range, data, discriminator))
     {
       /* The low bits ought to be clear.  */
-      linemap_assert (pure_location_p (set, locus));
-      const line_map *map = linemap_lookup (set, locus);
+      linemap_assert (pure_location_p (locus));
+      const line_map *map = linemap_lookup (this, locus);
       const line_map_ordinary *ordmap = linemap_check_ordinary (map);
       unsigned int int_diff = src_range.m_finish - src_range.m_start;
       unsigned int col_diff = (int_diff >> ordmap->m_range_bits);
       if (col_diff < (1U << ordmap->m_range_bits))
 	{
 	  location_t packed = locus | col_diff;
-	  set->num_optimized_ranges++;
+	  m_num_optimized_ranges++;
 	  return packed;
 	}
     }
@@ -217,47 +215,47 @@ get_combined_adhoc_loc (line_maps *set,
     return locus;
 
   if (!data && discriminator == 0)
-    set->num_unoptimized_ranges++;
+    m_num_unoptimized_ranges++;
 
   lb.locus = locus;
   lb.src_range = src_range;
   lb.data = data;
   lb.discriminator = discriminator;
   slot = (struct location_adhoc_data **)
-      htab_find_slot (set->location_adhoc_data_map.htab, &lb, INSERT);
+      htab_find_slot (m_location_adhoc_data_map.htab, &lb, INSERT);
   if (*slot == NULL)
     {
-      if (set->location_adhoc_data_map.curr_loc >=
-	  set->location_adhoc_data_map.allocated)
+      if (m_location_adhoc_data_map.curr_loc >=
+	  m_location_adhoc_data_map.allocated)
 	{
-	  const auto orig_data = set->location_adhoc_data_map.data;
+	  const auto orig_data = m_location_adhoc_data_map.data;
 	  /* Cast away extern "C" from the type of xrealloc.  */
-	  line_map_realloc reallocator = (set->reallocator
-					  ? set->reallocator
+	  line_map_realloc reallocator = (m_reallocator
+					  ? m_reallocator
 					  : (line_map_realloc) xrealloc);
 
-	  if (set->location_adhoc_data_map.allocated == 0)
-	    set->location_adhoc_data_map.allocated = 128;
+	  if (m_location_adhoc_data_map.allocated == 0)
+	    m_location_adhoc_data_map.allocated = 128;
 	  else
-	    set->location_adhoc_data_map.allocated *= 2;
-	  set->location_adhoc_data_map.data = (struct location_adhoc_data *)
-	      reallocator (set->location_adhoc_data_map.data,
-			   set->location_adhoc_data_map.allocated
+	    m_location_adhoc_data_map.allocated *= 2;
+	  m_location_adhoc_data_map.data = (struct location_adhoc_data *)
+	      reallocator (m_location_adhoc_data_map.data,
+			   m_location_adhoc_data_map.allocated
 			   * sizeof (struct location_adhoc_data));
-	  if (set->location_adhoc_data_map.allocated > 128)
+	  if (m_location_adhoc_data_map.allocated > 128)
 	    {
 	      location_adhoc_data *param[2]
-		= {orig_data, set->location_adhoc_data_map.data};
-	      htab_traverse (set->location_adhoc_data_map.htab,
+		= {orig_data, m_location_adhoc_data_map.data};
+	      htab_traverse (m_location_adhoc_data_map.htab,
 			     location_adhoc_data_update, param);
 	    }
 	}
-      *slot = set->location_adhoc_data_map.data
-	      + set->location_adhoc_data_map.curr_loc;
-      set->location_adhoc_data_map.data[set->location_adhoc_data_map.curr_loc++]
+      *slot = m_location_adhoc_data_map.data
+	      + m_location_adhoc_data_map.curr_loc;
+      m_location_adhoc_data_map.data[m_location_adhoc_data_map.curr_loc++]
 	= lb;
     }
-  return ((*slot) - set->location_adhoc_data_map.data) | 0x80000000;
+  return ((*slot) - m_location_adhoc_data_map.data) | 0x80000000;
 }
 
 /* Construct a location with caret at CARET, ranging from START to
@@ -283,11 +281,10 @@ line_maps::make_location (location_t caret, location_t start, location_t finish)
   source_range src_range;
   src_range.m_start = get_start (start);
   src_range.m_finish = get_finish (finish);
-  location_t combined_loc = COMBINE_LOCATION_DATA (this,
-						   pure_loc,
-						   src_range,
-						   NULL,
-						   0);
+  location_t combined_loc = get_or_create_combined_loc (pure_loc,
+							src_range,
+							nullptr,
+							0);
   return combined_loc;
 }
 
@@ -297,14 +294,14 @@ void *
 get_data_from_adhoc_loc (const line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].data;
+  return set->m_location_adhoc_data_map.data[loc & MAX_LOCATION_T].data;
 }
 
 unsigned
 get_discriminator_from_adhoc_loc (const line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].discriminator;
+  return set->m_location_adhoc_data_map.data[loc & MAX_LOCATION_T].discriminator;
 }
 
 /* Return the location for the adhoc loc.  */
@@ -313,16 +310,16 @@ location_t
 get_location_from_adhoc_loc (const line_maps *set, location_t loc)
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
+  return set->m_location_adhoc_data_map.data[loc & MAX_LOCATION_T].locus;
 }
 
 /* Return the source_range for adhoc location LOC.  */
 
-static source_range
-get_range_from_adhoc_loc (const line_maps *set, location_t loc)
+source_range
+line_maps::get_range_from_adhoc_loc (location_t loc) const
 {
   linemap_assert (IS_ADHOC_LOC (loc));
-  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].src_range;
+  return m_location_adhoc_data_map.data[loc & MAX_LOCATION_T].src_range;
 }
 
 /* Get the source_range of location LOC, either from the ad-hoc
@@ -332,7 +329,7 @@ source_range
 line_maps::get_range_from_loc (location_t loc) const
 {
   if (IS_ADHOC_LOC (loc))
-    return get_range_from_adhoc_loc (this, loc);
+    return get_range_from_adhoc_loc (loc);
 
   /* For ordinary maps, extract packed range.  */
   if (loc >= RESERVED_LOCATION_COUNT
@@ -433,10 +430,10 @@ linemap_init (line_maps *set,
   new (set) line_maps();
 #endif
   /* Set default reallocator (used for initial alloc too).  */
-  set->reallocator = xrealloc;
+  set->m_reallocator = xrealloc;
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
-  set->location_adhoc_data_map.htab =
+  set->m_location_adhoc_data_map.htab =
       htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
   set->builtin_location = builtin_location;
 }
@@ -502,13 +499,13 @@ line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
 	 allocator may well be larger than what we ask for.  Use this
 	 hook to find what that size is.  */
       size_t alloc_size
-	= set->round_alloc_size (num_maps_allocated * size_of_a_map);
+	= set->m_round_alloc_size (num_maps_allocated * size_of_a_map);
 
       /* Now alloc_size contains the exact memory size we would get if
 	 we have asked for the initial alloc_size amount of memory.
 	 Let's get back to the number of map that amounts to.  */
       unsigned num_maps = alloc_size / size_of_a_map;
-      buffer = set->reallocator (buffer, num_maps * size_of_a_map);
+      buffer = set->m_reallocator (buffer, num_maps * size_of_a_map);
       memset ((char *)buffer + num_maps_used * size_of_a_map, 0,
 	      (num_maps - num_maps_used) * size_of_a_map);
       if (macro_p)
@@ -783,9 +780,8 @@ linemap_enter_macro (class line_maps *set, struct cpp_hashnode *macro_node,
   map->macro = macro_node;
   map->n_tokens = num_tokens;
   map->macro_locations
-    = (location_t*) set->reallocator (NULL,
-					   2 * num_tokens
-					   * sizeof (location_t));
+    = (location_t*) set->m_reallocator (nullptr,
+					2 * num_tokens * sizeof (location_t));
   map->expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
 	  2 * num_tokens * sizeof (location_t));
@@ -2115,9 +2111,9 @@ linemap_get_statistics (const line_maps *set,
   s->macro_maps_used_size = macro_maps_used_size;
   s->duplicated_macro_maps_locations_size =
     duplicated_macro_maps_locations_size;
-  s->adhoc_table_size = (set->location_adhoc_data_map.allocated
+  s->adhoc_table_size = (set->m_location_adhoc_data_map.allocated
 			 * sizeof (struct location_adhoc_data));
-  s->adhoc_table_entries_used = set->location_adhoc_data_map.curr_loc;
+  s->adhoc_table_entries_used = set->m_location_adhoc_data_map.curr_loc;
 }
 
 

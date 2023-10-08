@@ -1231,7 +1231,8 @@ location_t
 make_location (location_t caret, source_range src_range)
 {
   location_t pure_loc = get_pure_location (caret);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL, 0);
+  return line_table->get_or_create_combined_loc (pure_loc, src_range,
+						 nullptr, 0);
 }
 
 /* An expanded_location stores the column in byte units.  This function
@@ -1313,9 +1314,9 @@ dump_line_table_statistics (void)
   fprintf (stderr, "Ad-hoc table entries used:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.adhoc_table_entries_used));
   fprintf (stderr, "optimized_ranges:                    " PRsa (5) "\n",
-	   SIZE_AMOUNT (line_table->num_optimized_ranges));
+	   SIZE_AMOUNT (line_table->m_num_optimized_ranges));
   fprintf (stderr, "unoptimized_ranges:                  " PRsa (5) "\n",
-	   SIZE_AMOUNT (line_table->num_unoptimized_ranges));
+	   SIZE_AMOUNT (line_table->m_num_unoptimized_ranges));
 
   fprintf (stderr, "\n");
 }
@@ -1917,7 +1918,8 @@ location_with_discriminator (location_t locus, int discriminator)
   if (locus == UNKNOWN_LOCATION)
     return locus;
 
-  return COMBINE_LOCATION_DATA (line_table, locus, src_range, block, discriminator);
+  return line_table->get_or_create_combined_loc (locus, src_range, block,
+						 discriminator);
 }
 
 /* Return TRUE if LOCUS represents a location with a discriminator.  */
@@ -2099,10 +2101,10 @@ line_table_test::line_table_test ()
   saved_line_table = line_table;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  gcc_assert (saved_line_table->reallocator);
-  line_table->reallocator = saved_line_table->reallocator;
-  gcc_assert (saved_line_table->round_alloc_size);
-  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  gcc_assert (saved_line_table->m_reallocator);
+  line_table->m_reallocator = saved_line_table->m_reallocator;
+  gcc_assert (saved_line_table->m_round_alloc_size);
+  line_table->m_round_alloc_size = saved_line_table->m_round_alloc_size;
   line_table->default_range_bits = 0;
 }
 
@@ -2115,10 +2117,10 @@ line_table_test::line_table_test (const line_table_case &case_)
   saved_line_table = line_table;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  gcc_assert (saved_line_table->reallocator);
-  line_table->reallocator = saved_line_table->reallocator;
-  gcc_assert (saved_line_table->round_alloc_size);
-  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  gcc_assert (saved_line_table->m_reallocator);
+  line_table->m_reallocator = saved_line_table->m_reallocator;
+  gcc_assert (saved_line_table->m_round_alloc_size);
+  line_table->m_round_alloc_size = saved_line_table->m_round_alloc_size;
   line_table->default_range_bits = case_.m_default_range_bits;
   if (case_.m_base_location)
     {

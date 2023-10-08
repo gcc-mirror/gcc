@@ -15969,7 +15969,8 @@ module_state::read_location (bytes_in &sec) const
 	range.m_finish = read_location (sec);
 	unsigned discriminator = sec.u ();
 	if (locus != loc && range.m_start != loc && range.m_finish != loc)
-	  locus = get_combined_adhoc_loc (line_table, locus, range, NULL, discriminator);
+	  locus = line_table->get_or_create_combined_loc (locus, range,
+							  nullptr, discriminator);
       }
       break;
 

@@ -14505,7 +14505,8 @@ set_block (location_t loc, tree block)
   location_t pure_loc = get_pure_location (loc);
   source_range src_range = get_range_from_loc (line_table, loc);
   unsigned discriminator = get_discriminator_from_loc (line_table, loc);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, block, discriminator);
+  return line_table->get_or_create_combined_loc (pure_loc, src_range, block,
+						 discriminator);
 }
 
 location_t
@@ -14526,11 +14527,10 @@ set_source_range (tree expr, source_range src_range)
   location_t expr_location = EXPR_LOCATION (expr);
   location_t pure_loc = get_pure_location (expr_location);
   unsigned discriminator = get_discriminator_from_loc (expr_location);
-  location_t adhoc = COMBINE_LOCATION_DATA (line_table,
-					    pure_loc,
-					    src_range,
-					    NULL,
-					    discriminator);
+  location_t adhoc = line_table->get_or_create_combined_loc (pure_loc,
+							     src_range,
+							     nullptr,
+							     discriminator);
   SET_EXPR_LOCATION (expr, adhoc);
   return adhoc;
 }

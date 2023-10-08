@@ -802,7 +802,21 @@ public:
   location_t make_location (location_t caret,
 			    location_t start,
 			    location_t finish);
-  
+
+  location_t
+  get_or_create_combined_loc (location_t locus,
+			      source_range src_range,
+			      void *data,
+			      unsigned discriminator);
+
+ private:
+  bool can_be_stored_compactly_p (location_t locus,
+				  source_range src_range,
+				  void *data,
+				  unsigned discriminator) const;
+  source_range get_range_from_adhoc_loc (location_t loc) const;
+
+ public:
   maps_info_ordinary info_ordinary;
 
   maps_info_macro info_macro;
@@ -827,13 +841,13 @@ public:
   unsigned int max_column_hint;
 
   /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
-  line_map_realloc GTY((callback)) reallocator;
+  line_map_realloc GTY((callback)) m_reallocator;
 
   /* The allocators' function used to know the actual size it
      allocated, for a certain allocation size requested.  */
-  line_map_round_alloc_size_func GTY((callback)) round_alloc_size;
+  line_map_round_alloc_size_func GTY((callback)) m_round_alloc_size;
 
-  struct location_adhoc_data_map location_adhoc_data_map;
+  struct location_adhoc_data_map m_location_adhoc_data_map;
 
   /* The special location value that is used as spelling location for
      built-in tokens.  */
@@ -842,8 +856,8 @@ public:
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
 
-  unsigned int num_optimized_ranges;
-  unsigned int num_unoptimized_ranges;
+  unsigned int m_num_optimized_ranges;
+  unsigned int m_num_unoptimized_ranges;
 };
 
 /* Returns the number of allocated maps so far. MAP_KIND shall be TRUE
@@ -1052,8 +1066,6 @@ LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
   return (line_map_macro *)LINEMAPS_LAST_ALLOCATED_MAP (set, true);
 }
 
-extern location_t get_combined_adhoc_loc (line_maps *, location_t,
-					  source_range, void *, unsigned);
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
 extern unsigned get_discriminator_from_adhoc_loc (const line_maps *, location_t);
 extern location_t get_location_from_adhoc_loc (const line_maps *,
@@ -1072,18 +1084,6 @@ pure_location_p (const line_maps *set, location_t loc);
    or ad-hoc information.  */
 
 extern location_t get_pure_location (const line_maps *set, location_t loc);
-
-/* Combine LOC and BLOCK, giving a combined adhoc location.  */
-
-inline location_t
-COMBINE_LOCATION_DATA (class line_maps *set,
-		       location_t loc,
-		       source_range src_range,
-		       void *block,
-		       unsigned discriminator)
-{
-  return get_combined_adhoc_loc (set, loc, src_range, block, discriminator);
-}
 
 extern void rebuild_location_adhoc_htab (class line_maps *);
 
