@@ -134,6 +134,7 @@ namespace recording {
     class statement;
       class extended_asm;
     class case_;
+    class memento_of_get_aligned;
   class top_level_asm;
 
   /* End of recording types. */

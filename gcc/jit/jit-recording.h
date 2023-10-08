@@ -580,6 +580,7 @@ public:
   virtual struct_ *dyn_cast_struct () { return NULL; }
   virtual vector_type *dyn_cast_vector_type () { return NULL; }
   virtual array_type *dyn_cast_array_type () { return NULL; }
+  virtual memento_of_get_aligned *dyn_cast_aligned_type () { return NULL; }
 
   /* Is it typesafe to copy to this type from rtype?  */
   virtual bool accepts_writes_from (type *rtype)
@@ -590,6 +591,14 @@ public:
 
   virtual bool is_same_type_as (type *other)
   {
+    if (is_int ()
+		 && other->is_int ()
+		 && get_size () == other->get_size ()
+		 && is_signed () == other->is_signed ())
+    {
+      /* LHS (this) is an integer of the same size and sign as rtype.  */
+      return true;
+    }
     return this == other;
   }
 
@@ -607,6 +616,7 @@ public:
   virtual type *is_volatile () { return NULL; }
   virtual type *is_restrict () { return NULL; }
   virtual type *is_const () { return NULL; }
+  virtual type *is_aligned () { return NULL; }
   virtual type *is_array () = 0;
   virtual struct_ *is_struct () { return NULL; }
   virtual bool is_union () const { return false; }
@@ -661,13 +671,6 @@ public:
 	       accept it:  */
 	    return true;
 	  }
-      } else if (is_int ()
-		 && rtype->is_int ()
-		 && get_size () == rtype->get_size ()
-		 && is_signed () == rtype->is_signed ())
-      {
-	/* LHS (this) is an integer of the same size and sign as rtype.  */
-	return true;
       }
 
     return type::accepts_writes_from (rtype);
@@ -844,10 +847,27 @@ public:
   : decorated_type (other_type),
     m_alignment_in_bytes (alignment_in_bytes) {}
 
+  bool is_same_type_as (type *other) final override
+  {
+    if (!other->is_aligned ())
+    {
+      return m_other_type->is_same_type_as (other);
+    }
+    return m_alignment_in_bytes
+	== other->dyn_cast_aligned_type ()->m_alignment_in_bytes
+	&& m_other_type->is_same_type_as (other->is_aligned ());
+  }
+
+  type *is_aligned () final override { return m_other_type; }
+
   /* Strip off the alignment, giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
 
   void replay_into (replayer *) final override;
+  memento_of_get_aligned *dyn_cast_aligned_type () final override 
+  {
+    return this;
+  }
 
   array_type *dyn_cast_array_type () final override
   {
