@@ -1,3 +1,418 @@
+2023-10-07  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add support for
+	cortex-x4 core.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi: Add command-line option for cortex-x4 core.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/constraints.md (jb): New constraint for vsib memory
+	that does not allow gpr32.
+	* config/i386/i386.md: (setcc_<mode>_sse): Replace m to jm for avx
+	alternative and set attr_gpr32 to 0.
+	(movmsk_df): Split avx/noavx alternatives and  replace "r" to "jr" for
+	avx alternative.
+	(<sse>_rcp<mode>2): Split avx/noavx alternatives and replace
+	"m/Bm" to "jm/ja" for avx alternative, set its gpr32 attr to 0.
+	(*rsqrtsf2_sse): Likewise.
+	* config/i386/mmx.md (mmx_pmovmskb): Split alternative 1 to
+	avx/noavx and assign jr/r constraint to dest.
+	* config/i386/sse.md (<sse>_movmsk<ssemodesuffix><avxsizesuffix>):
+	Split avx/noavx alternatives and replace "r" to "jr" for avx alternative.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext): Likewise.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_lt): Likewise.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_lt): Likewise.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_shift): Likewise.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_shift): Likewise.
+	(<sse2_avx2>_pmovmskb): Likewise.
+	(*<sse2_avx2>_pmovmskb_zext): Likewise.
+	(*sse2_pmovmskb_ext): Likewise.
+	(*<sse2_avx2>_pmovmskb_lt): Likewise.
+	(*<sse2_avx2>_pmovmskb_zext_lt): Likewise.
+	(*sse2_pmovmskb_ext_lt): Likewise.
+	(<sse>_rcp<mode>2): Split avx/noavx alternatives and replace
+	"m/Bm" to "jm/ja" for avx alternative, set its attr_gpr32 to 0.
+	(sse_vmrcpv4sf2): Likewise.
+	(*sse_vmrcpv4sf2): Likewise.
+	(rsqrt<mode>2): Likewise.
+	(sse_vmrsqrtv4sf2): Likewise.
+	(*sse_vmrsqrtv4sf2): Likewise.
+	(avx_h<insn>v4df3): Likewise.
+	(sse3_hsubv2df3): Likewise.
+	(avx_h<insn>v8sf3): Likewise.
+	(sse3_h<insn>v4sf3): Likewise.
+	(<sse3>_lddqu<avxsizesuffix>): Likewise.
+	(avx_cmp<mode>3): Likewise.
+	(avx_vmcmp<mode>3): Likewise.
+	(*sse2_gt<mode>3): Likewise.
+	(sse_ldmxcsr): Likewise.
+	(sse_stmxcsr): Likewise.
+	(avx_vtest<ssemodesuffix><avxsizesuffix>): Replace m to jm for
+	avx alternative and set attr_gpr32 to 0.
+	(avx2_permv2ti): Likewise.
+	(*avx_vperm2f128<mode>_full): Likewise.
+	(*avx_vperm2f128<mode>_nozero): Likewise.
+	(vec_set_lo_v32qi): Likewise.
+	(<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>): Likewise.
+	(<avx_avx2>_maskstore<ssemodesuffix><avxsi)zesuffix>: Likewise.
+	(avx_cmp<mode>3): Likewise.
+	(avx_vmcmp<mode>3): Likewise.
+	(*<sse>_maskcmp<mode>3_comm): Likewise.
+	(*avx2_gathersi<VEC_GATHER_MODE:mode>): Replace Tv to jb and set
+	attr_gpr32 to 0.
+	(*avx2_gathersi<VEC_GATHER_MODE:mode>_2): Likewise.
+	(*avx2_gatherdi<VEC_GATHER_MODE:mode>): Likewise.
+	(*avx2_gatherdi<VEC_GATHER_MODE:mode>_2): Likewise.
+	(*avx2_gatherdi<VI4F_256:mode>_3): Likewise.
+	(*avx2_gatherdi<VI4F_256:mode>_4): Likewise.
+	(avx_vbroadcastf128_<mode>): Restrict non-egpr alternative to
+	noavx512vl, set its constraint to jm and set attr_gpr32 to 0.
+	(vec_set_lo_<mode><mask_name>): Likewise.
+	(vec_set_lo_<mode><mask_name>): Likewise for SF/SI modes.
+	(vec_set_hi_<mode><mask_name>): Likewise.
+	(vec_set_hi_<mode><mask_name>): Likewise for SF/SI modes.
+	(vec_set_hi_<mode>): Likewise.
+	(vec_set_lo_<mode>): Likewise.
+	(avx2_set_hi_v32qi): Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (*movhi_internal): Split out non-gpr
+	supported pextrw with mem constraint to avx/noavx alternatives,
+	set jm and attr gpr32 0 to the noavx alternative.
+	(*mov<mode>_internal): Likewise.
+	* config/i386/mmx.md (mmx_pshufbv8qi3): Change "r/m/Bm" to
+	"jr/jm/ja" and set_attr gpr32 0 for noavx alternative.
+	(mmx_pshufbv4qi3): Likewise.
+	(*mmx_pinsrd): Likewise.
+	(*mmx_pinsrb): Likewise.
+	(*pinsrb): Likewise.
+	(mmx_pshufbv8qi3): Likewise.
+	(mmx_pshufbv4qi3): Likewise.
+	(@sse4_1_insertps_<mode>): Likewise.
+	(*mmx_pextrw): Split altrenatives and map non-EGPR
+	constraints, attr_gpr32 and attr_isa to noavx mnemonics.
+	(*movv2qi_internal): Likewise.
+	(*pextrw): Likewise.
+	(*mmx_pextrb): Likewise.
+	(*mmx_pextrb_zext): Likewise.
+	(*pextrb): Likewise.
+	(*pextrb_zext): Likewise.
+	(vec_extractv2si_1): Likewise.
+	(vec_extractv2si_1_zext): Likewise.
+	* config/i386/sse.md: (vi128_h_r): New mode attr for
+	pinsr{bw}/pextr{bw} with reg operand.
+	(*abs<mode>2): Split altrenatives and %v in mnemonics, map
+	non-EGPR constraints, gpr32 and isa attrs to noavx mnemonics.
+	(*vec_extract<mode>): Likewise.
+	(*vec_extract<mode>): Likewise for HFBF pattern.
+	(*vec_extract<PEXTR_MODE12:mode>_zext): Likewise.
+	(*vec_extractv4si_1): Likewise.
+	(*vec_extractv4si_zext): Likewise.
+	(*vec_extractv2di_1): Likewise.
+	(*vec_concatv2si_sse4_1): Likewise.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Likewise.
+	(vec_concatv2di): Likewise.
+	(*sse4_1_<code>v2qiv2di2<mask_name>_1): Likewise.
+	(ssse3_avx2>_pshufb<mode>3<mask_name>): Change "r/m/Bm" to
+	"jr/jm/ja" and set_attr gpr32 0 for noavx alternative, split
+	%v for avx/noavx alternatives if necessary.
+	(*vec_concatv2sf_sse4_1): Likewise.
+	(*sse4_1_extractps): Likewise.
+	(vec_set<mode>_0): Likewise for VI4F_128.
+	(*vec_setv4sf_sse4_1): Likewise.
+	(@sse4_1_insertps<mode>): Likewise.
+	(ssse3_pmaddubsw128): Likewise.
+	(*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>): Likewise.
+	(<sse4_1_avx2>_packusdw<mask_name>): Likewise.
+	(<ssse3_avx2>_palignr<mode>): Likewise.
+	(<vi8_sse4_1_avx2_avx512>_movntdqa): Likewise.
+	(<sse4_1_avx2>_mpsadbw): Likewise.
+	(*sse4_1_mulv2siv2di3<mask_name>): Likewise.
+	(*<sse4_1_avx2>_mul<mode>3<mask_name>): Likewise.
+	(*sse4_1_<code><mode>3<mask_name>): Likewise.
+	(*<code>v8hi3): Likewise.
+	(*<code>v16qi3): Likewise.
+	(*sse4_1_<code>v8qiv8hi2<mask_name>_1): Likewise.
+	(*sse4_1_zero_extendv8qiv8hi2_3): Likewise.
+	(*sse4_1_zero_extendv8qiv8hi2_4): Likewise.
+	(*sse4_1_<code>v4qiv4si2<mask_name>_1): Likewise.
+	(*sse4_1_<code>v4hiv4si2<mask_name>_1): Likewise.
+	(*sse4_1_zero_extendv4hiv4si2_3): Likewise.
+	(*sse4_1_zero_extendv4hiv4si2_4): Likewise.
+	(*sse4_1_<code>v2hiv2di2<mask_name>_1): Likewise.
+	(*sse4_1_<code>v2siv2di2<mask_name>_1): Likewise.
+	(*sse4_1_zero_extendv2siv2di2_3): Likewise.
+	(*sse4_1_zero_extendv2siv2di2_4): Likewise.
+	(aesdec): Likewise.
+	(aesdeclast): Likewise.
+	(aesenc): Likewise.
+	(aesenclast): Likewise.
+	(pclmulqdq): Likewise.
+	(vgf2p8affineinvqb_<mode><mask_name>): Likewise.
+	(vgf2p8affineqb_<mode><mask_name>): Likewise.
+	(vgf2p8mulb_<mode><mask_name>): Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-protos.h (x86_evex_reg_mentioned_p): New
+	prototype.
+	* config/i386/i386.cc (x86_evex_reg_mentioned_p): New
+	function.
+	* config/i386/i386.md (sse4_1_round<mode>2): Set attr gpr32 0
+	and constraint jm to all non-evex alternatives, adjust
+	alternative outputs if evex reg is mentioned.
+	* config/i386/sse.md (<sse4_1>_ptest<mode>): Set attr gpr32 0
+	and constraint jm/ja to all non-evex alternatives.
+	(ptesttf2): Likewise.
+	(<sse4_1>_round<ssemodesuffix><avxsizesuffix): Likewise.
+	(sse4_1_round<ssescalarmodesuffix>): Likewise.
+	(sse4_2_pcmpestri): Likewise.
+	(sse4_2_pcmpestrm): Likewise.
+	(sse4_2_pcmpestr_cconly): Likewise.
+	(sse4_2_pcmpistr): Likewise.
+	(sse4_2_pcmpistri): Likewise.
+	(sse4_2_pcmpistrm): Likewise.
+	(sse4_2_pcmpistr_cconly): Likewise.
+	(aesimc): Likewise.
+	(aeskeygenassist): Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3): Set
+	attr gpr32 0 and constraint jm/ja to all mem alternatives.
+	(ssse3_ph<plusminus_mnemonic>wv8hi3): Likewise.
+	(ssse3_ph<plusminus_mnemonic>wv4hi3): Likewise.
+	(avx2_ph<plusminus_mnemonic>dv8si3): Likewise.
+	(ssse3_ph<plusminus_mnemonic>dv4si3): Likewise.
+	(ssse3_ph<plusminus_mnemonic>dv2si3): Likewise.
+	(<ssse3_avx2>_psign<mode>3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+	(<sse4_1>_blend<ssemodesuffix><avxsizesuffix): Likewise.
+	(<sse4_1>_blendv<ssemodesuffix><avxsizesuffix): Likewise.
+	(*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt): Likewise.
+	(*<sse4_1>_blendv<ssefltmodesuff)ix><avxsizesuffix>_not_ltint: Likewise.
+	(<sse4_1>_dp<ssemodesuffix><avxsizesuffix>): Likewise.
+	(<sse4_1_avx2>_mpsadbw): Likewise.
+	(<sse4_1_avx2>_pblendvb): Likewise.
+	(*<sse4_1_avx2>_pblendvb_lt): Likewise.
+	(sse4_1_pblend<ssemodesuffix>): Likewise.
+	(*avx2_pblend<ssemodesuffix>): Likewise.
+	(avx2_permv2ti): Likewise.
+	(*avx_vperm2f128<mode>_nozero): Likewise.
+	(*avx2_eq<mode>3): Likewise.
+	(*sse4_1_eqv2di3): Likewise.
+	(sse4_2_gtv2di3): Likewise.
+	(avx2_gt<mode>3): Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (<xsave>): Set attr gpr32 0 and constraint
+	jm.
+	(<xsave>_rex64): Likewise.
+	(<xrstor>_rex64): Likewise.
+	(<xrstor>64): Likewise.
+	(fxsave64): Likewise.
+	(fxstore64): Likewise.
+
+2023-10-07  Hongyu Wang  <hongyu.wang@intel.com>
+	    Kong Lingling  <lingling.kong@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_get_ssemov): Check if egpr is used,
+	adjust mnemonic for vmovduq/vmovdqa.
+	* config/i386/sse.md (*<extract_type>_vinsert<shuffletype><extract_suf>_0):
+	Check if egpr is used, adjust mnemonic for vmovdqu/vmovdqa.
+	(avx_vec_concat<mode>): Likewise, and separate alternative 0 to
+	avx_noavx512f.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (map_egpr_constraints): New funciton to
+	map common constraints to EGPR prohibited constraints.
+	(ix86_md_asm_adjust): Calls map_egpr_constraints.
+	* config/i386/i386.opt: Add option mapx-inline-asm-use-gpr32.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_insn_base_reg_class): New
+	prototype.
+	(ix86_regno_ok_for_insn_base_p): Likewise.
+	(ix86_insn_index_reg_class): Likewise.
+	* config/i386/i386.cc (ix86_memory_address_use_extended_reg_class_p):
+	New helper function to scan the insn.
+	(ix86_insn_base_reg_class): New function to choose BASE_REG_CLASS.
+	(ix86_regno_ok_for_insn_base_p): Likewise for base regno.
+	(ix86_insn_index_reg_class): Likewise for INDEX_REG_CLASS.
+	* config/i386/i386.h (INSN_BASE_REG_CLASS): Define.
+	(REGNO_OK_FOR_INSN_BASE_P): Likewise.
+	(INSN_INDEX_REG_CLASS): Likewise.
+	(enum reg_class): Add INDEX_GPR16.
+	(GENERAL_GPR16_REGNO_P): Define.
+	* config/i386/i386.md (gpr32): New attribute.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/constraints.md (jr): New register constraint
+	that prohibits EGPR.
+	(jR): Constraint that force usage of EGPR.
+	(jm): New memory constraint that prohibits EGPR.
+	(ja): Likewise for Bm constraint.
+	(jb): Likewise for Tv constraint.
+	(j<): New auto-dec memory constraint that prohibits EGPR.
+	(j>): Likewise for ">" constraint.
+	(jo): Likewise for "o" constraint.
+	(jv): Likewise for "V" constraint.
+	(jp): Likewise for "p" constraint.
+	* config/i386/i386.h (enum reg_class): Add new reg class
+	GENERAL_GPR16.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-protos.h (x86_extended_rex2reg_mentioned_p):
+	New function prototype.
+	* config/i386/i386.cc (regclass_map): Add mapping for 16 new
+	general registers.
+	(debugger64_register_map): Likewise.
+	(ix86_conditional_register_usage): Clear REX2 register when APX
+	disabled.
+	(ix86_code_end): Add handling for REX2 reg.
+	(print_reg): Likewise.
+	(ix86_output_jmp_thunk_or_indirect): Likewise.
+	(ix86_output_indirect_branch_via_reg): Likewise.
+	(ix86_attr_length_vex_default): Likewise.
+	(ix86_emit_save_regs): Adjust to allow saving r31.
+	(ix86_register_priority): Set REX2 reg priority same as REX.
+	(x86_extended_reg_mentioned_p): Add check for REX2 regs.
+	(x86_extended_rex2reg_mentioned_p): New function.
+	* config/i386/i386.h (CALL_USED_REGISTERS): Add new extended
+	registers.
+	(REG_ALLOC_ORDER): Likewise.
+	(FIRST_REX2_INT_REG): Define.
+	(LAST_REX2_INT_REG): Ditto.
+	(GENERAL_REGS): Add 16 new registers.
+	(INT_SSE_REGS): Likewise.
+	(FLOAT_INT_REGS): Likewise.
+	(FLOAT_INT_SSE_REGS): Likewise.
+	(INT_MASK_REGS): Likewise.
+	(ALL_REGS):Likewise.
+	(REX2_INT_REG_P): Define.
+	(REX2_INT_REGNO_P): Ditto.
+	(GENERAL_REGNO_P): Add REX2_INT_REGNO_P.
+	(REGNO_OK_FOR_INDEX_P): Ditto.
+	(REG_OK_FOR_INDEX_NONSTRICT_P): Add new extended registers.
+	* config/i386/i386.md: Add 16 new integer general
+	registers.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/cpuinfo.h (XSTATE_APX_F): New macro.
+	(XCR_APX_F_ENABLED_MASK): Likewise.
+	(get_available_features): Detect APX_F under
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_APX_F_SET): New.
+	(OPTION_MASK_ISA2_APX_F_UNSET): Likewise.
+	(ix86_handle_option): Handle -mapxf.
+	* common/config/i386/i386-cpuinfo.h (FEATURE_APX_F): New.
+	* common/config/i386/i386-isas.h: Add entry for APX_F.
+	* config/i386/cpuid.h (bit_APX_F): New.
+	* config/i386/i386.h (bit_APX_F): (TARGET_APX_EGPR,
+	TARGET_APX_PUSH2POP2, TARGET_APX_NDD): New define.
+	* config/i386/i386-opts.h (enum apx_features): New enum.
+	* config/i386/i386-isa.def (APX_F): New DEF_PTA.
+	* config/i386/i386-options.cc (ix86_function_specific_save):
+	Save ix86_apx_features.
+	(ix86_function_specific_restore): Restore it.
+	(ix86_valid_target_attribute_inner_p): Add mapxf.
+	(ix86_option_override_internal): Set ix86_apx_features for PTA
+	and TARGET_APX_F. Also reports error when APX_F is set but not
+	having TARGET_64BIT.
+	* config/i386/i386.opt: (-mapxf): New ISA flag option.
+	(-mapx=): New enumeration option.
+	(apx_features): New enum type.
+	(apx_none): New enum value.
+	(apx_egpr): Likewise.
+	(apx_push2pop2): Likewise.
+	(apx_ndd): Likewise.
+	(apx_all): Likewise.
+	* doc/invoke.texi: Document mapxf.
+
+2023-10-07  Hongyu Wang  <hongyu.wang@intel.com>
+	    Kong Lingling  <lingling.kong@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* addresses.h (index_reg_class): New wrapper function like
+	base_reg_class.
+	* doc/tm.texi: Document INSN_INDEX_REG_CLASS.
+	* doc/tm.texi.in: Ditto.
+	* lra-constraints.cc (index_part_to_reg): Pass index_class.
+	(process_address_1): Calls index_reg_class with curr_insn and
+	replace INDEX_REG_CLASS with its return value index_cl.
+	* reload.cc (find_reloads_address): Likewise.
+	(find_reloads_address_1): Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* addresses.h (base_reg_class): Add insn argument and new macro
+	INSN_BASE_REG_CLASS.
+	(regno_ok_for_base_p_1): Add insn argument and new macro
+	REGNO_OK_FOR_INSN_BASE_P.
+	(regno_ok_for_base_p): Add insn argument and parse to ok_for_base_p_1.
+	* doc/tm.texi: Document INSN_BASE_REG_CLASS and
+	REGNO_OK_FOR_INSN_BASE_P.
+	* doc/tm.texi.in: Ditto.
+	* lra-constraints.cc (process_address_1): Pass insn to
+	base_reg_class.
+	(curr_insn_transform): Ditto.
+	* reload.cc (find_reloads): Ditto.
+	(find_reloads_address): Ditto.
+	(find_reloads_address_1): Ditto.
+	(find_reloads_subreg_address): Ditto.
+	* reload1.cc (maybe_fix_stack_asms): Ditto.
+
+2023-10-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/108338
+	* config/rs6000/rs6000.md (movsf_from_si): Update to generate mtvsrws
+	for P9.
+
+2023-10-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/108338
+	* config/rs6000/predicates.md (lowpart_subreg_operator): New
+	define_predicate.
+	* config/rs6000/rs6000.md (any_rshift): New code_iterator.
+	(movsf_from_si2): Rename to ...
+	(movsf_from_si2_<code>): ... this.
+
+2023-10-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/111634
+	* config/riscv/riscv.cc (riscv_legitimize_address): Ensure
+	object is a REG before extracting its' REGNO.
+
 2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.cc (ix86_split_ashl): Split shifts by

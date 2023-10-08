@@ -1,3 +1,89 @@
+2023-10-07  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Revert:
+	2023-10-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add zfa for building.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-run-0.c: New test.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/apx-legacy-insn-check-norex2.c: Add intrinsic
+	tests.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/apx-legacy-insn-check-norex2.c: Add
+	sse/vex intrinsic tests.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp: Add apxf check.
+	* gcc.target/i386/apx-legacy-insn-check-norex2.c: New test.
+	* gcc.target/i386/apx-legacy-insn-check-norex2-asm.c: New assembler test.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/apx-inline-gpr-norex2.c: New test.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/apx-egprs-names.c: New test.
+	* gcc.target/i386/apx-spill_to_egprs-1.c: Likewise.
+	* gcc.target/i386/apx-interrupt-1.c: Likewise.
+
+2023-10-07  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/apx-1.c: New test.
+
+2023-10-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add zfa for building.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-run-0.c: New test.
+
+2023-10-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/108338
+	* gcc.target/powerpc/pr108338.c: Updated to check mtvsrws for p9.
+
+2023-10-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/108338
+	* gcc.target/powerpc/pr108338.c: New test.
+
+2023-10-07  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Adjust assembler times.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Ditto.
+
 2023-10-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/ashldi3-2.c: New 32-bit test case.
