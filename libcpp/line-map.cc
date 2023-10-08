@@ -638,7 +638,7 @@ linemap_add (line_maps *set, enum lc_reason reason,
   map->sysp = sysp;
   map->to_file = to_file;
   map->to_line = to_line;
-  LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
+  set->info_ordinary.m_cache = LINEMAPS_ORDINARY_USED (set) - 1;
   /* Do not store range_bits here.  That's readjusted in
      linemap_line_start.  */
   map->m_range_bits = map->m_column_and_range_bits = 0;
@@ -786,7 +786,7 @@ linemap_enter_macro (class line_maps *set, struct cpp_hashnode *macro_node,
   memset (MACRO_MAP_LOCATIONS (map), 0,
 	  2 * num_tokens * sizeof (location_t));
 
-  LINEMAPS_MACRO_CACHE (set) = LINEMAPS_MACRO_USED (set) - 1;
+  set->info_macro.m_cache = LINEMAPS_MACRO_USED (set) - 1;
 
   return map;
 }
@@ -1116,7 +1116,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
   if (set ==  NULL || line < RESERVED_LOCATION_COUNT)
     return NULL;
 
-  unsigned mn = LINEMAPS_ORDINARY_CACHE (set);
+  unsigned mn = set->info_ordinary.m_cache;
   unsigned mx = LINEMAPS_ORDINARY_USED (set);
 
   const line_map_ordinary *cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
@@ -1141,7 +1141,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 	mn = md;
     }
 
-  LINEMAPS_ORDINARY_CACHE (set) = mn;
+  set->info_ordinary.m_cache = mn;
   const line_map_ordinary *result = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   linemap_assert (line >= MAP_START_LOCATION (result));
   return result;
@@ -1173,7 +1173,7 @@ linemap_macro_map_lookup (const line_maps *set, location_t line)
 unsigned
 linemap_lookup_macro_index (const line_maps *set, location_t line)
 {
-  unsigned mn = LINEMAPS_MACRO_CACHE (set);
+  unsigned mn = set->info_macro.m_cache;
   unsigned mx = LINEMAPS_MACRO_USED (set);
   const struct line_map_macro *cached = LINEMAPS_MACRO_MAP_AT (set, mn);
 
@@ -1195,7 +1195,7 @@ linemap_lookup_macro_index (const line_maps *set, location_t line)
 	mx = md;
     }
 
-  LINEMAPS_MACRO_CACHE (set) = mx;
+  set->info_macro.m_cache = mx;
   return mx;
 }
 

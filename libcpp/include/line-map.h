@@ -733,7 +733,9 @@ struct GTY(()) maps_info_ordinary {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  mutable unsigned int cache;
+  /* The index of the last ordinary map that was looked up with
+     linemap_lookup.  */
+  mutable unsigned int m_cache;
 };
 
 struct GTY(()) maps_info_macro {
@@ -748,7 +750,9 @@ struct GTY(()) maps_info_macro {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  mutable unsigned int cache;
+  /* The index of the last macro map that was looked up with
+     linemap_lookup.  */
+  mutable unsigned int m_cache;
 };
 
 /* Data structure to associate a source_range together with an arbitrary
@@ -904,18 +908,6 @@ LINEMAPS_USED (line_maps *set, bool map_kind)
     return set->info_ordinary.used;
 }
 
-/* Returns the index of the last map that was looked up with
-   linemap_lookup. MAP_KIND shall be TRUE if we are interested in
-   macro maps, FALSE otherwise.  */
-inline unsigned int &
-LINEMAPS_CACHE (const line_maps *set, bool map_kind)
-{
-  if (map_kind)
-    return set->info_macro.cache;
-  else
-    return set->info_ordinary.cache;
-}
-
 /* Return the map at a given index.  */
 inline line_map *
 LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, int index)
@@ -968,14 +960,6 @@ LINEMAPS_ORDINARY_USED (const line_maps *set)
   return LINEMAPS_USED (set, false);
 }
 
-/* Return the index of the last ordinary map that was looked up with
-   linemap_lookup.  */
-inline unsigned int &
-LINEMAPS_ORDINARY_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, false);
-}
-
 /* Returns a pointer to the last ordinary map used in the line table
    SET.  */
 inline line_map_ordinary *
@@ -1014,14 +998,6 @@ inline unsigned int
 LINEMAPS_MACRO_USED (const line_maps *set)
 {
   return LINEMAPS_USED (set, true);
-}
-
-/* Return the index of the last macro map that was looked up with
-   linemap_lookup.  */
-inline unsigned int &
-LINEMAPS_MACRO_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, true);
 }
 
 /* Returns the last macro map used in the line table SET.  */
