@@ -630,8 +630,8 @@ class boundaries
 public:
   enum class kind { HARD, SOFT};
 
-  boundaries (const region &base_reg)
-  : m_base_reg (base_reg)
+  boundaries (const region &base_reg, logger *logger)
+  : m_base_reg (base_reg), m_logger (logger)
   {
   }
 
@@ -646,6 +646,15 @@ public:
   {
     add (range.m_start, kind);
     add (range.m_next, kind);
+    if (m_logger)
+      {
+	m_logger->start_log_line ();
+	m_logger->log_partial ("added access_range: ");
+	range.dump_to_pp (m_logger->get_printer (), true);
+	m_logger->log_partial (" (%s)",
+			       (kind == kind::HARD) ? "HARD" : "soft");
+	m_logger->end_log_line ();
+      }
   }
 
   void add (const region &reg, region_model_manager *mgr, enum kind kind)
@@ -714,8 +723,30 @@ public:
     return m_all_offsets.size ();
   }
 
+  std::vector<region_offset>
+  get_hard_boundaries_in_range (byte_offset_t min_offset,
+				byte_offset_t max_offset) const
+  {
+    std::vector<region_offset> result;
+    for (auto &offset : m_hard_offsets)
+      {
+	if (!offset.concrete_p ())
+	  continue;
+	byte_offset_t byte;
+	if (!offset.get_concrete_byte_offset (&byte))
+	  continue;
+	if (byte < min_offset)
+	  continue;
+	if (byte > max_offset)
+	  continue;
+	result.push_back (offset);
+      }
+    return result;
+  }
+
 private:
   const region &m_base_reg;
+  logger *m_logger;
   std::set<region_offset> m_all_offsets;
   std::set<region_offset> m_hard_offsets;
 };
@@ -1085,7 +1116,6 @@ public:
     logger.dec_indent ();
   }
 
-private:
   int get_table_x_for_offset (region_offset offset) const
   {
     auto slot = m_table_x_for_offset.find (offset);
@@ -1097,6 +1127,7 @@ private:
     return slot->second;
   }
 
+private:
   int get_table_x_for_prev_offset (region_offset offset) const
   {
     auto slot = m_table_x_for_prev_offset.find (offset);
@@ -1132,6 +1163,124 @@ public:
 			    style_manager &sm) const = 0;
 };
 
+/* A spatial_item that involves showing an svalue at a particular offset.  */
+
+class svalue_spatial_item : public spatial_item
+{
+public:
+  enum class kind
+  {
+     WRITTEN,
+     EXISTING
+  };
+protected:
+  svalue_spatial_item (const svalue &sval,
+		       access_range bits,
+		       enum kind kind)
+  : m_sval (sval), m_bits (bits), m_kind (kind)
+  {
+  }
+
+  const svalue &m_sval;
+  access_range m_bits;
+  enum kind m_kind;
+};
+
+static std::unique_ptr<spatial_item>
+make_existing_svalue_spatial_item (const svalue *sval,
+				   const access_range &bits,
+				   const theme &theme);
+
+class compound_svalue_spatial_item : public svalue_spatial_item
+{
+public:
+  compound_svalue_spatial_item (const compound_svalue &sval,
+				const access_range &bits,
+				enum kind kind,
+				const theme &theme)
+  : svalue_spatial_item (sval, bits, kind),
+    m_compound_sval (sval)
+  {
+    const binding_map &map = m_compound_sval.get_map ();
+    auto_vec <const binding_key *> binding_keys;
+    for (auto iter : map)
+      {
+	const binding_key *key = iter.first;
+	const svalue *bound_sval = iter.second;
+	if (const concrete_binding *concrete_key
+	      = key->dyn_cast_concrete_binding ())
+	  {
+	    access_range range (nullptr,
+				concrete_key->get_bit_range ());
+	    if (std::unique_ptr<spatial_item> child
+		  = make_existing_svalue_spatial_item (bound_sval,
+						       range,
+						       theme))
+	      m_children.push_back (std::move (child));
+	  }
+      }
+  }
+
+  void add_boundaries (boundaries &out, logger *logger) const final override
+  {
+    LOG_SCOPE (logger);
+    for (auto &iter : m_children)
+      iter->add_boundaries (out, logger);
+  }
+
+  table make_table (const bit_to_table_map &btm,
+		    style_manager &sm) const final override
+  {
+    std::vector<table> child_tables;
+    int max_rows = 0;
+    for (auto &iter : m_children)
+      {
+	table child_table (iter->make_table (btm, sm));
+	max_rows = MAX (max_rows, child_table.get_size ().h);
+	child_tables.push_back (std::move (child_table));
+      }
+    table t (table::size_t (btm.get_num_columns (), max_rows));
+    for (auto &&child_table : child_tables)
+      t.add_other_table (std::move (child_table),
+			 table::coord_t (0, 0));
+    return t;
+  }
+
+private:
+  const compound_svalue &m_compound_sval;
+  std::vector<std::unique_ptr<spatial_item>> m_children;
+};
+
+/* Loop through the TABLE_X_RANGE columns of T, adding
+   cells containing "..." in any unoccupied ranges of table cell.  */
+
+static void
+add_ellipsis_to_gaps (table &t,
+		      style_manager &sm,
+		      const table::range_t &table_x_range,
+		      const table::range_t &table_y_range)
+{
+  int table_x = table_x_range.get_min ();
+  while (table_x < table_x_range.get_next ())
+    {
+      /* Find a run of unoccupied table cells.  */
+      const int start_table_x = table_x;
+      while (table_x < table_x_range.get_next ()
+	     && !t.get_placement_at (table::coord_t (table_x,
+						     table_y_range.get_min ())))
+	table_x++;
+      const table::range_t unoccupied_x_range (start_table_x, table_x);
+      if (unoccupied_x_range.get_size () > 0)
+	t.set_cell_span (table::rect_t (unoccupied_x_range, table_y_range),
+			 styled_string (sm, "..."));
+      /* Skip occupied table cells.  */
+      while (table_x < table_x_range.get_next ()
+	     && t.get_placement_at (table::coord_t (table_x,
+						    table_y_range.get_min ())))
+	table_x++;
+    }
+}
+
 /* Subclass of spatial_item for visualizing the region of memory
    that's valid to access relative to the base region of region accessed in
    the operation.  */
@@ -1140,14 +1289,23 @@ class valid_region_spatial_item : public spatial_item
 {
 public:
   valid_region_spatial_item (const access_operation &op,
-			     diagnostic_event_id_t region_creation_event_id)
+			     diagnostic_event_id_t region_creation_event_id,
+			     const theme &theme)
   : m_op (op),
-    m_region_creation_event_id (region_creation_event_id)
-  {}
+    m_region_creation_event_id (region_creation_event_id),
+    m_boundaries (nullptr),
+    m_existing_sval (op.m_model.get_store_value (op.m_base_region, nullptr)),
+    m_existing_sval_spatial_item
+      (make_existing_svalue_spatial_item (m_existing_sval,
+					  op.get_valid_bits (),
+					  theme))
+  {
+  }
 
   void add_boundaries (boundaries &out, logger *logger) const final override
   {
     LOG_SCOPE (logger);
+    m_boundaries = &out;
     access_range valid_bits = m_op.get_valid_bits ();
     if (logger)
       {
@@ -1157,6 +1315,18 @@ public:
 	logger->end_log_line ();
       }
     out.add (valid_bits, boundaries::kind::HARD);
+
+    if (m_existing_sval_spatial_item)
+      {
+	if (logger)
+	  {
+	    logger->start_log_line ();
+	    logger->log_partial ("existing svalue: ");
+	    m_existing_sval->dump_to_pp (logger->get_printer (), true);
+	    logger->end_log_line ();
+	  }
+	m_existing_sval_spatial_item->add_boundaries (out, logger);
+      }
 
     /* Support for showing first and final element in array types.  */
     if (tree base_type = m_op.m_base_region->get_type ())
@@ -1193,65 +1363,102 @@ public:
   {
     tree base_type = m_op.m_base_region->get_type ();
     gcc_assert (TREE_CODE (base_type) == ARRAY_TYPE);
+    gcc_assert (m_boundaries != nullptr);
 
     tree domain = TYPE_DOMAIN (base_type);
     if (!(TYPE_MIN_VALUE (domain) && TYPE_MAX_VALUE (domain)))
       return;
 
-    region_model_manager * const mgr = m_op.get_manager ();
     const int table_y = 0;
     const int table_h = 1;
     const table::range_t table_y_range (table_y, table_y + table_h);
 
     t.add_row ();
-    const svalue *min_idx_sval
-      = mgr->get_or_create_constant_svalue (TYPE_MIN_VALUE (domain));
-    const region *min_element = mgr->get_element_region (m_op.m_base_region,
+
+    const table::range_t min_x_range
+      = maybe_add_array_index_to_table (t, btm, sm, table_y_range,
+					TYPE_MIN_VALUE (domain));
+    const table::range_t max_x_range
+      = maybe_add_array_index_to_table (t, btm, sm, table_y_range,
+					TYPE_MAX_VALUE (domain));
+
+    if (TREE_TYPE (base_type) == char_type_node)
+      {
+	/* For a char array,: if there are any hard boundaries in
+	   m_boundaries that are *within* the valid region,
+	   then show those index values.  */
+	std::vector<region_offset> hard_boundaries
+	  = m_boundaries->get_hard_boundaries_in_range
+	      (tree_to_shwi (TYPE_MIN_VALUE (domain)),
+	       tree_to_shwi (TYPE_MAX_VALUE (domain)));
+	for (auto &offset : hard_boundaries)
+	  {
+	    const int table_x = btm.get_table_x_for_offset (offset);
+	    if (!offset.concrete_p ())
+	      continue;
+	    byte_offset_t byte;
+	    if (!offset.get_concrete_byte_offset (&byte))
+	      continue;
+	    table::range_t table_x_range (table_x, table_x + 1);
+	    t.maybe_set_cell_span (table::rect_t (table_x_range,
+						  table_y_range),
+				   fmt_styled_string (sm, "[%wi]",
+						      byte.to_shwi ()));
+	  }
+      }
+
+    add_ellipsis_to_gaps (t, sm,
+			  table::range_t (min_x_range.get_next (),
+					  max_x_range.get_min ()),
+			  table_y_range);
+  }
+
+  table::range_t
+  maybe_add_array_index_to_table (table &t,
+				  const bit_to_table_map &btm,
+				  style_manager &sm,
+				  const table::range_t table_y_range,
+				  tree idx_cst) const
+  {
+    region_model_manager * const mgr = m_op.get_manager ();
+    tree base_type = m_op.m_base_region->get_type ();
+    const svalue *idx_sval
+      = mgr->get_or_create_constant_svalue (idx_cst);
+    const region *element_reg = mgr->get_element_region (m_op.m_base_region,
 							 TREE_TYPE (base_type),
-							 min_idx_sval);
-    const access_range min_element_range (*min_element, mgr);
-    const table::range_t min_element_x_range
-      = btm.get_table_x_for_range (min_element_range);
+							 idx_sval);
+    const access_range element_range (*element_reg, mgr);
+    const table::range_t element_x_range
+      = btm.get_table_x_for_range (element_range);
 
-    t.set_cell_span (table::rect_t (min_element_x_range,
-				    table_y_range),
-		     fmt_styled_string (sm, "[%E]",
-					TYPE_MIN_VALUE (domain)));
+    t.maybe_set_cell_span (table::rect_t (element_x_range,
+					  table_y_range),
+			   fmt_styled_string (sm, "[%E]", idx_cst));
 
-    const svalue *max_idx_sval
-      = mgr->get_or_create_constant_svalue (TYPE_MAX_VALUE (domain));
-    const region *max_element = mgr->get_element_region (m_op.m_base_region,
-							 TREE_TYPE (base_type),
-							 max_idx_sval);
-    if (min_element == max_element)
-      return; // 1-element array
-
-    const access_range max_element_range (*max_element, mgr);
-    const table::range_t max_element_x_range
-      = btm.get_table_x_for_range (max_element_range);
-    t.set_cell_span (table::rect_t (max_element_x_range,
-				    table_y_range),
-		     fmt_styled_string (sm, "[%E]",
-					TYPE_MAX_VALUE (domain)));
-
-    const table::range_t other_elements_x_range (min_element_x_range.next,
-						 max_element_x_range.start);
-    if (other_elements_x_range.get_size () > 0)
-      t.set_cell_span (table::rect_t (other_elements_x_range, table_y_range),
-		       styled_string (sm, "..."));
+    return element_x_range;
   }
 
   table make_table (const bit_to_table_map &btm,
 		    style_manager &sm) const final override
   {
-    table t (table::size_t (btm.get_num_columns (), 1));
+    table t (table::size_t (btm.get_num_columns (), 0));
 
     if (tree base_type = m_op.m_base_region->get_type ())
       if (TREE_CODE (base_type) == ARRAY_TYPE)
 	add_array_elements_to_table (t, btm, sm);
 
+    /* Make use of m_existing_sval_spatial_item, if any.  */
+    if (m_existing_sval_spatial_item)
+      {
+	table table_for_existing
+	  = m_existing_sval_spatial_item->make_table (btm, sm);
+	const int table_y = t.add_rows (table_for_existing.get_size ().h);
+	t.add_other_table (std::move (table_for_existing),
+			   table::coord_t (0, table_y));
+      }
+
     access_range valid_bits = m_op.get_valid_bits ();
-    const int table_y = t.get_size ().h - 1;
+    const int table_y = t.add_row ();
     const int table_h = 1;
     table::rect_t rect = btm.get_table_rect (valid_bits, table_y, table_h);
     styled_string s;
@@ -1306,6 +1513,9 @@ public:
 private:
   const access_operation &m_op;
   diagnostic_event_id_t m_region_creation_event_id;
+  mutable const boundaries *m_boundaries;
+  const svalue *m_existing_sval;
+  std::unique_ptr<spatial_item> m_existing_sval_spatial_item;
 };
 
 /* Subclass of spatial_item for visualizing the region of memory
@@ -1362,15 +1572,10 @@ private:
    to the accessed region.
    Can be subclassed to give visualizations of specific kinds of svalue.  */
 
-class svalue_spatial_item : public spatial_item
+class written_svalue_spatial_item : public spatial_item
 {
 public:
-  static std::unique_ptr<svalue_spatial_item> make (const access_operation &op,
-						    const svalue &sval,
-						    access_range actual_bits,
-						    const theme &theme);
-
-  svalue_spatial_item (const access_operation &op,
+  written_svalue_spatial_item (const access_operation &op,
 		       const svalue &sval,
 		       access_range actual_bits)
   : m_op (op), m_sval (sval), m_actual_bits (actual_bits)
@@ -1479,15 +1684,15 @@ protected:
      └──────────────────────────────────────────────────────────────────────┘
 */
 
-class string_region_spatial_item : public svalue_spatial_item
+class string_literal_spatial_item : public svalue_spatial_item
 {
 public:
-  string_region_spatial_item (const access_operation &op,
-			      const svalue &sval,
-			      access_range actual_bits,
-			      const string_region &string_reg,
-			      const theme &theme)
-  : svalue_spatial_item (op, sval, actual_bits),
+  string_literal_spatial_item (const svalue &sval,
+			       access_range actual_bits,
+			       const string_region &string_reg,
+			       const theme &theme,
+			       enum kind kind)
+  : svalue_spatial_item (sval, actual_bits, kind),
     m_string_reg (string_reg),
     m_theme (theme),
     m_ellipsis_threshold (param_analyzer_text_art_string_ellipsis_threshold),
@@ -1501,16 +1706,18 @@ public:
   void add_boundaries (boundaries &out, logger *logger) const override
   {
     LOG_SCOPE (logger);
-    out.add (m_actual_bits, boundaries::kind::HARD);
+    out.add (m_bits, m_kind == svalue_spatial_item::kind::WRITTEN
+	     ? boundaries::kind::HARD
+	     : boundaries::kind::SOFT);
 
     tree string_cst = get_string_cst ();
     /* TREE_STRING_LENGTH is sizeof, not strlen.  */
     if (m_show_full_string)
-      out.add_all_bytes_in_range (m_actual_bits);
+      out.add_all_bytes_in_range (m_bits);
     else
       {
 	byte_range bytes (0, 0);
-	bool valid = m_actual_bits.as_concrete_byte_range (&bytes);
+	bool valid = m_bits.as_concrete_byte_range (&bytes);
 	gcc_assert (valid);
 	byte_range head_of_string (bytes.get_start_byte_offset (),
 				   m_ellipsis_head_len);
@@ -1532,11 +1739,13 @@ public:
   {
     table t (table::size_t (btm.get_num_columns (), 0));
 
-    const int byte_idx_table_y = t.add_row ();
+    const int byte_idx_table_y = (m_kind == svalue_spatial_item::kind::WRITTEN
+				  ? t.add_row ()
+				  : -1);
     const int byte_val_table_y = t.add_row ();
 
     byte_range bytes (0, 0);
-    bool valid = m_actual_bits.as_concrete_byte_range (&bytes);
+    bool valid = m_bits.as_concrete_byte_range (&bytes);
     gcc_assert (valid);
     tree string_cst = get_string_cst ();
     if (m_show_full_string)
@@ -1616,14 +1825,17 @@ public:
 			       byte_idx,
 			       byte_idx_table_y, byte_val_table_y);
 
-	/* Ellipsis (two rows high).  */
+	/* Ellipsis.  */
 	const byte_range ellipsis_bytes
 	  (m_ellipsis_head_len + bytes.get_start_byte_offset (),
 	   TREE_STRING_LENGTH (string_cst)
 	   - (m_ellipsis_head_len + m_ellipsis_tail_len));
 	const table::rect_t table_rect
-	  = btm.get_table_rect (&m_string_reg, ellipsis_bytes,
-				byte_idx_table_y, 2);
+	  = ((byte_idx_table_y != -1)
+	     ? btm.get_table_rect (&m_string_reg, ellipsis_bytes,
+				   byte_idx_table_y, 2)
+	     : btm.get_table_rect (&m_string_reg, ellipsis_bytes,
+				   byte_val_table_y, 1));
 	t.set_cell_span(table_rect, styled_string (sm, "..."));
 
 	/* Tail of string.  */
@@ -1637,12 +1849,15 @@ public:
 			       byte_idx_table_y, byte_val_table_y);
       }
 
-    const int summary_table_y = t.add_row ();
-    t.set_cell_span (btm.get_table_rect (&m_string_reg, bytes,
-					 summary_table_y, 1),
-		     fmt_styled_string (sm,
-					_("string literal (type: %qT)"),
-					TREE_TYPE (string_cst)));
+    if (m_kind == svalue_spatial_item::kind::WRITTEN)
+      {
+	const int summary_table_y = t.add_row ();
+	t.set_cell_span (btm.get_table_rect (&m_string_reg, bytes,
+					     summary_table_y, 1),
+			 fmt_styled_string (sm,
+					    _("string literal (type: %qT)"),
+					    TREE_TYPE (string_cst)));
+      }
 
     return t;
   }
@@ -1687,7 +1902,7 @@ private:
     gcc_assert (byte_idx_within_string < TREE_STRING_LENGTH (string_cst));
 
     const byte_range bytes (byte_idx_within_cluster, 1);
-    if (1) // show_byte_indices
+    if (byte_idx_table_y != -1)
       {
 	const table::rect_t idx_table_rect
 	  = btm.get_table_rect (&m_string_reg, bytes, byte_idx_table_y, 1);
@@ -1729,18 +1944,54 @@ private:
   const bool m_show_utf8;
 };
 
-std::unique_ptr<svalue_spatial_item>
-svalue_spatial_item::make (const access_operation &op,
-			   const svalue &sval,
-			   access_range actual_bits,
-			   const theme &theme)
+static std::unique_ptr<spatial_item>
+make_written_svalue_spatial_item (const access_operation &op,
+				  const svalue &sval,
+				  access_range actual_bits,
+				  const theme &theme)
 {
   if (const initial_svalue *initial_sval = sval.dyn_cast_initial_svalue ())
     if (const string_region *string_reg
 	= initial_sval->get_region ()->dyn_cast_string_region ())
-      return make_unique <string_region_spatial_item> (op, sval, actual_bits,
-						       *string_reg, theme);
-  return make_unique <svalue_spatial_item> (op, sval, actual_bits);
+      return make_unique <string_literal_spatial_item>
+	(sval, actual_bits,
+	 *string_reg, theme,
+	 svalue_spatial_item::kind::WRITTEN);
+  return make_unique <written_svalue_spatial_item> (op, sval, actual_bits);
+}
+
+static std::unique_ptr<spatial_item>
+make_existing_svalue_spatial_item (const svalue *sval,
+				   const access_range &bits,
+				   const theme &theme)
+{
+  if (!sval)
+    return nullptr;
+
+  switch (sval->get_kind ())
+    {
+    default:
+      return nullptr;
+
+    case SK_INITIAL:
+      {
+	const initial_svalue *initial_sval = (const initial_svalue *)sval;
+	if (const string_region *string_reg
+	    = initial_sval->get_region ()->dyn_cast_string_region ())
+	  return make_unique <string_literal_spatial_item>
+	    (*sval, bits,
+	     *string_reg, theme,
+	     svalue_spatial_item::kind::EXISTING);
+	return nullptr;
+      }
+
+    case SK_COMPOUND:
+      return make_unique<compound_svalue_spatial_item>
+	(*((const compound_svalue *)sval),
+	 bits,
+	 svalue_spatial_item::kind::EXISTING,
+	 theme);
+    }
 }
 
 /* Widget subclass implementing access diagrams.  */
@@ -1759,7 +2010,7 @@ public:
     m_theme (theme),
     m_logger (logger),
     m_invalid (false),
-    m_valid_region_spatial_item (op, region_creation_event_id),
+    m_valid_region_spatial_item (op, region_creation_event_id, theme),
     m_accessed_region_spatial_item (op),
     m_btm (),
     m_calc_req_size_called (false)
@@ -1800,10 +2051,11 @@ public:
     if (op.m_sval_hint)
       {
 	access_range actual_bits = m_op.get_actual_bits ();
-	m_svalue_spatial_item = svalue_spatial_item::make (m_op,
-							   *op.m_sval_hint,
-							   actual_bits,
-							   m_theme);
+	m_written_svalue_spatial_item
+	  = make_written_svalue_spatial_item (m_op,
+					      *op.m_sval_hint,
+					      actual_bits,
+					      m_theme);
       }
 
     /* Two passes:
@@ -1856,9 +2108,9 @@ public:
 	add_aligned_child_table (std::move (t_headings));
       }
 
-    if (m_svalue_spatial_item)
+    if (m_written_svalue_spatial_item)
       {
-	table t_sval (m_svalue_spatial_item->make_table (m_btm, m_sm));
+	table t_sval (m_written_svalue_spatial_item->make_table (m_btm, m_sm));
 	add_aligned_child_table (std::move (t_sval));
       }
     else
@@ -1942,12 +2194,12 @@ private:
   find_boundaries () const
   {
     std::unique_ptr<boundaries> result
-      = make_unique<boundaries> (*m_op.m_base_region);
+      = make_unique<boundaries> (*m_op.m_base_region, m_logger);
 
     m_valid_region_spatial_item.add_boundaries (*result, m_logger);
     m_accessed_region_spatial_item.add_boundaries (*result, m_logger);
-    if (m_svalue_spatial_item)
-      m_svalue_spatial_item->add_boundaries (*result, m_logger);
+    if (m_written_svalue_spatial_item)
+      m_written_svalue_spatial_item->add_boundaries (*result, m_logger);
 
     return result;
   }
@@ -2324,7 +2576,7 @@ private:
 
   valid_region_spatial_item m_valid_region_spatial_item;
   accessed_region_spatial_item m_accessed_region_spatial_item;
-  std::unique_ptr<svalue_spatial_item> m_svalue_spatial_item;
+  std::unique_ptr<spatial_item> m_written_svalue_spatial_item;
 
   std::unique_ptr<boundaries> m_boundaries;
 
