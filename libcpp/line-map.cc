@@ -738,7 +738,7 @@ linemap_module_restore (line_maps *set, unsigned lwm)
 bool
 linemap_tracks_macro_expansion_locs_p (const line_maps *set)
 {
-  return LINEMAPS_MACRO_MAPS (set) != NULL;
+  return set->info_macro.maps != nullptr;
 }
 
 /* Create a macro map.  A macro map encodes source locations of tokens
@@ -2076,7 +2076,7 @@ linemap_get_statistics (const line_maps *set,
   macro_maps_allocated_size =
     LINEMAPS_MACRO_ALLOCATED (set) * sizeof (struct line_map_macro);
 
-  for (cur_map = LINEMAPS_MACRO_MAPS (set);
+  for (cur_map = set->info_macro.maps;
        cur_map && cur_map <= LINEMAPS_LAST_MACRO_MAP (set);
        ++cur_map)
     {

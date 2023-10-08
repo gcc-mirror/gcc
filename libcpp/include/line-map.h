@@ -928,14 +928,6 @@ LINEMAPS_LAST_MAP (const line_maps *set, bool map_kind)
 			  LINEMAPS_USED (set, map_kind) - 1);
 }
 
-/* Returns a pointer to the memory region where ordinary maps are
-   allocated in the line table SET.  */
-inline line_map_ordinary *
-LINEMAPS_ORDINARY_MAPS (const line_maps *set)
-{
-  return set->info_ordinary.maps;
-}
-
 /* Returns the INDEXth ordinary map.  */
 inline line_map_ordinary *
 LINEMAPS_ORDINARY_MAP_AT (const line_maps *set, int index)
@@ -966,14 +958,6 @@ inline line_map_ordinary *
 LINEMAPS_LAST_ORDINARY_MAP (const line_maps *set)
 {
   return (line_map_ordinary *)LINEMAPS_LAST_MAP (set, false);
-}
-
-/* Returns a pointer to the beginning of the region where macro maps
-   are allocated.  */
-inline line_map_macro *
-LINEMAPS_MACRO_MAPS (const line_maps *set)
-{
-  return set->info_macro.maps;
 }
 
 /* Returns the INDEXth macro map.  */
