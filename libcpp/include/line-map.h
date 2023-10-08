@@ -936,16 +936,6 @@ LINEMAPS_LAST_MAP (const line_maps *set, bool map_kind)
 			  LINEMAPS_USED (set, map_kind) - 1);
 }
 
-/* Returns the last map that was allocated in the line table SET.
-   MAP_KIND shall be TRUE if we are interested in macro maps, FALSE
-   otherwise.*/
-inline line_map *
-LINEMAPS_LAST_ALLOCATED_MAP (const line_maps *set, bool map_kind)
-{
-  return LINEMAPS_MAP_AT (set, map_kind,
-			  LINEMAPS_ALLOCATED (set, map_kind) - 1);
-}
-
 /* Returns a pointer to the memory region where ordinary maps are
    allocated in the line table SET.  */
 inline line_map_ordinary *
@@ -992,14 +982,6 @@ inline line_map_ordinary *
 LINEMAPS_LAST_ORDINARY_MAP (const line_maps *set)
 {
   return (line_map_ordinary *)LINEMAPS_LAST_MAP (set, false);
-}
-
-/* Returns a pointer to the last ordinary map allocated the line table
-   SET.  */
-inline line_map_ordinary *
-LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP (const line_maps *set)
-{
-  return (line_map_ordinary *)LINEMAPS_LAST_ALLOCATED_MAP (set, false);
 }
 
 /* Returns a pointer to the beginning of the region where macro maps
@@ -1057,13 +1039,6 @@ LINEMAPS_MACRO_LOWEST_LOCATION (const line_maps *set)
   return LINEMAPS_MACRO_USED (set)
          ? MAP_START_LOCATION (LINEMAPS_LAST_MACRO_MAP (set))
          : MAX_LOCATION_T + 1;
-}
-
-/* Returns the last macro map allocated in the line table SET.  */
-inline line_map_macro *
-LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
-{
-  return (line_map_macro *)LINEMAPS_LAST_ALLOCATED_MAP (set, true);
 }
 
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
