@@ -1204,7 +1204,9 @@ expansion_point_location (location_t location)
 }
 
 /* Construct a location with caret at CARET, ranging from START to
-   finish e.g.
+   FINISH.
+
+   For example, consider:
 
                  11111111112
         12345678901234567890
@@ -1220,16 +1222,7 @@ expansion_point_location (location_t location)
 location_t
 make_location (location_t caret, location_t start, location_t finish)
 {
-  location_t pure_loc = get_pure_location (caret);
-  source_range src_range;
-  src_range.m_start = get_start (start);
-  src_range.m_finish = get_finish (finish);
-  location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
-						   pure_loc,
-						   src_range,
-						   NULL,
-						   0);
-  return combined_loc;
+  return line_table->make_location (caret, start, finish);
 }
 
 /* Same as above, but taking a source range rather than two locations.  */
