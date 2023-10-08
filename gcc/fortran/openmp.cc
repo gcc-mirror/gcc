@@ -11245,6 +11245,8 @@ resolve_omp_target (gfc_code *code)
   if (!code->ext.omp_clauses->contains_teams_construct)
     return;
   gfc_code *c = code->block->next;
+  if (c->op == EXEC_BLOCK)
+    c = c->ext.block.ns->code;
   if (code->ext.omp_clauses->target_first_st_is_teams
       && ((GFC_IS_TEAMS_CONSTRUCT (c->op) && c->next == NULL)
 	  || (c->op == EXEC_BLOCK
