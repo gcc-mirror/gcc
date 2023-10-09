@@ -3886,6 +3886,7 @@ Parser<ManagedTokenSource>::parse_type_param_bound ()
     case SELF_ALIAS:
     case CRATE:
     case DOLLAR_SIGN:
+    case SCOPE_RESOLUTION:
       return parse_trait_bound ();
     default:
       // don't error - assume this is fine TODO
