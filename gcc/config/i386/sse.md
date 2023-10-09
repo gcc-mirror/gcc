@@ -16842,7 +16842,7 @@
   [(set (match_operand:VI24_128 0 "register_operand" "=Yr,*x,<v_Yw>")
 	(umaxmin:VI24_128
 	  (match_operand:VI24_128 1 "vector_operand" "%0,0,<v_Yw>")
-	  (match_operand:VI24_128 2 "vector_operand" "YrBm,*xBm,<v_Yw>m")))]
+	  (match_operand:VI24_128 2 "vector_operand" "Yrja,*xja,<v_Yw>m")))]
   "TARGET_SSE4_1
    && <mask_mode512bit_condition>
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
@@ -20638,7 +20638,7 @@
 	  (match_operand:DI 1 "register_operand"
 	  "  0, 0,x ,Yv,0,Yv,0,0,v")
 	  (match_operand:DI 2 "nonimmediate_operand"
-	  " jrm,jrm,rm,rm,x,Yv,x,m,m")))]
+	  " jrjm,jrjm,rm,rm,x,Yv,x,m,m")))]
   "TARGET_SSE"
   "@
    pinsrq\t{$1, %2, %0|%0, %2, 1}
