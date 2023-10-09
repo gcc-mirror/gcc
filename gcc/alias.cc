@@ -774,7 +774,22 @@ reference_alias_ptr_type_1 (tree *t)
       && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
 	  != TYPE_MAIN_VARIANT
 	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
-    return TREE_TYPE (TREE_OPERAND (inner, 1));
+    {
+      tree alias_ptrtype = TREE_TYPE (TREE_OPERAND (inner, 1));
+      /* Unless we have the (aggregate) effective type of the access
+	 somewhere on the access path.  If we have for example
+	 (&a->elts[i])->l.len exposed by abstraction we'd see
+	 MEM <A> [(B *)a].elts[i].l.len and we can use the alias set
+	 of 'len' when typeof (MEM <A> [(B *)a].elts[i]) == B for
+	 example.  See PR111715.  */
+      tree inner = *t;
+      while (handled_component_p (inner)
+	     && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (alias_ptrtype))))
+	inner = TREE_OPERAND (inner, 0);
+      if (TREE_CODE (inner) == MEM_REF)
+	return alias_ptrtype;
+    }
 
   /* Otherwise, pick up the outermost object that we could have
      a pointer to.  */
