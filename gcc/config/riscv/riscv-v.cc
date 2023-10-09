@@ -3030,6 +3030,95 @@ shuffle_decompress_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+static bool
+shuffle_bswap_pattern (struct expand_vec_perm_d *d)
+{
+  HOST_WIDE_INT diff;
+  unsigned i, size, step;
+
+  if (!d->one_vector_p || !d->perm[0].is_constant (&diff) || !diff)
+    return false;
+
+  step = diff + 1;
+  size = step * GET_MODE_UNIT_BITSIZE (d->vmode);
+
+  switch (size)
+    {
+    case 16:
+      break;
+    case 32:
+    case 64:
+      /* We will have VEC_PERM_EXPR after rtl expand when invoking
+	 __builtin_bswap. It will generate about 9 instructions in
+	 loop as below, no matter it is bswap16, bswap32 or bswap64.
+	   .L2:
+	 1 vle16.v v4,0(a0)
+	 2 vmv.v.x v2,a7
+	 3 vand.vv v2,v6,v2
+	 4 slli    a2,a5,1
+	 5 vrgatherei16.vv v1,v4,v2
+	 6 sub     a4,a4,a5
+	 7 vse16.v v1,0(a3)
+	 8 add     a0,a0,a2
+	 9 add     a3,a3,a2
+	   bne     a4,zero,.L2
+
+	 But for bswap16 we may have a even simple code gen, which
+	 has only 7 instructions in loop as below.
+	   .L5
+	 1 vle8.v  v2,0(a5)
+	 2 addi    a5,a5,32
+	 3 vsrl.vi v4,v2,8
+	 4 vsll.vi v2,v2,8
+	 5 vor.vv  v4,v4,v2
+	 6 vse8.v  v4,0(a4)
+	 7 addi    a4,a4,32
+	   bne     a5,a6,.L5
+
+	 Unfortunately, the instructions in loop will grow to 13 and 24
+	 for bswap32 and bswap64. Thus, we will leverage vrgather (9 insn)
+	 for both the bswap64 and bswap32, but take shift and or (7 insn)
+	 for bswap16.
+       */
+    default:
+      return false;
+    }
+
+  for (i = 0; i < step; i++)
+    if (!d->perm.series_p (i, step, diff - i, step))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  machine_mode vhi_mode;
+  poly_uint64 vhi_nunits = exact_div (GET_MODE_NUNITS (d->vmode), 2);
+
+  if (!get_vector_mode (HImode, vhi_nunits).exists (&vhi_mode))
+    return false;
+
+  /* Step-1: Move op0 to src with VHI mode.  */
+  rtx src = gen_reg_rtx (vhi_mode);
+  emit_move_insn (src, gen_lowpart (vhi_mode, d->op0));
+
+  /* Step-2: Shift right 8 bits to dest.  */
+  rtx dest = expand_binop (vhi_mode, lshr_optab, src, gen_int_mode (8, Pmode),
+			   NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* Step-3: Shift left 8 bits to src.  */
+  src = expand_binop (vhi_mode, ashl_optab, src, gen_int_mode (8, Pmode),
+		      NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* Step-4: Logic Or dest and src to dest.  */
+  dest = expand_binop (vhi_mode, ior_optab, dest, src,
+		       NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* Step-5: Move src to target with VQI mode.  */
+  emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
+
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -3088,6 +3177,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_compress_patterns (d))
 	    return true;
 	  if (shuffle_decompress_patterns (d))
+	    return true;
+	  if (shuffle_bswap_pattern (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
