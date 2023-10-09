@@ -1146,10 +1146,7 @@ gori_compute::compute_operand1_range (vrange &r,
 
       // If op1 == op2, create a new trio for just this call.
       if (op1 == op2 && gimple_range_ssa_p (op1))
-	{
-	  relation_kind k = get_identity_relation (op1, op1_range);
-	  trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), k);
-	}
+	trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), VREL_EQ);
       if (!handler.calc_op1 (r, lhs, op2_range, trio))
 	return false;
     }
@@ -1225,10 +1222,7 @@ gori_compute::compute_operand2_range (vrange &r,
 
   // If op1 == op2, create a new trio for this stmt.
   if (op1 == op2 && gimple_range_ssa_p (op1))
-    {
-      relation_kind k = get_identity_relation (op1, op1_range);
-      trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), k);
-    }
+    trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), VREL_EQ);
   // Intersect with range for op2 based on lhs and op1.
   if (!handler.calc_op2 (r, lhs, op1_range, trio))
     return false;
