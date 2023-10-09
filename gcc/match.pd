@@ -1350,6 +1350,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && TYPE_PRECISION (TREE_TYPE (@0)) == 1)
   (bit_ior @0 (bit_xor @1 { build_one_cst (type); }))))
 
+/* a | ((~a) ^ b)  -->  a | (~b) (alt version of the above 2) */
+(simplify
+ (bit_ior:c @0 (bit_xor:cs @1 @2))
+ (with { bool wascmp; }
+ (if (bitwise_inverted_equal_p (@0, @1, wascmp)
+      && (!wascmp || element_precision (type) == 1))
+  (bit_ior @0 (bit_not @2)))))
+
 /* (a | b) | (a &^ b)  -->  a | b  */
 (for op (bit_and bit_xor)
  (simplify
