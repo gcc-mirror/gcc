@@ -8881,7 +8881,7 @@ proc available_vector_sizes { } {
 	lappend result 4096 2048 1024 512 256 128 64 32 16 8 4 2
     } elseif { [istarget riscv*-*-*] } {
 	if { [check_effective_target_riscv_v] } {
-	    lappend result 0 32 64 128
+	    lappend result 0 32 64 128 256 512 1024
 	}
 	lappend result 128
     } else {
