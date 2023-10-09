@@ -5279,7 +5279,7 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
       switch (GET_MODE_SIZE (mode))
 	{
 	case 64:
-	  if (TARGET_AVX512F)
+	  if (TARGET_AVX512F && TARGET_EVEX512)
 	    return 2;
 	  break;
 	case 32:
@@ -5329,9 +5329,14 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_XI:
 	case MODE_OI:
 	  if (EXT_REX_SSE_REG_P (operands[0]))
-	    return (TARGET_AVX512VL
-		    ? "vpxord\t%x0, %x0, %x0"
-		    : "vpxord\t%g0, %g0, %g0");
+	    {
+	      if (TARGET_AVX512VL)
+		return "vpxord\t%x0, %x0, %x0";
+	      else if (TARGET_EVEX512)
+		return "vpxord\t%g0, %g0, %g0";
+	      else
+		gcc_unreachable ();
+	    }
 	  return "vpxor\t%x0, %x0, %x0";
 
 	case MODE_V2DF:
@@ -5340,16 +5345,23 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  /* FALLTHRU */
 	case MODE_V8DF:
 	case MODE_V4DF:
-	  if (!EXT_REX_SSE_REG_P (operands[0]))
-	    return "vxorpd\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ)
-	    return (TARGET_AVX512VL
-		    ? "vxorpd\t%x0, %x0, %x0"
-		    : "vxorpd\t%g0, %g0, %g0");
-	  else
-	    return (TARGET_AVX512VL
-		    ? "vpxorq\t%x0, %x0, %x0"
-		    : "vpxorq\t%g0, %g0, %g0");
+	  if (EXT_REX_SSE_REG_P (operands[0]))
+	    {
+	      if (TARGET_AVX512DQ)
+		return (TARGET_AVX512VL
+			? "vxorpd\t%x0, %x0, %x0"
+			: "vxorpd\t%g0, %g0, %g0");
+	      else
+		{
+		  if (TARGET_AVX512VL)
+		    return "vpxorq\t%x0, %x0, %x0";
+		  else if (TARGET_EVEX512)
+		    return "vpxorq\t%g0, %g0, %g0";
+		  else
+		    gcc_unreachable ();
+		}
+	    }
+	  return "vxorpd\t%x0, %x0, %x0";
 
 	case MODE_V4SF:
 	  if (!EXT_REX_SSE_REG_P (operands[0]))
@@ -5357,16 +5369,23 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  /* FALLTHRU */
 	case MODE_V16SF:
 	case MODE_V8SF:
-	  if (!EXT_REX_SSE_REG_P (operands[0]))
-	    return "vxorps\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ)
-	    return (TARGET_AVX512VL
-		    ? "vxorps\t%x0, %x0, %x0"
-		    : "vxorps\t%g0, %g0, %g0");
-	  else
-	    return (TARGET_AVX512VL
-		    ? "vpxord\t%x0, %x0, %x0"
-		    : "vpxord\t%g0, %g0, %g0");
+	  if (EXT_REX_SSE_REG_P (operands[0]))
+	    {
+	      if (TARGET_AVX512DQ)
+		return (TARGET_AVX512VL
+			? "vxorps\t%x0, %x0, %x0"
+			: "vxorps\t%g0, %g0, %g0");
+	      else
+		{
+		  if (TARGET_AVX512VL)
+		    return "vpxord\t%x0, %x0, %x0";
+		  else if (TARGET_EVEX512)
+		    return "vpxord\t%g0, %g0, %g0";
+		  else
+		    gcc_unreachable ();
+		}
+	    }
+	  return "vxorps\t%x0, %x0, %x0";
 
 	default:
 	  gcc_unreachable ();
@@ -5384,7 +5403,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_XI:
 	case MODE_V8DF:
 	case MODE_V16SF:
-	  gcc_assert (TARGET_AVX512F);
+	  gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
 	  return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 
 	case MODE_OI:
@@ -5396,14 +5415,18 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_V2DF:
 	case MODE_V4SF:
 	  gcc_assert (TARGET_SSE2);
-	  if (!EXT_REX_SSE_REG_P (operands[0]))
-	    return (TARGET_AVX
-		    ? "vpcmpeqd\t%0, %0, %0"
-		    : "pcmpeqd\t%0, %0");
-	  else if (TARGET_AVX512VL)
-	    return "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}";
-	  else
-	    return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
+	  if (EXT_REX_SSE_REG_P (operands[0]))
+	    {
+	      if (TARGET_AVX512VL)
+		return "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}";
+	      else if (TARGET_EVEX512)
+		return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
+	      else
+		gcc_unreachable ();
+	    }
+	  return (TARGET_AVX
+		  ? "vpcmpeqd\t%0, %0, %0"
+		  : "pcmpeqd\t%0, %0");
 
 	default:
 	  gcc_unreachable ();
@@ -5413,7 +5436,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
     {
       if (GET_MODE_SIZE (mode) == 64)
 	{
-	  gcc_assert (TARGET_AVX512F);
+	  gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
 	  return "vpcmpeqd\t%t0, %t0, %t0";
 	}
       else if (GET_MODE_SIZE (mode) == 32)
@@ -5425,7 +5448,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
     }
   else if (vector_all_ones_zero_extend_quarter_operand (x, mode))
     {
-      gcc_assert (TARGET_AVX512F);
+      gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
       return "vpcmpeqd\t%x0, %x0, %x0";
     }
 
@@ -5533,6 +5556,8 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 	  || memory_operand (operands[1], mode))
 	gcc_unreachable ();
       size = 64;
+      /* We need TARGET_EVEX512 to move into zmm register.  */
+      gcc_assert (TARGET_EVEX512);
       switch (type)
 	{
 	case opcode_int:
@@ -10780,7 +10805,7 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	case E_OImode:
 	case E_XImode:
 	  if (!standard_sse_constant_p (x, mode)
-	      && GET_MODE_SIZE (TARGET_AVX512F
+	      && GET_MODE_SIZE (TARGET_AVX512F && TARGET_EVEX512
 				? XImode
 				: (TARGET_AVX
 				   ? OImode
@@ -19355,8 +19380,12 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
 {
   bool si;
   enum ix86_builtins code;
+  const machine_mode mode = TYPE_MODE (TREE_TYPE (vectype));
 
   if (!TARGET_AVX512F)
+    return NULL_TREE;
+
+  if (!TARGET_EVEX512 && GET_MODE_SIZE (mode) == 64)
     return NULL_TREE;
 
   if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 2u)

@@ -3943,7 +3943,7 @@ ix86_valid_mask_cmp_mode (machine_mode mode)
   if ((inner_mode == QImode || inner_mode == HImode) && !TARGET_AVX512BW)
     return false;
 
-  return vector_size == 64 || TARGET_AVX512VL;
+  return (vector_size == 64 && TARGET_EVEX512) || TARGET_AVX512VL;
 }
 
 /* Return true if integer mask comparison should be used.  */
@@ -4773,7 +4773,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      && GET_MODE_SIZE (GET_MODE_INNER (mode)) >= 4
 	      /* Don't do it if not using integer masks and we'd end up with
 		 the right values in the registers though.  */
-	      && (GET_MODE_SIZE (mode) == 64
+	      && ((GET_MODE_SIZE (mode) == 64 && TARGET_EVEX512)
 		  || !vector_all_ones_operand (optrue, data_mode)
 		  || opfalse != CONST0_RTX (data_mode))))
 	{
@@ -15689,6 +15689,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
   bool use_vector_set = false;
   rtx (*gen_vec_set_0) (rtx, rtx, rtx) = NULL;
 
+  if (GET_MODE_SIZE (mode) == 64 && !TARGET_EVEX512)
+    return false;
+
   switch (mode)
     {
     case E_V2DImode:
@@ -18309,7 +18312,7 @@ ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 
   unsigned vector_size = GET_MODE_SIZE (mode);
   if (TARGET_FMA
-      || (TARGET_AVX512F && vector_size == 64)
+      || (TARGET_AVX512F && TARGET_EVEX512 && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     emit_insn (gen_rtx_SET (e2,
 			    gen_rtx_FMA (mode, e0, x0, mthree)));
@@ -23025,6 +23028,9 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;
   bool two_args;
+
+  if (GET_MODE_SIZE (vmode) == 64 && !TARGET_EVEX512)
+    return false;
 
   /* For HF mode vector, convert it to HI using subreg.  */
   if (GET_MODE_INNER (vmode) == HFmode)
