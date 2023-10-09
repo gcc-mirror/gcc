@@ -124,6 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_SHA512_SET OPTION_MASK_ISA2_SHA512
 #define OPTION_MASK_ISA2_SM4_SET OPTION_MASK_ISA2_SM4
 #define OPTION_MASK_ISA2_APX_F_SET OPTION_MASK_ISA2_APX_F
+#define OPTION_MASK_ISA2_EVEX512_SET OPTION_MASK_ISA2_EVEX512
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -311,6 +312,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_SHA512_UNSET OPTION_MASK_ISA2_SHA512
 #define OPTION_MASK_ISA2_SM4_UNSET OPTION_MASK_ISA2_SM4
 #define OPTION_MASK_ISA2_APX_F_UNSET OPTION_MASK_ISA2_APX_F
+#define OPTION_MASK_ISA2_EVEX512_UNSET OPTION_MASK_ISA2_EVEX512
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1355,6 +1357,19 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_APX_F_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_APX_F_UNSET;
 	  opts->x_ix86_apx_features = apx_none;
+	}
+      return true;
+
+    case OPT_mevex512:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_EVEX512_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_EVEX512_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_EVEX512_UNSET;
 	}
       return true;
 

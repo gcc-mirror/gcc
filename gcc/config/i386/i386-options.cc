@@ -250,7 +250,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mavxvnniint16",	OPTION_MASK_ISA2_AVXVNNIINT16 },
   { "-msm3",		OPTION_MASK_ISA2_SM3 },
   { "-msha512",		OPTION_MASK_ISA2_SHA512 },
-  { "-msm4",            OPTION_MASK_ISA2_SM4 }
+  { "-msm4",            OPTION_MASK_ISA2_SM4 },
+  { "-mevex512",        OPTION_MASK_ISA2_EVEX512 }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1112,6 +1113,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("sha512", OPT_msha512),
     IX86_ATTR_ISA ("sm4", OPT_msm4),
     IX86_ATTR_ISA ("apxf", OPT_mapxf),
+    IX86_ATTR_ISA ("evex512", OPT_mevex512),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2576,6 +2578,21 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_isa_flags
       &= ~((OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_BMI2 | OPTION_MASK_ISA_TBM)
 	   & ~opts->x_ix86_isa_flags_explicit);
+
+  /* Set EVEX512 target if it is not explicitly set
+     when AVX512 is enabled.  */
+  if (TARGET_AVX512F_P(opts->x_ix86_isa_flags)
+      && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512))
+    opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512;
+
+  /* Disable AVX512{PF,ER,4VNNIW,4FAMPS} for -mno-evex512.  */
+  if (!TARGET_EVEX512_P(opts->x_ix86_isa_flags2))
+    {
+      opts->x_ix86_isa_flags
+	&= ~(OPTION_MASK_ISA_AVX512PF | OPTION_MASK_ISA_AVX512ER);
+      opts->x_ix86_isa_flags2
+	&= ~(OPTION_MASK_ISA2_AVX5124FMAPS | OPTION_MASK_ISA2_AVX5124VNNIW);
+    }
 
   /* Validate -mpreferred-stack-boundary= value or default it to
      PREFERRED_STACK_BOUNDARY_DEFAULT.  */

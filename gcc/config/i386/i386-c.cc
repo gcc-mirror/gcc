@@ -546,7 +546,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
   if (isa_flag & OPTION_MASK_ISA_AVX512BW)
     def_or_undef (parse_in, "__AVX512BW__");
   if (isa_flag & OPTION_MASK_ISA_AVX512VL)
-    def_or_undef (parse_in, "__AVX512VL__");
+    {
+      def_or_undef (parse_in, "__AVX512VL__");
+      def_or_undef (parse_in, "__EVEX256__");
+    }
   if (isa_flag & OPTION_MASK_ISA_AVX512VBMI)
     def_or_undef (parse_in, "__AVX512VBMI__");
   if (isa_flag & OPTION_MASK_ISA_AVX512IFMA)
@@ -707,6 +710,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SHA512__");
   if (isa_flag2 & OPTION_MASK_ISA2_SM4)
     def_or_undef (parse_in, "__SM4__");
+  if (isa_flag2 & OPTION_MASK_ISA2_EVEX512)
+    def_or_undef (parse_in, "__EVEX512__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
