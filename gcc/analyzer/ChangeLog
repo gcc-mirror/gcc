@@ -1,3 +1,55 @@
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111155
+	* access-diagram.cc (boundaries::boundaries): Add logger param
+	(boundaries::add): Add logging.
+	(boundaries::get_hard_boundaries_in_range): New.
+	(boundaries::m_logger): New field.
+	(boundaries::get_table_x_for_offset): Make public.
+	(class svalue_spatial_item): New.
+	(class compound_svalue_spatial_item): New.
+	(add_ellipsis_to_gaps): New.
+	(valid_region_spatial_item::valid_region_spatial_item): Add theme
+	param.  Initialize m_boundaries, m_existing_sval, and
+	m_existing_sval_spatial_item.
+	(valid_region_spatial_item::add_boundaries): Set m_boundaries.
+	Add boundaries for any m_existing_sval_spatial_item.
+	(valid_region_spatial_item::add_array_elements_to_table): Rewrite
+	creation of min/max index in terms of
+	maybe_add_array_index_to_table.  Rewrite ellipsis code using
+	add_ellipsis_to_gaps. Add index values for any hard boundaries
+	within the valid region.
+	(valid_region_spatial_item::maybe_add_array_index_to_table): New,
+	based on code formerly in add_array_elements_to_table.
+	(valid_region_spatial_item::make_table): Make use of
+	m_existing_sval_spatial_item, if any.
+	(valid_region_spatial_item::m_boundaries): New field.
+	(valid_region_spatial_item::m_existing_sval): New field.
+	(valid_region_spatial_item::m_existing_sval_spatial_item): New
+	field.
+	(class svalue_spatial_item): Rename to...
+	(class written_svalue_spatial_item): ...this.
+	(class string_region_spatial_item): Rename to..
+	(class string_literal_spatial_item): ...this.  Add "kind".
+	(string_literal_spatial_item::add_boundaries): Use m_kind to
+	determine kind of boundary.  Update for renaming of m_actual_bits
+	to m_bits.
+	(string_literal_spatial_item::make_table): Likewise.  Support not
+	displaying a row for byte indexes, and not displaying a row for
+	the type.
+	(string_literal_spatial_item::add_column_for_byte): Make byte index
+	row optional.
+	(svalue_spatial_item::make): Convert to...
+	(make_written_svalue_spatial_item): ...this.
+	(make_existing_svalue_spatial_item): New.
+	(access_diagram_impl::access_diagram_impl): Pass theme to
+	m_valid_region_spatial_item ctor.  Update for renaming of
+	m_svalue_spatial_item.
+	(access_diagram_impl::find_boundaries): Pass logger to boundaries.
+	Update for renaming of...
+	(access_diagram_impl::m_svalue_spatial_item): Rename to...
+	(access_diagram_impl::m_written_svalue_spatial_item): ...this.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer-logging.cc (logger::log_va_partial): Use text_info

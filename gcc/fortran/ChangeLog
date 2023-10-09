@@ -1,3 +1,11 @@
+2023-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (parse_omp_structured_block): Make the user code end
+	up inside of BLOCK construct for strictly structured blocks;
+	fix fallout for 'section' and 'teams'.
+	* openmp.cc (resolve_omp_target): Fix changed BLOCK handling
+	for teams in target checking.
+
 2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37336

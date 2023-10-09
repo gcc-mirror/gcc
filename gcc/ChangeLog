@@ -1,3 +1,103 @@
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111155
+	* text-art/table.cc (table::maybe_set_cell_span): New.
+	(table::add_other_table): New.
+	* text-art/table.h (class table::cell_placement): Add class table
+	as a friend.
+	(table::add_rows): New.
+	(table::add_row): Reimplement in terms of add_rows.
+	(table::maybe_set_cell_span): New decl.
+	(table::add_other_table): New decl.
+	* text-art/types.h (operator+): New operator for rect + coord.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* genmatch.cc (main): Update for "m_" prefix of some fields of
+	line_maps.
+	* input.cc (make_location): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(dump_line_table_statistics): Update for "m_" prefix of some
+	fields of line_maps.
+	(location_with_discriminator): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(line_table_test::line_table_test): Update for "m_" prefix of some
+	fields of line_maps.
+	* toplev.cc (general_init): Likewise.
+	* tree.cc (set_block): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(set_source_range): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.cc (make_location): Move implementation to
+	line_maps::make_location.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/111700
+	* input.cc (file_cache::add_file): Update leading comment to
+	clarify that it can fail.
+	(file_cache::lookup_or_add_file): Likewise.
+	(file_cache::get_source_file_content): Gracefully handle
+	lookup_or_add_file failing.
+
+2023-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_build_const_vector): Handle V2HF
+	and V4HFmode.
+	(ix86_build_signbit_mask): Ditto.
+	* config/i386/mmx.md (mmxintvecmode): Ditto.
+	(<code><mode>2): New define_expand.
+	(*mmx_<code><mode>): New define_insn_and_split.
+	(*mmx_nabs<mode>2): Ditto.
+	(*mmx_andnot<mode>3): New define_insn.
+	(<code><mode>3): Ditto.
+	(copysign<mode>3): New define_expand.
+	(xorsign<mode>3): Ditto.
+	(signbit<mode>2): Ditto.
+
+2023-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (VHF_32_64): New mode iterator.
+	(<insn><mode>3): New define_expand, merged from ..
+	(<insn>v4hf3): .. this and
+	(<insn>v2hf3): .. this.
+	(movd_v2hf_to_sse_reg): New define_expand, splitted from ..
+	(movd_v2hf_to_sse): .. this.
+	(<code><mode>3): New define_expand.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (can_be_built_by_li_and_rldic): New function.
+	(rs6000_emit_set_long_const): Call can_be_built_by_li_and_rldic.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (can_be_built_by_li_lis_and_rldicl): New
+	function.
+	(can_be_built_by_li_lis_and_rldicr): New function.
+	(rs6000_emit_set_long_const): Call can_be_built_by_li_lis_and_rldicr and
+	can_be_built_by_li_lis_and_rldicl.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (can_be_rotated_to_negative_lis): New
+	function.
+	(can_be_built_by_li_and_rotldi): Rename to ...
+	(can_be_built_by_li_lis_and_rotldi): ... this function.
+	(rs6000_emit_set_long_const): Call can_be_built_by_li_lis_and_rotldi.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (can_be_built_by_li_and_rotldi): New function.
+	(rs6000_emit_set_long_const): Call can_be_built_by_li_and_rotldi.
+
+2023-10-08  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* config/riscv/linux.h: Pass the static-pie specific options to
+	the linker.
+
 2023-10-07  Saurabh Jha  <saurabh.jha@arm.com>
 
 	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add support for

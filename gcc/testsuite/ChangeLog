@@ -1,3 +1,92 @@
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111155
+	* c-c++-common/analyzer/out-of-bounds-diagram-strcat-2.c: New test.
+	* c-c++-common/analyzer/out-of-bounds-diagram-strcat.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-17.c: Update expected
+	result to show the existing content of "buf" and the index at
+	which the write starts.
+	* gcc.dg/analyzer/out-of-bounds-diagram-18.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-diagram-19.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-diagram-6.c: Update expected
+	output.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/111700
+	* c-c++-common/diagnostic-format-sarif-file-pr111700.c: New test.
+
+2023-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-absneghf.c: New test.
+	* gcc.target/i386/part-vect-copysignhf.c: New test.
+	* gcc.target/i386/part-vect-xorsignhf.c: New test.
+
+2023-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-vminmaxph-1.c: New test.
+	* gcc.target/i386/avx512fp16-64-32-vecop-1.c: Scan-assembler
+	only for { target { ! ia32 } }.
+
+2023-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/block_17.f90: New test.
+	* gfortran.dg/gomp/strictly-structured-block-5.f90: New test.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const-build.c: Add more tests.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const-build.c: Add more tests.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const-build.c: Add more tests.
+
+2023-10-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const-build.c: New test.
+
+2023-10-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-egprs-names.c: Compile for non-ia32.
+	* gcc.target/i386/apx-inline-gpr-norex2.c: Likewise.
+	* gcc.target/i386/apx-interrupt-1.c: Likewise.
+	* gcc.target/i386/apx-legacy-insn-check-norex2-asm.c: Likewise.
+	* gcc.target/i386/apx-legacy-insn-check-norex2.c: Likewise.
+
+2023-10-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s1115.c: Fix TSVC XPASS.
+	* gcc.dg/vect/tsvc/vect-tsvc-s114.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1161.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1232.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s124.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1279.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s161.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s253.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s257.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s271.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2711.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2712.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s272.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s273.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s274.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s276.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s278.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s279.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3111.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s353.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s441.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-s443.c: Ditto.
+	* gcc.dg/vect/tsvc/vect-tsvc-vif.c: Ditto.
+
+2023-10-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Enable more vect tests for RVV.
+
 2023-10-07  Lehua Ding  <lehua.ding@rivai.ai>
 
 	Revert:
