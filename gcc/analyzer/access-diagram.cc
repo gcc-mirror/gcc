@@ -652,7 +652,8 @@ public:
 	m_logger->log_partial ("added access_range: ");
 	range.dump_to_pp (m_logger->get_printer (), true);
 	m_logger->log_partial (" (%s)",
-			       (kind == kind::HARD) ? "HARD" : "soft");
+			       (kind == boundaries::kind::HARD)
+			       ? "HARD" : "soft");
 	m_logger->end_log_line ();
       }
   }
