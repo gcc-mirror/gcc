@@ -784,83 +784,103 @@ ix86_init_mmx_sse_builtins (void)
 		    IX86_BUILTIN_GATHERALTDIV8SI);
 
   /* AVX512F */
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv16sf",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv16sf",
 		    V16SF_FTYPE_V16SF_PCVOID_V16SI_HI_INT,
 		    IX86_BUILTIN_GATHER3SIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv8df",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv8df",
 		    V8DF_FTYPE_V8DF_PCVOID_V8SI_QI_INT,
 		    IX86_BUILTIN_GATHER3SIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv16sf",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv16sf",
 		    V8SF_FTYPE_V8SF_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv8df",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv8df",
 		    V8DF_FTYPE_V8DF_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv16si",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv16si",
 		    V16SI_FTYPE_V16SI_PCVOID_V16SI_HI_INT,
 		    IX86_BUILTIN_GATHER3SIV16SI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv8di",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv8di",
 		    V8DI_FTYPE_V8DI_PCVOID_V8SI_QI_INT,
 		    IX86_BUILTIN_GATHER3SIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv16si",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv16si",
 		    V8SI_FTYPE_V8SI_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV16SI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv8di",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv8di",
 		    V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altsiv8df ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altsiv8df ",
 		    V8DF_FTYPE_V8DF_PCDOUBLE_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altdiv16sf ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altdiv16sf ",
 		    V16SF_FTYPE_V16SF_PCFLOAT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altsiv8di ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altsiv8di ",
 		    V8DI_FTYPE_V8DI_PCINT64_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altdiv16si ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altdiv16si ",
 		    V16SI_FTYPE_V16SI_PCINT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv16sf",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv16sf",
 	       VOID_FTYPE_PVOID_HI_V16SI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERSIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv8df",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv8df",
 	       VOID_FTYPE_PVOID_QI_V8SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv16sf",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv16sf",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8SF_INT,
 	       IX86_BUILTIN_SCATTERDIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv8df",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv8df",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERDIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv16si",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv16si",
 	       VOID_FTYPE_PVOID_HI_V16SI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERSIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv8di",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv8di",
 	       VOID_FTYPE_PVOID_QI_V8SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv16si",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv16si",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8SI_INT,
 	       IX86_BUILTIN_SCATTERDIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv8di",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv8di",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERDIV8DI);
 
@@ -1009,19 +1029,23 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PVOID_QI_V2DI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERDIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltsiv8df ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltsiv8df ",
 	       VOID_FTYPE_PDOUBLE_QI_V16SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltdiv16sf ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltdiv16sf ",
 	       VOID_FTYPE_PFLOAT_HI_V8DI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltsiv8di ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltsiv8di ",
 	       VOID_FTYPE_PLONGLONG_QI_V16SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltdiv16si ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltdiv16si ",
 	       VOID_FTYPE_PINT_HI_V8DI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SI);
 
