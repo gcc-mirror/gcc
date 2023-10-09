@@ -611,6 +611,7 @@ ix86_broadcast_from_constant (machine_mode mode, rtx op)
      avx512 embed broadcast is available.  */
   if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT
       && (!TARGET_AVX512F
+	  || (GET_MODE_SIZE (mode) == 64 && !TARGET_EVEX512)
 	  || (GET_MODE_SIZE (mode) < 64 && !TARGET_AVX512VL)))
     return nullptr;
 

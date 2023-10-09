@@ -774,7 +774,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    TARGET_ABSOLUTE_BIGGEST_ALIGNMENT.  */
 
 #define BIGGEST_ALIGNMENT \
-  (TARGET_IAMCU ? 32 : (TARGET_AVX512F ? 512 : (TARGET_AVX ? 256 : 128)))
+  (TARGET_IAMCU ? 32 : ((TARGET_AVX512F && TARGET_EVEX512) \
+			? 512 : (TARGET_AVX ? 256 : 128)))
 
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
@@ -1848,7 +1849,7 @@ typedef struct ix86_args {
    MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
 #define MOVE_MAX \
-  ((TARGET_AVX512F \
+  ((TARGET_AVX512F && TARGET_EVEX512\
     && (ix86_move_max == PVW_AVX512 \
 	|| ix86_store_max == PVW_AVX512)) \
    ? 64 \
@@ -1867,7 +1868,7 @@ typedef struct ix86_args {
    store_by_pieces of 16/32/64 bytes.  */
 #define STORE_MAX_PIECES \
   (TARGET_INTER_UNIT_MOVES_TO_VEC \
-   ? ((TARGET_AVX512F && ix86_store_max == PVW_AVX512) \
+   ? ((TARGET_AVX512F && TARGET_EVEX512 && ix86_store_max == PVW_AVX512) \
       ? 64 \
       : ((TARGET_AVX \
 	  && ix86_store_max >= PVW_AVX256) \
