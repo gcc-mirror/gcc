@@ -91,6 +91,9 @@ inline bool relation_equiv_p (relation_kind r)
 
 void print_relation (FILE *f, relation_kind rel);
 
+// Adjust range as an equivalence.
+void adjust_equivalence_range (vrange &range);
+
 class relation_oracle
 {
 public:
