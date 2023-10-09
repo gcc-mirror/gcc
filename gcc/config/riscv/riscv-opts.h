@@ -116,4 +116,7 @@ enum riscv_entity
 #define TARGET_VECTOR_VLS                                                      \
   (TARGET_VECTOR && riscv_autovec_preference == RVV_SCALABLE)
 
+/* TODO: Enable RVV movmisalign by default for now.  */
+#define TARGET_VECTOR_MISALIGN_SUPPORTED 1
+
 #endif /* ! GCC_RISCV_OPTS_H */

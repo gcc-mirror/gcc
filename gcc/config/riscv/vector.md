@@ -1326,6 +1326,19 @@
   }
 )
 
+;; According to RVV ISA:
+;; If an element accessed by a vector memory instruction is not naturally aligned to the size of the element,
+;; either the element is transferred successfully or an address misaligned exception is raised on that element.
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:V 0 "nonimmediate_operand")
+	(match_operand:V 1 "general_operand"))]
+  "TARGET_VECTOR && TARGET_VECTOR_MISALIGN_SUPPORTED"
+  {
+    emit_move_insn (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 ;; -----------------------------------------------------------------
 ;; ---- Duplicate Operations
 ;; -----------------------------------------------------------------

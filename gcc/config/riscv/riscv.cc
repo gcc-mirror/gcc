@@ -9021,18 +9021,7 @@ riscv_support_vector_misalignment (machine_mode mode,
 				   int misalignment,
 				   bool is_packed ATTRIBUTE_UNUSED)
 {
-  /* Only enable misalign data movements for VLS modes.  */
-  if (TARGET_VECTOR_VLS && STRICT_ALIGNMENT)
-    {
-      /* Return if movmisalign pattern is not supported for this mode.  */
-      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
-	return false;
-
-      /* Misalignment factor is unknown at compile time.  */
-      if (misalignment == -1)
-	return false;
-    }
-  /* Disable movmisalign for VLA auto-vectorization.  */
+  /* Depend on movmisalign pattern.  */
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
 }
