@@ -30,7 +30,7 @@
 
 #ifndef __AVX5124VNNIW__
 #pragma GCC push_options
-#pragma GCC target("avx5124vnniw")
+#pragma GCC target("avx5124vnniw,evex512")
 #define __DISABLE_AVX5124VNNIW__
 #endif /* __AVX5124VNNIW__ */
 
