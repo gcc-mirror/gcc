@@ -20470,8 +20470,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	return MASK_PAIR_REGNO_P(regno);
 
       return ((TARGET_AVX512F && VALID_MASK_REG_MODE (mode))
-	      || (TARGET_AVX512BW
-		  && VALID_MASK_AVX512BW_MODE (mode)));
+	      || (TARGET_AVX512BW && mode == SImode)
+	      || (TARGET_AVX512BW && TARGET_EVEX512 && mode == DImode));
     }
 
   if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)

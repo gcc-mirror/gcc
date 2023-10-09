@@ -15638,6 +15638,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
     case E_V32HFmode:
     case E_V32BFmode:
     case E_V64QImode:
+      gcc_assert (TARGET_EVEX512);
       if (TARGET_AVX512BW)
 	return ix86_vector_duplicate_value (mode, target, val);
       else
@@ -23533,7 +23534,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   bool uns_p = code != ASHIFTRT;
 
   if ((qimode == V16QImode && !TARGET_AVX2)
-      || (qimode == V32QImode && !TARGET_AVX512BW)
+      || (qimode == V32QImode && (!TARGET_AVX512BW || !TARGET_EVEX512))
       /* There are no V64HImode instructions.  */
       || qimode == V64QImode)
      return false;
