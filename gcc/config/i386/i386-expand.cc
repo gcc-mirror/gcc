@@ -2413,30 +2413,53 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   rtx tmp;
 
   /* Handle special case - vector comparsion with boolean result, transform
-     it using ptest instruction.  */
+     it using ptest instruction or vpcmpeq + kortest.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
       || (mode == TImode && !TARGET_64BIT)
-      || mode == OImode)
+      || mode == OImode
+      || GET_MODE_SIZE (mode) == 64)
     {
-      rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
-      machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
+      unsigned msize = GET_MODE_SIZE (mode);
+      machine_mode p_mode
+	= msize == 64 ? V16SImode : msize == 32 ? V4DImode : V2DImode;
+      /* kortest set CF when result is 0xFFFF (op0 == op1).  */
+      rtx flag = gen_rtx_REG (msize == 64 ? CCCmode : CCZmode, FLAGS_REG);
 
       gcc_assert (code == EQ || code == NE);
 
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+      /* Using vpcmpeq zmm zmm k + kortest for 512-bit vectors.  */
+      if (msize == 64)
 	{
-	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
-	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
-	  mode = p_mode;
+	  if (mode != V16SImode)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	    }
+
+	  tmp = gen_reg_rtx (HImode);
+	  emit_insn (gen_avx512f_cmpv16si3 (tmp, op0, op1, GEN_INT (0)));
+	  emit_insn (gen_kortesthi_ccc (tmp, tmp));
 	}
-      /* Generate XOR since we can't check that one operand is zero vector.  */
-      tmp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
-      tmp = gen_lowpart (p_mode, tmp);
-      emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
-			      gen_rtx_UNSPEC (CCZmode,
-					      gen_rtvec (2, tmp, tmp),
-					      UNSPEC_PTEST)));
+      /* Using ptest for 128/256-bit vectors.  */
+      else
+	{
+	  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	    {
+	      op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	      op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	      mode = p_mode;
+	    }
+
+	  /* Generate XOR since we can't check that one operand is zero
+	     vector.  */
+	  tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
+	  tmp = gen_lowpart (p_mode, tmp);
+	  emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
+				  gen_rtx_UNSPEC (CCZmode,
+						  gen_rtvec (2, tmp, tmp),
+						  UNSPEC_PTEST)));
+	}
       tmp = gen_rtx_fmt_ee (code, VOIDmode, flag, const0_rtx);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
