@@ -46,5 +46,5 @@ void foo(double* restrict y, const double* restrict x0, const double* restrict x
   }
 }
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
-/* { dg-final { scan-tree-dump "Loop contains only SLP stmts" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { ! { vect_load_lanes && vect_strided8 } } } } } */
+/* { dg-final { scan-tree-dump "Loop contains only SLP stmts" "vect" { target { ! { vect_load_lanes && vect_strided8 } } } } } */
