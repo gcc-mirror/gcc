@@ -3093,7 +3093,7 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
       // FIXME: Can we clean this last call with a method call?
       rust_error_at (token->get_locus (),
 		     "unexpected token when parsing generic parameters: %qs",
-		     token->get_str ().c_str ());
+		     token->as_string ().c_str ());
       return nullptr;
     }
 

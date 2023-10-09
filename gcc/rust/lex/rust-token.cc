@@ -245,6 +245,8 @@ Token::as_string () const
 	  return "b'" + escape_special_chars (get_str (), Context::Char) + "'";
 	case LIFETIME:
 	  return "'" + get_str ();
+	case SCOPE_RESOLUTION:
+	  return "::";
 	case INT_LITERAL:
 	  if (get_type_hint () == CORETYPE_UNKNOWN)
 	    return get_str ();
