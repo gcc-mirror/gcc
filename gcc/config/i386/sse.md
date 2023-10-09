@@ -350,7 +350,8 @@
 
 (define_mode_iterator VF1_VF2_AVX512DQ
   [(V16SF "TARGET_AVX512F && TARGET_EVEX512") (V8SF "TARGET_AVX") V4SF
-   (V8DF "TARGET_AVX512DQ") (V4DF "TARGET_AVX512DQ && TARGET_AVX512VL")
+   (V8DF "TARGET_AVX512DQ && TARGET_EVEX512")
+   (V4DF "TARGET_AVX512DQ && TARGET_AVX512VL")
    (V2DF "TARGET_AVX512DQ && TARGET_AVX512VL")])
 
 (define_mode_iterator VFH
@@ -392,7 +393,7 @@
   [(V8SF "TARGET_AVX") V4SF])
 
 (define_mode_iterator VF1_128_256VL
-  [V8SF (V4SF "TARGET_AVX512VL")])
+  [(V8SF "TARGET_EVEX512") (V4SF "TARGET_AVX512VL")])
 
 ;; All DFmode vector float modes
 (define_mode_iterator VF2
@@ -467,7 +468,7 @@
    (V8DF "TARGET_EVEX512") (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
 (define_mode_iterator VF2_AVX512VL
-  [V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
+  [(V8DF "TARGET_EVEX512") (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
 (define_mode_iterator VF1_AVX512VL
   [(V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
@@ -534,7 +535,7 @@
   [(V8DI "TARGET_EVEX512") (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
 (define_mode_iterator VI8_256_512
-  [V8DI (V4DI "TARGET_AVX512VL")])
+  [(V8DI "TARGET_EVEX512") (V4DI "TARGET_AVX512VL")])
 
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
@@ -9105,7 +9106,7 @@
 (define_insn "<mask_codefor>fixuns_trunc<mode><sseintvecmodelower>2<mask_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
 	(unsigned_fix:<sseintvecmode>
-	  (match_operand:VF1_128_256VL 1 "nonimmediate_operand" "vm")))]
+	  (match_operand:VF1_128_256 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512VL"
   "vcvttps2udq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
@@ -11507,7 +11508,8 @@
    (V8SF "32x4") (V8SI "32x4") (V4DF "64x2") (V4DI "64x2")])
 
 (define_mode_iterator AVX512_VEC
-  [(V8DF "TARGET_AVX512DQ") (V8DI "TARGET_AVX512DQ")
+  [(V8DF "TARGET_AVX512DQ && TARGET_EVEX512")
+   (V8DI "TARGET_AVX512DQ && TARGET_EVEX512")
    (V16SF "TARGET_EVEX512") (V16SI "TARGET_EVEX512")])
 
 (define_expand "<extract_type>_vextract<shuffletype><extract_suf>_mask"
@@ -11677,7 +11679,8 @@
   [(V16SF "32x8") (V16SI "32x8") (V8DF "64x4") (V8DI "64x4")])
 
 (define_mode_iterator AVX512_VEC_2
-  [(V16SF "TARGET_AVX512DQ") (V16SI "TARGET_AVX512DQ")
+  [(V16SF "TARGET_AVX512DQ && TARGET_EVEX512")
+   (V16SI "TARGET_AVX512DQ && TARGET_EVEX512")
    (V8DF "TARGET_EVEX512") (V8DI "TARGET_EVEX512")])
 
 (define_expand "<extract_type_2>_vextract<shuffletype><extract_suf_2>_mask"
@@ -27053,8 +27056,8 @@
 
 ;; For broadcast[i|f]32x2.  Yes there is no v4sf version, only v4si.
 (define_mode_iterator VI4F_BRCST32x2
-  [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
-   V16SF (V8SF "TARGET_AVX512VL")])
+  [(V16SI "TARGET_EVEX512") (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   (V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL")])
 
 (define_mode_attr 64x2mode
   [(V8DF "V2DF") (V8DI "V2DI") (V4DI "V2DI") (V4DF "V2DF")])
@@ -27104,7 +27107,8 @@
 
 ;; For broadcast[i|f]64x2
 (define_mode_iterator VI8F_BRCST64x2
-  [V8DI V8DF (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")])
+  [(V8DI "TARGET_EVEX512") (V8DF "TARGET_EVEX512")
+   (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")])
 
 (define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>_1"
   [(set (match_operand:VI8F_BRCST64x2 0 "register_operand" "=v,v")

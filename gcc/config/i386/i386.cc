@@ -5348,9 +5348,14 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  if (EXT_REX_SSE_REG_P (operands[0]))
 	    {
 	      if (TARGET_AVX512DQ)
-		return (TARGET_AVX512VL
-			? "vxorpd\t%x0, %x0, %x0"
-			: "vxorpd\t%g0, %g0, %g0");
+		{
+		  if (TARGET_AVX512VL)
+		    return "vxorpd\t%x0, %x0, %x0";
+		  else if (TARGET_EVEX512)
+		    return "vxorpd\t%g0, %g0, %g0";
+		  else
+		    gcc_unreachable ();
+		}
 	      else
 		{
 		  if (TARGET_AVX512VL)
@@ -5372,9 +5377,14 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  if (EXT_REX_SSE_REG_P (operands[0]))
 	    {
 	      if (TARGET_AVX512DQ)
-		return (TARGET_AVX512VL
-			? "vxorps\t%x0, %x0, %x0"
-			: "vxorps\t%g0, %g0, %g0");
+		{
+		  if (TARGET_AVX512VL)
+		    return "vxorps\t%x0, %x0, %x0";
+		  else if (TARGET_EVEX512)
+		    return "vxorps\t%g0, %g0, %g0";
+		  else
+		    gcc_unreachable ();
+		}
 	      else
 		{
 		  if (TARGET_AVX512VL)
