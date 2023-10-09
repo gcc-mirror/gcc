@@ -6509,6 +6509,22 @@ ix86_split_ashr (rtx *operands, rtx scratch, machine_mode mode)
 	    emit_insn (gen_ashr3 (low[0], low[0],
 				  GEN_INT (count - half_width)));
 	}
+      else if (count == 1
+	       && (TARGET_USE_RCR || optimize_size > 1))
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  if (mode == DImode)
+	    {
+	      emit_insn (gen_ashrsi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrsi2 (low[0], low[0]));
+	    }
+	  else
+	    {
+	      emit_insn (gen_ashrdi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrdi2 (low[0], low[0]));
+	    }
+	}
       else
 	{
 	  gen_shrd = mode == DImode ? gen_x86_shrd : gen_x86_64_shrd;
@@ -6573,6 +6589,22 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
 	  if (count > half_width)
 	    emit_insn (gen_lshr3 (low[0], low[0],
 				  GEN_INT (count - half_width)));
+	}
+      else if (count == 1
+	       && (TARGET_USE_RCR || optimize_size > 1))
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  if (mode == DImode)
+	    {
+	      emit_insn (gen_lshrsi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrsi2 (low[0], low[0]));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lshrdi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrdi2 (low[0], low[0]));
+	    }
 	}
       else
 	{
