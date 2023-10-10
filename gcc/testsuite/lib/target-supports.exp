@@ -4215,6 +4215,15 @@ proc check_effective_target_vect_floatuint_cvt { } {
 		&& [check_effective_target_riscv_v]) }}]
 }
 
+# Return 1 if the target supports vector integer char -> long long extend optab
+#
+
+proc check_effective_target_vect_ext_char_longlong { } {
+    return [check_cached_effective_target_indexed vect_ext_char_longlong {
+      expr { ([istarget riscv*-*-*]
+	      && [check_effective_target_riscv_v]) }}]
+}
+
 # Return 1 if peeling for alignment might be profitable on the target
 #
 
