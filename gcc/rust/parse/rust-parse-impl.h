@@ -22,6 +22,7 @@
 /* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
  * This is also the reason why there are no include guards. */
 
+#include "rust-token.h"
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
 #include "rust-make-unique.h"
@@ -12089,7 +12090,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
     {
       TokenId id = current_token->get_id ();
       if (id == SEMICOLON || id == RIGHT_PAREN || id == RIGHT_CURLY
-	  || id == RIGHT_SQUARE || id == COMMA)
+	  || id == RIGHT_SQUARE || id == COMMA || id == LEFT_CURLY)
 	return nullptr;
     }
 
