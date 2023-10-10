@@ -1133,7 +1133,8 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "default")
+      else if (t->get_str () == "default"
+	       && lexer.peek_token (1)->get_id () != EXCLAM)
 	{
 	  add_error (Error (t->get_locus (),
 			    "%qs is only allowed on items within %qs blocks",
