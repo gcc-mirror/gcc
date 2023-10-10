@@ -2309,6 +2309,36 @@ is_std_allocator_allocate (const constexpr_call *call)
 	  && is_std_allocator_allocate (call->fundef->decl));
 }
 
+/* Return true if FNDECL is std::source_location::current.  */
+
+static inline bool
+is_std_source_location_current (tree fndecl)
+{
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  if (name == NULL_TREE || !id_equal (name, "current"))
+    return false;
+
+  tree ctx = DECL_CONTEXT (fndecl);
+  if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
+    return false;
+
+  name = DECL_NAME (TYPE_MAIN_DECL (ctx));
+  return name && id_equal (name, "source_location");
+}
+
+/* Overload for the above taking constexpr_call*.  */
+
+static inline bool
+is_std_source_location_current (const constexpr_call *call)
+{
+  return (call
+	  && call->fundef
+	  && is_std_source_location_current (call->fundef->decl));
+}
+
 /* Return true if FNDECL is __dynamic_cast.  */
 
 static inline bool
@@ -7866,33 +7896,70 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TYPE_PTROB_P (type)
 	    && TYPE_PTR_P (TREE_TYPE (op))
 	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
-	    /* Inside a call to std::construct_at or to
-	       std::allocator<T>::{,de}allocate, we permit casting from void*
+	    /* Inside a call to std::construct_at,
+	       std::allocator<T>::{,de}allocate, or
+	       std::source_location::current, we permit casting from void*
 	       because that is compiler-generated code.  */
 	    && !is_std_construct_at (ctx->call)
-	    && !is_std_allocator_allocate (ctx->call))
+	    && !is_std_allocator_allocate (ctx->call)
+	    && !is_std_source_location_current (ctx->call))
 	  {
 	    /* Likewise, don't error when casting from void* when OP is
 	       &heap uninit and similar.  */
 	    tree sop = tree_strip_nop_conversions (op);
-	    if (TREE_CODE (sop) == ADDR_EXPR
-		&& VAR_P (TREE_OPERAND (sop, 0))
-		&& DECL_ARTIFICIAL (TREE_OPERAND (sop, 0)))
+	    tree decl = NULL_TREE;
+	    if (TREE_CODE (sop) == ADDR_EXPR)
+	      decl = TREE_OPERAND (sop, 0);
+	    if (decl
+		&& VAR_P (decl)
+		&& DECL_ARTIFICIAL (decl)
+		&& (DECL_NAME (decl) == heap_identifier
+		    || DECL_NAME (decl) == heap_uninit_identifier
+		    || DECL_NAME (decl) == heap_vec_identifier
+		    || DECL_NAME (decl) == heap_vec_uninit_identifier))
 	      /* OK */;
 	    /* P2738 (C++26): a conversion from a prvalue P of type "pointer to
 	       cv void" to a pointer-to-object type T unless P points to an
 	       object whose type is similar to T.  */
-	    else if (cxx_dialect > cxx23
-		     && (sop = cxx_fold_indirect_ref (ctx, loc,
-						      TREE_TYPE (type), sop)))
+	    else if (cxx_dialect > cxx23)
 	      {
-		r = build1 (ADDR_EXPR, type, sop);
-		break;
+		r = cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (type), sop);
+		if (r)
+		  {
+		    r = build1 (ADDR_EXPR, type, r);
+		    break;
+		  }
+		if (!ctx->quiet)
+		  {
+		    if (TREE_CODE (sop) == ADDR_EXPR)
+		      {
+			auto_diagnostic_group d;
+			error_at (loc, "cast from %qT is not allowed in a "
+				  "constant expression because "
+				  "pointed-to type %qT is not similar to %qT",
+				  TREE_TYPE (op), TREE_TYPE (TREE_TYPE (sop)),
+				  TREE_TYPE (type));
+			tree obj = build_fold_indirect_ref (sop);
+			inform (DECL_SOURCE_LOCATION (obj),
+				"pointed-to object declared here");
+		      }
+		    else
+		      {
+			gcc_assert (integer_zerop (sop));
+			error_at (loc, "cast from %qT is not allowed in a "
+				  "constant expression because "
+				  "%qE does not point to an object",
+				  TREE_TYPE (op), oldop);
+		      }
+		  }
+		*non_constant_p = true;
+		return t;
 	      }
 	    else
 	      {
 		if (!ctx->quiet)
-		  error_at (loc, "cast from %qT is not allowed",
+		  error_at (loc, "cast from %qT is not allowed in a "
+			    "constant expression before C++26",
 			    TREE_TYPE (op));
 		*non_constant_p = true;
 		return t;
