@@ -6295,7 +6295,65 @@ void f (void) __attribute__ ((interrupt ("user")));
 Permissible values for this parameter are @code{user}, @code{supervisor},
 and @code{machine}.  If there is no parameter, then it defaults to
 @code{machine}.
+
 @end table
+
+The following target-specific function attributes are available for the
+RISC-V target.  For the most part, these options mirror the behavior of
+similar command-line options (@pxref{RISC-V Options}), but on a
+per-function basis.
+
+@table @code
+@cindex @code{arch=} function attribute, RISC-V
+@item arch=
+Specifies the architecture version and architectural extensions to use
+for this function.  The behavior and permissible arguments are the same as
+for the @option{-march=} command-line option, in addtion, it also support
+extension enablement list, a list of extension name and prefixed with @code{+},
+like @code{arch=+zba} means enable @code{zba} extension.
+Multiple extension can be enabled by separating them with a comma.  For example:
+@code{arch=+zba,+zbb}.
+
+@cindex @code{tune=} function attribute, RISC-V
+@item tune=
+Specifies the core for which to tune the performance of this function.
+The behavior and permissible arguments are the same as for the @option{-mtune=}
+command-line option.
+
+@cindex @code{cpu=} function attribute, RISC-V
+@item cpu=
+Specifies the core for which to tune the performance of this function and also
+whose architectural features to use.  The behavior and valid arguments are the
+same as for the @option{-mcpu=} command-line option.
+
+@end table
+
+The above target attributes can be specified as follows:
+
+@smallexample
+__attribute__((target("@var{attr-string}")))
+int
+f (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+where @code{@var{attr-string}} is one of the attribute strings specified above.
+
+Multiple target function attributes can be specified by separating them with
+a semicolon.  For example:
+@smallexample
+__attribute__((target("arch=+zba,+zbb;tune=rocket")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+is valid and compiles function @code{foo} with @code{zba}
+and @code{zbb} extensions and tunes it for @code{rocket}.
 
 @node RL78 Function Attributes
 @subsection RL78 Function Attributes

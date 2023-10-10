@@ -73,10 +73,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "gcse.h"
 #include "tree-dfa.h"
+#include "target-globals.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
 #include "riscv-vector-costs.h"
+#include "riscv-subset.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -264,17 +266,6 @@ struct riscv_tune_param
   bool use_divmod_expansion;
 };
 
-/* Information about one micro-arch we know about.  */
-struct riscv_tune_info {
-  /* This micro-arch canonical name.  */
-  const char *name;
-
-  /* Which automaton to use for tuning.  */
-  enum riscv_microarchitecture_type microarchitecture;
-
-  /* Tuning parameters for this micro-arch.  */
-  const struct riscv_tune_param *tune_param;
-};
 
 /* Global variables for machine-dependent things.  */
 
@@ -501,10 +492,23 @@ riscv_min_arithmetic_precision (void)
   return 32;
 }
 
-/* Return the riscv_tune_info entry for the given name string.  */
+template <class T>
+static const char *
+get_tune_str (const T *opts)
+{
+  const char *tune_string = RISCV_TUNE_STRING_DEFAULT;
+  if (opts->x_riscv_tune_string)
+    tune_string = opts->x_riscv_tune_string;
+  else if (opts->x_riscv_cpu_string)
+    tune_string = opts->x_riscv_cpu_string;
+  return tune_string;
+}
 
-static const struct riscv_tune_info *
-riscv_parse_tune (const char *tune_string)
+/* Return the riscv_tune_info entry for the given name string, return nullptr
+   if NULL_P is true, otherwise return an placeholder and report error.  */
+
+const struct riscv_tune_info *
+riscv_parse_tune (const char *tune_string, bool null_p)
 {
   const riscv_cpu_info *cpu = riscv_find_cpu (tune_string);
 
@@ -514,6 +518,9 @@ riscv_parse_tune (const char *tune_string)
   for (unsigned i = 0; i < ARRAY_SIZE (riscv_tune_info_table); i++)
     if (strcmp (riscv_tune_info_table[i].name, tune_string) == 0)
       return riscv_tune_info_table + i;
+
+  if (null_p)
+    return nullptr;
 
   error ("unknown cpu %qs for %<-mtune%>", tune_string);
   return riscv_tune_info_table;
@@ -7896,6 +7903,33 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
   riscv_asm_output_variant_cc (stream, fndecl, name);
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+    {
+      fprintf (stream, "\t.option push\n");
+      std::string isa = riscv_current_subset_list ()->to_string (true);
+      fprintf (stream, "\t.option arch, %s\n", isa.c_str ());
+
+      struct cl_target_option *local_cl_target =
+	TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
+      struct cl_target_option *global_cl_target =
+	TREE_TARGET_OPTION (target_option_default_node);
+      const char *local_tune_str = get_tune_str (local_cl_target);
+      const char *global_tune_str = get_tune_str (global_cl_target);
+      if (strcmp (local_tune_str, global_tune_str) != 0)
+	fprintf (stream, "\t# tune = %s\n", local_tune_str);
+    }
+}
+
+void
+riscv_declare_function_size (FILE *stream, const char *name, tree fndecl)
+{
+  if (!flag_inhibit_size_directive)
+    ASM_OUTPUT_MEASURED_SIZE (stream, name);
+
+  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+    {
+      fprintf (stream, "\t.option pop\n");
+    }
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  */
@@ -8102,16 +8136,18 @@ riscv_override_options_internal (struct gcc_options *opts)
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
-  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && (target_flags_explicit & MASK_FDIV) == 0)
+  if ((TARGET_HARD_FLOAT_OPTS_P (opts) || TARGET_ZFINX_OPTS_P (opts))
+      && ((target_flags_explicit & MASK_FDIV) == 0))
     opts->x_target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
      if both -mtune and -mcpu are not given.  */
-  cpu = riscv_parse_tune (opts->x_riscv_tune_string ? opts->x_riscv_tune_string :
-			  (opts->x_riscv_cpu_string ? opts->x_riscv_cpu_string :
-			   RISCV_TUNE_STRING_DEFAULT));
+  const char *tune_string = get_tune_str (opts);
+  cpu = riscv_parse_tune (tune_string, false);
   riscv_microarchitecture = cpu->microarchitecture;
-  tune_param = opts->x_optimize_size ? &optimize_size_tune_info : cpu->tune_param;
+  tune_param = opts->x_optimize_size
+		 ? &optimize_size_tune_info
+		 : cpu->tune_param;
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
@@ -8123,7 +8159,7 @@ riscv_override_options_internal (struct gcc_options *opts)
   /* Make a note if user explicity passed -mstrict-align for later
      builtin macro generation.  Can't use target_flags_explicitly since
      it is set even for -mno-strict-align.  */
-  riscv_user_wants_strict_align = TARGET_STRICT_ALIGN;
+  riscv_user_wants_strict_align = TARGET_STRICT_ALIGN_OPTS_P (opts);
 
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
@@ -8281,7 +8317,40 @@ riscv_option_override (void)
   init_machine_status = &riscv_init_machine_status;
 
   riscv_override_options_internal (&global_options);
+
+  /* Save these options as the default ones in case we push and pop them later
+     while processing functions with potential target attributes.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options, &global_options_set);
 }
+
+/* Restore or save the TREE_TARGET_GLOBALS from or to NEW_TREE.
+   Used by riscv_set_current_function to
+   make sure optab availability predicates are recomputed when necessary.  */
+
+void
+riscv_save_restore_target_globals (tree new_tree)
+{
+  if (TREE_TARGET_GLOBALS (new_tree))
+    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+  else if (new_tree == target_option_default_node)
+    restore_target_globals (&default_target_globals);
+  else
+    TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
+}
+
+/* Implements TARGET_OPTION_RESTORE.  Restore the backend codegen decisions
+   using the information saved in PTR.  */
+
+static void
+riscv_option_restore (struct gcc_options *opts,
+		      struct gcc_options * /* opts_set */,
+		      struct cl_target_option * /* ptr */)
+{
+  riscv_override_options_internal (opts);
+}
+
+static GTY (()) tree riscv_previous_fndecl;
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
@@ -8528,7 +8597,12 @@ riscv_get_interrupt_type (tree decl)
     return MACHINE_MODE;
 }
 
-/* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
+/* Implement `TARGET_SET_CURRENT_FUNCTION'.  Unpack the codegen decisions
+   like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
+   of the function, if such exists.  This function may be called multiple
+   times on a single function so use aarch64_previous_fndecl to avoid
+   setting up identical state.  */
+
 /* Sanity cheching for above function attributes.  */
 static void
 riscv_set_current_function (tree decl)
@@ -8536,36 +8610,66 @@ riscv_set_current_function (tree decl)
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
-      || ! cfun->machine
-      || cfun->machine->attributes_checked_p)
+      || ! cfun->machine)
     return;
 
-  cfun->machine->naked_p = riscv_naked_function_p (decl);
-  cfun->machine->interrupt_handler_p
-    = riscv_interrupt_type_p (TREE_TYPE (decl));
-
-  if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
-    error ("function attributes %qs and %qs are mutually exclusive",
-	   "interrupt", "naked");
-
-  if (cfun->machine->interrupt_handler_p)
+  if (!cfun->machine->attributes_checked_p)
     {
-      tree ret = TREE_TYPE (TREE_TYPE (decl));
-      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      cfun->machine->naked_p = riscv_naked_function_p (decl);
+      cfun->machine->interrupt_handler_p
+	= riscv_interrupt_type_p (TREE_TYPE (decl));
 
-      if (TREE_CODE (ret) != VOID_TYPE)
-	error ("%qs function cannot return a value", "interrupt");
+      if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
+	error ("function attributes %qs and %qs are mutually exclusive",
+	       "interrupt", "naked");
 
-      if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
-	error ("%qs function cannot have arguments", "interrupt");
+      if (cfun->machine->interrupt_handler_p)
+	{
+	  tree ret = TREE_TYPE (TREE_TYPE (decl));
+	  tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-      cfun->machine->interrupt_mode = riscv_get_interrupt_type (decl);
+	  if (TREE_CODE (ret) != VOID_TYPE)
+	    error ("%qs function cannot return a value", "interrupt");
 
-      gcc_assert (cfun->machine->interrupt_mode != UNKNOWN_MODE);
+	  if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
+	    error ("%qs function cannot have arguments", "interrupt");
+
+	  cfun->machine->interrupt_mode = riscv_get_interrupt_type (decl);
+
+	  gcc_assert (cfun->machine->interrupt_mode != UNKNOWN_MODE);
+	}
+
+      /* Don't print the above diagnostics more than once.  */
+      cfun->machine->attributes_checked_p = 1;
     }
 
-  /* Don't print the above diagnostics more than once.  */
-  cfun->machine->attributes_checked_p = 1;
+  if (!decl || decl == riscv_previous_fndecl)
+    return;
+
+  tree old_tree = (riscv_previous_fndecl
+		     ? DECL_FUNCTION_SPECIFIC_TARGET (riscv_previous_fndecl)
+		     : NULL_TREE);
+
+  tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (decl);
+
+  /* If current function has no attributes but the previous one did,
+     use the default node.  */
+  if (!new_tree && old_tree)
+    new_tree = target_option_default_node;
+
+  /* If nothing to do, return.  #pragma GCC reset or #pragma GCC pop to
+     the default have been handled by aarch64_save_restore_target_globals from
+     aarch64_pragma_target_parse.  */
+  if (old_tree == new_tree)
+    return;
+
+  riscv_previous_fndecl = decl;
+
+  /* First set the target options.  */
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
+
+  riscv_save_restore_target_globals (new_tree);
 }
 
 /* Implement TARGET_MERGE_DECL_ATTRIBUTES. */
@@ -9686,6 +9790,12 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE riscv_option_restore
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P riscv_option_valid_attribute_p
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS riscv_legitimize_address

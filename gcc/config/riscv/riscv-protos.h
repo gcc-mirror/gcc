@@ -124,6 +124,7 @@ extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
 extern void riscv_declare_function_name (FILE *, const char *, tree);
+extern void riscv_declare_function_size (FILE *, const char *, tree);
 extern void riscv_asm_output_alias (FILE *, const tree, const tree);
 extern void riscv_asm_output_external (FILE *, const tree, const char *);
 extern bool
@@ -647,5 +648,25 @@ extern bool th_print_operand_address (FILE *, machine_mode, rtx);
 
 extern bool riscv_use_divmod_expander (void);
 void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
+extern bool
+riscv_option_valid_attribute_p (tree, tree, tree, int);
+extern void
+riscv_override_options_internal (struct gcc_options *);
+
+struct riscv_tune_param;
+/* Information about one micro-arch we know about.  */
+struct riscv_tune_info {
+  /* This micro-arch canonical name.  */
+  const char *name;
+
+  /* Which automaton to use for tuning.  */
+  enum riscv_microarchitecture_type microarchitecture;
+
+  /* Tuning parameters for this micro-arch.  */
+  const struct riscv_tune_param *tune_param;
+};
+
+const struct riscv_tune_info *
+riscv_parse_tune (const char *, bool);
 
 #endif /* ! GCC_RISCV_PROTOS_H */

@@ -84,11 +84,11 @@ Target RejectNegative Joined Negative(march=)
 lower-case.
 
 mtune=
-Target RejectNegative Joined Var(riscv_tune_string)
+Target RejectNegative Joined Var(riscv_tune_string) Save
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
 
 mcpu=
-Target RejectNegative Joined Var(riscv_cpu_string)
+Target RejectNegative Joined Var(riscv_cpu_string) Save
 -mcpu=PROCESSOR	Use architecture of and optimize the output for PROCESSOR.
 
 msmall-data-limit=
@@ -106,7 +106,7 @@ memory accesses to be generated as compressed instructions.  Currently targets
 32-bit integer load/stores.
 
 mcmodel=
-Target RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
+Target RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL) Save
 Specify the code model.
 
 mstrict-align
