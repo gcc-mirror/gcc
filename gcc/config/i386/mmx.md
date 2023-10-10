@@ -103,7 +103,8 @@
    (V4HF "V4HF") (V2HF "V2HI")])
 
 (define_mode_attr mmxintvecmodelower
-  [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")])
+  [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")
+   (V4HF "v4hi") (V2HF "v2hi")])
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr mmxdoublevecmode
@@ -2053,6 +2054,21 @@
   DONE;
 })
 
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:VHF_32_64 0 "register_operand")
+	(sqrt:VHF_32_64
+	  (match_operand:VHF_32_64 1 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_sqrtv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
 (define_expand "<code><mode>2"
   [(set (match_operand:VHF_32_64 0 "register_operand")
 	(absneg:VHF_32_64
@@ -2087,6 +2103,179 @@
   "&& reload_completed"
   [(set (match_dup 0)
 	(ior:<MODE> (match_dup 1) (match_dup 2)))])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel half-precision floating point rounding operations.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "btrunc<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_btruncv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "nearbyint<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_nearbyintv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "rint<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_rintv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "lrint<mode><mmxintvecmodelower>2"
+  [(match_operand:<mmxintvecmode> 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_lrintv8hfv8hi2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "floor<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_floorv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "lfloor<mode><mmxintvecmodelower>2"
+  [(match_operand:<mmxintvecmode> 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_lfloorv8hfv8hi2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "ceil<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_ceilv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "lceil<mode><mmxintvecmodelower>2"
+  [(match_operand:<mmxintvecmode> 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_lceilv8hfv8hi2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "round<mode>2"
+  [(match_operand:VHF_32_64 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_roundv8hf2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
+
+(define_expand "lround<mode><mmxintvecmodelower>2"
+  [(match_operand:<mmxintvecmode> 0 "register_operand")
+   (match_operand:VHF_32_64 1 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && !flag_trapping_math"
+{
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+  emit_insn (gen_lroundv8hfv8hi2 (op0, op1));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+
+  DONE;
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
