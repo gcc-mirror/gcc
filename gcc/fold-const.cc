@@ -9266,8 +9266,8 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 512-bit values (for V8DFmode).  */
-  unsigned char buffer[64];
+  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
+  unsigned char buffer[128];
   int len;
 
   /* Check that the host and target are sane.  */

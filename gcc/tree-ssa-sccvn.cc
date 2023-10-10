@@ -5751,6 +5751,8 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	  && maybe_lt (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (result))),
 		       GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op)))))
 	result = NULL_TREE;
+      else if (CONSTANT_CLASS_P (result))
+	result = const_unop (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
       else
 	{
 	  /* We will be setting the value number of lhs to the value number
