@@ -141,6 +141,7 @@ public:
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
+  bool is_macro_rules_def (const_TokenPtr t);
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
   std::unique_ptr<AST::Pattern> parse_pattern_no_alt ();

@@ -1071,6 +1071,18 @@ Parser<ManagedTokenSource>::parse_token_tree ()
     }
 }
 
+template <typename ManagedTokenSource>
+bool
+Parser<ManagedTokenSource>::is_macro_rules_def (const_TokenPtr t)
+{
+  auto macro_name = lexer.peek_token (2)->get_id ();
+
+  bool allowed_macro_name = (macro_name == IDENTIFIER || macro_name == TRY);
+
+  return t->get_str () == "macro_rules"
+	 && lexer.peek_token (1)->get_id () == EXCLAM && allowed_macro_name;
+}
+
 // Parses a single item
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Item>
@@ -1142,7 +1154,7 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
 			    "default", "impl"));
 	  return nullptr;
 	}
-      else if (t->get_str () == "macro_rules")
+      else if (is_macro_rules_def (t))
 	{
 	  // macro_rules! macro item
 	  return parse_macro_rules_def (std::move (outer_attrs));
@@ -6233,8 +6245,7 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "macro_rules"
-	       && lexer.peek_token (1)->get_id () == EXCLAM)
+      else if (is_macro_rules_def (t))
 	{
 	  // macro_rules! macro item
 	  return parse_macro_rules_def (std::move (outer_attrs));
