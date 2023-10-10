@@ -5747,8 +5747,9 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
     {
       /* Avoid the type punning in case the result mode has padding where
 	 the op we lookup has not.  */
-      if (maybe_lt (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (result))),
-		    GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op)))))
+      if (TYPE_MODE (TREE_TYPE (result)) != BLKmode
+	  && maybe_lt (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (result))),
+		       GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op)))))
 	result = NULL_TREE;
       else
 	{
