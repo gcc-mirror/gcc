@@ -1950,7 +1950,7 @@
   [(set (match_operand:V4HF 0 "register_operand")
 	(div:V4HF
 	  (match_operand:V4HF 1 "nonimmediate_operand")
-	  (match_operand:V4HF 2 "nonimmediate_operand")))]
+	  (match_operand:V4HF 2 "register_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
