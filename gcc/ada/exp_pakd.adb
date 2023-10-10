@@ -2112,8 +2112,8 @@ package body Exp_Pakd is
 
       --  We build up an expression serially that has the form
 
-      --    linear-subscript * component_size       for each array reference
-      --      +  field'Bit_Position                 for each record field
+      --    linear-subscript * component_size     for each array component ref
+      --      +  pref.component'Bit_Position      for each record component ref
       --      +  ...
 
       loop
@@ -2135,7 +2135,7 @@ package body Exp_Pakd is
          elsif Nkind (Base) = N_Selected_Component then
             Term :=
               Make_Attribute_Reference (Loc,
-                Prefix         => Selector_Name (Base),
+                Prefix         => Base,
                 Attribute_Name => Name_Bit_Position);
 
          else
