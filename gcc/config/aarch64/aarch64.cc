@@ -22,6 +22,7 @@
 
 #define INCLUDE_STRING
 #define INCLUDE_ALGORITHM
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29229,6 +29230,48 @@ aarch64_test_fractional_cost ()
   ASSERT_EQ (cf (1, 2).as_double (), 0.5);
 }
 
+/* Calculate whether our system register data, as imported from
+   `aarch64-sys-reg.def' has any duplicate entries.  */
+static void
+aarch64_test_sysreg_encoding_clashes (void)
+{
+  using dup_instances_t = hash_map<nofree_string_hash,
+				   std::vector<const sysreg_t*>>;
+
+  dup_instances_t duplicate_instances;
+
+  /* Every time an encoding is established to come up more than once
+     we add it to a "clash-analysis queue", which is then used to extract
+     necessary information from our hash map when establishing whether
+     repeated encodings are valid.  */
+
+  /* 1) Collect recurrence information.  */
+  for (unsigned i = 0; i < ARRAY_SIZE (aarch64_sysregs); i++)
+    {
+      const sysreg_t *reg = aarch64_sysregs + i;
+
+      std::vector<const sysreg_t*> *tmp
+	= &duplicate_instances.get_or_insert (reg->encoding);
+
+      tmp->push_back (reg);
+    }
+
+  /* 2) Carry out analysis on collected data.  */
+  for (auto instance : duplicate_instances)
+    {
+      unsigned nrep = instance.second.size ();
+      if (nrep > 1)
+	for (unsigned i = 0; i < nrep; i++)
+	  for (unsigned j = i + 1; j < nrep; j++)
+	    {
+	      const sysreg_t *a = instance.second[i];
+	      const sysreg_t *b = instance.second[j];
+	      ASSERT_TRUE ((a->properties != b->properties)
+			   || (a->arch_reqs != b->arch_reqs));
+	    }
+    }
+}
+
 /* Run all target-specific selftests.  */
 
 static void
@@ -29236,6 +29279,7 @@ aarch64_run_selftests (void)
 {
   aarch64_test_loading_full_dump ();
   aarch64_test_fractional_cost ();
+  aarch64_test_sysreg_encoding_clashes ();
 }
 
 } // namespace selftest
