@@ -6808,11 +6808,13 @@ Parser<ManagedTokenSource>::parse_path_expr_segment ()
   /* use lookahead to determine if they actually exist (don't want to
    * accidently parse over next ident segment) */
   if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION
-      && lexer.peek_token (1)->get_id () == LEFT_ANGLE)
+      && (lexer.peek_token (1)->get_id () == LEFT_ANGLE
+	  || lexer.peek_token (1)->get_id () == LEFT_SHIFT))
     {
       // skip scope resolution
       lexer.skip_token ();
 
+      // Let parse_path_generic_args split "<<" tokens
       AST::GenericArgs generic_args = parse_path_generic_args ();
 
       return AST::PathExprSegment (std::move (ident), locus,
