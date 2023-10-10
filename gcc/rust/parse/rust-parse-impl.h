@@ -14464,11 +14464,16 @@ Parser<ManagedTokenSource>::parse_closure_expr_pratt (const_TokenPtr tok,
 
 	    if (lexer.peek_token ()->get_id () != COMMA)
 	      {
+		if (lexer.peek_token ()->get_id () == OR)
+		  lexer.split_current_token (PIPE, PIPE);
 		// not an error but means param list is done
 		break;
 	      }
 	    // skip comma
 	    lexer.skip_token ();
+
+	    if (lexer.peek_token ()->get_id () == OR)
+	      lexer.split_current_token (PIPE, PIPE);
 
 	    t = lexer.peek_token ();
 	  }
