@@ -575,10 +575,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "vcond_mask_<mode><mode>"
-  [(match_operand:VB 0 "register_operand")
-   (match_operand:VB 1 "register_operand")
-   (match_operand:VB 2 "register_operand")
-   (match_operand:VB 3 "register_operand")]
+  [(match_operand:VB_VLS 0 "register_operand")
+   (match_operand:VB_VLS 1 "register_operand")
+   (match_operand:VB_VLS 2 "register_operand")
+   (match_operand:VB_VLS 3 "register_operand")]
   "TARGET_VECTOR"
   {
     /* mask1 = operands[3] & operands[1].  */
