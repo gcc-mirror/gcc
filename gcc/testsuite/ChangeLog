@@ -1,3 +1,89 @@
+2023-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111694
+	* gcc.dg/pr111694.c: New.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-perm-4.c: Adapt test for stride5 load_lanes.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/pr97832-2.c: Adapt dump check for target supports load_lanes with stride = 8.
+	* gcc.dg/vect/pr97832-3.c: Ditto.
+	* gcc.dg/vect/pr97832-4.c: Ditto.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-12a.c: Adapt for stride 8 load_lanes.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-reduc-4.c: Adapt test for stride8 load_lanes.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-23.c: Add RVV like ARM SVE.
+	* gcc.dg/vect/slp-perm-10.c: Ditto.
+
+2023-10-09  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadmempair-4.c: New test.
+
+2023-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111715
+	* gcc.dg/tree-ssa/ssa-fre-102.c: New testcase.
+
+2023-10-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/perm-4.c: Adjust checker.
+	* gcc.target/riscv/rvv/autovec/unop/bswap16-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/bswap16-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/bswap16-0.c: New test.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/pr45752.c: Adapt dump check for target supports load_lanes with stride = 5.
+
+2023-10-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-arith-2.c: Also match COND_LEN.
+	* gcc.dg/vect/vect-cond-arith-4.c: Ditto.
+	* gcc.dg/vect/vect-cond-arith-5.c: Ditto.
+	* gcc.dg/vect/vect-cond-arith-6.c: Ditto.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/fast-math-slp-38.c: Add ! vect_strided6.
+
+2023-10-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/rcr-1.c: New 64-bit test case.
+	* gcc.target/i386/rcr-2.c: New 32-bit test case.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/noevex512-1.c: New test.
+	* gcc.target/i386/noevex512-2.c: Ditto.
+	* gcc.target/i386/noevex512-3.c: Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr90096.c: Adjust error message.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-cond-reduc-4.c: Add vect_pack_trunc variant.
+
+2023-10-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/106769
+	* gcc.target/powerpc/pr88558.h: New.
+	* gcc.target/powerpc/pr88558-p7.c: New.
+	* gcc.target/powerpc/pr88558-p8.c: New.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111155

@@ -1,3 +1,8 @@
+2023-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc (boundaries::add): Explicitly state
+	"boundaries::" scope for "kind" enum.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111155

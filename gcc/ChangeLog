@@ -1,3 +1,577 @@
+2023-10-09  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (afdo_calculate_branch_prob): Fix count comparisons
+	* tree-vect-loop-manip.cc (vect_do_peeling): Guard against zero count
+	when scaling loop profile
+
+2023-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111694
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Adjust
+	equivalence range.
+	* value-relation.cc (adjust_equivalence_range): New.
+	* value-relation.h (adjust_equivalence_range): New prototype.
+
+2023-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::compute_operand1_range): Do
+	not call get_identity_relation.
+	(gori_compute::compute_operand2_range): Ditto.
+	* value-relation.cc (get_identity_relation): Remove.
+	* value-relation.h (get_identity_relation): Remove protyotype.
+
+2023-10-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add parameter.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add generic_ooo.
+	* config/riscv/riscv.cc (riscv_sched_adjust_cost): Implement
+	scheduler hook.
+	(TARGET_SCHED_ADJUST_COST): Define.
+	* config/riscv/riscv.md (no,yes"): Include generic-ooo.md
+	* config/riscv/riscv.opt: Add -madjust-lmul-cost.
+	* config/riscv/generic-ooo.md: New file.
+	* config/riscv/vector.md: Add vsetvl_pre.
+
+2023-10-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_MISALIGN_SUPPORTED): New macro.
+	* config/riscv/riscv.cc (riscv_support_vector_misalignment): Depend on movmisalign pattern.
+	* config/riscv/vector.md (movmisalign<mode>): New pattern.
+
+2023-10-09  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/riscv/thead.cc (th_mempair_save_regs): Fix missing CFI
+	directives for store-pair instruction.
+
+2023-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111715
+	* alias.cc (reference_alias_ptr_type_1): When we have
+	a type-punning ref at the base search for the access
+	path part that's still semantically valid.
+
+2023-10-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (shuffle_bswap_pattern): New func impl
+	for shuffle bswap.
+	(expand_vec_perm_const_1): Add handling for shuffle bswap pattern.
+
+2023-10-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_split_ashr): Split shifts by
+	one into ashr[sd]i3_carry followed by rcr[sd]i2, if TARGET_USE_RCR
+	or -Oz.
+	(ix86_split_lshr): Likewise, split shifts by one bit into
+	lshr[sd]i3_carry followed by rcr[sd]i2, if TARGET_USE_RCR or -Oz.
+	* config/i386/i386.h (TARGET_USE_RCR): New backend macro.
+	* config/i386/i386.md (rcrsi2): New define_insn for rcrl.
+	(rcrdi2): New define_insn for rcrq.
+	(<anyshiftrt><mode>3_carry): New define_insn for right shifts that
+	set the carry flag from the least significant bit, modelled using
+	UNSPEC_CC_NE.
+	* config/i386/x86-tune.def (X86_TUNE_USE_RCR): New tuning parameter
+	controlling use of rcr 1 vs. shrd, which is significantly faster on
+	AMD processors.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.opt: Allow -mno-evex512.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md (V48H_AVX512VL): Add TARGET_EVEX512.
+	(VFH): Ditto.
+	(VF2H): Ditto.
+	(VFH_AVX512VL): Ditto.
+	(VHFBF): Ditto.
+	(VHF_AVX512VL): Ditto.
+	(VI2H_AVX512VL): Ditto.
+	(VI2F_256_512): Ditto.
+	(VF48_I1248): Remove unused iterator.
+	(VF48H_AVX512VL): Add TARGET_EVEX512.
+	(VF_AVX512): Remove unused iterator.
+	(REDUC_PLUS_MODE): Add TARGET_EVEX512.
+	(REDUC_SMINMAX_MODE): Ditto.
+	(FMAMODEM): Ditto.
+	(VFH_SF_AVX512VL): Ditto.
+	(VEC_PERM_AVX2): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md (VI1_AVX512VL): Add TARGET_EVEX512.
+	(VI8_FVL): Ditto.
+	(VI1_AVX512F): Ditto.
+	(VI1_AVX512VNNI): Ditto.
+	(VI1_AVX512VL_F): Ditto.
+	(VI12_VI48F_AVX512VL): Ditto.
+	(*avx512f_permvar_truncv32hiv32qi_1): Ditto.
+	(sdot_prod<mode>): Ditto.
+	(VEC_PERM_AVX2): Ditto.
+	(VPERMI2): Ditto.
+	(VPERMI2I): Ditto.
+	(vpmadd52<vpmadd52type>v8di): Ditto.
+	(usdot_prod<mode>): Ditto.
+	(vpdpbusd_v16si): Ditto.
+	(vpdpbusds_v16si): Ditto.
+	(vpdpwssd_v16si): Ditto.
+	(vpdpwssds_v16si): Ditto.
+	(VI48_AVX512VP2VL): Ditto.
+	(avx512vp2intersect_2intersectv16si): Ditto.
+	(VF_AVX512BF16VL): Ditto.
+	(VF1_AVX512_256): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	Make sure there is EVEX512 enabled.
+	(ix86_expand_vecop_qihi2): Refuse V32QI->V32HI when no EVEX512.
+	* config/i386/i386.cc (ix86_hard_regno_mode_ok): Disable 64 bit mask
+	when !TARGET_EVEX512.
+	* config/i386/i386.md (avx512bw_512): New.
+	(SWI1248_AVX512BWDQ_64): Add TARGET_EVEX512.
+	(*zero_extendsidi2): Change isa to avx512bw_512.
+	(kmov_isa): Ditto.
+	(*anddi_1): Ditto.
+	(*andn<mode>_1): Change isa to kmov_isa.
+	(*<code><mode>_1): Ditto.
+	(*notxor<mode>_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Change isa to avx512bw_512.
+	(*ashl<mode>3_1): Change isa to kmov_isa.
+	(*lshr<mode>3_1): Ditto.
+	* config/i386/sse.md (VI12HFBF_AVX512VL): Add TARGET_EVEX512.
+	(VI1248_AVX512VLBW): Ditto.
+	(VHFBF_AVX512VL): Ditto.
+	(VI): Ditto.
+	(VIHFBF): Ditto.
+	(VI_AVX2): Ditto.
+	(VI1_AVX512): Ditto.
+	(VI12_256_512_AVX512VL): Ditto.
+	(VI2_AVX2_AVX512BW): Ditto.
+	(VI2_AVX512VNNIBW): Ditto.
+	(VI2_AVX512VL): Ditto.
+	(VI2HFBF_AVX512VL): Ditto.
+	(VI8_AVX2_AVX512BW): Ditto.
+	(VIMAX_AVX2_AVX512BW): Ditto.
+	(VIMAX_AVX512VL): Ditto.
+	(VI12_AVX2_AVX512BW): Ditto.
+	(VI124_AVX2_24_AVX512F_1_AVX512BW): Ditto.
+	(VI248_AVX512VL): Ditto.
+	(VI248_AVX512VLBW): Ditto.
+	(VI248_AVX2_8_AVX512F_24_AVX512BW): Ditto.
+	(VI248_AVX512BW): Ditto.
+	(VI248_AVX512BW_AVX512VL): Ditto.
+	(VI248_512): Ditto.
+	(VI124_256_AVX512F_AVX512BW): Ditto.
+	(VI_AVX512BW): Ditto.
+	(VIHFBF_AVX512BW): Ditto.
+	(SWI1248_AVX512BWDQ): Ditto.
+	(SWI1248_AVX512BW): Ditto.
+	(SWI1248_AVX512BWDQ2): Ditto.
+	(*knotsi_1_zext): Ditto.
+	(define_split for zero_extend + not): Ditto.
+	(kunpckdi): Ditto.
+	(REDUC_SMINMAX_MODE): Ditto.
+	(VEC_EXTRACT_MODE): Ditto.
+	(*avx512bw_permvar_truncv16siv16hi_1): Ditto.
+	(*avx512bw_permvar_truncv16siv16hi_1_hf): Ditto.
+	(truncv32hiv32qi2): Ditto.
+	(avx512bw_<code>v32hiv32qi2): Ditto.
+	(avx512bw_<code>v32hiv32qi2_mask): Ditto.
+	(avx512bw_<code>v32hiv32qi2_mask_store): Ditto.
+	(usadv64qi): Ditto.
+	(VEC_PERM_AVX2): Ditto.
+	(AVX512ZEXTMASK): Ditto.
+	(SWI24_MASK): New.
+	(vec_pack_trunc_<mode>): Change iterator to SWI24_MASK.
+	(avx512bw_packsswb<mask_name>): Add TARGET_EVEX512.
+	(avx512bw_packssdw<mask_name>): Ditto.
+	(avx512bw_interleave_highv64qi<mask_name>): Ditto.
+	(avx512bw_interleave_lowv64qi<mask_name>): Ditto.
+	(<mask_codefor>avx512bw_pshuflwv32hi<mask_name>): Ditto.
+	(<mask_codefor>avx512bw_pshufhwv32hi<mask_name>): Ditto.
+	(vec_unpacks_lo_di): Ditto.
+	(SWI48x_MASK): New.
+	(vec_unpacks_hi_<mode>): Change iterator to SWI48x_MASK.
+	(avx512bw_umulhrswv32hi3<mask_name>): Add TARGET_EVEX512.
+	(VI1248_AVX512VL_AVX512BW): Ditto.
+	(avx512bw_<code>v32qiv32hi2<mask_name>): Ditto.
+	(*avx512bw_zero_extendv32qiv32hi2_1): Ditto.
+	(*avx512bw_zero_extendv32qiv32hi2_2): Ditto.
+	(<insn>v32qiv32hi2): Ditto.
+	(pbroadcast_evex_isa): Change isa attribute to avx512bw_512.
+	(VPERMI2): Add TARGET_EVEX512.
+	(VPERMI2I): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse2_mulvxdi3):
+	Add TARGET_EVEX512 for 512 bit usage.
+	* config/i386/i386.cc (standard_sse_constant_opcode): Ditto.
+	* config/i386/sse.md (VF1_VF2_AVX512DQ): Ditto.
+	(VF1_128_256VL): Ditto.
+	(VF2_AVX512VL): Ditto.
+	(VI8_256_512): Ditto.
+	(<mask_codefor>fixuns_trunc<mode><sseintvecmodelower>2<mask_name>):
+	Ditto.
+	(AVX512_VEC): Ditto.
+	(AVX512_VEC_2): Ditto.
+	(VI4F_BRCST32x2): Ditto.
+	(VI8F_BRCST64x2): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtins.cc
+	(ix86_vectorize_builtin_gather): Disable 512 bit gather
+	when !TARGET_EVEX512.
+	* config/i386/i386-expand.cc (ix86_valid_mask_cmp_mode):
+	Add TARGET_EVEX512.
+	(ix86_expand_int_sse_cmp): Ditto.
+	(ix86_expand_vector_init_one_nonzero): Disable subroutine
+	when !TARGET_EVEX512.
+	(ix86_emit_swsqrtsf): Add TARGET_EVEX512.
+	(ix86_vectorize_vec_perm_const): Disable subroutine when
+	!TARGET_EVEX512.
+	* config/i386/i386.cc
+	(standard_sse_constant_p): Add TARGET_EVEX512.
+	(standard_sse_constant_opcode): Ditto.
+	(ix86_get_ssemov): Ditto.
+	(ix86_legitimate_constant_p): Ditto.
+	(ix86_vectorize_builtin_scatter): Diable 512 bit scatter
+	when !TARGET_EVEX512.
+	* config/i386/i386.md (avx512f_512): New.
+	(movxi): Add TARGET_EVEX512.
+	(*movxi_internal_avx512f): Ditto.
+	(*movdi_internal): Change alternative 12 to ?Yv. Adjust mode
+	for alternative 13.
+	(*movsi_internal): Change alternative 8 to ?Yv. Adjust mode for
+	alternative 9.
+	(*movhi_internal): Change alternative 11 to *Yv.
+	(*movdf_internal): Change alternative 12 to Yv.
+	(*movsf_internal): Change alternative 5 to Yv. Adjust mode for
+	alternative 5 and 6.
+	(*mov<mode>_internal): Change alternative 4 to Yv.
+	(define_split for convert SF to DF): Add TARGET_EVEX512.
+	(extendbfsf2_1): Ditto.
+	* config/i386/predicates.md (bcst_mem_operand): Disable predicate
+	for 512 bit when !TARGET_EVEX512.
+	* config/i386/sse.md (VMOVE): Add TARGET_EVEX512.
+	(V48_AVX512VL): Ditto.
+	(V48_256_512_AVX512VL): Ditto.
+	(V48H_AVX512VL): Ditto.
+	(VI12_AVX512VL): Ditto.
+	(V): Ditto.
+	(V_512): Ditto.
+	(V_256_512): Ditto.
+	(VF): Ditto.
+	(VF1_VF2_AVX512DQ): Ditto.
+	(VFH): Ditto.
+	(VFB): Ditto.
+	(VF1): Ditto.
+	(VF1_AVX2): Ditto.
+	(VF2): Ditto.
+	(VF2H): Ditto.
+	(VF2_512_256): Ditto.
+	(VF2_512_256VL): Ditto.
+	(VF_512): Ditto.
+	(VFB_512): Ditto.
+	(VI48_AVX512VL): Ditto.
+	(VI1248_AVX512VLBW): Ditto.
+	(VF_AVX512VL): Ditto.
+	(VFH_AVX512VL): Ditto.
+	(VF1_AVX512VL): Ditto.
+	(VI): Ditto.
+	(VIHFBF): Ditto.
+	(VI_AVX2): Ditto.
+	(VI8): Ditto.
+	(VI8_AVX512VL): Ditto.
+	(VI2_AVX512F): Ditto.
+	(VI4_AVX512F): Ditto.
+	(VI4_AVX512VL): Ditto.
+	(VI48_AVX512F_AVX512VL): Ditto.
+	(VI8_AVX2_AVX512F): Ditto.
+	(VI8_AVX_AVX512F): Ditto.
+	(V8FI): Ditto.
+	(V16FI): Ditto.
+	(VI124_AVX2_24_AVX512F_1_AVX512BW): Ditto.
+	(VI248_AVX512VLBW): Ditto.
+	(VI248_AVX2_8_AVX512F_24_AVX512BW): Ditto.
+	(VI248_AVX512BW): Ditto.
+	(VI248_AVX512BW_AVX512VL): Ditto.
+	(VI48_AVX512F): Ditto.
+	(VI48_AVX_AVX512F): Ditto.
+	(VI12_AVX_AVX512F): Ditto.
+	(VI148_512): Ditto.
+	(VI124_256_AVX512F_AVX512BW): Ditto.
+	(VI48_512): Ditto.
+	(VI_AVX512BW): Ditto.
+	(VIHFBF_AVX512BW): Ditto.
+	(VI4F_256_512): Ditto.
+	(VI48F_256_512): Ditto.
+	(VI48F): Ditto.
+	(VI12_VI48F_AVX512VL): Ditto.
+	(V32_512): Ditto.
+	(AVX512MODE2P): Ditto.
+	(STORENT_MODE): Ditto.
+	(REDUC_PLUS_MODE): Ditto.
+	(REDUC_SMINMAX_MODE): Ditto.
+	(*andnot<mode>3): Change isa attribute to avx512f_512.
+	(*andnot<mode>3): Ditto.
+	(<code><mode>3): Ditto.
+	(<code>tf3): Ditto.
+	(FMAMODEM): Add TARGET_EVEX512.
+	(FMAMODE_AVX512): Ditto.
+	(VFH_SF_AVX512VL): Ditto.
+	(avx512f_fix_notruncv16sfv16si<mask_name><round_name>): Ditto.
+	(fix<fixunssuffix>_truncv16sfv16si2<mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512f_cvtdq2pd512_2): Ditto.
+	(avx512f_cvtpd2dq512<mask_name><round_name>): Ditto.
+	(fix<fixunssuffix>_truncv8dfv8si2<mask_name><round_saeonly_name>):
+	Ditto.
+	(<mask_codefor>avx512f_cvtpd2ps512<mask_name><round_name>): Ditto.
+	(vec_unpacks_lo_v16sf): Ditto.
+	(vec_unpacks_hi_v16sf): Ditto.
+	(vec_unpacks_float_hi_v16si): Ditto.
+	(vec_unpacks_float_lo_v16si): Ditto.
+	(vec_unpacku_float_hi_v16si): Ditto.
+	(vec_unpacku_float_lo_v16si): Ditto.
+	(vec_pack_sfix_trunc_v8df): Ditto.
+	(avx512f_vec_pack_sfix_v8df): Ditto.
+	(<mask_codefor>avx512f_unpckhps512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_unpcklps512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_movshdup512<mask_name>): Ditto.
+	(<mask_codefor>avx512f_movsldup512<mask_name>): Ditto.
+	(AVX512_VEC): Ditto.
+	(AVX512_VEC_2): Ditto.
+	(vec_extract_lo_v64qi): Ditto.
+	(vec_extract_hi_v64qi): Ditto.
+	(VEC_EXTRACT_MODE): Ditto.
+	(<mask_codefor>avx512f_unpckhpd512<mask_name>): Ditto.
+	(avx512f_movddup512<mask_name>): Ditto.
+	(avx512f_unpcklpd512<mask_name>): Ditto.
+	(*<avx512>_vternlog<mode>_all): Ditto.
+	(*<avx512>_vpternlog<mode>_1): Ditto.
+	(*<avx512>_vpternlog<mode>_2): Ditto.
+	(*<avx512>_vpternlog<mode>_3): Ditto.
+	(avx512f_shufps512_mask): Ditto.
+	(avx512f_shufps512_1<mask_name>): Ditto.
+	(avx512f_shufpd512_mask): Ditto.
+	(avx512f_shufpd512_1<mask_name>): Ditto.
+	(<mask_codefor>avx512f_interleave_highv8di<mask_name>): Ditto.
+	(<mask_codefor>avx512f_interleave_lowv8di<mask_name>): Ditto.
+	(vec_dupv2df<mask_name>): Ditto.
+	(trunc<pmov_src_lower><mode>2): Ditto.
+	(*avx512f_<code><pmov_src_lower><mode>2): Ditto.
+	(*avx512f_vpermvar_truncv8div8si_1): Ditto.
+	(avx512f_<code><pmov_src_lower><mode>2_mask): Ditto.
+	(avx512f_<code><pmov_src_lower><mode>2_mask_store): Ditto.
+	(truncv8div8qi2): Ditto.
+	(avx512f_<code>v8div16qi2): Ditto.
+	(*avx512f_<code>v8div16qi2_store_1): Ditto.
+	(*avx512f_<code>v8div16qi2_store_2): Ditto.
+	(avx512f_<code>v8div16qi2_mask): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_1): Ditto.
+	(*avx512f_<code>v8div16qi2_mask_store_1): Ditto.
+	(avx512f_<code>v8div16qi2_mask_store_2): Ditto.
+	(vec_widen_umult_even_v16si<mask_name>): Ditto.
+	(*vec_widen_umult_even_v16si<mask_name>): Ditto.
+	(vec_widen_smult_even_v16si<mask_name>): Ditto.
+	(*vec_widen_smult_even_v16si<mask_name>): Ditto.
+	(VEC_PERM_AVX2): Ditto.
+	(one_cmpl<mode>2): Ditto.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): Ditto.
+	(*one_cmpl<mode>2_pternlog_false_dep): Ditto.
+	(define_split to xor): Ditto.
+	(*andnot<mode>3): Ditto.
+	(define_split for ior): Ditto.
+	(*iornot<mode>3): Ditto.
+	(*xnor<mode>3): Ditto.
+	(*<nlogic><mode>3): Ditto.
+	(<mask_codefor>avx512f_interleave_highv16si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_interleave_lowv16si<mask_name>): Ditto.
+	(avx512f_pshufdv3_mask): Ditto.
+	(avx512f_pshufd_1<mask_name>): Ditto.
+	(*vec_extractv4ti): Ditto.
+	(VEXTRACTI128_MODE): Ditto.
+	(define_split to vec_extract): Ditto.
+	(VI1248_AVX512VL_AVX512BW): Ditto.
+	(<mask_codefor>avx512f_<code>v16qiv16si2<mask_name>): Ditto.
+	(<insn>v16qiv16si2): Ditto.
+	(avx512f_<code>v16hiv16si2<mask_name>): Ditto.
+	(<insn>v16hiv16si2): Ditto.
+	(avx512f_zero_extendv16hiv16si2_1): Ditto.
+	(avx512f_<code>v8qiv8di2<mask_name>): Ditto.
+	(*avx512f_<code>v8qiv8di2<mask_name>_1): Ditto.
+	(*avx512f_<code>v8qiv8di2<mask_name>_2): Ditto.
+	(<insn>v8qiv8di2): Ditto.
+	(avx512f_<code>v8hiv8di2<mask_name>): Ditto.
+	(<insn>v8hiv8di2): Ditto.
+	(avx512f_<code>v8siv8di2<mask_name>): Ditto.
+	(*avx512f_zero_extendv8siv8di2_1): Ditto.
+	(*avx512f_zero_extendv8siv8di2_2): Ditto.
+	(<insn>v8siv8di2): Ditto.
+	(avx512f_roundps512_sfix): Ditto.
+	(vashrv8di3): Ditto.
+	(vashrv16si3): Ditto.
+	(pbroadcast_evex_isa): Change isa attribute to avx512f_512.
+	(vec_dupv4sf): Add TARGET_EVEX512.
+	(*vec_dupv4si): Ditto.
+	(*vec_dupv2di): Ditto.
+	(vec_dup<mode>): Change isa attribute to avx512f_512.
+	(VPERMI2): Add TARGET_EVEX512.
+	(VPERMI2I): Ditto.
+	(VEC_INIT_MODE): Ditto.
+	(VEC_INIT_HALF_MODE): Ditto.
+	(<mask_codefor>avx512f_vcvtph2ps512<mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512f_vcvtps2ph512_mask_sae): Ditto.
+	(<mask_codefor>avx512f_vcvtps2ph512<mask_name><round_saeonly_name>):
+	Ditto.
+	(*avx512f_vcvtps2ph512<merge_mask_name>): Ditto.
+	(INT_BROADCAST_MODE): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_broadcast_from_constant):
+	Disable zmm broadcast for !TARGET_EVEX512.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Do not use PVW_512 when no-evex512.
+	(ix86_simd_clone_adjust): Add evex512 target into string.
+	* config/i386/i386.cc (type_natural_mode): Report ABI warning
+	when using zmm register w/o evex512.
+	(ix86_return_in_memory): Do not allow zmm when !TARGET_EVEX512.
+	(ix86_hard_regno_mode_ok): Ditto.
+	(ix86_set_reg_reg_cost): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_vector_mode_supported_p): Ditto.
+	(ix86_preferred_simd_mode): Ditto.
+	(ix86_get_mask_mode): Ditto.
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Disable 512 bit
+	libmvec call when !TARGET_EVEX512.
+	(ix86_simd_clone_usable): Ditto.
+	* config/i386/i386.h (BIGGEST_ALIGNMENT): Disable 512 alignment
+	when !TARGET_EVEX512
+	(MOVE_MAX): Do not use PVW_512 when !TARGET_EVEX512.
+	(STORE_MAX_PIECES): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_EVEX512.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_EVEX512.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_EVEX512.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_EVEX512.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_EVEX512.
+	* config/i386/i386-builtins.cc
+	(ix86_init_mmx_sse_builtins): Ditto.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx512fp16intrin.h: Add evex512 target for 512 bit
+	intrins.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config.gcc: Add avx512bitalgvlintrin.h.
+	* config/i386/avx5124fmapsintrin.h: Add evex512 target for 512 bit
+	intrins.
+	* config/i386/avx5124vnniwintrin.h: Ditto.
+	* config/i386/avx512bf16intrin.h: Ditto.
+	* config/i386/avx512bitalgintrin.h: Add evex512 target for 512 bit
+	intrins. Split 128/256 bit intrins to avx512bitalgvlintrin.h.
+	* config/i386/avx512erintrin.h: Add evex512 target for 512 bit
+	intrins
+	* config/i386/avx512ifmaintrin.h: Ditto
+	* config/i386/avx512pfintrin.h: Ditto
+	* config/i386/avx512vbmi2intrin.h: Ditto.
+	* config/i386/avx512vbmiintrin.h: Ditto.
+	* config/i386/avx512vnniintrin.h: Ditto.
+	* config/i386/avx512vp2intersectintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqintrin.h: Ditto.
+	* config/i386/gfniintrin.h: Ditto.
+	* config/i386/immintrin.h: Add avx512bitalgvlintrin.h.
+	* config/i386/vaesintrin.h: Add evex512 target for 512 bit intrins.
+	* config/i386/vpclmulqdqintrin.h: Ditto.
+	* config/i386/avx512bitalgvlintrin.h: New.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512bwintrin.h: Add evex512 target for 512 bit
+	intrins.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512dqintrin.h: Add evex512 target for 512 bit
+	intrins.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512fintrin.h: Add evex512 target for 512 bit intrins.
+
+2023-10-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_EVEX512_SET): New.
+	(OPTION_MASK_ISA2_EVEX512_UNSET): Ditto.
+	(ix86_handle_option): Handle EVEX512.
+	* config/i386/i386-c.cc
+	(ix86_target_macros_internal): Handle EVEX512. Add __EVEX256__
+	when AVX512VL is set.
+	* config/i386/i386-options.cc: (isa2_opts): Handle EVEX512.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_option_override_internal): Set EVEX512 target if it is not
+	explicitly set when AVX512 is enabled. Disable
+	AVX512{PF,ER,4VNNIW,4FAMPS} for -mno-evex512.
+	* config/i386/i386.opt: Add mevex512. Temporaily RejectNegative.
+
+2023-10-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/88558
+	* config/rs6000/rs6000.md (lrint<mode>di2): Remove TARGET_FPRND
+	from insn condition.
+	(lrint<mode>si2): New insn pattern for 32bit lrint.
+
+2023-10-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/88558
+	* config/rs6000/rs6000.cc (rs6000_hard_regno_mode_ok_uncached):
+	Enable SImode on FP registers for P7.
+	* config/rs6000/rs6000.md (*movsi_internal1): Add fmr for SImode
+	move between FP registers.  Set attribute isa of stfiwx to "*"
+	and attribute of stxsiwx to "p7".
+
+2023-10-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md: Make use of new copysign RTL.
+
+2023-10-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (vec_concatv2di): Replace constraint "m"
+	with "jm" for alternative 0 and 1 of operand 2.
+	(sse4_1_<code><mode>3<mask_name>): Replace constraint "Bm" with
+	"ja" for alternative 0 and 1 of operand2.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111155
