@@ -1562,7 +1562,7 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 
   /* add.f for if (a+b) */
   if (mode == SImode
-      && GET_CODE (y) == NEG
+      && GET_CODE (x) == NEG
       && (op == EQ || op == NE))
     return CC_ZNmode;
 

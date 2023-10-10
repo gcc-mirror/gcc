@@ -1102,34 +1102,33 @@ archs4x, archs4xd"
 ; the combiner needs this pattern
 (define_insn "*addsi_compare"
   [(set (reg:CC_ZN CC_REG)
-	(compare:CC_ZN (match_operand:SI 0 "register_operand" "c")
-		       (neg:SI (match_operand:SI 1 "register_operand" "c"))))]
+	(compare:CC_ZN (neg:SI
+			(match_operand:SI 0 "register_operand" "r"))
+		       (match_operand:SI 1 "register_operand"  "r")))]
   ""
-  "add.f 0,%0,%1"
+  "add.f\\t0,%0,%1"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "4")])
 
-; for flag setting 'add' instructions like if (a+b < a) { ...}
-; the combiner needs this pattern
 (define_insn "addsi_compare_2"
   [(set (reg:CC_C CC_REG)
-	(compare:CC_C (plus:SI (match_operand:SI 0 "register_operand" "c,c")
-			       (match_operand:SI 1 "nonmemory_operand" "cL,Cal"))
-		      (match_dup 0)))]
+       (compare:CC_C (plus:SI (match_operand:SI 0 "register_operand"   "r,r")
+                              (match_operand:SI 1 "nonmemory_operand" "rL,Cal"))
+                     (match_dup 0)))]
   ""
-  "add.f 0,%0,%1"
+  "add.f\\t0,%0,%1"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "4,8")])
 
 (define_insn "*addsi_compare_3"
   [(set (reg:CC_C CC_REG)
-	(compare:CC_C (plus:SI (match_operand:SI 0 "register_operand" "c")
-			       (match_operand:SI 1 "register_operand" "c"))
-		      (match_dup 1)))]
+       (compare:CC_C (plus:SI (match_operand:SI 0 "register_operand" "r")
+                              (match_operand:SI 1 "register_operand" "r"))
+                     (match_dup 1)))]
   ""
-  "add.f 0,%0,%1"
+  "add.f\\t0,%0,%1"
   [(set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "4")])
