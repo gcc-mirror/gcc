@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_FTYPE_NAME1(A, B) RISCV_##A##_FTYPE_##B
 #define RISCV_FTYPE_NAME2(A, B, C) RISCV_##A##_FTYPE_##B##_##C
 #define RISCV_FTYPE_NAME3(A, B, C, D) RISCV_##A##_FTYPE_##B##_##C##_##D
+#define RISCV_FTYPE_NAME4(A, B, C, D, E) \
+  RISCV_##A##_FTYPE_##B##_##C##_##D##_##E
 
 /* Classifies the prototype of a built-in function.  */
 enum riscv_function_type {
@@ -123,6 +125,9 @@ AVAIL (clmulr_zbc32, TARGET_ZBC && !TARGET_64BIT)
 AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
 AVAIL (hint_pause, (!0))
 
+// CORE-V AVAIL
+AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
+
 /* Construct a riscv_builtin_description from the given arguments.
 
    INSN is the name of the associated instruction pattern, without the
@@ -158,6 +163,7 @@ AVAIL (hint_pause, (!0))
 #define RISCV_ATYPE_UHI unsigned_intHI_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
 #define RISCV_ATYPE_UDI unsigned_intDI_type_node
+#define RISCV_ATYPE_SI intSI_type_node
 #define RISCV_ATYPE_VOID_PTR ptr_type_node
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
@@ -170,10 +176,14 @@ AVAIL (hint_pause, (!0))
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C
 #define RISCV_FTYPE_ATYPES3(A, B, C, D) \
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D
+#define RISCV_FTYPE_ATYPES4(A, B, C, D, E) \
+  RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D, \
+  RISCV_ATYPE_##E
 
 static const struct riscv_builtin_description riscv_builtins[] = {
   #include "riscv-cmo.def"
   #include "riscv-scalar-crypto.def"
+  #include "corev.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),

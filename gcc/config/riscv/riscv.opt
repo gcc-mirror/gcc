@@ -405,6 +405,11 @@ int riscv_ztso_subext
 Mask(ZTSO) Var(riscv_ztso_subext)
 
 TargetVariable
+int riscv_xcv_subext
+
+Mask(XCVMAC) Var(riscv_xcv_subext)
+
+TargetVariable
 int riscv_xthead_subext
 
 Mask(XTHEADBA)      Var(riscv_xthead_subext)

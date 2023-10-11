@@ -2471,6 +2471,15 @@ Test system has an integer register width of 64 bits.
 
 @end table
 
+@subsubsection CORE-V specific attributes
+
+@table @code
+
+@item cv_mac
+Test system has support for the CORE-V MAC extension.
+
+@end table
+
 @subsubsection Other hardware attributes
 
 @c Please keep this table sorted alphabetically.

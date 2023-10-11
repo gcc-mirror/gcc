@@ -12915,6 +12915,19 @@ proc check_effective_target_const_volatile_readonly_section { } {
   return 1
 }
 
+# Return 1 if the CORE-V MAC extension is available.
+proc check_effective_target_cv_mac { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_mac object {
+        void foo (void)
+        {
+          asm ("cv.mac t0, t1, t2");
+        }
+    } "-march=rv32i_xcvmac" ]
+}
+
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.
 # Otherwise, modifies dg-do-what.
 proc dg-require-python-h { args } {

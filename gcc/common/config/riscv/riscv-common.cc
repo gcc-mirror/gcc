@@ -310,6 +310,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"xcvmac", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"xtheadba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadbs", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1479,6 +1481,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
 
   {"ztso", &gcc_options::x_riscv_ztso_subext, MASK_ZTSO},
+
+  {"xcvmac",        &gcc_options::x_riscv_xcv_subext, MASK_XCVMAC},
 
   {"xtheadba",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBA},
   {"xtheadbb",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBB},
