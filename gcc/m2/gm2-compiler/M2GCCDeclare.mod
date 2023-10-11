@@ -156,8 +156,6 @@ FROM m2decl IMPORT BuildIntegerConstant, BuildStringConstant, BuildCStringConsta
                    BuildStartFunctionDeclaration,
                    BuildParameterDeclaration, BuildEndFunctionDeclaration,
                    DeclareKnownVariable, GetBitsPerBitset, BuildPtrToTypeString ;
-(*                   DeclareM2linkStaticInitialization,
-                   DeclareM2linkForcedModuleInitOrder ; *)
 
 FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, BuildStartFunctionType,
                    BuildStartFieldVarient, BuildStartVarient, BuildStartType, BuildStartArrayType,
@@ -181,12 +179,13 @@ FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, 
                    BuildEndFieldVarient, BuildArrayIndexType, BuildEndFunctionType,
                    BuildSetType, BuildEndVarient, BuildEndArrayType, InitFunctionTypeParameters,
                    BuildProcTypeParameterDeclaration, DeclareKnownType,
-                   ValueOutOfTypeRange, ExceedsTypeRange ;
+                   ValueOutOfTypeRange, ExceedsTypeRange,
+                   GetMaxFrom, GetMinFrom ;
 
 FROM m2convert IMPORT BuildConvert ;
 
 FROM m2expr IMPORT BuildSub, BuildLSL, BuildTBitSize, BuildAdd, BuildDivTrunc, BuildModTrunc,
-                   BuildSize, TreeOverflow, AreConstantsEqual,
+                   BuildSize, TreeOverflow, AreConstantsEqual, CompareTrees,
                    GetPointerZero, GetIntegerZero, GetIntegerOne ;
 
 FROM m2block IMPORT RememberType, pushGlobalScope, popGlobalScope, pushFunctionScope, popFunctionScope,
@@ -3511,6 +3510,44 @@ END DeclareEnumeration ;
 
 
 (*
+   DeclareSubrangeNarrow - will return cardinal, integer, or type depending on whether
+                           low..high fits in the C data type.
+*)
+
+PROCEDURE DeclareSubrangeNarrow (location: location_t;
+                                 high, low: CARDINAL; type: Tree) : Tree ;
+VAR
+   m2low, m2high,
+   lowtree,
+   hightree     : Tree ;
+BEGIN
+   (* No zero alignment, therefore the front end will prioritize subranges to match
+      unsigned int, int, or ZTYPE assuming the low..high range fits.  *)
+   lowtree := Mod2Gcc (low) ;
+   hightree := Mod2Gcc (high) ;
+   IF CompareTrees (lowtree, GetIntegerZero (location)) >= 0
+   THEN
+      (* low..high is always positive, can we use unsigned int?  *)
+      m2high := GetMaxFrom (location, GetM2CardinalType ()) ;
+      IF CompareTrees (hightree, m2high) <= 0
+      THEN
+         RETURN GetM2CardinalType ()
+      END
+   ELSE
+      (* Must be a signed subrange base, can we use int?  *)
+      m2high := GetMaxFrom (location, GetM2IntegerType ()) ;
+      m2low := GetMinFrom (location, GetM2IntegerType ()) ;
+      IF (CompareTrees (lowtree, m2low) >= 0) AND (CompareTrees (hightree, m2high) <= 0)
+      THEN
+         RETURN GetM2IntegerType ()
+      END
+   END ;
+   (* Fall back to the ZType.  *)
+   RETURN type
+END DeclareSubrangeNarrow ;
+
+
+(*
    DeclareSubrange - declare a subrange type.
 *)
 
@@ -3525,6 +3562,7 @@ BEGIN
    location := TokenToLocation (GetDeclaredMod (sym)) ;
    GetSubrange (sym, high, low) ;
    align := GetAlignment (sym) ;
+   type := Mod2Gcc (GetSType (sym)) ;
    IF align # NulSym
    THEN
       IF AreConstantsEqual (GetIntegerZero (location), Mod2Gcc (align))
@@ -3532,11 +3570,12 @@ BEGIN
          type := BuildSmallestTypeRange (location, Mod2Gcc (low), Mod2Gcc (high))
       ELSE
          MetaError1 ('a non-zero alignment in a subrange type {%1Wa} is currently not implemented and will be ignored',
-                     sym) ;
-         type := Mod2Gcc (GetSType (sym))
+                     sym)
       END
-   ELSE
-      type := Mod2Gcc (GetSType (sym))
+   ELSIF GetSType (sym) = ZType
+   THEN
+      (* Can we narrow the ZType subrange to CARDINAL or INTEGER?  *)
+      type := DeclareSubrangeNarrow (location, high, low, type)
    END ;
    gccsym := BuildSubrangeType (location,
                                 KeyToCharStar (GetFullSymName (sym)),
@@ -3553,18 +3592,18 @@ PROCEDURE IncludeGetNth (l: List; sym: CARDINAL) ;
 VAR
    i: CARDINAL ;
 BEGIN
-   printf0(' ListOfSons [') ;
+   printf0 (' ListOfSons [') ;
    i := 1 ;
-   WHILE GetNth(sym, i)#NulSym DO
+   WHILE GetNth (sym, i) # NulSym DO
       IF i>1
       THEN
-         printf0(', ') ;
+         printf0 (', ')
       END ;
-      IncludeItemIntoList(l, GetNth(sym, i)) ;
-      PrintTerse(GetNth(sym, i)) ;
-      INC(i)
+      IncludeItemIntoList (l, GetNth(sym, i)) ;
+      PrintTerse (GetNth (sym, i)) ;
+      INC (i)
    END ;
-   printf0(']')
+   printf0 (']')
 END IncludeGetNth ;
 
 
