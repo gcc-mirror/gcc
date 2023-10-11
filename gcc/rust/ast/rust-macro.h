@@ -804,20 +804,10 @@ protected:
 
   bool is_item () const override { return !has_semicolon (); }
 
-  TraitItem *clone_trait_item_impl () const override
+  MacroInvocation *clone_associated_item_impl () const override
   {
     return clone_macro_invocation_impl ();
   };
-
-  TraitImplItem *clone_trait_impl_item_impl () const override
-  {
-    return clone_macro_invocation_impl ();
-  };
-
-  InherentImplItem *clone_inherent_impl_item_impl () const override
-  {
-    return clone_macro_invocation_impl ();
-  }
 };
 
 // more generic meta item path-only form
