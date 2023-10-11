@@ -32,31 +32,7 @@ class ASTLowerImplItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::ImplItem *translate (AST::InherentImplItem *item,
-				   HirId parent_impl_id)
-  {
-    ASTLowerImplItem resolver;
-    item->accept_vis (resolver);
-
-    if (resolver.translated != nullptr)
-      {
-	rust_assert (resolver.item_cast != nullptr);
-
-	auto id = resolver.translated->get_impl_mappings ().get_hirid ();
-	auto defid = resolver.translated->get_impl_mappings ().get_defid ();
-	auto locus = resolver.translated->get_locus ();
-
-	resolver.handle_outer_attributes (*resolver.item_cast);
-	resolver.mappings->insert_hir_implitem (parent_impl_id,
-						resolver.translated);
-	resolver.mappings->insert_location (id, locus);
-	resolver.mappings->insert_defid_mapping (defid, resolver.item_cast);
-      }
-
-    return resolver.translated;
-  }
-
-  static HIR::ImplItem *translate (AST::TraitImplItem *item,
+  static HIR::ImplItem *translate (AST::AssociatedItem *item,
 				   HirId parent_impl_id)
   {
     ASTLowerImplItem resolver;
@@ -312,7 +288,7 @@ class ASTLowerTraitItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::TraitItem *translate (AST::TraitItem *item)
+  static HIR::TraitItem *translate (AST::AssociatedItem *item)
   {
     ASTLowerTraitItem resolver;
     item->accept_vis (resolver);
