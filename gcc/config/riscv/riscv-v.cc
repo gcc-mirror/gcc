@@ -3912,6 +3912,16 @@ emit_vec_cvt_x_f (rtx op_dest, rtx op_src, rtx mask,
 }
 
 static void
+emit_vec_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
+		  machine_mode vec_mode)
+{
+  rtx ops[] = {op_dest, op_src};
+  insn_code icode = code_for_pred_fcvt_x_f (UNSPEC_VFCVT, vec_mode);
+
+  emit_vlmax_insn (icode, type, ops);
+}
+
+static void
 emit_vec_cvt_f_x (rtx op_dest, rtx op_src, rtx mask,
 		  insn_type type, machine_mode vec_mode)
 {
@@ -4093,6 +4103,16 @@ expand_vec_roundeven (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-5: Retrieve the sign bit for -0.0.  */
   emit_vec_copysign (op_0, op_0, op_1, vec_fp_mode);
+}
+
+void
+expand_vec_lrint (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
+		  machine_mode vec_long_mode)
+{
+  gcc_assert (known_eq (GET_MODE_SIZE (vec_fp_mode),
+			GET_MODE_SIZE (vec_long_mode)));
+
+  emit_vec_cvt_x_f (op_0, op_1, UNARY_OP_FRM_DYN, vec_fp_mode);
 }
 
 } // namespace riscv_vector

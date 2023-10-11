@@ -2239,6 +2239,7 @@
 ;; - round/roundf
 ;; - trunc/truncf
 ;; - roundeven/roundevenf
+;; - lrint/lrintf
 ;; -------------------------------------------------------------------------
 (define_expand "ceil<mode>2"
   [(match_operand:V_VLSF 0 "register_operand")
@@ -2306,6 +2307,16 @@
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
     riscv_vector::expand_vec_roundeven (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "lrint<mode><vlconvert>2"
+  [(match_operand:<VLCONVERT>     0 "register_operand")
+   (match_operand:V_VLS_FCONVERTL 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <VLCONVERT>mode);
     DONE;
   }
 )

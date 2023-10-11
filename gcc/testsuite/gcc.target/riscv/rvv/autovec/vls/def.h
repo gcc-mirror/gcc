@@ -213,6 +213,15 @@ typedef double v512df __attribute__ ((vector_size (4096)));
       a[i] = OP (b[i]);                                                        \
   }
 
+#define DEF_OP_V_CVT(PREFIX, NUM, TYPE_IN, TYPE_OUT, OP)                       \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE_IN##_##TYPE_OUT##_##NUM (TYPE_OUT *restrict a,               \
+					   TYPE_IN *restrict b)                \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = OP (b[i]);                                                        \
+  }
+
 #define DEF_CALL_VV(PREFIX, NUM, TYPE, CALL)                                   \
   void __attribute__ ((noinline, noclone))                                     \
   PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
