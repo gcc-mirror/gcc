@@ -17,6 +17,15 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_c_enum "unspec" [
+
+  ;;CORE-V ALU
+  UNSPEC_CV_ALU_CLIP
+  UNSPEC_CV_ALU_CLIPR
+  UNSPEC_CV_ALU_CLIPU
+  UNSPEC_CV_ALU_CLIPUR
+])
+
 ;; XCVMAC extension.
 
 (define_insn "riscv_cv_mac_mac"
@@ -386,5 +395,299 @@
 
   "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.machhsrn\t%0,%1,%2,%4"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+;; XCVALU builtins
+
+(define_insn "riscv_cv_alu_slet"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (le:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.sle\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_sletu"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (leu:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.sleu\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_min"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (smin:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.min\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_minu"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (umin:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.minu\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_max"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (smax:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.max\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_maxu"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (umax:SI
+      (match_operand:SI 1 "register_operand" "r")
+      (match_operand:SI 2 "register_operand" "r")))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.maxu\t%0, %1, %2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_exths"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+   (sign_extend:SI
+     (truncate:HI
+       (match_operand:HI 1 "register_operand" "r"))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.exths\t%0, %1"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_exthz"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+   (zero_extend:SI
+     (truncate:HI
+       (match_operand:HI 1 "register_operand" "r"))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.exthz\t%0, %1"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_extbs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+   (sign_extend:SI
+     (truncate:QI
+       (match_operand:QI 1 "register_operand" "r"))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.extbs\t%0, %1"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_extbz"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+   (zero_extend:SI
+     (truncate:QI
+   (match_operand:QI 1 "register_operand" "r"))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "cv.extbz\t%0, %1"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_clip"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+   (unspec:SI [(match_operand:SI 1 "register_operand" "r,r")
+               (match_operand:SI 2 "immediate_register_operand" "CVP2,r")]
+    UNSPEC_CV_ALU_CLIP))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.clip\t%0,%1,%X2
+  cv.clipr\t%0,%1,%2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_clipu"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+   (unspec:SI [(match_operand:SI 1 "register_operand" "r,r")
+               (match_operand:SI 2 "immediate_register_operand" "CVP2,r")]
+    UNSPEC_CV_ALU_CLIPU))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.clipu\t%0,%1,%X2
+  cv.clipur\t%0,%1,%2"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_addN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (ashiftrt:SI
+      (plus:SI
+        (match_operand:SI 1 "register_operand" "r,0")
+        (match_operand:SI 2 "register_operand" "r,r"))
+      (and:SI (match_operand:QI 3 "csr_operand" "K,r")
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.addn\t%0,%1,%2,%3
+  cv.addnr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_adduN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (lshiftrt:SI
+      (plus:SI
+        (match_operand:SI 1 "register_operand" "r,0")
+        (match_operand:SI 2 "register_operand" "r,r"))
+      (and:SI (match_operand:QI 3 "csr_operand" "K,r")
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.addun\t%0,%1,%2,%3
+  cv.addunr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_addRN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (ashiftrt:SI
+      (plus:SI
+        (plus:SI
+          (match_operand:SI 1 "register_operand" "r,0")
+          (match_operand:SI 2 "register_operand" "r,r"))
+        (if_then_else (eq (match_operand:QI 3 "csr_operand" "K,r")
+                          (const_int 0))
+          (const_int 1)
+          (ashift:SI (const_int 1)
+            (minus:QI (match_dup 3)
+                      (const_int 1)))))
+      (and:SI (match_dup 3)
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.addrn\t%0,%1,%2,%3
+  cv.addrnr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_adduRN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (lshiftrt:SI
+      (plus:SI
+        (plus:SI
+          (match_operand:SI 1 "register_operand" "r,0")
+          (match_operand:SI 2 "register_operand" "r,r"))
+        (if_then_else (eq (match_operand:QI 3 "csr_operand" "K,r")
+                          (const_int 0))
+          (const_int 1)
+          (ashift:SI (const_int 1)
+            (minus:QI (match_dup 3)
+                      (const_int 1)))))
+      (and:SI (match_dup 3)
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.addurn\t%0,%1,%2,%3
+  cv.addurnr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_subN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (ashiftrt:SI
+      (minus:SI
+        (match_operand:SI 1 "register_operand" "r,0")
+        (match_operand:SI 2 "register_operand" "r,r"))
+      (and:SI (match_operand:QI 3 "csr_operand" "K,r")
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.subn\t%0,%1,%2,%3
+  cv.subnr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_subuN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (lshiftrt:SI
+      (minus:SI
+        (match_operand:SI 1 "register_operand" "r,0")
+        (match_operand:SI 2 "register_operand" "r,r"))
+      (and:SI (match_operand:QI 3 "csr_operand" "K,r")
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.subun\t%0,%1,%2,%3
+  cv.subunr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_subRN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (ashiftrt:SI
+      (plus:SI
+        (minus:SI
+          (match_operand:SI 1 "register_operand" "r,0")
+          (match_operand:SI 2 "register_operand" "r,r"))
+        (if_then_else (eq (match_operand:QI 3 "csr_operand" "K,r")
+                          (const_int 0))
+          (const_int 1)
+          (ashift:SI (const_int 1)
+            (minus:QI (match_dup 3)
+                      (const_int 1)))))
+      (and:SI (match_dup 3)
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.subrn\t%0,%1,%2,%3
+  cv.subrnr\t%0,%2,%3"
+  [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+(define_insn "riscv_cv_alu_subuRN"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+    (lshiftrt:SI
+      (plus:SI
+        (minus:SI
+          (match_operand:SI 1 "register_operand" "r,0")
+          (match_operand:SI 2 "register_operand" "r,r"))
+        (if_then_else (eq (match_operand:QI 3 "csr_operand" "K,r")
+                          (const_int 0))
+          (const_int 1)
+          (ashift:SI (const_int 1)
+            (minus:QI (match_dup 3)
+                      (const_int 1)))))
+      (and:SI (match_dup 3)
+              (const_int 31))))]
+
+  "TARGET_XCVALU && !TARGET_64BIT"
+  "@
+  cv.suburn\t%0,%1,%2,%3
+  cv.suburnr\t%0,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])

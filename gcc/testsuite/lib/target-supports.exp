@@ -12928,6 +12928,19 @@ proc check_effective_target_cv_mac { } {
     } "-march=rv32i_xcvmac" ]
 }
 
+# Return 1 if the CORE-V ALU extension is available.
+proc check_effective_target_cv_alu { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_alu object {
+        void foo (void)
+        {
+          asm ("cv.addn t0, t1, t2, 0");
+        }
+    } "-march=rv32i_xcvalu" ]
+}
+
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.
 # Otherwise, modifies dg-do-what.
 proc dg-require-python-h { args } {

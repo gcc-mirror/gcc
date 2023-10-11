@@ -127,6 +127,7 @@ AVAIL (hint_pause, (!0))
 
 // CORE-V AVAIL
 AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
+AVAIL (cvalu, TARGET_XCVALU && !TARGET_64BIT)
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -163,6 +164,8 @@ AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
 #define RISCV_ATYPE_UHI unsigned_intHI_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
 #define RISCV_ATYPE_UDI unsigned_intDI_type_node
+#define RISCV_ATYPE_QI intQI_type_node
+#define RISCV_ATYPE_HI intHI_type_node
 #define RISCV_ATYPE_SI intSI_type_node
 #define RISCV_ATYPE_VOID_PTR ptr_type_node
 

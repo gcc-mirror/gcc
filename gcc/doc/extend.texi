@@ -21792,6 +21792,100 @@ Generates the @code{cv.macsRN} machine instruction.
 Generates the @code{cv.machhsRN} machine instruction.
 @end deftypefn
 
+These built-in functions are available for the CORE-V ALU machine
+architecture. For more information on CORE-V built-ins, please see
+@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-miscellaneous-alu-builtins-xcvalu}
+
+@deftypefn {Built-in Function} {int} __builtin_riscv_cv_alu_slet (int32_t, int32_t)
+Generated assembler @code{cv.slet}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int} __builtin_riscv_cv_alu_sletu (uint32_t, uint32_t)
+Generated assembler @code{cv.sletu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_min (int32_t, int32_t)
+Generated assembler @code{cv.min}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_minu (uint32_t, uint32_t)
+Generated assembler @code{cv.minu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_max (int32_t, int32_t)
+Generated assembler @code{cv.max}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_tnt} __builtin_riscv_cv_alu_maxu (uint32_t, uint32_t)
+Generated assembler @code{cv.maxu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_exths (int16_t)
+Generated assembler @code{cv.exths}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_exthz (uint16_t)
+Generated assembler @code{cv.exthz}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_extbs (int8_t)
+Generated assembler @code{cv.extbs}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_extbz (uint8_t)
+Generated assembler @code{cv.extbz}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_clip (int32_t, uint32_t)
+Generated assembler @code{cv.clip} if the uint32_t operand is a constant and an exact power of 2.
+Generated assembler @code{cv.clipr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_clipu (uint32_t, uint32_t)
+Generated assembler @code{cv.clipu} if the uint32_t operand is a constant and an exact power of 2.
+Generated assembler @code{cv.clipur} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_addN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.addN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.addNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_adduN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.adduN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.adduNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_addRN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.addRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.addRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_adduRN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.adduRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.adduRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_subN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.subN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_subuN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.subuN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subuNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_subRN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.subRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_subuRN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.subuRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subuRNr} if  the it is a register.
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
