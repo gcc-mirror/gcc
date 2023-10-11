@@ -10194,7 +10194,8 @@ loongarch_gen_const_int_vector_shuffle (machine_mode mode, int val)
 void
 loongarch_expand_vector_group_init (rtx target, rtx vals)
 {
-  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
+  rtx ops[2] = { force_reg (E_V16QImode, XVECEXP (vals, 0, 0)),
+      force_reg (E_V16QImode, XVECEXP (vals, 0, 1)) };
   emit_insn (gen_rtx_SET (target, gen_rtx_VEC_CONCAT (E_V32QImode, ops[0],
 						      ops[1])));
 }
