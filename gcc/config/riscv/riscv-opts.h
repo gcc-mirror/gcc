@@ -112,6 +112,12 @@ enum riscv_entity
    ? 0 \
    : 32 << (__builtin_popcount (riscv_zvl_flags) - 1))
 
+/* Same as TARGET_MIN_VLEN, but take an OPTS as gcc_options.  */
+#define TARGET_MIN_VLEN_OPTS(opts)                                             \
+  ((opts->x_riscv_zvl_flags == 0)                                              \
+     ? 0                                                                       \
+     : 32 << (__builtin_popcount (opts->x_riscv_zvl_flags) - 1))
+
 /* We only enable VLS modes for VLA vectorization since fixed length VLMAX mode
    is the highest priority choice and should not conflict with VLS modes.  */
 #define TARGET_VECTOR_VLS                                                      \
