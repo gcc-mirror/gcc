@@ -33,7 +33,7 @@ ResolveTraitItems::ResolveTraitItems (const CanonicalPath &prefix,
 {}
 
 void
-ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
+ResolveTraitItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		       const CanonicalPath &canonical_prefix)
 {
   if (item->is_marked_for_strip ())
@@ -881,15 +881,7 @@ ResolveItem::visit (AST::ExternBlock &extern_block)
 }
 
 void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
-				const CanonicalPath &prefix,
-				const CanonicalPath &canonical_prefix)
-{
-  ResolveImplItems::go (item, prefix, canonical_prefix);
-}
-
-void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+ResolveItem::resolve_impl_item (AST::AssociatedItem *item,
 				const CanonicalPath &prefix,
 				const CanonicalPath &canonical_prefix)
 {
@@ -1062,18 +1054,7 @@ ResolveImplItems::ResolveImplItems (const CanonicalPath &prefix,
 {}
 
 void
-ResolveImplItems::go (AST::InherentImplItem *item, const CanonicalPath &prefix,
-		      const CanonicalPath &canonical_prefix)
-{
-  if (item->is_marked_for_strip ())
-    return;
-
-  ResolveImplItems resolver (prefix, canonical_prefix);
-  item->accept_vis (resolver);
-}
-
-void
-ResolveImplItems::go (AST::TraitImplItem *item, const CanonicalPath &prefix,
+ResolveImplItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		      const CanonicalPath &canonical_prefix)
 {
   if (item->is_marked_for_strip ())

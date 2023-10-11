@@ -32,7 +32,7 @@ class ResolveTraitItems : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::TraitItem *item, const CanonicalPath &prefix,
+  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TraitItemType &type) override;
@@ -78,9 +78,7 @@ public:
   void visit (AST::UseDeclaration &) override;
 
 protected:
-  void resolve_impl_item (AST::TraitImplItem *item, const CanonicalPath &prefix,
-			  const CanonicalPath &canonical_prefix);
-  void resolve_impl_item (AST::InherentImplItem *item,
+  void resolve_impl_item (AST::AssociatedItem *item,
 			  const CanonicalPath &prefix,
 			  const CanonicalPath &canonical_prefix);
   void resolve_extern_item (AST::ExternalItem *item);
@@ -97,9 +95,7 @@ class ResolveImplItems : public ResolveItem
   using Rust::Resolver::ResolveItem::visit;
 
 public:
-  static void go (AST::InherentImplItem *item, const CanonicalPath &prefix,
-		  const CanonicalPath &canonical_prefix);
-  static void go (AST::TraitImplItem *item, const CanonicalPath &prefix,
+  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TypeAlias &alias) override;
