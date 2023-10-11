@@ -11019,12 +11019,12 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DF")])
 
-(define_insn "*vec_concatv8hf_movss"
-  [(set (match_operand:V8HF 0 "register_operand"       "=x,v,v")
-	(vec_merge:V8HF
-	  (vec_duplicate:V8HF
-	    (match_operand:V2HF 2 "nonimmediate_operand" "x,m,v"))
-	  (match_operand:V8HF 1 "reg_or_0_operand"	 "0,C,v" )
+(define_insn "*vec_concat<mmxxmmmodelower>_movss"
+  [(set (match_operand:<mmxxmmmode> 0 "register_operand"       "=x,v,v")
+	(vec_merge:<mmxxmmmode>
+	  (vec_duplicate:<mmxxmmmode>
+	    (match_operand:V2FI_32 2 "nonimmediate_operand" "x,m,v"))
+	  (match_operand:<mmxxmmmode> 1 "reg_or_0_operand"	 "0,C,v" )
 	  (const_int 3)))]
   "TARGET_SSE"
   "@
