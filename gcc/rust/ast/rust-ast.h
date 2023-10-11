@@ -1194,7 +1194,7 @@ public:
   virtual bool is_marked_for_strip () const { return false; }
 
   virtual location_t get_locus () const = 0;
-  virtual NodeId get_pattern_node_id () const = 0;
+  virtual NodeId get_node_id () const = 0;
 
 protected:
   // Clone pattern implementation as pure virtual method
