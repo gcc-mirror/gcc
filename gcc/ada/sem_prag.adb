@@ -25109,6 +25109,10 @@ package body Sem_Prag is
             else
                Check_Arg_Count (1);
 
+               if Ignore_Style_Checks_Pragmas then
+                  return;
+               end if;
+
                if Nkind (A) = N_String_Literal then
                   S := Strval (A);
 
@@ -25129,9 +25133,7 @@ package body Sem_Prag is
                         --  them in the parser.
 
                         if J = Slen then
-                           if not Ignore_Style_Checks_Pragmas then
-                              Set_Style_Check_Options (Options);
-                           end if;
+                           Set_Style_Check_Options (Options);
 
                            exit;
                         end if;
@@ -25142,23 +25144,17 @@ package body Sem_Prag is
 
                elsif Nkind (A) = N_Identifier then
                   if Chars (A) = Name_All_Checks then
-                     if not Ignore_Style_Checks_Pragmas then
-                        if GNAT_Mode then
-                           Set_GNAT_Style_Check_Options;
-                        else
-                           Set_Default_Style_Check_Options;
-                        end if;
+                     if GNAT_Mode then
+                        Set_GNAT_Style_Check_Options;
+                     else
+                        Set_Default_Style_Check_Options;
                      end if;
 
                   elsif Chars (A) = Name_On then
-                     if not Ignore_Style_Checks_Pragmas then
-                        Style_Check := True;
-                     end if;
+                     Style_Check := True;
 
                   elsif Chars (A) = Name_Off then
-                     if not Ignore_Style_Checks_Pragmas then
-                        Style_Check := False;
-                     end if;
+                     Style_Check := False;
                   end if;
                end if;
             end if;
