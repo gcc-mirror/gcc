@@ -2924,7 +2924,7 @@
   /* Hopefully this does not happen often as this is going
      to clobber $ra and muck up the return stack predictors.  */
   if (get_attr_length (insn) == 8)
-    return "call\t%l0";
+    return "jump\t%l0,ra";
 
   return "j\t%l0";
 }
