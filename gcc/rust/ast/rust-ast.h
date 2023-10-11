@@ -1446,53 +1446,18 @@ protected:
   }
 };
 
-// Item used in trait declarations - abstract base class
-class TraitItem : public Visitable
-{
-protected:
-  TraitItem (location_t locus)
-    : node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
-  {}
-
-  // Clone function implementation as pure virtual method
-  virtual TraitItem *clone_trait_item_impl () const = 0;
-
-  NodeId node_id;
-  location_t locus;
-
-public:
-  virtual ~TraitItem () {}
-
-  // Unique pointer custom clone function
-  std::unique_ptr<TraitItem> clone_trait_item () const
-  {
-    return std::unique_ptr<TraitItem> (clone_trait_item_impl ());
-  }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
-
-  NodeId get_node_id () const { return node_id; }
-  location_t get_locus () const { return locus; }
-};
-
-/* Abstract base class for items used within an inherent impl block (the impl
- * name {} one) */
-class InherentImplItem : public Visitable
+class AssociatedItem : public Visitable
 {
 protected:
   // Clone function implementation as pure virtual method
-  virtual InherentImplItem *clone_inherent_impl_item_impl () const = 0;
+  virtual AssociatedItem *clone_associated_item_impl () const = 0;
 
 public:
-  virtual ~InherentImplItem () {}
+  virtual ~AssociatedItem () {}
 
-  // Unique pointer custom clone function
-  std::unique_ptr<InherentImplItem> clone_inherent_impl_item () const
+  std::unique_ptr<AssociatedItem> clone_associated_item () const
   {
-    return std::unique_ptr<InherentImplItem> (clone_inherent_impl_item_impl ());
+    return std::unique_ptr<AssociatedItem> (clone_associated_item_impl ());
   }
 
   virtual std::string as_string () const = 0;
@@ -1503,25 +1468,59 @@ public:
   virtual location_t get_locus () const = 0;
 };
 
-// Abstract base class for items used in a trait impl
-class TraitImplItem : public Visitable
+// Item used in trait declarations - abstract base class
+class TraitItem : virtual public AssociatedItem
 {
 protected:
-  virtual TraitImplItem *clone_trait_impl_item_impl () const = 0;
+  TraitItem (location_t locus)
+    : node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+  {}
+
+  // Clone function implementation as pure virtual method
+  virtual TraitItem *clone_associated_item_impl () const override = 0;
+
+  NodeId node_id;
+  location_t locus;
 
 public:
-  virtual ~TraitImplItem (){};
+  // Unique pointer custom clone function
+  std::unique_ptr<TraitItem> clone_trait_item () const
+  {
+    return std::unique_ptr<TraitItem> (clone_associated_item_impl ());
+  }
 
+  NodeId get_node_id () const { return node_id; }
+  location_t get_locus () const { return locus; }
+};
+
+/* Abstract base class for items used within an inherent impl block (the impl
+ * name {} one) */
+class InherentImplItem : virtual public AssociatedItem
+{
+protected:
+  // Clone function implementation as pure virtual method
+  virtual InherentImplItem *clone_associated_item_impl () const override = 0;
+
+public:
+  // Unique pointer custom clone function
+  std::unique_ptr<InherentImplItem> clone_inherent_impl_item () const
+  {
+    return std::unique_ptr<InherentImplItem> (clone_associated_item_impl ());
+  }
+};
+
+// Abstract base class for items used in a trait impl
+class TraitImplItem : virtual public AssociatedItem
+{
+protected:
+  virtual TraitImplItem *clone_associated_item_impl () const override = 0;
+
+public:
   // Unique pointer custom clone function
   std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
   {
-    return std::unique_ptr<TraitImplItem> (clone_trait_impl_item_impl ());
+    return std::unique_ptr<TraitImplItem> (clone_associated_item_impl ());
   }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
 };
 
 // Abstract base class for an item used inside an extern block

@@ -923,14 +923,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  Method *clone_inherent_impl_item_impl () const final override
-  {
-    return clone_method_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  Method *clone_trait_impl_item_impl () const final override
+  Method *clone_associated_item_impl () const final override
   {
     return clone_method_impl ();
   }
@@ -1703,14 +1696,7 @@ protected:
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  Function *clone_inherent_impl_item_impl () const override
-  {
-    return new Function (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  Function *clone_trait_impl_item_impl () const override
+  Function *clone_associated_item_impl () const override
   {
     return new Function (*this);
   }
@@ -1834,7 +1820,7 @@ protected:
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  TypeAlias *clone_trait_impl_item_impl () const override
+  TypeAlias *clone_associated_item_impl () const override
   {
     return new TypeAlias (*this);
   }
@@ -2699,14 +2685,7 @@ protected:
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  ConstantItem *clone_inherent_impl_item_impl () const override
-  {
-    return new ConstantItem (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  ConstantItem *clone_trait_impl_item_impl () const override
+  ConstantItem *clone_associated_item_impl () const override
   {
     return new ConstantItem (*this);
   }
@@ -3016,7 +2995,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  TraitItemFunc *clone_trait_item_impl () const override
+  TraitItemFunc *clone_associated_item_impl () const override
   {
     return new TraitItemFunc (*this);
   }
@@ -3232,7 +3211,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  TraitItemMethod *clone_trait_item_impl () const override
+  TraitItemMethod *clone_associated_item_impl () const override
   {
     return new TraitItemMethod (*this);
   }
@@ -3337,7 +3316,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  TraitItemConst *clone_trait_item_impl () const override
+  TraitItemConst *clone_associated_item_impl () const override
   {
     return new TraitItemConst (*this);
   }
@@ -3424,7 +3403,7 @@ public:
 
 protected:
   // Clone function implementation as (not pure) virtual method
-  TraitItemType *clone_trait_item_impl () const override
+  TraitItemType *clone_associated_item_impl () const override
   {
     return new TraitItemType (*this);
   }
