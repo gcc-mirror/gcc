@@ -51,8 +51,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
   Literal &get_literal () { return lit; }
 
   const Literal &get_literal () const { return lit; }
@@ -151,8 +149,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -181,8 +177,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -208,7 +202,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
+  NodeId get_node_id () const override final { return node_id; }
 
 protected:
   RestPattern *clone_pattern_impl () const override
@@ -437,8 +431,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -506,8 +498,6 @@ public:
   bool get_is_mut () const { return is_mut; }
 
   NodeId get_node_id () const { return node_id; }
-
-  NodeId get_pattern_node_id () const override final { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -944,8 +934,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1182,8 +1170,6 @@ public:
   const PathInExpression &get_path () const { return path; }
 
   NodeId get_node_id () const { return node_id; }
-
-  NodeId get_pattern_node_id () const override final { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1425,8 +1411,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1486,8 +1470,6 @@ public:
   }
 
   NodeId get_node_id () const { return node_id; }
-
-  NodeId get_pattern_node_id () const override final { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1553,8 +1535,6 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  NodeId get_pattern_node_id () const override final { return node_id; }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1619,8 +1599,6 @@ public:
   }
 
   NodeId get_node_id () const { return node_id; }
-
-  NodeId get_pattern_node_id () const override final { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -668,7 +668,7 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  NodeId get_pattern_node_id () const override final
+  NodeId get_node_id () const override final
   {
     return ExprWithoutBlock::get_node_id ();
   }

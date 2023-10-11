@@ -953,7 +953,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   if (has_semicolon)
     source_node = invoc.get_macro_node_id ();
   else
-    source_node = invoc.get_pattern_node_id ();
+    source_node = invoc.get_node_id ();
   auto seg
     = CanonicalPath::new_seg (source_node, invoc_data.get_path ().as_string ());
 
