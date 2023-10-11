@@ -31,16 +31,7 @@ class ResolveToplevelImplItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::InherentImplItem *item, const CanonicalPath &prefix)
-  {
-    if (item->is_marked_for_strip ())
-      return;
-
-    ResolveToplevelImplItem resolver (prefix);
-    item->accept_vis (resolver);
-  }
-
-  static void go (AST::TraitImplItem *item, const CanonicalPath &prefix)
+  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix)
   {
     if (item->is_marked_for_strip ())
       return;
@@ -128,7 +119,7 @@ class ResolveTopLevelTraitItems : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::TraitItem *item, const CanonicalPath &prefix,
+  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
     ResolveTopLevelTraitItems resolver (prefix, canonical_prefix);
