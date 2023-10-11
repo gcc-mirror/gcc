@@ -1,3 +1,63 @@
+2023-10-10  Andrew Waterman  <andrew@sifive.com>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (struct machine_function): Track if a
+	far-branch/jump is used within a function (and $ra needs to be
+	saved).
+	(riscv_print_operand): Implement 'N' (inverse integer branch).
+	(riscv_far_jump_used_p): Implement.
+	(riscv_save_return_addr_reg_p): New function.
+	(riscv_save_reg_p): Use riscv_save_return_addr_reg_p.
+	* config/riscv/riscv.h (FIXED_REGISTERS): Update $ra.
+	(CALL_USED_REGISTERS): Update $ra.
+	* config/riscv/riscv.md: Add new types "ret" and "jalr".
+	(length attribute): Handle long conditional and unconditional
+	branches.
+	(conditional branch pattern): Handle case where jump can not
+	reach the intended target.
+	(indirect_jump, tablejump): Use new "jalr" type.
+	(simple_return): Use new "ret" type.
+	(simple_return_internal, eh_return_internal): Likewise.
+	(gpr_restore_return, riscv_mret): Likewise.
+	(riscv_uret, riscv_sret): Likewise.
+	* config/riscv/generic.md (generic_branch): Also recognize jalr & ret
+	types.
+	* config/riscv/sifive-7.md (sifive_7_jump): Likewise.
+
+2023-10-10  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111679
+	* match.pd (`a | ((~a) ^ b)`): New pattern.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111751
+	* config/riscv/autovec.md: Add VLS BOOL modes.
+
+2023-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111751
+	* fold-const.cc (fold_view_convert_expr): Up the buffer size
+	to 128 bytes.
+	* tree-ssa-sccvn.cc (visit_reference_op_load): Special case
+	constants, giving up when re-interpretation to the target type
+	fails.
+
+2023-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111751
+	* tree-ssa-sccvn.cc (visit_reference_op_load): Exempt
+	BLKmode result from the padding bits check.
+
+2023-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_select_cc_mode): Match NEG code with
+	the first operand.
+	* config/arc/arc.md (addsi_compare): Make pattern canonical.
+	(addsi_compare_2): Fix identation, constraint letters.
+	(addsi_compare_3): Likewise.
+
 2023-10-09  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* auto-profile.cc (afdo_calculate_branch_prob): Fix count comparisons

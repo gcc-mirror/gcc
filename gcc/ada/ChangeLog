@@ -1,3 +1,59 @@
+2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (inline_status_for_subprog): Minor tweak.
+	(gnat_to_gnu_field): Try harder to get a packable form of the type
+	for a bitfield.
+
+2023-10-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/a-direct.adb (Start_Search_Internal): Tweak subprogram
+	body.
+
+2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Set_Scope_Is_Transient): Delete.
+	* sem_util.adb (Set_Scope_Is_Transient): Likewise.
+	* exp_ch7.adb (Create_Transient_Scope): Set Is_Transient directly.
+
+2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Build_In_Place_Aggregate_Return): Return true
+	if the aggregate is a dependent expression of a conditional
+	expression being returned from a build-in-place function.
+
+2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/111434
+	* sem_ch10.adb (Replace): New procedure to replace an entity with
+	another on the homonym chain.
+	(Install_Limited_With_Clause): Rename Non_Lim_View to Typ for the
+	sake of consistency.  Call Replace to do the replacements and split
+	the code into the regular and the special cases.  Add debuggging
+	output controlled by -gnatdi.
+	(Install_With_Clause): Print the Parent_With and Implicit_With flags
+	in the debugging output controlled by -gnatdi.
+	(Remove_Limited_With_Unit.Restore_Chain_For_Shadow (Shadow)): Rewrite
+	using a direct replacement of E4 by E2.   Call Replace to do the
+	replacements.  Add debuggging output controlled by -gnatdi.
+
+2023-10-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/a-direct.adb: Fix filesystem entry filtering.
+
+2023-10-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.ads, nlists.ads, types.ads: Remove references to extended
+	nodes. Fix typo.
+	* sinfo.ads: Likewise and fix position of
+	Comes_From_Check_Or_Contract description.
+
+2023-10-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Protect the frontend against
+	replacing 'Size by its static value if 'Size is not known at
+	compile time and we are processing pragmas Compile_Time_Warning or
+	Compile_Time_Errors.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/misc.cc: Use text_info ctor.

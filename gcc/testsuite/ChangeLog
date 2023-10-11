@@ -1,3 +1,45 @@
+2023-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109422
+	* g++.dg/cpp2a/lambda-generic-mangle1.C: New test.
+	* g++.dg/cpp2a/lambda-generic-mangle1a.C: New test.
+
+2023-10-10  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111679
+	* gcc.dg/tree-ssa/bitops-5.c: New test.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/no-scevccp-outer-7.c: Adjust regex pattern.
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c: Ditto.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/tree-ssa/predcom-2.c: Add riscv.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/pr65947-8.c: Use vect_fold_extract_last.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111751
+	* gcc.target/riscv/rvv/autovec/pr111751.c: New test.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Add vect1024 variant.
+	* lib/target-supports.exp: Ditto.
+
+2023-10-10  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/add_f-combine.c: New test.
+
+2023-10-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Add 256/512/1024
+
 2023-10-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111694

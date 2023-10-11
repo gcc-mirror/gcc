@@ -1,3 +1,8 @@
+2023-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109422
+	* mangle.cc (write_template_param): Also mangle level.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* module.cc (module_state::read_location): Update for renaming of
