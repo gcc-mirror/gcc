@@ -975,7 +975,7 @@ BEGIN
              appendString (InitStringChar ("'"))
           END
        ELSE
-          appendString (InitStringCharStar ('CHR (')) ;
+          appendString (InitString ('CHR (')) ;
           appendString (InitStringCharStar (CSTIntToString (value))) ;
           appendString (InitStringChar (')'))
        END

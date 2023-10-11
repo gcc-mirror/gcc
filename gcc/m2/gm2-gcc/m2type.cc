@@ -894,22 +894,6 @@ m2type_GetCardinalAddressType (void)
   return m2_cardinal_address_type_node;
 }
 
-/* noBitsRequired returns the number of bits required to contain,
-   values.  How many bits are required to represent all numbers
-   between: 0..values-1 */
-
-static tree
-noBitsRequired (tree values)
-{
-  int bits = tree_floor_log2 (values);
-
-  if (integer_pow2p (values))
-    /* remember we start counting from zero.  */
-    return m2decl_BuildIntegerConstant (bits);
-  else
-    return m2decl_BuildIntegerConstant (bits + 1);
-}
-
 #if 0
 /* build_set_type creates a set type from the, domain, [low..high].
    The values low..high all have type, range_type.  */
@@ -1118,9 +1102,7 @@ m2type_BuildSmallestTypeRange (location_t location, tree low, tree high)
   m2assert_AssertLocation (location);
   low = fold (low);
   high = fold (high);
-  bits = fold (noBitsRequired (
-      m2expr_BuildAdd (location, m2expr_BuildSub (location, high, low, false),
-                       m2expr_GetIntegerOne (location), false)));
+  bits = fold (m2expr_calcNbits (location, low, high));
   return build_m2_specific_size_type (location, INTEGER_TYPE,
                                       TREE_INT_CST_LOW (bits),
                                       tree_int_cst_sgn (low) < 0);
@@ -2519,8 +2501,7 @@ m2type_BuildSubrangeType (location_t location, char *name, tree type,
     error ("high bound for the subrange has overflowed");
 
   /* First build a type with the base range.  */
-  range_type = build_range_type (type, TYPE_MIN_VALUE (type),
-				 TYPE_MAX_VALUE (type));
+  range_type = build_range_type (type, lowval, highval);
 
   TYPE_UNSIGNED (range_type) = TYPE_UNSIGNED (type);
 #if 0

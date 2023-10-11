@@ -280,6 +280,7 @@ TYPE
                     Size        : PtrToValue ; (* Size of subrange type.      *)
                     Type        : CARDINAL ;   (* Index to type symbol for    *)
                                                (* the type of subrange.       *)
+                    Align       : CARDINAL ;   (* Alignment for this type.    *)
                     ConstLitTree: SymbolTree ; (* constants of this type.     *)
                     packedInfo  : PackedInfo ; (* the equivalent packed type  *)
                     oafamily    : CARDINAL ;   (* The oafamily for this sym   *)
@@ -6152,6 +6153,7 @@ BEGIN
                                         (* ConstExpression.              *)
             Type := NulSym ;            (* Index to a type. Determines   *)
                                         (* the type of subrange.         *)
+            Align := NulSym ;           (* The alignment of this type.   *)
             InitPacked(packedInfo) ;    (* not packed and no equivalent  *)
             InitTree(ConstLitTree) ;    (* constants of this type.       *)
             Size := InitValue() ;       (* Size determines the type size *)
@@ -14600,10 +14602,11 @@ BEGIN
       RecordFieldSym:  RecordField.Align := align |
       TypeSym       :  Type.Align := align |
       ArraySym      :  Array.Align := align |
-      PointerSym    :  Pointer.Align := align
+      PointerSym    :  Pointer.Align := align |
+      SubrangeSym   :  Subrange.Align := align
 
       ELSE
-         InternalError ('expecting record, field, pointer, type or an array symbol')
+         InternalError ('expecting record, field, pointer, type, subrange or an array symbol')
       END
    END
 END PutAlignment ;
@@ -14628,10 +14631,11 @@ BEGIN
       ArraySym       :  RETURN( Array.Align ) |
       PointerSym     :  RETURN( Pointer.Align ) |
       VarientFieldSym:  RETURN( GetAlignment(VarientField.Parent) ) |
-      VarientSym     :  RETURN( GetAlignment(Varient.Parent) )
+      VarientSym     :  RETURN( GetAlignment(Varient.Parent) ) |
+      SubrangeSym    :  RETURN( Subrange.Align )
 
       ELSE
-         InternalError ('expecting record, field, pointer, type or an array symbol')
+         InternalError ('expecting record, field, pointer, type, subrange or an array symbol')
       END
    END
 END GetAlignment ;

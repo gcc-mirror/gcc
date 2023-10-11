@@ -186,7 +186,7 @@ FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, 
 FROM m2convert IMPORT BuildConvert ;
 
 FROM m2expr IMPORT BuildSub, BuildLSL, BuildTBitSize, BuildAdd, BuildDivTrunc, BuildModTrunc,
-                   BuildSize, TreeOverflow,
+                   BuildSize, TreeOverflow, AreConstantsEqual,
                    GetPointerZero, GetIntegerZero, GetIntegerOne ;
 
 FROM m2block IMPORT RememberType, pushGlobalScope, popGlobalScope, pushFunctionScope, popFunctionScope,
@@ -3518,15 +3518,28 @@ PROCEDURE DeclareSubrange (sym: CARDINAL) : Tree ;
 VAR
    type,
    gccsym   : Tree ;
+   align,
    high, low: CARDINAL ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (GetDeclaredMod (sym)) ;
    GetSubrange (sym, high, low) ;
-   (* type := BuildSmallestTypeRange (location, Mod2Gcc(low), Mod2Gcc(high)) ; *)
-   type := Mod2Gcc (GetSType (sym)) ;
+   align := GetAlignment (sym) ;
+   IF align # NulSym
+   THEN
+      IF AreConstantsEqual (GetIntegerZero (location), Mod2Gcc (align))
+      THEN
+         type := BuildSmallestTypeRange (location, Mod2Gcc (low), Mod2Gcc (high))
+      ELSE
+         MetaError1 ('a non-zero alignment in a subrange type {%1Wa} is currently not implemented and will be ignored',
+                     sym) ;
+         type := Mod2Gcc (GetSType (sym))
+      END
+   ELSE
+      type := Mod2Gcc (GetSType (sym))
+   END ;
    gccsym := BuildSubrangeType (location,
-                                KeyToCharStar (GetFullSymName(sym)),
+                                KeyToCharStar (GetFullSymName (sym)),
                                 type, Mod2Gcc (low), Mod2Gcc (high)) ;
    RETURN gccsym
 END DeclareSubrange ;
@@ -5314,8 +5327,8 @@ END WalkEnumerationDependants ;
 
 PROCEDURE WalkSubrangeDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
-   type,
-   high, low: CARDINAL ;
+   type, align,
+   high, low  : CARDINAL ;
 BEGIN
    GetSubrange(sym, high, low) ;
    CheckResolveSubrange (sym) ;
@@ -5326,7 +5339,12 @@ BEGIN
    END ;
    (* low and high are not types but constants and they are resolved by M2GenGCC *)
    p(low) ;
-   p(high)
+   p(high) ;
+   align := GetAlignment (sym) ;
+   IF align # NulSym
+   THEN
+      p(align)
+   END
 END WalkSubrangeDependants ;
 
 
@@ -5338,6 +5356,7 @@ END WalkSubrangeDependants ;
 PROCEDURE IsSubrangeDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
    result   : BOOLEAN ;
+   align,
    type,
    high, low: CARDINAL ;
 BEGIN
@@ -5355,6 +5374,11 @@ BEGIN
       result := FALSE
    END ;
    IF NOT q(high)
+   THEN
+      result := FALSE
+   END ;
+   align := GetAlignment(sym) ;
+   IF (align#NulSym) AND (NOT q(align))
    THEN
       result := FALSE
    END ;

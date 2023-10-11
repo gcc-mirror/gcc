@@ -2594,7 +2594,7 @@ BEGIN
    PushTtok (m2strnul, tok) ;
    PushT (1) ;
    BuildAdrFunction
-END BuildAdrFunction ;
+END BuildStringAdrParam ;
 
 
 (*
