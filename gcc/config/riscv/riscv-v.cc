@@ -3491,15 +3491,14 @@ expand_gather_scatter (rtx *ops, bool is_load)
 
   machine_mode vec_mode = GET_MODE (vec_reg);
   machine_mode idx_mode = GET_MODE (vec_offset);
-  scalar_mode inner_vec_mode = GET_MODE_INNER (vec_mode);
   scalar_mode inner_idx_mode = GET_MODE_INNER (idx_mode);
-  unsigned inner_vsize = GET_MODE_BITSIZE (inner_vec_mode);
   unsigned inner_offsize = GET_MODE_BITSIZE (inner_idx_mode);
   poly_int64 nunits = GET_MODE_NUNITS (vec_mode);
   poly_int64 value;
   bool is_vlmax = poly_int_rtx_p (len, &value) && known_eq (value, nunits);
 
-  if (inner_offsize < inner_vsize)
+  /* Extend the offset element to address width.  */
+  if (inner_offsize < BITS_PER_WORD)
     {
       /* 7.2. Vector Load/Store Addressing Modes.
 	 If the vector offset elements are narrower than XLEN, they are
@@ -3794,6 +3793,14 @@ cmp_lmul_gt_one (machine_mode mode)
   else if (riscv_v_ext_vls_mode_p (mode))
     return known_gt (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
   return false;
+}
+
+/* Return true if the gather/scatter offset mode is valid.  */
+bool
+gather_scatter_valid_offset_mode_p (machine_mode mode)
+{
+  machine_mode new_mode;
+  return get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists (&new_mode);
 }
 
 /* We don't have to convert the floating point to integer when the
