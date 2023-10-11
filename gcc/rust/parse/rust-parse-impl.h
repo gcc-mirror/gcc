@@ -12086,7 +12086,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
     {
       TokenId id = current_token->get_id ();
       if (id == SEMICOLON || id == RIGHT_PAREN || id == RIGHT_CURLY
-	  || id == RIGHT_SQUARE)
+	  || id == RIGHT_SQUARE || id == COMMA)
 	return nullptr;
     }
 
