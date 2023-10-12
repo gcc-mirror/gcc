@@ -80,6 +80,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  True within a delta aggregate (but only after the "delta" token has
    --  been scanned). Used to distinguish syntax errors from syntactically
    --  correct "deep" delta aggregates (enabled via -gnatX0).
+   Save_Style_Checks : Style_Check_Options;
+   Save_Style_Check  : Boolean;
+   --  Variables for storing the original state of whether style checks should
+   --  be active in general and which particular ones should be checked.
 
    --------------------
    -- Error Recovery --
@@ -1601,6 +1605,11 @@ begin
    else
       Save_Config_Attrs := Save_Config_Switches;
 
+      --  Store the state of Style_Checks pragamas
+
+      Save_Style_Check := Style_Check;
+      Save_Style_Check_Options (Save_Style_Checks);
+
       --  The following loop runs more than once in syntax check mode
       --  where we allow multiple compilation units in the same file
       --  and in Multiple_Unit_Per_file mode where we skip units till
@@ -1658,6 +1667,7 @@ begin
          --  syntax mode we are interested in all units in the file.
 
          else
+
             declare
                Comp_Unit_Node : constant Node_Id := P_Compilation_Unit;
 
@@ -1743,6 +1753,13 @@ begin
 
          Restore_Config_Switches (Save_Config_Attrs);
       end loop;
+
+      --  Restore the state of Style_Checks after parsing the unit to
+      --  avoid parsed pragmas affecting other units.
+
+      Reset_Style_Check_Options;
+      Set_Style_Check_Options (Save_Style_Checks);
+      Style_Check := Save_Style_Check;
 
       --  Now that we have completely parsed the source file, we can complete
       --  the source file table entry.
