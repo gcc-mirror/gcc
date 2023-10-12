@@ -1099,7 +1099,7 @@ f7_t* f7_ldexp (f7_t *cc, const f7_t *aa, int delta)
 
   F7_CONST_ADDR (<ident> CST, f7_t* PTMP)
 
-      Return an LD address to for some f7_const_X[_P] constant.
+      Return an LD address to some f7_const_X[_P] constant.
       *PTMP might be needed to hold a copy of f7_const_X_P in RAM.
 
   f7_t*       F7_U16_ADDR (uint16_t     X, f7_t* PTMP)   // USE_LPM
@@ -2187,6 +2187,64 @@ void f7_atan (f7_t *cc, const f7_t *aa)
 }
 #undef MINIMAX_6_6_IN_0_1
 #endif // F7MOD_atan_
+
+
+#ifdef F7MOD_atan2_
+F7_WEAK
+void f7_atan2 (f7_t *cc, const f7_t *yy, const f7_t *xx)
+{
+  uint8_t y_class = f7_classify (yy);
+  uint8_t x_class = f7_classify (xx);
+
+  // (NaN, *) -> NaN
+  // (*, NaN) -> NaN
+  if (f7_class_nan (y_class | x_class))
+    return f7_set_nan (cc);
+
+  // (0, 0) -> 0
+  if (f7_class_zero (y_class & x_class))
+    return f7_clr (cc);
+
+  f7_t pi7, *pi = &pi7;
+  f7_const (pi, pi);
+
+  // (Inf, +Inf) -> +pi/4;    (-Inf, +Inf) -> +3pi/4
+  // (Inf, -Inf) -> -pi/4;    (-Inf, -Inf) -> -3pi/4
+  if (f7_class_inf (y_class & x_class))
+    {
+      f7_copy (cc, pi);
+      if (! f7_class_sign (x_class))
+	cc->expo = F7_(const_pi_expo) - 1; // pi / 2
+      pi->expo = F7_(const_pi_expo) - 2;   // pi / 4
+      f7_Isub (cc, pi);
+      cc->flags = y_class & F7_FLAG_sign;
+      return;
+    }
+
+  // sign(pi) := sign(y)
+  pi->flags = y_class & F7_FLAG_sign;
+
+  // Only use atan(*) with |*| <= 1.
+
+  if (f7_cmp_abs (yy, xx) > 0)
+    {
+      // |y| > |x|:  atan2 = sgn(y) * pi/2 - atan (x / y);
+      pi->expo = F7_(const_pi_expo) - 1;  // +- pi / 2
+      f7_div (cc, xx, yy);
+      f7_atan (cc, cc);
+      f7_IRsub (cc, pi);
+    }
+  else
+    {
+      // x >  |y|:  atan2 = atan (y / x)
+      // x < -|y|:  atan2 = atan (y / x) +- pi
+      f7_div (cc, yy, xx);
+      f7_atan (cc, cc);
+      if (f7_class_sign (x_class))
+	f7_Iadd (cc, pi);
+    }
+}
+#endif // F7MOD_atan2_
 
 
 #ifdef F7MOD_asinacos_
