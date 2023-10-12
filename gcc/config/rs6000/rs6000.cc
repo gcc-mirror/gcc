@@ -10370,6 +10370,11 @@ can_be_built_by_li_lis_and_rldicl (HOST_WIDE_INT c, int *shift,
   /* Leading zeros may be cleaned by rldicl with a mask.  Change leading zeros
      to ones and then recheck it.  */
   int lz = clz_hwi (c);
+
+  /* If lz == 0, the left shift is undefined.  */
+  if (!lz)
+    return false;
+
   HOST_WIDE_INT unmask_c
     = c | (HOST_WIDE_INT_M1U << (HOST_BITS_PER_WIDE_INT - lz));
   int n;
@@ -10398,6 +10403,11 @@ can_be_built_by_li_lis_and_rldicr (HOST_WIDE_INT c, int *shift,
   /* Tailing zeros may be cleaned by rldicr with a mask.  Change tailing zeros
      to ones and then recheck it.  */
   int tz = ctz_hwi (c);
+
+  /* If tz == HOST_BITS_PER_WIDE_INT, the left shift is undefined.  */
+  if (tz >= HOST_BITS_PER_WIDE_INT)
+    return false;
+
   HOST_WIDE_INT unmask_c = c | ((HOST_WIDE_INT_1U << tz) - 1);
   int n;
   if (can_be_rotated_to_lowbits (~unmask_c, 15, &n)
@@ -10428,8 +10438,15 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
      right bits are shifted as 0's, and left 1's(and x's) are cleaned.  */
   int tz = ctz_hwi (c);
   int lz = clz_hwi (c);
+
+  /* If lz == HOST_BITS_PER_WIDE_INT, the left shift is undefined.  */
+  if (lz >= HOST_BITS_PER_WIDE_INT)
+    return false;
+
   int middle_ones = clz_hwi (~(c << lz));
-  if (tz + lz + middle_ones >= ones)
+  if (tz + lz + middle_ones >= ones
+      && (tz - lz) < HOST_BITS_PER_WIDE_INT
+      && tz < HOST_BITS_PER_WIDE_INT)
     {
       *mask = ((1LL << (HOST_BITS_PER_WIDE_INT - tz - lz)) - 1LL) << tz;
       *shift = tz;
@@ -10440,7 +10457,8 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   int leading_ones = clz_hwi (~c);
   int tailing_ones = ctz_hwi (~c);
   int middle_zeros = ctz_hwi (c >> tailing_ones);
-  if (leading_ones + tailing_ones + middle_zeros >= ones)
+  if (leading_ones + tailing_ones + middle_zeros >= ones
+      && middle_zeros < HOST_BITS_PER_WIDE_INT)
     {
       *mask = ~(((1ULL << middle_zeros) - 1ULL) << tailing_ones);
       *shift = tailing_ones + middle_zeros;
@@ -10450,10 +10468,15 @@ can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
   /* xx1..1xx: --> xx0..01..1xx: some 1's(following x's) are cleaned. */
   /* Get the position for the first bit of successive 1.
      The 24th bit would be in successive 0 or 1.  */
-  HOST_WIDE_INT low_mask = (1LL << 24) - 1LL;
+  HOST_WIDE_INT low_mask = (HOST_WIDE_INT_1U << 24) - HOST_WIDE_INT_1U;
   int pos_first_1 = ((c & (low_mask + 1)) == 0)
 		      ? clz_hwi (c & low_mask)
 		      : HOST_BITS_PER_WIDE_INT - ctz_hwi (~(c | low_mask));
+
+  /* Make sure the left and right shifts are defined.  */
+  if (!IN_RANGE (pos_first_1, 1, HOST_BITS_PER_WIDE_INT-1))
+    return false;
+
   middle_ones = clz_hwi (~c << pos_first_1);
   middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_first_1));
   if (pos_first_1 < HOST_BITS_PER_WIDE_INT
