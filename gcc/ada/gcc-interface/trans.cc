@@ -8950,30 +8950,6 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	  }
       break;
 
-    case CALL_EXPR:
-      /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
-	 put into static memory; this performs a restricted version of constant
-	 propagation on fat pointers in calls.  But do not do it for strings to
-	 avoid blocking concatenation in the caller when it is inlined.  */
-      for (int i = 0; i < call_expr_nargs (expr); i++)
-	{
-	  tree arg = CALL_EXPR_ARG (expr, i);
-
-	  if (TREE_CODE (arg) == CONSTRUCTOR
-	      && TREE_CONSTANT (arg)
-	      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (arg)))
-	    {
-	      tree t = CONSTRUCTOR_ELT (arg, 0)->value;
-	      if (TREE_CODE (t) == NOP_EXPR)
-		t = TREE_OPERAND (t, 0);
-	      if (TREE_CODE (t) == ADDR_EXPR)
-		t = TREE_OPERAND (t, 0);
-	      if (TREE_CODE (t) != STRING_CST)
-		CALL_EXPR_ARG (expr, i) = tree_output_constant_def (arg);
-	    }
-	}
-      break;
-
     case DECL_EXPR:
       op = DECL_EXPR_DECL (expr);
 
