@@ -221,6 +221,14 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 
     case GIMPLE_CALL:
       {
+	/* Never elide a noreturn call we pruned control-flow for.  */
+	if ((gimple_call_flags (stmt) & ECF_NORETURN)
+	    && gimple_call_ctrl_altering_p (stmt))
+	  {
+	    mark_stmt_necessary (stmt, true);
+	    return;
+	  }
+
 	tree callee = gimple_call_fndecl (stmt);
 	if (callee != NULL_TREE
 	    && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
