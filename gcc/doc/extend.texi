@@ -21719,7 +21719,7 @@ vector intrinsic specification, which is available at the following link:
 All of these functions are declared in the include file @file{riscv_vector.h}.
 
 @node CORE-V Built-in Functions
-@subsubsection CORE-V Built-in Functions
+@subsection CORE-V Built-in Functions
 
 These built-in functions are available for the CORE-V MAC machine
 architecture. For more information on CORE-V built-ins, please see
