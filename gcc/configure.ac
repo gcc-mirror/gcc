@@ -956,6 +956,19 @@ fi
 
 AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
 
+# Specify the number of splits of insn-emit.cc to generate.
+AC_ARG_WITH(insnemit-partitions,
+[AS_HELP_STRING([--with-insnemit-partitions=num],
+[Set the number of partitions of insn-emit.cc for genemit to create. [default=10]])],
+[DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"], [DEFAULT_INSNEMIT_PARTITIONS=10])
+if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
+  AC_MSG_ERROR(m4_normalize([
+		Invalid value $DEFAULT_INSNEMIT_PARTITIONS for --with-insnemit-partitions. \
+		Cannot be negative.]))
+fi
+
+AC_SUBST(DEFAULT_INSNEMIT_PARTITIONS)
+
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
 [AS_HELP_STRING([--enable-__cxa_atexit], [enable __cxa_atexit for C++])],

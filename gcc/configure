@@ -844,6 +844,7 @@ enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
+DEFAULT_INSNEMIT_PARTITIONS
 DEFAULT_MATCHPD_PARTITIONS
 with_float
 with_cpu
@@ -973,6 +974,7 @@ enable_multilib
 enable_multiarch
 with_stack_clash_protection_guard_size
 with_matchpd_partitions
+with_insnemit_partitions
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1846,6 +1848,9 @@ Optional Packages:
   --with-matchpd-partitions=num
                           Set the number of partitions to make for gimple and
                           generic when splitting match.pd. [default=10]
+  --with-insnemit-partitions=num
+                          Set the number of partitions of insn-emit.cc for
+                          genemit to create. [default=10]
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -7944,6 +7949,21 @@ fi
 
 if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
   as_fn_error $? "Invalid value $DEFAULT_MATCHPD_PARTITIONS for --with-matchpd-partitions. Cannot be negative." "$LINENO" 5
+fi
+
+
+
+# Specify the number of splits of insn-emit.cc to generate.
+
+# Check whether --with-insnemit-partitions was given.
+if test "${with_insnemit_partitions+set}" = set; then :
+  withval=$with_insnemit_partitions; DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"
+else
+  DEFAULT_INSNEMIT_PARTITIONS=10
+fi
+
+if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
+  as_fn_error $? "Invalid value $DEFAULT_INSNEMIT_PARTITIONS for --with-insnemit-partitions. Cannot be negative." "$LINENO" 5
 fi
 
 
@@ -19980,7 +20000,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19983 "configure"
+#line 19995 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20086,7 +20106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20089 "configure"
+#line 20101 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

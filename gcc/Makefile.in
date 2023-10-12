@@ -236,6 +236,13 @@ GIMPLE_MATCH_PD_SEQ_O = $(patsubst %, gimple-match-%.o, $(MATCH_SPLITS_SEQ))
 GENERIC_MATCH_PD_SEQ_SRC = $(patsubst %, generic-match-%.cc, $(MATCH_SPLITS_SEQ))
 GENERIC_MATCH_PD_SEQ_O = $(patsubst %, generic-match-%.o, $(MATCH_SPLITS_SEQ))
 
+# The number of splits to be made for the insn-emit files.
+NUM_INSNEMIT_SPLITS = @DEFAULT_INSNEMIT_PARTITIONS@
+INSNEMIT_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNEMIT_SPLITS),$(one_to_9999))
+INSNEMIT_SEQ_SRC = $(patsubst %, insn-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
+INSNEMIT_SEQ_TMP = $(patsubst %, tmp-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
+INSNEMIT_SEQ_O = $(patsubst %, insn-emit-%.o, $(INSNEMIT_SPLITS_SEQ))
+
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
@@ -1356,7 +1363,7 @@ OBJS = \
 	insn-attrtab.o \
 	insn-automata.o \
 	insn-dfatab.o \
-	insn-emit.o \
+	$(INSNEMIT_SEQ_O) \
 	insn-extract.o \
 	insn-latencytab.o \
 	insn-modes.o \
@@ -1857,7 +1864,8 @@ TREECHECKING = @TREECHECKING@
 FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
- insn-output.cc insn-recog.cc insn-emit.cc insn-extract.cc insn-peep.cc \
+ insn-output.cc insn-recog.cc $(INSNEMIT_SEQ_SRC) \
+ insn-extract.cc insn-peep.cc \
  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
  insn-latencytab.cc insn-opinit.cc insn-opinit.h insn-preds.cc insn-constants.h \
  tm-preds.h tm-constrs.h checksum-options $(GIMPLE_MATCH_PD_SEQ_SRC) \
@@ -2489,11 +2497,11 @@ $(common_out_object_file): $(common_out_file)
 # and compile them.
 
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  insn-emit.cc insn-recog.cc insn-extract.cc insn-output.cc insn-peep.cc \
-  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
-  insn-latencytab.cc insn-preds.cc $(GIMPLE_MATCH_PD_SEQ_SRC) \
-  $(GENERIC_MATCH_PD_SEQ_SRC) gimple-match-auto.h generic-match-auto.h \
-  insn-target-def.h
+  $(INSNEMIT_SEQ_SRC) insn-recog.cc insn-extract.cc insn-output.cc \
+  insn-peep.cc insn-attr.h insn-attr-common.h insn-attrtab.cc \
+  insn-dfatab.cc insn-latencytab.cc insn-preds.cc \
+  $(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC) \
+  gimple-match-auto.h generic-match-auto.h insn-target-def.h
 
 # Dependencies for the md file.  The first time through, we just assume
 # the md file itself and the generated dependency file (in order to get
@@ -2516,7 +2524,7 @@ s-mddeps: $(md_file) $(MD_INCLUDES) build/genmddeps$(build_exeext)
 simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 			  insn-config.h insn-flags.h insn-target-def.h
 
-simple_rtl_generated_c	= insn-automata.cc insn-emit.cc \
+simple_rtl_generated_c	= insn-automata.cc \
 			  insn-extract.cc insn-output.cc \
 			  insn-peep.cc insn-recog.cc
 
@@ -2545,8 +2553,20 @@ $(simple_generated_c:insn-%.cc=s-%): s-%: build/gen%$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-$*.cc insn-$*.cc
 	$(STAMP) s-$*
 
+# genemit splits its output into different files and doesn't write to
+# stdout. (but rather to tmp-emit-01.cc..tmp-emit-10.cc)
+$(INSNEMIT_SEQ_SRC): s-tmp-emit; @true
+s-tmp-emit: build/genemit$(build_exeext) $(MD_DEPS) insn-conditions.md
+	$(RUN_GEN) build/genemit$(build_exeext) $(md_file) insn-conditions.md \
+	  $(addprefix -O,${INSNEMIT_SEQ_TMP})
+	$(foreach id, $(INSNEMIT_SPLITS_SEQ), \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-emit-$(id).cc \
+	  insn-emit-$(id).cc;)
+	$(STAMP) s-tmp-emit
+
 # gencheck doesn't read the machine description, and the file produced
 # doesn't use the insn-* convention.
+
 tree-check.h: s-check ; @true
 s-check : build/gencheck$(build_exeext)
 	$(RUN_GEN) build/gencheck$(build_exeext) > tmp-check.h

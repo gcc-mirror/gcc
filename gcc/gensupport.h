@@ -130,6 +130,7 @@ extern rtx add_implicit_parallel (rtvec);
 extern rtx_reader *init_rtx_reader_args_cb (int, const char **,
 					    bool (*)(const char *));
 extern rtx_reader *init_rtx_reader_args (int, const char **);
+extern int count_patterns ();
 extern bool read_md_rtx (md_rtx_info *);
 extern unsigned int get_num_insn_codes ();
 

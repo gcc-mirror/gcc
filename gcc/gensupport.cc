@@ -3131,6 +3131,61 @@ init_rtx_reader_args (int argc, const char **argv)
   return init_rtx_reader_args_cb (argc, argv, 0);
 }
 
+/* Count the number of patterns in all queues and return the count.  */
+int
+count_patterns ()
+{
+  int count = 0, truth = 1;
+  rtx def;
+  class queue_elem *cur = define_attr_queue;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = define_pred_queue;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = define_insn_queue;
+  truth = 1;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = other_queue;
+  truth = 1;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  return count;
+}
+
 /* Try to read a single rtx from the file.  Return true on success,
    describing it in *INFO.  */
 
