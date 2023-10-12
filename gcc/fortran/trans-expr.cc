@@ -12015,7 +12015,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		 && !is_runtime_conformable (expr1, expr2);
 
   /* Only analyze the expressions for coarray properties, when in coarray-lib
-     mode.  */
+     mode.  Avoid false-positive uninitialized diagnostics with initializing
+     the codimension flag unconditionally.  */
+  lhs_caf_attr.codimension = false;
+  rhs_caf_attr.codimension = false;
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       lhs_caf_attr = gfc_caf_attr (expr1, false, &lhs_refs_comp);
