@@ -2831,9 +2831,10 @@ device number 0 will be used.
 
 @item @emph{See also}:
 @ref{omp_get_default_device}, @ref{omp_set_default_device},
+@ref{OMP_TARGET_OFFLOAD}
 
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.13
+@uref{https://www.openmp.org, OpenMP specification v5.2}, Section 21.2.7
 @end table
 
 
@@ -3133,15 +3134,25 @@ variable can be set to one of three values - @code{MANDATORY}, @code{DISABLED}
 or @code{DEFAULT}.
 
 If set to @code{MANDATORY}, the program will terminate with an error if
-the offload device is not present or is not supported.  If set to
-@code{DISABLED}, then offloading is disabled and all code will run on the
-host. If set to @code{DEFAULT}, the program will try offloading to the
+any device construct or device memory routine uses a device that is unavailable
+or not supported by the implementation, or uses a non-conforming device number.
+If set to @code{DISABLED}, then offloading is disabled and all code will run on
+the host. If set to @code{DEFAULT}, the program will try offloading to the
 device first, then fall back to running code on the host if it cannot.
 
 If undefined, then the program will behave as if @code{DEFAULT} was set.
 
+Note: Even with @code{MANDATORY}, there will be no run-time termination when
+the device number in a @code{device} clause or argument to a device memory
+routine is for host, which includes using the device number in the
+@var{default-device-var} ICV.  However, the initial value of
+the @var{default-device-var} ICV is affected by @code{MANDATORY}.
+
+@item @emph{See also}:
+@ref{OMP_DEFAULT_DEVICE}
+
 @item @emph{Reference}:
-@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.17
+@uref{https://www.openmp.org, OpenMP specification v5.2}, Section 21.2.8
 @end table
 
 
