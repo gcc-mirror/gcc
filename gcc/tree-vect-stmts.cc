@@ -9279,6 +9279,40 @@ vectorizable_store (vec_info *vinfo,
       stmt_vec_info next_stmt_info = first_stmt_info;
       for (i = 0; i < vec_num; i++)
 	{
+	  if (!costing_p)
+	    {
+	      if (slp)
+		vec_oprnd = vec_oprnds[i];
+	      else if (grouped_store)
+		/* For grouped stores vectorized defs are interleaved in
+		   vect_permute_store_chain().  */
+		vec_oprnd = result_chain[i];
+	    }
+
+	  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	    {
+	      if (costing_p)
+		inside_cost += record_stmt_cost (cost_vec, 1, vec_perm,
+						 stmt_info, 0, vect_body);
+	      else
+		{
+		  tree perm_mask = perm_mask_for_reverse (vectype);
+		  tree perm_dest = vect_create_destination_var (
+		    vect_get_store_rhs (stmt_info), vectype);
+		  tree new_temp = make_ssa_name (perm_dest);
+
+		  /* Generate the permute statement.  */
+		  gimple *perm_stmt
+		    = gimple_build_assign (new_temp, VEC_PERM_EXPR, vec_oprnd,
+					   vec_oprnd, perm_mask);
+		  vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
+					       gsi);
+
+		  perm_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  vec_oprnd = new_temp;
+		}
+	    }
+
 	  if (costing_p)
 	    {
 	      vect_get_store_cost (vinfo, stmt_info, 1,
@@ -9294,8 +9328,6 @@ vectorizable_store (vec_info *vinfo,
 
 	      continue;
 	    }
-	  unsigned misalign;
-	  unsigned HOST_WIDE_INT align;
 
 	  tree final_mask = NULL_TREE;
 	  tree final_len = NULL_TREE;
@@ -9315,13 +9347,8 @@ vectorizable_store (vec_info *vinfo,
 	    dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
 
-	  if (slp)
-	    vec_oprnd = vec_oprnds[i];
-	  else if (grouped_store)
-	    /* For grouped stores vectorized defs are interleaved in
-	       vect_permute_store_chain().  */
-	    vec_oprnd = result_chain[i];
-
+	  unsigned misalign;
+	  unsigned HOST_WIDE_INT align;
 	  align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 	  if (alignment_support_scheme == dr_aligned)
 	    misalign = 0;
@@ -9337,24 +9364,6 @@ vectorizable_store (vec_info *vinfo,
 	    set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 				    misalign);
 	  align = least_bit_hwi (misalign | align);
-
-	  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-	    {
-	      tree perm_mask = perm_mask_for_reverse (vectype);
-	      tree perm_dest
-		= vect_create_destination_var (vect_get_store_rhs (stmt_info),
-					       vectype);
-	      tree new_temp = make_ssa_name (perm_dest);
-
-	      /* Generate the permute statement.  */
-	      gimple *perm_stmt
-		= gimple_build_assign (new_temp, VEC_PERM_EXPR, vec_oprnd,
-				       vec_oprnd, perm_mask);
-	      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt, gsi);
-
-	      perm_stmt = SSA_NAME_DEF_STMT (new_temp);
-	      vec_oprnd = new_temp;
-	    }
 
 	  /* Compute IFN when LOOP_LENS or final_mask valid.  */
 	  machine_mode vmode = TYPE_MODE (vectype);
