@@ -951,81 +951,6 @@ cfun_returns (tree decl)
   return false;
 }
 
-/* Function vect_model_store_cost
-
-   Models cost for stores.  In the case of grouped accesses, one access
-   has the overhead of the grouped access attributed to it.  */
-
-static void
-vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
-		       vect_memory_access_type memory_access_type,
-		       dr_alignment_support alignment_support_scheme,
-		       int misalignment,
-		       vec_load_store_type vls_type, slp_tree slp_node,
-		       stmt_vector_for_cost *cost_vec)
-{
-  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
-	      && memory_access_type != VMAT_ELEMENTWISE
-	      && memory_access_type != VMAT_STRIDED_SLP
-	      && memory_access_type != VMAT_LOAD_STORE_LANES
-	      && memory_access_type != VMAT_CONTIGUOUS_PERMUTE);
-
-  unsigned int inside_cost = 0, prologue_cost = 0;
-
-  /* ???  Somehow we need to fix this at the callers.  */
-  if (slp_node)
-    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-
-  if (vls_type == VLS_STORE_INVARIANT)
-    {
-      if (!slp_node)
-	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-					   stmt_info, 0, vect_prologue);
-    }
-
-
-  /* Costs of the stores.  */
-  vect_get_store_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
-		       misalignment, &inside_cost, cost_vec);
-
-  /* When vectorizing a store into the function result assign
-     a penalty if the function returns in a multi-register location.
-     In this case we assume we'll end up with having to spill the
-     vector result and do piecewise loads as a conservative estimate.  */
-  tree base = get_base_address (STMT_VINFO_DATA_REF (stmt_info)->ref);
-  if (base
-      && (TREE_CODE (base) == RESULT_DECL
-	  || (DECL_P (base) && cfun_returns (base)))
-      && !aggregate_value_p (base, cfun->decl))
-    {
-      rtx reg = hard_function_value (TREE_TYPE (base), cfun->decl, 0, 1);
-      /* ???  Handle PARALLEL in some way.  */
-      if (REG_P (reg))
-	{
-	  int nregs = hard_regno_nregs (REGNO (reg), GET_MODE (reg));
-	  /* Assume that a single reg-reg move is possible and cheap,
-	     do not account for vector to gp register move cost.  */
-	  if (nregs > 1)
-	    {
-	      /* Spill.  */
-	      prologue_cost += record_stmt_cost (cost_vec, ncopies,
-						 vector_store,
-						 stmt_info, 0, vect_epilogue);
-	      /* Loads.  */
-	      prologue_cost += record_stmt_cost (cost_vec, ncopies * nregs,
-						 scalar_load,
-						 stmt_info, 0, vect_epilogue);
-	    }
-	}
-    }
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_model_store_cost: inside_cost = %d, "
-                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
-}
-
-
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_store_cost (vec_info *, stmt_vec_info stmt_info, int ncopies,
@@ -9223,6 +9148,11 @@ vectorizable_store (vec_info *vinfo,
       return true;
     }
 
+  gcc_assert (memory_access_type == VMAT_CONTIGUOUS
+	      || memory_access_type == VMAT_CONTIGUOUS_DOWN
+	      || memory_access_type == VMAT_CONTIGUOUS_PERMUTE
+	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE);
+
   unsigned inside_cost = 0, prologue_cost = 0;
   auto_vec<tree> result_chain (group_size);
   auto_vec<tree, 1> vec_oprnds;
@@ -9257,10 +9187,9 @@ vectorizable_store (vec_info *vinfo,
 		     that there is no interleaving, DR_GROUP_SIZE is 1,
 		     and only one iteration of the loop will be executed.  */
 		  op = vect_get_store_rhs (next_stmt_info);
-		  if (costing_p
-		      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
+		  if (costing_p)
 		    update_prologue_cost (&prologue_cost, op);
-		  else if (!costing_p)
+		  else
 		    {
 		      vect_get_vec_defs_for_operand (vinfo, next_stmt_info,
 						     ncopies, op,
@@ -9352,10 +9281,9 @@ vectorizable_store (vec_info *vinfo,
 	{
 	  if (costing_p)
 	    {
-	      if (memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
-		vect_get_store_cost (vinfo, stmt_info, 1,
-				     alignment_support_scheme, misalignment,
-				     &inside_cost, cost_vec);
+	      vect_get_store_cost (vinfo, stmt_info, 1,
+				   alignment_support_scheme, misalignment,
+				   &inside_cost, cost_vec);
 
 	      if (!slp)
 		{
@@ -9550,18 +9478,41 @@ vectorizable_store (vec_info *vinfo,
 
   if (costing_p)
     {
-      if (memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
+      /* When vectorizing a store into the function result assign
+	 a penalty if the function returns in a multi-register location.
+	 In this case we assume we'll end up with having to spill the
+	 vector result and do piecewise loads as a conservative estimate.  */
+      tree base = get_base_address (STMT_VINFO_DATA_REF (stmt_info)->ref);
+      if (base
+	  && (TREE_CODE (base) == RESULT_DECL
+	      || (DECL_P (base) && cfun_returns (base)))
+	  && !aggregate_value_p (base, cfun->decl))
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "vect_model_store_cost: inside_cost = %d, "
-			     "prologue_cost = %d .\n",
-			     inside_cost, prologue_cost);
+	  rtx reg = hard_function_value (TREE_TYPE (base), cfun->decl, 0, 1);
+	  /* ???  Handle PARALLEL in some way.  */
+	  if (REG_P (reg))
+	    {
+	      int nregs = hard_regno_nregs (REGNO (reg), GET_MODE (reg));
+	      /* Assume that a single reg-reg move is possible and cheap,
+		 do not account for vector to gp register move cost.  */
+	      if (nregs > 1)
+		{
+		  /* Spill.  */
+		  prologue_cost
+		    += record_stmt_cost (cost_vec, ncopies, vector_store,
+					 stmt_info, 0, vect_epilogue);
+		  /* Loads.  */
+		  prologue_cost
+		    += record_stmt_cost (cost_vec, ncopies * nregs, scalar_load,
+					 stmt_info, 0, vect_epilogue);
+		}
+	    }
 	}
-      else
-	vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
-			       alignment_support_scheme, misalignment, vls_type,
-			       slp_node, cost_vec);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_store_cost: inside_cost = %d, "
+			 "prologue_cost = %d .\n",
+			 inside_cost, prologue_cost);
     }
 
   return true;
