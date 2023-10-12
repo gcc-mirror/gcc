@@ -10403,11 +10403,36 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	}
 
       if (expr1->ts.type == BT_CHARACTER
-	  && expr1->symtree->n.sym->ts.deferred
-	  && expr1->symtree->n.sym->ts.u.cl->backend_decl
-	  && VAR_P (expr1->symtree->n.sym->ts.u.cl->backend_decl))
+	  && expr1->ts.deferred)
 	{
-	  tmp = expr1->symtree->n.sym->ts.u.cl->backend_decl;
+	  gfc_symbol *psym = expr1->symtree->n.sym;
+	  tmp = NULL_TREE;
+	  if (psym->ts.type == BT_CHARACTER)
+	    {
+	      gcc_assert (psym->ts.u.cl->backend_decl
+			  && VAR_P (psym->ts.u.cl->backend_decl));
+	      tmp = psym->ts.u.cl->backend_decl;
+	    }
+	  else if (expr1->ts.u.cl->backend_decl
+		   && VAR_P (expr1->ts.u.cl->backend_decl))
+	    tmp = expr1->ts.u.cl->backend_decl;
+	  else if (TREE_CODE (lse.expr) == COMPONENT_REF)
+	    {
+	      gfc_ref *ref = expr1->ref;
+	      for (;ref; ref = ref->next)
+		{
+		  if (ref->type == REF_COMPONENT
+		      && ref->u.c.component->ts.type == BT_CHARACTER
+		      && gfc_deferred_strlen (ref->u.c.component, &tmp))
+		    tmp = fold_build3_loc (input_location, COMPONENT_REF,
+					   TREE_TYPE (tmp),
+					   TREE_OPERAND (lse.expr, 0),
+					   tmp, NULL_TREE);
+		}
+	    }
+
+	  gcc_assert (tmp);
+
 	  if (expr2->expr_type != EXPR_NULL)
 	    gfc_add_modify (&block, tmp,
 			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
