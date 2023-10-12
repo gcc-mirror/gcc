@@ -8558,10 +8558,18 @@ vectorizable_store (vec_info *vinfo,
 	  else if (group_size >= const_nunits
 		   && group_size % const_nunits == 0)
 	    {
-	      nstores = 1;
-	      lnel = const_nunits;
-	      ltype = vectype;
-	      lvectype = vectype;
+	      int mis_align = dr_misalignment (first_dr_info, vectype);
+	      dr_alignment_support dr_align
+		= vect_supportable_dr_alignment (vinfo, dr_info, vectype,
+						 mis_align);
+	      if (dr_align == dr_aligned
+		  || dr_align == dr_unaligned_supported)
+		{
+		  nstores = 1;
+		  lnel = const_nunits;
+		  ltype = vectype;
+		  lvectype = vectype;
+		}
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
