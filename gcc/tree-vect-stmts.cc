@@ -966,7 +966,8 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 {
   gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
 	      && memory_access_type != VMAT_ELEMENTWISE
-	      && memory_access_type != VMAT_STRIDED_SLP);
+	      && memory_access_type != VMAT_STRIDED_SLP
+	      && memory_access_type != VMAT_LOAD_STORE_LANES);
   unsigned int inside_cost = 0, prologue_cost = 0;
   stmt_vec_info first_stmt_info = stmt_info;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -8408,7 +8409,8 @@ vectorizable_store (vec_info *vinfo,
       if (grouped_store
 	  && !slp
 	  && first_stmt_info != stmt_info
-	  && memory_access_type == VMAT_ELEMENTWISE)
+	  && (memory_access_type == VMAT_ELEMENTWISE
+	      || memory_access_type == VMAT_LOAD_STORE_LANES))
 	return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
@@ -8478,6 +8480,31 @@ vectorizable_store (vec_info *vinfo,
   if (!costing_p && dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform store. ncopies = %d\n",
 		     ncopies);
+
+  /* Check if we need to update prologue cost for invariant,
+     and update it accordingly if so.  If it's not for
+     interleaving store, we can just check vls_type; but if
+     it's for interleaving store, need to check the def_type
+     of the stored value since the current vls_type is just
+     for first_stmt_info.  */
+  auto update_prologue_cost = [&](unsigned *prologue_cost, tree store_rhs)
+  {
+    gcc_assert (costing_p);
+    if (slp)
+      return;
+    if (grouped_store)
+      {
+	gcc_assert (store_rhs);
+	enum vect_def_type cdt;
+	gcc_assert (vect_is_simple_use (store_rhs, vinfo, &cdt));
+	if (cdt != vect_constant_def && cdt != vect_external_def)
+	  return;
+      }
+    else if (vls_type != VLS_STORE_INVARIANT)
+      return;
+    *prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec, stmt_info,
+					0, vect_prologue);
+  };
 
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
@@ -8646,14 +8673,8 @@ vectorizable_store (vec_info *vinfo,
 	  if (!costing_p)
 	    vect_get_vec_defs (vinfo, next_stmt_info, slp_node, ncopies, op,
 			       &vec_oprnds);
-	  else if (!slp)
-	    {
-	      enum vect_def_type cdt;
-	      gcc_assert (vect_is_simple_use (op, vinfo, &cdt));
-	      if (cdt == vect_constant_def || cdt == vect_external_def)
-		prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-						   stmt_info, 0, vect_prologue);
-	    }
+	  else
+	    update_prologue_cost (&prologue_cost, op);
 	  unsigned int group_el = 0;
 	  unsigned HOST_WIDE_INT
 	    elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
@@ -8857,13 +8878,7 @@ vectorizable_store (vec_info *vinfo,
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
       gcc_assert (!slp && grouped_store);
-      if (costing_p)
-	{
-	  vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
-				 alignment_support_scheme, misalignment,
-				 vls_type, slp_node, cost_vec);
-	  return true;
-	}
+      unsigned inside_cost = 0, prologue_cost = 0;
       for (j = 0; j < ncopies; j++)
 	{
 	  gimple *new_stmt;
@@ -8879,29 +8894,39 @@ vectorizable_store (vec_info *vinfo,
 		     DR_GROUP_SIZE is the exact number of stmts in the
 		     chain. Therefore, NEXT_STMT_INFO can't be NULL_TREE.  */
 		  op = vect_get_store_rhs (next_stmt_info);
-		  vect_get_vec_defs_for_operand (vinfo, next_stmt_info, ncopies,
-						 op, gvec_oprnds[i]);
-		  vec_oprnd = (*gvec_oprnds[i])[0];
-		  dr_chain.quick_push (vec_oprnd);
+		  if (costing_p)
+		    update_prologue_cost (&prologue_cost, op);
+		  else
+		    {
+		      vect_get_vec_defs_for_operand (vinfo, next_stmt_info,
+						     ncopies, op,
+						     gvec_oprnds[i]);
+		      vec_oprnd = (*gvec_oprnds[i])[0];
+		      dr_chain.quick_push (vec_oprnd);
+		    }
 		  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 		}
-	      if (mask)
-		{
-		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
-						 mask, &vec_masks,
-						 mask_vectype);
-		  vec_mask = vec_masks[0];
-		}
 
-	      /* We should have catched mismatched types earlier.  */
-	      gcc_assert (
-		useless_type_conversion_p (vectype, TREE_TYPE (vec_oprnd)));
-	      dataref_ptr
-		= vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
-					    NULL, offset, &dummy, gsi,
-					    &ptr_incr, false, bump);
+	      if (!costing_p)
+		{
+		  if (mask)
+		    {
+		      vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
+						     mask, &vec_masks,
+						     mask_vectype);
+		      vec_mask = vec_masks[0];
+		    }
+
+		  /* We should have catched mismatched types earlier.  */
+		  gcc_assert (
+		    useless_type_conversion_p (vectype, TREE_TYPE (vec_oprnd)));
+		  dataref_ptr
+		    = vect_create_data_ref_ptr (vinfo, first_stmt_info,
+						aggr_type, NULL, offset, &dummy,
+						gsi, &ptr_incr, false, bump);
+		}
 	    }
-	  else
+	  else if (!costing_p)
 	    {
 	      gcc_assert (!LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo));
 	      /* DR_CHAIN is then used as an input to
@@ -8915,6 +8940,15 @@ vectorizable_store (vec_info *vinfo,
 		vec_mask = vec_masks[j];
 	      dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					     stmt_info, bump);
+	    }
+
+	  if (costing_p)
+	    {
+	      for (i = 0; i < vec_num; i++)
+		vect_get_store_cost (vinfo, stmt_info, 1,
+				     alignment_support_scheme, misalignment,
+				     &inside_cost, cost_vec);
+	      continue;
 	    }
 
 	  /* Get an array into which we can store the individual vectors.  */
@@ -9002,6 +9036,12 @@ vectorizable_store (vec_info *vinfo,
 	    *vec_stmt = new_stmt;
 	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
+
+      if (costing_p && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_store_cost: inside_cost = %d, "
+			 "prologue_cost = %d .\n",
+			 inside_cost, prologue_cost);
 
       return true;
     }
