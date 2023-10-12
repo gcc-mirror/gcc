@@ -10223,9 +10223,15 @@ package body Sem_Ch4 is
 
                elsif not Comes_From_Source (Visible_Op)
                  and then Alias (Visible_Op) = Op
-                 and then not Is_Hidden (Visible_Op)
                then
-                  return True;
+                  --  If Visible_Op or what it overrides is not hidden, then we
+                  --  have found what we're looking for.
+
+                  if not Is_Hidden (Visible_Op)
+                    or else not Is_Hidden (Overridden_Operation (Op))
+                  then
+                     return True;
+                  end if;
                end if;
 
                Visible_Op := Homonym (Visible_Op);
