@@ -2270,6 +2270,7 @@ namespace wi
     /* This ought to be true, except for the special case that BImode
        is canonicalized to STORE_FLAG_VALUE, which might be 1.  */
     static const bool is_sign_extended = false;
+    static const bool needs_write_val_arg = false;
     static unsigned int get_precision (const rtx_mode_t &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
 				      const rtx_mode_t &);

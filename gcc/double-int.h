@@ -442,6 +442,7 @@ namespace wi
   {
     static const enum precision_type precision_type = INL_CONST_PRECISION;
     static const bool host_dependent_precision = true;
+    static const bool needs_write_val_arg = false;
     static const unsigned int precision = HOST_BITS_PER_DOUBLE_INT;
     static unsigned int get_precision (const double_int &);
     static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
