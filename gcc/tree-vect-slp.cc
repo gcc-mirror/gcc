@@ -505,6 +505,14 @@ static const int arg2_map[] = { 1, 2 };
 static const int arg1_arg4_map[] = { 2, 1, 4 };
 static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
+static const int mask_call_maps[6][7] = {
+  { 1, 1, },
+  { 2, 1, 2, },
+  { 3, 1, 2, 3, },
+  { 4, 1, 2, 3, 4, },
+  { 5, 1, 2, 3, 4, 5, },
+  { 6, 1, 2, 3, 4, 5, 6 },
+};
 
 /* For most SLP statements, there is a one-to-one mapping between
    gimple arguments and child nodes.  If that is not true for STMT,
@@ -546,6 +554,15 @@ vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
 
 	  case IFN_MASK_STORE:
 	    return arg3_arg2_map;
+
+	  case IFN_MASK_CALL:
+	    {
+	      unsigned nargs = gimple_call_num_args (call);
+	      if (nargs >= 2 && nargs <= 7)
+		return mask_call_maps[nargs-2];
+	      else
+		return nullptr;
+	    }
 
 	  default:
 	    break;
@@ -1070,7 +1087,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       if (call_stmt)
 	{
 	  combined_fn cfn = gimple_call_combined_fn (call_stmt);
-	  if (cfn != CFN_LAST)
+	  if (cfn != CFN_LAST && cfn != CFN_MASK_CALL)
 	    rhs_code = cfn;
 	  else
 	    rhs_code = CALL_EXPR;
@@ -1085,6 +1102,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      rhs_code = CFN_MASK_STORE;
 	    }
 	  else if ((cfn != CFN_LAST
+		    && cfn != CFN_MASK_CALL
 		    && internal_fn_p (cfn)
 		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
 		   || gimple_call_tail_p (call_stmt)
