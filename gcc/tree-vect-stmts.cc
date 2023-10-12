@@ -964,7 +964,9 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 		       vec_load_store_type vls_type, slp_tree slp_node,
 		       stmt_vector_for_cost *cost_vec)
 {
-  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER);
+  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
+	      && memory_access_type != VMAT_ELEMENTWISE
+	      && memory_access_type != VMAT_STRIDED_SLP);
   unsigned int inside_cost = 0, prologue_cost = 0;
   stmt_vec_info first_stmt_info = stmt_info;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -1010,29 +1012,9 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
                          group_size);
     }
 
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   /* Costs of the stores.  */
-  if (memory_access_type == VMAT_ELEMENTWISE)
-    {
-      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
-      /* N scalar stores plus extracting the elements.  */
-      inside_cost += record_stmt_cost (cost_vec,
-				       ncopies * assumed_nunits,
-				       scalar_store, stmt_info, 0, vect_body);
-    }
-  else
-    vect_get_store_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
-			 misalignment, &inside_cost, cost_vec);
-
-  if (memory_access_type == VMAT_ELEMENTWISE
-      || memory_access_type == VMAT_STRIDED_SLP)
-    {
-      /* N scalar stores plus extracting the elements.  */
-      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
-      inside_cost += record_stmt_cost (cost_vec,
-				       ncopies * assumed_nunits,
-				       vec_to_scalar, stmt_info, 0, vect_body);
-    }
+  vect_get_store_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
+		       misalignment, &inside_cost, cost_vec);
 
   /* When vectorizing a store into the function result assign
      a penalty if the function returns in a multi-register location.
@@ -8416,6 +8398,18 @@ vectorizable_store (vec_info *vinfo,
 			 "Vectorizing an unaligned access.\n");
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
+
+      /* As function vect_transform_stmt shows, for interleaving stores
+	 the whole chain is vectorized when the last store in the chain
+	 is reached, the other stores in the group are skipped.  So we
+	 want to only cost the last one here, but it's not trivial to
+	 get the last, as it's equivalent to use the first one for
+	 costing, use the first one instead.  */
+      if (grouped_store
+	  && !slp
+	  && first_stmt_info != stmt_info
+	  && memory_access_type == VMAT_ELEMENTWISE)
+	return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
 
@@ -8488,14 +8482,7 @@ vectorizable_store (vec_info *vinfo,
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
     {
-      if (costing_p)
-	{
-	  vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
-				 alignment_support_scheme, misalignment,
-				 vls_type, slp_node, cost_vec);
-	  return true;
-	}
-
+      unsigned inside_cost = 0, prologue_cost = 0;
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
       gimple *incr;
@@ -8503,7 +8490,7 @@ vectorizable_store (vec_info *vinfo,
       tree ivstep;
       tree running_off;
       tree stride_base, stride_step, alias_off;
-      tree vec_oprnd;
+      tree vec_oprnd = NULL_TREE;
       tree dr_offset;
       unsigned int g;
       /* Checked by get_load_store_type.  */
@@ -8609,26 +8596,30 @@ vectorizable_store (vec_info *vinfo,
 		  lnel = const_nunits;
 		  ltype = vectype;
 		  lvectype = vectype;
+		  alignment_support_scheme = dr_align;
+		  misalignment = mis_align;
 		}
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	}
 
-      ivstep = stride_step;
-      ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (ivstep), ivstep,
-			    build_int_cst (TREE_TYPE (ivstep), vf));
+      if (!costing_p)
+	{
+	  ivstep = stride_step;
+	  ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (ivstep), ivstep,
+				build_int_cst (TREE_TYPE (ivstep), vf));
 
-      standard_iv_increment_position (loop, &incr_gsi, &insert_after);
+	  standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
-      ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
-      create_iv (stride_base, PLUS_EXPR, ivstep, NULL,
-		 loop, &incr_gsi, insert_after,
-		 &offvar, NULL);
-      incr = gsi_stmt (incr_gsi);
+	  stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
+	  ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
+	  create_iv (stride_base, PLUS_EXPR, ivstep, NULL, loop, &incr_gsi,
+		     insert_after, &offvar, NULL);
+	  incr = gsi_stmt (incr_gsi);
 
-      stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
+	  stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
+	}
 
       alias_off = build_int_cst (ref_type, 0);
       stmt_vec_info next_stmt_info = first_stmt_info;
@@ -8636,39 +8627,76 @@ vectorizable_store (vec_info *vinfo,
       for (g = 0; g < group_size; g++)
 	{
 	  running_off = offvar;
-	  if (g)
+	  if (!costing_p)
 	    {
-	      tree size = TYPE_SIZE_UNIT (ltype);
-	      tree pos = fold_build2 (MULT_EXPR, sizetype, size_int (g),
-				      size);
-	      tree newoff = copy_ssa_name (running_off, NULL);
-	      incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
-					  running_off, pos);
-	      vect_finish_stmt_generation (vinfo, stmt_info, incr, gsi);
-	      running_off = newoff;
+	      if (g)
+		{
+		  tree size = TYPE_SIZE_UNIT (ltype);
+		  tree pos
+		    = fold_build2 (MULT_EXPR, sizetype, size_int (g), size);
+		  tree newoff = copy_ssa_name (running_off, NULL);
+		  incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+					      running_off, pos);
+		  vect_finish_stmt_generation (vinfo, stmt_info, incr, gsi);
+		  running_off = newoff;
+		}
 	    }
 	  if (!slp)
 	    op = vect_get_store_rhs (next_stmt_info);
-	  vect_get_vec_defs (vinfo, next_stmt_info, slp_node, ncopies,
-			     op, &vec_oprnds);
+	  if (!costing_p)
+	    vect_get_vec_defs (vinfo, next_stmt_info, slp_node, ncopies, op,
+			       &vec_oprnds);
+	  else if (!slp)
+	    {
+	      enum vect_def_type cdt;
+	      gcc_assert (vect_is_simple_use (op, vinfo, &cdt));
+	      if (cdt == vect_constant_def || cdt == vect_external_def)
+		prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
+						   stmt_info, 0, vect_prologue);
+	    }
 	  unsigned int group_el = 0;
 	  unsigned HOST_WIDE_INT
 	    elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
 	  for (j = 0; j < ncopies; j++)
 	    {
-	      vec_oprnd = vec_oprnds[j];
-	      /* Pun the vector to extract from if necessary.  */
-	      if (lvectype != vectype)
+	      if (!costing_p)
 		{
-		  tree tem = make_ssa_name (lvectype);
-		  gimple *pun
-		    = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
-							lvectype, vec_oprnd));
-		  vect_finish_stmt_generation (vinfo, stmt_info, pun, gsi);
-		  vec_oprnd = tem;
+		  vec_oprnd = vec_oprnds[j];
+		  /* Pun the vector to extract from if necessary.  */
+		  if (lvectype != vectype)
+		    {
+		      tree tem = make_ssa_name (lvectype);
+		      tree cvt
+			= build1 (VIEW_CONVERT_EXPR, lvectype, vec_oprnd);
+		      gimple *pun = gimple_build_assign (tem, cvt);
+		      vect_finish_stmt_generation (vinfo, stmt_info, pun, gsi);
+		      vec_oprnd = tem;
+		    }
 		}
 	      for (i = 0; i < nstores; i++)
 		{
+		  if (costing_p)
+		    {
+		      /* Only need vector extracting when there are more
+			 than one stores.  */
+		      if (nstores > 1)
+			inside_cost
+			  += record_stmt_cost (cost_vec, 1, vec_to_scalar,
+					       stmt_info, 0, vect_body);
+		      /* Take a single lane vector type store as scalar
+			 store to avoid ICE like 110776.  */
+		      if (VECTOR_TYPE_P (ltype)
+			  && known_ne (TYPE_VECTOR_SUBPARTS (ltype), 1U))
+			vect_get_store_cost (vinfo, stmt_info, 1,
+					     alignment_support_scheme,
+					     misalignment, &inside_cost,
+					     cost_vec);
+		      else
+			inside_cost
+			  += record_stmt_cost (cost_vec, 1, scalar_store,
+					       stmt_info, 0, vect_body);
+		      continue;
+		    }
 		  tree newref, newoff;
 		  gimple *incr, *assign;
 		  tree size = TYPE_SIZE (ltype);
@@ -8718,6 +8746,12 @@ vectorizable_store (vec_info *vinfo,
 	  if (slp)
 	    break;
 	}
+
+      if (costing_p && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_store_cost: inside_cost = %d, "
+			 "prologue_cost = %d .\n",
+			 inside_cost, prologue_cost);
 
       return true;
     }
