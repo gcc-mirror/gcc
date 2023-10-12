@@ -11672,7 +11672,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 					LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 					&bound))
 	    loop->nb_iterations_upper_bound
-	      = wi::umin ((widest_int) (bound - 1),
+	      = wi::umin ((bound_wide_int) (bound - 1),
 			  loop->nb_iterations_upper_bound);
       }
   }

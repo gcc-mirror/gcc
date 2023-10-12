@@ -365,13 +365,13 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     fputs (code == CALL_EXPR ? " must-tail-call" : " static", file);
   if (TREE_DEPRECATED (node))
     fputs (" deprecated", file);
-  if (TREE_UNAVAILABLE (node))
-    fputs (" unavailable", file);
   if (TREE_VISITED (node))
     fputs (" visited", file);
 
   if (code != TREE_VEC && code != INTEGER_CST && code != SSA_NAME)
     {
+      if (TREE_UNAVAILABLE (node))
+	fputs (" unavailable", file);
       if (TREE_LANG_FLAG_0 (node))
 	fputs (" tree_0", file);
       if (TREE_LANG_FLAG_1 (node))

@@ -440,7 +440,7 @@ namespace wi
   template <>
   struct int_traits <double_int>
   {
-    static const enum precision_type precision_type = CONST_PRECISION;
+    static const enum precision_type precision_type = INL_CONST_PRECISION;
     static const bool host_dependent_precision = true;
     static const unsigned int precision = HOST_BITS_PER_DOUBLE_INT;
     static unsigned int get_precision (const double_int &);

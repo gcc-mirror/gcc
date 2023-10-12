@@ -1154,7 +1154,11 @@ go_output_typedef (class godump_container *container, tree decl)
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		      tree_to_uhwi (value));
 	  else
-	    print_hex (wi::to_wide (element), buf);
+	    {
+	      wide_int w = wi::to_wide (element);
+	      gcc_assert (w.get_len () <= WIDE_INT_MAX_INL_ELTS);
+	      print_hex (w, buf);
+	    }
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

@@ -2137,7 +2137,10 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  Use widest_int
      so that any extension is done according ARG1's type.  */
-  return force_fit_type (type, wi::to_widest (arg1),
+  tree arg1_type = TREE_TYPE (arg1);
+  unsigned prec = MAX (TYPE_PRECISION (arg1_type), TYPE_PRECISION (type));
+  return force_fit_type (type, wide_int::from (wi::to_wide (arg1), prec,
+					       TYPE_SIGN (arg1_type)),
 			 !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			 TREE_OVERFLOW (arg1));
 }
@@ -9565,8 +9568,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	  if (change)
 	    {
-	      tem = force_fit_type (type, wi::to_widest (and1), 0,
-				    TREE_OVERFLOW (and1));
+	      tree and1_type = TREE_TYPE (and1);
+	      unsigned prec = MAX (TYPE_PRECISION (and1_type),
+				   TYPE_PRECISION (type));
+	      tem = force_fit_type (type,
+				    wide_int::from (wi::to_wide (and1), prec,
+						    TYPE_SIGN (and1_type)),
+				    0, TREE_OVERFLOW (and1));
 	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
 				      fold_convert_loc (loc, type, and0), tem);
 	    }

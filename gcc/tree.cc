@@ -2676,13 +2676,13 @@ build_zero_cst (tree type)
 tree
 build_replicated_int_cst (tree type, unsigned int width, HOST_WIDE_INT value)
 {
-  int n = (TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1)
-    / HOST_BITS_PER_WIDE_INT;
+  int n = ((TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1)
+	   / HOST_BITS_PER_WIDE_INT);
   unsigned HOST_WIDE_INT low, mask;
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT a[WIDE_INT_MAX_INL_ELTS];
   int i;
 
-  gcc_assert (n && n <= WIDE_INT_MAX_ELTS);
+  gcc_assert (n && n <= WIDE_INT_MAX_INL_ELTS);
 
   if (width == HOST_BITS_PER_WIDE_INT)
     low = value;
@@ -2696,8 +2696,8 @@ build_replicated_int_cst (tree type, unsigned int width, HOST_WIDE_INT value)
     a[i] = low;
 
   gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
-  return wide_int_to_tree
-    (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
+  return wide_int_to_tree (type, wide_int::from_array (a, n,
+						       TYPE_PRECISION (type)));
 }
 
 /* If floating-point type TYPE has an IEEE-style sign bit, return an

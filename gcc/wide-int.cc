@@ -51,7 +51,7 @@ typedef unsigned int UDWtype __attribute__ ((mode (TI)));
 #include "longlong.h"
 #endif
 
-static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
+static const HOST_WIDE_INT zeros[1] = {};
 
 /*
  * Internal utilities.
@@ -62,8 +62,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 #define HALF_INT_MASK ((HOST_WIDE_INT_1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
 
 #define BLOCK_OF(TARGET) ((TARGET) / HOST_BITS_PER_WIDE_INT)
-#define BLOCKS_NEEDED(PREC) \
-  (PREC ? (((PREC) + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT) : 1)
+#define BLOCKS_NEEDED(PREC) (PREC ? CEIL (PREC, HOST_BITS_PER_WIDE_INT) : 1)
 #define SIGN_MASK(X) ((HOST_WIDE_INT) (X) < 0 ? -1 : 0)
 
 /* Return the value a VAL[I] if I < LEN, otherwise, return 0 or -1
@@ -96,7 +95,7 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
   top = val[len - 1];
   if (len * HOST_BITS_PER_WIDE_INT > precision)
     val[len - 1] = top = sext_hwi (top, precision % HOST_BITS_PER_WIDE_INT);
-  if (top != 0 && top != (HOST_WIDE_INT)-1)
+  if (top != 0 && top != HOST_WIDE_INT_M1)
     return len;
 
   /* At this point we know that the top is either 0 or -1.  Find the
@@ -163,7 +162,7 @@ wi::from_buffer (const unsigned char *buffer, unsigned int buffer_len)
   /* We have to clear all the bits ourself, as we merely or in values
      below.  */
   unsigned int len = BLOCKS_NEEDED (precision);
-  HOST_WIDE_INT *val = result.write_val ();
+  HOST_WIDE_INT *val = result.write_val (0);
   for (unsigned int i = 0; i < len; ++i)
     val[i] = 0;
 
@@ -232,8 +231,7 @@ wi::to_mpz (const wide_int_ref &x, mpz_t result, signop sgn)
     }
   else if (excess < 0 && wi::neg_p (x))
     {
-      int extra
-	= (-excess + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+      int extra = CEIL (-excess, HOST_BITS_PER_WIDE_INT);
       HOST_WIDE_INT *t = XALLOCAVEC (HOST_WIDE_INT, len + extra);
       for (int i = 0; i < len; i++)
 	t[i] = v[i];
@@ -280,8 +278,8 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
      extracted from the GMP manual, section "Integer Import and Export":
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
   numb = CHAR_BIT * sizeof (HOST_WIDE_INT);
-  count = (mpz_sizeinbase (x, 2) + numb - 1) / numb;
-  HOST_WIDE_INT *val = res.write_val ();
+  count = CEIL (mpz_sizeinbase (x, 2), numb);
+  HOST_WIDE_INT *val = res.write_val (0);
   /* Read the absolute value.
 
      Write directly to the wide_int storage if possible, otherwise leave
@@ -289,7 +287,7 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
      to use mpz_tdiv_r_2exp for the latter case, but the situation is
      pathological and it seems safer to operate on the original mpz value
      in all cases.  */
-  void *valres = mpz_export (count <= WIDE_INT_MAX_ELTS ? val : 0,
+  void *valres = mpz_export (count <= WIDE_INT_MAX_INL_ELTS ? val : 0,
 			     &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
   if (count < 1)
     {
@@ -1334,21 +1332,6 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
   unsigned HOST_WIDE_INT o0, o1, k, t;
   unsigned int i;
   unsigned int j;
-  unsigned int blocks_needed = BLOCKS_NEEDED (prec);
-  unsigned int half_blocks_needed = blocks_needed * 2;
-  /* The sizes here are scaled to support a 2x largest mode by 2x
-     largest mode yielding a 4x largest mode result.  This is what is
-     needed by vpn.  */
-
-  unsigned HOST_HALF_WIDE_INT
-    u[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  unsigned HOST_HALF_WIDE_INT
-    v[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  /* The '2' in 'R' is because we are internally doing a full
-     multiply.  */
-  unsigned HOST_HALF_WIDE_INT
-    r[2 * 4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << HOST_BITS_PER_HALF_WIDE_INT) - 1;
 
   /* If the top level routine did not really pass in an overflow, then
      just make sure that we never attempt to set it.  */
@@ -1467,6 +1450,37 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	}
       val[0] = high ? r >> prec : r;
       return 1;
+    }
+
+  /* The sizes here are scaled to support a 2x WIDE_INT_MAX_INL_PRECISION by 2x
+     WIDE_INT_MAX_INL_PRECISION yielding a 4x WIDE_INT_MAX_INL_PRECISION
+     result.  */
+
+  unsigned HOST_HALF_WIDE_INT
+    ubuf[4 * WIDE_INT_MAX_INL_PRECISION / HOST_BITS_PER_HALF_WIDE_INT];
+  unsigned HOST_HALF_WIDE_INT
+    vbuf[4 * WIDE_INT_MAX_INL_PRECISION / HOST_BITS_PER_HALF_WIDE_INT];
+  /* The '2' in 'R' is because we are internally doing a full
+     multiply.  */
+  unsigned HOST_HALF_WIDE_INT
+    rbuf[2 * 4 * WIDE_INT_MAX_INL_PRECISION / HOST_BITS_PER_HALF_WIDE_INT];
+  const HOST_WIDE_INT mask
+    = (HOST_WIDE_INT_1 << HOST_BITS_PER_HALF_WIDE_INT) - 1;
+  unsigned HOST_HALF_WIDE_INT *u = ubuf;
+  unsigned HOST_HALF_WIDE_INT *v = vbuf;
+  unsigned HOST_HALF_WIDE_INT *r = rbuf;
+
+  if (!high)
+    prec = MIN ((op1len + op2len + 1) * HOST_BITS_PER_WIDE_INT, prec);
+  unsigned int blocks_needed = BLOCKS_NEEDED (prec);
+  unsigned int half_blocks_needed = blocks_needed * 2;
+  if (UNLIKELY (prec > WIDE_INT_MAX_INL_PRECISION))
+    {
+      unsigned HOST_HALF_WIDE_INT *buf
+	= XALLOCAVEC (unsigned HOST_HALF_WIDE_INT, 4 * 4 * blocks_needed);
+      u = buf;
+      v = u + 4 * blocks_needed;
+      r = v + 4 * blocks_needed;
     }
 
   /* We do unsigned mul and then correct it.  */
@@ -1782,16 +1796,6 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 		     unsigned int divisor_prec, signop sgn,
 		     wi::overflow_type *oflow)
 {
-  unsigned int dividend_blocks_needed = 2 * BLOCKS_NEEDED (dividend_prec);
-  unsigned int divisor_blocks_needed = 2 * BLOCKS_NEEDED (divisor_prec);
-  unsigned HOST_HALF_WIDE_INT
-    b_quotient[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  unsigned HOST_HALF_WIDE_INT
-    b_remainder[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  unsigned HOST_HALF_WIDE_INT
-    b_dividend[(4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT) + 1];
-  unsigned HOST_HALF_WIDE_INT
-    b_divisor[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   unsigned int m, n;
   bool dividend_neg = false;
   bool divisor_neg = false;
@@ -1910,6 +1914,44 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	}
     }
 
+  unsigned HOST_HALF_WIDE_INT
+    b_quotient_buf[4 * WIDE_INT_MAX_INL_PRECISION
+		   / HOST_BITS_PER_HALF_WIDE_INT];
+  unsigned HOST_HALF_WIDE_INT
+    b_remainder_buf[4 * WIDE_INT_MAX_INL_PRECISION
+		    / HOST_BITS_PER_HALF_WIDE_INT];
+  unsigned HOST_HALF_WIDE_INT
+    b_dividend_buf[(4 * WIDE_INT_MAX_INL_PRECISION
+		    / HOST_BITS_PER_HALF_WIDE_INT) + 1];
+  unsigned HOST_HALF_WIDE_INT
+    b_divisor_buf[4 * WIDE_INT_MAX_INL_PRECISION
+		  / HOST_BITS_PER_HALF_WIDE_INT];
+  unsigned HOST_HALF_WIDE_INT *b_quotient = b_quotient_buf;
+  unsigned HOST_HALF_WIDE_INT *b_remainder = b_remainder_buf;
+  unsigned HOST_HALF_WIDE_INT *b_dividend = b_dividend_buf;
+  unsigned HOST_HALF_WIDE_INT *b_divisor = b_divisor_buf;
+
+  if (sgn == SIGNED || dividend_val[dividend_len - 1] >= 0)
+    dividend_prec = MIN ((dividend_len + 1) * HOST_BITS_PER_WIDE_INT,
+			 dividend_prec);
+  if (sgn == SIGNED || divisor_val[divisor_len - 1] >= 0)
+    divisor_prec = MIN (divisor_len * HOST_BITS_PER_WIDE_INT, divisor_prec);
+  unsigned int dividend_blocks_needed = 2 * BLOCKS_NEEDED (dividend_prec);
+  unsigned int divisor_blocks_needed = 2 * BLOCKS_NEEDED (divisor_prec);
+  if (UNLIKELY (dividend_prec > WIDE_INT_MAX_INL_PRECISION)
+      || UNLIKELY (divisor_prec > WIDE_INT_MAX_INL_PRECISION))
+    {
+      unsigned HOST_HALF_WIDE_INT *buf
+	= XALLOCAVEC (unsigned HOST_HALF_WIDE_INT,
+		      12 * dividend_blocks_needed
+		      + 4 * divisor_blocks_needed + 1);
+      b_quotient = buf;
+      b_remainder = b_quotient + 4 * dividend_blocks_needed;
+      b_dividend = b_remainder + 4 * dividend_blocks_needed;
+      b_divisor = b_dividend + 4 * dividend_blocks_needed + 1;
+      memset (b_quotient, 0,
+	      4 * dividend_blocks_needed * sizeof (HOST_HALF_WIDE_INT));
+    }
   wi_unpack (b_dividend, dividend.get_val (), dividend.get_len (),
 	     dividend_blocks_needed, dividend_prec, UNSIGNED);
   wi_unpack (b_divisor, divisor.get_val (), divisor.get_len (),
@@ -1924,7 +1966,8 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
   while (n > 1 && b_divisor[n - 1] == 0)
     n--;
 
-  memset (b_quotient, 0, sizeof (b_quotient));
+  if (b_quotient == b_quotient_buf)
+    memset (b_quotient_buf, 0, sizeof (b_quotient_buf));
 
   divmod_internal_2 (b_quotient, b_remainder, b_dividend, b_divisor, m, n);
 
@@ -1970,6 +2013,7 @@ wi::lshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 
   /* The whole-block shift fills with zeros.  */
   unsigned int len = BLOCKS_NEEDED (precision);
+  len = MIN (xlen + skip + 1, len);
   for (unsigned int i = 0; i < skip; ++i)
     val[i] = 0;
 
@@ -1993,21 +2037,16 @@ wi::lshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
   return canonize (val, len, precision);
 }
 
-/* Right shift XVAL by SHIFT and store the result in VAL.  Return the
+/* Right shift XVAL by SHIFT and store the result in VAL.  LEN is the
    number of blocks in VAL.  The input has XPRECISION bits and the
    output has XPRECISION - SHIFT bits.  */
-static unsigned int
+static void
 rshift_large_common (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
-		     unsigned int xlen, unsigned int xprecision,
-		     unsigned int shift)
+		     unsigned int xlen, unsigned int shift, unsigned int len)
 {
   /* Split the shift into a whole-block shift and a subblock shift.  */
   unsigned int skip = shift / HOST_BITS_PER_WIDE_INT;
   unsigned int small_shift = shift % HOST_BITS_PER_WIDE_INT;
-
-  /* Work out how many blocks are needed to store the significant bits
-     (excluding the upper zeros or signs).  */
-  unsigned int len = BLOCKS_NEEDED (xprecision - shift);
 
   /* It's easier to handle the simple block case specially.  */
   if (small_shift == 0)
@@ -2025,7 +2064,6 @@ rshift_large_common (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 	  val[i] |= curr << (-small_shift % HOST_BITS_PER_WIDE_INT);
 	}
     }
-  return len;
 }
 
 /* Logically right shift XVAL by SHIFT and store the result in VAL.
@@ -2036,11 +2074,18 @@ wi::lrshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 		   unsigned int xlen, unsigned int xprecision,
 		   unsigned int precision, unsigned int shift)
 {
-  unsigned int len = rshift_large_common (val, xval, xlen, xprecision, shift);
+  /* Work out how many blocks are needed to store the significant bits
+     (excluding the upper zeros or signs).  */
+  unsigned int blocks_needed = BLOCKS_NEEDED (xprecision - shift);
+  unsigned int len = blocks_needed;
+  if (len > xlen && xval[xlen - 1] >= 0)
+    len = xlen;
+
+  rshift_large_common (val, xval, xlen, shift, len);
 
   /* The value we just created has precision XPRECISION - SHIFT.
      Zero-extend it to wider precisions.  */
-  if (precision > xprecision - shift)
+  if (precision > xprecision - shift && len == blocks_needed)
     {
       unsigned int small_prec = (xprecision - shift) % HOST_BITS_PER_WIDE_INT;
       if (small_prec)
@@ -2063,11 +2108,16 @@ wi::arshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 		   unsigned int xlen, unsigned int xprecision,
 		   unsigned int precision, unsigned int shift)
 {
-  unsigned int len = rshift_large_common (val, xval, xlen, xprecision, shift);
+  /* Work out how many blocks are needed to store the significant bits
+     (excluding the upper zeros or signs).  */
+  unsigned int blocks_needed = BLOCKS_NEEDED (xprecision - shift);
+  unsigned int len = MIN (xlen, blocks_needed);
+
+  rshift_large_common (val, xval, xlen, shift, len);
 
   /* The value we just created has precision XPRECISION - SHIFT.
      Sign-extend it to wider types.  */
-  if (precision > xprecision - shift)
+  if (precision > xprecision - shift && len == blocks_needed)
     {
       unsigned int small_prec = (xprecision - shift) % HOST_BITS_PER_WIDE_INT;
       if (small_prec)
@@ -2399,9 +2449,12 @@ from_int (int i)
 static void
 assert_deceq (const char *expected, const wide_int_ref &wi, signop sgn)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_dec (wi, buf, sgn);
-  ASSERT_STREQ (expected, buf);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len = wi.get_len ();
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  print_dec (wi, p, sgn);
+  ASSERT_STREQ (expected, p);
 }
 
 /* Likewise for base 16.  */
@@ -2409,9 +2462,12 @@ assert_deceq (const char *expected, const wide_int_ref &wi, signop sgn)
 static void
 assert_hexeq (const char *expected, const wide_int_ref &wi)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_hex (wi, buf);
-  ASSERT_STREQ (expected, buf);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len = wi.get_len ();
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  print_hex (wi, p);
+  ASSERT_STREQ (expected, p);
 }
 
 /* Test cases.  */
@@ -2428,7 +2484,7 @@ test_printing ()
   assert_hexeq ("0x1fffffffffffffffff", wi::shwi (-1, 69));
   assert_hexeq ("0xffffffffffffffff", wi::mask (64, false, 69));
   assert_hexeq ("0xffffffffffffffff", wi::mask <widest_int> (64, false));
-  if (WIDE_INT_MAX_PRECISION > 128)
+  if (WIDE_INT_MAX_INL_PRECISION > 128)
     {
       assert_hexeq ("0x20000000000000000fffffffffffffffe",
 		    wi::lshift (1, 129) + wi::lshift (1, 64) - 2);

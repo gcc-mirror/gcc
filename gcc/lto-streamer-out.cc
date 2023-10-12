@@ -2173,13 +2173,26 @@ output_cfg (struct output_block *ob, struct function *fn)
 			   loop_estimation, EST_LAST, loop->estimate_state);
       streamer_write_hwi (ob, loop->any_upper_bound);
       if (loop->any_upper_bound)
-	streamer_write_widest_int (ob, loop->nb_iterations_upper_bound);
+	{
+	  widest_int w = widest_int::from (loop->nb_iterations_upper_bound,
+					   SIGNED);
+	  streamer_write_widest_int (ob, w);
+	}
       streamer_write_hwi (ob, loop->any_likely_upper_bound);
       if (loop->any_likely_upper_bound)
-	streamer_write_widest_int (ob, loop->nb_iterations_likely_upper_bound);
+	{
+	  widest_int w
+	    = widest_int::from (loop->nb_iterations_likely_upper_bound,
+				SIGNED);
+	  streamer_write_widest_int (ob, w);
+	}
       streamer_write_hwi (ob, loop->any_estimate);
       if (loop->any_estimate)
-	streamer_write_widest_int (ob, loop->nb_iterations_estimate);
+	{
+	  widest_int w = widest_int::from (loop->nb_iterations_estimate,
+					   SIGNED);
+	  streamer_write_widest_int (ob, w);
+	}
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);

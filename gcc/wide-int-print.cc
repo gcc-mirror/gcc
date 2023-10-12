@@ -74,9 +74,12 @@ print_decs (const wide_int_ref &wi, char *buf)
 void
 print_decs (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_decs (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len = wi.get_len ();
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  print_decs (wi, p);
+  fputs (p, file);
 }
 
 /* Try to print the unsigned self in decimal to BUF if the number fits
@@ -98,9 +101,12 @@ print_decu (const wide_int_ref &wi, char *buf)
 void
 print_decu (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_decu (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len = wi.get_len ();
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  print_decu (wi, p);
+  fputs (p, file);
 }
 
 void
@@ -134,9 +140,12 @@ print_hex (const wide_int_ref &val, char *buf)
 void
 print_hex (const wide_int_ref &wi, FILE *file)
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_hex (wi, buf);
-  fputs (buf, file);
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
+  unsigned len = wi.get_len ();
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  print_hex (wi, p);
+  fputs (p, file);
 }
 
 /* Print larger precision wide_int.  Not defined as inline in a header

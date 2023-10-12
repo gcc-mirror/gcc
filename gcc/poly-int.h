@@ -96,6 +96,20 @@ struct poly_coeff_traits<T, wi::VAR_PRECISION>
 };
 
 template<typename T>
+struct poly_coeff_traits<T, wi::INL_CONST_PRECISION>
+{
+  typedef WI_UNARY_RESULT (T) result;
+  typedef int int_type;
+  /* These types are always signed.  */
+  static const int signedness = 1;
+  static const int precision = wi::int_traits<T>::precision;
+  static const int rank = precision * 2 / CHAR_BIT;
+
+  template<typename Arg>
+  struct init_cast { using type = const Arg &; };
+};
+
+template<typename T>
 struct poly_coeff_traits<T, wi::CONST_PRECISION>
 {
   typedef WI_UNARY_RESULT (T) result;
