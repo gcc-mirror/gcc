@@ -5688,6 +5688,14 @@ type_has_virtual_destructor (tree type)
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
+/* True iff class TYPE has a non-deleted trivial default
+   constructor.  */
+
+bool type_has_non_deleted_trivial_default_ctor (tree type)
+{
+  return TYPE_HAS_TRIVIAL_DFLT (type) && locate_ctor (type);
+}
+
 /* Returns true iff T, a class, has a move-assignment or
    move-constructor.  Does not lazily declare either.
    If USER_P is false, any move function will do.  If it is true, the
