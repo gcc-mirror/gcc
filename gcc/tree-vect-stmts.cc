@@ -967,10 +967,10 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
   gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
 	      && memory_access_type != VMAT_ELEMENTWISE
 	      && memory_access_type != VMAT_STRIDED_SLP
-	      && memory_access_type != VMAT_LOAD_STORE_LANES);
+	      && memory_access_type != VMAT_LOAD_STORE_LANES
+	      && memory_access_type != VMAT_CONTIGUOUS_PERMUTE);
+
   unsigned int inside_cost = 0, prologue_cost = 0;
-  stmt_vec_info first_stmt_info = stmt_info;
-  bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
   /* ???  Somehow we need to fix this at the callers.  */
   if (slp_node)
@@ -983,35 +983,6 @@ vect_model_store_cost (vec_info *vinfo, stmt_vec_info stmt_info, int ncopies,
 					   stmt_info, 0, vect_prologue);
     }
 
-  /* Grouped stores update all elements in the group at once,
-     so we want the DR for the first statement.  */
-  if (!slp_node && grouped_access_p)
-    first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-
-  /* True if we should include any once-per-group costs as well as
-     the cost of the statement itself.  For SLP we only get called
-     once per group anyhow.  */
-  bool first_stmt_p = (first_stmt_info == stmt_info);
-
-  /* We assume that the cost of a single store-lanes instruction is
-     equivalent to the cost of DR_GROUP_SIZE separate stores.  If a grouped
-     access is instead being provided by a permute-and-store operation,
-     include the cost of the permutes.  */
-  if (first_stmt_p
-      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
-    {
-      /* Uses a high and low interleave or shuffle operations for each
-	 needed permute.  */
-      int group_size = DR_GROUP_SIZE (first_stmt_info);
-      int nstmts = ncopies * ceil_log2 (group_size) * group_size;
-      inside_cost = record_stmt_cost (cost_vec, nstmts, vec_perm,
-				      stmt_info, 0, vect_body);
-
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_model_store_cost: strided group_size = %d .\n",
-                         group_size);
-    }
 
   /* Costs of the stores.  */
   vect_get_store_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
@@ -8408,9 +8379,7 @@ vectorizable_store (vec_info *vinfo,
 	 costing, use the first one instead.  */
       if (grouped_store
 	  && !slp
-	  && first_stmt_info != stmt_info
-	  && (memory_access_type == VMAT_ELEMENTWISE
-	      || memory_access_type == VMAT_LOAD_STORE_LANES))
+	  && first_stmt_info != stmt_info)
 	return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
@@ -9254,14 +9223,15 @@ vectorizable_store (vec_info *vinfo,
       return true;
     }
 
+  unsigned inside_cost = 0, prologue_cost = 0;
   auto_vec<tree> result_chain (group_size);
   auto_vec<tree, 1> vec_oprnds;
   for (j = 0; j < ncopies; j++)
     {
       gimple *new_stmt;
-      if (j == 0 && !costing_p)
+      if (j == 0)
 	{
-	  if (slp)
+	  if (slp && !costing_p)
 	    {
 	      /* Get vectorized arguments for SLP_NODE.  */
 	      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1, op,
@@ -9287,13 +9257,20 @@ vectorizable_store (vec_info *vinfo,
 		     that there is no interleaving, DR_GROUP_SIZE is 1,
 		     and only one iteration of the loop will be executed.  */
 		  op = vect_get_store_rhs (next_stmt_info);
-		  vect_get_vec_defs_for_operand (vinfo, next_stmt_info, ncopies,
-						 op, gvec_oprnds[i]);
-		  vec_oprnd = (*gvec_oprnds[i])[0];
-		  dr_chain.quick_push (vec_oprnd);
+		  if (costing_p
+		      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
+		    update_prologue_cost (&prologue_cost, op);
+		  else if (!costing_p)
+		    {
+		      vect_get_vec_defs_for_operand (vinfo, next_stmt_info,
+						     ncopies, op,
+						     gvec_oprnds[i]);
+		      vec_oprnd = (*gvec_oprnds[i])[0];
+		      dr_chain.quick_push (vec_oprnd);
+		    }
 		  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 		}
-	      if (mask)
+	      if (mask && !costing_p)
 		{
 		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
 						 mask, &vec_masks,
@@ -9303,11 +9280,13 @@ vectorizable_store (vec_info *vinfo,
 	    }
 
 	  /* We should have catched mismatched types earlier.  */
-	  gcc_assert (useless_type_conversion_p (vectype,
-						 TREE_TYPE (vec_oprnd)));
+	  gcc_assert (costing_p
+		      || useless_type_conversion_p (vectype,
+						    TREE_TYPE (vec_oprnd)));
 	  bool simd_lane_access_p
 	    = STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) != 0;
-	  if (simd_lane_access_p
+	  if (!costing_p
+	      && simd_lane_access_p
 	      && !loop_masks
 	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
 	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
@@ -9319,7 +9298,7 @@ vectorizable_store (vec_info *vinfo,
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
 	    }
-	  else
+	  else if (!costing_p)
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
 					  simd_lane_access_p ? loop : NULL,
@@ -9347,16 +9326,46 @@ vectorizable_store (vec_info *vinfo,
 	}
 
       new_stmt = NULL;
-      if (!costing_p && grouped_store)
-	/* Permute.  */
-	vect_permute_store_chain (vinfo, dr_chain, group_size, stmt_info, gsi,
-				  &result_chain);
+      if (grouped_store)
+	{
+	  /* Permute.  */
+	  gcc_assert (memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
+	  if (costing_p)
+	    {
+	      int group_size = DR_GROUP_SIZE (first_stmt_info);
+	      int nstmts = ceil_log2 (group_size) * group_size;
+	      inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
+					       stmt_info, 0, vect_body);
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "vect_model_store_cost: "
+				 "strided group_size = %d .\n",
+				 group_size);
+	    }
+	  else
+	    vect_permute_store_chain (vinfo, dr_chain, group_size, stmt_info,
+				      gsi, &result_chain);
+	}
 
       stmt_vec_info next_stmt_info = first_stmt_info;
       for (i = 0; i < vec_num; i++)
 	{
 	  if (costing_p)
-	    continue;
+	    {
+	      if (memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
+		vect_get_store_cost (vinfo, stmt_info, 1,
+				     alignment_support_scheme, misalignment,
+				     &inside_cost, cost_vec);
+
+	      if (!slp)
+		{
+		  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+		  if (!next_stmt_info)
+		    break;
+		}
+
+	      continue;
+	    }
 	  unsigned misalign;
 	  unsigned HOST_WIDE_INT align;
 
@@ -9540,9 +9549,20 @@ vectorizable_store (vec_info *vinfo,
     }
 
   if (costing_p)
-    vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
-			   alignment_support_scheme, misalignment, vls_type,
-			   slp_node, cost_vec);
+    {
+      if (memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vect_model_store_cost: inside_cost = %d, "
+			     "prologue_cost = %d .\n",
+			     inside_cost, prologue_cost);
+	}
+      else
+	vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
+			       alignment_support_scheme, misalignment, vls_type,
+			       slp_node, cost_vec);
+    }
 
   return true;
 }
