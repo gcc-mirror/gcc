@@ -1635,6 +1635,8 @@ widest_int_storage <N>::write_val (unsigned int l)
       u.valp = XNEWVEC (HOST_WIDE_INT, l);
       return u.valp;
     }
+  else if (CHECKING_P && l < WIDE_INT_MAX_INL_ELTS)
+    u.val[l] = HOST_WIDE_INT_UC (0xbaaaaaaddeadbeef);
   return u.val;
 }
 
@@ -1650,6 +1652,9 @@ widest_int_storage <N>::set_len (unsigned int l, bool)
       memcpy (u.val, valp, l * sizeof (u.val[0]));
       XDELETEVEC (valp);
     }
+  else if (len && len < WIDE_INT_MAX_INL_ELTS)
+    gcc_checking_assert ((unsigned HOST_WIDE_INT) u.val[len]
+			 == HOST_WIDE_INT_UC (0xbaaaaaaddeadbeef));
   len = l;
   /* There are no excess bits in val[len - 1].  */
   STATIC_ASSERT (N % HOST_BITS_PER_WIDE_INT == 0);
