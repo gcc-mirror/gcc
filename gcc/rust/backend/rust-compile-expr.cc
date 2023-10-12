@@ -2219,8 +2219,12 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   const Resolver::CanonicalPath &parent_canonical_path
     = closure_tyty.get_ident ().path;
+  NodeId node_id;
+  bool ok = ctx->get_mappings ()->lookup_hir_to_node (
+    expr.get_mappings ().get_hirid (), &node_id);
+  rust_assert (ok);
   Resolver::CanonicalPath path = parent_canonical_path.append (
-    Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, "{{closure}}"));
+    Resolver::CanonicalPath::new_seg (node_id, "{{closure}}"));
 
   std::string ir_symbol_name = path.get ();
   std::string asm_name = ctx->mangle_item (&closure_tyty, path);

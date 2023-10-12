@@ -45,8 +45,7 @@ struct V0Path
   std::string path = "";
   // Used for "N" and "C"
   std::string ident = "";
-  // Used for "C"
-  std::string crate_disambiguator = "";
+  std::string disambiguator = "";
   // Used for "M" and "X"
   std::string impl_path = "";
   std::string impl_type = "";
@@ -58,13 +57,14 @@ struct V0Path
   std::string as_string () const
   {
     if (prefix == "N")
-      return generic_prefix + prefix + ns + path + ident + generic_postfix;
+      return generic_prefix + prefix + ns + path + disambiguator + ident
+	     + generic_postfix;
     else if (prefix == "M")
       return prefix + impl_path + impl_type;
     else if (prefix == "X")
       return prefix + impl_type + trait_type;
     else if (prefix == "C")
-      return prefix + crate_disambiguator + ident;
+      return prefix + disambiguator + ident;
     else
       rust_unreachable ();
   }
@@ -427,7 +427,7 @@ v0_crate_path (CrateNum crate_num, std::string ident)
 {
   V0Path v0path;
   v0path.prefix = "C";
-  v0path.crate_disambiguator = v0_disambiguator (crate_num);
+  v0path.disambiguator = v0_disambiguator (crate_num);
   v0path.ident = ident;
   return v0path;
 }
@@ -468,6 +468,18 @@ v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
   return v0path;
 }
 
+static V0Path
+v0_closure (V0Path path, HirId closure)
+{
+  V0Path v0path;
+  v0path.prefix = "N";
+  v0path.ns = "C";
+  v0path.disambiguator = v0_disambiguator (closure);
+  v0path.path = path.as_string ();
+  v0path.ident = "0";
+  return v0path;
+}
+
 static std::string
 v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	 const Resolver::CanonicalPath &cpath)
@@ -490,6 +502,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
       = mappings->lookup_hir_implitem (hir_id, &parent_impl_id);
     HIR::TraitItem *trait_item = mappings->lookup_hir_trait_item (hir_id);
     HIR::Item *item = mappings->lookup_hir_item (hir_id);
+    HIR::Expr *expr = mappings->lookup_hir_expr (hir_id);
 
     if (impl_item != nullptr)
       {
@@ -567,10 +580,16 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 				  cpath.get ().c_str ());
 	  break;
 	}
+    else if (expr != nullptr)
+      {
+	rust_assert (expr->get_expression_type ()
+		     == HIR::Expr::ExprType::Closure);
+	// Use HIR ID as disambiguator.
+	v0path = v0_closure (v0path, hir_id);
+      }
     else
       {
-	// Not HIR item, impl item, nor trait impl item. Assume a crate.
-	// FIXME: Do closures get here?
+	// Not HIR item, impl item, trait impl item, nor expr. Assume a crate.
 
 	// std::string crate_name;
 	// bool ok = mappings->get_crate_name (path.get_crate_num (),
