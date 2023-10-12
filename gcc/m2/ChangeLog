@@ -1,3 +1,38 @@
+2023-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GCCDeclare.mod (DeclareSubrange): Check
+	the base type of the subrange against the ZTYPE and call
+	DeclareSubrangeNarrow if necessary.
+	(DeclareSubrangeNarrow): New procedure function.
+
+2023-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111675
+	* gm2-compiler/M2CaseList.mod (appendTree): Replace
+	InitStringCharStar with InitString.
+	* gm2-compiler/M2GCCDeclare.mod: Import AreConstantsEqual.
+	(DeclareSubrange): Add zero alignment test and call
+	BuildSmallestTypeRange if necessary.
+	(WalkSubrangeDependants): Walk the align expression.
+	(IsSubrangeDependants): Test the align expression.
+	* gm2-compiler/M2Quads.mod (BuildStringAdrParam): Correct end name.
+	* gm2-compiler/P2SymBuild.mod (BuildTypeAlignment): Allow subranges
+	to be zero aligned (packed).
+	* gm2-compiler/SymbolTable.mod (Subrange): Add Align field.
+	(MakeSubrange): Set Align to NulSym.
+	(PutAlignment): Assign Subrange.Align to align.
+	(GetAlignment): Return Subrange.Align.
+	* gm2-gcc/m2expr.cc (noBitsRequired): Rewrite.
+	(calcNbits): Rename ...
+	(m2expr_calcNbits): ... to this and test for negative values.
+	(m2expr_BuildTBitSize): Replace calcNBits with m2expr_calcNbits.
+	* gm2-gcc/m2expr.def (calcNbits): Export.
+	* gm2-gcc/m2expr.h (m2expr_calcNbits): New prototype.
+	* gm2-gcc/m2type.cc (noBitsRequired): Remove.
+	(m2type_BuildSmallestTypeRange): Call m2expr_calcNbits.
+	(m2type_BuildSubrangeType): Create range_type from
+	build_range_type (type, lowval, highval).
+
 2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Quads.mod (EndBuildFor): Improve

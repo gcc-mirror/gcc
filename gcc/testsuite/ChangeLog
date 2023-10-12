@@ -1,3 +1,102 @@
+2023-10-11  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111282
+	* gcc.dg/tree-ssa/and-1.c: Update testcase to avoid
+	matching `~1 & (a ^ 1)` simplification.
+	* gcc.dg/tree-ssa/bitops-6.c: New test.
+
+2023-10-11  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* lib/target-supports.exp: Add proc for the XCValu extension.
+	* gcc.target/riscv/cv-alu-compile.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-addn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-addrn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-addun.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-addurn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-clip.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-clipu.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-subn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-subrn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-subun.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile-suburn.c: New test.
+	* gcc.target/riscv/cv-alu-fail-compile.c: New test.
+
+2023-10-11  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* lib/target-supports.exp: Add new effective target check.
+	* gcc.target/riscv/cv-mac-compile.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mac.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-machhsn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-machhsrn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-machhun.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-machhurn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-macsn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-macsrn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-macun.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-macurn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-msu.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulhhsn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulhhsrn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulhhun.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulhhurn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulsn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulsrn.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulun.c: New test.
+	* gcc.target/riscv/cv-mac-fail-compile-mulurn.c: New test.
+	* gcc.target/riscv/cv-mac-test-autogeneration.c: New test.
+
+2023-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111675
+	* gm2/extensions/run/pass/packedrecord3.mod: New test.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/offset_extend-1.c: New test.
+
+2023-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/test-math.h: New define for
+	CVT like test case.
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrint-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrint-1.c: New test.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Remove riscv.
+
+2023-10-11  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111519
+	* gcc.dg/torture/pr111519.c: New testcase.
+
+2023-10-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr106245-1.c: New test case.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Add RVV.
+
+2023-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111745.c: New test.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-live-2.c: Make pattern match more accurate.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-multitypes-16.c: Adapt check for RVV.
+	* lib/target-supports.exp: Add vect_ext_char_longlong property.
+
 2023-10-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109422

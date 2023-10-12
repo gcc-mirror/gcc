@@ -1,3 +1,128 @@
+2023-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-opts.h (TARGET_MIN_VLEN_OPTS): New.
+
+2023-10-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (jump): Adjust sequence to use a "jump"
+	pseudo op instead of a "call" pseudo op.
+
+2023-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-subset.h (riscv_subset_list::parse_single_std_ext):
+	New.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::clone): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+	(riscv_subset_list::set_loc): Ditto.
+	(riscv_set_arch_by_subset_list): Ditto.
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_single_std_ext): New.
+	(riscv_subset_list::parse_single_multiletter_ext): Ditto.
+	(riscv_subset_list::clone): Ditto.
+	(riscv_subset_list::parse_single_ext): Ditto.
+	(riscv_subset_list::set_loc): Ditto.
+	(riscv_set_arch_by_subset_list): Ditto.
+
+2023-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_convert_vector_bits): Get setting
+	from argument rather than get setting from global setting.
+	(riscv_override_options_internal): New, splited from
+	riscv_override_options, also take a gcc_options argument.
+	(riscv_option_override): Splited most part to
+	riscv_override_options_internal.
+
+2023-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/options.texi (Mask): Document TARGET_<NAME>_P and
+	TARGET_<NAME>_OPTS_P.
+	(InverseMask): Ditto.
+	* opth-gen.awk (Mask): Generate TARGET_<NAME>_P and
+	TARGET_<NAME>_OPTS_P macro.
+	(InverseMask): Ditto.
+
+2023-10-11  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111282
+	* match.pd (`a & ~(a ^ b)`, `a & (a == b)`,
+	`a & ((~a) ^ b)`): New patterns.
+
+2023-10-11  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Add the XCValu
+	extension.
+	* config/riscv/constraints.md: Add builtins for the XCValu
+	extension.
+	* config/riscv/predicates.md (immediate_register_operand):
+	Likewise.
+	* config/riscv/corev.def: Likewise.
+	* config/riscv/corev.md: Likewise.
+	* config/riscv/riscv-builtins.cc (AVAIL): Likewise.
+	(RISCV_ATYPE_UHI): Likewise.
+	* config/riscv/riscv-ftypes.def: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* config/riscv/riscv.cc (riscv_print_operand): Likewise.
+	* doc/extend.texi: Add XCValu documentation.
+	* doc/sourcebuild.texi: Likewise.
+
+2023-10-11  Mary Bennett  <mary.bennett@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc: Add XCVmac.
+	* config/riscv/riscv-ftypes.def: Add XCVmac builtins.
+	* config/riscv/riscv-builtins.cc: Likewise.
+	* config/riscv/riscv.md: Likewise.
+	* config/riscv/riscv.opt: Likewise.
+	* doc/extend.texi: Add XCVmac builtin documentation.
+	* doc/sourcebuild.texi: Likewise.
+	* config/riscv/corev.def: New file.
+	* config/riscv/corev.md: New file.
+
+2023-10-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Fix index bug.
+	* config/riscv/riscv-protos.h (gather_scatter_valid_offset_mode_p): New function.
+	* config/riscv/riscv-v.cc (expand_gather_scatter): Fix index bug.
+	(gather_scatter_valid_offset_mode_p): New function.
+
+2023-10-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lrint<mode><vlconvert>2): New pattern
+	for lrint/lintf.
+	* config/riscv/riscv-protos.h (expand_vec_lrint): New func decl
+	for expanding lint.
+	* config/riscv/riscv-v.cc (emit_vec_cvt_x_f): New helper func impl
+	for vfcvt.x.f.v.
+	(expand_vec_lrint): New function impl for expanding lint.
+	* config/riscv/vector-iterators.md: New mode attr and iterator.
+
+2023-10-11  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111519
+	* tree-ssa-strlen.cc (strlen_pass::count_nonzero_bytes): Add vuse
+	argument and pass it through to recursive calls and
+	count_nonzero_bytes_addr calls.  Don't shadow the stmt argument, but
+	change stmt for gimple_assign_single_p statements for which we don't
+	immediately punt.
+	(strlen_pass::count_nonzero_bytes_addr): Add vuse argument and pass
+	it through to recursive calls and count_nonzero_bytes calls.  Don't
+	use get_strinfo if gimple_vuse (stmt) is different from vuse.  Don't
+	shadow the stmt argument.
+
+2023-10-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/101955
+	PR tree-optimization/106245
+	* simplify-rtx.cc (simplify_relational_operation_1): Simplify
+	the RTL (ne:SI (subreg:QI (ashift:SI x 7) 0) 0) to (and:SI x 1).
+
+2023-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/111745
+	* config/i386/mmx.md (divv4hf3): Refine predicate of
+	operands[2] with register_operand.
+
 2023-10-10  Andrew Waterman  <andrew@sifive.com>
 	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
 	    Jeff Law  <jlaw@ventanamicro.com>
