@@ -8432,11 +8432,23 @@ vectorizable_store (vec_info *vinfo,
   else if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) >= 3)
     {
       gcc_assert (memory_access_type == VMAT_CONTIGUOUS);
+      gcc_assert (!slp);
       if (costing_p)
 	{
-	  vect_model_store_cost (vinfo, stmt_info, ncopies, memory_access_type,
-				 alignment_support_scheme, misalignment,
-				 vls_type, slp_node, cost_vec);
+	  unsigned int inside_cost = 0, prologue_cost = 0;
+	  if (vls_type == VLS_STORE_INVARIANT)
+	    prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
+					       stmt_info, 0, vect_prologue);
+	  vect_get_store_cost (vinfo, stmt_info, ncopies,
+			       alignment_support_scheme, misalignment,
+			       &inside_cost, cost_vec);
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vect_model_store_cost: inside_cost = %d, "
+			     "prologue_cost = %d .\n",
+			     inside_cost, prologue_cost);
+
 	  return true;
 	}
       return vectorizable_scan_store (vinfo, stmt_info, gsi, vec_stmt, ncopies);
