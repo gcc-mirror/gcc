@@ -303,6 +303,7 @@ enum insn_type : unsigned int
   UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
   UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
   UNARY_OP_FRM_RMM = UNARY_OP | FRM_RMM_P,
+  UNARY_OP_FRM_RUP = UNARY_OP | FRM_RUP_P,
   UNARY_OP_TAMU_FRM_DYN = UNARY_OP_TAMU | FRM_DYN_P,
   UNARY_OP_TAMU_FRM_RUP = UNARY_OP_TAMU | FRM_RUP_P,
   UNARY_OP_TAMU_FRM_RDN = UNARY_OP_TAMU | FRM_RDN_P,
@@ -477,6 +478,7 @@ void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lround (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
