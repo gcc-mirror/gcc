@@ -8196,13 +8196,7 @@ package body Sem_Ch12 is
                      --  if one of the operands is of a universal type, we need
                      --  to manually restore the full view of private types.
 
-                     if Nkind (N) in N_Op_Eq
-                                   | N_Op_Ge
-                                   | N_Op_Gt
-                                   | N_Op_Le
-                                   | N_Op_Lt
-                                   | N_Op_Ne
-                     then
+                     if Nkind (N) in N_Op_Compare then
                         if Yields_Universal_Type (Left_Opnd (Assoc)) then
                            if Present (Etype (Right_Opnd (Assoc)))
                              and then

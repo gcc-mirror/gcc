@@ -2099,16 +2099,15 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --  If there was no match, and the operator is inequality, this may be
+      --  If there was no match and the operator is inequality, this may be
       --  a case where inequality has not been made explicit, as for tagged
       --  types. Analyze the node as the negation of an equality operation.
-      --  This cannot be done earlier, because before analysis we cannot rule
+      --  This cannot be done earlier because, before analysis, we cannot rule
       --  out the presence of an explicit inequality.
 
-      if Etype (N) = Any_Type
-        and then Nkind (N) = N_Op_Ne
-      then
+      if Etype (N) = Any_Type and then Nkind (N) = N_Op_Ne then
          Op_Id := Get_Name_Entity_Id (Name_Op_Eq);
+
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
                Find_Comparison_Equality_Types (L, R, Op_Id, N);

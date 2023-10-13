@@ -255,8 +255,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Division_Check, Flag)));
 
    Ab (N_Op_Boolean, N_Binary_Op);
-   --  Binary operators that take operands of a boolean type, and yield a
-   --  result of a boolean type.
+   --  Binary operators that yield a result of a boolean type
 
    Cc (N_Op_And, N_Op_Boolean,
        (Sm (Chars, Name_Id),
