@@ -4385,6 +4385,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_MASK:
+		if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+		    != SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		  i = -1;
 		break;
 	      }
 	    if (i == (size_t) -1)
@@ -4410,6 +4413,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if (bestn == NULL)
     return false;
 
+  unsigned int num_mask_args = 0;
+  if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+    for (i = 0; i < nargs; i++)
+      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
+	num_mask_args++;
+
   for (i = 0; i < nargs; i++)
     {
       if ((arginfo[i].dt == vect_constant_def
@@ -4434,30 +4443,50 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  return false;
 	}
 
-      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK
-	  && bestn->simdclone->mask_mode == VOIDmode
-	  && (simd_clone_subparts (bestn->simdclone->args[i].vector_type)
-	      != simd_clone_subparts (arginfo[i].vectype)))
+      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
 	{
-	  /* FORNOW we only have partial support for vector-type masks that
-	     can't hold all of simdlen. */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-			     vect_location,
-			     "in-branch vector clones are not yet"
-			     " supported for mismatched vector sizes.\n");
-	  return false;
-	}
-      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK
-	  && bestn->simdclone->mask_mode != VOIDmode)
-	{
-	  /* FORNOW don't support integer-type masks.  */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-			     vect_location,
-			     "in-branch vector clones are not yet"
-			     " supported for integer mask modes.\n");
-	  return false;
+	  if (bestn->simdclone->mask_mode == VOIDmode)
+	    {
+	      if (simd_clone_subparts (bestn->simdclone->args[i].vector_type)
+		  != simd_clone_subparts (arginfo[i].vectype))
+		{
+		  /* FORNOW we only have partial support for vector-type masks
+		     that can't hold all of simdlen. */
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "in-branch vector clones are not yet"
+				     " supported for mismatched vector sizes.\n");
+		  return false;
+		}
+	    }
+	  else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+	    {
+	      if (!SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype))
+		  || maybe_ne (exact_div (bestn->simdclone->simdlen,
+					  num_mask_args),
+			       simd_clone_subparts (arginfo[i].vectype)))
+		{
+		  /* FORNOW we only have partial support for integer-type masks
+		     that represent the same number of lanes as the
+		     vectorized mask inputs. */
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "in-branch vector clones are not yet "
+				     "supported for mismatched vector sizes.\n");
+		  return false;
+		}
+	    }
+	  else
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				 vect_location,
+				 "in-branch vector clones not supported"
+				 " on this target.\n");
+	      return false;
+	    }
 	}
     }
 
@@ -4674,14 +4703,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		}
 	      break;
 	    case SIMD_CLONE_ARG_TYPE_MASK:
-	      atype = bestn->simdclone->args[i].vector_type;
-	      if (bestn->simdclone->mask_mode != VOIDmode)
+	      if (bestn->simdclone->mask_mode == VOIDmode)
 		{
-		  /* FORNOW: this is disabled above.  */
-		  gcc_unreachable ();
-		}
-	      else
-		{
+		  atype = bestn->simdclone->args[i].vector_type;
 		  tree elt_type = TREE_TYPE (atype);
 		  tree one = fold_convert (elt_type, integer_one_node);
 		  tree zero = fold_convert (elt_type, integer_zero_node);
@@ -4732,6 +4756,72 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			}
 		    }
 		}
+	      else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+		{
+		  atype = bestn->simdclone->args[i].vector_type;
+		  /* Guess the number of lanes represented by atype.  */
+		  unsigned HOST_WIDE_INT atype_subparts
+		    = exact_div (bestn->simdclone->simdlen,
+				 num_mask_args).to_constant ();
+		  o = vector_unroll_factor (nunits, atype_subparts);
+		  for (m = j * o; m < (j + 1) * o; m++)
+		    {
+		      if (m == 0)
+			{
+			  if (!slp_node)
+			    vect_get_vec_defs_for_operand (vinfo, stmt_info,
+							   o * ncopies,
+							   op,
+							   &vec_oprnds[i]);
+			  vec_oprnds_i[i] = 0;
+			}
+		      if (atype_subparts
+			  < simd_clone_subparts (arginfo[i].vectype))
+			{
+			  /* The mask argument has fewer elements than the
+			     input vector.  */
+			  /* FORNOW */
+			  gcc_unreachable ();
+			}
+		      else if (atype_subparts
+			       == simd_clone_subparts (arginfo[i].vectype))
+			{
+			  /* The vector mask argument matches the input
+			     in the number of lanes, but not necessarily
+			     in the mode.  */
+			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
+			  tree st = lang_hooks.types.type_for_mode
+				      (TYPE_MODE (TREE_TYPE (vec_oprnd0)), 1);
+			  vec_oprnd0 = build1 (VIEW_CONVERT_EXPR, st,
+					       vec_oprnd0);
+			  gassign *new_stmt
+			    = gimple_build_assign (make_ssa_name (st),
+						   vec_oprnd0);
+			  vect_finish_stmt_generation (vinfo, stmt_info,
+						       new_stmt, gsi);
+			  if (!types_compatible_p (atype, st))
+			    {
+			      new_stmt
+				= gimple_build_assign (make_ssa_name (atype),
+						       NOP_EXPR,
+						       gimple_assign_lhs
+							 (new_stmt));
+			      vect_finish_stmt_generation (vinfo, stmt_info,
+							   new_stmt, gsi);
+			    }
+			  vargs.safe_push (gimple_assign_lhs (new_stmt));
+			}
+		      else
+			{
+			  /* The mask argument has more elements than the
+			     input vector.  */
+			  /* FORNOW */
+			  gcc_unreachable ();
+			}
+		    }
+		}
+	      else
+		gcc_unreachable ();
 	      break;
 	    case SIMD_CLONE_ARG_TYPE_UNIFORM:
 	      vargs.safe_push (op);
