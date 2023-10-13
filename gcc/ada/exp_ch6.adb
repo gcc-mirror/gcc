@@ -4630,7 +4630,7 @@ package body Exp_Ch6 is
             --  It may be possible that we are re-expanding an already
             --  expanded call when are are dealing with dispatching ???
 
-            if not Present (Parameter_Associations (Call_Node))
+            if No (Parameter_Associations (Call_Node))
               or else Nkind (Last (Parameter_Associations (Call_Node)))
                         /= N_Parameter_Association
               or else not Is_Accessibility_Actual

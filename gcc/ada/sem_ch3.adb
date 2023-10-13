@@ -7394,7 +7394,7 @@ package body Sem_Ch3 is
       Set_Is_Constrained
         (Derived_Type,
          (Is_Constrained (Parent_Type) or else Constraint_Present)
-           and then not Present (Discriminant_Specifications (N)));
+           and then No (Discriminant_Specifications (N)));
 
       if Constraint_Present then
          if not Has_Discriminants (Parent_Type) then

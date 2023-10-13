@@ -16400,7 +16400,7 @@ package body Sem_Ch13 is
       if Nkind (N) = N_Aggregate then
          if Present (Component_Associations (N))
             or else Null_Record_Present (N)
-            or else not Present (Expressions (N))
+            or else No (Expressions (N))
          then
             Error_Msg_N ("bad Stable_Properties aspect specification", N);
             return;
