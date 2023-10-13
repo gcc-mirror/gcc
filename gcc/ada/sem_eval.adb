@@ -6812,7 +6812,7 @@ package body Sem_Eval is
 
                  --  No constraint on the parent type
 
-                 or else not Present (Discriminant_Constraint (Etype (Typ)))
+                 or else No (Discriminant_Constraint (Etype (Typ)))
                  or else Is_Empty_Elmt_List
                            (Discriminant_Constraint (Etype (Typ)))
 

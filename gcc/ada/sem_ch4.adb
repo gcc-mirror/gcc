@@ -9911,7 +9911,7 @@ package body Sem_Ch4 is
          if (not Is_Tagged_Type (Obj_Type)
               and then
                 (not (Core_Extensions_Allowed or Allow_Extensions)
-                  or else not Present (Primitive_Operations (Obj_Type))))
+                  or else No (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
             Obj_Type := Prev_Obj_Type;

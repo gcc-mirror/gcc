@@ -3385,7 +3385,7 @@ package body Sem_Ch3 is
       --  case we bypass this.
 
       if Ekind (T) /= E_Void then
-         if not Present (Direct_Primitive_Operations (T)) then
+         if No (Direct_Primitive_Operations (T)) then
             if Etype (T) = T then
                Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
@@ -3397,8 +3397,7 @@ package body Sem_Ch3 is
 
             elsif Etype (T) = Base_Type (T) then
 
-               if not Present (Direct_Primitive_Operations (Base_Type (T)))
-               then
+               if No (Direct_Primitive_Operations (Base_Type (T))) then
                   Set_Direct_Primitive_Operations
                     (Base_Type (T), New_Elmt_List);
                end if;
@@ -3416,7 +3415,7 @@ package body Sem_Ch3 is
          --  If T already has a Direct_Primitive_Operations list but its
          --  base type doesn't then set the base type's list to T's list.
 
-         elsif not Present (Direct_Primitive_Operations (Base_Type (T))) then
+         elsif No (Direct_Primitive_Operations (Base_Type (T))) then
             Set_Direct_Primitive_Operations
               (Base_Type (T), Direct_Primitive_Operations (T));
          end if;
@@ -10345,7 +10344,7 @@ package body Sem_Ch3 is
       --  If not already set, initialize the derived type's list of primitive
       --  operations to an empty element list.
 
-      if not Present (Direct_Primitive_Operations (Derived_Type)) then
+      if No (Direct_Primitive_Operations (Derived_Type)) then
          Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
 
          --  If Etype of the derived type is the base type (as opposed to
@@ -10355,8 +10354,7 @@ package body Sem_Ch3 is
          --  between the two.
 
          if Etype (Derived_Type) = Base_Type (Derived_Type)
-           and then
-             not Present (Direct_Primitive_Operations (Etype (Derived_Type)))
+           and then No (Direct_Primitive_Operations (Etype (Derived_Type)))
          then
             Set_Direct_Primitive_Operations
               (Etype (Derived_Type),
