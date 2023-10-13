@@ -20,4 +20,4 @@ void foo ()
 
 /* We want to have the store group split into 4, 2, 4 when using 32byte vectors.
    Unfortunately it does not work when 64-byte vectors are available.  */
-/* { dg-final { scan-tree-dump-not "from scalars" "slp2" { xfail amdgcn-*-* } } } */
+/* { dg-final { scan-tree-dump-not "from scalars" "slp2" { xfail vect512 } } } */
