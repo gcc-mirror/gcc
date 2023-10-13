@@ -5748,6 +5748,26 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	    }
 	  return 2;
 	}
+
+      /* Try 2 bitmask immediates which are xor'd together. */
+      for (i = 0; i < 64; i += 16)
+	{
+	  val2 = (val >> i) & mask;
+	  val2 |= val2 << 16;
+	  val2 |= val2 << 32;
+	  if (aarch64_bitmask_imm (val2) && aarch64_bitmask_imm (val ^ val2))
+	    break;
+	}
+
+      if (i != 64)
+	{
+	  if (generate)
+	    {
+	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+	      emit_insn (gen_xordi3 (dest, dest, GEN_INT (val ^ val2)));
+	    }
+	  return 2;
+	}
     }
 
   /* Try a bitmask plus 2 movk to generate the immediate in 3 instructions.  */
