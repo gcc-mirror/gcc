@@ -1,5 +1,5 @@
 /* { dg-do compile { target aarch64*-*-* i?86-*-* x86_64-*-* } } */
-/* { dg-options "-fdump-rtl-ce1 -O2 -w --param max-rtl-if-conversion-unpredictable-cost=100" } */
+/* { dg-options "-fdump-rtl-ce1 -O2 --param max-rtl-if-conversion-unpredictable-cost=100" } */
 /* { dg-additional-options "-march=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 typedef struct cpp_reader cpp_reader;
@@ -20,7 +20,7 @@ enum cpp_ttype
   CPP_HEADER_NAME, CPP_COMMENT, CPP_MACRO_ARG, CPP_PADDING, CPP_EOF,
 };
 
-static struct op lex (cpp_reader *, int);
+struct op lex (cpp_reader *, int);
 
 struct op
 {
@@ -29,7 +29,7 @@ struct op
 };
 
 int
-_cpp_parse_expr (pfile)
+_cpp_parse_expr (cpp_reader *pfile)
 {
   struct op init_stack[20];
   struct op *stack = init_stack;
