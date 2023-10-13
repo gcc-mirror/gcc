@@ -1550,6 +1550,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && wi::bit_and_not (get_nonzero_bits (@0), wi::to_wide (@1)) == 0)
   @0))
+
+/* `a & (x | CST)` -> a if we know that (a & ~CST) == 0   */
+(simplify
+ (bit_and:c SSA_NAME@0 (bit_ior @1 INTEGER_CST@2))
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && wi::bit_and_not (get_nonzero_bits (@0), wi::to_wide (@2)) == 0)
+  @0))
+
 /* x | C -> C if we know that x & ~C == 0.  */
 (simplify
  (bit_ior SSA_NAME@0 INTEGER_CST@1)
