@@ -1635,17 +1635,13 @@ CompileExpr::visit (HIR::CallExpr &expr)
     return;
 
   bool is_variadic = false;
-  if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
-    {
-      const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
-      is_variadic = fn->is_variadic ();
-    }
-
   size_t required_num_args = expr.get_arguments ().size ();
+
   if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
     {
       const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
       required_num_args = fn->num_params ();
+      is_variadic = fn->is_variadic ();
     }
   else if (tyty->get_kind () == TyTy::TypeKind::FNPTR)
     {

@@ -115,10 +115,8 @@ public:
       }
 
     if (fntype->has_substitutions_defined ())
-      {
-	// override the Hir Lookups for the substituions in this context
-	fntype->override_context ();
-      }
+      // override the HIR lookups for the substitutions in this context
+      fntype->override_context ();
 
     if (fntype->get_abi () == ABI::INTRINSIC)
       {
