@@ -2,6 +2,7 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize -fno-vect-cost-model -ffast-math -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
+#include <stdint-gcc.h>
 #include "test-math.h"
 
 /*

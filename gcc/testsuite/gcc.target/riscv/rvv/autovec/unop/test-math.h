@@ -68,8 +68,6 @@
 #define FRM_RMM 4
 #define FRM_DYN 7
 
-typedef long long int64_t;
-
 static inline void
 set_rm (unsigned rm)
 {

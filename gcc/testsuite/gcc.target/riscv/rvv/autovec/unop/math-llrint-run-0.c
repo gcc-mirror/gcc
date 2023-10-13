@@ -1,6 +1,7 @@
 /* { dg-do run { target { riscv_v && rv64 } } } */
 /* { dg-additional-options "-std=c99 -O3 -ftree-vectorize -fno-vect-cost-model -ffast-math" } */
 
+#include <stdint-gcc.h>
 #include "test-math.h"
 
 #define ARRAY_SIZE 128
