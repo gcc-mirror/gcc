@@ -291,9 +291,17 @@ function_info::add_insn_after (insn_info *insn, insn_info *after)
 	  first->set_last_debug_insn (insn);
 	}
       else // !insn->is_debug_insn () && next->is_debug_insn ()
-	// At present we don't (need to) support inserting a nondebug
-	// instruction between two existing debug instructions.
-	gcc_assert (!after->is_debug_insn ());
+	{
+	  // At present we don't (need to) support inserting a nondebug
+	  // instruction between two existing debug instructions.
+	  gcc_assert (!after->is_debug_insn ());
+
+	  // Find the next nondebug insn and update its previous pointer
+	  // to point to INSN.
+	  auto next_nondebug = next->last_debug_insn ()->next_any_insn ();
+	  gcc_checking_assert (!next_nondebug->is_debug_insn ());
+	  next_nondebug->set_prev_sametype_insn (insn);
+	}
 
       // If AFTER and NEXT are separated by at least two points, we can
       // use a unique point number for INSN.  Otherwise INSN will have
