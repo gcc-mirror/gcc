@@ -1,3 +1,461 @@
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lceil<mode><v_i_l_ll_convert>2): New
+	pattern] for lceil/lceilf.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum value.
+	(expand_vec_lceil): New func decl for expanding lceil.
+	* config/riscv/riscv-v.cc (expand_vec_lceil): New func impl
+	for expanding lceil.
+
+2023-10-12  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/111778
+	* config/rs6000/rs6000.cc (can_be_built_by_li_lis_and_rldicl): Protect
+	code from shifts that are undefined.
+	(can_be_built_by_li_lis_and_rldicr): Likewise.
+	(can_be_built_by_li_and_rldic): Protect code from shifts that
+	undefined.  Also replace uses of 1ULL with HOST_WIDE_INT_1U.
+
+2023-10-12  Alex Coplan  <alex.coplan@arm.com>
+
+	* reg-notes.def (NOALIAS): Correct comment.
+
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/111787
+	* tree.h (wi::int_traits <unextended_tree>::needs_write_val_arg): New
+	static data member.
+	(int_traits <extended_tree <N>>::needs_write_val_arg): Likewise.
+	(wi::ints_for): Provide separate partial specializations for
+	generic_wide_int <extended_tree <N>> and INL_CONST_PRECISION or that
+	and CONST_PRECISION, rather than using
+	int_traits <extended_tree <N> >::precision_type as the second template
+	argument.
+	* rtl.h (wi::int_traits <rtx_mode_t>::needs_write_val_arg): New
+	static data member.
+	* double-int.h (wi::int_traits <double_int>::needs_write_val_arg):
+	Likewise.
+
+2023-10-12  Mary Bennett  <mary.bennett@embecosm.com>
+
+	PR middle-end/111777
+	* doc/extend.texi: Change subsubsection to subsection for
+	CORE-V built-ins.
+
+2023-10-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Add undef.
+
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int.h (widest_int_storage <N>::write_val): If l is small
+	and there is space in u.val array, store a canary value at the
+	end when checking.
+	(widest_int_storage <N>::set_len): Check the canary hasn't been
+	overwritten.
+
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* wide-int.h: Adjust file comment.
+	(WIDE_INT_MAX_INL_ELTS): Define to former value of WIDE_INT_MAX_ELTS.
+	(WIDE_INT_MAX_INL_PRECISION): Define.
+	(WIDE_INT_MAX_ELTS): Change to 255.  Assert that WIDE_INT_MAX_INL_ELTS
+	is smaller than WIDE_INT_MAX_ELTS.
+	(RWIDE_INT_MAX_ELTS, RWIDE_INT_MAX_PRECISION, WIDEST_INT_MAX_ELTS,
+	WIDEST_INT_MAX_PRECISION): Define.
+	(WI_BINARY_RESULT_VAR, WI_UNARY_RESULT_VAR): Change write_val callers
+	to pass 0 as a new argument.
+	(class widest_int_storage): Likewise.
+	(widest_int, widest2_int): Change typedefs to use widest_int_storage
+	rather than fixed_wide_int_storage.
+	(enum wi::precision_type): Add INL_CONST_PRECISION enumerator.
+	(struct binary_traits): Add partial specializations for
+	INL_CONST_PRECISION.
+	(generic_wide_int): Add needs_write_val_arg static data member.
+	(int_traits): Likewise.
+	(wide_int_storage): Replace val non-static data member with a union
+	u of it and HOST_WIDE_INT *valp.  Declare copy constructor, copy
+	assignment operator and destructor.  Add unsigned int argument to
+	write_val.
+	(wide_int_storage::wide_int_storage): Initialize precision to 0
+	in the default ctor.  Remove unnecessary {}s around STATIC_ASSERTs.
+	Assert in non-default ctor T's precision_type is not
+	INL_CONST_PRECISION and allocate u.valp for large precision.  Add
+	copy constructor.
+	(wide_int_storage::~wide_int_storage): New.
+	(wide_int_storage::operator=): Add copy assignment operator.  In
+	assignment operator remove unnecessary {}s around STATIC_ASSERTs,
+	assert ctor T's precision_type is not INL_CONST_PRECISION and
+	if precision changes, deallocate and/or allocate u.valp.
+	(wide_int_storage::get_val): Return u.valp rather than u.val for
+	large precision.
+	(wide_int_storage::write_val): Likewise.  Add an unused unsigned int
+	argument.
+	(wide_int_storage::set_len): Use write_val instead of writing val
+	directly.
+	(wide_int_storage::from, wide_int_storage::from_array): Adjust
+	write_val callers.
+	(wide_int_storage::create): Allocate u.valp for large precisions.
+	(wi::int_traits <wide_int_storage>::get_binary_precision): New.
+	(fixed_wide_int_storage::fixed_wide_int_storage): Make default
+	ctor defaulted.
+	(fixed_wide_int_storage::write_val): Add unused unsigned int argument.
+	(fixed_wide_int_storage::from, fixed_wide_int_storage::from_array):
+	Adjust write_val callers.
+	(wi::int_traits <fixed_wide_int_storage>::get_binary_precision): New.
+	(WIDEST_INT): Define.
+	(widest_int_storage): New template class.
+	(wi::int_traits <widest_int_storage>): New.
+	(trailing_wide_int_storage::write_val): Add unused unsigned int
+	argument.
+	(wi::get_binary_precision): Use
+	wi::int_traits <WI_BINARY_RESULT (T1, T2)>::get_binary_precision
+	rather than get_precision on get_binary_result.
+	(wi::copy): Adjust write_val callers.  Don't call set_len if
+	needs_write_val_arg.
+	(wi::bit_not): If result.needs_write_val_arg, call write_val
+	again with upper bound estimate of len.
+	(wi::sext, wi::zext, wi::set_bit): Likewise.
+	(wi::bit_and, wi::bit_and_not, wi::bit_or, wi::bit_or_not,
+	wi::bit_xor, wi::add, wi::sub, wi::mul, wi::mul_high, wi::div_trunc,
+	wi::div_floor, wi::div_ceil, wi::div_round, wi::divmod_trunc,
+	wi::mod_trunc, wi::mod_floor, wi::mod_ceil, wi::mod_round,
+	wi::lshift, wi::lrshift, wi::arshift): Likewise.
+	(wi::bswap, wi::bitreverse): Assert result.needs_write_val_arg
+	is false.
+	(gt_ggc_mx, gt_pch_nx): Remove generic template for all
+	generic_wide_int, instead add functions and templates for each
+	storage of generic_wide_int.  Make functions for
+	generic_wide_int <wide_int_storage> and templates for
+	generic_wide_int <widest_int_storage <N>> deleted.
+	(wi::mask, wi::shifted_mask): Adjust write_val calls.
+	* wide-int.cc (zeros): Decrease array size to 1.
+	(BLOCKS_NEEDED): Use CEIL.
+	(canonize): Use HOST_WIDE_INT_M1.
+	(wi::from_buffer): Pass 0 to write_val.
+	(wi::to_mpz): Use CEIL.
+	(wi::from_mpz): Likewise.  Pass 0 to write_val.  Use
+	WIDE_INT_MAX_INL_ELTS instead of WIDE_INT_MAX_ELTS.
+	(wi::mul_internal): Use WIDE_INT_MAX_INL_PRECISION instead of
+	MAX_BITSIZE_MODE_ANY_INT in automatic array sizes, for prec
+	above WIDE_INT_MAX_INL_PRECISION estimate precision from
+	lengths of operands.  Use XALLOCAVEC allocated buffers for
+	prec above WIDE_INT_MAX_INL_PRECISION.
+	(wi::divmod_internal): Likewise.
+	(wi::lshift_large): For len > WIDE_INT_MAX_INL_ELTS estimate
+	it from xlen and skip.
+	(rshift_large_common): Remove xprecision argument, add len
+	argument with len computed in caller.  Don't return anything.
+	(wi::lrshift_large, wi::arshift_large): Compute len here
+	and pass it to rshift_large_common, for lengths above
+	WIDE_INT_MAX_INL_ELTS using estimations from xlen if possible.
+	(assert_deceq, assert_hexeq): For lengths above
+	WIDE_INT_MAX_INL_ELTS use XALLOCAVEC allocated buffer.
+	(test_printing): Use WIDE_INT_MAX_INL_PRECISION instead of
+	WIDE_INT_MAX_PRECISION.
+	* wide-int-print.h (WIDE_INT_PRINT_BUFFER_SIZE): Use
+	WIDE_INT_MAX_INL_PRECISION instead of WIDE_INT_MAX_PRECISION.
+	* wide-int-print.cc (print_decs, print_decu, print_hex): For
+	lengths above WIDE_INT_MAX_INL_ELTS use XALLOCAVEC allocated buffer.
+	* tree.h (wi::int_traits<extended_tree <N>>): Change precision_type
+	to INL_CONST_PRECISION for N == ADDR_MAX_PRECISION.
+	(widest_extended_tree): Use WIDEST_INT_MAX_PRECISION instead of
+	WIDE_INT_MAX_PRECISION.
+	(wi::ints_for): Use int_traits <extended_tree <N> >::precision_type
+	instead of hard coded CONST_PRECISION.
+	(widest2_int_cst): Use WIDEST_INT_MAX_PRECISION instead of
+	WIDE_INT_MAX_PRECISION.
+	(wi::extended_tree <N>::get_len): Use WIDEST_INT_MAX_PRECISION rather
+	than WIDE_INT_MAX_PRECISION.
+	(wi::ints_for::zero): Use
+	wi::int_traits <wi::extended_tree <N> >::precision_type instead of
+	wi::CONST_PRECISION.
+	* tree.cc (build_replicated_int_cst): Formatting fix.  Use
+	WIDE_INT_MAX_INL_ELTS rather than WIDE_INT_MAX_ELTS.
+	* print-tree.cc (print_node): Don't print TREE_UNAVAILABLE on
+	INTEGER_CSTs, TREE_VECs or SSA_NAMEs.
+	* double-int.h (wi::int_traits <double_int>::precision_type): Change
+	to INL_CONST_PRECISION from CONST_PRECISION.
+	* poly-int.h (struct poly_coeff_traits): Add partial specialization
+	for wi::INL_CONST_PRECISION.
+	* cfgloop.h (bound_wide_int): New typedef.
+	(struct nb_iter_bound): Change bound type from widest_int to
+	bound_wide_int.
+	(struct loop): Change nb_iterations_upper_bound,
+	nb_iterations_likely_upper_bound and nb_iterations_estimate type from
+	widest_int to bound_wide_int.
+	* cfgloop.cc (record_niter_bound): Return early if wi::min_precision
+	of i_bound is too large for bound_wide_int.  Adjustments for the
+	widest_int to bound_wide_int type change in non-static data members.
+	(get_estimated_loop_iterations, get_max_loop_iterations,
+	get_likely_max_loop_iterations): Adjustments for the widest_int to
+	bound_wide_int type change in non-static data members.
+	* tree-vect-loop.cc (vect_transform_loop): Likewise.
+	* tree-ssa-loop-niter.cc (do_warn_aggressive_loop_optimizations): Use
+	XALLOCAVEC allocated buffer for i_bound len above
+	WIDE_INT_MAX_INL_ELTS.
+	(record_estimate): Return early if wi::min_precision of i_bound is too
+	large for bound_wide_int.  Adjustments for the widest_int to
+	bound_wide_int type change in non-static data members.
+	(wide_int_cmp): Use bound_wide_int instead of widest_int.
+	(bound_index): Use bound_wide_int instead of widest_int.
+	(discover_iteration_bound_by_body_walk): Likewise.  Use
+	widest_int::from to convert it to widest_int when passed to
+	record_niter_bound.
+	(maybe_lower_iteration_bound): Use widest_int::from to convert it to
+	widest_int when passed to record_niter_bound.
+	(estimate_numbers_of_iteration): Don't record upper bound if
+	loop->nb_iterations has too large precision for bound_wide_int.
+	(n_of_executions_at_most): Use widest_int::from.
+	* tree-ssa-loop-ivcanon.cc (remove_redundant_iv_tests): Adjust for
+	the widest_int to bound_wide_int changes.
+	* match.pd (fold_sign_changed_comparison simplification): Use
+	wide_int::from on wi::to_wide instead of wi::to_widest.
+	* value-range.h (irange::maybe_resize): Avoid using memcpy on
+	non-trivially copyable elements.
+	* value-range.cc (irange_bitmask::dump): Use XALLOCAVEC allocated
+	buffer for mask or value len above WIDE_INT_PRINT_BUFFER_SIZE.
+	* fold-const.cc (fold_convert_const_int_from_int, fold_unary_loc):
+	Use wide_int::from on wi::to_wide instead of wi::to_widest.
+	* tree-ssa-ccp.cc (bit_value_binop): Zero extend r1max from width
+	before calling wi::udiv_trunc.
+	* lto-streamer-out.cc (output_cfg): Adjustments for the widest_int to
+	bound_wide_int type change in non-static data members.
+	* lto-streamer-in.cc (input_cfg): Likewise.
+	(lto_input_tree_1): Use WIDE_INT_MAX_INL_ELTS rather than
+	WIDE_INT_MAX_ELTS.  For length above WIDE_INT_MAX_INL_ELTS use
+	XALLOCAVEC allocated buffer.  Formatting fix.
+	* data-streamer-in.cc (streamer_read_wide_int,
+	streamer_read_widest_int): Likewise.
+	* tree-affine.cc (aff_combination_expand): Use placement new to
+	construct name_expansion.
+	(free_name_expansion): Destruct name_expansion.
+	* gimple-ssa-strength-reduction.cc (struct slsr_cand_d): Change
+	index type from widest_int to offset_int.
+	(class incr_info_d): Change incr type from widest_int to offset_int.
+	(alloc_cand_and_find_basis, backtrace_base_for_ref,
+	restructure_reference, slsr_process_ref, create_mul_ssa_cand,
+	create_mul_imm_cand, create_add_ssa_cand, create_add_imm_cand,
+	slsr_process_add, cand_abs_increment, replace_mult_candidate,
+	replace_unconditional_candidate, incr_vec_index,
+	create_add_on_incoming_edge, create_phi_basis_1,
+	replace_conditional_candidate, record_increment,
+	record_phi_increments_1, phi_incr_cost_1, phi_incr_cost,
+	lowest_cost_path, total_savings, ncd_with_phi, ncd_of_cand_and_phis,
+	nearest_common_dominator_for_cands, insert_initializers,
+	all_phi_incrs_profitable_1, replace_one_candidate,
+	replace_profitable_candidates): Use offset_int rather than widest_int
+	and wi::to_offset rather than wi::to_widest.
+	* real.cc (real_to_integer): Use WIDE_INT_MAX_INL_ELTS rather than
+	2 * WIDE_INT_MAX_ELTS and for words above that use XALLOCAVEC
+	allocated buffer.
+	* tree-ssa-loop-ivopts.cc (niter_for_exit): Use placement new
+	to construct tree_niter_desc and destruct it on failure.
+	(free_tree_niter_desc): Destruct tree_niter_desc if value is non-NULL.
+	* gengtype.cc (main): Remove widest_int handling.
+	* graphite-isl-ast-to-gimple.cc (widest_int_from_isl_expr_int): Use
+	WIDEST_INT_MAX_ELTS instead of WIDE_INT_MAX_ELTS.
+	* gimple-ssa-warn-alloca.cc (pass_walloca::execute): Use
+	WIDE_INT_MAX_INL_PRECISION instead of WIDE_INT_MAX_PRECISION and
+	assert get_len () fits into it.
+	* value-range-pretty-print.cc (vrange_printer::print_irange_bitmasks):
+	For mask or value lengths above WIDE_INT_MAX_INL_ELTS use XALLOCAVEC
+	allocated buffer.
+	* gimple-ssa-sprintf.cc (adjust_range_for_overflow): Use
+	wide_int::from on wi::to_wide instead of wi::to_widest.
+	* omp-general.cc (score_wide_int): New typedef.
+	(omp_context_compute_score): Use score_wide_int instead of widest_int
+	and adjust for those changes.
+	(struct omp_declare_variant_entry): Change score and
+	score_in_declare_simd_clone non-static data member type from widest_int
+	to score_wide_int.
+	(omp_resolve_late_declare_variant, omp_resolve_declare_variant): Use
+	score_wide_int instead of widest_int and adjust for those changes.
+	(omp_lto_output_declare_variant_alt): Likewise.
+	(omp_lto_input_declare_variant_alt): Likewise.
+	* godump.cc (go_output_typedef): Assert get_len () is smaller than
+	WIDE_INT_MAX_INL_ELTS.
+
+2023-10-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lround<mode><v_i_l_ll_convert>2): New
+	pattern for lround/lroundf.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum value.
+	(expand_vec_lround): New func decl for expanding lround.
+	* config/riscv/riscv-v.cc (expand_vec_lround): New func impl
+	for expanding lround.
+
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.h (wide_int_ptr): Remove.
+	(dw_wide_int_ptr): New typedef.
+	(struct dw_val_node): Change type of val_wide from wide_int_ptr
+	to dw_wide_int_ptr.
+	(struct dw_wide_int): New type.
+	(dw_wide_int::elt): New method.
+	(dw_wide_int::operator ==): Likewise.
+	* dwarf2out.cc (get_full_len): Change argument type to
+	const dw_wide_int & from const wide_int &.  Use CEIL.  Call
+	get_precision method instead of calling wi::get_precision.
+	(alloc_dw_wide_int): New function.
+	(add_AT_wide): Change w argument type to const wide_int_ref &
+	from const wide_int &.  Use alloc_dw_wide_int.
+	(mem_loc_descriptor, loc_descriptor): Use alloc_dw_wide_int.
+	(insert_wide_int): Change val argument type to const wide_int_ref &
+	from const wide_int &.
+	(add_const_value_attribute): Pass rtx_mode_t temporary directly to
+	add_AT_wide instead of using a temporary variable.
+
+2023-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111764
+	* tree-vect-loop.cc (check_reduction_path): Remove the attempt
+	to allow x + x via special-casing of assigns.
+
+2023-10-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect USER_MSR.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_USER_MSR_SET): New.
+	(OPTION_MASK_ISA2_USER_MSR_UNSET): Ditto.
+	(ix86_handle_option): Handle -musermsr.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_USER_MSR.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for usermsr.
+	* config.gcc: Add usermsrintrin.h
+	* config/i386/cpuid.h (bit_USER_MSR): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (VOID, UINT64, UINT64).
+	* config/i386/i386-builtins.cc (ix86_init_mmx_sse_builtins):
+	Add __builtin_urdmsr and __builtin_uwrmsr.
+	* config/i386/i386-builtins.h (ix86_builtins):
+	Add IX86_BUILTIN_URDMSR and IX86_BUILTIN_UWRMSR.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Define __USER_MSR__.
+	* config/i386/i386-expand.cc (ix86_expand_builtin):
+	Handle new builtins.
+	* config/i386/i386-isa.def (USER_MSR): Add DEF_PTA(USER_MSR).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle usermsr.
+	* config/i386/i386.md (urdmsr): New define_insn.
+	(uwrmsr): Ditto.
+	* config/i386/i386.opt: Add option -musermsr.
+	* config/i386/x86gprintrin.h: Include usermsrintrin.h
+	* doc/extend.texi: Document usermsr.
+	* doc/invoke.texi: Document -musermsr.
+	* doc/sourcebuild.texi: Document target usermsr.
+	* config/i386/usermsrintrin.h: New file.
+
+2023-10-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Add loongarch-driver.h to tm_files.
+	* config/loongarch/loongarch.h: Do not include loongarch-driver.h.
+	* config/loongarch/t-loongarch: Append loongarch-multilib.h to $(GTM_H)
+	instead of $(TM_H) for building generator programs.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111367
+	* config/rs6000/rs6000.md (stack_protect_setsi): Support prefixed
+	instruction emission and incorporate to stack_protect_set<mode>.
+	(stack_protect_setdi): Rename to ...
+	(stack_protect_set<mode>): ... this, adjust constraint.
+	(stack_protect_testsi): Support prefixed instruction emission and
+	incorporate to stack_protect_test<mode>.
+	(stack_protect_testdi): Rename to ...
+	(stack_protect_test<mode>): ... this, adjust constraint.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Consider generated
+	VEC_PERM_EXPR stmt for VMAT_CONTIGUOUS_REVERSE in costing as
+	vec_perm.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_store_cost): Remove.
+	(vectorizable_store): Adjust the costing for the remaining memory
+	access types VMAT_CONTIGUOUS{, _DOWN, _REVERSE}.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_store_cost): Assert it will never
+	get VMAT_CONTIGUOUS_PERMUTE and remove VMAT_CONTIGUOUS_PERMUTE related
+	handlings.
+	(vectorizable_store): Adjust the cost handling on
+	VMAT_CONTIGUOUS_PERMUTE without calling vect_model_store_cost.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_store_cost): Assert it will never
+	get VMAT_LOAD_STORE_LANES.
+	(vectorizable_store): Adjust the cost handling on VMAT_LOAD_STORE_LANES
+	without calling vect_model_store_cost.  Factor out new lambda function
+	update_prologue_cost.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_store_cost): Assert it won't get
+	VMAT_ELEMENTWISE and VMAT_STRIDED_SLP any more, and remove their
+	related handlings.
+	(vectorizable_store): Adjust the cost handling on VMAT_ELEMENTWISE
+	and VMAT_STRIDED_SLP without calling vect_model_store_cost.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Adjust costing on
+	vectorizable_scan_store without calling vect_model_store_cost
+	any more.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_store_cost): Assert it won't get
+	VMAT_GATHER_SCATTER any more, remove VMAT_GATHER_SCATTER related
+	handlings and the related parameter gs_info.
+	(vect_build_scatter_store_calls): Add the handlings on costing with
+	one more argument cost_vec.
+	(vectorizable_store): Adjust the cost handling on VMAT_GATHER_SCATTER
+	without calling vect_model_store_cost any more.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Move and duplicate the call
+	to vect_model_store_cost down to some different transform paths
+	according to the handlings of different vect_memory_access_types
+	or some special handling need.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Ensure the generated
+	vector store for some case of VMAT_ELEMENTWISE is supported.
+
+2023-10-12  Mo, Zewei  <zewei.mo@intel.com>
+	    Hu Lin1  <lin1.hu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (gen_push2): New function to emit push2
+	and adjust cfa offset.
+	(ix86_pro_and_epilogue_can_use_push2_pop2): New function to
+	determine whether push2/pop2 can be used.
+	(ix86_compute_frame_layout): Adjust preferred stack boundary
+	and stack alignment needed for push2/pop2.
+	(ix86_emit_save_regs): Emit push2 when available.
+	(ix86_emit_restore_reg_using_pop2): New function to emit pop2
+	and adjust cfa info.
+	(ix86_emit_restore_regs_using_pop2): New function to loop
+	through the saved regs and call above.
+	(ix86_expand_epilogue): Call ix86_emit_restore_regs_using_pop2
+	when push2pop2 available.
+	* config/i386/i386.md (push2_di): New pattern for push2.
+	(pop2_di): Likewise for pop2.
+
+2023-10-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lrint<mode><vlconvert>2): Rename from.
+	(lrint<mode><v_i_l_ll_convert>2): Rename to.
+	* config/riscv/vector-iterators.md: Rename and remove TARGET_64BIT.
+
 2023-10-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/riscv-opts.h (TARGET_MIN_VLEN_OPTS): New.

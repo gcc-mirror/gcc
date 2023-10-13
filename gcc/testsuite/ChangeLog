@@ -1,3 +1,105 @@
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceil-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceil-1.c: New test.
+
+2023-10-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadcondmov-indirect.c: Make robust against
+	instruction reordering.
+
+2023-10-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/armv9_warning.c: New test.
+
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* gcc.dg/bitint-38.c: New test.
+
+2023-10-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lround-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lround-1.c: New test.
+
+2023-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111764
+	* gcc.dg/vect/pr111764.c: New testcase.
+
+2023-10-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/x86gprintrin-1.c: Add -musermsr for 64bit target.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Add musermsr for 64bit target.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto
+	* gcc.target/i386/user_msr-1.c: New test.
+	* gcc.target/i386/user_msr-2.c: Ditto.
+
+2023-10-12  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* lib/target-supports.exp: Add LoongArch in
+	check_effective_target_vect_int_mod according to SX/ASX capabilities.
+
+2023-10-12  Chenghui Pan  <panchenghui@loongson.cn>
+
+	PR target/111424
+	* lib/target-supports.exp: Enable vect.exp for LoongArch.
+
+2023-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67740
+	* gfortran.dg/pr67740.f90: New test
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111367
+	* g++.target/powerpc/pr111367.C: New test.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/111427
+	* gfortran.dg/vect/pr60510.f (test): Init variable a.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-store-2.c: New test.
+
+2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-store-1.c: New test.
+
+2023-10-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/test-math.h: Add type int64_t.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrint-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llrint-0.c: New test.
+
+2023-10-12  Mo, Zewei  <zewei.mo@intel.com>
+	    Hu Lin1  <lin1.hu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-push2pop2-1.c: New test.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_interrupt-1.c: Likewise.
+
+2023-10-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-irint-0.c: New test.
+
 2023-10-11  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-optimization/111282

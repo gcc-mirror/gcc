@@ -1,3 +1,9 @@
+2023-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* c-warn.cc (match_case_to_enum_1): Use wi::to_wide just once instead
+	of 3 times, assert get_len () is smaller than WIDE_INT_MAX_INL_ELTS.
+
 2023-10-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.cc (maybe_add_include_fixit): Update for renaming of

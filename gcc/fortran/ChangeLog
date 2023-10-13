@@ -1,3 +1,10 @@
+2023-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67740
+	* trans-expr.cc (gfc_trans_pointer_assignment): Set the hidden
+	string length component for pointer assignment to character
+	pointer components.
+
 2023-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parse.cc (parse_omp_structured_block): Make the user code end
