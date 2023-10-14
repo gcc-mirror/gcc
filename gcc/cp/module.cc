@@ -5158,7 +5158,6 @@ trees_out::start (tree t, bool code_streamed)
     case INTEGER_CST:
       u (TREE_INT_CST_NUNITS (t));
       u (TREE_INT_CST_EXT_NUNITS (t));
-      u (TREE_INT_CST_OFFSET_NUNITS (t));
       break;
 
     case OMP_CLAUSE:
@@ -5231,7 +5230,6 @@ trees_in::start (unsigned code)
 	unsigned n = u ();
 	unsigned e = u ();
 	t = make_int_cst (n, e);
-	TREE_INT_CST_OFFSET_NUNITS(t) = u ();
       }
       break;
 

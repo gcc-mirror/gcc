@@ -1139,8 +1139,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.unextended)
 #define TREE_INT_CST_EXT_NUNITS(NODE) \
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
-#define TREE_INT_CST_OFFSET_NUNITS(NODE) \
-  (INTEGER_CST_CHECK (NODE)->base.u.int_length.offset)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
 #define TREE_INT_CST_LOW(NODE) \
   ((unsigned HOST_WIDE_INT) TREE_INT_CST_ELT (NODE, 0))
@@ -6453,7 +6451,15 @@ inline unsigned int
 wi::extended_tree <N>::get_len () const
 {
   if (N == ADDR_MAX_PRECISION)
-    return TREE_INT_CST_OFFSET_NUNITS (m_t);
+    {
+      /* to_offset can only be applied to trees that are offset_int-sized
+	 or smaller.  EXT_LEN is correct if it fits, otherwise the constant
+	 must be exactly the precision of offset_int and so LEN is correct.  */
+      unsigned int ext_len = TREE_INT_CST_EXT_NUNITS (m_t);
+      if (ext_len <= OFFSET_INT_ELTS)
+	return ext_len;
+      return TREE_INT_CST_NUNITS (m_t);
+    }
   else if (N >= WIDEST_INT_MAX_PRECISION)
     return TREE_INT_CST_EXT_NUNITS (m_t);
   else

@@ -249,12 +249,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Precision of wide_int and largest _BitInt precision + 1 we can
    support.  */
-#define WIDE_INT_MAX_ELTS 255
+#define WIDE_INT_MAX_ELTS 1024
 #define WIDE_INT_MAX_PRECISION (WIDE_INT_MAX_ELTS * HOST_BITS_PER_WIDE_INT)
 
-/* Precision of widest_int and largest _BitInt precision + 1 we can
-   support.  */
-#define WIDEST_INT_MAX_ELTS 510
+/* Precision of widest_int.  */
+#define WIDEST_INT_MAX_ELTS 2048
 #define WIDEST_INT_MAX_PRECISION (WIDEST_INT_MAX_ELTS * HOST_BITS_PER_WIDE_INT)
 
 STATIC_ASSERT (WIDE_INT_MAX_INL_ELTS < WIDE_INT_MAX_ELTS);
@@ -1717,14 +1716,14 @@ private:
   unsigned int m_precision;
 
   /* A pointer to the length field.  */
-  unsigned char *m_len;
+  unsigned short *m_len;
 
   /* A pointer to the HWI array.  There are enough elements to hold all
      values of precision M_PRECISION.  */
   HOST_WIDE_INT *m_val;
 
 public:
-  trailing_wide_int_storage (unsigned int, unsigned char *, HOST_WIDE_INT *);
+  trailing_wide_int_storage (unsigned int, unsigned short *, HOST_WIDE_INT *);
 
   /* The standard generic_wide_int storage methods.  */
   unsigned int get_len () const;
@@ -1762,15 +1761,13 @@ private:
   unsigned short m_precision;
 
   /* The shared maximum length of each number.  */
-  unsigned char m_max_len;
+  unsigned short m_max_len;
 
   /* The number of elements.  */
   unsigned char m_num_elements;
 
-  /* The current length of each number.
-     Avoid char array so the whole structure is not a typeless storage
-     that will, in turn, turn off TBAA on gimple, trees and RTL.  */
-  struct {unsigned char len;} m_len[N];
+  /* The current length of each number.  */
+  unsigned short m_len[N];
 
   /* The variable-length part of the structure, which always contains
      at least one HWI.  Element I starts at index I * M_MAX_LEN.  */
@@ -1791,7 +1788,7 @@ public:
 };
 
 inline trailing_wide_int_storage::
-trailing_wide_int_storage (unsigned int precision, unsigned char *len,
+trailing_wide_int_storage (unsigned int precision, unsigned short *len,
 			   HOST_WIDE_INT *val)
   : m_precision (precision), m_len (len), m_val (val)
 {
@@ -1857,7 +1854,7 @@ template <int N>
 inline trailing_wide_int
 trailing_wide_ints <N>::operator [] (unsigned int index)
 {
-  return trailing_wide_int_storage (m_precision, &m_len[index].len,
+  return trailing_wide_int_storage (m_precision, &m_len[index],
 				    &m_val[index * m_max_len]);
 }
 
@@ -1866,7 +1863,7 @@ inline typename trailing_wide_ints <N>::const_reference
 trailing_wide_ints <N>::operator [] (unsigned int index) const
 {
   return wi::storage_ref (&m_val[index * m_max_len],
-			  m_len[index].len, m_precision);
+			  m_len[index], m_precision);
 }
 
 /* Return how many extra bytes need to be added to the end of the
