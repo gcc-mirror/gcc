@@ -2535,13 +2535,13 @@ public:
       {
 	/* Copy the string contents to a null terminated string.  */
 	dinteger_t length = (e->len * e->sz);
-	char *string = XALLOCAVEC (char, length + 1);
+	char *string = XALLOCAVEC (char, length + e->sz);
+	memset (string, 0, length + e->sz);
 	if (length > 0)
 	  memcpy (string, e->string, length);
-	string[length] = '\0';
 
 	/* String value and type includes the null terminator.  */
-	tree value = build_string (length, string);
+	tree value = build_string (length + e->sz, string);
 	TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
 	value = build_address (value);
 
