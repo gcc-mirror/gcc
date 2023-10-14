@@ -1,3 +1,29 @@
+2023-10-11  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Fix name order.
+
+2023-10-10  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* MAINTAINERS: Add myself.
+
+2023-10-06  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/111663
+	* Makefile.tpl (STAGEfeedback_CONFIGURE_FLAGS): Disable -Werror.
+	* Makefile.in: Regenerate.
+
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up indentation.
+
+2023-10-05  Jan Engelhardt  <jengelh@inai.de>
+
+	* SECURITY.txt: Fix up commas.
+
+2023-10-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* SECURITY.txt: New file.
+
 2023-09-18  Fei Gao  <gaofei@eswincomputing.com>
 
 	* MAINTAINERS: Add myself.

@@ -256,8 +256,8 @@ public:
   debug_diagnostic_context ()
   {
     diagnostic_initialize (this, 0);
-    show_line_numbers_p = true;
-    show_caret = true;
+    m_source_printing.show_line_numbers_p = true;
+    m_source_printing.enabled = true;
   }
   ~debug_diagnostic_context ()
   {

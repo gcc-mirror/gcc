@@ -5,42 +5,6 @@
 #include "def.h"
 
 /*
-** mov0:
-**	lhu\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sh\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov0 (int16_t *in, int16_t *out)
-{
-  v1hi v = *(v1hi*)in;
-  *(v1hi*)out = v;
-}
-
-/*
-** mov1:
-**	lw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sw\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov1 (int16_t *in, int16_t *out)
-{
-  v2hi v = *(v2hi*)in;
-  *(v2hi*)out = v;
-}
-
-/*
-** mov2:
-**	ld\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**	sd\s+[a-x0-9]+,0\s*\([a-x0-9]+\)
-**  ret
-*/
-void mov2 (int16_t *in, int16_t *out)
-{
-  v4hi v = *(v4hi*)in;
-  *(v4hi*)out = v;
-}
-
-/*
 ** mov3:
 **	vsetivli\s+zero,\s*8,\s*e16,\s*mf4,\s*t[au],\s*m[au]
 **	vle16\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)

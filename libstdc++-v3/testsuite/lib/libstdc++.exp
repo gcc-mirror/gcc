@@ -1221,6 +1221,43 @@ proc check_v3_target_thread_fence { } {
     }]
 }
 
+proc check_v3_target_atomic_cmpxchg_word { } {
+    return [check_v3_target_prop_cached et_atomic_cmpxchg_word {
+	global cxxflags
+	global DEFAULT_CXXFLAGS
+
+	# Set up and link a C++11 test program that depends on
+	# atomic-compare-exchange being available for a pointer-sized
+	# integer.  It should be sufficient as gcc can derive all
+	# other operations when a target implements this operation.
+	set src atomic_cmpxchg_word[pid].cc
+
+	set f [open $src "w"]
+	puts $f "
+	__UINTPTR_TYPE__ i, j, k;
+	int main() {
+	__atomic_compare_exchange (&i, &j, &k, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	return 0;
+	}"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
+	set lines [v3_target_compile $src /dev/null executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, linking succeeded.
+	    return 1
+	} else {
+	    verbose "check_v3_target_atomic_cmpxchg_word: compilation failed" 2
+	    return 0
+	}
+    }]
+}
+
 # Return 1 if atomics_bool and atomic_int are always lock-free, 0 otherwise.
 proc check_v3_target_atomic_builtins { } {
     return [check_v3_target_prop_cached et_atomic_builtins {

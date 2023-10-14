@@ -412,7 +412,7 @@ struct iv_use
   tree *op_p;		/* The place where it occurs.  */
 
   tree addr_base;	/* Base address with const offset stripped.  */
-  poly_uint64_pod addr_offset;
+  poly_uint64 addr_offset;
 			/* Const offset stripped from base address.  */
 };
 
@@ -1036,10 +1036,12 @@ niter_for_exit (struct ivopts_data *data, edge exit)
 	 names that appear in phi nodes on abnormal edges, so that we do not
 	 create overlapping life ranges for them (PR 27283).  */
       desc = XNEW (class tree_niter_desc);
+      ::new (static_cast<void*> (desc)) tree_niter_desc ();
       if (!number_of_iterations_exit (data->current_loop,
 				      exit, desc, true)
      	  || contains_abnormal_ssa_name_p (desc->niter))
 	{
+	  desc->~tree_niter_desc ();
 	  XDELETE (desc);
 	  desc = NULL;
 	}
@@ -2956,7 +2958,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
 static tree
-strip_offset (tree expr, poly_uint64_pod *offset)
+strip_offset (tree expr, poly_uint64 *offset)
 {
   poly_int64 off;
   tree core = strip_offset_1 (expr, false, false, &off);
@@ -7894,7 +7896,11 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 bool
 free_tree_niter_desc (edge const &, tree_niter_desc *const &value, void *)
 {
-  free (value);
+  if (value)
+    {
+      value->~tree_niter_desc ();
+      free (value);
+    }
   return true;
 }
 

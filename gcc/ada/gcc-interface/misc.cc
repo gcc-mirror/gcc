@@ -269,7 +269,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* No caret by default for Ada.  */
   if (!OPTION_SET_P (flag_diagnostics_show_caret))
-    global_dc->show_caret = false;
+    global_dc->m_source_printing.enabled = false;
 
   /* Copy global settings to local versions.  */
   gnat_encodings = global_options.x_gnat_encodings;
@@ -293,7 +293,6 @@ static void
 internal_error_function (diagnostic_context *context, const char *msgid,
 			 va_list *ap)
 {
-  text_info tinfo;
   char *buffer, *p, *loc;
   String_Template temp, temp_loc;
   String_Pointer sp, sp_loc;
@@ -309,9 +308,7 @@ internal_error_function (diagnostic_context *context, const char *msgid,
   pp_clear_output_area (context->printer);
 
   /* Format the message into the pretty-printer.  */
-  tinfo.format_spec = msgid;
-  tinfo.args_ptr = ap;
-  tinfo.err_no = errno;
+  text_info tinfo (msgid, ap, errno);
   pp_format_verbatim (context->printer, &tinfo);
 
   /* Extract a (writable) pointer to the formatted text.  */

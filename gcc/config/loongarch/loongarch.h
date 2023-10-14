@@ -49,9 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_LIBGCC_SDATA_SECTION ".sdata"
 
-/* Driver native functions for SPEC processing in the GCC driver.  */
-#include "loongarch-driver.h"
-
 /* This definition replaces the formerly used 'm' constraint with a
    different constraint letter in order to avoid changing semantics of
    the 'm' constraint when accepting new address formats in

@@ -1,3 +1,145 @@
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_ORDINARY_MAPS): Delete.
+	(LINEMAPS_MACRO_MAPS): Delete.
+	* line-map.cc (linemap_tracks_macro_expansion_locs_p): Update for
+	deletion of LINEMAPS_MACRO_MAPS.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (maps_info_ordinary::cache): Rename to...
+	(maps_info_ordinary::m_cache): ...this.
+	(maps_info_macro::cache): Rename to...
+	(maps_info_macro::m_cache): ...this.
+	(LINEMAPS_CACHE): Delete.
+	(LINEMAPS_ORDINARY_CACHE): Delete.
+	(LINEMAPS_MACRO_CACHE): Delete.
+	* init.cc (read_original_filename): Update for adding "m_" prefix.
+	* line-map.cc (linemap_add): Eliminate LINEMAPS_ORDINARY_CACHE in
+	favor of a simple field access.
+	(linemap_enter_macro): Likewise for LINEMAPS_MACRO_CACHE.
+	(linemap_ordinary_map_lookup): Likewise for
+	LINEMAPS_ORDINARY_CACHE, twice.
+	(linemap_lookup_macro_index): Likewise for LINEMAPS_MACRO_CACHE.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_LAST_ALLOCATED_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Delete.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::reallocator): Rename to...
+	(line_maps::m_reallocator): ...this.
+	(line_maps::round_alloc_size): Rename to...
+	(line_maps::m_round_alloc_size): ...this.
+	(line_maps::location_adhoc_data_map): Rename to...
+	(line_maps::m_location_adhoc_data_map): ...this.
+	(line_maps::num_optimized_ranges): Rename to...
+	(line_maps::m_num_optimized_ranges): ..this.
+	(line_maps::num_unoptimized_ranges): Rename to...
+	(line_maps::m_num_unoptimized_ranges): ...this.
+	(get_combined_adhoc_loc): Delete decl.
+	(COMBINE_LOCATION_DATA): Delete.
+	* lex.cc (get_location_for_byte_range_in_cur_line): Update for
+	removal of COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Likewise.
+	(_cpp_lex_direct): Likewise.
+	* line-map.cc (line_maps::~line_maps): Update for "m_" prefix of
+	some fields of line_maps.
+	(rebuild_location_adhoc_htab): Likewise.
+	(can_be_stored_compactly_p): Convert to...
+	(line_maps::can_be_stored_compactly_p): ...this private member
+	function.
+	(get_combined_adhoc_loc): Convert to...
+	(line_maps::get_or_create_combined_loc): ...this public member
+	function.
+	(line_maps::make_location): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(get_data_from_adhoc_loc): Update for "m_" prefix of some fields
+	of line_maps.
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Convert to...
+	(line_maps::get_range_from_adhoc_loc): ...this private member
+	function.
+	(line_maps::get_range_from_loc): Update for conversion of
+	get_range_from_adhoc_loc to a member function.
+	(linemap_init): Update for "m_" prefix of some fields of
+	line_maps.
+	(line_map_new_raw): Likewise.
+	(linemap_enter_macro): Likewise.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::pure_location_p): New decl.
+	(line_maps::get_pure_location): New decl.
+	(line_maps::get_range_from_loc): New decl.
+	(line_maps::get_start): New.
+	(line_maps::get_finish): New.
+	(line_maps::make_location): New decl.
+	(get_range_from_loc): Make line_maps param const.
+	(get_discriminator_from_loc): Likewise.
+	(pure_location_p): Likewise.
+	(get_pure_location): Likewise.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_included_from_linemap): Likewise.
+	(first_map_in_common): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_location_before_p): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_dump): Likewise.
+	(line_table_dump): Likewise.
+	* internal.h (linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	* line-map.cc (can_be_stored_compactly_p): Likewise.
+	(get_data_from_adhoc_loc): Drop redundant "class".
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Likewise.
+	(get_range_from_loc): Make const and move implementation to...
+	(line_maps::get_range_from_loc): ...this new function.
+	(get_discriminator_from_loc): Make line_maps param const.
+	(pure_location_p): Make const and move implementation to...
+	(line_maps::pure_location_p): ...this new function.
+	(get_pure_location): Make const and move implementation to...
+	(line_maps::get_pure_location): ...this new function.
+	(linemap_included_from_linemap): Make line_maps param const.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(first_map_in_common_1): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_macro_loc_to_spelling_point): Likewise.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_dump): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(line_table_dump): Likewise.
+
 2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/61474

@@ -418,10 +418,13 @@ set_range_info (tree name, const vrange &r)
   if (r.undefined_p () || r.varying_p ())
     return false;
 
+  // Pick up the current range, or VARYING if none.
   tree type = TREE_TYPE (name);
   if (POINTER_TYPE_P (type))
     {
-      if (r.nonzero_p ())
+      struct ptr_info_def *pi = get_ptr_info (name);
+      // If R is nonnull and pi is not, set nonnull.
+      if (r.nonzero_p () && (!pi || pi->pt.null))
 	{
 	  set_ptr_nonnull (name);
 	  return true;
@@ -429,18 +432,16 @@ set_range_info (tree name, const vrange &r)
       return false;
     }
 
-  /* If a global range already exists, incorporate it.  */
+  Value_Range tmp (type);
   if (range_info_p (name))
-    {
-      Value_Range tmp (type);
-      range_info_get_range (name, tmp);
-      tmp.intersect (r);
-      if (tmp.undefined_p ())
-	return false;
+    range_info_get_range (name, tmp);
+  else
+    tmp.set_varying (type);
+  // If the result doesn't change, or is undefined, return false.
+  if (!tmp.intersect (r) || tmp.undefined_p ())
+    return false;
 
-      return range_info_set_range (name, tmp);
-    }
-  return range_info_set_range (name, r);
+  return range_info_set_range (name, tmp);
 }
 
 /* Set nonnull attribute to pointer NAME.  */

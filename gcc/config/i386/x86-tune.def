@@ -717,3 +717,6 @@ DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)
 /* X86_TUNE_SLOW_STC: This disables use of stc, clc and cmc carry flag
   modifications on architectures where theses operations are slow.  */
 DEF_TUNE (X86_TUNE_SLOW_STC, "slow_stc", m_PENT4)
+
+/* X86_TUNE_USE_RCR: Controls use of rcr 1 instruction instead of shrd.  */
+DEF_TUNE (X86_TUNE_USE_RCR, "use_rcr", m_AMD_MULTIPLE)

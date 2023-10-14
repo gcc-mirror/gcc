@@ -405,9 +405,7 @@ package Types is
 
    subtype Entity_Id is Node_Id;
    --  A synonym for node types, used in the Einfo package to refer to nodes
-   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx). All such
-   --  nodes are extended nodes and these are the only extended nodes, so that
-   --  in practice entity and extended nodes are synonymous.
+   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx).
    --
    --  Note that Sinfo.Nodes.N_Entity_Id is the same as Entity_Id, except it
    --  has a predicate requiring the correct Nkind. Opt_N_Entity_Id is the same

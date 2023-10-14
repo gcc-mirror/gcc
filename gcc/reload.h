@@ -97,7 +97,7 @@ struct reload
   /* Positive amount to increment or decrement by if
      reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
      Ignored otherwise (don't assume it is zero).  */
-  poly_int64_pod inc;
+  poly_int64 inc;
   /* A reg for which reload_in is the equivalent.
      If reload_in is a symbol_ref which came from
      reg_equiv_constant, then this is the pseudo

@@ -28,6 +28,8 @@ def get_bool_type():
 def get_std_size_type():
     return gdb.lookup_type('std::size_t')
 
+_versioned_namespace = '__8::'
+
 def is_specialization_of(x, template_name):
     """
     Test whether a type is a specialization of the named class template.
@@ -37,8 +39,7 @@ def is_specialization_of(x, template_name):
     """
     if isinstance(x, gdb.Type):
         x = x.tag
-    if _versioned_namespace:
-        template_name = '(%s)?%s' % (_versioned_namespace, template_name)
+    template_name = '(%s)?%s' % (_versioned_namespace, template_name)
     return re.match(r'^std::(__\d::)?%s<.*>$' % template_name, x) is not None
 
 class LibStdCxxXMethod(gdb.xmethod.XMethod):

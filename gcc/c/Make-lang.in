@@ -91,8 +91,6 @@ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 components_in_prev = "bfd opcodes binutils fixincludes gas gcc gmp mpfr mpc isl gold intl ld libbacktrace libcpp libcody libdecnumber libiberty libiberty-linker-plugin libiconv zlib lto-plugin libctf libsframe"
 components_in_prev_target = "libstdc++-v3 libsanitizer libvtv libgcc libbacktrace libphobos zlib libgomp libatomic"
 
-.PHONY: create_fdas_for_cc1
-
 cc1.fda: create_fdas_for_cc1
 	$(PROFILE_MERGER) $(shell ls -ha cc1_*.fda) --output_file cc1.fda -gcov_version 2
 
@@ -116,6 +114,8 @@ create_fdas_for_cc1: ../stage1-gcc/cc1$(exeext) ../prev-gcc/$(PERF_DATA)
 	    $(CREATE_GCOV) -binary ../prev-gcc/cc1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
 	  fi; \
 	done;
+
+	$(STAMP) $@
 #
 # Build hooks:
 

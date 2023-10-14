@@ -2471,6 +2471,18 @@ Test system has an integer register width of 64 bits.
 
 @end table
 
+@subsubsection CORE-V specific attributes
+
+@table @code
+
+@item cv_mac
+Test system has support for the CORE-V MAC extension.
+
+@item cv_alu
+Test system has support for the CORE-V ALU extension.
+
+@end table
+
 @subsubsection Other hardware attributes
 
 @c Please keep this table sorted alphabetically.
@@ -2623,6 +2635,9 @@ Target supports atomic operations on @code{int} and @code{long}.
 Test environment appears to run executables on a simulator that
 accepts only @code{EM_SPARC} executables and chokes on @code{EM_SPARC32PLUS}
 or @code{EM_SPARCV9} executables.
+
+@item user_msr
+Target supports the execution of @code{user_msr} instructions.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.

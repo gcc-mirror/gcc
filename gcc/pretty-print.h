@@ -31,15 +31,29 @@ along with GCC; see the file COPYING3.  If not see
    along with a list of things.  */
 struct text_info
 {
-  const char *format_spec;
-  va_list *args_ptr;
-  int err_no;  /* for %m */
-  void **x_data;
-  rich_location *m_richloc;
+  text_info () = default;
+  text_info (const char *format_spec,
+	     va_list *args_ptr,
+	     int err_no,
+	     void **data = nullptr,
+	     rich_location *rich_loc = nullptr)
+  : m_format_spec (format_spec),
+    m_args_ptr (args_ptr),
+    m_err_no (err_no),
+    m_data (data),
+    m_richloc (rich_loc)
+  {
+  }
 
   void set_location (unsigned int idx, location_t loc,
 		     enum range_display_kind range_display_kind);
   location_t get_location (unsigned int index_of_location) const;
+
+  const char *m_format_spec;
+  va_list *m_args_ptr;
+  int m_err_no;  /* for %m */
+  void **m_data;
+  rich_location *m_richloc;
 };
 
 /* How often diagnostics are prefixed by their locations:
@@ -445,6 +459,6 @@ pp_wide_int (pretty_printer *pp, const wide_int_ref &w, signop sgn)
 }
 
 template<unsigned int N, typename T>
-void pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &);
+void pp_wide_integer (pretty_printer *pp, const poly_int<N, T> &);
 
 #endif /* GCC_PRETTY_PRINT_H */

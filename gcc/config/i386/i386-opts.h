@@ -134,4 +134,12 @@ enum lam_type {
   lam_u57
 };
 
+enum apx_features {
+  apx_none = 0,
+  apx_egpr = 1 << 0,
+  apx_push2pop2 = 1 << 1,
+  apx_ndd = 1 << 2,
+  apx_all = apx_egpr | apx_push2pop2 | apx_ndd,
+};
+
 #endif

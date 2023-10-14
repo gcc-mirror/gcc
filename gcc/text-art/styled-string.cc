@@ -563,10 +563,7 @@ styled_string::from_fmt_va (style_manager &sm,
 			    const char *fmt,
 			    va_list *args)
 {
-  text_info text;
-  text.err_no = errno;
-  text.args_ptr = args;
-  text.format_spec = fmt;
+  text_info text (fmt, args, errno);
   pretty_printer pp;
   pp_show_color (&pp) = true;
   pp.url_format = URL_FORMAT_DEFAULT;

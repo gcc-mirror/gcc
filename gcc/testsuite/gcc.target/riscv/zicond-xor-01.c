@@ -10,5 +10,5 @@ long xor1(long crc, long poly)
   return crc;
 }
 
-/* { dg-final { scan-assembler-times "czero.eqz\t" 1 } } */
+/* { dg-final { scan-assembler-times {\mczero.eqz\M} 1 } } */
 /* { dg-final { scan-assembler-times "xor\t" 1 } } */

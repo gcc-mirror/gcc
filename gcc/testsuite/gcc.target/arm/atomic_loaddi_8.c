@@ -6,4 +6,4 @@
 #include "atomic_loaddi_seq_cst.x"
 
 /* { dg-final { scan-assembler-times "ldrd\tr\[0-9\]+, r\[0-9\]+, \\\[r\[0-9\]+\\\]" 1 } } */
-/* { dg-final { scan-assembler-times "dmb\tish" 1 } } */
+/* { dg-final { scan-assembler-times "dmb\tish" 2 } } */

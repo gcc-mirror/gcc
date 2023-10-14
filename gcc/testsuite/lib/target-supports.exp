@@ -2021,7 +2021,7 @@ proc riscv_get_arch { } {
 proc add_options_for_riscv_d { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	return [regsub -all -- {((?^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
     }
     if { [check_effective_target_riscv_d] } {
 	return "$flags"
@@ -2032,7 +2032,7 @@ proc add_options_for_riscv_d { flags } {
 proc add_options_for_riscv_v { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	return [regsub -all -- {((?^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
     }
     if { [check_effective_target_riscv_v] } {
 	return "$flags"
@@ -2043,8 +2043,8 @@ proc add_options_for_riscv_v { flags } {
 proc add_options_for_riscv_zfh { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zfh ]
-	return [regsub -all -- {((?^|[[:space:]])-march=[[:alnum:]_.]*_zfh[[:alnum:]_.]*)_zfh} $flags \\1 ]
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zfh ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zfh[[:alnum:]_.]*)_zfh} $flags \\1 ]
     }
     if { [check_effective_target_riscv_zfh] } {
 	return "$flags"
@@ -3970,7 +3970,8 @@ proc check_effective_target_vect_int { } {
 	     || [et-is-effective-target mips_msa]))
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
-	 || [istarget riscv*-*-*]
+	 || ([istarget riscv*-*-*]
+	     && [check_effective_target_riscv_v])
 	}}]
 }
 
@@ -4098,7 +4099,9 @@ proc check_effective_target_vect_intfloat_cvt { } {
 		 && [et-is-effective-target mips_msa])
 	     || [istarget amdgcn-*-*]
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vxe2]) }}]
+		 && [check_effective_target_s390_vxe2])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports signed double->int conversion
@@ -4117,7 +4120,9 @@ proc check_effective_target_vect_doubleint_cvt { } {
 	    || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports signed int->double conversion
@@ -4136,7 +4141,9 @@ proc check_effective_target_vect_intdouble_cvt { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 #Return 1 if we're supporting __int128 for target, 0 otherwise.
@@ -4167,7 +4174,9 @@ proc check_effective_target_vect_uintfloat_cvt { } {
 		 && [et-is-effective-target mips_msa])
 	     || [istarget amdgcn-*-*]
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vxe2]) }}]
+		 && [check_effective_target_s390_vxe2])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 
@@ -4184,7 +4193,9 @@ proc check_effective_target_vect_floatint_cvt { } {
 		 && [et-is-effective-target mips_msa])
 	     || [istarget amdgcn-*-*]
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vxe2]) }}]
+		 && [check_effective_target_s390_vxe2])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports unsigned float->int conversion
@@ -4199,7 +4210,18 @@ proc check_effective_target_vect_floatuint_cvt { } {
 		&& [et-is-effective-target mips_msa])
 	    || [istarget amdgcn-*-*]
 	    || ([istarget s390*-*-*]
-		&& [check_effective_target_s390_vxe2]) }}]
+		&& [check_effective_target_s390_vxe2])
+	    || ([istarget riscv*-*-*]
+		&& [check_effective_target_riscv_v]) }}]
+}
+
+# Return 1 if the target supports vector integer char -> long long extend optab
+#
+
+proc check_effective_target_vect_ext_char_longlong { } {
+    return [check_cached_effective_target_indexed vect_ext_char_longlong {
+      expr { ([istarget riscv*-*-*]
+	      && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if peeling for alignment might be profitable on the target
@@ -7275,7 +7297,9 @@ proc check_effective_target_vect_shift { } {
 		     || [et-is-effective-target mips_loongson_mmi]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports hardware vector shift by register operation.
@@ -7285,6 +7309,8 @@ proc check_effective_target_vect_var_shift { } {
       expr {(([istarget i?86-*-*] || [istarget x86_64-*-*])
 	     && [check_avx2_available])
 	    || [istarget aarch64*-*-*]
+	    || ([istarget riscv*-*-*]
+		&& [check_effective_target_riscv_v])
       }}]
 }
 
@@ -7299,7 +7325,9 @@ proc check_effective_target_whole_vector_shift { } {
 	     && [et-is-effective-target mips_loongson_mmi])
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
-	 || [istarget amdgcn-*-*] } {
+	 || [istarget amdgcn-*-*]
+	 || ([istarget riscv*-*-*]
+	     && [check_effective_target_riscv_v]) } {
 	set answer 1
     } else {
 	set answer 0
@@ -7327,7 +7355,9 @@ proc check_effective_target_vect_bool_cmp { } {
     return [check_cached_effective_target_indexed vect_bool_cmp {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
-	     || [is-effective-target arm_neon] }}]
+	     || [is-effective-target arm_neon]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports addition of char vectors for at least
@@ -7348,6 +7378,8 @@ proc check_effective_target_vect_char_add { } {
 	     || [et-is-effective-target mips_msa]))
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
+	 || ([istarget riscv*-*-*]
+	     && [check_effective_target_riscv_v])
 	}}]
 }
 
@@ -7362,7 +7394,9 @@ proc check_effective_target_vect_shift_char { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
@@ -7381,7 +7415,9 @@ proc check_effective_target_vect_long { } {
 	      && [et-is-effective-target mips_msa])
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
-	 || [istarget amdgcn-*-*] } {
+	 || [istarget amdgcn-*-*]
+	 || ([istarget riscv*-*-*]
+	     && [check_effective_target_riscv_v]) } {
 	set answer 1
     } else {
 	set answer 0
@@ -7409,7 +7445,9 @@ proc check_effective_target_vect_float { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vxe])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports hardware vectors of float without
@@ -7438,7 +7476,9 @@ proc check_effective_target_vect_double { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]} }]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v])} }]
 }
 
 # Return 1 if the target supports conditional addition, subtraction,
@@ -7446,7 +7486,8 @@ proc check_effective_target_vect_double { } {
 # via the cond_ optabs.  Return 0 otherwise.
 
 proc check_effective_target_vect_double_cond_arith { } {
-    return [check_effective_target_aarch64_sve]
+    return [expr { [check_effective_target_aarch64_sve]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports hardware vectors of long long, 0 otherwise.
@@ -7463,7 +7504,9 @@ proc check_effective_target_vect_long_long { } {
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*]
 		 && [check_effective_target_has_arch_pwr8])
-	     || [istarget aarch64*-*-*] }}]
+	     || [istarget aarch64*-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v])}}]
 }
 
 
@@ -7516,7 +7559,9 @@ proc check_effective_target_vect_perm { } {
 		     || [et-is-effective-target mips_msa]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if, for some VF:
@@ -7609,7 +7654,9 @@ proc check_effective_target_vect_perm_byte { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports SLP permutation of 3 vectors when each
@@ -7638,7 +7685,9 @@ proc check_effective_target_vect_perm_short { } {
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports SLP permutation of 3 vectors when each
@@ -7827,7 +7876,9 @@ proc check_effective_target_vect_sdot_qi { } {
 	     || [istarget aarch64*-*-*]
 	     || [istarget arm*-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7842,7 +7893,9 @@ proc check_effective_target_vect_udot_qi { } {
 	     || [istarget arm*-*-*]
 	     || [istarget ia64-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7869,7 +7922,9 @@ proc check_effective_target_vect_sdot_hi { } {
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7881,7 +7936,9 @@ proc check_effective_target_vect_udot_hi { } {
     return [check_cached_effective_target_indexed vect_udot_hi {
       expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7896,15 +7953,19 @@ proc check_effective_target_vect_usad_char { } {
 	      || ([istarget aarch64*-*-*]
 		  && ![check_effective_target_aarch64_sve])
 	      || ([istarget powerpc*-*-*]
-		  && [check_p9vector_hw_available])}}]
+		  && [check_p9vector_hw_available])
+	      || ([istarget riscv*-*-*]
+		  && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports both signed
 # and unsigned average operations on vectors of bytes.
 
 proc check_effective_target_vect_avg_qi {} {
-    return [expr { [istarget aarch64*-*-*]
-		   && ![check_effective_target_aarch64_sve1_only] }]
+    return [expr { ([istarget aarch64*-*-*]
+		    && ![check_effective_target_aarch64_sve1_only])
+		   || ([istarget riscv*-*-*]
+		       && [check_effective_target_riscv_v]) }]
 }
 
 # Return 1 if the target plus current options supports both signed
@@ -7920,8 +7981,10 @@ proc check_effective_target_vect_mulhrs_hi {} {
 # by power-of-2 operations on vectors of 4-byte integers.
 
 proc check_effective_target_vect_sdiv_pow2_si {} {
-    return [expr { [istarget aarch64*-*-*]
-		   && [check_effective_target_aarch64_sve] }]
+    return [expr { ([istarget aarch64*-*-*]
+		    && [check_effective_target_aarch64_sve])
+		   || ([istarget riscv*-*-*]
+		       && [check_effective_target_riscv_v]) }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7941,7 +8004,9 @@ proc check_effective_target_vect_pack_trunc { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-             || [istarget amdgcn*-*-*] }}]
+             || [istarget amdgcn*-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -7961,7 +8026,9 @@ proc check_effective_target_vect_unpack { } {
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn*-*-*] }}]
+	     || [istarget amdgcn*-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target plus current options does not guarantee
@@ -8595,7 +8662,8 @@ proc check_effective_target_vect_load_lanes { } {
 proc check_effective_target_vect_masked_load { } {
     return [expr { [check_avx_available]
 		   || [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*] } ]
+		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_riscv_v] } ]
 }
 
 # Return 1 if the target supports vector masked stores.
@@ -8610,14 +8678,16 @@ proc check_effective_target_vect_masked_store { } {
 # Return 1 if the target supports vector gather loads via internal functions.
 
 proc check_effective_target_vect_gather_load_ifn { } {
-    return [expr { [check_effective_target_aarch64_sve] }]
+    return [expr { [check_effective_target_aarch64_sve]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports vector scatter stores.
 
 proc check_effective_target_vect_scatter_store { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*] }]
+		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
@@ -8634,7 +8704,9 @@ proc check_effective_target_vect_condition { } {
 		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector conditional operations where
@@ -8651,7 +8723,9 @@ proc check_effective_target_vect_cond_mixed { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector char multiplication, 0 otherwise.
@@ -8667,7 +8741,9 @@ proc check_effective_target_vect_char_mult { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector short multiplication, 0 otherwise.
@@ -8685,7 +8761,8 @@ proc check_effective_target_vect_short_mult { } {
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || [istarget amdgcn-*-*]
-	     || [istarget riscv*-*-*] }}]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector int multiplication, 0 otherwise.
@@ -8702,7 +8779,8 @@ proc check_effective_target_vect_int_mult { } {
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || [istarget amdgcn-*-*]
-	     || [istarget riscv*-*-*] }}]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports 64 bit hardware vector
@@ -8719,7 +8797,9 @@ proc check_effective_target_vect_long_mult { } {
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget aarch64*-*-*]
 	 || ([istarget mips*-*-*]
-	      && [et-is-effective-target mips_msa]) } {
+	      && [et-is-effective-target mips_msa])
+	 || ([istarget riscv*-*-*]
+	      && [check_effective_target_riscv_v]) } {
 	set answer 1
     } else {
 	set answer 0
@@ -8735,7 +8815,11 @@ proc check_effective_target_vect_int_mod { } {
     return [check_cached_effective_target_indexed vect_int_mod {
       expr { ([istarget powerpc*-*-*]
 	      && [check_effective_target_has_arch_pwr10])
-             || [istarget amdgcn-*-*] }}]
+             || [istarget amdgcn-*-*]
+             || ([istarget loongarch*-*-*]
+		 && [check_effective_target_loongarch_sx])
+             || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.
@@ -8751,7 +8835,9 @@ proc check_effective_target_vect_extract_even_odd { } {
 		 && ([et-is-effective-target mips_msa]
 		     || [et-is-effective-target mpaired_single]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+             || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector interleaving, 0 otherwise.
@@ -8767,7 +8853,9 @@ proc check_effective_target_vect_interleave { } {
 		 && ([et-is-effective-target mpaired_single]
 		     || [et-is-effective-target mips_msa]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 foreach N {2 3 4 5 6 7 8} {
@@ -8825,7 +8913,7 @@ proc available_vector_sizes { } {
 	lappend result 4096 2048 1024 512 256 128 64 32 16 8 4 2
     } elseif { [istarget riscv*-*-*] } {
 	if { [check_effective_target_riscv_v] } {
-	    lappend result 0 32
+	    lappend result 0 32 64 128 256 512 1024
 	}
 	lappend result 128
     } else {
@@ -8845,6 +8933,12 @@ proc check_effective_target_vect_multiple_sizes { } {
 
 proc check_effective_target_vect_variable_length { } {
     return [expr { [lindex [available_vector_sizes] 0] == 0 }]
+}
+
+# Return 1 if the target supports vectors of 1024 bits.
+
+proc check_effective_target_vect1024 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 1024] >= 0 }]
 }
 
 # Return 1 if the target supports vectors of 512 bits.
@@ -8884,7 +8978,9 @@ proc check_effective_target_vect_call_copysignf { } {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget aarch64*-*-*]
-             || [istarget amdgcn-*-*] }}]
+             || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports hardware square root instructions.
@@ -8921,7 +9017,9 @@ proc check_effective_target_vect_call_sqrtf { } {
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-             || [istarget amdgcn-*-*] }}]
+             || [istarget amdgcn-*-*]
+	     || ([istarget riscv*-*-*]
+		 && [check_effective_target_riscv_v]) }}]
 }
 
 # Return 1 if the target supports vector lrint calls.
@@ -9032,14 +9130,16 @@ proc check_effective_target_vect_call_roundf { } {
 
 proc check_effective_target_vect_logical_reduc { } {
     return [expr { [check_effective_target_aarch64_sve]
-	           || [istarget amdgcn-*-*] }]
+	           || [istarget amdgcn-*-*]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports the fold_extract_last optab.
 
 proc check_effective_target_vect_fold_extract_last { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*] }]
+		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_riscv_v] }]
 }
 
 # Return 1 if the target supports section-anchors
@@ -9932,7 +10032,8 @@ proc check_effective_target_vect_sizes_32B_16B { } {
 proc check_effective_target_vect_sizes_16B_8B { } {
   if { [check_avx_available]
        || [is-effective-target arm_neon]
-       || [istarget aarch64*-*-*] } {
+       || [istarget aarch64*-*-*]
+       || [check_effective_target_riscv_v] } {
      return 1;
   } else {
     return 0;
@@ -10148,6 +10249,16 @@ proc check_effective_target_sm4 { } {
 						       (__v4si) __B);
         }
     } "-msm4" ]
+}
+
+proc check_effective_target_apxf { } {
+    return [check_no_compiler_messages apxf object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("add\t%%r16, %%r31" ::);
+	}
+    } "-mapxf" ]
 }
 
 # Return 1 if sse instructions can be compiled.
@@ -11323,6 +11434,13 @@ proc check_vect_support_and_set_flags { } {
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default compile
 	}
+    } elseif [istarget loongarch*-*-*] {
+      lappend DEFAULT_VECTCFLAGS "-mdouble-float" "-mlasx"
+      if [check_effective_target_loongarch_asx_hw] {
+	  set dg-do-what-default run
+      } else {
+	  set dg-do-what-default compile
+      }
     } else {
         return 0
     }
@@ -11874,7 +11992,8 @@ proc check_effective_target_builtin_eh_return { } {
 # Return 1 if the target supports max reduction for vectors.
 
 proc check_effective_target_vect_max_reduc { } {
-    if { [istarget aarch64*-*-*] || [is-effective-target arm_neon] } {
+    if { [istarget aarch64*-*-*] || [is-effective-target arm_neon]
+	  || [check_effective_target_riscv_v] } {
 	return 1
     }
     return 0
@@ -12803,6 +12922,72 @@ proc check_effective_target_const_volatile_readonly_section { } {
 	return 0
     }
   return 1
+}
+
+# Return 1 if the CORE-V MAC extension is available.
+proc check_effective_target_cv_mac { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_mac object {
+        void foo (void)
+        {
+          asm ("cv.mac t0, t1, t2");
+        }
+    } "-march=rv32i_xcvmac" ]
+}
+
+# Return 1 if the CORE-V ALU extension is available.
+proc check_effective_target_cv_alu { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_alu object {
+        void foo (void)
+        {
+          asm ("cv.addn t0, t1, t2, 0");
+        }
+    } "-march=rv32i_xcvalu" ]
+}
+
+proc check_effective_target_loongarch_sx { } {
+    return [check_no_compiler_messages loongarch_lsx assembly {
+       #if !defined(__loongarch_sx)
+       #error "LSX not defined"
+       #endif
+    }]
+}
+
+proc check_effective_target_loongarch_sx_hw { } {
+    return [check_runtime loongarch_sx_hw {
+	#include <lsxintrin.h>
+	int main (void)
+	{
+	  __m128i a, b, c;
+	  c = __lsx_vand_v (a, b);
+	  return 0;
+	}
+    } "-mlsx"]
+}
+
+proc check_effective_target_loongarch_asx { } {
+    return [check_no_compiler_messages loongarch_asx assembly {
+       #if !defined(__loongarch_asx)
+       #error "LASX not defined"
+       #endif
+    }]
+}
+
+proc check_effective_target_loongarch_asx_hw { } {
+    return [check_runtime loongarch_asx_hw {
+	#include <lasxintrin.h>
+	int main (void)
+	{
+	  __m256i a, b, c;
+	  c = __lasx_xvand_v (a, b);
+	  return 0;
+	}
+    } "-mlasx"]
 }
 
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.

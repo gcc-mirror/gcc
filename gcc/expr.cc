@@ -5438,8 +5438,8 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
    *BITSTART and *BITEND.  */
 
 void
-get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
-	       poly_int64_pod *bitpos, tree *offset)
+get_bit_range (poly_uint64 *bitstart, poly_uint64 *bitend, tree exp,
+	       poly_int64 *bitpos, tree *offset)
 {
   poly_int64 bitoffset;
   tree field, repr;
@@ -7881,8 +7881,8 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
    this case, but the address of the object can be found.  */
 
 tree
-get_inner_reference (tree exp, poly_int64_pod *pbitsize,
-		     poly_int64_pod *pbitpos, tree *poffset,
+get_inner_reference (tree exp, poly_int64 *pbitsize,
+		     poly_int64 *pbitpos, tree *poffset,
 		     machine_mode *pmode, int *punsignedp,
 		     int *preversep, int *pvolatilep)
 {

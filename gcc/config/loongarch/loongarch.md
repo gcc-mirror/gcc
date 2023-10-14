@@ -37,7 +37,6 @@
   UNSPEC_FCLASS
   UNSPEC_FMAX
   UNSPEC_FMIN
-  UNSPEC_FCOPYSIGN
   UNSPEC_FTINT
   UNSPEC_FTINTRM
   UNSPEC_FTINTRP
@@ -1129,9 +1128,8 @@
 
 (define_insn "copysign<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
-		      (match_operand:ANYF 2 "register_operand" "f")]
-		     UNSPEC_FCOPYSIGN))]
+	(copysign:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		       (match_operand:ANYF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "fcopysign.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcopysign")

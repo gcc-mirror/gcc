@@ -59,7 +59,7 @@
    (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO64:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -74,7 +74,7 @@
    (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO32:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -89,7 +89,7 @@
    (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO16:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -104,7 +104,7 @@
    (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO8:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -119,7 +119,7 @@
    (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO4:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -134,7 +134,7 @@
    (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO2:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -153,7 +153,7 @@
    (match_operand:<RATIO1:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO1:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -172,7 +172,7 @@
    (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO64:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -187,7 +187,7 @@
    (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO32:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -202,7 +202,7 @@
    (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO16:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -217,7 +217,7 @@
    (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO8:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -232,7 +232,7 @@
    (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO4:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -247,7 +247,7 @@
    (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO2:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -266,7 +266,7 @@
    (match_operand:<RATIO1:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_mode_p (<RATIO1:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -336,7 +336,7 @@
 ;; - vadd.vx/vadd.vi
 ;; -------------------------------------------------------------------------
 
-(define_expand "@vec_series<mode>"
+(define_expand "vec_series<mode>"
   [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VEL> 1 "reg_or_int_operand")
    (match_operand:<VEL> 2 "reg_or_int_operand")]
@@ -575,10 +575,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "vcond_mask_<mode><mode>"
-  [(match_operand:VB 0 "register_operand")
-   (match_operand:VB 1 "register_operand")
-   (match_operand:VB 2 "register_operand")
-   (match_operand:VB 3 "register_operand")]
+  [(match_operand:VB_VLS 0 "register_operand")
+   (match_operand:VB_VLS 1 "register_operand")
+   (match_operand:VB_VLS 2 "register_operand")
+   (match_operand:VB_VLS 3 "register_operand")]
   "TARGET_VECTOR"
   {
     /* mask1 = operands[3] & operands[1].  */
@@ -2229,12 +2229,20 @@
 })
 
 ;; -------------------------------------------------------------------------
-;; ---- [FP] Math.h.
+;; ---- [FP] Rounding.
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - ceil/ceilf
 ;; - floor/floorf
 ;; - nearbyint/nearbyintf
+;; - rint/rintf
+;; - round/roundf
+;; - trunc/truncf
+;; - roundeven/roundevenf
+;; - lrint/lrintf
+;; - irintf
+;; - lceil/lceilf
+;; - lfloor/lfloorf
 ;; -------------------------------------------------------------------------
 (define_expand "ceil<mode>2"
   [(match_operand:V_VLSF 0 "register_operand")
@@ -2302,6 +2310,46 @@
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
     riscv_vector::expand_vec_roundeven (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "lrint<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "lround<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "lceil<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
+    DONE;
+  }
+)
+
+(define_expand "lfloor<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
+  {
+    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
     DONE;
   }
 )

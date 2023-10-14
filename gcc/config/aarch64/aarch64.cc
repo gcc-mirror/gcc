@@ -257,7 +257,7 @@ public:
     machine_mode orig_mode;
 
     /* The offset in bytes of the piece from the start of the type.  */
-    poly_uint64_pod offset;
+    poly_uint64 offset;
   };
 
   /* Divides types analyzed as IS_PST into individual pieces.  The pieces

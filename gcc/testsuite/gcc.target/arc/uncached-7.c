@@ -8,4 +8,4 @@ void s_acc(void)
     s[10] = 15;
 }
 
-/* { dg-final { scan-assembler-times "st\.di" 1 } } */
+/* { dg-final { scan-assembler-times "st\.di" 1 { xfail *-*-* } } } */

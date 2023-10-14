@@ -181,27 +181,31 @@ test_diagnostic_start_span_fn (diagnostic_context *context,
   pp_newline (context->printer);
 }
 
-/* Custom diagnostic callback: loudly announce a new diagnostic group.  */
+/* Custom output format subclass.  */
 
-static void
-test_begin_group_cb (diagnostic_context * context)
+class test_output_format : public diagnostic_text_output_format
 {
-  pp_string (context->printer,
-	     "================================= BEGIN GROUP ==============================");
-  pp_newline (context->printer);
-}
+ public:
+  test_output_format (diagnostic_context &context)
+  : diagnostic_text_output_format (context)
+  {}
 
-/* Custom diagnostic callback: loudly announce the end of a
-   diagnostic group.  */
-
-static void
-test_end_group_cb (diagnostic_context * context)
-{
-  pp_set_prefix (context->printer, NULL);
-  pp_string (context->printer,
-	     "---------------------------------- END GROUP -------------------------------");
-  pp_newline_and_flush (context->printer);
-}
+  void on_begin_group () final override
+  {
+    /* Loudly announce a new diagnostic group.  */
+    pp_string (m_context.printer,
+	       "================================= BEGIN GROUP ==============================");
+    pp_newline (m_context.printer);
+  }
+  void on_end_group () final override
+  {
+    /* Loudly announce the end of a diagnostic group.  */
+    pp_set_prefix (m_context.printer, NULL);
+    pp_string (m_context.printer,
+	       "---------------------------------- END GROUP -------------------------------");
+    pp_newline_and_flush (m_context.printer);
+  }
+};
 
 /* Entrypoint for the plugin.
    Install custom callbacks into the global_dc.
@@ -220,9 +224,8 @@ plugin_init (struct plugin_name_args *plugin_info,
     return 1;
 
   diagnostic_starter (global_dc) = test_diagnostic_starter;
-  global_dc->start_span = test_diagnostic_start_span_fn;
-  global_dc->begin_group_cb = test_begin_group_cb;
-  global_dc->end_group_cb = test_end_group_cb;
+  global_dc->m_text_callbacks.start_span = test_diagnostic_start_span_fn;
+  global_dc->m_output_format = new test_output_format (*global_dc);
 
   pass_info.pass = new pass_test_groups (g);
   pass_info.reference_pass_name = "*warn_function_noreturn";

@@ -395,6 +395,11 @@
 	return true;
 })
 
+;; CORE-V Predicates:
+(define_predicate "immediate_register_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_int")))
+
 ;; Predicates for the V extension.
 (define_special_predicate "vector_length_operand"
   (ior (match_operand 0 "pmode_register_operand")

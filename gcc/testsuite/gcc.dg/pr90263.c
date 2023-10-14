@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target glibc } */
+/* { dg-skip-if "riscv_v uses an inline memcpy routine" { riscv_v } }*/
 
 int *f (int *p, int *q, long n)
 {

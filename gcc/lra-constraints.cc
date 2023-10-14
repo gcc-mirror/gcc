@@ -3399,12 +3399,12 @@ base_plus_disp_to_reg (struct address_info *ad, rtx disp)
 /* Make reload of index part of address AD.  Return the new
    pseudo.  */
 static rtx
-index_part_to_reg (struct address_info *ad)
+index_part_to_reg (struct address_info *ad, enum reg_class index_class)
 {
   rtx new_reg;
 
   new_reg = lra_create_new_reg (GET_MODE (*ad->index), NULL_RTX,
-				INDEX_REG_CLASS, NULL, "index term");
+				index_class, NULL, "index term");
   expand_mult (GET_MODE (*ad->index), *ad->index_term,
 	       GEN_INT (get_index_scale (ad)), new_reg, 1);
   return new_reg;
@@ -3659,13 +3659,14 @@ process_address_1 (int nop, bool check_only_p,
   /* If INDEX_REG_CLASS is assigned to base_term already and isn't to
      index_term, swap them so to avoid assigning INDEX_REG_CLASS to both
      when INDEX_REG_CLASS is a single register class.  */
+  enum reg_class index_cl = index_reg_class (curr_insn);
   if (ad.base_term != NULL
       && ad.index_term != NULL
-      && ira_class_hard_regs_num[INDEX_REG_CLASS] == 1
+      && ira_class_hard_regs_num[index_cl] == 1
       && REG_P (*ad.base_term)
       && REG_P (*ad.index_term)
-      && in_class_p (*ad.base_term, INDEX_REG_CLASS, NULL)
-      && ! in_class_p (*ad.index_term, INDEX_REG_CLASS, NULL))
+      && in_class_p (*ad.base_term, index_cl, NULL)
+      && ! in_class_p (*ad.index_term, index_cl, NULL))
     {
       std::swap (ad.base, ad.index);
       std::swap (ad.base_term, ad.index_term);
@@ -3681,7 +3682,7 @@ process_address_1 (int nop, bool check_only_p,
 				     REGNO (*ad.base_term)) != NULL_RTX)
 	    ? after : NULL),
 	   base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-			   get_index_code (&ad)))))
+			   get_index_code (&ad), curr_insn))))
     {
       change_p = true;
       if (ad.base_term2 != NULL)
@@ -3689,7 +3690,7 @@ process_address_1 (int nop, bool check_only_p,
     }
   if (ad.index_term != NULL
       && process_addr_reg (ad.index_term, check_only_p,
-			   before, NULL, INDEX_REG_CLASS))
+			   before, NULL, index_cl))
     change_p = true;
 
   /* Target hooks sometimes don't treat extra-constraint addresses as
@@ -3731,7 +3732,8 @@ process_address_1 (int nop, bool check_only_p,
 	  rtx_insn *last = get_last_insn ();
 	  int code = -1;
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as,
-					      SCRATCH, SCRATCH);
+					      SCRATCH, SCRATCH,
+					      curr_insn);
 	  rtx addr = *ad.inner;
 
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
@@ -3794,9 +3796,10 @@ process_address_1 (int nop, bool check_only_p,
 	  /* index * scale + disp => new base + index * scale,
 	     case (1) above.  */
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as, PLUS,
-					      GET_CODE (*ad.index));
+					      GET_CODE (*ad.index),
+					      curr_insn);
 
-	  lra_assert (INDEX_REG_CLASS != NO_REGS);
+	  lra_assert (index_cl != NO_REGS);
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "disp");
 	  lra_emit_move (new_reg, *ad.disp);
 	  *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
@@ -3855,7 +3858,7 @@ process_address_1 (int nop, bool check_only_p,
 	      *ad.base_term = XEXP (SET_SRC (set), 0);
 	      *ad.disp_term = XEXP (SET_SRC (set), 1);
 	      cl = base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-				   get_index_code (&ad));
+				   get_index_code (&ad), curr_insn);
 	      regno = REGNO (*ad.base_term);
 	      if (regno >= FIRST_PSEUDO_REGISTER
 		  && cl != lra_get_allocno_class (regno))
@@ -3892,14 +3895,15 @@ process_address_1 (int nop, bool check_only_p,
       changed pseudo on the equivalent memory and a subreg of the
       pseudo onto the memory of different mode for which the scale is
       prohibitted.  */
-      new_reg = index_part_to_reg (&ad);
+      new_reg = index_part_to_reg (&ad, index_cl);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       *ad.base_term, new_reg);
     }
   else
     {
       enum reg_class cl = base_reg_class (ad.mode, ad.as,
-					  SCRATCH, SCRATCH);
+					  SCRATCH, SCRATCH,
+					  curr_insn);
       rtx addr = *ad.inner;
       
       new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
@@ -4649,7 +4653,7 @@ curr_insn_transform (bool check_only_p)
 
 	  push_to_sequence (before);
 	  rclass = base_reg_class (GET_MODE (op), MEM_ADDR_SPACE (op),
-				   MEM, SCRATCH);
+				   MEM, SCRATCH, curr_insn);
 	  if (GET_RTX_CLASS (code) == RTX_AUTOINC)
 	    new_reg = emit_inc (rclass, *loc, *loc,
 				/* This value does not matter for MODIFY.  */

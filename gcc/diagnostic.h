@@ -177,6 +177,51 @@ class diagnostic_client_data_hooks;
 class logical_location;
 class diagnostic_diagram;
 
+/* Abstract base class for a particular output format for diagnostics;
+   each value of -fdiagnostics-output-format= will have its own
+   implementation.  */
+
+class diagnostic_output_format
+{
+public:
+  virtual ~diagnostic_output_format () {}
+
+  virtual void on_begin_group () = 0;
+  virtual void on_end_group () = 0;
+  virtual void on_begin_diagnostic (diagnostic_info *) = 0;
+  virtual void on_end_diagnostic (diagnostic_info *,
+				  diagnostic_t orig_diag_kind) = 0;
+  virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
+
+protected:
+  diagnostic_output_format (diagnostic_context &context)
+  : m_context (context)
+  {}
+
+  diagnostic_context &m_context;
+};
+
+/* Subclass of diagnostic_output_format for classic text-based output
+   to stderr.
+
+   Uses diagnostic_context.m_text_callbacks to provide client-specific
+   textual output (e.g. include paths, macro expansions, etc).  */
+
+class diagnostic_text_output_format : public diagnostic_output_format
+{
+public:
+  diagnostic_text_output_format (diagnostic_context &context)
+  : diagnostic_output_format (context)
+  {}
+  ~diagnostic_text_output_format ();
+  void on_begin_group () override {}
+  void on_end_group () override {}
+  void on_begin_diagnostic (diagnostic_info *) override;
+  void on_end_diagnostic (diagnostic_info *,
+			  diagnostic_t orig_diag_kind) override;
+  void on_diagram (const diagnostic_diagram &diagram) override;
+};
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 struct diagnostic_context
@@ -218,16 +263,6 @@ struct diagnostic_context
   /* For pragma push/pop.  */
   int *push_list;
   int n_push;
-
-  /* True if we should print the source line with a caret indicating
-     the location.  */
-  bool show_caret;
-
-  /* Maximum width of the source line printed.  */
-  int caret_max_width;
-
-  /* Character used for caret diagnostics.  */
-  char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
 
   /* True if we should print any CWE identifiers associated with
      diagnostics.  */
@@ -274,22 +309,25 @@ struct diagnostic_context
   /* Maximum number of errors to report.  */
   int max_errors;
 
-  /* This function is called before any message is printed out.  It is
-     responsible for preparing message prefix and such.  For example, it
-     might say:
-     In file included from "/usr/local/include/curses.h:5:
-                      from "/home/gdr/src/nifty_printer.h:56:
-                      ...
-  */
-  diagnostic_starter_fn begin_diagnostic;
+  /* Client-supplied callbacks for use in text output.  */
+  struct {
+    /* This function is called before any message is printed out.  It is
+       responsible for preparing message prefix and such.  For example, it
+       might say:
+       In file included from "/usr/local/include/curses.h:5:
+       from "/home/gdr/src/nifty_printer.h:56:
+       ...
+    */
+    diagnostic_starter_fn begin_diagnostic;
 
-  /* This function is called by diagnostic_show_locus in between
-     disjoint spans of source code, so that the context can print
-     something to indicate that a new span of source code has begun.  */
-  diagnostic_start_span_fn start_span;
+    /* This function is called by diagnostic_show_locus in between
+       disjoint spans of source code, so that the context can print
+       something to indicate that a new span of source code has begun.  */
+    diagnostic_start_span_fn start_span;
 
-  /* This function is called after the diagnostic message is printed.  */
-  diagnostic_finalizer_fn end_diagnostic;
+    /* This function is called after the diagnostic message is printed.  */
+    diagnostic_finalizer_fn end_diagnostic;
+  } m_text_callbacks;
 
   /* Client hook to report an internal error.  */
   void (*internal_error) (diagnostic_context *, const char *, va_list *);
@@ -336,29 +374,49 @@ struct diagnostic_context
 
   bool inhibit_notes_p;
 
-  /* When printing source code, should the characters at carets and ranges
-     be colorized? (assuming colorization is on at all).
-     This should be true for frontends that generate range information
-     (so that the ranges of code are colorized),
-     and false for frontends that merely specify points within the
-     source code (to avoid e.g. colorizing just the first character in
-     a token, which would look strange).  */
-  bool colorize_source_p;
+  /* Fields relating to printing the user's source code (potentially with
+     a margin, underlining, labels, etc).  */
+  struct {
 
-  /* When printing source code, should labelled ranges be printed?  */
-  bool show_labels_p;
+    /* True if we should print the source line with a caret indicating
+       the location.
+       Corresponds to -fdiagnostics-show-caret.  */
+    bool enabled;
 
-  /* When printing source code, should there be a left-hand margin
-     showing line numbers?  */
-  bool show_line_numbers_p;
+    /* Maximum width of the source line printed.  */
+    int max_width;
 
-  /* If printing source code, what should the minimum width of the margin
-     be?  Line numbers will be right-aligned, and padded to this width.  */
-  int min_margin_width;
+    /* Character used at the caret when printing source locations.  */
+    char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
 
-  /* Usable by plugins; if true, print a debugging ruler above the
-     source output.  */
-  bool show_ruler_p;
+    /* When printing source code, should the characters at carets and ranges
+       be colorized? (assuming colorization is on at all).
+       This should be true for frontends that generate range information
+       (so that the ranges of code are colorized),
+       and false for frontends that merely specify points within the
+       source code (to avoid e.g. colorizing just the first character in
+       a token, which would look strange).  */
+    bool colorize_source_p;
+
+    /* When printing source code, should labelled ranges be printed?
+       Corresponds to -fdiagnostics-show-labels.  */
+    bool show_labels_p;
+
+    /* When printing source code, should there be a left-hand margin
+       showing line numbers?
+       Corresponds to -fdiagnostics-show-line-numbers.  */
+    bool show_line_numbers_p;
+
+    /* If printing source code, what should the minimum width of the margin
+       be?  Line numbers will be right-aligned, and padded to this width.
+       Corresponds to -fdiagnostics-minimum-margin-width=VALUE.  */
+    int min_margin_width;
+
+    /* Usable by plugins; if true, print a debugging ruler above the
+       source output.  */
+    bool show_ruler_p;
+
+  } m_source_printing;
 
   /* True if -freport-bug option is used.  */
   bool report_bug;
@@ -392,18 +450,9 @@ struct diagnostic_context
      diagnostic_group was pushed.  */
   int diagnostic_group_emission_count;
 
-  /* Optional callbacks for handling diagnostic groups.  */
-
-  /* If non-NULL, this will be called immediately before the first
-     time a diagnostic is emitted within a stack of groups.  */
-  void (*begin_group_cb) (diagnostic_context * context);
-
-  /* If non-NULL, this will be called when a stack of groups is
-     popped if any diagnostics were emitted within that group.  */
-  void (*end_group_cb) (diagnostic_context * context);
-
-  /* Callback for final cleanup.  */
-  void (*final_cb) (diagnostic_context *context);
+  /* How to output diagnostics (text vs a structured format such as JSON).
+     Must be non-NULL; owned by context.  */
+  diagnostic_output_format *m_output_format;
 
   /* Callback to set the locations of call sites along the inlining
      stack corresponding to a diagnostic location.  Needed to traverse
@@ -431,9 +480,6 @@ struct diagnostic_context
        Can be NULL (if text art is disabled).  */
     text_art::theme *m_theme;
 
-    /* Callback for emitting diagrams.  */
-    void (*m_emission_cb) (diagnostic_context *context,
-			   const diagnostic_diagram &diagram);
   } m_diagrams;
 };
 
@@ -444,12 +490,13 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 }
 
 
-/* Client supplied function to announce a diagnostic.  */
-#define diagnostic_starter(DC) (DC)->begin_diagnostic
+/* Client supplied function to announce a diagnostic
+   (for text-based diagnostic output).  */
+#define diagnostic_starter(DC) (DC)->m_text_callbacks.begin_diagnostic
 
 /* Client supplied function called after a diagnostic message is
-   displayed.  */
-#define diagnostic_finalizer(DC) (DC)->end_diagnostic
+   displayed (for text-based diagnostic output).  */
+#define diagnostic_finalizer(DC) (DC)->m_text_callbacks.end_diagnostic
 
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->x_data
@@ -605,8 +652,9 @@ inline bool
 diagnostic_same_line (const diagnostic_context *context,
 		       expanded_location s1, expanded_location s2)
 {
-  return s2.column && s1.line == s2.line 
-    && context->caret_max_width - CARET_LINE_MARGIN > abs (s1.column - s2.column);
+  return (s2.column && s1.line == s2.line
+	  && (context->m_source_printing.max_width - CARET_LINE_MARGIN
+	      > abs (s1.column - s2.column)));
 }
 
 extern const char *diagnostic_get_color_for_kind (diagnostic_t kind);
@@ -627,6 +675,8 @@ extern void diagnostic_output_format_init_json_file (diagnostic_context *context
 extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context);
 extern void diagnostic_output_format_init_sarif_file (diagnostic_context *context,
 						      const char *base_file_name);
+extern void diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+							FILE *stream);
 
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);

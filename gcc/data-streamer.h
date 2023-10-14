@@ -199,7 +199,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
 inline poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t>
 bp_unpack_poly_value (struct bitpack_d *bp, unsigned nbits)
 {
-  poly_int_pod<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
+  poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
   for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
     x.coeffs[i] = bp_unpack_value (bp, nbits);
   return x;

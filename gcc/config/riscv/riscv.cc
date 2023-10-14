@@ -183,6 +183,9 @@ struct GTY(())  machine_function {
   /* True if attributes on current function have been checked.  */
   bool attributes_checked_p;
 
+  /* True if RA must be saved because of a far jump.  */
+  bool far_jump_used;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -380,6 +383,21 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   8,		/* fmv_cost */
   false,            /* slow_unaligned_access */
   false		/* use_divmod_expansion */
+};
+
+/* Costs to use when optimizing for a generic ooo profile.  */
+static const struct riscv_tune_param generic_ooo_tune_info = {
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* fp_add */
+  {COSTS_N_INSNS (5), COSTS_N_INSNS (6)},	/* fp_mul */
+  {COSTS_N_INSNS (7), COSTS_N_INSNS (8)},	/* fp_div */
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  1,						/* issue_rate */
+  3,						/* branch_cost */
+  4,						/* memory_cost */
+  4,						/* fmv_cost */
+  false,					/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -2042,7 +2060,7 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	{
 	  rtx index = XEXP (base, 0);
 	  rtx fp = XEXP (base, 1);
-	  if (REGNO (fp) == VIRTUAL_STACK_VARS_REGNUM)
+	  if (REG_P (fp) && REGNO (fp) == VIRTUAL_STACK_VARS_REGNUM)
 	    {
 
 	      /* If we were given a MULT, we must fix the constant
@@ -2386,9 +2404,8 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     }
   else
     {
-      /* FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096.  */
-      int max_power = exact_log2 (4096 / 128);
-      for (int i = 0; i < max_power; i++)
+      int max_power = exact_log2 (MAX_POLY_VARIANT);
+      for (int i = 0; i <= max_power; i++)
 	{
 	  int possible_div_factor = 1 << i;
 	  if (factor % (vlenb / possible_div_factor) == 0)
@@ -2768,6 +2785,19 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
   switch (GET_CODE (x))
     {
+    case SET:
+      /* If we are called for an INSN that's a simple set of a register,
+	 then cost based on the SET_SRC alone.  */
+      if (outer_code == INSN && REG_P (SET_DEST (x)))
+	{
+	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
+	  return true;
+	}
+
+      /* Otherwise return FALSE indicating we should recurse into both the
+	 SET_DEST and SET_SRC combining the cost of both.  */
+      return false;
+
     case CONST_INT:
       /* trivial constants checked using OUTER_CODE in case they are
 	 encodable in insn itself w/o need for additional insn(s).  */
@@ -5420,6 +5450,7 @@ riscv_get_v_regno_alignment (machine_mode mode)
 	  any outermost HIGH.
    'R'	Print the low-part relocation associated with OP.
    'C'	Print the integer branch condition for comparison OP.
+   'N'	Print the inverse of the integer branch condition for comparison OP.
    'A'	Print the atomic operation suffix for memory model OP.
    'I'	Print the LR suffix for memory model OP.
    'J'	Print the SC suffix for memory model OP.
@@ -5576,6 +5607,11 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       fputs (GET_RTX_NAME (code), file);
       break;
 
+    case 'N':
+      /* The RTL names match the instruction names. */
+      fputs (GET_RTX_NAME (reverse_condition (code)), file);
+      break;
+
     case 'A': {
       const enum memmodel model = memmodel_base (INTVAL (op));
       if (riscv_memmodel_needs_amo_acquire (model)
@@ -5630,6 +5666,13 @@ riscv_print_operand (FILE *file, rtx op, int letter)
     case 'T':
       {
 	rtx newop = GEN_INT (ctz_hwi (~INTVAL (op)));
+	output_addr_const (file, newop);
+	break;
+      }
+    case 'X':
+      {
+	int ival = INTVAL (op) + 1;
+	rtx newop = GEN_INT (ctz_hwi (ival) + 1);
 	output_addr_const (file, newop);
 	break;
       }
@@ -5845,6 +5888,64 @@ riscv_frame_set (rtx mem, rtx reg)
   return set;
 }
 
+/* Returns true if the current function might contain a far jump.  */
+
+static bool
+riscv_far_jump_used_p ()
+{
+  size_t func_size = 0;
+
+  if (cfun->machine->far_jump_used)
+    return true;
+
+  /* We can't change far_jump_used during or after reload, as there is
+     no chance to change stack frame layout.  So we must rely on the
+     conservative heuristic below having done the right thing.  */
+  if (reload_in_progress || reload_completed)
+    return false;
+
+  /* Estimate the function length.  */
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    func_size += get_attr_length (insn);
+
+  /* Conservatively determine whether some jump might exceed 1 MiB
+     displacement.  */
+  if (func_size * 2 >= 0x100000)
+    cfun->machine->far_jump_used = true;
+
+  return cfun->machine->far_jump_used;
+}
+
+/* Return true, if the current function must save the incoming return
+   address.  */
+
+static bool
+riscv_save_return_addr_reg_p (void)
+{
+  /* The $ra register is call-clobbered: if this is not a leaf function,
+     save it.  */
+  if (!crtl->is_leaf)
+    return true;
+
+  /* We need to save the incoming return address if __builtin_eh_return
+     is being used to set a different return address.  */
+  if (crtl->calls_eh_return)
+    return true;
+
+  /* Far jumps/branches use $ra as a temporary to set up the target jump
+     location (clobbering the incoming return address).  */
+  if (riscv_far_jump_used_p ())
+    return true;
+
+  /* Need not to use ra for leaf when frame pointer is turned off by
+     option whatever the omit-leaf-frame's value.  */
+  if (frame_pointer_needed && crtl->is_leaf
+      && !TARGET_OMIT_LEAF_FRAME_POINTER)
+    return true;
+
+  return false;
+}
+
 /* Return true if the current function must save register REGNO.  */
 
 static bool
@@ -5865,11 +5966,7 @@ riscv_save_reg_p (unsigned int regno)
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
-  /* Need not to use ra for leaf when frame pointer is turned off by option
-     whatever the omit-leaf-frame's value.  */
-  bool keep_leaf_ra = frame_pointer_needed && crtl->is_leaf
-    && !TARGET_OMIT_LEAF_FRAME_POINTER;
-  if (regno == RETURN_ADDR_REGNUM && (crtl->calls_eh_return || keep_leaf_ra))
+  if (regno == RETURN_ADDR_REGNUM && riscv_save_return_addr_reg_p ())
     return true;
 
   /* If this is an interrupt handler, then must save extra registers.  */
@@ -7792,6 +7889,75 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   return more - 1;
 }
 
+/* Adjust the cost/latency of instructions for scheduling.
+   For now this is just used to change the latency of vector instructions
+   according to their LMUL.  We assume that an insn with LMUL == 8 requires
+   eight times more execution cycles than the same insn with LMUL == 1.
+   As this may cause very high latencies which lead to scheduling artifacts
+   we currently only perform the adjustment when -madjust-lmul-cost is given.
+   */
+static int
+riscv_sched_adjust_cost (rtx_insn *, int, rtx_insn *insn, int cost,
+			 unsigned int)
+{
+  /* Only do adjustments for the generic out-of-order scheduling model.  */
+  if (!TARGET_VECTOR || riscv_microarchitecture != generic_ooo)
+    return cost;
+
+  if (recog_memoized (insn) < 0)
+    return cost;
+
+  enum attr_type type = get_attr_type (insn);
+
+  if (type == TYPE_VFREDO || type == TYPE_VFWREDO)
+    {
+      /* TODO: For ordered reductions scale the base cost relative to the
+	 number of units.  */
+      ;
+    }
+
+  /* Don't do any LMUL-based latency adjustment unless explicitly asked to.  */
+  if (!TARGET_ADJUST_LMUL_COST)
+    return cost;
+
+  /* vsetvl has a vlmul attribute but its latency does not depend on it.  */
+  if (type == TYPE_VSETVL || type == TYPE_VSETVL_PRE)
+    return cost;
+
+  enum riscv_vector::vlmul_type lmul =
+    (riscv_vector::vlmul_type)get_attr_vlmul (insn);
+
+  double factor = 1;
+  switch (lmul)
+    {
+    case riscv_vector::LMUL_2:
+      factor = 2;
+      break;
+    case riscv_vector::LMUL_4:
+      factor = 4;
+      break;
+    case riscv_vector::LMUL_8:
+      factor = 8;
+      break;
+    case riscv_vector::LMUL_F2:
+      factor = 0.5;
+      break;
+    case riscv_vector::LMUL_F4:
+      factor = 0.25;
+      break;
+    case riscv_vector::LMUL_F8:
+      factor = 0.125;
+      break;
+    default:
+      factor = 1;
+    }
+
+  /* If the latency was nonzero, keep it that way.  */
+  int new_cost = MAX (cost > 0 ? 1 : 0, cost * factor);
+
+  return new_cost;
+}
+
 /* Auxiliary function to emit RISC-V ELF attribute. */
 static void
 riscv_emit_attribute ()
@@ -7969,10 +8135,11 @@ riscv_init_machine_status (void)
 /* Return the VLEN value associated with -march.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
-riscv_convert_vector_bits (void)
+riscv_convert_vector_bits (struct gcc_options *opts)
 {
   int chunk_num;
-  if (TARGET_MIN_VLEN > 32)
+  int min_vlen = TARGET_MIN_VLEN_OPTS (opts);
+  if (min_vlen > 32)
     {
       /* When targetting minimum VLEN > 32, we should use 64-bit chunk size.
 	 Otherwise we can not include SEW = 64bits.
@@ -7990,7 +8157,7 @@ riscv_convert_vector_bits (void)
 	   - TARGET_MIN_VLEN = 2048bit: [256,256]
 	   - TARGET_MIN_VLEN = 4096bit: [512,512]
 	   FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096bit.  */
-      chunk_num = TARGET_MIN_VLEN / 64;
+      chunk_num = min_vlen / 64;
     }
   else
     {
@@ -8009,10 +8176,10 @@ riscv_convert_vector_bits (void)
      to set RVV mode size. The RVV machine modes size are run-time constant if
      TARGET_VECTOR is enabled. The RVV machine modes size remains default
      compile-time constant if TARGET_VECTOR is disabled.  */
-  if (TARGET_VECTOR)
+  if (TARGET_VECTOR_OPTS_P (opts))
     {
-      if (riscv_autovec_preference == RVV_FIXED_VLMAX)
-	return (int) TARGET_MIN_VLEN / (riscv_bytes_per_vector_chunk * 8);
+      if (opts->x_riscv_autovec_preference == RVV_FIXED_VLMAX)
+	return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
       else
 	return poly_uint16 (chunk_num, chunk_num);
     }
@@ -8020,40 +8187,33 @@ riscv_convert_vector_bits (void)
     return 1;
 }
 
-/* Implement TARGET_OPTION_OVERRIDE.  */
-
-static void
-riscv_option_override (void)
+/* 'Unpack' up the internal tuning structs and update the options
+    in OPTS.  The caller must have set up selected_tune and selected_arch
+    as all the other target-specific codegen decisions are
+    derived from them.  */
+void
+riscv_override_options_internal (struct gcc_options *opts)
 {
   const struct riscv_tune_info *cpu;
 
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
-
-  flag_pcc_struct_return = 0;
-
-  if (flag_pic)
-    g_switch_value = 0;
-
   /* The presence of the M extension implies that division instructions
      are present, so include them unless explicitly disabled.  */
-  if (TARGET_MUL && (target_flags_explicit & MASK_DIV) == 0)
-    target_flags |= MASK_DIV;
-  else if (!TARGET_MUL && TARGET_DIV)
+  if (TARGET_MUL_OPTS_P (opts) && (target_flags_explicit & MASK_DIV) == 0)
+    opts->x_target_flags |= MASK_DIV;
+  else if (!TARGET_MUL_OPTS_P (opts) && TARGET_DIV_OPTS_P (opts))
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
   if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && (target_flags_explicit & MASK_FDIV) == 0)
-    target_flags |= MASK_FDIV;
+    opts->x_target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
      if both -mtune and -mcpu are not given.  */
-  cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
-			  (riscv_cpu_string ? riscv_cpu_string :
+  cpu = riscv_parse_tune (opts->x_riscv_tune_string ? opts->x_riscv_tune_string :
+			  (opts->x_riscv_cpu_string ? opts->x_riscv_cpu_string :
 			   RISCV_TUNE_STRING_DEFAULT));
   riscv_microarchitecture = cpu->microarchitecture;
-  tune_param = optimize_size ? &optimize_size_tune_info : cpu->tune_param;
+  tune_param = opts->x_optimize_size ? &optimize_size_tune_info : cpu->tune_param;
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
@@ -8069,15 +8229,38 @@ riscv_option_override (void)
 
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
-    target_flags |= MASK_STRICT_ALIGN;
+    opts->x_target_flags |= MASK_STRICT_ALIGN;
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
-  if (riscv_branch_cost == 0)
-    riscv_branch_cost = tune_param->branch_cost;
+  if (opts->x_riscv_branch_cost == 0)
+    opts->x_riscv_branch_cost = tune_param->branch_cost;
 
-  /* Function to allocate machine-dependent function status.  */
-  init_machine_status = &riscv_init_machine_status;
+  /* FIXME: We don't allow TARGET_MIN_VLEN > 4096 since the datatypes of
+     both GET_MODE_SIZE and GET_MODE_BITSIZE are poly_uint16.
+
+     We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
+  if (TARGET_MIN_VLEN_OPTS (opts) > 4096)
+    sorry ("Current RISC-V GCC cannot support VLEN greater than 4096bit for "
+	   "'V' Extension");
+
+  /* Convert -march to a chunks count.  */
+  riscv_vector_chunks = riscv_convert_vector_bits (opts);
+}
+
+/* Implement TARGET_OPTION_OVERRIDE.  */
+
+static void
+riscv_option_override (void)
+{
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
+  flag_pcc_struct_return = 0;
+
+  if (flag_pic)
+    g_switch_value = 0;
 
   if (flag_pic)
     riscv_cmodel = CM_PIC;
@@ -8192,20 +8375,14 @@ riscv_option_override (void)
       riscv_stack_protector_guard_offset = offs;
     }
 
-  /* FIXME: We don't allow TARGET_MIN_VLEN > 4096 since the datatypes of
-     both GET_MODE_SIZE and GET_MODE_BITSIZE are poly_uint16.
-
-     We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
-  if (TARGET_MIN_VLEN > 4096)
-    sorry (
-      "Current RISC-V GCC cannot support VLEN greater than 4096bit for 'V' Extension");
-
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_sched_pressure_algorithm,
 		       SCHED_PRESSURE_MODEL);
 
-  /* Convert -march to a chunks count.  */
-  riscv_vector_chunks = riscv_convert_vector_bits ();
+  /* Function to allocate machine-dependent function status.  */
+  init_machine_status = &riscv_init_machine_status;
+
+  riscv_override_options_internal (&global_options);
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -9008,18 +9185,7 @@ riscv_support_vector_misalignment (machine_mode mode,
 				   int misalignment,
 				   bool is_packed ATTRIBUTE_UNUSED)
 {
-  /* Only enable misalign data movements for VLS modes.  */
-  if (TARGET_VECTOR_VLS && STRICT_ALIGNMENT)
-    {
-      /* Return if movmisalign pattern is not supported for this mode.  */
-      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
-	return false;
-
-      /* Misalignment factor is unknown at compile time.  */
-      if (misalignment == -1)
-	return false;
-    }
-  /* Disable movmisalign for VLA auto-vectorization.  */
+  /* Depend on movmisalign pattern.  */
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
 }
@@ -9617,6 +9783,9 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
 
 #undef  TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE riscv_sched_variable_issue
+
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST riscv_sched_adjust_cost
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL riscv_function_ok_for_sibcall

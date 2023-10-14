@@ -2,6 +2,7 @@
 // { dg-do link }
 // { dg-options "-O2 -g -fdebug-types-section" }
 // { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } }
+// { dg-skip-if "No debug linker support" { *-*-darwin* } }
 
 struct A {
   int bar () const { return 0; }

@@ -229,14 +229,14 @@ vrange_storage::equal_p (const vrange &r) const
 // irange_storage implementation
 //============================================================================
 
-unsigned char *
+unsigned short *
 irange_storage::write_lengths_address ()
 {
-  return (unsigned char *)&m_val[(m_num_ranges * 2 + 2)
-				 * WIDE_INT_MAX_HWIS (m_precision)];
+  return (unsigned short *)&m_val[(m_num_ranges * 2 + 2)
+				  * WIDE_INT_MAX_HWIS (m_precision)];
 }
 
-const unsigned char *
+const unsigned short *
 irange_storage::lengths_address () const
 {
   return const_cast <irange_storage *> (this)->write_lengths_address ();
@@ -263,7 +263,7 @@ irange_storage::irange_storage (const irange &r)
 }
 
 static inline void
-write_wide_int (HOST_WIDE_INT *&val, unsigned char *&len, const wide_int &w)
+write_wide_int (HOST_WIDE_INT *&val, unsigned short *&len, const wide_int &w)
 {
   *len = w.get_len ();
   for (unsigned i = 0; i < *len; ++i)
@@ -294,7 +294,7 @@ irange_storage::set_irange (const irange &r)
   m_kind = VR_RANGE;
 
   HOST_WIDE_INT *val = &m_val[0];
-  unsigned char *len = write_lengths_address ();
+  unsigned short *len = write_lengths_address ();
 
   for (unsigned i = 0; i < r.num_pairs (); ++i)
     {
@@ -317,7 +317,7 @@ irange_storage::set_irange (const irange &r)
 
 static inline void
 read_wide_int (wide_int &w,
-	       const HOST_WIDE_INT *val, unsigned char len, unsigned prec)
+	       const HOST_WIDE_INT *val, unsigned short len, unsigned prec)
 {
   trailing_wide_int_storage stow (prec, &len,
 				  const_cast <HOST_WIDE_INT *> (val));
@@ -342,7 +342,7 @@ irange_storage::get_irange (irange &r, tree type) const
 
   gcc_checking_assert (TYPE_PRECISION (type) == m_precision);
   const HOST_WIDE_INT *val = &m_val[0];
-  const unsigned char *len = lengths_address ();
+  const unsigned short *len = lengths_address ();
 
   // Handle the common case where R can fit the new range.
   if (r.m_max_ranges >= m_num_ranges)
@@ -411,7 +411,7 @@ irange_storage::size (const irange &r)
   unsigned n = r.num_pairs () * 2 + 2;
   unsigned hwi_size = ((n * WIDE_INT_MAX_HWIS (prec) - 1)
 		       * sizeof (HOST_WIDE_INT));
-  unsigned len_size = n;
+  unsigned len_size = n * sizeof (unsigned short);
   return sizeof (irange_storage) + hwi_size + len_size;
 }
 
@@ -433,7 +433,7 @@ irange_storage::dump () const
     return;
 
   const HOST_WIDE_INT *val = &m_val[0];
-  const unsigned char *len = lengths_address ();
+  const unsigned short *len = lengths_address ();
   int i, j;
 
   fprintf (stderr, "  lengths = [ ");

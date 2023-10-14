@@ -94,7 +94,7 @@ extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 struct GTY(()) expr_status {
   /* Number of units that we should eventually pop off the stack.
      These are the arguments to function calls that have already returned.  */
-  poly_int64_pod x_pending_stack_adjust;
+  poly_int64 x_pending_stack_adjust;
 
   /* Under some ABIs, it is the caller's responsibility to pop arguments
      pushed for function calls.  A naive implementation would simply pop
@@ -117,7 +117,7 @@ struct GTY(()) expr_status {
      boundary can be momentarily unaligned while pushing the arguments.
      Record the delta since last aligned boundary here in order to get
      stack alignment in the nested function calls working right.  */
-  poly_int64_pod x_stack_pointer_delta;
+  poly_int64 x_stack_pointer_delta;
 
   /* Nonzero means __builtin_saveregs has already been done in this function.
      The value is the pseudoreg containing the value __builtin_saveregs
@@ -537,7 +537,7 @@ extern struct machine_function * (*init_machine_status) (void);
 
 struct args_size
 {
-  poly_int64_pod constant;
+  poly_int64 constant;
   tree var;
 };
 

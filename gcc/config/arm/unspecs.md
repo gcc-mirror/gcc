@@ -221,8 +221,10 @@
   VUNSPEC_SC		; Represent a store-register-exclusive.
   VUNSPEC_LAX		; Represent a load-register-acquire-exclusive.
   VUNSPEC_SLX		; Represent a store-register-release-exclusive.
-  VUNSPEC_LDA		; Represent a store-register-acquire.
+  VUNSPEC_LDA		; Represent a load-register-acquire.
+  VUNSPEC_LDR		; Represent a load-register-relaxed.
   VUNSPEC_STL		; Represent a store-register-release.
+  VUNSPEC_STR		; Represent a store-register-relaxed.
   VUNSPEC_GET_FPSCR	; Represent fetch of FPSCR content.
   VUNSPEC_SET_FPSCR	; Represent assign of FPSCR content.
   VUNSPEC_SET_FPSCR_NZCVQC	; Represent assign of FPSCR_nzcvqc content.

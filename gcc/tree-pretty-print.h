@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
   pp_verbatim (PP, "%qs not supported by %s", \
 	       get_tree_code_name (TREE_CODE (T)), __FUNCTION__)
 
-#define pp_ti_abstract_origin(TI) ((tree *) (TI)->x_data)
+#define pp_ti_abstract_origin(TI) ((tree *) (TI)->m_data)
 
 
 extern void debug_generic_expr (tree);

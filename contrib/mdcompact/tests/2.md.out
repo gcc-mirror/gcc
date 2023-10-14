@@ -1,0 +1,21 @@
+(define_insn "*movti_aarch64"
+  [(set (match_operand:TI 0
+	 "nonimmediate_operand")
+	(match_operand:TI 1
+	 "aarch64_movti_operand"))]
+  "(register_operand (operands[0], TImode)
+    || aarch64_reg_or_zero (operands[1], TImode))"
+  {@ [ cons: =0 , 1    ; attrs: type  , length , arch  ]
+     [ r        , rUti ; multiple     , 8      , *     ] #
+     [ w        , Z    ; neon_move    , 4      , simd  ] movi\t%0.2d, #0
+     [ w        , Z    ; f_mcr        , 4      , *     ] fmov\t%d0, xzr
+     [ w        , r    ; f_mcr        , 8      , *     ] #
+     [ r        , w    ; f_mrc        , 8      , *     ] #
+     [ w        , w    ; neon_logic_q , 4      , simd  ] mov\t%0.16b, %1.16b
+     [ r        , m    ; load_16      , 4      , *     ] ldp\t%0, %H0, %1
+     [ m        , r    ; store_16     , 4      , *     ] stp\t%1, %H1, %0
+     [ m        , Z    ; store_16     , 4      , *     ] stp\txzr, xzr, %0
+     [ w        , m    ; load_16      , 4      , fp    ] ldr\t%q0, %1
+     [ m        , w    ; store_16     , 4      , fp    ] str\t%q1, %0
+  }
+)

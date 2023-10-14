@@ -2537,13 +2537,14 @@ for each target.  However, a considerable number of attributes are
 supported by most, if not all targets.  Those are described in
 the @ref{Common Function Attributes} section.
 
-Function attributes are introduced by the @code{__attribute__} keyword
-in the declaration of a function, followed by an attribute specification
-enclosed in double parentheses.  You can specify multiple attributes in
-a declaration by separating them by commas within the double parentheses
-or by immediately following one attribute specification with another.
-@xref{Attribute Syntax}, for the exact rules on attribute syntax and
-placement.  Compatible attribute specifications on distinct declarations
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
+
+Compatible attribute specifications on distinct declarations
 of the same function are merged.  An attribute specification that is not
 compatible with attributes already applied to a declaration of the same
 function is ignored with a warning.
@@ -3109,7 +3110,9 @@ file descriptor opened with @code{O_RDONLY}.
 @cindex @code{flatten} function attribute
 @item flatten
 Generally, inlining into a function is limited.  For a function marked with
-this attribute, every call inside this function is inlined, if possible.
+this attribute, every call inside this function is inlined including the
+calls such inlining introduces to the function (but not recursive calls
+to the function itself), if possible.
 Functions declared with attribute @code{noinline} and similar are not
 inlined.  Whether the function itself is considered for inlining depends
 on its size and the current inlining parameters.
@@ -7207,6 +7210,11 @@ Enable/disable the generation of the SHA512 instructions.
 @itemx no-sm4
 Enable/disable the generation of the SM4 instructions.
 
+@cindex @code{target("usermsr")} function attribute, x86
+@item usermsr
+@itemx no-usermsr
+Enable/disable the generation of the USER_MSR instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
@@ -7433,10 +7441,9 @@ when this attribute is present.
 @cindex attribute of variables
 @cindex variable attributes
 
-The keyword @code{__attribute__} allows you to specify special properties
+You can use attributes to specify special properties
 of variables, function parameters, or structure, union, and, in C++, class
-members.  This @code{__attribute__} keyword is followed by an attribute
-specification enclosed in double parentheses.  Some attributes are currently
+members.  Some attributes are currently
 defined generically for variables.  Other attributes are defined for
 variables on particular target systems.  Other attributes are available
 for functions (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
@@ -7445,8 +7452,12 @@ enumerators (@pxref{Enumerator Attributes}), statements
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
-@xref{Attribute Syntax}, for details of the exact syntax for using
-attributes.
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
 
 @menu
 * Common Variable Attributes::
@@ -8508,7 +8519,7 @@ placed in either the @code{.bss_below100} section or the
 @cindex attribute of types
 @cindex type attributes
 
-The keyword @code{__attribute__} allows you to specify various special
+You can use attributes to specify various special
 properties of types.  Some type attributes apply only to structure and
 union types, and in C++, also class types, while others can apply to
 any type defined via a @code{typedef} declaration.  Unless otherwise
@@ -8521,19 +8532,20 @@ labels (@pxref{Label  Attributes}), enumerators (@pxref{Enumerator
 Attributes}), statements (@pxref{Statement Attributes}), and for variables
 (@pxref{Variable Attributes}).
 
-The @code{__attribute__} keyword is followed by an attribute specification
-enclosed in double parentheses.
+GCC provides two different ways to specify attributes: the traditional
+GNU syntax using @samp{__attribute__ ((...))} annotations, and the
+newer standard C and C++ syntax using @samp{[[...]]} with the
+@samp{gnu::} prefix on attribute names.  Note that the exact rules for
+placement of attributes in your source code are different depending on
+which syntax you use.  @xref{Attribute Syntax}, for details.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
 @code{struct}, @code{union} or @code{enum} keyword.  You can also place
 them just past the closing curly brace of the definition, but this is less
 preferred because logically the type should be fully defined at 
-the closing brace.
-
-You can also include type attributes in a @code{typedef} declaration.
-@xref{Attribute Syntax}, for details of the exact syntax for using
-attributes.
+the closing brace.  You can also include type attributes in a
+@code{typedef} declaration.
 
 @menu
 * Common Type Attributes::
@@ -9347,9 +9359,34 @@ have to optimize it to just @code{return 42 + 42;}.
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
+@cindex C standard attributes
+@cindex C++ standard attributes
+@cindex standard attribute syntax
+@cindex GNU attribute syntax
 
-This section describes the syntax with which @code{__attribute__} may be
-used, and the constructs to which attribute specifiers bind, for the C
+GCC provides two different ways to specify attributes: the standard C
+and C++ syntax using double square brackets, and the older GNU
+extension syntax using the @code{@w{__attribute__}} keyword, which predates
+the adoption of the standard syntax and is still widely used in older
+code.
+
+The standard @samp{[[]]} attribute syntax is recognized by GCC's
+default language dialect for both C and C++.  More specifically, this
+syntax was first introduced in the C++11 language standard
+(@pxref{Standards}), and is supported by GCC in C++ code with
+@option{-std=c++11} or @option{-std=gnu++11} or later.  It is also
+part of the C2x language standard and is supported when compiling C
+code with @option{-std=c2x} or @option{-std=gnu17} or later.
+
+When using GNU-specific attributes in the standard syntax, you must
+prefix their names with @samp{gnu::}, such as @code{gnu::section}.
+Refer to the relevant language standards for exact details on the
+placement of @samp{[[]]} attributes within your code, as they differ
+in some details from the rules for the GNU attribute syntax.
+
+The remainder of this section describes the details of the GNU extension
+@code{__attribute__} syntax,
+and the constructs to which attribute specifiers bind, for the C
 language.  Some details may vary for C++ and Objective-C@.  Because of
 limitations in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
@@ -14938,6 +14975,7 @@ instructions, but allow the compiler to schedule those calls.
 * PRU Built-in Functions::
 * RISC-V Built-in Functions::
 * RISC-V Vector Intrinsics::
+* CORE-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -21679,6 +21717,179 @@ GCC supports vector intrinsics as specified in version 0.11 of the RISC-V
 vector intrinsic specification, which is available at the following link:
 @uref{https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v0.11.x}.
 All of these functions are declared in the include file @file{riscv_vector.h}.
+
+@node CORE-V Built-in Functions
+@subsection CORE-V Built-in Functions
+
+These built-in functions are available for the CORE-V MAC machine
+architecture. For more information on CORE-V built-ins, please see
+@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-multiply-accumulate-builtins-xcvmac}.
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mac (int32_t, int32_t, int32_t)
+Generated assembler @code{cv.mac}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_msu (int32_t, int32_t, int32_t)
+Generates the @code{cv.msu} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_muluN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.muluN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_mulhhuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.mulhhuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulhhsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulhhsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_muluRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.muluRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_mulhhuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.mulhhuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulhhsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulhhsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_macuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.macuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_machhuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.machhuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_macsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.macsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_machhsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.machhsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_macuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.macuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_machhuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.machhuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_macsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.macsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_machhsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.machhsRN} machine instruction.
+@end deftypefn
+
+These built-in functions are available for the CORE-V ALU machine
+architecture. For more information on CORE-V built-ins, please see
+@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-miscellaneous-alu-builtins-xcvalu}
+
+@deftypefn {Built-in Function} {int} __builtin_riscv_cv_alu_slet (int32_t, int32_t)
+Generated assembler @code{cv.slet}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int} __builtin_riscv_cv_alu_sletu (uint32_t, uint32_t)
+Generated assembler @code{cv.sletu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_min (int32_t, int32_t)
+Generated assembler @code{cv.min}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_minu (uint32_t, uint32_t)
+Generated assembler @code{cv.minu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_max (int32_t, int32_t)
+Generated assembler @code{cv.max}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_tnt} __builtin_riscv_cv_alu_maxu (uint32_t, uint32_t)
+Generated assembler @code{cv.maxu}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_exths (int16_t)
+Generated assembler @code{cv.exths}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_exthz (uint16_t)
+Generated assembler @code{cv.exthz}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_extbs (int8_t)
+Generated assembler @code{cv.extbs}
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_extbz (uint8_t)
+Generated assembler @code{cv.extbz}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_clip (int32_t, uint32_t)
+Generated assembler @code{cv.clip} if the uint32_t operand is a constant and an exact power of 2.
+Generated assembler @code{cv.clipr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_clipu (uint32_t, uint32_t)
+Generated assembler @code{cv.clipu} if the uint32_t operand is a constant and an exact power of 2.
+Generated assembler @code{cv.clipur} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_addN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.addN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.addNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_adduN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.adduN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.adduNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_addRN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.addRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.addRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_adduRN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.adduRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.adduRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_subN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.subN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_subuN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.subuN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subuNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_alu_subRN (int32_t, int32_t, uint8_t)
+Generated assembler @code{cv.subRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subRNr} if  the it is a register.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_alu_subuRN (uint32_t, uint32_t, uint8_t)
+Generated assembler @code{cv.subuRN} if the uint8_t operand is a constant and in the range 0 <= shft <= 31.
+Generated assembler @code{cv.subuRNr} if  the it is a register.
+@end deftypefn
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions

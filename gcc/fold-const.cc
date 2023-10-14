@@ -2137,7 +2137,10 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  Use widest_int
      so that any extension is done according ARG1's type.  */
-  return force_fit_type (type, wi::to_widest (arg1),
+  tree arg1_type = TREE_TYPE (arg1);
+  unsigned prec = MAX (TYPE_PRECISION (arg1_type), TYPE_PRECISION (type));
+  return force_fit_type (type, wide_int::from (wi::to_wide (arg1), prec,
+					       TYPE_SIGN (arg1_type)),
 			 !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			 TREE_OVERFLOW (arg1));
 }
@@ -9266,8 +9269,8 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 static tree
 fold_view_convert_expr (tree type, tree expr)
 {
-  /* We support up to 512-bit values (for V8DFmode).  */
-  unsigned char buffer[64];
+  /* We support up to 1024-bit values (for GCN/RISC-V V128QImode).  */
+  unsigned char buffer[128];
   int len;
 
   /* Check that the host and target are sane.  */
@@ -9565,8 +9568,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	  if (change)
 	    {
-	      tem = force_fit_type (type, wi::to_widest (and1), 0,
-				    TREE_OVERFLOW (and1));
+	      tree and1_type = TREE_TYPE (and1);
+	      unsigned prec = MAX (TYPE_PRECISION (and1_type),
+				   TYPE_PRECISION (type));
+	      tem = force_fit_type (type,
+				    wide_int::from (wi::to_wide (and1), prec,
+						    TYPE_SIGN (and1_type)),
+				    0, TREE_OVERFLOW (and1));
 	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
 				      fold_convert_loc (loc, type, and0), tem);
 	    }
@@ -16564,7 +16572,7 @@ round_down_loc (location_t loc, tree value, int divisor)
 
 static tree
 split_address_to_core_and_offset (tree exp,
-				  poly_int64_pod *pbitpos, tree *poffset)
+				  poly_int64 *pbitpos, tree *poffset)
 {
   tree core;
   machine_mode mode;
@@ -16614,7 +16622,7 @@ split_address_to_core_and_offset (tree exp,
    otherwise.  If they do, E1 - E2 is stored in *DIFF.  */
 
 bool
-ptr_difference_const (tree e1, tree e2, poly_int64_pod *diff)
+ptr_difference_const (tree e1, tree e2, poly_int64 *diff)
 {
   tree core1, core2;
   poly_int64 bitpos1, bitpos2;

@@ -19,7 +19,7 @@ h ()
 {
   #pragma omp target
    #pragma omp parallel
-    #pragma omp serial
+    #pragma omp single
      {
        int var2[5];
        #pragma omp allocate(var2)

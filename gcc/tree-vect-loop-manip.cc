@@ -3335,7 +3335,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	      free (bbs);
 	      free (original_bbs);
 	    }
-	  else
+	  else if (old_count.nonzero_p ())
 	    scale_loop_profile (epilog, guard_to->count.probability_in (old_count), -1);
 
 	  /* Only need to handle basic block before epilog loop if it's not

@@ -1932,7 +1932,8 @@ range_to_prec (tree op, gimple *stmt)
   unsigned int prec = TYPE_PRECISION (type);
 
   if (!optimize
-      || !get_range_query (cfun)->range_of_expr (r, op, stmt))
+      || !get_range_query (cfun)->range_of_expr (r, op, stmt)
+      || r.undefined_p ())
     {
       if (TYPE_UNSIGNED (type))
 	return prec;
@@ -2066,6 +2067,9 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	    }
 	  else if (gimple_code (g) == GIMPLE_NOP)
 	    {
+	      *prec = TYPE_UNSIGNED (TREE_TYPE (op)) ? limb_prec : -limb_prec;
+	      if (prec_stored)
+		*prec_stored = *prec;
 	      tree var = create_tmp_var (m_limb_type);
 	      TREE_ADDRESSABLE (var) = 1;
 	      ret = build_fold_addr_expr (var);

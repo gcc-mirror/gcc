@@ -611,6 +611,7 @@ ix86_broadcast_from_constant (machine_mode mode, rtx op)
      avx512 embed broadcast is available.  */
   if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT
       && (!TARGET_AVX512F
+	  || (GET_MODE_SIZE (mode) == 64 && !TARGET_EVEX512)
 	  || (GET_MODE_SIZE (mode) < 64 && !TARGET_AVX512VL)))
     return nullptr;
 
@@ -3942,7 +3943,7 @@ ix86_valid_mask_cmp_mode (machine_mode mode)
   if ((inner_mode == QImode || inner_mode == HImode) && !TARGET_AVX512BW)
     return false;
 
-  return vector_size == 64 || TARGET_AVX512VL;
+  return (vector_size == 64 && TARGET_EVEX512) || TARGET_AVX512VL;
 }
 
 /* Return true if integer mask comparison should be used.  */
@@ -4772,7 +4773,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      && GET_MODE_SIZE (GET_MODE_INNER (mode)) >= 4
 	      /* Don't do it if not using integer masks and we'd end up with
 		 the right values in the registers though.  */
-	      && (GET_MODE_SIZE (mode) == 64
+	      && ((GET_MODE_SIZE (mode) == 64 && TARGET_EVEX512)
 		  || !vector_all_ones_operand (optrue, data_mode)
 		  || opfalse != CONST0_RTX (data_mode))))
 	{
@@ -6342,6 +6343,18 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
 	  if (count > half_width)
 	    ix86_expand_ashl_const (high[0], count - half_width, mode);
 	}
+      else if (count == 1)
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  rtx x3 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  rtx x4 = gen_rtx_LTU (mode, x3, const0_rtx);
+	  half_mode = mode == DImode ? SImode : DImode;
+	  emit_insn (gen_add3_cc_overflow_1 (half_mode, low[0],
+					     low[0], low[0]));
+	  emit_insn (gen_add3_carry (half_mode, high[0], high[0], high[0],
+				     x3, x4));
+	}
       else
 	{
 	  gen_shld = mode == DImode ? gen_x86_shld : gen_x86_64_shld;
@@ -6496,6 +6509,22 @@ ix86_split_ashr (rtx *operands, rtx scratch, machine_mode mode)
 	    emit_insn (gen_ashr3 (low[0], low[0],
 				  GEN_INT (count - half_width)));
 	}
+      else if (count == 1
+	       && (TARGET_USE_RCR || optimize_size > 1))
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  if (mode == DImode)
+	    {
+	      emit_insn (gen_ashrsi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrsi2 (low[0], low[0]));
+	    }
+	  else
+	    {
+	      emit_insn (gen_ashrdi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrdi2 (low[0], low[0]));
+	    }
+	}
       else
 	{
 	  gen_shrd = mode == DImode ? gen_x86_shrd : gen_x86_64_shrd;
@@ -6560,6 +6589,22 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
 	  if (count > half_width)
 	    emit_insn (gen_lshr3 (low[0], low[0],
 				  GEN_INT (count - half_width)));
+	}
+      else if (count == 1
+	       && (TARGET_USE_RCR || optimize_size > 1))
+	{
+	  if (!rtx_equal_p (operands[0], operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  if (mode == DImode)
+	    {
+	      emit_insn (gen_lshrsi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrsi2 (low[0], low[0]));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lshrdi3_carry (high[0], high[0]));
+	      emit_insn (gen_rcrdi2 (low[0], low[0]));
+	    }
 	}
       else
 	{
@@ -8320,6 +8365,11 @@ alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
 {
   if (alg == no_stringop)
     return false;
+  /* It is not possible to use a library call if we have non-default
+     address space.  We can do better than the generic byte-at-a-time
+     loop, used as a fallback.  */
+  if (alg == libcall && have_as)
+    return false;
   if (alg == vector_loop)
     return TARGET_SSE || TARGET_AVX;
   /* Algorithms using the rep prefix want at least edi and ecx;
@@ -8494,8 +8544,12 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	gcc_assert (alg != libcall);
       return alg;
     }
+
+  /* Try to use some reasonable fallback algorithm.  Note that for
+     non-default address spaces we default to a loop instead of
+     a libcall.  */
   return (alg_usable_p (algs->unknown_size, memset, have_as)
-	  ? algs->unknown_size : libcall);
+	  ? algs->unknown_size : have_as ? loop : libcall);
 }
 
 /* Decide on alignment.  We know that the operand is already aligned to ALIGN
@@ -13417,6 +13471,41 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	return 0;
       }
 
+    case IX86_BUILTIN_URDMSR:
+    case IX86_BUILTIN_UWRMSR:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_normal (arg0);
+
+	if (CONST_INT_P (op0))
+	  {
+	    unsigned HOST_WIDE_INT val = UINTVAL (op0);
+	    if (val > 0xffffffff)
+	      op0 = force_reg (DImode, op0);
+	  }
+	else
+	  op0 = force_reg (DImode, op0);
+
+	if (fcode == IX86_BUILTIN_UWRMSR)
+	  {
+	    arg1 = CALL_EXPR_ARG (exp, 1);
+	    op1 = expand_normal (arg1);
+	    op1 = force_reg (DImode, op1);
+	    icode = CODE_FOR_uwrmsr;
+	    target = 0;
+	  }
+	else
+	  {
+	    if (target == 0)
+	      target = gen_reg_rtx (DImode);
+	    icode = CODE_FOR_urdmsr;
+	    op1 = op0;
+	    op0 = target;
+	  }
+	emit_insn (GEN_FCN (icode) (op0, op1));
+	return target;
+      }
+
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
     case IX86_BUILTIN_VEC_INIT_V8QI:
@@ -15616,6 +15705,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
     case E_V32HFmode:
     case E_V32BFmode:
     case E_V64QImode:
+      gcc_assert (TARGET_EVEX512);
       if (TARGET_AVX512BW)
 	return ix86_vector_duplicate_value (mode, target, val);
       else
@@ -15666,6 +15756,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
   rtx x, tmp;
   bool use_vector_set = false;
   rtx (*gen_vec_set_0) (rtx, rtx, rtx) = NULL;
+
+  if (GET_MODE_SIZE (mode) == 64 && !TARGET_EVEX512)
+    return false;
 
   switch (mode)
     {
@@ -18287,7 +18380,7 @@ ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 
   unsigned vector_size = GET_MODE_SIZE (mode);
   if (TARGET_FMA
-      || (TARGET_AVX512F && vector_size == 64)
+      || (TARGET_AVX512F && TARGET_EVEX512 && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     emit_insn (gen_rtx_SET (e2,
 			    gen_rtx_FMA (mode, e0, x0, mthree)));
@@ -23004,6 +23097,9 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   unsigned int i, nelt, which;
   bool two_args;
 
+  if (GET_MODE_SIZE (vmode) == 64 && !TARGET_EVEX512)
+    return false;
+
   /* For HF mode vector, convert it to HI using subreg.  */
   if (GET_MODE_INNER (vmode) == HFmode)
     {
@@ -23505,7 +23601,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   bool uns_p = code != ASHIFTRT;
 
   if ((qimode == V16QImode && !TARGET_AVX2)
-      || (qimode == V32QImode && !TARGET_AVX512BW)
+      || (qimode == V32QImode && (!TARGET_AVX512BW || !TARGET_EVEX512))
       /* There are no V64HImode instructions.  */
       || qimode == V64QImode)
      return false;
@@ -24001,7 +24097,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
   machine_mode mode = GET_MODE (op0);
   rtx t1, t2, t3, t4, t5, t6;
 
-  if (TARGET_AVX512DQ && mode == V8DImode)
+  if (TARGET_AVX512DQ && TARGET_EVEX512 && mode == V8DImode)
     emit_insn (gen_avx512dq_mulv8di3 (op0, op1, op2));
   else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V4DImode)
     emit_insn (gen_avx512dq_mulv4di3 (op0, op1, op2));

@@ -1,0 +1,11 @@
+(define_insn "<optab><mode>3"
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL:GPI (match_operand:GPI 1 "register_operand")
+		     (match_operand:GPI 2 "aarch64_logical_operand")))]
+  ""
+  {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
+     [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
+     [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+  }
+)

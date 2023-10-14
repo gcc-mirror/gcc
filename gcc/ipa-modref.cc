@@ -474,7 +474,7 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
   FOR_EACH_VEC_SAFE_ELT (tt->bases, i, n)
     {
       fprintf (out, "      Base %i:", (int)i);
-      print_generic_expr (dump_file, n->base);
+      print_generic_expr (out, n->base);
       fprintf (out, " (alias set %i)\n",
 	       n->base ? get_alias_set (n->base) : 0);
       if (n->every_ref)
@@ -487,7 +487,7 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
       FOR_EACH_VEC_SAFE_ELT (n->refs, j, r)
 	{
 	  fprintf (out, "        Ref %i:", (int)j);
-	  print_generic_expr (dump_file, r->ref);
+	  print_generic_expr (out, r->ref);
 	  fprintf (out, " (alias set %i)\n",
 		   r->ref ? get_alias_set (r->ref) : 0);
 	  if (r->every_access)
@@ -567,7 +567,7 @@ remove_modref_edge_summaries (cgraph_node *node)
 /* Dump summary.  */
 
 void
-modref_summary::dump (FILE *out)
+modref_summary::dump (FILE *out) const
 {
   if (loads)
     {
@@ -1331,7 +1331,7 @@ modref_access_analysis::merge_call_side_effects
 	  if (parm_map[i].parm_offset_known)
 	    {
 	      fprintf (dump_file, " offset:");
-	      print_dec ((poly_int64_pod)parm_map[i].parm_offset,
+	      print_dec ((poly_int64)parm_map[i].parm_offset,
 			 dump_file, SIGNED);
 	    }
 	}
@@ -1347,7 +1347,7 @@ modref_access_analysis::merge_call_side_effects
 	  if (chain_map.parm_offset_known)
 	    {
 	      fprintf (dump_file, " offset:");
-	      print_dec ((poly_int64_pod)chain_map.parm_offset,
+	      print_dec ((poly_int64)chain_map.parm_offset,
 			 dump_file, SIGNED);
 	    }
 	}

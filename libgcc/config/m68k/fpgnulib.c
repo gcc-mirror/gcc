@@ -395,6 +395,7 @@ double __extendsfdf2 (float);
 float __truncdfsf2 (double);
 long __fixdfsi (double);
 long __fixsfsi (float);
+int __cmpdf2 (double, double);
 
 int
 __unordxf2(long double a, long double b)

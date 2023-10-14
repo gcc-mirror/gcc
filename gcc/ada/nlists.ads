@@ -43,9 +43,6 @@ package Nlists is
    --  this header, which may be used to access the nodes in the list using
    --  the set of routines that define this interface.
 
-   --  Note: node lists can contain either nodes or entities (extended nodes)
-   --  or a mixture of nodes and extended nodes.
-
    function In_Same_List (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_List);
    --  Equivalent to List_Containing (N1) = List_Containing (N2)

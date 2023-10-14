@@ -1470,6 +1470,9 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 		{
 		  if (rel != VREL_EQ)
 		    range_cast (equiv_range, type);
+		  else
+		    adjust_equivalence_range (equiv_range);
+
 		  if (block_result.intersect (equiv_range))
 		    {
 		      if (DEBUG_RANGE_CACHE)

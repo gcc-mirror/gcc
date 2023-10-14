@@ -1,3 +1,27 @@
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/or1k/linux-unwind.h (or1k_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/arc/linux-unwind.h (arc_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/riscv/linux-unwind.h (riscv_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/csky/linux-unwind.h (csky_fallback_frame_state): Add
+	missing cast.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* config/m68k/fpgnulib.c (__cmpdf2): Declare.
+
 2023-09-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/lse.S (BTI_C): Remove define.

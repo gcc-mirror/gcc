@@ -5458,8 +5458,8 @@ main (int argc, char **argv)
 
   line_table = XCNEW (class line_maps);
   linemap_init (line_table, 0);
-  line_table->reallocator = xrealloc;
-  line_table->round_alloc_size = round_alloc_size;
+  line_table->m_reallocator = xrealloc;
+  line_table->m_round_alloc_size = round_alloc_size;
 
   r = cpp_create_reader (CLK_GNUC99, NULL, line_table);
   cpp_callbacks *cb = cpp_get_callbacks (r);

@@ -68,4 +68,4 @@ contains
   end function func_foo_a
 
 end program simple_leak
-! { dg-final { scan-tree-dump-times "\>_final" 4 "original" } }
+! { dg-final { scan-tree-dump-times "\>_final" 6 "original" } }

@@ -51,7 +51,7 @@ or1k_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   rt = context->cfa;
-  sc = &rt->uc.uc_mcontext;
+  sc = (struct sigcontext *) &rt->uc.uc_mcontext;
 
   new_cfa = sc->regs.gpr[1];
   fs->regs.cfa_how = CFA_REG_OFFSET;

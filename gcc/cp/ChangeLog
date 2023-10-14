@@ -1,3 +1,26 @@
+2023-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109422
+	* mangle.cc (write_template_param): Also mangle level.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* module.cc (module_state::read_location): Update for renaming of
+	get_combined_adhoc_loc.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (print_instantiation_partial_context_line): Call
+	diagnostic_show_locus.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for "m_" prefixes to text_info fields.
+
+2023-09-30  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Make create_fdas_for_cc1plus target not .PHONY
+
 2023-09-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* constexpr.cc (cxx_fold_indirect_ref): Remove unused variables.

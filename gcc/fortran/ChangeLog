@@ -1,3 +1,69 @@
+2023-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104351
+	* decl.cc (get_proc_name): Extend name conflict detection between
+	internal procedure and previous declaration also to derived type.
+
+2023-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110957
+	* invoke.texi: Update documentation to reflect '-ffpe-trap=none'.
+	* options.cc (gfc_handle_fpe_option): Fix mixup up of error messages
+	for options -ffpe-trap and -ffpe-summary.  Accept '-ffpe-trap=none'
+	to clear FPU traps previously set on command line.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111779
+	* trans-expr.cc (gfc_trans_assignment_1): Initialize
+	lhs_caf_attr and rhs_caf_attr codimension flag to avoid
+	false positive -Wuninitialized.
+
+2023-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67740
+	* trans-expr.cc (gfc_trans_pointer_assignment): Set the hidden
+	string length component for pointer assignment to character
+	pointer components.
+
+2023-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (parse_omp_structured_block): Make the user code end
+	up inside of BLOCK construct for strictly structured blocks;
+	fix fallout for 'section' and 'teams'.
+	* openmp.cc (resolve_omp_target): Fix changed BLOCK handling
+	for teams in target checking.
+
+2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37336
+	PR fortran/111674
+	* trans-expr.cc (gfc_trans_scalar_assign): Finalize components
+	on deallocation if derived type is not finalizable.
+
+2023-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_format_decoder): Update for "m_" prefixes to
+	text_info fields.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostics_init): Update for change to start_span.
+
+2023-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostic_starter): Update for reorganization of
+	source-printing fields of diagnostic_context.
+	(gfc_diagnostics_init): Likewise.
+	(gfc_diagnostics_finish): Likewise.
+
+2023-09-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/37336
+	* trans-array.cc (structure_alloc_comps): Deref coarray.
+	(gfc_trans_deferred_array): Add freeing of components after
+	check for allocated coarray.
+
 2023-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68155

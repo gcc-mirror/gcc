@@ -39,7 +39,7 @@ lbl_28:for (p_25 = 0; p_25 < 9; p_25 += 1)
     if (p_25)
       goto lbl_29;
   unsigned short l_53;
-  for (0; l_53; l_53 = foo)
+  for (0; l_53; l_53 = (unsigned short) foo)
     {
     }
   return 0;

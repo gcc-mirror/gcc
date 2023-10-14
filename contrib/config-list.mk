@@ -29,7 +29,8 @@ GCC_SRC_DIR=../../gcc
 #     > make.out 2>&1 &
 #
 
-LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
+LIST = \
+  aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms \
   amdgcn-amdhsa \
@@ -47,11 +48,11 @@ LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
   hppa64-hpux11.3 \
   hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes \
-  i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
+  i686-apple-darwin9 i686-apple-darwin13 i686-apple-darwin17 \
   i686-freebsd13 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
   i686-openbsd i686-elf i686-kopensolaris-gnu i686-gnu \
-  i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
+  i686-pc-linux-gnu i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.11 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
@@ -75,8 +76,8 @@ LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   nvptx-none \
   or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \
-  powerpc-darwin8 \
-  powerpc-darwin7 powerpc64-darwin powerpc-freebsd13 powerpc-netbsd \
+  powerpc-apple-darwin9 powerpc64-apple-darwin9 powerpc-apple-darwin8 \
+  powerpc-freebsd13 powerpc-netbsd \
   powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
   powerpc-rtems \
@@ -96,8 +97,9 @@ LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux \
   sparc64-netbsd sparc64-openbsd \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
-  vax-netbsdelf visium-elf x86_64-apple-darwin x86_64-gnu \
-  x86_64-pc-linux-gnuOPT-with-fpmath=avx \
+  vax-netbsdelf visium-elf \
+  x86_64-apple-darwin10 x86_64-apple-darwin15 x86_64-apple-darwin21 \
+  x86_64-gnu x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd13 x86_64-netbsd \
   x86_64-w64-mingw32 \
   x86_64-mingw32OPT-enable-sjlj-exceptions=yes x86_64-rtems \

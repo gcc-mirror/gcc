@@ -28,4 +28,3 @@ handler1 (void)
 
 /* { dg-final { scan-assembler-not "fp,\\\[sp" } } */
 /* { dg-final { scan-assembler-not "push.*fp" } } */
-/* { dg-final { scan-assembler "mov_s.*fp,sp" } } */

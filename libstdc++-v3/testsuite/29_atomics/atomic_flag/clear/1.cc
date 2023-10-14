@@ -1,5 +1,5 @@
 // { dg-do run { target c++11 } }
-// { dg-require-thread-fence "" }
+// { dg-require-atomic-cmpxchg-word "" }
 
 // Copyright (C) 2009-2023 Free Software Foundation, Inc.
 //

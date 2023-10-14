@@ -387,3 +387,16 @@ function integer_range_info(range_option, init, option, uinteger_used)
     else
         return "-1, -1"
 }
+
+# Find the index of VAR in VAR_ARRY which as length N_VAR_ARRY.  If
+# VAR is not found, return N_VAR_ARRY. That means the var is a new
+# defination.
+function find_index(var, var_arry, n_var_arry)
+{
+    for (var_index = 0; var_index < n_var_arry; var_index++)
+    {
+        if (var_arry[var_index] == var)
+            break
+    }
+    return var_index
+}

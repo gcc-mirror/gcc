@@ -10,7 +10,7 @@ volatile __mmask64 m64;
 void
 foo (int i)
 {
-  x1 = _mm512_gf2p8affineinv_epi64_epi8 (x1, x2, 3);	/* { dg-error "needs isa option -mgfni -mavx512f" } */
+  x1 = _mm512_gf2p8affineinv_epi64_epi8 (x1, x2, 3);	/* { dg-error "needs isa option -mevex512 -mgfni -mavx512f" } */
 }
 
 #ifdef __x86_64__

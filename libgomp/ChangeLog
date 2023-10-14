@@ -1,3 +1,28 @@
+2023-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OMP_DEFAULT_DEVICE): Update spec ref; add @ref to
+	OMP_TARGET_OFFLOAD.
+	(OMP_TARGET_OFFLOAD): Update spec ref; add @ref to OMP_DEFAULT_DEVICE;
+	clarify MANDATORY behavior.
+
+2023-10-12  Zhang, Jun  <jun.zhang@intel.com>
+
+	* env.c (initialize_env): Use do_adjust_default_spincount.
+	* config/linux/x86/spincount.h: New file.
+
+2023-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/strictly-structured-block-1.f90: New test.
+
+2023-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Device Memory Routines): New.
+
+2023-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Clarify 'kind' trait
+	and that other target archs have no 'arch'/'isa' traits implemented.
+
 2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1 Impl.): Mark 'omp allocate' as
