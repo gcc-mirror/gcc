@@ -1,3 +1,9 @@
+2023-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111622
+	* value-relation.cc (equiv_oracle::add_partial_equiv): Do not
+	register a partial equivalence if an operand has no uses.
+
 2023-10-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111694
