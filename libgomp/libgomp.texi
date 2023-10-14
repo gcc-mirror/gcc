@@ -1917,7 +1917,7 @@ is not supported.
 @item @emph{Description}:
 If the device number is refers to the initial device or to a device with
 memory accessible from the host (shared memory), the @code{omp_get_mapped_ptr}
-routines returnes the value of the passed @var{ptr}.  Otherwise, if associated
+routines returns the value of the passed @var{ptr}.  Otherwise, if associated
 storage to the passed host pointer @var{ptr} exists on device associated with
 @var{device_num}, it returns that pointer. In all other cases and in cases of
 an error, a null pointer is returned.
@@ -2397,12 +2397,12 @@ They have C linkage and do not throw exceptions.
 * omp_destroy_allocator:: Destroy an allocator
 * omp_set_default_allocator:: Set the default allocator
 * omp_get_default_allocator:: Get the default allocator
-@c * omp_alloc:: <fixme>
-@c * omp_aligned_alloc:: <fixme>
-@c * omp_free:: <fixme>
-@c * omp_calloc:: <fixme>
-@c * omp_aligned_calloc:: <fixme>
-@c * omp_realloc:: <fixme>
+* omp_alloc:: Memory allocation with an allocator
+* omp_aligned_alloc:: Memory allocation with an allocator and alignment
+* omp_free:: Freeing memory allocated with OpenMP routines
+* omp_calloc:: Allocate nullified memory with an allocator
+* omp_aligned_calloc:: Allocate nullified aligned memory with an allocator
+* omp_realloc:: Reallocate memory allocated with OpenMP routines
 @c * omp_get_memspace_num_resources:: <fixme>/TR11
 @c * omp_get_submemspace:: <fixme>/TR11
 @end menu
@@ -2434,8 +2434,8 @@ may be used as trait value to specify that the default value should be used.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{function omp_init_allocator(memspace, ntraits, traits)}
-@item                   @tab @code{integer (kind=omp_allocator_handle_kind) :: omp_init_allocator}
-@item                   @tab @code{integer (kind=omp_memspace_handle_kind), intent(in) :: memspace}
+@item                   @tab @code{integer (omp_allocator_handle_kind) :: omp_init_allocator}
+@item                   @tab @code{integer (omp_memspace_handle_kind), intent(in) :: memspace}
 @item                   @tab @code{integer, intent(in) :: ntraits}
 @item                   @tab @code{type (omp_alloctrait), intent(in) :: traits(*)}
 @end multitable
@@ -2467,7 +2467,7 @@ routine is permitted but will have no effect.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_destroy_allocator(allocator)}
-@item                   @tab @code{integer (kind=omp_allocator_handle_kind), intent(in) :: allocator}
+@item                   @tab @code{integer (omp_allocator_handle_kind), intent(in) :: allocator}
 @end multitable
 
 @item @emph{See also}:
@@ -2495,7 +2495,7 @@ routine is invoked with the @code{omp_null_allocator} allocator.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_set_default_allocator(allocator)}
-@item                   @tab @code{integer (kind=omp_allocator_handle_kind), intent(in) :: allocator}
+@item                   @tab @code{integer (omp_allocator_handle_kind), intent(in) :: allocator}
 @end multitable
 
 @item @emph{See also}:
@@ -2524,7 +2524,7 @@ OpenMP memory routine is invoked with the @code{omp_null_allocator} allocator.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{function omp_get_default_allocator()}
-@item                   @tab @code{integer (kind=omp_allocator_handle_kind) :: omp_get_default_allocator}
+@item                   @tab @code{integer (omp_allocator_handle_kind) :: omp_get_default_allocator}
 @end multitable
 
 @item @emph{See also}:
@@ -2532,6 +2532,337 @@ OpenMP memory routine is invoked with the @code{omp_null_allocator} allocator.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.5
+@end table
+
+
+
+@node omp_alloc
+@subsection @code{omp_alloc} -- Memory allocation with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate memory with the specified allocator, which can either be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If the allocators
+is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  @var{size} must be a nonnegative number
+denoting the number of bytes to be allocated; if @var{size} is zero,
+@code{omp_alloc} will return a null pointer.  If successful, a pointer to the
+allocated memory is returned, otherwise the @code{fallback} trait of the
+allocator determines the behavior.  The content of the allocated memory is
+unspecified.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_alloc} must be freed using @code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_alloc(size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_alloc(size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_alloc(size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.6
+@end table
+
+
+
+@node omp_aligned_alloc
+@subsection @code{omp_aligned_alloc} -- Memory allocation with an allocator and alignment
+@table @asis
+@item @emph{Description}:
+Allocate memory with the specified allocator, which can either be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If the allocators
+is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  @var{alignment} must be a positive power
+of two and @var{size} must be a nonnegative number that is a multiple of the
+alignment and denotes the number of bytes to be allocated; if @var{size} is
+zero, @code{omp_aligned_alloc} will return a null pointer.  The alignment will
+be at least the maximal value required by @code{alignment} trait of the
+allocator and the value of the  passed @var{alignment} argument.  If successful,
+a pointer to the allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.  The content of the allocated
+memory is unspecified.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_aligned_alloc} must be freed using
+@code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_alloc(size_t alignment,}
+@item                   @tab @code{  size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_alloc(size_t alignment,}
+@item                   @tab @code{  size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_aligned_alloc(alignment, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: alignment, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.6
+@end table
+
+
+
+@node omp_free
+@subsection @code{omp_free} -- Freeing memory allocated with OpenMP routines
+@table @asis
+@item @emph{Description}:
+The @code{omp_free} routine deallocates memory previously allocated by an
+OpenMP memory-management routine. The @var{ptr} argument must point to such
+memory or be a null pointer; if it is a null pointer, no operation is
+performed.  If specified, the @var{allocator} argument must be either the
+memory allocator that was used for the allocation or @code{omp_null_allocator};
+if it is @code{omp_null_allocator}, the implementation will determine the value
+automatically.
+
+Calling @code{omp_free} invokes undefined behavior if the memory
+was already deallocated or when the used allocator has already been destroyed.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_free(void *ptr,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_free(void *ptr,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_free(ptr, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr}
+@item                   @tab @code{type (c_ptr), value :: ptr}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_alloc}, @ref{omp_aligned_alloc}, @ref{omp_calloc},
+@ref{omp_aligned_calloc}, @ref{omp_realloc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.7
+@end table
+
+
+
+@node omp_calloc
+@subsection @code{omp_calloc} -- Allocate nullified memory with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate zero-initialized memory with the specified allocator, which can either
+be a predefined allocator, an allocator handle or @code{omp_null_allocator}.  If
+the allocators is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  The to-be allocated memory is for an
+array with @var{nmemb} elements, each having a size of @var{size} bytes.  Both
+@var{nmemb} and @var{size} must be nonnegative numbers; if either of them is
+zero, @code{omp_calloc} will return a null pointer.  If successful, a pointer to
+the zero-initialized allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_calloc} must be freed using @code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_calloc(nmemb, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: nmemb, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.8
+@end table
+
+
+
+@node omp_aligned_calloc
+@subsection @code{omp_aligned_calloc} -- Allocate aligned nullified memory with an allocator
+@table @asis
+@item @emph{Description}:
+Allocate zero-initialized memory with the specified allocator, which can either
+be a predefined allocator, an allocator handle or @code{omp_null_allocator}.  If
+the allocators is @code{omp_null_allocator}, the allocator specified by the
+@var{def-allocator-var} ICV is used.  The to-be allocated memory is for an
+array with @var{nmemb} elements, each having a size of @var{size} bytes.  Both
+@var{nmemb} and @var{size} must be nonnegative numbers; if either of them is
+zero, @code{omp_aligned_calloc} will return a null pointer.  @var{alignment}
+must be a positive power of two and @var{size} must be a multiple of the
+alignment; the alignment will be at least the maximal value required by
+@code{alignment} trait of the allocator and the value of the  passed
+@var{alignment} argument.  If successful, a pointer to the zero-initialized
+allocated memory is returned, otherwise the @code{fallback} trait of the
+allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{allocator} argument may only be a constant expression with the value of
+one of the predefined allocators and may not be @code{omp_null_allocator}.
+
+Memory allocated by @code{omp_aligned_calloc} must be freed using
+@code{omp_free}.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_aligned_calloc(size_t nmemb, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_aligned_calloc(nmemb, size, allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{integer (c_size_t), value :: nmemb, size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.13.8
+@end table
+
+
+
+@node omp_realloc
+@subsection @code{omp_realloc} -- Reallocate memory allocated with OpenMP routines
+@table @asis
+@item @emph{Description}:
+The @code{omp_realloc} routine deallocates memory to which @var{ptr} points to
+and allocates new memory with the specified @var{allocator} argument; the
+new memory will have the content of the old memory up to the minimum of the
+old size and the new @var{size}, otherwise the content of the returned memory
+is unspecified.  If the new allocator is the same as the old one, the routine
+tries to resize the existing memory allocation, returning the same address as
+@var{ptr} if successful.  @var{ptr} must point to memory allocated by an OpenMP
+memory-management routine.
+
+The @var{allocator} and @var{free_allocator} arguments must be a predefined
+allocator, an allocator handle or @code{omp_null_allocator}.  If
+@var{free_allocator} is @code{omp_null_allocator}, the implementation
+automatically determines the allocator used for the allocation of @var{ptr}.
+If @var{allocator} is @code{omp_null_allocator} and @var{ptr} is is not a
+null pointer, the same allocator as @code{free_allocator} is used and
+when @var{ptr} is a null pointer the allocator specified by the
+@var{def-allocator-var} ICV is used.
+
+The @var{size} must be a nonnegative number denoting the number of bytes to be
+allocated; if @var{size} is zero, @code{omp_realloc} will return free the
+memory and return a null pointer.  When @var{size} is nonzero: if successful,
+a pointer to the allocated memory is returned, otherwise the @code{fallback}
+trait of the allocator determines the behavior.
+
+In @code{target} regions, either the @code{dynamic_allocators} clause must
+appear on a @code{requires} directive in the same compilation unit -- or the
+@var{free_allocator} and @var{allocator} arguments may only be a constant
+expression with the value of one of the predefined allocators and may not be
+@code{omp_null_allocator}.
+
+Memory allocated by @code{omp_realloc} must be freed using @code{omp_free}.
+Calling @code{omp_free} invokes undefined behavior if the memory
+was already deallocated or when the used allocator has already been destroyed.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_realloc(void *ptr, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator,}
+@item                   @tab @code{  omp_allocator_handle_t free_allocator)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void* omp_realloc(void *ptr, size_t size,}
+@item                   @tab @code{  omp_allocator_handle_t allocator=omp_null_allocator,}
+@item                   @tab @code{  omp_allocator_handle_t free_allocator=omp_null_allocator)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_realloc(ptr, size, allocator, free_allocator) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t}
+@item                   @tab @code{type(C_ptr), value :: ptr}
+@item                   @tab @code{integer (c_size_t), value :: size}
+@item                   @tab @code{integer (omp_allocator_handle_kind), value :: allocator, free_allocator}
+@end multitable
+
+@item @emph{See also}:
+@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_set_default_allocator},
+@ref{omp_free}, @ref{omp_init_allocator}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.9
 @end table
 
 
@@ -2591,7 +2922,7 @@ variable is not set.
 * OMP_PLACES::              Specifies on which CPUs the threads should be placed
 * OMP_STACKSIZE::           Set default thread stack size
 * OMP_SCHEDULE::            How threads are scheduled
-* OMP_TARGET_OFFLOAD::      Controls offloading behaviour
+* OMP_TARGET_OFFLOAD::      Controls offloading behavior
 * OMP_TEAMS_THREAD_LIMIT::  Set the maximum number of threads imposed by teams
 * OMP_THREAD_LIMIT::        Set the maximum number of threads
 * OMP_WAIT_POLICY::         How waiting threads are handled
@@ -3122,14 +3453,14 @@ dynamic scheduling and a chunk size of 1 is used.
 
 
 @node OMP_TARGET_OFFLOAD
-@section @env{OMP_TARGET_OFFLOAD} -- Controls offloading behaviour
+@section @env{OMP_TARGET_OFFLOAD} -- Controls offloading behavior
 @cindex Environment Variable
 @cindex Implementation specific setting
 @table @asis
 @item @emph{ICV:} @var{target-offload-var}
 @item @emph{Scope:} global
 @item @emph{Description}:
-Specifies the behaviour with regard to offloading code to a device.  This
+Specifies the behavior with regard to offloading code to a device.  This
 variable can be set to one of three values - @code{MANDATORY}, @code{DISABLED}
 or @code{DEFAULT}.
 
@@ -5292,6 +5623,27 @@ on more architectures, GCC currently does not match any @code{arch} or
 
 @node Memory allocation
 @section Memory allocation
+
+The description below applies to:
+
+@itemize
+@item Explicit use of the OpenMP API routines, see
+      @ref{Memory Management Routines}.
+@item The @code{allocate} clause, except when the @code{allocator} modifier is a
+      constant expression with value @code{omp_default_mem_alloc} and no
+      @code{align} modifier has been specified. (In that case, the normal
+      @code{malloc} allocation is used.)
+@item Using the @code{allocate} directive for automatic/stack variables, except
+      when the @code{allocator} clause is a constant expression with value
+      @code{omp_default_mem_alloc} and no @code{align} clause has been
+      specified. (In that case, the normal allocation is used: stack allocation
+      and, sometimes for Fortran, also @code{malloc} [depending on flags such as
+      @option{-fstack-arrays}].)
+@item Using the @code{allocate} directive for variable in static memory is
+      currently not supported (compile time error).
+@item Using the @code{allocators} directive for Fortran pointers and
+      allocatables is currently not supported (compile time error).
+@end itemize
 
 For the available predefined allocators and, as applicable, their associated
 predefined memory spaces and for the available traits and their default values,
