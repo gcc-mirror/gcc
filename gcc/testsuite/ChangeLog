@@ -1,3 +1,156 @@
+2023-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104351
+	* gfortran.dg/derived_function_interface_1.f90: Adjust pattern.
+	* gfortran.dg/pr104351.f90: New test.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111795
+	* gcc.target/i386/vect-simd-clone-avx512-1.c: New testcase.
+	* gcc.target/i386/vect-simd-clone-avx512-2.c: Likewise.
+	* gcc.target/i386/vect-simd-clone-avx512-3.c: Likewise.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-simd-clone-1.c: New testcase.
+	* gcc.dg/vect/slp-simd-clone-2.c: Likewise.
+
+2023-10-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-68.c: Use vect512.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-1.c:
+	Use scalar func as reference instead of hardcode.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-run-2.c: Ditto.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloor-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloor-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llfloor-0.c: New test.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-ifloor-0.c: New test.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iceil-0.c: New test.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-llceil-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceil-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llceil-0.c: New test.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/pc44485.c (func_21): Add missing cast.
+	* gcc.c-torture/compile/pr106101.c: Use builtins to avoid
+	calls to undeclared functions.  Change type of yyvsp to
+	char ** and introduce yyvsp1 to avoid type errors.
+	* gcc.c-torture/execute/pr111331-1.c: Add missing int.
+	* gcc.dg/pr100512.c: Unreduce test case and suppress only
+	-Wpointer-to-int-cast.
+	* gcc.dg/pr103003.c: Likewise.
+	* gcc.dg/pr103451.c: Add cast to long and suppress
+	-Wdiv-by-zero only.
+	* gcc.dg/pr68435.c: Avoid implicit int and missing
+	static function implementation warning.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/20000105-1.c: Add missing int return type.
+	Call __builtin_exit instead of exit.
+	* gcc.c-torture/compile/20000105-2.c: Add missing void types.
+	* gcc.c-torture/compile/20000211-1.c (Lstream_fputc, Lstream_write)
+	(Lstream_flush_out, parse_doprnt_spec): Add missing function
+	declaration.
+	* gcc.c-torture/compile/20000224-1.c (call_critical_lisp_code):
+	Declare.
+	* gcc.c-torture/compile/20000314-2.c: Add missing void types.
+	* gcc.c-torture/compile/980816-1.c (XtVaCreateManagedWidget)
+	(XtAddCallback): Likewise.
+	* gcc.c-torture/compile/pr49474.c: Use struct
+	gfc_formal_arglist * instead of (implied) int type.
+	* gcc.c-torture/execute/20001111-1.c (foo): Add cast to
+	char *.
+	(main): Call __builtin_abort and __builtin_exit.
+
+2023-10-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/920501-11.c: Compile with -std=gnu89.
+	* gcc.c-torture/compile/920501-23.c: Likewise.
+	* gcc.c-torture/compile/920501-8.c: Likewise.
+	* gcc.c-torture/compile/920701-1.c: Likewise.
+	* gcc.c-torture/compile/930529-1.c: Likewise.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111779
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Adjust for more DSE.
+	* gcc.dg/vect/vect-pr111779.c: New testcase.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111773
+	* g++.dg/torture/pr111773.C: New testcase.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-llround-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llround-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llround-0.c: New test.
+
+2023-10-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-pr69907.c: Add RVV.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iround-0.c: New test.
+
+2023-10-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/rvv/autovec/bug-01.C: New.
+	* g++.target/riscv/rvv/rvv.exp: Add autovec folder.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-llrint-0.c: Include
+	stdint-gcc.h for int types.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrint-run-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/test-math.h: Remove int64_t
+	typedef.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloor-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloor-1.c: New test.
+
 2023-10-13  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/unop/math-lceil-0.c: New test.

@@ -1,3 +1,24 @@
+2023-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104351
+	* decl.cc (get_proc_name): Extend name conflict detection between
+	internal procedure and previous declaration also to derived type.
+
+2023-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110957
+	* invoke.texi: Update documentation to reflect '-ffpe-trap=none'.
+	* options.cc (gfc_handle_fpe_option): Fix mixup up of error messages
+	for options -ffpe-trap and -ffpe-summary.  Accept '-ffpe-trap=none'
+	to clear FPU traps previously set on command line.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111779
+	* trans-expr.cc (gfc_trans_assignment_1): Initialize
+	lhs_caf_attr and rhs_caf_attr codimension flag to avoid
+	false positive -Wuninitialized.
+
 2023-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67740

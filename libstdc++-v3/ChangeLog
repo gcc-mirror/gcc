@@ -1,3 +1,30 @@
+2023-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc (test01):
+	Initialize stream to va_arg(ap, FILE*) rather than 0.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc (test01):
+	Likewise.
+
+2023-10-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc,
+	testsuite/29_atomics/atomic_flag/clear/1.cc,
+	testsuite/29_atomics/atomic_flag/cons/value_init.cc,
+	testsuite/29_atomics/atomic_flag/test_and_set/explicit.cc,
+	testsuite/29_atomics/atomic_flag/test_and_set/implicit.cc,
+	testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc,
+	testsuite/29_atomics/atomic_ref/generic.cc,
+	testsuite/29_atomics/atomic_ref/integral.cc,
+	testsuite/29_atomics/atomic_ref/pointer.cc: Replace
+	dg-require-thread-fence with dg-require-atomic-cmpxchg-word.
+
+2023-10-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/dg-options.exp (dg-require-atomic-cmpxchg-word):
+	New proc.
+	* testsuite/lib/libstdc++.exp (check_v3_target_atomic_cmpxchg_word):
+	Ditto.
+
 2023-10-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* config/abi/pre/gnu-versioned-namespace.ver: Add missing symbols

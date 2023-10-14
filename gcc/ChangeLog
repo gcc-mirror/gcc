@@ -1,3 +1,52 @@
+2023-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111622
+	* value-relation.cc (equiv_oracle::add_partial_equiv): Do not
+	register a partial equivalence if an operand has no uses.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111795
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Handle
+	integer mode mask arguments.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (mask_call_maps): New.
+	(vect_get_operand_map): Handle IFN_MASK_CALL.
+	(vect_build_slp_tree_1): Likewise.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Handle
+	SLP.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111779
+	* tree-sra.cc (sra_handled_bf_read_p): New function.
+	(build_access_from_expr_1): Handle some BIT_FIELD_REFs.
+	(sra_modify_expr): Likewise.
+	(make_fancy_name_1): Skip over BIT_FIELD_REF.
+
+2023-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111773
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Do
+	not elide noreturn calls that are reflected to the IL.
+
+2023-10-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_poly_move): Bump
+	max_power to 64.
+	* config/riscv/riscv.h (MAX_POLY_VARIANT): New.
+
+2023-10-13  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lfloor<mode><v_i_l_ll_convert>2): New
+	pattern for lfloor/lfloorf.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum value.
+	(expand_vec_lfloor): New func decl for expanding lfloor.
+	* config/riscv/riscv-v.cc (expand_vec_lfloor): New func impl
+	for expanding lfloor.
+
 2023-10-13  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md (lceil<mode><v_i_l_ll_convert>2): New
