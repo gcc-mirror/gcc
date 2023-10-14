@@ -1405,18 +1405,45 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 			   || alloc == NULL_TREE
 			   || !integer_onep (alloc)))
 		{
-		  tree tmp = build_pointer_type (TREE_TYPE (t));
-		  tree v = create_tmp_var (tmp, get_name (t));
-		  DECL_IGNORED_P (v) = 0;
-		  tmp = remove_attribute ("omp allocate", DECL_ATTRIBUTES (t));
-		  DECL_ATTRIBUTES (v)
-		    = tree_cons (get_identifier ("omp allocate var"),
-				 build_tree_list (NULL_TREE, t), tmp);
-		  tmp = build_fold_indirect_ref (v);
-		  TREE_THIS_NOTRAP (tmp) = 1;
-		  SET_DECL_VALUE_EXPR (t, tmp);
-		  DECL_HAS_VALUE_EXPR_P (t) = 1;
-		  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (t));
+		  /* Fortran might already use a pointer type internally;
+		     use that pointer except for type(C_ptr) and type(C_funptr);
+		     note that normal proc pointers are rejected.  */
+		  tree type = TREE_TYPE (t);
+		  tree tmp, v;
+		  if (lang_GNU_Fortran ()
+		      && POINTER_TYPE_P (type)
+		      && TREE_TYPE (type) != void_type_node
+		      && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
+		    {
+		      type = TREE_TYPE (type);
+		      v = t;
+		    }
+		  else
+		    {
+		      tmp = build_pointer_type (type);
+		      v = create_tmp_var (tmp, get_name (t));
+		      DECL_IGNORED_P (v) = 0;
+		      DECL_ATTRIBUTES (v)
+			= tree_cons (get_identifier ("omp allocate var"),
+				     build_tree_list (NULL_TREE, t),
+				     DECL_ATTRIBUTES (t));
+		      tmp = build_fold_indirect_ref (v);
+		      TREE_THIS_NOTRAP (tmp) = 1;
+		      SET_DECL_VALUE_EXPR (t, tmp);
+		      DECL_HAS_VALUE_EXPR_P (t) = 1;
+		    }
+		  tree sz = TYPE_SIZE_UNIT (type);
+		  /* The size to use in Fortran might not match TYPE_SIZE_UNIT;
+		     hence, for some decls, a size variable is saved in the
+		     attributes; use it, if available.  */
+		  if (TREE_CHAIN (TREE_VALUE (attr))
+		      && TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr)))
+		      && TREE_PURPOSE (
+			   TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr)))))
+		    {
+		      sz = TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr)));
+		      sz = TREE_PURPOSE (sz);
+		    }
 		  if (alloc == NULL_TREE)
 		    alloc = build_zero_cst (ptr_type_node);
 		  if (align == NULL_TREE)
@@ -1425,28 +1452,93 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 		    align = build_int_cst (size_type_node,
 					   MAX (tree_to_uhwi (align),
 						DECL_ALIGN_UNIT (t)));
+		  location_t loc = DECL_SOURCE_LOCATION (t);
 		  tmp = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
-		  tmp = build_call_expr_loc (DECL_SOURCE_LOCATION (t), tmp,
-					     3, align, sz, alloc);
-		  tmp = fold_build2_loc (DECL_SOURCE_LOCATION (t), MODIFY_EXPR,
-					 TREE_TYPE (v), v,
+		  tmp = build_call_expr_loc (loc, tmp, 3, align, sz, alloc);
+		  tmp = fold_build2_loc (loc, MODIFY_EXPR, TREE_TYPE (v), v,
 					 fold_convert (TREE_TYPE (v), tmp));
-		  gcc_assert (BIND_EXPR_BODY (bind_expr) != NULL_TREE
-			      && (TREE_CODE (BIND_EXPR_BODY (bind_expr))
-				  == STATEMENT_LIST));
-		  tree_stmt_iterator e = tsi_start (BIND_EXPR_BODY (bind_expr));
-		  while (!tsi_end_p (e))
+		  gcc_assert (BIND_EXPR_BODY (bind_expr) != NULL_TREE);
+		  /* Ensure that either TREE_CHAIN (TREE_VALUE (attr) is set
+		     and GOMP_FREE added here or that DECL_HAS_VALUE_EXPR_P (t)
+		     is set, using in a condition much further below.  */
+		  gcc_assert (DECL_HAS_VALUE_EXPR_P (t)
+			      || TREE_CHAIN (TREE_VALUE (attr)));
+		  if (TREE_CHAIN (TREE_VALUE (attr)))
 		    {
-		      if ((TREE_CODE (*e) == DECL_EXPR
-			   && TREE_OPERAND (*e, 0) == t)
-			  || (TREE_CODE (*e) == CLEANUP_POINT_EXPR
-			      && TREE_CODE (TREE_OPERAND (*e, 0)) == DECL_EXPR
-			      && TREE_OPERAND (TREE_OPERAND (*e, 0), 0) == t))
-		      break;
+		      /* Fortran is special as it does not have properly nest
+			 declarations in blocks.  And as there is no
+			 initializer, there is also no expression to look for.
+			 Hence, the FE makes the statement list of the
+			 try-finally block available. We can put the GOMP_alloc
+			 at the top, unless an allocator or size expression
+			 requires to put it afterward; note that the size is
+			 always later in generated code; for strings, no
+			 size expr but still an expr might be available.  */
+		      tree sl = TREE_PURPOSE (TREE_CHAIN (TREE_VALUE (attr)));
+		      tree_stmt_iterator e = tsi_start (sl);
+		      tree needle = NULL_TREE;
+		      if (TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr))))
+			{
+			  needle = TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr)));
+			  needle = (TREE_VALUE (needle) ? TREE_VALUE (needle)
+							: sz);
+			}
+		      else if (TREE_CHAIN (TREE_CHAIN (TREE_VALUE (attr))))
+			needle = sz;
+		      else if (DECL_P (alloc) && DECL_ARTIFICIAL (alloc))
+			needle = alloc;
+
+		      if (needle != NULL_TREE)
+			{
+			  while (!tsi_end_p (e))
+			    {
+			      if (*e == needle
+				  || (TREE_CODE (*e) == MODIFY_EXPR
+				      && TREE_OPERAND (*e, 0) == needle))
+				break;
+			      ++e;
+			    }
+			  gcc_assert (!tsi_end_p (e));
+			}
+		      tsi_link_after (&e, tmp, TSI_SAME_STMT);
+
+		      /* As the cleanup is in BIND_EXPR_BODY, GOMP_free is added
+			 here; for C/C++ it will be added in the 'cleanup'
+			 section after gimplification. But Fortran already has
+			 a try-finally block.  */
+		      sl = TREE_VALUE (TREE_CHAIN (TREE_VALUE (attr)));
+		      e = tsi_last (sl);
+		      tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		      tmp = build_call_expr_loc (EXPR_LOCATION (*e), tmp, 2, v,
+						 build_zero_cst (ptr_type_node));
+		      tsi_link_after (&e, tmp, TSI_SAME_STMT);
+		      tmp = build_clobber (TREE_TYPE (v), CLOBBER_EOL);
+		      tmp = fold_build2_loc (loc, MODIFY_EXPR, TREE_TYPE (v), v,
+					     fold_convert (TREE_TYPE (v), tmp));
 		      ++e;
+		      tsi_link_after (&e, tmp, TSI_SAME_STMT);
 		    }
-		  gcc_assert (!tsi_end_p (e));
-		  tsi_link_before (&e, tmp, TSI_SAME_STMT);
+		  else
+		    {
+		      gcc_assert (TREE_CODE (BIND_EXPR_BODY (bind_expr))
+				  == STATEMENT_LIST);
+		      tree_stmt_iterator e;
+		      e = tsi_start (BIND_EXPR_BODY (bind_expr));
+		      while (!tsi_end_p (e))
+			{
+			  if ((TREE_CODE (*e) == DECL_EXPR
+			       && TREE_OPERAND (*e, 0) == t)
+			      || (TREE_CODE (*e) == CLEANUP_POINT_EXPR
+				  && (TREE_CODE (TREE_OPERAND (*e, 0))
+				      == DECL_EXPR)
+				  && (TREE_OPERAND (TREE_OPERAND (*e, 0), 0)
+				      == t)))
+			    break;
+			  ++e;
+			}
+		      gcc_assert (!tsi_end_p (e));
+		      tsi_link_before (&e, tmp, TSI_SAME_STMT);
+		   }
 		}
 	    }
 
@@ -1539,16 +1631,26 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  && !is_global_var (t)
 	  && DECL_CONTEXT (t) == current_function_decl)
 	{
+	  tree attr;
 	  if (flag_openmp
 	      && DECL_HAS_VALUE_EXPR_P (t)
 	      && TREE_USED (t)
-	      && lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
+	      && ((attr = lookup_attribute ("omp allocate",
+					    DECL_ATTRIBUTES (t))) != NULL_TREE)
+	      && TREE_CHAIN (TREE_VALUE (attr)) == NULL_TREE)
 	    {
+	      /* For Fortran, TREE_CHAIN (TREE_VALUE (attr)) is set, which
+		 causes that the GOMP_free call is already added above.  */
+	      tree v = TREE_OPERAND (DECL_VALUE_EXPR (t), 0);
 	      tree tmp = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
-	      tmp = build_call_expr_loc (end_locus, tmp, 2,
-					 TREE_OPERAND (DECL_VALUE_EXPR (t), 0),
+	      tmp = build_call_expr_loc (end_locus, tmp, 2, v,
 					 build_zero_cst (ptr_type_node));
 	      gimplify_and_add (tmp, &cleanup);
+	      gimple *clobber_stmt;
+	      tmp = build_clobber (TREE_TYPE (v), CLOBBER_EOL);
+	      clobber_stmt = gimple_build_assign (v, tmp);
+	      gimple_set_location (clobber_stmt, end_locus);
+	      gimplify_seq_add_stmt (&cleanup, clobber_stmt);
 	    }
 	  if (!DECL_HARD_REGISTER (t)
 	      && !TREE_THIS_VOLATILE (t)

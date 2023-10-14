@@ -833,18 +833,18 @@ check_omp_allocate_stmt (locus *loc)
 		      &n->expr->where, gfc_ascii_statement (ST_OMP_ALLOCATE));
 	  return false;
 	}
+      /* Procedure pointers are not allocatable; hence, we do not regard them as
+	 pointers here - and reject them later in gfc_resolve_omp_allocate.  */
       bool alloc_ptr;
       if (n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok)
 	alloc_ptr = (CLASS_DATA (n->sym)->attr.allocatable
 		     || CLASS_DATA (n->sym)->attr.class_pointer);
       else
-	alloc_ptr = (n->sym->attr.allocatable || n->sym->attr.pointer
-		     || n->sym->attr.proc_pointer);
+	alloc_ptr = n->sym->attr.allocatable || n->sym->attr.pointer;
       if (alloc_ptr
 	  || (n->sym->ns && n->sym->ns->proc_name
 	      && (n->sym->ns->proc_name->attr.allocatable
-		  || n->sym->ns->proc_name->attr.pointer
-		  || n->sym->ns->proc_name->attr.proc_pointer)))
+		  || n->sym->ns->proc_name->attr.pointer)))
 	has_allocatable = true;
       else
 	has_non_allocatable = true;
