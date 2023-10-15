@@ -36,12 +36,23 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools exuberant-ctags
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools emacs
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
         run: |
           sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Stamp
+        if: success()
+        env:
+          revision: ${{ github.head_ref }}
+        run: |
+          if test -z "${revision}"; then revision=0; fi
+          {
+              date
+              echo "$(TZ=UTC date) (revision ${revision})"
+          } > LAST_UPDATED
 
       - name: Cache
         id: cache-deps
@@ -58,14 +69,9 @@ jobs:
 
       - name: Download prerequisites
         if: success()
-        env:
-          revision: ${{ github.head_ref }}
         run: |
           ./contrib/download_prerequisites
-          {
-              date
-              echo "$(TZ=UTC date) (revision ${revision})"
-          } > LAST_UPDATED
+          ls
 
       - name: Configure x86_64
         if: success() && matrix.target == 'x86_64'
