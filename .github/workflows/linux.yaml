@@ -96,7 +96,7 @@ jobs:
         if: success()
         run: |
           cd ../build
-          make bootstrap -j$(nproc)
+          make bootstrap-lean -j$(nproc)
 
       - name: Make install
         if: success()
