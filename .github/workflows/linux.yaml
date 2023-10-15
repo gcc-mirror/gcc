@@ -3,14 +3,14 @@ on:
   push:
     branches: 
       - master
+      - me/*
       - releases/gcc-*
     tags:
       - releases/gcc-*
   pull_request:
     branches: 
       - master
-      - releases/gcc-*
-    tags:
+      - me/*
       - releases/gcc-*
 
 concurrency:
@@ -36,12 +36,25 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
         run: |
           sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Cache
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-downloaded-prerequisites
+        with:
+          path: ../build
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('LAST_UPDATED') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
       - name: Download prerequisites
         if: success()
@@ -51,13 +64,13 @@ jobs:
       - name: Configure x86_64
         if: success() && matrix.target == 'x86_64'
         run: |
-          unset ADA_INCLUDE_PATH
-          unset ADA_OBJECT_PATH
+          if test -n "${ADA_INCLUDE_PATH}"; then unset ADA_INCLUDE_PATH; fi
+          if test -n "${ADA_OBJECT_PATH}"; then unset ADA_OBJECT_PATH; fi
           cd ../
-          mkdir build
+          if test ! -d build; then mkdir build; fi
           cd build
           ../gcc/configure \
-                --enable-languages=c,c++,go,d,fortran,objc,obj-c++,m2 \
+                --enable-languages=c,c++,objc,obj-c++ \
                 --prefix=/usr \
                 --with-gcc-major-version-only \
                 --program-prefix=x86_64-linux-gnu- \
@@ -80,6 +93,7 @@ jobs:
                 --with-target-system-zlib=auto \
                 --enable-objc-gc=auto \
                 --enable-multiarch \
+                --disable-bootstrap \
                 --disable-werror \
                 --with-arch-32=i686 \
                 --with-abi=m64 \
@@ -88,26 +102,51 @@ jobs:
                 --with-tune=generic \
                 --without-cuda-driver \
                 --enable-checking=release \
+                --enable-silent-rules \
                 --build=x86_64-linux-gnu \
                 --host=x86_64-linux-gnu \
                 --target=x86_64-linux-gnu
 
-      - name: Make bootstrap
+      - name: Make docs
         if: success()
         run: |
           cd ../build
-          make bootstrap-lean -j$(nproc)
+          make etags || make tags
+          make info
+          make dvi
+          make pdf
+          make html
 
-      - name: Make install
+      - name: Make
+        if: success()
+        run: |
+          cd ../build
+          if test -x "$(which nproc)"; then echo "nproc says that we can use $(nproc) build jobs"; else echo "error: missing nproc!" >&2 && exit 1; fi
+          time (make -j"$(nproc)" | tee build.log)
+
+      - name: Debug failure
+        if: failure()
+        run: |
+          if test -r build.log; then grep -i "error:" build.log; elif test -r ../build/build.log; then grep -i "error:" ../build/build.log; fi
+
+      - name: Make install (plus docs)
         if: success()
         run: |
           cd ../build
           sudo make install
+          sudo make install-info
+          sudo make install-dvi
+          sudo make install-pdf
+          sudo make install-html
+          sudo make dir.info
 
       - name: Tests
         if: success()
         run: |
-          /usr/bin/x86_64-linux-gnu-gcc --version
-          /usr/bin/x86_64-linux-gnu-gcc -v
+          if test -x /usr/bin/x86_64-linux-gnu-gcc; then /usr/bin/x86_64-linux-gnu-gcc --version; elif test -x ../build/gcc/xgcc; then ../build/gcc/xgcc --version; fi
+          if test -x /usr/bin/x86_64-linux-gnu-gcc; then /usr/bin/x86_64-linux-gnu-gcc -v; elif test -x ../build/gcc/xgcc; then ../build/gcc/xgcc --v; fi
           cd ../build
-          make -k check
+          if test -e build.log; then make warning.log; fi
+          time make -k check
+          if test -e warning.log; then make mail-report-with-warnings.log; else make mail-report.log; fi
+          if test -x mail-report-with-warnings.log; then ./mail-report-with-warnings.log; elif test -x mail-report.log; then ./mail-report.log; fi
