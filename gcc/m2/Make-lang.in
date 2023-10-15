@@ -62,6 +62,12 @@ m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) \
                  $(GCC_PASSES) $(GCC_PARTS)
 m2.serial = cc1gm2$(exeext)
 
+m2.tags: force
+	cd $(srcdir)/m2; $(ETAGS) -o TAGS.sub \
+        *.cc *.h gm2-gcc/*.cc gm2-gcc/*.h \
+        gm2-libs-ch/*.h gm2-libs-ch/*.c gm2-libs-ch/*.cc; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
+
 m2.srcinfo: doc/m2.info
 	-cp -p $^ $(srcdir)/doc
 
