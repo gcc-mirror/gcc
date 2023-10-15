@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools texlive
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools texlive findutils
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
@@ -109,8 +109,7 @@ jobs:
         if: success()
         run: |
           cd ../build
-          echo "make pdf" && (time make pdf-fixincludes) && echo "pdfs done"
-          echo "make html" && (time make html) && echo "html done"
+          echo "make html" && (time make html-fixincludes) && echo "html done"
 
       - name: Make
         if: success()
@@ -123,8 +122,9 @@ jobs:
         if: success()
         run: |
           cd ../build
-          echo "make info" && (time make info) && echo "info done"
-          echo "make dvi" && (time make dvi) && echo "dvi done"
+          echo "make info" && (time make info) && find . -name "*.info" -print
+          echo "make dvi" && (time make dvi) && find . -name "*.dvi" -print
+          echo "make pdf" && (time make pdf) && echo "pdfs done"
 
       - name: Debug failure
         if: failure()
