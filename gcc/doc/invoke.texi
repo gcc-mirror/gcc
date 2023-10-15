@@ -21868,11 +21868,13 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-x2}, @samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-a510},
 @samp{cortex-a520}, @samp{cortex-a520ae}, @samp{cortex-a710}, @samp{cortex-a715},
 @samp{cortex-a720}, @samp{cortex-a720ae}, @samp{ampere1}, @samp{ampere1a},
-@samp{ampere1b}, @samp{cobalt-100} and @samp{native}.
+@samp{ampere1b}, @samp{cobalt-100}, @samp{apple-m1}, @samp{apple-m2},
+@samp{apple-m3} and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
-@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55} specify that GCC
+@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
+@samp{apple-m1}, @samp{apple-m2}, @samp{apple-m3} specify that GCC
 should tune for a big.LITTLE system.
 
 The value @samp{neoverse-512tvb} specifies that GCC should tune
