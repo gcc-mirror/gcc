@@ -142,7 +142,7 @@ public:
 
     int doppelganger;           // sub-module
     Symbol *cov;                // private uint[] __coverage;
-    unsigned *covb;             // bit array of valid code line numbers
+    DArray<unsigned> covb;      // bit array of valid code line numbers
 
     Symbol *sictor;             // module order independent constructor
     Symbol *sctor;              // module constructor

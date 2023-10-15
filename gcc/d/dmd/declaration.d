@@ -16,7 +16,6 @@ import core.stdc.stdio;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.attrib;
 import dmd.ctorflow;
 import dmd.dclass;
 import dmd.delegatize;
@@ -647,11 +646,11 @@ extern (C++) final class TupleDeclaration : Declaration
                 {
                     buf.printf("_%s_%d", ident.toChars(), i);
                     auto id = Identifier.idPool(buf.extractSlice());
-                    auto arg = new Parameter(STC.in_, t, id, null);
+                    auto arg = new Parameter(Loc.initial, STC.in_, t, id, null);
                 }
                 else
                 {
-                    auto arg = new Parameter(0, t, null, null, null);
+                    auto arg = new Parameter(Loc.initial, 0, t, null, null, null);
                 }
                 (*args)[i] = arg;
                 if (!t.deco)
@@ -1602,6 +1601,8 @@ extern (C++) class VarDeclaration : Declaration
         {
             inuse++;
             _init = _init.initializerSemantic(_scope, type, INITinterpret);
+            import dmd.semantic2 : lowerStaticAAs;
+            lowerStaticAAs(this, _scope);
             _scope = null;
             inuse--;
         }

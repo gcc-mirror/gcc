@@ -750,7 +750,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         {
             if (i)
                 buf.writestring(", ");
-            .toCBuffer(tp, &buf, &hgs);
+            toCBuffer(tp, buf, hgs);
         }
         buf.writeByte(')');
 
@@ -768,7 +768,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             constraint)
         {
             buf.writestring(" if (");
-            .toCBuffer(constraint, &buf, &hgs);
+            toCBuffer(constraint, buf, hgs);
             buf.writeByte(')');
         }
 
@@ -865,7 +865,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                 if (!fparam.ident)
                     continue;
                 // don't add it, if it has no name
-                auto v = new VarDeclaration(loc, fparam.type, fparam.ident, null);
+                auto v = new VarDeclaration(fparam.loc, fparam.type, fparam.ident, null);
                 fparam.storageClass |= STC.parameter;
                 v.storage_class = fparam.storageClass;
                 v.dsymbolSemantic(scx);
@@ -6024,14 +6024,14 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     override const(char)* toChars() const
     {
         OutBuffer buf;
-        toCBufferInstance(this, &buf);
+        toCBufferInstance(this, buf);
         return buf.extractChars();
     }
 
     override final const(char)* toPrettyCharsHelper()
     {
         OutBuffer buf;
-        toCBufferInstance(this, &buf, true);
+        toCBufferInstance(this, buf, true);
         return buf.extractChars();
     }
 
@@ -6058,11 +6058,9 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             {
                 case Classification.error:
                     return &errorSupplemental;
-                case Classification.warning:
-                    return &warningSupplemental;
                 case Classification.deprecation:
                     return &deprecationSupplemental;
-                case Classification.gagged, Classification.tip:
+                case Classification.gagged, Classification.tip, Classification.warning:
                     assert(0);
             }
         }();
@@ -7056,10 +7054,10 @@ extern (C++) class TemplateInstance : ScopeDsymbol
 
             if (td_ambig)
             {
-                .error(loc, "%s `%s.%s` matches more than one template declaration:\n%s:     `%s`\nand\n%s:     `%s`",
-                    td_best.kind(), td_best.parent.toPrettyChars(), td_best.ident.toChars(),
-                    td_best.loc.toChars(), td_best.toChars(),
-                    td_ambig.loc.toChars(), td_ambig.toChars());
+                .error(loc, "%s `%s.%s` matches more than one template declaration:",
+                    td_best.kind(), td_best.parent.toPrettyChars(), td_best.ident.toChars());
+                .errorSupplemental(td_best.loc, "`%s`\nand:", td_best.toChars());
+                .errorSupplemental(td_ambig.loc, "`%s`", td_ambig.toChars());
                 return false;
             }
             if (td_best)
@@ -7825,7 +7823,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
     override const(char)* toChars() const
     {
         OutBuffer buf;
-        toCBufferInstance(this, &buf);
+        toCBufferInstance(this, buf);
         return buf.extractChars();
     }
 

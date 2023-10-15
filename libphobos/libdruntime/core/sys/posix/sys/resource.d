@@ -22,6 +22,9 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
+
 nothrow @nogc extern(C):
 
 //
@@ -120,15 +123,31 @@ version (linux)
             c_long[16] __reserved;
     }
 
-    enum
+    version (MIPS_Any)
     {
-        RLIMIT_CORE   = 4,
-        RLIMIT_CPU    = 0,
-        RLIMIT_DATA   = 2,
-        RLIMIT_FSIZE  = 1,
-        RLIMIT_NOFILE = 7,
-        RLIMIT_STACK  = 3,
-        RLIMIT_AS     = 9,
+        enum
+        {
+            RLIMIT_CORE   = 4,
+            RLIMIT_CPU    = 0,
+            RLIMIT_DATA   = 2,
+            RLIMIT_FSIZE  = 1,
+            RLIMIT_NOFILE = 5,
+            RLIMIT_STACK  = 3,
+            RLIMIT_AS     = 6,
+        }
+    }
+    else
+    {
+        enum
+        {
+            RLIMIT_CORE   = 4,
+            RLIMIT_CPU    = 0,
+            RLIMIT_DATA   = 2,
+            RLIMIT_FSIZE  = 1,
+            RLIMIT_NOFILE = 7,
+            RLIMIT_STACK  = 3,
+            RLIMIT_AS     = 9,
+        }
     }
 }
 else version (Darwin)

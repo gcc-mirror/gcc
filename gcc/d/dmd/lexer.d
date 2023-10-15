@@ -51,7 +51,7 @@ struct CompileEnv
     bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
     bool ddocOutput;         /// collect embedded documentation comments
     bool shortenedMethods = true;   /// allow => in normal function declarations
-    bool obsolete;           /// warn on use of legacy code
+    bool masm;               /// use MASM inline asm syntax
 }
 
 /***********************************************************
@@ -484,6 +484,12 @@ class Lexer
                     goto default;
                 wysiwygStringConstant(t);
                 return;
+            case 'x':
+                if (p[1] != '"')
+                    goto case_ident;
+                p++;
+                t.value = hexStringConstant(t);
+                return;
             case 'q':
                 if (Ccompile)
                     goto case_ident;
@@ -526,7 +532,7 @@ class Lexer
             //case 'u':
             case 'v':
             case 'w':
-            case 'x':
+                /*case 'x':*/
             case 'y':
             case 'z':
             case 'A':
@@ -1474,6 +1480,84 @@ class Lexer
             }
             stringbuffer.writeByte(c);
         }
+    }
+
+    /**************************************
+     * Lex hex strings:
+     *      x"0A ae 34FE BD"
+     */
+    final TOK hexStringConstant(Token* t)
+    {
+        Loc start = loc();
+        uint n = 0;
+        uint v = ~0; // dead assignment, needed to suppress warning
+        p++;
+        stringbuffer.setsize(0);
+        while (1)
+        {
+            dchar c = *p++;
+            switch (c)
+            {
+            case ' ':
+            case '\t':
+            case '\v':
+            case '\f':
+                continue; // skip white space
+            case '\r':
+                if (*p == '\n')
+                    continue; // ignore '\r' if followed by '\n'
+                // Treat isolated '\r' as if it were a '\n'
+                goto case '\n';
+            case '\n':
+                endOfLine();
+                continue;
+            case 0:
+            case 0x1A:
+                error("unterminated string constant starting at %s", start.toChars());
+                t.setString();
+                // decrement `p`, because it needs to point to the next token (the 0 or 0x1A character is the TOK.endOfFile token).
+                p--;
+                return TOK.hexadecimalString;
+            case '"':
+                if (n & 1)
+                {
+                    error("odd number (%d) of hex characters in hex string", n);
+                    stringbuffer.writeByte(v);
+                }
+                t.setString(stringbuffer);
+                stringPostfix(t);
+                return TOK.hexadecimalString;
+            default:
+                if (c >= '0' && c <= '9')
+                    c -= '0';
+                else if (c >= 'a' && c <= 'f')
+                    c -= 'a' - 10;
+                else if (c >= 'A' && c <= 'F')
+                    c -= 'A' - 10;
+                else if (c & 0x80)
+                {
+                    p--;
+                    const u = decodeUTF();
+                    p++;
+                    if (u == PS || u == LS)
+                        endOfLine();
+                    else
+                        error("non-hex character \\u%04x in hex string", u);
+                }
+                else
+                    error("non-hex character '%c' in hex string", c);
+                if (n & 1)
+                {
+                    v = (v << 4) | c;
+                    stringbuffer.writeByte(v);
+                }
+                else
+                    v = c;
+                n++;
+                break;
+            }
+        }
+        assert(0); // see bug 15731
     }
 
     /**

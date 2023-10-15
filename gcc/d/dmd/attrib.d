@@ -679,7 +679,7 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
     {
         assert(visibility.kind > Visibility.Kind.undefined);
         OutBuffer buf;
-        visibilityToBuffer(&buf, visibility);
+        visibilityToBuffer(buf, visibility);
         return buf.extractChars();
     }
 

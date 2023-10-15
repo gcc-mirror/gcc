@@ -1170,8 +1170,8 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                             StorageClass stc2 =   narg.storageClass & (STC.ref_ | STC.out_ | STC.lazy_);
                             if (stc1 && stc2 && stc1 != stc2)
                             {
-                                OutBuffer buf1;  stcToBuffer(&buf1, stc1 | ((stc1 & STC.ref_) ? (fparam.storageClass & STC.auto_) : 0));
-                                OutBuffer buf2;  stcToBuffer(&buf2, stc2);
+                                OutBuffer buf1;  stcToBuffer(buf1, stc1 | ((stc1 & STC.ref_) ? (fparam.storageClass & STC.auto_) : 0));
+                                OutBuffer buf2;  stcToBuffer(buf2, stc2);
 
                                 .error(loc, "incompatible parameter storage classes `%s` and `%s`",
                                     buf1.peekChars(), buf2.peekChars());
@@ -1179,7 +1179,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                                 stc = stc1 | (stc & ~(STC.ref_ | STC.out_ | STC.lazy_));
                             }
                             (*newparams)[j] = new Parameter(
-                                stc, narg.type, narg.ident, narg.defaultArg, narg.userAttribDecl);
+                                loc, stc, narg.type, narg.ident, narg.defaultArg, narg.userAttribDecl);
                         }
                         fparam.type = new TypeTuple(newparams);
                         fparam.type = fparam.type.typeSemantic(loc, argsc);
@@ -2089,6 +2089,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
             {
                 e = new StringExp(loc, mt.deco.toDString());
                 Scope sc;
+                sc.eSink = global.errorSink;
                 e = e.expressionSemantic(&sc);
             }
         }
@@ -2097,6 +2098,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
             const s = mt.toChars();
             e = new StringExp(loc, s.toDString());
             Scope sc;
+            sc.eSink = global.errorSink;
             e = e.expressionSemantic(&sc);
         }
         else if (flag && mt != Type.terror)
@@ -2127,7 +2129,9 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
                         error(loc, "no property `%s` for `%s` of type `%s`", ident.toChars(), src.toChars(), mt.toPrettyChars(true));
                     else
                         error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
+
                     if (auto dsym = mt.toDsymbol(scope_))
+                    {
                         if (auto sym = dsym.isAggregateDeclaration())
                         {
                             if (auto fd = search_function(sym, Id.opDispatch))
@@ -2135,6 +2139,9 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
                             else if (!sym.members)
                                 errorSupplemental(sym.loc, "`%s %s` is opaque and has no members.", sym.kind, mt.toPrettyChars(true));
                         }
+                        errorSupplemental(dsym.loc, "%s `%s` defined here",
+                            dsym.kind, dsym.toChars());
+                    }
                 }
             }
             e = ErrorExp.get();
@@ -3482,7 +3489,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             if (fd_aaLen is null)
             {
                 auto fparams = new Parameters();
-                fparams.push(new Parameter(STC.const_ | STC.scope_, mt, null, null, null));
+                fparams.push(new Parameter(Loc.initial, STC.const_ | STC.scope_, mt, null, null, null));
                 fd_aaLen = FuncDeclaration.genCfunc(fparams, Type.tsize_t, Id.aaLen);
                 TypeFunction tf = fd_aaLen.type.toTypeFunction();
                 tf.purity = PURE.const_;
@@ -3938,6 +3945,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                     e.error("no property `%s` for type `%s`", ident.toChars(),
                         mt.toChars());
 
+                errorSupplemental(mt.sym.loc, "%s `%s` defined here",
+                    mt.sym.kind, mt.toChars());
                 return ErrorExp.get();
             }
             return res;
@@ -4791,7 +4800,7 @@ Type stripDefaultArgs(Type t)
         {
             Type t = stripDefaultArgs(p.type);
             return (t != p.type || p.defaultArg || p.ident || p.userAttribDecl)
-                ? new Parameter(p.storageClass, t, null, null, null)
+                ? new Parameter(p.loc, p.storageClass, t, null, null, null)
                 : null;
         }
 

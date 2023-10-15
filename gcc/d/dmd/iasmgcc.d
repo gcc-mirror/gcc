@@ -330,7 +330,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     s.insn = semanticString(sc, s.insn, "asm instruction template");
 
     if (s.labels && s.outputargs)
-        s.error("extended asm statements with labels cannot have output constraints");
+        error(s.loc, "extended asm statements with labels cannot have output constraints");
 
     // Analyse all input and output operands.
     if (s.args)

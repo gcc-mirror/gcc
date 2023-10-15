@@ -2725,6 +2725,15 @@ public:
 
   void visit (AssocArrayLiteralExp *e) final override
   {
+    if (e->lowering != NULL)
+      {
+	/* When an associative array literal gets lowered, it's converted into a
+	   struct literal suitable for static initialization.  */
+	gcc_assert (this->constp_);
+	this->result_ = build_expr (e->lowering, this->constp_, true);
+	return ;
+      }
+
     /* Want the mutable type for typeinfo reference.  */
     Type *tb = e->type->toBasetype ()->mutableOf ();
 

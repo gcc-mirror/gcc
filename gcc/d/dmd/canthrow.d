@@ -202,7 +202,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
 
         override void visit(ThrowExp te)
         {
-            const res = checkThrow(te.loc, te.e1, mustNotThrow, func);
+            const res = checkThrow(te.loc, te.e1, func, mustNotThrow ? global.errorSink : null);
             assert((res & ~(CT.exception | CT.error)) == 0);
             result |= res;
         }

@@ -779,7 +779,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_Wall:
       if (value)
 	global.params.warnings = DIAGNOSTICinform;
-      global.params.obsolete = value;
       break;
 
     case OPT_Wdeprecated:
@@ -941,7 +940,6 @@ d_post_options (const char ** fn)
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.shortenedMethods = global.params.shortenedMethods;
-  global.compileEnv.obsolete = global.params.obsolete;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)
@@ -1002,6 +1000,66 @@ d_write_file (const char *filename, const char *data)
     error ("writing output file %s: %m", filename);
 }
 
+/* Read ddoc macro files named by the DDOCFILES, then write the concatenated
+   the contents into DDOCBUF.  */
+
+static void
+d_read_ddoc_files (Strings &ddocfiles, OutBuffer &ddocbuf)
+{
+  if (ddocbuf.length ())
+    return;
+
+  for (size_t i = 0; i < ddocfiles.length; i++)
+    {
+      int fd = open (ddocfiles[i], O_RDONLY);
+      bool ok = false;
+      struct stat buf;
+
+      if (fd == -1 || fstat (fd, &buf))
+	{
+	  error ("unable to open %s for reading: %m", ddocfiles[i]);
+	  continue;
+	}
+
+      /* Check we've not been given a directory, or a file bigger than 4GB.  */
+      if (S_ISDIR (buf.st_mode))
+	errno = ENOENT;
+      else if (buf.st_size != unsigned (buf.st_size))
+	errno = EMFILE;
+      else
+	{
+	  unsigned size = unsigned (buf.st_size);
+	  char *buffer = (char *) xmalloc (size);
+
+	  if (read (fd, buffer, size) == ssize_t (size))
+	    {
+	      ddocbuf.write (buffer, size);
+	      ok = true;
+	    }
+
+	  free (buffer);
+	}
+
+      close (fd);
+      if (!ok)
+	fatal_error (input_location, "reading ddoc file %s: %m", ddocfiles[i]);
+    }
+}
+
+static void
+d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
+{
+  input_location = make_location_t (m->loc);
+
+  d_read_ddoc_files (global.params.ddoc.files, ddocbuf);
+
+  OutBuffer ddocbuf_out;
+  gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
+	      global.errorSink, ddocbuf_out);
+
+  d_write_file (m->docfile.toChars (), ddocbuf_out.peekChars ());
+}
+
 /* Implements the lang_hooks.parse_file routine for language D.  */
 
 static void
@@ -1037,6 +1095,9 @@ d_parse_file (void)
   /* Create Module's for all sources we will load.  */
   Modules modules;
   modules.reserve (num_in_fnames);
+
+  /* Buffer for contents of .ddoc files.  */
+  OutBuffer ddocbuf;
 
   /* In this mode, the first file name is supposed to be a duplicate
      of one of the input files.  */
@@ -1125,7 +1186,8 @@ d_parse_file (void)
 
       if (m->filetype == FileType::ddoc)
 	{
-	  gendocfile (m, global.errorSink);
+	  d_generate_ddoc_file (m, ddocbuf);
+
 	  /* Remove M from list of modules.  */
 	  modules.remove (i);
 	  i--;
@@ -1168,7 +1230,9 @@ d_parse_file (void)
 	  if (global.params.verbose)
 	    message ("import    %s", m->toChars ());
 
-	  genhdrfile (m);
+	  OutBuffer buf;
+	  genhdrfile (m, buf);
+	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
       dump_headers = true;
@@ -1308,7 +1372,7 @@ d_parse_file (void)
   if (global.params.json.doOutput)
     {
       OutBuffer buf;
-      json_generate (&buf, &modules);
+      json_generate (modules, buf);
       d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
@@ -1318,7 +1382,7 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  gendocfile (m, global.errorSink);
+	  d_generate_ddoc_file (m, ddocbuf);
 	}
     }
 
@@ -1331,7 +1395,7 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (&buf, m);
+	  moduleToBuffer (buf, m);
 	  message ("%s", buf.peekChars ());
 	}
     }

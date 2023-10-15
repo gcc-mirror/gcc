@@ -163,6 +163,9 @@ proc gdc-convert-args { args } {
 	    upvar 2 compilable_do_what compilable_do_what
 	    set compilable_do_what "compile"
 
+	} elseif [string match "-nothrow" $arg] {
+	    lappend out "-fno-exceptions"
+
 	} elseif [string match "-vgc" $arg] {
 	    lappend out "-ftransition=nogc"
 

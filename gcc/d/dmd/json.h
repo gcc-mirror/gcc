@@ -15,5 +15,5 @@
 
 struct OutBuffer;
 
-void json_generate(OutBuffer *, Modules *);
+void json_generate(Modules &, OutBuffer &);
 JsonFieldFlags tryParseJsonField(const char *fieldName);

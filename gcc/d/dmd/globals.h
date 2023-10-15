@@ -96,6 +96,22 @@ struct Output
     int bufferLines;    // number of lines written to the buffer
 };
 
+/// Command line state related to printing uasage about other switches
+struct Help
+{
+    d_bool manual;       // open browser on compiler manual
+    d_bool usage;        // print usage and exit
+    // print help of switch:
+    d_bool mcpu;         // -mcpu
+    d_bool transition;   // -transition
+    d_bool check;        // -check
+    d_bool checkAction;  // -checkaction
+    d_bool revert;       // -revert
+    d_bool preview;      // -preview
+    d_bool externStd;    // -extern-std
+    d_bool hc;           // -HC
+};
+
 // Put command line switches in here
 struct Param
 {
@@ -119,7 +135,6 @@ struct Param
     d_bool release;       // build release version
     d_bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
-    d_bool obsolete;      // warn about use of obsolete features
     d_bool color;         // use ANSI colors in console output
     d_bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
@@ -136,16 +151,7 @@ struct Param
     CppStdRevision cplusplus;  // version of C++ name mangling to support
     d_bool showGaggedErrors;  // print gagged errors anyway
     d_bool printErrorContext;  // print errors with the error context (the error line in the source file)
-    d_bool manual;            // open browser on compiler manual
-    d_bool usage;             // print usage and exit
-    d_bool mcpuUsage;         // print help on -mcpu switch
-    d_bool transitionUsage;   // print help on -transition switch
-    d_bool checkUsage;        // print help on -check switch
-    d_bool checkActionUsage;  // print help on -checkaction switch
-    d_bool revertUsage;       // print help on -revert switch
-    d_bool previewUsage;      // print help on -preview switch
-    d_bool externStdUsage;    // print help on -extern-std switch
-    d_bool hcUsage;           // print help on -HC switch
+    Help help;
     d_bool logo;              // print logo;
 
     // Options for `-preview=/-revert=`
@@ -265,7 +271,6 @@ struct CompileEnv
     bool previewIn;
     bool ddocOutput;
     bool shortenedMethods;
-    bool obsolete;
 };
 
 struct Global
@@ -277,6 +282,7 @@ struct Global
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
+    char datetime[26];       /// string returned by ctime()
     CompileEnv compileEnv;
 
     Param params;
@@ -296,6 +302,7 @@ struct Global
 
     FileManager* fileManager;
     ErrorSink* errorSink;       // where the error messages go
+    ErrorSink* errorSinkNull;   // where the error messages disappear
 
     FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
 
@@ -358,8 +365,8 @@ struct Loc
 {
 private:
     unsigned _linnum;
-    unsigned short _charnum;
-    unsigned short fileIndex;
+    unsigned _charnum;
+    unsigned fileIndex;
 public:
     static void set(bool showColumns, MessageStyle messageStyle);
 

@@ -19,14 +19,12 @@ import core.stdc.string;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.attrib;
 import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.func;
-import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
@@ -878,6 +876,10 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
                 return 1;
             return 0;
         }
+
+        // opaque class is not abstract if it is not declared abstract
+        if (!members)
+            return no();
 
         for (size_t i = 0; i < members.length; i++)
         {

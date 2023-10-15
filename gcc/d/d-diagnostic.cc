@@ -220,7 +220,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
 verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
-	      const char *prefix1 = NULL, const char *prefix2 = NULL)
+	      const char *prefix1, const char *prefix2)
 {
   diagnostic_t diag_kind = DK_UNSPECIFIED;
   int opt = 0;
@@ -277,6 +277,9 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
     }
   else if (kind == ErrorKind::tip)
     {
+      if (global.gag)
+	return;
+
       diag_kind = DK_DEBUG;
       verbatim = true;
     }

@@ -213,21 +213,21 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/internal/gc/impl/proto/gc.lo core/internal/gc/os.lo \
 	core/internal/gc/pooltable.lo core/internal/gc/proxy.lo \
 	core/internal/hash.lo core/internal/lifetime.lo \
-	core/internal/moving.lo core/internal/parseoptions.lo \
-	core/internal/postblit.lo core/internal/qsort.lo \
-	core/internal/spinlock.lo core/internal/string.lo \
-	core/internal/switch_.lo core/internal/traits.lo \
-	core/internal/utf.lo core/internal/util/array.lo \
-	core/internal/util/math.lo core/lifetime.lo core/math.lo \
-	core/memory.lo core/runtime.lo core/simd.lo \
-	core/stdc/assert_.lo core/stdc/complex.lo core/stdc/config.lo \
-	core/stdc/ctype.lo core/stdc/errno.lo core/stdc/fenv.lo \
-	core/stdc/float_.lo core/stdc/inttypes.lo core/stdc/limits.lo \
-	core/stdc/locale.lo core/stdc/math.lo core/stdc/signal.lo \
-	core/stdc/stdarg.lo core/stdc/stddef.lo core/stdc/stdint.lo \
-	core/stdc/stdio.lo core/stdc/stdlib.lo core/stdc/string.lo \
-	core/stdc/tgmath.lo core/stdc/time.lo core/stdc/wchar_.lo \
-	core/stdc/wctype.lo core/sync/barrier.lo \
+	core/internal/moving.lo core/internal/newaa.lo \
+	core/internal/parseoptions.lo core/internal/postblit.lo \
+	core/internal/qsort.lo core/internal/spinlock.lo \
+	core/internal/string.lo core/internal/switch_.lo \
+	core/internal/traits.lo core/internal/utf.lo \
+	core/internal/util/array.lo core/internal/util/math.lo \
+	core/lifetime.lo core/math.lo core/memory.lo core/runtime.lo \
+	core/simd.lo core/stdc/assert_.lo core/stdc/complex.lo \
+	core/stdc/config.lo core/stdc/ctype.lo core/stdc/errno.lo \
+	core/stdc/fenv.lo core/stdc/float_.lo core/stdc/inttypes.lo \
+	core/stdc/limits.lo core/stdc/locale.lo core/stdc/math.lo \
+	core/stdc/signal.lo core/stdc/stdarg.lo core/stdc/stddef.lo \
+	core/stdc/stdint.lo core/stdc/stdio.lo core/stdc/stdlib.lo \
+	core/stdc/string.lo core/stdc/tgmath.lo core/stdc/time.lo \
+	core/stdc/wchar_.lo core/stdc/wctype.lo core/sync/barrier.lo \
 	core/sync/condition.lo core/sync/config.lo core/sync/event.lo \
 	core/sync/exception.lo core/sync/mutex.lo core/sync/package.lo \
 	core/sync/rwmutex.lo core/sync/semaphore.lo \
@@ -859,9 +859,9 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
 	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \
-	core/internal/moving.d core/internal/parseoptions.d \
-	core/internal/postblit.d core/internal/qsort.d \
-	core/internal/spinlock.d core/internal/string.d \
+	core/internal/moving.d core/internal/newaa.d \
+	core/internal/parseoptions.d core/internal/postblit.d \
+	core/internal/qsort.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
 	core/internal/util/array.d core/internal/util/math.d core/lifetime.d \
 	core/math.d core/memory.d core/runtime.d core/simd.d \
@@ -1268,6 +1268,7 @@ core/internal/gc/proxy.lo: core/internal/gc/$(am__dirstamp)
 core/internal/hash.lo: core/internal/$(am__dirstamp)
 core/internal/lifetime.lo: core/internal/$(am__dirstamp)
 core/internal/moving.lo: core/internal/$(am__dirstamp)
+core/internal/newaa.lo: core/internal/$(am__dirstamp)
 core/internal/parseoptions.lo: core/internal/$(am__dirstamp)
 core/internal/postblit.lo: core/internal/$(am__dirstamp)
 core/internal/qsort.lo: core/internal/$(am__dirstamp)

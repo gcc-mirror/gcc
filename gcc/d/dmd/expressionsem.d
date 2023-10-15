@@ -1197,6 +1197,11 @@ private bool haveSameThis(FuncDeclaration outerFunc, FuncDeclaration calledFunc)
     if (thisAd == requiredAd)
         return true;
 
+    // if outerfunc is the member of a nested aggregate, then let
+    // getRightThis take care of this.
+    if (thisAd.isNested())
+        return true;
+
     // outerfunc is the member of a base class that contains calledFunc,
     // then we consider that they have the same this.
     auto cd = requiredAd.isClassDeclaration();
@@ -1204,11 +1209,6 @@ private bool haveSameThis(FuncDeclaration outerFunc, FuncDeclaration calledFunc)
         return false;
 
     if (cd.isBaseOf2(thisAd.isClassDeclaration()))
-        return true;
-
-    // if outerfunc is the member of a nested aggregate, then let
-    // getRightThis take care of this.
-    if (thisAd.isNested())
         return true;
 
     return false;
@@ -2319,6 +2319,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             }
             err |= arg.checkValue();
             err |= arg.checkSharedAccess(sc);
+            err |= checkParamArgumentEscape(sc, fd, Id.dotdotdot, null, cast(STC) tf.parameterList.stc, arg, false, false);
             arg = arg.optimize(WANTvalue);
         }
         (*arguments)[i] = arg;
@@ -2331,14 +2332,14 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
     {
         if (auto se = (*arguments)[nparams - 1 - isVa_list].isStringExp())
         {
-            checkPrintfFormat(se.loc, se.peekString(), (*arguments)[nparams .. nargs], isVa_list);
+            checkPrintfFormat(se.loc, se.peekString(), (*arguments)[nparams .. nargs], isVa_list, sc.eSink);
         }
     }
     else if (fd && fd.scanf)
     {
         if (auto se = (*arguments)[nparams - 1 - isVa_list].isStringExp())
         {
-            checkScanfFormat(se.loc, se.peekString(), (*arguments)[nparams .. nargs], isVa_list);
+            checkScanfFormat(se.loc, se.peekString(), (*arguments)[nparams .. nargs], isVa_list, sc.eSink);
         }
     }
     else
@@ -2528,7 +2529,8 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
         auto args = new Parameters(arguments.length - nparams);
         for (size_t i = 0; i < arguments.length - nparams; i++)
         {
-            auto arg = new Parameter(STC.in_, (*arguments)[nparams + i].type, null, null, null);
+            Expression earg = (*arguments)[nparams + i];
+            auto arg = new Parameter(earg.loc, STC.in_, earg.type, null, null, null);
             (*args)[i] = arg;
         }
         auto tup = new TypeTuple(args);
@@ -3889,10 +3891,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     foreach (v; c.fields)
                     {
                         if (v.inuse || v._scope is null || v._init is null ||
-                            v._init.isVoidInitializer())
+                            v._init.isVoidInitializer() || v.semanticRun >= PASS.semantic2done)
                             continue;
                         v.inuse++;
                         v._init = v._init.initializerSemantic(v._scope, v.type, INITinterpret);
+                        import dmd.semantic2 : lowerStaticAAs;
+                        lowerStaticAAs(v, sc);
                         v.inuse--;
                     }
                 }
@@ -4312,7 +4316,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             if (exp.fd.treq) // defer type determination
             {
                 FuncExp fe;
-                if (exp.matchType(exp.fd.treq, sc, &fe) > MATCH.nomatch)
+                if (exp.matchType(exp.fd.treq, sc, &fe, sc.eSink) > MATCH.nomatch)
                     e = fe;
                 else
                     e = ErrorExp.get();
@@ -5275,10 +5279,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             {
                 OutBuffer buf;
                 buf.writeByte('(');
-                argExpTypesToCBuffer(&buf, exp.arguments);
+                argExpTypesToCBuffer(buf, exp.arguments);
                 buf.writeByte(')');
                 if (tthis)
-                    tthis.modToBuffer(&buf);
+                    tthis.modToBuffer(buf);
 
                 //printf("tf = %s, args = %s\n", tf.deco, (*arguments)[0].type.deco);
                 .error(exp.loc, "%s `%s%s` is not callable using argument types `%s`",
@@ -5348,7 +5352,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 {
                     OutBuffer buf;
                     buf.writeByte('(');
-                    argExpTypesToCBuffer(&buf, exp.arguments);
+                    argExpTypesToCBuffer(buf, exp.arguments);
                     buf.writeByte(')');
 
                     //printf("tf = %s, args = %s\n", tf.deco, (*arguments)[0].type.deco);
@@ -5947,7 +5951,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     for (size_t i = 0; i < cd.baseclasses.length; i++)
                     {
                         BaseClass* b = (*cd.baseclasses)[i];
-                        args.push(new Parameter(STC.in_, b.type, null, null, null));
+                        args.push(new Parameter(Loc.initial, STC.in_, b.type, null, null, null));
                     }
                     tded = new TypeTuple(args);
                 }
@@ -5993,7 +5997,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                          */
                         if (e.tok2 == TOK.parameters && arg.defaultArg && arg.defaultArg.op == EXP.error)
                             return setError();
-                        args.push(new Parameter(arg.storageClass, arg.type, (e.tok2 == TOK.parameters) ? arg.ident : null, (e.tok2 == TOK.parameters) ? arg.defaultArg : null, arg.userAttribDecl));
+                        args.push(new Parameter(arg.loc, arg.storageClass, arg.type, (e.tok2 == TOK.parameters) ? arg.ident : null, (e.tok2 == TOK.parameters) ? arg.defaultArg : null, arg.userAttribDecl));
                     }
                     tded = new TypeTuple(args);
                     break;
@@ -7278,7 +7282,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         else if (!exp.e1.type.deco)
         {
             // try to resolve the type
-            exp.e1.type = exp.e1.type.typeSemantic(exp.e1.loc, null);
+            exp.e1.type = exp.e1.type.typeSemantic(exp.e1.loc, sc);
             if (!exp.e1.type.deco)  // still couldn't resolve it
             {
                 if (auto ve = exp.e1.isVarExp())
@@ -7527,7 +7531,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         if (exp.e1.checkNoBool())
             return setError();
-        if (exp.e1.checkArithmetic() ||
+        if (exp.e1.checkArithmetic(exp.op) ||
             exp.e1.checkSharedAccess(sc))
             return setError();
 
@@ -7557,7 +7561,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         if (exp.e1.checkNoBool())
             return setError();
-        if (exp.e1.checkArithmetic())
+        if (exp.e1.checkArithmetic(exp.op))
             return setError();
         if (exp.e1.checkSharedAccess(sc))
             return setError();
@@ -10024,19 +10028,22 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     return setError();
             }
 
-            if (0 && global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
-                e2x.op != EXP.slice && e2x.op != EXP.assign &&
-                e2x.op != EXP.arrayLiteral && e2x.op != EXP.string_ &&
-                !(e2x.op == EXP.add || e2x.op == EXP.min ||
-                  e2x.op == EXP.mul || e2x.op == EXP.div ||
-                  e2x.op == EXP.mod || e2x.op == EXP.xor ||
-                  e2x.op == EXP.and || e2x.op == EXP.or ||
-                  e2x.op == EXP.pow ||
-                  e2x.op == EXP.tilde || e2x.op == EXP.negate))
+            version (none)
             {
-                const(char)* e1str = exp.e1.toChars();
-                const(char)* e2str = e2x.toChars();
-                exp.warning("explicit element-wise assignment `%s = (%s)[]` is better than `%s = %s`", e1str, e2str, e1str, e2str);
+                if (global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
+                    e2x.op != EXP.slice && e2x.op != EXP.assign &&
+                    e2x.op != EXP.arrayLiteral && e2x.op != EXP.string_ &&
+                    !(e2x.op == EXP.add || e2x.op == EXP.min ||
+                      e2x.op == EXP.mul || e2x.op == EXP.div ||
+                      e2x.op == EXP.mod || e2x.op == EXP.xor ||
+                      e2x.op == EXP.and || e2x.op == EXP.or ||
+                      e2x.op == EXP.pow ||
+                      e2x.op == EXP.tilde || e2x.op == EXP.negate))
+                {
+                    const(char)* e1str = exp.e1.toChars();
+                    const(char)* e2str = e2x.toChars();
+                    exp.warning("explicit element-wise assignment `%s = (%s)[]` is better than `%s = %s`", e1str, e2str, e1str, e2str);
+                }
             }
 
             Type t2n = t2.nextOf();
@@ -10085,17 +10092,20 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         else
         {
-            if (0 && global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
-                t1.ty == Tarray && t2.ty == Tsarray &&
-                e2x.op != EXP.slice &&
-                t2.implicitConvTo(t1))
+            version (none)
             {
-                // Disallow ar[] = sa (Converted to ar[] = sa[])
-                // Disallow da   = sa (Converted to da   = sa[])
-                const(char)* e1str = exp.e1.toChars();
-                const(char)* e2str = e2x.toChars();
-                const(char)* atypestr = exp.e1.op == EXP.slice ? "element-wise" : "slice";
-                exp.warning("explicit %s assignment `%s = (%s)[]` is better than `%s = %s`", atypestr, e1str, e2str, e1str, e2str);
+                if (global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
+                    t1.ty == Tarray && t2.ty == Tsarray &&
+                    e2x.op != EXP.slice &&
+                    t2.implicitConvTo(t1))
+                {
+                    // Disallow ar[] = sa (Converted to ar[] = sa[])
+                    // Disallow da   = sa (Converted to da   = sa[])
+                    const(char)* e1str = exp.e1.toChars();
+                    const(char)* e2str = e2x.toChars();
+                    const(char)* atypestr = exp.e1.op == EXP.slice ? "element-wise" : "slice";
+                    exp.warning("explicit %s assignment `%s = (%s)[]` is better than `%s = %s`", atypestr, e1str, e2str, e1str, e2str);
+                }
             }
             if (exp.op == EXP.blit)
                 e2x = e2x.castTo(sc, exp.e1.type);
@@ -10785,11 +10795,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         bool err = false;
         if (tb1.ty == Tdelegate || tb1.isPtrToFunction())
         {
-            err |= exp.e1.checkArithmetic() || exp.e1.checkSharedAccess(sc);
+            err |= exp.e1.checkArithmetic(exp.op) || exp.e1.checkSharedAccess(sc);
         }
         if (tb2.ty == Tdelegate || tb2.isPtrToFunction())
         {
-            err |= exp.e2.checkArithmetic() || exp.e2.checkSharedAccess(sc);
+            err |= exp.e2.checkArithmetic(exp.op) || exp.e2.checkSharedAccess(sc);
         }
         if (err)
             return setError();
@@ -10891,11 +10901,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         bool err = false;
         if (t1.ty == Tdelegate || t1.isPtrToFunction())
         {
-            err |= exp.e1.checkArithmetic() || exp.e1.checkSharedAccess(sc);
+            err |= exp.e1.checkArithmetic(exp.op) || exp.e1.checkSharedAccess(sc);
         }
         if (t2.ty == Tdelegate || t2.isPtrToFunction())
         {
-            err |= exp.e2.checkArithmetic() || exp.e2.checkSharedAccess(sc);
+            err |= exp.e2.checkArithmetic(exp.op) || exp.e2.checkSharedAccess(sc);
         }
         if (err)
             return setError();
@@ -11032,7 +11042,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             (exp.e2.isStringExp() && (exp.e1.isIntegerExp() || exp.e1.isStringExp())))
             return exp;
 
-        Identifier hook = global.params.tracegc ? Id._d_arraycatnTXTrace : Id._d_arraycatnTX;
+        bool useTraceGCHook = global.params.tracegc && sc.needsCodegen();
+
+        Identifier hook = useTraceGCHook ? Id._d_arraycatnTXTrace : Id._d_arraycatnTX;
         if (!verifyHookExist(exp.loc, *sc, hook, "concatenating arrays"))
         {
             setError();
@@ -11061,7 +11073,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
 
         auto arguments = new Expressions();
-        if (global.params.tracegc)
+        if (useTraceGCHook)
         {
             auto funcname = (sc.callsc && sc.callsc.func) ?
                 sc.callsc.func.toPrettyChars() : sc.func.toPrettyChars();
@@ -11088,7 +11100,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         /* `_d_arraycatnTX` canot be used with `-betterC`, but `CatExp`s may be
          * used with `-betterC`, but only during CTFE.
          */
-        if (!global.params.useGC || !sc.needsCodegen())
+        if (!global.params.useGC)
             return;
 
         if (auto ce = exp.isCatExp())
@@ -12087,8 +12099,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 return setError();
             }
 
-            if (sc.needsCodegen() &&
-                (t1.ty == Tarray || t1.ty == Tsarray) &&
+            if ((t1.ty == Tarray || t1.ty == Tsarray) &&
                 (t2.ty == Tarray || t2.ty == Tsarray))
             {
                 if (!verifyHookExist(exp.loc, *sc, Id.__cmp, "comparing arrays"))
