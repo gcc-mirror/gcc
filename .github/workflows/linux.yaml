@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools texlive findutils
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
@@ -93,10 +93,8 @@ jobs:
                 --disable-vtable-verify \
                 --with-system-zlib \
                 --with-target-system-zlib=auto \
-                --disable-multiarch \
                 --disable-bootstrap \
                 --disable-werror \
-                --disable-multilib \
                 --with-tune=generic \
                 --without-cuda-driver \
                 --enable-checking=release \
@@ -105,12 +103,6 @@ jobs:
                 --host=x86_64-linux-gnu \
                 --target=x86_64-linux-gnu
 
-      - name: Make docs (pre-build)
-        if: success()
-        run: |
-          cd ../build
-          echo "make html" && (time make html-fixincludes) && echo "html done"
-
       - name: Make
         if: success()
         run: |
@@ -118,18 +110,25 @@ jobs:
           if test -x "$(which nproc)"; then echo "nproc says that we can use $(nproc) build jobs"; else echo "error: missing nproc!" >&2 && exit 1; fi
           time (make -j"$(nproc)" | tee build.log)
 
+      - name: Debug failure
+        if: failure()
+        run: |
+          if test -r build.log; then grep -i "error:" build.log; \
+          elif test -r ../build/build.log; then grep -i "error:" ../build/build.log; \
+          else \
+            sudo apt install remake; \
+            cd ../build; \
+            remake -dpPw --trace=full; \
+          fi
+
       - name: Make docs (post-build)
         if: success()
         run: |
           cd ../build
           echo "make info" && (time make info) && find . -name "*.info" -print
           echo "make dvi" && (time make dvi) && find . -name "*.dvi" -print
-          echo "make pdf" && (time make pdf) && echo "pdfs done"
-
-      - name: Debug failure
-        if: failure()
-        run: |
-          if test -r build.log; then grep -i "error:" build.log; elif test -r ../build/build.log; then grep -i "error:" ../build/build.log; fi
+          echo "make pdf" && (time make pdf) && find . -name "*.pdf" -print
+          echo "make html" && (time make html) && find . -name "*.html" -print
 
       - name: Make install (plus docs)
         if: success()
