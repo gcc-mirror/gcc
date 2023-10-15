@@ -109,9 +109,8 @@ jobs:
         if: success()
         run: |
           cd ../build
-          echo "make dvi-fixincludes" && time make dvi-fixincludes
-          echo "make pdf" && time make pdf
-          echo "make html" && time make html
+          echo "make pdf" && (time make pdf-fixincludes) && echo "pdfs done"
+          echo "make html" && (time make html) && echo "html done"
 
       - name: Make
         if: success()
@@ -124,8 +123,8 @@ jobs:
         if: success()
         run: |
           cd ../build
-          echo "make info" && time make info
-          echo "make dvi" && time make dvi
+          echo "make info" && (time make info) && echo "info done"
+          echo "make dvi" && (time make dvi) && echo "dvi done"
 
       - name: Debug failure
         if: failure()
