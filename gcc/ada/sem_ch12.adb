@@ -7685,7 +7685,9 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Check_Private_View (N : Node_Id) is
-      Typ : constant Entity_Id := Etype (N);
+      Comparison : constant Boolean := Nkind (N) in N_Op_Compare;
+      Typ        : constant Entity_Id :=
+        (if Comparison then Compare_Type (N) else Etype (N));
 
       procedure Check_Private_Type (T : Entity_Id; Private_View : Boolean);
       --  Check that the available view of T matches Private_View and, if not,
@@ -7749,10 +7751,16 @@ package body Sem_Ch12 is
            and then (not In_Open_Scopes (Scope (Typ))
                       or else Nkind (Parent (N)) = N_Subtype_Declaration)
          then
-            --  In the generic, only the private declaration was visible
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
 
-            Prepend_Elmt (Typ, Exchanged_Views);
-            Exchange_Declarations (Etype (Get_Associated_Node (N)));
+            begin
+               --  In the generic, only the private declaration was visible
+
+               Prepend_Elmt (Typ, Exchanged_Views);
+               Exchange_Declarations
+                 (if Comparison then Compare_Type (Assoc) else Etype (Assoc));
+            end;
 
          --  Check that the available views of Typ match their respective flag.
          --  Note that the type of a visible discriminant is never private.
@@ -8165,30 +8173,6 @@ package body Sem_Ch12 is
                   if Nkind (Assoc) = Nkind (N) then
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
-
-                     --  For the comparison and equality operators, the Etype
-                     --  of the operator does not provide any information so,
-                     --  if one of the operands is of a universal type, we need
-                     --  to manually restore the full view of private types.
-
-                     if Nkind (N) in N_Op_Compare then
-                        if Yields_Universal_Type (Left_Opnd (Assoc)) then
-                           if Present (Etype (Right_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Right_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Right_Opnd (Assoc)));
-                           end if;
-
-                        elsif Yields_Universal_Type (Right_Opnd (Assoc)) then
-                           if Present (Etype (Left_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Left_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Left_Opnd (Assoc)));
-                           end if;
-                        end if;
-                     end if;
 
                   --  The node is a reference to a global type and acts as the
                   --  subtype mark of a qualified expression created in order
@@ -16883,6 +16867,11 @@ package body Sem_Ch12 is
                end if;
             end;
 
+         --  Do not walk the node pointed to by Label_Construct twice
+
+         elsif Nkind (N) = N_Implicit_Label_Declaration then
+            null;
+
          else
             Save_References_In_Descendants (N);
          end if;
@@ -16894,10 +16883,27 @@ package body Sem_Ch12 is
       ---------------------
 
       procedure Set_Global_Type (N : Node_Id; N2 : Node_Id) is
-         Typ : constant Entity_Id := Etype (N2);
+         Comparison : constant Boolean   := Nkind (N2) in N_Op_Compare;
+         Typ        : constant Entity_Id :=
+           (if Comparison then Compare_Type (N2) else Etype (N2));
 
       begin
-         Set_Etype (N, Typ);
+         --  For a comparison (or equality) operator, the Etype is Boolean, so
+         --  it is always global. But the type subject to the Has_Private_View
+         --  processing is the Compare_Type, so we must specifically check it.
+
+         if Comparison then
+            Set_Etype (N, Etype (N2));
+
+            if not Is_Global (Typ) then
+               return;
+            end if;
+
+            Set_Compare_Type (N, Typ);
+
+         else
+            Set_Etype (N, Typ);
+         end if;
 
          --  If the entity of N is not the associated node, this is a
          --  nested generic and it has an associated node as well, whose
@@ -16939,7 +16945,11 @@ package body Sem_Ch12 is
             Set_Has_Private_View (N);
 
             if Present (Full_View (Typ)) then
-               Set_Etype (N2, Full_View (Typ));
+               if Comparison then
+                  Set_Compare_Type (N2, Full_View (Typ));
+               else
+                  Set_Etype (N2, Full_View (Typ));
+               end if;
             end if;
          end if;
 

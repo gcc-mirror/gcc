@@ -267,32 +267,38 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Op_Eq, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Ge, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Gt, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Le, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Lt, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Ne, N_Op_Compare,
        (Sm (Chars, Name_Id),
         Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sm (Compare_Type, Node_Id)));
 
    Cc (N_Op_Or, N_Op_Boolean,
        (Sm (Chars, Name_Id),

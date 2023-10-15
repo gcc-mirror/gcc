@@ -99,6 +99,7 @@ package Gen_IL.Fields is
       Comes_From_Check_Or_Contract,
       Comes_From_Extended_Return_Statement,
       Comes_From_Iterator,
+      Compare_Type,
       Compile_Time_Known_Aggregate,
       Component_Associations,
       Component_Clauses,
