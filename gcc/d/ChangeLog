@@ -1,3 +1,16 @@
+2023-10-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/111537
+	* expr.cc (ExprVisitor::visit (StringExp *)): Include null terminator
+	in STRING_CST string.
+	* modules.cc (get_compiler_dso_type): Generate ModuleInfo** type for
+	the minfo fields.
+
+2023-10-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_write_file): New function.
+	(d_parse_file): Reduce code duplication.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Use text_info

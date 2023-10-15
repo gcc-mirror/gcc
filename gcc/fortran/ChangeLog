@@ -1,3 +1,27 @@
+2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (ext_attr_t): Add omp_allocate flag.
+	* match.cc (gfc_free_omp_namelist): Void deleting same
+	u2.allocator multiple times now that a sequence can use
+	the same one.
+	* openmp.cc (gfc_match_omp_clauses, gfc_match_omp_allocate): Use
+	same allocator expr multiple times.
+	(is_predefined_allocator): Make static.
+	(gfc_resolve_omp_allocate): Update/extend restriction checks;
+	remove sorry message.
+	(resolve_omp_clauses): Reject corarrays in allocate/allocators
+	directive.
+	* parse.cc (check_omp_allocate_stmt): Permit procedure pointers
+	here (rejected later) for less misleading diagnostic.
+	* trans-array.cc (gfc_trans_auto_array_allocation): Propagate
+	size for GOMP_alloc and location to which it should be added to.
+	* trans-decl.cc (gfc_trans_deferred_vars): Handle 'omp allocate'
+	for stack variables; sorry for static variables/common blocks.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Evaluate 'allocate'
+	clause's allocator only once; fix adding expressions to the
+	block.
+	(gfc_trans_omp_single): Pass a block to gfc_trans_omp_clauses.
+
 2023-10-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104351

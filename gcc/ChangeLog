@@ -1,3 +1,59 @@
+2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Handle Fortran's
+	'omp allocate' for stack variables.
+
+2023-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* tree-core.h (struct tree_base): Remove int_length.offset
+	member, change type of int_length.unextended and int_length.extended
+	from unsigned char to unsigned short.
+	* tree.h (TREE_INT_CST_OFFSET_NUNITS): Remove.
+	(wi::extended_tree <N>::get_len): Don't use TREE_INT_CST_OFFSET_NUNITS,
+	instead compute it at runtime from TREE_INT_CST_EXT_NUNITS and
+	TREE_INT_CST_NUNITS.
+	* tree.cc (wide_int_to_tree_1): Don't assert
+	TREE_INT_CST_OFFSET_NUNITS value.
+	(make_int_cst): Don't initialize TREE_INT_CST_OFFSET_NUNITS.
+	* wide-int.h (WIDE_INT_MAX_ELTS): Change from 255 to 1024.
+	(WIDEST_INT_MAX_ELTS): Change from 510 to 2048, adjust comment.
+	(trailing_wide_int_storage): Change m_len type from unsigned char *
+	to unsigned short *.
+	(trailing_wide_int_storage::trailing_wide_int_storage): Change second
+	argument from unsigned char * to unsigned short *.
+	(trailing_wide_ints): Change m_max_len type from unsigned char to
+	unsigned short.  Change m_len element type from
+	struct{unsigned char len;} to unsigned short.
+	(trailing_wide_ints <N>::operator []): Remove .len from m_len
+	accesses.
+	* value-range-storage.h (irange_storage::lengths_address): Change
+	return type from const unsigned char * to const unsigned short *.
+	(irange_storage::write_lengths_address): Change return type from
+	unsigned char * to unsigned short *.
+	* value-range-storage.cc (irange_storage::write_lengths_address):
+	Likewise.
+	(irange_storage::lengths_address): Change return type from
+	const unsigned char * to const unsigned short *.
+	(write_wide_int): Change len argument type from unsigned char *&
+	to unsigned short *&.
+	(irange_storage::set_irange): Change len variable type from
+	unsigned char * to unsigned short *.
+	(read_wide_int): Change len argument type from unsigned char to
+	unsigned short.  Use trailing_wide_int_storage <unsigned short>
+	instead of trailing_wide_int_storage and
+	trailing_wide_int <unsigned short> instead of trailing_wide_int.
+	(irange_storage::get_irange): Change len variable type from
+	unsigned char * to unsigned short *.
+	(irange_storage::size): Multiply n by sizeof (unsigned short)
+	in len_size variable initialization.
+	(irange_storage::dump): Change len variable type from
+	unsigned char * to unsigned short *.
+
+2023-10-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Remove redundant iterators.
+
 2023-10-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111622
