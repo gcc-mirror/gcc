@@ -5660,42 +5660,51 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* A == 0 ? A : -A    same as -A */
  (for cmp (eq uneq)
   (simplify
-   (cnd (cmp @0 zerop) @0 (negate@1 @0))
-    (if (!HONOR_SIGNED_ZEROS (type))
+   (cnd (cmp @0 zerop) @2 (negate@1 @2))
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && bitwise_equal_p (@0, @2))
      @1))
   (simplify
-   (cnd (cmp @0 zerop) zerop (negate@1 @0))
-    (if (!HONOR_SIGNED_ZEROS (type))
+   (cnd (cmp @0 zerop) zerop (negate@1 @2))
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && bitwise_equal_p (@0, @2))
      @1))
  )
  /* A != 0 ? A : -A    same as A */
  (for cmp (ne ltgt)
   (simplify
-   (cnd (cmp @0 zerop) @0 (negate @0))
-    (if (!HONOR_SIGNED_ZEROS (type))
-     @0))
+   (cnd (cmp @0 zerop) @1 (negate @1))
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && bitwise_equal_p (@0, @1))
+     @1))
   (simplify
-   (cnd (cmp @0 zerop) @0 integer_zerop)
-    (if (!HONOR_SIGNED_ZEROS (type))
-     @0))
+   (cnd (cmp @0 zerop) @1 integer_zerop)
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && bitwise_equal_p (@0, @1))
+     @1))
  )
  /* A >=/> 0 ? A : -A    same as abs (A) */
  (for cmp (ge gt)
   (simplify
-   (cnd (cmp @0 zerop) @0 (negate @0))
-    (if (!HONOR_SIGNED_ZEROS (type)
-	 && !TYPE_UNSIGNED (type))
-     (abs @0))))
+   (cnd (cmp @0 zerop) @1 (negate @1))
+    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE(@0))
+	 && !TYPE_UNSIGNED (TREE_TYPE(@0))
+	 && bitwise_equal_p (@0, @1))
+     (if (TYPE_UNSIGNED (type))
+      (absu:type @0)
+      (abs @0)))))
  /* A <=/< 0 ? A : -A    same as -abs (A) */
  (for cmp (le lt)
   (simplify
-   (cnd (cmp @0 zerop) @0 (negate @0))
-    (if (!HONOR_SIGNED_ZEROS (type)
-	 && !TYPE_UNSIGNED (type))
-     (if (ANY_INTEGRAL_TYPE_P (type)
-	  && !TYPE_OVERFLOW_WRAPS (type))
+   (cnd (cmp @0 zerop) @1 (negate @1))
+    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE(@0))
+	 && !TYPE_UNSIGNED (TREE_TYPE(@0))
+	 && bitwise_equal_p (@0, @1))
+     (if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+	  || TYPE_UNSIGNED (type))
       (with {
-	tree utype = unsigned_type_for (type);
+	tree utype = unsigned_type_for (TREE_TYPE(@0));
        }
        (convert (negate (absu:utype @0))))
        (negate (abs @0)))))
