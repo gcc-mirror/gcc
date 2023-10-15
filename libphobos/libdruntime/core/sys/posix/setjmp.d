@@ -174,6 +174,21 @@ version (CRuntime_Glibc)
         }
         alias __jmp_buf = __s390_jmp_buf[1];
     }
+    else version (LoongArch64)
+    {
+        struct __loongarch_jmp_buf
+        {
+            long __pc;
+            long __sp;
+            // reserved
+            long __r21;
+            long __fp;
+            long[9] __regs;
+            static if (__traits(getTargetInfo, "floatAbi") != "soft_float")
+                double[8] __fpregs;
+        }
+        alias __jmp_buf = __loongarch_jmp_buf[1];
+    }
     else
         static assert(0, "unimplemented");
 

@@ -56,6 +56,7 @@ version (linux)
     version (IA64)      version = GENERICMSQ;
     version (IBMZ_Any)  version = GENERICMSQ;
     version (RISCV_Any) version = GENERICMSQ;
+    version (LoongArch64) version = GENERICMSQ;
 
     version (GENERICMSQ)
     {

@@ -3394,7 +3394,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         {
             if (e.op == EXP.type)
             {
-                e.error("`%s` is not an expression", e.toChars());
+                error(e.loc, "`%s` is not an expression", e.toChars());
                 return ErrorExp.get();
             }
             else if (mt.dim.toUInteger() < 1 && checkUnsafeDotExp(sc, e, ident, flag))
@@ -3409,7 +3409,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         {
             if (e.isTypeExp())
             {
-                e.error("`.tupleof` cannot be used on type `%s`", mt.toChars);
+                error(e.loc, "`.tupleof` cannot be used on type `%s`", mt.toChars);
                 return ErrorExp.get();
             }
             else
@@ -3443,7 +3443,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         }
         if (e.op == EXP.type && (ident == Id.length || ident == Id.ptr))
         {
-            e.error("`%s` is not an expression", e.toChars());
+            error(e.loc, "`%s` is not an expression", e.toChars());
             return ErrorExp.get();
         }
         if (ident == Id.length)
@@ -3611,7 +3611,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 e = build_overload(e.loc, sc, e, null, fd);
                 // @@@DEPRECATED_2.110@@@.
                 // Deprecated in 2.082, made an error in 2.100.
-                e.error("`opDot` is obsolete. Use `alias this`");
+                error(e.loc, "`opDot` is obsolete. Use `alias this`");
                 return ErrorExp.get();
             }
 
@@ -3626,7 +3626,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 TemplateDeclaration td = fd.isTemplateDeclaration();
                 if (!td)
                 {
-                    fd.error("must be a template `opDispatch(string s)`, not a %s", fd.kind());
+                    .error(fd.loc, "%s `%s` must be a template `opDispatch(string s)`, not a %s", fd.kind, fd.toPrettyChars, fd.kind());
                     return returnExp(ErrorExp.get());
                 }
                 auto se = new StringExp(e.loc, ident.toString());
@@ -3762,9 +3762,9 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 !v.type.deco && v.inuse)
             {
                 if (v.inuse) // https://issues.dlang.org/show_bug.cgi?id=9494
-                    e.error("circular reference to %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "circular reference to %s `%s`", v.kind(), v.toPrettyChars());
                 else
-                    e.error("forward reference to %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "forward reference to %s `%s`", v.kind(), v.toPrettyChars());
                 return ErrorExp.get();
             }
             if (v.type.ty == Terror)
@@ -3776,7 +3776,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             {
                 if (v.inuse)
                 {
-                    e.error("circular initialization of %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "circular initialization of %s `%s`", v.kind(), v.toPrettyChars());
                     return ErrorExp.get();
                 }
                 checkAccess(e.loc, sc, null, v);
@@ -3850,7 +3850,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         Declaration d = s.isDeclaration();
         if (!d)
         {
-            e.error("`%s.%s` is not a declaration", e.toChars(), ident.toChars());
+            error(e.loc, "`%s.%s` is not a declaration", e.toChars(), ident.toChars());
             return ErrorExp.get();
         }
 
@@ -3939,10 +3939,10 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             if (!(flag & 1) && !res)
             {
                 if (auto ns = mt.sym.search_correct(ident))
-                    e.error("no property `%s` for type `%s`. Did you mean `%s.%s` ?", ident.toChars(), mt.toChars(), mt.toChars(),
+                    error(e.loc, "no property `%s` for type `%s`. Did you mean `%s.%s` ?", ident.toChars(), mt.toChars(), mt.toChars(),
                         ns.toChars());
                 else
-                    e.error("no property `%s` for type `%s`", ident.toChars(),
+                    error(e.loc, "no property `%s` for type `%s`", ident.toChars(),
                         mt.toChars());
 
                 errorSupplemental(mt.sym.loc, "%s `%s` defined here",
@@ -4189,14 +4189,14 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
                 !v.type.deco && v.inuse)
             {
                 if (v.inuse) // https://issues.dlang.org/show_bug.cgi?id=9494
-                    e.error("circular reference to %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "circular reference to %s `%s`", v.kind(), v.toPrettyChars());
                 else
-                    e.error("forward reference to %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "forward reference to %s `%s`", v.kind(), v.toPrettyChars());
                 return ErrorExp.get();
             }
             if (v.type.ty == Terror)
             {
-                e.error("type of variable `%s` has errors", v.toPrettyChars);
+                error(e.loc, "type of variable `%s` has errors", v.toPrettyChars);
                 return ErrorExp.get();
             }
 
@@ -4204,7 +4204,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
             {
                 if (v.inuse)
                 {
-                    e.error("circular initialization of %s `%s`", v.kind(), v.toPrettyChars());
+                    error(e.loc, "circular initialization of %s `%s`", v.kind(), v.toPrettyChars());
                     return ErrorExp.get();
                 }
                 checkAccess(e.loc, sc, null, v);
@@ -4283,7 +4283,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         Declaration d = s.isDeclaration();
         if (!d)
         {
-            e.error("`%s.%s` is not a declaration", e.toChars(), ident.toChars());
+            error(e.loc, "`%s.%s` is not a declaration", e.toChars(), ident.toChars());
             return ErrorExp.get();
         }
 
@@ -4910,7 +4910,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
 
     if (ed.inuse)
     {
-        ed.error(loc, "recursive definition of `.%s` property", id.toChars());
+        .error(loc, "%s `%s` recursive definition of `.%s` property", ed.kind, ed.toPrettyChars, id.toChars());
         return errorReturn();
     }
     if (*pval)
@@ -4922,12 +4922,12 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
         return errorReturn();
     if (!ed.members)
     {
-        ed.error(loc, "is opaque and has no `.%s`", id.toChars());
+        .error(loc, "%s `%s` is opaque and has no `.%s`", ed.kind, ed.toPrettyChars, id.toChars(), id.toChars());
         return errorReturn();
     }
     if (!(ed.memtype && ed.memtype.isintegral()))
     {
-        ed.error(loc, "has no `.%s` property because base type `%s` is not an integral type",
+        .error(loc, "%s `%s` has no `.%s` property because base type `%s` is not an integral type", ed.kind, ed.toPrettyChars, id.toChars(),
               id.toChars(), ed.memtype ? ed.memtype.toChars() : "");
         return errorReturn();
     }
@@ -4946,7 +4946,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
 
         if (em.semanticRun < PASS.semanticdone)
         {
-            em.error("is forward referenced looking for `.%s`", id.toChars());
+            .error(em.loc, "%s `%s` is forward referenced looking for `.%s`", em.kind, em.toPrettyChars, id.toChars());
             ed.errors = true;
             continue;
         }
@@ -5010,7 +5010,7 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
     auto locm = adjustLocForMixin(str, loc, global.params.mixinOut);
     scope p = new Parser!ASTCodegen(locm, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
-    p.transitionIn = global.params.vin;
+    p.transitionIn = global.params.v.vin;
     p.nextToken();
     //printf("p.loc.linnum = %d\n", p.loc.linnum);
 

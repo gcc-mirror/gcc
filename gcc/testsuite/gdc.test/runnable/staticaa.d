@@ -90,6 +90,20 @@ void testStructInit()
     assert(s.t[A.y] == "A.y");
 }
 
+struct S2
+{
+    string[A] t = [A.x : "A.x", A.y : "A.y"];
+}
+
+bool testStructInitCTFE()
+{
+    S2 s2;
+    assert(s2.t[A.x] == "A.x");
+    assert(s2.t[A.y] == "A.y");
+    return true;
+}
+static assert(testStructInitCTFE());
+
 /////////////////////////////////////////////
 
 class C
@@ -102,6 +116,19 @@ void testClassInit()
     C c = new C();
     assert(c.t[0] == "zero");
 }
+
+class C2
+{
+    string[int] t = [0 : "zero"];
+}
+
+bool testClassInitCTFE()
+{
+    C2 c2 = new C2();
+    assert(c2.t[0] == "zero");
+    return true;
+}
+static assert(testClassInitCTFE());
 
 /////////////////////////////////////////////
 

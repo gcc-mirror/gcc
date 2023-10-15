@@ -166,6 +166,15 @@ version (GNUFP)
 
         alias fexcept_t = uint;
     }
+    else version (LoongArch64)
+    {
+        struct fenv_t
+        {
+            uint   __fp_control_register;
+        }
+
+        alias fexcept_t = uint;
+    }
     else
     {
         static assert(0, "Unimplemented architecture");
@@ -784,6 +793,28 @@ else
             FE_DOWNWARD     = 0x3, ///
             FE_UPWARD       = 0x2, ///
             FE_TOWARDZERO   = 0x1, ///
+        }
+    }
+    else version (LoongArch64)
+    {
+        // Define bits representing exceptions in the FPSR status word.
+        enum
+        {
+            FE_INEXACT      = 0x010000, ///
+            FE_UNDERFLOW    = 0x020000, ///
+            FE_OVERFLOW     = 0x040000, ///
+            FE_DIVBYZERO    = 0x080000, ///
+            FE_INVALID      = 0x100000, ///
+            FE_ALL_EXCEPT   = 0x1f0000, ///
+        }
+
+        // Define bits representing rounding modes in the FPCR Rmode field.
+        enum
+        {
+            FE_TONEAREST    = 0x000, ///
+            FE_TOWARDZERO   = 0x100, ///
+            FE_DOWNWARD     = 0x200, ///
+            FE_UPWARD       = 0x300, ///
         }
     }
     else

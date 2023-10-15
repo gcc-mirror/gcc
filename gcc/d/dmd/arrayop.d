@@ -19,6 +19,7 @@ import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -92,7 +93,7 @@ bool checkNonAssignmentArrayOp(Expression e, bool suggestion = false)
         const(char)* s = "";
         if (suggestion)
             s = " (possible missing [])";
-        e.error("array operation `%s` without destination memory not allowed%s", e.toChars(), s);
+        error(e.loc, "array operation `%s` without destination memory not allowed%s", e.toChars(), s);
         return true;
     }
     return false;
@@ -121,7 +122,7 @@ Expression arrayOp(BinExp e, Scope* sc)
     Type tbn = tb.nextOf().toBasetype();
     if (tbn.ty == Tvoid)
     {
-        e.error("cannot perform array operations on `void[]` arrays");
+        error(e.loc, "cannot perform array operations on `void[]` arrays");
         return ErrorExp.get();
     }
     if (!isArrayOpValid(e))
@@ -164,7 +165,7 @@ Expression arrayOp(BinAssignExp e, Scope* sc)
 
     if (tn && (!tn.isMutable() || !tn.isAssignable()))
     {
-        e.error("slice `%s` is not mutable", e.e1.toChars());
+        error(e.loc, "slice `%s` is not mutable", e.e1.toChars());
         if (e.op == EXP.addAssign)
             checkPossibleAddCatError!(AddAssignExp, CatAssignExp)(e.isAddAssignExp);
         return ErrorExp.get();
@@ -370,7 +371,7 @@ bool isArrayOpOperand(Expression e)
 
 ErrorExp arrayOpInvalidError(Expression e)
 {
-    e.error("invalid array operation `%s` (possible missing [])", e.toChars());
+    error(e.loc, "invalid array operation `%s` (possible missing [])", e.toChars());
     if (e.op == EXP.add)
         checkPossibleAddCatError!(AddExp, CatExp)(e.isAddExp());
     else if (e.op == EXP.addAssign)
@@ -383,5 +384,5 @@ private void checkPossibleAddCatError(AddT, CatT)(AddT ae)
     if (!ae.e2.type || ae.e2.type.ty != Tarray || !ae.e2.type.implicitConvTo(ae.e1.type))
         return;
     CatT ce = new CatT(ae.loc, ae.e1, ae.e2);
-    ae.errorSupplemental("did you mean to concatenate (`%s`) instead ?", ce.toChars());
+    errorSupplemental(ae.loc, "did you mean to concatenate (`%s`) instead ?", ce.toChars());
 }

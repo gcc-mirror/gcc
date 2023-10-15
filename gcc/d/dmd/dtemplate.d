@@ -872,7 +872,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                 if (!ti.symtab)
                     ti.symtab = new DsymbolTable();
                 if (!scx.insert(v))
-                    error("parameter `%s.%s` is already defined", toChars(), v.toChars());
+                    .error(loc, "%s `%s` parameter `%s.%s` is already defined", kind, toPrettyChars, toChars(), v.toChars());
                 else
                     v.parent = fd;
             }
@@ -916,7 +916,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         import dmd.staticcond;
 
         // there will be a full tree view in verbose mode, and more compact list in the usual
-        const full = global.params.verbose;
+        const full = global.params.v.verbose;
         uint count;
         const msg = visualizeStaticCondition(constraint, lastConstraint, lastConstraintNegs[], full, count);
         scope (exit)
@@ -1769,7 +1769,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                                     if (m2 < matchTiargs)
                                         matchTiargs = m2; // pick worst match
                                     if (!(*dedtypes)[i].equals(oded))
-                                        error("specialization not allowed for deduced parameter `%s`", tparam.ident.toChars());
+                                        .error(loc, "%s `%s` specialization not allowed for deduced parameter `%s`", kind, toPrettyChars, kind, toPrettyChars, tparam.ident.toChars());
                                 }
                                 else
                                 {
@@ -2147,7 +2147,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     if (m2 < matchTiargs)
                         matchTiargs = m2; // pick worst match
                     if (!(*dedtypes)[i].equals(oded))
-                        error("specialization not allowed for deduced parameter `%s`", tparam.ident.toChars());
+                        .error(loc, "%s `%s` specialization not allowed for deduced parameter `%s`", kind, toPrettyChars, tparam.ident.toChars());
                 }
                 else
                 {
@@ -2194,7 +2194,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     if (m2 < matchTiargs)
                         matchTiargs = m2; // pick worst match
                     if (!(*dedtypes)[i].equals(oded))
-                        error("specialization not allowed for deduced parameter `%s`", tparam.ident.toChars());
+                        .error(loc, "%s `%s` specialization not allowed for deduced parameter `%s`", kind, toPrettyChars, tparam.ident.toChars());
                 }
             }
             oded = declareParameter(paramscope, tparam, oded);
@@ -2346,7 +2346,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         }
 
         if (!sc.insert(d))
-            error("declaration `%s` is already defined", tp.ident.toChars());
+            .error(loc, "%s `%s` declaration `%s` is already defined", kind, toPrettyChars, tp.ident.toChars());
         d.dsymbolSemantic(sc);
         /* So the caller's o gets updated with the result of semantic() being run on o
          */
@@ -5629,7 +5629,8 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
                     // i.e: `template T(int arg = T)`
                     // Raise error now before calling resolveProperties otherwise we'll
                     // start looping on the expansion of the template instance.
-                    sc.tinst.tempdecl.error("recursive template expansion");
+                    auto td = sc.tinst.tempdecl;
+                    .error(td.loc, "%s `%s` recursive template expansion", td.kind, td.toPrettyChars);
                     return ErrorExp.get();
                 }
             }
@@ -5993,7 +5994,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             }
             if (!inst)
             {
-                error("cannot resolve forward reference");
+                .error(loc, "%s `%s` cannot resolve forward reference", kind, toPrettyChars);
                 errors = true;
                 return this;
             }
@@ -6039,17 +6040,17 @@ extern (C++) class TemplateInstance : ScopeDsymbol
      * Given an error instantiating the TemplateInstance,
      * give the nested TemplateInstance instantiations that got
      * us here. Those are a list threaded into the nested scopes.
+     * Params:
+     *  cl = classification of this trace as printing either errors or deprecations
+     *  max_shown = maximum number of trace elements printed (controlled with -v/-verror-limit)
      */
-    extern(D) final void printInstantiationTrace(Classification cl = Classification.error)
+    extern(D) final void printInstantiationTrace(Classification cl = Classification.error,
+                                                 const(uint) max_shown = global.params.v.errorSupplementCount())
     {
         if (global.gag)
             return;
 
         // Print full trace for verbose mode, otherwise only short traces
-        const(uint) max_shown = !global.params.verbose ?
-                                    (global.params.errorSupplementLimit ? global.params.errorSupplementLimit : uint.max)
-                                    : uint.max;
-
         const(char)* format = "instantiated from here: `%s`";
 
         // This returns a function pointer
@@ -6456,9 +6457,9 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             {
                 s = sc.search_correct(id);
                 if (s)
-                    error("template `%s` is not defined, did you mean %s?", id.toChars(), s.toChars());
+                    .error(loc, "%s `%s` template `%s` is not defined, did you mean %s?", kind, toPrettyChars, id.toChars(), s.toChars());
                 else
-                    error("template `%s` is not defined", id.toChars());
+                    .error(loc, "%s `%s` template `%s` is not defined", kind, toPrettyChars, id.toChars());
                 return false;
             }
             static if (LOG)
@@ -6526,7 +6527,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     }
                     if (td.semanticRun == PASS.initial)
                     {
-                        error("`%s` forward references template declaration `%s`",
+                        .error(loc, "%s `%s` `%s` forward references template declaration `%s`", kind, toPrettyChars,
                             toChars(), td.toChars());
                         return 1;
                     }
@@ -6581,7 +6582,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             }
             if (!s)
             {
-                error("template `%s` is not defined", id.toChars());
+                .error(loc, "%s `%s` template `%s` is not defined", kind, toPrettyChars, id.toChars());
                 return false;
             }
         }
@@ -6652,7 +6653,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         }
         else
         {
-            error("`%s` is not a template declaration, it is a %s", id.toChars(), s.kind());
+            .error(loc, "%s `%s` `%s` is not a template declaration, it is a %s", kind, toPrettyChars, id.toChars(), s.kind());
             return false;
         }
     }
@@ -6970,7 +6971,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             tdtypes.setDim(tempdecl.parameters.length);
             if (!tempdecl.matchWithInstance(sc, this, &tdtypes, argumentList, 2))
             {
-                error("incompatible arguments for template instantiation");
+                .error(loc, "%s `%s` incompatible arguments for template instantiation", kind, toPrettyChars);
                 return false;
             }
             // TODO: Normalizing tiargs for https://issues.dlang.org/show_bug.cgi?id=7469 is necessary?
@@ -7130,13 +7131,13 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 const cmsg = tdecl.getConstraintEvalError(tip);
                 if (cmsg)
                 {
-                    error("%s `%s`\n%s", msg, tmsg, cmsg);
+                    .error(loc, "%s `%s` %s `%s`\n%s", kind, toPrettyChars, msg, tmsg, cmsg);
                     if (tip)
                         .tip(tip);
                 }
                 else
                 {
-                    error("%s `%s`", msg, tmsg);
+                    .error(loc, "%s `%s` %s `%s`", kind, toPrettyChars, msg, tmsg);
 
                     if (tdecl.parameters.length == tiargs.length)
                     {
@@ -7290,7 +7291,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         }
                         if (td.semanticRun == PASS.initial)
                         {
-                            error("`%s` forward references template declaration `%s`", toChars(), td.toChars());
+                            .error(loc, "%s `%s` `%s` forward references template declaration `%s`", kind, toPrettyChars, toChars(), td.toChars());
                             return 1;
                         }
                     }
@@ -7370,7 +7371,8 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 // Emulate Expression.toMangleBuffer call that had exist in TemplateInstance.genIdent.
                 if (ea.op != EXP.int64 && ea.op != EXP.float64 && ea.op != EXP.complex80 && ea.op != EXP.null_ && ea.op != EXP.string_ && ea.op != EXP.arrayLiteral && ea.op != EXP.assocArrayLiteral && ea.op != EXP.structLiteral)
                 {
-                    ea.error("expression `%s` is not a valid template value argument", ea.toChars());
+                    if (!ea.type.isTypeError())
+                        .error(ea.loc, "%s `%s` expression `%s` is not a valid template value argument", kind, toPrettyChars, ea.toChars());
                     errors = true;
                 }
             }
@@ -7425,7 +7427,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                                 goto L1;
                             }
                         }
-                        error("`%s` is nested in both `%s` and `%s`", toChars(), enclosing.toChars(), dparent.toChars());
+                        .error(loc, "%s `%s` `%s` is nested in both `%s` and `%s`", kind, toPrettyChars, toChars(), enclosing.toChars(), dparent.toChars());
                         errors = true;
                     }
                 L1:
@@ -7611,7 +7613,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         if (++nest > global.recursionLimit)
         {
             global.gag = 0; // ensure error message gets printed
-            error("recursive expansion exceeded allowed nesting limit");
+            .error(loc, "%s `%s` recursive expansion exceeded allowed nesting limit", kind, toPrettyChars);
             fatal();
         }
 
@@ -7628,7 +7630,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         if (++nest > global.recursionLimit)
         {
             global.gag = 0; // ensure error message gets printed
-            error("recursive expansion exceeded allowed nesting limit");
+            .error(loc, "%s `%s` recursive expansion exceeded allowed nesting limit", kind, toPrettyChars);
             fatal();
         }
 
@@ -7838,7 +7840,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
             tqual.resolve(loc, sc, e, t, s);
             if (!s)
             {
-                error("is not defined");
+                .error(loc, "%s `%s` is not defined", kind, toPrettyChars);
                 return false;
             }
             s = s.toAlias();
@@ -7866,7 +7868,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
             }
             if (!tempdecl)
             {
-                error("- `%s` is a %s, not a template", s.toChars(), s.kind());
+                .error(loc, "%s `%s` - `%s` is a %s, not a template", kind, toPrettyChars, s.toChars(), s.kind());
                 return false;
             }
         }
@@ -8270,6 +8272,7 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
              */
             if (tap.specType)
             {
+                tap.specType = typeSemantic(tap.specType, tap.loc, sc);
                 Declaration d = (cast(Dsymbol)sa).isDeclaration();
                 if (!d)
                     return matchArgNoMatch();
@@ -8453,12 +8456,12 @@ struct TemplateStats
         {
             if (ts.allInstances is null)
                 ts.allInstances = new TemplateInstances();
-            if (global.params.vtemplatesListInstances)
+            if (global.params.v.templatesListInstances)
                 ts.allInstances.push(cast() ti);
         }
 
     // message(ti.loc, "incInstance %p %p", td, ti);
-        if (!global.params.vtemplates)
+        if (!global.params.v.templates)
             return;
         if (!td)
             return;
@@ -8482,7 +8485,7 @@ struct TemplateStats
                           const TemplateInstance ti)
     {
         // message(ti.loc, "incUnique %p %p", td, ti);
-        if (!global.params.vtemplates)
+        if (!global.params.v.templates)
             return;
         if (!td)
             return;
@@ -8511,7 +8514,7 @@ extern (C++) void printTemplateStats()
         }
     }
 
-    if (!global.params.vtemplates)
+    if (!global.params.v.templates)
         return;
 
     Array!(TemplateDeclarationStats) sortedStats;
@@ -8525,7 +8528,7 @@ extern (C++) void printTemplateStats()
 
     foreach (const ref ss; sortedStats[])
     {
-        if (global.params.vtemplatesListInstances &&
+        if (global.params.v.templatesListInstances &&
             ss.ts.allInstances)
         {
             message(ss.td.loc,

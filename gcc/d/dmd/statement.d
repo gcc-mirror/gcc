@@ -82,15 +82,6 @@ extern (C++) abstract class Statement : ASTNode
         return b;
     }
 
-    override final const(char)* toChars() const
-    {
-        HdrGenState hgs;
-        OutBuffer buf;
-        toCBuffer(this, buf, hgs);
-        buf.writeByte(0);
-        return buf.extractSlice().ptr;
-    }
-
     Statement getRelatedLabeled()
     {
         return this;
@@ -571,12 +562,7 @@ extern (C++) final class CompoundDeclarationStatement : CompoundStatement
 
     override CompoundDeclarationStatement syntaxCopy()
     {
-        auto a = new Statements(statements.length);
-        foreach (i, s; *statements)
-        {
-            (*a)[i] = s ? s.syntaxCopy() : null;
-        }
-        return new CompoundDeclarationStatement(loc, a);
+        return new CompoundDeclarationStatement(loc, Statement.arraySyntaxCopy(statements));
     }
 
     override void accept(Visitor v)
@@ -601,12 +587,7 @@ extern (C++) final class UnrolledLoopStatement : Statement
 
     override UnrolledLoopStatement syntaxCopy()
     {
-        auto a = new Statements(statements.length);
-        foreach (i, s; *statements)
-        {
-            (*a)[i] = s ? s.syntaxCopy() : null;
-        }
-        return new UnrolledLoopStatement(loc, a);
+        return new UnrolledLoopStatement(loc, Statement.arraySyntaxCopy(statements));
     }
 
     override bool hasBreak() const pure nothrow
@@ -1117,76 +1098,44 @@ extern (C++) final class StaticAssertStatement : Statement
  */
 extern (C++) final class SwitchStatement : Statement
 {
+    Parameter param;
     Expression condition;           /// switch(condition)
     Statement _body;                ///
     bool isFinal;                   /// https://dlang.org/spec/statement.html#final-switch-statement
+    Loc endloc;
 
+    bool hasDefault;                /// true if has default statement
+    bool hasVars;                   /// true if has variable case values
     DefaultStatement sdefault;      /// default:
     Statement tryBody;              /// set to TryCatchStatement or TryFinallyStatement if in _body portion
     TryFinallyStatement tf;         /// set if in the 'finally' block of a TryFinallyStatement
     GotoCaseStatements gotoCases;   /// array of unresolved GotoCaseStatement's
     CaseStatements* cases;          /// array of CaseStatement's
-    int hasNoDefault;               /// !=0 if no default statement
-    int hasVars;                    /// !=0 if has variable case values
     VarDeclaration lastVar;         /// last observed variable declaration in this statement
 
-    extern (D) this(const ref Loc loc, Expression condition, Statement _body, bool isFinal)
+    extern (D) this(const ref Loc loc, Parameter param, Expression condition, Statement _body, bool isFinal, Loc endloc)
     {
         super(loc, STMT.Switch);
+        this.param = param;
         this.condition = condition;
         this._body = _body;
         this.isFinal = isFinal;
+        this.endloc = endloc;
     }
 
     override SwitchStatement syntaxCopy()
     {
-        return new SwitchStatement(loc, condition.syntaxCopy(), _body.syntaxCopy(), isFinal);
+        return new SwitchStatement(loc,
+            param ? param.syntaxCopy() : null,
+            condition.syntaxCopy(),
+            _body.syntaxCopy(),
+            isFinal,
+            endloc);
     }
 
     override bool hasBreak() const pure nothrow
     {
         return true;
-    }
-
-    /************************************
-     * Returns:
-     *  true if error
-     */
-    extern (D) bool checkLabel()
-    {
-        /*
-         * Checks the scope of a label for existing variable declaration.
-         * Params:
-         *   vd = last variable declared before this case/default label
-         * Returns: `true` if the variables declared in this label would be skipped.
-         */
-        bool checkVar(VarDeclaration vd)
-        {
-            for (auto v = vd; v && v != lastVar; v = v.lastVar)
-            {
-                if (v.isDataseg() || (v.storage_class & (STC.manifest | STC.temp) && vd.ident != Id.withSym) || v._init.isVoidInitializer())
-                    continue;
-                if (vd.ident == Id.withSym)
-                    error(loc, "`switch` skips declaration of `with` temporary");
-                else
-                    error(loc, "`switch` skips declaration of variable `%s`", v.toPrettyChars());
-                errorSupplemental(v.loc, "declared here");
-                return true;
-            }
-            return false;
-        }
-
-        enum error = true;
-
-        if (sdefault && checkVar(sdefault.lastVar))
-            return !error; // return error once fully deprecated
-
-        foreach (scase; *cases)
-        {
-            if (scase && checkVar(scase.lastVar))
-                return !error; // return error once fully deprecated
-        }
-        return !error;
     }
 
     override void accept(Visitor v)
@@ -1712,85 +1661,6 @@ extern (C++) final class GotoStatement : Statement
         return new GotoStatement(loc, ident);
     }
 
-    /**************
-     * Returns: true for error
-     */
-    extern (D) bool checkLabel()
-    {
-        if (!label.statement)
-            return true;        // error should have been issued for this already
-
-        if (label.statement.os != os)
-        {
-            if (os && os.tok == TOK.onScopeFailure && !label.statement.os)
-            {
-                // Jump out from scope(failure) block is allowed.
-            }
-            else
-            {
-                if (label.statement.os)
-                    error(loc, "cannot `goto` in to `%s` block", Token.toChars(label.statement.os.tok));
-                else
-                    error(loc, "cannot `goto` out of `%s` block", Token.toChars(os.tok));
-                return true;
-            }
-        }
-
-        if (label.statement.tf != tf)
-        {
-            error(loc, "cannot `goto` in or out of `finally` block");
-            return true;
-        }
-
-        if (label.statement.inCtfeBlock && !inCtfeBlock)
-        {
-            error(loc, "cannot `goto` into `if (__ctfe)` block");
-            return true;
-        }
-
-        Statement stbnext;
-        for (auto stb = tryBody; stb != label.statement.tryBody; stb = stbnext)
-        {
-            if (!stb)
-            {
-                error(loc, "cannot `goto` into `try` block");
-                return true;
-            }
-            if (auto stf = stb.isTryFinallyStatement())
-                stbnext = stf.tryBody;
-            else if (auto stc = stb.isTryCatchStatement())
-                stbnext = stc.tryBody;
-            else
-                assert(0);
-        }
-
-        VarDeclaration vd = label.statement.lastVar;
-        if (!vd || vd.isDataseg() || (vd.storage_class & STC.manifest))
-            return false;
-
-        VarDeclaration last = lastVar;
-        while (last && last != vd)
-            last = last.lastVar;
-        if (last == vd)
-        {
-            // All good, the label's scope has no variables
-        }
-        else if (vd.storage_class & STC.exptemp)
-        {
-            // Lifetime ends at end of expression, so no issue with skipping the statement
-        }
-        else
-        {
-            if (vd.ident == Id.withSym)
-                error(loc, "`goto` skips declaration of `with` temporary");
-            else
-                error(loc, "`goto` skips declaration of variable `%s`", vd.toPrettyChars());
-            errorSupplemental(vd.loc, "declared here");
-            return true;
-        }
-        return false;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -1972,12 +1842,7 @@ extern (C++) final class CompoundAsmStatement : CompoundStatement
 
     override CompoundAsmStatement syntaxCopy()
     {
-        auto a = new Statements(statements.length);
-        foreach (i, s; *statements)
-        {
-            (*a)[i] = s ? s.syntaxCopy() : null;
-        }
-        return new CompoundAsmStatement(loc, a, stc);
+        return new CompoundAsmStatement(loc, Statement.arraySyntaxCopy(statements), stc);
     }
 
     override void accept(Visitor v)

@@ -23,6 +23,7 @@ import dmd.declaration;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.errors;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -135,7 +136,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
         {
             if (!t.deco)
             {
-                e.error("forward reference to type `%s`", t.toChars());
+                error(e.loc, "forward reference to type `%s`", t.toChars());
             }
             else
             {
@@ -143,7 +144,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
                 //type = type.typeSemantic(loc, sc);
                 //printf("type %s t %s\n", type.deco, t.deco);
                 auto ts = toAutoQualChars(e.type, t);
-                e.error("cannot implicitly convert expression `%s` of type `%s` to `%s`",
+                error(e.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`",
                     e.toChars(), ts[0], ts[1]);
             }
         }
@@ -244,7 +245,7 @@ MATCH implicitConvTo(Expression e, Type t)
             return MATCH.nomatch;
         if (!e.type)
         {
-            e.error("`%s` is not an expression", e.toChars());
+            error(e.loc, "`%s` is not an expression", e.toChars());
             e.type = Type.terror;
         }
 
@@ -715,6 +716,14 @@ MATCH implicitConvTo(Expression e, Type t)
                     if (e.postfix != 'd')
                         m = MATCH.convert;
                     return m;
+                case Tint8:
+                case Tuns8:
+                    if (e.hexString)
+                    {
+                        m = MATCH.convert;
+                        return m;
+                    }
+                    break;
                 case Tenum:
                     if (tn.isTypeEnum().sym.isSpecial())
                     {
@@ -1671,7 +1680,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 goto Lok;
 
             auto ts = toAutoQualChars(e.type, t);
-            e.error("cannot cast expression `%s` of type `%s` to `%s` because of different sizes",
+            error(e.loc, "cannot cast expression `%s` of type `%s` to `%s` because of different sizes",
                 e.toChars(), ts[0], ts[1]);
             return ErrorExp.get();
         }
@@ -1700,7 +1709,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                     const dim = t1b.isTypeSArray().dim.toInteger();
                     if (tsize == 0 || (dim * fsize) % tsize != 0)
                     {
-                        e.error("cannot cast expression `%s` of type `%s` to `%s` since sizes don't line up",
+                        error(e.loc, "cannot cast expression `%s` of type `%s` to `%s` since sizes don't line up",
                                 e.toChars(), e.type.toChars(), t.toChars());
                         return ErrorExp.get();
                     }
@@ -1743,7 +1752,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 // void delegate() dg;
                 // cast(U*)dg; // ==> cast(U*)dg.ptr;
                 // Note that it happens even when U is a Tfunction!
-                e.deprecation("casting from %s to %s is deprecated", e.type.toChars(), t.toChars());
+                deprecation(e.loc, "casting from %s to %s is deprecated", e.type.toChars(), t.toChars());
                 goto Lok;
             }
             goto Lfail;
@@ -1761,7 +1770,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 if (result)
                     return result;
             }
-            e.error("cannot cast expression `%s` of type `%s` to `%s`", e.toChars(), e.type.toChars(), t.toChars());
+            error(e.loc, "cannot cast expression `%s` of type `%s` to `%s`", e.toChars(), e.type.toChars(), t.toChars());
             return ErrorExp.get();
         }
 
@@ -1830,7 +1839,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (!e.committed && t.ty == Tpointer && t.nextOf().ty == Tvoid &&
             (!sc || !(sc.flags & SCOPE.Cfile)))
         {
-            e.error("cannot convert string literal to `void*`");
+            error(e.loc, "cannot convert string literal to `void*`");
             return ErrorExp.get();
         }
 
@@ -1968,7 +1977,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     dchar c;
                     if (const s = utf_decodeChar(se.peekString(), u, c))
-                        e.error("%.*s", cast(int)s.length, s.ptr);
+                        error(e.loc, "%.*s", cast(int)s.length, s.ptr);
                     else
                         buffer.writeUTF16(c);
                 }
@@ -1981,7 +1990,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     dchar c;
                     if (const s = utf_decodeChar(se.peekString(), u, c))
-                        e.error("%.*s", cast(int)s.length, s.ptr);
+                        error(e.loc, "%.*s", cast(int)s.length, s.ptr);
                     buffer.write4(c);
                     newlen++;
                 }
@@ -1993,7 +2002,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     dchar c;
                     if (const s = utf_decodeWchar(se.peekWstring(), u, c))
-                        e.error("%.*s", cast(int)s.length, s.ptr);
+                        error(e.loc, "%.*s", cast(int)s.length, s.ptr);
                     else
                         buffer.writeUTF8(c);
                 }
@@ -2006,7 +2015,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     dchar c;
                     if (const s = utf_decodeWchar(se.peekWstring(), u, c))
-                        e.error("%.*s", cast(int)s.length, s.ptr);
+                        error(e.loc, "%.*s", cast(int)s.length, s.ptr);
                     buffer.write4(c);
                     newlen++;
                 }
@@ -2018,7 +2027,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     uint c = se.peekDstring()[u];
                     if (!utf_isValidDchar(c))
-                        e.error("invalid UCS-32 char \\U%08x", c);
+                        error(e.loc, "invalid UCS-32 char \\U%08x", c);
                     else
                         buffer.writeUTF8(c);
                     newlen++;
@@ -2032,7 +2041,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     uint c = se.peekDstring()[u];
                     if (!utf_isValidDchar(c))
-                        e.error("invalid UCS-32 char \\U%08x", c);
+                        error(e.loc, "invalid UCS-32 char \\U%08x", c);
                     else
                         buffer.writeUTF16(c);
                     newlen++;
@@ -2392,7 +2401,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                     }
                     else if (f.needThis())
                     {
-                        e.error("no `this` to create delegate for `%s`", f.toChars());
+                        error(e.loc, "no `this` to create delegate for `%s`", f.toChars());
                         return ErrorExp.get();
                     }
                     else if (f.isNested())
@@ -2402,7 +2411,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                     }
                     else
                     {
-                        e.error("cannot cast from function pointer to delegate");
+                        error(e.loc, "cannot cast from function pointer to delegate");
                         return ErrorExp.get();
                     }
                 }
@@ -2443,7 +2452,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             int offset;
             e.func.tookAddressOf++;
             if (e.func.tintro && e.func.tintro.nextOf().isBaseOf(e.func.type.nextOf(), &offset) && offset)
-                e.error("%s", msg.ptr);
+                error(e.loc, "%s", msg.ptr);
             auto result = e.copy();
             result.type = t;
             return result;
@@ -2459,7 +2468,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     int offset;
                     if (f.tintro && f.tintro.nextOf().isBaseOf(f.type.nextOf(), &offset) && offset)
-                        e.error("%s", msg.ptr);
+                        error(e.loc, "%s", msg.ptr);
                     if (f != e.func)    // if address not already marked as taken
                         f.tookAddressOf++;
                     auto result = new DelegateExp(e.loc, e.e1, f, false, e.vthis2);
@@ -2467,7 +2476,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                     return result;
                 }
                 if (e.func.tintro)
-                    e.error("%s", msg.ptr);
+                    error(e.loc, "%s", msg.ptr);
             }
         }
 
@@ -2596,7 +2605,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             }
         }
         auto ts = toAutoQualChars(tsa ? tsa : e.type, t);
-        e.error("cannot cast expression `%s` of type `%s` to `%s`",
+        error(e.loc, "cannot cast expression `%s` of type `%s` to `%s`",
             e.toChars(), ts[0], ts[1]);
         return ErrorExp.get();
     }
@@ -3610,7 +3619,7 @@ Expression integralPromotions(Expression e, Scope* sc)
     switch (e.type.toBasetype().ty)
     {
     case Tvoid:
-        e.error("void has no value");
+        error(e.loc, "void has no value");
         return ErrorExp.get();
 
     case Tint8:
@@ -3659,7 +3668,7 @@ void fix16997(Scope* sc, UnaExp ue)
             case Tchar:
             case Twchar:
             case Tdchar:
-                ue.deprecation("integral promotion not done for `%s`, remove '-revert=intpromote' switch or `%scast(int)(%s)`",
+                deprecation(ue.loc, "integral promotion not done for `%s`, remove '-revert=intpromote' switch or `%scast(int)(%s)`",
                     ue.toChars(), EXPtoString(ue.op).ptr, ue.e1.toChars());
                 break;
 

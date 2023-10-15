@@ -205,10 +205,6 @@ public:
     const char *locToChars();
     bool equals(const RootObject * const o) const override;
     bool isAnonymous() const;
-    void error(const Loc &loc, const char *format, ...);
-    void error(const char *format, ...);
-    void deprecation(const Loc &loc, const char *format, ...);
-    void deprecation(const char *format, ...);
     bool checkDeprecated(const Loc &loc, Scope *sc);
     Module *getModule();
     bool isCsymbol();

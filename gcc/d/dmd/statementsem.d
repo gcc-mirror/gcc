@@ -45,6 +45,7 @@ import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
 import dmd.gluelayer;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.importc;
@@ -130,7 +131,7 @@ private Expression checkAssignmentAsCondition(Expression e, Scope* sc)
     auto ec = lastComma(e);
     if (ec.op == EXP.assign)
     {
-        ec.error("assignment cannot be used as a condition, perhaps `==` was meant?");
+        error(ec.loc, "assignment cannot be used as a condition, perhaps `==` was meant?");
         return ErrorExp.get();
     }
     return e;
@@ -665,7 +666,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             const olderrors = global.startGagging();
             discardValue(fs.increment);
             if (global.endGagging(olderrors))
-                fs.increment.deprecation("`%s` has no effect", fs.increment.toChars());
+                deprecation(fs.increment.loc, "`%s` has no effect", fs.increment.toChars());
             if (checkNonAssignmentArrayOp(fs.increment))
                 fs.increment = ErrorExp.get();
             fs.increment = fs.increment.optimize(WANTvalue);
@@ -1391,7 +1392,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
                 version (none)
                 {
-                    printf("init: %s\n", _init.toChars());
+                    printf("init: %s\n", toChars(_init));
                     printf("condition: %s\n", condition.toChars());
                     printf("increment: %s\n", increment.toChars());
                     printf("body: %s\n", forbody.toChars());
@@ -1779,7 +1780,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     if (!se)
                         return setError();
 
-                    if (global.params.verbose)
+                    if (global.params.v.verbose)
                     {
                         message("library   %.*s", cast(int)se.len, se.string);
                     }
@@ -1865,6 +1866,37 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (ss.cases)
         {
             result = ss; // already run
+            return;
+        }
+
+        if (ss.param)
+        {
+            /**
+             * If the switch statement is of form `switch(auto a = exp) { body }`,
+             * rewrite to the following inside it's own scope:
+             *
+             * auto a = exp
+             * switch(a)
+             *     { body }
+             */
+            auto statements = new Statements();
+            auto vardecl = new VarDeclaration(ss.param.loc,
+                ss.param.type,
+                ss.param.ident,
+                new ExpInitializer(ss.condition.loc, ss.condition),
+                ss.param.storageClass);
+
+            statements.push(new ExpStatement(ss.param.loc, vardecl));
+
+            ss.condition = new VarExp(ss.param.loc, vardecl, false);
+            ss.param = null;
+
+            statements.push(ss);
+
+            Statement s = new CompoundStatement(ss.loc, statements);
+            s = new ScopeStatement(ss.loc, s, ss.endloc);
+            s = s.statementSemantic(sc);
+            result = s;
             return;
         }
 
@@ -1979,9 +2011,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             if (ed && ss.cases.length < ed.members.length)
             {
                 int missingMembers = 0;
-                const maxShown = !global.params.verbose ?
-                                    (global.params.errorSupplementLimit ? global.params.errorSupplementLimit : int.max)
-                                    : int.max;
+                const maxShown = global.params.v.errorSupplementCount();
             Lmembers:
                 foreach (es; *ed.members)
                 {
@@ -2014,11 +2044,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 needswitcherror = true;
         }
 
-        if (!sc.sw.sdefault &&
-            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe))
+        ss.hasDefault = sc.sw.sdefault ||
+            !(!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe);
+        if (!ss.hasDefault)
         {
-            ss.hasNoDefault = 1;
-
             if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()) && !(sc.flags & SCOPE.Cfile))
                 error(ss.loc, "`switch` statement without a `default`; use `final switch` or add `default: assert(0);` or add `default: break;`");
 
@@ -2207,7 +2236,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     /* Flag that we need to do special code generation
                     * for this, i.e. generate a sequence of if-then-else
                     */
-                    sw.hasVars = 1;
+                    sw.hasVars = true;
 
                     /* TODO check if v can be uninitialized at that point.
                     */
@@ -2633,7 +2662,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     //errors = true;
                 }
                 if (global.endGagging(olderrors))
-                    rs.exp.deprecation("`%s` has no effect", rs.exp.toChars());
+                    deprecation(rs.exp.loc, "`%s` has no effect", rs.exp.toChars());
 
                 /* Replace:
                  *      return exp;
@@ -2708,7 +2737,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     // checking for `shared`, make sure we were right
                     if (global.params.noSharedAccess == FeatureState.enabled && rs.exp.type.isShared())
                     {
-                        fd.error("function returns `shared` but cannot be inferred `ref`");
+                        .error(fd.loc, "%s `%s` function returns `shared` but cannot be inferred `ref`", fd.kind, fd.toPrettyChars);
                         supplemental();
                     }
                 }
@@ -3992,7 +4021,7 @@ private extern(D) Statement loopReturn(Expression e, Statements* cases, const re
     }
 
     s = new CompoundStatement(loc, a);
-    return new SwitchStatement(loc, e, s, false);
+    return new SwitchStatement(loc, null, e, s, false, loc);
 }
 
 /*************************************
@@ -4547,13 +4576,13 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
                         {
                             if (!isStatic)
                             {
-                                error(fs.loc, "constant value `%s` cannot be `ref`", ie.toChars());
+                                error(fs.loc, "constant value `%s` cannot be `ref`", toChars(ie));
                             }
                             else
                             {
                                 if (!needExpansion)
                                 {
-                                    error(fs.loc, "constant value `%s` cannot be `ref`", ie.toChars());
+                                    error(fs.loc, "constant value `%s` cannot be `ref`", toChars(ie));
                                 }
                                 else
                                 {
@@ -4858,7 +4887,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
             auto loc = adjustLocForMixin(str, cs.loc, global.params.mixinOut);
             scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
-            p.transitionIn = global.params.vin;
+            p.transitionIn = global.params.v.vin;
             p.nextToken();
 
             auto a = new Statements();
@@ -5052,4 +5081,131 @@ bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
         }
     }
     return true;
+}
+
+/************************************
+ * Check for skipped variable declarations.
+ * Params:
+ *      ss = statement to check
+ * Returns:
+ *  true if error
+ */
+private bool checkLabel(SwitchStatement ss)
+{
+    /*
+     * Checks the scope of a label for existing variable declaration.
+     * Params:
+     *   vd = last variable declared before this case/default label
+     * Returns: `true` if the variables declared in this label would be skipped.
+     */
+    bool checkVar(VarDeclaration vd)
+    {
+        for (auto v = vd; v && v != ss.lastVar; v = v.lastVar)
+        {
+            if (v.isDataseg() || (v.storage_class & (STC.manifest | STC.temp) && vd.ident != Id.withSym) || v._init.isVoidInitializer())
+                continue;
+            if (vd.ident == Id.withSym)
+                error(ss.loc, "`switch` skips declaration of `with` temporary");
+            else
+                error(ss.loc, "`switch` skips declaration of variable `%s`", v.toPrettyChars());
+            errorSupplemental(v.loc, "declared here");
+            return true;
+        }
+        return false;
+    }
+
+    enum error = true;
+
+    if (ss.sdefault && checkVar(ss.sdefault.lastVar))
+        return !error; // return error once fully deprecated
+
+    foreach (scase; *ss.cases)
+    {
+        if (scase && checkVar(scase.lastVar))
+            return !error; // return error once fully deprecated
+    }
+    return !error;
+}
+
+
+/**************
+ * Check for skipped variable declarations.
+ * Params:
+ *      gs = statement to check
+ * Returns: true for error
+ */
+bool checkLabel(GotoStatement gs)
+{
+    if (!gs.label.statement)
+        return true;        // error should have been issued for this already
+
+    if (gs.label.statement.os != gs.os)
+    {
+        if (gs.os && gs.os.tok == TOK.onScopeFailure && !gs.label.statement.os)
+        {
+            // Jump out from scope(failure) block is allowed.
+        }
+        else
+        {
+            if (gs.label.statement.os)
+                error(gs.loc, "cannot `goto` in to `%s` block", Token.toChars(gs.label.statement.os.tok));
+            else
+                error(gs.loc, "cannot `goto` out of `%s` block", Token.toChars(gs.os.tok));
+            return true;
+        }
+    }
+
+    if (gs.label.statement.tf != gs.tf)
+    {
+        error(gs.loc, "cannot `goto` in or out of `finally` block");
+        return true;
+    }
+
+    if (gs.label.statement.inCtfeBlock && !gs.inCtfeBlock)
+    {
+        error(gs.loc, "cannot `goto` into `if (__ctfe)` block");
+        return true;
+    }
+
+    Statement stbnext;
+    for (auto stb = gs.tryBody; stb != gs.label.statement.tryBody; stb = stbnext)
+    {
+        if (!stb)
+        {
+            error(gs.loc, "cannot `goto` into `try` block");
+            return true;
+        }
+        if (auto stf = stb.isTryFinallyStatement())
+            stbnext = stf.tryBody;
+        else if (auto stc = stb.isTryCatchStatement())
+            stbnext = stc.tryBody;
+        else
+            assert(0);
+    }
+
+    VarDeclaration vd = gs.label.statement.lastVar;
+    if (!vd || vd.isDataseg() || (vd.storage_class & STC.manifest))
+        return false;
+
+    VarDeclaration last = gs.lastVar;
+    while (last && last != vd)
+        last = last.lastVar;
+    if (last == vd)
+    {
+        // All good, the label's scope has no variables
+    }
+    else if (vd.storage_class & STC.exptemp)
+    {
+        // Lifetime ends at end of expression, so no issue with skipping the statement
+    }
+    else
+    {
+        if (vd.ident == Id.withSym)
+            error(gs.loc, "`goto` skips declaration of `with` temporary");
+        else
+            error(gs.loc, "`goto` skips declaration of variable `%s`", vd.toPrettyChars());
+        errorSupplemental(vd.loc, "declared here");
+        return true;
+    }
+    return false;
 }

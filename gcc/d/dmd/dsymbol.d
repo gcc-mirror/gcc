@@ -375,79 +375,6 @@ extern (C++) class Dsymbol : ASTNode
         return '`' ~ cstr.toDString() ~ "`\0";
     }
 
-    static if (__VERSION__ < 2092)
-    {
-        final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-    }
-    else
-    {
-        pragma(printf) final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-    }
-
     final bool checkDeprecated(const ref Loc loc, Scope* sc)
     {
         if (global.params.useDeprecated == DiagnosticReporting.off)
@@ -470,9 +397,9 @@ extern (C++) class Dsymbol : ASTNode
                 break;
         }
         if (message)
-            deprecation(loc, "is deprecated - %s", message);
+            deprecation(loc, "%s `%s` is deprecated - %s", kind, toPrettyChars, message);
         else
-            deprecation(loc, "is deprecated");
+            deprecation(loc, "%s `%s` is deprecated", kind, toPrettyChars);
 
         if (auto ti = sc.parent ? sc.parent.isInstantiated() : null)
             ti.printInstantiationTrace(Classification.deprecation);
@@ -886,7 +813,7 @@ extern (C++) class Dsymbol : ASTNode
             if (ident == Id.__sizeof ||
                 !(sc && sc.flags & SCOPE.Cfile) && (ident == Id.__xalignof || ident == Id._mangleof))
             {
-                error("`.%s` property cannot be redefined", ident.toChars());
+                .error(loc, "%s `%s` `.%s` property cannot be redefined", kind, toPrettyChars, ident.toChars());
                 errors = true;
             }
         }
@@ -1026,7 +953,7 @@ extern (C++) class Dsymbol : ASTNode
      */
     uinteger_t size(const ref Loc loc)
     {
-        error("symbol `%s` has no size", toChars());
+        .error(loc, "%s `%s` symbol `%s` has no size", kind, toPrettyChars, toChars());
         return SIZE_INVALID;
     }
 
@@ -1776,7 +1703,7 @@ public:
         }
         else
         {
-            s1.error(s1.loc, "conflicts with %s `%s` at %s", s2.kind(), s2.toPrettyChars(), s2.locToChars());
+            .error(s1.loc, "%s `%s` conflicts with %s `%s` at %s", s1.kind, s1.toPrettyChars, s2.kind(), s2.toPrettyChars(), s2.locToChars());
         }
     }
 
@@ -2140,7 +2067,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                      */
                     if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.length != 1)
                     {
-                        exp.error("`%s` only defines opDollar for one dimension", ad.toChars());
+                        error(exp.loc, "`%s` only defines opDollar for one dimension", ad.toChars());
                         return null;
                     }
                     Declaration d = s.isDeclaration();
@@ -2149,7 +2076,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                 }
                 e = e.expressionSemantic(sc);
                 if (!e.type)
-                    exp.error("`%s` has no value", e.toChars());
+                    error(exp.loc, "`%s` has no value", e.toChars());
                 t = e.type.toBasetype();
                 if (t && t.ty == Tfunction)
                     e = new CallExp(e.loc, e);

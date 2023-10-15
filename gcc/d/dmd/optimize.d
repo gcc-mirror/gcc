@@ -24,6 +24,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.init;
 import dmd.location;
 import dmd.mtype;
@@ -90,7 +91,7 @@ Expression expandVar(int result, VarDeclaration v)
                 {
                     if (v.storage_class & STC.manifest)
                     {
-                        v.error("recursive initialization of constant");
+                        .error(v.loc, "%s `%s` recursive initialization of constant", v.kind, v.toPrettyChars);
                         return errorReturn();
                     }
                     return nullReturn();
@@ -100,7 +101,7 @@ Expression expandVar(int result, VarDeclaration v)
                 {
                     if (v.storage_class & STC.manifest)
                     {
-                        v.error("enum cannot be initialized with `%s`", v._init.toChars());
+                        .error(v.loc, "%s `%s` enum cannot be initialized with `%s`", v.kind, v.toPrettyChars, dmd.hdrgen.toChars(v._init));
                         return errorReturn();
                     }
                     return nullReturn();
@@ -275,7 +276,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     //printf("Expression_optimize() e: %s result: %d keepLvalue %d\n", e.toChars(), result, keepLvalue);
     Expression ret = e;
 
-    void error()
+    void errorReturn()
     {
         ret = ErrorExp.get();
     }
@@ -571,8 +572,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 
                     if (index < 0 || index > dim)
                     {
-                        e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
-                        return error();
+                        error(e.loc, "array index %lld is out of bounds `[0..%lld]`", index, dim);
+                        return errorReturn();
                     }
 
                     import core.checkedint : mulu;
@@ -580,8 +581,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // offset = index*size
                     if (overflow)
                     {
-                        e.error("array offset overflow");
-                        return error();
+                        error(e.loc, "array offset overflow");
+                        return errorReturn();
                     }
 
                     Expression ex = new AddrExp(ae1.loc, ae1);  // &a[i]
@@ -610,8 +611,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                          */
                         if (!((dim == 0 || dim == index) && ve.var.isCsymbol()))
                         {
-                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
-                            return error();
+                            error(e.loc, "array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return errorReturn();
                         }
                     }
 
@@ -620,8 +621,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     const offset = mulu(index, ts.nextOf().size(e.loc), overflow);
                     if (overflow)
                     {
-                        e.error("array offset overflow");
-                        return error();
+                        error(e.loc, "array offset overflow");
+                        return errorReturn();
                     }
 
                     ret = new SymOffExp(e.loc, ve.var, offset);
@@ -645,8 +646,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                          */
                         if (!((dim == 0 || dim == index) && ve.var.isCsymbol()))
                         {
-                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
-                            return error();
+                            error(e.loc, "array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return errorReturn();
                         }
                     }
 
@@ -655,8 +656,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // index*elementsize
                     if (overflow)
                     {
-                        e.error("array offset overflow");
-                        return error();
+                        error(e.loc, "array offset overflow");
+                        return errorReturn();
                     }
 
                     auto pe = new AddrExp(e.loc, ve);
@@ -808,7 +809,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             const esz  = e.type.nextOf().size(e.loc);
             const e1sz = e.e1.type.toBasetype().nextOf().size(e.e1.loc);
             if (esz == SIZE_INVALID || e1sz == SIZE_INVALID)
-                return error();
+                return errorReturn();
 
             if (e1sz == esz)
             {
@@ -855,13 +856,13 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             ClassDeclaration cdfrom = e.e1.type.isClassHandle();
             ClassDeclaration cdto = e.type.isClassHandle();
             if (cdfrom.errors || cdto.errors)
-                return error();
+                return errorReturn();
             if (cdto == ClassDeclaration.object && !cdfrom.isInterfaceDeclaration())
                 return returnE_e1();    // can always convert a class to Object
             // Need to determine correct offset before optimizing away the cast.
             // https://issues.dlang.org/show_bug.cgi?id=16980
             if (cdfrom.size(e.loc) == SIZE_INVALID)
-                return error();
+                return errorReturn();
             assert(cdfrom.sizeok == Sizeok.done);
             assert(cdto.sizeok == Sizeok.done || !cdto.isBaseOf(cdfrom, null));
             int offset;
@@ -886,7 +887,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     const e1sz = e.e1.type.size(e.e1.loc);
                     if (esz == SIZE_INVALID ||
                         e1sz == SIZE_INVALID)
-                        return error();
+                        return errorReturn();
 
                     if (esz == e1sz)
                         return returnE_e1();
@@ -919,8 +920,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                 sz *= 8;
                 if (i2 < 0 || i2 >= sz)
                 {
-                    e.error("shift assign by %lld is outside the range `0..%llu`", i2, cast(ulong)sz - 1);
-                    return error();
+                    error(e.loc, "shift assign by %lld is outside the range `0..%llu`", i2, cast(ulong)sz - 1);
+                    return errorReturn();
                 }
             }
         }
@@ -1005,8 +1006,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             sz *= 8;
             if (i2 < 0 || i2 >= sz)
             {
-                e.error("shift by %lld is outside the range `0..%llu`", i2, cast(ulong)sz - 1);
-                return error();
+                error(e.loc, "shift by %lld is outside the range `0..%llu`", i2, cast(ulong)sz - 1);
+                return errorReturn();
             }
             if (e.e1.isConst() == 1)
                 ret = (*shift)(e.loc, e.type, e.e1, e.e2).copy();
@@ -1062,8 +1063,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         // All negative integral powers are illegal.
         if (e.e1.type.isintegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
         {
-            e.error("cannot raise `%s` to a negative integer power. Did you mean `(cast(real)%s)^^%s` ?", e.e1.type.toBasetype().toChars(), e.e1.toChars(), e.e2.toChars());
-            return error();
+            error(e.loc, "cannot raise `%s` to a negative integer power. Did you mean `(cast(real)%s)^^%s` ?", e.e1.type.toBasetype().toChars(), e.e1.toChars(), e.e2.toChars());
+            return errorReturn();
         }
         // If e2 *could* have been an integer, make it one.
         if (e.e2.op == EXP.float64 && e.e2.toReal() == real_t(cast(sinteger_t)e.e2.toReal()))
@@ -1337,7 +1338,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     {
         if (b++ == global.recursionLimit)
         {
-            e.error("infinite loop while optimizing expression");
+            error(e.loc, "infinite loop while optimizing expression");
             fatal();
         }
 

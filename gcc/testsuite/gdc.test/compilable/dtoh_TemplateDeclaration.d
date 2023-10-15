@@ -39,8 +39,6 @@ struct _d_dynamicArray final
 };
 #endif
 
-typedef uint$?:32=32|64=64$_t size_t;
-
 struct Outer final
 {
     int32_t a;

@@ -111,7 +111,8 @@ bool evalStaticCondition(Scope* sc, Expression original, Expression e, out bool 
         const opt = e.toBool();
         if (opt.isEmpty())
         {
-            e.error("expression `%s` is not constant", e.toChars());
+            if (!e.type.isTypeError())
+                error(e.loc, "expression `%s` is not constant", e.toChars());
             errors = true;
             return false;
         }

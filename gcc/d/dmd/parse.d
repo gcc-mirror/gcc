@@ -6247,9 +6247,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 if (auto ds = parseDebugSpecification())
                 {
                     if (ds.ident)
-                        ds.error("declaration must be at module level");
+                        eSink.error(ds.loc, "%s `%s` declaration must be at module level", ds.kind, ds.toPrettyChars);
                     else
-                        ds.error("level declaration must be at module level");
+                        eSink.error(ds.loc, "%s `%s` level declaration must be at module level", ds.kind, ds.toPrettyChars);
                 }
                 break;
             }
@@ -6263,9 +6263,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 if (auto vs = parseVersionSpecification())
                 {
                     if (vs.ident)
-                        vs.error("declaration must be at module level");
+                        eSink.error(vs.loc, "%s `%s` declaration must be at module level", vs.kind, vs.toPrettyChars);
                     else
-                        vs.error("level declaration must be at module level");
+                        eSink.error(vs.loc, "%s `%s` level declaration must be at module level", vs.kind, vs.toPrettyChars);
                 }
                 break;
             }
@@ -6329,10 +6329,11 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             {
                 nextToken();
                 check(TOK.leftParenthesis);
+                auto param = parseAssignCondition();
                 AST.Expression condition = parseExpression();
                 closeCondition("switch", null, condition);
                 AST.Statement _body = parseStatement(ParseStatementFlags.scope_);
-                s = new AST.SwitchStatement(loc, condition, _body, isfinal);
+                s = new AST.SwitchStatement(loc, param, condition, _body, isfinal, token.loc);
                 break;
             }
         case TOK.case_:
@@ -8200,6 +8201,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
         case TOK.string_:
         case TOK.hexadecimalString:
+            const bool hexString = token.value == TOK.hexadecimalString;
             {
                 // cat adjacent strings
                 auto s = token.ustring;
@@ -8235,6 +8237,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         break;
                 }
                 e = new AST.StringExp(loc, s[0 .. len], len, 1, postfix);
+                e.isStringExp().hexString = hexString;
                 break;
             }
         case TOK.void_:
@@ -8899,7 +8902,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                                 {
                                     e = parseUnaryExp();
                                     e = new AST.CastExp(loc, e, t);
-                                    error("C style cast illegal, use `%s`", e.toChars());
+                                    error(loc, "C style cast illegal, use `%s`", e.toChars());
                                 }
                                 return e;
                             }
