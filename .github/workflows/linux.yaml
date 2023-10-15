@@ -105,11 +105,11 @@ jobs:
                 --host=x86_64-linux-gnu \
                 --target=x86_64-linux-gnu
 
-      - name: Make docs
+      - name: Make docs (pre-build)
         if: success()
         run: |
           cd ../build
-          echo "make dvi" && time make dvi
+          echo "make dvi-fixincludes" && time make dvi-fixincludes
           echo "make pdf" && time make pdf
           echo "make html" && time make html
 
@@ -125,6 +125,7 @@ jobs:
         run: |
           cd ../build
           echo "make info" && time make info
+          echo "make dvi" && time make dvi
 
       - name: Debug failure
         if: failure()
