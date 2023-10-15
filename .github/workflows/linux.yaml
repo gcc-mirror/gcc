@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-devtools exuberant-ctags
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
@@ -58,8 +58,14 @@ jobs:
 
       - name: Download prerequisites
         if: success()
+        env:
+          revision: ${{ github.head_ref }}
         run: |
-          ./contrib/download_prerequisites    
+          ./contrib/download_prerequisites
+          {
+              date
+              echo "$(TZ=UTC date) (revision ${revision})"
+          } > LAST_UPDATED
 
       - name: Configure x86_64
         if: success() && matrix.target == 'x86_64'
