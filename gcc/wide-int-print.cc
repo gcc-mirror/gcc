@@ -75,9 +75,9 @@ void
 print_decs (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
-  unsigned len = wi.get_len ();
-  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_decs_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
   print_decs (wi, p);
   fputs (p, file);
 }
@@ -102,9 +102,9 @@ void
 print_decu (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
-  unsigned len = wi.get_len ();
-  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_decu_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
   print_decu (wi, p);
   fputs (p, file);
 }
@@ -141,9 +141,9 @@ void
 print_hex (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
-  unsigned len = wi.get_len ();
-  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_hex_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
   print_hex (wi, p);
   fputs (p, file);
 }
@@ -154,8 +154,10 @@ print_hex (const wide_int_ref &wi, FILE *file)
 void
 pp_wide_int_large (pretty_printer *pp, const wide_int_ref &w, signop sgn)
 {
-  unsigned int prec = w.get_precision ();
-  char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
+  unsigned int len;
+  if (!print_dec_buf_size (w, sgn, &len))
+    len = WIDE_INT_PRINT_BUFFER_SIZE;
+  char *buf = XALLOCAVEC (char, len);
   print_dec (w, buf, sgn);
   pp_string (pp, buf);
 }

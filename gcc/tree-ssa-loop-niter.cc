@@ -3874,13 +3874,13 @@ do_warn_aggressive_loop_optimizations (class loop *loop,
 
   gimple *estmt = last_nondebug_stmt (e->src);
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
-  unsigned len = i_bound.get_len ();
-  if (len > WIDE_INT_MAX_INL_ELTS)
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_dec_buf_size (i_bound, TYPE_SIGN (TREE_TYPE (loop->nb_iterations)),
+			  &len))
+    p = XALLOCAVEC (char, len);
   else
     p = buf;
-  print_dec (i_bound, p, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
-	     ? UNSIGNED : SIGNED);
+  print_dec (i_bound, p, TYPE_SIGN (TREE_TYPE (loop->nb_iterations)));
   auto_diagnostic_group d;
   if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
 		  "iteration %s invokes undefined behavior", p))

@@ -251,11 +251,10 @@ irange_bitmask::dump (FILE *file) const
   pp_needs_newline (&buffer) = true;
   buffer.buffer->stream = file;
   pp_string (&buffer, "MASK ");
-  unsigned len_mask = m_mask.get_len ();
-  unsigned len_val = m_value.get_len ();
-  unsigned len = MAX (len_mask, len_val);
-  if (len > WIDE_INT_MAX_INL_ELTS)
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len_mask, len_val;
+  if (print_hex_buf_size (m_mask, &len_mask)
+      | print_hex_buf_size (m_value, &len_val))
+    p = XALLOCAVEC (char, MAX (len_mask, len_val));
   else
     p = buf;
   print_hex (m_mask, p);

@@ -2450,9 +2450,9 @@ static void
 assert_deceq (const char *expected, const wide_int_ref &wi, signop sgn)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
-  unsigned len = wi.get_len ();
-  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_dec_buf_size (wi, sgn, &len))
+    p = XALLOCAVEC (char, len);
   print_dec (wi, p, sgn);
   ASSERT_STREQ (expected, p);
 }
@@ -2463,9 +2463,9 @@ static void
 assert_hexeq (const char *expected, const wide_int_ref &wi)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p = buf;
-  unsigned len = wi.get_len ();
-  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len;
+  if (print_hex_buf_size (wi, &len))
+    p = XALLOCAVEC (char, len);
   print_hex (wi, p);
   ASSERT_STREQ (expected, p);
 }
