@@ -136,14 +136,21 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 @node Enabling OpenMP
 @chapter Enabling OpenMP
 
-To activate the OpenMP extensions for C/C++ and Fortran, the compile-time 
-flag @command{-fopenmp} must be specified.  This enables the OpenMP directive
-@code{#pragma omp} in C/C++ and @code{!$omp} directives in free form, 
-@code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form, 
-@code{!$} conditional compilation sentinels in free form and @code{c$},
-@code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
-arranges for automatic linking of the OpenMP runtime library 
+To activate the OpenMP extensions for C/C++ and Fortran, the compile-time
+flag @option{-fopenmp} must be specified.  For C and C++, this enables
+the handling of the OpenMP directives using @code{#pragma omp} and, for C++, the
+@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
+@code{[[omp::decl(...)]]} attributes.  For Fortran, it enables for
+free source form the @code{!$omp} sentinel for directives and the
+@code{!$} conditional compilation sentinel and for fixed source form the
+@code{c$omp}, @code{*$omp} and @code{!$omp} sentinels for directives and
+the @code{c$}, @code{*$} and @code{!$} conditional compilation sentinels.
+The flag also arranges for automatic linking of the OpenMP runtime library
 (@ref{Runtime Library Routines}).
+
+The @option{-fopenmp-simd} flag can be used to enable a subset of
+OpenMP directives that do not require the linking of either the
+OpenMP runtime library or the POSIX threads library.
 
 A complete description of all OpenMP directives may be found in the
 @uref{https://www.openmp.org, OpenMP Application Program Interface} manuals.
@@ -3697,12 +3704,10 @@ pools available and their worker threads run at priority four.
 
 To activate the OpenACC extensions for C/C++ and Fortran, the compile-time 
 flag @option{-fopenacc} must be specified.  This enables the OpenACC directive
-@code{#pragma acc} in C/C++ and @code{!$acc} directives in free form,
-@code{c$acc}, @code{*$acc} and @code{!$acc} directives in fixed form,
-@code{!$} conditional compilation sentinels in free form and @code{c$},
-@code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
-arranges for automatic linking of the OpenACC runtime library 
-(@ref{OpenACC Runtime Library Routines}).
+@samp{#pragma acc} in C/C++ and, in Fortran, the @samp{!$acc} sentinel in free
+source form and the @samp{c$acc}, @samp{*$acc} and @samp{!$acc} sentinels in
+fixed source form.  The flag also arranges for automatic linking of the OpenACC
+runtime library (@ref{OpenACC Runtime Library Routines}).
 
 See @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
