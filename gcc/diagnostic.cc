@@ -226,8 +226,17 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->includes_seen = NULL;
   context->m_client_data_hooks = NULL;
   context->m_diagrams.m_theme = NULL;
-  diagnostics_text_art_charset_init (context,
-				     DIAGNOSTICS_TEXT_ART_CHARSET_DEFAULT);
+
+  enum diagnostic_text_art_charset text_art_charset
+    = DIAGNOSTICS_TEXT_ART_CHARSET_DEFAULT;
+  if (const char *lang = getenv ("LANG"))
+    {
+      /* For LANG=C, don't assume the terminal supports anything
+	 other than ASCII.  */
+      if (!strcmp (lang, "C"))
+	text_art_charset = DIAGNOSTICS_TEXT_ART_CHARSET_ASCII;
+    }
+  diagnostics_text_art_charset_init (context, text_art_charset);
 }
 
 /* Maybe initialize the color support. We require clients to do this

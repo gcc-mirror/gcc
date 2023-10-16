@@ -5688,7 +5688,8 @@ value further adds the possibility of emoji in the output (such as emitting
 U+26A0 WARNING SIGN followed by U+FE0F VARIATION SELECTOR-16 to select the
 emoji variant of the character).
 
-The default is @samp{emoji}.
+The default is @samp{emoji}, except when the environment variable @env{LANG}
+is set to @samp{C}, in which case the default is @samp{ascii}.
 
 @opindex fdiagnostics-format
 @item -fdiagnostics-format=@var{FORMAT}
