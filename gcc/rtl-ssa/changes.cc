@@ -370,8 +370,11 @@ update_insn_in_place (insn_change &change)
 // Finalize the new list of definitions and uses in CHANGE, removing
 // any uses and definitions that are no longer needed, and converting
 // pending clobbers into actual definitions.
+//
+// POS gives the final position of INSN, which hasn't yet been moved into
+// place.
 void
-function_info::finalize_new_accesses (insn_change &change)
+function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 {
   insn_info *insn = change.insn ();
 
@@ -462,13 +465,34 @@ function_info::finalize_new_accesses (insn_change &change)
   // Add (possibly temporary) uses to m_temp_uses for each resource.
   // If there are multiple references to the same resource, aggregate
   // information in the modes and flags.
+  use_info *mem_use = nullptr;
   for (rtx_obj_reference ref : properties.refs ())
     if (ref.is_read ())
       {
 	unsigned int regno = ref.regno;
 	machine_mode mode = ref.is_reg () ? ref.mode : BLKmode;
 	use_info *use = find_access (unshared_uses, ref.regno);
-	gcc_assert (use);
+	if (!use)
+	  {
+	    // For now, we only support inferring uses of mem.
+	    gcc_assert (regno == MEM_REGNO);
+
+	    if (mem_use)
+	      {
+		mem_use->record_reference (ref, false);
+		continue;
+	      }
+
+	    resource_info resource { mode, regno };
+	    auto def = find_def (resource, pos).prev_def (pos);
+	    auto set = safe_dyn_cast <set_info *> (def);
+	    gcc_assert (set);
+	    mem_use = allocate<use_info> (insn, resource, set);
+	    mem_use->record_reference (ref, true);
+	    m_temp_uses.safe_push (mem_use);
+	    continue;
+	  }
+
 	if (use->m_has_been_superceded)
 	  {
 	    // This is the first reference to the resource.
@@ -656,7 +680,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
 
 	  // Finalize the new list of accesses for the change.  Don't install
 	  // them yet, so that we still have access to the old lists below.
-	  finalize_new_accesses (change);
+	  finalize_new_accesses (change,
+				 placeholder ? placeholder : insn);
 	}
       placeholders[i] = placeholder;
     }
