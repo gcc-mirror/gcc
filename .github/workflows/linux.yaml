@@ -21,6 +21,7 @@ jobs:
   build:
     name: ${{ matrix.name }}-build
     runs-on: ubuntu-latest
+    timeout-minutes: 720
     strategy:
       matrix:
         include:
@@ -36,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils binutils autogen gettext
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
@@ -109,6 +110,7 @@ jobs:
           cd ../build
           if test -x "$(which nproc)"; then echo "nproc says that we can use $(nproc) build jobs"; else echo "error: missing nproc!" >&2 && exit 1; fi
           time (make -j"$(nproc)" | tee build.log)
+          if test -e build.log; then stat build.log && wc -l build.log; fi
 
       - name: Debug failure
         if: failure()
@@ -148,6 +150,6 @@ jobs:
           if test -x /usr/bin/x86_64-linux-gnu-gcc; then /usr/bin/x86_64-linux-gnu-gcc -v; elif test -x ../build/gcc/xgcc; then ../build/gcc/xgcc --v; fi
           cd ../build
           if test -e build.log; then make warning.log; fi
-          time make -k check
+          time (make -k -j"$(nproc)" check RUNTESTFLAGS="compile.exp dg-torture.exp execute.exp old-deja.exp" | tee testsuite_output.log)
           if test -e warning.log; then make mail-report-with-warnings.log; else make mail-report.log; fi
           if test -x mail-report-with-warnings.log; then ./mail-report-with-warnings.log; elif test -x mail-report.log; then ./mail-report.log; fi
