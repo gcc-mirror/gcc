@@ -352,6 +352,12 @@ CompileExpr::visit (HIR::IfExprConseqElse &expr)
 void
 CompileExpr::visit (HIR::BlockExpr &expr)
 {
+  if (expr.has_label ())
+    {
+      rust_error_at (expr.get_locus (), "labeled blocks are not supported");
+      return;
+    }
+
   TyTy::BaseType *block_tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 				       &block_tyty))
