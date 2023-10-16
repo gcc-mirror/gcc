@@ -3421,6 +3421,22 @@ archs4x, archs4xd"
    (set_attr "predicable" "no,no,yes,no,no")
    (set_attr "cond" "nocond,canuse,canuse,nocond,nocond")])
 
+;; Split asl dst,1,src into bset dst,0,src.
+(define_insn_and_split "*ashlsi3_1"
+  [(set (match_operand:SI 0 "dest_reg_operand")
+	(ashift:SI (const_int 1)
+		   (match_operand:SI 1 "nonmemory_operand")))]
+  "!TARGET_BARREL_SHIFTER
+   && arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(ior:SI (ashift:SI (const_int 1) (match_dup 1))
+		(const_int 0)))]
+  ""
+  [(set_attr "type" "shift")
+   (set_attr "length" "8")])
+
 (define_insn_and_split "*ashlsi3_nobs"
   [(set (match_operand:SI 0 "dest_reg_operand")
 	(ashift:SI (match_operand:SI 1 "register_operand")
