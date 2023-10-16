@@ -663,7 +663,8 @@ ix86_can_inline_p (tree caller, tree callee)
 static bool
 ix86_in_large_data_p (tree exp)
 {
-  if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC)
+  if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC
+      && ix86_cmodel != CM_LARGE && ix86_cmodel != CM_LARGE_PIC)
     return false;
 
   if (exp == NULL_TREE)
@@ -874,7 +875,8 @@ x86_elf_aligned_decl_common (FILE *file, tree decl,
 			const char *name, unsigned HOST_WIDE_INT size,
 			unsigned align)
 {
-  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC
+       || ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
       && size > (unsigned int)ix86_section_threshold)
     {
       switch_to_section (get_named_section (decl, ".lbss", 0));
@@ -895,7 +897,8 @@ void
 x86_output_aligned_bss (FILE *file, tree decl, const char *name,
 		       	unsigned HOST_WIDE_INT size, unsigned align)
 {
-  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC
+       || ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
       && size > (unsigned int)ix86_section_threshold)
     switch_to_section (get_named_section (decl, ".lbss", 0));
   else

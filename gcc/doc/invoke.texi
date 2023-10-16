@@ -33398,9 +33398,9 @@ the cache line size.  @samp{compat} is the default.
 
 @opindex mlarge-data-threshold
 @item -mlarge-data-threshold=@var{threshold}
-When @option{-mcmodel=medium} is specified, data objects larger than
-@var{threshold} are placed in the large data section.  This value must be the
-same across all objects linked into the binary, and defaults to 65535.
+When @option{-mcmodel=medium} or @option{-mcmodel=large} is specified, data
+objects larger than @var{threshold} are placed in large data sections.  The
+default is 65535.
 
 @opindex mrtd
 @item -mrtd
