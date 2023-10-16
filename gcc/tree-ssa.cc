@@ -1792,15 +1792,20 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
 	  maybe_reg = true;
 	  DECL_NOT_GIMPLE_REG_P (var) = 0;
 	}
-      if (maybe_reg && is_gimple_reg (var))
+      if (maybe_reg)
 	{
-	  if (dump_file)
+	  if (is_gimple_reg (var))
 	    {
-	      fprintf (dump_file, "Now a gimple register: ");
-	      print_generic_expr (dump_file, var);
-	      fprintf (dump_file, "\n");
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Now a gimple register: ");
+		  print_generic_expr (dump_file, var);
+		  fprintf (dump_file, "\n");
+		}
+	      bitmap_set_bit (suitable_for_renaming, DECL_UID (var));
 	    }
-	  bitmap_set_bit (suitable_for_renaming, DECL_UID (var));
+	  else
+	    DECL_NOT_GIMPLE_REG_P (var) = 1;
 	}
     }
 }
