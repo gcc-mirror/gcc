@@ -2296,8 +2296,11 @@ Parser<ManagedTokenSource>::parse_visibility ()
   auto vis_loc = lexer.peek_token ()->get_locus ();
   lexer.skip_token ();
 
-  // create simple pub visibility if no parentheses
-  if (lexer.peek_token ()->get_id () != LEFT_PAREN)
+  // create simple pub visibility if
+  // - found no parentheses
+  // - found unit type `()`
+  if (lexer.peek_token ()->get_id () != LEFT_PAREN
+      || lexer.peek_token (1)->get_id () == RIGHT_PAREN)
     {
       return AST::Visibility::create_public (vis_loc);
       // or whatever
