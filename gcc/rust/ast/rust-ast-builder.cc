@@ -85,8 +85,9 @@ std::unique_ptr<Expr>
 AstBuilder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		   std::unique_ptr<Expr> &&tail_expr)
 {
-  return std::unique_ptr<Expr> (
-    new BlockExpr (std::move (stmts), std::move (tail_expr), {}, {}, loc, loc));
+  return std::unique_ptr<Expr> (new BlockExpr (std::move (stmts),
+					       std::move (tail_expr), {}, {},
+					       LoopLabel::error (), loc, loc));
 }
 
 std::unique_ptr<Stmt>

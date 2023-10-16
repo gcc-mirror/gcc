@@ -7359,6 +7359,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::BlockExpr>
 Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
+					      AST::LoopLabel label,
 					      location_t pratt_parsed_loc)
 {
   location_t locus = pratt_parsed_loc;
@@ -7425,8 +7426,8 @@ Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
 
   return std::unique_ptr<AST::BlockExpr> (
     new AST::BlockExpr (std::move (stmts), std::move (expr),
-			std::move (inner_attrs), std::move (outer_attrs), locus,
-			end_locus));
+			std::move (inner_attrs), std::move (outer_attrs),
+			std::move (label), locus, end_locus));
 }
 
 /* Parses a "grouped" expression (expression in parentheses), used to control
@@ -8367,7 +8368,7 @@ Parser<ManagedTokenSource>::parse_for_loop_expr (AST::AttrVec outer_attrs,
 
 // Parses a loop expression with label (any kind of loop - disambiguates).
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::BaseLoopExpr>
+std::unique_ptr<AST::Expr>
 Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
 						      AST::AttrVec outer_attrs)
 {
@@ -8419,6 +8420,8 @@ Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
 	  return parse_while_loop_expr (std::move (outer_attrs),
 					std::move (label));
 	}
+    case LEFT_CURLY:
+      return parse_block_expr (std::move (outer_attrs), std::move (label));
     default:
       // error
       add_error (Error (t->get_locus (),
@@ -12537,7 +12540,8 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
       return parse_continue_expr (std::move (outer_attrs), tok->get_locus ());
     case LEFT_CURLY:
       // ok - this is an expression with block for once.
-      return parse_block_expr (std::move (outer_attrs), tok->get_locus ());
+      return parse_block_expr (std::move (outer_attrs),
+			       AST::LoopLabel::error (), tok->get_locus ());
     case IF:
       // if or if let, so more lookahead to find out
       if (lexer.peek_token ()->get_id () == LET)

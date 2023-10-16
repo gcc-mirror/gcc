@@ -11,6 +11,36 @@ namespace AST {
  * "has_whatever" pairs with
  * optional types (std::optional or boost::optional)? */
 
+// Loop label expression AST node used with break and continue expressions
+// TODO: inline?
+class LoopLabel /*: public Node*/
+{
+  Lifetime label; // or type LIFETIME_OR_LABEL
+  location_t locus;
+
+  NodeId node_id;
+
+public:
+  std::string as_string () const;
+
+  LoopLabel (Lifetime loop_label, location_t locus = UNDEF_LOCATION)
+    : label (std::move (loop_label)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  // Returns whether the LoopLabel is in an error state.
+  bool is_error () const { return label.is_error (); }
+
+  // Creates an error state LoopLabel.
+  static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
+
+  location_t get_locus () const { return locus; }
+
+  Lifetime &get_lifetime () { return label; }
+
+  NodeId get_node_id () const { return node_id; }
+};
+
 // AST node for an expression with an accompanying block - abstract
 class ExprWithBlock : public Expr
 {
@@ -2396,6 +2426,7 @@ class BlockExpr : public ExprWithBlock
   std::vector<Attribute> inner_attrs;
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
+  LoopLabel label;
   location_t start_locus;
   location_t end_locus;
   bool marked_for_strip = false;
@@ -2412,19 +2443,21 @@ public:
   BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr,
 	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, location_t start_locus,
-	     location_t end_locus)
+	     std::vector<Attribute> outer_attribs, LoopLabel label,
+	     location_t start_locus, location_t end_locus)
     : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      start_locus (start_locus), end_locus (end_locus)
+      label (std::move (label)), start_locus (start_locus),
+      end_locus (end_locus)
   {}
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), outer_attrs (other.outer_attrs),
-      inner_attrs (other.inner_attrs), start_locus (other.start_locus),
-      end_locus (other.end_locus), marked_for_strip (other.marked_for_strip)
+      inner_attrs (other.inner_attrs), label (other.label),
+      start_locus (other.start_locus), end_locus (other.end_locus),
+      marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2523,6 +2556,9 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  bool has_label () { return !label.is_error (); }
+  LoopLabel &get_label () { return label; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3350,36 +3386,6 @@ protected:
   {
     return new UnsafeBlockExpr (*this);
   }
-};
-
-// Loop label expression AST node used with break and continue expressions
-// TODO: inline?
-class LoopLabel /*: public Node*/
-{
-  Lifetime label; // or type LIFETIME_OR_LABEL
-  location_t locus;
-
-  NodeId node_id;
-
-public:
-  std::string as_string () const;
-
-  LoopLabel (Lifetime loop_label, location_t locus = UNDEF_LOCATION)
-    : label (std::move (loop_label)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
-  {}
-
-  // Returns whether the LoopLabel is in an error state.
-  bool is_error () const { return label.is_error (); }
-
-  // Creates an error state LoopLabel.
-  static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
-
-  location_t get_locus () const { return locus; }
-
-  Lifetime &get_lifetime () { return label; }
-
-  NodeId get_node_id () const { return node_id; }
 };
 
 // Base loop expression AST node - aka LoopExpr
