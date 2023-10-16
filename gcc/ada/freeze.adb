@@ -798,7 +798,7 @@ package body Freeze is
          --  limited objects.
 
          if Present (Init)
-           and then not Is_Limited_View (Typ)
+           and then not Is_Inherently_Limited_Type (Typ)
          then
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
@@ -7446,7 +7446,8 @@ package body Freeze is
                --  be an array type, or a nonlimited record type).
 
                if Has_Private_Declaration (E) then
-                  if (not Is_Record_Type (E) or else not Is_Limited_View (E))
+                  if (not Is_Record_Type (E)
+                       or else not Is_Inherently_Limited_Type (E))
                     and then not Is_Private_Type (E)
                   then
                      Error_Msg_Name_1 := Name_Simple_Storage_Pool_Type;

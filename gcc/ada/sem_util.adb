@@ -1879,7 +1879,7 @@ package body Sem_Util is
          return False;
       end if;
 
-      return Is_Definite_Subtype (T) and then Is_Limited_View (T);
+      return Is_Definite_Subtype (T) and then Is_Inherently_Limited_Type (T);
    end Build_Default_Subtype_OK;
 
    --------------------------------------------
@@ -6190,7 +6190,7 @@ package body Sem_Util is
       --  In Ada 95, limited types are returned by reference, but not if the
       --  convention is other than Ada.
 
-      elsif Is_Limited_View (Typ)
+      elsif Is_Inherently_Limited_Type (Typ)
         and then not Has_Foreign_Convention (Func)
       then
          Set_Returns_By_Ref (Func);
@@ -15325,7 +15325,7 @@ package body Sem_Util is
            --  statement is aliased if its type is immutably limited.
 
            or else (Is_Return_Object (E)
-                     and then Is_Limited_View (Etype (E)))
+                     and then Is_Inherently_Limited_Type (Etype (E)))
 
            --  The current instance of a limited type is aliased, so
            --  we want to allow uses of T'Access in the init proc for
@@ -15334,7 +15334,7 @@ package body Sem_Util is
 
            or else (Is_Formal (E)
                      and then Chars (E) = Name_uInit
-                     and then Is_Limited_View (Etype (E)));
+                     and then Is_Inherently_Limited_Type (Etype (E)));
 
       elsif Nkind (Obj) = N_Selected_Component then
          return Is_Aliased (Entity (Selector_Name (Obj)));
@@ -22592,7 +22592,7 @@ package body Sem_Util is
 
       begin
          if Is_Record_Type (Typ)
-           and then not Is_Limited_View (Typ)
+           and then not Is_Inherently_Limited_Type (Typ)
            and then Has_Defaulted_Discriminants (Typ)
          then
             --  Loop through the components, looking for an array whose upper

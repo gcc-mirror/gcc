@@ -5927,7 +5927,7 @@ package body Exp_Util is
       --  function being called is build-in-place. This will have to be revised
       --  when build-in-place functions are generalized to other types.
 
-      elsif Is_Limited_View (Exp_Typ)
+      elsif Is_Inherently_Limited_Type (Exp_Typ)
         and then
          (Is_Class_Wide_Type (Exp_Typ)
            or else Is_Interface (Exp_Typ)
@@ -12363,7 +12363,7 @@ package body Exp_Util is
 
          if Ada_Version >= Ada_2005
            and then Nkind (Exp) = N_Function_Call
-           and then Is_Limited_View (Etype (Exp))
+           and then Is_Inherently_Limited_Type (Etype (Exp))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
          then
             declare

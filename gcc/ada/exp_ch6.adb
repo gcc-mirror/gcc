@@ -6913,7 +6913,7 @@ package body Exp_Ch6 is
             Set_Enclosing_Sec_Stack_Return (N);
          end if;
 
-      elsif Is_Limited_View (R_Type) then
+      elsif Is_Inherently_Limited_Type (R_Type) then
          null;
 
       --  No copy needed for thunks returning interface type objects since
@@ -8219,7 +8219,7 @@ package body Exp_Ch6 is
       --  of a function with a limited interface result, where the function
       --  may return objects of nonlimited descendants.
 
-      return Is_Limited_View (Typ)
+      return Is_Inherently_Limited_Type (Typ)
         and then Ada_Version >= Ada_2005
         and then not Debug_Flag_Dot_L;
    end Is_Build_In_Place_Result_Type;

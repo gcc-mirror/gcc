@@ -7255,7 +7255,7 @@ package body Exp_Ch3 is
 
          else pragma Assert (Is_Definite_Subtype (Typ)
            or else (Has_Unknown_Discriminants (Typ)
-                     and then Is_Limited_View (Typ)));
+                     and then Is_Inherently_Limited_Type (Typ)));
 
             Alloc_Typ := Typ;
          end if;
@@ -7692,7 +7692,7 @@ package body Exp_Ch3 is
                --  and attached to the finalization list.
 
                if Needs_Finalization (Typ)
-                 and then not Is_Limited_View (Typ)
+                 and then not Is_Inherently_Limited_Type (Typ)
                then
                   Adj_Call :=
                     Make_Adjust_Call (
@@ -8137,7 +8137,7 @@ package body Exp_Ch3 is
             --  the object declaration into a renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Limited_View (Typ)
+              and then not Is_Inherently_Limited_Type (Typ)
               and then Nkind (Expr_Q) /= N_Function_Call
               and then not Rewrite_As_Renaming
             then

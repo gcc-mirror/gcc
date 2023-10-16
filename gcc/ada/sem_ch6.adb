@@ -1065,7 +1065,7 @@ package body Sem_Ch6 is
          --  get generated elsewhere.
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
-           and then Is_Limited_View (Etype (Scope_Id))
+           and then Is_Inherently_Limited_Type (Etype (Scope_Id))
            and then Static_Accessibility_Level (Expr, Zero_On_Dynamic_Level)
                       > Subprogram_Access_Level (Scope_Id)
          then
@@ -6662,7 +6662,7 @@ package body Sem_Ch6 is
               ("(Ada 2005) cannot copy object of a limited type "
                & "(RM-2005 6.5(5.5/2))", Expr);
 
-            if Is_Limited_View (R_Type) then
+            if Is_Inherently_Limited_Type (R_Type) then
                Error_Msg_N
                  ("\return by reference not permitted in Ada 2005", Expr);
             end if;
@@ -6682,7 +6682,7 @@ package body Sem_Ch6 is
                  ("return of limited object not permitted in Ada 2005 "
                   & "(RM-2005 6.5(5.5/2))?y?", Expr);
 
-            elsif Is_Limited_View (R_Type) then
+            elsif Is_Inherently_Limited_Type (R_Type) then
                Error_Msg_N
                  ("return by reference not permitted in Ada 2005 "
                   & "(RM-2005 6.5(5.5/2))?y?", Expr);

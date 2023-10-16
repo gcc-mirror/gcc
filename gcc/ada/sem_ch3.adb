@@ -11636,7 +11636,7 @@ package body Sem_Ch3 is
       --  or else be a partial view.
 
       if Nkind (Discriminant_Type (D)) = N_Access_Definition then
-         if Is_Limited_View (Current_Scope)
+         if Is_Inherently_Limited_Type (Current_Scope)
            or else
              (Nkind (Parent (Current_Scope)) = N_Private_Type_Declaration
                and then Limited_Present (Parent (Current_Scope)))

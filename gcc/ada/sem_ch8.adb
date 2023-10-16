@@ -1143,7 +1143,7 @@ package body Sem_Ch8 is
          --  there is no copy involved and no performance hit.
 
          if Nkind (Nam) = N_Function_Call
-           and then Is_Limited_View (Etype (Nam))
+           and then Is_Inherently_Limited_Type (Etype (Nam))
            and then not Is_Constrained (Etype (Nam))
            and then Comes_From_Source (N)
          then

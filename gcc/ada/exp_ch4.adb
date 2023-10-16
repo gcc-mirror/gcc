@@ -941,7 +941,7 @@ package body Exp_Ch4 is
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
-           and then not Is_Limited_View (T)
+           and then not Is_Inherently_Limited_Type (T)
            and then not Aggr_In_Place
            and then Nkind (Exp) /= N_Function_Call
            and then not For_Special_Return_Object (N)
