@@ -531,10 +531,7 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 
 		value_range vr;
 		range_query *query;
-		if (cfun)
-		  query = get_range_query (cfun);
-		else
-		  query = get_global_range_query ();
+		query = get_range_query (cfun);
 
 		if (TREE_CODE (index) == SSA_NAME
 		    && (low_bound = array_ref_low_bound (exp),

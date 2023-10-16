@@ -11064,11 +11064,7 @@ expr_not_equal_to (tree t, const wide_int &w)
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	return false;
 
-      if (cfun)
-	get_range_query (cfun)->range_of_expr (vr, t);
-      else
-	get_global_range_query ()->range_of_expr (vr, t);
-
+      get_range_query (cfun)->range_of_expr (vr, t);
       if (!vr.undefined_p () && !vr.contains_p (w))
 	return true;
       /* If T has some known zero bits and W has any of those bits set,

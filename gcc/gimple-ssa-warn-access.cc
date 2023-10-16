@@ -332,7 +332,7 @@ check_nul_terminated_array (GimpleOrTree expr, tree src, tree bound)
     {
       Value_Range r (TREE_TYPE (bound));
 
-      get_global_range_query ()->range_of_expr (r, bound);
+      get_range_query (cfun)->range_of_expr (r, bound);
 
       if (r.undefined_p () || r.varying_p ())
 	return true;
