@@ -149,6 +149,7 @@ public:
   {
     switch (kind)
       {
+      case PATH:
       case PAT:
       case TY:
       case VIS:
