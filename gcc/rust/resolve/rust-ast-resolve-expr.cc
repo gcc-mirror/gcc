@@ -303,6 +303,28 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
+  if (expr.has_label ())
+    {
+      auto label = expr.get_label ();
+      if (label.get_lifetime ().get_lifetime_type ()
+	  != AST::Lifetime::LifetimeType::NAMED)
+	{
+	  rust_error_at (label.get_locus (),
+			 "Labels must be a named lifetime value");
+	  return;
+	}
+
+      auto label_name = label.get_lifetime ().get_lifetime_name ();
+      auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
+      resolver->get_label_scope ().insert (
+	CanonicalPath::new_seg (label.get_node_id (), label_name),
+	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
+	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (locus, "was defined here");
+	});
+    }
+
   for (auto &s : expr.get_statements ())
     {
       if (s->is_item ())
