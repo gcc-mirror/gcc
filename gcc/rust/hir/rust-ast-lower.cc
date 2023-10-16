@@ -95,6 +95,8 @@ ASTLowering::go ()
 void
 ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
+  auto label = lower_loop_label (expr.get_label ());
+
   std::vector<std::unique_ptr<HIR::Stmt>> block_stmts;
   bool block_did_terminate = false;
 
@@ -143,8 +145,8 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
 			  std::unique_ptr<HIR::ExprWithoutBlock> (tail_expr),
 			  tail_reachable, expr.get_inner_attrs (),
-			  expr.get_outer_attrs (), expr.get_start_locus (),
-			  expr.get_end_locus ());
+			  expr.get_outer_attrs (), label,
+			  expr.get_start_locus (), expr.get_end_locus ());
 
   terminated = block_did_terminate;
 }
