@@ -1326,7 +1326,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
       if (iters[i])
 	{
 	  gfc_expr *var = iters[i]->var;
-	  for (int j = i - 1; j < i; j++)
+	  for (int j = 0; j < i; j++)
 	    {
 	      if (iters[j]
 		  && (var_in_expr (var, iters[j]->start)
