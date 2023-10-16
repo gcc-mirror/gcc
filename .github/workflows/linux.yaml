@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -qq update
-          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils binutils autogen gettext
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils binutils autogen gettext autopoint libasprintf-dev libgettextpo-dev mailutils
 
       - name: Install dependencies for aarch64
         if: success() && contains(matrix.target, 'aarch64')
@@ -83,7 +83,7 @@ jobs:
           if test ! -d build; then mkdir build; fi
           cd build
           ../gcc/configure \
-                --enable-languages=c,c++,objc,obj-c++ \
+                --enable-languages=c,c++,lto,objc,obj-c++ \
                 --prefix=/usr \
                 --with-gcc-major-version-only \
                 --program-prefix=x86_64-linux-gnu- \
