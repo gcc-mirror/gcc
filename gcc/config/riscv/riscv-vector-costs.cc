@@ -446,10 +446,6 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
   auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (this_loop_vinfo);
 
-  if (!LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (this_loop_vinfo)
-      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (other_loop_vinfo))
-    return false;
-
   if (loop_autovec_infos.get (loop) && loop_autovec_infos.get (loop)->end_p)
     return false;
   else if (loop_autovec_infos.get (loop))
@@ -482,6 +478,15 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
   machine_mode biggest_mode
     = compute_local_live_ranges (program_points_per_bb, live_ranges_per_bb);
+
+  /* If we can use simple VLS modes to handle NITERS element.
+     We don't need to use VLA modes with partial vector auto-vectorization.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
+      && known_le (tree_to_poly_int64 (LOOP_VINFO_NITERS (this_loop_vinfo))
+		     * GET_MODE_SIZE (biggest_mode).to_constant (),
+		   (int) RVV_M8 * BYTES_PER_RISCV_VECTOR)
+      && pow2p_hwi (LOOP_VINFO_INT_NITERS (this_loop_vinfo)))
+    return vector_costs::better_main_loop_than_p (other);
 
   /* Update live ranges according to PHI.  */
   update_local_live_ranges (other->m_vinfo, program_points_per_bb,
