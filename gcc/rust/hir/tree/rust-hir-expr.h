@@ -28,6 +28,34 @@
 namespace Rust {
 namespace HIR {
 
+// Loop label expression HIR node used with break and continue expressions
+// TODO: inline?
+class LoopLabel /*: public Node*/
+{
+  Lifetime label; // or type LIFETIME_OR_LABEL
+
+  location_t locus;
+
+  Analysis::NodeMapping mappings;
+
+public:
+  std::string as_string () const;
+
+  LoopLabel (Analysis::NodeMapping mapping, Lifetime loop_label,
+	     location_t locus)
+    : label (std::move (loop_label)), locus (locus), mappings (mapping)
+  {}
+
+  // Returns whether the LoopLabel is in an error state.
+  bool is_error () const { return label.is_error (); }
+
+  location_t get_locus () const { return locus; }
+
+  Analysis::NodeMapping &get_mappings () { return mappings; }
+
+  Lifetime &get_lifetime () { return label; }
+};
+
 // HIR node for an expression with an accompanying block - abstract
 class ExprWithBlock : public Expr
 {
@@ -2121,6 +2149,7 @@ public:
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
   bool tail_reachable;
+  LoopLabel label;
   location_t start_locus;
   location_t end_locus;
 
@@ -2140,19 +2169,19 @@ public:
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
-	     location_t start_locus, location_t end_locus)
+	     LoopLabel label, location_t start_locus, location_t end_locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       WithInnerAttrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      tail_reachable (tail_reachable), start_locus (start_locus),
-      end_locus (end_locus)
+      tail_reachable (tail_reachable), label (std::move (label)),
+      start_locus (start_locus), end_locus (end_locus)
   {}
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), /*statements(other.statements),*/
-      WithInnerAttrs (other.inner_attrs), start_locus (other.start_locus),
-      end_locus (other.end_locus)
+      WithInnerAttrs (other.inner_attrs), label (other.label),
+      start_locus (other.start_locus), end_locus (other.end_locus)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2210,6 +2239,9 @@ public:
   {
     return ExprType::Block;
   }
+
+  bool has_label () const { return !label.is_error (); }
+  LoopLabel &get_label () { return label; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2833,34 +2865,6 @@ protected:
   {
     return new UnsafeBlockExpr (*this);
   }
-};
-
-// Loop label expression HIR node used with break and continue expressions
-// TODO: inline?
-class LoopLabel /*: public Node*/
-{
-  Lifetime label; // or type LIFETIME_OR_LABEL
-
-  location_t locus;
-
-  Analysis::NodeMapping mappings;
-
-public:
-  std::string as_string () const;
-
-  LoopLabel (Analysis::NodeMapping mapping, Lifetime loop_label,
-	     location_t locus)
-    : label (std::move (loop_label)), locus (locus), mappings (mapping)
-  {}
-
-  // Returns whether the LoopLabel is in an error state.
-  bool is_error () const { return label.is_error (); }
-
-  location_t get_locus () const { return locus; }
-
-  Analysis::NodeMapping &get_mappings () { return mappings; }
-
-  Lifetime &get_lifetime () { return label; }
 };
 
 // Base loop expression HIR node - aka LoopExpr
