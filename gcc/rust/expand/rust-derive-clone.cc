@@ -46,7 +46,8 @@ std::unique_ptr<TraitImplItem>
 DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
 {
   auto block = std::unique_ptr<BlockExpr> (
-    new BlockExpr ({}, std::move (clone_expr), {}, {}, loc, loc));
+    new BlockExpr ({}, std::move (clone_expr), {}, {}, AST::LoopLabel::error (),
+		   loc, loc));
   auto big_self_type = builder.single_type_path ("Self");
 
   return std::unique_ptr<TraitImplItem> (
