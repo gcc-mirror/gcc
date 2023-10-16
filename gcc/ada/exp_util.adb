@@ -1893,7 +1893,7 @@ package body Exp_Util is
          --  routines.
 
          if Present (DIC_Asp) then
-            Set_Entity (Identifier (DIC_Asp), New_Copy_Tree (Expr));
+            Set_Expression_Copy (DIC_Asp, New_Copy_Tree (Expr));
          end if;
 
          --  Once the DIC assertion expression is fully processed, add a check
@@ -3153,7 +3153,7 @@ package body Exp_Util is
                --  Check_Aspect_At_xxx routines.
 
                if Present (Prag_Asp) then
-                  Set_Entity (Identifier (Prag_Asp), New_Copy_Tree (Expr));
+                  Set_Expression_Copy (Prag_Asp, New_Copy_Tree (Expr));
                end if;
 
                Add_Invariant_Check (Prag, Expr, Checks);
