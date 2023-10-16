@@ -230,6 +230,9 @@ package body Sem_Ch10 is
    --  Reset all visibility flags on unit after compiling it, either as a main
    --  unit or as a unit in the context.
 
+   procedure Replace (Old_E, New_E : Entity_Id);
+   --  Replace Old_E by New_E on visibility list
+
    procedure Unchain (E : Entity_Id);
    --  Remove single entity from visibility list
 
@@ -5147,15 +5150,12 @@ package body Sem_Ch10 is
               and then not Is_Child_Unit (Lim_Typ)
             then
                declare
-                  Non_Lim_View : constant Entity_Id :=
-                                   Non_Limited_View (Lim_Typ);
+                  Typ : constant Entity_Id := Non_Limited_View (Lim_Typ);
 
                   Prev : Entity_Id;
 
                begin
-                  Prev := Current_Entity (Lim_Typ);
-
-                  --  Replace Non_Lim_View in the homonyms list, so that the
+                  --  Replace Typ by Lim_Typ in the homonyms list, so that the
                   --  limited view becomes available.
 
                   --  If the nonlimited view is a record with an anonymous
@@ -5187,38 +5187,47 @@ package body Sem_Ch10 is
                   --
                   --  [*] denotes the visible entity (Current_Entity)
 
-                  if Prev = Non_Lim_View
-                    or else
-                      (Ekind (Prev) = E_Incomplete_Type
-                        and then Full_View (Prev) = Non_Lim_View)
-                    or else
-                      (Ekind (Prev) = E_Incomplete_Type
-                        and then From_Limited_With (Prev)
-                        and then
-                          Ekind (Non_Limited_View (Prev)) = E_Incomplete_Type
-                        and then
-                          Full_View (Non_Limited_View (Prev)) = Non_Lim_View)
-                  then
-                     Set_Current_Entity (Lim_Typ);
+                  Prev := Current_Entity (Lim_Typ);
 
-                  else
-                     while Present (Homonym (Prev))
-                       and then Homonym (Prev) /= Non_Lim_View
-                     loop
-                        Prev := Homonym (Prev);
-                     end loop;
+                  while Present (Prev) loop
+                     --  This is a regular replacement
 
-                     Set_Homonym (Prev, Lim_Typ);
-                  end if;
+                     if Prev = Typ
+                       or else (Ekind (Prev) = E_Incomplete_Type
+                                 and then Full_View (Prev) = Typ)
+                     then
+                        Replace (Prev, Lim_Typ);
 
-                  Set_Homonym (Lim_Typ, Homonym (Non_Lim_View));
+                        if Debug_Flag_I then
+                           Write_Str ("   (homonym) replace ");
+                           Write_Name (Chars (Typ));
+                           Write_Eol;
+                        end if;
+
+                        exit;
+
+                     --  This is where E1 is replaced with E4
+
+                     elsif Ekind (Prev) = E_Incomplete_Type
+                       and then From_Limited_With (Prev)
+                       and then
+                         Ekind (Non_Limited_View (Prev)) = E_Incomplete_Type
+                       and then Full_View (Non_Limited_View (Prev)) = Typ
+                     then
+                        Replace (Prev, Lim_Typ);
+
+                        if Debug_Flag_I then
+                           Write_Str ("   (homonym) E1 -> E4 ");
+                           Write_Name (Chars (Typ));
+                           Write_Eol;
+                        end if;
+
+                        exit;
+                     end if;
+
+                     Prev := Homonym (Prev);
+                  end loop;
                end;
-
-               if Debug_Flag_I then
-                  Write_Str ("   (homonym) chain ");
-                  Write_Name (Chars (Lim_Typ));
-                  Write_Eol;
-               end if;
             end if;
 
             Next_Entity (Lim_Typ);
@@ -5311,6 +5320,10 @@ package body Sem_Ch10 is
       if Debug_Flag_I then
          if Private_Present (With_Clause) then
             Write_Str ("install private withed unit ");
+         elsif Parent_With (With_Clause) then
+            Write_Str ("install parent withed unit ");
+         elsif Implicit_With (With_Clause) then
+            Write_Str ("install implicit withed unit ");
          else
             Write_Str ("install withed unit ");
          end if;
@@ -6650,9 +6663,10 @@ package body Sem_Ch10 is
          ------------------------------
 
          procedure Restore_Chain_For_Shadow (Shadow : Entity_Id) is
-            Is_E3 : Boolean;
+            Typ : constant Entity_Id := Non_Limited_View (Shadow);
+            pragma Assert (not In_Chain (Typ));
+
             Prev  : Entity_Id;
-            Typ   : Entity_Id;
 
          begin
             --  If the package has incomplete types, the limited view of the
@@ -6661,9 +6675,8 @@ package body Sem_Ch10 is
             --  the incomplete type at stake. This in turn has a full view
             --  E3 that is the full declaration, with a corresponding
             --  shadow entity E4. When reinstalling the nonlimited view,
-            --  the nonvisible entity E1 is first replaced with E2, but then
-            --  E3 must *not* become the visible entity as it is replacing E4
-            --  in the homonyms list and simply be ignored.
+            --  the visible entity E4 is replaced directly with E2 in the
+            --  the homonyms list and E3 is simply ignored.
             --
             --           regular views          limited views
             --
@@ -6676,40 +6689,42 @@ package body Sem_Ch10 is
             --
             --  [*] denotes the visible entity (Current_Entity)
 
-            Typ := Non_Limited_View (Shadow);
-            pragma Assert (not In_Chain (Typ));
-
-            Is_E3 := Nkind (Parent (Typ)) = N_Full_Type_Declaration
-              and then Present (Incomplete_View (Parent (Typ)));
-
             Prev := Current_Entity (Shadow);
 
-            if Prev = Shadow then
-               if Is_E3 then
-                  Set_Name_Entity_Id (Chars (Prev), Homonym (Prev));
-                  return;
+            while Present (Prev) loop
+               --  This is a regular replacement
 
-               else
-                  Set_Current_Entity (Typ);
+               if Prev = Shadow then
+                  Replace (Prev, Typ);
+
+                  if Debug_Flag_I then
+                     Write_Str ("   (homonym) replace ");
+                     Write_Name (Chars (Typ));
+                     Write_Eol;
+                  end if;
+
+                  exit;
+
+               --  This is where E4 is replaced with E2
+
+               elsif Ekind (Prev) = E_Incomplete_Type
+                 and then From_Limited_With (Prev)
+                 and then Ekind (Typ) = E_Incomplete_Type
+                 and then Full_View (Typ) = Non_Limited_View (Prev)
+               then
+                  Replace (Prev, Typ);
+
+                  if Debug_Flag_I then
+                     Write_Str ("   (homonym) E4 -> E2 ");
+                     Write_Name (Chars (Typ));
+                     Write_Eol;
+                  end if;
+
+                  exit;
                end if;
 
-            else
-               while Present (Homonym (Prev))
-                 and then Homonym (Prev) /= Shadow
-               loop
-                  Prev := Homonym (Prev);
-               end loop;
-
-               if Is_E3 then
-                  Set_Homonym (Prev, Homonym (Shadow));
-                  return;
-
-               else
-                  Set_Homonym (Prev, Typ);
-               end if;
-            end if;
-
-            Set_Homonym (Typ, Homonym (Shadow));
+               Prev := Homonym (Prev);
+            end loop;
          end Restore_Chain_For_Shadow;
 
          --------------------
@@ -7010,6 +7025,35 @@ package body Sem_Ch10 is
    begin
       null;
    end sm;
+
+   -------------
+   -- Replace --
+   -------------
+
+   procedure Replace (Old_E, New_E : Entity_Id) is
+      Prev : Entity_Id;
+
+   begin
+      Prev := Current_Entity (Old_E);
+
+      if No (Prev) then
+         return;
+
+      elsif Prev = Old_E then
+         Set_Current_Entity (New_E);
+         Set_Homonym (New_E, Homonym (Old_E));
+
+      else
+         while Present (Prev) and then Homonym (Prev) /= Old_E loop
+            Prev := Homonym (Prev);
+         end loop;
+
+         if Present (Prev) then
+            Set_Homonym (Prev, New_E);
+            Set_Homonym (New_E, Homonym (Old_E));
+         end if;
+      end if;
+   end Replace;
 
    -------------
    -- Unchain --

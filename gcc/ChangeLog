@@ -1,3 +1,43 @@
+2023-10-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111622
+	* value-relation.cc (equiv_oracle::add_partial_equiv): Do not
+	register a partial equivalence if an operand has no uses.
+
+2023-10-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111694
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Adjust
+	equivalence range.
+	* value-relation.cc (adjust_equivalence_range): New.
+	* value-relation.h (adjust_equivalence_range): New prototype.
+
+2023-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-10-11  Richard Biener  <rguenther@suse.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111519
+	* tree-ssa-strlen.cc (strlen_pass::count_nonzero_bytes): Add vuse
+	argument and pass it through to recursive calls and
+	count_nonzero_bytes_addr calls.  Don't shadow the stmt argument, but
+	change stmt for gimple_assign_single_p statements for which we don't
+	immediately punt.
+	(strlen_pass::count_nonzero_bytes_addr): Add vuse argument and pass
+	it through to recursive calls and count_nonzero_bytes calls.  Don't
+	use get_strinfo if gimple_vuse (stmt) is different from vuse.  Don't
+	shadow the stmt argument.
+
+2023-10-07  Andrew Pinski  <pinskia@gmail.com>
+
+	Backported from master:
+	2023-10-06  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111699
+	* match.pd ((c ? a : b) op d, (c ? a : b) op (c ? d : e),
+	(v ? w : 0) ? a : b, c1 ? c2 ? a : b : b): Enable only for GIMPLE.
+
 2023-10-02  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	Backported from master:

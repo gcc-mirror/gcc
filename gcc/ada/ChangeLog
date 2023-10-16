@@ -1,3 +1,18 @@
+2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/111434
+	* sem_ch10.adb (Replace): New procedure to replace an entity with
+	another on the homonym chain.
+	(Install_Limited_With_Clause): Rename Non_Lim_View to Typ for the
+	sake of consistency.  Call Replace to do the replacements and split
+	the code into the regular and the special cases.  Add debuggging
+	output controlled by -gnatdi.
+	(Install_With_Clause): Print the Parent_With and Implicit_With flags
+	in the debugging output controlled by -gnatdi.
+	(Remove_Limited_With_Unit.Restore_Chain_For_Shadow (Shadow)): Rewrite
+	using a direct replacement of E4 by E2.   Call Replace to do the
+	replacements.  Add debuggging output controlled by -gnatdi.
+
 2023-09-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Remove call

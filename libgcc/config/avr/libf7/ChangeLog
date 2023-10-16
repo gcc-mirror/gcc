@@ -1,3 +1,9 @@
+2023-10-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7.c (F7MOD_atan2_, f7_atan2): New module and function.
+	* libf7.h: Adjust comments.
+	* libf7-common.mk (CALL_PROLOGUES): Add atan2.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

@@ -43,7 +43,7 @@ m_xd += lrint lround
 # -mcall-prologues
 CALL_PROLOGUES += divx sqrt cbrt get_double set_double logx exp exp10 pow10
 CALL_PROLOGUES += put_C truncx round minmax sincos tan cotan pow powi fmod
-CALL_PROLOGUES += atan asinacos madd_msub hypot init horner sinhcosh tanh
+CALL_PROLOGUES += atan atan2 asinacos madd_msub hypot init horner sinhcosh tanh
 
 # -mstrict-X
 STRICT_X += log addsub truncx ldexp exp

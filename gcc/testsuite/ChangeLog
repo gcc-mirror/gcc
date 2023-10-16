@@ -1,3 +1,25 @@
+2023-10-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111694
+	* gcc.dg/pr111694.c: New.
+
+2023-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-10-11  Richard Biener  <rguenther@suse.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111519
+	* gcc.dg/torture/pr111519.c: New testcase.
+
+2023-10-07  Andrew Pinski  <pinskia@gmail.com>
+
+	Backported from master:
+	2023-10-06  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111699
+	* gcc.c-torture/compile/pr111699-1.c: New test.
+
 2023-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
