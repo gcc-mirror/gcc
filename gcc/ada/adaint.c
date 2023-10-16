@@ -1507,7 +1507,16 @@ extern long long __gnat_file_time(char* name)
     long long ll_time;
   } t_write;
 
-  if (!GetFileAttributesExA(name, GetFileExInfoStandard, &fad)) {
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+  int name_len;
+
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  name_len = _tcslen (wname);
+
+  if (name_len > GNAT_MAX_PATH_LEN)
+    return LLONG_MIN;
+
+  if (!GetFileAttributesEx(wname, GetFileExInfoStandard, &fad)) {
     return LLONG_MIN;
   }
 
