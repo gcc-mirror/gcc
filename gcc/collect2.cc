@@ -865,12 +865,15 @@ main (int argc, char **argv)
   int i;
 
   for (i = 0; i < USE_LD_MAX; i++)
-    full_ld_suffixes[i]
 #ifdef CROSS_DIRECTORY_STRUCTURE
-      = concat (target_machine, "-", ld_suffixes[i], NULL);
-#else
-      = ld_suffixes[i];
+    /* lld and mold are platform-agnostic and not prefixed with target
+       triple.  */
+    if (!(i == USE_LLD_LD || i == USE_MOLD_LD))
+      full_ld_suffixes[i] = concat (target_machine, "-", ld_suffixes[i],
+				    NULL);
+    else
 #endif
+      full_ld_suffixes[i] = ld_suffixes[i];
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
