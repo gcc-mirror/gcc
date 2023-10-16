@@ -1751,7 +1751,7 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 	  && !TREE_THIS_VOLATILE (base)
 	  && (TYPE_ADDR_SPACE (TREE_TYPE (base))
 	      == TYPE_ADDR_SPACE (TREE_TYPE (model->expr)))
-	  && offset <= model->offset
+	  && offset == model->offset
 	  /* build_reconstructed_reference can still fail if we have already
 	     massaged BASE because of another type incompatibility.  */
 	  && (res = build_reconstructed_reference (loc, base, model)))
