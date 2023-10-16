@@ -566,6 +566,10 @@ TypeCheckExpr::visit (HIR::UnsafeBlockExpr &expr)
 void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
+  if (expr.has_label ())
+    context->push_new_loop_context (expr.get_mappings ().get_hirid (),
+				    expr.get_locus ());
+
   for (auto &s : expr.get_statements ())
     {
       if (!s->is_item ())
@@ -602,6 +606,20 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
   else if (expr.is_tail_reachable ())
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  else if (expr.has_label ())
+    {
+      TyTy::BaseType *loop_context_type = context->pop_loop_context ();
+
+      bool loop_context_type_infered
+	= (loop_context_type->get_kind () != TyTy::TypeKind::INFER)
+	  || ((loop_context_type->get_kind () == TyTy::TypeKind::INFER)
+	      && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
+		  != TyTy::InferType::GENERAL));
+
+      infered = loop_context_type_infered ? loop_context_type
+					  : TyTy::TupleType::get_unit_type (
+					    expr.get_mappings ().get_hirid ());
+    }
   else
     {
       // FIXME this seems wrong
