@@ -1,3 +1,19 @@
+2023-10-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd f9efc98fd7.
+	* dmd/VERSION: Bump version to v2.105.2.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* d-diagnostic.cc (verrorReport): Don't emit tips when error gagging
+	is turned on.
+	* d-lang.cc (d_handle_option): Remove obsolete parameter.
+	(d_post_options): Likewise.
+	(d_read_ddoc_files): New function.
+	(d_generate_ddoc_file): New function.
+	(d_parse_file): Update for new front-end interface.
+	* expr.cc (ExprVisitor::visit (AssocArrayLiteralExp *)): Check for new
+	front-end lowering of static associative arrays.
+
 2023-10-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/111537

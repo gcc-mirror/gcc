@@ -1,3 +1,9 @@
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* scanner.cc (skip_free_comments, skip_fixed_comments): Remove
+	leftover 'OpenACC' from comments about OpenMP's conditional
+	compilation sentinel.
+
 2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (ext_attr_t): Add omp_allocate flag.

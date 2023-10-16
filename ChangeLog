@@ -1,3 +1,8 @@
+2023-10-15  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Add distclean-sim dependency on distclean-gnulib.
+	* Makefile.in: Regenerate.
+
 2023-10-11  Filip Kastl  <fkastl@suse.cz>
 
 	* MAINTAINERS: Fix name order.

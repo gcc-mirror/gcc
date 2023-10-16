@@ -1,3 +1,41 @@
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-fopenacc, -fopenmp, -fopenmp-simd): Use @samp not
+	@code; document more completely the supported Fortran sentinels.
+
+2023-10-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* optabs.cc (expand_subword_shift): Call simplify_expand_binop
+	instead of expand_binop.  Optimize cases (i.e. avoid generating
+	RTL) when CARRIES or INTO_INPUT is zero.  Use one_cmpl_optab
+	(i.e. NOT) instead of xor_optab with ~0 to calculate ~OP1.
+
+2023-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111800
+	* wide-int-print.h (print_dec_buf_size, print_decs_buf_size,
+	print_decu_buf_size, print_hex_buf_size): New inline functions.
+	* wide-int.cc (assert_deceq): Use print_dec_buf_size.
+	(assert_hexeq): Use print_hex_buf_size.
+	* wide-int-print.cc (print_decs): Use print_decs_buf_size.
+	(print_decu): Use print_decu_buf_size.
+	(print_hex): Use print_hex_buf_size.
+	(pp_wide_int_large): Use print_dec_buf_size.
+	* value-range.cc (irange_bitmask::dump): Use print_hex_buf_size.
+	* value-range-pretty-print.cc (vrange_printer::print_irange_bitmasks):
+	Likewise.
+	* tree-ssa-loop-niter.cc (do_warn_aggressive_loop_optimizations): Use
+	print_dec_buf_size.  Use TYPE_SIGN macro in print_dec call argument.
+
+2023-10-15  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* combine.cc (simplify_compare_const): Fix handling of unsigned
+	constants.
+
+2023-10-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Fix vsingle incorrect attribute for RVVM2x2QI.
+
 2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.cc (gimplify_bind_expr): Handle Fortran's

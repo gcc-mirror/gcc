@@ -1,3 +1,20 @@
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Enabling OpenMP): Update for C/C++ attributes;
+	improve wording especially for Fortran; mention -fopenmp-simd.
+	(Enabling OpenACC): Minor cleanup; remove conditional compilation
+	sentinel.
+
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (ACC_DEVICE_TYPE, ACC_DEVICE_NUM, ACC_PROFLIB):
+	Actually document what the function does.
+	(GCC_ACC_NOTIFY): Remove unused env var.
+
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Replace most future tense by present tense.
+
 2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-6.f90: Add missing
