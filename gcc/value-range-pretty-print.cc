@@ -100,11 +100,10 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
 
   pp_string (pp, " MASK ");
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
-  unsigned len_mask = bm.mask ().get_len ();
-  unsigned len_val = bm.value ().get_len ();
-  unsigned len = MAX (len_mask, len_val);
-  if (len > WIDE_INT_MAX_INL_ELTS)
-    p = XALLOCAVEC (char, len * HOST_BITS_PER_WIDE_INT / 4 + 4);
+  unsigned len_mask, len_val;
+  if (print_hex_buf_size (bm.mask (), &len_mask)
+      | print_hex_buf_size (bm.value (), &len_val))
+    p = XALLOCAVEC (char, MAX (len_mask, len_val));
   else
     p = buf;
   print_hex (bm.mask (), p);

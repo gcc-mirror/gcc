@@ -1920,7 +1920,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         StringExp se = ex ? ex.ctfeInterpret().toStringExp() : null;
         if (!ex || !se || se.len == 0)
         {
-            e.error("string expected as argument of __traits `%s` instead of `%s`", e.ident.toChars(), ex.toChars());
+            e.error("string expected as argument of __traits `%s` instead of `%s`", e.ident.toChars(), (*e.args)[0].toChars());
             return ErrorExp.get();
         }
         se = se.toUTF8(sc);

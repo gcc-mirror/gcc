@@ -1,3 +1,7 @@
+2023-10-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2.tags): New rule.
+
 2023-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GCCDeclare.mod (DeclareSubrange): Check

@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag7477.d(13): Error: integral constant must be scalar type, not `Foo`
-fail_compilation/diag7477.d(20): Error: integral constant must be scalar type, not `string`
+fail_compilation/diag7477.d(13): Error: cannot generate 0 value of type `Foo` for `a`
+fail_compilation/diag7477.d(20): Error: cannot generate 0 value of type `string` for `a`
 ---
 */
 

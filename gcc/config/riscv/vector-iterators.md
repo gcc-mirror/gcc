@@ -2230,7 +2230,7 @@
   (RVVM1x5QI "rvvm1qi") (RVVMF2x5QI "rvvmf2qi") (RVVMF4x5QI "rvvmf4qi") (RVVMF8x5QI "rvvmf8qi")
   (RVVM2x4QI "rvvm2qi") (RVVM1x4QI "rvvm1qi") (RVVMF2x4QI "rvvmf2qi") (RVVMF4x4QI "rvvmf4qi") (RVVMF8x4QI "rvvmf8qi")
   (RVVM2x3QI "rvvm2qi") (RVVM1x3QI "rvvm1qi") (RVVMF2x3QI "rvvmf2qi") (RVVMF4x3QI "rvvmf4qi") (RVVMF8x3QI "rvvmf8qi")
-  (RVVM4x2QI "rvvm4qi") (RVVM2x2QI "rvvm1qi") (RVVM1x2QI "rvvm1qi") (RVVMF2x2QI "rvvmf2qi") (RVVMF4x2QI "rvvmf4qi") (RVVMF8x2QI "rvvmf8qi")
+  (RVVM4x2QI "rvvm4qi") (RVVM2x2QI "rvvm2qi") (RVVM1x2QI "rvvm1qi") (RVVMF2x2QI "rvvmf2qi") (RVVMF4x2QI "rvvmf4qi") (RVVMF8x2QI "rvvmf8qi")
 
   (RVVM1x8HI "rvvm1hi") (RVVMF2x8HI "rvvmf2hi") (RVVMF4x8HI "rvvmf4hi")
   (RVVM1x7HI "rvvm1hi") (RVVMF2x7HI "rvvmf2hi") (RVVMF4x7HI "rvvmf4hi")

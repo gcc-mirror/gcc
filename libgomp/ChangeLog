@@ -1,3 +1,40 @@
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Enabling OpenMP): Update for C/C++ attributes;
+	improve wording especially for Fortran; mention -fopenmp-simd.
+	(Enabling OpenACC): Minor cleanup; remove conditional compilation
+	sentinel.
+
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (ACC_DEVICE_TYPE, ACC_DEVICE_NUM, ACC_PROFLIB):
+	Actually document what the function does.
+	(GCC_ACC_NOTIFY): Remove unused env var.
+
+2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Replace most future tense by present tense.
+
+2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-6.f90: Add missing
+	dg-additional-options "-fdump-tree-gimple"; fix scan.
+
+2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Fix some typos.
+	(Memory Management Routines): Document remaining 5.x routines.
+	(Memory allocation): Make clear when the section applies.
+
+2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Impl. Status): Mention that Fortran now
+	supports the allocate directive for stack variables.
+	* testsuite/libgomp.fortran/allocate-5.f90: New test.
+	* testsuite/libgomp.fortran/allocate-6.f90: New test.
+	* testsuite/libgomp.fortran/allocate-7.f90: New test.
+	* testsuite/libgomp.fortran/allocate-8.f90: New test.
+
 2023-10-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OMP_DEFAULT_DEVICE): Update spec ref; add @ref to

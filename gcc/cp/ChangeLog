@@ -1,3 +1,9 @@
+2023-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* module.cc (trees_out::start, trees_in::start): Remove
+	TREE_INT_CST_OFFSET_NUNITS handling.
+
 2023-10-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109422

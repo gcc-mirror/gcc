@@ -83,7 +83,7 @@ else version = MARS;
 
 enum LOG = false;
 
-private uint setMangleOverride(Dsymbol s, const(char)[] sym)
+package uint setMangleOverride(Dsymbol s, const(char)[] sym)
 {
     if (s.isFuncDeclaration() || s.isVarDeclaration())
     {
@@ -766,7 +766,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             else
             {
                 OutBuffer buf;
-                stcToBuffer(&buf, stc);
+                stcToBuffer(buf, stc);
                 dsym.error("cannot be `%s`", buf.peekChars());
             }
             dsym.storage_class &= ~stc; // strip off
@@ -783,7 +783,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (stc)
             {
                 OutBuffer buf;
-                stcToBuffer(&buf, stc);
+                stcToBuffer(buf, stc);
                 dsym.error("cannot be `scope` and `%s`", buf.peekChars());
             }
             else if (dsym.isMember())
@@ -1121,11 +1121,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                                 if (ne.member && !(ne.member.storage_class & STC.scope_))
                                 {
                                     import dmd.escape : setUnsafeDIP1000;
-                                    const inSafeFunc = sc.func && sc.func.isSafeBypassingInference();
+                                    const inSafeFunc = sc.func && sc.func.isSafeBypassingInference();   // isSafeBypassingInference may call setUnsafe().
                                     if (sc.setUnsafeDIP1000(false, dsym.loc, "`scope` allocation of `%s` requires that constructor be annotated with `scope`", dsym))
                                         errorSupplemental(ne.member.loc, "is the location of the constructor");
-                                    else if (global.params.obsolete && inSafeFunc)
-                                        warningSupplemental(ne.member.loc, "is the location of the constructor");
                                 }
                                 ne.onstack = 1;
                                 dsym.onstack = true;
@@ -1512,11 +1510,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         ob.writestring(") : ");
         // use visibility instead of sc.visibility because it couldn't be
         // resolved yet, see the comment above
-        visibilityToBuffer(ob, imp.visibility);
+        visibilityToBuffer(*ob, imp.visibility);
         ob.writeByte(' ');
         if (imp.isstatic)
         {
-            stcToBuffer(ob, STC.static_);
+            stcToBuffer(*ob, STC.static_);
             ob.writeByte(' ');
         }
         ob.writestring(": ");
@@ -2528,9 +2526,14 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 if (!em.ed.isAnonymous())
                     em.ed.memtype = t;
             }
+            const errors = global.startGagging();
             Expression e = new IntegerExp(em.loc, 0, t);
             e = e.ctfeInterpret();
-
+            if (global.endGagging(errors))
+            {
+                error(em.loc, "cannot generate 0 value of type `%s` for `%s`",
+                    t.toChars(), em.toChars());
+            }
             // save origValue for better json output
             em.origValue = e;
 
@@ -2564,7 +2567,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (emprev.errors)
                 return errorReturn();
 
+            auto errors = global.startGagging();
             Expression eprev = emprev.value;
+            assert(eprev);
             // .toHeadMutable() due to https://issues.dlang.org/show_bug.cgi?id=18645
             Type tprev = eprev.type.toHeadMutable().equals(em.ed.type.toHeadMutable())
                 ? em.ed.memtype
@@ -2578,12 +2583,23 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             emax = emax.expressionSemantic(sc);
             emax = emax.ctfeInterpret();
 
-            // Set value to (eprev + 1).
-            // But first check that (eprev != emax)
-            assert(eprev);
+            // check that (eprev != emax)
             Expression e = new EqualExp(EXP.equal, em.loc, eprev, emax);
             e = e.expressionSemantic(sc);
             e = e.ctfeInterpret();
+            if (global.endGagging(errors))
+            {
+                // display an introductory error before showing what actually failed
+                error(em.loc, "cannot check `%s` value for overflow", em.toPrettyChars());
+                // rerun to show errors
+                Expression e2 = DotIdExp.create(em.ed.loc, new TypeExp(em.ed.loc, tprev), Id.max);
+                e2 = e2.expressionSemantic(sc);
+                e2 = e2.ctfeInterpret();
+                e2 = new EqualExp(EXP.equal, em.loc, eprev, e2);
+                e2 = e2.expressionSemantic(sc);
+                e2 = e2.ctfeInterpret();
+            }
+            // now any errors are for generating a value
             if (e.toInteger())
             {
                 auto mt = em.ed.memtype;
@@ -2593,13 +2609,21 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     emprev.ed.toChars(), emprev.toChars(), mt.toChars());
                 return errorReturn();
             }
-
+            errors = global.startGagging();
             // Now set e to (eprev + 1)
             e = new AddExp(em.loc, eprev, IntegerExp.literal!1);
             e = e.expressionSemantic(sc);
             e = e.castTo(sc, eprev.type);
             e = e.ctfeInterpret();
-
+            if (global.endGagging(errors))
+            {
+                error(em.loc, "cannot generate value for `%s`", em.toPrettyChars());
+                // rerun to show errors
+                Expression e2 = new AddExp(em.loc, eprev, IntegerExp.literal!1);
+                e2 = e2.expressionSemantic(sc);
+                e2 = e2.castTo(sc, eprev.type);
+                e2 = e2.ctfeInterpret();
+            }
             // save origValue (without cast) for better json output
             if (e.op != EXP.error) // avoid duplicate diagnostics
             {
@@ -3351,7 +3375,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (!tf.isNaked() && !(funcdecl.isThis() || funcdecl.isNested()))
             {
                 OutBuffer buf;
-                MODtoBuffer(&buf, tf.mod);
+                MODtoBuffer(buf, tf.mod);
                 funcdecl.error("without `this` cannot be `%s`", buf.peekChars());
                 tf.mod = 0; // remove qualifiers
             }
@@ -3889,7 +3913,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     OutBuffer buf;
 
                     auto fd = s.isFuncDeclaration();
-                    functionToBufferFull(cast(TypeFunction)(funcdecl.type), &buf,
+                    functionToBufferFull(cast(TypeFunction)(funcdecl.type), buf,
                         new Identifier(funcdecl.toPrettyChars()), &hgs, null);
                     const(char)* funcdeclToChars = buf.peekChars();
 
@@ -3912,7 +3936,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         }
                         else
                         {
-                            functionToBufferFull(cast(TypeFunction)(fd.type), &buf1,
+                            functionToBufferFull(cast(TypeFunction)(fd.type), buf1,
                                 new Identifier(fd.toPrettyChars()), &hgs, null);
 
                             error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",

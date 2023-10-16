@@ -1519,7 +1519,7 @@ match_case_to_enum_1 (tree key, tree type, tree label)
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   wide_int w = wi::to_wide (key);
 
-  gcc_assert (w.get_len () <= WIDE_INT_MAX_INL_ELTS);
+  gcc_assert (w.get_precision () <= WIDE_INT_MAX_INL_PRECISION);
   if (tree_fits_uhwi_p (key))
     print_dec (w, buf, UNSIGNED);
   else if (tree_fits_shwi_p (key))

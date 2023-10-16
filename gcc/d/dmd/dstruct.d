@@ -105,6 +105,7 @@ extern (C++) void semanticTypeInfo(Scope* sc, Type t)
         if (!sc) // inline may request TypeInfo.
         {
             Scope scx;
+            scx.eSink = global.errorSink;
             scx._module = sd.getModule();
             getTypeInfoType(sd.loc, t, &scx);
             sd.requestTypeInfo = true;

@@ -24,6 +24,7 @@ fail_compilation/chkformat.d(122): Deprecation: argument `0LU` for format specif
 fail_compilation/chkformat.d(122):        C `long` is 4 bytes on your system|32=
 fail_compilation/chkformat.d(122): Deprecation: argument `0LU` for format specification `"%lu"` must be `uint`, not `ulong`
 fail_compilation/chkformat.d(122):        C `long` is 4 bytes on your system$
+fail_compilation/chkformat.d(123): Deprecation: argument `p` for format specification `"%n"` must be `int*`, not `const(int)*`
 fail_compilation/chkformat.d(201): Deprecation: argument `0L` for format specification `"%d"` must be `int*`, not `long`
 fail_compilation/chkformat.d(202): Deprecation: more format specifiers than 1 arguments
 fail_compilation/chkformat.d(203): Deprecation: argument `0L` for format specification `"%d"` must be `int*`, not `long`
@@ -86,6 +87,7 @@ void test19() { int u; printf("%ls\n", &u); }
 //void test20() { int u; char[] s; sprintf(&s[0], "%d\n", &u); }
 //void test21() { int u; fprintf(null, "%d\n", &u); }
 void test20() { printf("%lu", ulong.init); }
+void test22() { int i; const(int)* p = &i; printf("%n", p); }
 
 #line 200
 

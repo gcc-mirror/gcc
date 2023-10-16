@@ -237,7 +237,7 @@ public:
     virtual unsigned alignsize();
     Type *trySemantic(const Loc &loc, Scope *sc);
     Type *merge2();
-    void modToBuffer(OutBuffer *buf) const;
+    void modToBuffer(OutBuffer& buf) const;
     char *modToChars() const;
 
     virtual bool isintegral();
@@ -563,13 +563,14 @@ enum class PURE : unsigned char
 class Parameter final : public ASTNode
 {
 public:
+    Loc loc;
     StorageClass storageClass;
     Type *type;
     Identifier *ident;
     Expression *defaultArg;
     UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 
-    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident,
+    static Parameter *create(const Loc &loc, StorageClass storageClass, Type *type, Identifier *ident,
                              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();

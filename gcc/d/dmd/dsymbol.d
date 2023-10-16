@@ -1801,6 +1801,7 @@ public:
             if (!tfgetmembers)
             {
                 Scope sc;
+                sc.eSink = global.errorSink;
                 auto parameters = new Parameters();
                 Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
                 parameters.push(p);

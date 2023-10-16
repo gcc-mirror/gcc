@@ -1,10 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag8894.d(16): Error: no property `x` for `f` of type `diag8894.Foo`
-fail_compilation/diag8894.d(17): Error: no property `y` for `f` of type `diag8894.Foo`
-fail_compilation/diag8894.d(18): Error: no property `x` for `f` of type `diag8894.Foo`
-fail_compilation/diag8894.d(19): Error: no property `x` for `f` of type `diag8894.Foo`
+fail_compilation/diag8894.d(20): Error: no property `x` for `f` of type `diag8894.Foo`
+fail_compilation/diag8894.d(15):        struct `Foo` defined here
+fail_compilation/diag8894.d(21): Error: no property `y` for `f` of type `diag8894.Foo`
+fail_compilation/diag8894.d(15):        struct `Foo` defined here
+fail_compilation/diag8894.d(22): Error: no property `x` for `f` of type `diag8894.Foo`
+fail_compilation/diag8894.d(15):        struct `Foo` defined here
+fail_compilation/diag8894.d(23): Error: no property `x` for `f` of type `diag8894.Foo`
+fail_compilation/diag8894.d(15):        struct `Foo` defined here
 ---
 */
 

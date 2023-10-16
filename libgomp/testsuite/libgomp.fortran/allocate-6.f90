@@ -1,3 +1,4 @@
+! { dg-additional-options "-fdump-tree-gimple" }
 module m
   use iso_c_binding
   use omp_lib
@@ -23,10 +24,10 @@ subroutine one ()
       !$omp allocate(var,var2) align(128) allocator(omp_low_lat_mem_alloc)
       var = 5
 ! { dg-final { scan-tree-dump-times "var\\.\[0-9\]+ = __builtin_GOMP_alloc \\(128, 4, 5\\);" 1 "gimple" } } */
-! { dg-final { scan-tree-dump-times "var2\\.\[0-9\]+ = __builtin_GOMP_alloc \\(128, D\\.\[0-9\]+, 5\\);" 1 "gimple" } } */
+! { dg-final { scan-tree-dump-times "var2 = __builtin_GOMP_alloc \\(128, D\\.\[0-9\]+, 5\\);" 1 "gimple" } } */
 
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(var\\.\[0-9\]+, 0B\\);" 1 "gimple" } } */
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(var2\\.\[0-9\]+, 0B\\);" 1 "gimple" } } */
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(var2, 0B\\);" 1 "gimple" } } */
 
       if (mod(transfer(loc(var), intptr), 128_c_intptr_t) /= 0) &
         stop 1

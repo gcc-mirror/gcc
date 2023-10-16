@@ -1,3 +1,10 @@
+2023-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111800
+	* c-warn.cc (match_case_to_enum_1): Assert w.get_precision ()
+	is smaller or equal to WIDE_INT_MAX_INL_PRECISION rather than
+	w.get_len () is smaller or equal to WIDE_INT_MAX_INL_ELTS.
+
 2023-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

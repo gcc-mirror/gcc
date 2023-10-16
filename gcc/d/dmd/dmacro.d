@@ -13,11 +13,12 @@ module dmd.dmacro;
 
 import core.stdc.ctype;
 import core.stdc.string;
-import dmd.doc;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 
-extern (C++) struct MacroTable
+@trusted:
+
+struct MacroTable
 {
     /**********************************
      * Define name=text macro.
@@ -26,7 +27,7 @@ extern (C++) struct MacroTable
      *  name = name of macro
      *  text = text of macro
      */
-    extern (D) void define(const(char)[] name, const(char)[] text) nothrow pure @safe
+    void define(const(char)[] name, const(char)[] text) nothrow pure @safe
     {
         //printf("MacroTable::define('%.*s' = '%.*s')\n", cast(int)name.length, name.ptr, text.length, text.ptr);
         if (auto table = name in mactab)
@@ -37,13 +38,16 @@ extern (C++) struct MacroTable
         mactab[name] = new Macro(name, text);
     }
 
+    alias fp_t = bool function(const(char)* p) @nogc nothrow pure;
+
     /*****************************************************
      * Look for macros in buf and expand them in place.
      * Only look at the text in buf from start to pend.
      *
      * Returns: `true` on success, `false` when the recursion limit was reached
      */
-    extern (D) bool expand(ref OutBuffer buf, size_t start, ref size_t pend, const(char)[] arg, int recursionLimit) nothrow pure
+    bool expand(ref OutBuffer buf, size_t start, ref size_t pend, const(char)[] arg, int recursionLimit,
+        fp_t isIdStart, fp_t isIdTail) nothrow pure
     {
         version (none)
         {
@@ -101,7 +105,7 @@ extern (C++) struct MacroTable
                     end += marg.length - 2;
                     // Scan replaced text for further expansion
                     size_t mend = u + marg.length;
-                    const success = expand(buf, u, mend, null, recursionLimit);
+                    const success = expand(buf, u, mend, null, recursionLimit, isIdStart, isIdTail);
                     if (!success)
                         return false;
                     end += mend - (u + marg.length);
@@ -119,7 +123,7 @@ extern (C++) struct MacroTable
                     end += -2 + 2 + marg.length + 2;
                     // Scan replaced text for further expansion
                     size_t mend = u + 2 + marg.length;
-                    const success = expand(buf, u + 2, mend, null, recursionLimit);
+                    const success = expand(buf, u + 2, mend, null, recursionLimit, isIdStart, isIdTail);
                     if (!success)
                         return false;
                     end += mend - (u + 2 + marg.length);
@@ -149,7 +153,7 @@ extern (C++) struct MacroTable
                 /* Scan forward to find end of macro name and
                  * beginning of macro argument (marg).
                  */
-                for (v = u + 2; v < end; v += utfStride(p + v))
+                for (v = u + 2; v < end; v += utfStride(p[v]))
                 {
                     if (!isIdTail(p + v))
                     {
@@ -228,7 +232,7 @@ extern (C++) struct MacroTable
                             // Scan replaced text for further expansion
                             m.inuse++;
                             size_t mend = v + 1 + 2 + m.text.length + 2;
-                            const success = expand(buf, v + 1, mend, marg, recursionLimit);
+                            const success = expand(buf, v + 1, mend, marg, recursionLimit, isIdStart, isIdTail);
                             if (!success)
                                 return false;
                             end += mend - (v + 1 + 2 + m.text.length + 2);
@@ -260,7 +264,7 @@ extern (C++) struct MacroTable
 
   private:
 
-    extern (D) Macro* search(const(char)[] name) @nogc nothrow pure @safe
+    Macro* search(const(char)[] name) @nogc nothrow pure @safe
     {
         //printf("Macro::search(%.*s)\n", cast(int)name.length, name.ptr);
         if (auto table = name in mactab)
@@ -299,7 +303,7 @@ struct Macro
  *      copy allocated with mem.xmalloc()
  */
 
-char[] memdup(const(char)[] p) nothrow pure @trusted
+char[] memdup(const(char)[] p) nothrow pure
 {
     size_t len = p.length;
     return (cast(char*)memcpy(mem.xmalloc(len), p.ptr, len))[0 .. len];
@@ -423,4 +427,36 @@ Largstart:
         marg = p[vstart .. v];
     //printf("extractArg%d('%.*s') = '%.*s'\n", n, cast(int)end, p, cast(int)marg.length, marg.ptr);
     return v;
+}
+
+/*****************************************
+ * Get number of UTF-8 code units in code point that starts with `c`
+ * Params:
+ *      c = starting code unit
+ * Returns: number of UTF-8 code units (i.e. bytes), else 1 on invalid UTF start
+ */
+@safe
+int utfStride(char c) @nogc nothrow pure
+{
+    return
+        c < 0x80 ? 1 :
+        c < 0xC0 ? 1 : // invalid UTF start
+        c < 0xE0 ? 2 :
+        c < 0xF0 ? 3 :
+        c < 0xF8 ? 4 :
+        c < 0xFC ? 5 :
+        c < 0xFE ? 6 :
+                   1; // invalid UTF start
+}
+
+unittest
+{
+    assert(utfStride(0) == 1);
+    assert(utfStride(0x80) == 1);
+    assert(utfStride(0xC0) == 2);
+    assert(utfStride(0xE0) == 3);
+    assert(utfStride(0xF0) == 4);
+    assert(utfStride(0xF8) == 5);
+    assert(utfStride(0xFC) == 6);
+    assert(utfStride(0xFE) == 1);
 }

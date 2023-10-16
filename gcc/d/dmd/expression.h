@@ -94,7 +94,7 @@ public:
 
     const char *toChars() const override;
     void error(const char *format, ...) const;
-    void warning(const char *format, ...) const;
+    void warning(unsigned flag, const char *format, ...) const;
     void deprecation(const char *format, ...) const;
 
     virtual dinteger_t toInteger();
@@ -446,6 +446,7 @@ public:
     OwnedBy ownedByCtfe;
     Expressions *keys;
     Expressions *values;
+    Expression* lowering;
 
     bool equals(const RootObject * const o) const override;
     AssocArrayLiteralExp *syntaxCopy() override;

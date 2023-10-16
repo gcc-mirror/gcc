@@ -157,7 +157,7 @@ MOD MODmerge(MOD mod1, MOD mod2) pure nothrow @nogc @safe
 /*********************************
  * Store modifier name into buf.
  */
-void MODtoBuffer(OutBuffer* buf, MOD mod) nothrow @safe
+void MODtoBuffer(ref OutBuffer buf, MOD mod) nothrow @safe
 {
     buf.writestring(MODtoString(mod));
 }
@@ -787,7 +787,7 @@ extern (C++) abstract class Type : ASTNode
         HdrGenState hgs;
         hgs.fullQual = (ty == Tclass && !mod);
 
-        .toCBuffer(this, &buf, null, &hgs);
+        toCBuffer(this, buf, null, hgs);
         return buf.extractChars();
     }
 
@@ -799,7 +799,7 @@ extern (C++) abstract class Type : ASTNode
         HdrGenState hgs;
         hgs.fullQual = QualifyTypes;
 
-        .toCBuffer(this, &buf, null, &hgs);
+        toCBuffer(this, buf, null, hgs);
         return buf.extractChars();
     }
 
@@ -973,7 +973,7 @@ extern (C++) abstract class Type : ASTNode
     /*********************************
      * Store this type's modifier name into buf.
      */
-    final void modToBuffer(OutBuffer* buf) nothrow const
+    final void modToBuffer(ref OutBuffer buf) nothrow const
     {
         if (mod)
         {
@@ -989,7 +989,7 @@ extern (C++) abstract class Type : ASTNode
     {
         OutBuffer buf;
         buf.reserve(16);
-        modToBuffer(&buf);
+        modToBuffer(buf);
         return buf.extractChars();
     }
 
@@ -4563,7 +4563,7 @@ extern (C++) final class TypeFunction : TypeNext
                 continue;
             if (params == parameterList.parameters)
                 params = parameterList.parameters.copy();
-            (*params)[i] = new Parameter(p.storageClass, t, null, null, null);
+            (*params)[i] = new Parameter(p.loc, p.storageClass, t, null, null, null);
         }
         if (next == tret && params == parameterList.parameters)
             return this;
@@ -6218,7 +6218,7 @@ extern (C++) final class TypeTuple : Type
                 Expression e = (*exps)[i];
                 if (e.type.ty == Ttuple)
                     e.error("cannot form sequence of sequences");
-                auto arg = new Parameter(STC.undefined_, e.type, null, null, null);
+                auto arg = new Parameter(e.loc, STC.undefined_, e.type, null, null, null);
                 (*arguments)[i] = arg;
             }
         }
@@ -6244,15 +6244,15 @@ extern (C++) final class TypeTuple : Type
     {
         super(Ttuple);
         arguments = new Parameters();
-        arguments.push(new Parameter(0, t1, null, null, null));
+        arguments.push(new Parameter(Loc.initial, 0, t1, null, null, null));
     }
 
     extern (D) this(Type t1, Type t2)
     {
         super(Ttuple);
         arguments = new Parameters();
-        arguments.push(new Parameter(0, t1, null, null, null));
-        arguments.push(new Parameter(0, t2, null, null, null));
+        arguments.push(new Parameter(Loc.initial, 0, t1, null, null, null));
+        arguments.push(new Parameter(Loc.initial, 0, t2, null, null, null));
     }
 
     static TypeTuple create() @safe
@@ -6661,14 +6661,16 @@ extern (C++) final class Parameter : ASTNode
 {
     import dmd.attrib : UserAttributeDeclaration;
 
+    Loc loc;
     StorageClass storageClass;
     Type type;
     Identifier ident;
     Expression defaultArg;
     UserAttributeDeclaration userAttribDecl; // user defined attributes
 
-    extern (D) this(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    extern (D) this(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
+        this.loc = loc;
         this.type = type;
         this.ident = ident;
         this.storageClass = storageClass;
@@ -6676,14 +6678,14 @@ extern (C++) final class Parameter : ASTNode
         this.userAttribDecl = userAttribDecl;
     }
 
-    static Parameter create(StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    static Parameter create(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
-        return new Parameter(storageClass, type, ident, defaultArg, userAttribDecl);
+        return new Parameter(loc, storageClass, type, ident, defaultArg, userAttribDecl);
     }
 
     Parameter syntaxCopy()
     {
-        return new Parameter(storageClass, type ? type.syntaxCopy() : null, ident, defaultArg ? defaultArg.syntaxCopy() : null, userAttribDecl ? userAttribDecl.syntaxCopy(null) : null);
+        return new Parameter(loc, storageClass, type ? type.syntaxCopy() : null, ident, defaultArg ? defaultArg.syntaxCopy() : null, userAttribDecl ? userAttribDecl.syntaxCopy(null) : null);
     }
 
     /****************************************************
@@ -7687,4 +7689,29 @@ pure string visitTYCase(string handler) @safe
             ";
     }
     assert(0);
+}
+
+
+/**
+ * Returns:
+ *     `TypeIdentifier` corresponding to `object.Throwable`
+ */
+TypeIdentifier getThrowable()
+{
+    auto tid = new TypeIdentifier(Loc.initial, Id.empty);
+    tid.addIdent(Id.object);
+    tid.addIdent(Id.Throwable);
+    return tid;
+}
+
+/**
+ * Returns:
+ *      TypeIdentifier corresponding to `object.Exception`
+ */
+TypeIdentifier getException()
+{
+    auto tid = new TypeIdentifier(Loc.initial, Id.empty);
+    tid.addIdent(Id.object);
+    tid.addIdent(Id.Exception);
+    return tid;
 }

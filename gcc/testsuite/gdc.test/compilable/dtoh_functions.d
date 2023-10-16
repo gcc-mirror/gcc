@@ -45,10 +45,10 @@ struct S final
     int32_t get(int32_t , int32_t );
     static int32_t get();
     static const int32_t staticVar;
-    void useVars(int32_t pi = i, int32_t psv = staticVar);
+    void useVars(int32_t pi = i, int32_t psv = S::staticVar);
     struct Nested final
     {
-        void useStaticVar(int32_t i = staticVar);
+        void useStaticVar(int32_t i = S::staticVar);
         Nested()
         {
         }

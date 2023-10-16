@@ -18506,6 +18506,8 @@ ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign, rtx mask)
 	vmode = V4SFmode;
       else if (mode == DFmode)
 	vmode = V2DFmode;
+      else if (mode == HFmode)
+	vmode = V8HFmode;
       else
 	vmode = mode;
 
@@ -19042,6 +19044,10 @@ ix86_expand_round_sse4 (rtx op0, rtx op1)
 
   switch (mode)
     {
+    case E_HFmode:
+      gen_copysign = gen_copysignhf3;
+      gen_round = gen_sse4_1_roundhf2;
+      break;
     case E_SFmode:
       gen_copysign = gen_copysignsf3;
       gen_round = gen_sse4_1_roundsf2;

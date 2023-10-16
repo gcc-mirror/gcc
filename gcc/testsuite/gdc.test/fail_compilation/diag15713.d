@@ -1,10 +1,11 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag15713.d(19): Error: no property `widthSign` for `this` of type `diag15713.WrData.Data`
-fail_compilation/diag15713.d(39): Error: template instance `diag15713.conwritefImpl!("parse-int", "width", "\n", Data(null))` error instantiating
-fail_compilation/diag15713.d(44):        instantiated from here: `conwritefImpl!("main", "\n", Data(null))`
-fail_compilation/diag15713.d(49):        instantiated from here: `fdwritef!()`
+fail_compilation/diag15713.d(20): Error: no property `widthSign` for `this` of type `diag15713.WrData.Data`
+fail_compilation/diag15713.d(16):        struct `Data` defined here
+fail_compilation/diag15713.d(40): Error: template instance `diag15713.conwritefImpl!("parse-int", "width", "\n", Data(null))` error instantiating
+fail_compilation/diag15713.d(45):        instantiated from here: `conwritefImpl!("main", "\n", Data(null))`
+fail_compilation/diag15713.d(50):        instantiated from here: `fdwritef!()`
 ---
 */
 

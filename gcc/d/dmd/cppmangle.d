@@ -23,7 +23,6 @@
 
 module dmd.cppmangle;
 
-import core.stdc.string;
 import core.stdc.stdio;
 
 import dmd.arraytypes;
@@ -46,7 +45,6 @@ import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.target;
-import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 

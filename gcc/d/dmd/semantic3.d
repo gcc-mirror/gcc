@@ -471,7 +471,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         stc |= STC.temp;
                     }
                     Type vtype = fparam.type;
-                    auto v = new VarDeclaration(funcdecl.loc, vtype, id, null);
+                    auto v = new VarDeclaration(fparam.loc, vtype, id, null);
                     //printf("declaring parameter %s of type %s\n", v.toChars(), v.type.toChars());
                     stc |= STC.parameter;
                     if (f.parameterList.varargs == VarArg.typesafe && i + 1 == nparams)
@@ -749,7 +749,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 funcdecl.buildEnsureRequire();
 
                 // Check for errors related to 'nothrow'.
-                const blockexit = funcdecl.fbody.blockExit(funcdecl, f.isnothrow);
+                const blockexit = funcdecl.fbody.blockExit(funcdecl, f.isnothrow ? global.errorSink : null);
                 if (f.isnothrow && blockexit & BE.throw_)
                     error(funcdecl.loc, "%s `%s` may throw but is marked as `nothrow`", funcdecl.kind(), funcdecl.toPrettyChars());
 
@@ -993,7 +993,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 freq = freq.statementSemantic(sc2);
 
                 // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
-                const blockExit = freq.blockExit(funcdecl, false);
+                const blockExit = freq.blockExit(funcdecl, null);
                 if (blockExit & BE.throw_)
                 {
                     if (isnothrow)
@@ -1040,7 +1040,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 fens = fens.statementSemantic(sc2);
 
                 // @@@DEPRECATED_2.111@@@ - pass `isnothrow` instead of `false` to print a more detailed error msg`
-                const blockExit = fens.blockExit(funcdecl, false);
+                const blockExit = fens.blockExit(funcdecl, null);
                 if (blockExit & BE.throw_)
                 {
                     if (isnothrow)
@@ -1177,7 +1177,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
                             s = s.statementSemantic(sc2);
 
-                            const blockexit = s.blockExit(funcdecl, isnothrow);
+                            const blockexit = s.blockExit(funcdecl, isnothrow ? global.errorSink : null);
                             if (blockexit & BE.throw_)
                             {
                                 funcdecl.hasNoEH = false;
@@ -1187,7 +1187,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                     f.isnothrow = false;
                             }
 
-                            if (sbody.blockExit(funcdecl, f.isnothrow) == BE.fallthru)
+                            if (sbody.blockExit(funcdecl, f.isnothrow ? global.errorSink : null) == BE.fallthru)
                                 sbody = new CompoundStatement(Loc.initial, sbody, s);
                             else
                                 sbody = new TryFinallyStatement(Loc.initial, sbody, s);
@@ -1453,7 +1453,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             {
                 // storage_class is apparently not set for dtor & ctor
                 OutBuffer ob;
-                stcToBuffer(&ob,
+                stcToBuffer(ob,
                     (ngErr ? STC.nogc : 0) |
                     (puErr ? STC.pure_ : 0) |
                     (saErr ? STC.system : 0)

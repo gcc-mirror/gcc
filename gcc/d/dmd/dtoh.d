@@ -199,7 +199,8 @@ struct _d_dynamicArray final
     else
     {
         const(char)[] name = FileName.combine(global.params.cxxhdr.dir, global.params.cxxhdr.name);
-        writeFile(Loc.initial, name, buf[]);
+        if (!writeFile(Loc.initial, name, buf[]))
+            return fatal();
     }
 }
 
@@ -2327,7 +2328,12 @@ public:
         {
             //printf("%s %d\n", p.defaultArg.toChars, p.defaultArg.op);
             buf.writestring(" = ");
+            // Always emit the FDN of a symbol for the default argument,
+            // to avoid generating an ambiguous assignment.
+            auto save = adparent;
+            adparent = null;
             printExpressionFor(p.type, p.defaultArg);
+            adparent = save;
         }
     }
 
@@ -2636,7 +2642,7 @@ public:
             import dmd.hdrgen;
             // Hex floating point literals were introduced in C++ 17
             const allowHex = global.params.cplusplus >= CppStdRevision.cpp17;
-            floatToBuffer(e.type, e.value, buf, allowHex);
+            floatToBuffer(e.type, e.value, *buf, allowHex);
         }
     }
 

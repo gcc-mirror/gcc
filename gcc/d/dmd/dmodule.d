@@ -780,7 +780,9 @@ extern (C++) final class Module : Package
         {
             filetype = FileType.c;
 
+            global.compileEnv.masm = target.os == Target.OS.Windows && !target.omfobj; // Microsoft inline assembler format
             scope p = new CParser!AST(this, buf, cast(bool) docfile, global.errorSink, target.c, &defines, &global.compileEnv);
+            global.compileEnv.masm = false;
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();
@@ -1253,7 +1255,7 @@ extern (C++) final class Module : Package
     // Back end
     int doppelganger; // sub-module
     Symbol* cov; // private uint[] __coverage;
-    uint* covb; // bit array of valid code line numbers
+    uint[] covb; // bit array of valid code line numbers
     Symbol* sictor; // module order independent constructor
     Symbol* sctor; // module constructor
     Symbol* sdtor; // module destructor

@@ -779,7 +779,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_Wall:
       if (value)
 	global.params.warnings = DIAGNOSTICinform;
-      global.params.obsolete = value;
       break;
 
     case OPT_Wdeprecated:
@@ -941,7 +940,6 @@ d_post_options (const char ** fn)
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.shortenedMethods = global.params.shortenedMethods;
-  global.compileEnv.obsolete = global.params.obsolete;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)
@@ -976,6 +974,90 @@ void
 d_add_builtin_module (Module *m)
 {
   builtin_modules.push (m);
+}
+
+/* Writes to FILENAME.  DATA is the full content of the file to be written.  */
+
+static void
+d_write_file (const char *filename, const char *data)
+{
+  FILE *stream;
+
+  if (filename && (filename[0] != '-' || filename[1] != '\0'))
+    stream = fopen (filename, "w");
+  else
+    stream = stdout;
+
+  if (!stream)
+    {
+      error ("unable to open %s for writing: %m", filename);
+      return;
+    }
+
+  fprintf (stream, "%s", data);
+
+  if (stream != stdout && (ferror (stream) || fclose (stream)))
+    error ("writing output file %s: %m", filename);
+}
+
+/* Read ddoc macro files named by the DDOCFILES, then write the concatenated
+   the contents into DDOCBUF.  */
+
+static void
+d_read_ddoc_files (Strings &ddocfiles, OutBuffer &ddocbuf)
+{
+  if (ddocbuf.length ())
+    return;
+
+  for (size_t i = 0; i < ddocfiles.length; i++)
+    {
+      int fd = open (ddocfiles[i], O_RDONLY);
+      bool ok = false;
+      struct stat buf;
+
+      if (fd == -1 || fstat (fd, &buf))
+	{
+	  error ("unable to open %s for reading: %m", ddocfiles[i]);
+	  continue;
+	}
+
+      /* Check we've not been given a directory, or a file bigger than 4GB.  */
+      if (S_ISDIR (buf.st_mode))
+	errno = ENOENT;
+      else if (buf.st_size != unsigned (buf.st_size))
+	errno = EMFILE;
+      else
+	{
+	  unsigned size = unsigned (buf.st_size);
+	  char *buffer = (char *) xmalloc (size);
+
+	  if (read (fd, buffer, size) == ssize_t (size))
+	    {
+	      ddocbuf.write (buffer, size);
+	      ok = true;
+	    }
+
+	  free (buffer);
+	}
+
+      close (fd);
+      if (!ok)
+	fatal_error (input_location, "reading ddoc file %s: %m", ddocfiles[i]);
+    }
+}
+
+static void
+d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
+{
+  input_location = make_location_t (m->loc);
+
+  d_read_ddoc_files (global.params.ddoc.files, ddocbuf);
+
+  OutBuffer ddocbuf_out;
+  gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
+	      global.errorSink, ddocbuf_out);
+
+  d_write_file (m->docfile.toChars (), ddocbuf_out.peekChars ());
 }
 
 /* Implements the lang_hooks.parse_file routine for language D.  */
@@ -1013,6 +1095,9 @@ d_parse_file (void)
   /* Create Module's for all sources we will load.  */
   Modules modules;
   modules.reserve (num_in_fnames);
+
+  /* Buffer for contents of .ddoc files.  */
+  OutBuffer ddocbuf;
 
   /* In this mode, the first file name is supposed to be a duplicate
      of one of the input files.  */
@@ -1101,7 +1186,8 @@ d_parse_file (void)
 
       if (m->filetype == FileType::ddoc)
 	{
-	  gendocfile (m, global.errorSink);
+	  d_generate_ddoc_file (m, ddocbuf);
+
 	  /* Remove M from list of modules.  */
 	  modules.remove (i);
 	  i--;
@@ -1144,7 +1230,9 @@ d_parse_file (void)
 	  if (global.params.verbose)
 	    message ("import    %s", m->toChars ());
 
-	  genhdrfile (m);
+	  OutBuffer buf;
+	  genhdrfile (m, buf);
+	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
       dump_headers = true;
@@ -1264,8 +1352,6 @@ d_parse_file (void)
   if (d_option.deps)
     {
       obstack buffer;
-      FILE *deps_stream;
-
       gcc_obstack_init (&buffer);
 
       for (size_t i = 0; i < modules.length; i++)
@@ -1275,27 +1361,8 @@ d_parse_file (void)
       if (d_option.deps_filename_user)
 	d_option.deps_filename = d_option.deps_filename_user;
 
-      if (d_option.deps_filename)
-	{
-	  deps_stream = fopen (d_option.deps_filename, "w");
-	  if (!deps_stream)
-	    {
-	      fatal_error (input_location, "opening dependency file %s: %m",
-			   d_option.deps_filename);
-	      goto had_errors;
-	    }
-	}
-      else
-	deps_stream = stdout;
-
-      fprintf (deps_stream, "%s", (char *) obstack_finish (&buffer));
-
-      if (deps_stream != stdout
-	  && (ferror (deps_stream) || fclose (deps_stream)))
-	{
-	  fatal_error (input_location, "closing dependency file %s: %m",
-		       d_option.deps_filename);
-	}
+      d_write_file (d_option.deps_filename,
+		    (char *) obstack_finish (&buffer));
     }
 
   if (global.params.vtemplates)
@@ -1305,30 +1372,8 @@ d_parse_file (void)
   if (global.params.json.doOutput)
     {
       OutBuffer buf;
-      json_generate (&buf, &modules);
-
-      const char *name = global.params.json.name.ptr;
-      FILE *json_stream;
-
-      if (name && (name[0] != '-' || name[1] != '\0'))
-	{
-	  const char *nameext
-	    = FileName::defaultExt (name, json_ext.ptr);
-	  json_stream = fopen (nameext, "w");
-	  if (!json_stream)
-	    {
-	      fatal_error (input_location, "opening json file %s: %m", nameext);
-	      goto had_errors;
-	    }
-	}
-      else
-	json_stream = stdout;
-
-      fprintf (json_stream, "%s", buf.peekChars ());
-
-      if (json_stream != stdout
-	  && (ferror (json_stream) || fclose (json_stream)))
-	fatal_error (input_location, "closing json file %s: %m", name);
+      json_generate (modules, buf);
+      d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
   /* Generate Ddoc files.  */
@@ -1337,7 +1382,7 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  gendocfile (m, global.errorSink);
+	  d_generate_ddoc_file (m, ddocbuf);
 	}
     }
 
@@ -1350,7 +1395,7 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (&buf, m);
+	  moduleToBuffer (buf, m);
 	  message ("%s", buf.peekChars ());
 	}
     }
@@ -1391,22 +1436,8 @@ d_parse_file (void)
   /* We want to write the mixin expansion file also on error.  */
   if (global.params.mixinOut.doOutput)
     {
-      FILE *mixin_stream = fopen (global.params.mixinOut.name.ptr, "w");
-
-      if (mixin_stream)
-	{
-	  OutBuffer *buf = global.params.mixinOut.buffer;
-	  fprintf (mixin_stream, "%s", buf->peekChars ());
-
-	  if (ferror (mixin_stream) || fclose (mixin_stream))
-	    fatal_error (input_location, "closing mixin file %s: %m",
-			 global.params.mixinOut.name.ptr);
-	}
-      else
-	{
-	  fatal_error (input_location, "opening mixin file %s: %m",
-		       global.params.mixinOut.name.ptr);
-	}
+      d_write_file (global.params.mixinOut.name.ptr,
+		    global.params.mixinOut.buffer->peekChars ());
     }
 
   /* Remove generated .di files on error.  */

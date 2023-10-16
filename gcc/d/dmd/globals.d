@@ -101,6 +101,23 @@ extern(C++) struct Output
     OutBuffer* buffer;  // if this output is buffered, this is the buffer
     int bufferLines;    // number of lines written to the buffer
 }
+
+/// Command line state related to printing usage about other switches
+extern(C++) struct Help
+{
+    bool manual;       // open browser on compiler manual
+    bool usage;        // print usage and exit
+    // print help of switch:
+    bool mcpu;         // -mcpu
+    bool transition;   // -transition
+    bool check;        // -check
+    bool checkAction;  // -checkaction
+    bool revert;       // -revert
+    bool preview;      // -preview
+    bool externStd;    // -extern-std
+    bool hc;           // -HC
+}
+
 /// Put command line switches in here
 extern (C++) struct Param
 {
@@ -124,7 +141,6 @@ extern (C++) struct Param
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
     DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
-    bool obsolete;          // enable warnings about use of obsolete messages
     bool color;             // use ANSI colors in console output
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
@@ -143,16 +159,7 @@ extern (C++) struct Param
 
     bool showGaggedErrors;  // print gagged errors anyway
     bool printErrorContext;  // print errors with the error context (the error line in the source file)
-    bool manual;            // open browser on compiler manual
-    bool usage;             // print usage and exit
-    bool mcpuUsage;         // print help on -mcpu switch
-    bool transitionUsage;   // print help on -transition switch
-    bool checkUsage;        // print help on -check switch
-    bool checkActionUsage;  // print help on -checkaction switch
-    bool revertUsage;       // print help on -revert switch
-    bool previewUsage;      // print help on -preview switch
-    bool externStdUsage;    // print help on -extern-std switch
-    bool hcUsage;           // print help on -HC switch
+    Help help;
     bool logo;              // print compiler logo
 
     // Options for `-preview=/-revert=`
@@ -258,6 +265,7 @@ extern (C++) struct Global
     Array!(const(char)*)* filePath;     /// Array of char*'s which form the file import lookup path
 
     private enum string _version = import("VERSION");
+    char[26] datetime;      /// string returned by ctime()
     CompileEnv compileEnv;
 
     Param params;           /// command line parameters
@@ -281,6 +289,7 @@ extern (C++) struct Global
     enum recursionLimit = 500; /// number of recursive template expansions before abort
 
     ErrorSink errorSink;       /// where the error messages go
+    ErrorSink errorSinkNull;   /// where the error messages are ignored
 
     extern (C++) FileName function(FileName, ref const Loc, out bool, OutBuffer*) preprocess;
 
@@ -337,6 +346,7 @@ extern (C++) struct Global
     extern (C++) void _init()
     {
         errorSink = new ErrorSinkCompiler;
+        errorSinkNull = new ErrorSinkNull;
 
         this.fileManager = new FileManager();
         version (MARS)
@@ -369,6 +379,7 @@ extern (C++) struct Global
             core.stdc.time.time(&ct);
         const p = ctime(&ct);
         assert(p);
+        datetime[] = p[0 .. 26];
 
         __gshared char[11 + 1] date = 0;        // put in BSS segment
         __gshared char[8  + 1] time = 0;

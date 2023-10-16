@@ -53,12 +53,6 @@ const(char)* toWinPath(const(char)* src)
  *   loc = The line number information from where the call originates
  *   filename = Path to file
  */
-Buffer readFile(Loc loc, const(char)* filename)
-{
-    return readFile(loc, filename.toDString());
-}
-
-/// Ditto
 Buffer readFile(Loc loc, const(char)[] filename)
 {
     auto result = File.read(filename);
@@ -78,15 +72,19 @@ Buffer readFile(Loc loc, const(char)[] filename)
  *   loc = The line number information from where the call originates
  *   filename = Path to file
  *   data = Full content of the file to be written
+ * Returns:
+ *   false on error
  */
-extern (D) void writeFile(Loc loc, const(char)[] filename, const void[] data)
+extern (D) bool writeFile(Loc loc, const(char)[] filename, const void[] data)
 {
-    ensurePathToNameExists(Loc.initial, filename);
+    if (!ensurePathToNameExists(Loc.initial, filename))
+        return false;
     if (!File.update(filename, data))
     {
         error(loc, "error writing file '%.*s'", cast(int) filename.length, filename.ptr);
-        fatal();
+        return false;
     }
+    return true;
 }
 
 
@@ -97,8 +95,10 @@ extern (D) void writeFile(Loc loc, const(char)[] filename, const void[] data)
  * Params:
  *   loc = The line number information from where the call originates
  *   name = a path to check (the name is stripped)
+ * Returns:
+ *      false on error
  */
-void ensurePathToNameExists(Loc loc, const(char)[] name)
+bool ensurePathToNameExists(Loc loc, const(char)[] name)
 {
     const char[] pt = FileName.path(name);
     if (pt.length)
@@ -106,10 +106,12 @@ void ensurePathToNameExists(Loc loc, const(char)[] name)
         if (!FileName.ensurePathExists(pt))
         {
             error(loc, "cannot create directory %*.s", cast(int) pt.length, pt.ptr);
-            fatal();
+            FileName.free(pt.ptr);
+            return false;
         }
     }
     FileName.free(pt.ptr);
+    return true;
 }
 
 

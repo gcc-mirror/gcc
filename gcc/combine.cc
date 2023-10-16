@@ -11923,7 +11923,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) < 0x80000000 is equivalent to >= 0.  */
       else if (is_a <scalar_int_mode> (mode, &int_mode)
 	       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
-	       && ((unsigned HOST_WIDE_INT) const_op
+	       && (((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode))
 		   == HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1)))
 	{
 	  const_op = 0;
@@ -11962,7 +11962,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) >= 0x80000000 is equivalent to < 0.  */
       else if (is_a <scalar_int_mode> (mode, &int_mode)
 	       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
-	       && ((unsigned HOST_WIDE_INT) const_op
+	       && (((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode))
 		   == HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1)))
 	{
 	  const_op = 0;

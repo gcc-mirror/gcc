@@ -114,6 +114,7 @@ immutable Msgtable[] msgtable =
     { "returnLabel", "__returnLabel" },
     { "line" },
     { "empty", "" },
+    { "dotdotdot", "..." }, // use for error messages
     { "p" },
     { "__vptr" },
     { "__monitor" },
@@ -305,6 +306,7 @@ immutable Msgtable[] msgtable =
     { "aaKeys", "_aaKeys" },
     { "aaValues", "_aaValues" },
     { "aaRehash", "_aaRehash" },
+    { "_aaAsStruct" },
     { "monitorenter", "_d_monitorenter" },
     { "monitorexit", "_d_monitorexit" },
     { "criticalenter", "_d_criticalenter2" },

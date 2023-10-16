@@ -173,7 +173,7 @@ public:
             Identifier id = Identifier.generateId("__o");
 
             Statement handler = new PeelStatement(sexception);
-            if (sexception.blockExit(fd, false) & BE.fallthru)
+            if (sexception.blockExit(fd, null) & BE.fallthru)
             {
                 auto ts = new ThrowStatement(Loc.initial, new IdentifierExp(Loc.initial, id));
                 ts.internalThrow = true;
@@ -1311,7 +1311,7 @@ extern (C++) class FuncDeclaration : Declaration
     final const(char)* toFullSignature()
     {
         OutBuffer buf;
-        functionToBufferWithIdent(type.toTypeFunction(), &buf, toChars(), isStatic);
+        functionToBufferWithIdent(type.toTypeFunction(), buf, toChars(), isStatic);
         return buf.extractChars();
     }
 
@@ -2279,8 +2279,11 @@ extern (C++) class FuncDeclaration : Declaration
                                 break LcheckAncestorsOfANestedRef;
                         }
                         a.push(f);
-                        .errorSupplemental(f.loc, "`%s` closes over variable `%s` at %s",
-                            f.toPrettyChars(), v.toChars(), v.loc.toChars());
+                        .errorSupplemental(f.loc, "%s `%s` closes over variable `%s`",
+                            f.kind, f.toPrettyChars(), v.toChars());
+                        if (v.ident != Id.This)
+                            .errorSupplemental(v.loc, "`%s` declared here", v.toChars());
+
                         break LcheckAncestorsOfANestedRef;
                     }
                 }
@@ -2657,7 +2660,7 @@ extern (C++) class FuncDeclaration : Declaration
             auto fparams = new Parameters();
             if (canBuildResultVar())
             {
-                Parameter p = new Parameter(STC.ref_ | STC.const_, f.nextOf(), Id.result, null, null);
+                Parameter p = new Parameter(loc, STC.ref_ | STC.const_, f.nextOf(), Id.result, null, null);
                 fparams.push(p);
             }
             auto fo = cast(TypeFunction)(originalType ? originalType : f);
@@ -3340,14 +3343,14 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         s = fd = td.funcroot;
 
     OutBuffer tiargsBuf;
-    arrayObjectsToBuffer(&tiargsBuf, tiargs);
+    arrayObjectsToBuffer(tiargsBuf, tiargs);
 
     OutBuffer fargsBuf;
     fargsBuf.writeByte('(');
-    argExpTypesToCBuffer(&fargsBuf, fargs);
+    argExpTypesToCBuffer(fargsBuf, fargs);
     fargsBuf.writeByte(')');
     if (tthis)
-        tthis.modToBuffer(&fargsBuf);
+        tthis.modToBuffer(fargsBuf);
 
     // The call is ambiguous
     if (m.lastf && m.nextf)
@@ -4623,7 +4626,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         {
             if (!gag)
             {
-                if (!sc.isDeprecated() && global.params.obsolete)
+                version (none) // disable obsolete warning
                     warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
             }
         }

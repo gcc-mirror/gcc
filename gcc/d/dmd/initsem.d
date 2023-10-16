@@ -53,31 +53,38 @@ import dmd.typesem;
  */
 Expression toAssocArrayLiteral(ArrayInitializer ai)
 {
-    Expression e;
-    //printf("ArrayInitializer::toAssocArrayInitializer()\n");
+    //printf("ArrayInitializer::toAssocArrayInitializer(%s)\n", ai.toChars());
     //static int i; if (++i == 2) assert(0);
     const dim = ai.value.length;
+    if (!dim)
+    {
+        error(ai.loc, "invalid associative array initializer `%s`, use `null` instead",
+            ai.toChars());
+        return ErrorExp.get();
+    }
+    auto no(const char* format, Initializer i)
+    {
+        error(i.loc, format, i.toChars());
+        return ErrorExp.get();
+    }
+    Expression e;
     auto keys = new Expressions(dim);
     auto values = new Expressions(dim);
     for (size_t i = 0; i < dim; i++)
     {
-        e = ai.index[i];
-        if (!e)
-            goto Lno;
-        (*keys)[i] = e;
         Initializer iz = ai.value[i];
-        if (!iz)
-            goto Lno;
+        assert(iz);
         e = iz.initializerToExpression();
         if (!e)
-            goto Lno;
+            return no("invalid value `%s` in initializer", iz);
         (*values)[i] = e;
+        e = ai.index[i];
+        if (!e)
+            return no("missing key for value `%s` in initializer", iz);
+        (*keys)[i] = e;
     }
     e = new AssocArrayLiteralExp(ai.loc, keys, values);
     return e;
-Lno:
-    error(ai.loc, "not an associative array initializer");
-    return ErrorExp.get();
 }
 
 /******************************************
