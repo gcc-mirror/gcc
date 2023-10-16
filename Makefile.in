@@ -66891,6 +66891,7 @@ check-stageautoprofile-libctf: maybe-all-stageautoprofile-ld
 check-stageautofeedback-libctf: maybe-all-stageautofeedback-ld
 distclean-gnulib: maybe-distclean-gdb
 distclean-gnulib: maybe-distclean-gdbserver
+distclean-gnulib: maybe-distclean-sim
 all-bison: maybe-all-build-texinfo
 all-flex: maybe-all-build-bison
 all-flex: maybe-all-m4

@@ -2748,9 +2748,10 @@ Typical command lines are
 @opindex fopenacc
 @cindex OpenACC accelerator programming
 @item -fopenacc
-Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
-@code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
-compiler generates accelerated code according to the OpenACC Application
+Enable handling of OpenACC directives @samp{#pragma acc} in C/C++ and
+@samp{!$acc} in free-form Fortran and @samp{!$acc}, @samp{c$acc} and
+@samp{*$acc} in fixed-form Fortran.  When @option{-fopenacc} is specified,
+the compiler generates accelerated code according to the OpenACC Application
 Programming Interface v2.6 @w{@uref{https://www.openacc.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
@@ -2766,10 +2767,12 @@ can be omitted, to use a target-specific default value.
 @opindex fopenmp
 @cindex OpenMP parallel
 @item -fopenmp
-Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
-@code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
-@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
-When @option{-fopenmp} is specified, the
+Enable handling of OpenMP directives @samp{#pragma omp} in C/C++,
+@samp{[[omp::directive(...)]]}, @samp{[[omp::sequence(...)]]} and
+@samp{[[omp::decl(...)]]} in C++ and @samp{!$omp} in Fortran.  It
+additionally enables the conditional compilation sentinel @samp{!$} in
+Fortran.  In fixed source form Fortran, the sentinels can also start with
+@samp{c} or @samp{*}.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
 Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
@@ -2785,10 +2788,12 @@ Enable handling of OpenMP's @code{simd}, @code{declare simd},
 and @code{loop} directive, and of combined or composite directives with
 @code{simd} as constituent with @code{#pragma omp} in C/C++,
 @code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
-@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.
-Other OpenMP directives are ignored.  Unless @option{-fopenmp} is
-additionally specified, the @code{loop} region binds to the current
-task region, independent of the specified @code{bind} clause.
+@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.  It
+additionally enables the conditional compilation sentinel @samp{!$} in
+Fortran.  In fixed source form Fortran, the sentinels can also start with
+@samp{c} or @samp{*}.  Other OpenMP directives are ignored.  Unless
+@option{-fopenmp} is additionally specified, the @code{loop} region binds
+to the current task region, independent of the specified @code{bind} clause.
 
 @opindex fopenmp-target-simd-clone
 @cindex OpenMP target SIMD clone

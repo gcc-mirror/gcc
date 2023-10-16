@@ -1767,10 +1767,10 @@ private FuncDeclaration findBestOpApplyMatch(Expression ethis, FuncDeclaration f
 
     if (fd_ambig)
     {
-        .error(ethis.loc, "`%s.%s` matches more than one declaration:\n`%s`:     `%s`\nand:\n`%s`:     `%s`",
-            ethis.toChars(), fstart.ident.toChars(),
-            fd_best.loc.toChars(), fd_best.type.toChars(),
-            fd_ambig.loc.toChars(), fd_ambig.type.toChars());
+        .error(ethis.loc, "`%s.%s` matches more than one declaration:",
+            ethis.toChars(), fstart.ident.toChars());
+        .errorSupplemental(fd_best.loc, "`%s`\nand:", fd_best.type.toChars());
+        .errorSupplemental(fd_ambig.loc, "`%s`", fd_ambig.type.toChars());
         return null;
     }
 

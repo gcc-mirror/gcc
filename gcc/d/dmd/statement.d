@@ -16,20 +16,14 @@ module dmd.statement;
 import core.stdc.stdarg;
 import core.stdc.stdio;
 
-import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
+import dmd.errors;
 import dmd.gluelayer;
 import dmd.cond;
-import dmd.dclass;
 import dmd.declaration;
-import dmd.denum;
-import dmd.dimport;
-import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dtemplate;
-import dmd.errors;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
@@ -37,39 +31,13 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
-import dmd.dinterpret;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.sapply;
-import dmd.sideeffect;
 import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
-
-/**
- * Returns:
- *     `TypeIdentifier` corresponding to `object.Throwable`
- */
-TypeIdentifier getThrowable()
-{
-    auto tid = new TypeIdentifier(Loc.initial, Id.empty);
-    tid.addIdent(Id.object);
-    tid.addIdent(Id.Throwable);
-    return tid;
-}
-
-/**
- * Returns:
- *      TypeIdentifier corresponding to `object.Exception`
- */
-TypeIdentifier getException()
-{
-    auto tid = new TypeIdentifier(Loc.initial, Id.empty);
-    tid.addIdent(Id.object);
-    tid.addIdent(Id.Exception);
-    return tid;
-}
 
 /***********************************************************
  * Specification: https://dlang.org/spec/statement.html
@@ -118,62 +86,9 @@ extern (C++) abstract class Statement : ASTNode
     {
         HdrGenState hgs;
         OutBuffer buf;
-        .toCBuffer(this, &buf, &hgs);
+        toCBuffer(this, buf, hgs);
         buf.writeByte(0);
         return buf.extractSlice().ptr;
-    }
-
-    static if (__VERSION__ < 2092)
-    {
-        final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error);
-            va_end(ap);
-        }
-
-        final void warning(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.warning);
-            va_end(ap);
-        }
-
-        final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation);
-            va_end(ap);
-        }
-    }
-    else
-    {
-        pragma(printf) final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error);
-            va_end(ap);
-        }
-
-        pragma(printf) final void warning(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.warning);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation);
-            va_end(ap);
-        }
     }
 
     Statement getRelatedLabeled()
@@ -1252,9 +1167,10 @@ extern (C++) final class SwitchStatement : Statement
                 if (v.isDataseg() || (v.storage_class & (STC.manifest | STC.temp) && vd.ident != Id.withSym) || v._init.isVoidInitializer())
                     continue;
                 if (vd.ident == Id.withSym)
-                    error("`switch` skips declaration of `with` temporary at %s", v.loc.toChars());
+                    error(loc, "`switch` skips declaration of `with` temporary");
                 else
-                    error("`switch` skips declaration of variable `%s` at %s", v.toPrettyChars(), v.loc.toChars());
+                    error(loc, "`switch` skips declaration of variable `%s`", v.toPrettyChars());
+                errorSupplemental(v.loc, "declared here");
                 return true;
             }
             return false;
@@ -1813,22 +1729,22 @@ extern (C++) final class GotoStatement : Statement
             else
             {
                 if (label.statement.os)
-                    error("cannot `goto` in to `%s` block", Token.toChars(label.statement.os.tok));
+                    error(loc, "cannot `goto` in to `%s` block", Token.toChars(label.statement.os.tok));
                 else
-                    error("cannot `goto` out of `%s` block", Token.toChars(os.tok));
+                    error(loc, "cannot `goto` out of `%s` block", Token.toChars(os.tok));
                 return true;
             }
         }
 
         if (label.statement.tf != tf)
         {
-            error("cannot `goto` in or out of `finally` block");
+            error(loc, "cannot `goto` in or out of `finally` block");
             return true;
         }
 
         if (label.statement.inCtfeBlock && !inCtfeBlock)
         {
-            error("cannot `goto` into `if (__ctfe)` block");
+            error(loc, "cannot `goto` into `if (__ctfe)` block");
             return true;
         }
 
@@ -1837,7 +1753,7 @@ extern (C++) final class GotoStatement : Statement
         {
             if (!stb)
             {
-                error("cannot `goto` into `try` block");
+                error(loc, "cannot `goto` into `try` block");
                 return true;
             }
             if (auto stf = stb.isTryFinallyStatement())
@@ -1863,17 +1779,15 @@ extern (C++) final class GotoStatement : Statement
         {
             // Lifetime ends at end of expression, so no issue with skipping the statement
         }
-        else if (vd.ident == Id.withSym)
-        {
-            error("`goto` skips declaration of `with` temporary at %s", vd.loc.toChars());
-            return true;
-        }
         else
         {
-            error("`goto` skips declaration of variable `%s` at %s", vd.toPrettyChars(), vd.loc.toChars());
+            if (vd.ident == Id.withSym)
+                error(loc, "`goto` skips declaration of `with` temporary");
+            else
+                error(loc, "`goto` skips declaration of variable `%s`", vd.toPrettyChars());
+            errorSupplemental(vd.loc, "declared here");
             return true;
         }
-
         return false;
     }
 
@@ -1959,6 +1873,7 @@ extern (C++) final class LabelDsymbol : Dsymbol
 extern (C++) class AsmStatement : Statement
 {
     Token* tokens;
+    bool caseSensitive;  // for register names
 
     extern (D) this(const ref Loc loc, Token* tokens) @safe
     {

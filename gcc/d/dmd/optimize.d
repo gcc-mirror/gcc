@@ -1280,19 +1280,25 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         //printf("CatExp::optimize(%d) %s\n", result, e.toChars());
         if (binOptimize(e, result))
             return;
-        if (auto ce1 = e.e1.isCatExp())
-        {
-            // https://issues.dlang.org/show_bug.cgi?id=12798
-            // optimize ((expr ~ str1) ~ str2)
-            scope CatExp cex = new CatExp(e.loc, ce1.e2, e.e2);
-            cex.type = e.type;
-            Expression ex = Expression_optimize(cex, result, false);
-            if (ex != cex)
+
+        if (e.type == Type.tstring)
+            if (auto ce1 = e.e1.isCatExp())
             {
-                e.e1 = ce1.e1;
-                e.e2 = ex;
+                // https://issues.dlang.org/show_bug.cgi?id=12798
+                // optimize ((expr ~ str1) ~ str2)
+                // https://issues.dlang.org/show_bug.cgi?id=24078
+                // This optimization is only valid if `expr` is a string.
+                // Otherwise it leads to:
+                // `["c"] ~ "a" ~ "b"` becoming `["c"] ~ "ab"`
+                scope CatExp cex = new CatExp(e.loc, ce1.e2, e.e2);
+                cex.type = e.type;
+                Expression ex = Expression_optimize(cex, result, false);
+                if (ex != cex)
+                {
+                    e.e1 = ce1.e1;
+                    e.e2 = ex;
+                }
             }
-        }
         // optimize "str"[] -> "str"
         if (auto se1 = e.e1.isSliceExp())
         {

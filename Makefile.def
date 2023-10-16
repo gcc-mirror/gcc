@@ -612,6 +612,7 @@ dependencies = { module=check-libctf; on=all-ld; };
 // gdb and gdbserver.
 dependencies = { module=distclean-gnulib; on=distclean-gdb; };
 dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
+dependencies = { module=distclean-gnulib; on=distclean-sim; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };

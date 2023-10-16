@@ -135,6 +135,27 @@ version (linux)
     enum F_SETLK        = 6;
     enum F_SETLKW       = 7;
   }
+  else version (MIPS_N64)
+  {
+    enum F_GETLK        = 14;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  }
+  else version (MIPS_Any)
+  {
+    static if ( __USE_FILE_OFFSET64 )
+    {
+      enum F_GETLK      = 33;
+      enum F_SETLK      = 34;
+      enum F_SETLKW     = 35;
+    }
+    else
+    {
+      enum F_GETLK      = 14;
+      enum F_SETLK      = 6;
+      enum F_SETLKW     = 7;
+    }
+  }
   else
   static if ( __USE_FILE_OFFSET64 )
   {

@@ -275,6 +275,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             // https://issues.dlang.org/show_bug.cgi?id=20417
             // Don't run CTFE for the temporary variables inside typeof or __traits(compiles)
             vd._init = vd._init.initializerSemantic(sc, vd.type, sc.intypeof == 1 || sc.flags & SCOPE.compile ? INITnointerpret : INITinterpret);
+            lowerStaticAAs(vd, sc);
             vd.inuse--;
         }
         if (vd._init && vd.storage_class & STC.manifest)
@@ -818,4 +819,56 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         return (cast(Expression*)e1).toStringExp().compare((cast(Expression*)e2).toStringExp());
     }
     ale.elements.sort!predicate;
+}
+
+/**
+ * Try lower a variable's static Associative Array to a newaa struct.
+ * Params:
+ *   vd = Variable to lower
+ *   sc = Scope
+ */
+void lowerStaticAAs(VarDeclaration vd, Scope* sc)
+{
+    if (vd.storage_class & STC.manifest)
+        return;
+    if (auto ei = vd._init.isExpInitializer())
+    {
+        scope v = new StaticAAVisitor(sc);
+        v.vd = vd;
+        ei.exp.accept(v);
+    }
+}
+
+/// Visit Associative Array literals and lower them to structs for static initialization
+private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
+{
+    alias visit = SemanticTimeTransitiveVisitor.visit;
+    Scope* sc;
+    VarDeclaration vd;
+
+    this(Scope* sc) scope @safe
+    {
+        this.sc = sc;
+    }
+
+    override void visit(AssocArrayLiteralExp aaExp)
+    {
+        if (!verifyHookExist(aaExp.loc, *sc, Id._aaAsStruct, "initializing static associative arrays", Id.object))
+            return;
+
+        Expression hookFunc = new IdentifierExp(aaExp.loc, Id.empty);
+        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id.object);
+        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id._aaAsStruct);
+        auto arguments = new Expressions();
+        arguments.push(aaExp.syntaxCopy());
+        Expression loweredExp = new CallExp(aaExp.loc, hookFunc, arguments);
+
+        sc = sc.startCTFE();
+        loweredExp = loweredExp.expressionSemantic(sc);
+        loweredExp = resolveProperties(sc, loweredExp);
+        sc = sc.endCTFE();
+        loweredExp = loweredExp.ctfeInterpret();
+
+        aaExp.lowering = loweredExp;
+    }
 }

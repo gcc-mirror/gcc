@@ -147,13 +147,57 @@ public struct Int128
 
     /** Support casting to a bool
      * Params: T = bool
-     * Returns: boolean result
+     * Returns: true if value is not zero
      */
     bool opCast(T : bool)() const
     {
         return tst(this.data);
     }
   } // @safe pure nothrow @nogc
+
+    /** Support casting to an integral type
+     * Params: T = integral type
+     * Returns: low bits of value reinterpreted as T
+     */
+    T opCast(T : long)() const
+    if (is(byte : T))
+    {
+        return cast(T) this.data.lo;
+    }
+
+    ///
+    @safe unittest
+    {
+        const Int128 a = Int128(0xffff_ffff_ffff_ffffL, 0x0123_4567_89ab_cdefL);
+        assert(cast(long) a == 0x0123_4567_89ab_cdefL);
+        assert(cast(int)  a ==           0x89ab_cdef);
+        assert(cast(byte) a == cast(byte) 0xef);
+    }
+
+    /** Support casting to floating point type
+     * Params: T = floating point type
+     * Returns: value cast to floating point with environment-dependent
+     * rounding if the value is not exactly representable
+     */
+    T opCast(T : real)() const
+    {
+        import core.math : ldexp;
+        if (cast(long) this.data.hi >= 0)
+            return ldexp(cast(T) this.data.hi, 64) + this.data.lo;
+        else
+        {
+            const absData = neg(this.data);
+            return -ldexp(cast(T) absData.hi, 64) - absData.lo;
+        }
+    }
+
+    ///
+    @safe unittest
+    {
+        const Int128 a = Int128(-1L << 60);
+        assert(cast(double) a == -(2.0 ^^ 60));
+        assert(cast(double) (a * a) == 2.0 ^^ 120);
+    }
 
     /** Support binary arithmetic operators + - * / % & | ^ << >> >>>
      * Params:

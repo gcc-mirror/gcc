@@ -2390,11 +2390,23 @@ version (CRuntime_Glibc)
     //ucontext_t (defined in core.sys.posix.ucontext)
     //mcontext_t (defined in core.sys.posix.ucontext)
 
-    struct stack_t
+    version (MIPS_Any)
     {
-        void*   ss_sp;
-        int     ss_flags;
-        size_t  ss_size;
+        struct stack_t
+        {
+            void*   ss_sp;
+            size_t  ss_size;
+            int     ss_flags;
+        }
+    }
+    else
+    {
+        struct stack_t
+        {
+            void*   ss_sp;
+            int     ss_flags;
+            size_t  ss_size;
+        }
     }
 
     struct sigstack
@@ -2760,7 +2772,7 @@ else version (CRuntime_UClibc)
     enum MINSIGSTKSZ    = 2048;
     enum SIGSTKSZ       = 8192;
 
-    version (MIPS32)
+    version (MIPS_Any)
     {
         struct stack_t
         {

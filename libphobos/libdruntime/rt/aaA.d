@@ -974,3 +974,22 @@ unittest
     GC.runFinalizers((cast(char*)(&entryDtor))[0 .. 1]);
     assert(T.dtor == 6 && T.postblit == 2);
 }
+
+// Ensure the newaa struct layout (used for static initialization) is in sync
+unittest
+{
+    import newaa = core.internal.newaa;
+    static assert(newaa.Impl.sizeof == Impl.sizeof);
+    // ensure compatible types and offsets
+    static foreach (i; 0 .. Impl.tupleof.length)
+    {
+        // for bucket array and Flags, we "compatible" types, not exactly the same types.
+        static if (__traits(identifier, Impl.tupleof[i]) == "buckets"
+            || __traits(identifier, Impl.tupleof[i]) == "flags")
+            static assert(Impl.tupleof[i].sizeof == newaa.Impl.tupleof[i].sizeof);
+        else
+            static assert(is(typeof(Impl.tupleof[i]) == typeof(newaa.Impl.tupleof[i])));
+
+        static assert(Impl.tupleof[i].offsetof == newaa.Impl.tupleof[i].offsetof);
+    }
+}

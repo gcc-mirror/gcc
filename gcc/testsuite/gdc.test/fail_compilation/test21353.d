@@ -2,11 +2,14 @@
 EXTRA_FILES: imports/imp21353.d
 TEST_OUTPUT:
 ---
-fail_compilation/test21353.d(19): Error: no property `A` for type `imports.imp21353.B`
-fail_compilation/test21353.d(20): Error: no property `A` for type `imports.imp21353.B`
-fail_compilation/test21353.d(21): Error: no property `A` for type `imports.imp21353.B`
-fail_compilation/test21353.d(23): Error: undefined identifier `P` in module `imports.imp21353`
-fail_compilation/test21353.d(24): Error: undefined identifier `P` in module `imports.imp21353`
+fail_compilation/test21353.d(22): Error: no property `A` for type `imports.imp21353.B`
+fail_compilation/imports/imp21353.d(5):        struct `B` defined here
+fail_compilation/test21353.d(23): Error: no property `A` for type `imports.imp21353.B`
+fail_compilation/imports/imp21353.d(5):        struct `B` defined here
+fail_compilation/test21353.d(24): Error: no property `A` for type `imports.imp21353.B`
+fail_compilation/imports/imp21353.d(5):        struct `B` defined here
+fail_compilation/test21353.d(26): Error: undefined identifier `P` in module `imports.imp21353`
+fail_compilation/test21353.d(27): Error: undefined identifier `P` in module `imports.imp21353`
 ---
 */
 

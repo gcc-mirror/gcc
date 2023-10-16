@@ -155,7 +155,7 @@ extern(D):
     ///
     alias opDollar = length;
     ///
-    bool empty() const nothrow @safe                                        { return size() == 0; }
+    bool empty() const nothrow @trusted                                     { return size() == 0; }
 
     ///
     size_t[2] opSlice(size_t dim : 0)(size_t start, size_t end) const pure nothrow @safe @nogc { return [start, end]; }
@@ -1918,7 +1918,7 @@ extern(D):
         ///
         size_type capacity() const nothrow                                  { return (__is_long() ? __get_long_cap() : __min_cap) - 1; }
         ///
-        inout(T)* data() inout @safe                                        { return __get_pointer(); }
+        inout(T)* data() inout @trusted                                     { return __get_pointer(); }
         ///
         inout(T)[] as_array() scope return inout nothrow @trusted           { return __get_pointer()[0 .. size()]; }
         ///
@@ -2355,7 +2355,7 @@ extern(D):
                 }
             }
             void __set_long_size(size_type __s) nothrow                         { __r_.first().__l.__size_ = __s; }
-            size_type __get_long_size() const nothrow                           { return __r_.first().__l.__size_; }
+            size_type __get_long_size() const nothrow @trusted                  { return __r_.first().__l.__size_; }
             void __set_size(size_type __s) nothrow                              { if (__is_long()) __set_long_size(__s); else __set_short_size(__s); }
 
             void __set_long_cap(size_type __s) nothrow                          { __r_.first().__l.__cap_  = __long_mask | __s; }

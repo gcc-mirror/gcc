@@ -277,12 +277,13 @@ get_compiler_dso_type (void)
   DECL_CHAIN (field) = fields;
   fields = field;
 
-  field = create_field_decl (build_pointer_type (get_moduleinfo_type ()),
-			     NULL, 1, 1);
+  tree moduleinfo_ptr_ptr_type =
+    build_pointer_type (build_pointer_type (get_moduleinfo_type ()));
+
+  field = create_field_decl (moduleinfo_ptr_ptr_type, NULL, 1, 1);
   DECL_CHAIN (field) = fields;
   fields = field;
-  field = create_field_decl (build_pointer_type (get_moduleinfo_type ()),
-			     NULL, 1, 1);
+  field = create_field_decl (moduleinfo_ptr_ptr_type, NULL, 1, 1);
   DECL_CHAIN (field) = fields;
   fields = field;
 

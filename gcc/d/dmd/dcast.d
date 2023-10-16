@@ -23,7 +23,6 @@ import dmd.declaration;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.errors;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -32,7 +31,6 @@ import dmd.globals;
 import dmd.hdrgen;
 import dmd.location;
 import dmd.impcnvtab;
-import dmd.id;
 import dmd.importc;
 import dmd.init;
 import dmd.intrange;
@@ -44,7 +42,6 @@ import dmd.root.rmem;
 import dmd.root.utf;
 import dmd.tokens;
 import dmd.typesem;
-import dmd.visitor;
 
 enum LOG = false;
 
@@ -73,7 +70,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
         {
             // no need for an extra cast when matching is exact
 
-            if (match == MATCH.convert && e.type.isTypeNoreturn())
+            if (match == MATCH.convert && e.type.isTypeNoreturn() && e.op != EXP.type)
             {
                 return specialNoreturnCast(e, t);
             }
@@ -174,7 +171,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
     {
         //printf("FuncExp::implicitCastTo type = %p %s, t = %s\n", e.type, e.type ? e.type.toChars() : NULL, t.toChars());
         FuncExp fe;
-        if (e.matchType(t, sc, &fe) > MATCH.nomatch)
+        if (e.matchType(t, sc, &fe, global.errorSink) > MATCH.nomatch)
         {
             return fe;
         }
@@ -1075,7 +1072,7 @@ MATCH implicitConvTo(Expression e, Type t)
     MATCH visitFunc(FuncExp e)
     {
         //printf("FuncExp::implicitConvTo type = %p %s, t = %s\n", e.type, e.type ? e.type.toChars() : NULL, t.toChars());
-        MATCH m = e.matchType(t, null, null, 1);
+        MATCH m = e.matchType(t, null, null, global.errorSinkNull);
         if (m > MATCH.nomatch)
         {
             return m;
@@ -1537,7 +1534,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         {
             return e;
         }
-        if (e.type.isTypeNoreturn())
+        if (e.type.isTypeNoreturn() && e.op != EXP.type)
         {
             return specialNoreturnCast(e, t);
         }
@@ -2489,7 +2486,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
     {
         //printf("FuncExp::castTo type = %s, t = %s\n", e.type.toChars(), t.toChars());
         FuncExp fe;
-        if (e.matchType(t, sc, &fe, 1) > MATCH.nomatch)
+        if (e.matchType(t, sc, &fe, global.errorSinkNull) > MATCH.nomatch)
         {
             return fe;
         }

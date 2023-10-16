@@ -4,8 +4,9 @@
 TEST_OUTPUT:
 ---
 fail_compilation/imports/imp22329.d(3): Error: no property `values` for type `test22329.Foo`
+fail_compilation/test22329.d(13):        struct `Foo` defined here
 fail_compilation/imports/imp22329.d(3): Error: incompatible types for `(arg) + (1)`: `Foo` and `int`
-fail_compilation/test22329.d(20): Error: template instance `imp22329.func!(Foo)` error instantiating
+fail_compilation/test22329.d(21): Error: template instance `imp22329.func!(Foo)` error instantiating
 ---
 */
 
