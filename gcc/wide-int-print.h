@@ -42,7 +42,7 @@ print_dec_buf_size (const wide_int_ref &wi, signop sgn, unsigned int *len)
   unsigned int l = wi.get_len ();
   if ((l != 1 || sgn == UNSIGNED) && wi::neg_p (wi))
     l = WIDE_INT_MAX_HWIS (wi.get_precision ());
-  l = l * HOST_BITS_PER_WIDE_INT / 4 + 4;
+  l = l * HOST_BITS_PER_WIDE_INT / 3 + 3;
   *len = l;
   return UNLIKELY (l > WIDE_INT_PRINT_BUFFER_SIZE);
 }
