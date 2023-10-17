@@ -4,7 +4,7 @@
 /* { dg-options "-march=rv64gc_zba_zbs -mabi=lp64" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
-int foo2(int unused, int n, unsigned y, unsigned delta){
+unsigned int foo2(int unused, int n, unsigned y, unsigned delta){
   int s = 0;
   unsigned int x = 0;
   for (;x<n;x +=delta)
@@ -12,4 +12,4 @@ int foo2(int unused, int n, unsigned y, unsigned delta){
   return s;
 }
 
-/* { dg-final { scan-assembler "\msext\M" } } */
+/* { dg-final { scan-assembler-not "\msext\M" } } */
