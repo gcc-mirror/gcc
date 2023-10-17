@@ -615,7 +615,7 @@ HIRCompileBase::compile_function (
       param_vars.push_back (compiled_param_var);
 
       const HIR::Pattern &param_pattern = *referenced_param.get_param_name ();
-      ctx->insert_var_decl (param_pattern.get_pattern_mappings ().get_hirid (),
+      ctx->insert_var_decl (param_pattern.get_mappings ().get_hirid (),
 			    compiled_param_var);
     }
 

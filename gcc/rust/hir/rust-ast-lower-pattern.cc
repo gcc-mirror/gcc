@@ -35,8 +35,7 @@ ASTLoweringPattern::translate (AST::Pattern *pattern, bool is_let_top_level)
 
   resolver.mappings->insert_hir_pattern (resolver.translated);
   resolver.mappings->insert_location (
-    resolver.translated->get_pattern_mappings ().get_hirid (),
-    pattern->get_locus ());
+    resolver.translated->get_mappings ().get_hirid (), pattern->get_locus ());
 
   return resolver.translated;
 }

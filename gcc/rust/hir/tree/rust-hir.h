@@ -420,7 +420,7 @@ public:
 
   virtual void accept_vis (HIRPatternVisitor &vis) = 0;
 
-  virtual const Analysis::NodeMapping &get_pattern_mappings () const = 0;
+  virtual const Analysis::NodeMapping &get_mappings () const = 0;
 
   virtual location_t get_locus () const = 0;
 

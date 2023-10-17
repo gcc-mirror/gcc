@@ -85,8 +85,8 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
 {
   // Compile the literal
   HIR::LiteralExpr *litexpr
-    = new HIR::LiteralExpr (pattern.get_pattern_mappings (),
-			    pattern.get_literal (), pattern.get_locus (),
+    = new HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
+			    pattern.get_locus (),
 			    std::vector<AST::Attribute> ());
 
   // Note: Floating point literals are currently accepted but will likely be
@@ -164,10 +164,10 @@ void
 CompilePatternCaseLabelExpr::visit (HIR::RangePattern &pattern)
 {
   tree upper = compile_range_pattern_bound (pattern.get_upper_bound ().get (),
-					    pattern.get_pattern_mappings (),
+					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
   tree lower = compile_range_pattern_bound (pattern.get_lower_bound ().get (),
-					    pattern.get_pattern_mappings (),
+					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
 
   case_label_expr = build_case_label (lower, upper, associated_case_label);
@@ -239,7 +239,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
-		  pattern->get_pattern_mappings ().get_hirid (), binding);
+		  pattern->get_mappings ().get_hirid (), binding);
 	      }
 	  }
 	else
@@ -255,7 +255,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
-		  pattern->get_pattern_mappings ().get_hirid (), binding);
+		  pattern->get_mappings ().get_hirid (), binding);
 	      }
 	  }
       }
@@ -362,7 +362,7 @@ CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
 void
 CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
 {
-  ctx->insert_pattern_binding (pattern.get_pattern_mappings ().get_hirid (),
+  ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
 			       match_scrutinee_expr);
 }
 
@@ -371,7 +371,7 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
 {
   Bvariable *var = nullptr;
   rust_assert (
-    ctx->lookup_var_decl (pattern.get_pattern_mappings ().get_hirid (), &var));
+    ctx->lookup_var_decl (pattern.get_mappings ().get_hirid (), &var));
 
   auto fnctx = ctx->peek_fn ();
   if (ty->is_unit ())
@@ -429,7 +429,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_lower)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
+	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 
@@ -448,7 +448,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_upper)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
+	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 
@@ -470,7 +470,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items.get_patterns ())
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
+	    HirId pattern_id = pattern.get_mappings ().get_hirid ();
 	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
 	    rust_assert (ok);
 

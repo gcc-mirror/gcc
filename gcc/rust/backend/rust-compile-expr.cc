@@ -1072,7 +1072,7 @@ sort_tuple_patterns (HIR::MatchExpr &expr)
 
 	      // Construct a TuplePattern from the rest of the patterns
 	      result_pattern = std::unique_ptr<HIR::Pattern> (
-		new HIR::TuplePattern (ref.get_pattern_mappings (),
+		new HIR::TuplePattern (ref.get_mappings (),
 				       std::move (new_items),
 				       ref.get_locus ()));
 	    }
