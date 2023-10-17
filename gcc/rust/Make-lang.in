@@ -169,6 +169,7 @@ GRS_OBJS = \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
     rust/rust-compile-fnparam.o \
+    rust/rust-compile-proc-macro.o \
     rust/rust-base62.o \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \
