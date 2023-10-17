@@ -23,13 +23,6 @@
   return register_operand (op, mode);
 })
 
-(define_predicate "mpy_dest_reg_operand"
-  (match_code "reg,subreg")
-{
-  return register_operand (op, mode);
-})
-
-
 ;; Returns 1 if OP is a symbol reference.
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref, label_ref, const")

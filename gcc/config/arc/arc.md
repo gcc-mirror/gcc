@@ -2293,7 +2293,7 @@ archs4x, archs4xd"
 ; registers, since it cannot be the destination of a multi-cycle insn
 ; like MPY or MPYU.
 (define_insn "mulsi3_700"
- [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=r, r,r,  r,r")
+ [(set (match_operand:SI 0 "register_operand"            "=r, r,r,  r,r")
 	(mult:SI (match_operand:SI 1 "register_operand"  "%0, r,0,  0,r")
 		 (match_operand:SI 2 "nonmemory_operand" "rL,rL,I,Cal,Cal")))]
  "TARGET_ARC700_MPY"
@@ -2306,8 +2306,8 @@ archs4x, archs4xd"
 ; ARCv2 has no penalties between mpy and mpyu. So, we use mpy because of its
 ; short variant. LP_COUNT constraints are still valid.
 (define_insn "mulsi3_v2"
- [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=q,q, r, r,r,  r,  r")
-	(mult:SI (match_operand:SI 1 "register_operand"  "%0,q, 0, r,0,  0,  c")
+ [(set (match_operand:SI 0 "register_operand"            "=q,q, r, r,r,  r,  r")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%0,q, 0, r,0,  0,  r")
 		 (match_operand:SI 2 "nonmemory_operand"  "q,0,rL,rL,I,Cal,Cal")))]
  "TARGET_MULTI"
  "@
