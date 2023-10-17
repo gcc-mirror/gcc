@@ -181,5 +181,7 @@ jobs:
           name: logfiles
           # A file, directory or wildcard pattern that describes what to upload
           path: |
-            ./*.log
-            ../build/*.log
+            *.log
+            build/*.log
+            path/*.log
+            testsuite/*.log
