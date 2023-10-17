@@ -15669,6 +15669,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 					maybe_range_for_decl,
 					&init_loc,
 					&auto_result);
+      const bool fndecl_p = TREE_CODE (decl) == FUNCTION_DECL;
       /* If an error occurred while parsing tentatively, exit quickly.
 	 (That usually happens when in the body of a function; each
 	 statement is treated as a declaration-statement until proven
@@ -15682,16 +15683,13 @@ cp_parser_simple_declaration (cp_parser* parser,
 	     init-declarator, they shall all form declarations of
 	     variables.  */
 	  if (auto_function_declaration == NULL_TREE)
-	    auto_function_declaration
-	      = TREE_CODE (decl) == FUNCTION_DECL ? decl : error_mark_node;
-	  else if (TREE_CODE (decl) == FUNCTION_DECL
-		   || auto_function_declaration != error_mark_node)
+	    auto_function_declaration = fndecl_p ? decl : error_mark_node;
+	  else if (fndecl_p || auto_function_declaration != error_mark_node)
 	    {
 	      error_at (decl_specifiers.locations[ds_type_spec],
 			"non-variable %qD in declaration with more than one "
 			"declarator with placeholder type",
-			TREE_CODE (decl) == FUNCTION_DECL
-			? decl : auto_function_declaration);
+			fndecl_p ? decl : auto_function_declaration);
 	      auto_function_declaration = error_mark_node;
 	    }
 	}
@@ -15763,7 +15761,9 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  /* If we have already issued an error message we don't need
 	     to issue another one.  */
 	  if ((decl != error_mark_node
-	       && DECL_INITIAL (decl) != error_mark_node)
+	       /* grokfndecl sets DECL_INITIAL to error_mark_node for
+		  functions.  */
+	       && (fndecl_p || DECL_INITIAL (decl) != error_mark_node))
 	      || cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    cp_parser_error (parser, "expected %<,%> or %<;%>");
 	  /* Skip tokens until we reach the end of the statement.  */
