@@ -50,13 +50,23 @@ void f2 (__INT32_TYPE__* a, __INT32_TYPE__* b, int l)
    Use extern here so that we get a known alignment, lest
    DATA_ALIGNMENT force us to make the scan pattern accomodate
    code for different alignments depending on word size.
-** f3:
+** f3: { target { any-opts "-mcmodel=medlow" } }
 **        lui\s+[ta][0-7],%hi\(a_a\)
 **        lui\s+[ta][0-7],%hi\(a_b\)
 **        addi\s+a4,[ta][0-7],%lo\(a_b\)
 **        vsetivli\s+zero,16,e32,m4,ta,ma
 **        vle32.v\s+v\d+,0\([ta][0-7]\)
 **        addi\s+[ta][0-7],[ta][0-7],%lo\(a_a\)
+**        vse32\.v\s+v\d+,0\([ta][0-7]\)
+**        ret
+*/
+
+/*
+** f3: { target { any-opts "-mcmodel=medany" } }
+**        lla\s+[ta][0-7],a_b
+**        vsetivli\s+zero,16,e32,m4,ta,ma
+**        vle32.v\s+v\d+,0\([ta][0-7]\)
+**        lla\s+[ta][0-7],a_a
 **        vse32\.v\s+v\d+,0\([ta][0-7]\)
 **        ret
 */
