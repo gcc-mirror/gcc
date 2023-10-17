@@ -67,6 +67,8 @@ public:
   // this will only work with "simple" tokens like punctuation.
   void split_current_token (TokenId new_left, TokenId new_right);
 
+  void split_current_token (std::vector<TokenPtr> new_tokens);
+
   std::vector<std::unique_ptr<AST::Token>>
   get_token_slice (size_t start_idx, size_t end_idx) const;
 };

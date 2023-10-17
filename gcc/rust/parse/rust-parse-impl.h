@@ -12895,6 +12895,28 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
 					   std::move (outer_attrs),
 					   restrictions);
 	  }
+	else if (next_tok->get_id () == FLOAT_LITERAL)
+	  {
+	    // Lexer has misidentified a tuple index as a float literal
+	    // eg: `(x, (y, z)).1.0` -> 1.0 has been identified as a float
+	    // literal. This means we should split it into three new separate
+	    // tokens, the first tuple index, the dot and the second tuple
+	    // index.
+	    auto current_loc = next_tok->get_locus ();
+	    auto str = next_tok->get_str ();
+	    auto dot_pos = str.find (".");
+	    auto prefix = str.substr (0, dot_pos);
+	    auto suffix = str.substr (dot_pos + 1);
+	    lexer.split_current_token (
+	      {Token::make_int (current_loc, std::move (prefix),
+				CORETYPE_PURE_DECIMAL),
+	       Token::make (DOT, current_loc + 1),
+	       Token::make_int (current_loc + 2, std::move (suffix),
+				CORETYPE_PURE_DECIMAL)});
+	    return parse_tuple_index_expr (tok, std::move (left),
+					   std::move (outer_attrs),
+					   restrictions);
+	  }
 	else if (next_tok->get_id () == IDENTIFIER
 		 && lexer.peek_token (1)->get_id () != LEFT_PAREN
 		 && lexer.peek_token (1)->get_id () != SCOPE_RESOLUTION)
