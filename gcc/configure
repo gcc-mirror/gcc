@@ -26007,16 +26007,22 @@ if ${gcc_cv_as_mmacosx_version_min+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_mmacosx_version_min=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.text' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mmacosx-version-min=10.1 -o conftest.o conftest.s >&5'
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( -mmacosx-version-min=10.1 \* 1000 \) + gcc_cv_as_mmacosx_version_min=yes \) \* 1000 + `
+  then :
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags .text -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_mmacosx_version_min=yes
+
+$as_echo "#define HAVE_AS_MMACOSX_VERSION_MIN_OPTION 1" >>confdefs.h
+
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -26026,12 +26032,43 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mmacosx_version_min" >&5
 $as_echo "$gcc_cv_as_mmacosx_version_min" >&6; }
-if test $gcc_cv_as_mmacosx_version_min = yes; then
 
-$as_echo "#define HAVE_AS_MMACOSX_VERSION_MIN_OPTION 1" >>confdefs.h
 
+    if test x$gcc_cv_as_mmacosx_version_min = "xyes"; then
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .build_version" >&5
+$as_echo_n "checking assembler for .build_version... " >&6; }
+if ${gcc_cv_as_darwin_build_version+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_darwin_build_version=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( -mmacosx-version-min=10.14 \* 1000 \) + gcc_cv_as_darwin_build_version=yes \) \* 1000 + `
+  then :
 fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  .build_version macos, 10, 14 sdk_version 10, 14 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
 
+$as_echo "#define HAVE_AS_MACOS_BUILD_VERSION 1" >>confdefs.h
+
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_darwin_build_version" >&5
+$as_echo "$gcc_cv_as_darwin_build_version" >&6; }
+
+
+    fi
     ;;
 esac
 
