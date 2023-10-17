@@ -2437,6 +2437,7 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
 	  {
 	    if (!ctx->quiet)
 	      {
+		auto_diagnostic_group d;
 		error_at (loc, "reference %<dynamic_cast%> failed");
 		inform (loc, "dynamic type %qT of its operand does "
 			"not have a base class of type %qT",
@@ -2492,6 +2493,7 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
 	    {
 	      if (!ctx->quiet)
 		{
+		  auto_diagnostic_group d;
 		  error_at (loc, "reference %<dynamic_cast%> failed");
 		  inform (loc, "static type %qT of its operand is a "
 			  "non-public base class of dynamic type %qT",
@@ -2524,6 +2526,7 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
 	{
 	  if (!ctx->quiet)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (loc, "reference %<dynamic_cast%> failed");
 	      inform (loc, "static type %qT of its operand is a non-public"
 		      " base class of dynamic type %qT", objtype, mdtype);
@@ -2545,6 +2548,7 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
 	{
 	  if (!ctx->quiet)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (loc, "reference %<dynamic_cast%> failed");
 	      if (b_kind == bk_ambig)
 		inform (loc, "%qT is an ambiguous base class of dynamic "
@@ -2822,6 +2826,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			{
 			  if (!ctx->quiet)
 			    {
+			      auto_diagnostic_group d;
 			      error_at (loc, "array deallocation of object "
 					     "allocated with non-array "
 					     "allocation");
@@ -2844,6 +2849,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			{
 			  if (!ctx->quiet)
 			    {
+			      auto_diagnostic_group d;
 			      error_at (loc, "non-array deallocation of "
 					     "object allocated with array "
 					     "allocation");
@@ -4193,6 +4199,7 @@ diag_array_subscript (location_t loc, const constexpr_ctx *ctx, tree array, tree
       STRIP_ANY_LOCATION_WRAPPER (array);
       if (DECL_P (array))
 	{
+	  auto_diagnostic_group d;
 	  if (TYPE_DOMAIN (arraytype))
 	    error_at (loc, "array subscript value %qE is outside the bounds "
 		      "of array %qD of type %qT", sidx, array, arraytype);
@@ -5838,6 +5845,7 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 static void
 outside_lifetime_error (location_t loc, tree r)
 {
+  auto_diagnostic_group d;
   if (DECL_NAME (r) == heap_deleted_identifier)
     {
       /* Provide a more accurate message for deleted variables.  */
@@ -9460,6 +9468,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	      if (flags & tf_error)
 		{
 		  tree cap = DECL_CAPTURED_VARIABLE (t);
+		  auto_diagnostic_group d;
 		  if (constexpr_error (input_location, fundef_p,
 				       "lambda capture of %qE is not a "
 				       "constant expression", cap)
