@@ -762,13 +762,20 @@ extern enum aarch64_processor aarch64_tune;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#ifdef HAVE_POLY_INT_H
+#if defined(HAVE_POLY_INT_H) && defined(GCC_VEC_H)
 struct GTY (()) aarch64_frame
 {
   /* The offset from the bottom of the static frame (the bottom of the
      outgoing arguments) of each register save slot, or -2 if no save is
      needed.  */
   poly_int64 reg_offset[LAST_SAVED_REGNUM + 1];
+
+  /* The list of GPRs, FPRs and predicate registers that have nonnegative
+     entries in reg_offset.  The registers are listed in order of
+     increasing offset (rather than increasing register number).  */
+  vec<unsigned, va_gc_atomic> *saved_gprs;
+  vec<unsigned, va_gc_atomic> *saved_fprs;
+  vec<unsigned, va_gc_atomic> *saved_prs;
 
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the
