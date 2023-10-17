@@ -13214,6 +13214,7 @@ contains
 end module
 program test_signal
   use m_handler
+  intrinsic :: signal, sleep
   call signal (12, handler_print)  ! 12 = SIGUSR2 (on some systems)
   call signal (10, 1)  ! 10 = SIGUSR1 and 1 = SIG_IGN (on some systems)
 
