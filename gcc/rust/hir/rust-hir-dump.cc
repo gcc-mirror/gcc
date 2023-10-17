@@ -983,7 +983,7 @@ Dump::visit (CompoundAssignmentExpr &e)
   begin ("CompoundAssignmentExpr");
 
   do_operatorexpr (e);
-  visit_field ("right_expr", *e.get_right_expr ());
+  visit_field ("right_expr", *e.get_rhs ());
 
   std::string str;
 

@@ -375,8 +375,8 @@ PrivacyReporter::visit (HIR::AssignmentExpr &expr)
 void
 PrivacyReporter::visit (HIR::CompoundAssignmentExpr &expr)
 {
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
+  expr.get_lhs ()->accept_vis (*this);
+  expr.get_rhs ()->accept_vis (*this);
 }
 
 void

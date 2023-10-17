@@ -1012,6 +1012,8 @@ public:
 
 private:
   TyVar element_type;
+  // FIXME: I dont think this should be in tyty - tyty should already be const
+  // evaluated
   HIR::Expr &capacity_expr;
 };
 

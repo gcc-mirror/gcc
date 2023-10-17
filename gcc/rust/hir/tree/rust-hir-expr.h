@@ -762,9 +762,9 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_left_expr () { return main_or_left_expr; }
+  std::unique_ptr<Expr> &get_lhs () { return main_or_left_expr; }
 
-  std::unique_ptr<Expr> &get_right_expr () { return right_expr; }
+  std::unique_ptr<Expr> &get_rhs () { return right_expr; }
 
   void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
