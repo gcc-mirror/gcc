@@ -4199,8 +4199,8 @@ case "${target}" in
 		fi
 		for which in cpu arch tune; do
 			eval "val=\$with_$which"
-			base_val=`echo $val | sed -e 's/\+.*//'`
-			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
+			base_val=`echo $val | sed -E -e 's/\+.*//'`
+			ext_val=`echo $val | sed -E -e 's/[a-z0-9.-]+//'`
 
 			if [ $which = arch ]; then
 			  def=aarch64-arches.def
@@ -4232,9 +4232,9 @@ case "${target}" in
 
 			  while [ x"$ext_val" != x ]
 			  do
-				ext_val=`echo $ext_val | sed -e 's/\+//'`
-				ext=`echo $ext_val | sed -e 's/\+.*//'`
-				base_ext=`echo $ext | sed -e 's/^no//'`
+				ext_val=`echo $ext_val | sed -E -e 's/\+//'`
+				ext=`echo $ext_val | sed -E -e 's/\+.*//'`
+				base_ext=`echo $ext | sed -E -e 's/^no//'`
 				opt_line=`echo -e "$options_parsed" | \
 					grep "^\"$base_ext\""`
 
@@ -4245,7 +4245,7 @@ case "${target}" in
 				  echo "Unknown extension used in --with-$which=$val" 1>&2
 				  exit 1
 				fi
-				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
+				ext_val=`echo $ext_val | sed -E -e 's/[a-z0-9]+//'`
 			  done
 
 			  true
