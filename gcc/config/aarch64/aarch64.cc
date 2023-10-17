@@ -8694,7 +8694,7 @@ aarch64_layout_frame (void)
       allocate_gpr_slot (R29_REGNUM);
       allocate_gpr_slot (R30_REGNUM);
     }
-  else if (flag_stack_clash_protection
+  else if ((flag_stack_clash_protection || !frame.is_scs_enabled)
 	   && known_eq (frame.reg_offset[R30_REGNUM], SLOT_REQUIRED))
     /* Put the LR save slot first, since it makes a good choice of probe
        for stack clash purposes.  The idea is that the link register usually

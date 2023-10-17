@@ -14,6 +14,6 @@ t_frame_pattern (test2, 200, "x19")
 t_frame_run (test2)
 
 
-/* { dg-final { scan-assembler-times "stp\tx19, x30, \\\[sp, -\[0-9\]+\\\]!" 1 } } */
-/* { dg-final { scan-assembler "ldp\tx19, x30, \\\[sp\\\], \[0-9\]+" } } */
+/* { dg-final { scan-assembler-times "stp\tx30, x19, \\\[sp, -\[0-9\]+\\\]!" 1 } } */
+/* { dg-final { scan-assembler "ldp\tx30, x19, \\\[sp\\\], \[0-9\]+" } } */
 
