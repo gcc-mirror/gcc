@@ -34,10 +34,9 @@ TypeCheckPattern::Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
   pattern->accept_vis (resolver);
 
   if (resolver.infered == nullptr)
-    return new TyTy::ErrorType (pattern->get_pattern_mappings ().get_hirid ());
+    return new TyTy::ErrorType (pattern->get_mappings ().get_hirid ());
 
-  resolver.context->insert_type (pattern->get_pattern_mappings (),
-				 resolver.infered);
+  resolver.context->insert_type (pattern->get_mappings (), resolver.infered);
   return resolver.infered;
 }
 
@@ -135,7 +134,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 	    TyTy::BaseType *fty = field->get_field_type ();
 
 	    // setup the type on this pattern type
-	    context->insert_type (pattern->get_pattern_mappings (), fty);
+	    context->insert_type (pattern->get_mappings (), fty);
 	  }
       }
       break;
@@ -289,7 +288,7 @@ TypeCheckPattern::visit (HIR::WildcardPattern &pattern)
   // wildcard patterns within the MatchArm's are simply just the same type as
   // the parent
   infered = parent->clone ();
-  infered->set_ref (pattern.get_pattern_mappings ().get_hirid ());
+  infered->set_ref (pattern.get_mappings ().get_hirid ());
 }
 
 void
@@ -332,9 +331,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	      = TypeCheckPattern::Resolve (p.get (), par_type);
 	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
 	  }
-	infered
-	  = new TyTy::TupleType (pattern.get_pattern_mappings ().get_hirid (),
-				 pattern.get_locus (), pattern_elems);
+	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
+				       pattern.get_locus (), pattern_elems);
       }
       break;
 
@@ -352,8 +350,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::LiteralPattern &pattern)
 {
-  infered = resolve_literal (pattern.get_pattern_mappings (),
-			     pattern.get_literal (), pattern.get_locus ());
+  infered = resolve_literal (pattern.get_mappings (), pattern.get_literal (),
+			     pattern.get_locus ());
 }
 
 void
@@ -363,14 +361,14 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
   TyTy::BaseType *upper = nullptr, *lower = nullptr;
 
   upper = typecheck_range_pattern_bound (pattern.get_upper_bound (),
-					 pattern.get_pattern_mappings (),
+					 pattern.get_mappings (),
 					 pattern.get_locus ());
 
   lower = typecheck_range_pattern_bound (pattern.get_lower_bound (),
-					 pattern.get_pattern_mappings (),
+					 pattern.get_mappings (),
 					 pattern.get_locus ());
 
-  infered = unify_site (pattern.get_pattern_mappings ().get_hirid (),
+  infered = unify_site (pattern.get_mappings ().get_hirid (),
 			TyTy::TyWithLocation (upper),
 			TyTy::TyWithLocation (lower), pattern.get_locus ());
 }
@@ -402,11 +400,10 @@ TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
   TyTy::BaseType *infered_base
     = TypeCheckPattern::Resolve (pattern.get_referenced_pattern ().get (),
 				 ref_ty_ty->get_base ());
-  infered
-    = new TyTy::ReferenceType (pattern.get_pattern_mappings ().get_hirid (),
-			       TyTy::TyVar (infered_base->get_ref ()),
-			       pattern.is_mut () ? Mutability::Mut
-						 : Mutability::Imm);
+  infered = new TyTy::ReferenceType (pattern.get_mappings ().get_hirid (),
+				     TyTy::TyVar (infered_base->get_ref ()),
+				     pattern.is_mut () ? Mutability::Mut
+						       : Mutability::Imm);
 }
 
 void
@@ -488,7 +485,7 @@ TypeCheckPattern::visit (HIR::AltPattern &pattern)
   for (auto &type : types)
     {
       alt_pattern_type
-	= unify_site (pattern.get_pattern_mappings ().get_hirid (),
+	= unify_site (pattern.get_mappings ().get_hirid (),
 		      TyTy::TyWithLocation (alt_pattern_type),
 		      TyTy::TyWithLocation (type, type->get_locus ()),
 		      pattern.get_locus ());
@@ -519,7 +516,7 @@ ClosureParamInfer::ClosureParamInfer ()
 void
 ClosureParamInfer::visit (HIR::WildcardPattern &pattern)
 {
-  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  HirId id = pattern.get_mappings ().get_hirid ();
   infered = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
 				 TyTy::InferType::TypeHint::Default (),
 				 pattern.get_locus ());
@@ -528,7 +525,7 @@ ClosureParamInfer::visit (HIR::WildcardPattern &pattern)
 void
 ClosureParamInfer::visit (HIR::IdentifierPattern &pattern)
 {
-  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  HirId id = pattern.get_mappings ().get_hirid ();
   infered = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
 				 TyTy::InferType::TypeHint::Default (),
 				 pattern.get_locus ());
@@ -540,7 +537,7 @@ ClosureParamInfer::visit (HIR::ReferencePattern &pattern)
   TyTy::BaseType *element
     = ClosureParamInfer::Resolve (pattern.get_referenced_pattern ().get ());
 
-  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  HirId id = pattern.get_mappings ().get_hirid ();
   infered = new TyTy::ReferenceType (id, TyTy::TyVar (element->get_ref ()),
 				     pattern.get_mutability ());
 }

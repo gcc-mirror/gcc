@@ -2019,7 +2019,7 @@ Dump::visit (LiteralPattern &e)
 {
   begin ("LiteralPattern");
   put_field ("lit", e.get_literal ().as_string ());
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   end ("LiteralPattern");
 }
 
@@ -2042,7 +2042,7 @@ void
 Dump::visit (WildcardPattern &e)
 {
   begin ("WildcardPattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   end ("WildcardPattern");
 }
 
@@ -2075,7 +2075,7 @@ void
 Dump::visit (RangePattern &e)
 {
   begin ("RangePattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   put_field ("lower", e.get_lower_bound ()->as_string ());
   put_field ("upper", e.get_upper_bound ()->as_string ());
   put_field ("has_ellipsis_syntax",
@@ -2087,7 +2087,7 @@ void
 Dump::visit (ReferencePattern &e)
 {
   begin ("ReferencePattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   put_field ("mut", std::to_string (e.is_mut ()));
   put_field ("pattern", e.get_referenced_pattern ()->as_string ());
   end ("ReferencePattern");
@@ -2161,7 +2161,7 @@ void
 Dump::visit (TupleStructPattern &e)
 {
   begin ("TupleStructPattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
 
   put_field ("path", e.get_path ().as_string ());
 
@@ -2191,7 +2191,7 @@ void
 Dump::visit (TuplePattern &e)
 {
   begin ("TuplePattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   visit_field ("items", e.get_items ());
   end ("TuplePattern");
 }
@@ -2200,7 +2200,7 @@ void
 Dump::visit (SlicePattern &e)
 {
   begin ("SlicePattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   visit_collection ("items", e.get_items ());
   end ("SlicePattern");
 }
@@ -2209,7 +2209,7 @@ void
 Dump::visit (AltPattern &e)
 {
   begin ("AltPattern");
-  do_mappings (e.get_pattern_mappings ());
+  do_mappings (e.get_mappings ());
   visit_collection ("alts", e.get_alts ());
   end ("AltPattern");
 }

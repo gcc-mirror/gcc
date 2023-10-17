@@ -49,7 +49,7 @@ CompileStmt::visit (HIR::LetStmt &stmt)
     return;
 
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
-  HirId stmt_id = stmt_pattern.get_pattern_mappings ().get_hirid ();
+  HirId stmt_id = stmt_pattern.get_mappings ().get_hirid ();
 
   TyTy::BaseType *ty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (stmt_id, &ty))

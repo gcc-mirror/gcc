@@ -709,11 +709,11 @@ Mappings::lookup_hir_struct_field (HirId id)
 void
 Mappings::insert_hir_pattern (HIR::Pattern *pattern)
 {
-  auto id = pattern->get_pattern_mappings ().get_hirid ();
+  auto id = pattern->get_mappings ().get_hirid ();
   rust_assert (lookup_hir_pattern (id) == nullptr);
 
   hirPatternMappings[id] = pattern;
-  insert_node_to_hir (pattern->get_pattern_mappings ().get_nodeid (), id);
+  insert_node_to_hir (pattern->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Pattern *

@@ -51,7 +51,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -137,7 +137,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -176,7 +176,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -395,7 +395,7 @@ public:
 
   bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; };
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -464,7 +464,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -758,7 +758,7 @@ public:
   PathInExpression &get_path () { return path; }
   StructPatternElements &get_struct_pattern_elems () { return elems; }
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -991,7 +991,7 @@ public:
 
   std::unique_ptr<TupleStructItems> &get_items () { return items; }
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1218,7 +1218,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1293,7 +1293,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1365,7 +1365,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }

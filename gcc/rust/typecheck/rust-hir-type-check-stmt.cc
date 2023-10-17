@@ -87,7 +87,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 	return;
 
       init_expr_ty->append_reference (
-	stmt_pattern.get_pattern_mappings ().get_hirid ());
+	stmt_pattern.get_mappings ().get_hirid ());
     }
 
   TyTy::BaseType *specified_ty = nullptr;
@@ -122,10 +122,11 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
       // let x;
       else
 	{
-	  auto infer = new TyTy::InferType (
-	    stmt_pattern.get_pattern_mappings ().get_hirid (),
-	    TyTy::InferType::InferTypeKind::GENERAL,
-	    TyTy::InferType::TypeHint::Default (), stmt.get_locus ());
+	  auto infer
+	    = new TyTy::InferType (stmt_pattern.get_mappings ().get_hirid (),
+				   TyTy::InferType::InferTypeKind::GENERAL,
+				   TyTy::InferType::TypeHint::Default (),
+				   stmt.get_locus ());
 	  TypeCheckPattern::Resolve (&stmt_pattern, infer);
 	}
     }

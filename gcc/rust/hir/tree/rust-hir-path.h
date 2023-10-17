@@ -390,9 +390,9 @@ public:
 	   == 0;
   }
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
-    return get_mappings ();
+    return mappings;
   }
 
 protected:
@@ -864,9 +864,9 @@ public:
 
   location_t get_locus () { return locus; }
 
-  const Analysis::NodeMapping &get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
-    return get_mappings ();
+    return mappings;
   }
 
 protected:
