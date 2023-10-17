@@ -610,6 +610,12 @@
 #endif
 
 
+/* Define if your macOS assembler supports .build_version directives */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MACOS_BUILD_VERSION
+#endif
+
+
 /* Define if the assembler understands -march=rv*_zifencei. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MARCH_ZIFENCEI
@@ -635,8 +641,7 @@
 #endif
 
 
-/* Define if your Mac OS X assembler supports the -mmacos-version-min option.
-   */
+/* Define if your macOS assembler supports the -mmacos-version-min option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
 #endif
