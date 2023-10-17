@@ -1,3 +1,19 @@
+2023-10-16  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_fold_expression): Track location range.
+	* semantics.cc (finish_unary_fold_expr)
+	(finish_left_unary_fold_expr, finish_right_unary_fold_expr)
+	(finish_binary_fold_expr): Add location parm.
+	* constraint.cc (finish_shorthand_constraint): Pass it.
+	* pt.cc (convert_generic_types_to_packs): Likewise.
+	* cp-tree.h: Adjust.
+
+2023-10-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111272
+	* constexpr.cc (explain_invalid_constexpr_fn): Also check the body of
+	a constructor in C++14 and up.
+
 2023-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/102989

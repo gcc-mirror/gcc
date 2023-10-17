@@ -1,3 +1,129 @@
+2023-10-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* explow.cc (probe_stack_range): Handle case when expand_binop
+	does not construct its result in the expected location.
+
+2023-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_initialize): When LANG=C, update
+	default for -fdiagnostics-text-art-charset from emoji to ascii.
+	* doc/invoke.texi (fdiagnostics-text-art-charset): Document the above.
+
+2023-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_initialize): Ensure
+	context->extra_output_kind is initialized.
+
+2023-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_can_inline_p):
+	Handle CM_LARGE and CM_LARGE_PIC.
+	(x86_elf_aligned_decl_common): Ditto.
+	(x86_output_aligned_bss): Ditto.
+	* config/i386/i386.opt: Update doc for -mlarge-data-threshold=.
+	* doc/invoke.texi: Update doc for -mlarge-data-threshold=.
+
+2023-10-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (emit_block_move): Remove redundant
+	prototype.  Improve comment.
+	* config/riscv/riscv.cc (riscv_block_move_straight): Move from riscv.cc
+	into riscv-string.cc.
+	(riscv_adjust_block_mem, riscv_block_move_loop): Likewise.
+	(riscv_expand_block_move): Likewise.
+	* config/riscv/riscv-string.cc (riscv_block_move_straight): Add moved
+	function.
+	(riscv_adjust_block_mem, riscv_block_move_loop): Likewise.
+	(riscv_expand_block_move): Likewise.
+
+2023-10-16  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* Makefile.in: Add fold-mem-offsets.o.
+	* passes.def: Schedule a new pass.
+	* tree-pass.h (make_pass_fold_mem_offsets): Declare.
+	* common.opt: New options.
+	* doc/invoke.texi: Document new option.
+	* fold-mem-offsets.cc: New file.
+
+2023-10-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/101541
+	* match.pd (A CMP 0 ? A : -A): Improve
+	using bitwise_equal_p.
+
+2023-10-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/31531
+	* match.pd (~X op ~Y): Allow for an optional nop convert.
+	(~X op C): Likewise.
+
+2023-10-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (*ashlsi3_1): New pre-reload splitter to
+	use bset dst,0,src to implement 1<<x on !TARGET_BARREL_SHIFTER.
+
+2023-10-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/vector.md (popcountv8hi2_vx): Sign extend each
+	unsigned vector element.
+
+2023-10-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::preferred_new_lmul_p): Use VLS modes.
+
+2023-10-16  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* fold-const.cc (expr_not_equal_to): Replace get_global_range_query
+	by get_range_query.
+	* gimple-fold.cc (size_must_be_zero_p): Likewise.
+	* gimple-range-fold.cc (fur_source::fur_source): Likewise.
+	* gimple-ssa-warn-access.cc (check_nul_terminated_array): Likewise.
+	* tree-dfa.cc (get_ref_base_and_extent): Likewise.
+
+2023-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (V2FI_32): New mode iterator
+	(movd_v2hf_to_sse): Rename to ..
+	(movd_<mode>_to_sse): .. this.
+	(movd_v2hf_to_sse_reg): Rename to ..
+	(movd_<mode>_to_sse_reg): .. this.
+	(fix<fixunssuffix>_trunc<mode><mmxintvecmodelower>2): New
+	expander.
+	(fix<fixunssuffix>_truncv2hfv2si2): Ditto.
+	(float<floatunssuffix><mmxintvecmodelower><mode>2): Ditto.
+	(float<floatunssuffix>v2siv2hf2): Ditto.
+	(extendv2hfv2sf2): Ditto.
+	(truncv2sfv2hf2): Ditto.
+	* config/i386/sse.md (*vec_concatv8hf_movss): Rename to ..
+	(*vec_concat<mode>_movss): .. this.
+
+2023-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_sse_copysign_to_positive):
+	Handle HFmode.
+	(ix86_expand_round_sse4): Ditto.
+	* config/i386/i386.md (roundhf2): New expander.
+	(lroundhf<mode>2): Ditto.
+	(lrinthf<mode>2): Ditto.
+	(l<rounding_insn>hf<mode>2): Ditto.
+	* config/i386/mmx.md (sqrt<mode>2): Ditto.
+	(btrunc<mode>2): Ditto.
+	(nearbyint<mode>2): Ditto.
+	(rint<mode>2): Ditto.
+	(lrint<mode><mmxintvecmodelower>2): Ditto.
+	(floor<mode>2): Ditto.
+	(lfloor<mode><mmxintvecmodelower>2): Ditto.
+	(ceil<mode>2): Ditto.
+	(lceil<mode><mmxintvecmodelower>2): Ditto.
+	(round<mode>2): Ditto.
+	(lround<mode><mmxintvecmodelower>2): Ditto.
+	* config/i386/sse.md (lrint<mode><sseintvecmodelower>2): Ditto.
+	(lfloor<mode><sseintvecmodelower>2): Ditto.
+	(lceil<mode><sseintvecmodelower>2): Ditto.
+	(lround<mode><sseintvecmodelower>2): Ditto.
+	(sse4_1_round<ssescalarmodesuffix>): Extend to V8HF.
+	(round<mode>2): Extend to V8HF/V16HF/V32HF.
+
 2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi (-fopenacc, -fopenmp, -fopenmp-simd): Use @samp not
