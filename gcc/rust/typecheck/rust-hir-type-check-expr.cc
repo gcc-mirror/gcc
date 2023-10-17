@@ -249,16 +249,14 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 {
   infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-  auto lhs = TypeCheckExpr::Resolve (expr.get_left_expr ().get ());
-  auto rhs = TypeCheckExpr::Resolve (expr.get_right_expr ().get ());
+  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
+  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
   // we dont care about the result of the unify from a compound assignment
   // since this is a unit-type expr
   coercion_site (expr.get_mappings ().get_hirid (),
-		 TyTy::TyWithLocation (lhs,
-				       expr.get_left_expr ()->get_locus ()),
-		 TyTy::TyWithLocation (rhs,
-				       expr.get_right_expr ()->get_locus ()),
+		 TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
+		 TyTy::TyWithLocation (rhs, expr.get_rhs ()->get_locus ()),
 		 expr.get_locus ());
 
   auto lang_item_type

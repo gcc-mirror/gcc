@@ -184,8 +184,8 @@ void
 CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_left_expr ().get (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_right_expr ().get (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
 
   // this might be an operator overload situation lets check
   TyTy::FnType *fntype;
@@ -198,8 +198,8 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 	  expr.get_expr_type ());
       auto compound_assignment
 	= resolve_operator_overload (lang_item_type, expr, lhs, rhs,
-				     expr.get_left_expr ().get (),
-				     expr.get_right_expr ().get ());
+				     expr.get_lhs ().get (),
+				     expr.get_rhs ().get ());
       ctx->add_statement (compound_assignment);
 
       return;
