@@ -7688,7 +7688,9 @@ BEGIN
          PartialUnboundedSym : n := GetSymName(PartialUnbounded.Type) |
          TupleSym            : n := NulName |
          GnuAsmSym           : n := NulName |
-         InterfaceSym        : n := NulName
+         InterfaceSym        : n := NulName |
+         ImportSym           : n := NulName |
+         ImportStatementSym  : n := NulName
 
          ELSE
             InternalError ('unexpected symbol type')

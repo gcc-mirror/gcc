@@ -97,6 +97,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
                         IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
+                        IsImport, IsImportStatement,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
@@ -4268,9 +4269,15 @@ BEGIN
    ELSIF IsAModula2Type(sym)
    THEN
       printf2('sym %d IsAModula2Type (%a)', sym, n)
-   ELSIF IsGnuAsmVolatile(sym)
+   ELSIF IsGnuAsm(sym)
    THEN
-      printf2('sym %d IsGnuAsmVolatile (%a)', sym, n)
+      printf2('sym %d IsGnuAsm (%a)', sym, n)
+   ELSIF IsImport (sym)
+   THEN
+      printf1('sym %d IsImport', sym)
+   ELSIF IsImportStatement (sym)
+   THEN
+      printf1('sym %d IsImportStatement', sym)
    END ;
 
    IF IsHiddenType(sym)
