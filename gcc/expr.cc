@@ -9329,13 +9329,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  op0 = expand_expr (treeop0, target, VOIDmode,
 			     modifier);
 
-	  /* If the signedness of the conversion differs and OP0 is
-	     a promoted SUBREG, clear that indication since we now
-	     have to do the proper extension.  */
-	  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)) != unsignedp
-	      && GET_CODE (op0) == SUBREG)
-	    SUBREG_PROMOTED_VAR_P (op0) = 0;
-
 	  return REDUCE_BIT_FIELD (op0);
 	}
 
