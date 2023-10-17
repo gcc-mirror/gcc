@@ -40,6 +40,8 @@ public:
   // closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
   // this will only work with "simple" tokens like punctuation.
   void split_current_token (TokenId new_left, TokenId new_right);
+
+  void split_current_token (std::vector<TokenPtr> new_tokens);
 };
 } // namespace Rust
 

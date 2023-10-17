@@ -2530,6 +2530,18 @@ Lexer::split_current_token (TokenId new_left, TokenId new_right)
 }
 
 void
+Lexer::split_current_token (std::vector<TokenPtr> new_tokens)
+{
+  rust_assert (new_tokens.size () > 0);
+  token_queue.replace_current_value (new_tokens[0]);
+
+  for (size_t i = 1; i < new_tokens.size (); i++)
+    {
+      token_queue.insert (i, new_tokens[i]);
+    }
+}
+
+void
 Lexer::start_line (int current_line, int current_column)
 {
   if (line_map)

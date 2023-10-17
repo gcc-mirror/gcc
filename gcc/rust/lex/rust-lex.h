@@ -202,6 +202,8 @@ public:
    * this will only work with "simple" tokens like punctuation. */
   void split_current_token (TokenId new_left, TokenId new_right);
 
+  void split_current_token (std::vector<TokenPtr> new_tokens);
+
   Linemap *get_line_map () { return line_map; }
   std::string get_filename () { return std::string (input.get_filename ()); }
 
