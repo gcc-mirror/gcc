@@ -1,3 +1,20 @@
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* gcc.target/powerpc/pr111380-1.c: New test.
+	* gcc.target/powerpc/pr111380-2.c: New test.
+
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* g++.target/powerpc/pr111366.C: New test.
+
 2023-10-07  Andrew Pinski  <pinskia@gmail.com>
 
 	Backported from master:
