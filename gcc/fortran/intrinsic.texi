@@ -13168,10 +13168,10 @@ end program test_sign
 @table @asis
 @item @emph{Description}:
 @code{SIGNAL(NUMBER, HANDLER [, STATUS])} causes external subroutine
-@var{HANDLER} to be executed with a single integer argument when signal
-@var{NUMBER} occurs.  If @var{HANDLER} is an integer, it can be used to
-turn off handling of signal @var{NUMBER} or revert to its default
-action.  See @code{signal(2)}.
+@var{HANDLER} to be executed with a single integer argument passed by
+value when signal @var{NUMBER} occurs.  If @var{HANDLER} is an integer,
+it can be used to turn off handling of signal @var{NUMBER} or revert to
+its default action.  See @code{signal(2)}.
 
 If @code{SIGNAL} is called as a subroutine and the @var{STATUS} argument
 is supplied, it is set to the value returned by @code{signal(2)}.
@@ -13197,19 +13197,25 @@ Subroutine, function
 @item @var{STATUS} @tab (Optional) @var{STATUS} shall be a scalar
 integer. It has @code{INTENT(OUT)}.
 @end multitable
-@c TODO: What should the interface of the handler be?  Does it take arguments?
 
 @item @emph{Return value}:
 The @code{SIGNAL} function returns the value returned by @code{signal(2)}.
 
 @item @emph{Example}:
 @smallexample
+module m_handler
+contains
+  ! POSIX.1-2017:  void (*func)(int)
+  subroutine handler_print(signum) bind(C)
+    use iso_c_binding, only: c_int
+    integer(c_int), value :: signum
+    print *, 'handler_print invoked with signum =', signum
+  end subroutine
+end module
 program test_signal
-  intrinsic signal
-  external handler_print
-
-  call signal (12, handler_print)
-  call signal (10, 1)
+  use m_handler
+  call signal (12, handler_print)  ! 12 = SIGUSR2 (on some systems)
+  call signal (10, 1)  ! 10 = SIGUSR1 and 1 = SIG_IGN (on some systems)
 
   call sleep (30)
 end program test_signal
