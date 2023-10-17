@@ -3359,7 +3359,8 @@ template_parameters_equivalent_p (const_tree parm1, const_tree parm2)
   /* ... one parameter was introduced by a parameter declaration, then
      both are. This case arises as a result of eagerly rewriting declarations
      during parsing.  */
-  if (DECL_VIRTUAL_P (decl1) != DECL_VIRTUAL_P (decl2))
+  if (DECL_IMPLICIT_TEMPLATE_PARM_P (decl1)
+      != DECL_IMPLICIT_TEMPLATE_PARM_P (decl2))
     return false;
 
   /* ... if either declares a pack, they both do.  */

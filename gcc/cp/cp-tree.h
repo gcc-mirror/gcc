@@ -677,10 +677,14 @@ template_info_decl_check (const_tree t, const char* f, int l, const char* fn)
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 0);	\
      __t; })
 
+#define DECL_TEMPLATE_PARM_CHECK(NODE) \
+  decl_template_parm_check ((NODE), __FILE__, __LINE__, __FUNCTION__)
+
 #else /* ENABLE_TREE_CHECKING */
 
 #define TEMPLATE_INFO_DECL_CHECK(NODE) (NODE)
 #define THUNK_FUNCTION_CHECK(NODE) (NODE)
+#define DECL_TEMPLATE_PARM_CHECK(NODE) (NODE)
 
 #endif /* ENABLE_TREE_CHECKING */
 
@@ -3577,6 +3581,11 @@ struct GTY(()) lang_decl {
    need.  But we want a more descriptive name.  */
 #define DECL_VTABLE_OR_VTT_P(NODE) DECL_VIRTUAL_P (VAR_DECL_CHECK (NODE))
 
+/* 1 iff a _DECL for a template parameter came from
+   synthesize_implicit_template_parm.  */
+#define DECL_IMPLICIT_TEMPLATE_PARM_P(NODE) \
+  DECL_VIRTUAL_P (DECL_TEMPLATE_PARM_CHECK (NODE))
+
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
 #define FUNCTION_REF_QUALIFIED(NODE) \
   TREE_LANG_FLAG_4 (FUNC_OR_METHOD_CHECK (NODE))
@@ -5056,6 +5065,16 @@ get_vec_init_expr (tree t)
        || TREE_CODE (NODE) == PARM_DECL		\
        || TREE_CODE (NODE) == TYPE_DECL		\
        || TREE_CODE (NODE) == TEMPLATE_DECL))
+
+#if ENABLE_TREE_CHECKING
+inline tree
+decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
+{
+  if (!DECL_TEMPLATE_PARM_P (t))
+    tree_check_failed (t, f, l, fn, 0);
+  return const_cast<tree>(t);
+}
+#endif
 
 /* Nonzero for a raw template parameter node.  */
 #define TEMPLATE_PARM_P(NODE)					\

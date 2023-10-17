@@ -1744,7 +1744,7 @@ write_closure_template_head (tree tmpl)
 	continue;
       parm = TREE_VALUE (parm);
 
-      if (DECL_VIRTUAL_P (parm))
+      if (DECL_IMPLICIT_TEMPLATE_PARM_P (parm))
 	// A synthetic parm, we're done.
 	break;
 

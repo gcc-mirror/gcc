@@ -50895,7 +50895,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
      Note that DECL_ARTIFICIAL is used elsewhere for template
      parameters.  */
   if (TREE_VALUE (new_parm) != error_mark_node)
-    DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
+    DECL_IMPLICIT_TEMPLATE_PARM_P (TREE_VALUE (new_parm)) = true;
 
   tree new_decl = get_local_decls ();
   if (non_type)
