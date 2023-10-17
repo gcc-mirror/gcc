@@ -154,6 +154,14 @@ compute_local_program_points (
     }
 }
 
+static machine_mode
+get_biggest_mode (machine_mode mode1, machine_mode mode2)
+{
+  unsigned int mode1_size = GET_MODE_BITSIZE (mode1).to_constant ();
+  unsigned int mode2_size = GET_MODE_BITSIZE (mode2).to_constant ();
+  return mode1_size >= mode2_size ? mode1 : mode2;
+}
+
 /* Compute local live ranges of each vectorized variable.
    Note that we only compute local live ranges (within a block) since
    local live ranges information is accurate enough for us to determine
@@ -201,12 +209,12 @@ compute_local_live_ranges (
 	    {
 	      unsigned int point = program_point.point;
 	      gimple *stmt = program_point.stmt;
-	      machine_mode mode = biggest_mode;
 	      tree lhs = gimple_get_lhs (stmt);
 	      if (lhs != NULL_TREE && is_gimple_reg (lhs)
 		  && !POINTER_TYPE_P (TREE_TYPE (lhs)))
 		{
-		  mode = TYPE_MODE (TREE_TYPE (lhs));
+		  biggest_mode = get_biggest_mode (biggest_mode,
+						   TYPE_MODE (TREE_TYPE (lhs)));
 		  bool existed_p = false;
 		  pair &live_range
 		    = live_ranges->get_or_insert (lhs, &existed_p);
@@ -225,7 +233,9 @@ compute_local_live_ranges (
 		     the future.  */
 		  if (is_gimple_val (var) && !POINTER_TYPE_P (TREE_TYPE (var)))
 		    {
-		      mode = TYPE_MODE (TREE_TYPE (var));
+		      biggest_mode
+			= get_biggest_mode (biggest_mode,
+					    TYPE_MODE (TREE_TYPE (var)));
 		      bool existed_p = false;
 		      pair &live_range
 			= live_ranges->get_or_insert (var, &existed_p);
@@ -238,9 +248,6 @@ compute_local_live_ranges (
 			live_range = pair (0, point);
 		    }
 		}
-	      if (GET_MODE_SIZE (mode).to_constant ()
-		  > GET_MODE_SIZE (biggest_mode).to_constant ())
-		biggest_mode = mode;
 	    }
 	  if (dump_enabled_p ())
 	    for (hash_map<tree, pair>::iterator iter = live_ranges->begin ();
