@@ -1538,6 +1538,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  Identifier get_field_name () const { return field_name; }
+
   StructExprFieldKind get_kind () const override
   {
     return StructExprFieldKind::IDENTIFIER_VALUE;
