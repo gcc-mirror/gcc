@@ -321,7 +321,7 @@ public:
 
   PathExprSegment &get_root_seg () { return segments.at (0); }
 
-  PathExprSegment get_final_segment () const { return segments.back (); }
+  const PathExprSegment &get_final_segment () const { return segments.back (); }
 
   PatternType get_pattern_type () const override final
   {
