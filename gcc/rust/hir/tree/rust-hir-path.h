@@ -390,7 +390,7 @@ public:
 	   == 0;
   }
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_pattern_mappings () const override final
   {
     return get_mappings ();
   }
@@ -864,7 +864,7 @@ public:
 
   location_t get_locus () { return locus; }
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_pattern_mappings () const override final
   {
     return get_mappings ();
   }
