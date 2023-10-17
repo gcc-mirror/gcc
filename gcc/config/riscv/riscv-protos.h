@@ -117,7 +117,6 @@ extern rtx riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y);
 extern bool riscv_expand_conditional_move (rtx, rtx, rtx, rtx);
 extern rtx riscv_legitimize_call_address (rtx);
 extern void riscv_set_return_address (rtx, rtx);
-extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern rtx riscv_return_addr (int, rtx);
 extern poly_int64 riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
@@ -125,7 +124,6 @@ extern void riscv_expand_epilogue (int);
 extern bool riscv_epilogue_uses (unsigned int);
 extern bool riscv_can_use_return_insn (void);
 extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
-extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
@@ -159,6 +157,9 @@ extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
+
+/* Routines implemented in riscv-string.c.  */
+extern bool riscv_expand_block_move (rtx, rtx, rtx);
 
 /* Information about one CPU we know about.  */
 struct riscv_cpu_info {

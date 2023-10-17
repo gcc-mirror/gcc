@@ -51,7 +51,7 @@ bool isTrivialExp(Expression *e);
 bool hasSideEffect(Expression *e, bool assumeImpureCalls = false);
 
 enum BE : int32_t;
-BE canThrow(Expression *e, FuncDeclaration *func, bool mustNotThrow);
+BE canThrow(Expression *e, FuncDeclaration *func, ErrorSink *eSink);
 
 typedef unsigned char OwnedBy;
 enum
@@ -93,9 +93,6 @@ public:
     DYNCAST dyncast() const override final { return DYNCAST_EXPRESSION; }
 
     const char *toChars() const override;
-    void error(const char *format, ...) const;
-    void warning(unsigned flag, const char *format, ...) const;
-    void deprecation(const char *format, ...) const;
 
     virtual dinteger_t toInteger();
     virtual uinteger_t toUInteger();
@@ -380,6 +377,7 @@ public:
     size_t len;         // number of chars, wchars, or dchars
     unsigned char sz;   // 1: char, 2: wchar, 4: dchar
     bool committed;     // if type is committed
+    bool hexString;     // if string is parsed from a hex string literal
 
     static StringExp *create(const Loc &loc, const char *s);
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);

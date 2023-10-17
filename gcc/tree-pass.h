@@ -622,6 +622,7 @@ extern rtl_opt_pass *make_pass_sched_fusion (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_peephole2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_if_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_regrename (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_fold_mem_offsets (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_cprop_hardreg (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_reorder_blocks (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_leaf_regs (gcc::context *ctxt);

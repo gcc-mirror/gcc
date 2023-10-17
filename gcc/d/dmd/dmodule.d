@@ -468,7 +468,8 @@ extern (C++) final class Module : Package
                  !FileName.equalsExt(srcfilename, dd_ext))
         {
 
-            error("source file name '%.*s' must have .%.*s extension",
+            error(loc, "%s `%s` source file name '%.*s' must have .%.*s extension",
+                  kind, toPrettyChars,
                   cast(int)srcfilename.length, srcfilename.ptr,
                   cast(int)mars_ext.length, mars_ext.ptr);
             fatal();
@@ -528,7 +529,7 @@ extern (C++) final class Module : Package
 
         if (!m.read(loc))
             return null;
-        if (global.params.verbose)
+        if (global.params.v.verbose)
         {
             OutBuffer buf;
             foreach (pid; packages)
@@ -593,7 +594,8 @@ extern (C++) final class Module : Package
         }
         if (FileName.equals(docfilename, srcfile.toString()))
         {
-            error("source file and output file have same name '%s'", srcfile.toChars());
+            error(loc, "%s `%s` source file and output file have same name '%s'",
+                kind, toPrettyChars, srcfile.toChars());
             fatal();
         }
         return FileName(docfilename);
@@ -793,7 +795,7 @@ extern (C++) final class Module : Package
         {
             const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
             scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink, &global.compileEnv, doUnittests);
-            p.transitionIn = global.params.vin;
+            p.transitionIn = global.params.v.vin;
             p.nextToken();
             p.parseModuleDeclaration();
             md = p.md;
@@ -852,7 +854,7 @@ extern (C++) final class Module : Package
             /* Check to see if module name is a valid identifier
              */
             if (!Identifier.isValidIdentifier(this.ident.toChars()))
-                error("has non-identifier characters in filename, use module declaration instead");
+                error(loc, "%s `%s` has non-identifier characters in filename, use module declaration instead", kind, toPrettyChars);
         }
         // Insert module into the symbol table
         Dsymbol s = this;
@@ -905,11 +907,11 @@ extern (C++) final class Module : Package
             if (Module mprev = prev.isModule())
             {
                 if (!FileName.equals(srcname, mprev.srcfile.toChars()))
-                    error(loc, "from file %s conflicts with another module %s from file %s", srcname, mprev.toChars(), mprev.srcfile.toChars());
+                    error(loc, "%s `%s` from file %s conflicts with another module %s from file %s", kind, toPrettyChars, srcname, mprev.toChars(), mprev.srcfile.toChars());
                 else if (isRoot() && mprev.isRoot())
-                    error(loc, "from file %s is specified twice on the command line", srcname);
+                    error(loc, "%s `%s` from file %s is specified twice on the command line", kind, toPrettyChars, srcname);
                 else
-                    error(loc, "from file %s must be imported with 'import %s;'", srcname, toPrettyChars());
+                    error(loc, "%s `%s` from file %s must be imported with 'import %s;'", kind, toPrettyChars, srcname, toPrettyChars());
                 // https://issues.dlang.org/show_bug.cgi?id=14446
                 // Return previously parsed module to avoid AST duplication ICE.
                 return mprev;
@@ -920,7 +922,7 @@ extern (C++) final class Module : Package
                 if (isPackageFile)
                     amodules.push(this); // Add to global array of all modules
                 else
-                    error(md ? md.loc : loc, "from file %s conflicts with package name %s", srcname, pkg.toChars());
+                    error(md ? md.loc : loc, "%s `%s` from file %s conflicts with package name %s", kind, toPrettyChars, srcname, pkg.toChars());
             }
             else
                 assert(global.errors);
@@ -941,7 +943,7 @@ extern (C++) final class Module : Package
             return; // already done
         if (filetype == FileType.ddoc)
         {
-            error("is a Ddoc file, cannot import it");
+            error(loc, "%s `%s` is a Ddoc file, cannot import it", kind, toPrettyChars);
             return;
         }
 
@@ -1026,11 +1028,11 @@ extern (C++) final class Module : Package
                 const slice = se.peekString();
                 if (slice.length)
                 {
-                    deprecation(loc, "is deprecated - %.*s", cast(int)slice.length, slice.ptr);
+                    deprecation(loc, "%s `%s` is deprecated - %.*s", kind, toPrettyChars, cast(int)slice.length, slice.ptr);
                     return;
                 }
             }
-            deprecation(loc, "is deprecated");
+            deprecation(loc, "%s `%s` is deprecated", kind, toPrettyChars);
         }
     }
 
@@ -1479,7 +1481,8 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 3)
         {
-            mod.error("odd length of UTF-32 char source %llu", cast(ulong) buf.length);
+            .error(mod.loc, "%s `%s` odd length of UTF-32 char source %llu",
+                mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
 
@@ -1495,7 +1498,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
             {
                 if (u > 0x10FFFF)
                 {
-                    mod.error("UTF-32 value %08x greater than 0x10FFFF", u);
+                    .error(mod.loc, "%s `%s` UTF-32 value %08x greater than 0x10FFFF", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1525,7 +1528,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
 
         if (buf.length & 1)
         {
-            mod.error("odd length of UTF-16 char source %llu", cast(ulong) buf.length);
+            .error(mod.loc, "%s `%s` odd length of UTF-16 char source %llu", mod.kind, mod.toPrettyChars, cast(ulong) buf.length);
             return null;
         }
 
@@ -1545,13 +1548,13 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                     i++;
                     if (i >= eBuf.length)
                     {
-                        mod.error("surrogate UTF-16 high value %04x at end of file", u);
+                        .error(mod.loc, "%s `%s` surrogate UTF-16 high value %04x at end of file", mod.kind, mod.toPrettyChars, u);
                         return null;
                     }
                     const u2 = readNext(&eBuf[i]);
                     if (u2 < 0xDC00 || 0xE000 <= u2)
                     {
-                        mod.error("surrogate UTF-16 low value %04x out of range", u2);
+                        .error(mod.loc, "%s `%s` surrogate UTF-16 low value %04x out of range", mod.kind, mod.toPrettyChars, u2);
                         return null;
                     }
                     u = (u - 0xD7C0) << 10;
@@ -1559,12 +1562,12 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
                 }
                 else if (u >= 0xDC00 && u <= 0xDFFF)
                 {
-                    mod.error("unpaired surrogate UTF-16 value %04x", u);
+                    .error(mod.loc, "%s `%s` unpaired surrogate UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 else if (u == 0xFFFE || u == 0xFFFF)
                 {
-                    mod.error("illegal UTF-16 value %04x", u);
+                    .error(mod.loc, "%s `%s` illegal UTF-16 value %04x", mod.kind, mod.toPrettyChars, u);
                     return null;
                 }
                 dbuf.writeUTF8(u);
@@ -1623,7 +1626,8 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
     // It's UTF-8
     if (buf[0] >= 0x80)
     {
-        mod.error("source file must start with BOM or ASCII character, not \\x%02X", buf[0]);
+        auto loc = mod.getLoc();
+        .error(loc, "%s `%s` source file must start with BOM or ASCII character, not \\x%02X", mod.kind, mod.toPrettyChars, buf[0]);
         return null;
     }
 

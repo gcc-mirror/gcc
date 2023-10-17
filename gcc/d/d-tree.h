@@ -94,7 +94,7 @@ enum level_kind
 
 enum intrinsic_code
 {
-#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) CODE,
+#define DEF_D_INTRINSIC(CODE, B, N, M, D, C, F) CODE,
 
 #include "intrinsics.def"
 
@@ -668,6 +668,7 @@ extern tree build_import_decl (Dsymbol *);
 /* In intrinsics.cc.  */
 extern void maybe_set_intrinsic (FuncDeclaration *);
 extern tree maybe_expand_intrinsic (tree);
+extern tree maybe_reject_intrinsic (tree);
 
 /* In modules.cc.  */
 extern void build_module_tree (Module *);

@@ -238,17 +238,6 @@ bool isNeedThisScope(Scope* sc, Declaration d)
     return true;
 }
 
-/******************************
- * check e is exp.opDispatch!(tiargs) or not
- * It's used to switch to UFCS the semantic analysis path
- */
-bool isDotOpDispatch(Expression e)
-{
-    if (auto dtie = e.isDotTemplateInstanceExp())
-        return dtie.ti.name == Id.opDispatch;
-    return false;
-}
-
 /****************************************
  * Expand tuples in-place.
  *
@@ -377,41 +366,6 @@ TupleDeclaration isAliasThisTuple(Expression e)
         }
         return null;
     }
-}
-
-int expandAliasThisTuples(Expressions* exps, size_t starti = 0)
-{
-    if (!exps || exps.length == 0)
-        return -1;
-
-    for (size_t u = starti; u < exps.length; u++)
-    {
-        Expression exp = (*exps)[u];
-        if (TupleDeclaration td = exp.isAliasThisTuple)
-        {
-            exps.remove(u);
-            size_t i;
-            td.foreachVar((s)
-            {
-                auto d = s.isDeclaration();
-                auto e = new DotVarExp(exp.loc, exp, d);
-                assert(d.type);
-                e.type = d.type;
-                exps.insert(u + i, e);
-                ++i;
-            });
-            version (none)
-            {
-                printf("expansion ->\n");
-                foreach (e; exps)
-                {
-                    printf("\texps[%d] e = %s %s\n", i, EXPtoString(e.op), e.toChars());
-                }
-            }
-            return cast(int)u;
-        }
-    }
-    return -1;
 }
 
 /****************************************
@@ -602,7 +556,7 @@ extern (C++) struct UnionExp
 
 private:
     // Ensure that the union is suitably aligned.
-    align(8) union __AnonStruct__u
+    align(8) union _AnonStruct_u
     {
         char[__traits(classInstanceSize, Expression)] exp;
         char[__traits(classInstanceSize, IntegerExp)] integerexp;
@@ -623,23 +577,7 @@ private:
         char[__traits(classInstanceSize, VectorExp)] vectorexp;
     }
 
-    __AnonStruct__u u;
-}
-
-/********************************
- * Test to see if two reals are the same.
- * Regard NaN's as equivalent.
- * Regard +0 and -0 as different.
- * Params:
- *      x1 = first operand
- *      x2 = second operand
- * Returns:
- *      true if x1 is x2
- *      else false
- */
-bool RealIdentical(real_t x1, real_t x2) @safe
-{
-    return (CTFloat.isNaN(x1) && CTFloat.isNaN(x2)) || CTFloat.isIdentical(x1, x2);
+    _AnonStruct_u u;
 }
 
 /************************ TypeDotIdExp ************************************/
@@ -818,99 +756,6 @@ extern (C++) abstract class Expression : ASTNode
         return buf.extractChars();
     }
 
-    static if (__VERSION__ < 2092)
-    {
-        final void error(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.error);
-                va_end(ap);
-            }
-        }
-
-        final void errorSupplemental(const(char)* format, ...)
-        {
-            if (type == Type.terror)
-                return;
-
-            va_list ap;
-            va_start(ap, format);
-            .verrorReportSupplemental(loc, format, ap, ErrorKind.error);
-            va_end(ap);
-        }
-
-        final void warning(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.warning);
-                va_end(ap);
-            }
-        }
-
-        final void deprecation(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.deprecation);
-                va_end(ap);
-            }
-        }
-    }
-    else
-    {
-        pragma(printf) final void error(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.error);
-                va_end(ap);
-            }
-        }
-
-        pragma(printf) final void errorSupplemental(const(char)* format, ...)
-        {
-            if (type == Type.terror)
-                return;
-
-            va_list ap;
-            va_start(ap, format);
-            .verrorReportSupplemental(loc, format, ap, ErrorKind.error);
-            va_end(ap);
-        }
-
-        pragma(printf) final void warning(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.warning);
-                va_end(ap);
-            }
-        }
-
-        pragma(printf) final void deprecation(const(char)* format, ...) const
-        {
-            if (type != Type.terror)
-            {
-                va_list ap;
-                va_start(ap, format);
-                .verrorReport(loc, format, ap, ErrorKind.deprecation);
-                va_end(ap);
-            }
-        }
-    }
-
     /**********************************
      * Combine e1 and e2 by CommaExp if both are not NULL.
      */
@@ -992,7 +837,8 @@ extern (C++) abstract class Expression : ASTNode
     dinteger_t toInteger()
     {
         //printf("Expression %s\n", EXPtoString(op).ptr);
-        error("integer constant expression expected instead of `%s`", toChars());
+        if (!type.isTypeError())
+            error(loc, "integer constant expression expected instead of `%s`", toChars());
         return 0;
     }
 
@@ -1004,19 +850,19 @@ extern (C++) abstract class Expression : ASTNode
 
     real_t toReal()
     {
-        error("floating point constant expression expected instead of `%s`", toChars());
+        error(loc, "floating point constant expression expected instead of `%s`", toChars());
         return CTFloat.zero;
     }
 
     real_t toImaginary()
     {
-        error("floating point constant expression expected instead of `%s`", toChars());
+        error(loc, "floating point constant expression expected instead of `%s`", toChars());
         return CTFloat.zero;
     }
 
     complex_t toComplex()
     {
-        error("floating point constant expression expected instead of `%s`", toChars());
+        error(loc, "floating point constant expression expected instead of `%s`", toChars());
         return complex_t(CTFloat.zero);
     }
 
@@ -1045,9 +891,9 @@ extern (C++) abstract class Expression : ASTNode
             loc = e.loc;
 
         if (e.op == EXP.type)
-            error("`%s` is a `%s` definition and cannot be modified", e.type.toChars(), e.type.kind());
+            error(loc, "`%s` is a `%s` definition and cannot be modified", e.type.toChars(), e.type.kind());
         else
-            error("`%s` is not an lvalue and cannot be modified", e.toChars());
+            error(loc, "`%s` is not an lvalue and cannot be modified", e.toChars());
 
         return ErrorExp.get();
     }
@@ -1071,17 +917,17 @@ extern (C++) abstract class Expression : ASTNode
                             break;
                         if (!ff.type.isMutable)
                         {
-                            error("cannot modify `%s` in `%s` function", toChars(), MODtoChars(type.mod));
+                            error(loc, "cannot modify `%s` in `%s` function", toChars(), MODtoChars(type.mod));
                             return ErrorExp.get();
                         }
                     }
                 }
-                error("cannot modify `%s` expression `%s`", MODtoChars(type.mod), toChars());
+                error(loc, "cannot modify `%s` expression `%s`", MODtoChars(type.mod), toChars());
                 return ErrorExp.get();
             }
             else if (!type.isAssignable())
             {
-                error("cannot modify struct instance `%s` of type `%s` because it contains `const` or `immutable` members",
+                error(loc, "cannot modify struct instance `%s` of type `%s` because it contains `const` or `immutable` members",
                     toChars(), type.toChars());
                 return ErrorExp.get();
             }
@@ -1136,7 +982,7 @@ extern (C++) abstract class Expression : ASTNode
     {
         if (type && type.toBasetype().ty == Tvoid)
         {
-            error("expression `%s` is `void` and has no value", toChars());
+            error(loc, "expression `%s` is `void` and has no value", toChars());
             //print(); assert(0);
             if (!global.gag)
                 type = Type.terror;
@@ -1153,7 +999,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (!type.isscalar())
         {
-            error("`%s` is not a scalar, it is a `%s`", toChars(), type.toChars());
+            error(loc, "`%s` is not a scalar, it is a `%s`", toChars(), type.toChars());
             return true;
         }
         return checkValue();
@@ -1167,7 +1013,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (type.toBasetype().ty == Tbool)
         {
-            error("operation not allowed on `bool` `%s`", toChars());
+            error(loc, "operation not allowed on `bool` `%s`", toChars());
             return true;
         }
         return false;
@@ -1181,7 +1027,7 @@ extern (C++) abstract class Expression : ASTNode
             return true;
         if (!type.isintegral())
         {
-            error("`%s` is not of integral type, it is a `%s`", toChars(), type.toChars());
+            error(loc, "`%s` is not of integral type, it is a `%s`", toChars(), type.toChars());
             return true;
         }
         return checkValue();
@@ -1199,7 +1045,7 @@ extern (C++) abstract class Expression : ASTNode
             const char* msg = type.isAggregate() ?
                 "operator `%s` is not defined for `%s` of type `%s`" :
                 "illegal operator `%s` for `%s` of type `%s`";
-            error(msg, EXPtoString(op).ptr, toChars(), type.toChars());
+            error(loc, msg, EXPtoString(op).ptr, toChars(), type.toChars());
             return true;
         }
         return checkValue();
@@ -1240,7 +1086,7 @@ extern (C++) abstract class Expression : ASTNode
         // If the call has a pure parent, then the called func must be pure.
         if (!f.isPure() && checkImpure(sc, loc, null, f))
         {
-            error("`pure` %s `%s` cannot call impure %s `%s`",
+            error(loc, "`pure` %s `%s` cannot call impure %s `%s`",
                 sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
                 f.toPrettyChars());
 
@@ -1379,7 +1225,7 @@ extern (C++) abstract class Expression : ASTNode
 
             if (checkImpure(sc, loc, "`pure` %s `%s` cannot access mutable static data `%s`", v))
             {
-                error("`pure` %s `%s` cannot access mutable static data `%s`",
+                error(loc, "`pure` %s `%s` cannot access mutable static data `%s`",
                     sc.func.kind(), sc.func.toPrettyChars(), v.toChars());
                 err = true;
             }
@@ -1424,7 +1270,7 @@ extern (C++) abstract class Expression : ASTNode
                         OutBuffer vbuf;
                         MODMatchToBuffer(&ffbuf, ff.type.mod, v.type.mod);
                         MODMatchToBuffer(&vbuf, v.type.mod, ff.type.mod);
-                        error("%s%s `%s` cannot access %sdata `%s`",
+                        error(loc, "%s%s `%s` cannot access %sdata `%s`",
                             ffbuf.peekChars(), ff.kind(), ff.toPrettyChars(), vbuf.peekChars(), v.toChars());
                         err = true;
                         break;
@@ -1483,7 +1329,7 @@ extern (C++) abstract class Expression : ASTNode
             {
                 if (sc.varDecl.storage_class & STC.safe)
                 {
-                    error("`@safe` variable `%s` cannot be initialized by calling `@system` function `%s`",
+                    error(loc, "`@safe` variable `%s` cannot be initialized by calling `@system` function `%s`",
                         sc.varDecl.toChars(), f.toChars());
                     return true;
                 }
@@ -1504,7 +1350,7 @@ extern (C++) abstract class Expression : ASTNode
                     loc = sc.func.loc;
 
                 const prettyChars = f.toPrettyChars();
-                error("`@safe` %s `%s` cannot call `@system` %s `%s`",
+                error(loc, "`@safe` %s `%s` cannot call `@system` %s `%s`",
                     sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
                     prettyChars);
                 if (!f.isDtorDeclaration)
@@ -1568,7 +1414,7 @@ extern (C++) abstract class Expression : ASTNode
                     || f.ident == Id._d_arrayappendT || f.ident == Id._d_arrayappendcTX
                     || f.ident == Id._d_arraycatnTX || f.ident == Id._d_newclassT))
                 {
-                    error("`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
+                    error(loc, "`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
                         sc.func.kind(), sc.func.toPrettyChars(), f.kind(), f.toPrettyChars());
 
                     if (!f.isDtorDeclaration)
@@ -1628,7 +1474,7 @@ extern (C++) abstract class Expression : ASTNode
                 //        sc.intypeof, sc.getStructClassScope(), func, fdthis);
                 auto t = ve.var.isThis();
                 assert(t);
-                error("accessing non-static variable `%s` requires an instance of `%s`", ve.var.toChars(), t.toChars());
+                error(loc, "accessing non-static variable `%s` requires an instance of `%s`", ve.var.toChars(), t.toChars());
                 return true;
             }
         }
@@ -1661,8 +1507,8 @@ extern (C++) abstract class Expression : ASTNode
             break;
         }
 
-        error("read-modify-write operations are not allowed for `shared` variables");
-        errorSupplemental("Use `core.atomic.atomicOp!\"%s\"(%s, %s)` instead",
+        error(loc, "read-modify-write operations are not allowed for `shared` variables");
+        errorSupplemental(loc, "Use `core.atomic.atomicOp!\"%s\"(%s, %s)` instead",
                           EXPtoString(rmwOp).ptr, toChars(), ex ? ex.toChars() : "1");
         return true;
     }
@@ -1862,7 +1708,10 @@ extern (C++) abstract class Expression : ASTNode
         inout(IdentityExp) isIdentityExp() { return (op == EXP.identity || op == EXP.notIdentity) ? cast(typeof(return))this : null; }
         inout(CondExp)     isCondExp() { return op == EXP.question ? cast(typeof(return))this : null; }
         inout(GenericExp)  isGenericExp() { return op == EXP._Generic ? cast(typeof(return))this : null; }
-        inout(DefaultInitExp)    isDefaultInitExp() { return isDefaultInitOp(op) ? cast(typeof(return))this: null; }
+        inout(DefaultInitExp)    isDefaultInitExp() { return
+            (op == EXP.prettyFunction    || op == EXP.functionString ||
+             op == EXP.line              || op == EXP.moduleString   ||
+             op == EXP.file              || op == EXP.fileFullPath   ) ? cast(typeof(return))this : null; }
         inout(FileInitExp)       isFileInitExp() { return (op == EXP.file || op == EXP.fileFullPath) ? cast(typeof(return))this : null; }
         inout(LineInitExp)       isLineInitExp() { return op == EXP.line ? cast(typeof(return))this : null; }
         inout(ModuleInitExp)     isModuleInitExp() { return op == EXP.moduleString ? cast(typeof(return))this : null; }
@@ -1910,7 +1759,7 @@ extern (C++) final class IntegerExp : Expression
         {
             //printf("%s, loc = %d\n", toChars(), loc.linnum);
             if (type.ty != Terror)
-                error("integral constant must be scalar type, not `%s`", type.toChars());
+                error(loc, "integral constant must be scalar type, not `%s`", type.toChars());
             type = Type.terror;
         }
         this.type = type;
@@ -1988,7 +1837,7 @@ extern (C++) final class IntegerExp : Expression
             e = this;
         else if (!loc.isValid())
             loc = e.loc;
-        e.error("cannot modify constant `%s`", e.toChars());
+        error(e.loc, "cannot modify constant `%s`", e.toChars());
         return ErrorExp.get();
     }
 
@@ -2172,11 +2021,6 @@ extern (C++) final class VoidInitExp : Expression
         this.type = var.type;
     }
 
-    override const(char)* toChars() const
-    {
-        return "void";
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -2210,6 +2054,21 @@ extern (C++) final class RealExp : Expression
         emplaceExp!(RealExp)(pue, loc, value, type);
     }
 
+    /********************************
+     * Test to see if two reals are the same.
+     * Regard NaN's as equivalent.
+     * Regard +0 and -0 as different.
+     * Params:
+     *      x1 = first operand
+     *      x2 = second operand
+     * Returns:
+     *      true if x1 is x2
+     *      else false
+     */
+    private static bool RealIdentical(real_t x1, real_t x2) @safe
+    {
+        return (CTFloat.isNaN(x1) && CTFloat.isNaN(x2)) || CTFloat.isIdentical(x1, x2);
+    }
     override bool equals(const RootObject o) const
     {
         if (this == o)
@@ -2299,7 +2158,9 @@ extern (C++) final class ComplexExp : Expression
             return true;
         if (auto ne = (cast(Expression)o).isComplexExp())
         {
-            if (type.toHeadMutable().equals(ne.type.toHeadMutable()) && RealIdentical(creall(value), creall(ne.value)) && RealIdentical(cimagl(value), cimagl(ne.value)))
+            if (type.toHeadMutable().equals(ne.type.toHeadMutable()) &&
+                RealExp.RealIdentical(creall(value), creall(ne.value)) &&
+                RealExp.RealIdentical(cimagl(value), cimagl(ne.value)))
             {
                 return true;
             }
@@ -2594,6 +2455,9 @@ extern (C++) final class StringExp : Expression
      */
     bool committed;
 
+    /// If the string is parsed from a hex string literal
+    bool hexString = false;
+
     enum char NoPostfix = 0;
 
     extern (D) this(const ref Loc loc, const(void)[] string) scope
@@ -2685,7 +2549,7 @@ extern (C++) final class StringExp : Expression
             {
                 if (const s = utf_decodeChar(string[0 .. len], u, c))
                 {
-                    error("%.*s", cast(int)s.length, s.ptr);
+                    error(loc, "%.*s", cast(int)s.length, s.ptr);
                     return 0;
                 }
                 result += utf_codeLength(encSize, c);
@@ -2697,7 +2561,7 @@ extern (C++) final class StringExp : Expression
             {
                 if (const s = utf_decodeWchar(wstring[0 .. len], u, c))
                 {
-                    error("%.*s", cast(int)s.length, s.ptr);
+                    error(loc, "%.*s", cast(int)s.length, s.ptr);
                     return 0;
                 }
                 result += utf_codeLength(encSize, c);
@@ -2902,7 +2766,7 @@ extern (C++) final class StringExp : Expression
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        error("cannot modify string literal `%s`", toChars());
+        error(loc, "cannot modify string literal `%s`", toChars());
         return ErrorExp.get();
     }
 
@@ -3035,7 +2899,7 @@ extern (C++) final class TupleExp : Expression
             }
             else
             {
-                error("`%s` is not an expression", o.toChars());
+                error(loc, "`%s` is not an expression", o.toChars());
             }
         }
     }
@@ -3571,13 +3435,13 @@ extern (C++) final class TypeExp : Expression
 
     override bool checkType()
     {
-        error("type `%s` is not an expression", toChars());
+        error(loc, "type `%s` is not an expression", toChars());
         return true;
     }
 
     override bool checkValue()
     {
-        error("type `%s` has no value", toChars());
+        error(loc, "type `%s` has no value", toChars());
         return true;
     }
 
@@ -3617,7 +3481,7 @@ extern (C++) final class ScopeExp : Expression
     {
         if (sds.isPackage())
         {
-            error("%s `%s` has no type", sds.kind(), sds.toChars());
+            error(loc, "%s `%s` has no type", sds.kind(), sds.toChars());
             return true;
         }
         if (auto ti = sds.isTemplateInstance())
@@ -3627,7 +3491,7 @@ extern (C++) final class ScopeExp : Expression
                 ti.semantictiargsdone &&
                 ti.semanticRun == PASS.initial)
             {
-                error("partial %s `%s` has no type", sds.kind(), toChars());
+                error(loc, "partial %s `%s` has no type", sds.kind(), toChars());
                 return true;
             }
         }
@@ -3636,7 +3500,7 @@ extern (C++) final class ScopeExp : Expression
 
     override bool checkValue()
     {
-        error("%s `%s` has no value", sds.kind(), sds.toChars());
+        error(loc, "%s `%s` has no value", sds.kind(), sds.toChars());
         return true;
     }
 
@@ -3678,13 +3542,13 @@ extern (C++) final class TemplateExp : Expression
 
     override bool checkType()
     {
-        error("%s `%s` has no type", td.kind(), toChars());
+        error(loc, "%s `%s` has no type", td.kind(), toChars());
         return true;
     }
 
     override bool checkValue()
     {
-        error("%s `%s` has no value", td.kind(), toChars());
+        error(loc, "%s `%s` has no value", td.kind(), toChars());
         return true;
     }
 
@@ -3877,22 +3741,22 @@ extern (C++) final class VarExp : SymbolExp
     {
         if (var.storage_class & STC.manifest)
         {
-            error("manifest constant `%s` cannot be modified", var.toChars());
+            error(loc, "manifest constant `%s` cannot be modified", var.toChars());
             return ErrorExp.get();
         }
         if (var.storage_class & STC.lazy_ && !delegateWasExtracted)
         {
-            error("lazy variable `%s` cannot be modified", var.toChars());
+            error(loc, "lazy variable `%s` cannot be modified", var.toChars());
             return ErrorExp.get();
         }
         if (var.ident == Id.ctfe)
         {
-            error("cannot modify compiler-generated variable `__ctfe`");
+            error(loc, "cannot modify compiler-generated variable `__ctfe`");
             return ErrorExp.get();
         }
         if (var.ident == Id.dollar) // https://issues.dlang.org/show_bug.cgi?id=13574
         {
-            error("cannot modify operator `$`");
+            error(loc, "cannot modify operator `$`");
             return ErrorExp.get();
         }
         return this;
@@ -3903,7 +3767,7 @@ extern (C++) final class VarExp : SymbolExp
         //printf("VarExp::modifiableLvalue('%s')\n", var.toChars());
         if (var.storage_class & STC.manifest)
         {
-            error("cannot modify manifest constant `%s`", toChars());
+            error(loc, "cannot modify manifest constant `%s`", toChars());
             return ErrorExp.get();
         }
         // See if this expression is a modifiable lvalue (i.e. not const)
@@ -4219,7 +4083,7 @@ extern (C++) final class FuncExp : Expression
     {
         if (td)
         {
-            error("template lambda has no type");
+            error(loc, "template lambda has no type");
             return true;
         }
         return false;
@@ -4229,7 +4093,7 @@ extern (C++) final class FuncExp : Expression
     {
         if (td)
         {
-            error("template lambda has no value");
+            error(loc, "template lambda has no value");
             return true;
         }
         return false;
@@ -4425,11 +4289,11 @@ extern (C++) abstract class UnaExp : Expression
 
         if (e1.op == EXP.type)
         {
-            error("incompatible type for `%s(%s)`: cannot use `%s` with types", EXPtoString(op).ptr, e1.toChars(), EXPtoString(op).ptr);
+            error(loc, "incompatible type for `%s(%s)`: cannot use `%s` with types", EXPtoString(op).ptr, e1.toChars(), EXPtoString(op).ptr);
         }
         else
         {
-            error("incompatible type for `%s(%s)`: `%s`", EXPtoString(op).ptr, e1.toChars(), e1.type.toChars());
+            error(loc, "incompatible type for `%s(%s)`: `%s`", EXPtoString(op).ptr, e1.toChars(), e1.type.toChars());
         }
         return ErrorExp.get();
     }
@@ -4504,18 +4368,18 @@ extern (C++) abstract class BinExp : Expression
         const(char)* thisOp = (op == EXP.question) ? ":" : EXPtoString(op).ptr;
         if (e1.op == EXP.type || e2.op == EXP.type)
         {
-            error("incompatible types for `(%s) %s (%s)`: cannot use `%s` with types",
+            error(loc, "incompatible types for `(%s) %s (%s)`: cannot use `%s` with types",
                 e1.toChars(), thisOp, e2.toChars(), EXPtoString(op).ptr);
         }
         else if (e1.type.equals(e2.type))
         {
-            error("incompatible types for `(%s) %s (%s)`: both operands are of type `%s`",
+            error(loc, "incompatible types for `(%s) %s (%s)`: both operands are of type `%s`",
                 e1.toChars(), thisOp, e2.toChars(), e1.type.toChars());
         }
         else
         {
             auto ts = toAutoQualChars(e1.type, e2.type);
-            error("incompatible types for `(%s) %s (%s)`: `%s` and `%s`",
+            error(loc, "incompatible types for `(%s) %s (%s)`: `%s` and `%s`",
                 e1.toChars(), thisOp, e2.toChars(), ts[0], ts[1]);
         }
         return ErrorExp.get();
@@ -4536,7 +4400,7 @@ extern (C++) abstract class BinExp : Expression
         {
             if ((type.isintegral() && t2.isfloating()))
             {
-                warning("`%s %s %s` is performing truncating conversion", type.toChars(), EXPtoString(op).ptr, t2.toChars());
+                warning(loc, "`%s %s %s` is performing truncating conversion", type.toChars(), EXPtoString(op).ptr, t2.toChars());
             }
         }
 
@@ -4548,17 +4412,17 @@ extern (C++) abstract class BinExp : Expression
             const(char)* opstr = EXPtoString(op).ptr;
             if (t1.isreal() && t2.iscomplex())
             {
-                error("`%s %s %s` is undefined. Did you mean `%s %s %s.re`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
+                error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.re`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
                 return ErrorExp.get();
             }
             else if (t1.isimaginary() && t2.iscomplex())
             {
-                error("`%s %s %s` is undefined. Did you mean `%s %s %s.im`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
+                error(loc, "`%s %s %s` is undefined. Did you mean `%s %s %s.im`?", t1.toChars(), opstr, t2.toChars(), t1.toChars(), opstr, t2.toChars());
                 return ErrorExp.get();
             }
             else if ((t1.isreal() || t1.isimaginary()) && t2.isimaginary())
             {
-                error("`%s %s %s` is an undefined operation", t1.toChars(), opstr, t2.toChars());
+                error(loc, "`%s %s %s` is an undefined operation", t1.toChars(), opstr, t2.toChars());
                 return ErrorExp.get();
             }
         }
@@ -4570,7 +4434,7 @@ extern (C++) abstract class BinExp : Expression
             // Thus, r+=i, r+=c, i+=r, i+=c are all forbidden operations.
             if ((t1.isreal() && (t2.isimaginary() || t2.iscomplex())) || (t1.isimaginary() && (t2.isreal() || t2.iscomplex())))
             {
-                error("`%s %s %s` is undefined (result is complex)", t1.toChars(), EXPtoString(op).ptr, t2.toChars());
+                error(loc, "`%s %s %s` is undefined (result is complex)", t1.toChars(), EXPtoString(op).ptr, t2.toChars());
                 return ErrorExp.get();
             }
             if (type.isreal() || type.isimaginary())
@@ -4661,7 +4525,7 @@ extern (C++) abstract class BinExp : Expression
         {
             if (t2.iscomplex())
             {
-                error("cannot perform modulo complex arithmetic");
+                error(loc, "cannot perform modulo complex arithmetic");
                 return ErrorExp.get();
             }
         }
@@ -4950,13 +4814,13 @@ extern (C++) final class DotTemplateExp : UnaExp
 
     override bool checkType()
     {
-        error("%s `%s` has no type", td.kind(), toChars());
+        error(loc, "%s `%s` has no type", td.kind(), toChars());
         return true;
     }
 
     override bool checkValue()
     {
-        error("%s `%s` has no value", td.kind(), toChars());
+        error(loc, "%s `%s` has no value", td.kind(), toChars());
         return true;
     }
 
@@ -5125,7 +4989,7 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
             ti.semantictiargsdone &&
             ti.semanticRun == PASS.initial)
         {
-            error("partial %s `%s` has no type", ti.kind(), toChars());
+            error(loc, "partial %s `%s` has no type", ti.kind(), toChars());
             return true;
         }
         return false;
@@ -5137,9 +5001,9 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
             ti.semantictiargsdone &&
             ti.semanticRun == PASS.initial)
 
-            error("partial %s `%s` has no value", ti.kind(), toChars());
+            error(loc, "partial %s `%s` has no value", ti.kind(), toChars());
         else
-            error("%s `%s` has no value", ti.kind(), ti.toChars());
+            error(loc, "%s `%s` has no value", ti.kind(), ti.toChars());
         return true;
     }
 
@@ -5484,9 +5348,9 @@ extern (C++) final class PtrExp : UnaExp
         if (var && var.type.isFunction_Delegate_PtrToFunction())
         {
             if (var.type.isTypeFunction())
-                error("function `%s` is not an lvalue and cannot be modified", var.toChars());
+                error(loc, "function `%s` is not an lvalue and cannot be modified", var.toChars());
             else
-                error("function pointed to by `%s` is not an lvalue and cannot be modified", var.toChars());
+                error(loc, "function pointed to by `%s` is not an lvalue and cannot be modified", var.toChars());
             return ErrorExp.get();
         }
         return Expression.modifiableLvalue(sc, e);
@@ -5774,7 +5638,7 @@ extern (C++) final class SliceExp : UnaExp
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        error("slice expression `%s` is not a modifiable lvalue", toChars());
+        error(loc, "slice expression `%s` is not a modifiable lvalue", toChars());
         return this;
     }
 
@@ -5848,7 +5712,7 @@ extern (C++) final class ArrayExp : UnaExp
     override Expression toLvalue(Scope* sc, Expression e)
     {
         if (type && type.toBasetype().ty == Tvoid)
-            error("`void`s have no value");
+            error(loc, "`void`s have no value");
         return this;
     }
 
@@ -6116,7 +5980,7 @@ extern (C++) final class IndexExp : BinExp
             Type t2b = e2.type.toBasetype();
             if (t2b.ty == Tarray && t2b.nextOf().isMutable())
             {
-                error("associative arrays can only be assigned values with immutable keys, not `%s`", e2.type.toChars());
+                error(loc, "associative arrays can only be assigned values with immutable keys, not `%s`", e2.type.toChars());
                 return ErrorExp.get();
             }
             modifiable = true;
@@ -6975,7 +6839,7 @@ extern (C++) final class CondExp : BinExp
     {
         if (!e1.isLvalue() && !e2.isLvalue())
         {
-            error("conditional expression `%s` is not a modifiable lvalue", toChars());
+            error(loc, "conditional expression `%s` is not a modifiable lvalue", toChars());
             return ErrorExp.get();
         }
         e1 = e1.modifiableLvalue(sc, e1);
@@ -7061,14 +6925,6 @@ extern (C++) final class CondExp : BinExp
     }
 }
 
-/// Returns: if this token is the `op` for a derived `DefaultInitExp` class.
-bool isDefaultInitOp(EXP op) pure nothrow @safe @nogc
-{
-    return  op == EXP.prettyFunction    || op == EXP.functionString ||
-            op == EXP.line              || op == EXP.moduleString   ||
-            op == EXP.file              || op == EXP.fileFullPath   ;
-}
-
 /***********************************************************
  * A special keyword when used as a function's default argument
  *
@@ -7085,6 +6941,12 @@ bool isDefaultInitOp(EXP op) pure nothrow @safe @nogc
  */
 extern (C++) class DefaultInitExp : Expression
 {
+    /*************************
+     * Params:
+     *  loc = location
+     *  op = EXP.prettyFunction, EXP.functionString, EXP.moduleString,
+     *       EXP.line, EXP.file, EXP.fileFullPath
+     */
     extern (D) this(const ref Loc loc, EXP op) @safe
     {
         super(loc, op);

@@ -23,6 +23,7 @@ import dmd.dsymbol;
 import dmd.errors;
 import dmd.globals;
 import dmd.hdrgen;
+import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.root.filename;
@@ -1045,6 +1046,10 @@ public:
     override void visit(AST.AliasDeclaration ad)
     {
         debug (Debug_DtoH) mixin(traceVisit!ad);
+
+        // Declared in object.d but already included in `#include`s
+        if (ad.ident == Id._size_t || ad.ident == Id._ptrdiff_t)
+            return;
 
         if (!shouldEmitAndMarkVisited(ad))
             return;
@@ -3211,6 +3216,21 @@ const(char*) keywordClass(const Identifier ident)
             if (global.params.cplusplus >= CppStdRevision.cpp20)
                 return "keyword in C++20";
             return null;
+        case "restrict":
+        case "_Alignas":
+        case "_Alignof":
+        case "_Atomic":
+        case "_Bool":
+        //case "_Complex": // handled above in C++
+        case "_Generic":
+        case "_Imaginary":
+        case "_Noreturn":
+        case "_Static_assert":
+        case "_Thread_local":
+        case "_assert":
+        case "_import":
+        //case "__...": handled in default case below
+            return "Keyword in C";
 
         default:
             // Identifiers starting with __ are reserved

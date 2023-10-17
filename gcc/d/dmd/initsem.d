@@ -29,6 +29,7 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.importc;
@@ -59,12 +60,12 @@ Expression toAssocArrayLiteral(ArrayInitializer ai)
     if (!dim)
     {
         error(ai.loc, "invalid associative array initializer `%s`, use `null` instead",
-            ai.toChars());
+            toChars(ai));
         return ErrorExp.get();
     }
     auto no(const char* format, Initializer i)
     {
-        error(i.loc, format, i.toChars());
+        error(i.loc, format, toChars(i));
         return ErrorExp.get();
     }
     Expression e;
@@ -399,13 +400,13 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         if (i.exp.op == EXP.type)
         {
-            i.exp.error("initializer must be an expression, not `%s`", i.exp.toChars());
+            error(i.exp.loc, "initializer must be an expression, not `%s`", i.exp.toChars());
             return err();
         }
         // Make sure all pointers are constants
         if (needInterpret && hasNonConstPointers(i.exp))
         {
-            i.exp.error("cannot use non-constant CTFE pointer in an initializer `%s`", currExp.toChars());
+            error(i.exp.loc, "cannot use non-constant CTFE pointer in an initializer `%s`", currExp.toChars());
             return err();
         }
         Type ti = i.exp.type.toBasetype();
@@ -563,7 +564,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 }
                 if (dim1 != dim2)
                 {
-                    i.exp.error("mismatched array lengths, %d and %d", cast(int)dim1, cast(int)dim2);
+                    error(i.exp.loc, "mismatched array lengths, %d and %d", cast(int)dim1, cast(int)dim2);
                     i.exp = ErrorExp.get();
                 }
             }
@@ -571,7 +572,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             const errors = global.startGagging();
             i.exp = i.exp.implicitCastTo(sc, t);
             if (global.endGagging(errors))
-                currExp.error("cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
+                error(currExp.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
         }
         }
     L1:
@@ -791,12 +792,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     const length = (*dlist).length;
                     if (length == 0 || !(*dlist)[0].ident)
                     {
-                        error(ci.loc, "`.identifier` expected for C struct field initializer `%s`", ci.toChars());
+                        error(ci.loc, "`.identifier` expected for C struct field initializer `%s`", toChars(ci));
                         return err();
                     }
                     if (length > 1)
                     {
-                        error(ci.loc, "only 1 designator currently allowed for C struct field initializer `%s`", ci.toChars());
+                        error(ci.loc, "only 1 designator currently allowed for C struct field initializer `%s`", toChars(ci));
                         return err();
                     }
                     auto id = (*dlist)[0].ident;
@@ -912,12 +913,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     const length = (*dlist).length;
                     if (length == 0 || !(*dlist)[0].exp)
                     {
-                        error(ci.loc, "`[ constant-expression ]` expected for C array element initializer `%s`", ci.toChars());
+                        error(ci.loc, "`[ constant-expression ]` expected for C array element initializer `%s`", toChars(ci));
                         return err();
                     }
                     if (length > 1)
                     {
-                        error(ci.loc, "only 1 designator currently allowed for C array element initializer `%s`", ci.toChars());
+                        error(ci.loc, "only 1 designator currently allowed for C array element initializer `%s`", toChars(ci));
                         return err();
                     }
                     //printf("tn: %s, di.initializer: %s\n", tn.toChars(), di.initializer.toChars());
@@ -988,7 +989,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         else
         {
-            error(ci.loc, "unrecognized C initializer `%s`", ci.toChars());
+            error(ci.loc, "unrecognized C initializer `%s`", toChars(ci));
             return err();
         }
     }
@@ -1103,9 +1104,9 @@ Initializer inferType(Initializer init, Scope* sc)
         {
             TemplateInstance ti = se.sds.isTemplateInstance();
             if (ti && ti.semanticRun == PASS.semantic && !ti.aliasdecl)
-                se.error("cannot infer type from %s `%s`, possible circular dependency", se.sds.kind(), se.toChars());
+                error(se.loc, "cannot infer type from %s `%s`, possible circular dependency", se.sds.kind(), se.toChars());
             else
-                se.error("cannot infer type from %s `%s`", se.sds.kind(), se.toChars());
+                error(se.loc, "cannot infer type from %s `%s`", se.sds.kind(), se.toChars());
             return new ErrorInitializer();
         }
 
@@ -1119,7 +1120,7 @@ Initializer inferType(Initializer init, Scope* sc)
             }
             if (hasOverloads && !f.isUnique())
             {
-                init.exp.error("cannot infer type from overloaded function symbol `%s`", init.exp.toChars());
+                error(init.exp.loc, "cannot infer type from overloaded function symbol `%s`", init.exp.toChars());
                 return new ErrorInitializer();
             }
         }
@@ -1127,7 +1128,7 @@ Initializer inferType(Initializer init, Scope* sc)
         {
             if (ae.e1.op == EXP.overloadSet)
             {
-                init.exp.error("cannot infer type from overloaded function symbol `%s`", init.exp.toChars());
+                error(init.exp.loc, "cannot infer type from overloaded function symbol `%s`", init.exp.toChars());
                 return new ErrorInitializer();
             }
         }

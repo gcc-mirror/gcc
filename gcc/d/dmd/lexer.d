@@ -1525,6 +1525,7 @@ class Lexer
                     stringbuffer.writeByte(v);
                 }
                 t.setString(stringbuffer);
+                t.postfix = 'h';
                 stringPostfix(t);
                 return TOK.hexadecimalString;
             default:
@@ -2206,9 +2207,14 @@ class Lexer
                 if (base == 2)
                     goto Ldone; // if ".identifier" or ".unicode"
                 goto Lreal; // otherwise as part of a floating point literal
+
+            case 'i':
+                if (Ccompile)
+                    goto Ldone;
+                goto Lreal;
+
             case 'p':
             case 'P':
-            case 'i':
             Lreal:
                 p = start;
                 return inreal(t);
@@ -2401,7 +2407,13 @@ class Lexer
             decimal  = 2, // decimal
             unsigned = 4, // u or U suffix
             long_    = 8, // l or L suffix
-            llong    = 0x10 // ll or LL
+            llong    = 0x10, // ll or LL
+
+            // Microsoft extensions
+            i8       = 0x20,
+            i16      = 0x40,
+            i32      = 0x80,
+            i64      = 0x100,
         }
         FLAGS flags = (base == 10) ? FLAGS.decimal : FLAGS.octalhex;
         bool err;
@@ -2424,6 +2436,37 @@ class Lexer
                     {
                         f = FLAGS.long_ | FLAGS.llong;
                         ++p;
+                    }
+                    break;
+
+                case 'i':
+                case 'I':
+                    if (p[1] == '8')
+                    {
+                        f = FLAGS.i8;
+                        ++p;
+                    }
+                    else if (p[1] == '1' && p[2] == '6')
+                    {
+                        f = FLAGS.i16;
+                        p += 2;
+                    }
+                    else if (p[1] == '3' && p[2] == '2')
+                    {
+                        f = FLAGS.i32;
+                        p += 2;
+                    }
+                    else if (p[1] == '6' && p[2] == '4')
+                    {
+                        f = FLAGS.i64;
+                        p += 2;
+                    }
+                    else
+                        break Lsuffixes;
+                    if (p[1] >= '0' && p[1] <= '9' && !err)
+                    {
+                        error("invalid integer suffix");
+                        err = true;
                     }
                     break;
 
@@ -2557,6 +2600,34 @@ class Lexer
             case FLAGS.octalhex | FLAGS.long_ | FLAGS.unsigned | FLAGS.llong:
             case FLAGS.decimal  | FLAGS.long_ | FLAGS.unsigned | FLAGS.llong:
                 result = TOK.uns64Literal;
+                break;
+
+            case FLAGS.octalhex | FLAGS.i8:
+            case FLAGS.octalhex | FLAGS.i16:
+            case FLAGS.octalhex | FLAGS.i32:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i8:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i16:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i32:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i8:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i16:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i32:
+                result = TOK.uns32Literal;
+                break;
+
+            case FLAGS.decimal | FLAGS.i8:
+            case FLAGS.decimal | FLAGS.i16:
+            case FLAGS.decimal | FLAGS.i32:
+                result = TOK.int32Literal;
+                break;
+
+            case FLAGS.octalhex | FLAGS.i64:
+            case FLAGS.octalhex | FLAGS.unsigned | FLAGS.i64:
+            case FLAGS.decimal  | FLAGS.unsigned | FLAGS.i64:
+                result = TOK.uns64Literal;
+                break;
+
+            case FLAGS.decimal | FLAGS.i64:
+                result = TOK.int64Literal;
                 break;
 
             default:

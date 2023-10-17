@@ -1443,6 +1443,7 @@ OBJS = \
 	fixed-value.o \
 	fold-const.o \
 	fold-const-call.o \
+	fold-mem-offsets.o \
 	function.o \
 	function-abi.o \
 	function-tests.o \

@@ -1818,7 +1818,10 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 			   gen_int_mode (PROBE_INTERVAL, Pmode), test_addr,
 			   1, OPTAB_WIDEN);
 
-      gcc_assert (temp == test_addr);
+      /* There is no guarantee that expand_binop constructs its result
+	 in TEST_ADDR.  So copy into TEST_ADDR if necessary.  */
+      if (temp != test_addr)
+	emit_move_insn (test_addr, temp);
 
       /* Probe at TEST_ADDR.  */
       emit_stack_probe (test_addr);

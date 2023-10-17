@@ -1098,7 +1098,15 @@ explain_invalid_constexpr_fn (tree fun)
 	  body = massage_constexpr_body (fun, body);
 	  require_potential_rvalue_constant_expression (body);
 	  if (DECL_CONSTRUCTOR_P (fun))
-	    cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
+	    {
+	      cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
+	      if (cxx_dialect > cxx11)
+		{
+		  /* Also check the body, not just the ctor-initializer.  */
+		  body = DECL_SAVED_TREE (fun);
+		  require_potential_rvalue_constant_expression (body);
+		}
+	    }
 	}
     }
 }

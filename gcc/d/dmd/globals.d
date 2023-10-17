@@ -118,6 +118,38 @@ extern(C++) struct Help
     bool hc;           // -HC
 }
 
+extern(C++) struct Verbose
+{
+    bool verbose;           // verbose compile
+    bool showColumns;       // print character (column) numbers in diagnostics
+    bool tls;               // identify thread local variables
+    bool templates;         // collect and list statistics on template instantiations
+    // collect and list statistics on template instantiations origins.
+    // TODO: make this an enum when we want to list other kinds of instances
+    bool templatesListInstances;
+    bool gc;                // identify gc usage
+    bool field;             // identify non-mutable field variables
+    bool complex = true;    // identify complex/imaginary type usage
+    bool vin;               // identify 'in' parameters
+    bool showGaggedErrors;  // print gagged errors anyway
+    bool printErrorContext; // print errors with the error context (the error line in the source file)
+    bool logo;              // print compiler logo
+    bool color;             // use ANSI colors in console output
+    bool cov;               // generate code coverage data
+    MessageStyle messageStyle = MessageStyle.digitalmars; // style of file/line annotations on messages
+    uint errorLimit = 20;
+    uint errorSupplementLimit = 6;      // Limit the number of supplemental messages for each error (0 means unlimited)
+
+    uint errorSupplementCount()
+    {
+        if (verbose)
+            return uint.max;
+        if (errorSupplementLimit == 0)
+            return uint.max;
+        return errorSupplementLimit;
+    }
+}
+
 /// Put command line switches in here
 extern (C++) struct Param
 {
@@ -125,23 +157,13 @@ extern (C++) struct Param
     bool multiobj;          // break one object file into multiple ones
     bool trace;             // insert profiling hooks
     bool tracegc;           // instrument calls to 'new'
-    bool verbose;           // verbose compile
     bool vcg_ast;           // write-out codegen-ast
-    bool showColumns;       // print character (column) numbers in diagnostics
-    bool vtls;              // identify thread local variables
-    bool vtemplates;        // collect and list statistics on template instantiations
-    bool vtemplatesListInstances; // collect and list statistics on template instantiations origins. TODO: make this an enum when we want to list other kinds of instances
-    bool vgc;               // identify gc usage
-    bool vfield;            // identify non-mutable field variables
-    bool vcomplex = true;   // identify complex/imaginary type usage
-    bool vin;               // identify 'in' parameters
     DiagnosticReporting useDeprecated = DiagnosticReporting.inform;  // how use of deprecated features are handled
     bool useUnitTests;          // generate unittest code
     bool useInline = false;     // inline expand functions
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
     DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
-    bool color;             // use ANSI colors in console output
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
     bool ctfe_cov = false;  // generate coverage data for ctfe
@@ -157,10 +179,8 @@ extern (C++) struct Param
 
     CppStdRevision cplusplus = CppStdRevision.cpp11;    // version of C++ standard to support
 
-    bool showGaggedErrors;  // print gagged errors anyway
-    bool printErrorContext;  // print errors with the error context (the error line in the source file)
     Help help;
-    bool logo;              // print compiler logo
+    Verbose v;
 
     // Options for `-preview=/-revert=`
     FeatureState useDIP25 = FeatureState.enabled; // implement https://wiki.dlang.org/DIP25
@@ -195,9 +215,6 @@ extern (C++) struct Param
 
     CHECKACTION checkAction = CHECKACTION.D; // action to take when bounds, asserts or switch defaults are violated
 
-    uint errorLimit = 20;
-    uint errorSupplementLimit = 6;      // Limit the number of supplemental messages for each error (0 means unlimited)
-
     const(char)[] argv0;                // program name
     Array!(const(char)*) modFileAliasStrings; // array of char*'s of -I module filename alias strings
     Array!(const(char)*)* imppath;      // array of char*'s of where to look for import modules
@@ -216,13 +233,7 @@ extern (C++) struct Param
     Output moduleDeps;                  // Generate `.deps` module dependencies
 
     uint debuglevel;                    // debug level
-    Array!(const(char)*)* debugids;     // debug identifiers
-
     uint versionlevel;                  // version level
-    Array!(const(char)*)* versionids;   // version identifiers
-
-
-    MessageStyle messageStyle = MessageStyle.digitalmars; // style of file/line annotations on messages
 
     bool run; // run resulting executable
     Strings runargs; // arguments for executable
@@ -355,7 +366,7 @@ extern (C++) struct Global
 
             // -color=auto is the default value
             import dmd.console : detectTerminal, detectColorPreference;
-            params.color = detectTerminal() && detectColorPreference();
+            params.v.color = detectTerminal() && detectColorPreference();
         }
         else version (IN_GCC)
         {

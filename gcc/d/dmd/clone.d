@@ -1201,7 +1201,7 @@ FuncDeclaration buildInv(AggregateDeclaration ad, Scope* sc)
                 version (all)
                 {
                     // currently rejects
-                    ad.error(inv.loc, "mixing invariants with different `shared`/`synchronized` qualifiers is not supported");
+                    .error(inv.loc, "%s `%s` mixing invariants with different `shared`/`synchronized` qualifiers is not supported", ad.kind(), ad.toPrettyChars());
                     e = null;
                     break;
                 }

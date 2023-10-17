@@ -1,3 +1,14 @@
+2023-10-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4c18eed967.
+	* d-diagnostic.cc (verrorReport): Update for new front-end interface.
+	(verrorReportSupplemental): Likewise.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_handle_option): Likewise.
+	(d_post_options): Likewise.
+	(d_parse_file): Likewise.
+	* decl.cc (get_symbol_decl): Likewise.
+
 2023-10-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd f9efc98fd7.

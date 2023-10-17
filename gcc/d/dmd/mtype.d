@@ -4592,7 +4592,7 @@ extern (C++) final class TypeFunction : TypeNext
     // arguments get specially formatted
     private const(char)* getParamError(Expression arg, Parameter par)
     {
-        if (global.gag && !global.params.showGaggedErrors)
+        if (global.gag && !global.params.v.showGaggedErrors)
             return null;
         // show qualification when toChars() is the same but types are different
         // https://issues.dlang.org/show_bug.cgi?id=19948
@@ -4611,7 +4611,7 @@ extern (C++) final class TypeFunction : TypeNext
 
     private extern(D) const(char)* getMatchError(A...)(const(char)* format, A args)
     {
-        if (global.gag && !global.params.showGaggedErrors)
+        if (global.gag && !global.params.v.showGaggedErrors)
             return null;
         OutBuffer buf;
         buf.printf(format, args);
@@ -6217,7 +6217,7 @@ extern (C++) final class TypeTuple : Type
             {
                 Expression e = (*exps)[i];
                 if (e.type.ty == Ttuple)
-                    e.error("cannot form sequence of sequences");
+                    error(e.loc, "cannot form sequence of sequences");
                 auto arg = new Parameter(e.loc, STC.undefined_, e.type, null, null, null);
                 (*arguments)[i] = arg;
             }

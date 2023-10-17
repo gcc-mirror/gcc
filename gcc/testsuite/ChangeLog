@@ -1,3 +1,63 @@
+2023-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/large-data.c: New test.
+
+2023-10-16  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/fle-ieee.c: Updates dg-options with
+	explicit -march=rv64gc and -march=rv32gc.
+	* gcc.target/riscv/fle-snan.c: Ditto.
+	* gcc.target/riscv/fle.c: Ditto.
+	* gcc.target/riscv/flef-ieee.c: Ditto.
+	* gcc.target/riscv/flef.c: Ditto.
+	* gcc.target/riscv/flef-snan.c: Ditto.
+	* gcc.target/riscv/flt-ieee.c: Ditto.
+	* gcc.target/riscv/flt-snan.c: Ditto.
+	* gcc.target/riscv/fltf-ieee.c: Ditto.
+	* gcc.target/riscv/fltf-snan.c: Ditto.
+
+2023-10-16  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.target/riscv/fold-mem-offsets-1.c: New test.
+	* gcc.target/riscv/fold-mem-offsets-2.c: New test.
+	* gcc.target/riscv/fold-mem-offsets-3.c: New test.
+	* gcc.target/i386/pr52146.c: Adjust expected output.
+
+2023-10-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/101541
+	* gcc.dg/tree-ssa/phi-opt-36.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-37.c: New test.
+
+2023-10-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/31531
+	* gcc.dg/tree-ssa/pr31531-1.c: New test.
+	* gcc.dg/tree-ssa/pr31531-2.c: New test.
+
+2023-10-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/concepts/diagnostic3.C: Add expected column.
+	* g++.dg/cpp1z/fold3.C: Adjust diagnostic lines.
+
+2023-10-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111272
+	* g++.dg/cpp1y/constexpr-diag1.C: New test.
+
+2023-10-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/no-dynamic-lmul-1.c: New test.
+
+2023-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-hf-convert-1.c: New test.
+
+2023-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-roundhf.c: New test.
+	* gcc.target/i386/part-vect-sqrtph-1.c: New test.
+
 2023-10-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* lib/gdc-utils.exp (gdc-convert-args): Handle new compiler options.

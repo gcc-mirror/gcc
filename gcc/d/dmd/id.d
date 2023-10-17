@@ -61,6 +61,8 @@ immutable Msgtable[] msgtable =
     { "IUnknown" },
     { "Object" },
     { "object" },
+    { "_size_t", "size_t" },
+    { "_ptrdiff_t", "ptrdiff_t" },
     { "string" },
     { "wstring" },
     { "dstring" },

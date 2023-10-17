@@ -132,6 +132,14 @@ else version (IBMZ_Any)
         epoll_data_t data;
     }
 }
+else version (LoongArch64)
+{
+    struct epoll_event
+    {
+        uint events;
+        epoll_data_t data;
+    }
+}
 else
 {
     static assert(false, "Platform not supported");

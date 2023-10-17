@@ -2050,6 +2050,9 @@ public:
     tree result = get_decl_tree (e->var);
     TREE_USED (result) = 1;
 
+    if (e->var->isFuncDeclaration ())
+      result = maybe_reject_intrinsic (result);
+
     if (declaration_reference_p (e->var))
       gcc_assert (POINTER_TYPE_P (TREE_TYPE (result)));
     else

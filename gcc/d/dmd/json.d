@@ -788,7 +788,7 @@ public:
         objectStart();
         jsonProperties(d);
         if (d._init)
-            property("init", d._init.toString());
+            property("init", toString(d._init));
         if (d.isField())
             property("offset", d.offset);
         if (!d.alignment.isUnknown() && !d.alignment.isDefault())
@@ -815,7 +815,7 @@ public:
         arrayStart();
         foreach (m; modules)
         {
-            if (global.params.verbose)
+            if (global.params.v.verbose)
                 message("json gen %s", m.toChars());
             m.accept(this);
         }

@@ -90,6 +90,12 @@ else version (IBMZ_Any)
     else
         alias uint32_t Elf_Symndx;
 }
+else version (LoongArch64)
+{
+    // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/elfclass.h
+    alias __WORDSIZE __ELF_NATIVE_CLASS;
+    alias uint32_t Elf_Symndx;
+}
 else
     static assert(0, "unimplemented");
 // <bits/elfclass.h>

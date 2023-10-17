@@ -519,6 +519,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);
+	  NEXT_PASS (pass_fold_mem_offsets);
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);

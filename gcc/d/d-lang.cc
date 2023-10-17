@@ -295,7 +295,6 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
 
   global.compileEnv.vendor = lang_hooks.name;
   global.params.argv0 = xstrdup (decoded_options[0].arg);
-  global.params.errorLimit = flag_max_errors;
 
   /* Default extern(C++) mangling to C++17.  */
   global.params.cplusplus = CppStdRevisionCpp17;
@@ -303,7 +302,8 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
   global.params.warnings = DIAGNOSTICoff;
-  global.params.messageStyle = MessageStyle::gnu;
+  global.params.v.errorLimit = flag_max_errors;
+  global.params.v.messageStyle = MessageStyle::gnu;
 
   global.params.imppath = d_gc_malloc<Strings> ();
   global.params.fileImppath = d_gc_malloc<Strings> ();
@@ -458,9 +458,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fdebug_:
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  if (!global.params.debugids)
-	    global.params.debugids = d_gc_malloc<Strings> ();
-	  global.params.debugids->push (arg);
+	  DebugCondition::addGlobalIdent (arg);
 	  break;
 	}
 
@@ -662,30 +660,30 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_ftransition_all:
-      global.params.vfield = value;
-      global.params.vgc = value;
-      global.params.vin = value;
-      global.params.vtls = value;
+      global.params.v.field = value;
+      global.params.v.gc = value;
+      global.params.v.vin = value;
+      global.params.v.tls = value;
       break;
 
     case OPT_ftransition_field:
-      global.params.vfield = value;
+      global.params.v.field = value;
       break;
 
     case OPT_ftransition_in:
-      global.params.vin = value;
+      global.params.v.vin = value;
       break;
 
     case OPT_ftransition_nogc:
-      global.params.vgc = value;
+      global.params.v.gc = value;
       break;
 
     case OPT_ftransition_templates:
-      global.params.vtemplates = value;
+      global.params.v.templates = value;
       break;
 
     case OPT_ftransition_tls:
-      global.params.vtls = value;
+      global.params.v.tls = value;
       break;
 
     case OPT_funittest:
@@ -695,9 +693,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fversion_:
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
-	  if (!global.params.versionids)
-	    global.params.versionids = d_gc_malloc<Strings> ();
-	  global.params.versionids->push (arg);
+	  VersionCondition::addGlobalIdent (arg);
 	  break;
 	}
 
@@ -773,7 +769,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_v:
-      global.params.verbose = value;
+      global.params.v.verbose = value;
       break;
 
     case OPT_Wall:
@@ -792,7 +788,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_Wspeculative:
       if (value)
-	global.params.showGaggedErrors = 1;
+	global.params.v.showGaggedErrors = 1;
       break;
 
     case OPT_Xf:
@@ -916,19 +912,20 @@ d_post_options (const char ** fn)
       && global.params.warnings == DIAGNOSTICerror)
     global.params.useDeprecated = DIAGNOSTICerror;
 
-  /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
-  if (OPTION_SET_P (flag_max_errors))
-    global.params.errorLimit = flag_max_errors;
-
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   global.params.useInline = flag_inline_functions;
-  global.params.showColumns = flag_show_column;
-  global.params.printErrorContext = flag_diagnostics_show_caret;
+
+  /* Make -fmax-errors visible to frontend's diagnostic machinery.  */
+  if (OPTION_SET_P (flag_max_errors))
+    global.params.v.errorLimit = flag_max_errors;
+
+  global.params.v.showColumns = flag_show_column;
+  global.params.v.printErrorContext = flag_diagnostics_show_caret;
 
   /* Keep the front-end location type in sync with params.  */
-  Loc::set (global.params.showColumns, global.params.messageStyle);
+  Loc::set (global.params.v.showColumns, global.params.v.messageStyle);
 
   if (global.params.useInline)
     global.params.dihdr.fullOutput = true;
@@ -940,25 +937,6 @@ d_post_options (const char ** fn)
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.shortenedMethods = global.params.shortenedMethods;
-
-  /* Add in versions given on the command line.  */
-  if (global.params.versionids)
-    {
-      for (size_t i = 0; i < global.params.versionids->length; i++)
-	{
-	  const char *s = (*global.params.versionids)[i];
-	  VersionCondition::addGlobalIdent (s);
-	}
-    }
-
-  if (global.params.debugids)
-    {
-      for (size_t i = 0; i < global.params.debugids->length; i++)
-	{
-	  const char *s = (*global.params.debugids)[i];
-	  DebugCondition::addGlobalIdent (s);
-	}
-    }
 
   if (warn_return_type == -1)
     warn_return_type = 0;
@@ -1065,7 +1043,7 @@ d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
 static void
 d_parse_file (void)
 {
-  if (global.params.verbose)
+  if (global.params.v.verbose)
     {
       message ("binary    %s", global.params.argv0.ptr);
       message ("version   %s", global.versionChars ());
@@ -1175,7 +1153,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("parse     %s", m->toChars ());
 
       if (!Module::rootModule)
@@ -1227,7 +1205,7 @@ d_parse_file (void)
 	      || (d_option.fonly && m != Module::rootModule))
 	    continue;
 
-	  if (global.params.verbose)
+	  if (global.params.v.verbose)
 	    message ("import    %s", m->toChars ());
 
 	  OutBuffer buf;
@@ -1246,7 +1224,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("importall %s", m->toChars ());
 
       m->importAll (NULL);
@@ -1270,7 +1248,7 @@ d_parse_file (void)
 	  continue;
 	}
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic  %s", m->toChars ());
 
       dsymbolSemantic (m, NULL);
@@ -1301,7 +1279,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic2 %s", m->toChars ());
 
       semantic2 (m, NULL);
@@ -1317,7 +1295,7 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("semantic3 %s", m->toChars ());
 
       semantic3 (m, NULL);
@@ -1365,7 +1343,7 @@ d_parse_file (void)
 		    (char *) obstack_finish (&buffer));
     }
 
-  if (global.params.vtemplates)
+  if (global.params.v.templates)
     printTemplateStats ();
 
   /* Generate JSON files.  */
@@ -1417,7 +1395,7 @@ d_parse_file (void)
 	  || (d_option.fonly && m != Module::rootModule))
 	continue;
 
-      if (global.params.verbose)
+      if (global.params.v.verbose)
 	message ("code      %s", m->toChars ());
 
       if (!flag_syntax_only)

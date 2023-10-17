@@ -76,6 +76,10 @@ else version (SPARC_Any)
 {
         enum __NR_perf_event_open = 327;
 }
+else version (LoongArch64)
+{
+        enum __NR_perf_event_open = 241;
+}
 else
 {
         static assert(0, "Architecture not supported");

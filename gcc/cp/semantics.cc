@@ -12605,7 +12605,7 @@ capture_decltype (tree decl)
    this is a right unary fold. Otherwise it is a left unary fold. */
 
 static tree
-finish_unary_fold_expr (tree expr, int op, tree_code dir)
+finish_unary_fold_expr (location_t loc, tree expr, int op, tree_code dir)
 {
   /* Build a pack expansion (assuming expr has pack type).  */
   if (!uses_parameter_packs (expr))
@@ -12618,7 +12618,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
 
   /* Build the fold expression.  */
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (input_location, dir, code, pack);
+  tree fold = build_min_nt_loc (loc, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),
@@ -12627,27 +12627,28 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
 }
 
 tree
-finish_left_unary_fold_expr (tree expr, int op)
+finish_left_unary_fold_expr (location_t loc, tree expr, int op)
 {
-  return finish_unary_fold_expr (expr, op, UNARY_LEFT_FOLD_EXPR);
+  return finish_unary_fold_expr (loc, expr, op, UNARY_LEFT_FOLD_EXPR);
 }
 
 tree
-finish_right_unary_fold_expr (tree expr, int op)
+finish_right_unary_fold_expr (location_t loc, tree expr, int op)
 {
-  return finish_unary_fold_expr (expr, op, UNARY_RIGHT_FOLD_EXPR);
+  return finish_unary_fold_expr (loc, expr, op, UNARY_RIGHT_FOLD_EXPR);
 }
 
 /* Build a binary fold expression over EXPR1 and EXPR2. The
    associativity of the fold is determined by EXPR1 and EXPR2 (whichever
    has an unexpanded parameter pack). */
 
-tree
-finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
+static tree
+finish_binary_fold_expr (location_t loc, tree pack, tree init,
+			 int op, tree_code dir)
 {
   pack = make_pack_expansion (pack);
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (input_location, dir, code, pack, init);
+  tree fold = build_min_nt_loc (loc, dir, code, pack, init);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),
@@ -12656,16 +12657,16 @@ finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
 }
 
 tree
-finish_binary_fold_expr (tree expr1, tree expr2, int op)
+finish_binary_fold_expr (location_t loc, tree expr1, tree expr2, int op)
 {
   // Determine which expr has an unexpanded parameter pack and
   // set the pack and initial term.
   bool pack1 = uses_parameter_packs (expr1);
   bool pack2 = uses_parameter_packs (expr2);
   if (pack1 && !pack2)
-    return finish_binary_fold_expr (expr1, expr2, op, BINARY_RIGHT_FOLD_EXPR);
+    return finish_binary_fold_expr (loc, expr1, expr2, op, BINARY_RIGHT_FOLD_EXPR);
   else if (pack2 && !pack1)
-    return finish_binary_fold_expr (expr2, expr1, op, BINARY_LEFT_FOLD_EXPR);
+    return finish_binary_fold_expr (loc, expr2, expr1, op, BINARY_LEFT_FOLD_EXPR);
   else
     {
       if (pack1)

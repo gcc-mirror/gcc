@@ -5533,6 +5533,8 @@ static cp_expr
 cp_parser_fold_expression (cp_parser *parser, tree expr1)
 {
   cp_id_kind pidk;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  const cp_token *token = nullptr;
 
   // Left fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -5540,6 +5542,7 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
       if (expr1)
 	return error_mark_node;
       cp_lexer_consume_token (parser->lexer);
+      token = cp_lexer_peek_token (parser->lexer);
       int op = cp_parser_fold_operator (parser);
       if (op == ERROR_MARK)
         {
@@ -5551,10 +5554,11 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
 					     false, &pidk);
       if (expr == error_mark_node)
         return error_mark_node;
-      return finish_left_unary_fold_expr (expr, op);
+      loc = make_location (token->location, loc, parser->lexer);
+      return finish_left_unary_fold_expr (loc, expr, op);
     }
 
-  const cp_token* token = cp_lexer_peek_token (parser->lexer);
+  token = cp_lexer_peek_token (parser->lexer);
   int op = cp_parser_fold_operator (parser);
   if (op == ERROR_MARK)
     {
@@ -5585,7 +5589,10 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
 
   // Right fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
-    return finish_right_unary_fold_expr (expr1, op);
+    {
+      loc = make_location (token->location, loc, parser->lexer);
+      return finish_right_unary_fold_expr (loc, expr1, op);
+    }
 
   if (cp_lexer_next_token_is_not (parser->lexer, token->type))
     {
@@ -5598,7 +5605,8 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   tree expr2 = cp_parser_cast_expression (parser, false, false, false, &pidk);
   if (expr2 == error_mark_node)
     return error_mark_node;
-  return finish_binary_fold_expr (expr1, expr2, op);
+  loc = make_location (token->location, loc, parser->lexer);
+  return finish_binary_fold_expr (loc, expr1, expr2, op);
 }
 
 /* Parse a primary-expression.

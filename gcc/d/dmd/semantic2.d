@@ -195,7 +195,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             if (!tempinst.errors)
             {
                 if (!tempdecl.literal)
-                    tempinst.error(tempinst.loc, "error instantiating");
+                    .error(tempinst.loc, "%s `%s` error instantiating", tempinst.kind, tempinst.toPrettyChars);
                 if (tempinst.tinst)
                     tempinst.tinst.printInstantiationTrace();
             }
@@ -315,7 +315,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                 }
 
                 if (hasInvalidEnumInitializer(ei.exp))
-                    vd.error(": Unable to initialize enum with class or pointer to struct. Use static const variable instead.");
+                    .error(vd.loc, "%s `%s` : Unable to initialize enum with class or pointer to struct. Use static const variable instead.", vd.kind, vd.toPrettyChars);
             }
         }
         else if (vd._init && vd.isThreadlocal())
@@ -326,13 +326,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
             {
                 ExpInitializer ei = vd._init.isExpInitializer();
                 if (ei && ei.exp.op == EXP.classReference)
-                    vd.error("is a thread-local class and cannot have a static initializer. Use `static this()` to initialize instead.");
+                    .error(vd.loc, "%s `%s` is a thread-local class and cannot have a static initializer. Use `static this()` to initialize instead.", vd.kind, vd.toPrettyChars);
             }
             else if (vd.type.ty == Tpointer && vd.type.nextOf().ty == Tstruct && vd.type.nextOf().isMutable() && !vd.type.nextOf().isShared())
             {
                 ExpInitializer ei = vd._init.isExpInitializer();
                 if (ei && ei.exp.op == EXP.address && (cast(AddrExp)ei.exp).e1.op == EXP.structLiteral)
-                    vd.error("is a thread-local pointer to struct and cannot have a static initializer. Use `static this()` to initialize instead.");
+                    .error(vd.loc, "%s `%s` is a thread-local pointer to struct and cannot have a static initializer. Use `static this()` to initialize instead.", vd.kind, vd.toPrettyChars);
             }
         }
         vd.semanticRun = PASS.semantic2done;
@@ -454,7 +454,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                     (!sameAttr || !sameParams)
                 )
                 {
-                    f2.error("cannot overload `extern(%s)` function at %s",
+                    .error(f2.loc, "%s `%s` cannot overload `extern(%s)` function at %s", f2.kind, f2.toPrettyChars,
                             linkageToChars(f1._linkage),
                             f1.loc.toChars());
                     return 0;
@@ -473,14 +473,14 @@ private extern(C++) final class Semantic2Visitor : Visitor
                     // this condition, as well as the error for extern(C) functions above.
                     if (sameAttr != tf1.attributesEqual(tf2))
                     {
-                        f2.deprecation("cannot overload `extern(%s)` function at %s",
+                        .deprecation(f2.loc, "%s `%s` cannot overload `extern(%s)` function at %s", f2.kind, f2.toPrettyChars,
                                 linkageToChars(f1._linkage),
                                 f1.loc.toChars());
                     }
                     return 0;
                 }
 
-                error(f2.loc, "%s `%s%s` conflicts with previous declaration at %s",
+                .error(f2.loc, "%s `%s%s` conflicts with previous declaration at %s",
                         f2.kind(),
                         f2.toPrettyChars(),
                         parametersTypeToChars(tf2.parameterList),
@@ -631,7 +631,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
 
         if (ad._scope)
         {
-            ad.error("has forward references");
+            .error(ad.loc, "%s `%s` has forward references", ad.kind, ad.toPrettyChars);
             return;
         }
 
@@ -685,20 +685,20 @@ private extern(C++) final class Semantic2Visitor : Visitor
                         //printf("            found\n");
                         // Check that calling conventions match
                         if (fd._linkage != ifd._linkage)
-                            fd.error("linkage doesn't match interface function");
+                            .error(fd.loc, "%s `%s` linkage doesn't match interface function", fd.kind, fd.toPrettyChars);
 
                         // Check that it is current
                         //printf("newinstance = %d fd.toParent() = %s ifd.toParent() = %s\n",
                             //newinstance, fd.toParent().toChars(), ifd.toParent().toChars());
                         if (fd.toParent() != cd && ifd.toParent() == base.sym)
-                            cd.error("interface function `%s` is not implemented", ifd.toFullSignature());
+                            .error(cd.loc, "%s `%s` interface function `%s` is not implemented", cd.kind, cd.toPrettyChars, ifd.toFullSignature());
                     }
                     else
                     {
                         //printf("            not found %p\n", fd);
                         // BUG: should mark this class as abstract?
                         if (!cd.isAbstract())
-                            cd.error("interface function `%s` is not implemented", ifd.toFullSignature());
+                            .error(cd.loc, "%s `%s` interface function `%s` is not implemented", cd.kind, cd.toPrettyChars, ifd.toFullSignature());
                     }
                 }
             }
@@ -748,7 +748,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     // When `@gnuAbiTag` is used, the type will be the UDA, not the struct literal
     if (e.op == EXP.type)
     {
-        e.error("`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
+        error(e.loc, "`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
         return;
     }
 
@@ -766,7 +766,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     auto ale = (*sle.elements)[0].isArrayLiteralExp();
     if (ale is null)
     {
-        e.error("`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
+        error(e.loc, "`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
         return;
     }
 
@@ -775,8 +775,8 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     {
         const str1 = (*lastTag.isStructLiteralExp().elements)[0].toString();
         const str2 = ale.toString();
-        e.error("only one `@%s` allowed per symbol", Id.udaGNUAbiTag.toChars());
-        e.errorSupplemental("instead of `@%s @%s`, use `@%s(%.*s, %.*s)`",
+        error(e.loc, "only one `@%s` allowed per symbol", Id.udaGNUAbiTag.toChars());
+        errorSupplemental(e.loc, "instead of `@%s @%s`, use `@%s(%.*s, %.*s)`",
             lastTag.toChars(), e.toChars(), Id.udaGNUAbiTag.toChars(),
             // Avoid [ ... ]
             cast(int)str1.length - 2, str1.ptr + 1,
@@ -792,7 +792,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         const str = elem.toStringExp().peekString();
         if (!str.length)
         {
-            e.error("argument `%d` to `@%s` cannot be %s", cast(int)(idx + 1),
+            error(e.loc, "argument `%d` to `@%s` cannot be %s", cast(int)(idx + 1),
                     Id.udaGNUAbiTag.toChars(),
                     elem.isNullExp() ? "`null`".ptr : "empty".ptr);
             continue;
@@ -802,7 +802,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         {
             if (!c.isValidMangling())
             {
-                e.error("`@%s` char `0x%02x` not allowed in mangling",
+                error(e.loc, "`@%s` char `0x%02x` not allowed in mangling",
                         Id.udaGNUAbiTag.toChars(), c);
                 break;
             }

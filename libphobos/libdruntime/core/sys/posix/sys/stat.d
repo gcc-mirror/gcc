@@ -966,6 +966,66 @@ version (linux)
         else
             static assert(stat_t.sizeof == 144);
     }
+    else version (LoongArch64)
+    {
+        private
+        {
+            alias __dev_t = ulong;
+            alias __ino_t = c_ulong;
+            alias __ino64_t = ulong;
+            alias __mode_t = uint;
+            alias __nlink_t = uint;
+            alias __uid_t = uint;
+            alias __gid_t = uint;
+            alias __off_t = c_long;
+            alias __off64_t = long;
+            alias __blksize_t = int;
+            alias __blkcnt_t = c_long;
+            alias __blkcnt64_t = long;
+            alias __timespec = timespec;
+            alias __time_t = time_t;
+        }
+        struct stat_t
+        {
+            __dev_t st_dev;
+            __ino_t st_ino;
+            __mode_t st_mode;
+            __nlink_t st_nlink;
+            __uid_t st_uid;
+            __gid_t st_gid;
+            __dev_t st_rdev;
+            __dev_t __pad1;
+            // la64 always uses 64-bit file offsets
+            __off64_t st_size;
+            __blksize_t st_blksize;
+            int __pad2;
+            // la64 always uses 64-bit block counts
+            __blkcnt64_t st_blocks;
+            static if (_XOPEN_SOURCE >= 700)
+            {
+                __timespec st_atim;
+                __timespec st_mtim;
+                __timespec st_ctim;
+                extern(D) @safe @property inout pure nothrow
+                {
+                    ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
+                    ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
+                    ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
+                }
+            }
+            else
+            {
+                __time_t st_atime;
+                c_ulong st_atimensec;
+                __time_t st_mtime;
+                c_ulong st_mtimensec;
+                __time_t st_ctime;
+                c_ulong st_ctimensec;
+            }
+            int[2] __glibc_reserved;
+        }
+        static assert(stat_t.sizeof == 128);
+    }
     else
         static assert(0, "unimplemented");
 

@@ -98,7 +98,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                 if (s.exp.type && s.exp.type.toBasetype().isTypeNoreturn())
                     result = BE.halt;
 
-                result |= canThrow(s.exp, func, eSink !is null);
+                result |= canThrow(s.exp, func, eSink);
             }
         }
 
@@ -153,6 +153,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
 
                     if (!(result & BE.fallthru) && !s.comeFrom())
                     {
+                        version (none) // this warning is completely useless due to insane false positive rate in real life template code
                         if (blockExit(s, func, eSink) != BE.halt && s.hasCode() &&
                             s.loc != Loc.initial) // don't emit warning for generated code
                             global.errorSink.warning(s.loc, "statement is not reachable");
@@ -211,7 +212,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                 result = BE.fallthru;
             if (result & BE.fallthru)
             {
-                result |= canThrow(s.condition, func, eSink !is null);
+                result |= canThrow(s.condition, func, eSink);
 
                 if (!(result & BE.break_) && s.condition.toBool().hasValue(true))
                     result &= ~BE.fallthru;
@@ -230,7 +231,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
             }
             if (s.condition)
             {
-                result |= canThrow(s.condition, func, eSink !is null);
+                result |= canThrow(s.condition, func, eSink);
 
                 const opt = s.condition.toBool();
                 if (opt.hasValue(true))
@@ -248,13 +249,13 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
                 result |= r & ~(BE.fallthru | BE.break_ | BE.continue_);
             }
             if (s.increment)
-                result |= canThrow(s.increment, func, eSink !is null);
+                result |= canThrow(s.increment, func, eSink);
         }
 
         void visitForeach(ForeachStatement s)
         {
             result = BE.fallthru;
-            result |= canThrow(s.aggr, func, eSink !is null);
+            result |= canThrow(s.aggr, func, eSink);
 
             if (s._body)
                 result |= blockExit(s._body, func, eSink) & ~(BE.break_ | BE.continue_);
@@ -270,7 +271,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
         {
             //printf("IfStatement::blockExit(%p)\n", s);
             result = BE.none;
-            result |= canThrow(s.condition, func, eSink !is null);
+            result |= canThrow(s.condition, func, eSink);
 
             const opt = s.condition.toBool();
             if (opt.hasValue(true))
@@ -309,7 +310,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
         void visitSwitch(SwitchStatement s)
         {
             result = BE.none;
-            result |= canThrow(s.condition, func, eSink !is null);
+            result |= canThrow(s.condition, func, eSink);
 
             if (s._body)
             {
@@ -354,7 +355,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
         {
             result = BE.return_;
             if (s.exp)
-                result |= canThrow(s.exp, func, eSink !is null);
+                result |= canThrow(s.exp, func, eSink);
         }
 
         void visitBreak(BreakStatement s)
@@ -376,7 +377,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
         void visitWith(WithStatement s)
         {
             result = BE.none;
-            result |= canThrow(s.exp, func, eSink !is null);
+            result |= canThrow(s.exp, func, eSink);
             result |= blockExit(s._body, func, eSink);
         }
 

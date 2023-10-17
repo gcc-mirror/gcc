@@ -233,7 +233,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
       if (global.gag)
 	global.gaggedErrors++;
 
-      if (global.gag && !global.params.showGaggedErrors)
+      if (global.gag && !global.params.v.showGaggedErrors)
 	return;
 
       diag_kind = global.gag ? DK_ANACHRONISM : DK_ERROR;
@@ -308,7 +308,7 @@ verrorReportSupplemental (const Loc& loc, const char* format, va_list ap,
 {
   if (kind == ErrorKind::error)
     {
-      if (global.gag && !global.params.showGaggedErrors)
+      if (global.gag && !global.params.v.showGaggedErrors)
 	return;
     }
   else if (kind == ErrorKind::warning)

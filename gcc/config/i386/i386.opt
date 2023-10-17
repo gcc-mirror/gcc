@@ -282,7 +282,7 @@ Branches are this expensive (arbitrary units).
 
 mlarge-data-threshold=
 Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(DEFAULT_LARGE_SECTION_THRESHOLD)
--mlarge-data-threshold=<number>	Data greater than given threshold will go into .ldata section in x86-64 medium model.
+-mlarge-data-threshold=<number>	Data greater than given threshold will go into a large data section in x86-64 medium and large code models.
 
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(ix86_cmodel) Init(CM_32)

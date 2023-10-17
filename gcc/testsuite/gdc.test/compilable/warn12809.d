@@ -1,7 +1,7 @@
 // REQUIRED_ARGS: -o- -w
 
 /*
-TEST_OUTPUT:
+Warning removed in: https://github.com/dlang/dmd/pull/15568
 ---
 fail_compilation/warn12809.d(25): Warning: statement is not reachable
 fail_compilation/warn12809.d(33): Warning: statement is not reachable
@@ -36,7 +36,7 @@ void test_unrachable3()
 /********************************************/
 
 /*
-TEST_OUTPUT:
+
 ---
 fail_compilation/warn12809.d(108): Warning: statement is not reachable
 fail_compilation/warn12809.d(115): Warning: statement is not reachable
@@ -70,4 +70,28 @@ void test3()
     try { }
     finally foo();
     int x = 1;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=14835
+bool isEven(int i)()
+{
+    static if (i % 2)
+        return true;
+    return false;
+}
+
+enum x = isEven!0;
+
+// https://issues.dlang.org/show_bug.cgi?id=10532
+alias Seq(T...) = T;
+void f()
+{
+    foreach (e; Seq!(10, 20))
+    {
+        if (e == 10)
+            continue;
+
+        // lots of code follows..
+        auto x = 1;
+    }
 }

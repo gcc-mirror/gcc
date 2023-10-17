@@ -1,6 +1,6 @@
 // REQUIRED_ARGS: -c -w
 /*
-TEST_OUTPUT:
+Warning removed in: https://github.com/dlang/dmd/pull/15568
 ---
 fail_compilation/testpull1810.d(21): Warning: statement is not reachable
 Error: warnings are treated as errors

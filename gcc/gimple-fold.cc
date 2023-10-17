@@ -876,10 +876,8 @@ size_must_be_zero_p (tree size)
   wide_int zero = wi::zero (TYPE_PRECISION (type));
   value_range valid_range (type, zero, ssize_max);
   value_range vr;
-  if (cfun)
-    get_range_query (cfun)->range_of_expr (vr, size);
-  else
-    get_global_range_query ()->range_of_expr (vr, size);
+  get_range_query (cfun)->range_of_expr (vr, size);
+
   if (vr.undefined_p ())
     vr.set_varying (TREE_TYPE (size));
   vr.intersect (valid_range);
