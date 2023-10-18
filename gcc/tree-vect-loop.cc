@@ -5861,7 +5861,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   basic_block exit_bb;
   tree scalar_dest;
   tree scalar_type;
-  gimple *new_phi = NULL, *phi;
+  gimple *new_phi = NULL, *phi = NULL;
   gimple_stmt_iterator exit_gsi;
   tree new_temp = NULL_TREE, new_name, new_scalar_dest;
   gimple *epilog_stmt = NULL;

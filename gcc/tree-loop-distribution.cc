@@ -950,7 +950,7 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
 
   initialize_original_copy_tables ();
   res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, single_exit (loop), NULL,
-						NULL, preheader, NULL);
+						NULL, preheader, NULL, false);
   gcc_assert (res != NULL);
 
   /* When a not last partition is supposed to keep the LC PHIs computed
