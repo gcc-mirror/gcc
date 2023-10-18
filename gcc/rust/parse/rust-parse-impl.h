@@ -3584,6 +3584,13 @@ Parser<ManagedTokenSource>::parse_function_param ()
 
   // TODO: should saved location be at start of outer attributes or pattern?
   location_t locus = lexer.peek_token ()->get_locus ();
+
+  if (lexer.peek_token ()->get_id () == ELLIPSIS) // Unnamed variadic
+    {
+      lexer.skip_token (); // Skip ellipsis
+      return AST::FunctionParam (std::move (outer_attrs), locus);
+    }
+
   std::unique_ptr<AST::Pattern> param_pattern = parse_pattern ();
 
   // create error function param if it doesn't exist
@@ -3599,15 +3606,24 @@ Parser<ManagedTokenSource>::parse_function_param ()
       return AST::FunctionParam::create_error ();
     }
 
-  std::unique_ptr<AST::Type> param_type = parse_type ();
-  if (param_type == nullptr)
+  if (lexer.peek_token ()->get_id () == ELLIPSIS) // Named variadic
     {
-      // skip?
-      return AST::FunctionParam::create_error ();
+      lexer.skip_token (); // Skip ellipsis
+      return AST::FunctionParam (std::move (param_pattern),
+				 std::move (outer_attrs), locus);
     }
-
-  return AST::FunctionParam (std::move (param_pattern), std::move (param_type),
-			     std::move (outer_attrs), locus);
+  else
+    {
+      std::unique_ptr<AST::Type> param_type = parse_type ();
+      if (param_type == nullptr)
+	{
+	  // skip?
+	  return AST::FunctionParam::create_error ();
+	}
+      return AST::FunctionParam (std::move (param_pattern),
+				 std::move (param_type),
+				 std::move (outer_attrs), locus);
+    }
 }
 
 /* Parses a function or method return type syntactical construction. Also
