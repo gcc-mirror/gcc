@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "opts.h"
 #include "function-abi.h"
+#include "cfgloop.h"
+#include "tree-vectorizer.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3845,8 +3847,6 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 }
 
-/* Vectorizer cost model implementation.  */
-
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 
 static int
@@ -3865,34 +3865,180 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vector_load:
       case vec_to_scalar:
       case scalar_to_vec:
-      case cond_branch_not_taken:
-      case vec_promote_demote:
       case scalar_store:
       case vector_store:
 	return 1;
 
+      case vec_promote_demote:
       case vec_perm:
 	return LASX_SUPPORTED_MODE_P (mode)
 	  && !LSX_SUPPORTED_MODE_P (mode) ? 2 : 1;
 
       case unaligned_load:
-      case vector_gather_load:
+      case unaligned_store:
 	return 2;
 
-      case unaligned_store:
-      case vector_scatter_store:
-	return 10;
-
       case cond_branch_taken:
-	return 3;
+	return 4;
+
+      case cond_branch_not_taken:
+	return 2;
 
       case vec_construct:
 	elements = TYPE_VECTOR_SUBPARTS (vectype);
-	return elements / 2 + 1;
+	if (ISA_HAS_LASX)
+	  return elements + 1;
+	else
+	  return elements;
 
       default:
 	gcc_unreachable ();
     }
+}
+
+class loongarch_vector_costs : public vector_costs
+{
+public:
+  using vector_costs::vector_costs;
+
+  unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
+			      int misalign,
+			      vect_cost_model_location where) override;
+  void finish_cost (const vector_costs *) override;
+
+protected:
+  void count_operations (vect_cost_for_stmt, stmt_vec_info,
+			 vect_cost_model_location, unsigned int);
+  unsigned int determine_suggested_unroll_factor (loop_vec_info);
+  /* The number of vectorized stmts in loop.  */
+  unsigned m_stmts = 0;
+  /* The number of load and store operations in loop.  */
+  unsigned m_loads = 0;
+  unsigned m_stores = 0;
+  /* Reduction factor for suggesting unroll factor.  */
+  unsigned m_reduc_factor = 0;
+  /* True if the loop contains an average operation. */
+  bool m_has_avg =false;
+};
+
+/* Implement TARGET_VECTORIZE_CREATE_COSTS.  */
+static vector_costs *
+loongarch_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
+{
+  return new loongarch_vector_costs (vinfo, costing_for_scalar);
+}
+
+void
+loongarch_vector_costs::count_operations (vect_cost_for_stmt kind,
+					  stmt_vec_info stmt_info,
+					  vect_cost_model_location where,
+					  unsigned int count)
+{
+  if (!m_costing_for_scalar
+      && is_a<loop_vec_info> (m_vinfo)
+      && where == vect_body)
+    {
+      m_stmts += count;
+
+      if (kind == scalar_load
+	  || kind == vector_load
+	  || kind == unaligned_load)
+	m_loads += count;
+      else if (kind == scalar_store
+	       || kind == vector_store
+	       || kind == unaligned_store)
+	m_stores += count;
+      else if ((kind == scalar_stmt
+		|| kind == vector_stmt
+		|| kind == vec_to_scalar)
+	       && stmt_info && vect_is_reduction (stmt_info))
+	{
+	  tree lhs = gimple_get_lhs (stmt_info->stmt);
+	  unsigned int base = FLOAT_TYPE_P (TREE_TYPE (lhs)) ? 2 : 1;
+	  m_reduc_factor = MAX (base * count, m_reduc_factor);
+	}
+    }
+}
+
+unsigned int
+loongarch_vector_costs::determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
+{
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  if (m_has_avg)
+    return 1;
+
+  /* Don't unroll if it's specified explicitly not to be unrolled.  */
+  if (loop->unroll == 1
+      || (OPTION_SET_P (flag_unroll_loops) && !flag_unroll_loops)
+      || (OPTION_SET_P (flag_unroll_all_loops) && !flag_unroll_all_loops))
+    return 1;
+
+  unsigned int nstmts_nonldst = m_stmts - m_loads - m_stores;
+  /* Don't unroll if no vector instructions excepting for memory access.  */
+  if (nstmts_nonldst == 0)
+    return 1;
+
+  /* Use this simple hardware resource model that how many non vld/vst
+     vector instructions can be issued per cycle.  */
+  unsigned int issue_info = loongarch_vect_issue_info;
+  unsigned int reduc_factor = m_reduc_factor > 1 ? m_reduc_factor : 1;
+  unsigned int uf = CEIL (reduc_factor * issue_info, nstmts_nonldst);
+  uf = MIN ((unsigned int) loongarch_vect_unroll_limit, uf);
+
+  return 1 << ceil_log2 (uf);
+}
+
+unsigned
+loongarch_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
+				       stmt_vec_info stmt_info, slp_tree,
+				       tree vectype, int misalign,
+				       vect_cost_model_location where)
+{
+  unsigned retval = 0;
+
+  if (flag_vect_cost_model)
+    {
+      int stmt_cost = loongarch_builtin_vectorization_cost (kind, vectype,
+							    misalign);
+      retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
+      m_costs[where] += retval;
+
+      count_operations (kind, stmt_info, where, count);
+    }
+
+  if (stmt_info)
+    {
+      /* Detect the use of an averaging operation.  */
+      gimple *stmt = stmt_info->stmt;
+      if (is_gimple_call (stmt)
+	  && gimple_call_internal_p (stmt))
+	{
+	  switch (gimple_call_internal_fn (stmt))
+	    {
+	    case IFN_AVG_FLOOR:
+	    case IFN_AVG_CEIL:
+	      m_has_avg = true;
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  return retval;
+}
+
+void
+loongarch_vector_costs::finish_cost (const vector_costs *scalar_costs)
+{
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
+  if (loop_vinfo)
+    {
+      m_suggested_unroll_factor = determine_suggested_unroll_factor (loop_vinfo);
+    }
+
+  vector_costs::finish_cost (scalar_costs);
 }
 
 /* Implement TARGET_ADDRESS_COST.  */
@@ -7265,9 +7411,6 @@ loongarch_option_override_internal (struct gcc_options *opts,
   if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
     error ("%qs cannot be used for compiling a shared library",
 	   "-mdirect-extern-access");
-  if (loongarch_vector_access_cost == 0)
-    loongarch_vector_access_cost = 5;
-
 
   switch (la_target.cmodel)
     {
@@ -11281,6 +11424,8 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   loongarch_builtin_vectorization_cost
+#undef TARGET_VECTORIZE_CREATE_COSTS
+#define TARGET_VECTORIZE_CREATE_COSTS loongarch_vectorize_create_costs
 
 
 #undef TARGET_IN_SMALL_DATA_P

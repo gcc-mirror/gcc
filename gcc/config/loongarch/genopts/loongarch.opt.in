@@ -146,10 +146,6 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
-mmemvec-cost=
-Target RejectNegative Joined UInteger Var(loongarch_vector_access_cost) IntegerRange(1, 5)
-mmemvec-cost=COST      Set the cost of vector memory access instructions.
-
 mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero.
@@ -213,3 +209,14 @@ mrelax
 Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
+
+-param=loongarch-vect-unroll-limit=
+Target Joined UInteger Var(loongarch_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param
+Used to limit unroll factor which indicates how much the autovectorizer may
+unroll a loop.  The default value is 6.
+
+-param=loongarch-vect-issue-info=
+Target Undocumented Joined UInteger Var(loongarch_vect_issue_info) Init(4) IntegerRange(1, 64) Param
+Indicate how many non memory access vector instructions can be issued per
+cycle, it's used in unroll factor determination for autovectorizer.  The
+default value is 4.
