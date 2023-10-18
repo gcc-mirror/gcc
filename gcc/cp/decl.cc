@@ -3607,8 +3607,8 @@ identify_goto (tree decl, location_t loc, const location_t *locus,
 {
   bool complained
     = emit_diagnostic (diag_kind, loc, 0,
-		       decl ? N_("jump to label %qD")
-		       : N_("jump to case label"), decl);
+		       decl ? G_("jump to label %qD")
+		       : G_("jump to case label"), decl);
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;

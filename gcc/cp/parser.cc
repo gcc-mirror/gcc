@@ -6206,8 +6206,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	      {
 		const char *msg
 		  = (TREE_CODE (decl) == PARM_DECL
-		     ? _("parameter %qD may not appear in this context")
-		     : _("local variable %qD may not appear in this context"));
+		     ? G_("parameter %qD may not appear in this context")
+		     : G_("local variable %qD may not appear in this context"));
 		error_at (id_expression.get_location (), msg,
 			  decl.get_value ());
 		return error_mark_node;
@@ -22145,16 +22145,16 @@ cp_parser_using_enum (cp_parser *parser)
      shall have a reachable enum-specifier.  */
   const char *msg = nullptr;
   if (cxx_dialect < cxx20)
-    msg = _("%<using enum%> "
-	    "only available with %<-std=c++20%> or %<-std=gnu++20%>");
+    msg = G_("%<using enum%> "
+	     "only available with %<-std=c++20%> or %<-std=gnu++20%>");
   else if (dependent_type_p (type))
-    msg = _("%<using enum%> of dependent type %qT");
+    msg = G_("%<using enum%> of dependent type %qT");
   else if (TREE_CODE (type) != ENUMERAL_TYPE)
-    msg = _("%<using enum%> of non-enumeration type %q#T");
+    msg = G_("%<using enum%> of non-enumeration type %q#T");
   else if (!COMPLETE_TYPE_P (type))
-    msg = _("%<using enum%> of incomplete type %qT");
+    msg = G_("%<using enum%> of incomplete type %qT");
   else if (OPAQUE_ENUM_P (type))
-    msg = _("%<using enum%> of %qT before its enum-specifier");
+    msg = G_("%<using enum%> of %qT before its enum-specifier");
   if (msg)
     {
       location_t loc = make_location (start, start, end);
