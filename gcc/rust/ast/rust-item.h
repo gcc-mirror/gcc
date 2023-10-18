@@ -1682,6 +1682,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  bool is_variadic () const
+  {
+    return function_params.size () != 0
+	   && function_params.back ().is_variadic ();
+  }
+
   // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { function_body = nullptr; }
   bool is_marked_for_strip () const override
