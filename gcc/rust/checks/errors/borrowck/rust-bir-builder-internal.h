@@ -55,12 +55,21 @@ public:
 
 struct BuilderContext
 {
-  struct LabelledBlockCtx
+  struct LoopAndLabelInfo
   {
-    NodeId label; // UNKNOWN_NODEID if no label
-    PlaceId label_var;
+    bool is_loop;      // Loop or labelled block
+    NodeId label;      // UNKNOWN_NODEID if no label (loop)
+    PlaceId label_var; // For break with value.
     BasicBlockId break_bb;
     BasicBlockId continue_bb; // Only valid for loops
+
+    LoopAndLabelInfo (bool is_loop = false, NodeId label = UNKNOWN_NODEID,
+		      PlaceId label_var = INVALID_PLACE,
+		      BasicBlockId break_bb = INVALID_BB,
+		      BasicBlockId continue_bb = INVALID_BB)
+      : is_loop (is_loop), label (label), label_var (label_var),
+	break_bb (break_bb), continue_bb (continue_bb)
+    {}
   };
 
   // Context
@@ -83,7 +92,7 @@ struct BuilderContext
    */
   std::unordered_map<NodeId, PlaceId> label_place_map;
 
-  std::vector<LabelledBlockCtx> loop_stack;
+  std::vector<LoopAndLabelInfo> loop_and_label_stack;
 
 public:
   BuilderContext ()
@@ -115,6 +124,18 @@ public:
       }
     rust_unreachable ();
   };
+
+  const LoopAndLabelInfo &lookup_label (NodeId label)
+  {
+    auto label_match = [label] (const LoopAndLabelInfo &info) {
+      return info.label != UNKNOWN_NODEID && info.label == label;
+    };
+
+    auto found = std::find_if (loop_and_label_stack.rbegin (),
+			       loop_and_label_stack.rend (), label_match);
+    rust_assert (found != loop_and_label_stack.rend ());
+    return *found;
+  }
 };
 
 // Common infrastructure for building BIR from HIR.
@@ -195,10 +216,13 @@ protected:
     push_assignment (tmp, rhs);
   }
 
-  void push_switch (PlaceId switch_val)
+  void push_switch (PlaceId switch_val,
+		    std::initializer_list<BasicBlockId> destinations = {})
   {
     ctx.get_current_bb ().statements.emplace_back (Node::Kind::SWITCH,
 						   switch_val);
+    ctx.get_current_bb ().successors.insert (
+      ctx.get_current_bb ().successors.end (), destinations);
   }
 
   void push_storage_dead (PlaceId place)
@@ -235,15 +259,14 @@ protected:
   void add_jump_to (BasicBlockId bb) { add_jump (ctx.current_bb, bb); }
 
 protected:
-  template <typename T> bool resolve_label (T &label, NodeId &resolved_label)
+  template <typename T> NodeId resolve_label (T &expr)
   {
-    if (!ctx.resolver.lookup_resolved_label (
-	  label.get_mappings ().get_nodeid (), &resolved_label))
-      {
-	rust_error_at (label.get_locus (), "unresolved label");
-	return false;
-      }
-    return true;
+    NodeId resolved_label;
+    bool ok
+      = ctx.resolver.lookup_resolved_label (expr.get_mappings ().get_nodeid (),
+					    &resolved_label);
+    rust_assert (ok);
+    return resolved_label;
   }
 
   template <typename T>
@@ -261,21 +284,22 @@ protected:
     return true;
   }
 
-  bool find_block_ctx (NodeId label, BuilderContext::LabelledBlockCtx &block)
+  bool find_block_ctx (NodeId label, BuilderContext::LoopAndLabelInfo &block)
   {
-    if (ctx.loop_stack.empty ())
+    if (ctx.loop_and_label_stack.empty ())
       return false;
     if (label == UNKNOWN_NODEID)
       {
-	block = ctx.loop_stack.back ();
+	block = ctx.loop_and_label_stack.back ();
 	return true;
       }
     auto found
-      = std::find_if (ctx.loop_stack.rbegin (), ctx.loop_stack.rend (),
-		      [&label] (const BuilderContext::LabelledBlockCtx &block) {
+      = std::find_if (ctx.loop_and_label_stack.rbegin (),
+		      ctx.loop_and_label_stack.rend (),
+		      [&label] (const BuilderContext::LoopAndLabelInfo &block) {
 			return block.label == label;
 		      });
-    if (found == ctx.loop_stack.rend ())
+    if (found == ctx.loop_and_label_stack.rend ())
       return false;
     block = *found;
     return true;
@@ -318,8 +342,8 @@ protected:
       }
   }
 
-  /** Dereferences the `translated` place until it is at most one reference and
-   * return the base type. */
+  /** Dereferences the `translated` place until it is at most one reference
+   * and return the base type. */
   TyTy::BaseType *autoderef (PlaceId &place)
   {
     auto ty = ctx.place_db[place].tyty;

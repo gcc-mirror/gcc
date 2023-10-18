@@ -258,11 +258,45 @@ ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::BlockExpr &block)
 {
+  BasicBlockId end_bb;
+
+  if (block.has_label ())
+    {
+      end_bb = new_bb ();
+      NodeId label
+	= block.get_label ().get_lifetime ().get_mappings ().get_nodeid ();
+      PlaceId label_var = ctx.place_db.add_temporary (lookup_type (block));
+      ctx.loop_and_label_stack.push_back ({false, label, label_var, end_bb, 0});
+    }
+
+  bool unreachable = false;
   for (auto &stmt : block.get_statements ())
     {
+      if (unreachable)
+	break;
       stmt->accept_vis (*this);
+      if (ctx.get_current_bb ().is_terminated ())
+	unreachable = true;
     }
-  if (block.has_expr ())
+
+  if (block.has_label ())
+    {
+      auto label_info = ctx.loop_and_label_stack.back ();
+      if (block.has_expr () && !unreachable)
+	{
+	  push_assignment (label_info.label_var,
+			   visit_expr (*block.get_final_expr ()));
+	}
+      if (!ctx.get_current_bb ().is_terminated ())
+	{
+	  add_jump_to (end_bb);
+	}
+      ctx.current_bb = end_bb;
+      ctx.loop_and_label_stack.pop_back ();
+
+      return_place (label_info.label_var);
+    }
+  else if (block.has_expr () && !unreachable)
     {
       return_place (visit_expr (*block.get_final_expr ()));
     }
@@ -290,25 +324,36 @@ ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
 void
 ExprStmtBuilder::visit (HIR::BreakExpr &brk)
 {
-  //  BuilderContext::LabelledBlockCtx block_ctx{};
-  //  NodeId label = UNKNOWN_NODEID;
-  //  if (brk.has_label ())
-  //    {
-  //      if (!resolve_label (brk.get_label (), label))
-  //	return;
-  //    }
-  //  if (!find_block_ctx (label, block_ctx))
-  //    {
-  //      rust_error_at (brk.get_locus (), "unresolved labelled block");
-  //    }
-  //
-  //  if (brk.has_break_expr ())
-  //    {
-  //      brk.get_expr ()->accept_vis (*this);
-  //      push_assignment (block_ctx.label_var, new Operator<1> ({translated}));
-  //    }
-  //
-  //  add_jump_to (block_ctx.break_bb);
+  BuilderContext::LoopAndLabelInfo info;
+  if (brk.has_label ())
+    {
+      NodeId label = resolve_label (brk.get_label ());
+      auto lookup
+	= std::find_if (ctx.loop_and_label_stack.rbegin (),
+			ctx.loop_and_label_stack.rend (),
+			[label] (const BuilderContext::LoopAndLabelInfo &info) {
+			  return info.label == label;
+			});
+      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+      info = *lookup;
+    }
+  else
+    {
+      auto lookup
+	= std::find_if (ctx.loop_and_label_stack.rbegin (),
+			ctx.loop_and_label_stack.rend (),
+			[] (const BuilderContext::LoopAndLabelInfo &info) {
+			  return info.is_loop;
+			});
+      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+      info = *lookup;
+    }
+  if (brk.has_break_expr ())
+    {
+      push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
+    }
+  add_jump_to (info.break_bb);
+  // No code allowed after break. No BB starts - would be empty.
 }
 
 void
@@ -370,60 +415,87 @@ ExprStmtBuilder::visit (HIR::UnsafeBlockExpr &expr)
   rust_sorry_at (expr.get_locus (), "unsafe blocks are not supported");
 }
 
+BuilderContext::LoopAndLabelInfo &
+ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
+{
+  NodeId label = (expr.has_loop_label ())
+		   ? resolve_label (expr.get_loop_label ())
+		   : UNKNOWN_NODEID;
+  PlaceId label_var = ctx.place_db.add_temporary (lookup_type (expr));
+
+  BasicBlockId continue_bb = new_bb ();
+  BasicBlockId break_bb = new_bb ();
+  ctx.loop_and_label_stack.push_back (
+    {true, label, label_var, break_bb, continue_bb});
+  return ctx.loop_and_label_stack.back ();
+}
+
 void
 ExprStmtBuilder::visit (HIR::LoopExpr &expr)
 {
-  //  PlaceId label_var = ctx.place_db.add_temporary (nullptr);
-  //  NodeId label;
-  //  if (!resolve_label (expr.get_loop_label (), label))
-  //    return;
-  //  ctx.label_place_map.emplace (label, label_var);
-  //
-  //  expr.get_loop_block ()->accept_vis (*this);
-  //
-  //  translated = label_var;
+  auto loop = setup_loop (expr);
+
+  add_jump_to (loop.continue_bb);
+
+  ctx.current_bb = loop.continue_bb;
+  (void) visit_expr (*expr.get_loop_block ());
+  add_jump_to (loop.continue_bb);
+
+  ctx.current_bb = loop.break_bb;
 }
+
 void
 ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
 {
-  //  // TODO: Desugar in AST->HIR ???
-  //  PlaceId label_var = ctx.place_db.add_temporary (nullptr);
-  //  NodeId label;
-  //  if (!resolve_label (expr.get_loop_label (), label))
-  //    return;
-  //  ctx.label_place_map.emplace (label, label_var);
-  //
-  //  expr.get_predicate_expr ()->accept_vis (*this);
-  //
-  //  expr.get_loop_block ()->accept_vis (*this);
-  //
-  //  translated = label_var;
+  auto loop = setup_loop (expr);
+
+  add_jump_to (loop.continue_bb);
+
+  ctx.current_bb = loop.continue_bb;
+  auto cond_val = visit_expr (*expr.get_predicate_expr ());
+  auto body_bb = new_bb ();
+  push_switch (cond_val, {body_bb, loop.break_bb});
+
+  ctx.current_bb = body_bb;
+  (void) visit_expr (*expr.get_loop_block ());
+  add_jump_to (loop.continue_bb);
+
+  ctx.current_bb = loop.break_bb;
 }
+
 void
 ExprStmtBuilder::visit (HIR::WhileLetLoopExpr &expr)
 {
   // TODO: Desugar in AST->HIR
+  rust_sorry_at (expr.get_locus (), "while let loops are not yet supported");
 }
+
 void
 ExprStmtBuilder::visit (HIR::IfExpr &expr)
 {
   // If without else cannot return a non-unit value (see [E0317]).
 
+  if (expr.get_if_block ()->statements.empty ())
+    return;
+
   push_switch (visit_expr (*expr.get_if_condition ()));
   BasicBlockId if_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
+  BasicBlockId then_start_block = ctx.current_bb;
   (void) visit_expr (*expr.get_if_block ());
-  BasicBlockId then_block = ctx.current_bb;
+  BasicBlockId then_end_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
   BasicBlockId final_block = ctx.current_bb;
   return_unit (expr);
 
   // Jumps are added at the end to match rustc MIR order for easier comparison.
-  add_jump (if_block, then_block);
+  add_jump (if_block, then_start_block);
   add_jump (if_block, final_block);
-  add_jump (then_block, final_block);
+
+  if (!ctx.basic_blocks[then_end_block].is_terminated ())
+    add_jump (then_end_block, final_block);
 }
 
 void
@@ -451,8 +523,11 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
   // Jumps are added at the end to match rustc MIR order for easier comparison.
   add_jump (if_block, then_block);
   add_jump (if_block, else_block);
-  add_jump (then_block, final_block);
-  add_jump (else_block, final_block);
+
+  if (!ctx.basic_blocks[then_block].is_terminated ())
+    add_jump (then_block, final_block);
+  if (!ctx.basic_blocks[else_block].is_terminated ())
+    add_jump (else_block, final_block);
 }
 void
 ExprStmtBuilder::visit (HIR::IfLetExpr &expr)
@@ -573,6 +648,5 @@ ExprStmtBuilder::visit (HIR::ExprStmt &stmt)
 {
   (void) visit_expr (*stmt.get_expr ());
 }
-
 } // namespace BIR
 } // namespace Rust
