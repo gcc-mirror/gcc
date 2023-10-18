@@ -22609,6 +22609,15 @@ Intel Core i7 graniterapids CPU.
 @item graniterapids-d
 Intel Core i7 graniterapids D CPU.
 
+@item arrowlake
+Intel Core i7 Arrow Lake CPU.
+
+@item arrowlake-s
+Intel Core i7 Arrow Lake S CPU.
+
+@item pantherlake
+Intel Core i7 Panther Lake CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -22630,17 +22639,8 @@ Intel Atom Sierra Forest CPU.
 @item grandridge
 Intel Atom Grand Ridge CPU.
 
-@item arrowlake
-Intel Core i7 Arrow Lake CPU.
-
-@item arrowlake-s
-Intel Core i7 Arrow Lake S CPU.
-
 @item clearwaterforest
 Intel Atom Clearwater Forest CPU.
-
-@item pantherlake
-Intel Core i7 Panther Lake CPU.
 
 @item knl
 Intel Knights Landing CPU.
