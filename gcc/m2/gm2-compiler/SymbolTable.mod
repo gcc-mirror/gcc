@@ -6713,7 +6713,8 @@ BEGIN
       WITH pSym^.Var DO
          RETURN( IsPointerCheck )
       END
-   END
+   END ;
+   RETURN FALSE
 END GetVarPointerCheck ;
 
 
