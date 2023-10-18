@@ -4951,8 +4951,15 @@ cse_insn (rtx_insn *insn)
 	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && (extend_op = load_extend_op (int_mode)) != UNKNOWN)
 	{
+#if GCC_VERSION >= 5000
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
+#else
+	  /* Workaround GCC < 5 bug, fixed in r5-3834 as part of PR63362
+	     fix.  */
+	  alignas (rtx_def) unsigned char memory_extended_buf[sizeof (rtx_def)];
+	  rtx memory_extend_rtx = (rtx) &memory_extended_buf[0];
+#endif
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
