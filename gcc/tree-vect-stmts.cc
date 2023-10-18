@@ -12324,23 +12324,22 @@ vectorizable_condition (vec_info *vinfo,
   return true;
 }
 
-/* vectorizable_comparison.
+/* Helper of vectorizable_comparison.
 
-   Check if STMT_INFO is comparison expression that can be vectorized.
+   Check if STMT_INFO is comparison expression CODE that can be vectorized.
    If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    comparison, put it in VEC_STMT, and insert it at GSI.
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_comparison (vec_info *vinfo,
-			 stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt,
-			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
+			   stmt_vec_info stmt_info, tree_code code,
+			   gimple_stmt_iterator *gsi, gimple **vec_stmt,
+			   slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   tree lhs, rhs1, rhs2;
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vec_rhs1 = NULL_TREE, vec_rhs2 = NULL_TREE;
   tree new_temp;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -12348,7 +12347,7 @@ vectorizable_comparison (vec_info *vinfo,
   int ndts = 2;
   poly_uint64 nunits;
   int ncopies;
-  enum tree_code code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
+  enum tree_code bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   vec<tree> vec_oprnds0 = vNULL;
@@ -12371,14 +12370,6 @@ vectorizable_comparison (vec_info *vinfo,
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   gcc_assert (ncopies >= 1);
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
-    return false;
-
-  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!stmt)
-    return false;
-
-  code = gimple_assign_rhs_code (stmt);
 
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return false;
@@ -12493,7 +12484,6 @@ vectorizable_comparison (vec_info *vinfo,
 	  return false;
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
       vect_model_simple_cost (vinfo, stmt_info,
 			      ncopies * (1 + (bitop2 != NOP_EXPR)),
 			      dts, ndts, slp_node, cost_vec);
@@ -12503,7 +12493,7 @@ vectorizable_comparison (vec_info *vinfo,
   /* Transform.  */
 
   /* Handle def.  */
-  lhs = gimple_assign_lhs (stmt);
+  lhs = gimple_assign_lhs (STMT_VINFO_STMT (stmt_info));
   mask = vect_create_destination_var (lhs, mask_type);
 
   vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
@@ -12555,6 +12545,44 @@ vectorizable_comparison (vec_info *vinfo,
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
+
+  return true;
+}
+
+/* vectorizable_comparison.
+
+   Check if STMT_INFO is comparison expression that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   comparison, put it in VEC_STMT, and insert it at GSI.
+
+   Return true if STMT_INFO is vectorizable in this way.  */
+
+static bool
+vectorizable_comparison (vec_info *vinfo,
+			 stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
+			 gimple **vec_stmt,
+			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+{
+  bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+    return false;
+
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
+    return false;
+
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
+				  vec_stmt, slp_node, cost_vec))
+    return false;
+
+  if (!vec_stmt)
+    STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
 
   return true;
 }
