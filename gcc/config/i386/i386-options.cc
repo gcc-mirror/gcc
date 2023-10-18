@@ -142,8 +142,10 @@ along with GCC; see the file COPYING3.  If not see
 #define m_ARROWLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ARROWLAKE)
 #define m_ARROWLAKE_S (HOST_WIDE_INT_1U<<PROCESSOR_ARROWLAKE_S)
 #define m_CLEARWATERFOREST (HOST_WIDE_INT_1U<<PROCESSOR_CLEARWATERFOREST)
+#define m_PANTHERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_PANTHERLAKE)
 #define m_CORE_ATOM (m_SIERRAFOREST | m_GRANDRIDGE | m_CLEARWATERFOREST)
-#define m_CORE_HYBRID (m_ALDERLAKE | m_ARROWLAKE | m_ARROWLAKE_S)
+#define m_CORE_HYBRID (m_ALDERLAKE | m_ARROWLAKE | m_ARROWLAKE_S \
+		       | m_PANTHERLAKE)
 #define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
 /* Gather Data Sampling / CVE-2022-40982 / INTEL-SA-00828.
    Software mitigation.  */
@@ -785,6 +787,7 @@ static const struct processor_costs *processor_cost_table[] =
   &icelake_cost,
   &icelake_cost,
   &icelake_cost,
+  &alderlake_cost,
   &alderlake_cost,
   &alderlake_cost,
   &intel_cost,

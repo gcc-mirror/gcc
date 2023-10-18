@@ -120,6 +120,10 @@ int __attribute__ ((target("arch=clearwaterforest"))) foo () {
   return 31;
 }
 
+int __attribute__ ((target("arch=pantherlake"))) foo () {
+  return 32;
+}
+
 int main ()
 {
   int val = foo ();
@@ -172,6 +176,8 @@ int main ()
     assert (val == 30);
   else if (__builtin_cpu_is ("clearwaterforest"))
     assert (val == 31);
+  else if (__builtin_cpu_is ("pantherlake"))
+    assert (val == 32);
   else
     assert (val == 0);
 

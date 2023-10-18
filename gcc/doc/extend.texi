@@ -22639,6 +22639,9 @@ Intel Core i7 Arrow Lake S CPU.
 @item clearwaterforest
 Intel Atom Clearwater Forest CPU.
 
+@item pantherlake
+Intel Core i7 Panther Lake CPU.
+
 @item knl
 Intel Knights Landing CPU.
 

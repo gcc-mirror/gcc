@@ -589,26 +589,14 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
-	      if (has_feature (FEATURE_AVX))
+	      if (has_feature (FEATURE_AVX512F))
 		{
-		  /* Assume Clearwater Forest.  */
-		  if (has_feature (FEATURE_USER_MSR))
-		    cpu = "clearwaterforest";
-		  /* Assume Arrow Lake S.  */
-		  else if (has_feature (FEATURE_SM3))
-		    cpu = "arrowlake-s";
-		  /* Assume Grand Ridge.  */
-		  else if (has_feature (FEATURE_RAOINT))
-		    cpu = "grandridge";
 		  /* Assume Granite Rapids D.  */
-		  else if (has_feature (FEATURE_AMX_COMPLEX))
+		  if (has_feature (FEATURE_AMX_COMPLEX))
 		    cpu = "graniterapids-d";
 		  /* Assume Granite Rapids.  */
 		  else if (has_feature (FEATURE_AMX_FP16))
 		    cpu = "graniterapids";
-		  /* Assume Sierra Forest.  */
-		  else if (has_feature (FEATURE_AVXVNNIINT8))
-		    cpu = "sierraforest";
 		  /* Assume Tiger Lake */
 		  else if (has_feature (FEATURE_AVX512VP2INTERSECT))
 		    cpu = "tigerlake";
@@ -621,36 +609,54 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Ice Lake Server.  */
 		  else if (has_feature (FEATURE_WBNOINVD))
 		    cpu = "icelake-server";
-		/* Assume Ice Lake.  */
-		else if (has_feature (FEATURE_AVX512BITALG))
-		  cpu = "icelake-client";
-		/* Assume Cannon Lake.  */
-		else if (has_feature (FEATURE_AVX512VBMI))
-		  cpu = "cannonlake";
-		/* Assume Knights Mill.  */
-		else if (has_feature (FEATURE_AVX5124VNNIW))
-		  cpu = "knm";
-		/* Assume Knights Landing.  */
-		else if (has_feature (FEATURE_AVX512ER))
-		  cpu = "knl";
-		/* Assume Skylake with AVX-512.  */
-		else if (has_feature (FEATURE_AVX512F))
-		  cpu = "skylake-avx512";
-		 /* Assume Alder Lake */
-		else if (has_feature (FEATURE_SERIALIZE))
+		  /* Assume Ice Lake.  */
+		  else if (has_feature (FEATURE_AVX512BITALG))
+		    cpu = "icelake-client";
+		  /* Assume Cannon Lake.  */
+		  else if (has_feature (FEATURE_AVX512VBMI))
+		    cpu = "cannonlake";
+		  /* Assume Knights Mill.  */
+		  else if (has_feature (FEATURE_AVX5124VNNIW))
+		    cpu = "knm";
+		  /* Assume Knights Landing.  */
+		  else if (has_feature (FEATURE_AVX512ER))
+		    cpu = "knl";
+		  /* Assume Skylake with AVX-512.  */
+		  else
+		    cpu = "skylake-avx512";
+		}
+	      else if (has_feature (FEATURE_AVX))
+		{
+		  /* Assume Panther Lake.  */
+		  if (has_feature (FEATURE_PREFETCHI))
+		    cpu = "pantherlake";
+		  /* Assume Clearwater Forest.  */
+		  else if (has_feature (FEATURE_USER_MSR))
+		    cpu = "clearwaterforest";
+		  /* Assume Arrow Lake S.  */
+		  else if (has_feature (FEATURE_SM3))
+		    cpu = "arrowlake-s";
+		  /* Assume Grand Ridge.  */
+		  else if (has_feature (FEATURE_RAOINT))
+		    cpu = "grandridge";
+		  /* Assume Sierra Forest.  */
+		  else if (has_feature (FEATURE_AVXVNNIINT8))
+		    cpu = "sierraforest";
+		  /* Assume Alder Lake.  */
+		  else if (has_feature (FEATURE_SERIALIZE))
 		    cpu = "alderlake";
-		/* Assume Skylake.  */
-		else if (has_feature (FEATURE_CLFLUSHOPT))
-		  cpu = "skylake";
-		/* Assume Broadwell.  */
-		else if (has_feature (FEATURE_ADX))
-		  cpu = "broadwell";
-		else if (has_feature (FEATURE_AVX2))
-		/* Assume Haswell.  */
-		  cpu = "haswell";
-		else
-		/* Assume Sandy Bridge.  */
-		  cpu = "sandybridge";	      
+		  /* Assume Skylake.  */
+		  else if (has_feature (FEATURE_CLFLUSHOPT))
+		    cpu = "skylake";
+		  /* Assume Broadwell.  */
+		  else if (has_feature (FEATURE_ADX))
+		    cpu = "broadwell";
+		  /* Assume Haswell.  */
+		  else if (has_feature (FEATURE_AVX2))
+		    cpu = "haswell";
+		  /* Assume Sandy Bridge.  */
+		  else
+		    cpu = "sandybridge";	      
 	      }
 	      else if (has_feature (FEATURE_SSE4_2))
 		{

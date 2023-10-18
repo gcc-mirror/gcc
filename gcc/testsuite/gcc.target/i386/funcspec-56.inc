@@ -217,6 +217,7 @@ extern void test_arch_graniterapids_d (void)	__attribute__((__target__("arch=gra
 extern void test_arch_arrowlake (void)		__attribute__((__target__("arch=arrowlake")));
 extern void test_arch_arrowlake_s (void)	__attribute__((__target__("arch=arrowlake-s")));
 extern void test_arch_clearwaterforest (void)	__attribute__((__target__("arch=clearwaterforest")));
+extern void test_arch_pantherlake (void)	__attribute__((__target__("arch=pantherlake")));
 extern void test_arch_lujiazui (void)			__attribute__((__target__("arch=lujiazui")));
 extern void test_arch_k8 (void)			__attribute__((__target__("arch=k8")));
 extern void test_arch_k8_sse3 (void)		__attribute__((__target__("arch=k8-sse3")));
