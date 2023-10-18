@@ -4166,6 +4166,7 @@ class NamedFunctionParam
 
   NodeId node_id;
   location_t locus;
+  bool variadic;
 
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
@@ -4178,7 +4179,7 @@ public:
   bool is_error () const
   {
     // also if identifier is "" but that is probably more costly to compute
-    return param_type == nullptr;
+    return param_type == nullptr && !variadic;
   }
 
   std::string get_name () const { return name; }
@@ -4195,17 +4196,35 @@ public:
 		      std::vector<Attribute> outer_attrs, location_t locus)
     : name (std::move (name)), param_type (std::move (param_type)),
       outer_attrs (std::move (outer_attrs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      variadic (false)
+  {}
+
+  NamedFunctionParam (std::string name, std::vector<Attribute> outer_attrs,
+		      location_t locus)
+    : name (std::move (name)), param_type (nullptr),
+      outer_attrs (std::move (outer_attrs)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      variadic (true)
+  {}
+
+  NamedFunctionParam (std::vector<Attribute> outer_attrs, location_t locus)
+    : name (""), param_type (nullptr), outer_attrs (std::move (outer_attrs)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      variadic (true)
   {}
 
   // Copy constructor
   NamedFunctionParam (NamedFunctionParam const &other)
-    : name (other.name), outer_attrs (other.outer_attrs)
+    : name (other.name), outer_attrs (other.outer_attrs),
+      variadic (other.variadic)
   {
     node_id = other.node_id;
     // guard to prevent null dereference (only required if error state)
     if (other.param_type != nullptr)
       param_type = other.param_type->clone_type ();
+    else
+      param_type = nullptr;
   }
 
   ~NamedFunctionParam () = default;
