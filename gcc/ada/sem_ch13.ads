@@ -79,8 +79,7 @@ package Sem_Ch13 is
    procedure Set_Enum_Esize (T : Entity_Id);
    --  This routine sets the Esize field for an enumeration type T, based
    --  on the current representation information available for T. Note that
-   --  the setting of the RM_Size field is not affected. This routine also
-   --  initializes the alignment field to zero.
+   --  the setting of the RM_Size field is not affected.
 
    Unknown_Minimum_Size : constant Nonzero_Int := -1;
 
