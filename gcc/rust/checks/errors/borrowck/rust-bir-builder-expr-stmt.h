@@ -46,6 +46,8 @@ private:
     return result;
   }
 
+  BuilderContext::LoopAndLabelInfo &setup_loop (HIR::BaseLoopExpr &expr);
+
 protected: // Expr
   // TODO: test when compiles
   void visit (HIR::ClosureExpr &expr) override;
