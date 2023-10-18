@@ -1109,6 +1109,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return { __n, this->_M_node_allocator() };
       }
 
+      // Only use the possibly cached node's hash code if its hash function
+      // _H2 matches _Hash and is stateless. Otherwise recompute it using _Hash.
+      template<typename _H2>
+	__hash_code
+	_M_src_hash_code(const _H2&, const key_type& __k,
+			 const __node_value_type& __src_n) const
+	{
+	  if constexpr (std::is_same_v<_H2, _Hash>)
+	    if constexpr (std::is_empty_v<_Hash>)
+	      return this->_M_hash_code(__src_n);
+
+	  return this->_M_hash_code(__k);
+	}
+
     public:
       // Extract a node.
       node_type
@@ -1146,7 +1160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto __pos = __i++;
 	      const key_type& __k = _ExtractKey{}(*__pos);
 	      __hash_code __code
-		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
+		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
 	      size_type __bkt = _M_bucket_index(__code);
 	      if (_M_find_node(__bkt, __k, __code) == nullptr)
 		{
@@ -1174,8 +1188,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
+	      const key_type& __k = _ExtractKey{}(*__pos);
 	      __hash_code __code
-		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
+		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
 	      auto __nh = __src.extract(__pos);
 	      __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
 	      __nh._M_ptr = nullptr;
