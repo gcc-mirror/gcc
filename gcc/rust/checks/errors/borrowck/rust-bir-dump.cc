@@ -1,3 +1,4 @@
+#include <numeric>
 #include "rust-bir-dump.h"
 
 namespace Rust {
@@ -43,11 +44,39 @@ print_comma_separated (std::ostream &stream, const std::vector<T> &collection,
     }
 }
 
-static constexpr bool FOLD_CFG = true;
+void
+simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
+{
+  // The BIR builder can generate many useless basic blocks, which contain only
+  // a goto.
+  // For actual borrow-checking, the folding has little value.
+
+  bool stabilized = false;
+  while (!stabilized)
+    {
+      stabilized = true;
+      // BB0 cannot be folded as it is an entry block.
+      for (size_t i = 1; i < func.basic_blocks.size (); ++i)
+	{
+	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i]];
+	  if (bb.statements.empty () && bb.is_goto_terminated ())
+	    {
+	      bb_fold_map[i] = bb.successors.at (0);
+	      stabilized = false;
+	    }
+	}
+    }
+}
 
 void
-Dump::go ()
+Dump::go (bool enable_simplify_cfg)
 {
+  // To avoid mutation of the BIR, we use indirection through bb_fold_map.
+  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
+
+  if (enable_simplify_cfg)
+    simplify_cfg (func, bb_fold_map);
+
   stream << "fn " << name << "(";
   print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
     stream << "_" << get_place_name (place_id) << ": "
@@ -71,13 +100,16 @@ Dump::go ()
 
   for (BasicBlockId id = 0; id < func.basic_blocks.size (); ++id)
     {
+      if (bb_fold_map[id] != id)
+	continue; // This BB was folded.
+
       if (func.basic_blocks[id].statements.empty ()
 	  && func.basic_blocks[id].successors.empty ())
 	continue;
 
       BasicBlock &bb = func.basic_blocks[id];
       stream << "\n";
-      stream << indentation << "bb" << id << ": {\n";
+      stream << indentation << "bb" << bb_fold_map[id] << ": {\n";
       for (auto &stmt : bb.statements)
 	{
 	  stream << indentation << indentation;
@@ -86,7 +118,7 @@ Dump::go ()
 	}
       stream << indentation << "} -> [";
       for (auto succ : bb.successors)
-	stream << "bb" << succ << ", ";
+	stream << "bb" << bb_fold_map[succ] << ", ";
       stream << "]\n";
     }
 
