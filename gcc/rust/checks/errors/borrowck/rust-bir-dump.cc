@@ -28,15 +28,31 @@ get_tyty_name (TyTy::BaseType *tyty)
   return "unknown";
 }
 
+template <typename T, typename FN>
+void
+print_comma_separated (std::ostream &stream, const std::vector<T> &collection,
+		       FN printer)
+{
+  if (collection.empty ())
+    return;
+  printer (collection[0]);
+  for (auto it = collection.begin () + 1; it != collection.end (); ++it)
+    {
+      stream << ", ";
+      printer (*it);
+    }
+}
+
+static constexpr bool FOLD_CFG = true;
+
 void
 Dump::go ()
 {
   stream << "fn " << name << "(";
-  for (PlaceId arg : func.arguments)
-    {
-      stream << "_" << get_place_name (arg) << ": "
-	     << get_tyty_name (place_db[arg].tyty) << ", ";
-    }
+  print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
+    stream << "_" << get_place_name (place_id) << ": "
+	   << get_tyty_name (place_db[place_id].tyty);
+  });
   stream << ") -> " << get_tyty_name (place_db[RETURN_VALUE_PLACE].tyty)
 	 << " {\n";
 
@@ -182,11 +198,9 @@ void
 Dump::visit (InitializerExpr &expr)
 {
   stream << "{";
-  for (auto &place : expr.get_values ())
-    {
-      visit_move_place (place);
-      stream << ", ";
-    }
+  print_comma_separated (stream, expr.get_values (), [this] (PlaceId place_id) {
+    visit_move_place (place_id);
+  });
   stream << "}";
 }
 
