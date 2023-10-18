@@ -2595,268 +2595,99 @@ vect_build_zero_merge_argument (vec_info *vinfo,
 /* Build a gather load call while vectorizing STMT_INFO.  Insert new
    instructions before GSI and add them to VEC_STMT.  GS_INFO describes
    the gather load operation.  If the load is conditional, MASK is the
-   unvectorized condition and MASK_DT is its definition type, otherwise
-   MASK is null.  */
+   vectorized condition, otherwise MASK is null.  PTR is the base
+   pointer and OFFSET is the vectorized offset.  */
 
-static void
-vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
-			      gimple_stmt_iterator *gsi,
-			      gimple **vec_stmt,
-			      gather_scatter_info *gs_info,
-			      tree mask,
-			      stmt_vector_for_cost *cost_vec)
+static gimple *
+vect_build_one_gather_load_call (vec_info *vinfo, stmt_vec_info stmt_info,
+				 gimple_stmt_iterator *gsi,
+				 gather_scatter_info *gs_info,
+				 tree ptr, tree offset, tree mask)
 {
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  int ncopies = vect_get_num_copies (loop_vinfo, vectype);
-  edge pe = loop_preheader_edge (loop);
-  enum { NARROW, NONE, WIDEN } modifier;
-  poly_uint64 gather_off_nunits
-    = TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype);
-
-  /* FIXME: Keep the previous costing way in vect_model_load_cost by costing
-     N scalar loads, but it should be tweaked to use target specific costs
-     on related gather load calls.  */
-  if (cost_vec)
-    {
-      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
-      unsigned int inside_cost;
-      inside_cost = record_stmt_cost (cost_vec, ncopies * assumed_nunits,
-				      scalar_load, stmt_info, 0, vect_body);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "vect_model_load_cost: inside_cost = %d, "
-			 "prologue_cost = 0 .\n",
-			 inside_cost);
-      return;
-    }
-
   tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info->decl));
   tree rettype = TREE_TYPE (TREE_TYPE (gs_info->decl));
   tree srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
-  tree ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  /* ptrtype */ arglist = TREE_CHAIN (arglist);
   tree idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
   tree scaletype = TREE_VALUE (arglist);
-  tree real_masktype = masktype;
+  tree var;
   gcc_checking_assert (types_compatible_p (srctype, rettype)
 		       && (!mask
 			   || TREE_CODE (masktype) == INTEGER_TYPE
 			   || types_compatible_p (srctype, masktype)));
-  if (mask)
-    masktype = truth_type_for (srctype);
 
-  tree mask_halftype = masktype;
-  tree perm_mask = NULL_TREE;
-  tree mask_perm_mask = NULL_TREE;
-  if (known_eq (nunits, gather_off_nunits))
-    modifier = NONE;
-  else if (known_eq (nunits * 2, gather_off_nunits))
+  tree op = offset;
+  if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
     {
-      modifier = WIDEN;
-
-      /* Currently widening gathers and scatters are only supported for
-	 fixed-length vectors.  */
-      int count = gather_off_nunits.to_constant ();
-      vec_perm_builder sel (count, count, 1);
-      for (int i = 0; i < count; ++i)
-	sel.quick_push (i | (count / 2));
-
-      vec_perm_indices indices (sel, 1, count);
-      perm_mask = vect_gen_perm_mask_checked (gs_info->offset_vectype,
-					      indices);
-    }
-  else if (known_eq (nunits, gather_off_nunits * 2))
-    {
-      modifier = NARROW;
-
-      /* Currently narrowing gathers and scatters are only supported for
-	 fixed-length vectors.  */
-      int count = nunits.to_constant ();
-      vec_perm_builder sel (count, count, 1);
-      sel.quick_grow (count);
-      for (int i = 0; i < count; ++i)
-	sel[i] = i < count / 2 ? i : i + count / 2;
-      vec_perm_indices indices (sel, 2, count);
-      perm_mask = vect_gen_perm_mask_checked (vectype, indices);
-
-      ncopies *= 2;
-
-      if (mask && VECTOR_TYPE_P (real_masktype))
-	{
-	  for (int i = 0; i < count; ++i)
-	    sel[i] = i | (count / 2);
-	  indices.new_vector (sel, 2, count);
-	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
-	}
-      else if (mask)
-	mask_halftype = truth_type_for (gs_info->offset_vectype);
-    }
-  else
-    gcc_unreachable ();
-
-  tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
-  tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
-
-  tree ptr = fold_convert (ptrtype, gs_info->base);
-  if (!is_gimple_min_invariant (ptr))
-    {
-      gimple_seq seq;
-      ptr = force_gimple_operand (ptr, &seq, true, NULL_TREE);
-      basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
-      gcc_assert (!new_bb);
+      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op)),
+			    TYPE_VECTOR_SUBPARTS (idxtype)));
+      var = vect_get_new_ssa_name (idxtype, vect_simple_var);
+      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
+      gassign *new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
+      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+      op = var;
     }
 
-  tree scale = build_int_cst (scaletype, gs_info->scale);
-
-  tree vec_oprnd0 = NULL_TREE;
-  tree vec_mask = NULL_TREE;
   tree src_op = NULL_TREE;
   tree mask_op = NULL_TREE;
-  tree prev_res = NULL_TREE;
-
-  if (!mask)
-    {
-      src_op = vect_build_zero_merge_argument (vinfo, stmt_info, rettype);
-      mask_op = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
-    }
-
-  auto_vec<tree> vec_oprnds0;
-  auto_vec<tree> vec_masks;
-  vect_get_vec_defs_for_operand (vinfo, stmt_info,
-				 modifier == WIDEN ? ncopies / 2 : ncopies,
-				 gs_info->offset, &vec_oprnds0);
   if (mask)
-    vect_get_vec_defs_for_operand (vinfo, stmt_info,
-				   modifier == NARROW ? ncopies / 2 : ncopies,
-				   mask, &vec_masks, masktype);
-  for (int j = 0; j < ncopies; ++j)
     {
-      tree op, var;
-      if (modifier == WIDEN && (j & 1))
-	op = permute_vec_elements (vinfo, vec_oprnd0, vec_oprnd0,
-				   perm_mask, stmt_info, gsi);
-      else
-	op = vec_oprnd0 = vec_oprnds0[modifier == WIDEN ? j / 2 : j];
-
-      if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
+      if (!useless_type_conversion_p (masktype, TREE_TYPE (mask)))
 	{
-	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op)),
-				TYPE_VECTOR_SUBPARTS (idxtype)));
-	  var = vect_get_new_ssa_name (idxtype, vect_simple_var);
-	  op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
-	  gassign *new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	  op = var;
-	}
-
-      if (mask)
-	{
-	  if (mask_perm_mask && (j & 1))
-	    mask_op = permute_vec_elements (vinfo, mask_op, mask_op,
-					    mask_perm_mask, stmt_info, gsi);
-	  else
-	    {
-	      if (modifier == NARROW)
-		{
-		  if ((j & 1) == 0)
-		    vec_mask = vec_masks[j / 2];
-		}
-	      else
-		vec_mask = vec_masks[j];
-
-	      mask_op = vec_mask;
-	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
-		{
-		  poly_uint64 sub1 = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op));
-		  poly_uint64 sub2 = TYPE_VECTOR_SUBPARTS (masktype);
-		  gcc_assert (known_eq (sub1, sub2));
-		  var = vect_get_new_ssa_name (masktype, vect_simple_var);
-		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
-		  gassign *new_stmt
-		    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_op);
-		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-		  mask_op = var;
-		}
-	    }
-	  if (modifier == NARROW && !VECTOR_TYPE_P (real_masktype))
-	    {
-	      var = vect_get_new_ssa_name (mask_halftype, vect_simple_var);
-	      gassign *new_stmt
-		= gimple_build_assign (var, (j & 1) ? VEC_UNPACK_HI_EXPR
-						    : VEC_UNPACK_LO_EXPR,
-				       mask_op);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      mask_op = var;
-	    }
-	  src_op = mask_op;
-	}
-
-      tree mask_arg = mask_op;
-      if (masktype != real_masktype)
-	{
-	  tree utype, optype = TREE_TYPE (mask_op);
-	  if (VECTOR_TYPE_P (real_masktype)
-	      || TYPE_MODE (real_masktype) == TYPE_MODE (optype))
-	    utype = real_masktype;
+	  tree utype, optype = TREE_TYPE (mask);
+	  if (VECTOR_TYPE_P (masktype)
+	      || TYPE_MODE (masktype) == TYPE_MODE (optype))
+	    utype = masktype;
 	  else
 	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
 	  var = vect_get_new_ssa_name (utype, vect_scalar_var);
-	  mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask_op);
+	  tree mask_arg = build1 (VIEW_CONVERT_EXPR, utype, mask);
 	  gassign *new_stmt
-	    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
+	      = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_arg);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	  mask_arg = var;
-	  if (!useless_type_conversion_p (real_masktype, utype))
+	  if (!useless_type_conversion_p (masktype, utype))
 	    {
 	      gcc_assert (TYPE_PRECISION (utype)
-			  <= TYPE_PRECISION (real_masktype));
-	      var = vect_get_new_ssa_name (real_masktype, vect_scalar_var);
+			  <= TYPE_PRECISION (masktype));
+	      var = vect_get_new_ssa_name (masktype, vect_scalar_var);
 	      new_stmt = gimple_build_assign (var, NOP_EXPR, mask_arg);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      mask_arg = var;
 	    }
 	  src_op = build_zero_cst (srctype);
-	}
-      gimple *new_stmt = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
-					    mask_arg, scale);
-
-      if (!useless_type_conversion_p (vectype, rettype))
-	{
-	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype),
-				TYPE_VECTOR_SUBPARTS (rettype)));
-	  op = vect_get_new_ssa_name (rettype, vect_simple_var);
-	  gimple_call_set_lhs (new_stmt, op);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	  var = make_ssa_name (vec_dest);
-	  op = build1 (VIEW_CONVERT_EXPR, vectype, op);
-	  new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  mask_op = mask_arg;
 	}
       else
 	{
-	  var = make_ssa_name (vec_dest, new_stmt);
-	  gimple_call_set_lhs (new_stmt, var);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  src_op = mask;
+	  mask_op = mask;
 	}
-
-      if (modifier == NARROW)
-	{
-	  if ((j & 1) == 0)
-	    {
-	      prev_res = var;
-	      continue;
-	    }
-	  var = permute_vec_elements (vinfo, prev_res, var, perm_mask,
-				      stmt_info, gsi);
-	  new_stmt = SSA_NAME_DEF_STMT (var);
-	}
-
-      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
-  *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
+  else
+    {
+      src_op = vect_build_zero_merge_argument (vinfo, stmt_info, rettype);
+      mask_op = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
+    }
+
+  tree scale = build_int_cst (scaletype, gs_info->scale);
+  gimple *new_stmt = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
+					mask_op, scale);
+
+  if (!useless_type_conversion_p (vectype, rettype))
+    {
+      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype),
+			    TYPE_VECTOR_SUBPARTS (rettype)));
+      op = vect_get_new_ssa_name (rettype, vect_simple_var);
+      gimple_call_set_lhs (new_stmt, op);
+      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+      op = build1 (VIEW_CONVERT_EXPR, vectype, op);
+      new_stmt = gimple_build_assign (NULL_TREE, VIEW_CONVERT_EXPR, op);
+    }
+
+  return new_stmt;
 }
 
 /* Build a scatter store call while vectorizing STMT_INFO.  Insert new
@@ -10112,13 +9943,6 @@ vectorizable_load (vec_info *vinfo,
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info), *first_dr_info = NULL;
   ensure_base_align (dr_info);
 
-  if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
-    {
-      vect_build_gather_load_calls (vinfo, stmt_info, gsi, vec_stmt, &gs_info,
-				    mask, cost_vec);
-      return true;
-    }
-
   if (memory_access_type == VMAT_INVARIANT)
     {
       gcc_assert (!grouped_load && !mask && !bb_vinfo);
@@ -11015,6 +10839,134 @@ vectorizable_load (vec_info *vinfo,
 		  gimple_call_set_nothrow (call, true);
 		  new_stmt = call;
 		  data_ref = NULL_TREE;
+		}
+	      else if (gs_info.decl)
+		{
+		  /* The builtin decls path for gather is legacy, x86 only.  */
+		  gcc_assert (!final_len && nunits.is_constant ());
+		  if (costing_p)
+		    {
+		      unsigned int cnunits = vect_nunits_for_cost (vectype);
+		      inside_cost
+			= record_stmt_cost (cost_vec, cnunits, scalar_load,
+					    stmt_info, 0, vect_body);
+		      continue;
+		    }
+		  poly_uint64 offset_nunits
+		    = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
+		  if (known_eq (nunits, offset_nunits))
+		    {
+		      new_stmt = vect_build_one_gather_load_call
+				   (vinfo, stmt_info, gsi, &gs_info,
+				    dataref_ptr, vec_offsets[vec_num * j + i],
+				    final_mask);
+		      data_ref = NULL_TREE;
+		    }
+		  else if (known_eq (nunits, offset_nunits * 2))
+		    {
+		      /* We have a offset vector with half the number of
+			 lanes but the builtins will produce full vectype
+			 data with just the lower lanes filled.  */
+		      new_stmt = vect_build_one_gather_load_call
+			  (vinfo, stmt_info, gsi, &gs_info,
+			   dataref_ptr, vec_offsets[2 * vec_num * j + 2 * i],
+			   final_mask);
+		      tree low = make_ssa_name (vectype);
+		      gimple_set_lhs (new_stmt, low);
+		      vect_finish_stmt_generation (vinfo, stmt_info,
+						   new_stmt, gsi);
+
+		      /* now put upper half of final_mask in final_mask low. */
+		      if (final_mask
+			  && !SCALAR_INT_MODE_P
+				(TYPE_MODE (TREE_TYPE (final_mask))))
+			{
+			  int count = nunits.to_constant ();
+			  vec_perm_builder sel (count, count, 1);
+			  sel.quick_grow (count);
+			  for (int i = 0; i < count; ++i)
+			    sel[i] = i | (count / 2);
+			  vec_perm_indices indices (sel, 2, count);
+			  tree perm_mask = vect_gen_perm_mask_checked
+					     (TREE_TYPE (final_mask), indices);
+			  new_stmt = gimple_build_assign (NULL_TREE,
+							  VEC_PERM_EXPR,
+							  final_mask,
+							  final_mask,
+							  perm_mask);
+			  final_mask = make_ssa_name (TREE_TYPE (final_mask));
+			  gimple_set_lhs (new_stmt, final_mask);
+			  vect_finish_stmt_generation (vinfo, stmt_info,
+						       new_stmt, gsi);
+			}
+		      else if (final_mask)
+			{
+			  new_stmt = gimple_build_assign (NULL_TREE,
+							  VEC_UNPACK_HI_EXPR,
+							  final_mask);
+			  final_mask = make_ssa_name
+			    (truth_type_for (gs_info.offset_vectype));
+			  gimple_set_lhs (new_stmt, final_mask);
+			  vect_finish_stmt_generation (vinfo, stmt_info,
+						       new_stmt, gsi);
+			}
+
+		      new_stmt = vect_build_one_gather_load_call
+				   (vinfo, stmt_info, gsi, &gs_info,
+				    dataref_ptr,
+				    vec_offsets[2 * vec_num * j + 2 * i + 1],
+				    final_mask);
+		      tree high = make_ssa_name (vectype);
+		      gimple_set_lhs (new_stmt, high);
+		      vect_finish_stmt_generation (vinfo, stmt_info,
+						   new_stmt, gsi);
+
+		      /* compose low + high.  */
+		      int count = nunits.to_constant ();
+		      vec_perm_builder sel (count, count, 1);
+		      sel.quick_grow (count);
+		      for (int i = 0; i < count; ++i)
+			sel[i] = i < count / 2 ? i : i + count / 2;
+		      vec_perm_indices indices (sel, 2, count);
+		      tree perm_mask
+			= vect_gen_perm_mask_checked (vectype, indices);
+		      new_stmt = gimple_build_assign (NULL_TREE,
+						      VEC_PERM_EXPR,
+						      low, high, perm_mask);
+		      data_ref = NULL_TREE;
+		    }
+		  else if (known_eq (nunits * 2, offset_nunits))
+		    {
+		      /* We have a offset vector with double the number of
+			 lanes.  Select the low/high part accordingly.  */
+		      vec_offset = vec_offsets[(vec_num * j + i) / 2];
+		      if ((vec_num * j + i) & 1)
+			{
+			  int count = offset_nunits.to_constant ();
+			  vec_perm_builder sel (count, count, 1);
+			  sel.quick_grow (count);
+			  for (int i = 0; i < count; ++i)
+			    sel[i] = i | (count / 2);
+			  vec_perm_indices indices (sel, 2, count);
+			  tree perm_mask = vect_gen_perm_mask_checked
+					     (TREE_TYPE (vec_offset), indices);
+			  new_stmt = gimple_build_assign (NULL_TREE,
+							  VEC_PERM_EXPR,
+							  vec_offset,
+							  vec_offset,
+							  perm_mask);
+			  vec_offset = make_ssa_name (TREE_TYPE (vec_offset));
+			  gimple_set_lhs (new_stmt, vec_offset);
+			  vect_finish_stmt_generation (vinfo, stmt_info,
+						       new_stmt, gsi);
+			}
+		      new_stmt = vect_build_one_gather_load_call
+				   (vinfo, stmt_info, gsi, &gs_info,
+				    dataref_ptr, vec_offset, final_mask);
+		      data_ref = NULL_TREE;
+		    }
+		  else
+		    gcc_unreachable ();
 		}
 	      else
 		{
