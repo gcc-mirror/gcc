@@ -4384,9 +4384,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_MASK:
+		/* While we can create a traditional data vector from
+		   an incoming integer mode mask we have no good way to
+		   force generate an integer mode mask from a traditional
+		   boolean vector input.  */
 		if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
-		    != SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		    && !SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
 		  i = -1;
+		else if (!SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+			 && SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		  this_badness += 2048;
 		break;
 	      }
 	    if (i == (size_t) -1)
