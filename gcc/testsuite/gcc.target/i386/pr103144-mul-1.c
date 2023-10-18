@@ -11,7 +11,7 @@ foo_mul (int* a, int b)
   for (int i = 0; i != N; i++)
     {
       a[i] = b;
-      b *= 3;
+      b *= 4;
     }
 }
 
@@ -23,7 +23,7 @@ foo_mul_const (int* a)
   for (int i = 0; i != N; i++)
     {
       a[i] = b;
-      b *= 3;
+      b *= 4;
     }
 }
 
@@ -34,7 +34,7 @@ foo_mul_peel (int* a, int b)
   for (int i = 0; i != 39; i++)
     {
       a[i] = b;
-      b *= 3;
+      b *= 4;
     }
 }
 
@@ -46,6 +46,6 @@ foo_mul_peel_const (int* a)
   for (int i = 0; i != 39; i++)
     {
       a[i] = b;
-      b *= 3;
+      b *= 4;
     }
 }

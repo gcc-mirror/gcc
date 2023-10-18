@@ -1904,8 +1904,10 @@ iv_phi_p (stmt_vec_info stmt_info)
 /* Return true if vectorizer can peel for nonlinear iv.  */
 static bool
 vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
-			      enum vect_induction_op_type induction_type)
+			      stmt_vec_info stmt_info)
 {
+  enum vect_induction_op_type induction_type
+    = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info);
   tree niters_skip;
   /* Init_expr will be update by vect_update_ivs_after_vectorizer,
      if niters or vf is unkown:
@@ -1926,11 +1928,31 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* Avoid compile time hog on vect_peel_nonlinear_iv_init.  */
+  if (induction_type == vect_step_op_mul)
+    {
+      tree step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
+      tree type = TREE_TYPE (step_expr);
+
+      if (wi::exact_log2 (wi::to_wide (step_expr)) == -1
+	  && LOOP_VINFO_INT_NITERS(loop_vinfo) >= TYPE_PRECISION (type))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Avoid compile time hog on"
+			     " vect_peel_nonlinear_iv_init"
+			     " for nonlinear induction vec_step_op_mul"
+			     " when iteration count is too big.\n");
+	  return false;
+	}
+    }
+
   /* Also doens't support peel for neg when niter is variable.
      ??? generate something like niter_expr & 1 ? init_expr : -init_expr?  */
   niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
   if ((niters_skip != NULL_TREE
-       && TREE_CODE (niters_skip) != INTEGER_CST)
+       && (TREE_CODE (niters_skip) != INTEGER_CST
+	   || (HOST_WIDE_INT) TREE_INT_CST_LOW (niters_skip) < 0))
       || (!vect_use_loop_mask_for_alignment_p (loop_vinfo)
 	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0))
     {
@@ -1991,7 +2013,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       induction_type = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (phi_info);
       if (induction_type != vect_step_op_add)
 	{
-	  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, induction_type))
+	  if (!vect_can_peel_nonlinear_iv_p (loop_vinfo, phi_info))
 	    return false;
 
 	  continue;
