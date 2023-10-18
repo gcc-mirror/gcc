@@ -305,20 +305,32 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
 void
 ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
 {
-  //  BuilderContext::LabelledBlockCtx loop_ctx;
-  //  NodeId label = UNKNOWN_NODEID;
-  //  if (cont.has_label ())
-  //    {
-  //      if (!resolve_label (cont.get_label (), label))
-  //	return;
-  //    }
-  //
-  //  if (!find_block_ctx (label, loop_ctx))
-  //    {
-  //      rust_error_at (cont.get_locus (), "unresolved loop label");
-  //    }
-  //
-  //  add_jump_to (loop_ctx.continue_bb);
+  BuilderContext::LoopAndLabelInfo info;
+  if (cont.has_label ())
+    {
+      NodeId label = resolve_label (cont.get_label ());
+      auto lookup
+	= std::find_if (ctx.loop_and_label_stack.rbegin (),
+			ctx.loop_and_label_stack.rend (),
+			[label] (const BuilderContext::LoopAndLabelInfo &info) {
+			  return info.label == label;
+			});
+      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+      info = *lookup;
+    }
+  else
+    {
+      auto lookup
+	= std::find_if (ctx.loop_and_label_stack.rbegin (),
+			ctx.loop_and_label_stack.rend (),
+			[] (const BuilderContext::LoopAndLabelInfo &info) {
+			  return info.is_loop;
+			});
+      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+      info = *lookup;
+    }
+  add_jump_to (info.continue_bb);
+  // No code allowed after continue. No BB starts - would be empty.
 }
 
 void
@@ -418,9 +430,10 @@ ExprStmtBuilder::visit (HIR::UnsafeBlockExpr &expr)
 BuilderContext::LoopAndLabelInfo &
 ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
 {
-  NodeId label = (expr.has_loop_label ())
-		   ? resolve_label (expr.get_loop_label ())
-		   : UNKNOWN_NODEID;
+  NodeId label
+    = (expr.has_loop_label ())
+	? expr.get_loop_label ().get_lifetime ().get_mappings ().get_nodeid ()
+	: UNKNOWN_NODEID;
   PlaceId label_var = ctx.place_db.add_temporary (lookup_type (expr));
 
   BasicBlockId continue_bb = new_bb ();
@@ -439,7 +452,8 @@ ExprStmtBuilder::visit (HIR::LoopExpr &expr)
 
   ctx.current_bb = loop.continue_bb;
   (void) visit_expr (*expr.get_loop_block ());
-  add_jump_to (loop.continue_bb);
+  if (!ctx.get_current_bb ().is_terminated ())
+    add_jump_to (loop.continue_bb);
 
   ctx.current_bb = loop.break_bb;
 }
