@@ -925,10 +925,24 @@ public:
      analysis.  */
   vec<_loop_vec_info *> epilogue_vinfos;
 
+  /* The controlling loop IV for the current loop when vectorizing.  This IV
+     controls the natural exits of the loop.  */
+  edge vec_loop_iv_exit;
+
+  /* The controlling loop IV for the epilogue loop when vectorizing.  This IV
+     controls the natural exits of the loop.  */
+  edge vec_epilogue_loop_iv_exit;
+
+  /* The controlling loop IV for the scalar loop being vectorized.  This IV
+     controls the natural exits of the loop.  */
+  edge scalar_loop_iv_exit;
 } *loop_vec_info;
 
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)                 (L)->loop
+#define LOOP_VINFO_IV_EXIT(L)              (L)->vec_loop_iv_exit
+#define LOOP_VINFO_EPILOGUE_IV_EXIT(L)     (L)->vec_epilogue_loop_iv_exit
+#define LOOP_VINFO_SCALAR_IV_EXIT(L)       (L)->scalar_loop_iv_exit
 #define LOOP_VINFO_BBS(L)                  (L)->bbs
 #define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
 #define LOOP_VINFO_NITERS(L)               (L)->num_iters
@@ -2161,11 +2175,13 @@ class auto_purge_vect_location
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
    in tree-vect-loop-manip.cc.  */
-extern void vect_set_loop_condition (class loop *, loop_vec_info,
+extern void vect_set_loop_condition (class loop *, edge, loop_vec_info,
 				     tree, tree, tree, bool);
-extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
-class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
-						     class loop *, edge);
+extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge,
+					 const_edge);
+class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *, edge,
+						    class loop *, edge,
+						    edge, edge *);
 class loop *vect_loop_versioning (loop_vec_info, gimple *);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,
@@ -2175,6 +2191,7 @@ extern void vect_prepare_for_masked_peels (loop_vec_info);
 extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
+extern edge vec_init_loop_exit_info (class loop *);
 
 /* In tree-vect-stmts.cc.  */
 extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
@@ -2364,6 +2381,7 @@ struct vect_loop_form_info
   tree assumptions;
   gcond *loop_cond;
   gcond *inner_loop_cond;
+  edge loop_exit;
 };
 extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
