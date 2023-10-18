@@ -1,3 +1,13 @@
+2023-10-17  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-07-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110170
+	* config/i386/i386.md (movdf_internal): Disparage slightly for
+	2 alternatives (r,v) and (v,r) by adding constraint modifier
+	'?'.
+
 2023-10-07  Andrew Pinski  <pinskia@gmail.com>
 
 	Backported from master:
