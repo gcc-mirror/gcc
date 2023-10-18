@@ -35,13 +35,16 @@ class Dump : public Visitor
   Function &func;
   const std::string &name;
 
+  std::vector<BasicBlockId> bb_fold_map;
+
   PlaceId node_place = INVALID_PLACE;
 
 public:
   Dump (std::ostream &os, Function &func, const std::string &name)
-    : stream (os), place_db (func.place_db), func (func), name (name)
+    : stream (os), place_db (func.place_db), func (func), name (name),
+      bb_fold_map (func.basic_blocks.size ())
   {}
-  void go ();
+  void go (bool enable_simplify_cfg = false);
 
 protected:
   void visit (Node &node) override;
