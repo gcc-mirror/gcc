@@ -150,6 +150,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-implitem.o \
     rust/rust-borrow-checker.o \
     rust/rust-bir-builder-expr-stmt.o \
+    rust/rust-bir-dump.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
     rust/rust-type-util.o \
