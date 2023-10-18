@@ -1,3 +1,15 @@
+2023-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111837
+	* frontend-passes.cc (traverse_io_block): Dependency check of loop
+	nest shall be triangular, not banded.
+
+2023-10-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (signal): Mention that the argument
+	passed to the signal handler procedure is passed by reference.
+	Extend example.
+
 2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* scanner.cc (skip_free_comments, skip_fixed_comments): Remove

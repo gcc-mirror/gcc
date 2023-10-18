@@ -1,3 +1,113 @@
+2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Don't make
+	the position of the LR save slot dependent on stack clash
+	protection unless shadow call stacks are enabled.
+
+2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add vectors that
+	store the list saved GPRs, FPRs and predicate registers.
+	* config/aarch64/aarch64.cc (aarch64_layout_frame): Initialize
+	the lists of saved registers.  Use them to choose push candidates.
+	Invalidate pop candidates if we're not going to do a pop.
+	(aarch64_next_callee_save): Delete.
+	(aarch64_save_callee_saves): Take a list of registers,
+	rather than a range.  Make !skip_wb select only write-back
+	candidates.
+	(aarch64_expand_prologue): Update calls accordingly.
+	(aarch64_restore_callee_saves): Take a list of registers,
+	rather than a range.  Always skip pop candidates.  Also skip
+	LR if shadow call stacks are enabled.
+	(aarch64_expand_epilogue): Update calls accordingly.
+
+2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgbuild.h (find_sub_basic_blocks): Declare.
+	* cfgbuild.cc (update_profile_for_new_sub_basic_block): New function,
+	split out from...
+	(find_many_sub_basic_blocks): ...here.
+	(find_sub_basic_blocks): New function.
+	* function.cc (thread_prologue_and_epilogue_insns): Handle
+	epilogues that contain jumps.
+
+2023-10-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110817
+	* tree-ssanames.cc (ssa_name_has_boolean_range): Remove the
+	check for boolean type as they don't have "[0,1]" range.
+
+2023-10-17  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111432
+	* match.pd (`a & (x | CST)`): New pattern.
+
+2023-10-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-cfg.cc (move_sese_region_to_fn): Initialize profile_count for
+	new basic block.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111846
+	* tree-vectorizer.h (_slp_tree::simd_clone_info): Add.
+	(SLP_TREE_SIMD_CLONE_INFO): New.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize
+	SLP_TREE_SIMD_CLONE_INFO.
+	(_slp_tree::~_slp_tree): Release it.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use
+	SLP_TREE_SIMD_CLONE_INFO or STMT_VINFO_SIMD_CLONE_INFO
+	dependent on if we're doing SLP.
+
+2023-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int-print.h (print_dec_buf_size): For length, divide number
+	of bits by 3 and add 3 instead of division by 4 and adding 4.
+	* wide-int-print.cc (print_decs): Remove superfluous ()s.  Don't call
+	print_hex, instead call print_decu on either negated value after
+	printing - or on wi itself.
+	(print_decu): Don't call print_hex, instead print even large numbers
+	decimally.
+	(pp_wide_int_large): Assume len from print_dec_buf_size is big enough
+	even if it returns false.
+	* pretty-print.h (pp_wide_int): Use print_dec_buf_size to check if
+	pp_wide_int_large should be used.
+	* tree-pretty-print.cc (dump_generic_node): Use print_hex_buf_size
+	to compute needed buffer size.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111818
+	* tree-ssa.cc (maybe_optimize_var): When clearing
+	DECL_NOT_GIMPLE_REG_P always rewrite into SSA.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111807
+	* tree-sra.cc (build_ref_for_model): Only call
+	build_reconstructed_reference when the offsets are the same.
+
+2023-10-17  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/111466
+	* expr.cc (expand_expr_real_2): Do not clear SUBREG_PROMOTED_VAR_P.
+
+2023-10-17  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_vector_group_init):
+	fix impl related to vec_initv32qiv16qi template to avoid ICE.
+
+2023-10-17  Lulu Cheng  <chenglulu@loongson.cn>
+	    Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* config/loongarch/loongarch.h (ASM_OUTPUT_ALIGN_WITH_NOP):
+	Delete.
+
+2023-10-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (max_number_of_live_regs): Fix big LMUL issue.
+	(get_store_value): New function.
+
 2023-10-16  Jeff Law  <jlaw@ventanamicro.com>
 
 	* explow.cc (probe_stack_range): Handle case when expand_binop

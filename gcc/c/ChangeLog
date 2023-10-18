@@ -1,3 +1,8 @@
+2023-10-17  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/111708
+	* c-decl.cc (grokdeclarator): Add error.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.cc (c_tree_printer): Update for "m_" prefixes to

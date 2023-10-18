@@ -1,3 +1,97 @@
+2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/test_frame_2.c: Expect x30 to come before x19.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+
+2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/stack_clash_2.c: Expect restores
+	to happen in offset order.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_2048.c: Likewise.
+
+2023-10-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110817
+	* gcc.c-torture/execute/pr110817-1.c: New test.
+	* gcc.c-torture/execute/pr110817-2.c: New test.
+	* gcc.c-torture/execute/pr110817-3.c: New test.
+
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111840
+	* g++.dg/parse/error65.C: New test.
+
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111660
+	* g++.dg/cpp0x/hog1.C: New test.
+	* g++.dg/cpp2a/consteval36.C: New test.
+
+2023-10-17  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr111466.c (foo2): Change return to unsigned
+	int as that will potentially generate two SEXT.W instructions.
+	dg-final: Change to scan-assembler-not SEXT.W.
+
+2023-10-17  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/111708
+	* gcc.dg/pr111708-1.c: New test.
+	* gcc.dg/pr111708-2.c: New test.
+
+2023-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111837
+	* gfortran.dg/implied_do_io_8.f90: New test.
+
+2023-10-17  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111432
+	* gcc.dg/tree-ssa/bitops-7.c: New test.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111846
+	* gcc.dg/vect/pr111846.c: New testcase.
+
+2023-10-17  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Split check.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111818
+	* gcc.dg/torture/pr111818.c: New testcase.
+
+2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111807
+	* gcc.dg/torture/pr111807.c: New testcase.
+
+2023-10-17  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/111466
+	* gcc.target/riscv/pr111466.c: New test.
+
+2023-10-17  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vec-init-1.c: New test.
+
+2023-10-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: New test.
+
+2023-10-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/builtins_reject.d: New test.
+	* gdc.dg/intrinsics_reject.d: New test.
+
 2023-10-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/large-data.c: New test.

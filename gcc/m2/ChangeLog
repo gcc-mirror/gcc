@@ -1,3 +1,186 @@
+2023-10-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111756
+	* Make-lang.in (CM2DEP): New define conditionally set if
+	($(CXXDEPMODE),depmode=gcc3).
+	(GM2_1): Use $(CM2DEP).
+	(m2/gm2-gcc/%.o): Ensure $(@D)/$(DEPDIR) is created.
+	Add $(CM2DEP) to the $(COMPILER) command and use $(POSTCOMPILE).
+	(m2/gm2-gcc/m2configure.o): Ditto.
+	(m2/gm2-lang.o): Ditto.
+	(m2/m2pp.o): Ditto.
+	(m2/gm2-gcc/rtegraph.o): Ditto.
+	(m2/mc-boot/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot/main.o): Ditto.
+	(mcflex.o): Ditto.
+	(m2/gm2-libs-boot/M2RTS.o): Ditto.
+	(m2/gm2-libs-boot/%.o): Ditto.
+	(m2/gm2-libs-boot/%.o): Ditto.
+	(m2/gm2-libs-boot/RTcodummy.o): Ditto.
+	(m2/gm2-libs-boot/RTintdummy.o): Ditto.
+	(m2/gm2-libs-boot/wrapc.o): Ditto.
+	(m2/gm2-libs-boot/UnixArgs.o): Ditto.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-libs-boot/SysStorage.o): Ditto.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Ditto.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/gm2-compiler-boot/m2flex.o): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-compiler/m2flex.o): Ditto.
+	(m2/gm2-libs-iso/%.o): Ditto.
+	(m2/gm2-libs/%.o): Ditto.
+	(m2/gm2-libs/%.o): Ditto.
+	(m2/gm2-libs/choosetemp.o): Ditto.
+	(m2/boot-bin/mklink$(exeext)): Ditto.
+	(m2/pge-boot/%.o): Ditto.
+	(m2/pge-boot/%.o): Ditto.
+	(m2/gm2-compiler/%.o): Ensure $(@D)/$(DEPDIR) is created and use
+	$(POSTCOMPILE).
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-libs-iso/%.o): Ditto.
+	(m2/gm2-libs/%.o): Ditto.
+	* README: Purge out of date info.
+	* gm2-compiler/M2Comp.mod (MakeSaveTempsFileNameExt): Import.
+	(OnExitDelete): Import.
+	(GetModuleDefImportStatementList): Import.
+	(GetModuleModImportStatementList): Import.
+	(GetImportModule): Import.
+	(IsImportStatement): Import.
+	(IsImport): Import.
+	(GetImportStatementList): Import.
+	(File): Import.
+	(Close): Import.
+	(EOF): Import.
+	(IsNoError): Import.
+	(WriteLine): Import.
+	(WriteChar): Import.
+	(FlushOutErr): Import.
+	(WriteS): Import.
+	(OpenToRead): Import.
+	(OpenToWrite): Import.
+	(ReadS): Import.
+	(WriteS): Import.
+	(GetM): Import.
+	(GetMM): Import.
+	(GetDepTarget): Import.
+	(GetMF): Import.
+	(GetMP): Import.
+	(GetObj): Import.
+	(GetMD): Import.
+	(GetMMD): Import.
+	(GenerateDefDependency): New procedure.
+	(GenerateDependenciesFromImport): New procedure.
+	(GenerateDependenciesFromList): New procedure.
+	(GenerateDependencies): New procedure.
+	(Compile): Re-write.
+	(compile): Re-format.
+	(CreateFileStem): New procedure function.
+	(DoPass0): Re-write.
+	(IsLibrary): New procedure function.
+	(IsUnique): New procedure function.
+	(Append): New procedure.
+	(MergeDep): New procedure.
+	(GetRuleTarget): New procedure function.
+	(ReadDepContents): New procedure function.
+	(WriteDep): New procedure.
+	(WritePhonyDep): New procedure.
+	(WriteDepContents): New procedure.
+	(CreateDepFilename): New procedure function.
+	(Pass0CheckDef): New procedure function.
+	(Pass0CheckMod): New procedure function.
+	(DoPass0): Re-write.
+	(DepContent): New variable.
+	(DepOutput): New variable.
+	(BaseName): New procedure function.
+	* gm2-compiler/M2GCCDeclare.mod (PrintTerse): Handle IsImport.
+	Replace IsGnuAsmVolatile with IsGnuAsm.
+	* gm2-compiler/M2Options.def (EXPORT QUALIFIED): Remove list.
+	(SetM): New procedure.
+	(GetM): New procedure function.
+	(SetMM): New procedure.
+	(GetMM): New procedure function.
+	(SetMF): New procedure.
+	(GetMF): New procedure function.
+	(SetPPOnly): New procedure.
+	(GetB): New procedure function.
+	(SetMD): New procedure.
+	(GetMD): New procedure function.
+	(SetMMD): New procedure.
+	(GetMMD): New procedure function.
+	(SetMQ): New procedure.
+	(SetMT): New procedure.
+	(GetMT): New procedure function.
+	(GetDepTarget): New procedure function.
+	(SetMP): New procedure.
+	(GetMP): New procedure function.
+	(SetObj): New procedure.
+	(SetSaveTempsDir): New procedure.
+	* gm2-compiler/M2Options.mod (SetM): New procedure.
+	(GetM): New procedure function.
+	(SetMM): New procedure.
+	(GetMM): New procedure function.
+	(SetMF): New procedure.
+	(GetMF): New procedure function.
+	(SetPPOnly): New procedure.
+	(GetB): New procedure function.
+	(SetMD): New procedure.
+	(GetMD): New procedure function.
+	(SetMMD): New procedure.
+	(GetMMD): New procedure function.
+	(SetMQ): New procedure.
+	(SetMT): New procedure.
+	(GetMT): New procedure function.
+	(GetDepTarget): New procedure function.
+	(SetMP): New procedure.
+	(GetMP): New procedure function.
+	(SetObj): New procedure.
+	(SetSaveTempsDir): New procedure.
+	* gm2-compiler/M2Preprocess.def (PreprocessModule): New parameters
+	topSource and outputDep.  Re-write.
+	(MakeSaveTempsFileNameExt): New procedure function.
+	(OnExitDelete): New procedure function.
+	* gm2-compiler/M2Preprocess.mod (GetM): Import.
+	(GetMM): Import.
+	(OnExitDelete): Add debugging message.
+	(RemoveFile): Add debugging message.
+	(BaseName): Remove.
+	(BuildCommandLineExecute): New procedure function.
+	* gm2-compiler/M2Search.def (SetDefExtension): Remove unnecessary
+	spacing.
+	* gm2-compiler/SymbolTable.mod (GetSymName): Handle ImportSym and
+	ImportStatementSym.
+	* gm2-gcc/m2options.h (M2Options_SetMD): New function.
+	(M2Options_GetMD): New function.
+	(M2Options_SetMMD): New function.
+	(M2Options_GetMMD): New function.
+	(M2Options_SetM): New function.
+	(M2Options_GetM): New function.
+	(M2Options_SetMM): New function.
+	(M2Options_GetMM): New function.
+	(M2Options_GetMQ): New function.
+	(M2Options_SetMF): New function.
+	(M2Options_GetMF): New function.
+	(M2Options_SetMT): New function.
+	(M2Options_SetMP): New function.
+	(M2Options_GetMP): New function.
+	(M2Options_GetDepTarget): New function.
+	* gm2-lang.cc (gm2_langhook_init): Correct comment case.
+	(gm2_langhook_init_options): Add case OPT_M and
+	OPT_MM.
+	(gm2_langhook_post_options): Add case OPT_MF, OPT_MT,
+	OPT_MD and OPT_MMD.
+	* lang-specs.h (M2CPP): Pass though MF option.
+	(MDMMD): New define.  Add MDMMD to "@modula-2".
+
 2023-10-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (m2.tags): New rule.

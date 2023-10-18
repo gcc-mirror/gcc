@@ -1,3 +1,34 @@
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111840
+	* parser.cc (cp_parser_simple_declaration): Do cp_parser_error
+	for FUNCTION_DECLs.
+
+2023-10-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111660
+	* cp-gimplify.cc (cp_fold_immediate_r) <case COND_EXPR>: Don't
+	handle it here.
+	(cp_fold_r): Handle COND_EXPR here.
+
+2023-10-17  Jason Merrill  <jason@redhat.com>
+
+	* mangle.cc (abi_check): New.
+	(write_prefix, write_unqualified_name, write_discriminator)
+	(write_type, write_member_name, write_expression)
+	(write_template_arg, write_template_param): Use it.
+	(start_mangling): Assign from {}.
+	* cp-tree.h: Update comment.
+
+2023-10-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constexpr.cc (cxx_eval_dynamic_cast_fn): Add missing
+	auto_diagnostic_group.
+	(cxx_eval_call_expression): Likewise.
+	(diag_array_subscript): Likewise.
+	(outside_lifetime_error): Likewise.
+	(potential_constant_expression_1): Likewise.
+
 2023-10-16  Jason Merrill  <jason@redhat.com>
 
 	* parser.cc (cp_parser_fold_expression): Track location range.

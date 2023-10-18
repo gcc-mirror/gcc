@@ -1,3 +1,45 @@
+2023-10-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (intrinsic_code): Update define for DEF_D_INTRINSIC.
+	(maybe_reject_intrinsic): New prototype.
+	* expr.cc (ExprVisitor::visit (SymOffExp *)): Call
+	maybe_reject_intrinsic.
+	* intrinsics.cc (intrinsic_decl): Add fallback field.
+	(intrinsic_decls): Update define for DEF_D_INTRINSIC.
+	(maybe_reject_intrinsic): New function.
+	* intrinsics.def (DEF_D_LIB_BUILTIN): Update.
+	(DEF_CTFE_BUILTIN): Update.
+	(INTRINSIC_BSF): Declare as library builtin.
+	(INTRINSIC_BSR): Likewise.
+	(INTRINSIC_BT): Likewise.
+	(INTRINSIC_BSF64): Likewise.
+	(INTRINSIC_BSR64): Likewise.
+	(INTRINSIC_BT64): Likewise.
+	(INTRINSIC_POPCNT32): Likewise.
+	(INTRINSIC_POPCNT64): Likewise.
+	(INTRINSIC_ROL): Likewise.
+	(INTRINSIC_ROL_TIARG): Likewise.
+	(INTRINSIC_ROR): Likewise.
+	(INTRINSIC_ROR_TIARG): Likewise.
+	(INTRINSIC_ADDS): Likewise.
+	(INTRINSIC_ADDSL): Likewise.
+	(INTRINSIC_ADDU): Likewise.
+	(INTRINSIC_ADDUL): Likewise.
+	(INTRINSIC_SUBS): Likewise.
+	(INTRINSIC_SUBSL): Likewise.
+	(INTRINSIC_SUBU): Likewise.
+	(INTRINSIC_SUBUL): Likewise.
+	(INTRINSIC_MULS): Likewise.
+	(INTRINSIC_MULSL): Likewise.
+	(INTRINSIC_MULU): Likewise.
+	(INTRINSIC_MULUI): Likewise.
+	(INTRINSIC_MULUL): Likewise.
+	(INTRINSIC_NEGS): Likewise.
+	(INTRINSIC_NEGSL): Likewise.
+	(INTRINSIC_TOPRECF): Likewise.
+	(INTRINSIC_TOPREC): Likewise.
+	(INTRINSIC_TOPRECL): Likewise.
+
 2023-10-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 4c18eed967.
