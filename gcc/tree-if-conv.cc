@@ -1107,17 +1107,21 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 
     case GIMPLE_CALL:
       {
+	/* There are some IFN_s that are used to replace builtins but have the
+	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
+	   will insert the proper selection, so do not block conversion.  */
+	int flags = gimple_call_flags (stmt);
+	if ((flags & ECF_CONST)
+	    && !(flags & ECF_LOOPING_CONST_OR_PURE)
+	    && gimple_call_combined_fn (stmt) != CFN_LAST)
+	  return true;
+
 	tree fndecl = gimple_call_fndecl (stmt);
 	if (fndecl)
 	  {
 	    /* We can vectorize some builtins and functions with SIMD
 	       "inbranch" clones.  */
-	    int flags = gimple_call_flags (stmt);
 	    struct cgraph_node *node = cgraph_node::get (fndecl);
-	    if ((flags & ECF_CONST)
-		&& !(flags & ECF_LOOPING_CONST_OR_PURE)
-		&& fndecl_built_in_p (fndecl))
-	      return true;
 	    if (node && node->simd_clones != NULL)
 	      /* Ensure that at least one clone can be "inbranch".  */
 	      for (struct cgraph_node *n = node->simd_clones; n != NULL;
@@ -1129,6 +1133,7 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		    return true;
 		  }
 	  }
+
 	return false;
       }
 
