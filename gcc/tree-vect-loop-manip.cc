@@ -1470,6 +1470,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       scalar_loop = loop;
       scalar_exit = loop_exit;
     }
+  else if (scalar_loop == loop)
+    scalar_exit = loop_exit;
+  else
+    {
+      /* Loop has been version, match exits up using the aux index.  */
+      for (edge exit : get_loop_exit_edges (scalar_loop))
+	if (exit->aux == loop_exit->aux)
+	  {
+	    scalar_exit	= exit;
+	    break;
+	  }
+    }
 
   bbs = XNEWVEC (basic_block, scalar_loop->num_nodes + 1);
   pbbs = bbs + 1;
@@ -1501,6 +1513,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
   exit = loop_exit;
   basic_block new_preheader = new_bbs[0];
 
+  /* Record the new loop exit information.  new_loop doesn't have SCEV data and
+     so we must initialize the exit information.  */
   if (new_e)
     *new_e = new_exit;
 

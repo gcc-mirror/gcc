@@ -851,79 +851,106 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
    in NUMBER_OF_ITERATIONSM1.  Place the condition under which the
    niter information holds in ASSUMPTIONS.
 
-   Return the loop exit condition.  */
+   Return the loop exit conditions.  */
 
 
-static gcond *
-vect_get_loop_niters (class loop *loop, edge exit, tree *assumptions,
+static vec<gcond *>
+vect_get_loop_niters (class loop *loop, const_edge main_exit, tree *assumptions,
 		      tree *number_of_iterations, tree *number_of_iterationsm1)
 {
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
+  vec<gcond *> conds;
+  conds.create (exits.length ());
   class tree_niter_desc niter_desc;
   tree niter_assumptions, niter, may_be_zero;
-  gcond *cond = get_loop_exit_condition (loop);
 
   *assumptions = boolean_true_node;
   *number_of_iterationsm1 = chrec_dont_know;
   *number_of_iterations = chrec_dont_know;
+
   DUMP_VECT_SCOPE ("get_loop_niters");
 
-  if (!exit)
-    return cond;
+  if (exits.is_empty ())
+    return conds;
 
-  may_be_zero = NULL_TREE;
-  if (!number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
-      || chrec_contains_undetermined (niter_desc.niter))
-    return cond;
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "Loop has %d exits.\n",
+		     exits.length ());
 
-  niter_assumptions = niter_desc.assumptions;
-  may_be_zero = niter_desc.may_be_zero;
-  niter = niter_desc.niter;
-
-  if (may_be_zero && integer_zerop (may_be_zero))
-    may_be_zero = NULL_TREE;
-
-  if (may_be_zero)
+  edge exit;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (exits, i, exit)
     {
-      if (COMPARISON_CLASS_P (may_be_zero))
-	{
-	  /* Try to combine may_be_zero with assumptions, this can simplify
-	     computation of niter expression.  */
-	  if (niter_assumptions && !integer_nonzerop (niter_assumptions))
-	    niter_assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-					     niter_assumptions,
-					     fold_build1 (TRUTH_NOT_EXPR,
-							  boolean_type_node,
-							  may_be_zero));
-	  else
-	    niter = fold_build3 (COND_EXPR, TREE_TYPE (niter), may_be_zero,
-				 build_int_cst (TREE_TYPE (niter), 0),
-				 rewrite_to_non_trapping_overflow (niter));
+      gcond *cond = get_loop_exit_condition (exit);
+      if (cond)
+	conds.safe_push (cond);
 
-	  may_be_zero = NULL_TREE;
-	}
-      else if (integer_nonzerop (may_be_zero))
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Analyzing exit %d...\n", i);
+
+      if (exit != main_exit)
+	continue;
+
+      may_be_zero = NULL_TREE;
+      if (!number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
+          || chrec_contains_undetermined (niter_desc.niter))
+	continue;
+
+      niter_assumptions = niter_desc.assumptions;
+      may_be_zero = niter_desc.may_be_zero;
+      niter = niter_desc.niter;
+
+      if (may_be_zero && integer_zerop (may_be_zero))
+	may_be_zero = NULL_TREE;
+
+      if (may_be_zero)
 	{
-	  *number_of_iterationsm1 = build_int_cst (TREE_TYPE (niter), 0);
-	  *number_of_iterations = build_int_cst (TREE_TYPE (niter), 1);
-	  return cond;
-	}
-      else
-	return cond;
+	  if (COMPARISON_CLASS_P (may_be_zero))
+	    {
+	      /* Try to combine may_be_zero with assumptions, this can simplify
+		 computation of niter expression.  */
+	      if (niter_assumptions && !integer_nonzerop (niter_assumptions))
+		niter_assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+						 niter_assumptions,
+						 fold_build1 (TRUTH_NOT_EXPR,
+							      boolean_type_node,
+							      may_be_zero));
+	      else
+		niter = fold_build3 (COND_EXPR, TREE_TYPE (niter), may_be_zero,
+				     build_int_cst (TREE_TYPE (niter), 0),
+				     rewrite_to_non_trapping_overflow (niter));
+
+	      may_be_zero = NULL_TREE;
+	    }
+	  else if (integer_nonzerop (may_be_zero))
+	    {
+	      *number_of_iterationsm1 = build_int_cst (TREE_TYPE (niter), 0);
+	      *number_of_iterations = build_int_cst (TREE_TYPE (niter), 1);
+	      continue;
+	    }
+	  else
+	    continue;
+       }
+
+      /* Loop assumptions are based off the normal exit.  */
+      *assumptions = niter_assumptions;
+      *number_of_iterationsm1 = niter;
+
+      /* We want the number of loop header executions which is the number
+	 of latch executions plus one.
+	 ???  For UINT_MAX latch executions this number overflows to zero
+	 for loops like do { n++; } while (n != 0);  */
+      if (niter && !chrec_contains_undetermined (niter))
+	  niter = fold_build2 (PLUS_EXPR, TREE_TYPE (niter),
+			       unshare_expr (niter),
+			       build_int_cst (TREE_TYPE (niter), 1));
+      *number_of_iterations = niter;
     }
 
-  *assumptions = niter_assumptions;
-  *number_of_iterationsm1 = niter;
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "All loop exits successfully analyzed.\n");
 
-  /* We want the number of loop header executions which is the number
-     of latch executions plus one.
-     ???  For UINT_MAX latch executions this number overflows to zero
-     for loops like do { n++; } while (n != 0);  */
-  if (niter && !chrec_contains_undetermined (niter))
-    niter = fold_build2 (PLUS_EXPR, TREE_TYPE (niter), unshare_expr (niter),
-			  build_int_cst (TREE_TYPE (niter), 1));
-  *number_of_iterations = niter;
-
-  return cond;
+  return conds;
 }
 
 /*  Determine the main loop exit for the vectorizer.  */
@@ -936,8 +963,25 @@ vec_init_loop_exit_info (class loop *loop)
   auto_vec<edge> exits = get_loop_exit_edges (loop);
   if (exits.length () == 1)
     return exits[0];
-  else
-    return NULL;
+
+  /* If we have multiple exits we only support counting IV at the moment.  Analyze
+     all exits and return one */
+  class tree_niter_desc niter_desc;
+  edge candidate = NULL;
+  for (edge exit : exits)
+    {
+      if (!get_loop_exit_condition (exit))
+	continue;
+
+      if (number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
+	  && !chrec_contains_undetermined (niter_desc.niter))
+	{
+	  if (!niter_desc.may_be_zero || !candidate)
+	    candidate = exit;
+	}
+    }
+
+  return candidate;
 }
 
 /* Function bb_in_loop_p
@@ -1767,7 +1811,7 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Considering outer-loop vectorization.\n");
-      info->inner_loop_cond = inner.loop_cond;
+      info->inner_loop_cond = inner.conds[0];
     }
 
   if (!single_exit (loop))
@@ -1788,31 +1832,39 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 				   "not vectorized: latch block not empty.\n");
 
   /* Make sure the exit is not abnormal.  */
-  edge e = single_exit (loop);
-  if (e->flags & EDGE_ABNORMAL)
+  if (exit_e->flags & EDGE_ABNORMAL)
     return opt_result::failure_at (vect_location,
 				   "not vectorized:"
 				   " abnormal loop exit edge.\n");
 
-  info->loop_cond
-    = vect_get_loop_niters (loop, e, &info->assumptions,
+  info->conds
+    = vect_get_loop_niters (loop, exit_e, &info->assumptions,
 			    &info->number_of_iterations,
 			    &info->number_of_iterationsm1);
-  if (!info->loop_cond)
+
+  if (info->conds.is_empty ())
     return opt_result::failure_at
       (vect_location,
        "not vectorized: complicated exit condition.\n");
+
+  /* Determine what the primary and alternate exit conds are.  */
+  for (unsigned i = 0; i < info->conds.length (); i++)
+    {
+      gcond *cond = info->conds[i];
+      if (exit_e->src == gimple_bb (cond))
+	std::swap (info->conds[0], info->conds[i]);
+    }
 
   if (integer_zerop (info->assumptions)
       || !info->number_of_iterations
       || chrec_contains_undetermined (info->number_of_iterations))
     return opt_result::failure_at
-      (info->loop_cond,
+      (info->conds[0],
        "not vectorized: number of iterations cannot be computed.\n");
 
   if (integer_zerop (info->number_of_iterations))
     return opt_result::failure_at
-      (info->loop_cond,
+      (info->conds[0],
        "not vectorized: number of iterations = 0.\n");
 
   if (!(tree_fits_shwi_p (info->number_of_iterations)
@@ -1847,8 +1899,15 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
   if (!integer_onep (info->assumptions) && !main_loop_info)
     LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
 
-  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (info->loop_cond);
-  STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
+  for (gcond *cond : info->conds)
+    {
+      stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (cond);
+      STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
+    }
+
+  for (unsigned i = 1; i < info->conds.length (); i ++)
+    LOOP_VINFO_LOOP_CONDS (loop_vinfo).safe_push (info->conds[i]);
+  LOOP_VINFO_LOOP_IV_COND (loop_vinfo) = info->conds[0];
 
   LOOP_VINFO_IV_EXIT (loop_vinfo) = info->loop_exit;
 

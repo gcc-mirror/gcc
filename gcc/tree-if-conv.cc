@@ -3795,6 +3795,13 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
     }
   if (need_to_ifcvt)
     {
+      /* Before we rewrite edges we'll record their original position in the
+	 edge map such that we can map the edges between the ifcvt and the
+	 non-ifcvt loop during peeling.  */
+      uintptr_t idx = 0;
+      for (edge exit : get_loop_exit_edges (loop))
+	exit->aux = (void*)idx++;
+
       /* Now all statements are if-convertible.  Combine all the basic
 	 blocks into one huge basic block doing the if-conversion
 	 on-the-fly.  */
