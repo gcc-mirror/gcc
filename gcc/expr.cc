@@ -13206,14 +13206,15 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  || integer_pow2p (arg1))
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
-      wide_int nz = tree_nonzero_bits (arg0);
-      gimple *srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
+      tree narg0 = arg0;
+      wide_int nz = tree_nonzero_bits (narg0);
+      gimple *srcstmt = get_def_for_expr (narg0, BIT_AND_EXPR);
       /* If the defining statement was (x & POW2), then use that instead of
 	 the non-zero bits.  */
       if (srcstmt && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
 	  nz = wi::to_wide (gimple_assign_rhs2 (srcstmt));
-	  arg0 = gimple_assign_rhs1 (srcstmt);
+	  narg0 = gimple_assign_rhs1 (srcstmt);
 	}
 
       if (wi::popcount (nz) == 1
@@ -13227,7 +13228,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 
 	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
 	  return expand_single_bit_test (loc, tcode,
-					 arg0,
+					 narg0,
 					 bitnum, type, target, mode);
 	}
     }
