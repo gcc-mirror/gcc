@@ -4538,7 +4538,19 @@ case "${target}" in
 				;;
 			esac
 		done
-		[ "x$with_arch" = x ] && with_arch=fiji
+		[ "x$with_arch" = x ] && with_arch=gfx900
+
+		case "x${with_multilib_list}" in
+		x | xno)
+			TM_MULTILIB_CONFIG=
+			;;
+		xdefault | xyes)
+			TM_MULTILIB_CONFIG=`echo "gfx900,gfx906,gfx908,gfx90a" | sed "s/${with_arch},\?//;s/,$//"`
+			;;
+		*)
+			TM_MULTILIB_CONFIG="${with_multilib_list}"
+			;;
+		esac
 		;;
 
 	hppa*-*-*)

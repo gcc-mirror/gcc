@@ -21097,7 +21097,9 @@ are
 
 @table @samp
 @item fiji
-Compile for GCN3 Fiji devices (gfx803).
+Compile for GCN3 Fiji devices (gfx803).  Support deprecated; availablility
+depends on how GCC has been configured, see @option{--with-arch} and
+@option{--with-multilib-list}.
 
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
