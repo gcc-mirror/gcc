@@ -267,6 +267,16 @@ struct gcc_jit_extended_asm : public gcc::jit::recording::extended_asm
       }								\
   JIT_END_STMT
 
+#define RETURN_IF_FAIL_PRINTF3(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2) \
+  JIT_BEGIN_STMT							\
+    if (!(TEST_EXPR))							\
+      {								\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
+		   __func__, (A0), (A1), (A2));			\
+	return;							\
+      }								\
+  JIT_END_STMT
+
 #define RETURN_IF_FAIL_PRINTF4(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
@@ -2984,6 +2994,17 @@ gcc_jit_block_add_assignment_op (gcc_jit_block *block,
     lvalue->get_type ()->get_debug_string (),
     rvalue->get_debug_string (),
     rvalue->get_type ()->get_debug_string ());
+  // TODO: check if it is a numeric vector?
+  RETURN_IF_FAIL_PRINTF3 (
+    lvalue->get_type ()->is_numeric (), ctxt, loc,
+    "gcc_jit_block_add_assignment_op %s has non-numeric lvalue %s (type: %s)",
+    gcc::jit::binary_op_reproducer_strings[op],
+    lvalue->get_debug_string (), lvalue->get_type ()->get_debug_string ());
+  RETURN_IF_FAIL_PRINTF3 (
+    rvalue->get_type ()->is_numeric (), ctxt, loc,
+    "gcc_jit_block_add_assignment_op %s has non-numeric rvalue %s (type: %s)",
+    gcc::jit::binary_op_reproducer_strings[op],
+    rvalue->get_debug_string (), rvalue->get_type ()->get_debug_string ());
 
   gcc::jit::recording::statement *stmt = block->add_assignment_op (loc, lvalue, op, rvalue);
 
