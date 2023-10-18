@@ -1006,7 +1006,8 @@ handle_pragma_diagnostic_impl ()
   /* option_string + 1 to skip the initial '-' */
   unsigned int option_index = find_opt (data.option_str + 1, lang_mask);
 
-  if (early && !c_option_is_from_cpp_diagnostics (option_index))
+  if (early && !(c_option_is_from_cpp_diagnostics (option_index)
+		 || option_index == OPT_Wunknown_pragmas))
     return;
 
   if (option_index == OPT_SPECIAL_unknown)
