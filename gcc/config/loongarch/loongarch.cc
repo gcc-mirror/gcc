@@ -8032,6 +8032,143 @@ loongarch_expand_vec_perm_even_odd (struct expand_vec_perm_d *d)
   return loongarch_expand_vec_perm_even_odd_1 (d, odd);
 }
 
+static void
+loongarch_expand_vec_interleave (rtx target, rtx op0, rtx op1, bool high_p)
+{
+  struct expand_vec_perm_d d;
+  unsigned i, nelt, base;
+  bool ok;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+  d.vmode = GET_MODE (target);
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.one_vector_p = false;
+  d.testing_p = false;
+
+  base = high_p ? nelt / 2 : 0;
+  for (i = 0; i < nelt / 2; ++i)
+    {
+      d.perm[i * 2] = i + base;
+      d.perm[i * 2 + 1] = i + base + nelt;
+    }
+
+  ok = loongarch_expand_vec_perm_interleave (&d);
+  gcc_assert (ok);
+}
+
+/* The loongarch lasx instructions xvmulwev and xvmulwod return the even or odd
+   parts of the double sized result elements in the corresponding elements of
+   the target register. That's NOT what the vec_widen_umult_lo/hi patterns are
+   expected to do. We emulate the widening lo/hi multiplies with the even/odd
+   versions followed by a vector merge.  */
+
+void
+loongarch_expand_vec_widen_hilo (rtx dest, rtx op1, rtx op2,
+				 bool uns_p, bool high_p, const char *optab)
+{
+  machine_mode wmode = GET_MODE (dest);
+  machine_mode mode = GET_MODE (op1);
+  rtx t1, t2, t3;
+
+  t1 = gen_reg_rtx (wmode);
+  t2 = gen_reg_rtx (wmode);
+  t3 = gen_reg_rtx (wmode);
+  switch (mode)
+    {
+    case V16HImode:
+      if (!strcmp (optab, "add"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvaddwev_w_h (t1, op1, op2));
+	      emit_insn (gen_lasx_xvaddwod_w_h (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvaddwev_w_hu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvaddwod_w_hu (t2, op1, op2));
+	    }
+	}
+      else if (!strcmp (optab, "mult"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvmulwev_w_h (t1, op1, op2));
+	      emit_insn (gen_lasx_xvmulwod_w_h (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvmulwev_w_hu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvmulwod_w_hu (t2, op1, op2));
+	    }
+	}
+      else if (!strcmp (optab, "sub"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvsubwev_w_h (t1, op1, op2));
+	      emit_insn (gen_lasx_xvsubwod_w_h (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvsubwev_w_hu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvsubwod_w_hu (t2, op1, op2));
+	    }
+	}
+      break;
+
+    case V32QImode:
+      if (!strcmp (optab, "add"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvaddwev_h_b (t1, op1, op2));
+	      emit_insn (gen_lasx_xvaddwod_h_b (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvaddwev_h_bu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvaddwod_h_bu (t2, op1, op2));
+	    }
+	}
+      else if (!strcmp (optab, "mult"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvmulwev_h_b (t1, op1, op2));
+	      emit_insn (gen_lasx_xvmulwod_h_b (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvmulwev_h_bu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvmulwod_h_bu (t2, op1, op2));
+	    }
+	}
+      else if (!strcmp (optab, "sub"))
+	{
+	  if (!uns_p)
+	    {
+	      emit_insn (gen_lasx_xvsubwev_h_b (t1, op1, op2));
+	      emit_insn (gen_lasx_xvsubwod_h_b (t2, op1, op2));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lasx_xvsubwev_h_bu (t1, op1, op2));
+	      emit_insn (gen_lasx_xvsubwod_h_bu (t2, op1, op2));
+	    }
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  loongarch_expand_vec_interleave (t3, t1, t2, high_p);
+  emit_move_insn (dest, gen_lowpart (wmode, t3));
+}
+
 /* Expand a variable vector permutation for LASX.  */
 
 void
