@@ -5171,3 +5171,81 @@
 					      const0_rtx));
   DONE;
 })
+
+(define_expand "avg<mode>3_ceil"
+  [(match_operand:ILASX_WHB 0 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  emit_insn (gen_lasx_xvavgr_s_<lasxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_ceil"
+  [(match_operand:ILASX_WHB 0 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  emit_insn (gen_lasx_xvavgr_u_<lasxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "avg<mode>3_floor"
+  [(match_operand:ILASX_WHB 0 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  emit_insn (gen_lasx_xvavg_s_<lasxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_floor"
+  [(match_operand:ILASX_WHB 0 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  emit_insn (gen_lasx_xvavg_u_<lasxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "usadv32qi"
+  [(match_operand:V8SI 0 "register_operand")
+   (match_operand:V32QI 1 "register_operand")
+   (match_operand:V32QI 2 "register_operand")
+   (match_operand:V8SI 3 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  rtx t1 = gen_reg_rtx (V32QImode);
+  rtx t2 = gen_reg_rtx (V16HImode);
+  rtx t3 = gen_reg_rtx (V8SImode);
+  emit_insn (gen_lasx_xvabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_lasx_xvhaddw_h_b (t2, t1, t1));
+  emit_insn (gen_lasx_xvhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));
+  DONE;
+})
+
+(define_expand "ssadv32qi"
+  [(match_operand:V8SI 0 "register_operand")
+   (match_operand:V32QI 1 "register_operand")
+   (match_operand:V32QI 2 "register_operand")
+   (match_operand:V8SI 3 "register_operand")]
+  "ISA_HAS_LASX"
+{
+  rtx t1 = gen_reg_rtx (V32QImode);
+  rtx t2 = gen_reg_rtx (V16HImode);
+  rtx t3 = gen_reg_rtx (V8SImode);
+  emit_insn (gen_lasx_xvabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_lasx_xvhaddw_h_b (t2, t1, t1));
+  emit_insn (gen_lasx_xvhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));
+  DONE;
+})
