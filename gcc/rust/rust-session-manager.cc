@@ -46,12 +46,12 @@
 #include "rust-expand-visitor.h"
 #include "rust-unicode.h"
 #include "rust-attribute-values.h"
+#include "rust-borrow-checker.h"
 
 #include "input.h"
 #include "selftest.h"
 #include "tm.h"
 #include "rust-target.h"
-#include "rust-borrow-checker.h"
 
 extern bool
 saw_errors (void);
