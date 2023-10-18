@@ -148,6 +148,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-stmt.o \
     rust/rust-hir-type-check-enumitem.o \
     rust/rust-hir-type-check-implitem.o \
+    rust/rust-borrow-checker.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
     rust/rust-type-util.o \
@@ -371,6 +372,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/checks/lints \
 	-I $(srcdir)/rust/checks/errors \
 	-I $(srcdir)/rust/checks/errors/privacy \
+	-I $(srcdir)/rust/checks/errors/borrowck \
 	-I $(srcdir)/rust/util \
         -I $(srcdir)/rust/metadata \
 		-I $(srcdir)/../libgrust
@@ -445,6 +447,11 @@ rust/%.o: rust/checks/errors/%.cc
 
 # build privacy pass files in rust folder
 rust/%.o: rust/checks/errors/privacy/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build borrow checking pass files in rust folder
+rust/%.o: rust/checks/errors/borrowck/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
