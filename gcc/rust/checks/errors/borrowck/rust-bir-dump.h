@@ -36,13 +36,15 @@ class Dump : public Visitor
   const std::string &name;
 
   std::vector<BasicBlockId> bb_fold_map;
+  std::vector<PlaceId> place_map;
 
   PlaceId node_place = INVALID_PLACE;
+  BasicBlockId node_bb = INVALID_BB;
 
 public:
   Dump (std::ostream &os, Function &func, const std::string &name)
     : stream (os), place_db (func.place_db), func (func), name (name),
-      bb_fold_map (func.basic_blocks.size ())
+      bb_fold_map (func.basic_blocks.size ()), place_map (func.place_db.size ())
   {}
   void go (bool enable_simplify_cfg = false);
 
