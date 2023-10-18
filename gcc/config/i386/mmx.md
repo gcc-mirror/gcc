@@ -4574,20 +4574,6 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "mmx_pinsrw"
-  [(set (match_operand:V4HI 0 "register_operand")
-        (vec_merge:V4HI
-          (vec_duplicate:V4HI
-            (match_operand:SI 2 "nonimmediate_operand"))
-	  (match_operand:V4HI 1 "register_operand")
-          (match_operand:SI 3 "const_0_to_3_operand")))]
-  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && (TARGET_SSE || TARGET_3DNOW_A)"
-{
-  operands[2] = gen_lowpart (HImode, operands[2]);
-  operands[3] = GEN_INT (1 << INTVAL (operands[3]));
-})
-
 (define_insn "*mmx_pinsrw"
   [(set (match_operand:V4HI 0 "register_operand" "=y,x,YW")
         (vec_merge:V4HI
