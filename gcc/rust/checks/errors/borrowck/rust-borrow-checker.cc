@@ -18,6 +18,8 @@
 
 #include "rust-borrow-checker.h"
 #include "rust-function-collector.h"
+#include "rust-bir.h"
+#include "rust-bir-visitor.h"
 
 namespace Rust {
 namespace HIR {
