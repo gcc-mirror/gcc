@@ -528,6 +528,7 @@ class FunctionParam
   location_t locus;
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
+  bool variadic;
 
 public:
   FunctionParam (std::unique_ptr<Pattern> param_name,
@@ -535,12 +536,26 @@ public:
 		 std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)), locus (locus),
       param_name (std::move (param_name)), type (std::move (param_type)),
+      variadic (false),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  FunctionParam (std::vector<Attribute> outer_attrs, location_t locus)
+    : outer_attrs (std::move (outer_attrs)), locus (locus),
+      param_name (nullptr), type (nullptr), variadic (true),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  FunctionParam (std::unique_ptr<Pattern> param_name,
+		 std::vector<Attribute> outer_attrs, location_t locus)
+    : outer_attrs (std::move (outer_attrs)), locus (locus),
+      param_name (std::move (param_name)), type (nullptr), variadic (true),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor uses clone
   FunctionParam (FunctionParam const &other)
-    : locus (other.locus), node_id (other.node_id)
+    : locus (other.locus), variadic (other.variadic), node_id (other.node_id)
   {
     // guard to prevent nullptr dereference
     if (other.param_name != nullptr)
@@ -554,6 +569,7 @@ public:
   {
     locus = other.locus;
     node_id = other.node_id;
+    variadic = other.variadic;
 
     // guard to prevent nullptr dereference
     if (other.param_name != nullptr)
@@ -573,7 +589,13 @@ public:
   FunctionParam &operator= (FunctionParam &&other) = default;
 
   // Returns whether FunctionParam is in an invalid state.
-  bool is_error () const { return param_name == nullptr || type == nullptr; }
+  bool is_error () const
+  {
+    if (variadic)
+      return false;
+    else
+      return param_name == nullptr || type == nullptr;
+  }
 
   // Creates an error FunctionParam.
   static FunctionParam create_error ()
@@ -602,6 +624,9 @@ public:
     rust_assert (type != nullptr);
     return type;
   }
+
+  bool is_variadic () const { return variadic; }
+
   NodeId get_node_id () const { return node_id; }
 
 protected:
