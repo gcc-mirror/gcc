@@ -18,7 +18,8 @@ bar (int *x, int a, int b, int n)
 }
 
 /* { dg-final { scan-assembler {e32,m2} } } */
-/* { dg-final { scan-assembler-times {csrr} 1 } } */
+/* { dg-final { scan-assembler-not {jr} } } */
+/* { dg-final { scan-assembler-times {ret} 2 } } *
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */

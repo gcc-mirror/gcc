@@ -1001,8 +1001,31 @@ expand_const_vector (rtx target, rtx src)
 	}
       else
 	{
-	  rtx ops[] = {tmp, elt};
-	  emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
+	  /* Emit vec_duplicate<mode> split pattern before RA so that
+	     we could have a better optimization opportunity in LICM
+	     which will hoist vmv.v.x outside the loop and in fwprop && combine
+	     which will transform 'vv' into 'vx' instruction.
+
+	     The reason we don't emit vec_duplicate<mode> split pattern during
+	     RA since the split stage after RA is a too late stage to generate
+	     RVV instruction which need an additional register (We can't
+	     allocate a new register after RA) for VL operand of vsetvl
+	     instruction (vsetvl a5, zero).  */
+	  if (lra_in_progress)
+	    {
+	      rtx ops[] = {tmp, elt};
+	      emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
+	    }
+	  else
+	    {
+	      struct expand_operand ops[2];
+	      enum insn_code icode = optab_handler (vec_duplicate_optab, mode);
+	      gcc_assert (icode != CODE_FOR_nothing);
+	      create_output_operand (&ops[0], tmp, mode);
+	      create_input_operand (&ops[1], elt, GET_MODE_INNER (mode));
+	      expand_insn (icode, 2, ops);
+	      tmp = ops[0].value;
+	    }
 	}
 
       if (tmp != target)
