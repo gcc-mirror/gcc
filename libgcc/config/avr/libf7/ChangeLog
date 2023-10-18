@@ -1,3 +1,16 @@
+2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* f7-renames.h: Re-renerate.
+
+2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7.h (F7_SIZEOF): New macro.
+	* libf7-asm.sx: Use F7_SIZEOF instead of magic number "10".
+	(F7MOD_D_fma_, __fma): New module and function.
+	(fma) [-mdouble=64]: Define as alias for __fma.
+	(fmal) [-mlong-double=64]: Define as alias for __fma.
+	* libf7-common.mk (F7_ASM_PARTS): Add D_fma.
+
 2023-10-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* libf7.c (F7MOD_atan2_, f7_atan2): New module and function.
