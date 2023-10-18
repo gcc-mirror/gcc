@@ -521,6 +521,7 @@ void expand_fold_extract_last (rtx *);
 void expand_cond_unop (unsigned, rtx *);
 void expand_cond_binop (unsigned, rtx *);
 void expand_cond_ternop (unsigned, rtx *);
+void expand_popcount (rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

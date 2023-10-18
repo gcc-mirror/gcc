@@ -4364,4 +4364,75 @@ expand_vec_lfloor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
   emit_vec_cvt_x_f (op_0, op_1, UNARY_OP_FRM_RDN, vec_fp_mode);
 }
 
+/* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as
+   well.  */
+void
+expand_popcount (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx src = ops[1];
+  machine_mode mode = GET_MODE (dst);
+  scalar_mode imode = GET_MODE_INNER (mode);
+  static const uint64_t m5 = 0x5555555555555555ULL;
+  static const uint64_t m3 = 0x3333333333333333ULL;
+  static const uint64_t mf = 0x0F0F0F0F0F0F0F0FULL;
+  static const uint64_t m1 = 0x0101010101010101ULL;
+
+  rtx x1 = gen_reg_rtx (mode);
+  rtx x2 = gen_reg_rtx (mode);
+  rtx x3 = gen_reg_rtx (mode);
+  rtx x4 = gen_reg_rtx (mode);
+
+  /* x1 = src - (src >> 1) & 0x555...);  */
+  rtx shift1 = expand_binop (mode, lshr_optab, src, GEN_INT (1), NULL, true,
+			     OPTAB_DIRECT);
+
+  rtx and1 = gen_reg_rtx (mode);
+  rtx ops1[] = {and1, shift1, gen_int_mode (m5, imode)};
+  emit_vlmax_insn (code_for_pred_scalar (AND, mode), riscv_vector::BINARY_OP,
+		   ops1);
+
+  x1 = expand_binop (mode, sub_optab, src, and1, NULL, true, OPTAB_DIRECT);
+
+  /* x2 = (x1 & 0x3333333333333333ULL) + ((x1 >> 2) & 0x3333333333333333ULL);
+   */
+  rtx and2 = gen_reg_rtx (mode);
+  rtx ops2[] = {and2, x1, gen_int_mode (m3, imode)};
+  emit_vlmax_insn (code_for_pred_scalar (AND, mode), riscv_vector::BINARY_OP,
+		   ops2);
+
+  rtx shift2 = expand_binop (mode, lshr_optab, x1, GEN_INT (2), NULL, true,
+			     OPTAB_DIRECT);
+
+  rtx and22 = gen_reg_rtx (mode);
+  rtx ops22[] = {and22, shift2, gen_int_mode (m3, imode)};
+  emit_vlmax_insn (code_for_pred_scalar (AND, mode), riscv_vector::BINARY_OP,
+		   ops22);
+
+  x2 = expand_binop (mode, add_optab, and2, and22, NULL, true, OPTAB_DIRECT);
+
+  /* x3 = (x2 + (x2 >> 4)) & 0x0f0f0f0f0f0f0f0fULL;  */
+  rtx shift3 = expand_binop (mode, lshr_optab, x2, GEN_INT (4), NULL, true,
+			     OPTAB_DIRECT);
+
+  rtx plus3
+    = expand_binop (mode, add_optab, x2, shift3, NULL, true, OPTAB_DIRECT);
+
+  rtx ops3[] = {x3, plus3, gen_int_mode (mf, imode)};
+  emit_vlmax_insn (code_for_pred_scalar (AND, mode), riscv_vector::BINARY_OP,
+		   ops3);
+
+  /* dest = (x3 * 0x0101010101010101ULL) >> 56;  */
+  rtx mul4 = gen_reg_rtx (mode);
+  rtx ops4[] = {mul4, x3, gen_int_mode (m1, imode)};
+  emit_vlmax_insn (code_for_pred_scalar (MULT, mode), riscv_vector::BINARY_OP,
+		   ops4);
+
+  x4 = expand_binop (mode, lshr_optab, mul4,
+		     GEN_INT (GET_MODE_BITSIZE (imode) - 8), NULL, true,
+		     OPTAB_DIRECT);
+
+  emit_move_insn (dst, x4);
+}
+
 } // namespace riscv_vector

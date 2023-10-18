@@ -1484,6 +1484,20 @@
   DONE;
 })
 
+;; -------------------------------------------------------------------------------
+;; - [INT] POPCOUNT.
+;; -------------------------------------------------------------------------------
+
+(define_expand "popcount<mode>2"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_popcount (operands);
+  DONE;
+})
+
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Highpart multiplication
 ;; -------------------------------------------------------------------------
