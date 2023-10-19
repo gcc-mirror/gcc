@@ -3036,7 +3036,7 @@ ExternalFunctionItem::as_string () const
 
   // function params
   str += "\n Function params: ";
-  if (function_params.empty () && !has_variadics)
+  if (function_params.empty ())
     {
       str += "none";
     }
@@ -3044,21 +3044,6 @@ ExternalFunctionItem::as_string () const
     {
       for (const auto &param : function_params)
 	str += "\n  " + param.as_string ();
-
-      if (has_variadics)
-	{
-	  str += "\n  variadic outer attrs: ";
-	  if (has_variadic_outer_attrs ())
-	    {
-	      for (const auto &attr : variadic_outer_attrs)
-		str += "\n   " + attr.as_string ();
-	    }
-	  else
-	    {
-	      str += "none";
-	    }
-	  str += "\n  ... (variadic)";
-	}
     }
 
   // add type on new line
@@ -3080,9 +3065,13 @@ NamedFunctionParam::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
 
-  str += "\n" + name;
+  if (has_name ())
+    str += "\n" + name;
 
-  str += "\n Type: " + param_type->as_string ();
+  if (is_variadic ())
+    str += "...";
+  else
+    str += "\n Type: " + param_type->as_string ();
 
   return str;
 }

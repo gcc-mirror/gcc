@@ -721,8 +721,11 @@ void
 DefaultASTVisitor::visit (AST::FunctionParam &param)
 {
   visit_outer_attrs (param);
-  visit (param.get_pattern ());
-  visit (param.get_type ());
+  if (param.has_name ())
+    visit (param.get_pattern ());
+
+  if (!param.is_variadic ())
+    visit (param.get_type ());
 }
 
 void
@@ -1054,7 +1057,8 @@ void
 DefaultASTVisitor::visit (AST::NamedFunctionParam &param)
 {
   visit_outer_attrs (param);
-  visit (param.get_type ());
+  if (!param.is_variadic ())
+    visit (param.get_type ());
 }
 
 void

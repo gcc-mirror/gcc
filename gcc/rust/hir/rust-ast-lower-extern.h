@@ -110,7 +110,7 @@ public:
     translated = new HIR::ExternalFunctionItem (
       mapping, function.get_identifier (), std::move (generic_params),
       std::unique_ptr<HIR::Type> (return_type), std::move (where_clause),
-      std::move (function_params), function.is_variadic (), std::move (vis),
+      std::move (function_params), is_variadic, std::move (vis),
       function.get_outer_attrs (), function.get_locus ());
   }
 

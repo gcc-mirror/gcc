@@ -2603,12 +2603,15 @@ CfgStrip::visit (AST::ExternalFunctionItem &item)
 	  continue;
 	}
 
-      auto &type = param.get_type ();
-      type->accept_vis (*this);
+      if (!param.is_variadic ())
+	{
+	  auto &type = param.get_type ();
+	  param.get_type ()->accept_vis (*this);
 
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+	  if (type->is_marked_for_strip ())
+	    rust_error_at (type->get_locus (),
+			   "cannot strip type in this position");
+	}
 
       // increment if nothing else happens
       ++it;

@@ -298,6 +298,13 @@ private:
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
+  std::unique_ptr<AST::ExternalFunctionItem>
+  parse_external_function_item (AST::Visibility vis, AST::AttrVec outer_attrs);
+  AST::NamedFunctionParam parse_named_function_param ();
+  template <typename EndTokenPred>
+  std::vector<AST::NamedFunctionParam>
+  parse_named_function_params (EndTokenPred is_end_token);
+
   std::unique_ptr<AST::TypeAlias> parse_type_alias (AST::Visibility vis,
 						    AST::AttrVec outer_attrs);
   std::unique_ptr<AST::Struct> parse_struct (AST::Visibility vis,
@@ -338,8 +345,6 @@ private:
 				       AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExternBlock>
   parse_extern_block (AST::Visibility vis, AST::AttrVec outer_attrs);
-  AST::NamedFunctionParam parse_named_function_param (AST::AttrVec outer_attrs
-						      = AST::AttrVec ());
   AST::Method parse_method ();
 
   // Expression-related (Pratt parsed)
