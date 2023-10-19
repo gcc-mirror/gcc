@@ -684,7 +684,7 @@ namespace __detail
     from_chars_result __res
       = __from_chars_float16_t(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = _Float16(__val);
     return __res;
   }
 #endif
@@ -697,7 +697,7 @@ namespace __detail
     float __val;
     from_chars_result __res = from_chars(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = _Float32(__val);
     return __res;
   }
 #endif
@@ -710,7 +710,7 @@ namespace __detail
     double __val;
     from_chars_result __res = from_chars(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = _Float64(__val);
     return __res;
   }
 #endif
@@ -723,7 +723,7 @@ namespace __detail
     long double __val;
     from_chars_result __res = from_chars(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = _Float128(__val);
     return __res;
   }
 #elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
@@ -739,7 +739,7 @@ namespace __detail
     __extension__ __ieee128 __val;
     from_chars_result __res = from_chars(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = _Float128(__val);
     return __res;
   }
 #else
@@ -760,7 +760,7 @@ namespace __detail
     from_chars_result __res
       = __from_chars_bfloat16_t(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
-      __value = __val;
+      __value = __gnu_cxx::__bfloat16_t(__val);
     return __res;
   }
 #endif
