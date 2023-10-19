@@ -3367,7 +3367,7 @@ convert_argument (location_t ploc, tree function, tree fundecl,
     {
       error_at (ploc, "type of formal parameter %d is incomplete",
 		parmnum + 1);
-      return val;
+      return error_mark_node;
     }
 
   /* Optionally warn about conversions that differ from the default
