@@ -1,3 +1,256 @@
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111863
+	* expr.cc (do_store_flag): Don't over write arg0
+	when stripping off `& POW2`.
+
+2023-10-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/111648
+	* fold-const.cc (valid_mask_for_fold_vec_perm_cst_p): If a1
+	chooses base element from arg, ensure that it's a natural stepped
+	sequence.
+	(build_vec_cst_rand): New param natural_stepped and use it to
+	construct a naturally stepped sequence.
+	(test_nunits_min_2): Add new unit tests Case 6 and Case 7.
+
+2023-10-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.cc (pru_insn_cost): New function.
+	(TARGET_INSN_COST): Define for PRU.
+
+2023-10-18  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_test_fractional_cost):
+	Test <= instead of testing < twice.
+
+2023-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/111852
+	* cse.cc (cse_insn): Add workaround for GCC 4.8-4.9, instead of
+	using rtx_def type for memory_extend_buf, use unsigned char
+	arrayy with size of rtx_def and its alignment.
+
+2023-10-18  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Move -fpermissive to Warning Options.
+	* diagnostic.cc (update_effective_level_from_pragmas): Remove
+	redundant system header check.
+	(diagnostic_report_diagnostic): Move down syshdr/-w check.
+	(diagnostic_impl): Handle DK_PERMERROR with an option number.
+	(permerror): Add new overloads.
+	* diagnostic-core.h (permerror): Declare them.
+
+2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Remove "omp allocate" attribute
+	to avoid that auxillary statement list reaches LTO.
+
+2023-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111845
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Remember temporary
+	statements for the 4 operand addition or subtraction of 3 operands
+	from 1 operand cases and remove them when successful.  Look for
+	nested additions even from rhs[2], not just rhs[1].
+
+2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/111093
+	* config/nvptx/nvptx.cc (nvptx_option_override): Issue fatal error
+	instead of an assert ICE when no -march= has been specified.
+
+2023-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.cc (darwin_file_start): Add assembler directives
+	for the target OS version, where these are supported by the
+	assembler.
+	(darwin_override_options): Check for building >= macOS 10.14.
+	* configure: Regenerate.
+	* configure.ac: Check for assembler support of .build_version
+	directives.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (INCLUDE_ALGORITHM): Remove.
+	(typedef struct ifcvt_arg_entry): New.
+	(cmp_arg_entry): New.
+	(gen_phi_arg_condition, gen_phi_nest_statement,
+	predicate_scalar_phi): Use them.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<VDMOV:mode>):
+	Rewrite to new syntax.
+	(*aarch64_simd_mov<VQMOV:mode): Rewrite to new syntax and merge in
+	splits.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (if_convertible_stmt_p): Allow any const IFN.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* match.pd: Add new cond_op rule.
+
+2023-10-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (movfcc): Use fcmp.caf.s for
+	zeroing a fcc.
+
+2023-10-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call):
+	Relax check to again allow passing integer mode masks
+	as traditional vectors.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-loop-distribution.cc (copy_loop_before): Request no LCSSA.
+	* tree-vect-loop-manip.cc (adjust_phi_and_debug_stmts): Add additional
+	asserts.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Keep LCSSA during peeling.
+	(find_guard_arg): Look value up through explicit edge and original defs.
+	(vect_do_peeling): Use it.
+	(slpeel_update_phi_nodes_for_guard2): Take explicit exit edge.
+	(slpeel_update_phi_nodes_for_lcssa, slpeel_update_phi_nodes_for_loops):
+	Remove.
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Initialize phi.
+	* tree-vectorizer.h (slpeel_tree_duplicate_loop_to_edge_cfg): Add
+	optional param to turn off LCSSA mode.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-if-conv.cc (tree_if_conversion): Record exits in aux.
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg): Use
+	it.
+	* tree-vect-loop.cc (vect_get_loop_niters): Determine main exit.
+	(vec_init_loop_exit_info): Extend analysis when multiple exits.
+	(vect_analyze_loop_form): Record conds and determine main cond.
+	(vect_create_loop_vinfo): Extend bookkeeping of conds.
+	(vect_analyze_loop): Release conds.
+	* tree-vectorizer.h (LOOP_VINFO_LOOP_CONDS,
+	LOOP_VINFO_LOOP_IV_COND):  New.
+	(struct vect_loop_form_info): Add conds, alt_loop_conds;
+	(struct loop_vec_info): Add conds, loop_iv_cond.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-loop-distribution.cc (copy_loop_before): Pass exit explicitly.
+	(loop_distribution::distribute_loop): Bail out of not single exit.
+	* tree-scalar-evolution.cc (get_loop_exit_condition): New.
+	* tree-scalar-evolution.h (get_loop_exit_condition): New.
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment): Pass exit
+	explicitly.
+	* tree-vect-loop-manip.cc (vect_set_loop_condition_partial_vectors,
+	vect_set_loop_condition_partial_vectors_avx512,
+	vect_set_loop_condition_normal, vect_set_loop_condition): Explicitly
+	take exit.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Explicitly take exit and
+	return new peeled corresponding peeled exit.
+	(slpeel_can_duplicate_loop_p): Explicitly take exit.
+	(find_loop_location): Handle not knowing an explicit exit.
+	(vect_update_ivs_after_vectorizer, vect_gen_vector_loop_niters_mult_vf,
+	find_guard_arg, slpeel_update_phi_nodes_for_loops,
+	slpeel_update_phi_nodes_for_guard2): Use new exits.
+	(vect_do_peeling): Update bookkeeping to keep track of exits.
+	* tree-vect-loop.cc (vect_get_loop_niters): Explicitly take exit to
+	analyze.
+	(vec_init_loop_exit_info): New.
+	(_loop_vec_info::_loop_vec_info): Initialize vec_loop_iv,
+	vec_epilogue_loop_iv, scalar_loop_iv.
+	(vect_analyze_loop_form): Initialize exits.
+	(vect_create_loop_vinfo): Set main exit.
+	(vect_create_epilog_for_reduction, vectorizable_live_operation,
+	vect_transform_loop): Use it.
+	(scale_profile_for_vect_loop): Explicitly take exit to scale.
+	* tree-vectorizer.cc (set_uid_loop_bbs): Initialize loop exit.
+	* tree-vectorizer.h (LOOP_VINFO_IV_EXIT, LOOP_VINFO_EPILOGUE_IV_EXIT,
+	LOOP_VINFO_SCALAR_IV_EXIT): New.
+	(struct loop_vec_info): Add vec_loop_iv, vec_epilogue_loop_iv,
+	scalar_loop_iv.
+	(vect_set_loop_condition, slpeel_can_duplicate_loop_p,
+	slpeel_tree_duplicate_loop_to_edge_cfg): Take explicit exits.
+	(vec_init_loop_exit_info): New.
+	(struct vect_loop_form_info): Add loop_exit.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-stmts.cc (vectorizable_comparison): Refactor, splitting body
+	to ...
+	(vectorizable_comparison_1): ...This.
+
+2023-10-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_consecutive_patterns): New function.
+	(expand_vec_perm_const_1): Add consecutive pattern recognition.
+
+2023-10-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add Panther
+	Lake.
+	* common/config/i386/i386-common.cc (processor_name):
+	Ditto.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h (enum processor_types):
+	Add INTEL_PANTHERLAKE.
+	* config.gcc: Add -march=pantherlake.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Refactor
+	the if clause. Handle pantherlake.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Handle pantherlake.
+	* config/i386/i386-options.cc (processor_cost_table): Ditto.
+	(m_PANTHERLAKE): New.
+	(m_CORE_HYBRID): Add pantherlake.
+	* config/i386/i386.h (enum processor_type): Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2023-10-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-options.cc (m_CORE_HYBRID): New.
+	* config/i386/x86-tune.def: Replace hybrid client tune to
+	m_CORE_HYBRID.
+
+2023-10-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Clearwater Forest.
+	* common/config/i386/i386-common.cc (processor_name):
+	Add Clearwater Forest.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h (enum processor_types):
+	Add INTEL_CLEARWATERFOREST.
+	* config.gcc: Add -march=clearwaterforest.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Handle
+	clearwaterforest.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Ditto.
+	* config/i386/i386-options.cc (processor_cost_table): Ditto.
+	(m_CLEARWATERFOREST): New.
+	(m_CORE_ATOM): Add clearwaterforest.
+	* config/i386/i386.h (enum processor_type): Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2023-10-18  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (fma<mode>4): New expander.
+	(fms<mode>4): Ditto.
+	(fnma<mode>4): Ditto.
+	(fnms<mode>4): Ditto.
+	(vec_fmaddsubv4hf4): Ditto.
+	(vec_fmsubaddv4hf4): Ditto.
+
+2023-10-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111832
+	* config/riscv/riscv-vector-costs.cc (get_biggest_mode): New function.
+
 2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_layout_frame): Don't make

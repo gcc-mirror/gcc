@@ -1,3 +1,79 @@
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/111863
+	* gcc.c-torture/execute/pr111863-1.c: New test.
+
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101364
+	* gcc.dg/pr101364-1.c: New test.
+
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101285
+	* gcc.dg/pr101285-1.c: New test.
+
+2023-10-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/integer-pack2.C: Add -fpermissive.
+	* g++.dg/diagnostic/sys-narrow.h: New test.
+	* g++.dg/diagnostic/sys-narrow1.C: New test.
+	* g++.dg/diagnostic/sys-narrow1a.C: New test.
+	* g++.dg/diagnostic/sys-narrow1b.C: New test.
+	* g++.dg/diagnostic/sys-narrow1c.C: New test.
+	* g++.dg/diagnostic/sys-narrow1d.C: New test.
+	* g++.dg/diagnostic/sys-narrow1e.C: New test.
+	* g++.dg/diagnostic/sys-narrow1f.C: New test.
+	* g++.dg/diagnostic/sys-narrow1g.C: New test.
+	* g++.dg/diagnostic/sys-narrow1h.C: New test.
+	* g++.dg/diagnostic/sys-narrow1i.C: New test.
+
+2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-13a.f90: New test.
+
+2023-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111845
+	* gcc.dg/pr111845.c: New test.
+	* gcc.target/i386/pr111845.c: New test.
+
+2023-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.target/aarch64/sve/pre_cond_share_1.c: New test.
+
+2023-10-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add new test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/consecutive-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/consecutive-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/consecutive-3.c: New test.
+
+2023-10-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv16.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2023-10-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv16.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2023-10-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-fmaddsubhf-1.c: New test.
+	* gcc.target/i386/part-vect-fmahf-1.c: New test.
+
+2023-10-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111832
+	* gcc.target/riscv/rvv/rvv.exp: Enable more dynamic tests.
+
 2023-10-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/test_frame_2.c: Expect x30 to come before x19.
