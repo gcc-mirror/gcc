@@ -1633,6 +1633,21 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	{
 	  tree new_arg = gimple_phi_arg (phi, 0)->def;
 	  new_phi_args.put (new_arg, gimple_phi_result (phi));
+
+	  if (TREE_CODE (new_arg) != SSA_NAME)
+	    continue;
+	  /* If the PHI node dominates the loop then we shouldn't create
+	      a new LC-SSSA PHI for it in the intermediate block.  Unless the
+	      the loop has been versioned.  If it has then we need the PHI
+	      node such that later when the loop guard is added the original
+	      dominating PHI can be found.  */
+	  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (new_arg));
+	  if (loop == scalar_loop
+	      && (!def_bb || !flow_bb_inside_loop_p (loop, def_bb)))
+	    {
+	      auto gsi = gsi_for_stmt (phi);
+	      remove_phi_node (&gsi, true);
+	    }
 	}
 
       /* Copy the current loop LC PHI nodes between the original loop exit
