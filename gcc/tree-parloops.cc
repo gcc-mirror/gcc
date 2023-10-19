@@ -2203,6 +2203,11 @@ create_loop_fn (location_t loc)
   DECL_CONTEXT (t) = decl;
   TREE_USED (t) = 1;
   DECL_ARGUMENTS (decl) = t;
+  DECL_FUNCTION_SPECIFIC_TARGET (decl)
+    = DECL_FUNCTION_SPECIFIC_TARGET (act_cfun->decl);
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
+    = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (act_cfun->decl);
+
 
   allocate_struct_function (decl, false);
 
