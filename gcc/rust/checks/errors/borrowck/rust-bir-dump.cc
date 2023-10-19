@@ -1,5 +1,6 @@
 #include <numeric>
 #include "rust-bir-dump.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace BIR {
@@ -76,7 +77,21 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
 	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i]];
 	  if (bb.statements.empty () && bb.is_goto_terminated ())
 	    {
-	      bb_fold_map[i] = bb.successors.at (0);
+	      auto dst = bb.successors.at (0);
+	      if (bb_fold_map[dst] != dst)
+		{
+		  rust_error_at (
+		    UNKNOWN_LOCATION,
+		    "BIR DUMP: Cannot fold CFG, because it contains an "
+		    "infinite loop with no executable statements.");
+		  rust_inform (UNKNOWN_LOCATION,
+			       "Continuing with an unfolded CFG.");
+		  // Reverting the fold map to the original state.
+		  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
+		  stabilized = true;
+		  break;
+		}
+	      bb_fold_map[i] = dst;
 	      stabilized = false;
 	    }
 	}
