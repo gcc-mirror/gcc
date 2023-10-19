@@ -51,6 +51,7 @@
 #include "selftest.h"
 #include "tm.h"
 #include "rust-target.h"
+#include "rust-borrow-checker.h"
 
 extern bool
 saw_errors (void);
@@ -313,7 +314,7 @@ Session::enable_dump (std::string arg)
 	"dump option was not given a name. choose %<lex%>, %<ast-pretty%>, "
 	"%<register_plugins%>, %<injection%>, "
 	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
-	"%<hir-pretty%>, or %<all%>");
+	"%<hir-pretty%>, %<bir%> or %<all%>");
       return false;
     }
 
@@ -356,6 +357,10 @@ Session::enable_dump (std::string arg)
   else if (arg == "hir-pretty")
     {
       options.enable_dump_option (CompileOptions::HIR_DUMP_PRETTY);
+    }
+  else if (arg == "bir")
+    {
+      options.enable_dump_option (CompileOptions::BIR_DUMP);
     }
   else
     {
@@ -658,6 +663,13 @@ Session::compile_crate (const char *filename)
     return;
 
   HIR::ConstChecker ().go (hir);
+
+  if (last_step == CompileOptions::CompileStep::BorrowCheck)
+    return;
+
+  const bool dump_bir
+    = options.dump_option_enabled (CompileOptions::DumpOption::BIR_DUMP);
+  HIR::BorrowChecker (dump_bir).go (hir);
 
   if (saw_errors ())
     return;

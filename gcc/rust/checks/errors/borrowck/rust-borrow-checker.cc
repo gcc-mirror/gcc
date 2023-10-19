@@ -22,8 +22,6 @@
 namespace Rust {
 namespace HIR {
 
-BorrowChecker::BorrowChecker () = default;
-
 void
 BorrowChecker::go (HIR::Crate &crate)
 {
