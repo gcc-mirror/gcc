@@ -202,4 +202,8 @@ frust-name-resolution-2.0
 Rust Var(flag_name_resolution_2_0)
 Use the temporary and experimental name resolution pipeline instead of the stable one
 
+frust-borrowcheck
+Rust Var(flag_borrowcheck)
+Use the WIP borrow checker.
+
 ; This comment is to ensure we retain the blank line above.

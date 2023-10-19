@@ -583,9 +583,11 @@ void Session::compile_crate(const char *filename) {
   if (last_step == CompileOptions::CompileStep::BorrowCheck)
     return;
 
-  const bool dump_bir =
-      options.dump_option_enabled(CompileOptions::DumpOption::BIR_DUMP);
-  HIR::BorrowChecker(dump_bir).go(hir);
+  if (flag_borrowcheck) {
+    const bool dump_bir =
+        options.dump_option_enabled(CompileOptions::DumpOption::BIR_DUMP);
+    HIR::BorrowChecker(dump_bir).go(hir);
+  }
 
   if (saw_errors())
     return;
