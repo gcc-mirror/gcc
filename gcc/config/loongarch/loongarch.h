@@ -1058,11 +1058,6 @@ typedef struct {
 
 #define ASM_OUTPUT_ALIGN(STREAM, LOG) fprintf (STREAM, "\t.align\t%d\n", (LOG))
 
-/* "nop" instruction 54525952 (andi $r0,$r0,0) is
-   used for padding.  */
-#define ASM_OUTPUT_ALIGN_WITH_NOP(STREAM, LOG) \
-  fprintf (STREAM, "\t.align\t%d,54525952,4\n", (LOG))
-
 /* This is how to output an assembler line to advance the location
    counter by SIZE bytes.  */
 

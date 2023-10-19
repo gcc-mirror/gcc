@@ -1,3 +1,20 @@
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101364
+	* c-decl.cc (diagnose_arglist_conflict): Test for
+	error mark before calling of c_type_promotes_to.
+
+2023-10-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/101285
+	* c-typeck.cc (c_safe_arg_type_equiv_p): Return true for error
+	operands early.
+
+2023-10-17  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/111708
+	* c-decl.cc (grokdeclarator): Add error.
+
 2023-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.cc (c_tree_printer): Update for "m_" prefixes to

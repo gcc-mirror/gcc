@@ -4969,12 +4969,14 @@ get_vec_init_expr (tree t)
 /* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
    is a INT_CST whose TREE_INT_CST_LOW indicates the level of the
    template parameters, with 1 being the outermost set of template
-   parameters.  The TREE_VALUE is a vector, whose elements are the
+   parameters.  The TREE_TYPE is TEMPLATE_PARMS_CONSTRAINTS.
+   The TREE_VALUE is a vector, whose elements are the
    template parameters at each level.  Each element in the vector is a
    TREE_LIST, whose TREE_VALUE is a PARM_DECL (if the parameter is a
    non-type parameter), or a TYPE_DECL (if the parameter is a type
    parameter) or a TEMPLATE_DECL (if the parameter is a template
-   parameter).  The TREE_PURPOSE is the default value, if any.  The
+   parameter).  The TREE_PURPOSE is the default value, if any.
+   The TREE_TYPE is TEMPLATE_PARM_CONSTRAINTS.  The
    TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
    TYPE_DECL).

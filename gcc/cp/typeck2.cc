@@ -1109,15 +1109,11 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
       else if (complain & tf_error)
 	{
 	  int savederrorcount = errorcount;
-	  if (!flag_permissive)
-	    global_dc->pedantic_errors = 1;
-	  auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
-	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI",
-		   init, ftype, type);
+	  permerror (loc, OPT_Wnarrowing,
+		     "narrowing conversion of %qE from %qH to %qI",
+		     init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
-	  global_dc->pedantic_errors = flag_pedantic_errors;
 	}
     }
 

@@ -1241,14 +1241,6 @@ static diagnostic_t
 update_effective_level_from_pragmas (diagnostic_context *context,
 				     diagnostic_info *diagnostic)
 {
-  if (diagnostic->m_iinfo.m_allsyslocs && !context->dc_warn_system_headers)
-    {
-      /* Ignore the diagnostic if all the inlined locations are
-	 in system headers and -Wno-system-headers is in effect.  */
-      diagnostic->kind = DK_IGNORED;
-      return DK_IGNORED;
-    }
-
   if (context->n_classification_history <= 0)
     return DK_UNSPECIFIED;
 
@@ -1489,24 +1481,16 @@ bool
 diagnostic_report_diagnostic (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
-  location_t location = diagnostic_location (diagnostic);
   diagnostic_t orig_diag_kind = diagnostic->kind;
 
   gcc_assert (context->m_output_format);
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
-  bool report_warning_p = true;
-  if (diagnostic->kind == DK_WARNING || diagnostic->kind == DK_PEDWARN)
-    {
-      if (context->dc_inhibit_warnings)
-	return false;
-      /* Remember the result of the overall system header warning setting
-	 but proceed to also check the inlining context.  */
-      report_warning_p = diagnostic_report_warnings_p (context, location);
-      if (!report_warning_p && diagnostic->kind == DK_PEDWARN)
-	return false;
-    }
+  bool was_warning = (diagnostic->kind == DK_WARNING
+		      || diagnostic->kind == DK_PEDWARN);
+  if (was_warning && context->dc_inhibit_warnings)
+    return false;
 
   if (diagnostic->kind == DK_PEDWARN)
     {
@@ -1546,9 +1530,12 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (!diagnostic_enabled (context, diagnostic))
     return false;
 
-  if (!report_warning_p && diagnostic->m_iinfo.m_allsyslocs)
-    /* Bail if the warning is not to be reported because all locations
-       in the inlining stack (if there is one) are in system headers.  */
+  if ((was_warning || diagnostic->kind == DK_WARNING)
+      && ((!context->dc_warn_system_headers
+	   && diagnostic->m_iinfo.m_allsyslocs)
+	  || context->dc_inhibit_warnings))
+    /* Bail if the warning is not to be reported because all locations in the
+       inlining stack (if there is one) are in system headers.  */
     return false;
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
@@ -1738,7 +1725,8 @@ diagnostic_impl (rich_location *richloc, const diagnostic_metadata *metadata,
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
 			   permissive_error_kind (global_dc));
-      diagnostic.option_index = permissive_error_option (global_dc);
+      diagnostic.option_index = (opt != -1 ? opt
+				 : permissive_error_option (global_dc));
     }
   else
     {
@@ -2030,6 +2018,37 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, NULL, -1, gmsgid, &ap, DK_PERMERROR);
+  va_end (ap);
+  return ret;
+}
+
+/* Similar to the above, but controlled by a flag other than -fpermissive.
+   As above, an error by default or a warning with -fpermissive, but this
+   diagnostic can also be downgraded by -Wno-error=opt.  */
+
+bool
+permerror (location_t location, int opt, const char *gmsgid, ...)
+{
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_impl (&richloc, NULL, opt, gmsgid, &ap, DK_PERMERROR);
+  va_end (ap);
+  return ret;
+}
+
+/* Same as "permerror" above, but at RICHLOC.  */
+
+bool
+permerror (rich_location *richloc, int opt, const char *gmsgid, ...)
+{
+  gcc_assert (richloc);
+
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = diagnostic_impl (richloc, NULL, opt, gmsgid, &ap, DK_PERMERROR);
   va_end (ap);
   return ret;
 }

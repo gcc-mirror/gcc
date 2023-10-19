@@ -24,5 +24,6 @@ extern bool inside_basic_block_p (const rtx_insn *);
 extern bool control_flow_insn_p (const rtx_insn *);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
 extern void find_many_sub_basic_blocks (sbitmap);
+extern void find_sub_basic_blocks (basic_block);
 
 #endif /* GCC_CFGBUILD_H */

@@ -12,6 +12,8 @@ on:
       - master
       - me/*
       - releases/gcc-*
+    tags:
+      - releases/gcc-*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

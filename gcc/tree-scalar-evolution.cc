@@ -1293,8 +1293,16 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
 gcond *
 get_loop_exit_condition (const class loop *loop)
 {
+  return get_loop_exit_condition (single_exit (loop));
+}
+
+/* If the statement just before the EXIT_EDGE contains a condition then
+   return the condition, otherwise NULL. */
+
+gcond *
+get_loop_exit_condition (const_edge exit_edge)
+{
   gcond *res = NULL;
-  edge exit_edge = single_exit (loop);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, "(get_loop_exit_condition \n  ");

@@ -448,8 +448,9 @@ pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
 inline void
 pp_wide_int (pretty_printer *pp, const wide_int_ref &w, signop sgn)
 {
-  unsigned int prec = w.get_precision ();
-  if (UNLIKELY ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3))
+  unsigned int len;
+  print_dec_buf_size (w, sgn, &len);
+  if (UNLIKELY (len > sizeof (pp_buffer (pp)->digit_buffer)))
     pp_wide_int_large (pp, w, sgn);
   else
     {

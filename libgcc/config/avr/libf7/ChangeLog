@@ -1,3 +1,22 @@
+2023-10-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-asm.sx (mul_mant): Implement for devices without MUL.
+	* asm-defs.h (wmov) [!HAVE_MUL]: Fix regno computation.
+	* t-libf7 (F7_ASM_FLAGS): Add -g0.
+
+2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* f7-renames.h: Re-renerate.
+
+2023-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7.h (F7_SIZEOF): New macro.
+	* libf7-asm.sx: Use F7_SIZEOF instead of magic number "10".
+	(F7MOD_D_fma_, __fma): New module and function.
+	(fma) [-mdouble=64]: Define as alias for __fma.
+	(fmal) [-mlong-double=64]: Define as alias for __fma.
+	* libf7-common.mk (F7_ASM_PARTS): Add D_fma.
+
 2023-10-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* libf7.c (F7MOD_atan2_, f7_atan2): New module and function.

@@ -176,9 +176,9 @@ test_7 (void)
 **	add	sp, sp, #?16
 **	ldr	z16, \[sp\]
 **	add	sp, sp, #?32
+**	ldp	x29, x30, \[sp\]
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
-**	ldp	x29, x30, \[sp\]
 **	mov	x12, #?4144
 **	add	sp, sp, x12
 **	ret
@@ -234,9 +234,9 @@ test_9 (int n)
 **	sub	sp, x29, #32
 **	ldr	z16, \[sp\]
 **	add	sp, sp, #?32
+**	ldp	x29, x30, \[sp\]
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
-**	ldp	x29, x30, \[sp\]
 **	mov	x12, #?4144
 **	add	sp, sp, x12
 **	ret
@@ -267,9 +267,9 @@ test_10 (int n)
 **	sub	sp, x29, #32
 **	ldr	z16, \[sp\]
 **	add	sp, sp, #?32
+**	ldp	x29, x30, \[sp\]
 **	ldp	x24, x25, \[sp, 16\]
 **	ldr	x26, \[sp, 32\]
-**	ldp	x29, x30, \[sp\]
 **	add	sp, sp, #?3008
 **	add	sp, sp, #?126976
 **	ret

@@ -6112,6 +6112,8 @@ thread_prologue_and_epilogue_insns (void)
 		  && returnjump_p (BB_END (e->src)))
 		e->flags &= ~EDGE_FALLTHRU;
 	    }
+
+	  find_sub_basic_blocks (BLOCK_FOR_INSN (epilogue_seq));
 	}
       else if (next_active_insn (BB_END (exit_fallthru_edge->src)))
 	{
@@ -6210,6 +6212,8 @@ thread_prologue_and_epilogue_insns (void)
 	  set_insn_locations (seq, epilogue_location);
 
 	  emit_insn_before (seq, insn);
+
+	  find_sub_basic_blocks (BLOCK_FOR_INSN (insn));
 	}
     }
 

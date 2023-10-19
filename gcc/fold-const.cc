@@ -10692,15 +10692,39 @@ valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
 
       /* Ensure that the stepped sequence always selects from the same
 	 input pattern.  */
-      unsigned arg_npatterns
-	= ((q1 & 1) == 0) ? VECTOR_CST_NPATTERNS (arg0)
-			  : VECTOR_CST_NPATTERNS (arg1);
+      tree arg = ((q1 & 1) == 0) ? arg0 : arg1;
+      unsigned arg_npatterns = VECTOR_CST_NPATTERNS (arg);
 
       if (!multiple_p (step, arg_npatterns))
 	{
 	  if (reason)
 	    *reason = "step is not multiple of npatterns";
 	  return false;
+	}
+
+      /* If a1 chooses base element from arg, ensure that it's a natural
+	 stepped sequence, ie, (arg[2] - arg[1]) == (arg[1] - arg[0])
+	 to preserve arg's encoding.  */
+
+      if (maybe_lt (r1, arg_npatterns))
+	{
+	  unsigned HOST_WIDE_INT index;
+	  if (!r1.is_constant (&index))
+	    return false;
+
+	  tree arg_elem0 = vector_cst_elt (arg, index);
+	  tree arg_elem1 = vector_cst_elt (arg, index + arg_npatterns);
+	  tree arg_elem2 = vector_cst_elt (arg, index + arg_npatterns * 2);
+
+	  tree step1, step2;
+	  if (!(step1 = const_binop (MINUS_EXPR, arg_elem1, arg_elem0))
+	      || !(step2 = const_binop (MINUS_EXPR, arg_elem2, arg_elem1))
+	      || !operand_equal_p (step1, step2, 0))
+	    {
+	      if (reason)
+		*reason = "not a natural stepped sequence";
+	      return false;
+	    }
 	}
     }
 
@@ -17165,7 +17189,8 @@ namespace test_fold_vec_perm_cst {
 static tree
 build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
 		    unsigned nelts_per_pattern,
-		    int step = 0, int threshold = 100)
+		    int step = 0, bool natural_stepped = false,
+		    int threshold = 100)
 {
   tree inner_type = lang_hooks.types.type_for_mode (GET_MODE_INNER (vmode), 1);
   tree vectype = build_vector_type_for_mode (inner_type, vmode);
@@ -17180,17 +17205,28 @@ build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
 
   // Fill a1 for each pattern
   for (unsigned i = 0; i < npatterns; i++)
-    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
-
+    {
+      tree a1;
+      if (natural_stepped)
+	{
+	  tree a0 = builder[i];
+	  wide_int a0_val = wi::to_wide (a0);
+	  wide_int a1_val = a0_val + step;
+	  a1 = wide_int_to_tree (inner_type, a1_val);
+	}
+      else
+	a1 = build_int_cst (inner_type, rand () % threshold);
+      builder.quick_push (a1);
+    }
   if (nelts_per_pattern == 2)
     return builder.build ();
 
   for (unsigned i = npatterns * 2; i < npatterns * nelts_per_pattern; i++)
     {
       tree prev_elem = builder[i - npatterns];
-      int prev_elem_val = TREE_INT_CST_LOW (prev_elem);
-      int val = prev_elem_val + step;
-      builder.quick_push (build_int_cst (inner_type, val));
+      wide_int prev_elem_val = wi::to_wide (prev_elem);
+      wide_int val = prev_elem_val + step;
+      builder.quick_push (wide_int_to_tree (inner_type, val));
     }
 
   return builder.build ();
@@ -17436,7 +17472,7 @@ test_nunits_min_2 (machine_mode vmode)
 	 and step (a2 - a1) = 1, step is not a multiple of npatterns
 	 in input vector. So return NULL_TREE.  */
       {
-	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1);
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1, true);
 	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 1);
 	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
 
@@ -17456,7 +17492,7 @@ test_nunits_min_2 (machine_mode vmode)
 	 Test that stepped sequence of the pattern selects from arg0.
 	 res = { arg1[0], arg0[0], arg0[1], ... } // (1, 3)  */
       {
-	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1, true);
 	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
 	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
 
@@ -17468,6 +17504,62 @@ test_nunits_min_2 (machine_mode vmode)
 	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
 
 	tree expected_res[] = { ARG1(0), ARG0(0), ARG0(1) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 6: PR111648 - a1 chooses base element from input vector arg.
+	 In this case ensure that arg has a natural stepped sequence
+	 to preserve arg's encoding.
+
+	 As a concrete example, consider:
+	 arg0: { -16, -9, -10, ... } // (1, 3)
+	 arg1: { -12, -5, -6, ... }  // (1, 3)
+	 sel = { 0, len, len + 1, ... } // (1, 3)
+
+	 This will create res with following encoding:
+	 res = { arg0[0], arg1[0], arg1[1], ... } // (1, 3)
+	     = { -16, -12, -5, ... }
+
+	 The step in above encoding would be: (-5) - (-12) = 7
+	 And hence res[3] would be computed as -5 + 7 = 2.
+	 instead of arg1[2], ie, -6.
+	 Ensure that valid_mask_for_fold_vec_perm_cst returns false
+	 for this case.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, len, len+1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	/* FIXME: It may happen that build_vec_cst_rand may build a natural
+	   stepped pattern, even if we didn't explicitly tell it to. So folding
+	   may not always fail, but if it does, ensure that's because arg1 does
+	   not have a natural stepped sequence (and not due to other reason)  */
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+	if (res == NULL_TREE)
+	  ASSERT_TRUE (!strcmp (reason, "not a natural stepped sequence"));
+      }
+
+      /* Case 7: Same as Case 6, except that arg1 contains natural stepped
+	 sequence and thus folding should be valid for this case.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1, true);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, len, len+1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG1(1) };
 	validate_res (1, 3, res, expected_res);
       }
     }

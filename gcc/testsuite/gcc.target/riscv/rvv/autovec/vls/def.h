@@ -833,3 +833,9 @@ typedef double v512df __attribute__ ((vector_size (4096)));
       a[i] = cond[i] ? (TYPE3) (b[i] >> shift) : a[i];                         \
     return a;                                                                  \
   }
+
+#define DEF_CONSECUTIVE(TYPE, NUM)                                             \
+  TYPE f##TYPE (TYPE a, TYPE b)                                                \
+  {                                                                            \
+    return __builtin_shufflevector (a, b, MASK_##NUM);                         \
+  }

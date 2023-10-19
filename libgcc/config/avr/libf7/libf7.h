@@ -29,6 +29,7 @@
 
 #define F7_MANT_BYTES 7
 #define F7_MANT_BITS (8 * F7_MANT_BYTES)
+#define F7_SIZEOF (1 + F7_MANT_BYTES + 2)
 
 /*  Using the following GCC features:
     --  Unnamed structs / unions (GNU-C)

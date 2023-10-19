@@ -4215,6 +4215,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if (nargs == 0)
     return false;
 
+  vec<tree>& simd_clone_info = (slp_node ? SLP_TREE_SIMD_CLONE_INFO (slp_node)
+				: STMT_VINFO_SIMD_CLONE_INFO (stmt_info));
   arginfo.reserve (nargs, true);
   auto_vec<slp_tree> slp_op;
   slp_op.safe_grow_cleared (nargs);
@@ -4256,25 +4258,22 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	gcc_assert (thisarginfo.vectype != NULL_TREE);
 
       /* For linear arguments, the analyze phase should have saved
-	 the base and step in STMT_VINFO_SIMD_CLONE_INFO.  */
-      if (i * 3 + 4 <= STMT_VINFO_SIMD_CLONE_INFO (stmt_info).length ()
-	  && STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 3 + 2])
+	 the base and step in {STMT_VINFO,SLP_TREE}_SIMD_CLONE_INFO.  */
+      if (i * 3 + 4 <= simd_clone_info.length ()
+	  && simd_clone_info[i * 3 + 2])
 	{
 	  gcc_assert (vec_stmt);
-	  thisarginfo.linear_step
-	    = tree_to_shwi (STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 3 + 2]);
-	  thisarginfo.op
-	    = STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 3 + 1];
+	  thisarginfo.linear_step = tree_to_shwi (simd_clone_info[i * 3 + 2]);
+	  thisarginfo.op = simd_clone_info[i * 3 + 1];
 	  thisarginfo.simd_lane_linear
-	    = (STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 3 + 3]
-	       == boolean_true_node);
+	    = (simd_clone_info[i * 3 + 3] == boolean_true_node);
 	  /* If loop has been peeled for alignment, we need to adjust it.  */
 	  tree n1 = LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo);
 	  tree n2 = LOOP_VINFO_NITERS (loop_vinfo);
 	  if (n1 != n2 && !thisarginfo.simd_lane_linear)
 	    {
 	      tree bias = fold_build2 (MINUS_EXPR, TREE_TYPE (n1), n1, n2);
-	      tree step = STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[i * 3 + 2];
+	      tree step = simd_clone_info[i * 3 + 2];
 	      tree opt = TREE_TYPE (thisarginfo.op);
 	      bias = fold_convert (TREE_TYPE (step), bias);
 	      bias = fold_build2 (MULT_EXPR, TREE_TYPE (step), bias, step);
@@ -4328,8 +4327,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   unsigned group_size = slp_node ? SLP_TREE_LANES (slp_node) : 1;
   unsigned int badness = 0;
   struct cgraph_node *bestn = NULL;
-  if (STMT_VINFO_SIMD_CLONE_INFO (stmt_info).exists ())
-    bestn = cgraph_node::get (STMT_VINFO_SIMD_CLONE_INFO (stmt_info)[0]);
+  if (simd_clone_info.exists ())
+    bestn = cgraph_node::get (simd_clone_info[0]);
   else
     for (struct cgraph_node *n = node->simd_clones; n != NULL;
 	 n = n->simdclone->next_clone)
@@ -4385,9 +4384,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_MASK:
+		/* While we can create a traditional data vector from
+		   an incoming integer mode mask we have no good way to
+		   force generate an integer mode mask from a traditional
+		   boolean vector input.  */
 		if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
-		    != SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		    && !SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
 		  i = -1;
+		else if (!SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+			 && SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		  this_badness += 2048;
 		break;
 	      }
 	    if (i == (size_t) -1)
@@ -4532,24 +4538,22 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	 so automagic virtual operand updating doesn't work.  */
       if (gimple_vuse (stmt) && slp_node)
 	vinfo->any_known_not_updated_vssa = true;
-      STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (bestn->decl);
+      simd_clone_info.safe_push (bestn->decl);
       for (i = 0; i < nargs; i++)
 	if ((bestn->simdclone->args[i].arg_type
 	     == SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP)
 	    || (bestn->simdclone->args[i].arg_type
 		== SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP))
 	  {
-	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_grow_cleared (i * 3
-									+ 1,
-								      true);
-	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (arginfo[i].op);
+	    simd_clone_info.safe_grow_cleared (i * 3 + 1, true);
+	    simd_clone_info.safe_push (arginfo[i].op);
 	    tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
 		       ? size_type_node : TREE_TYPE (arginfo[i].op);
 	    tree ls = build_int_cst (lst, arginfo[i].linear_step);
-	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (ls);
+	    simd_clone_info.safe_push (ls);
 	    tree sll = arginfo[i].simd_lane_linear
 		       ? boolean_true_node : boolean_false_node;
-	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (sll);
+	    simd_clone_info.safe_push (sll);
 	  }
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
@@ -12327,23 +12331,22 @@ vectorizable_condition (vec_info *vinfo,
   return true;
 }
 
-/* vectorizable_comparison.
+/* Helper of vectorizable_comparison.
 
-   Check if STMT_INFO is comparison expression that can be vectorized.
+   Check if STMT_INFO is comparison expression CODE that can be vectorized.
    If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    comparison, put it in VEC_STMT, and insert it at GSI.
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_comparison (vec_info *vinfo,
-			 stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt,
-			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
+			   stmt_vec_info stmt_info, tree_code code,
+			   gimple_stmt_iterator *gsi, gimple **vec_stmt,
+			   slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   tree lhs, rhs1, rhs2;
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vec_rhs1 = NULL_TREE, vec_rhs2 = NULL_TREE;
   tree new_temp;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -12351,7 +12354,7 @@ vectorizable_comparison (vec_info *vinfo,
   int ndts = 2;
   poly_uint64 nunits;
   int ncopies;
-  enum tree_code code, bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
+  enum tree_code bitop1 = NOP_EXPR, bitop2 = NOP_EXPR;
   int i;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   vec<tree> vec_oprnds0 = vNULL;
@@ -12374,14 +12377,6 @@ vectorizable_comparison (vec_info *vinfo,
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   gcc_assert (ncopies >= 1);
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
-    return false;
-
-  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!stmt)
-    return false;
-
-  code = gimple_assign_rhs_code (stmt);
 
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return false;
@@ -12496,7 +12491,6 @@ vectorizable_comparison (vec_info *vinfo,
 	  return false;
 	}
 
-      STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
       vect_model_simple_cost (vinfo, stmt_info,
 			      ncopies * (1 + (bitop2 != NOP_EXPR)),
 			      dts, ndts, slp_node, cost_vec);
@@ -12506,7 +12500,7 @@ vectorizable_comparison (vec_info *vinfo,
   /* Transform.  */
 
   /* Handle def.  */
-  lhs = gimple_assign_lhs (stmt);
+  lhs = gimple_assign_lhs (STMT_VINFO_STMT (stmt_info));
   mask = vect_create_destination_var (lhs, mask_type);
 
   vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
@@ -12558,6 +12552,44 @@ vectorizable_comparison (vec_info *vinfo,
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
+
+  return true;
+}
+
+/* vectorizable_comparison.
+
+   Check if STMT_INFO is comparison expression that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   comparison, put it in VEC_STMT, and insert it at GSI.
+
+   Return true if STMT_INFO is vectorizable in this way.  */
+
+static bool
+vectorizable_comparison (vec_info *vinfo,
+			 stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
+			 gimple **vec_stmt,
+			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+{
+  bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+    return false;
+
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
+    return false;
+
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (!vectorizable_comparison_1 (vinfo, vectype, stmt_info, code, gsi,
+				  vec_stmt, slp_node, cost_vec))
+    return false;
+
+  if (!vec_stmt)
+    STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
 
   return true;
 }

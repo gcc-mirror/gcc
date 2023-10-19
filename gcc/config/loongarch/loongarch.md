@@ -2150,7 +2150,7 @@
   [(set (match_operand:FCC 0 "register_operand" "=z")
 	(const_int 0))]
   ""
-  "movgr2cf\t%0,$r0")
+  "fcmp.caf.s\t%0,$f0,$f0")
 
 ;; Conditional move instructions.
 

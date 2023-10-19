@@ -2365,7 +2365,157 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Parallel single-precision floating point conversion operations
+;; Parallel half-precision FMA multiply/accumulate instructions.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "fma<mode>4"
+  [(set (match_operand:VHF_32_64 0 "register_operand")
+	(fma:VHF_32_64
+	  (match_operand:VHF_32_64 1 "nonimmediate_operand")
+	  (match_operand:VHF_32_64 2 "nonimmediate_operand")
+	  (match_operand:VHF_32_64 3 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op3, operands[3]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op2, operands[2]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+
+  emit_insn (gen_fmav8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "fms<mode>4"
+  [(set (match_operand:VHF_32_64 0 "register_operand")
+	(fma:VHF_32_64
+	  (match_operand:VHF_32_64   1 "nonimmediate_operand")
+	  (match_operand:VHF_32_64   2 "nonimmediate_operand")
+	  (neg:VHF_32_64
+	    (match_operand:VHF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op3, operands[3]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op2, operands[2]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+
+  emit_insn (gen_fmsv8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VHF_32_64 0 "register_operand")
+	(fma:VHF_32_64
+	  (neg:VHF_32_64
+	    (match_operand:VHF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VHF_32_64   2 "nonimmediate_operand")
+	  (match_operand:VHF_32_64   3 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op3, operands[3]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op2, operands[2]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+
+  emit_insn (gen_fnmav8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "fnms<mode>4"
+  [(set (match_operand:VHF_32_64 0 "register_operand" "=v,v,x")
+	(fma:VHF_32_64
+	  (neg:VHF_32_64
+	    (match_operand:VHF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VHF_32_64   2 "nonimmediate_operand")
+	  (neg:VHF_32_64
+	    (match_operand:VHF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op3, operands[3]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op2, operands[2]));
+  emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
+
+  emit_insn (gen_fnmsv8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "vec_fmaddsubv4hf4"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "nonimmediate_operand")
+   (match_operand:V4HF 2 "nonimmediate_operand")
+   (match_operand:V4HF 3 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && TARGET_MMX_WITH_SSE
+   && ix86_partial_vec_fp_math"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_vec_fmaddsubv8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "vec_fmsubaddv4hf4"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "nonimmediate_operand")
+   (match_operand:V4HF 2 "nonimmediate_operand")
+   (match_operand:V4HF 3 "nonimmediate_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+   && ix86_partial_vec_fp_math
+   && TARGET_MMX_WITH_SSE"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_vec_fmsubaddv8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel half-precision floating point conversion operations
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -2822,6 +2822,89 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize the consecutive index that we can use a single
+   vrgather.v[x|i] to shuffle the vectors.
+
+   e.g. short[8] = VEC_PERM_EXPR <a, a, {0,1,0,1,0,1,0,1}>
+   Use SEW = 32, index = 1 vrgather.vi to get the result.  */
+static bool
+shuffle_consecutive_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  scalar_mode smode = GET_MODE_INNER (vmode);
+  poly_int64 vec_len = d->perm.length ();
+  HOST_WIDE_INT elt;
+
+  if (!vec_len.is_constant () || !d->perm[0].is_constant (&elt))
+    return false;
+  int vlen = vec_len.to_constant ();
+
+  /* Compute the last element index of consecutive pattern from the leading
+     consecutive elements.  */
+  int last_consecutive_idx = -1;
+  int consecutive_num = -1;
+  for (int i = 1; i < vlen; i++)
+    {
+      if (maybe_ne (d->perm[i], d->perm[i - 1] + 1))
+	break;
+      last_consecutive_idx = i;
+      consecutive_num = last_consecutive_idx + 1;
+    }
+
+  int new_vlen = vlen / consecutive_num;
+  if (last_consecutive_idx < 0 || consecutive_num == vlen
+      || !pow2p_hwi (consecutive_num) || !pow2p_hwi (new_vlen))
+    return false;
+  /* VEC_PERM <..., (index, index + 1, ... index + consecutive_num - 1)>.
+     All elements of index, index + 1, ... index + consecutive_num - 1 should
+     locate at the same vector.  */
+  if (maybe_ge (d->perm[0], vec_len)
+      != maybe_ge (d->perm[last_consecutive_idx], vec_len))
+    return false;
+  /* If a vector has 8 elements.  We allow optimizations on consecutive
+     patterns e.g. <0, 1, 2, 3, 0, 1, 2, 3> or <4, 5, 6, 7, 4, 5, 6, 7>.
+     Other patterns like <2, 3, 4, 5, 2, 3, 4, 5> are not feasible patterns
+     to be optimized.  */
+  if (d->perm[0].to_constant () % consecutive_num != 0)
+    return false;
+  unsigned int container_bits = consecutive_num * GET_MODE_BITSIZE (smode);
+  if (container_bits > 64)
+    return false;
+  else if (container_bits == 64)
+    {
+      if (!TARGET_VECTOR_ELEN_64)
+	return false;
+      else if (FLOAT_MODE_P (smode) && !TARGET_VECTOR_ELEN_FP_64)
+	return false;
+    }
+
+  /* Check the rest of elements are the same consecutive pattern.  */
+  for (int i = consecutive_num; i < vlen; i++)
+    if (maybe_ne (d->perm[i], d->perm[i % consecutive_num]))
+      return false;
+
+  if (FLOAT_MODE_P (smode))
+    smode = float_mode_for_size (container_bits).require ();
+  else
+    smode = int_mode_for_size (container_bits, 0).require ();
+  if (!get_vector_mode (smode, new_vlen).exists (&vmode))
+    return false;
+  machine_mode sel_mode = related_int_vector_mode (vmode).require ();
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  int index = elt / consecutive_num;
+  if (index >= new_vlen)
+    index = index - new_vlen;
+  rtx sel = gen_const_vector_dup (sel_mode, index);
+  rtx op = elt >= vlen ? d->op0 : d->op1;
+  emit_vlmax_gather_insn (gen_lowpart (vmode, d->target),
+			  gen_lowpart (vmode, op), sel);
+  return true;
+}
+
 /* Recognize the patterns that we can use compress operation to shuffle the
    vectors. The perm selector of compress pattern is divided into 2 part:
    The first part is the random index number < NUNITS.
@@ -3173,6 +3256,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       if (d->vmode == d->op_mode)
 	{
 	  if (shuffle_merge_patterns (d))
+	    return true;
+	  if (shuffle_consecutive_patterns (d))
 	    return true;
 	  if (shuffle_compress_patterns (d))
 	    return true;
