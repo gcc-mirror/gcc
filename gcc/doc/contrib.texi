@@ -782,6 +782,9 @@ clean-ups and porting work, and maintaining the IRIX, Solaris 2, and
 Tru64 UNIX ports.
 
 @item
+Patrick Palka for contributions to the C++ library and front end.
+
+@item
 Steven Pemberton for his contribution of @file{enquire} which allowed GCC to
 determine various properties of the floating point unit and generate
 @file{float.h} in older versions of GCC.
