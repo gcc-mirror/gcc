@@ -221,6 +221,7 @@ struct CompileOptions
     TARGET_OPTION_DUMP,
     HIR_DUMP,
     HIR_DUMP_PRETTY,
+    BIR_DUMP,
   };
 
   std::set<DumpOption> dump_options;
@@ -254,6 +255,7 @@ struct CompileOptions
     Privacy,
     Unsafety,
     Const,
+    BorrowCheck,
     Compilation,
     End,
   } compile_until
@@ -277,6 +279,7 @@ struct CompileOptions
     enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP_PRETTY);
+    enable_dump_option (DumpOption::BIR_DUMP);
   }
 
   void set_crate_name (std::string name)

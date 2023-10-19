@@ -190,10 +190,13 @@ EnumValue
 Enum(frust_compile_until) String(const) Value(8)
 
 EnumValue
-Enum(frust_compile_until) String(compilation) Value(9)
+Enum(frust_compile_until) String(borrowcheck) Value(9)
 
 EnumValue
-Enum(frust_compile_until) String(end) Value(10)
+Enum(frust_compile_until) String(compilation) Value(10)
+
+EnumValue
+Enum(frust_compile_until) String(end) Value(11)
 
 frust-name-resolution-2.0
 Rust Var(flag_name_resolution_2_0)
