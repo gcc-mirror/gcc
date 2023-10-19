@@ -11362,8 +11362,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	 updated offset we set using ADVANCE.  Instead we have to make sure the
 	 reference in the data references point to the corresponding copy of
 	 the original in the epilogue.  */
-      if (STMT_VINFO_MEMORY_ACCESS_TYPE (vect_stmt_to_vectorize (stmt_vinfo))
-	  == VMAT_GATHER_SCATTER)
+      if (STMT_VINFO_GATHER_SCATTER_P (vect_stmt_to_vectorize (stmt_vinfo)))
 	{
 	  DR_REF (dr)
 	    = simplify_replace_tree (DR_REF (dr), NULL_TREE, NULL_TREE,
@@ -11372,6 +11371,9 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	    = simplify_replace_tree (DR_BASE_ADDRESS (dr), NULL_TREE, NULL_TREE,
 				     &find_in_mapping, &mapping);
 	}
+      else
+	gcc_assert (STMT_VINFO_MEMORY_ACCESS_TYPE (vect_stmt_to_vectorize (stmt_vinfo))
+		    != VMAT_GATHER_SCATTER);
       DR_STMT (dr) = STMT_VINFO_STMT (stmt_vinfo);
       stmt_vinfo->dr_aux.stmt = stmt_vinfo;
       /* The vector size of the epilogue is smaller than that of the main loop

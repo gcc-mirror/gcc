@@ -283,10 +283,11 @@ typedef struct _slp_oprnd_info
   vec<tree> ops;
   /* Information about the first statement, its vector def-type, type, the
      operand itself in case it's constant, and an indication if it's a pattern
-     stmt.  */
+     stmt and gather/scatter info.  */
   tree first_op_type;
   enum vect_def_type first_dt;
   bool any_pattern;
+  gather_scatter_info first_gs_info;
 } *slp_oprnd_info;
 
 
@@ -609,6 +610,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   unsigned int i, number_of_oprnds;
   enum vect_def_type dt = vect_uninitialized_def;
   slp_oprnd_info oprnd_info;
+  gather_scatter_info gs_info;
   unsigned int commutative_op = -1U;
   bool first = stmt_num == 0;
 
@@ -659,6 +661,19 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	oprnd = TREE_OPERAND (oprnd, 0);
 
       oprnd_info = (*oprnds_info)[i];
+
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	{
+	  gcc_assert (number_of_oprnds == 1);
+	  if (!is_a <loop_vec_info> (vinfo)
+	      || !vect_check_gather_scatter (stmt_info,
+					     as_a <loop_vec_info> (vinfo),
+					     first ? &oprnd_info->first_gs_info
+					     : &gs_info))
+	    return -1;
+
+	  oprnd = first ? oprnd_info->first_gs_info.offset : gs_info.offset;
+	}
 
       stmt_vec_info def_stmt_info;
       if (!vect_is_simple_use (oprnd, vinfo, &dts[i], &def_stmt_info))
@@ -790,6 +805,25 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: different operand types\n");
 	  return 1;
+	}
+
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	{
+	  if (!operand_equal_p (oprnd_info->first_gs_info.base,
+				gs_info.base))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different gather base\n");
+	      return 1;
+	    }
+	  if (oprnd_info->first_gs_info.scale != gs_info.scale)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different gather scale\n");
+	      return 1;
+	    }
 	}
 
       /* Not first stmt of the group, check that the def-stmt/s match
@@ -1235,6 +1269,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| rhs_code == INDIRECT_REF
 			|| rhs_code == COMPONENT_REF
 			|| rhs_code == MEM_REF)))
+	      || (ldst_p
+		  && (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+		      != STMT_VINFO_GATHER_SCATTER_P (first_stmt_info)))
 	      || first_stmt_ldst_p != ldst_p
 	      || first_stmt_phi_p != phi_p)
 	    {
@@ -1357,12 +1394,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info))
 	      && rhs_code != CFN_GATHER_LOAD
 	      && rhs_code != CFN_MASK_GATHER_LOAD
+	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	      /* Not grouped loads are handled as externals for BB
 		 vectorization.  For loop vectorization we can handle
 		 splats the same we handle single element interleaving.  */
 	      && (is_a <bb_vec_info> (vinfo)
-		  || stmt_info != first_stmt_info
-		  || STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
+		  || stmt_info != first_stmt_info))
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -1858,6 +1895,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD)
 		    || gimple_call_internal_p (stmt, IFN_GATHER_LOAD)
 		    || gimple_call_internal_p (stmt, IFN_MASK_GATHER_LOAD));
+      else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	gcc_assert (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)));
       else
 	{
 	  *max_nunits = this_max_nunits;
