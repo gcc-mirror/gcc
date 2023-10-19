@@ -1042,7 +1042,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align
 -mmax-inline-memcpy-size=@var{n}
--mexplicit-relocs -mno-explicit-relocs
+-mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
 -mcmodel=@var{code-model}}
 
@@ -26310,25 +26310,38 @@ The text segment and data segment must be within 2GB addressing space.
 
 @item extreme
 This mode does not limit the size of the code segment and data segment.
-The @option{-mcmodel=extreme} option is incompatible with @option{-fplt} and
-@option{-mno-explicit-relocs}.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt},
+and it requires @option{-mexplicit-relocs=always}.
 @end table
 The default code model is @code{normal}.
 
-@opindex mexplicit-relocs
-@opindex mno-explicit-relocs
-@item -mexplicit-relocs
-@itemx -mno-explicit-relocs
-Use or do not use assembler relocation operators when dealing with symbolic
+@item -mexplicit-relocs=@var{style}
+Set when to use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
-limit instruction scheduling but allow linker relaxation.  The default
+limit instruction scheduling but allow linker relaxation.
+with @option{-mexplicit-relocs=none} the assembler macros are always used,
+with @option{-mexplicit-relocs=always} the assembler relocation operators
+are always used, with @option{-mexplicit-relocs=auto} the compiler will
+use the relocation operators where the linker relaxation is impossible to
+improve the code quality, and macros elsewhere.  The default
 value for the option is determined during GCC build-time by detecting
 corresponding assembler support:
-@code{-mno-explicit-relocs} if the assembler supports relaxation or it
-does not support relocation operators at all,
-@code{-mexplicit-relocs} otherwise.  This option is mostly useful for
+@option{-mexplicit-relocs=none} if the assembler does not support
+relocation operators at all,
+@option{-mexplicit-relocs=always} if the assembler supports relocation
+operators but does not support relaxation,
+@option{-mexplicit-relocs=auto} if the assembler supports both relocation
+operators and relaxation.  This option is mostly useful for
 debugging, or interoperation with assemblers different from the build-time
 one.
+
+@opindex mexplicit-relocs
+@item -mexplicit-relocs
+An alias of @option{-mexplicit-relocs=always} for backward compatibility.
+
+@opindex mno-explicit-relocs
+@item -mno-explicit-relocs
+An alias of @option{-mexplicit-relocs=none} for backward compatibility.
 
 @opindex mdirect-extern-access
 @item -mdirect-extern-access
