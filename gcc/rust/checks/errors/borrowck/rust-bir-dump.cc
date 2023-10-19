@@ -114,24 +114,27 @@ Dump::go (bool enable_simplify_cfg)
   stream << "fn " << name << "(";
   print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
     stream << "_" << place_map[place_id] << ": "
-	   << get_tyty_name (place_db[place_id].tyty);
+	   << get_tyty_name (func.place_db[place_id].tyty);
   });
-  stream << ") -> " << get_tyty_name (place_db[RETURN_VALUE_PLACE].tyty)
+  stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty)
 	 << " {\n";
 
-  for (PlaceId id = FIRST_VARIABLE_PLACE; id < place_db.size (); ++id)
+  // Print locals declaration.
+  for (PlaceId id = FIRST_VARIABLE_PLACE; id < func.place_db.size (); ++id)
     {
-      const Place &place = place_db[id];
+      const Place &place = func.place_db[id];
       if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
 	{
 	  if (std::find (func.arguments.begin (), func.arguments.end (), id)
 	      != func.arguments.end ())
 	    continue;
-	  stream << indentation << "let _" << place_map[id] << ": "
-		 << get_tyty_name (place_db[id].tyty) << ";\n";
+	  stream << indentation << "let _";
+	  stream << place_map[id] << ": "
+		 << get_tyty_name (func.place_db[id].tyty) << ";\n";
 	}
     }
 
+  // Print BBs.
   for (node_bb = 0; node_bb < func.basic_blocks.size (); ++node_bb)
     {
       if (bb_fold_map[node_bb] != node_bb)
@@ -140,6 +143,8 @@ Dump::go (bool enable_simplify_cfg)
       if (func.basic_blocks[node_bb].statements.empty ()
 	  && func.basic_blocks[node_bb].successors.empty ())
 	continue;
+
+      bb_terminated = false;
 
       BasicBlock &bb = func.basic_blocks[node_bb];
       stream << "\n";
@@ -150,10 +155,15 @@ Dump::go (bool enable_simplify_cfg)
 	  visit (stmt);
 	  stream << ";\n";
 	}
+      if (!bb_terminated)
+	{
+	  stream << indentation << indentation << "goto -> bb"
+		 << bb_fold_map[bb.successors.at (0)] << ";\n";
+	}
       stream << indentation << "}\n";
     }
 
-  stream << "}\n\n";
+  stream << "}\n";
 }
 void
 Dump::visit (Node &node)
@@ -162,7 +172,8 @@ Dump::visit (Node &node)
   switch (node.get_kind ())
     {
       case Node::Kind::ASSIGNMENT: {
-	stream << "_" << place_map[node.get_place ()] << " = ";
+	visit_place (node.get_place ());
+	stream << " = ";
 	node.get_expr ().accept_vis (*this);
 	break;
       }
@@ -175,13 +186,16 @@ Dump::visit (Node &node)
 			       stream << "bb" << bb_fold_map[succ];
 			     });
       stream << "]";
+      bb_terminated = true;
       break;
     case Node::Kind::RETURN:
       stream << "return";
+      bb_terminated = true;
       break;
     case Node::Kind::GOTO:
       stream << "goto -> bb"
 	     << bb_fold_map[func.basic_blocks[node_bb].successors.at (0)];
+      bb_terminated = true;
       break;
     case Node::Kind::STORAGE_DEAD:
       stream << "StorageDead(";
@@ -200,7 +214,7 @@ Dump::visit (Node &node)
 void
 Dump::visit_place (PlaceId place_id)
 {
-  const Place &place = place_db[place_id];
+  const Place &place = func.place_db[place_id];
   switch (place.kind)
     {
     case Place::TEMPORARY:
@@ -237,8 +251,8 @@ Dump::visit_place (PlaceId place_id)
 void
 Dump::visit_move_place (PlaceId place_id)
 {
-  const Place &place = place_db[place_id];
-  if (!place.is_copy)
+  const Place &place = func.place_db[place_id];
+  if (place.is_rvalue || !place.is_copy)
     stream << "move ";
   visit_place (place_id);
 }
@@ -254,7 +268,7 @@ Dump::visit (BorrowExpr &expr)
 void
 Dump::visit_lifetime (PlaceId place_id)
 {
-  const Place &place = place_db[place_id];
+  const Place &place = func.place_db[place_id];
   if (place.lifetime.has_lifetime ())
     {
       if (place.lifetime.id == STATIC_LIFETIME_ID)
@@ -279,7 +293,7 @@ Dump::visit (CallExpr &expr)
 {
   stream << "Call(";
   if (auto fn_type
-      = place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ())
+      = func.place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ())
     {
       stream << fn_type->get_identifier ();
     }
@@ -288,18 +302,17 @@ Dump::visit (CallExpr &expr)
       visit_move_place (expr.get_callable ());
     }
   stream << ")(";
-  for (auto &place : expr.get_arguments ())
-    {
-      visit_move_place (place);
-      stream << ", ";
-    }
+  print_comma_separated (stream, expr.get_arguments (),
+			 [this] (PlaceId place_id) {
+			   visit_move_place (place_id);
+			 });
   stream << ") -> [";
-  print_comma_separated (stream,
-			 func.basic_blocks[bb_fold_map[node_bb]].successors,
-			 [this] (const BasicBlockId &dst) {
-			   stream << "bb" << bb_fold_map[dst];
+  print_comma_separated (stream, func.basic_blocks[node_bb].successors,
+			 [this] (BasicBlockId succ) {
+			   stream << "bb" << bb_fold_map[succ];
 			 });
   stream << "]";
+  bb_terminated = true;
 }
 
 void

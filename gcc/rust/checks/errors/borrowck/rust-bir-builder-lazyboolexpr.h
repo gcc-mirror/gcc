@@ -30,29 +30,28 @@ namespace BIR {
  * Special builder is needed to store short-circuiting context for directly
  * nested lazy boolean expressions.
  */
-class LazyBooleanExprBuilder : public AbstractBuilder,
-			       public HIR::HIRExpressionVisitor
+class LazyBooleanExprBuilder : public AbstractExprBuilder
 {
   BasicBlockId short_circuit_bb;
 
 public:
-  explicit LazyBooleanExprBuilder (BuilderContext &ctx)
-    : AbstractBuilder (ctx), short_circuit_bb (0)
+  explicit LazyBooleanExprBuilder (BuilderContext &ctx,
+				   PlaceId expr_return_place = INVALID_PLACE)
+    : AbstractExprBuilder (ctx, expr_return_place), short_circuit_bb (0)
   {}
 
   PlaceId build (HIR::LazyBooleanExpr &expr)
   {
-    PlaceId return_place = ctx.place_db.add_temporary (lookup_type (expr));
+    PlaceId return_place = take_or_create_return_place (lookup_type (expr));
 
     short_circuit_bb = new_bb ();
-    visit (expr);
-    push_assignment (return_place, translated);
+    push_assignment (return_place, visit_expr (expr));
     auto final_bb = new_bb ();
     push_goto (final_bb);
 
     ctx.current_bb = short_circuit_bb;
-    translated = ctx.place_db.get_constant (lookup_type (expr));
-    push_assignment (return_place, translated);
+    push_assignment (return_place,
+		     ctx.place_db.get_constant (lookup_type (expr)));
     push_goto (final_bb);
 
     ctx.current_bb = final_bb;
@@ -62,11 +61,11 @@ public:
 protected:
   void visit (HIR::LazyBooleanExpr &expr) override
   {
-    expr.get_lhs ()->accept_vis (*this);
-    push_switch (translated, {short_circuit_bb});
+    auto lhs = visit_expr (*expr.get_lhs ());
+    push_switch (make_arg (lhs), {short_circuit_bb});
 
-    start_new_subsequent_bb ();
-    expr.get_rhs ()->accept_vis (*this);
+    start_new_consecutive_bb ();
+    return_place (visit_expr (*expr.get_rhs ()));
   }
   void visit (HIR::GroupedExpr &expr) override
   {
@@ -77,15 +76,15 @@ protected:
 public:
   void visit (HIR::QualifiedPathInExpression &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::PathInExpression &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ClosureExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::StructExprStructFields &fields) override
   {
@@ -97,119 +96,119 @@ public:
   }
   void visit (HIR::LiteralExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::BorrowExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::DereferenceExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ErrorPropagationExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::NegationExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ComparisonExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::TypeCastExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::AssignmentExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::CompoundAssignmentExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ArrayExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::ArrayIndexExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::TupleExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::TupleIndexExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::CallExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::MethodCallExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::FieldAccessExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::BlockExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::UnsafeBlockExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::LoopExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::WhileLoopExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::WhileLetLoopExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::IfExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::IfExprConseqElse &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::IfLetExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::IfLetExprConseqElse &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::MatchExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::AwaitExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
   void visit (HIR::AsyncBlockExpr &expr) override
   {
-    translated = ExprStmtBuilder (ctx).build (expr);
+    return_place (ExprStmtBuilder (ctx).build (expr));
   }
 
 protected: // Illegal at this position.

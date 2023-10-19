@@ -23,16 +23,20 @@
 
 namespace Rust {
 namespace BIR {
-// Compiles binding of values into newly created variables.
-// Used in let, match arm, and function parameter patterns.
+
+/**
+ * Compiles binding of values into newly created variables.
+ * Used in let, match arm, and function parameter patterns.
+ */
 class PatternBindingBuilder : protected AbstractBuilder,
 			      public HIR::HIRPatternVisitor
 {
+  /** Value of initialization expression. */
   PlaceId init;
-  // This is where lifetime annotations are stored.
+  /** This is where lifetime annotations are stored. */
   tl::optional<HIR::Type *> type;
 
-  // Emulates recursive stack saving and restoring inside a visitor.
+  /** Emulates recursive stack saving and restoring inside a visitor. */
   class SavedState
   {
     PatternBindingBuilder *builder;
@@ -55,21 +59,26 @@ class PatternBindingBuilder : protected AbstractBuilder,
 
 public:
   PatternBindingBuilder (BuilderContext &ctx, PlaceId init, HIR::Type *type)
-    : AbstractBuilder (ctx), init (init),
-      type (type ? tl::optional<HIR::Type *> (type) : tl::nullopt)
+    : AbstractBuilder (ctx), init (init), type (optional_from_ptr (type))
   {}
 
   void go (HIR::Pattern &pattern) { pattern.accept_vis (*this); }
 
-  void visit_identifier (const Analysis::NodeMapping &node, bool is_ref)
+  void visit_identifier (const Analysis::NodeMapping &node, bool is_ref,
+			 bool is_mut = false)
   {
-    translated = declare_variable (node);
     if (is_ref)
       {
+	translated = declare_variable (
+	  node, new TyTy::ReferenceType (node.get_hirid (),
+					 TyTy::TyVar (node.get_hirid ()),
+					 (is_mut) ? Mutability::Mut
+						  : Mutability::Imm));
 	push_assignment (translated, new BorrowExpr (init));
       }
     else
       {
+	translated = declare_variable (node);
 	push_assignment (translated, init);
       }
     auto &init_place = ctx.place_db[init];
@@ -87,8 +96,10 @@ public:
   {
     // Top-level identifiers are resolved directly to avoid useless temporary
     // (for cleaner BIR).
-    visit_identifier (pattern.get_mappings (), pattern.get_is_ref ());
+    visit_identifier (pattern.get_mappings (), pattern.get_is_ref (),
+		      pattern.is_mut ());
   }
+
   void visit (HIR::ReferencePattern &pattern) override
   {
     SavedState saved (this);
@@ -104,6 +115,7 @@ public:
       = ctx.lookup_lifetime (ref_type.map (&HIR::ReferenceType::get_lifetime));
     pattern.get_referenced_pattern ()->accept_vis (*this);
   }
+
   void visit (HIR::SlicePattern &pattern) override
   {
     SavedState saved (this);
@@ -119,11 +131,13 @@ public:
 	item->accept_vis (*this);
       }
   }
+
   void visit (HIR::AltPattern &pattern) override
   {
     rust_sorry_at (pattern.get_locus (),
 		   "borrow-checking of alt patterns is not yet implemented");
   }
+
   void visit (HIR::StructPattern &pattern) override
   {
     SavedState saved (this);
@@ -181,12 +195,14 @@ public:
 						   field_ty->get_field_type (),
 						   saved.init, field_index);
 	      visit_identifier (ident_field->get_mappings (),
-				ident_field->get_has_ref ());
+				ident_field->get_has_ref (),
+				ident_field->is_mut ());
 	      break;
 	    }
 	  }
       }
   }
+
   void visit_tuple_fields (std::vector<std::unique_ptr<HIR::Pattern>> &fields,
 			   SavedState &saved, size_t &index)
   {

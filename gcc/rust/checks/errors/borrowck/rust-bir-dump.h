@@ -28,10 +28,10 @@
 namespace Rust {
 namespace BIR {
 
+/** Prints the BIR to a stream in a format resembling rustc's MIR. */
 class Dump : public Visitor
 {
   std::ostream &stream;
-  const PlaceDB &place_db;
   Function &func;
   const std::string &name;
 
@@ -40,10 +40,11 @@ class Dump : public Visitor
 
   PlaceId node_place = INVALID_PLACE;
   BasicBlockId node_bb = INVALID_BB;
+  bool bb_terminated = false;
 
 public:
   Dump (std::ostream &os, Function &func, const std::string &name)
-    : stream (os), place_db (func.place_db), func (func), name (name),
+    : stream (os), func (func), name (name),
       bb_fold_map (func.basic_blocks.size ()), place_map (func.place_db.size ())
   {}
   void go (bool enable_simplify_cfg = false);

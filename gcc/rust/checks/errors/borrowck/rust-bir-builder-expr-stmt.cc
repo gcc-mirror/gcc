@@ -25,6 +25,48 @@
 namespace Rust {
 namespace BIR {
 
+using LoopAndLabelCtx = BuilderContext::LoopAndLabelCtx;
+
+BuilderContext::LoopAndLabelCtx &
+ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
+{
+  NodeId label
+    = (expr.has_loop_label ())
+	? expr.get_loop_label ().get_lifetime ().get_mappings ().get_nodeid ()
+	: UNKNOWN_NODEID;
+  PlaceId label_var = take_or_create_return_place (lookup_type (expr));
+
+  BasicBlockId continue_bb = new_bb ();
+  BasicBlockId break_bb = new_bb ();
+  ctx.loop_and_label_stack.push_back (
+    {true, label, label_var, break_bb, continue_bb});
+  return ctx.loop_and_label_stack.back ();
+}
+
+BuilderContext::LoopAndLabelCtx &
+ExprStmtBuilder::get_label_ctx (HIR::Lifetime &label)
+{
+  NodeId label_id = resolve_label (label);
+  auto lookup = std::find_if (ctx.loop_and_label_stack.rbegin (),
+			      ctx.loop_and_label_stack.rend (),
+			      [label_id] (LoopAndLabelCtx &info) {
+				return info.label == label_id;
+			      });
+  rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+  return *lookup;
+}
+
+LoopAndLabelCtx &
+ExprStmtBuilder::get_unnamed_loop_ctx ()
+{
+  auto lookup
+    = std::find_if (ctx.loop_and_label_stack.rbegin (),
+		    ctx.loop_and_label_stack.rend (),
+		    [] (LoopAndLabelCtx &info) { return info.is_loop; });
+  rust_assert (lookup != ctx.loop_and_label_stack.rend ());
+  return *lookup;
+}
+
 void
 ExprStmtBuilder::visit (HIR::ClosureExpr &expr)
 {
@@ -34,8 +76,9 @@ ExprStmtBuilder::visit (HIR::ClosureExpr &expr)
     {
       captures.push_back (ctx.place_db.lookup_variable (capture));
     }
+  make_args (captures);
 
-  // Not a coercion site.
+  // Note: Not a coercion site for captures.
   return_expr (new InitializerExpr (std::move (captures)), lookup_type (expr));
 }
 
@@ -45,6 +88,7 @@ ExprStmtBuilder::visit (HIR::StructExprStructFields &fields)
   auto struct_ty
     = lookup_type (fields)->as<TyTy::ADTType> ()->get_variants ().at (0);
   auto init_values = StructBuilder (ctx, struct_ty).build (fields);
+  make_args (init_values);
   return_expr (new InitializerExpr (std::move (init_values)),
 	       lookup_type (fields));
 }
@@ -59,7 +103,7 @@ ExprStmtBuilder::visit (HIR::StructExprStruct &expr)
 void
 ExprStmtBuilder::visit (HIR::LiteralExpr &expr)
 {
-  // Different literal values of the same type are not distinguished.
+  // Different literal values of the same type are not distinguished in BIR.
   return_place (ctx.place_db.get_constant (lookup_type (expr)));
 }
 
@@ -74,12 +118,14 @@ void
 ExprStmtBuilder::visit (HIR::DereferenceExpr &expr)
 {
   auto operand = visit_expr (*expr.get_expr ());
-  return_place (operand);
+  return_place (ctx.place_db.lookup_or_add_path (Place::DEREF,
+						 lookup_type (expr), operand));
 }
 
 void
 ExprStmtBuilder::visit (HIR::ErrorPropagationExpr &expr)
 {
+  // TODO: desugar in AST->HIR
   rust_sorry_at (expr.get_locus (), "error propagation is not supported");
 }
 
@@ -87,7 +133,7 @@ void
 ExprStmtBuilder::visit (HIR::NegationExpr &expr)
 {
   PlaceId operand = visit_expr (*expr.get_expr ());
-  return_expr (new Operator<1> ({operand}), lookup_type (expr));
+  return_expr (new Operator<1> ({make_arg (operand)}), lookup_type (expr));
 }
 
 void
@@ -95,7 +141,8 @@ ExprStmtBuilder::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({lhs, rhs}), lookup_type (expr));
+  return_expr (new Operator<2> ({make_arg (lhs), make_arg (rhs)}),
+	       lookup_type (expr));
 }
 
 void
@@ -103,19 +150,23 @@ ExprStmtBuilder::visit (HIR::ComparisonExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({lhs, rhs}), lookup_type (expr));
+  return_expr (new Operator<2> ({make_arg (lhs), make_arg (rhs)}),
+	       lookup_type (expr));
 }
 
 void
 ExprStmtBuilder::visit (HIR::LazyBooleanExpr &expr)
 {
-  return_place (LazyBooleanExprBuilder (ctx).build (expr));
+  return_place (LazyBooleanExprBuilder (ctx, take_or_create_return_place (
+					       lookup_type (expr)))
+		  .build (expr));
 }
 
 void
 ExprStmtBuilder::visit (HIR::TypeCastExpr &expr)
 {
-  return_place (visit_expr (*expr.get_expr ()));
+  auto operand = visit_expr (*expr.get_expr ());
+  return_expr (new Operator<1> ({operand}), lookup_type (expr));
 }
 
 void
@@ -132,34 +183,31 @@ ExprStmtBuilder::visit (HIR::CompoundAssignmentExpr &expr)
   auto lhs = visit_expr (*expr.get_lhs ());
   auto rhs = visit_expr (*expr.get_rhs ());
   push_assignment (lhs, new Operator<2> ({lhs, rhs}));
-  // TODO: (philip) nicer unit?
-  return_place (ctx.place_db.get_constant (lookup_type (expr)));
 }
 
 void
 ExprStmtBuilder::visit (HIR::GroupedExpr &expr)
 {
-  // Uses accept_vis directly to avoid creating n new temporary.
-  expr.get_expr_in_parens ()->accept_vis (*this);
+  return_place (visit_expr (*expr.get_expr_in_parens ()));
 }
 
 void
 ExprStmtBuilder::visit (HIR::ArrayExpr &expr)
 {
-  switch (expr.get_internal_elements ()->get_array_expr_type ())
+  auto &elems = expr.get_internal_elements ();
+  switch (elems->get_array_expr_type ())
     {
       case HIR::ArrayElems::VALUES: {
-	auto init_values = visit_list ((static_cast<HIR::ArrayElemsValues *> (
-					  expr.get_internal_elements ().get ()))
-					 ->get_values ());
+	auto &elem_vals = (static_cast<HIR::ArrayElemsValues &> (*elems));
+	auto init_values = visit_list (elem_vals.get_values ());
+	make_args (init_values);
 	return_expr (new InitializerExpr (std::move (init_values)),
 		     lookup_type (expr));
 	break;
       }
       case HIR::ArrayElems::COPIED: {
-	auto init = visit_expr (*(static_cast<HIR::ArrayElemsCopied *> (
-				    expr.get_internal_elements ().get ()))
-				   ->get_elem_to_copy ());
+	auto &elem_copied = (static_cast<HIR::ArrayElemsCopied &> (*elems));
+	auto init = visit_expr (*elem_copied.get_elem_to_copy ());
 	return_expr (new InitializerExpr ({init}), lookup_type (expr));
 	break;
       }
@@ -171,7 +219,7 @@ ExprStmtBuilder::visit (HIR::ArrayIndexExpr &expr)
 {
   auto lhs = visit_expr (*expr.get_array_expr ());
   auto rhs = visit_expr (*expr.get_index_expr ());
-  // The Index is not tracked in BIR.
+  // The index is not tracked in BIR.
   (void) rhs;
   return_place (
     ctx.place_db.lookup_or_add_path (Place::INDEX, lookup_type (expr), lhs));
@@ -181,14 +229,6 @@ void
 ExprStmtBuilder::visit (HIR::TupleExpr &expr)
 {
   std::vector<PlaceId> init_values = visit_list (expr.get_tuple_elems ());
-  if (std::any_of (init_values.begin (), init_values.end (),
-		   [this] (PlaceId id) {
-		     return ctx.place_db[id].lifetime.has_lifetime ();
-		   }))
-    {
-      ctx.place_db[expr_return_place].lifetime
-	= {ctx.lifetime_interner.get_anonymous ()};
-    }
   return_expr (new InitializerExpr (std::move (init_values)),
 	       lookup_type (expr));
 }
@@ -208,7 +248,7 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
   PlaceId fn = visit_expr (*expr.get_fnexpr ());
   std::vector<PlaceId> arguments = visit_list (expr.get_arguments ());
 
-  TyTy::BaseType *call_type = ctx.place_db[fn].tyty;
+  auto *call_type = ctx.place_db[fn].tyty;
   if (auto fn_type = call_type->try_as<TyTy::FnType> ())
     {
       for (size_t i = 0; i < fn_type->get_params ().size (); ++i)
@@ -234,6 +274,10 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
 }
 
 void
+ExprStmtBuilder::visit (HIR::MethodCallExpr &expr)
+{}
+
+void
 ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
 {
   auto receiver = visit_expr (*expr.get_receiver_expr ());
@@ -242,12 +286,12 @@ ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
   auto adt = type->as<TyTy::ADTType> ();
   rust_assert (!adt->is_enum ());
   rust_assert (adt->number_of_variants () == 1);
-  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  auto struct_ty = adt->get_variants ().at (0);
 
   TyTy::StructFieldType *field_ty = nullptr;
   size_t field_index = 0;
-  bool ok = variant->lookup_field (expr.get_field_name ().as_string (),
-				   &field_ty, &field_index);
+  bool ok = struct_ty->lookup_field (expr.get_field_name ().as_string (),
+				     &field_ty, &field_index);
   rust_assert (ok);
 
   return_place (ctx.place_db.lookup_or_add_path (Place::FIELD,
@@ -258,114 +302,71 @@ ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::BlockExpr &block)
 {
-  BasicBlockId end_bb;
-
   if (block.has_label ())
     {
-      end_bb = new_bb ();
       NodeId label
 	= block.get_label ().get_lifetime ().get_mappings ().get_nodeid ();
-      PlaceId label_var = ctx.place_db.add_temporary (lookup_type (block));
-      ctx.loop_and_label_stack.push_back ({false, label, label_var, end_bb, 0});
+      PlaceId label_var = take_or_create_return_place (lookup_type (block));
+      ctx.loop_and_label_stack.push_back (
+	{false, label, label_var, new_bb (), INVALID_BB});
     }
 
+  // Eliminates dead code after break, continue, return.
   bool unreachable = false;
   for (auto &stmt : block.get_statements ())
     {
-      if (unreachable)
-	break;
       stmt->accept_vis (*this);
       if (ctx.get_current_bb ().is_terminated ())
-	unreachable = true;
+	{
+	  unreachable = true;
+	  break;
+	}
     }
 
   if (block.has_label ())
     {
-      auto label_info = ctx.loop_and_label_stack.back ();
+      auto block_ctx = ctx.loop_and_label_stack.back ();
       if (block.has_expr () && !unreachable)
 	{
-	  push_assignment (label_info.label_var,
+	  push_assignment (block_ctx.label_var,
 			   visit_expr (*block.get_final_expr ()));
 	}
       if (!ctx.get_current_bb ().is_terminated ())
 	{
-	  add_jump_to (end_bb);
+	  push_goto (block_ctx.break_bb);
 	}
-      ctx.current_bb = end_bb;
+      ctx.current_bb = block_ctx.break_bb;
       ctx.loop_and_label_stack.pop_back ();
 
-      return_place (label_info.label_var);
+      return_place (block_ctx.label_var);
     }
   else if (block.has_expr () && !unreachable)
     {
-      return_place (visit_expr (*block.get_final_expr ()));
+      return_place (visit_expr (*block.get_final_expr (),
+				take_or_create_return_place (
+				  lookup_type (*block.get_final_expr ()))));
     }
 }
 
 void
 ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
 {
-  BuilderContext::LoopAndLabelInfo info;
-  if (cont.has_label ())
-    {
-      NodeId label = resolve_label (cont.get_label ());
-      auto lookup
-	= std::find_if (ctx.loop_and_label_stack.rbegin (),
-			ctx.loop_and_label_stack.rend (),
-			[label] (const BuilderContext::LoopAndLabelInfo &info) {
-			  return info.label == label;
-			});
-      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
-      info = *lookup;
-    }
-  else
-    {
-      auto lookup
-	= std::find_if (ctx.loop_and_label_stack.rbegin (),
-			ctx.loop_and_label_stack.rend (),
-			[] (const BuilderContext::LoopAndLabelInfo &info) {
-			  return info.is_loop;
-			});
-      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
-      info = *lookup;
-    }
+  LoopAndLabelCtx info = cont.has_label () ? get_label_ctx (cont.get_label ())
+					   : get_unnamed_loop_ctx ();
   push_goto (info.continue_bb);
-  // No code allowed after continue. No BB starts - would be empty.
+  // No code allowed after continue. Handled in BlockExpr.
 }
 
 void
 ExprStmtBuilder::visit (HIR::BreakExpr &brk)
 {
-  BuilderContext::LoopAndLabelInfo info;
-  if (brk.has_label ())
-    {
-      NodeId label = resolve_label (brk.get_label ());
-      auto lookup
-	= std::find_if (ctx.loop_and_label_stack.rbegin (),
-			ctx.loop_and_label_stack.rend (),
-			[label] (const BuilderContext::LoopAndLabelInfo &info) {
-			  return info.label == label;
-			});
-      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
-      info = *lookup;
-    }
-  else
-    {
-      auto lookup
-	= std::find_if (ctx.loop_and_label_stack.rbegin (),
-			ctx.loop_and_label_stack.rend (),
-			[] (const BuilderContext::LoopAndLabelInfo &info) {
-			  return info.is_loop;
-			});
-      rust_assert (lookup != ctx.loop_and_label_stack.rend ());
-      info = *lookup;
-    }
+  LoopAndLabelCtx info = brk.has_label () ? get_label_ctx (brk.get_label ())
+					  : get_unnamed_loop_ctx ();
   if (brk.has_break_expr ())
-    {
-      push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
-    }
+    push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
+
   push_goto (info.break_bb);
-  // No code allowed after break. No BB starts - would be empty.
+  // No code allowed after continue. Handled in BlockExpr.
 }
 
 void
@@ -425,22 +426,6 @@ void
 ExprStmtBuilder::visit (HIR::UnsafeBlockExpr &expr)
 {
   rust_sorry_at (expr.get_locus (), "unsafe blocks are not supported");
-}
-
-BuilderContext::LoopAndLabelInfo &
-ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
-{
-  NodeId label
-    = (expr.has_loop_label ())
-	? expr.get_loop_label ().get_lifetime ().get_mappings ().get_nodeid ()
-	: UNKNOWN_NODEID;
-  PlaceId label_var = ctx.place_db.add_temporary (lookup_type (expr));
-
-  BasicBlockId continue_bb = new_bb ();
-  BasicBlockId break_bb = new_bb ();
-  ctx.loop_and_label_stack.push_back (
-    {true, label, label_var, break_bb, continue_bb});
-  return ctx.loop_and_label_stack.back ();
 }
 
 void
@@ -518,40 +503,40 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 {
-  PlaceId result = ctx.place_db.add_temporary (lookup_type (expr));
+  push_switch (make_arg (visit_expr (*expr.get_if_condition ())));
+  BasicBlockId if_end_bb = ctx.current_bb;
 
-  push_switch (visit_expr (*expr.get_if_condition ()));
-  BasicBlockId if_block = ctx.current_bb;
+  PlaceId result = take_or_create_return_place (lookup_type (expr));
 
   ctx.current_bb = new_bb ();
-  auto then_res = visit_expr (*expr.get_if_block ());
-  push_assignment (result, then_res);
+  BasicBlockId then_start_bb = ctx.current_bb;
+  (void) visit_expr (*expr.get_if_block (), result);
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (INVALID_BB); // Resolved later.
-  BasicBlockId then_block = ctx.current_bb;
+  BasicBlockId then_end_bb = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
-  auto else_res = visit_expr (*expr.get_else_block ());
-  push_assignment (result, else_res);
+  BasicBlockId else_start_bb = ctx.current_bb;
+  (void) visit_expr (*expr.get_else_block (), result);
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (INVALID_BB); // Resolved later.
-  BasicBlockId else_block = ctx.current_bb;
+  BasicBlockId else_end_bb = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
-  BasicBlockId final_block = ctx.current_bb;
+  BasicBlockId final_start_bb = ctx.current_bb;
   return_place (result);
 
   // Jumps are added at the end to match rustc MIR order for easier comparison.
-  add_jump (if_block, then_block);
-  add_jump (if_block, else_block);
+  add_jump (if_end_bb, then_start_bb);
+  add_jump (if_end_bb, else_start_bb);
 
-  auto &then_bb = ctx.basic_blocks[then_block];
+  auto &then_bb = ctx.basic_blocks[then_end_bb];
   if (then_bb.is_goto_terminated () && then_bb.successors.empty ())
-    add_jump (then_block, final_block);
+    add_jump (then_end_bb, final_start_bb);
 
-  auto &else_bb = ctx.basic_blocks[else_block];
+  auto &else_bb = ctx.basic_blocks[else_end_bb];
   if (else_bb.is_goto_terminated () && else_bb.successors.empty ())
-    add_jump (else_block, final_block);
+    add_jump (else_end_bb, final_start_bb);
 }
 void
 ExprStmtBuilder::visit (HIR::IfLetExpr &expr)
@@ -566,6 +551,7 @@ ExprStmtBuilder::visit (HIR::IfLetExprConseqElse &expr)
 void
 ExprStmtBuilder::visit (HIR::MatchExpr &expr)
 {
+  rust_sorry_at (expr.get_locus (), "match expressions are not supported");
   //  // TODO
   //  expr.get_scrutinee_expr ()->accept_vis (*this);
   //  PlaceId scrutinee = translated;
@@ -621,44 +607,47 @@ ExprStmtBuilder::visit (HIR::AsyncBlockExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::QualifiedPathInExpression &expr)
 {
-  PlaceId result;
   // Note: Type is only stored for the expr, not the segment.
-  bool ok = resolve_variable (expr.get_final_segment (), result);
-  rust_assert (ok);
+  PlaceId result
+    = resolve_variable_or_fn (expr.get_final_segment (), lookup_type (expr));
   return_place (result);
 }
 
 void
 ExprStmtBuilder::visit (HIR::PathInExpression &expr)
 {
-  PlaceId result;
   // Note: Type is only stored for the expr, not the segment.
-  bool ok = resolve_variable (expr.get_final_segment (), result);
-  rust_assert (ok);
+  PlaceId result
+    = resolve_variable_or_fn (expr.get_final_segment (), lookup_type (expr));
   return_place (result);
 }
 
 void
 ExprStmtBuilder::visit (HIR::LetStmt &stmt)
 {
-  if (stmt.has_init_expr ())
+  if (stmt.get_pattern ()->get_pattern_type () == HIR::Pattern::IDENTIFIER)
     {
-      auto init = visit_expr (*stmt.get_init_expr ());
-      PatternBindingBuilder (ctx, init, stmt.get_type ().get ())
-	.go (*stmt.get_pattern ());
-    }
-  else if (stmt.get_pattern ()->get_pattern_type () == HIR::Pattern::IDENTIFIER)
-    {
+      // Only if a pattern is just an identifier, no destructuring is needed.
+      // Hoverer PatternBindingBuilder cannot change existing temporary
+      // (init expr is evaluated before pattern binding) into a
+      // variable, so it would emit extra assignment.
       auto var = declare_variable (stmt.get_pattern ()->get_mappings ());
       auto &var_place = ctx.place_db[var];
       if (var_place.tyty->get_kind () == TyTy::REF)
 	{
-	  auto p_type = tl::optional<HIR::ReferenceType *> (
-	    static_cast<HIR::ReferenceType *> (stmt.get_type ().get ()));
 	  var_place.lifetime = ctx.lookup_lifetime (
-	    p_type.map (&HIR::ReferenceType::get_lifetime));
+	    optional_from_ptr (
+	      static_cast<HIR::ReferenceType *> (stmt.get_type ().get ()))
+	      .map (&HIR::ReferenceType::get_lifetime));
 	}
-      return;
+      if (stmt.has_init_expr ())
+	(void) visit_expr (*stmt.get_init_expr (), var);
+    }
+  else if (stmt.has_init_expr ())
+    {
+      auto init = visit_expr (*stmt.get_init_expr ());
+      PatternBindingBuilder (ctx, init, stmt.get_type ().get ())
+	.go (*stmt.get_pattern ());
     }
   else
     {

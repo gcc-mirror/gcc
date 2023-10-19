@@ -148,30 +148,9 @@ public:
       0);
   }
 
-  PlaceId lookup_variable (NodeId id)
-  {
-    PlaceId current = FIRST_VARIABLE_PLACE;
-
-    while (current != places.size ())
-      {
-	if (places[current].kind == Place::VARIABLE
-	    && places[current].variable_or_field_index == id)
-	  return current;
-	current++;
-      }
-    return INVALID_PLACE;
-  };
-
-  PlaceId add_temporary (TyTy::BaseType *tyty)
-  {
-    return add_place (
-      {Place::TEMPORARY, 0, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty},
-      0);
-  }
-
-  WARN_UNUSED_RESULT PlaceId lookup_or_add_path (Place::Kind kind,
-						 TyTy::BaseType *tyty,
-						 PlaceId parent, size_t id = 0)
+  [[nodiscard]] PlaceId lookup_or_add_path (Place::Kind kind,
+					    TyTy::BaseType *tyty,
+					    PlaceId parent, size_t id = 0)
   {
     PlaceId current = 0;
     if (parent < places.size ())
@@ -193,6 +172,13 @@ public:
       current);
   }
 
+  PlaceId add_temporary (TyTy::BaseType *tyty)
+  {
+    return add_place (
+      {Place::TEMPORARY, 0, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty},
+      0);
+  }
+
   PlaceId get_constant (TyTy::BaseType *tyty)
   {
     auto lookup = constants_lookup.find (tyty);
@@ -204,6 +190,44 @@ public:
       = {Place::CONSTANT, 0, {}, is_type_copy (tyty), false, lifetime, tyty};
     places.push_back (place);
     return places.size () - 1;
+  }
+
+  PlaceId lookup_variable (NodeId id)
+  {
+    PlaceId current = FIRST_VARIABLE_PLACE;
+
+    while (current != places.size ())
+      {
+	if (places[current].kind == Place::VARIABLE
+	    && places[current].variable_or_field_index == id)
+	  return current;
+	current++;
+      }
+    return INVALID_PLACE;
+  };
+
+  PlaceId lookup_or_add_variable (NodeId id, TyTy::BaseType *tyty)
+  {
+    auto lookup = lookup_variable (id);
+    if (lookup != INVALID_PLACE)
+      return lookup;
+    places.push_back (
+      {Place::VARIABLE, id, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty});
+    return places.size () - 1;
+  };
+
+  PlaceId into_rvalue (PlaceId place)
+  {
+    if (places[place].is_rvalue || places[place].kind == Place::CONSTANT
+	|| places[place].tyty->get_kind () == TyTy::REF)
+      return place;
+    return add_place ({Place::TEMPORARY,
+		       0,
+		       {},
+		       places[place].is_copy,
+		       true,
+		       NO_LIFETIME,
+		       places[place].tyty});
   }
 
 private:
