@@ -31,31 +31,35 @@ namespace Rust {
 
 namespace BIR {
 
-class LifetimeResolver
-{
-  using Index = uint32_t;
-  using Value = std::string;
-
-  Index next_index = FIRST_NORMAL_LIFETIME_ID;
-  std::unordered_map<Value, Index> value_to_index;
-
-public:
-  Index intern (const Value &value)
-  {
-    auto found = value_to_index.find (value);
-    if (found != value_to_index.end ())
-      {
-	return found->second;
-      }
-    value_to_index.emplace (value, next_index);
-    return next_index++;
-  }
-  Index get_anonymous () { return next_index++; }
-};
-
+/** Holds the context of BIR building so that it can be shared/passed between
+ * different builders. */
 struct BuilderContext
 {
-  struct LoopAndLabelInfo
+  class LifetimeResolver
+  {
+    using Index = uint32_t;
+    using Value = std::string;
+
+    Index next_index = FIRST_NORMAL_LIFETIME_ID;
+    std::unordered_map<Value, Index> value_to_index;
+
+  public:
+    Index resolve (const Value &value)
+    {
+      auto found = value_to_index.find (value);
+      if (found != value_to_index.end ())
+	{
+	  return found->second;
+	}
+      value_to_index.emplace (value, next_index);
+      return next_index++;
+    }
+
+    /** Returns a new anonymous lifetime. */
+    Index get_anonymous () { return next_index++; }
+  };
+
+  struct LoopAndLabelCtx
   {
     bool is_loop;      // Loop or labelled block
     NodeId label;      // UNKNOWN_NODEID if no label (loop)
@@ -63,19 +67,20 @@ struct BuilderContext
     BasicBlockId break_bb;
     BasicBlockId continue_bb; // Only valid for loops
 
-    LoopAndLabelInfo (bool is_loop = false, NodeId label = UNKNOWN_NODEID,
-		      PlaceId label_var = INVALID_PLACE,
-		      BasicBlockId break_bb = INVALID_BB,
-		      BasicBlockId continue_bb = INVALID_BB)
+    LoopAndLabelCtx (bool is_loop = false, NodeId label = UNKNOWN_NODEID,
+		     PlaceId label_var = INVALID_PLACE,
+		     BasicBlockId break_bb = INVALID_BB,
+		     BasicBlockId continue_bb = INVALID_BB)
       : is_loop (is_loop), label (label), label_var (label_var),
 	break_bb (break_bb), continue_bb (continue_bb)
     {}
   };
 
-  // Context
+  // External context.
   Resolver::TypeCheckContext &tyctx;
   Resolver::Resolver &resolver;
 
+  // BIR output
   std::vector<BasicBlock> basic_blocks;
   size_t current_bb = 0;
 
@@ -85,6 +90,7 @@ struct BuilderContext
    */
   PlaceDB place_db;
   LifetimeResolver lifetime_interner;
+  // Used for cleaner dump.
   std::vector<PlaceId> arguments;
   /**
    * Since labels can be used to return values, we need to reserve a place for
@@ -92,7 +98,8 @@ struct BuilderContext
    */
   std::unordered_map<NodeId, PlaceId> label_place_map;
 
-  std::vector<LoopAndLabelInfo> loop_and_label_stack;
+  /** Context for current situation (loop, label, etc.) */
+  std::vector<LoopAndLabelCtx> loop_and_label_stack;
 
 public:
   BuilderContext ()
@@ -111,7 +118,7 @@ public:
     switch (lifetime->get_lifetime_type ())
       {
 	case AST::Lifetime::NAMED: {
-	  return {lifetime_interner.intern (lifetime->get_name ())};
+	  return {lifetime_interner.resolve (lifetime->get_name ())};
 	}
 	case AST::Lifetime::STATIC: {
 	  return STATIC_LIFETIME;
@@ -125,9 +132,9 @@ public:
     rust_unreachable ();
   };
 
-  const LoopAndLabelInfo &lookup_label (NodeId label)
+  const LoopAndLabelCtx &lookup_label (NodeId label)
   {
-    auto label_match = [label] (const LoopAndLabelInfo &info) {
+    auto label_match = [label] (const LoopAndLabelCtx &info) {
       return info.label != UNKNOWN_NODEID && info.label == label;
     };
 
@@ -138,67 +145,39 @@ public:
   }
 };
 
-// Common infrastructure for building BIR from HIR.
+/** Common infrastructure for building BIR from HIR. */
 class AbstractBuilder
 {
 protected:
   BuilderContext &ctx;
 
-  // This emulates the return value of the visitor, to be able to use the
-  // current visitor infrastructure, where the return value is forced to be
-  // void.
+  /**
+   * This emulates the return value of the visitor, to be able to use the
+   * current visitor infrastructure, where the return value is forced to be
+   * void.
+   */
   PlaceId translated = INVALID_PLACE;
 
 protected:
   explicit AbstractBuilder (BuilderContext &ctx) : ctx (ctx) {}
 
-  WARN_UNUSED_RESULT static NodeId get_nodeid (HIR::Expr &expr)
-  {
-    return expr.get_mappings ().get_nodeid ();
-  }
-
-  WARN_UNUSED_RESULT static NodeId get_nodeid (HIR::Pattern &pattern)
-  {
-    return pattern.get_mappings ().get_nodeid ();
-  }
-
-  template <typename T>
-  WARN_UNUSED_RESULT TyTy::BaseType *lookup_type (T &pattern) const
-  {
-    return lookup_type (pattern.get_mappings ().get_hirid ());
-  }
-
-  WARN_UNUSED_RESULT TyTy::BaseType *lookup_type (HirId hirid) const
-  {
-    TyTy::BaseType *type = nullptr;
-    bool ok = ctx.tyctx.lookup_type (hirid, &type);
-    rust_assert (ok);
-    rust_assert (type != nullptr);
-    return type;
-  }
-
   PlaceId declare_variable (const Analysis::NodeMapping &node)
   {
-    const NodeId nodeid = node.get_nodeid ();
-    const HirId hirid = node.get_hirid ();
-
-    // In debug mode check that the variable is not already declared.
-    rust_assert (ctx.place_db.lookup_variable (nodeid) == INVALID_PLACE);
-
-    return ctx.place_db.add_variable (nodeid, lookup_type (hirid));
+    return declare_variable (node, lookup_type (node.get_hirid ()));
   }
 
   PlaceId declare_variable (const Analysis::NodeMapping &node,
-			    TyTy::BaseType *type)
+			    TyTy::BaseType *ty)
   {
     const NodeId nodeid = node.get_nodeid ();
 
-    // In debug mode check that the variable is not already declared.
+    // In debug mode, check that the variable is not already declared.
     rust_assert (ctx.place_db.lookup_variable (nodeid) == INVALID_PLACE);
 
-    return ctx.place_db.add_variable (nodeid, type);
+    return ctx.place_db.add_variable (nodeid, ty);
   }
 
+protected: // Helpers to add BIR nodes
   void push_assignment (PlaceId lhs, AbstractExpr *rhs)
   {
     ctx.get_current_bb ().statements.emplace_back (lhs, rhs);
@@ -219,8 +198,8 @@ protected:
   void push_switch (PlaceId switch_val,
 		    std::initializer_list<BasicBlockId> destinations = {})
   {
-    ctx.get_current_bb ().statements.emplace_back (Node::Kind::SWITCH,
-						   switch_val);
+    auto copy = make_arg (switch_val);
+    ctx.get_current_bb ().statements.emplace_back (Node::Kind::SWITCH, copy);
     ctx.get_current_bb ().successors.insert (
       ctx.get_current_bb ().successors.end (), destinations);
   }
@@ -232,25 +211,40 @@ protected:
       ctx.get_current_bb ().successors.push_back (bb);
   }
 
-  void push_storage_dead (PlaceId place)
+  PlaceId declare_rvalue (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (Node::Kind::STORAGE_DEAD,
-						   place);
+    ctx.place_db[place].is_rvalue = true;
+    return place;
   }
 
-  void push_storage_live (PlaceId place)
+  void declare_rvalues (std::vector<PlaceId> &places)
   {
-    ctx.get_current_bb ().statements.emplace_back (Node::Kind::STORAGE_LIVE,
-						   place);
+    for (auto &place : places)
+      declare_rvalue (place);
   }
 
+  PlaceId make_arg (PlaceId arg)
+  {
+    auto copy = ctx.place_db.into_rvalue (arg);
+    if (copy != arg)
+      push_assignment (copy, arg);
+    return copy;
+  }
+
+  void make_args (std::vector<PlaceId> &args)
+  {
+    std::transform (args.begin (), args.end (), args.begin (),
+		    [this] (PlaceId arg) { return make_arg (arg); });
+  }
+
+protected: // CFG helpers
   BasicBlockId new_bb ()
   {
     ctx.basic_blocks.emplace_back ();
     return ctx.basic_blocks.size () - 1;
   }
 
-  BasicBlockId start_new_subsequent_bb ()
+  BasicBlockId start_new_consecutive_bb ()
   {
     BasicBlockId bb = new_bb ();
     ctx.get_current_bb ().successors.emplace_back (bb);
@@ -265,7 +259,22 @@ protected:
 
   void add_jump_to (BasicBlockId bb) { add_jump (ctx.current_bb, bb); }
 
-protected:
+protected: // HIR resolution helpers
+  template <typename T>
+  [[nodiscard]] TyTy::BaseType *lookup_type (T &hir_node) const
+  {
+    return lookup_type (hir_node.get_mappings ().get_hirid ());
+  }
+
+  [[nodiscard]] TyTy::BaseType *lookup_type (HirId hirid) const
+  {
+    TyTy::BaseType *type = nullptr;
+    bool ok = ctx.tyctx.lookup_type (hirid, &type);
+    rust_assert (ok);
+    rust_assert (type != nullptr);
+    return type;
+  }
+
   template <typename T> NodeId resolve_label (T &expr)
   {
     NodeId resolved_label;
@@ -276,42 +285,30 @@ protected:
     return resolved_label;
   }
 
-  template <typename T>
-  bool resolve_variable (T &variable, PlaceId &resolved_variable)
+  template <typename T> PlaceId resolve_variable (T &variable)
   {
     NodeId variable_id;
-    if (!ctx.resolver.lookup_resolved_name (
-	  variable.get_mappings ().get_nodeid (), &variable_id))
-      {
-	// TODO: should this be assert? (should be caught by typecheck)
-	rust_error_at (variable.get_locus (), "unresolved variable");
-	return false;
-      }
-    resolved_variable = ctx.place_db.lookup_variable (variable_id);
-    return true;
+    bool ok = ctx.resolver.lookup_resolved_name (
+      variable.get_mappings ().get_nodeid (), &variable_id);
+    rust_assert (ok);
+    return ctx.place_db.lookup_variable (variable_id);
   }
 
-  bool find_block_ctx (NodeId label, BuilderContext::LoopAndLabelInfo &block)
+  template <typename T>
+  PlaceId resolve_variable_or_fn (T &variable, TyTy::BaseType *ty)
   {
-    if (ctx.loop_and_label_stack.empty ())
-      return false;
-    if (label == UNKNOWN_NODEID)
-      {
-	block = ctx.loop_and_label_stack.back ();
-	return true;
-      }
-    auto found
-      = std::find_if (ctx.loop_and_label_stack.rbegin (),
-		      ctx.loop_and_label_stack.rend (),
-		      [&label] (const BuilderContext::LoopAndLabelInfo &block) {
-			return block.label == label;
-		      });
-    if (found == ctx.loop_and_label_stack.rend ())
-      return false;
-    block = *found;
-    return true;
+    // Unlike variables,
+    // functions do not have to be declared in PlaceDB before use.
+    NodeId variable_id;
+    bool ok = ctx.resolver.lookup_resolved_name (
+      variable.get_mappings ().get_nodeid (), &variable_id);
+    rust_assert (ok);
+    return ctx.place_db.lookup_or_add_variable (variable_id,
+						(ty) ? ty
+						     : lookup_type (variable));
   }
 
+protected: // Implicit conversions.
   /**
    * Performs implicit coercions on the `translated` place defined for a
    * coercion site.
@@ -362,7 +359,6 @@ protected:
     return ty;
   }
 
-  /** For operator  */
   void autoref ()
   {
     if (ctx.place_db[translated].tyty->get_kind () != TyTy::REF)
@@ -380,66 +376,107 @@ class AbstractExprBuilder : public AbstractBuilder,
 			    public HIR::HIRExpressionVisitor
 {
 protected:
-  // Exactly one of this and `translated` is used by each visitor.
-  AbstractExpr *expr_return_expr = nullptr;
+  /**
+   * Optional place for the result of the evaluated expression.
+   * Valid if value is not `INVALID_PLACE`.
+   * Used when return place must be created by caller (return for if-else).
+   */
+  PlaceId expr_return_place = INVALID_PLACE;
 
 protected:
-  explicit AbstractExprBuilder (BuilderContext &ctx) : AbstractBuilder (ctx) {}
+  explicit AbstractExprBuilder (BuilderContext &ctx,
+				PlaceId expr_return_place = INVALID_PLACE)
+    : AbstractBuilder (ctx), expr_return_place (expr_return_place)
+  {}
 
-  PlaceId visit_expr (HIR::Expr &expr)
+  /**
+   * Wrapper that provides return value based API inside a visitor which has to
+   * use global state to pass the data around.
+   * @param dst_place Place to assign the produced value to, optionally
+   * allocated by the caller.
+   * */
+  PlaceId visit_expr (HIR::Expr &expr, PlaceId dst_place = INVALID_PLACE)
   {
-    // Reset return places.
+    // Save to support proper recursion.
+    auto saved = expr_return_place;
+    expr_return_place = dst_place;
     translated = INVALID_PLACE;
-    expr_return_expr = nullptr;
     expr.accept_vis (*this);
-    if (translated != INVALID_PLACE)
-      {
-	auto result = translated;
-	translated = INVALID_PLACE;
-	return result;
-      }
-    else if (expr_return_expr != nullptr)
-      {
-	// Only allocate temporary, if needed.
-	push_tmp_assignment (expr_return_expr, lookup_type (expr));
-	expr_return_expr = nullptr;
-	return translated;
-      }
-    else
-      {
-	return ctx.place_db.get_constant (lookup_type (expr));
-      }
+    expr_return_place = saved;
+    auto result = translated;
+    translated = INVALID_PLACE;
+    return result;
   }
 
+  /**
+   * Create a return value of a subexpression, which produces an expression.
+   * Use `return_place` for subexpression that only produce a place (look it up)
+   * to avoid needless assignments.
+   *
+   * @param can_panic mark that expression can panic to insert jump to cleanup.
+   */
   void return_expr (AbstractExpr *expr, TyTy::BaseType *ty,
 		    bool can_panic = false)
   {
-    rust_assert (expr_return_expr == nullptr);
-    if (can_panic)
+    if (expr_return_place != INVALID_PLACE)
       {
-	push_tmp_assignment (expr, ty);
-	// TODO, cleanup?
-	start_new_subsequent_bb ();
+	push_assignment (expr_return_place, expr);
       }
     else
       {
-	translated = INVALID_PLACE;
-	expr_return_expr = expr;
+	push_tmp_assignment (expr, ty);
+      }
+
+    if (can_panic)
+      {
+	start_new_consecutive_bb ();
       }
   }
 
+  /** Mark place to be a result of processed subexpression. */
   void return_place (PlaceId place)
   {
-    expr_return_expr = nullptr;
-    translated = place;
+    if (expr_return_place != INVALID_PLACE)
+      {
+	// Return place is already allocated, no need to defer assignment.
+	push_assignment (expr_return_place, place);
+      }
+    else
+      {
+	translated = place;
+      }
   }
 
+  /** Explicitly return a unit value. Expression produces no value. */
   void return_unit (HIR::Expr &expr)
   {
-    expr_return_expr = nullptr;
     translated = ctx.place_db.get_constant (lookup_type (expr));
   }
+
+  PlaceId take_or_create_return_place (TyTy::BaseType *type)
+  {
+    auto result = (expr_return_place != INVALID_PLACE)
+		    ? expr_return_place
+		    : ctx.place_db.add_temporary (type);
+    expr_return_place = INVALID_PLACE;
+    return result;
+  }
 };
+
+/**
+ * Helper to convert a pointer to an optional. Maps nullptr to nullopt.
+ * Optionals are mainly used here to provide monadic operations (map) over
+ * possibly null pointers.
+ */
+template <typename T>
+tl::optional<T>
+optional_from_ptr (T ptr)
+{
+  if (ptr != nullptr)
+    return {ptr};
+  else
+    return tl::nullopt;
+}
 
 } // namespace BIR
 } // namespace Rust

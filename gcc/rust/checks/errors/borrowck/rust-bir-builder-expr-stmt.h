@@ -25,14 +25,21 @@
 namespace Rust {
 namespace BIR {
 
+/**
+ * Compiles expressions into a BIR place.
+ * See AbstractExprBuilder for API usage docs (mainly `return_place` and
+ * `return_expr`).
+ */
 class ExprStmtBuilder : public AbstractExprBuilder, public HIR::HIRStmtVisitor
 {
-  PlaceId expr_return_place = INVALID_PLACE;
-
 public:
   explicit ExprStmtBuilder (BuilderContext &ctx) : AbstractExprBuilder (ctx) {}
 
-  PlaceId build (HIR::Expr &expr) { return visit_expr (expr); }
+  /** Entry point. */
+  PlaceId build (HIR::Expr &expr, PlaceId place = INVALID_PLACE)
+  {
+    return visit_expr (expr, place);
+  }
 
 private:
   template <typename T>
@@ -46,17 +53,19 @@ private:
     return result;
   }
 
-  BuilderContext::LoopAndLabelInfo &setup_loop (HIR::BaseLoopExpr &expr);
+  /** Common infrastructure for loops. */
+  BuilderContext::LoopAndLabelCtx &setup_loop (HIR::BaseLoopExpr &expr);
+
+  BuilderContext::LoopAndLabelCtx &get_label_ctx (HIR::Lifetime &label);
+  BuilderContext::LoopAndLabelCtx &get_unnamed_loop_ctx ();
 
 protected: // Expr
-  // TODO: test when compiles
   void visit (HIR::ClosureExpr &expr) override;
   void visit (HIR::StructExprStructFields &fields) override;
   void visit (HIR::StructExprStruct &expr) override;
   void visit (HIR::LiteralExpr &expr) override;
   void visit (HIR::BorrowExpr &expr) override;
   void visit (HIR::DereferenceExpr &expr) override;
-  // TODO: desugar in AST->HIR
   void visit (HIR::ErrorPropagationExpr &expr) override;
   void visit (HIR::NegationExpr &expr) override;
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override;
@@ -71,7 +80,7 @@ protected: // Expr
   void visit (HIR::TupleExpr &expr) override;
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::CallExpr &expr) override;
-  void visit (HIR::MethodCallExpr &expr) override {}
+  void visit (HIR::MethodCallExpr &expr) override;
   void visit (HIR::FieldAccessExpr &expr) override;
   void visit (HIR::BlockExpr &block) override;
   void visit (HIR::ContinueExpr &cont) override;
@@ -96,7 +105,7 @@ protected: // Expr
   void visit (HIR::AwaitExpr &expr) override;
   void visit (HIR::AsyncBlockExpr &expr) override;
 
-  // Nodes not containing executable code. Nothing to do.
+protected: // Nodes not containing executable code. Nothing to do.
   void visit (HIR::QualifiedPathInExpression &expr) override;
   void visit (HIR::PathInExpression &expr) override;
 
@@ -119,9 +128,8 @@ protected: // Stmt
 
   void visit (HIR::ExprStmt &stmt) override;
 
-protected: // Unused
+protected: // Ignored.
   // Only executable code of a single function/method is translated.
-  // All other items are ignored.
   void visit (HIR::EnumItemTuple &tuple) override {}
   void visit (HIR::EnumItemStruct &a_struct) override {}
   void visit (HIR::EnumItem &item) override {}

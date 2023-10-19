@@ -29,6 +29,7 @@ namespace BIR {
 class StructBuilder : public AbstractBuilder, public HIR::HIRFullVisitor
 {
   TyTy::VariantDef *struct_ty;
+  /** Output of the builder. */
   std::vector<PlaceId> init_values;
 
 public:
@@ -47,34 +48,33 @@ public:
 
   void visit (HIR::StructExprFieldIdentifier &field) override
   {
-    resolve_variable (field, translated);
-    handle_named_field (field);
+    handle_named_field (field, resolve_variable (field));
   }
   void visit (HIR::StructExprFieldIdentifierValue &field) override
   {
-    translated = ExprStmtBuilder (ctx).build (*field.get_value ());
-    handle_named_field (field);
+    auto value = ExprStmtBuilder (ctx).build (*field.get_value ());
+    handle_named_field (field, value);
   }
   void visit (HIR::StructExprFieldIndexValue &field) override
   {
-    translated = ExprStmtBuilder (ctx).build (*field.get_value ());
-    coercion_site (translated,
+    auto value = ExprStmtBuilder (ctx).build (*field.get_value ());
+    coercion_site (value,
 		   struct_ty->get_field_at_index (field.get_tuple_index ())
 		     ->get_field_type ());
-    init_values.push_back (translated);
+    init_values.push_back (value);
   }
 
 private:
-  template <typename T> void handle_named_field (T &field)
+  template <typename T> void handle_named_field (T &field, PlaceId value)
   {
     size_t field_index;
     TyTy::StructFieldType *field_type;
     bool ok = struct_ty->lookup_field (field.get_field_name ().as_string (),
 				       &field_type, &field_index);
     rust_assert (ok);
-    rust_assert (translated != INVALID_PLACE);
-    coercion_site (translated, field_type->get_field_type ());
-    init_values.push_back (translated);
+    rust_assert (value != INVALID_PLACE);
+    coercion_site (value, field_type->get_field_type ());
+    init_values.push_back (value);
   }
 
 protected:
