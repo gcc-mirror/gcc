@@ -2027,7 +2027,7 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
    diagnostic can also be downgraded by -Wno-error=opt.  */
 
 bool
-permerror (location_t location, int opt, const char *gmsgid, ...)
+permerror_opt (location_t location, int opt, const char *gmsgid, ...)
 {
   auto_diagnostic_group d;
   va_list ap;
@@ -2041,7 +2041,7 @@ permerror (location_t location, int opt, const char *gmsgid, ...)
 /* Same as "permerror" above, but at RICHLOC.  */
 
 bool
-permerror (rich_location *richloc, int opt, const char *gmsgid, ...)
+permerror_opt (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 

@@ -1109,9 +1109,9 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
       else if (complain & tf_error)
 	{
 	  int savederrorcount = errorcount;
-	  permerror (loc, OPT_Wnarrowing,
-		     "narrowing conversion of %qE from %qH to %qI",
-		     init, ftype, type);
+	  permerror_opt (loc, OPT_Wnarrowing,
+			 "narrowing conversion of %qE from %qH to %qI",
+			 init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
 	}
