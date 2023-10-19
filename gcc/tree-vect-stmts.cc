@@ -3957,16 +3957,6 @@ vect_simd_lane_linear (tree op, class loop *loop,
     }
 }
 
-/* Return the number of elements in vector type VECTYPE, which is associated
-   with a SIMD clone.  At present these vectors always have a constant
-   length.  */
-
-static unsigned HOST_WIDE_INT
-simd_clone_subparts (tree vectype)
-{
-  return TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
-}
-
 /* Function vectorizable_simd_clone_call.
 
    Check if STMT_INFO performs a function call that can be vectorized
@@ -4267,7 +4257,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 							    slp_node);
 	  if (arginfo[i].vectype == NULL
 	      || !constant_multiple_p (bestn->simdclone->simdlen,
-				       simd_clone_subparts (arginfo[i].vectype)))
+				       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 	    return false;
 	}
 
@@ -4282,10 +4272,11 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
 	{
+	  tree clone_arg_vectype = bestn->simdclone->args[i].vector_type;
 	  if (bestn->simdclone->mask_mode == VOIDmode)
 	    {
-	      if (simd_clone_subparts (bestn->simdclone->args[i].vector_type)
-		  != simd_clone_subparts (arginfo[i].vectype))
+	      if (maybe_ne (TYPE_VECTOR_SUBPARTS (clone_arg_vectype),
+			    TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 		{
 		  /* FORNOW we only have partial support for vector-type masks
 		     that can't hold all of simdlen. */
@@ -4302,7 +4293,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      if (!SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype))
 		  || maybe_ne (exact_div (bestn->simdclone->simdlen,
 					  num_mask_args),
-			       simd_clone_subparts (arginfo[i].vectype)))
+			       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 		{
 		  /* FORNOW we only have partial support for integer-type masks
 		     that represent the same number of lanes as the
@@ -4436,21 +4427,24 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  unsigned int k, l, m, o;
 	  tree atype;
+	  poly_uint64 callee_nelements, caller_nelements;
 	  op = gimple_call_arg (stmt, i + arg_offset);
 	  switch (bestn->simdclone->args[i].arg_type)
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
 	      atype = bestn->simdclone->args[i].vector_type;
-	      o = vector_unroll_factor (nunits,
-					simd_clone_subparts (atype));
+	      caller_nelements = TYPE_VECTOR_SUBPARTS (arginfo[i].vectype);
+	      callee_nelements = TYPE_VECTOR_SUBPARTS (atype);
+	      o = vector_unroll_factor (nunits, callee_nelements);
 	      for (m = j * o; m < (j + 1) * o; m++)
 		{
-		  if (simd_clone_subparts (atype)
-		      < simd_clone_subparts (arginfo[i].vectype))
+		  if (known_lt (callee_nelements, caller_nelements))
 		    {
 		      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (atype));
-		      k = (simd_clone_subparts (arginfo[i].vectype)
-			   / simd_clone_subparts (atype));
+		      if (!constant_multiple_p (caller_nelements,
+						callee_nelements, &k))
+			gcc_unreachable ();
+
 		      gcc_assert ((k & (k - 1)) == 0);
 		      if (m == 0)
 			{
@@ -4481,8 +4475,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		    }
 		  else
 		    {
-		      k = (simd_clone_subparts (atype)
-			   / simd_clone_subparts (arginfo[i].vectype));
+		      if (!constant_multiple_p (callee_nelements,
+						caller_nelements, &k))
+			gcc_unreachable ();
 		      gcc_assert ((k & (k - 1)) == 0);
 		      vec<constructor_elt, va_gc> *ctor_elts;
 		      if (k != 1)
@@ -4544,20 +4539,19 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  tree elt_type = TREE_TYPE (atype);
 		  tree one = fold_convert (elt_type, integer_one_node);
 		  tree zero = fold_convert (elt_type, integer_zero_node);
-		  o = vector_unroll_factor (nunits,
-					    simd_clone_subparts (atype));
+		  callee_nelements = TYPE_VECTOR_SUBPARTS (atype);
+		  caller_nelements = TYPE_VECTOR_SUBPARTS (arginfo[i].vectype);
+		  o = vector_unroll_factor (nunits, callee_nelements);
 		  for (m = j * o; m < (j + 1) * o; m++)
 		    {
-		      if (simd_clone_subparts (atype)
-			  < simd_clone_subparts (arginfo[i].vectype))
+		      if (maybe_lt (callee_nelements, caller_nelements))
 			{
 			  /* The mask type has fewer elements than simdlen.  */
 
 			  /* FORNOW */
 			  gcc_unreachable ();
 			}
-		      else if (simd_clone_subparts (atype)
-			       == simd_clone_subparts (arginfo[i].vectype))
+		      else if (known_eq (callee_nelements, caller_nelements))
 			{
 			  /* The SIMD clone function has the same number of
 			     elements as the current function.  */
@@ -4595,9 +4589,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		{
 		  atype = bestn->simdclone->args[i].vector_type;
 		  /* Guess the number of lanes represented by atype.  */
-		  unsigned HOST_WIDE_INT atype_subparts
+		  poly_uint64 atype_subparts
 		    = exact_div (bestn->simdclone->simdlen,
-				 num_mask_args).to_constant ();
+				 num_mask_args);
 		  o = vector_unroll_factor (nunits, atype_subparts);
 		  for (m = j * o; m < (j + 1) * o; m++)
 		    {
@@ -4610,16 +4604,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 							   &vec_oprnds[i]);
 			  vec_oprnds_i[i] = 0;
 			}
-		      if (atype_subparts
-			  < simd_clone_subparts (arginfo[i].vectype))
+		      if (maybe_lt (atype_subparts,
+				    TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 			{
 			  /* The mask argument has fewer elements than the
 			     input vector.  */
 			  /* FORNOW */
 			  gcc_unreachable ();
 			}
-		      else if (atype_subparts
-			       == simd_clone_subparts (arginfo[i].vectype))
+		      else if (known_eq (atype_subparts,
+					 TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 			{
 			  /* The vector mask argument matches the input
 			     in the number of lanes, but not necessarily
@@ -4738,7 +4732,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       if (vec_dest)
 	{
 	  gcc_assert (ratype
-		      || known_eq (simd_clone_subparts (rtype), nunits));
+		      || known_eq (TYPE_VECTOR_SUBPARTS (rtype), nunits));
 	  if (ratype)
 	    new_temp = create_tmp_var (ratype);
 	  else if (useless_type_conversion_p (vectype, rtype))
@@ -4752,13 +4746,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       if (vec_dest)
 	{
-	  if (!multiple_p (simd_clone_subparts (vectype), nunits))
+	  if (!multiple_p (TYPE_VECTOR_SUBPARTS (vectype), nunits))
 	    {
 	      unsigned int k, l;
 	      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
 	      poly_uint64 bytes = GET_MODE_SIZE (TYPE_MODE (vectype));
 	      k = vector_unroll_factor (nunits,
-					simd_clone_subparts (vectype));
+					TYPE_VECTOR_SUBPARTS (vectype));
 	      gcc_assert ((k & (k - 1)) == 0);
 	      for (l = 0; l < k; l++)
 		{
@@ -4788,10 +4782,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		vect_clobber_variable (vinfo, stmt_info, gsi, new_temp);
 	      continue;
 	    }
-	  else if (!multiple_p (nunits, simd_clone_subparts (vectype)))
+	  else if (!multiple_p (nunits, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
-	      unsigned int k = (simd_clone_subparts (vectype)
-				/ simd_clone_subparts (rtype));
+	      unsigned int k;
+	      if (!constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype),
+					TYPE_VECTOR_SUBPARTS (rtype), &k))
+		gcc_unreachable ();
 	      gcc_assert ((k & (k - 1)) == 0);
 	      if ((j & (k - 1)) == 0)
 		vec_alloc (ret_ctor_elts, k);
@@ -4799,7 +4795,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		{
 		  unsigned int m, o;
 		  o = vector_unroll_factor (nunits,
-					    simd_clone_subparts (rtype));
+					    TYPE_VECTOR_SUBPARTS (rtype));
 		  for (m = 0; m < o; m++)
 		    {
 		      tree tem = build4 (ARRAY_REF, rtype, new_temp,
