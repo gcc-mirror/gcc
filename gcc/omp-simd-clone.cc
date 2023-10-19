@@ -807,8 +807,14 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
     {
       ipa_adjusted_param adj;
       memset (&adj, 0, sizeof (adj));
-      tree parm = args[i];
-      tree parm_type = node->definition ? TREE_TYPE (parm) : parm;
+      tree parm = NULL_TREE;
+      tree parm_type = NULL_TREE;
+      if (i < args.length())
+	{
+	  parm = args[i];
+	  parm_type = node->definition ? TREE_TYPE (parm) : parm;
+	}
+
       adj.base_index = i;
       adj.prev_clone_index = i;
 
@@ -1547,7 +1553,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	  mask = gimple_assign_lhs (g);
 	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
 				   BIT_AND_EXPR, mask,
-				   build_int_cst (TREE_TYPE (mask), 1));
+				   build_one_cst (TREE_TYPE (mask)));
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 	  mask = gimple_assign_lhs (g);
 	}

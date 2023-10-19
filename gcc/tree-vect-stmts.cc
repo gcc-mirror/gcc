@@ -2547,7 +2547,8 @@ vect_build_all_ones_mask (vec_info *vinfo,
 {
   if (TREE_CODE (masktype) == INTEGER_TYPE)
     return build_int_cst (masktype, -1);
-  else if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
+  else if (VECTOR_BOOLEAN_TYPE_P (masktype)
+	   || TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
     {
       tree mask = build_int_cst (TREE_TYPE (masktype), -1);
       mask = build_vector_from_val (masktype, mask);
@@ -3987,7 +3988,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   size_t i, nargs;
   tree lhs, rtype, ratype;
   vec<constructor_elt, va_gc> *ret_ctor_elts = NULL;
-  int arg_offset = 0;
+  int masked_call_offset = 0;
 
   /* Is STMT a vectorizable call?   */
   gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt);
@@ -4002,7 +4003,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       gcc_checking_assert (TREE_CODE (fndecl) == ADDR_EXPR);
       fndecl = TREE_OPERAND (fndecl, 0);
       gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
-      arg_offset = 1;
+      masked_call_offset = 1;
     }
   if (fndecl == NULL_TREE)
     return false;
@@ -4030,7 +4031,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     return false;
 
   /* Process function arguments.  */
-  nargs = gimple_call_num_args (stmt) - arg_offset;
+  nargs = gimple_call_num_args (stmt) - masked_call_offset;
 
   /* Bail out if the function has zero arguments.  */
   if (nargs == 0)
@@ -4052,7 +4053,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       thisarginfo.op = NULL_TREE;
       thisarginfo.simd_lane_linear = false;
 
-      int op_no = i + arg_offset;
+      int op_no = i + masked_call_offset;
       if (slp_node)
 	op_no = vect_slp_child_index_for_operand (stmt, op_no);
       if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
@@ -4134,16 +4135,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       arginfo.quick_push (thisarginfo);
     }
 
-  if (loop_vinfo
-      && !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ())
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not considering SIMD clones; not yet supported"
-			 " for variable-width vectors.\n");
-      return false;
-    }
-
   poly_uint64 vf = loop_vinfo ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
   unsigned group_size = slp_node ? SLP_TREE_LANES (slp_node) : 1;
   unsigned int badness = 0;
@@ -4156,9 +4147,10 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       {
 	unsigned int this_badness = 0;
 	unsigned int num_calls;
-	if (!constant_multiple_p (vf * group_size,
-				  n->simdclone->simdlen, &num_calls)
-	    || n->simdclone->nargs != nargs)
+	if (!constant_multiple_p (vf * group_size, n->simdclone->simdlen,
+				  &num_calls)
+	    || (!n->simdclone->inbranch && (masked_call_offset > 0))
+	    || nargs != n->simdclone->nargs)
 	  continue;
 	if (num_calls != 1)
 	  this_badness += exact_log2 (num_calls) * 4096;
@@ -4175,7 +4167,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      case SIMD_CLONE_ARG_TYPE_VECTOR:
 		if (!useless_type_conversion_p
 			(n->simdclone->args[i].orig_type,
-			 TREE_TYPE (gimple_call_arg (stmt, i + arg_offset))))
+			 TREE_TYPE (gimple_call_arg (stmt,
+						     i + masked_call_offset))))
 		  i = -1;
 		else if (arginfo[i].dt == vect_constant_def
 			 || arginfo[i].dt == vect_external_def
@@ -4230,6 +4223,17 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  }
 	if (i == (size_t) -1)
 	  continue;
+	if (masked_call_offset == 0
+	    && n->simdclone->inbranch
+	    && n->simdclone->nargs > nargs)
+	  {
+	    gcc_assert (n->simdclone->args[n->simdclone->nargs - 1].arg_type ==
+			SIMD_CLONE_ARG_TYPE_MASK);
+	    /* Penalize using a masked SIMD clone in a non-masked loop, that is
+	       not in a branch, as we'd have to construct an all-true mask.  */
+	    if (!loop_vinfo || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	      this_badness += 64;
+	  }
 	if (bestn == NULL || this_badness < badness)
 	  {
 	    bestn = n;
@@ -4252,7 +4256,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	   || arginfo[i].dt == vect_external_def)
 	  && bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
 	{
-	  tree arg_type = TREE_TYPE (gimple_call_arg (stmt, i + arg_offset));
+	  tree arg_type = TREE_TYPE (gimple_call_arg (stmt,
+						      i + masked_call_offset));
 	  arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
 							    slp_node);
 	  if (arginfo[i].vectype == NULL
@@ -4361,22 +4366,37 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       if (gimple_vuse (stmt) && slp_node)
 	vinfo->any_known_not_updated_vssa = true;
       simd_clone_info.safe_push (bestn->decl);
-      for (i = 0; i < nargs; i++)
-	if ((bestn->simdclone->args[i].arg_type
-	     == SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP)
-	    || (bestn->simdclone->args[i].arg_type
-		== SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP))
-	  {
-	    simd_clone_info.safe_grow_cleared (i * 3 + 1, true);
-	    simd_clone_info.safe_push (arginfo[i].op);
-	    tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
-		       ? size_type_node : TREE_TYPE (arginfo[i].op);
-	    tree ls = build_int_cst (lst, arginfo[i].linear_step);
-	    simd_clone_info.safe_push (ls);
-	    tree sll = arginfo[i].simd_lane_linear
-		       ? boolean_true_node : boolean_false_node;
-	    simd_clone_info.safe_push (sll);
-	  }
+      for (i = 0; i < bestn->simdclone->nargs; i++)
+	{
+	  switch (bestn->simdclone->args[i].arg_type)
+	    {
+	    default:
+	      continue;
+	    case SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP:
+	    case SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP:
+	      {
+		auto &clone_info = STMT_VINFO_SIMD_CLONE_INFO (stmt_info);
+		clone_info.safe_grow_cleared (i * 3 + 1, true);
+		clone_info.safe_push (arginfo[i].op);
+		tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
+			   ? size_type_node : TREE_TYPE (arginfo[i].op);
+		tree ls = build_int_cst (lst, arginfo[i].linear_step);
+		clone_info.safe_push (ls);
+		tree sll = arginfo[i].simd_lane_linear
+			   ? boolean_true_node : boolean_false_node;
+		clone_info.safe_push (sll);
+	      }
+	      break;
+	    case SIMD_CLONE_ARG_TYPE_MASK:
+	      if (loop_vinfo
+		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+		vect_record_loop_mask (loop_vinfo,
+				       &LOOP_VINFO_MASKS (loop_vinfo),
+				       ncopies, vectype, op);
+
+	      break;
+	    }
+	}
 
       if (!bestn->simdclone->inbranch && loop_vinfo)
 	{
@@ -4428,6 +4448,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     vec_oprnds.safe_grow_cleared (nargs, true);
   for (j = 0; j < ncopies; ++j)
     {
+      poly_uint64 callee_nelements;
+      poly_uint64 caller_nelements;
       /* Build argument list for the vectorized call.  */
       if (j == 0)
 	vargs.create (nargs);
@@ -4438,8 +4460,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  unsigned int k, l, m, o;
 	  tree atype;
-	  poly_uint64 callee_nelements, caller_nelements;
-	  op = gimple_call_arg (stmt, i + arg_offset);
+	  op = gimple_call_arg (stmt, i + masked_call_offset);
 	  switch (bestn->simdclone->args[i].arg_type)
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
@@ -4519,14 +4540,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			if (!useless_type_conversion_p (TREE_TYPE (vec_oprnd0),
 						       atype))
 			  {
-			    vec_oprnd0
-			      = build1 (VIEW_CONVERT_EXPR, atype, vec_oprnd0);
+			    vec_oprnd0 = build1 (VIEW_CONVERT_EXPR, atype,
+						 vec_oprnd0);
 			    gassign *new_stmt
 			      = gimple_build_assign (make_ssa_name (atype),
 						     vec_oprnd0);
 			    vect_finish_stmt_generation (vinfo, stmt_info,
 							 new_stmt, gsi);
-			    vargs.safe_push (gimple_assign_lhs (new_stmt));
+			    vargs.safe_push (gimple_get_lhs (new_stmt));
 			  }
 			else
 			  vargs.safe_push (vec_oprnd0);
@@ -4576,6 +4597,24 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			      vec_oprnds_i[i] = 0;
 			    }
 			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
+			  if (loop_vinfo
+			      && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+			    {
+			      vec_loop_masks *loop_masks
+				= &LOOP_VINFO_MASKS (loop_vinfo);
+			      tree loop_mask
+				= vect_get_loop_mask (loop_vinfo, gsi,
+						      loop_masks, ncopies,
+						      vectype, j);
+			      vec_oprnd0
+				= prepare_vec_mask (loop_vinfo,
+						    TREE_TYPE (loop_mask),
+						    loop_mask, vec_oprnd0,
+						    gsi);
+			      loop_vinfo->vec_cond_masked_set.add ({ vec_oprnd0,
+								     loop_mask });
+
+			    }
 			  vec_oprnd0
 			    = build3 (VEC_COND_EXPR, atype, vec_oprnd0,
 				      build_vector_from_val (atype, one),
@@ -4736,6 +4775,64 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
 	    default:
 	      gcc_unreachable ();
+	    }
+	}
+
+      if (masked_call_offset == 0
+	  && bestn->simdclone->inbranch
+	  && bestn->simdclone->nargs > nargs)
+	{
+	  unsigned long m, o;
+	  size_t mask_i = bestn->simdclone->nargs - 1;
+	  tree mask;
+	  gcc_assert (bestn->simdclone->args[mask_i].arg_type ==
+		      SIMD_CLONE_ARG_TYPE_MASK);
+
+	  tree masktype = bestn->simdclone->args[mask_i].vector_type;
+	  callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
+	  o = vector_unroll_factor (nunits, callee_nelements);
+	  for (m = j * o; m < (j + 1) * o; m++)
+	    {
+	      if (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+		{
+		  vec_loop_masks *loop_masks = &LOOP_VINFO_MASKS (loop_vinfo);
+		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
+					     ncopies, vectype, j);
+		}
+	      else
+		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
+
+	      if (!useless_type_conversion_p (TREE_TYPE (mask), masktype))
+		{
+		  gassign *new_stmt;
+		  if (bestn->simdclone->mask_mode != VOIDmode)
+		    {
+		      /* This means we are dealing with integer mask modes.
+			 First convert to an integer type with the same size as
+			 the current vector type.  */
+		      unsigned HOST_WIDE_INT intermediate_size
+			= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (mask)));
+		      tree mid_int_type =
+			build_nonstandard_integer_type (intermediate_size, 1);
+		      mask = build1 (VIEW_CONVERT_EXPR, mid_int_type, mask);
+		      new_stmt
+			= gimple_build_assign (make_ssa_name (mid_int_type),
+					       mask);
+		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		      /* Then zero-extend to the mask mode.  */
+		      mask = fold_build1 (NOP_EXPR, masktype,
+					  gimple_get_lhs (new_stmt));
+		    }
+		  else
+		    mask = build1 (VIEW_CONVERT_EXPR, masktype, mask);
+
+		  new_stmt = gimple_build_assign (make_ssa_name (masktype),
+						  mask);
+		  vect_finish_stmt_generation (vinfo, stmt_info,
+					       new_stmt, gsi);
+		  mask = gimple_assign_lhs (new_stmt);
+		}
+	      vargs.safe_push (mask);
 	    }
 	}
 
