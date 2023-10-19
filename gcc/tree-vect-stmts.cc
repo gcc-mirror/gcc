@@ -4377,6 +4377,17 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		       ? boolean_true_node : boolean_false_node;
 	    simd_clone_info.safe_push (sll);
 	  }
+
+      if (!bestn->simdclone->inbranch && loop_vinfo)
+	{
+	  if (dump_enabled_p ()
+	      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "can't use a fully-masked loop because a"
+			     " non-masked simd clone was selected.\n");
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	}
+
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
 /*      vect_model_simple_cost (vinfo, stmt_info, ncopies,
