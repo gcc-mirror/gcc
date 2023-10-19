@@ -48,12 +48,12 @@ public:
     visit (expr);
     push_assignment (return_place, translated);
     auto final_bb = new_bb ();
-    add_jump_to (final_bb);
+    push_goto (final_bb);
 
     ctx.current_bb = short_circuit_bb;
     translated = ctx.place_db.get_constant (lookup_type (expr));
     push_assignment (return_place, translated);
-    add_jump_to (final_bb);
+    push_goto (final_bb);
 
     ctx.current_bb = final_bb;
     return return_place;
@@ -63,8 +63,7 @@ protected:
   void visit (HIR::LazyBooleanExpr &expr) override
   {
     expr.get_lhs ()->accept_vis (*this);
-    push_switch (translated);
-    add_jump_to (short_circuit_bb);
+    push_switch (translated, {short_circuit_bb});
 
     start_new_subsequent_bb ();
     expr.get_rhs ()->accept_vis (*this);
