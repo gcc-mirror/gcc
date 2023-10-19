@@ -24,7 +24,7 @@ func Errstr(errnum int) string {
 			}
 			return string(b[:i])
 		}
-		if errno != ERANGE {
+		if Errno(errno) != ERANGE {
 			return "strerror_r failure"
 		}
 	}
