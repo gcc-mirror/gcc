@@ -751,6 +751,13 @@ package body Par_SCO is
       begin
          case Nkind (N) is
 
+            --  Aspect specifications have dedicated processings (see
+            --  Traverse_Aspects) so ignore them here, so that they are
+            --  processed only once.
+
+            when N_Aspect_Specification =>
+               return Skip;
+
             --  Logical operators, output table entries and then process
             --  operands recursively to deal with nested conditions.
 
