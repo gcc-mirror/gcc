@@ -5,7 +5,7 @@ abstract project Libgnat_Common is
                    ("-I../include", "-DIN_RTS=1", "-fexceptions",
                     "-DSTANDALONE") &
                    External_As_List ("EXTRALIBFLAGS", " ");
-   Ada_Flags    := Common_Flags & ("-nostdinc", "-I../adainclude")
+   Ada_Flags    := Common_Flags & ("-nostdinc", "-I../adainclude", "-gnatg")
                    & Split (External ("ADAFLAGS", "-gnatpg"), " ");
    Library_Kind := External ("LIBRARY_KIND", "static");
 
