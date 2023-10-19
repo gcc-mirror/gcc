@@ -225,6 +225,13 @@ protected:
       ctx.get_current_bb ().successors.end (), destinations);
   }
 
+  void push_goto (BasicBlockId bb)
+  {
+    ctx.get_current_bb ().statements.emplace_back (Node::Kind::GOTO);
+    if (bb != INVALID_BB) // INVALID_BB means the goto will be resolved later.
+      ctx.get_current_bb ().successors.push_back (bb);
+  }
+
   void push_storage_dead (PlaceId place)
   {
     ctx.get_current_bb ().statements.emplace_back (Node::Kind::STORAGE_DEAD,

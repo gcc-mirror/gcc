@@ -329,7 +329,7 @@ ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
       rust_assert (lookup != ctx.loop_and_label_stack.rend ());
       info = *lookup;
     }
-  add_jump_to (info.continue_bb);
+  push_goto (info.continue_bb);
   // No code allowed after continue. No BB starts - would be empty.
 }
 
@@ -364,7 +364,7 @@ ExprStmtBuilder::visit (HIR::BreakExpr &brk)
     {
       push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
     }
-  add_jump_to (info.break_bb);
+  push_goto (info.break_bb);
   // No code allowed after break. No BB starts - would be empty.
 }
 
@@ -448,12 +448,12 @@ ExprStmtBuilder::visit (HIR::LoopExpr &expr)
 {
   auto loop = setup_loop (expr);
 
-  add_jump_to (loop.continue_bb);
+  push_goto (loop.continue_bb);
 
   ctx.current_bb = loop.continue_bb;
   (void) visit_expr (*expr.get_loop_block ());
   if (!ctx.get_current_bb ().is_terminated ())
-    add_jump_to (loop.continue_bb);
+    push_goto (loop.continue_bb);
 
   ctx.current_bb = loop.break_bb;
 }
@@ -463,7 +463,7 @@ ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
 {
   auto loop = setup_loop (expr);
 
-  add_jump_to (loop.continue_bb);
+  push_goto (loop.continue_bb);
 
   ctx.current_bb = loop.continue_bb;
   auto cond_val = visit_expr (*expr.get_predicate_expr ());
@@ -472,7 +472,7 @@ ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
 
   ctx.current_bb = body_bb;
   (void) visit_expr (*expr.get_loop_block ());
-  add_jump_to (loop.continue_bb);
+  push_goto (loop.continue_bb);
 
   ctx.current_bb = loop.break_bb;
 }
@@ -498,6 +498,8 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
   ctx.current_bb = new_bb ();
   BasicBlockId then_start_block = ctx.current_bb;
   (void) visit_expr (*expr.get_if_block ());
+  if (!ctx.get_current_bb ().is_terminated ())
+    push_goto (INVALID_BB); // Resolved later.
   BasicBlockId then_end_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
@@ -508,7 +510,8 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
   add_jump (if_block, then_start_block);
   add_jump (if_block, final_block);
 
-  if (!ctx.basic_blocks[then_end_block].is_terminated ())
+  auto &then_end_bb = ctx.basic_blocks[then_end_block];
+  if (then_end_bb.is_goto_terminated () && then_end_bb.successors.empty ())
     add_jump (then_end_block, final_block);
 }
 
@@ -523,11 +526,15 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
   ctx.current_bb = new_bb ();
   auto then_res = visit_expr (*expr.get_if_block ());
   push_assignment (result, then_res);
+  if (!ctx.get_current_bb ().is_terminated ())
+    push_goto (INVALID_BB); // Resolved later.
   BasicBlockId then_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
   auto else_res = visit_expr (*expr.get_else_block ());
   push_assignment (result, else_res);
+  if (!ctx.get_current_bb ().is_terminated ())
+    push_goto (INVALID_BB); // Resolved later.
   BasicBlockId else_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
@@ -538,9 +545,12 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
   add_jump (if_block, then_block);
   add_jump (if_block, else_block);
 
-  if (!ctx.basic_blocks[then_block].is_terminated ())
+  auto &then_bb = ctx.basic_blocks[then_block];
+  if (then_bb.is_goto_terminated () && then_bb.successors.empty ())
     add_jump (then_block, final_block);
-  if (!ctx.basic_blocks[else_block].is_terminated ())
+
+  auto &else_bb = ctx.basic_blocks[else_block];
+  if (else_bb.is_goto_terminated () && else_bb.successors.empty ())
     add_jump (else_block, final_block);
 }
 void
@@ -652,8 +662,8 @@ ExprStmtBuilder::visit (HIR::LetStmt &stmt)
     }
   else
     {
-      // TODO
-      rust_sorry_at (stmt.get_locus (), "pattern matching in let statements");
+      rust_sorry_at (stmt.get_locus (), "pattern matching in let statements "
+					"without initializer is not supported");
     }
 }
 
@@ -662,5 +672,6 @@ ExprStmtBuilder::visit (HIR::ExprStmt &stmt)
 {
   (void) visit_expr (*stmt.get_expr ());
 }
+
 } // namespace BIR
 } // namespace Rust
