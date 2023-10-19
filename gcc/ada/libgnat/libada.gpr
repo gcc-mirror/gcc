@@ -6,13 +6,14 @@
 -- 1. Create a new directory (e.g. "rts-debug"), then copy the adainclude
 --    directory from the reference runtime that you want to rebuild.
 --    You can find the relevant adainclude directory by running the command
---    gprls [--target=<target>] [--RTS=<runtime>] and using the adainclude
+--    gprls -v [--target=<target>] [--RTS=<runtime>] and using the adainclude
 --    directory listed. For example:
---     $ cd <reference directory>
---     $ mkdir rts-debug
---     $ cd rts-debug
---     $ cp -a `gprls -v | grep adainclude` .
---     $ cd adainclude
+--    $ cd <reference directory>
+--    $ mkdir rts-debug
+--    $ cd rts-debug
+--    $ cp -a `gprls -v \
+--      [--target=<target>] --RTS=native | grep adainclude` .
+--    $ cd adainclude
 --
 --    or under Windows:
 --
