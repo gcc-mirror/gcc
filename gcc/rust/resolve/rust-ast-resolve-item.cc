@@ -1115,9 +1115,8 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
-    {
+    if (!param.is_variadic ())
       ResolveType::go (param.get_type ().get ());
-    }
 
   // done
   resolver->get_name_scope ().pop ();

@@ -1265,12 +1265,9 @@ ExpandVisitor::visit (AST::ExternalFunctionItem &item)
   for (auto &param : item.get_generic_params ())
     visit (param);
 
-  // FIXME: Should this work? What is the difference between NamedFunctionParam
-  // and FunctionParam?
-  // expand_function_params (item.get_function_params ());
-
   for (auto &param : item.get_function_params ())
-    maybe_expand_type (param.get_type ());
+    if (!param.is_variadic ())
+      maybe_expand_type (param.get_type ());
 
   if (item.has_return_type ())
     maybe_expand_type (item.get_return_type ());

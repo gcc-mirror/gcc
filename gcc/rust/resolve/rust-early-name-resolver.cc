@@ -872,7 +872,8 @@ EarlyNameResolver::visit (AST::ExternalFunctionItem &item)
     generic->accept_vis (*this);
 
   for (auto &param : item.get_function_params ())
-    param.get_type ()->accept_vis (*this);
+    if (!param.is_variadic ())
+      param.get_type ()->accept_vis (*this);
 
   if (item.has_return_type ())
     item.get_return_type ()->accept_vis (*this);

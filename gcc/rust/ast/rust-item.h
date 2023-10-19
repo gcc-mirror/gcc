@@ -618,6 +618,8 @@ public:
     return param_name;
   }
 
+  bool has_name () const { return param_name != nullptr; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()
   {
@@ -4171,7 +4173,7 @@ class NamedFunctionParam
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
    * '_'). */
-  bool has_name () const { return name != "_"; }
+  bool has_name () const { return name != "_" && name != ""; }
 
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
@@ -4181,6 +4183,8 @@ public:
     // also if identifier is "" but that is probably more costly to compute
     return param_type == nullptr && !variadic;
   }
+
+  bool is_variadic () const { return variadic; }
 
   std::string get_name () const { return name; }
 
@@ -4294,8 +4298,6 @@ class ExternalFunctionItem : public ExternalItem
   WhereClause where_clause;
 
   std::vector<NamedFunctionParam> function_params;
-  bool has_variadics;
-  std::vector<Attribute> variadic_outer_attrs;
 
 public:
   // Returns whether item has generic parameters.
@@ -4314,12 +4316,10 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   // Returns whether item has variadic parameters.
-  bool is_variadic () const { return has_variadics; }
-
-  // Returns whether item has outer attributes on its variadic parameters.
-  bool has_variadic_outer_attrs () const
+  bool is_variadic () const
   {
-    return !variadic_outer_attrs.empty ();
+    return function_params.size () != 0
+	   && function_params.back ().is_variadic ();
   }
 
   location_t get_locus () const { return locus; }
@@ -4331,17 +4331,14 @@ public:
     Identifier item_name,
     std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
-    std::vector<NamedFunctionParam> function_params, bool has_variadics,
-    std::vector<Attribute> variadic_outer_attrs, Visibility vis,
+    std::vector<NamedFunctionParam> function_params, Visibility vis,
     std::vector<Attribute> outer_attrs, location_t locus)
     : ExternalItem (), outer_attrs (std::move (outer_attrs)),
       visibility (std::move (vis)), item_name (std::move (item_name)),
       locus (locus), generic_params (std::move (generic_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
-      function_params (std::move (function_params)),
-      has_variadics (has_variadics),
-      variadic_outer_attrs (std::move (variadic_outer_attrs))
+      function_params (std::move (function_params))
   {
     // TODO: assert that if has variadic outer attrs, then has_variadics is
     // true?
@@ -4351,10 +4348,7 @@ public:
   ExternalFunctionItem (ExternalFunctionItem const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
       item_name (other.item_name), locus (other.locus),
-      where_clause (other.where_clause),
-      function_params (other.function_params),
-      has_variadics (other.has_variadics),
-      variadic_outer_attrs (other.variadic_outer_attrs)
+      where_clause (other.where_clause), function_params (other.function_params)
   {
     node_id = other.node_id;
     // guard to prevent null pointer dereference
@@ -4375,8 +4369,6 @@ public:
     locus = other.locus;
     where_clause = other.where_clause;
     function_params = other.function_params;
-    has_variadics = other.has_variadics;
-    variadic_outer_attrs = other.variadic_outer_attrs;
     node_id = other.node_id;
 
     // guard to prevent null pointer dereference

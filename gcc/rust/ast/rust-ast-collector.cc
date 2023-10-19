@@ -172,9 +172,22 @@ TokenCollector::visit (Visitable &v)
 void
 TokenCollector::visit (FunctionParam &param)
 {
-  visit (param.get_pattern ());
-  push (Rust::Token::make (COLON, UNDEF_LOCATION));
-  visit (param.get_type ());
+  visit_items_as_lines (param.get_outer_attrs ());
+  if (!param.is_variadic ())
+    {
+      visit (param.get_pattern ());
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
+      visit (param.get_type ());
+    }
+  else
+    {
+      if (param.has_name ())
+	{
+	  visit (param.get_pattern ());
+	  push (Rust::Token::make (COLON, UNDEF_LOCATION));
+	}
+      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
+    }
 }
 
 void
@@ -293,9 +306,23 @@ void
 TokenCollector::visit (NamedFunctionParam &param)
 {
   auto name = param.get_name ();
-  push (Rust::Token::make_identifier (param.get_locus (), std::move (name)));
-  push (Rust::Token::make (COLON, UNDEF_LOCATION));
-  visit (param.get_type ());
+  if (!param.is_variadic ())
+    {
+      push (
+	Rust::Token::make_identifier (param.get_locus (), std::move (name)));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
+      visit (param.get_type ());
+    }
+  else
+    {
+      if (name != "")
+	{
+	  push (Rust::Token::make_identifier (param.get_locus (),
+					      std::move (name)));
+	  push (Rust::Token::make (COLON, UNDEF_LOCATION));
+	}
+      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
+    }
 }
 
 void
@@ -2209,13 +2236,6 @@ TokenCollector::visit (ExternalFunctionItem &function)
   push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (function.get_function_params ());
-  if (function.is_variadic ())
-    {
-      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-      // TODO: Add variadic outer attributes?
-      // TODO: Add variadic name once implemented.
-      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
-    }
 
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
   if (function.has_return_type ())

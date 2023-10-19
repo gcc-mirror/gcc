@@ -5963,6 +5963,161 @@ Parser<ManagedTokenSource>::parse_extern_block (AST::Visibility vis,
 			  std::move (outer_attrs), locus));
 }
 
+template <typename ManagedTokenSource>
+AST::NamedFunctionParam
+Parser<ManagedTokenSource>::parse_named_function_param ()
+{
+  AST::AttrVec outer_attrs = parse_outer_attributes ();
+  location_t locus = lexer.peek_token ()->get_locus ();
+
+  if (lexer.peek_token ()->get_id () == ELLIPSIS)
+    {
+      lexer.skip_token (); // Skip ellipsis
+      return AST::NamedFunctionParam (std::move (outer_attrs), locus);
+    }
+
+  // parse identifier/_
+  std::string name;
+
+  const_TokenPtr t = lexer.peek_token ();
+  location_t name_location = t->get_locus ();
+  switch (t->get_id ())
+    {
+    case IDENTIFIER:
+      name = t->get_str ();
+      lexer.skip_token ();
+      break;
+    case UNDERSCORE:
+      name = "_";
+      lexer.skip_token ();
+      break;
+    default:
+      // this is not a function param, but not necessarily an error
+      return AST::NamedFunctionParam::create_error ();
+    }
+
+  if (!skip_token (COLON))
+    {
+      // skip after somewhere?
+      return AST::NamedFunctionParam::create_error ();
+    }
+
+  // parse (required) type
+  std::unique_ptr<AST::Type> param_type = parse_type ();
+  if (param_type == nullptr)
+    {
+      Error error (
+	lexer.peek_token ()->get_locus (),
+	"could not parse param type in extern block function declaration");
+      add_error (std::move (error));
+
+      skip_after_semicolon ();
+      return AST::NamedFunctionParam::create_error ();
+    }
+
+  return AST::NamedFunctionParam (std::move (name), std::move (param_type),
+				  std::move (outer_attrs), name_location);
+}
+
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<AST::NamedFunctionParam>
+Parser<ManagedTokenSource>::parse_named_function_params (
+  EndTokenPred is_end_token)
+{
+  std::vector<AST::NamedFunctionParam> params;
+  if (is_end_token (lexer.peek_token ()->get_id ()))
+    return params;
+
+  auto initial_param = parse_named_function_param ();
+  if (initial_param.is_error ())
+    return params;
+
+  params.push_back (std::move (initial_param));
+  auto t = lexer.peek_token ();
+  while (t->get_id () == COMMA)
+    {
+      lexer.skip_token ();
+      if (is_end_token (lexer.peek_token ()->get_id ()))
+	break;
+
+      auto param = parse_named_function_param ();
+      if (param.is_error ())
+	{
+	  Error error (lexer.peek_token ()->get_locus (),
+		       "failed to parse param in c function params");
+	  add_error (error);
+	  return std::vector<AST::NamedFunctionParam> ();
+	}
+      params.push_back (std::move (param));
+      t = lexer.peek_token ();
+    }
+  params.shrink_to_fit ();
+  return params;
+}
+
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ExternalFunctionItem>
+Parser<ManagedTokenSource>::parse_external_function_item (
+  AST::Visibility vis, AST::AttrVec outer_attrs)
+{
+  location_t locus = lexer.peek_token ()->get_locus ();
+
+  // parse extern function declaration item
+  // skip function token
+  lexer.skip_token ();
+
+  // parse identifier
+  const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    {
+      skip_after_semicolon ();
+      return nullptr;
+    }
+  Identifier ident{ident_tok};
+
+  // parse (optional) generic params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
+    = parse_generic_params_in_angles ();
+
+  if (!skip_token (LEFT_PAREN))
+    {
+      skip_after_semicolon ();
+      return nullptr;
+    }
+
+  // parse parameters
+  std::vector<AST::NamedFunctionParam> function_params
+    = parse_named_function_params (
+      [] (TokenId id) { return id == RIGHT_PAREN; });
+
+  if (!skip_token (RIGHT_PAREN))
+    {
+      skip_after_semicolon ();
+      return nullptr;
+    }
+
+  // parse (optional) return type
+  std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
+
+  // parse (optional) where clause
+  AST::WhereClause where_clause = parse_where_clause ();
+
+  if (!skip_token (SEMICOLON))
+    {
+      // skip somewhere?
+      return nullptr;
+    }
+
+  function_params.shrink_to_fit ();
+
+  return std::unique_ptr<AST::ExternalFunctionItem> (
+    new AST::ExternalFunctionItem (
+      std::move (ident), std::move (generic_params), std::move (return_type),
+      std::move (where_clause), std::move (function_params), std::move (vis),
+      std::move (outer_attrs), locus));
+}
+
 // Parses a single extern block item (static or function declaration).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExternalItem>
@@ -6031,112 +6186,9 @@ Parser<ManagedTokenSource>::parse_external_item ()
 				       has_mut, std::move (vis),
 				       std::move (outer_attrs), locus));
       }
-      case FN_TOK: {
-	// parse extern function declaration item
-	// skip function token
-	lexer.skip_token ();
-
-	// parse identifier
-	const_TokenPtr ident_tok = expect_token (IDENTIFIER);
-	if (ident_tok == nullptr)
-	  {
-	    skip_after_semicolon ();
-	    return nullptr;
-	  }
-	Identifier ident{ident_tok};
-
-	// parse (optional) generic params
-	std::vector<std::unique_ptr<AST::GenericParam>> generic_params
-	  = parse_generic_params_in_angles ();
-
-	if (!skip_token (LEFT_PAREN))
-	  {
-	    skip_after_semicolon ();
-	    return nullptr;
-	  }
-
-	// parse parameters
-	std::vector<AST::NamedFunctionParam> function_params;
-	bool is_variadic = false;
-	AST::AttrVec variadic_attrs;
-
-	const_TokenPtr t = lexer.peek_token ();
-	while (t->get_id () != RIGHT_PAREN)
-	  {
-	    AST::AttrVec maybe_variadic_attrs = parse_outer_attributes ();
-	    if (lexer.peek_token ()->get_id () == ELLIPSIS)
-	      {
-		// variadic - use attrs for this
-		lexer.skip_token ();
-		is_variadic = true;
-		variadic_attrs = std::move (maybe_variadic_attrs);
-		t = lexer.peek_token ();
-
-		if (t->get_id () != RIGHT_PAREN)
-		  {
-		    Error error (t->get_locus (),
-				 "expected right parentheses after variadic in "
-				 "named function "
-				 "parameters, found %qs",
-				 t->get_token_description ());
-		    add_error (std::move (error));
-
-		    skip_after_semicolon ();
-		    return nullptr;
-		  }
-
-		break;
-	      }
-
-	    AST::NamedFunctionParam param
-	      = parse_named_function_param (std::move (maybe_variadic_attrs));
-	    if (param.is_error ())
-	      {
-		Error error (t->get_locus (), "could not parse named function "
-					      "parameter in external function");
-		add_error (std::move (error));
-
-		skip_after_semicolon ();
-		return nullptr;
-	      }
-	    function_params.push_back (std::move (param));
-
-	    if (lexer.peek_token ()->get_id () != COMMA)
-	      break;
-
-	    // skip comma
-	    lexer.skip_token ();
-	    t = lexer.peek_token ();
-	  }
-
-	if (!skip_token (RIGHT_PAREN))
-	  {
-	    skip_after_semicolon ();
-	    return nullptr;
-	  }
-
-	// parse (optional) return type
-	std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
-
-	// parse (optional) where clause
-	AST::WhereClause where_clause = parse_where_clause ();
-
-	if (!skip_token (SEMICOLON))
-	  {
-	    // skip somewhere?
-	    return nullptr;
-	  }
-
-	function_params.shrink_to_fit ();
-
-	return std::unique_ptr<AST::ExternalFunctionItem> (
-	  new AST::ExternalFunctionItem (
-	    std::move (ident), std::move (generic_params),
-	    std::move (return_type), std::move (where_clause),
-	    std::move (function_params), is_variadic,
-	    std::move (variadic_attrs), std::move (vis),
-	    std::move (outer_attrs), locus));
-      }
+    case FN_TOK:
+      return parse_external_function_item (std::move (vis),
+					   std::move (outer_attrs));
     case TYPE:
       return parse_external_type_item (std::move (vis),
 				       std::move (outer_attrs));
@@ -6150,56 +6202,6 @@ Parser<ManagedTokenSource>::parse_external_item ()
       skip_after_semicolon ();
       return nullptr;
     }
-}
-
-/* Parses an extern block function param (with "pattern" being _ or an
- * identifier). */
-template <typename ManagedTokenSource>
-AST::NamedFunctionParam
-Parser<ManagedTokenSource>::parse_named_function_param (
-  AST::AttrVec outer_attrs)
-{
-  // parse identifier/_
-  std::string name;
-
-  const_TokenPtr t = lexer.peek_token ();
-  location_t name_location = t->get_locus ();
-  switch (t->get_id ())
-    {
-    case IDENTIFIER:
-      name = t->get_str ();
-      lexer.skip_token ();
-      break;
-    case UNDERSCORE:
-      name = "_";
-      lexer.skip_token ();
-      break;
-    default:
-      // this is not a function param, but not necessarily an error
-      return AST::NamedFunctionParam::create_error ();
-    }
-
-  if (!skip_token (COLON))
-    {
-      // skip after somewhere?
-      return AST::NamedFunctionParam::create_error ();
-    }
-
-  // parse (required) type
-  std::unique_ptr<AST::Type> param_type = parse_type ();
-  if (param_type == nullptr)
-    {
-      Error error (
-	lexer.peek_token ()->get_locus (),
-	"could not parse param type in extern block function declaration");
-      add_error (std::move (error));
-
-      skip_after_semicolon ();
-      return AST::NamedFunctionParam::create_error ();
-    }
-
-  return AST::NamedFunctionParam (std::move (name), std::move (param_type),
-				  std::move (outer_attrs), name_location);
 }
 
 // Parses a statement (will further disambiguate any statement).

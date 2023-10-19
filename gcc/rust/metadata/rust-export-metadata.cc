@@ -118,11 +118,12 @@ ExportContext::emit_function (const HIR::Function &fn)
 	  function_params.push_back (std::move (p));
 	}
 
-      AST::ExternalItem *external_item = new AST::ExternalFunctionItem (
-	item_name, {} /* generic_params */, std::move (return_type),
-	where_clause, std::move (function_params), false /* has_variadics */,
-	{} /* variadic_outer_attrs */, vis, function.get_outer_attrs (),
-	function.get_locus ());
+      AST::ExternalItem *external_item
+	= new AST::ExternalFunctionItem (item_name, {} /* generic_params */,
+					 std::move (return_type), where_clause,
+					 std::move (function_params), vis,
+					 function.get_outer_attrs (),
+					 function.get_locus ());
 
       std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
       external_items.push_back (
