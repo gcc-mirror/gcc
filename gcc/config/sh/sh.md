@@ -842,7 +842,7 @@
   if (SUBREG_P (reg))
     reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
-  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) != NULL_RTX)
+  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) == NULL_RTX)
     FAIL;
 
   /* FIXME: Maybe also search the predecessor basic blocks to catch
