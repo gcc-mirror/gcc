@@ -5580,7 +5580,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code2 == INTEGER_TYPE || code2 == BITINT_TYPE))
     {
       if (!null_pointer_constant_p (orig_op2))
-	pedwarn (colon_loc, 0,
+	pedwarn (colon_loc, OPT_Wint_conversion,
 		 "pointer/integer type mismatch in conditional expression");
       else
 	{
@@ -5592,7 +5592,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code1 == INTEGER_TYPE || code1 == BITINT_TYPE))
     {
       if (!null_pointer_constant_p (orig_op1))
-	pedwarn (colon_loc, 0,
+	pedwarn (colon_loc, OPT_Wint_conversion,
 		 "pointer/integer type mismatch in conditional expression");
       else
 	{
