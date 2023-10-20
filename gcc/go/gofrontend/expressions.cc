@@ -8426,6 +8426,287 @@ Expression::make_bound_method(Expression* expr, const Method* method,
   return new Bound_method_expression(expr, method, function, location);
 }
 
+// A general selector.  This is a Parser_expression for LEFT.NAME.  It
+// is lowered after we know the type of the left hand side.
+
+class Selector_expression : public Parser_expression
+{
+ public:
+  Selector_expression(Expression* left, const std::string& name,
+		      Location location)
+    : Parser_expression(EXPRESSION_SELECTOR, location),
+      left_(left), name_(name)
+  { }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse)
+  { return Expression::traverse(&this->left_, traverse); }
+
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_copy()
+  {
+    return new Selector_expression(this->left_->copy(), this->name_,
+				   this->location());
+  }
+
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const;
+
+ private:
+  Expression*
+  lower_method_expression(Gogo*);
+
+  // The expression on the left hand side.
+  Expression* left_;
+  // The name on the right hand side.
+  std::string name_;
+};
+
+// Lower a selector expression once we know the real type of the left
+// hand side.
+
+Expression*
+Selector_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*,
+			      int)
+{
+  Expression* left = this->left_;
+  if (left->is_type_expression())
+    return this->lower_method_expression(gogo);
+  return Type::bind_field_or_method(gogo, left->type(), left, this->name_,
+				    this->location());
+}
+
+// Lower a method expression T.M or (*T).M.  We turn this into a
+// function literal.
+
+Expression*
+Selector_expression::lower_method_expression(Gogo* gogo)
+{
+  Location location = this->location();
+  Type* left_type = this->left_->type();
+  Type* type = left_type;
+  const std::string& name(this->name_);
+
+  bool is_pointer;
+  if (type->points_to() == NULL)
+    is_pointer = false;
+  else
+    {
+      is_pointer = true;
+      type = type->points_to();
+    }
+
+  Named_type* nt = type->named_type();
+  Struct_type* st = type->struct_type();
+  bool is_ambiguous;
+  Method* method = NULL;
+  if (nt != NULL)
+    method = nt->method_function(name, &is_ambiguous);
+  else if (st != NULL)
+    method = st->method_function(name, &is_ambiguous);
+  const Typed_identifier* imethod = NULL;
+  if (method == NULL && !is_pointer)
+    {
+      Interface_type* it = type->interface_type();
+      if (it != NULL)
+	imethod = it->find_method(name);
+    }
+
+  if ((method == NULL && imethod == NULL)
+      || (left_type->named_type() != NULL && left_type->points_to() != NULL))
+    {
+      if (nt != NULL)
+	{
+	  if (!is_ambiguous)
+	    go_error_at(location, "type %<%s%s%> has no method %<%s%>",
+			is_pointer ? "*" : "",
+			nt->message_name().c_str(),
+			Gogo::message_name(name).c_str());
+	  else
+	    go_error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
+			Gogo::message_name(name).c_str(),
+			is_pointer ? "*" : "",
+			nt->message_name().c_str());
+	}
+      else
+	{
+	  if (!is_ambiguous)
+	    go_error_at(location, "type has no method %<%s%>",
+			Gogo::message_name(name).c_str());
+	  else
+	    go_error_at(location, "method %<%s%> is ambiguous",
+			Gogo::message_name(name).c_str());
+	}
+      return Expression::make_error(location);
+    }
+
+  if (method != NULL && !is_pointer && !method->is_value_method())
+    {
+      go_error_at(location, "method requires pointer (use %<(*%s).%s%>)",
+                  nt->message_name().c_str(),
+                  Gogo::message_name(name).c_str());
+      return Expression::make_error(location);
+    }
+
+  // Build a new function type in which the receiver becomes the first
+  // argument.
+  Function_type* method_type;
+  if (method != NULL)
+    {
+      method_type = method->type();
+      go_assert(method_type->is_method());
+    }
+  else
+    {
+      method_type = imethod->type()->function_type();
+      go_assert(method_type != NULL && !method_type->is_method());
+    }
+
+  const char* const receiver_name = "$this";
+  Typed_identifier_list* parameters = new Typed_identifier_list();
+  parameters->push_back(Typed_identifier(receiver_name, this->left_->type(),
+					 location));
+
+  const Typed_identifier_list* method_parameters = method_type->parameters();
+  if (method_parameters != NULL)
+    {
+      int i = 0;
+      for (Typed_identifier_list::const_iterator p = method_parameters->begin();
+	   p != method_parameters->end();
+	   ++p, ++i)
+	{
+	  if (!p->name().empty() && !Gogo::is_sink_name(p->name()))
+	    parameters->push_back(*p);
+	  else
+	    {
+	      char buf[20];
+	      snprintf(buf, sizeof buf, "$param%d", i);
+	      parameters->push_back(Typed_identifier(buf, p->type(),
+						     p->location()));
+	    }
+	}
+    }
+
+  const Typed_identifier_list* method_results = method_type->results();
+  Typed_identifier_list* results;
+  if (method_results == NULL)
+    results = NULL;
+  else
+    {
+      results = new Typed_identifier_list();
+      for (Typed_identifier_list::const_iterator p = method_results->begin();
+	   p != method_results->end();
+	   ++p)
+	results->push_back(*p);
+    }
+
+  Function_type* fntype = Type::make_function_type(NULL, parameters, results,
+						   location);
+  if (method_type->is_varargs())
+    fntype->set_is_varargs();
+
+  // We generate methods which always takes a pointer to the receiver
+  // as their first argument.  If this is for a pointer type, we can
+  // simply reuse the existing function.  We use an internal hack to
+  // get the right type.
+  // FIXME: This optimization is disabled because it doesn't yet work
+  // with function descriptors when the method expression is not
+  // directly called.
+  if (method != NULL && is_pointer && false)
+    {
+      Named_object* mno = (method->needs_stub_method()
+			   ? method->stub_object()
+			   : method->named_object());
+      Expression* f = Expression::make_func_reference(mno, NULL, location);
+      f = Expression::make_cast(fntype, f, location);
+      Type_conversion_expression* tce =
+	static_cast<Type_conversion_expression*>(f);
+      tce->set_may_convert_function_types();
+      return f;
+    }
+
+  Named_object* no = gogo->start_function(gogo->thunk_name(), fntype, false,
+					  location);
+
+  Named_object* vno = gogo->lookup(receiver_name, NULL);
+  go_assert(vno != NULL);
+  Expression* ve = Expression::make_var_reference(vno, location);
+  Expression* bm;
+  if (method != NULL)
+    bm = Type::bind_field_or_method(gogo, type, ve, name, location);
+  else
+    bm = Expression::make_interface_field_reference(ve, name, location);
+
+  // Even though we found the method above, if it has an error type we
+  // may see an error here.
+  if (bm->is_error_expression())
+    {
+      gogo->finish_function(location);
+      return bm;
+    }
+
+  Expression_list* args;
+  if (parameters->size() <= 1)
+    args = NULL;
+  else
+    {
+      args = new Expression_list();
+      Typed_identifier_list::const_iterator p = parameters->begin();
+      ++p;
+      for (; p != parameters->end(); ++p)
+	{
+	  vno = gogo->lookup(p->name(), NULL);
+	  go_assert(vno != NULL);
+	  args->push_back(Expression::make_var_reference(vno, location));
+	}
+    }
+
+  gogo->start_block(location);
+
+  Call_expression* call = Expression::make_call(bm, args,
+						method_type->is_varargs(),
+						location);
+
+  Statement* s = Statement::make_return_from_call(call, location);
+  gogo->add_statement(s);
+
+  Block* b = gogo->finish_block(location);
+
+  gogo->add_block(b, location);
+
+  // Lower the call in case there are multiple results.
+  gogo->lower_block(no, b);
+  gogo->flatten_block(no, b);
+
+  gogo->finish_function(location);
+
+  return Expression::make_func_reference(no, NULL, location);
+}
+
+// Dump the ast for a selector expression.
+
+void
+Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
+    const
+{
+  ast_dump_context->dump_expression(this->left_);
+  ast_dump_context->ostream() << ".";
+  ast_dump_context->ostream() << this->name_;
+}
+
+// Make a selector expression.
+
+Expression*
+Expression::make_selector(Expression* left, const std::string& name,
+			  Location location)
+{
+  return new Selector_expression(left, name, location);
+}
+
 // Class Builtin_call_expression.  This is used for a call to a
 // builtin function.
 
@@ -15263,287 +15544,6 @@ Expression::make_interface_field_reference(Expression* expr,
 					   Location location)
 {
   return new Interface_field_reference_expression(expr, field, location);
-}
-
-// A general selector.  This is a Parser_expression for LEFT.NAME.  It
-// is lowered after we know the type of the left hand side.
-
-class Selector_expression : public Parser_expression
-{
- public:
-  Selector_expression(Expression* left, const std::string& name,
-		      Location location)
-    : Parser_expression(EXPRESSION_SELECTOR, location),
-      left_(left), name_(name)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse* traverse)
-  { return Expression::traverse(&this->left_, traverse); }
-
-  Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
-
-  Expression*
-  do_copy()
-  {
-    return new Selector_expression(this->left_->copy(), this->name_,
-				   this->location());
-  }
-
-  void
-  do_dump_expression(Ast_dump_context* ast_dump_context) const;
-
- private:
-  Expression*
-  lower_method_expression(Gogo*);
-
-  // The expression on the left hand side.
-  Expression* left_;
-  // The name on the right hand side.
-  std::string name_;
-};
-
-// Lower a selector expression once we know the real type of the left
-// hand side.
-
-Expression*
-Selector_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*,
-			      int)
-{
-  Expression* left = this->left_;
-  if (left->is_type_expression())
-    return this->lower_method_expression(gogo);
-  return Type::bind_field_or_method(gogo, left->type(), left, this->name_,
-				    this->location());
-}
-
-// Lower a method expression T.M or (*T).M.  We turn this into a
-// function literal.
-
-Expression*
-Selector_expression::lower_method_expression(Gogo* gogo)
-{
-  Location location = this->location();
-  Type* left_type = this->left_->type();
-  Type* type = left_type;
-  const std::string& name(this->name_);
-
-  bool is_pointer;
-  if (type->points_to() == NULL)
-    is_pointer = false;
-  else
-    {
-      is_pointer = true;
-      type = type->points_to();
-    }
-
-  Named_type* nt = type->named_type();
-  Struct_type* st = type->struct_type();
-  bool is_ambiguous;
-  Method* method = NULL;
-  if (nt != NULL)
-    method = nt->method_function(name, &is_ambiguous);
-  else if (st != NULL)
-    method = st->method_function(name, &is_ambiguous);
-  const Typed_identifier* imethod = NULL;
-  if (method == NULL && !is_pointer)
-    {
-      Interface_type* it = type->interface_type();
-      if (it != NULL)
-	imethod = it->find_method(name);
-    }
-
-  if ((method == NULL && imethod == NULL)
-      || (left_type->named_type() != NULL && left_type->points_to() != NULL))
-    {
-      if (nt != NULL)
-	{
-	  if (!is_ambiguous)
-	    go_error_at(location, "type %<%s%s%> has no method %<%s%>",
-			is_pointer ? "*" : "",
-			nt->message_name().c_str(),
-			Gogo::message_name(name).c_str());
-	  else
-	    go_error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
-			Gogo::message_name(name).c_str(),
-			is_pointer ? "*" : "",
-			nt->message_name().c_str());
-	}
-      else
-	{
-	  if (!is_ambiguous)
-	    go_error_at(location, "type has no method %<%s%>",
-			Gogo::message_name(name).c_str());
-	  else
-	    go_error_at(location, "method %<%s%> is ambiguous",
-			Gogo::message_name(name).c_str());
-	}
-      return Expression::make_error(location);
-    }
-
-  if (method != NULL && !is_pointer && !method->is_value_method())
-    {
-      go_error_at(location, "method requires pointer (use %<(*%s).%s%>)",
-                  nt->message_name().c_str(),
-                  Gogo::message_name(name).c_str());
-      return Expression::make_error(location);
-    }
-
-  // Build a new function type in which the receiver becomes the first
-  // argument.
-  Function_type* method_type;
-  if (method != NULL)
-    {
-      method_type = method->type();
-      go_assert(method_type->is_method());
-    }
-  else
-    {
-      method_type = imethod->type()->function_type();
-      go_assert(method_type != NULL && !method_type->is_method());
-    }
-
-  const char* const receiver_name = "$this";
-  Typed_identifier_list* parameters = new Typed_identifier_list();
-  parameters->push_back(Typed_identifier(receiver_name, this->left_->type(),
-					 location));
-
-  const Typed_identifier_list* method_parameters = method_type->parameters();
-  if (method_parameters != NULL)
-    {
-      int i = 0;
-      for (Typed_identifier_list::const_iterator p = method_parameters->begin();
-	   p != method_parameters->end();
-	   ++p, ++i)
-	{
-	  if (!p->name().empty() && !Gogo::is_sink_name(p->name()))
-	    parameters->push_back(*p);
-	  else
-	    {
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "$param%d", i);
-	      parameters->push_back(Typed_identifier(buf, p->type(),
-						     p->location()));
-	    }
-	}
-    }
-
-  const Typed_identifier_list* method_results = method_type->results();
-  Typed_identifier_list* results;
-  if (method_results == NULL)
-    results = NULL;
-  else
-    {
-      results = new Typed_identifier_list();
-      for (Typed_identifier_list::const_iterator p = method_results->begin();
-	   p != method_results->end();
-	   ++p)
-	results->push_back(*p);
-    }
-
-  Function_type* fntype = Type::make_function_type(NULL, parameters, results,
-						   location);
-  if (method_type->is_varargs())
-    fntype->set_is_varargs();
-
-  // We generate methods which always takes a pointer to the receiver
-  // as their first argument.  If this is for a pointer type, we can
-  // simply reuse the existing function.  We use an internal hack to
-  // get the right type.
-  // FIXME: This optimization is disabled because it doesn't yet work
-  // with function descriptors when the method expression is not
-  // directly called.
-  if (method != NULL && is_pointer && false)
-    {
-      Named_object* mno = (method->needs_stub_method()
-			   ? method->stub_object()
-			   : method->named_object());
-      Expression* f = Expression::make_func_reference(mno, NULL, location);
-      f = Expression::make_cast(fntype, f, location);
-      Type_conversion_expression* tce =
-	static_cast<Type_conversion_expression*>(f);
-      tce->set_may_convert_function_types();
-      return f;
-    }
-
-  Named_object* no = gogo->start_function(gogo->thunk_name(), fntype, false,
-					  location);
-
-  Named_object* vno = gogo->lookup(receiver_name, NULL);
-  go_assert(vno != NULL);
-  Expression* ve = Expression::make_var_reference(vno, location);
-  Expression* bm;
-  if (method != NULL)
-    bm = Type::bind_field_or_method(gogo, type, ve, name, location);
-  else
-    bm = Expression::make_interface_field_reference(ve, name, location);
-
-  // Even though we found the method above, if it has an error type we
-  // may see an error here.
-  if (bm->is_error_expression())
-    {
-      gogo->finish_function(location);
-      return bm;
-    }
-
-  Expression_list* args;
-  if (parameters->size() <= 1)
-    args = NULL;
-  else
-    {
-      args = new Expression_list();
-      Typed_identifier_list::const_iterator p = parameters->begin();
-      ++p;
-      for (; p != parameters->end(); ++p)
-	{
-	  vno = gogo->lookup(p->name(), NULL);
-	  go_assert(vno != NULL);
-	  args->push_back(Expression::make_var_reference(vno, location));
-	}
-    }
-
-  gogo->start_block(location);
-
-  Call_expression* call = Expression::make_call(bm, args,
-						method_type->is_varargs(),
-						location);
-
-  Statement* s = Statement::make_return_from_call(call, location);
-  gogo->add_statement(s);
-
-  Block* b = gogo->finish_block(location);
-
-  gogo->add_block(b, location);
-
-  // Lower the call in case there are multiple results.
-  gogo->lower_block(no, b);
-  gogo->flatten_block(no, b);
-
-  gogo->finish_function(location);
-
-  return Expression::make_func_reference(no, NULL, location);
-}
-
-// Dump the ast for a selector expression.
-
-void
-Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
-    const
-{
-  ast_dump_context->dump_expression(this->left_);
-  ast_dump_context->ostream() << ".";
-  ast_dump_context->ostream() << this->name_;
-}
-
-// Make a selector expression.
-
-Expression*
-Expression::make_selector(Expression* left, const std::string& name,
-			  Location location)
-{
-  return new Selector_expression(left, name, location);
 }
 
 // Class Allocation_expression.
