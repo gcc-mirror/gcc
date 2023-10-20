@@ -2032,12 +2032,14 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   return conv;
 }
 
-/* Most of the implementation of implicit_conversion, with the same
-   parameters.  */
+/* Returns the implicit conversion sequence (see [over.ics]) from type
+   FROM to type TO.  The optional expression EXPR may affect the
+   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
+   true, this conversion is coming from a C-style cast.  */
 
 static conversion *
-implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
-		       int flags, tsubst_flags_t complain)
+implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
+		     int flags, tsubst_flags_t complain)
 {
   conversion *conv;
 
@@ -2165,26 +2167,6 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
     }
 
   return NULL;
-}
-
-/* Returns the implicit conversion sequence (see [over.ics]) from type
-   FROM to type TO.  The optional expression EXPR may affect the
-   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
-   true, this conversion is coming from a C-style cast.  */
-
-static conversion *
-implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
-		     int flags, tsubst_flags_t complain)
-{
-  conversion *conv = implicit_conversion_1 (to, from, expr, c_cast_p,
-					    flags, complain);
-  if (!conv || conv->bad_p)
-    return conv;
-  if (conv_is_prvalue (conv)
-      && CLASS_TYPE_P (conv->type)
-      && CLASSTYPE_PURE_VIRTUALS (conv->type))
-    conv->bad_p = true;
-  return conv;
 }
 
 /* Like implicit_conversion, but return NULL if the conversion is bad.
