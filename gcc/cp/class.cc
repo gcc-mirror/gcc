@@ -8851,15 +8851,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
       rhs = BASELINK_FUNCTIONS (rhs);
     }
 
-  /* If we are in a template, and have a NON_DEPENDENT_EXPR, we cannot
-     deduce any type information.  */
-  if (TREE_CODE (rhs) == NON_DEPENDENT_EXPR)
-    {
-      if (complain & tf_error)
-	error ("not enough type information");
-      return error_mark_node;
-    }
-
   /* There are only a few kinds of expressions that may have a type
      dependent on overload resolution.  */
   gcc_assert (TREE_CODE (rhs) == ADDR_EXPR

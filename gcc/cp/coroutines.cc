@@ -1421,8 +1421,7 @@ coro_validate_builtin_call (tree call, tsubst_flags_t)
 	location_t loc = EXPR_LOCATION (arg);
 
 	/* We expect alignof expressions in templates.  */
-	if (TREE_CODE (arg) == NON_DEPENDENT_EXPR
-	    && TREE_CODE (TREE_OPERAND (arg, 0)) == ALIGNOF_EXPR)
+	if (TREE_CODE (arg) == ALIGNOF_EXPR)
 	  ;
 	else if (!TREE_CONSTANT (arg))
 	  {

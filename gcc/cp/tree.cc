@@ -308,7 +308,6 @@ lvalue_kind (const_tree ref)
 	 its argument unmodified and we assign it to a const_tree.  */
       return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
 
-    case NON_DEPENDENT_EXPR:
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
@@ -412,10 +411,6 @@ cp_stabilize_reference (tree ref)
   STRIP_ANY_LOCATION_WRAPPER (ref);
   switch (TREE_CODE (ref))
     {
-    case NON_DEPENDENT_EXPR:
-      /* We aren't actually evaluating this.  */
-      return ref;
-
     /* We need to treat specially anything stabilize_reference doesn't
        handle specifically.  */
     case VAR_DECL:

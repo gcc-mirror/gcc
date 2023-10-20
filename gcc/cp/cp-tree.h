@@ -7491,7 +7491,7 @@ extern bool any_value_dependent_elements_p      (const_tree);
 extern bool dependent_omp_for_p			(tree, tree, tree, tree);
 extern tree resolve_typename_type		(tree, bool);
 extern tree template_for_substitution		(tree);
-extern tree build_non_dependent_expr		(tree);
+inline tree build_non_dependent_expr		(tree t) { return t; } // XXX remove
 extern void make_args_non_dependent		(vec<tree, va_gc> *);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree instantiate_non_dependent_expr	(tree, tsubst_flags_t = tf_error);

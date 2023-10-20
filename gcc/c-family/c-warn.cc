@@ -3036,7 +3036,7 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
 	  /* We could be called while processing a template and RHS could be
 	     a functor.  In that case it's a class, not a pointer.  */
-	  if (!POINTER_TYPE_P (rhs))
+	  if (!rhs || !POINTER_TYPE_P (rhs))
 	    return NULL_TREE;
 	  rhs = TREE_TYPE (rhs);	/* Function type.  */
 	  rhstype = TREE_TYPE (rhs);

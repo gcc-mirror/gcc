@@ -12,7 +12,7 @@ template<typename T>
 
 
 template<typename U>
-  requires C1<U>() // { dg-error "cannot be used as a function" }
+  requires C1<U>() // { dg-error "cannot call a concept" }
   void f1(U) { }
 
 template<typename U>

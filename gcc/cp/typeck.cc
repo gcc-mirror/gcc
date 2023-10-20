@@ -4844,9 +4844,6 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       || warning_suppressed_p (op, OPT_Waddress))
     return;
 
-  if (TREE_CODE (op) == NON_DEPENDENT_EXPR)
-    op = TREE_OPERAND (op, 0);
-
   tree cop = fold_for_warn (op);
 
   if (TREE_CODE (cop) == NON_LVALUE_EXPR)
@@ -5405,7 +5402,9 @@ cp_build_binary_op (const op_location_t &location,
 	    type0 = TREE_TYPE (type0);
 	  if (!TYPE_P (type1))
 	    type1 = TREE_TYPE (type1);
-	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1))
+	  if (type0
+	      && INDIRECT_TYPE_P (type0)
+	      && same_type_p (TREE_TYPE (type0), type1))
 	    {
 	      if (!(TREE_CODE (first_arg) == PARM_DECL
 		    && DECL_ARRAY_PARAMETER_P (first_arg)
@@ -5422,7 +5421,9 @@ cp_build_binary_op (const op_location_t &location,
 			      "first %<sizeof%> operand was declared here");
 		}
 	    }
-	  else if (TREE_CODE (type0) == ARRAY_TYPE
+	  else if (!dependent_type_p (type0)
+		   && !dependent_type_p (type1)
+		   && TREE_CODE (type0) == ARRAY_TYPE
 		   && !char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type0)))
 		   /* Set by finish_parenthesized_expr.  */
 		   && !warning_suppressed_p (op1, OPT_Wsizeof_array_div)
@@ -7399,6 +7400,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 					 complain);
       if (arg != error_mark_node)
 	{
+	  if (processing_template_decl)
+	    return build1_loc (location, TRUTH_NOT_EXPR, boolean_type_node, arg);
 	  val = invert_truthvalue_loc (location, arg);
 	  if (obvalue_p (val))
 	    val = non_lvalue_loc (location, val);
