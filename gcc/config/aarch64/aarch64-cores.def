@@ -74,6 +74,7 @@ AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  V8A,  (CRC, CRYPTO), thu
 /* Ampere Computing ('\xC0') cores. */
 AARCH64_CORE("ampere1", ampere1, cortexa57, V8_6A, (F16, RNG, AES, SHA3), ampere1, 0xC0, 0xac3, -1)
 AARCH64_CORE("ampere1a", ampere1a, cortexa57, V8_6A, (F16, RNG, AES, SHA3, SM4, MEMTAG), ampere1a, 0xC0, 0xac4, -1)
+AARCH64_CORE("ampere1b", ampere1b, cortexa57, V8_7A, (F16, RNG, AES, SHA3, SM4, MEMTAG, CSSC), ampere1b, 0xC0, 0xac5, -1)
 /* Do not swap around "emag" and "xgene1",
    this order is required to handle variant correctly. */
 AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x50, 0x000, 3)

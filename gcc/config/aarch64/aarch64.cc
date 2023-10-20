@@ -375,6 +375,7 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/neoversen1.h"
 #include "tuning_models/ampere1.h"
 #include "tuning_models/ampere1a.h"
+#include "tuning_models/ampere1b.h"
 #include "tuning_models/neoversev1.h"
 #include "tuning_models/neoverse512tvb.h"
 #include "tuning_models/neoversen2.h"
