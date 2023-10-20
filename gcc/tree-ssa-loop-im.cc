@@ -400,6 +400,24 @@ movement_possibility_1 (gimple *stmt)
       || gimple_could_trap_p (stmt))
     return MOVE_PRESERVE_EXECUTION;
 
+  if (is_gimple_assign (stmt))
+    {
+      auto code = gimple_assign_rhs_code (stmt);
+      tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+      /* For shifts and rotates and possibly out-of-bound shift operands
+	 we currently cannot rewrite them into something unconditionally
+	 well-defined.  */
+      if ((code == LSHIFT_EXPR
+	   || code == RSHIFT_EXPR
+	   || code == LROTATE_EXPR
+	   || code == RROTATE_EXPR)
+	  && (TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST
+	      /* We cannot use ranges at 'stmt' here.  */
+	      || wi::ltu_p (wi::to_wide (gimple_assign_rhs2 (stmt)),
+			    element_precision (type))))
+	ret = MOVE_PRESERVE_EXECUTION;
+    }
+
   /* Non local loads in a transaction cannot be hoisted out.  Well,
      unless the load happens on every path out of the loop, but we
      don't take this into account yet.  */
