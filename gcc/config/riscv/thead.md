@@ -587,14 +587,23 @@
   [(set_attr "move_type" "shift_shift,load,load,load,load,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
 
+;; All modes that are supported by XTheadMemIdx
 (define_mode_iterator TH_M_ANYI [(QI "TARGET_XTHEADMEMIDX")
                                  (HI "TARGET_XTHEADMEMIDX")
                                  (SI "TARGET_XTHEADMEMIDX")
                                  (DI "TARGET_64BIT && TARGET_XTHEADMEMIDX")])
 
+;; All modes that are supported by XTheadFMemIdx
+(define_mode_iterator TH_M_ANYF [(SF "TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX")
+                                 (DF "TARGET_DOUBLE_FLOAT && TARGET_XTHEADFMEMIDX")])
+
 ;; All non-extension modes that are supported by XTheadMemIdx
 (define_mode_iterator TH_M_NOEXTI [(SI "!TARGET_64BIT && TARGET_XTHEADMEMIDX")
                                    (DI "TARGET_64BIT && TARGET_XTHEADMEMIDX")])
+
+;; All non-extension modes that are supported by XTheadFMemIdx
+(define_mode_iterator TH_M_NOEXTF [(SF "TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX")
+                                   (DF "TARGET_DOUBLE_FLOAT && TARGET_XTHEADFMEMIDX")])
 
 ;; XTheadMemIdx optimizations
 ;; All optimizations attempt to improve the operand utilization of
@@ -807,6 +816,158 @@
   "#"
   "&& 1"
   [(set (mem:TH_M_ANYI (plus:DI
+          (match_dup 2)
+          (zero_extend:DI (match_dup 1))))
+        (match_dup 0))]
+)
+
+;; XTheadFMemIdx
+
+(define_insn "*th_fmemidx_movsf_hardfloat"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,th_m_mir,f,th_m_miu")
+	(match_operand:SF 1 "move_operand"         " th_m_mir,f,th_m_miu,f"))]
+  "TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX
+   && (register_operand (operands[0], SFmode)
+       || reg_or_0_operand (operands[1], SFmode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "fpload,fpstore,fpload,fpstore")
+   (set_attr "mode" "SF")])
+
+(define_insn "*th_fmemidx_movdf_hardfloat_rv64"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,th_m_mir,f,th_m_miu")
+	(match_operand:DF 1 "move_operand"         " th_m_mir,f,th_m_miu,f"))]
+  "TARGET_64BIT && TARGET_DOUBLE_FLOAT && TARGET_XTHEADFMEMIDX
+   && (register_operand (operands[0], DFmode)
+       || reg_or_0_operand (operands[1], DFmode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "fpload,fpstore,fpload,fpstore")
+   (set_attr "mode" "DF")])
+
+;; XTheadFMemIdx optimizations
+;; Similar like XTheadMemIdx optimizations, but less cases.
+;; Note, that we might get GP registers in FP-mode (reg:DF a2)
+;; which cannot be handled by the XTheadFMemIdx instructions.
+;; This might even happend after register allocation.
+;; We could implement splitters that undo the combiner results
+;; if "after_reload && !HARDFP_REG_P (operands[0])", but this
+;; raises even more questions (e.g. split into what?).
+;; So let's solve this by simply requiring XTheadMemIdx
+;; which provides the necessary instructions to cover this case.
+
+(define_insn_and_split "*th_fmemidx_I_a"
+  [(set (match_operand:TH_M_NOEXTF 0 "register_operand" "=f")
+        (mem:TH_M_NOEXTF (plus:X
+          (mult:X (match_operand:X 1 "register_operand" "r")
+                  (match_operand:QI 2 "immediate_operand" "i"))
+          (match_operand:X 3 "register_operand" "r"))))]
+  "TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTF (plus:X
+          (match_dup 3)
+          (ashift:X (match_dup 1) (match_dup 2)))))]
+  { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_fmemidx_I_c"
+  [(set (mem:TH_M_ANYF (plus:X
+          (mult:X (match_operand:X 1 "register_operand" "r")
+                  (match_operand:QI 2 "immediate_operand" "i"))
+          (match_operand:X 3 "register_operand" "r")))
+        (match_operand:TH_M_ANYF 0 "register_operand" "f"))]
+  "TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYF (plus:X
+          (match_dup 3)
+          (ashift:X (match_dup 1) (match_dup 2))))
+        (match_dup 0))]
+  { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_fmemidx_US_a"
+  [(set (match_operand:TH_M_NOEXTF 0 "register_operand" "=f")
+        (mem:TH_M_NOEXTF (plus:DI
+          (and:DI
+            (mult:DI (match_operand:DI 1 "register_operand" "r")
+                     (match_operand:QI 2 "immediate_operand" "i"))
+            (match_operand:DI 3 "immediate_operand" "i"))
+          (match_operand:DI 4 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTF (plus:DI
+          (match_dup 4)
+          (ashift:DI (zero_extend:DI (match_dup 1)) (match_dup 2)))))]
+  { operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_fmemidx_US_c"
+  [(set (mem:TH_M_ANYF (plus:DI
+          (and:DI
+            (mult:DI (match_operand:DI 1 "register_operand" "r")
+                     (match_operand:QI 2 "immediate_operand" "i"))
+            (match_operand:DI 3 "immediate_operand" "i"))
+          (match_operand:DI 4 "register_operand" "r")))
+        (match_operand:TH_M_ANYF 0 "register_operand" "f"))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYF (plus:DI
+          (match_dup 4)
+          (ashift:DI (zero_extend:DI (match_dup 1)) (match_dup 2))))
+        (match_dup 0))]
+  { operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_fmemidx_UZ_a"
+  [(set (match_operand:TH_M_NOEXTF 0 "register_operand" "=f")
+        (mem:TH_M_NOEXTF (plus:DI
+          (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+          (match_operand:DI 2 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX
+   && (!HARD_REGISTER_NUM_P (REGNO (operands[0])) || HARDFP_REG_P (REGNO (operands[0])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTF (plus:DI
+          (match_dup 2)
+          (zero_extend:DI (match_dup 1)))))]
+)
+
+(define_insn_and_split "*th_fmemidx_UZ_c"
+  [(set (mem:TH_M_ANYF (plus:DI
+          (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+          (match_operand:DI 2 "register_operand" "r")))
+        (match_operand:TH_M_ANYF 0 "register_operand" "f"))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADFMEMIDX"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYF (plus:DI
           (match_dup 2)
           (zero_extend:DI (match_dup 1))))
         (match_dup 0))]

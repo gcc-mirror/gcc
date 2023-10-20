@@ -372,6 +372,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define FP_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
+#define HARDFP_REG_P(REGNO)  \
+  ((REGNO) >= FP_REG_FIRST && (REGNO) <= FP_REG_LAST)
 #define V_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)

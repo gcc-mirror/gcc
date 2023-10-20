@@ -1084,7 +1084,7 @@ riscv_regno_mode_ok_for_base_p (int regno,
 enum reg_class
 riscv_index_reg_class ()
 {
-  if (TARGET_XTHEADMEMIDX)
+  if (TARGET_XTHEADMEMIDX || TARGET_XTHEADFMEMIDX)
     return GR_REGS;
 
   return NO_REGS;
@@ -1097,7 +1097,7 @@ riscv_index_reg_class ()
 int
 riscv_regno_ok_for_index_p (int regno)
 {
-  if (TARGET_XTHEADMEMIDX)
+  if (TARGET_XTHEADMEMIDX || TARGET_XTHEADFMEMIDX)
     return riscv_regno_mode_ok_for_base_p (regno, VOIDmode, 1);
 
   return 0;
