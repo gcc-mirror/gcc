@@ -1,3 +1,14 @@
+2023-10-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Hash_code_base::_M_hash_code(const _Hash&, const _Hash_node_value<>&)): Remove.
+	(_Hash_code_base::_M_hash_code<_H2>(const _H2&, const _Hash_node_value<>&)): Remove.
+	* include/bits/hashtable.h
+	(_M_src_hash_code<_H2>(const _H2&, const key_type&, const __node_value_type&)): New.
+	(_M_merge_unique<>, _M_merge_multi<>): Use latter.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc
+	(test04, test05, test06): New test cases.
+
 2023-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc (test01):

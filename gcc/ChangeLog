@@ -1,3 +1,187 @@
+2023-10-19  Marek Polacek  <polacek@redhat.com>
+
+	* doc/contrib.texi: Add entry for Patrick Palka.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust_argument_types): Make function
+	compatible with mask parameters in clone.
+	* tree-vect-stmts.cc (vect_build_all_ones_mask): Allow vector boolean
+	typed masks.
+	(vectorizable_simd_clone_call): Enable the use of masked clones in
+	fully masked loops.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/110485
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Disable partial
+	vectors usage if a notinbranch simdclone has been selected.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-data-refs.cc (vect_get_smallest_scalar_type): Special case
+	simd clone calls and only use types that are mapped to vectors.
+	(simd_clone_call_p): New helper function.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-parloops.cc (try_transform_to_exit_first_loop_alt): Accept
+	poly NIT and ALT_BOUND.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-parloops.cc (create_loop_fn): Copy specific target and
+	optimization options to clone.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* omp-simd-clone.cc (simd_clone_subparts): Remove.
+	(simd_clone_init_simd_arrays): Replace simd_clone_supbarts with
+	TYPE_VECTOR_SUBPARTS.
+	(ipa_simd_modify_function_body): Likewise.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Likewise.
+	(simd_clone_subparts): Remove.
+
+2023-10-19  Jason Merrill  <jason@redhat.com>
+
+	* ABOUT-GCC-NLS: Add usage guidance.
+
+2023-10-19  Jason Merrill  <jason@redhat.com>
+
+	* diagnostic-core.h (permerror): Rename new overloads...
+	(permerror_opt): To this.
+	* diagnostic.cc: Likewise.
+
+2023-10-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111860
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Remove PHI nodes that dominate loop.
+
+2023-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111131
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Make
+	sure to update all gather/scatter stmt DRs, not only those
+	that eventually got VMAT_GATHER_SCATTER set.
+	* tree-vect-slp.cc (_slp_oprnd_info::first_gs_info): Add.
+	(vect_get_and_check_slp_defs): Handle gathers/scatters,
+	adding the offset as SLP operand and comparing base and scale.
+	(vect_build_slp_tree_1): Handle gathers.
+	(vect_build_slp_tree_2): Likewise.
+
+2023-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_build_gather_load_calls): Rename
+	to ...
+	(vect_build_one_gather_load_call): ... this.  Refactor,
+	inline widening/narrowing support ...
+	(vectorizable_load): ... here, do gather vectorization
+	with builtin decls along other gather vectorization.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.md (load_pair_dw_tftf): Rename to ...
+	(load_pair_dw_<TX:mode><TX2:mode>): ... this.
+	(store_pair_dw_tftf): Rename to ...
+	(store_pair_dw_<TX:mode><TX2:mode>): ... this.
+	* config/aarch64/iterators.md (TX2): New.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses): Add new
+	parameter to give final insn position, infer use of mem if it isn't
+	specified explicitly.
+	(function_info::change_insns): Pass down final insn position to
+	finalize_new_accesses.
+	* rtl-ssa/functions.h: Add parameter to finalize_new_accesses.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/accesses.cc (function_info::reparent_use): New.
+	* rtl-ssa/functions.h (function_info): Declare new member
+	function reparent_use.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/access-utils.h (drop_memory_access): New.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/insns.cc (function_info::add_insn_after): Ensure we
+	update the prev pointer on the following nondebug insn in the
+	case that !insn->is_debug_insn () && next->is_debug_insn ().
+
+2023-10-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h: Correct the ISA enabled for Arrow Lake.
+	Also make Clearwater Forest depends on Sierra Forest.
+	* config/i386/i386-options.cc: Revise the order of the macro
+	definition to avoid confusion.
+	* doc/extend.texi: Revise documentation.
+	* doc/invoke.texi: Correct documentation.
+
+2023-10-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (amdgcn): Switch default to --with-arch=gfx900.
+	Implement support for --with-multilib-list.
+	* config/gcn/t-gcn-hsa: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Mark Fiji deprecated.
+
+2023-10-19  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_vector_costs): Inherit from
+	vector_costs.  Add a constructor.
+	(loongarch_vector_costs::add_stmt_cost): Use adjust_cost_for_freq to
+	adjust the cost for inner loops.
+	(loongarch_vector_costs::count_operations): New function.
+	(loongarch_vector_costs::determine_suggested_unroll_factor): Ditto.
+	(loongarch_vector_costs::finish_cost): Ditto.
+	(loongarch_builtin_vectorization_cost): Adjust.
+	* config/loongarch/loongarch.opt (loongarch-vect-unroll-limit): New parameter.
+	(loongarcg-vect-issue-info): Ditto.
+	(mmemvec-cost): Delete.
+	* config/loongarch/genopts/loongarch.opt.in
+	(loongarch-vect-unroll-limit): Ditto.
+	(loongarcg-vect-issue-info): Ditto.
+	(mmemvec-cost): Delete.
+	* doc/invoke.texi (loongarcg-vect-unroll-limit): Document new option.
+
+2023-10-19  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md
+	(vec_widen_<su>mult_even_v8si): New patterns.
+	(vec_widen_<su>add_hi_<mode>): Ditto.
+	(vec_widen_<su>add_lo_<mode>): Ditto.
+	(vec_widen_<su>sub_hi_<mode>): Ditto.
+	(vec_widen_<su>sub_lo_<mode>): Ditto.
+	(vec_widen_<su>mult_hi_<mode>): Ditto.
+	(vec_widen_<su>mult_lo_<mode>): Ditto.
+	* config/loongarch/loongarch.md (u_bool): New iterator.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_vec_widen_hilo): New prototype.
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vec_interleave): New function.
+	(loongarch_expand_vec_widen_hilo): New function.
+
+2023-10-19  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md
+	(avg<mode>3_ceil): New patterns.
+	(uavg<mode>3_ceil): Ditto.
+	(avg<mode>3_floor): Ditto.
+	(uavg<mode>3_floor): Ditto.
+	(usadv32qi): Ditto.
+	(ssadv32qi): Ditto.
+	* config/loongarch/lsx.md
+	(avg<mode>3_ceil): New patterns.
+	(uavg<mode>3_ceil): Ditto.
+	(avg<mode>3_floor): Ditto.
+	(uavg<mode>3_floor): Ditto.
+	(usadv16qi): Ditto.
+	(ssadv16qi): Ditto.
+
 2023-10-18  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/111863

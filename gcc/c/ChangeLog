@@ -1,3 +1,15 @@
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/100532
+	* c-typeck.cc (convert_argument): After erroring out
+	about an incomplete type return error_mark_node.
+
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/104822
+	* c-typeck.cc (convert_for_assignment): Check for null pointer
+	before warning about an incompatible scalar storage order.
+
 2023-10-18  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c/101364

@@ -1,3 +1,17 @@
+2023-10-19  Marek Polacek  <polacek@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_r): Don't call maybe_constant_value.
+
+2023-10-19  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.cc (check_narrowing): Adjust.
+
+2023-10-19  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_primary_expression): Use G_.
+	(cp_parser_using_enum): Likewise.
+	* decl.cc (identify_goto): Likewise.
+
 2023-10-18  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.cc (check_narrowing): Use permerror.

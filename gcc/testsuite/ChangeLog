@@ -1,3 +1,90 @@
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/gomp/pr110485.c: New test.
+
+2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-simd-clone-16f.c: Remove unnecessary differentation
+	between targets with different pointer sizes.
+	* gcc.dg/vect/vect-simd-clone-17f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/100532
+	* gcc.dg/pr100532-1.c: New test.
+
+2023-10-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/104822
+	* gcc.dg/sso-18.c: New test.
+	* gcc.dg/sso-19.c: New test.
+
+2023-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/89038
+	* c-c++-common/cpp/Wunknown-pragmas-1.c: New test.
+
+2023-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/82335
+	* c-c++-common/cpp/diagnostic-pragma-3.c: New test.
+
+2023-10-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111860
+	* gcc.dg/vect/pr111860.c: New test.
+
+2023-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111131
+	* gcc.dg/vect/vect-gather-1.c: Now expected to vectorize
+	everywhere.
+	* gcc.dg/vect/vect-gather-2.c: Expected to not SLP anywhere.
+	Massage the scale case to more reliably produce a different
+	one.  Scan for the specific messages.
+	* gcc.dg/vect/vect-gather-3.c: Masked gather is also supported
+	for AVX2, but not emulated.
+	* gcc.dg/vect/vect-gather-4.c: Expected to not SLP anywhere.
+	Massage to more properly ensure this.
+	* gcc.dg/vect/tsvc/vect-tsvc-s353.c: Expect to vectorize
+	everywhere.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/pr71727.c: Adjust scan-assembler-not to
+	make sure we don't have q-register stores with -mstrict-align.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/args_9.c: Adjust scan-assemblers to
+	allow for stp.
+
+2023-10-19  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/lr_free_1.c: Add
+	--param=aarch64-stp-policy=never to dg-options.
+
+2023-10-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Group Clearwater Forest
+	with atom cores.
+
+2023-10-19  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vect-widen-add.c: New test.
+	* gcc.target/loongarch/vect-widen-mul.c: New test.
+	* gcc.target/loongarch/vect-widen-sub.c: New test.
+
+2023-10-19  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/avg-ceil-lasx.c: New test.
+	* gcc.target/loongarch/avg-ceil-lsx.c: New test.
+	* gcc.target/loongarch/avg-floor-lasx.c: New test.
+	* gcc.target/loongarch/avg-floor-lsx.c: New test.
+	* gcc.target/loongarch/sad-lasx.c: New test.
+	* gcc.target/loongarch/sad-lsx.c: New test.
+
 2023-10-18  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/111863
