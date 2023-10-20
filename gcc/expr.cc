@@ -7470,7 +7470,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    break;
 	  }
 	/* Use sign-extension for uniform boolean vectors with
-	   integer modes.  */
+	   integer modes.  Effectively "vec_duplicate" for bitmasks.  */
 	if (!TREE_SIDE_EFFECTS (exp)
 	    && VECTOR_BOOLEAN_TYPE_P (type)
 	    && SCALAR_INT_MODE_P (mode)
@@ -7479,7 +7479,19 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	  {
 	    rtx op0 = force_reg (TYPE_MODE (TREE_TYPE (elt)),
 				 expand_normal (elt));
-	    convert_move (target, op0, 0);
+	    rtx tmp = gen_reg_rtx (mode);
+	    convert_move (tmp, op0, 0);
+
+	    /* Ensure no excess bits are set.
+	       GCN needs this for nunits < 64.
+	       x86 needs this for nunits < 8.  */
+	    auto nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
+	      tmp = expand_binop (mode, and_optab, tmp,
+				  GEN_INT ((1 << nunits) - 1), target,
+				  true, OPTAB_DIRECT);
+	    if (tmp != target)
+	      emit_move_insn (target, tmp);
 	    break;
 	  }
 
