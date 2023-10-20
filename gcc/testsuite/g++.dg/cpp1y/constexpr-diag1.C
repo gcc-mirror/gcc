@@ -1,6 +1,6 @@
 // PR c++/111272
 // { dg-do compile { target c++14 } }
-// { dg-options "-Werror=invalid-constexpr" }
+// { dg-options "-Werror=invalid-constexpr -fno-implicit-constexpr" }
 // { dg-prune-output "some warnings being treated as errors" }
 
 struct Jam
