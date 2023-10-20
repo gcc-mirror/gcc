@@ -3235,7 +3235,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       /* Update the number of iterations for prolog loop.  */
       tree step_prolog = build_one_cst (TREE_TYPE (niters_prolog));
-      vect_set_loop_condition (prolog, prolog_e, loop_vinfo, niters_prolog,
+      vect_set_loop_condition (prolog, prolog_e, NULL, niters_prolog,
 			       step_prolog, NULL_TREE, false);
 
       /* Skip the prolog loop.  */
