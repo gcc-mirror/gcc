@@ -1007,7 +1007,7 @@ Expression::make_type(Type* type, Location location)
 
 Expression*
 Var_expression::do_lower(Gogo* gogo, Named_object* function,
-			 Statement_inserter* inserter, int)
+			 Statement_inserter* inserter)
 {
   if (this->variable_->is_variable())
     {
@@ -1158,7 +1158,7 @@ Enclosed_var_expression::do_traverse(Traverse*)
 
 Expression*
 Enclosed_var_expression::do_lower(Gogo* gogo, Named_object* function,
-				  Statement_inserter* inserter, int)
+				  Statement_inserter* inserter)
 {
   gogo->lower_expression(function, inserter, &this->reference_);
   return this;
@@ -2097,7 +2097,7 @@ Unknown_expression::do_is_addressable() const
 // Lower a reference to an unknown name.
 
 Expression*
-Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*)
 {
   if (this->is_error_expression())
     return Expression::make_error(this->location());
@@ -3642,7 +3642,7 @@ Const_expression::do_is_zero_value() const
 // predeclared constant iota into an integer value.
 
 Expression*
-Const_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*, int)
+Const_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*)
 {
   Location loc = this->location();
 
@@ -4120,7 +4120,7 @@ class Iota_expression : public Parser_expression
   { }
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+  do_lower(Gogo*, Named_object*, Statement_inserter*)
   { go_unreachable(); }
 
   // There should only ever be one of these.
@@ -4171,7 +4171,7 @@ Type_conversion_expression::do_type()
 
 Expression*
 Type_conversion_expression::do_lower(Gogo* gogo, Named_object*,
-				     Statement_inserter* inserter, int)
+				     Statement_inserter* inserter)
 {
   Type* type = this->type_;
   Expression* val = this->expr_;
@@ -4997,7 +4997,7 @@ Unary_expression::check_operand_address_taken(Gogo*)
 // instead.
 
 Expression*
-Unary_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*, int)
+Unary_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*)
 {
   Location loc = this->location();
 
@@ -6677,7 +6677,7 @@ Binary_expression::eval_complex(Operator op, const Numeric_constant* left_nc,
 
 Expression*
 Binary_expression::do_lower(Gogo* gogo, Named_object*,
-			    Statement_inserter* inserter, int)
+			    Statement_inserter* inserter)
 {
   Location location = this->location();
 
@@ -8955,7 +8955,7 @@ class Selector_expression : public Parser_expression
   do_issue_nil_check();
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_copy()
@@ -9030,7 +9030,7 @@ Selector_expression::do_issue_nil_check()
 // Lower a selector expression to the resolved value.
 
 Expression*
-Selector_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+Selector_expression::do_lower(Gogo*, Named_object*, Statement_inserter*)
 {
   if (this->is_error_expression() || this->resolved_ == NULL)
     return Expression::make_error(this->location());
@@ -9360,7 +9360,7 @@ Builtin_call_expression::do_set_recover_arg(Expression* arg)
 
 Expression*
 Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
-				  Statement_inserter* inserter, int)
+				  Statement_inserter* inserter)
 {
   if (this->is_error_expression())
     return this;
@@ -12564,7 +12564,7 @@ Call_expression::do_discarding_value()
 
 Expression*
 Call_expression::do_lower(Gogo* gogo, Named_object*,
-			  Statement_inserter* inserter, int)
+			  Statement_inserter* inserter)
 {
   if (this->lowered_ != NULL)
     return this->lowered_;
@@ -14836,7 +14836,7 @@ Index_expression::do_issue_nil_check()
 // expression into an array index, a string index, or a map index.
 
 Expression*
-Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*)
 {
   if (this->is_error_expression())
     return Expression::make_error(this->location());
@@ -16211,7 +16211,7 @@ Expression::make_map_index(Expression* map, Expression* index,
 
 Expression*
 Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
-				     Statement_inserter* inserter, int)
+				     Statement_inserter* inserter)
 {
   Struct_type* struct_type = this->expr_->type()->struct_type();
   if (struct_type == NULL)
@@ -18018,7 +18018,7 @@ class Composite_literal_key_expression : public Parser_expression
   do_determine_type(Gogo*, const Type_context*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*);
 
   Expression*
   do_copy()
@@ -18084,7 +18084,7 @@ Composite_literal_key_expression::do_type()
 
 Expression*
 Composite_literal_key_expression::do_lower(Gogo*, Named_object*,
-					   Statement_inserter*, int)
+					   Statement_inserter*)
 {
   if (this->is_error_expression())
     return Expression::make_error(this->location());
@@ -18658,7 +18658,7 @@ Composite_literal_expression::do_check_types(Gogo* gogo)
 
 Expression*
 Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
-				       Statement_inserter* inserter, int)
+				       Statement_inserter* inserter)
 {
   if (this->is_error_expression() || this->type_->is_error())
     return Expression::make_error(this->location());
