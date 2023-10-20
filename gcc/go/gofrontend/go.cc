@@ -118,35 +118,38 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
     ::gogo->add_linkname(p->first, p->second.is_exported, p->second.ext_name,
 			 p->second.loc);
 
+  // Lower calls to builtin functions.
+  ::gogo->lower_builtin_calls();
+
   // Finalize method lists and build stub methods for named types.
   ::gogo->finalize_methods();
 
   // Check that functions have a terminating statement.
   ::gogo->check_return_statements();
 
-  // Now that we have seen all the names, lower the parse tree into a
-  // form which is easier to use.
-  ::gogo->lower_parse_tree();
-
   // At this point we have handled all inline functions, so we no
   // longer need the linemap.
   ::gogo->linemap()->stop();
 
-  // Create function descriptors as needed.
-  ::gogo->create_function_descriptors();
+  // Work out types of unspecified constants and variables.
+  ::gogo->determine_types();
 
   // Now that we have seen all the names, verify that types are
   // correct.
   ::gogo->verify_types();
 
-  // Work out types of unspecified constants and variables.
-  ::gogo->determine_types();
-
   // Check types and issue errors as appropriate.
   ::gogo->check_types();
 
+  // Now that we have seen all the names and we know all the types,
+  // lower the parse tree into a form which is easier to use.
+  ::gogo->lower_parse_tree();
+
   if (only_check_syntax)
     return;
+
+  // Create function descriptors as needed.
+  ::gogo->create_function_descriptors();
 
   // Record global variable initializer dependencies.
   ::gogo->record_global_init_refs();

@@ -703,6 +703,11 @@ class Gogo
   void
   record_interface_type(Interface_type*);
 
+  // Whether we need an initialization function.
+  bool
+  need_init_fn() const
+  { return this->need_init_fn_; }
+
   // Note that we need an initialization function.
   void
   set_need_init_fn()
@@ -819,6 +824,10 @@ class Gogo
   // Create all necessary function descriptors.
   void
   create_function_descriptors();
+
+  // Lower calls to builtin functions.
+  void
+  lower_builtin_calls();
 
   // Finalize the method lists and build stub methods for named types.
   void
@@ -2569,7 +2578,8 @@ class Named_constant
   Named_constant(Type* type, Expression* expr, int iota_value,
 		 Location location)
     : type_(type), expr_(expr), iota_value_(iota_value), location_(location),
-      lowering_(false), is_sink_(false), bconst_(NULL)
+      lowering_(false), is_sink_(false), type_is_determined_(false),
+      bconst_(NULL)
   { }
 
   Type*
@@ -2655,6 +2665,8 @@ class Named_constant
   bool lowering_;
   // Whether this constant is blank named and needs only type checking.
   bool is_sink_;
+  // Whether we have determined the type of the constants.
+  bool type_is_determined_;
   // The backend representation of the constant value.
   Bexpression* bconst_;
 };
@@ -3275,6 +3287,10 @@ class Bindings
   // Traverse the tree.  See the Traverse class.
   int
   traverse(Traverse*, bool is_global);
+
+  // Determine types for the objects.
+  void
+  determine_types(Gogo*);
 
   // Iterate over definitions.  This does not include things which
   // were only declared.

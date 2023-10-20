@@ -1300,13 +1300,13 @@ class Type
 		       Function_type* equal_fntype);
 
   void
-  write_identity_hash(Gogo*, int64_t size);
+  write_identity_hash(Gogo*, Named_object* function, int64_t size);
 
   void
-  write_identity_equal(Gogo*, int64_t size);
+  write_identity_equal(Gogo*, Named_object* function, int64_t size);
 
   void
-  write_named_equal(Gogo*, Named_type*);
+  write_named_equal(Gogo*, Named_object* function, Named_type*);
 
   // Build a composite literal for the uncommon type information.
   Expression*
@@ -1354,8 +1354,8 @@ class Type
 		     Location);
 
   static void
-  build_one_stub_method(Gogo*, Method*, const char* receiver_name,
-			const Type* receiver_type,
+  build_one_stub_method(Gogo*, Method*, Named_object* stub,
+			const char* receiver_name, const Type* receiver_type,
 			const Typed_identifier_list*, bool is_varargs,
 			const Typed_identifier_list*, Location);
 
@@ -1364,12 +1364,12 @@ class Type
   build_direct_iface_stub_methods(Gogo*, const Type*, Methods*, Location);
 
   static void
-  build_one_iface_stub_method(Gogo*, Method*, const char*,
+  build_one_iface_stub_method(Gogo*, Method*, Named_object* stub, const char*,
                               const Typed_identifier_list*, bool,
 			      const Typed_identifier_list*, Location);
 
   static void
-  add_return_from_results(Gogo*, Call_expression*,
+  add_return_from_results(Gogo*, Named_object* stub, Call_expression*,
 			  const Typed_identifier_list*, Location);
 
   static Expression*
@@ -2654,11 +2654,11 @@ class Struct_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Function_type*);
+  write_hash_function(Gogo*, Named_object* function, Function_type*);
 
   // Write the equality function for this type.
   void
-  write_equal_function(Gogo*, Named_type*);
+  write_equal_function(Gogo*, Named_object* function, Named_type*);
 
   // Whether we can write this type to a C header file, to implement
   // -fgo-c-header.
@@ -2844,11 +2844,11 @@ class Array_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Function_type*);
+  write_hash_function(Gogo*, Named_object* function, Function_type*);
 
   // Write the equality function for this type.
   void
-  write_equal_function(Gogo*, Named_type*);
+  write_equal_function(Gogo*, Named_object* function, Named_type*);
 
  protected:
   int

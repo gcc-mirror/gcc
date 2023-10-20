@@ -2998,10 +2998,7 @@ Lower_parse_tree::constant(Named_object* no, bool)
     return TRAVERSE_CONTINUE;
   nc->set_lowering();
 
-  go_assert(this->iota_value_ == -1);
-  this->iota_value_ = nc->iota_value();
   nc->traverse_expression(this);
-  this->iota_value_ = -1;
 
   nc->clear_lowering();
 
@@ -3018,8 +3015,6 @@ Lower_parse_tree::constant(Named_object* no, bool)
 int
 Lower_parse_tree::function(Named_object* no)
 {
-  no->func_value()->set_closure_type();
-
   go_assert(this->function_ == NULL);
   this->function_ = no;
   int t = no->func_value()->traverse(this);
@@ -3482,6 +3477,43 @@ Gogo::create_function_descriptors()
   this->traverse(&cfd);
 }
 
+// Lower calls to builtin functions.  We need to do this early because
+// some builtin calls are constant expressions.  In particular we need
+// to do this before finalize_methods, because finalize_methods calls
+// is_direct_iface_type, which needs to know whether something like
+// [unsafe.Sizeof(byte(0))]*byte is a direct-iface type.
+
+class Lower_builtin_calls : public Traverse
+{
+ public:
+  Lower_builtin_calls(Gogo* gogo)
+    : Traverse(traverse_expressions),
+      gogo_(gogo)
+  { }
+
+  int
+  expression(Expression**);
+
+ private:
+  Gogo* gogo_;
+};
+
+int
+Lower_builtin_calls::expression(Expression** pexpr)
+{
+  Call_expression* ce = (*pexpr)->call_expression();
+  if (ce != NULL)
+    *pexpr = ce->lower_builtin(this->gogo_);
+  return TRAVERSE_CONTINUE;
+}
+
+void
+Gogo::lower_builtin_calls()
+{
+  Lower_builtin_calls lbc(this);
+  this->traverse(&lbc);
+}
+
 // Finalize the methods of an interface type.
 
 int
@@ -3625,47 +3657,7 @@ Gogo::finalize_methods_for_type(Type* type)
 void
 Gogo::determine_types()
 {
-  Bindings* bindings = this->current_bindings();
-  for (Bindings::const_definitions_iterator p = bindings->begin_definitions();
-       p != bindings->end_definitions();
-       ++p)
-    {
-      if ((*p)->is_function())
-	(*p)->func_value()->determine_types(this);
-      else if ((*p)->is_variable())
-	(*p)->var_value()->determine_type(this);
-      else if ((*p)->is_const())
-	(*p)->const_value()->determine_type(this);
-
-      // See if a variable requires us to build an initialization
-      // function.  We know that we will see all global variables
-      // here.
-      if (!this->need_init_fn_ && (*p)->is_variable())
-	{
-	  Variable* variable = (*p)->var_value();
-
-	  // If this is a global variable which requires runtime
-	  // initialization, we need an initialization function.
-	  if (!variable->is_global())
-	    ;
-	  else if (variable->init() == NULL)
-	    ;
-	  else if (variable->type()->interface_type() != NULL)
-	    this->need_init_fn_ = true;
-	  else if (variable->init()->is_constant())
-	    ;
-	  else if (!variable->init()->is_composite_literal())
-	    this->need_init_fn_ = true;
-	  else if (variable->init()->is_nonconstant_composite_literal())
-	    this->need_init_fn_ = true;
-
-	  // If this is a global variable which holds a pointer value,
-	  // then we need an initialization function to register it as a
-	  // GC root.
-	  if (variable->is_global() && variable->type()->has_pointer())
-	    this->need_init_fn_ = true;
-	}
-    }
+  this->current_bindings()->determine_types(this);
 
   // Determine the types of constants in packages.
   for (Packages::const_iterator p = this->packages_.begin();
@@ -3756,6 +3748,7 @@ Check_types_traverse::variable(Named_object* named_object)
 			  no->message_name().c_str());
             }
         }
+
       if (!var->is_used()
           && !var->is_global()
           && !var->is_parameter()
@@ -3763,8 +3756,15 @@ Check_types_traverse::variable(Named_object* named_object)
           && !var->type()->is_error()
           && (init == NULL || !init->is_error_expression())
           && !Lex::is_invalid_identifier(named_object->name()))
-	go_error_at(var->location(), "%qs declared but not used",
-		    named_object->message_name().c_str());
+	{
+	  // Avoid giving an error if the initializer is invalid.
+	  if (init != NULL)
+	    init->check_types(this->gogo_);
+
+	  if (init == NULL || !init->is_error_expression())
+	    go_error_at(var->location(), "%qs declared but not used",
+			named_object->message_name().c_str());
+	}
     }
   return TRAVERSE_CONTINUE;
 }
@@ -3786,6 +3786,11 @@ Check_types_traverse::constant(Named_object* named_object, bool)
 	go_error_at(constant->location(), "const initializer cannot be nil");
       else if (!ctype->is_error())
 	go_error_at(constant->location(), "invalid constant type");
+      constant->set_error();
+    }
+  else if (constant->expr()->is_error_expression())
+    {
+      go_assert(saw_errors());
       constant->set_error();
     }
   else if (!constant->expr()->is_constant())
@@ -4396,6 +4401,7 @@ Shortcuts::convert_shortcut(Block* enclosing, Expression** pshortcut)
 
   Statement* if_statement = Statement::make_if_statement(cond, block, NULL,
 							 loc);
+  if_statement->determine_types(this->gogo_);
   retblock->add_statement(if_statement);
 
   *pshortcut = Expression::make_temporary_reference(ts, loc);
@@ -4817,7 +4823,7 @@ Build_recover_thunks::function(Named_object* orig_no)
   // Any varargs call has already been lowered.
   call->set_varargs_are_lowered();
 
-  Statement* s = Statement::make_return_from_call(call, location);
+  Statement* s = Statement::make_return_from_call(new_no, call, location);
   s->determine_types(this->gogo_);
   gogo->add_statement(s);
 
@@ -5894,6 +5900,7 @@ Function::traverse(Traverse* traverse)
 void
 Function::determine_types(Gogo* gogo)
 {
+  this->set_closure_type();
   if (this->block_ != NULL)
     this->block_->determine_types(gogo);
 }
@@ -7465,8 +7472,8 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
   if (!Block::import_block(outer, &ifb, start_loc))
     return;
 
-  gogo->lower_block(no, outer);
   outer->determine_types(gogo);
+  gogo->lower_block(no, outer);
 
   gogo->add_imported_inline_function(no);
 }
@@ -7670,9 +7677,13 @@ Variable::has_type() const
 Type*
 Variable::type_from_tuple(Expression* expr, bool report_error) const
 {
-  if (expr->map_index_expression() != NULL)
+  if (Index_expression::is_map_index(expr))
     {
-      Map_type* mt = expr->map_index_expression()->get_map_type();
+      Map_type* mt;
+      if (expr->map_index_expression() != NULL)
+	mt = expr->map_index_expression()->get_map_type();
+      else
+	mt = expr->index_expression()->left()->type()->map_type();
       if (mt == NULL)
 	return Type::make_error_type();
       return mt->val_type();
@@ -7701,7 +7712,9 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
 			  bool report_error) const
 {
   Type* t = expr->type();
-  if (t->array_type() != NULL
+  if (t->is_error_type())
+    return t;
+  else if (t->array_type() != NULL
       || (t->points_to() != NULL
 	  && t->points_to()->array_type() != NULL
 	  && !t->points_to()->is_slice_type()))
@@ -8211,14 +8224,50 @@ Named_constant::traverse_expression(Traverse* traverse)
   return Expression::traverse(&this->expr_, traverse);
 }
 
+// Set the iota value in a constant expression.
+
+class Set_iota_value : public Traverse
+{
+ public:
+  Set_iota_value(int iota_value)
+    : Traverse(traverse_expressions),
+      iota_value_(iota_value)
+  { }
+
+  int
+  expression(Expression**);
+
+ private:
+  int iota_value_;
+};
+
+int
+Set_iota_value::expression(Expression** pexpr)
+{
+  Expression* expr = *pexpr;
+  if (expr->const_expression() != NULL)
+    expr->const_expression()->set_iota_value(this->iota_value_);
+  else if (expr->unknown_expression() != NULL)
+    {
+      // This case can happen for an array length that is not set in
+      // the determine types pass.
+      expr->unknown_expression()->set_iota_value(this->iota_value_);
+    }
+  return TRAVERSE_CONTINUE;
+}
+
 // Determine the type of the constant.
 
 void
 Named_constant::determine_type(Gogo* gogo)
 {
+  if (this->type_is_determined_)
+    return;
+  this->type_is_determined_ = true;
+
   if (this->type_ != NULL)
     {
-      Type_context context(this->type_, false);
+      Type_context context(this->type_, this->type_->is_abstract());
       this->expr_->determine_type(gogo, &context);
     }
   else
@@ -8229,6 +8278,9 @@ Named_constant::determine_type(Gogo* gogo)
       this->type_ = this->expr_->type();
       go_assert(this->type_ != NULL);
     }
+
+  Set_iota_value siv(this->iota_value_);
+  this->traverse_expression(&siv);
 }
 
 // Indicate that we found and reported an error for this constant.
@@ -9351,6 +9403,55 @@ Bindings::traverse(Traverse* traverse, bool is_global)
     }
 
   return TRAVERSE_CONTINUE;
+}
+
+// Determine types for the objects.
+
+void
+Bindings::determine_types(Gogo* gogo)
+{
+  // We don't use an iterator because the traversal can add new
+  // bindings.
+  for (size_t i = 0; i < this->named_objects_.size(); ++i)
+    {
+      Named_object* no = this->named_objects_[i];
+      if (no->is_function())
+	no->func_value()->determine_types(gogo);
+      else if (no->is_variable())
+	no->var_value()->determine_type(gogo);
+      else if (no->is_const())
+	no->const_value()->determine_type(gogo);
+
+      // See if a variable requires us to build an initialization
+      // function.  We know that we will see all global variables
+      // here.
+      if (!gogo->need_init_fn() && no->is_variable())
+	{
+	  Variable* variable = no->var_value();
+
+	  // If this is a global variable which requires runtime
+	  // initialization, we need an initialization function.
+
+	  if (!variable->is_global())
+	    continue;
+
+	  if (variable->init() == NULL)
+	    ;
+	  else if (variable->type()->interface_type() != NULL)
+	    gogo->set_need_init_fn();
+	  else if (variable->init()->is_constant())
+	    ;
+	  else if (!variable->init()->is_composite_literal())
+	    gogo->set_need_init_fn();
+	  else if (variable->init()->is_nonconstant_composite_literal())
+	    gogo->set_need_init_fn();
+
+	  // If this global variable holds a pointer value, we need an
+	  // initialization function to register it as a GC root.
+	  if (variable->type()->has_pointer())
+	    gogo->set_need_init_fn();
+	}
+    }
 }
 
 void
