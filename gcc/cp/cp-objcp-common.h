@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In cp/objcp-common.c, cp/cp-lang.cc and objcp/objcp-lang.cc.  */
 
 extern tree cp_get_debug_type (const_tree);
-extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t, tree);
+extern tree objcp_tsubst_expr (tree, tree, tsubst_flags_t, tree);
 
 extern int cp_decl_dwarf_attribute (const_tree, int);
 extern int cp_type_dwarf_attribute (const_tree, int);
