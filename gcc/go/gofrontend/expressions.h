@@ -598,19 +598,19 @@ class Expression
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
   bool
-  numeric_constant_value(Numeric_constant* val) const
+  numeric_constant_value(Numeric_constant* val)
   { return this->do_numeric_constant_value(val); }
 
   // If this is not a constant expression with string type, return
   // false.  If it is one, return true, and set VAL to the value.
   bool
-  string_constant_value(std::string* val) const
+  string_constant_value(std::string* val)
   { return this->do_string_constant_value(val); }
 
   // If this is not a constant expression with boolean type, return
   // false.  If it is one, return true, and set VAL to the value.
   bool
-  boolean_constant_value(bool* val) const
+  boolean_constant_value(bool* val)
   { return this->do_boolean_constant_value(val); }
 
   // If this is a const reference expression, return the named
@@ -1197,19 +1197,19 @@ class Expression
   // Return whether this is a constant expression of numeric type, and
   // set the Numeric_constant to the value.
   virtual bool
-  do_numeric_constant_value(Numeric_constant*) const
+  do_numeric_constant_value(Numeric_constant*)
   { return false; }
 
   // Return whether this is a constant expression of string type, and
   // set VAL to the value.
   virtual bool
-  do_string_constant_value(std::string*) const
+  do_string_constant_value(std::string*)
   { return false; }
 
   // Return whether this is a constant expression of boolean type, and
   // set VAL to the value.
   virtual bool
-  do_boolean_constant_value(bool*) const
+  do_boolean_constant_value(bool*)
   { return false; }
 
   // Called by the parser if the value is being discarded.
@@ -1532,13 +1532,13 @@ class Const_expression : public Expression
   { return true; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
+  do_numeric_constant_value(Numeric_constant* nc);
 
   bool
-  do_string_constant_value(std::string* val) const;
+  do_string_constant_value(std::string* val);
 
   bool
-  do_boolean_constant_value(bool* val) const;
+  do_boolean_constant_value(bool* val);
 
   Type*
   do_type();
@@ -1865,7 +1865,7 @@ class String_expression : public Expression
   { return true; }
 
   bool
-  do_string_constant_value(std::string* val) const
+  do_string_constant_value(std::string* val)
   {
     *val = this->val_;
     return true;
@@ -1967,13 +1967,13 @@ class Type_conversion_expression : public Expression
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_string_constant_value(std::string*) const;
+  do_string_constant_value(std::string*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   Type*
   do_type()
@@ -2169,10 +2169,10 @@ class Unary_expression : public Expression
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   Type*
   do_type();
@@ -2329,10 +2329,10 @@ class Binary_expression : public Expression
   do_is_static_initializer() const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
-  do_boolean_constant_value(bool*) const;
+  do_boolean_constant_value(bool*);
 
   bool
   do_discarding_value();
@@ -2806,7 +2806,7 @@ class Builtin_call_expression : public Call_expression
   do_is_untyped(Type**) const;
 
   bool
-  do_numeric_constant_value(Numeric_constant*) const;
+  do_numeric_constant_value(Numeric_constant*);
 
   bool
   do_discarding_value();

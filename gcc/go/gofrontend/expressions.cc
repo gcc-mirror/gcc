@@ -846,7 +846,7 @@ class Error_expression : public Expression
   { return false; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const
+  do_numeric_constant_value(Numeric_constant* nc)
   {
     nc->set_unsigned_long(NULL, 0);
     return true;
@@ -1992,7 +1992,7 @@ class Boolean_expression : public Expression
   { return this->val_ == false; }
 
   bool
-  do_boolean_constant_value(bool* val) const
+  do_boolean_constant_value(bool* val)
   {
     *val = this->val_;
     return true;
@@ -2537,7 +2537,7 @@ class Integer_expression : public Expression
   { return true; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
+  do_numeric_constant_value(Numeric_constant* nc);
 
   Type*
   do_type();
@@ -2602,7 +2602,7 @@ Integer_expression::do_traverse(Traverse* traverse)
 // this as a character when appropriate.
 
 bool
-Integer_expression::do_numeric_constant_value(Numeric_constant* nc) const
+Integer_expression::do_numeric_constant_value(Numeric_constant* nc)
 {
   if (this->is_character_constant_)
     nc->set_rune(this->type_, this->val_);
@@ -2983,7 +2983,7 @@ class Float_expression : public Expression
   { return true; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const
+  do_numeric_constant_value(Numeric_constant* nc)
   {
     nc->set_float(this->type_, this->val_);
     return true;
@@ -3219,7 +3219,7 @@ class Complex_expression : public Expression
   { return true; }
 
   bool
-  do_numeric_constant_value(Numeric_constant* nc) const
+  do_numeric_constant_value(Numeric_constant* nc)
   {
     nc->set_complex(this->type_, this->val_);
     return true;
@@ -3480,7 +3480,7 @@ Const_expression::do_lower(Gogo* gogo, Named_object*,
 // Return a numeric constant value.
 
 bool
-Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
+Const_expression::do_numeric_constant_value(Numeric_constant* nc)
 {
   if (this->seen_)
     return false;
@@ -3508,7 +3508,7 @@ Const_expression::do_numeric_constant_value(Numeric_constant* nc) const
 }
 
 bool
-Const_expression::do_string_constant_value(std::string* val) const
+Const_expression::do_string_constant_value(std::string* val)
 {
   if (this->seen_)
     return false;
@@ -3523,7 +3523,7 @@ Const_expression::do_string_constant_value(std::string* val) const
 }
 
 bool
-Const_expression::do_boolean_constant_value(bool* val) const
+Const_expression::do_boolean_constant_value(bool* val)
 {
   if (this->seen_)
     return false;
@@ -4180,7 +4180,7 @@ Type_conversion_expression::do_is_static_initializer() const
 
 bool
 Type_conversion_expression::do_numeric_constant_value(
-    Numeric_constant* nc) const
+    Numeric_constant* nc)
 {
   if (!this->type_->is_numeric_type())
     return false;
@@ -4192,7 +4192,7 @@ Type_conversion_expression::do_numeric_constant_value(
 // Return the constant string value if there is one.
 
 bool
-Type_conversion_expression::do_string_constant_value(std::string* val) const
+Type_conversion_expression::do_string_constant_value(std::string* val)
 {
   if (this->type_->is_string_type() && this->expr_->type()->is_string_type())
     return this->expr_->string_constant_value(val);
@@ -4229,7 +4229,7 @@ Type_conversion_expression::do_string_constant_value(std::string* val) const
 // Return the constant boolean value if there is one.
 
 bool
-Type_conversion_expression::do_boolean_constant_value(bool* val) const
+Type_conversion_expression::do_boolean_constant_value(bool* val)
 {
   if (!this->type_->is_boolean_type())
     return false;
@@ -5141,7 +5141,7 @@ Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
 // Return the integral constant value of a unary expression, if it has one.
 
 bool
-Unary_expression::do_numeric_constant_value(Numeric_constant* nc) const
+Unary_expression::do_numeric_constant_value(Numeric_constant* nc)
 {
   Numeric_constant unc;
   if (!this->expr_->numeric_constant_value(&unc))
@@ -5154,7 +5154,7 @@ Unary_expression::do_numeric_constant_value(Numeric_constant* nc) const
 // Return the boolean constant value of a unary expression, if it has one.
 
 bool
-Unary_expression::do_boolean_constant_value(bool* val) const
+Unary_expression::do_boolean_constant_value(bool* val)
 {
   if (this->op_ == OPERATOR_NOT
       && this->expr_->boolean_constant_value(val))
@@ -6733,7 +6733,7 @@ Binary_expression::operand_address(Statement_inserter* inserter,
 // Return the numeric constant value, if it has one.
 
 bool
-Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
+Binary_expression::do_numeric_constant_value(Numeric_constant* nc)
 {
   Numeric_constant left_nc;
   if (!this->left_->numeric_constant_value(&left_nc))
@@ -6749,7 +6749,7 @@ Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
 // Return the boolean constant value, if it has one.
 
 bool
-Binary_expression::do_boolean_constant_value(bool* val) const
+Binary_expression::do_boolean_constant_value(bool* val)
 {
   bool is_comparison = false;
   switch (this->op_)
@@ -9924,7 +9924,7 @@ Builtin_call_expression::do_is_untyped(Type** ptype) const
 // Return a numeric constant if possible.
 
 bool
-Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
+Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc)
 {
   if (this->code_ == BUILTIN_LEN
       || this->code_ == BUILTIN_CAP)
@@ -11230,37 +11230,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 void
 Builtin_call_expression::do_export(Export_function_body* efb) const
 {
-  Numeric_constant nc;
-  if (this->numeric_constant_value(&nc))
-    {
-      if (nc.is_int())
-	{
-	  mpz_t val;
-	  nc.get_int(&val);
-	  Integer_expression::export_integer(efb, val);
-	  mpz_clear(val);
-	}
-      else if (nc.is_float())
-	{
-	  mpfr_t fval;
-	  nc.get_float(&fval);
-	  Float_expression::export_float(efb, fval);
-	  mpfr_clear(fval);
-	}
-      else if (nc.is_complex())
-	{
-	  mpc_t cval;
-	  nc.get_complex(&cval);
-	  Complex_expression::export_complex(efb, cval);
-	  mpc_clear(cval);
-	}
-      else
-	go_unreachable();
-
-      // A trailing space lets us reliably identify the end of the number.
-      efb->write_c_string(" ");
-    }
-  else if (this->code_ == BUILTIN_ADD || this->code_ == BUILTIN_SLICE)
+  if (this->code_ == BUILTIN_ADD || this->code_ == BUILTIN_SLICE)
     {
       char buf[50];
       snprintf(buf, sizeof buf, "<p%d>%s", efb->unsafe_package_index(),
