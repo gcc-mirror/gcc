@@ -201,6 +201,19 @@ Expression::report_error(const char* msg)
   this->set_is_error();
 }
 
+// A convenience function for handling a type in do_is_untyped.  If
+// TYPE is not abstract, return false.  Otherwise set *PTYPE to TYPE
+// and return true.
+
+bool
+Expression::is_untyped_type(Type* type, Type** ptype)
+{
+  if (!type->is_abstract())
+    return false;
+  *ptype = type;
+  return true;
+}
+
 // Set types of variables and constants.  This is implemented by the
 // child class.
 
@@ -825,6 +838,10 @@ class Error_expression : public Expression
   bool
   do_is_constant() const
   { return true; }
+
+  bool
+  do_is_untyped(Type**) const
+  { return false; }
 
   bool
   do_numeric_constant_value(Numeric_constant* nc) const
@@ -1966,6 +1983,9 @@ class Boolean_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const
   { return this->val_ == false; }
 
@@ -2021,6 +2041,15 @@ Boolean_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+bool
+Boolean_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+  *ptype = Type::make_boolean_type();
+  return true;
 }
 
 // Get the type.
@@ -2094,6 +2123,15 @@ String_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+bool
+String_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+  *ptype = Type::make_string_type();
+  return true;
 }
 
 // Get the type.
@@ -2486,6 +2524,9 @@ class Integer_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const
   { return mpz_sgn(this->val_) == 0; }
 
@@ -2565,6 +2606,18 @@ Integer_expression::do_numeric_constant_value(Numeric_constant* nc) const
     nc->set_rune(this->type_, this->val_);
   else
     nc->set_int(this->type_, this->val_);
+  return true;
+}
+
+bool
+Integer_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+  if (this->is_character_constant_)
+    *ptype = Type::make_abstract_character_type();
+  else
+    *ptype = Type::make_abstract_integer_type();
   return true;
 }
 
@@ -2914,6 +2967,9 @@ class Float_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const
   {
     return mpfr_zero_p(this->val_) != 0
@@ -2977,6 +3033,15 @@ Float_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+bool
+Float_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+  *ptype = Type::make_abstract_float_type();
+  return true;
 }
 
 // Return the current type.  If we haven't set the type yet, we return
@@ -3136,6 +3201,9 @@ class Complex_expression : public Expression
   { return true; }
 
   bool
+  do_is_untyped(Type**) const;
+
+  bool
   do_is_zero_value() const
   {
     return mpfr_zero_p(mpc_realref(this->val_)) != 0
@@ -3203,6 +3271,15 @@ Complex_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+bool
+Complex_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+  *ptype = Type::make_abstract_complex_type();
+  return true;
 }
 
 // Return the current type.  If we haven't set the type yet, we return
@@ -3458,6 +3535,21 @@ Const_expression::do_boolean_constant_value(bool* val) const
   return ok;
 }
 
+// Whether this is untyped.
+
+bool
+Const_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+
+  Named_constant* nc = this->constant_->const_value();
+  if (nc->type() != NULL)
+    return Expression::is_untyped_type(nc->type(), ptype);
+
+  return nc->expr()->is_untyped(ptype);
+}
+
 // Return the type of the const reference.
 
 Type*
@@ -3706,6 +3798,13 @@ class Nil_expression : public Expression
   bool
   do_is_constant() const
   { return true; }
+
+  bool
+  do_untyped_type(Type** ptype) const
+  {
+    *ptype = Type::make_nil_type();
+    return true;
+  }
 
   bool
   do_is_zero_value() const
@@ -4774,6 +4873,14 @@ Unary_expression::do_is_constant() const
     return this->expr_->is_constant();
 }
 
+bool
+Unary_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->op_ == OPERATOR_MULT || this->op_ == OPERATOR_AND)
+    return false;
+  return this->expr_->is_untyped(ptype);
+}
+
 // Return whether a unary expression can be used as a constant
 // initializer.
 
@@ -5521,6 +5628,81 @@ Binary_expression::do_traverse(Traverse* traverse)
   if (t == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return Expression::traverse(&this->right_, traverse);
+}
+
+// Return whether a binary expression is untyped.
+
+bool
+Binary_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->type_ != NULL)
+    return Expression::is_untyped_type(this->type_, ptype);
+
+  switch (this->op_)
+    {
+    case OPERATOR_EQEQ:
+    case OPERATOR_NOTEQ:
+    case OPERATOR_LT:
+    case OPERATOR_LE:
+    case OPERATOR_GT:
+    case OPERATOR_GE:
+      // Comparisons are untyped by default.
+      *ptype = Type::make_boolean_type();
+      return true;
+
+    case OPERATOR_LSHIFT:
+    case OPERATOR_RSHIFT:
+      // A shift operation is untyped if the left hand expression is
+      // untyped.  The right hand expression is irrelevant.
+      return this->left_->is_untyped(ptype);
+
+    default:
+      break;
+    }
+
+  Type* tleft;
+  Type* tright;
+  if (!this->left_->is_untyped(&tleft)
+      || !this->right_->is_untyped(&tright))
+    return false;
+
+  // If both sides are numeric, pick a type based on the kind.
+  enum kind { INT, RUNE, FLOAT, COMPLEX };
+  enum kind kleft, kright;
+
+  if (tleft->integer_type() != NULL)
+    kleft = tleft->integer_type()->is_rune() ? RUNE : INT;
+  else if (tleft->float_type() != NULL)
+    kleft = FLOAT;
+  else if (tleft->complex_type() != NULL)
+    kleft = COMPLEX;
+  else
+    {
+      // Not numeric.  If the types are different, we will report an
+      // error later.
+      *ptype = tleft;
+      return true;
+    }
+
+  if (tright->integer_type() != NULL)
+    kright = tright->integer_type()->is_rune() ? RUNE : INT;
+  else if (tright->float_type() != NULL)
+    kright = FLOAT;
+  else if (tright->complex_type() != NULL)
+    kright = COMPLEX;
+  else
+    {
+      // Types are different.  We will report an error later.
+      *ptype = tleft;
+      return true;
+    }
+
+  if (kleft > kright)
+    *ptype = tleft;
+  else
+    *ptype = tright;
+
+  return true;
 }
 
 // Return whether this expression may be used as a static initializer.
@@ -7646,6 +7828,21 @@ String_concat_expression::do_is_constant() const
 }
 
 bool
+String_concat_expression::do_is_untyped(Type** ptype) const
+{
+  for (Expression_list::iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    {
+      if (!(*pe)->is_untyped(ptype))
+	return false;
+    }
+
+  *ptype = Type::make_string_type();
+  return true;
+}
+
+bool
 String_concat_expression::do_is_zero_value() const
 {
   for (Expression_list::const_iterator pe = this->exprs_->begin();
@@ -9669,6 +9866,47 @@ Builtin_call_expression::do_is_constant() const
     }
 
   return false;
+}
+
+// Return whether a builtin call is untyped.  Most builtin functions
+// have a known type, but complex, real, and imag can be untyped.
+
+bool
+Builtin_call_expression::do_is_untyped(Type** ptype) const
+{
+  if (this->is_error_expression())
+    return false;
+
+  switch (this->code_)
+    {
+    default:
+      return false;
+
+    case BUILTIN_COMPLEX:
+      {
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() != 2)
+	  return false;
+	Type* dummy;
+	if (!args->front()->is_untyped(&dummy)
+	    || !args->back()->is_untyped(&dummy))
+	  return false;
+	*ptype = Type::make_abstract_complex_type();
+	return true;
+      }
+
+    case BUILTIN_REAL:
+    case BUILTIN_IMAG:
+      {
+	Expression* arg = this->one_arg();
+	if (arg == NULL)
+	  return false;
+	if (!arg->is_untyped(ptype))
+	  return false;
+	*ptype = Type::make_abstract_float_type();
+	return true;
+      }
+    }
 }
 
 // Return a numeric constant if possible.
