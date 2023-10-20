@@ -736,10 +736,18 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
      better way of doing this.  When ISO C binding is cleared up,
      this can probably be removed.  See PR 57048.  */
 
-  if (((ts1->type == BT_INTEGER && ts2->type == BT_DERIVED)
-       || (ts1->type == BT_DERIVED && ts2->type == BT_INTEGER))
-      && ts1->u.derived && ts2->u.derived
-      && ts1->u.derived == ts2->u.derived)
+  if ((ts1->type == BT_INTEGER
+       && ts2->type == BT_DERIVED
+       && ts1->f90_type == BT_VOID
+       && ts2->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+       && ts1->u.derived
+       && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0)
+      || (ts2->type == BT_INTEGER
+	  && ts1->type == BT_DERIVED
+	  && ts2->f90_type == BT_VOID
+	  && ts1->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+	  && ts2->u.derived
+	  && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0))
     return true;
 
   /* The _data component is not always present, therefore check for its
