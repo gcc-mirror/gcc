@@ -1729,6 +1729,9 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
 
   lookup_object = build_c_cast (loc, rcv_p, lookup_object);
 
+  if (error_operand_p (lookup_object))
+    return error_mark_node;
+
   /* Use SAVE_EXPR to avoid evaluating the receiver twice.  */
   lookup_object = save_expr (lookup_object);
 

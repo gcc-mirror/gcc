@@ -96,7 +96,7 @@ convert_to_pointer_1 (tree type, tree expr, bool fold_p)
 
     default:
       error ("cannot convert to a pointer type");
-      return convert_to_pointer_1 (type, integer_zero_node, fold_p);
+      return error_mark_node;
     }
 }
 
@@ -332,11 +332,11 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       error ("pointer value used where a floating-point was expected");
-      return convert_to_real_1 (type, integer_zero_node, fold_p);
+      return error_mark_node;
 
     default:
       error ("aggregate value used where a floating-point was expected");
-      return convert_to_real_1 (type, integer_zero_node, fold_p);
+      return error_mark_node;
     }
 }
 
@@ -959,7 +959,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 
     default:
       error ("aggregate value used where an integer was expected");
-      return convert (type, integer_zero_node);
+      return error_mark_node;
     }
 }
 
@@ -1053,11 +1053,11 @@ convert_to_complex_1 (tree type, tree expr, bool fold_p)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       error ("pointer value used where a complex was expected");
-      return convert_to_complex_1 (type, integer_zero_node, fold_p);
+      return error_mark_node;
 
     default:
       error ("aggregate value used where a complex was expected");
-      return convert_to_complex_1 (type, integer_zero_node, fold_p);
+      return error_mark_node;
     }
 }
 
