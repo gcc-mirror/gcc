@@ -1284,11 +1284,11 @@ class Select_statement : public Statement
  private:
   // Lower a one-case select statement.
   Statement*
-  lower_one_case(Block*);
+  lower_one_case(Gogo*, Block*);
 
   // Lower a two-case select statement with one defualt case.
   Statement*
-  lower_two_case(Block*);
+  lower_two_case(Gogo*, Block*);
 
   // The select clauses.
   Select_clauses* clauses_;
@@ -1760,7 +1760,7 @@ class For_range_statement : public Statement
 		      Block**);
 
   Statement*
-  lower_map_range_clear(Type*, Block*, Expression*, Named_object*,
+  lower_map_range_clear(Gogo*, Type*, Block*, Expression*, Named_object*,
                         Temporary_statement*, Location);
 
   Statement*

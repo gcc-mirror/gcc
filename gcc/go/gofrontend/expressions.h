@@ -1090,7 +1090,7 @@ class Expression
   // interface type.  If FOR_TYPE_GUARD is true this is for a type
   // assertion.
   static Expression*
-  convert_interface_to_interface(Type* lhs_type,
+  convert_interface_to_interface(Gogo*, Type* lhs_type,
                                  Expression* rhs, bool for_type_guard,
                                  Location);
 
@@ -1125,9 +1125,9 @@ class Expression
 
   // Insert bounds checks for an index expression.
   static void
-  check_bounds(Expression* val, Operator, Expression* bound, Runtime::Function,
+  check_bounds(Gogo*, Expression* val, Operator, Expression* bound,
 	       Runtime::Function, Runtime::Function, Runtime::Function,
-	       Statement_inserter*, Location);
+	       Runtime::Function, Statement_inserter*, Location);
 
   // Return an expression for constructing a direct interface type from a
   // pointer.

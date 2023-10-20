@@ -961,7 +961,7 @@ Assignment_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
             code = Runtime::MAPASSIGN;
             break;
         }
-      Expression* call = Runtime::make_call(code, loc, 3,
+      Expression* call = Runtime::make_call(gogo, code, loc, 3,
 					    a1, a2, a3);
       Type* ptrval_type = Type::make_pointer_type(mt->val_type());
       call = Expression::make_cast(ptrval_type, call, loc);
@@ -1597,10 +1597,11 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
             code = Runtime::MAPACCESS2;
             break;
         }
-      call = Runtime::make_call(code, loc, 3, a1, a2, a3);
+      call = Runtime::make_call(gogo, code, loc, 3, a1, a2, a3);
     }
   else
-    call = Runtime::make_call(Runtime::MAPACCESS2_FAT, loc, 4, a1, a2, a3, a4);
+    call = Runtime::make_call(gogo, Runtime::MAPACCESS2_FAT, loc, 4,
+			      a1, a2, a3, a4);
   ref = Expression::make_temporary_reference(val_ptr_temp, loc);
   ref->set_is_lvalue();
   Expression* res = Expression::make_call_result(call, 0);
@@ -1701,7 +1702,7 @@ Tuple_receive_assignment_statement::do_traverse(Traverse* traverse)
 // Lower to a function call.
 
 Statement*
-Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
+Tuple_receive_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 					     Block* enclosing,
 					     Statement_inserter*)
 {
@@ -1744,7 +1745,7 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(val_temp, loc);
   Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(Runtime::CHANRECV2,
+  Expression* call = Runtime::make_call(gogo, Runtime::CHANRECV2,
 					loc, 2, this->channel_, p2);
   ref = Expression::make_temporary_reference(closed_temp, loc);
   ref->set_is_lvalue();
@@ -1819,10 +1820,10 @@ class Tuple_type_guard_assignment_statement : public Statement
 
  private:
   Call_expression*
-  lower_to_type(Runtime::Function);
+  lower_to_type(Gogo*, Runtime::Function);
 
   void
-  lower_to_object_type(Block*, Runtime::Function);
+  lower_to_object_type(Gogo*, Block*, Runtime::Function);
 
   // The variable which recieves the converted value.
   Expression* val_;
@@ -1849,7 +1850,7 @@ Tuple_type_guard_assignment_statement::do_traverse(Traverse* traverse)
 // Lower to a function call.
 
 Statement*
-Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
+Tuple_type_guard_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 						Block* enclosing,
 						Statement_inserter*)
 {
@@ -1876,22 +1877,25 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
   if (this->type_->interface_type() != NULL)
     {
       if (this->type_->interface_type()->is_empty())
-	call = Runtime::make_call((expr_is_empty
+	call = Runtime::make_call(gogo,
+				  (expr_is_empty
 				   ? Runtime::IFACEE2E2
 				   : Runtime::IFACEI2E2),
 				  loc, 1, this->expr_);
       else
-	call = this->lower_to_type(expr_is_empty
-				   ? Runtime::IFACEE2I2
-				   : Runtime::IFACEI2I2);
+	call = this->lower_to_type(gogo,
+				   (expr_is_empty
+				    ? Runtime::IFACEE2I2
+				    : Runtime::IFACEI2I2));
     }
   else if (this->type_->points_to() != NULL)
-    call = this->lower_to_type(expr_is_empty
-			       ? Runtime::IFACEE2T2P
-			       : Runtime::IFACEI2T2P);
+    call = this->lower_to_type(gogo,
+			       (expr_is_empty
+				? Runtime::IFACEE2T2P
+				: Runtime::IFACEI2T2P));
   else
     {
-      this->lower_to_object_type(b,
+      this->lower_to_object_type(gogo, b,
 				 (expr_is_empty
 				  ? Runtime::IFACEE2T2
 				  : Runtime::IFACEI2T2));
@@ -1918,10 +1922,11 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
 // Lower a conversion to a non-empty interface type or a pointer type.
 
 Call_expression*
-Tuple_type_guard_assignment_statement::lower_to_type(Runtime::Function code)
+Tuple_type_guard_assignment_statement::lower_to_type(Gogo* gogo,
+						     Runtime::Function code)
 {
   Location loc = this->location();
-  return Runtime::make_call(code, loc, 2,
+  return Runtime::make_call(gogo, code, loc, 2,
 			    Expression::make_type_descriptor(this->type_, loc),
 			    this->expr_);
 }
@@ -1930,6 +1935,7 @@ Tuple_type_guard_assignment_statement::lower_to_type(Runtime::Function code)
 
 void
 Tuple_type_guard_assignment_statement::lower_to_object_type(
+    Gogo* gogo,
     Block* b,
     Runtime::Function code)
 {
@@ -1955,7 +1961,8 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
   Expression* p1 = Expression::make_type_descriptor(this->type_, loc);
   Expression* ref = Expression::make_temporary_reference(val_temp, loc);
   Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(code, loc, 3, p1, this->expr_, p3);
+  Expression* call = Runtime::make_call(gogo, code, loc, 3,
+					p1, this->expr_, p3);
   Statement* s;
   if (ok_temp == NULL)
     s = Statement::make_statement(call, true);
@@ -2565,7 +2572,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
       Expression* nil = Expression::make_nil(location);
       Expression* isnil = Expression::make_binary(OPERATOR_EQEQ, fn, nil,
 						  location);
-      Expression* crash = Runtime::make_call(Runtime::PANIC_GO_NIL,
+      Expression* crash = Runtime::make_call(gogo, Runtime::PANIC_GO_NIL,
 					     location, 0);
       crash = Expression::make_conditional(isnil, crash,
 					   Expression::make_nil(location),
@@ -2749,7 +2756,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
     {
       retaddr_label = gogo->add_label_reference("retaddr", location, false);
       Expression* arg = Expression::make_label_addr(retaddr_label, location);
-      Expression* call = Runtime::make_call(Runtime::SETDEFERRETADDR,
+      Expression* call = Runtime::make_call(gogo, Runtime::SETDEFERRETADDR,
 					    location, 1, arg);
 
       // This is a hack to prevent the middle-end from deleting the
@@ -2973,7 +2980,8 @@ Go_statement::do_get_backend(Translate_context* context)
   if (!this->get_fn_and_arg(&fn, &arg))
     return context->backend()->error_statement();
 
-  Expression* call = Runtime::make_call(Runtime::GO, this->location(), 2,
+  Gogo* gogo = context->gogo();
+  Expression* call = Runtime::make_call(gogo, Runtime::GO, this->location(), 2,
 					fn, arg);
   Bexpression* bcall = call->get_backend(context);
   Bfunction* bfunction = context->function()->func_value()->get_decl();
@@ -3009,6 +3017,7 @@ Defer_statement::do_get_backend(Translate_context* context)
   if (!this->get_fn_and_arg(&fn, &arg))
     return context->backend()->error_statement();
 
+  Gogo* gogo = context->gogo();
   Location loc = this->location();
   Expression* ds = context->function()->func_value()->defer_stack(loc);
 
@@ -3022,11 +3031,11 @@ Defer_statement::do_get_backend(Translate_context* context)
       Expression* defer = Expression::make_allocation(defer_type, loc);
       defer->allocation_expression()->set_allocate_on_stack();
       defer->allocation_expression()->set_no_zero();
-      call = Runtime::make_call(Runtime::DEFERPROCSTACK, loc, 4,
+      call = Runtime::make_call(gogo, Runtime::DEFERPROCSTACK, loc, 4,
                                 defer, ds, fn, arg);
     }
   else
-    call = Runtime::make_call(Runtime::DEFERPROC, loc, 3,
+    call = Runtime::make_call(gogo, Runtime::DEFERPROC, loc, 3,
                               ds, fn, arg);
   Bexpression* bcall = call->get_backend(context);
   Bfunction* bfunction = context->function()->func_value()->get_decl();
@@ -4632,12 +4641,12 @@ Type_case_clauses::Type_case_clause::lower(Gogo* gogo,
 				           Expression::make_type_descriptor(type, loc),
 				           loc);
 	  else
-	    cond = Runtime::make_call(Runtime::EQTYPE, loc, 2,
+	    cond = Runtime::make_call(gogo, Runtime::EQTYPE, loc, 2,
 				      Expression::make_type_descriptor(type, loc),
 				      ref);
 	}
       else
-	cond = Runtime::make_call(Runtime::IFACET2IP, loc, 2,
+	cond = Runtime::make_call(gogo, Runtime::IFACET2IP, loc, 2,
 				  Expression::make_type_descriptor(type, loc),
 				  ref);
 
@@ -5076,6 +5085,7 @@ Send_statement::do_add_conversions()
 Bstatement*
 Send_statement::do_get_backend(Translate_context* context)
 {
+  Gogo* gogo = context->gogo();
   Location loc = this->location();
 
   Channel_type* channel_type = this->channel_->type()->channel_type();
@@ -5147,7 +5157,7 @@ Send_statement::do_get_backend(Translate_context* context)
       btemp = temp->get_backend(context);
     }
 
-  Expression* call = Runtime::make_call(Runtime::CHANSEND, loc, 2,
+  Expression* call = Runtime::make_call(gogo, Runtime::CHANSEND, loc, 2,
 					this->channel_, val);
 
   context->gogo()->lower_expression(context->function(), NULL, &call);
@@ -5660,7 +5670,9 @@ Select_clauses::get_backend(Translate_context* context,
   if (count == 0)
     return context->backend()->expression_statement(bfunction, bindex);
 
-  Expression* crash = Runtime::make_call(Runtime::UNREACHABLE, location, 0);
+  Gogo* gogo = context->gogo();
+  Expression* crash = Runtime::make_call(gogo, Runtime::UNREACHABLE,
+					 location, 0);
   Bexpression* bcrash = crash->get_backend(context);
   clauses[count] = context->backend()->expression_statement(bfunction, bcrash);
 
@@ -5726,7 +5738,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   // Zero-case select.  Just block the execution.
   if (ncases == 0)
     {
-      Expression* call = Runtime::make_call(Runtime::BLOCK, loc, 0);
+      Expression* call = Runtime::make_call(gogo, Runtime::BLOCK, loc, 0);
       Statement *s = Statement::make_statement(call, false);
       b->add_statement(s);
       this->is_lowered_ = true;
@@ -5735,12 +5747,12 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 
   // One-case select.  It is mostly just to run the case.
   if (ncases == 1)
-    return this->lower_one_case(b);
+    return this->lower_one_case(gogo, b);
 
   // Two-case select with one default case.  It is a non-blocking
   // send/receive.
   if (ncases == 2 && has_default)
-    return this->lower_two_case(b);
+    return this->lower_two_case(gogo, b);
 
   // We don't allocate an entry in scases for the default case.
   if (has_default)
@@ -5803,7 +5815,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 							    loc);
   Expression* block_expr = Expression::make_boolean(!has_default, loc);
 
-  Call_expression* call = Runtime::make_call(Runtime::SELECTGO, loc, 5,
+  Call_expression* call = Runtime::make_call(gogo, Runtime::SELECTGO, loc, 5,
 					     scases_ref, order_ref,
 					     send_count_expr, recv_count_expr,
 					     block_expr);
@@ -5827,7 +5839,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 // Lower a one-case select statement.
 
 Statement*
-Select_statement::lower_one_case(Block* b)
+Select_statement::lower_one_case(Gogo* gogo, Block* b)
 {
   Select_clauses::Select_clause& scase = this->clauses_->at(0);
   Location loc = this->location();
@@ -5843,7 +5855,7 @@ Select_statement::lower_one_case(Block* b)
       Expression* nil = Expression::make_nil(loc);
       Expression* cond = Expression::make_binary(OPERATOR_EQEQ, chanref, nil, loc);
       Block* bnil = new Block(b, loc);
-      Expression* call = Runtime::make_call(Runtime::BLOCK, loc, 0);
+      Expression* call = Runtime::make_call(gogo, Runtime::BLOCK, loc, 0);
       Statement* s = Statement::make_statement(call, false);
       bnil->add_statement(s);
       Statement* ifs = Statement::make_if_statement(cond, bnil, NULL, loc);
@@ -5935,7 +5947,7 @@ Select_statement::lower_one_case(Block* b)
 // Lower a two-case select statement with one default case.
 
 Statement*
-Select_statement::lower_two_case(Block* b)
+Select_statement::lower_two_case(Gogo* gogo, Block* b)
 {
   Select_clauses::Select_clause& chancase =
     (this->clauses_->at(0).is_default()
@@ -5968,7 +5980,8 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      cond = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
+      cond = Runtime::make_call(gogo, Runtime::SELECTNBSEND, loc, 2,
+				chanref, addr);
       bchan = chancase.statements();
     }
   else
@@ -5980,8 +5993,8 @@ Select_statement::lower_two_case(Block* b)
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
 
       // selected, ok = selectnbrecv(&lhs, chan)
-      Call_expression* call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2,
-						 addr, chanref);
+      Call_expression* call = Runtime::make_call(gogo, Runtime::SELECTNBRECV,
+						 loc, 2, addr, chanref);
 
       Temporary_statement* selected_temp =
 	Statement::make_temporary(Type::make_boolean_type(),
@@ -6389,7 +6402,8 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   // calls.
   if (range_type->map_type() != NULL)
     {
-      Statement* clear = this->lower_map_range_clear(range_type,
+      Statement* clear = this->lower_map_range_clear(gogo,
+						     range_type,
                                                      enclosing,
                                                      orig_range_expr,
                                                      range_object,
@@ -6856,7 +6870,7 @@ For_range_statement::lower_range_string(Gogo* gogo,
 
   ref = this->make_range_ref(range_object, range_temp, loc);
   index_ref = Expression::make_temporary_reference(index_temp, loc);
-  call = Runtime::make_call(Runtime::DECODERUNE, loc, 2, ref, index_ref);
+  call = Runtime::make_call(gogo, Runtime::DECODERUNE, loc, 2, ref, index_ref);
 
   value_ref = Expression::make_temporary_reference(value_temp, loc);
   value_ref->set_is_lvalue();
@@ -6935,7 +6949,7 @@ For_range_statement::lower_range_map(Gogo* gogo,
   Expression* p2 = this->make_range_ref(range_object, range_temp, loc);
   Expression* ref = Expression::make_temporary_reference(hiter, loc);
   Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(Runtime::MAPITERINIT, loc, 3,
+  Expression* call = Runtime::make_call(gogo, Runtime::MAPITERINIT, loc, 3,
 					p1, p2, p3);
   init->add_statement(Statement::make_statement(call, true));
 
@@ -6985,7 +6999,7 @@ For_range_statement::lower_range_map(Gogo* gogo,
 
   ref = Expression::make_temporary_reference(hiter, loc);
   p1 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  call = Runtime::make_call(Runtime::MAPITERNEXT, loc, 1, p1);
+  call = Runtime::make_call(gogo, Runtime::MAPITERNEXT, loc, 1, p1);
   post->add_statement(Statement::make_statement(call, true));
 
   *ppost = post;
@@ -7069,7 +7083,8 @@ For_range_statement::lower_range_channel(Gogo*,
 // containing the call.  Return NULL otherwise.
 
 Statement*
-For_range_statement::lower_map_range_clear(Type* map_type,
+For_range_statement::lower_map_range_clear(Gogo* gogo,
+					   Type* map_type,
                                            Block* enclosing,
                                            Expression* orig_range_expr,
                                            Named_object* range_object,
@@ -7109,7 +7124,7 @@ For_range_statement::lower_map_range_clear(Type* map_type,
   // Everything matches. Rewrite to mapclear(TYPE, MAP).
   Expression* e1 = Expression::make_type_descriptor(map_type, loc);
   Expression* e2 = this->make_range_ref(range_object, range_temp, loc);
-  call = Runtime::make_call(Runtime::MAPCLEAR, loc, 2, e1, e2);
+  call = Runtime::make_call(gogo, Runtime::MAPCLEAR, loc, 2, e1, e2);
   return Statement::make_statement(call, true);
 }
 
@@ -7198,12 +7213,13 @@ For_range_statement::lower_array_range_clear(Gogo* gogo,
   Expression* sz_arg = Expression::make_temporary_reference(ts2, loc);
   Expression* call;
   if (elem_type->has_pointer())
-    call = Runtime::make_call(Runtime::MEMCLRHASPTR, loc, 2, ptr_arg, sz_arg);
+    call = Runtime::make_call(gogo, Runtime::MEMCLRHASPTR, loc, 2,
+			      ptr_arg, sz_arg);
   else
     {
       Type* int32_type = Type::lookup_integer_type("int32");
       Expression* zero32 = Expression::make_integer_ul(0, int32_type, loc);
-      call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, ptr_arg,
+      call = Runtime::make_call(gogo, Runtime::BUILTIN_MEMSET, loc, 3, ptr_arg,
                                 zero32, sz_arg);
     }
   Statement* cs3 = Statement::make_statement(call, true);

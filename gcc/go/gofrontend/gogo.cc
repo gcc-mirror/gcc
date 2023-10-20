@@ -898,7 +898,8 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
   Expression* root_addr = Expression::make_unary(OPERATOR_AND, root_list_ctor,
                                                  builtin_loc);
   root_addr->unary_expression()->set_is_gc_root();
-  Expression* register_roots = Runtime::make_call(Runtime::REGISTER_GC_ROOTS,
+  Expression* register_roots = Runtime::make_call(this,
+						  Runtime::REGISTER_GC_ROOTS,
                                                   builtin_loc, 1, root_addr);
 
   Translate_context context(this, NULL, NULL, NULL);
@@ -1039,7 +1040,7 @@ Gogo::register_type_descriptors(std::vector<Bstatement*>& init_stmts,
   Type* array_ptr_type = Type::make_pointer_type(list_array_type);
   Expression* expr = Expression::make_backend(bexpr, array_ptr_type,
                                               builtin_loc);
-  expr = Runtime::make_call(Runtime::REGISTER_TYPE_DESCRIPTORS,
+  expr = Runtime::make_call(this, Runtime::REGISTER_TYPE_DESCRIPTORS,
                             builtin_loc, 2, len_expr->copy(), expr);
   Bexpression* bcall = expr->get_backend(&context);
   init_stmts.push_back(this->backend()->expression_statement(init_bfn,
@@ -4928,7 +4929,8 @@ Build_recover_thunks::can_recover_arg(Location location)
     }
 
   Expression* zexpr = Expression::make_integer_ul(0, NULL, location);
-  Expression* call = Runtime::make_call(Runtime::BUILTIN_RETURN_ADDRESS,
+  Expression* call = Runtime::make_call(this->gogo_,
+					Runtime::BUILTIN_RETURN_ADDRESS,
                                         location, 1, zexpr);
   call = Expression::make_unsafe_cast(uintptr_type, call, location);
 
@@ -5078,7 +5080,7 @@ Expression*
 Gogo::allocate_memory(Type* type, Location location)
 {
   Expression* td = Expression::make_type_descriptor(type, location);
-  return Runtime::make_call(Runtime::NEW, location, 1, td);
+  return Runtime::make_call(this, Runtime::NEW, location, 1, td);
 }
 
 // Traversal class used to check for return statements.
@@ -6778,7 +6780,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   // libgo/runtime/go-unwind.c.
 
   std::vector<Bstatement*> stmts;
-  Expression* call = Runtime::make_call(Runtime::CHECKDEFER, end_loc, 1,
+  Expression* call = Runtime::make_call(gogo, Runtime::CHECKDEFER, end_loc, 1,
 					this->defer_stack(end_loc));
   Translate_context context(gogo, named_function, NULL, NULL);
   Bexpression* defer = call->get_backend(&context);
@@ -6791,11 +6793,11 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   go_assert(*except == NULL);
   *except = gogo->backend()->statement_list(stmts);
 
-  call = Runtime::make_call(Runtime::CHECKDEFER, end_loc, 1,
+  call = Runtime::make_call(gogo, Runtime::CHECKDEFER, end_loc, 1,
                             this->defer_stack(end_loc));
   defer = call->get_backend(&context);
 
-  call = Runtime::make_call(Runtime::DEFERRETURN, end_loc, 1,
+  call = Runtime::make_call(gogo, Runtime::DEFERRETURN, end_loc, 1,
         		    this->defer_stack(end_loc));
   Bexpression* undefer = call->get_backend(&context);
   Bstatement* function_defer =
