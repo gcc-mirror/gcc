@@ -610,7 +610,7 @@ add_to_dst_predicate_list (class loop *loop, edge e,
 /* Return true if one of the successor edges of BB exits LOOP.  */
 
 static bool
-bb_with_exit_edge_p (class loop *loop, basic_block bb)
+bb_with_exit_edge_p (const class loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1297,6 +1297,44 @@ get_loop_body_in_if_conv_order (const class loop *loop)
     }
   free (blocks_in_bfs_order);
   BITMAP_FREE (visited);
+
+  /* Go through loop and reject if-conversion or lowering of bitfields if we
+     encounter statements we do not believe the vectorizer will be able to
+     handle.  If adding a new type of statement here, make sure
+     'ifcvt_local_dce' is also able to handle it propertly.  */
+  for (index = 0; index < loop->num_nodes; index++)
+    {
+      basic_block bb = blocks[index];
+      gimple_stmt_iterator gsi;
+
+      bool may_have_nonlocal_labels
+	= bb_with_exit_edge_p (loop, bb) || bb == loop->latch;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	switch (gimple_code (gsi_stmt (gsi)))
+	  {
+	  case GIMPLE_LABEL:
+	    if (!may_have_nonlocal_labels)
+	      {
+		tree label
+		  = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi)));
+		if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+		  {
+		    free (blocks);
+		    return NULL;
+		  }
+	      }
+	    /* Fallthru.  */
+	  case GIMPLE_ASSIGN:
+	  case GIMPLE_CALL:
+	  case GIMPLE_DEBUG:
+	  case GIMPLE_COND:
+	    gimple_set_uid (gsi_stmt (gsi), 0);
+	    break;
+	  default:
+	    free (blocks);
+	    return NULL;
+	  }
+    }
   return blocks;
 }
 
@@ -1467,36 +1505,6 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
 	exit_bb = bb;
     }
 
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = ifc_bbs[i];
-      gimple_stmt_iterator gsi;
-
-      bool may_have_nonlocal_labels
-	= bb_with_exit_edge_p (loop, bb) || bb == loop->latch;
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	switch (gimple_code (gsi_stmt (gsi)))
-	  {
-	  case GIMPLE_LABEL:
-	    if (!may_have_nonlocal_labels)
-	      {
-		tree label
-		  = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi)));
-		if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
-		  return false;
-	      }
-	    /* Fallthru.  */
-	  case GIMPLE_ASSIGN:
-	  case GIMPLE_CALL:
-	  case GIMPLE_DEBUG:
-	  case GIMPLE_COND:
-	    gimple_set_uid (gsi_stmt (gsi), 0);
-	    break;
-	  default:
-	    return false;
-	  }
-    }
-
   data_reference_p dr;
 
   innermost_DR_map
@@ -1605,14 +1613,6 @@ if_convertible_loop_p (class loop *loop, vec<data_reference_p> *refs)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "less than 2 basic blocks\n");
-      return false;
-    }
-
-  /* More than one loop exit is too much to handle.  */
-  if (!single_exit (loop))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "multiple exits\n");
       return false;
     }
 
@@ -3736,9 +3736,6 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 	aggressive_if_conv = true;
     }
 
-  if (!single_exit (loop))
-    goto cleanup;
-
   /* If there are more than two BBs in the loop then there is at least one if
      to convert.  */
   if (loop->num_nodes > 2
@@ -3758,15 +3755,25 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 
   if (loop->num_nodes > 2)
     {
-      need_to_ifcvt = true;
+      /* More than one loop exit is too much to handle.  */
+      if (!single_exit (loop))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Can not ifcvt due to multiple exits\n");
+	}
+      else
+	{
+	  need_to_ifcvt = true;
 
-      if (!if_convertible_loop_p (loop, &refs) || !dbg_cnt (if_conversion_tree))
-	goto cleanup;
+	  if (!if_convertible_loop_p (loop, &refs)
+	      || !dbg_cnt (if_conversion_tree))
+	    goto cleanup;
 
-      if ((need_to_predicate || any_complicated_phi)
-	  && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
-	      || loop->dont_vectorize))
-	goto cleanup;
+	  if ((need_to_predicate || any_complicated_phi)
+	      && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
+		  || loop->dont_vectorize))
+	    goto cleanup;
+	}
     }
 
   if ((flag_tree_loop_vectorize || loop->force_vectorize)
@@ -3864,7 +3871,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
      PHIs, those are to be kept in sync with the non-if-converted copy.
      ???  We'll still keep dead stores though.  */
   exit_bbs = BITMAP_ALLOC (NULL);
-  bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
+  for (edge exit : get_loop_exit_edges (loop))
+    bitmap_set_bit (exit_bbs, exit->dest->index);
   bitmap_set_bit (exit_bbs, loop->latch->index);
 
   std::pair <tree, tree> *name_pair;
