@@ -1281,54 +1281,55 @@ public:
   /* The static execute probability of the demand info.  */
   profile_probability probability;
 
-  auto_vec<vsetvl_info> infos;
-  vsetvl_info m_info;
-  bb_info *m_bb;
+  auto_vec<vsetvl_info> local_infos;
+  vsetvl_info global_info;
+  bb_info *bb;
 
   bool full_available;
 
-  vsetvl_block_info () : m_bb (nullptr), full_available (false)
+  vsetvl_block_info () : bb (nullptr), full_available (false)
   {
-    infos.safe_grow_cleared (0);
-    m_info.set_empty ();
+    local_infos.safe_grow_cleared (0);
+    global_info.set_empty ();
   }
   vsetvl_block_info (const vsetvl_block_info &other)
-    : probability (other.probability), infos (other.infos.copy ()),
-      m_info (other.m_info), m_bb (other.m_bb)
+    : probability (other.probability), local_infos (other.local_infos.copy ()),
+      global_info (other.global_info), bb (other.bb)
   {}
 
   vsetvl_info &get_entry_info ()
   {
     gcc_assert (!empty_p ());
-    return infos.is_empty () ? m_info : infos[0];
+    return local_infos.is_empty () ? global_info : local_infos[0];
   }
   vsetvl_info &get_exit_info ()
   {
     gcc_assert (!empty_p ());
-    return infos.is_empty () ? m_info : infos[infos.length () - 1];
+    return local_infos.is_empty () ? global_info
+				   : local_infos[local_infos.length () - 1];
   }
   const vsetvl_info &get_entry_info () const
   {
     gcc_assert (!empty_p ());
-    return infos.is_empty () ? m_info : infos[0];
+    return local_infos.is_empty () ? global_info : local_infos[0];
   }
   const vsetvl_info &get_exit_info () const
   {
     gcc_assert (!empty_p ());
-    return infos.is_empty () ? m_info : infos[infos.length () - 1];
+    return local_infos.is_empty () ? global_info
+				   : local_infos[local_infos.length () - 1];
   }
 
-  bool empty_p () const { return infos.is_empty () && !has_info (); }
-  bool has_info () const { return !m_info.empty_p (); }
+  bool empty_p () const { return local_infos.is_empty () && !has_info (); }
+  bool has_info () const { return !global_info.empty_p (); }
   void set_info (const vsetvl_info &info)
   {
-    gcc_assert (infos.is_empty ());
-    m_info = info;
-    m_info.set_bb (m_bb);
+    gcc_assert (local_infos.is_empty ());
+    global_info = info;
+    global_info.set_bb (bb);
   }
-  void set_empty_info () { m_info.set_empty (); }
+  void set_empty_info () { global_info.set_empty (); }
 };
-
 
 /* Demand system is the RVV-based VSETVL info analysis tools wrapper.
    It defines compatible rules for SEW/LMUL, POLICY and AVL.
@@ -2323,7 +2324,7 @@ public:
 	    block_info.get_entry_info ().dump (file, "      ");
 	    fprintf (file, "    Footer vsetvl info:");
 	    block_info.get_exit_info ().dump (file, "      ");
-	    for (const auto &info : block_info.infos)
+	    for (const auto &info : block_info.local_infos)
 	      {
 		fprintf (file,
 			 "    insn %d vsetvl info:", info.get_insn ()->uid ());
@@ -2740,7 +2741,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
   for (bb_info *bb : crtl->ssa->bbs ())
     {
       auto &block_info = get_block_info (bb);
-      block_info.m_bb = bb;
+      block_info.bb = bb;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  Try fuse basic block %d\n", bb->index ());
@@ -2768,7 +2769,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 	  else if ((curr_info.unknown_p () && prev_info.valid_p ())
 		   || (curr_info.valid_p () && prev_info.unknown_p ()))
 	    {
-	      block_info.infos.safe_push (prev_info);
+	      block_info.local_infos.safe_push (prev_info);
 	      prev_info = curr_info;
 	    }
 	  else if (curr_info.valid_p () && prev_info.valid_p ())
@@ -2825,14 +2826,14 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		      fprintf (dump_file, "      curr_info: ");
 		      curr_info.dump (dump_file, "       ");
 		    }
-		  block_info.infos.safe_push (prev_info);
+		  block_info.local_infos.safe_push (prev_info);
 		  prev_info = curr_info;
 		}
 	    }
 	}
 
       if (prev_info.valid_p () || prev_info.unknown_p ())
-	block_info.infos.safe_push (prev_info);
+	block_info.local_infos.safe_push (prev_info);
     }
 
   m_avl_regs = sbitmap_alloc (GP_REG_LAST + 1);
@@ -3194,9 +3195,9 @@ pre_vsetvl::pre_global_vsetvl_info ()
       vsetvl_info &curr_info = block_info.get_entry_info ();
       if (curr_info.delete_p ())
 	{
-	  if (block_info.infos.is_empty ())
+	  if (block_info.local_infos.is_empty ())
 	    continue;
-	  curr_info = block_info.infos[0];
+	  curr_info = block_info.local_infos[0];
 	}
       if (curr_info.valid_p () && !curr_info.vl_use_by_non_rvv_insn_p ()
 	  && preds_has_same_avl_p (curr_info))
@@ -3204,7 +3205,7 @@ pre_vsetvl::pre_global_vsetvl_info ()
 
       vsetvl_info prev_info = vsetvl_info ();
       prev_info.set_empty ();
-      for (auto &curr_info : block_info.infos)
+      for (auto &curr_info : block_info.local_infos)
 	{
 	  if (prev_info.valid_p () && curr_info.valid_p ()
 	      && m_dem.avl_available_p (prev_info, curr_info))
@@ -3221,7 +3222,7 @@ pre_vsetvl::emit_vsetvl ()
 
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
-      for (const auto &curr_info : get_block_info (bb).infos)
+      for (const auto &curr_info : get_block_info (bb).local_infos)
 	{
 	  insn_info *insn = curr_info.get_insn ();
 	  if (curr_info.delete_p ())
