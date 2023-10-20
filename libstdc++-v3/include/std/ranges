@@ -4632,6 +4632,9 @@ namespace views::__adaptor
   class zip_view<_Vs...>::_Iterator
     : public __detail::__zip_view_iter_cat<_Const, _Vs...>
   {
+#ifdef __clang__ // LLVM-61763 workaround
+  public:
+#endif
     __detail::__tuple_or_pair_t<iterator_t<__detail::__maybe_const_t<_Const, _Vs>>...> _M_current;
 
     constexpr explicit
@@ -4652,11 +4655,13 @@ namespace views::__adaptor
 	return input_iterator_tag{};
     }
 
+#ifndef __clang__ // LLVM-61763 workaround
     template<move_constructible _Fp, input_range... _Ws>
       requires (view<_Ws> && ...) && (sizeof...(_Ws) > 0) && is_object_v<_Fp>
 	&& regular_invocable<_Fp&, range_reference_t<_Ws>...>
 	&& std::__detail::__can_reference<invoke_result_t<_Fp&, range_reference_t<_Ws>...>>
       friend class zip_transform_view;
+#endif
 
   public:
     // iterator_category defined in __zip_view_iter_cat
@@ -5327,6 +5332,9 @@ namespace views::__adaptor
   template<bool _Const>
   class adjacent_view<_Vp, _Nm>::_Iterator
   {
+#ifdef __clang__ // LLVM-61763 workaround
+  public:
+#endif
     using _Base = __detail::__maybe_const_t<_Const, _Vp>;
     array<iterator_t<_Base>, _Nm> _M_current = array<iterator_t<_Base>, _Nm>();
 
@@ -5367,12 +5375,14 @@ namespace views::__adaptor
 
     friend class adjacent_view;
 
+#ifndef __clang__ // LLVM-61763 workaround
     template<forward_range _Wp, move_constructible _Fp, size_t _Mm>
       requires view<_Wp> && (_Mm > 0) && is_object_v<_Fp>
         && regular_invocable<__detail::__unarize<_Fp&, _Mm>, range_reference_t<_Wp>>
         && std::__detail::__can_reference<invoke_result_t<__detail::__unarize<_Fp&, _Mm>,
 							 range_reference_t<_Wp>>>
       friend class adjacent_transform_view;
+#endif
 
   public:
     using iterator_category = input_iterator_tag;
