@@ -5564,14 +5564,14 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else
 	{
 	  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	  if (bltin1 && bltin2)
-	    warning_at (colon_loc, OPT_Wincompatible_pointer_types,
-			"pointer type mismatch between %qT and %qT "
-			"of %qD and %qD in conditional expression",
-			type1, type2, bltin1, bltin2);
-	  else
-	    pedwarn (colon_loc, 0,
-		     "pointer type mismatch in conditional expression");
+	  if (emit_diagnostic (bltin1 && bltin2 ? DK_WARNING : DK_PEDWARN,
+			       colon_loc, OPT_Wincompatible_pointer_types,
+			       "pointer type mismatch "
+			       "in conditional expression"))
+	    {
+	      inform (op1_loc, "first expression has type %qT", type1);
+	      inform (op2_loc, "second expression has type %qT", type2);
+	    }
 	  result_type = build_pointer_type
 			  (build_qualified_type (void_type_node, qual));
 	}
