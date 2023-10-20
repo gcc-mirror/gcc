@@ -2446,20 +2446,19 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	    modes->safe_push (mode);
 	}
     }
-  if (TARGET_VECTOR_VLS)
-    {
-      /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
-      unsigned int i = 0;
-      unsigned int base_size = TARGET_MIN_VLEN * lmul / 8;
-      unsigned int size = base_size;
-      machine_mode mode;
-      while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
-	{
+    /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
+    unsigned int i = 0;
+    unsigned int base_size = TARGET_MIN_VLEN * lmul / 8;
+    unsigned int size = base_size;
+    machine_mode mode;
+    while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
+     {
+	if (vls_mode_valid_p (mode))
 	  modes->safe_push (mode);
-	  i++;
-	  size = base_size / (1U << i);
-	}
-    }
+
+	i++;
+	size = base_size / (1U << i);
+     }
   /* Enable LOOP_VINFO comparison in COST model.  */
   return VECT_COMPARE_COSTS;
 }
@@ -3900,6 +3899,95 @@ cmp_lmul_gt_one (machine_mode mode)
     return known_gt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
   else if (riscv_v_ext_vls_mode_p (mode))
     return known_gt (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
+  return false;
+}
+
+/* Return true if the VLS mode is legal. There are 2 cases here.
+
+   1. Enable VLS modes for VLA vectorization since fixed length VLMAX mode
+      is the highest priority choice and should not conflict with VLS modes.
+   2. Enable VLS modes for some cases in fixed-vlmax, aka the bitsize of the
+      VLS mode are smaller than the minimal vla.
+
+   Take vlen = 2048 as example for case 2.
+
+   Note: Below table based on vlen = 2048.
+   +----------------------------------------------------+----------------------+
+   | VLS mode                                           | VLA mode             |
+   +----------------------------------------------------+----------------------+
+   | Name       | Precision | Inner Precision | Enabled | Min mode  | Min bits |
+   +------------+-----------+-----------------+---------+-----------+----------+
+   | V1BI       |     1     |              1  | Yes     | RVVMF64BI |    32    |
+   | V2BI       |     2     |              1  | Yes     | RVVMF64BI |    32    |
+   | V4BI       |     4     |              1  | Yes     | RVVMF64BI |    32    |
+   | V8BI       |     8     |              1  | Yes     | RVVMF64BI |    32    |
+   | V16BI      |    16     |              1  | Yes     | RVVMF64BI |    32    |
+   | V32BI      |    32     |              1  | NO      | RVVMF64BI |    32    |
+   | V64BI      |    64     |              1  | NO      | RVVMF64BI |    32    |
+   | ...        |   ...     |            ...  | ...     | RVVMF64BI |    32    |
+   | V4096BI    |  4096     |              1  | NO      | RVVMF64BI |    32    |
+   +------------+-----------+-----------------+---------+-----------+----------+
+   | V1QI       |     8     |              8  | Yes     | RVVMF8QI  |   256    |
+   | V2QI       |    16     |              8  | Yes     | RVVMF8QI  |   256    |
+   | V4QI       |    32     |              8  | Yes     | RVVMF8QI  |   256    |
+   | V8QI       |    64     |              8  | Yes     | RVVMF8QI  |   256    |
+   | V16QI      |   128     |              8  | Yes     | RVVMF8QI  |   256    |
+   | V32QI      |   256     |              8  | NO      | RVVMF8QI  |   256    |
+   | V64QI      |   512     |              8  | NO      | RVVMF8QI  |   256    |
+   | ...        |   ...     |              .. | ...     | RVVMF8QI  |   256    |
+   | V4096QI    | 32768     |              8  | NO      | RVVMF8QI  |   256    |
+   +------------+-----------+-----------------+---------+-----------+----------+
+   | V1HI       |    16     |              16 | Yes     | RVVMF4HI  |   512    |
+   | V2HI       |    32     |              16 | Yes     | RVVMF4HI  |   512    |
+   | V4HI       |    64     |              16 | Yes     | RVVMF4HI  |   512    |
+   | V8HI       |   128     |              16 | Yes     | RVVMF4HI  |   512    |
+   | V16HI      |   256     |              16 | Yes     | RVVMF4HI  |   512    |
+   | V32HI      |   512     |              16 | NO      | RVVMF4HI  |   512    |
+   | V64HI      |  1024     |              16 | NO      | RVVMF4HI  |   512    |
+   | ...        |   ...     |              .. | ...     | RVVMF4HI  |   512    |
+   | V2048HI    | 32768     |              16 | NO      | RVVMF4HI  |   512    |
+   +------------+-----------+-----------------+---------+-----------+----------+
+   | V1SI/SF    |    32     |              32 | Yes     | RVVMF2SI  |  1024    |
+   | V2SI/SF    |    64     |              32 | Yes     | RVVMF2SI  |  1024    |
+   | V4SI/SF    |   128     |              32 | Yes     | RVVMF2SI  |  1024    |
+   | V8SI/SF    |   256     |              32 | Yes     | RVVMF2SI  |  1024    |
+   | V16SI/SF   |   512     |              32 | Yes     | RVVMF2SI  |  1024    |
+   | V32SI/SF   |  1024     |              32 | NO      | RVVMF2SI  |  1024    |
+   | V64SI/SF   |  2048     |              32 | NO      | RVVMF2SI  |  1024    |
+   | ...        |   ...     |              .. | ...     | RVVMF2SI  |  1024    |
+   | V1024SI/SF | 32768     |              32 | NO      | RVVMF2SI  |  1024    |
+   +------------+-----------+-----------------+---------+-----------+----------+
+   | V1DI/DF    |    64     |              64 | Yes     | RVVM1DI   |  2048    |
+   | V2DI/DF    |   128     |              64 | Yes     | RVVM1DI   |  2048    |
+   | V4DI/DF    |   256     |              64 | Yes     | RVVM1DI   |  2048    |
+   | V8DI/DF    |   512     |              64 | Yes     | RVVM1DI   |  2048    |
+   | V16DI/DF   |  1024     |              64 | Yes     | RVVM1DI   |  2048    |
+   | V32DI/DF   |  2048     |              64 | NO      | RVVM1DI   |  2048    |
+   | V64DI/DF   |  4096     |              64 | NO      | RVVM1DI   |  2048    |
+   | ...        |   ...     |              .. | ...     | RVVM1DI   |  2048    |
+   | V512DI/DF  | 32768     |              64 | NO      | RVVM1DI   |  2048    |
+   +------------+-----------+-----------------+---------+-----------+----------+
+
+   Then we can have the condition for VLS mode in fixed-vlmax, aka:
+     PRECISION (VLSmode) < VLEN / (64 / PRECISION(VLS_inner_mode)).  */
+bool
+vls_mode_valid_p (machine_mode vls_mode)
+{
+  if (!TARGET_VECTOR)
+    return false;
+
+  if (riscv_autovec_preference == RVV_SCALABLE)
+    return true;
+
+  if (riscv_autovec_preference == RVV_FIXED_VLMAX)
+    {
+      machine_mode inner_mode = GET_MODE_INNER (vls_mode);
+      int precision = GET_MODE_PRECISION (inner_mode).to_constant ();
+      int min_vlmax_bitsize = TARGET_MIN_VLEN / (64 / precision);
+
+      return GET_MODE_PRECISION (vls_mode).to_constant () < min_vlmax_bitsize;
+    }
+
   return false;
 }
 
