@@ -575,6 +575,10 @@ class Type
   static Named_type*
   make_builtin_named_type(const char* name, Type* type);
 
+  // Return a string version of this type to use in an error message.
+  std::string
+  message_name() const;
+
   // Traverse a type.
   static int
   traverse(Type*, Traverse*);
@@ -1095,6 +1099,10 @@ class Type
 
   // Functions implemented by the child class.
 
+  // Message name.
+  virtual void
+  do_message_name(std::string*) const = 0;
+
   // Traverse the subtypes.
   virtual int
   do_traverse(Traverse*);
@@ -1194,6 +1202,11 @@ class Type
   Expression*
   type_descriptor_constructor(Gogo*, int runtime_type_kind, Named_type*,
 			      const Methods*, bool only_value_methods);
+
+  // For the benefit of child class message name construction.
+  void
+  append_message_name(const Type* type, std::string* ret) const
+  { type->do_message_name(ret); }
 
   // For the benefit of child class reflection string generation.
   void
@@ -1656,6 +1669,10 @@ class Error_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<ERROR>"); }
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -1683,6 +1700,10 @@ class Void_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("void"); }
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -1712,6 +1733,10 @@ class Boolean_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<untyped bool>"); }
+
   bool
   do_compare_is_identity(Gogo*)
   { return true; }
@@ -1797,6 +1822,9 @@ class Integer_type : public Type
   { this->is_rune_ = true; }
 
 protected:
+  void
+  do_message_name(std::string* ret) const;
+
   bool
   do_compare_is_identity(Gogo*)
   { return true; }
@@ -1874,6 +1902,9 @@ class Float_type : public Type
   is_identical(const Float_type* t) const;
 
  protected:
+  void
+  do_message_name(std::string* ret) const;
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -1952,6 +1983,9 @@ class Complex_type : public Type
   is_identical(const Complex_type* t) const;
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -2009,6 +2043,10 @@ class String_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<untyped string>"); }
+
   bool
   do_has_pointer() const
   { return true; }
@@ -2166,7 +2204,14 @@ class Function_type : public Type
   is_backend_function_type() const
   { return false; }
 
+  // Append just the signature of the function type.
+  void
+  append_signature(std::string*) const;
+
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse*);
 
@@ -2293,6 +2338,9 @@ class Pointer_type : public Type
   make_pointer_type_descriptor_type();
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse*);
 
@@ -2346,6 +2394,10 @@ class Nil_type : public Type
   { }
 
  protected:
+  void
+  do_message_name(std::string* ret) const
+  { ret->append("<NIL>"); }
+
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
@@ -2671,6 +2723,9 @@ class Struct_type : public Type
   write_to_c_header(std::ostream&) const;
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse*);
 
@@ -2851,6 +2906,9 @@ class Array_type : public Type
   write_equal_function(Gogo*, Named_object* function, Named_type*);
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse* traverse);
 
@@ -2999,6 +3057,9 @@ class Map_type : public Type
   static const int bucket_size = 8;
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse*);
 
@@ -3118,6 +3179,9 @@ class Channel_type : public Type
   select_case_type();
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse* traverse)
   { return Type::traverse(this->element_type_, traverse); }
@@ -3273,6 +3337,9 @@ class Interface_type : public Type
   { return this->methods_are_finalized_; }
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse*);
 
@@ -3450,12 +3517,6 @@ class Named_type : public Type
   const std::string&
   name() const;
 
-  // Return the name of the type for an error message.  The difference
-  // is that if the type is defined in a different package, this will
-  // return PACKAGE.NAME.
-  std::string
-  message_name() const;
-
   // Return the underlying type.
   Type*
   real_type()
@@ -3599,6 +3660,9 @@ class Named_type : public Type
   convert(Gogo*);
 
  protected:
+  void
+  do_message_name(std::string* ret) const;
+
   int
   do_traverse(Traverse* traverse)
   { return Type::traverse(this->type_, traverse); }
@@ -3758,6 +3822,9 @@ class Forward_declaration_type : public Type
   add_existing_method(Named_object*);
 
  protected:
+  void
+  do_message_name(std::string*) const;
+
   int
   do_traverse(Traverse* traverse);
 
