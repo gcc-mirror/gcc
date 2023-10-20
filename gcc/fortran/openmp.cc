@@ -164,6 +164,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->if_expr);
   for (i = 0; i < OMP_IF_LAST; i++)
     gfc_free_expr (c->if_exprs[i]);
+  gfc_free_expr (c->self_expr);
   gfc_free_expr (c->final_expr);
   gfc_free_expr (c->num_threads);
   gfc_free_expr (c->chunk_size);

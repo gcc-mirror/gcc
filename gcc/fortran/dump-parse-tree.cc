@@ -1619,6 +1619,12 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->if_exprs[i]);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->self_expr)
+    {
+      fputs (" SELF(", dumpfile);
+      show_expr (omp_clauses->self_expr);
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->final_expr)
     {
       fputs (" FINAL(", dumpfile);
