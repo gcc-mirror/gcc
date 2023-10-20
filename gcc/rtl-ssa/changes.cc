@@ -706,7 +706,11 @@ function_info::change_insns (array_slice<insn_change *> changes)
       insn_change &change = *changes[i];
       insn_info *insn = change.insn ();
       if (change.is_deletion ())
-	remove_insn (insn);
+	{
+	  if (rtx_insn *rtl = insn->rtl ())
+	    ::remove_insn (rtl); // Remove the underlying RTL insn.
+	  remove_insn (insn);
+	}
       else if (insn_info *placeholder = placeholders[i])
 	{
 	  // Check if earlier movements turned a move into a no-op.
