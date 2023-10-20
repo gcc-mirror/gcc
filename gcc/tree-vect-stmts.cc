@@ -4070,7 +4070,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       if (thisarginfo.dt == vect_constant_def
 	  || thisarginfo.dt == vect_external_def)
 	{
-	  gcc_assert (vec_stmt || thisarginfo.vectype == NULL_TREE);
+	  /* With SLP we determine the vector type of constants/externals
+	     at analysis time, handling conflicts via
+	     vect_maybe_update_slp_op_vectype.  At transform time
+	     we have a vector type recorded for SLP.  */
+	  gcc_assert (!vec_stmt
+		      || !slp_node
+		      || thisarginfo.vectype != NULL_TREE);
 	  if (!vec_stmt)
 	    thisarginfo.vectype = get_vectype_for_scalar_type (vinfo,
 							       TREE_TYPE (op),
