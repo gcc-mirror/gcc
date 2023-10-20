@@ -9748,6 +9748,10 @@ set_call_expr_flags (tree decl, int flags)
 		   DECL_ATTRIBUTES (decl));
   if ((flags & ECF_TM_PURE) && flag_tm)
     apply_tm_attr (decl, get_identifier ("transaction_pure"));
+  if ((flags & ECF_XTHROW))
+    DECL_ATTRIBUTES (decl)
+      = tree_cons (get_identifier ("expected_throw"),
+		   NULL, DECL_ATTRIBUTES (decl));
   /* Looping const or pure is implied by noreturn.
      There is currently no way to declare looping const or looping pure alone.  */
   gcc_assert (!(flags & ECF_LOOPING_CONST_OR_PURE)
@@ -9960,7 +9964,8 @@ build_common_builtin_nodes (void)
       ftype = build_function_type_list (void_type_node, NULL_TREE);
       local_define_builtin ("__builtin_cxa_end_cleanup", ftype,
 			    BUILT_IN_CXA_END_CLEANUP,
-			    "__cxa_end_cleanup", ECF_NORETURN | ECF_LEAF);
+			    "__cxa_end_cleanup",
+			    ECF_NORETURN | ECF_XTHROW | ECF_LEAF);
     }
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -9969,7 +9974,7 @@ build_common_builtin_nodes (void)
 			((targetm_common.except_unwind_info (&global_options)
 			  == UI_SJLJ)
 			 ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
-			ECF_NORETURN);
+			ECF_NORETURN | ECF_XTHROW);
 
   if (builtin_decl_explicit (BUILT_IN_RETURN_ADDRESS) == NULL_TREE)
     {

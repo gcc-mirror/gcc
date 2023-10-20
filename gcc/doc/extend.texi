@@ -3055,6 +3055,17 @@ when using these attributes the problem is diagnosed
 earlier and with exact location of the call even in presence of inline
 functions or when not emitting debugging information.
 
+@cindex @code{expected_throw} function attribute
+@item expected_throw
+This attribute, attached to a function, tells the compiler the function
+is more likely to raise or propagate an exception than to return, loop
+forever, or terminate the program.
+
+This hint is mostly ignored by the compiler.  The only effect is when
+it's applied to @code{noreturn} functions and
+@samp{-fharden-control-flow-redundancy} is enabled, and
+@samp{-fhardcfr-check-noreturn-calls=not-always} is not overridden.
+
 @cindex @code{externally_visible} function attribute
 @item externally_visible
 This attribute, attached to a global variable or function, nullifies

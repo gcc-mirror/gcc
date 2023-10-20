@@ -642,6 +642,9 @@ Objective-C and Objective-C++ Dialects}.
 -fsanitize-undefined-trap-on-error  -fbounds-check
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
 -fharden-compares -fharden-conditional-branches
+-fharden-control-flow-redundancy  -fhardcfr-skip-leaf
+-fhardcfr-check-exceptions  -fhardcfr-check-returning-calls
+-fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong
 -fstack-protector-explicit  -fstack-check
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
@@ -15964,6 +15967,16 @@ A value of zero can be used to lift
 the bound.  A variable whose value is unknown at compilation time and
 defined outside a SCoP is a parameter of the SCoP.
 
+@item hardcfr-max-blocks
+Disable @option{-fharden-control-flow-redundancy} for functions with a
+larger number of blocks than the specified value.  Zero removes any
+limit.
+
+@item hardcfr-max-inline-blocks
+Force @option{-fharden-control-flow-redundancy} to use out-of-line
+checking for functions with a larger number of basic blocks than the
+specified value.
+
 @item loop-block-tile-size
 Loop blocking or strip mining transforms, enabled with
 @option{-floop-block} or @option{-floop-strip-mine}, strip mine each
@@ -17447,6 +17460,86 @@ optimizations, emit extra code to compute and verify the reversed
 condition, and to call @code{__builtin_trap} if the result is
 unexpected.  Use with @samp{-fharden-compares} to cover all
 conditionals.
+
+@opindex fharden-control-flow-redundancy
+@item -fharden-control-flow-redundancy
+Emit extra code to set booleans when entering basic blocks, and to
+verify and trap, at function exits, when the booleans do not form an
+execution path that is compatible with the control flow graph.
+
+Verification takes place before returns, before mandatory tail calls
+(see below) and, optionally, before escaping exceptions with
+@option{-fhardcfr-check-exceptions}, before returning calls with
+@option{-fhardcfr-check-returning-calls}, and before noreturn calls with
+@option{-fhardcfr-check-noreturn-calls}).  Tuning options
+@option{--param hardcfr-max-blocks} and @option{--param
+hardcfr-max-inline-blocks} are available.
+
+Tail call optimization takes place too late to affect control flow
+redundancy, but calls annotated as mandatory tail calls by language
+front-ends, and any calls marked early enough as potential tail calls
+would also have verification issued before the call, but these
+possibilities are merely theoretical, as these conditions can only be
+met when using custom compiler plugins.
+
+@opindex fhardcfr-skip-leaf
+@item -fhardcfr-skip-leaf
+Disable @option{-fharden-control-flow-redundancy} in leaf functions.
+
+@opindex fhardcfr-check-exceptions
+@opindex fno-hardcfr-check-exceptions
+@item -fhardcfr-check-exceptions
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph at exception
+escape points, as if the function body was wrapped with a cleanup
+handler that performed the check and reraised.  This option is enabled
+by default; use @option{-fno-hardcfr-check-exceptions} to disable it.
+
+@opindex fhardcfr-check-returning-calls
+@opindex fno-hardcfr-check-returning-calls
+@item -fhardcfr-check-returning-calls
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph before any
+function call immediately followed by a return of its result, if any, so
+as to not prevent tail-call optimization, whether or not it is
+ultimately optimized to a tail call.
+
+This option is enabled by default whenever sibling call optimizations
+are enabled (see @option{-foptimize-sibling-calls}), but it can be
+enabled (or disabled, using its negated form) explicitly, regardless of
+the optimizations.
+
+@opindex fhardcfr-check-noreturn-calls
+@item -fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
+When @option{-fharden-control-flow-redundancy} is active, check the
+recorded execution path against the control flow graph before
+@code{noreturn} calls, either all of them (@option{always}), those that
+aren't expected to return control to the caller through an exception
+(@option{no-xthrow}, the default), those that may not return control to
+the caller through an exception either (@option{nothrow}), or none of
+them (@option{never}).
+
+Checking before a @code{noreturn} function that may return control to
+the caller through an exception may cause checking to be performed more
+than once, if the exception is caught in the caller, whether by a
+handler or a cleanup.  When @option{-fhardcfr-check-exceptions} is also
+enabled, the compiler will avoid associating a @code{noreturn} call with
+the implicitly-added cleanup handler, since it would be redundant with
+the check performed before the call, but other handlers or cleanups in
+the function, if activated, will modify the recorded execution path and
+check it again when another checkpoint is hit.  The checkpoint may even
+be another @code{noreturn} call, so checking may end up performed
+multiple times.
+
+Various optimizers may cause calls to be marked as @code{noreturn}
+and/or @code{nothrow}, even in the absence of the corresponding
+attributes, which may affect the placement of checks before calls, as
+well as the addition of implicit cleanup handlers for them.  This
+unpredictability, and the fact that raising and reraising exceptions
+frequently amounts to implicitly calling @code{noreturn} functions, have
+made @option{no-xthrow} the default setting for this option: it excludes
+from the @code{noreturn} treatment only internal functions used to
+(re)raise exceptions, that are not affected by these optimizations.
 
 @opindex fstack-protector
 @item -fstack-protector

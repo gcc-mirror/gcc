@@ -519,6 +519,7 @@ gigi (Node_Id gnat_root,
 			   ftype, NULL_TREE,
 			   is_default, true, true, true, false, false, NULL,
 			   Empty);
+  set_call_expr_flags (reraise_zcx_decl, ECF_NORETURN | ECF_XTHROW);
 
   /* Dummy objects to materialize "others" and "all others" in the exception
      tables.  These are exported by a-exexpr-gcc.adb, so see this unit for
@@ -721,6 +722,7 @@ build_raise_check (int check, enum exception_info_kind kind)
     = create_subprog_decl (get_identifier (Name_Buffer), NULL_TREE, ftype,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
+  set_call_expr_flags (result, ECF_NORETURN | ECF_XTHROW);
 
   return result;
 }

@@ -157,6 +157,16 @@ enum stack_reuse_level
   SR_ALL
 };
 
+/* Control Flow Redundancy hardening options for noreturn calls.  */
+enum hardcfr_noret
+{
+  HCFRNR_NEVER,
+  HCFRNR_NOTHROW,
+  HCFRNR_NO_XTHROW,
+  HCFRNR_UNSPECIFIED,
+  HCFRNR_ALWAYS,
+};
+
 /* The live patching level.  */
 enum live_patching_level
 {

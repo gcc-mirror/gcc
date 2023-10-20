@@ -5281,7 +5281,8 @@ push_cp_library_fn (enum tree_code operator_code, tree type,
 tree
 push_throw_library_fn (tree name, tree type)
 {
-  tree fn = push_library_fn (name, type, NULL_TREE, ECF_NORETURN | ECF_COLD);
+  tree fn = push_library_fn (name, type, NULL_TREE,
+			     ECF_NORETURN | ECF_XTHROW | ECF_COLD);
   return fn;
 }
 

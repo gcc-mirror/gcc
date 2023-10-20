@@ -1179,6 +1179,9 @@ DEF_GCC_BUILTIN (BUILT_IN_FILE, "FILE", BT_FN_CONST_STRING, ATTR_NOTHROW_LEAF_LI
 DEF_GCC_BUILTIN (BUILT_IN_FUNCTION, "FUNCTION", BT_FN_CONST_STRING, ATTR_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
+/* Control Flow Redundancy hardening out-of-line checker.  */
+DEF_BUILTIN_STUB (BUILT_IN___HARDCFR_CHECK, "__builtin___hardcfr_check")
+
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"
 

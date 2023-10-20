@@ -1831,6 +1831,41 @@ fharden-conditional-branches
 Common Var(flag_harden_conditional_branches) Optimization
 Harden conditional branches by checking reversed conditions.
 
+fharden-control-flow-redundancy
+Common Var(flag_harden_control_flow_redundancy) Optimization
+Harden control flow by recording and checking execution paths.
+
+fhardcfr-skip-leaf
+Common Var(flag_harden_control_flow_redundancy_skip_leaf) Optimization
+Disable CFR in leaf functions.
+
+fhardcfr-check-returning-calls
+Common Var(flag_harden_control_flow_redundancy_check_returning_calls) Init(-1) Optimization
+Check CFR execution paths also before calls followed by returns of their results.
+
+fhardcfr-check-exceptions
+Common Var(flag_harden_control_flow_redundancy_check_exceptions) Init(-1) Optimization
+Check CFR execution paths also when exiting a function through an exception.
+
+fhardcfr-check-noreturn-calls=
+Common Joined RejectNegative Enum(hardcfr_check_noreturn_calls) Var(flag_harden_control_flow_redundancy_check_noreturn) Init(HCFRNR_UNSPECIFIED) Optimization
+-fhardcfr-check-noreturn-calls=[always|no-xthrow|nothrow|never]	Check CFR execution paths also before calling noreturn functions.
+
+Enum
+Name(hardcfr_check_noreturn_calls) Type(enum hardcfr_noret) UnknownError(unknown hardcfr noreturn checking level %qs)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(never) Value(HCFRNR_NEVER)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(nothrow) Value(HCFRNR_NOTHROW)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(no-xthrow) Value(HCFRNR_NO_XTHROW)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(always) Value(HCFRNR_ALWAYS)
+
 ; Nonzero means ignore `#ident' directives.  0 means handle them.
 ; Generate position-independent code for executables if possible
 ; On SVR4 targets, it also controls whether or not to emit a
