@@ -1,3 +1,12 @@
+2023-10-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111528
+	* lra-eliminations.cc (lra_eliminate_regs_1): Use simplify_gen_binary
+	rather than gen_rtx_PLUS.
+
 2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
