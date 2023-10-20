@@ -6151,7 +6151,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CLEANUP_POINT_EXPR:
     case EXPR_STMT:
     case PAREN_EXPR:
-    case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case LOOP_EXPR:
     case EXIT_EXPR:
