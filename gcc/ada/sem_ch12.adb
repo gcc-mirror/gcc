@@ -16938,8 +16938,11 @@ package body Sem_Ch12 is
          elsif No (Full_View (Typ)) and then Typ /= Etype (Typ) then
             null;
 
-         --  Otherwise mark the type for flipping and use the full view when
-         --  available.
+         --  Otherwise mark the type for flipping and set the full view on N2
+         --  when available, which is necessary for Check_Private_View to swap
+         --  back the views in case the full declaration of Typ is visible in
+         --  the instantiation context. Note that this will be problematic if
+         --  N2 is re-analyzed later, e.g. if it's a default value in a call.
 
          else
             Set_Has_Private_View (N);
