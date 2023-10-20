@@ -1080,7 +1080,8 @@ enum omp_mask2
   OMP_CLAUSE_INDEPENDENT,
   OMP_CLAUSE_USE_DEVICE,
   OMP_CLAUSE_DEVICE_RESIDENT,
-  OMP_CLAUSE_HOST_SELF,
+  OMP_CLAUSE_SELF,
+  OMP_CLAUSE_HOST,
   OMP_CLAUSE_WAIT,
   OMP_CLAUSE_DELETE,
   OMP_CLAUSE_AUTO,
@@ -1094,7 +1095,6 @@ enum omp_mask2
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
   OMP_CLAUSE_USES_ALLOCATORS, /* OpenMP 5.0  */
-  OMP_CLAUSE_SELF, /* OpenACC 2.7  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1877,8 +1877,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
      that should work.  */
   bool allow_derived = (openacc
 			&& ((mask & OMP_CLAUSE_ATTACH)
-			    || (mask & OMP_CLAUSE_DETACH)
-			    || (mask & OMP_CLAUSE_HOST_SELF)));
+			    || (mask & OMP_CLAUSE_DETACH)));
 
   gcc_checking_assert (OMP_MASK1_LAST <= 64 && OMP_MASK2_LAST <= 64);
   *cp = NULL;
@@ -2550,7 +2549,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match ("device ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
 					   OMP_MAP_FORCE_TO, true,
-					   allow_derived))
+					   /* allow_derived = */ true))
 	    continue;
 	  if ((mask & OMP_CLAUSE_DEVICEPTR)
 	      && gfc_match ("deviceptr ( ") == MATCH_YES
@@ -2725,11 +2724,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->assume->holds = el;
 	      continue;
 	    }
-	  if ((mask & OMP_CLAUSE_HOST_SELF)
+	  if ((mask & OMP_CLAUSE_HOST)
 	      && gfc_match ("host ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
 					   OMP_MAP_FORCE_FROM, true,
-					   allow_derived))
+					   /* allow_derived = */ true))
 	    continue;
 	  break;
 	case 'i':
@@ -3521,10 +3520,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		gfc_current_locus = old_loc;
 	    }
 	  if ((mask & OMP_CLAUSE_SELF)
+	      && !(mask & OMP_CLAUSE_HOST) /* OpenACC compute construct */
 	      && (m = gfc_match_dupl_check (!c->self_expr, "self"))
 	          != MATCH_NO)
 	    {
-	      gcc_assert (!(mask & OMP_CLAUSE_HOST_SELF));
 	      if (m == MATCH_ERROR)
 		goto error;
 	      m = gfc_match (" ( %e )", &c->self_expr);
@@ -3541,11 +3540,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      continue;
 	    }
-	  if ((mask & OMP_CLAUSE_HOST_SELF)
+	  if ((mask & OMP_CLAUSE_SELF)
+	      && (mask & OMP_CLAUSE_HOST) /* OpenACC 'update' directive */
 	      && gfc_match ("self ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
 					   OMP_MAP_FORCE_FROM, true,
-					   allow_derived))
+					   /* allow_derived = */ true))
 	    continue;
 	  if ((mask & OMP_CLAUSE_SEQ)
 	      && (m = gfc_match_dupl_check (!c->seq, "seq")) != MATCH_NO)
@@ -3854,9 +3854,10 @@ error:
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_DEVICEPTR | OMP_CLAUSE_DEVICE_RESIDENT    \
    | OMP_CLAUSE_PRESENT			      \
    | OMP_CLAUSE_LINK)
-#define OACC_UPDATE_CLAUSES \
-  (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_HOST_SELF	      \
-   | OMP_CLAUSE_DEVICE | OMP_CLAUSE_WAIT | OMP_CLAUSE_IF_PRESENT)
+#define OACC_UPDATE_CLAUSES						\
+  (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_HOST	      \
+   | OMP_CLAUSE_DEVICE | OMP_CLAUSE_WAIT | OMP_CLAUSE_IF_PRESENT	      \
+   | OMP_CLAUSE_SELF)
 #define OACC_ENTER_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_WAIT	      \
    | OMP_CLAUSE_COPYIN | OMP_CLAUSE_CREATE | OMP_CLAUSE_ATTACH)
