@@ -21364,31 +21364,6 @@ tsubst_copy_and_build (tree t,
 		 || TREE_CODE (function) == MEMBER_REF)
 	  ret = build_offset_ref_call_from_tree (function, &call_args,
 						 complain);
-	else if (TREE_CODE (function) == COMPONENT_REF)
-	  {
-	    tree instance = TREE_OPERAND (function, 0);
-	    tree fn = TREE_OPERAND (function, 1);
-
-	    if (processing_template_decl
-		&& (type_dependent_expression_p (instance)
-		    || (!BASELINK_P (fn)
-			&& TREE_CODE (fn) != FIELD_DECL)
-		    || type_dependent_expression_p (fn)
-		    || any_type_dependent_arguments_p (call_args)))
-	      ret = build_min_nt_call_vec (function, call_args);
-	    else if (!BASELINK_P (fn))
-	      ret = finish_call_expr (function, &call_args,
-				       /*disallow_virtual=*/false,
-				       /*koenig_p=*/false,
-				       complain);
-	    else
-	      ret = (build_new_method_call
-		      (instance, fn,
-		       &call_args, NULL_TREE,
-		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
-		       /*fn_p=*/NULL,
-		       complain));
-	  }
 	else if (concept_check_p (function))
 	  {
 	    /* FUNCTION is a template-id referring to a concept definition.  */
@@ -28585,7 +28560,7 @@ type_dependent_expression_p (tree expression)
       if (TREE_CODE (expression) == COMPONENT_REF
 	  || TREE_CODE (expression) == OFFSET_REF)
 	{
-	  if (type_dependent_expression_p (TREE_OPERAND (expression, 0)))
+	  if (type_dependent_object_expression_p (TREE_OPERAND (expression, 0)))
 	    return true;
 	  expression = TREE_OPERAND (expression, 1);
 	  if (identifier_p (expression))

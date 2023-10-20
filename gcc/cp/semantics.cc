@@ -2793,18 +2793,19 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	     (c++/89780, c++/107363).  This also suppresses the
 	     -Wredundant-move warning.  */
 	  suppress_warning (result, OPT_Wpessimizing_move);
-	  if (is_overloaded_fn (fn))
-	    fn = get_fns (fn);
 
 	  if (cfun)
 	    {
 	      bool abnormal = true;
-	      for (lkp_iterator iter (fn); abnormal && iter; ++iter)
+	      for (lkp_iterator iter (maybe_get_fns (fn)); iter; ++iter)
 		{
 		  tree fndecl = STRIP_TEMPLATE (*iter);
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
-		    abnormal = false;
+		    {
+		      abnormal = false;
+		      break;
+		    }
 		}
 	      /* FIXME: Stop warning about falling off end of non-void
 		 function.   But this is wrong.  Even if we only see
@@ -2814,6 +2815,9 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      if (abnormal)
 		current_function_returns_abnormally = 1;
 	    }
+	  if (TREE_CODE (fn) == COMPONENT_REF)
+	    maybe_generic_this_capture (TREE_OPERAND (fn, 0),
+					TREE_OPERAND (fn, 1));
 	  return result;
 	}
       orig_args = make_tree_vector_copy (*args);
