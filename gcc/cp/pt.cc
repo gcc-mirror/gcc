@@ -29294,24 +29294,6 @@ resolve_typename_type (tree type, bool only_current_p)
   return result;
 }
 
-/* ARGS is a vector of expressions as arguments to a function call.
-   Replace the arguments with equivalent non-dependent expressions.
-   This modifies ARGS in place.  */
-
-void
-make_args_non_dependent (vec<tree, va_gc> *args)
-{
-  unsigned int ix;
-  tree arg;
-
-  FOR_EACH_VEC_SAFE_ELT (args, ix, arg)
-    {
-      tree newarg = build_non_dependent_expr (arg);
-      if (newarg != arg)
-	(*args)[ix] = newarg;
-    }
-}
-
 /* Returns a type which represents 'auto' or 'decltype(auto)'.  We use a
    TEMPLATE_TYPE_PARM with a level one deeper than the actual template parms,
    by default.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
@@ -31525,33 +31507,6 @@ print_template_statistics (void)
 
 namespace selftest {
 
-/* Verify that build_non_dependent_expr () works, for various expressions,
-   and that location wrappers don't affect the results.  */
-
-static void
-test_build_non_dependent_expr ()
-{
-  location_t loc = BUILTINS_LOCATION;
-
-  /* Verify constants, without and with location wrappers.  */
-  tree int_cst = build_int_cst (integer_type_node, 42);
-  ASSERT_EQ (int_cst, build_non_dependent_expr (int_cst));
-
-  tree wrapped_int_cst = maybe_wrap_with_location (int_cst, loc);
-  ASSERT_TRUE (location_wrapper_p (wrapped_int_cst));
-  ASSERT_EQ (wrapped_int_cst, build_non_dependent_expr (wrapped_int_cst));
-
-  tree string_lit = build_string (4, "foo");
-  TREE_TYPE (string_lit) = char_array_type_node;
-  string_lit = fix_string_type (string_lit);
-  ASSERT_EQ (string_lit, build_non_dependent_expr (string_lit));
-
-  tree wrapped_string_lit = maybe_wrap_with_location (string_lit, loc);
-  ASSERT_TRUE (location_wrapper_p (wrapped_string_lit));
-  ASSERT_EQ (wrapped_string_lit,
-	     build_non_dependent_expr (wrapped_string_lit));
-}
-
 /* Verify that type_dependent_expression_p () works correctly, even
    in the presence of location wrapper nodes.  */
 
@@ -31592,7 +31547,6 @@ test_type_dependent_expression_p ()
 void
 cp_pt_cc_tests ()
 {
-  test_build_non_dependent_expr ();
   test_type_dependent_expression_p ();
 }
 

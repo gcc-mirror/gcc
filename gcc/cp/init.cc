@@ -3920,11 +3920,6 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
 		(**init)[i] = copy_node (e);
 	    }
 	}
-
-      make_args_non_dependent (*placement);
-      if (nelts)
-	nelts = build_non_dependent_expr (nelts);
-      make_args_non_dependent (*init);
     }
 
   if (nelts)

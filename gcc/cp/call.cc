@@ -11431,12 +11431,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
     }
 
   if (processing_template_decl)
-    {
-      orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
-      instance = build_non_dependent_expr (instance);
-      if (args != NULL)
-	make_args_non_dependent (*args);
-    }
+    orig_args = args == NULL ? NULL : make_tree_vector_copy (*args);
 
   /* Process the argument list.  */
   if (args != NULL && *args != NULL)

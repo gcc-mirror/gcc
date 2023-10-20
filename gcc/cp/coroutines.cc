@@ -1351,9 +1351,6 @@ finish_co_return_stmt (location_t kw, tree expr)
 	 to undo it so we can try to treat it as an rvalue below.  */
       expr = maybe_undo_parenthesized_ref (expr);
 
-      if (processing_template_decl)
-	expr = build_non_dependent_expr (expr);
-
       if (error_operand_p (expr))
 	return error_mark_node;
     }

@@ -2214,7 +2214,6 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  TREE_TYPE (expr) = ttype;
 	  return expr;
 	}
-      expr = build_non_dependent_expr (expr);
     }
 
   if (MAYBE_CLASS_TYPE_P (type))

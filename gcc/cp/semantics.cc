@@ -916,8 +916,7 @@ finish_expr_stmt (tree expr)
 	  expr = convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 	}
       else if (!type_dependent_expression_p (expr))
-	convert_to_void (build_non_dependent_expr (expr), ICV_STATEMENT,
-                         tf_warning_or_error);
+	convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 
       if (check_for_bare_parameter_packs (expr))
         expr = error_mark_node;
@@ -1396,8 +1395,7 @@ finish_for_expr (tree expr, tree for_stmt)
                               tf_warning_or_error);
     }
   else if (!type_dependent_expression_p (expr))
-    convert_to_void (build_non_dependent_expr (expr), ICV_THIRD_IN_FOR,
-                     tf_warning_or_error);
+    convert_to_void (expr, ICV_THIRD_IN_FOR, tf_warning_or_error);
   expr = maybe_cleanup_point_expr_void (expr);
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
@@ -2819,11 +2817,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  return result;
 	}
       orig_args = make_tree_vector_copy (*args);
-      if (!BASELINK_P (fn)
-	  && TREE_CODE (fn) != PSEUDO_DTOR_EXPR
-	  && TREE_TYPE (fn) != unknown_type_node)
-	fn = build_non_dependent_expr (fn);
-      make_args_non_dependent (*args);
     }
 
   if (TREE_CODE (fn) == COMPONENT_REF)
@@ -11033,20 +11026,6 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	  if (type_dependent_expression_p (OMP_CLAUSE_HINT_EXPR (clauses))
 	      || TREE_CODE (OMP_CLAUSE_HINT_EXPR (clauses)) != INTEGER_CST)
 	    dependent_p = true;
-	}
-      if (!dependent_p)
-	{
-	  lhs = build_non_dependent_expr (lhs);
-	  if (rhs)
-	    rhs = build_non_dependent_expr (rhs);
-	  if (v)
-	    v = build_non_dependent_expr (v);
-	  if (lhs1)
-	    lhs1 = build_non_dependent_expr (lhs1);
-	  if (rhs1)
-	    rhs1 = build_non_dependent_expr (rhs1);
-	  if (r && r != void_list_node)
-	    r = build_non_dependent_expr (r);
 	}
     }
   if (!dependent_p)
