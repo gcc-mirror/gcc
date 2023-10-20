@@ -2274,7 +2274,7 @@ make_eh_dispatch_edges (geh_dispatch *stmt)
 /* Create the single EH edge from STMT to its nearest landing pad,
    if there is such a landing pad within the current function.  */
 
-void
+edge
 make_eh_edges (gimple *stmt)
 {
   basic_block src, dst;
@@ -2283,14 +2283,14 @@ make_eh_edges (gimple *stmt)
 
   lp_nr = lookup_stmt_eh_lp (stmt);
   if (lp_nr <= 0)
-    return;
+    return NULL;
 
   lp = get_eh_landing_pad_from_number (lp_nr);
   gcc_assert (lp != NULL);
 
   src = gimple_bb (stmt);
   dst = label_to_block (cfun, lp->post_landing_pad);
-  make_edge (src, dst, EDGE_EH);
+  return make_edge (src, dst, EDGE_EH);
 }
 
 /* Do the work in redirecting EDGE_IN to NEW_BB within the EH region tree;
