@@ -3282,7 +3282,8 @@ simple_iv_with_niters (class loop *wrto_loop, class loop *use_loop,
 
   type = TREE_TYPE (iv->base);
   e = TREE_OPERAND (iv->base, 0);
-  if (TREE_CODE (e) != PLUS_EXPR
+  if (!tree_nop_conversion_p (type, TREE_TYPE (e))
+      || TREE_CODE (e) != PLUS_EXPR
       || TREE_CODE (TREE_OPERAND (e, 1)) != INTEGER_CST
       || !tree_int_cst_equal (iv->step,
 			      fold_convert (type, TREE_OPERAND (e, 1))))
