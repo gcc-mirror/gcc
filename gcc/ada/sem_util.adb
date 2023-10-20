@@ -3795,36 +3795,6 @@ package body Sem_Util is
       end loop;
    end Check_Inherited_Nonoverridable_Aspects;
 
-   ----------------------------------------
-   -- Check_Nonvolatile_Function_Profile --
-   ----------------------------------------
-
-   procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id) is
-      Formal : Entity_Id;
-
-   begin
-      --  Inspect all formal parameters
-
-      Formal := First_Formal (Func_Id);
-      while Present (Formal) loop
-         if Is_Effectively_Volatile_For_Reading (Etype (Formal)) then
-            Error_Msg_NE
-              ("nonvolatile function & cannot have a volatile parameter",
-               Formal, Func_Id);
-         end if;
-
-         Next_Formal (Formal);
-      end loop;
-
-      --  Inspect the return type
-
-      if Is_Effectively_Volatile_For_Reading (Etype (Func_Id)) then
-         Error_Msg_NE
-           ("nonvolatile function & cannot have a volatile return type",
-            Result_Definition (Parent (Func_Id)), Func_Id);
-      end if;
-   end Check_Nonvolatile_Function_Profile;
-
    -------------------
    -- Check_Parents --
    -------------------
@@ -5152,96 +5122,6 @@ package body Sem_Util is
          Report_Unused_Body_States (States);
       end if;
    end Check_Unused_Body_States;
-
-   ------------------------------------
-   -- Check_Volatility_Compatibility --
-   ------------------------------------
-
-   procedure Check_Volatility_Compatibility
-     (Id1, Id2                     : Entity_Id;
-      Description_1, Description_2 : String;
-      Srcpos_Bearer                : Node_Id) is
-
-   begin
-      if SPARK_Mode /= On then
-         return;
-      end if;
-
-      declare
-         AR1 : constant Boolean := Async_Readers_Enabled (Id1);
-         AW1 : constant Boolean := Async_Writers_Enabled (Id1);
-         ER1 : constant Boolean := Effective_Reads_Enabled (Id1);
-         EW1 : constant Boolean := Effective_Writes_Enabled (Id1);
-         AR2 : constant Boolean := Async_Readers_Enabled (Id2);
-         AW2 : constant Boolean := Async_Writers_Enabled (Id2);
-         ER2 : constant Boolean := Effective_Reads_Enabled (Id2);
-         EW2 : constant Boolean := Effective_Writes_Enabled (Id2);
-
-         AR_Check_Failed : constant Boolean := AR1 and not AR2;
-         AW_Check_Failed : constant Boolean := AW1 and not AW2;
-         ER_Check_Failed : constant Boolean := ER1 and not ER2;
-         EW_Check_Failed : constant Boolean := EW1 and not EW2;
-
-         package Failure_Description is
-            procedure Note_If_Failure
-              (Failed : Boolean; Aspect_Name : String);
-            --  If Failed is False, do nothing.
-            --  If Failed is True, add Aspect_Name to the failure description.
-
-            function Failure_Text return String;
-            --  returns accumulated list of failing aspects
-         end Failure_Description;
-
-         package body Failure_Description is
-            Description_Buffer : Bounded_String;
-
-            ---------------------
-            -- Note_If_Failure --
-            ---------------------
-
-            procedure Note_If_Failure
-              (Failed : Boolean; Aspect_Name : String) is
-            begin
-               if Failed then
-                  if Description_Buffer.Length /= 0 then
-                     Append (Description_Buffer, ", ");
-                  end if;
-                  Append (Description_Buffer, Aspect_Name);
-               end if;
-            end Note_If_Failure;
-
-            ------------------
-            -- Failure_Text --
-            ------------------
-
-            function Failure_Text return String is
-            begin
-               return +Description_Buffer;
-            end Failure_Text;
-         end Failure_Description;
-
-         use Failure_Description;
-      begin
-         if AR_Check_Failed
-           or AW_Check_Failed
-           or ER_Check_Failed
-           or EW_Check_Failed
-         then
-            Note_If_Failure (AR_Check_Failed, "Async_Readers");
-            Note_If_Failure (AW_Check_Failed, "Async_Writers");
-            Note_If_Failure (ER_Check_Failed, "Effective_Reads");
-            Note_If_Failure (EW_Check_Failed, "Effective_Writes");
-
-            Error_Msg_N
-              (Description_1
-                 & " and "
-                 & Description_2
-                 & " are not compatible with respect to volatility due to "
-                 & Failure_Text,
-               Srcpos_Bearer);
-         end if;
-      end;
-   end Check_Volatility_Compatibility;
 
    -----------------
    -- Choice_List --
@@ -19326,7 +19206,7 @@ package body Sem_Util is
 
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(10)).
+               --  type (SPARK RM 7.1.3(9)).
 
                if not Is_Scalar_Type (Etype (Formal))
                  and then Is_Effectively_Volatile_For_Reading (Etype (Formal))
@@ -19335,7 +19215,7 @@ package body Sem_Util is
 
                --  An effectively volatile object may act as an actual in a
                --  call to an instance of Unchecked_Conversion. (SPARK RM
-               --  7.1.3(10)).
+               --  7.1.3(9)).
 
                elsif Is_Unchecked_Conversion_Instance (Subp) then
                   return True;

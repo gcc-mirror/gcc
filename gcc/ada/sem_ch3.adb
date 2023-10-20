@@ -1442,26 +1442,6 @@ package body Sem_Ch3 is
          end if;
 
          Set_Etype (T, T);
-
-         --  For SPARK, check that the designated type is compatible with
-         --  respect to volatility with the access type.
-
-         if SPARK_Mode /= Off
-            and then Comes_From_Source (T)
-         then
-            --  ??? UNIMPLEMENTED
-            --  In the case where the designated type is incomplete at this
-            --  point, performing this check here is harmless but the check
-            --  will need to be repeated when the designated type is complete.
-
-            --  The preceding call to Comes_From_Source is needed because the
-            --  FE sometimes introduces implicitly declared access types. See,
-            --  for example, the expansion of nested_po.ads in OA28-015.
-
-            Check_Volatility_Compatibility
-              (Full_Desig, T, "designated type", "access type",
-               Srcpos_Bearer => T);
-         end if;
       end if;
 
       --  If the type has appeared already in a with_type clause, it is frozen
@@ -17337,29 +17317,6 @@ package body Sem_Ch3 is
    begin
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
 
-      if SPARK_Mode = On
-        and then Is_Tagged_Type (Parent_Type)
-      then
-         declare
-            Partial_View : constant Entity_Id :=
-                             Incomplete_Or_Partial_View (Parent_Type);
-
-         begin
-            --  If the partial view was not found then the parent type is not
-            --  a private type. Otherwise check if the partial view is a tagged
-            --  private type.
-
-            if Present (Partial_View)
-              and then Is_Private_Type (Partial_View)
-              and then not Is_Tagged_Type (Partial_View)
-            then
-               Error_Msg_NE
-                 ("cannot derive from & declared as untagged private "
-                  & "(SPARK RM 3.4(1))", N, Partial_View);
-            end if;
-         end;
-      end if;
-
       --  Ada 2005 (AI-251): In case of interface derivation check that the
       --  parent is also an interface.
 
@@ -21012,19 +20969,6 @@ package body Sem_Ch3 is
                      & "cannot have defaults", Expression (Discr));
                end if;
             end if;
-         end if;
-
-         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(4)).
-         --  This check is relevant only when SPARK_Mode is on as it is not a
-         --  standard Ada legality rule. The only way for a discriminant to be
-         --  effectively volatile is to have an effectively volatile type, so
-         --  we check this directly, because the Ekind of Discr might not be
-         --  set yet (to help preventing cascaded errors on derived types).
-
-         if SPARK_Mode = On
-           and then Is_Effectively_Volatile (Discr_Type)
-         then
-            Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;
 
          Next (Discr);
