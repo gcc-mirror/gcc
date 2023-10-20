@@ -1006,8 +1006,13 @@ convert_to_complex_1 (tree type, tree expr, bool fold_p)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case BITINT_TYPE:
-      return build2 (COMPLEX_EXPR, type, convert (subtype, expr),
-		     convert (subtype, integer_zero_node));
+      {
+	tree real = convert (subtype, expr);
+	tree imag = convert (subtype, integer_zero_node);
+	if (error_operand_p (real) || error_operand_p (imag))
+	  return error_mark_node;
+	return build2 (COMPLEX_EXPR, type, real, imag);
+      }
 
     case COMPLEX_TYPE:
       {
