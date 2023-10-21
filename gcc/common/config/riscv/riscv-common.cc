@@ -1495,6 +1495,10 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
 		   "extensions", arch);
 
+  /* 'H' hypervisor extension requires base ISA with 32 registers.  */
+  if (subset_list->lookup ("e") && subset_list->lookup ("h"))
+    error_at (loc, "%<-march=%s%>: h extension requires i extension", arch);
+
   return subset_list;
 
 fail:
