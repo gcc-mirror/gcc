@@ -83,7 +83,7 @@ def arch_canonicalize(arch, isa_spec):
   new_arch = ""
   extra_long_ext = []
   std_exts = []
-  if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
+  if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64e', 'rv64i', 'rv64g']:
     new_arch = arch[:5].replace("g", "i")
     if arch[:5] in ['rv32g', 'rv64g']:
       std_exts = ['m', 'a', 'f', 'd']

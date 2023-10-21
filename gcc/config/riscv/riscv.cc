@@ -8669,13 +8669,18 @@ riscv_option_override (void)
     error ("requested ABI requires %<-march%> to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
-  if (TARGET_RVE && riscv_abi != ABI_ILP32E)
-    error ("rv32e requires ilp32e ABI");
+  /* RVE requires specific ABI.  */
+  if (TARGET_RVE)
+    if (!TARGET_64BIT && riscv_abi != ABI_ILP32E)
+      error ("rv32e requires ilp32e ABI");
+    else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
+      error ("rv64e requires lp64e ABI");
 
-  // Zfinx require abi ilp32,ilp32e or lp64.
-  if (TARGET_ZFINX && riscv_abi != ABI_ILP32
-      && riscv_abi != ABI_LP64 && riscv_abi != ABI_ILP32E)
-    error ("z*inx requires ABI ilp32, ilp32e or lp64");
+  /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
+  if (TARGET_ZFINX
+      && riscv_abi != ABI_ILP32 && riscv_abi != ABI_LP64
+      && riscv_abi != ABI_ILP32E && riscv_abi != ABI_LP64E)
+    error ("z*inx requires ABI ilp32, ilp32e, lp64 or lp64e");
 
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
@@ -8801,7 +8806,7 @@ static GTY (()) tree riscv_previous_fndecl;
 static void
 riscv_conditional_register_usage (void)
 {
-  /* We have only x0~x15 on RV32E.  */
+  /* We have only x0~x15 on RV32E/RV64E.  */
   if (TARGET_RVE)
     {
       for (int r = 16; r <= 31; r++)

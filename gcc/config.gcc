@@ -4703,7 +4703,7 @@ case "${target}" in
 
 		# Infer arch from --with-arch, --target, and --with-abi.
 		case "${with_arch}" in
-		rv32e* | rv32i* | rv32g* | rv64i* | rv64g*)
+		rv32e* | rv32i* | rv32g* | rv64e* | rv64i* | rv64g*)
 			# OK.
 			;;
 		"")
@@ -4712,11 +4712,12 @@ case "${target}" in
 			ilp32e) with_arch="rv32e" ;;
 			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
 			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
+			lp64e) with_arch="rv64e" ;;
 			*) with_arch="rv${xlen}gc" ;;
 			esac
 			;;
 		*)
-			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32e, rv32i, rv32g, rv64i, or rv64g." 1>&2
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32e, rv32i, rv32g, rv64e, rv64i, or rv64g." 1>&2
 			exit 1
 			;;
 		esac
@@ -4730,7 +4731,7 @@ case "${target}" in
 		# pick a default based on the ISA, preferring soft-float
 		# unless the D extension is present.
 		case "${with_abi}" in
-		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64f | lp64d)
+		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64e | lp64f | lp64d)
 			;;
 		"")
 			case "${with_arch}" in
@@ -4738,6 +4739,7 @@ case "${target}" in
 			rv32e*) with_abi=ilp32e ;;
 			rv32*) with_abi=ilp32 ;;
 			rv64*d* | rv64g*) with_abi=lp64d ;;
+			rv64e*) with_abi=lp64e ;;
 			rv64*) with_abi=lp64 ;;
 			esac
 			;;
@@ -4753,7 +4755,7 @@ case "${target}" in
 		ilp32,rv32* | ilp32e,rv32e* \
 		| ilp32f,rv32*f* | ilp32f,rv32g* \
 		| ilp32d,rv32*d* | ilp32d,rv32g* \
-		| lp64,rv64* \
+		| lp64,rv64* | lp64e,rv64e* \
 		| lp64f,rv64*f* | lp64f,rv64g* \
 		| lp64d,rv64*d* | lp64d,rv64g*)
 			;;

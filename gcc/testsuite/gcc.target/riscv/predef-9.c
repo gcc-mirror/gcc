@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32i -mabi=ilp32 -mcmodel=medlow" } */
+/* { dg-options "-march=rv64em -mabi=lp64e -mno-div -mcmodel=medlow" } */
 
 int main () {
 #if !defined(__riscv)
@@ -13,7 +13,7 @@ int main () {
 #if defined(__riscv_32e)
 #error "__riscv_32e"
 #endif
-#if defined(__riscv_64e)
+#if !defined(__riscv_64e)
 #error "__riscv_64e"
 #endif
 
@@ -21,7 +21,7 @@ int main () {
 #error "__riscv_atomic"
 #endif
 
-#if defined(__riscv_mul)
+#if !defined(__riscv_mul)
 #error "__riscv_mul"
 #endif
 #if defined(__riscv_div)
@@ -31,7 +31,7 @@ int main () {
 #error "__riscv_muldiv"
 #endif
 
-#if __riscv_xlen != 32
+#if __riscv_xlen != 64
 #error "__riscv_xlen"
 #endif
 
@@ -42,7 +42,7 @@ int main () {
 #error "__riscv_fsqrt"
 #endif
 
-#if defined(__riscv_abi_rve)
+#if !defined(__riscv_abi_rve)
 #error "__riscv_abi_rve"
 #endif
 #if !defined(__riscv_float_abi_soft)

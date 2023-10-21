@@ -29647,9 +29647,10 @@ conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
-registers are only 32 bits wide.  There is also the @samp{ilp32e} ABI that can
-only be used with the @samp{rv32e} architecture.  This ABI is not well
-specified at present, and is subject to change.
+registers are only 32 bits wide.  There are also the @samp{ilp32e} ABI that can
+only be used with the @samp{rv32e} architecture and the @samp{lp64e} ABI that
+can only be used with the @samp{rv64e}.  Those ABIs are not well specified at
+present, and are subject to change.
 
 @opindex mfdiv
 @item -mfdiv
