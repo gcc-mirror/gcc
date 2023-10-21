@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc.h"
 #include "diagnostic.h"
 #include "stmt.h"
+#include "realmpfr.h"
 
 #include "jit-playback.h"
 #include "jit-result.h"
@@ -1078,22 +1079,16 @@ new_rvalue_from_const <double> (type *type,
   // FIXME: type-checking, or coercion?
   tree inner_type = type->as_tree ();
 
+  mpfr_t mpf_value;
+
+  mpfr_init2 (mpf_value, 64);
+  mpfr_set_d (mpf_value, value, MPFR_RNDN);
+
   /* We have a "double", we want a REAL_VALUE_TYPE.
 
-     real.cc:real_from_target appears to require the representation to be
-     split into 32-bit values, and then sent as an pair of host long
-     ints.  */
+     realmpfr.cc:real_from_mpfr.  */
   REAL_VALUE_TYPE real_value;
-  union
-  {
-    double as_double;
-    uint32_t as_uint32s[2];
-  } u;
-  u.as_double = value;
-  long int as_long_ints[2];
-  as_long_ints[0] = u.as_uint32s[0];
-  as_long_ints[1] = u.as_uint32s[1];
-  real_from_target (&real_value, as_long_ints, DFmode);
+  real_from_mpfr (&real_value, mpf_value, inner_type, MPFR_RNDN);
   tree inner = build_real (inner_type, real_value);
   return new rvalue (this, inner);
 }
