@@ -235,45 +235,76 @@ gimple_init_gcov_profiler (void)
     }
 }
 
-/* Output instructions as GIMPLE trees to increment the edge
-   execution count, and insert them on E.  We rely on
-   gsi_insert_on_edge to preserve the order.  */
+/* If RESULT is not null, then output instructions as GIMPLE trees to assign
+   the updated counter from CALL of FUNC to RESULT.  Insert the CALL and the
+   optional assignment instructions to GSI.  Use NAME for temporary values.  */
 
-void
-gimple_gen_edge_profiler (int edgeno, edge e)
+static inline void
+gen_assign_counter_update (gimple_stmt_iterator *gsi, gcall *call, tree func,
+			   tree result, const char *name)
 {
-  tree one;
+  if (result)
+    {
+      tree result_type = TREE_TYPE (TREE_TYPE (func));
+      tree tmp = make_temp_ssa_name (result_type, NULL, name);
+      gimple_set_lhs (call, tmp);
+      gsi_insert_after (gsi, call, GSI_NEW_STMT);
+      gassign *assign = gimple_build_assign (result, tmp);
+      gsi_insert_after (gsi, assign, GSI_NEW_STMT);
+    }
+  else
+    gsi_insert_after (gsi, call, GSI_NEW_STMT);
+}
 
-  one = build_int_cst (gcov_type_node, 1);
+/* Output instructions as GIMPLE trees to increment the COUNTER.  If RESULT is
+   not null, then assign the updated counter value to RESULT.  Insert the
+   instructions to GSI.  Use NAME for temporary values.  */
+
+static inline void
+gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
+		    const char *name)
+{
+  tree type = gcov_type_node;
+  tree addr = build_fold_addr_expr (counter);
+  tree one = build_int_cst (type, 1);
+  tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
-      tree addr = tree_coverage_counter_addr (GCOV_COUNTER_ARCS, edgeno);
-      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
-				      ? BUILT_IN_ATOMIC_FETCH_ADD_8:
-				      BUILT_IN_ATOMIC_FETCH_ADD_4);
-      gcall *stmt = gimple_build_call (f, 3, addr, one,
-				       build_int_cst (integer_type_node,
-						      MEMMODEL_RELAXED));
-      gsi_insert_on_edge (e, stmt);
+      tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
+				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
+				      BUILT_IN_ATOMIC_ADD_FETCH_4);
+      gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
+      gen_assign_counter_update (gsi, call, f, result, name);
     }
   else
     {
-      tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-      tree gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
-						   NULL, "PROF_edge_counter");
-      gassign *stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
-      gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
-					      NULL, "PROF_edge_counter");
-      gassign *stmt2 = gimple_build_assign (gcov_type_tmp_var, PLUS_EXPR,
-					    gimple_assign_lhs (stmt1), one);
-      gassign *stmt3 = gimple_build_assign (unshare_expr (ref),
-					    gimple_assign_lhs (stmt2));
-      gsi_insert_on_edge (e, stmt1);
-      gsi_insert_on_edge (e, stmt2);
-      gsi_insert_on_edge (e, stmt3);
+      tree tmp1 = make_temp_ssa_name (type, NULL, name);
+      gassign *assign1 = gimple_build_assign (tmp1, counter);
+      gsi_insert_after (gsi, assign1, GSI_NEW_STMT);
+      tree tmp2 = make_temp_ssa_name (type, NULL, name);
+      gassign *assign2 = gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
+      gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
+      gassign *assign3 = gimple_build_assign (counter, tmp2);
+      gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
+      if (result)
+	{
+	  gassign *assign4 = gimple_build_assign (result, tmp2);
+	  gsi_insert_after (gsi, assign4, GSI_NEW_STMT);
+	}
     }
+}
+
+/* Output instructions as GIMPLE trees to increment the edge
+   execution count, and insert them on E.  */
+
+void
+gimple_gen_edge_profiler (int edgeno, edge e)
+{
+  gimple_stmt_iterator gsi = gsi_last (PENDING_STMT (e));
+  tree counter = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
+  gen_counter_update (&gsi, counter, NULL_TREE, "PROF_edge_counter");
 }
 
 /* Emits code to get VALUE to instrument at GSI, and returns the
@@ -507,56 +538,16 @@ gimple_gen_time_profiler (unsigned tag)
   tree original_ref = tree_coverage_counter_ref (tag, 0);
   tree ref = force_gimple_operand_gsi (&gsi, original_ref, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
-  tree one = build_int_cst (type, 1);
 
   /* Emit: if (counters[0] != 0).  */
   gcond *cond = gimple_build_cond (EQ_EXPR, ref, build_int_cst (type, 0),
 				   NULL, NULL);
   gsi_insert_before (&gsi, cond, GSI_NEW_STMT);
 
-  gsi = gsi_start_bb (update_bb);
-
   /* Emit: counters[0] = ++__gcov_time_profiler_counter.  */
-  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
-    {
-      tree ptr = make_temp_ssa_name (build_pointer_type (type), NULL,
-				     "PROF_time_profiler_counter_ptr");
-      tree addr = build1 (ADDR_EXPR, TREE_TYPE (ptr),
-			  tree_time_profiler_counter);
-      gassign *assign = gimple_build_assign (ptr, NOP_EXPR, addr);
-      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
-      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
-				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
-				      BUILT_IN_ATOMIC_ADD_FETCH_4);
-      gcall *stmt = gimple_build_call (f, 3, ptr, one,
-				       build_int_cst (integer_type_node,
-						      MEMMODEL_RELAXED));
-      tree result_type = TREE_TYPE (TREE_TYPE (f));
-      tree tmp = make_temp_ssa_name (result_type, NULL, "PROF_time_profile");
-      gimple_set_lhs (stmt, tmp);
-      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      assign = gimple_build_assign (tmp, NOP_EXPR,
-				    gimple_call_lhs (stmt));
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (original_ref, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-    }
-  else
-    {
-      tree tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      gassign *assign = gimple_build_assign (tmp, tree_time_profiler_counter);
-      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
-
-      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      assign = gimple_build_assign (tmp, PLUS_EXPR, gimple_assign_lhs (assign),
-				    one);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (original_ref, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (tree_time_profiler_counter, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-    }
+  gsi = gsi_start_bb (update_bb);
+  gen_counter_update (&gsi, tree_time_profiler_counter, original_ref,
+		      "PROF_time_profile");
 }
 
 /* Output instructions as GIMPLE trees to increment the average histogram
