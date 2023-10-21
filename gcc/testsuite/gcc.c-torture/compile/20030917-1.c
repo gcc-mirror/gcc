@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef struct string STR;
 typedef struct atbl ARRAY;
 struct string {

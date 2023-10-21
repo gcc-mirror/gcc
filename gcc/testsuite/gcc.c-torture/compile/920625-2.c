@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef	char *	caddr_t;
 typedef unsigned Cursor;
 typedef char *String;

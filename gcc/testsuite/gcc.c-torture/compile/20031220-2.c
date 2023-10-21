@@ -2,6 +2,7 @@
   Orgin: Matt Thomas <matt@3am-software.com>
   This used to cause GCC to write out an instruction for i386 when using a L64 host
   which gas could not handle because GCC would write a full 64bit hex string out. */
+/* { dg-additional-options "-std=gnu89" } */
 
 
 float fabsf (float);

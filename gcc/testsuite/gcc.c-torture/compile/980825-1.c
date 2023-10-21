@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef enum { FALSE, TRUE } boolean;
 enum _errorTypes { FATAL = 1, WARNING = 2, PERROR = 4 };
 typedef struct _optionValues {

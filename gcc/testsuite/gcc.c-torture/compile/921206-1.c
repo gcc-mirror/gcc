@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 double sqrt(double),fabs(double),sin(double);
 int sxs;
 int sys;

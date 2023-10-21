@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 f (unsigned short Z[48])
 {
   int j;

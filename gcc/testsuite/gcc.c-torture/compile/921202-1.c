@@ -1,4 +1,5 @@
 /* { dg-require-stack-size "2055*3*8" } */
+/* { dg-additional-options "-std=gnu89" } */
 
 f ()
 {

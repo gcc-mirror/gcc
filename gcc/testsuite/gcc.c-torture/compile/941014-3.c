@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef unsigned char byte;
 typedef unsigned int uint;
 typedef unsigned long ulong;

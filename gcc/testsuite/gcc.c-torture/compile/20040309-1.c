@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 static const char default_tupleseps[] = ", \t";
 
 

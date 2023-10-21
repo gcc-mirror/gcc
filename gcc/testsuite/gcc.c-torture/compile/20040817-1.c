@@ -1,4 +1,5 @@
 /* PR 17051: SRA failed to rename the VOPS properly.  */
+/* { dg-additional-options "-std=gnu89" } */
 
 struct A
 {
