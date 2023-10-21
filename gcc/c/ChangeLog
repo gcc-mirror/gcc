@@ -1,3 +1,18 @@
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/109827
+	PR other/44209
+	* c-typeck.cc (build_conditional_expr): Use OPT_Wint_conversion
+	for pointer/integer mismatch warnings.
+
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/109826
+	PR other/44209
+	* c-typeck.cc (build_conditional_expr): Use
+	OPT_Wincompatible_pointer_types for pointer mismatches.
+	Emit location information for the operand.
+
 2023-10-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c/100532

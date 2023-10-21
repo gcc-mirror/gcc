@@ -1,3 +1,12 @@
+2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Set false for __RDNA2__.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIB2ADD): Add hardcfr.c.
+	* hardcfr.c: New.
+
 2023-10-13  Florian Weimer  <fweimer@redhat.com>
 
 	* config/or1k/linux-unwind.h (or1k_fallback_frame_state): Add

@@ -1,3 +1,210 @@
+2023-10-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/101955
+	PR tree-optimization/106245
+	* gcc.target/i386/pr106245-2.c: New test case.
+	* gcc.target/i386/pr106245-3.c: New 32-bit test case.
+	* gcc.target/i386/pr106245-4.c: New 64-bit test case.
+	* gcc.target/i386/pr106245-5.c: Likewise.
+
+2023-10-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/sfinae-dr657.C: Adjust.
+
+2023-10-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-diag1.C: Add -fno-implicit-constexpr.
+
+2023-10-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wsign-promo1.C: New test.
+
+2023-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/decltype-1_a.C: New.
+	* g++.dg/modules/decltype-1_b.C: New.
+	* g++.dg/modules/lambda-5_a.C: New.
+	* g++.dg/modules/lambda-5_b.C: New.
+
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wint-conversion-3.c: New.
+
+2023-10-20  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wincompatible-pointer-types-2.c: New.
+	* gcc.dg/Wincompatible-pointer-types-3.c: New.
+	* gcc.dg/Wincompatible-pointer-types-4.c: New.
+
+2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/111884
+	* c-c++-common/alias-1.c: New test.
+
+2023-10-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/pr111882.c: New test.
+
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106086
+	* g++.dg/template/crash127.C: Expect additional error due to
+	being able to check the member access expression ahead of time.
+	Strengthen the test by not instantiating the class template.
+	* g++.dg/cpp1y/lambda-generic-this5.C: New test.
+
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/var-concept3.C: Adjust expected diagnostic
+	for attempting to call a variable concept.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111383
+	PR tree-optimization/110243
+	* gcc.dg/torture/pr111383.c: New testcase.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111445
+	* gcc.dg/torture/pr111445.c: New testcase.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110243
+	PR tree-optimization/111336
+	* gcc.dg/torture/pr110243.c: New testcase.
+	* gcc.dg/torture/pr111336.c: Likewise.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111891
+	* gfortran.dg/pr111891.f90: New testcase.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111000
+	* gcc.dg/torture/pr111000.c: New testcase.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/torture/harden-cfr.c: New.
+	* c-c++-common/harden-cfr-noret-never-O0.c: New.
+	* c-c++-common/torture/harden-cfr-noret-never.c: New.
+	* c-c++-common/torture/harden-cfr-noret-noexcept.c: New.
+	* c-c++-common/torture/harden-cfr-noret-nothrow.c: New.
+	* c-c++-common/torture/harden-cfr-noret.c: New.
+	* c-c++-common/torture/harden-cfr-notail.c: New.
+	* c-c++-common/torture/harden-cfr-returning.c: New.
+	* c-c++-common/torture/harden-cfr-tail.c: New.
+	* c-c++-common/torture/harden-cfr-abrt-always.c: New.
+	* c-c++-common/torture/harden-cfr-abrt-never.c: New.
+	* c-c++-common/torture/harden-cfr-abrt-no-xthrow.c: New.
+	* c-c++-common/torture/harden-cfr-abrt-nothrow.c: New.
+	* c-c++-common/torture/harden-cfr-abrt.c: New.
+	* c-c++-common/torture/harden-cfr-always.c: New.
+	* c-c++-common/torture/harden-cfr-never.c: New.
+	* c-c++-common/torture/harden-cfr-no-xthrow.c: New.
+	* c-c++-common/torture/harden-cfr-nothrow.c: New.
+	* c-c++-common/torture/harden-cfr-bret-always.c: New.
+	* c-c++-common/torture/harden-cfr-bret-never.c: New.
+	* c-c++-common/torture/harden-cfr-bret-noopt.c: New.
+	* c-c++-common/torture/harden-cfr-bret-noret.c: New.
+	* c-c++-common/torture/harden-cfr-bret-no-xthrow.c: New.
+	* c-c++-common/torture/harden-cfr-bret-nothrow.c: New.
+	* c-c++-common/torture/harden-cfr-bret-retcl.c: New.
+	* c-c++-common/torture/harden-cfr-bret.c: New.
+	* g++.dg/harden-cfr-throw-always-O0.C: New.
+	* g++.dg/harden-cfr-throw-returning-O0.C: New.
+	* g++.dg/torture/harden-cfr-noret-always-no-nothrow.C: New.
+	* g++.dg/torture/harden-cfr-noret-never-no-nothrow.C: New.
+	* g++.dg/torture/harden-cfr-noret-no-nothrow.C: New.
+	* g++.dg/torture/harden-cfr-throw-always.C: New.
+	* g++.dg/torture/harden-cfr-throw-never.C: New.
+	* g++.dg/torture/harden-cfr-throw-no-xthrow.C: New.
+	* g++.dg/torture/harden-cfr-throw-no-xthrow-expected.C: New.
+	* g++.dg/torture/harden-cfr-throw-nothrow.C: New.
+	* g++.dg/torture/harden-cfr-throw-nocleanup.C: New.
+	* g++.dg/torture/harden-cfr-throw-returning.C: New.
+	* g++.dg/torture/harden-cfr-throw.C: New.
+	* gcc.dg/torture/harden-cfr-noret-no-nothrow.c: New.
+	* gcc.dg/torture/harden-cfr-tail-ub.c: New.
+	* gnat.dg/hardcfr.adb: New.
+	* c-c++-common/torture/harden-cfr-skip-leaf.c: New file.
+	* g++.dg/harden-cfr-throw-returning-enabled-O0.C: New file.
+
+2023-10-20  Tamar Christina  <tamar.christina@arm.com>
+	     Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-bitfield-read-1-not.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-2-not.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-8.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-9.c: New test.
+
+2023-10-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr89229-5b.c: Modify test.
+	* gcc.target/i386/pr89229-6b.c: Ditto.
+	* gcc.target/i386/pr89229-7b.c: Ditto.
+
+2023-10-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111848
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Adapt test.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111848.c: New test.
+
+2023-10-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111037
+	PR target/111234
+	PR target/111725
+	* gcc.target/riscv/rvv/base/scalar_move-1.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-46.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-89.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-95.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-1.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-2.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/pr109773-1.c: Adjust.
+	* gcc.target/riscv/rvv/base/pr111037-1.c: Moved to...
+	* gcc.target/riscv/rvv/vsetvl/pr111037-1.c: ...here.
+	* gcc.target/riscv/rvv/base/pr111037-2.c: Moved to...
+	* gcc.target/riscv/rvv/vsetvl/pr111037-2.c: ...here.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-12.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-3.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-13.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-18.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-23.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-104.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-105.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-106.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-107.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-108.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-109.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-4.c: New test.
+
+2023-10-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/101631
+	PR c++/102286
+	* g++.dg/cpp1y/constexpr-89336-3.C: Fix union initialisation.
+	* g++.dg/cpp1y/constexpr-union6.C: New test.
+	* g++.dg/cpp1y/constexpr-union7.C: New test.
+	* g++.dg/cpp2a/constexpr-union2.C: New test.
+	* g++.dg/cpp2a/constexpr-union3.C: New test.
+	* g++.dg/cpp2a/constexpr-union4.C: New test.
+	* g++.dg/cpp2a/constexpr-union5.C: New test.
+	* g++.dg/cpp2a/constexpr-union6.C: New test.
+
+2023-10-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-cast4.C: New test.
+
 2023-10-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/gomp/pr110485.c: New test.

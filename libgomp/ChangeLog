@@ -1,3 +1,15 @@
+2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX1030): New.
+	(isa_hsa_name): Recognise gfx1030.
+	(isa_code): Likewise.
+	* team.c (defined): Remove s_endpgm.
+
+2023-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in: Tag omp_lock_hint_* as being deprecated when
+	_OPENMP >= 201811.
+
 2023-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Enabling OpenMP): Update for C/C++ attributes;

@@ -1,3 +1,19 @@
+2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/111884
+	* c-common.cc (c_common_get_alias_set): Return -1 for char8_t only
+	in C++.
+
+2023-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* c-warn.cc (check_address_or_pointer_of_packed_member): Handle
+	type-dependent callee of CALL_EXPR.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-attribs.cc (handle_expected_throw_attribute): New.
+	(c_common_attribute_table): Add expected_throw.
+
 2023-10-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c++/89038

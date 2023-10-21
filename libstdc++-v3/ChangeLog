@@ -1,3 +1,8 @@
+2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/111883
+	* include/std/charconv (from_chars): Add explicit casts.
+
 2023-10-19  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h

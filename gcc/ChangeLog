@@ -1,3 +1,407 @@
+2023-10-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/101955
+	PR tree-optimization/106245
+	* config/i386/i386.md (*extv<mode>_1_0): New define_insn_and_split.
+
+2023-10-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gimple-harden-control-flow.cc: Include memmodel.h.
+
+2023-10-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gimple-harden-control-flow.cc: Include tm_p.h.
+
+2023-10-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/111882
+	* tree-if-conv.cc (get_bitfield_rep): Return NULL_TREE for bitfields
+	with non-constant offsets.
+
+2023-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111866
+	* tree-vect-loop-manip.cc (vect_do_peeling): Pass null as vinfo to
+	vect_set_loop_condition during prolog peeling.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111445
+	* tree-scalar-evolution.cc (simple_iv_with_niters):
+	Add missing check for a sign-conversion.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110243
+	PR tree-optimization/111336
+	* tree-ssa-loop-ivopts.cc (strip_offset_1): Rewrite
+	operations with undefined behavior on overflow to
+	unsigned arithmetic.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111891
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Fix
+	assert.
+
+2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc: Allow --with-arch=gfx1030.
+	* config/gcn/gcn-hsa.h (NO_XNACK): gfx1030 does not support xnack.
+	(ASM_SPEC): gfx1030 needs -mattr=+wavefrontsize64 set.
+	* config/gcn/gcn-opts.h (enum processor_type): Add PROCESSOR_GFX1030.
+	(TARGET_GFX1030): New.
+	(TARGET_RDNA2): New.
+	* config/gcn/gcn-valu.md (@dpp_move<mode>): Disable for RDNA2.
+	(addc<mode>3<exec_vcc>): Add RDNA2 syntax variant.
+	(subc<mode>3<exec_vcc>): Likewise.
+	(<convop><mode><vndi>2_exec): Add RDNA2 alternatives.
+	(vec_cmp<mode>di): Likewise.
+	(vec_cmp<u><mode>di): Likewise.
+	(vec_cmp<mode>di_exec): Likewise.
+	(vec_cmp<u><mode>di_exec): Likewise.
+	(vec_cmp<mode>di_dup): Likewise.
+	(vec_cmp<mode>di_dup_exec): Likewise.
+	(reduc_<reduc_op>_scal_<mode>): Disable for RDNA2.
+	(*<reduc_op>_dpp_shr_<mode>): Likewise.
+	(*plus_carry_dpp_shr_<mode>): Likewise.
+	(*plus_carry_in_dpp_shr_<mode>): Likewise.
+	* config/gcn/gcn.cc (gcn_option_override): Recognise gfx1030.
+	(gcn_global_address_p): RDNA2 only allows smaller offsets.
+	(gcn_addr_space_legitimate_address_p): Likewise.
+	(gcn_omp_device_kind_arch_isa): Recognise gfx1030.
+	(gcn_expand_epilogue): Use VGPRs instead of SGPRs.
+	(output_file_start): Configure gfx1030.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Add __RDNA2__;
+	(ASSEMBLER_DIALECT): New.
+	* config/gcn/gcn.md (rdna): New define_attr.
+	(enabled): Use "rdna" attribute.
+	(gcn_return): Remove s_dcache_wb.
+	(addcsi3_scalar): Add RDNA2 syntax variant.
+	(addcsi3_scalar_zero): Likewise.
+	(addptrdi3): Likewise.
+	(mulsi3): v_mul_lo_i32 should be v_mul_lo_u32 on all ISA.
+	(*memory_barrier): Add RDNA2 syntax variant.
+	(atomic_load<mode>): Add RDNA2 cache control variants, and disable
+	scalar atomics for RDNA2.
+	(atomic_store<mode>): Likewise.
+	(atomic_exchange<mode>): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Add gfx1030.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX1030): New.
+	(main): Recognise -march=gfx1030.
+	* config/gcn/t-omp-device: Add gfx1030 isa.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111000
+	* stor-layout.h (element_precision): Move ..
+	* tree.h (element_precision): .. here.
+	* tree-ssa-loop-im.cc (movement_possibility_1): Restrict
+	motion of shifts and rotates.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-core.h (ECF_XTHROW): New macro.
+	* tree.cc (set_call_expr): Add expected_throw attribute when
+	ECF_XTHROW is set.
+	(build_common_builtin_node): Add ECF_XTHROW to
+	__cxa_end_cleanup and _Unwind_Resume or _Unwind_SjLj_Resume.
+	* calls.cc (flags_from_decl_or_type): Check for expected_throw
+	attribute to set ECF_XTHROW.
+	* gimple.cc (gimple_build_call_from_tree): Propagate
+	ECF_XTHROW from decl flags to gimple call...
+	(gimple_call_flags): ... and back.
+	* gimple.h (GF_CALL_XTHROW): New gf_mask flag.
+	(gimple_call_set_expected_throw): New.
+	(gimple_call_expected_throw_p): New.
+	* Makefile.in (OBJS): Add gimple-harden-control-flow.o.
+	* builtins.def (BUILT_IN___HARDCFR_CHECK): New.
+	* common.opt (fharden-control-flow-redundancy): New.
+	(-fhardcfr-check-returning-calls): New.
+	(-fhardcfr-check-exceptions): New.
+	(-fhardcfr-check-noreturn-calls=*): New.
+	(Enum hardcfr_check_noreturn_calls): New.
+	(fhardcfr-skip-leaf): New.
+	* doc/invoke.texi: Document them.
+	(hardcfr-max-blocks, hardcfr-max-inline-blocks): New params.
+	* flag-types.h (enum hardcfr_noret): New.
+	* gimple-harden-control-flow.cc: New.
+	* params.opt (-param=hardcfr-max-blocks=): New.
+	(-param=hradcfr-max-inline-blocks=): New.
+	* passes.def (pass_harden_control_flow_redundancy): Add.
+	* tree-pass.h (make_pass_harden_control_flow_redundancy):
+	Declare.
+	* doc/extend.texi: Document expected_throw attribute.
+
+2023-10-20  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/changes.cc (function_info::change_insns): Ensure we call
+	::remove_insn on deleted insns.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	* doc/generic.texi ({L,R}ROTATE_EXPR): Document.
+
+2023-10-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101177
+	* config/sh/sh.md (unnamed split pattern): Fix comparison of
+	find_regno_note result.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Rewrite
+	both STMT_VINFO_GATHER_SCATTER_P and VMAT_GATHER_SCATTER
+	stmt refs.
+
+2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (off_map, off_op0_map, off_arg2_map,
+	off_arg3_arg2_map): New.
+	(vect_get_operand_map): Get flag whether the stmt was
+	recognized as gather or scatter and use the above
+	accordingly.
+	(vect_get_and_check_slp_defs): Adjust.
+	(vect_build_slp_tree_2): Likewise.
+
+2023-10-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::fuse_local_vsetvl_info): Rename variables.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+	(pre_vsetvl::emit_vsetvl): Ditto.
+
+2023-10-20  Tamar Christina  <tamar.christina@arm.com>
+	     Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-if-conv.cc (if_convertible_loop_p_1): Move check from here ...
+	(get_loop_body_if_conv_order): ... to here.
+	(if_convertible_loop_p): Remove single_exit check.
+	(tree_if_conversion): Move single_exit check to if-conversion part and
+	support multiple exits.
+
+2023-10-20  Tamar Christina  <tamar.christina@arm.com>
+	     Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-patterns.cc (vect_init_pattern_stmt): Copy STMT_VINFO_TYPE
+	from original statement.
+	(vect_recog_bitfield_ref_pattern): Support bitfields in gcond.
+
+2023-10-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111848
+	* config/riscv/riscv-selftests.cc (run_const_vector_selftests): Adapt selftest.
+	* config/riscv/riscv-v.cc (expand_const_vector): Change it into vec_duplicate splitter.
+
+2023-10-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111037
+	PR target/111234
+	PR target/111725
+	* config/riscv/riscv-vsetvl.cc (bitmap_union_of_preds_with_entry): New.
+	(debug): Removed.
+	(compute_reaching_defintion): New.
+	(enum vsetvl_type): Moved.
+	(vlmax_avl_p): Moved.
+	(enum emit_type): Moved.
+	(vlmul_to_str): Moved.
+	(vlmax_avl_insn_p): Removed.
+	(policy_to_str): Moved.
+	(loop_basic_block_p): Removed.
+	(valid_sew_p): Removed.
+	(vsetvl_insn_p): Moved.
+	(vsetvl_vtype_change_only_p): Removed.
+	(after_or_same_p): Removed.
+	(before_p): Removed.
+	(anticipatable_occurrence_p): Removed.
+	(available_occurrence_p): Removed.
+	(insn_should_be_added_p): Removed.
+	(get_all_sets): Moved.
+	(get_same_bb_set): Moved.
+	(gen_vsetvl_pat): Removed.
+	(calculate_vlmul): Moved.
+	(get_max_int_sew): New.
+	(emit_vsetvl_insn): Removed.
+	(get_max_float_sew): New.
+	(eliminate_insn): Removed.
+	(insert_vsetvl): Removed.
+	(count_regno_occurrences): Moved.
+	(get_vl_vtype_info): Removed.
+	(enum def_type): Moved.
+	(validate_change_or_fail): Moved.
+	(change_insn): Removed.
+	(get_all_real_uses): Moved.
+	(get_forward_read_vl_insn): Removed.
+	(get_backward_fault_first_load_insn): Removed.
+	(change_vsetvl_insn): Removed.
+	(avl_source_has_vsetvl_p): Removed.
+	(source_equal_p): Moved.
+	(calculate_sew): Removed.
+	(same_equiv_note_p): Moved.
+	(get_expr_id): New.
+	(incompatible_avl_p): Removed.
+	(get_regno): New.
+	(different_sew_p): Removed.
+	(get_bb_index): New.
+	(different_lmul_p): Removed.
+	(has_no_uses): Moved.
+	(different_ratio_p): Removed.
+	(different_tail_policy_p): Removed.
+	(different_mask_policy_p): Removed.
+	(possible_zero_avl_p): Removed.
+	(enum demand_flags): New.
+	(second_ratio_invalid_for_first_sew_p): Removed.
+	(second_ratio_invalid_for_first_lmul_p): Removed.
+	(enum class): New.
+	(float_insn_valid_sew_p): Removed.
+	(second_sew_less_than_first_sew_p): Removed.
+	(first_sew_less_than_second_sew_p): Removed.
+	(class vsetvl_info): New.
+	(compare_lmul): Removed.
+	(second_lmul_less_than_first_lmul_p): Removed.
+	(second_ratio_less_than_first_ratio_p): Removed.
+	(DEF_INCOMPATIBLE_COND): Removed.
+	(greatest_sew): Removed.
+	(first_sew): Removed.
+	(second_sew): Removed.
+	(first_vlmul): Removed.
+	(second_vlmul): Removed.
+	(first_ratio): Removed.
+	(second_ratio): Removed.
+	(vlmul_for_first_sew_second_ratio): Removed.
+	(vlmul_for_greatest_sew_second_ratio): Removed.
+	(ratio_for_second_sew_first_vlmul): Removed.
+	(class vsetvl_block_info): New.
+	(DEF_SEW_LMUL_FUSE_RULE): New.
+	(always_unavailable): Removed.
+	(avl_unavailable_p): Removed.
+	(class demand_system): New.
+	(sew_unavailable_p): Removed.
+	(lmul_unavailable_p): Removed.
+	(ge_sew_unavailable_p): Removed.
+	(ge_sew_lmul_unavailable_p): Removed.
+	(ge_sew_ratio_unavailable_p): Removed.
+	(DEF_UNAVAILABLE_COND): Removed.
+	(same_sew_lmul_demand_p): Removed.
+	(propagate_avl_across_demands_p): Removed.
+	(reg_available_p): Removed.
+	(support_relaxed_compatible_p): Removed.
+	(demands_can_be_fused_p): Removed.
+	(earliest_pred_can_be_fused_p): Removed.
+	(vsetvl_dominated_by_p): Removed.
+	(avl_info::avl_info): Removed.
+	(avl_info::single_source_equal_p): Removed.
+	(avl_info::multiple_source_equal_p): Removed.
+	(DEF_SEW_LMUL_RULE): New.
+	(avl_info::operator=): Removed.
+	(avl_info::operator==): Removed.
+	(DEF_POLICY_RULE): New.
+	(avl_info::operator!=): Removed.
+	(avl_info::has_non_zero_avl): Removed.
+	(vl_vtype_info::vl_vtype_info): Removed.
+	(vl_vtype_info::operator==): Removed.
+	(DEF_AVL_RULE): New.
+	(vl_vtype_info::operator!=): Removed.
+	(vl_vtype_info::same_avl_p): Removed.
+	(vl_vtype_info::same_vtype_p): Removed.
+	(vl_vtype_info::same_vlmax_p): Removed.
+	(vector_insn_info::operator>=): Removed.
+	(vector_insn_info::operator==): Removed.
+	(class pre_vsetvl): New.
+	(vector_insn_info::parse_insn): Removed.
+	(vector_insn_info::compatible_p): Removed.
+	(vector_insn_info::skip_avl_compatible_p): Removed.
+	(vector_insn_info::compatible_avl_p): Removed.
+	(vector_insn_info::compatible_vtype_p): Removed.
+	(vector_insn_info::available_p): Removed.
+	(vector_insn_info::fuse_avl): Removed.
+	(vector_insn_info::fuse_sew_lmul): Removed.
+	(vector_insn_info::fuse_tail_policy): Removed.
+	(vector_insn_info::fuse_mask_policy): Removed.
+	(vector_insn_info::local_merge): Removed.
+	(vector_insn_info::global_merge): Removed.
+	(vector_insn_info::get_avl_or_vl_reg): Removed.
+	(vector_insn_info::update_fault_first_load_avl): Removed.
+	(vector_insn_info::dump): Removed.
+	(vector_infos_manager::vector_infos_manager): Removed.
+	(vector_infos_manager::create_expr): Removed.
+	(vector_infos_manager::get_expr_id): Removed.
+	(vector_infos_manager::all_same_ratio_p): Removed.
+	(vector_infos_manager::all_avail_in_compatible_p): Removed.
+	(vector_infos_manager::all_same_avl_p): Removed.
+	(vector_infos_manager::expr_set_num): Removed.
+	(vector_infos_manager::release): Removed.
+	(vector_infos_manager::create_bitmap_vectors): Removed.
+	(vector_infos_manager::free_bitmap_vectors): Removed.
+	(vector_infos_manager::dump): Removed.
+	(class pass_vsetvl): Adjust.
+	(pass_vsetvl::get_vector_info): Removed.
+	(pass_vsetvl::get_block_info): Removed.
+	(pass_vsetvl::update_vector_info): Removed.
+	(pass_vsetvl::update_block_info): Removed.
+	(pre_vsetvl::compute_avl_def_data): New.
+	(pass_vsetvl::simple_vsetvl): Removed.
+	(pass_vsetvl::compute_local_backward_infos): Removed.
+	(pass_vsetvl::need_vsetvl): Removed.
+	(pass_vsetvl::transfer_before): Removed.
+	(pass_vsetvl::transfer_after): Removed.
+	(pre_vsetvl::compute_vsetvl_def_data): New.
+	(pass_vsetvl::emit_local_forward_vsetvls): Removed.
+	(pass_vsetvl::prune_expressions): Removed.
+	(pass_vsetvl::compute_local_properties): Removed.
+	(pre_vsetvl::compute_lcm_local_properties): New.
+	(pass_vsetvl::earliest_fusion): Removed.
+	(pre_vsetvl::fuse_local_vsetvl_info): New.
+	(pass_vsetvl::vsetvl_fusion): Removed.
+	(pass_vsetvl::can_refine_vsetvl_p): Removed.
+	(pre_vsetvl::earliest_fuse_vsetvl_info): New.
+	(pass_vsetvl::refine_vsetvls): Removed.
+	(pass_vsetvl::cleanup_vsetvls): Removed.
+	(pass_vsetvl::commit_vsetvls): Removed.
+	(pass_vsetvl::pre_vsetvl): Removed.
+	(pass_vsetvl::get_vsetvl_at_end): Removed.
+	(local_avl_compatible_p): Removed.
+	(pass_vsetvl::local_eliminate_vsetvl_insn): Removed.
+	(pre_vsetvl::pre_global_vsetvl_info): New.
+	(get_first_vsetvl_before_rvv_insns): Removed.
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Removed.
+	(pre_vsetvl::emit_vsetvl): New.
+	(pass_vsetvl::ssa_post_optimization): Removed.
+	(pre_vsetvl::cleaup): New.
+	(pre_vsetvl::remove_avl_operand): New.
+	(pass_vsetvl::df_post_optimization): Removed.
+	(pre_vsetvl::remove_unused_dest_operand): New.
+	(pass_vsetvl::init): Removed.
+	(pass_vsetvl::done): Removed.
+	(pass_vsetvl::compute_probabilities): Removed.
+	(pass_vsetvl::lazy_vsetvl): Adjust.
+	(pass_vsetvl::execute): Adjust.
+	* config/riscv/riscv-vsetvl.def (DEF_INCOMPATIBLE_COND): Removed.
+	(DEF_SEW_LMUL_RULE): New.
+	(DEF_SEW_LMUL_FUSE_RULE): Removed.
+	(DEF_POLICY_RULE): New.
+	(DEF_UNAVAILABLE_COND): Removed
+	(DEF_AVL_RULE): New demand type.
+	(sew_lmul): New demand type.
+	(ratio_only): New demand type.
+	(sew_only): New demand type.
+	(ge_sew): New demand type.
+	(ratio_and_ge_sew): New demand type.
+	(tail_mask_policy): New demand type.
+	(tail_policy_only): New demand type.
+	(mask_policy_only): New demand type.
+	(ignore_policy): New demand type.
+	(avl): New demand type.
+	(non_zero_avl): New demand type.
+	(ignore_avl): New demand type.
+	* config/riscv/t-riscv: Removed riscv-vsetvl.h
+	* config/riscv/riscv-vsetvl.h: Removed.
+
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-eh.cc (make_eh_edges): Return the new edge.
+	* tree-eh.h (make_eh_edges): Likewise.
+
 2023-10-19  Marek Polacek  <polacek@redhat.com>
 
 	* doc/contrib.texi: Add entry for Patrick Palka.

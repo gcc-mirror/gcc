@@ -1,3 +1,9 @@
+2023-10-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/trans.cc (gigi): Mark __gnat_reraise_zcx with
+	ECF_XTHROW.
+	(build_raise_check): Likewise for all rcheck subprograms.
+
 2023-10-19  Yannick Moy  <moy@adacore.com>
 
 	* aspects.ads: Add aspect Side_Effects.
