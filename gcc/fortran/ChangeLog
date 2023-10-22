@@ -1,3 +1,12 @@
+2023-10-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111837
+	* frontend-passes.cc (traverse_io_block): Dependency check of loop
+	nest shall be triangular, not banded.
+
 2023-08-06  Steve Kargl  <kargl@gcc.gnu.org>
 
 	Backported from master:
