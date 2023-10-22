@@ -48,7 +48,7 @@ import dmd.mtype;
 import dmd.objc;
 import dmd.root.aav;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
 import dmd.semantic2;
@@ -4620,15 +4620,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
       case default_:
         if (!sc.func)
             return false;
-        if (sc.func.isSafeBypassingInference())
-        {
-            if (!gag)
-            {
-                version (none) // disable obsolete warning
-                    warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
-            }
-        }
-        else if (!sc.func.safetyViolation)
+        if (!sc.func.isSafeBypassingInference() && !sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
             sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);

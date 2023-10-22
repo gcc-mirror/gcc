@@ -113,9 +113,6 @@ public:
 
     virtual Statement *syntaxCopy();
 
-    void error(const char *format, ...);
-    void warning(unsigned flag, const char *format, ...);
-    void deprecation(const char *format, ...);
     virtual Statement *getRelatedLabeled() { return this; }
     virtual bool hasBreak() const;
     virtual bool hasContinue() const;

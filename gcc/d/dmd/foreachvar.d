@@ -35,7 +35,7 @@ import dmd.mtype;
 import dmd.postordervisitor;
 import dmd.printast;
 import dmd.root.array;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.statement;
 import dmd.tokens;
 import dmd.visitor;

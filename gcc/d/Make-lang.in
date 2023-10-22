@@ -174,11 +174,11 @@ D_FRONTEND_OBJS = \
 	d/root-port.o \
 	d/root-region.o \
 	d/root-rmem.o \
-	d/root-rootobject.o \
 	d/root-speller.o \
 	d/root-string.o \
 	d/root-stringtable.o \
 	d/root-utf.o \
+	d/rootobject.o \
 	d/safe.o \
 	d/sapply.o \
 	d/semantic2.o \

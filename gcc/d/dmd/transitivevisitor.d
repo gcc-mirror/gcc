@@ -8,7 +8,7 @@ module dmd.transitivevisitor;
 import dmd.astenums;
 import dmd.permissivevisitor;
 import dmd.tokens;
-import dmd.root.rootobject;
+import dmd.rootobject;
 
 import core.stdc.stdio;
 

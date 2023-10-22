@@ -1326,7 +1326,6 @@ public:
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
     Expression *modifiableLvalue(Scope *sc, Expression *e) override;
-    void hookDtors(Scope *sc);
 
     void accept(Visitor *v) override { v->visit(this); }
 };

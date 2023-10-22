@@ -4,12 +4,12 @@
  * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/rootobject.d, root/_rootobject.d)
- * Documentation:  https://dlang.org/phobos/dmd_root_rootobject.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/root/rootobject.d
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/rootobject.d, _rootobject.d)
+ * Documentation:  https://dlang.org/phobos/dmd_rootobject.html
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/rootobject.d
  */
 
-module dmd.root.rootobject;
+module dmd.rootobject;
 
 /***********************************************************
  */

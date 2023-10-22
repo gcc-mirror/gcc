@@ -63,11 +63,12 @@ import dmd.opover;
 import dmd.optimize;
 import dmd.parse;
 import dmd.printast;
+import dmd.postordervisitor;
 import dmd.root.array;
 import dmd.root.ctfloat;
 import dmd.root.filename;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.utf;
 import dmd.semantic2;
@@ -140,6 +141,58 @@ bool expressionsToString(ref OutBuffer buf, Scope* sc, Expressions* exps)
     return false;
 }
 
+/*****************************************
+ * Determine if `this` is available by walking up the enclosing
+ * scopes until a function is found.
+ *
+ * Params:
+ *      sc = where to start looking for the enclosing function
+ * Returns:
+ *      Found function if it satisfies `isThis()`, otherwise `null`
+ */
+FuncDeclaration hasThis(Scope* sc)
+{
+    //printf("hasThis()\n");
+    Dsymbol p = sc.parent;
+    while (p && p.isTemplateMixin())
+        p = p.parent;
+    FuncDeclaration fdthis = p ? p.isFuncDeclaration() : null;
+    //printf("fdthis = %p, '%s'\n", fdthis, fdthis ? fdthis.toChars() : "");
+
+    // Go upwards until we find the enclosing member function
+    FuncDeclaration fd = fdthis;
+    while (1)
+    {
+        if (!fd)
+        {
+            return null;
+        }
+        if (!fd.isNested() || fd.isThis() || (fd.hasDualContext() && fd.isMember2()))
+            break;
+
+        Dsymbol parent = fd.parent;
+        while (1)
+        {
+            if (!parent)
+                return null;
+            TemplateInstance ti = parent.isTemplateInstance();
+            if (ti)
+                parent = ti.parent;
+            else
+                break;
+        }
+        fd = parent.isFuncDeclaration();
+    }
+
+    if (!fd.isThis() && !(fd.hasDualContext() && fd.isMember2()))
+    {
+        return null;
+    }
+
+    assert(fd.vthis);
+    return fd;
+
+}
 
 /***********************************************************
  * Resolve `exp` as a compile-time known string.
@@ -355,6 +408,126 @@ extern(D) bool arrayExpressionSemantic(
     return err;
 }
 
+/************************************************
+ * Handle the postblit call on lvalue, or the move of rvalue.
+ *
+ * Params:
+ *   sc = the scope where the expression is encountered
+ *   e = the expression the needs to be moved or copied (source)
+ *   t = if the struct defines a copy constructor, the type of the destination
+ *
+ * Returns:
+ *  The expression that copy constructs or moves the value.
+ */
+extern (D) Expression doCopyOrMove(Scope *sc, Expression e, Type t = null)
+{
+    if (auto ce = e.isCondExp())
+    {
+        ce.e1 = doCopyOrMove(sc, ce.e1);
+        ce.e2 = doCopyOrMove(sc, ce.e2);
+    }
+    else
+    {
+        e = e.isLvalue() ? callCpCtor(sc, e, t) : valueNoDtor(e);
+    }
+    return e;
+}
+
+/*********************************************
+ * If e is an instance of a struct, and that struct has a copy constructor,
+ * rewrite e as:
+ *    (tmp = e),tmp
+ * Input:
+ *      sc = just used to specify the scope of created temporary variable
+ *      destinationType = the type of the object on which the copy constructor is called;
+ *                        may be null if the struct defines a postblit
+ */
+private Expression callCpCtor(Scope* sc, Expression e, Type destinationType)
+{
+    if (auto ts = e.type.baseElemOf().isTypeStruct())
+    {
+        StructDeclaration sd = ts.sym;
+        if (sd.postblit || sd.hasCopyCtor)
+        {
+            /* Create a variable tmp, and replace the argument e with:
+             *      (tmp = e),tmp
+             * and let AssignExp() handle the construction.
+             * This is not the most efficient, ideally tmp would be constructed
+             * directly onto the stack.
+             */
+            auto tmp = copyToTemp(STC.rvalue, "__copytmp", e);
+            if (sd.hasCopyCtor && destinationType)
+            {
+                // https://issues.dlang.org/show_bug.cgi?id=22619
+                // If the destination type is inout we can preserve it
+                // only if inside an inout function; if we are not inside
+                // an inout function, then we will preserve the type of
+                // the source
+                if (destinationType.hasWild && !(sc.func.storage_class & STC.wild))
+                    tmp.type = e.type;
+                else
+                    tmp.type = destinationType;
+            }
+            tmp.storage_class |= STC.nodtor;
+            tmp.dsymbolSemantic(sc);
+            Expression de = new DeclarationExp(e.loc, tmp);
+            Expression ve = new VarExp(e.loc, tmp);
+            de.type = Type.tvoid;
+            ve.type = e.type;
+            return Expression.combine(de, ve);
+        }
+    }
+    return e;
+}
+
+/************************************************
+ * If we want the value of this expression, but do not want to call
+ * the destructor on it.
+ */
+Expression valueNoDtor(Expression e)
+{
+    auto ex = lastComma(e);
+
+    if (auto ce = ex.isCallExp())
+    {
+        /* The struct value returned from the function is transferred
+         * so do not call the destructor on it.
+         * Recognize:
+         *       ((S _ctmp = S.init), _ctmp).this(...)
+         * and make sure the destructor is not called on _ctmp
+         * BUG: if ex is a CommaExp, we should go down the right side.
+         */
+        if (auto dve = ce.e1.isDotVarExp())
+        {
+            if (dve.var.isCtorDeclaration())
+            {
+                // It's a constructor call
+                if (auto comma = dve.e1.isCommaExp())
+                {
+                    if (auto ve = comma.e2.isVarExp())
+                    {
+                        VarDeclaration ctmp = ve.var.isVarDeclaration();
+                        if (ctmp)
+                        {
+                            ctmp.storage_class |= STC.nodtor;
+                            assert(!ce.isLvalue());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if (auto ve = ex.isVarExp())
+    {
+        auto vtmp = ve.var.isVarDeclaration();
+        if (vtmp && (vtmp.storage_class & STC.rvalue))
+        {
+            vtmp.storage_class |= STC.nodtor;
+        }
+    }
+    return e;
+}
+
 /*
 Checks if `exp` contains a direct access to a `noreturn`
 variable. If that is the case, an `assert(0)` expression
@@ -491,6 +664,78 @@ private bool isDotOpDispatch(Expression e)
     if (auto dtie = e.isDotTemplateInstanceExp())
         return dtie.ti.name == Id.opDispatch;
     return false;
+}
+
+private void hookDtors(CondExp ce, Scope* sc)
+{
+    extern (C++) final class DtorVisitor : StoppableVisitor
+    {
+        alias visit = typeof(super).visit;
+    public:
+        Scope* sc;
+        CondExp ce;
+        VarDeclaration vcond;
+        bool isThen;
+
+        extern (D) this(Scope* sc, CondExp ce) @safe
+        {
+            this.sc = sc;
+            this.ce = ce;
+        }
+
+        override void visit(Expression e)
+        {
+            //printf("(e = %s)\n", e.toChars());
+        }
+
+        override void visit(DeclarationExp e)
+        {
+            auto v = e.declaration.isVarDeclaration();
+            if (v && !v.isDataseg())
+            {
+                if (v._init)
+                {
+                    if (auto ei = v._init.isExpInitializer())
+                        walkPostorder(ei.exp, this);
+                }
+
+                if (v.edtor)
+                    walkPostorder(v.edtor, this);
+
+                if (v.needsScopeDtor())
+                {
+                    if (!vcond)
+                    {
+                        vcond = copyToTemp(STC.volatile_ | STC.const_, "__cond", ce.econd);
+                        vcond.dsymbolSemantic(sc);
+
+                        Expression de = new DeclarationExp(ce.econd.loc, vcond);
+                        de = de.expressionSemantic(sc);
+
+                        Expression ve = new VarExp(ce.econd.loc, vcond);
+                        ce.econd = Expression.combine(de, ve);
+                    }
+
+                    //printf("\t++v = %s, v.edtor = %s\n", v.toChars(), v.edtor.toChars());
+                    Expression ve = new VarExp(vcond.loc, vcond);
+                    if (isThen)
+                        v.edtor = new LogicalExp(v.edtor.loc, EXP.andAnd, ve, v.edtor);
+                    else
+                        v.edtor = new LogicalExp(v.edtor.loc, EXP.orOr, ve, v.edtor);
+                    v.edtor = v.edtor.expressionSemantic(sc);
+                    //printf("\t--v = %s, v.edtor = %s\n", v.toChars(), v.edtor.toChars());
+                }
+            }
+        }
+    }
+
+    scope DtorVisitor v = new DtorVisitor(sc, ce);
+    //printf("+%s\n", toChars());
+    v.isThen = true;
+    walkPostorder(ce.e1, v);
+    v.isThen = false;
+    walkPostorder(ce.e2, v);
+    //printf("-%s\n", toChars());
 }
 
 
@@ -1514,6 +1759,26 @@ private Expression resolvePropertiesX(Scope* sc, Expression e1, Expression e2 = 
 Leprop:
     error(loc, "not a property %s", e1.toChars());
     return ErrorExp.get();
+}
+
+private bool checkRightThis(Expression e, Scope* sc)
+{
+    if (e.op == EXP.error)
+        return true;
+    if (e.op == EXP.variable && e.type.ty != Terror)
+    {
+        VarExp ve = cast(VarExp)e;
+        if (isNeedThisScope(sc, ve.var))
+        {
+            //printf("checkRightThis sc.intypeof = %d, ad = %p, func = %p, fdthis = %p\n",
+            //        sc.intypeof, sc.getStructClassScope(), func, fdthis);
+            auto t = ve.var.isThis();
+            assert(t);
+            error(e.loc, "accessing non-static variable `%s` requires an instance of `%s`", ve.var.toChars(), t.toChars());
+            return true;
+        }
+    }
+    return false;
 }
 
 extern (C++) Expression resolveProperties(Scope* sc, Expression e)
@@ -10085,24 +10350,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     return setError();
             }
 
-            version (none)
-            {
-                if (global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
-                    e2x.op != EXP.slice && e2x.op != EXP.assign &&
-                    e2x.op != EXP.arrayLiteral && e2x.op != EXP.string_ &&
-                    !(e2x.op == EXP.add || e2x.op == EXP.min ||
-                      e2x.op == EXP.mul || e2x.op == EXP.div ||
-                      e2x.op == EXP.mod || e2x.op == EXP.xor ||
-                      e2x.op == EXP.and || e2x.op == EXP.or ||
-                      e2x.op == EXP.pow ||
-                      e2x.op == EXP.tilde || e2x.op == EXP.negate))
-                {
-                    const(char)* e1str = exp.e1.toChars();
-                    const(char)* e2str = e2x.toChars();
-                    exp.warning("explicit element-wise assignment `%s = (%s)[]` is better than `%s = %s`", e1str, e2str, e1str, e2str);
-                }
-            }
-
             Type t2n = t2.nextOf();
             Type t1n = t1.nextOf();
             int offset;
@@ -10149,21 +10396,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         else
         {
-            version (none)
-            {
-                if (global.params.warnings != DiagnosticReporting.off && !global.gag && exp.op == EXP.assign &&
-                    t1.ty == Tarray && t2.ty == Tsarray &&
-                    e2x.op != EXP.slice &&
-                    t2.implicitConvTo(t1))
-                {
-                    // Disallow ar[] = sa (Converted to ar[] = sa[])
-                    // Disallow da   = sa (Converted to da   = sa[])
-                    const(char)* e1str = exp.e1.toChars();
-                    const(char)* e2str = e2x.toChars();
-                    const(char)* atypestr = exp.e1.op == EXP.slice ? "element-wise" : "slice";
-                    exp.warning("explicit %s assignment `%s = (%s)[]` is better than `%s = %s`", atypestr, e1str, e2str, e1str, e2str);
-                }
-            }
             if (exp.op == EXP.blit)
                 e2x = e2x.castTo(sc, exp.e1.type);
             else

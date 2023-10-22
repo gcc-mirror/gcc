@@ -45,7 +45,7 @@ import dmd.parse;
 import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.statement;
 import dmd.staticassert;

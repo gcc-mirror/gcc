@@ -30,7 +30,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.typesem;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.tokens;
 import dmd.utils;

@@ -48,7 +48,7 @@ import dmd.nspace;
 import dmd.opover;
 import dmd.root.aav;
 import dmd.root.rmem;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.speller;
 import dmd.root.string;
 import dmd.statement;

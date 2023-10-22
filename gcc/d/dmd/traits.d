@@ -49,7 +49,7 @@ import dmd.target;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.common.outbuffer;
 import dmd.root.string;
 

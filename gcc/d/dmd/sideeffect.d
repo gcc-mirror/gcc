@@ -269,41 +269,6 @@ bool discardValue(Expression e)
             break;
         }
     case EXP.call:
-        /* Issue 3882: */
-        if (global.params.warnings != DiagnosticReporting.off && !global.gag)
-        {
-            CallExp ce = cast(CallExp)e;
-            if (e.type.ty == Tvoid)
-            {
-                /* Don't complain about calling void-returning functions with no side-effect,
-                 * because purity and nothrow are inferred, and because some of the
-                 * runtime library depends on it. Needs more investigation.
-                 *
-                 * One possible solution is to restrict this message to only be called in hierarchies that
-                 * never call assert (and or not called from inside unittest blocks)
-                 */
-            }
-            else if (ce.e1.type)
-            {
-                Type t = ce.e1.type.toBasetype();
-                if (t.ty == Tdelegate)
-                    t = (cast(TypeDelegate)t).next;
-                if (t.ty == Tfunction && (ce.f ? callSideEffectLevel(ce.f) : callSideEffectLevel(ce.e1.type)) > 0)
-                {
-                    const(char)* s;
-                    if (ce.f)
-                        s = ce.f.toPrettyChars();
-                    else if (ce.e1.op == EXP.star)
-                    {
-                        // print 'fp' if ce.e1 is (*fp)
-                        s = (cast(PtrExp)ce.e1).e1.toChars();
-                    }
-                    else
-                        s = ce.e1.toChars();
-                    warning(e.loc, "calling `%s` without side effects discards return value of type `%s`; prepend a `cast(void)` if intentional", s, e.type.toChars());
-                }
-            }
-        }
         return false;
     case EXP.andAnd:
     case EXP.orOr:

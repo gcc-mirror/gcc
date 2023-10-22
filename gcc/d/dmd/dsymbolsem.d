@@ -62,7 +62,7 @@ import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.utf;
 import dmd.semantic2;
 import dmd.semantic3;
@@ -3853,12 +3853,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             /* Remember which functions this overrides
                              */
                             funcdecl.foverrides.push(fdv);
-
-                            /* Should we really require 'override' when implementing
-                             * an interface function?
-                             */
-                            //if (!isOverride())
-                            //    warning(loc, "overrides base class function %s, but is not marked with 'override'", fdv.toPrettyChars());
 
                             if (fdv.tintro)
                                 ti = fdv.tintro;
