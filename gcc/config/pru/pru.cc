@@ -784,6 +784,28 @@ pru_rtx_costs (rtx x, machine_mode mode,
     }
 }
 
+/* Calculate the cost of an addressing mode that contains ADDR.
+   ADDR must be a valid address.  */
+
+static int
+pru_address_cost (rtx addr, machine_mode, addr_space_t as, bool)
+{
+  if (as != ADDR_SPACE_GENERIC)
+    /* All currently implemented special address spaces for PRU
+       are much more efficient than generic memory I/O.  */
+    return 0;
+  else if (ctable_addr_operand (addr, VOIDmode)
+	   || (GET_CODE (addr) == PLUS
+	       && ctable_base_operand (XEXP (addr, 1), VOIDmode)))
+    /* Using CTABLE instructions reduces register pressure,
+       so give it precedence.  */
+    return 1;
+  else
+    /* Same two instructions (LBBO/SBBO) are used for any valid
+       addressing mode.  */
+    return 2;
+}
+
 /* Insn costs on PRU are straightforward because:
      - Insns emit 0, 1 or more instructions.
      - All instructions are 32-bit length.
@@ -3207,6 +3229,9 @@ pru_unwind_word_mode (void)
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pru_rtx_costs
+
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST pru_address_cost
 
 #undef TARGET_INSN_COST
 #define TARGET_INSN_COST pru_insn_cost
