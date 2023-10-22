@@ -20261,7 +20261,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	op1 = TREE_OPERAND (t, 0);
 	++cp_unevaluated_operand;
 	++c_inhibit_evaluation_warnings;
-	op1 = tsubst_expr (op1, args, complain, in_decl);
+	op1 = tsubst (op1, args, complain, in_decl);
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
 	RETURN (objc_build_encode_expr (op1));
