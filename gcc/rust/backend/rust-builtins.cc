@@ -285,46 +285,70 @@ void
 BuiltinsContext::register_rust_mappings ()
 {
   rust_intrinsic_to_gcc_builtin = {
-    {"sinf32", "__builtin_sinf"},
-    {"sqrtf32", "__builtin_sqrtf"},
-    {"sqrtf64", "__builtin_sqrt"},
     {"unreachable", "__builtin_unreachable"},
     {"abort", "__builtin_abort"},
+
+    // Math intrinsics
+    {"sqrtf32", "__builtin_sqrtf"},
+    {"sqrtf64", "__builtin_sqrt"},
+
+    {"sinf32", "__builtin_sinf"},
     {"sinf64", "__builtin_sin"},
+
     {"cosf32", "__builtin_cosf"},
     {"cosf64", "__builtin_cos"},
+
     {"powf32", "__builtin_powf"},
     {"powf64", "__builtin_pow"},
+
+    {"powif32", "__builtin_powif"},
+    {"powif64", "__builtin_powi"},
+
     {"expf32", "__builtin_expf"},
     {"expf64", "__builtin_exp"},
+
     {"exp2f32", "__builtin_exp2f"},
     {"exp2f64", "__builtin_exp2"},
+
     {"logf32", "__builtin_logf"},
     {"logf64", "__builtin_log"},
+
     {"log10f32", "__builtin_log10f"},
     {"log10f64", "__builtin_log10"},
+
     {"log2f32", "__builtin_log2f"},
     {"log2f64", "__builtin_log2"},
+
     {"fmaf32", "__builtin_fmaf"},
     {"fmaf64", "__builtin_fma"},
+
     {"fabsf32", "__builtin_fabsf"},
     {"fabsf64", "__builtin_fabs"},
+
     {"minnumf32", "__builtin_fminf"},
     {"minnumf64", "__builtin_fmin"},
+
     {"maxnumf32", "__builtin_fmaxf"},
     {"maxnumf64", "__builtin_fmax"},
+
     {"copysignf32", "__builtin_copysignf"},
     {"copysignf64", "__builtin_copysign"},
+
     {"floorf32", "__builtin_floorf"},
     {"floorf64", "__builtin_floor"},
+
     {"ceilf32", "__builtin_ceilf"},
     {"ceilf64", "__builtin_ceil"},
+
     {"truncf32", "__builtin_truncf"},
     {"truncf64", "__builtin_trunc"},
+
     {"rintf32", "__builtin_rintf"},
     {"rintf64", "__builtin_rint"},
+
     {"nearbyintf32", "__builtin_nearbyintf"},
     {"nearbyintf64", "__builtin_nearbyint"},
+
     {"roundf32", "__builtin_roundf"},
     {"roundf64", "__builtin_round"},
   };
