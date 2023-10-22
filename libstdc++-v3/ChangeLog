@@ -1,3 +1,31 @@
+2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_M_init_local_buf()): New
+	function.
+	(_M_use_local_data()): Use _M_init_local_buf.
+	(basic_string(), basic_string(const Alloc&))
+	(basic_string(basic_string&&))
+	(basic_string(basic_string&&, const Alloc&)): Use
+	_M_init_local_buf instead of _M_use_local_data().
+	* include/bits/basic_string.tcc (swap(basic_string&))
+	(_M_construct(InIter, InIter, input_iterator_tag))
+	(_M_construct(InIter, InIter, forward_iterator_tag))
+	(_M_construct(size_type, CharT), reserve()): Likewise.
+
+2023-10-21  Benjamin Brock  <brock@cs.berkeley.edu>
+
+	* include/std/ranges (zip_view, adjacent_view): Implement
+	workaround for LLVM-61763.
+
+2023-10-21  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: Test length()
+
+2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h (operator==(default_sentinel_t)): Fix
+	indentation.
+
 2023-10-20  Marek Polacek  <polacek@redhat.com>
 
 	PR testsuite/111883

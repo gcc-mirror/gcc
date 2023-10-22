@@ -1,3 +1,15 @@
+2023-10-21  Pan Li  <pan2.li@intel.com>
+
+	PR target/111857
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_VLS): Remove.
+	* config/riscv/riscv-protos.h (vls_mode_valid_p): New func decl.
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Replace
+	macro reference to func.
+	(vls_mode_valid_p): New func impl for vls mode valid or not.
+	* config/riscv/riscv-vector-switch.def (VLS_ENTRY): Replace
+	macro reference to func.
+	* config/riscv/vector-iterators.md: Ditto.
+
 2023-10-20  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

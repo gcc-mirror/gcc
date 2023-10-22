@@ -1,3 +1,131 @@
+2023-10-21  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/20000403-1.c: Compile with -std=gnu89.
+	* gcc.c-torture/compile/20000511-1.c: Likewise.
+	* gcc.c-torture/compile/20000804-1.c: Likewise.
+	* gcc.c-torture/compile/20020418-1.c: Likewise.
+	* gcc.c-torture/compile/20020927-1.c: Likewise.
+	* gcc.c-torture/compile/20030109-1.c: Likewise.
+	* gcc.c-torture/compile/20030224-1.c: Likewise.
+	* gcc.c-torture/compile/20030415-1.c: Likewise.
+	* gcc.c-torture/compile/20030612-1.c: Likewise.
+	* gcc.c-torture/compile/20030917-1.c: Likewise.
+	* gcc.c-torture/compile/20031113-1.c: Likewise.
+	* gcc.c-torture/compile/20031220-2.c: Likewise.
+	* gcc.c-torture/compile/20040309-1.c: Likewise.
+	* gcc.c-torture/compile/20040310-1.c: Likewise.
+	* gcc.c-torture/compile/20040317-3.c: Likewise.
+	* gcc.c-torture/compile/20040817-1.c: Likewise.
+	* gcc.c-torture/compile/20091215-1.c: Likewise.
+	* gcc.c-torture/compile/86.c: Likewise.
+	* gcc.c-torture/compile/900216-1.c: Likewise.
+	* gcc.c-torture/compile/900313-1.c: Likewise.
+	* gcc.c-torture/compile/900407-1.c: Likewise.
+	* gcc.c-torture/compile/900516-1.c: Likewise.
+	* gcc.c-torture/compile/920409-2.c: Likewise.
+	* gcc.c-torture/compile/920415-1.c: Likewise.
+	* gcc.c-torture/compile/920428-1.c: Likewise.
+	* gcc.c-torture/compile/920428-5.c: Likewise.
+	* gcc.c-torture/compile/920428-7.c: Likewise.
+	* gcc.c-torture/compile/920501-1.c: Likewise.
+	* gcc.c-torture/compile/920501-13.c: Likewise.
+	* gcc.c-torture/compile/920501-15.c: Likewise.
+	* gcc.c-torture/compile/920501-16.c: Likewise.
+	* gcc.c-torture/compile/920501-18.c: Likewise.
+	* gcc.c-torture/compile/920501-20.c: Likewise.
+	* gcc.c-torture/compile/920501-6.c: Likewise.
+	* gcc.c-torture/compile/920501-7.c: Likewise.
+	* gcc.c-torture/compile/920502-1.c: Likewise.
+	* gcc.c-torture/compile/920502-2.c: Likewise.
+	* gcc.c-torture/compile/920520-1.c: Likewise.
+	* gcc.c-torture/compile/920521-1.c: Likewise.
+	* gcc.c-torture/compile/920608-1.c: Likewise.
+	* gcc.c-torture/compile/920617-1.c: Likewise.
+	* gcc.c-torture/compile/920617-2.c: Likewise.
+	* gcc.c-torture/compile/920625-1.c: Likewise.
+	* gcc.c-torture/compile/920625-2.c: Likewise.
+	* gcc.c-torture/compile/920626-1.c: Likewise.
+	* gcc.c-torture/compile/920706-1.c: Likewise.
+	* gcc.c-torture/compile/920710-2.c: Likewise.
+	* gcc.c-torture/compile/920723-1.c: Likewise.
+	* gcc.c-torture/compile/920808-1.c: Likewise.
+	* gcc.c-torture/compile/920809-1.c: Likewise.
+	* gcc.c-torture/compile/920817-1.c: Likewise.
+	* gcc.c-torture/compile/920831-1.c: Likewise.
+	* gcc.c-torture/compile/920917-1.c: Likewise.
+	* gcc.c-torture/compile/920928-2.c: Likewise.
+	* gcc.c-torture/compile/920928-5.c: Likewise.
+	* gcc.c-torture/compile/921012-1.c: Likewise.
+	* gcc.c-torture/compile/921021-1.c: Likewise.
+	* gcc.c-torture/compile/921024-1.c: Likewise.
+	* gcc.c-torture/compile/921103-1.c: Likewise.
+	* gcc.c-torture/compile/921109-1.c: Likewise.
+	* gcc.c-torture/compile/921111-1.c: Likewise.
+	* gcc.c-torture/compile/921116-2.c: Likewise.
+	* gcc.c-torture/compile/921118-1.c: Likewise.
+	* gcc.c-torture/compile/921202-1.c: Likewise.
+	* gcc.c-torture/compile/921202-2.c: Likewise.
+	* gcc.c-torture/compile/921203-1.c: Likewise.
+	* gcc.c-torture/compile/921203-2.c: Likewise.
+	* gcc.c-torture/compile/921206-1.c: Likewise.
+	* gcc.c-torture/compile/930109-1.c: Likewise.
+	* gcc.c-torture/compile/930111-1.c: Likewise.
+	* gcc.c-torture/compile/930117-1.c: Likewise.
+	* gcc.c-torture/compile/930118-1.c: Likewise.
+	* gcc.c-torture/compile/930120-1.c: Likewise.
+	* gcc.c-torture/compile/930217-1.c: Likewise.
+	* gcc.c-torture/compile/930325-1.c: Likewise.
+	* gcc.c-torture/compile/930411-1.c: Likewise.
+	* gcc.c-torture/compile/930427-2.c: Likewise.
+	* gcc.c-torture/compile/930503-2.c: Likewise.
+	* gcc.c-torture/compile/930506-2.c: Likewise.
+	* gcc.c-torture/compile/930513-2.c: Likewise.
+	* gcc.c-torture/compile/930530-1.c: Likewise.
+	* gcc.c-torture/compile/930602-1.c: Likewise.
+	* gcc.c-torture/compile/930618-1.c: Likewise.
+	* gcc.c-torture/compile/930623-1.c: Likewise.
+	* gcc.c-torture/compile/931003-1.c: Likewise.
+	* gcc.c-torture/compile/931013-1.c: Likewise.
+	* gcc.c-torture/compile/931013-2.c: Likewise.
+	* gcc.c-torture/compile/931102-2.c: Likewise.
+	* gcc.c-torture/compile/931203-1.c: Likewise.
+	* gcc.c-torture/compile/940718-1.c: Likewise.
+	* gcc.c-torture/compile/941014-1.c: Likewise.
+	* gcc.c-torture/compile/941014-2.c: Likewise.
+	* gcc.c-torture/compile/941014-3.c: Likewise.
+	* gcc.c-torture/compile/941014-4.c: Likewise.
+	* gcc.c-torture/compile/941111-1.c: Likewise.
+	* gcc.c-torture/compile/941113-1.c: Likewise.
+	* gcc.c-torture/compile/950124-1.c: Likewise.
+	* gcc.c-torture/compile/950329-1.c: Likewise.
+	* gcc.c-torture/compile/950612-1.c: Likewise.
+	* gcc.c-torture/compile/950618-1.c: Likewise.
+	* gcc.c-torture/compile/950719-1.c: Likewise.
+	* gcc.c-torture/compile/950910-1.c: Likewise.
+	* gcc.c-torture/compile/950922-1.c: Likewise.
+	* gcc.c-torture/compile/951106-1.c: Likewise.
+	* gcc.c-torture/compile/951222-1.c: Likewise.
+	* gcc.c-torture/compile/960106-1.c: Likewise.
+	* gcc.c-torture/compile/960319-1.c: Likewise.
+	* gcc.c-torture/compile/960829-1.c: Likewise.
+	* gcc.c-torture/compile/970206-1.c: Likewise.
+	* gcc.c-torture/compile/980825-1.c: Likewise.
+	* gcc.c-torture/compile/990829-1.c: Likewise.
+	* gcc.c-torture/compile/991213-2.c: Likewise.
+
+2023-10-21  Pan Li  <pan2.li@intel.com>
+
+	PR target/111857
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Adjust checker.
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add help define.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr111857-6.c: New test.
+
 2023-10-20  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
