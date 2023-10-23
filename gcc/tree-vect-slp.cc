@@ -1298,6 +1298,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| rhs_code == COMPONENT_REF
 			|| rhs_code == MEM_REF)))
 	      || (ldst_p
+		  && (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		      != STMT_VINFO_GROUPED_ACCESS (first_stmt_info)))
+	      || (ldst_p
 		  && (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 		      != STMT_VINFO_GATHER_SCATTER_P (first_stmt_info)))
 	      || first_stmt_ldst_p != ldst_p
