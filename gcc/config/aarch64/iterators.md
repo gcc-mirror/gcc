@@ -314,6 +314,12 @@
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
 
+;; 1 and 2 lane DI and DF modes.
+(define_mode_iterator V12DIF [V1DI V1DF V2DI V2DF])
+
+;; 1 and 2 lane DI mode.
+(define_mode_iterator V12DI [V1DI V2DI])
+
 ;; 2 and 4 lane SI modes.
 (define_mode_iterator VS [V2SI V4SI])
 
@@ -1324,10 +1330,10 @@
 (define_mode_attr Vetype [(V8QI "b") (V16QI "b")
 			  (V4HI "h") (V8HI  "h")
 			  (V2SI "s") (V4SI  "s")
-			  (V2DI "d")
+			  (V2DI "d") (V1DI  "d")
 			  (V4HF "h") (V8HF  "h")
 			  (V2SF "s") (V4SF  "s")
-			  (V2DF "d")
+			  (V2DF "d") (V1DF  "d")
 			  (V2x8QI "b") (V2x4HI "h")
 			  (V2x2SI "s") (V2x1DI "d")
 			  (V2x4HF "h") (V2x2SF "s")
@@ -1498,10 +1504,12 @@
 (define_mode_attr VEL [(V8QI  "QI") (V16QI "QI")
 		       (V4HI "HI") (V8HI  "HI")
 		       (V2SI "SI") (V4SI  "SI")
-		       (DI   "DI") (V2DI  "DI")
+		       (DI   "DI") (V1DI  "DI")
+		       (V2DI "DI")
 		       (V4HF "HF") (V8HF  "HF")
 		       (V2SF "SF") (V4SF  "SF")
-		       (DF   "DF") (V2DF  "DF")
+		       (DF   "DF") (V1DF  "DF")
+		       (V2DF "DF")
 		       (SI   "SI") (HI    "HI")
 		       (QI   "QI")
 		       (V4BF "BF") (V8BF "BF")
@@ -1518,12 +1526,13 @@
 (define_mode_attr Vel [(V8QI "qi") (V16QI "qi")
 		       (V4HI "hi") (V8HI "hi")
 		       (V2SI "si") (V4SI "si")
-		       (DI   "di") (V2DI "di")
+		       (DI   "di") (V1DI "si")
+		       (V2DI "di")
 		       (V4HF "hf") (V8HF "hf")
 		       (V2SF "sf") (V4SF "sf")
-		       (V2DF "df") (DF   "df")
-		       (SI   "si") (HI   "hi")
-		       (QI   "qi")
+		       (V1DF "df") (V2DF "df")
+		       (DF   "df") (SI   "si")
+		       (HI   "hi") (QI   "qi")
 		       (V4BF "bf") (V8BF "bf")
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
