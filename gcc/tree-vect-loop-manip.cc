@@ -1626,12 +1626,31 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  edge temp_e = redirect_edge_and_branch (exit, new_preheader);
 	  flush_pending_stmts (temp_e);
 	}
-
       /* Record the new SSA names in the cache so that we can skip materializing
 	 them again when we fill in the rest of the LCSSA variables.  */
       for (auto phi : new_phis)
 	{
 	  tree new_arg = gimple_phi_arg (phi, 0)->def;
+
+	  if (!SSA_VAR_P (new_arg))
+	    continue;
+	  /* If the PHI MEM node dominates the loop then we shouldn't create
+	      a new LC-SSSA PHI for it in the intermediate block.   */
+	  /* A MEM phi that consitutes a new DEF for the vUSE chain can either
+	     be a .VDEF or a PHI that operates on MEM. And said definition
+	     must not be inside the main loop.  Or we must be a parameter.
+	     In the last two cases we may remove a non-MEM PHI node, but since
+	     they dominate both loops the removal is unlikely to cause trouble
+	     as the exits must already be using them.  */
+	  if (virtual_operand_p (new_arg)
+	      && (SSA_NAME_IS_DEFAULT_DEF (new_arg)
+		  || !flow_bb_inside_loop_p (loop,
+				gimple_bb (SSA_NAME_DEF_STMT (new_arg)))))
+	    {
+	      auto gsi = gsi_for_stmt (phi);
+	      remove_phi_node (&gsi, true);
+	      continue;
+	    }
 	  new_phi_args.put (new_arg, gimple_phi_result (phi));
 
 	  if (TREE_CODE (new_arg) != SSA_NAME)
