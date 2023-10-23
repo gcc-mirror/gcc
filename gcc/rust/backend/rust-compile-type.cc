@@ -79,9 +79,10 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
   static tree enum_node = NULL_TREE;
   if (enum_node == NULL_TREE)
     {
-      enum_node
-	= Backend::named_type ("enumeral", Backend::integer_type (false, 64),
-			       BUILTINS_LOCATION);
+      // equivalent to isize
+      enum_node = Backend::named_type (
+	"enumeral", Backend::integer_type (false, Backend::get_pointer_size ()),
+	BUILTINS_LOCATION);
     }
   return enum_node;
 }
