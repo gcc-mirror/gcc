@@ -4108,10 +4108,18 @@ static void
 emit_vec_cvt_x_f (rtx op_dest, rtx op_src, rtx mask,
 		  insn_type type, machine_mode vec_mode)
 {
-  rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
   insn_code icode = code_for_pred_fcvt_x_f (UNSPEC_VFCVT, vec_mode);
 
-  emit_vlmax_insn (icode, type, cvt_x_ops);
+  if (type & USE_VUNDEF_MERGE_P)
+    {
+      rtx cvt_x_ops[] = {op_dest, mask, op_src};
+      emit_vlmax_insn (icode, type, cvt_x_ops);
+    }
+  else
+    {
+      rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
+      emit_vlmax_insn (icode, type, cvt_x_ops);
+    }
 }
 
 static void
@@ -4157,7 +4165,7 @@ expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, with rounding up (aka ceil).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RUP, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_RUP, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the final result.
      To avoid unnecessary frm register access, we use RUP here and it will
@@ -4182,7 +4190,7 @@ expand_vec_floor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, with rounding down (aka floor).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RDN, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_RDN, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the floor result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RDN, vec_fp_mode);
@@ -4208,7 +4216,7 @@ expand_vec_nearbyint (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-4: Convert to integer on mask, with rounding down (aka nearbyint).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_DYN, vec_fp_mode);
 
   /* Step-5: Convert to floating-point on mask for the nearbyint result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
@@ -4233,7 +4241,7 @@ expand_vec_rint (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, with dyn rounding (aka rint).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_DYN, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the rint result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
@@ -4255,7 +4263,7 @@ expand_vec_round (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, rounding to nearest (aka round).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RMM, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_RMM, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the round result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RMM, vec_fp_mode);
@@ -4299,7 +4307,7 @@ expand_vec_roundeven (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, rounding to nearest, ties to even.  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMU_FRM_RNE, vec_fp_mode);
+  emit_vec_cvt_x_f (tmp, op_1, mask, UNARY_OP_TAMA_FRM_RNE, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the rint result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_RNE, vec_fp_mode);
