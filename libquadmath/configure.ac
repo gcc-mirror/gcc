@@ -122,8 +122,6 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-AC_CHECK_LIBM
-
 AC_CHECK_HEADERS(fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
 LIBQUAD_CHECK_MATH_H_SIGNGAM
 
