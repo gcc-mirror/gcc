@@ -5970,7 +5970,7 @@ Parser<ManagedTokenSource>::parse_named_function_param ()
   AST::AttrVec outer_attrs = parse_outer_attributes ();
   location_t locus = lexer.peek_token ()->get_locus ();
 
-  if (lexer.peek_token ()->get_id () == ELLIPSIS)
+  if (lexer.peek_token ()->get_id () == ELLIPSIS) // Unnamed variadic
     {
       lexer.skip_token (); // Skip ellipsis
       return AST::NamedFunctionParam (std::move (outer_attrs), locus);
@@ -6000,6 +6000,13 @@ Parser<ManagedTokenSource>::parse_named_function_param ()
     {
       // skip after somewhere?
       return AST::NamedFunctionParam::create_error ();
+    }
+
+  if (lexer.peek_token ()->get_id () == ELLIPSIS) // Named variadic
+    {
+      lexer.skip_token (); // Skip ellipsis
+      return AST::NamedFunctionParam (std::move (name), std::move (outer_attrs),
+				      locus);
     }
 
   // parse (required) type
