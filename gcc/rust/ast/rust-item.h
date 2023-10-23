@@ -2604,6 +2604,13 @@ public:
       const_expr (std::move (const_expr)), locus (locus)
   {}
 
+  ConstantItem (std::string ident, Visibility vis, std::unique_ptr<Type> type,
+		std::vector<Attribute> outer_attrs, location_t locus)
+    : VisItem (std::move (vis), std::move (outer_attrs)),
+      identifier (std::move (ident)), type (std::move (type)),
+      const_expr (nullptr), locus (locus)
+  {}
+
   ConstantItem (ConstantItem const &other)
     : VisItem (other), identifier (other.identifier), locus (other.locus)
   {
