@@ -3412,7 +3412,7 @@ __m128i __lsx_vftintrneh_l_s (__m128 _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V4SI, V4SF.  */
+/* Data types in instruction templates:  V4SF, V4SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128 __lsx_vfrintrne_s (__m128 _1)
 {
@@ -3420,7 +3420,7 @@ __m128 __lsx_vfrintrne_s (__m128 _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V2DI, V2DF.  */
+/* Data types in instruction templates:  V2DF, V2DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128d __lsx_vfrintrne_d (__m128d _1)
 {
@@ -3428,7 +3428,7 @@ __m128d __lsx_vfrintrne_d (__m128d _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V4SI, V4SF.  */
+/* Data types in instruction templates:  V4SF, V4SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128 __lsx_vfrintrz_s (__m128 _1)
 {
@@ -3436,7 +3436,7 @@ __m128 __lsx_vfrintrz_s (__m128 _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V2DI, V2DF.  */
+/* Data types in instruction templates:  V2DF, V2DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128d __lsx_vfrintrz_d (__m128d _1)
 {
@@ -3444,7 +3444,7 @@ __m128d __lsx_vfrintrz_d (__m128d _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V4SI, V4SF.  */
+/* Data types in instruction templates:  V4SF, V4SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128 __lsx_vfrintrp_s (__m128 _1)
 {
@@ -3452,7 +3452,7 @@ __m128 __lsx_vfrintrp_s (__m128 _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V2DI, V2DF.  */
+/* Data types in instruction templates:  V2DF, V2DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128d __lsx_vfrintrp_d (__m128d _1)
 {
@@ -3460,7 +3460,7 @@ __m128d __lsx_vfrintrp_d (__m128d _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V4SI, V4SF.  */
+/* Data types in instruction templates:  V4SF, V4SF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128 __lsx_vfrintrm_s (__m128 _1)
 {
@@ -3468,7 +3468,7 @@ __m128 __lsx_vfrintrm_s (__m128 _1)
 }
 
 /* Assembly instruction format:	vd, vj.  */
-/* Data types in instruction templates:  V2DI, V2DF.  */
+/* Data types in instruction templates:  V2DF, V2DF.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128d __lsx_vfrintrm_d (__m128d _1)
 {
