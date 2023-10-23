@@ -729,7 +729,14 @@ sh_treg_combine::record_set_of_reg (rtx reg, rtx_insn *start_insn,
 	}
       else if (REG_P (new_entry.cstore.set_src ()))
 	{
-	  // If it's a reg-reg copy follow the copied reg.
+	  // If it's a reg-reg copy follow the copied reg, but ignore
+	  // nop copies of the reg onto itself.
+	  if (REGNO (new_entry.cstore.set_src ()) == REGNO (reg))
+	    {
+	      i = prev_nonnote_nondebug_insn_bb (i);
+	      continue;
+	    }
+
 	  new_entry.cstore_reg_reg_copies.push_back (new_entry.cstore);
 	  reg = new_entry.cstore.set_src ();
 	  i = new_entry.cstore.insn;
