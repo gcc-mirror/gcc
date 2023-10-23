@@ -3578,9 +3578,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 
       STRIP_USELESS_TYPE_CONVERSION (rhs);
 
-      /* If we are in SSA form properly remap the default definition
-         or assign to a dummy SSA name if the parameter is unused and
-	 we are not optimizing.  */
+      /* If we are in SSA form properly remap the default definition.  */
       if (gimple_in_ssa_p (cfun) && is_gimple_reg (p))
 	{
 	  if (def)
@@ -3589,11 +3587,6 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	      init_stmt = gimple_build_assign (def, rhs);
 	      SSA_NAME_IS_DEFAULT_DEF (def) = 0;
 	      set_ssa_default_def (cfun, var, NULL);
-	    }
-	  else if (!optimize)
-	    {
-	      def = make_ssa_name (var);
-	      init_stmt = gimple_build_assign (def, rhs);
 	    }
 	}
       else if (!is_empty_type (TREE_TYPE (var)))
@@ -3652,6 +3645,23 @@ initialize_inlined_parameters (copy_body_data *id, gimple *stmt,
 		  && TREE_CODE (*defp) == SSA_NAME
 		  && SSA_NAME_VAR (*defp) == var)
 		TREE_TYPE (*defp) = TREE_TYPE (var);
+	    }
+	  /* When not optimizing and the parameter is unused, assign to
+	     a dummy SSA name.  Do this after remapping the type above.  */
+	  else if (!optimize
+		   && is_gimple_reg (p)
+		   && i < gimple_call_num_args (stmt))
+	    {
+	      tree val = gimple_call_arg (stmt, i);
+	      if (val != error_mark_node)
+		{
+		  if (!useless_type_conversion_p (TREE_TYPE (p),
+						  TREE_TYPE (val)))
+		    val = force_value_to_type (TREE_TYPE (p), val);
+		  def = make_ssa_name (var);
+		  gimple *init_stmt = gimple_build_assign (def, val);
+		  insert_init_stmt (id, bb, init_stmt);
+		}
 	    }
 	}
     }
