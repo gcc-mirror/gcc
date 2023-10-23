@@ -220,7 +220,8 @@ package System.CRTL is
    function ungetc (c : int; stream : FILEs) return int;
    pragma Import (C, ungetc, "ungetc");
 
-   function unlink (filename : chars) return int;
+   function unlink (filename : chars;
+     encoding : Filename_Encoding := Unspecified) return int;
    pragma Import (C, unlink, "__gnat_unlink");
 
    function open (filename : chars; oflag : int) return int;

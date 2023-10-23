@@ -197,8 +197,7 @@ package Interfaces.C_Streams is
    function ungetc (c : int; stream : FILEs) return int
      renames System.CRTL.ungetc;
 
-   function unlink (filename : chars) return int
-     renames System.CRTL.unlink;
+   function unlink (filename : chars) return int;
 
    ---------------------
    -- Extra functions --
