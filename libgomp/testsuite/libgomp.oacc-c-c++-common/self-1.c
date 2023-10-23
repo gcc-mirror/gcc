@@ -1,3 +1,8 @@
+/* OpenACC 'self' clause.  */
+
+/* This is 'if-1.c' with 'self(!cond)' instead of 'if(cond)' on compute
+   constructs.  */
+
 #include <openacc.h>
 #include <stdlib.h>
 #include <stdbool.h>

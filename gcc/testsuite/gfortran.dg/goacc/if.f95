@@ -1,3 +1,5 @@
+! See also 'self.f95'.
+
 ! { dg-do compile } 
 
 program test
@@ -12,12 +14,14 @@ program test
   !$acc end parallel 
   !$acc parallel if (1) ! { dg-error "scalar LOGICAL expression" }
   !$acc end parallel 
-  !$acc kernels if (i) ! { dg-error "scalar LOGICAL expression" }
-  !$acc end kernels 
+
   !$acc kernels if ! { dg-error "Expected '\\(' after 'if'" }
   !$acc kernels if () ! { dg-error "Invalid character" }
+  !$acc kernels if (i) ! { dg-error "scalar LOGICAL expression" }
+  !$acc end kernels 
   !$acc kernels if (1) ! { dg-error "scalar LOGICAL expression" }
   !$acc end kernels
+
   !$acc data if ! { dg-error "Expected '\\(' after 'if'" }
   !$acc data if () ! { dg-error "Invalid character" }
   !$acc data if (i) ! { dg-error "scalar LOGICAL expression" }
@@ -36,12 +40,14 @@ program test
   !$acc end parallel
   !$acc parallel if (i.gt.1)
   !$acc end parallel
+
   !$acc kernels if (x)
   !$acc end kernels
   !$acc kernels if (.true.)
   !$acc end kernels
   !$acc kernels if (i.gt.1)
   !$acc end kernels
+
   !$acc data if (x)
   !$acc end data
   !$acc data if (.true.)

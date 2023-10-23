@@ -1,3 +1,5 @@
+! See also 'if.f95'.
+
 ! { dg-do compile } 
 
 program test
@@ -29,6 +31,8 @@ program test
   !$acc kernels self (.false.) self (.false.) { dg-error "Duplicated 'self' clause" }
   !$acc serial self (.false.) self (.false.) { dg-error "Duplicated 'self' clause" }
 
+  !$acc parallel self
+  !$acc end parallel 
   !$acc parallel self (x)
   !$acc end parallel
   !$acc parallel self (.true.)
@@ -36,6 +40,8 @@ program test
   !$acc parallel self (i.gt.1)
   !$acc end parallel
 
+  !$acc kernels self
+  !$acc end kernels 
   !$acc kernels self (x)
   !$acc end kernels
   !$acc kernels self (.true.)
@@ -43,6 +49,8 @@ program test
   !$acc kernels self (i.gt.1)
   !$acc end kernels
 
+  !$acc serial self
+  !$acc end serial
   !$acc serial self (x)
   !$acc end serial
   !$acc serial self (.true.)

@@ -1,3 +1,7 @@
+/* OpenACC 'if' clause.  */
+
+/* See also 'self-1.c'.  */
+
 #include <openacc.h>
 #include <stdlib.h>
 #include <stdbool.h>
