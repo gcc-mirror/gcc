@@ -4783,6 +4783,16 @@ Parser<ManagedTokenSource>::parse_const_item (AST::Visibility vis,
   // parse constant type (required)
   std::unique_ptr<AST::Type> type = parse_type ();
 
+  // A const with no given expression value
+  if (lexer.peek_token ()->get_id () == SEMICOLON)
+    {
+      lexer.skip_token ();
+      return std::unique_ptr<AST::ConstantItem> (
+	new AST::ConstantItem (std::move (ident), std::move (vis),
+			       std::move (type), std::move (outer_attrs),
+			       locus));
+    }
+
   if (!skip_token (EQUAL))
     {
       skip_after_semicolon ();
