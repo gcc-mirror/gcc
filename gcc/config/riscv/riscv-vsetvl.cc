@@ -1607,6 +1607,29 @@ private:
   inline bool can_use_next_avl_p (const vsetvl_info &prev,
 				  const vsetvl_info &next)
   {
+    /* Forbid the AVL/VL propagation if VL of NEXT is used
+       by non-RVV instructions.  This is because:
+
+	 bb 2:
+	   PREV: scalar move (no AVL)
+	 bb 3:
+	   NEXT: vsetvl a5(VL), a4(AVL) ...
+	   branch a5,zero
+
+       Since user vsetvl instruction is no side effect instruction
+       which should be placed in the correct and optimal location
+       of the program by the previous PASS, it is unreasonable that
+       VSETVL PASS tries to move it to another places if it used by
+       non-RVV instructions.
+
+       Note: We only forbid the cases that VL is used by the following
+       non-RVV instructions which will cause issues.  We don't forbid
+       other cases since it won't cause correctness issues and we still
+       more demand info are fused backward.  The later LCM algorithm
+       should know the optimal location of the vsetvl.  */
+    if (next.has_vl () && next.vl_used_by_non_rvv_insn_p ())
+      return false;
+
     if (!next.has_nonvlmax_reg_avl () && !next.has_vl ())
       return true;
 
