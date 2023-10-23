@@ -1,3 +1,21 @@
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* libm2cor/Makefile.am: Handle Darwin rpaths.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am: Handle Darwin rpaths.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am: Handle Darwin rpaths.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.am: Handle Darwin rpaths.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am: Handle Darwin rpaths.
+	* libm2pim/Makefile.in: Regenerate.
+
 2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/wrapclock.cc (longint_t): New declaration.

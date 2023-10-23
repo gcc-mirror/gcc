@@ -1,3 +1,10 @@
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* src/Makefile.am: Handle Darwin rpaths.
+	* src/Makefile.in: Regenerate.
+
 2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (_M_init_local_buf()): New

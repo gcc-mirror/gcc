@@ -1,3 +1,9 @@
+2023-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR objc++/111920
+	* pt.cc (tsubst_expr) <case AT_ENCODE_EXPR>: Use tsubst instead
+	of tsubst_expr.
+
 2023-10-20  Jason Merrill  <jason@redhat.com>
 
 	* call.cc (implicit_conversion_1): Rename...

@@ -1,3 +1,21 @@
+2023-10-22  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/110986
+	* gcc.target/aarch64/cond_op-1.c: New test.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gfortran.dg/coarray/caf.exp: Correctly set
+	libatomic flags.
+	* gfortran.dg/dg.exp: Likewise.
+	* lib/asan-dg.exp: Set correct -B flags.
+	* lib/atomic-dg.exp: Likewise.
+	* lib/target-libpath.exp: Handle ENABLE_DARWIN_AT_RPATH.
+
+2023-10-22  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/arch-26.c: New test.
+
 2023-10-21  Florian Weimer  <fweimer@redhat.com>
 
 	* gcc.c-torture/compile/20000403-1.c: Compile with -std=gnu89.

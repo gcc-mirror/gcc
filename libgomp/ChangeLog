@@ -1,3 +1,10 @@
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths
+
 2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH_AMDGCN_GFX1030): New.

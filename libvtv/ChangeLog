@@ -1,3 +1,8 @@
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.

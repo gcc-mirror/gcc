@@ -1,3 +1,29 @@
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-slibgcc-darwin: Generate libgcc_s
+	with an @rpath name.
+	* config.host: Handle Darwin rpaths.
+	* config/t-darwin-rpath: New file.
+
+2023-10-22  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Maxim Blinov  <maxim.blinov@embecosm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgcc2.h (__builtin_nested_func_ptr_created): Declare.
+	(__builtin_nested_func_ptr_deleted): Declare.
+	* libgcc-std.ver.in: Add the new symbols.
+	* config/aarch64/heap-trampoline.c: Implement heap-based
+	trampolines for aarch64.
+	* config/aarch64/t-heap-trampoline: Add rule to build
+	config/aarch64/heap-trampoline.c
+	* config/i386/heap-trampoline.c: Implement heap-based
+	trampolines for x86_64.
+	* config/i386/t-heap-trampoline: Add rule to build
+	config/i386/heap-trampoline.cc
+	* config.host: Handle --enable-heap-trampolines on
+	x86_64-*-linux*, aarch64-*-linux*, x86_64-*-darwin*.
+
 2023-10-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/amdgcn_veclib.h (CDNA3_PLUS): Set false for __RDNA2__.

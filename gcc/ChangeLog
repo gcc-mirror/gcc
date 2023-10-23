@@ -1,3 +1,80 @@
+2023-10-22  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/110986
+	* config/aarch64/aarch64.md (*cmov<mode>_insn_insv): New pattern.
+	(*cmov_uxtw_insn_insv): Likewise.
+
+2023-10-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* doc/invoke.texi: Document the new -nodefaultrpaths option.
+	* doc/install.texi: Document the new --with-darwin-extra-rpath
+	option.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: set ENABLE_DARWIN_AT_RPATH in site.tmp.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac: Add --with-darwin-extra-rpath option.
+	* config/darwin.h: Handle DARWIN_EXTRA_RPATH.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* config/darwin.h: Handle Darwin rpaths.
+	* config/darwin.opt: Handle Darwin rpaths.
+	* Makefile.in:  Handle Darwin rpaths.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.cc (RUNPATH_OPTION): New.
+	(do_spec_1): Provide '%P' as a spec to insert rpaths for
+	each compiler startfile path.
+
+2023-10-22  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Maxim Blinov  <maxim.blinov@embecosm.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Default to heap trampolines on macOS 11 and above.
+	* config/i386/darwin.h: Define X86_CUSTOM_FUNCTION_TEST.
+	* config/i386/i386.h: Define X86_CUSTOM_FUNCTION_TEST.
+	* config/i386/i386.cc: Use X86_CUSTOM_FUNCTION_TEST.
+
+2023-10-22  Andrew Burgess  <andrew.burgess@embecosm.com>
+	    Maxim Blinov  <maxim.blinov@embecosm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* builtins.def (BUILT_IN_NESTED_PTR_CREATED): Define.
+	(BUILT_IN_NESTED_PTR_DELETED): Ditto.
+	* common.opt (ftrampoline-impl): Add option to control
+	generation of trampoline instantiation (heap or stack).
+	* coretypes.h: Define enum trampoline_impl.
+	* tree-nested.cc (convert_tramp_reference_op): Don't bother calling
+	__builtin_adjust_trampoline for heap trampolines.
+	(finalize_nesting_tree_1): Emit calls to
+	__builtin_nested_...{created,deleted} if we're generating with
+	-ftrampoline-impl=heap.
+	* tree.cc (build_common_builtin_nodes): Build
+	__builtin_nested_...{created,deleted}.
+	* doc/invoke.texi (-ftrampoline-impl): Document.
+
+2023-10-22  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse):
+	Prohibit 'E' and 'H' combinations.
+
+2023-10-22  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Change version number of the 'Zfa' extension to 1.0.
+
 2023-10-21  Pan Li  <pan2.li@intel.com>
 
 	PR target/111857
