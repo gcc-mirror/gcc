@@ -2,7 +2,6 @@
 
 ! This is 'if-1.f90' with 'self(!cond)' instead of 'if(cond)' on compute
 ! constructs.
-! ..., which the exception of certain 'kernels' constructs.
 
 ! { dg-do run }
 ! { dg-additional-options "-cpp" }
@@ -523,7 +522,7 @@ program main
 
   a(:) = 16.0
 
-  !$acc kernels if (0 == 1) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels self (0 /= 1) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -569,7 +568,7 @@ program main
 
   a(:) = 22.0
 
-  !$acc kernels if (zero == 1) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels self (zero /= 1) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -615,7 +614,7 @@ program main
 
   a(:) = 76.0
 
-  !$acc kernels if (.FALSE.) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels self (.TRUE.) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -665,7 +664,7 @@ program main
 
   nn = 0
 
-  !$acc kernels if (nn == 1) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels self (nn /= 1) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -715,7 +714,7 @@ program main
 
   nn = 0;
 
-  !$acc kernels copyin (a(1:N)) copyout (b(1:N)) if ((nn + nn) > 0) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels copyin (a(1:N)) copyout (b(1:N)) self (.NOT. ((nn + nn) > 0)) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -735,7 +734,7 @@ program main
 
   a(:) = 91.0
 
-  !$acc kernels copyin (a(1:N)) copyout (b(1:N)) if (-2 > 0) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels copyin (a(1:N)) copyout (b(1:N)) self (.NOT. (-2 > 0)) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }
@@ -781,7 +780,7 @@ program main
 
   a(:) = 87.0
 
-  !$acc kernels if (one == 0) ! { dg-line l_compute[incr c_compute] }
+  !$acc kernels self (one /= 0) ! { dg-line l_compute[incr c_compute] }
   ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
   !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} "" { target *-*-* } .+1 }

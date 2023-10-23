@@ -10334,9 +10334,19 @@ expand_omp_target (struct omp_region *region)
 
   if ((c = omp_find_clause (clauses, OMP_CLAUSE_SELF)) != NULL_TREE)
     {
-      gcc_assert (is_gimple_omp_oacc (entry_stmt) && offloaded);
+      gcc_assert ((is_gimple_omp_oacc (entry_stmt) && offloaded)
+		  || (gimple_omp_target_kind (entry_stmt)
+		      == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS));
 
-      edge e = split_block_after_labels (new_bb);
+      edge e;
+      if (offloaded)
+	e = split_block_after_labels (new_bb);
+      else
+	{
+	  gsi = gsi_last_nondebug_bb (new_bb);
+	  gsi_prev (&gsi);
+	  e = split_block (new_bb, gsi_stmt (gsi));
+	}
       basic_block cond_bb = e->src;
       new_bb = e->dest;
       remove_edge (e);
