@@ -8600,7 +8600,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* popcount(X&Y) + popcount(X|Y) is popcount(x) + popcount(Y).  */
 (simplify
   (plus:c (POPCOUNT:s (bit_and:s @0 @1)) (POPCOUNT:s (bit_ior:cs @0 @1)))
-  (plus (POPCOUNT @0) (POPCOUNT @1)))
+  (plus (POPCOUNT:type @0) (POPCOUNT:type @1)))
 
 /* popcount(X) + popcount(Y) - popcount(X&Y) is popcount(X|Y).  */
 /* popcount(X) + popcount(Y) - popcount(X|Y) is popcount(X&Y).  */
