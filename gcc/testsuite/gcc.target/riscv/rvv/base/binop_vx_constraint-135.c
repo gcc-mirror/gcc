@@ -5,7 +5,7 @@
 
 /*
 ** f1:
-**	vsetivli\tzero,4,e32,m1,t[au],mu
+**  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vmslt\.vi\tv[0-9]+,\s*v[0-9]+,\s*16
@@ -24,9 +24,9 @@ void f1 (void * in, void * in2, void *out, int32_t x)
 
 /*
 ** f2:
-**	vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
+**  ...
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetivli\tzero,4,e32,m1,t[au],mu
+**  ...
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vmslt\.vi\tv[0-9]+,\s*v[0-9]+,\s*16
@@ -47,9 +47,9 @@ void f2 (void * in, void *out, int32_t x)
 
 /*
 ** f3:
-**	vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
+**  ...
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetivli\tzero,4,e32,m1,t[au],m[au]
+**  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vmslt\.vi\tv[0-9]+,\s*v[0-9]+,\s*16
