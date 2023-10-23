@@ -280,6 +280,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE__CONDTEMP_  */
   1, /* OMP_CLAUSE__SCANTEMP_  */
   1, /* OMP_CLAUSE_IF  */
+  1, /* OMP_CLAUSE_SELF */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
   0, /* OMP_CLAUSE_NOWAIT  */
@@ -326,7 +327,6 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
   0, /* OMP_CLAUSE_NOHOST */
-  1, /* OMP_CLAUSE_SELF */
 };
 
 const char * const omp_clause_code_name[] =
@@ -372,6 +372,7 @@ const char * const omp_clause_code_name[] =
   "_condtemp_",
   "_scantemp_",
   "if",
+  "self",
   "num_threads",
   "schedule",
   "nowait",
@@ -418,7 +419,6 @@ const char * const omp_clause_code_name[] =
   "if_present",
   "finalize",
   "nohost",
-  "self",
 };
 
 /* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric

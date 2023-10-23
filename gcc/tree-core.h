@@ -389,6 +389,9 @@ enum omp_clause_code {
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
+  /* OpenACC clause: self.  */
+  OMP_CLAUSE_SELF,
+
   /* OpenMP clause: num_threads (integer-expression).  */
   OMP_CLAUSE_NUM_THREADS,
 
@@ -527,9 +530,6 @@ enum omp_clause_code {
 
   /* OpenACC clause: nohost.  */
   OMP_CLAUSE_NOHOST,
-
-  /* OpenACC clause: self.  */
-  OMP_CLAUSE_SELF,
 };
 
 #undef DEFTREESTRUCT
