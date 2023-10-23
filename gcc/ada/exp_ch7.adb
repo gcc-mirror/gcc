@@ -2248,8 +2248,8 @@ package body Exp_Ch7 is
                --  Finalization of transient objects are treated separately in
                --  order to handle sensitive cases. These include:
 
-               --    * Aggregate expansion
-               --    * If, case, and expression with actions expansion
+               --    * Conditional expressions
+               --    * Expressions with actions
                --    * Transient scopes
 
                --  If one of those contexts has marked the transient object as
@@ -2508,22 +2508,6 @@ package body Exp_Ch7 is
                then
                   Last_Top_Level_Ctrl_Construct := Decl;
                end if;
-
-            --  Handle the case where the original context has been wrapped in
-            --  a block to avoid interference between exception handlers and
-            --  At_End handlers. Treat the block as transparent and process its
-            --  contents.
-
-            elsif Nkind (Decl) = N_Block_Statement
-              and then Is_Finalization_Wrapper (Decl)
-            then
-               if Present (Handled_Statement_Sequence (Decl)) then
-                  Process_Declarations
-                    (Statements (Handled_Statement_Sequence (Decl)),
-                     Preprocess);
-               end if;
-
-               Process_Declarations (Declarations (Decl), Preprocess);
             end if;
 
             Prev_Non_Pragma (Decl);
