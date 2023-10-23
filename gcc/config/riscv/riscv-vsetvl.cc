@@ -844,7 +844,7 @@ public:
   bb_info *get_bb () const { return m_bb; }
   uint8_t get_max_sew () const { return m_max_sew; }
   insn_info *get_read_vl_insn () const { return m_read_vl_insn; }
-  bool vl_use_by_non_rvv_insn_p () const { return m_vl_used_by_non_rvv_insn; }
+  bool vl_used_by_non_rvv_insn_p () const { return m_vl_used_by_non_rvv_insn; }
 
   bool has_imm_avl () const { return m_avl && CONST_INT_P (m_avl); }
   bool has_vlmax_avl () const { return vlmax_avl_p (m_avl); }
@@ -1270,7 +1270,7 @@ public:
     if (get_read_vl_insn ())
       fprintf (file, "%sread_vl_insn: insn %u\n", indent,
 	       get_read_vl_insn ()->uid ());
-    if (vl_use_by_non_rvv_insn_p ())
+    if (vl_used_by_non_rvv_insn_p ())
       fprintf (file, "%suse_by_non_rvv_insn=true\n", indent);
   }
 };
@@ -1552,7 +1552,7 @@ private:
     if (prev.get_ratio () != next.get_ratio ())
       return false;
 
-    if (next.has_vl () && next.vl_use_by_non_rvv_insn_p ())
+    if (next.has_vl () && next.vl_used_by_non_rvv_insn_p ())
       return false;
 
     if (vector_config_insn_p (prev.get_insn ()->rtl ()) && next.get_avl_def ()
@@ -2787,7 +2787,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		      curr_info.dump (dump_file, "        ");
 		      fprintf (dump_file, "\n");
 		    }
-		  if (!curr_info.vl_use_by_non_rvv_insn_p ()
+		  if (!curr_info.vl_used_by_non_rvv_insn_p ()
 		      && vsetvl_insn_p (curr_info.get_insn ()->rtl ()))
 		    m_delete_list.safe_push (curr_info);
 
@@ -3199,7 +3199,7 @@ pre_vsetvl::pre_global_vsetvl_info ()
 	    continue;
 	  curr_info = block_info.local_infos[0];
 	}
-      if (curr_info.valid_p () && !curr_info.vl_use_by_non_rvv_insn_p ()
+      if (curr_info.valid_p () && !curr_info.vl_used_by_non_rvv_insn_p ()
 	  && preds_has_same_avl_p (curr_info))
 	curr_info.set_change_vtype_only ();
 
