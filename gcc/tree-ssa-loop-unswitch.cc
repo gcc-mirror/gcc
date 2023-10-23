@@ -1454,10 +1454,7 @@ hoist_guard (class loop *loop, edge guard)
   cond_stmt = as_a <gcond *> (stmt);
   extract_true_false_edges_from_block (guard_bb, &te, &fe);
   /* Insert guard to PRE_HEADER.  */
-  if (!empty_block_p (pre_header))
-    gsi = gsi_last_bb (pre_header);
-  else
-    gsi = gsi_start_bb (pre_header);
+  gsi = gsi_last_bb (pre_header);
   /* Create copy of COND_STMT.  */
   new_cond_stmt = gimple_build_cond (gimple_cond_code (cond_stmt),
 				     gimple_cond_lhs (cond_stmt),
