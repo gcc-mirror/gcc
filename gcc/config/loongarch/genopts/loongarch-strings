@@ -63,3 +63,9 @@ STR_CMODEL_TS	      tiny-static
 STR_CMODEL_MEDIUM     medium
 STR_CMODEL_LARGE      large
 STR_CMODEL_EXTREME    extreme
+
+# -mexplicit-relocs
+OPTSTR_EXPLICIT_RELOCS		explicit-relocs
+STR_EXPLICIT_RELOCS_AUTO	auto
+STR_EXPLICIT_RELOCS_NONE	none
+STR_EXPLICIT_RELOCS_ALWAYS	always

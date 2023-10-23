@@ -1236,3 +1236,6 @@ struct GTY (()) machine_function
    we just need "ibar" to avoid instruction hazard here.  */
 #undef  CLEAR_INSN_CACHE
 #define CLEAR_INSN_CACHE(beg, end) __builtin_loongarch_ibar (0)
+
+#define TARGET_EXPLICIT_RELOCS \
+  (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
