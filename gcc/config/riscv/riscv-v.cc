@@ -4144,12 +4144,20 @@ emit_vec_cvt_f_x (rtx op_dest, rtx op_src, rtx mask,
 
 static void
 emit_vec_cvt_x_f_rtz (rtx op_dest, rtx op_src, rtx mask,
-		      machine_mode vec_mode)
+		      insn_type type, machine_mode vec_mode)
 {
-  rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
   insn_code icode = code_for_pred (FIX, vec_mode);
 
-  emit_vlmax_insn (icode, UNARY_OP_TAMU, cvt_x_ops);
+  if (type & USE_VUNDEF_MERGE_P)
+    {
+      rtx cvt_x_ops[] = {op_dest, mask, op_src};
+      emit_vlmax_insn (icode, type, cvt_x_ops);
+    }
+  else
+    {
+      rtx cvt_x_ops[] = {op_dest, mask, op_dest, op_src};
+      emit_vlmax_insn (icode, type, cvt_x_ops);
+    }
 }
 
 void
@@ -4285,7 +4293,7 @@ expand_vec_trunc (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
   /* Step-3: Convert to integer on mask, rounding to zero (aka truncate).  */
   rtx tmp = gen_reg_rtx (vec_int_mode);
-  emit_vec_cvt_x_f_rtz (tmp, op_1, mask, vec_fp_mode);
+  emit_vec_cvt_x_f_rtz (tmp, op_1, mask, UNARY_OP_TAMA, vec_fp_mode);
 
   /* Step-4: Convert to floating-point on mask for the rint result.  */
   emit_vec_cvt_f_x (op_0, tmp, mask, UNARY_OP_TAMU_FRM_DYN, vec_fp_mode);
