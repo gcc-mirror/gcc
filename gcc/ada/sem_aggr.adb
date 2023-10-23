@@ -3903,7 +3903,7 @@ package body Sem_Aggr is
                   Prefix_Type : constant Entity_Id :=
                     Get_Component_Type (Prefix (Selector), Enclosing_Type);
                begin
-                  if not Present (Prefix_Type) then
+                  if No (Prefix_Type) then
                      pragma Assert (Serious_Errors_Detected > 0);
                      return Empty;
                   end if;
