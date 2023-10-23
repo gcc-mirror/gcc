@@ -4200,6 +4200,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V8QImode:
     case E_V4HImode:
+    case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
       if (TARGET_SSE4_1)
 	{
@@ -4209,6 +4211,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V4QImode:
     case E_V2HImode:
+    case E_V2HFmode:
+    case E_V2BFmode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_mmx_pblendvb_v4qi;

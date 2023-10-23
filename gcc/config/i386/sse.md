@@ -4644,29 +4644,14 @@
   DONE;
 })
 
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VHF_AVX512VL 0 "register_operand")
-	(if_then_else:VHF_AVX512VL
+(define_expand "vcond<VI2HFBF_AVX512VL:mode><VHF_AVX512VL:mode>"
+  [(set (match_operand:VI2HFBF_AVX512VL 0 "register_operand")
+	(if_then_else:VI2HFBF_AVX512VL
 	  (match_operator 3 ""
 	    [(match_operand:VHF_AVX512VL 4 "vector_operand")
 	     (match_operand:VHF_AVX512VL 5 "vector_operand")])
-	  (match_operand:VHF_AVX512VL 1 "general_operand")
-	  (match_operand:VHF_AVX512VL 2 "general_operand")))]
-  "TARGET_AVX512FP16"
-{
-  bool ok = ix86_expand_fp_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<sseintvecmodelower><mode>"
-  [(set (match_operand:<sseintvecmode> 0 "register_operand")
-	(if_then_else:<sseintvecmode>
-	  (match_operator 3 ""
-	    [(match_operand:VHF_AVX512VL 4 "vector_operand")
-	     (match_operand:VHF_AVX512VL 5 "vector_operand")])
-	  (match_operand:<sseintvecmode> 1 "general_operand")
-	  (match_operand:<sseintvecmode> 2 "general_operand")))]
+	  (match_operand:VI2HFBF_AVX512VL 1 "general_operand")
+	  (match_operand:VI2HFBF_AVX512VL 2 "general_operand")))]
   "TARGET_AVX512FP16"
 {
   bool ok = ix86_expand_fp_vcond (operands);
