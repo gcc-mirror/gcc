@@ -1082,10 +1082,11 @@ struct GTY(()) tree_base {
 
       unsigned spare1 : 8;
 
-      /* This field is only used with TREE_TYPE nodes; the only reason it is
+      /* For _TYPE nodes, this is TYPE_ADDR_SPACE; the reason it is
 	 present in tree_base instead of tree_type is to save space.  The size
 	 of the field must be large enough to hold addr_space_t values.
-	 For CONSTRUCTOR nodes this holds the clobber_kind enum.  */
+	 For CONSTRUCTOR nodes this holds the clobber_kind enum.
+	 The C++ front-end uses this in IDENTIFIER_NODE and NAMESPACE_DECL.  */
       unsigned address_space : 8;
     } bits;
 
