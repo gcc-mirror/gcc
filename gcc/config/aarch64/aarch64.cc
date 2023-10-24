@@ -15541,6 +15541,28 @@ aarch64_memory_move_cost (machine_mode mode, reg_class_t rclass_i, bool in)
 	  : aarch64_tune_params.memmov_cost.store_int);
 }
 
+/* Implement TARGET_INSN_COST.  We have the opportunity to do something
+   much more productive here, such as using insn attributes to cost things.
+   But we don't, not yet.
+
+   The main point of this current definition is to make calling insn_cost
+   on one instruction equivalent to calling seq_cost on a sequence that
+   contains only that instruction.  The default definition would instead
+   only look at SET_SRCs, ignoring SET_DESTs.
+
+   This ensures that, for example, storing a 128-bit zero vector is more
+   expensive than storing a 128-bit vector register.  A move of zero
+   into a 128-bit vector register followed by multiple stores of that
+   register is then cheaper than multiple stores of zero (which would
+   use STP of XZR).  This in turn allows STP Qs to be formed.  */
+static int
+aarch64_insn_cost (rtx_insn *insn, bool speed)
+{
+  if (rtx set = single_set (insn))
+    return set_rtx_cost (set, speed);
+  return pattern_cost (PATTERN (insn), speed);
+}
+
 /* Implement TARGET_INIT_BUILTINS.  */
 static void
 aarch64_init_builtins ()
@@ -28398,6 +28420,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS aarch64_rtx_costs_wrapper
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST aarch64_insn_cost
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P aarch64_scalar_mode_supported_p
