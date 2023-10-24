@@ -101,7 +101,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Records are not nested, but there is a record hierarchy.  Tag
    numbers reflect this hierarchy.  Tags are unique across note and
    data files.  Some record types have a varying amount of data.  The
-   LENGTH is the number of 4bytes that follow and is usually used to
+   LENGTH is the number of bytes that follow and is usually used to
    determine how much data.  The tag value is split into 4 8-bit
    fields, one for each of four possible levels.  The most significant
    is allocated first.  Unused levels are zero.  Active levels are
