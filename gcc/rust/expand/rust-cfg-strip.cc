@@ -2293,12 +2293,15 @@ CfgStrip::visit (AST::ConstantItem &const_item)
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
    * stripped. */
-  auto &expr = const_item.get_expr ();
-  expr->accept_vis (*this);
-  if (expr->is_marked_for_strip ())
-    rust_error_at (expr->get_locus (),
-		   "cannot strip expression in this position - outer "
-		   "attributes not allowed");
+  if (const_item.has_expr ())
+    {
+      auto &expr = const_item.get_expr ();
+      expr->accept_vis (*this);
+      if (expr->is_marked_for_strip ())
+	rust_error_at (expr->get_locus (),
+		       "cannot strip expression in this position - outer "
+		       "attributes not allowed");
+    }
 }
 void
 CfgStrip::visit (AST::StaticItem &static_item)
