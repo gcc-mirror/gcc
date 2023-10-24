@@ -2367,3 +2367,16 @@
     DONE;
   }
 )
+
+;; Implement rawmemchr[qi|si|hi].
+(define_expand "rawmemchr<ANYI:mode>"
+  [(match_operand      0 "register_operand")
+   (match_operand      1 "memory_operand")
+   (match_operand:ANYI 2 "const_int_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_rawmemchr(<MODE>mode, operands[0], operands[1],
+				   operands[2]);
+    DONE;
+  }
+)

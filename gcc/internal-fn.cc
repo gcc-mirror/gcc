@@ -3208,7 +3208,7 @@ expand_VEC_CONVERT (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
-/* Expand IFN_RAWMEMCHAR internal function.  */
+/* Expand IFN_RAWMEMCHR internal function.  */
 
 void
 expand_RAWMEMCHR (internal_fn, gcall *stmt)
