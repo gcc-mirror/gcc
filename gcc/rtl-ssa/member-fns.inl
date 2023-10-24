@@ -215,7 +215,7 @@ set_info::last_nondebug_insn_use () const
 inline use_info *
 set_info::first_any_insn_use () const
 {
-  if (m_first_use->is_in_any_insn ())
+  if (m_first_use && m_first_use->is_in_any_insn ())
     return m_first_use;
   return nullptr;
 }
