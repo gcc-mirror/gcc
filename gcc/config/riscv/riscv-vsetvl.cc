@@ -2687,13 +2687,16 @@ pre_vsetvl::compute_lcm_local_properties ()
 	      if (!info.has_nonvlmax_reg_avl () && !info.has_vl ())
 		continue;
 
-	      unsigned int regno;
-	      sbitmap_iterator sbi;
-	      EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0, regno,
-					sbi)
+	      if (info.has_nonvlmax_reg_avl ())
 		{
-		  if (regno == REGNO (info.get_avl ()))
-		    bitmap_clear_bit (m_transp[bb->index ()], i);
+		  unsigned int regno;
+		  sbitmap_iterator sbi;
+		  EXECUTE_IF_SET_IN_BITMAP (m_reg_def_loc[bb->index ()], 0,
+					    regno, sbi)
+		    {
+		      if (regno == REGNO (info.get_avl ()))
+			bitmap_clear_bit (m_transp[bb->index ()], i);
+		    }
 		}
 
 	      for (const insn_info *insn : bb->real_nondebug_insns ())
