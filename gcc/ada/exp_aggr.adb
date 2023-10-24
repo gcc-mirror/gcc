@@ -4294,15 +4294,9 @@ package body Exp_Aggr is
          return;
       end if;
 
-      --  Otherwise, if a transient scope is required, create it now. If we
-      --  are within an initialization procedure do not create such, because
-      --  the target of the assignment must not be declared within a local
-      --  block, and because cleanup will take place on return from the
-      --  initialization procedure.
+      --  Otherwise, if a transient scope is required, create it now
 
-      --  Should the condition be more restrictive ???
-
-      if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
+      if Requires_Transient_Scope (Typ) then
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 

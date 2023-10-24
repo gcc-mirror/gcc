@@ -13233,15 +13233,6 @@ package body Exp_Util is
             then
                return True;
             end if;
-
-        --  Handle a rare case caused by a controlled transient object created
-        --  as part of a record init proc. The variable is wrapped in a block,
-        --  but the block is not associated with a transient scope.
-
-         elsif Nkind (Decl) = N_Block_Statement and then Inside_Init_Proc then
-            if Requires_Cleanup_Actions (Decl, Lib_Level) then
-               return True;
-            end if;
          end if;
 
          Next (Decl);

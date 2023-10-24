@@ -2479,35 +2479,6 @@ package body Exp_Ch7 is
               and then Present (Library_Unit (Decl))
             then
                Process_Package_Body (Proper_Body (Unit (Library_Unit (Decl))));
-
-            --  Handle a rare case caused by a controlled transient object
-            --  created as part of a record init proc. The variable is wrapped
-            --  in a block, but the block is not associated with a transient
-            --  scope.
-
-            elsif Nkind (Decl) = N_Block_Statement
-              and then Inside_Init_Proc
-            then
-               Old_Counter_Val := Counter_Val;
-
-               if Present (Handled_Statement_Sequence (Decl)) then
-                  Process_Declarations
-                    (Statements (Handled_Statement_Sequence (Decl)),
-                     Preprocess);
-               end if;
-
-               Process_Declarations (Declarations (Decl), Preprocess);
-
-               --  Either the declaration or statement list of the block has a
-               --  controlled object.
-
-               if Preprocess
-                 and then Top_Level
-                 and then No (Last_Top_Level_Ctrl_Construct)
-                 and then Counter_Val > Old_Counter_Val
-               then
-                  Last_Top_Level_Ctrl_Construct := Decl;
-               end if;
             end if;
 
             Prev_Non_Pragma (Decl);
