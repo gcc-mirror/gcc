@@ -124,7 +124,7 @@ public:
   void visit (AST::EnumItemDiscriminant &item) override {}
   void visit (AST::Enum &enum_item) override {}
   void visit (AST::Union &union_item) override {}
-  void visit (AST::ConstantItem &const_item) override {}
+  void visit (AST::ConstantItem &const_item) override;
   void visit (AST::StaticItem &static_item) override {}
   void visit (AST::TraitItemFunc &item) override {}
   void visit (AST::TraitItemMethod &item) override {}
@@ -132,7 +132,7 @@ public:
   void visit (AST::TraitItemType &item) override {}
   void visit (AST::Trait &trait) override {}
   void visit (AST::InherentImpl &impl) override;
-  void visit (AST::TraitImpl &impl) override {}
+  void visit (AST::TraitImpl &impl) override;
   void visit (AST::ExternalTypeItem &item) override {}
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
@@ -187,6 +187,20 @@ public:
   void visit (AST::SliceType &type) override {}
   void visit (AST::InferredType &type) override {}
   void visit (AST::BareFunctionType &type) override {}
+
+private:
+  enum class Context
+  {
+    INHERENT_IMPL,
+    TRAIT_IMPL,
+    CRATE,
+  };
+
+  std::vector<Context> context;
+
+  void push_context (Context ctx) { context.push_back (ctx); }
+
+  void pop_context () { context.pop_back (); }
 };
 
 } // namespace Rust
