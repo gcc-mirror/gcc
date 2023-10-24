@@ -75,6 +75,21 @@ VAR
 
 
 (*
+   InitDependencyList - initialize all fields of DependencyList.
+*)
+
+PROCEDURE InitDependencyList (VAR depList: DependencyList;
+                              proc: PROC; state: DependencyState) ;
+BEGIN
+   depList.proc := proc ;
+   depList.forced := FALSE ;
+   depList.forc := FALSE ;
+   depList.appl := FALSE ;
+   depList.state := state
+END InitDependencyList ;
+
+
+(*
    CreateModule - creates a new module entry and returns the
                   ModuleChain.
 *)
@@ -90,11 +105,7 @@ BEGIN
    mptr^.libname := libname ;
    mptr^.init := init ;
    mptr^.fini := fini ;
-   mptr^.dependency.proc := dependencies ;
-   mptr^.dependency.forced := FALSE ;
-   mptr^.dependency.forc := FALSE ;
-   mptr^.dependency.appl := FALSE ;
-   mptr^.dependency.state := unregistered ;
+   InitDependencyList (mptr^.dependency, dependencies, unregistered) ;
    mptr^.prev := NIL ;
    mptr^.next := NIL ;
    IF HexTrace
