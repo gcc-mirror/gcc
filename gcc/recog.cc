@@ -3080,13 +3080,6 @@ constrain_operands (int strict, alternative_mask alternatives)
 
 	  earlyclobber[opno] = 0;
 
-	  /* A unary operator may be accepted by the predicate, but it
-	     is irrelevant for matching constraints.  */
-	  /* For special_memory_operand, there could be a memory operand inside,
-	     and it would cause a mismatch for constraint_satisfied_p.  */
-	  if (UNARY_P (op) && op == extract_mem_from_operand (op))
-	    op = XEXP (op, 0);
-
 	  if (GET_CODE (op) == SUBREG)
 	    {
 	      if (REG_P (SUBREG_REG (op))
@@ -3152,14 +3145,6 @@ constrain_operands (int strict, alternative_mask alternatives)
 		    {
 		      rtx op1 = recog_data.operand[match];
 		      rtx op2 = recog_data.operand[opno];
-
-		      /* A unary operator may be accepted by the predicate,
-			 but it is irrelevant for matching constraints.  */
-		      if (UNARY_P (op1))
-			op1 = XEXP (op1, 0);
-		      if (UNARY_P (op2))
-			op2 = XEXP (op2, 0);
-
 		      val = operands_match_p (op1, op2);
 		    }
 
