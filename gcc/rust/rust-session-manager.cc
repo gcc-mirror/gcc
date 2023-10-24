@@ -47,6 +47,7 @@
 #include "rust-unicode.h"
 #include "rust-attribute-values.h"
 #include "rust-borrow-checker.h"
+#include "rust-ast-validation.h"
 
 #include "input.h"
 #include "selftest.h"
@@ -600,7 +601,15 @@ Session::compile_crate (const char *filename)
       rust_debug ("END POST-EXPANSION AST DUMP");
     }
 
+  // AST Validation pass
+  if (last_step == CompileOptions::CompileStep::ASTValidation)
+    return;
+
+  ASTValidation ().check (parsed_crate);
+
   // feature gating
+  if (last_step == CompileOptions::CompileStep::FeatureGating)
+    return;
   FeatureGate ().check (parsed_crate);
 
   if (last_step == CompileOptions::CompileStep::NameResolution)
