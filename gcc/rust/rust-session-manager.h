@@ -249,6 +249,8 @@ struct CompileOptions
     Ast,
     AttributeCheck,
     Expansion,
+    ASTValidation,
+    FeatureGating,
     NameResolution,
     Lowering,
     TypeCheck,
