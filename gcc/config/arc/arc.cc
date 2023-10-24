@@ -241,7 +241,6 @@ static int branch_dest (rtx);
 static void  arc_output_pic_addr_const (FILE *,  rtx, int);
 static bool arc_function_ok_for_sibcall (tree, tree);
 static rtx arc_function_value (const_tree, const_tree, bool);
-const char * output_shift (rtx *);
 static void arc_reorg (void);
 static bool arc_in_small_data_p (const_tree);
 
@@ -4151,143 +4150,287 @@ arc_pre_reload_split (void)
 	  && !(cfun->curr_properties & PROP_rtl_split_insns));
 }
 
-/* Output the assembler code for doing a shift.
-   We go to a bit of trouble to generate efficient code as the ARC601 only has
-   single bit shifts.  This is taken from the h8300 port.  We only have one
-   mode of shifting and can't access individual bytes like the h8300 can, so
-   this is greatly simplified (at the expense of not generating hyper-
-   efficient code).
-
-   This function is not used if the variable shift insns are present.  */
-
-/* FIXME:  This probably can be done using a define_split in arc.md.
-   Alternately, generate rtx rather than output instructions.  */
+/* Output the assembler code for a zero-overhead loop doing a shift
+   or rotate.  We know OPERANDS[0] == OPERANDS[1], and the bit count
+   is OPERANDS[2].  */
 
 const char *
-output_shift (rtx *operands)
+output_shift_loop (enum rtx_code code, rtx *operands)
 {
-  /*  static int loopend_lab;*/
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
-  const char *shift_one;
-
-  gcc_assert (mode == SImode);
-
-  switch (code)
-    {
-    case ASHIFT:   shift_one = "add %0,%1,%1"; break;
-    case ASHIFTRT: shift_one = "asr %0,%1"; break;
-    case LSHIFTRT: shift_one = "lsr %0,%1"; break;
-    default:       gcc_unreachable ();
-    }
+  bool twice_p = false;
+  gcc_assert (GET_MODE (operands[0]) == SImode);
 
   if (GET_CODE (operands[2]) != CONST_INT)
     {
-      output_asm_insn ("and.f lp_count,%2, 0x1f", operands);
-      goto shiftloop;
+      output_asm_insn ("and.f\tlp_count,%2,0x1f", operands);
+      output_asm_insn ("lpnz\t2f", operands);
     }
   else
     {
-      int n;
-
-      n = INTVAL (operands[2]);
-
-      /* Only consider the lower 5 bits of the shift count.  */
-      n = n & 0x1f;
-
-      /* First see if we can do them inline.  */
-      /* ??? We could get better scheduling & shorter code (using short insns)
-	 by using splitters.  Alas, that'd be even more verbose.  */
-      if (code == ASHIFT && n <= 9 && n > 2
-	  && dest_reg_operand (operands[4], SImode))
+      int n = INTVAL (operands[2]) & 31;
+      if (!n)
 	{
-	  output_asm_insn ("mov %4,0\n\tadd3 %0,%4,%1", operands);
-	  for (n -=3 ; n >= 3; n -= 3)
-	    output_asm_insn ("add3 %0,%4,%0", operands);
-	  if (n == 2)
-	    output_asm_insn ("add2 %0,%4,%0", operands);
-	  else if (n)
-	    output_asm_insn ("add %0,%0,%0", operands);
+	  output_asm_insn ("mov\t%0,%1",operands);
+	  return "";
 	}
-      else if (n <= 4)
-	{
-	  while (--n >= 0)
-	    {
-	      output_asm_insn (shift_one, operands);
-	      operands[1] = operands[0];
-	    }
-	}
-      /* See if we can use a rotate/and.  */
-      else if (n == BITS_PER_WORD - 1)
-	{
-	  switch (code)
-	    {
-	    case ASHIFT :
-	      output_asm_insn ("and %0,%1,1\n\tror %0,%0", operands);
-	      break;
-	    case ASHIFTRT :
-	      /* The ARC doesn't have a rol insn.  Use something else.  */
-	      output_asm_insn ("add.f 0,%1,%1\n\tsbc %0,%0,%0", operands);
-	      break;
-	    case LSHIFTRT :
-	      /* The ARC doesn't have a rol insn.  Use something else.  */
-	      output_asm_insn ("add.f 0,%1,%1\n\trlc %0,0", operands);
-	      break;
-	    default:
-	      break;
-	    }
-	}
-      else if (n == BITS_PER_WORD - 2 && dest_reg_operand (operands[4], SImode))
-	{
-	  switch (code)
-	    {
-	    case ASHIFT :
-	      output_asm_insn ("and %0,%1,3\n\tror %0,%0\n\tror %0,%0", operands);
-	      break;
-	    case ASHIFTRT :
-#if 1 /* Need some scheduling comparisons.  */
-	      output_asm_insn ("add.f %4,%1,%1\n\tsbc %0,%0,%0\n\t"
-			       "add.f 0,%4,%4\n\trlc %0,%0", operands);
-#else
-	      output_asm_insn ("add.f %4,%1,%1\n\tbxor %0,%4,31\n\t"
-			       "sbc.f %0,%0,%4\n\trlc %0,%0", operands);
-#endif
-	      break;
-	    case LSHIFTRT :
-#if 1
-	      output_asm_insn ("add.f %4,%1,%1\n\trlc %0,0\n\t"
-			       "add.f 0,%4,%4\n\trlc %0,%0", operands);
-#else
-	      output_asm_insn ("add.f %0,%1,%1\n\trlc.f %0,0\n\t"
-			       "and %0,%0,1\n\trlc %0,%0", operands);
-#endif
-	      break;
-	    default:
-	      break;
-	    }
-	}
-      else if (n == BITS_PER_WORD - 3 && code == ASHIFT)
-	output_asm_insn ("and %0,%1,7\n\tror %0,%0\n\tror %0,%0\n\tror %0,%0",
-			 operands);
-      /* Must loop.  */
-      else
-	{
-	  operands[2] = GEN_INT (n);
-	  output_asm_insn ("mov.f lp_count, %2", operands);
 
-	shiftloop:
+      if ((n & 1) == 0 && code != ROTATE)
+	{
+	  twice_p = true;
+	  n >>= 1;
+	}
+      operands[2] = GEN_INT (n);
+      output_asm_insn ("mov\tlp_count,%2", operands);
+      output_asm_insn ("lp\t2f", operands);
+    }
+
+  switch (code)
+    {
+    case ASHIFT:
+      output_asm_insn ("add\t%0,%1,%1", operands);
+      if (twice_p)
+	output_asm_insn ("add\t%0,%1,%1", operands);
+      break;
+    case ASHIFTRT:
+      output_asm_insn ("asr\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("asr\t%0,%1", operands);
+      break;
+    case LSHIFTRT:
+      output_asm_insn ("lsr\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("lsr\t%0,%1", operands);
+      break;
+    case ROTATERT:
+      output_asm_insn ("ror\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("ror\t%0,%1", operands);
+      break;
+    case ROTATE:
+      output_asm_insn ("add.f\t%0,%1,%1", operands);
+      output_asm_insn ("adc\t%0,%0,0", operands);
+      twice_p = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!twice_p)
+    output_asm_insn ("nop", operands);
+  fprintf (asm_out_file, "2:\t%s end single insn loop\n", ASM_COMMENT_START);
+  return "";
+}
+
+
+/* Split SImode left shift instruction.  */
+void
+arc_split_ashl (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 9)
+	{
+	  if (n == 0)
+	    emit_move_insn (operands[0], operands[1]);
+	  else if (n <= 2)
 	    {
-	      output_asm_insn ("lpnz\t2f", operands);
-	      output_asm_insn (shift_one, operands);
-	      output_asm_insn ("nop", operands);
-	      fprintf (asm_out_file, "2:\t%s end single insn loop\n",
-		       ASM_COMMENT_START);
+	      emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[1]));
+	      if (n == 2)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
 	    }
+	  else
+	    {
+	      rtx zero = gen_reg_rtx (SImode);
+	      emit_move_insn (zero, const0_rtx);
+	      emit_insn (gen_add_shift (operands[0], operands[1],
+					GEN_INT (3), zero));
+	      for (n -= 3; n >= 3; n -= 3)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  GEN_INT (3), zero));
+	      if (n == 2)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  const2_rtx, zero));
+	      else if (n)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  return;
+	}
+      else if (n >= 29)
+	{
+	  if (n < 31)
+	    {
+	      if (n == 29)
+		{
+		  emit_insn (gen_andsi3_i (operands[0], operands[1],
+					   GEN_INT (7)));
+		  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+		}
+	      else
+		emit_insn (gen_andsi3_i (operands[0], operands[1],
+					 GEN_INT (3)));
+	      emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_insn (gen_andsi3_i (operands[0], operands[1], const1_rtx));
+	  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
 	}
     }
 
-  return "";
+  emit_insn (gen_ashlsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode arithmetic right shift instruction.  */
+void
+arc_split_ashr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n == 30)
+	{
+	  rtx tmp = gen_reg_rtx (SImode);
+	  emit_insn (gen_add_f (tmp, operands[1], operands[1]));
+	  emit_insn (gen_sbc (operands[0], operands[0], operands[0]));
+	  emit_insn (gen_addsi_compare_2 (tmp, tmp));
+	  emit_insn (gen_adc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 31)
+	{
+	  emit_insn (gen_addsi_compare_2 (operands[1], operands[1]));
+	  emit_insn (gen_sbc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+    }
+
+  emit_insn (gen_ashrsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode logical right shift instruction.  */
+void
+arc_split_lshr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n == 30)
+	{
+	  rtx tmp = gen_reg_rtx (SImode);
+	  emit_insn (gen_add_f (tmp, operands[1], operands[1]));
+	  emit_insn (gen_scc_ltu_cc_c (operands[0]));
+	  emit_insn (gen_addsi_compare_2 (tmp, tmp));
+	  emit_insn (gen_adc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 31)
+	{
+	  emit_insn (gen_addsi_compare_2 (operands[1], operands[1]));
+	  emit_insn (gen_scc_ltu_cc_c (operands[0]));
+	  return;
+	}
+    }
+
+  emit_insn (gen_lshrsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode rotate left instruction.  */
+void
+arc_split_rotl (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 2)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[1]));
+	      if (n == 2)
+		emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 28)
+	{
+	  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[1]));
+	  while (++n < 32)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 16 || n == 12 || n == 14)
+	{
+	  emit_insn (gen_rotrsi3_loop (operands[0], operands[1],
+				       GEN_INT (32 - n)));
+	  return;
+	}
+    }
+
+  emit_insn (gen_rotlsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode rotate right instruction.  */
+void
+arc_split_rotr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 30)
+	{
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[1]));
+	  if (n == 31)
+	    emit_insn (gen_rotlsi3_cnt1 (operands[1], operands[1]));
+	  return;
+	}
+      else if (n >= 21 || n == 17 || n == 19)
+	{
+	  emit_insn (gen_rotrsi3_loop (operands[0], operands[1],
+				       GEN_INT (32 - n)));
+	  return;
+	}
+    }
+
+  emit_insn (gen_rotrsi3_loop (operands[0], operands[1], operands[2]));
 }
 
 /* Nested function support.  */
@@ -4459,9 +4602,9 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
       else
-        output_operand_lossage ("invalid operands to %%c code");
+	output_operand_lossage ("invalid operands to %%c code");
 
       return;
 
@@ -5433,8 +5576,8 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
       if ((GET_CODE (XEXP (x, 0)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
-          || (GET_CODE (XEXP (x, 0)) == MULT
-              && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
+	  || (GET_CODE (XEXP (x, 0)) == MULT
+	      && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
 	{
 	  if (CONSTANT_P (XEXP (x, 1)) && !speed)
 	    *total += COSTS_N_INSNS (4);
@@ -5445,8 +5588,8 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MINUS:
       if ((GET_CODE (XEXP (x, 1)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 1), 1), VOIDmode))
-          || (GET_CODE (XEXP (x, 1)) == MULT
-              && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
+	  || (GET_CODE (XEXP (x, 1)) == MULT
+	      && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
 	{
 	  if (CONSTANT_P (XEXP (x, 0)) && !speed)
 	    *total += COSTS_N_INSNS (4);
@@ -7546,9 +7689,9 @@ hwloop_optimize (hwloop_info loop)
   if (REG_P (loop->iter_reg) && (REGNO (loop->iter_reg)) != LP_COUNT)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d doesn't use lp_count as loop"
+	fprintf (dump_file, ";; loop %d doesn't use lp_count as loop"
 		 " iterator\n",
-                 loop->loop_no);
+		 loop->loop_no);
       /* This loop doesn't use the lp_count, check though if we can
 	 fix it.  */
       if (TEST_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT)
@@ -7721,7 +7864,7 @@ hwloop_optimize (hwloop_info loop)
 		 /* Make sure we don't split a call and its corresponding
 		    CALL_ARG_LOCATION note.  */
 		 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
-        entry_after = NEXT_INSN (entry_after);
+	entry_after = NEXT_INSN (entry_after);
 #endif
       entry_after = next_nonnote_insn_bb (entry_after);
 

@@ -542,15 +542,6 @@
   (match_code "ashiftrt, lshiftrt, ashift")
 )
 
-;; Return true if OP is a right shift operator that can be implemented in
-;; four insn words or less without a barrel shifter or multiplier.
-(define_predicate "shiftr4_operator"
-  (and (match_code "ashiftrt, lshiftrt")
-       (match_test "const_int_operand (XEXP (op, 1), VOIDmode) ")
-       (match_test "UINTVAL (XEXP (op, 1)) <= 4U
-		    || INTVAL (XEXP (op, 1)) == 30
-		    || INTVAL (XEXP (op, 1)) == 31")))
-
 (define_predicate "mult_operator"
     (and (match_code "mult") (match_test "TARGET_MPY"))
 )

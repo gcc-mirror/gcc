@@ -3353,22 +3353,16 @@ archs4x, archs4xd"
 
 ;; Shift instructions.
 
-(define_expand "ashlsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(ashift:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "nonmemory_operand" "")))]
-  "")
+(define_code_iterator ANY_SHIFT_ROTATE [ashift ashiftrt lshiftrt
+					rotate rotatert])
 
-(define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "nonmemory_operand" "")))]
-  "")
+(define_code_attr insn [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr")
+			(rotate "rotl") (rotatert "rotr")])
 
-(define_expand "lshrsi3"
+(define_expand "<insn>si3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "nonmemory_operand" "")))]
+	(ANY_SHIFT_ROTATE:SI (match_operand:SI 1 "register_operand" "")
+			     (match_operand:SI 2 "nonmemory_operand" "")))]
   "")
 
 ; asl, asr, lsr patterns:
@@ -3437,10 +3431,10 @@ archs4x, archs4xd"
   [(set_attr "type" "shift")
    (set_attr "length" "8")])
 
-(define_insn_and_split "*ashlsi3_nobs"
+(define_insn_and_split "*<insn>si3_nobs"
   [(set (match_operand:SI 0 "dest_reg_operand")
-	(ashift:SI (match_operand:SI 1 "register_operand")
-		   (match_operand:SI 2 "nonmemory_operand")))]
+	(ANY_SHIFT_ROTATE:SI (match_operand:SI 1 "register_operand")
+			     (match_operand:SI 2 "nonmemory_operand")))]
   "!TARGET_BARREL_SHIFTER
    && operands[2] != const1_rtx
    && arc_pre_reload_split ()"
@@ -3448,173 +3442,28 @@ archs4x, archs4xd"
   "&& 1"
   [(const_int 0)]
 {
-  if (CONST_INT_P (operands[2]))
-    {
-      int n = INTVAL (operands[2]) & 0x1f;
-      if (n <= 9)
-	{
-	  if (n == 0)
-	    emit_move_insn (operands[0], operands[1]);
-	  else if (n <= 2)
-	    {
-	      emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[1]));
-	      if (n == 2)
-		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
-	    }
-	  else
-	    {
-	      rtx zero = gen_reg_rtx (SImode);
-	      emit_move_insn (zero, const0_rtx);
-	      emit_insn (gen_add_shift (operands[0], operands[1],
-					GEN_INT (3), zero));
-	      for (n -= 3; n >= 3; n -= 3)
-		emit_insn (gen_add_shift (operands[0], operands[0],
-					  GEN_INT (3), zero));
-	      if (n == 2)
-		emit_insn (gen_add_shift (operands[0], operands[0],
-					  const2_rtx, zero));
-	      else if (n)
-		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
-	    }
-	  DONE;
-	}
-      else if (n >= 29)
-	{
-	  if (n < 31)
-	    {
-	      if (n == 29)
-		{
-		  emit_insn (gen_andsi3_i (operands[0], operands[1],
-					   GEN_INT (7)));
-		  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
-		}
-	      else
-		emit_insn (gen_andsi3_i (operands[0], operands[1],
-					 GEN_INT (3)));
-	      emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
-	    }
-	  else
-	    emit_insn (gen_andsi3_i (operands[0], operands[1], const1_rtx));
-	  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
-	  DONE;
-	}
-    }
-
-  rtx shift = gen_rtx_fmt_ee (ASHIFT, SImode, operands[1], operands[2]);
-  emit_insn (gen_shift_si3_loop (operands[0], operands[1],
-				 operands[2], shift));
+  arc_split_<insn> (operands);
   DONE;
 })
 
-(define_insn_and_split "*ashlri3_nobs"
-  [(set (match_operand:SI 0 "dest_reg_operand")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "nonmemory_operand")))]
-  "!TARGET_BARREL_SHIFTER
-   && operands[2] != const1_rtx
-   && arc_pre_reload_split ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  if (CONST_INT_P (operands[2]))
-    {
-      int n = INTVAL (operands[2]) & 0x1f;
-      if (n <= 4)
-	{
-	  if (n != 0)
-	    {
-	      emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[1]));
-	      while (--n > 0)
-		emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
-	    }
-	  else 
-	    emit_move_insn (operands[0], operands[1]);
-	  DONE;
-	}
-    }
-
-  rtx pat;
-  rtx shift = gen_rtx_fmt_ee (ASHIFTRT, SImode, operands[1], operands[2]);
-  if (shiftr4_operator (shift, SImode))
-    pat = gen_shift_si3 (operands[0], operands[1], operands[2], shift);
-  else
-    pat = gen_shift_si3_loop (operands[0], operands[1], operands[2], shift);
-  emit_insn (pat);
-  DONE;
-})
-
-(define_insn_and_split "*lshrsi3_nobs"
-  [(set (match_operand:SI 0 "dest_reg_operand")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand")
-		     (match_operand:SI 2 "nonmemory_operand")))]
-  "!TARGET_BARREL_SHIFTER
-   && operands[2] != const1_rtx
-   && arc_pre_reload_split ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  if (CONST_INT_P (operands[2]))
-    {
-      int n = INTVAL (operands[2]) & 0x1f;
-      if (n <= 4)
-	{
-	  if (n != 0)
-	    {
-	      emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[1]));
-	      while (--n > 0)
-		emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
-	    }
-	  else 
-	    emit_move_insn (operands[0], operands[1]);
-	  DONE;
-	}
-    }
-
-  rtx pat;
-  rtx shift = gen_rtx_fmt_ee (LSHIFTRT, SImode, operands[1], operands[2]);
-  if (shiftr4_operator (shift, SImode))
-    pat = gen_shift_si3 (operands[0], operands[1], operands[2], shift);
-  else
-    pat = gen_shift_si3_loop (operands[0], operands[1], operands[2], shift);
-  emit_insn (pat);
-  DONE;
-})
-
-;; shift_si3 appears after {ashr,lshr}si3_nobs
-(define_insn "shift_si3"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=r")
-	(match_operator:SI 3 "shiftr4_operator"
-			   [(match_operand:SI 1 "register_operand" "0")
-			    (match_operand:SI 2 "const_int_operand" "n")]))
-   (clobber (match_scratch:SI 4 "=&r"))
-   (clobber (reg:CC CC_REG))
-  ]
-  "!TARGET_BARREL_SHIFTER
-   && operands[2] != const1_rtx"
-  "* return output_shift (operands);"
-  [(set_attr "type" "shift")
-   (set_attr "length" "16")])
-
-;; shift_si3_loop appears after {ashl,ashr,lshr}si3_nobs
-(define_insn "shift_si3_loop"
+;; <ANY_SHIFT_ROTATE>si3_loop appears after <ANY_SHIFT_ROTATE>si3_nobs
+(define_insn "<insn>si3_loop"
   [(set (match_operand:SI 0 "dest_reg_operand" "=r,r")
-	(match_operator:SI 3 "shift_operator"
-			   [(match_operand:SI 1 "register_operand" "0,0")
-			    (match_operand:SI 2 "nonmemory_operand" "rn,Cal")]))
+	(ANY_SHIFT_ROTATE:SI 
+	  (match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:SI 2 "nonmemory_operand" "rn,Cal")))
    (clobber (reg:SI LP_COUNT))
    (clobber (reg:CC CC_REG))
   ]
   "!TARGET_BARREL_SHIFTER
    && operands[2] != const1_rtx"
-  "* return output_shift (operands);"
+  "* return output_shift_loop (<CODE>, operands);"
   [(set_attr "type" "shift")
    (set_attr "length" "16,20")])
 
 ;; Rotate instructions.
 
-(define_insn "rotrsi3"
+(define_insn "rotrsi3_insn"
   [(set (match_operand:SI 0 "dest_reg_operand"                    "=r, r,   r")
 	(rotatert:SI (match_operand:SI 1 "arc_nonmemory_operand"  " 0,rL,rCsz")
 		     (match_operand:SI 2 "nonmemory_operand"      "rL,rL,rCal")))]
@@ -3623,6 +3472,35 @@ archs4x, archs4xd"
   [(set_attr "type" "shift,shift,shift")
    (set_attr "predicable" "yes,no,no")
    (set_attr "length" "4,4,8")])
+
+(define_insn_and_split "*rotlsi3"
+  [(set (match_operand:SI 0 "dest_reg_operand")
+	(rotate:SI (match_operand:SI 1 "register_operand")
+		   (match_operand:SI 2 "nonmemory_operand")))]
+  "TARGET_BARREL_SHIFTER
+   && arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (rotatert:SI (match_dup 1) (match_dup 3)))]
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 31;
+      if (n == 0)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+      else operands[3] = GEN_INT (32 - n);
+    }
+  else
+    {
+      if (!register_operand (operands[2], SImode))
+	operands[2] = force_reg (SImode, operands[2]);
+      operands[3] = gen_reg_rtx (SImode);
+      emit_insn (gen_negsi2 (operands[3], operands[2]));
+    }
+})
 
 ;; Compare / branch instructions.
 
@@ -5994,6 +5872,20 @@ archs4x, archs4xd"
 	      (set (zero_extract:SI (match_dup 0) (match_dup 5) (match_dup 6))
 		   (zero_extract:SI (match_dup 1) (match_dup 5) (match_dup 7)))])
    (match_dup 1)])
+
+(define_insn_and_split "rotlsi3_cnt1"
+  [(set (match_operand:SI 0 "dest_reg_operand"            "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (const_int 1)))]
+  "!TARGET_BARREL_SHIFTER"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_add_f (operands[0], operands[1], operands[1]));
+  emit_insn (gen_adc (operands[0], operands[0], const0_rtx));
+  DONE;
+})
 
 (define_insn "rotrsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"              "=r")
