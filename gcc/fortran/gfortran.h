@@ -1545,6 +1545,7 @@ typedef struct gfc_omp_clauses
 {
   gfc_omp_namelist *lists[OMP_LIST_NUM];
   struct gfc_expr *if_expr;
+  struct gfc_expr *if_exprs[OMP_IF_LAST];
   struct gfc_expr *final_expr;
   struct gfc_expr *num_threads;
   struct gfc_expr *chunk_size;
@@ -1561,7 +1562,6 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *priority;
   struct gfc_expr *detach;
   struct gfc_expr *depobj;
-  struct gfc_expr *if_exprs[OMP_IF_LAST];
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   struct gfc_omp_assumptions *assume;
