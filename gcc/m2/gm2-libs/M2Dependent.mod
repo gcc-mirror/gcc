@@ -91,6 +91,9 @@ BEGIN
    mptr^.init := init ;
    mptr^.fini := fini ;
    mptr^.dependency.proc := dependencies ;
+   mptr^.dependency.forced := FALSE ;
+   mptr^.dependency.forc := FALSE ;
+   mptr^.dependency.appl := FALSE ;
    mptr^.dependency.state := unregistered ;
    mptr^.prev := NIL ;
    mptr^.next := NIL ;
