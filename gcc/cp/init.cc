@@ -3261,7 +3261,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       max_outer_nelts = wi::udiv_trunc (max_size, inner_size);
       max_outer_nelts_tree = wide_int_to_tree (sizetype, max_outer_nelts);
 
-      size = size_binop (MULT_EXPR, size, fold_convert (sizetype, nelts));
+      size = build2 (MULT_EXPR, sizetype, size, convert (sizetype, nelts));
 
       if (TREE_CODE (cst_outer_nelts) == INTEGER_CST)
 	{
@@ -3344,7 +3344,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Use a class-specific operator new.  */
       /* If a cookie is required, add some extra space.  */
       if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
-	size = size_binop (PLUS_EXPR, size, cookie_size);
+	size = build2 (PLUS_EXPR, sizetype, size, cookie_size);
       else
 	{
 	  cookie_size = NULL_TREE;
@@ -3358,8 +3358,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (cxx_dialect >= cxx11 && flag_exceptions)
 	errval = throw_bad_array_new_length ();
       if (outer_nelts_check != NULL_TREE)
-	size = fold_build3 (COND_EXPR, sizetype, outer_nelts_check,
-			    size, errval);
+	size = build3 (COND_EXPR, sizetype, outer_nelts_check, size, errval);
+      size = cp_fully_fold (size);
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
@@ -3415,6 +3415,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    outer_nelts_check = NULL_TREE;
 	}
 
+      size = cp_fully_fold (size);
       /* If size is zero e.g. due to type having zero size, try to
 	 preserve outer_nelts for constant expression evaluation
 	 purposes.  */
