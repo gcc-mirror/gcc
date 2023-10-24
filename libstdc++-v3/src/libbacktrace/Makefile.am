@@ -49,9 +49,13 @@ WARN_FLAGS = -W -Wall -Wwrite-strings -Wmissing-format-attribute \
 	     -Wcast-qual
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wno-unused-but-set-variable
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
-AM_CFLAGS = $(C_WARN_FLAGS)
+AM_CFLAGS = \
+	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+	$(C_WARN_FLAGS)
 AM_CFLAGS += $(EXTRA_CFLAGS)
-AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions
+AM_CXXFLAGS = \
+	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+	$(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 
 obj_prefix = std_stacktrace
