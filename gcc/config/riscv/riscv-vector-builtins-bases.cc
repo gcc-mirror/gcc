@@ -1550,6 +1550,8 @@ public:
 
   rtx expand (function_expander &e) const override
   {
+    if (!e.target)
+      return NULL_RTX;
     rtx dest = expand_normal (CALL_EXPR_ARG (e.exp, 0));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 2));
@@ -1569,6 +1571,8 @@ public:
 
   rtx expand (function_expander &e) const override
   {
+    if (!e.target)
+      return NULL_RTX;
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (e.target));
