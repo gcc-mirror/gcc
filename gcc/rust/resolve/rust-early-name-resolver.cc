@@ -752,7 +752,8 @@ void
 EarlyNameResolver::visit (AST::ConstantItem &const_item)
 {
   const_item.get_type ()->accept_vis (*this);
-  const_item.get_expr ()->accept_vis (*this);
+  if (const_item.has_expr ())
+    const_item.get_expr ()->accept_vis (*this);
 }
 
 void

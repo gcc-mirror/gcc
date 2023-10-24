@@ -1127,7 +1127,8 @@ ExpandVisitor::visit (AST::ConstantItem &const_item)
 {
   maybe_expand_type (const_item.get_type ());
 
-  maybe_expand_expr (const_item.get_expr ());
+  if (const_item.has_expr ())
+    maybe_expand_expr (const_item.get_expr ());
 }
 
 void
