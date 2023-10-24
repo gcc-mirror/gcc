@@ -61,7 +61,8 @@ move_earlier_than (insn_range_info range, insn_info *insn)
 inline bool
 can_insert_after (insn_info *insn)
 {
-  return insn->is_bb_head () || (insn->is_real () && !insn->is_jump ());
+  return (insn->is_bb_head ()
+	  || (insn->is_real () && !control_flow_insn_p (insn->rtl ())));
 }
 
 // Try to restrict move range MOVE_RANGE so that it is possible to

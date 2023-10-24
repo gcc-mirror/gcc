@@ -49,6 +49,7 @@
 #include "obstack-utils.h"
 #include "mux-utils.h"
 #include "rtlanal.h"
+#include "cfgbuild.h"
 
 // Provides the global crtl->ssa.
 #include "memmodel.h"
