@@ -408,6 +408,10 @@ bitfield_p (const_tree ref)
 tree
 cp_stabilize_reference (tree ref)
 {
+  if (processing_template_decl)
+    /* As in cp_save_expr.  */
+    return ref;
+
   STRIP_ANY_LOCATION_WRAPPER (ref);
   switch (TREE_CODE (ref))
     {
