@@ -525,6 +525,11 @@ function_info::create_phi (ebb_info *ebb, resource_info resource,
 phi_info *
 function_info::create_degenerate_phi (ebb_info *ebb, set_info *def)
 {
+  // Allow the function to be called twice in succession for the same def.
+  def_lookup dl = find_def (def->resource (), ebb->phi_insn ());
+  if (set_info *set = dl.matching_set ())
+    return as_a<phi_info *> (set);
+
   access_info *input = def;
   phi_info *phi = create_phi (ebb, def->resource (), &input, 1);
   if (def->is_reg ())
