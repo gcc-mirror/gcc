@@ -1,3 +1,22 @@
+2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/36887
+	* directives.cc (do_pragma_poison): Store in the extra hash map the
+	location from which an identifier has been poisoned.
+	* lex.cc (identifier_diagnostics_on_lex): When issuing a diagnostic
+	for the use of a poisoned identifier, also add a note indicating the
+	location from which it was poisoned.
+	* identifiers.cc (alloc_node): Convert to template function.
+	(_cpp_init_hashtable): Handle the new extra hash map.
+	(_cpp_destroy_hashtable): Likewise.
+	* include/cpplib.h (struct cpp_hashnode_extra): New struct.
+	(cpp_create_reader): Update prototype to...
+	* init.cc (cpp_create_reader): ...accept an argument for the extra
+	hash table and pass it to _cpp_init_hashtable.
+	* include/symtab.h (ht_lookup): New overload for convenience.
+	* internal.h (struct cpp_reader): Add EXTRA_HASH_TABLE member.
+	(_cpp_init_hashtable): Adjust prototype.
+
 2023-10-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (LINEMAPS_ORDINARY_MAPS): Delete.

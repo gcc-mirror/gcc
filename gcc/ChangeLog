@@ -1,3 +1,271 @@
+2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/36887
+	* toplev.h (ident_hash_extra): Declare...
+	* stringpool.cc (ident_hash_extra): ...this new global variable.
+	(init_stringpool): Handle ident_hash_extra as well as ident_hash.
+	(ggc_mark_stringpool): Likewise.
+	(ggc_purge_stringpool): Likewise.
+	(struct string_pool_data_extra): New struct.
+	(spd2): New GC root variable.
+	(gt_pch_save_stringpool): Use spd2 to handle ident_hash_extra,
+	analogous to how spd is used to handle ident_hash.
+	(gt_pch_restore_stringpool): Likewise.
+
+2023-10-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/111794
+	* tree-vect-stmts.cc (vectorizable_assignment): Add
+	same-precision exception for dest and source.
+
+2023-10-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (popcount<mode>2): New expander.
+	* config/riscv/riscv-protos.h (expand_popcount): Define.
+	* config/riscv/riscv-v.cc (expand_popcount): Vectorize popcount
+	with the WWG algorithm.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111916
+	* tree-sra.cc (sra_modify_assign): Do not lower all
+	BIT_FIELD_REF reads that are sra_handled_bf_read_p.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111915
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Check all
+	accesses are either grouped or not.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111914
+	* tree-inline.cc (setup_one_parameter): Move code emitting
+	a dummy load when not optimizing ...
+	(initialize_inlined_parameters): ... here to after when
+	we remapped the parameter type.
+
+2023-10-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/111001
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::record_set_of_reg):
+	Skip over nop move insns.
+
+2023-10-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111860
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Drop .MEM nodes only.
+
+2023-10-23  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`(A - B) CMP 0 ? (A - B) : (B - A)`):
+	New patterns.
+
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* convert.cc (convert_to_pointer_1): Return error_mark_node
+	after an error.
+	(convert_to_real_1): Likewise.
+	(convert_to_integer_1): Likewise.
+	(convert_to_complex_1): Likewise.
+
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/111903
+	* convert.cc (convert_to_complex_1): Return
+	error_mark_node if either convert was an error
+	when converting from a scalar.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111917
+	* tree-ssa-loop-unswitch.cc (hoist_guard): Always insert
+	new conditional after last stmt.
+
+2023-10-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111927
+	* config/riscv/riscv-vsetvl.cc: Fix bug.
+
+2023-10-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (emit_vec_cvt_x_f_rtz): Add insn type
+	arg.
+	(expand_vec_trunc): Take MA instead of MU for cvt_x_f_rtz.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/invoke.texi (-mexplicit-relocs=style): Document.
+	(-mexplicit-relocs): Document as an alias of
+	-mexplicit-relocs=always.
+	(-mno-explicit-relocs): Document as an alias of
+	-mexplicit-relocs=none.
+	(-mcmodel=extreme): Mention -mexplicit-relocs=always instead of
+	-mexplicit-relocs.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md (symbolic_pcrel_operand): New
+	predicate.
+	* config/loongarch/loongarch.md (define_peephole2): Optimize
+	la.local + ld/st to pcalau12i + ld/st if the address is only used
+	once if -mexplicit-relocs=auto and -mcmodel=normal or medium.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	Return true for TLS symbol types if -mexplicit-relocs=auto.
+	(loongarch_call_tls_get_addr): Replace TARGET_EXPLICIT_RELOCS
+	with la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE.
+	(loongarch_legitimize_tls_address): Likewise.
+	* config/loongarch/loongarch.md (@tls_low<mode>): Remove
+	TARGET_EXPLICIT_RELOCS from insn condition.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_explicit_relocs_p): Declare new function.
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	Implement.
+	(loongarch_symbol_insns): Call loongarch_explicit_relocs_p for
+	SYMBOL_GOT_DISP, instead of using TARGET_EXPLICIT_RELOCS.
+	(loongarch_split_symbol): Call loongarch_explicit_relocs_p for
+	deciding if return early, instead of using
+	TARGET_EXPLICIT_RELOCS.
+	(loongarch_output_move): CAll loongarch_explicit_relocs_p
+	instead of using TARGET_EXPLICIT_RELOCS.
+	* config/loongarch/loongarch.md (*low<mode>): Remove
+	TARGET_EXPLICIT_RELOCS from insn condition.
+	(@ld_from_got<mode>): Likewise.
+	* config/loongarch/predicates.md (move_operand): Call
+	loongarch_explicit_relocs_p instead of using
+	TARGET_EXPLICIT_RELOCS.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch-strings: Add strings for
+	-mexplicit-relocs={auto,none,always}.
+	* config/loongarch/genopts/loongarch.opt.in: Add options for
+	-mexplicit-relocs={auto,none,always}.
+	* config/loongarch/loongarch-str.h: Regenerate.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch-def.h
+	(EXPLICIT_RELOCS_AUTO): Define.
+	(EXPLICIT_RELOCS_NONE): Define.
+	(EXPLICIT_RELOCS_ALWAYS): Define.
+	(N_EXPLICIT_RELOCS_TYPES): Define.
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Error out if the old-style
+	-m[no-]explicit-relocs option is used with
+	-mexplicit-relocs={auto,none,always} together.  Map
+	-mno-explicit-relocs to -mexplicit-relocs=none and
+	-mexplicit-relocs to -mexplicit-relocs=always for backward
+	compatibility.  Set a proper default for -mexplicit-relocs=
+	based on configure-time probed linker capability.  Update a
+	diagnostic message to mention -mexplicit-relocs=always instead
+	of the old-style -mexplicit-relocs.
+	(loongarch_handle_model_attribute): Update a diagnostic message
+	to mention -mexplicit-relocs=always instead of the old-style
+	-mexplicit-relocs.
+	* config/loongarch/loongarch.h (TARGET_EXPLICIT_RELOCS): Define.
+
+2023-10-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::fuse_local_vsetvl_info): Fix typo.
+	(pre_vsetvl::pre_global_vsetvl_info): Ditto.
+
+2023-10-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix avl_type attribute of tuple mov<mode>.
+
+2023-10-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/111784
+	* tree-vect-stmts.cc (vectorizable_store): Adjust costing way for
+	adjacent vector stores, by costing them with the total number
+	rather than costing them one by one.
+	(vectorizable_load): Adjust costing way for adjacent vector
+	loads, by costing them with the total number rather than costing
+	them one by one.
+
+2023-10-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111753
+	* config/i386/i386.cc (ix86_standard_x87sse_constant_load_p):
+	Do not split to xmm16+ when !TARGET_AVX512VL.
+
+2023-10-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (enum insn_type): Add new type
+	values.
+	* config/riscv/riscv-v.cc (emit_vec_cvt_x_f): Add undef merge
+	operand handling.
+	(expand_vec_ceil): Take MA instead of MU for tmp register.
+	(expand_vec_floor): Ditto.
+	(expand_vec_nearbyint): Ditto.
+	(expand_vec_rint): Ditto.
+	(expand_vec_round): Ditto.
+	(expand_vec_roundeven): Ditto.
+
+2023-10-23  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.h (CLEAR_INSN_CACHE): New definition.
+
+2023-10-23  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* expr.cc (can_use_qi_vectors): New function to return true if
+	we know how to implement OP using vectors of bytes.
+	(qi_vector_mode_supported_p): New function to check if optabs
+	exists for the mode and certain by pieces operations.
+	(widest_fixed_size_mode_for_size): Replace the second argument
+	with the type of by pieces operations.  Call can_use_qi_vectors
+	and qi_vector_mode_supported_p to do the check.  Call
+	scalar_mode_supported_p to check if the scalar mode is supported.
+	(by_pieces_ninsns): Pass the type of by pieces operation to
+	widest_fixed_size_mode_for_size.
+	(class op_by_pieces_d): Remove m_qi_vector_mode.  Add m_op to
+	record the type of by pieces operations.
+	(op_by_pieces_d::op_by_pieces_d): Change last argument to the
+	type of by pieces operations, initialize m_op with it.  Pass
+	m_op to function widest_fixed_size_mode_for_size.
+	(op_by_pieces_d::get_usable_mode): Pass m_op to function
+	widest_fixed_size_mode_for_size.
+	(op_by_pieces_d::smallest_fixed_size_mode_for_size): Call
+	can_use_qi_vectors and qi_vector_mode_supported_p to do the
+	check.
+	(op_by_pieces_d::run): Pass m_op to function
+	widest_fixed_size_mode_for_size.
+	(move_by_pieces_d::move_by_pieces_d): Set m_op to MOVE_BY_PIECES.
+	(store_by_pieces_d::store_by_pieces_d): Set m_op with the op.
+	(can_store_by_pieces): Pass the type of by pieces operations to
+	widest_fixed_size_mode_for_size.
+	(clear_by_pieces): Initialize class store_by_pieces_d with
+	CLEAR_BY_PIECES.
+	(compare_by_pieces_d::compare_by_pieces_d): Set m_op to
+	COMPARE_BY_PIECES.
+
+2023-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/111820
+	PR tree-optimization/111833
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p): Give
+	up vectorization for nonlinear iv vect_step_op_mul when
+	step_expr is not exact_log2 and niters is greater than
+	TYPE_PRECISION (TREE_TYPE (step_expr)). Also don't vectorize
+	for nagative niters_skip which will be used by fully masked
+	loop.
+	(vect_can_advance_ivs_p): Pass whole phi_info to
+	vect_can_peel_nonlinear_iv_p.
+	* tree-vect-loop.cc (vect_peel_nonlinear_iv_init): Optimize
+	init_expr * pow (step_expr, skipn) to init_expr
+	<< (log2 (step_expr) * skipn) when step_expr is exact_log2.
+
+2023-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (mmx_pinsrw): Remove.
+
 2023-10-22  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/110986

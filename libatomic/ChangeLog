@@ -1,3 +1,8 @@
+2023-10-23  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.am (all-multi): Drop commands.
+	* Makefile.in: Update accordingly.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/lib/libatomic.exp: Pass correct flags on darwin.

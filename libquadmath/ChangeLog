@@ -1,3 +1,10 @@
+2023-10-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libquadmath/111928
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove AC_CHECK_LIBM.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Handle Darwin rpaths.

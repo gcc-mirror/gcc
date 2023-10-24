@@ -1,3 +1,228 @@
+2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/36887
+	* c-c++-common/cpp/diagnostic-poison.c: New test.
+	* g++.dg/pch/pr36887.C: New test.
+	* g++.dg/pch/pr36887.Hs: New test.
+
+2023-10-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/slp-mask-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/slp-mask-run-1.c: New test.
+
+2023-10-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/popcount-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/popcount-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/popcount-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/popcount.c: New test.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111916
+	* gcc.dg/torture/pr111916.c: New testcase.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111915
+	* gcc.dg/vect/pr111915.c: New testcase.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111914
+	* gcc.dg/pr111914.c: New testcase.
+
+2023-10-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111860
+	* gcc.dg/vect/pr111860-2.c: New test.
+	* gcc.dg/vect/pr111860-3.c: New test.
+
+2023-10-23  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-38.c: New test.
+
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/111903
+	* gcc.target/i386/float16-8.c: New test.
+
+2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111917
+	* gcc.dg/torture/pr111917.c: New testcase.
+
+2023-10-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111927
+	* gcc.target/riscv/rvv/vsetvl/pr111927.c: New test.
+
+2023-10-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/cvt-0.c: Remove the vsetvl
+	asm check from func body.
+	* gcc.target/riscv/rvv/autovec/unop/cvt-1.c: Ditto.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store.c:
+	New test.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-no-anchor.c:
+	New test.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/explicit-relocs-auto-tls-ld-gd.c: New
+	test.
+	* gcc.target/loongarch/explicit-relocs-auto-tls-le-ie.c: New
+	test.
+
+2023-10-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/explicit-relocs-auto-lto.c: New test.
+
+2023-10-23  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/builtins/pr93262-chk.c (main_test):
+	Remove unnecessary return statement.
+
+2023-10-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-1.c: Remove the
+	vsetvl asm check from func body.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-129.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-13.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-130.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-131.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-133.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-134.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-135.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-14.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-153.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-154.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-155.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-158.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-16.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-17.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-171.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-172.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-173.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-174.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-18.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-19.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-20.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-21.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-22.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-23.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-24.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-25.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-26.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-27.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-28.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-29.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-30.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-31.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-32.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-33.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-34.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-35.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-36.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-37.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-38.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-39.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-40.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-41.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-42.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-43.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-44.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vx_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vx_constraint-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/ternop_vx_constraint-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/unop_v_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/unop_v_constraint-2.c: Ditto.
+
+2023-10-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/bswap16-0.c: Remove the
+	vsetvl check.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ceil-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-floor-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceil-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloor-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrint-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-llround-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-nearbyint-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-rint-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-round-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-roundeven-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-trunc-3.c: Ditto.
+
+2023-10-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111753
+	* gcc.target/i386/pr111753.c: New test.
+
+2023-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111820-1.c: New test.
+	* gcc.target/i386/pr111820-2.c: New test.
+	* gcc.target/i386/pr111820-3.c: New test.
+	* gcc.target/i386/pr103144-mul-1.c: Adjust testcase.
+	* gcc.target/i386/pr103144-mul-2.c: Adjust testcase.
+
 2023-10-22  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/110986
