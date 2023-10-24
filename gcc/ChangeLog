@@ -1,3 +1,24 @@
+2023-10-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/111001
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::record_set_of_reg):
+	Skip over nop move insns.
+
+2023-10-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111367
+	* config/rs6000/rs6000.md (stack_protect_setsi): Support prefixed
+	instruction emission and incorporate to stack_protect_set<mode>.
+	(stack_protect_setdi): Rename to ...
+	(stack_protect_set<mode>): ... this, adjust constraint.
+	(stack_protect_testsi): Support prefixed instruction emission and
+	incorporate to stack_protect_test<mode>.
+	(stack_protect_testdi): Rename to ...
+	(stack_protect_test<mode>): ... this, adjust constraint.
+
 2023-10-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/101177
