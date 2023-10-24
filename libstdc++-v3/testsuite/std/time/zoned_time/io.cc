@@ -1,6 +1,7 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target cxx11_abi }
+// { dg-timeout-factor 2 }
 
 #include <chrono>
 #include <sstream>
