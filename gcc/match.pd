@@ -5611,6 +5611,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (wi::eq_p (wi::bit_not (wi::to_wide (@1)), wi::to_wide (@2)))
   @3))
 
+/* X != C1 ? abs(X) : C2 simplifies to abs(x) when abs(C1) == C2. */
+(for op (abs absu)
+ (simplify
+  (cond (ne @0 INTEGER_CST@1) (op@3 @0) INTEGER_CST@2)
+  (if (wi::abs (wi::to_wide (@1)) == wi::to_wide (@2))
+   (if (op != ABSU_EXPR && wi::only_sign_bit_p (wi::to_wide (@1)))
+    (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+     (convert (absu:utype @0)))
+    @3))))
+
 /* (X + 1) > Y ? -X : 1 simplifies to X >= Y ? -X : 1 when
    X is unsigned, as when X + 1 overflows, X is -1, so -X == 1.  */
 (simplify
