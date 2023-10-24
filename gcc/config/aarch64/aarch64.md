@@ -358,6 +358,8 @@
     UNSPEC_SAVE_NZCV
     UNSPEC_RESTORE_NZCV
     UNSPECV_PATCHABLE_AREA
+    UNSPEC_LDAP1_LANE
+    UNSPEC_STL1_LANE
     ;; Wraps a constant integer that should be multiplied by the number
     ;; of quadwords in an SME vector.
     UNSPEC_SME_VQ
