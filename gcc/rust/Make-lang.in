@@ -189,6 +189,7 @@ GRS_OBJS = \
     rust/rust-builtins.o \
     rust/rust-feature.o \
     rust/rust-feature-gate.o \
+    rust/rust-ast-validation.o \
     rust/rust-dir-owner.o \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
