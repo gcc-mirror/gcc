@@ -1110,7 +1110,9 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   ix86_move_vector_high_sse_to_mmx (op0);
 }
 
-/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  */
+/* Split MMX punpcklXX/punpckhXX with SSE punpcklXX.  This is also used
+   for a full unpack of OPERANDS[1] and OPERANDS[2] into a wider
+   OPERANDS[0].  */
 
 void
 ix86_split_mmx_punpck (rtx operands[], bool high_p)
@@ -1118,7 +1120,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  machine_mode mode = GET_MODE (op0);
+  machine_mode mode = GET_MODE (op1);
   rtx mask;
   /* The corresponding SSE mode.  */
   machine_mode sse_mode, double_sse_mode;
@@ -5660,7 +5662,7 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
       gcc_unreachable ();
     }
 
-  ops[0] = gen_reg_rtx (imode);
+  ops[0] = dest;
 
   ops[1] = force_reg (imode, src);
 
@@ -5671,7 +5673,6 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
 				  ops[1], pc_rtx, pc_rtx);
 
   ix86_split_mmx_punpck (ops, false);
-  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), ops[0], imode));
 }
 
 /* Unpack SRC into the next wider integer vector type.  UNSIGNED_P is
