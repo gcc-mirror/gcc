@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-validation.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 
@@ -37,14 +38,44 @@ ASTValidation::visit (std::unique_ptr<T> &node)
 void
 ASTValidation::check (AST::Crate &crate)
 {
+  push_context (Context::CRATE);
   for (auto &item : crate.items)
     {
       visit (item);
     }
+  pop_context ();
 }
 
 void
 ASTValidation::visit (AST::InherentImpl &impl)
-{}
+{
+  push_context (Context::INHERENT_IMPL);
+  for (auto &item : impl.get_impl_items ())
+    {
+      visit (item);
+    }
+  pop_context ();
+}
+
+void
+ASTValidation::visit (AST::TraitImpl &impl)
+{
+  push_context (Context::TRAIT_IMPL);
+  for (auto &item : impl.get_impl_items ())
+    {
+      visit (item);
+    }
+  pop_context ();
+}
+
+void
+ASTValidation::visit (AST::ConstantItem &const_item)
+{
+  if (!const_item.has_expr () && context.back () != Context::TRAIT_IMPL)
+    {
+      rust_error_at (const_item.get_locus (),
+		     "associated constant in %<impl%> without body");
+    }
+}
 
 } // namespace Rust
