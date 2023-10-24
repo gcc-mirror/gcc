@@ -983,7 +983,10 @@ function_info::perform_pending_updates ()
   for (insn_info *insn : m_queued_insn_updates)
     {
       rtx_insn *rtl = insn->rtl ();
-      if (JUMP_P (rtl))
+      if (NOTE_P (rtl))
+	// The insn was later optimized away, typically to a NOTE_INSN_DELETED.
+	;
+      else if (JUMP_P (rtl))
 	{
 	  if (INSN_CODE (rtl) == NOOP_MOVE_INSN_CODE)
 	    {
