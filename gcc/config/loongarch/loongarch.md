@@ -113,6 +113,7 @@
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
+   (TP_REGNUM			2)
    (T0_REGNUM			12)
    (T1_REGNUM			13)
    (S0_REGNUM			23)
@@ -3647,6 +3648,12 @@
   [(set_attr "length" "0")
    (set_attr "type" "ghost")])
 
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointer<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(reg:P TP_REGNUM))]
+  "HAVE_AS_TLS"
+  {})
 
 (define_split
   [(match_operand 0 "small_data_pattern")]

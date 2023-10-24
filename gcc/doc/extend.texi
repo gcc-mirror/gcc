@@ -16749,6 +16749,11 @@ __float128 __builtin_nanq (void);
 __float128 __builtin_nansq (void);
 @end smallexample
 
+Returns the value that is currently set in the @samp{tp} register.
+@smallexample
+    void * __builtin_thread_pointer (void)
+@end smallexample
+
 @node MIPS DSP Built-in Functions
 @subsection MIPS DSP Built-in Functions
 
