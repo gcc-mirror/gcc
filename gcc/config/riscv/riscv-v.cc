@@ -4435,4 +4435,16 @@ expand_popcount (rtx *ops)
   emit_move_insn (dst, x4);
 }
 
+/* Return true if it is VLMAX AVL TYPE.  */
+bool
+vlmax_avl_type_p (rtx_insn *rinsn)
+{
+  extract_insn_cached (rinsn);
+  int index = get_attr_avl_type_idx (rinsn);
+  if (index == INVALID_ATTRIBUTE)
+    return false;
+  rtx avl_type = recog_data.operand[index];
+  return INTVAL (avl_type) == VLMAX;
+}
+
 } // namespace riscv_vector

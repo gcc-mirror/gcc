@@ -365,7 +365,7 @@ get_avl (rtx_insn *rinsn)
 
   if (!has_vl_op (rinsn))
     return NULL_RTX;
-  if (get_attr_avl_type (rinsn) == VLMAX)
+  if (vlmax_avl_type_p (rinsn))
     return RVV_VLMAX;
   extract_insn_cached (rinsn);
   return recog_data.operand[get_attr_vl_op_idx (rinsn)];
