@@ -1635,6 +1635,7 @@ OBJS = \
 	rtl-ssa/changes.o \
 	rtl-ssa/functions.o \
 	rtl-ssa/insns.o \
+	rtl-ssa/movement.o \
 	rtl-tests.o \
 	rtl.o \
 	rtlhash.o \

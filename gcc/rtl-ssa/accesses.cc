@@ -1570,6 +1570,19 @@ rtl_ssa::insert_access_base (obstack_watermark &watermark,
 }
 
 // See the comment above the declaration.
+use_array
+rtl_ssa::remove_uses_of_def (obstack_watermark &watermark, use_array uses,
+			     def_info *def)
+{
+  access_array_builder uses_builder (watermark);
+  uses_builder.reserve (uses.size ());
+  for (use_info *use : uses)
+    if (use->def () != def)
+      uses_builder.quick_push (use);
+  return use_array (uses_builder.finish ());
+}
+
+// See the comment above the declaration.
 access_array
 rtl_ssa::remove_note_accesses_base (obstack_watermark &watermark,
 				    access_array accesses)
@@ -1585,6 +1598,56 @@ rtl_ssa::remove_note_accesses_base (obstack_watermark &watermark,
 	return builder.finish ();
       }
   return accesses;
+}
+
+// See the comment above the declaration.
+bool
+rtl_ssa::accesses_reference_same_resource (access_array accesses1,
+					   access_array accesses2)
+{
+  auto i1 = accesses1.begin ();
+  auto end1 = accesses1.end ();
+  auto i2 = accesses2.begin ();
+  auto end2 = accesses2.end ();
+
+  while (i1 != end1 && i2 != end2)
+    {
+      access_info *access1 = *i1;
+      access_info *access2 = *i2;
+
+      unsigned int regno1 = access1->regno ();
+      unsigned int regno2 = access2->regno ();
+      if (regno1 == regno2)
+	return true;
+
+      if (regno1 < regno2)
+	++i1;
+      else
+	++i2;
+    }
+  return false;
+}
+
+// See the comment above the declaration.
+bool
+rtl_ssa::insn_clobbers_resources (insn_info *insn, access_array accesses)
+{
+  if (accesses_reference_same_resource (insn->defs (), accesses))
+    return true;
+
+  if (insn->is_call () && accesses_include_hard_registers (accesses))
+    {
+      function_abi abi = insn_callee_abi (insn->rtl ());
+      for (const access_info *access : accesses)
+	{
+	  if (!HARD_REGISTER_NUM_P (access->regno ()))
+	    break;
+	  if (abi.clobbers_reg_p (access->mode (), access->regno ()))
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 // Print RESOURCE to PP.

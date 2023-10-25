@@ -19,6 +19,10 @@
 
 namespace rtl_ssa {
 
+// Return true if INSN can in principle be moved around, and if RTL-SSA
+// has enough information to do that.
+bool can_move_insn_p (insn_info *);
+
 // Restrict movement range RANGE so that the instruction is placed later
 // than INSN.  (The movement range is the range of instructions after which
 // an instruction can be placed.)

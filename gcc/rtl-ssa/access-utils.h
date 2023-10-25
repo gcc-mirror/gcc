@@ -33,6 +33,20 @@ accesses_include_hard_registers (const access_array &accesses)
   return accesses.size () && HARD_REGISTER_NUM_P (accesses.front ()->regno ());
 }
 
+// Return true if ACCESSES includes a reference to a non-fixed hard register.
+inline bool
+accesses_include_nonfixed_hard_registers (access_array accesses)
+{
+  for (access_info *access : accesses)
+    {
+      if (!HARD_REGISTER_NUM_P (access->regno ()))
+	break;
+      if (!fixed_regs[access->regno ()])
+	return true;
+    }
+  return false;
+}
+
 // Return true if sorted array ACCESSES includes an access to memory.
 inline bool
 accesses_include_memory (const access_array &accesses)
@@ -244,6 +258,22 @@ inline def_info *
 last_def (def_mux mux)
 {
   return mux.last_def ();
+}
+
+// If INSN's definitions contain a single set, return that set, otherwise
+// return null.
+inline set_info *
+single_set_info (insn_info *insn)
+{
+  set_info *set = nullptr;
+  for (auto def : insn->defs ())
+    if (auto this_set = dyn_cast<set_info *> (def))
+      {
+	if (set)
+	  return nullptr;
+	set = this_set;
+      }
+  return set;
 }
 
 int lookup_use (splay_tree<use_info *> &, insn_info *);
@@ -539,6 +569,10 @@ insert_access (obstack_watermark &watermark,
   return T (insert_access_base (watermark, access1, accesses2));
 }
 
+// Return a copy of USES that drops any use of DEF.
+use_array remove_uses_of_def (obstack_watermark &, use_array uses,
+			      def_info *def);
+
 // The underlying non-template implementation of remove_note_accesses.
 access_array remove_note_accesses_base (obstack_watermark &, access_array);
 
@@ -553,5 +587,12 @@ remove_note_accesses (obstack_watermark &watermark, T accesses)
 {
   return T (remove_note_accesses_base (watermark, accesses));
 }
+
+// Return true if ACCESSES1 and ACCESSES2 have at least one resource in common.
+bool accesses_reference_same_resource (access_array accesses1,
+				       access_array accesses2);
+
+// Return true if INSN clobbers the value of any resources in ACCESSES.
+bool insn_clobbers_resources (insn_info *insn, access_array accesses);
 
 }
