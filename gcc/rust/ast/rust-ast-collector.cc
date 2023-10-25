@@ -534,11 +534,12 @@ TokenCollector::visit (ConstGenericParam &param)
   auto id = param.get_name ().as_string ();
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
   push (Rust::Token::make (COLON, UNDEF_LOCATION));
-  visit (param.get_type ());
+  if (param.has_type ())
+    visit (param.get_type ());
   if (param.has_default_value ())
     {
       push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
-      visit (param.get_type ());
+      visit (param.get_default_value ());
     }
 }
 
