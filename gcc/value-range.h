@@ -139,6 +139,7 @@ public:
   void verify_mask () const;
   void dump (FILE *) const;
 
+  bool member_p (const wide_int &val) const;
   void adjust_range (irange &r) const;
 
   // Convenience functions for nonzero bitmask compatibility.
@@ -200,6 +201,19 @@ irange_bitmask::set_nonzero_bits (const wide_int &bits)
   m_mask = bits;
   if (flag_checking)
     verify_mask ();
+}
+
+// Return TRUE if val could be a valid value with this bitmask.
+
+inline bool
+irange_bitmask::member_p (const wide_int &val) const
+{
+  if (unknown_p ())
+    return true;
+  wide_int res = m_mask & val;
+  if (m_value != 0)
+    res |= ~m_mask & m_value;
+  return res == val;
 }
 
 inline bool
