@@ -350,6 +350,8 @@ public:
 
   const Identifier &get_name () const { return name; }
 
+  Attribute &get_outer_attribute () { return outer_attr; }
+
   std::unique_ptr<AST::Type> &get_type ()
   {
     rust_assert (has_type ());

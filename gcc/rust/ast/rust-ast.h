@@ -1408,6 +1408,10 @@ class LifetimeParam : public GenericParam
 public:
   Lifetime get_lifetime () const { return lifetime; }
 
+  Lifetime &get_lifetime () { return lifetime; }
+
+  Attribute &get_outer_attribute () { return outer_attr; }
+
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
 
