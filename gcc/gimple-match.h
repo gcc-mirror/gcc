@@ -32,7 +32,8 @@ public:
   enum uncond { UNCOND };
 
   /* Build an unconditional op.  */
-  gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE) {}
+  gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE), len
+			       (NULL_TREE), bias (NULL_TREE) {}
   gimple_match_cond (tree, tree);
   gimple_match_cond (tree, tree, tree, tree);
 
@@ -56,7 +57,8 @@ public:
 
 inline
 gimple_match_cond::gimple_match_cond (tree cond_in, tree else_value_in)
-  : cond (cond_in), else_value (else_value_in)
+  : cond (cond_in), else_value (else_value_in), len (NULL_TREE),
+    bias (NULL_TREE)
 {
 }
 

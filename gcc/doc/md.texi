@@ -5306,6 +5306,21 @@ no need to define this instruction pattern if the others are supported.
 Similar to @code{vcond@var{m}@var{n}} but operand 3 holds a pre-computed
 result of vector comparison.
 
+@cindex @code{vcond_mask_len_@var{m}@var{n}} instruction pattern
+@item @samp{vcond_mask_@var{m}@var{n}}
+Set each element of operand 0 to the corresponding element of operand 2
+or operand 3.  Choose operand 2 if both the element index is less than
+operand 4 plus operand 5 and the corresponding element of operand 1
+is nonzero:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = i < op4 + op5 && op1[i] ? op2[i] : op3[i];
+@end smallexample
+
+Operands 0, 2 and 3 have mode @var{m}.  Operand 1 has mode @var{n}.
+Operands 4 and 5 have a target-dependent scalar integer mode.
+
 @cindex @code{maskload@var{m}@var{n}} instruction pattern
 @item @samp{maskload@var{m}@var{n}}
 Perform a masked load of vector from memory operand 1 of mode @var{m}

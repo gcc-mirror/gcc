@@ -359,6 +359,9 @@ enum insn_type : unsigned int
   /* For vmerge, no mask operand, no mask policy operand.  */
   MERGE_OP = __NORMAL_OP_TA2 | TERNARY_OP_P,
 
+  /* For vmerge with TU policy.  */
+  MERGE_OP_TU = HAS_DEST_P | HAS_MERGE_P | TERNARY_OP_P | TU_POLICY_P,
+
   /* For vm<compare>, no tail policy operand.  */
   COMPARE_OP = __NORMAL_OP_MA | TERNARY_OP_P,
   COMPARE_OP_MU = __MASK_OP_MU | TERNARY_OP_P,

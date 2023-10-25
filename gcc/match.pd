@@ -87,6 +87,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   negate bit_not)
 (define_operator_list COND_UNARY
   IFN_COND_NEG IFN_COND_NOT)
+(define_operator_list COND_LEN_UNARY
+  IFN_COND_LEN_NEG IFN_COND_LEN_NOT)
 
 /* Binary operations and their associated IFN_COND_* function.  */
 (define_operator_list UNCOND_BINARY
@@ -8961,6 +8963,21 @@ and,
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
      (cond_op (bit_not @0) @2 @1)))))
 
+(for uncond_op (UNCOND_UNARY)
+     cond_op (COND_LEN_UNARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@3 @1)) @2 @4 @5)
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op @0 @1 @2 @4 @5))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@3 @2)) @4 @5)
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op (bit_not @0) @2 @1 @4 @5)))))
+
 /* `(a ? -1 : 0) ^ b` can be converted into a conditional not.  */
 (simplify
  (bit_xor:c (vec_cond @0 uniform_integer_cst_p@1 uniform_integer_cst_p@2) @3)
@@ -9007,6 +9024,23 @@ and,
 	&& single_use (@4))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
+(for uncond_op (UNCOND_BINARY)
+     cond_op (COND_LEN_BINARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@4 @1 @2)) @3 @5 @6)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
+    (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3) @5 @6)))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@4 @2 @3)) @5 @6)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
+    (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1) @5 @6))))))
+
 /* Same for ternary operations.  */
 (for uncond_op (UNCOND_TERNARY)
      cond_op (COND_TERNARY)
@@ -9025,6 +9059,23 @@ and,
 	&& single_use (@5))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
+
+(for uncond_op (UNCOND_TERNARY)
+     cond_op (COND_LEN_TERNARY)
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4 @6 @7)
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
+    (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4) @6 @7)))))
+ (simplify
+  (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@5 @2 @3 @4 @6 @7)))
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
+    (view_convert (cond_op (bit_not @0) @2 @3 @4 (view_convert:op_type @1) @6 @7))))))
 #endif
 
 /* Detect cases in which a VEC_COND_EXPR effectively replaces the

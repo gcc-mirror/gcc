@@ -170,6 +170,7 @@ init_internal_fns ()
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
 #define vec_cond_mask_direct { 1, 0, false }
+#define vec_cond_mask_len_direct { 1, 1, false }
 #define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
@@ -4690,6 +4691,7 @@ internal_fn_len_index (internal_fn fn)
     case IFN_MASK_LEN_STORE:
     case IFN_MASK_LEN_LOAD_LANES:
     case IFN_MASK_LEN_STORE_LANES:
+    case IFN_VCOND_MASK_LEN:
       return 3;
 
     default:
@@ -4781,6 +4783,9 @@ internal_fn_mask_index (internal_fn fn)
     case IFN_MASK_LEN_GATHER_LOAD:
     case IFN_MASK_LEN_SCATTER_STORE:
       return 4;
+
+    case IFN_VCOND_MASK_LEN:
+      return 0;
 
     default:
       return (conditional_internal_fn_code (fn) != ERROR_MARK

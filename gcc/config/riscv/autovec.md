@@ -565,6 +565,32 @@
   [(set_attr "type" "vector")]
 )
 
+(define_expand "vcond_mask_len_<mode>"
+  [(match_operand:V 0 "register_operand")
+    (match_operand:<VM> 1 "nonmemory_operand")
+    (match_operand:V 2 "nonmemory_operand")
+    (match_operand:V 3 "autovec_else_operand")
+    (match_operand 4 "autovec_length_operand")
+    (match_operand 5 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    if (satisfies_constraint_Wc1 (operands[1]))
+      riscv_vector::expand_cond_len_unop (code_for_pred_mov (<MODE>mode),
+					  operands);
+    else
+      {
+	/* The order of then and else is opposite to pred_merge.  */
+	rtx ops[] = {operands[0], operands[3], operands[3], operands[2],
+		     operands[1]};
+	riscv_vector::emit_nonvlmax_insn (code_for_pred_merge (<MODE>mode),
+					  riscv_vector::MERGE_OP_TU,
+					  ops, operands[4]);
+      }
+    DONE;
+  }
+  [(set_attr "type" "vector")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [BOOL] Select based on masks
 ;; -------------------------------------------------------------------------

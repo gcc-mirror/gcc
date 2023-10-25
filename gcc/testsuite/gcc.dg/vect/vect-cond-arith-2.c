@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fgimple -fdump-tree-optimized -ffast-math" } */
+/* { dg-additional-options "-fno-vect-cost-model" { target { riscv_v } } } */
 
 double __GIMPLE (ssa, startwith("loop"))
 neg_xi (double *x)

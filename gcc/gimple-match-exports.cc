@@ -307,9 +307,16 @@ maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
       && VECTOR_TYPE_P (res_op->type)
       && gimple_simplified_result_is_gimple_val (res_op))
     {
-      new_op.set_op (VEC_COND_EXPR, res_op->type,
-		     res_op->cond.cond, res_op->ops[0],
-		     res_op->cond.else_value);
+      tree len = res_op->cond.len;
+      if (!len)
+	new_op.set_op (VEC_COND_EXPR, res_op->type,
+		       res_op->cond.cond, res_op->ops[0],
+		       res_op->cond.else_value);
+      else
+	new_op.set_op (IFN_VCOND_MASK_LEN, res_op->type,
+		       res_op->cond.cond, res_op->ops[0],
+		       res_op->cond.else_value,
+		       res_op->cond.len, res_op->cond.bias);
       *res_op = new_op;
       return gimple_resimplify3 (seq, res_op, valueize);
     }
