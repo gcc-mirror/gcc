@@ -647,6 +647,14 @@ DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable", m_PENT | m_LAKEMONT)
    and can happen in caller/callee saving sequences.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall", m_PPRO)
 
+/* X86_TUNE_PARTIAL_MEMORY_READ_STALL: Reading (possible unaligned) part of
+   memory location after a large write to the same address causes
+   store-to-load forwarding stall.  */
+DEF_TUNE (X86_TUNE_PARTIAL_MEMORY_READ_STALL, "partial_memoy_read_stall",
+	  m_386 | m_486 | m_PENT | m_LAKEMONT | m_PPRO | m_P4_NOCONA | m_CORE2
+	   | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT
+	   | m_K6_GEODE | m_ATHLON_K8 | m_AMDFAM10)
+
 /* X86_TUNE_PROMOTE_QIMODE: When it is cheap, turn 8bit arithmetic to
    corresponding 32bit arithmetic.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QIMODE, "promote_qimode",

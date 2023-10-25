@@ -311,6 +311,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_USE_SAHF		ix86_tune_features[X86_TUNE_USE_SAHF]
 #define TARGET_MOVX		ix86_tune_features[X86_TUNE_MOVX]
 #define TARGET_PARTIAL_REG_STALL ix86_tune_features[X86_TUNE_PARTIAL_REG_STALL]
+#define TARGET_PARTIAL_MEMORY_READ_STALL \
+	ix86_tune_features[X86_TUNE_PARTIAL_MEMORY_READ_STALL]
 #define TARGET_PARTIAL_FLAG_REG_STALL \
 	ix86_tune_features[X86_TUNE_PARTIAL_FLAG_REG_STALL]
 #define TARGET_LCP_STALL \
