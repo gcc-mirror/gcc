@@ -3695,6 +3695,24 @@ riscv_zero_if_equal (rtx cmp0, rtx cmp1)
 		       cmp0, cmp1, 0, 0, OPTAB_DIRECT);
 }
 
+/* Helper function for riscv_extend_comparands to Sign-extend the OP.
+   However if the OP is SI subreg promoted with an inner DI, such as
+       (subreg/s/v:SI (reg/v:DI) 0)
+   just peel off the SUBREG to get DI, avoiding extraneous extension.  */
+
+static void
+riscv_sign_extend_if_not_subreg_prom (rtx *op)
+{
+  if (GET_CODE (*op) == SUBREG
+      && SUBREG_PROMOTED_VAR_P (*op)
+      && SUBREG_PROMOTED_SIGNED_P (*op)
+      && (GET_MODE_SIZE (GET_MODE (XEXP (*op, 0))).to_constant ()
+	  == GET_MODE_SIZE (word_mode)))
+    *op = XEXP (*op, 0);
+  else
+    *op = gen_rtx_SIGN_EXTEND (word_mode, *op);
+}
+
 /* Sign- or zero-extend OP0 and OP1 for integer comparisons.  */
 
 static void
@@ -3724,9 +3742,10 @@ riscv_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
 	}
       else
 	{
-	  *op0 = gen_rtx_SIGN_EXTEND (word_mode, *op0);
+	  riscv_sign_extend_if_not_subreg_prom (op0);
+
 	  if (*op1 != const0_rtx)
-	    *op1 = gen_rtx_SIGN_EXTEND (word_mode, *op1);
+	    riscv_sign_extend_if_not_subreg_prom (op1);
 	}
     }
 }
