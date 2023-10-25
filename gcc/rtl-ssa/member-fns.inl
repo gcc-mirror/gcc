@@ -916,6 +916,15 @@ function_info::reg_defs (unsigned int regno) const
   return { m_defs[regno + 1], nullptr };
 }
 
+inline bool
+function_info::is_single_dominating_def (const set_info *set) const
+{
+  return (set->is_first_def ()
+	  && set->is_last_def ()
+	  && (!HARD_REGISTER_NUM_P (set->regno ())
+	      || !TEST_HARD_REG_BIT (m_clobbered_by_calls, set->regno ())));
+}
+
 inline set_info *
 function_info::single_dominating_def (unsigned int regno) const
 {

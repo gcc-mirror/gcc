@@ -32,7 +32,7 @@
 using namespace rtl_ssa;
 
 function_info::function_info (function *fn)
-  : m_fn (fn)
+  : m_fn (fn), m_clobbered_by_calls ()
 {
   // Force the alignment to be obstack_alignment.  Everything else is normal.
   obstack_specify_allocation (&m_obstack, OBSTACK_CHUNK_SIZE,

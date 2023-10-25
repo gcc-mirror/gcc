@@ -127,24 +127,6 @@ set_with_nondebug_insn_uses (access_info *access)
   return nullptr;
 }
 
-// Return true if SET is the only set of SET->resource () and if it
-// dominates all uses (excluding uses of SET->resource () at points
-// where SET->resource () is always undefined).
-inline bool
-is_single_dominating_def (const set_info *set)
-{
-  return set->is_first_def () && set->is_last_def ();
-}
-
-// SET is known to be available on entry to BB.  Return true if it is
-// also available on exit from BB.  (The value might or might not be live.)
-inline bool
-remains_available_on_exit (const set_info *set, bb_info *bb)
-{
-  return (set->is_last_def ()
-	  || *set->next_def ()->insn () > *bb->end_insn ());
-}
-
 // ACCESS is known to be associated with an instruction rather than
 // a phi node.  Return which instruction that is.
 inline insn_info *
@@ -311,6 +293,15 @@ next_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
       comparison = -1;
     }
   return tree->insn ();
+}
+
+// Search forwards from immediately after INSN for the first instruction
+// recorded in TREE.  Return null if no such instruction exists.
+inline insn_info *
+next_call_clobbers (insn_call_clobbers_tree &tree, insn_info *insn)
+{
+  auto ignore = [](const insn_info *) { return false; };
+  return next_call_clobbers_ignoring (tree, insn, ignore);
 }
 
 // If ACCESS is a set, return the first use of ACCESS by a nondebug insn I

@@ -102,6 +102,11 @@ public:
   // definitions by things like phi nodes.
   iterator_range<def_iterator> reg_defs (unsigned int regno) const;
 
+  // Return true if SET is the only set of SET->resource () and if it
+  // dominates all uses (excluding uses of SET->resource () at points
+  // where SET->resource () is always undefined).
+  bool is_single_dominating_def (const set_info *set) const;
+
   // Check if all uses of register REGNO are either unconditionally undefined
   // or use the same single dominating definition.  Return the definition
   // if so, otherwise return null.
@@ -115,6 +120,11 @@ public:
   // allocated during a change attempt.  The object should remain in
   // scope until the change has been aborted or successfully completed.
   obstack_watermark new_change_attempt () { return &m_temp_obstack; }
+
+  // SET either occurs in BB or is known to be available on entry to BB.
+  // Return true if it is also available on exit from BB.  (The value
+  // might or might not be live.)
+  bool remains_available_on_exit (const set_info *set, bb_info *bb);
 
   // Make a best attempt to check whether the values used by USES are
   // available on entry to BB, without solving a full dataflow problem.
@@ -357,6 +367,10 @@ private:
   // on it.  As with M_QUEUED_INSN_UPDATES, these updates are queued until
   // a convenient point.
   auto_bitmap m_need_to_purge_dead_edges;
+
+  // The set of hard registers that are fully or partially clobbered
+  // by at least one insn_call_clobbers_note.
+  HARD_REG_SET m_clobbered_by_calls;
 };
 
 void pp_function (pretty_printer *, const function_info *);

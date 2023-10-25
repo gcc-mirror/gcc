@@ -1303,6 +1303,31 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
   return insert_access (watermark, clobber, old_defs);
 }
 
+// See the comment above the declaration.
+bool
+function_info::remains_available_on_exit (const set_info *set, bb_info *bb)
+{
+  if (HARD_REGISTER_NUM_P (set->regno ())
+      && TEST_HARD_REG_BIT (m_clobbered_by_calls, set->regno ()))
+    {
+      insn_info *search_insn = (set->bb () == bb
+				? set->insn ()
+				: bb->head_insn ());
+      for (ebb_call_clobbers_info *call_group : bb->ebb ()->call_clobbers ())
+	{
+	  if (!call_group->clobbers (set->resource ()))
+	    continue;
+
+	  insn_info *insn = next_call_clobbers (*call_group, search_insn);
+	  if (insn && insn->bb () == bb)
+	    return false;
+	}
+    }
+
+  return (set->is_last_def ()
+	  || *set->next_def ()->insn () > *bb->end_insn ());
+}
+
 // A subroutine of make_uses_available.  Try to make USE's definition
 // available at the head of BB.  WILL_BE_DEBUG_USE is true if the
 // definition will be used only in debug instructions.
