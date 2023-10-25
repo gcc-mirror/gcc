@@ -866,11 +866,14 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 
   start_insn_accesses ();
 
+  HARD_REG_SET added_regs = {};
   FOR_EACH_ARTIFICIAL_USE (ref, cfg_bb->index)
     if ((DF_REF_FLAGS (ref) & DF_REF_AT_TOP) == flags)
       {
 	unsigned int regno = DF_REF_REGNO (ref);
 	machine_mode mode = GET_MODE (DF_REF_REAL_REG (ref));
+	if (HARD_REGISTER_NUM_P (regno))
+	  SET_HARD_REG_BIT (added_regs, regno);
 
 	// A definition must be available.
 	gcc_checking_assert (bitmap_bit_p (&lr_info->in, regno)
@@ -879,10 +882,20 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 	m_temp_uses.safe_push (create_reg_use (bi, insn, { mode, regno }));
       }
 
-  // Track the return value of memory by adding an artificial use of
-  // memory at the end of the exit block.
-  if (flags == 0 && cfg_bb->index == EXIT_BLOCK)
+  // Ensure that global registers and memory are live at the end of any
+  // block that has no successors, such as the exit block and non-local gotos.
+  // Global registers have to be singled out because they are not part of
+  // the DF artifical use list (they are instead treated as used within
+  // every block).
+  if (flags == 0 && EDGE_COUNT (cfg_bb->succs) == 0)
     {
+      for (unsigned int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+	if (global_regs[i] && !TEST_HARD_REG_BIT (added_regs, i))
+	  {
+	    auto mode = reg_raw_mode[i];
+	    m_temp_uses.safe_push (create_reg_use (bi, insn, { mode, i }));
+	  }
+
       auto *use = allocate<use_info> (insn, memory, bi.current_mem_value ());
       add_use (use);
       m_temp_uses.safe_push (use);
