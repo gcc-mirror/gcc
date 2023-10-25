@@ -209,6 +209,35 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
   return true;
 }
 
+// SET has been deleted.  Clean up all remaining uses.  Such uses are
+// either dead phis or now-redundant live-out uses.
+void
+function_info::process_uses_of_deleted_def (set_info *set)
+{
+  if (!set->has_any_uses ())
+    return;
+
+  auto *use = *set->all_uses ().begin ();
+  do
+    {
+      auto *next_use = use->next_use ();
+      if (use->is_in_phi ())
+	{
+	  // This call will not recurse.
+	  process_uses_of_deleted_def (use->phi ());
+	  delete_phi (use->phi ());
+	}
+      else
+	{
+	  gcc_assert (use->is_live_out_use ());
+	  remove_use (use);
+	}
+      use = next_use;
+    }
+  while (use);
+  gcc_assert (!set->has_any_uses ());
+}
+
 // Update the REG_NOTES of INSN, whose pattern has just been changed.
 static void
 update_notes (rtx_insn *insn)
@@ -695,7 +724,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
     }
 
   // Remove all definitions that are no longer needed.  After the above,
-  // such definitions should no longer have any registered users.
+  // the only uses of such definitions should be dead phis and now-redundant
+  // live-out uses.
   //
   // In particular, this means that consumers must handle debug
   // instructions before removing a set.
@@ -704,7 +734,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
       if (def->m_has_been_superceded)
 	{
 	  auto *set = dyn_cast<set_info *> (def);
-	  gcc_assert (!set || !set->has_any_uses ());
+	  if (set && set->has_any_uses ())
+	    process_uses_of_deleted_def (set);
 	  remove_def (def);
 	}
 

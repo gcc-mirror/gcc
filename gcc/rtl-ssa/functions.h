@@ -263,6 +263,7 @@ private:
   bb_info *create_bb_info (basic_block);
   void append_bb (bb_info *);
 
+  void process_uses_of_deleted_def (set_info *);
   insn_info *add_placeholder_after (insn_info *);
   void possibly_queue_changes (insn_change &);
   void finalize_new_accesses (insn_change &, insn_info *);
