@@ -133,7 +133,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="gettext libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libiconv libctf libsframe"
+host_libs="gettext libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libiconv libctf libsframe libgrust "
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -164,6 +164,7 @@ target_libraries="target-libgcc \
 		target-libada \
 		target-libgm2 \
 		target-libgo \
+		target-libgrust \
 		target-libphobos \
 		target-zlib"
 
@@ -2468,6 +2469,17 @@ case ,${enable_languages}, in
     ;;
   *)
     noconfigdirs="$noconfigdirs target-libitm target-libsanitizer target-libvtv"
+    ;;
+esac
+
+case ,${enable_languages}, in
+  *,rust,*)
+    case " ${noconfigdirs} " in
+      *\ target-libstdc++-v3\ *)
+        # Disable target libgrust if we're not building target libstdc++.
+        noconfigdirs="$noconfigdirs target-libgrust"
+        ;;
+    esac
     ;;
 esac
 

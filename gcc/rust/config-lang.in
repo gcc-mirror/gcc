@@ -29,4 +29,7 @@ compilers="rust1\$(exeext)"
 
 build_by_default="no"
 
+target_libs="target-libgrust"
+lang_dirs=libgrust
+
 gtfiles="\$(srcdir)/rust/rust-lang.cc"

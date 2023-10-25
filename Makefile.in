@@ -1131,7 +1131,8 @@ configure-host:  \
     maybe-configure-libcc1 \
     maybe-configure-gotools \
     maybe-configure-libctf \
-    maybe-configure-libsframe
+    maybe-configure-libsframe \
+    maybe-configure-libgrust
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -1156,7 +1157,8 @@ configure-target:  \
     maybe-configure-target-libgm2 \
     maybe-configure-target-libgomp \
     maybe-configure-target-libitm \
-    maybe-configure-target-libatomic
+    maybe-configure-target-libatomic \
+    maybe-configure-target-libgrust
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
@@ -1312,6 +1314,7 @@ all-host: maybe-all-libctf
 @if libsframe-no-bootstrap
 all-host: maybe-all-libsframe
 @endif libsframe-no-bootstrap
+all-host: maybe-all-libgrust
 
 .PHONY: all-target
 
@@ -1356,6 +1359,7 @@ all-target: maybe-all-target-libitm
 @if target-libatomic-no-bootstrap
 all-target: maybe-all-target-libatomic
 @endif target-libatomic-no-bootstrap
+all-target: maybe-all-target-libgrust
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -1426,6 +1430,7 @@ info-host: maybe-info-libcc1
 info-host: maybe-info-gotools
 info-host: maybe-info-libctf
 info-host: maybe-info-libsframe
+info-host: maybe-info-libgrust
 
 .PHONY: info-target
 
@@ -1452,6 +1457,7 @@ info-target: maybe-info-target-libgm2
 info-target: maybe-info-target-libgomp
 info-target: maybe-info-target-libitm
 info-target: maybe-info-target-libatomic
+info-target: maybe-info-target-libgrust
 
 .PHONY: do-dvi
 do-dvi:
@@ -1517,6 +1523,7 @@ dvi-host: maybe-dvi-libcc1
 dvi-host: maybe-dvi-gotools
 dvi-host: maybe-dvi-libctf
 dvi-host: maybe-dvi-libsframe
+dvi-host: maybe-dvi-libgrust
 
 .PHONY: dvi-target
 
@@ -1543,6 +1550,7 @@ dvi-target: maybe-dvi-target-libgm2
 dvi-target: maybe-dvi-target-libgomp
 dvi-target: maybe-dvi-target-libitm
 dvi-target: maybe-dvi-target-libatomic
+dvi-target: maybe-dvi-target-libgrust
 
 .PHONY: do-pdf
 do-pdf:
@@ -1608,6 +1616,7 @@ pdf-host: maybe-pdf-libcc1
 pdf-host: maybe-pdf-gotools
 pdf-host: maybe-pdf-libctf
 pdf-host: maybe-pdf-libsframe
+pdf-host: maybe-pdf-libgrust
 
 .PHONY: pdf-target
 
@@ -1634,6 +1643,7 @@ pdf-target: maybe-pdf-target-libgm2
 pdf-target: maybe-pdf-target-libgomp
 pdf-target: maybe-pdf-target-libitm
 pdf-target: maybe-pdf-target-libatomic
+pdf-target: maybe-pdf-target-libgrust
 
 .PHONY: do-html
 do-html:
@@ -1699,6 +1709,7 @@ html-host: maybe-html-libcc1
 html-host: maybe-html-gotools
 html-host: maybe-html-libctf
 html-host: maybe-html-libsframe
+html-host: maybe-html-libgrust
 
 .PHONY: html-target
 
@@ -1725,6 +1736,7 @@ html-target: maybe-html-target-libgm2
 html-target: maybe-html-target-libgomp
 html-target: maybe-html-target-libitm
 html-target: maybe-html-target-libatomic
+html-target: maybe-html-target-libgrust
 
 .PHONY: do-TAGS
 do-TAGS:
@@ -1790,6 +1802,7 @@ TAGS-host: maybe-TAGS-libcc1
 TAGS-host: maybe-TAGS-gotools
 TAGS-host: maybe-TAGS-libctf
 TAGS-host: maybe-TAGS-libsframe
+TAGS-host: maybe-TAGS-libgrust
 
 .PHONY: TAGS-target
 
@@ -1816,6 +1829,7 @@ TAGS-target: maybe-TAGS-target-libgm2
 TAGS-target: maybe-TAGS-target-libgomp
 TAGS-target: maybe-TAGS-target-libitm
 TAGS-target: maybe-TAGS-target-libatomic
+TAGS-target: maybe-TAGS-target-libgrust
 
 .PHONY: do-install-info
 do-install-info:
@@ -1881,6 +1895,7 @@ install-info-host: maybe-install-info-libcc1
 install-info-host: maybe-install-info-gotools
 install-info-host: maybe-install-info-libctf
 install-info-host: maybe-install-info-libsframe
+install-info-host: maybe-install-info-libgrust
 
 .PHONY: install-info-target
 
@@ -1907,6 +1922,7 @@ install-info-target: maybe-install-info-target-libgm2
 install-info-target: maybe-install-info-target-libgomp
 install-info-target: maybe-install-info-target-libitm
 install-info-target: maybe-install-info-target-libatomic
+install-info-target: maybe-install-info-target-libgrust
 
 .PHONY: do-install-dvi
 do-install-dvi:
@@ -1972,6 +1988,7 @@ install-dvi-host: maybe-install-dvi-libcc1
 install-dvi-host: maybe-install-dvi-gotools
 install-dvi-host: maybe-install-dvi-libctf
 install-dvi-host: maybe-install-dvi-libsframe
+install-dvi-host: maybe-install-dvi-libgrust
 
 .PHONY: install-dvi-target
 
@@ -1998,6 +2015,7 @@ install-dvi-target: maybe-install-dvi-target-libgm2
 install-dvi-target: maybe-install-dvi-target-libgomp
 install-dvi-target: maybe-install-dvi-target-libitm
 install-dvi-target: maybe-install-dvi-target-libatomic
+install-dvi-target: maybe-install-dvi-target-libgrust
 
 .PHONY: do-install-pdf
 do-install-pdf:
@@ -2063,6 +2081,7 @@ install-pdf-host: maybe-install-pdf-libcc1
 install-pdf-host: maybe-install-pdf-gotools
 install-pdf-host: maybe-install-pdf-libctf
 install-pdf-host: maybe-install-pdf-libsframe
+install-pdf-host: maybe-install-pdf-libgrust
 
 .PHONY: install-pdf-target
 
@@ -2089,6 +2108,7 @@ install-pdf-target: maybe-install-pdf-target-libgm2
 install-pdf-target: maybe-install-pdf-target-libgomp
 install-pdf-target: maybe-install-pdf-target-libitm
 install-pdf-target: maybe-install-pdf-target-libatomic
+install-pdf-target: maybe-install-pdf-target-libgrust
 
 .PHONY: do-install-html
 do-install-html:
@@ -2154,6 +2174,7 @@ install-html-host: maybe-install-html-libcc1
 install-html-host: maybe-install-html-gotools
 install-html-host: maybe-install-html-libctf
 install-html-host: maybe-install-html-libsframe
+install-html-host: maybe-install-html-libgrust
 
 .PHONY: install-html-target
 
@@ -2180,6 +2201,7 @@ install-html-target: maybe-install-html-target-libgm2
 install-html-target: maybe-install-html-target-libgomp
 install-html-target: maybe-install-html-target-libitm
 install-html-target: maybe-install-html-target-libatomic
+install-html-target: maybe-install-html-target-libgrust
 
 .PHONY: do-installcheck
 do-installcheck:
@@ -2245,6 +2267,7 @@ installcheck-host: maybe-installcheck-libcc1
 installcheck-host: maybe-installcheck-gotools
 installcheck-host: maybe-installcheck-libctf
 installcheck-host: maybe-installcheck-libsframe
+installcheck-host: maybe-installcheck-libgrust
 
 .PHONY: installcheck-target
 
@@ -2271,6 +2294,7 @@ installcheck-target: maybe-installcheck-target-libgm2
 installcheck-target: maybe-installcheck-target-libgomp
 installcheck-target: maybe-installcheck-target-libitm
 installcheck-target: maybe-installcheck-target-libatomic
+installcheck-target: maybe-installcheck-target-libgrust
 
 .PHONY: do-mostlyclean
 do-mostlyclean:
@@ -2336,6 +2360,7 @@ mostlyclean-host: maybe-mostlyclean-libcc1
 mostlyclean-host: maybe-mostlyclean-gotools
 mostlyclean-host: maybe-mostlyclean-libctf
 mostlyclean-host: maybe-mostlyclean-libsframe
+mostlyclean-host: maybe-mostlyclean-libgrust
 
 .PHONY: mostlyclean-target
 
@@ -2362,6 +2387,7 @@ mostlyclean-target: maybe-mostlyclean-target-libgm2
 mostlyclean-target: maybe-mostlyclean-target-libgomp
 mostlyclean-target: maybe-mostlyclean-target-libitm
 mostlyclean-target: maybe-mostlyclean-target-libatomic
+mostlyclean-target: maybe-mostlyclean-target-libgrust
 
 .PHONY: do-clean
 do-clean:
@@ -2427,6 +2453,7 @@ clean-host: maybe-clean-libcc1
 clean-host: maybe-clean-gotools
 clean-host: maybe-clean-libctf
 clean-host: maybe-clean-libsframe
+clean-host: maybe-clean-libgrust
 
 .PHONY: clean-target
 
@@ -2453,6 +2480,7 @@ clean-target: maybe-clean-target-libgm2
 clean-target: maybe-clean-target-libgomp
 clean-target: maybe-clean-target-libitm
 clean-target: maybe-clean-target-libatomic
+clean-target: maybe-clean-target-libgrust
 
 .PHONY: do-distclean
 do-distclean:
@@ -2518,6 +2546,7 @@ distclean-host: maybe-distclean-libcc1
 distclean-host: maybe-distclean-gotools
 distclean-host: maybe-distclean-libctf
 distclean-host: maybe-distclean-libsframe
+distclean-host: maybe-distclean-libgrust
 
 .PHONY: distclean-target
 
@@ -2544,6 +2573,7 @@ distclean-target: maybe-distclean-target-libgm2
 distclean-target: maybe-distclean-target-libgomp
 distclean-target: maybe-distclean-target-libitm
 distclean-target: maybe-distclean-target-libatomic
+distclean-target: maybe-distclean-target-libgrust
 
 .PHONY: do-maintainer-clean
 do-maintainer-clean:
@@ -2609,6 +2639,7 @@ maintainer-clean-host: maybe-maintainer-clean-libcc1
 maintainer-clean-host: maybe-maintainer-clean-gotools
 maintainer-clean-host: maybe-maintainer-clean-libctf
 maintainer-clean-host: maybe-maintainer-clean-libsframe
+maintainer-clean-host: maybe-maintainer-clean-libgrust
 
 .PHONY: maintainer-clean-target
 
@@ -2635,6 +2666,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libgm2
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
 maintainer-clean-target: maybe-maintainer-clean-target-libitm
 maintainer-clean-target: maybe-maintainer-clean-target-libatomic
+maintainer-clean-target: maybe-maintainer-clean-target-libgrust
 
 
 # Here are the targets which correspond to the do-X targets.
@@ -2757,7 +2789,8 @@ check-host:  \
     maybe-check-libcc1 \
     maybe-check-gotools \
     maybe-check-libctf \
-    maybe-check-libsframe
+    maybe-check-libsframe \
+    maybe-check-libgrust
 
 .PHONY: check-target
 check-target:  \
@@ -2783,7 +2816,8 @@ check-target:  \
     maybe-check-target-libgm2 \
     maybe-check-target-libgomp \
     maybe-check-target-libitm \
-    maybe-check-target-libatomic
+    maybe-check-target-libatomic \
+    maybe-check-target-libgrust
 
 do-check:
 	@: $(MAKE); $(unstage)
@@ -2895,7 +2929,8 @@ install-host-nogcc:  \
     maybe-install-libcc1 \
     maybe-install-gotools \
     maybe-install-libctf \
-    maybe-install-libsframe
+    maybe-install-libsframe \
+    maybe-install-libgrust
 
 .PHONY: install-host
 install-host:  \
@@ -2951,7 +2986,8 @@ install-host:  \
     maybe-install-libcc1 \
     maybe-install-gotools \
     maybe-install-libctf \
-    maybe-install-libsframe
+    maybe-install-libsframe \
+    maybe-install-libgrust
 
 .PHONY: install-target
 install-target:  \
@@ -2977,7 +3013,8 @@ install-target:  \
     maybe-install-target-libgm2 \
     maybe-install-target-libgomp \
     maybe-install-target-libitm \
-    maybe-install-target-libatomic
+    maybe-install-target-libatomic \
+    maybe-install-target-libgrust
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -3062,7 +3099,8 @@ install-strip-host:  \
     maybe-install-strip-libcc1 \
     maybe-install-strip-gotools \
     maybe-install-strip-libctf \
-    maybe-install-strip-libsframe
+    maybe-install-strip-libsframe \
+    maybe-install-strip-libgrust
 
 .PHONY: install-strip-target
 install-strip-target:  \
@@ -3088,7 +3126,8 @@ install-strip-target:  \
     maybe-install-strip-target-libgm2 \
     maybe-install-strip-target-libgomp \
     maybe-install-strip-target-libitm \
-    maybe-install-strip-target-libatomic
+    maybe-install-strip-target-libatomic \
+    maybe-install-strip-target-libgrust
 
 
 ### other supporting targets
@@ -43944,6 +43983,474 @@ maintainer-clean-libsframe:
 
 
 
+.PHONY: configure-libgrust maybe-configure-libgrust
+maybe-configure-libgrust:
+@if gcc-bootstrap
+configure-libgrust: stage_current
+@endif gcc-bootstrap
+@if libgrust
+maybe-configure-libgrust: configure-libgrust
+configure-libgrust: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/libgrust; \
+	cd "$(HOST_SUBDIR)/libgrust" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif libgrust
+
+
+
+
+
+.PHONY: all-libgrust maybe-all-libgrust
+maybe-all-libgrust:
+@if gcc-bootstrap
+all-libgrust: stage_current
+@endif gcc-bootstrap
+@if libgrust
+TARGET-libgrust=all
+maybe-all-libgrust: all-libgrust
+all-libgrust: configure-libgrust
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-libgrust))
+@endif libgrust
+
+
+
+
+.PHONY: check-libgrust maybe-check-libgrust
+maybe-check-libgrust:
+@if libgrust
+maybe-check-libgrust: check-libgrust
+
+check-libgrust:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif libgrust
+
+.PHONY: install-libgrust maybe-install-libgrust
+maybe-install-libgrust:
+@if libgrust
+maybe-install-libgrust: install-libgrust
+
+install-libgrust: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libgrust
+
+.PHONY: install-strip-libgrust maybe-install-strip-libgrust
+maybe-install-strip-libgrust:
+@if libgrust
+maybe-install-strip-libgrust: install-strip-libgrust
+
+install-strip-libgrust: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libgrust
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libgrust info-libgrust
+maybe-info-libgrust:
+@if libgrust
+maybe-info-libgrust: info-libgrust
+
+info-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-dvi-libgrust dvi-libgrust
+maybe-dvi-libgrust:
+@if libgrust
+maybe-dvi-libgrust: dvi-libgrust
+
+dvi-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-pdf-libgrust pdf-libgrust
+maybe-pdf-libgrust:
+@if libgrust
+maybe-pdf-libgrust: pdf-libgrust
+
+pdf-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-html-libgrust html-libgrust
+maybe-html-libgrust:
+@if libgrust
+maybe-html-libgrust: html-libgrust
+
+html-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-TAGS-libgrust TAGS-libgrust
+maybe-TAGS-libgrust:
+@if libgrust
+maybe-TAGS-libgrust: TAGS-libgrust
+
+TAGS-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-install-info-libgrust install-info-libgrust
+maybe-install-info-libgrust:
+@if libgrust
+maybe-install-info-libgrust: install-info-libgrust
+
+install-info-libgrust: \
+    configure-libgrust \
+    info-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-install-dvi-libgrust install-dvi-libgrust
+maybe-install-dvi-libgrust:
+@if libgrust
+maybe-install-dvi-libgrust: install-dvi-libgrust
+
+install-dvi-libgrust: \
+    configure-libgrust \
+    dvi-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-install-pdf-libgrust install-pdf-libgrust
+maybe-install-pdf-libgrust:
+@if libgrust
+maybe-install-pdf-libgrust: install-pdf-libgrust
+
+install-pdf-libgrust: \
+    configure-libgrust \
+    pdf-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-install-html-libgrust install-html-libgrust
+maybe-install-html-libgrust:
+@if libgrust
+maybe-install-html-libgrust: install-html-libgrust
+
+install-html-libgrust: \
+    configure-libgrust \
+    html-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-installcheck-libgrust installcheck-libgrust
+maybe-installcheck-libgrust:
+@if libgrust
+maybe-installcheck-libgrust: installcheck-libgrust
+
+installcheck-libgrust: \
+    configure-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-mostlyclean-libgrust mostlyclean-libgrust
+maybe-mostlyclean-libgrust:
+@if libgrust
+maybe-mostlyclean-libgrust: mostlyclean-libgrust
+
+mostlyclean-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-clean-libgrust clean-libgrust
+maybe-clean-libgrust:
+@if libgrust
+maybe-clean-libgrust: clean-libgrust
+
+clean-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-distclean-libgrust distclean-libgrust
+maybe-distclean-libgrust:
+@if libgrust
+maybe-distclean-libgrust: distclean-libgrust
+
+distclean-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libgrust
+
+.PHONY: maybe-maintainer-clean-libgrust maintainer-clean-libgrust
+maybe-maintainer-clean-libgrust:
+@if libgrust
+maybe-maintainer-clean-libgrust: maintainer-clean-libgrust
+
+maintainer-clean-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libgrust"; \
+	(cd $(HOST_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libgrust
+
+
+
 # ---------------------------------------
 # Modules which run on the target machine
 # ---------------------------------------
@@ -62018,6 +62525,491 @@ maintainer-clean-target-libatomic:
 
 
 
+
+
+.PHONY: configure-target-libgrust maybe-configure-target-libgrust
+maybe-configure-target-libgrust:
+@if gcc-bootstrap
+configure-target-libgrust: stage_current
+@endif gcc-bootstrap
+@if target-libgrust
+maybe-configure-target-libgrust: configure-target-libgrust
+configure-target-libgrust: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libgrust..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgrust; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgrust/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libgrust/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgrust/multilib.tmp $(TARGET_SUBDIR)/libgrust/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgrust/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgrust/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgrust/multilib.tmp $(TARGET_SUBDIR)/libgrust/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgrust/multilib.tmp $(TARGET_SUBDIR)/libgrust/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgrust; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libgrust; \
+	cd "$(TARGET_SUBDIR)/libgrust" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif target-libgrust
+
+
+
+
+
+.PHONY: all-target-libgrust maybe-all-target-libgrust
+maybe-all-target-libgrust:
+@if gcc-bootstrap
+all-target-libgrust: stage_current
+@endif gcc-bootstrap
+@if target-libgrust
+TARGET-target-libgrust=all
+maybe-all-target-libgrust: all-target-libgrust
+all-target-libgrust: configure-target-libgrust
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
+		$(TARGET-target-libgrust))
+@endif target-libgrust
+
+
+
+
+
+.PHONY: check-target-libgrust maybe-check-target-libgrust
+maybe-check-target-libgrust:
+@if target-libgrust
+maybe-check-target-libgrust: check-target-libgrust
+
+check-target-libgrust:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libgrust
+
+.PHONY: install-target-libgrust maybe-install-target-libgrust
+maybe-install-target-libgrust:
+@if target-libgrust
+maybe-install-target-libgrust: install-target-libgrust
+
+install-target-libgrust: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libgrust
+
+.PHONY: install-strip-target-libgrust maybe-install-strip-target-libgrust
+maybe-install-strip-target-libgrust:
+@if target-libgrust
+maybe-install-strip-target-libgrust: install-strip-target-libgrust
+
+install-strip-target-libgrust: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libgrust
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libgrust info-target-libgrust
+maybe-info-target-libgrust:
+@if target-libgrust
+maybe-info-target-libgrust: info-target-libgrust
+
+info-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-dvi-target-libgrust dvi-target-libgrust
+maybe-dvi-target-libgrust:
+@if target-libgrust
+maybe-dvi-target-libgrust: dvi-target-libgrust
+
+dvi-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-pdf-target-libgrust pdf-target-libgrust
+maybe-pdf-target-libgrust:
+@if target-libgrust
+maybe-pdf-target-libgrust: pdf-target-libgrust
+
+pdf-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-html-target-libgrust html-target-libgrust
+maybe-html-target-libgrust:
+@if target-libgrust
+maybe-html-target-libgrust: html-target-libgrust
+
+html-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-TAGS-target-libgrust TAGS-target-libgrust
+maybe-TAGS-target-libgrust:
+@if target-libgrust
+maybe-TAGS-target-libgrust: TAGS-target-libgrust
+
+TAGS-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-install-info-target-libgrust install-info-target-libgrust
+maybe-install-info-target-libgrust:
+@if target-libgrust
+maybe-install-info-target-libgrust: install-info-target-libgrust
+
+install-info-target-libgrust: \
+    configure-target-libgrust \
+    info-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-install-dvi-target-libgrust install-dvi-target-libgrust
+maybe-install-dvi-target-libgrust:
+@if target-libgrust
+maybe-install-dvi-target-libgrust: install-dvi-target-libgrust
+
+install-dvi-target-libgrust: \
+    configure-target-libgrust \
+    dvi-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-install-pdf-target-libgrust install-pdf-target-libgrust
+maybe-install-pdf-target-libgrust:
+@if target-libgrust
+maybe-install-pdf-target-libgrust: install-pdf-target-libgrust
+
+install-pdf-target-libgrust: \
+    configure-target-libgrust \
+    pdf-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-install-html-target-libgrust install-html-target-libgrust
+maybe-install-html-target-libgrust:
+@if target-libgrust
+maybe-install-html-target-libgrust: install-html-target-libgrust
+
+install-html-target-libgrust: \
+    configure-target-libgrust \
+    html-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-installcheck-target-libgrust installcheck-target-libgrust
+maybe-installcheck-target-libgrust:
+@if target-libgrust
+maybe-installcheck-target-libgrust: installcheck-target-libgrust
+
+installcheck-target-libgrust: \
+    configure-target-libgrust 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-mostlyclean-target-libgrust mostlyclean-target-libgrust
+maybe-mostlyclean-target-libgrust:
+@if target-libgrust
+maybe-mostlyclean-target-libgrust: mostlyclean-target-libgrust
+
+mostlyclean-target-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-clean-target-libgrust clean-target-libgrust
+maybe-clean-target-libgrust:
+@if target-libgrust
+maybe-clean-target-libgrust: clean-target-libgrust
+
+clean-target-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-distclean-target-libgrust distclean-target-libgrust
+maybe-distclean-target-libgrust:
+@if target-libgrust
+maybe-distclean-target-libgrust: distclean-target-libgrust
+
+distclean-target-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libgrust
+
+.PHONY: maybe-maintainer-clean-target-libgrust maintainer-clean-target-libgrust
+maybe-maintainer-clean-target-libgrust:
+@if target-libgrust
+maybe-maintainer-clean-target-libgrust: maintainer-clean-target-libgrust
+
+maintainer-clean-target-libgrust: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgrust"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgrust && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libgrust
+
+
+
 @if target-libgomp
 .PHONY: check-target-libgomp-c++
 check-target-libgomp-c++:
@@ -65606,6 +66598,7 @@ configure-stagetrain-target-libatomic: maybe-all-stagetrain-gcc
 configure-stagefeedback-target-libatomic: maybe-all-stagefeedback-gcc
 configure-stageautoprofile-target-libatomic: maybe-all-stageautoprofile-gcc
 configure-stageautofeedback-target-libatomic: maybe-all-stageautofeedback-gcc
+configure-target-libgrust: stage_last
 @endif gcc-bootstrap
 
 @if gcc-no-bootstrap
@@ -65632,6 +66625,7 @@ configure-target-libgm2: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
 configure-target-libitm: maybe-all-gcc
 configure-target-libatomic: maybe-all-gcc
+configure-target-libgrust: maybe-all-gcc
 @endif gcc-no-bootstrap
 
 
@@ -66941,6 +67935,7 @@ all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libatomic
 configure-target-libgm2: maybe-all-target-libstdc++-v3
 all-target-libgm2: maybe-all-target-libatomic
+configure-target-libgrust: maybe-all-target-libstdc++-v3
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libbacktrace
@@ -67050,6 +68045,7 @@ configure-target-libgm2: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
 configure-target-libitm: maybe-all-target-libgcc
 configure-target-libatomic: maybe-all-target-libgcc
+configure-target-libgrust: maybe-all-target-libgcc
 @endif gcc-no-bootstrap
 
 
@@ -67097,6 +68093,8 @@ configure-target-libitm: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libitm: maybe-all-target-libstdc++-v3
 
 configure-target-libatomic: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libgrust: maybe-all-target-newlib maybe-all-target-libgloss
 
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
