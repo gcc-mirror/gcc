@@ -53,9 +53,11 @@ __attribute__ ((aligned(256))) struct
 __attribute__ ((aligned(256))) struct
 {
   volatile uint64_t c1;
+  char pad1[256 - sizeof(uint64_t)];
   volatile uint64_t c2;
+  char pad2[256 - sizeof(uint64_t)];
   volatile uint64_t c3;
-} counters = { 0, 0, 0 };
+} counters = { 0 };
 
 /* ---------------------------- local helper functions --------------------- */
 
