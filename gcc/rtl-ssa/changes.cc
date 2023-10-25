@@ -429,8 +429,18 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
   // Also keep any explicitly-recorded call clobbers, which are deliberately
   // excluded from the vec_rtx_properties.  Calls shouldn't move, so we can
   // keep the definitions in their current position.
+  //
+  // If the change describes a set of memory, but the pattern doesn't
+  // reference memory, keep the set anyway.  This can happen if the
+  // old pattern was a parallel that contained a memory clobber, and if
+  // the new pattern was recognized without that clobber.  Keeping the
+  // set avoids a linear-complexity update to the set's users.
+  //
+  // ??? We could queue an update so that these bogus clobbers are
+  // removed later.
   for (def_info *def : change.new_defs)
-    if (def->m_has_been_superceded && def->is_call_clobber ())
+    if (def->m_has_been_superceded
+	&& (def->is_call_clobber () || def->is_mem ()))
       {
 	def->m_has_been_superceded = false;
 	def->set_insn (insn);
@@ -535,7 +545,7 @@ function_info::finalize_new_accesses (insn_change &change, insn_info *pos)
 	}
     }
 
-  // Install the new list of definitions in CHANGE.
+  // Install the new list of uses in CHANGE.
   sort_accesses (m_temp_uses);
   change.new_uses = use_array (temp_access_array (m_temp_uses));
   m_temp_uses.truncate (0);
