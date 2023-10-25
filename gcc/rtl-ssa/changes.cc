@@ -586,8 +586,6 @@ function_info::apply_changes_to_insn (insn_change &change)
 
       insn->set_accesses (builder.finish ().begin (), num_defs, num_uses);
     }
-
-  add_reg_unused_notes (insn);
 }
 
 // Add a temporary placeholder instruction after AFTER.
@@ -733,9 +731,14 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	}
     }
 
-  // Finally apply the changes to the underlying insn_infos.
+  // Apply the changes to the underlying insn_infos.
   for (insn_change *change : changes)
     apply_changes_to_insn (*change);
+
+  // Now that the insns and accesses are up to date, add any REG_UNUSED notes.
+  for (insn_change *change : changes)
+    if (!change->is_deletion ())
+      add_reg_unused_notes (change->insn ());
 }
 
 // See the comment above the declaration.
