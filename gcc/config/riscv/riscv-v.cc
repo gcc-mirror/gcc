@@ -4447,4 +4447,87 @@ vlmax_avl_type_p (rtx_insn *rinsn)
   return INTVAL (avl_type) == VLMAX;
 }
 
+/* Return true if it is an RVV instruction depends on VL global
+   status register.  */
+bool
+has_vl_op (rtx_insn *rinsn)
+{
+  return recog_memoized (rinsn) >= 0 && get_attr_has_vl_op (rinsn);
+}
+
+/* Get default tail policy.  */
+static bool
+get_default_ta ()
+{
+  /* For the instruction that doesn't require TA, we still need a default value
+     to emit vsetvl. We pick up the default value according to prefer policy. */
+  return (bool) (get_prefer_tail_policy () & 0x1
+		 || (get_prefer_tail_policy () >> 1 & 0x1));
+}
+
+/* Helper function to get TA operand.  */
+bool
+tail_agnostic_p (rtx_insn *rinsn)
+{
+  /* If it doesn't have TA, we return agnostic by default.  */
+  extract_insn_cached (rinsn);
+  int ta = get_attr_ta (rinsn);
+  return ta == INVALID_ATTRIBUTE ? get_default_ta () : IS_AGNOSTIC (ta);
+}
+
+/* Change insn and Assert the change always happens.  */
+void
+validate_change_or_fail (rtx object, rtx *loc, rtx new_rtx, bool in_group)
+{
+  bool change_p = validate_change (object, loc, new_rtx, in_group);
+  gcc_assert (change_p);
+}
+
+/* Return true if it is NONVLMAX AVL TYPE.  */
+bool
+nonvlmax_avl_type_p (rtx_insn *rinsn)
+{
+  extract_insn_cached (rinsn);
+  int index = get_attr_avl_type_idx (rinsn);
+  if (index == INVALID_ATTRIBUTE)
+    return false;
+  rtx avl_type = recog_data.operand[index];
+  return INTVAL (avl_type) == NONVLMAX;
+}
+
+/* Return true if RTX is RVV VLMAX AVL.  */
+bool
+vlmax_avl_p (rtx x)
+{
+  return x && rtx_equal_p (x, RVV_VLMAX);
+}
+
+/* Helper function to get SEW operand. We always have SEW value for
+   all RVV instructions that have VTYPE OP.  */
+uint8_t
+get_sew (rtx_insn *rinsn)
+{
+  return get_attr_sew (rinsn);
+}
+
+/* Helper function to get VLMUL operand. We always have VLMUL value for
+   all RVV instructions that have VTYPE OP. */
+enum vlmul_type
+get_vlmul (rtx_insn *rinsn)
+{
+  return (enum vlmul_type) get_attr_vlmul (rinsn);
+}
+
+/* Count the number of REGNO in RINSN.  */
+int
+count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
+{
+  int count = 0;
+  extract_insn (rinsn);
+  for (int i = 0; i < recog_data.n_operands; i++)
+    if (refers_to_regno_p (regno, recog_data.operand[i]))
+      count++;
+  return count;
+}
+
 } // namespace riscv_vector

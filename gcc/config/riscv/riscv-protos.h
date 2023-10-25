@@ -560,6 +560,14 @@ bool cmp_lmul_gt_one (machine_mode);
 bool gather_scatter_valid_offset_mode_p (machine_mode);
 bool vls_mode_valid_p (machine_mode);
 bool vlmax_avl_type_p (rtx_insn *);
+bool has_vl_op (rtx_insn *);
+bool tail_agnostic_p (rtx_insn *);
+void validate_change_or_fail (rtx, rtx *, rtx, bool);
+bool nonvlmax_avl_type_p (rtx_insn *);
+bool vlmax_avl_p (rtx);
+uint8_t get_sew (rtx_insn *);
+enum vlmul_type get_vlmul (rtx_insn *);
+int count_regno_occurrences (rtx_insn *, unsigned int);
 }
 
 /* We classify builtin types into two classes:

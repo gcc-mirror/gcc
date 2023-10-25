@@ -255,26 +255,12 @@ policy_to_str (bool agnostic_p)
   return agnostic_p ? "agnostic" : "undisturbed";
 }
 
-static bool
-vlmax_avl_p (rtx x)
-{
-  return x && rtx_equal_p (x, RVV_VLMAX);
-}
-
 /* Return true if it is an RVV instruction depends on VTYPE global
    status register.  */
 static bool
 has_vtype_op (rtx_insn *rinsn)
 {
   return recog_memoized (rinsn) >= 0 && get_attr_has_vtype_op (rinsn);
-}
-
-/* Return true if it is an RVV instruction depends on VL global
-   status register.  */
-static bool
-has_vl_op (rtx_insn *rinsn)
-{
-  return recog_memoized (rinsn) >= 0 && get_attr_has_vl_op (rinsn);
 }
 
 /* Return true if the instruction ignores VLMUL field of VTYPE.  */
@@ -371,32 +357,6 @@ get_avl (rtx_insn *rinsn)
   return recog_data.operand[get_attr_vl_op_idx (rinsn)];
 }
 
-/* Helper function to get SEW operand. We always have SEW value for
-   all RVV instructions that have VTYPE OP.  */
-static uint8_t
-get_sew (rtx_insn *rinsn)
-{
-  return get_attr_sew (rinsn);
-}
-
-/* Helper function to get VLMUL operand. We always have VLMUL value for
-   all RVV instructions that have VTYPE OP. */
-static enum vlmul_type
-get_vlmul (rtx_insn *rinsn)
-{
-  return (enum vlmul_type) get_attr_vlmul (rinsn);
-}
-
-/* Get default tail policy.  */
-static bool
-get_default_ta ()
-{
-  /* For the instruction that doesn't require TA, we still need a default value
-     to emit vsetvl. We pick up the default value according to prefer policy. */
-  return (bool) (get_prefer_tail_policy () & 0x1
-		 || (get_prefer_tail_policy () >> 1 & 0x1));
-}
-
 /* Get default mask policy.  */
 static bool
 get_default_ma ()
@@ -405,16 +365,6 @@ get_default_ma ()
      to emit vsetvl. We pick up the default value according to prefer policy. */
   return (bool) (get_prefer_mask_policy () & 0x1
 		 || (get_prefer_mask_policy () >> 1 & 0x1));
-}
-
-/* Helper function to get TA operand.  */
-static bool
-tail_agnostic_p (rtx_insn *rinsn)
-{
-  /* If it doesn't have TA, we return agnostic by default.  */
-  extract_insn_cached (rinsn);
-  int ta = get_attr_ta (rinsn);
-  return ta == INVALID_ATTRIBUTE ? get_default_ta () : IS_AGNOSTIC (ta);
 }
 
 /* Helper function to get MA operand.  */
@@ -474,18 +424,6 @@ get_max_float_sew ()
   else if (TARGET_VECTOR_ELEN_FP_16)
     return 16;
   gcc_unreachable ();
-}
-
-/* Count the number of REGNO in RINSN.  */
-static int
-count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
-{
-  int count = 0;
-  extract_insn (rinsn);
-  for (int i = 0; i < recog_data.n_operands; i++)
-    if (refers_to_regno_p (regno, recog_data.operand[i]))
-      count++;
-  return count;
 }
 
 enum def_type
@@ -694,14 +632,6 @@ has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
       return false;
 
   return true;
-}
-
-/* Change insn and Assert the change always happens.  */
-static void
-validate_change_or_fail (rtx object, rtx *loc, rtx new_rtx, bool in_group)
-{
-  bool change_p = validate_change (object, loc, new_rtx, in_group);
-  gcc_assert (change_p);
 }
 
 /* This flags indicates the minimum demand of the vl and vtype values by the
