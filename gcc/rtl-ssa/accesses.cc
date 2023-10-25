@@ -1305,6 +1305,33 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
 
 // See the comment above the declaration.
 bool
+function_info::remains_available_at_insn (const set_info *set,
+					  insn_info *insn)
+{
+  auto *ebb = set->ebb ();
+  gcc_checking_assert (ebb == insn->ebb ());
+
+  def_info *next_def = set->next_def ();
+  if (next_def && *next_def->insn () < *insn)
+    return false;
+
+  if (HARD_REGISTER_NUM_P (set->regno ())
+      && TEST_HARD_REG_BIT (m_clobbered_by_calls, set->regno ()))
+    for (ebb_call_clobbers_info *call_group : ebb->call_clobbers ())
+      {
+	if (!call_group->clobbers (set->resource ()))
+	  continue;
+
+	insn_info *call_insn = next_call_clobbers (*call_group, insn);
+	if (call_insn && *call_insn < *insn)
+	  return false;
+      }
+
+  return true;
+}
+
+// See the comment above the declaration.
+bool
 function_info::remains_available_on_exit (const set_info *set, bb_info *bb)
 {
   if (HARD_REGISTER_NUM_P (set->regno ())
@@ -1354,14 +1381,20 @@ function_info::make_use_available (use_info *use, bb_info *bb,
   if (is_single_dominating_def (def))
     return use;
 
-  // FIXME: Deliberately limited for fwprop compatibility testing.
+  if (def->ebb () == bb->ebb ())
+    {
+      if (remains_available_at_insn (def, bb->head_insn ()))
+	return use;
+      return nullptr;
+    }
+
   basic_block cfg_bb = bb->cfg_bb ();
   bb_info *use_bb = use->bb ();
   if (single_pred_p (cfg_bb)
       && single_pred (cfg_bb) == use_bb->cfg_bb ()
       && remains_available_on_exit (def, use_bb))
     {
-      if (def->ebb () == bb->ebb () || will_be_debug_use)
+      if (will_be_debug_use)
 	return use;
 
       resource_info resource = use->resource ();

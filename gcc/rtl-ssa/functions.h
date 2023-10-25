@@ -121,6 +121,10 @@ public:
   // scope until the change has been aborted or successfully completed.
   obstack_watermark new_change_attempt () { return &m_temp_obstack; }
 
+  // SET and INSN belong to the same EBB, with SET occuring before INSN.
+  // Return true if SET is still available at INSN.
+  bool remains_available_at_insn (const set_info *set, insn_info *insn);
+
   // SET either occurs in BB or is known to be available on entry to BB.
   // Return true if it is also available on exit from BB.  (The value
   // might or might not be live.)
