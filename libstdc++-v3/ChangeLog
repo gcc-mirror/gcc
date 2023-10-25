@@ -1,3 +1,9 @@
+2023-10-24  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	* include/Makefile.am: Move cstdarg, cstdalign and cstdbool to
+	freestanding.
+	* include/Makefile.in: Regenerate.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

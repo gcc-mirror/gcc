@@ -1,3 +1,16 @@
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* init.cc (build_new_1): Use convert, build2, build3 and
+	cp_fully_fold instead of fold_convert, size_binop and
+	fold_build3 when building up 'size'.
+
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111919
+	* tree.cc (cp_stabilize_reference): Do nothing when
+	processing_template_decl.
+
 2023-10-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR objc++/111920

@@ -1,3 +1,9 @@
+2023-10-24  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/aarch64/heap-trampoline.c: Disable when libc is not
+	present.
+	* config/i386/heap-trampoline.c: Ditto.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/t-slibgcc-darwin: Generate libgcc_s

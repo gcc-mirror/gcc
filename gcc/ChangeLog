@@ -1,3 +1,138 @@
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.cc (constrain_operands): Remove UNARY_P handling.
+	* reload.cc (find_reloads): Likewise.
+
+2023-10-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcov-io.h: Fix record length encoding in comment.
+
+2023-10-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain): Provide
+	more accurate values (sizes) for inter-unit moves with -Os.
+
+2023-10-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc-protos.h (output_shift): Rename to...
+	(output_shift_loop): Tweak API to take an explicit rtx_code.
+	(arc_split_ashl): Prototype new function here.
+	(arc_split_ashr): Likewise.
+	(arc_split_lshr): Likewise.
+	(arc_split_rotl): Likewise.
+	(arc_split_rotr): Likewise.
+	* config/arc/arc.cc (output_shift): Delete local prototype.  Rename.
+	(output_shift_loop): New function replacing output_shift to output
+	a zero overheap loop for SImode shifts and rotates on ARC targets
+	without barrel shifter (i.e. no hardware support for these insns).
+	(arc_split_ashl): New helper function to split *ashlsi3_nobs.
+	(arc_split_ashr): New helper function to split *ashrsi3_nobs.
+	(arc_split_lshr): New helper function to split *lshrsi3_nobs.
+	(arc_split_rotl): New helper function to split *rotlsi3_nobs.
+	(arc_split_rotr): New helper function to split *rotrsi3_nobs.
+	(arc_print_operand): Correct whitespace.
+	(arc_rtx_costs): Likewise.
+	(hwloop_optimize): Likewise.
+	* config/arc/arc.md (ANY_SHIFT_ROTATE): New define_code_iterator.
+	(define_code_attr insn): New code attribute to map to pattern name.
+	(<ANY_SHIFT_ROTATE>si3): New expander unifying previous ashlsi3,
+	ashrsi3 and lshrsi3 define_expands.  Adds rotlsi3 and rotrsi3.
+	(*<ANY_SHIFT_ROTATE>si3_nobs): New define_insn_and_split that
+	unifies the previous *ashlsi3_nobs, *ashrsi3_nobs and *lshrsi3_nobs.
+	We now call arc_split_<insn> in arc.cc to implement each split.
+	(shift_si3): Delete define_insn, all shifts/rotates are now split.
+	(shift_si3_loop): Rename to...
+	(<insn>si3_loop): define_insn to handle loop implementations of
+	SImode shifts and rotates, calling ouput_shift_loop for template.
+	(rotrsi3): Rename to...
+	(*rotrsi3_insn): define_insn for TARGET_BARREL_SHIFTER's ror.
+	(*rotlsi3): New define_insn_and_split to transform left rotates
+	into right rotates before reload.
+	(rotlsi3_cnt1): New define_insn_and_split to implement a left
+	rotate by one bit using an add.f followed by an adc.
+	* config/arc/predicates.md (shiftr4_operator): Delete.
+
+2023-10-24  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.md (mulsi3_700): Update pattern.
+	(mulsi3_v2): Likewise.
+	* config/arc/predicates.md (mpy_dest_reg_operand): Remove it.
+
+2023-10-24  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/104376
+	PR tree-optimization/101541
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation):
+	Allow nop conversions even if it is defined by a statement
+	inside the conditional.
+
+2023-10-24  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111913
+	* match.pd (`popcount(X&Y) + popcount(X|Y)`): Add the resulting
+	type for popcount.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/blocks.cc (function_info::create_degenerate_phi): Check
+	whether the requested phi already exists.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa.h: Include cfgbuild.h.
+	* rtl-ssa/movement.h (can_insert_after): Replace is_jump with the
+	more comprehensive control_flow_insn_p.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/changes.cc (function_info::perform_pending_updates): Check
+	whether an insn has been replaced by a note.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/member-fns.inl (first_any_insn_use): Handle null
+	m_first_use.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386-expand.cc (ix86_split_mmx_punpck): Allow the
+	destination to be wider than the sources.  Take the mode from the
+	first source.
+	(ix86_expand_sse_extend): Pass the destination directly to
+	ix86_split_mmx_punpck, rather than using a fresh register that
+	is half the size.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/predicates.md (aeswidekl_operation): Protect
+	REGNO check with REG_P.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_insn_cost): New function.
+	(TARGET_INSN_COST): Define.
+
+2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_atomic_exchange<mode>): Require
+	!TARGET_LSE.
+
+2023-10-24  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111935
+	* config/riscv/riscv-vector-builtins-bases.cc: fix bug.
+
+2023-10-24  Mark Harmstone  <mark@harmstone.com>
+
+	* opts.cc (debug_type_names): Remove stabs and xcoff.
+	(df_set_names): Adjust.
+
+2023-10-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111947
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_lcm_local_properties): Add REGNO check.
+
 2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/36887

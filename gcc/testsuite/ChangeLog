@@ -1,3 +1,38 @@
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* g++.dg/template/non-dependent28.C: New test.
+
+2023-10-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111919
+	* g++.dg/template/non-dependent27.C: New test.
+
+2023-10-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/mve_vadcq_vsbcq_fpscr_overwrite.c: Fix.
+
+2023-10-24  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/101541
+	* gcc.dg/tree-ssa/phi-opt-39.c: New test.
+
+2023-10-24  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111913
+	* gcc.c-torture/compile/fold-popcount-1.c: New test.
+	* gcc.dg/fold-popcount-8a.c: New test.
+
+2023-10-24  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111935
+	* gcc.target/riscv/rvv/base/pr111935.c: New test.
+
+2023-10-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111947
+	* gcc.target/riscv/rvv/vsetvl/pr111947.c: New test.
+
 2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/36887
