@@ -34,6 +34,7 @@
 #include "emit-rtl.h"
 #include "cfghooks.h"
 #include "cfgrtl.h"
+#include "sreal.h"
 
 using namespace rtl_ssa;
 
@@ -171,18 +172,33 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 {
   unsigned int old_cost = 0;
   unsigned int new_cost = 0;
+  sreal weighted_old_cost = 0;
+  sreal weighted_new_cost = 0;
+  auto entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   for (insn_change *change : changes)
     {
       old_cost += change->old_cost ();
+      basic_block cfg_bb = change->bb ()->cfg_bb ();
+      bool for_speed = optimize_bb_for_speed_p (cfg_bb);
+      if (for_speed)
+	weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+			      * change->old_cost ());
       if (!change->is_deletion ())
 	{
-	  basic_block cfg_bb = change->bb ()->cfg_bb ();
-	  change->new_cost = insn_cost (change->rtl (),
-					optimize_bb_for_speed_p (cfg_bb));
+	  change->new_cost = insn_cost (change->rtl (), for_speed);
 	  new_cost += change->new_cost;
+	  if (for_speed)
+	    weighted_new_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+				  * change->new_cost);
 	}
     }
-  bool ok_p = (strict_p ? new_cost < old_cost : new_cost <= old_cost);
+  bool ok_p;
+  if (weighted_new_cost != weighted_old_cost)
+    ok_p = weighted_new_cost < weighted_old_cost;
+  else if (strict_p)
+    ok_p = new_cost < old_cost;
+  else
+    ok_p = new_cost <= old_cost;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "original cost");
@@ -192,6 +208,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	  fprintf (dump_file, " %c %d", sep, change->old_cost ());
 	  sep = '+';
 	}
+      if (weighted_old_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_old_cost.to_double ());
       fprintf (dump_file, ", replacement cost");
       sep = '=';
       for (const insn_change *change : changes)
@@ -200,6 +218,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	    fprintf (dump_file, " %c %d", sep, change->new_cost);
 	    sep = '+';
 	  }
+      if (weighted_new_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_new_cost.to_double ());
       fprintf (dump_file, "; %s\n",
 	       ok_p ? "keeping replacement" : "rejecting replacement");
     }
