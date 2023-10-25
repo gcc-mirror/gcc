@@ -23105,27 +23105,23 @@ aarch64_expand_cpymem (rtx *operands)
   int mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
+  unsigned align = UINTVAL (operands[3]);
   rtx base;
   machine_mode cur_mode = BLKmode;
-
-  /* Variable-sized memcpy can go through the MOPS expansion if available.  */
-  if (!CONST_INT_P (operands[2]))
-    return aarch64_expand_cpymem_mops (operands);
-
-  unsigned HOST_WIDE_INT size = INTVAL (operands[2]);
-
-  /* Try to inline up to 256 bytes or use the MOPS threshold if available.  */
-  unsigned HOST_WIDE_INT max_copy_size
-    = TARGET_MOPS ? aarch64_mops_memcpy_size_threshold : 256;
-
   bool size_p = optimize_function_for_size_p (cfun);
 
-  /* Large constant-sized cpymem should go through MOPS when possible.
-     It should be a win even for size optimization in the general case.
-     For speed optimization the choice between MOPS and the SIMD sequence
-     depends on the size of the copy, rather than number of instructions,
-     alignment etc.  */
-  if (size > max_copy_size)
+  /* Variable-sized or strict-align copies may use the MOPS expansion.  */
+  if (!CONST_INT_P (operands[2]) || (STRICT_ALIGNMENT && align < 16))
+    return aarch64_expand_cpymem_mops (operands);
+
+  unsigned HOST_WIDE_INT size = UINTVAL (operands[2]);
+
+  /* Try to inline up to 256 bytes.  */
+  unsigned max_copy_size = 256;
+  unsigned mops_threshold = aarch64_mops_memcpy_size_threshold;
+
+  /* Large copies use MOPS when available or a library call.  */
+  if (size > max_copy_size || (TARGET_MOPS && size > mops_threshold))
     return aarch64_expand_cpymem_mops (operands);
 
   int copy_bits = 256;
@@ -23289,12 +23285,13 @@ aarch64_expand_setmem (rtx *operands)
   unsigned HOST_WIDE_INT len;
   rtx dst = operands[0];
   rtx val = operands[2], src;
+  unsigned align = UINTVAL (operands[3]);
   rtx base;
   machine_mode cur_mode = BLKmode, next_mode;
 
-  /* If we don't have SIMD registers or the size is variable use the MOPS
-     inlined sequence if possible.  */
-  if (!CONST_INT_P (operands[1]) || !TARGET_SIMD)
+  /* Variable-sized or strict-align memset may use the MOPS expansion.  */
+  if (!CONST_INT_P (operands[1]) || !TARGET_SIMD
+      || (STRICT_ALIGNMENT && align < 16))
     return aarch64_expand_setmem_mops (operands);
 
   bool size_p = optimize_function_for_size_p (cfun);
@@ -23302,10 +23299,13 @@ aarch64_expand_setmem (rtx *operands)
   /* Default the maximum to 256-bytes when considering only libcall vs
      SIMD broadcast sequence.  */
   unsigned max_set_size = 256;
+  unsigned mops_threshold = aarch64_mops_memset_size_threshold;
 
-  len = INTVAL (operands[1]);
-  if (len > max_set_size && !TARGET_MOPS)
-    return false;
+  len = UINTVAL (operands[1]);
+
+  /* Large memset uses MOPS when available or a library call.  */
+  if (len > max_set_size || (TARGET_MOPS && len > mops_threshold))
+    return aarch64_expand_setmem_mops (operands);
 
   int cst_val = !!(CONST_INT_P (val) && (INTVAL (val) != 0));
   /* The MOPS sequence takes:
@@ -23317,12 +23317,6 @@ aarch64_expand_setmem (rtx *operands)
   /* A libcall to memset in the worst case takes 3 instructions to prepare
      the arguments + 1 for the call.  */
   unsigned libcall_cost = 4;
-
-  /* Upper bound check.  For large constant-sized setmem use the MOPS sequence
-     when available.  */
-  if (TARGET_MOPS
-      && len >= (unsigned HOST_WIDE_INT) aarch64_mops_memset_size_threshold)
-    return aarch64_expand_setmem_mops (operands);
 
   /* Attempt a sequence with a vector broadcast followed by stores.
      Count the number of operations involved to see if it's worth it
@@ -23365,10 +23359,8 @@ aarch64_expand_setmem (rtx *operands)
       simd_ops++;
       n -= mode_bits;
 
-      /* Do certain trailing copies as overlapping if it's going to be
-	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
-	 byte copy it's more efficient to do two overlapping 8 byte copies than
-	 8 + 4 + 2 + 1.  Only do this when -mstrict-align is not supplied.  */
+      /* Emit trailing writes using overlapping unaligned accesses
+	(when !STRICT_ALIGNMENT) - this is smaller and faster.  */
       if (n > 0 && n < copy_limit / 2 && !STRICT_ALIGNMENT)
 	{
 	  next_mode = smallest_mode_for_size (n, MODE_INT);
