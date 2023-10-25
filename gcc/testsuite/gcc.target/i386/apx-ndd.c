@@ -29,6 +29,16 @@ foo2_##OP_NAME##_##TYPE (TYPE *a, TYPE b) \
   return c;			 	  \
 }
 
+#define FOO3(TYPE, OP_NAME, OP, IMM)  \
+TYPE				      \
+__attribute__ ((noipa))		      \
+foo3_##OP_NAME##_##TYPE (TYPE a)      \
+{				      \
+  TYPE b = a OP IMM;		      \
+  return b;			      \
+}			
+
+
 #define F(TYPE, OP_NAME, OP)   \
 TYPE				 \
 __attribute__ ((noipa)) 	 \
@@ -112,6 +122,16 @@ FOO (int, xor, ^)
 FOO1 (int, xor, ^)
 FOO (long, xor, ^)
 FOO1 (long, xor, ^)
+
+FOO (char, shl, <<)
+FOO3 (char, shl, <<, 7)
+FOO (short, shl, <<)
+FOO3 (short, shl, <<, 7)
+FOO (int, shl, <<)
+FOO3 (int, shl, <<, 7)
+FOO (long, shl, <<)
+FOO3 (long, shl, <<, 7)
+
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
@@ -134,3 +154,5 @@ FOO1 (long, xor, ^)
 /* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)ax" 3 } } */
 /* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)si, %(?:|r|e)ax" 2 } } */
 /* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 2 } } */
+/* { dg-final { scan-assembler-times "sal(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "sal(?:l|w|q)\[^\n\r]*7, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
