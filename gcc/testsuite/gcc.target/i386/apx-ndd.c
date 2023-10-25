@@ -2,6 +2,8 @@
 /* { dg-options "-mapxf -march=x86-64 -O2" } */
 /* { dg-final { scan-assembler-not "movl"} } */
 
+#include <stdint.h>
+
 #define FOO(TYPE, OP_NAME, OP)   \
 TYPE				 \
 __attribute__ ((noipa)) 	 \
@@ -132,6 +134,24 @@ FOO3 (int, shl, <<, 7)
 FOO (long, shl, <<)
 FOO3 (long, shl, <<, 7)
 
+FOO (char, sar, >>)
+FOO3 (char, sar, >>, 7)
+FOO (short, sar, >>)
+FOO3 (short, sar, >>, 7)
+FOO (int, sar, >>)
+FOO3 (int, sar, >>, 7)
+FOO (long, sar, >>)
+FOO3 (long, sar, >>, 7)
+
+FOO (uint8_t, shr, >>)
+FOO3 (uint8_t, shr, >>, 7)
+FOO (uint16_t, shr, >>)
+FOO3 (uint16_t, shr, >>, 7)
+FOO (uint32_t, shr, >>)
+FOO3 (uint32_t, shr, >>, 7)
+FOO (uint64_t, shr, >>)
+FOO3 (uint64_t, shr, >>, 7)
+
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
@@ -156,3 +176,7 @@ FOO3 (long, shl, <<, 7)
 /* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 2 } } */
 /* { dg-final { scan-assembler-times "sal(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "sal(?:l|w|q)\[^\n\r]*7, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
+/* { dg-final { scan-assembler-times "sar(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "sar(?:b|l|w|q)\[^\n\r]*7, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "shr(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "shr(?:b|l|w|q)\[^\n\r]*7, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
