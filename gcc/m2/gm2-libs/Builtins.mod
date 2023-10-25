@@ -58,6 +58,22 @@ BEGIN
    RETURN cbuiltin.memcpy (dest, src, nbytes)
 END memcpy ;
 
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnan)) isnanf (x: SHORTREAL) : INTEGER ;
+BEGIN
+   RETURN wrapc.isnanf (x)
+END isnanf ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnan)) isnan (x: REAL) : INTEGER ;
+BEGIN
+   RETURN wrapc.isnan (x)
+END isnan ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_isnan)) isnanl (x: LONGREAL) : INTEGER ;
+BEGIN
+   RETURN wrapc.isnanl (x)
+END isnanl ;
+
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_isfinite)) isfinitef (x: SHORTREAL) : INTEGER ;
 BEGIN
    RETURN wrapc.isfinitef (x)
