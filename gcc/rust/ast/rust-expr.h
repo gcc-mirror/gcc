@@ -226,6 +226,8 @@ public:
 
   LiteralExpr get_literal () const { return lit_expr; }
 
+  LiteralExpr &get_literal () { return lit_expr; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
@@ -256,7 +258,11 @@ public:
 
   SimplePath get_path () const { return path; }
 
+  SimplePath &get_path () { return path; }
+
   LiteralExpr get_literal () const { return lit; }
+
+  LiteralExpr &get_literal () { return lit; }
 
   std::string as_string () const override
   {

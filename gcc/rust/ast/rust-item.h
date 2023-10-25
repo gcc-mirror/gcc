@@ -77,6 +77,8 @@ public:
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
+  Attribute &get_outer_attribute () { return outer_attr; }
+
   TypeParam (Identifier type_representation, location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
@@ -472,6 +474,7 @@ public:
   bool get_is_mut () const { return is_mut; }
 
   Lifetime get_lifetime () const { return lifetime; }
+  Lifetime &get_lifetime () { return lifetime; }
 
   NodeId get_node_id () const { return node_id; }
 
@@ -915,7 +918,9 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
-  FunctionQualifiers get_qualifiers () { return qualifiers; }
+  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+
+  FunctionQualifiers &get_qualifiers () { return qualifiers; }
 
   Visibility &get_visibility () { return vis; }
   const Visibility &get_visibility () const { return vis; }
@@ -1299,6 +1304,8 @@ public:
     return path;
   }
 
+  SimplePath &get_path () { return path; }
+
   /* TODO: find way to ensure only PATH_PREFIXED glob_type has path - factory
    * methods? */
 protected:
@@ -1389,6 +1396,8 @@ public:
     return path;
   }
 
+  SimplePath &get_path () { return path; }
+
   std::vector<std::unique_ptr<UseTree>> &get_trees () { return trees; }
 
   const std::vector<std::unique_ptr<UseTree>> &get_trees () const
@@ -1450,6 +1459,8 @@ public:
     rust_assert (has_path ());
     return path;
   }
+
+  SimplePath &get_path () { return path; }
 
   const Identifier &get_identifier () const
   {
@@ -1676,6 +1687,8 @@ public:
   }
 
   const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
+
+  FunctionQualifiers &get_qualifiers () { return qualifiers; }
 
   Identifier get_function_name () const { return function_name; }
 
@@ -2921,7 +2934,8 @@ public:
   // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause () { return where_clause; }
 
-  FunctionQualifiers get_qualifiers () { return qualifiers; }
+  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+  FunctionQualifiers &get_qualifiers () { return qualifiers; }
 };
 
 // Actual trait item function declaration within traits
@@ -3137,7 +3151,9 @@ public:
   SelfParam &get_self_param () { return self_param; }
   const SelfParam &get_self_param () const { return self_param; }
 
-  FunctionQualifiers get_qualifiers () { return qualifiers; }
+  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+
+  FunctionQualifiers &get_qualifiers () { return qualifiers; }
 };
 
 // Actual trait item method declaration within traits
