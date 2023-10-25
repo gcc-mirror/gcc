@@ -47,7 +47,8 @@ function_info::build_info::build_info (unsigned int num_regs,
     potential_phi_regs (num_regs),
     bb_phis (num_bb_indices),
     bb_mem_live_out (num_bb_indices),
-    bb_to_rpo (num_bb_indices)
+    bb_to_rpo (num_bb_indices),
+    exit_block_dominator (nullptr)
 {
   last_access.safe_grow_cleared (num_regs + 1);
 
@@ -103,21 +104,8 @@ function_info::bb_walker::bb_walker (function_info *function, build_info &bi)
   : dom_walker (CDI_DOMINATORS, ALL_BLOCKS, bi.bb_to_rpo.address ()),
     m_function (function),
     m_bi (bi),
-    m_exit_block_dominator (nullptr)
+    m_exit_block_dominator (bi.exit_block_dominator)
 {
-  // ??? There is no dominance information associated with the exit block,
-  // so work out its immediate dominator using predecessor blocks.  We then
-  // walk the exit block just before popping its immediate dominator.
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (m_function->m_fn)->preds)
-    if (m_exit_block_dominator)
-      m_exit_block_dominator
-	= nearest_common_dominator (CDI_DOMINATORS,
-				    m_exit_block_dominator, e->src);
-    else
-      m_exit_block_dominator = e->src;
-
   // If the exit block is unreachable, process it last.
   if (!m_exit_block_dominator)
     m_exit_block_dominator = ENTRY_BLOCK_PTR_FOR_FN (m_function->m_fn);
@@ -623,6 +611,19 @@ function_info::place_phis (build_info &bi)
   for (unsigned int i = 0; i < num_bb_indices; ++i)
     bitmap_initialize (&frontiers[i], &bitmap_default_obstack);
   compute_dominance_frontiers (frontiers.address ());
+
+  // The normal dominance information doesn't calculate dominators for
+  // the exit block, so we don't get dominance frontiers for them either.
+  // Calculate them by hand.
+  for (edge e : EXIT_BLOCK_PTR_FOR_FN (m_fn)->preds)
+    {
+      basic_block bb = e->src;
+      while (bb != bi.exit_block_dominator)
+	{
+	  bitmap_set_bit (&frontiers[bb->index], EXIT_BLOCK);
+	  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	}
+    }
 
   // In extreme cases, the number of live-in registers can be much
   // greater than the number of phi nodes needed in a block (see PR98863).
@@ -1263,6 +1264,16 @@ function_info::process_all_blocks ()
   unsigned int num_bb_indices = last_basic_block_for_fn (m_fn);
 
   build_info bi (m_num_regs, num_bb_indices);
+
+  // ??? There is no dominance information associated with the exit block,
+  // so work out its immediate dominator using predecessor blocks.
+  for (edge e : EXIT_BLOCK_PTR_FOR_FN (m_fn)->preds)
+    if (bi.exit_block_dominator)
+      bi.exit_block_dominator
+	= nearest_common_dominator (CDI_DOMINATORS,
+				    bi.exit_block_dominator, e->src);
+    else
+      bi.exit_block_dominator = e->src;
 
   calculate_potential_phi_regs (bi);
   create_ebbs (bi);
