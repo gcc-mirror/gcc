@@ -1862,6 +1862,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   std::vector<std::unique_ptr<AST::Item>> take_items ()
   {
