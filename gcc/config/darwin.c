@@ -3284,6 +3284,8 @@ darwin_override_options (void)
     {
       if (strverscmp (darwin_macosx_version_min, "10.14") >= 0)
 	generating_for_darwin_version = 18;
+      else if (strverscmp (darwin_macosx_version_min, "10.8") >= 0)
+	generating_for_darwin_version = 12;
       else if (strverscmp (darwin_macosx_version_min, "10.7") >= 0)
 	generating_for_darwin_version = 11;
       else if (strverscmp (darwin_macosx_version_min, "10.6") >= 0)
@@ -3453,8 +3455,17 @@ darwin_override_options (void)
       && write_symbols == DWARF2_DEBUG)
     flag_var_tracking_uninit = flag_var_tracking;
 
-  /* Final check on PCI options; for Darwin these are not dependent on the PIE
-     ones, although PIE does require PIC to support it.  */
+  if (OPTION_SET_P (flag_pie) && flag_pie)
+    {
+      /* This is a little complicated, to match Xcode tools.
+	 For Darwin, PIE requires PIC codegen, but otherwise is only a link-
+	 time change.  For almost all Darwin, we do not report __PIE__; the
+	 exception is Darwin12-17 and for 32b only.  */
+      flag_pie = generating_for_darwin_version >= 12 && !TARGET_64BIT ? 2 : 0;
+      flag_pic = 2; /* We always set this.  */
+    }
+
+  /* Final check on PIC options.  */
   if (MACHO_DYNAMIC_NO_PIC_P)
     {
       if (flag_pic)
