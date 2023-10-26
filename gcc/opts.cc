@@ -49,7 +49,7 @@ static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 const char *const debug_type_names[] =
 {
-  "none", "stabs", "dwarf-2", "xcoff", "vms", "ctf", "btf"
+  "none", "dwarf-2", "vms", "ctf", "btf"
 };
 
 /* Bitmasks of fundamental debug info formats indexed by enum
@@ -64,7 +64,7 @@ static uint32_t debug_type_masks[] =
 /* Names of the set of debug formats requested by user.  Updated and accessed
    via debug_set_names.  */
 
-static char df_set_names[sizeof "none stabs dwarf-2 xcoff vms ctf btf"];
+static char df_set_names[sizeof "none dwarf-2 vms ctf btf"];
 
 /* Get enum debug_info_type of the specified debug format, for error messages.
    Can be used only for individual debug format types.  */

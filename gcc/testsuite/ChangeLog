@@ -1,3 +1,56 @@
+2023-10-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111367
+	* g++.target/powerpc/pr111367.C: New test.
+
+2023-10-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111837
+	* gfortran.dg/implied_do_io_8.f90: New test.
+
+2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/111884
+	* c-c++-common/alias-1.c: New test.
+
+2023-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/89038
+	* c-c++-common/cpp/Wunknown-pragmas-1.c: New test.
+
+2023-10-17  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-07-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110170-3.c: New test.
+
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* gcc.target/powerpc/pr111380-1.c: New test.
+	* gcc.target/powerpc/pr111380-2.c: New test.
+
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* g++.target/powerpc/pr111366.C: New test.
+
 2023-10-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111694

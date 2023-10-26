@@ -669,6 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__str._M_is_local())
 	  {
+	    (void)_M_use_local_data();
 	    traits_type::copy(_M_local_buf, __str._M_local_buf,
 			      __str.length() + 1);
 	  }
@@ -682,7 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	// basic_stringbuf relies on writing into unallocated capacity so
 	// we mess up the contents if we put a '\0' in the string.
 	_M_length(__str.length());
-	__str._M_data(__str._M_local_data());
+	__str._M_data(__str._M_use_local_data());
 	__str._M_set_length(0);
       }
 
@@ -708,6 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__str._M_is_local())
 	  {
+	    (void)_M_use_local_data();
 	    traits_type::copy(_M_local_buf, __str._M_local_buf,
 			      __str.length() + 1);
 	    _M_length(__str.length());
@@ -719,7 +721,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    _M_data(__str._M_data());
 	    _M_length(__str.length());
 	    _M_capacity(__str._M_allocated_capacity);
-	    __str._M_data(__str._M_local_buf);
+	    __str._M_data(__str._M_use_local_data());
 	    __str._M_set_length(0);
 	  }
 	else

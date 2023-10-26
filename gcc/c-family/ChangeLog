@@ -1,3 +1,18 @@
+2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/111884
+	* c-common.cc (c_common_get_alias_set): Return -1 for char8_t only
+	in C++.
+
+2023-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/89038
+	* c-pragma.cc (handle_pragma_diagnostic_impl):  Handle
+	-Wunknown-pragmas during early processing.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

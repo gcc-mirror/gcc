@@ -1,3 +1,61 @@
+2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111936
+	* src/libbacktrace/Makefile.am: Add -prefer-pic to libtool
+	compile commands.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-10-25  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	Backported from master:
+	2023-10-24  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	* include/Makefile.am: Move cstdarg, cstdalign and cstdbool to
+	freestanding.
+	* include/Makefile.in: Regenerate.
+
+2023-10-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Hash_code_base::_M_hash_code(const _Hash&, const _Hash_node_value<>&)): Remove.
+	(_Hash_code_base::_M_hash_code<_H2>(const _H2&, const _Hash_node_value<>&)): Remove.
+	* include/bits/hashtable.h
+	(_M_src_hash_code<_H2>(const _H2&, const key_type&, const __node_value_type&)): New.
+	(_M_merge_unique<>, _M_merge_multi<>): Use latter.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc
+	(test04, test05, test06): New test cases.
+
+2023-10-21  Benjamin Brock  <brock@cs.berkeley.edu>
+
+	Backported from master:
+	2023-10-21  Benjamin Brock  <brock@cs.berkeley.edu>
+
+	* include/std/ranges (zip_view, adjacent_view): Implement
+	workaround for LLVM-61763.
+
+2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h (operator==(default_sentinel_t)): Fix
+	indentation.
+
+2023-10-21  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2023-09-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* include/bits/basic_string.h: (basic_string(basic_string&&)):
+	Activate _M_local_buf when needed.
+	(basic_string(basic_string&&, const _Alloc&)): Likewise.
+	* include/bits/basic_string.tcc: (basic_string::swap): Likewise.
+	* include/std/variant: (__detail::__variant::__construct_n): New.
+	(__detail::__variant::__emplace): Use __construct_n.
+
 2023-10-02  Tim Song  <t.canens.cpp@gmail.com>
 
 	Backported from master:

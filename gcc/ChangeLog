@@ -1,3 +1,76 @@
+2023-10-24  Mark Harmstone  <mark@harmstone.com>
+
+	Backported from master:
+	2023-10-24  Mark Harmstone  <mark@harmstone.com>
+
+	* opts.cc (debug_type_names): Remove stabs and xcoff.
+	(df_set_names): Adjust.
+
+2023-10-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/111001
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::record_set_of_reg):
+	Skip over nop move insns.
+
+2023-10-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-10-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111367
+	* config/rs6000/rs6000.md (stack_protect_setsi): Support prefixed
+	instruction emission and incorporate to stack_protect_set<mode>.
+	(stack_protect_setdi): Rename to ...
+	(stack_protect_set<mode>): ... this, adjust constraint.
+	(stack_protect_testsi): Support prefixed instruction emission and
+	incorporate to stack_protect_test<mode>.
+	(stack_protect_testdi): Rename to ...
+	(stack_protect_test<mode>): ... this, adjust constraint.
+
+2023-10-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101177
+	* config/sh/sh.md (unnamed split pattern): Fix comparison of
+	find_regno_note result.
+
+2023-10-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/111528
+	* lra-eliminations.cc (lra_eliminate_regs_1): Use simplify_gen_binary
+	rather than gen_rtx_PLUS.
+
+2023-10-17  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-07-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110170
+	* config/i386/i386.md (movdf_internal): Disparage slightly for
+	2 alternatives (r,v) and (v,r) by adding constraint modifier
+	'?'.
+
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111380
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Adopt
+	target_option_default_node when the callee has no option
+	attributes, also simplify the existing code accordingly.
+
+2023-10-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-09-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111366
+	* config/rs6000/rs6000.cc (rs6000_update_ipa_fn_target_info): Skip
+	empty inline asm.
+
 2023-10-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111622
