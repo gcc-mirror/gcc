@@ -25429,7 +25429,7 @@ package body Sem_Util is
 
       --  Check the status of the operand of a type conversion
 
-      elsif Nkind (N) = N_Type_Conversion then
+      elsif Nkind (N) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          return Null_Status (Expression (N));
 
       --  The input denotes a reference to an entity. Determine whether the
