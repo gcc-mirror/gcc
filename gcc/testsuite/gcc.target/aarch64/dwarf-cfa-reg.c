@@ -1,5 +1,6 @@
 /* Verify that CFA register is restored to SP after FP is restored.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target cfi } */
 /* { dg-options "-O0 -gdwarf-2" } */
 /* { dg-final { scan-assembler ".cfi_restore 30" } } */
 /* { dg-final { scan-assembler ".cfi_restore 29" } } */

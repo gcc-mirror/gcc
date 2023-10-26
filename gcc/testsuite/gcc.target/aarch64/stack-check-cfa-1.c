@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fstack-clash-protection --param stack-clash-protection-guard-size=16 -funwind-tables -fno-stack-protector" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
+/* { dg-require-effective-target cfi } */
 
 #define SIZE 128*1024
 #include "stack-check-prologue.h"
