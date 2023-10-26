@@ -19123,6 +19123,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 		    cp_finish_decl (decl, init, const_init, asmspec_tree, 0);
 
+		    if (flag_openmp && VAR_P (decl))
+		      finish_omp_allocate (false, DECL_SOURCE_LOCATION (decl),
+					   decl, args, complain, in_decl);
+
 		    if (ndecl != error_mark_node)
 		      cp_finish_decomp (ndecl, first, cnt);
 		  }

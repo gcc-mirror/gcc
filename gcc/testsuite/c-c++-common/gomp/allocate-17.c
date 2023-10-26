@@ -20,7 +20,7 @@ one ()
   #pragma omp target map(tofrom: result) firstprivate(n)
     {
       int var = 5; //, var2[n];
-      #pragma omp allocate(var) align(128) allocator(omp_low_lat_mem_alloc) /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } } */
+      #pragma omp allocate(var) align(128) allocator(omp_low_lat_mem_alloc)
        var = 7;
 }
 
