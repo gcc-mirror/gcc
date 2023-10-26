@@ -2228,16 +2228,15 @@ preferred_simd_mode (scalar_mode mode)
      vectorizer when we enable them in this target hook. Currently, we can
      support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
      -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
-  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (autovec_use_vlmax_p ())
     {
-      if (TARGET_MIN_VLEN < 128 && lmul < RVV_M2)
+      if (TARGET_MIN_VLEN < 128 && TARGET_MAX_LMUL < RVV_M2)
 	return word_mode;
       /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
 	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
 	 get the auto-vectorization mode.  */
       poly_uint64 nunits;
-      poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * lmul;
+      poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
       poly_uint64 scalar_size = GET_MODE_SIZE (mode);
       gcc_assert (multiple_p (vector_size, scalar_size, &nunits));
       machine_mode rvv_mode;
@@ -2417,10 +2416,9 @@ get_cmp_insn_code (rtx_code code, machine_mode mode)
 unsigned int
 autovectorize_vector_modes (vector_modes *modes, bool)
 {
-  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (autovec_use_vlmax_p ())
     {
-      poly_uint64 full_size = BYTES_PER_RISCV_VECTOR * lmul;
+      poly_uint64 full_size = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
 
       /* Start with a RVV<LMUL>QImode where LMUL is the number of units that
 	 fit a whole vector.
@@ -2448,7 +2446,7 @@ autovectorize_vector_modes (vector_modes *modes, bool)
     }
     /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
     unsigned int i = 0;
-    unsigned int base_size = TARGET_MIN_VLEN * lmul / 8;
+    unsigned int base_size = TARGET_MIN_VLEN * TARGET_MAX_LMUL / 8;
     unsigned int size = base_size;
     machine_mode mode;
     while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
@@ -2470,14 +2468,13 @@ can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
 {
   if (!autovec_use_vlmax_p ())
     return false;
-  int lmul = riscv_autovec_lmul == RVV_DYNAMIC ? RVV_M8 : riscv_autovec_lmul;
   if (riscv_v_ext_vector_mode_p (vector_mode)
-      && multiple_p (BYTES_PER_RISCV_VECTOR * lmul,
+      && multiple_p (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   if (riscv_v_ext_vls_mode_p (vector_mode)
-      && multiple_p (TARGET_MIN_VLEN * lmul, GET_MODE_SIZE (element_mode),
-		     nunits))
+      && multiple_p (TARGET_MIN_VLEN * TARGET_MAX_LMUL,
+		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   return false;
 }
