@@ -1781,26 +1781,17 @@ private:
    attribute.  */
 
 void
-region_model::
-check_external_function_for_access_attr (const gcall *call,
-					 tree callee_fndecl,
-					 region_model_context *ctxt) const
+region_model::check_function_attr_access (const gcall *call,
+					  tree callee_fndecl,
+					  region_model_context *ctxt,
+					  rdwr_map &rdwr_idx) const
 {
   gcc_assert (call);
   gcc_assert (callee_fndecl);
   gcc_assert (ctxt);
 
   tree fntype = TREE_TYPE (callee_fndecl);
-  if (!fntype)
-    return;
-
-  if (!TYPE_ATTRIBUTES (fntype))
-    return;
-
-  /* Initialize a map of attribute access specifications for arguments
-     to the function call.  */
-  rdwr_map rdwr_idx;
-  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+  gcc_assert (fntype);
 
   unsigned argno = 0;
 
@@ -1854,6 +1845,151 @@ check_external_function_for_access_attr (const gcall *call,
     }
 }
 
+/* Subroutine of region_model::check_function_attr_null_terminated_string_arg,
+   checking one instance of __attribute__((null_terminated_string_arg)).  */
+
+void
+region_model::
+check_one_function_attr_null_terminated_string_arg (const gcall *call,
+						    tree callee_fndecl,
+						    region_model_context *ctxt,
+						    rdwr_map &rdwr_idx,
+						    tree attr)
+{
+  gcc_assert (call);
+  gcc_assert (callee_fndecl);
+  gcc_assert (ctxt);
+  gcc_assert (attr);
+
+  tree arg = TREE_VALUE (attr);
+  if (!arg)
+    return;
+
+  /* Convert from 1-based to 0-based index.  */
+  unsigned int arg_idx = TREE_INT_CST_LOW (TREE_VALUE (arg)) - 1;
+
+  /* If there's also an "access" attribute on the ptr param
+     for reading with a size param specified, then that size
+     limits the size of the possible read from the pointer.  */
+  if (const attr_access* access = rdwr_idx.get (arg_idx))
+    if ((access->mode == access_read_only
+	 || access->mode == access_read_write)
+	&& access->sizarg != UINT_MAX)
+      {
+	/* First, check for a null-terminated string *without*
+	   emitting warnings (via a null context), to get an
+	   svalue for the strlen of the buffer (possibly
+	   nullptr if there would be an issue).  */
+	call_details cd_unchecked (call, this, nullptr);
+	const svalue *strlen_sval
+	  = check_for_null_terminated_string_arg (cd_unchecked,
+						  arg_idx);
+
+	/* Get svalue for the size limit argument.  */
+	call_details cd_checked (call, this, ctxt);
+	const svalue *limit_sval
+	  = cd_checked.get_arg_svalue (access->sizarg);
+	const svalue *ptr_sval
+	  = cd_checked.get_arg_svalue (arg_idx);
+	/* Try reading all of the bytes expressed by the size param,
+	   but without checking (via a null context).  */
+	const svalue *limited_sval
+	  = read_bytes (deref_rvalue (ptr_sval, NULL_TREE, nullptr),
+			NULL_TREE,
+			limit_sval,
+			nullptr);
+	if (limited_sval->get_kind () == SK_POISONED)
+	  {
+	    /* Reading up to the truncation limit caused issues.
+	       Assume that the string is meant to be terminated
+	       before then, so perform a *checked* check for the
+	       terminator.  */
+	    check_for_null_terminated_string_arg (cd_checked,
+						  arg_idx);
+	  }
+	else
+	  {
+	    /* Reading up to the truncation limit seems OK; repeat
+	       the read, but with checking enabled.  */
+	    const svalue *limited_sval
+	      = read_bytes (deref_rvalue (ptr_sval, NULL_TREE, ctxt),
+			    NULL_TREE,
+			    limit_sval,
+			    ctxt);
+	  }
+	return;
+      }
+
+  /* Otherwise, we don't have an access-attribute limiting the read.
+     Simulate a read up to the null terminator (if any).  */
+
+  call_details cd (call, this, ctxt);
+  check_for_null_terminated_string_arg (cd, arg_idx);
+}
+
+/* Check CALL a call to external function CALLEE_FNDECL for any uses
+   of __attribute__ ((null_terminated_string_arg)), compaining
+   to CTXT about any issues.
+
+   Use RDWR_IDX for tracking uses of __attribute__ ((access, ....).  */
+
+void
+region_model::
+check_function_attr_null_terminated_string_arg (const gcall *call,
+						tree callee_fndecl,
+						region_model_context *ctxt,
+						rdwr_map &rdwr_idx)
+{
+  gcc_assert (call);
+  gcc_assert (callee_fndecl);
+  gcc_assert (ctxt);
+
+  tree fntype = TREE_TYPE (callee_fndecl);
+  gcc_assert (fntype);
+
+  /* A function declaration can specify multiple attribute
+     null_terminated_string_arg, each with one argument.  */
+  for (tree attr = TYPE_ATTRIBUTES (fntype); attr; attr = TREE_CHAIN (attr))
+    {
+      attr = lookup_attribute ("null_terminated_string_arg", attr);
+      if (!attr)
+	return;
+
+      check_one_function_attr_null_terminated_string_arg (call, callee_fndecl,
+							  ctxt, rdwr_idx,
+							  attr);
+    }
+}
+
+/* Check CALL a call to external function CALLEE_FNDECL for any
+   function attributes, complaining to CTXT about any issues.  */
+
+void
+region_model::check_function_attrs (const gcall *call,
+				    tree callee_fndecl,
+				    region_model_context *ctxt)
+{
+  gcc_assert (call);
+  gcc_assert (callee_fndecl);
+  gcc_assert (ctxt);
+
+  tree fntype = TREE_TYPE (callee_fndecl);
+  if (!fntype)
+    return;
+
+  if (!TYPE_ATTRIBUTES (fntype))
+    return;
+
+  /* Initialize a map of attribute access specifications for arguments
+     to the function call.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+
+  check_function_attr_access (call, callee_fndecl, ctxt, rdwr_idx);
+  check_function_attr_null_terminated_string_arg (call, callee_fndecl,
+						  ctxt, rdwr_idx);
+}
+
 /* Handle a call CALL to a function with unknown behavior.
 
    Traverse the regions in this model, determining what regions are
@@ -1870,7 +2006,7 @@ region_model::handle_unrecognized_call (const gcall *call,
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
   if (fndecl && ctxt)
-    check_external_function_for_access_attr (call, fndecl, ctxt);
+    check_function_attrs (call, fndecl, ctxt);
 
   reachable_regions reachable_regs (this);
 
@@ -3768,14 +3904,14 @@ region_model::scan_for_null_terminator (const region *reg,
    TODO: we should also complain if:
    - the pointer is NULL (or could be).  */
 
-void
+const svalue *
 region_model::check_for_null_terminated_string_arg (const call_details &cd,
-						    unsigned arg_idx)
+						    unsigned arg_idx) const
 {
-  check_for_null_terminated_string_arg (cd,
-					arg_idx,
-					false, /* include_terminator */
-					nullptr); // out_sval
+  return check_for_null_terminated_string_arg (cd,
+					       arg_idx,
+					       false, /* include_terminator */
+					       nullptr); // out_sval
 }
 
 
@@ -3805,7 +3941,7 @@ const svalue *
 region_model::check_for_null_terminated_string_arg (const call_details &cd,
 						    unsigned arg_idx,
 						    bool include_terminator,
-						    const svalue **out_sval)
+						    const svalue **out_sval) const
 {
   class null_terminator_check_event : public custom_event
   {

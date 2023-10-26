@@ -3755,6 +3755,63 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
+@cindex @code{null_terminated_string_arg} function attribute
+@item null_terminated_string_arg
+@itemx null_terminated_string_arg (@var{N})
+The @code{null_terminated_string_arg} attribute may be applied to a
+function that takes a @code{char *} or @code{const char *} at
+referenced argument @var{N}.
+
+It indicates that the passed argument must be a C-style null-terminated
+string.  Specifically, the presence of the attribute implies that, if
+the pointer is non-null, the function may scan through the referenced
+buffer looking for the first zero byte.
+
+In particular, when the analyzer is enabled (via @option{-fanalyzer}),
+if the pointer is non-null, it will simulate scanning for the first
+zero byte in the referenced buffer, and potentially emit
+@option{-Wanalyzer-use-of-uninitialized-value}
+or @option{-Wanalyzer-out-of-bounds} on improperly terminated buffers.
+
+For example, given the following:
+
+@smallexample
+char *example_1 (const char *p)
+  __attribute__((null_terminated_string_arg (1)));
+@end smallexample
+
+the analyzer will check that any non-null pointers passed to the function
+are validly terminated.
+
+If the parameter must be non-null, it is appropriate to use both this
+attribute and the attribute @code{nonnull}, such as in:
+
+@smallexample
+extern char *example_2 (const char *p)
+  __attribute__((null_terminated_string_arg (1),
+                 nonnull (1)));
+@end smallexample
+
+See the @code{nonnull} attribute for more information and
+caveats.
+
+If the pointer argument is also referred to by an @code{access} attribute on the
+function with @var{access-mode} either @code{read_only} or @code{read_write}
+and the latter attribute has the optional @var{size-index} argument
+referring to a size argument, this expressses the maximum size of the access.
+For example, given:
+
+@smallexample
+extern char *example_fn (const char *p, size_t n)
+  __attribute__((null_terminated_string_arg (1),
+                 access (read_only, 1, 2),
+                 nonnull (1)));
+@end smallexample
+
+the analyzer will require the first parameter to be non-null, and either
+be validly null-terminated, or validly readable up to the size specified by
+the second parameter.
+
 @cindex @code{noplt} function attribute
 @item noplt
 The @code{noplt} attribute is the counterpart to option @option{-fno-plt}.
