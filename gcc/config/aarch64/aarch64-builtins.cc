@@ -1980,8 +1980,7 @@ aarch64_init_data_intrinsics (void)
 void
 handle_arm_acle_h (void)
 {
-  if (TARGET_LS64)
-    aarch64_init_ls64_builtins ();
+  aarch64_init_ls64_builtins ();
   aarch64_init_tme_builtins ();
   aarch64_init_memtag_builtins ();
 }
@@ -2228,6 +2227,13 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
     case AARCH64_TME_BUILTIN_TCANCEL:
       return aarch64_check_required_extensions (location, decl,
 						AARCH64_FL_TME);
+
+    case AARCH64_LS64_BUILTIN_LD64B:
+    case AARCH64_LS64_BUILTIN_ST64B:
+    case AARCH64_LS64_BUILTIN_ST64BV:
+    case AARCH64_LS64_BUILTIN_ST64BV0:
+      return aarch64_check_required_extensions (location, decl,
+						AARCH64_FL_LS64);
 
     default:
       break;
