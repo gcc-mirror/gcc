@@ -9556,6 +9556,8 @@
 		(match_dup 4)
 		(label_ref:SI (match_operand 3 ""))))
 	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (match_scratch:SI 5))
+	      (clobber (match_scratch:SI 6))
 	      (use (label_ref:SI (match_operand 2 "")))])]
   "TARGET_ARM"
 {
@@ -9576,15 +9578,15 @@
 				 (label_ref:SI (match_operand 2 "" ""))))
 		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (match_scratch:SI 4 "=&r"))
+	      (clobber (match_scratch:SI 5 "=r"))
 	      (use (label_ref:SI (match_dup 2)))])]
   "TARGET_ARM"
-  "*
-    if (flag_pic)
-      return \"cmp\\t%0, %1\;addls\\t%|pc, %|pc, %0, asl #2\;b\\t%l3\";
-    return   \"cmp\\t%0, %1\;ldrls\\t%|pc, [%|pc, %0, asl #2]\;b\\t%l3\";
-  "
+  {
+    return arm_output_casesi (operands);
+  }
   [(set_attr "conds" "clob")
-   (set_attr "length" "12")
+   (set_attr "length" "24")
    (set_attr "type" "multiple")]
 )
 
