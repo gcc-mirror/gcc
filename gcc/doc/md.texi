@@ -7341,8 +7341,10 @@ store the result in operand 0, otherwise store operand 2 in operand 0.
 The operation only works for the operands are vectors.
 
 @smallexample
-for (i = 0; i < ops[4] + ops[5]; i++)
-  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[4] + ops[5] && op1[i]
+            ? @var{op} op2[i]
+            : op3[i]);
 @end smallexample
 
 where, for example, @var{op} is @code{~} for @samp{cond_len_one_cmpl@var{mode}}.
@@ -7403,8 +7405,10 @@ store the result in operand 0, otherwise store operand 4 in operand 0.
 The operation only works for the operands are vectors.
 
 @smallexample
-for (i = 0; i < ops[5] + ops[6]; i++)
-  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[5] + ops[6] && op1[i]
+            ? op2[i] @var{op} op3[i]
+            : op4[i]);
 @end smallexample
 
 where, for example, @var{op} is @code{+} for @samp{cond_len_add@var{mode}}.
@@ -7436,8 +7440,10 @@ takes 3 operands rather than two.  For example, the vector form of
 @samp{cond_len_fma@var{mode}} is equivalent to:
 
 @smallexample
-for (i = 0; i < ops[6] + ops[7]; i++)
-  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[6] + ops[7] && op1[i]
+            ? fma (op2[i], op3[i], op4[i])
+            : op5[i]);
 @end smallexample
 
 @cindex @code{neg@var{mode}cc} instruction pattern
