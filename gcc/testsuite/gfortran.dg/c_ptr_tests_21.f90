@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-effective-target fopenmp }
 ! { dg-additional-options "-fopenmp" }
 !
 ! Ensure that C_PTR and C_FUNPTR are reported as incompatible types in variant 

@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-effective-target fopenmp }
 ! { dg-additional-options "-fopenmp" }
 !
 ! This failed to compile the declare variant directive due to the C_PTR 
