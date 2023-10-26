@@ -63,41 +63,14 @@ range_operator::fold_range (frange &r, tree type,
     }
 
   frange res;
-  REAL_VALUE_TYPE lb, ub;
-  bool maybe_nan;
-  rv_fold (res, type,
-	   lb, ub, maybe_nan,
+  rv_fold (r, type,
 	   op1.lower_bound (), op1.upper_bound (),
 	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
 
-  // Handle possible NANs by saturating to the appropriate INF if only
-  // one end is a NAN.  If both ends are a NAN, just return a NAN.
-  bool lb_nan = real_isnan (&lb);
-  bool ub_nan = real_isnan (&ub);
-  if (lb_nan && ub_nan)
-    {
-      r.set_nan (type);
-      gcc_checking_assert (r == res);
-      return true;
-    }
-  if (lb_nan)
-    lb = dconstninf;
-  else if (ub_nan)
-    ub = dconstinf;
-
-  r.set (type, lb, ub);
-
-  if (lb_nan || ub_nan || maybe_nan
-      || op1.maybe_isnan ()
-      || op2.maybe_isnan ())
-    // Keep the default NAN (with a varying sign) set by the setter.
-    ;
-  else
-    r.clear_nan ();
-
+  if (r.known_isnan ())
+    return true;
   if (op1.maybe_isnan () || op2.maybe_isnan ())
-    res.update_nan ();
-  gcc_checking_assert (r == res);
+    r.update_nan ();
 
   // If the result has overflowed and flag_trapping_math, folding this
   // operation could elide an overflow or division by zero exception.
@@ -130,17 +103,11 @@ range_operator::fold_range (frange &r, tree type,
 // UB, the final range has the possibility of a NAN.
 void
 range_operator::rv_fold (frange &r, tree type,
-			 REAL_VALUE_TYPE &lb,
-			 REAL_VALUE_TYPE &ub,
-			 bool &maybe_nan,
 			 const REAL_VALUE_TYPE &,
 			 const REAL_VALUE_TYPE &,
 			 const REAL_VALUE_TYPE &,
 			 const REAL_VALUE_TYPE &, relation_kind) const
 {
-  lb = dconstninf;
-  ub = dconstinf;
-  maybe_nan = true;
   r.set (type, dconstninf, dconstinf, nan_state (true));
 }
 
@@ -2479,14 +2446,15 @@ operator_plus::op2_range (frange &r, tree type,
 
 void
 operator_plus::rv_fold (frange &r, tree type,
-			REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
 			const REAL_VALUE_TYPE &rh_ub,
 			relation_kind) const
 {
+  REAL_VALUE_TYPE lb, ub;
+  bool maybe_nan = false;
+
   frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
   frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
 
@@ -2496,8 +2464,6 @@ operator_plus::rv_fold (frange &r, tree type,
   // [+INF] + [-INF] = NAN
   else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
     maybe_nan = true;
-  else
-    maybe_nan = false;
 
   // Handle possible NANs by saturating to the appropriate INF if only
   // one end is a NAN.  If both ends are a NAN, just return a NAN.
@@ -2543,14 +2509,15 @@ operator_minus::op2_range (frange &r, tree type,
 
 void
 operator_minus::rv_fold (frange &r, tree type,
-			 REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			 bool &maybe_nan,
 			 const REAL_VALUE_TYPE &lh_lb,
 			 const REAL_VALUE_TYPE &lh_ub,
 			 const REAL_VALUE_TYPE &rh_lb,
 			 const REAL_VALUE_TYPE &rh_ub,
 			 relation_kind) const
 {
+  REAL_VALUE_TYPE lb, ub;
+  bool maybe_nan = false;
+
   frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
   frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
 
@@ -2560,8 +2527,6 @@ operator_minus::rv_fold (frange &r, tree type,
   // [-INF] - [-INF] = NAN
   else if (real_isinf (&lh_lb, true) && real_isinf (&rh_lb, true))
     maybe_nan = true;
-  else
-    maybe_nan = false;
 
   // Handle possible NANs by saturating to the appropriate INF if only
   // one end is a NAN.  If both ends are a NAN, just return a NAN.
@@ -2652,8 +2617,6 @@ operator_mult::op2_range (frange &r, tree type,
 
 void
 operator_mult::rv_fold (frange &r, tree type,
-			REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
@@ -2666,8 +2629,8 @@ operator_mult::rv_fold (frange &r, tree type,
        && real_equal (&lh_ub, &rh_ub)
        && real_isneg (&lh_lb) == real_isneg (&rh_lb)
        && real_isneg (&lh_ub) == real_isneg (&rh_ub));
-
-  maybe_nan = false;
+  REAL_VALUE_TYPE lb, ub;
+  bool maybe_nan = false;
   // x * x never produces a new NAN and we only multiply the same
   // values, so the 0 * INF problematic cases never appear there.
   if (!is_square)
@@ -2676,9 +2639,6 @@ operator_mult::rv_fold (frange &r, tree type,
       if ((zero_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub))
 	  || (zero_p (rh_lb, rh_ub) && singleton_inf_p (lh_lb, lh_ub)))
 	{
-	  real_nan (&lb, "", 0, TYPE_MODE (type));
-	  ub = lb;
-	  maybe_nan = true;
 	  r.set_nan (type);
 	  return;
 	}
@@ -2841,7 +2801,6 @@ public:
   }
 private:
   void rv_fold (frange &r, tree type,
-		REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		const REAL_VALUE_TYPE &lh_lb,
 		const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb,
@@ -2852,13 +2811,12 @@ private:
     if ((zero_p (lh_lb, lh_ub) && zero_p (rh_lb, rh_ub))
 	|| (singleton_inf_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub)))
       {
-	real_nan (&lb, "", 0, TYPE_MODE (type));
-	ub = lb;
-	maybe_nan = true;
 	r.set_nan (type);
 	return;
       }
 
+    REAL_VALUE_TYPE lb, ub;
+    bool maybe_nan = false;
     // If +-0.0 is in both ranges, it is a maybe NAN.
     if (contains_zero_p (lh_lb, lh_ub) && contains_zero_p (rh_lb, rh_ub))
       maybe_nan = true;
@@ -2866,8 +2824,6 @@ private:
     else if ((real_isinf (&lh_lb) || real_isinf (&lh_ub))
 	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
       maybe_nan = true;
-    else
-      maybe_nan = false;
 
     int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
 
