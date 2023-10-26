@@ -804,23 +804,34 @@ proc configure_check-function-bodies { config } {
 
     # Regexp for the start of a function definition (name in \1).
     if { [istarget nvptx*-*-*] } {
-	set up_config(start) {^// BEGIN(?: GLOBAL|) FUNCTION DEF: ([a-zA-Z_]\S+)$}
+	set up_config(start) {
+	    {^// BEGIN(?: GLOBAL|) FUNCTION DEF: ([a-zA-Z_]\S+)$}
+	}
+    } elseif { [istarget *-*-darwin*] } {
+	set up_config(start) {
+	    {^_([a-zA-Z_]\S+):$}
+	    {^LFB[0-9]+:}
+	}
     } else {
-	set up_config(start) {^([a-zA-Z_]\S+):$}
+	set up_config(start) {{^([a-zA-Z_]\S+):$}}
     }
 
     # Regexp for the end of a function definition.
     if { [istarget nvptx*-*-*] } {
 	set up_config(end) {^\}$}
+    } elseif { [istarget *-*-darwin*] } {
+	set up_config(end) {^LFE[0-9]+}
     } else {
 	set up_config(end) {^\s*\.size}
     }
- 
+
     # Regexp for lines that aren't interesting.
     if { [istarget nvptx*-*-*] } {
 	# Skip lines beginning with '//' comments ('-fverbose-asm', for
 	# example).
 	set up_config(fluff) {^\s*(?://)}
+    } elseif { [istarget *-*-darwin*] } {
+	set up_config(fluff) {^\s*(?:\.|//|@)|^L[0-9ACESV]}
     } else {
 	# Skip lines beginning with labels ('.L[...]:') or other directives
 	# ('.align', '.cfi_startproc', '.quad [...]', '.text', etc.), '//' or
@@ -852,9 +863,19 @@ proc parse_function_bodies { config filename result } {
     set fd [open $filename r]
     set in_function 0
     while { [gets $fd line] >= 0 } {
-	if { [regexp $up_config(start) $line dummy function_name] } {
-	    set in_function 1
-	    set function_body ""
+	if { $in_function == 0 } {
+	    if { [regexp [lindex $up_config(start) 0] \
+			 $line dummy function_name] } {
+		set in_function 1
+		set function_body ""
+	    }
+	} elseif { $in_function < [llength $up_config(start)] } {
+	    if { [regexp [lindex $up_config(start) $in_function] $line] } {
+		incr in_function
+	    } else {
+		verbose "parse_function_bodies: skipped $function_name"
+		set in_function 0
+	    }
 	} elseif { $in_function } {
 	    if { [regexp $up_config(end) $line] } {
 		verbose "parse_function_bodies: $function_name:\n$function_body"
@@ -957,7 +978,6 @@ proc check-function-bodies { args } {
     set start_expected {^(\S+):$}
 
     configure_check-function-bodies config
-
     set have_bodies 0
     if { [is_remote host] } {
 	remote_upload host "$filename"
