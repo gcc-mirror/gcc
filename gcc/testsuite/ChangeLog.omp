@@ -1,5 +1,9 @@
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/gomp/allocate-4a.f90: Update dg-error.
+
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
 	* c-c++-common/gomp/allocate-5.c: Remove C++ 'sorry'; minor updates.
 	* c-c++-common/gomp/allocate-9.c: Likewise.
 	* c-c++-common/gomp/allocate-17.c: Likewise.
