@@ -1447,5 +1447,29 @@ DefaultASTVisitor::visit (AST::BareFunctionType &type)
     visit (type.get_return_type ());
 }
 
+void
+ContextualASTVisitor::visit (AST::Crate &crate)
+{
+  push_context (Context::CRATE);
+  DefaultASTVisitor::visit (crate);
+  pop_context ();
+}
+
+void
+ContextualASTVisitor::visit (AST::InherentImpl &impl)
+{
+  push_context (Context::INHERENT_IMPL);
+  DefaultASTVisitor::visit (impl);
+  pop_context ();
+}
+
+void
+ContextualASTVisitor::visit (AST::TraitImpl &impl)
+{
+  push_context (Context::TRAIT_IMPL);
+  DefaultASTVisitor::visit (impl);
+  pop_context ();
+}
+
 } // namespace AST
 } // namespace Rust
