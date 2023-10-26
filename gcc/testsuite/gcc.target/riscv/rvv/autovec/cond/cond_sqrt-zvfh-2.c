@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d --param riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d --param riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
 
 #include <stdint-gcc.h>
 
@@ -13,11 +13,10 @@
   }
 
 #define TEST_ALL(T)                                                            \
-  T (float, __builtin_sqrtf)                                                   \
-  T (double, __builtin_sqrt)
+  T (_Float16, __builtin_sqrtf16)                                              \
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {\tvfsqrt\.v\tv[0-9]+,v[0-9]+,v0\.t} 2 } } */
+/* { dg-final { scan-assembler-times {\tvfsqrt\.v\tv[0-9]+,v[0-9]+,v0\.t} 1 } } */
 
 /* { dg-final { scan-assembler {\tvsetvli\t[a-z0-9]+,[a-z0-9]+,e[0-9]+,m[f0-9]+,t[au],mu} } } */
