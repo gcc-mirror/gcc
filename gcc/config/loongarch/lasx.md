@@ -906,15 +906,15 @@
 })
 
 ;; Same as vcond_
-(define_expand "vcond_mask_<ILASX:mode><ILASX:mode>"
-  [(match_operand:ILASX 0 "register_operand")
-   (match_operand:ILASX 1 "reg_or_m1_operand")
-   (match_operand:ILASX 2 "reg_or_0_operand")
-   (match_operand:ILASX 3 "register_operand")]
+(define_expand "vcond_mask_<mode><mode256_i>"
+  [(match_operand:LASX 0 "register_operand")
+   (match_operand:LASX 1 "reg_or_m1_operand")
+   (match_operand:LASX 2 "reg_or_0_operand")
+   (match_operand:<VIMODE256> 3 "register_operand")]
   "ISA_HAS_LASX"
 {
-  loongarch_expand_vec_cond_mask_expr (<ILASX:MODE>mode,
-				      <ILASX:VIMODE256>mode, operands);
+  loongarch_expand_vec_cond_mask_expr (<MODE>mode,
+				       <VIMODE256>mode, operands);
   DONE;
 })
 
