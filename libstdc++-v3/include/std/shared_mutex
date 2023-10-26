@@ -801,7 +801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unlock()
       {
 	if (!_M_owns)
-	  __throw_system_error(int(errc::resource_deadlock_would_occur));
+	  __throw_system_error(int(errc::operation_not_permitted));
 	_M_pm->unlock_shared();
 	_M_owns = false;
       }
