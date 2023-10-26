@@ -1,3 +1,22 @@
+2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111936
+	* src/libbacktrace/Makefile.am: Add -prefer-pic to libtool
+	compile commands.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-10-25  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	Backported from master:
+	2023-10-24  Paul M. Bendixen  <paulbendixen@gmail.com>
+
+	* include/Makefile.am: Move cstdarg, cstdalign and cstdbool to
+	freestanding.
+	* include/Makefile.in: Regenerate.
+
 2023-10-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h
