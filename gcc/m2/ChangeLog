@@ -1,3 +1,22 @@
+2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111955
+	* gm2-gcc/m2builtins.cc (gm2_isnan_node): New tree.
+	(DoBuiltinIsnan): New function.
+	(m2builtins_BuiltInIsnan): New function.
+	(m2builtins_init): Initialize gm2_isnan_node.
+	(list_of_builtins): Add define for __builtin_isnan.
+	* gm2-libs-ch/wrapc.c (wrapc_isnan): New function.
+	(wrapc_isnanf): New function.
+	(wrapc_isnanl): New function.
+	* gm2-libs/Builtins.def (isnanf): New procedure function.
+	(isnan): New procedure function.
+	(isnanl): New procedure function.
+	* gm2-libs/Builtins.mod:
+	* gm2-libs/wrapc.def (isnan): New function.
+	(isnanf): New function.
+	(isnanl): New function.
+
 2023-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/M2Dependent.mod (InitDependencyList): New

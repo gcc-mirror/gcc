@@ -1,3 +1,8 @@
+2023-10-25  Vibhav Pant  <vibhavp@gmail.com>
+
+	* jit-recording.cc (recording::global::write_to_dump): Fix
+	dump of string literal initializers.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in: Handle Darwin rpaths.

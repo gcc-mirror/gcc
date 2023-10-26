@@ -1,3 +1,37 @@
+2023-10-25  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.def: Improve OFFSET_REF comment.
+	* cp-gimplify.cc (cp_fold_immediate): Add to comment.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Return
+	'PRAGMA_OACC_CLAUSE_SELF' for "self".
+	(cp_parser_oacc_data_clause, OACC_UPDATE_CLAUSE_MASK): Adjust.
+	(cp_parser_oacc_all_clauses): Remove 'bool compute_p' formal
+	parameter, and instead locally determine whether we're called for
+	an OpenACC compute construct or OpenACC 'update' directive.
+	(cp_parser_oacc_compute): Adjust.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_compute_clause_self): New function.
+	(cp_parser_oacc_all_clauses): Add new 'bool compute_p = false'
+	parameter, add parsing of self clause when compute_p is true.
+	(OACC_KERNELS_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_SELF.
+	(OACC_PARALLEL_CLAUSE_MASK): Likewise,
+	(OACC_SERIAL_CLAUSE_MASK): Likewise.
+	(cp_parser_oacc_compute): Adjust call to c_parser_oacc_all_clauses to
+	set compute_p argument to true.
+	* pt.cc (tsubst_omp_clauses): Add OMP_CLAUSE_SELF case.
+	* semantics.cc (c_finish_omp_clauses): Add OMP_CLAUSE_SELF case, merged
+	with OMP_CLAUSE_IF case.
+
+2023-10-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111895
+	* typeck.cc (build_static_cast_1): Call decay_conversion.
+
 2023-10-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/111929

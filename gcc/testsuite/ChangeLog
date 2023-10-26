@@ -1,3 +1,60 @@
+2023-10-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/imm_choice_comparison.c: Change tests.
+	* gcc.target/aarch64/moveor_imm.c: Add new test.
+	* gcc.target/aarch64/pr106583.c: Change tests.
+
+2023-10-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111698
+	* gcc.target/i386/pr111698.c: New test.
+
+2023-10-25  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/builtin_thread_pointer.c: New test.
+
+2023-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99804
+	* g++.dg/template/enum9.C: New test.
+
+2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111955
+	* gm2/pimlib/run/pass/testnan.mod: New test.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/self-clause-2.c: Verify
+	'--param=openacc-kernels=decompose'.
+	* gfortran.dg/goacc/kernels-tree.f95: Adjust.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/if-clause-2.c: Enhance.
+	* c-c++-common/goacc/self-clause-1.c: Likewise.
+	* c-c++-common/goacc/self-clause-2.c: Likewise.
+	* gfortran.dg/goacc/if.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/self.f95: Likewise.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/if-clause-1.c: Enable for C++
+	* c-c++-common/goacc/self-clause-1.c: Likewise.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/self-clause-1.c: New test.
+	* c-c++-common/goacc/self-clause-2.c: New test.
+	* gfortran.dg/goacc/self.f95: New test.
+
+2023-10-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111895
+	* g++.dg/cpp0x/scoped_enum12.C: New test.
+
 2023-10-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/111929

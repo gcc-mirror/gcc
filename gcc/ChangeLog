@@ -1,3 +1,214 @@
+2023-10-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Handle fPIE.
+
+2023-10-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Use -E to to sed to indicate that we are using
+	extended REs.
+
+2023-10-25  Jason Merrill  <jason@redhat.com>
+
+	* tree-core.h (struct tree_base): Update address_space comment.
+
+2023-10-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_internal_mov_immediate)
+	Add support for immediates using MOV/EOR bitmask.
+
+2023-10-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111698
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_MEMORY_READ_STALL):
+	New tune.
+	* config/i386/i386.h (TARGET_PARTIAL_MEMORY_READ_STALL): New macro.
+	* config/i386/i386.md: New peephole pattern to narrow test
+	instructions with immediate operands that test memory locations
+	for zero.
+
+2023-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::union_append): New.
+	(irange::union_): Call union_append when appropriate.
+	* value-range.h (irange::union_append): New prototype.
+
+2023-10-25  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lasxintrin.h (__lasx_xvftintrnel_l_s): Fix comments.
+	(__lasx_xvfrintrne_s): Ditto.
+	(__lasx_xvfrintrne_d): Ditto.
+	(__lasx_xvfrintrz_s): Ditto.
+	(__lasx_xvfrintrz_d): Ditto.
+	(__lasx_xvfrintrp_s): Ditto.
+	(__lasx_xvfrintrp_d): Ditto.
+	(__lasx_xvfrintrm_s): Ditto.
+	(__lasx_xvfrintrm_d): Ditto.
+	* config/loongarch/lsxintrin.h (__lsx_vftintrneh_l_s): Ditto.
+	(__lsx_vfrintrne_s): Ditto.
+	(__lsx_vfrintrne_d): Ditto.
+	(__lsx_vfrintrz_s): Ditto.
+	(__lsx_vfrintrz_d): Ditto.
+	(__lsx_vfrintrp_s): Ditto.
+	(__lsx_vfrintrp_d): Ditto.
+	(__lsx_vfrintrm_s): Ditto.
+	(__lsx_vfrintrm_d): Ditto.
+
+2023-10-25  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* config/loongarch/loongarch.md (get_thread_pointer<mode>):Adds the
+	instruction template corresponding to the __builtin_thread_pointer
+	function.
+	* doc/extend.texi:Add the __builtin_thread_pointer function support
+	description to the documentation.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Add rtl-ssa/movement.o.
+	* rtl-ssa/access-utils.h (accesses_include_nonfixed_hard_registers)
+	(single_set_info): New functions.
+	(remove_uses_of_def, accesses_reference_same_resource): Declare.
+	(insn_clobbers_resources): Likewise.
+	* rtl-ssa/accesses.cc (rtl_ssa::remove_uses_of_def): New function.
+	(rtl_ssa::accesses_reference_same_resource): Likewise.
+	(rtl_ssa::insn_clobbers_resources): Likewise.
+	* rtl-ssa/movement.h (can_move_insn_p): Declare.
+	* rtl-ssa/movement.cc: New file.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/functions.h (function_info::remains_available_at_insn):
+	New member function.
+	* rtl-ssa/accesses.cc (function_info::remains_available_at_insn):
+	Likewise.
+	(function_info::make_use_available): Avoid false negatives for
+	queries within an EBB.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/changes.cc: Include sreal.h.
+	(rtl_ssa::changes_are_worthwhile): When optimizing for speed,
+	scale the cost of each instruction by its execution frequency.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/access-utils.h (next_call_clobbers): New function.
+	(is_single_dominating_def, remains_available_on_exit): Replace with...
+	* rtl-ssa/functions.h (function_info::is_single_dominating_def)
+	(function_info::remains_available_on_exit): ...these new member
+	functions.
+	(function_info::m_clobbered_by_calls): New member variable.
+	* rtl-ssa/functions.cc (function_info::function_info): Explicitly
+	initialize m_clobbered_by_calls.
+	* rtl-ssa/insns.cc (function_info::record_call_clobbers): Update
+	m_clobbered_by_calls for each call-clobber note.
+	* rtl-ssa/member-fns.inl (function_info::is_single_dominating_def):
+	New function.  Check for call clobbers.
+	* rtl-ssa/accesses.cc (function_info::remains_available_on_exit):
+	Likewise.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/internals.h (build_info::exit_block_dominator): New
+	member variable.
+	* rtl-ssa/blocks.cc (build_info::build_info): Initialize it.
+	(bb_walker::bb_walker): Use it, moving the computation of the
+	dominator to...
+	(function_info::process_all_blocks): ...here.
+	(function_info::place_phis): Add dominance frontiers for the
+	exit block.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/functions.h (function_info::process_uses_of_deleted_def):
+	New member function.
+	* rtl-ssa/changes.cc (function_info::process_uses_of_deleted_def):
+	Likewise.
+	(function_info::change_insns): Use it.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses):
+	If a change describes a set of memory, ensure that that set
+	is kept, regardless of the insn pattern.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/changes.cc (function_info::apply_changes_to_insn): Remove
+	call to add_reg_unused_notes and instead...
+	(function_info::change_insns): ...use a separate loop here.
+
+2023-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/blocks.cc (function_info::add_artificial_accesses): Force
+	global registers to be live on exit.  Handle any block with zero
+	successors like an exit block.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Handle 'OMP_CLAUSE_SELF' like 'OMP_CLAUSE_IF'.
+	* omp-expand.cc (expand_omp_target): Handle 'OMP_CLAUSE_SELF' for
+	'GF_OMP_TARGET_KIND_OACC_DATA_KERNELS'.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-core.h (omp_clause_code): Move 'OMP_CLAUSE_SELF' after
+	'OMP_CLAUSE_IF'.
+	* tree-pretty-print.cc (dump_omp_clause): Adjust.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Likewise.
+	* tree.h: Likewise.
+
+2023-10-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (has_vl_op): Export from riscv-vsetvl to riscv-v
+	(tail_agnostic_p): Ditto.
+	(validate_change_or_fail): Ditto.
+	(nonvlmax_avl_type_p): Ditto.
+	(vlmax_avl_p): Ditto.
+	(get_sew): Ditto.
+	(enum vlmul_type): Ditto.
+	(count_regno_occurrences): Ditto.
+	* config/riscv/riscv-v.cc (has_vl_op): Ditto.
+	(get_default_ta): Ditto.
+	(tail_agnostic_p): Ditto.
+	(validate_change_or_fail): Ditto.
+	(nonvlmax_avl_type_p): Ditto.
+	(vlmax_avl_p): Ditto.
+	(get_sew): Ditto.
+	(enum vlmul_type): Ditto.
+	(get_vlmul): Ditto.
+	(count_regno_occurrences): Ditto.
+	* config/riscv/riscv-vsetvl.cc (vlmax_avl_p): Ditto.
+	(has_vl_op): Ditto.
+	(get_sew): Ditto.
+	(get_vlmul): Ditto.
+	(get_default_ta): Ditto.
+	(tail_agnostic_p): Ditto.
+	(count_regno_occurrences): Ditto.
+	(validate_change_or_fail): Ditto.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Add OMP_CLAUSE_SELF case.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-expand.cc (expand_omp_target): Add OMP_CLAUSE_SELF expansion code,
+	* omp-low.cc (scan_sharing_clauses): Add OMP_CLAUSE_SELF case.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_SELF enum.
+	* tree-nested.cc (convert_nonlocal_omp_clauses): Add OMP_CLAUSE_SELF
+	case.
+	(convert_local_omp_clauses): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Add OMP_CLAUSE_SELF case.
+	* tree.cc (omp_clause_num_ops): Add OMP_CLAUSE_SELF entry.
+	(omp_clause_code_name): Likewise.
+	* tree.h (OMP_CLAUSE_SELF_EXPR): New macro.
+
+2023-10-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (vlmax_avl_type_p): New function.
+	* config/riscv/riscv-v.cc (vlmax_avl_type_p): Ditto.
+	* config/riscv/riscv-vsetvl.cc (get_avl): Adapt function.
+	* config/riscv/vector.md: Change avl_type into avl_type_idx.
+
 2023-10-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* recog.cc (constrain_operands): Remove UNARY_P handling.

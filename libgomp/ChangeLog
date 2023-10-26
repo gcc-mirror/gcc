@@ -1,3 +1,24 @@
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_data_start): Handle
+	'GOACC_FLAG_LOCAL_DEVICE'.
+	(GOACC_parallel_keyed): Simplify accordingly.
+	* testsuite/libgomp.oacc-fortran/self-1.f90: Adjust.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/if-1.c: Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/self-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/if-self-1.c: New.
+	* testsuite/libgomp.oacc-fortran/self-1.f90: Likewise.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Add code to handle
+	GOACC_FLAG_LOCAL_DEVICE case.
+	* testsuite/libgomp.oacc-c-c++-common/self-1.c: New test.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Handle Darwin rpaths.

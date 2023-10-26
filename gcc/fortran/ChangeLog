@@ -1,3 +1,30 @@
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (omp_mask2): Split 'OMP_CLAUSE_HOST_SELF' into
+	'OMP_CLAUSE_SELF', 'OMP_CLAUSE_HOST'.
+	(gfc_match_omp_clauses, OACC_UPDATE_CLAUSES): Adjust.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.h (typedef struct gfc_omp_clauses): Add self_expr field.
+	* openmp.cc (enum omp_mask2): Add OMP_CLAUSE_SELF.
+	(gfc_match_omp_clauses): Add handling for OMP_CLAUSE_SELF.
+	(OACC_PARALLEL_CLAUSES): Add OMP_CLAUSE_SELF.
+	(OACC_KERNELS_CLAUSES): Likewise.
+	(OACC_SERIAL_CLAUSES): Likewise.
+	(resolve_omp_clauses): Add handling for omp_clauses->self_expr.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Add handling of
+	clauses->self_expr and building of OMP_CLAUSE_SELF tree clause.
+	(gfc_split_omp_clauses): Add handling of self_expr field copy.
+
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Group handling of 'if'
+	clause without and with modifier.
+	* frontend-passes.cc (gfc_code_walker): Likewise.
+	* gfortran.h (gfc_omp_clauses): Likewise.
+	* openmp.cc (gfc_free_omp_clauses): Likewise.
+
 2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* intrinsic.texi (signal): Add 'intrinsic :: signal, sleep' to

@@ -1,3 +1,25 @@
+2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Return
+	'PRAGMA_OACC_CLAUSE_SELF' for "self".
+	(c_parser_oacc_data_clause, OACC_UPDATE_CLAUSE_MASK): Adjust.
+	(c_parser_oacc_all_clauses): Remove 'bool compute_p' formal
+	parameter, and instead locally determine whether we're called for
+	an OpenACC compute construct or OpenACC 'update' directive.
+	(c_parser_oacc_compute): Adjust.
+
+2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.cc (c_parser_oacc_compute_clause_self): New function.
+	(c_parser_oacc_all_clauses): Add new 'bool compute_p = false'
+	parameter, add parsing of self clause when compute_p is true.
+	(OACC_KERNELS_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_SELF.
+	(OACC_PARALLEL_CLAUSE_MASK): Likewise,
+	(OACC_SERIAL_CLAUSE_MASK): Likewise.
+	(c_parser_oacc_compute): Adjust call to c_parser_oacc_all_clauses to
+	set compute_p argument to true.
+	* c-typeck.cc (c_finish_omp_clauses): Add OMP_CLAUSE_SELF case.
+
 2023-10-20  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/109827
