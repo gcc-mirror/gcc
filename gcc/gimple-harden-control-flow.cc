@@ -1287,7 +1287,7 @@ pass_harden_control_flow_redundancy::execute (function *fun)
 
 	      add_stmt_to_eh_lp (stmt, lp_eh_cleanup);
 	      /* Finally, wire the EH cleanup block into the CFG.  */
-	      edge neeh = make_eh_edges (stmt);
+	      edge neeh = make_eh_edge (stmt);
 	      neeh->probability = profile_probability::never ();
 	      gcc_checking_assert (neeh->dest == bb_eh_cleanup);
 	      if (neeh->dest->count.initialized_p ())

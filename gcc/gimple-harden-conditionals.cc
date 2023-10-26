@@ -580,7 +580,7 @@ pass_harden_compares::execute (function *fun)
 	  if (throwing_compare_p)
 	    {
 	      add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
-	      make_eh_edges (asgnck);
+	      make_eh_edge (asgnck);
 
 	      edge ckeh;
 	      basic_block nbb = split_edge (non_eh_succ_edge

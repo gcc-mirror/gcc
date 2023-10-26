@@ -2615,7 +2615,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	}
       else if (can_throw)
 	{
-	  make_eh_edges (copy_stmt);
+	  make_eh_edge (copy_stmt);
 	  update_probs = true;
 	}
 
