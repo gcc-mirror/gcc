@@ -8449,8 +8449,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
   if (code == ZERO_EXTEND)
     {
       new_rtx = make_compound_operation (XEXP (x, 0), next_code);
-      tem = simplify_const_unary_operation (ZERO_EXTEND, GET_MODE (x),
-					    new_rtx, GET_MODE (XEXP (x, 0)));
+      tem = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
+				      new_rtx, GET_MODE (XEXP (x, 0)));
       if (tem)
 	return tem;
       SUBST (XEXP (x, 0), new_rtx);
