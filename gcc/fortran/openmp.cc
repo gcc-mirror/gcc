@@ -2652,11 +2652,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      for (gfc_omp_namelist *n = *head; n; n = n->next)
 		{
-		  n->u2.allocator = ((allocator)
-				     ? gfc_copy_expr (allocator) : NULL);
+		  n->u2.allocator = allocator;
 		  n->u.align = (align) ? gfc_copy_expr (align) : NULL;
 		}
-	      gfc_free_expr (allocator);
 	      gfc_free_expr (align);
 	      continue;
 	    }
@@ -5236,9 +5234,8 @@ gfc_match_omp_allocate (void)
       for (; vars; vars = vars->next)
 	{
 	  vars->u.align = (align) ? gfc_copy_expr (align) : NULL;
-	  vars->u2.allocator = ((allocator) ? gfc_copy_expr (allocator) : NULL);
+	  vars->u2.allocator = allocator;
 	}
-      gfc_free_expr (allocator);
       gfc_free_expr (align);
     }
   return MATCH_YES;
@@ -8231,7 +8228,7 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
 /* Assume that a constant expression in the range 1 (omp_default_mem_alloc)
    to 8 (omp_thread_mem_alloc) range is fine.  The original symbol name is
    already lost during matching via gfc_match_expr.  */
-bool
+static bool
 is_predefined_allocator (gfc_expr *expr)
 {
   return (gfc_resolve_expr (expr)
@@ -8250,9 +8247,19 @@ void
 gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 {
   for (gfc_omp_namelist *n = list; n; n = n->next)
-    n->sym->mark = 0;
-  for (gfc_omp_namelist *n = list; n; n = n->next)
     {
+      if (n->sym->attr.result || n->sym->result == n->sym)
+	{
+	  gfc_error ("Unexpected function-result variable %qs at %L in "
+		     "declarative !$OMP ALLOCATE", n->sym->name, &n->where);
+	  continue;
+	}
+      if (ns->omp_allocate->sym->attr.proc_pointer)
+	{
+	  gfc_error ("Procedure pointer %qs not supported with !$OMP "
+		     "ALLOCATE at %L", n->sym->name, &n->where);
+	  continue;
+	}
       if (n->sym->attr.flavor != FL_VARIABLE)
 	{
 	  gfc_error ("Argument %qs at %L to declarative !$OMP ALLOCATE "
@@ -8260,8 +8267,7 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 		     &n->where);
 	  continue;
 	}
-      if (ns != n->sym->ns || n->sym->attr.use_assoc
-	  || n->sym->attr.host_assoc || n->sym->attr.imported)
+      if (ns != n->sym->ns || n->sym->attr.use_assoc || n->sym->attr.imported)
 	{
 	  gfc_error ("Argument %qs at %L to declarative !$OMP ALLOCATE shall be"
 		     " in the same scope as the variable declaration",
@@ -8274,7 +8280,13 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 		     "declarative !$OMP ALLOCATE", n->sym->name, &n->where);
 	  continue;
 	}
-      if (n->sym->mark)
+      if (n->sym->attr.codimension)
+	{
+	  gfc_error ("Unexpected coarray argument %qs as argument at %L to "
+		     "declarative !$OMP ALLOCATE", n->sym->name, &n->where);
+	  continue;
+	}
+      if (n->sym->attr.omp_allocate)
 	{
 	  if (n->sym->attr.in_common)
 	    {
@@ -8289,7 +8301,28 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 		       n->sym->name, &n->where);
 	  continue;
 	}
-      n->sym->mark = 1;
+      /* For 'equivalence(a,b)', a 'union_type {<type> a,b} equiv.0' is created
+	 with a value expression for 'a' as 'equiv.0.a' (likewise for b); while
+	 this can be handled, EQUIVALENCE is marked as obsolescent since Fortran
+	 2018 and also not widely used.  However, it could be supported,
+	 if needed. */
+      if (n->sym->attr.in_equivalence)
+	{
+	  gfc_error ("Sorry, EQUIVALENCE object %qs not supported with !$OMP "
+		     "ALLOCATE at %L", n->sym->name, &n->where);
+	  continue;
+	}
+      /* Similar for Cray pointer/pointee - they could be implemented but as
+	 common vendor extension but nowadays rarely used and requiring
+	 -fcray-pointer, there is no need to support them.  */
+      if (n->sym->attr.cray_pointer || n->sym->attr.cray_pointee)
+	{
+	  gfc_error ("Sorry, Cray pointers and pointees such as %qs are not "
+		     "supported with !$OMP ALLOCATE at %L",
+		     n->sym->name, &n->where);
+	  continue;
+	}
+      n->sym->attr.omp_allocate = 1;
       if ((n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok
 	   && CLASS_DATA (n->sym)->attr.allocatable)
 	  || (n->sym->ts.type != BT_CLASS && n->sym->attr.allocatable))
@@ -8347,8 +8380,6 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 		   "%<omp_allocator_handle_kind%> kind at %L",
 		   &n->u2.allocator->where);
     }
-  gfc_error ("Sorry, declarative !$OMP ALLOCATE at %L not yet supported",
-	     &list->where);
 }
 
 /* Resolve ASSUME's and ASSUMES' assumption clauses.  Note that absent/contains
@@ -8745,6 +8776,9 @@ verify_omp_clauses_symbol_dups (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  n_null = n;
 		  continue;
 		}
+	      if (n->sym->attr.codimension)
+		gfc_error ("Unexpected coarray %qs in %<allocate%> at %L",
+			   n->sym->name, &n->where);
 	      for (a = code->block->next->ext.alloc.list; a; a = a->next)
 		if (a->expr->expr_type == EXPR_VARIABLE
 		    && a->expr->symtree->n.sym == n->sym)

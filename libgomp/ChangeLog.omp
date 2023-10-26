@@ -1,4 +1,18 @@
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Impl. Status): Mention that Fortran now
+	supports the allocate directive for stack variables.
+	* testsuite/libgomp.fortran/allocate-5a.f90: Renamed from
+	testsuite/libgomp.fortran/allocate-5.f90.
+	* testsuite/libgomp.fortran/allocate-5.f90: New test.
+	* testsuite/libgomp.fortran/allocate-6.f90: New test.
+	* testsuite/libgomp.fortran/allocate-7.f90: New test.
+	* testsuite/libgomp.fortran/allocate-8.f90: New test.
+
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-2a.f90: Add exec stmt.

@@ -5544,6 +5544,7 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 		      || list == OMP_LIST_FROM);
   bool free_align = (list == OMP_LIST_ALLOCATE);
   gfc_omp_namelist *n;
+  gfc_expr *last_allocator = NULL;
 
   for (; name; name = n)
     {
@@ -5555,7 +5556,13 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
       else if (free_mapper && name->u2.udm)
 	free (name->u2.udm);
       else if (free_align)
-	gfc_free_expr (name->u2.allocator);
+	{
+	  if (last_allocator != name->u2.allocator)
+	    {
+	      last_allocator = name->u2.allocator;
+	      gfc_free_expr (name->u2.allocator);
+	    }
+	}
       else if (!free_mapper && name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)

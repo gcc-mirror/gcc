@@ -1,4 +1,12 @@
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_bind_expr): Handle Fortran's
+	'omp allocate' for stack variables.
+
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* omp-low.cc (scan_sharing_clauses): Update message for directive use.

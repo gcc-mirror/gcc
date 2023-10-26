@@ -1,119 +1,87 @@
-! { dg-do compile }
+! { dg-additional-options "-fdump-tree-gimple" }
 
-module test
-  integer, allocatable :: mvar1
-  integer, allocatable :: mvar2
-  integer, allocatable :: mvar3
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_alloc \\(" 5 "gimple" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(" 5 "gimple" } }
+
+
+module m
+  use omp_lib
+  use iso_c_binding
+  implicit none (type, external)
+  integer(c_intptr_t) :: intptr
+contains
+
+integer function one ()
+  integer :: sum, i
+  !$omp allocate(sum)
+  ! { dg-final { scan-tree-dump-times "sum\\.\[0-9\]+ = __builtin_GOMP_alloc \\(4, 4, 0B\\);" 1 "gimple" } }
+  ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(sum\\.\[0-9\]+, 0B\\);" 1 "gimple" } }
+
+  ! NOTE: Initializer cannot be omp_init_allocator - as 'A' is
+  ! in the same scope and the auto-omp_free comes later than
+  ! any omp_destroy_allocator.
+  integer(omp_allocator_handle_kind) :: my_allocator = omp_low_lat_mem_alloc
+  integer :: n = 25
+  sum = 0
+ block
+  type(omp_alloctrait) :: traits(1) = [ omp_alloctrait(omp_atk_alignment, 64) ]
+  integer :: A(n)
+  !$omp allocate(A) align(128) allocator(my_allocator)
+  ! { dg-final { scan-tree-dump-times "a = __builtin_GOMP_alloc \\(128, D\\.\[0-9\]+, D\\.\[0-9\]+\\);" 1 "gimple" } }
+  ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(a, 0B\\);" 1 "gimple" } }
+
+  if (mod (transfer(loc(A), intptr), 128_c_intptr_t) /= 0) &
+    stop 2
+  do i = 1, n
+    A(i) = i
+  end do
+
+  my_allocator = omp_init_allocator(omp_low_lat_mem_space,1,traits)
+  block
+    integer B(n)
+    integer C(5)
+    !$omp allocate(B,C) allocator(my_allocator)
+    ! { dg-final { scan-tree-dump-times "b = __builtin_GOMP_alloc \\(\[0-9\]+, D\\.\[0-9\]+, D\\.\[0-9\]+\\);" 1 "gimple" } }
+    ! { dg-final { scan-tree-dump-times "c\\.\[0-9\]+ = __builtin_GOMP_alloc \\(\[0-9\]+, 20, D\\.\[0-9\]+\\);" 1 "gimple" } }
+    ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(b, 0B\\);" 1 "gimple" } }
+    ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(c\\.\[0-9\]+, 0B\\);" 1 "gimple" } }
+
+    integer :: D(5)
+    !$omp allocate(D) align(256)
+    ! { dg-final { scan-tree-dump-times "d\\.\[0-9\]+ = __builtin_GOMP_alloc \\(256, 20, 0B\\);" 1 "gimple" } }
+    ! { dg-final { scan-tree-dump-times "__builtin_GOMP_free \\(d\\.\[0-9\]+, 0B\\);" 1 "gimple" } }
+
+    B = 0
+    C = [1,2,3,4,5]
+    D = [11,22,33,44,55]
+
+    if (mod (transfer(loc(B), intptr), 64_c_intptr_t) /= 0) &
+      stop 3
+    if (mod (transfer(loc(C), intptr), 64_c_intptr_t) /= 0) &
+      stop 4
+    if (mod (transfer(loc(D), intptr), 256_c_intptr_t) /= 0) &
+      stop 5
+
+    do i = 1, 5
+      if (C(i) /= i) &
+        stop 6
+      if (D(i) /= i + 10*i) &
+        stop 7
+    end do
+
+    do i = 1, n
+      if (B(i) /= 0) &
+        stop 9
+      sum = sum + A(i)+B(i)+C(mod(i,5)+1)+D(mod(i,5)+1)
+    end do
+  end block
+  call omp_destroy_allocator (my_allocator)
+ end block
+ one = sum
+end
 end module
 
-subroutine foo(x, y)
-  use omp_lib
-  implicit none
-  integer  :: x
-  integer  :: y
-  
-  integer, allocatable :: var1(:)
-  integer, allocatable :: var2(:)
-  integer, allocatable :: var3(:)
-  integer, allocatable :: var4(:)
-  integer, allocatable :: var5(:)
-  integer, allocatable :: var6(:)
-  integer, allocatable :: var7(:)
-  integer, allocatable :: var8(:)
-  integer, allocatable :: var9(:)
-
-  x = 1 ! executable statement before '!$omp allocate'
-
-  ! Don't use a hard-coded value (..., but it does pass the checks).
-  !$omp allocate (var1) allocator(10_omp_allocator_handle_kind) ! { dg-bogus "Expected integer expression of the 'omp_allocator_handle_kind' kind" }
-  allocate (var1(x))
-
-  ! Assumption is that 'omp_allocator_handle_kind' ('c_intptr_t') isn't 1.
-  !$omp allocate (var1) allocator(10_1) ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind at .1." }
-  allocate (var1(x))
-
-  !$omp allocate (var2)  ! { dg-error "'var2' specified in 'allocate' at .1. but not in the associated ALLOCATE statement" }
-  allocate (var3(x))  ! { dg-error "'var3' listed in 'allocate' statement at .1. but it is neither explicitly in listed in the '!.OMP ALLOCATE' directive nor exists a directive without argument list" }
-
-  !$omp allocate (x)
-  x = 2  ! { dg-error "Unexpected assignment at .1.; expected ALLOCATE or !.OMP ALLOCATE statement" }
-
-  !$omp allocate (var4)
-  y = 2 ! { dg-error "Unexpected assignment at .1.; expected ALLOCATE or !.OMP ALLOCATE statement" }
-
-  !$omp allocate (var5)
-  !$omp allocate
-  allocate (var5(x))
-
-  !$omp allocate (var6)
-  !$omp allocate (var7)  ! { dg-error "'var7' specified in 'allocate' at .1. but not in the associated ALLOCATE statement" }
-  !$omp allocate (var8)  ! { dg-error "'var8' specified in 'allocate' at .1. but not in the associated ALLOCATE statement" }
-  allocate (var6(x))
-
-  !$omp allocate (var9)
-  !$omp allocate (var9)  ! { dg-warning "var9' appears more than once in 'allocate'" }
-  allocate (var9(x))
-
-end subroutine
-
-function outer(a)
-  IMPLICIT NONE
-
-  integer :: outer, a
-  integer, allocatable :: var1
-
-  outer = inner(a) + 5
-  return
-
-  contains
-
-    integer function inner(x)
-    integer :: x
-    integer, allocatable :: var2
-
-    x = 1 ! executable statement before '!$omp allocate'
-
-    !$omp allocate (var1, var2)  ! { dg-error "Sorry, allocation of allocatable 'var1' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" }
-    allocate (var1, var2)
-
-    inner = x + 10
-    return
-    end function inner
-
-end function outer
-
-subroutine bar(s)
-  use omp_lib
-  use test
-  integer  :: s
-  integer, save, allocatable :: svar1
-  integer, save, allocatable :: svar2
-  integer, save, allocatable :: svar3
-
-  type (omp_alloctrait) :: traits(3)
-  integer (omp_allocator_handle_kind) :: a
-
-  traits = [omp_alloctrait (omp_atk_alignment, 64), &
-            omp_alloctrait (omp_atk_fallback, omp_atv_null_fb), &
-            omp_alloctrait (omp_atk_pool_size, 8192)]
-  a = omp_init_allocator (omp_default_mem_space, 3, traits)
-  if (a == omp_null_allocator) stop 1
-
-  !$omp allocate (mvar1) allocator(a)
-  allocate (mvar1)
-
-  !$omp allocate (mvar2)
-  allocate (mvar2)
-
-  !$omp allocate (mvar3) allocator(omp_low_lat_mem_alloc)
-  allocate (mvar3)
-
-  !$omp allocate (svar1)  allocator(a)
-  allocate (svar1)
-
-  !$omp allocate (svar2)
-  allocate (svar2)
-
-  !$omp allocate (svar3) allocator(omp_low_lat_mem_alloc)
-  allocate (svar3)
-end subroutine
+use m
+if (one () /= 1225) &
+  stop 1
+end
