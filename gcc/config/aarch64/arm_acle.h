@@ -265,9 +265,7 @@ __crc32d (uint32_t __a, uint64_t __b)
 #define _TMFAILURE_INT        0x00800000u
 #define _TMFAILURE_TRIVIAL    0x01000000u
 
-#ifdef __ARM_FEATURE_LS64
 typedef __arm_data512_t data512_t;
-#endif
 
 #pragma GCC push_options
 #pragma GCC target ("+nothing+rng")
