@@ -252,10 +252,7 @@ __crc32d (uint32_t __a, uint64_t __b)
 
 #pragma GCC pop_options
 
-#ifdef __ARM_FEATURE_TME
-#pragma GCC push_options
-#pragma GCC target ("+nothing+tme")
-
+/* Constants for TME failure reason.  */
 #define _TMFAILURE_REASON     0x00007fffu
 #define _TMFAILURE_RTRY       0x00008000u
 #define _TMFAILURE_CNCL       0x00010000u
@@ -267,37 +264,6 @@ __crc32d (uint32_t __a, uint64_t __b)
 #define _TMFAILURE_DBG        0x00400000u
 #define _TMFAILURE_INT        0x00800000u
 #define _TMFAILURE_TRIVIAL    0x01000000u
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__tstart (void)
-{
-  return __builtin_aarch64_tstart ();
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__tcommit (void)
-{
-  __builtin_aarch64_tcommit ();
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__tcancel (const uint64_t __reason)
-{
-  __builtin_aarch64_tcancel (__reason);
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__ttest (void)
-{
-  return __builtin_aarch64_ttest ();
-}
-
-#pragma GCC pop_options
-#endif
 
 #ifdef __ARM_FEATURE_LS64
 typedef __arm_data512_t data512_t;
