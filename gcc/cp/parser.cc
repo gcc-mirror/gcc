@@ -43316,6 +43316,67 @@ cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
   return finish_omp_structured_block (stmt);
 }
 
+struct cp_omp_loc_tree
+{
+  location_t loc;
+  tree var;
+};
+
+/* Check whether the expression used in the allocator clause is declared or
+   modified between the variable declaration and its allocate directive.  */
+static tree
+cp_check_omp_allocate_allocator_r (tree *tp, int *, void *data)
+{
+  tree var = ((struct cp_omp_loc_tree *) data)->var;
+  location_t loc = ((struct cp_omp_loc_tree *) data)->loc;
+  tree v = NULL_TREE;
+  if (TREE_CODE (*tp) == VAR_DECL)
+    for (v = current_binding_level->names; v; v = TREE_CHAIN (v))
+      if (v == var)
+	break;
+  if (v != NULL_TREE)
+    {
+      if (linemap_location_before_p (line_table, DECL_SOURCE_LOCATION (var),
+				     DECL_SOURCE_LOCATION (*tp)))
+	{
+	  error_at (loc, "variable %qD used in the %<allocator%> clause must "
+			 "be declared before %qD", *tp, var);
+	  inform (DECL_SOURCE_LOCATION (*tp), "declared here");
+	  inform (DECL_SOURCE_LOCATION (var),
+		  "to be allocated variable declared here");
+	  return *tp;
+	}
+      else
+	{
+	  gcc_assert (cur_stmt_list
+		      && TREE_CODE (cur_stmt_list) == STATEMENT_LIST);
+
+	  tree_stmt_iterator l = tsi_last (cur_stmt_list);
+	  while (!tsi_end_p (l))
+	    {
+	      if (linemap_location_before_p (line_table, EXPR_LOCATION (*l),
+					     DECL_SOURCE_LOCATION (var)))
+		break;
+	      if (TREE_CODE (*l) == MODIFY_EXPR
+		  && TREE_OPERAND (*l, 0) == *tp)
+		{
+		  error_at (loc,
+			    "variable %qD used in the %<allocator%> clause "
+			    "must not be modified between declaration of %qD "
+			    "and its %<allocate%> directive", *tp, var);
+		  inform (EXPR_LOCATION (*l), "modified here");
+		  inform (DECL_SOURCE_LOCATION (var),
+			  "to be allocated variable declared here");
+		  return *tp;
+		}
+	      --l;
+	    }
+	}
+    }
+  return NULL_TREE;
+}
+
+
 /* OpenMP 5.x:
    # pragma omp allocate (list)  clauses
 
@@ -43330,7 +43391,6 @@ cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
 {
   tree allocator = NULL_TREE;
   tree alignment = NULL_TREE;
-  location_t loc = pragma_tok->location;
   tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
 
   do
@@ -43360,63 +43420,56 @@ cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
 	  break;
 	}
       else if (p[2] == 'i')
-	{
-	  if (expr != error_mark_node)
-	    alignment = expr;
-	  /* FIXME: Remove when adding check to semantics.cc; cf FIXME below. */
-	  if (alignment
-	      && !type_dependent_expression_p (alignment)
-	      && !INTEGRAL_TYPE_P (TREE_TYPE (alignment)))
-	    {
-	      error_at (cloc, "%<align%> clause argument needs to be "
-			      "positive constant power of two integer "
-			      "expression");
-	      alignment = NULL_TREE;
-	    }
-	  else if (alignment)
-	    {
-	      alignment = mark_rvalue_use (alignment);
-	      if (!processing_template_decl)
-		{
-		  alignment = maybe_constant_value (alignment);
-		  if (TREE_CODE (alignment) != INTEGER_CST
-		      || !tree_fits_uhwi_p (alignment)
-		      || !integer_pow2p (alignment))
-		    {
-		      error_at (cloc, "%<align%> clause argument needs to be "
-				      "positive constant power of two integer "
-				      "expression");
-		      alignment = NULL_TREE;
-		    }
-		}
-	    }
-	}
+	alignment = expr;
       else if (allocator)
 	{
 	  error_at (cloc, "too many %qs clauses", "allocator");
 	  break;
 	}
       else
-	{
-	  if (expr != error_mark_node)
-	    allocator = expr;
-	}
+	 allocator = expr;
       parens.require_close (parser);
     } while (true);
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  if (allocator || alignment)
-    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
-      {
-	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
-	OMP_CLAUSE_ALLOCATE_ALIGN (c) = alignment;
-      }
-
-  /* FIXME: When implementing properly, delete the align/allocate expr error
-     check above and add one in semantics.cc (to properly handle templates).
-     Base this on the allocator/align modifiers check for the 'allocate' clause
-     in semantics.cc's finish_omp_clauses.  */
-  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
+  for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
+    {
+      tree var = OMP_CLAUSE_DECL (c);
+      if (lookup_attribute ("omp allocate", DECL_ATTRIBUTES (var)))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+		    "%qD already appeared as list item in an "
+		    "%<allocate%> directive", var);
+	  continue;
+	}
+      if (TREE_CODE (var) == PARM_DECL)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+		    "function parameter %qD may not appear as list item in an "
+		    "%<allocate%> directive", var);
+	  continue;
+	}
+      tree v;
+      for (v = current_binding_level->names; v; v = TREE_CHAIN (v))
+	if (v == var)
+	  break;
+      if (v == NULL_TREE)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (nl),
+			"%<allocate%> directive must be in the same scope as %qD",
+			var);
+	  inform (DECL_SOURCE_LOCATION (var), "declared here");
+	  continue;
+	}
+      struct cp_omp_loc_tree data
+	= {EXPR_LOC_OR_LOC (allocator, OMP_CLAUSE_LOCATION (nl)), var};
+      walk_tree (&allocator, cp_check_omp_allocate_allocator_r, &data, NULL);
+      DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
+					 build_tree_list (allocator, alignment),
+					 DECL_ATTRIBUTES (var));
+      if (!processing_template_decl)
+	finish_omp_allocate (true, OMP_CLAUSE_LOCATION (nl), var);
+    }
 }
 
 /* OpenMP 2.5:

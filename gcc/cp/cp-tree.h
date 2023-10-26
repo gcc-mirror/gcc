@@ -7924,6 +7924,10 @@ extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, tree, vec<tree> *, tree);
 extern tree finish_omp_for_block		(tree, tree);
+extern void finish_omp_allocate			(bool, location_t, tree,
+						 tree = NULL_TREE,
+						 tsubst_flags_t = tf_warning_or_error,
+						 tree = NULL_TREE);
 extern void finish_omp_atomic			(location_t, enum tree_code,
 						 enum tree_code, tree, tree,
 						 tree, tree, tree, tree, tree,

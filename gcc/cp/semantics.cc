@@ -11761,6 +11761,86 @@ finish_omp_for_block (tree bind, tree omp_for)
 }
 
 void
+finish_omp_allocate (bool in_parsing, location_t loc, tree decl, tree args,
+		     tsubst_flags_t complain, tree in_decl)
+{
+  location_t loc2;
+  tree attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (decl));
+  if (attr == NULL_TREE)
+    return;
+
+  tree allocator = TREE_PURPOSE (TREE_VALUE (attr));
+  tree alignment = TREE_VALUE (TREE_VALUE (attr));
+
+  if (alignment == error_mark_node)
+    TREE_VALUE (TREE_VALUE (attr)) = NULL_TREE;
+  else if (alignment)
+    {
+      location_t loc2 = EXPR_LOCATION (alignment);
+      if (!in_parsing)
+	alignment = tsubst_expr (alignment, args, complain, in_decl);
+      alignment = fold_non_dependent_expr (alignment);
+
+      if (TREE_CODE (alignment) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (alignment))
+	  || tree_int_cst_sgn (alignment) != 1
+	  || !integer_pow2p (alignment))
+	{
+	  error_at (loc2, "%<align%> clause argument needs to be positive "
+			  "constant power of two integer expression");
+	  TREE_VALUE (TREE_VALUE (attr)) = NULL_TREE;
+	}
+      else
+	TREE_VALUE (TREE_VALUE (attr)) = alignment;
+    }
+  loc2 = allocator ? EXPR_LOCATION (allocator) : UNKNOWN_LOCATION;
+  if (allocator == error_mark_node)
+    {
+      allocator = TREE_PURPOSE (TREE_VALUE (attr)) = NULL_TREE;
+      return;
+    }
+  else
+    {
+      if (!in_parsing)
+	allocator = tsubst_expr (allocator, args, complain, in_decl);
+      allocator = fold_non_dependent_expr (allocator);
+    }
+
+  if (allocator)
+    {
+      tree orig_type = TYPE_MAIN_VARIANT (TREE_TYPE (allocator));
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (allocator))
+	  || TREE_CODE (orig_type) != ENUMERAL_TYPE
+	  || TYPE_NAME (orig_type) == NULL_TREE
+	  || (DECL_NAME (TYPE_NAME (orig_type))
+	      != get_identifier ("omp_allocator_handle_t")))
+	{
+	  error_at (loc2, "%<allocator%> clause expression has type "
+			  "%qT rather than %<omp_allocator_handle_t%>",
+			  TREE_TYPE (allocator));
+	  allocator = TREE_PURPOSE (TREE_VALUE (attr)) = NULL_TREE;
+	}
+      else
+	TREE_PURPOSE (TREE_VALUE (attr)) = fold_non_dependent_expr (allocator);
+    }
+  if (TREE_STATIC (decl))
+    {
+      if (allocator == NULL_TREE)
+	error_at (loc, "%<allocator%> clause required for "
+		       "static variable %qD", decl);
+      else if (allocator
+	       && (wi::to_widest (allocator) < 1
+		   || wi::to_widest (allocator) > 8))
+	/* 8 = largest predefined memory allocator. */
+	error_at (loc2, "%<allocator%> clause requires a predefined allocator "
+			"as %qD is static", decl);
+      else
+	sorry_at (loc, "%<#pragma omp allocate%> for static variables like %qD "
+		       "not yet supported", decl);
+    }
+}
+
+void
 finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1, tree r,
 		   tree clauses, enum omp_memory_order mo, bool weak)

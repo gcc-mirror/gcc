@@ -1,3 +1,11 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-5.c: Remove C++ 'sorry'; minor updates.
+	* c-c++-common/gomp/allocate-9.c: Likewise.
+	* c-c++-common/gomp/allocate-17.c: Likewise.
+	* c-c++-common/gomp/directive-1.c: Likewise.
+	* g++.dg/gomp/allocate-5.C: New test.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/gomp/declare-mapper-17.c: New test.

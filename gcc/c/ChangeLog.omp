@@ -1,3 +1,8 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Change error
+	wording.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_variable_list): Support array-shaping

@@ -1,3 +1,15 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Impl. Status): Document that 'omp allocate'
+	is now supported for C++ stack/automatic variables.
+	* testsuite/libgomp.c-c++-common/allocate-4.c: Renamed from ...
+	* testsuite/libgomp.c/allocate-4.c: ... this.
+	* testsuite/libgomp.c-c++-common/allocate-5.c: Renamed from ...
+	* testsuite/libgomp.c/allocate-5.c: ... this.
+	* testsuite/libgomp.c-c++-common/allocate-6.c: Renamed from ...
+	* testsuite/libgomp.c/allocate-6.c: ... this.
+	* testsuite/libgomp.c++/allocate-2.C: New test.
+
 2023-09-19  Julian Brown  <julian@codesourcery.com>
 
 	* target.c (omp_target_memcpy_rect_worker): Add 1D strided transfer
