@@ -4145,6 +4145,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
        (op (mult (convert:type @0) @2) @1))))
 
+/* ?: Value replacement. */
+/* a == 0 ? b : b + a  -> b + a */
+(for op (plus bit_ior bit_xor)
+ (simplify
+  (cond (eq @0 integer_zerop) @1 (op:c@2 @1 @0))
+   @2))
+/* a == 0 ? b : b - a  -> b - a */
+/* a == 0 ? b : b ptr+ a  -> b ptr+ a */
+/* a == 0 ? b : b shift/rotate a -> b shift/rotate a */
+(for op (lrotate rrotate lshift rshift minus pointer_plus)
+ (simplify
+  (cond (eq @0 integer_zerop) @1 (op@2 @1 @0))
+   @2))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
