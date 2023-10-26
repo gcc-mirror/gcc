@@ -1709,21 +1709,17 @@ aarch64_init_tme_builtins (void)
     = build_function_type_list (void_type_node, uint64_type_node, NULL);
 
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TSTART]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tstart",
-				   ftype_uint64_void,
-				   AARCH64_TME_BUILTIN_TSTART);
+    = aarch64_general_simulate_builtin ("__tstart", ftype_uint64_void,
+					AARCH64_TME_BUILTIN_TSTART);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TTEST]
-    = aarch64_general_add_builtin ("__builtin_aarch64_ttest",
-				   ftype_uint64_void,
-				   AARCH64_TME_BUILTIN_TTEST);
+    = aarch64_general_simulate_builtin ("__ttest", ftype_uint64_void,
+					AARCH64_TME_BUILTIN_TTEST);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCOMMIT]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tcommit",
-				   ftype_void_void,
-				   AARCH64_TME_BUILTIN_TCOMMIT);
+    = aarch64_general_simulate_builtin ("__tcommit", ftype_void_void,
+					AARCH64_TME_BUILTIN_TCOMMIT);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCANCEL]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tcancel",
-				   ftype_void_uint64,
-				   AARCH64_TME_BUILTIN_TCANCEL);
+    = aarch64_general_simulate_builtin ("__tcancel", ftype_void_uint64,
+					AARCH64_TME_BUILTIN_TCANCEL);
 }
 
 /* Add builtins for Random Number instructions.  */
@@ -1986,6 +1982,7 @@ handle_arm_acle_h (void)
 {
   if (TARGET_LS64)
     aarch64_init_ls64_builtins ();
+  aarch64_init_tme_builtins ();
 }
 
 /* Initialize fpsr fpcr getters and setters.  */
@@ -2077,9 +2074,6 @@ aarch64_general_init_builtins (void)
      register them.  */
   if (!TARGET_ILP32)
     aarch64_init_pauth_hint_builtins ();
-
-  if (TARGET_TME)
-    aarch64_init_tme_builtins ();
 
   if (TARGET_MEMTAG)
     aarch64_init_memtag_builtins ();
@@ -2203,6 +2197,7 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 			    unsigned int code, tree fndecl,
 			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
 {
+  tree decl = aarch64_builtin_decls[code];
   switch (code)
     {
     case AARCH64_RSR:
@@ -2215,15 +2210,29 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
     case AARCH64_WSR64:
     case AARCH64_WSRF:
     case AARCH64_WSRF64:
-      tree addr = STRIP_NOPS (args[0]);
-      if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
-	  || TREE_CODE (addr) != ADDR_EXPR
-	  || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
-	{
-	  error_at (location, "first argument to %qD must be a string literal",
-		    fndecl);
-	  return false;
-	}
+      {
+	tree addr = STRIP_NOPS (args[0]);
+	if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
+	    || TREE_CODE (addr) != ADDR_EXPR
+	    || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
+	  {
+	    error_at (location,
+		      "first argument to %qD must be a string literal",
+		      fndecl);
+	    return false;
+	  }
+	break;
+      }
+
+    case AARCH64_TME_BUILTIN_TSTART:
+    case AARCH64_TME_BUILTIN_TCOMMIT:
+    case AARCH64_TME_BUILTIN_TTEST:
+    case AARCH64_TME_BUILTIN_TCANCEL:
+      return aarch64_check_required_extensions (location, decl,
+						AARCH64_FL_TME);
+
+    default:
+      break;
     }
   /* Default behavior.  */
   return true;
