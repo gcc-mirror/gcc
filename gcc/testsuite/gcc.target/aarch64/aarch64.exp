@@ -37,9 +37,10 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-# Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
-	"" $DEFAULT_CFLAGS
-
+aarch64-with-arch-dg-options "" {
+    # Main loop.
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+	    "" $DEFAULT_CFLAGS
+}
 # All done.
 dg-finish
