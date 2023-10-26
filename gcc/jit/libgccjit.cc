@@ -2114,7 +2114,7 @@ gcc_jit_context_new_unary_op (gcc_jit_context *ctxt,
     op);
   RETURN_NULL_IF_FAIL (result_type, ctxt, loc, "NULL result_type");
   RETURN_NULL_IF_FAIL_PRINTF3 (
-    result_type->is_numeric (), ctxt, loc,
+    result_type->is_numeric () || result_type->is_numeric_vector (), ctxt, loc,
     "gcc_jit_unary_op %s with operand %s "
     "has non-numeric result_type: %s",
     gcc::jit::unary_op_reproducer_strings[op],
@@ -2171,7 +2171,7 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
     b->get_debug_string (),
     b->get_type ()->get_debug_string ());
   RETURN_NULL_IF_FAIL_PRINTF4 (
-    result_type->is_numeric (), ctxt, loc,
+    result_type->is_numeric () || result_type->is_numeric_vector (), ctxt, loc,
     "gcc_jit_binary_op %s with operands a: %s b: %s "
     "has non-numeric result_type: %s",
     gcc::jit::binary_op_reproducer_strings[op],
