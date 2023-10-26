@@ -62,7 +62,6 @@ range_operator::fold_range (frange &r, tree type,
       return true;
     }
 
-  frange res;
   rv_fold (r, type,
 	   op1.lower_bound (), op1.upper_bound (),
 	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
