@@ -1364,14 +1364,14 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  if (n->expr)
 	    {
 	      fputs ("allocator(", dumpfile);
-	      show_expr (n->expr);
+	      show_expr (n->u2.allocator);
 	      fputc (')', dumpfile);
 	    }
 	  if (n->expr && n->u.align)
 	    fputc (',', dumpfile);
 	  if (n->u.align)
 	    {
-	      fputs ("allocator(", dumpfile);
+	      fputs ("align(", dumpfile);
 	      show_expr (n->u.align);
 	      fputc (')', dumpfile);
 	    }
@@ -2137,6 +2137,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_ENTER_DATA: name = "ENTER DATA"; is_oacc = true; break;
     case EXEC_OACC_EXIT_DATA: name = "EXIT DATA"; is_oacc = true; break;
     case EXEC_OMP_ALLOCATE: name = "ALLOCATE"; break;
+    case EXEC_OMP_ALLOCATORS: name = "ALLOCATORS"; break;
     case EXEC_OMP_ASSUME: name = "ASSUME"; break;
     case EXEC_OMP_ATOMIC: name = "ATOMIC"; break;
     case EXEC_OMP_BARRIER: name = "BARRIER"; break;
@@ -2242,6 +2243,8 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
@@ -2345,7 +2348,6 @@ show_omp_node (int level, gfc_code *c)
       || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
       || c->op == EXEC_OMP_TARGET_EXIT_DATA || c->op == EXEC_OMP_SCAN
       || c->op == EXEC_OMP_DEPOBJ || c->op == EXEC_OMP_ERROR
-      || c->op == EXEC_OMP_ALLOCATE
       || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -3492,6 +3494,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_ATOMIC:
     case EXEC_OMP_CANCEL:

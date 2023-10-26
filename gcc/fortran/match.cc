@@ -5554,6 +5554,8 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 	gfc_free_namespace (name->u2.ns);
       else if (free_mapper && name->u2.udm)
 	free (name->u2.udm);
+      else if (free_align)
+	gfc_free_expr (name->u2.allocator);
       else if (!free_mapper && name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)

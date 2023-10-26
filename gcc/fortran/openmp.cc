@@ -56,8 +56,8 @@ struct gfc_omp_directive {
    and "nothing".  */
 
 static const struct gfc_omp_directive gfc_omp_directives[] = {
-  /* {"allocate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_ALLOCATE}, */
-  /* {"allocators", GFC_OMP_DIR_EXECUTABLE, ST_OMP_ALLOCATORS}, */
+  {"allocate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_ALLOCATE},
+  {"allocators", GFC_OMP_DIR_EXECUTABLE, ST_OMP_ALLOCATORS},
   {"assumes", GFC_OMP_DIR_INFORMATIONAL, ST_OMP_ASSUMES},
   {"assume", GFC_OMP_DIR_INFORMATIONAL, ST_OMP_ASSUME},
   {"atomic", GFC_OMP_DIR_EXECUTABLE, ST_OMP_ATOMIC},
@@ -430,7 +430,8 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 			     gfc_omp_namelist ***headp = NULL,
 			     bool allow_sections = false,
 			     bool allow_derived = false,
-			     bool *has_all_memory = NULL)
+			     bool *has_all_memory = NULL,
+			     bool reject_common_vars = false)
 {
   gfc_omp_namelist *head, *tail, *p;
   locus old_loc, cur_loc;
@@ -518,6 +519,15 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 	  tail->sym = sym;
 	  tail->expr = expr;
 	  tail->where = cur_loc;
+	  if (reject_common_vars && sym->attr.in_common)
+	    {
+	      gcc_assert (allow_common);
+	      gfc_error ("%qs at %L is part of the common block %</%s/%> and "
+			 "may only be specificed implicitly via the named "
+			 "common block", sym->name, &cur_loc,
+			 sym->common_head->name);
+	      goto cleanup;
+	    }
 	  goto next_item;
 	case MATCH_NO:
 	  break;
@@ -1187,7 +1197,6 @@ enum omp_mask2
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
   OMP_CLAUSE_NOHOST,
-  OMP_CLAUSE_ALLOCATOR,
   OMP_CLAUSE_HAS_DEVICE_ADDR,  /* OpenMP 5.1  */
   OMP_CLAUSE_ENTER, /* OpenMP 5.2 */
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
@@ -2643,7 +2652,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      for (gfc_omp_namelist *n = *head; n; n = n->next)
 		{
-		  n->expr = (allocator) ? gfc_copy_expr (allocator) : NULL;
+		  n->u2.allocator = ((allocator)
+				     ? gfc_copy_expr (allocator) : NULL);
 		  n->u.align = (align) ? gfc_copy_expr (align) : NULL;
 		}
 	      gfc_free_expr (allocator);
@@ -5031,7 +5041,6 @@ cleanup:
 }
 
 
-#define OMP_ALLOCATE_CLAUSES (omp_mask (OMP_CLAUSE_ALLOCATOR))
 #define OMP_PARALLEL_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_COPYIN | OMP_CLAUSE_REDUCTION	\
@@ -5123,6 +5132,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_AT) | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
 #define OMP_WORKSHARE_CLAUSES \
   omp_mask (OMP_CLAUSE_NOWAIT)
+#define OMP_ALLOCATORS_CLAUSES \
+  omp_mask (OMP_CLAUSE_ALLOCATE)
 #define OMP_UNROLL_CLAUSES \
   (omp_mask (OMP_CLAUSE_UNROLL_FULL) | OMP_CLAUSE_UNROLL_PARTIAL)
 #define OMP_TILE_CLAUSES \
@@ -5138,6 +5149,113 @@ match_omp (gfc_exec_op op, const omp_mask mask)
   new_st.op = op;
   new_st.ext.omp_clauses = c;
   return MATCH_YES;
+}
+
+/* Handles both declarative and (deprecated) executable ALLOCATE directive;
+   accepts optional list (for executable) and common blocks.
+   If no variables have been provided, the single omp namelist has sym == NULL.
+
+   Note that the executable ALLOCATE directive permits structure elements only
+   in OpenMP 5.0 and 5.1 but not longer in 5.2.  See also the comment on the
+   'omp allocators' directive below. The accidental change was reverted for
+   OpenMP TR12, permitting them again. See also gfc_match_omp_allocators.
+
+   Hence, structure elements are rejected for now, also to make resolving
+   OMP_LIST_ALLOCATE simpler (check for duplicates, same symbol in
+   Fortran allocate stmt).  TODO: Permit structure elements.  */
+
+match
+gfc_match_omp_allocate (void)
+{
+  match m;
+  bool first = true;
+  gfc_omp_namelist *vars = NULL;
+  gfc_expr *align = NULL;
+  gfc_expr *allocator = NULL;
+  locus loc = gfc_current_locus;
+
+  m = gfc_match_omp_variable_list (" (", &vars, true, NULL, NULL, true, true,
+				   NULL, true);
+
+  if (m == MATCH_ERROR)
+    return m;
+
+  while (true)
+    {
+      gfc_gobble_whitespace ();
+      if (gfc_match_omp_eos () == MATCH_YES)
+	break;
+      if (!first)
+	gfc_match (", ");
+      first = false;
+      if ((m = gfc_match_dupl_check (!align, "align", true, &align))
+	  != MATCH_NO)
+	{
+	  if (m == MATCH_ERROR)
+	    goto error;
+	  continue;
+	}
+      if ((m = gfc_match_dupl_check (!allocator, "allocator",
+				     true, &allocator)) != MATCH_NO)
+	{
+	  if (m == MATCH_ERROR)
+	    goto error;
+	  continue;
+	}
+      gfc_error ("Expected ALIGN or ALLOCATOR clause at %C");
+      return MATCH_ERROR;
+    }
+  for (gfc_omp_namelist *n = vars; n; n = n->next)
+    if (n->expr)
+      {
+	if ((n->expr->ref && n->expr->ref->type == REF_COMPONENT)
+	    || (n->expr->ref->next && n->expr->ref->type == REF_COMPONENT))
+	  gfc_error ("Sorry, structure-element list item at %L in ALLOCATE "
+		     "directive is not yet supported", &n->expr->where);
+	else
+	  gfc_error ("Unexpected expression as list item at %L in ALLOCATE "
+		     "directive", &n->expr->where);
+
+	gfc_free_omp_namelist (vars, OMP_LIST_ALLOCATE);
+	goto error;
+      }
+
+  new_st.op = EXEC_OMP_ALLOCATE;
+  new_st.ext.omp_clauses = gfc_get_omp_clauses ();
+  if (vars == NULL)
+    {
+      vars = gfc_get_omp_namelist ();
+      vars->where = loc;
+      vars->u.align = align;
+      vars->u2.allocator = allocator;
+      new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE] = vars;
+    }
+  else
+    {
+      new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE] = vars;
+      for (; vars; vars = vars->next)
+	{
+	  vars->u.align = (align) ? gfc_copy_expr (align) : NULL;
+	  vars->u2.allocator = ((allocator) ? gfc_copy_expr (allocator) : NULL);
+	}
+      gfc_free_expr (allocator);
+      gfc_free_expr (align);
+    }
+  return MATCH_YES;
+
+error:
+  gfc_free_expr (align);
+  gfc_free_expr (allocator);
+  return MATCH_ERROR;
+}
+
+/* In line with OpenMP 5.2 derived-type components are rejected.
+   See also comment before gfc_match_omp_allocate.  */
+
+match
+gfc_match_omp_allocators (void)
+{
+  return match_omp (EXEC_OMP_ALLOCATORS, OMP_ALLOCATORS_CLAUSES);
 }
 
 
@@ -7656,66 +7774,6 @@ gfc_match_omp_ordered_depend (void)
   return match_omp (EXEC_OMP_ORDERED, omp_mask (OMP_CLAUSE_DOACROSS));
 }
 
-/* omp allocate (list) [clause-list]
-   - clause-list:  allocator
-*/
-
-match
-gfc_match_omp_allocate (void)
-{
-  gfc_omp_clauses *c = gfc_get_omp_clauses ();
-  gfc_expr *allocator = NULL;
-  match m;
-
-  m = gfc_match (" (");
-  if (m == MATCH_YES)
-    {
-      m = gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_ALLOCATOR],
-				       true, NULL);
-
-      if (m != MATCH_YES)
-	{
-	  /* If the list was empty, we must find closing ')'.  */
-	  m = gfc_match (")");
-	  if (m != MATCH_YES)
-	    return m;
-	}
-    }
-
-  if (gfc_match (" allocator ( ") == MATCH_YES)
-    {
-      m = gfc_match_expr (&allocator);
-      if (m != MATCH_YES)
-	{
-	  gfc_error ("Expected allocator at %C");
-	  return MATCH_ERROR;
-	}
-      if (gfc_match (" ) ") != MATCH_YES)
-	{
-	  gfc_error ("Expected ')' at %C");
-	  gfc_free_expr (allocator);
-	  return MATCH_ERROR;
-	}
-    }
-
-  if (gfc_match_omp_eos () != MATCH_YES)
-    {
-      gfc_free_expr (allocator);
-      gfc_error ("Unexpected junk after $OMP allocate at %C");
-      return MATCH_ERROR;
-    }
-  gfc_omp_namelist *n;
-  for (n = c->lists[OMP_LIST_ALLOCATOR]; n; n = n->next)
-      n->expr = gfc_copy_expr (allocator);
-
-  new_st.op = EXEC_OMP_ALLOCATE;
-  new_st.ext.omp_clauses = c;
-  new_st.resolved_sym = NULL;
-  gfc_free_expr (allocator);
-  return MATCH_YES;
-}
-
-
 /* omp atomic [clause-list]
    - atomic-clause:  read | write | update
    - capture
@@ -8170,6 +8228,128 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
   return copy;
 }
 
+/* Assume that a constant expression in the range 1 (omp_default_mem_alloc)
+   to 8 (omp_thread_mem_alloc) range is fine.  The original symbol name is
+   already lost during matching via gfc_match_expr.  */
+bool
+is_predefined_allocator (gfc_expr *expr)
+{
+  return (gfc_resolve_expr (expr)
+	  && expr->rank == 0
+	  && expr->ts.type == BT_INTEGER
+	  && expr->ts.kind == gfc_c_intptr_kind
+	  && expr->expr_type == EXPR_CONSTANT
+	  && mpz_sgn (expr->value.integer) > 0
+	  && mpz_cmp_si (expr->value.integer, 8) <= 0);
+}
+
+/* Resolve declarative ALLOCATE statement. Note: Common block vars only appear
+   as /block/ not individual, which is ensured during parsing.  */
+
+void
+gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
+{
+  for (gfc_omp_namelist *n = list; n; n = n->next)
+    n->sym->mark = 0;
+  for (gfc_omp_namelist *n = list; n; n = n->next)
+    {
+      if (n->sym->attr.flavor != FL_VARIABLE)
+	{
+	  gfc_error ("Argument %qs at %L to declarative !$OMP ALLOCATE "
+		     "directive must be a variable", n->sym->name,
+		     &n->where);
+	  continue;
+	}
+      if (ns != n->sym->ns || n->sym->attr.use_assoc
+	  || n->sym->attr.host_assoc || n->sym->attr.imported)
+	{
+	  gfc_error ("Argument %qs at %L to declarative !$OMP ALLOCATE shall be"
+		     " in the same scope as the variable declaration",
+		     n->sym->name, &n->where);
+	  continue;
+	}
+      if (n->sym->attr.dummy)
+	{
+	  gfc_error ("Unexpected dummy argument %qs as argument at %L to "
+		     "declarative !$OMP ALLOCATE", n->sym->name, &n->where);
+	  continue;
+	}
+      if (n->sym->mark)
+	{
+	  if (n->sym->attr.in_common)
+	    {
+	      gfc_error ("Duplicated common block %</%s/%> in !$OMP ALLOCATE "
+			 "at %L", n->sym->common_head->name, &n->where);
+	      while (n->next && n->next->sym
+		     && n->sym->common_head == n->next->sym->common_head)
+		n = n->next;
+	    }
+	  else
+	    gfc_error ("Duplicated variable %qs in !$OMP ALLOCATE at %L",
+		       n->sym->name, &n->where);
+	  continue;
+	}
+      n->sym->mark = 1;
+      if ((n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok
+	   && CLASS_DATA (n->sym)->attr.allocatable)
+	  || (n->sym->ts.type != BT_CLASS && n->sym->attr.allocatable))
+	gfc_error ("Unexpected allocatable variable %qs at %L in declarative "
+		   "!$OMP ALLOCATE directive", n->sym->name, &n->where);
+      else if ((n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok
+		&& CLASS_DATA (n->sym)->attr.class_pointer)
+	       || (n->sym->ts.type != BT_CLASS && n->sym->attr.pointer))
+	gfc_error ("Unexpected pointer variable %qs at %L in declarative "
+		   "!$OMP ALLOCATE directive", n->sym->name, &n->where);
+      HOST_WIDE_INT alignment = 0;
+      if (n->u.align
+	  && (!gfc_resolve_expr (n->u.align)
+	      || n->u.align->ts.type != BT_INTEGER
+	      || n->u.align->rank != 0
+	      || n->u.align->expr_type != EXPR_CONSTANT
+	      || gfc_extract_hwi (n->u.align, &alignment)
+	      || !pow2p_hwi (alignment)))
+	{
+	  gfc_error ("ALIGN requires a scalar positive constant integer "
+		     "alignment expression at %L that is a power of two",
+		     &n->u.align->where);
+	  while (n->sym->attr.in_common && n->next && n->next->sym
+		 && n->sym->common_head == n->next->sym->common_head)
+	    n = n->next;
+	  continue;
+	}
+      if (n->sym->attr.in_common || n->sym->attr.save || n->sym->ns->save_all
+	  || (n->sym->ns->proc_name
+	      && (n->sym->ns->proc_name->attr.flavor == FL_PROGRAM
+		  || n->sym->ns->proc_name->attr.flavor == FL_MODULE)))
+	{
+	  bool com = n->sym->attr.in_common;
+	  if (!n->u2.allocator)
+	    gfc_error ("An ALLOCATOR clause is required as the list item "
+		       "%<%s%s%s%> at %L has the SAVE attribute", com ? "/" : "",
+		       com ? n->sym->common_head->name : n->sym->name,
+		       com ? "/" : "", &n->where);
+	  else if (!is_predefined_allocator (n->u2.allocator))
+	    gfc_error ("Predefined allocator required in ALLOCATOR clause at %L"
+		       " as the list item %<%s%s%s%> at %L has the SAVE attribute",
+		       &n->u2.allocator->where, com ? "/" : "",
+		       com ? n->sym->common_head->name : n->sym->name,
+		       com ? "/" : "", &n->where);
+	  while (n->sym->attr.in_common && n->next && n->next->sym
+		 && n->sym->common_head == n->next->sym->common_head)
+	    n = n->next;
+	}
+      else if (n->u2.allocator
+	  && (!gfc_resolve_expr (n->u2.allocator)
+	      || n->u2.allocator->ts.type != BT_INTEGER
+	      || n->u2.allocator->rank != 0
+	      || n->u2.allocator->ts.kind != gfc_c_intptr_kind))
+	gfc_error ("Expected integer expression of the "
+		   "%<omp_allocator_handle_kind%> kind at %L",
+		   &n->u2.allocator->where);
+    }
+  gfc_error ("Sorry, declarative !$OMP ALLOCATE at %L not yet supported",
+	     &list->where);
+}
 
 /* Resolve ASSUME's and ASSUMES' assumption clauses.  Note that absent/contains
    is handled during parse time in omp_verify_merge_absent_contains.   */
@@ -8457,28 +8637,31 @@ verify_omp_clauses_symbol_dups (gfc_code *code, gfc_omp_clauses *omp_clauses,
     {
       for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
 	{
-	  if (n->expr && (!gfc_resolve_expr (n->expr)
-			  || n->expr->ts.type != BT_INTEGER
-			  || n->expr->ts.kind != gfc_c_intptr_kind))
+	  if (n->u2.allocator
+	      && (!gfc_resolve_expr (n->u2.allocator)
+		  || n->u2.allocator->ts.type != BT_INTEGER
+		  || n->u2.allocator->rank != 0
+		  || n->u2.allocator->ts.kind != gfc_c_intptr_kind))
 	    {
 	      gfc_error ("Expected integer expression of the "
 			 "%<omp_allocator_handle_kind%> kind at %L",
-			 &n->expr->where);
+			 &n->u2.allocator->where);
 	      break;
 	    }
 	  if (!n->u.align)
 	    continue;
-	  int alignment = 0;
+	  HOST_WIDE_INT alignment = 0;
 	  if (!gfc_resolve_expr (n->u.align)
 	      || n->u.align->ts.type != BT_INTEGER
 	      || n->u.align->rank != 0
-	      || gfc_extract_int (n->u.align, &alignment)
+	      || n->u.align->expr_type != EXPR_CONSTANT
+	      || gfc_extract_hwi (n->u.align, &alignment)
 	      || alignment <= 0
 	      || !pow2p_hwi (alignment))
 	    {
-	      gfc_error ("ALIGN modifier requires at %L a scalar positive "
-			 "constant integer alignment expression that is a "
-			 "power of two", &n->u.align->where);
+	      gfc_error ("ALIGN requires a scalar positive constant integer "
+			 "alignment expression at %L that is a power of two",
+			 &n->u.align->where);
 	      break;
 	    }
 	}
@@ -8488,15 +8671,21 @@ verify_omp_clauses_symbol_dups (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	 2.  Variable in allocate clause are also present in some
 	     privatization clase (non-composite case).  */
       for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
-	n->sym->mark = 0;
+	if (n->sym)
+	  n->sym->mark = 0;
 
       gfc_omp_namelist *prev = NULL;
-      for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n;)
+      for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; )
 	{
+	  if (n->sym == NULL)
+	    {
+	      n = n->next;
+	      continue;
+	    }
 	  if (n->sym->mark == 1)
 	    {
 	      gfc_warning (0, "%qs appears more than once in %<allocate%> "
-			   "clauses at %L" , n->sym->name, &n->where);
+			   "at %L" , n->sym->name, &n->where);
 	      /* We have already seen this variable so it is a duplicate.
 		 Remove it.  */
 	      if (prev != NULL && prev->next == n)
@@ -8540,6 +8729,168 @@ verify_omp_clauses_symbol_dups (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      gfc_error ("%qs specified in %<allocate%> clause at %L but not "
 			 "in an explicit privatization clause", n->sym->name,
 			 &n->where);
+	}
+      if (code
+	  && (code->op == EXEC_OMP_ALLOCATORS || code->op == EXEC_OMP_ALLOCATE)
+	  && code->block
+	  && code->block->next
+	  && code->block->next->op == EXEC_ALLOCATE)
+	{
+	  gfc_alloc *a;
+	  gfc_omp_namelist *n_null = NULL;
+	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+	    {
+	      if (n->sym == NULL)
+		{
+		  n_null = n;
+		  continue;
+		}
+	      for (a = code->block->next->ext.alloc.list; a; a = a->next)
+		if (a->expr->expr_type == EXPR_VARIABLE
+		    && a->expr->symtree->n.sym == n->sym)
+		  break;
+	      if (a == NULL)
+		gfc_error ("%qs specified in %<allocate%> at %L but not "
+			   "in the associated ALLOCATE statement",
+			   n->sym->name, &n->where);
+	    }
+	  /* If there is an ALLOCATE directive without list argument, a
+	     namelist with its allocator/align clauses and n->sym = NULL is
+	     created during parsing; here, we add all not otherwise specified
+	     items from the Fortran allocate to that list.
+	     For an ALLOCATORS directive, not listed items use the normal
+	     Fortran way.
+	     The behavior of an ALLOCATE directive that does not list all
+	     arguments but there is no directive without list argument is not
+	     well specified.  Thus, we reject such code below. In OpenMP 5.2
+	     the executable ALLOCATE directive is deprecated and in 6.0
+	     deleted such that no spec clarification is to be expected.  */
+	  gfc_alloc *a_prev = NULL;
+	  gfc_alloc *extra_alloc = NULL, *extra_alloc_last = NULL;
+	  for (a = code->block->next->ext.alloc.list; a; )
+	    {
+	      if (a->expr->expr_type == EXPR_VARIABLE)
+		{
+		  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+		    if (a->expr->symtree->n.sym == n->sym)
+		      break;
+		  if (n == NULL && n_null == NULL)
+		    {
+		      if (!extra_alloc)
+			extra_alloc = extra_alloc_last = a;
+		      else
+			{
+			  extra_alloc_last->next = a;
+			  extra_alloc_last = a;
+			}
+		      a = a->next;
+		      if (code->block->next->ext.alloc.list == extra_alloc_last)
+			code->block->next->ext.alloc.list = a;
+		      else
+			a_prev->next = a;
+		      extra_alloc_last->next = NULL;
+		      continue;
+		    }
+		  if (n == NULL)
+		    {
+		      if (a->expr->symtree->n.sym->attr.codimension)
+			gfc_error ("Unexpected coarray %qs in %<allocate%> at "
+				   "%L, implicitly listed in %<!$OMP ALLOCATE%>"
+				   " at %L", a->expr->symtree->n.sym->name,
+				   &a->expr->where, &n_null->where);
+		      if (n_null->sym == NULL)
+			n_null->sym = a->expr->symtree->n.sym;
+		      else
+			{
+			  n = n_null->next;
+			  n_null->next = gfc_get_omp_namelist ();
+			  n_null->next->next = n;
+			  n_null->next->sym = a->expr->symtree->n.sym;
+			  n_null->next->u2.allocator = n_null->u2.allocator;
+			  n_null->next->u.align
+			    = gfc_copy_expr (n_null->u.align);
+			  n_null->next->where = n_null->where;
+			  n_null = n_null->next;
+			}
+		    }
+		}
+	      a_prev = a;
+	      a = a->next;
+	    }
+	  if (n_null && n_null->sym == NULL)
+	    {
+	      if (n_null == omp_clauses->lists[OMP_LIST_ALLOCATE])
+		omp_clauses->lists[OMP_LIST_ALLOCATE] = n_null->next;
+	      else
+		{
+		  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n;
+		       n = n->next)
+		    if (n->next == n_null)
+		      break;
+		  n->next = n_null->next;
+		  n_null->next = NULL;
+		  gfc_free_omp_namelist (n_null, OMP_LIST_ALLOCATE);
+		}
+	    }
+	  if (extra_alloc)
+	    {
+	      /* Unspecified whether that should use the default allocator
+		 of OpenMP or the Fortran allocator. Thus, just reject it.  */
+	      if (code->op == EXEC_OMP_ALLOCATE)
+		gfc_error ("%qs listed in %<allocate%> statement at %L but "
+			   "it is neither explicitly in listed in the "
+			   "%<!$OMP ALLOCATE%> directive nor exists a directive"
+			   " without argument list",
+			   extra_alloc->expr->symtree->n.sym->name,
+			   &extra_alloc->expr->where);
+	      gfc_code *c = code->block->next;
+	      gcc_assert (c->op == EXEC_ALLOCATE && c->next == NULL);
+	      gfc_code *cn = code->next;
+	      code->next = gfc_get_code (c->op);
+	      code->next->next = cn;
+	      cn = code->next;
+	      cn->loc = c->loc;
+	      cn->expr1 = gfc_copy_expr (cn->expr1);
+	      cn->expr2 = gfc_copy_expr (cn->expr2);
+	      cn->expr3 = gfc_copy_expr (cn->expr3);
+	      cn->ext.alloc.ts = cn->ext.alloc.ts;
+	      cn->ext.alloc.list = extra_alloc;
+	      cn->ext.alloc.arr_spec_from_expr3
+		= c->ext.alloc.arr_spec_from_expr3;
+	      cn->ext.alloc.expr3_not_explicit
+		= c->ext.alloc.expr3_not_explicit;
+	    }
+	  /* The current implementation requires that an EXEC_OMP_ALLOCATE is
+	     added with OMP_ALLOCATE_KIND_FREE set at the end of the scope;
+	     cf. trans-decl.cc's gfc_trans_deferred_vars and
+	     gfc_trans_omp_allocate.  */
+	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+	    if (n->sym
+		&& n->sym->attr.allocatable
+		&& !n->sym->attr.save
+		&& !n->sym->attr.result
+		&& !n->sym->ns->proc_name->attr.is_main_program)
+	      {
+		if (ns != n->sym->ns)
+		  gfc_error ("Sorry, allocation of allocatable %qs with "
+			     "%<!$omp allocators%> or %<!$omp allocate%> at %L "
+			     "is only suppored in the scope where it has been "
+			     "declared, unless it has the SAVE attribute",
+			     n->sym->name, &code->loc);
+		gfc_symbol *proc = n->sym->ns->proc_name;
+		gfc_omp_namelist *p = gfc_get_omp_namelist ();
+		p->sym = n->sym;
+		p->expr = gfc_copy_expr (n->expr);
+		p->where = code->loc;
+		p->next = NULL;
+		if (proc->omp_allocated == NULL)
+		  proc->omp_allocated_end = proc->omp_allocated = p;
+		else
+		  {
+		    proc->omp_allocated_end->next = p;
+		    proc->omp_allocated_end = p;
+		  }
+	      }
 	}
     }
   for (n = omp_clauses->lists[OMP_LIST_TO]; n; n = n->next)
@@ -8811,7 +9162,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER", "ALLOCATOR",
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER",
 	"USES_ALLOCATORS" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
@@ -9110,15 +9461,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			     n->sym->name, &n->where);
 		else if (n->expr)
 		  {
-		    gfc_expr *expr = n->expr;
-		    int alignment = 0;
-		    if (!gfc_resolve_expr (expr)
-			|| expr->ts.type != BT_INTEGER
-			|| expr->rank != 0
-			|| gfc_extract_int (expr, &alignment)
-			|| alignment <= 0)
-		      gfc_error ("%qs in ALIGNED clause at %L requires a scalar "
-				 "positive constant integer alignment "
+		    if (!gfc_resolve_expr (n->expr)
+			|| n->expr->ts.type != BT_INTEGER
+			|| n->expr->rank != 0
+			|| n->expr->expr_type != EXPR_CONSTANT
+			|| mpz_sgn (n->expr->value.integer) <= 0)
+		      gfc_error ("%qs in ALIGNED clause at %L requires a scalar"
+				 " positive constant integer alignment "
 				 "expression", n->sym->name, &n->where);
 		  }
 	      }
@@ -9318,6 +9667,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  default:
 	    for (; n != NULL; n = n->next)
 	      {
+		if (n->sym == NULL)
+		  {
+		    gcc_assert (code->op == EXEC_OMP_ALLOCATORS
+				|| code->op == EXEC_OMP_ALLOCATE);
+		    continue;
+		  }
 		bool bad = false;
 		bool is_reduction = (list == OMP_LIST_REDUCTION
 				     || list == OMP_LIST_REDUCTION_INSCAN
@@ -11706,8 +12061,6 @@ omp_code_to_statement (gfc_code *code)
 {
   switch (code->op)
     {
-    case EXEC_OMP_ALLOCATE:
-      return ST_OMP_ALLOCATE;
     case EXEC_OMP_PARALLEL:
       return ST_OMP_PARALLEL;
     case EXEC_OMP_PARALLEL_MASKED:
@@ -11754,6 +12107,10 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_DO;
     case EXEC_OMP_LOOP:
       return ST_OMP_LOOP;
+    case EXEC_OMP_ALLOCATE:
+      return ST_OMP_ALLOCATE_EXEC;
+    case EXEC_OMP_ALLOCATORS:
+      return ST_OMP_ALLOCATORS;
     case EXEC_OMP_ASSUME:
       return ST_OMP_ASSUME;
     case EXEC_OMP_ATOMIC:
@@ -12207,168 +12564,6 @@ gfc_resolve_oacc_routines (gfc_namespace *ns)
     }
 }
 
-static void
-prepare_omp_allocated_var_list_for_cleanup (gfc_omp_namelist *cn, locus loc)
-{
-  gfc_symbol *proc = cn->sym->ns->proc_name;
-  gfc_omp_namelist *p, *n;
-
-  for (n = cn; n; n = n->next)
-    {
-      if (n->sym->attr.allocatable && !n->sym->attr.save
-	  && !n->sym->attr.result && !proc->attr.is_main_program)
-	{
-	  p = gfc_get_omp_namelist ();
-	  p->sym = n->sym;
-	  p->expr = gfc_copy_expr (n->expr);
-	  p->where = loc;
-	  p->next = NULL;
-	  if (proc->omp_allocated == NULL)
-	    proc->omp_allocated_end = proc->omp_allocated = p;
-	  else
-	    {
-	      proc->omp_allocated_end->next = p;
-	      proc->omp_allocated_end = p;
-	    }
-
-	}
-    }
-}
-
-static void
-check_allocate_directive_restrictions (gfc_symbol *sym, gfc_expr *omp_al,
-				       gfc_namespace *ns, locus loc)
-{
-  if (sym->attr.save != SAVE_NONE || sym->attr.in_common == 1
-      || sym->module != NULL)
-    {
-      int tmp;
-      /*  Assumption here is that we can extract an integer then
-	  it is a predefined thing.  */
-      if (!omp_al || gfc_extract_int (omp_al, &tmp))
-	  gfc_error ("%qs should use predefined allocator at %L", sym->name,
-		     &loc);
-    }
-  if (ns != sym->ns)
-    gfc_error ("%qs is not in the same scope as %<allocate%>"
-	       " directive at %L", sym->name, &loc);
-}
-
-#define EMPTY_VAR_LIST(node) \
-  (node->ext.omp_clauses->lists[OMP_LIST_ALLOCATOR] == NULL)
-
-static void
-gfc_resolve_omp_allocate (gfc_code *code, gfc_namespace *ns)
-{
-  gfc_alloc *al;
-  gfc_omp_namelist *n = NULL;
-  gfc_omp_namelist *cn = NULL;
-  gfc_omp_namelist *p, *tail = NULL;
-  gfc_code *cur;
-  hash_set<gfc_symbol*> vars;
-
-  gfc_omp_clauses *clauses = code->ext.omp_clauses;
-  gcc_assert (clauses);
-  cn = clauses->lists[OMP_LIST_ALLOCATOR];
-  gfc_expr *omp_al = cn ? cn->expr : NULL;
-
-  if (omp_al && (omp_al->ts.type != BT_INTEGER
-      || omp_al->ts.kind != gfc_c_intptr_kind))
-    gfc_error ("Expected integer expression of the "
-	       "%<omp_allocator_handle_kind%> kind at %L", &omp_al->where);
-
-  /* Check that variables in this allocate directive are not duplicated
-     in this directive or others coming directly after it.  */
-  for (cur = code; cur != NULL && cur->op == EXEC_OMP_ALLOCATE;
-      cur = cur->next)
-    {
-      gfc_omp_clauses *c = cur->ext.omp_clauses;
-      gcc_assert (c);
-      for (n = c->lists[OMP_LIST_ALLOCATOR]; n; n = n->next)
-	{
-	  if (vars.contains (n->sym))
-	    gfc_error ("%qs is used in multiple %<allocate%> "
-		       "directives at %L", n->sym->name, &cur->loc);
-	  /* This helps us avoid duplicate error messages.  */
-	  if (cur == code)
-	    vars.add (n->sym);
-	}
-    }
-
-  if (cur == NULL || cur->op != EXEC_ALLOCATE)
-    {
-      /*  There is no allocate statement right after allocate directive.
-	  We don't support this case at the moment.  */
-      for (n = cn; n != NULL; n = n->next)
-	{
-	  gfc_symbol *sym = n->sym;
-	  if (sym->attr.allocatable == 1)
-	    gfc_error ("%qs with ALLOCATABLE attribute is not allowed in "
-		       "%<allocate%> directive at %L as this directive is not"
-		       " associated with an %<allocate%> statement.",
-		       sym->name, &code->loc);
-	}
-      sorry_at (code->loc.lb->location, "%<allocate%> directive that is "
-		"not associated with an %<allocate%> statement is not "
-		"supported.");
-      return;
-    }
-
-  /* If there is another allocate directive right after this one, check
-     that none of them is empty.  Doing it this way, we can check this
-     thing even when multiple directives are together and generate
-     error at right location.  */
-  if (code->next && code->next->op == EXEC_OMP_ALLOCATE
-      && (EMPTY_VAR_LIST (code) || EMPTY_VAR_LIST (code->next)))
-    gfc_error ("Empty variable list is not allowed at %L when multiple "
-	       "%<allocate%> directives are associated with an "
-	       "%<allocate%> statement.",
-	       EMPTY_VAR_LIST (code) ? &code->loc : &code->next->loc);
-
-  if (EMPTY_VAR_LIST (code))
-    {
-      /* Empty namelist means allocate directive applies to all
-	 variables in allocate statement.  'cur' points to associated
-	 allocate statement.  */
-      for (al = cur->ext.alloc.list; al != NULL; al = al->next)
-	if (al->expr && al->expr->symtree && al->expr->symtree->n.sym)
-	  {
-	    check_allocate_directive_restrictions (al->expr->symtree->n.sym,
-						   omp_al, ns, code->loc);
-	    p = gfc_get_omp_namelist ();
-	    p->sym = al->expr->symtree->n.sym;
-	    p->expr = omp_al;
-	    p->where = code->loc;
-	    if (cn == NULL)
-	      cn = tail = p;
-	    else
-	      {
-		tail->next = p;
-		tail = tail->next;
-	      }
-	  }
-      clauses->lists[OMP_LIST_ALLOCATOR]= cn;
-    }
-  else
-    {
-      for (n = cn; n != NULL; n = n->next)
-	{
-	  for (al = cur->ext.alloc.list; al != NULL; al = al->next)
-	    if (al->expr && al->expr->symtree && al->expr->symtree->n.sym
-		&& al->expr->symtree->n.sym == n->sym)
-	      break;
-	  if (al == NULL)
-	    gfc_error ("%qs in %<allocate%> directive at %L is not present "
-		       "in associated %<allocate%> statement.",
-		       n->sym->name, &code->loc);
-	  check_allocate_directive_restrictions (n->sym, omp_al, ns,
-						 code->loc);
-	}
-    }
-  prepare_omp_allocated_var_list_for_cleanup (cn, code->loc);
-}
-
-
 void
 gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 {
@@ -12518,6 +12713,8 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TARGET:
       resolve_omp_target (code);
       gcc_fallthrough ();
+    case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_ERROR:
@@ -12577,9 +12774,6 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
       break;
     case EXEC_OMP_METADIRECTIVE:
       resolve_omp_metadirective (code, ns);
-      break;
-    case EXEC_OMP_ALLOCATE:
-      gfc_resolve_omp_allocate (code, ns);
       break;
     default:
       break;

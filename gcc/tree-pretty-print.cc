@@ -815,20 +815,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
-    case OMP_CLAUSE_ALLOCATOR:
-      pp_string (pp, "(");
-      dump_generic_node (pp, OMP_ALLOCATE_DECL (clause),
-			 spc, flags, false);
-      if (OMP_ALLOCATE_ALLOCATOR (clause))
-	{
-	  pp_string (pp, ":allocator(");
-	  dump_generic_node (pp, OMP_ALLOCATE_ALLOCATOR (clause),
-			     spc, flags, false);
-	  pp_right_paren (pp);
-	}
-      pp_right_paren (pp);
-      break;
-
     case OMP_CLAUSE_ALLOCATE:
       pp_string (pp, "allocate(");
       if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))

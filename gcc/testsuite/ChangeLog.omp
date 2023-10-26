@@ -1,3 +1,18 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-2.f90: Update dg-warning.
+	* gfortran.dg/gomp/allocate-4.f90: New upstream test.
+	* gfortran.dg/gomp/allocate-5.f90: New upstream test.
+	* gfortran.dg/gomp/allocate-6.f90: New upstream test.
+	* gfortran.dg/gomp/allocate-7.f90: New upstream test.
+	* gfortran.dg/gomp/allocate-4a.f90: Renamed from allocate-4.f90
+	* gfortran.dg/gomp/allocate-6a.f90: Renamed from allocate-6.f90
+	* gfortran.dg/gomp/allocate-7a.f90: Renamed from allocate-7.f90
+	* gfortran.dg/gomp/allocate-9a.f90: New test.
+	* gfortran.dg/gomp/allocators-1.f90: New upstream test.
+	* gfortran.dg/gomp/allocators-2.f90: New upstream test.
+
 2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

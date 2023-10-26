@@ -1,3 +1,14 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.cc (scan_sharing_clauses): Update message for directive use.
+	(lower_omp_allocate, lower_omp_1): Update for clause changes; handle
+	alignment.
+	* tree-core.h (enum omp_clause_code): Remove OMP_CLAUSE_ALLOCATOR.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+	* tree.cc (omp_clause_num_ops): Likewise.
+	* tree.h (OMP_ALLOCATE_DECL, OMP_ALLOCATE_ALLOCATOR): Remove.
+
 2023-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

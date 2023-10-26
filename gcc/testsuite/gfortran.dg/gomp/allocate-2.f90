@@ -25,11 +25,11 @@ subroutine foo(x)
   x=3
   !$omp end parallel
 
-  !$omp parallel private (x) allocate (x) allocate (x) ! { dg-warning "'x' appears more than once in 'allocate' clauses at .1." }
+  !$omp parallel private (x) allocate (x) allocate (x) ! { dg-warning "'x' appears more than once in 'allocate' at .1." }
   x=4
   !$omp end parallel
 
-  !$omp parallel private (x) allocate (x, x) ! { dg-warning "'x' appears more than once in 'allocate' clauses at .1." } 
+  !$omp parallel private (x) allocate (x, x) ! { dg-warning "'x' appears more than once in 'allocate' at .1." } 
   x=5
   !$omp end parallel
 

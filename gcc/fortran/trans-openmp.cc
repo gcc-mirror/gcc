@@ -4719,17 +4719,24 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    tree node = build_omp_clause (input_location,
 						  OMP_CLAUSE_ALLOCATE);
 		    OMP_CLAUSE_DECL (node) = t;
-		    if (n->expr)
+		    if (n->u2.allocator)
 		      {
 			tree allocator_;
-			if (n->expr->expr_type == EXPR_VARIABLE)
-			  allocator_
-			    = gfc_trans_omp_variable (n->expr->symtree->n.sym,
-						      false);
+			if (n->u2.allocator->expr_type == EXPR_VARIABLE)
+			  {
+			    allocator_
+			      = gfc_trans_omp_variable (n->u2.allocator->symtree->n.sym,
+							false);
+			    if (POINTER_TYPE_P (TREE_TYPE (allocator_)))
+			      {
+				allocator_ = build_fold_indirect_ref (allocator_);
+				allocator_ = gfc_evaluate_now (allocator_, block);
+			      }
+			  }
 			else
 			  {
 			    gfc_init_se (&se, NULL);
-			    gfc_conv_expr (&se, n->expr);
+			    gfc_conv_expr (&se, n->u2.allocator);
 			    allocator_ = gfc_evaluate_now (se.expr, block);
 			  }
 			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
@@ -4741,28 +4748,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			gfc_conv_expr (&se, n->u.align);
 			align_ = gfc_evaluate_now (se.expr, block);
 			OMP_CLAUSE_ALLOCATE_ALIGN (node) = align_;
-		      }
-		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
-		  }
-	      }
-	  break;
-	case OMP_LIST_ALLOCATOR:
-	  for (; n != NULL; n = n->next)
-	    if (n->sym->attr.referenced)
-	      {
-		tree t = gfc_trans_omp_variable (n->sym, false);
-		if (t != error_mark_node)
-		  {
-		    tree node = build_omp_clause (input_location,
-						  OMP_CLAUSE_ALLOCATOR);
-		    OMP_ALLOCATE_DECL (node) = t;
-		    if (n->expr)
-		      {
-			tree allocator_;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, n->expr);
-			allocator_ = gfc_evaluate_now (se.expr, block);
-			OMP_ALLOCATE_ALLOCATOR (node) = allocator_;
 		      }
 		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 		  }
@@ -7818,7 +7803,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 }
 
 static tree
-gfc_trans_omp_allocate (gfc_code *code)
+gfc_trans_omp_allocators (gfc_code *code)
 {
   stmtblock_t block;
   tree stmt;
@@ -7836,7 +7821,11 @@ gfc_trans_omp_allocate (gfc_code *code)
       && code->resolved_sym != NULL)
     OMP_ALLOCATE_KIND_FREE (stmt) = 1;
   else
-    OMP_ALLOCATE_KIND_ALLOCATE (stmt) = 1;
+    {
+      OMP_ALLOCATE_KIND_ALLOCATE (stmt) = 1;
+      gfc_add_expr_to_block (&block, stmt);
+      stmt = gfc_trans_allocate (code->block->next);
+    }
 
   gfc_add_expr_to_block (&block, stmt);
   gfc_merge_block_scope (&block);
@@ -9590,6 +9579,8 @@ gfc_split_omp_clauses (gfc_code *code,
 			     p = gfc_get_omp_namelist ();
 			     p->sym = alloc_nl->sym;
 			     p->expr = alloc_nl->expr;
+			     p->u.align = alloc_nl->u.align;
+			     p->u2.allocator = alloc_nl->u2.allocator;
 			     p->where = alloc_nl->where;
 			     if (clausesa[i].lists[OMP_LIST_ALLOCATE] == NULL)
 			       {
@@ -10849,7 +10840,8 @@ gfc_trans_omp_directive (gfc_code *code)
   switch (code->op)
     {
     case EXEC_OMP_ALLOCATE:
-      return gfc_trans_omp_allocate (code);
+    case EXEC_OMP_ALLOCATORS:
+      return gfc_trans_omp_allocators (code);
     case EXEC_OMP_ASSUME:
       return gfc_trans_omp_assume (code);
     case EXEC_OMP_ATOMIC:

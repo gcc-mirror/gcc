@@ -260,7 +260,7 @@ enum gfc_statement
   ST_OACC_CACHE, ST_OACC_KERNELS_LOOP, ST_OACC_END_KERNELS_LOOP,
   ST_OACC_SERIAL_LOOP, ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL,
   ST_OACC_END_SERIAL, ST_OACC_ENTER_DATA, ST_OACC_EXIT_DATA, ST_OACC_ROUTINE,
-  ST_OACC_ATOMIC, ST_OACC_END_ATOMIC, ST_OMP_ALLOCATE,
+  ST_OACC_ATOMIC, ST_OACC_END_ATOMIC,
   ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_ATOMIC,
   ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED,
   ST_OMP_END_PARALLEL, ST_OMP_END_PARALLEL_DO, ST_OMP_END_PARALLEL_SECTIONS,
@@ -320,6 +320,8 @@ enum gfc_statement
   ST_OMP_END_MASKED_TASKLOOP_SIMD, ST_OMP_SCOPE, ST_OMP_END_SCOPE,
   ST_OMP_METADIRECTIVE, ST_OMP_BEGIN_METADIRECTIVE, ST_OMP_END_METADIRECTIVE,
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
+  ST_OMP_ALLOCATE, ST_OMP_ALLOCATE_EXEC,
+  ST_OMP_ALLOCATORS, ST_OMP_END_ALLOCATORS,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE,
   ST_OMP_UNROLL, ST_OMP_END_UNROLL,
@@ -1387,6 +1389,7 @@ typedef struct gfc_omp_namelist
       struct gfc_omp_namelist_udr *udr;
       struct gfc_omp_namelist_udm *udm;
       gfc_namespace *ns;
+      gfc_expr *allocator;
       struct gfc_omp_namelist *duplicate_of;
     } u2;
   struct gfc_symbol *memspace_sym;
@@ -1431,7 +1434,6 @@ enum
   OMP_LIST_USE_DEVICE_ADDR,
   OMP_LIST_NONTEMPORAL,
   OMP_LIST_ALLOCATE,
-  OMP_LIST_ALLOCATOR,
   OMP_LIST_HAS_DEVICE_ADDR,
   OMP_LIST_ENTER,
   OMP_LIST_USES_ALLOCATORS,
@@ -2257,8 +2259,9 @@ typedef struct gfc_namespace
   /* Linked list of !$omp declare variant constructs.  */
   struct gfc_omp_declare_variant *omp_declare_variant;
 
-  /* OpenMP assumptions.  */
+  /* OpenMP assumptions and allocate for static/stack vars.  */
   struct gfc_omp_assumptions *omp_assumes;
+  struct gfc_omp_namelist *omp_allocate;
 
   /* A hash set for the gfc expressions that have already
      been finalized in this namespace.  */
@@ -3027,7 +3030,6 @@ enum gfc_exec_op
   EXEC_OACC_DATA, EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP, EXEC_OACC_UPDATE,
   EXEC_OACC_WAIT, EXEC_OACC_CACHE, EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA,
   EXEC_OACC_ATOMIC, EXEC_OACC_DECLARE,
-  EXEC_OMP_ALLOCATE,
   EXEC_OMP_CRITICAL, EXEC_OMP_DO, EXEC_OMP_FLUSH, EXEC_OMP_MASTER,
   EXEC_OMP_ORDERED, EXEC_OMP_PARALLEL, EXEC_OMP_PARALLEL_DO,
   EXEC_OMP_PARALLEL_SECTIONS, EXEC_OMP_PARALLEL_WORKSHARE,
@@ -3058,7 +3060,8 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
-  EXEC_OMP_METADIRECTIVE, EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_ERROR
+  EXEC_OMP_METADIRECTIVE, EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_ERROR,
+  EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS
 };
 
 typedef struct gfc_code
@@ -3712,6 +3715,7 @@ void gfc_free_omp_udr (gfc_omp_udr *);
 void gfc_free_omp_metadirective_clauses (gfc_omp_metadirective_clause *);
 void gfc_free_omp_udm (gfc_omp_udm *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
+void gfc_resolve_omp_allocate (gfc_namespace *, gfc_omp_namelist *);
 void gfc_resolve_omp_assumptions (gfc_omp_assumptions *);
 gfc_omp_udm *gfc_omp_udm_find (gfc_symtree *, gfc_typespec *);
 gfc_omp_udm *gfc_find_omp_udm (gfc_namespace *ns, const char *mapper_id,

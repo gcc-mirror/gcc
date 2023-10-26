@@ -22,6 +22,7 @@ subroutine foo (x, y, h)
   integer (kind=omp_allocator_handle_kind) :: h
   integer, allocatable :: var1
 
+  !$omp flush ! executable statement before '!$omp allocate'
   !$omp allocate (var1)  allocator(h)
   allocate (var1)
 

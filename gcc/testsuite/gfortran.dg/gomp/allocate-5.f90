@@ -1,73 +1,99 @@
-! { dg-do compile }
-
-module omp_lib_kinds
-  use iso_c_binding, only: c_int, c_intptr_t
+module my_omp_lib
+  use iso_c_binding, only: c_intptr_t
+  !use omp_lib
   implicit none
-  private :: c_int, c_intptr_t
-  integer, parameter :: omp_allocator_handle_kind = c_intptr_t
+        integer, parameter :: omp_allocator_handle_kind = c_intptr_t
 
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_null_allocator = 0
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_default_mem_alloc = 1
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_large_cap_mem_alloc = 2
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_const_mem_alloc = 3
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_high_bw_mem_alloc = 4
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_low_lat_mem_alloc = 5
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_cgroup_mem_alloc = 6
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_pteam_mem_alloc = 7
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_thread_mem_alloc = 8
-end module
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_null_allocator = 0
 
-subroutine foo(x, y)
-  use omp_lib_kinds
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_default_mem_alloc = 1
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_large_cap_mem_alloc = 2
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_const_mem_alloc = 3
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_high_bw_mem_alloc = 4
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_low_lat_mem_alloc = 5
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_cgroup_mem_alloc = 6
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_pteam_mem_alloc = 7
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_thread_mem_alloc = 8
+  type t
+    integer :: a
+  end type t
+end module my_omp_lib
+
+subroutine zero()
+  !$omp assumes absent (allocators)
+
+  !$omp assume absent (allocators)
+  !$omp end assume
+end
+
+subroutine two(c,x2,y2)
+  use my_omp_lib
   implicit none
-  integer  :: x
-  integer  :: y
+  integer, allocatable :: a, b(:), c(:,:)
+  type(t), allocatable :: x1
+  type(t), pointer :: x2(:)
+  class(t), allocatable :: y1
+  class(t), pointer :: y2(:)
 
-  integer, allocatable :: var1(:)
-  integer, allocatable :: var2(:)
-  integer, allocatable :: var3(:)
-  integer, allocatable :: var4(:,:)
-  integer, allocatable :: var5(:)
-  integer, allocatable :: var6(:)
-  integer, allocatable :: var7(:)
-  integer, allocatable :: var8(:)
-  integer, allocatable :: var9(:)
-  integer, allocatable :: var10(:)
-  integer, allocatable :: var11(:)
-  integer, allocatable :: var12(:)
+  !$omp flush  ! some executable statement
+  !$omp allocate(a)
+  allocate(a)
+  deallocate(a)
 
-  !$omp allocate (var1) allocator(omp_default_mem_alloc)
-  allocate (var1(x))
-  
-  !$omp allocate (var2)
-  allocate (var2(x))
+  !$omp allocate(x1,y1,x2,y2)
+  allocate(x1,y1,x2(5),y2(5))
+  deallocate(x1,y1,x2,y2)
 
-  !$omp allocate (var3, var4) allocator(omp_large_cap_mem_alloc)
-  allocate (var3(x),var4(x,y))
+  !$omp allocate(b,a) align ( 128 )
+  !$omp allocate align ( 64 )
+  allocate(a,b(4),c(3,4))
+  deallocate(a,b,c)
+end
 
-  !$omp allocate()
-  allocate (var5(x))
+subroutine three(c)
+  use my_omp_lib
+  implicit none
+  integer :: q
+  integer, allocatable :: a, b(:), c(:,:)
 
-  !$omp allocate
-  allocate (var6(x))
+  call foo()  ! executable stmt
+  !$omp allocate allocator( omp_large_cap_mem_alloc ) , align(64)
+  !$omp allocate(b) allocator( omp_high_bw_mem_alloc )
+  !$omp allocate(c) allocator( omp_high_bw_mem_alloc )
+  allocate(a,b(4),c(3,4))
+  deallocate(a,b,c)
 
-  !$omp allocate () allocator(omp_default_mem_alloc)
-  allocate (var7(x))
-
-  !$omp allocate allocator(omp_default_mem_alloc)
-  allocate (var8(x))
-
-  !$omp allocate (var9) allocator(omp_default_mem_alloc)
-  !$omp allocate (var10) allocator(omp_large_cap_mem_alloc)
-  allocate (var9(x), var10(x))
-
-end subroutine
+  block
+    q = 5  ! executable stmt
+    !$omp allocate(a) align(64)
+    !$omp allocate(b) allocator( omp_high_bw_mem_alloc ), align(32)
+    !$omp allocate(c) allocator( omp_thread_mem_alloc )
+    ! { dg-error "Sorry, allocation of allocatable 'a' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-3 }
+    ! { dg-error "Sorry, allocation of allocatable 'b' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-4 }
+    ! { dg-error "Sorry, allocation of allocatable 'c' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-5 }
+    allocate(a,b(4),c(3,4))
+    deallocate(a,b,c)
+  end block
+  call inner
+contains
+  subroutine inner
+    call foo()  ! executable stmt
+    !$omp allocate(a) align(64)
+    !$omp allocate(b) allocator( omp_high_bw_mem_alloc ), align(32)
+    !$omp allocate(c) allocator( omp_thread_mem_alloc )
+    ! { dg-error "Sorry, allocation of allocatable 'a' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-3 }
+    ! { dg-error "Sorry, allocation of allocatable 'b' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-4 }
+    ! { dg-error "Sorry, allocation of allocatable 'c' with '!.omp allocators' or '!.omp allocate' at .1. is only suppored in the scope where it has been declared, unless it has the SAVE attribute" "" { target *-*-* } .-5 }
+    allocate(a,b(4),c(3,4))
+    deallocate(a,b,c)
+  end subroutine inner
+end

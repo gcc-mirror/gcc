@@ -4654,7 +4654,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       gfc_clear_new_st ();
       new_st.op = EXEC_OMP_ALLOCATE;
       gfc_omp_clauses *c = gfc_get_omp_clauses ();
-      c->lists[OMP_LIST_ALLOCATOR] = proc_sym->omp_allocated;
+      c->lists[OMP_LIST_ALLOCATE] = proc_sym->omp_allocated;
       new_st.ext.omp_clauses = c;
       /* This is just a hacky way to convey to handler that we are
 	 dealing with cleanup here.  Saves us from using another field

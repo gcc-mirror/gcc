@@ -1,84 +1,103 @@
-! { dg-do compile }
-! { dg-additional-options "-fdump-tree-original -fdump-tree-gimple" }
-! { dg-additional-options "-fdump-tree-omplower" }
-
-module omp_lib_kinds
-  use iso_c_binding, only: c_int, c_intptr_t
+module my_omp_lib
+  use iso_c_binding, only: c_intptr_t
+  !use omp_lib
   implicit none
-  private :: c_int, c_intptr_t
-  integer, parameter :: omp_allocator_handle_kind = c_intptr_t
+        integer, parameter :: omp_allocator_handle_kind = c_intptr_t
 
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_null_allocator = 0
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_default_mem_alloc = 1
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_large_cap_mem_alloc = 2
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_const_mem_alloc = 3
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_high_bw_mem_alloc = 4
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_low_lat_mem_alloc = 5
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_cgroup_mem_alloc = 6
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_pteam_mem_alloc = 7
-  integer (kind=omp_allocator_handle_kind), &
-     parameter :: omp_thread_mem_alloc = 8
-end module
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_null_allocator = 0
 
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_default_mem_alloc = 1
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_large_cap_mem_alloc = 2
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_const_mem_alloc = 3
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_high_bw_mem_alloc = 4
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_low_lat_mem_alloc = 5
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_cgroup_mem_alloc = 6
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_pteam_mem_alloc = 7
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_thread_mem_alloc = 8
+   type t
+     integer,allocatable :: a
+     integer,pointer :: b(:,:)
+   end type t
+end module my_omp_lib
 
-subroutine foo(x, y, al)
-  use omp_lib_kinds
+subroutine zero()
+  !$omp assumes absent (allocate)  ! { dg-error "Invalid 'ALLOCATE' directive at .1. in ABSENT clause: declarative, informational and meta directives not permitted" }
+
+  !$omp assume absent (allocate)  ! { dg-error "Invalid 'ALLOCATE' directive at .1. in ABSENT clause: declarative, informational and meta directives not permitted" }
+  !!$omp end assume
+end
+
+subroutine alloc(c,x2,y2)
+  use my_omp_lib
   implicit none
-  
-type :: my_type
-  integer :: i
-  integer :: j
-  real :: x
-end type
+  integer, allocatable :: a, b(:), c(:,:)
+  type(t) :: x1,x2
+  class(t) :: y1,y2
+  allocatable :: x1, y1
 
-  integer  :: x
-  integer  :: y
-  integer (kind=omp_allocator_handle_kind) :: al
+  !$omp flush  ! some executable statement
 
-  integer, allocatable :: var1
-  integer, allocatable :: var2
-  real, allocatable :: var3(:,:)
-  type (my_type), allocatable :: var4
-  integer, pointer :: pii, parr(:)
-  integer, allocatable :: var
+  !$omp allocate(x2%a,x2%b,y2%a,y2%b) allocator(omp_pteam_mem_alloc) align(64)  ! { dg-error "Sorry, structure-element list item at .1. in ALLOCATE directive is not yet supported" }
+  allocate(x2%a,x2%b(3,4),y2%a,y2%b(3,4))
 
-  character, allocatable :: str1a, str1aarr(:) 
-  character(len=5), allocatable :: str5a, str5aarr(:)
-  
+  !$omp allocate(b(3)) align ( 64 ) ! { dg-error "Unexpected expression as list item at .1. in ALLOCATE directive" }
+  allocate(b(3))
+end
+
+subroutine one(n, my_alloc)
+  use my_omp_lib
+  implicit none
+integer :: n
+integer(kind=omp_allocator_handle_kind), intent(in) :: my_alloc
+
+integer :: a,b,c(n),d(5),e(2)
+integer, save :: k,l,m(5),r(2)
+integer :: q,x,y(2),z(5)
+common /com1/ q,x
+common /com2/ y,z
+integer, allocatable :: alloc
+integer, pointer :: ptr
+
+!$omp allocate(q) ! { dg-error "'q' at .1. is part of the common block '/com1/' and may only be specificed implicitly via the named common block" }
+
+!$omp allocate(d(:)) ! { dg-error "Unexpected expression as list item at .1. in ALLOCATE directive" }
+!$omp allocate(a) align(4), align(4)  ! { dg-error "Duplicated 'align' clause" }
+!$omp allocate(   e ) allocator( omp_high_bw_mem_alloc ), align(32),allocator( omp_high_bw_mem_alloc )  ! { dg-error "Duplicated 'allocator' clause" }
+
+!$omp allocate align(32) ! { dg-error "'!.OMP ALLOCATE' directive at .1. must either have a variable argument or, if associated with an ALLOCATE stmt, must be preceded by an executable statement or OpenMP construct" }
+
+!$omp allocate(alloc) align(128)  ! { dg-error "'!.OMP ALLOCATE' directive at .1. associated with an ALLOCATE stmt must be preceded by an executable statement or OpenMP construct; note the variables in the list all have the allocatable or pointer attribute" }
+!$omp allocate(ptr) align(128)  ! { dg-error "'!.OMP ALLOCATE' directive at .1. associated with an ALLOCATE stmt must be preceded by an executable statement or OpenMP construct; note the variables in the list all have the allocatable or pointer attribute" }
+
+!$omp allocate(e) allocate(omp_thread_mem_alloc)  ! { dg-error "Expected ALIGN or ALLOCATOR clause" }
+end
+
+subroutine two()
+  integer, allocatable :: a,b,c
+
+  call foo()
+  !$omp allocate(a)
+  a = 5  ! { dg-error "Unexpected assignment at .1.; expected ALLOCATE or !.OMP ALLOCATE statement" }
+
+  !$omp allocate  ! { dg-error "!.OMP ALLOCATE statements at .1. and .2. have both no list item but only one may" }
+  !$omp allocate(b)
+  !$omp allocate  ! { dg-error "!.OMP ALLOCATE statements at .1. and .2. have both no list item but only one may" }
+   allocate(a,b,c)
+
   !$omp allocate
-  allocate(str1a, str1aarr(10), str5a, str5aarr(10))
+   allocate(a,b,c)  ! allocate is no block construct, hence:
+  !$omp end allocate  ! { dg-error "Unclassifiable OpenMP directive" }
 
-  !$omp allocate (var1) allocator(omp_default_mem_alloc)
-  !$omp allocate (var2) allocator(omp_large_cap_mem_alloc)
-  allocate (var1, var2)
-
-  !$omp allocate (var4)  allocator(omp_low_lat_mem_alloc)
-  allocate (var4)
-  var4%i = 5
-
-  !$omp allocate (var3)  allocator(omp_low_lat_mem_alloc)
-  allocate (var3(x,y))
-
-  !$omp allocate
-  allocate(pii, parr(5))
-
-  ! allocate statement not associated with an allocate directive
-  allocate(var)
-end subroutine
-
-! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "original" } }
-! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "gimple" } }
-! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "gimple" } }
-! { dg-final { scan-tree-dump-times "builtin_malloc" 11 "original" } }
-! { dg-final { scan-tree-dump-times "builtin_free" 9 "original" } }
-! { dg-final { scan-tree-dump-times "GOMP_alloc" 10 "omplower" } }
-! { dg-final { scan-tree-dump-times "GOMP_free" 8 "omplower" } }
+  !$omp allocators allocate(align(64) : a, b)
+  !$omp allocators allocate(align(128) : c)  ! { dg-error "Unexpected !.OMP ALLOCATORS at .1.; expected ALLOCATE statement after !.OMP ALLOCATORS" }
+   allocate(a,b,c)
+end

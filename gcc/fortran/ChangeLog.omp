@@ -1,3 +1,48 @@
+2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_node,
+	show_code_node): Dump EXEC_OMP_ALLOCATORS update for struct changes.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_(END_)ALLOCATORS.
+	(gfc_omp_namelist): Add allocator to union u2.
+	(enum): Remove OMP_LIST_ALLOCATOR.
+	(gfc_namespace): Add omp_allocate.
+	(enum gfc_exec_op): Add EXEC_OMP_ALLOCATORS.
+	(gfc_resolve_omp_allocate): New prototype.
+	* match.cc (gfc_free_omp_namelist): Free u2.allocator.
+	* match.h (gfc_match_omp_allocators): New prototype.
+	* openmp.cc (gfc_omp_directives): Enable allocate/allocator.
+	(gfc_match_omp_variable_list): Add reject_common_vars Boolean arg.
+	(enum omp_mask2): Remove OMP_CLAUSE_ALLOCATOR.
+	(gfc_match_omp_clauses): Update for struct change.
+	(OMP_ALLOCATE_CLAUSES): Remove.
+	(OMP_ALLOCATORS_CLAUSES): Add.
+	(gfc_match_omp_allocate): Replace by upstream version.
+	(gfc_match_omp_allocators, is_predefined_allocator,
+	gfc_resolve_omp_allocate): New.
+	(verify_omp_clauses_symbol_dups): Update for allocate/allocator.
+	(resolve_omp_clauses): Update from mainline.
+	(omp_code_to_statement): Add EXEC_OMP_ALLOCATORS.
+	prepare_omp_allocated_var_list_for_cleanup,
+	check_allocate_directive_restrictions, EMPTY_VAR_LIST,
+	gfc_resolve_omp_allocate): Remove.
+	(gfc_resolve_omp_directive): Add EXEC_OMP_ALLOCATORS.
+	* parse.cc (check_omp_allocate_stmt, decode_omp_directive
+	next_statement, case_omp_decl, gfc_ascii_statement,
+	verify_st_order, parse_openmp_allocate_block,
+	parse_omp_structured_block, parse_executable): Update from mainline.
+	* resolve.cc (gfc_resolve_blocks, resolve_codes): Handle allocate
+	and allocator.
+	* st.cc (gfc_free_statement): And EXEC_OMP_ALLOCATORS.
+	* trans-decl.cc (gfc_trans_deferred_vars): Use OMP_LIST_ALLOCATE
+	instead of OMP_LIST_ALLOCATOR.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Remove OMP_LIST_ALLOCATOR,
+	update allocate handling.
+	(gfc_trans_omp_allocate): Renamed to ...
+	(gfc_trans_omp_allocators): ... this.
+	(gfc_split_omp_clauses, gfc_trans_omp_directive): Update.
+	* trans.cc (trans_code): Handle EXEC_OMP_ALLOCATORS.
+
 2023-10-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

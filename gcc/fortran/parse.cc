@@ -42,6 +42,7 @@ static jmp_buf eof_buf;
 
 gfc_state_data *gfc_state_stack;
 static bool last_was_use_stmt = false;
+bool in_exec_part;
 
 bool gfc_matching_omp_context_selector;
 bool gfc_in_metadirective_body;
@@ -752,6 +753,82 @@ decode_oacc_directive (void)
   return ST_GET_FCN_CHARACTERISTICS;
 }
 
+/* Checks for the ST_OMP_ALLOCATE. First, check whether all list items
+   are allocatables/pointers - and if so, assume it is associated with a Fortran
+   ALLOCATE stmt.  If not, do some initial parsing-related checks and append
+   namelist to namespace.
+   The check follows OpenMP 5.1 by requiring an executable stmt or OpenMP
+   construct before a directive associated with an allocate statement
+   (-> ST_OMP_ALLOCATE_EXEC); instead of showing an error, conversion of
+   ST_OMP_ALLOCATE -> ST_OMP_ALLOCATE_EXEC would be an alternative.  */
+
+bool
+check_omp_allocate_stmt (locus *loc)
+{
+  gfc_omp_namelist *n;
+
+  if (new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->sym == NULL)
+    {
+      gfc_error ("%qs directive at %L must either have a variable argument or, "
+		 "if associated with an ALLOCATE stmt, must be preceded by an "
+		 "executable statement or OpenMP construct",
+		 gfc_ascii_statement (ST_OMP_ALLOCATE), loc);
+      return false;
+    }
+  bool has_allocatable = false;
+  bool has_non_allocatable = false;
+  for (n = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
+    {
+      if (n->expr)
+	{
+	  gfc_error ("Structure-component expression at %L in %qs directive not"
+		     " permitted in declarative directive; as directive "
+		     "associated with an ALLOCATE stmt it must be preceded by "
+		     "an executable statement or OpenMP construct",
+		      &n->expr->where, gfc_ascii_statement (ST_OMP_ALLOCATE));
+	  return false;
+	}
+      bool alloc_ptr;
+      if (n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok)
+	alloc_ptr = (CLASS_DATA (n->sym)->attr.allocatable
+		     || CLASS_DATA (n->sym)->attr.class_pointer);
+      else
+	alloc_ptr = (n->sym->attr.allocatable || n->sym->attr.pointer
+		     || n->sym->attr.proc_pointer);
+      if (alloc_ptr
+	  || (n->sym->ns && n->sym->ns->proc_name
+	      && (n->sym->ns->proc_name->attr.allocatable
+		  || n->sym->ns->proc_name->attr.pointer
+		  || n->sym->ns->proc_name->attr.proc_pointer)))
+	has_allocatable = true;
+      else
+	has_non_allocatable = true;
+    }
+  /* All allocatables - assume it is allocated with an ALLOCATE stmt.  */
+  if (has_allocatable && !has_non_allocatable)
+    {
+      gfc_error ("%qs directive at %L associated with an ALLOCATE stmt must be "
+		 "preceded by an executable statement or OpenMP construct; "
+		 "note the variables in the list all have the allocatable or "
+		 "pointer attribute", gfc_ascii_statement (ST_OMP_ALLOCATE),
+		 loc);
+      return false;
+    }
+  if (!gfc_current_ns->omp_allocate)
+    gfc_current_ns->omp_allocate
+      = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+  else
+    {
+      for (n = gfc_current_ns->omp_allocate; n->next; n = n->next)
+	;
+      n->next = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+    }
+  new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE] = NULL;
+  gfc_free_omp_clauses (new_st.ext.omp_clauses);
+  return true;
+}
+
+
 /* Like match, but set a flag simd_matched if keyword matched
    and if spec_only, goto do_spec_only without actually matching.  */
 #define matchs(keyword, subr, st)				\
@@ -865,6 +942,11 @@ decode_omp_directive (void)
   switch (c)
     {
     case 'a':
+      if (in_exec_part)
+	matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE_EXEC);
+      else
+	matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE);
+      matcho ("allocators", gfc_match_omp_allocators, ST_OMP_ALLOCATORS);
       /* For -fopenmp-simd, ignore 'assumes'; note no clause starts with 's'. */
       if (!flag_openmp && gfc_match ("assumes") == MATCH_YES)
 	break;
@@ -887,6 +969,7 @@ decode_omp_directive (void)
       break;
     case 'e':
       matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
+      matcho ("end allocators", gfc_match_omp_eos_error, ST_OMP_END_ALLOCATORS);
       matcho ("end metadirective", gfc_match_omp_eos_error,
 	      ST_OMP_END_METADIRECTIVE);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
@@ -927,7 +1010,6 @@ decode_omp_directive (void)
     {
     case 'a':
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
-      matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE);
       break;
     case 'b':
       matcho ("barrier", gfc_match_omp_barrier, ST_OMP_BARRIER);
@@ -1228,6 +1310,9 @@ decode_omp_directive (void)
 	  return ST_NONE;
 	}
     }
+  if (ret == ST_OMP_ALLOCATE && !check_omp_allocate_stmt (&old_locus))
+    goto error_handling;
+
   switch (ret)
     {
     /* Set omp_target_seen; exclude ST_OMP_DECLARE_TARGET.
@@ -1769,9 +1854,9 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: case ST_OMP_ERROR: \
-  case ST_OMP_ALLOCATE: case ST_ERROR_STOP: case ST_OMP_SCAN: \
-  case ST_SYNC_ALL: case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: \
-  case ST_UNLOCK: case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
+  case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
+  case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
+  case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
   case ST_END_TEAM: case ST_SYNC_TEAM: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
@@ -1811,7 +1896,7 @@ next_statement (void)
   case ST_OMP_TARGET_SIMD: case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
-  case ST_OMP_ASSUME: \
+  case ST_OMP_ALLOCATE_EXEC: case ST_OMP_ALLOCATORS: case ST_OMP_ASSUME: \
   case ST_OMP_UNROLL: \
   case ST_OMP_TILE: \
   case ST_CRITICAL: \
@@ -1832,8 +1917,8 @@ next_statement (void)
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_MAPPER: \
   case ST_OMP_DECLARE_REDUCTION: case ST_OMP_DECLARE_VARIANT: \
-  case ST_OMP_ASSUMES: case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: \
-  case ST_OACC_DECLARE
+  case ST_OMP_ALLOCATE: case ST_OMP_ASSUMES: case ST_OMP_REQUIRES: \
+  case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* OpenMP statements that are followed by a structured block.  */
 
@@ -2494,14 +2579,18 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
     case ST_OACC_END_ATOMIC:
       p = "!$ACC END ATOMIC";
       break;
+    case ST_OMP_ALLOCATE:
+    case ST_OMP_ALLOCATE_EXEC:
+      p = "!$OMP ALLOCATE";
+      break;
+    case ST_OMP_ALLOCATORS:
+      p = "!$OMP ALLOCATORS";
+      break;
     case ST_OMP_ASSUME:
       p = "!$OMP ASSUME";
       break;
     case ST_OMP_ASSUMES:
       p = "!$OMP ASSUMES";
-      break;
-    case ST_OMP_ALLOCATE:
-      p = "!$OMP ALLOCATE";
       break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
@@ -2556,6 +2645,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_DO_SIMD:
       p = "!$OMP DO SIMD";
+      break;
+    case ST_OMP_END_ALLOCATORS:
+      p = "!$OMP END ALLOCATORS";
       break;
     case ST_OMP_END_ASSUME:
       p = "!$OMP END ASSUME";
@@ -3138,6 +3230,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
     {
     case ST_NONE:
       p->state = ORDER_START;
+      in_exec_part = false;
       break;
 
     case ST_USE:
@@ -3211,6 +3304,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
     case_exec_markers:
       if (p->state < ORDER_EXEC)
 	p->state = ORDER_EXEC;
+      in_exec_part = true;
       break;
 
     default:
@@ -5777,6 +5871,77 @@ parse_oacc_loop (gfc_statement acc_st)
 }
 
 
+/* Parse an OpenMP allocate block, including optional ALLOCATORS
+   end directive.  */
+
+static gfc_statement
+parse_openmp_allocate_block (gfc_statement omp_st)
+{
+  gfc_statement st;
+  gfc_code *cp, *np;
+  gfc_state_data s;
+  bool empty_list = false;
+  locus empty_list_loc;
+  gfc_omp_namelist *n_first = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+
+  if (omp_st == ST_OMP_ALLOCATE_EXEC
+      && new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->sym == NULL)
+    {
+      empty_list = true;
+      empty_list_loc = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->where;
+    }
+
+  accept_statement (omp_st);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_OMP_STRUCTURED_BLOCK, NULL);
+  np = new_level (cp);
+  np->op = cp->op;
+  np->block = NULL;
+
+  st = next_statement ();
+  while (omp_st == ST_OMP_ALLOCATE_EXEC && st == ST_OMP_ALLOCATE_EXEC)
+    {
+      if (empty_list && !new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->sym)
+	{
+	  locus *loc = &new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->where;
+	  gfc_error_now ("%s statements at %L and %L have both no list item but"
+			 " only one may", gfc_ascii_statement (st),
+			 &empty_list_loc, loc);
+	  empty_list = false;
+	}
+      if (!new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->sym)
+	{
+	  empty_list = true;
+	  empty_list_loc = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE]->where;
+	}
+      for ( ; n_first->next; n_first = n_first->next)
+	;
+      n_first->next = new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+      new_st.ext.omp_clauses->lists[OMP_LIST_ALLOCATE] = NULL;
+      gfc_free_omp_clauses (new_st.ext.omp_clauses);
+
+      accept_statement (ST_NONE);
+      st = next_statement ();
+    }
+  if (st != ST_ALLOCATE && omp_st == ST_OMP_ALLOCATE_EXEC)
+    gfc_error_now ("Unexpected %s at %C; expected ALLOCATE or %s statement",
+		   gfc_ascii_statement (st), gfc_ascii_statement (omp_st));
+  else if (st != ST_ALLOCATE)
+    gfc_error_now ("Unexpected %s at %C; expected ALLOCATE statement after %s",
+		   gfc_ascii_statement (st), gfc_ascii_statement (omp_st));
+  accept_statement (st);
+  pop_state ();
+  st = next_statement ();
+  if (omp_st == ST_OMP_ALLOCATORS && st == ST_OMP_END_ALLOCATORS)
+    {
+      accept_statement (st);
+      st = next_statement ();
+    }
+  return st;
+}
+
+
 /* Parse the statements of an OpenMP structured block.  */
 
 static gfc_statement
@@ -5897,6 +6062,11 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		case ST_FORALL_BLOCK:
 		  parse_forall_block ();
 		  break;
+
+		case ST_OMP_ALLOCATE_EXEC:
+		case ST_OMP_ALLOCATORS:
+		  st = parse_openmp_allocate_block (st);
+		  continue;
 
 		case ST_OMP_ASSUME:
 		case ST_OMP_PARALLEL:
@@ -6114,6 +6284,7 @@ parse_executable (gfc_statement st)
 {
   int close_flag;
   bool one_stmt_p = false;
+  in_exec_part = true;
 
   if (st == ST_NONE)
     st = next_statement ();
@@ -6229,6 +6400,11 @@ parse_executable (gfc_statement st)
 	case ST_OACC_HOST_DATA:
 	  parse_oacc_structured_block (st);
 	  break;
+
+	case ST_OMP_ALLOCATE_EXEC:
+	case ST_OMP_ALLOCATORS:
+	  st = parse_openmp_allocate_block (st);
+	  continue;
 
 	case_omp_structured_block:
 	  st = parse_omp_structured_block (st,

@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "omp-offload.h"
+#include "intl.h"
 
 /* Lowering of OMP parallel and workshare constructs proceeds in two
    phases.  The first phase scans the function looking for OMP statements
@@ -1468,8 +1469,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
 	    && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
 	    && omp_maybe_offloaded_ctx (ctx))
-	  error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> clause must"
-		    " specify an allocator here");
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    gimple_code (ctx->stmt) == GIMPLE_OMP_ALLOCATE
+		    ? G_("%<allocate%> directive must specify an allocator "
+			 "here")
+		    : G_("%<allocate%> clause must specify an allocator here"));
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	tree val = integer_zero_node;
@@ -2168,7 +2172,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_ALLOCATE:
-	case OMP_CLAUSE_ALLOCATOR:
 	case OMP_CLAUSE__OMPACC_:
 	  break;
 
@@ -2398,7 +2401,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE__CONDTEMP_:
-	case OMP_CLAUSE_ALLOCATOR:
 	case OMP_CLAUSE__OMPACC_:
 	  break;
 
@@ -9457,31 +9459,20 @@ lower_omp_single_simple (gomp_single *single_stmt, gimple_seq *pre_p)
 }
 
 static void
-lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+lower_omp_allocate (gimple_stmt_iterator *gsi_p)
 {
   gomp_allocate *st = as_a <gomp_allocate *> (gsi_stmt (*gsi_p));
   tree clauses = gimple_omp_allocate_clauses (st);
   int kind = gimple_omp_allocate_kind (st);
   gcc_assert (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE
 	      || kind == GF_OMP_ALLOCATE_KIND_FREE);
-
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
-      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_ALLOCATOR)
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_ALLOCATE)
 	continue;
 
       bool allocate = (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE);
-      /* The allocate directives that appear in a target region must specify
-	 an allocator clause unless a requires directive with the
-	 dynamic_allocators clause is present in the same compilation unit.  */
-      if (OMP_ALLOCATE_ALLOCATOR (c) == NULL_TREE
-	  && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
-	  && omp_maybe_offloaded_ctx (ctx))
-	error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> directive must"
-		  " specify an allocator here");
-
-      tree var = OMP_ALLOCATE_DECL (c);
-
+      tree var = OMP_CLAUSE_DECL (c);
       gimple_stmt_iterator gsi = *gsi_p;
       for (gsi_next (&gsi); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -9493,10 +9484,11 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      || (!allocate && gimple_call_fndecl (stmt)
 		  != builtin_decl_explicit (BUILT_IN_FREE)))
 	    continue;
+
 	  const gcall *gs = as_a <const gcall *> (stmt);
-	  tree allocator = OMP_ALLOCATE_ALLOCATOR (c)
-			   ? OMP_ALLOCATE_ALLOCATOR (c)
-			   : integer_zero_node;
+	  tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+			   ? OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+			   : build_zero_cst (ptr_type_node);
 	  if (allocate)
 	    {
 	      tree lhs = gimple_call_lhs (gs);
@@ -9518,12 +9510,17 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      if (lhs == var)
 		{
 		  unsigned HOST_WIDE_INT ialign = 0;
-		  tree align;
+		  tree align = OMP_CLAUSE_ALLOCATE_ALIGN (c);
 		  if (TYPE_P (var))
 		    ialign = TYPE_ALIGN_UNIT (var);
 		  else
 		    ialign = DECL_ALIGN_UNIT (var);
-		  align = build_int_cst (size_type_node, ialign);
+		  if (align == NULL_TREE)
+		    align = build_int_cst (size_type_node, ialign);
+		  else
+		    align = build_int_cst (size_type_node,
+					   MAX (tree_to_uhwi (align),
+						ialign));
 		  tree repl = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
 		  tree size = gimple_call_arg (gs, 0);
 		  gimple *g = gimple_build_call (repl, 3, align, size,
@@ -16135,7 +16132,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GIMPLE_OMP_ALLOCATE:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
-      lower_omp_allocate (gsi_p, ctx);
+      lower_omp_allocate (gsi_p);
       break;
     case GIMPLE_OMP_SINGLE:
       ctx = maybe_lookup_ctx (stmt);
