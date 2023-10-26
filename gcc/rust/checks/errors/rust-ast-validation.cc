@@ -21,53 +21,6 @@
 
 namespace Rust {
 
-template <typename T>
-void
-ASTValidation::visit (T &node)
-{
-  node.accept_vis (*this);
-}
-
-template <typename T>
-void
-ASTValidation::visit (std::unique_ptr<T> &node)
-{
-  node->accept_vis (*this);
-}
-
-void
-ASTValidation::check (AST::Crate &crate)
-{
-  push_context (Context::CRATE);
-  for (auto &item : crate.items)
-    {
-      visit (item);
-    }
-  pop_context ();
-}
-
-void
-ASTValidation::visit (AST::InherentImpl &impl)
-{
-  push_context (Context::INHERENT_IMPL);
-  for (auto &item : impl.get_impl_items ())
-    {
-      visit (item);
-    }
-  pop_context ();
-}
-
-void
-ASTValidation::visit (AST::TraitImpl &impl)
-{
-  push_context (Context::TRAIT_IMPL);
-  for (auto &item : impl.get_impl_items ())
-    {
-      visit (item);
-    }
-  pop_context ();
-}
-
 void
 ASTValidation::visit (AST::ConstantItem &const_item)
 {
@@ -76,6 +29,7 @@ ASTValidation::visit (AST::ConstantItem &const_item)
       rust_error_at (const_item.get_locus (),
 		     "associated constant in %<impl%> without body");
     }
+  AST::ContextualASTVisitor::visit (const_item);
 }
 
 } // namespace Rust
