@@ -171,7 +171,7 @@ proc set_ld_library_path_env_vars { } {
   }
   if { [istarget *-*-darwin*] } {
     if { [info exists ENABLE_DARWIN_AT_RPATH] || [istarget *-*-darwin1\[5-9\]*]
-         || [istarget *-*-darwin20*] } {
+         || [istarget *-*-darwin2*] } {
       # Either we are not using DYLD_LIBRARY_PATH or we're on a version of the
       # OS for which it is not passed through system exes.
       if [info exists env(DYLD_LIBRARY_PATH)] {
