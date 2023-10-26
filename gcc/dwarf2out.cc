@@ -14311,7 +14311,9 @@ reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
      argument pointer and soft frame pointer rtx's.
      Use DW_OP_fbreg offset DW_OP_stack_value in this case.  */
   if ((rtl == arg_pointer_rtx || rtl == frame_pointer_rtx)
-      && eliminate_regs (rtl, VOIDmode, NULL_RTX) != rtl)
+      && (ira_use_lra_p
+	  ? lra_eliminate_regs (rtl, VOIDmode, NULL_RTX)
+	  : eliminate_regs (rtl, VOIDmode, NULL_RTX)) != rtl)
     {
       dw_loc_descr_ref result = NULL;
 

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "regset.h"
 #include "ira.h"
 #include "ira-int.h"
 #include "addresses.h"
@@ -1757,6 +1758,145 @@ process_bb_node_for_costs (ira_loop_tree_node_t loop_tree_node)
     process_bb_for_costs (bb);
 }
 
+/* Check that reg REGNO can be changed by TO in INSN.  Return true in case the
+   result insn would be valid one.  */
+static bool
+equiv_can_be_consumed_p (int regno, rtx to, rtx_insn *insn)
+{
+  validate_replace_src_group (regno_reg_rtx[regno], to, insn);
+  bool res = verify_changes (0);
+  cancel_changes (0);
+  return res;
+}
+
+/* Return true if X contains a pseudo with equivalence.  In this case also
+   return the pseudo through parameter REG.  If the pseudo is a part of subreg,
+   return the subreg through parameter SUBREG.  */
+
+static bool
+get_equiv_regno (rtx x, int &regno, rtx &subreg)
+{
+  subreg = NULL_RTX;
+  if (GET_CODE (x) == SUBREG)
+    {
+      subreg = x;
+      x = SUBREG_REG (x);
+    }
+  if (REG_P (x)
+      && (ira_reg_equiv[REGNO (x)].memory != NULL
+	  || ira_reg_equiv[REGNO (x)].constant != NULL))
+    {
+      regno = REGNO (x);
+      return true;
+    }
+  RTX_CODE code = GET_CODE (x);
+  const char *fmt = GET_RTX_FORMAT (code);
+
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      {
+	if (get_equiv_regno (XEXP (x, i), regno, subreg))
+	  return true;
+      }
+    else if (fmt[i] == 'E')
+      {
+	for (int j = 0; j < XVECLEN (x, i); j++)
+	  if (get_equiv_regno (XVECEXP (x, i, j), regno, subreg))
+	    return true;
+      }
+  return false;
+}
+
+/* A pass through the current function insns.  Calculate costs of using
+   equivalences for pseudos and store them in regno_equiv_gains.  */
+
+static void
+calculate_equiv_gains (void)
+{
+  basic_block bb;
+  int regno, freq, cost;
+  rtx subreg;
+  rtx_insn *insn;
+  machine_mode mode;
+  enum reg_class rclass;
+  bitmap_head equiv_pseudos;
+
+  ira_assert (allocno_p);
+  bitmap_initialize (&equiv_pseudos, &reg_obstack);
+  for (regno = max_reg_num () - 1; regno >= FIRST_PSEUDO_REGISTER; regno--)
+    if (ira_reg_equiv[regno].init_insns != NULL
+	&& (ira_reg_equiv[regno].memory != NULL
+	    || (ira_reg_equiv[regno].constant != NULL
+		/* Ignore complicated constants which probably will be placed
+		   in memory:  */
+		&& GET_CODE (ira_reg_equiv[regno].constant) != CONST_DOUBLE
+		&& GET_CODE (ira_reg_equiv[regno].constant) != CONST_VECTOR
+		&& GET_CODE (ira_reg_equiv[regno].constant) != LABEL_REF)))
+      {
+	rtx_insn_list *x;
+	for (x = ira_reg_equiv[regno].init_insns; x != NULL; x = x->next ())
+	  {
+	    insn = x->insn ();
+	    rtx set = single_set (insn);
+
+	    if (set == NULL_RTX || SET_DEST (set) != regno_reg_rtx[regno])
+	      break;
+	    bb = BLOCK_FOR_INSN (insn);
+	    ira_curr_regno_allocno_map
+	      = ira_bb_nodes[bb->index].parent->regno_allocno_map;
+	    mode = PSEUDO_REGNO_MODE (regno);
+	    rclass = pref[COST_INDEX (regno)];
+	    ira_init_register_move_cost_if_necessary (mode);
+	    if (ira_reg_equiv[regno].memory != NULL)
+	      cost = ira_memory_move_cost[mode][rclass][1];
+	    else
+	      cost = ira_register_move_cost[mode][rclass][rclass];
+	    freq = REG_FREQ_FROM_BB (bb);
+	    regno_equiv_gains[regno] += cost * freq;
+	  }
+	if (x != NULL)
+	  /* We found complicated equiv or reverse equiv mem=reg.  Ignore
+	     them.  */
+	  regno_equiv_gains[regno] = 0;
+	else
+	  bitmap_set_bit (&equiv_pseudos, regno);
+      }
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      freq = REG_FREQ_FROM_BB (bb);
+      ira_curr_regno_allocno_map
+	= ira_bb_nodes[bb->index].parent->regno_allocno_map;
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!INSN_P (insn) || !get_equiv_regno (PATTERN (insn), regno, subreg)
+	      || !bitmap_bit_p (&equiv_pseudos, regno))
+	    continue;
+	  rtx subst = ira_reg_equiv[regno].memory;
+
+	  if (subst == NULL)
+	    subst = ira_reg_equiv[regno].constant;
+	  ira_assert (subst != NULL);
+	  mode = PSEUDO_REGNO_MODE (regno);
+	  ira_init_register_move_cost_if_necessary (mode);
+	  bool consumed_p = equiv_can_be_consumed_p (regno, subst, insn);
+
+	  rclass = pref[COST_INDEX (regno)];
+	  if (MEM_P (subst)
+	      /* If it is a change of constant into double for example, the
+		 result constant probably will be placed in memory.  */
+	      || (subreg != NULL_RTX && !INTEGRAL_MODE_P (GET_MODE (subreg))))
+	    cost = ira_memory_move_cost[mode][rclass][1] + (consumed_p ? 0 : 1);
+	  else if (consumed_p)
+	    continue;
+	  else
+	    cost = ira_register_move_cost[mode][rclass][rclass];
+	  regno_equiv_gains[regno] -= cost * freq;
+	}
+    }
+  bitmap_clear (&equiv_pseudos);
+}
+
 /* Find costs of register classes and memory for allocnos or pseudos
    and their best costs.  Set up preferred, alternative and allocno
    classes for pseudos.  */
@@ -1855,6 +1995,12 @@ find_costs_and_classes (FILE *dump_file)
       if (pass == 0)
 	pref = pref_buffer;
 
+      if (ira_use_lra_p && allocno_p && pass == 1)
+	/* It is a pass through all insns.  So do it once and only for RA (not
+	   for insn scheduler) when we already found preferable pseudo register
+	   classes on the previous pass.  */
+	calculate_equiv_gains ();
+
       /* Now for each allocno look at how desirable each class is and
 	 find which class is preferred.  */
       for (i = max_reg_num () - 1; i >= FIRST_PSEUDO_REGISTER; i--)
@@ -1947,6 +2093,17 @@ find_costs_and_classes (FILE *dump_file)
 	    }
 	  if (i >= first_moveable_pseudo && i < last_moveable_pseudo)
 	    i_mem_cost = 0;
+	  else if (ira_use_lra_p)
+	    {
+	      if (equiv_savings > 0)
+		{
+		  i_mem_cost = 0;
+		  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+		    fprintf (ira_dump_file,
+			     "   Use MEM for r%d as the equiv savings is %d\n",
+			     i, equiv_savings);
+		}
+	    }
 	  else if (equiv_savings < 0)
 	    i_mem_cost = -equiv_savings;
 	  else if (equiv_savings > 0)
@@ -2395,7 +2552,10 @@ ira_costs (void)
   total_allocno_costs = (struct costs *) ira_allocate (max_struct_costs_size
 						       * ira_allocnos_num);
   initiate_regno_cost_classes ();
-  calculate_elim_costs_all_insns ();
+  if (!ira_use_lra_p)
+    /* Process equivs in reload to update costs through hook
+       ira_adjust_equiv_reg_cost.  */
+    calculate_elim_costs_all_insns ();
   find_costs_and_classes (ira_dump_file);
   setup_allocno_class_and_costs ();
   finish_regno_cost_classes ();
@@ -2520,13 +2680,14 @@ ira_tune_allocno_costs (void)
     }
 }
 
-/* Add COST to the estimated gain for eliminating REGNO with its
-   equivalence.  If COST is zero, record that no such elimination is
-   possible.  */
+/* A hook from the reload pass.  Add COST to the estimated gain for eliminating
+   REGNO with its equivalence.  If COST is zero, record that no such
+   elimination is possible.  */
 
 void
 ira_adjust_equiv_reg_cost (unsigned regno, int cost)
 {
+  ira_assert (!ira_use_lra_p);
   if (cost == 0)
     regno_equiv_gains[regno] = 0;
   else
