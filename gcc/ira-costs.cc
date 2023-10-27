@@ -1871,7 +1871,8 @@ calculate_equiv_gains (void)
 	= ira_bb_nodes[bb->index].parent->regno_allocno_map;
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (!INSN_P (insn) || !get_equiv_regno (PATTERN (insn), regno, subreg)
+	  if (!NONDEBUG_INSN_P (insn)
+	      || !get_equiv_regno (PATTERN (insn), regno, subreg)
 	      || !bitmap_bit_p (&equiv_pseudos, regno))
 	    continue;
 	  rtx subst = ira_reg_equiv[regno].memory;
