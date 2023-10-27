@@ -4824,10 +4824,7 @@ package body Sem_Ch12 is
                      --  Cleanup actions are not generated within generic units
                      --  or in the formal part of generic units.
 
-                     if Inside_A_Generic
-                       or else Is_Generic_Unit (S)
-                       or else Ekind (S) = E_Void
-                     then
+                     if not Expander_Active then
                         exit;
 
                      --  For package scopes, cleanup actions are generated only
