@@ -1,3 +1,9 @@
+2023-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-attribs.cc (c_common_attribute_table): Add
+	"null_terminated_string_arg".
+	(handle_null_terminated_string_arg_attribute): New.
+
 2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/36887

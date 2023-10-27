@@ -1,3 +1,105 @@
+2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111318
+	PR target/111888
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Adapt test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/select_vl-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111318.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr111888.c: New test.
+
+2023-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-access-read_write.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-access-without-size.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-multiple.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-nonnull-2.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-nonnull-sized.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-nonnull.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-nullable-sized.c:
+	New test.
+	* c-c++-common/analyzer/attr-null_terminated_string_arg-nullable.c:
+	New test.
+	* c-c++-common/attr-null_terminated_string_arg.c: New test.
+
+2023-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/aarch64/aarch64.exp: Use aarch64-with-arch-dg-options
+	to normaize the options to the tests in aarch64.exp.
+
+2023-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-libpath.exp: Skip DYLD_LIBRARY_PATH for all
+	current OS versions > 10.
+
+2023-10-26  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111957
+	* gcc.dg/tree-ssa/phi-opt-40.c: New test.
+
+2023-10-26  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gfortran.dg/c_ptr_tests_20.f90: Add "fopenmp" effective target.
+	* gfortran.dg/c_ptr_tests_21.f90: Add "fopenmp" effective target.
+
+2023-10-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* g++.target/riscv/rvv/rvv.exp: Add -mabi argument to CFLAGS.
+
+2023-10-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports-dg.exp (check-flags): Move default argument
+	handling further up.  Fix a couple of issues in the lappends.
+	Avoid frobbing the compiler flags if the return value is already
+	known to be 1.
+	* lib/dg-pch.exp (dg-flags-pch): Process the dg-skip-if and
+	dg-require-effective-target directives to see whether the
+	assembly test should be skipped.
+	* gcc.dg/pch/valid-1.c: Remove dg-require-effective-target.
+	* gcc.dg/pch/valid-1b.c: Likewise.
+
+2023-10-26  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/arm-switchstatement.c: New test.
+
+2023-10-26  Paul-Antoine Arras  <pa@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/c_ptr_tests_20.f90: New test, checking that INTEGER(8)
+	and TYPE(C_PTR) are recognised as compatible.
+	* gfortran.dg/c_ptr_tests_21.f90: New test, exercising the error
+	detection for C_FUNPTR.
+
+2023-10-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/91865
+	* gcc.target/msp430/pr91865.c: New test case.
+
+2023-10-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vcond-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-vcond-2.c: New test.
+
+2023-10-26  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.misc-tests/godump-1.c: Move _BitInt tests into godump-2.c.
+	* gcc.misc-tests/godump-2.c: New test.
+
+2023-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/111520
+	* g++.dg/torture/harden-comp-pr111520.cc: New.
+
 2023-10-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* gcc.target/aarch64/imm_choice_comparison.c: Change tests.

@@ -1,3 +1,31 @@
+2023-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc
+	(region_model::check_external_function_for_access_attr): Split
+	out, replacing with...
+	(region_model::check_function_attr_access): ...this new function
+	and...
+	(region_model::check_function_attrs): ...this new function.
+	(region_model::check_one_function_attr_null_terminated_string_arg):
+	New.
+	(region_model::check_function_attr_null_terminated_string_arg):
+	New.
+	(region_model::handle_unrecognized_call): Update for renaming of
+	check_external_function_for_access_attr to check_function_attrs.
+	(region_model::check_for_null_terminated_string_arg): Add return
+	value to one overload.  Make both overloads const.
+	* region-model.h: Include "stringpool.h" and "attribs.h".
+	(region_model::check_for_null_terminated_string_arg): Add return
+	value to one overload.  Make both overloads const.
+	(region_model::check_external_function_for_access_attr): Delete
+	decl.
+	(region_model::check_function_attr_access): New decl.
+	(region_model::check_function_attr_null_terminated_string_arg):
+	New decl.
+	(region_model::check_one_function_attr_null_terminated_string_arg):
+	New decl.
+	(region_model::check_function_attrs): New decl.
+
 2023-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* access-diagram.cc (boundaries::add): Explicitly state

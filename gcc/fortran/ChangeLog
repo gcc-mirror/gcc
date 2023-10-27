@@ -1,3 +1,11 @@
+2023-10-26  Paul-Antoine Arras  <pa@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* interface.cc (gfc_compare_types): Return true if one type is C_PTR
+	and the other is a compatible INTEGER(8).
+	* misc.cc (gfc_typename): Handle the case where an INTEGER(8) actually
+	holds a TYPE(C_PTR).
+
 2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* openmp.cc (omp_mask2): Split 'OMP_CLAUSE_HOST_SELF' into

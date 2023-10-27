@@ -1,3 +1,18 @@
+2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/109951
+	* configure.ac: 'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	<local.exp>: Don't set 'CC_FOR_TARGET', 'CXX_FOR_TARGET', instead
+	set 'SYSROOT_CFLAGS_FOR_TARGET'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* include/Makefile.in: Likewise.
+	* man/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libffi.exp (libffi_target_compile): If
+	'--with-build-sysroot=[...]' was specified, use it for build-tree
+	testing.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/lib/libffi.exp: Likewise.

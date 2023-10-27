@@ -1,3 +1,147 @@
+2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (TARGET_MAX_LMUL): New macro.
+	* config/riscv/riscv-v.cc (preferred_simd_mode): Adapt macro.
+	(autovectorize_vector_modes): Ditto.
+	(can_find_related_mode_p): Ditto.
+
+2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111318
+	PR target/111888
+	* config.gcc: Add AVL propagation pass.
+	* config/riscv/riscv-passes.def (INSERT_PASS_AFTER): Ditto.
+	* config/riscv/riscv-protos.h (make_pass_avlprop): Ditto.
+	* config/riscv/t-riscv: Ditto.
+	* config/riscv/riscv-avlprop.cc: New file.
+
+2023-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/extend.texi (Common Function Attributes): Add
+	null_terminated_string_arg.
+
+2023-10-26  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/111957
+	* match.pd (`a != C1 ? abs(a) : C2`): New pattern.
+
+2023-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator::fold_range): Delete unused
+	variable.
+
+2023-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator::fold_range): Remove
+	superfluous code.
+	(range_operator::rv_fold): Remove unneeded arguments.
+	(operator_plus::rv_fold): Same.
+	(operator_minus::rv_fold): Same.
+	(operator_mult::rv_fold): Same.
+	(operator_div::rv_fold): Same.
+	* range-op-mixed.h: Remove lb, ub, and maybe_nan arguments from
+	rv_fold methods.
+	* range-op.h: Same.
+
+2023-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator::fold_range): Pass frange
+	argument to rv_fold.
+	(range_operator::rv_fold): Add frange argument.
+	(operator_plus::rv_fold): Same.
+	(operator_minus::rv_fold): Same.
+	(operator_mult::rv_fold): Same.
+	(operator_div::rv_fold): Same.
+	* range-op-mixed.h: Add frange argument to rv_fold methods.
+	* range-op.h: Same.
+
+2023-10-26  Richard Ball  <richard.ball@arm.com>
+
+	* config/arm/aout.h (ASM_OUTPUT_ADDR_DIFF_ELT): Add table output
+	for different machine modes for arm.
+	* config/arm/arm-protos.h (arm_output_casesi): New prototype.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Make arm use
+	ASM_OUTPUT_ADDR_DIFF_ELT.
+	(CASE_VECTOR_SHORTEN_MODE): Change table size calculation for
+	TARGET_ARM.
+	(LABEL_ALIGN_AFTER_BARRIER): Change to accommodate .p2align 2
+	for TARGET_ARM.
+	* config/arm/arm.cc (arm_output_casesi): New function.
+	* config/arm/arm.md (arm_casesi_internal): Change casesi expand
+	and insn.
+	for arm to use new function arm_output_casesi.
+
+2023-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h
+	(darwin_label_is_anonymous_local_objc_name): Make metadata names
+	linker-visibile for GNU objective C.
+
+2023-10-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* dwarf2out.cc (reg_loc_descriptor): Use lra_eliminate_regs when
+	LRA is used.
+	* ira-costs.cc: Include regset.h.
+	(equiv_can_be_consumed_p, get_equiv_regno, calculate_equiv_gains):
+	New functions.
+	(find_costs_and_classes): Call calculate_equiv_gains and redefine
+	mem_cost of pseudos with equivs when LRA is used.
+	* var-tracking.cc: Include ira.h and lra.h.
+	(vt_initialize): Use lra_eliminate_regs when LRA is used.
+
+2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Adapt COND_LEN pseudo code.
+
+2023-10-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/91865
+	* combine.cc (make_compound_operation): Avoid creating a
+	ZERO_EXTEND of a ZERO_EXTEND.
+
+2023-10-26  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vcond_mask_<ILASX:mode><ILASX:mode>): Change to
+	(vcond_mask_<mode><mode256_i>): this.
+	* config/loongarch/lsx.md (vcond_mask_<ILSX:mode><ILSX:mode>): Change to
+	(vcond_mask_<mode><mode_i>): this.
+
+2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* ipa-icf.cc (sem_item::target_supports_symbol_aliases_p):
+	'gcc_checking_assert (TARGET_SUPPORTS_ALIASES);' before
+	'return true;'.
+	* ipa-visibility.cc (function_and_variable_visibility): Change
+	'#ifdef ASM_OUTPUT_DEF' to 'if (TARGET_SUPPORTS_ALIASES)'.
+	* varasm.cc (output_constant_pool_contents)
+	[#ifdef ASM_OUTPUT_DEF]:
+	'gcc_checking_assert (TARGET_SUPPORTS_ALIASES);'.
+	(do_assemble_alias) [#ifdef ASM_OUTPUT_DEF]:
+	'if (!TARGET_SUPPORTS_ALIASES)',
+	'gcc_checking_assert (seen_error ());'.
+	(assemble_alias): Change '#if !defined (ASM_OUTPUT_DEF)' to
+	'if (!TARGET_SUPPORTS_ALIASES)'.
+	(default_asm_output_anchor):
+	'gcc_checking_assert (TARGET_SUPPORTS_ALIASES);'.
+
+2023-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/111520
+	* gimple-harden-conditionals.cc
+	(pass_harden_compares::execute): Set EH edge probability and
+	EH block execution count.
+
+2023-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-eh.h (make_eh_edges): Rename to...
+	(make_eh_edge): ... this.
+	* tree-eh.cc: Likewise.  Adjust all callers...
+	* gimple-harden-conditionals.cc: ... here, ...
+	* gimple-harden-control-flow.cc: ... here, ...
+	* tree-cfg.cc: ... here, ...
+	* tree-inline.cc: ... and here.
+
 2023-10-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.cc (darwin_override_options): Handle fPIE.

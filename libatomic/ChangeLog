@@ -1,3 +1,17 @@
+2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/109951
+	* configure.ac: 'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libatomic.exp (libatomic_init): If
+	'--with-build-sysroot=[...]' was specified, use it for build-tree
+	testing.
+	* testsuite/libatomic-site-extra.exp.in (GCC_UNDER_TEST): Don't
+	set.
+	(SYSROOT_CFLAGS_FOR_TARGET): Set.
+
 2023-10-23  Jan Beulich  <jbeulich@suse.com>
 
 	* Makefile.am (all-multi): Drop commands.

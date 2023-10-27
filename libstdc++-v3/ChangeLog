@@ -1,3 +1,33 @@
+2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112089
+	* include/std/shared_mutex (shared_lock::unlock): Change errc
+	constant to operation_not_permitted.
+	* testsuite/30_threads/shared_lock/locking/112089.cc: New test.
+
+2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/io.cc: Double timeout using
+	dg-timeout-factor.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/format.cc: Likewise.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/month_day/io.cc: Likewise.
+	* testsuite/std/time/month_day_last/io.cc: Likewise.
+	* testsuite/std/time/month_weekday/io.cc: Likewise.
+	* testsuite/std/time/month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/weekday_indexed/io.cc: Likewise.
+	* testsuite/std/time/weekday_last/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/time/year_month_day_last/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: Likewise.
+
 2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/111936
