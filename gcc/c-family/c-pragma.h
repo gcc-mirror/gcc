@@ -256,7 +256,7 @@ c_register_pragma_with_early_handler (const char *space, const char *name,
 				      pragma_handler_1arg early_handler);
 extern void c_invoke_early_pragma_handler (unsigned int);
 extern void c_pp_invoke_early_pragma_handler (unsigned int);
-
+extern void c_reset_target_pragmas ();
 
 extern void maybe_apply_pragma_weak (tree);
 extern void maybe_apply_pending_pragma_weaks (void);

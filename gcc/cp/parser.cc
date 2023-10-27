@@ -766,6 +766,12 @@ cp_lexer_new_main (void)
 
   maybe_check_all_macros (parse_in);
 
+  /* If we processed any #pragma GCC target directives, we handled them early so
+     any macros they defined would be effective during preprocessing.  Now, we
+     need to reset to the default state to begin compilation, and we will
+     process them again at the correct time as needed.  */
+  c_reset_target_pragmas ();
+
   gcc_assert (!lexer->next_token->purged_p);
   return lexer;
 }

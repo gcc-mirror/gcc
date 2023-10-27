@@ -99,7 +99,7 @@ static void general_init (const char *, bool);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
-static void finalize (bool);
+static void finalize ();
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void compile_file (void);
@@ -163,6 +163,7 @@ FILE *aux_info_file;
 FILE *callgraph_info_file = NULL;
 static bitmap callgraph_info_external_printed;
 FILE *stack_usage_file = NULL;
+static bool no_backend = false;
 
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed
@@ -1221,7 +1222,7 @@ parse_alignment_opts (void)
 
 /* Process the options that have been parsed.  */
 static void
-process_options (bool no_backend)
+process_options ()
 {
   const char *language_string = lang_hooks.name;
 
@@ -1871,6 +1872,9 @@ lang_dependent_init (const char *name)
 void
 target_reinit (void)
 {
+  if (no_backend)
+    return;
+
   struct rtl_data saved_x_rtl;
   rtx *saved_regno_reg_rtx;
   tree saved_optimization_current_node;
@@ -1963,7 +1967,7 @@ dump_memory_report (const char *header)
 /* Clean up: close opened files, etc.  */
 
 static void
-finalize (bool no_backend)
+finalize ()
 {
   /* Close the dump files.  */
   if (flag_gen_aux_info)
@@ -2045,7 +2049,7 @@ standard_type_bitsize (int bitsize)
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile (bool no_backend)
+do_compile ()
 {
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
@@ -2132,7 +2136,7 @@ do_compile (bool no_backend)
 
       timevar_start (TV_PHASE_FINALIZE);
 
-      finalize (no_backend);
+      finalize ();
 
       timevar_stop (TV_PHASE_FINALIZE);
     }
@@ -2273,13 +2277,13 @@ toplev::main (int argc, char **argv)
 	 initialization based on the command line options.  This hook also
 	 sets the original filename if appropriate (e.g. foo.i -> foo.c)
 	 so we can correctly initialize debug output.  */
-      bool no_backend = lang_hooks.post_options (&main_input_filename);
+      no_backend = lang_hooks.post_options (&main_input_filename);
 
-      process_options (no_backend);
+      process_options ();
 
       if (m_use_TV_TOTAL)
 	start_timevars ();
-      do_compile (no_backend);
+      do_compile ();
 
       if (flag_self_test && !seen_error ())
 	{
@@ -2324,6 +2328,7 @@ toplev::main (int argc, char **argv)
 void
 toplev::finalize (void)
 {
+  no_backend = false;
   rtl_initialized = false;
   this_target_rtl->target_specific_initialized = false;
 
