@@ -1,23 +1,24 @@
-/* { dg-do run { target { riscv_v } } } */
+/* { dg-do run { target { riscv_zvfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
-#include "cond_fmax-2.c"
+#include "cond_fmax_zvfh-4.c"
 #include <math.h>
 
 #define N 99
 
-#define TEST_LOOP(FN, TYPE, NAME, CONST)				\
+#define TEST_LOOP(FN, TYPE, PRED_TYPE, NAME, CONST)			\
   {									\
-    TYPE x[N], y[N], z[N];						\
+    TYPE x[N], y[N];							\
+    PRED_TYPE pred[N];							\
     for (int i = 0; i < N; ++i)						\
       {									\
-	y[i] = i % 13;							\
-	z[i] = i * i;							\
+	y[i] = i * i;							\
+	pred[i] = i % 3;						\
       }									\
-    test_##TYPE##_##NAME (x, y, z, N);					\
+    test_##TYPE##_##NAME (x, y, pred, N);				\
     for (int i = 0; i < N; ++i)						\
       {									\
-	TYPE expected = y[i] < 8 ? FN (z[i], CONST) : y[i];		\
+	TYPE expected = i % 3 != 1 ? FN (y[i], CONST) : 0;		\
 	if (x[i] != expected)						\
 	  __builtin_abort ();						\
 	asm volatile ("" ::: "memory");					\

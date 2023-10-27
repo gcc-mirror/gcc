@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
 #include <stdint-gcc.h>
+#include <math.h>
 
 #ifndef FN
 #define FN(X) __builtin_fmax##X
@@ -24,11 +25,10 @@
   T (FN, TYPE, PRED_TYPE, two, 2)
 
 #define TEST_ALL(T) \
-  TEST_TYPE (T, FN (f16), _Float16, int16_t) \
   TEST_TYPE (T, FN (f32), float, int32_t) \
   TEST_TYPE (T, FN (f64), double, int64_t)
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {vfmax\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 9 } } */
+/* { dg-final { scan-assembler-times {vfmax\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 6 } } */
 /* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

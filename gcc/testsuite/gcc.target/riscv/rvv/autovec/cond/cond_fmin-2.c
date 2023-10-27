@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
 #include <stdint-gcc.h>
+#include <math.h>
 
 #define FN(X) __builtin_fmin##X
 #include "cond_fmax-2.c"

@@ -1,7 +1,7 @@
-/* { dg-do run { target { riscv_v } } } */
+/* { dg-do run { target { riscv_zvfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
-#include "cond_fmax-2.c"
+#include "cond_fmax_zvfh-2.c"
 #include <math.h>
 
 #define N 99

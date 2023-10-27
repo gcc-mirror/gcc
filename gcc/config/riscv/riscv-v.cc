@@ -3211,7 +3211,9 @@ needs_fp_rounding (unsigned icode, machine_mode mode)
     return false;
 
   return icode != maybe_code_for_pred (SMIN, mode)
+	 && icode != maybe_code_for_pred (UNSPEC_VFMIN, mode)
 	 && icode != maybe_code_for_pred (SMAX, mode)
+	 && icode != maybe_code_for_pred (UNSPEC_VFMAX, mode)
 	 && icode != maybe_code_for_pred (NEG, mode)
 	 && icode != maybe_code_for_pred (ABS, mode)
 	 /* narrower-FP -> FP */

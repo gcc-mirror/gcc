@@ -25,10 +25,9 @@
   T (FN, TYPE, two, 2)
 
 #define TEST_ALL(T) \
-  TEST_TYPE (T, FN (f32), float) \
-  TEST_TYPE (T, FN (f64), double)
+  TEST_TYPE (T, FN (f16), _Float16)
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {vfmax\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 6 } } */
+/* { dg-final { scan-assembler-times {vfmax\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
 /* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */
