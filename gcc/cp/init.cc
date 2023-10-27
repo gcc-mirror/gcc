@@ -3261,7 +3261,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       max_outer_nelts = wi::udiv_trunc (max_size, inner_size);
       max_outer_nelts_tree = wide_int_to_tree (sizetype, max_outer_nelts);
 
-      size = build2 (MULT_EXPR, sizetype, size, convert (sizetype, nelts));
+      size = build2 (MULT_EXPR, sizetype, size, nelts);
 
       if (TREE_CODE (cst_outer_nelts) == INTEGER_CST)
 	{
@@ -3293,9 +3293,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    - wi::clz (max_outer_nelts);
 	  max_outer_nelts = (max_outer_nelts >> shift) << shift;
 
-          outer_nelts_check = fold_build2 (LE_EXPR, boolean_type_node,
-					   outer_nelts,
-					   max_outer_nelts_tree);
+	  outer_nelts_check = build2 (LE_EXPR, boolean_type_node,
+				      outer_nelts,
+				      max_outer_nelts_tree);
 	}
     }
 
