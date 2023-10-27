@@ -267,6 +267,9 @@ public:
   get_str_option (enum gcc_jit_str_option opt);
 
   void
+  set_output_ident (const char *output_ident);
+
+  void
   set_int_option (enum gcc_jit_int_option opt,
 		  int value);
 
@@ -503,6 +506,25 @@ private:
      to avoid infinite recursion when logging all mementos: don't re-escape
      such strings.  */
   bool m_escaped;
+};
+
+class output_ident : public memento
+{
+public:
+  output_ident (context *ctxt, const char *text);
+  ~output_ident ();
+
+  void replay_into (replayer *) final override;
+
+  output_ident (const output_ident&) = delete;
+  output_ident& operator= (const output_ident&) = delete;
+
+private:
+  string * make_debug_string () final override;
+  void write_reproducer (reproducer &r) final override;
+
+private:
+  char *m_ident;
 };
 
 class location : public memento

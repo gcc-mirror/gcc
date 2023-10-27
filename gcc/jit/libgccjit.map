@@ -320,3 +320,8 @@ LIBGCCJIT_ABI_33 {
   global:
     gcc_jit_function_new_temp;
 } LIBGCCJIT_ABI_32;
+
+LIBGCCJIT_ABI_34 {
+  global:
+    gcc_jit_context_set_output_ident;
+} LIBGCCJIT_ABI_33;

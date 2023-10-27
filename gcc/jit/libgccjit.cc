@@ -3883,6 +3883,22 @@ gcc_jit_context_compile_to_file (gcc_jit_context *ctxt,
   ctxt->compile_to_file (output_kind, output_path);
 }
 
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::set_str_option method in
+   jit-recording.cc.  */
+
+void
+gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,
+				  const char* output_ident)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  RETURN_IF_FAIL (output_ident, ctxt, NULL, "NULL output_ident");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  ctxt->set_output_ident (output_ident);
+}
 
 /* Public entrypoint.  See description in libgccjit.h.
 

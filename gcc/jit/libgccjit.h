@@ -2153,6 +2153,12 @@ gcc_jit_lvalue_add_string_attribute (gcc_jit_lvalue *variable,
 				     enum gcc_jit_variable_attribute attribute,
 				     const char* value);
 
+extern void
+gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,
+				  const char* output_ident);
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_output_ident
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

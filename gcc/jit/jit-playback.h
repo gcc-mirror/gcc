@@ -77,6 +77,9 @@ public:
   type *
   get_type (enum gcc_jit_types type);
 
+  void
+  set_output_ident (const char* ident);
+
   type *
   new_array_type (location *loc,
 		  type *element_type,

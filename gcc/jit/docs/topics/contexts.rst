@@ -604,3 +604,32 @@ Additional command-line options
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option
+
+Output options
+**************
+
+.. function:: void gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,\
+                                                     const char* output_ident)
+
+   Set the identifier to write in the .comment section of the output file to
+   ``output_ident``.
+
+   The parameter ``output_ident`` must be non-NULL.
+
+   This only works on some target, as you can see here:
+   https://gcc.gnu.org/onlinedocs/cpp/Other-Directives.html
+
+   Analogous to:
+
+   .. code-block:: c
+
+      #ident "My comment"
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_34`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_output_ident

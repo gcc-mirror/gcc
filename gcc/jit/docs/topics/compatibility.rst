@@ -445,3 +445,11 @@ on functions and variables:
 temporary variable:
 
   * :func:`gcc_jit_function_new_temp`
+
+.. _LIBGCCJIT_ABI_34:
+
+``LIBGCCJIT_ABI_34``
+--------------------
+``LIBGCCJIT_ABI_34`` covers the addition of
+
+ * :func:`gcc_jit_context_set_output_ident`

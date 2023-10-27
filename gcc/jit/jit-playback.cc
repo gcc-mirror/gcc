@@ -329,6 +329,13 @@ get_type (enum gcc_jit_types type_)
   return new type (type_node);
 }
 
+void
+playback::context::
+set_output_ident (const char* ident)
+{
+  targetm.asm_out.output_ident (ident);
+}
+
 /* Construct a playback::type instance (wrapping a tree) for the given
    array type.  */
 

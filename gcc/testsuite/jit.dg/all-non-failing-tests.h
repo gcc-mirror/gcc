@@ -283,6 +283,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-output-ident.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-quadratic.c */
 #define create_code create_code_quadratic
 #define verify_code verify_code_quadratic

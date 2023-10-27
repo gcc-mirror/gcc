@@ -1486,6 +1486,13 @@ recording::context::get_str_option (enum gcc_jit_str_option opt)
   return m_str_options[opt];
 }
 
+void
+recording::context::set_output_ident (const char *ident)
+{
+  recording::output_ident *memento = new output_ident (this, ident);
+  record (memento);
+}
+
 /* Set the given integer option for this context, or add an error if
    it's not recognized.
 
@@ -2325,6 +2332,52 @@ recording::string::write_reproducer (reproducer &)
 {
   /* Empty.  */
 }
+
+/* The implementation of class gcc::jit::recording::output_ident.  */
+
+/* Constructor for gcc::jit::recording::output_ident, allocating a
+   copy of the given text using new char[].  */
+
+recording::output_ident::output_ident (context *ctxt, const char *ident)
+: memento (ctxt)
+{
+  m_ident = ident ? xstrdup (ident) : NULL;
+}
+
+/* Destructor for gcc::jit::recording::output_ident.  */
+
+recording::output_ident::~output_ident ()
+{
+  free (m_ident);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::output_ident.  */
+
+void
+recording::output_ident::replay_into (replayer *r)
+{
+  r->set_output_ident (m_ident);
+}
+
+/* Implementation of recording::memento::make_debug_string for output_ident.  */
+
+recording::string *
+recording::output_ident::make_debug_string ()
+{
+  return m_ctxt->new_string (m_ident);
+}
+
+/* Implementation of recording::memento::write_reproducer for output_ident.  */
+
+void
+recording::output_ident::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_context_set_output_ident (%s, \"%s\");",
+	   r.get_identifier (get_context ()),
+	   m_ident);
+}
+
 
 /* The implementation of class gcc::jit::recording::location.  */
 
