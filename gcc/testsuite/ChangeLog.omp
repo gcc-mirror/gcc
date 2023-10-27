@@ -1,3 +1,10 @@
+2023-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-13a.f90: New test.
+
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/allocate-4a.f90: Update dg-error.
