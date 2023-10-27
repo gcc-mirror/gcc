@@ -1,9 +1,7 @@
 ! { dg-do compile }
-! { dg-require-effective-target fopenmp }
-! { dg-additional-options "-fopenmp" }
 !
-! This failed to compile the declare variant directive due to the C_PTR 
-! arguments to foo being recognised as INTEGER(8)
+! Ensure that C_PTR and C_FUNPTR are reported as incompatible types in variant 
+! argument lists
 
 program adjust_args
   use iso_c_binding, only: c_loc
@@ -22,15 +20,15 @@ program adjust_args
     
 contains
   subroutine foo_variant(c_d_bv, c_d_av, n)
-    use iso_c_binding, only: c_ptr, c_f_pointer
-    type(c_ptr), intent(in) :: c_d_bv, c_d_av
+    use iso_c_binding, only: c_funptr, c_f_pointer
+    type(c_funptr), intent(in) :: c_d_bv, c_d_av
     integer, intent(in) :: n
     real, pointer :: f_d_bv(:)
     real, pointer :: f_d_av(:)
     integer :: i
   
-    call c_f_pointer(c_d_bv, f_d_bv, [n])
-    call c_f_pointer(c_d_av, f_d_av, [n])
+!     call c_f_pointer(c_d_bv, f_d_bv, [n])
+!     call c_f_pointer(c_d_av, f_d_av, [n])
     !$omp target teams loop is_device_ptr(f_d_bv, f_d_av)
     do i = 1, n
       f_d_bv(i) = f_d_av(i) * i
@@ -45,7 +43,7 @@ contains
     real, pointer :: f_bv(:)
     real, pointer :: f_av(:)
     integer :: i
-    !$omp declare variant(foo_variant)          &
+    !$omp declare variant(foo_variant)          & ! { dg-error "variant 'foo_variant' and base 'foo' at .1. have incompatible types: Type mismatch in argument 'c_bv' .TYPE.c_ptr./TYPE.c_funptr.." }
     !$omp         match(construct={parallel})       
   
     call c_f_pointer(c_bv, f_bv, [n])
