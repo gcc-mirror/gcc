@@ -114,8 +114,5 @@ bar4 (T)
   return (a = a);
 }
 
-template void bar<int> (int); // { dg-message "required" }
-template bool bar1<int> (int); // { dg-message "required" }
 template bool bar2<int> (int);
-template bool bar3<int> (int); // { dg-message "required" }
 template bool bar4<int> (int);

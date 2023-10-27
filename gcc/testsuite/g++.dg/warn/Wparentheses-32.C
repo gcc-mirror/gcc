@@ -21,8 +21,8 @@ void f() {
   if (z1 = z2) { } // { dg-warning "parentheses" }
 
   bool b;
-  b = m = n; // { dg-warning "parentheses" "" { xfail *-*-* } }
-  b = x1 = x2; // { dg-warning "parentheses" "" { xfail *-*-* } }
-  b = y1 = y2; // { dg-warning "parentheses" "" { xfail *-*-* } }
-  b = z1 = z2; // { dg-warning "parentheses" "" { xfail *-*-* } }
+  b = m = n; // { dg-warning "parentheses" }
+  b = x1 = x2; // { dg-warning "parentheses" }
+  b = y1 = y2; // { dg-warning "parentheses" }
+  b = z1 = z2; // { dg-warning "parentheses" }
 }

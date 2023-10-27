@@ -10338,16 +10338,9 @@ convert_for_assignment (tree type, tree rhs,
 
   /* If -Wparentheses, warn about a = b = c when a has type bool and b
      does not.  */
-  if (warn_parentheses
-      && TREE_CODE (type) == BOOLEAN_TYPE
-      && TREE_CODE (rhs) == MODIFY_EXPR
-      && !warning_suppressed_p (rhs, OPT_Wparentheses)
-      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
-      && (complain & tf_warning)
-      && warning_at (rhs_loc, OPT_Wparentheses,
-		     "suggest parentheses around assignment used as "
-		     "truth value"))
-    suppress_warning (rhs, OPT_Wparentheses);
+  if (TREE_CODE (type) == BOOLEAN_TYPE
+      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE)
+    maybe_warn_unparenthesized_assignment (rhs, complain);
 
   if (complain & tf_warning)
     warn_for_address_or_pointer_of_packed_member (type, rhs);
