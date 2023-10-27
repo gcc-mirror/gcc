@@ -63,6 +63,15 @@
 /* function getgid exists */
 #undef HAVE_GETGID
 
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
+
+/* function getopt_long exists */
+#undef HAVE_GETOPT_LONG
+
+/* function getopt_long_only exists */
+#undef HAVE_GETOPT_LONG_ONLY
+
 /* function getpid exists */
 #undef HAVE_GETPID
 
