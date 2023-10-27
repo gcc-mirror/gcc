@@ -1339,13 +1339,26 @@ insn_propagation::apply_to_pattern_1 (rtx *loc)
 	      && apply_to_pattern_1 (&COND_EXEC_CODE (body)));
 
     case PARALLEL:
-      {
-	int last = XVECLEN (body, 0) - 1;
-	for (int i = 0; i < last; ++i)
-	  if (!apply_to_pattern_1 (&XVECEXP (body, 0, i)))
-	    return false;
-	return apply_to_pattern_1 (&XVECEXP (body, 0, last));
-      }
+      for (int i = 0; i < XVECLEN (body, 0); ++i)
+	{
+	  rtx *subloc = &XVECEXP (body, 0, i);
+	  if (GET_CODE (*subloc) == SET)
+	    {
+	      if (!apply_to_lvalue_1 (SET_DEST (*subloc)))
+		return false;
+	      /* ASM_OPERANDS are shared between SETs in the same PARALLEL.
+		 Only process them on the first iteration.  */
+	      if ((i == 0 || GET_CODE (SET_SRC (*subloc)) != ASM_OPERANDS)
+		  && !apply_to_rvalue_1 (&SET_SRC (*subloc)))
+		return false;
+	    }
+	  else
+	    {
+	      if (!apply_to_pattern_1 (subloc))
+		return false;
+	    }
+	}
+      return true;
 
     case ASM_OPERANDS:
       for (int i = 0, len = ASM_OPERANDS_INPUT_LENGTH (body); i < len; ++i)
