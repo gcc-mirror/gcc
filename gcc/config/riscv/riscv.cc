@@ -346,7 +346,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  {COSTS_N_INSNS (33), COSTS_N_INSNS (65)},	/* int_div */
   1,						/* issue_rate */
   3,						/* branch_cost */
   5,						/* memory_cost */
@@ -361,7 +361,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  {COSTS_N_INSNS (33), COSTS_N_INSNS (65)},	/* int_div */
   2,						/* issue_rate */
   4,						/* branch_cost */
   3,						/* memory_cost */
@@ -376,7 +376,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)}, /* fp_div */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (4)}, /* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)}, /* int_div */
+  {COSTS_N_INSNS (18), COSTS_N_INSNS (34)}, /* int_div */
   1,            /* issue_rate */
   3,            /* branch_cost */
   5,            /* memory_cost */
