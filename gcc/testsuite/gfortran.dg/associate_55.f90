@@ -26,7 +26,7 @@ contains
     class(test_t), intent(inout) :: obj
     integer, intent(in) :: a
     associate (state => obj%state(TEST_STATES)) ! { dg-error "no IMPLICIT type" }
-      state = a                                 ! { dg-error "vector-indexed target" }
+      state = a  ! { dg-error "cannot be used in a variable definition context" }
 !      state(TEST_STATE) = a
     end associate
   end subroutine test_alter_state2
