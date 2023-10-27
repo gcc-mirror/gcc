@@ -1784,6 +1784,7 @@ get_equiv_regno (rtx x, int &regno, rtx &subreg)
     }
   if (REG_P (x)
       && (ira_reg_equiv[REGNO (x)].memory != NULL
+	  || ira_reg_equiv[REGNO (x)].invariant != NULL
 	  || ira_reg_equiv[REGNO (x)].constant != NULL))
     {
       regno = REGNO (x);
@@ -1826,6 +1827,7 @@ calculate_equiv_gains (void)
   for (regno = max_reg_num () - 1; regno >= FIRST_PSEUDO_REGISTER; regno--)
     if (ira_reg_equiv[regno].init_insns != NULL
 	&& (ira_reg_equiv[regno].memory != NULL
+	    || ira_reg_equiv[regno].invariant != NULL
 	    || (ira_reg_equiv[regno].constant != NULL
 		/* Ignore complicated constants which probably will be placed
 		   in memory:  */
@@ -1876,6 +1878,8 @@ calculate_equiv_gains (void)
 
 	  if (subst == NULL)
 	    subst = ira_reg_equiv[regno].constant;
+	  if (subst == NULL)
+	    subst = ira_reg_equiv[regno].invariant;
 	  ira_assert (subst != NULL);
 	  mode = PSEUDO_REGNO_MODE (regno);
 	  ira_init_register_move_cost_if_necessary (mode);
