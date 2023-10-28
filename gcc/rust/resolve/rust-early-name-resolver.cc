@@ -601,25 +601,6 @@ EarlyNameResolver::visit (AST::TypeBoundWhereClauseItem &item)
 }
 
 void
-EarlyNameResolver::visit (AST::Method &method)
-{
-  if (method.has_generics ())
-    for (auto &generic : method.get_generic_params ())
-      generic->accept_vis (*this);
-
-  if (method.get_self_param ().has_type ())
-    method.get_self_param ().get_type ()->accept_vis (*this);
-
-  for (auto &param : method.get_function_params ())
-    param.get_type ()->accept_vis (*this);
-
-  if (method.has_return_type ())
-    method.get_return_type ()->accept_vis (*this);
-
-  method.get_definition ()->accept_vis (*this);
-}
-
-void
 EarlyNameResolver::visit (AST::Module &module)
 {
   if (module.get_kind () == AST::Module::UNLOADED)
@@ -680,6 +661,9 @@ EarlyNameResolver::visit (AST::Function &function)
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
       generic->accept_vis (*this);
+
+  if (function.has_self_param () && function.get_self_param ().has_type ())
+    function.get_self_param ().get_type ()->accept_vis (*this);
 
   for (auto &param : function.get_function_params ())
     param.get_type ()->accept_vis (*this);

@@ -331,10 +331,6 @@ ResolverBase::visit (AST::TypeBoundWhereClauseItem &)
 {}
 
 void
-ResolverBase::visit (AST::Method &)
-{}
-
-void
 ResolverBase::visit (AST::Module &)
 {}
 

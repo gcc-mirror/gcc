@@ -173,7 +173,6 @@ private:
   void visit (AST::TypeParam &param);
   void visit (AST::LifetimeWhereClauseItem &item);
   void visit (AST::TypeBoundWhereClauseItem &item);
-  void visit (AST::Method &method);
   void visit (AST::Module &module);
   void visit (AST::ExternCrate &crate);
   void visit (AST::UseTreeGlob &use_tree);

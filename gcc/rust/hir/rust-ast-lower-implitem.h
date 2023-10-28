@@ -131,6 +131,10 @@ public:
     Identifier function_name = function.get_function_name ();
     location_t locus = function.get_locus ();
 
+    HIR::SelfParam self_param = HIR::SelfParam::error ();
+    if (function.has_self_param ())
+      self_param = lower_self (function.get_self_param ());
+
     std::unique_ptr<HIR::Type> return_type
       = function.has_return_type () ? std::unique_ptr<HIR::Type> (
 	  ASTLoweringType::translate (function.get_return_type ().get ()))
@@ -176,7 +180,16 @@ public:
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (function_body),
 			   std::move (vis), function.get_outer_attrs (),
-			   HIR::SelfParam::error (), locus);
+			   std::move (self_param), locus);
+
+    if (!fn->get_self_param ().is_error ())
+      {
+	// insert mappings for self
+	mappings->insert_hir_self_param (&fn->get_self_param ());
+	mappings->insert_location (
+	  fn->get_self_param ().get_mappings ().get_hirid (),
+	  fn->get_self_param ().get_locus ());
+      }
 
     // add the mappings for the function params at the end
     for (auto &param : fn->get_function_params ())
@@ -187,93 +200,6 @@ public:
 
     translated = fn;
     item_cast = fn;
-  }
-
-  void visit (AST::Method &method) override
-  {
-    // ignore for now and leave empty
-    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
-    for (auto &item : method.get_where_clause ().get_items ())
-      {
-	HIR::WhereClauseItem *i
-	  = ASTLowerWhereClauseItem::translate (*item.get ());
-	where_clause_items.push_back (
-	  std::unique_ptr<HIR::WhereClauseItem> (i));
-      }
-
-    HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::FunctionQualifiers qualifiers
-      = lower_qualifiers (method.get_qualifiers ());
-    HIR::Visibility vis = translate_visibility (method.get_visibility ());
-
-    // need
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
-    if (method.has_generics ())
-      {
-	generic_params = lower_generic_params (method.get_generic_params ());
-      }
-    Identifier method_name = method.get_method_name ();
-    location_t locus = method.get_locus ();
-
-    HIR::SelfParam self_param = lower_self (method.get_self_param ());
-
-    std::unique_ptr<HIR::Type> return_type
-      = method.has_return_type () ? std::unique_ptr<HIR::Type> (
-	  ASTLoweringType::translate (method.get_return_type ().get ()))
-				  : nullptr;
-
-    std::vector<HIR::FunctionParam> function_params;
-    for (auto &param : method.get_function_params ())
-      {
-	auto translated_pattern = std::unique_ptr<HIR::Pattern> (
-	  ASTLoweringPattern::translate (param.get_pattern ().get ()));
-	auto translated_type = std::unique_ptr<HIR::Type> (
-	  ASTLoweringType::translate (param.get_type ().get ()));
-
-	auto crate_num = mappings->get_current_crate ();
-	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				       mappings->get_next_hir_id (crate_num),
-				       UNKNOWN_LOCAL_DEFID);
-
-	auto hir_param
-	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
-				std::move (translated_type),
-				param.get_locus ());
-	function_params.push_back (std::move (hir_param));
-      }
-
-    bool terminated = false;
-    std::unique_ptr<HIR::BlockExpr> method_body
-      = std::unique_ptr<HIR::BlockExpr> (
-	ASTLoweringBlock::translate (method.get_definition ().get (),
-				     &terminated));
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, method.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
-    auto mth
-      = new HIR::Function (mapping, std::move (method_name),
-			   std::move (qualifiers), std::move (generic_params),
-			   std::move (function_params), std::move (return_type),
-			   std::move (where_clause), std::move (method_body),
-			   std::move (vis), method.get_outer_attrs (),
-			   std::move (self_param), locus);
-
-    // insert mappings for self
-    mappings->insert_hir_self_param (&self_param);
-    mappings->insert_location (self_param.get_mappings ().get_hirid (),
-			       self_param.get_locus ());
-
-    // add the mappings for the function params at the end
-    for (auto &param : mth->get_function_params ())
-      {
-	mappings->insert_hir_param (&param);
-	mappings->insert_location (mapping.get_hirid (), param.get_locus ());
-      }
-
-    translated = mth;
-    item_cast = mth;
   }
 
 private:

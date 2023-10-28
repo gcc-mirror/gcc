@@ -266,7 +266,6 @@ public:
   void visit (TypeParam &param);
   void visit (LifetimeWhereClauseItem &item);
   void visit (TypeBoundWhereClauseItem &item);
-  void visit (Method &method);
   void visit (Module &module);
   void visit (ExternCrate &crate);
   void visit (UseTreeGlob &use_tree);

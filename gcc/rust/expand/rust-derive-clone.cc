@@ -51,11 +51,12 @@ DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
   auto big_self_type = builder.single_type_path ("Self");
 
   return std::unique_ptr<TraitImplItem> (
-    new Method ({"clone"}, builder.fn_qualifiers (), /* generics */ {},
-		SelfParam (Lifetime::error (), /* is_mut */ false, loc),
-		/* function params */ {}, std::move (big_self_type),
-		WhereClause::create_empty (), std::move (block),
-		Visibility::create_private (), {}, loc));
+    new Function ({"clone"}, builder.fn_qualifiers (), /* generics */ {},
+		  tl::optional<SelfParam> (tl::in_place, Lifetime::error (),
+					   /* is_mut */ false, loc),
+		  /* function params */ {}, std::move (big_self_type),
+		  WhereClause::create_empty (), std::move (block),
+		  Visibility::create_private (), {}, loc));
 }
 
 /**

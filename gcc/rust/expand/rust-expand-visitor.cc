@@ -984,24 +984,6 @@ ExpandVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 }
 
 void
-ExpandVisitor::visit (AST::Method &method)
-{
-  for (auto &param : method.get_generic_params ())
-    visit (param);
-
-  expand_self_param (method.get_self_param ());
-  expand_function_params (method.get_function_params ());
-
-  if (method.has_return_type ())
-    visit (method.get_return_type ());
-
-  if (method.has_where_clause ())
-    expand_where_clause (method.get_where_clause ());
-
-  visit (method.get_definition ());
-}
-
-void
 ExpandVisitor::visit (AST::Module &module)
 {
   if (module.get_kind () == AST::Module::ModuleKind::LOADED)
@@ -1040,6 +1022,8 @@ ExpandVisitor::visit (AST::Function &function)
   for (auto &param : function.get_generic_params ())
     visit (param);
 
+  if (function.has_self_param ())
+    expand_self_param (function.get_self_param ());
   expand_function_params (function.get_function_params ());
 
   if (function.has_return_type ())

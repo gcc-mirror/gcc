@@ -192,14 +192,6 @@ TopLevel::visit (AST::Function &function)
 }
 
 void
-TopLevel::visit (AST::Method &method)
-{
-  insert_or_error_out (method.get_method_name (), method, Namespace::Values);
-
-  method.get_definition ()->accept_vis (*this);
-}
-
-void
 TopLevel::visit (AST::BlockExpr &expr)
 {
   // extracting the lambda from the `scoped` call otherwise the code looks like

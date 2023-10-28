@@ -29,6 +29,8 @@
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
 
+#include "optional.h"
+
 namespace Rust {
 // Left binding powers of operations.
 enum binding_powers
@@ -2903,10 +2905,11 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
 
   return std::unique_ptr<AST::Function> (
     new AST::Function (std::move (function_name), std::move (qualifiers),
-		       std::move (generic_params), std::move (function_params),
-		       std::move (return_type), std::move (where_clause),
-		       std::move (block_expr), std::move (vis),
-		       std::move (outer_attrs), locus));
+		       std::move (generic_params),
+		       tl::optional<AST::SelfParam> (),
+		       std::move (function_params), std::move (return_type),
+		       std::move (where_clause), std::move (block_expr),
+		       std::move (vis), std::move (outer_attrs), locus));
 }
 
 // Parses function or method qualifiers (i.e. const, unsafe, and extern).
@@ -5645,18 +5648,18 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   // do actual if instead of ternary for return value optimisation
   if (is_method)
     {
-      return std::unique_ptr<AST::Method> (
-	new AST::Method (std::move (ident), std::move (qualifiers),
-			 std::move (generic_params), std::move (self_param),
-			 std::move (function_params), std::move (return_type),
-			 std::move (where_clause), std::move (body),
-			 std::move (vis), std::move (outer_attrs), locus));
+      return std::unique_ptr<AST::Function> (new AST::Function (
+	std::move (ident), std::move (qualifiers), std::move (generic_params),
+	tl::optional<AST::SelfParam> (tl::in_place, std::move (self_param)),
+	std::move (function_params), std::move (return_type),
+	std::move (where_clause), std::move (body), std::move (vis),
+	std::move (outer_attrs), locus));
     }
   else
     {
       return std::unique_ptr<AST::Function> (
 	new AST::Function (std::move (ident), std::move (qualifiers),
-			   std::move (generic_params),
+			   std::move (generic_params), tl::nullopt,
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (body),
 			   std::move (vis), std::move (outer_attrs), locus));
@@ -5884,17 +5887,18 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   // do actual if instead of ternary for return value optimisation
   if (is_method)
     {
-      return std::unique_ptr<AST::Method> (new AST::Method (
+      return std::unique_ptr<AST::Function> (new AST::Function (
 	std::move (ident), std::move (qualifiers), std::move (generic_params),
-	std::move (self_param), std::move (function_params),
-	std::move (return_type), std::move (where_clause), std::move (body),
-	std::move (vis), std::move (outer_attrs), locus, is_default));
+	tl::optional<AST::SelfParam> (tl::in_place, std::move (self_param)),
+	std::move (function_params), std::move (return_type),
+	std::move (where_clause), std::move (body), std::move (vis),
+	std::move (outer_attrs), locus, is_default));
     }
   else
     {
       return std::unique_ptr<AST::Function> (new AST::Function (
 	std::move (ident), std::move (qualifiers), std::move (generic_params),
-	std::move (function_params), std::move (return_type),
+	tl::nullopt, std::move (function_params), std::move (return_type),
 	std::move (where_clause), std::move (body), std::move (vis),
 	std::move (outer_attrs), locus, is_default));
     }
@@ -7188,7 +7192,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
  * resolve it into whatever it is afterward. As such, this is only here for
  * algorithmically defining the grammar rule. */
 template <typename ManagedTokenSource>
-AST::Method
+std::unique_ptr<AST::Function>
 Parser<ManagedTokenSource>::parse_method ()
 {
   location_t locus = lexer.peek_token ()->get_locus ();
@@ -7202,7 +7206,7 @@ Parser<ManagedTokenSource>::parse_method ()
   if (ident_tok == nullptr)
     {
       skip_after_next_block ();
-      return AST::Method::create_error ();
+      return nullptr;
     }
   Identifier method_name{ident_tok};
 
@@ -7217,7 +7221,7 @@ Parser<ManagedTokenSource>::parse_method ()
       add_error (std::move (error));
 
       skip_after_next_block ();
-      return AST::Method::create_error ();
+      return nullptr;
     }
 
   // parse self param
@@ -7229,7 +7233,7 @@ Parser<ManagedTokenSource>::parse_method ()
       add_error (std::move (error));
 
       skip_after_next_block ();
-      return AST::Method::create_error ();
+      return nullptr;
     }
 
   // skip comma if it exists
@@ -7248,7 +7252,7 @@ Parser<ManagedTokenSource>::parse_method ()
       add_error (std::move (error));
 
       skip_after_next_block ();
-      return AST::Method::create_error ();
+      return nullptr;
     }
 
   // parse function return type - if exists
@@ -7266,15 +7270,16 @@ Parser<ManagedTokenSource>::parse_method ()
       add_error (std::move (error));
 
       skip_after_end_block ();
-      return AST::Method::create_error ();
+      return nullptr;
     }
 
   // does not parse visibility, but this method isn't used, so doesn't matter
-  return AST::Method (std::move (method_name), std::move (qualifiers),
-		      std::move (generic_params), std::move (self_param),
-		      std::move (function_params), std::move (return_type),
-		      std::move (where_clause), std::move (block_expr),
-		      AST::Visibility::create_error (), AST::AttrVec (), locus);
+  return std::unique_ptr<AST::Function> (new AST::Function (
+    std::move (method_name), std::move (qualifiers), std::move (generic_params),
+    tl::optional<AST::SelfParam> (tl::in_place, std::move (self_param)),
+    std::move (function_params), std::move (return_type),
+    std::move (where_clause), std::move (block_expr),
+    AST::Visibility::create_error (), AST::AttrVec (), locus));
 }
 
 /* Parses an expression or macro statement. */

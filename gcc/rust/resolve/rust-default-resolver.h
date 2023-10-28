@@ -43,7 +43,6 @@ public:
   void visit (AST::BlockExpr &);
   void visit (AST::Module &);
   void visit (AST::Function &);
-  void visit (AST::Method &);
   void visit (AST::ForLoopExpr &);
   void visit (AST::Trait &);
   void visit (AST::InherentImpl &);

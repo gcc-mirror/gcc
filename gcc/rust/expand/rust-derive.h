@@ -145,7 +145,6 @@ private:
   virtual void visit (TypeParam &param) override final{};
   virtual void visit (LifetimeWhereClauseItem &item) override final{};
   virtual void visit (TypeBoundWhereClauseItem &item) override final{};
-  virtual void visit (Method &method) override final{};
   virtual void visit (Module &module) override final{};
   virtual void visit (ExternCrate &crate) override final{};
   virtual void visit (UseTreeGlob &use_tree) override final{};

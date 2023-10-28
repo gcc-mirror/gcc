@@ -148,12 +148,6 @@ FeatureGate::visit (AST::TraitImpl &impl)
 }
 
 void
-FeatureGate::visit (AST::Method &method)
-{
-  check_rustc_attri (method.get_outer_attrs ());
-}
-
-void
 FeatureGate::visit (AST::Function &function)
 {
   check_rustc_attri (function.get_outer_attrs ());

@@ -171,7 +171,6 @@ class SelfParam;
 class FunctionQualifiers;
 class FunctionParam;
 struct Visibility;
-class Method;
 class VisItem;
 class Module;
 class ExternCrate;
