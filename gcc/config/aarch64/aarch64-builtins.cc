@@ -815,11 +815,13 @@ enum aarch64_builtins
   AARCH64_RSR64,
   AARCH64_RSRF,
   AARCH64_RSRF64,
+  AARCH64_RSR128,
   AARCH64_WSR,
   AARCH64_WSRP,
   AARCH64_WSR64,
   AARCH64_WSRF,
   AARCH64_WSRF64,
+  AARCH64_WSR128,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1843,6 +1845,10 @@ aarch64_init_rwsr_builtins (void)
   AARCH64_INIT_RWSR_BUILTINS_DECL (RSRF64, rsrf64, fntype);
 
   fntype
+    = build_function_type_list (uint128_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR128, rsr128, fntype);
+
+  fntype
     = build_function_type_list (void_type_node, const_char_ptr_type,
 				uint32_type_node, NULL);
 
@@ -1867,6 +1873,12 @@ aarch64_init_rwsr_builtins (void)
     = build_function_type_list (void_type_node, const_char_ptr_type,
 				double_type_node, NULL);
   AARCH64_INIT_RWSR_BUILTINS_DECL (WSRF64, wsrf64, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint128_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR128, wsr128, fntype);
+
 }
 
 /* Initialize the memory tagging extension (MTE) builtins.  */
@@ -2710,6 +2722,7 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
   tree arg0, arg1;
   rtx const_str, input_val, subreg;
   enum machine_mode mode;
+  enum insn_code icode;
   class expand_operand ops[2];
 
   arg0 = CALL_EXPR_ARG (exp, 0);
@@ -2718,7 +2731,18 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
 		   || fcode == AARCH64_WSRP
 		   || fcode == AARCH64_WSR64
 		   || fcode == AARCH64_WSRF
-		   || fcode == AARCH64_WSRF64);
+		   || fcode == AARCH64_WSRF64
+		   || fcode == AARCH64_WSR128);
+
+  bool op128 = (fcode == AARCH64_RSR128 || fcode == AARCH64_WSR128);
+  enum machine_mode sysreg_mode = op128 ? TImode : DImode;
+
+  if (op128 && !TARGET_D128)
+    {
+      error_at (EXPR_LOCATION (exp), "128-bit system register support requires"
+				     " the %<d128%> extension");
+      return const0_rtx;
+    }
 
   /* Argument 0 (system register name) must be a string literal.  */
   gcc_assert (TREE_CODE (arg0) == ADDR_EXPR
@@ -2740,7 +2764,8 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
   for (unsigned pos = 0; pos <= len; pos++)
     sysreg_name[pos] = TOLOWER (sysreg_name[pos]);
 
-  const char *name_output = aarch64_retrieve_sysreg (sysreg_name, write_op);
+  const char* name_output = aarch64_retrieve_sysreg ((const char *) sysreg_name,
+						     write_op, op128);
   if (name_output == NULL)
     {
       error_at (EXPR_LOCATION (exp), "invalid system register name %qs",
@@ -2760,13 +2785,17 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
       mode = TYPE_MODE (TREE_TYPE (arg1));
       input_val = copy_to_mode_reg (mode, expand_normal (arg1));
 
+      icode = (op128 ? CODE_FOR_aarch64_write_sysregti
+		     : CODE_FOR_aarch64_write_sysregdi);
+
       switch (fcode)
 	{
 	case AARCH64_WSR:
 	case AARCH64_WSRP:
 	case AARCH64_WSR64:
 	case AARCH64_WSRF64:
-	  subreg = lowpart_subreg (DImode, input_val, mode);
+	case AARCH64_WSR128:
+	  subreg = lowpart_subreg (sysreg_mode, input_val, mode);
 	  break;
 	case AARCH64_WSRF:
 	  subreg = gen_lowpart_SUBREG (SImode, input_val);
@@ -2775,8 +2804,8 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
 	}
 
       create_fixed_operand (&ops[0], const_str);
-      create_input_operand (&ops[1], subreg, DImode);
-      expand_insn (CODE_FOR_aarch64_write_sysregdi, 2, ops);
+      create_input_operand (&ops[1], subreg, sysreg_mode);
+      expand_insn (icode, 2, ops);
 
       return target;
     }
@@ -2784,10 +2813,13 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
   /* Read operations are implied by !write_op.  */
   gcc_assert (call_expr_nargs (exp) == 1);
 
+  icode = (op128 ? CODE_FOR_aarch64_read_sysregti
+		 : CODE_FOR_aarch64_read_sysregdi);
+
   /* Emit the initial read_sysregdi rtx.  */
-  create_output_operand (&ops[0], target, DImode);
+  create_output_operand (&ops[0], target, sysreg_mode);
   create_fixed_operand (&ops[1], const_str);
-  expand_insn (CODE_FOR_aarch64_read_sysregdi, 2, ops);
+  expand_insn (icode, 2, ops);
   target = ops[0].value;
 
   /* Do any necessary post-processing on the result.  */
@@ -2797,7 +2829,8 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
     case AARCH64_RSRP:
     case AARCH64_RSR64:
     case AARCH64_RSRF64:
-      return lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)), target, DImode);
+    case AARCH64_RSR128:
+      return lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)), target, sysreg_mode);
     case AARCH64_RSRF:
       subreg = gen_lowpart_SUBREG (SImode, target);
       return gen_lowpart_SUBREG (SFmode, subreg);
@@ -3044,11 +3077,13 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_RSR64:
     case AARCH64_RSRF:
     case AARCH64_RSRF64:
+    case AARCH64_RSR128:
     case AARCH64_WSR:
     case AARCH64_WSRP:
     case AARCH64_WSR64:
     case AARCH64_WSRF:
     case AARCH64_WSRF64:
+    case AARCH64_WSR128:
       return aarch64_expand_rwsr_builtin (exp, target, fcode);
     }
 

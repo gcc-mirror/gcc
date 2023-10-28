@@ -840,7 +840,7 @@ bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 bool aarch64_valid_sysreg_name_p (const char *);
-const char *aarch64_retrieve_sysreg (const char *, bool);
+const char *aarch64_retrieve_sysreg (const char *, bool, bool);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);
 bool aarch64_maybe_generate_simd_constant (rtx, rtx, machine_mode);
 bool aarch64_simd_special_constant_p (rtx, machine_mode);

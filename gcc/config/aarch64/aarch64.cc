@@ -498,6 +498,8 @@ typedef struct {
 #define F_ARCHEXT		   (1 << 4)
 /* Flag indicating register name is alias for another system register.  */
 #define F_REG_ALIAS		   (1 << 5)
+/* Flag indicatinig registers which may be implemented with 128-bits.  */
+#define F_REG_128		   (1 << 6)
 
 /* Database of system registers, their encodings and architectural
    requirements.  */
@@ -29083,9 +29085,10 @@ aarch64_valid_sysreg_name_p (const char *regname)
 
 /* Return the generic sysreg specification for a valid system register
    name, otherwise NULL.  WRITE_P is true iff the register is being
-   written to.  */
+   written to.  IS128OP indicates the requested system register should
+   be checked for a 128-bit implementation.  */
 const char *
-aarch64_retrieve_sysreg (const char *regname, bool write_p)
+aarch64_retrieve_sysreg (const char *regname, bool write_p, bool is128op)
 {
   const sysreg_t *sysreg = aarch64_lookup_sysreg_map (regname);
   if (sysreg == NULL)
@@ -29095,6 +29098,8 @@ aarch64_retrieve_sysreg (const char *regname, bool write_p)
       else
 	return NULL;
     }
+  if (is128op && !(sysreg->properties & F_REG_128))
+    return NULL;
   if ((write_p && (sysreg->properties & F_REG_READ))
       || (!write_p && (sysreg->properties & F_REG_WRITE)))
     return NULL;

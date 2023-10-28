@@ -339,7 +339,9 @@
     UNSPEC_RDFFR
     UNSPEC_WRFFR
     UNSPEC_SYSREG_RDI
+    UNSPEC_SYSREG_RTI
     UNSPEC_SYSREG_WDI
+    UNSPEC_SYSREG_WTI
     ;; Represents an SVE-style lane index, in which the indexing applies
     ;; within the containing 128-bit block.
     UNSPEC_SVE_LANE_SELECT
@@ -558,12 +560,28 @@
   "mrs\t%x0, %1"
 )
 
+(define_insn "aarch64_read_sysregti"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+    (unspec_volatile:TI [(match_operand 1 "aarch64_sysreg_string" "")]
+			UNSPEC_SYSREG_RTI))]
+ "TARGET_D128"
+ "mrrs\t%x0, %H0, %x1"
+)
+
 (define_insn "aarch64_write_sysregdi"
   [(unspec_volatile:DI [(match_operand 0 "aarch64_sysreg_string" "")
 			(match_operand:DI 1 "register_operand" "rZ")]
 		       UNSPEC_SYSREG_WDI)]
   ""
   "msr\t%0, %x1"
+)
+
+(define_insn "aarch64_write_sysregti"
+ [(unspec_volatile:TI [(match_operand 0 "aarch64_sysreg_string" "")
+		       (match_operand:TI 1 "register_operand" "r")]
+		      UNSPEC_SYSREG_WTI)]
+ "TARGET_D128"
+ "msrr\t%x0, %x1, %H1"
 )
 
 (define_insn "indirect_jump"

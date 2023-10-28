@@ -344,6 +344,17 @@ __rndrrs (uint64_t *__res)
 #define __arm_wsrf64(__regname, __value) \
   __builtin_aarch64_wsrf64 (__regname, __value)
 
+#pragma GCC push_options
+#pragma GCC target ("+nothing+d128")
+
+#define __arm_rsr128(__regname) \
+  __builtin_aarch64_rsr128 (__regname)
+
+#define __arm_wsr128(__regname, __value) \
+  __builtin_aarch64_wsr128 (__regname, __value)
+
+#pragma GCC pop_options
+
 #ifdef __cplusplus
 }
 #endif
