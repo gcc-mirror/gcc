@@ -345,7 +345,7 @@ private:
 				       AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExternBlock>
   parse_extern_block (AST::Visibility vis, AST::AttrVec outer_attrs);
-  AST::Method parse_method ();
+  std::unique_ptr<AST::Function> parse_method ();
 
   // Expression-related (Pratt parsed)
   std::unique_ptr<AST::Expr>

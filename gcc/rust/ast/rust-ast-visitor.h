@@ -132,7 +132,6 @@ public:
   // virtual void visit(WhereClauseItem& item) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
   virtual void visit (TypeBoundWhereClauseItem &item) = 0;
-  virtual void visit (Method &method) = 0;
   virtual void visit (Module &module) = 0;
   virtual void visit (ExternCrate &crate) = 0;
   // virtual void visit(UseTree& use_tree) = 0;
@@ -308,7 +307,6 @@ protected:
   virtual void visit (AST::TypeParam &param) override;
   virtual void visit (AST::LifetimeWhereClauseItem &item) override;
   virtual void visit (AST::TypeBoundWhereClauseItem &item) override;
-  virtual void visit (AST::Method &method) override;
   virtual void visit (AST::Module &module) override;
   virtual void visit (AST::ExternCrate &crate) override;
   virtual void visit (AST::UseTreeGlob &use_tree) override;

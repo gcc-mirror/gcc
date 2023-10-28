@@ -107,7 +107,6 @@ public:
 
   void visit (AST::LifetimeWhereClauseItem &);
   void visit (AST::TypeBoundWhereClauseItem &);
-  void visit (AST::Method &);
   void visit (AST::Module &);
   void visit (AST::ExternCrate &);
 

@@ -68,22 +68,6 @@ DefaultResolver::visit (AST::Function &function)
 }
 
 void
-DefaultResolver::visit (AST::Method &method)
-{
-  auto def_fn = [this, &method] () {
-    for (auto &param : method.get_function_params ())
-      {
-	param.get_pattern ()->accept_vis (*this);
-	param.get_type ()->accept_vis (*this);
-      }
-
-    method.get_definition ()->accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Function, method.get_node_id (), def_fn);
-}
-
-void
 DefaultResolver::visit (AST::ForLoopExpr &expr)
 {
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), [this, &expr] () {

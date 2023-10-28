@@ -524,6 +524,36 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
 
+  if (function.has_self_param ())
+    {
+      // self turns into (self: Self) as a function param
+      AST::SelfParam &self_param = function.get_self_param ();
+      // FIXME: which location should be used for Rust::Identifier `self`?
+      AST::IdentifierPattern self_pattern (
+	self_param.get_node_id (), {"self"}, self_param.get_locus (),
+	self_param.get_has_ref (), self_param.get_is_mut (),
+	std::unique_ptr<AST::Pattern> (nullptr));
+      PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+      if (self_param.has_type ())
+	{
+	  // This shouldn't happen the parser should already error for this
+	  rust_assert (!self_param.get_has_ref ());
+	  ResolveType::go (self_param.get_type ().get ());
+	}
+      else
+	{
+	  // here we implicitly make self have a type path of Self
+	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+	    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+
+	  AST::TypePath self_type_path (std::move (segments),
+					self_param.get_locus ());
+	  ResolveType::go (&self_type_path);
+	}
+    }
+
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
 
@@ -617,89 +647,6 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   resolver->get_type_scope ().pop ();
   resolver->get_name_scope ().pop ();
-}
-
-void
-ResolveItem::visit (AST::Method &method)
-{
-  auto decl = CanonicalPath::new_seg (method.get_node_id (),
-				      method.get_method_name ().as_string ());
-  auto path = prefix.append (decl);
-  auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (method.get_node_id (), cpath);
-
-  NodeId scope_node_id = method.get_node_id ();
-
-  resolve_visibility (method.get_visibility ());
-
-  resolver->get_name_scope ().push (scope_node_id);
-  resolver->get_type_scope ().push (scope_node_id);
-  resolver->get_label_scope ().push (scope_node_id);
-  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
-
-  if (method.has_generics ())
-    for (auto &generic : method.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
-
-  // resolve any where clause items
-  if (method.has_where_clause ())
-    ResolveWhereClause::Resolve (method.get_where_clause ());
-
-  if (method.has_return_type ())
-    ResolveType::go (method.get_return_type ().get ());
-
-  // self turns into (self: Self) as a function param
-  AST::SelfParam &self_param = method.get_self_param ();
-  // FIXME: which location should be used for Rust::Identifier `self`?
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
-				       self_param.get_locus (),
-				       self_param.get_has_ref (),
-				       self_param.get_is_mut (),
-				       std::unique_ptr<AST::Pattern> (nullptr));
-  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
-
-  if (self_param.has_type ())
-    {
-      // This shouldn't happen the parser should already error for this
-      rust_assert (!self_param.get_has_ref ());
-      ResolveType::go (self_param.get_type ().get ());
-    }
-  else
-    {
-      // here we implicitly make self have a type path of Self
-      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-      AST::TypePath self_type_path (std::move (segments),
-				    self_param.get_locus ());
-      ResolveType::go (&self_type_path);
-    }
-
-  std::vector<PatternBinding> bindings
-    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
-
-  // we make a new scope so the names of parameters are resolved and shadowed
-  // correctly
-  for (auto &param : method.get_function_params ())
-    {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
-			      bindings);
-    }
-
-  // resolve any where clause items
-  if (method.has_where_clause ())
-    ResolveWhereClause::Resolve (method.get_where_clause ());
-
-  // resolve the function body
-  ResolveExpr::go (method.get_definition ().get (), path, cpath);
-
-  resolver->get_name_scope ().pop ();
-  resolver->get_type_scope ().pop ();
-  resolver->get_label_scope ().pop ();
 }
 
 void

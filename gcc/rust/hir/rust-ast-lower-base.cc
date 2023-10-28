@@ -264,9 +264,6 @@ void
 ASTLoweringBase::visit (AST::TypeBoundWhereClauseItem &)
 {}
 void
-ASTLoweringBase::visit (AST::Method &)
-{}
-void
 ASTLoweringBase::visit (AST::Module &)
 {}
 void

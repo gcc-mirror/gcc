@@ -1627,41 +1627,6 @@ TokenCollector::visit (TypeBoundWhereClauseItem &item)
 }
 
 void
-TokenCollector::visit (Method &method)
-{
-  visit (method.get_visibility ());
-  auto method_name = method.get_method_name ().as_string ();
-  auto qualifiers = method.get_qualifiers ();
-  visit (qualifiers);
-
-  push (Rust::Token::make (FN_TOK, method.get_locus ()));
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (method_name)));
-  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
-
-  visit (method.get_self_param ());
-  if (!method.get_function_params ().empty ())
-    {
-      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-      visit_items_joined_by_separator (method.get_function_params (), COMMA);
-    }
-
-  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
-
-  if (method.has_return_type ())
-    {
-      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
-      visit (method.get_return_type ());
-    }
-
-  auto &block = method.get_definition ();
-  if (!block)
-    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
-  else
-    visit (block);
-  newline ();
-}
-
-void
 TokenCollector::visit (Module &module)
 {
   //  Syntax:
@@ -1817,6 +1782,14 @@ TokenCollector::visit (Function &function)
     visit (function.get_generic_params ());
 
   push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
+
+  if (function.has_self_param ())
+    {
+      visit (function.get_self_param ());
+      if (!function.get_function_params ().empty ())
+	push (Rust::Token::make (COMMA, UNDEF_LOCATION));
+    }
+
   visit_items_joined_by_separator (function.get_function_params ());
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 

@@ -576,12 +576,6 @@ AttributeChecker::visit (AST::TypeBoundWhereClauseItem &)
 {}
 
 void
-AttributeChecker::visit (AST::Method &method)
-{
-  method.get_definition ()->accept_vis (*this);
-}
-
-void
 AttributeChecker::visit (AST::Module &module)
 {
   check_proc_macro_non_function (module.get_outer_attrs ());

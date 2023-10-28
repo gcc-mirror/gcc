@@ -88,22 +88,6 @@ public:
       });
   }
 
-  void visit (AST::Method &method) override
-  {
-    auto decl = CanonicalPath::new_seg (method.get_node_id (),
-					method.get_method_name ().as_string ());
-    auto path = prefix.append (decl);
-
-    resolver->get_name_scope ().insert (
-      path, method.get_node_id (), method.get_locus (), false,
-      Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rich_location r (line_table, method.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
-  }
-
 private:
   ResolveToplevelImplItem (const CanonicalPath &prefix)
     : ResolverBase (), prefix (prefix)

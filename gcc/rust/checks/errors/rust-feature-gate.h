@@ -104,7 +104,6 @@ public:
   void visit (AST::TypeParam &param) override {}
   void visit (AST::LifetimeWhereClauseItem &item) override {}
   void visit (AST::TypeBoundWhereClauseItem &item) override {}
-  void visit (AST::Method &method) override;
   void visit (AST::Module &module) override {}
   void visit (AST::ExternCrate &crate) override {}
   void visit (AST::UseTreeGlob &use_tree) override {}

@@ -1945,53 +1945,6 @@ CfgStrip::visit (AST::TypeBoundWhereClauseItem &item)
     bound->accept_vis (*this);
 }
 void
-CfgStrip::visit (AST::Method &method)
-{
-  // initial test based on outer attrs
-  expand_cfg_attrs (method.get_outer_attrs ());
-  if (fails_cfg_with_expand (method.get_outer_attrs ()))
-    {
-      method.mark_for_strip ();
-      return;
-    }
-
-  // just expand sub-stuff - can't actually strip generic params themselves
-  for (auto &param : method.get_generic_params ())
-    param->accept_vis (*this);
-
-  /* assuming you can't strip self param - wouldn't be a method
-   * anymore. spec allows outer attrs on self param, but doesn't
-   * specify whether cfg is used. */
-  maybe_strip_self_param (method.get_self_param ());
-
-  /* strip method parameters if required - this is specifically
-   * allowed by spec */
-  maybe_strip_function_params (method.get_function_params ());
-
-  if (method.has_return_type ())
-    {
-      auto &return_type = method.get_return_type ();
-      return_type->accept_vis (*this);
-
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
-		       "cannot strip type in this position");
-    }
-
-  if (method.has_where_clause ())
-    maybe_strip_where_clause (method.get_where_clause ());
-
-  /* body should always exist - if error state, should have returned
-   * before now */
-  // can't strip block itself, but can strip sub-expressions
-  auto &block_expr = method.get_definition ();
-  block_expr->accept_vis (*this);
-  if (block_expr->is_marked_for_strip ())
-    rust_error_at (block_expr->get_locus (),
-		   "cannot strip block expression in this position - outer "
-		   "attributes not allowed");
-}
-void
 CfgStrip::visit (AST::Module &module)
 {
   // strip test based on outer attrs
@@ -2075,6 +2028,13 @@ CfgStrip::visit (AST::Function &function)
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : function.get_generic_params ())
     param->accept_vis (*this);
+
+  /* assuming you can't strip self param - wouldn't be a method
+   * anymore. spec allows outer attrs on self param, but doesn't
+   * specify whether cfg is used. */
+  // TODO: verify this
+  if (function.has_self_param ())
+    maybe_strip_self_param (function.get_self_param ());
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */

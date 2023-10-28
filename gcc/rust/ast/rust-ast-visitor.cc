@@ -729,23 +729,6 @@ DefaultASTVisitor::visit (AST::FunctionParam &param)
 }
 
 void
-DefaultASTVisitor::visit (AST::Method &method)
-{
-  visit_outer_attrs (method);
-  visit (method.get_visibility ());
-  visit (method.get_qualifiers ());
-  for (auto &generic : method.get_generic_params ())
-    visit (generic);
-  visit (method.get_self_param ());
-  for (auto &param : method.get_function_params ())
-    visit (param);
-  if (method.has_return_type ())
-    visit (method.get_return_type ());
-  visit (method.get_where_clause ());
-  visit (method.get_definition ());
-}
-
-void
 DefaultASTVisitor::visit (AST::Module &module)
 {
   visit_outer_attrs (module);
@@ -794,6 +777,8 @@ DefaultASTVisitor::visit (AST::Function &function)
   visit (function.get_qualifiers ());
   for (auto &generic : function.get_generic_params ())
     visit (generic);
+  if (function.has_self_param ())
+    visit (function.get_self_param ());
   for (auto &param : function.get_function_params ())
     visit (param);
   if (function.has_return_type ())
