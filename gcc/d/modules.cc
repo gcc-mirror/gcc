@@ -329,7 +329,7 @@ static tree
 build_dso_cdtor_fn (bool ctor_p)
 {
   const char *name = ctor_p ? GDC_PREFIX ("dso_ctor") : GDC_PREFIX ("dso_dtor");
-  tree condition = ctor_p ? boolean_true_node : boolean_false_node;
+  tree condition = ctor_p ? d_bool_true_node : d_bool_false_node;
 
   /* Declaration of dso_ctor/dso_dtor is:
 
@@ -452,7 +452,7 @@ register_moduleinfo (Module *decl, tree minfo)
   d_finish_decl (dso_slot_node);
 
   dso_initialized_node = build_dso_registry_var (GDC_PREFIX ("dso_initialized"),
-						 boolean_type_node);
+						 d_bool_type);
   d_finish_decl (dso_initialized_node);
 
   /* Declare dso_ctor() and dso_dtor().  */
