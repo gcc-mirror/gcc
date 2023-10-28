@@ -1,3 +1,19 @@
+2023-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/111820
+	PR tree-optimization/111833
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p): Give
+	up vectorization for nonlinear iv vect_step_op_mul when
+	step_expr is not exact_log2 and niters is greater than
+	TYPE_PRECISION (TREE_TYPE (step_expr)). Also don't vectorize
+	for nagative niters_skip which will be used by fully masked
+	loop.
+	(vect_can_advance_ivs_p): Pass whole phi_info to
+	vect_can_peel_nonlinear_iv_p.
+	* tree-vect-loop.cc (vect_peel_nonlinear_iv_init): Optimize
+	init_expr * pow (step_expr, skipn) to init_expr
+	<< (log2 (step_expr) * skipn) when step_expr is exact_log2.
+
 2023-10-26  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
