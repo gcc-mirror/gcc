@@ -343,7 +343,7 @@ pass_avlprop::execute (function *fn)
     {
       fprintf (dump_file, "\nNumber of potential AVL propagations: %d\n",
 	       m_candidates.length ());
-      for (const auto candidate : m_candidates)
+      for (const auto &candidate : m_candidates)
 	{
 	  fprintf (dump_file, "\nAVL propagation type: %s\n",
 		   avlprop_type_to_str (candidate.first));
