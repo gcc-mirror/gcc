@@ -1714,6 +1714,12 @@ public:
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
 
+    /* Record whether the call expression has no side effects, so we can check
+       for an unused return value later.  */
+    if (TREE_CODE (exp) == CALL_EXPR && CALL_EXPR_FN (exp) != NULL_TREE
+	&& call_side_effect_free_p (e->f, e->e1->type))
+      CALL_EXPR_WARN_IF_UNUSED (exp) = 1;
+
     if (returnvalue != NULL_TREE)
       exp = compound_expr (exp, returnvalue);
 
@@ -2338,7 +2344,12 @@ public:
 		new_call = d_save_expr (new_call);
 		se->type = sd->type;
 		se->sym = new_call;
-		result = compound_expr (build_expr (se), new_call);
+
+		/* Setting `se->sym' would mean that the result of the
+		   constructed struct literal expression is `*(new_call)'.
+		   Strip off the indirect reference, as we don't mean to
+		   compute the value yet.  */
+		result = build_address (build_expr (se));
 	      }
 	    else
 	      result = new_call;
