@@ -1115,7 +1115,7 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
 	if (length == 0 || result OP 0) break;  */
   t = build_boolop (EQ_EXPR, length, d_convert (lentype, integer_zero_node));
   t = build_boolop (TRUTH_ORIF_EXPR, t, build_boolop (code, result,
-						      boolean_false_node));
+						      d_bool_false_node));
   t = build1 (EXIT_EXPR, void_type_node, t);
   add_stmt (t);
 
