@@ -1,3 +1,24 @@
+2023-10-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104649
+	* decl.cc (gfc_match_formal_arglist): Handle conflicting declarations
+	of a MODULE PROCEDURE when one of the declarations is an alternate
+	return.
+
+2023-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104625
+	* expr.cc (gfc_check_vardef_context): Check that the target
+	does have a vector index before emitting the specific error.
+	* match.cc (copy_ts_from_selector_to_associate): Ensure that
+	class valued operator expressions set the selector rank and
+	use the rank to provide the associate variable with an
+	appropriate array spec.
+	* resolve.cc (resolve_operator): Reduce stacked parentheses to
+	a single pair.
+	(fixup_array_ref): Extract selector symbol from parentheses.
+
 2023-10-26  Paul-Antoine Arras  <pa@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

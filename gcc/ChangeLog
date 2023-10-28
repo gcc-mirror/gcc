@@ -1,3 +1,125 @@
+2023-10-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112107
+	* ira-costs.cc: (calculate_equiv_gains): Use NONDEBUG_INSN_P
+	instead of INSN_P.
+
+2023-10-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/112088
+	* config/gcn/gcn.cc (gcn_expand_epilogue): Fix kernel epilogue register
+	conflict.
+
+2023-10-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md
+	(vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop): Mention "operands" in
+	condition to silence the warnings.
+	(vec_extract<V_2REG:mode><V_2REG_ALT:mode>_nop): Likewise.
+	* config/gcn/gcn.md (*movti_insn): Likewise.
+
+2023-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.cc (insn_propagation::apply_to_pattern_1): Handle shared
+	ASM_OPERANDS.
+
+2023-10-27  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv.cc (rocket_tune_info): Fix int_div cost.
+	(sifive_7_tune_info, thead_c906_tune_info): Likewise.
+
+2023-10-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (rawmemchr<ANYI:mode>): New expander.
+	* config/riscv/riscv-protos.h (gen_no_side_effects_vsetvl_rtx):
+	Define.
+	(expand_rawmemchr): Define.
+	* config/riscv/riscv-v.cc (force_vector_length_operand): Remove
+	static.
+	(expand_block_move): Move from here...
+	* config/riscv/riscv-string.cc (expand_block_move): ...to here.
+	(expand_rawmemchr): Add vectorized expander.
+	* internal-fn.cc (expand_RAWMEMCHR): Fix typo.
+
+2023-10-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: (get_equiv_regno, calculate_equiv_gains):
+	Process reg equivalence invariants.
+
+2023-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_MEMORY_READ_STALL):
+	i386: Fiy typo in "partial_memory_read_stall" tune option.
+
+2023-10-27  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_print_operand): Add
+	support for CONST_STRING.
+
+2023-10-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110551
+	* config/i386/i386.md (<u>mul<mode><dwi>3): Make operands 1 and
+	2 take "regiser_operand" and "nonimmediate_operand" respectively.
+	(<u>mulqihi3): Likewise.
+	(*bmi2_umul<mode><dwi>3_1): Operand 2 needs to be register_operand
+	matching the %d constraint.  Use umul_highpart RTX to represent
+	the highpart multiplication.
+	(*umul<mode><dwi>3_1):  Operand 2 should use regiser_operand
+	predicate, and "a" rather than "0" as operands 0 and 2 have
+	different modes.
+	(define_split): For mul to mulx conversion, use the new
+	umul_highpart RTX representation.
+	(*mul<mode><dwi>3_1):  Operand 1 should be register_operand
+	and the constraint %a as operands 0 and 1 have different modes.
+	(*<u>mulqihi3_1): Operand 1 should be register_operand matching
+	the constraint %0.
+	(define_peephole2): Providing widening multiplication variants
+	of the peephole2s that tweak highpart multiplication register
+	allocation.
+
+2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/87299
+	* toplev.cc (no_backend): New static global.
+	(finalize): Remove argument no_backend, which is now a
+	static global.
+	(process_options): Likewise.
+	(do_compile): Likewise.
+	(target_reinit): Don't do anything in preprocess-only mode.
+	(toplev::main): Adapt to no_backend change.
+	(toplev::finalize): Likewise.
+
+2023-10-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101590
+	PR tree-optimization/94884
+	* match.pd (`(X BIT_OP Y) CMP X`): New pattern.
+
+2023-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103861
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Handle
+	V2HF/V2BF/V4HF/V4BFmode.
+	* config/i386/i386.cc (ix86_get_mask_mode): Return QImode when
+	data_mode is V4HF/V2HFmode.
+	* config/i386/mmx.md (vec_cmpv4hfqi): New expander.
+	(vcond_mask_<mode>v4hi): Ditto.
+	(vcond_mask_<mode>qi): Ditto.
+	(vec_cmpv2hfqi): Ditto.
+	(vcond_mask_<mode>v2hi): Ditto.
+	(mmx_plendvb_<mode>): Add 2 combine splitters after the
+	patterns.
+	(mmx_pblendvb_v8qi): Ditto.
+	(<code>v2hi3): Add a combine splitter after the pattern.
+	(<code><mode>3): Ditto.
+	(<code>v8qi3): Ditto.
+	(<code><mode>3): Ditto.
+	* config/i386/sse.md (vcond<mode><mode>): Merge this with ..
+	(vcond<sseintvecmodelower><mode>): .. this into ..
+	(vcond<VI2HFBF_AVX512VL:mode><VHF_AVX512VL:mode>): .. this,
+	and extend to V8BF/V16BF/V32BFmode.
+
 2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-opts.h (TARGET_MAX_LMUL): New macro.

@@ -1,3 +1,29 @@
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* init.cc (build_new_1): Remove unnecessary call to convert
+	on 'nelts'.  Use build2 instead of fold_build2 for
+	'outer_nelts_checks'.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (maybe_warn_unparenthesized_assignment): Declare.
+	* semantics.cc (is_assignment_op_expr_p): Generalize to return
+	true for any assignment operator expression, not just one that
+	has been resolved to an operator overload.
+	(maybe_warn_unparenthesized_assignment): Factored out from ...
+	(maybe_convert_cond): ... here.
+	(finish_parenthesized_expr): Mention
+	maybe_warn_unparenthesized_assignment.
+	* typeck.cc (convert_for_assignment): Replace -Wparentheses
+	warning logic with maybe_warn_unparenthesized_assignment.
+
+2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/87299
+	* parser.cc (cp_lexer_new_main): Call c_reset_target_pragmas ()
+	after preprocessing is complete, before starting compilation.
+
 2023-10-26  liuhongt  <hongtao.liu@intel.com>
 
 	* typeck.cc (build_vec_cmp): Pass type of arg0 to

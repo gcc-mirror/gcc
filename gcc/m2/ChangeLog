@@ -1,3 +1,18 @@
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111530
+	* gm2-libs-ch/cgetopt.c (cgetopt_cgetopt_long): Re-format.
+	(cgetopt_cgetopt_long_only): Re-format.
+	(cgetopt_SetOption):  Re-format and assign flag to NULL
+	if name is also NULL.
+	* gm2-libs/GetOpt.def (AddLongOption): Add index parameter
+	and change flag to be a VAR parameter rather than a pointer.
+	(GetOptLong): Re-format.
+	(GetOpt): Correct comment.
+	* gm2-libs/GetOpt.mod: Re-write to rely on cgetopt rather
+	than implement long option creation in GetOpt.
+	* gm2-libs/cgetopt.def (SetOption): has_arg type is INTEGER.
+
 2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111955

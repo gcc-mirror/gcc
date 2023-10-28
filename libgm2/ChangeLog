@@ -1,3 +1,27 @@
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112110
+	* libm2iso/wrapclock.cc (timezone): Return 0 if unable
+	to get the timezone from the tm struct.
+
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111530
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_CHECK_HEADERS): Include getopt.h.
+	(GM2_CHECK_LIB): getopt_long check.
+	(GM2_CHECK_LIB): getopt_long_only check.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* libm2pim/cgetopt.cc: Re-write using conditional on configure
+	and long function code from libiberty/getopt.c.
+
 2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/111955

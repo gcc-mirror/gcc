@@ -1,3 +1,104 @@
+2023-10-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/stack_save_restore_2.c: Accept any number
+	after __riscv_save_ and __riscv_restore_.
+
+2023-10-27  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104649
+	* gfortran.dg/pr104649.f90: New test.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111929
+	* g++.dg/template/non-dependent28a.C: New test.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/template/new14.C: New test.
+
+2023-10-27  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/warn/Wparentheses-13.C: Strengthen by expecting that
+	we issue the -Wparentheses warnings ahead of time.
+	* g++.dg/warn/Wparentheses-23.C: Likewise.
+	* g++.dg/warn/Wparentheses-32.C: Remove xfails.
+
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111530
+	* gm2/pimlib/run/pass/testgetopt.mod: New test.
+
+2023-10-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/tree-prof/peel-2.c: Add
+	-fno-tree-loop-distribute-patterns.
+	* gcc.dg/tree-ssa/ldist-rawmemchr-1.c: Add riscv.
+	* gcc.dg/tree-ssa/ldist-rawmemchr-2.c: Ditto.
+	* gcc.target/riscv/rvv/rvv.exp: Add builtin directory.
+	* gcc.target/riscv/rvv/autovec/builtin/rawmemchr-1.c: New test.
+
+2023-10-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-1.c: Remove
+	Float16.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-2.c: Ditto.
+	* lib/target-supports.exp: Add zvfh handling.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-zvfh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-zvfh-2.c: New test.
+
+2023-10-27  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gfortran.dg/c_ptr_tests_20.f90: Moved to...
+	* gfortran.dg/gomp/c_ptr_tests_20.f90: ...here.
+	* gfortran.dg/c_ptr_tests_21.f90: Moved to...
+	* gfortran.dg/gomp/c_ptr_tests_21.f90: ...here.
+
+2023-10-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110551
+	* gcc.target/i386/pr110551.c: New test case.
+
+2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/87299
+	* c-c++-common/pragma-target-1.c: New test.
+	* c-c++-common/pragma-target-2.c: New test.
+	* g++.target/i386/pr87299-1.C: New test.
+	* g++.target/i386/pr87299-2.C: New test.
+	* gcc.target/i386/pr87299-1.c: New test.
+	* gcc.target/i386/pr87299-2.c: New test.
+	* gcc.target/s390/target-attribute/tattr-2b.c: New test.
+	* gcc.target/aarch64/pragma_cpp_predefs_1b.c: New test.
+	* gcc.target/arm/pragma_arch_attribute_1b.c: New test.
+	* gcc.target/nios2/custom-fp-2b.c: New test.
+	* gcc.target/powerpc/float128-3b.c: New test.
+
+2023-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104625
+	* gfortran.dg/pr104625.f90: New test.
+	* gfortran.dg/associate_55.f90: Change error check.
+
+2023-10-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101590
+	PR tree-optimization/94884
+	* gcc.dg/tree-ssa/bitcmp-1.c: New test.
+	* gcc.dg/tree-ssa/bitcmp-2.c: New test.
+	* gcc.dg/tree-ssa/bitcmp-3.c: New test.
+	* gcc.dg/tree-ssa/bitcmp-4.c: New test.
+	* gcc.dg/tree-ssa/bitcmp-5.c: New test.
+	* gcc.dg/tree-ssa/bitcmp-6.c: New test.
+
+2023-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/part-vect-vcondhf.C: New test.
+	* gcc.target/i386/part-vect-vec_cmphf.c: New test.
+
 2023-10-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/111318

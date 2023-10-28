@@ -1,3 +1,12 @@
+2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/87299
+	* c-pragma.cc (init_pragma): Register `#pragma GCC target' and
+	related pragmas in preprocess-only mode, and enable early handling.
+	(c_reset_target_pragmas): New function refactoring code from...
+	(handle_pragma_reset_options): ...here.
+	* c-pragma.h (c_reset_target_pragmas): Declare.
+
 2023-10-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-attribs.cc (c_common_attribute_table): Add
