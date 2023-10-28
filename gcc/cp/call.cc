@@ -10247,15 +10247,16 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
 
-  if (! flag_elide_constructors && !force_elide)
+  if (!force_elide
+      && (!flag_elide_constructors
+	  /* It's unsafe to elide the operation when handling
+	     a noexcept-expression, it may evaluate to the wrong
+	     value (c++/53025, c++/96090).  */
+	  || cp_noexcept_operand != 0))
     /* Do things the hard way.  */;
-  else if (cand->num_convs == 1 
-           && (DECL_COPY_CONSTRUCTOR_P (fn) 
-               || DECL_MOVE_CONSTRUCTOR_P (fn))
-	   /* It's unsafe to elide the constructor when handling
-	      a noexcept-expression, it may evaluate to the wrong
-	      value (c++/53025).  */
-	   && (force_elide || cp_noexcept_operand == 0))
+  else if (cand->num_convs == 1
+	   && (DECL_COPY_CONSTRUCTOR_P (fn)
+	       || DECL_MOVE_CONSTRUCTOR_P (fn)))
     {
       tree targ;
       tree arg = argarray[num_artificial_parms_for (fn)];
