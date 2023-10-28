@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mapxf -mforce-drap" } */
+/* { dg-skip-if "does not emit .cfi_xxx" "*-*-darwin*" } */
 
 #include "apx-push2pop2-1.c"
 
