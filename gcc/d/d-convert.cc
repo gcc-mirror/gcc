@@ -132,13 +132,13 @@ d_truthvalue_conversion (tree expr)
       return expr;
 
     case INTEGER_CST:
-      return integer_zerop (expr) ? boolean_false_node
-				  : boolean_true_node;
+      return integer_zerop (expr) ? d_bool_false_node
+				  : d_bool_true_node;
 
     case REAL_CST:
       return real_compare (NE_EXPR, &TREE_REAL_CST (expr), &dconst0)
-	     ? boolean_true_node
-	     : boolean_false_node;
+	     ? d_bool_true_node
+	     : d_bool_false_node;
 
     case ADDR_EXPR:
       /* If we are taking the address of a decl that can never be null,
@@ -148,7 +148,7 @@ d_truthvalue_conversion (tree expr)
 	  warning (OPT_Waddress,
 		   "the address of %qD will always evaluate as %<true%>",
 		   TREE_OPERAND (expr, 0));
-	  return boolean_true_node;
+	  return d_bool_true_node;
 	}
       break;
 
