@@ -490,7 +490,7 @@ void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lfloor (rtx, rtx, machine_mode, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
-			  bool, void (*)(rtx *, rtx));
+			  bool, void (*)(rtx *, rtx), enum avl_type);
 rtx gen_scalar_move_mask (machine_mode);
 rtx gen_no_side_effects_vsetvl_rtx (machine_mode, rtx, rtx);
 

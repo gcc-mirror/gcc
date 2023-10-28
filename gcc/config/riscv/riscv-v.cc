@@ -1641,7 +1641,7 @@ has_vi_variant_p (rtx_code code, rtx x)
 bool
 sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
 		     machine_mode vector_mode, bool has_vi_variant_p,
-		     void (*emit_vector_func) (rtx *, rtx))
+		     void (*emit_vector_func) (rtx *, rtx), enum avl_type type)
 {
   machine_mode scalar_mode = GET_MODE_INNER (vector_mode);
   if (has_vi_variant_p)
@@ -1671,7 +1671,11 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
 
   rtx tmp = gen_reg_rtx (vector_mode);
   rtx ops[] = {tmp, *scalar_op};
-  emit_nonvlmax_insn (code_for_pred_broadcast (vector_mode), UNARY_OP, ops, vl);
+  if (type == VLMAX)
+    emit_vlmax_insn (code_for_pred_broadcast (vector_mode), UNARY_OP, ops);
+  else
+    emit_nonvlmax_insn (code_for_pred_broadcast (vector_mode), UNARY_OP, ops,
+			vl);
   emit_vector_func (operands, tmp);
 
   return true;
