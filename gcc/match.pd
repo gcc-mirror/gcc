@@ -4159,6 +4159,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (eq @0 integer_zerop) @1 (op@2 @1 @0))
    @2))
 
+/* a == 1 ? b : b / a  -> b / a */
+(for op (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (cond (eq @0 integer_onep) @1 (op@2 @1 @0))
+   @2))
+
+/* a == 1 ? b : a * b -> a * b */
+(for op (mult)
+ (simplify
+  (cond (eq @0 integer_onep) @1 (op:c@2 @1 @0))
+   @2))
+
+/* a == -1 ? b : a & b -> a & b */
+(for op (bit_and)
+ (simplify
+  (cond (eq @0 integer_all_onesp) @1 (op:c@2 @1 @0))
+   @2))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
