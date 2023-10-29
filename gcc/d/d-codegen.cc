@@ -2245,14 +2245,16 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       for (size_t i = 0; i < arguments->length; ++i)
 	{
 	  Expression *arg = (*arguments)[i];
-	  tree targ = build_expr (arg);
+	  tree targ;
 
 	  if (i - varargs < nparams && i >= varargs)
 	    {
 	      /* Actual arguments for declared formal arguments.  */
 	      Parameter *parg = tf->parameterList[i - varargs];
-	      targ = convert_for_argument (targ, parg);
+	      targ = convert_for_argument (arg, parg);
 	    }
+	  else
+	    targ = build_expr (arg);
 
 	  /* Don't pass empty aggregates by value.  */
 	  if (empty_aggregate_p (TREE_TYPE (targ)) && !TREE_ADDRESSABLE (targ)
