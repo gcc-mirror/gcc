@@ -6,6 +6,38 @@
 
 #include <arm_acle.h>
 
+#pragma GCC push_options
+#pragma GCC target ("arch=armv9.4-a+d128")
+
+#ifndef __ARM_FEATURE_SYSREG128
+#error "__ARM_FEATURE_SYSREG128 feature macro not defined."
+#endif
+
+/*
+** get_rsr128:
+**	mrrs	x0, x1, s3_0_c7_c4_0
+** ...
+*/
+__uint128_t
+get_rsr128 ()
+{
+  __arm_rsr128 ("par_el1");
+}
+
+/*
+** set_wsr128:
+** ...
+** 	msrr	s3_0_c7_c4_0, x0, x1
+** ...
+*/
+void
+set_wsr128 (__uint128_t c)
+{
+  __arm_wsr128 ("par_el1", c);
+}
+
+#pragma GCC pop_options
+
 /*
 ** get_rsr:
 ** ...
