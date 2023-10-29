@@ -1,3 +1,31 @@
+2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/112270
+	* d-builtins.cc (d_build_d_type_nodes): Initialize d_bool_false_node,
+	d_bool_true_node.
+	* d-codegen.cc (build_array_struct_comparison): Use d_bool_false_node
+	instead of boolean_false_node.
+	* d-convert.cc (d_truthvalue_conversion): Use d_bool_false_node and
+	d_bool_true_node instead of boolean_false_node and boolean_true_node.
+	* d-tree.h (enum d_tree_index): Add DTI_BOOL_FALSE and DTI_BOOL_TRUE.
+	(d_bool_false_node): New macro.
+	(d_bool_true_node): New macro.
+	* modules.cc (build_dso_cdtor_fn): Use d_bool_false_node and
+	d_bool_true_node instead of boolean_false_node and boolean_true_node.
+	(register_moduleinfo): Use d_bool_type instead of boolean_type_node.
+
+2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (call_side_effect_free_p): New function.
+	* d-tree.h (CALL_EXPR_WARN_IF_UNUSED): New macro.
+	(call_side_effect_free_p): New prototype.
+	* expr.cc (ExprVisitor::visit (CallExp *)): Set
+	CALL_EXPR_WARN_IF_UNUSED on matched call expressions.
+	(ExprVisitor::visit (NewExp *)): Don't dereference the result of an
+	allocation call here.
+	* toir.cc (add_stmt): Emit warning when call expression added to
+	statement list without being used.
+
 2023-10-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd f4be7f6f7b.

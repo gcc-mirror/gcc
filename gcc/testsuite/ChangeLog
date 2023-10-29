@@ -1,3 +1,12 @@
+2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/112270
+	* gdc.dg/pr112270.d: New test.
+
+2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wunused_value.d: New test.
+
 2023-10-27  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* gcc.target/riscv/stack_save_restore_2.c: Accept any number
