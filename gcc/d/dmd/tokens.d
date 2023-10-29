@@ -900,7 +900,7 @@ extern (C++) struct Token
 
 nothrow:
 
-    int isKeyword() pure const @safe @nogc
+    extern (D) int isKeyword() pure const @safe @nogc
     {
         foreach (kw; keywords)
         {

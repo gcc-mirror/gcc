@@ -13,6 +13,7 @@
 module rt.lifetime;
 
 import core.attribute : weak;
+import core.internal.array.utils : __arrayStart, __arrayClearPad;
 import core.memory;
 debug(PRINTF) import core.stdc.stdio;
 static import rt.tlsgc;
@@ -226,7 +227,6 @@ size_t structTypeInfoSize(const TypeInfo ti) pure nothrow @nogc
 private class ArrayAllocLengthLock
 {}
 
-
 /**
   Set the allocated length of the array block.  This is called
   any time an array is appended to or its length is set.
@@ -387,14 +387,6 @@ private size_t __arrayAllocLength(ref BlkInfo info, const TypeInfo tinext) pure 
 }
 
 /**
-  get the start of the array for the given block
-  */
-private void *__arrayStart(return scope BlkInfo info) nothrow pure
-{
-    return info.base + ((info.size & BIGLENGTHMASK) ? LARGEPREFIX : 0);
-}
-
-/**
   get the padding required to allocate size bytes.  Note that the padding is
   NOT included in the passed in size.  Therefore, do NOT call this function
   with the size of an allocated block.
@@ -402,22 +394,6 @@ private void *__arrayStart(return scope BlkInfo info) nothrow pure
 private size_t __arrayPad(size_t size, const TypeInfo tinext) nothrow pure @trusted
 {
     return size > MAXMEDSIZE ? LARGEPAD : ((size > MAXSMALLSIZE ? MEDPAD : SMALLPAD) + structTypeInfoSize(tinext));
-}
-
-/**
-  clear padding that might not be zeroed by the GC (it assumes it is within the
-  requested size from the start, but it is actually at the end of the allocated block)
-  */
-private void __arrayClearPad(ref BlkInfo info, size_t arrsize, size_t padsize) nothrow pure
-{
-    import core.stdc.string;
-    if (padsize > MEDPAD && !(info.attr & BlkAttr.NO_SCAN) && info.base)
-    {
-        if (info.size < PAGESIZE)
-            memset(info.base + arrsize, 0, padsize);
-        else
-            memset(info.base, 0, LARGEPREFIX);
-    }
 }
 
 /**

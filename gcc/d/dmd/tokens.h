@@ -469,10 +469,7 @@ struct Token
         Identifier *ident;
     };
 
-    void free();
-
     Token() : next(NULL) {}
-    int isKeyword();
     const char *toChars() const;
 
     static const char *toChars(TOK value);

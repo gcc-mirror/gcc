@@ -123,7 +123,6 @@ public:
     Expressions *alignExps;
     structalign_t salign;
 
-    AlignDeclaration(const Loc &loc, Expression *ealign, Dsymbols *decl);
     AlignDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }

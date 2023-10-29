@@ -187,7 +187,7 @@ else version (FreeBSD)
     alias c_long    ssize_t;
     alias c_long    time_t;
     alias uint      uid_t;
-    alias uint      fflags_t;
+    alias uint      fflags_t; // non-standard
 }
 else version (NetBSD)
 {
@@ -866,7 +866,7 @@ else version (Darwin)
 }
 else version (FreeBSD)
 {
-    alias int lwpid_t;
+    alias int lwpid_t; // non-standard
 
     alias void* pthread_attr_t;
     alias void* pthread_cond_t;

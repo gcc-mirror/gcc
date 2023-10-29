@@ -3684,7 +3684,7 @@ void fix16997(Scope* sc, UnaExp ue)
  * This is to enable comparing things like an immutable
  * array with a mutable one.
  */
-extern (C++) bool arrayTypeCompatibleWithoutCasting(Type t1, Type t2)
+extern (D) bool arrayTypeCompatibleWithoutCasting(Type t1, Type t2)
 {
     t1 = t1.toBasetype();
     t2 = t2.toBasetype();

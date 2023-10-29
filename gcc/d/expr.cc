@@ -2368,22 +2368,10 @@ public:
 
 	if (e->arguments->length == 1)
 	  {
-	    /* Single dimension array allocations.  */
-	    Expression *arg = (*e->arguments)[0];
-
-	    if (tarray->next->size () == 0)
-	      {
-		/* Array element size is unknown.  */
-		this->result_ = d_array_value (build_ctype (e->type),
-					       size_int (0), null_pointer_node);
-		return;
-	      }
-
-	    libcall_fn libcall = tarray->next->isZeroInit ()
-	      ? LIBCALL_NEWARRAYT : LIBCALL_NEWARRAYIT;
-	    result = build_libcall (libcall, tb, 2,
-				    build_typeinfo (e, e->type),
-				    build_expr (arg));
+	    /* Single dimension array allocations has already been handled by
+	       the front-end.  */
+	    gcc_assert (e->lowering);
+	    result = build_expr (e->lowering);
 	  }
 	else
 	  {

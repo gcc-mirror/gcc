@@ -2975,6 +2975,9 @@ public:
         }
     }
 
+    private alias fp_t = extern (D) UnionExp function(const ref Loc loc, Type, Expression, Expression);
+    private alias fp2_t = extern (D) bool function(const ref Loc loc, EXP, Expression, Expression);
+
     extern (D) private void interpretCommon(BinExp e, fp_t fp)
     {
         debug (LOG)

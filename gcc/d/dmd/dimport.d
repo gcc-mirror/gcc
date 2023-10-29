@@ -128,7 +128,7 @@ extern (C++) final class Import : Dsymbol
      * Returns:
      *  true for errors, false for success
      */
-    bool load(Scope* sc)
+    extern (D) bool load(Scope* sc)
     {
         //printf("Import::load('%s') %p\n", toPrettyChars(), this);
         // See if existing module

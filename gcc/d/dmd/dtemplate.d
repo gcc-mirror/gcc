@@ -1241,7 +1241,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
      *      match   this is at least as specialized as td2
      *      0       td2 is more specialized than this
      */
-    MATCH leastAsSpecialized(Scope* sc, TemplateDeclaration td2, ArgumentList argumentList)
+    extern (D) MATCH leastAsSpecialized(Scope* sc, TemplateDeclaration td2, ArgumentList argumentList)
     {
         enum LOG_LEASTAS = 0;
         static if (LOG_LEASTAS)
@@ -2258,7 +2258,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     /**************************************************
      * Declare template parameter tp with value o, and install it in the scope sc.
      */
-    RootObject declareParameter(Scope* sc, TemplateParameter tp, RootObject o)
+    extern (D) RootObject declareParameter(Scope* sc, TemplateParameter tp, RootObject o)
     {
         //printf("TemplateDeclaration.declareParameter('%s', o = %p)\n", tp.ident.toChars(), o);
         Type ta = isType(o);
@@ -2508,7 +2508,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
      * Returns:
      *   The last template parameter if it's a `TemplateTupleParameter`
      */
-    TemplateTupleParameter isVariadic()
+    extern (D) TemplateTupleParameter isVariadic()
     {
         size_t dim = parameters.length;
         if (dim == 0)
@@ -6203,7 +6203,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         return false;
     }
 
-    final size_t toHash()
+    extern (D) final size_t toHash()
     {
         if (!hash)
         {

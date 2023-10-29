@@ -1393,7 +1393,7 @@ extern (C++) abstract class Type : ASTNode
      * For our new type 'this', which is type-constructed from t,
      * fill in the cto, ito, sto, scto, wto shortcuts.
      */
-    final void fixTo(Type t)
+    extern (D) final void fixTo(Type t)
     {
         // If fixing this: immutable(T*) by t: immutable(T)*,
         // cache t to this.xto won't break transitivity.
@@ -1528,7 +1528,7 @@ extern (C++) abstract class Type : ASTNode
     /***************************
      * Look for bugs in constructing types.
      */
-    final void check()
+    extern (D) final void check()
     {
         if (mcache)
         with (mcache)
@@ -1722,7 +1722,7 @@ extern (C++) abstract class Type : ASTNode
      * Apply STCxxxx bits to existing type.
      * Use *before* semantic analysis is run.
      */
-    final Type addSTC(StorageClass stc)
+    extern (D) final Type addSTC(StorageClass stc)
     {
         Type t = this;
         if (t.isImmutable())
@@ -2555,7 +2555,7 @@ extern (C++) abstract class Type : ASTNode
      * Return the mask that an integral type will
      * fit into.
      */
-    final uinteger_t sizemask()
+    extern (D) final uinteger_t sizemask()
     {
         uinteger_t m;
         switch (toBasetype().ty)
@@ -5227,7 +5227,7 @@ extern (C++) abstract class TypeQualified : Type
     // us a `TypeQualified`
     abstract override TypeQualified syntaxCopy();
 
-    final void syntaxCopyHelper(TypeQualified t)
+    extern (D) final void syntaxCopyHelper(TypeQualified t)
     {
         //printf("TypeQualified::syntaxCopyHelper(%s) %s\n", t.toChars(), toChars());
         idents.setDim(t.idents.length);
@@ -5265,17 +5265,17 @@ extern (C++) abstract class TypeQualified : Type
         }
     }
 
-    final void addIdent(Identifier ident)
+    extern (D) final void addIdent(Identifier ident)
     {
         idents.push(ident);
     }
 
-    final void addInst(TemplateInstance inst)
+    extern (D) final void addInst(TemplateInstance inst)
     {
         idents.push(inst);
     }
 
-    final void addIndex(RootObject e)
+    extern (D) final void addIndex(RootObject e)
     {
         idents.push(e);
     }

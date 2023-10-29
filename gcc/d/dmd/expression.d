@@ -331,7 +331,7 @@ TemplateDeclaration getFuncTemplateDecl(Dsymbol s) @safe
  * to serve essentially as a Variant that will sit on the stack
  * during CTFE to reduce memory consumption.
  */
-extern (C++) struct UnionExp
+extern (D) struct UnionExp
 {
     // yes, default constructor does nothing
     extern (D) this(Expression e)
@@ -341,14 +341,14 @@ extern (C++) struct UnionExp
 
     /* Extract pointer to Expression
      */
-    extern (C++) Expression exp() return
+    extern (D) Expression exp() return
     {
         return cast(Expression)&u;
     }
 
     /* Convert to an allocated Expression
      */
-    extern (C++) Expression copy()
+    extern (D) Expression copy()
     {
         Expression e = exp();
         //if (e.size > sizeof(u)) printf("%s\n", EXPtoString(e.op).ptr);
@@ -526,7 +526,7 @@ extern (C++) abstract class Expression : ASTNode
     /*********************************
      * Does *not* do a deep copy.
      */
-    final Expression copy()
+    extern (D) final Expression copy()
     {
         Expression e;
         if (!size)
@@ -745,7 +745,7 @@ extern (C++) abstract class Expression : ASTNode
         return toLvalue(sc, e);
     }
 
-    final Expression implicitCastTo(Scope* sc, Type t)
+    extern (D) final Expression implicitCastTo(Scope* sc, Type t)
     {
         return .implicitCastTo(this, sc, t);
     }
@@ -755,7 +755,7 @@ extern (C++) abstract class Expression : ASTNode
         return .implicitConvTo(this, t);
     }
 
-    final Expression castTo(Scope* sc, Type t)
+    extern (D) final Expression castTo(Scope* sc, Type t)
     {
         return .castTo(this, sc, t);
     }
@@ -861,7 +861,7 @@ extern (C++) abstract class Expression : ASTNode
         return checkValue();
     }
 
-    final bool checkDeprecated(Scope* sc, Dsymbol s)
+    extern (D) final bool checkDeprecated(Scope* sc, Dsymbol s)
     {
         return s.checkDeprecated(loc, sc);
     }
@@ -1205,10 +1205,11 @@ extern (C++) abstract class Expression : ASTNode
             return false;
         if (sc.flags & (SCOPE.ctfe | SCOPE.debug_))
             return false;
-        /* The original expression (`new S(...)`) will be verified instead. This
-         * is to keep errors related to the original code and not the lowering.
+        /* The original expressions (`new S(...)` or `new S[...]``) will be
+         * verified instead. This is to keep errors related to the original code
+         * and not the lowering.
          */
-        if (f.ident == Id._d_newitemT)
+        if (f.ident == Id._d_newitemT || f.ident == Id._d_newarrayT)
             return false;
 
         if (!f.isNogc())
@@ -1568,12 +1569,6 @@ extern (C++) final class IntegerExp : Expression
         return new IntegerExp(loc, value, type);
     }
 
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, dinteger_t value, Type type)
-    {
-        emplaceExp!(IntegerExp)(pue, loc, value, type);
-    }
-
     override bool equals(const RootObject o) const
     {
         if (this == o)
@@ -1641,7 +1636,7 @@ extern (C++) final class IntegerExp : Expression
         return value;
     }
 
-    void setInteger(dinteger_t value)
+    extern (D) void setInteger(dinteger_t value)
     {
         this.value = normalize(type.toBasetype().ty, value);
     }
@@ -1838,12 +1833,6 @@ extern (C++) final class RealExp : Expression
         return new RealExp(loc, value, type);
     }
 
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, real_t value, Type type)
-    {
-        emplaceExp!(RealExp)(pue, loc, value, type);
-    }
-
     /********************************
      * Test to see if two reals are the same.
      * Regard NaN's as equivalent.
@@ -1934,12 +1923,6 @@ extern (C++) final class ComplexExp : Expression
     static ComplexExp create(const ref Loc loc, complex_t value, Type type) @safe
     {
         return new ComplexExp(loc, value, type);
-    }
-
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, complex_t value, Type type)
-    {
-        emplaceExp!(ComplexExp)(pue, loc, value, type);
     }
 
     override bool equals(const RootObject o) const
@@ -2277,22 +2260,6 @@ extern (C++) final class StringExp : Expression
         return new StringExp(loc, string[0 .. len]);
     }
 
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, const(char)* s)
-    {
-        emplaceExp!(StringExp)(pue, loc, s.toDString());
-    }
-
-    extern (D) static void emplace(UnionExp* pue, const ref Loc loc, const(void)[] string)
-    {
-        emplaceExp!(StringExp)(pue, loc, string);
-    }
-
-    extern (D) static void emplace(UnionExp* pue, const ref Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix)
-    {
-        emplaceExp!(StringExp)(pue, loc, string, len, sz, postfix);
-    }
-
     override bool equals(const RootObject o) const
     {
         //printf("StringExp::equals('%s') %s\n", o.toChars(), toChars());
@@ -2428,7 +2395,7 @@ extern (C++) final class StringExp : Expression
      *  i = index
      *  c = code unit to set it to
      */
-    void setCodeUnit(size_t i, dchar c)
+    extern (D) void setCodeUnit(size_t i, dchar c)
     {
         assert(i < len);
         final switch (sz)
@@ -2778,12 +2745,6 @@ extern (C++) final class ArrayLiteralExp : Expression
         return new ArrayLiteralExp(loc, null, elements);
     }
 
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, Expressions* elements)
-    {
-        emplaceExp!(ArrayLiteralExp)(pue, loc, null, elements);
-    }
-
     override ArrayLiteralExp syntaxCopy()
     {
         return new ArrayLiteralExp(loc,
@@ -2822,12 +2783,12 @@ extern (C++) final class ArrayLiteralExp : Expression
         return false;
     }
 
-    Expression getElement(size_t i)
+    Expression getElement(size_t i) // use opIndex instead
     {
         return this[i];
     }
 
-    Expression opIndex(size_t i)
+    extern (D) Expression opIndex(size_t i)
     {
         auto el = (*elements)[i];
         return el ? el : basis;
@@ -3063,7 +3024,7 @@ extern (C++) final class StructLiteralExp : Expression
      * Gets expression at offset of type.
      * Returns NULL if not found.
      */
-    Expression getField(Type type, uint offset)
+    extern (D) Expression getField(Type type, uint offset)
     {
         //printf("StructLiteralExp::getField(this = %s, type = %s, offset = %u)\n",
         //  /*toChars()*/"", type.toChars(), offset);
@@ -3113,7 +3074,7 @@ extern (C++) final class StructLiteralExp : Expression
      * Get index of field.
      * Returns -1 if not found.
      */
-    int getFieldIndex(Type type, uint offset)
+    extern (D) int getFieldIndex(Type type, uint offset)
     {
         /* Find which field offset is by looking at the field offsets
          */
@@ -4072,7 +4033,7 @@ extern (C++) abstract class UnaExp : Expression
      * Returns:
      *  ErrorExp
      */
-    final Expression incompatibleTypes()
+    extern (D) final Expression incompatibleTypes()
     {
         if (e1.type.toBasetype() == Type.terror)
             return e1;
@@ -4112,9 +4073,6 @@ extern (C++) abstract class UnaExp : Expression
     }
 }
 
-alias fp_t = UnionExp function(const ref Loc loc, Type, Expression, Expression);
-alias fp2_t = bool function(const ref Loc loc, EXP, Expression, Expression);
-
 /***********************************************************
  * Base class for binary operators
  */
@@ -4147,7 +4105,7 @@ extern (C++) abstract class BinExp : Expression
      * Returns:
      *  ErrorExp
      */
-    final Expression incompatibleTypes()
+    extern (D) final Expression incompatibleTypes()
     {
         if (e1.type.toBasetype() == Type.terror)
             return e1;
@@ -4357,7 +4315,7 @@ extern (C++) abstract class BinExp : Expression
 
     }
 
-    final Expression reorderSettingAAElem(Scope* sc)
+    extern (D) final Expression reorderSettingAAElem(Scope* sc)
     {
         BinExp be = this;
 
@@ -4729,7 +4687,7 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
         return new DotTemplateInstanceExp(loc, e1.syntaxCopy(), ti.name, TemplateInstance.arraySyntaxCopy(ti.tiargs));
     }
 
-    bool findTempDecl(Scope* sc)
+    extern (D) bool findTempDecl(Scope* sc)
     {
         static if (LOGSEMANTIC)
         {
@@ -5321,12 +5279,6 @@ extern (C++) final class VectorExp : UnaExp
     static VectorExp create(const ref Loc loc, Expression e, Type t) @safe
     {
         return new VectorExp(loc, e, t);
-    }
-
-    // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, const ref Loc loc, Expression e, Type type)
-    {
-        emplaceExp!(VectorExp)(pue, loc, e, type);
     }
 
     override VectorExp syntaxCopy()

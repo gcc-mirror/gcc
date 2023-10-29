@@ -4406,6 +4406,58 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 (*exp.arguments)[i] = arg;
                 tb = tb.isTypeDArray().next.toBasetype();
             }
+
+            if (nargs == 1)
+            {
+                if (global.params.betterC || !sc.needsCodegen())
+                    goto LskipNewArrayLowering;
+
+                /* Class types may inherit base classes that have errors.
+                 * This may leak errors from the base class to the derived one
+                 * and then to the hook. Semantic analysis is performed eagerly
+                 * to a void this.
+                 */
+                if (auto tc = exp.type.nextOf.isTypeClass())
+                {
+                    tc.sym.dsymbolSemantic(sc);
+                    if (tc.sym.errors)
+                        goto LskipNewArrayLowering;
+                }
+
+                auto hook = global.params.tracegc ? Id._d_newarrayTTrace : Id._d_newarrayT;
+                if (!verifyHookExist(exp.loc, *sc, hook, "new array"))
+                    goto LskipNewArrayLowering;
+
+                /* Lower the memory allocation and initialization of `new T[n]`
+                 * to `_d_newarrayT!T(n)`.
+                 */
+                Expression lowering = new IdentifierExp(exp.loc, Id.empty);
+                lowering = new DotIdExp(exp.loc, lowering, Id.object);
+                auto tiargs = new Objects();
+                /* Remove `inout`, `const`, `immutable` and `shared` to reduce
+                 * the number of generated `_d_newarrayT` instances.
+                 */
+                const isShared = exp.type.nextOf.isShared();
+                auto t = exp.type.nextOf.unqualify(MODFlags.wild | MODFlags.const_ |
+                    MODFlags.immutable_ | MODFlags.shared_);
+                tiargs.push(t);
+                lowering = new DotTemplateInstanceExp(exp.loc, lowering, hook, tiargs);
+
+                auto arguments = new Expressions();
+                if (global.params.tracegc)
+                {
+                    auto funcname = (sc.callsc && sc.callsc.func) ?
+                        sc.callsc.func.toPrettyChars() : sc.func.toPrettyChars();
+                    arguments.push(new StringExp(exp.loc, exp.loc.filename.toDString()));
+                    arguments.push(new IntegerExp(exp.loc, exp.loc.linnum, Type.tint32));
+                    arguments.push(new StringExp(exp.loc, funcname.toDString()));
+                }
+                arguments.push((*exp.arguments)[0]);
+                arguments.push(new IntegerExp(exp.loc, isShared, Type.tbool));
+
+                lowering = new CallExp(exp.loc, lowering, arguments);
+                exp.lowering = lowering.expressionSemantic(sc);
+            }
         }
         else if (tb.isscalar())
         {
@@ -4447,6 +4499,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
         }
 
+    LskipNewArrayLowering:
         //printf("NewExp: '%s'\n", toChars());
         //printf("NewExp:type '%s'\n", type.toChars());
         semanticTypeInfo(sc, exp.type);

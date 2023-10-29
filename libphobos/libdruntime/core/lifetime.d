@@ -2731,7 +2731,8 @@ if (is(T == class))
 {
     import core.internal.traits : hasIndirections;
     import core.exception : onOutOfMemoryError;
-    import core.memory : GC, pureMalloc;
+    import core.memory : pureMalloc;
+    import core.memory : GC;
 
     alias BlkAttr = GC.BlkAttr;
 
@@ -2820,11 +2821,11 @@ T _d_newclassTTrace(T)(string file, int line, string funcname) @trusted
 T* _d_newitemT(T)() @trusted
 {
     import core.internal.lifetime : emplaceInitializer;
-    import core.internal.traits : hasElaborateDestructor, hasIndirections;
+    import core.internal.traits : hasIndirections;
     import core.memory : GC;
 
     auto flags = !hasIndirections!T ? GC.BlkAttr.NO_SCAN : GC.BlkAttr.NONE;
-    immutable tiSize = hasElaborateDestructor!T ? size_t.sizeof : 0;
+    immutable tiSize = TypeInfoSize!T;
     immutable itemSize = T.sizeof;
     immutable totalSize = itemSize + tiSize;
     if (tiSize)
@@ -3003,4 +3004,10 @@ version (D_ProfileGC)
         else
             assert(0, "Cannot create new `struct` if compiling without support for runtime type information!");
     }
+}
+
+template TypeInfoSize(T)
+{
+    import core.internal.traits : hasElaborateDestructor;
+    enum TypeInfoSize = hasElaborateDestructor!T ? size_t.sizeof : 0;
 }

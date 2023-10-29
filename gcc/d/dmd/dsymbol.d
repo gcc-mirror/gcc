@@ -141,12 +141,13 @@ struct Visibility
     Kind kind;
     Package pkg;
 
-    extern (D):
-
-    this(Visibility.Kind kind) pure nothrow @nogc @safe
+    extern(C++) this(Visibility.Kind kind, Package pkg = null) pure nothrow @nogc @safe
     {
         this.kind = kind;
+        this.pkg  = pkg;
     }
+
+    extern (D):
 
     /**
      * Checks if `this` is less or more visible than `other`

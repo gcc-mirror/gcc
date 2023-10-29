@@ -133,7 +133,7 @@ extern (C++) final class StaticForeach : RootObject
         this.rangefe = rangefe;
     }
 
-    StaticForeach syntaxCopy()
+    extern (D) StaticForeach syntaxCopy()
     {
         return new StaticForeach(
             loc,

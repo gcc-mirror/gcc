@@ -540,13 +540,9 @@ private void putChar(R, E)(ref R r, E e)
 if (isSomeChar!E)
 {
     // https://issues.dlang.org/show_bug.cgi?id=9186: Can't use (E[]).init
-    ref const( char)[] cstringInit();
-    ref const(wchar)[] wstringInit();
-    ref const(dchar)[] dstringInit();
-
-    enum csCond = is(typeof(doPut(r, cstringInit())));
-    enum wsCond = is(typeof(doPut(r, wstringInit())));
-    enum dsCond = is(typeof(doPut(r, dstringInit())));
+    enum csCond = is(typeof(doPut(r, (){ ref const( char)[] cstringInit(); return cstringInit(); }())));
+    enum wsCond = is(typeof(doPut(r, (){ ref const(wchar)[] wstringInit(); return wstringInit(); }())));
+    enum dsCond = is(typeof(doPut(r, (){ ref const(dchar)[] dstringInit(); return dstringInit(); }())));
 
     //Use "max" to avoid static type demotion
     enum ccCond = is(typeof(doPut(r,  char.max)));

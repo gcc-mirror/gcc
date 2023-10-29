@@ -367,7 +367,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         baseok = Baseok.none;
     }
 
-    final void classError(const(char)* fmt, const(char)* arg)
+    extern (D) private void classError(const(char)* fmt, const(char)* arg)
     {
         .error(loc, fmt, kind, toPrettyChars, arg);
     }
@@ -423,7 +423,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Determine if 'this' is a base class of cd.
      * This is used to detect circular inheritance only.
      */
-    final bool isBaseOf2(ClassDeclaration cd) pure nothrow @nogc
+    extern (D) final bool isBaseOf2(ClassDeclaration cd) pure nothrow @nogc
     {
         if (!cd)
             return false;
@@ -538,7 +538,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Returns:
      *  ClassDeclaration if found, null if not
      */
-    final ClassDeclaration searchBase(Identifier ident)
+    extern (D) final ClassDeclaration searchBase(Identifier ident)
     {
         foreach (b; *baseclasses)
         {
@@ -716,7 +716,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * Errors:
      *  prints error message if more than one match
      */
-    final FuncDeclaration findFunc(Identifier ident, TypeFunction tf)
+    extern (D) final FuncDeclaration findFunc(Identifier ident, TypeFunction tf)
     {
         //printf("ClassDeclaration.findFunc(%s, %s) %s\n", ident.toChars(), tf.toChars(), toChars());
         FuncDeclaration fdmatch = null;

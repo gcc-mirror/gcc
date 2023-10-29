@@ -1095,7 +1095,7 @@ extern (C++) final class Module : Package
         return Package.symtabInsert(s);
     }
 
-    void deleteObjFile()
+    extern (D) void deleteObjFile()
     {
         if (global.params.obj)
             File.remove(objfile.toChars());

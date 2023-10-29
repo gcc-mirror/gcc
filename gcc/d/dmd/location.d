@@ -64,7 +64,7 @@ nothrow:
         this.messageStyle = messageStyle;
     }
 
-    extern (D) this(const(char)* filename, uint linnum, uint charnum) @safe
+    extern (C++) this(const(char)* filename, uint linnum, uint charnum) @safe
     {
         this._linnum = linnum;
         this._charnum = charnum;

@@ -32,7 +32,7 @@ import dmd.visitor;
  *  1. save evaluation order
  *  2. prevent sharing of sub-expression in AST
  */
-extern (C++) bool isTrivialExp(Expression e)
+bool isTrivialExp(Expression e)
 {
     extern (C++) final class IsTrivialExp : StoppableVisitor
     {
@@ -70,7 +70,7 @@ extern (C++) bool isTrivialExp(Expression e)
  *   assumeImpureCalls = whether function calls should always be assumed to
  *                       be impure (e.g. debug is allowed to violate purity)
  */
-extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
+bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
 {
     extern (C++) final class LambdaHasSideEffect : StoppableVisitor
     {

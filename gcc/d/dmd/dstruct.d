@@ -71,7 +71,7 @@ extern (C++) FuncDeclaration search_toString(StructDeclaration sd)
  *      sc = context
  *      t = type that TypeInfo is being generated for
  */
-extern (C++) void semanticTypeInfo(Scope* sc, Type t)
+extern (D) void semanticTypeInfo(Scope* sc, Type t)
 {
     if (sc)
     {

@@ -21,7 +21,7 @@ public:
    // alias Identifier this;
     Identifier *ident;
     Dsymbol    *sym;
-    bool       isDeprecated_;
+    d_bool     isDeprecated_;
 
     AliasThis *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;

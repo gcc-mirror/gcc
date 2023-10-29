@@ -39,7 +39,6 @@ class ClassDeclaration;
 class OverloadSet;
 class StringExp;
 class LoweredAssignExp;
-struct UnionExp;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
 #else
@@ -47,11 +46,6 @@ struct Symbol;          // back end symbol
 #endif
 
 void expandTuples(Expressions *exps, Identifiers *names = nullptr);
-bool isTrivialExp(Expression *e);
-bool hasSideEffect(Expression *e, bool assumeImpureCalls = false);
-
-enum BE : int32_t;
-BE canThrow(Expression *e, FuncDeclaration *func, ErrorSink *eSink);
 
 typedef unsigned char OwnedBy;
 enum
@@ -86,7 +80,6 @@ public:
 
     size_t size() const;
     static void _init();
-    Expression *copy();
     virtual Expression *syntaxCopy();
 
     // kludge for template.isExpression()
@@ -103,13 +96,10 @@ public:
     virtual bool isLvalue();
     virtual Expression *toLvalue(Scope *sc, Expression *e);
     virtual Expression *modifiableLvalue(Scope *sc, Expression *e);
-    Expression *implicitCastTo(Scope *sc, Type *t);
     MATCH implicitConvTo(Type *t);
-    Expression *castTo(Scope *sc, Type *t);
     virtual Expression *resolveLoc(const Loc &loc, Scope *sc);
     virtual bool checkType();
     virtual bool checkValue();
-    bool checkDeprecated(Scope *sc, Dsymbol *s);
     virtual Expression *addDtorHook(Scope *sc);
     Expression *addressOf();
     Expression *deref();
@@ -248,7 +238,6 @@ public:
     dinteger_t value;
 
     static IntegerExp *create(const Loc &loc, dinteger_t value, Type *type);
-    static void emplace(UnionExp *pue, const Loc &loc, dinteger_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     real_t toReal() override;
@@ -258,7 +247,6 @@ public:
     Expression *toLvalue(Scope *sc, Expression *e) override;
     void accept(Visitor *v) override { v->visit(this); }
     dinteger_t getInteger() { return value; }
-    void setInteger(dinteger_t value);
     template<int v>
     static IntegerExp literal();
 };
@@ -278,7 +266,6 @@ public:
     real_t value;
 
     static RealExp *create(const Loc &loc, real_t value, Type *type);
-    static void emplace(UnionExp *pue, const Loc &loc, real_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
@@ -296,7 +283,6 @@ public:
     complex_t value;
 
     static ComplexExp *create(const Loc &loc, complex_t value, Type *type);
-    static void emplace(UnionExp *pue, const Loc &loc, complex_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
@@ -376,15 +362,13 @@ public:
     void *string;       // char, wchar, or dchar data
     size_t len;         // number of chars, wchars, or dchars
     unsigned char sz;   // 1: char, 2: wchar, 4: dchar
-    bool committed;     // if type is committed
-    bool hexString;     // if string is parsed from a hex string literal
+    d_bool committed;   // if type is committed
+    d_bool hexString;   // if string is parsed from a hex string literal
 
     static StringExp *create(const Loc &loc, const char *s);
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);
-    static void emplace(UnionExp *pue, const Loc &loc, const char *s);
     bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
-    void setCodeUnit(d_size_t i, char32_t c);
     StringExp *toStringExp() override;
     StringExp *toUTF8(Scope *sc);
     Optional<bool> toBool() override;
@@ -427,11 +411,9 @@ public:
     Expressions *elements;
 
     static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
-    static void emplace(UnionExp *pue, const Loc &loc, Expressions *elements);
     ArrayLiteralExp *syntaxCopy() override;
     bool equals(const RootObject * const o) const override;
-    Expression *getElement(d_size_t i); // use opIndex instead
-    Expression *opIndex(d_size_t i);
+    Expression *getElement(d_size_t i);
     Optional<bool> toBool() override;
     StringExp *toStringExp() override;
 
@@ -490,8 +472,6 @@ public:
     static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
-    Expression *getField(Type *type, unsigned offset);
-    int getFieldIndex(Type *type, unsigned offset);
     Expression *addDtorHook(Scope *sc) override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
 
@@ -702,7 +682,6 @@ public:
     Expression *e1;
 
     UnaExp *syntaxCopy() override;
-    Expression *incompatibleTypes();
     Expression *resolveLoc(const Loc &loc, Scope *sc) override final;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -718,9 +697,6 @@ public:
     Type *att2; // Save alias this type to detect recursion
 
     BinExp *syntaxCopy() override;
-    Expression *incompatibleTypes();
-
-    Expression *reorderSettingAAElem(Scope *sc);
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -806,7 +782,6 @@ public:
     TemplateInstance *ti;
 
     DotTemplateInstanceExp *syntaxCopy() override;
-    bool findTempDecl(Scope *sc);
     bool checkType() override;
     bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -925,7 +900,6 @@ public:
     OwnedBy ownedByCtfe;
 
     static VectorExp *create(const Loc &loc, Expression *e, Type *t);
-    static void emplace(UnionExp *pue, const Loc &loc, Expression *e, Type *t);
     VectorExp *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -1382,62 +1356,6 @@ class PrettyFuncInitExp final : public DefaultInitExp
 public:
     Expression *resolveLoc(const Loc &loc, Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
-};
-
-/****************************************************************/
-
-/* A type meant as a union of all the Expression types,
- * to serve essentially as a Variant that will sit on the stack
- * during CTFE to reduce memory consumption.
- */
-struct UnionExp
-{
-    UnionExp() { }  // yes, default constructor does nothing
-
-    UnionExp(Expression *e)
-    {
-        memcpy(this, (void *)e, e->size());
-    }
-
-    /* Extract pointer to Expression
-     */
-    Expression *exp() { return (Expression *)&u; }
-
-    /* Convert to an allocated Expression
-     */
-    Expression *copy();
-
-private:
-    // Ensure that the union is suitably aligned.
-#if defined(__GNUC__) || defined(__clang__)
-    __attribute__((aligned(8)))
-#elif defined(_MSC_VER)
-    __declspec(align(8))
-#elif defined(__DMC__)
-    #pragma pack(8)
-#endif
-    union
-    {
-        char exp       [sizeof(Expression)];
-        char integerexp[sizeof(IntegerExp)];
-        char errorexp  [sizeof(ErrorExp)];
-        char realexp   [sizeof(RealExp)];
-        char complexexp[sizeof(ComplexExp)];
-        char symoffexp [sizeof(SymOffExp)];
-        char stringexp [sizeof(StringExp)];
-        char arrayliteralexp [sizeof(ArrayLiteralExp)];
-        char assocarrayliteralexp [sizeof(AssocArrayLiteralExp)];
-        char structliteralexp [sizeof(StructLiteralExp)];
-        char nullexp   [sizeof(NullExp)];
-        char dotvarexp [sizeof(DotVarExp)];
-        char addrexp   [sizeof(AddrExp)];
-        char indexexp  [sizeof(IndexExp)];
-        char sliceexp  [sizeof(SliceExp)];
-        char vectorexp [sizeof(VectorExp)];
-    } u;
-#if defined(__DMC__)
-    #pragma pack()
-#endif
 };
 
 /****************************************************************/

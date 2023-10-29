@@ -1581,7 +1581,7 @@ public:
     auto logs = new double[10_000_000];
 
     // Parallel foreach works with or without an index
-    // variable.  It can be iterate by ref if range.front
+    // variable.  It can iterate by ref if range.front
     // returns by ref.
 
     // Iterate over logs using work units of size 100.

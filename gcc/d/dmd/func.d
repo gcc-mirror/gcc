@@ -689,7 +689,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Determine if 'this' overrides fd.
      * Return !=0 if it does.
      */
-    final int overrides(FuncDeclaration fd)
+    extern (D) final int overrides(FuncDeclaration fd)
     {
         int result = 0;
         if (fd.ident == ident)
@@ -838,7 +838,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *  base class if overriding, null if not
      */
-    final BaseClass* overrideInterface()
+    extern (D) final BaseClass* overrideInterface()
     {
         for (ClassDeclaration cd = toParent2().isClassDeclaration(); cd; cd = cd.baseClass)
         {
@@ -1215,7 +1215,7 @@ extern (C++) class FuncDeclaration : Declaration
      *      -1      increase nesting by 1 (`fd` is nested within `this`)
      *      LevelError  error, `this` cannot call `fd`
      */
-    final int getLevel(FuncDeclaration fd, int intypeof)
+    extern (D) final int getLevel(FuncDeclaration fd, int intypeof)
     {
         //printf("FuncDeclaration::getLevel(fd = '%s')\n", fd.toChars());
         Dsymbol fdparent = fd.toParent2();
@@ -1276,8 +1276,8 @@ extern (C++) class FuncDeclaration : Declaration
      *      -1      increase nesting by 1 (`fd` is nested within 'this')
      *      LevelError  error
      */
-    final int getLevelAndCheck(const ref Loc loc, Scope* sc, FuncDeclaration fd,
-                               Declaration decl)
+    extern (D) final int getLevelAndCheck(const ref Loc loc, Scope* sc, FuncDeclaration fd,
+                                          Declaration decl)
     {
         int level = getLevel(fd, sc.intypeof);
         if (level != LevelError)
@@ -1490,7 +1490,7 @@ extern (C++) class FuncDeclaration : Declaration
         return purity;
     }
 
-    final PURE isPureBypassingInference()
+    extern (D) final PURE isPureBypassingInference()
     {
         if (purityInprocess)
             return PURE.fwdref;
@@ -1544,7 +1544,7 @@ extern (C++) class FuncDeclaration : Declaration
         return type.toTypeFunction().trust == TRUST.safe;
     }
 
-    final bool isSafeBypassingInference()
+    extern (D) final bool isSafeBypassingInference()
     {
         return !(safetyInprocess) && isSafe();
     }
@@ -1612,7 +1612,7 @@ extern (C++) class FuncDeclaration : Declaration
         return type.toTypeFunction().isnogc;
     }
 
-    final bool isNogcBypassingInference()
+    extern (D) final bool isNogcBypassingInference()
     {
         return !nogcInprocess && isNogc();
     }
@@ -2935,7 +2935,7 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *      `false` if the result cannot be returned by hidden reference.
      */
-    final bool checkNRVO()
+    extern (D) final bool checkNRVO()
     {
         if (!isNRVO() || returns is null)
             return false;
@@ -3939,7 +3939,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
      * If B to A conversion is convariant that requires offseet adjusting,
      * all return statements should be adjusted to return expressions typed A.
      */
-    void modifyReturns(Scope* sc, Type tret)
+    extern (D) void modifyReturns(Scope* sc, Type tret)
     {
         import dmd.statement_rewrite_walker;
 

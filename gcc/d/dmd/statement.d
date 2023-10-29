@@ -114,7 +114,7 @@ extern (C++) abstract class Statement : ASTNode
      * Returns:
      *     `true` if statement uses exception handling
      */
-    final bool usesEH()
+    extern (D) final bool usesEH()
     {
         extern (C++) final class UsesEH : StoppableVisitor
         {
@@ -153,7 +153,7 @@ extern (C++) abstract class Statement : ASTNode
      * Returns:
      *   `true` if statement 'comes from' somewhere else, like a goto
      */
-    final bool comeFrom()
+    extern (D) final bool comeFrom()
     {
         extern (C++) final class ComeFrom : StoppableVisitor
         {
@@ -192,7 +192,7 @@ extern (C++) abstract class Statement : ASTNode
      * Returns:
      *   `true` if statement has executable code.
      */
-    final bool hasCode()
+    extern (D) final bool hasCode()
     {
         extern (C++) final class HasCode : StoppableVisitor
         {
