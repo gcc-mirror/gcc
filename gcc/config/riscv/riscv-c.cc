@@ -215,9 +215,42 @@ riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
 
     case RISCV_BUILTIN_VECTOR:
       return riscv_vector::check_builtin_call (loc, arg_loc, subcode,
-					       orig_fndecl, nargs, args);
+					       fndecl, nargs, args);
     }
   gcc_unreachable ();
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
+static tree
+riscv_resolve_overloaded_builtin (unsigned int uncast_location, tree fndecl,
+				  void *uncast_arglist)
+{
+  vec<tree, va_gc> empty = {};
+  location_t loc = (location_t) uncast_location;
+  vec<tree, va_gc> *arglist = (vec<tree, va_gc> *) uncast_arglist;
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  tree new_fndecl = NULL_TREE;
+
+  if (!arglist)
+    arglist = &empty;
+
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      break;
+    case RISCV_BUILTIN_VECTOR:
+      new_fndecl = riscv_vector::resolve_overloaded_builtin (subcode, arglist);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (new_fndecl == NULL_TREE)
+    return new_fndecl;
+
+  return build_function_call_vec (loc, vNULL, new_fndecl, arglist, NULL,
+				  fndecl);
 }
 
 /* Implement REGISTER_TARGET_PRAGMAS.  */
@@ -225,6 +258,7 @@ riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
 void
 riscv_register_pragmas (void)
 {
+  targetm.resolve_overloaded_builtin = riscv_resolve_overloaded_builtin;
   targetm.check_builtin_call = riscv_check_builtin_call;
   c_register_pragma ("riscv", "intrinsic", riscv_pragma_intrinsic);
 }

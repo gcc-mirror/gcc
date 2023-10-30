@@ -451,6 +451,7 @@ gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
 rtx expand_builtin (unsigned int, tree, rtx);
 bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 			   tree, unsigned int, tree *);
+tree resolve_overloaded_builtin (unsigned int, vec<tree, va_gc> *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx *);
 void emit_vlmax_vsetvl (machine_mode, rtx);

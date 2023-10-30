@@ -262,7 +262,8 @@ public:
    vremu/vsadd/vsaddu/vssub/vssubu
    vfadd/vfsub/
 */
-template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
+template <rtx_code CODE, bool MAY_REQUIRE_FRM = false,
+	  enum frm_op_type FRM_OP = NO_FRM>
 class binop : public function_base
 {
 public:
@@ -270,6 +271,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return MAY_REQUIRE_FRM; }
 
   rtx expand (function_expander &e) const override
   {
@@ -307,6 +310,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -396,6 +401,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -630,6 +637,8 @@ class sat_op : public function_base
 public:
   bool has_rounding_mode_operand_p () const override { return true; }
 
+  bool may_require_vxrm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
@@ -651,6 +660,8 @@ class vnclip : public function_base
 {
 public:
   bool has_rounding_mode_operand_p () const override { return true; }
+
+  bool may_require_vxrm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1024,6 +1035,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -1039,6 +1052,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1064,6 +1079,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1086,6 +1103,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1111,6 +1130,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1134,6 +1155,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1156,6 +1179,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1181,6 +1206,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1203,6 +1230,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1228,6 +1257,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1250,6 +1281,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1274,6 +1307,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1296,6 +1331,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool has_merge_operand_p () const override { return false; }
 
@@ -1320,6 +1357,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1392,6 +1431,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_pred_fcvt_x_f (UNSPEC, e.arg_mode (0)));
@@ -1418,6 +1459,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_x_v)
@@ -1438,6 +1481,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1483,6 +1528,8 @@ public:
     return FRM_OP == HAS_FRM;
   }
 
+  bool may_require_frm_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -1509,6 +1556,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   rtx expand (function_expander &e) const override
   {
@@ -1554,6 +1603,8 @@ public:
   {
     return FRM_OP == HAS_FRM;
   }
+
+  bool may_require_frm_p () const override { return true; }
 
   bool apply_mask_policy_p () const override { return false; }
 
@@ -2181,20 +2232,20 @@ static CONSTEXPR const mask_misc<UNSPEC_VMSIF> vmsif_obj;
 static CONSTEXPR const mask_misc<UNSPEC_VMSOF> vmsof_obj;
 static CONSTEXPR const viota viota_obj;
 static CONSTEXPR const vid vid_obj;
-static CONSTEXPR const binop<PLUS> vfadd_obj;
-static CONSTEXPR const binop<MINUS> vfsub_obj;
-static CONSTEXPR const binop<PLUS, HAS_FRM> vfadd_frm_obj;
-static CONSTEXPR const binop<MINUS, HAS_FRM> vfsub_frm_obj;
+static CONSTEXPR const binop<PLUS, true> vfadd_obj;
+static CONSTEXPR const binop<MINUS, true> vfsub_obj;
+static CONSTEXPR const binop<PLUS, true, HAS_FRM> vfadd_frm_obj;
+static CONSTEXPR const binop<MINUS, true, HAS_FRM> vfsub_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
 static CONSTEXPR const reverse_binop<MINUS, HAS_FRM> vfrsub_frm_obj;
 static CONSTEXPR const widen_binop_fp<PLUS> vfwadd_obj;
 static CONSTEXPR const widen_binop_fp<PLUS, HAS_FRM> vfwadd_frm_obj;
 static CONSTEXPR const widen_binop_fp<MINUS> vfwsub_obj;
 static CONSTEXPR const widen_binop_fp<MINUS, HAS_FRM> vfwsub_frm_obj;
-static CONSTEXPR const binop<MULT> vfmul_obj;
-static CONSTEXPR const binop<MULT, HAS_FRM> vfmul_frm_obj;
-static CONSTEXPR const binop<DIV> vfdiv_obj;
-static CONSTEXPR const binop<DIV, HAS_FRM> vfdiv_frm_obj;
+static CONSTEXPR const binop<MULT, true> vfmul_obj;
+static CONSTEXPR const binop<MULT,  true, HAS_FRM> vfmul_frm_obj;
+static CONSTEXPR const binop<DIV, true> vfdiv_obj;
+static CONSTEXPR const binop<DIV,  true, HAS_FRM> vfdiv_frm_obj;
 static CONSTEXPR const reverse_binop<DIV> vfrdiv_obj;
 static CONSTEXPR const reverse_binop<DIV, HAS_FRM> vfrdiv_frm_obj;
 static CONSTEXPR const widen_binop_fp<MULT> vfwmul_obj;
