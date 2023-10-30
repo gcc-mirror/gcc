@@ -947,6 +947,39 @@ struct GTY(()) ipcp_transformation
 
   void maybe_create_parm_idx_map (tree fndecl);
 
+  /* Remove all elements in m_agg_values on which PREDICATE returns true.  */
+
+  template<typename pred_function>
+  void remove_argaggs_if (pred_function &&predicate)
+  {
+    unsigned ts_len = vec_safe_length (m_agg_values);
+    if (ts_len == 0)
+      return;
+
+    bool removed_item = false;
+    unsigned dst_index = 0;
+
+    for (unsigned i = 0; i < ts_len; i++)
+      {
+	ipa_argagg_value *v = &(*m_agg_values)[i];
+	if (!predicate (*v))
+	  {
+	    if (removed_item)
+	      (*m_agg_values)[dst_index] = *v;
+	    dst_index++;
+	  }
+	else
+	  removed_item = true;
+      }
+    if (dst_index == 0)
+      {
+	ggc_free (m_agg_values);
+	m_agg_values = NULL;
+      }
+    else if (removed_item)
+      m_agg_values->truncate (dst_index);
+  }
+
   /* Known aggregate values.  */
   vec<ipa_argagg_value, va_gc>  *m_agg_values;
   /* Value range information.  */
