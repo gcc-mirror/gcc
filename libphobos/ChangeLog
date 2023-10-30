@@ -1,3 +1,8 @@
+2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e48bc0987d.
+	* src/MERGE: Merge upstream phobos 2458e8f82.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

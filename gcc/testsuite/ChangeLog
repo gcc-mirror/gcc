@@ -1,3 +1,27 @@
+2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110712
+	* gdc.dg/pr110712.d: New test.
+
+2023-10-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/large-data.c: Skip for Darwin.
+
+2023-10-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/apx-interrupt-1.c: Skip for Darwin.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+
+2023-10-29  Martin Uecker  <uecker@tugraz.at>
+
+	PR tree-optimization/109334
+	* gcc.dg/builtin-dynamic-object-size-0.c
+	(test_parmsz_simple3): Supported again.
+	(test_parmsz_external4): New test.
+	* gcc.dg/builtin-dynamic-object-size-20.c: New test.
+	* gcc.dg/pr104970.c: New test.
+
 2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/112270

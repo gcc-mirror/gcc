@@ -1,3 +1,14 @@
+2023-10-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add missing emul TLS
+	symbols.
+
+2023-10-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/experimental/contract.cc
+	[_GLIBCXX_INLINE_VERSION](handle_contract_violation): Provide symbol
+	without version namespace decoration for gcc.
+
 2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112089

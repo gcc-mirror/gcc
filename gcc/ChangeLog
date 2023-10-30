@@ -1,3 +1,21 @@
+2023-10-29  Martin Uecker  <uecker@tugraz.at>
+
+	PR tree-optimization/109334
+	* tree-object-size.cc (parm_object_size): Allow size
+	computation for implicit access attributes.
+
+2023-10-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.h (TARGET_SALT): Change HW version from
+	260000 (which corresponds to RF-2014.0) to 270000 (which
+	corresponds to RG-2015.0, the release where salt/saltu opcodes
+	were introduced).
+
+2023-10-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Use
+	reference type to prevent copying.
+
 2023-10-27  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/112107

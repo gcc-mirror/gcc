@@ -1,3 +1,25 @@
+2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110712
+	* d-codegen.cc (d_build_call): Update call to convert_for_argument.
+	* d-convert.cc (is_valist_parameter_type): New function.
+	(check_valist_conversion): New function.
+	(convert_for_assignment): Update signature.  Add check whether
+	assigning va_list is permissible.
+	(convert_for_argument): Likewise.
+	* d-tree.h (convert_for_assignment): Update signature.
+	(convert_for_argument): Likewise.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Update call to
+	convert_for_assignment.
+
+2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd e48bc0987d.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Update for new front-end
+	interface.
+	* runtime.def (NEWARRAYT): Remove.
+	(NEWARRAYIT): Remove.
+
 2023-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/112270
