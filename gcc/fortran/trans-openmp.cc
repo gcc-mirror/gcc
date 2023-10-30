@@ -4730,11 +4730,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      allocator_
 				= gfc_trans_omp_variable (n->u2.allocator->symtree->n.sym,
 							  false);
-			    if (POINTER_TYPE_P (TREE_TYPE (allocator_)))
-			      {
+			      if (POINTER_TYPE_P (TREE_TYPE (allocator_)))
 				allocator_ = build_fold_indirect_ref (allocator_);
-				allocator_ = gfc_evaluate_now (allocator_, block);
-			      }
 			    }
 			  else if (alloc_expr != n->u2.allocator)
 			    {

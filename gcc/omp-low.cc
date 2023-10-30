@@ -9486,11 +9486,11 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p)
 	    continue;
 
 	  const gcall *gs = as_a <const gcall *> (stmt);
-	  tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-			   ? OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-			   : build_zero_cst (ptr_type_node);
 	  if (allocate)
 	    {
+	      tree allocator = (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+				? OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+				: build_zero_cst (ptr_type_node));
 	      tree lhs = gimple_call_lhs (gs);
 	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		{
@@ -9559,6 +9559,7 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p)
 	      if (arg == var)
 		{
 		  tree repl = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  tree allocator = build_zero_cst (ptr_type_node);
 		  gimple *g = gimple_build_call (repl, 2,
 						 gimple_call_arg (gs, 0),
 						 allocator);

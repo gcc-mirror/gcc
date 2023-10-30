@@ -17876,6 +17876,15 @@ gimplify_omp_allocate (tree *expr_p, gimple_seq *pre_p)
     kind = GF_OMP_ALLOCATE_KIND_ALLOCATE;
   else
     kind = GF_OMP_ALLOCATE_KIND_FREE;
+  for (tree c = OMP_ALLOCATE_CLAUSES (expr); c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_ALLOCATE)
+	continue;
+
+      gimplify_expr (&OMP_CLAUSE_ALLOCATE_ALLOCATOR (c), pre_p, NULL,
+			 is_gimple_val, fb_rvalue);
+    }
+
   gimple *stmt = gimple_build_omp_allocate (OMP_ALLOCATE_CLAUSES (expr),
 					    kind);
   gimplify_seq_add_stmt (pre_p, stmt);
