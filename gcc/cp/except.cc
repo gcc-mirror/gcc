@@ -1284,7 +1284,15 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
    current_retval_sentinel so that we know that the return value needs to be
    destroyed on throw.  Do the same if the current function might use the
    named return value optimization, so we don't destroy it on return.
-   Otherwise, returns NULL_TREE.  */
+   Otherwise, returns NULL_TREE.
+
+   The sentinel is set to indicate that we're in the process of returning, and
+   therefore should destroy a normal return value on throw, and shouldn't
+   destroy a named return value variable on normal scope exit.  It is set on
+   return, and cleared either by maybe_splice_retval_cleanup, or when an
+   exception reaches the NRV scope (finalize_nrv_r).  Note that once return
+   passes the NRV scope, it's effectively a normal return value, so cleanup
+   past that point is handled by maybe_splice_retval_cleanup. */
 
 tree
 maybe_set_retval_sentinel ()
@@ -1361,6 +1369,14 @@ maybe_splice_retval_cleanup (tree compound_stmt, bool is_try)
 	  tsi_delink (&iter);
 	}
       tree dtor = build_cleanup (retval);
+      if (!function_body)
+	{
+	  /* Clear the sentinel so we don't try to destroy the retval again on
+	     rethrow (c++/112301).  */
+	  tree clear = build2 (MODIFY_EXPR, boolean_type_node,
+			       current_retval_sentinel, boolean_false_node);
+	  dtor = build2 (COMPOUND_EXPR, void_type_node, clear, dtor);
+	}
       tree cond = build3 (COND_EXPR, void_type_node, current_retval_sentinel,
 			  dtor, void_node);
       tree cleanup = build_stmt (loc, CLEANUP_STMT,

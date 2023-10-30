@@ -16,13 +16,14 @@ extern "C" int printf (const char *, ...);
 
 struct X
 {
-  X(bool throws) : throws_(throws) { ++c; DEBUG; }
+  X(bool throws) : i(-42), throws_(throws) { ++c; DEBUG; }
   X(const X& x); // not defined
   ~X() THROWS
   {
-    ++d; DEBUG;
+    i = ++d; DEBUG;
     if (throws_) { throw 1; }
   }
+  int i;
 private:
   bool throws_;
 };
@@ -71,6 +72,75 @@ X i2()
   return X(false);
 }
 
+// c++/112301
+X i3()
+{
+  try {
+    X x(true);
+    return X(false);
+  } catch(...) { throw; }
+}
+
+X i4()
+{
+  try {
+    X x(true);
+    X x2(false);
+    return x2;
+  } catch(...) { throw; }
+}
+
+X i4a()
+{
+  try {
+    X x2(false);
+    X x(true);
+    return x2;
+  } catch(...) { throw; }
+}
+
+X i4b()
+{
+  X x(true);
+  X x2(false);
+  return x2;
+}
+
+X i4c()
+{
+  X x2(false);
+  X x(true);
+  return x2;
+}
+
+X i5()
+{
+  X x2(false);
+
+  try {
+    X x(true);
+    return x2;
+  } catch(...) {
+    if (x2.i != -42)
+      d += 42;
+    throw;
+  }
+}
+
+X i6()
+{
+  X x2(false);
+
+  try {
+    X x(true);
+    return x2;
+  } catch(...) {
+    if (x2.i != -42)
+      d += 42;
+  }
+  return x2;
+}
+
 X j()
 {
   try {
@@ -113,6 +183,13 @@ int main()
   catch (...) {}
 
   try { i2(); } catch (...) {}
+  try { i3(); } catch (...) {}
+  try { i4(); } catch (...) {}
+  try { i4a(); } catch (...) {}
+  try { i4b(); } catch (...) {}
+  try { i4c(); } catch (...) {}
+  try { i5(); } catch (...) {}
+  try { i6(); } catch (...) {}
 
   try { j(); } catch (...) {}
 

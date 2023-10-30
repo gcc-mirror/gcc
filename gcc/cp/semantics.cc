@@ -4982,6 +4982,7 @@ public:
   tree result;
   hash_table<nofree_ptr_hash <tree_node> > visited;
   bool simple;
+  bool in_nrv_cleanup;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -4997,7 +4998,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
   /* If there's a label, we might need to destroy the NRV on goto (92407).  */
-  else if (TREE_CODE (*tp) == LABEL_EXPR)
+  else if (TREE_CODE (*tp) == LABEL_EXPR && !dp->in_nrv_cleanup)
     dp->simple = false;
   /* Change NRV returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
@@ -5016,16 +5017,59 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == dp->var)
     {
+      dp->in_nrv_cleanup = true;
+      cp_walk_tree (&CLEANUP_BODY (*tp), finalize_nrv_r, data, 0);
+      dp->in_nrv_cleanup = false;
+      cp_walk_tree (&CLEANUP_EXPR (*tp), finalize_nrv_r, data, 0);
+      *walk_subtrees = 0;
+
       if (dp->simple)
+	/* For a simple NRV, just run it on the EH path.  */
 	CLEANUP_EH_ONLY (*tp) = true;
       else
 	{
+	  /* Not simple, we need to check current_retval_sentinel to decide
+	     whether to run it.  If it's set, we're returning normally and
+	     don't want to destroy the NRV.  If the sentinel is not set, we're
+	     leaving scope some other way, either by flowing off the end of its
+	     scope or throwing an exception.  */
 	  tree cond = build3 (COND_EXPR, void_type_node,
 			      current_retval_sentinel,
 			      void_node, CLEANUP_EXPR (*tp));
 	  CLEANUP_EXPR (*tp) = cond;
 	}
+
+      /* If a cleanup might throw, we need to clear current_retval_sentinel on
+	 the exception path, both so the check above succeeds and so an outer
+	 cleanup added by maybe_splice_retval_cleanup doesn't run.  */
+      if (cp_function_chain->throwing_cleanup)
+	{
+	  tree clear = build2 (MODIFY_EXPR, boolean_type_node,
+			       current_retval_sentinel,
+			       boolean_false_node);
+	  if (dp->simple)
+	    {
+	      /* We're already only on the EH path, just prepend it.  */
+	      tree &exp = CLEANUP_EXPR (*tp);
+	      exp = build2 (COMPOUND_EXPR, void_type_node, clear, exp);
+	    }
+	  else
+	    {
+	      /* The cleanup runs on both normal and EH paths, we need another
+		 CLEANUP_STMT to clear the flag only on the EH path.  */
+	      tree &bod = CLEANUP_BODY (*tp);
+	      bod = build_stmt (EXPR_LOCATION (*tp), CLEANUP_STMT,
+				bod, clear, current_retval_sentinel);
+	      CLEANUP_EH_ONLY (bod) = true;
+	    }
+	}
     }
+  /* Disable maybe_splice_retval_cleanup within the NRV cleanup scope, we don't
+     want to destroy the retval before the variable goes out of scope.  */
+  else if (TREE_CODE (*tp) == CLEANUP_STMT
+	   && dp->in_nrv_cleanup
+	   && CLEANUP_DECL (*tp) == dp->result)
+    CLEANUP_EXPR (*tp) = void_node;
   /* Replace the DECL_EXPR for the NRV with an initialization of the
      RESULT_DECL, if needed.  */
   else if (TREE_CODE (*tp) == DECL_EXPR
@@ -5082,6 +5126,7 @@ finalize_nrv (tree fndecl, tree var)
 
   data.var = var;
   data.result = result;
+  data.in_nrv_cleanup = false;
 
   /* This is simpler for variables declared in the outer scope of
      the function so we know that their lifetime always ends with a
