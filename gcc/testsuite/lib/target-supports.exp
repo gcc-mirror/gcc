@@ -1903,6 +1903,17 @@ proc check_effective_target_rv_float_abi_soft { } {
     }]
 }
 
+# Return 1 if the target arch supports the atomic extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_a { } {
+    return [check_no_compiler_messages riscv_ext_a assembly {
+       #ifndef __riscv_a
+       #error "Not __riscv_a"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the double precision floating point
 # extension, 0 otherwise.  Cache the result.
 
@@ -2052,6 +2063,18 @@ proc riscv_get_arch { } {
 	set gcc_march ""
     }
     return "$gcc_march"
+}
+
+proc add_options_for_riscv_a { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set expanded_flags [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*)g+} $flags \\1imafd ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[b-eg-rt-wy]*)a*} $expanded_flags \\1a ]
+    }
+    if { [check_effective_target_riscv_a] } {
+	return "$flags"
+    }
+    return "$flags -march=[regsub {(rv[[:digit:]]*[b-eg-rt-wy]*)a*} [riscv_get_arch] &a]"
 }
 
 proc add_options_for_riscv_d { flags } {

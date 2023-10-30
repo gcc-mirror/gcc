@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* Verify that compare exchange mappings match Table A.6's recommended mapping.  */
+/* { dg-add-options riscv_a } */
 /* { dg-final { scan-assembler-times "lr.w\t" 1 } } */
 /* { dg-final { scan-assembler-times "sc.w\t" 1 } } */
 

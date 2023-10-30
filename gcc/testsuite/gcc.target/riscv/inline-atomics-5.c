@@ -1,7 +1,7 @@
 /* Test __atomic routines for existence and proper execution on 1 byte
    values with each valid memory model.  */
 /* Duplicate logic as libatomic/testsuite/libatomic.c/atomic-compare-exchange-1.c */
-/* { dg-do run } */
+/* { dg-do run { target { riscv_a } } } */
 /* { dg-options "-minline-atomics" } */
 
 /* Test the execution of the __atomic_compare_exchange_n builtin for a char.  */
