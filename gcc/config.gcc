@@ -706,7 +706,7 @@ slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
-nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
+nano-x2 eden-x4 nano-x4 lujiazui yongfeng x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
 sierraforest graniterapids graniterapids-d grandridge arrowlake arrowlake-s \
 clearwaterforest pantherlake native"
 
@@ -3811,6 +3811,10 @@ case ${target} in
 	arch=lujiazui
 	cpu=lujiazui
 	;;
+      yongfeng-*)
+	arch=yongfeng
+	cpu=yongfeng
+	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
@@ -3924,9 +3928,13 @@ case ${target} in
 	arch=k8
 	cpu=k8
 	;;
-    lujiazui-*)
+      lujiazui-*)
 	arch=lujiazui
 	cpu=lujiazui
+	;;
+      yongfeng-*)
+	arch=yongfeng
+	cpu=yongfeng
 	;;
       nocona-*)
 	arch=nocona

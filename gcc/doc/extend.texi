@@ -22724,6 +22724,9 @@ Intel Knights Mill CPU.
 @item lujiazui
 ZHAOXIN lujiazui CPU.
 
+@item yongfeng
+ZHAOXIN yongfeng CPU.
+
 @item amdfam10h
 AMD Family 10h CPU.
 

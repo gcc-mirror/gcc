@@ -663,6 +663,12 @@ get_zhaoxin_cpu (struct __processor_model *cpu_model,
 	  reset_cpu_feature (cpu_model, cpu_features2, FEATURE_F16C);
 	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
 	}
+     else if (model >= 0x5b)
+	{
+	  cpu = "yongfeng";
+	  CHECK___builtin_cpu_is ("yongfeng");
+	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_YONGFENG;
+	}
       break;
     default:
       break;
