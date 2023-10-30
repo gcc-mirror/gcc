@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target { dfp && { ! ia32 } } } } */
 /* { dg-options "-O2 -mavx512bw -fno-tree-ter -Wno-div-by-zero" } */
 
 typedef int __attribute__((__vector_size__ (8))) v64u8;
