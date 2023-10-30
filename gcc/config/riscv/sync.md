@@ -60,7 +60,7 @@
   [(match_operand:GPR 0 "register_operand")
    (match_operand:GPR 1 "memory_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
-  "TARGET_ATOMIC"
+  ""
   {
     if (TARGET_ZTSO)
       emit_insn (gen_atomic_load_ztso<mode> (operands[0], operands[1],
@@ -75,7 +75,7 @@
   [(match_operand:GPR 0 "memory_operand")
    (match_operand:GPR 1 "reg_or_0_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
-  "TARGET_ATOMIC"
+  ""
   {
     if (TARGET_ZTSO)
       emit_insn (gen_atomic_store_ztso<mode> (operands[0], operands[1],
