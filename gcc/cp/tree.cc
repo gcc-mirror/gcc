@@ -4119,6 +4119,26 @@ cp_tree_equal (tree t1, tree t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
+  if (comparing_contracts)
+    {
+      /* When comparing contracts, one declaration may already be
+	 genericized. Check for invisible references and unravel them
+	 for comparison purposes. Remember that a parameter is an invisible
+	 reference so we can compare the parameter types accordingly.  */
+      if (code1 == VIEW_CONVERT_EXPR
+	  && is_invisiref_parm (TREE_OPERAND(t1, 0)))
+	{
+	  t1 = TREE_OPERAND(t1, 0);
+	  code1 = TREE_CODE(t1);
+	}
+      if (code2 == VIEW_CONVERT_EXPR
+	  && is_invisiref_parm (TREE_OPERAND(t2, 0)))
+	{
+	  t2 = TREE_OPERAND(t2, 0);
+	  code2 = TREE_CODE(t2);
+	}
+    }
+
   if (code1 != code2)
     return false;
 
@@ -4281,8 +4301,14 @@ cp_tree_equal (tree t1, tree t2)
 	   with parameters with identical contexts.  */
 	return false;
 
-      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)) || comparing_contracts)
 	{
+	  /* When comparing contracts, we already know the declarations match,
+	    and that the arguments have the same type. If one of the declarations
+	    has been genericised, then the type of arguments in that declaration
+	    will be adjusted for an invisible reference and the type comparison
+	    would spuriosly fail. The only thing we care about when comparing
+	    contractsis that we're using the same parameter.  */
 	  if (DECL_ARTIFICIAL (t1) ^ DECL_ARTIFICIAL (t2))
 	    return false;
 	  if (CONSTRAINT_VAR_P (t1) ^ CONSTRAINT_VAR_P (t2))

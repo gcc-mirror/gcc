@@ -1022,6 +1022,12 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
       sprintf (LABEL, "*%s%ld", "lTRAMP", (long)(NUM));\
     else if (strncmp ("LANCHOR", PREFIX, 7) == 0)	\
       sprintf (LABEL, "*%s%ld", "lANCHOR", (long)(NUM));\
+    else if (strlen (PREFIX) == 19 \
+	     && strncmp ("Lcontract_violation", PREFIX, 19) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lcontract_violation", (long)(NUM));\
+    else if (strlen (PREFIX) == 13 \
+	     && strncmp ("Lsrc_loc_impl", PREFIX, 13) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lsrc_loc_impl", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)

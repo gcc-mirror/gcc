@@ -1095,26 +1095,8 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fconstexpr-ops-limit)
 fcontracts
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontracts)
 
-fcontract-assumption-mode=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-assumption-mode)
-
-fcontract-build-level=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-build-level)
-
-fcontract-strict-declarations=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-strict-declarations)
-
-fcontract-mode=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-mode)
-
-fcontract-continuation-mode=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-continuation-mode)
-
-fcontract-role=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-role)
-
-fcontract-semantic=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-semantic)
+fcontract-evaluation-semantic=
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-evaluation-semantic)
 
 fcoroutines
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcoroutines)

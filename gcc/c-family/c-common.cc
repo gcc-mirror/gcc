@@ -103,7 +103,7 @@ machine_mode c_default_pointer_mode = VOIDmode;
 	tree dfloat32_type_node;
 	tree dfloat64_type_node;
 	tree dfloat128_type_node;
-	tree dfloat64x_type_node; 
+	tree dfloat64x_type_node;
 
 	tree intQI_type_node;
 	tree intHI_type_node;
@@ -472,6 +472,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
   { "__constinit",	RID_CONSTINIT,	D_CXXONLY },
+  { "__contract_assert", RID_CONTASSERT, D_CXXONLY | D_CXXWARN  },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
   { "__func__",		RID_C99_FUNCTION_NAME, 0 },
@@ -519,6 +520,7 @@ const struct c_common_resword c_common_reswords[] =
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
+  { "contract_assert",	RID_CONTASSERT,	D_CXXONLY | D_CXXWARN | D_CXX26 },
   { "decltype",         RID_DECLTYPE,   D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "default",		RID_DEFAULT,	0 },
   { "delete",		RID_DELETE,	D_CXXONLY | D_CXXWARN },

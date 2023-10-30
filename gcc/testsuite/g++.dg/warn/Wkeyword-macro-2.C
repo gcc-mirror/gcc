@@ -26,7 +26,7 @@
 #define constexpr 1			// { dg-warning "keyword 'constexpr' defined as macro" "" { target c++26 } }
 #define constinit 1			// { dg-warning "keyword 'constinit' defined as macro" "" { target c++26 } }
 #define continue 1			// { dg-warning "keyword 'continue' defined as macro" "" { target c++26 } }
-#define contract_assert 1
+#define contract_assert 1		// { dg-warning "keyword 'contract_assert' defined as macro" "" { target c++26 } }
 #define co_return 1			// { dg-warning "keyword 'co_return' defined as macro" "" { target c++26 } }
 #define co_yield 1			// { dg-warning "keyword 'co_yield' defined as macro" "" { target c++26 } }
 #define decltype 1			// { dg-warning "keyword 'decltype' defined as macro" "" { target c++26 } }

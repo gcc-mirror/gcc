@@ -26,7 +26,7 @@
 #undef constexpr 			// { dg-error "undefining keyword 'constexpr'" "" { target c++26 } }
 #undef constinit 			// { dg-error "undefining keyword 'constinit'" "" { target c++26 } }
 #undef continue 			// { dg-error "undefining keyword 'continue'" "" { target c++26 } }
-#undef contract_assert
+#undef contract_assert			// { dg-error "undefining keyword 'contract_assert'" "" { target c++26 } }
 #undef co_return 			// { dg-error "undefining keyword 'co_return'" "" { target c++26 } }
 #undef co_yield 			// { dg-error "undefining keyword 'co_yield'" "" { target c++26 } }
 #undef decltype 			// { dg-error "undefining keyword 'decltype'" "" { target c++26 } }

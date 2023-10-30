@@ -224,6 +224,8 @@ in the following sections.
 -fconcepts  -fconcepts-diagnostics-depth=@var{n}
 -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
+-fcontracts
+-fcontract-evaluation-semantic=@r{[}ignore@r{|}observe@r{|}enforce@r{|}quick_enforce@r{]}
 -fcoroutines  -fdiagnostics-all-candidates
 -fno-elide-constructors
 -fno-enforce-eh-specs
@@ -3310,6 +3312,48 @@ smaller than the above limit, or if in a body of some loop or even outside
 of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
+
+@opindex fcontracts
+@opindex fno-contracts
+@item -fcontracts
+Enable support for the C++ Contracts feature, as specified in the C++26
+working draft (N5003).
+
+On violation of an enforced or observed contract (see @option{-fcontract-evaluation-semantic}
+below), a violation handler is called; the standard library provides a default
+handler that emits information about the contract that failed.
+
+Users can replace the default violation handler by defining
+@smallexample
+void
+handle_contract_violation (const std::contracts::contract_violation&);
+@end smallexample
+
+@opindex fcontract-evaluation-semantic
+@item -fcontract-evaluation-semantic=@var{semantic}
+Set the semantic with which contracts will be evaluated to @var{semantic}.
+
+Available values for the evaluation mode are:
+
+'@code{ignored}' The contract checks will be elided, with no checking added at
+either compile or runtime.
+
+'@code{observed}' The contract checks are performed (at runtime) and, if one
+fails, a handler is called that allows actions such as logging or emitting
+run-time warnings. When the handler returns, the execution of the code will
+continue.  At compile-time the checks are performed for @code{constexpr}
+evaluations, in this case a diagnostic is emitted if the check fails.
+
+'@code{enforce}' The contract checks are performed and the handler is called if
+one fails.  When the handler returns the execution of the code is terminated
+preventing it from continuing past the failed case.  At compile-time the checks
+are applied to @code{constexpr} and, if one fails, the program is ill-formed;
+an error will be emitted.
+
+'@code{quick_enforce}' The contract checks are performed (at runtime) and, if one
+fails, the execution is terminated immediately (without calling any handler).
+At compile-time there is no difference in behaviour between this option and
+the @code{enforce} case, since no handler is invoked at compile time.
 
 @opindex fcoroutines
 @opindex fno-coroutines

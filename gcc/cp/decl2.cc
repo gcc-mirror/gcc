@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "escaped_string.h"
 #include "gcc-rich-location.h"
 #include "tree-pretty-print-markup.h"
+#include "contracts.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
@@ -6103,6 +6104,9 @@ c_parse_final_cleanups (void)
 					 pending_statics->length ()))
 	reconsider = true;
     }
+
+  if (flag_contracts)
+    maybe_emit_violation_handler_wrappers ();
 
   /* All templates have been instantiated.  */
   at_eof = 2;

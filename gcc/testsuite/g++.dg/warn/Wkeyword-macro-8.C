@@ -3,6 +3,7 @@
 // { dg-do preprocess }
 // { dg-options "-Wkeyword-macro" }
 // { dg-additional-options "-fmodules" { target c++20 } }
+// { dg-additional-options "-fcontracts" { target c++26 } }
 
 // [lex.key]
 #undef alignas				// { dg-warning "undefining keyword 'alignas'" "" { target c++11 } }
@@ -26,7 +27,7 @@
 #undef constexpr			// { dg-warning "undefining keyword 'constexpr'" "" { target c++11 } }
 #undef constinit			// { dg-warning "undefining keyword 'constinit'" "" { target c++20 } }
 #undef continue				// { dg-warning "undefining keyword 'continue'" }
-#undef contract_assert
+#undef contract_assert			// { dg-warning "undefining keyword 'contract_assert'" "" { target c++26 } }
 #undef co_return			// { dg-warning "undefining keyword 'co_return'" "" { target c++20 } }
 #undef co_yield				// { dg-warning "undefining keyword 'co_yield'" "" { target c++20 } }
 #undef decltype				// { dg-warning "undefining keyword 'decltype'" "" { target c++11 } }
