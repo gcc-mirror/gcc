@@ -3455,7 +3455,7 @@ darwin_override_options (void)
       && write_symbols == DWARF2_DEBUG)
     flag_var_tracking_uninit = flag_var_tracking;
 
-  if (OPTION_SET_P (flag_pie) && flag_pie)
+  if (global_options_set.x_flag_pie && flag_pie)
     {
       /* This is a little complicated, to match Xcode tools.
 	 For Darwin, PIE requires PIC codegen, but otherwise is only a link-
