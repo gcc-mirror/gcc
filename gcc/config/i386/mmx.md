@@ -3360,21 +3360,6 @@
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "TI")])
 
-(define_split
-  [(set (match_operand:V4HI 0 "register_operand")
-	(eq:V4HI
-	  (eq:V4HI
-	    (us_minus:V4HI
-	      (match_operand:V4HI 1 "register_operand")
-	      (match_operand:V4HI 2 "register_operand"))
-	    (match_operand:V4HI 3 "const0_operand"))
-	  (match_operand:V4HI 4 "const0_operand")))]
-  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
-  [(set (match_dup 0)
-	(umin:V4HI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0)
-	(eq:V4HI (match_dup 0) (match_dup 2)))])
-
 (define_expand "mmx_<code>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand")
         (umaxmin:V8QI
@@ -3408,21 +3393,6 @@
 	  (match_operand:V8QI 2 "register_operand")))]
   "TARGET_MMX_WITH_SSE")
 
-(define_split
-  [(set (match_operand:V8QI 0 "register_operand")
-	(eq:V8QI
-	  (eq:V8QI
-	    (us_minus:V8QI
-	      (match_operand:V8QI 1 "register_operand")
-	      (match_operand:V8QI 2 "register_operand"))
-	    (match_operand:V8QI 3 "const0_operand"))
-	  (match_operand:V8QI 4 "const0_operand")))]
-  "TARGET_MMX_WITH_SSE"
-  [(set (match_dup 0)
-	(umin:V8QI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0)
-	(eq:V8QI (match_dup 0) (match_dup 2)))])
-
 (define_insn "<code><mode>3"
   [(set (match_operand:VI1_16_32 0 "register_operand" "=x,Yw")
         (umaxmin:VI1_16_32
@@ -3435,21 +3405,6 @@
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
-
-(define_split
-  [(set (match_operand:V4QI 0 "register_operand")
-	(eq:V4QI
-	  (eq:V4QI
-	    (us_minus:V4QI
-	      (match_operand:V4QI 1 "register_operand")
-	      (match_operand:V4QI 2 "register_operand"))
-	    (match_operand:V4QI 3 "const0_operand"))
-	  (match_operand:V4QI 4 "const0_operand")))]
-  "TARGET_SSE2"
-  [(set (match_dup 0)
-	(umin:V4QI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0)
-	(eq:V4QI (match_dup 0) (match_dup 2)))])
 
 (define_insn "<code>v2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=Yr,*x,Yv")
@@ -3466,21 +3421,6 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "TI")])
-
-(define_split
-  [(set (match_operand:V2HI 0 "register_operand")
-	(eq:V2HI
-	  (eq:V2HI
-	    (us_minus:V2HI
-	      (match_operand:V2HI 1 "register_operand")
-	      (match_operand:V2HI 2 "register_operand"))
-	    (match_operand:V2HI 3 "const0_operand"))
-	  (match_operand:V2HI 4 "const0_operand")))]
-  "TARGET_SSE4_1"
-  [(set (match_dup 0)
-	(umin:V2HI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0)
-	(eq:V2HI (match_dup 0) (match_dup 2)))])
 
 (define_insn "ssse3_abs<mode>2"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y,Yv")
@@ -3954,7 +3894,7 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
-(define_split
+(define_insn_and_split "*mmx_pblendvb_v8qi_1"
   [(set (match_operand:V8QI 0 "register_operand")
        (unspec:V8QI
 	  [(match_operand:V8QI 1 "register_operand")
@@ -3962,21 +3902,26 @@
 	   (eq:V8QI
 	     (eq:V8QI
 		(match_operand:V8QI 3 "register_operand")
-		(match_operand:V8QI 4 "register_operand"))
+		(match_operand:V8QI 4 "nonmemory_operand"))
 	     (match_operand:V8QI 5 "const0_operand"))]
 	   UNSPEC_BLENDV))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
   [(set (match_dup 6)
-	(eq:V8QI (match_dup 3) (match_dup 4)))
+	(eq:V8QI (match_dup 3) (match_dup 7)))
    (set (match_dup 0)
 	(unspec:V8QI
 	  [(match_dup 2)
 	   (match_dup 1)
 	   (match_dup 6)]
 	  UNSPEC_BLENDV))]
-  "operands[6] = gen_reg_rtx (V8QImode);")
+{
+  operands[6] = gen_reg_rtx (V8QImode);
+  operands[7] = force_reg (V8QImode, operands[4]);
+})
 
-(define_split
+(define_insn_and_split "*mmx_pblendvb_v8qi_2"
   [(set (match_operand:V8QI 0 "register_operand")
        (unspec:V8QI
 	  [(match_operand:V8QI 1 "register_operand")
@@ -3985,12 +3930,14 @@
 	     (eq:MMXMODE24
 	       (eq:MMXMODE24
 		 (match_operand:MMXMODE24 3 "register_operand")
-		 (match_operand:MMXMODE24 4 "register_operand"))
+		 (match_operand:MMXMODE24 4 "nonmemory_operand"))
 	     (match_operand:MMXMODE24 5 "const0_operand")) 0)]
 	   UNSPEC_BLENDV))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
   [(set (match_dup 6)
-	(eq:MMXMODE24 (match_dup 3) (match_dup 4)))
+	(eq:MMXMODE24 (match_dup 3) (match_dup 8)))
    (set (match_dup 0)
 	(unspec:V8QI
 	  [(match_dup 2)
@@ -4000,6 +3947,7 @@
 {
   operands[6] = gen_reg_rtx (<MODE>mode);
   operands[7] = lowpart_subreg (V8QImode, operands[6], <MODE>mode);
+  operands[8] = force_reg (<MODE>mode, operands[4]);
 })
 
 (define_insn "mmx_pblendvb_<mode>"
@@ -4022,7 +3970,7 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
-(define_split
+(define_insn_and_split "*mmx_pblendvb_<mode>_1"
   [(set (match_operand:VI_16_32 0 "register_operand")
 	(unspec:VI_16_32
 	  [(match_operand:VI_16_32 1 "register_operand")
@@ -4030,21 +3978,26 @@
 	   (eq:VI_16_32
 	     (eq:VI_16_32
 		(match_operand:VI_16_32 3 "register_operand")
-		(match_operand:VI_16_32 4 "register_operand"))
+		(match_operand:VI_16_32 4 "nonmemory_operand"))
 	     (match_operand:VI_16_32 5 "const0_operand"))]
 	   UNSPEC_BLENDV))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
   [(set (match_dup 6)
-	(eq:VI_16_32 (match_dup 3) (match_dup 4)))
+	(eq:VI_16_32 (match_dup 3) (match_dup 7)))
    (set (match_dup 0)
 	(unspec:VI_16_32
 	  [(match_dup 2)
 	   (match_dup 1)
 	   (match_dup 6)]
 	  UNSPEC_BLENDV))]
-  "operands[6] = gen_reg_rtx (<MODE>mode);")
+{
+  operands[6] = gen_reg_rtx (<MODE>mode);
+  operands[7] = force_reg (<MODE>mode, operands[4]);
+})
 
-(define_split
+(define_insn_and_split "*mmx_pblendvb_v4qi_2"
   [(set (match_operand:V4QI 0 "register_operand")
        (unspec:V4QI
 	  [(match_operand:V4QI 1 "register_operand")
@@ -4053,12 +4006,14 @@
 	     (eq:V2HI
 	       (eq:V2HI
 		 (match_operand:V2HI 3 "register_operand")
-		 (match_operand:V2HI 4 "register_operand"))
+		 (match_operand:V2HI 4 "nonmemory_operand"))
 	     (match_operand:V2HI 5 "const0_operand")) 0)]
 	   UNSPEC_BLENDV))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
   [(set (match_dup 6)
-	(eq:V2HI (match_dup 3) (match_dup 4)))
+	(eq:V2HI (match_dup 3) (match_dup 8)))
    (set (match_dup 0)
 	(unspec:V4QI
 	  [(match_dup 2)
@@ -4068,6 +4023,7 @@
 {
   operands[6] = gen_reg_rtx (V2HImode);
   operands[7] = lowpart_subreg (V4QImode, operands[6], V2HImode);
+  operands[8] = force_reg (V2HImode, operands[4]);
 })
 
 ;; XOP parallel XMM conditional moves

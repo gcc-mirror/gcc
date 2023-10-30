@@ -3,7 +3,6 @@
 /* { dg-options "-O2 -mavx512fp16 -mavx512vl" } */
 /* { dg-final { scan-assembler-times "vpcmpeqw" 6 } } */
 /* { dg-final { scan-assembler-times "vpcmpgtw" 2 } } */
-/* { dg-final { scan-assembler-times "vpminuw" 2 } } */
 /* { dg-final { scan-assembler-times "vcmpph" 8 } } */
 /* { dg-final { scan-assembler-times "vpblendvb" 8 } } */
 typedef unsigned short  __attribute__((__vector_size__ (4))) __v2hu;
