@@ -1,3 +1,7 @@
+2023-10-31  Neal Frager  <neal.frager@amd.com>
+
+	* config/microblaze/microblaze.cc: Fix mcpu version check.
+
 2023-10-30  Mayshao  <mayshao-oc@zhaoxin.com>
 
 	* common/config/i386/cpuinfo.h (get_zhaoxin_cpu): Recognize yongfeng.

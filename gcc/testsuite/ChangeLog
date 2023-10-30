@@ -1,3 +1,25 @@
+2023-10-31  Neal Frager  <neal.frager@amd.com>
+
+	* gcc.target/microblaze/isa/bshift.c: Bump to mcpu=v10.0.
+	* gcc.target/microblaze/isa/div.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp1.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp2.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp3.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp4.c: Ditto.
+	* gcc.target/microblaze/isa/fcvt.c: Ditto.
+	* gcc.target/microblaze/isa/float.c: Ditto.
+	* gcc.target/microblaze/isa/fsqrt.c: Ditto.
+	* gcc.target/microblaze/isa/mul-bshift-pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/mul-bshift.c: Ditto.
+	* gcc.target/microblaze/isa/mul.c: Ditto.
+	* gcc.target/microblaze/isa/mulh-bshift-pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/mulh.c: Ditto.
+	* gcc.target/microblaze/isa/nofcmp.c: Ditto.
+	* gcc.target/microblaze/isa/nofloat.c: Ditto.
+	* gcc.target/microblaze/isa/pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/vanilla.c: Ditto.
+	* gcc.target/microblaze/microblaze.exp: Ditto.
+
 2023-10-30  Mayshao  <mayshao-oc@zhaoxin.com>
 
 	* g++.target/i386/mv32.C: Handle new -march.
