@@ -1357,6 +1357,14 @@ maybe_splice_retval_cleanup (tree compound_stmt, bool is_try)
 	  tsi_delink (&iter);
 	}
       tree dtor = build_cleanup (retval);
+      if (!function_body)
+	{
+	  /* Clear the sentinel so we don't try to destroy the retval again on
+	     rethrow (c++/112301).  */
+	  tree clear = build2 (MODIFY_EXPR, boolean_type_node,
+			       current_retval_sentinel, boolean_false_node);
+	  dtor = build2 (COMPOUND_EXPR, void_type_node, clear, dtor);
+	}
       tree cond = build3 (COND_EXPR, void_type_node, current_retval_sentinel,
 			  dtor, void_node);
       tree cleanup = build_stmt (loc, CLEANUP_STMT,
