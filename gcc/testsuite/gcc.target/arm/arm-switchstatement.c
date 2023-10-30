@@ -53,9 +53,10 @@ inline void SIFunction (const char* flag)
 /*
 **QImode_test:
 **	...
-**	adr	(r[0-9]+), .L[0-9]+
-**	ldrb	\1, \[\1, r[0-9]+\]
-**	add	pc, pc, \1, lsl #2
+**	ldr	(r[0-9]+), .L[0-9]+
+**	...
+**	ldrb	(r[0-9]+), \[\1, r[0-9]+\]
+**	add	pc, pc, \2, lsl #2
 **	...
 */
 __attribute__ ((noinline)) __attribute__ ((noclone)) const char* QImode_test(enum z x)
@@ -77,10 +78,11 @@ __attribute__ ((noinline)) __attribute__ ((noclone)) const char* QImode_test(enu
 /*
 **HImode_test:
 **	...
-**	adr	(r[0-9]+), .L[0-9]+
-**	add	\1, \1, (r[0-9]+)
-**	ldrh	\1, \[\1, \2\]
-**	add	pc, pc, \1, lsl #2
+**	ldr	(r[0-9]+), .L[0-9]+
+**	...
+**	add	r[0-9]+, r[0-9]+, r[0-9]+
+**	ldrh	(r[0-9]+), \[r[0-9]+, r[0-9]+]
+**	add	pc, pc, \2, lsl #2
 **	...
 */
 __attribute__ ((noinline)) __attribute__ ((noclone)) const char* HImode_test(enum z x)
@@ -102,7 +104,8 @@ __attribute__ ((noinline)) __attribute__ ((noclone)) const char* HImode_test(enu
 /*
 **SImode_test:
 **	...
-**	adr	(r[0-9]+), .L[0-9]+
+**	ldr	(r[0-9]+), .L[0-9]+
+**	...
 **	ldr	pc, \[\1, r[0-9]+, lsl #2\]
 **	...
 */
@@ -125,10 +128,11 @@ __attribute__ ((noinline)) __attribute__ ((noclone)) const char* SImode_test(enu
 /*
 **backwards_branch_test:
 **	...
-**	adr	(r[0-9]+), .L[0-9]+
-**	add	\1, \1, (r[0-9]+)
-**	ldrsh	\1, \[\1, \2\]
-**	add	pc, pc, \1, lsl #2
+**	ldr	(r[0-9]+), .L[0-9]+
+**	...
+**	add	r[0-9]+, r[0-9]+, r[0-9]+
+**	ldrsh	(r[0-9]+), \[r[0-9]+, r[0-9]+]
+**	add	pc, pc, \2, lsl #2
 **	...
 */
 __attribute__ ((noinline)) __attribute__ ((noclone)) const char* backwards_branch_test(enum z x, int flag)

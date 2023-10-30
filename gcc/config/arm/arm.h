@@ -2092,10 +2092,11 @@ enum arm_auto_incmodes
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-#define CASE_VECTOR_PC_RELATIVE ((TARGET_ARM || TARGET_THUMB2		\
-				  || (TARGET_THUMB1			\
-				      && (optimize_size || flag_pic)))	\
-				 && (!target_pure_code))
+#define CASE_VECTOR_PC_RELATIVE						\
+   (TARGET_ARM								\
+    || (!target_pure_code						\
+	&& (TARGET_THUMB2						\
+	    || (TARGET_THUMB1 && (optimize_size || flag_pic)))))
 
 
 #define CASE_VECTOR_SHORTEN_MODE(min, max, body)			\
@@ -2301,8 +2302,14 @@ extern int making_const_table;
 	asm_fprintf (STREAM, "\tpop {%r}\n", REGNO);	\
     } while (0)
 
-#define ADDR_VEC_ALIGN(JUMPTABLE)	\
-  ((TARGET_THUMB && GET_MODE (PATTERN (JUMPTABLE)) == SImode) ? 2 : 0)
+/* If the switch table is in the code segment, additional alignment is
+   needed for Thumb SImode tables.  Otherwise, tables in RO data have
+   natural alignment.  */
+#define ADDR_VEC_ALIGN(TABLE)						\
+  (JUMP_TABLES_IN_TEXT_SECTION						\
+   ? ((TARGET_THUMB && GET_MODE (PATTERN (TABLE)) == SImode) ? 2 : 0)	\
+   : (exact_log2 (GET_MODE_ALIGNMENT (GET_MODE (PATTERN (TABLE)))	\
+		  / BITS_PER_UNIT)))
 
 /* Alignment for case labels comes from ADDR_VEC_ALIGN; avoid the
    default alignment from elfos.h.  */

@@ -187,16 +187,16 @@
 	  switch (GET_MODE (body))					\
 	    {								\
 	    case E_QImode:						\
-	      asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d-4)/4\n",	\
+	      asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LLrtx%d-4)/4\n",	\
 			   VALUE, REL);					\
 	      break;							\
 	    case E_HImode:						\
-	      asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d-4)/4\n",	\
+	      asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LLrtx%d-4)/4\n",	\
 			   VALUE, REL);					\
 	      break;							\
 	    case E_SImode:						\
 	      if (flag_pic)						\
-		asm_fprintf (STREAM, "\t.word\t%LL%d-%LL%d-4\n",	\
+		asm_fprintf (STREAM, "\t.word\t%LL%d-%LLrtx%d-4\n",	\
 			     VALUE, REL);				\
 	      else							\
 		asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE);	\
