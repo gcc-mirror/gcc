@@ -26,9 +26,9 @@ f2 (void);
 /*
 **test1:
 **	...
-**	cm.push	{ra, s0-s4}, -80
+**	cm.push	{ra, s0-s[1-9]}, -80
 **	...
-**	cm.popret	{ra, s0-s4}, 80
+**	cm.popret	{ra, s0-s[1-9]}, 80
 **	...
 */
 int
@@ -50,9 +50,9 @@ test1 ()
 /*
 **test2_step1_0_size:
 **	...
-**	cm.push	{ra, s0-s1}, -64
+**	cm.push	{ra, s0-s[1-9]}, -64
 **	...
-**	cm.popret	{ra, s0-s1}, 64
+**	cm.popret	{ra, s0-s[1-9]}, 64
 **	...
 */
 int
@@ -70,9 +70,9 @@ test2_step1_0_size ()
 /*
 **test3:
 **	...
-**	cm.push	{ra, s0-s4}, -80
+**	cm.push	{ra, s0-s[1-9]}, -80
 **	...
-**	cm.popret	{ra, s0-s4}, 80
+**	cm.popret	{ra, s0-s[1-9]}, 80
 **	...
 */
 float
