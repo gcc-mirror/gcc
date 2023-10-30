@@ -9578,6 +9578,12 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	{
 	  if (code->expr1->symtree->n.sym->attr.untyped)
 	    code->expr1->symtree->n.sym->ts = code->expr2->ts;
+	  /* Sometimes the selector expression is given the typespec of the
+	     '_data' field, which is logical enough but inappropriate here. */
+	  if (code->expr2->ts.type == BT_DERIVED
+	      && code->expr2->symtree
+	      && code->expr2->symtree->n.sym->ts.type == BT_CLASS)
+	    code->expr2->ts = code->expr2->symtree->n.sym->ts;
 	  selector_type = CLASS_DATA (code->expr2)
 	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
