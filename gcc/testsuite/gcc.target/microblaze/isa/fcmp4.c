@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a -mhard-float" } */
+/* { dg-options "-O3 -mcpu=v10.0 -mhard-float" } */
 
 void float_func(float f1, float f2, float f3)
 {

@@ -49,7 +49,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/isa/*.\[cSi\]]] \
 ${default_c_flags} ""
 
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/others/*.\[cSi\]]] \
-    "" "-mcpu=v6.00.a"
+    "" "-mcpu=v10.0"
 
 
 # All done.

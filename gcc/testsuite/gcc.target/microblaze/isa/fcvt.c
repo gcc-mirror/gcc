@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a -mhard-float -mxl-float-convert" } */
+/* { dg-options "-O3 -mcpu=v10.0 -mhard-float -mxl-float-convert" } */
 
 int float_func (float f) 
 {
