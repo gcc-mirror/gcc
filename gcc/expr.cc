@@ -1000,18 +1000,21 @@ can_use_qi_vectors (by_pieces_operation op)
 /* Return true if optabs exists for the mode and certain by pieces
    operations.  */
 static bool
-qi_vector_mode_supported_p (fixed_size_mode mode, by_pieces_operation op)
+by_pieces_mode_supported_p (fixed_size_mode mode, by_pieces_operation op)
 {
+  if (optab_handler (mov_optab, mode) == CODE_FOR_nothing)
+    return false;
+
   if ((op == SET_BY_PIECES || op == CLEAR_BY_PIECES)
-      && optab_handler (vec_duplicate_optab, mode) != CODE_FOR_nothing)
-    return true;
+      && VECTOR_MODE_P (mode)
+      && optab_handler (vec_duplicate_optab, mode) == CODE_FOR_nothing)
+    return false;
 
   if (op == COMPARE_BY_PIECES
-      && optab_handler (mov_optab, mode) != CODE_FOR_nothing
-      && can_compare_p (EQ, mode, ccp_jump))
-    return true;
+      && !can_compare_p (EQ, mode, ccp_jump))
+    return false;
 
-  return false;
+  return true;
 }
 
 /* Return the widest mode that can be used to perform part of an
@@ -1035,7 +1038,7 @@ widest_fixed_size_mode_for_size (unsigned int size, by_pieces_operation op)
 	  {
 	    if (GET_MODE_SIZE (candidate) >= size)
 	      break;
-	    if (qi_vector_mode_supported_p (candidate, op))
+	    if (by_pieces_mode_supported_p (candidate, op))
 	      result = candidate;
 	  }
 
@@ -1049,7 +1052,7 @@ widest_fixed_size_mode_for_size (unsigned int size, by_pieces_operation op)
     {
       mode = tmode.require ();
       if (GET_MODE_SIZE (mode) < size
-	  && targetm.scalar_mode_supported_p (mode))
+	  && by_pieces_mode_supported_p (mode, op))
       result = mode;
     }
 
@@ -1454,7 +1457,7 @@ op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
 	      break;
 
 	    if (GET_MODE_SIZE (candidate) >= size
-		&& qi_vector_mode_supported_p (candidate, m_op))
+		&& by_pieces_mode_supported_p (candidate, m_op))
 	      return candidate;
 	  }
     }
