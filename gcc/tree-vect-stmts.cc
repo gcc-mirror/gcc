@@ -1420,8 +1420,17 @@ vectorizable_internal_function (combined_fn cfn, tree fndecl,
       const direct_internal_fn_info &info = direct_internal_fn (ifn);
       if (info.vectorizable)
 	{
+	  bool same_size_p = TYPE_SIZE (vectype_in) == TYPE_SIZE (vectype_out);
 	  tree type0 = (info.type0 < 0 ? vectype_out : vectype_in);
 	  tree type1 = (info.type1 < 0 ? vectype_out : vectype_in);
+
+	  /* The type size of both the vectype_in and vectype_out should be
+	     exactly the same when vectype_out isn't participating the optab.
+	     While there is no restriction for type size when vectype_out
+	     is part of the optab query.  */
+	  if (type0 != vectype_out && type1 != vectype_out && !same_size_p)
+	    return IFN_LAST;
+
 	  if (direct_internal_fn_supported_p (ifn, tree_pair (type0, type1),
 					      OPTIMIZE_FOR_SPEED))
 	    return ifn;
@@ -3359,19 +3368,6 @@ vectorizable_call (vec_info *vinfo,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "no vectype for scalar type %T\n", rhs_type);
 
-      return false;
-    }
-  /* FORNOW: we don't yet support mixtures of vector sizes for calls,
-     just mixtures of nunits.  E.g. DI->SI versions of __builtin_ctz*
-     are traditionally vectorized as two VnDI->VnDI IFN_CTZs followed
-     by a pack of the two vectors into an SI vector.  We would need
-     separate code to handle direct VnDI->VnSI IFN_CTZs.  */
-  if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype_out))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "mismatched vector sizes %T and %T\n",
-			 vectype_in, vectype_out);
       return false;
     }
 
