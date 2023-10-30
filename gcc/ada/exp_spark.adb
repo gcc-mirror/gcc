@@ -200,7 +200,7 @@ package body Exp_SPARK is
       begin
          loop
             if Nkind (Pref) = N_Indexed_Component then
-               Index := First (Expressions (Choice));
+               Index := First (Expressions (Pref));
                Apply_Scalar_Range_Check (Index, Etype (Index));
 
             elsif Is_Array_Type (Typ)
