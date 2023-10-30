@@ -3353,6 +3353,7 @@ archs4x, archs4xd"
 
 ;; Shift instructions.
 
+(define_code_iterator ANY_ROTATE [rotate rotatert])
 (define_code_iterator ANY_SHIFT_ROTATE [ashift ashiftrt lshiftrt
 					rotate rotatert])
 
@@ -3414,6 +3415,37 @@ archs4x, archs4xd"
    (set_attr "iscompact" "maybe,maybe,false,false,false")
    (set_attr "predicable" "no,no,yes,no,no")
    (set_attr "cond" "nocond,canuse,canuse,nocond,nocond")])
+
+(define_insn "<insn>si2_cnt16"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ANY_ROTATE:SI (match_operand:SI 1 "register_operand" "r")
+		       (const_int 16)))]
+  "TARGET_SWAP"
+  "swap\\t%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "two_cycle_core")])
+
+(define_insn "ashlsi2_cnt16"
+  [(set (match_operand:SI 0 "register_operand"             "=r")
+	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
+		   (const_int 16)))]
+  "TARGET_SWAP && TARGET_V2"
+  "lsl16\\t%0,%1"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")
+   (set_attr "predicable" "no")])
+
+(define_insn "lshrsi2_cnt16"
+  [(set (match_operand:SI 0 "register_operand"               "=r")
+	(lshiftrt:SI (match_operand:SI 1 "nonmemory_operand" "rL")
+		     (const_int 16)))]
+  "TARGET_SWAP && TARGET_V2"
+  "lsr16\\t%0,%1"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")
+   (set_attr "predicable" "no")])
 
 ;; Split asl dst,1,src into bset dst,0,src.
 (define_insn_and_split "*ashlsi3_1"
@@ -5924,17 +5956,6 @@ archs4x, archs4xd"
 		   (const_int 8)))]
   "TARGET_BARREL_SHIFTER && TARGET_V2"
   "lsl8\\t%0,%1"
-  [(set_attr "type" "shift")
-   (set_attr "iscompact" "false")
-   (set_attr "length" "4")
-   (set_attr "predicable" "no")])
-
-(define_insn "*ashlsi2_cnt16"
-  [(set (match_operand:SI 0 "register_operand"            "=r")
-	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
-		   (const_int 16)))]
-  "TARGET_SWAP && TARGET_V2"
-  "lsl16\\t%0,%1"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "false")
    (set_attr "length" "4")

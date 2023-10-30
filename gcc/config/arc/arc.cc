@@ -4256,6 +4256,17 @@ arc_split_ashl (rtx *operands)
 	    }
 	  return;
 	}
+      else if (n >= 16 && n <= 22 && TARGET_SWAP && TARGET_V2)
+	{
+	  emit_insn (gen_ashlsi2_cnt16 (operands[0], operands[1]));
+	  if (n > 16)
+	    {
+	      operands[1] = operands[0];
+	      operands[2] = GEN_INT (n - 16);
+	      arc_split_ashl (operands);
+	    }
+	  return;
+	}
       else if (n >= 29)
 	{
 	  if (n < 31)
@@ -4300,6 +4311,15 @@ arc_split_ashr (rtx *operands)
 	    emit_move_insn (operands[0], operands[1]);
 	  return;
 	}
+      else if (n >= 16 && n <= 18 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_extendhisi2 (operands[0],
+				      gen_lowpart (HImode, operands[0])));
+	  while (--n >= 16)
+	    emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
       else if (n == 30)
 	{
 	  rtx tmp = gen_reg_rtx (SImode);
@@ -4337,6 +4357,13 @@ arc_split_lshr (rtx *operands)
 	    }
 	  else
 	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 16 && n <= 19 && TARGET_SWAP && TARGET_V2)
+	{
+	  emit_insn (gen_lshrsi2_cnt16 (operands[0], operands[1]));
+	  while (--n >= 16)
+	    emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
 	  return;
 	}
       else if (n == 30)
@@ -4385,6 +4412,19 @@ arc_split_rotl (rtx *operands)
 	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
 	  return;
 	}
+      else if (n >= 13 && n <= 16 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotlsi2_cnt16 (operands[0], operands[1]));
+	  while (++n <= 16)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 17 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotlsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
       else if (n >= 16 || n == 12 || n == 14)
 	{
 	  emit_insn (gen_rotrsi3_loop (operands[0], operands[1],
@@ -4413,6 +4453,19 @@ arc_split_rotr (rtx *operands)
 	    }
 	  else
 	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n == 15 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 16 && n <= 19 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  while (--n >= 16)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
 	  return;
 	}
       else if (n >= 30)
