@@ -78,6 +78,8 @@ GLIBCXX_8.0 {
 
     # thread/mutex/condition_variable/future
     __once_proxy;
+
+    # targets using emutls
     __emutls_v._ZSt3__811__once_call;
     __emutls_v._ZSt3__815__once_callable;
 
