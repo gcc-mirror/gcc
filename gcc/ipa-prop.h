@@ -213,6 +213,10 @@ struct GTY(()) ipa_argagg_value
   unsigned index : IPA_PROP_ARG_INDEX_LIMIT_BITS;
   /* Whether the value was passed by reference.  */
   unsigned by_ref : 1;
+  /* Set if the value should not be used after materialization in
+     value_numbering.  It is kept around just so that clone materialization can
+     distinguish a combined IPA-CP and IPA-SRA from a deleted argument.  */
+  unsigned killed : 1;
 };
 
 /* A view into a sorted list of aggregate values in a particular context, be it
