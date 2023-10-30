@@ -69,8 +69,9 @@ handle_contract_violation (const std::experimental::contract_violation &violatio
 }
 
 #if _GLIBCXX_INLINE_VERSION
-// Provide symbol without version namespace decoration for gcc.
-extern "C" __attribute__ ((weak)) void
+// The compiler expects the contract_violation class to be in an unversioned
+// namespace, so provide a forwarding function with the expected symbol name.
+extern "C" void
 _Z25handle_contract_violationRKNSt12experimental18contract_violationE
 (const std::experimental::contract_violation &violation)
 { handle_contract_violation(violation); }
