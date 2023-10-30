@@ -1,5 +1,5 @@
 /* PR target/111698 */
-/* { dg-options "-O2 -masm=att" } */
+/* { dg-options "-O2 -masm=att -march=sandybridge" } */
 /* { dg-final { scan-assembler-not "testl" } }  */
 
 int m;
