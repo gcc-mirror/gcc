@@ -956,10 +956,16 @@ arc_select_cc_mode (OP, X, Y)
 
 /* Costs.  */
 
+/* Analog of COSTS_N_INSNS when optimizing for size.  */
+#ifndef COSTS_N_BYTES
+#define COSTS_N_BYTES(N) (N)
+#endif
+
 /* The cost of a branch insn.  */
 /* ??? What's the right value here?  Branches are certainly more
    expensive than reg->reg moves.  */
-#define BRANCH_COST(speed_p, predictable_p) 2
+#define BRANCH_COST(speed_p, predictable_p) \
+	(speed_p ? COSTS_N_INSNS (2) : COSTS_N_INSNS (1))
 
 /* Scc sets the destination to 1 and then conditionally zeroes it.
    Best case, ORed SCCs can be made into clear - condset - condset.
@@ -971,11 +977,8 @@ arc_select_cc_mode (OP, X, Y)
    beging decisive of p0, we want:
    p0 * (branch_cost - 4) > (1 - p0) * 5
    ??? We don't get to see that probability to evaluate, so we can
-   only wildly guess that it might be 50%.
-   ??? The compiler also lacks the notion of branch predictability.  */
-#define LOGICAL_OP_NON_SHORT_CIRCUIT \
-  (BRANCH_COST (optimize_function_for_speed_p (cfun), \
-		false) > 9)
+   only wildly guess that it might be 50%.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT false
 
 /* Nonzero if access to memory by bytes is slow and undesirable.
    For RISC chips, it means that access to memory by bytes is no
