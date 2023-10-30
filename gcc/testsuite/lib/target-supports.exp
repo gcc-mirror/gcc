@@ -1961,6 +1961,17 @@ proc check_effective_target_riscv_zfh { } {
     }]
 }
 
+# Return 1 if the target arch supports the TSO memory ordering extension,
+# 0 otherwise. Cache the result.
+
+proc check_effective_target_riscv_ztso { } {
+    return [check_no_compiler_messages riscv_ext_ztso assembly {
+       #ifndef __riscv_ztso
+       #error "Not __riscv_ztso"
+       #endif
+    }]
+}
+
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {
@@ -2040,7 +2051,7 @@ proc check_effective_target_riscv_zvfh_ok { } {
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvfh } {
+    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvfh ztso } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"
@@ -2109,6 +2120,18 @@ proc add_options_for_riscv_zfh { flags } {
 	return "$flags"
     }
     return "$flags -march=[riscv_get_arch]_zfh"
+}
+
+proc add_options_for_riscv_ztso { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_ztso ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_ztso[[:alnum:]_.]*)_ztso} $flags \\1 ]
+    }
+    if { [check_effective_target_riscv_ztso] } {
+	return "$flags"
+    }
+    return "$flags -march=[riscv_get_arch]_ztso"
 }
 
 proc add_options_for_riscv_zvfh { flags } {
