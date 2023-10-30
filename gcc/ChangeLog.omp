@@ -1,3 +1,9 @@
+2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc/gimplify.cc (gimplify_omp_allocate): Gimplify allocator.
+	* omp-low.cc (lower_omp_allocate): Simplify; GOMP_free can also
+	take a plain 0 as allocator argument (arg is unused in libgomp).
+
 2023-07-14  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.cc (lower_omp_target): Reverse iteration over array

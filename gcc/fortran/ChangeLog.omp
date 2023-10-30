@@ -1,3 +1,8 @@
+2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Avoid gfc_evaluate_now
+	for allocator with indirect ref for better diagnostic.
+
 2023-07-14  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_arrayshape_type): Reverse dimension
