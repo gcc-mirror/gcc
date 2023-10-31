@@ -38,97 +38,96 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
+#include "gimple-fold.h"
 #include "tree-pass.h"
 #include "plugin.h"
+#include "gimplify.h"
 
 #include "ctfc.h"
 #include "btf.h"
 #include "coreout.h"
 #include "core-builtins.h"
 
-/*
- * BPF CO-RE builtins definition.
+/* BPF CO-RE builtins definition.
 
-   The expansion of CO-RE builtins occur in three steps:
-   1. - bpf_resolve_overloaded_core_builtin (pack step)
-     Right after the front-end, all of the CO-RE builtins are converted to an
-     internal builtin __builtin_core_reloc, which takes a single argument and
-     has polymorphic return value to fit the particular expected return type
-     from the original builtin.  The first argument contains an index argument
-     which points to the information stored in a vec<struct cr_builtins>
-     which collects the required information from the original CO-RE builtin in
-     order to use it later on in the __builtin_core_reloc expansion (the next
-     step).
+    The expansion of CO-RE builtins occur in three steps:
+    1. - bpf_resolve_overloaded_core_builtin (pack step)
+      Right after the front-end, all of the CO-RE builtins are converted to an
+      internal builtin __builtin_core_reloc, which takes a single argument and
+      has polymorphic return value to fit the particular expected return type
+      from the original builtin.  The first argument contains an index argument
+      which points to the information stored in a vec<struct cr_builtins> which
+      collects the required information from the original CO-RE builtin in
+      order to use it later on in the __builtin_core_reloc expansion (the next
+      step).
 
-   2. - bpf_expand_core_builtin
-     In this step, the __builtin_core_reloc is expanded to a unspec:UNSPEC_CORE_RELOC
-     with 3 operands, destination, source and the index. The index operand
-     is the index in the vec constructed in the previous step.
+    2. - bpf_expand_core_builtin
+      In this step, the __builtin_core_reloc is expanded to a
+      unspec:UNSPEC_CORE_RELOC with 3 operands, destination, source and the
+      index.  The index operand is the index in the vec constructed in the
+      previous step.
 
-   3. - final asm output (process step)
-     This is the output of the unspec:UNSPEC_CORE_RELOC. The index passed in
-     the third operand is read and extracted as a integer from the rtx node.
-     The data is collected from the vec and it is used to create
-     the proper CO-RE relocation as well as do the final assembly output.
-     It also creates a label to mark the location of the move instruction that
-     is used in the CO-RE relocation.
+    3. - final asm output (process step)
+      This is the output of the unspec:UNSPEC_CORE_RELOC.  The index passed in
+      the third operand is read and extracted as a integer from the rtx node.
+      The data is collected from the vec and it is used to create the proper
+      CO-RE relocation as well as do the final assembly output.  It also
+      creates a label to mark the location of the move instruction that is used
+      in the CO-RE relocation.
 
-  The initialization of the CO-RE builtins infrastructure occurs in
-  bpf_is function.  It creates a struct
-  builtin_helpers_t arrays which defines the kind argument position,
-  the callback helpers, kind, compare, pack and process, for each individual
-  type of builtin argument possible in the original CO-RE builtins.
+    The initialization of the CO-RE builtins infrastructure occurs in
+    bpf_init_core_builtins function.  It creates a struct builtin_helpers_t
+    arrays which defines the kind argument position, the callback helpers,
+    kind, compare, pack and process, for each individual type of builtin
+    argument possible in the original CO-RE builtins.
 
-  More precisely, field expression, type and enum value, used in the following
-  relocations:
-    - __builtin_core_preserve_access_index (<field_expr>)
-    - __builtin_core_field_info (<field_expr>, <kind>)
-    - __builtin_core_type_id (<type>, <kind>)
-    - __builtin_core_type_info (<type>, <kind>)
-    - __builtin_core_enum_value (<enum_value>, <kind>)
+    More precisely, field expression, type and enum value, used in the
+    following relocations:
+      - __builtin_core_field_info (<field_expr>, <kind>)
+      - __builtin_core_type_id (<type>, <kind>)
+      - __builtin_core_type_info (<type>, <kind>)
+      - __builtin_core_enum_value (<enum_value>, <kind>)
 
-  The kind helper allows to identify the proper relocation for the builtin
-  call based on the value within the kind argument.
+    The kind helper allows to identify the proper relocation for the builtin
+    call based on the value within the kind argument.
 
-  The compare helper is used to identify if a new builtin call has similar
-  arguments to any other builtin call with the compiling unit.
-  This enables the possibility to optimize consecutive similar calls of the
-  builtins.
+    The compare helper is used to identify if a new builtin call has similar
+    arguments to any other builtin call with the compiling unit.  This enables
+    the possibility to optimize consecutive similar calls of the builtins.
 
-  The pack helper callbacks are suppose to decode the original CO-RE builtin
-  call arguments, verify that it is a valid tree node for the particular
-  builtin, allocate a struct cr_local in vector and write it with the
-  relevant data for the particular builtin type.
+    The pack helper callbacks are suppose to decode the original CO-RE builtin
+    call arguments, verify that it is a valid tree node for the particular
+    builtin, allocate a struct cr_local in vector and write it with the
+    relevant data for the particular builtin type.
 
-  The process helper should take the data constructed in the pack helper and
-  create a struct cr_final element which contains the essential
-  information to create a CO-RE relocation.
-  This information is further used by the final assembly output step to define
-  the CO-RE relocation and pass-through the default value for the original
-  CO-RE builtin.
+    The process helper should take the data constructed in the pack helper and
+    create a struct cr_final element which contains the essential information
+    to create a CO-RE relocation.
+    This information is further used by the final assembly output step to
+    define the CO-RE relocation and pass-through the default value for the
+    original CO-RE builtin.
 
+    BPF CO-RE preserve access is supported in two forms:
+    - A target builtin, __builtin_preserve_access_index
 
-  BPF CO-RE preserve access is supported in two forms:
-  - A target builtin, __builtin_preserve_access_index
+      This builtin accepts a single argument.  Any access to an aggregate data
+      structure (struct, union or array), also referred through the document as
+      an field expression,  within the argument will be recorded by the CO-RE
+      machinery, resulting in one or more relocations being inserted in the
+      .BTF.ext section of the output.
 
-    This builtin accepts a single argument.  Any access to an aggregate data
-    structure (struct, union or array) within the argument will be recorded by
-    the CO-RE machinery, resulting in a relocation record being placed in the
-    .BTF.ext section of the output.
+    - An attribute, __attribute__((preserve_access_index))
 
-    It is implemented in bpf_resolve_overloaded_builtin () and
-    bpf_expand_builtin (), using the supporting routines below.
+      This attribute can be applied to struct and union types.  Any access done
+      through a node typed with this attribute will be recorded by the CO-RE
+      machinery.  This conversion is done in an independent gimple pass very
+      early in compilation, making sure that the field expression is
+      originating from a tree node which his type is attributed.
 
-  - An attribute, __attribute__((preserve_access_index))
-
-    This attribute can be applied to struct and union types.  Any access to a
-    type with this attribute will be recorded by the CO-RE machinery.
-    In the expand, any move matching is checked if any of its operands is
-    an expression to an attributed type, and if so, the expand will emit a
-    unspec:UNSPEC_CORE_RELOC that later on, in final assembly output, will
-    create the CO-RE relocation, just like it would happen if it was defined
-    as a builtin.  */
-
+    Both these variants of preserve_access_index rely on a tree walker that
+    identifies and converts any CO-RE valid field expressions.  Apart from the
+    gimple specific requirements for the attribute implementation both builtin
+    and attribute implementations rely on the same mechanism.  */
 
 struct GTY(()) cr_builtins
 {
@@ -139,12 +138,13 @@ struct GTY(()) cr_builtins
   enum btf_core_reloc_kind kind;
   enum bpf_builtins orig_builtin_code;
   tree orig_arg_expr;
+  tree access_node;
 };
 typedef struct cr_builtins *cr_builtins_ref;
 
 #define CORE_BUILTINS_DATA_EMPTY \
   { NULL_TREE, NULL_TREE, NULL_TREE, NULL_RTX, BPF_RELO_INVALID, \
-    BPF_BUILTIN_UNUSED, NULL }
+    BPF_BUILTIN_UNUSED, NULL_TREE, NULL_TREE}
 
 /* Vector definition and its access function.  */
 static GTY(()) vec<cr_builtins_ref, va_gc> *builtins_data = NULL;
@@ -189,7 +189,6 @@ search_builtin_data (builtin_local_data_compare_fn callback,
 enum cr_decision
 {
   FAILED_VALIDATION = 0,
-  KEEP_ORIGINAL_NO_RELOCATION,
   REPLACE_CREATE_RELOCATION,
   REPLACE_NO_RELOCATION
 };
@@ -286,7 +285,7 @@ compare_same_ptr_type (struct cr_builtins *a, struct cr_builtins *b)
 
 /* Handling for __attribute__((preserve_access_index)) for BPF CO-RE support.
 
-   This attribute marks a structure/union/array type as "preseve", so that
+   This attribute marks a structure/union/array type as "preserve", so that
    every access to that type should be recorded and replayed by the BPF loader;
    this is just the same functionality as __builtin_preserve_access_index,
    but in the form of an attribute for an entire aggregate type.
@@ -300,7 +299,7 @@ compare_same_ptr_type (struct cr_builtins *a, struct cr_builtins *b)
    will record access all the way to 'a', even though struct X does not have
    the preserve_access_index attribute.
 
-   This is to follow LLVM behavior. */
+   This is to follow LLVM behavior.  */
 
 /* True if tree T accesses any member of a struct/union/class which is marked
    with the PRESERVE_ACCESS_INDEX attribute.  */
@@ -319,11 +318,14 @@ is_attr_preserve_access (tree t)
   tree base = get_inner_reference (t, &bitsize, &bitpos, &var_off, &mode,
 				   &sign, &reverse, &vol);
 
+  if (TREE_CODE (t) == SSA_NAME
+      || TREE_CODE (t) == VAR_DECL)
+    return lookup_attribute ("preserve_access_index",
+			     TYPE_ATTRIBUTES (TREE_TYPE (base)));
+
   if (TREE_CODE (base) == MEM_REF)
-    {
-      return lookup_attribute ("preserve_access_index",
-			       TYPE_ATTRIBUTES (TREE_TYPE (base)));
-    }
+    return lookup_attribute ("preserve_access_index",
+			     TYPE_ATTRIBUTES (TREE_TYPE (base)));
 
   if (TREE_CODE (t) == COMPONENT_REF)
     {
@@ -339,7 +341,8 @@ is_attr_preserve_access (tree t)
       const tree container = DECL_CONTEXT (TREE_OPERAND (t, 1));
 
       return lookup_attribute ("preserve_access_index",
-			       TYPE_ATTRIBUTES (container));
+			       TYPE_ATTRIBUTES (container))
+	     || is_attr_preserve_access (op);
     }
 
   else if (TREE_CODE (t) == ADDR_EXPR)
@@ -348,6 +351,25 @@ is_attr_preserve_access (tree t)
   return false;
 }
 
+static tree
+root_for_core_field_info (tree node)
+{
+  bool done = false;
+  while (!done)
+    {
+      switch (TREE_CODE (node))
+	{
+	case ADDR_EXPR:
+	case NOP_EXPR:
+	  node = TREE_OPERAND (node, 0);
+	  break;
+	default:
+	  done = true;
+	  break;
+	}
+    }
+  return node;
+}
 
 /* Expand a call to __builtin_preserve_field_info by evaluating the requested
    information about SRC according to KIND, and return a tree holding
@@ -363,6 +385,8 @@ core_field_info (tree src, enum btf_core_reloc_kind kind)
   int unsignedp, reversep, volatilep;
   location_t loc = EXPR_LOCATION (src);
   tree type = TREE_TYPE (src);
+
+  src = root_for_core_field_info (src);
 
   get_inner_reference (src, &bitsize, &bitpos, &var_off, &mode, &unsignedp,
 		       &reversep, &volatilep);
@@ -499,7 +523,7 @@ core_field_info (tree src, enum btf_core_reloc_kind kind)
    NODE should be a FIELD_DECL (i.e. of struct or union), or an ARRAY_REF.  */
 
 static int
-bpf_core_get_index (const tree node)
+bpf_core_get_index (const tree node, bool *valid)
 {
   enum tree_code code = TREE_CODE (node);
 
@@ -539,66 +563,104 @@ bpf_core_get_index (const tree node)
 	}
     }
 
-  gcc_unreachable ();
+  if (valid != NULL)
+    *valid = false;
   return -1;
 }
 
-/* This function takes a possible field expression (node) and verifies it is
-   valid, extracts what should be the root of the valid field expression and
-   composes the accessors array of indices.  The accessors are later used in the
-   CO-RE relocation in the string field.  */
+#define PREPARE_FAKE_PTR(P) \
+  _fake_##P; \
+  if (P == NULL) \
+    P = &_fake_##P; \
+  _fake_##P
+
+#define MAX_NR_ACCESSORS 100
+
+/* This function validates and extracts information for CO-RE field expression.
+   Any parametric expression is allowed to be passed in argument NODE.
+
+   If NODE is a valid CO-RE expression VALID boolean pointer would be set to
+   true.
+
+   A CO-RE field expression is an expression accessing structures, arrays and
+   unions.
+   An examples of CO-RE valid expression is:
+     A->B[2].UNION_C.D
+
+   This function traverses the tree structure to verify if the expression in
+   NODE is valid and extracts other characteristics of the expression, and
+   returns it by updating the pointer arguments:
+
+   ACCESSORS: is an array with the indexes of the particular fields
+     within the expression.  The indexes are related to actual index on the
+     struct/union type, or the array access index.  The RETURN of the function
+     is the number of accessors required to represent this expression in CO-RE
+     access string.
+   VALID - boolean pointer that sets if expression is valid or not for CO-RE.
+   ACCESS_NODE - It is the base of the expression.  Using the example below is
+     the node that represents the A in the expression.
+
+   ALLOW_ENTRY_CAST is an input arguments and specifies if the function should
+   consider as valid expressions in which NODE entry is a cast expression (or
+   tree code nop_expr).  */
 
 static unsigned char
-compute_field_expr (tree node, unsigned int *accessors, bool *valid,
-		    tree *root)
+compute_field_expr (tree node, unsigned int *accessors,
+		    bool *valid,
+		    tree *access_node,
+		    bool allow_entry_cast = true)
 {
   unsigned char n = 0;
+  unsigned int fake_accessors[MAX_NR_ACCESSORS];
+  if (accessors == NULL)
+    accessors = fake_accessors;
+  bool PREPARE_FAKE_PTR (valid) = true;
+  tree PREPARE_FAKE_PTR (access_node) = NULL_TREE;
+
   if (node == NULL_TREE)
     {
       *valid = false;
       return 0;
     }
 
+  *access_node = node;
+
   switch (TREE_CODE (node))
     {
-    case INDIRECT_REF:
     case ADDR_EXPR:
+      return 0;
+    case INDIRECT_REF:
       accessors[0] = 0;
-      n = compute_field_expr (TREE_OPERAND (node, 0), &accessors[0], valid,
-			      root);
-      *root = node;
-      return n + 1;
+      return 1;
     case POINTER_PLUS_EXPR:
-      accessors[0] = bpf_core_get_index (node);
-      *root = node;
+      accessors[0] = bpf_core_get_index (node, valid);
       return 1;
     case COMPONENT_REF:
-      n = compute_field_expr (TREE_OPERAND (node, 0), accessors, valid,
-			      root);
-      accessors[n] = bpf_core_get_index (TREE_OPERAND (node, 1));
-      *root = node;
+      n = compute_field_expr (TREE_OPERAND (node, 0), accessors,
+			      valid,
+			      access_node, false);
+      accessors[n] = bpf_core_get_index (TREE_OPERAND (node, 1), valid);
       return n + 1;
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case MEM_REF:
-      n = compute_field_expr (TREE_OPERAND (node, 0), accessors, valid, root);
-      accessors[n] = bpf_core_get_index (node);
-      *root = node;
-      return n + 1;
-    case NOP_EXPR:
-      n = compute_field_expr (TREE_OPERAND (node, 0), accessors, valid, root);
-      *root = node;
+      n = compute_field_expr (TREE_OPERAND (node, 0), accessors,
+			      valid,
+			      access_node, false);
+      accessors[n++] = bpf_core_get_index (node, valid);
       return n;
-    case TARGET_EXPR:
-      {
-	tree value = TREE_OPERAND (node, 1);
-	if (TREE_CODE (value) == BIND_EXPR
-	    && TREE_CODE (value = BIND_EXPR_BODY (value)) == MODIFY_EXPR)
-	  return compute_field_expr (TREE_OPERAND (value, 1), accessors, valid,
-				     root);
-      }
-      *root = node;
-      return 0;
+    case NOP_EXPR:
+      if (allow_entry_cast == true)
+	{
+	  *valid = false;
+	  return 0;
+	}
+      n = compute_field_expr (TREE_OPERAND (node, 0), accessors,
+			      valid,
+			      access_node, false);
+      return n;
+
+    case CALL_EXPR:
     case SSA_NAME:
     case VAR_DECL:
     case PARM_DECL:
@@ -608,81 +670,46 @@ compute_field_expr (tree node, unsigned int *accessors, bool *valid,
       return 0;
     }
 }
+#undef PREPARE_FAKE_PTR
+
+
+/* Pack helper for the __builtin_preserve_field_info.  */
 
 static struct cr_local
-pack_field_expr_for_access_index (tree *args,
-				  enum btf_core_reloc_kind kind,
-				  enum bpf_builtins code ATTRIBUTE_UNUSED)
+pack_field_expr (tree *args,
+		 enum btf_core_reloc_kind kind,
+		 enum bpf_builtins code ATTRIBUTE_UNUSED)
 {
   struct cr_local ret = CR_LOCAL_EMPTY;
   ret.fail = false;
 
   tree arg = args[0];
   tree root = arg;
+  tree access_node = NULL_TREE;
+  tree type = NULL_TREE;
 
-  /* Avoid double-recording information if argument is an access to
-     a struct/union marked __attribute__((preserve_access_index)).  This
-     Will be handled by the attribute handling pass.  */
-  if (is_attr_preserve_access (arg))
-    {
-      ret.reloc_decision = REPLACE_NO_RELOCATION;
-      ret.reloc_data.expr = arg;
-    }
-  else
-    {
-      ret.reloc_decision = REPLACE_CREATE_RELOCATION;
-
-      unsigned int accessors[100];
-      bool valid = true;
-      compute_field_expr (arg, accessors, &valid, &root);
-
-      if (valid == true)
-	ret.reloc_data.expr = root;
-      else
-	{
-	  bpf_error_at (EXPR_LOC_OR_LOC (arg, UNKNOWN_LOCATION),
-			"Cannot compute index for field argument");
-	  ret.fail = true;
-	}
-    }
-
-  /* Note: the type of default_value is used to define the return type of
-   __builtin_core_reloc in bpf_resolve_overloaded_core_builtin.  */
-  ret.reloc_data.type = TREE_TYPE (root);
-  ret.reloc_data.default_value = build_int_cst (ret.reloc_data.type, 0);
-  ret.reloc_data.kind = kind;
-
-  if (TREE_CODE (ret.reloc_data.default_value) == ERROR_MARK)
-    ret.fail = true;
-
-  return ret;
-}
-
-static struct cr_local
-pack_field_expr_for_preserve_field (tree *args,
-				    enum btf_core_reloc_kind kind,
-				    enum bpf_builtins code ATTRIBUTE_UNUSED)
-{
-  struct cr_local ret = CR_LOCAL_EMPTY;
-  ret.fail = false;
-
-  tree arg = args[0];
-  tree tmp;
-  tree root = arg;
-
-  /* Remove cast to void * created by front-end to fit builtin type, when passed
-   * a simple expression like f->u.  */
-  if (TREE_CODE (arg) == NOP_EXPR && (tmp = TREE_OPERAND (arg, 0))
-      && TREE_CODE (tmp) == ADDR_EXPR && (tmp = TREE_OPERAND (tmp, 0))
-      && arg != NULL_TREE)
-    arg = tmp;
+  ret.reloc_decision = REPLACE_CREATE_RELOCATION;
 
   unsigned int accessors[100];
   bool valid = true;
-  compute_field_expr (arg, accessors, &valid, &root);
+  compute_field_expr (root, accessors, &valid, &access_node, false);
+
+  type = TREE_TYPE (access_node);
 
   if (valid == true)
-    ret.reloc_data.expr = root;
+    {
+      ret.reloc_data.expr = root;
+
+      /* Note: the type of default_value is used to define the return type of
+       __builtin_core_reloc in bpf_resolve_overloaded_core_builtin.  */
+      ret.reloc_data.access_node = access_node;
+      ret.reloc_data.type = type;
+      ret.reloc_data.default_value = core_field_info (root, kind);
+      ret.reloc_data.kind = kind;
+
+      if (TREE_CODE (ret.reloc_data.default_value) == ERROR_MARK)
+	ret.fail = true;
+    }
   else
     {
       bpf_error_at (EXPR_LOC_OR_LOC (arg, UNKNOWN_LOCATION),
@@ -690,16 +717,10 @@ pack_field_expr_for_preserve_field (tree *args,
       ret.fail = true;
     }
 
-  ret.reloc_decision = REPLACE_CREATE_RELOCATION;
-  ret.reloc_data.type = TREE_TYPE (root);
-  ret.reloc_data.default_value = core_field_info (root, kind);
-  ret.reloc_data.kind = kind;
-
-  if (TREE_CODE (ret.reloc_data.default_value) == ERROR_MARK)
-    ret.fail = true;
-
   return ret;
 }
+
+/* Process helper for the __builtin_preserve_field_info.  */
 
 static struct cr_final
 process_field_expr (struct cr_builtins *data)
@@ -711,19 +732,18 @@ process_field_expr (struct cr_builtins *data)
 	      || data->kind == BPF_RELO_FIELD_SIGNED
 	      || data->kind == BPF_RELO_FIELD_EXISTS);
 
-  unsigned int accessors[100];
+  unsigned int accessors[MAX_NR_ACCESSORS];
   unsigned char nr_accessors = 0;
-  bool valid = true;
-  tree root = NULL_TREE;
   tree expr = data->expr;
-  tree type = TREE_TYPE (data->expr);
+  tree type = data->type;
 
   if (TREE_CODE (expr) == ADDR_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  nr_accessors = compute_field_expr (expr, accessors, &valid, &root);
+  expr = root_for_core_field_info (expr);
+  nr_accessors = compute_field_expr (expr, accessors, NULL, NULL, false);
 
-  struct cr_final ret = { NULL, type, data->kind};
+  struct cr_final ret = { NULL, type, data->kind };
 
   char str[100];
   if (nr_accessors > 0)
@@ -740,9 +760,11 @@ process_field_expr (struct cr_builtins *data)
   return ret;
 }
 
-hash_map <tree, tree> bpf_enum_mappings;
-
+static GTY(()) hash_map<tree, tree> *bpf_enum_mappings;
 tree enum_value_type = NULL_TREE;
+
+/* Pack helper for the __builtin_preserve_enum_value.  */
+
 static struct cr_local
 pack_enum_value (tree *args, enum btf_core_reloc_kind kind,
 		 enum bpf_builtins code ATTRIBUTE_UNUSED)
@@ -757,7 +779,7 @@ pack_enum_value (tree *args, enum btf_core_reloc_kind kind,
   tree type = NULL_TREE;
 
   /* Deconstructing "*(typeof (enum_type) *) enum_value" to collect both the
-   * enum_type and enum_value.  */
+     enum_type and enum_value.  */
   if (TREE_CODE (tmp) != TARGET_EXPR
       || (type = TREE_TYPE (tmp)) == NULL_TREE
       || (TREE_CODE (type) != POINTER_TYPE)
@@ -771,7 +793,7 @@ pack_enum_value (tree *args, enum btf_core_reloc_kind kind,
   if (TREE_CODE (enum_value) != INTEGER_CST)
     goto pack_enum_value_fail;
 
-  result = bpf_enum_mappings.get (enum_value);
+  result = bpf_enum_mappings->get (enum_value);
   if (result == NULL)
     goto pack_enum_value_fail;
 
@@ -796,6 +818,8 @@ pack_enum_value_fail:
   ret.reloc_data.kind = kind;
   return ret;
 }
+
+/* Process helper for the __builtin_preserve_enum_value.  */
 
 static struct cr_final
 process_enum_value (struct cr_builtins *data)
@@ -829,6 +853,8 @@ process_enum_value (struct cr_builtins *data)
   return ret;
 }
 
+/* Pack helper for the __builtin_preserve_type_info.  */
+
 static struct cr_local
 pack_type (tree *args, enum btf_core_reloc_kind kind,
 	   enum bpf_builtins code ATTRIBUTE_UNUSED)
@@ -842,12 +868,12 @@ pack_type (tree *args, enum btf_core_reloc_kind kind,
   tree tmp = args[0];
   HOST_WIDE_INT type_size_i;
 
+  if (TYPE_P (tmp))
+    goto is_already_type;
   /* Typical structure to match:
-   *    *({ extern typeof (TYPE) *<tmp_name>; <tmp_name>; })
-   */
+	*({ extern typeof (TYPE) *<tmp_name>; <tmp_name>; })  */
 
   /* Extract Pointer dereference from the construct.  */
-
   while (tmp != NULL_TREE
 	&& (TREE_CODE (tmp) == INDIRECT_REF
 	    || TREE_CODE (tmp) == NOP_EXPR))
@@ -865,6 +891,7 @@ pack_type (tree *args, enum btf_core_reloc_kind kind,
 
   tmp = TREE_TYPE (tmp);
 
+is_already_type:
   if (TREE_CODE (tmp) == POINTER_TYPE)
     tmp = TREE_TYPE (tmp);
 
@@ -884,7 +911,7 @@ pack_type (tree *args, enum btf_core_reloc_kind kind,
   ret.reloc_data.type = root_type;
   ret.reloc_decision = REPLACE_CREATE_RELOCATION;
 
-  /* Force this type to be marked as used in dwarf2out. */
+  /* Force this type to be marked as used in dwarf2out.  */
   gcc_assert (cfun);
   if (cfun->used_types_hash == NULL)
     cfun->used_types_hash = hash_set<tree>::create_ggc (37);
@@ -915,10 +942,12 @@ pack_type (tree *args, enum btf_core_reloc_kind kind,
 
 pack_type_fail:
       bpf_error_at (EXPR_LOC_OR_LOC (args[0], UNKNOWN_LOCATION),
-		    "invelid first argument format for enum value builtin");
+		    "invalid first argument format for enum value builtin");
       ret.fail = true;
   return ret;
 }
+
+/* Process helper for the __builtin_preserve_type_info.  */
 
 static struct cr_final
 process_type (struct cr_builtins *data)
@@ -1075,36 +1104,17 @@ kind_preserve_type_info (tree *args, int nargs)
   return BPF_RELO_INVALID;
 }
 
-
-/* Required to overcome having different return type builtins to avoid warnings
-   at front-end and be able to share the same builtin definition and permitting
-   the PURE attribute to work.  */
-hash_map<tree, tree> core_builtin_type_defs;
-
-static tree
-get_core_builtin_fndecl_for_type (tree ret_type)
-{
-  tree *def = core_builtin_type_defs.get (ret_type);
-  if (def)
-    return *def;
-
-  tree rettype = build_function_type_list (ret_type, integer_type_node, NULL);
-  tree new_fndecl = add_builtin_function_ext_scope ("__builtin_core_reloc",
-						    rettype,
-						    BPF_BUILTIN_CORE_RELOC,
-						    BUILT_IN_MD, NULL, NULL);
-  DECL_PURE_P (new_fndecl) = 1;
-
-  core_builtin_type_defs.put (ret_type, new_fndecl);
-
-  return new_fndecl;
-}
+/* Plugin handler used in the parser that allows to collect enum value
+   information that other wise would be folded and non recoverable.  */
 
 void
 bpf_handle_plugin_finish_type (void *event_data,
 			       void *data ATTRIBUTE_UNUSED)
 {
   tree type = (tree) event_data;
+
+  if (bpf_enum_mappings == NULL)
+    bpf_enum_mappings = hash_map<tree, tree>::create_ggc (10);
 
   if (TREE_CODE (type) == ENUMERAL_TYPE)
     for (tree l = TYPE_VALUES (type); l; l = TREE_CHAIN (l))
@@ -1115,11 +1125,11 @@ bpf_handle_plugin_finish_type (void *event_data,
 	initial = copy_node (initial);
 	DECL_INITIAL (value) = initial;
 
-	bpf_enum_mappings.put (initial, value);
+	tree *found = bpf_enum_mappings->get (initial);
+	if (found == NULL)
+	  bpf_enum_mappings->put (initial, value);
       }
 }
-
-/* -- Header file exposed functions -- */
 
 /* Initializes support information to process CO-RE builtins.
    Defines information for the builtin processing, such as helper functions to
@@ -1133,13 +1143,13 @@ bpf_init_core_builtins (void)
   core_builtin_helpers[BPF_BUILTIN_PRESERVE_ACCESS_INDEX] =
     BPF_CORE_HELPER_SET (kind_access_index,
 			 NULL,
-			 pack_field_expr_for_access_index,
-			 process_field_expr,
+			 NULL,
+			 NULL,
 			 true);
   core_builtin_helpers[BPF_BUILTIN_PRESERVE_FIELD_INFO] =
     BPF_CORE_HELPER_SET (kind_preserve_field_info,
 			 NULL,
-			 pack_field_expr_for_preserve_field,
+			 pack_field_expr,
 			 process_field_expr,
 			 true);
   core_builtin_helpers[BPF_BUILTIN_BTF_TYPE_ID] =
@@ -1167,12 +1177,16 @@ bpf_init_core_builtins (void)
     BPF_CORE_HELPER_SET (NULL, NULL, NULL, NULL, true);
 
   /* Initialize plugin handler to record enums value for use in
-   * __builtin_preserve_enum_value.  */
+     __builtin_preserve_enum_value.  */
   plugin_state = (enum bpf_plugin_states) flag_plugin_added;
   flag_plugin_added = true;
   register_callback ("bpf_collect_enum_info", PLUGIN_FINISH_TYPE,
 		     bpf_handle_plugin_finish_type, NULL);
 }
+
+/* This function returns the related __builtin_core_reloc call tree node to a
+   particular CO-RE builtin definition in FNDECL when called with
+   arguments ARGS.  */
 
 static tree
 construct_builtin_core_reloc (location_t loc, tree fndecl, tree *args,
@@ -1200,14 +1214,12 @@ construct_builtin_core_reloc (location_t loc, tree fndecl, tree *args,
 	  local_data.reloc_data.orig_arg_expr = args[0];
 	}
       else
-	local_data.reloc_decision = KEEP_ORIGINAL_NO_RELOCATION;
+	gcc_unreachable ();
 
       if (local_data.fail == true)
 	return error_mark_node;
 
-      if (local_data.reloc_decision == REPLACE_NO_RELOCATION)
-	return local_data.reloc_data.expr;
-      else if (local_data.reloc_decision == REPLACE_CREATE_RELOCATION)
+      if (local_data.reloc_decision == REPLACE_CREATE_RELOCATION)
 	{
 	  int index = search_builtin_data (helper.compare,
 					   &local_data.reloc_data);
@@ -1216,37 +1228,253 @@ construct_builtin_core_reloc (location_t loc, tree fndecl, tree *args,
 	  struct cr_builtins *data = get_builtin_data (index);
 	  memcpy (data, &local_data.reloc_data, sizeof (struct cr_builtins));
 
-	  tree new_fndecl = bpf_builtins[BPF_BUILTIN_CORE_RELOC];
-
-	  tree ret_type = TREE_TYPE (local_data.reloc_data.default_value);
-	  if (ret_type != ptr_type_node)
-	    new_fndecl = get_core_builtin_fndecl_for_type (ret_type);
-	  return build_call_expr_loc (loc,
-				      new_fndecl, 1,
-				      build_int_cst (integer_type_node,
-						     index));
+	  tree fndecl = bpf_builtins[BPF_BUILTIN_CORE_RELOC];
+	  return  build_call_expr_loc (loc,
+				fndecl, 1,
+				build_int_cst (integer_type_node, index));
 	}
     }
   return NULL_TREE;
 }
 
-/* This function is used by bpf_resolve_overloaded_builtin which is the
-   implementation of the TARGET_RESOLVE_OVERLOADED_BUILTIN.  It is executed in
-   a very early stage and allows to adapt the builtin to different arguments
-   allowing the compiler to make builtins polymorphic.  In this particular
-   implementation, it collects information of the specific builtin call,
-   converts it to the internal __builtin_core_reloc, stores any required
-   information from the original builtin call in a vec<cr_builtins> and assigns
-   the index within the *vec*, replacing by __builtin_core_reloc.  In the
-   process we also adjust return type of the __builtin_core_reloc to permit
-   polymorphic return type, as it is expected in some of the BPF CO-RE
-   builtins.  */
+/* This function constructs the CO-RE safe code around field expressions.
+   If the expression is an array access, create an offset by multiplying the
+   index access by the __builtin_type_info call requesting the size of the
+   array element and multiplying by the index.  The offset is added to the
+   base pointer.
+   In a more formal way:
+     - base + (__blt_preserve_type_info (typeof(expr), SIZEOF) * array_i)
+
+   Please notice that __builtin_preserve_type_info is never really created, but
+   rather a call to __builtin_core_reloc that represents it.
+
+   Any other case, it is assumed to be a field access and instead a CO-RE field
+   expressions offset relocation is created and added to the base node.
+   More precisely:
+     - base + __builtin_preserve_field_expr (expr, SIZEOF)  */
+
+static tree
+core_expr_with_field_expr_plus_base (tree base, tree expr, bool leaf_node)
+{
+  tree type = TREE_TYPE (expr);
+  tree args[2];
+
+  if (base == expr)
+    return expr;
+  else if (TREE_CODE (expr) == ARRAY_REF
+	   && leaf_node == false)
+    {
+      if (TREE_CODE (base) == MEM_REF)
+	base = TREE_OPERAND (base, 0);
+
+      tree array_index = TREE_OPERAND (expr, 1);
+      tree fndecl = bpf_builtins[BPF_BUILTIN_PRESERVE_TYPE_INFO];
+
+      tree type = TREE_TYPE (base);
+      gcc_assert (POINTER_TYPE_P (type)
+		  && TREE_CODE (type = TREE_TYPE (type)) == ARRAY_TYPE
+		  && (type = TREE_TYPE (type)) != NULL_TREE);
+      args[0] = type;
+      args[1] = build_int_cst (integer_type_node, BPF_TYPE_SIZE);
+      tree builtin_call = construct_builtin_core_reloc (UNKNOWN_LOCATION,
+							fndecl,
+							args, 2);
+
+      tree offset = fold_build2 (MULT_EXPR, size_type_node,
+			fold_build1 (NOP_EXPR, size_type_node, builtin_call),
+			fold_build1 (NOP_EXPR, size_type_node, array_index));
+
+      if (!POINTER_TYPE_P (TREE_TYPE (base)))
+	base = fold_build1 (ADDR_EXPR,
+			    build_pointer_type (TREE_TYPE (base)), base);
+
+      tree tmp = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			 fold_build1 (NOP_EXPR, ptr_type_node, base),
+			 offset);
+
+      tmp = fold_build1 (NOP_EXPR, build_pointer_type (type), tmp);
+      return tmp;
+    }
+  else
+    {
+      tree fndecl = bpf_builtins[BPF_BUILTIN_PRESERVE_FIELD_INFO];
+      args[0] = expr;
+      args[1] = build_int_cst (integer_type_node, BPF_FIELD_BYTE_OFFSET);
+      tree builtin_call = construct_builtin_core_reloc (UNKNOWN_LOCATION,
+							fndecl,
+							args, 2);
+
+      if (!POINTER_TYPE_P (TREE_TYPE (base)))
+	base = fold_build1 (ADDR_EXPR,
+			    build_pointer_type (TREE_TYPE (base)), base);
+
+      tree tmp = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			 fold_build1 (NOP_EXPR, ptr_type_node, base),
+			 fold_build1 (NOP_EXPR, size_type_node, builtin_call));
+      tmp = fold_build1 (NOP_EXPR, build_pointer_type (type), tmp);
+      return tmp;
+    }
+}
+
+/* This function takes arbitrary field expression and returns a CO-RE
+   compatible version by introducing CO-RE relocations.
+
+   In cases where the expression is not supported in CO-RE with a single
+   relocation, it creates multiple levels of access, i.e. if the expression
+   contains multiple indirections.
+   For example:
+     - A->B->C
+
+   It recursively traverses the expression to its leaf nodes and rollbacks
+   constructing the CO-RE relocations.  It calls
+   core_expr_with_field_expr_plus_base that creates the necessary CO-RE
+   relocations.
+
+   Arguments:
+    - EXPR: is the expression to be converted.  It should be validated by
+    compute_field_expr function before this function is called.
+    - CHANGED: is set to true if the returned tree node is different from
+    the input expr argument.
+    - ENTRY: internal only.  Should not be set in a call.  */
+
+static tree
+make_core_safe_access_index (tree expr, bool *changed, bool entry = true)
+{
+  poly_int64 bitsize, bitpos;
+  tree var_off;
+  machine_mode mode;
+  int sign, reverse, vol;
+
+  tree base = get_inner_reference (expr, &bitsize, &bitpos, &var_off, &mode,
+				   &sign, &reverse, &vol);
+
+  if (base == NULL_TREE || base == expr)
+    return expr;
+
+  tree ret = NULL_TREE;
+  int n;
+  bool valid = true;
+  tree access_node = NULL_TREE;
+
+  /* In case the base is itself a valid field expression, first convert the
+     base in a CO-RE safe expression.
+     This seems to be a requirement since get_inner_reference not always
+     returns the true base of the expression.  */
+  if ((n = compute_field_expr (base, NULL, &valid, &access_node)) > 0
+      && valid == true)
+    {
+      if (TREE_CODE (access_node) == INDIRECT_REF)
+	base = TREE_OPERAND (access_node, 0);
+
+      bool local_changed = false;
+      ret = make_core_safe_access_index (base, &local_changed, false);
+      if (local_changed == true)
+	{
+	  if (TREE_CODE (access_node) == INDIRECT_REF)
+	    base = fold_build1 (INDIRECT_REF,
+				TREE_TYPE (base),
+				ret);
+	  else
+	    base = ret;
+	}
+    }
+
+  /* The remaining is to traverse the field part of the field expression.  */
+  if (mode != VOIDmode && var_off == NULL_TREE)
+    {
+      *changed = true;
+      return core_expr_with_field_expr_plus_base (base, expr, true);
+    }
+  else
+    {
+      switch (TREE_CODE (expr))
+	{
+	case COMPONENT_REF:
+	case ARRAY_REF:
+	case ADDR_EXPR:
+	  {
+	    bool local_changed = false;
+	    tree type = TREE_TYPE (TREE_OPERAND (expr, 0));
+	    ret = make_core_safe_access_index (TREE_OPERAND (expr, 0),
+					       &local_changed, false);
+
+	    /* This variable is a replaced in the expr for algorithmic purposes.
+	       It reduces the expression just to the remaining sub-expression
+	       that still was not processed.  */
+	    if (local_changed == true)
+	      TREE_OPERAND (expr, 0) = create_tmp_var (type, "fake");
+	  }
+	  break;
+	default:
+	  ret = expr;
+	  break;
+	}
+    }
+
+  base = get_inner_reference (expr, &bitsize, &bitpos, &var_off, &mode,
+			      &sign, &reverse, &vol);
+
+  if ((ret != NULL_TREE
+       && mode != VOIDmode && var_off != NULL_TREE)
+      || entry == true)
+    {
+      *changed = true;
+      ret = core_expr_with_field_expr_plus_base (ret, expr, false);
+    }
+  return ret;
+}
+
+/* This function verifies if the NODE expression is a field expression and
+   changes and converts it to CO-RE.  This is used by a tree walker for any
+   __builtin_preserve_access_index argument expression from within
+   bpf_resolve_overloaded_core_builtin.  */
+
+static tree
+replace_core_access_index_comp_expr (tree *node, int *walk_subtrees,
+				     void *data ATTRIBUTE_UNUSED)
+{
+  bool valid = true;
+  gcc_assert (*node != NULL_TREE);
+
+  tree *expr = node;
+  bool should_indirect = false;
+  if (TREE_CODE (*expr) == ADDR_EXPR)
+    expr = &TREE_OPERAND (*expr, 0);
+  else
+    should_indirect = true;
+
+  int n = compute_field_expr (*node, NULL, &valid, NULL);
+  if (valid == true && n > 0)
+    {
+      bool changed = false;
+      tree expr_test = make_core_safe_access_index (*expr, &changed);
+      *walk_subtrees = 0;
+
+      if (changed == true)
+	{
+	  if (should_indirect == true)
+	    expr_test = fold_build1 (INDIRECT_REF,
+				     TREE_TYPE (TREE_TYPE (expr_test)),
+				     expr_test);
+
+	  *expr = expr_test;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* This function is used by bpf_resolve_overloaded_builtin defined in bpf.cc.
+   It is executed in a very early stage and processes any CO-RE builtins,
+   adapting the code and creating the more generic __builtin_core_reloc calls.
+   */
 
 #define MAX_CORE_BUILTIN_ARGS 3
 tree
 bpf_resolve_overloaded_core_builtin (location_t loc, tree fndecl,
 				     void *arglist)
 {
+  remove_parser_plugin ();
+
   if (!bpf_require_core_support ())
     return error_mark_node;
 
@@ -1255,29 +1483,43 @@ bpf_resolve_overloaded_core_builtin (location_t loc, tree fndecl,
   for (unsigned int i = 0; i < argsvec->length (); i++)
     args[i] = (*argsvec)[i];
 
-  remove_parser_plugin ();
+  int code = DECL_MD_FUNCTION_CODE (fndecl);
+  if (code == BPF_BUILTIN_PRESERVE_ACCESS_INDEX)
+  {
+    walk_tree (&args[0], replace_core_access_index_comp_expr, NULL, NULL);
+    return args[0];
+  }
 
   return construct_builtin_core_reloc (loc, fndecl, args, argsvec->length ());
 }
 
 /* Used in bpf_expand_builtin.  This function is called in RTL expand stage to
    convert the internal __builtin_core_reloc in unspec:UNSPEC_CORE_RELOC RTL,
-   which will contain a third argument that is the index in the vec collected in
-   bpf_resolve_overloaded_core_builtin.  */
+   which will contain a third argument that is the index in the vec collected
+   in bpf_resolve_overloaded_core_builtin.  */
 
 rtx
 bpf_expand_core_builtin (tree exp, enum bpf_builtins code)
 {
-  if (code == BPF_BUILTIN_CORE_RELOC)
-    {
-      tree index = CALL_EXPR_ARG (exp, 0);
-      struct cr_builtins *data = get_builtin_data (TREE_INT_CST_LOW (index));
+  if (!TARGET_BPF_CORE)
+    return NULL_RTX;
 
-      rtx v = expand_normal (data->default_value);
-      rtx i = expand_normal (index);
-      return gen_rtx_UNSPEC (DImode,
-			     gen_rtvec (2, v, i),
-			     UNSPEC_CORE_RELOC);
+  switch (code)
+    {
+    case BPF_BUILTIN_CORE_RELOC:
+      {
+	tree index = CALL_EXPR_ARG (exp, 0);
+	struct cr_builtins *data = get_builtin_data (TREE_INT_CST_LOW (index));
+
+	rtx v = expand_normal (data->default_value);
+	rtx i = expand_normal (index);
+	  return gen_rtx_UNSPEC (DImode,
+				 gen_rtvec (2, v, i),
+				 UNSPEC_CORE_RELOC);
+      }
+      break;
+    default:
+      break;
     }
 
   return NULL_RTX;
@@ -1287,8 +1529,8 @@ bpf_expand_core_builtin (tree exp, enum bpf_builtins code)
    unspec:UNSPEC_CORE_RELOC.  It recovers the vec index kept as the third
    operand and collects the data from the vec.  With that it calls the process
    helper in order to construct the data required for the CO-RE relocation.
-   Also it creates a label pointing to the unspec instruction and uses it
-   in the CO-RE relocation creation.  */
+   Also it creates a label pointing to the unspec instruction and uses it in
+   the CO-RE relocation creation.  */
 
 const char *
 bpf_add_core_reloc (rtx *operands, const char *templ)
@@ -1306,67 +1548,198 @@ bpf_add_core_reloc (rtx *operands, const char *templ)
   make_core_relo (&reloc_data, tmp_label);
 
   /* Replace default value for later processing builtin types.
-     Example if the type id builtins. */
+     Example if the type id builtins.  */
   if (data->rtx_default_value != NULL_RTX)
     operands[1] = data->rtx_default_value;
 
   return templ;
 }
 
-/* This function is used within the defined_expand for mov in bpf.md file.
-   It identifies if any of the operands in a move is a expression with a
-   type with __attribute__((preserve_access_index)), which case it
-   will emit an unspec:UNSPEC_CORE_RELOC such that it would later create a
-   CO-RE relocation for this expression access.  */
-
-void
-bpf_replace_core_move_operands (rtx *operands)
+static tree
+maybe_get_base_for_field_expr (tree expr)
 {
-  for (int i = 0; i < 2; i++)
-    if (MEM_P (operands[i]))
-      {
-	tree expr = MEM_EXPR (operands[i]);
+  poly_int64 bitsize, bitpos;
+  tree var_off;
+  machine_mode mode;
+  int sign, reverse, vol;
 
-	if (expr == NULL_TREE)
-	  continue;
+  if (expr == NULL_TREE)
+    return NULL_TREE;
 
-	if (TREE_CODE (expr) == MEM_REF
-	    && TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME)
-	  {
-	    gimple *def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (expr, 0));
-	    if (def_stmt && is_gimple_assign (def_stmt))
-		expr = gimple_assign_rhs1 (def_stmt);
-	  }
-	if (is_attr_preserve_access (expr)
-	    && bpf_require_core_support ())
-	  {
-	    struct cr_local local_data = pack_field_expr_for_access_index (
-					   &expr,
-					   BPF_RELO_FIELD_BYTE_OFFSET,
-					   BPF_BUILTIN_PRESERVE_ACCESS_INDEX);
+  return get_inner_reference (expr, &bitsize, &bitpos, &var_off, &mode,
+			      &sign, &reverse, &vol);
+}
 
-	    local_data.reloc_decision = REPLACE_CREATE_RELOCATION;
-	    local_data.reloc_data.orig_arg_expr = expr;
-	    local_data.reloc_data.orig_builtin_code = BPF_BUILTIN_PRESERVE_ACCESS_INDEX;
+/* Access functions to mark sub expressions as attributed with
+   __preserve_access_index.
+   This is required since in gimple format, in order to convert an expression as
+   CO-RE safe, we must create multiple gimple statements.
+   Also, only the type of the base of the expression might be attributed with
+   __preserve_access_index.  Nevertheless all the consecutive accesses to this
+   attributed node should also be converted to CO-RE safe.
+   Any LHS assigned values with CO-RE converted expressions are marked and
+   any uses of these values are later checked for further convertion.
+   The core_access_index_map functions allow to mark this nodes for later
+   convertion to CO-RE.
+   This mechanism are used by make_gimple_core_safe_access_index.  */
 
-	    int index = allocate_builtin_data ();
-	    struct cr_builtins *data = get_builtin_data (index);
-	    memcpy (data, &local_data.reloc_data, sizeof (struct cr_builtins));
+static GTY(()) hash_map<tree, tree> *core_access_index_map = NULL;
 
-	    rtx reg = XEXP (operands[i], 0);
-	    if (!REG_P (reg))
-	      {
-		reg = gen_reg_rtx (Pmode);
-		operands[i] = gen_rtx_MEM (GET_MODE (operands[i]), reg);
-	      }
+static void
+core_access_clean (void)
+{
+  if (core_access_index_map == NULL)
+    core_access_index_map = hash_map<tree, tree>::create_ggc (10);
+  core_access_index_map->empty ();
+}
 
-	    emit_insn (
-	      gen_mov_reloc_coredi (reg,
-				    gen_rtx_CONST_INT (Pmode, 0),
-				    gen_rtx_CONST_INT (Pmode, index)));
-	    return;
-	  }
-      }
+static bool
+core_is_access_index (tree expr)
+{
+  if (TREE_CODE (expr) == MEM_REF
+      || TREE_CODE (expr) == INDIRECT_REF)
+    expr = TREE_OPERAND (expr, 0);
+
+  tree *def = core_access_index_map->get (expr);
+  if (def)
+    return true;
+  return false;
+}
+
+static void
+core_mark_as_access_index (tree expr)
+{
+  if (TREE_CODE (expr) == MEM_REF
+      || TREE_CODE (expr) == INDIRECT_REF)
+    expr = TREE_OPERAND (expr, 0);
+
+  if (bpf_enum_mappings->get (expr) == NULL)
+    core_access_index_map->put (expr, NULL_TREE);
+}
+
+/* This function is an adaptation of make_core_safe_access_index but to be used
+   in gimple format trees.  It is used by execute_lower_bpf_core, when
+   traversing the gimple tree looking for nodes that would have its type
+   attributed with __preserve_access_index.  In this particular cases any of
+   the expressions using such attributed types must be made CO-RE safe.  */
+
+static tree
+make_gimple_core_safe_access_index (tree *tp,
+				    int *walk_subtrees ATTRIBUTE_UNUSED,
+				    void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  bool valid = true;
+  int n = 0;
+
+  tree *patch = tp;
+  if (TREE_CODE (*patch) == ADDR_EXPR)
+    patch = &(TREE_OPERAND (*tp, 0));
+  tree orig_type = TREE_TYPE (*patch);
+
+  if ((is_attr_preserve_access (*patch)
+      || core_is_access_index (maybe_get_base_for_field_expr (*patch)))
+      && (n = compute_field_expr (*patch, NULL, &valid, NULL)) > 0
+      && valid == true)
+    {
+      bool changed = false;
+      tree expr_test = make_core_safe_access_index (*patch, &changed);
+
+
+      gimple_seq before = NULL;
+      push_gimplify_context ();
+      gimplify_expr (&expr_test, &before, NULL, is_gimple_val, fb_rvalue);
+
+      /* In case the ADDR_EXPR bypassed above is no longer needed.  */
+      if (patch != tp && TREE_TYPE (expr_test) == TREE_TYPE (*tp))
+	*tp = expr_test;
+      /* For non pointer value accesses.  */
+      else if (TREE_TYPE (expr_test) == build_pointer_type (orig_type))
+	*patch = fold_build2 (MEM_REF, TREE_TYPE (*patch),
+			      expr_test, build_int_cst (ptr_type_node, 0));
+      else
+	*patch = expr_test;
+
+      *tp = fold (*tp);
+
+      gsi_insert_seq_before (&(wi->gsi), before, GSI_LAST_NEW_STMT);
+      pop_gimplify_context (NULL);
+
+      wi->changed = true;
+      *walk_subtrees = false;
+
+      tree lhs;
+      if (!wi->is_lhs
+	  && (lhs = gimple_get_lhs (wi->stmt)) != NULL_TREE)
+	core_mark_as_access_index (lhs);
+    }
+  return NULL_TREE;
+}
+
+/* This is the entry point for the pass_data_lower_bpg_core.  It walks all the
+   statements in gimple, looking for expressions that are suppose to be CO-RE
+   preserve_access_index attributed.
+   Those expressions are processed and split by
+   make_gimple_core_safe_access_index function, which will both create the
+   calls to __build_core_reloc and split the expression in smaller parts in
+   case it cannot be represented CO-RE safeguarded by a single CO-RE
+   relocation.  */
+
+static unsigned int
+execute_lower_bpf_core (void)
+{
+  if (!TARGET_BPF_CORE)
+    return 0;
+
+  gimple_seq body = gimple_body (current_function_decl);
+
+  struct walk_stmt_info wi;
+  core_access_clean ();
+
+  memset (&wi, 0, sizeof (wi));
+  wi.info = NULL;
+
+  /* Split preserve_access_index expressions when needed.  */
+  walk_gimple_seq_mod (&body, NULL, make_gimple_core_safe_access_index, &wi);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_lower_bpf_core =
+{
+  GIMPLE_PASS, /* type */
+  "bpf_core_lower", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_lower_bpf_core: public gimple_opt_pass
+{
+public:
+  pass_lower_bpf_core (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_bpf_core, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute (function *) final override
+  {
+    return execute_lower_bpf_core ();
+  }
+
+}; /* class pass_lower_bpf_core */
+
+} /* anon namespace */
+
+gimple_opt_pass *
+make_pass_lower_bpf_core (gcc::context *ctxt)
+{
+  return new pass_lower_bpf_core (ctxt);
 }
 
 #include "gt-core-builtins.h"

@@ -24,26 +24,35 @@ unsigned long ula[8];
 unsigned long
 func (void)
 {
-  /* 1 */
-  int b = _(my_s.b);
+  int b;
+  char c;
+  unsigned char uc;
+  unsigned long ul;
+  int ic;
 
-  /* 2 */
-  char c = _(my_s.c);
+  __builtin_preserve_access_index (({
+    /* 1 */
+    b = my_s.b;
 
-  /* 2:3 */
-  unsigned char uc = _(my_u.uc[3]);
+    /* 2 */
+    ic = my_s.c;
 
-  /* 6 */
-  unsigned long ul = _(ula[6]);
+    /* 2:3 */
+    uc = my_u.uc[3];
 
-  return b + c + uc + ul;
+    /* 6 */
+    ul = ula[6];
+  }));
+
+  return b + ic + uc + ul;
 }
 
 char
 s_ptr (struct S *ps)
 {
   /* 0:2 */
-  char x = _(ps->c);
+  char x;
+  __builtin_preserve_access_index (({ x = ps->c; }));
   return x;
 }
 
@@ -51,7 +60,8 @@ unsigned char
 u_ptr (union U *pu)
 {
   /* 0:2:3 */
-  unsigned char x = _(pu->uc[3]);
+  unsigned char x;
+  __builtin_preserve_access_index (({ x = pu->uc[3]; }));
   return x;
 }
 
