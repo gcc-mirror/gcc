@@ -1,3 +1,67 @@
+2023-10-30  Mayshao  <mayshao-oc@zhaoxin.com>
+
+	* g++.target/i386/mv32.C: Handle new -march.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+
+2023-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111157
+	* gcc.dg/lto/pr111157_0.c: New test.
+	* gcc.dg/lto/pr111157_1.c: Second file of the same new test.
+
+2023-10-30  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rv32i_zcmp.c: Accept any register in the
+	range of 1-9 for cm.push and cm.popret insns.
+
+2023-10-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/101955
+	* gcc.target/arc/pr101955.c: New test case.
+
+2023-10-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/lsl16-1.c: New test case.
+	* gcc.target/arc/lsr16-1.c: Likewise.
+	* gcc.target/arc/swap-1.c: Likewise.
+	* gcc.target/arc/swap-2.c: Likewise.
+
+2023-10-30  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/arm-switchstatement.c: Alter the tests to
+	change adr instruction to ldr.
+
+2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr105554.c: Require ifunc.
+
+2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/Wtrampolines.c: Skip on darwin20 and later.
+
+2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/112287
+	* gcc.target/i386/pr111698.c: Pass -march=sandybridge.
+
+2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/pie-2.c: Skip test on darwin.
+
+2023-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/111462
+	* gcc.dg/tree-ssa/ssa-sink-18.c: XFAIL also powerpc64le.
+
+2023-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104555
+	* gfortran.dg/pr104555.f90: New test.
+
+2023-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104610-2.c: New test.
+
 2023-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/110712

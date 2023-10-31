@@ -1,3 +1,11 @@
+2023-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104555
+	* resolve.cc (resolve_select_type): If the selector expression
+	has no class component references and the expression is a
+	derived type, copy the typespec of the symbol to that of the
+	expression.
+
 2023-10-27  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -1,3 +1,14 @@
+2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add comment on recently
+	added emul TLS symbols.
+
+2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/experimental/contract.cc
+	[_GLIBCXX_INLINE_VERSION](handle_contract_violation): Rework comment.
+	Remove weak attribute.
+
 2023-10-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* config/abi/pre/gnu-versioned-namespace.ver: Add missing emul TLS

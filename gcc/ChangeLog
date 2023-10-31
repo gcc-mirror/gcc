@@ -1,3 +1,175 @@
+2023-10-30  Mayshao  <mayshao-oc@zhaoxin.com>
+
+	* common/config/i386/cpuinfo.h (get_zhaoxin_cpu): Recognize yongfeng.
+	* common/config/i386/i386-common.cc: Add yongfeng.
+	* common/config/i386/i386-cpuinfo.h (enum processor_subtypes):
+	Add ZHAOXIN_FAM7H_YONGFENG.
+	* config.gcc: Add yongfeng.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Let -march=native recognize yongfeng processors.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add yongfeng.
+	* config/i386/i386-options.cc (m_YONGFENG): New definition.
+	(m_ZHAOXIN): Ditto.
+	* config/i386/i386.h (enum processor_type): Add PROCESSOR_YONGFENG.
+	* config/i386/i386.md: Add yongfeng.
+	* config/i386/lujiazui.md: Fix typo.
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+	Add yongfeng costs.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add yongfeng.
+	(ix86_adjust_cost): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_SCHEDULE): Replace
+	m_LUJIAZUI with m_ZHAOXIN.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_MOVX): Ditto.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_32): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_64): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS): Ditto.
+	(X86_TUNE_FUSE_ALU_AND_BRANCH): Ditto.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS): Ditto.
+	(X86_TUNE_USE_LEAVE): Ditto.
+	(X86_TUNE_PUSH_MEMORY): Ditto.
+	(X86_TUNE_LCP_STALL): Ditto.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Ditto.
+	(X86_TUNE_OPT_AGU): Ditto.
+	(X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB): Ditto.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Ditto.
+	(X86_TUNE_USE_SAHF): Ditto.
+	(X86_TUNE_USE_BT): Ditto.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Ditto.
+	(X86_TUNE_ONE_IF_CONV_INSN): Ditto.
+	(X86_TUNE_AVOID_MFENCE): Ditto.
+	(X86_TUNE_EXPAND_ABS): Ditto.
+	(X86_TUNE_USE_SIMODE_FIOP): Ditto.
+	(X86_TUNE_USE_FFREEP): Ditto.
+	(X86_TUNE_EXT_80387_CONSTANTS): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_TYPELESS_STORES): Ditto.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Ditto.
+	(X86_TUNE_USE_GATHER_2PARTS): Add m_YONGFENG.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER_8PARTS): Ditto.
+	(X86_TUNE_AVOID_128FMA_CHAINS): Ditto.
+	* doc/extend.texi: Add details about yongfeng.
+	* doc/invoke.texi: Ditto.
+	* config/i386/yongfeng.md: New file to describe yongfeng processor.
+
+2023-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111157
+	* ipa-prop.h (struct ipa_argagg_value): Newf flag killed.
+	* ipa-modref.cc (ipcp_argagg_and_kill_overlap_p): New function.
+	(update_signature): Mark any any IPA-CP aggregate constants at
+	positions known to be killed as killed.  Move check that there is
+	clone_info after this pruning.
+	* ipa-cp.cc (ipa_argagg_value_list::dump): Dump the killed flag.
+	(ipa_argagg_value_list::push_adjusted_values): Clear the new flag.
+	(push_agg_values_from_plats): Likewise.
+	(ipa_push_agg_values_from_jfunc): Likewise.
+	(estimate_local_effects): Likewise.
+	(push_agg_values_for_index_from_edge): Likewise.
+	* ipa-prop.cc (write_ipcp_transformation_info): Stream the killed
+	flag.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_get_aggregate_const): Update comment, assert that encountered
+	record does not have killed flag set.
+	(ipcp_transform_function): Prune all aggregate constants with killed
+	set.
+
+2023-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111157
+	* ipa-prop.h (ipcp_transformation): New member function template
+	remove_argaggs_if.
+	* ipa-sra.cc (zap_useless_ipcp_results): Use remove_argaggs_if to
+	filter aggreagate constants.
+
+2023-10-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/101955
+	* config/arc/arc.md (*extvsi_1_0): New define_insn_and_split
+	to convert sign extract of the least significant bit into an
+	AND $1 then a NEG when !TARGET_BARREL_SHIFTER.
+
+2023-10-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.cc (arc_rtx_costs): Improve cost estimates.
+	Provide reasonable values for SHIFTS and ROTATES by constant
+	bit counts depending upon TARGET_BARREL_SHIFTER.
+	(arc_insn_cost): Use insn attributes if the instruction is
+	recognized.  Avoid calling get_attr_length for type "multi",
+	i.e. define_insn_and_split patterns without explicit type.
+	Fall-back to set_rtx_cost for single_set and pattern_cost
+	otherwise.
+	* config/arc/arc.h (COSTS_N_BYTES): Define helper macro.
+	(BRANCH_COST): Improve/correct definition.
+	(LOGICAL_OP_NON_SHORT_CIRCUIT): Preserve previous behavior.
+
+2023-10-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.cc (arc_split_ashl): Use lsl16 on TARGET_SWAP.
+	(arc_split_ashr): Use swap and sign-extend on TARGET_SWAP.
+	(arc_split_lshr): Use lsr16 on TARGET_SWAP.
+	(arc_split_rotl): Use swap on TARGET_SWAP.
+	(arc_split_rotr): Likewise.
+	* config/arc/arc.md (ANY_ROTATE): New code iterator.
+	(<ANY_ROTATE>si2_cnt16): New define_insn for alternate form of
+	swap instruction on TARGET_SWAP.
+	(ashlsi2_cnt16): Rename from *ashlsi16_cnt16 and move earlier.
+	(lshrsi2_cnt16): New define_insn for LSR16 instruction.
+	(*ashlsi2_cnt16): See above.
+
+2023-10-30  Richard Ball  <richard.ball@arm.com>
+
+	* config/arm/aout.h: Change to use the Lrtx label.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Remove arm targets
+	from (!target_pure_code) condition.
+	(ADDR_VEC_ALIGN): Add align for tables in rodata section.
+	* config/arm/arm.cc (arm_output_casesi): Alter the function to include
+	.Lrtx label and remove adr instructions.
+	* config/arm/arm.md
+	(arm_casesi_internal): Use force_reg to generate ldr instructions that
+	would otherwise be out of range, and change rtl to accommodate force reg.
+	Additionally remove unnecessary register temp.
+	(casesi): Remove pure code check for Arm.
+	* config/arm/elf.h (JUMP_TABLES_IN_TEXT_SECTION): Remove arm
+	targets from JUMP_TABLES_IN_TEXT_SECTION definition.
+
+2023-10-30  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/106907
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Change bitwise
+	xor to an equality and fix comment indentation.
+
+2023-10-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (sew64_scalar_helper): Fix bug.
+	* config/riscv/riscv-v.cc (sew64_scalar_helper): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104610
+	* config/i386/i386-expand.cc (ix86_expand_branch): Handle
+	512-bit vector with vpcmpeq + kortest.
+	* config/i386/i386.md (cbranchxi4): New expander.
+	* config/i386/sse.md: (cbranch<mode>4): Extend to V16SImode
+	and V8DImode.
+
+2023-10-30  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* expr.cc (qi_vector_mode_supported_p): Rename to...
+	(by_pieces_mode_supported_p): ...this, and extends it to do
+	the checking for both scalar and vector mode.
+	(widest_fixed_size_mode_for_size): Call
+	by_pieces_mode_supported_p to examine the mode.
+	(op_by_pieces_d::smallest_fixed_size_mode_for_size): Likewise.
+
 2023-10-29  Martin Uecker  <uecker@tugraz.at>
 
 	PR tree-optimization/109334
