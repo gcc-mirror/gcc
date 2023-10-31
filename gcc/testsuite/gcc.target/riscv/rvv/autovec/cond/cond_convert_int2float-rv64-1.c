@@ -12,4 +12,6 @@
 /* { dg-final { scan-assembler-times {\tvfncvt\.f\.xu\.w\tv[0-9]+,v[0-9]+,v0\.t} 2 } } */
 /* { dg-final { scan-assembler-times {\tvfncvt\.f\.x\.w\tv[0-9]+,v[0-9]+,v0\.t} 2 } } */
 
+/* { dg-final { scan-assembler-times {\tvfncvt\.f\.f\.w\tv[0-9]+,v[0-9]+,v0\.t} 2 } } */
+
 /* { dg-final { scan-assembler {\tvsetvli\t[a-z0-9]+,[a-z0-9]+,e[0-9]+,m[f0-9]+,t[au],mu} } } */

@@ -977,14 +977,11 @@
 ;; This operation can be performed in the loop vectorizer but unfortunately
 ;; not applicable for now. We can remove this pattern after loop vectorizer
 ;; is able to take care of INT64 to FP16 conversion.
-(define_insn_and_split "<float_cvt><mode><vnnconvert>2"
+(define_expand "<float_cvt><mode><vnnconvert>2"
   [(set (match_operand:<VNNCONVERT>  0 "register_operand")
 	(any_float:<VNNCONVERT>
 	  (match_operand:VWWCONVERTI 1 "register_operand")))]
   "TARGET_VECTOR && TARGET_ZVFH && can_create_pseudo_p () && !flag_trapping_math"
-  "#"
-  "&& 1"
-  [(const_int 0)]
   {
     rtx single = gen_reg_rtx (<VNCONVERT>mode); /* Get vector SF mode.  */
 
@@ -994,9 +991,7 @@
     emit_insn (gen_trunc<vnconvert><vnnconvert>2 (operands[0], single));
 
     DONE;
-  }
-  [(set_attr "type" "vfncvtitof")]
-)
+  })
 
 ;; =========================================================================
 ;; == Unary arithmetic
