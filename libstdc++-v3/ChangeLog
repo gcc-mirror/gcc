@@ -1,3 +1,9 @@
+2023-10-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/experimental/contract.cc
+	[_GLIBCXX_INLINE_VERSION](handle_contract_violation): Provide symbol
+	without version namespace decoration for gcc.
+
 2023-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
