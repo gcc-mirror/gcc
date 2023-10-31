@@ -1,5 +1,5 @@
 /* Control flow redundancy hardening.
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <oliva@adacore.com>.
 
 This file is part of GCC.
@@ -460,6 +460,10 @@ class rt_bb_visited
      at the end of a block's predecessors or successors list.  */
   tree ckfail, ckpart, ckinv, ckblk;
 
+  /* If we need to deal with abnormal edges, we insert SSA_NAMEs for
+     boolean true and false.  */
+  tree vfalse, vtrue;
+
   /* Convert a block index N to a block vindex, the index used to
      identify it in the VISITED array.  Check that it's in range:
      neither ENTRY nor EXIT, but maybe one-past-the-end, to compute
@@ -596,7 +600,8 @@ public:
   /* Prepare to add control flow redundancy testing to CFUN.  */
   rt_bb_visited (int checkpoints)
     : nblocks (n_basic_blocks_for_fn (cfun)),
-      vword_type (NULL), ckseq (NULL), rtcfg (NULL)
+      vword_type (NULL), ckseq (NULL), rtcfg (NULL),
+      vfalse (NULL), vtrue (NULL)
   {
     /* If we've already added a declaration for the builtin checker,
        extract vword_type and vword_bits from its declaration.  */
@@ -703,7 +708,74 @@ public:
   /* Insert SEQ on E.  */
   void insert_exit_check_on_edge (gimple_seq seq, edge e)
   {
-    gsi_insert_seq_on_edge_immediate (e, seq);
+    if (!(e->flags & EDGE_ABNORMAL))
+      {
+	gsi_insert_seq_on_edge_immediate (e, seq);
+	return;
+      }
+
+    /* Initialize SSA boolean constants for use in abnormal PHIs.  */
+    if (!vfalse)
+      {
+	vfalse = make_ssa_name (boolean_type_node);
+	vtrue = make_ssa_name (boolean_type_node);
+
+	gimple_seq vft_seq = NULL;
+	gassign *vfalse_init = gimple_build_assign (vfalse, boolean_false_node);
+	gimple_seq_add_stmt (&vft_seq, vfalse_init);
+	gassign *vtrue_init = gimple_build_assign (vtrue, boolean_true_node);
+	gimple_seq_add_stmt (&vft_seq, vtrue_init);
+
+	gsi_insert_seq_on_edge_immediate (single_succ_edge
+					  (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+					  vft_seq);
+      }
+
+    /* We can't insert on abnormal edges, but we can arrange for SEQ
+       to execute conditionally at dest.  Add a PHI boolean with TRUE
+       from E and FALSE from other preds, split the whole block, add a
+       test for the PHI to run a new block with SEQ or skip straight
+       to the original block.  If there are multiple incoming abnormal
+       edges, we'll do this multiple times.  ??? Unless there are
+       multiple abnormal edges with different postcheck status, we
+       could split the block and redirect other edges, rearranging the
+       PHI nodes.  Optimizers already know how to do this, so we can
+       keep things simple here.  */
+    basic_block bb = e->dest;
+    basic_block bb_postcheck = split_block_after_labels (bb)->dest;
+
+    basic_block bb_check = create_empty_bb (e->dest);
+    bb_check->count = e->count ();
+    if (dom_info_available_p (CDI_DOMINATORS))
+      set_immediate_dominator (CDI_DOMINATORS, bb_check, bb);
+    if (current_loops)
+      add_bb_to_loop (bb_check, current_loops->tree_root);
+
+    gimple_stmt_iterator chkpt = gsi_after_labels (bb_check);
+    gsi_insert_seq_before_without_update (&chkpt, seq, GSI_SAME_STMT);
+    edge edge_postcheck = make_edge (bb_check, bb_postcheck, EDGE_FALLTHRU);
+    edge_postcheck->probability = profile_probability::always ();
+
+    tree cond_var = make_ssa_name (boolean_type_node);
+    gcond *cond = gimple_build_cond (NE_EXPR, cond_var, boolean_false_node,
+				     NULL, NULL);
+    gimple_stmt_iterator condpt = gsi_after_labels (bb);
+    gsi_insert_before (&condpt, cond, GSI_SAME_STMT);
+    edge edge_nocheck = single_succ_edge (bb);
+    edge_nocheck->flags &= ~EDGE_FALLTHRU;
+    edge_nocheck->flags |= EDGE_FALSE_VALUE;
+    edge edge_check = make_edge (bb, bb_check, EDGE_TRUE_VALUE);
+    edge_check->probability = e->count ().probability_in (bb->count);
+    edge_nocheck->probability = edge_check->probability.invert ();
+
+    gphi *cond_phi = create_phi_node (cond_var, bb);
+    for (int i = 0, ei = EDGE_COUNT (bb->preds); i < ei; i++)
+      {
+	edge pred = EDGE_PRED (bb, i);
+	bool check_edge = pred == e;
+	tree val = check_edge ? vtrue : vfalse;
+	add_phi_arg (cond_phi, val, pred, UNKNOWN_LOCATION);
+      }
   }
 
   /* Add checking code to CHK_EDGES and CHKCALL_BLOCKS, and
