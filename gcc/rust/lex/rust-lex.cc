@@ -2351,9 +2351,6 @@ Lexer::parse_decimal_int_or_float (location_t loc)
       current_char = peek_input ();
       length++;
 
-      // add a '0' after the . to prevent ambiguity
-      str += '0';
-
       // type hint not allowed
 
       current_column += length;

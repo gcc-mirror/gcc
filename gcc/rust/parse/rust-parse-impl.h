@@ -12892,12 +12892,18 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
 	    auto dot_pos = str.find (".");
 	    auto prefix = str.substr (0, dot_pos);
 	    auto suffix = str.substr (dot_pos + 1);
-	    lexer.split_current_token (
-	      {Token::make_int (current_loc, std::move (prefix),
-				CORETYPE_PURE_DECIMAL),
-	       Token::make (DOT, current_loc + 1),
-	       Token::make_int (current_loc + 2, std::move (suffix),
-				CORETYPE_PURE_DECIMAL)});
+	    if (dot_pos == str.size () - 1)
+	      lexer.split_current_token (
+		{Token::make_int (current_loc, std::move (prefix),
+				  CORETYPE_PURE_DECIMAL),
+		 Token::make (DOT, current_loc + 1)});
+	    else
+	      lexer.split_current_token (
+		{Token::make_int (current_loc, std::move (prefix),
+				  CORETYPE_PURE_DECIMAL),
+		 Token::make (DOT, current_loc + 1),
+		 Token::make_int (current_loc + 2, std::move (suffix),
+				  CORETYPE_PURE_DECIMAL)});
 	    return parse_tuple_index_expr (tok, std::move (left),
 					   std::move (outer_attrs),
 					   restrictions);
