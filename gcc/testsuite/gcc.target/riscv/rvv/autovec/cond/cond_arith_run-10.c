@@ -1,27 +1,26 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
 
-#include "cond_fma_fnma-5.c"
+#include "cond_arith-10.c"
 
-#define FACTOR 17
 #define N 99
 
-#define TEST_LOOP(TYPE, NAME, OP)                                              \
+#undef TEST
+#define TEST(TYPE, NAME, OP)                                                   \
   {                                                                            \
-    TYPE r[N], a[N], b[N], pred[N], merged[N];                                 \
+    TYPE x[N], y[N], z[N], pred[N], merged[N];                                 \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
-	a[i] = (i & 1 ? i : 3 * i);                                            \
-	b[i] = (i >> 4) << (i & 15);                                           \
-	pred[i] = i % 3 < i % 5;                                               \
-	merged[i] = i * 5;                                                     \
-	asm volatile ("" ::: "memory");                                        \
+	y[i] = i * i;                                                          \
+	z[i] = ((i + 2) % 3) * (i + 1);                                        \
+	pred[i] = i % 3;                                                       \
+	merged[i] = i;                                                         \
       }                                                                        \
-    test_##TYPE##_##NAME (r, a, b, FACTOR, pred, merged, N);                   \
+    test_##TYPE##_##NAME (x, y, z, pred, merged, N);                           \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
-	TYPE expected = pred[i] ? a[i] OP b[i] * (TYPE) FACTOR : merged[i];    \
-	if (r[i] != expected)                                                  \
+	TYPE expected = i % 3 != 1 ? y[i] OP z[i] : merged[i];                 \
+	if (x[i] != expected)                                                  \
 	  __builtin_abort ();                                                  \
 	asm volatile ("" ::: "memory");                                        \
       }                                                                        \
@@ -30,6 +29,6 @@
 int
 main (void)
 {
-  TEST_ALL (TEST_LOOP)
+  TEST_ALL
   return 0;
 }

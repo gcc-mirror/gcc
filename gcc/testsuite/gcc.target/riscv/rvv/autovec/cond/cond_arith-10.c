@@ -6,10 +6,11 @@
 #define TEST(TYPE, NAME, OP)                                                   \
   void __attribute__ ((noinline, noclone))                                     \
   test_##TYPE##_##NAME (TYPE *__restrict x, TYPE *__restrict y,                \
-			TYPE *__restrict z, TYPE *__restrict pred, int n)      \
+			TYPE *__restrict z, TYPE *__restrict pred,             \
+			TYPE *__restrict merged, int n)                        \
   {                                                                            \
     for (int i = 0; i < n; ++i)                                                \
-      x[i] = pred[i] != 1 ? y[i] OP z[i] : y[i];                               \
+      x[i] = pred[i] != 1 ? y[i] OP z[i] : merged[i];                          \
   }
 
 #define TEST_TYPE(TYPE)                                                        \

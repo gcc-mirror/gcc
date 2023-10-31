@@ -21,3 +21,5 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tvfsqrt\.v\tv[0-9]+,v[0-9]+,v0\.t} 2 } } */
 
 /* { dg-final { scan-assembler {\tvsetvli\t[a-z0-9]+,[a-z0-9]+,e[0-9]+,m[f0-9]+,t[au],mu} } } */
+
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

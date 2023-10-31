@@ -9,3 +9,4 @@
 /* { dg-final { scan-assembler-times {\tvfncvt\.rod\.f\.f\.w\tv[0-9]+,v[0-9]+\n} 1 } } */
 
 /* { dg-final { scan-assembler {\tvsetvli\t[a-z0-9]+,[a-z0-9]+,e[0-9]+,m[f0-9]+,t[au],mu} } } */
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */
