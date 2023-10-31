@@ -1664,7 +1664,8 @@ pretty_printer::pretty_printer (int maximum_length)
     need_newline (),
     translate_identifiers (true),
     show_color (),
-    url_format (URL_FORMAT_NONE)
+    url_format (URL_FORMAT_NONE),
+    m_skipping_null_url (false)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -1687,7 +1688,8 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   need_newline (other.need_newline),
   translate_identifiers (other.translate_identifiers),
   show_color (other.show_color),
-  url_format (other.url_format)
+  url_format (other.url_format),
+  m_skipping_null_url (false)
 {
   pp_line_cutoff (this) = maximum_length;
   /* By default, we emit prefixes once per message.  */
@@ -2211,6 +2213,13 @@ identifier_to_locale (const char *ident)
 void
 pp_begin_url (pretty_printer *pp, const char *url)
 {
+  if (!url)
+    {
+      /* Handle null URL by skipping all output here,
+	 and in the next pp_end_url.  */
+      pp->m_skipping_null_url = true;
+      return;
+    }
   switch (pp->url_format)
     {
     case URL_FORMAT_NONE:
@@ -2254,6 +2263,13 @@ get_end_url_string (pretty_printer *pp)
 void
 pp_end_url (pretty_printer *pp)
 {
+  if (pp->m_skipping_null_url)
+    {
+      /* We gracefully handle pp_begin_url (NULL) by omitting output for
+	 both begin and end.  Here we handle the latter.  */
+      pp->m_skipping_null_url = false;
+      return;
+    }
   if (pp->url_format != URL_FORMAT_NONE)
     pp_string (pp, get_end_url_string (pp));
 }
@@ -2588,6 +2604,42 @@ test_urls ()
   }
 }
 
+/* Verify that we gracefully reject null URLs.  */
+
+void
+test_null_urls ()
+{
+  {
+    pretty_printer pp;
+    pp.url_format = URL_FORMAT_NONE;
+    pp_begin_url (&pp, nullptr);
+    pp_string (&pp, "This isn't a link");
+    pp_end_url (&pp);
+    ASSERT_STREQ ("This isn't a link",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.url_format = URL_FORMAT_ST;
+    pp_begin_url (&pp, nullptr);
+    pp_string (&pp, "This isn't a link");
+    pp_end_url (&pp);
+    ASSERT_STREQ ("This isn't a link",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.url_format = URL_FORMAT_BEL;
+    pp_begin_url (&pp, nullptr);
+    pp_string (&pp, "This isn't a link");
+    pp_end_url (&pp);
+    ASSERT_STREQ ("This isn't a link",
+		  pp_formatted_text (&pp));
+  }
+}
+
 /* Test multibyte awareness.  */
 static void test_utf8 ()
 {
@@ -2637,6 +2689,7 @@ pretty_print_cc_tests ()
   test_pp_format ();
   test_prefixes_and_wrapping ();
   test_urls ();
+  test_null_urls ();
   test_utf8 ();
 }
 
