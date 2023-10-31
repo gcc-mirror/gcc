@@ -20205,12 +20205,16 @@ int __builtin_bcdadd_ov (vector unsigned char, vector unsigned char, const int);
 vector __int128 __builtin_bcdsub (vector __int128, vector __int128, const int);
 vector unsigned char __builtin_bcdsub (vector unsigned char, vector unsigned char,
                                        const int);
+int __builtin_bcdsub_le (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_le (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_lt (vector __int128, vector __int128, const int);
 int __builtin_bcdsub_lt (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_eq (vector __int128, vector __int128, const int);
 int __builtin_bcdsub_eq (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_gt (vector __int128, vector __int128, const int);
 int __builtin_bcdsub_gt (vector unsigned char, vector unsigned char, const int);
+int __builtin_bcdsub_ge (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_ge (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_ov (vector __int128, vector __int128, const int);
 int __builtin_bcdsub_ov (vector unsigned char, vector unsigned char, const int);
 @end smallexample
