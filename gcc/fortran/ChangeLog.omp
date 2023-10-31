@@ -1,3 +1,8 @@
+2023-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.cc (gfc_match_end): Handle unnamed END BLOCK with
+	metadirectives.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Avoid gfc_evaluate_now

@@ -8409,6 +8409,9 @@ gfc_match_end (gfc_statement *st)
 		&& state_data->sym->abr_modproc_decl;
 	}
 	while (state == COMP_OMP_METADIRECTIVE);
+
+	if (startswith (block_name, "block@"))
+	  block_name = NULL;
       }
       break;
     default:
