@@ -2609,12 +2609,15 @@ process_alt_operands (int only_alternative)
 		  winreg = true;
 		  if (REG_P (op))
 		    {
+		      tree decl;
 		      if (hard_regno[nop] >= 0
 			  && in_hard_reg_set_p (this_alternative_set,
 						mode, hard_regno[nop])
-			  && !TEST_HARD_REG_BIT
-			      (this_alternative_exclude_start_hard_regs,
-			       hard_regno[nop]))
+			  && ((REG_ATTRS (op) && (decl = REG_EXPR (op)) != NULL
+			       && VAR_P (decl) && DECL_HARD_REGISTER (decl))
+			      || !(TEST_HARD_REG_BIT
+				   (this_alternative_exclude_start_hard_regs,
+				    hard_regno[nop]))))
 			win = true;
 		      else if (hard_regno[nop] < 0
 			       && in_class_p (op, this_alternative, NULL))
