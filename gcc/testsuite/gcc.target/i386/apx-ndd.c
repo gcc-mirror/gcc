@@ -40,6 +40,14 @@ foo3_##OP_NAME##_##TYPE (TYPE a)      \
   return b;			      \
 }			
 
+#define FOO4(TYPE, OP_NAME, OP1, OP2, IMM1)		    \
+TYPE							    \
+__attribute__ ((noipa))					    \
+foo4_##OP_NAME##_##TYPE (TYPE a)			    \
+{							    \
+  TYPE b = (a OP1 IMM1 | a OP2 (8 * sizeof(TYPE) - IMM1));  \
+  return b;						    \
+}
 
 #define F(TYPE, OP_NAME, OP)   \
 TYPE				 \
@@ -152,6 +160,16 @@ FOO3 (uint32_t, shr, >>, 7)
 FOO (uint64_t, shr, >>)
 FOO3 (uint64_t, shr, >>, 7)
 
+FOO4 (uint8_t, ror, >>, <<, 1)
+FOO4 (uint16_t, ror, >>, <<, 1)
+FOO4 (uint32_t, ror, >>, <<, 1)
+FOO4 (uint64_t, ror, >>, <<, 1)
+
+FOO4 (uint8_t, rol, <<, >>, 1)
+FOO4 (uint16_t, rol, <<, >>, 1)
+FOO4 (uint32_t, rol, <<, >>, 1)
+FOO4 (uint64_t, rol, <<, >>, 1)
+
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
@@ -180,3 +198,5 @@ FOO3 (uint64_t, shr, >>, 7)
 /* { dg-final { scan-assembler-times "sar(?:b|l|w|q)\[^\n\r]*7, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "shr(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "shr(?:b|l|w|q)\[^\n\r]*7, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "ror(?:b|l|w|q)\[^\n\r]*1, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "rol(?:b|l|w|q)\[^\n\r]*1, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
