@@ -1331,6 +1331,7 @@ ANALYZER_OBJS = \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
 	analyzer/ranges.o \
+	analyzer/record-layout.o \
 	analyzer/region.o \
 	analyzer/region-model.o \
 	analyzer/region-model-asm.o \

@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-event.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/feasible-graph.h"
+#include "analyzer/record-layout.h"
 
 #if ENABLE_ANALYZER
 
@@ -6122,137 +6123,6 @@ region_model::unset_dynamic_extents (const region *reg)
 {
   m_dynamic_extents.remove (reg);
 }
-
-/* Information of the layout of a RECORD_TYPE, capturing it as a vector
-   of items, where each item is either a field or padding.  */
-
-class record_layout
-{
-public:
-  /* An item within a record; either a field, or padding after a field.  */
-  struct item
-  {
-  public:
-    item (const bit_range &br,
-	  tree field,
-	  bool is_padding)
-    : m_bit_range (br),
-      m_field (field),
-      m_is_padding (is_padding)
-    {
-    }
-
-    bit_offset_t get_start_bit_offset () const
-    {
-      return m_bit_range.get_start_bit_offset ();
-    }
-    bit_offset_t get_next_bit_offset () const
-    {
-      return m_bit_range.get_next_bit_offset ();
-    }
-
-    bool contains_p (bit_offset_t offset) const
-    {
-      return m_bit_range.contains_p (offset);
-    }
-
-    void dump_to_pp (pretty_printer *pp) const
-    {
-      if (m_is_padding)
-	pp_printf (pp, "padding after %qD", m_field);
-      else
-	pp_printf (pp, "%qD", m_field);
-      pp_string (pp, ", ");
-      m_bit_range.dump_to_pp (pp);
-    }
-
-    bit_range m_bit_range;
-    tree m_field;
-    bool m_is_padding;
-  };
-
-  record_layout (tree record_type)
-  {
-    gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
-
-    for (tree iter = TYPE_FIELDS (record_type); iter != NULL_TREE;
-	 iter = DECL_CHAIN (iter))
-      {
-	if (TREE_CODE (iter) == FIELD_DECL)
-	  {
-	    int iter_field_offset = int_bit_position (iter);
-	    bit_size_t size_in_bits;
-	    if (!int_size_in_bits (TREE_TYPE (iter), &size_in_bits))
-	      size_in_bits = 0;
-
-	    maybe_pad_to (iter_field_offset);
-
-	    /* Add field.  */
-	    m_items.safe_push (item (bit_range (iter_field_offset,
-						size_in_bits),
-				     iter, false));
-	  }
-      }
-
-    /* Add any trailing padding.  */
-    bit_size_t size_in_bits;
-    if (int_size_in_bits (record_type, &size_in_bits))
-      maybe_pad_to (size_in_bits);
-  }
-
-  void dump_to_pp (pretty_printer *pp) const
-  {
-    unsigned i;
-    item *it;
-    FOR_EACH_VEC_ELT (m_items, i, it)
-      {
-	it->dump_to_pp (pp);
-	pp_newline (pp);
-      }
-  }
-
-  DEBUG_FUNCTION void dump () const
-  {
-    pretty_printer pp;
-    pp_format_decoder (&pp) = default_tree_printer;
-    pp.buffer->stream = stderr;
-    dump_to_pp (&pp);
-    pp_flush (&pp);
-  }
-
-  const record_layout::item *get_item_at (bit_offset_t offset) const
-  {
-    unsigned i;
-    item *it;
-    FOR_EACH_VEC_ELT (m_items, i, it)
-      if (it->contains_p (offset))
-	return it;
-    return NULL;
-  }
-
-private:
-  /* Subroutine of ctor.  Add padding item to NEXT_OFFSET if necessary.  */
-
-  void maybe_pad_to (bit_offset_t next_offset)
-  {
-    if (m_items.length () > 0)
-      {
-	const item &last_item = m_items[m_items.length () - 1];
-	bit_offset_t offset_after_last_item
-	  = last_item.get_next_bit_offset ();
-	if (next_offset > offset_after_last_item)
-	  {
-	    bit_size_t padding_size
-	      = next_offset - offset_after_last_item;
-	    m_items.safe_push (item (bit_range (offset_after_last_item,
-						padding_size),
-				     last_item.m_field, true));
-	  }
-      }
-  }
-
-  auto_vec<item> m_items;
-};
 
 /* A subclass of pending_diagnostic for complaining about uninitialized data
    being copied across a trust boundary to an untrusted output
