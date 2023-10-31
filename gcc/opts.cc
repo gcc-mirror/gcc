@@ -3679,9 +3679,9 @@ char *
 get_option_url (diagnostic_context *, int option_index)
 {
   if (option_index)
-    return concat (/* DOCUMENTATION_ROOT_URL should be supplied via -D by
-		      the Makefile (see --with-documentation-root-url), and
-		      should have a trailing slash.  */
+    return concat (/* DOCUMENTATION_ROOT_URL should be supplied via
+		      #include "config.h" (see --with-documentation-root-url),
+		      and should have a trailing slash.  */
 		   DOCUMENTATION_ROOT_URL,
 
 		   /* get_option_html_page will return something like
