@@ -139,6 +139,8 @@ public:
   void verify_mask () const;
   void dump (FILE *) const;
 
+  void adjust_range (irange &r) const;
+
   // Convenience functions for nonzero bitmask compatibility.
   wide_int get_nonzero_bits () const;
   void set_nonzero_bits (const wide_int &bits);
