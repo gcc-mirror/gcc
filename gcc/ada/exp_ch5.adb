@@ -5158,9 +5158,6 @@ package body Exp_Ch5 is
       --  The package in which the iterator interface is instantiated. This is
       --  typically an instance within the container package.
 
-      Pack : Entity_Id;
-      --  The package in which the container type is declared
-
    begin
       if Present (Iterator_Filter (I_Spec)) then
          pragma Assert (Ada_Version >= Ada_2022);
@@ -5194,15 +5191,6 @@ package body Exp_Ch5 is
 
       --    package Vector_Iterator_Interfaces is new
       --      Ada.Iterator_Interfaces (Cursor, Has_Element);
-
-      --  If the container type is a derived type, the cursor type is found in
-      --  the package of the ultimate ancestor type.
-
-      if Is_Derived_Type (Container_Typ) then
-         Pack := Scope (Root_Type (Container_Typ));
-      else
-         Pack := Scope (Container_Typ);
-      end if;
 
       if Of_Present (I_Spec) then
          Handle_Of : declare
@@ -5289,6 +5277,9 @@ package body Exp_Ch5 is
             Default_Iter : Entity_Id;
             Ent          : Entity_Id;
 
+            Cont_Type_Pack         : Entity_Id;
+            --  The package in which the container type is declared
+
             Reference_Control_Type : Entity_Id := Empty;
             Pseudo_Reference       : Entity_Id := Empty;
 
@@ -5312,11 +5303,14 @@ package body Exp_Ch5 is
 
             Iter_Type := Etype (Default_Iter);
 
-            --  The iterator type, which is a class-wide type, may itself be
-            --  derived locally, so the desired instantiation is the scope of
-            --  the root type of the iterator type.
+            --  If the container type is a derived type, the cursor type is
+            --  found in the package of the ultimate ancestor type.
 
-            Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
+            if Is_Derived_Type (Container_Typ) then
+               Cont_Type_Pack := Scope (Root_Type (Container_Typ));
+            else
+               Cont_Type_Pack := Scope (Container_Typ);
+            end if;
 
             --  Find declarations needed for "for ... of" optimization.
             --  These declarations come from GNAT sources or sources
@@ -5326,7 +5320,7 @@ package body Exp_Ch5 is
             --  Note that we use _Next or _Previous to avoid picking up
             --  some arbitrary user-defined Next or Previous.
 
-            Ent := First_Entity (Pack);
+            Ent := First_Entity (Cont_Type_Pack);
             while Present (Ent) loop
                --  Get_Element_Access function with one parameter called
                --  Position.
@@ -5400,6 +5394,11 @@ package body Exp_Ch5 is
 
             Analyze_And_Resolve (Name (I_Spec));
 
+            --  The desired instantiation is the scope of an iterator interface
+            --  type that is an ancestor of the iterator type.
+
+            Iter_Pack := Scope (Iterator_Interface_Ancestor (Iter_Type));
+
             --  Find cursor type in proper iterator package, which is an
             --  instantiation of Iterator_Interfaces.
 
@@ -5469,11 +5468,12 @@ package body Exp_Ch5 is
       else
          Iter_Type := Etype (Name (I_Spec));
 
-         --  The iterator type, which is a class-wide type, may itself be
-         --  derived locally, so the desired instantiation is the scope of
-         --  the root type of the iterator type, as in the "of" case.
+         --  The instantiation in which to locate the Has_Element function
+         --  is the scope containing an iterator interface type that is
+         --  an ancestor of the iterator type.
 
-         Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
+         Iter_Pack := Scope (Iterator_Interface_Ancestor (Iter_Type));
+
          Cursor := Id;
       end if;
 

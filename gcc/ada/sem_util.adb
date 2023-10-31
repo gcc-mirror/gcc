@@ -21496,6 +21496,40 @@ package body Sem_Util is
       pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
+   --------------------------------
+   -- Iterate_Interface_Ancestor --
+   --------------------------------
+
+   function Iterator_Interface_Ancestor (Typ : Entity_Id) return Entity_Id is
+   begin
+      if Has_Interfaces (Typ) then
+         declare
+            Iface_Elmt : Elmt_Id;
+            Ifaces     : Elist_Id;
+            Root_Iface : Entity_Id;
+
+         begin
+            Collect_Interfaces (Typ, Ifaces);
+
+            Iface_Elmt := First_Elmt (Ifaces);
+            while Present (Iface_Elmt) loop
+               Root_Iface := Root_Type (Node (Iface_Elmt));
+
+               if Chars (Root_Iface)
+                    in Name_Forward_Iterator | Name_Reversible_Iterator
+                 and then In_Predefined_Unit (Root_Iface)
+               then
+                  return Root_Iface;
+               end if;
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end;
+      end if;
+
+      return Empty;
+   end Iterator_Interface_Ancestor;
+
    -------------------------
    -- Kill_Current_Values --
    -------------------------
