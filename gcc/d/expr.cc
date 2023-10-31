@@ -2357,9 +2357,6 @@ public:
     else if (tb->ty == TY::Tarray)
       {
 	/* Allocating memory for a new D array.  */
-	tb = e->newtype->toBasetype ();
-	TypeDArray *tarray = tb->isTypeDArray ();
-
 	gcc_assert (e->arguments && e->arguments->length >= 1);
 
 	if (e->arguments->length == 1)
@@ -2403,7 +2400,8 @@ public:
 				       size_int (e->arguments->length),
 				       build_address (var));
 
-	    result = build_libcall (libcall, tb, 2, tinfo, dims);
+	    result = build_libcall (libcall, e->newtype->toBasetype (), 2,
+				    tinfo, dims);
 	  }
 
 	if (e->argprefix)
