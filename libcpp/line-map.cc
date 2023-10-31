@@ -782,7 +782,7 @@ linemap_enter_macro (class line_maps *set, struct cpp_hashnode *macro_node,
   map->macro_locations
     = (location_t*) set->m_reallocator (nullptr,
 					2 * num_tokens * sizeof (location_t));
-  map->expansion = expansion;
+  map->m_expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
 	  2 * num_tokens * sizeof (location_t));
 
@@ -1225,7 +1225,7 @@ linemap_macro_map_loc_to_exp_point (const line_map_macro *map,
   linemap_assert ((location - MAP_START_LOCATION (map))
 		  <  MACRO_MAP_NUM_MACRO_TOKENS (map));
 
-  return MACRO_MAP_EXPANSION_POINT_LOCATION (map);
+  return map->get_expansion_point_location ();
 }
 
 /* LOCATION is the source location of a token that belongs to a macro
