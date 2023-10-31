@@ -857,6 +857,10 @@ package body Sem_Warn is
       --  from another unit. This is true for entities in packages that are at
       --  the library level.
 
+      function Type_OK_For_No_Value_Assigned (T : Entity_Id) return Boolean;
+      --  Return True if it is OK for an object of type T to be referenced
+      --  without having been assigned a value in the source.
+
       function Warnings_Off_E1 return Boolean;
       --  Return True if Warnings_Off is set for E1, or for its Etype (E1T),
       --  or for the base type of E1T.
@@ -1120,6 +1124,37 @@ package body Sem_Warn is
             end case;
          end loop;
       end Publicly_Referenceable;
+
+      -----------------------------------
+      -- Type_OK_For_No_Value_Assigned --
+      -----------------------------------
+
+      function Type_OK_For_No_Value_Assigned (T : Entity_Id) return Boolean is
+      begin
+         --  No information for generic types, so be conservative
+
+         if Is_Generic_Type (T) then
+            return False;
+         end if;
+
+         --  Even if objects of access types are implicitly initialized to null
+
+         if Is_Access_Type (T) then
+            return False;
+         end if;
+
+         --  The criterion is whether the type is (partially) initialized in
+         --  the source, in other words we disregard implicit default values.
+         --  But we do not require full initialization for by-reference types
+         --  because they are complex and it may not be possible to have it.
+
+         if Is_By_Reference_Type (T) then
+            return
+              Is_Partially_Initialized_Type (T, Include_Implicit => False);
+         else
+            return Is_Fully_Initialized_Type (T);
+         end if;
+      end Type_OK_For_No_Value_Assigned;
 
       ---------------------
       -- Warnings_Off_E1 --
@@ -1414,10 +1449,7 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
-                           if Is_Access_Type (E1T)
-                             or else
-                               not Is_Partially_Initialized_Type (E1T, False)
-                           then
+                           if not Type_OK_For_No_Value_Assigned (E1T) then
                               Output_Reference_Error
                                 ("?v?variable& is read but never assigned!");
                            end if;
@@ -1456,14 +1488,12 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference. If type of object has
-               --  preelaborable initialization, warning is misleading.
+               --  Check for unset reference
 
                if Warn_On_No_Value_Assigned
                  and then Present (UR)
-                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+                 and then not Type_OK_For_No_Value_Assigned (E1T)
                then
-
                   --  Don't issue warning if appearing inside Initial_Condition
                   --  pragma or aspect, since that expression is not evaluated
                   --  at the point where it occurs in the source.
