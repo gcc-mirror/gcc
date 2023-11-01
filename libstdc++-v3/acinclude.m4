@@ -997,7 +997,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }], [],
         [glibcxx_cv_c99_stdio_cxx98=yes], [glibcxx_cv_c99_stdio_cxx98=no])
     ])
@@ -1578,7 +1578,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }], [],
         [glibcxx_cv_c99_stdio_cxx11=yes], [glibcxx_cv_c99_stdio_cxx11=no])
     ])
