@@ -1427,7 +1427,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info))
 	      && rhs_code != CFN_GATHER_LOAD
 	      && rhs_code != CFN_MASK_GATHER_LOAD
-				&& rhs_code != CFN_MASK_LEN_GATHER_LOAD
+	      && rhs_code != CFN_MASK_LEN_GATHER_LOAD
 	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	      /* Not grouped loads are handled as externals for BB
 		 vectorization.  For loop vectorization we can handle
