@@ -862,4 +862,9 @@ cb_read_pch (cpp_reader *pfile, const char *name,
 
   fprintf (print.outf, "#pragma GCC pch_preprocess \"%s\"\n", name);
   print.src_line++;
+
+  /* The process of reading the PCH has destroyed the frontend parser,
+     so ask the frontend to reinitialize it, in case we need it to
+     process any #pragma directives encountered while preprocessing.  */
+  c_init_preprocess ();
 }
