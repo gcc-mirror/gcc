@@ -2622,6 +2622,92 @@
   DONE;
 })
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel half-precision floating point complex type operations
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "cmlav4hf4"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "vector_operand")
+   (match_operand:V4HF 2 "vector_operand")
+   (match_operand:V4HF 3 "vector_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_cmlav8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "cmla_conjv4hf4"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "vector_operand")
+   (match_operand:V4HF 2 "vector_operand")
+   (match_operand:V4HF 3 "vector_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op3 = gen_reg_rtx (V8HFmode);
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op3, operands[3]));
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_cmla_conjv8hf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "cmulv4hf3"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "vector_operand")
+   (match_operand:V4HF 2 "vector_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_cmulv8hf3 (op0, op1, op2));
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "cmul_conjv4hf3"
+  [(match_operand:V4HF 0 "register_operand")
+   (match_operand:V4HF 1 "vector_operand")
+   (match_operand:V4HF 2 "vector_operand")]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_cmul_conjv8hf3 (op0, op1, op2));
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel half-precision floating point conversion operations
