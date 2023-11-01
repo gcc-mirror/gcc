@@ -7751,6 +7751,12 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
      an assert so we can find and fix this problem.  */
   gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
 
+  /* If we ever encounter an insn without an insn reservation, trip
+     an assert so we can find and fix this problem.  */
+#if 0
+  gcc_assert (insn_has_dfa_reservation_p (insn));
+#endif
+
   return more - 1;
 }
 
