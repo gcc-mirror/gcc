@@ -161,15 +161,6 @@ PROCEDURE RememberVariables (l: Tree) ;
 
 
 (*
-   ConstantStringExceedsZType - return TRUE if str exceeds the ZTYPE range.
-*)
-
-PROCEDURE ConstantStringExceedsZType (location: location_t;
-                                      str: ADDRESS; base: CARDINAL;
-                                      issueError: BOOLEAN) : BOOLEAN ;
-
-
-(*
     BuildConstLiteralNumber - returns a GCC TREE built from the string, str.
                               It assumes that, str, represents a legal
                               number in Modula-2. It always returns a
