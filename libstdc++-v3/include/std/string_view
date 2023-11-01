@@ -301,7 +301,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr void
       remove_suffix(size_type __n) noexcept
-      { this->_M_len -= __n; }
+      {
+	__glibcxx_assert(this->_M_len >= __n);
+	this->_M_len -= __n;
+      }
 
       constexpr void
       swap(basic_string_view& __sv) noexcept
