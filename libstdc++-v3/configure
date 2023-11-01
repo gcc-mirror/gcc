@@ -17609,7 +17609,7 @@ else
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }
 int
 main ()
@@ -17640,7 +17640,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }
 int
 main ()
@@ -18285,7 +18285,7 @@ else
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }
 int
 main ()
@@ -18316,7 +18316,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
            vscanf("%i", args);
            vsnprintf(fmt, 0, "%i", args);
            vsscanf(fmt, "%i", args);
-           snprintf(fmt, 0, "%i");
+           snprintf(fmt, 0, "%i", 1);
          }
 int
 main ()
