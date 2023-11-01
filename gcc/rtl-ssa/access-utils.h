@@ -78,6 +78,46 @@ drop_memory_access (T accesses)
   return T (arr.begin (), accesses.size () - 1);
 }
 
+// Filter ACCESSES to return an access_array of only those accesses that
+// satisfy PREDICATE.  Alocate the new array above WATERMARK.
+template<typename T, typename FilterPredicate>
+inline T
+filter_accesses (obstack_watermark &watermark,
+		 T accesses,
+		 FilterPredicate predicate)
+{
+  access_array_builder builder (watermark);
+  builder.reserve (accesses.size ());
+  for (auto access : accesses)
+    if (predicate (access))
+      builder.quick_push (access);
+  return T (builder.finish ());
+}
+
+// Given an array of ACCESSES, remove any access with regno REGNO.
+// Allocate the new access array above WM.
+template<typename T>
+inline T
+remove_regno_access (obstack_watermark &watermark,
+		     T accesses, unsigned int regno)
+{
+  using Access = decltype (accesses[0]);
+  auto pred = [regno](Access a) { return a->regno () != regno; };
+  return filter_accesses (watermark, accesses, pred);
+}
+
+// As above, but additionally check that we actually did remove an access.
+template<typename T>
+inline T
+check_remove_regno_access (obstack_watermark &watermark,
+			   T accesses, unsigned regno)
+{
+  auto orig_size = accesses.size ();
+  auto result = remove_regno_access (watermark, accesses, regno);
+  gcc_assert (result.size () < orig_size);
+  return result;
+}
+
 // If sorted array ACCESSES includes a reference to REGNO, return the
 // access, otherwise return null.
 template<typename T>

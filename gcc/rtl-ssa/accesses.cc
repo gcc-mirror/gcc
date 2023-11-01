@@ -1597,16 +1597,14 @@ access_array
 rtl_ssa::remove_note_accesses_base (obstack_watermark &watermark,
 				    access_array accesses)
 {
+  auto predicate = [](access_info *a) {
+    return !a->only_occurs_in_notes ();
+  };
+
   for (access_info *access : accesses)
     if (access->only_occurs_in_notes ())
-      {
-	access_array_builder builder (watermark);
-	builder.reserve (accesses.size ());
-	for (access_info *access2 : accesses)
-	  if (!access2->only_occurs_in_notes ())
-	    builder.quick_push (access2);
-	return builder.finish ();
-      }
+      return filter_accesses (watermark, accesses, predicate);
+
   return accesses;
 }
 
