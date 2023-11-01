@@ -880,6 +880,13 @@
   ""
   [(set_attr "type" "vector")])
 
+(define_insn "@vundefined<mode>"
+  [(set (match_operand:VT 0 "register_operand" "=vr")
+	(unspec:VT [(reg:SI X0_REGNUM)] UNSPEC_VUNDEF))]
+  "TARGET_VECTOR"
+  ""
+  [(set_attr "type" "vector")])
+
 (define_expand "@vreinterpret<mode>"
   [(set (match_operand:V 0 "register_operand")
 	(match_operand 1 "vector_any_register_operand"))]
