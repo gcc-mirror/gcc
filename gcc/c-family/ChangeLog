@@ -1,3 +1,8 @@
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-warn.cc (warn_for_multistatement_macros): Update for removal
+	of MACRO_MAP_EXPANSION_POINT_LOCATION.
+
 2023-10-27  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/87299

@@ -1,3 +1,10 @@
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* module.cc (ordinary_loc_of): Update for removal of
+	MACRO_MAP_EXPANSION_POINT_LOCATION.
+	(module_state::note_location): Update for renaming of field.
+	(module_state::write_macro_maps): Likewise.
+
 2023-10-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/111929

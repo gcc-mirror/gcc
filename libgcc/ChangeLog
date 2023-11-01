@@ -1,3 +1,7 @@
+2023-10-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* hardcfr.c: Adjust copyright year.
+
 2023-10-24  Sergei Trofimovich  <siarheit@google.com>
 
 	* config/aarch64/heap-trampoline.c: Disable when libc is not

@@ -1,3 +1,301 @@
+2023-10-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-gather-6.c: New test.
+
+2023-10-31  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-attr-5.c: New test.
+	* gcc.target/bpf/core-attr-6.c: New test.
+	* gcc.target/bpf/core-builtin-1.c: Corrected
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: Corrected regular
+	expression.
+	* gcc.target/bpf/core-builtin-enumvalue.c: Corrected regular
+	expression.
+	* gcc.target/bpf/core-builtin-exprlist-1.c: New test.
+	* gcc.target/bpf/core-builtin-exprlist-2.c: New test.
+	* gcc.target/bpf/core-builtin-exprlist-3.c: New test.
+	* gcc.target/bpf/core-builtin-exprlist-4.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: Extra tests
+
+2023-10-31  Neal Frager  <neal.frager@amd.com>
+
+	* gcc.target/microblaze/isa/bshift.c: Bump to mcpu=v10.0.
+	* gcc.target/microblaze/isa/div.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp1.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp2.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp3.c: Ditto.
+	* gcc.target/microblaze/isa/fcmp4.c: Ditto.
+	* gcc.target/microblaze/isa/fcvt.c: Ditto.
+	* gcc.target/microblaze/isa/float.c: Ditto.
+	* gcc.target/microblaze/isa/fsqrt.c: Ditto.
+	* gcc.target/microblaze/isa/mul-bshift-pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/mul-bshift.c: Ditto.
+	* gcc.target/microblaze/isa/mul.c: Ditto.
+	* gcc.target/microblaze/isa/mulh-bshift-pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/mulh.c: Ditto.
+	* gcc.target/microblaze/isa/nofcmp.c: Ditto.
+	* gcc.target/microblaze/isa/nofloat.c: Ditto.
+	* gcc.target/microblaze/isa/pcmp.c: Ditto.
+	* gcc.target/microblaze/isa/vanilla.c: Ditto.
+	* gcc.target/microblaze/microblaze.exp: Ditto.
+
+2023-10-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: Add A extension to
+	dg-options for dg-do compile.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: Ditto.
+	* gcc.target/riscv/inline-atomics-2.c: Ditto.
+	* gcc.target/riscv/inline-atomics-3.c: Require A extension for dg-do
+	run.
+	* gcc.target/riscv/inline-atomics-4.c: Ditto.
+	* gcc.target/riscv/inline-atomics-5.c: Ditto.
+	* gcc.target/riscv/inline-atomics-6.c: Ditto.
+	* gcc.target/riscv/inline-atomics-7.c: Ditto.
+	* gcc.target/riscv/inline-atomics-8.c: Ditto.
+	* lib/target-supports.exp: Add testing infrastructure to require the A
+	extension or add it to an existing -march.
+
+2023-10-31  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-index-update.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb-update.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-index.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-uindex-update.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb-update.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadfmemidx-uindex.c: New test.
+
+2023-10-31  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmemidx-helpers.h: New test.
+	* gcc.target/riscv/xtheadmemidx-index-update.c: New test.
+	* gcc.target/riscv/xtheadmemidx-index-xtheadbb-update.c: New test.
+	* gcc.target/riscv/xtheadmemidx-index-xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadmemidx-index.c: New test.
+	* gcc.target/riscv/xtheadmemidx-modify-xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadmemidx-modify.c: New test.
+	* gcc.target/riscv/xtheadmemidx-uindex-update.c: New test.
+	* gcc.target/riscv/xtheadmemidx-uindex-xtheadbb-update.c: New test.
+	* gcc.target/riscv/xtheadmemidx-uindex-xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadmemidx-uindex.c: New test.
+
+2023-10-31  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/bcd-3.c (do_sub_ge, do_suble): Add functions
+	to test builtins __builtin_bcdsub_ge and __builtin_bcdsub_le.
+
+2023-10-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/111971
+	* gcc.target/powerpc/pr111971.c: New test.
+
+2023-10-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Remove
+	-ffast-math.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/fmax-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmax_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmax_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmax_zvfh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmin-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmin_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmin_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/fmin_zvfh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_zvfh-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_zvfh_run-10.c: New test.
+
+2023-10-31  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/111943
+	* gcc.dg/harden-cfr-pr111943.c: New.
+
+2023-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112305
+	* gcc.dg/torture/pr112305.c: New testcase.
+
+2023-10-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-1.c: Add vmerge assert.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv32-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv64-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_min_max-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul_run-5.c: New test.
+
+2023-10-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-1.c:
+	Add vfncvt.f.f.w assert.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-2.c:
+	Ditto.
+
+2023-10-31  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/part-vect-vcondhf.C: Adjust testcase.
+	* gcc.target/i386/pr112276.c: New test.
+
+2023-10-31  Andrew Pinski  <pinskia@gmail.com>
+
+	* gcc.dg/tree-ssa/phi-opt-value-4.c: New test.
+
+2023-10-31  Andrew Pinski  <pinskia@gmail.com>
+
+	* gcc.dg/tree-ssa/cond-1.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-value-1.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-value-1a.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-value-2.c: New test.
+
 2023-10-31  Neal Frager  <neal.frager@amd.com>
 
 	* gcc.target/microblaze/isa/bshift.c: Bump to mcpu=v10.0.

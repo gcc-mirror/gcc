@@ -1,3 +1,303 @@
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/record-layout.o.
+
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.cc (dump_location_info): Update for removal of
+	MACRO_MAP_EXPANSION_POINT_LOCATION.
+	* tree-diagnostic.cc (maybe_unwind_expanded_macro_loc):
+	Likewise.
+
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* opts.cc (get_option_url): Update comment; the requirement to
+	pass DOCUMENTATION_ROOT_URL's value via -D was removed in
+	r10-8065-ge33a1eae25b8a8.
+
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (pretty_printer::pretty_printer): Initialize
+	m_skipping_null_url.
+	(pp_begin_url): Handle URL being null.
+	(pp_end_url): Likewise.
+	(selftest::test_null_urls): New.
+	(selftest::pretty_print_cc_tests): Call it.
+	* pretty-print.h (pretty_printer::m_skipping_null_url): New.
+
+2023-10-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-slp.cc (vect_get_operand_map): Add MASK_LEN_GATHER_LOAD.
+	(vect_build_slp_tree_1): Ditto.
+	(vect_build_slp_tree_2): Ditto.
+
+2023-10-31  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf-passes.def (pass_lower_bpf_core): Added pass.
+	* config/bpf/bpf-protos.h: Added prototype for new pass.
+	* config/bpf/bpf.cc (bpf_delegitimize_address): New function.
+	* config/bpf/bpf.md (mov_reloc_core<MM:mode>): Prefixed
+	name with '*'.
+	* config/bpf/core-builtins.cc (cr_builtins) Added access_node to
+	struct.
+	(is_attr_preserve_access): Improved check.
+	(core_field_info): Make use of root_for_core_field_info
+	function.
+	(process_field_expr): Adapted to new functions.
+	(pack_type): Small improvement.
+	(bpf_handle_plugin_finish_type): Adapted to GTY(()).
+	(bpf_init_core_builtins): Changed to new function names.
+	(construct_builtin_core_reloc): Improved implementation.
+	(bpf_resolve_overloaded_core_builtin): Changed how
+	__builtin_preserve_access_index is converted.
+	(compute_field_expr): Corrected implementation. Added
+	access_node argument.
+	(bpf_core_get_index): Added valid argument.
+	(root_for_core_field_info, pack_field_expr)
+	(core_expr_with_field_expr_plus_base, make_core_safe_access_index)
+	(replace_core_access_index_comp_expr, maybe_get_base_for_field_expr)
+	(core_access_clean, core_is_access_index, core_mark_as_access_index)
+	(make_gimple_core_safe_access_index, execute_lower_bpf_core)
+	(make_pass_lower_bpf_core): Added functions.
+	(pass_data_lower_bpf_core): New pass struct.
+	(pass_lower_bpf_core): New gimple_opt_pass class.
+	(pack_field_expr_for_preserve_field)
+	(bpf_replace_core_move_operands): Removed function.
+	(bpf_enum_value_kind): Added GTY(()).
+	* config/bpf/core-builtins.h (bpf_field_info_kind, bpf_type_id_kind)
+	(bpf_type_info_kind, bpf_enum_value_kind): New enum.
+	* config/bpf/t-bpf: Added pass bpf-passes.def to PASSES_EXTRA.
+
+2023-10-31  Neal Frager  <neal.frager@amd.com>
+
+	* config/microblaze/microblaze.cc: Fix mcpu version check.
+
+2023-10-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync-rvwmo.md (atomic_load_rvwmo<mode>): Remove
+	TARGET_ATOMIC constraint
+	(atomic_store_rvwmo<mode>): Ditto.
+	* config/riscv/sync-ztso.md (atomic_load_ztso<mode>): Ditto.
+	(atomic_store_ztso<mode>): Ditto.
+	* config/riscv/sync.md (atomic_load<mode>): Ditto.
+	(atomic_store<mode>): Ditto.
+
+2023-10-31  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_index_reg_class):
+	Return GR_REGS for XTheadFMemIdx.
+	(riscv_regno_ok_for_index_p): Add support for XTheadFMemIdx.
+	* config/riscv/riscv.h (HARDFP_REG_P): New macro.
+	* config/riscv/thead.cc (is_fmemidx_mode): New function.
+	(th_memidx_classify_address_index): Add support for XTheadFMemIdx.
+	(th_fmemidx_output_index): New function.
+	(th_output_move): Add support for XTheadFMemIdx.
+	* config/riscv/thead.md (TH_M_ANYF): New mode iterator.
+	(TH_M_NOEXTF): Likewise.
+	(*th_fmemidx_movsf_hardfloat): New INSN.
+	(*th_fmemidx_movdf_hardfloat_rv64): Likewise.
+	(*th_fmemidx_I_a): Likewise.
+	(*th_fmemidx_I_c): Likewise.
+	(*th_fmemidx_US_a): Likewise.
+	(*th_fmemidx_US_c): Likewise.
+	(*th_fmemidx_UZ_a): Likewise.
+	(*th_fmemidx_UZ_c): Likewise.
+
+2023-10-31  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/constraints.md (th_m_mia): New constraint.
+	(th_m_mib): Likewise.
+	(th_m_mir): Likewise.
+	(th_m_miu): Likewise.
+	* config/riscv/riscv-protos.h (enum riscv_address_type):
+	Add new address types ADDRESS_REG_REG, ADDRESS_REG_UREG,
+	and ADDRESS_REG_WB and their documentation.
+	(struct riscv_address_info): Add new field 'shift' and
+	document the field usage for the new address types.
+	(riscv_valid_base_register_p): New prototype.
+	(th_memidx_legitimate_modify_p): Likewise.
+	(th_memidx_legitimate_index_p): Likewise.
+	(th_classify_address): Likewise.
+	(th_output_move): Likewise.
+	(th_print_operand_address): Likewise.
+	* config/riscv/riscv.cc (riscv_index_reg_class):
+	Return GR_REGS for XTheadMemIdx.
+	(riscv_regno_ok_for_index_p): Add support for XTheadMemIdx.
+	(riscv_classify_address): Call th_classify_address() on top.
+	(riscv_output_move): Call th_output_move() on top.
+	(riscv_print_operand_address): Call th_print_operand_address()
+	on top.
+	* config/riscv/riscv.h (HAVE_POST_MODIFY_DISP): New macro.
+	(HAVE_PRE_MODIFY_DISP): Likewise.
+	* config/riscv/riscv.md (zero_extendqi<SUPERQI:mode>2): Disable
+	for XTheadMemIdx.
+	(*zero_extendqi<SUPERQI:mode>2_internal): Convert to expand,
+	create INSN with same name and disable it for XTheadMemIdx.
+	(extendsidi2): Likewise.
+	(*extendsidi2_internal): Disable for XTheadMemIdx.
+	* config/riscv/thead.cc (valid_signed_immediate): New helper
+	function.
+	(th_memidx_classify_address_modify): New function.
+	(th_memidx_legitimate_modify_p): Likewise.
+	(th_memidx_output_modify): Likewise.
+	(is_memidx_mode): Likewise.
+	(th_memidx_classify_address_index): Likewise.
+	(th_memidx_legitimate_index_p): Likewise.
+	(th_memidx_output_index): Likewise.
+	(th_classify_address): Likewise.
+	(th_output_move): Likewise.
+	(th_print_operand_address): Likewise.
+	* config/riscv/thead.md (*th_memidx_operand): New splitter.
+	(*th_memidx_zero_extendqi<SUPERQI:mode>2): New INSN.
+	(*th_memidx_extendsidi2): Likewise.
+	(*th_memidx_zero_extendsidi2): Likewise.
+	(*th_memidx_zero_extendhi<GPR:mode>2): Likewise.
+	(*th_memidx_extend<SHORT:mode><SUPERQI:mode>2): Likewise.
+	(*th_memidx_bb_zero_extendsidi2): Likewise.
+	(*th_memidx_bb_zero_extendhi<GPR:mode>2): Likewise.
+	(*th_memidx_bb_extendhi<GPR:mode>2): Likewise.
+	(*th_memidx_bb_extendqi<SUPERQI:mode>2): Likewise.
+	(TH_M_ANYI): New mode iterator.
+	(TH_M_NOEXTI): Likewise.
+	(*th_memidx_I_a): New combiner optimization.
+	(*th_memidx_I_b): Likewise.
+	(*th_memidx_I_c): Likewise.
+	(*th_memidx_US_a): Likewise.
+	(*th_memidx_US_b): Likewise.
+	(*th_memidx_US_c): Likewise.
+	(*th_memidx_UZ_a): Likewise.
+	(*th_memidx_UZ_b): Likewise.
+	(*th_memidx_UZ_c): Likewise.
+
+2023-10-31  Carl Love  <cel@us.ibm.com>
+
+	* doc/extend.texi (__builtin_bcdsub_le, __builtin_bcdsub_ge): Add
+	documentation for the builti-ins.
+
+2023-10-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/111971
+	* lra-constraints.cc: (process_alt_operands): Don't check start
+	hard regs for regs originated from register variables.
+
+2023-10-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<ieee_fmaxmin_op><mode>3): fmax/fmin
+	expanders.
+	(cond_<ieee_fmaxmin_op><mode>): Ditto.
+	(cond_len_<ieee_fmaxmin_op><mode>): Ditto.
+	(reduc_fmax_scal_<mode>): Ditto.
+	(reduc_fmin_scal_<mode>): Ditto.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Add fmin/fmax.
+	* config/riscv/vector-iterators.md (fmin): New UNSPEC.
+	(UNSPEC_VFMIN): Ditto.
+	* config/riscv/vector.md (@pred_<ieee_fmaxmin_op><mode>): Add
+	UNSPEC insn patterns.
+	(@pred_<ieee_fmaxmin_op><mode>_scalar): Ditto.
+
+2023-10-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR bootstrap/84402
+	PR target/111600
+	* Makefile.in: Handle split insn-emit.cc.
+	* configure: Regenerate.
+	* configure.ac: Add --with-insnemit-partitions.
+	* genemit.cc (output_peephole2_scratches): Print to file instead
+	of stdout.
+	(print_code): Ditto.
+	(gen_rtx_scratch): Ditto.
+	(gen_exp): Ditto.
+	(gen_emit_seq): Ditto.
+	(emit_c_code): Ditto.
+	(gen_insn): Ditto.
+	(gen_expand): Ditto.
+	(gen_split): Ditto.
+	(output_add_clobbers): Ditto.
+	(output_added_clobbers_hard_reg_p): Ditto.
+	(print_overload_arguments): Ditto.
+	(print_overload_test): Ditto.
+	(handle_overloaded_code_for): Ditto.
+	(handle_overloaded_gen): Ditto.
+	(print_header): New function.
+	(handle_arg): New function.
+	(main): Split output into 10 files.
+	* gensupport.cc (count_patterns): New function.
+	* gensupport.h (count_patterns): Define.
+	* read-md.cc (md_reader::print_md_ptr_loc): Add file argument.
+	* read-md.h (class md_reader): Change definition.
+
+2023-10-31  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/111943
+	* gimple-harden-control-flow.cc: Adjust copyright year.
+	(rt_bb_visited): Add vfalse and vtrue data members.
+	Zero-initialize them in the ctor.
+	(rt_bb_visited::insert_exit_check_on_edge): Upon encountering
+	abnormal edges, insert initializers for vfalse and vtrue on
+	entry, and insert the check sequence guarded by a conditional
+	in the dest block.
+
+2023-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112305
+	* tree-scalar-evolution.h (expression_expensive): Adjust.
+	* tree-scalar-evolution.cc (expression_expensive): Record
+	when we see a COND_EXPR.
+	(final_value_replacement_loop): When the replacement contains
+	a COND_EXPR, rewrite it to defined overflow.
+	* tree-ssa-loop-ivopts.cc (may_eliminate_iv): Adjust.
+
+2023-10-31  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112299
+	* config/loongarch/loongarch-opts.h (HAVE_AS_TLS): Define to 0
+	if not defined yet.
+
+2023-10-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gimple-match.h (gimple_match_op::gimple_match_op):
+	Add interfaces for more arguments.
+	(gimple_match_op::set_op): Add interfaces for more arguments.
+	* match.pd: Add support of combining cond_len_op + vec_cond
+
+2023-10-31  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512cdintrin.h (target): Push evex512 for
+	avx512cd.
+	* config/i386/avx512vlintrin.h (target): Split avx512cdvl part
+	out from avx512vl.
+	* config/i386/i386-builtin.def (BDESC): Do not check evex512
+	for builtins not needed.
+
+2023-10-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec.md (<float_cvt><mode><vnnconvert>2):
+	Change to define_expand.
+
+2023-10-31  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112276
+	* config/i386/mmx.md (*mmx_pblendvb_v8qi_1): Change
+	define_split to define_insn_and_split to handle
+	immediate_operand for comparison.
+	(*mmx_pblendvb_v8qi_2): Ditto.
+	(*mmx_pblendvb_<mode>_1): Ditto.
+	(*mmx_pblendvb_v4qi_2): Ditto.
+	(<code><mode>3): Remove define_split after it.
+	(<code>v8qi3): Ditto.
+	(<code><mode>3): Ditto.
+	(<ode>v2hi3): Ditto.
+
+2023-10-31  Andrew Pinski  <pinskia@gmail.com>
+
+	* match.pd (`a == 1 ? b : a OP b`): New pattern.
+	(`a == -1 ? b : a & b`): New pattern.
+
+2023-10-31  Andrew Pinski  <pinskia@gmail.com>
+
+	* match.pd: (`a == 0 ? b : b + a`,
+	`a == 0 ? b : b - a`): New patterns.
+
 2023-10-31  Neal Frager  <neal.frager@amd.com>
 
 	* config/microblaze/microblaze.cc: Fix mcpu version check.

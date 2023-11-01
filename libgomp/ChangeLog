@@ -1,3 +1,8 @@
+2023-10-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: Add OpenACC
+	'acc_map_data' variant.
+
 2023-10-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-parallel.c (GOACC_data_start): Handle
