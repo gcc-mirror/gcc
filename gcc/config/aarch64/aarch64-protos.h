@@ -1044,6 +1044,7 @@ bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_mem_ok_with_ldpstp_policy_model (rtx, bool, machine_mode);
 void aarch64_swap_ldrstr_operands (rtx *, bool);
+bool aarch64_ldpstp_operand_mode_p (machine_mode);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);

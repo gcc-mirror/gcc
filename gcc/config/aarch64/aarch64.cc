@@ -8122,23 +8122,15 @@ static rtx
 aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 			  HOST_WIDE_INT adjustment)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_storewb_pairdi_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_WORD - adjustment));
-    case E_DFmode:
-      return gen_storewb_pairdf_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_WORD - adjustment));
-    case E_TFmode:
-      return gen_storewb_pairtf_di (base, base, reg, reg2,
-				    GEN_INT (-adjustment),
-				    GEN_INT (UNITS_PER_VREG - adjustment));
-    default:
-      gcc_unreachable ();
-    }
+  rtx new_base = plus_constant (Pmode, base, -adjustment);
+  rtx mem = gen_frame_mem (mode, new_base);
+  rtx mem2 = adjust_address_nv (mem, mode, GET_MODE_SIZE (mode));
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (3,
+				      gen_rtx_SET (base, new_base),
+				      gen_rtx_SET (mem, reg),
+				      gen_rtx_SET (mem2, reg2)));
 }
 
 /* Push registers numbered REGNO1 and REGNO2 to the stack, adjusting the
@@ -8170,20 +8162,15 @@ static rtx
 aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 			 HOST_WIDE_INT adjustment)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_loadwb_pairdi_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_WORD));
-    case E_DFmode:
-      return gen_loadwb_pairdf_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_WORD));
-    case E_TFmode:
-      return gen_loadwb_pairtf_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (UNITS_PER_VREG));
-    default:
-      gcc_unreachable ();
-    }
+  rtx mem = gen_frame_mem (mode, base);
+  rtx mem2 = adjust_address_nv (mem, mode, GET_MODE_SIZE (mode));
+  rtx new_base = plus_constant (Pmode, base, adjustment);
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (3,
+				      gen_rtx_SET (base, new_base),
+				      gen_rtx_SET (reg, mem),
+				      gen_rtx_SET (reg2, mem2)));
 }
 
 /* Pop the two registers numbered REGNO1, REGNO2 from the stack, adjusting it
@@ -26668,6 +26655,20 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
     }
 
   return false;
+}
+
+/* Test if MODE is suitable for a single transfer register in an ldp or stp
+   instruction.  */
+
+bool
+aarch64_ldpstp_operand_mode_p (machine_mode mode)
+{
+  if (!targetm.hard_regno_mode_ok (V0_REGNUM, mode)
+      || hard_regno_nregs (V0_REGNUM, mode) > 1)
+    return false;
+
+  const auto size = GET_MODE_SIZE (mode);
+  return known_eq (size, 4) || known_eq (size, 8) || known_eq (size, 16);
 }
 
 /* Return true if MEM1 and MEM2 can be combined into a single access

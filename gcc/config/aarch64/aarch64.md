@@ -1959,102 +1959,208 @@
    (set_attr "fp" "yes")]
 )
 
+;; Writeback load/store pair patterns.
+;;
+;; Note that modes in the patterns [SI DI TI] are used only as a proxy for their
+;; size; aarch64_ldp_reg_operand and aarch64_mem_pair_operator are special
+;; predicates which accept a wide range of operand modes, with the requirement
+;; that the contextual (pattern) mode is of the same size as the operand mode.
+
 ;; Load pair with post-index writeback.  This is primarily used in function
 ;; epilogues.
-(define_insn "loadwb_pair<GPI:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (match_operand:GPI 2 "register_operand" "=r")
-          (mem:GPI (match_dup 1)))
-     (set (match_operand:GPI 3 "register_operand" "=r")
-          (mem:GPI (plus:P (match_dup 1)
-                   (match_operand:P 5 "const_int_operand" "n"))))])]
-  "INTVAL (operands[5]) == GET_MODE_SIZE (<GPI:MODE>mode)"
-  "ldp\\t%<GPI:w>2, %<GPI:w>3, [%1], %4"
-  [(set_attr "type" "load_<GPI:ldpstp_sz>")]
+(define_insn "*loadwb_post_pair_<ldst_sz>"
+  [(set (match_operand 0 "pmode_register_operand")
+	(match_operator 7 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand")
+	  (match_operand 4 "const_int_operand")]))
+   (set (match_operand:GPI 2 "aarch64_ldp_reg_operand")
+	(match_operator 5 "memory_operand" [(match_dup 1)]))
+   (set (match_operand:GPI 3 "aarch64_ldp_reg_operand")
+	(match_operator 6 "memory_operand" [
+	  (match_operator 8 "pmode_plus_operator" [
+	    (match_dup 1)
+	    (const_int <ldst_sz>)])]))]
+  "aarch64_mem_pair_offset (operands[4], <MODE>mode)"
+  {@ [cons: =0, 1, =2, =3; attrs: type]
+     [      rk, 0,  r,  r; load_<ldpstp_sz>] ldp\t%<w>2, %<w>3, [%1], %4
+     [      rk, 0,  w,  w; neon_load1_2reg ] ldp\t%<v>2, %<v>3, [%1], %4
+  }
 )
 
-(define_insn "loadwb_pair<GPF:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (match_operand:GPF 2 "register_operand" "=w")
-          (mem:GPF (match_dup 1)))
-     (set (match_operand:GPF 3 "register_operand" "=w")
-          (mem:GPF (plus:P (match_dup 1)
-                   (match_operand:P 5 "const_int_operand" "n"))))])]
-  "INTVAL (operands[5]) == GET_MODE_SIZE (<GPF:MODE>mode)"
-  "ldp\\t%<GPF:w>2, %<GPF:w>3, [%1], %4"
-  [(set_attr "type" "neon_load1_2reg")]
+;; q-register variant of the above
+(define_insn "*loadwb_post_pair_16"
+  [(set (match_operand 0 "pmode_register_operand" "=rk")
+	(match_operator 7 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand" "0")
+	  (match_operand 4 "const_int_operand")]))
+   (set (match_operand:TI 2 "aarch64_ldp_reg_operand" "=w")
+	(match_operator 5 "memory_operand" [(match_dup 1)]))
+   (set (match_operand:TI 3 "aarch64_ldp_reg_operand" "=w")
+	(match_operator 6 "memory_operand"
+	  [(match_operator 8 "pmode_plus_operator" [
+	     (match_dup 1)
+	     (const_int 16)])]))]
+  "TARGET_FLOAT
+   && aarch64_mem_pair_offset (operands[4], TImode)"
+  "ldp\t%q2, %q3, [%1], %4"
+  [(set_attr "type" "neon_ldp_q")]
 )
 
-(define_insn "loadwb_pair<TX:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (match_operand:TX 2 "register_operand" "=w")
-          (mem:TX (match_dup 1)))
-     (set (match_operand:TX 3 "register_operand" "=w")
-          (mem:TX (plus:P (match_dup 1)
-			  (match_operand:P 5 "const_int_operand" "n"))))])]
-  "TARGET_BASE_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
-  "ldp\\t%q2, %q3, [%1], %4"
+;; Load pair with pre-index writeback.
+(define_insn "*loadwb_pre_pair_<ldst_sz>"
+  [(set (match_operand 0 "pmode_register_operand")
+	(match_operator 8 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand")
+	  (match_operand 4 "const_int_operand")]))
+   (set (match_operand:GPI 2 "aarch64_ldp_reg_operand")
+	(match_operator 6 "memory_operand" [
+	  (match_operator 9 "pmode_plus_operator" [
+	    (match_dup 1)
+	    (match_dup 4)
+	  ])]))
+   (set (match_operand:GPI 3 "aarch64_ldp_reg_operand")
+	(match_operator 7 "memory_operand" [
+	  (match_operator 10 "pmode_plus_operator" [
+	     (match_dup 1)
+	     (match_operand 5 "const_int_operand")
+	  ])]))]
+  "aarch64_mem_pair_offset (operands[4], <MODE>mode)
+   && known_eq (INTVAL (operands[5]),
+		INTVAL (operands[4]) + GET_MODE_SIZE (<MODE>mode))"
+  {@ [cons: =&0, 1, =2, =3; attrs: type     ]
+     [       rk, 0,  r,  r; load_<ldpstp_sz>] ldp\t%<w>2, %<w>3, [%0, %4]!
+     [       rk, 0,  w,  w; neon_load1_2reg ] ldp\t%<v>2, %<v>3, [%0, %4]!
+  }
+)
+
+;; q-register variant of the above
+(define_insn "*loadwb_pre_pair_16"
+  [(set (match_operand 0 "pmode_register_operand" "=&rk")
+	(match_operator 8 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand" "0")
+	  (match_operand 4 "const_int_operand")]))
+   (set (match_operand:TI 2 "aarch64_ldp_reg_operand" "=w")
+	(match_operator 6 "memory_operand" [
+	  (match_operator 9 "pmode_plus_operator" [
+	    (match_dup 1)
+	    (match_dup 4)
+	  ])]))
+   (set (match_operand:TI 3 "aarch64_ldp_reg_operand" "=w")
+	(match_operator 7 "memory_operand" [
+	  (match_operator 10 "pmode_plus_operator" [
+	     (match_dup 1)
+	     (match_operand 5 "const_int_operand")
+	  ])]))]
+  "TARGET_FLOAT
+   && aarch64_mem_pair_offset (operands[4], TImode)
+   && known_eq (INTVAL (operands[5]), INTVAL (operands[4]) + 16)"
+  "ldp\t%q2, %q3, [%0, %4]!"
   [(set_attr "type" "neon_ldp_q")]
 )
 
 ;; Store pair with pre-index writeback.  This is primarily used in function
 ;; prologues.
-(define_insn "storewb_pair<GPI:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=&k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (mem:GPI (plus:P (match_dup 0)
-                   (match_dup 4)))
-          (match_operand:GPI 2 "register_operand" "r"))
-     (set (mem:GPI (plus:P (match_dup 0)
-                   (match_operand:P 5 "const_int_operand" "n")))
-          (match_operand:GPI 3 "register_operand" "r"))])]
-  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
-  "stp\\t%<GPI:w>2, %<GPI:w>3, [%0, %4]!"
-  [(set_attr "type" "store_<GPI:ldpstp_sz>")]
+(define_insn "*storewb_pre_pair_<ldst_sz>"
+  [(set (match_operand 0 "pmode_register_operand")
+	(match_operator 6 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand")
+	  (match_operand 4 "const_int_operand")
+	]))
+   (set (match_operator:GPI 7 "aarch64_mem_pair_operator" [
+	  (match_operator 8 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (match_dup 4)
+	  ])])
+	(match_operand:GPI 2 "aarch64_stp_reg_operand"))
+   (set (match_operator:GPI 9 "aarch64_mem_pair_operator" [
+	  (match_operator 10 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (match_operand 5 "const_int_operand")
+	  ])])
+	(match_operand:GPI 3 "aarch64_stp_reg_operand"))]
+  "aarch64_mem_pair_offset (operands[4], <MODE>mode)
+   && known_eq (INTVAL (operands[5]),
+		INTVAL (operands[4]) + GET_MODE_SIZE (<MODE>mode))
+   && !reg_overlap_mentioned_p (operands[0], operands[2])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])"
+  {@ [cons: =&0, 1,   2,   3; attrs: type      ]
+     [       rk, 0, rYZ, rYZ; store_<ldpstp_sz>] stp\t%<w>2, %<w>3, [%0, %4]!
+     [       rk, 0,   w,   w; neon_store1_2reg ] stp\t%<v>2, %<v>3, [%0, %4]!
+  }
 )
 
-(define_insn "storewb_pair<GPF:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=&k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (mem:GPF (plus:P (match_dup 0)
-                   (match_dup 4)))
-          (match_operand:GPF 2 "register_operand" "w"))
-     (set (mem:GPF (plus:P (match_dup 0)
-                   (match_operand:P 5 "const_int_operand" "n")))
-          (match_operand:GPF 3 "register_operand" "w"))])]
-  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
-  "stp\\t%<GPF:w>2, %<GPF:w>3, [%0, %4]!"
-  [(set_attr "type" "neon_store1_2reg<q>")]
-)
-
-(define_insn "storewb_pair<TX:mode>_<P:mode>"
-  [(parallel
-    [(set (match_operand:P 0 "register_operand" "=&k")
-          (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
-     (set (mem:TX (plus:P (match_dup 0)
-			  (match_dup 4)))
-          (match_operand:TX 2 "register_operand" "w"))
-     (set (mem:TX (plus:P (match_dup 0)
-			  (match_operand:P 5 "const_int_operand" "n")))
-          (match_operand:TX 3 "register_operand" "w"))])]
-  "TARGET_BASE_SIMD
-   && INTVAL (operands[5])
-      == INTVAL (operands[4]) + GET_MODE_SIZE (<TX:MODE>mode)"
+;; q-register variant of the above.
+(define_insn "*storewb_pre_pair_16"
+  [(set (match_operand 0 "pmode_register_operand" "=&rk")
+	(match_operator 6 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand" "0")
+	  (match_operand 4 "const_int_operand")
+	]))
+   (set (match_operator:TI 7 "aarch64_mem_pair_operator" [
+	  (match_operator 8 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (match_dup 4)
+	  ])])
+	(match_operand:TI 2 "aarch64_ldp_reg_operand" "w"))
+   (set (match_operator:TI 9 "aarch64_mem_pair_operator" [
+	  (match_operator 10 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (match_operand 5 "const_int_operand")
+	  ])])
+	(match_operand:TI 3 "aarch64_ldp_reg_operand" "w"))]
+  "TARGET_FLOAT
+   && aarch64_mem_pair_offset (operands[4], TImode)
+   && known_eq (INTVAL (operands[5]), INTVAL (operands[4]) + 16)
+   && !reg_overlap_mentioned_p (operands[0], operands[2])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])"
   "stp\\t%q2, %q3, [%0, %4]!"
+  [(set_attr "type" "neon_stp_q")]
+)
+
+;; Store pair with post-index writeback.
+(define_insn "*storewb_post_pair_<ldst_sz>"
+  [(set (match_operand 0 "pmode_register_operand")
+	(match_operator 5 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand")
+	  (match_operand 4 "const_int_operand")
+	]))
+   (set (match_operator:GPI 6 "aarch64_mem_pair_operator" [(match_dup 1)])
+	(match_operand 2 "aarch64_stp_reg_operand"))
+   (set (match_operator:GPI 7 "aarch64_mem_pair_operator" [
+	  (match_operator 8 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (const_int <ldst_sz>)
+	  ])])
+	(match_operand 3 "aarch64_stp_reg_operand"))]
+  "aarch64_mem_pair_offset (operands[4], <MODE>mode)
+   && !reg_overlap_mentioned_p (operands[0], operands[2])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])"
+  {@ [cons: =0, 1,   2,   3; attrs: type      ]
+     [      rk, 0, rYZ, rYZ; store_<ldpstp_sz>] stp\t%<w>2, %<w>3, [%0], %4
+     [      rk, 0,   w,   w; neon_store1_2reg ] stp\t%<v>2, %<v>3, [%0], %4
+  }
+)
+
+;; Store pair with post-index writeback.
+(define_insn "*storewb_post_pair_16"
+  [(set (match_operand 0 "pmode_register_operand" "=rk")
+	(match_operator 5 "pmode_plus_operator" [
+	  (match_operand 1 "pmode_register_operand" "0")
+	  (match_operand 4 "const_int_operand")
+	]))
+   (set (match_operator:TI 6 "aarch64_mem_pair_operator" [(match_dup 1)])
+	(match_operand:TI 2 "aarch64_ldp_reg_operand" "w"))
+   (set (match_operator:TI 7 "aarch64_mem_pair_operator" [
+	  (match_operator 8 "pmode_plus_operator" [
+	    (match_dup 0)
+	    (const_int 16)
+	  ])])
+	(match_operand:TI 3 "aarch64_ldp_reg_operand" "w"))]
+  "TARGET_FLOAT
+   && aarch64_mem_pair_offset (operands[4], TImode)
+   && !reg_overlap_mentioned_p (operands[0], operands[2])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])"
+  "stp\t%q2, %q3, [%0], %4"
   [(set_attr "type" "neon_stp_q")]
 )
 
