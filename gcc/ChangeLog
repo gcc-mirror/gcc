@@ -1,3 +1,11 @@
+2023-10-31  xuli  <xuli1@eswincomputing.com>
+
+	Backported from master:
+	2023-10-24  xuli  <xuli1@eswincomputing.com>
+
+	PR target/111935
+	* config/riscv/riscv-vector-builtins-bases.cc: fix bug.
+
 2023-10-27  liuhongt  <hongtao.liu@intel.com>
 
 	PR tree-optimization/111820
