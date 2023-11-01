@@ -9503,9 +9503,9 @@ write_automata (void)
   fprintf (output_file, "\n#if %s\n\n", CPU_UNITS_QUERY_MACRO_NAME);
   output_get_cpu_unit_code_func ();
   output_cpu_unit_reservation_p ();
-  output_insn_has_dfa_reservation_p ();
   fprintf (output_file, "\n#endif /* #if %s */\n\n",
 	   CPU_UNITS_QUERY_MACRO_NAME);
+  output_insn_has_dfa_reservation_p ();
   output_dfa_clean_insn_cache_func ();
   output_dfa_start_func ();
   output_dfa_finish_func ();
