@@ -3696,6 +3696,8 @@ package body Sem_Aggr is
       Choice : Node_Id;
       Expr   : Node_Id;
 
+      Deep_Choice_Seen : Boolean := False;
+
    begin
       Assoc := First (Deltas);
       while Present (Assoc) loop
@@ -3750,6 +3752,7 @@ package body Sem_Aggr is
             while Present (Choice) loop
                if Is_Deep_Choice (Choice, Typ) then
                   pragma Assert (All_Extensions_Allowed);
+                  Deep_Choice_Seen := True;
 
                   --  a deep delta aggregate
                   Resolve_Deep_Delta_Assoc (Assoc, Typ);
@@ -3794,7 +3797,7 @@ package body Sem_Aggr is
             if Box_Present (Assoc) then
                Error_Msg_N
                  ("'<'> in array delta aggregate is not allowed", Assoc);
-            else
+            elsif not Deep_Choice_Seen then
                Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
             end if;
          end if;
