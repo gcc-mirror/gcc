@@ -1,3 +1,8 @@
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* c.opt (Walloc-size): New option.
+
 2023-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-warn.cc (warn_for_multistatement_macros): Update for removal

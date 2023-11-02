@@ -1,3 +1,12 @@
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: Wrap lines more tightly.
+
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: New file.
+	* .github/PULL_REQUEST_TEMPLATE.md: New file.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

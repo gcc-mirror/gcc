@@ -1,3 +1,8 @@
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* c-typeck.cc (convert_for_assignment): Add warning.
+
 2023-10-26  liuhongt  <hongtao.liu@intel.com>
 
 	* c-typeck.cc (build_vec_cmp): Pass type of arg0 to

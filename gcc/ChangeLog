@@ -1,3 +1,85 @@
+2023-11-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110551
+	* config/i386/i386.md (*bmi2_umul<mode><dwi>3_1): Tidy condition
+	as operands[2] with predicate register_operand must be !MEM_P.
+	(peephole2): Optimize a mulx followed by a register-to-register
+	move, to place result in the correct destination if possible.
+
+2023-11-01  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md:  Use riscv_subword_address function to
+	calculate the address and shift in atomic_test_and_set.
+
+2023-11-01  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_promote_function_mode): Fix mode
+	returned for libcall case.
+
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* doc/invoke.texi: Document -Walloc-size option.
+
+2023-11-01  Edwin Lu  <ewlu@rivosinc.com>
+
+	* genautomata.cc (write_automata): move endif
+
+2023-11-01  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust_return_type): Hoist out code to
+	create return array and don't return new type.
+	(simd_clone_adjust_argument_types): Hoist out code that creates
+	ipa_param_body_adjustments and don't return them.
+	(simd_clone_adjust): Call TARGET_SIMD_CLONE_ADJUST after return and
+	argument types have been vectorized, create adjustments and return array
+	after the hook.
+	(expand_simd_clones): Call TARGET_SIMD_CLONE_ADJUST after return and
+	argument types have been vectorized.
+
+2023-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112332
+	* config/i386/i386.md (stack_protexct_set_2 peephole2):
+	Use general_gr_operand as operand 4 predicate.
+
+2023-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (stack_protect_set): Explicitly
+	generate scratch register in word mode.
+	(@stack_protect_set_1_<mode>): Rename to ...
+	(@stack_protect_set_1_<PTR:mode>_<SWI48:mode>): ... this.
+	Use SWI48 mode iterator to match scratch register.
+	(stack_protexct_set_1 peephole2): Use PTR, W and SWI48 mode
+	iterators to match peephole sequence.  Use general_operand
+	predicate for operand 4.  Allow different operand 2 and operand 3
+	registers and use peep2_reg_dead_p to ensure new scratch
+	register is dead before peephole seqeunce. Use peep2_reg_dead_p
+	to ensure old scratch register is dead after peephole sequence.
+	(*stack_protect_set_2_<mode>): Rename to ...
+	(*stack_protect_set_2_<mode>_si): .. this.
+	(*stack_protect_set_3): Rename to ...
+	(*stack_protect_set_2_<mode>_di): ... this.
+	Use PTR mode iterator to match stack protector memory move.
+	Use earlyclobber for all alternatives of operand 1.
+	(stack_protexct_set_2 peephole2): Use PTR, W and SWI48 mode
+	iterators to match peephole sequence.  Use general_operand
+	predicate for operand 4.  Allow different operand 2 and operand 3
+	registers and use peep2_reg_dead_p to ensure new scratch
+	register is dead before peephole seqeunce. Use peep2_reg_dead_p
+	to ensure old scratch register is dead after peephole sequence.
+
+2023-11-01  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-functions.def (vundefined): Add vundefine
+	intrinsics for tuple types.
+	* config/riscv/riscv-vector-builtins.cc: Ditto.
+	* config/riscv/vector.md (@vundefined<mode>): Ditto.
+
+2023-11-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Fix whitespace.
+
 2023-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (ANALYZER_OBJS): Add analyzer/record-layout.o.

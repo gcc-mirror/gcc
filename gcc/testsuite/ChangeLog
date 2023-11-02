@@ -1,3 +1,58 @@
+2023-11-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110551
+	* gcc.target/i386/pr110551-2.c: New test case.
+
+2023-11-01  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Add Ztso extension to
+	dg-options for dg-do compile.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Ditto.
+	* lib/target-supports.exp: Add testing infrastructure to require the
+	Ztso extension or add it to an existing -march.
+
+2023-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/71219
+	* gcc.dg/Walloc-size-1.c: New test.
+	* gcc.dg/Walloc-size-2.c: New test.
+
+2023-11-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/102989
+	* gm2/pim/fail/largeconst.mod: Updated foo to an outrageous value.
+	* gm2/pim/fail/largeconst2.mod: Duplicate test removed.
+
+2023-11-01  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple_vundefined.c: New test.
+
 2023-10-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.dg/vect/vect-gather-6.c: New test.
