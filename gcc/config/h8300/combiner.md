@@ -1268,3 +1268,94 @@
 ;; 		      (label_ref (match_dup 1))
 ;; 		      (pc)))]
 ;;   "")
+
+;; Various ways to extract a single bit bitfield and sign extend it
+;;
+;; Testing showed this only triggering with SImode, probably because
+;; of how insv/extv are defined.
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extract:SI (match_operand:QHSI 1 "register_operand" "0")
+			 (const_int 1)
+			 (match_operand 2 "immediate_operand")))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (sign_extract:SI (match_dup 1) (const_int 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REG))])])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extract:SI (match_operand:QHSI 1 "register_operand" "0")
+			 (const_int 1)
+			 (match_operand 2 "immediate_operand")))
+   (clobber (reg:CC CC_REG))]
+  ""
+{
+  int position = INTVAL (operands[2]);
+
+  /* For bit position 31, 30, left shift the bit we want into C.  */
+  bool bit_in_c = false;
+  if (position == 31)
+    {
+      output_asm_insn ("shll.l\t%0", operands);
+      bit_in_c = true;
+    }
+  else if (position == 30 && TARGET_H8300S)
+    {
+      output_asm_insn ("shll.l\t#2,%0", operands);
+      bit_in_c = true;
+    }
+
+  /* Similar for positions 16, 17, but with a right shift into C.  */
+  else if (position == 16)
+    {
+      output_asm_insn ("shlr.w\t%e0", operands);
+      bit_in_c = true;
+    }
+  else if (position == 17 && TARGET_H8300S)
+    {
+      output_asm_insn ("shlr.w\t#2,%e0", operands);
+      bit_in_c = true;
+    }
+
+
+  /* For all the other cases in the upper 16 bits, move the upper 16
+     bits into the lower 16 bits, then use the standard sequence for
+     extracting one of the low 16 bits.  */
+  else if (position >= 16)
+    {
+      output_asm_insn ("mov.w\t%e1,%f0", operands);
+
+      /* We'll use the standard sequences for the low word now.  */
+      position %= 16;
+    }
+
+  /* Same size/speed as the general sequence, but slightly faster
+     to simulate.  */
+  if (position == 0)
+    return "and.l\t#1,%0\;neg.l\t%0";
+
+  rtx xoperands[3];
+  xoperands[0] = operands[0];
+  xoperands[1] = operands[1];
+  xoperands[2] = GEN_INT (position);
+
+  /* If the bit we want is not already in C, get it there  */
+  if (!bit_in_c)
+    {
+      if (position >= 8)
+	{
+	  xoperands[2] = GEN_INT (position % 8);
+	  output_asm_insn ("bld\t%2,%t1", xoperands);
+	}
+      else
+	output_asm_insn ("bld\t%2,%s1", xoperands);
+    }
+
+  /* Now the bit we want is in C, emit the generalized sequence
+     to get that bit into the destination, properly extended.  */
+  return "subx\t%s0,%s0\;exts.w %T0\;exts.l %0";
+}
+  [(set_attr "length" "10")])
