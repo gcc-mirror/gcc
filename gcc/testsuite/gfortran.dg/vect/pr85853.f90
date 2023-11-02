@@ -1,5 +1,4 @@
 ! Taken from execute/where_2.f90, but with special flags.
-! { dg-do run }
 ! { dg-additional-options "-fno-tree-loop-vectorize" }
 
 ! Program to test the WHERE constructs
