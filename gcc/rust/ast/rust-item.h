@@ -3048,8 +3048,9 @@ public:
 
   TraitItemType (Identifier name,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 std::vector<Attribute> outer_attrs, location_t locus)
-    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
+		 std::vector<Attribute> outer_attrs, Visibility vis,
+		 location_t locus)
+    : TraitItem (vis, locus), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)), type_param_bounds (std::move (type_param_bounds))
   {}
 

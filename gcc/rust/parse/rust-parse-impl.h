@@ -22,6 +22,7 @@
 /* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
  * This is also the reason why there are no include guards. */
 
+#include "rust-item.h"
 #include "rust-token.h"
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
@@ -5012,12 +5013,14 @@ Parser<ManagedTokenSource>::parse_trait_item ()
   // parse outer attributes (if they exist)
   AST::AttrVec outer_attrs = parse_outer_attributes ();
 
+  AST::Visibility vis = parse_visibility ();
+
   // lookahead to determine what type of trait item to parse
   const_TokenPtr tok = lexer.peek_token ();
   switch (tok->get_id ())
     {
     case TYPE:
-      return parse_trait_type (std::move (outer_attrs));
+      return parse_trait_type (std::move (outer_attrs), vis);
     case CONST:
       // disambiguate with function qualifier
       if (lexer.peek_token (1)->get_id () == IDENTIFIER)
@@ -5176,7 +5179,8 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 // Parse a typedef trait item.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::TraitItemType>
-Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs)
+Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs,
+					      AST::Visibility vis)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
   skip_token (TYPE);
@@ -5208,7 +5212,7 @@ Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs)
 
   return std::unique_ptr<AST::TraitItemType> (
     new AST::TraitItemType (std::move (ident), std::move (bounds),
-			    std::move (outer_attrs), locus));
+			    std::move (outer_attrs), vis, locus));
 }
 
 // Parses a constant trait item.
