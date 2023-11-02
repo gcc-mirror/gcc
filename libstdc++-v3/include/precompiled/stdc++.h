@@ -222,6 +222,7 @@
 
 #if __cplusplus > 202002L
 #include <expected>
+#include <generator>
 #include <spanstream>
 #if __has_include(<stacktrace>)
 # include <stacktrace>

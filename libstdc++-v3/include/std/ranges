@@ -68,6 +68,10 @@
 #define __glibcxx_want_ranges_zip
 #include <bits/version.h>
 
+#ifdef __glibcxx_generator  // C++ >= 23 && __glibcxx_coroutine
+# include <bits/elements_of.h>
+#endif
+
 /**
  * @defgroup ranges Ranges
  *

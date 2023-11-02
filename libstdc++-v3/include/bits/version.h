@@ -2125,4 +2125,15 @@
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
 
+// from version.def line 1637
+#if !defined(__cpp_lib_generator)
+# if (__cplusplus >= 202302L) && (__glibcxx_coroutine)
+#  define __glibcxx_generator 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_generator)
+#   define __cpp_lib_generator 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_generator) && defined(__glibcxx_want_generator) */
+#undef __glibcxx_want_generator
+
 #undef __glibcxx_want_all

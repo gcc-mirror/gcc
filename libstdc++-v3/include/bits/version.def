@@ -1743,6 +1743,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = generator;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+    extra_cond = "__glibcxx_coroutine";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";
