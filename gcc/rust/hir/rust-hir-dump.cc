@@ -808,7 +808,6 @@ Dump::visit (BorrowExpr &e)
   begin ("BorrowExpr");
   do_operatorexpr (e);
 
-  put_field ("double_borrow", std::to_string (e.is_double_borrow ()));
   put_field ("mut", enum_to_str (e.get_mut ()));
 
   end ("BorrowExpr");
