@@ -2324,7 +2324,8 @@ static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
   (cp_parser *, int, bool, bool, bool *, location_t * = NULL,
    bool = false);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
-enum { non_attr = 0, normal_attr = 1, id_attr = 2, assume_attr = 3 };
+enum { non_attr = 0, normal_attr = 1, id_attr = 2, assume_attr = 3,
+       uneval_string_attr = 4 };
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree, tree *, tree *);
 static cp_expr cp_parser_unary_expression
@@ -4467,7 +4468,8 @@ cp_parser_identifier (cp_parser* parser)
     return error_mark_node;
 }
 
-/* Worker for cp_parser_string_literal and cp_parser_userdef_string_literal.
+/* Worker for cp_parser_string_literal, cp_parser_userdef_string_literal
+   and cp_parser_unevaluated_string_literal.
    Do not call this directly; use either of the above.
 
    Parse a sequence of adjacent string constants.  Return a
@@ -4475,7 +4477,8 @@ cp_parser_identifier (cp_parser* parser)
    constant.  If TRANSLATE is true, translate the string to the
    execution character set.  If WIDE_OK is true, a wide string is
    valid here.  If UDL_OK is true, a string literal with user-defined
-   suffix can be used in this context.
+   suffix can be used in this context.  If UNEVAL is true, diagnose
+   numeric and conditional escape sequences in it if pedantic.
 
    C++98 [lex.string] says that if a narrow string literal token is
    adjacent to a wide string literal token, the behavior is undefined.
@@ -4489,7 +4492,7 @@ cp_parser_identifier (cp_parser* parser)
 static cp_expr
 cp_parser_string_literal_common (cp_parser *parser, bool translate,
 				 bool wide_ok, bool udl_ok,
-				 bool lookup_udlit)
+				 bool lookup_udlit, bool uneval)
 {
   tree value;
   size_t count;
@@ -4642,6 +4645,8 @@ cp_parser_string_literal_common (cp_parser *parser, bool translate,
       cp_parser_error (parser, "a wide string is invalid in this context");
       type = CPP_STRING;
     }
+  if (uneval)
+    type = CPP_UNEVAL_STRING;
 
   if ((translate ? cpp_interpret_string : cpp_interpret_string_notranslate)
       (parse_in, strs, count, &istr, type))
@@ -4716,7 +4721,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 {
   return cp_parser_string_literal_common (parser, translate, wide_ok,
 					  /*udl_ok=*/false,
-					  /*lookup_udlit=*/false);
+					  /*lookup_udlit=*/false,
+					  /*uneval=*/false);
 }
 
 /* Parse a string literal or user defined string literal.
@@ -4731,7 +4737,21 @@ cp_parser_userdef_string_literal (cp_parser *parser, bool lookup_udlit)
 {
   return cp_parser_string_literal_common (parser, /*translate=*/true,
 					  /*wide_ok=*/true, /*udl_ok=*/true,
-					  lookup_udlit);
+					  lookup_udlit, /*uneval=*/false);
+}
+
+/* Parse an unevaluated string literal.
+
+   unevaluated-string:
+     string-literal  */
+
+static inline cp_expr
+cp_parser_unevaluated_string_literal (cp_parser *parser)
+{
+  return cp_parser_string_literal_common (parser, /*translate=*/false,
+					  /*wide_ok=*/false, /*udl_ok=*/false,
+					  /*lookup_udlit=*/false,
+					  /*uneval=*/true);
 }
 
 /* Look up a literal operator with the name and the exact arguments.  */
@@ -8658,6 +8678,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	  expr = cp_lexer_consume_token (parser->lexer)->u.value;
 	else if (is_attribute_list == assume_attr)
 	  expr = cp_parser_conditional_expression (parser);
+	else if (is_attribute_list == uneval_string_attr)
+	  expr = cp_parser_unevaluated_string_literal (parser);
 	else
 	  expr
 	    = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
@@ -16513,8 +16535,12 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
 
   /* Look for the string-literal.  */
   cp_token *string_token = cp_lexer_peek_token (parser->lexer);
-  tree linkage = cp_parser_string_literal (parser, /*translate=*/false,
-					   /*wide_ok=*/false);
+  tree linkage;
+  if (cxx_dialect >= cxx26)
+    linkage = cp_parser_unevaluated_string_literal (parser);
+  else
+    linkage = cp_parser_string_literal (parser, /*translate=*/false,
+					/*wide_ok=*/false);
 
   /* Transform the literal into an identifier.  If the literal is a
      wide-character string, or contains embedded NULs, then we can't
@@ -16643,8 +16669,11 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 
       /* Parse the string-literal message.  */
-      message = cp_parser_string_literal (parser, /*translate=*/false,
-					  /*wide_ok=*/true);
+      if (cxx_dialect >= cxx26)
+	message = cp_parser_unevaluated_string_literal (parser);
+      else
+	message = cp_parser_string_literal (parser, /*translate=*/false,
+					    /*wide_ok=*/true);
 
       /* A `)' completes the static assertion.  */
       if (!parens.require_close (parser))
@@ -29650,6 +29679,11 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	     && attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
+    else if (attr_ns == NULL_TREE
+	     && cxx_dialect >= cxx26
+	     && (is_attribute_p ("deprecated", attr_id)
+		 || is_attribute_p ("nodiscard", attr_id)))
+      attr_flag = uneval_string_attr;
 
     /* If this is a fake attribute created to handle -Wno-attributes,
        we must skip parsing the arguments.  */

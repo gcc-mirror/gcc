@@ -129,17 +129,18 @@ struct _cpp_file;
   TK(UTF8STRING,	LITERAL) /* u8"string" */			\
   TK(OBJC_STRING,	LITERAL) /* @"string" - Objective-C */		\
   TK(HEADER_NAME,	LITERAL) /* <stdio.h> in #include */		\
+  TK(UNEVAL_STRING,	LITERAL) /* unevaluated "string" - C++26 */	\
 									\
-  TK(CHAR_USERDEF,	LITERAL) /* 'char'_suffix - C++-0x */		\
-  TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++-0x */		\
-  TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++-0x */		\
-  TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++-0x */		\
-  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++-0x */		\
-  TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++-0x */		\
-  TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++-0x */	\
-  TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++-0x */	\
-  TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++-0x */	\
-  TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++-0x */	\
+  TK(CHAR_USERDEF,	LITERAL) /* 'char'_suffix - C++11 */		\
+  TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++11 */		\
+  TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++11 */		\
+  TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++11 */		\
+  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++11 */		\
+  TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++11 */		\
+  TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++11 */		\
+  TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++11 */		\
+  TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++11 */		\
+  TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++11 */	\
 									\
   TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
 				 /* SPELL_LITERAL happens to DTRT.  */	\

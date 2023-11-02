@@ -2156,7 +2156,7 @@ static const uchar *
 convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 		struct _cpp_strbuf *tbuf, struct cset_converter cvt,
 		cpp_string_location_reader *loc_reader,
-		cpp_substring_ranges *ranges)
+		cpp_substring_ranges *ranges, bool uneval)
 {
   /* Values of \a \b \e \f \n \r \t \v respectively.  */
 #if HOST_CHARSET == HOST_CHARSET_ASCII
@@ -2183,12 +2183,20 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 			  char_range, loc_reader, ranges);
 
     case 'x':
+      if (uneval && CPP_PEDANTIC (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "numeric escape sequence in unevaluated string: "
+		   "'\\%c'", (int) c);
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':
     case 'o':
+      if (uneval && CPP_PEDANTIC (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "numeric escape sequence in unevaluated string: "
+		   "'\\%c'", (int) c);
       return convert_oct (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2296,7 +2304,7 @@ converter_for_type (cpp_reader *pfile, enum cpp_ttype type)
 
 static bool
 cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
-			cpp_string *to,  enum cpp_ttype type,
+			cpp_string *to, enum cpp_ttype type,
 			cpp_string_location_reader *loc_readers,
 			cpp_substring_ranges *out)
 {
@@ -2427,7 +2435,7 @@ cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
 
 	  struct _cpp_strbuf *tbuf_ptr = to ? &tbuf : NULL;
 	  p = convert_escape (pfile, p + 1, limit, tbuf_ptr, cvt,
-			      loc_reader, out);
+			      loc_reader, out, type == CPP_UNEVAL_STRING);
 	}
     }
 
@@ -2465,7 +2473,7 @@ cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
    false for failure.  */
 bool
 cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
-		      cpp_string *to,  enum cpp_ttype type)
+		      cpp_string *to, enum cpp_ttype type)
 {
   return cpp_interpret_string_1 (pfile, from, count, to, type, NULL, NULL);
 }
@@ -2548,7 +2556,7 @@ cpp_interpret_string_ranges (cpp_reader *pfile, const cpp_string *from,
 bool
 cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
 				  size_t count,	cpp_string *to,
-				  enum cpp_ttype type ATTRIBUTE_UNUSED)
+				  enum cpp_ttype type)
 {
   struct cset_converter save_narrow_cset_desc = pfile->narrow_cset_desc;
   bool retval;
@@ -2557,7 +2565,9 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
   pfile->narrow_cset_desc.cd = (iconv_t) -1;
   pfile->narrow_cset_desc.width = CPP_OPTION (pfile, char_precision);
 
-  retval = cpp_interpret_string (pfile, from, count, to, CPP_STRING);
+  retval = cpp_interpret_string (pfile, from, count, to,
+				 type == CPP_UNEVAL_STRING
+				 ? CPP_UNEVAL_STRING : CPP_STRING);
 
   pfile->narrow_cset_desc = save_narrow_cset_desc;
   return retval;
