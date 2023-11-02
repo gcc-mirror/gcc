@@ -10851,6 +10851,15 @@ aarch64_float_const_zero_rtx_p (rtx x)
   return real_equal (CONST_DOUBLE_REAL_VALUE (x), &dconst0);
 }
 
+/* Return true if X is any kind of constant zero rtx.  */
+
+bool
+aarch64_const_zero_rtx_p (rtx x)
+{
+  return (x == CONST0_RTX (GET_MODE (x))
+	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)));
+}
+
 /* Return TRUE if rtx X is immediate constant that fits in a single
    MOVI immediate operation.  */
 bool
@@ -12054,8 +12063,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
     case 'w':
     case 'x':
-      if (x == const0_rtx
-	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)))
+      if (aarch64_const_zero_rtx_p (x))
 	{
 	  asm_fprintf (f, "%czr", code);
 	  break;

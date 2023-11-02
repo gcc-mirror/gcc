@@ -774,6 +774,7 @@ bool aarch64_expand_cpymem (rtx *, bool);
 bool aarch64_expand_setmem (rtx *);
 bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_float_const_rtx_p (rtx);
+bool aarch64_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_fusion_enabled_p (enum aarch64_fusion_pairs);
 bool aarch64_gen_cpymemqi (rtx *);
