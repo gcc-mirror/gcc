@@ -2774,24 +2774,7 @@ predicate_statements (loop_p loop)
 		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
 		   && arith_code_with_undefined_signed_overflow
 						(gimple_assign_rhs_code (stmt)))
-	    {
-	      gsi_remove (&gsi, true);
-	      gimple_seq stmts = rewrite_to_defined_overflow (stmt);
-	      bool first = true;
-	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
-		   !gsi_end_p (gsi2);)
-		{
-		  gassign *stmt2 = as_a <gassign *> (gsi_stmt (gsi2));
-		  gsi_remove (&gsi2, false);
-		  if (first)
-		    {
-		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
-		      first = false;
-		    }
-		  else
-		    gsi_insert_after (&gsi, stmt2, GSI_NEW_STMT);
-		}
-	    }
+	    rewrite_to_defined_overflow (&gsi);
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);

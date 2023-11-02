@@ -3864,21 +3864,14 @@ final_value_replacement_loop (class loop *loop)
 	  while (!gsi_end_p (gsi2))
 	    {
 	      gimple *stmt = gsi_stmt (gsi2);
-	      gimple_stmt_iterator gsi3 = gsi2;
-	      gsi_next (&gsi2);
-	      gsi_remove (&gsi3, false);
 	      if (is_gimple_assign (stmt)
 		  && arith_code_with_undefined_signed_overflow
-		  (gimple_assign_rhs_code (stmt)))
-		gsi_insert_seq_before (&gsi,
-				       rewrite_to_defined_overflow (stmt),
-				       GSI_SAME_STMT);
-	      else
-		gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		       (gimple_assign_rhs_code (stmt)))
+		rewrite_to_defined_overflow (&gsi2);
+	      gsi_next (&gsi2);
 	    }
 	}
-      else
-	gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+      gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
       if (dump_file)
 	{
 	  fprintf (dump_file, "\n final stmt:\n  ");
