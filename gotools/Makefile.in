@@ -1003,8 +1003,8 @@ mostlyclean-local:
 @NATIVE_TRUE@	@cp gotools.sum gotools.log
 @NATIVE_TRUE@	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog embed-testlog; do \
 @NATIVE_TRUE@	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
-@NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.sum; \
-@NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.log; \
+@NATIVE_TRUE@	  echo "Running $${testname} ..." >> gotools.sum; \
+@NATIVE_TRUE@	  echo "Running $${testname} ..." >> gotools.log; \
 @NATIVE_TRUE@	  sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' < $${file} >> gotools.log; \
 @NATIVE_TRUE@	  grep '^--- ' $${file} | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' -e 's/SKIP/UNTESTED/' | sort -k 2 >> gotools.sum; \
 @NATIVE_TRUE@	done
