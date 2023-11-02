@@ -3575,7 +3575,23 @@ package body Sem_Aggr is
                               end if;
                            end if;
                         else
-                           Choice := First (Choices (Comp));
+
+                           --  If Nkind is N_Iterated_Component_Association,
+                           --  this corresponds to an iterator_specification
+                           --  with a loop_parameter_specification, and we
+                           --  have to pick up Discrete_Choices. In this case
+                           --  there will be just one "choice", which will
+                           --  typically be a range.
+
+                           if Nkind (Comp) = N_Iterated_Component_Association
+                           then
+                              Choice := First (Discrete_Choices (Comp));
+
+                           --  Case where there's a list of choices
+
+                           else
+                              Choice := First (Choices (Comp));
+                           end if;
 
                            while Present (Choice) loop
                               Get_Index_Bounds (Choice, Lo, Hi);
