@@ -132,6 +132,7 @@
  *           $(LREF PointerTarget)
  *           $(LREF Signed)
  *           $(LREF Unconst)
+ *           $(LREF Unshared)
  *           $(LREF Unqual)
  *           $(LREF Unsigned)
  *           $(LREF ValueType)
@@ -7846,6 +7847,46 @@ else
 
     alias ImmIntArr = immutable(int[]);
     static assert(is(Unconst!ImmIntArr == immutable(int)[]));
+}
+
+/++
+    Removes `shared` qualifier, if any, from type `T`.
+
+    Note that while `immutable` is implicitly `shared`, it is unaffected by
+    Unshared. Only explict `shared` is removed.
+  +/
+template Unshared(T)
+{
+    static if (is(T == shared U, U))
+        alias Unshared = U;
+    else
+        alias Unshared = T;
+}
+
+///
+@safe unittest
+{
+    static assert(is(Unshared!int == int));
+    static assert(is(Unshared!(const int) == const int));
+    static assert(is(Unshared!(immutable int) == immutable int));
+
+    static assert(is(Unshared!(shared int) == int));
+    static assert(is(Unshared!(shared(const int)) == const int));
+
+    static assert(is(Unshared!(shared(int[])) == shared(int)[]));
+}
+
+@safe unittest
+{
+    static assert(is(Unshared!(                   int) == int));
+    static assert(is(Unshared!(             const int) == const int));
+    static assert(is(Unshared!(       inout       int) == inout int));
+    static assert(is(Unshared!(       inout const int) == inout const int));
+    static assert(is(Unshared!(shared             int) == int));
+    static assert(is(Unshared!(shared       const int) == const int));
+    static assert(is(Unshared!(shared inout       int) == inout int));
+    static assert(is(Unshared!(shared inout const int) == inout const int));
+    static assert(is(Unshared!(         immutable int) == immutable int));
 }
 
 version (StdDdoc)

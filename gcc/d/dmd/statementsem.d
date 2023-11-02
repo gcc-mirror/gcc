@@ -3483,7 +3483,10 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             // https://issues.dlang.org/show_bug.cgi?id=23159
             if (!global.params.useExceptions)
             {
-                error(oss.loc, "`%s` cannot be used with -betterC", Token.toChars(oss.tok));
+                version (IN_GCC)
+                    error(oss.loc, "`%s` cannot be used with `-fno-exceptions`", Token.toChars(oss.tok));
+                else
+                    error(oss.loc, "`%s` cannot be used with -betterC", Token.toChars(oss.tok));
                 return setError();
             }
 

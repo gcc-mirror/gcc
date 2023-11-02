@@ -18,6 +18,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
 import dmd.dcast;
+import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;

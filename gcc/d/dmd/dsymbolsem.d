@@ -1320,7 +1320,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return;
 
         if (!(global.params.bitfields || sc.flags & SCOPE.Cfile))
-            .error(dsym.loc, "%s `%s` use -preview=bitfields for bitfield support", dsym.kind, dsym.toPrettyChars);
+        {
+            version (IN_GCC)
+                .error(dsym.loc, "%s `%s` use `-fpreview=bitfields` for bitfield support", dsym.kind, dsym.toPrettyChars);
+            else
+                .error(dsym.loc, "%s `%s` use -preview=bitfields for bitfield support", dsym.kind, dsym.toPrettyChars);
+        }
 
         if (!dsym.parent.isStructDeclaration() && !dsym.parent.isClassDeclaration())
         {
@@ -1390,7 +1395,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             // if parser errors occur when loading a module
             // we should just stop compilation
             if (imp.load(sc))
+            {
+                for (size_t i = 0; i < imp.aliasdecls.length; i++)
+                    imp.aliasdecls[i].type = Type.terror;
                 return;
+            }
 
             if (imp.mod)
             {

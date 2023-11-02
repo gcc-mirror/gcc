@@ -165,21 +165,24 @@ See_Also:
 
 Params:
     R = type to be tested
-    E = the type of the elements of the range if not `void`
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
 
 Returns:
     `true` if R is an input range (possibly with element type `E`), `false` if not
  */
-enum bool isInputRange(R, E = void) =
+enum bool isInputRange(R) =
     is(typeof(R.init) == R)
     && is(typeof((R r) { return r.empty; } (R.init)) == bool)
     && (is(typeof((return ref R r) => r.front)) || is(typeof(ref (return ref R r) => r.front)))
     && !is(typeof((R r) { return r.front; } (R.init)) == void)
-    && is(typeof((R r) => r.popFront))
-    && (is(E == void) ||
-        is(ElementType!R == E) ||
-        is(const(ElementType!R) == E) ||
-        (is(const(ElementType!R) == immutable E) && is(const(E) == E)));
+    && is(typeof((R r) => r.popFront));
+
+/// ditto
+enum bool isInputRange(R, E) =
+    .isInputRange!R && isQualifierConvertible!(ElementType!R, E);
+
 ///
 @safe unittest
 {

@@ -12,6 +12,7 @@
 module dmd.staticcond;
 
 import dmd.arraytypes;
+import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;

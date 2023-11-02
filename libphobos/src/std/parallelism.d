@@ -418,8 +418,8 @@ Bugs:  Changes to `ref` and `out` arguments are not propagated to the
 */
 struct Task(alias fun, Args...)
 {
-    AbstractTask base = {runTask : &impl};
-    alias base this;
+    private AbstractTask base = {runTask : &impl};
+    private alias base this;
 
     private @property AbstractTask* basePtr()
     {

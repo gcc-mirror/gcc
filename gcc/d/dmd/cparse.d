@@ -328,6 +328,7 @@ final class CParser(AST) : Parser!AST
         case TOK._Atomic:
 
         case TOK.__attribute__:
+        case TOK.__declspec:
 
         Ldeclaration:
         {

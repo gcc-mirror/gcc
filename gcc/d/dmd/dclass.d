@@ -613,7 +613,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
 
                 if (!b.sym.alignsize)
                     b.sym.alignsize = target.ptrsize;
-                alignmember(structalign_t(cast(ushort)b.sym.alignsize), b.sym.alignsize, &offset);
+                offset = alignmember(structalign_t(cast(ushort)b.sym.alignsize), b.sym.alignsize, offset);
                 assert(bi < vtblInterfaces.length);
 
                 BaseClass* bv = (*vtblInterfaces)[bi];

@@ -839,10 +839,10 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
             /* Given the anon 'member's size and alignment,
              * go ahead and place it.
              */
-            anonoffset = AggregateDeclaration.placeField(
-                &fieldState.offset,
+            anonoffset = placeField(
+                fieldState.offset,
                 anonstructsize, anonalignsize, alignment,
-                &ad.structsize, &ad.alignsize,
+                ad.structsize, ad.alignsize,
                 isunion);
 
             // Add to the anon fields the base offset of this anonymous aggregate

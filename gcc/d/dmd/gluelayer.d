@@ -39,9 +39,6 @@ version (NoBackend)
             return null;
         }
 
-        // toir
-        void toObjFile(Dsymbol ds, bool multiobj)   {}
-
         extern(C++) abstract class ObjcGlue
         {
             static void initialize() {}
@@ -59,7 +56,6 @@ else version (IN_GCC)
     extern (C++)
     {
         Statement asmSemantic(AsmStatement s, Scope* sc);
-        void toObjFile(Dsymbol ds, bool multiobj);
     }
 
     // stubs
@@ -76,5 +72,4 @@ else
     public import dmd.backend.code_x86 : code;
     public import dmd.iasm : asmSemantic;
     public import dmd.objc_glue : ObjcGlue;
-    public import dmd.toobj : toObjFile;
 }

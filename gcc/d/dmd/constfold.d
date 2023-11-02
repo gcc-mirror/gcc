@@ -20,6 +20,7 @@ import core.stdc.stdio;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ctfeexpr;
+import dmd.dcast;
 import dmd.declaration;
 import dmd.dstruct;
 import dmd.errors;
@@ -46,29 +47,6 @@ private Expression expType(Type type, Expression e)
         e.type = type;
     }
     return e;
-}
-
-/************************************
- * Returns:
- *    true if e is a constant
- */
-int isConst(Expression e) @safe
-{
-    //printf("Expression::isConst(): %s\n", e.toChars());
-    switch (e.op)
-    {
-    case EXP.int64:
-    case EXP.float64:
-    case EXP.complex80:
-        return 1;
-    case EXP.null_:
-        return 0;
-    case EXP.symbolOffset:
-        return 2;
-    default:
-        return 0;
-    }
-    assert(0);
 }
 
 /**********************************
