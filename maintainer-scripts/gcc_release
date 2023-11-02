@@ -25,7 +25,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.
+# <https://www.gnu.org/licenses/>.
 #
 ########################################################################
 
@@ -451,7 +451,7 @@ announce_snapshot() {
   echo \
 "Snapshot gcc-"${RELEASE}" is now available on
   https://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
-and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
+and on various mirrors, see https://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the GCC "${BRANCH}" git branch
 with the following options: "git://gcc.gnu.org/git/gcc.git branch ${GITBRANCH} revision ${GITREV}"
@@ -469,7 +469,7 @@ You'll find:
 <body>
 <h1>GCC "${RELEASE}" Snapshot</h1>
 
-<p>The <a href =\"http://gcc.gnu.org/\">GCC Project</a> makes
+<p>The <a href =\"https://gcc.gnu.org/\">GCC Project</a> makes
 periodic snapshots of the GCC source tree available to the public
 for testing purposes.</p>
 	
