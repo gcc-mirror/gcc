@@ -728,13 +728,17 @@ struct vcreate_def : public build_base
 	  if (!return_type)
 	    continue;
 
-	  machine_mode mode = TYPE_MODE (return_type);
-	  unsigned int nf = get_nf (mode);
+	  tree arg_type = function_instance.op_info->args[0].get_tree_type (
+	    function_instance.type.index);
 
-	  for (unsigned int i = 0; i < nf; i++)
-	    argument_types.quick_push (
-	      function_instance.op_info->args[0].get_tree_type (
-	        function_instance.type.index));
+	  machine_mode outer_mode = TYPE_MODE (return_type);
+	  machine_mode inner_mode = TYPE_MODE (arg_type);
+	  unsigned int nargs
+	    = exact_div (GET_MODE_SIZE (outer_mode), GET_MODE_SIZE (inner_mode))
+		.to_constant ();
+
+	  for (unsigned int i = 0; i < nargs; i++)
+	    argument_types.quick_push (arg_type);
 
 	  b.add_unique_function (function_instance, (*group.shape), return_type,
 	    argument_types);
@@ -748,6 +752,15 @@ struct vcreate_def : public build_base
       return nullptr;
     b.append_base_name (instance.base_name);
     b.append_name (operand_suffixes[instance.op_info->op]);
+
+    if (instance.op_info->ret.base_type != RVV_BASE_vector)
+      {
+	vector_type_index arg_type_idx
+	  = instance.op_info->args[0].get_function_type_index (
+	    instance.type.index);
+	b.append_name (type_suffixes[arg_type_idx].vector);
+      }
+
     vector_type_index ret_type_idx
       = instance.op_info->ret.get_function_type_index (instance.type.index);
     b.append_name (type_suffixes[ret_type_idx].vector);

@@ -877,6 +877,11 @@ static CONSTEXPR const rvv_arg_type_info tuple_vset_args[]
 static CONSTEXPR const rvv_arg_type_info tuple_vcreate_args[]
   = {rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info ext_vcreate_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
   = {PRED_TYPE_none, NUM_PRED_TYPES};
@@ -2516,6 +2521,54 @@ static CONSTEXPR const rvv_op_info all_none_void_tuple_ops
      OP_TYPE_none,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      void_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul1_x2_ops
+  = {lmul1_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x2), /* Return type */
+     ext_vcreate_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul1_x4_ops
+  = {lmul1_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x4), /* Return type */
+     ext_vcreate_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul1_x8_ops
+  = {lmul1_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x8), /* Return type */
+     ext_vcreate_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul2_x2_ops
+  = {lmul2_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x2), /* Return type */
+     ext_vcreate_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul2_x4_ops
+  = {lmul2_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x4), /* Return type */
+     ext_vcreate_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vcreate_lmul4_x2_ops
+  = {lmul4_ops,					/* Types */
+     OP_TYPE_v,					/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vlmul_ext_x2), /* Return type */
+     ext_vcreate_args /* Args */};
 
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {

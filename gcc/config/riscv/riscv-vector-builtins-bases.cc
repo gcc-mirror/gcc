@@ -1798,6 +1798,10 @@ public:
   {
     unsigned int nargs = gimple_call_num_args (f.call);
     tree lhs_type = TREE_TYPE (f.lhs);
+    /* LMUL > 1 non-tuple vector types are not structure,
+   we can't use __val[index] to set the subpart.  */
+    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (lhs_type)))
+      return NULL;
 
     /* Replace the call with a clobber of the result (to prevent it from
        becoming upwards exposed) followed by stores into each individual
@@ -1823,9 +1827,22 @@ public:
     return clobber;
   }
 
-  rtx expand (function_expander &) const override
+  rtx expand (function_expander &e) const override
   {
-    gcc_unreachable ();
+    if (!e.target)
+      return NULL_RTX;
+    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (e.target)));
+    unsigned int nargs = call_expr_nargs (e.exp);
+    for (unsigned int i = 0; i < nargs; i++)
+      {
+	rtx src = expand_normal (CALL_EXPR_ARG (e.exp, i));
+	poly_int64 offset = i * GET_MODE_SIZE (GET_MODE (src));
+	rtx subreg = simplify_gen_subreg (GET_MODE (src), e.target,
+					  GET_MODE (e.target), offset);
+	emit_move_insn (subreg, src);
+      }
+
+    return e.target;
   }
 };
 
