@@ -4980,7 +4980,7 @@ public:
 
   tree var;
   tree result;
-  hash_table<nofree_ptr_hash <tree_node> > visited;
+  hash_set<tree> visited;
   bool simple;
   bool in_nrv_cleanup;
 };
@@ -4991,12 +4991,22 @@ static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
   class nrv_data *dp = (class nrv_data *)data;
-  tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
      non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
+
+  /* Replace all uses of the NRV with the RESULT_DECL.  */
+  else if (*tp == dp->var)
+    *tp = dp->result;
+
+  /* Avoid walking into the same tree more than once.  Unfortunately, we
+     can't just use walk_tree_without duplicates because it would only call
+     us for the first occurrence of dp->var in the function body.  */
+  else if (dp->visited.add (*tp))
+    *walk_subtrees = 0;
+
   /* If there's a label, we might need to destroy the NRV on goto (92407).  */
   else if (TREE_CODE (*tp) == LABEL_EXPR && !dp->in_nrv_cleanup)
     dp->simple = false;
@@ -5086,18 +5096,6 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       SET_EXPR_LOCATION (init, EXPR_LOCATION (*tp));
       *tp = init;
     }
-  /* And replace all uses of the NRV with the RESULT_DECL.  */
-  else if (*tp == dp->var)
-    *tp = dp->result;
-
-  /* Avoid walking into the same tree more than once.  Unfortunately, we
-     can't just use walk_tree_without duplicates because it would only call
-     us for the first occurrence of dp->var in the function body.  */
-  slot = dp->visited.find_slot (*tp, INSERT);
-  if (*slot)
-    *walk_subtrees = 0;
-  else
-    *slot = *tp;
 
   /* Keep iterating.  */
   return NULL_TREE;
