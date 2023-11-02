@@ -632,7 +632,7 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  HIR::BorrowExpr *borrow_expr
+  auto *borrow_expr
     = new HIR::BorrowExpr (mapping, std::unique_ptr<HIR::Expr> (borrow_lvalue),
 			   expr.get_is_mut () ? Mutability::Mut
 					      : Mutability::Imm,
@@ -640,8 +640,8 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 
   if (expr.get_is_double_borrow ())
     {
-      NodeId artifical_bouble_borrow_id = mappings->get_next_node_id ();
-      Analysis::NodeMapping mapping (crate_num, artifical_bouble_borrow_id,
+      NodeId artificial_double_borrow_id = mappings->get_next_node_id ();
+      Analysis::NodeMapping mapping (crate_num, artificial_double_borrow_id,
 				     mappings->get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
