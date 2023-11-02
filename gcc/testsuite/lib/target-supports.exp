@@ -5408,36 +5408,36 @@ foreach { armfunc armflag armdefs } {
 	v5t "-march=armv5t -mfloat-abi=softfp" __ARM_ARCH_5T__
 	v5t_arm "-march=armv5t -marm" __ARM_ARCH_5T__
 	v5t_thumb "-march=armv5t -mthumb -mfloat-abi=softfp" __ARM_ARCH_5T__
-	v5te "-march=armv5te -mfloat-abi=softfp" __ARM_ARCH_5TE__
-	v5te_arm "-march=armv5te -marm" __ARM_ARCH_5TE__
-	v5te_thumb "-march=armv5te -mthumb -mfloat-abi=softfp" __ARM_ARCH_5TE__
-	v6 "-march=armv6 -mfloat-abi=softfp" __ARM_ARCH_6__
-	v6_arm "-march=armv6 -marm" __ARM_ARCH_6__
-	v6_thumb "-march=armv6 -mthumb -mfloat-abi=softfp" __ARM_ARCH_6__
-	v6k "-march=armv6k -mfloat-abi=softfp" __ARM_ARCH_6K__
-	v6k_arm "-march=armv6k -marm" __ARM_ARCH_6K__
-	v6k_thumb "-march=armv6k -mthumb -mfloat-abi=softfp" __ARM_ARCH_6K__
-	v6t2 "-march=armv6t2" __ARM_ARCH_6T2__
-	v6z "-march=armv6z -mfloat-abi=softfp" __ARM_ARCH_6Z__
-	v6z_arm "-march=armv6z -marm" __ARM_ARCH_6Z__
-	v6z_thumb "-march=armv6z -mthumb -mfloat-abi=softfp" __ARM_ARCH_6Z__
+	v5te "-march=armv5te+fp -mfloat-abi=softfp" __ARM_ARCH_5TE__
+	v5te_arm "-march=armv5te+fp -marm" __ARM_ARCH_5TE__
+	v5te_thumb "-march=armv5te+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_5TE__
+	v6 "-march=armv6+fp -mfloat-abi=softfp" __ARM_ARCH_6__
+	v6_arm "-march=armv6+fp -marm" __ARM_ARCH_6__
+	v6_thumb "-march=armv6+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_6__
+	v6k "-march=armv6k+fp -mfloat-abi=softfp" __ARM_ARCH_6K__
+	v6k_arm "-march=armv6k+fp -marm" __ARM_ARCH_6K__
+	v6k_thumb "-march=armv6k+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_6K__
+	v6t2 "-march=armv6t2+fp" __ARM_ARCH_6T2__
+	v6z "-march=armv6z+fp -mfloat-abi=softfp" __ARM_ARCH_6Z__
+	v6z_arm "-march=armv6z+fp -marm" __ARM_ARCH_6Z__
+	v6z_thumb "-march=armv6z+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_6Z__
 	v6m "-march=armv6-m -mthumb -mfloat-abi=soft" __ARM_ARCH_6M__
-	v7a "-march=armv7-a" __ARM_ARCH_7A__
-	v7r "-march=armv7-r" __ARM_ARCH_7R__
+	v7a "-march=armv7-a+fp" __ARM_ARCH_7A__
+	v7r "-march=armv7-r+fp" __ARM_ARCH_7R__
 	v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
-	v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__
-	v7ve "-march=armv7ve -marm"
+	v7em "-march=armv7e-m+fp -mthumb" __ARM_ARCH_7EM__
+	v7ve "-march=armv7ve+fp -marm"
 		"__ARM_ARCH_7A__ && __ARM_FEATURE_IDIV"
-	v8a "-march=armv8-a" __ARM_ARCH_8A__
-	v8a_hard "-march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=hard" __ARM_ARCH_8A__
-	v8_1a "-march=armv8.1-a" __ARM_ARCH_8A__
-	v8_2a "-march=armv8.2-a" __ARM_ARCH_8A__
-	v8r "-march=armv8-r" __ARM_ARCH_8R__
+	v8a "-march=armv8-a+simd" __ARM_ARCH_8A__
+	v8a_hard "-march=armv8-a+simd -mfpu=auto -mfloat-abi=hard" __ARM_ARCH_8A__
+	v8_1a "-march=armv8.1-a+simd" __ARM_ARCH_8A__
+	v8_2a "-march=armv8.2-a+simd" __ARM_ARCH_8A__
+	v8r "-march=armv8-r+fp.sp" __ARM_ARCH_8R__
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
-	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__
-	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__
-	v9a "-march=armv9-a" __ARM_ARCH_9A__ } {
+	v8m_main "-march=armv8-m.main+fp -mthumb" __ARM_ARCH_8M_MAIN__
+	v8_1m_main "-march=armv8.1-m.main+fp -mthumb" __ARM_ARCH_8M_MAIN__
+	v9a "-march=armv9-a+simd" __ARM_ARCH_9A__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
