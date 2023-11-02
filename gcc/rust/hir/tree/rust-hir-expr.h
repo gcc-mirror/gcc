@@ -213,7 +213,6 @@ public:
 class BorrowExpr : public OperatorExpr
 {
   Mutability mut;
-  bool double_borrow;
 
 public:
   std::string as_string () const override;
@@ -231,8 +230,6 @@ public:
 
   Mutability get_mut () const { return mut; }
   bool is_mut () const { return mut == Mutability::Mut; }
-
-  bool is_double_borrow () const { return double_borrow; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

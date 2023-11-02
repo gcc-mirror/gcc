@@ -1182,11 +1182,6 @@ BorrowExpr::as_string () const
 {
   std::string str ("&");
 
-  if (double_borrow)
-    {
-      str += "&";
-    }
-
   if (is_mut ())
     {
       str += "mut ";
