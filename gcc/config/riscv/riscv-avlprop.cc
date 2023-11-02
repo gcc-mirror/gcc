@@ -266,6 +266,13 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	      def_info *def2 = dl.prev_def (use_insn);
 	      if (!def1 || !def2 || def1 != def2)
 		return NULL_RTX;
+	      /* For vectorized codes, we always use SELECT_VL/MIN_EXPR to
+		 calculate the loop len at the header of the loop.
+		 We only allow AVL propagation for real instruction for now.
+		 TODO: We may enhance it for intrinsic codes if it is necessary.
+	      */
+	      if (!def1->insn ()->is_real ())
+		return NULL_RTX;
 
 	      /* FIXME: We only all AVL propation within a block which should
 		 be totally enough for vectorized codes.
