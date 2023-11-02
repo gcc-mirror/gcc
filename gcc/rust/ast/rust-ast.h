@@ -1495,7 +1495,7 @@ public:
   }
 
   NodeId get_node_id () const { return node_id; }
-  location_t get_locus () const { return locus; }
+  location_t get_locus () const override { return locus; }
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl

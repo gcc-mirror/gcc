@@ -3291,7 +3291,7 @@ public:
 
   std::string as_string () const override;
 
-  location_t get_locus () const { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
