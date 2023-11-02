@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "rust-ast.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -36,6 +37,179 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace Rust {
 namespace AST {
+
+SingleASTNode::SingleASTNode (SingleASTNode const &other)
+{
+  kind = other.kind;
+  switch (kind)
+    {
+    case EXPRESSION:
+      expr = other.expr->clone_expr ();
+      break;
+
+    case ITEM:
+      item = other.item->clone_item ();
+      break;
+
+    case STMT:
+      stmt = other.stmt->clone_stmt ();
+      break;
+
+    case EXTERN:
+      external_item = other.external_item->clone_external_item ();
+      break;
+
+    case TRAIT:
+      trait_item = other.trait_item->clone_trait_item ();
+      break;
+
+    case IMPL:
+      impl_item = other.impl_item->clone_inherent_impl_item ();
+      break;
+
+    case TRAIT_IMPL:
+      trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
+      break;
+
+    case TYPE:
+      type = other.type->clone_type ();
+      break;
+    }
+}
+
+SingleASTNode
+SingleASTNode::operator= (SingleASTNode const &other)
+{
+  kind = other.kind;
+  switch (kind)
+    {
+    case EXPRESSION:
+      expr = other.expr->clone_expr ();
+      break;
+
+    case ITEM:
+      item = other.item->clone_item ();
+      break;
+
+    case STMT:
+      stmt = other.stmt->clone_stmt ();
+      break;
+
+    case EXTERN:
+      external_item = other.external_item->clone_external_item ();
+      break;
+
+    case TRAIT:
+      trait_item = other.trait_item->clone_trait_item ();
+      break;
+
+    case IMPL:
+      impl_item = other.impl_item->clone_inherent_impl_item ();
+      break;
+
+    case TRAIT_IMPL:
+      trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
+      break;
+
+    case TYPE:
+      type = other.type->clone_type ();
+      break;
+    }
+  return *this;
+}
+
+void
+SingleASTNode::accept_vis (ASTVisitor &vis)
+{
+  switch (kind)
+    {
+    case EXPRESSION:
+      expr->accept_vis (vis);
+      break;
+
+    case ITEM:
+      item->accept_vis (vis);
+      break;
+
+    case STMT:
+      stmt->accept_vis (vis);
+      break;
+
+    case EXTERN:
+      external_item->accept_vis (vis);
+      break;
+
+    case TRAIT:
+      trait_item->accept_vis (vis);
+      break;
+
+    case IMPL:
+      impl_item->accept_vis (vis);
+      break;
+
+    case TRAIT_IMPL:
+      trait_impl_item->accept_vis (vis);
+      break;
+
+    case TYPE:
+      type->accept_vis (vis);
+      break;
+    }
+}
+
+bool
+SingleASTNode::is_error ()
+{
+  switch (kind)
+    {
+    case EXPRESSION:
+      return expr == nullptr;
+    case ITEM:
+      return item == nullptr;
+    case STMT:
+      return stmt == nullptr;
+    case EXTERN:
+      return external_item == nullptr;
+    case TRAIT:
+      return trait_item == nullptr;
+    case IMPL:
+      return impl_item == nullptr;
+    case TRAIT_IMPL:
+      return trait_impl_item == nullptr;
+    case TYPE:
+      return type == nullptr;
+    }
+
+  rust_unreachable ();
+  return true;
+}
+
+std::string
+SingleASTNode::as_string () const
+{
+  switch (kind)
+    {
+    case EXPRESSION:
+      return "Expr: " + expr->as_string ();
+    case ITEM:
+      return "Item: " + item->as_string ();
+    case STMT:
+      return "Stmt: " + stmt->as_string ();
+    case EXTERN:
+      return "External Item: " + external_item->as_string ();
+    case TRAIT:
+      return "Trait Item: " + trait_item->as_string ();
+    case IMPL:
+      return "Impl Item: " + impl_item->as_string ();
+    case TRAIT_IMPL:
+      return "Trait Impl Item: " + trait_impl_item->as_string ();
+    case TYPE:
+      return "Type: " + type->as_string ();
+    }
+
+  rust_unreachable ();
+  return "";
+}
 
 std::string
 Crate::as_string () const
