@@ -7367,6 +7367,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		idx = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
 	      tree arg = CALL_EXPR_ARG (rhs, idx);
 	      if (TREE_CODE (arg) == INTEGER_CST
+		  && !VOID_TYPE_P (ttl) && TYPE_SIZE_UNIT (ttl)
 		  && INTEGER_CST == TREE_CODE (TYPE_SIZE_UNIT (ttl))
 		  && tree_int_cst_lt (arg, TYPE_SIZE_UNIT (ttl)))
 		 warning_at (location, OPT_Walloc_size, "allocation of "
