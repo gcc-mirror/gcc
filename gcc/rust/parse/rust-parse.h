@@ -17,6 +17,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef RUST_PARSE_H
 #define RUST_PARSE_H
 
+#include "rust-item.h"
 #include "rust-lex.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -331,7 +332,7 @@ private:
   std::unique_ptr<AST::Trait> parse_trait (AST::Visibility vis,
 					   AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TraitItemType>
-  parse_trait_type (AST::AttrVec outer_attrs);
+  parse_trait_type (AST::AttrVec outer_attrs, AST::Visibility);
   std::unique_ptr<AST::TraitItemConst>
   parse_trait_const (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::Param> parse_self_param ();
