@@ -2908,7 +2908,7 @@ package body Inline is
          else
             Push_Scope (Scop);
             Expand_Cleanup_Actions (Decl);
-            End_Scope;
+            Pop_Scope;
          end if;
 
          Next_Elmt (Elmt);
