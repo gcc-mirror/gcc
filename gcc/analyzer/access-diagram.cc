@@ -919,11 +919,9 @@ class x_aligned_x_ruler_widget : public leaf_widget
 {
 public:
   x_aligned_x_ruler_widget (const access_diagram_impl &dia_impl,
-			    const theme &theme,
-			    table_dimension_sizes &col_widths)
+			    const theme &theme)
   : m_dia_impl (dia_impl),
-    m_theme (theme),
-    m_col_widths (col_widths)
+    m_theme (theme)
   {
   }
 
@@ -973,7 +971,6 @@ private:
 
   const access_diagram_impl &m_dia_impl;
   const theme &m_theme;
-  table_dimension_sizes &m_col_widths;
   std::vector<label> m_labels;
 };
 
@@ -2361,7 +2358,7 @@ private:
     LOG_SCOPE (m_logger);
 
     x_aligned_x_ruler_widget *w
-      = new x_aligned_x_ruler_widget (*this, m_theme, *m_col_widths);
+      = new x_aligned_x_ruler_widget (*this, m_theme);
 
     access_range invalid_before_bits;
     if (m_op.maybe_get_invalid_before_bits (&invalid_before_bits))

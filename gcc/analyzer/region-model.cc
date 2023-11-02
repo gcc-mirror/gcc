@@ -1877,23 +1877,13 @@ check_one_function_attr_null_terminated_string_arg (const gcall *call,
 	 || access->mode == access_read_write)
 	&& access->sizarg != UINT_MAX)
       {
-	/* First, check for a null-terminated string *without*
-	   emitting warnings (via a null context), to get an
-	   svalue for the strlen of the buffer (possibly
-	   nullptr if there would be an issue).  */
-	call_details cd_unchecked (call, this, nullptr);
-	const svalue *strlen_sval
-	  = check_for_null_terminated_string_arg (cd_unchecked,
-						  arg_idx);
-
-	/* Get svalue for the size limit argument.  */
 	call_details cd_checked (call, this, ctxt);
 	const svalue *limit_sval
 	  = cd_checked.get_arg_svalue (access->sizarg);
 	const svalue *ptr_sval
 	  = cd_checked.get_arg_svalue (arg_idx);
 	/* Try reading all of the bytes expressed by the size param,
-	   but without checking (via a null context).  */
+	   but without emitting warnings (via a null context).  */
 	const svalue *limited_sval
 	  = read_bytes (deref_rvalue (ptr_sval, NULL_TREE, nullptr),
 			NULL_TREE,
@@ -1912,11 +1902,10 @@ check_one_function_attr_null_terminated_string_arg (const gcall *call,
 	  {
 	    /* Reading up to the truncation limit seems OK; repeat
 	       the read, but with checking enabled.  */
-	    const svalue *limited_sval
-	      = read_bytes (deref_rvalue (ptr_sval, NULL_TREE, ctxt),
-			    NULL_TREE,
-			    limit_sval,
-			    ctxt);
+	    read_bytes (deref_rvalue (ptr_sval, NULL_TREE, ctxt),
+			NULL_TREE,
+			limit_sval,
+			ctxt);
 	  }
 	return;
       }
