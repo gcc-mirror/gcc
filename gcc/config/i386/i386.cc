@@ -11357,93 +11357,116 @@ ix86_validate_address_register (rtx op)
   return NULL_RTX;
 }
 
-/* Return true if insn memory address can use any available reg
-   in BASE_REG_CLASS or INDEX_REG_CLASS, otherwise false.
-   For APX, some instruction can't be encoded with gpr32
-   which is BASE_REG_CLASS or INDEX_REG_CLASS, for that case
-   returns false.  */
-static bool
-ix86_memory_address_use_extended_reg_class_p (rtx_insn* insn)
+/* Determine which memory address register set insn can use.  */
+
+static enum attr_addr
+ix86_memory_address_reg_class (rtx_insn* insn)
 {
-  /* LRA will do some initialization with insn == NULL,
-     return the maximum reg class for that.
-     For other cases, real insn will be passed and checked.  */
-  bool ret = true;
+  /* LRA can do some initialization with NULL insn,
+     return maximum register class in this case.  */
+  enum attr_addr addr_rclass = ADDR_GPR32;
+
   if (TARGET_APX_EGPR && insn)
     {
       if (asm_noperands (PATTERN (insn)) >= 0
 	  || GET_CODE (PATTERN (insn)) == ASM_INPUT)
-	return ix86_apx_inline_asm_use_gpr32;
+	return ix86_apx_inline_asm_use_gpr32 ? ADDR_GPR32 : ADDR_GPR16;
 
+      /* Return maximum register class for unrecognized instructions.  */
       if (INSN_CODE (insn) < 0)
-	return false;
+	return addr_rclass;
 
-      /* Try recog the insn before calling get_attr_gpr32. Save
-	 the current recog_data first.  */
-      /* Also save which_alternative for current recog.  */
+      /* Try to recognize the insn before calling get_attr_addr.
+	 Save current recog_data and current alternative.  */
+      struct recog_data_d saved_recog_data = recog_data;
+      int saved_alternative = which_alternative;
 
-      struct recog_data_d recog_data_save = recog_data;
-      int which_alternative_saved = which_alternative;
-
-      /* Update the recog_data for alternative check. */
+      /* Update recog_data for processing of alternatives.  */
       if (recog_data.insn != insn)
 	extract_insn_cached (insn);
 
-      /* If alternative is not set, loop throught each alternative
-	 of insn and get gpr32 attr for all enabled alternatives.
-	 If any enabled alternatives has 0 value for gpr32, disallow
-	 gpr32 for addressing.  */
-      if (which_alternative_saved == -1)
+      /* If current alternative is not set, loop throught enabled
+	 alternatives and get the most limited register class.  */
+      if (saved_alternative == -1)
 	{
 	  alternative_mask enabled = get_enabled_alternatives (insn);
-	  bool curr_insn_gpr32 = false;
+
 	  for (int i = 0; i < recog_data.n_alternatives; i++)
 	    {
 	      if (!TEST_BIT (enabled, i))
 		continue;
+
 	      which_alternative = i;
-	      curr_insn_gpr32 = get_attr_gpr32 (insn);
-	      if (!curr_insn_gpr32)
-		ret = false;
+	      addr_rclass = MIN (addr_rclass, get_attr_addr (insn));
 	    }
 	}
       else
 	{
-	  which_alternative = which_alternative_saved;
-	  ret = get_attr_gpr32 (insn);
+	  which_alternative = saved_alternative;
+	  addr_rclass = get_attr_addr (insn);
 	}
 
-      recog_data = recog_data_save;
-      which_alternative = which_alternative_saved;
+      recog_data = saved_recog_data;
+      which_alternative = saved_alternative;
     }
 
-  return ret;
+  return addr_rclass;
 }
 
-/* For APX, some instructions can't be encoded with gpr32.  */
+/* Return memory address register class insn can use.  */
+
 enum reg_class
 ix86_insn_base_reg_class (rtx_insn* insn)
 {
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return BASE_REG_CLASS;
-  return GENERAL_GPR16;
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      gcc_unreachable ();
+    case ADDR_GPR16:
+      return GENERAL_GPR16;
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return BASE_REG_CLASS;
 }
 
 bool
 ix86_regno_ok_for_insn_base_p (int regno, rtx_insn* insn)
 {
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      gcc_unreachable ();
+    case ADDR_GPR16:
+      return GENERAL_GPR16_REGNO_P (regno);
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return GENERAL_REGNO_P (regno);
-  return GENERAL_GPR16_REGNO_P (regno);
+  return GENERAL_REGNO_P (regno);
 }
 
 enum reg_class
 ix86_insn_index_reg_class (rtx_insn* insn)
 {
-  if (ix86_memory_address_use_extended_reg_class_p (insn))
-    return INDEX_REG_CLASS;
-  return INDEX_GPR16;
+  switch (ix86_memory_address_reg_class (insn))
+    {
+    case ADDR_GPR8:
+      gcc_unreachable ();
+    case ADDR_GPR16:
+      return INDEX_GPR16;
+    case ADDR_GPR32:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return INDEX_REG_CLASS;
 }
 
 /* Recognizes RTL expressions that are valid memory addresses for an
