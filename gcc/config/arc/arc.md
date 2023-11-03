@@ -2675,19 +2675,28 @@ archs4x, archs4xd"
 	(plus:SI (match_operand:SI 1 "register_operand" "")
 		 (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
-  "if (flag_pic && arc_raw_symbolic_reference_mentioned_p (operands[2], false))
-     {
-       operands[2]=force_reg(SImode, operands[2]);
-     }
-  ")
+{
+  if (flag_pic && arc_raw_symbolic_reference_mentioned_p (operands[2], false))
+    operands[2] = force_reg (SImode, operands[2]);
+})
 
 (define_expand "adddi3"
+  [(parallel
+      [(set (match_operand:DI 0 "register_operand" "")
+	    (plus:DI (match_operand:DI 1 "register_operand" "")
+		     (match_operand:DI 2 "nonmemory_operand" "")))
+       (clobber (reg:CC CC_REG))])])
+
+(define_insn_and_split "*adddi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "nonmemory_operand" "")))
    (clobber (reg:CC CC_REG))]
-  ""
-  "
+  "arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
   rtx l0 = gen_lowpart (SImode, operands[0]);
   rtx h0 = gen_highpart (SImode, operands[0]);
   rtx l1 = gen_lowpart (SImode, operands[1]);
@@ -2719,11 +2728,12 @@ archs4x, archs4xd"
 	   gen_rtx_LTU (VOIDmode, gen_rtx_REG (CC_Cmode, CC_REG), GEN_INT (0)),
 	   gen_rtx_SET (h0, plus_constant (SImode, h0, 1))));
       DONE;
-      }
+    }
   emit_insn (gen_add_f (l0, l1, l2));
   emit_insn (gen_adc (h0, h1, h2));
   DONE;
-")
+}
+  [(set_attr "length" "8")])
 
 (define_insn "add_f"
   [(set (reg:CC_C CC_REG)
@@ -3492,6 +3502,33 @@ archs4x, archs4xd"
   "* return output_shift_loop (<CODE>, operands);"
   [(set_attr "type" "shift")
    (set_attr "length" "16,20")])
+
+;; DImode shifts
+
+(define_expand "ashldi3"
+  [(parallel
+      [(set (match_operand:DI 0 "register_operand")
+	    (ashift:DI (match_operand:DI 1 "register_operand")
+		       (match_operand:QI 2 "const_int_operand")))
+       (clobber (reg:CC CC_REG))])]
+  ""
+{
+  if (operands[2] != const1_rtx)
+    FAIL;
+})
+
+(define_insn_and_split "*ashldi3_cnt1"
+  [(set (match_operand:DI 0 "register_operand")
+	(ashift:DI (match_operand:DI 1 "register_operand")
+		   (const_int 1)))
+   (clobber (reg:CC CC_REG))]
+  "arc_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 1)))
+	      (clobber (reg:CC CC_REG))])]
+  ""
+  [(set_attr "length" "8")])
 
 ;; Rotate instructions.
 
