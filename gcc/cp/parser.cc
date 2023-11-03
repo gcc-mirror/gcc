@@ -31407,7 +31407,16 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       cp_parser_require (parser, CPP_COLON, RT_COLON);
     }
   else
-    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
+    {
+      cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
+      if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+	identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	return error_mark_node;
+      if (identifier)
+	cp_parser_require (parser, CPP_COLON, RT_COLON);
+    }
   /* Defer the parsing of pre/post contracts inside class definitions.  */
   tree contract;
   if (!assertion_p &&
