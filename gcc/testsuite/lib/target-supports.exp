@@ -5590,6 +5590,24 @@ proc check_effective_target_arm_thumb1_cbz_ok {} {
     }
 }
 
+# Return 1 if this is an Arm target which supports the Armv6t2 extensions.
+# This can be either in Arm state or in Thumb state.
+
+proc check_effective_target_arm_arch_v6t2_hw_ok {} {
+    if [check_effective_target_arm_thumb1_ok] {
+	return [check_no_compiler_messages arm_movt object {
+	    int
+	    main (void)
+	    {
+	      asm ("bfc r0, #1, #2");
+	      return 0;
+	    }
+	} [add_options_for_arm_arch_v6t2 ""]]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target where ARMv8-M Security Extensions is
 # available.
 
