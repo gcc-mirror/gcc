@@ -55,17 +55,17 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
-/* Return true if vlmax is constant value and can be used in vsetivl.  */
-static bool
-const_vlmax_p (machine_mode mode)
+/* Return true if NUNTIS <=31 so that we can use immediate AVL in vsetivli.  */
+bool
+imm_avl_p (machine_mode mode)
 {
-  poly_uint64 nuints = GET_MODE_NUNITS (mode);
+  poly_uint64 nunits = GET_MODE_NUNITS (mode);
 
-  return nuints.is_constant ()
-    /* The vsetivli can only hold register 0~31.  */
-    ? (IN_RANGE (nuints.to_constant (), 0, 31))
-    /* Only allowed in VLS-VLMAX mode.  */
-    : false;
+  return nunits.is_constant ()
+	   /* The vsetivli can only hold register 0~31.  */
+	   ? (IN_RANGE (nunits.to_constant (), 0, 31))
+	   /* Only allowed in VLS-VLMAX mode.  */
+	   : false;
 }
 
 /* Helper functions for insn_flags && insn_types */
@@ -298,14 +298,6 @@ public:
 	      len = force_reg (Pmode, len);
 	    vls_p = true;
 	  }
-	else if (const_vlmax_p (vtype_mode))
-	  {
-	    /* Optimize VLS-VLMAX code gen, we can use vsetivli instead of
-	       the vsetvli to obtain the value of vlmax.  */
-	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
-	    len = gen_int_mode (nunits, Pmode);
-	    vls_p = true;
-	  }
 	else if (can_create_pseudo_p ())
 	  {
 	    len = gen_reg_rtx (Pmode);
@@ -370,7 +362,7 @@ void
 emit_vlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops)
 {
   insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
-  gcc_assert (can_create_pseudo_p () || const_vlmax_p (e.get_vtype_mode (ops)));
+  gcc_assert (can_create_pseudo_p () || imm_avl_p (e.get_vtype_mode (ops)));
 
   e.emit_insn ((enum insn_code) icode, ops);
 }

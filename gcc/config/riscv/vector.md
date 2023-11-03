@@ -708,6 +708,32 @@
 	       (const_int 5)]
 	(const_int INVALID_ATTRIBUTE)))
 
+;; The index of operand[] represents the machine mode of the instruction.
+(define_attr "mode_idx" ""
+	(cond [(eq_attr "type" "vlde,vste,vldm,vstm,vlds,vsts,vldux,vldox,vldff,vldr,vstr,\
+				vlsegde,vlsegds,vlsegdux,vlsegdox,vlsegdff,vialu,vext,vicalu,\
+				vshift,vicmp,viminmax,vimul,vidiv,vimuladd,vimerge,vimov,\
+				vsalu,vaalu,vsmul,vsshift,vfalu,vfmul,vfdiv,vfmuladd,vfsqrt,vfrecp,\
+				vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
+				vfcvtitof,vfncvtitof,vfncvtftoi,vfncvtftof,vmalu,vmiota,vmidx,\
+				vimovxv,vfmovfv,vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
+				vgather,vcompress,vmov,vnclip,vnshift")
+	       (const_int 0)
+
+	       (eq_attr "type" "vimovvx,vfmovvf")
+	       (const_int 1)
+
+	       (eq_attr "type" "vssegte,vmpop,vmffs")
+	       (const_int 2)       
+
+	       (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
+				vfwcvtftof,vmsfs,vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
+	       (const_int 3)
+
+	       (eq_attr "type" "viwalu,viwmul,viwmuladd,vfwalu,vfwmul,vfwmuladd")
+	       (const_int 4)]
+	(const_int INVALID_ATTRIBUTE)))
+
 ;; The index of operand[] to get the avl op.
 (define_attr "vl_op_idx" ""
   (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts,vstux,\
@@ -1207,7 +1233,8 @@
   }
   [(set_attr "type" "vmov,vlde,vste")
    (set_attr "mode" "<VT:MODE>")
-   (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))])
+   (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
+   (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))])
 
 ;; -----------------------------------------------------------------
 ;; ---- VLS Moves Operations

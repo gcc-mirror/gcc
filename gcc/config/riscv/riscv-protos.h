@@ -592,6 +592,7 @@ bool vlmax_avl_p (rtx);
 uint8_t get_sew (rtx_insn *);
 enum vlmul_type get_vlmul (rtx_insn *);
 int count_regno_occurrences (rtx_insn *, unsigned int);
+bool imm_avl_p (machine_mode);
 }
 
 /* We classify builtin types into two classes:
