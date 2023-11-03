@@ -13829,7 +13829,7 @@ grokdeclarator (const cp_declarator *declarator,
 
       /* Check that contracts aren't misapplied.  */
       if (tree contract_attr = find_contract (declarator->std_attributes))
-	if (!flag_contract_nonattr
+	if (!flag_contracts_nonattr
 	    && (declarator->kind != cdk_function
 		|| innermost_code != cdk_function))
 	  diagnose_misapplied_contracts (contract_attr);
