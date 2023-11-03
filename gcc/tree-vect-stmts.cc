@@ -4149,10 +4149,19 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       {
 	unsigned int this_badness = 0;
 	unsigned int num_calls;
+	/* The number of arguments in the call and the number of parameters in
+	   the simdclone should match.  However, when the simdclone is
+	   'inbranch', it could have one more paramater than nargs when using
+	   an inbranch simdclone to call a non-inbranch call, either in a
+	   non-masked loop using a all true constant mask, or inside a masked
+	   loop using it's mask.  */
+	size_t simd_nargs = n->simdclone->nargs;
+	if (!masked_call_offset && n->simdclone->inbranch)
+	  simd_nargs--;
 	if (!constant_multiple_p (vf * group_size, n->simdclone->simdlen,
 				  &num_calls)
 	    || (!n->simdclone->inbranch && (masked_call_offset > 0))
-	    || nargs != n->simdclone->nargs)
+	    || (nargs != simd_nargs))
 	  continue;
 	if (num_calls != 1)
 	  this_badness += exact_log2 (num_calls) * 4096;
