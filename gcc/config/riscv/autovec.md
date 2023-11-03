@@ -2395,82 +2395,42 @@
   }
 )
 
-(define_expand "lrint<mode><v_f2si_convert>2"
-  [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
+(define_expand "lrint<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
     DONE;
   }
 )
 
-(define_expand "lrint<mode><v_f2di_convert>2"
-  [(match_operand:<V_F2DI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
+(define_expand "lround<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
     DONE;
   }
 )
 
-(define_expand "lround<mode><v_f2si_convert>2"
-  [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
+(define_expand "lceil<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
     DONE;
   }
 )
 
-(define_expand "lround<mode><v_f2di_convert>2"
-  [(match_operand:<V_F2DI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
+(define_expand "lfloor<mode><v_i_l_ll_convert>2"
+  [(match_operand:<V_I_L_LL_CONVERT>    0 "register_operand")
+   (match_operand:V_VLS_FCONVERT_I_L_LL 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
-    DONE;
-  }
-)
-
-(define_expand "lceil<mode><v_f2si_convert>2"
-  [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
-  {
-    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
-    DONE;
-  }
-)
-
-(define_expand "lceil<mode><v_f2di_convert>2"
-  [(match_operand:<V_F2DI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
-  {
-    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
-    DONE;
-  }
-)
-
-(define_expand "lfloor<mode><v_f2si_convert>2"
-  [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
-  {
-    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
-    DONE;
-  }
-)
-
-(define_expand "lfloor<mode><v_f2di_convert>2"
-  [(match_operand:<V_F2DI_CONVERT>   0 "register_operand")
-   (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
-  {
-    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_I_L_LL_CONVERT>mode);
     DONE;
   }
 )
