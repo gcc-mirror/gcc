@@ -9,7 +9,7 @@
 extern uint32_t bar();
 
 #pragma GCC push_options
-#pragma GCC target("arch=armv8-a+crc")
+#pragma GCC target("arch=armv8-a+simd+crc")
 uint32_t crc32cw(uint32_t crc, uint32_t val)
 {
     uint32_t res;
