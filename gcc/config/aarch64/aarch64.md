@@ -4447,7 +4447,7 @@
 	   (match_operator:SI 1 "aarch64_comparison_operator"
 	    [(match_operand 2 "cc_register" "") (const_int 0)]))
 	  (match_operand:SI 3 "general_operand" "r"))))]
-  "can_create_pseudo_p ()"
+  ""
   "#"
   "&& true"
   [(set (match_dup 0)
