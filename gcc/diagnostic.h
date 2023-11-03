@@ -226,6 +226,12 @@ public:
    the context of a diagnostic message.  */
 struct diagnostic_context
 {
+public:
+  void begin_group ();
+  void end_group ();
+
+public:
+
   /* Where most of the diagnostic formatting work is done.  */
   pretty_printer *printer;
 
@@ -443,12 +449,15 @@ struct diagnostic_context
      applied, for generating patches.  */
   edit_context *edit_context_ptr;
 
-  /* How many diagnostic_group instances are currently alive.  */
-  int diagnostic_group_nesting_depth;
+  /* Fields relating to diagnostic groups.  */
+  struct {
+    /* How many diagnostic_group instances are currently alive.  */
+    int m_nesting_depth;
 
-  /* How many diagnostics have been emitted since the bottommost
-     diagnostic_group was pushed.  */
-  int diagnostic_group_emission_count;
+    /* How many diagnostics have been emitted since the bottommost
+       diagnostic_group was pushed.  */
+    int m_emission_count;
+  } m_diagnostic_groups;
 
   /* How to output diagnostics (text vs a structured format such as JSON).
      Must be non-NULL; owned by context.  */

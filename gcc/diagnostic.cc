@@ -218,8 +218,8 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->tabstop = 8;
   context->escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   context->edit_context_ptr = NULL;
-  context->diagnostic_group_nesting_depth = 0;
-  context->diagnostic_group_emission_count = 0;
+  context->m_diagnostic_groups.m_nesting_depth = 0;
+  context->m_diagnostic_groups.m_emission_count = 0;
   context->m_output_format = new diagnostic_text_output_format (*context);
   context->set_locations_cb = nullptr;
   context->ice_handler_cb = NULL;
@@ -1570,9 +1570,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
     ++diagnostic_kind_count (context, diagnostic->kind);
 
   /* Is this the initial diagnostic within the stack of groups?  */
-  if (context->diagnostic_group_emission_count == 0)
+  if (context->m_diagnostic_groups.m_emission_count == 0)
     context->m_output_format->on_begin_group ();
-  context->diagnostic_group_emission_count++;
+  context->m_diagnostic_groups.m_emission_count++;
 
   pp_format (context->printer, &diagnostic->message);
   context->m_output_format->on_begin_diagnostic (diagnostic);
@@ -2296,28 +2296,42 @@ fancy_abort (const char *file, int line, const char *function)
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
+/* struct diagnostic_context.  */
+
+void
+diagnostic_context::begin_group ()
+{
+  m_diagnostic_groups.m_nesting_depth++;
+}
+
+void
+diagnostic_context::end_group ()
+{
+  if (--m_diagnostic_groups.m_nesting_depth == 0)
+    {
+      /* Handle the case where we've popped the final diagnostic group.
+	 If any diagnostics were emitted, give the context a chance
+	 to do something.  */
+      if (m_diagnostic_groups.m_emission_count > 0)
+	m_output_format->on_end_group ();
+      m_diagnostic_groups.m_emission_count = 0;
+    }
+}
+
 /* class auto_diagnostic_group.  */
 
 /* Constructor: "push" this group into global_dc.  */
 
 auto_diagnostic_group::auto_diagnostic_group ()
 {
-  global_dc->diagnostic_group_nesting_depth++;
+  global_dc->begin_group ();
 }
 
 /* Destructor: "pop" this group from global_dc.  */
 
 auto_diagnostic_group::~auto_diagnostic_group ()
 {
-  if (--global_dc->diagnostic_group_nesting_depth == 0)
-    {
-      /* Handle the case where we've popped the final diagnostic group.
-	 If any diagnostics were emitted, give the context a chance
-	 to do something.  */
-      if (global_dc->diagnostic_group_emission_count > 0)
-	global_dc->m_output_format->on_end_group ();
-      global_dc->diagnostic_group_emission_count = 0;
-    }
+  global_dc->end_group ();
 }
 
 /* class diagnostic_text_output_format : public diagnostic_output_format.  */
