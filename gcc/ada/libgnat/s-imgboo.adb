@@ -37,8 +37,6 @@ pragma Assertion_Policy (Ghost          => Ignore,
                          Loop_Invariant => Ignore,
                          Assert         => Ignore);
 
-with System.Val_Spec;
-
 package body System.Img_Bool
   with SPARK_Mode
 is
