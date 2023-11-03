@@ -13,7 +13,7 @@ template <bool V, int W>
 struct U {
   int j : W = 7;		// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
   int k : W { 8 };		// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
-  int l : V ? 7 : a = 3;	// { dg-error "modification of .a. is not a constant expression" }
+  int l : V ? 7 : a = 3;	// { dg-error "modification of .a. from outside current evaluation is not a constant expression" }
 				// { dg-error "width not an integer constant" "" { target *-*-* } .-1 }
   int m : (V ? W : b) = 9;	// { dg-warning "default member initializers for bit-fields only available with" "" { target c++17_down } }
 				// { dg-error "zero width for bit-field" "" { target *-*-* } .-1 }

@@ -34,7 +34,7 @@ constexpr auto v3 = f3 ();	// { dg-message "in 'constexpr' expansion of" }
 constexpr bool
 f4 (int *p)
 {
-  delete p;			// { dg-error "deallocation of storage that was not previously allocated" }
+  delete p;			// { dg-error "destroying 'q' from outside current evaluation" }
   return false;
 }
 
@@ -70,3 +70,18 @@ f7 ()
 }
 
 constexpr auto v7 = f7 ();
+
+constexpr bool
+f8_impl (int *p)
+{
+  delete p;			// { dg-error "deallocation of storage that was not previously allocated" }
+  return false;
+}
+
+constexpr bool
+f8 ()
+{
+  int q = 0;
+  return f8_impl (&q);
+}
+constexpr auto v8 = f8 ();	// { dg-message "in 'constexpr' expansion of" }
