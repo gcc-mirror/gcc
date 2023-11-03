@@ -25644,7 +25644,7 @@ cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
      requires-clause.  */
   requires_clause = cp_parser_requires_clause_opt (parser, false);
 
-  if (flag_contract_nonattr)
+  if (flag_contracts_nonattr)
     declarator->std_attributes = chainon (declarator->std_attributes,
 					  cp_parser_std_attribute_spec_seq(parser,
 									   true));
