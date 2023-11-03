@@ -69,8 +69,23 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_ASM_SPEC ""
 #endif
 
+#if HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION
+#define ASM_MRELAX_DEFAULT "%{!mrelax:%{!mno-relax:-mrelax}}"
+#else
+#define ASM_MRELAX_DEFAULT "%{!mrelax:%{!mno-relax:-mno-relax}}"
+#endif
+
+#if HAVE_AS_MRELAX_OPTION
+#define ASM_MRELAX_SPEC \
+  "%{!mno-pass-mrelax-to-as:%{mrelax} %{mno-relax} " ASM_MRELAX_DEFAULT "}"
+#else
+#define ASM_MRELAX_SPEC \
+  "%{mpass-mrelax-to-as:%{mrelax} %{mno-relax} " ASM_MRELAX_DEFAULT "}"
+#endif
+
 #undef ASM_SPEC
-#define ASM_SPEC "%{mabi=*} %{subtarget_asm_spec}"
+#define ASM_SPEC \
+  "%{mabi=*} " ASM_MRELAX_SPEC " %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */
 

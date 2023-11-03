@@ -1004,7 +1004,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float @gol
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
 -mmax-inline-memcpy-size=@var{n} @gol
--mcmodel=@var{code-model}}
+-mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r @gol
@@ -24626,6 +24626,28 @@ global symbol: The data got table must be within +/-8EiB addressing space.
 @end itemize
 @end table
 The default code model is @code{normal}.
+
+@item -mrelax
+@itemx -mno-relax
+Take (do not take) advantage of linker relaxations.  If
+@option{-mpass-mrelax-to-as} is enabled, this option is also passed to
+the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mrelax} if the assembler supports both the @option{-mrelax}
+option and the conditional branch relaxation (it's required or the
+@code{.align} directives and conditional branch instructions in the
+assembly code outputted by GCC may be rejected by the assembler because
+of a relocation overflow), @option{-mno-relax} otherwise.
+
+@item -mpass-mrelax-to-as
+@itemx -mno-pass-mrelax-to-as
+Pass (do not pass) the @option{-mrelax} or @option{-mno-relax} option
+to the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mpass-mrelax-to-as} if the assembler supports the
+@option{-mrelax} option, @option{-mno-pass-mrelax-to-as} otherwise.
+This option is mostly useful for debugging, or interoperation with
+assemblers different from the build-time one.
 @end table
 
 @node M32C Options
