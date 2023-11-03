@@ -2913,9 +2913,9 @@ static tree cp_parser_gnu_attribute_list
 static tree cp_parser_std_attribute
   (cp_parser *, tree);
 static tree cp_parser_std_attribute_spec
-  (cp_parser *);
+  (cp_parser *, bool nonattr_allowed = false);
 static tree cp_parser_std_attribute_spec_seq
-  (cp_parser *);
+  (cp_parser *, bool nonattr_allowed = false);
 static size_t cp_parser_skip_std_attribute_spec_seq
   (cp_parser *, size_t);
 static size_t cp_parser_skip_attributes_opt
@@ -24147,7 +24147,16 @@ cp_parser_init_declarator (cp_parser* parser,
     {
       /* If the init-declarator isn't initialized and isn't followed by a
 	 `,' or `;', it's not a valid init-declarator.  */
-      if (token->type != CPP_COMMA
+      tree contract_attr_name = NULL_TREE;
+      if (token->type == CPP_NAME)
+	{
+	  contract_attr_name = token->u.value;
+	  contract_attr_name = canonicalize_attr_name (contract_attr_name);
+	}
+
+      /* Handle contract-attribute-specs specially.  */
+      if (contract_attr_name && contract_attribute_p (contract_attr_name));
+      else if (token->type != CPP_COMMA
 	  && token->type != CPP_SEMICOLON)
 	{
 	  if (maybe_range_for_decl && *maybe_range_for_decl != error_mark_node)
@@ -24694,6 +24703,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 							     flags);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
+		  attrs = chainon (attrs,
+				   cp_parser_std_attribute_spec_seq (parser, true));
 
 		  cp_omp_declare_simd_data odsd;
 		  if ((flag_openmp || flag_openmp_simd)
@@ -25632,6 +25643,11 @@ cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
   /* Function declarations may be followed by a trailing
      requires-clause.  */
   requires_clause = cp_parser_requires_clause_opt (parser, false);
+
+  if (flag_contract_nonattr)
+    declarator->std_attributes = chainon (declarator->std_attributes,
+					  cp_parser_std_attribute_spec_seq(parser,
+									   true));
 
   if (declare_simd_p)
     declarator->attributes
@@ -31375,7 +31391,8 @@ contains_error_p (tree t)
    placeholder.  */
 
 static tree
-cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
+cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
+				   bool nonattr_allowed)
 {
   gcc_assert (contract_attribute_p (attribute));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
@@ -31385,17 +31402,22 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
   bool postcondition_p = is_attribute_p ("post", attribute);
 
   /* Parse the optional mode.  */
-  tree mode = cp_parser_contract_mode_opt (parser, postcondition_p);
+  tree mode;
+  if (!nonattr_allowed)
+    mode = cp_parser_contract_mode_opt (parser, postcondition_p);
 
   /* Check for postcondition identifiers.  */
   cp_expr identifier;
-  if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-    identifier = cp_parser_identifier (parser);
-  if (identifier == error_mark_node)
-    return error_mark_node;
-
-  cp_parser_require (parser, CPP_COLON, RT_COLON);
-
+  if (!nonattr_allowed)
+    {
+      if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	return error_mark_node;
+      cp_parser_require (parser, CPP_COLON, RT_COLON);
+    }
+  else
+    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
   /* Defer the parsing of pre/post contracts inside class definitions.  */
   tree contract;
   if (!assertion_p &&
@@ -31406,13 +31428,21 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
 	 that doesn't close the attribute, return an error and let the attribute
 	 handling code emit an error for missing ']]'.  */
       cp_token *first = cp_lexer_peek_token (parser->lexer);
-      cp_parser_skip_to_closing_parenthesis_1 (parser,
-					       /*recovering=*/false,
-					       CPP_CLOSE_SQUARE,
-					       /*consume_paren=*/false);
-      if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE
-	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_CLOSE_SQUARE)
-	return error_mark_node;
+      if (!nonattr_allowed)
+	{
+	  cp_parser_skip_to_closing_parenthesis_1 (parser,
+						   /*recovering=*/false,
+						   CPP_CLOSE_SQUARE,
+						   /*consume_paren=*/false);
+	  if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE
+	      || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_CLOSE_SQUARE)
+	    return error_mark_node;
+	}
+      else
+	cp_parser_skip_to_closing_parenthesis_1 (parser,
+						 /*recovering=*/false,
+						 CPP_CLOSE_PAREN,
+						 /*consume_paren=*/true);
       cp_token *last = cp_lexer_peek_token (parser->lexer);
 
       /* Build a deferred-parse node.  */
@@ -31442,6 +31472,9 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
       ++processing_contract_condition;
       cp_expr condition = cp_parser_conditional_expression (parser);
       --processing_contract_condition;
+
+      if (nonattr_allowed)
+	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 
       /* Try to recover from errors by scanning up to the end of the
 	 attribute.  Sometimes we get partially parsed expressions, so
@@ -31576,19 +31609,23 @@ void cp_parser_late_contract_condition (cp_parser *parser,
    for [ [ ] ].  */
 
 static tree
-cp_parser_std_attribute_spec (cp_parser *parser)
+cp_parser_std_attribute_spec (cp_parser *parser, bool nonattr_allowed)
 {
   tree attributes = NULL_TREE;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-  if (token->type == CPP_OPEN_SQUARE
+  if ((token->type == CPP_OPEN_SQUARE
       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_OPEN_SQUARE)
+      || nonattr_allowed)
     {
       tree attr_ns = NULL_TREE;
       tree attr_name = NULL_TREE;
 
-      cp_lexer_consume_token (parser->lexer);
-      cp_lexer_consume_token (parser->lexer);
+      if (!nonattr_allowed)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
 
       token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_NAME)
@@ -31600,7 +31637,8 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       /* Handle contract-attribute-specs specially.  */
       if (attr_name && contract_attribute_p (attr_name))
 	{
-	  tree attrs = cp_parser_contract_attribute_spec (parser, attr_name);
+	  tree attrs = cp_parser_contract_attribute_spec (parser, attr_name,
+							  nonattr_allowed);
 	  if (attrs != error_mark_node)
 	    attributes = attrs;
 	  goto finish_attrs;
@@ -31635,8 +31673,9 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       attributes = cp_parser_std_attribute_list (parser, attr_ns);
 
       finish_attrs:
-      if (!cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE)
-	  || !cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
+      if (!nonattr_allowed
+	  && (!cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE)
+	      || !cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE)))
 	cp_parser_skip_to_end_of_statement (parser);
       else
 	/* Warn about parsing c++11 attribute in non-c++11 mode, only
@@ -31714,7 +31753,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
      attribute-specifier-seq [opt] attribute-specifier  */
 
 static tree
-cp_parser_std_attribute_spec_seq (cp_parser *parser)
+cp_parser_std_attribute_spec_seq (cp_parser *parser, bool nonattr_allowed)
 {
   tree attr_specs = NULL_TREE;
   tree attr_last = NULL_TREE;
@@ -31725,7 +31764,7 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
 
   while (true)
     {
-      tree attr_spec = cp_parser_std_attribute_spec (parser);
+      tree attr_spec = cp_parser_std_attribute_spec (parser, nonattr_allowed);
       if (attr_spec == void_list_node)
 	break;
       /* Accept [[]][[]]; for which cp_parser_std_attribute_spec
