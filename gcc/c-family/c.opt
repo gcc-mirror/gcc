@@ -1875,9 +1875,9 @@ Enum(on_off) String(off) Value(0)
 EnumValue
 Enum(on_off) String(on) Value(1)
 
-fcontract-nonattr=
-C++ Var(flag_contract_nonattr) Enum(on_off) Joined Init(0) RejectNegative
--fcontract-nonattr=[on|off]	Enable or disable the non-attribute syntax for contracts (default off).
+fcontracts-nonattr
+C++ Var(flag_contracts_nonattr) Init(0)
+Enable the non-attribute syntax for contracts.
 
 fcontract-assumption-mode=
 C++ Joined RejectNegative
