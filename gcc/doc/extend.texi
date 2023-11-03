@@ -14296,14 +14296,16 @@ an error if there is no such function.
 
 @defbuiltin{int __builtin_constant_p (@var{exp})}
 You can use the built-in function @code{__builtin_constant_p} to
-determine if a value is known to be constant at compile time and hence
-that GCC can perform constant-folding on expressions involving that
-value.  The argument of the function is the value to test.  The function
+determine if the expression @var{exp} is known to be constant at
+compile time and hence that GCC can perform constant-folding on expressions
+involving that value.  The argument of the function is the expression to test.
+The expression is not evaluated, side-effects are discarded.  The function
 returns the integer 1 if the argument is known to be a compile-time
-constant and 0 if it is not known to be a compile-time constant.  A
-return of 0 does not indicate that the value is @emph{not} a constant,
-but merely that GCC cannot prove it is a constant with the specified
-value of the @option{-O} option.
+constant and 0 if it is not known to be a compile-time constant.
+Any expression that has side-effects makes the function return 0.
+A return of 0 does not indicate that the expression is @emph{not} a constant,
+but merely that GCC cannot prove it is a constant within the constraints
+of the active set of optimization options.
 
 You typically use this function in an embedded application where
 memory is a critical resource.  If you have some complex calculation,
