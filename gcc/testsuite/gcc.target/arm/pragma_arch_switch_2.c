@@ -3,9 +3,10 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_arm_ok } */
 /* { dg-require-effective-target arm_arch_v5te_arm_ok } */
-/* { dg-additional-options "-Wall -O2 -march=armv5te -std=gnu99 -marm" } */
+/* { dg-additional-options "-Wall -O2 -std=gnu99" } */
+/* { dg-add-options arm_arch_v5te_arm } */
 
-#pragma GCC target ("arch=armv6")
+#pragma GCC target ("arch=armv6+fp")
 int test_assembly (int hi, int lo)
 {
    int res;
