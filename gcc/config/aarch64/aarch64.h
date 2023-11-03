@@ -265,6 +265,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
 #define AARCH64_ISA_D128	   (aarch64_isa_flags & AARCH64_FL_D128)
 #define AARCH64_ISA_THE		   (aarch64_isa_flags & AARCH64_FL_THE)
+#define AARCH64_ISA_GCS		   (aarch64_isa_flags & AARCH64_FL_GCS)
 
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
@@ -464,6 +465,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /*  Armv8.9-A/9.4-A Translation Hardening Extension system registers are
     enabled through +the.  */
 #define TARGET_THE (AARCH64_ISA_THE)
+
+/*  Armv9.4-A Guarded Control Stack extension system registers are
+    enabled through +gcs.  */
+#define TARGET_GCS (AARCH64_ISA_GCS)
+
 
 /* Standard register usage.  */
 

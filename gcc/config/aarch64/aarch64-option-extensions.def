@@ -163,4 +163,6 @@ AARCH64_OPT_EXTENSION("d128", D128, (), (), (), "d128")
 
 AARCH64_OPT_EXTENSION("the", THE, (), (), (), "the")
 
+AARCH64_OPT_EXTENSION("gcs", GCS, (), (), (), "gcs")
+
 #undef AARCH64_OPT_EXTENSION
