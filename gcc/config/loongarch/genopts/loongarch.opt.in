@@ -223,9 +223,13 @@ Target Var(TARGET_DIRECT_EXTERN_ACCESS) Init(0)
 Avoid using the GOT to access external symbols.
 
 mrelax
-Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION)
+Target Var(loongarch_mrelax) Init(HAVE_AS_MRELAX_OPTION && HAVE_AS_COND_BRANCH_RELAXATION)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
+
+mpass-mrelax-to-as
+Target Var(loongarch_pass_mrelax_to_as) Init(HAVE_AS_MRELAX_OPTION)
+Pass -mrelax or -mno-relax option to the assembler.
 
 -param=loongarch-vect-unroll-limit=
 Target Joined UInteger Var(loongarch_vect_unroll_limit) Init(6) IntegerRange(1, 64) Param

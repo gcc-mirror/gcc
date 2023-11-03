@@ -7432,7 +7432,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   if (la_opt_explicit_relocs == M_OPT_UNSET)
     la_opt_explicit_relocs = (HAVE_AS_EXPLICIT_RELOCS
-			      ? (HAVE_AS_MRELAX_OPTION
+			      ? (loongarch_mrelax
 				 ? EXPLICIT_RELOCS_AUTO
 				 : EXPLICIT_RELOCS_ALWAYS)
 			      : EXPLICIT_RELOCS_NONE);

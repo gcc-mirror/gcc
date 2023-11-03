@@ -5453,6 +5453,16 @@ x:
       [-mrelax], [.text],,
       [AC_DEFINE(HAVE_AS_MRELAX_OPTION, 1,
 		[Define if your assembler supports -mrelax option.])])
+    gcc_GAS_CHECK_FEATURE([conditional branch relaxation support],
+      gcc_cv_as_loongarch_cond_branch_relax,
+      [],
+      [a:
+       .rept 32769
+       nop
+       .endr
+       beq $a0,$a1,a],,
+      [AC_DEFINE(HAVE_AS_COND_BRANCH_RELAXATION, 1,
+		[Define if your assembler supports conditional branch relaxation.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],

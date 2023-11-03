@@ -1045,7 +1045,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmax-inline-memcpy-size=@var{n}
 -mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
--mcmodel=@var{code-model}}
+-mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -26356,16 +26356,14 @@ with @option{-mexplicit-relocs=always} the assembler relocation operators
 are always used, with @option{-mexplicit-relocs=auto} the compiler will
 use the relocation operators where the linker relaxation is impossible to
 improve the code quality, and macros elsewhere.  The default
-value for the option is determined during GCC build-time by detecting
-corresponding assembler support:
+value for the option is determined with the assembler capability detected
+during GCC build-time and the setting of @option{-mrelax}:
 @option{-mexplicit-relocs=none} if the assembler does not support
 relocation operators at all,
 @option{-mexplicit-relocs=always} if the assembler supports relocation
-operators but does not support relaxation,
-@option{-mexplicit-relocs=auto} if the assembler supports both relocation
-operators and relaxation.  This option is mostly useful for
-debugging, or interoperation with assemblers different from the build-time
-one.
+operators but @option{-mrelax} is not enabled,
+@option{-mexplicit-relocs=auto} if the assembler supports relocation
+operators and @option{-mrelax} is enabled.
 
 @opindex mexplicit-relocs
 @item -mexplicit-relocs
@@ -26388,6 +26386,28 @@ environments where no dynamic link is performed, like firmwares, OS
 kernels, executables linked with @option{-static} or @option{-static-pie}.
 @option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
 @option{-fpic}.
+
+@item -mrelax
+@itemx -mno-relax
+Take (do not take) advantage of linker relaxations.  If
+@option{-mpass-mrelax-to-as} is enabled, this option is also passed to
+the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mrelax} if the assembler supports both the @option{-mrelax}
+option and the conditional branch relaxation (it's required or the
+@code{.align} directives and conditional branch instructions in the
+assembly code outputted by GCC may be rejected by the assembler because
+of a relocation overflow), @option{-mno-relax} otherwise.
+
+@item -mpass-mrelax-to-as
+@itemx -mno-pass-mrelax-to-as
+Pass (do not pass) the @option{-mrelax} or @option{-mno-relax} option
+to the assembler.  The default is determined during GCC build-time by
+detecting corresponding assembler support:
+@option{-mpass-mrelax-to-as} if the assembler supports the
+@option{-mrelax} option, @option{-mno-pass-mrelax-to-as} otherwise.
+This option is mostly useful for debugging, or interoperation with
+assemblers different from the build-time one.
 
 @item loongarch-vect-unroll-limit
 The vectorizer will use available tuning information to determine whether it

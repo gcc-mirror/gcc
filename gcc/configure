@@ -31018,6 +31018,41 @@ $as_echo "#define HAVE_AS_MRELAX_OPTION 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for conditional branch relaxation support" >&5
+$as_echo_n "checking assembler for conditional branch relaxation support... " >&6; }
+if ${gcc_cv_as_loongarch_cond_branch_relax+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_cond_branch_relax=no
+  if test x$gcc_cv_as != x; then
+    $as_echo 'a:
+       .rept 32769
+       nop
+       .endr
+       beq $a0,$a1,a' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_loongarch_cond_branch_relax=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_cond_branch_relax" >&5
+$as_echo "$gcc_cv_as_loongarch_cond_branch_relax" >&6; }
+if test $gcc_cv_as_loongarch_cond_branch_relax = yes; then
+
+$as_echo "#define HAVE_AS_COND_BRANCH_RELAXATION 1" >>confdefs.h
+
+fi
+
     ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5

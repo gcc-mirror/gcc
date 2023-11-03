@@ -101,6 +101,10 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define HAVE_AS_MRELAX_OPTION 0
 #endif
 
+#ifndef HAVE_AS_COND_BRANCH_RELAXATION
+#define HAVE_AS_COND_BRANCH_RELAXATION 0
+#endif
+
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 #endif
