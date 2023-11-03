@@ -1523,7 +1523,7 @@
   "ISA_HAS_LSX"
 {
   if (which_alternative == 1)
-    return "ldi.<lsxfmt>\t%w0,0";
+    return "vldi.<lsxfmt>\t%w0,0";
 
   if (!TARGET_64BIT && (<MODE>mode == V2DImode || <MODE>mode == V2DFmode))
     return "#";
