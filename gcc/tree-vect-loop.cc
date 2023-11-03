@@ -10698,49 +10698,30 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 					   &stmts, true, NULL_TREE);
 	}
 
+      gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
       if (stmts)
-	{
-	  gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
-	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+	gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
-	  /* Remove existing phi from lhs and create one copy from new_tree.  */
-	  tree lhs_phi = NULL_TREE;
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (exit_bb);
-	       !gsi_end_p (gsi); gsi_next (&gsi))
+      /* Remove existing phis that copy from lhs and create copies
+	 from new_tree.  */
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (exit_bb); !gsi_end_p (gsi);)
+	{
+	  gimple *phi = gsi_stmt (gsi);
+	  if ((gimple_phi_arg_def (phi, 0) == lhs))
 	    {
-	      gimple *phi = gsi_stmt (gsi);
-	      if ((gimple_phi_arg_def (phi, 0) == lhs))
-		{
-		  remove_phi_node (&gsi, false);
-		  lhs_phi = gimple_phi_result (phi);
-		  gimple *copy = gimple_build_assign (lhs_phi, new_tree);
-		  gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
-		  break;
-		}
+	      remove_phi_node (&gsi, false);
+	      tree lhs_phi = gimple_phi_result (phi);
+	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
+	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
 	    }
+	  else
+	    gsi_next (&gsi);
 	}
 
-      /* Replace use of lhs with newly computed result.  If the use stmt is a
-	 single arg PHI, just replace all uses of PHI result.  It's necessary
-	 because lcssa PHI defining lhs may be before newly inserted stmt.  */
-      use_operand_p use_p;
+      /* There a no further out-of-loop uses of lhs by LC-SSA construction.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
-	if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	    && !is_gimple_debug (use_stmt))
-	  {
-	    if (gimple_code (use_stmt) == GIMPLE_PHI
-		&& gimple_phi_num_args (use_stmt) == 1)
-	      {
-		replace_uses_by (gimple_phi_result (use_stmt), new_tree);
-	      }
-	    else
-	      {
-		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-		    SET_USE (use_p, new_tree);
-	      }
-	    update_stmt (use_stmt);
-	  }
+	gcc_assert (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)));
     }
   else
     {
