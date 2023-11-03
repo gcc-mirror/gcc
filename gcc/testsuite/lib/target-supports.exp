@@ -1420,6 +1420,17 @@ proc check_effective_target_mpaired_single { args } {
 # Return true if the target has access to FPU instructions.
 
 proc check_effective_target_hard_float { } {
+    # This should work on cores that only have single-precision,
+    # and should also correctly handle legacy cores that had thumb1 and
+    # lacked FP support for that, but had it in Arm state.
+    if { [istarget arm*-*-*] } {
+	return [check_no_compiler_messages hard_float assembly {
+		#if __ARM_FP == 0
+		#error __arm_soft_float
+		#endif
+	}]
+    }
+
     if { [istarget loongarch*-*-*] } {
 	return [check_no_compiler_messages hard_float assembly {
 		#if (defined __loongarch_soft_float)
