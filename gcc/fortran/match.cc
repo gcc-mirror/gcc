@@ -5062,6 +5062,7 @@ gfc_match_call (void)
      right association is made.  They are thrown out in resolution.)
      ...  */
   if (!sym->attr.generic
+	&& !sym->attr.proc_pointer
 	&& !sym->attr.subroutine
 	&& !sym->attr.function)
     {
