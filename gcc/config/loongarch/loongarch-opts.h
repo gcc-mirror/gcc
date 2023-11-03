@@ -96,4 +96,8 @@ loongarch_config_target (struct loongarch_target *target,
 #define HAVE_AS_MRELAX_OPTION 0
 #endif
 
+#ifndef HAVE_AS_COND_BRANCH_RELAXATION
+#define HAVE_AS_COND_BRANCH_RELAXATION 0
+#endif
+
 #endif /* LOONGARCH_OPTS_H */
