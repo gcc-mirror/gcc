@@ -258,10 +258,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if ! __cpp_concepts // Need additional specializations to avoid ambiguities.
-  template<typename _Tp0, typename _Tp1, typename... _Rest>
-    struct _Nth_type<0, _Tp0, _Tp1, _Rest...>
-    { using type = _Tp0; };
-
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
     struct _Nth_type<0, _Tp0, _Tp1, _Tp2, _Rest...>
     { using type = _Tp0; };
