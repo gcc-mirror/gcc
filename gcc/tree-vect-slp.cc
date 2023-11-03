@@ -759,9 +759,8 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	  if ((dt == vect_constant_def
 	       || dt == vect_external_def)
 	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
-	      && (TREE_CODE (type) == BOOLEAN_TYPE
-		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
-						      type)))
+	      && TREE_CODE (type) != BOOLEAN_TYPE
+	      && !can_duplicate_and_interleave_p (vinfo, stmts.length (), type))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
