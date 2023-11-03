@@ -1,3 +1,16 @@
+2023-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110342
+	* include/cpplib.h (TTYPE_TABLE): Add CPP_UNEVAL_STRING literal
+	entry.  Use C++11 instead of C++-0x in comments.
+	* charset.cc (convert_escape): Add UNEVAL argument, if true,
+	pedantically diagnose numeric escape sequences.
+	(cpp_interpret_string_1): Formatting fix.  Adjust convert_escape
+	caller.
+	(cpp_interpret_string): Formatting string.
+	(cpp_interpret_string_notranslate): Pass type through to
+	cpp_interpret_string if it is CPP_UNEVAL_STRING.
+
 2023-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h

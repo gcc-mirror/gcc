@@ -1,3 +1,37 @@
+2023-11-02  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (nrv_data): Change visited to hash_set.
+	(finalize_nrv_r): Reorganize.
+
+2023-11-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112301
+	PR c++/102191
+	PR c++/33799
+	* except.cc (maybe_splice_retval_cleanup): Clear
+	current_retval_sentinel when destroying retval.
+	* semantics.cc (nrv_data): Add in_nrv_cleanup.
+	(finalize_nrv): Set it.
+	(finalize_nrv_r): Fix handling of throwing cleanups.
+
+2023-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110342
+	* parser.cc: Implement C++26 P2361R6 - Unevaluated strings.
+	(uneval_string_attr): New enumerator.
+	(cp_parser_string_literal_common): Add UNEVAL argument.  If true,
+	pass CPP_UNEVAL_STRING rather than CPP_STRING to
+	cpp_interpret_string_notranslate.
+	(cp_parser_string_literal, cp_parser_userdef_string_literal): Adjust
+	callers of cp_parser_string_literal_common.
+	(cp_parser_unevaluated_string_literal): New function.
+	(cp_parser_parenthesized_expression_list): Handle uneval_string_attr.
+	(cp_parser_linkage_specification): Use
+	cp_parser_unevaluated_string_literal for C++26.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_std_attribute): Use uneval_string_attr for standard
+	deprecated and nodiscard attributes.
+
 2023-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* module.cc (ordinary_loc_of): Update for removal of

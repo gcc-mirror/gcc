@@ -1,3 +1,109 @@
+2023-11-02  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_sched_variable_issue): add disabled assert
+
+2023-11-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/combiner.md: Add new patterns for single bit
+	sign extractions.
+
+2023-11-02  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lrint<mode><v_i_l_ll_convert>2): Remove.
+	(lround<mode><v_i_l_ll_convert>2): Ditto.
+	(lceil<mode><v_i_l_ll_convert>2): Ditto.
+	(lfloor<mode><v_i_l_ll_convert>2): Ditto.
+	(lrint<mode><v_f2si_convert>2): New pattern for cvt from
+	FP to SI.
+	(lround<mode><v_f2si_convert>2): Ditto.
+	(lceil<mode><v_f2si_convert>2): Ditto.
+	(lfloor<mode><v_f2si_convert>2): Ditto.
+	(lrint<mode><v_f2di_convert>2): New pattern for cvt from
+	FP to DI.
+	(lround<mode><v_f2di_convert>2): Ditto.
+	(lceil<mode><v_f2di_convert>2): Ditto.
+	(lfloor<mode><v_f2di_convert>2): Ditto.
+	* config/riscv/vector-iterators.md: Renew iterators for both
+	the SI and DI.
+
+2023-11-02  Sam James  <sam@gentoo.org>
+
+	* doc/passes.texi (Dead code elimination): Explicitly say 'lifetime'
+	as this has become the standard term for what we're doing here.
+
+2023-11-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-avlprop.cc
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Don't allow
+	non-real insn AVL propation.
+
+2023-11-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/111401
+	* internal-fn.cc (internal_fn_else_index): New function.
+	* internal-fn.h (internal_fn_else_index): Define.
+	* tree-if-conv.cc (convert_scalar_cond_reduction): Emit COND_OP
+	if supported.
+	(predicate_scalar_phi): Add whitespace.
+	* tree-vect-loop.cc (fold_left_reduction_fn): Add IFN_COND_OP.
+	(neutral_op_for_reduction): Return -0 for PLUS.
+	(check_reduction_path): Don't count else operand in COND_OP.
+	(vect_is_simple_reduction): Ditto.
+	(vect_create_epilog_for_reduction): Fix whitespace.
+	(vectorize_fold_left_reduction): Add COND_OP handling.
+	(vectorizable_reduction): Don't count else operand in COND_OP.
+	(vect_transform_reduction): Add COND_OP handling.
+	* tree-vectorizer.h (neutral_op_for_reduction): Add default
+	parameter.
+
+2023-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112320
+	* gimple-fold.h (rewrite_to_defined_overflow): New overload
+	for in-place operation.
+	* gimple-fold.cc (rewrite_to_defined_overflow): Add stmt
+	iterator argument to worker, define separate API for
+	in-place and not in-place operation.
+	* tree-if-conv.cc (predicate_statements): Simplify.
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Likewise.
+	* tree-ssa-ifcombine.cc (pass_tree_ifcombine::execute): Adjust.
+	* tree-ssa-reassoc.cc (update_range_test): Likewise.
+
+2023-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Move stack protector patterns
+	above mov $0,%reg -> xor %reg,%reg peephole2 pattern.
+
+2023-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (cmlav4hf4): New expander.
+	(cmla_conjv4hf4): Ditto.
+	(cmulv4hf3): Ditto.
+	(cmul_conjv4hf3): Ditto.
+
+2023-11-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix redundant codes in attributes.
+
+2023-11-02  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Expand non-tuple intrinsics.
+	* config/riscv/riscv-vector-builtins-functions.def (vcreate): Define non-tuple intrinsics.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vcreate_def): Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Add arg types.
+
+2023-11-02  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-stmts.cc (vectorizable_internal_function): Add type
+	size check for vectype_out doesn't participating for optab query.
+	(vectorizable_call): Remove the type size check.
+
+2023-11-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112327
+	* config/riscv/vector.md: Add '0'.
+
 2023-11-01  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/110551

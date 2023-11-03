@@ -1,3 +1,17 @@
+2023-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112317
+	* access-diagram.cc (class x_aligned_x_ruler_widget): Eliminate
+	unused field "m_col_widths".
+	(access_diagram_impl::add_valid_vs_invalid_ruler): Update for
+	above change.
+	* region-model.cc
+	(check_one_function_attr_null_terminated_string_arg): Remove
+	unused variables "cd_unchecked", "strlen_sval", and
+	"limited_sval".
+	* region-model.h (region_model_context_decorator::warn): Add
+	missing "override".
+
 2023-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* record-layout.cc: New file, based on material in region-model.cc.
