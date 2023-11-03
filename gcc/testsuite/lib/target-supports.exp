@@ -5411,6 +5411,7 @@ foreach { armfunc armflag armdefs } {
 	v5te "-march=armv5te+fp -mfloat-abi=softfp" __ARM_ARCH_5TE__
 	v5te_arm "-march=armv5te+fp -marm" __ARM_ARCH_5TE__
 	v5te_thumb "-march=armv5te+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_5TE__
+	xscale_arm "-mcpu=xscale -mfloat-abi=soft -marm" __XSCALE__
 	v6 "-march=armv6+fp -mfloat-abi=softfp" __ARM_ARCH_6__
 	v6_arm "-march=armv6+fp -marm" __ARM_ARCH_6__
 	v6_thumb "-march=armv6+fp -mthumb -mfloat-abi=softfp" __ARM_ARCH_6__
