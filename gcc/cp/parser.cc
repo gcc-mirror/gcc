@@ -31438,10 +31438,13 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	    return error_mark_node;
 	}
       else
-	cp_parser_skip_to_closing_parenthesis_1 (parser,
-						 /*recovering=*/false,
-						 CPP_CLOSE_PAREN,
-						 /*consume_paren=*/true);
+	{
+	  cp_parser_skip_to_closing_parenthesis_1 (parser,
+						   /*recovering=*/false,
+						   CPP_CLOSE_PAREN,
+						   /*consume_paren=*/false);
+	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	}
       cp_token *last = cp_lexer_peek_token (parser->lexer);
 
       /* Build a deferred-parse node.  */
