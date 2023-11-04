@@ -1514,10 +1514,6 @@ fdiagnostics-text-art-charset=
 Driver Common Joined RejectNegative Var(flag_diagnostics_text_art_charset) Enum(diagnostic_text_art_charset) Init(DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI)
 -fdiagnostics-text-art-charset=[none|ascii|unicode|emoji]	Determine which characters to use in text arg diagrams.
 
-; Required for these enum values.
-SourceInclude
-diagnostic-text-art.h
-
 Enum
 Name(diagnostic_text_art_charset) Type(int)
 

@@ -13960,9 +13960,9 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
      a system header.  If the DECL is not in a system header, or if
      -Wsystem-headers was provided, warn.  */
   auto wsh
-    = make_temp_override (global_dc->dc_warn_system_headers,
+    = make_temp_override (global_dc->m_warn_system_headers,
 			  (!in_system_header_at (DECL_SOURCE_LOCATION (decl))
-			   || global_dc->dc_warn_system_headers));
+			   || global_dc->m_warn_system_headers));
   if (tree call = do_warn_dangling_reference (init, /*arg_p=*/false))
     {
       auto_diagnostic_group d;

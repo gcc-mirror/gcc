@@ -97,7 +97,7 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
     result->set ("file", new json::string (exploc.file));
   result->set ("line", new json::integer_number (exploc.line));
 
-  const enum diagnostics_column_unit orig_unit = context->column_unit;
+  const enum diagnostics_column_unit orig_unit = context->m_column_unit;
   struct
   {
     const char *name;
@@ -109,15 +109,15 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
   int the_column = INT_MIN;
   for (int i = 0; i != ARRAY_SIZE (column_fields); ++i)
     {
-      context->column_unit = column_fields[i].unit;
-      const int col = diagnostic_converted_column (context, exploc);
+      context->m_column_unit = column_fields[i].unit;
+      const int col = context->converted_column (exploc);
       result->set (column_fields[i].name, new json::integer_number (col));
       if (column_fields[i].unit == orig_unit)
 	the_column = col;
     }
   gcc_assert (the_column != INT_MIN);
   result->set ("column", new json::integer_number (the_column));
-  context->column_unit = orig_unit;
+  context->m_column_unit = orig_unit;
   return result;
 }
 
@@ -220,18 +220,18 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
   pp_clear_output_area (m_context.printer);
 
   char *option_text;
-  option_text = m_context.option_name (&m_context, diagnostic->option_index,
-				       orig_diag_kind, diagnostic->kind);
+  option_text = m_context.m_option_name (&m_context, diagnostic->option_index,
+					 orig_diag_kind, diagnostic->kind);
   if (option_text)
     {
       diag_obj->set ("option", new json::string (option_text));
       free (option_text);
     }
 
-  if (m_context.get_option_url)
+  if (m_context.m_get_option_url)
     {
-      char *option_url = m_context.get_option_url (&m_context,
-						   diagnostic->option_index);
+      char *option_url = m_context.m_get_option_url (&m_context,
+						     diagnostic->option_index);
       if (option_url)
 	{
 	  diag_obj->set ("option_url", new json::string (option_url));
@@ -255,7 +255,7 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
       m_cur_children_array = new json::array ();
       diag_obj->set ("children", m_cur_children_array);
       diag_obj->set ("column-origin",
-		     new json::integer_number (m_context.column_origin));
+		     new json::integer_number (m_context.m_column_origin));
     }
 
   const rich_location *richloc = diagnostic->richloc;
@@ -296,9 +296,10 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
     }
 
   const diagnostic_path *path = richloc->get_path ();
-  if (path && m_context.make_json_for_path)
+  if (path && m_context.m_make_json_for_path)
     {
-      json::value *path_value = m_context.make_json_for_path (&m_context, path);
+      json::value *path_value
+	= m_context.m_make_json_for_path (&m_context, path);
       diag_obj->set ("path", path_value);
     }
 
@@ -359,14 +360,14 @@ static void
 diagnostic_output_format_init_json (diagnostic_context *context)
 {
   /* Override callbacks.  */
-  context->print_path = NULL; /* handled in json_end_diagnostic.  */
+  context->m_print_path = nullptr; /* handled in json_end_diagnostic.  */
 
   /* The metadata is handled in JSON format, rather than as text.  */
-  context->show_cwe = false;
-  context->show_rules = false;
+  context->set_show_cwe (false);
+  context->set_show_rules (false);
 
   /* The option is handled in JSON format, rather than as text.  */
-  context->show_option_requested = false;
+  context->set_show_option_requested (false);
 
   /* Don't colorize the text.  */
   pp_show_color (context->printer) = false;
@@ -378,8 +379,7 @@ void
 diagnostic_output_format_init_json_stderr (diagnostic_context *context)
 {
   diagnostic_output_format_init_json (context);
-  delete context->m_output_format;
-  context->m_output_format = new json_stderr_output_format (*context);
+  context->set_output_format (new json_stderr_output_format (*context));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
@@ -390,9 +390,8 @@ diagnostic_output_format_init_json_file (diagnostic_context *context,
 					 const char *base_file_name)
 {
   diagnostic_output_format_init_json (context);
-  delete context->m_output_format;
-  context->m_output_format = new json_file_output_format (*context,
-							  base_file_name);
+  context->set_output_format (new json_file_output_format (*context,
+							   base_file_name));
 }
 
 #if CHECKING_P

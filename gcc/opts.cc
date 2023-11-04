@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"
-#include "diagnostic-text-art.h"
 
 /* In this file all option sets are explicit.  */
 #undef OPTION_SET_P
@@ -2773,7 +2772,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Werror:
-      dc->warning_as_error_requested = value;
+      dc->set_warning_as_error_requested (value);
       break;
 
     case OPT_Werror_:
@@ -2785,7 +2784,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Wfatal_errors:
-      dc->fatal_errors = value;
+      dc->m_fatal_errors = value;
       break;
 
     case OPT_Wstack_usage_:
@@ -2803,7 +2802,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Wsystem_headers:
-      dc->dc_warn_system_headers = value;
+      dc->m_warn_system_headers = value;
       break;
 
     case OPT_aux_info:
@@ -2893,46 +2892,45 @@ common_handle_option (struct gcc_options *opts,
 	}
 
     case OPT_fdiagnostics_text_art_charset_:
-      diagnostics_text_art_charset_init (dc,
-					 (enum diagnostic_text_art_charset)value);
+      dc->set_text_art_charset ((enum diagnostic_text_art_charset)value);
       break;
 
     case OPT_fdiagnostics_parseable_fixits:
-      dc->extra_output_kind = (value
-			       ? EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1
-			       : EXTRA_DIAGNOSTIC_OUTPUT_none);
+      dc->set_extra_output_kind (value
+				 ? EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1
+				 : EXTRA_DIAGNOSTIC_OUTPUT_none);
       break;
 
     case OPT_fdiagnostics_column_unit_:
-      dc->column_unit = (enum diagnostics_column_unit)value;
+      dc->m_column_unit = (enum diagnostics_column_unit)value;
       break;
 
     case OPT_fdiagnostics_column_origin_:
-      dc->column_origin = value;
+      dc->m_column_origin = value;
       break;
 
     case OPT_fdiagnostics_escape_format_:
-      dc->escape_format = (enum diagnostics_escape_format)value;
+      dc->set_escape_format ((enum diagnostics_escape_format)value);
       break;
 
     case OPT_fdiagnostics_show_cwe:
-      dc->show_cwe = value;
+      dc->set_show_cwe (value);
       break;
 
     case OPT_fdiagnostics_show_rules:
-      dc->show_rules = value;
+      dc->set_show_rules (value);
       break;
 
     case OPT_fdiagnostics_path_format_:
-      dc->path_format = (enum diagnostic_path_format)value;
+      dc->set_path_format ((enum diagnostic_path_format)value);
       break;
 
     case OPT_fdiagnostics_show_path_depths:
-      dc->show_path_depths = value;
+      dc->set_show_path_depths (value);
       break;
 
     case OPT_fdiagnostics_show_option:
-      dc->show_option_requested = value;
+      dc->set_show_option_requested (value);
       break;
 
     case OPT_fdiagnostics_minimum_margin_width_:
@@ -3071,7 +3069,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fshow_column:
-      dc->show_column = value;
+      dc->m_show_column = value;
       break;
 
     case OPT_frandom_seed:
@@ -3199,7 +3197,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_pedantic_errors:
-      dc->pedantic_errors = 1;
+      dc->m_pedantic_errors = 1;
       control_warning_option (OPT_Wpedantic, DK_ERROR, NULL, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set,
@@ -3220,11 +3218,11 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_w:
-      dc->dc_inhibit_warnings = true;
+      dc->m_inhibit_warnings = true;
       break;
 
     case OPT_fmax_errors_:
-      dc->max_errors = value;
+      dc->set_max_errors (value);
       break;
 
     case OPT_fuse_ld_bfd:
@@ -3284,11 +3282,11 @@ common_handle_option (struct gcc_options *opts,
     case OPT_ftabstop_:
       /* It is documented that we silently ignore silly values.  */
       if (value >= 1 && value <= 100)
-	dc->tabstop = value;
+	dc->m_tabstop = value;
       break;
 
     case OPT_freport_bug:
-      dc->report_bug = value;
+      dc->set_report_bug (value);
       break;
 
     case OPT_fmultiflags:
@@ -3636,7 +3634,7 @@ option_name (diagnostic_context *context, int option_index,
   /* A warning without option classified as an error.  */
   else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
 	    || diag_kind == DK_WARNING)
-	   && context->warning_as_error_requested)
+	   && context->warning_as_error_requested_p ())
     return xstrdup (cl_options[OPT_Werror].opt_text);
   else
     return NULL;

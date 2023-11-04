@@ -331,7 +331,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   if (guard_loc == body_loc || body_loc == next_stmt_loc)
     return false;
 
-  const unsigned int tab_width = global_dc->tabstop;
+  const unsigned int tab_width = global_dc->m_tabstop;
 
   /* They must be in the same file.  */
   if (next_stmt_exploc.file != body_exploc.file)

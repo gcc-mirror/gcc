@@ -714,7 +714,7 @@ init_asm_output (const char *name)
 		     "cannot open %qs for writing: %m", asm_file_name);
     }
 
-  if (!flag_syntax_only && !(global_dc->lang_mask & CL_LTODump))
+  if (!flag_syntax_only && !(global_dc->m_lang_mask & CL_LTODump))
     {
       targetm.asm_out.file_start ();
 
@@ -986,7 +986,7 @@ internal_error_reentered (diagnostic_context *, const char *, va_list *)
 static void
 internal_error_function (diagnostic_context *, const char *, va_list *)
 {
-  global_dc->internal_error = internal_error_reentered;
+  global_dc->m_internal_error = internal_error_reentered;
   warn_if_plugins ();
   emergency_dump_function ();
 }
@@ -1019,7 +1019,7 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
-  global_dc->lang_mask = lang_hooks.option_lang_mask ();
+  global_dc->m_lang_mask = lang_hooks.option_lang_mask ();
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   tree_diagnostics_defaults (global_dc);
@@ -1030,25 +1030,24 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_labels;
   global_dc->m_source_printing.show_line_numbers_p
     = global_options_init.x_flag_diagnostics_show_line_numbers;
-  global_dc->show_cwe
-    = global_options_init.x_flag_diagnostics_show_cwe;
-  global_dc->show_rules
-    = global_options_init.x_flag_diagnostics_show_rules;
-  global_dc->path_format
-    = (enum diagnostic_path_format)global_options_init.x_flag_diagnostics_path_format;
-  global_dc->show_path_depths
-    = global_options_init.x_flag_diagnostics_show_path_depths;
-  global_dc->show_option_requested
-    = global_options_init.x_flag_diagnostics_show_option;
+  global_dc->set_show_cwe (global_options_init.x_flag_diagnostics_show_cwe);
+  global_dc->set_show_rules (global_options_init.x_flag_diagnostics_show_rules);
+  global_dc->set_path_format
+    ((enum diagnostic_path_format)
+     global_options_init.x_flag_diagnostics_path_format);
+  global_dc->set_show_path_depths
+    (global_options_init.x_flag_diagnostics_show_path_depths);
+  global_dc->set_show_option_requested
+    (global_options_init.x_flag_diagnostics_show_option);
   global_dc->m_source_printing.min_margin_width
     = global_options_init.x_diagnostics_minimum_margin_width;
-  global_dc->show_column
+  global_dc->m_show_column
     = global_options_init.x_flag_show_column;
-  global_dc->internal_error = internal_error_function;
-  global_dc->option_enabled = option_enabled;
-  global_dc->option_state = &global_options;
-  global_dc->option_name = option_name;
-  global_dc->get_option_url = get_option_url;
+  global_dc->m_internal_error = internal_error_function;
+  global_dc->m_option_enabled = option_enabled;
+  global_dc->m_option_state = &global_options;
+  global_dc->m_option_name = option_name;
+  global_dc->m_get_option_url = get_option_url;
 
   if (init_signals)
     {
@@ -1235,7 +1234,7 @@ process_options ()
   input_location = saved_location;
 
   if (flag_diagnostics_generate_patch)
-      global_dc->edit_context_ptr = new edit_context ();
+    global_dc->create_edit_context ();
 
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug) 
@@ -1664,13 +1663,11 @@ process_options ()
   if (!OPTION_SET_P (warnings_are_errors))
     {
       if (warn_coverage_mismatch
-	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
-	      DK_UNSPECIFIED))
+	  && option_unspecified_p (OPT_Wcoverage_mismatch))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
 					DK_ERROR, UNKNOWN_LOCATION);
       if (warn_coverage_invalid_linenum
-	  && (global_dc->classify_diagnostic[OPT_Wcoverage_invalid_line_number] ==
-	      DK_UNSPECIFIED))
+	  && option_unspecified_p (OPT_Wcoverage_invalid_line_number))
 	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_invalid_line_number,
 					DK_ERROR, UNKNOWN_LOCATION);
     }
@@ -2303,11 +2300,12 @@ toplev::main (int argc, char **argv)
 
   if (flag_diagnostics_generate_patch)
     {
-      gcc_assert (global_dc->edit_context_ptr);
+      auto edit_context_ptr = global_dc->get_edit_context ();
+      gcc_assert (edit_context_ptr);
 
       pretty_printer pp;
       pp_show_color (&pp) = pp_show_color (global_dc->printer);
-      global_dc->edit_context_ptr->print_diff (&pp, true);
+      edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
     }
 

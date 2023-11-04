@@ -186,7 +186,7 @@ void
 c_common_diagnostics_set_defaults (diagnostic_context *context)
 {
   diagnostic_finalizer (context) = c_diagnostic_finalizer;
-  context->opt_permissive = OPT_fpermissive;
+  context->m_opt_permissive = OPT_fpermissive;
 }
 
 /* Input charset configuration for diagnostics.  */
@@ -523,7 +523,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpermissive:
       flag_permissive = value;
-      global_dc->permissive = value;
+      global_dc->m_permissive = value;
       break;
 
     case OPT_fpreprocessed:

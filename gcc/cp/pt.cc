@@ -30469,7 +30469,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   if (fndecl != error_mark_node && !any_dguides_p && (complain & tf_warning))
     {
       if ((!DECL_IN_SYSTEM_HEADER (fndecl)
-	   || global_dc->dc_warn_system_headers)
+	   || global_dc->m_warn_system_headers)
 	  && warning (OPT_Wctad_maybe_unsupported,
 		      "%qT may not intend to support class template argument "
 		      "deduction", type))

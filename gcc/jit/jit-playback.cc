@@ -3512,7 +3512,7 @@ add_error_va (location *loc, const char *fmt, va_list ap)
 
 void
 playback::context::
-add_diagnostic (struct diagnostic_context *diag_context,
+add_diagnostic (diagnostic_context *diag_context,
 		struct diagnostic_info *diagnostic)
 {
   /* At this point the text has been formatted into the pretty-printer's

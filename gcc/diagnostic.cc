@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-metadata.h"
 #include "diagnostic-path.h"
 #include "diagnostic-client-data-hooks.h"
-#include "diagnostic-text-art.h"
 #include "diagnostic-diagram.h"
 #include "edit-context.h"
 #include "selftest.h"
@@ -61,9 +60,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #define pedantic_warning_kind(DC)			\
-  ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
-#define permissive_error_kind(DC) ((DC)->permissive ? DK_WARNING : DK_ERROR)
-#define permissive_error_option(DC) ((DC)->opt_permissive)
+  ((DC)->m_pedantic_errors ? DK_ERROR : DK_WARNING)
+#define permissive_error_kind(DC) ((DC)->m_permissive ? DK_WARNING : DK_ERROR)
+#define permissive_error_option(DC) ((DC)->m_opt_permissive)
 
 /* Prototypes.  */
 static bool diagnostic_impl (rich_location *, const diagnostic_metadata *,
@@ -74,7 +73,6 @@ static bool diagnostic_n_impl (rich_location *, const diagnostic_metadata *,
 			       const char *, const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(6,0);
 
-static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
 /* Name of program invoked, sans directories.  */
@@ -151,84 +149,86 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
 }
 
 /* Initialize the diagnostic message outputting machinery.  */
+
 void
-diagnostic_initialize (diagnostic_context *context, int n_opts)
+diagnostic_context::initialize (int n_opts)
 {
   int i;
 
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
-  context->printer = XNEW (pretty_printer);
-  new (context->printer) pretty_printer ();
+  this->printer = XNEW (pretty_printer);
+  new (this->printer) pretty_printer ();
 
-  memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
-  context->warning_as_error_requested = false;
-  context->n_opts = n_opts;
-  context->classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
+  m_file_cache = nullptr;
+  memset (m_diagnostic_count, 0, sizeof m_diagnostic_count);
+  m_warning_as_error_requested = false;
+  m_n_opts = n_opts;
+  m_classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
   for (i = 0; i < n_opts; i++)
-    context->classify_diagnostic[i] = DK_UNSPECIFIED;
-  context->m_source_printing.enabled = false;
-  diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
+    m_classify_diagnostic[i] = DK_UNSPECIFIED;
+  m_source_printing.enabled = false;
+  diagnostic_set_caret_max_width (this, pp_line_cutoff (this->printer));
   for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
-    context->m_source_printing.caret_chars[i] = '^';
-  context->show_cwe = false;
-  context->show_rules = false;
-  context->path_format = DPF_NONE;
-  context->show_path_depths = false;
-  context->show_option_requested = false;
-  context->abort_on_error = false;
-  context->show_column = false;
-  context->pedantic_errors = false;
-  context->permissive = false;
-  context->opt_permissive = 0;
-  context->fatal_errors = false;
-  context->dc_inhibit_warnings = false;
-  context->dc_warn_system_headers = false;
-  context->max_errors = 0;
-  context->internal_error = NULL;
-  diagnostic_starter (context) = default_diagnostic_starter;
-  context->m_text_callbacks.start_span = default_diagnostic_start_span_fn;
-  diagnostic_finalizer (context) = default_diagnostic_finalizer;
-  context->option_enabled = NULL;
-  context->option_state = NULL;
-  context->option_name = NULL;
-  context->get_option_url = NULL;
-  context->last_location = UNKNOWN_LOCATION;
-  context->last_module = 0;
-  context->x_data = NULL;
-  context->lock = 0;
-  context->inhibit_notes_p = false;
-  context->m_source_printing.colorize_source_p = false;
-  context->m_source_printing.show_labels_p = false;
-  context->m_source_printing.show_line_numbers_p = false;
-  context->m_source_printing.min_margin_width = 0;
-  context->m_source_printing.show_ruler_p = false;
-  context->report_bug = false;
-  context->extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_none;
+    m_source_printing.caret_chars[i] = '^';
+  m_show_cwe = false;
+  m_show_rules = false;
+  m_path_format = DPF_NONE;
+  m_show_path_depths = false;
+  m_show_option_requested = false;
+  m_abort_on_error = false;
+  m_show_column = false;
+  m_pedantic_errors = false;
+  m_permissive = false;
+  m_opt_permissive = 0;
+  m_fatal_errors = false;
+  m_inhibit_warnings = false;
+  m_warn_system_headers = false;
+  m_max_errors = 0;
+  m_internal_error = nullptr;
+  m_text_callbacks.begin_diagnostic = default_diagnostic_starter;
+  m_text_callbacks.start_span = default_diagnostic_start_span_fn;
+  m_text_callbacks.end_diagnostic = default_diagnostic_finalizer;
+  m_option_enabled = nullptr;
+  m_option_state = nullptr;
+  m_option_name = nullptr;
+  m_get_option_url = nullptr;
+  m_last_location = UNKNOWN_LOCATION;
+  m_last_module = nullptr;
+  m_client_aux_data = nullptr;
+  m_lock = 0;
+  m_inhibit_notes_p = false;
+  m_source_printing.colorize_source_p = false;
+  m_source_printing.show_labels_p = false;
+  m_source_printing.show_line_numbers_p = false;
+  m_source_printing.min_margin_width = 0;
+  m_source_printing.show_ruler_p = false;
+  m_report_bug = false;
+  m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_none;
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))
     {
       if (!strcmp (var, "fixits-v1"))
-	context->extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1;
+	m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1;
       else if (!strcmp (var, "fixits-v2"))
-	context->extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2;
+	m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2;
       /* Silently ignore unrecognized values.  */
     }
-  context->column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
-  context->column_origin = 1;
-  context->tabstop = 8;
-  context->escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
-  context->edit_context_ptr = NULL;
-  context->m_diagnostic_groups.m_nesting_depth = 0;
-  context->m_diagnostic_groups.m_emission_count = 0;
-  context->m_output_format = new diagnostic_text_output_format (*context);
-  context->set_locations_cb = nullptr;
-  context->ice_handler_cb = NULL;
-  context->includes_seen = NULL;
-  context->m_client_data_hooks = NULL;
-  context->m_diagrams.m_theme = NULL;
+  m_column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
+  m_column_origin = 1;
+  m_tabstop = 8;
+  m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+  m_edit_context_ptr = nullptr;
+  m_diagnostic_groups.m_nesting_depth = 0;
+  m_diagnostic_groups.m_emission_count = 0;
+  m_output_format = new diagnostic_text_output_format (*this);
+  m_set_locations_cb = nullptr;
+  m_ice_handler_cb = nullptr;
+  m_includes_seen = nullptr;
+  m_client_data_hooks = nullptr;
+  m_diagrams.m_theme = nullptr;
 
   enum diagnostic_text_art_charset text_art_charset
-    = DIAGNOSTICS_TEXT_ART_CHARSET_DEFAULT;
+    = DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI;
   if (const char *lang = getenv ("LANG"))
     {
       /* For LANG=C, don't assume the terminal supports anything
@@ -236,7 +236,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
       if (!strcmp (lang, "C"))
 	text_art_charset = DIAGNOSTICS_TEXT_ART_CHARSET_ASCII;
     }
-  diagnostics_text_art_charset_init (context, text_art_charset);
+  set_text_art_charset (text_art_charset);
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -244,7 +244,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
    without a VALUE, it initializes with DIAGNOSTICS_COLOR_DEFAULT.  */
 
 void
-diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
+diagnostic_context::color_init (int value)
 {
   /* value == -1 is the default value.  */
   if (value < 0)
@@ -263,14 +263,15 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
       else
 	value = DIAGNOSTICS_COLOR_DEFAULT;
     }
-  pp_show_color (context->printer)
+  pp_show_color (this->printer)
     = colorize_init ((diagnostic_color_rule_t) value);
 }
 
-/* Initialize URL support within CONTEXT based on VALUE, handling "auto".  */
+/* Initialize URL support within this context based on VALUE,
+   handling "auto".  */
 
 void
-diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
+diagnostic_context::urls_init (int value)
 {
   /* value == -1 is the default value.  */
   if (value < 0)
@@ -290,63 +291,88 @@ diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
 	value = DIAGNOSTICS_URLS_DEFAULT;
     }
 
-  context->printer->url_format
+  this->printer->url_format
     = determine_url_format ((diagnostic_url_rule_t) value);
 }
 
 /* Create the file_cache, if not already created, and tell it how to
    translate files on input.  */
-void diagnostic_initialize_input_context (diagnostic_context *context,
-					  diagnostic_input_charset_callback ccb,
-					  bool should_skip_bom)
+void
+diagnostic_context::
+initialize_input_context (diagnostic_input_charset_callback ccb,
+			  bool should_skip_bom)
 {
-  if (!context->m_file_cache)
-    context->m_file_cache = new file_cache;
-  context->m_file_cache->initialize_input_context (ccb, should_skip_bom);
+  if (!m_file_cache)
+    m_file_cache = new file_cache;
+  m_file_cache->initialize_input_context (ccb, should_skip_bom);
 }
 
 /* Do any cleaning up required after the last diagnostic is emitted.  */
 
 void
-diagnostic_finish (diagnostic_context *context)
+diagnostic_context::finish ()
 {
-  delete context->m_output_format;
-  context->m_output_format= nullptr;
+  delete m_output_format;
+  m_output_format= nullptr;
 
-  if (context->m_diagrams.m_theme)
+  if (m_diagrams.m_theme)
     {
-      delete context->m_diagrams.m_theme;
-      context->m_diagrams.m_theme = NULL;
+      delete m_diagrams.m_theme;
+      m_diagrams.m_theme = nullptr;
     }
 
-  diagnostic_file_cache_fini ();
+  delete m_file_cache;
+  m_file_cache = nullptr;
 
-  XDELETEVEC (context->classify_diagnostic);
-  context->classify_diagnostic = NULL;
+  XDELETEVEC (m_classify_diagnostic);
+  m_classify_diagnostic = nullptr;
 
-  /* diagnostic_initialize allocates context->printer using XNEW
+  /* diagnostic_context::initialize allocates this->printer using XNEW
      and placement-new.  */
-  context->printer->~pretty_printer ();
-  XDELETE (context->printer);
-  context->printer = NULL;
+  this->printer->~pretty_printer ();
+  XDELETE (this->printer);
+  this->printer = nullptr;
 
-  if (context->edit_context_ptr)
+  if (m_edit_context_ptr)
     {
-      delete context->edit_context_ptr;
-      context->edit_context_ptr = NULL;
+      delete m_edit_context_ptr;
+      m_edit_context_ptr = nullptr;
     }
 
-  if (context->includes_seen)
+  if (m_includes_seen)
     {
-      delete context->includes_seen;
-      context->includes_seen = nullptr;
+      delete m_includes_seen;
+      m_includes_seen = nullptr;
     }
 
-  if (context->m_client_data_hooks)
+  if (m_client_data_hooks)
     {
-      delete context->m_client_data_hooks;
-      context->m_client_data_hooks = NULL;
+      delete m_client_data_hooks;
+      m_client_data_hooks = nullptr;
     }
+}
+
+void
+diagnostic_context::set_output_format (diagnostic_output_format *output_format)
+{
+  /* Ideally we'd use a std::unique_ptr here.  */
+  delete m_output_format;
+  m_output_format = output_format;
+}
+
+void
+diagnostic_context::set_client_data_hooks (diagnostic_client_data_hooks *hooks)
+{
+  /* Ideally we'd use a std::unique_ptr here.  */
+  delete m_client_data_hooks;
+  m_client_data_hooks = hooks;
+}
+
+void
+diagnostic_context::create_edit_context ()
+{
+  delete m_edit_context_ptr;
+  m_edit_context_ptr = new edit_context ();
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -426,13 +452,12 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
    to the requested units and origin.  Return -1 if the column is
    invalid (<= 0).  */
 int
-diagnostic_converted_column (diagnostic_context *context, expanded_location s)
+diagnostic_context::converted_column (expanded_location s) const
 {
-  int one_based_col
-    = convert_column_unit (context->column_unit, context->tabstop, s);
+  int one_based_col = convert_column_unit (m_column_unit, m_tabstop, s);
   if (one_based_col <= 0)
     return -1;
-  return one_based_col + (context->column_origin - 1);
+  return one_based_col + (m_column_origin - 1);
 }
 
 /* Return a formatted line and column ':%line:%column'.  Elided if
@@ -473,8 +498,8 @@ diagnostic_get_location_text (diagnostic_context *context,
   if (strcmp (file, special_fname_builtin ()))
     {
       line = s.line;
-      if (context->show_column)
-	col = diagnostic_converted_column (context, s);
+      if (context->m_show_column)
+	col = context->converted_column (s);
     }
 
   const char *line_col = maybe_line_and_column (line, col);
@@ -612,26 +637,26 @@ bt_err_callback (void *data ATTRIBUTE_UNUSED, const char *msg, int errnum)
 }
 
 /* Check if we've met the maximum error limit, and if so fatally exit
-   with a message.  CONTEXT is the context to check, and FLUSH
-   indicates whether a diagnostic_finish call is needed.  */
+   with a message.
+   FLUSH indicates whether a diagnostic_context::finish call is needed.  */
 
 void
-diagnostic_check_max_errors (diagnostic_context *context, bool flush)
+diagnostic_context::check_max_errors (bool flush)
 {
-  if (!context->max_errors)
+  if (!m_max_errors)
     return;
 
-  int count = (diagnostic_kind_count (context, DK_ERROR)
-	       + diagnostic_kind_count (context, DK_SORRY)
-	       + diagnostic_kind_count (context, DK_WERROR));
+  int count = (diagnostic_kind_count (this, DK_ERROR)
+	       + diagnostic_kind_count (this, DK_SORRY)
+	       + diagnostic_kind_count (this, DK_WERROR));
 
-  if (count >= context->max_errors)
+  if (count >= m_max_errors)
     {
       fnotice (stderr,
 	       "compilation terminated due to -fmax-errors=%u.\n",
-	       context->max_errors);
+	       m_max_errors);
       if (flush)
-	diagnostic_finish (context);
+	finish ();
       exit (FATAL_EXIT_CODE);
     }
 }
@@ -639,8 +664,7 @@ diagnostic_check_max_errors (diagnostic_context *context, bool flush)
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
 void
-diagnostic_action_after_output (diagnostic_context *context,
-				diagnostic_t diag_kind)
+diagnostic_context::action_after_output (diagnostic_t diag_kind)
 {
   switch (diag_kind)
     {
@@ -652,12 +676,12 @@ diagnostic_action_after_output (diagnostic_context *context,
 
     case DK_ERROR:
     case DK_SORRY:
-      if (context->abort_on_error)
+      if (m_abort_on_error)
 	real_abort ();
-      if (context->fatal_errors)
+      if (m_fatal_errors)
 	{
 	  fnotice (stderr, "compilation terminated due to -Wfatal-errors.\n");
-	  diagnostic_finish (context);
+	  finish ();
 	  exit (FATAL_EXIT_CODE);
 	}
       break;
@@ -666,13 +690,12 @@ diagnostic_action_after_output (diagnostic_context *context,
     case DK_ICE_NOBT:
       {
 	/* Optional callback for attempting to handle ICEs gracefully.  */
-	if (void (*ice_handler_cb) (diagnostic_context *)
-	      = context->ice_handler_cb)
+	if (void (*ice_handler_cb) (diagnostic_context *) = m_ice_handler_cb)
 	  {
 	    /* Clear the callback, to avoid potentially re-entering
 	       the routine if there's a crash within the handler.  */
-	    context->ice_handler_cb = NULL;
-	    ice_handler_cb (context);
+	    m_ice_handler_cb = NULL;
+	    ice_handler_cb (this);
 	  }
 	/* The context might have had diagnostic_finish called on
 	   it at this point.  */
@@ -685,10 +708,10 @@ diagnostic_action_after_output (diagnostic_context *context,
 	  backtrace_full (state, 2, bt_callback, bt_err_callback,
 			  (void *) &count);
 
-	if (context->abort_on_error)
+	if (m_abort_on_error)
 	  real_abort ();
 
-	if (context->report_bug)
+	if (m_report_bug)
 	  fnotice (stderr, "Please submit a full bug report, "
 		   "with preprocessed source.\n");
 	else
@@ -704,9 +727,9 @@ diagnostic_action_after_output (diagnostic_context *context,
       }
 
     case DK_FATAL:
-      if (context->abort_on_error)
+      if (m_abort_on_error)
 	real_abort ();
-      diagnostic_finish (context);
+      finish ();
       fnotice (stderr, "compilation terminated.\n");
       exit (FATAL_EXIT_CODE);
 
@@ -715,29 +738,10 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
-/* True if the last module or file in which a diagnostic was reported is
-   different from the current one.  */
-
-static bool
-last_module_changed_p (diagnostic_context *context,
-		       const line_map_ordinary *map)
-{
-  return context->last_module != map;
-}
-
-/* Remember the current module or file as being the last one in which we
-   report a diagnostic.  */
-
-static void
-set_last_module (diagnostic_context *context, const line_map_ordinary *map)
-{
-  context->last_module = map;
-}
-
 /* Only dump the "In file included from..." stack once for each file.  */
 
-static bool
-includes_seen (diagnostic_context *context, const line_map_ordinary *map)
+bool
+diagnostic_context::includes_seen_p (const line_map_ordinary *map)
 {
   /* No include path for main.  */
   if (MAIN_FILE_P (map))
@@ -751,23 +755,23 @@ includes_seen (diagnostic_context *context, const line_map_ordinary *map)
   if (MAP_MODULE_P (probe))
     return false;
 
-  if (!context->includes_seen)
-    context->includes_seen = new hash_set<location_t, false, location_hash>;
+  if (!m_includes_seen)
+    m_includes_seen = new hash_set<location_t, false, location_hash>;
 
   /* Hash the location of the #include directive to better handle files
      that are included multiple times with different macros defined.  */
-  return context->includes_seen->add (linemap_included_from (map));
+  return m_includes_seen->add (linemap_included_from (map));
 }
 
 void
-diagnostic_report_current_module (diagnostic_context *context, location_t where)
+diagnostic_context::report_current_module (location_t where)
 {
   const line_map_ordinary *map = NULL;
 
-  if (pp_needs_newline (context->printer))
+  if (pp_needs_newline (this->printer))
     {
-      pp_newline (context->printer);
-      pp_needs_newline (context->printer) = false;
+      pp_newline (this->printer);
+      pp_needs_newline (this->printer) = false;
     }
 
   if (where <= BUILTINS_LOCATION)
@@ -777,10 +781,10 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 			    LRK_MACRO_DEFINITION_LOCATION,
 			    &map);
 
-  if (map && last_module_changed_p (context, map))
+  if (map && m_last_module != map)
     {
-      set_last_module (context, map);
-      if (!includes_seen (context, map))
+      m_last_module = map;
+      if (!includes_seen_p (map))
 	{
 	  bool first = true, need_inc = true, was_module = MAP_MODULE_P (map);
 	  expanded_location s = {};
@@ -792,10 +796,10 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	      s.file = LINEMAP_FILE (map);
 	      s.line = SOURCE_LINE (map, where);
 	      int col = -1;
-	      if (first && context->show_column)
+	      if (first && m_show_column)
 		{
 		  s.column = SOURCE_COLUMN (map, where);
-		  col = diagnostic_converted_column (context, s);
+		  col = converted_column (s);
 		}
 	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =
@@ -813,32 +817,31 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	      unsigned index = (was_module ? 6 : is_module ? 4
 				: need_inc ? 2 : 0) + !first;
 
-	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
+	      pp_verbatim (this->printer, "%s%s %r%s%s%R",
 			   first ? "" : was_module ? ", " : ",\n",
 			   _(msgs[index]),
 			   "locus", s.file, line_col);
 	      first = false, need_inc = was_module, was_module = is_module;
 	    }
-	  while (!includes_seen (context, map));
-	  pp_verbatim (context->printer, ":");
-	  pp_newline (context->printer);
+	  while (!includes_seen_p (map));
+	  pp_verbatim (this->printer, ":");
+	  pp_newline (this->printer);
 	}
     }
 }
 
-/* If DIAGNOSTIC has a diagnostic_path and CONTEXT supports printing paths,
-   print the path.  */
+/* If DIAGNOSTIC has a diagnostic_path and this context supports
+   printing paths, print the path.  */
 
 void
-diagnostic_show_any_path (diagnostic_context *context,
-			  diagnostic_info *diagnostic)
+diagnostic_context::show_any_path (const diagnostic_info &diagnostic)
 {
-  const diagnostic_path *path = diagnostic->richloc->get_path ();
+  const diagnostic_path *path = diagnostic.richloc->get_path ();
   if (!path)
     return;
 
-  if (context->print_path)
-    context->print_path (context, path);
+  if (m_print_path)
+    m_print_path (this, path);
 }
 
 /* class diagnostic_event.  */
@@ -1036,19 +1039,18 @@ default_diagnostic_finalizer (diagnostic_context *context,
    range.  If OPTION_INDEX is zero, the new setting is for all the
    diagnostics.  */
 diagnostic_t
-diagnostic_classify_diagnostic (diagnostic_context *context,
-				int option_index,
-				diagnostic_t new_kind,
-				location_t where)
+diagnostic_context::classify_diagnostic (int option_index,
+					 diagnostic_t new_kind,
+					 location_t where)
 {
   diagnostic_t old_kind;
 
   if (option_index < 0
-      || option_index >= context->n_opts
+      || option_index >= m_n_opts
       || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
     return DK_UNSPECIFIED;
 
-  old_kind = context->classify_diagnostic[option_index];
+  old_kind = m_classify_diagnostic[option_index];
 
   /* Handle pragmas separately, since we need to keep track of *where*
      the pragmas were.  */
@@ -1059,65 +1061,65 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !context->option_enabled (option_index,
-					       context->lang_mask,
-					       context->option_state)
-	    ? DK_IGNORED : (context->warning_as_error_requested
+	  old_kind = !m_option_enabled (option_index,
+					m_lang_mask,
+					m_option_state)
+	    ? DK_IGNORED : (m_warning_as_error_requested
 			    ? DK_ERROR : DK_WARNING);
-	  context->classify_diagnostic[option_index] = old_kind;
+	  m_classify_diagnostic[option_index] = old_kind;
 	}
 
-      for (i = context->n_classification_history - 1; i >= 0; i --)
-	if (context->classification_history[i].option == option_index)
+      for (i = m_n_classification_history - 1; i >= 0; i --)
+	if (m_classification_history[i].option == option_index)
 	  {
-	    old_kind = context->classification_history[i].kind;
+	    old_kind = m_classification_history[i].kind;
 	    break;
 	  }
 
-      i = context->n_classification_history;
-      context->classification_history =
-	(diagnostic_classification_change_t *) xrealloc (context->classification_history, (i + 1)
+      i = m_n_classification_history;
+      m_classification_history =
+	(diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
 							 * sizeof (diagnostic_classification_change_t));
-      context->classification_history[i].location = where;
-      context->classification_history[i].option = option_index;
-      context->classification_history[i].kind = new_kind;
-      context->n_classification_history ++;
+      m_classification_history[i].location = where;
+      m_classification_history[i].option = option_index;
+      m_classification_history[i].kind = new_kind;
+      m_n_classification_history ++;
     }
   else
-    context->classify_diagnostic[option_index] = new_kind;
+    m_classify_diagnostic[option_index] = new_kind;
 
   return old_kind;
 }
 
 /* Save all diagnostic classifications in a stack.  */
 void
-diagnostic_push_diagnostics (diagnostic_context *context, location_t where ATTRIBUTE_UNUSED)
+diagnostic_context::push_diagnostics (location_t where ATTRIBUTE_UNUSED)
 {
-  context->push_list = (int *) xrealloc (context->push_list, (context->n_push + 1) * sizeof (int));
-  context->push_list[context->n_push ++] = context->n_classification_history;
+  m_push_list = (int *) xrealloc (m_push_list, (m_n_push + 1) * sizeof (int));
+  m_push_list[m_n_push ++] = m_n_classification_history;
 }
 
 /* Restore the topmost classification set off the stack.  If the stack
    is empty, revert to the state based on command line parameters.  */
 void
-diagnostic_pop_diagnostics (diagnostic_context *context, location_t where)
+diagnostic_context::pop_diagnostics (location_t where)
 {
   int jump_to;
   int i;
 
-  if (context->n_push)
-    jump_to = context->push_list [-- context->n_push];
+  if (m_n_push)
+    jump_to = m_push_list [-- m_n_push];
   else
     jump_to = 0;
 
-  i = context->n_classification_history;
-  context->classification_history =
-    (diagnostic_classification_change_t *) xrealloc (context->classification_history, (i + 1)
+  i = m_n_classification_history;
+  m_classification_history =
+    (diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
 						     * sizeof (diagnostic_classification_change_t));
-  context->classification_history[i].location = where;
-  context->classification_history[i].option = jump_to;
-  context->classification_history[i].kind = DK_POP;
-  context->n_classification_history ++;
+  m_classification_history[i].location = where;
+  m_classification_history[i].option = jump_to;
+  m_classification_history[i].kind = DK_POP;
+  m_n_classification_history ++;
 }
 
 /* Helper function for print_parseable_fixits.  Print TEXT to PP, obeying the
@@ -1206,19 +1208,18 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
   pp_set_prefix (pp, saved_prefix);
 }
 
-/* Update the inlining info in CONTEXT for a DIAGNOSTIC.  */
+/* Update the inlining info in this context for a DIAGNOSTIC.  */
 
-static void
-get_any_inlining_info (diagnostic_context *context,
-		       diagnostic_info *diagnostic)
+void
+diagnostic_context::get_any_inlining_info (diagnostic_info *diagnostic)
 {
   auto &ilocs = diagnostic->m_iinfo.m_ilocs;
 
-  if (context->set_locations_cb)
+  if (m_set_locations_cb)
     /* Retrieve the locations into which the expression about to be
        diagnosed has been inlined, including those of all the callers
        all the way down the inlining stack.  */
-    context->set_locations_cb (context, diagnostic);
+    m_set_locations_cb (this, diagnostic);
   else
     {
       /* When there's no callback use just the one location provided
@@ -1237,11 +1238,11 @@ get_any_inlining_info (diagnostic_context *context,
    Return the new kind of DIAGNOSTIC if it was updated, or DK_UNSPECIFIED
    otherwise.  */
 
-static diagnostic_t
-update_effective_level_from_pragmas (diagnostic_context *context,
-				     diagnostic_info *diagnostic)
+diagnostic_t
+diagnostic_context::
+update_effective_level_from_pragmas (diagnostic_info *diagnostic)
 {
-  if (context->n_classification_history <= 0)
+  if (m_n_classification_history <= 0)
     return DK_UNSPECIFIED;
 
   /* Iterate over the locations, checking the diagnostic disposition
@@ -1251,10 +1252,10 @@ update_effective_level_from_pragmas (diagnostic_context *context,
   for (location_t loc: diagnostic->m_iinfo.m_ilocs)
     {
       /* FIXME: Stupid search.  Optimize later. */
-      for (int i = context->n_classification_history - 1; i >= 0; i --)
+      for (int i = m_n_classification_history - 1; i >= 0; i --)
 	{
 	  const diagnostic_classification_change_t &hist
-	    = context->classification_history[i];
+	    = m_classification_history[i];
 
 	  location_t pragloc = hist.location;
 	  if (!linemap_location_before_p (line_table, pragloc, loc))
@@ -1297,21 +1298,20 @@ get_cwe_url (int cwe)
    " [CWE-119]" will be printed, suitably colorized, and with a URL of a
    description of the security issue.  */
 
-static void
-print_any_cwe (diagnostic_context *context,
-		    const diagnostic_info *diagnostic)
+void
+diagnostic_context::print_any_cwe (const diagnostic_info &diagnostic)
 {
-  if (diagnostic->metadata == NULL)
+  if (diagnostic.metadata == NULL)
     return;
 
-  int cwe = diagnostic->metadata->get_cwe ();
+  int cwe = diagnostic.metadata->get_cwe ();
   if (cwe)
     {
-      pretty_printer *pp = context->printer;
-      char *saved_prefix = pp_take_prefix (context->printer);
+      pretty_printer * const pp = this->printer;
+      char *saved_prefix = pp_take_prefix (pp);
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic->kind]));
+				     diagnostic_kind_color[diagnostic.kind]));
       if (pp->url_format != URL_FORMAT_NONE)
 	{
 	  char *cwe_url = get_cwe_url (cwe);
@@ -1319,7 +1319,7 @@ print_any_cwe (diagnostic_context *context,
 	  free (cwe_url);
 	}
       pp_printf (pp, "CWE-%i", cwe);
-      pp_set_prefix (context->printer, saved_prefix);
+      pp_set_prefix (pp, saved_prefix);
       if (pp->url_format != URL_FORMAT_NONE)
 	pp_end_url (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
@@ -1333,25 +1333,24 @@ print_any_cwe (diagnostic_context *context,
    named "STR34-C", then " [STR34-C]" will be printed, suitably colorized,
    with any URL provided by the rule.  */
 
-static void
-print_any_rules (diagnostic_context *context,
-		const diagnostic_info *diagnostic)
+void
+diagnostic_context::print_any_rules (const diagnostic_info &diagnostic)
 {
-  if (diagnostic->metadata == NULL)
+  if (diagnostic.metadata == NULL)
     return;
 
-  for (unsigned idx = 0; idx < diagnostic->metadata->get_num_rules (); idx++)
+  for (unsigned idx = 0; idx < diagnostic.metadata->get_num_rules (); idx++)
     {
       const diagnostic_metadata::rule &rule
-	= diagnostic->metadata->get_rule (idx);
+	= diagnostic.metadata->get_rule (idx);
       if (char *desc = rule.make_description ())
 	{
-	  pretty_printer *pp = context->printer;
-	  char *saved_prefix = pp_take_prefix (context->printer);
+	  pretty_printer * const pp = this->printer;
+	  char *saved_prefix = pp_take_prefix (pp);
 	  pp_string (pp, " [");
 	  pp_string (pp,
 		     colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic->kind]));
+				     diagnostic_kind_color[diagnostic.kind]));
 	  char *url = NULL;
 	  if (pp->url_format != URL_FORMAT_NONE)
 	    {
@@ -1360,7 +1359,7 @@ print_any_rules (diagnostic_context *context,
 		pp_begin_url (pp, url);
 	    }
 	  pp_string (pp, desc);
-	  pp_set_prefix (context->printer, saved_prefix);
+	  pp_set_prefix (pp, saved_prefix);
 	  if (pp->url_format != URL_FORMAT_NONE)
 	    if (url)
 	      pp_end_url (pp);
@@ -1374,29 +1373,28 @@ print_any_rules (diagnostic_context *context,
 
 /* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
    printer, e.g. " [-Werror=uninitialized]".
-   Subroutine of diagnostic_report_diagnostic.  */
+   Subroutine of diagnostic_context::report_diagnostic.  */
 
-static void
-print_option_information (diagnostic_context *context,
-			  const diagnostic_info *diagnostic,
-			  diagnostic_t orig_diag_kind)
+void
+diagnostic_context::print_option_information (const diagnostic_info &diagnostic,
+					      diagnostic_t orig_diag_kind)
 {
   char *option_text;
 
-  option_text = context->option_name (context, diagnostic->option_index,
-				      orig_diag_kind, diagnostic->kind);
+  option_text = m_option_name (this, diagnostic.option_index,
+			       orig_diag_kind, diagnostic.kind);
 
   if (option_text)
     {
       char *option_url = NULL;
-      if (context->get_option_url
-	  && context->printer->url_format != URL_FORMAT_NONE)
-	option_url = context->get_option_url (context,
-					      diagnostic->option_index);
-      pretty_printer *pp = context->printer;
+      if (m_get_option_url
+	  && this->printer->url_format != URL_FORMAT_NONE)
+	option_url = m_get_option_url (this,
+				       diagnostic.option_index);
+      pretty_printer * const pp = this->printer;
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic->kind]));
+				     diagnostic_kind_color[diagnostic.kind]));
       if (option_url)
 	pp_begin_url (pp, option_url);
       pp_string (pp, option_text);
@@ -1414,36 +1412,33 @@ print_option_information (diagnostic_context *context,
 /* Returns whether a DIAGNOSTIC should be printed, and adjusts diagnostic->kind
    as appropriate for #pragma GCC diagnostic and -Werror=foo.  */
 
-static bool
-diagnostic_enabled (diagnostic_context *context,
-		    diagnostic_info *diagnostic)
+bool
+diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
 {
   /* Update the inlining stack for this diagnostic.  */
-  get_any_inlining_info (context, diagnostic);
+  get_any_inlining_info (diagnostic);
 
   /* Diagnostics with no option or -fpermissive are always enabled.  */
   if (!diagnostic->option_index
-      || diagnostic->option_index == permissive_error_option (context))
+      || diagnostic->option_index == permissive_error_option (this))
     return true;
 
   /* This tests if the user provided the appropriate -Wfoo or
      -Wno-foo option.  */
-  if (! context->option_enabled (diagnostic->option_index,
-				 context->lang_mask,
-				 context->option_state))
+  if (! m_option_enabled (diagnostic->option_index,
+			  m_lang_mask,
+			  m_option_state))
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
-  diagnostic_t diag_class
-    = update_effective_level_from_pragmas (context, diagnostic);
+  diagnostic_t diag_class = update_effective_level_from_pragmas (diagnostic);
 
   /* This tests if the user provided the appropriate -Werror=foo
      option.  */
   if (diag_class == DK_UNSPECIFIED
-      && (context->classify_diagnostic[diagnostic->option_index]
+      && (m_classify_diagnostic[diagnostic->option_index]
 	  != DK_UNSPECIFIED))
-    diagnostic->kind
-      = context->classify_diagnostic[diagnostic->option_index];
+    diagnostic->kind = m_classify_diagnostic[diagnostic->option_index];
 
   /* This allows for future extensions, like temporarily disabling
      warnings for ranges of source code.  */
@@ -1456,9 +1451,9 @@ diagnostic_enabled (diagnostic_context *context,
 /* Returns whether warning OPT is enabled at LOC.  */
 
 bool
-warning_enabled_at (location_t loc, int opt)
+diagnostic_context::warning_enabled_at (location_t loc, int opt)
 {
-  if (!diagnostic_report_warnings_p (global_dc, loc))
+  if (!diagnostic_report_warnings_p (this, loc))
     return false;
 
   rich_location richloc (line_table, loc);
@@ -1467,58 +1462,56 @@ warning_enabled_at (location_t loc, int opt)
   diagnostic.richloc = &richloc;
   diagnostic.message.m_richloc = &richloc;
   diagnostic.kind = DK_WARNING;
-  return diagnostic_enabled (global_dc, &diagnostic);
+  return diagnostic_enabled (&diagnostic);
 }
 
 /* Report a diagnostic message (an error or a warning) as specified by
-   DC.  This function is *the* subroutine in terms of which front-ends
-   should implement their specific diagnostic handling modules.  The
+   this diagnostic_context.
    front-end independent format specifiers are exactly those described
    in the documentation of output_format.
    Return true if a diagnostic was printed, false otherwise.  */
 
 bool
-diagnostic_report_diagnostic (diagnostic_context *context,
-			      diagnostic_info *diagnostic)
+diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 {
   diagnostic_t orig_diag_kind = diagnostic->kind;
 
-  gcc_assert (context->m_output_format);
+  gcc_assert (m_output_format);
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
   bool was_warning = (diagnostic->kind == DK_WARNING
 		      || diagnostic->kind == DK_PEDWARN);
-  if (was_warning && context->dc_inhibit_warnings)
+  if (was_warning && m_inhibit_warnings)
     return false;
 
   if (diagnostic->kind == DK_PEDWARN)
     {
-      diagnostic->kind = pedantic_warning_kind (context);
+      diagnostic->kind = pedantic_warning_kind (this);
       /* We do this to avoid giving the message for -pedantic-errors.  */
       orig_diag_kind = diagnostic->kind;
     }
 
-  if (diagnostic->kind == DK_NOTE && context->inhibit_notes_p)
+  if (diagnostic->kind == DK_NOTE && m_inhibit_notes_p)
     return false;
 
-  if (context->lock > 0)
+  if (m_lock > 0)
     {
       /* If we're reporting an ICE in the middle of some other error,
 	 try to flush out the previous error, then let this one
 	 through.  Don't do this more than once.  */
       if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
-	  && context->lock == 1)
-	pp_newline_and_flush (context->printer);
+	  && m_lock == 1)
+	pp_newline_and_flush (this->printer);
       else
-	error_recursion (context);
+	error_recursion ();
     }
 
   /* If the user requested that warnings be treated as errors, so be
      it.  Note that we do this before the next block so that
      individual warnings can be overridden back to warnings with
      -Wno-error=*.  */
-  if (context->warning_as_error_requested
+  if (m_warning_as_error_requested
       && diagnostic->kind == DK_WARNING)
     diagnostic->kind = DK_ERROR;
 
@@ -1527,21 +1520,21 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   /* Check to see if the diagnostic is enabled at the location and
      not disabled by #pragma GCC diagnostic anywhere along the inlining
      stack.  .  */
-  if (!diagnostic_enabled (context, diagnostic))
+  if (!diagnostic_enabled (diagnostic))
     return false;
 
   if ((was_warning || diagnostic->kind == DK_WARNING)
-      && ((!context->dc_warn_system_headers
+      && ((!m_warn_system_headers
 	   && diagnostic->m_iinfo.m_allsyslocs)
-	  || context->dc_inhibit_warnings))
+	  || m_inhibit_warnings))
     /* Bail if the warning is not to be reported because all locations in the
        inlining stack (if there is one) are in system headers.  */
     return false;
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
-    diagnostic_check_max_errors (context);
+    diagnostic_check_max_errors (this);
 
-  context->lock++;
+  m_lock++;
 
   if (diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
     {
@@ -1549,9 +1542,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	 error has already occurred.  This is counteracted by
 	 abort_on_error.  */
       if (!CHECKING_P
-	  && (diagnostic_kind_count (context, DK_ERROR) > 0
-	      || diagnostic_kind_count (context, DK_SORRY) > 0)
-	  && !context->abort_on_error)
+	  && (diagnostic_kind_count (this, DK_ERROR) > 0
+	      || diagnostic_kind_count (this, DK_SORRY) > 0)
+	  && !m_abort_on_error)
 	{
 	  expanded_location s 
 	    = expand_location (diagnostic_location (diagnostic));
@@ -1559,58 +1552,58 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		   s.file, s.line);
 	  exit (ICE_EXIT_CODE);
 	}
-      if (context->internal_error)
-	(*context->internal_error) (context,
-				    diagnostic->message.m_format_spec,
-				    diagnostic->message.m_args_ptr);
+      if (m_internal_error)
+	(*m_internal_error) (this,
+			     diagnostic->message.m_format_spec,
+			     diagnostic->message.m_args_ptr);
     }
   if (diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
-    ++diagnostic_kind_count (context, DK_WERROR);
+    ++diagnostic_kind_count (this, DK_WERROR);
   else
-    ++diagnostic_kind_count (context, diagnostic->kind);
+    ++diagnostic_kind_count (this, diagnostic->kind);
 
   /* Is this the initial diagnostic within the stack of groups?  */
-  if (context->m_diagnostic_groups.m_emission_count == 0)
-    context->m_output_format->on_begin_group ();
-  context->m_diagnostic_groups.m_emission_count++;
+  if (m_diagnostic_groups.m_emission_count == 0)
+    m_output_format->on_begin_group ();
+  m_diagnostic_groups.m_emission_count++;
 
-  pp_format (context->printer, &diagnostic->message);
-  context->m_output_format->on_begin_diagnostic (diagnostic);
-  pp_output_formatted_text (context->printer);
-  if (context->show_cwe)
-    print_any_cwe (context, diagnostic);
-  if (context->show_rules)
-    print_any_rules (context, diagnostic);
-  if (context->show_option_requested)
-    print_option_information (context, diagnostic, orig_diag_kind);
-  context->m_output_format->on_end_diagnostic (diagnostic, orig_diag_kind);
-  switch (context->extra_output_kind)
+  pp_format (this->printer, &diagnostic->message);
+  m_output_format->on_begin_diagnostic (diagnostic);
+  pp_output_formatted_text (this->printer);
+  if (m_show_cwe)
+    print_any_cwe (*diagnostic);
+  if (m_show_rules)
+    print_any_rules (*diagnostic);
+  if (m_show_option_requested)
+    print_option_information (*diagnostic, orig_diag_kind);
+  m_output_format->on_end_diagnostic (diagnostic, orig_diag_kind);
+  switch (m_extra_output_kind)
     {
     default:
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1:
-      print_parseable_fixits (context->printer, diagnostic->richloc,
+      print_parseable_fixits (this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
-			      context->tabstop);
-      pp_flush (context->printer);
+			      m_tabstop);
+      pp_flush (this->printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
-      print_parseable_fixits (context->printer, diagnostic->richloc,
+      print_parseable_fixits (this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
-			      context->tabstop);
-      pp_flush (context->printer);
+			      m_tabstop);
+      pp_flush (this->printer);
       break;
     }
-  diagnostic_action_after_output (context, diagnostic->kind);
+  diagnostic_action_after_output (this, diagnostic->kind);
   diagnostic->x_data = NULL;
 
-  if (context->edit_context_ptr)
+  if (m_edit_context_ptr)
     if (diagnostic->richloc->fixits_can_be_auto_applied_p ())
-      context->edit_context_ptr->add_fixits (diagnostic->richloc);
+      m_edit_context_ptr->add_fixits (diagnostic->richloc);
 
-  context->lock--;
+  m_lock--;
 
-  diagnostic_show_any_path (context, diagnostic);
+  show_any_path (*diagnostic);
 
   return true;
 }
@@ -1695,7 +1688,7 @@ diagnostic_append_note (diagnostic_context *context,
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
-  if (context->inhibit_notes_p)
+  if (context->m_inhibit_notes_p)
     {
       va_end (ap);
       return;
@@ -1735,7 +1728,7 @@ diagnostic_impl (rich_location *richloc, const diagnostic_metadata *metadata,
 	diagnostic.option_index = opt;
     }
   diagnostic.metadata = metadata;
-  return diagnostic_report_diagnostic (global_dc, &diagnostic);
+  return global_dc->report_diagnostic (&diagnostic);
 }
 
 /* Implement inform_n, warning_n, and error_n, as documented and
@@ -1763,7 +1756,7 @@ diagnostic_n_impl (rich_location *richloc, const diagnostic_metadata *metadata,
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
   diagnostic.metadata = metadata;
-  return diagnostic_report_diagnostic (global_dc, &diagnostic);
+  return global_dc->report_diagnostic (&diagnostic);
 }
 
 /* Wrapper around diagnostic_impl taking a variable argument list.  */
@@ -2203,17 +2196,16 @@ internal_error_no_backtrace (const char *gmsgid, ...)
   gcc_unreachable ();
 }
 
-/* Emit DIAGRAM to CONTEXT, respecting the output format.  */
+/* Emit DIAGRAM to this context, respecting the output format.  */
 
 void
-diagnostic_emit_diagram (diagnostic_context *context,
-			 const diagnostic_diagram &diagram)
+diagnostic_context::emit_diagram (const diagnostic_diagram &diagram)
 {
-  if (context->m_diagrams.m_theme == nullptr)
+  if (m_diagrams.m_theme == nullptr)
     return;
 
-  gcc_assert (context->m_output_format);
-  context->m_output_format->on_diagram (diagram);
+  gcc_assert (m_output_format);
+  m_output_format->on_diagram (diagram);
 }
 
 /* Special case error functions.  Most are implemented in terms of the
@@ -2236,18 +2228,18 @@ fnotice (FILE *file, const char *cmsgid, ...)
    so give up now.  But do try to flush out the previous error.
    This mustn't use internal_error, that will cause infinite recursion.  */
 
-static void
-error_recursion (diagnostic_context *context)
+void
+diagnostic_context::error_recursion ()
 {
-  if (context->lock < 3)
-    pp_newline_and_flush (context->printer);
+  if (m_lock < 3)
+    pp_newline_and_flush (this->printer);
 
   fnotice (stderr,
 	   "internal compiler error: error reporting routines re-entered.\n");
 
   /* Call diagnostic_action_after_output to get the "please submit a bug
      report" message.  */
-  diagnostic_action_after_output (context, DK_ICE);
+  diagnostic_action_after_output (this, DK_ICE);
 
   /* Do not use gcc_unreachable here; that goes through internal_error
      and therefore would cause infinite recursion.  */
@@ -2296,7 +2288,7 @@ fancy_abort (const char *file, int line, const char *function)
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
-/* struct diagnostic_context.  */
+/* class diagnostic_context.  */
 
 void
 diagnostic_context::begin_group ()
@@ -2342,7 +2334,7 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
   if (diagnostic_kind_count (&m_context, DK_WERROR))
     {
       /* -Werror was given.  */
-      if (m_context.warning_as_error_requested)
+      if (m_context.warning_as_error_requested_p ())
 	pp_verbatim (m_context.printer,
 		     _("%s: all warnings being treated as errors"),
 		     progname);
@@ -2416,34 +2408,34 @@ diagnostic_output_format_init (diagnostic_context *context,
     }
 }
 
-/* Initialize CONTEXT->m_diagrams based on CHARSET.
+/* Initialize this context's m_diagrams based on CHARSET.
    Specifically, make a text_art::theme object for m_diagrams.m_theme,
    (or NULL for "no diagrams").  */
 
 void
-diagnostics_text_art_charset_init (diagnostic_context *context,
-				   enum diagnostic_text_art_charset charset)
+diagnostic_context::
+set_text_art_charset (enum diagnostic_text_art_charset charset)
 {
-  delete context->m_diagrams.m_theme;
+  delete m_diagrams.m_theme;
   switch (charset)
     {
     default:
       gcc_unreachable ();
 
     case DIAGNOSTICS_TEXT_ART_CHARSET_NONE:
-      context->m_diagrams.m_theme = NULL;
+      m_diagrams.m_theme = nullptr;
       break;
 
     case DIAGNOSTICS_TEXT_ART_CHARSET_ASCII:
-      context->m_diagrams.m_theme = new text_art::ascii_theme ();
+      m_diagrams.m_theme = new text_art::ascii_theme ();
       break;
 
     case DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE:
-      context->m_diagrams.m_theme = new text_art::unicode_theme ();
+      m_diagrams.m_theme = new text_art::unicode_theme ();
       break;
 
     case DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI:
-      context->m_diagrams.m_theme = new text_art::emoji_theme ();
+      m_diagrams.m_theme = new text_art::emoji_theme ();
       break;
     }
 }
@@ -2802,9 +2794,9 @@ assert_location_text (const char *expected_loc_text,
 			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
   test_diagnostic_context dc;
-  dc.show_column = show_column;
-  dc.column_unit = column_unit;
-  dc.column_origin = origin;
+  dc.m_show_column = show_column;
+  dc.m_column_unit = column_unit;
+  dc.m_column_origin = origin;
 
   expanded_location xloc;
   xloc.file = filename;

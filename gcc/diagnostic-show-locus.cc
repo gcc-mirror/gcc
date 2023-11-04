@@ -1146,14 +1146,14 @@ make_policy (const diagnostic_context &dc,
 {
   /* The default is to not escape non-ASCII bytes.  */
   char_display_policy result
-    (dc.tabstop, cpp_wcwidth, default_print_decoded_ch);
+    (dc.m_tabstop, cpp_wcwidth, default_print_decoded_ch);
 
   /* If the diagnostic suggests escaping non-ASCII bytes, then
      use policy from user-supplied options.  */
   if (richloc.escape_on_output_p ())
     {
       result.m_undecoded_byte_width = width_per_escaped_byte;
-      switch (dc.escape_format)
+      switch (dc.get_escape_format ())
 	{
 	default:
 	  gcc_unreachable ();
@@ -2849,13 +2849,13 @@ diagnostic_show_locus (diagnostic_context * context,
 
   /* Don't print the same source location twice in a row, unless we have
      fix-it hints, or multiple locations, or a label.  */
-  if (loc == context->last_location
+  if (loc == context->m_last_location
       && richloc->get_num_fixit_hints () == 0
       && richloc->get_num_locations () == 1
       && richloc->get_range (0)->m_label == NULL)
     return;
 
-  context->last_location = loc;
+  context->m_last_location = loc;
 
   layout layout (context, richloc, diagnostic_kind, pp);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
@@ -2924,7 +2924,7 @@ test_display_widths ()
 
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     char_display_policy policy (make_policy (dc, richloc));
     ASSERT_EQ (cpp_display_width (pi, strlen (pi), policy), 8);
     ASSERT_EQ (cpp_display_width (emoji, strlen (emoji), policy), 9);
@@ -2936,7 +2936,7 @@ test_display_widths ()
 
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     char_display_policy policy (make_policy (dc, richloc));
     ASSERT_EQ (cpp_display_width (pi, strlen (pi), policy), 8);
     ASSERT_EQ (cpp_display_width (emoji, strlen (emoji), policy), 16);
@@ -3185,7 +3185,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_diagnostic_context dc;
-      dc.tabstop = tabstop;
+      dc.m_tabstop = tabstop;
       layout test_layout (&dc, &richloc, DK_ERROR);
       test_layout.print_line (1);
       const char *out = pp_formatted_text (dc.printer);
@@ -3203,7 +3203,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_diagnostic_context dc;
-      dc.tabstop = tabstop;
+      dc.m_tabstop = tabstop;
       static const int small_width = 24;
       dc.m_source_printing.max_width = small_width - 4;
       dc.m_source_printing.min_margin_width
@@ -4321,7 +4321,7 @@ test_one_liner_labels_utf8 ()
 
     {
       test_diagnostic_context dc;
-      dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+      dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ (" <U+1F602>_foo = <U+03C0>_bar.<U+1F602>_field<U+03C0>;\n"
 		    " ^~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~\n"
@@ -4333,7 +4333,7 @@ test_one_liner_labels_utf8 ()
     }
     {
       test_diagnostic_context dc;
-      dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+      dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ
 	(" <f0><9f><98><82>_foo = <cf><80>_bar.<f0><9f><98><82>_field<cf><80>;\n"
@@ -5517,7 +5517,7 @@ test_tab_expansion (const line_table_case &case_)
      everything too.  */
   {
     test_diagnostic_context dc;
-    dc.tabstop = tabstop;
+    dc.m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
@@ -5532,7 +5532,7 @@ test_tab_expansion (const line_table_case &case_)
      as well.  */
   {
     test_diagnostic_context dc;
-    dc.tabstop = tabstop;
+    dc.m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
@@ -5583,7 +5583,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ
       (" before<U+0000><U+0001><U+0002><U+0003><U+000B><80><ff>after\n"
@@ -5592,7 +5592,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
   }
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" before<00><01><02><03><0b><80><ff>after\n"
 		  "       ^~~~            ~~~~\n",
@@ -5636,7 +5636,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <U+0000>after\n"
 		  " ^~~~~~~~\n",
@@ -5644,7 +5644,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
   }
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <00>after\n"
 		  " ^~~~\n",

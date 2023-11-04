@@ -294,21 +294,14 @@ static void
 diagnostic_file_cache_init (void)
 {
   gcc_assert (global_dc);
-  if (global_dc->m_file_cache == NULL)
-    global_dc->m_file_cache = new file_cache ();
+  global_dc->file_cache_init ();
 }
 
-/* Free the resources used by the set of cache used for files accessed
-   by caret diagnostic.  */
-
 void
-diagnostic_file_cache_fini (void)
+diagnostic_context::file_cache_init ()
 {
-  if (global_dc->m_file_cache)
-    {
-      delete global_dc->m_file_cache;
-      global_dc->m_file_cache = NULL;
-    }
+  if (m_file_cache == nullptr)
+    m_file_cache = new file_cache ();
 }
 
 /* Return the total lines number that have been read so far by the
@@ -366,10 +359,10 @@ diagnostics_file_cache_forcibly_evict_file (const char *file_path)
 {
   gcc_assert (file_path);
 
-  if (!global_dc->m_file_cache)
+  auto file_cache = global_dc->get_file_cache ();
+  if (!file_cache)
     return;
-
-  global_dc->m_file_cache->forcibly_evict_file (file_path);
+  file_cache->forcibly_evict_file (file_path);
 }
 
 void
@@ -978,7 +971,7 @@ char_span
 location_get_source_line (const char *file_path, int line)
 {
   diagnostic_file_cache_init ();
-  return global_dc->m_file_cache->get_source_line (file_path, line);
+  return global_dc->get_file_cache ()->get_source_line (file_path, line);
 }
 
 /* Return a NUL-terminated copy of the source text between two locations, or
@@ -1091,7 +1084,7 @@ char_span
 get_source_file_content (const char *file_path)
 {
   diagnostic_file_cache_init ();
-  return global_dc->m_file_cache->get_source_file_content (file_path);
+  return global_dc->get_file_cache ()->get_source_file_content (file_path);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.
@@ -1103,7 +1096,7 @@ location_missing_trailing_newline (const char *file_path)
 {
   diagnostic_file_cache_init ();
 
-  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  file_cache_slot *c = global_dc->get_file_cache ()->lookup_or_add_file (file_path);
   if (c == NULL)
     return false;
 

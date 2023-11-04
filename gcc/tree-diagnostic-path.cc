@@ -205,7 +205,7 @@ struct event_range
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
 	  (initial_loc, LOCATION_ASPECT_CARET);
-	if (exploc.file != LOCATION_FILE (dc->last_location))
+	if (exploc.file != LOCATION_FILE (dc->m_last_location))
 	  dc->m_text_callbacks.start_span (dc, exploc);
       }
 
@@ -599,7 +599,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 
   const unsigned num_events = path->num_events ();
 
-  switch (context->path_format)
+  switch (context->get_path_format ())
     {
     case DPF_NONE:
       /* Do nothing.  */
@@ -614,7 +614,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    label_text event_text (event.get_desc (false));
 	    gcc_assert (event_text.get ());
 	    diagnostic_event_id_t event_id (i);
-	    if (context->show_path_depths)
+	    if (context->show_path_depths_p ())
 	      {
 		int stack_depth = event.get_stack_depth ();
 		tree fndecl = event.get_fndecl ();
@@ -646,7 +646,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	char *saved_prefix = pp_take_prefix (context->printer);
 	pp_set_prefix (context->printer, NULL);
 	print_path_summary_as_text (&summary, context,
-				    context->show_path_depths);
+				    context->show_path_depths_p ());
 	pp_flush (context->printer);
 	pp_set_prefix (context->printer, saved_prefix);
       }
