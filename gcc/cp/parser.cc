@@ -24736,7 +24736,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 			{
 			  gcc_rich_location richloc (attr_loc);
 			  error_at (&richloc,
-				    "contracts cannot appear before a trailing return type");
+				    "contract checks cannot appear before a trailing return type");
 			}
 		    }
 
