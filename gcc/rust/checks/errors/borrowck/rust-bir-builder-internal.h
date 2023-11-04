@@ -177,7 +177,7 @@ protected:
     return ctx.place_db.add_variable (nodeid, ty);
   }
 
-protected: // Helpers to add BIR nodes
+protected: // Helpers to add BIR statements
   void push_assignment (PlaceId lhs, AbstractExpr *rhs)
   {
     ctx.get_current_bb ().statements.emplace_back (lhs, rhs);
@@ -199,14 +199,15 @@ protected: // Helpers to add BIR nodes
 		    std::initializer_list<BasicBlockId> destinations = {})
   {
     auto copy = make_arg (switch_val);
-    ctx.get_current_bb ().statements.emplace_back (Node::Kind::SWITCH, copy);
+    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::SWITCH,
+						   copy);
     ctx.get_current_bb ().successors.insert (
       ctx.get_current_bb ().successors.end (), destinations);
   }
 
   void push_goto (BasicBlockId bb)
   {
-    ctx.get_current_bb ().statements.emplace_back (Node::Kind::GOTO);
+    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::GOTO);
     if (bb != INVALID_BB) // INVALID_BB means the goto will be resolved later.
       ctx.get_current_bb ().successors.push_back (bb);
   }

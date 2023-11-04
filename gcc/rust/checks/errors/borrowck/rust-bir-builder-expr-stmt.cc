@@ -419,7 +419,7 @@ ExprStmtBuilder::visit (HIR::ReturnExpr &ret)
     {
       push_assignment (RETURN_VALUE_PLACE, visit_expr (*ret.get_expr ()));
     }
-  ctx.get_current_bb ().statements.emplace_back (Node::Kind::RETURN);
+  ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
 }
 
 void

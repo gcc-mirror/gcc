@@ -135,20 +135,21 @@ Dump::go (bool enable_simplify_cfg)
     }
 
   // Print BBs.
-  for (node_bb = 0; node_bb < func.basic_blocks.size (); ++node_bb)
+  for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
+       ++statement_bb)
     {
-      if (bb_fold_map[node_bb] != node_bb)
+      if (bb_fold_map[statement_bb] != statement_bb)
 	continue; // This BB was folded.
 
-      if (func.basic_blocks[node_bb].statements.empty ()
-	  && func.basic_blocks[node_bb].successors.empty ())
+      if (func.basic_blocks[statement_bb].statements.empty ()
+	  && func.basic_blocks[statement_bb].successors.empty ())
 	continue;
 
       bb_terminated = false;
 
-      BasicBlock &bb = func.basic_blocks[node_bb];
+      BasicBlock &bb = func.basic_blocks[statement_bb];
       stream << "\n";
-      stream << indentation << "bb" << bb_fold_map[node_bb] << ": {\n";
+      stream << indentation << "bb" << bb_fold_map[statement_bb] << ": {\n";
       for (auto &stmt : bb.statements)
 	{
 	  stream << indentation << indentation;
@@ -166,49 +167,49 @@ Dump::go (bool enable_simplify_cfg)
   stream << "}\n";
 }
 void
-Dump::visit (Node &node)
+Dump::visit (Statement &stmt)
 {
-  node_place = node.get_place ();
-  switch (node.get_kind ())
+  statement_place = stmt.get_place ();
+  switch (stmt.get_kind ())
     {
-      case Node::Kind::ASSIGNMENT: {
-	visit_place (node.get_place ());
+      case Statement::Kind::ASSIGNMENT: {
+	visit_place (stmt.get_place ());
 	stream << " = ";
-	node.get_expr ().accept_vis (*this);
+	stmt.get_expr ().accept_vis (*this);
 	break;
       }
-    case Node::Kind::SWITCH:
+    case Statement::Kind::SWITCH:
       stream << "switchInt(";
-      visit_move_place (node.get_place ());
+      visit_move_place (stmt.get_place ());
       stream << ") -> [";
-      print_comma_separated (stream, func.basic_blocks[node_bb].successors,
+      print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			     [this] (BasicBlockId succ) {
 			       stream << "bb" << bb_fold_map[succ];
 			     });
       stream << "]";
       bb_terminated = true;
       break;
-    case Node::Kind::RETURN:
+    case Statement::Kind::RETURN:
       stream << "return";
       bb_terminated = true;
       break;
-    case Node::Kind::GOTO:
+    case Statement::Kind::GOTO:
       stream << "goto -> bb"
-	     << bb_fold_map[func.basic_blocks[node_bb].successors.at (0)];
+	     << bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)];
       bb_terminated = true;
       break;
-    case Node::Kind::STORAGE_DEAD:
+    case Statement::Kind::STORAGE_DEAD:
       stream << "StorageDead(";
-      visit_move_place (node.get_place ());
+      visit_move_place (stmt.get_place ());
       stream << ")";
       break;
-    case Node::Kind::STORAGE_LIVE:
+    case Statement::Kind::STORAGE_LIVE:
       stream << "StorageLive(";
-      visit_move_place (node.get_place ());
+      visit_move_place (stmt.get_place ());
       stream << ")";
       break;
     }
-  node_place = INVALID_PLACE;
+  statement_place = INVALID_PLACE;
 }
 
 void
@@ -261,7 +262,7 @@ void
 Dump::visit (BorrowExpr &expr)
 {
   stream << "&";
-  visit_lifetime (node_place);
+  visit_lifetime (statement_place);
   visit_place (expr.get_place ());
 }
 
@@ -307,7 +308,7 @@ Dump::visit (CallExpr &expr)
 			   visit_move_place (place_id);
 			 });
   stream << ") -> [";
-  print_comma_separated (stream, func.basic_blocks[node_bb].successors,
+  print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			 [this] (BasicBlockId succ) {
 			   stream << "bb" << bb_fold_map[succ];
 			 });

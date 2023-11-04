@@ -27,23 +27,23 @@ namespace Rust {
 namespace BIR {
 
 struct BasicBlock;
-class Node;
+class Statement;
 class AbstractExpr;
 
 /**
  * Top-level entity of the Borrow-checker IR (BIR).
- * It represents a single function (method, closure, etc.), which is also the
- * basic unit of Polonius borrow-checking.
+ * It represents a single function (method, closure, etc.), which is the
+ * basic unit of borrow-checking.
  */
 struct Function
 {
   PlaceDB place_db;
-  std::vector<PlaceId> arguments; // Only used for dump.
+  std::vector<PlaceId> arguments;
   std::vector<BasicBlock> basic_blocks;
 };
 
-/** Single "instruction" of BIR. */
-class Node
+/** Single statement of BIR. */
+class Statement
 {
 public:
   enum class Kind
@@ -68,12 +68,12 @@ private:
   std::unique_ptr<AbstractExpr> expr;
 
 public:
-  Node (PlaceId lhs, AbstractExpr *rhs)
+  Statement (PlaceId lhs, AbstractExpr *rhs)
     : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs)
   {}
 
-  explicit Node (Kind kind, PlaceId place = INVALID_PLACE,
-		 AbstractExpr *expr = nullptr)
+  explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
+		      AbstractExpr *expr = nullptr)
     : kind (kind), place (place), expr (expr)
   {}
 
@@ -92,7 +92,7 @@ static constexpr BasicBlockId INVALID_BB
 struct BasicBlock
 {
   // BIR "instructions".
-  std::vector<Node> statements;
+  std::vector<Statement> statements;
   // A basic block can end with: goto, return or switch
   std::vector<BasicBlockId> successors;
 
@@ -103,9 +103,9 @@ public:
       return false;
     switch (statements.back ().get_kind ())
       {
-      case Node::Kind::GOTO:
-      case Node::Kind::RETURN:
-      case Node::Kind::SWITCH:
+      case Statement::Kind::GOTO:
+      case Statement::Kind::RETURN:
+      case Statement::Kind::SWITCH:
 	return true;
       default:
 	return false;
@@ -115,11 +115,11 @@ public:
   WARN_UNUSED_RESULT bool is_goto_terminated () const
   {
     return is_terminated ()
-	   && statements.back ().get_kind () == Node::Kind::GOTO;
+	   && statements.back ().get_kind () == Statement::Kind::GOTO;
   }
 };
 
-// Rhs expression of BIR assignment node (abstract).
+// Rhs expression of BIR assignment statements (abstract).
 class AbstractExpr : public Visitable
 {
 };
@@ -163,8 +163,8 @@ public:
 };
 
 /**
- * This expression is only to be used inside the assignment node and acts as
- * identity wrapper for a place value. It is separated from `Operator<1>` to
+ * This expression is only to be used inside the assignment statement and acts
+ * as identity wrapper for a place value. It is separated from `Operator<1>` to
  * render it more explicitly in the dump.
  */
 class Assignment : public VisitableImpl<AbstractExpr, Assignment>
