@@ -738,8 +738,6 @@ struct objc_try_context
 
 extern tree objc_create_temporary_var (tree, const char *);
 
-size_t objc_common_tree_size (enum tree_code code);
-
 
 #define objc_is_object_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_object_id)
 #define objc_is_class_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_class_id)

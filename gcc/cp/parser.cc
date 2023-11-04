@@ -43886,7 +43886,8 @@ cp_parser_omp_section_scan (cp_parser *parser, const char *directive,
       {
 	tree first = cp_lexer_peek_nth_token (parser->lexer, i)->u.value;
 	tree second = cp_lexer_peek_nth_token (parser->lexer, i + 2)->u.value;
-	if (strcmp (IDENTIFIER_POINTER (first), "directive"))
+	if (strcmp (IDENTIFIER_POINTER (first), "directive")
+	    && strcmp (IDENTIFIER_POINTER (first), "__directive__"))
 	  continue;
 	if (strcmp (IDENTIFIER_POINTER (second), directive) == 0)
 	  break;

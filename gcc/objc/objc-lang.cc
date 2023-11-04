@@ -44,8 +44,6 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objc_common_init_ts
-#undef LANG_HOOKS_TREE_SIZE
-#define LANG_HOOKS_TREE_SIZE objc_common_tree_size
 #undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
 #define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE objc_get_sarif_source_language
 

@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "c-objc-common.h"
+#include "c-family/c-pragma.h"
+#include "c-parser.h"
 
 enum c_language_kind c_language = clk_c;
 

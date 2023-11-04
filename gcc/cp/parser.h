@@ -408,7 +408,8 @@ struct GTY(()) cp_parser {
      identifiers) rather than an explicit template parameter list.  */
   bool fully_implicit_function_template_p;
 
-  /* TRUE if omp::directive or omp::sequence attributes may not appear.  */
+  /* TRUE if omp::directive, omp::decl or omp::sequence attributes may not
+     appear.  */
   bool omp_attrs_forbidden_p;
 
   /* Tracks the function's template parameter list when declaring a function

@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
+#include "c-parser.h"
 
 #include "tree-pretty-print.h"
 
@@ -157,9 +158,10 @@ static bool undef_nested_function;
    the attribute lists.  */
 vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
 
-/* If non-zero, we are inside of
-   #pragma omp begin assumes ... #pragma omp end assumes region.  */
-int current_omp_begin_assumes;
+/* Vector of
+   #pragma omp begin assumes ... #pragma omp end assumes regions
+   we are in.  */
+vec<c_omp_begin_assumes_data, va_gc> *current_omp_begin_assumes;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
@@ -323,16 +325,45 @@ i_label_binding (tree node)
 #define I_LABEL_DECL(node) \
  (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
 
+/* Used by C_TOKEN_VEC tree.  */
+struct GTY (()) c_tree_token_vec {
+  struct tree_base base;
+  vec<c_token, va_gc> *tokens;
+};
+
+STATIC_ASSERT (sizeof (c_tree_token_vec) == sizeof (c_tree_token_vec_struct));
+STATIC_ASSERT (offsetof (c_tree_token_vec, tokens)
+	       == offsetof (c_tree_token_vec_struct, tokens));
+
 /* The resulting tree type.  */
 
-union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE + 2 * (TREE_CODE (&%h.generic) == C_TOKEN_VEC)"),
        chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node
  {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))
     generic;
   struct lang_identifier GTY ((tag ("1"))) identifier;
+  struct c_tree_token_vec GTY ((tag ("2"))) c_token_vec;
 };
+
+/* Langhook for tree_size.  */
+size_t
+c_tree_size (enum tree_code code)
+{
+  gcc_checking_assert (code >= NUM_TREE_CODES);
+  switch (code)
+    {
+    case C_TOKEN_VEC: return sizeof (c_tree_token_vec);
+    default:
+      switch (TREE_CODE_CLASS (code))
+	{
+	case tcc_declaration: return sizeof (tree_decl_non_common);
+	case tcc_type: return sizeof (tree_type_non_common);
+	default: gcc_unreachable ();
+	}
+    }
+}
 
 /* Track bindings and other things that matter for goto warnings.  For
    efficiency, we do not gather all the decls at the point of
@@ -5332,6 +5363,49 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	    attributes
 	      = tree_cons (get_identifier ("omp declare target nohost"),
 			   NULL_TREE, attributes);
+	}
+    }
+
+  if (flag_openmp || flag_openmp_simd)
+    {
+      bool diagnosed = false;
+      for (tree *pa = &attributes; *pa; )
+	{
+	  if (is_attribute_namespace_p ("omp", *pa))
+	    {
+	      tree name = get_attribute_name (*pa);
+	      if (is_attribute_p ("directive", name)
+		  || is_attribute_p ("sequence", name)
+		  || is_attribute_p ("decl", name))
+		{
+		  const char *p = NULL;
+		  if (TREE_VALUE (*pa) == NULL_TREE)
+		    p = IDENTIFIER_POINTER (name);
+		  for (tree a = TREE_VALUE (*pa); a; a = TREE_CHAIN (a))
+		    {
+		      tree d = TREE_VALUE (a);
+		      gcc_assert (TREE_CODE (d) == C_TOKEN_VEC);
+/*		      if (TREE_PUBLIC (d)
+			  && (VAR_P (*decl)
+			      || TREE_CODE (*decl) == FUNCTION_DECL)
+			  && c_maybe_parse_omp_decl (*decl, d))
+			continue; */
+		      p = TREE_PUBLIC (d) ? "decl" : "directive";
+		    }
+		  if (p && !diagnosed)
+		    {
+		      error ("%<omp::%s%> not allowed to be specified in "
+			     "this context", p);
+		      diagnosed = true;
+		    }
+		  if (p)
+		    {
+		      *pa = TREE_CHAIN (*pa);
+		      continue;
+		    }
+		}
+	    }
+	  pa = &TREE_CHAIN (*pa);
 	}
     }
 
