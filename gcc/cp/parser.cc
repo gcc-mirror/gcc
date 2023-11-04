@@ -24696,8 +24696,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 							     flags);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
-		  attrs = chainon (attrs,
-				   cp_parser_std_attribute_spec_seq (parser, true));
+		  if (flag_contracts_nonattr)
+		    attrs = chainon (attrs,
+				     cp_parser_std_attribute_spec_seq (parser, true));
 
 		  cp_omp_declare_simd_data odsd;
 		  if ((flag_openmp || flag_openmp_simd)
