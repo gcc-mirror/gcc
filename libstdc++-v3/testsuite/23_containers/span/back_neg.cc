@@ -25,7 +25,7 @@ test01(bool b)
 {
   std::span<int, 0> s;
   if (b || !s.empty())
-    s.back();
+    (void) s.back();
   return true;
 }
 
