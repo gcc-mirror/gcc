@@ -12477,6 +12477,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   if (cp_next_tokens_can_be_gnu_attribute_p (parser))
     gnu_attrs = chainon (gnu_attrs, cp_parser_gnu_attributes_opt (parser));
 
+  std_attrs = chainon (std_attrs, cp_parser_std_attribute_spec_seq(parser, true));
+
   if (has_param_list)
     {
       /* Parse optional trailing requires clause.  */
