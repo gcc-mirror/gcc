@@ -204,5 +204,6 @@ extern void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
 				bool, bool, bool, bool, bool,
 				enum c_lookahead_kind);
 extern struct c_type_name *c_parser_type_name (c_parser *, bool = false);
+extern bool c_maybe_parse_omp_decl (tree, tree);
 
 #endif

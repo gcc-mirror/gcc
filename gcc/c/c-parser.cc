@@ -262,6 +262,10 @@ struct GTY(()) c_parser {
      attributes turned into pragma, vector of tokens created from that,
      otherwise NULL.  */
   vec<c_token, va_gc> *in_omp_attribute_pragma;
+
+  /* Set for omp::decl attribute parsing to the decl to which it
+     appertains.  */
+  tree in_omp_decl_attribute;
 };
 
 /* Return a pointer to the Nth token in PARSERs tokens_buf.  */
@@ -5797,14 +5801,14 @@ c_parser_std_attribute (c_parser *parser, bool for_tm,
 		parens.skip_until_found_close (parser);
 		return attribute;
 	      }
-/*	    else if (is_attribute_p ("decl", name))
+	    else if (is_attribute_p ("decl", name))
 	      {
 		TREE_VALUE (TREE_PURPOSE (attribute))
 		  = get_identifier ("directive");
 		c_parser_omp_directive_args (parser, attribute, true);
 		parens.skip_until_found_close (parser);
 		return attribute;
-	      } */
+	      }
 	    else if (is_attribute_p ("sequence", name))
 	      {
 		TREE_VALUE (TREE_PURPOSE (attribute))
@@ -15146,6 +15150,19 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
 {
   /* The clauses location.  */
   location_t loc = c_parser_peek_token (parser)->location;
+
+  if (parser->in_omp_decl_attribute)
+    {
+      if (kind)
+	{
+	  tree u = build_omp_clause (loc, kind);
+	  OMP_CLAUSE_DECL (u) = parser->in_omp_decl_attribute;
+	  OMP_CLAUSE_CHAIN (u) = list;
+	  return u;
+	}
+      else
+	return tree_cons (parser->in_omp_decl_attribute, NULL_TREE, list);
+    }
 
   matching_parens parens;
   if (parens.require_open (parser))
@@ -24498,6 +24515,84 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
     clauses[0].type = CPP_PRAGMA;
 }
 
+/* D should be C_TOKEN_VEC from omp::decl attribute.  If it contains
+   a threadprivate, groupprivate, allocate or declare target directive,
+   return true and parse it for DECL.  */
+
+bool
+c_maybe_parse_omp_decl (tree decl, tree d)
+{
+  gcc_assert (TREE_CODE (d) == C_TOKEN_VEC);
+  vec<c_token, va_gc> *toks = C_TOKEN_VEC_TOKENS (d);
+  c_token *first = toks->address ();
+  c_token *last = first + toks->length ();
+  const char *directive[3] = {};
+  for (int j = 0; j < 3; j++)
+    {
+      tree id = NULL_TREE;
+      if (first + j == last)
+	break;
+      if (first[j].type == CPP_NAME)
+	id = first[j].value;
+      else if (first[j].type == CPP_KEYWORD)
+	id = ridpointers[(int) first[j].keyword];
+      else
+	break;
+      directive[j] = IDENTIFIER_POINTER (id);
+    }
+  const c_omp_directive *dir = NULL;
+  if (directive[0])
+    dir = c_omp_categorize_directive (directive[0], directive[1],
+				      directive[2]);
+  if (dir == NULL)
+    {
+      error_at (first->location,
+		"unknown OpenMP directive name in "
+		"%qs attribute argument", "omp::decl");
+      return false;
+    }
+  if (dir->id != PRAGMA_OMP_THREADPRIVATE
+      /* && dir->id != PRAGMA_OMP_GROUPPRIVATE */
+      && dir->id != PRAGMA_OMP_ALLOCATE
+      && (dir->id != PRAGMA_OMP_DECLARE
+	  || strcmp (directive[1], "target") != 0))
+    return false;
+
+  if (!flag_openmp && !dir->simd)
+    return true;
+
+  c_parser *parser = the_parser;
+  unsigned int tokens_avail = parser->tokens_avail;
+  gcc_assert (parser->tokens == &parser->tokens_buf[0]);
+  toks = NULL;
+  vec_safe_reserve (toks, last - first + 2, true);
+  c_token tok = {};
+  tok.type = CPP_PRAGMA;
+  tok.keyword = RID_MAX;
+  tok.pragma_kind = pragma_kind (dir->id);
+  tok.location = first->location;
+  toks->quick_push (tok);
+  while (++first < last)
+    toks->quick_push (*first);
+  tok = {};
+  tok.type = CPP_PRAGMA_EOL;
+  tok.keyword = RID_MAX;
+  tok.location = last[-1].location;
+  toks->quick_push (tok);
+  tok = {};
+  tok.type = CPP_EOF;
+  tok.keyword = RID_MAX;
+  tok.location = last[-1].location;
+  tok.flags = tokens_avail;
+  toks->quick_push (tok);
+  parser->in_omp_decl_attribute = decl;
+  parser->tokens = toks->address ();
+  parser->tokens_avail = toks->length ();
+  parser->in_omp_attribute_pragma = toks;
+  c_parser_pragma (parser, pragma_external, NULL);
+  parser->in_omp_decl_attribute = NULL_TREE;
+  return true;
+}
 
 /* OpenMP 4.0:
    # pragma omp declare target new-line
@@ -24526,7 +24621,8 @@ c_parser_omp_declare_target (c_parser *parser)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME))
     clauses = c_parser_omp_all_clauses (parser, OMP_DECLARE_TARGET_CLAUSE_MASK,
 					"#pragma omp declare target");
-  else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+  else if (parser->in_omp_decl_attribute
+	   || c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
       clauses = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ENTER,
 					      clauses);

@@ -5385,11 +5385,11 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 		    {
 		      tree d = TREE_VALUE (a);
 		      gcc_assert (TREE_CODE (d) == C_TOKEN_VEC);
-/*		      if (TREE_PUBLIC (d)
-			  && (VAR_P (*decl)
-			      || TREE_CODE (*decl) == FUNCTION_DECL)
-			  && c_maybe_parse_omp_decl (*decl, d))
-			continue; */
+		      if (TREE_PUBLIC (d)
+			  && (VAR_P (*node)
+			      || TREE_CODE (*node) == FUNCTION_DECL)
+			  && c_maybe_parse_omp_decl (*node, d))
+			continue;
 		      p = TREE_PUBLIC (d) ? "decl" : "directive";
 		    }
 		  if (p && !diagnosed)
