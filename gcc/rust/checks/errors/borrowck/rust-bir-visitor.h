@@ -22,7 +22,7 @@
 namespace Rust {
 namespace BIR {
 
-class Node;
+class Statement;
 class InitializerExpr;
 template <unsigned N> class Operator;
 class Assignment;
@@ -32,7 +32,7 @@ class CallExpr;
 class Visitor
 {
 public:
-  virtual void visit (Node &node) = 0;
+  virtual void visit (Statement &stmt) = 0;
   virtual void visit (InitializerExpr &expr) = 0;
   virtual void visit (Operator<1> &expr) = 0;
   virtual void visit (Operator<2> &expr) = 0;

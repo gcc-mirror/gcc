@@ -108,7 +108,7 @@ The dump consists of:
 - Declaration of locals: `let _0: i32;`, where `_0` is the return value (even if it is of the unit type). Arguments are not listed here, they are
   listed in the function header.
 - A list of basic blocks: `bb0: { ... }`. The basic block name is the `bb` prefix followed by a number.
-- Each basic block consists of a list of BIR nodes (instructions). Instruction can be either assigned to a local (place) or be a statement.
+- Each basic block consists of a list of BIR statements. Instruction can be either assigned to a local (place) or be a statement.
   Instructions take locals (places) as arguments.
 - Each basic block is terminated with a control flow instruction followed by a list of destinations:
     - `goto -> bb3;` - a goto instruction with a single destination.
@@ -126,16 +126,17 @@ of basic blocks, list of arguments (for dump only) and place database, which kee
 
 ### Basic Blocks
 
-A basic block is identified by its index in the function's basic block list. It contains a list of BIR nodes (instructions) and a list of successor
+A basic block is identified by its index in the function's basic block list.
+It contains a list of BIR statements and a list of successor
 basic block indices in CFG.
 
-### BIR Nodes (Instructions)
+### BIR Statements
 
-BIR nodes are of three categories:
+BIR statements are of three categories:
 
 - An assignment of an expression to a local (place).
 - A control flow operation (switch, return).
-- A special node (not executable) node, which carries additional information for borrow-checking (`StorageDead`, `StorageLive`).
+- A special statement (not executable), which carries additional information for borrow-checking (`StorageDead`, `StorageLive`).
 
 #### Expressions
 
@@ -147,7 +148,7 @@ lifetime) flow needs to be tracked.
 - `Operator<ARITY>` represents any kind of operation, except the following, where special information is needed either for borrow-checking or for
   better debugging.
 - `BorrowExpr` represents a borrow operation.
-- `AssignmentExpr` holds a place for a node of assignment (i.e., no operation is done on the place, it is just assigned).
+- `AssignmentExpr` holds a place for an assignment statement (i.e., no operation is done on the place, it is just assigned).
 - `CallExpr` represents a function call.
     - For functions, the callable is represented by a constant place (see below). (E.i. all calls use the same constant place.)
     - For closures and function pointers, the callable is represented by a (non-constant) place.

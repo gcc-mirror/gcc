@@ -37,8 +37,8 @@ class Dump : public Visitor
   std::vector<BasicBlockId> bb_fold_map;
   std::vector<PlaceId> place_map;
 
-  PlaceId node_place = INVALID_PLACE;
-  BasicBlockId node_bb = INVALID_BB;
+  PlaceId statement_place = INVALID_PLACE;
+  BasicBlockId statement_bb = INVALID_BB;
   bool bb_terminated = false;
 
 public:
@@ -49,7 +49,7 @@ public:
   void go (bool enable_simplify_cfg = false);
 
 protected:
-  void visit (Node &node) override;
+  void visit (Statement &stmt) override;
   void visit_place (PlaceId place_id);
   void visit_move_place (PlaceId place_id);
   void visit (BorrowExpr &expr) override;

@@ -77,13 +77,13 @@ private:
     if (body.has_expr () && !lookup_type (body)->is_unit ())
       {
 	push_assignment (RETURN_VALUE_PLACE, translated);
-	ctx.get_current_bb ().statements.emplace_back (Node::Kind::RETURN);
+	ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
       }
     else if (!ctx.get_current_bb ().is_terminated ())
       {
 	push_assignment (RETURN_VALUE_PLACE,
 			 ctx.place_db.get_constant (lookup_type (body)));
-	ctx.get_current_bb ().statements.emplace_back (Node::Kind::RETURN);
+	ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
       }
   };
 };
