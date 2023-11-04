@@ -25,5 +25,5 @@
 int main()
 {
   std::span<int, std::dynamic_extent> s;
-  s.back();
+  (void) s.back();
 }

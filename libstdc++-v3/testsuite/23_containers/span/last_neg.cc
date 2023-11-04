@@ -24,6 +24,6 @@ test01()
 {
   int a[2];
   std::span<int, 2> s(a);
-  s.last<3>(); // { dg-error "here" }
+  (void) s.last<3>(); // { dg-error "here" }
 }
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
