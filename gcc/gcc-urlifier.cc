@@ -37,7 +37,8 @@ public:
   char *get_url_for_quoted_text (const char *p, size_t sz) const final override;
 
   const char *get_url_suffix_for_quoted_text (const char *p, size_t sz) const;
-  const char *get_url_suffix_for_quoted_text (const char *p) const;
+  /* We use ATTRIBUTE_UNUSED as this helper is called only from ASSERTs.  */
+  const char *get_url_suffix_for_quoted_text (const char *p) const ATTRIBUTE_UNUSED;
 
 private:
   static char *
