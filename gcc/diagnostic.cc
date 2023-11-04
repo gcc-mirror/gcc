@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "cpplib.h"
 #include "text-art/theme.h"
+#include "pretty-print-urlifier.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -193,6 +194,7 @@ diagnostic_context::initialize (int n_opts)
   m_option_state = nullptr;
   m_option_name = nullptr;
   m_get_option_url = nullptr;
+  m_urlifier = nullptr;
   m_last_location = UNKNOWN_LOCATION;
   m_last_module = nullptr;
   m_client_aux_data = nullptr;
@@ -350,6 +352,9 @@ diagnostic_context::finish ()
       delete m_client_data_hooks;
       m_client_data_hooks = nullptr;
     }
+
+  delete m_urlifier;
+  m_urlifier = nullptr;
 }
 
 void
@@ -1567,7 +1572,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     m_output_format->on_begin_group ();
   m_diagnostic_groups.m_emission_count++;
 
-  pp_format (this->printer, &diagnostic->message);
+  pp_format (this->printer, &diagnostic->message, m_urlifier);
   m_output_format->on_begin_diagnostic (diagnostic);
   pp_output_formatted_text (this->printer);
   if (m_show_cwe)

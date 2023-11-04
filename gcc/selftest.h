@@ -231,6 +231,7 @@ extern void et_forest_cc_tests ();
 extern void fibonacci_heap_cc_tests ();
 extern void fold_const_cc_tests ();
 extern void function_tests_cc_tests ();
+extern void gcc_urlifier_cc_tests ();
 extern void ggc_tests_cc_tests ();
 extern void gimple_cc_tests ();
 extern void hash_map_tests_cc_tests ();

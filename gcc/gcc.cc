@@ -46,6 +46,7 @@ compilation is specified by a string called a "spec".  */
 #include "spellcheck.h"
 #include "opts-jobserver.h"
 #include "common/common-target.h"
+#include "gcc-urlifier.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -8291,6 +8292,7 @@ driver::global_initializations ()
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
+  global_dc->m_urlifier = make_gcc_urlifier ();
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */

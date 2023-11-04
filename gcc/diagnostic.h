@@ -518,6 +518,10 @@ public:
      particular option.  */
   char *(*m_get_option_url) (diagnostic_context *, int);
 
+  /* An optional hook for adding URLs to quoted text strings in
+     diagnostics.  Only used for the main diagnostic message.  */
+  urlifier *m_urlifier;
+
   void (*m_print_path) (diagnostic_context *, const diagnostic_path *);
   json::value *(*m_make_json_for_path) (diagnostic_context *,
 					const diagnostic_path *);

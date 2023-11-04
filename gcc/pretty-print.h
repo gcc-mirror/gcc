@@ -228,6 +228,8 @@ class format_postprocessor
 /* True if colors should be shown.  */
 #define pp_show_color(PP) (PP)->show_color
 
+class urlifier;
+
 /* The data structure that contains the bare minimum required to do
    proper pretty-printing.  Clients may derived from this structure
    and add additional fields they need.  */
@@ -404,7 +406,8 @@ extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_flush (pretty_printer *);
 extern void pp_really_flush (pretty_printer *);
-extern void pp_format (pretty_printer *, text_info *);
+extern void pp_format (pretty_printer *, text_info *,
+		       const urlifier * = nullptr);
 extern void pp_output_formatted_text (pretty_printer *);
 extern void pp_format_verbatim (pretty_printer *, text_info *);
 

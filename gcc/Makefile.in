@@ -1286,7 +1286,7 @@ FORTRAN_TARGET_OBJS=@fortran_target_objs@
 RUST_TARGET_OBJS=@rust_target_objs@
 
 # Object files for gcc many-languages driver.
-GCC_OBJS = gcc.o gcc-main.o ggc-none.o
+GCC_OBJS = gcc.o gcc-main.o ggc-none.o gcc-urlifier.o
 
 c-family-warn = $(STRICT_WARN)
 
@@ -1459,6 +1459,7 @@ OBJS = \
 	function-tests.o \
 	fwprop.o \
 	gcc-rich-location.o \
+	gcc-urlifier.o \
 	gcse.o \
 	gcse-common.o \
 	ggc-common.o \
