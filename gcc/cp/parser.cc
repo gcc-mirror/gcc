@@ -24731,7 +24731,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						      requires_clause, params);
 		  if (flag_contracts_nonattr)
 		    {
-		      if (find_contract (declarator->std_attributes)
+		      if (declarator
+			  && find_contract (declarator->std_attributes)
 			  && find_contract (attrs))
 			{
 			  gcc_rich_location richloc (attr_loc);
@@ -31639,12 +31640,19 @@ cp_parser_std_attribute_spec (cp_parser *parser, bool nonattr_allowed)
   tree attributes = NULL_TREE;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
+  tree attr_name = NULL_TREE;
+  if (token->type == CPP_NAME)
+    {
+      attr_name = token->u.value;
+      attr_name = canonicalize_attr_name (attr_name);
+    }
+
   if ((token->type == CPP_OPEN_SQUARE
       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_OPEN_SQUARE)
-      || nonattr_allowed)
+      || (nonattr_allowed && attr_name && contract_attribute_p (attr_name)))
     {
       tree attr_ns = NULL_TREE;
-      tree attr_name = NULL_TREE;
+
 
       if (!nonattr_allowed)
 	{
@@ -31652,12 +31660,6 @@ cp_parser_std_attribute_spec (cp_parser *parser, bool nonattr_allowed)
 	  cp_lexer_consume_token (parser->lexer);
 	}
 
-      token = cp_lexer_peek_token (parser->lexer);
-      if (token->type == CPP_NAME)
-	{
-	  attr_name = token->u.value;
-	  attr_name = canonicalize_attr_name (attr_name);
-	}
 
       /* Handle contract-attribute-specs specially.  */
       if (attr_name && contract_attribute_p (attr_name))
