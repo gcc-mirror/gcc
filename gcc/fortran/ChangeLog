@@ -1,3 +1,12 @@
+2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2023-11-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112316
+	* parse.cc (parse_associate): Remove condition that caused this
+	regression.
+
 2023-10-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
