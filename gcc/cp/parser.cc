@@ -24695,6 +24695,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    = cp_parser_exception_specification_opt (parser,
 							     flags);
 
+		  location_t attr_loc = cp_lexer_peek_token (parser->lexer)->location;
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 		  if (flag_contracts_nonattr)
 		    attrs = chainon (attrs,
@@ -24716,7 +24717,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 		     void func (int x) __attribute__((vector(..)));  */
 		  tree gnu_attrs = NULL_TREE;
 		  tree requires_clause = NULL_TREE;
-		  cp_token* late_return_token = cp_lexer_peek_token (parser->lexer);
 		  late_return
 		    = cp_parser_late_return_type_opt (parser, declarator,
 						      requires_clause, params);
@@ -24725,7 +24725,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      if (find_contract (declarator->std_attributes)
 			  && find_contract (attrs))
 			{
-			  gcc_rich_location richloc (late_return_token->location);
+			  gcc_rich_location richloc (attr_loc);
 			  error_at (&richloc,
 				    "contracts cannot appear before a trailing return type");
 			}
