@@ -1,3 +1,140 @@
+2023-11-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/98541
+	* gcc.dg/Wnonnull-4.c: Adapt test.
+	* gcc.dg/Wstringop-overflow-40.c: Adapt test.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* gfortran.dg/proc_ptr_53.f90: New test.
+
+2023-11-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-simd-clone-20.c: New file.
+	* gfortran.dg/simd-builtins-1.h: Adapt.
+	* gfortran.dg/simd-builtins-6.f90: Adapt.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92887
+	* gfortran.dg/value_optional_1.f90: New test.
+
+2023-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111766
+	* gcc.dg/pr111766.c: New.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/20231103-1.f90: New testcase.
+	* gfortran.dg/20231103-2.f90: Likewise.
+
+2023-11-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/adddi3-1.c: New test case.
+	* gcc.target/arc/ashldi3-1.c: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/tree-prof/indir-call-prof-2.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/tree-prof/partition1.C: Likewise.
+	* g++.dg/tree-prof/partition2.C: Likewise.
+	* g++.dg/tree-prof/partition3.C: Likewise.
+	* g++.dg/tree-prof/pr51719.C: Likewise.
+	* g++.dg/tree-prof/pr57451.C: Likewise.
+	* g++.dg/tree-prof/pr59255.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/lto/20081109-1_0.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/lto/20081109_0.C: Likewise.
+	* g++.dg/lto/20091026-1_0.C: Likewise.
+	* g++.dg/lto/pr87906_0.C: Likewise.
+	* g++.dg/lto/pr88046_0.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/compat/eh/ctor1_main.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/compat/eh/ctor2_main.C: Likewise.
+	* g++.dg/compat/eh/dtor1_main.C: Likewise.
+	* g++.dg/compat/eh/filter1_main.C: Likewise.
+	* g++.dg/compat/eh/filter2_main.C: Likewise.
+	* g++.dg/compat/eh/new1_main.C: Likewise.
+	* g++.dg/compat/eh/nrv1_main.C: Likewise.
+	* g++.dg/compat/eh/spec3_main.C: Likewise.
+	* g++.dg/compat/eh/template1_main.C: Likewise.
+	* g++.dg/compat/eh/unexpected1_main.C: Likewise.
+	* g++.dg/compat/init/array5_main.C: Likewise.
+
+2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/cpp0x/catch1.C: Specify
+	'dg-require-effective-target exceptions_enabled'.
+	* g++.dg/cpp0x/constexpr-throw.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89785-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-throw.C: Likewise.
+	* g++.dg/cpp1y/pr79393-3.C: Likewise.
+	* g++.dg/cpp2a/consteval-memfn1.C: Likewise.
+	* g++.dg/cpp2a/consteval11.C: Likewise.
+	* g++.dg/cpp2a/consteval34.C: Likewise.
+	* g++.dg/cpp2a/consteval9.C: Likewise.
+	* g++.dg/cpp2a/explicit1.C: Likewise.
+	* g++.dg/cpp2a/explicit2.C: Likewise.
+	* g++.dg/cpp2a/explicit5.C: Likewise.
+	* g++.dg/eh/builtin10.C: Likewise.
+	* g++.dg/eh/builtin11.C: Likewise.
+	* g++.dg/eh/builtin6.C: Likewise.
+	* g++.dg/eh/builtin7.C: Likewise.
+	* g++.dg/eh/builtin9.C: Likewise.
+	* g++.dg/eh/dtor4.C: Likewise.
+	* g++.dg/eh/pr42859.C: Likewise.
+	* g++.dg/ext/stmtexpr25.C: Likewise.
+	* g++.dg/ext/vla4.C: Likewise.
+	* g++.dg/init/placement4.C: Likewise.
+	* g++.dg/other/error32.C: Likewise.
+	* g++.dg/parse/crash55.C: Likewise.
+	* g++.dg/parse/pr31952-2.C: Likewise.
+	* g++.dg/parse/pr31952-3.C: Likewise.
+	* g++.dg/tm/noexcept-7.C: Likewise.
+	* g++.dg/torture/pr43257.C: Likewise.
+	* g++.dg/torture/pr56694.C: Likewise.
+	* g++.dg/torture/pr81659.C: Likewise.
+	* g++.dg/warn/Wcatch-value-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-2.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3b.C: Likewise.
+	* g++.dg/warn/Wexceptions1.C: Likewise.
+	* g++.dg/warn/Wexceptions3.C: Likewise.
+	* g++.dg/warn/Winfinite-recursion-3.C: Likewise.
+	* g++.dg/warn/Wreturn-6.C: Likewise.
+	* g++.dg/warn/Wstringop-truncation-2.C: Likewise.
+	* g++.dg/warn/Wterminate1.C: Likewise.
+	* g++.old-deja/g++.eh/catch1.C: Likewise.
+	* g++.old-deja/g++.eh/catch10.C: Likewise.
+	* g++.old-deja/g++.eh/cond1.C: Likewise.
+	* g++.old-deja/g++.eh/ctor1.C: Likewise.
+	* g++.old-deja/g++.eh/throw2.C: Likewise.
+	* g++.old-deja/g++.other/cond5.C: Likewise.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112310
+	* gcc.dg/torture/pr112310.c: New testcase.
+
+2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98498
+	* gfortran.dg/interface_50.f90: New test.
+
+2023-11-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112326
+	* gcc.target/riscv/rvv/autovec/pr112326.c: New test.
+
 2023-11-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/112316

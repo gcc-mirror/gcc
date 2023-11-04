@@ -1,3 +1,163 @@
+2023-11-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/98541
+	* gimple-ssa-warn-access.cc
+	(pass_waccess::maybe_check_access_sizes): For VLA bounds
+	in parameters, only warn about null pointers with 'static'.
+
+2023-11-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Allow unmasked
+	calls to use masked simdclones.
+
+2023-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_initialize): Update for consolidation
+	of group-based fields.
+	(diagnostic_report_diagnostic): Likewise.
+	(diagnostic_context::begin_group): New, based on body of
+	auto_diagnostic_group's ctor.
+	(diagnostic_context::end_group): New, based on body of
+	auto_diagnostic_group's dtor.
+	(auto_diagnostic_group::auto_diagnostic_group): Convert to a call
+	to begin_group.
+	(auto_diagnostic_group::~auto_diagnostic_group): Convert to a call
+	to end_group.
+	* diagnostic.h (diagnostic_context::begin_group): New decl.
+	(diagnostic_context::end_group): New decl.
+	(diagnostic_context::diagnostic_group_nesting_depth): Rename to...
+	(diagnostic_context::m_diagnostic_groups.m_nesting_depth):
+	...this.
+	(diagnostic_context::diagnostic_group_emission_count): Rename
+	to...
+	(diagnostic_context::m_diagnostic_groups::m_emission_count):
+	...this.
+
+2023-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111766
+	* range-op.cc (operator_equal::fold_range): Check constants
+	against the bitmask.
+	(operator_not_equal::fold_range): Ditto.
+	* value-range.h (irange_bitmask::member_p): New.
+
+2023-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange_bitmask::adjust_range): New.
+	(irange::intersect_bitmask): Call adjust_range.
+	* value-range.h (irange_bitmask::adjust_range): New prototype.
+
+2023-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_memory_address_use_extended_reg_class_p):
+	Rename to ...
+	(ix86_memory_address_reg_class): ... this.  Generalize address
+	register class handling to allow multiple address register classes.
+	Return maximal class for unrecognized instructions.  Improve comments.
+	(ix86_insn_base_reg_class): Rewrite to handle
+	multiple address register classes.
+	(ix86_regno_ok_for_insn_base_p): Ditto.
+	(ix86_insn_index_reg_class): Ditto.
+	* config/i386/i386.md: Rename "gpr32" attribute to "addr"
+	and substitute its values with "0" -> "gpr16", "1" -> "*".
+	(addr): New attribute to limit allowed address register set.
+	(gpr32): Remove.
+	* config/i386/mmx.md: Rename "gpr32" attribute to "addr"
+	and substitute its values with "0" -> "gpr16", "1" -> "*".
+	* config/i386/sse.md: Ditto.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Simplify
+	LC PHI replacement.
+
+2023-11-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (addsi3): Fix GNU-style code formatting.
+	(adddi3): Change define_expand to generate a *adddi3.
+	(*adddi3): New define_insn_and_split to lower DImode additions
+	during the split1 pass (after combine and before reload).
+	(ashldi3): New define_expand to (only) generate *ashldi3_cnt1
+	for DImode left shifts by a single bit.
+	(*ashldi3_cnt1): New define_insn_and_split to lower DImode
+	left shifts by one bit to an *adddi3.
+
+2023-11-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (*cmov_uxtw_insn_insv): Remove
+	can_create_pseudo_p condition.
+
+2023-11-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Support SLP for dummy mask -1.
+	* tree-vect-stmts.cc (vectorizable_load): Ditto.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112366
+	* tree-vect-loop.cc (vectorizable_live_operation): Remove
+	assert.
+
+2023-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112310
+	* tree-ssa-pre.cc (do_hoist_insertion): Keep the union
+	of expressions, validate dependences are contained within
+	the hoistable set before hoisting.
+
+2023-11-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lrint<mode><v_i_l_ll_convert>2): Remove.
+	(lround<mode><v_i_l_ll_convert>2): Ditto.
+	(lceil<mode><v_i_l_ll_convert>2): Ditto.
+	(lfloor<mode><v_i_l_ll_convert>2): Ditto.
+	(lrint<mode><v_f2si_convert>2): New pattern for cvt from
+	FP to SI.
+	(lround<mode><v_f2si_convert>2): Ditto.
+	(lceil<mode><v_f2si_convert>2): Ditto.
+	(lfloor<mode><v_f2si_convert>2): Ditto.
+	(lrint<mode><v_f2di_convert>2): New pattern for cvt from
+	FP to DI.
+	(lround<mode><v_f2di_convert>2): Ditto.
+	(lceil<mode><v_f2di_convert>2): Ditto.
+	(lfloor<mode><v_f2di_convert>2): Ditto.
+	* config/riscv/vector-iterators.md: Renew iterators for both
+	the SI and DI.
+
+2023-11-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112326
+	* config/riscv/riscv-avlprop.cc (get_insn_vtype_mode): New function.
+	(simplify_replace_vlmax_avl): Ditto.
+	(pass_avlprop::execute): Add immediate AVL simplification.
+	* config/riscv/riscv-protos.h (imm_avl_p): Rename.
+	* config/riscv/riscv-v.cc (const_vlmax_p): Ditto.
+	(imm_avl_p): Ditto.
+	(emit_vlmax_insn): Adapt for new interface name.
+	* config/riscv/vector.md (mode_idx): New attribute.
+
+2023-11-03  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-02  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (lrint<mode><v_i_l_ll_convert>2): Remove.
+	(lround<mode><v_i_l_ll_convert>2): Ditto.
+	(lceil<mode><v_i_l_ll_convert>2): Ditto.
+	(lfloor<mode><v_i_l_ll_convert>2): Ditto.
+	(lrint<mode><v_f2si_convert>2): New pattern for cvt from
+	FP to SI.
+	(lround<mode><v_f2si_convert>2): Ditto.
+	(lceil<mode><v_f2si_convert>2): Ditto.
+	(lfloor<mode><v_f2si_convert>2): Ditto.
+	(lrint<mode><v_f2di_convert>2): New pattern for cvt from
+	FP to DI.
+	(lround<mode><v_f2di_convert>2): Ditto.
+	(lceil<mode><v_f2di_convert>2): Ditto.
+	(lfloor<mode><v_f2di_convert>2): Ditto.
+	* config/riscv/vector-iterators.md: Renew iterators for both
+	the SI and DI.
+
 2023-11-02  Edwin Lu  <ewlu@rivosinc.com>
 
 	* config/riscv/riscv.cc (riscv_sched_variable_issue): add disabled assert

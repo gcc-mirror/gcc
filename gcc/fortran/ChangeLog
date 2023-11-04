@@ -1,3 +1,27 @@
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* match.cc (gfc_match_call): If a procedure pointer has already been
+	resolved, do not create a new symbol in a procedure reference of
+	the same name shadowing the first one if it is host-associated.
+
+2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92887
+	* trans-expr.cc (conv_cond_temp): Helper function for creation of a
+	conditional temporary.
+	(gfc_conv_procedure_call): Handle passing of allocatable or pointer
+	actual argument to dummy with OPTIONAL + VALUE attribute.  Actual
+	arguments that are not allocated or associated are treated as not
+	present.
+
+2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98498
+	* interface.cc (upoly_ok): Defined operators using unlimited
+	polymorphic formal arguments must not override the intrinsic
+	operator use.
+
 2023-11-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/112316
