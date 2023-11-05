@@ -138,7 +138,7 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 
 To activate the OpenMP extensions for C/C++ and Fortran, the compile-time
 flag @option{-fopenmp} must be specified.  For C and C++, this enables
-the handling of the OpenMP directives using @code{#pragma omp} and, for C++, the
+the handling of the OpenMP directives using @code{#pragma omp} and the
 @code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
 @code{[[omp::decl(...)]]} attributes.  For Fortran, it enables for
 free source form the @code{!$omp} sentinel for directives and the
