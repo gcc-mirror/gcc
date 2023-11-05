@@ -24729,10 +24729,16 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  late_return
 		    = cp_parser_late_return_type_opt (parser, declarator,
 						      requires_clause, params);
+
+		  cp_finalize_omp_declare_simd (parser, &odsd);
+
+		  /* Parse the virt-specifier-seq.  */
+		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
+
 		  if (flag_contracts_nonattr)
 		    {
-		      if (declarator
-			  && find_contract (declarator->std_attributes)
+		      tree cca_attrs = cp_parser_std_attribute_spec_seq (parser, true);
+		      if (find_contract (cca_attrs)
 			  && find_contract (attrs))
 			{
 			  gcc_rich_location richloc (attr_loc);
@@ -24740,12 +24746,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 				    "contract checks cannot appear before a trailing return type "
 				    "or a requires-clause");
 			}
+		      else
+			attrs = chainon(attrs, cca_attrs);
 		    }
-
-		  cp_finalize_omp_declare_simd (parser, &odsd);
-
-		  /* Parse the virt-specifier-seq.  */
-		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
 		  location_t parens_loc = make_location (parens_start,
 							 parens_start,
@@ -25659,11 +25662,6 @@ cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
   /* Function declarations may be followed by a trailing
      requires-clause.  */
   requires_clause = cp_parser_requires_clause_opt (parser, false);
-
-  if (flag_contracts_nonattr)
-    declarator->std_attributes = chainon (declarator->std_attributes,
-					  cp_parser_std_attribute_spec_seq(parser,
-									   true));
 
   if (declare_simd_p)
     declarator->attributes
