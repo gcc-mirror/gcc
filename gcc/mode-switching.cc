@@ -65,13 +65,11 @@ along with GCC; see the file COPYING3.  If not see
    MODE is the mode this insn must be executed in.
    INSN_PTR is the insn to be executed (may be the note that marks the
    beginning of a basic block).
-   BBNUM is the flow graph basic block this insn occurs in.
    NEXT is the next insn in the same basic block.  */
 struct seginfo
 {
   int mode;
   rtx_insn *insn_ptr;
-  int bbnum;
   struct seginfo *next;
   HARD_REG_SET regs_live;
 };
@@ -83,11 +81,6 @@ struct bb_info
   int mode_out;
   int mode_in;
 };
-
-static struct seginfo * new_seginfo (int, rtx_insn *, int, HARD_REG_SET);
-static void add_seginfo (struct bb_info *, struct seginfo *);
-static void reg_dies (rtx, HARD_REG_SET *);
-static void reg_becomes_live (rtx, const_rtx, void *);
 
 /* Clear ode I from entity J in bitmap B.  */
 #define clear_mode_bit(b, j, i) \
@@ -148,13 +141,13 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 }
 
 /* Allocate a new BBINFO structure, initialized with the MODE, INSN,
-   and basic block BB parameters.
+   and REGS_LIVE parameters.
    INSN may not be a NOTE_INSN_BASIC_BLOCK, unless it is an empty
    basic block; that allows us later to insert instructions in a FIFO-like
    manner.  */
 
 static struct seginfo *
-new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
+new_seginfo (int mode, rtx_insn *insn, const HARD_REG_SET &regs_live)
 {
   struct seginfo *ptr;
 
@@ -163,7 +156,6 @@ new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
   ptr = XNEW (struct seginfo);
   ptr->mode = mode;
   ptr->insn_ptr = insn;
-  ptr->bbnum = bb;
   ptr->next = NULL;
   ptr->regs_live = regs_live;
   return ptr;
@@ -605,7 +597,7 @@ optimize_mode_switching (void)
 		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
 		if (ins_pos != BB_END (bb))
 		  ins_pos = NEXT_INSN (ins_pos);
-		ptr = new_seginfo (no_mode, ins_pos, bb->index, live_now);
+		ptr = new_seginfo (no_mode, ins_pos, live_now);
 		add_seginfo (info + bb->index, ptr);
 		for (i = 0; i < no_mode; i++)
 		  clear_mode_bit (transp[bb->index], j, i);
@@ -623,7 +615,7 @@ optimize_mode_switching (void)
 		    {
 		      any_set_required = true;
 		      last_mode = mode;
-		      ptr = new_seginfo (mode, insn, bb->index, live_now);
+		      ptr = new_seginfo (mode, insn, live_now);
 		      add_seginfo (info + bb->index, ptr);
 		      for (i = 0; i < no_mode; i++)
 			clear_mode_bit (transp[bb->index], j, i);
@@ -652,7 +644,7 @@ optimize_mode_switching (void)
 	     mark the block as nontransparent.  */
 	  if (!any_set_required)
 	    {
-	      ptr = new_seginfo (no_mode, BB_END (bb), bb->index, live_now);
+	      ptr = new_seginfo (no_mode, BB_END (bb), live_now);
 	      add_seginfo (info + bb->index, ptr);
 	      if (last_mode != no_mode)
 		for (i = 0; i < no_mode; i++)
