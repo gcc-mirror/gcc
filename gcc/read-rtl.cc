@@ -1896,8 +1896,10 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 		repeat_count--;
 		value = saved_rtx;
 	      }
-	    else
+	    else if (c == '(')
 	      value = read_nested_rtx ();
+	    else
+	      fatal_with_file_and_line ("unexpected character in vector");
 
 	    for (; repeat_count > 0; repeat_count--)
 	      {
