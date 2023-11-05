@@ -1,3 +1,11 @@
+2023-11-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* gfortran.dg/proc_ptr_53.f90: New test.
+
 2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2023-11-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97245
+	* match.cc (gfc_match_call): If a procedure pointer has already been
+	resolved, do not create a new symbol in a procedure reference of
+	the same name shadowing the first one if it is host-associated.
+
 2023-11-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
