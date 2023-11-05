@@ -23,7 +23,7 @@
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
-(define_register_constraint "R" "LEGACY_REGS"
+(define_register_constraint "R" "LEGACY_GENERAL_REGS"
  "Legacy register---the eight integer registers available on all
   i386 processors (@code{a}, @code{b}, @code{c}, @code{d},
   @code{si}, @code{di}, @code{bp}, @code{sp}).")
