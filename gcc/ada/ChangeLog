@@ -1,3 +1,7 @@
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/misc.cc: Update for changes to diagnostic_context.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc-interface/Makefile.in: Handle Darwin rpaths.

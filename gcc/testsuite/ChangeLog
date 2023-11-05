@@ -1,3 +1,38 @@
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/attrs-19.c: New test.
+	* gcc.dg/gomp/attrs-20.c: New test.
+	* gcc.dg/gomp/attrs-21.c: New test.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/attrs-1.c: New test.
+	* gcc.dg/gomp/attrs-2.c: New test.
+	* gcc.dg/gomp/attrs-3.c: New test.
+	* gcc.dg/gomp/attrs-4.c: New test.
+	* gcc.dg/gomp/attrs-5.c: New test.
+	* gcc.dg/gomp/attrs-6.c: New test.
+	* gcc.dg/gomp/attrs-7.c: New test.
+	* gcc.dg/gomp/attrs-8.c: New test.
+	* gcc.dg/gomp/attrs-9.c: New test.
+	* gcc.dg/gomp/attrs-10.c: New test.
+	* gcc.dg/gomp/attrs-11.c: New test.
+	* gcc.dg/gomp/attrs-12.c: New test.
+	* gcc.dg/gomp/attrs-13.c: New test.
+	* gcc.dg/gomp/attrs-14.c: New test.
+	* gcc.dg/gomp/attrs-15.c: New test.
+	* gcc.dg/gomp/attrs-16.c: New test.
+	* gcc.dg/gomp/attrs-17.c: New test.
+	* gcc.dg/gomp/attrs-18.c: New test.
+	* g++.dg/gomp/attrs-2.C: Enable for c++11 rather than just
+	c++17.  Avoid using omp : syntax for c++11, c++14 and c.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Update for changes to
+	diagnostic_context.
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.c: Likewise.
+
 2023-11-03  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/98541

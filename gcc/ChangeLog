@@ -1,3 +1,358 @@
+2023-11-04  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/112379
+	* gcc-urlifier.cc (get_url_suffix_for_quoted_text): Mark as
+	ATTRIBUTE_UNUSED.
+
+2023-11-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector-iterators.md: Remove HF modes.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc: Include "pretty-print-urlifier.h".
+	(diagnostic_context::initialize): Initialize m_urlifier.
+	(diagnostic_context::finish): Clean up m_urlifier
+	(diagnostic_report::diagnostic): m_urlifier to pp_format.
+	* diagnostic.h (diagnostic_context::m_urlifier): New field.
+	* gcc-urlifier.cc: New file.
+	* gcc-urlifier.def: New file.
+	* gcc-urlifier.h: New file.
+	* gcc.cc: Include "gcc-urlifier.h".
+	(driver::global_initializations): Initialize global_dc->m_urlifier.
+	* pretty-print-urlifier.h: New file.
+	* pretty-print.cc: Include "pretty-print-urlifier.h".
+	(obstack_append_string): New.
+	(urlify_quoted_string): New.
+	(pp_format): Add "urlifier" param and use it to implement optional
+	urlification of quoted text strings.
+	(pp_output_formatted_text): Make buffer a const pointer.
+	(selftest::pp_printf_with_urlifier): New.
+	(selftest::test_urlification): New.
+	(selftest::pretty_print_cc_tests): Call it.
+	* pretty-print.h (class urlifier): New forward declaration.
+	(pp_format): Add optional urlifier param.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::gcc_urlifier_cc_tests .
+	* selftest.h (selftest::gcc_urlifier_cc_tests): New decl.
+	* toplev.cc: Include "gcc-urlifier.h".
+	(general_init): Initialize global_dc->m_urlifier.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (GCC_OBJS): Add gcc-urlifier.o.
+	(OBJS): Likewise.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-text-art-charset=): Remove refererence
+	to diagnostic-text-art.h.
+	* coretypes.h (struct diagnostic_context): Replace forward decl
+	with...
+	(class diagnostic_context): ...this.
+	* diagnostic-format-json.cc: Update for changes to
+	diagnostic_context.
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-show-locus.cc: Likewise.
+	* diagnostic-text-art.h: Deleted file, moving content...
+	(enum diagnostic_text_art_charset): ...to diagnostic.h,
+	(DIAGNOSTICS_TEXT_ART_CHARSET_DEFAULT): ...deleting,
+	(diagnostics_text_art_charset_init): ...deleting in favor of
+	diagnostic_context::set_text_art_charset.
+	* diagnostic.cc: Remove include of "diagnostic-text-art.h".
+	(pedantic_warning_kind): Update for field renaming.
+	(permissive_error_kind): Likewise.
+	(permissive_error_option): Likewise.
+	(diagnostic_initialize): Convert to...
+	(diagnostic_context::initialize): ...this, updating for field
+	renamings.
+	(diagnostic_color_init): Convert to...
+	(diagnostic_context::color_init): ...this.
+	(diagnostic_urls_init): Convert to...
+	(diagnostic_context::urls_init): ...this.
+	(diagnostic_initialize_input_context): Convert to...
+	(diagnostic_context::initialize_input_context): ...this.
+	(diagnostic_finish): Convert to...
+	(diagnostic_context::finish): ...this, updating for field
+	renamings.
+	(diagnostic_context::set_output_format): New.
+	(diagnostic_context::set_client_data_hooks): New.
+	(diagnostic_context::create_edit_context): New.
+	(diagnostic_converted_column): Convert to...
+	(diagnostic_context::converted_column): ...this.
+	(diagnostic_get_location_text): Update for field renaming.
+	(diagnostic_check_max_errors): Convert to...
+	(diagnostic_context::check_max_errors): ...this, updating for
+	field renamings.
+	(diagnostic_action_after_output): Convert to...
+	(diagnostic_context::action_after_output): ...this, updating for
+	field renamings.
+	(last_module_changed_p): Delete.
+	(set_last_module): Delete.
+	(includes_seen): Convert to...
+	(diagnostic_context::includes_seen_p): ...this, updating for field
+	renamings.
+	(diagnostic_report_current_module): Convert to...
+	(diagnostic_context::report_current_module): ...this, updating for
+	field renamings, and replacing uses of last_module_changed_p and
+	set_last_module to simple field accesses.
+	(diagnostic_show_any_path): Convert to...
+	(diagnostic_context::show_any_path): ...this.
+	(diagnostic_classify_diagnostic): Convert to...
+	(diagnostic_context::classify_diagnostic): ...this, updating for
+	field renamings.
+	(diagnostic_push_diagnostics): Convert to...
+	(diagnostic_context::push_diagnostics): ...this, updating for field
+	renamings.
+	(diagnostic_pop_diagnostics): Convert to...
+	(diagnostic_context::pop_diagnostics): ...this, updating for field
+	renamings.
+	(get_any_inlining_info): Convert to...
+	(diagnostic_context::get_any_inlining_info): ...this, updating for
+	field renamings.
+	(update_effective_level_from_pragmas): Convert to...
+	(diagnostic_context::update_effective_level_from_pragmas):
+	...this, updating for field renamings.
+	(print_any_cwe): Convert to...
+	(diagnostic_context::print_any_cwe): ...this.
+	(print_any_rules): Convert to...
+	(diagnostic_context::print_any_rules): ...this.
+	(print_option_information): Convert to...
+	(diagnostic_context::print_option_information): ...this, updating
+	for field renamings.
+	(diagnostic_enabled): Convert to...
+	(diagnostic_context::diagnostic_enabled): ...this, updating for
+	field renamings.
+	(warning_enabled_at): Convert to...
+	(diagnostic_context::warning_enabled_at): ...this.
+	(diagnostic_report_diagnostic): Convert to...
+	(diagnostic_context::report_diagnostic): ...this, updating for
+	field renamings and conversions to member functions.
+	(diagnostic_append_note): Update for field renaming.
+	(diagnostic_impl): Use diagnostic_context::report_diagnostic
+	directly.
+	(diagnostic_n_impl): Likewise.
+	(diagnostic_emit_diagram): Convert to...
+	(diagnostic_context::emit_diagram): ...this, updating for field
+	renamings.
+	(error_recursion): Convert to...
+	(diagnostic_context::error_recursion): ...this.
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	Use accessor.
+	(diagnostics_text_art_charset_init): Convert to...
+	(diagnostic_context::set_text_art_charset): ...this.
+	(assert_location_text): Update for field renamings.
+	* diagnostic.h (enum diagnostic_text_art_charset): Move here from
+	diagnostic-text-art.h.
+	(struct diagnostic_context): Convert to...
+	(class diagnostic_context): ...this.
+	(diagnostic_context::ice_handler_callback_t): New typedef.
+	(diagnostic_context::set_locations_callback_t): New typedef.
+	(diagnostic_context::initialize): New decl.
+	(diagnostic_context::color_init): New decl.
+	(diagnostic_context::urls_init): New decl.
+	(diagnostic_context::file_cache_init): New decl.
+	(diagnostic_context::finish): New decl.
+	(diagnostic_context::set_set_locations_callback): New.
+	(diagnostic_context::initialize_input_context): New decl.
+	(diagnostic_context::warning_enabled_at): New decl.
+	(diagnostic_context::option_unspecified_p): New.
+	(diagnostic_context::report_diagnostic): New decl.
+	(diagnostic_context::report_current_module): New decl.
+	(diagnostic_context::check_max_errors): New decl.
+	(diagnostic_context::action_after_output): New decl.
+	(diagnostic_context::classify_diagnostic): New decl.
+	(diagnostic_context::push_diagnostics): New decl.
+	(diagnostic_context::pop_diagnostics): New decl.
+	(diagnostic_context::emit_diagram): New decl.
+	(diagnostic_context::set_output_format): New decl.
+	(diagnostic_context::set_text_art_charset): New decl.
+	(diagnostic_context::set_client_data_hooks): New decl.
+	(diagnostic_context::create_edit_context): New decl.
+	(diagnostic_context::set_warning_as_error_requested): New.
+	(diagnostic_context::set_report_bug): New.
+	(diagnostic_context::set_extra_output_kind): New.
+	(diagnostic_context::set_show_cwe): New.
+	(diagnostic_context::set_show_rules): New.
+	(diagnostic_context::set_path_format): New.
+	(diagnostic_context::set_show_path_depths): New.
+	(diagnostic_context::set_show_option_requested): New.
+	(diagnostic_context::set_max_errors): New.
+	(diagnostic_context::set_escape_format): New.
+	(diagnostic_context::set_ice_handler_callback): New.
+	(diagnostic_context::warning_as_error_requested_p): New.
+	(diagnostic_context::show_path_depths_p): New.
+	(diagnostic_context::get_path_format): New.
+	(diagnostic_context::get_escape_format): New.
+	(diagnostic_context::get_file_cache): New.
+	(diagnostic_context::get_edit_context): New.
+	(diagnostic_context::get_client_data_hooks): New.
+	(diagnostic_context::get_diagram_theme): New.
+	(diagnostic_context::converted_column): New decl.
+	(diagnostic_context::diagnostic_count): New.
+	(diagnostic_context::includes_seen_p): New decl.
+	(diagnostic_context::print_any_cwe): New decl.
+	(diagnostic_context::print_any_rules): New decl.
+	(diagnostic_context::print_option_information): New decl.
+	(diagnostic_context::show_any_path): New decl.
+	(diagnostic_context::error_recursion): New decl.
+	(diagnostic_context::diagnostic_enabled): New decl.
+	(diagnostic_context::get_any_inlining_info): New decl.
+	(diagnostic_context::update_effective_level_from_pragmas): New
+	decl.
+	(diagnostic_context::m_file_cache): Make private.
+	(diagnostic_context::diagnostic_count): Rename to...
+	(diagnostic_context::m_diagnostic_count): ...this and make
+	private.
+	(diagnostic_context::warning_as_error_requested): Rename to...
+	(diagnostic_context::m_warning_as_error_requested): ...this and
+	make private.
+	(diagnostic_context::n_opts): Rename to...
+	(diagnostic_context::m_n_opts): ...this and make private.
+	(diagnostic_context::classify_diagnostic): Rename to...
+	(diagnostic_context::m_classify_diagnostic): ...this and make
+	private.
+	(diagnostic_context::classification_history): Rename to...
+	(diagnostic_context::m_classification_history): ...this and make
+	private.
+	(diagnostic_context::n_classification_history): Rename to...
+	(diagnostic_context::m_n_classification_history): ...this and make
+	private.
+	(diagnostic_context::push_list): Rename to...
+	(diagnostic_context::m_push_list): ...this and make private.
+	(diagnostic_context::n_push): Rename to...
+	(diagnostic_context::m_n_push): ...this and make private.
+	(diagnostic_context::show_cwe): Rename to...
+	(diagnostic_context::m_show_cwe): ...this and make private.
+	(diagnostic_context::show_rules): Rename to...
+	(diagnostic_context::m_show_rules): ...this and make private.
+	(diagnostic_context::path_format): Rename to...
+	(diagnostic_context::m_path_format): ...this and make private.
+	(diagnostic_context::show_path_depths): Rename to...
+	(diagnostic_context::m_show_path_depths): ...this and make
+	private.
+	(diagnostic_context::show_option_requested): Rename to...
+	(diagnostic_context::m_show_option_requested): ...this and make
+	private.
+	(diagnostic_context::abort_on_error): Rename to...
+	(diagnostic_context::m_abort_on_error): ...this.
+	(diagnostic_context::show_column): Rename to...
+	(diagnostic_context::m_show_column): ...this.
+	(diagnostic_context::pedantic_errors): Rename to...
+	(diagnostic_context::m_pedantic_errors): ...this.
+	(diagnostic_context::permissive): Rename to...
+	(diagnostic_context::m_permissive): ...this.
+	(diagnostic_context::opt_permissive): Rename to...
+	(diagnostic_context::m_opt_permissive): ...this.
+	(diagnostic_context::fatal_errors): Rename to...
+	(diagnostic_context::m_fatal_errors): ...this.
+	(diagnostic_context::dc_inhibit_warnings): Rename to...
+	(diagnostic_context::m_inhibit_warnings): ...this.
+	(diagnostic_context::dc_warn_system_headers): Rename to...
+	(diagnostic_context::m_warn_system_headers): ...this.
+	(diagnostic_context::max_errors): Rename to...
+	(diagnostic_context::m_max_errors): ...this and make private.
+	(diagnostic_context::internal_error): Rename to...
+	(diagnostic_context::m_internal_error): ...this.
+	(diagnostic_context::option_enabled): Rename to...
+	(diagnostic_context::m_option_enabled): ...this.
+	(diagnostic_context::option_state): Rename to...
+	(diagnostic_context::m_option_state): ...this.
+	(diagnostic_context::option_name): Rename to...
+	(diagnostic_context::m_option_name): ...this.
+	(diagnostic_context::get_option_url): Rename to...
+	(diagnostic_context::m_get_option_url): ...this.
+	(diagnostic_context::print_path): Rename to...
+	(diagnostic_context::m_print_path): ...this.
+	(diagnostic_context::make_json_for_path): Rename to...
+	(diagnostic_context::m_make_json_for_path): ...this.
+	(diagnostic_context::x_data): Rename to...
+	(diagnostic_context::m_client_aux_data): ...this.
+	(diagnostic_context::last_location): Rename to...
+	(diagnostic_context::m_last_location): ...this.
+	(diagnostic_context::last_module): Rename to...
+	(diagnostic_context::m_last_module): ...this and make private.
+	(diagnostic_context::lock): Rename to...
+	(diagnostic_context::m_lock): ...this and make private.
+	(diagnostic_context::lang_mask): Rename to...
+	(diagnostic_context::m_lang_mask): ...this.
+	(diagnostic_context::inhibit_notes_p): Rename to...
+	(diagnostic_context::m_inhibit_notes_p): ...this.
+	(diagnostic_context::report_bug): Rename to...
+	(diagnostic_context::m_report_bug): ...this and make private.
+	(diagnostic_context::extra_output_kind): Rename to...
+	(diagnostic_context::m_extra_output_kind): ...this and make
+	private.
+	(diagnostic_context::column_unit): Rename to...
+	(diagnostic_context::m_column_unit): ...this and make private.
+	(diagnostic_context::column_origin): Rename to...
+	(diagnostic_context::m_column_origin): ...this and make private.
+	(diagnostic_context::tabstop): Rename to...
+	(diagnostic_context::m_tabstop): ...this and make private.
+	(diagnostic_context::escape_format): Rename to...
+	(diagnostic_context::m_escape_format): ...this and make private.
+	(diagnostic_context::edit_context_ptr): Rename to...
+	(diagnostic_context::m_edit_context_ptr): ...this and make
+	private.
+	(diagnostic_context::set_locations_cb): Rename to...
+	(diagnostic_context::m_set_locations_cb): ...this and make
+	private.
+	(diagnostic_context::ice_handler_cb): Rename to...
+	(diagnostic_context::m_ice_handler_cb): ...this and make private.
+	(diagnostic_context::includes_seen): Rename to...
+	(diagnostic_context::m_includes_seen): ...this and make private.
+	(diagnostic_inhibit_notes): Update for field renaming.
+	(diagnostic_context_auxiliary_data): Likewise.
+	(diagnostic_abort_on_error): Convert from macro to inline function
+	and update for field renaming.
+	(diagnostic_kind_count): Convert from macro to inline function and
+	use diagnostic_count accessor.
+	(diagnostic_report_warnings_p): Update for field renaming.
+	(diagnostic_initialize): Convert decl to inline function calling
+	into diagnostic_context.
+	(diagnostic_color_init): Likewise.
+	(diagnostic_urls_init): Likewise.
+	(diagnostic_urls_init): Likewise.
+	(diagnostic_finish): Likewise.
+	(diagnostic_report_current_module): Likewise.
+	(diagnostic_show_any_path): Delete decl.
+	(diagnostic_initialize_input_context): Convert decl to inline
+	function calling into diagnostic_context.
+	(diagnostic_classify_diagnostic): Likewise.
+	(diagnostic_push_diagnostics): Likewise.
+	(diagnostic_pop_diagnostics): Likewise.
+	(diagnostic_report_diagnostic): Likewise.
+	(diagnostic_action_after_output): Likewise.
+	(diagnostic_check_max_errors): Likewise.
+	(diagnostic_file_cache_fini): Delete decl.
+	(diagnostic_converted_column): Delete decl.
+	(warning_enabled_at): Convert decl to inline function calling into
+	diagnostic_context.
+	(option_unspecified_p): New.
+	(diagnostic_emit_diagram): Delete decl.
+	* gcc.cc: Remove include of "diagnostic-text-art.h".
+	Update for changes to diagnostic_context.
+	* input.cc (diagnostic_file_cache_init): Move implementation
+	to...
+	(diagnostic_context::file_cache_init): ...this new member
+	function.
+	(diagnostic_file_cache_fini): Delete.
+	(diagnostics_file_cache_forcibly_evict_file): Update for
+	m_file_cache becoming private.
+	(location_get_source_line): Likewise.
+	(get_source_file_content): Likewise.
+	(location_missing_trailing_newline): Likewise.
+	* input.h (diagnostics_file_cache_fini): Delete.
+	* langhooks.cc: Update for changes to diagnostic_context.
+	* lto-wrapper.cc: Likewise.
+	* opts.cc: Remove include of "diagnostic-text-art.h".
+	Update for changes to diagnostic_context.
+	* selftest-diagnostic.cc: Update for changes to
+	diagnostic_context.
+	* toplev.cc: Likewise.
+	* tree-diagnostic-path.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+
 2023-11-03  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/98541

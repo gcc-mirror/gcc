@@ -1,3 +1,9 @@
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.h (objc_common_tree_size): Remove.
+	* objc-act.cc (objc_common_tree_size): Remove.
+	* objc-lang.cc (LANG_HOOKS_TREE_SIZE): Remove.
+
 2023-10-23  Andrew Pinski  <pinskia@gmail.com>
 
 	* objc-gnu-runtime-abi-01.cc (build_objc_method_call): Allow

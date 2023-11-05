@@ -1,3 +1,7 @@
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* bounds-checking.cc: Update for changes to diagnostic_context.
+
 2023-11-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112317

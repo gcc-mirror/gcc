@@ -1,3 +1,9 @@
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for changes to diagnostic_context.
+	* error.cc: Likewise.
+	* options.cc: Likewise.
+
 2023-11-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/97245

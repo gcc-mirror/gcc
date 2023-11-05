@@ -1,3 +1,16 @@
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pragma.cc:: (handle_pragma_push_options): Fix missing "GCC" in
+	name of pragma in "junk" message.
+	(handle_pragma_pop_options): Likewise.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Update for changes to diagnostic_context.
+	* c-indentation.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-warn.cc: Likewise.
+
 2023-11-01  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/71219

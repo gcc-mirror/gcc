@@ -1,3 +1,18 @@
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_parser): Adjust comment on omp_attrs_forbidden_p
+	member.
+	* parser.cc (cp_parser_omp_section_scan): Allow __directive__ spelling.
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc: Update for changes to diagnostic_context.
+	* class.cc: Likewise.
+	* decl.cc: Likewise.
+	* error.cc: Likewise.
+	* except.cc: Likewise.
+	* pt.cc: Likewise.
+
 2023-11-02  Jason Merrill  <jason@redhat.com>
 
 	* semantics.cc (nrv_data): Change visited to hash_set.

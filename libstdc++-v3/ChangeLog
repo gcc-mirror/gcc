@@ -1,3 +1,24 @@
+2023-11-04  Feng Jisen  <J1senn@outlook.com>
+
+	* include/bits/utility.h (_Nth_type): Remove redundant partial
+	specialization.
+
+2023-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110133
+	* include/std/system_error (system_error::system_error): Group
+	arguments so that concatenation can reuse rvalue's capacity.
+	* src/c++11/system_error.cc (strerror_string): New function.
+	[_GLIBCXX_HAVE_STRERROR_R] (use_strerror_result): New functions.
+	(generic_error_category::message): Use strerror_string.
+	(system_error_category::message): Likewise.
+
+2023-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Replace example that
+	uses a BADNAME.
+	* doc/html/manual/source_code_style.html: Regenerate.
+
 2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112314
