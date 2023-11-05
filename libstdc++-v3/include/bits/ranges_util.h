@@ -33,6 +33,7 @@
 #if __cplusplus > 201703L
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
+# include <bits/invoke.h>
 
 #ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
