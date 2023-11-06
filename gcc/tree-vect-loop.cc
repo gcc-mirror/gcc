@@ -6908,17 +6908,34 @@ merge_with_identity (gimple_stmt_iterator *gsi, tree mask, tree vectype,
 /* Successively apply CODE to each element of VECTOR_RHS, in left-to-right
    order, starting with LHS.  Insert the extraction statements before GSI and
    associate the new scalar SSA names with variable SCALAR_DEST.
+   If MASK is nonzero mask the input and then operate on it unconditionally.
    Return the SSA name for the result.  */
 
 static tree
 vect_expand_fold_left (gimple_stmt_iterator *gsi, tree scalar_dest,
-		       tree_code code, tree lhs, tree vector_rhs)
+		       tree_code code, tree lhs, tree vector_rhs,
+		       tree mask)
 {
   tree vectype = TREE_TYPE (vector_rhs);
   tree scalar_type = TREE_TYPE (vectype);
   tree bitsize = TYPE_SIZE (scalar_type);
   unsigned HOST_WIDE_INT vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
   unsigned HOST_WIDE_INT element_bitsize = tree_to_uhwi (bitsize);
+
+  /* Re-create a VEC_COND_EXPR to mask the input here in order to be able
+     to perform an unconditional element-wise reduction of it.  */
+  if (mask)
+    {
+      tree masked_vector_rhs = make_temp_ssa_name (vectype, NULL,
+						   "masked_vector_rhs");
+      tree neutral_op = neutral_op_for_reduction (scalar_type, code, NULL_TREE,
+						  false);
+      tree vector_identity = build_vector_from_val (vectype, neutral_op);
+      gassign *select = gimple_build_assign (masked_vector_rhs, VEC_COND_EXPR,
+					     mask, vector_rhs, vector_identity);
+      gsi_insert_before (gsi, select, GSI_SAME_STMT);
+      vector_rhs = masked_vector_rhs;
+    }
 
   for (unsigned HOST_WIDE_INT bit_offset = 0;
        bit_offset < vec_size_in_bits;
@@ -7156,7 +7173,8 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       else
 	{
 	  reduc_var = vect_expand_fold_left (gsi, scalar_dest_var,
-					     tree_code (code), reduc_var, def0);
+					     tree_code (code), reduc_var, def0,
+					     mask);
 	  new_stmt = SSA_NAME_DEF_STMT (reduc_var);
 	  /* Remove the statement, so that we can use the same code paths
 	     as for statements that we've just created.  */
