@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
+/* { dg-skip-if "newlib libc math causes different codegen" { newlib } } */
 /* { dg-options "-msse4.1 -O2 -Ofast" } */
 /* { dg-final { scan-assembler-times "roundps" 9 } } */
 /* { dg-final { scan-assembler-times "cvtps2dq" 1 } } */
