@@ -297,6 +297,7 @@ public:
   void set_output_format (diagnostic_output_format *output_format);
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
   void set_client_data_hooks (diagnostic_client_data_hooks *hooks);
+  void set_urlifier (urlifier *);
   void create_edit_context ();
   void set_warning_as_error_requested (bool val)
   {
@@ -518,10 +519,12 @@ public:
      particular option.  */
   char *(*m_get_option_url) (diagnostic_context *, int);
 
+private:
   /* An optional hook for adding URLs to quoted text strings in
      diagnostics.  Only used for the main diagnostic message.  */
   urlifier *m_urlifier;
 
+public:
   void (*m_print_path) (diagnostic_context *, const diagnostic_path *);
   json::value *(*m_make_json_for_path) (diagnostic_context *,
 					const diagnostic_path *);

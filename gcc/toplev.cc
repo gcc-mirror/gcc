@@ -1049,7 +1049,7 @@ general_init (const char *argv0, bool init_signals)
   global_dc->m_option_state = &global_options;
   global_dc->m_option_name = option_name;
   global_dc->m_get_option_url = get_option_url;
-  global_dc->m_urlifier = make_gcc_urlifier ();
+  global_dc->set_urlifier (make_gcc_urlifier ());
 
   if (init_signals)
     {

@@ -374,6 +374,14 @@ diagnostic_context::set_client_data_hooks (diagnostic_client_data_hooks *hooks)
 }
 
 void
+diagnostic_context::set_urlifier (urlifier *urlifier)
+{
+  /* Ideally we'd use a std::unique_ptr here.  */
+  delete m_urlifier;
+  m_urlifier = urlifier;
+}
+
+void
 diagnostic_context::create_edit_context ()
 {
   delete m_edit_context_ptr;
