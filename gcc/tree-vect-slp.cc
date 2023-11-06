@@ -2898,22 +2898,21 @@ vect_gather_slp_loads (vec<slp_tree> &loads, slp_tree node,
   if (!node || visited.add (node))
     return;
 
-  if (SLP_TREE_CHILDREN (node).length () == 0)
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    return;
+
+  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR)
     {
-      if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
-	return;
-      stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
+      if (STMT_VINFO_DATA_REF (stmt_info)
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
 	loads.safe_push (node);
     }
-  else
-    {
-      unsigned i;
-      slp_tree child;
-      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-	vect_gather_slp_loads (loads, child, visited);
-    }
+
+  unsigned i;
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    vect_gather_slp_loads (loads, child, visited);
 }
 
 

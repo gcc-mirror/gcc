@@ -2456,7 +2456,8 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   if (!mask_vectype)
-    mask_vectype = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (vectype));
+    mask_vectype = get_mask_type_for_scalar_type (vinfo, TREE_TYPE (vectype),
+						  mask_node_1);
 
   if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype))
     {
@@ -13379,6 +13380,25 @@ get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type,
 			       unsigned int group_size)
 {
   tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
+
+  if (!vectype)
+    return NULL;
+
+  return truth_type_for (vectype);
+}
+
+/* Function get_mask_type_for_scalar_type.
+
+   Returns the mask type corresponding to a result of comparison
+   of vectors of specified SCALAR_TYPE as supported by target.
+   NODE, if nonnull, is the SLP tree node that will use the returned
+   vector type.  */
+
+tree
+get_mask_type_for_scalar_type (vec_info *vinfo, tree scalar_type,
+			       slp_tree node)
+{
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type, node);
 
   if (!vectype)
     return NULL;

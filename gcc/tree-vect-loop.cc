@@ -2943,17 +2943,19 @@ start_over:
 		   != IFN_LAST)
 	    {
 	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
-		{
-		  stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
-		      (SLP_TREE_SCALAR_STMTS (load_node)[0]);
-		  /* Use SLP for strided accesses (or if we can't
-		     load-lanes).  */
-		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-		      || vect_load_lanes_supported
-			    (STMT_VINFO_VECTYPE (stmt_vinfo),
-			     DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
-		    break;
-		}
+		if (STMT_VINFO_GROUPED_ACCESS
+		      (SLP_TREE_REPRESENTATIVE (load_node)))
+		  {
+		    stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
+			(SLP_TREE_REPRESENTATIVE (load_node));
+		    /* Use SLP for strided accesses (or if we can't
+		       load-lanes).  */
+		    if (STMT_VINFO_STRIDED_P (stmt_vinfo)
+			|| vect_load_lanes_supported
+			     (STMT_VINFO_VECTYPE (stmt_vinfo),
+			      DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
+		      break;
+		  }
 
 	      can_use_lanes
 		= can_use_lanes && i == SLP_INSTANCE_LOADS (instance).length ();
@@ -3261,16 +3263,19 @@ again:
 				       "unsupported grouped store\n");
       FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, node)
 	{
-	  vinfo = SLP_TREE_SCALAR_STMTS (node)[0];
-	  vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
-	  bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
-	  size = DR_GROUP_SIZE (vinfo);
-	  vectype = STMT_VINFO_VECTYPE (vinfo);
-	  if (vect_load_lanes_supported (vectype, size, false) == IFN_LAST
-	      && ! vect_grouped_load_supported (vectype, single_element_p,
-						size))
-	    return opt_result::failure_at (vinfo->stmt,
-					   "unsupported grouped load\n");
+	  vinfo = SLP_TREE_REPRESENTATIVE (node);
+	  if (STMT_VINFO_GROUPED_ACCESS (vinfo))
+	    {
+	      vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
+	      bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
+	      size = DR_GROUP_SIZE (vinfo);
+	      vectype = STMT_VINFO_VECTYPE (vinfo);
+	      if (vect_load_lanes_supported (vectype, size, false) == IFN_LAST
+		  && ! vect_grouped_load_supported (vectype, single_element_p,
+						    size))
+		return opt_result::failure_at (vinfo->stmt,
+					       "unsupported grouped load\n");
+	    }
 	}
     }
 

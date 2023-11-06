@@ -2207,6 +2207,7 @@ extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
 extern tree get_vectype_for_scalar_type (vec_info *, tree, unsigned int = 0);
 extern tree get_vectype_for_scalar_type (vec_info *, tree, slp_tree);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree, unsigned int = 0);
+extern tree get_mask_type_for_scalar_type (vec_info *, tree, slp_tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
