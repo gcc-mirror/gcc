@@ -1201,6 +1201,9 @@ record_new_stack_level (void)
 rtx
 align_dynamic_address (rtx target, unsigned required_align)
 {
+  if (required_align == BITS_PER_UNIT)
+    return target;
+
   /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
      but we know it can't.  So add ourselves and then do
      TRUNC_DIV_EXPR.  */
