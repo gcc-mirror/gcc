@@ -10400,7 +10400,7 @@ pa_asm_trampoline_template (FILE *f)
 	  fputs ("\tldw		0(%r22),%r21\n", f);
 	  fputs ("\tldw		4(%r22),%r19\n", f);
 	  fputs ("\tbve		(%r21)\n", f);
-	  fputs ("\tldw		52(%r1),%r29\n", f);
+	  fputs ("\tldw		52(%r20),%r29\n", f);
 	  fputs ("\t.word	0\n", f);
 	  fputs ("\t.word	0\n", f);
 	  fputs ("\t.word	0\n", f);
