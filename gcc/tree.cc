@@ -12138,7 +12138,7 @@ strip_float_extensions (tree exp)
   if (DECIMAL_FLOAT_TYPE_P (expt) != DECIMAL_FLOAT_TYPE_P (subt))
     return exp;
 
-  if (TYPE_PRECISION (subt) > TYPE_PRECISION (expt))
+  if (element_precision (subt) > element_precision (expt))
     return exp;
 
   return strip_float_extensions (sub);
