@@ -187,11 +187,6 @@
   "@internal Vector memory operand."
   (match_operand 0 "vector_memory_operand"))
 
-(define_special_memory_constraint "Bc"
-  "@internal Constant memory operand."
-  (and (match_operand 0 "memory_operand")
-       (match_test "constant_address_p (XEXP (op, 0))")))
-
 (define_memory_constraint "Bk"
   "@internal TLS address that allows insn using non-integer registers."
   (and (match_operand 0 "memory_operand")
@@ -199,7 +194,8 @@
 
 (define_special_memory_constraint "Bn"
   "@internal Memory operand without REX prefix."
-  (match_operand 0 "norex_memory_operand"))
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "x86_extended_reg_mentioned_p (op)"))))
 
 (define_special_memory_constraint "Br"
   "@internal bcst memory operand."

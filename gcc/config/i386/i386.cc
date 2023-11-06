@@ -11366,49 +11366,48 @@ ix86_memory_address_reg_class (rtx_insn* insn)
      return maximum register class in this case.  */
   enum attr_addr addr_rclass = ADDR_GPR32;
 
-  if (TARGET_APX_EGPR && insn)
+  if (!insn)
+    return addr_rclass;
+
+  if (asm_noperands (PATTERN (insn)) >= 0
+      || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+    return ix86_apx_inline_asm_use_gpr32 ? ADDR_GPR32 : ADDR_GPR16;
+
+  /* Return maximum register class for unrecognized instructions.  */
+  if (INSN_CODE (insn) < 0)
+    return addr_rclass;
+
+  /* Try to recognize the insn before calling get_attr_addr.
+     Save current recog_data and current alternative.  */
+  struct recog_data_d saved_recog_data = recog_data;
+  int saved_alternative = which_alternative;
+
+  /* Update recog_data for processing of alternatives.  */
+  extract_insn_cached (insn);
+
+  /* If current alternative is not set, loop throught enabled
+     alternatives and get the most limited register class.  */
+  if (saved_alternative == -1)
     {
-      if (asm_noperands (PATTERN (insn)) >= 0
-	  || GET_CODE (PATTERN (insn)) == ASM_INPUT)
-	return ix86_apx_inline_asm_use_gpr32 ? ADDR_GPR32 : ADDR_GPR16;
+      alternative_mask enabled = get_enabled_alternatives (insn);
 
-      /* Return maximum register class for unrecognized instructions.  */
-      if (INSN_CODE (insn) < 0)
-	return addr_rclass;
-
-      /* Try to recognize the insn before calling get_attr_addr.
-	 Save current recog_data and current alternative.  */
-      struct recog_data_d saved_recog_data = recog_data;
-      int saved_alternative = which_alternative;
-
-      /* Update recog_data for processing of alternatives.  */
-      if (recog_data.insn != insn)
-	extract_insn_cached (insn);
-
-      /* If current alternative is not set, loop throught enabled
-	 alternatives and get the most limited register class.  */
-      if (saved_alternative == -1)
+      for (int i = 0; i < recog_data.n_alternatives; i++)
 	{
-	  alternative_mask enabled = get_enabled_alternatives (insn);
+	  if (!TEST_BIT (enabled, i))
+	    continue;
 
-	  for (int i = 0; i < recog_data.n_alternatives; i++)
-	    {
-	      if (!TEST_BIT (enabled, i))
-		continue;
-
-	      which_alternative = i;
-	      addr_rclass = MIN (addr_rclass, get_attr_addr (insn));
-	    }
+	  which_alternative = i;
+	  addr_rclass = MIN (addr_rclass, get_attr_addr (insn));
 	}
-      else
-	{
-	  which_alternative = saved_alternative;
-	  addr_rclass = get_attr_addr (insn);
-	}
-
-      recog_data = saved_recog_data;
-      which_alternative = saved_alternative;
     }
+  else
+    {
+      which_alternative = saved_alternative;
+      addr_rclass = get_attr_addr (insn);
+    }
+
+  recog_data = saved_recog_data;
+  which_alternative = saved_alternative;
 
   return addr_rclass;
 }
@@ -11421,7 +11420,7 @@ ix86_insn_base_reg_class (rtx_insn* insn)
   switch (ix86_memory_address_reg_class (insn))
     {
     case ADDR_GPR8:
-      gcc_unreachable ();
+      return LEGACY_GENERAL_REGS;
     case ADDR_GPR16:
       return GENERAL_GPR16;
     case ADDR_GPR32:
@@ -11439,7 +11438,7 @@ ix86_regno_ok_for_insn_base_p (int regno, rtx_insn* insn)
   switch (ix86_memory_address_reg_class (insn))
     {
     case ADDR_GPR8:
-      gcc_unreachable ();
+      return LEGACY_INT_REGNO_P (regno);
     case ADDR_GPR16:
       return GENERAL_GPR16_REGNO_P (regno);
     case ADDR_GPR32:
@@ -11457,7 +11456,7 @@ ix86_insn_index_reg_class (rtx_insn* insn)
   switch (ix86_memory_address_reg_class (insn))
     {
     case ADDR_GPR8:
-      gcc_unreachable ();
+      return LEGACY_INDEX_REGS;
     case ADDR_GPR16:
       return INDEX_GPR16;
     case ADDR_GPR32:
