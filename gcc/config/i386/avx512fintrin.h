@@ -60,6 +60,26 @@ typedef enum
    function attribute.  All AVX512 intrins calling those AVX2 intrins or
    before will change their calls to these AVX512 version.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_undefined_ps (void)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
+  __m128 __Y = __Y;
+#pragma GCC diagnostic pop
+  return __Y;
+}
+
+extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_undefined_pd (void)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
+  __m128d __Y = __Y;
+#pragma GCC diagnostic pop
+  return __Y;
+}
+
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_avx512_setzero_ps (void)
 {
   return __extension__ (__m128){ 0.0f, 0.0f, 0.0f, 0.0f };
@@ -674,13 +694,13 @@ _mm_maskz_scalef_round_ss (__mmask8 __U, __m128 __A, __m128 __B, const int __R)
 #define _mm_scalef_round_sd(A, B, C)					\
   ((__m128d)								\
    __builtin_ia32_scalefsd_mask_round ((A), (B),			\
-				       (__v2df) _mm_undefined_pd (),	\
+				       (__v2df) _mm_avx512_undefined_pd (),	\
 				       -1, (C)))
 
 #define _mm_scalef_round_ss(A, B, C)					\
   ((__m128)								\
    __builtin_ia32_scalefss_mask_round ((A), (B),			\
-				       (__v4sf) _mm_undefined_ps (),	\
+				       (__v4sf) _mm_avx512_undefined_ps (),	\
 				       -1, (C)))
 
 #define _mm_mask_scalef_round_sd(W, U, A, B, C)				\

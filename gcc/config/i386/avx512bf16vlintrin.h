@@ -174,7 +174,7 @@ _mm_cvtness_sbh (float __A)
 {
   __v4sf __V = {__A, 0, 0, 0};
   __v8bf __R = __builtin_ia32_cvtneps2bf16_v4sf_mask ((__v4sf)__V,
-	       (__v8bf)_mm_undefined_si128 (), (__mmask8)-1);
+	       (__v8bf)_mm_avx512_undefined_si128 (), (__mmask8)-1);
   return __R[0];
 }
 

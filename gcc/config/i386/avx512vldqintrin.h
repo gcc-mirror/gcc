@@ -388,7 +388,7 @@ _mm256_broadcast_f64x2 (__m128d __A)
 {
   return (__m256d) __builtin_ia32_broadcastf64x2_256_mask ((__v2df)
 							   __A,
-						           (__v4df)_mm256_undefined_pd(),
+						           (__v4df)_mm256_avx512_undefined_pd(),
 							   (__mmask8) -1);
 }
 
@@ -419,7 +419,7 @@ _mm256_broadcast_i64x2 (__m128i __A)
 {
   return (__m256i) __builtin_ia32_broadcasti64x2_256_mask ((__v2di)
 							   __A,
-						           (__v4di)_mm256_undefined_si256(),
+						           (__v4di)_mm256_avx512_undefined_si256(),
 							   (__mmask8) -1);
 }
 
@@ -449,7 +449,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_broadcast_f32x2 (__m128 __A)
 {
   return (__m256) __builtin_ia32_broadcastf32x2_256_mask ((__v4sf) __A,
-						          (__v8sf)_mm256_undefined_ps(),
+						          (__v8sf)_mm256_avx512_undefined_ps(),
 							  (__mmask8) -1);
 }
 
@@ -478,7 +478,7 @@ _mm256_broadcast_i32x2 (__m128i __A)
 {
   return (__m256i) __builtin_ia32_broadcasti32x2_256_mask ((__v4si)
 							   __A,
-						          (__v8si)_mm256_undefined_si256(),
+						          (__v8si)_mm256_avx512_undefined_si256(),
 							   (__mmask8) -1);
 }
 
@@ -509,7 +509,7 @@ _mm_broadcast_i32x2 (__m128i __A)
 {
   return (__m128i) __builtin_ia32_broadcasti32x2_128_mask ((__v4si)
 							   __A,
-						          (__v4si)_mm_undefined_si128(),
+						          (__v4si)_mm_avx512_undefined_si128(),
 							   (__mmask8) -1);
 }
 
