@@ -28,9 +28,10 @@
 #ifndef _AVX512VPOPCNTDQVLINTRIN_H_INCLUDED
 #define _AVX512VPOPCNTDQVLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VPOPCNTDQ__) || !defined(__AVX512VL__)
+#if !defined(__AVX512VPOPCNTDQ__) || !defined(__AVX512VL__) \
+  || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vpopcntdq,avx512vl")
+#pragma GCC target("avx512vpopcntdq,avx512vl,no-evex512")
 #define __DISABLE_AVX512VPOPCNTDQVL__
 #endif /* __AVX512VPOPCNTDQVL__ */
 

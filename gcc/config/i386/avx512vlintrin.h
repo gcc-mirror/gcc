@@ -28,9 +28,9 @@
 #ifndef _AVX512VLINTRIN_H_INCLUDED
 #define _AVX512VLINTRIN_H_INCLUDED
 
-#ifndef __AVX512VL__
+#if !defined (__AVX512VL__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vl")
+#pragma GCC target("avx512vl,no-evex512")
 #define __DISABLE_AVX512VL__
 #endif /* __AVX512VL__ */
 
@@ -13650,7 +13650,7 @@ _mm256_permutex_pd (__m256d __X, const int __M)
 
 #if !defined (__AVX512CD__) || !defined (__AVX512VL__)
 #pragma GCC push_options
-#pragma GCC target("avx512vl,avx512cd")
+#pragma GCC target("avx512vl,avx512cd,no-evex512")
 #define __DISABLE_AVX512VLCD__
 #endif
 

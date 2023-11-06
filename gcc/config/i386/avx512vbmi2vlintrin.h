@@ -28,9 +28,9 @@
 #ifndef _AVX512VBMI2VLINTRIN_H_INCLUDED
 #define _AVX512VBMI2VLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VL__) || !defined(__AVX512VBMI2__)
+#if !defined(__AVX512VL__) || !defined(__AVX512VBMI2__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vbmi2,avx512vl")
+#pragma GCC target("avx512vbmi2,avx512vl,no-evex512")
 #define __DISABLE_AVX512VBMI2VL__
 #endif /* __AVX512VBMIVL__ */
 

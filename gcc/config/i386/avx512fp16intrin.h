@@ -28,9 +28,9 @@
 #ifndef _AVX512FP16INTRIN_H_INCLUDED
 #define _AVX512FP16INTRIN_H_INCLUDED
 
-#ifndef __AVX512FP16__
+#if !defined (__AVX512FP16__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512fp16")
+#pragma GCC target("avx512fp16,no-evex512")
 #define __DISABLE_AVX512FP16__
 #endif /* __AVX512FP16__ */
 
