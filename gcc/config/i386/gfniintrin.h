@@ -139,7 +139,7 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_gf2p8mul_epi8 (__mmask16 __A, __m128i __B, __m128i __C)
 {
   return (__m128i) __builtin_ia32_vgf2p8mulb_v16qi_mask ((__v16qi) __B,
-			(__v16qi) __C, (__v16qi) _mm_setzero_si128 (), __A);
+			(__v16qi) __C, (__v16qi) _mm_avx512_setzero_si128 (), __A);
 }
 
 #ifdef __OPTIMIZE__
@@ -162,7 +162,7 @@ _mm_maskz_gf2p8affineinv_epi64_epi8 (__mmask16 __A, __m128i __B, __m128i __C,
 {
   return (__m128i) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask ((__v16qi) __B,
 						(__v16qi) __C, __D,
-						(__v16qi) _mm_setzero_si128 (),
+						(__v16qi) _mm_avx512_setzero_si128 (),
 						 __A);
 }
 
@@ -181,7 +181,7 @@ _mm_maskz_gf2p8affine_epi64_epi8 (__mmask16 __A, __m128i __B, __m128i __C,
 				  const int __D)
 {
   return (__m128i) __builtin_ia32_vgf2p8affineqb_v16qi_mask ((__v16qi) __B,
-		     (__v16qi) __C, __D, (__v16qi) _mm_setzero_si128 (), __A);
+		     (__v16qi) __C, __D, (__v16qi) _mm_avx512_setzero_si128 (), __A);
 }
 #else
 #define _mm_mask_gf2p8affineinv_epi64_epi8(A, B, C, D, E) 		   \
@@ -191,7 +191,7 @@ _mm_maskz_gf2p8affine_epi64_epi8 (__mmask16 __A, __m128i __B, __m128i __C,
 #define _mm_maskz_gf2p8affineinv_epi64_epi8(A, B, C, D) \
   ((__m128i) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(		   \
 			(__v16qi)(__m128i)(B), (__v16qi)(__m128i)(C),	   \
-			(int)(D), (__v16qi)(__m128i) _mm_setzero_si128 (), \
+			(int)(D), (__v16qi)(__m128i) _mm_avx512_setzero_si128 (), \
 			(__mmask16)(A)))
 #define _mm_mask_gf2p8affine_epi64_epi8(A, B, C, D, E) \
   ((__m128i) __builtin_ia32_vgf2p8affineqb_v16qi_mask((__v16qi)(__m128i)(C),\
@@ -199,7 +199,7 @@ _mm_maskz_gf2p8affine_epi64_epi8 (__mmask16 __A, __m128i __B, __m128i __C,
 #define _mm_maskz_gf2p8affine_epi64_epi8(A, B, C, D)			    \
   ((__m128i) __builtin_ia32_vgf2p8affineqb_v16qi_mask((__v16qi)(__m128i)(B),\
 		(__v16qi)(__m128i)(C), (int)(D),			    \
-		(__v16qi)(__m128i) _mm_setzero_si128 (), (__mmask16)(A)))
+		(__v16qi)(__m128i) _mm_avx512_setzero_si128 (), (__mmask16)(A)))
 #endif
 
 #ifdef __DISABLE_GFNIAVX512VL__
@@ -228,7 +228,7 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_gf2p8mul_epi8 (__mmask32 __A, __m256i __B, __m256i __C)
 {
   return (__m256i) __builtin_ia32_vgf2p8mulb_v32qi_mask ((__v32qi) __B,
-			(__v32qi) __C, (__v32qi) _mm256_setzero_si256 (), __A);
+			(__v32qi) __C, (__v32qi) _mm256_avx512_setzero_si256 (), __A);
 }
 
 #ifdef __OPTIMIZE__
@@ -251,7 +251,7 @@ _mm256_maskz_gf2p8affineinv_epi64_epi8 (__mmask32 __A, __m256i __B,
 {
   return (__m256i) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask ((__v32qi) __B,
 				      (__v32qi) __C, __D,
-				      (__v32qi) _mm256_setzero_si256 (), __A);
+				      (__v32qi) _mm256_avx512_setzero_si256 (), __A);
 }
 
 extern __inline __m256i
@@ -272,7 +272,7 @@ _mm256_maskz_gf2p8affine_epi64_epi8 (__mmask32 __A, __m256i __B,
 				     __m256i __C, const int __D)
 {
   return (__m256i) __builtin_ia32_vgf2p8affineqb_v32qi_mask ((__v32qi) __B,
-		(__v32qi) __C, __D, (__v32qi)_mm256_setzero_si256 (), __A);
+		(__v32qi) __C, __D, (__v32qi)_mm256_avx512_setzero_si256 (), __A);
 }
 #else
 #define _mm256_mask_gf2p8affineinv_epi64_epi8(A, B, C, D, E)		\
@@ -282,14 +282,14 @@ _mm256_maskz_gf2p8affine_epi64_epi8 (__mmask32 __A, __m256i __B,
 #define _mm256_maskz_gf2p8affineinv_epi64_epi8(A, B, C, D)		\
   ((__m256i) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(		\
 	(__v32qi)(__m256i)(B), (__v32qi)(__m256i)(C), (int)(D),		\
-	(__v32qi)(__m256i) _mm256_setzero_si256 (), (__mmask32)(A)))
+	(__v32qi)(__m256i) _mm256_avx512_setzero_si256 (), (__mmask32)(A)))
 #define _mm256_mask_gf2p8affine_epi64_epi8(A, B, C, D, E) 		    \
   ((__m256i) __builtin_ia32_vgf2p8affineqb_v32qi_mask((__v32qi)(__m256i)(C),\
 	(__v32qi)(__m256i)(D), (int)(E), (__v32qi)(__m256i)(A), (__mmask32)(B)))
 #define _mm256_maskz_gf2p8affine_epi64_epi8(A, B, C, D)			    \
   ((__m256i) __builtin_ia32_vgf2p8affineqb_v32qi_mask((__v32qi)(__m256i)(B),\
 	 (__v32qi)(__m256i)(C), (int)(D),				    \
-	 (__v32qi)(__m256i) _mm256_setzero_si256 (), (__mmask32)(A)))
+	 (__v32qi)(__m256i) _mm256_avx512_setzero_si256 (), (__mmask32)(A)))
 #endif
 
 #ifdef __DISABLE_GFNIAVX512VLBW__
