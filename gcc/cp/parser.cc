@@ -2893,13 +2893,15 @@ static tree cp_parser_asm_clobber_list
 static tree cp_parser_asm_label_list
   (cp_parser *);
 static bool cp_next_tokens_can_be_attribute_p
-  (cp_parser *);
+  (cp_parser *, bool nonattr_allowed = false);
 static bool cp_next_tokens_can_be_gnu_attribute_p
   (cp_parser *);
+static bool cp_next_tokens_can_be_contract_attribute_p
+  (cp_parser *, bool nonattr_allowed);
 static bool cp_next_tokens_can_be_std_attribute_p
-  (cp_parser *);
+  (cp_parser *, bool nonattr_allowed = false);
 static bool cp_nth_tokens_can_be_std_attribute_p
-  (cp_parser *, size_t);
+  (cp_parser *, size_t, bool nonattr_allowed = false);
 static bool cp_nth_tokens_can_be_gnu_attribute_p
   (cp_parser *, size_t);
 static bool cp_nth_tokens_can_be_attribute_p
@@ -2917,9 +2919,9 @@ static tree cp_parser_std_attribute_spec
 static tree cp_parser_std_attribute_spec_seq
   (cp_parser *, bool nonattr_allowed = false);
 static size_t cp_parser_skip_std_attribute_spec_seq
-  (cp_parser *, size_t);
+  (cp_parser *, size_t, bool nonattr_allowed = false);
 static size_t cp_parser_skip_attributes_opt
-  (cp_parser *, size_t);
+  (cp_parser *, size_t, bool nonattr_allowed = false);
 static bool cp_parser_extension_opt
   (cp_parser *, int *);
 static void cp_parser_label_declaration
@@ -25910,15 +25912,16 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       bool is_cv_qualifier;
 
       /* Check for attributes first.  */
-      if (cp_next_tokens_can_be_attribute_p (parser))
+      if (cp_next_tokens_can_be_attribute_p (parser, (seen_type_specifier && is_trailing_return)))
 	{
 	  /* GNU attributes at the end of a declaration apply to the
 	     declaration as a whole, not to the trailing return type.  So look
 	     ahead to see if these attributes are at the end.  */
 	  if (seen_type_specifier && is_trailing_return
-	      && cp_next_tokens_can_be_gnu_attribute_p (parser))
+	      && (cp_next_tokens_can_be_gnu_attribute_p (parser)
+		  || cp_next_tokens_can_be_contract_attribute_p (parser, (seen_type_specifier && is_trailing_return))))
 	    {
-	      size_t n = cp_parser_skip_attributes_opt (parser, 1);
+	      size_t n = cp_parser_skip_attributes_opt (parser, 1, (seen_type_specifier && is_trailing_return));
 	      cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, n);
 	      if (tok->type == CPP_SEMICOLON || tok->type == CPP_COMMA
 		  || tok->type == CPP_EQ || tok->type == CPP_OPEN_BRACE)
@@ -30551,26 +30554,48 @@ cp_next_tokens_can_be_gnu_attribute_p (cp_parser *parser)
 }
 
 /* Return TRUE iff the next tokens in the stream are possibly the
+   beginning of a C++ contract attribute. */
+
+static bool
+cp_next_tokens_can_be_contract_attribute_p (cp_parser *parser,
+					    bool nonattr_allowed)
+{
+  tree attr_name = NULL_TREE;
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  return (nonattr_allowed
+	  && (token->type == CPP_NAME
+	      && nonattr_allowed
+	      &&  (attr_name = token->u.value)
+	      &&  contract_attribute_p (attr_name)));
+}
+
+/* Return TRUE iff the next tokens in the stream are possibly the
    beginning of a standard C++-11 attribute specifier.  */
 
 static bool
-cp_next_tokens_can_be_std_attribute_p (cp_parser *parser)
+cp_next_tokens_can_be_std_attribute_p (cp_parser *parser, bool nonattr_allowed)
 {
-  return cp_nth_tokens_can_be_std_attribute_p (parser, 1);
+  return cp_nth_tokens_can_be_std_attribute_p (parser, 1, nonattr_allowed);
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the
    beginning of a standard C++-11 attribute specifier.  */
 
 static bool
-cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
+cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n,
+				      bool nonattr_allowed)
 {
   cp_token *token = cp_lexer_peek_nth_token (parser->lexer, n);
 
+  tree attr_name = NULL_TREE;
   return ((token->type == CPP_KEYWORD && token->keyword == RID_ALIGNAS)
-	  || (token->type == CPP_OPEN_SQUARE
-	      && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
-	      && token->type == CPP_OPEN_SQUARE));
+	   || (token->type == CPP_OPEN_SQUARE
+		&& (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
+		&& token->type == CPP_OPEN_SQUARE)
+	   || (token->type == CPP_NAME
+		&& nonattr_allowed
+		&&  (attr_name = token->u.value)
+		&&  contract_attribute_p (attr_name)));
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the
@@ -30588,10 +30613,10 @@ cp_nth_tokens_can_be_gnu_attribute_p (cp_parser *parser, size_t n)
    GNU attribute list, or a standard C++11 attribute sequence.  */
 
 static bool
-cp_next_tokens_can_be_attribute_p (cp_parser *parser)
+cp_next_tokens_can_be_attribute_p (cp_parser *parser, bool nonattr_allowed)
 {
   return (cp_next_tokens_can_be_gnu_attribute_p (parser)
-	  || cp_next_tokens_can_be_std_attribute_p (parser));
+	  || cp_next_tokens_can_be_std_attribute_p (parser, nonattr_allowed));
 }
 
 /* Return true iff the next Nth tokens can be the beginning of either
@@ -31875,8 +31900,11 @@ cp_parser_skip_gnu_attributes_opt (cp_parser *parser, size_t n)
    attribute tokens, or N on failure.  */
 
 static size_t
-cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n)
+cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n, bool nonattr_allowed)
 {
+  tree attr_name = NULL;
+  cp_token *token = NULL;
+
   while (true)
     {
       if (cp_lexer_nth_token_is (parser->lexer, n, CPP_OPEN_SQUARE)
@@ -31897,6 +31925,18 @@ cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n)
 	    break;
 	  n = n2;
 	}
+      else if (nonattr_allowed
+	       && (token = cp_lexer_peek_nth_token (parser->lexer, n))
+	       && token->type == CPP_NAME
+	       && (attr_name = token->u.value)
+	       && contract_attribute_p (attr_name))
+	{
+	  size_t n2 = cp_parser_skip_balanced_tokens (parser, n + 1);
+	  if (n2 == n + 1)
+	    break;
+	  n = n2;
+	}
+
       else
 	break;
     }
@@ -31908,11 +31948,11 @@ cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n)
    tokens, or N on failure.  */
 
 static size_t
-cp_parser_skip_attributes_opt (cp_parser *parser, size_t n)
+cp_parser_skip_attributes_opt (cp_parser *parser, size_t n, bool nonattr_allowed)
 {
   if (cp_nth_tokens_can_be_gnu_attribute_p (parser, n))
     return cp_parser_skip_gnu_attributes_opt (parser, n);
-  return cp_parser_skip_std_attribute_spec_seq (parser, n);
+  return cp_parser_skip_std_attribute_spec_seq (parser, n, nonattr_allowed);
 }
 
 /* Parse an optional `__extension__' keyword.  Returns TRUE if it is
