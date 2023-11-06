@@ -1449,7 +1449,7 @@ extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsi16_si128 (short __A)
 {
-  return _mm_set_epi16 (0, 0, 0, 0, 0, 0, 0, __A);
+  return _mm_avx512_set_epi16 (0, 0, 0, 0, 0, 0, 0, __A);
 }
 
 extern __inline short

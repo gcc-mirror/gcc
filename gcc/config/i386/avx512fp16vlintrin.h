@@ -34,6 +34,32 @@
 #define __DISABLE_AVX512FP16VL__
 #endif /* __AVX512FP16VL__ */
 
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_set1_ps (float __F)
+{
+  return __extension__ (__m128)(__v4sf){ __F, __F, __F, __F };
+}
+
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set1_ps (float __A)
+{
+  return __extension__ (__m256){ __A, __A, __A, __A,
+				 __A, __A, __A, __A };
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_and_si128 (__m128i __A, __m128i __B)
+{
+  return (__m128i) ((__v2du)__A & (__v2du)__B);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_and_si256 (__m256i __A, __m256i __B)
+{
+  return (__m256i) ((__v4du)__A & (__v4du)__B);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_castph_ps (__m128h __a)
@@ -147,15 +173,15 @@ extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_zextph128_ph256 (__m128h __A)
 {
-  return (__m256h) _mm256_insertf128_ps (_mm256_avx512_setzero_ps (),
-					 (__m128) __A, 0);
+  return (__m256h) _mm256_avx512_insertf128_ps (_mm256_avx512_setzero_ps (),
+						(__m128) __A, 0);
 }
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_conj_pch (__m256h __A)
 {
-  return (__m256h) _mm256_xor_epi32 ((__m256i) __A, _mm256_set1_epi32 (1<<31));
+  return (__m256h) _mm256_xor_epi32 ((__m256i) __A, _mm256_avx512_set1_epi32 (1<<31));
 }
 
 extern __inline __m256h
@@ -183,7 +209,7 @@ extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_conj_pch (__m128h __A)
 {
-  return (__m128h) _mm_xor_epi32 ((__m128i) __A, _mm_set1_epi32 (1<<31));
+  return (__m128h) _mm_xor_epi32 ((__m128i) __A, _mm_avx512_set1_epi32 (1<<31));
 }
 
 extern __inline __m128h
@@ -482,16 +508,16 @@ extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_abs_ph (__m128h __A)
 {
-  return (__m128h) _mm_and_si128 ( _mm_set1_epi32 (0x7FFF7FFF),
-				   (__m128i) __A);
+  return (__m128h) _mm_avx512_and_si128 (_mm_avx512_set1_epi32 (0x7FFF7FFF),
+					 (__m128i) __A);
 }
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_abs_ph (__m256h __A)
 {
-  return (__m256h) _mm256_and_si256 ( _mm256_set1_epi32 (0x7FFF7FFF),
-				      (__m256i) __A);
+  return (__m256h) _mm256_avx512_and_si256 (_mm256_avx512_set1_epi32 (0x7FFF7FFF),
+					    (__m256i) __A);
 }
 
 /* vcmpph */
@@ -3145,8 +3171,8 @@ _mm256_maskz_fcmul_pch (__mmask8 __A, __m256h __B, __m256h __C)
 }
 
 #define _MM256_REDUCE_OP(op)						\
-  __m128h __T1 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 0);	\
-  __m128h __T2 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 1);	\
+  __m128h __T1 = (__m128h) _mm256_avx512_extractf128_pd ((__m256d) __A, 0);	\
+  __m128h __T2 = (__m128h) _mm256_avx512_extractf128_pd ((__m256d) __A, 1);	\
   __m128h __T3 = (__T1 op __T2);					\
   __m128h __T4 = (__m128h) __builtin_shuffle (__T3,			\
 		 (__v8hi) { 4, 5, 6, 7, 0, 1, 2, 3 });			\
@@ -3172,8 +3198,8 @@ _mm256_reduce_mul_ph (__m256h __A)
 
 #undef _MM256_REDUCE_OP
 #define _MM256_REDUCE_OP(op)						\
-  __m128h __T1 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 0);	\
-  __m128h __T2 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 1);	\
+  __m128h __T1 = (__m128h) _mm256_avx512_extractf128_pd ((__m256d) __A, 0);	\
+  __m128h __T2 = (__m128h) _mm256_avx512_extractf128_pd ((__m256d) __A, 1);	\
   __m128h __T3 = _mm_##op (__T1, __T2);				\
   __m128h __T4 = (__m128h) __builtin_shuffle (__T3,			\
 		 (__v8hi) { 2, 3, 0, 1, 6, 7, 4, 5 });			\
@@ -3321,7 +3347,7 @@ _mm256_set1_pch (_Float16 _Complex __A)
     float __b;
   } __u = { .__a = __A };
 
-  return (__m256h) _mm256_set1_ps (__u.__b);
+  return (__m256h) _mm256_avx512_set1_ps (__u.__b);
 }
 
 extern __inline __m128h
@@ -3334,7 +3360,7 @@ _mm_set1_pch (_Float16 _Complex __A)
     float __b;
   } __u = { .__a = __A };
 
-  return (__m128h) _mm_set1_ps (__u.__b);
+  return (__m128h) _mm_avx512_set1_ps (__u.__b);
 }
 
 // intrinsics below are alias for f*mul_*ch

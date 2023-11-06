@@ -44,6 +44,126 @@ typedef char __v32qi_u __attribute__ ((__vector_size__ (32),	\
 typedef char __v16qi_u __attribute__ ((__vector_size__ (16),	\
 				       __may_alias__, __aligned__ (1)));
 
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_set1_epi32 (int __A)
+{
+  return _mm_avx512_set_epi32 (__A, __A, __A, __A);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_set1_epi16 (short __A)
+{
+  return _mm_avx512_set_epi16 (__A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_set1_epi8 (char __A)
+{
+  return _mm_avx512_set_epi8 (__A, __A, __A, __A, __A, __A, __A, __A,
+			      __A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set_epi16 (short __q15, short __q14, short __q13, short __q12,
+			 short __q11, short __q10, short __q09, short __q08,
+			 short __q07, short __q06, short __q05, short __q04,
+			 short __q03, short __q02, short __q01, short __q00)
+{
+  return __extension__ (__m256i)(__v16hi){
+    __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
+    __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15
+  };
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set_epi8  (char __q31, char __q30, char __q29, char __q28,
+			 char __q27, char __q26, char __q25, char __q24,
+			 char __q23, char __q22, char __q21, char __q20,
+			 char __q19, char __q18, char __q17, char __q16,
+			 char __q15, char __q14, char __q13, char __q12,
+			 char __q11, char __q10, char __q09, char __q08,
+			 char __q07, char __q06, char __q05, char __q04,
+			 char __q03, char __q02, char __q01, char __q00)
+{
+  return __extension__ (__m256i)(__v32qi){
+    __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
+    __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15,
+    __q16, __q17, __q18, __q19, __q20, __q21, __q22, __q23,
+    __q24, __q25, __q26, __q27, __q28, __q29, __q30, __q31
+  };
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set1_epi16 (short __A)
+{
+  return _mm256_avx512_set_epi16 (__A, __A, __A, __A, __A, __A, __A, __A,
+				  __A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set1_epi32 (int __A)
+{
+  return __extension__ (__m256i)(__v8si){ __A, __A, __A, __A,
+					  __A, __A, __A, __A };
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_set1_epi8 (char __A)
+{
+  return _mm256_avx512_set_epi8 (__A, __A, __A, __A, __A, __A, __A, __A,
+				 __A, __A, __A, __A, __A, __A, __A, __A,
+				 __A, __A, __A, __A, __A, __A, __A, __A,
+				 __A, __A, __A, __A, __A, __A, __A, __A);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_max_epi16 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pmaxsw128 ((__v8hi)__A, (__v8hi)__B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_min_epi16 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pminsw128 ((__v8hi)__A, (__v8hi)__B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_max_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) __builtin_ia32_pmaxuw128 ((__v8hi)__X, (__v8hi)__Y);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_min_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) __builtin_ia32_pminuw128 ((__v8hi)__X, (__v8hi)__Y);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_max_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) __builtin_ia32_pmaxsb128 ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_min_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) __builtin_ia32_pminsb128 ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_max_epu8 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pmaxub128 ((__v16qi)__A, (__v16qi)__B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_min_epu8 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pminub128 ((__v16qi)__A, (__v16qi)__B);
+}
+
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_mov_epi8 (__m256i __W, __mmask32 __U, __m256i __A)
@@ -52,6 +172,136 @@ _mm256_mask_mov_epi8 (__m256i __W, __mmask32 __U, __m256i __A)
 						    (__v32qi) __W,
 						    (__mmask32) __U);
 }
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_max_epi16 (__m256i __A, __m256i __B)
+{
+  return (__m256i)__builtin_ia32_pmaxsw256 ((__v16hi)__A, (__v16hi)__B);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_min_epi16 (__m256i __A, __m256i __B)
+{
+  return (__m256i)__builtin_ia32_pminsw256 ((__v16hi)__A, (__v16hi)__B);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_max_epu16 (__m256i __A, __m256i __B)
+{
+  return (__m256i)__builtin_ia32_pmaxuw256 ((__v16hi)__A, (__v16hi)__B);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_min_epu16 (__m256i __A, __m256i __B)
+{
+  return (__m256i)__builtin_ia32_pminuw256 ((__v16hi)__A, (__v16hi)__B);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_insertf128_ps (__m256 __X, __m128 __Y, const int __O)
+{
+  return (__m256) __builtin_ia32_vinsertf128_ps256 ((__v8sf)__X,
+						    (__v4sf)__Y,
+						    __O);
+}
+
+extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_extractf128_pd (__m256d __X, const int __N)
+{
+  return (__m128d) __builtin_ia32_vextractf128_pd256 ((__v4df)__X, __N);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_extracti128_si256 (__m256i __X, const int __M)
+{
+  return (__m128i) __builtin_ia32_extract128i256 ((__v4di)__X, __M);
+}
+#else
+#define _mm256_avx512_insertf128_ps(X, Y, O)					\
+  ((__m256) __builtin_ia32_vinsertf128_ps256 ((__v8sf)(__m256)(X),	\
+					      (__v4sf)(__m128)(Y),  	\
+					      (int)(O)))
+
+#define _mm256_avx512_extractf128_pd(X, N)					\
+  ((__m128d) __builtin_ia32_vextractf128_pd256 ((__v4df)(__m256d)(X),	\
+						(int)(N)))
+
+#define _mm256_avx512_extracti128_si256(X, M)				\
+  ((__m128i) __builtin_ia32_extract128i256 ((__v4di)(__m256i)(X), (int)(M)))
+#endif
+
+#define _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16(op) \
+  __v8hi __T1 = (__v8hi)_mm256_avx512_extracti128_si256 (__W, 0); \
+  __v8hi __T2 = (__v8hi)_mm256_avx512_extracti128_si256 (__W, 1); \
+  __v8hi __T3 = __T1 op __T2; \
+  __v8hi __T4 = __builtin_shufflevector (__T3, __T3, 4, 5, 6, 7, 4, 5, 6, 7); \
+  __v8hi __T5 = __T3 op __T4; \
+  __v8hi __T6 = __builtin_shufflevector (__T5, __T5, 2, 3, 2, 3, 4, 5, 6, 7); \
+  __v8hi __T7 = __T5 op __T6; \
+  __v8hi __T8 = __builtin_shufflevector (__T7, __T7, 1, 1, 2, 3, 4, 5, 6, 7); \
+  __v8hi __T9 = __T7 op __T8; \
+  return __T9[0]
+
+#define _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16(op) \
+  __m128i __T1 = _mm256_avx512_extracti128_si256 (__V, 0); \
+  __m128i __T2 = _mm256_avx512_extracti128_si256 (__V, 1); \
+  __m128i __T3 = _mm_avx512_##op (__T1, __T2); \
+  __m128i __T4 = (__m128i)__builtin_shufflevector ((__v8hi)__T3, \
+		  (__v8hi)__T3, 4, 5, 6, 7, 4, 5, 6, 7); \
+  __m128i __T5 = _mm_avx512_##op (__T3, __T4); \
+  __m128i __T6 = (__m128i)__builtin_shufflevector ((__v8hi)__T5, \
+		  (__v8hi)__T5, 2, 3, 2, 3, 4, 5, 6, 7); \
+  __m128i __T7 = _mm_avx512_##op (__T5, __T6); \
+  __m128i __T8 = (__m128i)__builtin_shufflevector ((__v8hi)__T7, \
+		  (__v8hi)__T7, 1, 1, 2, 3, 4, 5, 6, 7); \
+  __v8hi __T9 = (__v8hi)_mm_avx512_##op (__T7, __T8); \
+  return __T9[0]
+
+#define _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8(op) \
+  __v16qi __T1 = (__v16qi)_mm256_avx512_extracti128_si256 (__W, 0); \
+  __v16qi __T2 = (__v16qi)_mm256_avx512_extracti128_si256 (__W, 1); \
+  __v16qi __T3 = __T1 op __T2; \
+  __v16qi __T4 = __builtin_shufflevector (__T3, __T3, \
+		  8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __v16qi __T5 = __T3 op __T4; \
+  __v16qi __T6 = __builtin_shufflevector (__T5, __T5, \
+		  4, 5, 6, 7, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __v16qi __T7 = __T5 op __T6; \
+  __v16qi __T8 = __builtin_shufflevector (__T7, __T7, \
+		  2, 3, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __v16qi __T9 = __T7 op __T8; \
+  __v16qi __T10 = __builtin_shufflevector (__T9, __T9, \
+		  1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __v16qi __T11 = __T9 op __T10; \
+  return __T11[0]
+
+#define _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8(op) \
+  __m128i __T1 = _mm256_avx512_extracti128_si256 (__V, 0); \
+  __m128i __T2 = _mm256_avx512_extracti128_si256 (__V, 1); \
+  __m128i __T3 = _mm_avx512_##op (__T1, __T2); \
+  __m128i __T4 = (__m128i)__builtin_shufflevector ((__v16qi)__T3, \
+		  (__v16qi)__T3, \
+		  8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __m128i __T5 = _mm_avx512_##op (__T3, __T4); \
+  __m128i __T6 = (__m128i)__builtin_shufflevector ((__v16qi)__T5, \
+		  (__v16qi)__T5, \
+		  4, 5, 6, 7, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __m128i __T7 = _mm_avx512_##op (__T5, __T6); \
+  __m128i __T8 = (__m128i)__builtin_shufflevector ((__v16qi)__T7, \
+		  (__v16qi)__T5, \
+		  2, 3, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __m128i __T9 = _mm_avx512_##op (__T7, __T8); \
+  __m128i __T10 = (__m128i)__builtin_shufflevector ((__v16qi)__T9, \
+		  (__v16qi)__T9, \
+		  1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15); \
+  __v16qi __T11 = (__v16qi)_mm_avx512_##op (__T9, __T10); \
+  return __T11[0]
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -4746,7 +4996,7 @@ extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_mul_epi16 (__mmask8 __M, __m128i __W)
 {
-  __W = _mm_mask_mov_epi16 (_mm_set1_epi16 (1), __M, __W);
+  __W = _mm_mask_mov_epi16 (_mm_avx512_set1_epi16 (1), __M, __W);
   _MM_REDUCE_OPERATOR_BASIC_EPI16 (*);
 }
 
@@ -4754,7 +5004,7 @@ extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_and_epi16 (__mmask8 __M, __m128i __W)
 {
-  __W = _mm_mask_mov_epi16 (_mm_set1_epi16 (-1), __M, __W);
+  __W = _mm_mask_mov_epi16 (_mm_avx512_set1_epi16 (-1), __M, __W);
   _MM_REDUCE_OPERATOR_BASIC_EPI16 (&);
 }
 
@@ -4770,8 +5020,8 @@ extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_max_epi16 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (-32767-1), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epi16);
+  __V = _mm_mask_mov_epi16 (_mm_avx512_set1_epi16 (-32767-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (avx512_max_epi16);
 }
 
 extern __inline unsigned short
@@ -4779,23 +5029,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_max_epu16 (__mmask16 __M, __m128i __V)
 {
   __V = _mm_maskz_mov_epi16 (__M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epu16);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (avx512_max_epu16);
 }
 
 extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_min_epi16 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (32767), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epi16);
+  __V = _mm_mask_mov_epi16 (_mm_avx512_set1_epi16 (32767), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (avx512_min_epi16);
 }
 
 extern __inline unsigned short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_min_epu16 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (-1), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epu16);
+  __V = _mm_mask_mov_epi16 (_mm_avx512_set1_epi16 (-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (avx512_min_epu16);
 }
 
 extern __inline short
@@ -4803,23 +5053,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_add_epi16 (__mmask16 __M, __m256i __W)
 {
   __W = _mm256_maskz_mov_epi16 (__M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (+);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16 (+);
 }
 
 extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_mul_epi16 (__mmask16 __M, __m256i __W)
 {
-  __W = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (1), __M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (*);
+  __W = _mm256_mask_mov_epi16 (_mm256_avx512_set1_epi16 (1), __M, __W);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16 (*);
 }
 
 extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_and_epi16 (__mmask16 __M, __m256i __W)
 {
-  __W = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-1), __M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (&);
+  __W = _mm256_mask_mov_epi16 (_mm256_avx512_set1_epi16 (-1), __M, __W);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16 (&);
 }
 
 extern __inline short
@@ -4827,15 +5077,15 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_or_epi16 (__mmask16 __M, __m256i __W)
 {
   __W = _mm256_maskz_mov_epi16 (__M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (|);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16 (|);
 }
 
 extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_max_epi16 (__mmask16 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-32767-1), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epi16);
+  __V = _mm256_mask_mov_epi16 (_mm256_avx512_set1_epi16 (-32767-1), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epi16);
 }
 
 extern __inline unsigned short
@@ -4843,23 +5093,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_max_epu16 (__mmask16 __M, __m256i __V)
 {
   __V = _mm256_maskz_mov_epi16 (__M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epu16);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epu16);
 }
 
 extern __inline short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_min_epi16 (__mmask16 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (32767), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epi16);
+  __V = _mm256_mask_mov_epi16 (_mm256_avx512_set1_epi16 (32767), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epi16);
 }
 
 extern __inline unsigned short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_min_epu16 (__mmask16 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-1), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epu16);
+  __V = _mm256_mask_mov_epi16 (_mm256_avx512_set1_epi16 (-1), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epu16);
 }
 
 extern __inline char
@@ -4874,7 +5124,7 @@ extern __inline char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_mul_epi8 (__mmask16 __M, __m128i __W)
 {
-  __W = _mm_mask_mov_epi8 (_mm_set1_epi8 (1), __M, __W);
+  __W = _mm_mask_mov_epi8 (_mm_avx512_set1_epi8 (1), __M, __W);
   _MM_REDUCE_OPERATOR_BASIC_EPI8 (*);
 }
 
@@ -4882,7 +5132,7 @@ extern __inline char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_and_epi8 (__mmask16 __M, __m128i __W)
 {
-  __W = _mm_mask_mov_epi8 (_mm_set1_epi8 (-1), __M, __W);
+  __W = _mm_mask_mov_epi8 (_mm_avx512_set1_epi8 (-1), __M, __W);
   _MM_REDUCE_OPERATOR_BASIC_EPI8 (&);
 }
 
@@ -4898,8 +5148,8 @@ extern __inline signed char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_max_epi8 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (-127-1), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epi8);
+  __V = _mm_mask_mov_epi8 (_mm_avx512_set1_epi8 (-127-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (avx512_max_epi8);
 }
 
 extern __inline unsigned char
@@ -4907,23 +5157,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_max_epu8 (__mmask16 __M, __m128i __V)
 {
   __V = _mm_maskz_mov_epi8 (__M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epu8);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (avx512_max_epu8);
 }
 
 extern __inline signed char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_min_epi8 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (127), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epi8);
+  __V = _mm_mask_mov_epi8 (_mm_avx512_set1_epi8 (127), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (avx512_min_epi8);
 }
 
 extern __inline unsigned char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_min_epu8 (__mmask16 __M, __m128i __V)
 {
-  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (-1), __M, __V);
-  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epu8);
+  __V = _mm_mask_mov_epi8 (_mm_avx512_set1_epi8 (-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (avx512_min_epu8);
 }
 
 extern __inline char
@@ -4931,23 +5181,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_add_epi8 (__mmask32 __M, __m256i __W)
 {
   __W = _mm256_maskz_mov_epi8 (__M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (+);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8 (+);
 }
 
 extern __inline char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_mul_epi8 (__mmask32 __M, __m256i __W)
 {
-  __W = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (1), __M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (*);
+  __W = _mm256_mask_mov_epi8 (_mm256_avx512_set1_epi8 (1), __M, __W);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8 (*);
 }
 
 extern __inline char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_and_epi8 (__mmask32 __M, __m256i __W)
 {
-  __W = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-1), __M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (&);
+  __W = _mm256_mask_mov_epi8 (_mm256_avx512_set1_epi8 (-1), __M, __W);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8 (&);
 }
 
 extern __inline char
@@ -4955,15 +5205,15 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_or_epi8 (__mmask32 __M, __m256i __W)
 {
   __W = _mm256_maskz_mov_epi8 (__M, __W);
-  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (|);
+  _MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8 (|);
 }
 
 extern __inline signed char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_max_epi8 (__mmask32 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-127-1), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epi8);
+  __V = _mm256_mask_mov_epi8 (_mm256_avx512_set1_epi8 (-127-1), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epi8);
 }
 
 extern __inline unsigned char
@@ -4971,23 +5221,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_max_epu8 (__mmask32 __M, __m256i __V)
 {
   __V = _mm256_maskz_mov_epi8 (__M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epu8);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epu8);
 }
 
 extern __inline signed char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_min_epi8 (__mmask32 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (127), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epi8);
+  __V = _mm256_mask_mov_epi8 (_mm256_avx512_set1_epi8 (127), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epi8);
 }
 
 extern __inline unsigned char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_min_epu8 (__mmask32 __M, __m256i __V)
 {
-  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-1), __M, __V);
-  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epu8);
+  __V = _mm256_mask_mov_epi8 (_mm256_avx512_set1_epi8 (-1), __M, __V);
+  _MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epu8);
 }
 
 #ifdef __DISABLE_AVX512VLBW__
