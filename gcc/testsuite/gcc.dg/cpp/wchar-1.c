@@ -14,10 +14,10 @@ int main ()
 
 #if L'\x0' - 1 < 0
   if (c > 0)
-    abort ();
+    __builtin_abort ();
 #else
   if (c < 0)
-    abort ();
+    __builtin_abort ();
 #endif
  
   return 0;
