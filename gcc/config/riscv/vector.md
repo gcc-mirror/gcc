@@ -1370,11 +1370,29 @@
 ;; ---- Duplicate Operations
 ;; -----------------------------------------------------------------
 
+(define_expand "vec_duplicate<mode>"
+  [(set (match_operand:V_VLS 0 "register_operand")
+        (vec_duplicate:V_VLS
+          (match_operand:<VEL> 1 "direct_broadcast_operand")))]
+  "TARGET_VECTOR"
+  {
+    /* Early expand DImode broadcast in RV32 system to avoid RA reload
+       generate (set (reg) (vec_duplicate:DI)).  */
+    if (maybe_gt (GET_MODE_SIZE (<VEL>mode), GET_MODE_SIZE (Pmode)))
+      {
+        riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
+				       riscv_vector::UNARY_OP, operands);
+	DONE;
+      }
+    /* Otherwise, allow it fall into general vec_duplicate pattern
+       which allow us to have vv->vx combine optimization in later pass.  */
+  })
+
 ;; According to GCC internal:
 ;; This pattern only handles duplicates of non-constant inputs.
 ;; Constant vectors go through the movm pattern instead.
 ;; So "direct_broadcast_operand" can only be mem or reg, no CONSTANT.
-(define_insn_and_split "vec_duplicate<mode>"
+(define_insn_and_split "*vec_duplicate<mode>"
   [(set (match_operand:V_VLS 0 "register_operand")
         (vec_duplicate:V_VLS
           (match_operand:<VEL> 1 "direct_broadcast_operand")))]

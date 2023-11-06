@@ -4362,4 +4362,24 @@ count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
   return count;
 }
 
+/* Return true if the OP can be directly broadcasted.  */
+bool
+can_be_broadcasted_p (rtx op)
+{
+  machine_mode mode = GET_MODE (op);
+  /* We don't allow RA (register allocation) reload generate
+    (vec_duplicate:DI reg) in RV32 system wheras we allow
+    (vec_duplicate:DI mem) in RV32 system.  */
+  if (!can_create_pseudo_p () && !FLOAT_MODE_P (mode)
+      && maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (Pmode))
+      && !satisfies_constraint_Wdm (op))
+    return false;
+
+  if (satisfies_constraint_K (op) || register_operand (op, mode)
+      || satisfies_constraint_Wdm (op) || rtx_equal_p (op, CONST0_RTX (mode)))
+    return true;
+
+  return can_create_pseudo_p () && nonmemory_operand (op, mode);
+}
+
 } // namespace riscv_vector

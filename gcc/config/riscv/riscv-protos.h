@@ -597,6 +597,7 @@ uint8_t get_sew (rtx_insn *);
 enum vlmul_type get_vlmul (rtx_insn *);
 int count_regno_occurrences (rtx_insn *, unsigned int);
 bool imm_avl_p (machine_mode);
+bool can_be_broadcasted_p (rtx);
 }
 
 /* We classify builtin types into two classes:
