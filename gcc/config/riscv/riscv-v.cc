@@ -4168,12 +4168,10 @@ expand_vec_lrint (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
 void
 expand_vec_lround (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
-		   machine_mode vec_long_mode)
+		   machine_mode vec_int_mode)
 {
-  gcc_assert (known_eq (GET_MODE_SIZE (vec_fp_mode),
-			GET_MODE_SIZE (vec_long_mode)));
-
-  emit_vec_cvt_x_f (op_0, op_1, UNARY_OP_FRM_RMM, vec_fp_mode);
+  emit_vec_rounding_to_integer (op_0, op_1, vec_fp_mode, vec_int_mode,
+				UNARY_OP_FRM_RMM);
 }
 
 void
