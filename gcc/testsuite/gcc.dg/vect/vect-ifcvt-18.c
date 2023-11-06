@@ -1,6 +1,7 @@
 /* { dg-require-effective-target vect_condition } */
 /* { dg-require-effective-target vect_float } */
-/* { dg-additional-options "-Ofast -mavx" { target avx_runtime } } */
+/* { dg-require-effective-target avx_runtime } */
+/* { dg-additional-options "-Ofast -mavx" } */
 
 
 int A0[4] = {36,39,42,45};
