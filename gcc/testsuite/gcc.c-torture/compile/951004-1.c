@@ -5,6 +5,7 @@ typedef struct
 
 S a;
 
+void
 f (S pnt)
 {
   S mpnt, mtp;

@@ -5,7 +5,8 @@ int x[] =
   [e0] = 0
 };
 
-f ()
+void
+f (void)
 {
   switch (1)
     {

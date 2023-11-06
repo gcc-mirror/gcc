@@ -1,1 +1,1 @@
-x(){int y[]={};}
+void x(void){int y[]={};}

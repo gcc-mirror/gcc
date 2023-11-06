@@ -6,6 +6,7 @@ typedef __u16 __be16;
 struct hfs_extent {
  __be16 count;
 };
+__u16 __fswab16 (__u16);
 int hfs_free_fork( int type)
 {
  u32 total_blocks, blocks, start;

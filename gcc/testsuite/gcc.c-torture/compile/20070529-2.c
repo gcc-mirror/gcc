@@ -1,3 +1,4 @@
+void kmem_free (void *);
 void xfs_dir2_grow_inode(void)
 {
  int map;

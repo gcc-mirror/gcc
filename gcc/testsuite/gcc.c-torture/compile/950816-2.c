@@ -1,4 +1,6 @@
-f ()
+int func (char *);
+void
+f (void)
 {
   int i;
   float a,b,c;

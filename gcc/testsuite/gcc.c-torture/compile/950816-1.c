@@ -1,4 +1,5 @@
-f ()
+int
+f (void)
 {
   unsigned char b[2];
   float f;

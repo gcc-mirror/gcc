@@ -1,4 +1,5 @@
-f()
+int
+f(void)
 {
   long long a0, a1, a0s, val;
   int width;

@@ -1,4 +1,5 @@
-test ()
+void
+test (void)
 {
   short *p, q[3];
   int x;

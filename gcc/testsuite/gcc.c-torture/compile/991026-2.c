@@ -13,7 +13,8 @@ extern int open  (__const char *__file, int __oflag, ...)    ;
 
 char	myname[]="foo";
 
-detach()
+void
+detach(void)
 {
 	switch(fork()) {
 	    case -1:

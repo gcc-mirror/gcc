@@ -4,7 +4,8 @@ char *e ();
   if (d > *b++) d |= a; \
   if (b) b = e(b);
 
-xxx()
+void
+xxx(void)
 {
   int a, d;
   char *b, *c;

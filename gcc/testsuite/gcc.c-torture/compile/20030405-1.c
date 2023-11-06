@@ -12,7 +12,8 @@ char foo();
 
 static const char * const str = "mingo";
 
-bar()
+int
+bar(void)
 {
   size_t c;
   char *x;

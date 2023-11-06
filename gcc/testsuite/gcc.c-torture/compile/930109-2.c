@@ -1,4 +1,5 @@
-f(r)
+int
+f(int r)
 {
   int i;
   for (i = 0; i < 2; i++)

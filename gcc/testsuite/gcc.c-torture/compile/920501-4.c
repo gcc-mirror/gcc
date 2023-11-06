@@ -3,7 +3,7 @@
 /* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
 /* { dg-require-stack-size "8196*4" } */
 
-foo ()
+void foo (void)
 {
   int r0[8186 ];
   int r1[2 ];

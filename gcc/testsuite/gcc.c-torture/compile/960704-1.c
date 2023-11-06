@@ -4,7 +4,8 @@ struct A {
 
 struct A f ();
 
-main ()
+int
+main (void)
 {
   struct A a = f();
 }

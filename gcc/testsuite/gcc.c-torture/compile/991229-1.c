@@ -1,7 +1,8 @@
 static int parse (int, int);
 static int parseStmt (int, int);
 
-ejEval()
+void
+ejEval(void)
 {
 	int		state;
 	state = parse(8  , 0x1 );

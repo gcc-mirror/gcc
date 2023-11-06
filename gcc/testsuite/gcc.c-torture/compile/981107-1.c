@@ -1,3 +1,4 @@
+void call(void);
 unsigned long seed(void)
 {
     unsigned long u;

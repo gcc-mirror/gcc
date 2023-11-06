@@ -1,5 +1,7 @@
 /* PR 17186 */
 
+void bar(void);
+
 double foo()
 {
     int i;

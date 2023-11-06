@@ -1,7 +1,8 @@
 union u { union u *a; double d; };
 union u *s, g();
 
-f()
+void
+f(void)
 {
   union u x = g();
 

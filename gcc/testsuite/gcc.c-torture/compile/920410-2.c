@@ -1,4 +1,5 @@
-joe()
+void
+joe(void)
 {
   int j;
 

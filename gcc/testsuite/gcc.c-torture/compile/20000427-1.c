@@ -1,5 +1,6 @@
 int lwidth;                                                                   
 int lheight;                                                                  
+int FindNearestPowerOf2 (int);
 void ConvertFor3dDriver (int requirePO2, int maxAspect)       
 {                                                     
   int oldw = lwidth, oldh = lheight;                      

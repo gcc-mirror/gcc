@@ -1,3 +1,4 @@
+void
 quantize_fs_dither (unsigned width, short *errorptr, int dir)
 {
   short bpreverr;
