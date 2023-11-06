@@ -5133,6 +5133,23 @@ gd:
 	  [Define if your assembler supports mfcr field.])])
 
     case $target in
+      *-*-aix*) conftest_s='	.machine "pwr10"
+	.csect .text[[PR]]
+	tend. 0';;
+      *-*-darwin*) conftest_s='	.text
+	tend. 0';;
+      *) conftest_s='	.machine power10
+	.text
+	tend. 0';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([htm support on Power10],
+      gcc_cv_as_power10_htm,,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_POWER10_HTM, 1,
+	  [Define if your assembler supports htm insns on power10.])])
+
+    case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;

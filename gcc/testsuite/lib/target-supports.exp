@@ -12901,6 +12901,46 @@ proc check_effective_target_o_flag_in_section { } {
     }]
 }
 
+# Return 1 if the given assembler supports hardware transactional memory
+# instructions with machine type Power10, 0 otherwise.  Cache the result.
+
+proc check_effective_target_powerpc_as_p10_htm { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target powerpc_as_p10_htm {
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_AS_POWER10_HTM == 0"
+	puts $f "# error Assembler does not support htm insns with power10."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_powerpc_as_p10_htm compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_powerpc_as_p10_htm testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_powerpc_as_p10_htm testfile compilation failed" 2
+	    return 0
+	}
+    }]
+}
+
 # return 1 if LRA is supported.
 
 proc check_effective_target_lra { } {
