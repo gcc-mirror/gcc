@@ -3821,7 +3821,7 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, -2, pchar_type_node, pchar_type_node);
 
   gfor_fndecl_generate_error = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("generate_error")), ". R . R ",
+	get_identifier (PREFIX("generate_error")), ". W . R ",
 	void_type_node, 3, pvoid_type_node, integer_type_node,
 	pchar_type_node);
 
