@@ -168,16 +168,6 @@ struct diagnostic_info
   } m_iinfo;
 };
 
-/* Each time a diagnostic's classification is changed with a pragma,
-   we record the change and the location of the change in an array of
-   these structs.  */
-struct diagnostic_classification_change_t
-{
-  location_t location;
-  int option;
-  diagnostic_t kind;
-};
-
 /*  Forward declarations.  */
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
 				       diagnostic_info *);
@@ -240,6 +230,79 @@ public:
   void on_diagram (const diagnostic_diagram &diagram) override;
 };
 
+/* A stack of sets of classifications: each entry in the stack is
+   a mapping from option index to diagnostic severity that can be changed
+   via pragmas.  The stack can be pushed and popped.  */
+
+class diagnostic_option_classifier
+{
+public:
+  void init (int n_opts);
+  void fini ();
+
+  /* Save all diagnostic classifications in a stack.  */
+  void push ();
+
+  /* Restore the topmost classification set off the stack.  If the stack
+     is empty, revert to the state based on command line parameters.  */
+  void pop (location_t where);
+
+  bool option_unspecified_p (int opt) const
+  {
+    return get_current_override (opt) == DK_UNSPECIFIED;
+  }
+
+  diagnostic_t get_current_override (int opt) const
+  {
+    gcc_assert (opt < m_n_opts);
+    return m_classify_diagnostic[opt];
+  }
+
+  diagnostic_t
+  classify_diagnostic (const diagnostic_context *context,
+		       int option_index,
+		       diagnostic_t new_kind,
+		       location_t where);
+
+  diagnostic_t
+  update_effective_level_from_pragmas (diagnostic_info *diagnostic) const;
+
+private:
+  /* Each time a diagnostic's classification is changed with a pragma,
+     we record the change and the location of the change in an array of
+     these structs.  */
+  struct diagnostic_classification_change_t
+  {
+    location_t location;
+    int option;
+    diagnostic_t kind;
+  };
+
+  int m_n_opts;
+
+  /* For each option index that can be passed to warning() et al
+     (OPT_* from options.h when using this code with the core GCC
+     options), this array may contain a new kind that the diagnostic
+     should be changed to before reporting, or DK_UNSPECIFIED to leave
+     it as the reported kind, or DK_IGNORED to not report it at
+     all.  */
+  diagnostic_t *m_classify_diagnostic;
+
+  /* History of all changes to the classifications above.  This list
+     is stored in location-order, so we can search it, either
+     binary-wise or end-to-front, to find the most recent
+     classification for a given diagnostic, given the location of the
+     diagnostic.  */
+  diagnostic_classification_change_t *m_classification_history;
+
+  /* The size of the above array.  */
+  int m_n_classification_history;
+
+  /* For pragma push/pop.  */
+  int *m_push_list;
+  int m_n_push;
+};
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 class diagnostic_context
@@ -273,8 +336,7 @@ public:
 
   bool option_unspecified_p (int opt) const
   {
-    gcc_assert (opt < m_n_opts);
-    return m_classify_diagnostic[opt] == DK_UNSPECIFIED;
+    return m_option_classifier.option_unspecified_p (opt);
   }
 
   bool report_diagnostic (diagnostic_info *);
@@ -287,9 +349,22 @@ public:
   diagnostic_t
   classify_diagnostic (int option_index,
 		       diagnostic_t new_kind,
-		       location_t where);
-  void push_diagnostics (location_t where ATTRIBUTE_UNUSED);
-  void pop_diagnostics (location_t where);
+		       location_t where)
+  {
+    return m_option_classifier.classify_diagnostic (this,
+						    option_index,
+						    new_kind,
+						    where);
+  }
+
+  void push_diagnostics (location_t where ATTRIBUTE_UNUSED)
+  {
+    m_option_classifier.push ();
+  }
+  void pop_diagnostics (location_t where)
+  {
+    m_option_classifier.pop (where);
+  }
 
   void emit_diagram (const diagnostic_diagram &diagram);
 
@@ -376,9 +451,6 @@ private:
   bool diagnostic_enabled (diagnostic_info *diagnostic);
 
   void get_any_inlining_info (diagnostic_info *diagnostic);
-  diagnostic_t
-  update_effective_level_from_pragmas (diagnostic_info *diagnostic);
-
 
   /* Data members.
      Ideally, all of these would be private and have "m_" prefixes.  */
@@ -401,27 +473,8 @@ private:
      al.  */
   int m_n_opts;
 
-  /* For each option index that can be passed to warning() et al
-     (OPT_* from options.h when using this code with the core GCC
-     options), this array may contain a new kind that the diagnostic
-     should be changed to before reporting, or DK_UNSPECIFIED to leave
-     it as the reported kind, or DK_IGNORED to not report it at
-     all.  */
-  diagnostic_t *m_classify_diagnostic;
-
-  /* History of all changes to the classifications above.  This list
-     is stored in location-order, so we can search it, either
-     binary-wise or end-to-front, to find the most recent
-     classification for a given diagnostic, given the location of the
-     diagnostic.  */
-  diagnostic_classification_change_t *m_classification_history;
-
-  /* The size of the above array.  */
-  int m_n_classification_history;
-
-  /* For pragma push/pop.  */
-  int *m_push_list;
-  int m_n_push;
+  /* The stack of sets of overridden diagnostic option severities.  */
+  diagnostic_option_classifier m_option_classifier;
 
   /* True if we should print any CWE identifiers associated with
      diagnostics.  */

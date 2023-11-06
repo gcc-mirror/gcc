@@ -149,13 +149,63 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   context->m_source_printing.max_width = value;
 }
 
+void
+diagnostic_option_classifier::init (int n_opts)
+{
+  m_n_opts = n_opts;
+  m_classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
+  for (int i = 0; i < n_opts; i++)
+    m_classify_diagnostic[i] = DK_UNSPECIFIED;
+  m_push_list = nullptr;
+  m_n_push = 0;
+}
+
+void
+diagnostic_option_classifier::fini ()
+{
+  XDELETEVEC (m_classify_diagnostic);
+  m_classify_diagnostic = nullptr;
+  free (m_push_list);
+  m_n_push = 0;
+}
+
+/* Save all diagnostic classifications in a stack.  */
+
+void
+diagnostic_option_classifier::push ()
+{
+  m_push_list = (int *) xrealloc (m_push_list, (m_n_push + 1) * sizeof (int));
+  m_push_list[m_n_push ++] = m_n_classification_history;
+}
+
+/* Restore the topmost classification set off the stack.  If the stack
+   is empty, revert to the state based on command line parameters.  */
+
+void
+diagnostic_option_classifier::pop (location_t where)
+{
+  int jump_to;
+
+  if (m_n_push)
+    jump_to = m_push_list [-- m_n_push];
+  else
+    jump_to = 0;
+
+  const int i = m_n_classification_history;
+  m_classification_history =
+    (diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
+						     * sizeof (diagnostic_classification_change_t));
+  m_classification_history[i].location = where;
+  m_classification_history[i].option = jump_to;
+  m_classification_history[i].kind = DK_POP;
+  m_n_classification_history ++;
+}
+
 /* Initialize the diagnostic message outputting machinery.  */
 
 void
 diagnostic_context::initialize (int n_opts)
 {
-  int i;
-
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
   this->printer = XNEW (pretty_printer);
@@ -165,12 +215,10 @@ diagnostic_context::initialize (int n_opts)
   memset (m_diagnostic_count, 0, sizeof m_diagnostic_count);
   m_warning_as_error_requested = false;
   m_n_opts = n_opts;
-  m_classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
-  for (i = 0; i < n_opts; i++)
-    m_classify_diagnostic[i] = DK_UNSPECIFIED;
+  m_option_classifier.init (n_opts);
   m_source_printing.enabled = false;
   diagnostic_set_caret_max_width (this, pp_line_cutoff (this->printer));
-  for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
+  for (int i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     m_source_printing.caret_chars[i] = '^';
   m_show_cwe = false;
   m_show_rules = false;
@@ -326,8 +374,7 @@ diagnostic_context::finish ()
   delete m_file_cache;
   m_file_cache = nullptr;
 
-  XDELETEVEC (m_classify_diagnostic);
-  m_classify_diagnostic = nullptr;
+  m_option_classifier.fini ();
 
   /* diagnostic_context::initialize allocates this->printer using XNEW
      and placement-new.  */
@@ -1052,9 +1099,11 @@ default_diagnostic_finalizer (diagnostic_context *context,
    range.  If OPTION_INDEX is zero, the new setting is for all the
    diagnostics.  */
 diagnostic_t
-diagnostic_context::classify_diagnostic (int option_index,
-					 diagnostic_t new_kind,
-					 location_t where)
+diagnostic_option_classifier::
+classify_diagnostic (const diagnostic_context *context,
+		     int option_index,
+		     diagnostic_t new_kind,
+		     location_t where)
 {
   diagnostic_t old_kind;
 
@@ -1074,10 +1123,10 @@ diagnostic_context::classify_diagnostic (int option_index,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !m_option_enabled (option_index,
-					m_lang_mask,
-					m_option_state)
-	    ? DK_IGNORED : (m_warning_as_error_requested
+	  old_kind = !context->m_option_enabled (option_index,
+						 context->m_lang_mask,
+						 context->m_option_state)
+	    ? DK_IGNORED : (context->warning_as_error_requested_p ()
 			    ? DK_ERROR : DK_WARNING);
 	  m_classify_diagnostic[option_index] = old_kind;
 	}
@@ -1102,37 +1151,6 @@ diagnostic_context::classify_diagnostic (int option_index,
     m_classify_diagnostic[option_index] = new_kind;
 
   return old_kind;
-}
-
-/* Save all diagnostic classifications in a stack.  */
-void
-diagnostic_context::push_diagnostics (location_t where ATTRIBUTE_UNUSED)
-{
-  m_push_list = (int *) xrealloc (m_push_list, (m_n_push + 1) * sizeof (int));
-  m_push_list[m_n_push ++] = m_n_classification_history;
-}
-
-/* Restore the topmost classification set off the stack.  If the stack
-   is empty, revert to the state based on command line parameters.  */
-void
-diagnostic_context::pop_diagnostics (location_t where)
-{
-  int jump_to;
-  int i;
-
-  if (m_n_push)
-    jump_to = m_push_list [-- m_n_push];
-  else
-    jump_to = 0;
-
-  i = m_n_classification_history;
-  m_classification_history =
-    (diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
-						     * sizeof (diagnostic_classification_change_t));
-  m_classification_history[i].location = where;
-  m_classification_history[i].option = jump_to;
-  m_classification_history[i].kind = DK_POP;
-  m_n_classification_history ++;
 }
 
 /* Helper function for print_parseable_fixits.  Print TEXT to PP, obeying the
@@ -1246,14 +1264,14 @@ diagnostic_context::get_any_inlining_info (diagnostic_info *diagnostic)
 /* Update the kind of DIAGNOSTIC based on its location(s), including
    any of those in its inlining stack, relative to any
      #pragma GCC diagnostic
-   directives recorded within CONTEXT.
+   directives recorded within this object.
 
    Return the new kind of DIAGNOSTIC if it was updated, or DK_UNSPECIFIED
    otherwise.  */
 
 diagnostic_t
-diagnostic_context::
-update_effective_level_from_pragmas (diagnostic_info *diagnostic)
+diagnostic_option_classifier::
+update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 {
   if (m_n_classification_history <= 0)
     return DK_UNSPECIFIED;
@@ -1444,14 +1462,14 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
-  diagnostic_t diag_class = update_effective_level_from_pragmas (diagnostic);
+  diagnostic_t diag_class
+    = m_option_classifier.update_effective_level_from_pragmas (diagnostic);
 
   /* This tests if the user provided the appropriate -Werror=foo
      option.  */
   if (diag_class == DK_UNSPECIFIED
-      && (m_classify_diagnostic[diagnostic->option_index]
-	  != DK_UNSPECIFIED))
-    diagnostic->kind = m_classify_diagnostic[diagnostic->option_index];
+      && !option_unspecified_p (diagnostic->option_index))
+    diagnostic->kind = m_option_classifier.get_current_override (diagnostic->option_index);
 
   /* This allows for future extensions, like temporarily disabling
      warnings for ranges of source code.  */
