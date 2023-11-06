@@ -1990,19 +1990,20 @@ namespace __detail
       _Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&... __args)
       -> __node_ptr
       {
-	auto __nptr = __node_alloc_traits::allocate(_M_node_allocator(), 1);
+	auto& __alloc = _M_node_allocator();
+	auto __nptr = __node_alloc_traits::allocate(__alloc, 1);
 	__node_ptr __n = std::__to_address(__nptr);
 	__try
 	  {
 	    ::new ((void*)__n) __node_type;
-	    __node_alloc_traits::construct(_M_node_allocator(),
-					   __n->_M_valptr(),
+	    __node_alloc_traits::construct(__alloc, __n->_M_valptr(),
 					   std::forward<_Args>(__args)...);
 	    return __n;
 	  }
 	__catch(...)
 	  {
-	    __node_alloc_traits::deallocate(_M_node_allocator(), __nptr, 1);
+	    __n->~__node_type();
+	    __node_alloc_traits::deallocate(__alloc, __nptr, 1);
 	    __throw_exception_again;
 	  }
       }
