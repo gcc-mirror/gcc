@@ -701,24 +701,15 @@ extern diagnostic_context *global_dc;
    ready for use.  */
 #define diagnostic_ready_p() (global_dc->printer != NULL)
 
-/* The total count of a KIND of diagnostics emitted so far.  */
-
-inline int &
-diagnostic_kind_count (diagnostic_context *context,
-		       diagnostic_t kind)
-{
-  return context->diagnostic_count (kind);
-}
-
 /* The number of errors that have been issued so far.  Ideally, these
    would take a diagnostic_context as an argument.  */
-#define errorcount diagnostic_kind_count (global_dc, DK_ERROR)
+#define errorcount global_dc->diagnostic_count (DK_ERROR)
 /* Similarly, but for warnings.  */
-#define warningcount diagnostic_kind_count (global_dc, DK_WARNING)
+#define warningcount global_dc->diagnostic_count (DK_WARNING)
 /* Similarly, but for warnings promoted to errors.  */
-#define werrorcount diagnostic_kind_count (global_dc, DK_WERROR)
+#define werrorcount global_dc->diagnostic_count (DK_WERROR)
 /* Similarly, but for sorrys.  */
-#define sorrycount diagnostic_kind_count (global_dc, DK_SORRY)
+#define sorrycount global_dc->diagnostic_count (DK_SORRY)
 
 /* Returns nonzero if warnings should be emitted.  */
 #define diagnostic_report_warnings_p(DC, LOC)				\

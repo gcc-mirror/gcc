@@ -651,9 +651,9 @@ diagnostic_context::check_max_errors (bool flush)
   if (!m_max_errors)
     return;
 
-  int count = (diagnostic_kind_count (this, DK_ERROR)
-	       + diagnostic_kind_count (this, DK_SORRY)
-	       + diagnostic_kind_count (this, DK_WERROR));
+  int count = (m_diagnostic_count[DK_ERROR]
+	       + m_diagnostic_count[DK_SORRY]
+	       + m_diagnostic_count[DK_WERROR]);
 
   if (count >= m_max_errors)
     {
@@ -1547,8 +1547,8 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 	 error has already occurred.  This is counteracted by
 	 abort_on_error.  */
       if (!CHECKING_P
-	  && (diagnostic_kind_count (this, DK_ERROR) > 0
-	      || diagnostic_kind_count (this, DK_SORRY) > 0)
+	  && (m_diagnostic_count[DK_ERROR] > 0
+	      || m_diagnostic_count[DK_SORRY] > 0)
 	  && !m_abort_on_error)
 	{
 	  expanded_location s 
@@ -1563,9 +1563,9 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 			     diagnostic->message.m_args_ptr);
     }
   if (diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
-    ++diagnostic_kind_count (this, DK_WERROR);
+    ++m_diagnostic_count[DK_WERROR];
   else
-    ++diagnostic_kind_count (this, diagnostic->kind);
+    ++m_diagnostic_count[diagnostic->kind];
 
   /* Is this the initial diagnostic within the stack of groups?  */
   if (m_diagnostic_groups.m_emission_count == 0)
@@ -2336,7 +2336,7 @@ auto_diagnostic_group::~auto_diagnostic_group ()
 diagnostic_text_output_format::~diagnostic_text_output_format ()
 {
   /* Some of the errors may actually have been warnings.  */
-  if (diagnostic_kind_count (&m_context, DK_WERROR))
+  if (m_context.diagnostic_count (DK_WERROR))
     {
       /* -Werror was given.  */
       if (m_context.warning_as_error_requested_p ())
