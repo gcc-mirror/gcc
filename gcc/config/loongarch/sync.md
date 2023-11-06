@@ -129,19 +129,18 @@
    (clobber (match_scratch:GPR 6 "=&r"))]
   ""
 {
-  return "%G5\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "bne\\t%0,%z2,2f\\n\\t"
 	 "or%i3\\t%6,$zero,%3\\n\\t"
 	 "sc.<amo>\\t%6,%1\\n\\t"
-	 "beq\\t$zero,%6,1b\\n\\t"
+	 "beqz\\t%6,1b\\n\\t"
 	 "b\\t3f\\n\\t"
 	 "2:\\n\\t"
-	 "dbar\\t0x700\\n\\t"
+	 "%G5\\n\\t"
 	 "3:\\n\\t";
 }
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -234,8 +233,7 @@
    (clobber (match_scratch:GPR 7 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%2\\n\\t"
 	 "bne\\t%7,%z4,2f\\n\\t"
@@ -245,10 +243,10 @@
 	 "beq\\t$zero,%7,1b\\n\\t"
 	 "b\\t3f\\n\\t"
 	 "2:\\n\\t"
-	 "dbar\\t0x700\\n\\t"
+	 "%G6\\n\\t"
 	 "3:\\n\\t";
 }
-  [(set (attr "length") (const_int 40))])
+  [(set (attr "length") (const_int 36))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -303,8 +301,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "add.w\\t%8,%0,%z5\\n\\t"
@@ -314,7 +311,7 @@
 	 "beq\\t$zero,%7,1b";
 }
 
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_sub_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -330,8 +327,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "sub.w\\t%8,%0,%z5\\n\\t"
@@ -340,7 +336,7 @@
 	 "sc.<amo>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_and_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -356,8 +352,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "and\\t%8,%0,%z5\\n\\t"
@@ -366,7 +361,7 @@
 	 "sc.<amo>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_xor_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -382,8 +377,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "xor\\t%8,%0,%z5\\n\\t"
@@ -393,7 +387,7 @@
 	 "beq\\t$zero,%7,1b";
 }
 
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_or_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -409,8 +403,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "or\\t%8,%0,%z5\\n\\t"
@@ -420,7 +413,7 @@
 	 "beq\\t$zero,%7,1b";
 }
 
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_nand_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
@@ -436,8 +429,7 @@
    (clobber (match_scratch:GPR 8 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "and\\t%8,%0,%z5\\n\\t"
@@ -446,7 +438,7 @@
 	 "sc.<amo>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
-  [(set (attr "length") (const_int 32))])
+  [(set (attr "length") (const_int 28))])
 
 (define_insn "atomic_cas_value_exchange_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -461,8 +453,7 @@
    (clobber (match_scratch:GPR 7 "=&r"))]
   ""
 {
-  return "%G6\\n\\t"
-	 "1:\\n\\t"
+  return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%z3\\n\\t"
 	 "or%i5\\t%7,%7,%5\\n\\t"
