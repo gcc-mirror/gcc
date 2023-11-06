@@ -5245,6 +5245,9 @@ ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
   if (gen == NULL)
     return false;
 
+  if (d && d->testing_p)
+    return true;
+
   /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   if (d)
