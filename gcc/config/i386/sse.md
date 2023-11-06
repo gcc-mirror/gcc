@@ -5169,7 +5169,7 @@
   output_asm_insn (buf, operands);
   return "";
 }
-  [(set_attr "isa" "noavx,avx_noavx512f,avx512vl,avx512f_512")
+  [(set_attr "isa" "noavx,avx_noavx512vl,avx512vl,avx512f_512")
    (set_attr "addr" "*,gpr16,*,*")
    (set_attr "type" "sselog")
    (set (attr "prefix_data16")
