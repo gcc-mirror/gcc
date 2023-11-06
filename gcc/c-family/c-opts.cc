@@ -732,12 +732,12 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	set_std_c17 (false /* ISO */);
       break;
 
-    case OPT_std_c2x:
+    case OPT_std_c23:
       if (!preprocessing_asm_p)
 	set_std_c2x (true /* ISO */);
       break;
 
-    case OPT_std_gnu2x:
+    case OPT_std_gnu23:
       if (!preprocessing_asm_p)
 	set_std_c2x (false /* ISO */);
       break;

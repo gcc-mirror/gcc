@@ -47,7 +47,7 @@ pedwarn_c11 (location_t location, int opt, const char *gmsgid, ...)
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc2x)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_index = OPT_Wc11_c2x_compat;
+      diagnostic.option_index = OPT_Wc11_c23_compat;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c11-c2x-compat suppresses even the pedwarns.  */

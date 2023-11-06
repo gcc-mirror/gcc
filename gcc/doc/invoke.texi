@@ -337,7 +337,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation
 -Wno-builtin-declaration-mismatch
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
--Wc11-c2x-compat
+-Wc11-c23-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
@@ -2432,9 +2432,12 @@ same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
 
-@item c2x
-The next version of the ISO C standard, still under development.  The
-support for this version is experimental and incomplete.
+@item c23
+@itemx c2x
+@itemx iso9899:2024
+ISO C23, the 2023 revision of the ISO C standard (expected to be
+published in 2024).  The support for this version is experimental and
+incomplete.  The name @samp{c2x} is deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -2453,10 +2456,11 @@ The name @samp{gnu1x} is deprecated.
 @itemx gnu18
 GNU dialect of ISO C17.  This is the default for C code.
 
-@item gnu2x
+@item gnu23
+@itemx gnu2x
 The next version of the ISO C standard, still under development, plus
 GNU extensions.  The support for this version is experimental and
-incomplete.
+incomplete.  The name @samp{gnu2x} is deprecated.
 
 @item c++98
 @itemx c++03
@@ -2566,10 +2570,10 @@ this switch.  You may want to use the @option{-fno-gnu-keywords} flag
 instead, which disables @code{typeof} but not @code{asm} and
 @code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
 this switch only affects the @code{asm} and @code{typeof} keywords,
-since @code{inline} is a standard keyword in ISO C99.  In C2X mode
-(@option{-std=c2x} or @option{-std=gnu2x}), this switch only affects
+since @code{inline} is a standard keyword in ISO C99.  In C23 mode
+(@option{-std=c23} or @option{-std=gnu23}), this switch only affects
 the @code{asm} keyword, since @code{typeof} is a standard keyword in
-ISO C2X.
+ISO C23.
 
 @opindex fno-builtin
 @opindex fbuiltin
@@ -8998,17 +9002,19 @@ For instance, warn about use of anonymous structures and unions,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
-@opindex Wc11-c2x-compat
-@opindex Wno-c11-c2x-compat
-@item -Wc11-c2x-compat @r{(C and Objective-C only)}
-Warn about features not present in ISO C11, but present in ISO C2X.
+@opindex Wc11-c23-compat
+@opindex Wno-c11-c23-compat
+@item -Wc11-c23-compat @r{(C and Objective-C only)}
+@itemx -Wc11-c2x-compat @r{(C and Objective-C only)}
+Warn about features not present in ISO C11, but present in ISO C23.
 For instance, warn about omitting the string in @code{_Static_assert},
 use of @samp{[[]]} syntax for attributes, use of decimal
 floating-point types, and so on.  This option is independent of the
 standards mode.  Warnings are disabled in the expression that follows
-@code{__extension__}.
+@code{__extension__}.  The name @option{-Wc11-c2x-compat} is
+deprecated.
 
-When not compiling in C2X mode, these warnings are upgraded to errors
+When not compiling in C23 mode, these warnings are upgraded to errors
 by @option{-pedantic-errors}.
 
 @opindex Wc++-compat

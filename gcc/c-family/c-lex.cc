@@ -1188,11 +1188,11 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    if (warn_c11_c2x_compat > 0)
 	      {
 		if (pedantic && !flag_isoc2x)
-		  pedwarn (input_location, OPT_Wc11_c2x_compat,
+		  pedwarn (input_location, OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
 			   "before C2X");
 		else
-		  warning (OPT_Wc11_c2x_compat,
+		  warning (OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
 			   "before C2X");
 	      }

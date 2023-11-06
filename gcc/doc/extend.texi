@@ -9443,8 +9443,8 @@ default language dialect for both C and C++.  More specifically, this
 syntax was first introduced in the C++11 language standard
 (@pxref{Standards}), and is supported by GCC in C++ code with
 @option{-std=c++11} or @option{-std=gnu++11} or later.  It is also
-part of the C2x language standard and is supported when compiling C
-code with @option{-std=c2x} or @option{-std=gnu17} or later.
+part of the C23 language standard and is supported when compiling C
+code with @option{-std=c23} or @option{-std=gnu17} or later.
 
 When using GNU-specific attributes in the standard syntax, you must
 prefix their names with @samp{gnu::}, such as @code{gnu::section}.

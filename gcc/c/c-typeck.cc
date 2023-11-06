@@ -5545,7 +5545,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 			    "pointer to array loses qualifier "
 			    "in conditional expression");
 	      else if (warn_c11_c2x_compat > 0)
-		warning_at (colon_loc, OPT_Wc11_c2x_compat,
+		warning_at (colon_loc, OPT_Wc11_c23_compat,
 			    "pointer to array loses qualifier "
 			    "in conditional expression in ISO C before C2X");
 	    }
@@ -7603,7 +7603,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					   "pointer target type"),
 					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 	      else if (warn_quals_ped)
-		pedwarn_c11 (location, OPT_Wc11_c2x_compat,
+		pedwarn_c11 (location, OPT_Wc11_c23_compat,
 			     "array with qualifier on the element is not qualified before C2X");
 
 	      /* If this is not a case of ignoring a mismatch in signedness,
