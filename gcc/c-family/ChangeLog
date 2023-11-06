@@ -1,3 +1,10 @@
+2023-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (c_common_has_attribute): Return 1 for omp::directive
+	and omp::sequence with -fopenmp or -fopenmp-simd also for C, not
+	just for C++.  Return 1 for omp::decl with -fopenmp or -fopenmp-simd
+	for both C and C++.
+
 2023-11-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-pragma.cc:: (handle_pragma_push_options): Fix missing "GCC" in

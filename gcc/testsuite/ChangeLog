@@ -1,3 +1,37 @@
+2023-11-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr111753.c: Require dfp.
+
+2023-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/attrs-1.c: Adjust for omp::directive and
+	omp::sequence being supported also in C and add tests for omp::decl.
+	* c-c++-common/gomp/attrs-2.c: Likewise.
+	* c-c++-common/gomp/attrs-3.c: Add tests for omp::decl.
+
+2023-11-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112105
+	* gcc.target/aarch64/pr112105.c: New test.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Expect a 32-bit spill
+	rather than a 16-bit spill.
+
+2023-11-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-run-0.c:
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-irintf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-irint-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llrintf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrint-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrintf-rv64-0.c: New test.
+
 2023-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/attrs-19.c: New test.

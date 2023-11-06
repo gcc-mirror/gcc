@@ -1,3 +1,51 @@
+2023-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum reg_class): Add LEGACY_INDEX_REGS.
+	Rename LEGACY_REGS to LEGACY_GENERAL_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	* config/i386/constraints.md ("R"): Update for rename.
+
+2023-11-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc: Remove unused forward references.
+	(seginfo): Remove bbnum.
+	(new_seginfo): Remove associated argument.
+	(optimize_mode_switching): Update calls accordingly.
+
+2023-11-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-rtl.cc (read_rtx_operand): Avoid spinning endlessly for
+	invalid [...] operands.
+
+2023-11-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112105
+	* config/aarch64/aarch64.cc (aarch64_modes_compatible_p): New
+	function, with the core logic extracted from...
+	(aarch64_can_change_mode_class): ...here.  Extend the previous rules
+	to allow changes between partial SVE modes and other modes if
+	the other mode is no bigger than an element, and if no other rule
+	prevents it.  Use the aarch64_modes_tieable_p handling of
+	partial Advanced SIMD structure modes.
+	(aarch64_modes_tieable_p): Use aarch64_modes_compatible_p.
+	Allow all vector mode ties that it allows.
+
+2023-11-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Remove the size check of lrint.
+	* config/riscv/riscv-v.cc (emit_vec_narrow_cvt_x_f): New help
+	emit func impl.
+	(emit_vec_widden_cvt_x_f): New help emit func impl.
+	(emit_vec_rounding_to_integer): New func impl to emit the
+	rounding from FP to integer.
+	(expand_vec_lrint): Leverage emit_vec_rounding_to_integer.
+	* config/riscv/vector.md: Take V_VLSF for vfncvt.
+
+2023-11-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix bug.
+
 2023-11-04  Sergei Trofimovich  <siarheit@google.com>
 
 	PR bootstrap/112379
