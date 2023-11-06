@@ -212,7 +212,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
 }
 
 /* PR66726: Factor operations out of COND_EXPR.  If the arguments of the PHI
-   stmt are CONVERT_STMT, factor out the conversion and perform the conversion
+   stmt are Unary operator, factor out the operation and perform the operation
    to the result of PHI stmt.  COND_STMT is the controlling predicate.
    Return the newly-created PHI, if any.  */
 
