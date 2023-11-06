@@ -4814,36 +4814,42 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      else
 		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
 
-	      if (!useless_type_conversion_p (TREE_TYPE (mask), masktype))
+	      gassign *new_stmt;
+	      if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
 		{
-		  gassign *new_stmt;
-		  if (bestn->simdclone->mask_mode != VOIDmode)
-		    {
-		      /* This means we are dealing with integer mask modes.
-			 First convert to an integer type with the same size as
-			 the current vector type.  */
-		      unsigned HOST_WIDE_INT intermediate_size
-			= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (mask)));
-		      tree mid_int_type =
-			build_nonstandard_integer_type (intermediate_size, 1);
-		      mask = build1 (VIEW_CONVERT_EXPR, mid_int_type, mask);
-		      new_stmt
-			= gimple_build_assign (make_ssa_name (mid_int_type),
-					       mask);
-		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-		      /* Then zero-extend to the mask mode.  */
-		      mask = fold_build1 (NOP_EXPR, masktype,
-					  gimple_get_lhs (new_stmt));
-		    }
-		  else
-		    mask = build1 (VIEW_CONVERT_EXPR, masktype, mask);
-
-		  new_stmt = gimple_build_assign (make_ssa_name (masktype),
-						  mask);
-		  vect_finish_stmt_generation (vinfo, stmt_info,
-					       new_stmt, gsi);
-		  mask = gimple_assign_lhs (new_stmt);
+		  /* This means we are dealing with integer mask modes.
+		     First convert to an integer type with the same size as
+		     the current vector type.  */
+		  unsigned HOST_WIDE_INT intermediate_size
+		      = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (mask)));
+		  tree mid_int_type =
+		      build_nonstandard_integer_type (intermediate_size, 1);
+		  mask = build1 (VIEW_CONVERT_EXPR, mid_int_type, mask);
+		  new_stmt
+		      = gimple_build_assign (make_ssa_name (mid_int_type),
+					     mask);
+		  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		  /* Then zero-extend to the mask mode.  */
+		  mask = fold_build1 (NOP_EXPR, masktype,
+				      gimple_get_lhs (new_stmt));
 		}
+	      else if (bestn->simdclone->mask_mode == VOIDmode)
+		{
+		  tree one = fold_convert (TREE_TYPE (masktype),
+					   integer_one_node);
+		  tree zero = fold_convert (TREE_TYPE (masktype),
+					    integer_zero_node);
+		  mask = build3 (VEC_COND_EXPR, masktype, mask,
+				 build_vector_from_val (masktype, one),
+				 build_vector_from_val (masktype, zero));
+		}
+	      else
+		gcc_unreachable ();
+
+	      new_stmt = gimple_build_assign (make_ssa_name (masktype), mask);
+	      vect_finish_stmt_generation (vinfo, stmt_info,
+					   new_stmt, gsi);
+	      mask = gimple_assign_lhs (new_stmt);
 	      vargs.safe_push (mask);
 	    }
 	}
