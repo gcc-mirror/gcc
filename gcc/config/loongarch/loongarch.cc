@@ -5833,27 +5833,27 @@ loongarch_memmodel_needs_rel_acq_fence (enum memmodel model)
     }
 }
 
-/* Return true if a FENCE should be emitted to before a memory access to
-   implement the release portion of memory model MODEL.  */
+/* Return true if a FENCE should be emitted after a failed CAS to
+   implement the acquire semantic of failure_memorder.  */
 
 static bool
-loongarch_memmodel_needs_release_fence (enum memmodel model)
+loongarch_cas_failure_memorder_needs_acquire (enum memmodel model)
 {
-  switch (model)
+  switch (memmodel_base (model))
     {
+    case MEMMODEL_ACQUIRE:
     case MEMMODEL_ACQ_REL:
     case MEMMODEL_SEQ_CST:
-    case MEMMODEL_SYNC_SEQ_CST:
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_SYNC_RELEASE:
       return true;
 
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_CONSUME:
-    case MEMMODEL_SYNC_ACQUIRE:
     case MEMMODEL_RELAXED:
+    case MEMMODEL_RELEASE:
       return false;
 
+    /* MEMMODEL_CONSUME is deliberately not handled because it's always
+       replaced by MEMMODEL_ACQUIRE as at now.  If you see an ICE caused by
+       MEMMODEL_CONSUME, read the change (re)introducing it carefully and
+       decide what to do.  See PR 59448 and get_memmodel in builtins.cc.  */
     default:
       gcc_unreachable ();
     }
@@ -5966,7 +5966,8 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'd'	Print CONST_INT OP in decimal.
    'E'	Print CONST_INT OP element 0 of a replicated CONST_VECTOR in decimal.
    'F'	Print the FPU branch condition for comparison OP.
-   'G'	Print a DBAR insn if the memory model requires a release.
+   'G'	Print a DBAR insn for CAS failure (with an acquire semantic if
+	needed, otherwise a simple load-load barrier).
    'H'  Print address 52-61bit relocation associated with OP.
    'h'  Print the high-part relocation associated with OP.
    'i'	Print i if the operand is not a register.
@@ -6057,8 +6058,11 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'G':
-      if (loongarch_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
-	fputs ("dbar\t0", file);
+      if (loongarch_cas_failure_memorder_needs_acquire (
+	    memmodel_from_int (INTVAL (op))))
+	fputs ("dbar\t0b10100", file);
+      else
+	fputs ("dbar\t0x700", file);
       break;
 
     case 'h':
