@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-ssa.h"
 #include "cfgcleanup.h"
 #include "insn-attr.h"
+#include "tm-constrs.h"
 
 using namespace rtl_ssa;
 using namespace riscv_vector;
@@ -285,8 +286,20 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	  if (!use_insn->can_be_optimized () || use_insn->is_asm ()
 	      || use_insn->is_call () || use_insn->has_volatile_refs ()
 	      || use_insn->has_pre_post_modify ()
-	      || !has_vl_op (use_insn->rtl ())
-	      || !tail_agnostic_p (use_insn->rtl ()))
+	      || !has_vl_op (use_insn->rtl ()))
+	    return NULL_RTX;
+
+	  /* We should only propagate non-VLMAX AVL into VLMAX insn when
+	     such insn potential tail elements (after propagation) are
+	     not used.  So, we should make sure the outcome of VLMAX insn
+	     is not depend on.  */
+	  extract_insn_cached (use_insn->rtl ());
+	  int merge_op_idx = get_attr_merge_op_idx (use_insn->rtl ());
+	  if (merge_op_idx != INVALID_ATTRIBUTE
+	      && !satisfies_constraint_vu (recog_data.operand[merge_op_idx])
+	      && refers_to_regno_p (set->regno (),
+				    recog_data.operand[merge_op_idx])
+	      && !tail_agnostic_p (use_insn->rtl ()))
 	    return NULL_RTX;
 
 	  int new_sew = get_sew (use_insn->rtl ());
