@@ -73299,7 +73299,7 @@ fi
 
   # Most of this is adapted from libsanitizer/configure.ac
 
-  BACKTRACE_CPPFLAGS=
+  BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
   # libbacktrace only needs atomics for int, which we've already tested
   if test "$glibcxx_cv_atomic_int" = "yes"; then
@@ -73382,6 +73382,8 @@ done
     have_dl_iterate_phdr=no
   else
     # When built as a GCC target library, we can't do a link test.
+    ac_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <link.h>
@@ -73395,6 +73397,7 @@ else
 fi
 rm -f conftest*
 
+    CPPFLAGS="$ac_save_CPPFLAGS"
   fi
   if test "$have_dl_iterate_phdr" = "yes"; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"

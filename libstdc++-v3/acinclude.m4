@@ -5443,7 +5443,7 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
 
   # Most of this is adapted from libsanitizer/configure.ac
 
-  BACKTRACE_CPPFLAGS=
+  BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
   # libbacktrace only needs atomics for int, which we've already tested
   if test "$glibcxx_cv_atomic_int" = "yes"; then
@@ -5471,8 +5471,11 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
     have_dl_iterate_phdr=no
   else
     # When built as a GCC target library, we can't do a link test.
+    ac_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
     AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
 		    [have_dl_iterate_phdr=no])
+    CPPFLAGS="$ac_save_CPPFLAGS"
   fi
   if test "$have_dl_iterate_phdr" = "yes"; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
