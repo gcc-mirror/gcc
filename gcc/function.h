@@ -715,6 +715,7 @@ extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 extern basic_block emit_return_for_exit (edge exit_fallthru_edge,
 					 bool simple_p);
 extern void reposition_prologue_and_epilogue_notes (void);
+extern poly_int64 get_stack_dynamic_offset ();
 
 /* Returns the name of the current function.  */
 extern const char *fndecl_name (tree);

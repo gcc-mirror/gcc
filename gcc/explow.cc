@@ -1375,12 +1375,16 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
   rtx final_target, target;
+  rtx addr = (virtuals_instantiated
+	      ? plus_constant (Pmode, stack_pointer_rtx,
+			       get_stack_dynamic_offset ())
+	      : virtual_stack_dynamic_rtx);
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
      address anyway.  */
   if (size == const0_rtx)
-    return virtual_stack_dynamic_rtx;
+    return addr;
 
   /* Otherwise, show we're calling alloca or equivalent.  */
   cfun->calls_alloca = 1;
@@ -1532,7 +1536,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       poly_int64 saved_stack_pointer_delta;
 
       if (!STACK_GROWS_DOWNWARD)
-	emit_move_insn (target, virtual_stack_dynamic_rtx);
+	emit_move_insn (target, force_operand (addr, target));
 
       /* Check stack bounds if necessary.  */
       if (crtl->limit_stack)
@@ -1575,7 +1579,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       stack_pointer_delta = saved_stack_pointer_delta;
 
       if (STACK_GROWS_DOWNWARD)
-	emit_move_insn (target, virtual_stack_dynamic_rtx);
+	emit_move_insn (target, force_operand (addr, target));
     }
 
   suppress_reg_args_size = false;
