@@ -4453,7 +4453,8 @@ package body Sem_Ch3 is
 
       --  If not a deferred constant, then the object declaration freezes
       --  its type, unless the object is of an anonymous type and has delayed
-      --  aspects. In that case the type is frozen when the object itself is.
+      --  aspects (in that case the type is frozen when the object itself is)
+      --  or the context is a spec expression.
 
       else
          Check_Fully_Declared (T, N);
@@ -4463,7 +4464,7 @@ package body Sem_Ch3 is
            and then Is_Itype (T)
          then
             Set_Has_Delayed_Freeze (T);
-         else
+         elsif not In_Spec_Expression then
             Freeze_Before (N, T);
          end if;
       end if;
