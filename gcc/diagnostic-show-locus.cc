@@ -83,7 +83,7 @@ struct point_state
 class colorizer
 {
  public:
-  colorizer (diagnostic_context *context,
+  colorizer (pretty_printer *pp,
 	     diagnostic_t diagnostic_kind);
   ~colorizer ();
 
@@ -113,7 +113,7 @@ class colorizer
   static const int STATE_FIXIT_INSERT  = -2;
   static const int STATE_FIXIT_DELETE  = -3;
 
-  diagnostic_context *m_context;
+  pretty_printer *m_pp;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
   const char *m_range1;
@@ -365,10 +365,10 @@ struct char_display_policy : public cpp_char_column_policy
 class layout
 {
  public:
-  layout (diagnostic_context *context,
+  layout (const diagnostic_context &context,
 	  rich_location *richloc,
 	  diagnostic_t diagnostic_kind,
-	  pretty_printer *pp = nullptr);
+	  pretty_printer *pp);
 
   bool maybe_add_location_range (const location_range *loc_range,
 				 unsigned original_idx,
@@ -428,15 +428,12 @@ class layout
   move_to_column (int *column, int dest_column, bool add_left_margin);
 
  private:
-  diagnostic_context *m_context;
+  const diagnostic_source_printing_options &m_options;
   pretty_printer *m_pp;
   char_display_policy m_policy;
   location_t m_primary_loc;
   exploc_with_display_col m_exploc;
   colorizer m_colorizer;
-  bool m_colorize_source_p;
-  bool m_show_labels_p;
-  bool m_show_line_numbers_p;
   bool m_diagnostic_path_p;
   auto_vec <layout_range> m_layout_ranges;
   auto_vec <const fixit_hint *> m_fixit_hints;
@@ -451,9 +448,9 @@ class layout
 /* The constructor for "colorizer".  Lookup and store color codes for the
    different kinds of things we might need to print.  */
 
-colorizer::colorizer (diagnostic_context *context,
+colorizer::colorizer (pretty_printer *pp,
 		      diagnostic_t diagnostic_kind) :
-  m_context (context),
+  m_pp (pp),
   m_diagnostic_kind (diagnostic_kind),
   m_current_state (STATE_NORMAL_TEXT)
 {
@@ -461,7 +458,7 @@ colorizer::colorizer (diagnostic_context *context,
   m_range2 = get_color_by_name ("range2");
   m_fixit_insert = get_color_by_name ("fixit-insert");
   m_fixit_delete = get_color_by_name ("fixit-delete");
-  m_stop_color = colorize_stop (pp_show_color (context->printer));
+  m_stop_color = colorize_stop (pp_show_color (m_pp));
 }
 
 /* The destructor for "colorize".  If colorization is on, print a code to
@@ -497,35 +494,35 @@ colorizer::begin_state (int state)
       break;
 
     case STATE_FIXIT_INSERT:
-      pp_string (m_context->printer, m_fixit_insert);
+      pp_string (m_pp, m_fixit_insert);
       break;
 
     case STATE_FIXIT_DELETE:
-      pp_string (m_context->printer, m_fixit_delete);
+      pp_string (m_pp, m_fixit_delete);
       break;
 
     case 0:
       /* Make range 0 be the same color as the "kind" text
 	 (error vs warning vs note).  */
       pp_string
-	(m_context->printer,
-	 colorize_start (pp_show_color (m_context->printer),
+	(m_pp,
+	 colorize_start (pp_show_color (m_pp),
 			 diagnostic_get_color_for_kind (m_diagnostic_kind)));
       break;
 
     case 1:
-      pp_string (m_context->printer, m_range1);
+      pp_string (m_pp, m_range1);
       break;
 
     case 2:
-      pp_string (m_context->printer, m_range2);
+      pp_string (m_pp, m_range2);
       break;
 
     default:
       /* For ranges beyond 2, alternate between color 1 and color 2.  */
       {
 	gcc_assert (state > 2);
-	pp_string (m_context->printer,
+	pp_string (m_pp,
 		   state % 2 ? m_range1 : m_range2);
       }
       break;
@@ -538,7 +535,7 @@ void
 colorizer::finish_state (int state)
 {
   if (state != STATE_NORMAL_TEXT)
-    pp_string (m_context->printer, m_stop_color);
+    pp_string (m_pp, m_stop_color);
 }
 
 /* Get the color code for NAME (or the empty string if
@@ -547,7 +544,7 @@ colorizer::finish_state (int state)
 const char *
 colorizer::get_color_by_name (const char *name)
 {
-  return colorize_start (pp_show_color (m_context->printer), name);
+  return colorize_start (pp_show_color (m_pp), name);
 }
 
 /* Implementation of class layout_range.  */
@@ -1182,20 +1179,17 @@ make_policy (const diagnostic_context &dc,
    Determine m_x_offset_display, to ensure that the primary caret
    will fit within the max_width provided by the diagnostic_context.  */
 
-layout::layout (diagnostic_context * context,
+layout::layout (const diagnostic_context &context,
 		rich_location *richloc,
 		diagnostic_t diagnostic_kind,
 		pretty_printer *pp)
-: m_context (context),
-  m_pp (pp ? pp : context->printer),
-  m_policy (make_policy (*context, *richloc)),
+: m_options (context.m_source_printing),
+  m_pp (pp ? pp : context.printer),
+  m_policy (make_policy (context, *richloc)),
   m_primary_loc (richloc->get_range (0)->m_loc),
   m_exploc (richloc->get_expanded_location (0), m_policy,
 	    LOCATION_ASPECT_CARET),
-  m_colorizer (context, diagnostic_kind),
-  m_colorize_source_p (context->m_source_printing.colorize_source_p),
-  m_show_labels_p (context->m_source_printing.show_labels_p),
-  m_show_line_numbers_p (context->m_source_printing.show_line_numbers_p),
+  m_colorizer (m_pp, diagnostic_kind),
   m_diagnostic_path_p (diagnostic_kind == DK_DIAGNOSTIC_PATH),
   m_layout_ranges (richloc->get_num_locations ()),
   m_fixit_hints (richloc->get_num_fixit_hints ()),
@@ -1229,8 +1223,8 @@ layout::layout (diagnostic_context * context,
   calculate_linenum_width ();
   calculate_x_offset_display ();
 
-  if (context->m_source_printing.show_ruler_p)
-    show_ruler (m_x_offset_display + m_context->m_source_printing.max_width);
+  if (m_options.show_ruler_p)
+    show_ruler (m_x_offset_display + m_options.max_width);
 }
 
 
@@ -1363,7 +1357,7 @@ layout::will_show_line_p (linenum_type row) const
 void
 layout::print_gap_in_line_numbering ()
 {
-  gcc_assert (m_show_line_numbers_p);
+  gcc_assert (m_options.show_line_numbers_p);
 
   pp_emit_prefix (m_pp);
 
@@ -1546,7 +1540,7 @@ layout::calculate_line_spans ()
       line_span *current = &m_line_spans[m_line_spans.length () - 1];
       const line_span *next = &tmp_spans[i];
       gcc_assert (next->m_first_line >= current->m_first_line);
-      const int merger_distance = m_show_line_numbers_p ? 1 : 0;
+      const int merger_distance = m_options.show_line_numbers_p ? 1 : 0;
       if ((linenum_arith_t)next->m_first_line
 	  <= (linenum_arith_t)current->m_last_line + 1 + merger_distance)
 	{
@@ -1595,8 +1589,7 @@ layout::calculate_linenum_width ()
     m_linenum_width = MAX (m_linenum_width, 3);
   /* If there's a minimum margin width, apply it (subtracting 1 for the space
      after the line number.  */
-  m_linenum_width = MAX (m_linenum_width,
-			 m_context->m_source_printing.min_margin_width - 1);
+  m_linenum_width = MAX (m_linenum_width, m_options.min_margin_width - 1);
 }
 
 /* Calculate m_x_offset_display, which improves readability in case the source
@@ -1610,7 +1603,7 @@ layout::calculate_x_offset_display ()
 {
   m_x_offset_display = 0;
 
-  const int max_width = m_context->m_source_printing.max_width;
+  const int max_width = m_options.max_width;
   if (!max_width)
     {
       /* Nothing to do, the width is not capped.  */
@@ -1644,7 +1637,7 @@ layout::calculate_x_offset_display ()
      with a space.  */
   const int source_display_cols = eol_display_column;
   int left_margin_size = 1;
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
       left_margin_size = m_linenum_width + 3;
   caret_display_column += left_margin_size;
   eol_display_column += left_margin_size;
@@ -1691,7 +1684,7 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes)
   m_colorizer.set_normal_text ();
 
   pp_emit_prefix (m_pp);
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
     {
       int width = num_digits (row);
       for (int i = 0; i < m_linenum_width - width; i++)
@@ -1737,7 +1730,7 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes)
 	 For frontends that only generate carets, we don't colorize the
 	 characters above them, since this would look strange (e.g.
 	 colorizing just the first character in a token).  */
-      if (m_colorize_source_p)
+      if (m_options.colorize_source_p)
 	{
 	  bool in_range_p;
 	  point_state state;
@@ -1809,7 +1802,7 @@ void
 layout::start_annotation_line (char margin_char) const
 {
   pp_emit_prefix (m_pp);
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
     {
       /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
 	 of it, right-aligned, padded with spaces.  */
@@ -1852,8 +1845,7 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 	      /* Draw the caret.  */
 	      char caret_char;
 	      if (state.range_idx < rich_location::STATICALLY_ALLOCATED_RANGES)
-		caret_char
-		  = m_context->m_source_printing.caret_chars[state.range_idx];
+		caret_char = m_options.caret_chars[state.range_idx];
 	      else
 		caret_char = '^';
 	      pp_character (m_pp, caret_char);
@@ -2796,7 +2788,7 @@ layout::print_line (linenum_type row)
     = print_source_line (row, line.get_buffer (), line.length ());
   if (should_print_annotation_line_p (row))
     print_annotation_line (row, lbounds);
-  if (m_show_labels_p)
+  if (m_options.show_labels_p)
     print_any_labels (row);
   print_trailing_fixits (row);
 }
@@ -2816,7 +2808,7 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
   /* Use the layout location-handling logic to sanitize LOC,
      filtering it to the current line spans within a temporary
      layout instance.  */
-  layout layout (global_dc, this, DK_ERROR);
+  layout layout (*global_dc, this, DK_ERROR, nullptr);
   location_range loc_range;
   loc_range.m_loc = loc;
   loc_range.m_range_display_kind = SHOW_RANGE_WITHOUT_CARET;
@@ -2857,7 +2849,7 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->m_last_location = loc;
 
-  layout layout (context, richloc, diagnostic_kind, pp);
+  layout layout (*context, richloc, diagnostic_kind, pp);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
     {
@@ -2969,7 +2961,7 @@ test_offset_impl (int caret_byte_col, int max_width,
   rich_location richloc (line_table,
 			 linemap_position_for_column (line_table,
 						      caret_byte_col));
-  layout test_layout (&dc, &richloc, DK_ERROR);
+  layout test_layout (dc, &richloc, DK_ERROR, nullptr);
   ASSERT_EQ (left_margin - test_linenum_sep,
 	     test_layout.get_linenum_width ());
   ASSERT_EQ (expected_x_offset_display,
@@ -3084,7 +3076,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |         1         \n"
 		  "     |         1         \n"
@@ -3109,7 +3101,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col + 2));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |        1         1 \n"
 		  "     |        1         2 \n"
@@ -3186,7 +3178,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
     {
       test_diagnostic_context dc;
       dc.m_tabstop = tabstop;
-      layout test_layout (&dc, &richloc, DK_ERROR);
+      layout test_layout (dc, &richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
       const char *out = pp_formatted_text (dc.printer);
       ASSERT_EQ (NULL, strchr (out, '\t'));
@@ -3209,7 +3201,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_source_printing.min_margin_width
 	= test_left_margin - test_linenum_sep + 1;
       dc.m_source_printing.show_line_numbers_p = true;
-      layout test_layout (&dc, &richloc, DK_ERROR);
+      layout test_layout (dc, &richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
 
       /* We have arranged things so that two columns will be printed before
@@ -5521,7 +5513,7 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "            ^\n",
@@ -5536,7 +5528,7 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "                         ^\n",
