@@ -1,6 +1,6 @@
-/* Test C2x UTF-8 characters.  Test valid usages.  */
+/* Test C23 UTF-8 characters.  Test valid usages.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 unsigned char a = u8'a';
 _Static_assert (u8'a' == 97);

@@ -1,7 +1,7 @@
-/* Test C2x attribute syntax.  Basic tests of valid uses of empty
+/* Test C23 attribute syntax.  Basic tests of valid uses of empty
    attributes with GNU C features.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 /* Attributes can be used in declarations after __extension__, and
    before asm statements.  */

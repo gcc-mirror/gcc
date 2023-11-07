@@ -1,6 +1,6 @@
-/* Test C23 attribute syntax: diagnosed with -Wc11-c2x-compat.  */
+/* Test C23 attribute syntax: diagnosed with -Wc11-c23-compat.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 [[]]; /* { dg-warning "attributes before C23" } */
 

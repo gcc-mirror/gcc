@@ -1,5 +1,5 @@
-/* Test C2x attribute syntax.  Test empty attributes accepted.  */
+/* Test C23 attribute syntax.  Test empty attributes accepted.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 #include "../../gcc.dg/c2x-attr-syntax-1.c"

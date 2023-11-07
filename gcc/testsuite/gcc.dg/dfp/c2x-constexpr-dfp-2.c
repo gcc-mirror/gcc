@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Invalid code, compilation tests, DFP.  */
+/* Test C23 constexpr.  Invalid code, compilation tests, DFP.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Test conversions between binary and decimal.  */
 constexpr double v2 = 0.0DF; /* { dg-error "'constexpr' initializer for a binary floating-point type is of decimal type" } */

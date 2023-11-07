@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -std=c2x -ffat-lto-objects -fdump-tree-gimple" } */
+/* { dg-options "-fopenmp -std=c23 -ffat-lto-objects -fdump-tree-gimple" } */
 
 extern void abort ();
 

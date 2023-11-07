@@ -1,6 +1,6 @@
-/* Test C2x attribute syntax.  Test ignored attributes diagnosed.  */
+/* Test C23 attribute syntax.  Test ignored attributes diagnosed.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* A GNU attribute that is valid in some contexts, but should be
    diagnosed in contexts where all attributes are ignored (attribute

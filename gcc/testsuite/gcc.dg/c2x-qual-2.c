@@ -1,6 +1,6 @@
 /* Tests related to qualifiers and pointers to arrays in C23, PR98397 */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 /* test that qualifiers are preserved in tertiary operator for pointers to arrays in C23 */
 

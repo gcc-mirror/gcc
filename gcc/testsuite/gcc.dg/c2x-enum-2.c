@@ -1,8 +1,8 @@
-/* Test C2x enumerations with values not representable in int.  Test values
+/* Test C23 enumerations with values not representable in int.  Test values
    outside the range of standard or extended integer types are diagnosed, even
    when they can be represented in __int128.  */
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 enum e1 { e1a = __LONG_LONG_MAX__, e1b }; /* { dg-error "enumerator value outside the range" } */
 

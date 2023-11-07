@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat -pedantic-errors" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat -pedantic-errors" } */
 void tvoid(void* x);
 void transpose0(double* out, const double* in) { }
 void transpose1(double out[2][2], const double in[2][2]) { }

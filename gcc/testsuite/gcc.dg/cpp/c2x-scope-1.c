@@ -1,6 +1,6 @@
-/* Test :: token in C2x.  */
+/* Test :: token in C23.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #define CONCAT(x, y) x ## y
 

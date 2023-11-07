@@ -1,6 +1,6 @@
-/* Test C2x binary constants.  Invalid constants.  */
+/* Test C23 binary constants.  Invalid constants.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int a = 0b; /* { dg-error "invalid suffix" } */
 int b = 0B2; /* { dg-error "invalid suffix" } */

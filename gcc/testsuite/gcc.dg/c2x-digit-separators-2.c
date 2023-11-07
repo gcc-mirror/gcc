@@ -1,6 +1,6 @@
-/* Test C2x digit separators.  Invalid usages.  */
+/* Test C23 digit separators.  Invalid usages.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 void
 tf (void)

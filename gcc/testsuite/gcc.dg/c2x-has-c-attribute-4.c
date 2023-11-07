@@ -1,6 +1,6 @@
 /* Test __has_c_attribute.  Test syntax errors.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #if __has_c_attribute /* { dg-error "missing '\\('" } */
 #endif

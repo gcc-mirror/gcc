@@ -1,7 +1,7 @@
 /* Test that thread-local declarations are not considered tentative definitions
-   in C2x.  */
+   in C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 thread_local int a; /* { dg-message "previous" } */
 thread_local int a; /* { dg-error "redefinition" } */

@@ -1,6 +1,6 @@
-/* Test #elifdef and #elifndef in C2x.  */
+/* Test #elifdef and #elifndef in C23.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #define A
 #undef B

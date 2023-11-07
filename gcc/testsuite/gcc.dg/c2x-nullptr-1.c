@@ -1,7 +1,7 @@
 /* Test valid usage of C23 nullptr.  */
 /* { dg-do run } */
 // { dg-require-effective-target thread_fence }
-/* { dg-options "-std=c2x -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
 
 #include <stdarg.h>
 
@@ -156,7 +156,7 @@ test2 (int *p)
   (void) (_Generic(0, int : nullptr) != p);
 
   /* "(nullptr_t)nullptr" has type nullptr_t but isn't an NPC; these
-     comparisons are valid after C2X CD comments GB-071 and FR-073 were
+     comparisons are valid after C23 CD comments GB-071 and FR-073 were
      resolved by the wording in N3077.  */
   (void) ((nullptr_t)nullptr == p);
   (void) ((nullptr_t)nullptr != p);

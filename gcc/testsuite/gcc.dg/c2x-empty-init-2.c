@@ -1,6 +1,6 @@
-/* Test C2X support for empty initializers: invalid use cases.  */
+/* Test C23 support for empty initializers: invalid use cases.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Empty initialization is invalid for arrays of unknown size.  This is
    diagnosed via the diagnostic for zero-size arrays.  */

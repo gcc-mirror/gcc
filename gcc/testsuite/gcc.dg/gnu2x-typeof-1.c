@@ -1,8 +1,8 @@
-/* Test __typeof__ propagation of noreturn function attributes with -std=gnu2x:
+/* Test __typeof__ propagation of noreturn function attributes with -std=gnu23:
    these are part of the type of a function pointer with GNU __typeof__, but
-   not with C2x typeof.  */
+   not with C23 typeof.  */
 /* { dg-do link } */
-/* { dg-options "-std=gnu2x -O2" } */
+/* { dg-options "-std=gnu23 -O2" } */
 
 _Noreturn void f (void);
 

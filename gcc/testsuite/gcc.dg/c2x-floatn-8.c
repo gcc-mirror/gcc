@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 /* { dg-add-options float64x } */
 /* { dg-require-effective-target float64x } */
 

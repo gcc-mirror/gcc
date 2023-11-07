@@ -1,6 +1,6 @@
-/* Test C2x (= Unicode) rules for characters in identifiers.  */
+/* Test C23 (= Unicode) rules for characters in identifiers.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 ¨
 

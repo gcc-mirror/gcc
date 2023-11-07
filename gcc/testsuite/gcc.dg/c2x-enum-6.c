@@ -1,6 +1,6 @@
-/* Test C2x enumerations with fixed underlying type.  Valid code.  */
+/* Test C23 enumerations with fixed underlying type.  Valid code.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Check a type while defining an enum (via a diagnostic for incompatible
    pointer types if the wrong type was chosen).  */

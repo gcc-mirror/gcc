@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do run { target bitint } } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stdatomic.h>
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-add-options float32 } */
 /* { dg-add-options float64 } */
 /* { dg-add-options float32x } */

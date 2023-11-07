@@ -1,6 +1,6 @@
-/* Test C2x attribute syntax.  Invalid uses of attributes.  */
+/* Test C23 attribute syntax.  Invalid uses of attributes.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Prefix attributes not allowed on declarations without declarators.  */
 

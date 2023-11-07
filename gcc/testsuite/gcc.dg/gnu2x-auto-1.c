@@ -1,6 +1,6 @@
-/* Test C2x auto.  Invalid code with GNU extensions.  */
+/* Test C23 auto.  Invalid code with GNU extensions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 void
 f ()

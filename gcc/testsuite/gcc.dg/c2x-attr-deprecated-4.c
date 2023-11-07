@@ -1,6 +1,6 @@
-/* Test C2x deprecated attribute: duplicates (allowed after N2557).  */
+/* Test C23 deprecated attribute: duplicates (allowed after N2557).  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[deprecated, __deprecated__]] int a;
 [[__deprecated__, deprecated("message")]] int b;

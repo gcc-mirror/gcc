@@ -1,6 +1,6 @@
-/* Test C2x typeof and typeof_unqual.  Invalid code.  */
+/* Test C23 typeof and typeof_unqual.  Invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 struct s { int i : 2; } x;
 union u { unsigned int j : 1; } y;

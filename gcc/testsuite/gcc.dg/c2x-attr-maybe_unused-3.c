@@ -1,6 +1,6 @@
-/* Test C2x maybe_unused attribute: invalid syntax.  */
+/* Test C23 maybe_unused attribute: invalid syntax.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[maybe_unused()]] int a; /* { dg-error "does not take any arguments" } */
 

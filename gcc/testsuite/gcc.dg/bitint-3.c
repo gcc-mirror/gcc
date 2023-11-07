@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 _BitInt(32) a, b = 2147483647wb;
 _BitInt(64) c, d = 9223372036854775807wb;

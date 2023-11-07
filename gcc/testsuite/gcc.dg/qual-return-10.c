@@ -1,8 +1,8 @@
-/* Test qualifiers on function return types in C2X (C2X version of
+/* Test qualifiers on function return types in C23 (C23 version of
    qual-return-6.c): those qualifiers are now ignored for all purposes,
    including _Atomic, but should still get warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wignored-qualifiers" } */
+/* { dg-options "-std=c23 -Wignored-qualifiers" } */
 
 const int f1 (void); /* { dg-warning "qualifiers ignored" } */
 volatile int f2 (void) { return 0; } /* { dg-warning "qualifiers ignored" } */

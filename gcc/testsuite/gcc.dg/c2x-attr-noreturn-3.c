@@ -1,6 +1,6 @@
-/* Test C2x noreturn attribute: invalid syntax.  */
+/* Test C23 noreturn attribute: invalid syntax.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[noreturn()]] void a(); /* { dg-error "does not take any arguments" } */
 

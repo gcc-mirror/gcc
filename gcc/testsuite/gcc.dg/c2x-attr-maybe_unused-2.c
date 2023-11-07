@@ -1,6 +1,6 @@
-/* Test C2x maybe_unused attribute: invalid contexts.  */
+/* Test C23 maybe_unused attribute: invalid contexts.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* This attribute is not valid in most cases on types other than their
    definitions, or on statements, or as an attribute-declaration.  */

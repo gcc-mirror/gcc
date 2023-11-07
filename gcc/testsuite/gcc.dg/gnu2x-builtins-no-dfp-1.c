@@ -1,7 +1,7 @@
-/* Test C2x built-in functions: test DFP built-in functions are not
+/* Test C23 built-in functions: test DFP built-in functions are not
    available when no DFP support.  Bug 91985.  */
 /* { dg-do compile { target { ! dfp } } } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 int fabsd32 (void);
 int fabsd64 (void);

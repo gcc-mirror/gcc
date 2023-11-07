@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -std=c2x" } */
+/* { dg-options "-fopenmp -std=c23" } */
 
 int i;
 int t1, t2, t3, t4, t5, t6, t7;

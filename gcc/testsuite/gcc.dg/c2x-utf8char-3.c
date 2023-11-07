@@ -1,6 +1,6 @@
-/* Test C2x UTF-8 characters.  Test errors for invalid code.  */
+/* Test C23 UTF-8 characters.  Test errors for invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 unsigned char a = u8''; /* { dg-error "empty character constant" } */
 unsigned char b = u8'ab'; /* { dg-error "character constant too long for its type" } */

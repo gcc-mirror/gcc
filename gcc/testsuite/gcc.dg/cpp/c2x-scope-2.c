@@ -1,6 +1,6 @@
-/* Test :: token in C2x: preprocessed output.  */
+/* Test :: token in C23: preprocessed output.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors -P" } */
+/* { dg-options "-std=c23 -pedantic-errors -P" } */
 
 #define COLON() :
 #define TEST() ABC

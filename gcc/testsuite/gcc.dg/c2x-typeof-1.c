@@ -1,6 +1,6 @@
-/* Test C2x typeof and typeof_unqual.  Valid code.  */
+/* Test C23 typeof and typeof_unqual.  Valid code.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int i;
 extern typeof (i) i;

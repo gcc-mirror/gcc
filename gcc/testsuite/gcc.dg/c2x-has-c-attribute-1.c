@@ -1,6 +1,6 @@
 /* Test __has_c_attribute.  Test basic properties.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #ifdef __has_c_attribute
 /* OK.  */

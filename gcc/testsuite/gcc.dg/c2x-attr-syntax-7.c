@@ -1,6 +1,6 @@
 /* Test C23 attribute syntax: use of __extension__ in C11 mode.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 #define FOO ::
 #define BAR :

@@ -1,6 +1,6 @@
-/* Test __STDC_VERSION_STDINT_H__ in C2x.  */
+/* Test __STDC_VERSION_STDINT_H__ in C23.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors -ffreestanding" } */
+/* { dg-options "-std=c23 -pedantic-errors -ffreestanding" } */
 
 #include <stdint.h>
 

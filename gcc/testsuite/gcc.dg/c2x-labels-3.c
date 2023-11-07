@@ -1,7 +1,7 @@
 /* Tests for labels before declarations and at ends of compound statements
  * in combination with attributes. */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wall" } */
+/* { dg-options "-std=c23 -Wall" } */
 
 int f(void) 
 { 

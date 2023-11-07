@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -std=c2x" } */
+/* { dg-options "-fopenmp -std=c23" } */
 
 [[omp::directive(error)]];			/* { dg-error "'pragma omp error' encountered" } */
 [[omp::directive(error, at(compilation))]];	/* { dg-error "'pragma omp error' encountered" } */

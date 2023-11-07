@@ -1,6 +1,6 @@
 /* Test __has_c_attribute.  Test supported attributes.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #if __has_c_attribute ( nodiscard ) != 202311L
 #error "bad result for nodiscard"

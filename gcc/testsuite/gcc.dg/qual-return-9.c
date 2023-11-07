@@ -1,8 +1,8 @@
-/* Test qualifiers on function return types in C2X (C2X version of
+/* Test qualifiers on function return types in C23 (C23 version of
    qual-return-5.c): those qualifiers are now ignored for all purposes,
    including _Atomic.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int f1 (void);
 const int f1 (void);

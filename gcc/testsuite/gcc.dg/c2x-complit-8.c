@@ -1,7 +1,7 @@
-/* Test C2x storage class specifiers in compound literals: inline function
+/* Test C23 storage class specifiers in compound literals: inline function
    constraints.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 inline void
 f1 ()

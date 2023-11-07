@@ -1,6 +1,6 @@
 // PR c/102989
 // { dg-do compile { target bitint } }
-// { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" }
+// { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" }
 
 _BitInt(63) a;					/* { dg-warning "ISO C does not support '_BitInt\\\(63\\\)' before C23" } */
 signed _BitInt(15) b;				/* { dg-warning "ISO C does not support 'signed _BitInt\\\(15\\\)' before C23" } */

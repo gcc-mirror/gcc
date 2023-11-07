@@ -1,6 +1,6 @@
-/* Test C2x storage class specifiers in compound literals: invalid code.  */
+/* Test C23 storage class specifiers in compound literals: invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int *p = &(register int) { 0 }; /* { dg-error "file-scope compound literal specifies" } */
 
@@ -34,7 +34,7 @@ g ()
 void
 h ()
 {
-  /* The following cases are not part of the C2x syntax, but are detected
+  /* The following cases are not part of the C23 syntax, but are detected
      specially by the parser.  */
   (static int) 0; /* { dg-error "storage class specifier in cast" } */
   sizeof (static int); /* { dg-error "storage class specifier in" } */

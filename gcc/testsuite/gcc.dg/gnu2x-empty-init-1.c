@@ -1,7 +1,7 @@
-/* Test C2X support for empty initializers: valid use cases with GNU
+/* Test C23 support for empty initializers: valid use cases with GNU
    extensions.  */
 /* { dg-do run } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 extern void exit (int);
 extern void abort (void);

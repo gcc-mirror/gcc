@@ -1,6 +1,6 @@
-/* Test storage duration of compound literals in parameter lists for C2x.  */
+/* Test storage duration of compound literals in parameter lists for C23.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 extern void abort (void);
 extern void exit (int);

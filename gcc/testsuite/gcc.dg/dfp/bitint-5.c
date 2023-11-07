@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do run { target bitint } } */
-/* { dg-options "-O2 -std=c2x -pedantic-errors" } */
+/* { dg-options "-O2 -std=c23 -pedantic-errors" } */
 
 #if __BITINT_MAXWIDTH__ >= 192
 __attribute__((noipa)) _Decimal32

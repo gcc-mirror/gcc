@@ -1,6 +1,6 @@
 /* Test INFINITY macro.  Test when infinities supported.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target inff } */
 

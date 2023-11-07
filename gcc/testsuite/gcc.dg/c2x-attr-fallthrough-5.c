@@ -1,6 +1,6 @@
-/* Test C2x fallthrough attribute: mixtures with other attributes.  */
+/* Test C23 fallthrough attribute: mixtures with other attributes.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Use of other standard attributes together with "fallthrough" goes
    through a different path to diagnosing ignored attributes from that

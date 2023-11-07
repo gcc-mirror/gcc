@@ -1,6 +1,6 @@
-/* Test C2x enumerations with fixed underlying type.  Invalid code.  */
+/* Test C23 enumerations with fixed underlying type.  Invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* An enum type specifier may only be used when the enum is defined, or in a
    declaration of the form "enum name enum-type-specifier;".  */

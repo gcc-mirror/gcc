@@ -1,6 +1,6 @@
-/* Test C2x definition of LDBL_EPSILON.  */
+/* Test C23 definition of LDBL_EPSILON.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <float.h>
 

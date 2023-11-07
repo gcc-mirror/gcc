@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -std=c2x" } */
+/* { dg-options "-fopenmp -std=c23" } */
 
 #pragma omp declare target
 #pragma omp declare target

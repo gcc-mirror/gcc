@@ -1,6 +1,6 @@
 /* Tests for labels before declarations and at ends of compound statements.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 int f(int x) 
 { 

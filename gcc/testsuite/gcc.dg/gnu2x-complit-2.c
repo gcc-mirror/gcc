@@ -1,7 +1,7 @@
-/* Test C2x storage class specifiers in compound literals.  Thread-local
+/* Test C23 storage class specifiers in compound literals.  Thread-local
    cases, compilation tests, GNU __thread used.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 /* { dg-require-effective-target tls } */
 
 #include <stddef.h>

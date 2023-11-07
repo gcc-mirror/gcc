@@ -1,6 +1,6 @@
-/* Test C2x alignment support.  Test valid code.  */
+/* Test C23 alignment support.  Test valid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stddef.h>
 

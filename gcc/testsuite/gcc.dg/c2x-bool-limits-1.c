@@ -1,6 +1,6 @@
-/* Test limits for _Bool in <limits.h> in C2x.  */
+/* Test limits for _Bool in <limits.h> in C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #include <limits.h>
 

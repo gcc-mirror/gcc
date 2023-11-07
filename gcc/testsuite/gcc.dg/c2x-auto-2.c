@@ -1,6 +1,6 @@
-/* Test C2x auto.  Valid code, execution tests.  Based on auto-type-1.c.  */
+/* Test C23 auto.  Valid code, execution tests.  Based on auto-type-1.c.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-require-effective-target alloca } */
 
 extern void abort (void);

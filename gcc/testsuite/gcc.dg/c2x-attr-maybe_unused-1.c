@@ -1,6 +1,6 @@
-/* Test C2x maybe_unused attribute: valid uses.  */
+/* Test C23 maybe_unused attribute: valid uses.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wall -Wextra -Wunused" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wall -Wextra -Wunused" } */
 
 [[maybe_unused]] static void f1 (void) {}
 

@@ -1,6 +1,6 @@
-/* Test unreachable in <stddef.h> for C2x.  */
+/* Test unreachable in <stddef.h> for C23.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors -O2" } */
+/* { dg-options "-std=c23 -pedantic-errors -O2" } */
 
 #include <stddef.h>
 

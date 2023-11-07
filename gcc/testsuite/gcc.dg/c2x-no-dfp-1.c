@@ -1,7 +1,7 @@
 /* Test DFP types and constants rejected if no DFP support.  Bug
    91985.  */
 /* { dg-do compile { target { ! dfp } } } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 _Decimal32 d32a; /* { dg-error "not supported" } */
 _Decimal64 d64a; /* { dg-error "not supported" } */

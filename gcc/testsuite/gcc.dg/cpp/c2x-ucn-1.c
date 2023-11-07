@@ -1,6 +1,6 @@
-/* Test characters not permitted in UCNs in C2x.  */
+/* Test characters not permitted in UCNs in C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #if U'\u0000' /* { dg-error "is not a valid universal character" } */
 #endif

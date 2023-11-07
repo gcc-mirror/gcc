@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -std=c2x -Wno-attributes" } */
+/* { dg-options "-fopenmp -std=c23 -Wno-attributes" } */
 
 void
 foo ()

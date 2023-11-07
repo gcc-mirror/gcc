@@ -1,6 +1,6 @@
-/* Test C2x noreturn attribute: valid uses.  */
+/* Test C23 noreturn attribute: valid uses.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[noreturn]] void exit (int);
 

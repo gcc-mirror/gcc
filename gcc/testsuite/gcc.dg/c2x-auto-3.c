@@ -1,6 +1,6 @@
-/* Test C2x auto.  Invalid code.  */
+/* Test C23 auto.  Invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 auto; /* { dg-error "empty declaration" } */
 auto *p = (int *) 0; /* { dg-error "plain identifier" } */

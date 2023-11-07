@@ -1,6 +1,6 @@
-/* Test for scanf format extensions using formats from C2X.  */
+/* Test for scanf format extensions using formats from C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x -Wformat" } */
+/* { dg-options "-std=gnu23 -Wformat" } */
 
 #include "format.h"
 

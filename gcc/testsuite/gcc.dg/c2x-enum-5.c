@@ -1,7 +1,7 @@
-/* Test C2x enumerations with values not representable in int.  Test
-   -Wc11-c2x-compat warnings.  */
+/* Test C23 enumerations with values not representable in int.  Test
+   -Wc11-c23-compat warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 enum e1 { e1a = -__LONG_LONG_MAX__ - 1 }; /* { dg-warning "ISO C restricts enumerator values" } */
 

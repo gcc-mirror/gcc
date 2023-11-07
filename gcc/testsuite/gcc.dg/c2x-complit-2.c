@@ -1,6 +1,6 @@
-/* Test C2x storage class specifiers in compound literals.  */
+/* Test C23 storage class specifiers in compound literals.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stddef.h>
 

@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int *q, *r, *s;
 

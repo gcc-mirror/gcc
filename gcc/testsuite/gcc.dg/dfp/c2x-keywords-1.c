@@ -1,6 +1,6 @@
-/* Test that _Decimal* keywords are accepted in C2X mode.  */
+/* Test that _Decimal* keywords are accepted in C23 mode.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 _Decimal32 d32;
 _Decimal64 d64;

@@ -1,5 +1,5 @@
 /* Test DFP macros defined in <float.h> with DFP support.  TS 18661-2
-   feature test macro causes same macros to be defined as for C2X.  */
+   feature test macro causes same macros to be defined as for C23.  */
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 

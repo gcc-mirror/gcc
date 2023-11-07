@@ -1,6 +1,6 @@
 /* Portable assumptions */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 void
 foo (int x)

@@ -1,6 +1,6 @@
 /* Test errors for bad string literal concatenation.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 void *pLU = L"" U""; /* { dg-error "non-standard concatenation" } */
 void *pL_U = L"" "" U""; /* { dg-error "non-standard concatenation" } */

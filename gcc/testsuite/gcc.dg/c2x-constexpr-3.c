@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Invalid code.  */
+/* Test C23 constexpr.  Invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 extern constexpr int v0 = 0; /* { dg-error "'constexpr' used with 'extern'" } */
 /* { dg-warning "initialized and declared 'extern'" "initialized extern" { target *-*-* } .-1 } */

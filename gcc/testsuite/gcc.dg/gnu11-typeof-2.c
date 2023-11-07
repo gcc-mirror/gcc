@@ -1,6 +1,6 @@
 /* Test typeof propagation of noreturn function attributes with -std=gnu11:
    these are part of the type of a function pointer with GNU typeof, but not
-   with C2x typeof.  */
+   with C23 typeof.  */
 /* { dg-do link } */
 /* { dg-options "-std=gnu11 -O2" } */
 

@@ -1,7 +1,7 @@
-/* Test C2X support for empty initializers: invalid use cases with GNU
+/* Test C23 support for empty initializers: invalid use cases with GNU
    extensions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 void
 f (int a)

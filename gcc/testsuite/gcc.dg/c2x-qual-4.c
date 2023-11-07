@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 void tvoid(void* x);
 void transpose0(double* out, const double* in) { }
 void transpose1(double out[2][2], const double in[2][2]) { }

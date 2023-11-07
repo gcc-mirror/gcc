@@ -1,8 +1,8 @@
-/* Test C2x attribute syntax.  Test GNU attributes appertain to
+/* Test C23 attribute syntax.  Test GNU attributes appertain to
    appropriate constructs.  Attributes on types not being defined at
    the time.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x -Wformat" } */
+/* { dg-options "-std=gnu23 -Wformat" } */
 
 typedef void va_type (const char *, ...);
 typedef va_type [[gnu::format (printf, 1, 2)]] printf_like_1;

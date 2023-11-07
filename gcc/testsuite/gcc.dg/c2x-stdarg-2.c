@@ -1,7 +1,7 @@
-/* Test C2x variadic functions with no named parameters.  Compilation tests,
+/* Test C23 variadic functions with no named parameters.  Compilation tests,
    valid code, verify not considered unprototyped functions.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wstrict-prototypes -Wold-style-definition" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wstrict-prototypes -Wold-style-definition" } */
 
 int f (...);
 int g (int (...));

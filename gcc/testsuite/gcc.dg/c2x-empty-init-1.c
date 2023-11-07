@@ -1,6 +1,6 @@
-/* Test C2X support for empty initializers: valid use cases.  */
+/* Test C23 support for empty initializers: valid use cases.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 extern void exit (int);
 extern void abort (void);

@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code using GNU extensions, compilation tests.  */
+/* Test C23 constexpr.  Valid code using GNU extensions, compilation tests.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 struct s { struct { int x, y; } x; };
 constexpr struct s v = { { 123, 150 } };

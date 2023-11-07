@@ -1,7 +1,7 @@
-/* Test C2x digit separators.  Test token pasting avoided for preprocessed
+/* Test C23 digit separators.  Test token pasting avoided for preprocessed
    output.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -save-temps" } */
+/* { dg-options "-std=c23 -save-temps" } */
 
 #define ZERO 0
 

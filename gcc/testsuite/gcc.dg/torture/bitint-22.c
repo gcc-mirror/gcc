@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do run { target bitint } } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "-flto" } { "" } } */
 

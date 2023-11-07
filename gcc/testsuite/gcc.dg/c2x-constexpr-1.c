@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code, compilation tests.  */
+/* Test C23 constexpr.  Valid code, compilation tests.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <float.h>
 

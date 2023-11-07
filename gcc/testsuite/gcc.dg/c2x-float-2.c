@@ -1,6 +1,6 @@
 /* Test INFINITY macro.  Generic test.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -w" } */
+/* { dg-options "-std=c23 -w" } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target inff } */
 

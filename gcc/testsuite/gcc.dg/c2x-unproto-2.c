@@ -1,9 +1,9 @@
 /* Test compatibility of prototyped function types without arguments and with
-   variable arguments (C2x made the case of types affected by default argument
+   variable arguments (C23 made the case of types affected by default argument
    promotions compatible, before removing unprototyped functions completely).
-   Test always-invalid-in-C2x usages, in C2X mode.  */
+   Test always-invalid-in-C23 usages, in C23 mode.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 void f1 (); /* { dg-message "previous declaration" } */
 void f1 (int, ...); /* { dg-error "conflicting types" } */

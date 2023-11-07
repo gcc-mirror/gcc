@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code, compilation tests, IEEE arithmetic.  */
+/* Test C23 constexpr.  Valid code, compilation tests, IEEE arithmetic.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target inff } */
 

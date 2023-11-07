@@ -1,7 +1,7 @@
-/* Test old-style function definitions not in C2x: warnings disabled
+/* Test old-style function definitions not in C23: warnings disabled
    by -Wno-old-style-definition.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wno-old-style-definition" } */
+/* { dg-options "-std=c23 -Wno-old-style-definition" } */
 
 void
 f (x)

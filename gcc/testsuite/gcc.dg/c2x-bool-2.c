@@ -1,6 +1,6 @@
-/* Test bool, true and false keywords in C2x.  */
+/* Test bool, true and false keywords in C23.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 extern void abort (void);
 extern void exit (int);

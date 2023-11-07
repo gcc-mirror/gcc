@@ -1,6 +1,6 @@
-/* Test C2x nodiscard attribute: invalid syntax.  */
+/* Test C23 nodiscard attribute: invalid syntax.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[nodiscard()]] int a (void); /* { dg-error "parentheses must be omitted if attribute argument list is empty" } */
 

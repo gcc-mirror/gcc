@@ -1,7 +1,7 @@
-/* Test that declaring a function with () is the same as (void) in C2X.  Valid
+/* Test that declaring a function with () is the same as (void) in C23.  Valid
    use cases.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wstrict-prototypes" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wstrict-prototypes" } */
 
 void f1 ();
 void f1 (void);

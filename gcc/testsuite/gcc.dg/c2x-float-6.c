@@ -1,6 +1,6 @@
 /* Test SNAN macros.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors -fsignaling-nans" } */
+/* { dg-options "-std=c23 -pedantic-errors -fsignaling-nans" } */
 /* { dg-add-options ieee } */
 
 #include <float.h>

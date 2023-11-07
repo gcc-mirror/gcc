@@ -1,7 +1,7 @@
-/* Test C2x storage class specifiers in compound literals.  Thread-local
+/* Test C23 storage class specifiers in compound literals.  Thread-local
    cases, compilation tests.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-require-effective-target tls } */
 
 #include <stddef.h>

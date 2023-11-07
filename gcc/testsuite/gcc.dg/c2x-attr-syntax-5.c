@@ -1,7 +1,7 @@
-/* Test C2x attribute syntax.  Test unknown standard attributes
+/* Test C23 attribute syntax.  Test unknown standard attributes
    diagnosed with a pedwarn.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[unknown_attribute]]; /* { dg-error "attribute ignored" } */
 

@@ -1,6 +1,6 @@
-/* Test C2x attribute syntax.  Invalid use of fallthrough attribute.  */
+/* Test C23 attribute syntax.  Invalid use of fallthrough attribute.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wextra" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wextra" } */
 
 [[fallthrough]]; /* { dg-error "'fallthrough' attribute at top level" } */
 

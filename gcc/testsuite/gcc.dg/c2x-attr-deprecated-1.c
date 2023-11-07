@@ -1,6 +1,6 @@
-/* Test C2x deprecated attribute: valid uses.  */
+/* Test C23 deprecated attribute: valid uses.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Similar to tests from gnu2x-attrs-1.c, but using the standard
    attribute instead of gnu::deprecated, and sometimes using

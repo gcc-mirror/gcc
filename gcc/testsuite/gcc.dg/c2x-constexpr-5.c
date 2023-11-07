@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code, compilation tests, unsigned char.  */
+/* Test C23 constexpr.  Valid code, compilation tests, unsigned char.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -funsigned-char" } */
+/* { dg-options "-std=c23 -pedantic-errors -funsigned-char" } */
 
 constexpr char v1[] = "\x00\xff";
 constexpr signed char v2[] = "\x7f\x00";

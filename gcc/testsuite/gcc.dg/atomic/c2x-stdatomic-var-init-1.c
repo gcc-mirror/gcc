@@ -1,6 +1,6 @@
-/* Test ATOMIC_VAR_INIT not in C2x.  */
+/* Test ATOMIC_VAR_INIT not in C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stdatomic.h>
 

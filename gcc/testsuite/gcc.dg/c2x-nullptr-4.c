@@ -1,7 +1,7 @@
-/* Test that -Wc11-c2x-compat issues a warning (not a pedwarn) about
+/* Test that -Wc11-c23-compat issues a warning (not a pedwarn) about
    `nullptr' in C23.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 int *
 fn (int *p)

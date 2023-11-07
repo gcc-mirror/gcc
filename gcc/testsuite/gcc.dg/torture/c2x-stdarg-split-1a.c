@@ -1,8 +1,8 @@
-/* Test C2x variadic functions with no named parameters, or last named
+/* Test C23 variadic functions with no named parameters, or last named
    parameter with a declaration not allowed in C17.  Execution tests split
    between source files.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-additional-sources "c2x-stdarg-split-1b.c" } */
 
 extern void abort (void);

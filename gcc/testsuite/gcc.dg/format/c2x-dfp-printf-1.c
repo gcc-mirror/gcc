@@ -1,7 +1,7 @@
 /* Test for printf formats: acceptance of DFP formats in pedantic mode.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
-/* { dg-options "-std=c2x -pedantic -Wformat" } */
+/* { dg-options "-std=c23 -pedantic -Wformat" } */
 
 #include "format.h"
 

@@ -1,6 +1,6 @@
-/* Test omitted parameter names in C2x.  Execution test.  */
+/* Test omitted parameter names in C23.  Execution test.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 extern void abort (void);
 extern void exit (int);

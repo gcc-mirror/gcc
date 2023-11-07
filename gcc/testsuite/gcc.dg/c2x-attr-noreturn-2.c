@@ -1,6 +1,6 @@
-/* Test C2x noreturn attribute: invalid contexts.  */
+/* Test C23 noreturn attribute: invalid contexts.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[noreturn]]; /* { dg-error "ignored" } */
 

@@ -1,6 +1,6 @@
-/* Test for scanf formats.  Formats using C2X features.  */
+/* Test for scanf formats.  Formats using C23 features.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic -Wformat" } */
+/* { dg-options "-std=c23 -pedantic -Wformat" } */
 
 #include "format.h"
 

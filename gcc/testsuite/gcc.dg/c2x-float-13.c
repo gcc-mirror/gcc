@@ -1,6 +1,6 @@
-/* Test __STDC_VERSION_FLOAT_H__ in C2x.  */
+/* Test __STDC_VERSION_FLOAT_H__ in C23.  */
 /* { dg-do preprocess } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <float.h>
 

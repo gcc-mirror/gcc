@@ -1,7 +1,7 @@
-/* Test C2x storage class specifiers in compound literals.  Thread-local
+/* Test C23 storage class specifiers in compound literals.  Thread-local
    cases, execution tests.  */
 /* { dg-do run } */
-/* { dg-options "-pthread -std=gnu2x -pedantic-errors" } */
+/* { dg-options "-pthread -std=gnu23 -pedantic-errors" } */
 /* { dg-require-effective-target pthread_h } */
 /* { dg-require-effective-target pthread } */
 /* { dg-require-effective-target tls_runtime } */

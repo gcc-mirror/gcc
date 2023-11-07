@@ -1,6 +1,6 @@
-/* Test that DFP constants are accepted in C2X mode.  */
+/* Test that DFP constants are accepted in C23 mode.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int a = (int) 1.1DF;
 int b = (int) 2.df;

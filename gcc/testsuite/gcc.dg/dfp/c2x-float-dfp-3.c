@@ -1,7 +1,7 @@
 /* Test DFP macros defined in <float.h> with DFP support.  TR 24732
    feature test macro causes *_SUBNORMAL_MIN macros to be defined.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #define __STDC_WANT_DEC_FP__
 #include <float.h>

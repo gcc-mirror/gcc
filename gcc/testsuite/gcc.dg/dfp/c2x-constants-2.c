@@ -1,6 +1,6 @@
 /* Test that DFP constants are accepted in C23 mode: compat warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 int a = (int) 1.1DF; /* { dg-warning "C23 feature" } */
 int b = (int) 2.df; /* { dg-warning "C23 feature" } */

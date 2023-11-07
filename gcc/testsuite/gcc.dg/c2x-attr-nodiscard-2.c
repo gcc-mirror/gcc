@@ -1,6 +1,6 @@
-/* Test C2x nodiscard attribute: invalid contexts.  */
+/* Test C23 nodiscard attribute: invalid contexts.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* This attribute is not valid on types other than their definitions,
    or on declarations other than function declarations, or on

@@ -1,7 +1,7 @@
-/* Test initialization by UTF-8 string literal in C2X.  */
+/* Test initialization by UTF-8 string literal in C23.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target wchar } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 typedef __CHAR8_TYPE__  char8_t;
 typedef __CHAR16_TYPE__ char16_t;

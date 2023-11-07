@@ -1,6 +1,6 @@
-/* Test C2x deprecated attribute: valid uses.  */
+/* Test C23 deprecated attribute: valid uses.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[nodiscard]] int c1 (void); /* { dg-message "declared here" } */
 [[__nodiscard__ ("some reason")]] int c2 (void); /* { dg-message "declared here" } */

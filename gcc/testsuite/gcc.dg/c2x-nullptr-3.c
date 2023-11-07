@@ -1,6 +1,6 @@
 /* Test wrong usage of C23 nullptr.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wall -Wextra -Wno-unused-variable" } */
 
 typedef __typeof__(nullptr) nullptr_t;
 

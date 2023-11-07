@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code, compilation tests, DFP.  */
+/* Test C23 constexpr.  Valid code, compilation tests, DFP.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 constexpr _Decimal32 v1 = __DEC32_MIN__;
 constexpr _Decimal32 v2 = __DEC32_SUBNORMAL_MIN__;

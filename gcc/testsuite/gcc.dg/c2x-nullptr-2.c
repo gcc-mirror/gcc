@@ -1,6 +1,6 @@
 /* Test nullptr_t from <stddef.h>.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stddef.h>
 

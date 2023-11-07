@@ -1,7 +1,7 @@
-/* Test old-style function definitions not in C2x: () gives type with
+/* Test old-style function definitions not in C23: () gives type with
    a prototype.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 void
 f ()

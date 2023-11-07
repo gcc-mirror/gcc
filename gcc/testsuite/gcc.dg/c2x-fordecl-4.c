@@ -1,8 +1,8 @@
 /* Test for C99 declarations in for loops.  Test constraints are diagnosed with
-   -Wc11-c2x-compat for C2X: struct and union tags can't be declared there
+   -Wc11-c23-compat for C23: struct and union tags can't be declared there
    (affirmed in response to DR#277).  Based on c99-fordecl-3.c.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 void
 foo (void)

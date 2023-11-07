@@ -1,6 +1,6 @@
 /* Test that binary constants are accepted in C23 mode: compat warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 int a = 0b1; /* { dg-warning "C23 feature" } */
 #if 0b101 /* { dg-warning "C23 feature" } */

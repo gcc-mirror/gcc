@@ -1,6 +1,6 @@
-/* Test C2x constexpr.  Valid code, compilation tests, excess precision.  */
+/* Test C23 constexpr.  Valid code, compilation tests, excess precision.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -mfpmath=387 -fexcess-precision=standard" } */
+/* { dg-options "-std=c23 -pedantic-errors -mfpmath=387 -fexcess-precision=standard" } */
 
 constexpr long double ld = 1.0 / 3.0;
 constexpr long double ld2 = 1.1;

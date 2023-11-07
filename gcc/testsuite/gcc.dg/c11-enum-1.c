@@ -1,4 +1,4 @@
-/* Test C2x enumerations with values not representable in int are diagnosed for
+/* Test C23 enumerations with values not representable in int are diagnosed for
    C11.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors" } */

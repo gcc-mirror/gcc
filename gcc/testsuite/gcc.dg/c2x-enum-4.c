@@ -1,7 +1,7 @@
-/* Test C2x enumerations with values not representable in int.  Test overflow
+/* Test C23 enumerations with values not representable in int.  Test overflow
    of __int128 is diagnosed.  */
 /* { dg-do compile { target { int128 } } } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 enum e1 { e1a = (__int128) (((unsigned __int128) -1) >> 1), e1b }; /* { dg-error "overflow in enumeration values" } */
 

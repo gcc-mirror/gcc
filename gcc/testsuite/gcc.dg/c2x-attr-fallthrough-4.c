@@ -1,6 +1,6 @@
-/* Test C2x fallthrough attribute: duplicates (allowed after N2557).  */
+/* Test C23 fallthrough attribute: duplicates (allowed after N2557).  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int
 f (int a)

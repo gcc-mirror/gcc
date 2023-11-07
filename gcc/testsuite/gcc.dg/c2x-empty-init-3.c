@@ -1,6 +1,6 @@
-/* Test empty initializers diagnosed in C2X mode with -Wc11-c2x-compat.  */
+/* Test empty initializers diagnosed in C23 mode with -Wc11-c23-compat.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 struct s { int a; };
 struct s s = {}; /* { dg-warning "empty initializer" } */

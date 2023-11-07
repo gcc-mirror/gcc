@@ -1,6 +1,6 @@
 /* Test atomic_is_lock_free for char8_t.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stdatomic.h>
 #include <stdint.h>

@@ -1,6 +1,6 @@
 /* Tests for labels before declarations and at ends of compound statements.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int f(int x) 
 { 

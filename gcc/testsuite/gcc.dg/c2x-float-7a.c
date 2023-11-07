@@ -2,7 +2,7 @@
    signaling.  */
 /* { dg-do run } */
 /* { dg-require-effective-target fenv_exceptions } */
-/* { dg-options "-std=c2x -pedantic-errors -fsignaling-nans" } */
+/* { dg-options "-std=c23 -pedantic-errors -fsignaling-nans" } */
 /* { dg-add-options ieee } */
 
 #include <fenv.h>

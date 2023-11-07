@@ -1,6 +1,6 @@
-/* Test macro expansions in <stdbool.h> in C2x.  */
+/* Test macro expansions in <stdbool.h> in C23.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #include <stdbool.h>
 

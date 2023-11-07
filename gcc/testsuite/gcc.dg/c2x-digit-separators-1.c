@@ -1,6 +1,6 @@
-/* Test C2x digit separators.  Valid usages.  */
+/* Test C23 digit separators.  Valid usages.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 _Static_assert (123'45'6 == 123456);
 _Static_assert (0'123 == 0123);

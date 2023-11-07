@@ -1,7 +1,7 @@
-/* Test C2x attribute syntax.  Basic tests of valid uses of empty
+/* Test C23 attribute syntax.  Basic tests of valid uses of empty
    attributes.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [ [ ] ] [[]];
 

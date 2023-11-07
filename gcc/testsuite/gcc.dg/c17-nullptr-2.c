@@ -1,4 +1,4 @@
-/* Test that we don't predefine `nullptr' pre-C2X.  */
+/* Test that we don't predefine `nullptr' pre-C23.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c17 -pedantic-errors" } */
 

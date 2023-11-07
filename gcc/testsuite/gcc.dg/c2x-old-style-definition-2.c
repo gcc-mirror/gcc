@@ -1,6 +1,6 @@
-/* Test old-style function definitions not in C2x: errors.  */
+/* Test old-style function definitions not in C23: errors.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 void
 f (x) /* { dg-error "old-style function definition" } */

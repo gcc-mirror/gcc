@@ -1,6 +1,6 @@
 /* Test C23 Checked Integer Arithmetic macros in <stdckdint.h>.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #include <stdckdint.h>
 

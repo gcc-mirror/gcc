@@ -1,6 +1,6 @@
 /* Test DFP macros not defined in <float.h> if no DFP support.  */
 /* { dg-do compile { target { ! dfp } } } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #include <float.h>
 

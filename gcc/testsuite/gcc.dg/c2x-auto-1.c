@@ -1,6 +1,6 @@
-/* Test C2x auto.  Valid code, compilation tests.  */
+/* Test C23 auto.  Valid code, compilation tests.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 auto i = 1;
 extern int i;

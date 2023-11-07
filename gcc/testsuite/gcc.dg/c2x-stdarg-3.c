@@ -1,7 +1,7 @@
-/* Test C2x variadic functions with no named parameters.  Compilation tests,
+/* Test C23 variadic functions with no named parameters.  Compilation tests,
    invalid code.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 int f (...); /* { dg-message "previous declaration" } */
 int f (); /* { dg-error "conflicting types" } */

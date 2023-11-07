@@ -1,6 +1,6 @@
-/* Test C2x maybe_unused attribute: duplicates (allowed after N2557).  */
+/* Test C23 maybe_unused attribute: duplicates (allowed after N2557).  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 [[maybe_unused, __maybe_unused__]] int a;
 [[__maybe_unused__, maybe_unused]] int b;

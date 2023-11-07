@@ -1,11 +1,11 @@
-/* Test C2x attribute syntax.  Invalid uses of attributes with GNU C
+/* Test C23 attribute syntax.  Invalid uses of attributes with GNU C
    features.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x -w" } */
+/* { dg-options "-std=gnu23 -w" } */
 
 /* Attributes cannot be used as prefix attributes on old-style
    parameter declarations or on function declarators with identifier
-   lists (removed from C2x).  */
+   lists (removed from C23).  */
 
 void (*f(a, b) [[]])() int a, b; { } /* { dg-error "expected" } */
 

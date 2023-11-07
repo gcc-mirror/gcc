@@ -1,8 +1,8 @@
-/* Tests related to qualifiers and pointers to arrays in C2X, PR98397 */
+/* Tests related to qualifiers and pointers to arrays in C23, PR98397 */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
-/* test that qualifiers are preserved in tertiary operator for pointers to arrays in C2X */
+/* test that qualifiers are preserved in tertiary operator for pointers to arrays in C23 */
 
 void f(void)
 {

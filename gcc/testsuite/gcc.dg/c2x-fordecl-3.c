@@ -1,7 +1,7 @@
 /* Test for C99 declarations in for loops.  Test constraints are diagnosed with
-   -Wc11-c2x-compat for C2X.  Based on c99-fordecl-2.c.  */
+   -Wc11-c23-compat for C23.  Based on c99-fordecl-2.c.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -pedantic-errors -Wc11-c23-compat" } */
 
 void
 foo (void)

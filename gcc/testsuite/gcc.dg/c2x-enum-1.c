@@ -1,6 +1,6 @@
-/* Test C2x enumerations with values not representable in int.  */
+/* Test C23 enumerations with values not representable in int.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 /* Check a type while defining an enum (via a diagnostic for incompatible
    pointer types if the wrong type was chosen).  */

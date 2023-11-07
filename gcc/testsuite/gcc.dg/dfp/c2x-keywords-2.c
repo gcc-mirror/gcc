@@ -1,6 +1,6 @@
-/* Test that _Decimal* keywords are accepted in C2X mode: compat warnings.  */
+/* Test that _Decimal* keywords are accepted in C23 mode: compat warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -Wc11-c2x-compat" } */
+/* { dg-options "-std=c23 -Wc11-c23-compat" } */
 
 _Decimal32 d32; /* { dg-warning "ISO C does not support" } */
 _Decimal64 d64; /* { dg-warning "ISO C does not support" } */
