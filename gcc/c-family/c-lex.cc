@@ -1185,21 +1185,21 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  }
 	else if (!c_dialect_cxx ())
 	  {
-	    if (warn_c11_c2x_compat > 0)
+	    if (warn_c11_c23_compat > 0)
 	      {
-		if (pedantic && !flag_isoc2x)
+		if (pedantic && !flag_isoc23)
 		  pedwarn (input_location, OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 		else
 		  warning (OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 	      }
-	    else if (warn_c11_c2x_compat != 0 && pedantic && !flag_isoc2x)
+	    else if (warn_c11_c23_compat != 0 && pedantic && !flag_isoc23)
 	      pedwarn (input_location, OPT_Wpedantic,
 		       "non-standard suffix on floating constant "
-		       "before C2X");
+		       "before C23");
 	  }
 	else if (!extended)
 	  {
@@ -1271,7 +1271,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc2x)
+  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc23)
     {
       size_t maxlen = 0;
       for (size_t i = 0; i < copylen; ++i)

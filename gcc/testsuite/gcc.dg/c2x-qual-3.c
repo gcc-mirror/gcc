@@ -1,8 +1,8 @@
-/* Tests related to qualifiers and pointers to arrays in C2X, PR98397 */
+/* Tests related to qualifiers and pointers to arrays in C23, PR98397 */
 /* { dg-do compile } */
 /* { dg-options "-std=c2x -Wc11-c2x-compat -pedantic-errors" } */
 
-/* test that qualifiers are preserved in tertiary operator for pointers to arrays in C2X */
+/* test that qualifiers are preserved in tertiary operator for pointers to arrays in C23 */
 
 void f(void)
 {
@@ -25,6 +25,6 @@ void g(void)
 void h(void)
 {
 	const void* x;
-	const int (*p)[3] = x; /* { dg-warning "array with qualifier on the element is not qualified before C2X" } */
+	const int (*p)[3] = x; /* { dg-warning "array with qualifier on the element is not qualified before C23" } */
 }
 

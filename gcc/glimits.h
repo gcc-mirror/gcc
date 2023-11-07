@@ -125,7 +125,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if (defined __STDC_WANT_IEC_60559_BFP_EXT__ \
      || (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L))
-/* TS 18661-1 / C2X widths of integer types.  */
+/* TS 18661-1 / C23 widths of integer types.  */
 # undef CHAR_WIDTH
 # define CHAR_WIDTH __SCHAR_WIDTH__
 # undef SCHAR_WIDTH
@@ -151,7 +151,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L
-/* C2X width and limit of _Bool.  */
+/* C23 width and limit of _Bool.  */
 # undef BOOL_MAX
 # define BOOL_MAX 1
 # undef BOOL_WIDTH

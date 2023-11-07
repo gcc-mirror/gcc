@@ -122,14 +122,14 @@ c_parse_init (void)
   mask |= D_CXXONLY;
   if (!flag_isoc99)
     mask |= D_C99;
-  if (!flag_isoc2x)
-    mask |= D_C2X;
+  if (!flag_isoc23)
+    mask |= D_C23;
   if (flag_no_asm)
     {
       mask |= D_ASM | D_EXT;
       if (!flag_isoc99)
 	mask |= D_EXT89;
-      if (!flag_isoc2x)
+      if (!flag_isoc23)
 	mask |= D_EXT11;
     }
   if (!c_dialect_objc ())
@@ -1531,9 +1531,9 @@ disable_extension_diagnostics (void)
 	     /* Similarly for warn_c99_c11_compat.  */
 	     | ((warn_c99_c11_compat == 1) << 9)
 	     | ((warn_c99_c11_compat == -1) << 10)
-	     /* Similarly for warn_c11_c2x_compat.  */
-	     | ((warn_c11_c2x_compat == 1) << 11)
-	     | ((warn_c11_c2x_compat == -1) << 12)
+	     /* Similarly for warn_c11_c23_compat.  */
+	     | ((warn_c11_c23_compat == 1) << 11)
+	     | ((warn_c11_c23_compat == -1) << 12)
 	     );
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
@@ -1544,7 +1544,7 @@ disable_extension_diagnostics (void)
   warn_overlength_strings = 0;
   warn_c90_c99_compat = 0;
   warn_c99_c11_compat = 0;
-  warn_c11_c2x_compat = 0;
+  warn_c11_c23_compat = 0;
   return ret;
 }
 
@@ -1564,7 +1564,7 @@ restore_extension_diagnostics (int flags)
   /* See above for why is this needed.  */
   warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
   warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
-  warn_c11_c2x_compat = (flags >> 11) & 1 ? 1 : ((flags >> 12) & 1 ? -1 : 0);
+  warn_c11_c23_compat = (flags >> 11) & 1 ? 1 : ((flags >> 12) & 1 ? -1 : 0);
 }
 
 /* Helper data structure for parsing #pragma acc routine.  */
@@ -2319,7 +2319,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 
   finish_declspecs (specs);
   bool gnu_auto_type_p = specs->typespec_word == cts_auto_type;
-  bool std_auto_type_p = specs->c2x_auto_p;
+  bool std_auto_type_p = specs->c23_auto_p;
   bool any_auto_type_p = gnu_auto_type_p || std_auto_type_p;
   gcc_assert (!(gnu_auto_type_p && std_auto_type_p));
   const char *auto_type_keyword = gnu_auto_type_p ? "__auto_type" : "auto";
@@ -2660,7 +2660,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  specs->type = init_type;
 		  if (specs->postfix_attrs)
 		    {
-		      /* Postfix [[]] attributes are valid with C2X
+		      /* Postfix [[]] attributes are valid with C23
 			 auto, although not with __auto_type, and
 			 modify the type given by the initializer.  */
 		      specs->postfix_attrs =
@@ -3080,7 +3080,7 @@ c_parser_static_assert_declaration (c_parser *parser)
    static_assert-declaration-no-semi:
      _Static_assert ( constant-expression , string-literal )
 
-   C2X:
+   C23:
    static_assert-declaration-no-semi:
      _Static_assert ( constant-expression )
 */
@@ -3130,7 +3130,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   else if (flag_isoc11)
     /* If pedantic for pre-C11, the use of _Static_assert itself will
        have been diagnosed, so do not also diagnose the use of this
-       new C2X feature of _Static_assert.  */
+       new C23 feature of _Static_assert.  */
     pedwarn_c11 (assert_loc, OPT_Wpedantic,
 		 "ISO C11 does not support omitting the string in "
 		 "%qE", spelling);
@@ -3230,7 +3230,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 
    (_Bool and _Complex are new in C99.)
    (atomic-type-specifier is new in C11.)
-   (_BitInt is new in C2X.)
+   (_BitInt is new in C23.)
 
    C90 6.5.3, C99 6.7.3, C11 6.7.3:
 
@@ -3636,7 +3636,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
      enum gnu-attributes[opt] identifier
 
    The form with trailing comma is new in C99; enum-type-specifiers
-   are new in C2x.  The forms with gnu-attributes are GNU extensions.
+   are new in C23.  The forms with gnu-attributes are GNU extensions.
    In GNU C, we accept any expression without commas in the syntax
    (assignment expressions, not just conditional expressions);
    assignment expressions will be diagnosed as non-constant.
@@ -3696,7 +3696,7 @@ c_parser_enum_specifier (c_parser *parser)
     {
       pedwarn_c11 (enum_loc, OPT_Wpedantic,
 		   "ISO C does not support specifying %<enum%> underlying "
-		   "types before C2X");
+		   "types before C23");
       if (ident)
 	{
 	  /* The tag is in scope during the enum-type-specifier (which
@@ -4306,7 +4306,7 @@ c_parser_struct_declaration (c_parser *parser, tree *expr)
   return decls;
 }
 
-/* Parse a typeof specifier (a GNU extension adopted in C2X).
+/* Parse a typeof specifier (a GNU extension adopted in C23).
 
    typeof-specifier:
      typeof ( expression )
@@ -4330,7 +4330,7 @@ c_parser_typeof_specifier (c_parser *parser)
     {
       is_unqual = false;
       tree spelling = c_parser_peek_token (parser)->value;
-      is_std = (flag_isoc2x
+      is_std = (flag_isoc23
 		&& strcmp (IDENTIFIER_POINTER (spelling), "typeof") == 0);
     }
   else
@@ -4915,7 +4915,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr,
       ret->types = NULL_TREE;
       pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wpedantic,
 		   "ISO C requires a named argument before %<...%> "
-		   "before C2X");
+		   "before C23");
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
@@ -5659,7 +5659,7 @@ c_parser_omp_sequence_args (c_parser *parser, tree attribute)
   while (1);
 }
 
-/* Parse standard (C2X) attributes (including GNU attributes in the
+/* Parse standard (C23) attributes (including GNU attributes in the
    gnu:: namespace).
 
    attribute-specifier-sequence:
@@ -5887,7 +5887,7 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
     {
       if (!for_tm)
 	pedwarn_c11 (loc, OPT_Wpedantic,
-		     "ISO C does not support %<[[]]%> attributes before C2X");
+		     "ISO C does not support %<[[]]%> attributes before C23");
       attributes = c_parser_std_attribute_list (parser, for_tm);
     }
   c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
@@ -6155,7 +6155,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
       pedwarn_c11 (brace_loc, OPT_Wpedantic,
-		   "ISO C forbids empty initializer braces before C2X");
+		   "ISO C forbids empty initializer braces before C23");
     }
   else
     {
@@ -6444,7 +6444,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 }
 
 /* Parse a compound statement (possibly a function body) (C90 6.6.2,
-   C99 6.8.2, C11 6.8.2, C2X 6.8.2).
+   C99 6.8.2, C11 6.8.2, C23 6.8.2).
 
    compound-statement:
      { block-item-list[opt] }
@@ -9944,7 +9944,7 @@ c_parser_alignof_expression (c_parser *parser)
 			 || strcmp (IDENTIFIER_POINTER (alignof_spelling),
 				    "alignof") == 0);
   /* A diagnostic is not required for the use of this identifier in
-     the implementation namespace; only diagnose it for the C11 or C2X
+     the implementation namespace; only diagnose it for the C11 or C23
      spelling because of existing code using the other spellings.  */
   if (is_c11_alignof)
     {
@@ -11826,7 +11826,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = nullptr_node;
 	  set_c_expr_source_range (&expr, tok_range);
 	  pedwarn_c11 (loc, OPT_Wpedantic,
-		       "ISO C does not support %qs before C2X", "nullptr");
+		       "ISO C does not support %qs before C23", "nullptr");
 	  break;
 	case RID_TRUE:
 	  c_parser_consume_token (parser);
@@ -11978,7 +11978,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 		    "ISO C90 forbids compound literals") && scspecs)
     pedwarn_c11 (start_loc, OPT_Wpedantic,
 		 "ISO C forbids storage class specifiers in compound literals "
-		 "before C2X");
+		 "before C23");
   non_const = ((init.value && TREE_CODE (init.value) == CONSTRUCTOR)
 	       ? CONSTRUCTOR_NON_CONST (init.value)
 	       : init.original_code == C_MAYBE_CONST_EXPR);

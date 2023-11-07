@@ -3,4 +3,4 @@
 /* { dg-options "-std=c11 -Wc11-c2x-compat" } */
 
 #warning example text /* { dg-warning "example text" } */
-/* { dg-warning "#warning before C2X is a GCC extension" "compat" { target *-*-* } .-1 } */
+/* { dg-warning "#warning before C23 is a GCC extension" "compat" { target *-*-* } .-1 } */

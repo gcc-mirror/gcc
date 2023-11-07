@@ -109,7 +109,7 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_COMPOUND_LITERAL_P(DECL) \
   DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
 
-/* Set on decls used as placeholders for a C2x underspecified object
+/* Set on decls used as placeholders for a C23 underspecified object
    definition.  */
 #define C_DECL_UNDERSPECIFIED(DECL) DECL_LANG_FLAG_7 (DECL)
 
@@ -451,13 +451,13 @@ struct c_declspecs {
      specified other than in a definition of that enum (if so, this is
      invalid unless it is an empty declaration "enum identifier
      enum-type-specifier;", but such an empty declaration is valid in
-     C2x when "enum identifier;" would not be).  */
+     C23 when "enum identifier;" would not be).  */
   BOOL_BITFIELD enum_type_specifier_ref_p : 1;
-  /* Whether "auto" was specified in C2X (or later) mode and means the
+  /* Whether "auto" was specified in C23 (or later) mode and means the
      type is to be deduced from an initializer, or would mean that if
      no type specifier appears later in these declaration
      specifiers.  */
-  BOOL_BITFIELD c2x_auto_p : 1;
+  BOOL_BITFIELD c23_auto_p : 1;
   /* Whether "constexpr" was specified.  */
   BOOL_BITFIELD constexpr_p : 1;
   /* The address space that the declaration belongs to.  */

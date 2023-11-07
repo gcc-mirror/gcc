@@ -262,7 +262,7 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 
 #if (defined __STDC_WANT_IEC_60559_BFP_EXT__ \
      || (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L))
-/* TS 18661-1 / C2X widths of integer types.  */
+/* TS 18661-1 / C23 widths of integer types.  */
 
 #ifdef __INT8_TYPE__
 # undef INT8_WIDTH

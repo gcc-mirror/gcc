@@ -398,8 +398,8 @@ decode_format_attr (const_tree fn, tree atname, tree args,
 /* The C standard version we are checking formats against when pedantic.  */
 #define C_STD_VER		((int) (c_dialect_cxx ()		   \
 				 ? CPLUSPLUS_STD_VER			   \
-				 : (flag_isoc2x				   \
-				    ? STD_C2X				   \
+				 : (flag_isoc23				   \
+				    ? STD_C23				   \
 				    : (flag_isoc99			   \
 				       ? STD_C99			   \
 				       : (flag_isoc94 ? STD_C94 : STD_C89)))))
@@ -411,7 +411,7 @@ decode_format_attr (const_tree fn, tree atname, tree args,
 				    : "ISO C++11")		\
 				 : ((FEATURE_VER) == STD_EXT	\
 				    ? "ISO C"			\
-				    : ((FEATURE_VER) == STD_C2X	\
+				    : ((FEATURE_VER) == STD_C23	\
 				       ? "ISO C17"		\
 				       : "ISO C90")))
 /* Adjust a C standard version, which may be STD_C9L, to account for
@@ -486,16 +486,16 @@ static const format_length_info printf_length_specs[] =
   { "Z", FMT_LEN_z, STD_EXT, NO_FMT, 0 },
   { "t", FMT_LEN_t, STD_C99, NO_FMT, 0 },
   { "j", FMT_LEN_j, STD_C99, NO_FMT, 0 },
-  { "H", FMT_LEN_H, STD_C2X, NO_FMT, 0 },
-  { "D", FMT_LEN_D, STD_C2X, "DD", FMT_LEN_DD, STD_C2X, 0 },
-  { "w8", FMT_LEN_w8, STD_C2X, NO_FMT, 0 },
-  { "w16", FMT_LEN_w16, STD_C2X, NO_FMT, 0 },
-  { "w32", FMT_LEN_w32, STD_C2X, NO_FMT, 0 },
-  { "w64", FMT_LEN_w64, STD_C2X, NO_FMT, 0 },
-  { "wf8", FMT_LEN_wf8, STD_C2X, NO_FMT, 0 },
-  { "wf16", FMT_LEN_wf16, STD_C2X, NO_FMT, 0 },
-  { "wf32", FMT_LEN_wf32, STD_C2X, NO_FMT, 0 },
-  { "wf64", FMT_LEN_wf64, STD_C2X, NO_FMT, 0 },
+  { "H", FMT_LEN_H, STD_C23, NO_FMT, 0 },
+  { "D", FMT_LEN_D, STD_C23, "DD", FMT_LEN_DD, STD_C23, 0 },
+  { "w8", FMT_LEN_w8, STD_C23, NO_FMT, 0 },
+  { "w16", FMT_LEN_w16, STD_C23, NO_FMT, 0 },
+  { "w32", FMT_LEN_w32, STD_C23, NO_FMT, 0 },
+  { "w64", FMT_LEN_w64, STD_C23, NO_FMT, 0 },
+  { "wf8", FMT_LEN_wf8, STD_C23, NO_FMT, 0 },
+  { "wf16", FMT_LEN_wf16, STD_C23, NO_FMT, 0 },
+  { "wf32", FMT_LEN_wf32, STD_C23, NO_FMT, 0 },
+  { "wf64", FMT_LEN_wf64, STD_C23, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -531,16 +531,16 @@ static const format_length_info scanf_length_specs[] =
   { "z", FMT_LEN_z, STD_C99, NO_FMT, 0 },
   { "t", FMT_LEN_t, STD_C99, NO_FMT, 0 },
   { "j", FMT_LEN_j, STD_C99, NO_FMT, 0 },
-  { "H", FMT_LEN_H, STD_C2X, NO_FMT, 0 },
-  { "D", FMT_LEN_D, STD_C2X, "DD", FMT_LEN_DD, STD_C2X, 0 },
-  { "w8", FMT_LEN_w8, STD_C2X, NO_FMT, 0 },
-  { "w16", FMT_LEN_w16, STD_C2X, NO_FMT, 0 },
-  { "w32", FMT_LEN_w32, STD_C2X, NO_FMT, 0 },
-  { "w64", FMT_LEN_w64, STD_C2X, NO_FMT, 0 },
-  { "wf8", FMT_LEN_wf8, STD_C2X, NO_FMT, 0 },
-  { "wf16", FMT_LEN_wf16, STD_C2X, NO_FMT, 0 },
-  { "wf32", FMT_LEN_wf32, STD_C2X, NO_FMT, 0 },
-  { "wf64", FMT_LEN_wf64, STD_C2X, NO_FMT, 0 },
+  { "H", FMT_LEN_H, STD_C23, NO_FMT, 0 },
+  { "D", FMT_LEN_D, STD_C23, "DD", FMT_LEN_DD, STD_C23, 0 },
+  { "w8", FMT_LEN_w8, STD_C23, NO_FMT, 0 },
+  { "w16", FMT_LEN_w16, STD_C23, NO_FMT, 0 },
+  { "w32", FMT_LEN_w32, STD_C23, NO_FMT, 0 },
+  { "w64", FMT_LEN_w64, STD_C23, NO_FMT, 0 },
+  { "wf8", FMT_LEN_wf8, STD_C23, NO_FMT, 0 },
+  { "wf16", FMT_LEN_wf16, STD_C23, NO_FMT, 0 },
+  { "wf32", FMT_LEN_wf32, STD_C23, NO_FMT, 0 },
+  { "wf64", FMT_LEN_wf64, STD_C23, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -668,7 +668,7 @@ static const format_flag_spec strftime_flag_specs[] =
   { 'E', 0,   0, 0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
   { 'O', 0,   0, 0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
   { 'O', 'o', 0, 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
-  { 'O', 'p', 0, 0, NULL,               N_("the 'O' modifier"),               STD_C2X },
+  { 'O', 'p', 0, 0, NULL,               N_("the 'O' modifier"),               STD_C23 },
   { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
@@ -721,8 +721,8 @@ static const format_char_info print_char_table[] =
   /* C99 conversion specifiers.  */
   { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#'I", "",   NULL },
   { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#",   "",   NULL },
-  /* C2X conversion specifiers.  */
-  { "bB",  0, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0#",     "i",  NULL },
+  /* C23 conversion specifiers.  */
+  { "bB",  0, STD_C23, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0#",     "i",  NULL },
   /* X/Open conversion specifiers.  */
   { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-w",        "",   NULL },
   { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp",       "R",  NULL },
@@ -887,8 +887,8 @@ static const format_char_info scan_char_table[] =
   /* C99 conversion specifiers.  */
   { "F",   1, STD_C99,   { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w'",  "W",   NULL },
   { "aA",   1, STD_C99,  { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w'",  "W",   NULL },
-  /* C2X conversion specifiers.  */
-  { "b",     1, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "*w",   "W",   NULL },
+  /* C23 conversion specifiers.  */
+  { "b",     1, STD_C23, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "*w",   "W",   NULL },
   /* X/Open conversion specifiers.  */
   { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*mw",   "W",   NULL },
   { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*amw",  "W",   NULL },

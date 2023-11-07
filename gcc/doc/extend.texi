@@ -843,7 +843,7 @@ Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
 @end itemize
 
-The ISO C2X operator @code{typeof_unqual} is available in ISO C2X mode
+The ISO C23 operator @code{typeof_unqual} is available in ISO C23 mode
 and its result is the non-atomic unqualified version of what @code{typeof}
 operator returns.  Alternate spelling @code{__typeof_unqual__} is
 available in all C modes and provides non-atomic unqualified version of
@@ -2497,7 +2497,7 @@ hack ((union foo) x);
 @cindex code, mixed with declarations
 
 ISO C99 and ISO C++ allow declarations and code to be freely mixed
-within compound statements.  ISO C2X allows labels to be
+within compound statements.  ISO C23 allows labels to be
 placed before declarations and at the end of a compound statement.
 As an extension, GNU C also allows all this in C90 mode.  For example,
 you could do:
@@ -12051,7 +12051,7 @@ In C, writing:
 @end smallexample
 
 suppresses warnings about using @samp{[[]]} attributes in C versions
-that predate C2X@.  Since the scope token @samp{::} is not a single
+that predate C23@.  Since the scope token @samp{::} is not a single
 lexing token in earlier versions of C, this construct also allows two colons
 to be used in place of @code{::}.  GCC does not check whether the two
 colons are immediately adjacent.
@@ -24750,7 +24750,7 @@ restored.
 @item #pragma GCC diagnostic ignored_attributes
 
 Similarly to @option{-Wno-attributes=}, this pragma allows users to suppress
-warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+warnings about unknown scoped attributes (in C++11 and C23).  For example,
 @code{#pragma GCC diagnostic ignored_attributes "vendor::attr"} disables
 warning about the following declaration:
 

@@ -169,9 +169,9 @@ enum cpp_ttype
 #undef TK
 
 /* C language kind, used when calling cpp_create_reader.  */
-enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC23,
 	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11, CLK_STDC17,
-	     CLK_STDC2X,
+	     CLK_STDC23,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
 	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
@@ -514,7 +514,7 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
-  /* Nonzero for C2X decimal floating-point constants.  */
+  /* Nonzero for C23 decimal floating-point constants.  */
   unsigned char dfp_constants;
 
   /* Nonzero for C++20 __VA_OPT__ feature.  */
@@ -563,8 +563,8 @@ struct cpp_options
   /* True if warn about differences between C90 and C99.  */
   signed char cpp_warn_c90_c99_compat;
 
-  /* True if warn about differences between C11 and C2X.  */
-  signed char cpp_warn_c11_c2x_compat;
+  /* True if warn about differences between C11 and C23.  */
+  signed char cpp_warn_c11_c23_compat;
 
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
@@ -692,7 +692,7 @@ enum cpp_warning_reason {
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
-  CPP_W_C11_C2X_COMPAT,
+  CPP_W_C11_C23_COMPAT,
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
@@ -1302,7 +1302,7 @@ struct cpp_num
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
 #define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
-#define CPP_N_BITINT	0x8000000 /* C2X _BitInt literal.  */
+#define CPP_N_BITINT	0x8000000 /* C23 _BitInt literal.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */

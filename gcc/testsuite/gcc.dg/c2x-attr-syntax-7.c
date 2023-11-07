@@ -1,4 +1,4 @@
-/* Test C2x attribute syntax: use of __extension__ in C11 mode.  */
+/* Test C23 attribute syntax: use of __extension__ in C11 mode.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c2x -pedantic-errors -Wc11-c2x-compat" } */
 
@@ -36,7 +36,7 @@ cases (int x)
     case 19:
     case 33:
       x *= 2;
-      [[fallthrough]];  /* { dg-warning {attributes before C2X} } */
+      [[fallthrough]];  /* { dg-warning {attributes before C23} } */
     case 99:
       return x;
 
@@ -51,10 +51,10 @@ typedef int [[__extension__ unknown_attribute]] b3; /* { dg-error {'unknown_attr
 typedef int [[__extension__ gnu:vector_size(4)]] b4; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
 typedef int [[__extension__ gnu JOIN2(:,:) vector_size (4)]] b5;
-typedef int [[gnu::vector_size(4)]] b6; /* { dg-warning {attributes before C2X} } */
+typedef int [[gnu::vector_size(4)]] b6; /* { dg-warning {attributes before C23} } */
 typedef int [[gnu : : vector_size(4)]] b7; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
-/* { dg-warning {attributes before C2X} "" { target *-*-* } .-2 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */
 typedef int [[gnu : vector_size(4)]] b8; /* { dg-error {expected '\]' before ':'} } */
 /* { dg-error {'gnu' attribute ignored} "" { target *-*-* } .-1 } */
-/* { dg-warning {attributes before C2X} "" { target *-*-* } .-2 } */
+/* { dg-warning {attributes before C23} "" { target *-*-* } .-2 } */

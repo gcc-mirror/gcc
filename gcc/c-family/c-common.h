@@ -435,11 +435,11 @@ extern machine_mode c_default_pointer_mode;
 #define D_CONLY		0x0001	/* C only (not in C++).  */
 #define D_CXXONLY	0x0002	/* C++ only (not in C).  */
 #define D_C99		0x0004	/* In C, C99 only.  */
-#define D_C2X		0x0008	/* In C, C2X only.  */
+#define D_C23		0x0008	/* In C, C23 only.  */
 #define D_CXX11         0x0010	/* In C++, C++11 only.  */
 #define D_EXT		0x0020	/* GCC extension.  */
 #define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
-#define D_EXT11		0x0080	/* GCC extension incorporated in C2X.  */
+#define D_EXT11		0x0080	/* GCC extension incorporated in C23.  */
 #define D_ASM		0x0100	/* Disabled by -fno-asm.  */
 #define D_OBJC		0x0200	/* In Objective C and neither C nor C++.  */
 #define D_CXX_OBJC	0x0400	/* In Objective C, and C++, but not C.  */
@@ -536,7 +536,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 enum c_language_kind
 {
-  clk_c		= 0,		/* C90, C94, C99, C11 or C2X */
+  clk_c		= 0,		/* C90, C94, C99, C11 or C23 */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
   clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
@@ -681,9 +681,9 @@ extern int flag_isoc99;
 
 extern int flag_isoc11;
 
-/* Nonzero means use the ISO C2X dialect of C.  */
+/* Nonzero means use the ISO C23 dialect of C.  */
 
-extern int flag_isoc2x;
+extern int flag_isoc23;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -1038,7 +1038,7 @@ extern void c_init_preprocess (void);
    underlying type is determined in different ways, depending on the
    properties of the enum:
 
-     - In C++0x or C2x, the underlying type can be explicitly specified, e.g.,
+     - In C++0x or C23, the underlying type can be explicitly specified, e.g.,
 
          enum E1 : char { ... } // underlying type is char
 

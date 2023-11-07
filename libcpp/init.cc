@@ -108,13 +108,13 @@ static const struct lang_flags lang_defaults[] =
   /* GNUC99   */  { 1,  0,  1,  1,  0,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
   /* GNUC11   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
   /* GNUC17   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  1,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* GNUC23   */  { 1,  0,  1,  1,  1,  1,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
   /* STDC89   */  { 0,  0,  0,  0,  0,  0,    1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC94   */  { 0,  0,  0,  0,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC99   */  { 1,  0,  1,  1,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC11   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC17   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,    1,  1,   1,   0,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* STDC23   */  { 1,  0,  1,  1,  1,  1,    1,  1,   1,   0,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
   /* GNUCXX   */  { 0,  1,  1,  1,  0,  1,    0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
   /* CXX98    */  { 0,  1,  0,  1,  0,  1,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0,   0,   0,      0,      0,    1 },
   /* GNUCXX11 */  { 1,  1,  1,  1,  1,  1,    0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
@@ -210,7 +210,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
-  CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) = -1;
+  CPP_OPTION (pfile, cpp_warn_c11_c23_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_cxx11_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_cxx20_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
@@ -590,8 +590,8 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
-  else if (CPP_OPTION (pfile, lang) == CLK_STDC2X
-	   || CPP_OPTION (pfile, lang) == CLK_GNUC2X)
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC23
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC23)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 202000L");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC17
 	   || CPP_OPTION (pfile, lang) == CLK_GNUC17)

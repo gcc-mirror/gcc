@@ -3472,7 +3472,7 @@ The special operator @code{__has_attribute (@var{operand})} may be used
 in @samp{#if} and @samp{#elif} expressions to test whether the attribute
 referenced by its @var{operand} is recognized by GCC.  Using the operator
 in other contexts is not valid.  In C code, if compiling for strict
-conformance to standards before C2x, @var{operand} must be
+conformance to standards before C23, @var{operand} must be
 a valid identifier.  Otherwise, @var{operand} may be optionally
 introduced by the @code{@var{attribute-scope}::} prefix.
 The @var{attribute-scope} prefix identifies the ``namespace'' within

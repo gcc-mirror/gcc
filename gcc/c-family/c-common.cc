@@ -224,9 +224,9 @@ int flag_isoc99;
 
 int flag_isoc11;
 
-/* Nonzero means use the ISO C2X dialect of C.  */
+/* Nonzero means use the ISO C23 dialect of C.  */
 
-int flag_isoc2x;
+int flag_isoc23;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -324,10 +324,10 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    if they match the mask.
 
    Masks for languages:
-   C --std=c89: D_C99 | D_C2X | D_CXXONLY | D_OBJC | D_CXX_OBJC
-   C --std=c99: D_C2X | D_CXXONLY | D_OBJC
-   C --std=c17: D_C2X | D_CXXONLY | D_OBJC
-   C --std=c2x: D_CXXONLY | D_OBJC
+   C --std=c89: D_C99 | D_C23 | D_CXXONLY | D_OBJC | D_CXX_OBJC
+   C --std=c99: D_C23 | D_CXXONLY | D_OBJC
+   C --std=c17: D_C23 | D_CXXONLY | D_OBJC
+   C --std=c23: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
    C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
    C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
@@ -428,11 +428,11 @@ const struct c_common_resword c_common_reswords[] =
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
   { "__PHI",		RID_PHI,	D_CONLY },
   { "__RTL",		RID_RTL,	D_CONLY },
-  { "alignas",		RID_ALIGNAS,	D_C2X | D_CXX11 | D_CXXWARN },
-  { "alignof",		RID_ALIGNOF,	D_C2X | D_CXX11 | D_CXXWARN },
+  { "alignas",		RID_ALIGNAS,	D_C23 | D_CXX11 | D_CXXWARN },
+  { "alignof",		RID_ALIGNOF,	D_C23 | D_CXX11 | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },
   { "auto",		RID_AUTO,	0 },
-  { "bool",		RID_BOOL,	D_C2X | D_CXXWARN },
+  { "bool",		RID_BOOL,	D_C23 | D_CXXWARN },
   { "break",		RID_BREAK,	0 },
   { "case",		RID_CASE,	0 },
   { "catch",		RID_CATCH,	D_CXX_OBJC | D_CXXWARN },
@@ -443,7 +443,7 @@ const struct c_common_resword c_common_reswords[] =
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
   { "consteval",	RID_CONSTEVAL,	D_CXXONLY | D_CXX20 | D_CXXWARN },
-  { "constexpr",	RID_CONSTEXPR,	D_C2X | D_CXX11 | D_CXXWARN },
+  { "constexpr",	RID_CONSTEXPR,	D_C23 | D_CXX11 | D_CXXWARN },
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
@@ -458,7 +458,7 @@ const struct c_common_resword c_common_reswords[] =
   { "explicit",		RID_EXPLICIT,	D_CXXONLY | D_CXXWARN },
   { "export",		RID_EXPORT,	D_CXXONLY | D_CXXWARN },
   { "extern",		RID_EXTERN,	0 },
-  { "false",		RID_FALSE,	D_C2X | D_CXXWARN },
+  { "false",		RID_FALSE,	D_C23 | D_CXXWARN },
   { "float",		RID_FLOAT,	0 },
   { "for",		RID_FOR,	0 },
   { "friend",		RID_FRIEND,	D_CXXONLY | D_CXXWARN },
@@ -471,7 +471,7 @@ const struct c_common_resword c_common_reswords[] =
   { "namespace",	RID_NAMESPACE,	D_CXXONLY | D_CXXWARN },
   { "new",		RID_NEW,	D_CXXONLY | D_CXXWARN },
   { "noexcept",		RID_NOEXCEPT,	D_CXXONLY | D_CXX11 | D_CXXWARN },
-  { "nullptr",		RID_NULLPTR,	D_C2X | D_CXX11 | D_CXXWARN },
+  { "nullptr",		RID_NULLPTR,	D_C23 | D_CXX11 | D_CXXWARN },
   { "operator",		RID_OPERATOR,	D_CXXONLY | D_CXXWARN },
   { "private",		RID_PRIVATE,	D_CXX_OBJC | D_CXXWARN },
   { "protected",	RID_PROTECTED,	D_CXX_OBJC | D_CXXWARN },
@@ -484,21 +484,21 @@ const struct c_common_resword c_common_reswords[] =
   { "signed",		RID_SIGNED,	0 },
   { "sizeof",		RID_SIZEOF,	0 },
   { "static",		RID_STATIC,	0 },
-  { "static_assert",    RID_STATIC_ASSERT, D_C2X | D_CXX11 | D_CXXWARN },
+  { "static_assert",    RID_STATIC_ASSERT, D_C23 | D_CXX11 | D_CXXWARN },
   { "static_cast",	RID_STATCAST,	D_CXXONLY | D_CXXWARN },
   { "struct",		RID_STRUCT,	0 },
   { "switch",		RID_SWITCH,	0 },
   { "template",		RID_TEMPLATE,	D_CXXONLY | D_CXXWARN },
   { "this",		RID_THIS,	D_CXXONLY | D_CXXWARN },
-  { "thread_local",	RID_THREAD,	D_C2X | D_CXX11 | D_CXXWARN },
+  { "thread_local",	RID_THREAD,	D_C23 | D_CXX11 | D_CXXWARN },
   { "throw",		RID_THROW,	D_CXX_OBJC | D_CXXWARN },
-  { "true",		RID_TRUE,	D_C2X | D_CXXWARN },
+  { "true",		RID_TRUE,	D_C23 | D_CXXWARN },
   { "try",		RID_TRY,	D_CXX_OBJC | D_CXXWARN },
   { "typedef",		RID_TYPEDEF,	0 },
   { "typename",		RID_TYPENAME,	D_CXXONLY | D_CXXWARN },
   { "typeid",		RID_TYPEID,	D_CXXONLY | D_CXXWARN },
   { "typeof",		RID_TYPEOF,	D_EXT11 },
-  { "typeof_unqual",	RID_TYPEOF_UNQUAL,	D_CONLY | D_C2X },
+  { "typeof_unqual",	RID_TYPEOF_UNQUAL,	D_CONLY | D_C23 },
   { "union",		RID_UNION,	0 },
   { "unsigned",		RID_UNSIGNED,	0 },
   { "using",		RID_USING,	D_CXXONLY | D_CXXWARN },

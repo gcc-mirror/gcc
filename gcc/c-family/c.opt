@@ -434,7 +434,7 @@ C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACR
 Warn when a built-in preprocessor macro is undefined or redefined.
 
 Wc11-c23-compat
-C ObjC CPP(cpp_warn_c11_c2x_compat) CppReason(CPP_W_C11_C2X_COMPAT) Var(warn_c11_c2x_compat) Init(-1) Warning
+C ObjC CPP(cpp_warn_c11_c23_compat) CppReason(CPP_W_C11_C23_COMPAT) Var(warn_c11_c23_compat) Init(-1) Warning
 Warn about features not present in ISO C11, but present in ISO C23.
 
 Wc11-c2x-compat

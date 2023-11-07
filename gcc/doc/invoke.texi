@@ -9606,7 +9606,7 @@ Warnings about ill-formed uses of standard attributes are upgraded to
 errors by @option{-pedantic-errors}.
 
 Additionally, using @option{-Wno-attributes=}, it is possible to suppress
-warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+warnings about unknown scoped attributes (in C++11 and C23).  For example,
 @option{-Wno-attributes=vendor::attr} disables warning about the following
 declaration:
 
@@ -9677,7 +9677,7 @@ is also enabled by @option{-Wextra}.
 @item -Wold-style-definition @r{(C and Objective-C only)}
 Warn if an old-style function definition is used.  A warning is given
 even if there is a previous prototype.  A definition using @samp{()}
-is not considered an old-style definition in C2X mode, because it is
+is not considered an old-style definition in C23 mode, because it is
 equivalent to @samp{(void)} in that case, but is considered an
 old-style definition for older standards.
 
@@ -14746,10 +14746,10 @@ double} variants, to generate code that raises the ``inexact''
 floating-point exception for noninteger arguments.  ISO C99 and C11
 allow these functions to raise the ``inexact'' exception, but ISO/IEC
 TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
-ISO C2X, does not allow these functions to do so.
+ISO C23, does not allow these functions to do so.
 
 The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised, unless C2X or a later C standard is selected.
+exception to be raised, unless C23 or a later C standard is selected.
 This option does nothing unless @option{-ftrapping-math} is in effect.
 
 Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions

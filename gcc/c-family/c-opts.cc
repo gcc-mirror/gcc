@@ -119,7 +119,7 @@ static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
 static void set_std_c17 (int);
-static void set_std_c2x (int);
+static void set_std_c23 (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
@@ -734,12 +734,12 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_std_c23:
       if (!preprocessing_asm_p)
-	set_std_c2x (true /* ISO */);
+	set_std_c23 (true /* ISO */);
       break;
 
     case OPT_std_gnu23:
       if (!preprocessing_asm_p)
-	set_std_c2x (false /* ISO */);
+	set_std_c23 (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -866,9 +866,9 @@ c_common_post_options (const char **pfilename)
   else
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
 
-  /* C2X Annex F does not permit certain built-in functions to raise
+  /* C23 Annex F does not permit certain built-in functions to raise
      "inexact".  */
-  if (flag_isoc2x)
+  if (flag_isoc23)
     SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			 flag_fp_int_builtin_inexact, 0);
 
@@ -944,9 +944,9 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
-  /* -Wold-style-definition is enabled by default for C2X.  */
+  /* -Wold-style-definition is enabled by default for C23.  */
   if (warn_old_style_definition == -1)
-    warn_old_style_definition = flag_isoc2x;
+    warn_old_style_definition = flag_isoc23;
 
   /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
   if (warn_shift_overflow == -1)
@@ -1092,9 +1092,9 @@ c_common_post_options (const char **pfilename)
   if (warn_invalid_constexpr == -1)
     warn_invalid_constexpr = (cxx_dialect < cxx23);
 
-  /* char8_t support is implicitly enabled in C++20 and C2X.  */
+  /* char8_t support is implicitly enabled in C++20 and C23.  */
   if (flag_char8_t == -1)
-    flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
+    flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc23;
   cpp_opts->unsigned_utf8char = flag_char8_t ? 1 : cpp_opts->unsigned_char;
 
   if (flag_extern_tls_init)
@@ -1710,7 +1710,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_isoc11 = 0;
-  flag_isoc2x = 0;
+  flag_isoc23 = 0;
   lang_hooks.name = "GNU C89";
 }
 
@@ -1722,7 +1722,7 @@ set_std_c99 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  flag_isoc2x = 0;
+  flag_isoc23 = 0;
   flag_isoc11 = 0;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1737,7 +1737,7 @@ set_std_c11 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  flag_isoc2x = 0;
+  flag_isoc23 = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1752,7 +1752,7 @@ set_std_c17 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  flag_isoc2x = 0;
+  flag_isoc23 = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1761,17 +1761,17 @@ set_std_c17 (int iso)
 
 /* Set the C 2X standard (without GNU extensions if ISO).  */
 static void
-set_std_c2x (int iso)
+set_std_c23 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC2X: CLK_GNUC2X);
+  cpp_set_lang (parse_in, iso ? CLK_STDC23: CLK_GNUC23);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  flag_isoc2x = 1;
+  flag_isoc23 = 1;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
-  lang_hooks.name = "GNU C2X";
+  lang_hooks.name = "GNU C23";
 }
 
 

@@ -1343,7 +1343,7 @@ comp_target_types (location_t location, tree ttl, tree ttr)
 
   if (val == 1 && val_ped != 1)
     pedwarn_c11 (location, OPT_Wpedantic, "invalid use of pointers to arrays with different qualifiers "
-					  "in ISO C before C2X");
+					  "in ISO C before C23");
 
   if (val == 2)
     pedwarn (location, OPT_Wpedantic, "types are not quite compatible");
@@ -2082,7 +2082,7 @@ really_atomic_lvalue (tree expr)
   return true;
 }
 
-/* If EXPR is a named constant (C2x) derived from a constexpr variable
+/* If EXPR is a named constant (C23) derived from a constexpr variable
    - that is, a reference to such a variable, or a member extracted by
    a sequence of structure and union (but not array) member accesses
    (where union member accesses must access the same member as
@@ -5540,21 +5540,21 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	  if ((TREE_CODE (t2) == ARRAY_TYPE)
 	      && (TYPE_QUALS (t2_stripped) & ~TYPE_QUALS (t1)))
 	    {
-	      if (!flag_isoc2x)
+	      if (!flag_isoc23)
 		warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
 			    "pointer to array loses qualifier "
 			    "in conditional expression");
-	      else if (warn_c11_c2x_compat > 0)
+	      else if (warn_c11_c23_compat > 0)
 		warning_at (colon_loc, OPT_Wc11_c23_compat,
 			    "pointer to array loses qualifier "
-			    "in conditional expression in ISO C before C2X");
+			    "in conditional expression in ISO C before C23");
 	    }
 	  if (TREE_CODE (t2) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
 		     "ISO C forbids conditional expr between "
 		     "%<void *%> and function pointer");
 	  /* for array, use qualifiers of element type */
-	  if (flag_isoc2x)
+	  if (flag_isoc23)
 	    t2 = t2_stripped;
 	  result_type = build_pointer_type (qualify_type (t1, t2));
 	}
@@ -7547,7 +7547,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
-		WARNING_FOR_QUALIFIERS (flag_isoc2x,
+		WARNING_FOR_QUALIFIERS (flag_isoc23,
 					location, expr_loc,
 					OPT_Wdiscarded_array_qualifiers,
 					G_("passing argument %d of %qE discards "
@@ -7590,7 +7590,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      /* Don't warn about loss of qualifier for conversions from
 		 qualified void* to pointers to arrays with corresponding
 		 qualifier on the element type (except for pedantic before C23). */
-	      if (warn_quals || (warn_quals_ped && pedantic && !flag_isoc2x))
+	      if (warn_quals || (warn_quals_ped && pedantic && !flag_isoc23))
 		PEDWARN_FOR_QUALIFIERS (location, expr_loc,
 					OPT_Wdiscarded_qualifiers,
 					G_("passing argument %d of %qE discards "
@@ -7604,7 +7604,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 	      else if (warn_quals_ped)
 		pedwarn_c11 (location, OPT_Wc11_c23_compat,
-			     "array with qualifier on the element is not qualified before C2X");
+			     "array with qualifier on the element is not qualified before C23");
 
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
@@ -9382,7 +9382,7 @@ pop_init_level (location_t loc, int implicit,
     {
       /* A nonincremental scalar initializer--just return
 	 the element, after verifying there is just one.
-         Empty scalar initializers are supported in C2X.  */
+         Empty scalar initializers are supported in C23.  */
       if (vec_safe_is_empty (constructor_elements))
 	{
 	  if (constructor_erroneous || constructor_type == error_mark_node)
