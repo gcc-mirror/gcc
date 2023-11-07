@@ -2486,8 +2486,7 @@
 (define_expand "lfloor<mode><v_f2si_convert>2"
   [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
    (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math
-    && known_eq (GET_MODE_SIZE (<MODE>mode), GET_MODE_SIZE (<V_F2SI_CONVERT>mode))"
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
     riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
     DONE;
@@ -2497,8 +2496,7 @@
 (define_expand "lfloor<mode><v_f2di_convert>2"
   [(match_operand:<V_F2DI_CONVERT>   0 "register_operand")
    (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
-  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math
-    && known_eq (GET_MODE_SIZE (<MODE>mode), GET_MODE_SIZE (<V_F2DI_CONVERT>mode))"
+  "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
     riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
     DONE;
