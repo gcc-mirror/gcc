@@ -8077,9 +8077,7 @@ proc check_effective_target_vect_mulhrs_hi {} {
 
 proc check_effective_target_vect_sdiv_pow2_si {} {
     return [expr { ([istarget aarch64*-*-*]
-		    && [check_effective_target_aarch64_sve])
-		   || ([istarget riscv*-*-*]
-		       && [check_effective_target_riscv_v]) }]
+		    && [check_effective_target_aarch64_sve]) }]
 }
 
 # Return 1 if the target plus current options supports a vector

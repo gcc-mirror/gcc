@@ -79,5 +79,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vect_recog_divmod_pattern: detected" "vect" } } */
+/* { dg-final { scan-tree-dump {\.DIV_POW2} "vect" { target vect_sdiv_pow2_si } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loop" 18 "vect" { target vect_sdiv_pow2_si } } } */
