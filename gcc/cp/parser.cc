@@ -30576,7 +30576,8 @@ cp_next_tokens_can_be_contract_attribute_p (cp_parser *parser,
 	  && (token->type == CPP_NAME
 	      && nonattr_allowed
 	      &&  (attr_name = token->u.value)
-	      &&  contract_attribute_p (attr_name)));
+	      &&  contract_attribute_p (attr_name)
+	      &&  cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)));
 }
 
 /* Return TRUE iff the next tokens in the stream are possibly the
@@ -30605,7 +30606,9 @@ cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n,
 	   || (token->type == CPP_NAME
 		&& nonattr_allowed
 		&&  (attr_name = token->u.value)
-		&&  contract_attribute_p (attr_name)));
+		&&  contract_attribute_p (attr_name)
+		&&  cp_lexer_nth_token_is (parser->lexer, n + 1,
+					     CPP_OPEN_PAREN)));
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the
@@ -31939,7 +31942,8 @@ cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n, bool nonattr
 	       && (token = cp_lexer_peek_nth_token (parser->lexer, n))
 	       && token->type == CPP_NAME
 	       && (attr_name = token->u.value)
-	       && contract_attribute_p (attr_name))
+	       && contract_attribute_p (attr_name)
+	       && cp_lexer_nth_token_is (parser->lexer, n + 1, CPP_OPEN_PAREN))
 	{
 	  size_t n2 = cp_parser_skip_balanced_tokens (parser, n + 1);
 	  if (n2 == n + 1)
