@@ -106,12 +106,7 @@ parity_l1 (gfc_array_l1 * const restrict retarray,
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_LOGICAL_1));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-
-	}
+	return;
     }
   else
     {
