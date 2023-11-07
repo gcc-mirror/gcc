@@ -1,7 +1,7 @@
 #ifndef XTHEADMEMIDX_HELPERS_H
 #define XTHEADMEMIDX_HELPERS_H
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define intX_t long
 #define uintX_t unsigned long
