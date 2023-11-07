@@ -63,6 +63,7 @@ struct GTY(()) language_function {
 struct GTY(()) c_omp_declare_target_attr {
   bool attr_syntax;
   int device_type;
+  int indirect;
 };
 
 struct GTY(()) c_omp_begin_assumes_data {

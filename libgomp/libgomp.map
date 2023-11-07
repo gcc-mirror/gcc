@@ -419,6 +419,7 @@ GOMP_5.1 {
 GOMP_5.1.1 {
   global:
 	GOMP_taskwait_depend_nowait;
+	GOMP_target_map_indirect_ptr;
 } GOMP_5.1;
 
 OACC_2.0 {

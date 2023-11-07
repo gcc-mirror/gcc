@@ -37524,6 +37524,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_IN_REDUCTION;
 	  else if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
+	  else if (!strcmp ("indirect", p))
+	    result = PRAGMA_OMP_CLAUSE_INDIRECT;
 	  else if (!strcmp ("independent", p))
 	    result = PRAGMA_OACC_CLAUSE_INDEPENDENT;
 	  else if (!strcmp ("is_device_ptr", p))
@@ -38553,6 +38555,46 @@ cp_parser_omp_clause_final (cp_parser *parser, tree list, location_t location)
 
   c = build_omp_clause (location, OMP_CLAUSE_FINAL);
   OMP_CLAUSE_FINAL_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 5.1:
+   indirect [( expression )]
+*/
+
+static tree
+cp_parser_omp_clause_indirect (cp_parser *parser, tree list,
+			       location_t location)
+{
+  tree t;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+    {
+      matching_parens parens;
+      if (!parens.require_open (parser))
+	return list;
+
+      bool non_constant_p;
+      t = cp_parser_constant_expression (parser, true, &non_constant_p);
+
+      if (t != error_mark_node && non_constant_p)
+	error_at (location, "expected constant logical expression");
+
+      if (t == error_mark_node
+	  || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
+    }
+  else
+    t = integer_one_node;
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_INDIRECT, "indirect", location);
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_INDIRECT);
+  OMP_CLAUSE_INDIRECT_EXPR (c) = t;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -41628,6 +41670,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
 					      true, clauses);
 	  c_name = "in_reduction";
+	  break;
+	case PRAGMA_OMP_CLAUSE_INDIRECT:
+	  clauses = cp_parser_omp_clause_indirect (parser, clauses,
+						   token->location);
+	  c_name = "indirect";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
 	  clauses = cp_parser_omp_clause_lastprivate (parser, clauses);
@@ -48171,7 +48218,8 @@ cp_maybe_parse_omp_decl (tree decl, tree d)
    on #pragma omp declare target.  Return false if errors were reported.  */
 
 static bool
-handle_omp_declare_target_clause (tree c, tree t, int device_type)
+handle_omp_declare_target_clause (tree c, tree t, int device_type,
+				  bool indirect)
 {
   tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
   tree at2 = lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t));
@@ -48235,6 +48283,17 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
 	}
     }
+  if (indirect)
+    {
+      tree at4 = lookup_attribute ("omp declare target indirect",
+				   DECL_ATTRIBUTES (t));
+      if (at4 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target indirect");
+	  DECL_ATTRIBUTES (t)
+	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
   return true;
 }
 
@@ -48252,14 +48311,16 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TO)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ENTER)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INDIRECT))
 
 static void
 cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 {
   tree clauses = NULL_TREE;
   int device_type = 0;
-  bool only_device_type = true;
+  bool indirect = false;
+  bool only_device_type_or_indirect = true;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
       || (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))
@@ -48277,21 +48338,26 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
   else
     {
       cp_omp_declare_target_attr a
-	= { parser->lexer->in_omp_attribute_pragma, -1 };
+	= { parser->lexer->in_omp_attribute_pragma, -1, false };
       vec_safe_push (scope_chain->omp_declare_target_attribute, a);
       cp_parser_require_pragma_eol (parser, pragma_tok);
       return;
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
-      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
-  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
+	indirect |= !integer_zerop (OMP_CLAUSE_INDIRECT_EXPR (c));
+    }
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE
+	  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
 	continue;
       tree t = OMP_CLAUSE_DECL (c);
-      only_device_type = false;
-      if (!handle_omp_declare_target_clause (c, t, device_type))
+      only_device_type_or_indirect = false;
+      if (!handle_omp_declare_target_clause (c, t, device_type, indirect))
 	continue;
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_LOCAL_DECL_P (t)
@@ -48299,11 +48365,15 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 	  && DECL_LOCAL_DECL_ALIAS (t)
 	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
 	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
-					  device_type);
+					  device_type, indirect);
     }
-  if (device_type && only_device_type)
+  if ((device_type || indirect) && only_device_type_or_indirect)
     error_at (OMP_CLAUSE_LOCATION (clauses),
-	      "directive with only %<device_type%> clause");
+	      "directive with only %<device_type%> or %<indirect%> clauses");
+  if (indirect && device_type && device_type != OMP_CLAUSE_DEVICE_TYPE_ANY)
+    error_at (OMP_CLAUSE_LOCATION (clauses),
+	      "%<device_type%> clause must specify 'any' when used with "
+	      "an %<indirect%> clause");
 }
 
 /* OpenMP 5.1
@@ -48312,7 +48382,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
    # pragma omp begin declare target clauses[optseq] new-line  */
 
 #define OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK			\
-	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INDIRECT))
 
 static void
 cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
@@ -48342,11 +48413,16 @@ cp_parser_omp_begin (cp_parser *parser, cp_token *pragma_tok)
 					 "#pragma omp begin declare target",
 					 pragma_tok);
 	  int device_type = 0;
+	  bool indirect = 0;
 	  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
-	      device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
+		device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
+		indirect |= !integer_zerop (OMP_CLAUSE_INDIRECT_EXPR (c));
+	    }
 	  cp_omp_declare_target_attr a
-	    = { in_omp_attribute_pragma, device_type };
+	    = { in_omp_attribute_pragma, device_type, indirect };
 	  vec_safe_push (scope_chain->omp_declare_target_attribute, a);
 	}
       else

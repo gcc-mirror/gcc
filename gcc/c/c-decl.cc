@@ -5363,6 +5363,14 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	    attributes
 	      = tree_cons (get_identifier ("omp declare target nohost"),
 			   NULL_TREE, attributes);
+
+	  int indirect
+	    = current_omp_declare_target_attribute->last ().indirect;
+	  if (indirect && !lookup_attribute ("omp declare target indirect",
+					     attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target indirect"),
+			   NULL_TREE, attributes);
 	}
     }
 

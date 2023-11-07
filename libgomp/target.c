@@ -2256,11 +2256,20 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
   void **host_funcs_end  = ((void ***) host_table)[1];
   void **host_var_table  = ((void ***) host_table)[2];
   void **host_vars_end   = ((void ***) host_table)[3];
+  void **host_ind_func_table = NULL;
+  void **host_ind_funcs_end  = NULL;
 
-  /* The func table contains only addresses, the var table contains addresses
-     and corresponding sizes.  */
+  if (GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS (version))
+    {
+      host_ind_func_table = ((void ***) host_table)[4];
+      host_ind_funcs_end  = ((void ***) host_table)[5];
+    }
+
+  /* The func and ind_func tables contain only addresses, the var table
+     contains addresses and corresponding sizes.  */
   int num_funcs = host_funcs_end - host_func_table;
   int num_vars  = (host_vars_end - host_var_table) / 2;
+  int num_ind_funcs = (host_ind_funcs_end - host_ind_func_table);
 
   /* Load image to device and get target addresses for the image.  */
   struct addr_pair *target_table = NULL;
@@ -2273,7 +2282,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
   num_target_entries
     = devicep->load_image_func (devicep->target_id, version,
 				target_data, &target_table,
-				rev_lookup ? &rev_target_fn_table : NULL);
+				rev_lookup ? &rev_target_fn_table : NULL,
+				num_ind_funcs
+				  ? (uint64_t *) host_ind_func_table : NULL);
 
   if (num_target_entries != num_funcs + num_vars
       /* "+1" due to the additional ICV struct.  */

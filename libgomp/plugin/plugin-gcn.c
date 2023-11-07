@@ -365,6 +365,7 @@ struct gcn_image_desc
   } *gcn_image;
   const unsigned kernel_count;
   struct hsa_kernel_description *kernel_infos;
+  const unsigned ind_func_count;
   const unsigned global_variable_count;
 };
 
@@ -3366,7 +3367,8 @@ GOMP_OFFLOAD_init_device (int n)
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table,
-			 uint64_t **rev_fn_table)
+			 uint64_t **rev_fn_table,
+			 uint64_t *host_ind_fn_table)
 {
   if (GOMP_VERSION_DEV (version) != GOMP_VERSION_GCN)
     {
@@ -3382,6 +3384,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct module_info *module;
   struct kernel_info *kernel;
   int kernel_count = image_desc->kernel_count;
+  unsigned ind_func_count = GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS (version)
+			      ? image_desc->ind_func_count : 0;
   unsigned var_count = image_desc->global_variable_count;
   /* Currently, "others" is a struct of ICVS.  */
   int other_count = 1;
@@ -3400,6 +3404,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
     return -1;
 
   GCN_DEBUG ("Encountered %d kernels in an image\n", kernel_count);
+  GCN_DEBUG ("Encountered %d indirect functions in an image\n", ind_func_count);
   GCN_DEBUG ("Encountered %u global variables in an image\n", var_count);
   GCN_DEBUG ("Expect %d other variables in an image\n", other_count);
   pair = GOMP_PLUGIN_malloc ((kernel_count + var_count + other_count - 2)
@@ -3479,6 +3484,87 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 		     (void *)var_table[i].addr, var_table[i].size);
 	  pair++;
 	}
+    }
+
+  if (ind_func_count > 0)
+    {
+      hsa_status_t status;
+
+      /* Read indirect function table from image.  */
+      hsa_executable_symbol_t ind_funcs_symbol;
+      status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
+						     ".offload_ind_func_table",
+						     agent->id,
+						     0, &ind_funcs_symbol);
+
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not find .offload_ind_func_table symbol in the "
+		   "code object", status);
+
+      uint64_t ind_funcs_table_addr;
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(ind_funcs_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &ind_funcs_table_addr);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable from its symbol", status);
+
+      uint64_t ind_funcs_table[ind_func_count];
+      GOMP_OFFLOAD_dev2host (agent->device_id, ind_funcs_table,
+			     (void*) ind_funcs_table_addr,
+			     sizeof (ind_funcs_table));
+
+      /* Build host->target address map for indirect functions.  */
+      uint64_t ind_fn_map[ind_func_count * 2 + 1];
+      for (unsigned i = 0; i < ind_func_count; i++)
+	{
+	  ind_fn_map[i * 2] = host_ind_fn_table[i];
+	  ind_fn_map[i * 2 + 1] = ind_funcs_table[i];
+	  GCN_DEBUG ("Indirect function %d: %lx->%lx\n",
+		     i, host_ind_fn_table[i], ind_funcs_table[i]);
+	}
+      ind_fn_map[ind_func_count * 2] = 0;
+
+      /* Write the map onto the target.  */
+      void *map_target_addr
+	= GOMP_OFFLOAD_alloc (agent->device_id, sizeof (ind_fn_map));
+      GCN_DEBUG ("Allocated indirect map at %p\n", map_target_addr);
+
+      GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
+			     (void*) ind_fn_map,
+			     sizeof (ind_fn_map));
+
+      /* Write address of the map onto the target.  */
+      hsa_executable_symbol_t symbol;
+
+      status
+	= hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
+						XSTRING (GOMP_INDIRECT_ADDR_MAP),
+						agent->id, 0, &symbol);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not find GOMP_INDIRECT_ADDR_MAP in code object",
+		   status);
+
+      uint64_t varptr;
+      uint32_t varsize;
+
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &varptr);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable from its symbol", status);
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE,
+	&varsize);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable size from its symbol",
+		   status);
+
+      GCN_DEBUG ("Found GOMP_INDIRECT_ADDR_MAP at %lx with size %d\n",
+		 varptr, varsize);
+
+      GOMP_OFFLOAD_host2dev (agent->device_id, (void *) varptr,
+			     &map_target_addr,
+			     sizeof (map_target_addr));
     }
 
   GCN_DEBUG ("Looking for variable %s\n", XSTRING (GOMP_ADDITIONAL_ICVS));

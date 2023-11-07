@@ -1831,6 +1831,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
 struct GTY(()) cp_omp_declare_target_attr {
   bool attr_syntax;
   int device_type;
+  bool indirect;
 };
 
 struct GTY(()) cp_omp_begin_assumes_data {

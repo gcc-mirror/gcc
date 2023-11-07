@@ -1842,6 +1842,10 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DEVICE_TYPE_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEVICE_TYPE)->omp_clause.subcode.device_type_kind)
 
+#define OMP_CLAUSE_INDIRECT_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_INDIRECT), 0)
+
+
 /* True if there is a device clause with a device-modifier 'ancestor'.  */
 #define OMP_CLAUSE_DEVICE_ANCESTOR(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEVICE)->base.public_flag)

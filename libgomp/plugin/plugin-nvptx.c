@@ -266,6 +266,8 @@ typedef struct nvptx_tdata
 
   const struct targ_fn_launch *fn_descs;
   unsigned fn_num;
+
+  unsigned ind_fn_num;
 } nvptx_tdata_t;
 
 /* Descriptor of a loaded function.  */
@@ -1285,12 +1287,13 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table,
-			 uint64_t **rev_fn_table)
+			 uint64_t **rev_fn_table,
+			 uint64_t *host_ind_fn_table)
 {
   CUmodule module;
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
-  unsigned int fn_entries, var_entries, other_entries, i, j;
+  unsigned int fn_entries, var_entries, ind_fn_entries, other_entries, i, j;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1319,6 +1322,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   var_names = img_header->var_names;
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
+  ind_fn_entries = GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS (version)
+		     ? img_header->ind_fn_num : 0;
 
   /* Currently, other_entries contains only the struct of ICVs.  */
   other_entries = 1;
@@ -1371,6 +1376,60 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
       targ_tbl->start = (uintptr_t) var;
       targ_tbl->end = targ_tbl->start + bytes;
+    }
+
+  if (ind_fn_entries > 0)
+    {
+      CUdeviceptr var;
+      size_t bytes;
+
+      /* Read indirect function table from image.  */
+      CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
+				      "$offload_ind_func_table");
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      assert (bytes == sizeof (uint64_t) * ind_fn_entries);
+
+      uint64_t ind_fn_table[ind_fn_entries];
+      r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, ind_fn_table, var, bytes);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+
+      /* Build host->target address map for indirect functions.  */
+      uint64_t ind_fn_map[ind_fn_entries * 2 + 1];
+      for (unsigned k = 0; k < ind_fn_entries; k++)
+	{
+	  ind_fn_map[k * 2] = host_ind_fn_table[k];
+	  ind_fn_map[k * 2 + 1] = ind_fn_table[k];
+	  GOMP_PLUGIN_debug (0, "Indirect function %d: %lx->%lx\n",
+			     k, host_ind_fn_table[k], ind_fn_table[k]);
+	}
+      ind_fn_map[ind_fn_entries * 2] = 0;
+
+      /* Write the map onto the target.  */
+      void *map_target_addr
+	= GOMP_OFFLOAD_alloc (ord, sizeof (ind_fn_map));
+      GOMP_PLUGIN_debug (0, "Allocated indirect map at %p\n", map_target_addr);
+
+      GOMP_OFFLOAD_host2dev (ord, map_target_addr,
+			     (void*) ind_fn_map,
+			     sizeof (ind_fn_map));
+
+      /* Write address of the map onto the target.  */
+      CUdeviceptr varptr;
+      size_t varsize;
+      r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
+			     module, XSTRING (GOMP_INDIRECT_ADDR_MAP));
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("Indirect map variable not found in image: %s",
+			   cuda_error (r));
+
+      GOMP_PLUGIN_debug (0,
+			 "Indirect map variable found at %llx with size %ld\n",
+			 varptr, varsize);
+
+      GOMP_OFFLOAD_host2dev (ord, (void *) varptr, &map_target_addr,
+			     sizeof (map_target_addr));
     }
 
   CUdeviceptr varptr;
