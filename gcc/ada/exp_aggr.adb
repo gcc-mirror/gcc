@@ -6984,8 +6984,14 @@ package body Exp_Aggr is
                   Parameter_Associations =>
                     New_List (
                       Make_Integer_Literal (Loc, 1),
-                      New_Occurrence_Of
-                        (Defining_Identifier (Siz_Decl), Loc))));
+                      Make_Type_Conversion (Loc,
+                        Subtype_Mark =>
+                          New_Occurrence_Of
+                            (Etype (First_Formal (Entity (New_Indexed_Subp))),
+                             Loc),
+                        Expression => New_Occurrence_Of
+                                        (Defining_Identifier (Siz_Decl),
+                                         Loc)))));
          end if;
 
          Append (Init_Stat, Aggr_Code);
