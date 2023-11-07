@@ -4036,7 +4036,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_vis])
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
 	     || [istarget aarch64*-*-*]
-             || [istarget amdgcn*-*-*]} {
+	     || [istarget amdgcn*-*-*]
+	     || [istarget riscv*-*-*]} {
 	    return 0
 	} else {
 	    return 1
