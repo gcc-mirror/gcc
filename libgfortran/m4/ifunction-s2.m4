@@ -304,15 +304,13 @@ void
       retarray->offset = 0;
       retarray->dtype.rank = rank;
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
 	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
-
     }
   else
     {
@@ -468,14 +466,13 @@ void
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
 	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
     }
   else
     {

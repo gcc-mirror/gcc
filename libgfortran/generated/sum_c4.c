@@ -301,15 +301,13 @@ msum_c4 (gfc_array_c4 * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype.rank = rank;
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_4));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
 	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_4));
-
     }
   else
     {
@@ -466,14 +464,13 @@ ssum_c4 (gfc_array_c4 * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_4));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
 	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_4));
     }
   else
     {
