@@ -97,13 +97,32 @@ private:
   void visit_items_joined_by_separator (T &collection,
 					TokenId separator = COMMA,
 					size_t start_offset = 0,
-					size_t end_offset = 0);
+					size_t end_offset = 0)
+  {
+    if (collection.size () > start_offset)
+      {
+	visit (collection.at (start_offset));
+	auto size = collection.size () - end_offset;
+	for (size_t i = start_offset + 1; i < size; i++)
+	  {
+	    push (Rust::Token::make (separator, UNDEF_LOCATION));
+	    visit (collection.at (i));
+	  }
+      }
+  }
 
   /**
    * Visit item placing end of line after.
    */
   template <typename T>
-  void visit_as_line (T &item, std::vector<TokenPtr> trailing = {});
+  void visit_as_line (T &item, std::vector<TokenPtr> trailing = {})
+  {
+    indentation ();
+    visit (item);
+    for (auto &token : trailing)
+      push (token);
+    newline ();
+  }
 
   /**
    * Visit each item in @collection "as line".
@@ -111,8 +130,11 @@ private:
    * @see visit_as_line
    */
   template <typename T>
-  void visit_items_as_lines (T &collection,
-			     std::vector<TokenPtr> trailing = {});
+  void visit_items_as_lines (T &collection, std::vector<TokenPtr> trailing = {})
+  {
+    for (auto &item : collection)
+      visit_as_line (item, trailing);
+  }
 
   /**
    * Visit each item in @collection as lines inside a block delimited by braces
@@ -122,7 +144,25 @@ private:
   template <typename T>
   void visit_items_as_block (T &collection, std::vector<TokenPtr> trailing = {},
 			     TokenId left_brace = LEFT_CURLY,
-			     TokenId right_brace = RIGHT_CURLY);
+			     TokenId right_brace = RIGHT_CURLY)
+  {
+    push (Rust::Token::make (left_brace, UNDEF_LOCATION));
+    if (collection.empty ())
+      {
+	push (Rust::Token::make (right_brace, UNDEF_LOCATION));
+	newline ();
+      }
+    else
+      {
+	newline ();
+	increment_indentation ();
+	visit_items_as_lines (collection, trailing);
+	decrement_indentation ();
+	indentation ();
+	push (Rust::Token::make (right_brace, UNDEF_LOCATION));
+	newline ();
+      }
+  }
 
   void trailing_comma ();
   void newline ();
@@ -155,7 +195,7 @@ public:
   /**
    * @see visit<std::unique_ptr<T>>
    */
-  template <typename T> void visit (T &node);
+  template <typename T> void visit (T &node) { node.accept_vis (*this); }
 
   void visit (Visitable &v);
   void visit (LoopLabel &label);
