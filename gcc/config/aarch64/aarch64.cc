@@ -12345,6 +12345,9 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
       return false;
     }
 
+  const bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
+				  || type == ADDR_QUERY_LDP_STP_N);
+
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
       {
@@ -12356,7 +12359,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 	  }
 
 	vec_flags = aarch64_classify_vector_mode (mode);
-	if (vec_flags & VEC_ANY_SVE)
+	if ((vec_flags & VEC_ANY_SVE) && !load_store_pair_p)
 	  {
 	    HOST_WIDE_INT vnum
 	      = exact_div (addr.const_offset,
@@ -12365,6 +12368,9 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
 			 reg_names[REGNO (addr.base)], vnum);
 	    return true;
 	  }
+
+	if (!CONST_INT_P (addr.offset))
+	  return false;
 
 	asm_fprintf (f, "[%s, %wd]", reg_names[REGNO (addr.base)],
 		     INTVAL (addr.offset));
