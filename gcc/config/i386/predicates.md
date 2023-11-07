@@ -88,7 +88,7 @@
        (match_test "REGNO (op) == AX_REG")))
 
 ;; Return true if op is the flags register.
-(define_predicate "flags_reg_operand"
+(define_special_predicate "flags_reg_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == FLAGS_REG")))
 
