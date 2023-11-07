@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -fno-omit-frame-pointer -mthumb -w -Os" } */
+/* { dg-require-effective-target arm_arch_v6m_ok } */
+/* { dg-options "-std=c99 -fno-omit-frame-pointer -w -Os" } */
+/* { dg-add-options arm_arch_v6m } */
 
 typedef a[23];
 enum { b };
