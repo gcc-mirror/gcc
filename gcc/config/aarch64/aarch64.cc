@@ -12091,6 +12091,10 @@ sizetochar (int size)
      'N':		Take the duplicated element in a vector constant
 			and print the negative of it in decimal.
      'b/h/s/d/q':	Print a scalar FP/SIMD register name.
+     'Z':		Same for SVE registers.  ('z' was already taken.)
+			Note that it is not necessary to use %Z for operands
+			that have SVE modes.  The convention is to use %Z
+			only for non-SVE (or potentially non-SVE) modes.
      'S/T/U/V':		Print a FP/SIMD register name for a register list.
 			The register printed is the FP/SIMD register name
 			of X + 0/1/2/3 for S/T/U/V.
@@ -12263,6 +12267,8 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 's':
     case 'd':
     case 'q':
+    case 'Z':
+      code = TOLOWER (code);
       if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
 	{
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
