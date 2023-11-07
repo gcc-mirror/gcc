@@ -2776,9 +2776,9 @@ can be omitted, to use a target-specific default value.
 @opindex fopenmp
 @cindex OpenMP parallel
 @item -fopenmp
-Enable handling of OpenMP directives @samp{#pragma omp} in C/C++,
+Enable handling of OpenMP directives @samp{#pragma omp},
 @samp{[[omp::directive(...)]]}, @samp{[[omp::sequence(...)]]} and
-@samp{[[omp::decl(...)]]} in C++ and @samp{!$omp} in Fortran.  It
+@samp{[[omp::decl(...)]]} in C/C++ and @samp{!$omp} in Fortran.  It
 additionally enables the conditional compilation sentinel @samp{!$} in
 Fortran.  In fixed source form Fortran, the sentinels can also start with
 @samp{c} or @samp{*}.  When @option{-fopenmp} is specified, the
@@ -2795,9 +2795,9 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 Enable handling of OpenMP's @code{simd}, @code{declare simd},
 @code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
 and @code{loop} directive, and of combined or composite directives with
-@code{simd} as constituent with @code{#pragma omp} in C/C++,
+@code{simd} as constituent with @code{#pragma omp},
 @code{[[omp::directive(...)]]}, @code{[[omp::sequence(...)]]} and
-@code{[[omp::decl(...)]]} in C++ and @code{!$omp} in Fortran.  It
+@code{[[omp::decl(...)]]} in C/C++ and @code{!$omp} in Fortran.  It
 additionally enables the conditional compilation sentinel @samp{!$} in
 Fortran.  In fixed source form Fortran, the sentinels can also start with
 @samp{c} or @samp{*}.  Other OpenMP directives are ignored.  Unless
