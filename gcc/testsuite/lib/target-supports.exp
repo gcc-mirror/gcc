@@ -11575,6 +11575,14 @@ proc check_effective_target_non_strict_align {} {
     } "-Wcast-align"]
 }
 
+# Return 1 if the target supports -mstrict-align (and -mno-strict-align).
+
+proc check_effective_target_opt_mstrict_align {} {
+    return [check_no_compiler_messages opt_mstrict_align assembly {
+	void foo(void) {}
+    } "-mstrict-align -mno-strict-align"]
+}
+
 # Return 1 if the target has <ucontext.h>.
 
 proc check_effective_target_ucontext_h { } {

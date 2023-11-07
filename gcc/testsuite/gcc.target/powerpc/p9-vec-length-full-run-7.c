@@ -3,6 +3,8 @@
 
 /* { dg-additional-options "--param=vect-partial-vector-usage=2" } */
 
+/* { dg-additional-options "-mno-strict-align" { target opt_mstrict_align } } */
+
 /* Check whether it runs successfully if we vectorize the loop fully
    with vector access with length.  */
 

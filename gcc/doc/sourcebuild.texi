@@ -2580,6 +2580,9 @@ Target supports FPU instructions.
 @item non_strict_align
 Target does not require strict alignment.
 
+@item opt_mstrict_align
+Target supports @option{-mstrict-align} and @option{-mno-strict-align}.
+
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
 
