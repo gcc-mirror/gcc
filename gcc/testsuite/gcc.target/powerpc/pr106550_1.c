@@ -1,5 +1,6 @@
 /* PR target/106550 */
 /* { dg-require-effective-target power10_ok } */
+/* { dg-require-effective-target has_arch_ppc64 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10 -fdisable-rtl-split1" } */
 /* force the constant splitter run after RA: -fdisable-rtl-split1.  */
 
