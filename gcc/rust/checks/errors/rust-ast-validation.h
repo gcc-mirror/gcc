@@ -34,6 +34,7 @@ public:
   void check (AST::Crate &crate) { AST::ContextualASTVisitor::visit (crate); }
 
   virtual void visit (AST::ConstantItem &const_item);
+  virtual void visit (AST::Lifetime &lifetime);
 };
 
 } // namespace Rust

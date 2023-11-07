@@ -21,6 +21,29 @@
 
 namespace Rust {
 
+namespace {
+// TODO: make constexpr when update to c++20
+const std::map<std::string, TokenId> keywords = {
+#define RS_TOKEN(x, y)
+#define RS_TOKEN_KEYWORD(tok, key) {key, tok},
+  RS_TOKEN_LIST
+#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN
+};
+} // namespace
+
+void
+ASTValidation::visit (AST::Lifetime &lifetime)
+{
+  auto name = lifetime.get_lifetime_name ();
+  auto valid = std::set<std::string>{"static", "_"};
+  if (valid.find (name) == valid.end ()
+      && keywords.find (name) != keywords.end ())
+    rust_error_at (lifetime.get_locus (), "lifetimes cannot use keyword names");
+
+  AST::ContextualASTVisitor::visit (lifetime);
+}
+
 void
 ASTValidation::visit (AST::ConstantItem &const_item)
 {
