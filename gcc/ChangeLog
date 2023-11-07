@@ -1,3 +1,408 @@
+2023-11-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_asm_trampoline_template): Fix typo.
+
+2023-11-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 1.
+
+2023-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (class colorizer): Take just a
+	pretty_printer rather than a diagnostic_context.
+	(layout::layout): Make context param a const reference,
+	and pretty_printer param non-optional.
+	(layout::m_context): Drop field.
+	(layout::m_options): New field.
+	(layout::m_colorize_source_p): Drop field.
+	(layout::m_show_labels_p): Drop field.
+	(layout::m_show_line_numbers_p): Drop field.
+	(layout::print_gap_in_line_numbering): Use m_options.
+	(layout::calculate_line_spans): Likewise.
+	(layout::calculate_linenum_width): Likewise.
+	(layout::calculate_x_offset_display): Likewise.
+	(layout::print_source_line): Likewise.
+	(layout::start_annotation_line): Likewise.
+	(layout::print_annotation_line): Likewise.
+	(layout::print_line): Likewise.
+	(gcc_rich_location::add_location_if_nearby): Update for changes to
+	layout ctor.
+	(diagnostic_show_locus): Likewise.
+	(selftest::test_offset_impl): Likewise.
+	(selftest::test_layout_x_offset_display_utf8): Likewise.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	* diagnostic.h (diagnostic_context::m_source_printing): Move
+	declaration of struct outside diagnostic_context as...
+	(struct diagnostic_source_printing_options)... this.
+
+2023-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::push_diagnostics): Convert
+	to...
+	(diagnostic_option_classifier::push): ...this.
+	(diagnostic_context::pop_diagnostics): Convert to...
+	(diagnostic_option_classifier::pop): ...this.
+	(diagnostic_context::initialize): Move code to...
+	(diagnostic_option_classifier::init): ...this new function.
+	(diagnostic_context::finish): Move code to...
+	(diagnostic_option_classifier::fini): ...this new function.
+	(diagnostic_context::classify_diagnostic): Convert to...
+	(diagnostic_option_classifier::classify_diagnostic): ...this.
+	(diagnostic_context::update_effective_level_from_pragmas): Convert
+	to...
+	(diagnostic_option_classifier::update_effective_level_from_pragmas):
+	...this.
+	(diagnostic_context::diagnostic_enabled): Update for refactoring.
+	* diagnostic.h (struct diagnostic_classification_change_t): Move into...
+	(class diagnostic_option_classifier): ...this new class.
+	(diagnostic_context::option_unspecified_p): Update for move of
+	fields into m_option_classifier.
+	(diagnostic_context::classify_diagnostic): Likewise.
+	(diagnostic_context::push_diagnostics): Likewise.
+	(diagnostic_context::pop_diagnostics): Likewise.
+	(diagnostic_context::update_effective_level_from_pragmas): Delete.
+	(diagnostic_context::m_classify_diagnostic): Move into class
+	diagnostic_option_classifier.
+	(diagnostic_context::m_option_classifier): Likewise.
+	(diagnostic_context::m_classification_history): Likewise.
+	(diagnostic_context::m_n_classification_history): Likewise.
+	(diagnostic_context::m_push_list): Likewise.
+	(diagnostic_context::m_n_push): Likewise.
+	(diagnostic_context::m_option_classifier): New.
+
+2023-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::set_urlifier): New.
+	* diagnostic.h (diagnostic_context::set_urlifier): New decl.
+	(diagnostic_context::m_urlifier): Make private.
+	* gcc.cc (driver::global_initializations): Use set_urlifier rather
+	than directly setting field.
+	* toplev.cc (general_init): Likewise.
+
+2023-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::check_max_errors): Replace
+	uses of diagnostic_kind_count with simple field acesss.
+	(diagnostic_context::report_diagnostic): Likewise.
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	Replace use of diagnostic_kind_count with
+	diagnostic_context::diagnostic_count.
+	* diagnostic.h (diagnostic_kind_count): Delete.
+	(errorcount): Replace use of diagnostic_kind_count with
+	diagnostic_context::diagnostic_count.
+	(warningcount): Likewise.
+	(werrorcount): Likewise.
+	(sorrycount): Likewise.
+
+2023-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (Other attributes): Document thread_fence
+	effective-target.
+
+2023-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Bc): Remove constraint.
+	(Bn): Rewrite to use x86_extended_reg_mentioned_p predicate.
+	* config/i386/i386.cc (ix86_memory_address_reg_class):
+	Do not limit processing to TARGET_APX_EGPR.  Exit early for
+	NULL insn.  Do not check recog_data.insn before calling
+	extract_insn_cached.
+	(ix86_insn_base_reg_class): Handle ADDR_GPR8.
+	(ix86_regno_ok_for_insn_base_p): Ditto.
+	(ix86_insn_index_reg_class): Ditto.
+	* config/i386/i386.md (*cmpqi_ext<mode>_1_mem_rex64):
+	Remove insn pattern and corresponding peephole2 pattern.
+	(*cmpi_ext<mode>_1): Remove (m,Q) alternative.
+	Change (QBc,Q) alternative to (QBn,Q).  Add "addr" attribute.
+	(*cmpqi_ext<mode>_3_mem_rex64): Remove insn pattern
+	and corresponding peephole2 pattern.
+	(*cmpi_ext<mode>_3): Remove (Q,m) alternative.
+	Change (Q,QnBc) alternative to (Q,QnBn).  Add "addr" attribute.
+	(*extzvqi_mem_rex64): Remove insn pattern and
+	corresponding peephole2 pattern.
+	(*extzvqi): Remove (Q,m) alternative.  Change (Q,QnBc)
+	alternative to (Q,QnBn).  Add "addr" attribute.
+	(*insvqi_1_mem_rex64): Remove insn pattern and
+	corresponding peephole2 pattern.
+	(*insvqi_1): Remove (Q,m) alternative.  Change (Q,QnBc)
+	alternative to (Q,QnBn).  Add "addr" attribute.
+	(@insv<mode>_1): Ditto.
+	(*addqi_ext<mode>_0): Remove (m,0,Q) alternative.  Change (QBc,0,Q)
+	alternative to (QBn,0,Q).  Add "addr" attribute.
+	(*subqi_ext<mode>_0): Ditto.
+	(*andqi_ext<mode>_0): Ditto.
+	(*<any_or:code>qi_ext<mode>_0): Ditto.
+	(*addqi_ext<mode>_1): Remove (Q,0,m) alternative.  Change (Q,0,QnBc)
+	alternative to (Q,0,QnBn).  Add "addr" attribute.
+	(*andqi_ext<mode>_1): Ditto.
+	(*andqi_ext<mode>_1_cc): Ditto.
+	(*<any_or:code>qi_ext<mode>_1): Ditto.
+	(*xorqi_ext<mode>_1_cc): Ditto.
+	* config/i386/predicates.md (nonimm_x64constmem_operand):
+	Remove predicate.
+	(general_x64constmem_operand): Ditto.
+	(norex_memory_operand): Ditto.
+
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* doc/cpp.texi (__STDC_VERSION__): Refer to -std=c23 and
+	-std=gnu23 instead of -std=c2x and -std=gnu2x.
+	* doc/extend.texi (Attribute Syntax): Refer to C23 and -std=c23
+	instead of C2x and -std=c2x.
+	* doc/invoke.texi (-Wc11-c23-compat, -std=c23, -std=gnu23)
+	(-std=iso9899:2024): Document, with -Wc11-c2x-compat, -std=c2x and
+	-std=gnu2x as deprecated aliases.  Update descriptions of C23.
+	* doc/standards.texi (Standards): Describe C23 with C2X as an old
+	name.
+
+2023-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (MAKE_DECL_ONE_ONLY): Define.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112405
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call):
+	Properly handle invariant and/or loop mask passing.
+
+2023-11-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Remove the size check of lround.
+	* config/riscv/riscv-v.cc (expand_vec_lround): Leverage
+	emit_vec_rounding_to_integer for round.
+
+2023-11-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md: Adapt predicate.
+	* config/riscv/riscv-protos.h (can_be_broadcasted_p): New function.
+	* config/riscv/riscv-v.cc (can_be_broadcasted_p): Ditto.
+	* config/riscv/vector.md (vec_duplicate<mode>): New pattern.
+	(*vec_duplicate<mode>): Adapt vec_duplicate insn pattern.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111950
+	* tree-vect-loop-manip.cc (slpeel_duplicate_current_defs_from_edges):
+	Remove.
+	(find_guard_arg): Likewise.
+	(slpeel_update_phi_nodes_for_guard2): Likewise.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Remove calls to
+	slpeel_duplicate_current_defs_from_edges, do not elide
+	LC-PHIs for invariant values.
+	(vect_do_peeling): Materialize PHI arguments for the edge
+	around the epilog from the PHI defs of the main loop exit.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112404
+	* tree-vectorizer.h (get_mask_type_for_scalar_type): Declare
+	overload with SLP node argument.
+	* tree-vect-stmts.cc (get_mask_type_for_scalar_type): Implement it.
+	(vect_check_scalar_mask): Use it.
+	* tree-vect-slp.cc (vect_gather_slp_loads): Properly identify
+	loads also for nodes with children, like .MASK_LOAD.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Look at the
+	representative for load nodes and check whether it is a grouped
+	access before looking for load-lanes support.
+
+2023-11-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/111760
+	* config/riscv/autovec.md (vcond_mask_len_<mode><vm>): Add
+	expander.
+	* config/riscv/riscv-protos.h (enum insn_type): Add.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Add !pred_mov.
+	* doc/md.texi: Add vcond_mask_len.
+	* gimple-match-exports.cc (maybe_resimplify_conditional_op):
+	Create VCOND_MASK_LEN when length masking.
+	* gimple-match.h (gimple_match_op::gimple_match_op): Always
+	initialize len and bias.
+	* internal-fn.cc (vec_cond_mask_len_direct): Add.
+	(direct_vec_cond_mask_len_optab_supported_p): Add.
+	(internal_fn_len_index): Add VCOND_MASK_LEN.
+	(internal_fn_mask_index): Ditto.
+	* internal-fn.def (VCOND_MASK_LEN): New internal function.
+	* match.pd: Combine unconditional unary, binary and ternary
+	operations into the respective COND_LEN operations.
+	* optabs.def (OPTAB_D): Add vcond_mask_len optab.
+
+2023-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.cc (align_dynamic_address): Do nothing if the required
+	alignment is a byte.
+
+2023-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function.h (get_stack_dynamic_offset): Declare.
+	* function.cc (get_stack_dynamic_offset): New function,
+	split out from...
+	(get_stack_dynamic_offset): ...here.
+	* explow.cc (allocate_dynamic_stack_space): Handle calls made
+	after virtual registers have been instantiated.
+
+2023-11-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112393
+	* config/i386/i386-expand.cc (ix86_expand_vec_perm_vpermt2):
+	Avoid generating RTL code when d->testing_p.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112369
+	* tree.cc (strip_float_extensions): Use element_precision.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112296
+	* doc/extend.texi (__builtin_constant_p): Clarify that
+	side-effects are discarded.
+
+2023-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111828
+	* config.in: Regenerate.
+	* config/rs6000/rs6000.cc (rs6000_update_ipa_fn_target_info): Guard
+	inline asm handling under !HAVE_AS_POWER10_HTM.
+	* configure: Regenerate.
+	* configure.ac: Detect assembler support for HTM insns at power10.
+
+2023-11-06  xuli  <xuli1@eswincomputing.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-c.cc (riscv_resolve_overloaded_builtin): New function for the hook.
+	(riscv_register_pragmas): Register the hook.
+	* config/riscv/riscv-protos.h (resolve_overloaded_builtin): New decl.
+	* config/riscv/riscv-vector-builtins-bases.cc: New function impl.
+	* config/riscv/riscv-vector-builtins-shapes.cc (build_one): Register overloaded function.
+	* config/riscv/riscv-vector-builtins.cc (struct non_overloaded_registered_function_hasher):
+	New hash table.
+	(function_builder::add_function): Add overloaded arg.
+	(function_builder::add_unique_function): Map overloaded function to non-overloaded function.
+	(function_builder::add_overloaded_function): New API impl.
+	(registered_function::overloaded_hash): Calculate hash value.
+	(has_vxrm_or_frm_p): New function impl.
+	(non_overloaded_registered_function_hasher::hash): Ditto.
+	(non_overloaded_registered_function_hasher::equal): Ditto.
+	(handle_pragma_vector): Allocate space for hash table.
+	(resolve_overloaded_builtin): New function impl.
+	* config/riscv/riscv-vector-builtins.h (function_base::may_require_frm_p): Ditto.
+	(function_base::may_require_vxrm_p): Ditto.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111889
+	* config/i386/avx512bf16intrin.h: Push no-evex512 target.
+	* config/i386/avx512bf16vlintrin.h: Ditto.
+	* config/i386/avx512bitalgvlintrin.h: Ditto.
+	* config/i386/avx512bwintrin.h: Ditto.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/avx512fp16intrin.h: Ditto.
+	* config/i386/avx512fp16vlintrin.h: Ditto.
+	* config/i386/avx512ifmavlintrin.h: Ditto.
+	* config/i386/avx512vbmi2vlintrin.h: Ditto.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+	* config/i386/avx512vnnivlintrin.h: Ditto.
+	* config/i386/avx512vp2intersectvlintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqvlintrin.h: Ditto.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512bf16vlintrin.h
+	(_mm_avx512_castsi128_ps): New.
+	(_mm256_avx512_castsi256_ps): Ditto.
+	(_mm_avx512_slli_epi32): Ditto.
+	(_mm256_avx512_slli_epi32): Ditto.
+	(_mm_avx512_cvtepi16_epi32): Ditto.
+	(_mm256_avx512_cvtepi16_epi32): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512bwintrin.h
+	(_mm_avx512_set_epi32): New.
+	(_mm_avx512_set_epi16): Ditto.
+	(_mm_avx512_set_epi8): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512fp16intrin.h: Ditto.
+	* config/i386/avx512fp16vlintrin.h
+	(_mm_avx512_set1_ps): New.
+	(_mm256_avx512_set1_ps): Ditto.
+	(_mm_avx512_and_si128): Ditto.
+	(_mm256_avx512_and_si256): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512vlbwintrin.h
+	(_mm_avx512_set1_epi32): New.
+	(_mm_avx512_set1_epi16): Ditto.
+	(_mm_avx512_set1_epi8): Ditto.
+	(_mm256_avx512_set_epi16): Ditto.
+	(_mm256_avx512_set_epi8): Ditto.
+	(_mm256_avx512_set1_epi16): Ditto.
+	(_mm256_avx512_set1_epi32): Ditto.
+	(_mm256_avx512_set1_epi8): Ditto.
+	(_mm_avx512_max_epi16): Ditto.
+	(_mm_avx512_min_epi16): Ditto.
+	(_mm_avx512_max_epu16): Ditto.
+	(_mm_avx512_min_epu16): Ditto.
+	(_mm_avx512_max_epi8): Ditto.
+	(_mm_avx512_min_epi8): Ditto.
+	(_mm_avx512_max_epu8): Ditto.
+	(_mm_avx512_min_epu8): Ditto.
+	(_mm256_avx512_max_epi16): Ditto.
+	(_mm256_avx512_min_epi16): Ditto.
+	(_mm256_avx512_max_epu16): Ditto.
+	(_mm256_avx512_min_epu16): Ditto.
+	(_mm256_avx512_insertf128_ps): Ditto.
+	(_mm256_avx512_extractf128_pd): Ditto.
+	(_mm256_avx512_extracti128_si256): Ditto.
+	(_MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI16): Ditto.
+	(_MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP16): Ditto.
+	(_MM256_AVX512_REDUCE_OPERATOR_BASIC_EPI8): Ditto.
+	(_MM256_AVX512_REDUCE_OPERATOR_MAX_MIN_EP8): Ditto.
+	(__attribute__): Change intrin call.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512bf16vlintrin.h: Change intrin call.
+	* config/i386/avx512fintrin.h
+	(_mm_avx512_undefined_ps): New.
+	(_mm_avx512_undefined_pd): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h
+	(_mm_avx512_undefined_si128): New.
+	(_mm256_avx512_undefined_ps): Ditto.
+	(_mm256_avx512_undefined_pd): Ditto.
+	(_mm256_avx512_undefined_si256): Ditto.
+	(__attribute__): Change intrin call.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512bitalgvlintrin.h: Change intrin call.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h:
+	(_mm_avx512_setzero_ps): New.
+	(_mm_avx512_setzero_pd): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512fp16intrin.h: Ditto.
+	* config/i386/avx512fp16vlintrin.h: Ditto.
+	* config/i386/avx512vbmi2vlintrin.h: Ditto.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h
+	(_mm_avx512_setzero_si128): New.
+	(_mm256_avx512_setzero_pd): Ditto.
+	(_mm256_avx512_setzero_ps): Ditto.
+	(_mm256_avx512_setzero_si256): Ditto.
+	(__attribute__): Change intrin call.
+	* config/i386/avx512vpopcntdqvlintrin.h: Ditto.
+	* config/i386/gfniintrin.h: Ditto.
+
 2023-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (enum reg_class): Add LEGACY_INDEX_REGS.

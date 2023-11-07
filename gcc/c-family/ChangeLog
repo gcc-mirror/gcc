@@ -1,3 +1,18 @@
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* c.opt (Wc11-c2x-compat): Rename to Wc11-c23-compat and make into
+	a deprecated alias of Wc11-c23-compat.
+	(std=c2x): Rename to std=c23 and make into a deprecated alias of
+	std=c23.
+	(std=gnu2x): Rename to std=gnu23 and make into a deprecated alias
+	of std=gnu23.
+	(std=iso9899:2024): New option.  Alias of std=c23.
+	* c-lex.cc (interpret_float): Use OPT_Wc11_c23_compat instead of
+	OPT_Wc11_c2x_compat.
+	* c-opts.cc (c_common_handle_option): Use OPT_std_c23 instead of
+	OPT_std_c2x and OPT_std_gnu23 instead of OPT_std_gnu2x.
+
 2023-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.cc (c_common_has_attribute): Return 1 for omp::directive

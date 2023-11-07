@@ -1,3 +1,304 @@
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/cpp/wchar-1.c (main): Call __builtin_abort instead of
+	abort.
+
+2023-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/dg-pch.exp (dg-flags-pch): Add -c when generating the
+	precompiled header.
+
+2023-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/init/array54.C: Require thread_fence.
+	* gcc.dg/c2x-nullptr-1.c: Likewise.
+	* gcc.dg/pr103721-2.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_thread_fence):
+	New.
+
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* gcc.dg/c23-opts-1.c, gcc.dg/c23-opts-2.c, gcc.dg/c23-opts-3.c,
+	gcc.dg/c23-opts-4.c, gcc.dg/c23-opts-5.c, gcc.dg/gnu23-opts-1.c,
+	gcc.dg/gnu23-opts-2.c: New tests.
+
+2023-11-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iround-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llroundf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llroundf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lround-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iround-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llroundf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lround-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lroundf-rv64-0.c: New test.
+
+2023-11-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/unop/sew64-rv32.c: New test.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111950
+	* gcc.dg/torture/pr111950.c: New testcase.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112404
+	* gfortran.dg/pr112404.f90: New testcase.
+
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/20000412-2.c (f): Call
+	__builtin_strlen	instead of strlen.
+	* gcc.c-torture/compile/20000427-1.c (FindNearestPowerOf2):
+	Declare.
+	* gcc.c-torture/compile/20000802-1.c (bar): Call
+	__builtin_memcpy	instead of memcpy.
+	* gcc.c-torture/compile/20010525-1.c (kind_varread): Likewise.
+	* gcc.c-torture/compile/20010706-1.c (foo): Add missing int
+	return type.
+	* gcc.c-torture/compile/20020314-1.c (add_output_space_event)
+	(del_tux_atom, add_req_to_workqueue): Declare.
+	* gcc.c-torture/compile/20020701-1.c (f): Call
+	__builtin_memcpy	instead of memcpy.
+	* gcc.c-torture/compile/20021015-2.c (f): Call __builtin_bcmp
+	instead of bcmo.
+	* gcc.c-torture/compile/20030110-1.c (inb): Declare.
+	* gcc.c-torture/compile/20030314-1.c (bar): Add missing
+	void return type.
+	* gcc.c-torture/compile/20030405-1.c (bar): Add missing int
+	return type.
+	* gcc.c-torture/compile/20030416-1.c (bar): Declare.
+	(main): Add missing int return type.
+	* gcc.c-torture/compile/20030503-1.c (bar): Declare.
+	* gcc.c-torture/compile/20030530-1.c: (bar): Declare.
+	* gcc.c-torture/compile/20031031-2.c (foo, bar, baz): Declare.
+	* gcc.c-torture/compile/20040101-1.c (test16): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/20040124-1.c (f2, f3): Declare.
+	* gcc.c-torture/compile/20040304-1.c (macarg): Declare.
+	* gcc.c-torture/compile/20040705-1.c (f): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/20040908-1.c (bar): Declare.
+	* gcc.c-torture/compile/20050510-1.c (dont_remove): Declare.
+	* gcc.c-torture/compile/20051228-1.c (bar): Declare.
+	* gcc.c-torture/compile/20060109-1.c (cpp_interpret_string):
+	Declare.
+	(int_c_lex, cb_ident): Add missing void return type.
+	(cb_ident): Define as static.
+	* gcc.c-torture/compile/20060202-1.c (sarray_get): Declare.
+	* gcc.c-torture/compile/20070129.c (regcurly)
+	(reguni): Declare.
+	* gcc.c-torture/compile/20070529-1.c (__fswab16): Declare.
+	* gcc.c-torture/compile/20070529-2.c (kmem_free): Declare.
+	* gcc.c-torture/compile/20070605-1.c (quantize_fs_dither):
+	Add missing void return type.
+	* gcc.c-torture/compile/20071107-1.c
+	(settings_install_property_parser): Declare.
+	* gcc.c-torture/compile/20090907-1.c (load_waveform): Call
+	__builtin_abort instead of abort.
+	* gcc.c-torture/compile/20100907.c (t): Add missing void
+	types.
+	* gcc.c-torture/compile/20120524-1.c (build_packet): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/20120830-2.c
+	(ubidi_writeReordered_49): Add missing void return type.
+	* gcc.c-torture/compile/20121010-1.c (read_long): Add missing
+	int return type.
+	* gcc.c-torture/compile/920301-1.c (f, g): Add missing void
+	types.
+	* gcc.c-torture/compile/920409-1.c (x): Likewise.
+	* gcc.c-torture/compile/920410-1.c (main): Add missing int
+	return type.  Call __builtin_printf instead of printf.
+	* gcc.c-torture/compile/920410-2.c (joe): Add missing void
+	types.
+	* gcc.c-torture/compile/920411-2.c (x): Likewise.
+	* gcc.c-torture/compile/920413-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/920428-3.c (x): Add missing int types.
+	* gcc.c-torture/compile/920428-4.c (x): Add missing void
+	return type and int parameter type.
+	* gcc.c-torture/compile/920501-10.c (x): Add missing int
+	types.
+	* gcc.c-torture/compile/920501-12.c (x, a, b, A, B): Likewise.
+	* gcc.c-torture/compile/920501-17.c (x): Add missing void
+	types.
+	* gcc.c-torture/compile/920501-19.c (y): Likewise.
+	* gcc.c-torture/compile/920501-22.c (x): Likewise.
+	* gcc.c-torture/compile/920501-3.c (x): Likewise.
+	* gcc.c-torture/compile/920501-4.c (foo): Likewise.
+	* gcc.c-torture/compile/920529-1.c (f): Call __builtin_abort
+	instead of abort.
+	* gcc.c-torture/compile/920615-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/920623-1.c (g): Likewise.
+	* gcc.c-torture/compile/920624-1.c (f): Likewise.
+	* gcc.c-torture/compile/920711-1.c (f): Add missing int types.
+	* gcc.c-torture/compile/920729-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/920806-1.c (f): Likewise.
+	* gcc.c-torture/compile/920821-2.c (f): Likewise.
+	* gcc.c-torture/compile/920825-1.c (f): Likewise.
+	* gcc.c-torture/compile/920825-2.c (f, g): Add missing void
+	return type.
+	* gcc.c-torture/compile/920826-1.c (f): Likewise.
+	* gcc.c-torture/compile/920828-1.c (f): Add missing int types.
+	* gcc.c-torture/compile/920829-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/920928-3.c (f): Likewise.
+	* gcc.c-torture/compile/921012-2.c (f): Likewise.
+	* gcc.c-torture/compile/921013-1.c (f): Likewise.
+	* gcc.c-torture/compile/921019-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/921026-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/921126-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/921227-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/930109-2.c (f): Add missing int types.
+	* gcc.c-torture/compile/930210-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/930222-1.c (g): Declare.
+	(f): Add missing int return type.
+	* gcc.c-torture/compile/930421-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/930503-1.c (f): Likewise.
+	* gcc.c-torture/compile/930513-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/930513-3.c (test): Add missing void
+	types.
+	* gcc.c-torture/compile/930523-1.c (f): Likewise.
+	* gcc.c-torture/compile/930527-1.c (f): Likewise.
+	* gcc.c-torture/compile/930603-1.c (f): Likewise.
+	* gcc.c-torture/compile/930607-1.c (g): Likewise.
+	* gcc.c-torture/compile/930702-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/931018-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/931031-1.c (f): Likewise.
+	* gcc.c-torture/compile/931102-1.c (xxx): Add missing void
+	types.
+	* gcc.c-torture/compile/940611-1.c (f): Likewise.
+	* gcc.c-torture/compile/940712-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/950512-1.c (g): Declare.
+	(f): Add missing void return type.
+	* gcc.c-torture/compile/950530-1.c (f): Add missing int
+	return type.
+	* gcc.c-torture/compile/950610-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/950613-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/950816-1.c (f): Add missing int return
+	type and missing void.
+	* gcc.c-torture/compile/950816-2.c (func): Declare.
+	(f): Add missing void types.
+	* gcc.c-torture/compile/950816-3.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/950919-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/950921-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/951004-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/951116-1.c (f): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/951128-1.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/951220-1.c (f): Add missing int return
+	type.
+	* gcc.c-torture/compile/960220-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/960221-1.c (foo): Add missing void
+	return type.
+	* gcc.c-torture/compile/960704-1.c (main): Add missing int
+	return type and missing void.
+	* gcc.c-torture/compile/961031-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/961126-1.c (sub, sub2): Declare.
+	(main): Add missing int return type and missing void.
+	* gcc.c-torture/compile/961203-1.c (main): Call __builtin_exit
+	instead of exit.
+	* gcc.c-torture/compile/981001-1.c (main): Likewise.
+	* gcc.c-torture/compile/981107-1.c (call): Declare.
+	* gcc.c-torture/compile/990517-1.c (sdbm__splpage): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/990617-1.c (main): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/991026-2.c (detach): Add missing void
+	types.
+	* gcc.c-torture/compile/991229-1.c (ejEval): Likewise.
+	* gcc.c-torture/compile/991229-3.c (rand): Declare.
+
+2023-11-06  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/builtins/fputs.c (_GNU_SOURCE):
+	Define.
+	(fputs_unlocked): Declare.
+
+2023-11-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-arith-2.c: No vect cost model for
+	riscv_v.
+
+2023-11-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112393.c: New test.
+
+2023-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112369
+	* gcc.dg/pr112369.c: New testcase.
+
+2023-11-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-irint-run-0.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf-run-0.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrint-rv32-run-0.c: Ditto.
+
+2023-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111828
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_as_p10_htm): New proc.
+	* g++.target/powerpc/pr111828-1.C: New test.
+	* g++.target/powerpc/pr111828-2.C: New test.
+
+2023-11-06  xuli  <xuli1@eswincomputing.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vfadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vget_vset.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vloxseg2ei16.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vmv.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv32_vreinterpret.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vfadd.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vget_vset.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vloxseg2ei16.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vmv.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_rv64_vreinterpret.c: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vadd.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vfadd.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vget_vset.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vloxseg2ei16.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vmv.h: New test.
+	* gcc.target/riscv/rvv/base/overloaded_vreinterpret.h: New test.
+
+2023-11-06  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111889
+	* gcc.target/i386/pr111889.c: New test.
+
 2023-11-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc.target/i386/pr111753.c: Require dfp.

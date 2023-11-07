@@ -1,3 +1,11 @@
+2023-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107954
+	* c-errors.cc (pedwarn_c11): Use OPT_Wc11_c23_compat instead of
+	OPT_Wc11_c2x_compat.
+	* c-typeck.cc (build_conditional_expr, convert_for_assignment):
+	Use OPT_Wc11_c23_compat instead of OPT_Wc11_c2x_compat.
+
 2023-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.h (c_maybe_parse_omp_decl): Declare.

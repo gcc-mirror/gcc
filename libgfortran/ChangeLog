@@ -1,3 +1,9 @@
+2023-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/112364
+	* io/async.c (enqueue_transfer, enqueue_done_id, enqueue_done,
+	enqueue_close): Swap 1st and 2nd arg in calloc call.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Handle Darwin rpaths.
