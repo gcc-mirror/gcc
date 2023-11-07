@@ -32,16 +32,33 @@ int main()
   a[4] = 7;
   check_vect ();
   test(a, b);
-  if (a[0] != 1
-      || a[1] != 2
-      || a[2] != 3
-      || a[3] != 4
-      || a[4] != 7
-      || a[5] != 0
-      || a[6] != 0
-      || a[7] != 0
-      || a[8] != 0)
+  if (a[0] != 1)
     abort ();
+  __asm__ volatile ("");
+  if (a[1] != 2)
+    abort ();
+  __asm__ volatile ("");
+  if (a[2] != 3)
+    abort ();
+  __asm__ volatile ("");
+  if (a[3] != 4)
+    abort ();
+  __asm__ volatile ("");
+  if (a[4] != 7)
+    abort ();
+  __asm__ volatile ("");
+  if (a[5] != 0)
+    abort ();
+  __asm__ volatile ("");
+  if (a[6] != 0)
+    abort ();
+  __asm__ volatile ("");
+  if (a[7] != 0)
+    abort ();
+  __asm__ volatile ("");
+  if (a[8] != 0)
+    abort ();
+  __asm__ volatile ("");
   return 0;
 }
 
