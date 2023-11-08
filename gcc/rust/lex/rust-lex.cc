@@ -24,6 +24,7 @@
 #include "rust-session-manager.h"
 #include "safe-ctype.h"
 #include "cpplib.h"
+#include "rust-keyword-values.h"
 
 namespace Rust {
 // TODO: move to separate compilation unit?
@@ -254,25 +255,12 @@ Lexer::replace_current_token (TokenPtr replacement)
   rust_debug ("called 'replace_current_token' - this is deprecated");
 }
 
-/* shitty anonymous namespace that can only be accessed inside the compilation
- * unit - used for classify_keyword binary search in sorted array of keywords
- * created with x-macros. */
-namespace {
-// TODO: make constexpr when update to c++20
-const std::map<std::string, TokenId> keywords = {
-#define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(tok, key) {key, tok},
-  RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
-#undef RS_TOKEN
-};
-} // namespace
-
 /* Determines whether the string passed in is a keyword or not. If it is, it
  * returns the keyword name.  */
 TokenId
 Lexer::classify_keyword (const std::string &str)
 {
+  auto &keywords = Rust::Values::Keywords::keywords;
   auto keyword = keywords.find (str);
 
   if (keyword == keywords.end ())

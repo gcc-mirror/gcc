@@ -17,17 +17,26 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-keyword-values.h"
+#include "rust-token.h"
 
 namespace Rust {
 namespace Values {
 
-const std::set<std::string> Keywords::keywords = {
+// TODO: Can't we do this inline ?
+static std::map<std::string, TokenId>
+get_keywords ()
+{
+  std::map<std::string, TokenId> m = {
 #define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(tok, key) key,
-  RS_TOKEN_LIST
+#define RS_TOKEN_KEYWORD(tok, key) {key, tok},
+    RS_TOKEN_LIST
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
-};
+  };
+  return m;
+}
+
+const std::map<std::string, TokenId> Keywords::keywords = get_keywords ();
 
 } // namespace Values
 } // namespace Rust
