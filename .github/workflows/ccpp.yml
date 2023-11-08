@@ -70,7 +70,7 @@ jobs:
            cd gccrs-build; \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m64}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: check-rust-logs
         path: |
@@ -147,7 +147,7 @@ jobs:
            cd gccrs-build; \
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m32}"
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: check-rust-logs
         path: |
@@ -216,7 +216,7 @@ jobs:
            make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
 
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: check-rust-logs-4.8
         path: |
@@ -271,7 +271,7 @@ jobs:
            cd gccrs-build; \
            make check-rust
     - name: Archive check-rust results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: check-rust-logs-macos
         path: |
