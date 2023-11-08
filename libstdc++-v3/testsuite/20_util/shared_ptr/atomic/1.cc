@@ -18,6 +18,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target hosted }
+// { dg-additional-options "-Wno-deprecated" { target c++20 } }
 
 #include <memory>
 
