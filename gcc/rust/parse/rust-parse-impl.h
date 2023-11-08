@@ -28,6 +28,7 @@
 #include "rust-make-unique.h"
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
+#include "rust-keyword-values.h"
 
 #include "optional.h"
 
@@ -682,6 +683,7 @@ template <typename ManagedTokenSource>
 AST::SimplePathSegment
 Parser<ManagedTokenSource>::parse_simple_path_segment ()
 {
+  using namespace Values;
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
@@ -692,15 +694,15 @@ Parser<ManagedTokenSource>::parse_simple_path_segment ()
     case SUPER:
       lexer.skip_token ();
 
-      return AST::SimplePathSegment ("super", t->get_locus ());
+      return AST::SimplePathSegment (Keywords::SUPER, t->get_locus ());
     case SELF:
       lexer.skip_token ();
 
-      return AST::SimplePathSegment ("self", t->get_locus ());
+      return AST::SimplePathSegment (Keywords::SELF, t->get_locus ());
     case CRATE:
       lexer.skip_token ();
 
-      return AST::SimplePathSegment ("crate", t->get_locus ());
+      return AST::SimplePathSegment (Keywords::CRATE, t->get_locus ());
     case DOLLAR_SIGN:
       if (lexer.peek_token (1)->get_id () == CRATE)
 	{

@@ -1938,8 +1938,13 @@ Lexer::parse_raw_identifier (location_t loc)
     rust_error_at (get_current_location (),
 		   "%<_%> is not a valid raw identifier");
 
-  if (str == "crate" || str == "extern" || str == "self" || str == "super"
-      || str == "Self")
+  using namespace Rust::Values;
+  std::set<std::string> invalid{
+    Keywords::CRATE, Keywords::EXTERN_TOK, Keywords::SELF,
+    Keywords::SUPER, Keywords::SELF_ALIAS,
+  };
+
+  if (invalid.find (str) != invalid.end ())
     {
       rust_error_at (get_current_location (),
 		     "%qs is a forbidden raw identifier", str.c_str ());
