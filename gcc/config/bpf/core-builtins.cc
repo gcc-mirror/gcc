@@ -1473,8 +1473,6 @@ tree
 bpf_resolve_overloaded_core_builtin (location_t loc, tree fndecl,
 				     void *arglist)
 {
-  remove_parser_plugin ();
-
   if (!bpf_require_core_support ())
     return error_mark_node;
 
@@ -1688,6 +1686,7 @@ make_gimple_core_safe_access_index (tree *tp,
 static unsigned int
 execute_lower_bpf_core (void)
 {
+  remove_parser_plugin ();
   if (!TARGET_BPF_CORE)
     return 0;
 
