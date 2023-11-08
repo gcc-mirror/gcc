@@ -11163,7 +11163,7 @@ vectorizable_load (vec_info *vinfo,
 		     than the data vector for now.  */
 		  unsigned HOST_WIDE_INT factor
 		    = const_offset_nunits / const_nunits;
-		  vec_offset = vec_offsets[j / factor];
+		  vec_offset = vec_offsets[(vec_num * j + i) / factor];
 		  unsigned elt_offset = (j % factor) * const_nunits;
 		  tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
 		  tree scale = size_int (gs_info.scale);
