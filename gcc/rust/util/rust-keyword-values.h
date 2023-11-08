@@ -28,7 +28,7 @@ namespace Values {
 class Keywords
 {
 public:
-  const static std::set<std::string> keywords;
+  const static std::map<std::string, TokenId> keywords;
 
   // Rust keyword values
 public:
