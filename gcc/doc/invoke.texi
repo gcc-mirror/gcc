@@ -6174,12 +6174,16 @@ errors by @option{-pedantic-errors}.  For instance:
 Downgrade some required diagnostics about nonconformant code from
 errors to warnings.  Thus, using @option{-fpermissive} allows some
 nonconforming code to compile.  Some C++ diagnostics are controlled
-only by this flag, but it also downgrades some diagnostics that have
-their own flag:
+only by this flag, but it also downgrades some C and C++ diagnostics
+that have their own flag:
 
 @gccoptlist{
 -Wnarrowing @r{(C++)}
 }
+
+The @option{-fpermissive} option is the default for historic C language
+modes (@option{-std=c89}, @option{-std=gnu89}, @option{-std=c90},
+@option{-std=gnu90}).
 
 @opindex Wall
 @opindex Wno-all

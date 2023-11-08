@@ -854,6 +854,20 @@ c_common_post_options (const char **pfilename)
       && flag_unsafe_math_optimizations == 0)
     flag_fp_contract_mode = FP_CONTRACT_OFF;
 
+  /* C language modes before C99 enable -fpermissive by default, but
+     only if -pedantic-errors is not specified.  Also treat
+     -fno-permissive as a subset of -pedantic-errors that does not
+     reject certain GNU extensions also present the defaults for later
+     language modes.  */
+  if (!c_dialect_cxx ()
+      && !flag_isoc99
+      && !global_dc->m_pedantic_errors
+      && !OPTION_SET_P (flag_permissive))
+    {
+      flag_permissive = 1;
+      global_dc->m_permissive = 1;
+    }
+
   /* If we are compiling C, and we are outside of a standards mode,
      we can permit the new values from ISO/IEC TS 18661-3 for
      FLT_EVAL_METHOD.  Otherwise, we must restrict the possible values to
