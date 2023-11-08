@@ -4388,16 +4388,15 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP:
 	    case SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP:
 	      {
-		auto &clone_info = STMT_VINFO_SIMD_CLONE_INFO (stmt_info);
-		clone_info.safe_grow_cleared (i * 3 + 1, true);
-		clone_info.safe_push (arginfo[i].op);
+		simd_clone_info.safe_grow_cleared (i * 3 + 1, true);
+		simd_clone_info.safe_push (arginfo[i].op);
 		tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
 			   ? size_type_node : TREE_TYPE (arginfo[i].op);
 		tree ls = build_int_cst (lst, arginfo[i].linear_step);
-		clone_info.safe_push (ls);
+		simd_clone_info.safe_push (ls);
 		tree sll = arginfo[i].simd_lane_linear
 			   ? boolean_true_node : boolean_false_node;
-		clone_info.safe_push (sll);
+		simd_clone_info.safe_push (sll);
 	      }
 	      break;
 	    case SIMD_CLONE_ARG_TYPE_MASK:
