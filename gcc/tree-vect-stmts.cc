@@ -10920,9 +10920,6 @@ vectorizable_load (vec_info *vinfo,
 					       gsi, stmt_info, bump);
 	    }
 
-	  if (mask && !costing_p)
-	    vec_mask = vec_masks[j];
-
 	  gimple *new_stmt = NULL;
 	  for (i = 0; i < vec_num; i++)
 	    {
@@ -10931,6 +10928,8 @@ vectorizable_load (vec_info *vinfo,
 	      tree bias = NULL_TREE;
 	      if (!costing_p)
 		{
+		  if (mask)
+		    vec_mask = vec_masks[vec_num * j + i];
 		  if (loop_masks)
 		    final_mask
 		      = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
@@ -11285,8 +11284,6 @@ vectorizable_load (vec_info *vinfo,
 					  at_loop,
 					  offset, &dummy, gsi, &ptr_incr,
 					  simd_lane_access_p, bump);
-	  if (mask)
-	    vec_mask = vec_masks[0];
 	}
       else if (!costing_p)
 	{
@@ -11297,8 +11294,6 @@ vectorizable_load (vec_info *vinfo,
 	  else
 	    dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
-	  if (mask)
-	    vec_mask = vec_masks[j];
 	}
 
       if (grouped_load || slp_perm)
@@ -11312,6 +11307,8 @@ vectorizable_load (vec_info *vinfo,
 	  tree bias = NULL_TREE;
 	  if (!costing_p)
 	    {
+	      if (mask)
+		vec_mask = vec_masks[vec_num * j + i];
 	      if (loop_masks)
 		final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 						 vec_num * ncopies, vectype,
