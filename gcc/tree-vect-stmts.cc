@@ -2486,46 +2486,47 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
   return true;
 }
 
-/* Return true if stored value RHS is suitable for vectorizing store
-   statement STMT_INFO.  When returning true, store the type of the
-   definition in *RHS_DT_OUT, the type of the vectorized store value in
+/* Return true if stored value is suitable for vectorizing store
+   statement STMT_INFO.  When returning true, store the scalar stored
+   in *RHS and *RHS_NODE, the type of the definition in *RHS_DT_OUT,
+   the type of the vectorized store value in
    *RHS_VECTYPE_OUT and the type of the store in *VLS_TYPE_OUT.  */
 
 static bool
 vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
-		      slp_tree slp_node, tree rhs,
+		      slp_tree slp_node, tree *rhs, slp_tree *rhs_node,
 		      vect_def_type *rhs_dt_out, tree *rhs_vectype_out,
 		      vec_load_store_type *vls_type_out)
 {
-  /* In the case this is a store from a constant make sure
-     native_encode_expr can handle it.  */
-  if (CONSTANT_CLASS_P (rhs) && native_encode_expr (rhs, NULL, 64) == 0)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "cannot encode constant as a byte sequence.\n");
-      return false;
-    }
-
   int op_no = 0;
   if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
     {
       if (gimple_call_internal_p (call)
 	  && internal_store_fn_p (gimple_call_internal_fn (call)))
 	op_no = internal_fn_stored_value_index (gimple_call_internal_fn (call));
-      if (slp_node)
-	op_no = vect_slp_child_index_for_operand (call, op_no);
     }
+  if (slp_node)
+    op_no = vect_slp_child_index_for_operand
+	      (stmt_info->stmt, op_no, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
 
   enum vect_def_type rhs_dt;
   tree rhs_vectype;
-  slp_tree slp_op;
   if (!vect_is_simple_use (vinfo, stmt_info, slp_node, op_no,
-			   &rhs, &slp_op, &rhs_dt, &rhs_vectype))
+			   rhs, rhs_node, &rhs_dt, &rhs_vectype))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "use not simple.\n");
+      return false;
+    }
+
+  /* In the case this is a store from a constant make sure
+     native_encode_expr can handle it.  */
+  if (CONSTANT_CLASS_P (*rhs) && native_encode_expr (*rhs, NULL, 64) == 0)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "cannot encode constant as a byte sequence.\n");
       return false;
     }
 
@@ -4052,7 +4053,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       int op_no = i + masked_call_offset;
       if (slp_node)
-	op_no = vect_slp_child_index_for_operand (stmt, op_no);
+	op_no = vect_slp_child_index_for_operand (stmt, op_no, false);
       if (!vect_is_simple_use (vinfo, stmt_info, slp_node,
 			       op_no, &op, &slp_op[i],
 			       &thisarginfo.dt, &thisarginfo.vectype)
@@ -8173,7 +8174,6 @@ vectorizable_store (vec_info *vinfo,
 		    stmt_vector_for_cost *cost_vec)
 {
   tree data_ref;
-  tree op;
   tree vec_oprnd = NULL_TREE;
   tree elem_type;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -8236,14 +8236,13 @@ vectorizable_store (vec_info *vinfo,
 
       int mask_index = internal_fn_mask_index (ifn);
       if (mask_index >= 0 && slp_node)
-	mask_index = vect_slp_child_index_for_operand (call, mask_index);
+	mask_index = vect_slp_child_index_for_operand
+		    (call, mask_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
       if (mask_index >= 0
 	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
 				      &mask, NULL, &mask_dt, &mask_vectype))
 	return false;
     }
-
-  op = vect_get_store_rhs (stmt_info);
 
   /* Cannot have hybrid store SLP -- that would mean storing to the
      same location twice.  */
@@ -8279,8 +8278,10 @@ vectorizable_store (vec_info *vinfo,
       return false;
     }
 
+  tree op;
+  slp_tree op_node;
   if (!vect_check_store_rhs (vinfo, stmt_info, slp_node,
-			     op, &rhs_dt, &rhs_vectype, &vls_type))
+			     &op, &op_node, &rhs_dt, &rhs_vectype, &vls_type))
     return false;
 
   elem_type = TREE_TYPE (vectype);
@@ -9855,7 +9856,8 @@ vectorizable_load (vec_info *vinfo,
 
       mask_index = internal_fn_mask_index (ifn);
       if (mask_index >= 0 && slp_node)
-	mask_index = vect_slp_child_index_for_operand (call, mask_index);
+	mask_index = vect_slp_child_index_for_operand
+		    (call, mask_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
       if (mask_index >= 0
 	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
 				      &mask, &slp_op, &mask_dt, &mask_vectype))

@@ -589,9 +589,10 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 /* Return the SLP node child index for operand OP of STMT.  */
 
 int
-vect_slp_child_index_for_operand (const gimple *stmt, int op)
+vect_slp_child_index_for_operand (const gimple *stmt, int op,
+				  bool gather_scatter_p)
 {
-  const int *opmap = vect_get_operand_map (stmt);
+  const int *opmap = vect_get_operand_map (stmt, gather_scatter_p);
   if (!opmap)
     return op;
   for (int i = 1; i < 1 + opmap[0]; ++i)
