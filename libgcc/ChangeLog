@@ -1,3 +1,10 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* offloadstuff.c (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME): New.
+	(__offload_ind_func_table): New.
+	(__offload_ind_funcs_end): New.
+	(__OFFLOAD_TABLE__): Add entries for indirect functions.
+
 2023-11-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gcn/gthr-gcn.h (__gthread_getspecific): 's%NULL%0'.

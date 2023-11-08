@@ -1,3 +1,21 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* cp-tree.h (cp_omp_declare_target_attr): Add indirect field.
+	* decl2.cc (cplus_decl_attributes): Add attribute for indirect
+	functions.
+	* parser.cc (cp_parser_omp_clause_name): Handle indirect clause.
+	(cp_parser_omp_clause_indirect): New.
+	(cp_parser_omp_all_clauses): Handle indirect clause.
+	(handle_omp_declare_target_clause): Add extra parameter.  Add
+	indirect attribute for indirect functions.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(cp_parser_omp_declare_target): Handle indirect clause.  Emit error
+	message if device_type or indirect clauses used alone.  Emit error
+	if indirect clause used with device_type that is not 'any'.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(cp_parser_omp_begin): Handle indirect clause.
+	* semantics.cc (finish_omp_clauses): Handle indirect clause.
+
 2023-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.h (struct cp_parser): Adjust comment on omp_attrs_forbidden_p

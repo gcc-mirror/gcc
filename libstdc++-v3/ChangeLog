@@ -1,3 +1,17 @@
+2023-11-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Hashtable_alloc<>::_M_allocate_node): Add missing call to node destructor
+	on construct exception.
+
+2023-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/112351
+	* src/c++98/locale.cc (locale::facet::_S_initialize_once):
+	Check whether _S_c_locale is already initialized.
+	(locale::facet::_S_get_c_locale): Always perform non-threadsafe
+	init when threadsafe init failed.
+
 2023-11-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/111315

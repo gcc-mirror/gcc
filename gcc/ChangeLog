@@ -1,3 +1,117 @@
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Remove the size check of lfloor.
+	* config/riscv/riscv-v.cc (expand_vec_lfloor): Leverage
+	emit_vec_rounding_to_integer for floor.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/112361
+	PR target/112359
+	PR middle-end/112406
+	* tree-if-conv.cc (convert_scalar_cond_reduction): Remember if
+	loop was versioned and only then create COND_OPs.
+	(predicate_scalar_phi): Do not create COND_OP when not
+	vectorizing.
+	* tree-vect-loop.cc (vect_expand_fold_left): Re-create
+	VEC_COND_EXPR.
+	(vectorize_fold_left_reduction): Pass mask to
+	vect_expand_fold_left.
+
+2023-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md ("flags_reg_operand"):
+	Make predicate special to avoid automatic mode checks.
+
+2023-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	* configure: Regenerate.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lto-cgraph.cc (enum LTO_symtab_tags): Add tag for indirect
+	functions.
+	(output_offload_tables): Write indirect functions.
+	(input_offload_tables): read indirect functions.
+	* lto-section-names.h (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME): New.
+	* omp-builtins.def (BUILT_IN_GOMP_TARGET_MAP_INDIRECT_PTR): New.
+	* omp-offload.cc (offload_ind_funcs): New.
+	(omp_discover_implicit_declare_target): Add functions marked with
+	'omp declare target indirect' to indirect functions list.
+	(omp_finish_file): Add indirect functions to section for offload
+	indirect functions.
+	(execute_omp_device_lower): Redirect indirect calls on target by
+	passing function pointer to BUILT_IN_GOMP_TARGET_MAP_INDIRECT_PTR.
+	(pass_omp_device_lower::gate): Run pass_omp_device_lower if
+	indirect functions are present on an accelerator device.
+	* omp-offload.h (offload_ind_funcs): New.
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE_INDIRECT.
+	* tree.cc (omp_clause_num_ops): Add entry for OMP_CLAUSE_INDIRECT.
+	(omp_clause_code_name): Likewise.
+	* tree.h (OMP_CLAUSE_INDIRECT_EXPR): New.
+	* config/gcn/mkoffload.cc (process_asm): Process offload_ind_funcs
+	section.  Count number of indirect functions.
+	(process_obj): Emit number of indirect functions.
+	* config/nvptx/mkoffload.cc (ind_func_ids, ind_funcs_tail): New.
+	(process): Emit offload_ind_func_table in PTX code.  Emit indirect
+	function names and count in image.
+	* config/nvptx/nvptx.cc (nvptx_record_offload_symbol): Mark
+	indirect functions in PTX code with IND_FUNC_MAP.
+
+2023-11-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-fopenmp, -fopenmp-simd): Adjust wording for
+	attribute syntax supported also in C.
+
+2023-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_print_operand): Add a %Z
+	modifier for SVE registers.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* builtins.def (DEF_C2X_BUILTIN): Rename to DEF_C23_BUILTIN and
+	use flag_isoc23 and function_c23_misc.
+	* config/rl78/rl78.cc (rl78_option_override): Compare
+	lang_hooks.name with "GNU C23" not "GNU C2X".
+	* coretypes.h (function_c2x_misc): Rename to function_c23_misc.
+	* doc/cpp.texi (@code{__has_attribute}): Refer to C23 instead of
+	C2x.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* dwarf2out.cc (highest_c_language, gen_compile_unit_die): Compare
+	against and return "GNU C23" language string instead of "GNU C2X".
+	* ginclude/float.h: Refer to C23 instead of C2X in comments.
+	* ginclude/stdint-gcc.h: Likewise.
+	* glimits.h: Likewise.
+	* tree.h: Likewise.
+
+2023-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (opt_mstrict_align): New target.
+
+2023-11-07  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_len_<optab><v_double_trunc><mode>):
+	New combine pattern.
+	(*cond_len_<optab><v_quad_trunc><mode>): Ditto.
+	(*cond_len_<optab><v_oct_trunc><mode>): Ditto.
+	(*cond_len_extend<v_double_trunc><mode>): Ditto.
+	(*cond_len_widen_reduc_plus_scal_<mode>): Ditto.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112399
+	* config/riscv/riscv-avlprop.cc
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Enhance AVL propagation.
+	* config/riscv/t-riscv: Add new include.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Remove the size check of lceil.l
+	* config/riscv/riscv-v.cc (expand_vec_lceil):  Leverage
+	emit_vec_rounding_to_integer for ceil.
+
 2023-11-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_asm_trampoline_template): Fix typo.

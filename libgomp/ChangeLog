@@ -1,3 +1,49 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/linux/target-indirect.c: Move to...
+	* target-indirect.c: ...here.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add target-indirect.c.
+	* Makefile.in: Regenerate.
+	* libgomp-plugin.h (GOMP_INDIRECT_ADDR_MAP): New define.
+	(GOMP_OFFLOAD_load_image): Add extra argument.
+	* libgomp.h (struct indirect_splay_tree_key_s): New.
+	(indirect_splay_tree_node, indirect_splay_tree,
+	indirect_splay_tree_key): New.
+	(indirect_splay_compare): New.
+	* libgomp.map (GOMP_5.1.1): Add GOMP_target_map_indirect_ptr.
+	* libgomp.texi (OpenMP 5.1): Update documentation on indirect
+	calls in target region and on indirect clause.
+	(Other new OpenMP 5.2 features): Add entry for virtual function calls.
+	* libgomp_g.h (GOMP_target_map_indirect_ptr): Add prototype.
+	* oacc-host.c (host_load_image): Add extra argument.
+	* target.c (gomp_load_image_to_device): If the GOMP_VERSION is high
+	enough, read host indirect functions table and pass to
+	load_image_func.
+	* config/accel/target-indirect.c: New.
+	* config/linux/target-indirect.c: New.
+	* config/gcn/team.c (build_indirect_map): Add prototype.
+	(gomp_gcn_enter_kernel): Initialize support for indirect
+	function calls on GCN target.
+	* config/nvptx/team.c (build_indirect_map): Add prototype.
+	(gomp_nvptx_main): Initialize support for indirect function
+	calls on NVPTX target.
+	* plugin/plugin-gcn.c (struct gcn_image_desc): Add field for
+	indirect functions count.
+	(GOMP_OFFLOAD_load_image): Add extra argument.  If the GOMP_VERSION
+	is high enough, build address translation table and copy it to target
+	memory.
+	* plugin/plugin-nvptx.c (nvptx_tdata): Add field for indirect
+	functions count.
+	(GOMP_OFFLOAD_load_image): Add extra argument.  If the GOMP_VERSION
+	is high enough, Build address translation table and copy it to target
+	memory.
+	* testsuite/libgomp.c-c++-common/declare-target-indirect-1.c: New.
+	* testsuite/libgomp.c-c++-common/declare-target-indirect-2.c: New.
+	* testsuite/libgomp.c++/declare-target-indirect-1.C: New.
+
 2023-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (Enabling OpenMP): Adjust wording for attribute syntax

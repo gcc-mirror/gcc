@@ -1,3 +1,633 @@
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-ifloor-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloor-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloorf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lfloorf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloorf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llfloorf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-ifloor-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloor-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lfloorf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llfloorf-0.c: New test.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-c++-common/alias-1.c: Use "c23" or "gnu23" option names in
+	place of "c2x" or "gnu2x" names, and refer to C23 in comments in
+	place of C2X or C2x.
+	* gcc.dg/Wformat-overflow1.c: Likewise.
+	* gcc.dg/asm-scope-1.c: Likewise.
+	* gcc.dg/atomic/c2x-stdatomic-lockfree-char8_t.c: Likewise.
+	* gcc.dg/atomic/c2x-stdatomic-var-init-1.c: Likewise.
+	* gcc.dg/atomic/gnu2x-stdatomic-lockfree-char8_t.c: Likewise.
+	* gcc.dg/atomic/stdatomic-bitint-1.c: Likewise.
+	* gcc.dg/atomic/stdatomic-bitint-2.c: Likewise.
+	* gcc.dg/attr-assume-1.c: Likewise.
+	* gcc.dg/attr-assume-2.c: Likewise.
+	* gcc.dg/attr-assume-3.c: Likewise.
+	* gcc.dg/attr-assume-4.c: Likewise.
+	* gcc.dg/bitint-1.c: Likewise.
+	* gcc.dg/bitint-10.c: Likewise.
+	* gcc.dg/bitint-11.c: Likewise.
+	* gcc.dg/bitint-12.c: Likewise.
+	* gcc.dg/bitint-13.c: Likewise.
+	* gcc.dg/bitint-14.c: Likewise.
+	* gcc.dg/bitint-15.c: Likewise.
+	* gcc.dg/bitint-16.c: Likewise.
+	* gcc.dg/bitint-17.c: Likewise.
+	* gcc.dg/bitint-18.c: Likewise.
+	* gcc.dg/bitint-19.c: Likewise.
+	* gcc.dg/bitint-2.c: Likewise.
+	* gcc.dg/bitint-20.c: Likewise.
+	* gcc.dg/bitint-21.c: Likewise.
+	* gcc.dg/bitint-22.c: Likewise.
+	* gcc.dg/bitint-23.c: Likewise.
+	* gcc.dg/bitint-25.c: Likewise.
+	* gcc.dg/bitint-28.c: Likewise.
+	* gcc.dg/bitint-29.c: Likewise.
+	* gcc.dg/bitint-3.c: Likewise.
+	* gcc.dg/bitint-30.c: Likewise.
+	* gcc.dg/bitint-31.c: Likewise.
+	* gcc.dg/bitint-32.c: Likewise.
+	* gcc.dg/bitint-34.c: Likewise.
+	* gcc.dg/bitint-35.c: Likewise.
+	* gcc.dg/bitint-36.c: Likewise.
+	* gcc.dg/bitint-38.c: Likewise.
+	* gcc.dg/bitint-39.c: Likewise.
+	* gcc.dg/bitint-4.c: Likewise.
+	* gcc.dg/bitint-5.c: Likewise.
+	* gcc.dg/bitint-6.c: Likewise.
+	* gcc.dg/bitint-7.c: Likewise.
+	* gcc.dg/bitint-8.c: Likewise.
+	* gcc.dg/bitint-9.c: Likewise.
+	* gcc.dg/c11-attr-syntax-3.c: Likewise.
+	* gcc.dg/c11-builtins-1.c: Likewise.
+	* gcc.dg/c11-complit-1.c: Likewise.
+	* gcc.dg/c11-complit-2.c: Likewise.
+	* gcc.dg/c11-complit-3.c: Likewise.
+	* gcc.dg/c11-digit-separators-1.c: Likewise.
+	* gcc.dg/c11-empty-init-3.c: Likewise.
+	* gcc.dg/c11-enum-1.c: Likewise.
+	* gcc.dg/c11-enum-2.c: Likewise.
+	* gcc.dg/c11-enum-3.c: Likewise.
+	* gcc.dg/c11-enum-4.c: Likewise.
+	* gcc.dg/c11-enum-5.c: Likewise.
+	* gcc.dg/c11-enum-6.c: Likewise.
+	* gcc.dg/c11-floatn-5.c: Likewise.
+	* gcc.dg/c11-floatn-6.c: Likewise.
+	* gcc.dg/c11-floatn-7.c: Likewise.
+	* gcc.dg/c11-floatn-8.c: Likewise.
+	* gcc.dg/c11-fordecl-3.c: Likewise.
+	* gcc.dg/c11-fordecl-4.c: Likewise.
+	* gcc.dg/c11-keywords-1.c: Likewise.
+	* gcc.dg/c11-old-style-definition-1.c: Likewise.
+	* gcc.dg/c11-old-style-definition-2.c: Likewise.
+	* gcc.dg/c11-parm-omit-3.c: Likewise.
+	* gcc.dg/c11-qual-1.c: Likewise.
+	* gcc.dg/c11-static-assert-9.c: Likewise.
+	* gcc.dg/c11-stdarg-3.c: Likewise.
+	* gcc.dg/c11-unproto-1.c: Likewise.
+	* gcc.dg/c11-unproto-2.c: Likewise.
+	* gcc.dg/c11-utf8char-1.c: Likewise.
+	* gcc.dg/c17-nullptr-2.c: Likewise.
+	* gcc.dg/c2x-align-1.c: Likewise.
+	* gcc.dg/c2x-align-6.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-1.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-2.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-3.c: Likewise.
+	* gcc.dg/c2x-attr-deprecated-4.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-1.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-2.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-3.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-4.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-5.c: Likewise.
+	* gcc.dg/c2x-attr-fallthrough-6.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-1.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-2.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-3.c: Likewise.
+	* gcc.dg/c2x-attr-maybe_unused-4.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-1.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-2.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-3.c: Likewise.
+	* gcc.dg/c2x-attr-nodiscard-4.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-1.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-2.c: Likewise.
+	* gcc.dg/c2x-attr-noreturn-3.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-1.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-2.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-3.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-4.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-5.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-7.c: Likewise.
+	* gcc.dg/c2x-auto-1.c: Likewise.
+	* gcc.dg/c2x-auto-2.c: Likewise.
+	* gcc.dg/c2x-auto-3.c: Likewise.
+	* gcc.dg/c2x-auto-4.c: Likewise.
+	* gcc.dg/c2x-binary-constants-1.c: Likewise.
+	* gcc.dg/c2x-binary-constants-2.c: Likewise.
+	* gcc.dg/c2x-binary-constants-3.c: Likewise.
+	* gcc.dg/c2x-bool-1.c: Likewise.
+	* gcc.dg/c2x-bool-2.c: Likewise.
+	* gcc.dg/c2x-bool-limits-1.c: Likewise.
+	* gcc.dg/c2x-builtins-1.c: Likewise.
+	* gcc.dg/c2x-complit-1.c: Likewise.
+	* gcc.dg/c2x-complit-2.c: Likewise.
+	* gcc.dg/c2x-complit-3.c: Likewise.
+	* gcc.dg/c2x-complit-4.c: Likewise.
+	* gcc.dg/c2x-complit-5.c: Likewise.
+	* gcc.dg/c2x-complit-6.c: Likewise.
+	* gcc.dg/c2x-complit-7.c: Likewise.
+	* gcc.dg/c2x-complit-8.c: Likewise.
+	* gcc.dg/c2x-concat-1.c: Likewise.
+	* gcc.dg/c2x-constexpr-1.c: Likewise.
+	* gcc.dg/c2x-constexpr-2a.c: Likewise.
+	* gcc.dg/c2x-constexpr-2b.c: Likewise.
+	* gcc.dg/c2x-constexpr-3.c: Likewise.
+	* gcc.dg/c2x-constexpr-4.c: Likewise.
+	* gcc.dg/c2x-constexpr-5.c: Likewise.
+	* gcc.dg/c2x-constexpr-6.c: Likewise.
+	* gcc.dg/c2x-constexpr-7.c: Likewise.
+	* gcc.dg/c2x-constexpr-8.c: Likewise.
+	* gcc.dg/c2x-constexpr-9.c: Likewise.
+	* gcc.dg/c2x-digit-separators-1.c: Likewise.
+	* gcc.dg/c2x-digit-separators-2.c: Likewise.
+	* gcc.dg/c2x-digit-separators-3.c: Likewise.
+	* gcc.dg/c2x-empty-init-1.c: Likewise.
+	* gcc.dg/c2x-empty-init-2.c: Likewise.
+	* gcc.dg/c2x-empty-init-3.c: Likewise.
+	* gcc.dg/c2x-enum-1.c: Likewise.
+	* gcc.dg/c2x-enum-2.c: Likewise.
+	* gcc.dg/c2x-enum-3.c: Likewise.
+	* gcc.dg/c2x-enum-4.c: Likewise.
+	* gcc.dg/c2x-enum-5.c: Likewise.
+	* gcc.dg/c2x-enum-6.c: Likewise.
+	* gcc.dg/c2x-enum-7.c: Likewise.
+	* gcc.dg/c2x-enum-8.c: Likewise.
+	* gcc.dg/c2x-float-1.c: Likewise.
+	* gcc.dg/c2x-float-10.c: Likewise.
+	* gcc.dg/c2x-float-11.c: Likewise.
+	* gcc.dg/c2x-float-12.c: Likewise.
+	* gcc.dg/c2x-float-13.c: Likewise.
+	* gcc.dg/c2x-float-2.c: Likewise.
+	* gcc.dg/c2x-float-3.c: Likewise.
+	* gcc.dg/c2x-float-4.c: Likewise.
+	* gcc.dg/c2x-float-5.c: Likewise.
+	* gcc.dg/c2x-float-6.c: Likewise.
+	* gcc.dg/c2x-float-7a.c: Likewise.
+	* gcc.dg/c2x-float-7b.c: Likewise.
+	* gcc.dg/c2x-float-7c.c: Likewise.
+	* gcc.dg/c2x-float-8.c: Likewise.
+	* gcc.dg/c2x-float-9.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-1.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-2.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-3.c: Likewise.
+	* gcc.dg/c2x-float-no-dfp-4.c: Likewise.
+	* gcc.dg/c2x-floatn-1.c: Likewise.
+	* gcc.dg/c2x-floatn-2.c: Likewise.
+	* gcc.dg/c2x-floatn-3.c: Likewise.
+	* gcc.dg/c2x-floatn-4.c: Likewise.
+	* gcc.dg/c2x-floatn-5.c: Likewise.
+	* gcc.dg/c2x-floatn-6.c: Likewise.
+	* gcc.dg/c2x-floatn-7.c: Likewise.
+	* gcc.dg/c2x-floatn-8.c: Likewise.
+	* gcc.dg/c2x-fordecl-1.c: Likewise.
+	* gcc.dg/c2x-fordecl-2.c: Likewise.
+	* gcc.dg/c2x-fordecl-3.c: Likewise.
+	* gcc.dg/c2x-fordecl-4.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-1.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-2.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-3.c: Likewise.
+	* gcc.dg/c2x-has-c-attribute-4.c: Likewise.
+	* gcc.dg/c2x-labels-1.c: Likewise.
+	* gcc.dg/c2x-labels-2.c: Likewise.
+	* gcc.dg/c2x-labels-3.c: Likewise.
+	* gcc.dg/c2x-limits-1.c: Likewise.
+	* gcc.dg/c2x-no-dfp-1.c: Likewise.
+	* gcc.dg/c2x-nullptr-1.c: Likewise.
+	* gcc.dg/c2x-nullptr-2.c: Likewise.
+	* gcc.dg/c2x-nullptr-3.c: Likewise.
+	* gcc.dg/c2x-nullptr-4.c: Likewise.
+	* gcc.dg/c2x-nullptr-5.c: Likewise.
+	* gcc.dg/c2x-nullptr-6.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-1.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-2.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-3.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-4.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-5.c: Likewise.
+	* gcc.dg/c2x-old-style-definition-6.c: Likewise.
+	* gcc.dg/c2x-parm-omit-1.c: Likewise.
+	* gcc.dg/c2x-parm-omit-2.c: Likewise.
+	* gcc.dg/c2x-parm-omit-3.c: Likewise.
+	* gcc.dg/c2x-parm-omit-4.c: Likewise.
+	* gcc.dg/c2x-qual-1.c: Likewise.
+	* gcc.dg/c2x-qual-2.c: Likewise.
+	* gcc.dg/c2x-qual-3.c: Likewise.
+	* gcc.dg/c2x-qual-4.c: Likewise.
+	* gcc.dg/c2x-qual-5.c: Likewise.
+	* gcc.dg/c2x-qual-6.c: Likewise.
+	* gcc.dg/c2x-qual-7.c: Likewise.
+	* gcc.dg/c2x-static-assert-1.c: Likewise.
+	* gcc.dg/c2x-static-assert-2.c: Likewise.
+	* gcc.dg/c2x-static-assert-3.c: Likewise.
+	* gcc.dg/c2x-static-assert-4.c: Likewise.
+	* gcc.dg/c2x-stdarg-1.c: Likewise.
+	* gcc.dg/c2x-stdarg-2.c: Likewise.
+	* gcc.dg/c2x-stdarg-3.c: Likewise.
+	* gcc.dg/c2x-stdarg-4.c: Likewise.
+	* gcc.dg/c2x-stdarg-5.c: Likewise.
+	* gcc.dg/c2x-stdatomic-1.c: Likewise.
+	* gcc.dg/c2x-stddef-1.c: Likewise.
+	* gcc.dg/c2x-stdint-1.c: Likewise.
+	* gcc.dg/c2x-thread-local-1.c: Likewise.
+	* gcc.dg/c2x-thread-local-2.c: Likewise.
+	* gcc.dg/c2x-typeof-1.c: Likewise.
+	* gcc.dg/c2x-typeof-2.c: Likewise.
+	* gcc.dg/c2x-typeof-3.c: Likewise.
+	* gcc.dg/c2x-unproto-1.c: Likewise.
+	* gcc.dg/c2x-unproto-2.c: Likewise.
+	* gcc.dg/c2x-unproto-3.c: Likewise.
+	* gcc.dg/c2x-unproto-4.c: Likewise.
+	* gcc.dg/c2x-unreachable-1.c: Likewise.
+	* gcc.dg/c2x-utf8char-1.c: Likewise.
+	* gcc.dg/c2x-utf8char-2.c: Likewise.
+	* gcc.dg/c2x-utf8char-3.c: Likewise.
+	* gcc.dg/c2x-utf8str-type.c: Likewise.
+	* gcc.dg/c2x-utf8str.c: Likewise.
+	* gcc.dg/c90-auto-1.c: Likewise.
+	* gcc.dg/c90-complit-2.c: Likewise.
+	* gcc.dg/cpp/c11-warning-3.c: Likewise.
+	* gcc.dg/cpp/c2x-elifdef-1.c: Likewise.
+	* gcc.dg/cpp/c2x-elifdef-2.c: Likewise.
+	* gcc.dg/cpp/c2x-scope-1.c: Likewise.
+	* gcc.dg/cpp/c2x-scope-2.c: Likewise.
+	* gcc.dg/cpp/c2x-trigraphs-1.c: Likewise.
+	* gcc.dg/cpp/c2x-trigraphs-2.c: Likewise.
+	* gcc.dg/cpp/c2x-ucn-1.c: Likewise.
+	* gcc.dg/cpp/c2x-ucnid-1-utf8.c: Likewise.
+	* gcc.dg/cpp/c2x-ucnid-1.c: Likewise.
+	* gcc.dg/cpp/c2x-va-opt-1.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-1.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-3.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-1.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-2.c: Likewise.
+	* gcc.dg/cr-decimal-dig-2.c: Likewise.
+	* gcc.dg/cr-decimal-dig-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-4.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-2.c: Likewise.
+	* gcc.dg/dfp/bitint-1.c: Likewise.
+	* gcc.dg/dfp/bitint-2.c: Likewise.
+	* gcc.dg/dfp/bitint-3.c: Likewise.
+	* gcc.dg/dfp/bitint-4.c: Likewise.
+	* gcc.dg/dfp/bitint-5.c: Likewise.
+	* gcc.dg/dfp/bitint-6.c: Likewise.
+	* gcc.dg/dfp/bitint-7.c: Likewise.
+	* gcc.dg/dfp/bitint-8.c: Likewise.
+	* gcc.dg/dfp/c2x-builtins-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-2.c: Likewise.
+	* gcc.dg/dfp/c2x-constexpr-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-constexpr-dfp-2.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-1.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-2.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-3.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-4.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-5.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-6.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-7.c: Likewise.
+	* gcc.dg/dfp/c2x-float-dfp-8.c: Likewise.
+	* gcc.dg/dfp/c2x-keywords-1.c: Likewise.
+	* gcc.dg/dfp/c2x-keywords-2.c: Likewise.
+	* gcc.dg/dfp/tr24732-float-dfp-1.c: Likewise.
+	* gcc.dg/dfp/ts18661-2-float-dfp-1.c: Likewise.
+	* gcc.dg/fixed-point/bitint-1.c: Likewise.
+	* gcc.dg/format/c11-printf-1.c: Likewise.
+	* gcc.dg/format/c11-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-dfp-printf-1.c: Likewise.
+	* gcc.dg/format/c2x-dfp-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-printf-1.c: Likewise.
+	* gcc.dg/format/c2x-scanf-1.c: Likewise.
+	* gcc.dg/format/c2x-strftime-1.c: Likewise.
+	* gcc.dg/format/ext-10.c: Likewise.
+	* gcc.dg/format/ext-9.c: Likewise.
+	* gcc.dg/gnu11-typeof-2.c: Likewise.
+	* gcc.dg/gnu2x-attr-syntax-1.c: Likewise.
+	* gcc.dg/gnu2x-attr-syntax-2.c: Likewise.
+	* gcc.dg/gnu2x-attrs-1.c: Likewise.
+	* gcc.dg/gnu2x-attrs-2.c: Likewise.
+	* gcc.dg/gnu2x-auto-1.c: Likewise.
+	* gcc.dg/gnu2x-builtins-no-dfp-1.c: Likewise.
+	* gcc.dg/gnu2x-complit-1.c: Likewise.
+	* gcc.dg/gnu2x-complit-2.c: Likewise.
+	* gcc.dg/gnu2x-constexpr-1.c: Likewise.
+	* gcc.dg/gnu2x-empty-init-1.c: Likewise.
+	* gcc.dg/gnu2x-empty-init-2.c: Likewise.
+	* gcc.dg/gnu2x-enum-1.c: Likewise.
+	* gcc.dg/gnu2x-static-assert-1.c: Likewise.
+	* gcc.dg/gnu2x-stdarg-1.c: Likewise.
+	* gcc.dg/gnu2x-typeof-1.c: Likewise.
+	* gcc.dg/gnu2x-utf8char-1.c: Likewise.
+	* gcc.dg/gnu2x-utf8str-type.c: Likewise.
+	* gcc.dg/gnu2x-utf8str.c: Likewise.
+	* gcc.dg/gomp/attrs-1.c: Likewise.
+	* gcc.dg/gomp/attrs-10.c: Likewise.
+	* gcc.dg/gomp/attrs-11.c: Likewise.
+	* gcc.dg/gomp/attrs-12.c: Likewise.
+	* gcc.dg/gomp/attrs-13.c: Likewise.
+	* gcc.dg/gomp/attrs-14.c: Likewise.
+	* gcc.dg/gomp/attrs-15.c: Likewise.
+	* gcc.dg/gomp/attrs-16.c: Likewise.
+	* gcc.dg/gomp/attrs-17.c: Likewise.
+	* gcc.dg/gomp/attrs-18.c: Likewise.
+	* gcc.dg/gomp/attrs-19.c: Likewise.
+	* gcc.dg/gomp/attrs-2.c: Likewise.
+	* gcc.dg/gomp/attrs-20.c: Likewise.
+	* gcc.dg/gomp/attrs-21.c: Likewise.
+	* gcc.dg/gomp/attrs-3.c: Likewise.
+	* gcc.dg/gomp/attrs-4.c: Likewise.
+	* gcc.dg/gomp/attrs-5.c: Likewise.
+	* gcc.dg/gomp/attrs-6.c: Likewise.
+	* gcc.dg/gomp/attrs-7.c: Likewise.
+	* gcc.dg/gomp/attrs-8.c: Likewise.
+	* gcc.dg/gomp/attrs-9.c: Likewise.
+	* gcc.dg/limits-width-2.c: Likewise.
+	* gcc.dg/qual-return-10.c: Likewise.
+	* gcc.dg/qual-return-9.c: Likewise.
+	* gcc.dg/sso-19.c: Likewise.
+	* gcc.dg/stdckdint-1.c: Likewise.
+	* gcc.dg/stdckdint-2.c: Likewise.
+	* gcc.dg/stdint-width-2.c: Likewise.
+	* gcc.dg/tm/attrs-1.c: Likewise.
+	* gcc.dg/torture/bitint-1.c: Likewise.
+	* gcc.dg/torture/bitint-10.c: Likewise.
+	* gcc.dg/torture/bitint-11.c: Likewise.
+	* gcc.dg/torture/bitint-12.c: Likewise.
+	* gcc.dg/torture/bitint-13.c: Likewise.
+	* gcc.dg/torture/bitint-14.c: Likewise.
+	* gcc.dg/torture/bitint-15.c: Likewise.
+	* gcc.dg/torture/bitint-16.c: Likewise.
+	* gcc.dg/torture/bitint-17.c: Likewise.
+	* gcc.dg/torture/bitint-18.c: Likewise.
+	* gcc.dg/torture/bitint-19.c: Likewise.
+	* gcc.dg/torture/bitint-2.c: Likewise.
+	* gcc.dg/torture/bitint-20.c: Likewise.
+	* gcc.dg/torture/bitint-21.c: Likewise.
+	* gcc.dg/torture/bitint-22.c: Likewise.
+	* gcc.dg/torture/bitint-23.c: Likewise.
+	* gcc.dg/torture/bitint-24.c: Likewise.
+	* gcc.dg/torture/bitint-25.c: Likewise.
+	* gcc.dg/torture/bitint-26.c: Likewise.
+	* gcc.dg/torture/bitint-27.c: Likewise.
+	* gcc.dg/torture/bitint-28.c: Likewise.
+	* gcc.dg/torture/bitint-29.c: Likewise.
+	* gcc.dg/torture/bitint-3.c: Likewise.
+	* gcc.dg/torture/bitint-30.c: Likewise.
+	* gcc.dg/torture/bitint-31.c: Likewise.
+	* gcc.dg/torture/bitint-32.c: Likewise.
+	* gcc.dg/torture/bitint-33.c: Likewise.
+	* gcc.dg/torture/bitint-34.c: Likewise.
+	* gcc.dg/torture/bitint-35.c: Likewise.
+	* gcc.dg/torture/bitint-36.c: Likewise.
+	* gcc.dg/torture/bitint-37.c: Likewise.
+	* gcc.dg/torture/bitint-38.c: Likewise.
+	* gcc.dg/torture/bitint-39.c: Likewise.
+	* gcc.dg/torture/bitint-4.c: Likewise.
+	* gcc.dg/torture/bitint-40.c: Likewise.
+	* gcc.dg/torture/bitint-41.c: Likewise.
+	* gcc.dg/torture/bitint-42.c: Likewise.
+	* gcc.dg/torture/bitint-5.c: Likewise.
+	* gcc.dg/torture/bitint-6.c: Likewise.
+	* gcc.dg/torture/bitint-7.c: Likewise.
+	* gcc.dg/torture/bitint-8.c: Likewise.
+	* gcc.dg/torture/bitint-9.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: Likewise.
+	* gcc.dg/torture/c2x-stdarg-split-1a.c: Likewise.
+	* gcc.dg/torture/c2x-stdarg-split-1b.c: Likewise.
+	* gcc.dg/torture/float128-nan-floath.c: Likewise.
+	* gcc.dg/torture/float128x-nan-floath.c: Likewise.
+	* gcc.dg/torture/float16-nan-floath.c: Likewise.
+	* gcc.dg/torture/float32-nan-floath.c: Likewise.
+	* gcc.dg/torture/float32x-nan-floath.c: Likewise.
+	* gcc.dg/torture/float64-nan-floath.c: Likewise.
+	* gcc.dg/torture/float64x-nan-floath.c: Likewise.
+	* gcc.target/i386/excess-precision-11.c: Likewise.
+	* gcc.target/i386/excess-precision-12.c: Likewise.
+	* lib/target-supports.exp: Likewise.
+	* objc.dg/attributes/gnu2x-attr-syntax-1.m: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Recover scan check.
+	* lib/target-supports.exp: Remove riscv.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/pr112359.c: New test.
+
+2023-11-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Adjust dg-error.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/declare-target-7.c: Update expected error message.
+	* c-c++-common/gomp/declare-target-indirect-1.c: New.
+	* c-c++-common/gomp/declare-target-indirect-2.c: New.
+	* g++.dg/gomp/attrs-21.C (v12): Update expected error message.
+	* g++.dg/gomp/declare-target-indirect-1.C: New.
+	* gcc.dg/gomp/attrs-21.c (v12): Update expected error message.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/binary-constants-2.c: Refer to C23 instead of C2X.
+	* gcc.dg/binary-constants-3.c: Likewise.
+	* gcc.dg/bitint-23.c: Likewise.
+	* gcc.dg/bitint-26.c: Likewise.
+	* gcc.dg/bitint-27.c: Likewise.
+	* gcc.dg/c11-attr-syntax-1.c: Likewise.
+	* gcc.dg/c11-attr-syntax-2.c: Likewise.
+	* gcc.dg/c11-floatn-1.c: Likewise.
+	* gcc.dg/c11-floatn-2.c: Likewise.
+	* gcc.dg/c11-floatn-3.c: Likewise.
+	* gcc.dg/c11-floatn-4.c: Likewise.
+	* gcc.dg/c11-floatn-5.c: Likewise.
+	* gcc.dg/c11-floatn-6.c: Likewise.
+	* gcc.dg/c11-floatn-7.c: Likewise.
+	* gcc.dg/c11-floatn-8.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-4.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-6.c: Likewise.
+	* gcc.dg/c2x-attr-syntax-7.c: Likewise.
+	* gcc.dg/c2x-binary-constants-2.c: Likewise.
+	* gcc.dg/c2x-floatn-5.c: Likewise.
+	* gcc.dg/c2x-floatn-6.c: Likewise.
+	* gcc.dg/c2x-floatn-7.c: Likewise.
+	* gcc.dg/c2x-floatn-8.c: Likewise.
+	* gcc.dg/c2x-nullptr-4.c: Likewise.
+	* gcc.dg/c2x-qual-2.c: Likewise.
+	* gcc.dg/c2x-qual-3.c: Likewise.
+	* gcc.dg/c2x-qual-6.c: Likewise.
+	* gcc.dg/cpp/c11-warning-1.c: Likewise.
+	* gcc.dg/cpp/c11-warning-2.c: Likewise.
+	* gcc.dg/cpp/c11-warning-3.c: Likewise.
+	* gcc.dg/cpp/c2x-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-3.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-4.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-1.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-3.c: Likewise.
+	* gcc.dg/cpp/gnu2x-warning-2.c: Likewise.
+	* gcc.dg/dfp/c11-constants-1.c: Likewise.
+	* gcc.dg/dfp/c11-constants-2.c: Likewise.
+	* gcc.dg/dfp/c2x-constants-2.c: Likewise.
+	* gcc.dg/dfp/constants-pedantic.c: Likewise.
+	* gcc.dg/pr30260.c: Likewise.
+	* gcc.dg/system-binary-constants-1.c: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112420
+	* gcc.dg/vect/pr65518.c: Fix check for RVV.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-cond-reduc-4.c: Make check more accurate.
+
+2023-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Change test expectation.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Ditto.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Add RISC-V.
+
+2023-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_opt_mstrict_align): New.
+	* gcc.dg/strlenopt-80.c: Add -mno-strict-align if supported.
+	* gcc.target/powerpc/prefix-ds-dq.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-run-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-run-8.c: Likewise.
+
+2023-11-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmemidx-helpers.h:
+	Replace stdint.h with stdint-gcc.h.
+
+2023-11-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-index-update.c: Add ABI.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-index-xtheadbb.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-index.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb-update.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex-xtheadbb.c: Likewise.
+	* gcc.target/riscv/xtheadfmemidx-uindex.c: Likewise.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Add riscv.
+
+2023-11-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/112340
+	* gcc.target/powerpc/pr106550_1.c: Add has_arch_ppc64 target require.
+
+2023-11-07  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-1.c:
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_reduc-2.c:
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Fix dump check.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-reduc-sad.c: Fix check.
+	* gcc.dg/vect/vect-reduc-sad.c: Ditto.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-43.c: Fix XPASS for RVV.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112399
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-2.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr112399.c: New test.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-iceil-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceil-rv32-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceilf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lceilf-rv64-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceilf-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llceilf-run-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-iceil-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceil-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lceilf-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llceilf-0.c: New test.
+
+2023-11-07  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix FAIL.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix FAIL.
+
+2023-11-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/bb-slp-39.c: Add RISCV.
+
 2023-11-06  Florian Weimer  <fweimer@redhat.com>
 
 	* gcc.dg/cpp/wchar-1.c (main): Call __builtin_abort instead of

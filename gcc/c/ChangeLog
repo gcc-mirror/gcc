@@ -1,3 +1,37 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-decl.cc (c_decl_attributes): Add attribute for indirect
+	functions.
+	* c-lang.h (c_omp_declare_target_attr): Add indirect field.
+	* c-parser.cc (c_parser_omp_clause_name): Handle indirect clause.
+	(c_parser_omp_clause_indirect): New.
+	(c_parser_omp_all_clauses): Handle indirect clause.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(c_parser_omp_declare_target): Handle indirect clause.  Emit error
+	message if device_type or indirect clauses used alone.  Emit error
+	if indirect clause used with device_type that is not 'any'.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Add indirect clause to mask.
+	(c_parser_omp_begin): Handle indirect clause.
+	* c-typeck.cc (c_finish_omp_clauses): Handle indirect clause.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc: Use flag_isoc23 instead of flag_isoc2x and c23_auto_p
+	instead of c2x_auto_p.  Refer to C23 instead of C2X in diagnostics
+	and comments.
+	* c-errors.cc: Use flag_isoc23 instead of flag_isoc2x and
+	warn_c11_c23_compat instead of warn_c11_c2x_compat.  Refer to C23
+	instead of C2X in comments.
+	* c-parser.cc: Use flag_isoc23 instead of flag_isoc2x,
+	warn_c11_c23_compat instead of warn_c11_c2x_compat, c23_auto_p
+	instead of c2x_auto_p and D_C23 instead of D_C2X.  Refer to C23
+	instead of C2X in diagnostics and comments.
+	* c-tree.h: Refer to C23 instead of C2X in comments.
+	(struct c_declspecs): Rename c2x_auto_p to c23_auto_p.
+	* c-typeck.cc: Use flag_isoc23 instead of flag_isoc2x and
+	warn_c11_c23_compat instead of warn_c11_c2x_compat.  Refer to C23
+	instead of C2X in diagnostics and comments.
+
 2023-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/107954

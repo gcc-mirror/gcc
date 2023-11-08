@@ -1,3 +1,64 @@
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.h (T2X_UI): Rename to T23_UI.
+	(T2X_UL): Rename to T23_UL.
+	(T2X_ULL): Rename to T23_ULL.
+	(T2X_US): Rename to T23_US.
+	(T2X_UC): Rename to T23_UC.
+	(T2X_ST): Rename to T23_ST.
+	(T2X_UPD): Rename to T23_UPD.
+	(T2X_UIM): Rename to T23_UIM.
+	(T2X_D32): Rename to T23_D32.
+	(T2X_D64): Rename to T23_D64.
+	(T2X_D128): Rename to T23_D128.
+	(T2X_I8): Rename to T23_I8.
+	(T2X_I16): Rename to T23_I16.
+	(T2X_I32): Rename to T23_I32.
+	(T2X_I64): Rename to T23_I64.
+	(T2X_U8): Rename to T23_U8.
+	(T2X_U16): Rename to T23_U16.
+	(T2X_U32): Rename to T23_U32.
+	(T2X_U64): Rename to T23_U64.
+	(T2X_IF8): Rename to T23_IF8.
+	(T2X_IF16): Rename to T23_IF16.
+	(T2X_IF32): Rename to T23_IF32.
+	(T2X_IF64): Rename to T23_IF64.
+	(T2X_UF8): Rename to T23_UF8.
+	(T2X_UF16): Rename to T23_UF16.
+	(T2X_UF32): Rename to T23_UF32.
+	(T2X_UF64): Rename to T23_UF64.
+	* c-format.cc: Update all uses of T2X_* macros to use T23_*.
+
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-attribs.cc (c_common_attribute_table): Add attribute for
+	indirect functions.
+	* c-pragma.h (enum parma_omp_clause): Add entry for indirect clause.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (flag_isoc2x): Rename to flag_isoc23.
+	(c_common_reswords): Use D_C23 instead of D_C2X.
+	* c-common.h: Refer throughout to C23 instead of C2X in comments.
+	(D_C2X): Rename to D_C23.
+	(flag_isoc2x): Rename to flag_isoc23.
+	* c-cppbuiltin.cc (builtin_define_float_constants): Use
+	flag_isoc23 instead of flag_isoc2x.  Refer to C23 instead of C2x
+	in comments.
+	* c-format.cc: Use STD_C23 instead of STD_C2X and flag_isoc23
+	instead of flag_isoc2x.  Refer to C23 instead of C2X in comments.
+	* c-format.h: Use STD_C23 instead of STD_C2X.
+	* c-lex.cc: Use warn_c11_c23_compat instead of warn_c11_c2x_compat
+	and flag_isoc23 instead of flag_isoc2x.  Refer to C23 instead of
+	C2X in diagnostics.
+	* c-opts.cc: Use flag_isoc23 instead of flag_isoc2x.  Refer to C23
+	instead of C2X in comments.
+	(set_std_c2x): Rename to set_std_c23.
+	* c.opt (Wc11-c23-compat): Use CPP(cpp_warn_c11_c23_compat)
+	CppReason(CPP_W_C11_C23_COMPAT) Var(warn_c11_c23_compat) instead
+	of CPP(cpp_warn_c11_c2x_compat) CppReason(CPP_W_C11_C2X_COMPAT)
+	Var(warn_c11_c2x_compat).
+
 2023-11-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/107954

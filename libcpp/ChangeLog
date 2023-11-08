@@ -1,3 +1,24 @@
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* directives.cc: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(STDC2X): Rename to STDC23.
+	* expr.cc: Use cpp_warn_c11_c23_compat instead of
+	cpp_warn_c11_c2x_compat and CPP_W_C11_C23_COMPAT instead of
+	CPP_W_C11_C2X_COMPAT.  Refer to C23 instead of C2X in diagnostics
+	and comments.
+	* include/cpplib.h: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(CLK_GNUC2X): Rename to CLK_GNUC23.
+	(CLK_STDC2X): Rename to CLK_STDC23.
+	(CPP_W_C11_C2X_COMPAT): Rename to CPP_W_C11_C23_COMPAT.
+	* init.cc: Use GNUC23 instead of GNUC2X, STDC23 instead of STDC2X
+	and cpp_warn_c11_c23_compat instead of cpp_warn_c11_c2x_compat.
+	* lex.cc (maybe_va_opt_error): Refer to C23 instead of C2X in
+	diagnostic.
+	* macro.cc (_cpp_arguments_ok): Refer to C23 instead of C2X in
+	comment.
+
 2023-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/110342

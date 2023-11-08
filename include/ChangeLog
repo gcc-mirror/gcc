@@ -1,3 +1,8 @@
+2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Increment to 3.
+	(GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS): New.
+
 2023-10-25  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gomp-constants.h (GOACC_FLAG_LOCAL_DEVICE): New flag bit value.
