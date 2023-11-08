@@ -549,7 +549,8 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	  && swap)
 	return op1_op0_map;
       if (gather_scatter_p)
-	return gimple_vdef (stmt) ? off_op0_map : off_map;
+	return (TREE_CODE (gimple_assign_lhs (assign)) != SSA_NAME
+		? off_op0_map : off_map);
     }
   gcc_assert (!swap);
   if (auto call = dyn_cast<const gcall *> (stmt))
