@@ -1,3 +1,8 @@
+2023-11-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/cpuid.d (getCpuInfo0B): Limit number of times loop
+	runs.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.
