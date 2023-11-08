@@ -64,6 +64,7 @@ Late::setup_builtin_types ()
   };
 
   static const LType builtins[] = {
+    {LType ("bool", new TyTy::BoolType (next_hir_id ()))},
     {LType ("u8", new TyTy::UintType (next_hir_id (), TyTy::UintType::U8))},
     {LType ("u16", new TyTy::UintType (next_hir_id (), TyTy::UintType::U16))},
     {LType ("u32", new TyTy::UintType (next_hir_id (), TyTy::UintType::U32))},
