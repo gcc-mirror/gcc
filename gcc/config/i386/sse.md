@@ -12372,9 +12372,9 @@
   "operands[1] = gen_lowpart (<ssescalarmode>mode, operands[1]);")
 
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:HFBF 0 "register_sse4nonimm_operand" "=?r,jm,m,x,v")
+  [(set (match_operand:HFBF 0 "register_sse4nonimm_operand" "=?r,jm,m,x,Yw")
 	(vec_select:HFBF
-	  (match_operand:<ssevecmode> 1 "register_operand" "v,x,v,0,v")
+	  (match_operand:<ssevecmode> 1 "register_operand" "v,x,v,0,YW")
 	  (parallel
 	    [(match_operand:SI 2 "const_0_to_7_operand")])))]
   "TARGET_SSE2"
