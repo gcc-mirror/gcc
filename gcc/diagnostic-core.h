@@ -33,7 +33,10 @@ typedef enum
   DK_LAST_DIAGNOSTIC_KIND,
   /* This is used for tagging pragma pops in the diagnostic
      classification history chain.  */
-  DK_POP
+  DK_POP,
+  /* This is used internally to note that a diagnostic is enabled
+     without mandating any specific type.  */
+  DK_ANY,
 } diagnostic_t;
 
 /* RAII-style class for grouping related diagnostics.  */

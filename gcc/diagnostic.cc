@@ -1136,8 +1136,7 @@ classify_diagnostic (const diagnostic_context *context,
       if (old_kind == DK_UNSPECIFIED)
 	{
 	  old_kind = !context->option_enabled_p (option_index)
-	    ? DK_IGNORED : (context->warning_as_error_requested_p ()
-			    ? DK_ERROR : DK_WARNING);
+	    ? DK_IGNORED : DK_ANY;
 	  m_classify_diagnostic[option_index] = old_kind;
 	}
 
@@ -1472,7 +1471,15 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
      option.  */
   if (diag_class == DK_UNSPECIFIED
       && !option_unspecified_p (diagnostic->option_index))
-    diagnostic->kind = m_option_classifier.get_current_override (diagnostic->option_index);
+    {
+      const diagnostic_t new_kind
+	= m_option_classifier.get_current_override (diagnostic->option_index);
+      if (new_kind != DK_ANY)
+	/* DK_ANY means the diagnostic is not to be ignored, but we don't want
+	   to change it specifically to DK_ERROR or DK_WARNING; we want to
+	   preserve whatever the caller has specified.  */
+	diagnostic->kind = new_kind;
+    }
 
   /* This allows for future extensions, like temporarily disabling
      warnings for ranges of source code.  */
