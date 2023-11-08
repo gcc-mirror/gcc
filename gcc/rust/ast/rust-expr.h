@@ -2727,7 +2727,7 @@ protected:
 class BreakExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  Lifetime label;
+  LoopLabel label;
   std::unique_ptr<Expr> break_expr;
   location_t locus;
 
@@ -2745,7 +2745,7 @@ public:
   bool has_break_expr () const { return break_expr != nullptr; }
 
   // Constructor for a break expression
-  BreakExpr (Lifetime break_label, std::unique_ptr<Expr> expr_in_break,
+  BreakExpr (LoopLabel break_label, std::unique_ptr<Expr> expr_in_break,
 	     std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), label (std::move (break_label)),
       break_expr (std::move (expr_in_break)), locus (locus)
@@ -2807,7 +2807,7 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Lifetime &get_label () { return label; }
+  LoopLabel &get_label () { return label; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
