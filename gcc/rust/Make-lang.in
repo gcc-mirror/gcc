@@ -100,6 +100,7 @@ GRS_OBJS = \
     rust/rust-hir.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
+    rust/rust-keyword-values.o \
     rust/rust-abi.o \
     rust/rust-token-converter.o \
     rust/rust-macro.o \
