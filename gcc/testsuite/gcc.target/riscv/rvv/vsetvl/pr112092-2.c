@@ -3,13 +3,17 @@
 
 #include "riscv_vector.h"
 
-void foo(int32_t *in1, int32_t *in2, int32_t *in3, int32_t *out, size_t n, int cond, int avl) {
+void foo(int32_t *in1, int32_t *in2, int32_t *in3, int32_t *out, size_t n, int cond) {
   
   size_t vl;
-  if (cond)
-    vl = __riscv_vsetvl_e32m1(avl);
+  if (cond == 1)
+    vl = __riscv_vsetvlmax_e32m1();
+  else if (cond == 2)
+    vl = __riscv_vsetvlmax_e8mf4();
+  else if (cond == 2)
+    vl = __riscv_vsetvlmax_e16mf2();
   else
-    vl = __riscv_vsetvl_e16mf2(avl);
+    vl = __riscv_vsetvlmax_e64m2();
   for (size_t i = 0; i < n; i += 1) {
     vint32m1_t a = __riscv_vle32_v_i32m1(in1, vl);
     vint32m1_t b = __riscv_vle32_v_i32m1_tu(a, in2, vl);
