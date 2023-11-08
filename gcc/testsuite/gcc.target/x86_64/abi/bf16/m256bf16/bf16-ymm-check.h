@@ -11,13 +11,13 @@ main ()
     {
       do_test ();
 #ifdef DEBUG
-      printf ("PASSED\n");
+      __builtin_printf ("PASSED\n");
 #endif
       return 0;
     }
 
 #ifdef DEBUG
-  printf ("SKIPPED\n");
+  __builtin_printf ("SKIPPED\n");
 #endif
 
   return 0;
