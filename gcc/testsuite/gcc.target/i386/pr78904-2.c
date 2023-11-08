@@ -47,3 +47,12 @@ struct S1 test_add (struct S1 a)
 }
 
 /* { dg-final { scan-assembler "\[ \t\]addb\[ \t\]+t\[^\n\r]*, %.h" } } */
+
+struct S1 test_sub (struct S1 a)
+{
+  a.val -= t.val;
+
+  return a;
+}
+
+/* { dg-final { scan-assembler "\[ \t\]subb\[ \t\]+t\[^\n\r]*, %.h" } } */
