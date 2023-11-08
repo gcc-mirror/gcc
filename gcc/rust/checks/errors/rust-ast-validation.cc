@@ -37,6 +37,21 @@ ASTValidation::visit (AST::Lifetime &lifetime)
 }
 
 void
+ASTValidation::visit (AST::LoopLabel &label)
+{
+  auto name = label.get_lifetime ().get_lifetime_name ();
+  auto lifetime_name = '\'' + name;
+  auto &keywords = Values::Keywords::keywords;
+  if (keywords.find (name) != keywords.end ())
+    rust_error_at (label.get_locus (), "invalid label name %qs",
+		   lifetime_name.c_str ());
+
+  // WARNING: Do not call ContextualASTVisitor, we don't want to visit the
+  // lifetime
+  // Maybe we should refactor LoopLabel instead ?
+}
+
+void
 ASTValidation::visit (AST::ConstantItem &const_item)
 {
   if (!const_item.has_expr () && context.back () != Context::TRAIT_IMPL)

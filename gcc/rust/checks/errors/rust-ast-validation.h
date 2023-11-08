@@ -35,6 +35,7 @@ public:
 
   virtual void visit (AST::ConstantItem &const_item);
   virtual void visit (AST::Lifetime &lifetime);
+  virtual void visit (AST::LoopLabel &label);
 };
 
 } // namespace Rust
