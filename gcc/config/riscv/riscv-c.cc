@@ -204,7 +204,7 @@ riscv_pragma_intrinsic (cpp_reader *)
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 static bool
 riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
-			  tree orig_fndecl, unsigned int nargs, tree *args)
+			  tree, unsigned int nargs, tree *args)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
