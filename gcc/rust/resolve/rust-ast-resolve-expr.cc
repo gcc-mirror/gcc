@@ -452,7 +452,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 {
   if (expr.has_label ())
     {
-      auto label = expr.get_label ();
+      auto label = expr.get_label ().get_lifetime ();
       if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
 	{
 	  rust_error_at (label.get_locus (),
@@ -466,7 +466,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 				    label.get_lifetime_name ()),
 	    &resolved_node))
 	{
-	  rust_error_at (expr.get_label ().get_locus (), ErrorCode::E0426,
+	  rust_error_at (label.get_locus (), ErrorCode::E0426,
 			 "use of undeclared label %qs in %<break%>",
 			 label.get_lifetime_name ().c_str ());
 	  return;

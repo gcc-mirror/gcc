@@ -589,7 +589,8 @@ ASTLoweringExpr::visit (AST::ForLoopExpr &expr)
 void
 ASTLoweringExpr::visit (AST::BreakExpr &expr)
 {
-  HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
+  HIR::Lifetime break_label
+    = lower_lifetime (expr.get_label ().get_lifetime ());
   HIR::Expr *break_expr
     = expr.has_break_expr ()
 	? ASTLoweringExpr::translate (expr.get_break_expr ().get ())
