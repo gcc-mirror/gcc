@@ -1,7 +1,7 @@
 /* Test C23 constexpr.  Valid code, execution test.  */
 /* { dg-do link } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
-/* { dg-additional-sources "c2x-constexpr-2b.c" } */
+/* { dg-additional-sources "c23-constexpr-2b.c" } */
 
 extern void abort (void);
 extern void exit (int);

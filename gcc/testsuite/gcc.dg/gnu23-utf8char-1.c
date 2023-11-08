@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu23" } */
 
-#include "c2x-utf8char-1.c"
+#include "c23-utf8char-1.c"

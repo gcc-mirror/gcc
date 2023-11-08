@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c11" } */
 
-#include "c2x-float-no-dfp-1.c"
+#include "c23-float-no-dfp-1.c"

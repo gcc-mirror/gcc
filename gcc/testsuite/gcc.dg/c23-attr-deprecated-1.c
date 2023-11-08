@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 
-/* Similar to tests from gnu2x-attrs-1.c, but using the standard
+/* Similar to tests from gnu23-attrs-1.c, but using the standard
    attribute instead of gnu::deprecated, and sometimes using
    __deprecated__ or a string-literal argument.  */
 

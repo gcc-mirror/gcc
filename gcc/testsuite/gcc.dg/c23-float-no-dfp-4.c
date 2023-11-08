@@ -7,4 +7,4 @@
 #define __STDC_WANT_DEC_FP__
 #define __STDC_WANT_IEC_60559_DFP_EXT__
 
-#include "c2x-float-no-dfp-3.c"
+#include "c23-float-no-dfp-3.c"

@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu23" } */
 
-#include "../../gcc.dg/c2x-attr-syntax-1.c"
+#include "../../gcc.dg/c23-attr-syntax-1.c"

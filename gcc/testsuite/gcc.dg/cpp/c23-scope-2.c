@@ -8,4 +8,4 @@
 /* This must have a space inserted between the two ':' tokens in
    preprocessed output.  */
 TEST()COLON()COLON()TEST()
-/* { dg-final { scan-file c2x-scope-2.i "ABC: :ABC" } } */
+/* { dg-final { scan-file c23-scope-2.i "ABC: :ABC" } } */

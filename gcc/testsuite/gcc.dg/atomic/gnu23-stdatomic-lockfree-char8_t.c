@@ -2,4 +2,4 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu23 -pedantic-errors" } */
 
-#include "c2x-stdatomic-lockfree-char8_t.c"
+#include "c23-stdatomic-lockfree-char8_t.c"

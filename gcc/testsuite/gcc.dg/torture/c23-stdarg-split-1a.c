@@ -3,7 +3,7 @@
    between source files.  */
 /* { dg-do run } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
-/* { dg-additional-sources "c2x-stdarg-split-1b.c" } */
+/* { dg-additional-sources "c23-stdarg-split-1b.c" } */
 
 extern void abort (void);
 extern void exit (int);
