@@ -1067,7 +1067,7 @@ public:
 		break;
 	      }
 	    rtx avl = ::get_avl (rinsn);
-	    if (!avl || REGNO (get_vl ()) != REGNO (avl))
+	    if (!avl || !REG_P (avl) || REGNO (get_vl ()) != REGNO (avl))
 	      {
 		m_vl_used_by_non_rvv_insn = true;
 		break;
