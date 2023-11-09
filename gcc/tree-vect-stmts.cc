@@ -9995,8 +9995,7 @@ vectorizable_load (vec_info *vinfo,
 
       /* Invalidate assumptions made by dependence analysis when vectorization
 	 on the unrolled body effectively re-orders stmts.  */
-      if (!PURE_SLP_STMT (stmt_info)
-	  && STMT_VINFO_MIN_NEG_DIST (stmt_info) != 0
+      if (STMT_VINFO_MIN_NEG_DIST (stmt_info) != 0
 	  && maybe_gt (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 		       STMT_VINFO_MIN_NEG_DIST (stmt_info)))
 	{
