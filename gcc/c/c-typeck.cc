@@ -11311,17 +11311,11 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       if ((warn_return_type >= 0 || flag_isoc99)
 	  && valtype != NULL_TREE && TREE_CODE (valtype) != VOID_TYPE)
 	{
-	  bool warned_here;
-	  if (flag_isoc99)
-	    warned_here = pedwarn
-	      (loc, warn_return_type >= 0 ? OPT_Wreturn_type : 0,
-	       "%<return%> with no value, in function returning non-void");
-	  else
-	    warned_here = warning_at
-	      (loc, OPT_Wreturn_type,
-	       "%<return%> with no value, in function returning non-void");
 	  no_warning = true;
-	  if (warned_here)
+	  if (emit_diagnostic (flag_isoc99 ? DK_PEDWARN : DK_WARNING,
+			       loc, OPT_Wreturn_mismatch,
+			       "%<return%> with no value,"
+			       " in function returning non-void"))
 	    inform (DECL_SOURCE_LOCATION (current_function_decl),
 		    "declared here");
 	}
@@ -11332,7 +11326,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       bool warned_here;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	warned_here = pedwarn
-	  (xloc, warn_return_type >= 0 ? OPT_Wreturn_type : 0,
+	  (xloc, OPT_Wreturn_mismatch,
 	   "%<return%> with a value, in function returning void");
       else
 	warned_here = pedwarn

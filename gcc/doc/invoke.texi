@@ -7350,22 +7350,33 @@ This warning is enabled by @option{-Wall} for C and C++.
 Do not warn about returning a pointer (or in C++, a reference) to a
 variable that goes out of scope after the function returns.
 
+@opindex Wreturn-mismatch
+@opindex Wno-return-mismatch
+@item -Wreturn-mismatch
+Warn about return statements without an expressions in functions which
+do not return @code{void}.  Also warn about a @code{return} statement
+with an expression in a function whose return type is @code{void},
+unless the expression type is also @code{void}.  As a GNU extension, the
+latter case is accepted without a warning unless @option{-Wpedantic} is
+used.
+
+Attempting to use the return value of a non-@code{void} function other
+than @code{main} that flows off the end by reaching the closing curly
+brace that terminates the function is undefined.
+
+This warning is specific to C and enabled by default.
+
 @opindex Wreturn-type
 @opindex Wno-return-type
 @item -Wreturn-type
-Warn whenever a function is defined with a return type that defaults
-to @code{int}.  Also warn about any @code{return} statement with no
-return value in a function whose return type is not @code{void}
-(falling off the end of the function body is considered returning
-without a value).
+Warn whenever a function is defined with a return type that defaults to
+@code{int} (unless @option{-Wimplicit-int} is active, which takes
+precedence).  Also warn if execution may reach the end of the function
+body, or if the function does not contain any return statement at all.
 
-For C only, warn about a @code{return} statement with an expression in a
-function whose return type is @code{void}, unless the expression type is
-also @code{void}.  As a GNU extension, the latter case is accepted
-without a warning unless @option{-Wpedantic} is used.  Attempting
-to use the return value of a non-@code{void} function other than @code{main}
-that flows off the end by reaching the closing curly brace that terminates
-the function is undefined.
+Attempting to use the return value of a non-@code{void} function other
+than @code{main} that flows off the end by reaching the closing curly
+brace that terminates the function is undefined.
 
 Unlike in C, in C++, flowing off the end of a non-@code{void} function other
 than @code{main} results in undefined behavior even when the value of
