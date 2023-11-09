@@ -17693,78 +17693,28 @@ is_reverse_perm_mask (const struct expand_vec_perm_d &d)
   return true;
 }
 
-/* The case of reversing a four-element vector [0, 1, 2, 3]
-   can be handled by first permuting the doublewords
-   [2, 3, 0, 1] and subsequently rotating them by 32 bits.  */
 static bool
-expand_perm_with_rot (const struct expand_vec_perm_d &d)
+expand_perm_reverse_elements (const struct expand_vec_perm_d &d)
 {
-  if (d.nelt != 4)
+  if (d.op0 != d.op1 || !is_reverse_perm_mask (d))
     return false;
 
-  if (d.op0 == d.op1 && is_reverse_perm_mask (d))
+  if (d.testing_p)
+    return true;
+
+  switch (d.vmode)
     {
-      if (d.testing_p)
-	return true;
-
-      rtx tmp = gen_reg_rtx (d.vmode);
-      rtx op0_reg = force_reg (GET_MODE (d.op0), d.op0);
-
-      emit_insn (gen_vpdi4_2 (d.vmode, tmp, op0_reg, op0_reg));
-      if (d.vmode == V4SImode)
-	emit_insn (gen_rotlv4si3_di (d.target, tmp));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_rotlv4sf3_di (d.target, tmp));
-
-      return true;
+    case V1TImode: emit_move_insn (d.target, d.op0); break;
+    case V2DImode: emit_insn (gen_eltswapv2di (d.target, d.op0)); break;
+    case V4SImode: emit_insn (gen_eltswapv4si (d.target, d.op0)); break;
+    case V8HImode: emit_insn (gen_eltswapv8hi (d.target, d.op0)); break;
+    case V16QImode: emit_insn (gen_eltswapv16qi (d.target, d.op0)); break;
+    case V2DFmode: emit_insn (gen_eltswapv2df (d.target, d.op0)); break;
+    case V4SFmode: emit_insn (gen_eltswapv4sf (d.target, d.op0)); break;
+    default: gcc_unreachable();
     }
 
-  return false;
-}
-
-/* If we just reverse the elements, emit an eltswap if we have
-   vler/vster.  */
-static bool
-expand_perm_with_vster (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && (d.vmode == V2DImode || d.vmode == V2DFmode
-	  || d.vmode == V4SImode || d.vmode == V4SFmode
-	  || d.vmode == V8HImode))
-    {
-      if (d.testing_p)
-	return true;
-
-      if (d.vmode == V2DImode)
-	emit_insn (gen_eltswapv2di (d.target, d.op0));
-      else if (d.vmode == V2DFmode)
-	emit_insn (gen_eltswapv2df (d.target, d.op0));
-      else if (d.vmode == V4SImode)
-	emit_insn (gen_eltswapv4si (d.target, d.op0));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_eltswapv4sf (d.target, d.op0));
-      else if (d.vmode == V8HImode)
-	emit_insn (gen_eltswapv8hi (d.target, d.op0));
-      return true;
-    }
-  return false;
-}
-
-/* If we reverse a byte-vector this is the same as
-   byte reversing it which can be done with vstbrq.  */
-static bool
-expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && d.vmode == V16QImode)
-    {
-      if (d.testing_p)
-	return true;
-
-      emit_insn (gen_eltswapv16qi (d.target, d.op0));
-      return true;
-    }
-  return false;
+  return true;
 }
 
 /* Try to emit vlbr/vstbr.  Note, this is only a candidate insn since
@@ -17826,19 +17776,13 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 static bool
 vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
 {
+  if (expand_perm_reverse_elements (d))
+    return true;
+
   if (expand_perm_with_merge (d))
     return true;
 
-  if (expand_perm_with_vster (d))
-    return true;
-
-  if (expand_perm_with_vstbrq (d))
-    return true;
-
   if (expand_perm_with_vpdi (d))
-    return true;
-
-  if (expand_perm_with_rot (d))
     return true;
 
   if (expand_perm_as_a_vlbr_vstbr_candidate (d))
