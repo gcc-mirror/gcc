@@ -1214,6 +1214,32 @@ process_out_of_region_eh_regs (basic_block bb)
 
 #endif
 
+/* Add conflicts for object OBJ from REGION landing pads using CALLEE_ABI.  */
+static void
+add_conflict_from_region_landing_pads (eh_region region, ira_object_t obj,
+				       function_abi callee_abi)
+{
+  ira_allocno_t a = OBJECT_ALLOCNO (obj);
+  rtx_code_label *landing_label;
+  basic_block landing_bb;
+
+  for (eh_landing_pad lp = region->landing_pads; lp ; lp = lp->next_lp)
+    {
+      if ((landing_label = lp->landing_pad) != NULL
+	  && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
+	  && (region->type != ERT_CLEANUP
+	      || bitmap_bit_p (df_get_live_in (landing_bb),
+			       ALLOCNO_REGNO (a))))
+	{
+	  HARD_REG_SET new_conflict_regs
+	    = callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+	  OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	  return;
+	}
+    }
+}
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1385,23 +1411,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
 		  eh_region r;
-		  eh_landing_pad lp;
-		  rtx_code_label *landing_label;
-		  basic_block landing_bb;
 		  if (can_throw_internal (insn)
-		      && (r = get_eh_region_from_rtx (insn)) != NULL
-		      && (lp = gen_eh_landing_pad (r)) != NULL
-		      && (landing_label = lp->landing_pad) != NULL
-		      && (landing_bb = BLOCK_FOR_INSN (landing_label)) != NULL
-		      && (r->type != ERT_CLEANUP
-			  || bitmap_bit_p (df_get_live_in (landing_bb),
-					   ALLOCNO_REGNO (a))))
-		    {
-		      HARD_REG_SET new_conflict_regs
-			= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
-		      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
-		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
-		    }
+		      && (r = get_eh_region_from_rtx (insn)) != NULL)
+		    add_conflict_from_region_landing_pads (r, obj, callee_abi);
 		  if (sparseset_bit_p (allocnos_processed, num))
 		    continue;
 		  sparseset_set_bit (allocnos_processed, num);
