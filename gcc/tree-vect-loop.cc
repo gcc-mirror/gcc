@@ -1462,7 +1462,10 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
       if (!mask_type)
 	continue;
 
-      if (TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
+      /* For now vect_get_loop_mask only supports integer mode masks
+	 when we need to split it.  */
+      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_INT
+	  || TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
 	{
 	  ok = false;
 	  break;
