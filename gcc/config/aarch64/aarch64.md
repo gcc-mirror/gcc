@@ -1233,6 +1233,7 @@
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
   {@ [cons: =0, 1; attrs: type, arch]
+     [w, Z    ; neon_move      , simd  ] movi\t%0.<Vbtype>, #0
      [r, r    ; mov_reg        , *     ] mov\t%w0, %w1
      [r, M    ; mov_imm        , *     ] mov\t%w0, %1
      [w, D<hq>; neon_move      , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
@@ -1290,6 +1291,7 @@
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
+     [w  , Z  ; neon_move, simd, 4] movi\t%0.2d, #0
      [r k, r  ; mov_reg  , *   , 4] mov\t%w0, %w1
      [r  , k  ; mov_reg  , *   , 4] ^
      [r  , M  ; mov_imm  , *   , 4] mov\t%w0, %1
@@ -1323,6 +1325,7 @@
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
+     [w, Z  ; neon_move, simd, 4] movi\t%0.2d, #0
      [r, r  ; mov_reg  , *   , 4] mov\t%x0, %x1
      [k, r  ; mov_reg  , *   , 4] mov\t%0, %x1
      [r, k  ; mov_reg  , *   , 4] mov\t%x0, %1

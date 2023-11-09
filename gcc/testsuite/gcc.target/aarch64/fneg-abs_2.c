@@ -20,7 +20,7 @@ float32_t f1 (float32_t a)
 
 /*
 ** f2:
-**	fmov	d[0-9]+, xzr
+**	movi	v[0-9]+.4s, #?0
 **	fneg	v[0-9]+.2d, v[0-9]+.2d
 **	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
 **	ret

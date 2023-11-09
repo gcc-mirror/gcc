@@ -8,7 +8,7 @@
 
 /*
 ** negabs:
-**	fmov	d[0-9]+, xzr
+**	movi	v31.4s, #?0
 **	fneg	v[0-9]+.2d, v[0-9]+.2d
 **	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
 **	ret

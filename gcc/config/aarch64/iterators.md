@@ -1300,6 +1300,7 @@
 			  (V4SF "16b") (V2DF  "16b")
 			  (DI   "8b")  (DF    "8b")
 			  (SI   "8b")  (SF    "8b")
+			  (QI   "8b")  (HI    "8b")
 			  (V4BF "8b")  (V8BF  "16b")])
 
 ;; Advanced SIMD vector structure to element modes.
