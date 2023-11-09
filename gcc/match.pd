@@ -5190,6 +5190,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 (bit_not @3)) @2 @1)))
 
+/*  ((VCE (a cmp b ? -1 : 0)) < 0) ? c : d is just
+    (VCE ((a cmp b) ? (VCE c) : (VCE d))) when TYPE_PRECISION of the
+    component type of the outer vec_cond is greater equal the inner one.  */
+(for cmp (simple_comparison)
+ (simplify
+  (vec_cond
+    (lt (view_convert@5 (vec_cond@6 (cmp@4 @0 @1)
+				    integer_all_onesp
+				    integer_zerop))
+	  integer_zerop) @2 @3)
+  (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && VECTOR_INTEGER_TYPE_P (TREE_TYPE (@5))
+       && !TYPE_UNSIGNED (TREE_TYPE (@5))
+       && VECTOR_TYPE_P (TREE_TYPE (@6))
+       && VECTOR_TYPE_P (type)
+       && tree_int_cst_le (TYPE_SIZE (TREE_TYPE (type)),
+			   TYPE_SIZE (TREE_TYPE (TREE_TYPE (@6))))
+       && TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (@6)))
+   (with { tree vtype = TREE_TYPE (@6);}
+     (view_convert:type
+       (vec_cond @4 (view_convert:vtype @2) (view_convert:vtype @3)))))))
+
 /* c1 ? c2 ? a : b : b  -->  (c1 & c2) ? a : b  */
 (simplify
  (vec_cond @0 (vec_cond:s @1 @2 @3) @3)
