@@ -11894,16 +11894,18 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 /* Return true if X is a CONST_INT, CONST_WIDE_INT or a constant vector
    duplicate of such constants.  If so, store in RET_WI the wide_int
    representation of the constant paired with the inner mode of the vector mode
-   or TImode for scalar X constants.  */
+   or MODE for scalar X constants.  If MODE is not provided then TImode is
+   used.  */
 
 static bool
-aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi)
+aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi,
+					scalar_mode mode = TImode)
 {
   rtx elt = unwrap_const_vec_duplicate (x);
   if (!CONST_SCALAR_INT_P (elt))
     return false;
   scalar_mode smode
-    = CONST_SCALAR_INT_P (x) ? TImode : GET_MODE_INNER (GET_MODE (x));
+    = CONST_SCALAR_INT_P (x) ? mode : GET_MODE_INNER (GET_MODE (x));
   *ret_wi = rtx_mode_t (elt, smode);
   return true;
 }
@@ -11950,6 +11952,49 @@ aarch64_const_vec_all_same_in_range_p (rtx x,
   return (const_vec_duplicate_p (x, &elt)
 	  && CONST_INT_P (elt)
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
+}
+
+/* Some constants can't be made using normal mov instructions in Advanced SIMD
+   but we can still create them in various ways.  If the constant in VAL can be
+   created using alternate methods then if possible then return true and
+   additionally set TARGET to the rtx for the sequence if TARGET is not NULL.
+   Otherwise return false if sequence is not possible.  */
+
+bool
+aarch64_maybe_generate_simd_constant (rtx target, rtx val, machine_mode mode)
+{
+  wide_int wval;
+  auto smode = GET_MODE_INNER (mode);
+  if (!aarch64_extract_vec_duplicate_wide_int (val, &wval, smode))
+    return false;
+
+  /* For Advanced SIMD we can create an integer with only the top bit set
+     using fneg (0.0f).  */
+  if (TARGET_SIMD
+      && !TARGET_SVE
+      && smode == DImode
+      && wi::only_sign_bit_p (wval))
+    {
+      if (!target)
+	return true;
+
+      /* Use the same base type as aarch64_gen_shareable_zero.  */
+      rtx zero = CONST0_RTX (V4SImode);
+      emit_move_insn (lowpart_subreg (V4SImode, target, mode), zero);
+      rtx neg = lowpart_subreg (V2DFmode, target, mode);
+      emit_insn (gen_negv2df2 (neg, copy_rtx (neg)));
+      return true;
+    }
+
+  return false;
+}
+
+/* Check if the value in VAL with mode MODE can be created using special
+   instruction sequences.  */
+
+bool aarch64_simd_special_constant_p (rtx val, machine_mode mode)
+{
+  return aarch64_maybe_generate_simd_constant (NULL_RTX, val, mode);
 }
 
 bool

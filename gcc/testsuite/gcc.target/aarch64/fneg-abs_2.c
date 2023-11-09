@@ -20,8 +20,8 @@ float32_t f1 (float32_t a)
 
 /*
 ** f2:
-**	mov	x0, -9223372036854775808
-**	fmov	d[0-9]+, x0
+**	fmov	d[0-9]+, xzr
+**	fneg	v[0-9]+.2d, v[0-9]+.2d
 **	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
 **	ret
 */
@@ -29,3 +29,4 @@ float64_t f2 (float64_t a)
 {
   return -fabs (a);
 }
+

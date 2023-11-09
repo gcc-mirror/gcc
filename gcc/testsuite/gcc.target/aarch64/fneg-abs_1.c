@@ -28,8 +28,8 @@ float32x4_t t2 (float32x4_t a)
 
 /*
 ** t3:
-**	adrp	x0, .LC[0-9]+
-**	ldr	q[0-9]+, \[x0, #:lo12:.LC0\]
+**	movi	v[0-9]+.4s, 0
+**	fneg	v[0-9]+.2d, v[0-9]+.2d
 **	orr	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
 **	ret
 */

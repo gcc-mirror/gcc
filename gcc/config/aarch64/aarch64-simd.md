@@ -142,26 +142,35 @@
   [(set_attr "type" "neon_dup<q>")]
 )
 
-(define_insn "*aarch64_simd_mov<VDMOV:mode>"
+(define_insn_and_split "*aarch64_simd_mov<VDMOV:mode>"
   [(set (match_operand:VDMOV 0 "nonimmediate_operand")
 	(match_operand:VDMOV 1 "general_operand"))]
   "TARGET_FLOAT
    && (register_operand (operands[0], <MODE>mode)
        || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
-  {@ [cons: =0, 1; attrs: type, arch]
-     [w , m ; neon_load1_1reg<q> , *   ] ldr\t%d0, %1
-     [r , m ; load_8             , *   ] ldr\t%x0, %1
-     [m , Dz; store_8            , *   ] str\txzr, %0
-     [m , w ; neon_store1_1reg<q>, *   ] str\t%d1, %0
-     [m , r ; store_8            , *   ] str\t%x1, %0
-     [w , w ; neon_logic<q>      , simd] mov\t%0.<Vbtype>, %1.<Vbtype>
-     [w , w ; neon_logic<q>      , *   ] fmov\t%d0, %d1
-     [?r, w ; neon_to_gp<q>      , simd] umov\t%0, %1.d[0]
-     [?r, w ; neon_to_gp<q>      , *   ] fmov\t%x0, %d1
-     [?w, r ; f_mcr              , *   ] fmov\t%d0, %1
-     [?r, r ; mov_reg            , *   ] mov\t%0, %1
-     [w , Dn; neon_move<q>       , simd] << aarch64_output_simd_mov_immediate (operands[1], 64);
-     [w , Dz; f_mcr              , *   ] fmov\t%d0, xzr
+  {@ [cons: =0, 1; attrs: type, arch, length]
+     [w , m ; neon_load1_1reg<q> , *   , *] ldr\t%d0, %1
+     [r , m ; load_8             , *   , *] ldr\t%x0, %1
+     [m , Dz; store_8            , *   , *] str\txzr, %0
+     [m , w ; neon_store1_1reg<q>, *   , *] str\t%d1, %0
+     [m , r ; store_8            , *   , *] str\t%x1, %0
+     [w , w ; neon_logic<q>      , simd, *] mov\t%0.<Vbtype>, %1.<Vbtype>
+     [w , w ; neon_logic<q>      , *   , *] fmov\t%d0, %d1
+     [?r, w ; neon_to_gp<q>      , simd, *] umov\t%0, %1.d[0]
+     [?r, w ; neon_to_gp<q>      , *   , *] fmov\t%x0, %d1
+     [?w, r ; f_mcr              , *   , *] fmov\t%d0, %1
+     [?r, r ; mov_reg            , *   , *] mov\t%0, %1
+     [w , Dn; neon_move<q>       , simd, *] << aarch64_output_simd_mov_immediate (operands[1], 64);
+     [w , Dz; f_mcr              , *   , *] fmov\t%d0, xzr
+     [w , Dx; neon_move          , simd, 8] #
+  }
+  "CONST_INT_P (operands[1])
+   && aarch64_simd_special_constant_p (operands[1], <MODE>mode)
+   && FP_REGNUM_P (REGNO (operands[0]))"
+  [(const_int 0)]
+  {
+    aarch64_maybe_generate_simd_constant (operands[0], operands[1], <MODE>mode);
+    DONE;
   }
 )
 
@@ -181,19 +190,30 @@
      [?r , r ; multiple           , *   , 8] #
      [w  , Dn; neon_move<q>       , simd, 4] << aarch64_output_simd_mov_immediate (operands[1], 128);
      [w  , Dz; fmov               , *   , 4] fmov\t%d0, xzr
+     [w  , Dx; neon_move          , simd, 8] #
   }
   "&& reload_completed
-   && (REG_P (operands[0])
+   && ((REG_P (operands[0])
 	&& REG_P (operands[1])
 	&& !(FP_REGNUM_P (REGNO (operands[0]))
-	     && FP_REGNUM_P (REGNO (operands[1]))))"
+	     && FP_REGNUM_P (REGNO (operands[1]))))
+       || (aarch64_simd_special_constant_p (operands[1], <MODE>mode)
+	   && FP_REGNUM_P (REGNO (operands[0]))))"
   [(const_int 0)]
   {
     if (GP_REGNUM_P (REGNO (operands[0]))
 	&& GP_REGNUM_P (REGNO (operands[1])))
       aarch64_simd_emit_reg_reg_move (operands, DImode, 2);
     else
-      aarch64_split_simd_move (operands[0], operands[1]);
+      {
+	if (FP_REGNUM_P (REGNO (operands[0]))
+	    && <MODE>mode == V2DImode
+	    && aarch64_maybe_generate_simd_constant (operands[0], operands[1],
+						     <MODE>mode))
+	  ;
+	else
+	  aarch64_split_simd_move (operands[0], operands[1]);
+      }
     DONE;
   }
 )

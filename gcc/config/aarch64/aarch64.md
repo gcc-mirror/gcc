@@ -1341,13 +1341,21 @@
      [r, w  ; f_mrc    , fp  , 4] fmov\t%x0, %d1
      [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
      [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+     [w, Dx ; neon_move, simd, 8] #
   }
-  "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
-   && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
+  "CONST_INT_P (operands[1])
+   && REG_P (operands[0])
+   && ((!aarch64_move_imm (INTVAL (operands[1]), DImode)
+	&& GP_REGNUM_P (REGNO (operands[0])))
+       || (aarch64_simd_special_constant_p (operands[1], DImode)
+	   && FP_REGNUM_P (REGNO (operands[0]))))"
   [(const_int 0)]
   {
+    if (GP_REGNUM_P (REGNO (operands[0])))
       aarch64_expand_mov_immediate (operands[0], operands[1]);
-      DONE;
+    else
+      aarch64_maybe_generate_simd_constant (operands[0], operands[1], DImode);
+    DONE;
   }
 )
 
