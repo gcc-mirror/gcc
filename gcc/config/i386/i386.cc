@@ -25198,11 +25198,40 @@ ix86_reloc_rw_mask (void)
 }
 #endif
 
-/* If MEM is in the form of [base+offset], extract the two parts
-   of address and set to BASE and OFFSET, otherwise return false.  */
+/* Return true iff ADDR can be used as a symbolic base address.  */
 
 static bool
-extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
+symbolic_base_address_p (rtx addr)
+{
+  if (GET_CODE (addr) == SYMBOL_REF)
+    return true;
+
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_GOTOFF)
+    return true;
+
+  return false;
+}
+
+/* Return true iff ADDR can be used as a base address.  */
+
+static bool
+base_address_p (rtx addr)
+{
+  if (REG_P (addr))
+    return true;
+
+  if (symbolic_base_address_p (addr))
+    return true;
+
+  return false;
+}
+
+/* If MEM is in the form of [(base+symbase)+offset], extract the three
+   parts of address and set to BASE, SYMBASE and OFFSET, otherwise
+   return false.  */
+
+static bool
+extract_base_offset_in_addr (rtx mem, rtx *base, rtx *symbase, rtx *offset)
 {
   rtx addr;
 
@@ -25213,21 +25242,52 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
   if (GET_CODE (addr) == CONST)
     addr = XEXP (addr, 0);
 
-  if (REG_P (addr) || GET_CODE (addr) == SYMBOL_REF)
+  if (base_address_p (addr))
     {
       *base = addr;
+      *symbase = const0_rtx;
       *offset = const0_rtx;
       return true;
     }
 
   if (GET_CODE (addr) == PLUS
-      && (REG_P (XEXP (addr, 0))
-	  || GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
-      && CONST_INT_P (XEXP (addr, 1)))
+      && base_address_p (XEXP (addr, 0)))
     {
-      *base = XEXP (addr, 0);
-      *offset = XEXP (addr, 1);
-      return true;
+      rtx addend = XEXP (addr, 1);
+
+      if (GET_CODE (addend) == CONST)
+	addend = XEXP (addend, 0);
+
+      if (CONST_INT_P (addend))
+	{
+	  *base = XEXP (addr, 0);
+	  *symbase = const0_rtx;
+	  *offset = addend;
+	  return true;
+	}
+
+      /* Also accept REG + symbolic ref, with or without a CONST_INT
+	 offset.  */
+      if (REG_P (XEXP (addr, 0)))
+	{
+	  if (symbolic_base_address_p (addend))
+	    {
+	      *base = XEXP (addr, 0);
+	      *symbase = addend;
+	      *offset = const0_rtx;
+	      return true;
+	    }
+
+	  if (GET_CODE (addend) == PLUS
+	      && symbolic_base_address_p (XEXP (addend, 0))
+	      && CONST_INT_P (XEXP (addend, 1)))
+	    {
+	      *base = XEXP (addr, 0);
+	      *symbase = XEXP (addend, 0);
+	      *offset = XEXP (addend, 1);
+	      return true;
+	    }
+	}
     }
 
   return false;
@@ -25242,7 +25302,8 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 				    machine_mode mode)
 {
   HOST_WIDE_INT offval_1, offval_2, msize;
-  rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;
+  rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2,
+    symbase_1, symbase_2, offset_1, offset_2;
 
   if (load)
     {
@@ -25265,13 +25326,13 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
     return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
-  if (!extract_base_offset_in_addr (mem_1, &base_1, &offset_1))
+  if (!extract_base_offset_in_addr (mem_1, &base_1, &symbase_1, &offset_1))
     return false;
-  if (!extract_base_offset_in_addr (mem_2, &base_2, &offset_2))
+  if (!extract_base_offset_in_addr (mem_2, &base_2, &symbase_2, &offset_2))
     return false;
 
   /* Check if the bases are the same.  */
-  if (!rtx_equal_p (base_1, base_2))
+  if (!rtx_equal_p (base_1, base_2) || !rtx_equal_p (symbase_1, symbase_2))
     return false;
 
   offval_1 = INTVAL (offset_1);
