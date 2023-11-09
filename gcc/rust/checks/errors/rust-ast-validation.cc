@@ -62,4 +62,23 @@ ASTValidation::visit (AST::ConstantItem &const_item)
   AST::ContextualASTVisitor::visit (const_item);
 }
 
+void
+ASTValidation::visit (AST::ExternalFunctionItem &item)
+{
+  auto &params = item.get_function_params ();
+
+  if (params.size () == 1 && params[0].is_variadic ())
+    rust_error_at (
+      params[0].get_locus (),
+      "C-variadic function must be declared with at least one named argument");
+
+  for (auto it = params.begin (); it != params.end (); it++)
+    if (it->is_variadic () && it + 1 != params.end ())
+      rust_error_at (
+	it->get_locus (),
+	"%<...%> must be the last argument of a C-variadic function");
+
+  AST::ContextualASTVisitor::visit (item);
+}
+
 } // namespace Rust
