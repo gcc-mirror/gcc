@@ -1,3 +1,8 @@
+2023-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* c.opt (fpermissive): Enable for C and ObjC.
+	* c-opts.cc (c_common_post_options): Enable -fpermissive.
+
 2023-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-format.h (T2X_UI): Rename to T23_UI.

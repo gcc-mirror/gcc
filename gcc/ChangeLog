@@ -1,3 +1,111 @@
+2023-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82524
+	* config/i386/i386.md (*add<mode>_1_slp):
+	Split insn only for unmatched operand 0.
+	(*sub<mode>_1_slp): Ditto.
+	(*<any_logic:code><mode>_1_slp): Merge pattern from "*and<mode>_1_slp"
+	and "*<any_logic:code><mode>_1_slp" using any_logic code iterator.
+	Split insn only for unmatched operand 0.
+	(*neg<mode>1_slp): Split insn only for unmatched operand 0.
+	(*one_cmpl<mode>_1_slp): Ditto.
+	(*ashl<mode>3_1_slp): Ditto.
+	(*<any_shiftrt:insn><mode>_1_slp): Ditto.
+	(*<any_rotate:insn><mode>_1_slp): Ditto.
+	(*addqi_ext<mode>_1): Redefine as define_insn_and_split.  Add
+	alternative 1 and split insn after reload for unmatched operand 0.
+	(*<plusminus:insn>qi_ext<mode>_2): Merge pattern from
+	"*addqi_ext<mode>_2" and "*subqi_ext<mode>_2" using plusminus code
+	iterator. Redefine as define_insn_and_split.  Add alternative 1
+	and split insn after reload for unmatched operand 0.
+	(*subqi_ext<mode>_1): Redefine as define_insn_and_split.  Add
+	alternative 1 and split insn after reload for unmatched operand 0.
+	(*<any_logic:code>qi_ext<mode>_0): Merge pattern from
+	"*andqi_ext<mode>_0" and and "*<any_logic:code>qi_ext<mode>_0" using
+	any_logic code iterator.
+	(*<any_logic:code>qi_ext<mode>_1): Merge pattern from
+	"*andqi_ext<mode>_1" and "*<any_logic:code>qi_ext<mode>_1" using
+	any_logic code iterator. Redefine as define_insn_and_split.  Add
+	alternative 1 and split insn after reload for unmatched operand 0.
+	(*<any_logic:code>qi_ext<mode>_1_cc): Merge pattern from
+	"*andqi_ext<mode>_1_cc" and "*xorqi_ext<mode>_1_cc" using any_logic
+	code iterator. Redefine as define_insn_and_split.  Add alternative 1
+	and split insn after reload for unmatched operand 0.
+	(*<any_logic:code>qi_ext<mode>_2): Merge pattern from
+	"*andqi_ext<mode>_2" and "*<any_or:code>qi_ext<mode>_2" using
+	any_logic code iterator. Redefine as define_insn_and_split.  Add
+	alternative 1 and split insn after reload for unmatched operand 0.
+	(*<any_logic:code>qi_ext<mode>_3): Redefine as define_insn_and_split.
+	Add alternative 1 and split insn after reload for unmatched operand 0.
+	(*negqi_ext<mode>_1): Rename from "*negqi_ext<mode>_2".  Add
+	alternative 1 and split insn after reload for unmatched operand 0.
+	(*one_cmplqi_ext<mode>_1): Ditto.
+	(*ashlqi_ext<mode>_1): Ditto.
+	(*<any_shiftrt:insn>qi_ext<mode>_1): Ditto.
+
+2023-11-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Adjust offset
+	vector gathering for SLP of emulated gathers.
+
+2023-11-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_slp_child_index_for_operand):
+	Add gatherscatter_p argument.
+	* tree-vect-slp.cc (vect_slp_child_index_for_operand): Likewise.
+	Pass it on.
+	* tree-vect-stmts.cc (vect_check_store_rhs): Turn the rhs
+	argument into an output, also output the SLP node associated
+	with it.
+	(vectorizable_simd_clone_call): Adjust.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2023-11-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Use the correct
+	vectorized mask operand.
+
+2023-11-08  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/vector.md (*vsetvldi_no_side_effects_si_extend):
+	New combine pattern.
+
+2023-11-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc: Fix ICE.
+
+2023-11-08  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-c.cc (riscv_check_builtin_call): Eliminate warning.
+
+2023-11-08  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112394
+	* config/i386/constraints.md (jc): New constraint that prohibits
+	EGPR on -mno-avx.
+	* config/i386/i386.md (*movdi_internal): Change r constraint
+	corresponds to Yd.
+	(*movti_internal): Likewise.
+
+2023-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Mention C diagnostics
+	for -fpermissive.
+
+2023-11-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112092
+	* config/riscv/riscv-vector-builtins-bases.cc: Normalize the vsetvls.
+
+2023-11-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111907
+	* config/i386/i386.md (avx_noavx512vl): New definition for isa
+	attribute.
+	* config/i386/sse.md (*andnot<mode>3): Change isa attribute from
+	avx_noavx512f to avx_noavx512vl.
+
 2023-11-07  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec.md: Remove the size check of lfloor.
