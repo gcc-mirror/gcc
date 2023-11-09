@@ -233,16 +233,9 @@ EXPORT(timezone) (void)
       localtime_r (&time, &result);
       return result.tm_gmtoff;
     }
-  else
 #endif
 #endif
-    {
-#if defined(HAVE_TIMEZONE)
-      return timezone;
-#else
-      return 0;
-#endif
-    }
+  return 0;
 }
 
 /* istimezone returns 1 if timezone in wrapclock.cc can resolve the
