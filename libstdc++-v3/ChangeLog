@@ -1,3 +1,95 @@
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else):
+	Add string literals to static assertions.
+	* include/std/optional (optional::and_then, optional::or_else):
+	Likewise.
+
+2023-11-08  Feng Jisen  <J1senn@outlook.com>
+
+	Backported from master:
+	2023-11-04  Feng Jisen  <J1senn@outlook.com>
+
+	* include/bits/utility.h (_Nth_type): Remove redundant partial
+	specialization.
+
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112314
+	* include/std/string_view (string_view::remove_suffix): Add
+	debug assertion.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/debug.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/debug.cc:
+	New test.
+
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Fix snprintf checks.
+	* configure: Regenerate.
+
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112089
+	* include/std/shared_mutex (shared_lock::unlock): Change errc
+	constant to operation_not_permitted.
+	* testsuite/30_threads/shared_lock/locking/112089.cc: New test.
+
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/io.cc: Double timeout using
+	dg-timeout-factor.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/format.cc: Likewise.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/month_day/io.cc: Likewise.
+	* testsuite/std/time/month_day_last/io.cc: Likewise.
+	* testsuite/std/time/month_weekday/io.cc: Likewise.
+	* testsuite/std/time/month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/weekday_indexed/io.cc: Likewise.
+	* testsuite/std/time/weekday_last/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/time/year_month_day_last/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: Likewise.
+
+2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_M_init_local_buf()): New
+	function.
+	(_M_use_local_data()): Use _M_init_local_buf.
+	(basic_string(), basic_string(const Alloc&))
+	(basic_string(basic_string&&))
+	(basic_string(basic_string&&, const Alloc&)): Use
+	_M_init_local_buf instead of _M_use_local_data().
+	* include/bits/basic_string.tcc (swap(basic_string&))
+	(_M_construct(InIter, InIter, input_iterator_tag))
+	(_M_construct(InIter, InIter, forward_iterator_tag))
+	(_M_construct(size_type, CharT), reserve()): Likewise.
+
 2023-11-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/111315
