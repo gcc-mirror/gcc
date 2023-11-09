@@ -1214,6 +1214,22 @@ assign_discriminators (void)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  /* Don't allow debug stmts to affect discriminators, but
+	     allow them to take discriminators when they're on the
+	     same line as the preceding nondebug stmt.  */
+	  if (is_gimple_debug (stmt))
+	    {
+	      if (curr_locus != UNKNOWN_LOCATION
+		  && same_line_p (curr_locus, &curr_locus_e,
+				  gimple_location (stmt)))
+		{
+		  location_t loc = gimple_location (stmt);
+		  location_t dloc = location_with_discriminator (loc,
+								 curr_discr);
+		  gimple_set_location (stmt, dloc);
+		}
+	      continue;
+	    }
 	  if (curr_locus == UNKNOWN_LOCATION)
 	    {
 	      curr_locus = gimple_location (stmt);
