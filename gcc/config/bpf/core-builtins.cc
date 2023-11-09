@@ -1611,7 +1611,7 @@ core_mark_as_access_index (tree expr)
       || TREE_CODE (expr) == INDIRECT_REF)
     expr = TREE_OPERAND (expr, 0);
 
-  if (bpf_enum_mappings->get (expr) == NULL)
+  if (core_access_index_map->get (expr) == NULL)
     core_access_index_map->put (expr, NULL_TREE);
 }
 
