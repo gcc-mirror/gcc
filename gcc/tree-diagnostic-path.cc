@@ -204,7 +204,7 @@ struct event_range
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
-	  (initial_loc, LOCATION_ASPECT_CARET);
+	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
 	if (exploc.file != LOCATION_FILE (dc->m_last_location))
 	  dc->m_text_callbacks.start_span (dc, exploc);
       }

@@ -2212,7 +2212,7 @@ rich_location::get_range (unsigned int idx)
    location.  */
 
 expanded_location
-rich_location::get_expanded_location (unsigned int idx)
+rich_location::get_expanded_location (unsigned int idx) const
 {
   if (idx == 0)
    {
@@ -2221,7 +2221,7 @@ rich_location::get_expanded_location (unsigned int idx)
        {
 	  m_expanded_location
 	    = linemap_client_expand_location_to_spelling_point
-		(get_loc (0), LOCATION_ASPECT_CARET);
+		(m_line_table, get_loc (0), LOCATION_ASPECT_CARET);
 	  if (m_column_override)
 	    m_expanded_location.column = m_column_override;
 	  m_have_expanded_location = true;
@@ -2231,7 +2231,7 @@ rich_location::get_expanded_location (unsigned int idx)
    }
   else
     return linemap_client_expand_location_to_spelling_point
-	     (get_loc (idx), LOCATION_ASPECT_CARET);
+	     (m_line_table, get_loc (idx), LOCATION_ASPECT_CARET);
 }
 
 /* Set the column of the primary location, with 0 meaning
@@ -2490,10 +2490,12 @@ rich_location::maybe_add_fixit (location_t start,
   /* Only allow fix-it hints that affect a single line in one file.
      Compare the end-points.  */
   expanded_location exploc_start
-    = linemap_client_expand_location_to_spelling_point (start,
+    = linemap_client_expand_location_to_spelling_point (m_line_table,
+							start,
 							LOCATION_ASPECT_START);
   expanded_location exploc_next_loc
-    = linemap_client_expand_location_to_spelling_point (next_loc,
+    = linemap_client_expand_location_to_spelling_point (m_line_table,
+							next_loc,
 							LOCATION_ASPECT_START);
   /* They must be within the same file...  */
   if (exploc_start.file != exploc_next_loc.file)
@@ -2581,17 +2583,21 @@ fixit_hint::fixit_hint (location_t start,
 /* Does this fix-it hint affect the given line?  */
 
 bool
-fixit_hint::affects_line_p (const char *file, int line) const
+fixit_hint::affects_line_p (const line_maps *set,
+			    const char *file,
+			    int line) const
 {
   expanded_location exploc_start
-    = linemap_client_expand_location_to_spelling_point (m_start,
+    = linemap_client_expand_location_to_spelling_point (set,
+							m_start,
 							LOCATION_ASPECT_START);
   if (file != exploc_start.file)
     return false;
   if (line < exploc_start.line)
       return false;
   expanded_location exploc_next_loc
-    = linemap_client_expand_location_to_spelling_point (m_next_loc,
+    = linemap_client_expand_location_to_spelling_point (set,
+							m_next_loc,
 							LOCATION_ASPECT_START);
   if (file != exploc_next_loc.file)
     return false;

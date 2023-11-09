@@ -366,7 +366,7 @@ class layout
 {
  public:
   layout (const diagnostic_context &context,
-	  rich_location *richloc,
+	  const rich_location &richloc,
 	  diagnostic_t diagnostic_kind,
 	  pretty_printer *pp);
 
@@ -428,7 +428,10 @@ class layout
   move_to_column (int *column, int dest_column, bool add_left_margin);
 
  private:
+  bool compatible_locations_p (location_t loc_a, location_t loc_b) const;
+
   const diagnostic_source_printing_options &m_options;
+  const line_maps *m_line_table;
   pretty_printer *m_pp;
   char_display_policy m_policy;
   location_t m_primary_loc;
@@ -930,13 +933,13 @@ test_get_line_bytes_without_trailing_whitespace ()
    erroneously was leading to hundreds of lines of irrelevant source
    being printed.  */
 
-static bool
-compatible_locations_p (location_t loc_a, location_t loc_b)
+bool
+layout::compatible_locations_p (location_t loc_a, location_t loc_b) const
 {
   if (IS_ADHOC_LOC (loc_a))
-    loc_a = get_location_from_adhoc_loc (line_table, loc_a);
+    loc_a = get_location_from_adhoc_loc (m_line_table, loc_a);
   if (IS_ADHOC_LOC (loc_b))
-    loc_b = get_location_from_adhoc_loc (line_table, loc_b);
+    loc_b = get_location_from_adhoc_loc (m_line_table, loc_b);
 
   /* If either location is one of the special locations outside of a
      linemap, they are only compatible if they are equal.  */
@@ -944,10 +947,10 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
       || loc_b < RESERVED_LOCATION_COUNT)
     return loc_a == loc_b;
 
-  const line_map *map_a = linemap_lookup (line_table, loc_a);
+  const line_map *map_a = linemap_lookup (m_line_table, loc_a);
   linemap_assert (map_a);
 
-  const line_map *map_b = linemap_lookup (line_table, loc_b);
+  const line_map *map_b = linemap_lookup (m_line_table, loc_b);
   linemap_assert (map_b);
 
   /* Are they within the same map?  */
@@ -959,9 +962,9 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	  /* If so, then they're only compatible if either both are
 	     from the macro definition, or both from the macro arguments.  */
 	  bool loc_a_from_defn
-	    = linemap_location_from_macro_definition_p (line_table, loc_a);
+	    = linemap_location_from_macro_definition_p (m_line_table, loc_a);
 	  bool loc_b_from_defn
-	    = linemap_location_from_macro_definition_p (line_table, loc_b);
+	    = linemap_location_from_macro_definition_p (m_line_table, loc_b);
 	  if (loc_a_from_defn != loc_b_from_defn)
 	    return false;
 
@@ -969,11 +972,11 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
 	  location_t loc_a_toward_spelling
-	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+	    = linemap_macro_map_loc_unwind_toward_spelling (m_line_table,
 							    macro_map,
 							    loc_a);
 	  location_t loc_b_toward_spelling
-	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+	    = linemap_macro_map_loc_unwind_toward_spelling (m_line_table,
 							    macro_map,
 							    loc_b);
 	  return compatible_locations_p (loc_a_toward_spelling,
@@ -1180,37 +1183,38 @@ make_policy (const diagnostic_context &dc,
    will fit within the max_width provided by the diagnostic_context.  */
 
 layout::layout (const diagnostic_context &context,
-		rich_location *richloc,
+		const rich_location &richloc,
 		diagnostic_t diagnostic_kind,
 		pretty_printer *pp)
 : m_options (context.m_source_printing),
+  m_line_table (richloc.get_line_table ()),
   m_pp (pp ? pp : context.printer),
-  m_policy (make_policy (context, *richloc)),
-  m_primary_loc (richloc->get_range (0)->m_loc),
-  m_exploc (richloc->get_expanded_location (0), m_policy,
+  m_policy (make_policy (context, richloc)),
+  m_primary_loc (richloc.get_range (0)->m_loc),
+  m_exploc (richloc.get_expanded_location (0), m_policy,
 	    LOCATION_ASPECT_CARET),
   m_colorizer (m_pp, diagnostic_kind),
   m_diagnostic_path_p (diagnostic_kind == DK_DIAGNOSTIC_PATH),
-  m_layout_ranges (richloc->get_num_locations ()),
-  m_fixit_hints (richloc->get_num_fixit_hints ()),
-  m_line_spans (1 + richloc->get_num_locations ()),
+  m_layout_ranges (richloc.get_num_locations ()),
+  m_fixit_hints (richloc.get_num_fixit_hints ()),
+  m_line_spans (1 + richloc.get_num_locations ()),
   m_linenum_width (0),
   m_x_offset_display (0),
-  m_escape_on_output (richloc->escape_on_output_p ())
+  m_escape_on_output (richloc.escape_on_output_p ())
 {
-  for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
+  for (unsigned int idx = 0; idx < richloc.get_num_locations (); idx++)
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
 	 Ignore any ranges that are awkward to handle.  */
-      const location_range *loc_range = richloc->get_range (idx);
+      const location_range *loc_range = richloc.get_range (idx);
       maybe_add_location_range (loc_range, idx, false);
     }
 
   /* Populate m_fixit_hints, filtering to only those that are in the
      same file.  */
-  for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
+  for (unsigned int i = 0; i < richloc.get_num_fixit_hints (); i++)
     {
-      const fixit_hint *hint = richloc->get_fixit_hint (i);
+      const fixit_hint *hint = richloc.get_fixit_hint (i);
       if (validate_fixit_hint_p (hint))
 	m_fixit_hints.safe_push (hint);
     }
@@ -1249,18 +1253,18 @@ layout::maybe_add_location_range (const location_range *loc_range,
   gcc_assert (loc_range);
 
   /* Split the "range" into caret and range information.  */
-  source_range src_range = get_range_from_loc (line_table, loc_range->m_loc);
+  source_range src_range = get_range_from_loc (m_line_table, loc_range->m_loc);
 
   /* Expand the various locations.  */
   expanded_location start
     = linemap_client_expand_location_to_spelling_point
-    (src_range.m_start, LOCATION_ASPECT_START);
+    (m_line_table, src_range.m_start, LOCATION_ASPECT_START);
   expanded_location finish
     = linemap_client_expand_location_to_spelling_point
-    (src_range.m_finish, LOCATION_ASPECT_FINISH);
+    (m_line_table, src_range.m_finish, LOCATION_ASPECT_FINISH);
   expanded_location caret
     = linemap_client_expand_location_to_spelling_point
-    (loc_range->m_loc, LOCATION_ASPECT_CARET);
+    (m_line_table, loc_range->m_loc, LOCATION_ASPECT_CARET);
 
   /* If any part of the range isn't in the same file as the primary
      location of this diagnostic, ignore the range.  */
@@ -2098,7 +2102,7 @@ layout::print_leading_fixits (linenum_type row)
 
       gcc_assert (hint->insertion_p ());
 
-      if (hint->affects_line_p (m_exploc.file, row))
+      if (hint->affects_line_p (m_line_table, m_exploc.file, row))
 	{
 	  /* Printing the '+' with normal colorization
 	     and the inserted line with "insert" colorization
@@ -2550,7 +2554,7 @@ layout::print_trailing_fixits (linenum_type row)
       if (hint->ends_with_newline_p ())
 	continue;
 
-      if (hint->affects_line_p (m_exploc.file, row))
+      if (hint->affects_line_p (m_line_table, m_exploc.file, row))
 	corrections.add_hint (hint);
     }
 
@@ -2808,7 +2812,7 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
   /* Use the layout location-handling logic to sanitize LOC,
      filtering it to the current line spans within a temporary
      layout instance.  */
-  layout layout (*global_dc, this, DK_ERROR, nullptr);
+  layout layout (*global_dc, *this, DK_ERROR, nullptr);
   location_range loc_range;
   loc_range.m_loc = loc;
   loc_range.m_range_display_kind = SHOW_RANGE_WITHOUT_CARET;
@@ -2820,19 +2824,17 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
   return true;
 }
 
-/* Print the physical source code corresponding to the location of
-   this diagnostic, with additional annotations.
-   If PP is non-null, then use it rather than CONTEXT's printer.  */
+/* As per diagnostic_context::show_locus, but don't print anything
+   if source printing is disabled, or if the location hasn't changed.  */
 
 void
-diagnostic_show_locus (diagnostic_context * context,
-		       rich_location *richloc,
-		       diagnostic_t diagnostic_kind,
-		       pretty_printer *pp)
+diagnostic_context::maybe_show_locus (const rich_location &richloc,
+				      diagnostic_t diagnostic_kind,
+				      pretty_printer *pp)
 {
-  location_t loc = richloc->get_loc ();
+  const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
-  if (!context->m_source_printing.enabled)
+  if (!m_source_printing.enabled)
     return;
 
   /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
@@ -2841,20 +2843,32 @@ diagnostic_show_locus (diagnostic_context * context,
 
   /* Don't print the same source location twice in a row, unless we have
      fix-it hints, or multiple locations, or a label.  */
-  if (loc == context->m_last_location
-      && richloc->get_num_fixit_hints () == 0
-      && richloc->get_num_locations () == 1
-      && richloc->get_range (0)->m_label == NULL)
+  if (loc == m_last_location
+      && richloc.get_num_fixit_hints () == 0
+      && richloc.get_num_locations () == 1
+      && richloc.get_range (0)->m_label == NULL)
     return;
 
-  context->m_last_location = loc;
+  m_last_location = loc;
 
-  layout layout (*context, richloc, diagnostic_kind, pp);
+  show_locus (richloc, diagnostic_kind, pp);
+}
+
+/* Print the physical source code corresponding to the location of
+   this diagnostic, with additional annotations.
+   If PP is non-null, then use it rather than this context's printer.  */
+
+void
+diagnostic_context::show_locus (const rich_location &richloc,
+				diagnostic_t diagnostic_kind,
+				pretty_printer *pp)
+{
+  layout layout (*this, richloc, diagnostic_kind, pp);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
     {
       const line_span *line_span = layout.get_line_span (line_span_idx);
-      if (context->m_source_printing.show_line_numbers_p)
+      if (m_source_printing.show_line_numbers_p)
 	{
 	  /* With line numbers, we should show whenever the line-numbering
 	     "jumps".  */
@@ -2868,7 +2882,7 @@ diagnostic_show_locus (diagnostic_context * context,
 	    {
 	      expanded_location exploc
 		= layout.get_expanded_location (line_span);
-	      context->m_text_callbacks.start_span (context, exploc);
+	      m_text_callbacks.start_span (this, exploc);
 	    }
 	}
       /* Iterate over the lines within this span (using linenum_arith_t to
@@ -2961,7 +2975,7 @@ test_offset_impl (int caret_byte_col, int max_width,
   rich_location richloc (line_table,
 			 linemap_position_for_column (line_table,
 						      caret_byte_col));
-  layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+  layout test_layout (dc, richloc, DK_ERROR, nullptr);
   ASSERT_EQ (left_margin - test_linenum_sep,
 	     test_layout.get_linenum_width ());
   ASSERT_EQ (expected_x_offset_display,
@@ -3076,7 +3090,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col));
-    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |         1         \n"
 		  "     |         1         \n"
@@ -3101,7 +3115,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col + 2));
-    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |        1         1 \n"
 		  "     |        1         2 \n"
@@ -3178,7 +3192,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
     {
       test_diagnostic_context dc;
       dc.m_tabstop = tabstop;
-      layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+      layout test_layout (dc, richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
       const char *out = pp_formatted_text (dc.printer);
       ASSERT_EQ (NULL, strchr (out, '\t'));
@@ -3201,7 +3215,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_source_printing.min_margin_width
 	= test_left_margin - test_linenum_sep + 1;
       dc.m_source_printing.show_line_numbers_p = true;
-      layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+      layout test_layout (dc, richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
 
       /* We have arranged things so that two columns will be printed before
@@ -5513,7 +5527,7 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
-    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "            ^\n",
@@ -5528,7 +5542,7 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
-    layout test_layout (dc, &richloc, DK_ERROR, nullptr);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "                         ^\n",

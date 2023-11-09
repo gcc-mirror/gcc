@@ -410,6 +410,10 @@ public:
     m_option_classifier.pop (where);
   }
 
+  void maybe_show_locus (const rich_location &richloc,
+			 diagnostic_t diagnostic_kind,
+			 pretty_printer *pp);
+
   void emit_diagram (const diagnostic_diagram &diagram);
 
   /* Various setters for use by option-handling logic.  */
@@ -495,6 +499,10 @@ private:
   bool diagnostic_enabled (diagnostic_info *diagnostic);
 
   void get_any_inlining_info (diagnostic_info *diagnostic);
+
+  void show_locus (const rich_location &richloc,
+		   diagnostic_t diagnostic_kind,
+		   pretty_printer *pp);
 
   /* Data members.
      Ideally, all of these would be private and have "m_" prefixes.  */
@@ -816,10 +824,15 @@ diagnostic_report_current_module (diagnostic_context *context,
   context->report_current_module (where);
 }
 
-extern void diagnostic_show_locus (diagnostic_context *,
-				   rich_location *richloc,
-				   diagnostic_t diagnostic_kind,
-				   pretty_printer *pp = nullptr);
+inline void
+diagnostic_show_locus (diagnostic_context *context,
+		       rich_location *richloc,
+		       diagnostic_t diagnostic_kind,
+		       pretty_printer *pp = nullptr)
+{
+  gcc_assert (richloc);
+  context->maybe_show_locus (*richloc, diagnostic_kind, pp);
+}
 
 /* Because we read source files a second time after the frontend did it the
    first time, we need to know how the frontend handled things like character
