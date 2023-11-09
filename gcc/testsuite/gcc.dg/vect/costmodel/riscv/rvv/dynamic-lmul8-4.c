@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d --param riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 #include <stddef.h>

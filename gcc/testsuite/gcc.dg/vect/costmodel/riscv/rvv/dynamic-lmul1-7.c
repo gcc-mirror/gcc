@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 --param riscv-autovec-preference=scalable -Wno-psabi -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -Wno-psabi -fdump-tree-vect-details" } */
 
 #include "riscv_vector.h"
 
