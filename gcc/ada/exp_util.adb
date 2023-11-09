@@ -14401,6 +14401,7 @@ package body Exp_Util is
    ----------------------------------
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean is
+      Nod : Node_Id;
       Par : Node_Id;
 
    begin
@@ -14408,9 +14409,17 @@ package body Exp_Util is
       --  can be expanded into Expression_With_Actions, hence the test of the
       --  original node.
 
-      Par := Parent (N);
+      Nod := N;
+      Par := Parent (Nod);
+
       while Present (Par) loop
-         if Nkind (Original_Node (Par)) in N_Case_Expression | N_If_Expression
+         if Nkind (Original_Node (Par)) = N_Case_Expression
+           and then Nod /= Expression (Original_Node (Par))
+         then
+            return True;
+
+         elsif Nkind (Original_Node (Par)) = N_If_Expression
+           and then Nod /= First (Expressions (Original_Node (Par)))
          then
             return True;
 
@@ -14430,7 +14439,8 @@ package body Exp_Util is
             return False;
          end if;
 
-         Par := Parent (Par);
+         Nod := Par;
+         Par := Parent (Nod);
       end loop;
 
       return False;

@@ -1255,9 +1255,10 @@ package Exp_Util is
    --  extension to verify legality rules on inherited conditions.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N is immediately within a case or an if
-   --  expression. The criterion is whether temporaries created by the actions
-   --  attached to N need to outlive an enclosing case or if expression.
+   --  Determine whether arbitrary node N is immediately within a dependent
+   --  expression of a case or an if expression. The criterion is whether
+   --  temporaries created by the actions attached to N need to outlive an
+   --  enclosing case or if expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

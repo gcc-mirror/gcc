@@ -70,59 +70,6 @@ with Uintp;          use Uintp;
 
 package body Exp_Ch7 is
 
-   --------------------------------
-   -- Transient Scope Management --
-   --------------------------------
-
-   --  A transient scope is needed when certain temporary objects are created
-   --  by the compiler. These temporary objects are allocated on the secondary
-   --  stack and/or need finalization, and the transient scope is responsible
-   --  for finalizing the objects and reclaiming the memory of the secondary
-   --  stack at the appropriate time. They are generally objects allocated to
-   --  store the result of a function returning an unconstrained or controlled
-   --  value. Expressions needing to be wrapped in a transient scope may appear
-   --  in three different contexts which lead to different kinds of transient
-   --  scope expansion:
-
-   --   1. In a simple statement (procedure call, assignment, ...). In this
-   --      case the instruction is wrapped into a transient block. See
-   --      Wrap_Transient_Statement for details.
-
-   --   2. In an expression of a control structure (test in a IF statement,
-   --      expression in a CASE statement, ...). See Wrap_Transient_Expression
-   --      for details.
-
-   --   3. In a expression of an object_declaration. No wrapping is possible
-   --      here, so the finalization actions, if any, are done right after the
-   --      declaration and the secondary stack deallocation is done in the
-   --      proper enclosing scope. See Wrap_Transient_Declaration for details.
-
-   --------------------------------------------------
-   -- Transient Blocks and Finalization Management --
-   --------------------------------------------------
-
-   procedure Insert_Actions_In_Scope_Around
-     (N         : Node_Id;
-      Clean     : Boolean;
-      Manage_SS : Boolean);
-   --  Insert the before-actions kept in the scope stack before N, and the
-   --  after-actions after N, which must be a member of a list. If flag Clean
-   --  is set, insert any cleanup actions. If flag Manage_SS is set, insert
-   --  calls to mark and release the secondary stack.
-
-   function Make_Transient_Block
-     (Loc    : Source_Ptr;
-      Action : Node_Id;
-      Par    : Node_Id) return Node_Id;
-   --  Action is a single statement or object declaration. Par is the proper
-   --  parent of the generated block. Create a transient block whose name is
-   --  the current scope and the only handled statement is Action. If Action
-   --  involves controlled objects or secondary stack usage, the corresponding
-   --  cleanup actions are performed at the end of the block.
-
-   procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id);
-   --  Shared processing for Store_xxx_Actions_In_Scope
-
    -----------------------------
    -- Finalization Management --
    -----------------------------
@@ -291,6 +238,84 @@ package body Exp_Ch7 is
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
+
+   --------------------------------
+   -- Transient Scope Management --
+   --------------------------------
+
+   --  A transient scope is needed when certain temporary objects are created
+   --  by the compiler. These temporary objects are allocated on the secondary
+   --  stack and/or need finalization, and the transient scope is responsible
+   --  for finalizing the objects and reclaiming the memory of the secondary
+   --  stack at the appropriate time. They are generally objects allocated to
+   --  store the result of a function returning an unconstrained or controlled
+   --  value. Expressions needing to be wrapped in a transient scope may appear
+   --  in three different contexts, which lead to different kinds of transient
+   --  scope expansion:
+
+   --   1. In a simple statement (procedure call, assignment, ...). In this
+   --      case the statement is wrapped into a transient block, which takes
+   --      care of the finalization actions as well as the secondary stack
+   --      deallocation, See Wrap_Transient_Statement for details.
+
+   --   2. In an expression of a control structure (test in a If statement,
+   --      expression in a Case statement, ...). In this case the expression
+   --      is replaced by a temporary and the enclosing statement is wrapped
+   --      into a transient block, which takes care of the finalization actions
+   --      and the secondary stack deallocation. See Wrap_Transient_Expression
+   --      for details.
+
+   --   3. In an expression of an object declaration. No wrapping is possible
+   --      here, so the finalization actions performed on the normal path, if
+   --      any, are done right after the declaration, and those performed on
+   --      the exceptional path, as well as the secondary stack deallocation,
+   --      are deferred to the enclosing scope. See Wrap_Transient_Declaration
+   --      for details.
+
+   --  A transient scope is created by calling Establish_Transient_Scope on the
+   --  node that needs to be serviced by it (the serviced node can subsequently
+   --  be retrieved by invoking Node_To_Be_Wrapped when the current scope is a
+   --  transient scope). Once this has been done, the normal processing of the
+   --  Insert_Actions procedures is blocked and the procedures are redirected
+   --  to the Store_xxx_Actions_In_Scope procedures and Store_Actions_In_Scope
+   --  is ultimately invoked to store the pending actions.
+
+   --  A transient scope is finalized by calling one of the Wrap_Transient_xxx
+   --  procedures depending on the context as explained above. They ultimately
+   --  invoke Insert_Actions_In_Scope_Around as per the following picture:
+
+   --            Wrap_Transient_Expression          Wrap_Transient_Statement
+   --                                  |              |
+   --                                  V              V
+   --                                Make_Transient_Block
+   --                                        |
+   --   Wrap_Transient_Declaration           |
+   --                          |             |
+   --                          V             V
+   --                       Insert_Actions_In_Scope_Around
+
+   procedure Insert_Actions_In_Scope_Around
+     (N         : Node_Id;
+      Clean     : Boolean;
+      Manage_SS : Boolean);
+   --  Insert the before-actions kept in the scope stack before N, and the
+   --  after-actions after N, which must be a member of a list. If Clean is
+   --  true, insert any cleanup actions kept in the scope stack and generate
+   --  required finalization actions for the before-actions and after-actions.
+   --  If Manage_SS is true, insert calls to mark/release the secondary stack.
+
+   function Make_Transient_Block
+     (Loc    : Source_Ptr;
+      Action : Node_Id;
+      Par    : Node_Id) return Node_Id;
+   --  Action is a single statement or object declaration. Par is the proper
+   --  parent of the generated block. Create a transient block whose name is
+   --  the current scope and the only handled statement is Action. If Action
+   --  involves controlled objects or secondary stack usage, the corresponding
+   --  cleanup actions are performed at the end of the block.
+
+   procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id);
+   --  Shared processing for Store_xxx_Actions_In_Scope
 
    -------------------------------------------
    -- Unnesting procedures for CCG and LLVM --
@@ -5641,9 +5666,7 @@ package body Exp_Ch7 is
             Blk_Ins   := Last_Object;
          end if;
 
-         if Clean then
-            Insert_List_After_And_Analyze (Blk_Ins, Act_Cleanup);
-         end if;
+         Insert_List_After_And_Analyze (Blk_Ins, Act_Cleanup);
 
          --  Examine all objects in the list First_Object .. Last_Object
 
@@ -5824,13 +5847,15 @@ package body Exp_Ch7 is
            (Last_Obj, Build_SS_Release_Call (Loc, Mark_Id));
       end if;
 
-      --  Check for transient objects associated with Target and generate the
-      --  appropriate finalization actions for them.
+      --  If we are handling cleanups, check for transient objects associated
+      --  with Target and generate the required finalization actions for them.
 
-      Process_Transients_In_Scope
-        (First_Object => First_Obj,
-         Last_Object  => Last_Obj,
-         Related_Node => Target);
+      if Clean then
+         Process_Transients_In_Scope
+           (First_Object => First_Obj,
+            Last_Object  => Last_Obj,
+            Related_Node => Target);
+      end if;
 
       --  Reset the action lists
 
