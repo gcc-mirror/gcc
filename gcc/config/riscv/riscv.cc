@@ -9348,20 +9348,33 @@ static void
 riscv_frm_emit_after_bb_end (rtx_insn *cur_insn)
 {
   edge eg;
+  bool abnormal_edge_p = false;
   edge_iterator eg_iterator;
   basic_block bb = BLOCK_FOR_INSN (cur_insn);
 
   FOR_EACH_EDGE (eg, eg_iterator, bb->succs)
+    {
+      if (eg->flags & EDGE_ABNORMAL)
+	abnormal_edge_p = true;
+      else
+	{
+	  start_sequence ();
+	  emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
+	  rtx_insn *backup_insn = get_insns ();
+	  end_sequence ();
+
+	  insert_insn_on_edge (backup_insn, eg);
+	}
+    }
+
+  if (abnormal_edge_p)
     {
       start_sequence ();
       emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
       rtx_insn *backup_insn = get_insns ();
       end_sequence ();
 
-      if (eg->flags & EDGE_ABNORMAL)
-	insert_insn_end_basic_block (backup_insn, bb);
-      else
-	insert_insn_on_edge (backup_insn, eg);
+      insert_insn_end_basic_block (backup_insn, bb);
     }
 
   commit_edge_insertions ();
