@@ -1462,5 +1462,13 @@ ContextualASTVisitor::visit (AST::TraitImpl &impl)
   pop_context ();
 }
 
+void
+ContextualASTVisitor::visit (AST::Trait &trait)
+{
+  push_context (Context::TRAIT);
+  DefaultASTVisitor::visit (trait);
+  pop_context ();
+}
+
 } // namespace AST
 } // namespace Rust

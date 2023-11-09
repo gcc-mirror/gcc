@@ -442,6 +442,7 @@ protected:
     FUNCTION,
     INHERENT_IMPL,
     TRAIT_IMPL,
+    TRAIT,
     MODULE,
     CRATE,
   };
@@ -452,6 +453,8 @@ protected:
   virtual void visit (AST::InherentImpl &impl) override;
 
   virtual void visit (AST::TraitImpl &impl) override;
+
+  virtual void visit (AST::Trait &trait) override;
 
   template <typename T> void visit (T &item)
   {
