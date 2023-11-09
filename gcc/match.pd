@@ -1086,37 +1086,37 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* cos(copysign(x, y)) -> cos(x).  Similarly for cosh.  */
 (for coss (COS COSH)
-     copysigns (COPYSIGN)
- (simplify
-  (coss (copysigns @0 @1))
-   (coss @0)))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (coss (copysigns @0 @1))
+    (coss @0))))
 
 /* pow(copysign(x, y), z) -> pow(x, z) if z is an even integer.  */
 (for pows (POW)
-     copysigns (COPYSIGN)
- (simplify
-  (pows (copysigns @0 @2) REAL_CST@1)
-  (with { HOST_WIDE_INT n; }
-   (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
-    (pows @0 @1)))))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (pows (copysigns @0 @2) REAL_CST@1)
+   (with { HOST_WIDE_INT n; }
+    (if (real_isinteger (&TREE_REAL_CST (@1), &n) && (n & 1) == 0)
+     (pows @0 @1))))))
 /* Likewise for powi.  */
 (for pows (POWI)
-     copysigns (COPYSIGN)
- (simplify
-  (pows (copysigns @0 @2) INTEGER_CST@1)
-  (if ((wi::to_wide (@1) & 1) == 0)
-   (pows @0 @1))))
+ (for copysigns (COPYSIGN)
+  (simplify
+   (pows (copysigns @0 @2) INTEGER_CST@1)
+   (if ((wi::to_wide (@1) & 1) == 0)
+    (pows @0 @1)))))
 
 (for hypots (HYPOT)
-     copysigns (COPYSIGN)
- /* hypot(copysign(x, y), z) -> hypot(x, z).  */
- (simplify
-  (hypots (copysigns @0 @1) @2)
-  (hypots @0 @2))
- /* hypot(x, copysign(y, z)) -> hypot(x, y).  */
- (simplify
-  (hypots @0 (copysigns @1 @2))
-  (hypots @0 @1)))
+ (for copysigns (COPYSIGN)
+  /* hypot(copysign(x, y), z) -> hypot(x, z).  */
+  (simplify
+   (hypots (copysigns @0 @1) @2)
+   (hypots @0 @2))
+  /* hypot(x, copysign(y, z)) -> hypot(x, y).  */
+  (simplify
+   (hypots @0 (copysigns @1 @2))
+   (hypots @0 @1))))
 
 /* copysign(x, CST) -> [-]abs (x).  */
 (for copysigns (COPYSIGN_ALL)
