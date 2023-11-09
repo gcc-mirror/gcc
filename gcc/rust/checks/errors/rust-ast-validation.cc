@@ -43,7 +43,7 @@ ASTValidation::visit (AST::LoopLabel &label)
   auto lifetime_name = '\'' + name;
   auto &keywords = Values::Keywords::keywords;
   if (keywords.find (name) != keywords.end ())
-    rust_error_at (label.get_locus (), "invalid label name %qs",
+    rust_error_at (label.get_lifetime ().get_locus (), "invalid label name %qs",
 		   lifetime_name.c_str ());
 
   // WARNING: Do not call ContextualASTVisitor, we don't want to visit the
