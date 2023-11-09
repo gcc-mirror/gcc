@@ -2,6 +2,7 @@
 
 #include <ranges>
 #include <algorithm>
+#include <memory>
 #include <testsuite_hooks.h>
 
 #if __cpp_lib_ranges_repeat != 202207L
@@ -137,6 +138,17 @@ test06()
   static_assert( requires { views::repeat(move_only{}, 2); } );
 }
 
+void
+test07()
+{
+  // PR libstdc++/112453
+  auto t1 = std::views::repeat(std::make_unique<int>(5)) | std::views::take(2);
+  auto d1 = std::views::repeat(std::make_unique<int>(5)) | std::views::drop(2);
+
+  auto t2 = std::views::repeat(std::make_unique<int>(5), 4) | std::views::take(2);
+  auto d2 = std::views::repeat(std::make_unique<int>(5), 4) | std::views::drop(2);
+}
+
 int
 main()
 {
@@ -146,4 +158,5 @@ main()
   static_assert(test04());
   test05();
   test06();
+  test07();
 }
