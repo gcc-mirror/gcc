@@ -754,15 +754,33 @@
 (define_expand "copysign<mode>3"
   [(match_operand:VHSDF 0 "register_operand")
    (match_operand:VHSDF 1 "register_operand")
-   (match_operand:VHSDF 2 "register_operand")]
+   (match_operand:VHSDF 2 "nonmemory_operand")]
   "TARGET_SIMD"
 {
-  rtx v_bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
+  machine_mode int_mode = <V_INT_EQUIV>mode;
+  rtx v_bitmask = gen_reg_rtx (int_mode);
   int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
 
   emit_move_insn (v_bitmask,
 		  aarch64_simd_gen_const_vector_dup (<V_INT_EQUIV>mode,
 						     HOST_WIDE_INT_M1U << bits));
+
+  /* copysign (x, -1) should instead be expanded as orr with the sign
+     bit.  */
+  if (!REG_P (operands[2]))
+    {
+      rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+      if (GET_CODE (op2_elt) == CONST_DOUBLE
+	  && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+	{
+	  emit_insn (gen_ior<v_int_equiv>3 (
+	    lowpart_subreg (int_mode, operands[0], <MODE>mode),
+	    lowpart_subreg (int_mode, operands[1], <MODE>mode), v_bitmask));
+	  DONE;
+	}
+    }
+
+  operands[2] = force_reg (<MODE>mode, operands[2]);
   emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], v_bitmask,
 					 operands[2], operands[1]));
   DONE;
