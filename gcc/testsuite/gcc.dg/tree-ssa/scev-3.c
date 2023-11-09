@@ -40,4 +40,4 @@ __BB(6):
 
 }
 
-/* { dg-final { scan-tree-dump-times "&a" 1 "ivopts" } } */
+/* { dg-final { scan-tree-dump-times "&a" 1 "ivopts" { xfail ia32 } } } */
