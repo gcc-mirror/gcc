@@ -155,7 +155,7 @@ namespace __detail
     {
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
-	_S_build(_Kt&& __k, _Arg&& __arg, const _NodeGenerator& __node_gen)
+	_S_build(_Kt&& __k, _Arg&& __arg, _NodeGenerator& __node_gen)
 	-> typename _NodeGenerator::__node_ptr
 	{
 	  return __node_gen(std::forward<_Kt>(__k),
@@ -168,7 +168,7 @@ namespace __detail
     {
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
-	_S_build(_Kt&& __k, _Arg&&, const _NodeGenerator& __node_gen)
+	_S_build(_Kt&& __k, _Arg&&, _NodeGenerator& __node_gen)
 	-> typename _NodeGenerator::__node_ptr
 	{ return __node_gen(std::forward<_Kt>(__k)); }
     };
@@ -212,7 +212,7 @@ namespace __detail
 
       template<typename... _Args>
 	__node_ptr
-	operator()(_Args&&... __args) const
+	operator()(_Args&&... __args)
 	{
 	  if (!_M_nodes)
 	    return _M_h._M_allocate_node(std::forward<_Args>(__args)...);
@@ -230,7 +230,7 @@ namespace __detail
 	}
 
     private:
-      mutable __node_ptr _M_nodes;
+      __node_ptr _M_nodes;
       __hashtable_alloc& _M_h;
     };
 
@@ -631,6 +631,7 @@ namespace __detail
     { return _M_max_load_factor; }
 
     // Return a bucket size no smaller than n.
+    // TODO: 'const' qualifier is kept for abi compatibility reason.
     std::size_t
     _M_next_bkt(std::size_t __n) const;
 
@@ -643,6 +644,7 @@ namespace __detail
     // and __n_ins is number of elements to be inserted.  Do we need to
     // increase bucket count?  If so, return make_pair(true, n), where n
     // is the new bucket count.  If not, return make_pair(false, 0).
+    // TODO: 'const' qualifier is kept for abi compatibility reason.
     std::pair<bool, std::size_t>
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		   std::size_t __n_ins) const;
@@ -664,6 +666,8 @@ namespace __detail
     static const std::size_t _S_growth_factor = 2;
 
     float		_M_max_load_factor;
+
+    // TODO: 'mutable' kept for abi compatibility reason.
     mutable std::size_t	_M_next_resize;
   };
 
@@ -1007,12 +1011,12 @@ namespace __detail
       template<typename _InputIterator, typename _NodeGetter>
 	void
 	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			const _NodeGetter&, true_type __uks);
+			_NodeGetter&, true_type __uks);
 
       template<typename _InputIterator, typename _NodeGetter>
 	void
 	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			const _NodeGetter&, false_type __uks);
+			_NodeGetter&, false_type __uks);
 
     public:
       using iterator = _Node_iterator<_Value, __constant_iterators::value,
@@ -1088,7 +1092,7 @@ namespace __detail
 		   _Hash, _RangeHash, _Unused,
 		   _RehashPolicy, _Traits>::
       _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      const _NodeGetter& __node_gen, true_type __uks)
+		      _NodeGetter& __node_gen, true_type __uks)
       {
 	__hashtable& __h = _M_conjure_hashtable();
 	for (; __first != __last; ++__first)
@@ -1105,7 +1109,7 @@ namespace __detail
 		   _Hash, _RangeHash, _Unused,
 		   _RehashPolicy, _Traits>::
       _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      const _NodeGetter& __node_gen, false_type __uks)
+		      _NodeGetter& __node_gen, false_type __uks)
       {
 	using __rehash_guard_t = typename __hashtable::__rehash_guard_t;
 	using __pair_type = std::pair<bool, std::size_t>;
@@ -1435,9 +1439,7 @@ namespace __detail
       std::size_t
       _M_bucket_index(const _Hash_node_value<_Value, false>& __n,
 		      std::size_t __bkt_count) const
-	noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>()))
-		  && noexcept(declval<const _RangeHash&>()((__hash_code)0,
-							   (std::size_t)0)) )
+      noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>())) )
       {
 	return _RangeHash{}(_M_hash_code(_ExtractKey{}(__n._M_v())),
 			    __bkt_count);
@@ -1445,9 +1447,7 @@ namespace __detail
 
       std::size_t
       _M_bucket_index(const _Hash_node_value<_Value, true>& __n,
-		      std::size_t __bkt_count) const
-	noexcept( noexcept(declval<const _RangeHash&>()((__hash_code)0,
-							(std::size_t)0)) )
+		      std::size_t __bkt_count) const noexcept
       { return _RangeHash{}(__n._M_hash_code, __bkt_count); }
 
       void
