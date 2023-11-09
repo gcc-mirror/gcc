@@ -91,7 +91,7 @@ m68k port		Andreas Schwab		<schwab@linux-m68k.org>
 m68k-motorola-sysv port	Philippe De Muyter	<phdm@macqel.be>
 mcore port		Nick Clifton		<nickc@redhat.com>
 microblaze		Michael Eager		<eager@eagercon.com>
-mips port		YunQiang Su		<yunqiang.su@cipunited.com>
+mips port		YunQiang Su		<syq@gcc.gnu.org>
 mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
 mn10300 port		Jeff Law		<jeffreyalaw@gmail.com>
 mn10300 port		Alexandre Oliva		<aoliva@gcc.gnu.org>
