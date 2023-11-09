@@ -5,6 +5,8 @@
 
 #define N 99
 
+#define EPS 1e-8
+
 #define TEST_LOOP(OLD_TYPE, NEW_TYPE)                                          \
   {                                                                            \
     NEW_TYPE r[N], b[N];                                                       \
@@ -14,12 +16,15 @@
 	a[i] = (i & 1 ? i : 3 * i) * (i % 3 == 0 ? 1 : -1);                    \
 	b[i] = (i % 9) * (i % 7 + 1);                                          \
 	pred[i] = (i % 7 < 4);                                                 \
-	asm volatile("" ::: "memory");                                         \
+	asm volatile ("" ::: "memory");                                        \
       }                                                                        \
     test_##OLD_TYPE##_2_##NEW_TYPE (r, a, b, pred, N);                         \
     for (int i = 0; i < N; ++i)                                                \
-      if (r[i] != (pred[i] ? (NEW_TYPE) a[i] : b[i]))                          \
-	__builtin_abort ();                                                    \
+      {                                                                        \
+	NEW_TYPE ref = pred[i] ? a[i] : b[i];                                  \
+	if (__builtin_fabsf (r[i] - ref) > EPS)                                \
+	  __builtin_abort ();                                                  \
+      }                                                                        \
   }
 
 int

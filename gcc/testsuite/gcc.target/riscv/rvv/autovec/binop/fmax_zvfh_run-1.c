@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_zvfh } } } */
+/* { dg-do run { target { riscv_zvfh && riscv_zfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-signaling-nans" } */
 
 #include <math.h>
@@ -30,7 +30,7 @@
     dst[7] = nan ("0.0");                                                      \
     dst[8] = INFINITY;                                                         \
     dst[9] = -INFINITY;                                                        \
-    kest_##TYPE (dst, y, N);                                                   \
+    test_##TYPE (dst, y, N);                                                   \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
 	double ref = FN (SUFFIX) (x[i], y[i]);                                 \

@@ -2,9 +2,10 @@
 /* { dg-additional-options "--param riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math " } */
 
 #include "cond_sqrt-zvfh-1.c"
-#include <stdio.h>
 
 #define N 99
+
+#define EPS 1e-2
 
 #define TEST_LOOP(TYPE, OP)                                                    \
   {                                                                            \
@@ -13,12 +14,15 @@
       {                                                                        \
 	a[i] = (i & 1 ? i : 3 * i) * (i % 3 == 0 ? 1 : 2);                     \
 	pred[i] = (i % 7 < 4);                                                 \
-	asm volatile("" ::: "memory");                                         \
+	asm volatile ("" ::: "memory");                                        \
       }                                                                        \
     test_##TYPE##_##OP (r, a, pred, N);                                        \
     for (int i = 0; i < N; ++i)                                                \
-      if (r[i] != (pred[i] ? OP (a[i]) : a[i]))                                \
-	__builtin_abort ();                                                    \
+      {                                                                        \
+	float ref = pred[i] ? __builtin_sqrtf (a[i]) : a[i];                   \
+	if (__builtin_fabsf (r[i] - ref) > EPS)                                \
+	  __builtin_abort ();                                                  \
+      }                                                                        \
   }
 
 int

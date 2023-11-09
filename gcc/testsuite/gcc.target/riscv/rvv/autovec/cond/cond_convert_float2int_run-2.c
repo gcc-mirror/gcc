@@ -11,7 +11,7 @@
     OLD_TYPE a[N], pred[N];                                                    \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
-	a[i] = (i & 1 ? i : 3 * i) * (i % 3 == 0 ? 1 : -1);                    \
+	a[i] = (i & 1 ? i : 1.2 * i) * (i % 3 == 0 ? 1 : -1);                  \
 	pred[i] = (i % 7 < 4);                                                 \
 	asm volatile("" ::: "memory");                                         \
       }                                                                        \

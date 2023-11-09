@@ -7,4 +7,3 @@
 #include "fmax_zvfh-1.c"
 
 /* { dg-final { scan-assembler-times {vfmin\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+} 1 } } */
-

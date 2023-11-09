@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_zvfh } } } */
+/* { dg-do run { target { riscv_zvfh && riscv_zfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model -fno-signaling-nans" } */
 
 #include "cond_fmax_zvfh-1.c"
@@ -18,7 +18,7 @@
     test_##TYPE##_##NAME (x, y, pred, N);				\
     for (int i = 0; i < N; ++i)						\
       {									\
-	TYPE expected = i % 3 != 1 ? FN (y[i], CONST) : y[i];		\
+	TYPE expected = i % 3 != 1 ? FN (y[i], CONST) : y[i];	\
 	if (x[i] != expected)						\
 	  __builtin_abort ();						\
 	asm volatile ("" ::: "memory");					\
