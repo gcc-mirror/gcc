@@ -12,5 +12,5 @@ double bar (double x)
   return __builtin_copysign (x, minuszero);
 }
 
-/* { dg-final { scan-tree-dump-times "= -" 1 "cddce1" } } */
-/* { dg-final { scan-tree-dump-times "= ABS_EXPR" 2 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_copysign" 1 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "= ABS_EXPR" 1 "cddce1" } } */

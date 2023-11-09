@@ -9,5 +9,6 @@ long double abs_ld(long double x) { return __builtin_signbit(x) ? x : -x; }
 
 /* __builtin_signbit(x) ? x : -x. Should be convert into - ABS_EXP<x> */
 /* { dg-final { scan-tree-dump-not "signbit" "optimized"} } */
-/* { dg-final { scan-tree-dump-times "= ABS_EXPR" 3 "optimized"} } */
-/* { dg-final { scan-tree-dump-times "= -" 3 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "= ABS_EXPR" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "= -" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "= \.COPYSIGN" 2 "optimized"} } */

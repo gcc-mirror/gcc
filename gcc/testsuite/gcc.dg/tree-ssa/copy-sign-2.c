@@ -10,4 +10,5 @@ float f1(float x)
   float t = __builtin_copysignf (1.0f, -x);
   return x * t;
 }
-/* { dg-final { scan-tree-dump-times "ABS" 2 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "ABS" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times ".COPYSIGN" 1 "optimized"} } */
