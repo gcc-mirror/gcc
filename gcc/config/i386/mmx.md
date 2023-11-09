@@ -1215,7 +1215,7 @@
     }
 }
   [(set_attr "isa" "noavx,noavx,avx")
-   (set_attr "addr" "*,*,gpr16")
+   (set_attr "addr" "gpr16,gpr16,*")
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,1,*")
    (set_attr "prefix_extra" "1")
