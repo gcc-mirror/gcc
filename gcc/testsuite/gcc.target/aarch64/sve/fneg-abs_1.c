@@ -6,7 +6,7 @@
 
 /*
 ** t1:
-**	orr	v[0-9]+.2s, #128, lsl #24
+**	orr	z[0-9]+.s, z[0-9]+.s, #-2147483648
 **	ret
 */
 float32x2_t t1 (float32x2_t a)
@@ -16,7 +16,7 @@ float32x2_t t1 (float32x2_t a)
 
 /*
 ** t2:
-**	orr	v[0-9]+.4s, #128, lsl #24
+**	orr	z[0-9]+.s, z[0-9]+.s, #-2147483648
 **	ret
 */
 float32x4_t t2 (float32x4_t a)
@@ -26,9 +26,7 @@ float32x4_t t2 (float32x4_t a)
 
 /*
 ** t3:
-**	adrp	x0, .LC[0-9]+
-**	ldr	q[0-9]+, \[x0, #:lo12:.LC0\]
-**	orr	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
+**	orr	z[0-9]+.d, z[0-9]+.d, #-9223372036854775808
 **	ret
 */
 float64x2_t t3 (float64x2_t a)

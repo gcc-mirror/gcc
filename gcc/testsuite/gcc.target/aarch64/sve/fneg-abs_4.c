@@ -6,9 +6,7 @@
 
 /*
 ** negabs:
-**	mov	x0, -9223372036854775808
-**	fmov	d[0-9]+, x0
-**	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
+**	orr	z0.d, z0.d, #-9223372036854775808
 **	ret
 */
 double negabs (double x)
@@ -22,8 +20,7 @@ double negabs (double x)
 
 /*
 ** negabsf:
-**	movi	v[0-9]+.2s, 0x80, lsl 24
-**	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
+**	orr	z0.s, z0.s, #-2147483648
 **	ret
 */
 float negabsf (float x)

@@ -4599,7 +4599,8 @@
   ""
   {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
      [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
-     [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ rk       , ^r , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ w        , 0  , <lconst> ; *           , sve   ] <logical>\t%Z0.<s>, %Z0.<s>, #%2
      [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
   }
 )
