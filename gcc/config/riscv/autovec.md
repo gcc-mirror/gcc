@@ -1809,6 +1809,28 @@
 })
 
 ;; -------------------------------------------------------------------------
+;; ---- [FP] Conditional copysign operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfsgnj
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_copysign<mode>"
+  [(match_operand:V_VLSF 0 "register_operand")
+   (match_operand:<VM> 1 "register_operand")
+   (match_operand:V_VLSF 2 "register_operand")
+   (match_operand:V_VLSF 3 "register_operand")
+   (match_operand:V_VLSF 4 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (UNSPEC_VCOPYSIGN, <MODE>mode);
+  rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[4],
+               gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
+  riscv_vector::expand_cond_len_binop (icode, ops);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT] Conditional ternary operations
 ;; -------------------------------------------------------------------------
 ;; Includes:
