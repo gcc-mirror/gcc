@@ -947,6 +947,152 @@
   operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
 })
 
+;; VECTOR REVERSE ELEMENTS V16QI
+
+(define_expand "eltswapv16qi"
+  [(parallel
+    [(set (match_operand:V16QI  0 "nonimmediate_operand")
+	  (vec_select:V16QI
+	   (match_operand:V16QI 1 "nonimmediate_operand")
+	   (match_dup 2)))
+     (use (match_dup 3))])]
+  "TARGET_VX"
+{
+  rtvec vec = rtvec_alloc (16);
+  for (int i = 0; i < 16; ++i)
+    RTVEC_ELT (vec, i) = GEN_INT (15 - i);
+  operands[2] = gen_rtx_PARALLEL (VOIDmode, vec);
+  operands[3] = gen_rtx_CONST_VECTOR (V16QImode, vec);
+})
+
+(define_insn_and_split "*eltswapv16qi"
+  [(set (match_operand:V16QI  0 "nonimmediate_operand" "=v,^R,^v")
+	(vec_select:V16QI
+	 (match_operand:V16QI 1 "nonimmediate_operand"  "v,^v,^R")
+	 (parallel [(const_int 15)
+		    (const_int 14)
+		    (const_int 13)
+		    (const_int 12)
+		    (const_int 11)
+		    (const_int 10)
+		    (const_int 9)
+		    (const_int 8)
+		    (const_int 7)
+		    (const_int 6)
+		    (const_int 5)
+		    (const_int 4)
+		    (const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (use (match_operand:V16QI 2 "permute_pattern_operand" "v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vstbrq\t%v1,%0
+   vlbrq\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 0)
+	(unspec:V16QI [(match_dup 1)
+		       (match_dup 1)
+		       (match_dup 2)]
+		      UNSPEC_VEC_PERM))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V8HI
+
+(define_insn_and_split "eltswapv8hi"
+  [(set (match_operand:V8HI  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V8HI
+	 (match_operand:V8HI 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 7)
+		    (const_int 6)
+		    (const_int 5)
+		    (const_int 4)
+		    (const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (clobber (match_scratch:V2DI 2 "=&v,X,X"))
+   (clobber (match_scratch:V4SI 3 "=&v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vsterh\t%v1,%0
+   vlerh\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 2)
+	(subreg:V2DI (match_dup 1) 0))
+   (set (match_dup 2)
+	(vec_select:V2DI
+	 (match_dup 2)
+	 (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 2)
+	(rotate:V2DI
+	 (match_dup 2)
+	 (const_int 32)))
+   (set (match_dup 3)
+	(subreg:V4SI (match_dup 2) 0))
+   (set (match_dup 3)
+	(rotate:V4SI
+	 (match_dup 3)
+	 (const_int 16)))
+   (set (match_dup 0)
+	(subreg:V8HI (match_dup 3) 0))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V4SI / V4SF
+
+(define_insn_and_split "eltswap<mode>"
+  [(set (match_operand:V_HW_4  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V_HW_4
+	 (match_operand:V_HW_4 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (clobber (match_scratch:V2DI 2 "=&v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vsterf\t%v1,%0
+   vlerf\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 2)
+	(subreg:V2DI (match_dup 1) 0))
+   (set (match_dup 2)
+	(vec_select:V2DI
+	 (match_dup 2)
+	 (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 2)
+	(rotate:V2DI
+	 (match_dup 2)
+	 (const_int 32)))
+   (set (match_dup 0)
+	(subreg:V_HW_4 (match_dup 2) 0))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V2DI / V2DF
+
+(define_insn "eltswap<mode>"
+  [(set (match_operand:V_HW_2  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V_HW_2
+	 (match_operand:V_HW_2 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 1)
+		    (const_int 0)])))]
+  "TARGET_VX"
+  "@
+   vpdi\t%v0,%v1,%v1,4
+   vsterg\t%v1,%0
+   vlerg\t%v0,%1"
+  [(set_attr "cpu_facility" "vx,vxe2,vxe2")
+   (set_attr "op_type" "VRR,VRX,VRX")])
 
 ;;
 ;; Vector integer arithmetic instructions

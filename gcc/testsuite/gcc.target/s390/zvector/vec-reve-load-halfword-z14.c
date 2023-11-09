@@ -21,4 +21,6 @@ baz (signed short *x)
   return vec_reve (vec_xl (0, x));
 }
 
-/* { dg-final { scan-assembler-times "vperm\t" 3 } } */
+/* { dg-final { scan-assembler-times "vpdi\t" 3 } } */
+/* { dg-final { scan-assembler-times "verllg\t" 3 } } */
+/* { dg-final { scan-assembler-times "verllf\t" 3 } } */
