@@ -86,7 +86,6 @@
 
 ; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
 (define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
-(define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
 
 ; Empty string for all but TImode.  This is used to hide the TImode
 ; expander name in case it is defined already.  See addti3 for an
@@ -2508,12 +2507,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
 ; vcdgb, vcefb
-(define_insn "float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
-  [(set (match_operand:VX_VEC_CONV_BFP                        0 "register_operand" "=v")
-	(float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_BFP:xde><VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
+(define_insn "float<tointvec><mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                   0 "register_operand" "=v")
+	(float:VX_VEC_CONV_BFP (match_operand:<TOINTVEC> 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<xde><bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for loading a signed integer into an extended BFP
@@ -2539,12 +2537,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
 ; vcdlgb, vcelfb
-(define_insn "floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
-  [(set (match_operand:VX_VEC_CONV_BFP                                 0 "register_operand" "=v")
-	(unsigned_float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_BFP:xde>l<VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
+(define_insn "floatuns<tointvec><mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                            0 "register_operand" "=v")
+	(unsigned_float:VX_VEC_CONV_BFP (match_operand:<TOINTVEC> 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<xde>l<bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for loading an unsigned integer into an extended BFP
@@ -2570,12 +2567,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
 ; vcgdb, vcfeb
-(define_insn "fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
-  [(set (match_operand:VX_VEC_CONV_INT                      0 "register_operand" "=v")
-	(fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
+(define_insn "fix_trunc<mode><tointvec>2"
+  [(set (match_operand:<TOINTVEC>                      0 "register_operand" "=v")
+	(fix:<TOINTVEC> (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<bhfgq><xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for rounding an extended BFP operand in a VR into
@@ -2604,12 +2600,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
 ; vclgdb, vclfeb
-(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
-  [(set (match_operand:VX_VEC_CONV_INT                               0 "register_operand" "=v")
-	(unsigned_fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
+(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><tointvec>2"
+  [(set (match_operand:<TOINTVEC>                               0 "register_operand" "=v")
+	(unsigned_fix:<TOINTVEC> (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vcl<bhfgq><xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for rounding an extended BFP operand in a VR into
