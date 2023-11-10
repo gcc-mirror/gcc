@@ -5514,7 +5514,15 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 	{
 	  rtx tmp = gen_reg_rtx (mode);
 	  emit_insn (gen_dpp_move (mode, tmp, in, shift_val));
-	  emit_insn (gen_rtx_SET (out, gen_rtx_fmt_ee (code, mode, tmp, in)));
+	  rtx insn = gen_rtx_SET (out, gen_rtx_fmt_ee (code, mode, tmp, in));
+	  if (scalar_mode == DImode)
+	    {
+	      rtx clobber = gen_rtx_CLOBBER (VOIDmode,
+					     gen_rtx_REG (DImode, VCC_REG));
+	      insn = gen_rtx_PARALLEL (VOIDmode,
+				       gen_rtvec (2, insn, clobber));
+	    }
+	  emit_insn (insn);
 	}
       else
 	{
