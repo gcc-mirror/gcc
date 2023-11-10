@@ -654,7 +654,8 @@ Objective-C and Objective-C++ Dialects}.
 -finstrument-functions  -finstrument-functions-once
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{}
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}
--fprofile-prefix-map=@var{old}=@var{new}}
+-fprofile-prefix-map=@var{old}=@var{new}
+-fpatchable-function-entry=@var{N}@r{[},@var{M}@r{]}}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
