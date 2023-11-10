@@ -1,7 +1,7 @@
-/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
-/* { dg-additional-options "-std=c99 -march=rv64gcv_zvfh -mabi=lp64d -fno-vect-cost-model --param=riscv-autovec-preference=scalable" } */
+/* { dg-do run { target { riscv_v && riscv_zvfh } } } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=scalable" } */
 
-#include "vfcvt_rtz-template.h"
+#include "vfwcvt-ftoi-template.h"
 
 #define RUN(TYPE1, TYPE2, NUM)                                                 \
   TYPE1 src##TYPE1##TYPE2##NUM[NUM];                                           \
@@ -10,7 +10,7 @@
     {                                                                          \
       src##TYPE1##TYPE2##NUM[i] = i * -3.1315926 - 832.947289;                 \
     }                                                                          \
-  vfcvt_##TYPE1##TYPE2 (dst##TYPE1##TYPE2##NUM, src##TYPE1##TYPE2##NUM, NUM);  \
+  vfwcvt_##TYPE1##TYPE2 (dst##TYPE1##TYPE2##NUM, src##TYPE1##TYPE2##NUM, NUM); \
   for (int i = 0; i < NUM; i++)                                                \
     if (dst##TYPE1##TYPE2##NUM[i] != (TYPE2) src##TYPE1##TYPE2##NUM[i])        \
       __builtin_abort ();
@@ -22,7 +22,7 @@
     {                                                                          \
       src##TYPE1##TYPE2##NUM[i] = i * 3.1315926 + 832.947289;                  \
     }                                                                          \
-  vfcvt_##TYPE1##TYPE2 (dst##TYPE1##TYPE2##NUM, src##TYPE1##TYPE2##NUM, NUM);  \
+  vfwcvt_##TYPE1##TYPE2 (dst##TYPE1##TYPE2##NUM, src##TYPE1##TYPE2##NUM, NUM); \
   for (int i = 0; i < NUM; i++)                                                \
     if (dst##TYPE1##TYPE2##NUM[i] != (TYPE2) src##TYPE1##TYPE2##NUM[i])        \
       __builtin_abort ();
