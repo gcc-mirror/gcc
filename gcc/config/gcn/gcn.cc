@@ -5050,7 +5050,9 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 			      rtx dst, rtx src0, rtx src1,
 			      const vec_perm_indices & sel)
 {
-  if (vmode != op_mode)
+  if (vmode != op_mode
+      || !VECTOR_MODE_P (vmode)
+      || GET_MODE_INNER (vmode) == TImode)
     return false;
 
   unsigned int nelt = GET_MODE_NUNITS (vmode);
