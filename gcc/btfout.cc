@@ -299,7 +299,7 @@ btf_calc_num_vbytes (ctf_dtdef_ref dtd)
       break;
 
     case BTF_KIND_ENUM:
-      vlen_bytes += (dtd->dtd_data.ctti_size == 0x8)
+      vlen_bytes += (dtd->dtd_data.ctti_size > 4)
 			? vlen * sizeof (struct btf_enum64)
 			: vlen * sizeof (struct btf_enum);
       break;
@@ -914,8 +914,8 @@ btf_asm_enum_const (unsigned int size, ctf_dmdef_t * dmd, unsigned int idx)
 {
   dw2_asm_output_data (4, dmd->dmd_name_offset, "ENUM_CONST '%s' idx=%u",
 		       dmd->dmd_name, idx);
-  if (size == 4)
-    dw2_asm_output_data (size, dmd->dmd_value, "bte_value");
+  if (size <= 4)
+    dw2_asm_output_data (size < 4 ? 4 : size, dmd->dmd_value, "bte_value");
   else
     {
       dw2_asm_output_data (4, dmd->dmd_value & 0xffffffff, "bte_value_lo32");
