@@ -4084,6 +4084,10 @@ struct GTY(()) lang_decl {
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
 
+/* Look through an implicit INDIRECT_REF from convert_from_reference.  */
+#define STRIP_REFERENCE_REF(NODE)			\
+  (REFERENCE_REF_P (NODE) ? TREE_OPERAND (NODE, 0) : NODE)
+
 /* True iff this represents an lvalue being treated as an rvalue during return
    or throw as per [class.copy.elision].  */
 #define IMPLICIT_RVALUE_P(NODE) \
