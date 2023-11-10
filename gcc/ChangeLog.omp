@@ -3,6 +3,13 @@
 	Backport from mainline:
 	Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.cc (gcn_vectorize_vec_perm_const): Disallow TImode.
+
+2023-11-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (*mov<mode>_4reg): Disparage AVGPR use when a
 	reload is required.
 
