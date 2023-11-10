@@ -7087,7 +7087,7 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 					 opmask, &vec_opmask);
     }
 
-  gimple *sdef = scalar_dest_def_info->stmt;
+  gimple *sdef = vect_orig_stmt (scalar_dest_def_info)->stmt;
   tree scalar_dest = gimple_get_lhs (sdef);
   tree scalar_type = TREE_TYPE (scalar_dest);
   tree reduc_var = gimple_phi_result (reduc_def_stmt);
