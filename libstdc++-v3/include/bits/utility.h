@@ -163,6 +163,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Tp... _Idx>
     struct integer_sequence
     {
+#if __cplusplus >= 202002L
+      static_assert(is_integral_v<_Tp>);
+#endif
       typedef _Tp value_type;
       static constexpr size_t size() noexcept { return sizeof...(_Idx); }
     };
