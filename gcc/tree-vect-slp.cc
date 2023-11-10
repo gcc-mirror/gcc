@@ -9081,6 +9081,16 @@ vect_schedule_slp_node (vec_info *vinfo,
       /* Emit other stmts after the children vectorized defs which is
 	 earliest possible.  */
       gimple *last_stmt = NULL;
+      if (auto loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+	if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+	    || LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+	  {
+	    /* But avoid scheduling internal defs outside of the loop when
+	       we might have only implicitly tracked loop mask/len defs.  */
+	    gimple_stmt_iterator si
+	      = gsi_after_labels (LOOP_VINFO_LOOP (loop_vinfo)->header);
+	    last_stmt = *si;
+	  }
       bool seen_vector_def = false;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
