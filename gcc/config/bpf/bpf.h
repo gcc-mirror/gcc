@@ -489,6 +489,11 @@ enum reg_class
    locations.  */
 #define MOVE_MAX 8
 
+/* Allow upto 1024 bytes moves to occur using by_pieces
+   infrastructure.  This mimics clang behaviour when using
+   __builtin_memcmp.  */
+#define COMPARE_MAX_PIECES 1024
+
 /* An alias for the machine mode for pointers.  */
 #define Pmode DImode
 

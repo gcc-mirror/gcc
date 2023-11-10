@@ -1117,6 +1117,22 @@ bpf_small_register_classes_for_mode_p (machine_mode mode)
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   bpf_small_register_classes_for_mode_p
 
+static bool
+bpf_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
+				    unsigned int align ATTRIBUTE_UNUSED,
+				    enum by_pieces_operation op,
+				    bool speed_p)
+{
+  if (op != COMPARE_BY_PIECES)
+    return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
+
+  return size <= COMPARE_MAX_PIECES;
+}
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  bpf_use_by_pieces_infrastructure_p
+
 /* Finally, build the GCC target.  */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
