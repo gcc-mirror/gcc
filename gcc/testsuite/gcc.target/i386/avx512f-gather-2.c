@@ -1,5 +1,5 @@
 /* { dg-do compile } */ /* PR59617 */
-/* { dg-options "-O3 -mavx512f -fdump-tree-vect-details -mtune=knl" } */
+/* { dg-options "-O3 -mavx512f -march=sapphirerapids -fdump-tree-vect-details -mprefer-vector-width=512" } */
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 

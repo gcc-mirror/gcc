@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx5124vnniw" } */
+/* { dg-warning "AVX5124VNNIW support will be removed in GCC 15" "" { target *-*-* } 0 } */
 /* { dg-final { scan-assembler-times "vp4dpwssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vp4dpwssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vp4dpwssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */

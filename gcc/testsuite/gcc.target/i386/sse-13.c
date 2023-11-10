@@ -1,6 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512vl -mavx512dq -mavx512bw -mavx512vbmi -mavx512vbmi2 -mavx512ifma -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mavx512vp2intersect -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mavx512bitalg -mpconfig -mwbnoinvd -mavx512bf16 -menqcmd -mserialize -mtsxldtrk -mamx-tile -mamx-int8 -mamx-bf16 -mkl -mwidekl -mavxvnni -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4" } */
 /* { dg-add-options bind_pic_locally } */
+/* { dg-warning "AVX512ER support will be removed in GCC 15" "" { target *-*-* } 0 } */
+/* { dg-warning "AVX512PF support will be removed in GCC 15" "" { target *-*-* } 0 } */
+/* { dg-warning "AVX5124FMAPS support will be removed in GCC 15" "" { target *-*-* } 0 } */
+/* { dg-warning "AVX5124VNNIW support will be removed in GCC 15" "" { target *-*-* } 0 } */
+/* { dg-warning "PREFETCHWT1 support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #include <mm_malloc.h>
 

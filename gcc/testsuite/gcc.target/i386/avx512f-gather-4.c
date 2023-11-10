@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx512f } */
-/* { dg-options "-O3 -mavx512f -mtune=knl" } */
+/* { dg-options "-O3 -mavx512f -march=sapphirerapids -mprefer-vector-width=512" } */
 
 #include "avx512f-check.h"
 

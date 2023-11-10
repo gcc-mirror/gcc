@@ -738,11 +738,11 @@ Target Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation.
 
 mavx512pf
-Target Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save Warn(AVX512PF support will be removed in GCC 15)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation.
 
 mavx512er
-Target Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save Warn(AVX512ER support will be removed in GCC 15)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation.
 
 mavx512cd
@@ -770,11 +770,11 @@ Target Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
 
 mavx5124fmaps
-Target Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save Warn(AVX5124FMAPS support will be removed in GCC 15)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation.
 
 mavx5124vnniw
-Target Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save Warn(AVX5124VNNIW support will be removed in GCC 15)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
 
 mavx512vpopcntdq
@@ -969,7 +969,7 @@ Target Mask(ISA_F16C) Var(ix86_isa_flags) Save
 Support F16C built-in functions and code generation.
 
 mprefetchwt1
-Target Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
+Target Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save Warn(PREFETCHWT1 support will be removed in GCC 15)
 Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx512f -mtune=knl" } */
+/* { dg-options "-O3 -mavx512f -march=sapphirerapids -mprefer-vector-width=512" } */
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 

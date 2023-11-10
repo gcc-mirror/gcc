@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=knl -mvzeroupper" } */
+/* { dg-warning "'-march=knl' support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #include <immintrin.h>
 

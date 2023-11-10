@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx5124fmaps" } */
 /* { dg-require-effective-target avx5124fmaps } */
+/* { dg-warning "AVX5124FMAPS support will be removed in GCC 15" "" { target *-*-* } 0 } */
 
 #define ESP_FLOAT 1.0
 

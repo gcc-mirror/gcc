@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -ffloat-store -mavx512er" } */
+/* { dg-options "-O2 -ftree-vectorize -ffloat-store -mavx2" } */
 
 float x[256];
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mavx512f -O2 -mtune=knl" } */
+/* { dg-options "-mavx512f -O2" } */
 /* { dg-require-effective-target avx512f } */
 
 #include "avx512f-check.h"
