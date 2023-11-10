@@ -518,20 +518,26 @@
 	  ;; Branches further than +/- 1 MiB require three instructions.
 	  ;; Branches further than +/- 4 KiB require two instructions.
 	  (eq_attr "type" "branch")
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 4088))
-				  (le (minus (pc) (match_dup 0)) (const_int 4092)))
-	  (const_int 4)
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 1048568))
-				  (le (minus (pc) (match_dup 0)) (const_int 1048572)))
-	  (const_int 8)
-	  (const_int 12)))
+	  (if_then_else (and (le (minus (match_dup 0) (pc))
+				 (const_int 4088))
+			     (le (minus (pc) (match_dup 0))
+				 (const_int 4092)))
+			(const_int 4)
+			(if_then_else (and (le (minus (match_dup 0) (pc))
+					       (const_int 1048568))
+					   (le (minus (pc) (match_dup 0))
+					       (const_int 1048572)))
+				      (const_int 8)
+				      (const_int 12)))
 
 	  ;; Jumps further than +/- 1 MiB require two instructions.
 	  (eq_attr "type" "jump")
-	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 1048568))
-				  (le (minus (pc) (match_dup 0)) (const_int 1048572)))
-	  (const_int 4)
-	  (const_int 8))
+	  (if_then_else (and (le (minus (match_dup 0) (pc))
+				 (const_int 1048568))
+			     (le (minus (pc) (match_dup 0))
+				 (const_int 1048572)))
+			(const_int 4)
+			(const_int 8))
 
 	  ;; Conservatively assume calls take two instructions (AUIPC + JALR).
 	  ;; The linker will opportunistically relax the sequence to JAL.
