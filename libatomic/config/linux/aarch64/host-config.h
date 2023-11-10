@@ -26,7 +26,7 @@
 
 #ifdef HWCAP_USCAT
 # if N == 16
-#  define IFUNC_COND_1	(hwcap & HWCAP_USCAT)
+#  define IFUNC_COND_1	ifunc1 (hwcap)
 # else
 #  define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
 # endif
@@ -40,5 +40,29 @@
 #endif
 
 #endif /* HAVE_IFUNC */
+
+#ifdef HWCAP_USCAT
+
+#define MIDR_IMPLEMENTOR(midr)	(((midr) >> 24) & 255)
+#define MIDR_PARTNUM(midr)	(((midr) >> 4) & 0xfff)
+
+static inline bool
+ifunc1 (unsigned long hwcap)
+{
+  if (hwcap & HWCAP_USCAT)
+    return true;
+  if (!(hwcap & HWCAP_CPUID))
+    return false;
+
+  unsigned long midr;
+  asm volatile ("mrs %0, midr_el1" : "=r" (midr));
+
+  /* Neoverse N1 supports atomic 128-bit load/store.  */
+  if (MIDR_IMPLEMENTOR (midr) == 'A' && MIDR_PARTNUM (midr) == 0xd0c)
+    return true;
+
+  return false;
+}
+#endif
 
 #include_next <host-config.h>
