@@ -4846,12 +4846,16 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  bool exporting = revealing_p && module_exporting_p ();
 	  if (exporting)
 	    {
+	      /* Module flags for templates are on the template_result.  */
+	      tree decl = STRIP_TEMPLATE (new_fn);
+
 	      /* If the using decl is exported, the things it refers
-		 to must also be exported (or not habve module attachment).  */
-	      if (!DECL_MODULE_EXPORT_P (new_fn)
-		  && (DECL_LANG_SPECIFIC (new_fn)
-		      && DECL_MODULE_ATTACH_P (new_fn)))
+		 to must also be exported (or not have module attachment).  */
+	      if (!DECL_MODULE_EXPORT_P (decl)
+		  && (DECL_LANG_SPECIFIC (decl)
+		      && DECL_MODULE_ATTACH_P (decl)))
 		{
+		  auto_diagnostic_group d;
 		  error ("%q#D does not have external linkage", new_fn);
 		  inform (DECL_SOURCE_LOCATION (new_fn),
 			  "%q#D declared here", new_fn);
