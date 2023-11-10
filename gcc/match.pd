@@ -8959,13 +8959,13 @@ and,
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op @0 @1 @2))))
+     (cond_op @0 (view_convert @1) @2))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@3 @2)))
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op (bit_not @0) @2 @1)))))
+     (cond_op (bit_not @0) (view_convert @2) @1)))))
 
 (for uncond_op (UNCOND_UNARY)
      cond_op (COND_LEN_UNARY)
@@ -8974,13 +8974,13 @@ and,
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op @0 @1 @2 @4 @5))))
+     (cond_op @0 (view_convert @1) @2 @4 @5))))
  (simplify
   (IFN_VCOND_MASK_LEN @0 @1 (view_convert? (uncond_op@3 @2)) @4 @5)
    (with { tree op_type = TREE_TYPE (@3); }
     (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
         && is_truth_type_for (op_type, TREE_TYPE (@0)))
-     (cond_op (bit_not @0) @2 @1 @4 @5)))))
+     (cond_op (bit_not @0) (view_convert @2) @1 @4 @5)))))
 
 /* `(a ? -1 : 0) ^ b` can be converted into a conditional not.  */
 (simplify
