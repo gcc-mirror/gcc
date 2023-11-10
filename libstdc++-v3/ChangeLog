@@ -1,3 +1,175 @@
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/headers/atomic/types_std_c++2a_neg.cc:
+	Fix test to work for C++23 and C++26 too.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/p2520r0.cc: Add no_pch.
+	* testsuite/std/format/functions/format.cc: Likewise.
+	* testsuite/std/format/functions/format_c++23.cc: Likewise.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (resize_and_overwrite): Invoke
+	the callable with the same size as resize_and_overwrite was
+	called with.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Check with small values for the new size.
+	* testsuite/std/format/functions/format.cc: Check wide
+	formatting of double values that produce small strings.
+	* testsuite/std/format/functions/format_c++23.cc: New test.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/dg-options.exp (add_options_for_no_pch): Remove
+	any "-include bits/stdc++.h" from options and add the macro to
+	the existing options instead of replacing them.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic): Change class-head
+	to struct.
+	* include/bits/stl_tree.h (_Rb_tree_merge_helper): Change
+	class-head to struct in friend declaration.
+	* include/std/chrono (tzdb_list::_Node): Likewise.
+	* include/std/future (_Task_state_base, _Task_state): Likewise.
+	* include/std/scoped_allocator (__inner_type_impl): Likewise.
+	* include/std/valarray (_BinClos, _SClos, _GClos, _IClos)
+	(_ValFunClos, _RefFunClos): Change class-head to struct.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocate): Add [[maybe_unused]]
+	attribute.
+	* include/bits/regex_executor.tcc: Remove name of unused
+	parameter.
+	* include/bits/shared_ptr_atomic.h (atomic_is_lock_free):
+	Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/streambuf_iterator.h (operator==): Likewise.
+	* include/bits/uses_allocator.h: Likewise.
+	* include/c_global/cmath (isfinite, isinf, isnan): Likewise.
+	* include/std/chrono (zoned_time): Likewise.
+	* include/std/future (__future_base::_S_allocate_result):
+	Likewise.
+	(packaged_task): Likewise.
+	* include/std/optional (_Optional_payload_base): Likewise.
+	* include/std/scoped_allocator (__inner_type_impl): Likewise.
+	* include/std/tuple (_Tuple_impl): Likewise.
+
+2023-11-09  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	Backported from master:
+	2023-09-11  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* src/c++11/cow-locale_init.cc: Add [[maybe_unused]] attribute.
+	* src/c++17/fs_path.cc (path::_S_convert_loc): Likewise.
+	* src/filesystem/path.cc (path::_S_convert_loc): Likewise.
+
+2023-11-09  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	Backported from master:
+	2023-09-08  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	* src/libbacktrace/Makefile.am: Remove -Werror.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/operations/1.cc: Add
+	dg-options for C++20 mode.
+	* testsuite/23_containers/unordered_multimap/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/operations/1.cc:
+	Likewise.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/new_allocator.h (__new_allocator): Define copy
+	assignment operator as defaulted.
+	* include/std/complex (complex<float>, complex<double>)
+	(complex<long double>): Define copy constructor as defaulted.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for mkdir,
+	chmod, chdir, and getcwd.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++17/fs_ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+	* src/filesystem/ops-common.h [FILESYSTEM_IS_WINDOWS]
+	(chmod, mkdir, getcwd, chdir): Define new macros.
+	[FILESYSTEM_IS_WINDOWS] (chmod, mkdir, getcwd, chdir): Use
+	new macros.
+	* src/filesystem/ops.cc (create_dir): Use USE_MKDIR macro.
+	(fs::current_path): Use USE_GETCWD and USE_CHDIR macros.
+	(fs::permissions): Use USE_CHMOD macro.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111172
+	* include/std/variant (get<T>): Remove !is_void static
+	assertions.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc (acquire_sequence_ptr_for_lock): New
+	function.
+	(reset_sequence_ptr): New function.
+	(_Safe_iterator_base::_M_detach)
+	(_Safe_local_iterator_base::_M_detach): Replace bare atomic_load
+	with acquire_sequence_ptr_for_lock.
+	(_Safe_iterator_base::_M_reset): Replace bare atomic_store with
+	reset_sequence_ptr.
+
+2023-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Add new file.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): Move to ...
+	* src/c++11/assert_fail.cc: New file.
+
 2023-11-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

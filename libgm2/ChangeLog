@@ -1,3 +1,9 @@
+2023-11-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112110
+	* libm2iso/wrapclock.cc (timezone): Return 0 if unable to
+	get the	timezone from the tm struct.
+
 2023-09-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
