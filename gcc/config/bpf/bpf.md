@@ -184,7 +184,7 @@
          (mult:SI (match_operand:SI 1 "register_operand" "0,0")
                   (match_operand:SI 2 "reg_or_imm_operand" "r,I"))))]
   ""
-  "{mul32\t%0,%2|%w0 *= %w2}"
+  "{mul32\t%0,%2|%W0 *= %W2}"
   [(set_attr "type" "alu32")])
 
 ;;; Division
