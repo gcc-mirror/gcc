@@ -1758,13 +1758,46 @@ process_bb_node_for_costs (ira_loop_tree_node_t loop_tree_node)
     process_bb_for_costs (bb);
 }
 
+/* Return true if all autoinc rtx in X change only a register and memory is
+   valid.  */
+static bool
+validate_autoinc_and_mem_addr_p (rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  if (GET_RTX_CLASS (code) == RTX_AUTOINC)
+    return REG_P (XEXP (x, 0));
+  const char *fmt = GET_RTX_FORMAT (code);
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      {
+	if (!validate_autoinc_and_mem_addr_p (XEXP (x, i)))
+	  return false;
+      }
+    else if (fmt[i] == 'E')
+      {
+	for (int j = 0; j < XVECLEN (x, i); j++)
+	  if (!validate_autoinc_and_mem_addr_p (XVECEXP (x, i, j)))
+	    return false;
+      }
+  /* Check memory after checking autoinc to guarantee that autoinc is already
+     valid for machine-dependent code checking memory address.  */
+  return (!MEM_P (x)
+	  || memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					  MEM_ADDR_SPACE (x)));
+}
+
 /* Check that reg REGNO can be changed by TO in INSN.  Return true in case the
    result insn would be valid one.  */
 static bool
 equiv_can_be_consumed_p (int regno, rtx to, rtx_insn *insn)
 {
   validate_replace_src_group (regno_reg_rtx[regno], to, insn);
-  bool res = verify_changes (0);
+  /* We can change register to equivalent memory in autoinc rtl.  Some code
+     including verify_changes assumes that autoinc contains only a register.
+     So check this first.  */
+  bool res = validate_autoinc_and_mem_addr_p (PATTERN (insn));
+  if (res)
+    res = verify_changes (0);
   cancel_changes (0);
   return res;
 }
