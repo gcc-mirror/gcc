@@ -2126,44 +2126,6 @@ expand_vector_init_merge_repeating_sequence (rtx target,
     }
 }
 
-/* Subroutine of expand_vec_init to handle case
-   when all trailing elements of builder are same.
-   This works as follows:
-   (a) Use expand_insn interface to broadcast last vector element in TARGET.
-   (b) Insert remaining elements in TARGET using insr.
-
-   ??? The heuristic used is to do above if number of same trailing elements
-   is at least 3/4 of total number of elements, loosely based on
-   heuristic from mostly_zeros_p.  May need fine-tuning.  */
-
-static bool
-expand_vector_init_trailing_same_elem (rtx target,
-				       const rtx_vector_builder &builder,
-				       int nelts_reqd)
-{
-  int ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
-  machine_mode mode = GET_MODE (target);
-
-  if (ndups >= (3 * nelts_reqd) / 4)
-    {
-      rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
-      emit_move_insn (target, dup);
-
-      for (int i = nelts_reqd - ndups - 1; i >= 0; i--)
-	{
-	  unsigned int unspec
-	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-	  insn_code icode = code_for_pred_slide (unspec, mode);
-	  rtx ops[] = {target, target, builder.elt (i)};
-	  emit_vlmax_insn (icode, BINARY_OP, ops);
-       }
-
-      return true;
-    }
-
-  return false;
-}
-
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
 
 void
@@ -2199,11 +2161,6 @@ expand_vec_init (rtx target, rtx vals)
 	  expand_vector_init_merge_repeating_sequence (target, v);
 	  return;
 	}
-
-      /* Case 4: Optimize trailing same elements sequence:
-	 v = {y, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x};  */
-      if (expand_vector_init_trailing_same_elem (target, v, nelts))
-	return;
 
       /* TODO: We will support more Initialization of vector in the future.  */
     }
