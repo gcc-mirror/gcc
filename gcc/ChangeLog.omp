@@ -3,6 +3,14 @@
 	Backport from mainline:
 	Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Add clobber to DImode
+	min/max instructions.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md
 	(vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop): Mention "operands" in
 	condition to silence the warnings.
