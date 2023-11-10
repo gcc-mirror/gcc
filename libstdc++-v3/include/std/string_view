@@ -606,13 +606,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]]
     constexpr bool
     operator==(basic_string_view<_CharT, _Traits> __x,
-               basic_string_view<_CharT, _Traits> __y) noexcept
-    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
-
-  template<typename _CharT, typename _Traits>
-    [[nodiscard]]
-    constexpr bool
-    operator==(basic_string_view<_CharT, _Traits> __x,
                __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
     noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
@@ -622,19 +615,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]]
     constexpr auto
     operator<=>(basic_string_view<_CharT, _Traits> __x,
-		basic_string_view<_CharT, _Traits> __y) noexcept
-    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
-    { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
-
-  template<typename _CharT, typename _Traits>
-    [[nodiscard]]
-    constexpr auto
-    operator<=>(basic_string_view<_CharT, _Traits> __x,
 		__type_identity_t<basic_string_view<_CharT, _Traits>> __y)
     noexcept
     -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
     { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
 #else
+  template<typename _CharT, typename _Traits>
+    [[nodiscard]]
+    constexpr bool
+    operator==(basic_string_view<_CharT, _Traits> __x,
+	       basic_string_view<_CharT, _Traits> __y) noexcept
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
+
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
     constexpr bool
