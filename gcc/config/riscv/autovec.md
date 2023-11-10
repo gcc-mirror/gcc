@@ -373,7 +373,19 @@
 ;; -------------------------------------------------------------------------
 
 (define_expand "vec_init<mode><vel>"
-  [(match_operand:V_VLS 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand 1 "")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_init (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+;; We split RVV floating-point because we are going to
+;; use vfslide1down/vfslide1up for FP16 which need TARGET_ZVFH.
+(define_expand "vec_init<mode><vel>"
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand 1 "")]
   "TARGET_VECTOR"
   {
