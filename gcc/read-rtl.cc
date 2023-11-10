@@ -1293,8 +1293,25 @@ md_reader::read_mapping (struct iterator_group *group, htab_t table)
 	  string = read_string (false);
 	  require_char_ws (')');
 	}
-      number = group->find_builtin (name.string);
-      end_ptr = add_map_value (end_ptr, number, string);
+      auto *subm = (struct mapping *) htab_find (group->iterators,
+						 &name.string);
+      if (subm)
+	{
+	  if (m == subm)
+	    fatal_with_file_and_line ("recursive definition of `%s'",
+				      name.string);
+	  for (map_value *v = subm->values; v; v = v->next)
+	    {
+	      auto *joined = rtx_reader_ptr->join_c_conditions (v->string,
+								string);
+	      end_ptr = add_map_value (end_ptr, v->number, joined);
+	    }
+	}
+      else
+	{
+	  number = group->find_builtin (name.string);
+	  end_ptr = add_map_value (end_ptr, number, string);
+	}
       c = read_skip_spaces ();
     }
   while (c != ']');

@@ -11797,6 +11797,19 @@ to @code{@var{mode}}.  For example:
 means that the @code{:DI} expansion only applies if @code{TARGET_64BIT}
 but that the @code{:SI} expansion has no such constraint.
 
+It is also possible to include iterators in other iterators.  For example:
+
+@smallexample
+(define_mode_iterator VI [V16QI V8HI V4SI V2DI])
+(define_mode_iterator VF [V8HF V4SF (V2DF "TARGET_DOUBLE")])
+(define_mode_iterator V [VI (VF "TARGET_FLOAT")])
+@end smallexample
+
+makes @samp{:V} iterate over the modes in @code{VI} and the modes
+in @code{VF}.  When a construct uses @samp{:V}, the @code{V8HF} and
+@code{V4SF} expansions require @samp{TARGET_FLOAT} while the @code{V2DF}
+expansion requires @samp{TARGET_DOUBLE && TARGET_FLOAT}.
+
 Iterators are applied in the order they are defined.  This can be
 significant if two iterators are used in a construct that requires
 substitutions.  @xref{Substitutions}.
