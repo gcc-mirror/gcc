@@ -414,6 +414,7 @@ public:
   rtx get_merged_repeating_sequence ();
 
   bool repeating_sequence_use_merge_profitable_p ();
+  bool combine_sequence_use_slideup_profitable_p ();
   rtx get_merge_scalar_mask (unsigned int) const;
 
   bool single_step_npatterns_p () const;
@@ -509,6 +510,22 @@ rvv_builder::repeating_sequence_use_merge_profitable_p ()
   unsigned int slide1down_cost = nelts;
 
   return (build_merge_mask_cost + merge_cost) * npatterns () < slide1down_cost;
+}
+
+/* Return true if it's worthwhile to use slideup combine 2 vectors.  */
+bool
+rvv_builder::combine_sequence_use_slideup_profitable_p ()
+{
+  int nelts = full_nelts ().to_constant ();
+  int leading_ndups = this->count_dups (0, nelts - 1, 1);
+  int trailing_ndups = this->count_dups (nelts - 1, -1, -1);
+
+  /* ??? Current heuristic we do is we do combine 2 vectors
+     by slideup when:
+       1. # of leading same elements is equal to # of trailing same elements.
+       2. Both of above are equal to nelts / 2.
+     Otherwise, it is not profitable.  */
+  return leading_ndups == trailing_ndups && trailing_ndups == nelts / 2;
 }
 
 /* Merge the repeating sequence into a single element and return the RTX.  */
@@ -2126,6 +2143,29 @@ expand_vector_init_merge_repeating_sequence (rtx target,
     }
 }
 
+/* Use slideup approach to combine the vectors.
+     v = {a, a, a, a, b, b, b, b}
+
+   First:
+     v1 = {a, a, a, a, a, a, a, a}
+     v2 = {b, b, b, b, b, b, b, b}
+     v = slideup (v1, v2, nelt / 2)
+*/
+static void
+expand_vector_init_slideup_combine_sequence (rtx target,
+					     const rvv_builder &builder)
+{
+  machine_mode mode = GET_MODE (target);
+  int nelts = builder.full_nelts ().to_constant ();
+  rtx first_elt = builder.elt (0);
+  rtx last_elt = builder.elt (nelts - 1);
+  rtx low = expand_vector_broadcast (mode, first_elt);
+  rtx high = expand_vector_broadcast (mode, last_elt);
+  insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, mode);
+  rtx ops[] = {target, low, high, gen_int_mode (nelts / 2, Pmode)};
+  emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+}
+
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
 
 void
@@ -2159,6 +2199,19 @@ expand_vec_init (rtx target, rtx vals)
       if (v.repeating_sequence_use_merge_profitable_p ())
 	{
 	  expand_vector_init_merge_repeating_sequence (target, v);
+	  return;
+	}
+
+      /* Case 3: Optimize combine sequence.
+	 E.g. v = {a, a, a, a, a, a, a, a, b, b, b, b, b, b, b, b}.
+	 We can combine:
+	   v1 = {a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a}.
+	 and
+	   v2 = {b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b}.
+	 by slideup.  */
+      if (v.combine_sequence_use_slideup_profitable_p ())
+	{
+	  expand_vector_init_slideup_combine_sequence (target, v);
 	  return;
 	}
 

@@ -845,3 +845,10 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   {                                                                            \
     return __builtin_shufflevector (a, b, MASK_##NUM);                         \
   }
+
+#define DEF_COMBINE(TYPE1, TYPE2, NUM, ...)                                    \
+  void combine_##TYPE1##_##TYPE2##_##NUM (TYPE2 *out, TYPE2 x, TYPE2 y)        \
+  {                                                                            \
+    v##NUM##TYPE1 v = {__VA_ARGS__};                                           \
+    *(v##NUM##TYPE1 *) out = v;                                                \
+  }

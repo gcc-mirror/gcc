@@ -386,6 +386,11 @@ enum insn_type : unsigned int
   COMPRESS_OP_MERGE
   = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
 
+  /* For vslideup.up has merge operand but use ta.  */
+  SLIDEUP_OP_MERGE = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P
+		     | HAS_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+		     | BINARY_OP_P,
+
   /* For vreduce, no mask policy operand. */
   REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
   REDUCE_OP_M = __MASK_OP_TA | BINARY_OP_P | VTYPE_MODE_FROM_OP1_P,
