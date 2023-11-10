@@ -1278,7 +1278,7 @@
 	(sign_extract:SI (match_operand:QHSI 1 "register_operand" "0")
 			 (const_int 1)
 			 (match_operand 2 "immediate_operand")))]
-  ""
+  "!TARGET_H8300SX"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
@@ -1291,7 +1291,7 @@
 			 (const_int 1)
 			 (match_operand 2 "immediate_operand")))
    (clobber (reg:CC CC_REG))]
-  ""
+  "!TARGET_H8300SX"
 {
   int position = INTVAL (operands[2]);
 
@@ -1357,5 +1357,71 @@
   /* Now the bit we want is in C, emit the generalized sequence
      to get that bit into the destination, properly extended.  */
   return "subx\t%s0,%s0\;exts.w %T0\;exts.l %0";
+}
+  [(set_attr "length" "10")])
+
+;; For shift counts >= 16 we can always do better than the
+;; generic sequences.  Other patterns handle smaller counts.
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "0")
+			     (match_operand 2 "immediate_operand" "n"))
+		(const_int 1)))]
+  "!TARGET_H8300SX && INTVAL (operands[2]) >= 16"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (and:SI (lshiftrt:SI (match_dup 0) (match_dup 2))
+					 (const_int 1)))
+	      (clobber (reg:CC CC_REG))])])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "0")
+			     (match_operand 2 "immediate_operand" "n"))
+		(const_int 1)))
+   (clobber (reg:CC CC_REG))]
+  "!TARGET_H8300SX && INTVAL (operands[2]) >= 16"
+{
+  int position = INTVAL (operands[2]);
+
+  /* If the bit we want is the highest bit we can just rotate it into position
+     and mask off everything else.  */
+  if (position == 31)
+    {
+      output_asm_insn ("rotl.l\t%0", operands);
+      return "and.l\t#1,%0";
+    }
+
+  /* Special case for H8/S.  Similar to bit 31.  */
+  if (position == 30 && TARGET_H8300S)
+    return "rotl.l\t#2,%0\;and.l\t#1,%0";
+
+  if (position <= 30 && position >= 17)
+    {
+      /* Shift 16 bits, without worrying about extensions.  */
+      output_asm_insn ("mov.w\t%e1,%f0", operands);
+
+      /* Get the bit we want into C.  */
+      operands[2] = GEN_INT (position % 8);
+      if (position >= 24)
+	output_asm_insn ("bld\t%2,%t0", operands);
+      else
+	output_asm_insn ("bld\t%2,%s0", operands);
+
+      /* xor + rotate to clear the destination, then rotate
+	 the C into position.  */
+      return "xor.l\t%0,%0\;rotxl.l\t%0";
+    }
+
+  if (position == 16)
+    {
+      /* Shift 16 bits, without worrying about extensions.  */
+      output_asm_insn ("mov.w\t%e1,%f0", operands);
+
+      /* And finally, mask out everything we don't want.  */
+      return "and.l\t#1,%0";
+    }
+
+  gcc_unreachable ();
 }
   [(set_attr "length" "10")])
