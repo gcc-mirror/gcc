@@ -21,8 +21,10 @@ void f() {
   [=] {
     [](decltype((x)) y) {};     // OK, lambda takes a parameter of type float const&
 
+#if __cpp_init_captures
     [x=1](decltype((x)) y) {
       decltype((x)) z = x;      // OK, y has type int&, z has type int const&
     };
+#endif
   };
 }
