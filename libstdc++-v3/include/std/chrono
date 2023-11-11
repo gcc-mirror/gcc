@@ -1800,22 +1800,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	const auto __m = static_cast<unsigned>(month());
 
-	// Excluding February, the last day of month __m is either 30 or 31 or,
-	// in another words, it is 30 + b = 30 | b, where b is in {0, 1}.
+	// The result is unspecified if __m < 1 or __m > 12.  Hence, assume
+	// 1 <= __m <= 12.  For __m != 2, day() == 30 or day() == 31 or, in
+	// other words, day () == 30 | b, where b is in {0, 1}.
 
-	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if __m is odd.
-	// Hence, b = __m & 1 = (__m ^ 0) & 1.
+	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if, __m is
+	// odd.  Hence, b = __m & 1 = (__m ^ 0) & 1.
 
-	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if __m is even.
-	// Hence, b = (__m ^ 1) & 1.
+	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if, __m is
+	// even.  Hence, b = (__m ^ 1) & 1.
 
 	// Therefore, b = (__m ^ c) & 1, where c = 0, if __m < 8, or c = 1 if
 	// __m >= 8, that is, c = __m >> 3.
 
-	// The above mathematically justifies this implementation whose
-	// performance does not depend on look-up tables being on the L1 cache.
-	return chrono::day{__m != 2 ? ((__m ^ (__m >> 3)) & 1) | 30
-				    : _M_y.is_leap() ? 29 : 28};
+	// Since 30 = (11110)_2 and __m <= 31 = (11111)_2, the "& 1" in b's
+	// calculation is unnecessary.
+
+	// The performance of this implementation does not depend on look-up
+	// tables being on the L1 cache.
+	return chrono::day{__m != 2 ? (__m ^ (__m >> 3)) | 30
+	  : _M_y.is_leap() ? 29 : 28};
       }
 
       constexpr
