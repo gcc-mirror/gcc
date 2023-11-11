@@ -3332,6 +3332,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))
     (rcmp @0 @1))))
 
+/* (type)([0,1]@a != 0) -> (type)a
+   (type)([0,1]@a == 1) -> (type)a
+   (type)([0,1]@a == 0) -> a ^ 1
+   (type)([0,1]@a != 1) -> a ^ 1.  */
+(for eqne (eq ne)
+ (simplify
+  (convert (eqne zero_one_valued_p@0 INTEGER_CST@1))
+  (if ((integer_zerop (@1) || integer_onep (@1)))
+   (if ((eqne == EQ_EXPR) ^ integer_zerop (@1))
+    (convert @0)
+    /* Only do this if the types match as (type)(a == 0) is
+       canonical form normally, while `a ^ 1` is canonical when
+       there is no type change. */
+    (if (types_match (type, TREE_TYPE (@0)))
+     (bit_xor @0 { build_one_cst (type); } ))))))
+
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
 
