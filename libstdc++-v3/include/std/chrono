@@ -835,29 +835,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       is_leap() const noexcept
       {
-	// Testing divisibility by 100 first gives better performance, that is,
-	// return (_M_y % 100 != 0 || _M_y % 400 == 0) && _M_y % 4 == 0;
-
-	// It gets even faster if _M_y is in [-536870800, 536870999]
-	// (which is the case here) and _M_y % 100 is replaced by
-	// __is_multiple_of_100 below.
+	// Testing divisibility by 100 first gives better performance [1], i.e.,
+	//     return _M_y % 100 == 0 ? _M_y % 400 == 0 : _M_y % 16 == 0;
+	// Furthermore, if _M_y % 100 == 0, then _M_y % 400 == 0 is equivalent
+	// to _M_y % 16 == 0, so we can simplify it to
+	//     return _M_y % 100 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #1
+	// Similarly, we can replace 100 with 25 (which is good since
+	// _M_y % 25 == 0 requires one fewer instruction than _M_y % 100 == 0
+	// [2]):
+	//     return _M_y % 25 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #2
+	// Indeed, first assume _M_y % 4 != 0.  Then _M_y % 16 != 0 and hence,
+	// _M_y % 4 == 0 and _M_y % 16 == 0 are both false.  Therefore, #2
+	// returns false as it should (regardless of _M_y % 25.) Now assume
+	// _M_y % 4 == 0.  In this case, _M_y % 25 == 0 if, and only if,
+	// _M_y % 100 == 0, that is, #1 and #2 are equivalent.  Finally, #2 is
+	// equivalent to
+	//     return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0.
 
 	// References:
 	// [1] https://github.com/cassioneri/calendar
-	// [2] https://accu.org/journals/overload/28/155/overload155.pdf#page=16
+	// [2] https://godbolt.org/z/55G8rn77e
+	// [3] https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
 
-	// Furthermore, if y%100 == 0, then y%400==0 is equivalent to y%16==0,
-	// so we can simplify it to (!mult_100 && y % 4 == 0) || y % 16 == 0,
-	// which is equivalent to (y & (mult_100 ? 15 : 3)) == 0.
-	// See https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
-
-	constexpr uint32_t __multiplier   = 42949673;
-	constexpr uint32_t __bound        = 42949669;
-	constexpr uint32_t __max_dividend = 1073741799;
-	constexpr uint32_t __offset       = __max_dividend / 2 / 100 * 100;
-	const bool __is_multiple_of_100
-	  = __multiplier * (_M_y + __offset) < __bound;
-	return (_M_y & (__is_multiple_of_100 ? 15 : 3)) == 0;
+	return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0;
       }
 
       explicit constexpr
