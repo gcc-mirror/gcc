@@ -6977,6 +6977,8 @@ mode or ``no mode'', depending on context.
 
 @hook TARGET_MODE_CONFLUENCE
 
+@hook TARGET_MODE_BACKPROP
+
 @hook TARGET_MODE_ENTRY
 
 @hook TARGET_MODE_EXIT

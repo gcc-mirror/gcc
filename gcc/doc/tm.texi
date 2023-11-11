@@ -10456,6 +10456,34 @@ The hook should return the number of modes if no suitable mode exists
 for the given arguments.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_MODE_BACKPROP (int @var{entity}, int @var{mode1}, int @var{mode2})
+If defined, the mode-switching pass uses this hook to back-propagate mode
+requirements through blocks that have no mode requirements of their own.
+Specifically, @var{mode1} is the mode that @var{entity} has on exit
+from a block B1 (say) and @var{mode2} is the mode that the next block
+requires @var{entity} to have.  B1 does not have any mode requirements
+of its own.
+
+The hook should return the mode that it prefers or requires @var{entity}
+to have in B1, or the number of modes if there is no such requirement.
+If the hook returns a required mode for more than one of B1's outgoing
+edges, those modes are combined as for @code{TARGET_MODE_CONFLUENCE}.
+
+For example, suppose there is a ``one-shot'' entity that,
+for a given execution of a function, either stays off or makes exactly
+one transition from off to on.  It is safe to make the transition at any
+time, but it is better not to do so unnecessarily.  This hook allows the
+function to manage such an entity without having to track its state at
+runtime.  Specifically. the entity would have two modes, 0 for off and
+1 for on, with 2 representing ``don't know''.  The system is forbidden from
+transitioning from 2 to 1, since 2 represents the possibility that the
+entity is already on (and the aim is to avoid having to emit code to
+check for that case).  This hook would therefore return 1 when @var{mode1}
+is 2 and @var{mode2} is 1, which would force the entity to be on in the
+source block.  Applying this inductively would remove all transitions
+in which the previous state is unknown.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_MODE_ENTRY (int @var{entity})
 If this hook is defined, it is evaluated for every @var{entity} that
 needs mode switching.  It should return the mode that @var{entity} is
