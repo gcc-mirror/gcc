@@ -7071,6 +7071,13 @@ must be defined.",
  int, (int entity), NULL)
 
 DEFHOOK
+(eh_handler,
+ "If this hook is defined, it should return the mode that @var{entity} is\n\
+guaranteed to be in on entry to an exception handler, or the number of modes\n\
+if there is no such guarantee.",
+ int, (int entity), NULL)
+
+DEFHOOK
 (priority,
  "This hook specifies the order in which modes for @var{entity}\n\
 are processed. 0 is the highest priority,\n\

@@ -6979,6 +6979,8 @@ mode or ``no mode'', depending on context.
 
 @hook TARGET_MODE_EXIT
 
+@hook TARGET_MODE_EH_HANDLER
+
 @hook TARGET_MODE_PRIORITY
 
 @node Target Attributes

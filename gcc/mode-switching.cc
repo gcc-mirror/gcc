@@ -597,7 +597,10 @@ optimize_mode_switching (void)
 		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
 		if (ins_pos != BB_END (bb))
 		  ins_pos = NEXT_INSN (ins_pos);
-		ptr = new_seginfo (no_mode, no_mode, ins_pos, live_now);
+		if (bb_has_eh_pred (bb)
+		    && targetm.mode_switching.eh_handler)
+		  last_mode = targetm.mode_switching.eh_handler (e);
+		ptr = new_seginfo (no_mode, last_mode, ins_pos, live_now);
 		add_seginfo (&tail_ptr, ptr);
 		bitmap_clear_bit (transp_all, bb->index);
 	      }
