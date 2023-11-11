@@ -162,23 +162,14 @@ new_seginfo (int mode, rtx_insn *insn, const HARD_REG_SET &regs_live)
 }
 
 /* Add a seginfo element to the end of a list.
-   HEAD is a pointer to the list beginning.
+   TAIL is a pointer to the list's null terminator.
    INFO is the structure to be linked in.  */
 
 static void
-add_seginfo (struct bb_info *head, struct seginfo *info)
+add_seginfo (struct seginfo ***tail_ptr, struct seginfo *info)
 {
-  struct seginfo *ptr;
-
-  if (head->seginfo == NULL)
-    head->seginfo = info;
-  else
-    {
-      ptr = head->seginfo;
-      while (ptr->next != NULL)
-	ptr = ptr->next;
-      ptr->next = info;
-    }
+  **tail_ptr = info;
+  *tail_ptr = &info->next;
 }
 
 /* Record in LIVE that register REG died.  */
@@ -574,6 +565,7 @@ optimize_mode_switching (void)
 	 Also compute the initial transparency settings.  */
       FOR_EACH_BB_FN (bb, cfun)
 	{
+	  struct seginfo **tail_ptr = &info[bb->index].seginfo;
 	  struct seginfo *ptr;
 	  int last_mode = no_mode;
 	  bool any_set_required = false;
@@ -599,7 +591,7 @@ optimize_mode_switching (void)
 		if (ins_pos != BB_END (bb))
 		  ins_pos = NEXT_INSN (ins_pos);
 		ptr = new_seginfo (no_mode, ins_pos, live_now);
-		add_seginfo (info + bb->index, ptr);
+		add_seginfo (&tail_ptr, ptr);
 		for (i = 0; i < no_mode; i++)
 		  clear_mode_bit (transp[bb->index], j, i);
 	      }
@@ -617,7 +609,7 @@ optimize_mode_switching (void)
 		      any_set_required = true;
 		      last_mode = mode;
 		      ptr = new_seginfo (mode, insn, live_now);
-		      add_seginfo (info + bb->index, ptr);
+		      add_seginfo (&tail_ptr, ptr);
 		      for (i = 0; i < no_mode; i++)
 			clear_mode_bit (transp[bb->index], j, i);
 		    }
@@ -646,7 +638,7 @@ optimize_mode_switching (void)
 	  if (!any_set_required)
 	    {
 	      ptr = new_seginfo (no_mode, BB_END (bb), live_now);
-	      add_seginfo (info + bb->index, ptr);
+	      add_seginfo (&tail_ptr, ptr);
 	      if (last_mode != no_mode)
 		for (i = 0; i < no_mode; i++)
 		  clear_mode_bit (transp[bb->index], j, i);
