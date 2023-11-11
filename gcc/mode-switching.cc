@@ -556,12 +556,16 @@ optimize_mode_switching (void)
   bitmap_vector_clear (antic, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
 
+  auto_sbitmap transp_all (last_basic_block_for_fn (cfun));
+
   for (j = n_entities - 1; j >= 0; j--)
     {
       int e = entity_map[j];
       int no_mode = num_modes[e];
       struct bb_info *info = bb_info[j];
       rtx_insn *insn;
+
+      bitmap_ones (transp_all);
 
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
@@ -595,8 +599,7 @@ optimize_mode_switching (void)
 		  ins_pos = NEXT_INSN (ins_pos);
 		ptr = new_seginfo (no_mode, no_mode, ins_pos, live_now);
 		add_seginfo (&tail_ptr, ptr);
-		for (i = 0; i < no_mode; i++)
-		  clear_mode_bit (transp[bb->index], j, i);
+		bitmap_clear_bit (transp_all, bb->index);
 	      }
 	  }
 
@@ -611,8 +614,7 @@ optimize_mode_switching (void)
 		    {
 		      ptr = new_seginfo (last_mode, mode, insn, live_now);
 		      add_seginfo (&tail_ptr, ptr);
-		      for (i = 0; i < no_mode; i++)
-			clear_mode_bit (transp[bb->index], j, i);
+		      bitmap_clear_bit (transp_all, bb->index);
 		      any_set_required = true;
 		      last_mode = mode;
 		    }
@@ -643,8 +645,7 @@ optimize_mode_switching (void)
 	      ptr = new_seginfo (last_mode, no_mode, BB_END (bb), live_now);
 	      add_seginfo (&tail_ptr, ptr);
 	      if (last_mode != no_mode)
-		for (i = 0; i < no_mode; i++)
-		  clear_mode_bit (transp[bb->index], j, i);
+		bitmap_clear_bit (transp_all, bb->index);
 	    }
 	}
       if (targetm.mode_switching.entry && targetm.mode_switching.exit)
@@ -667,8 +668,7 @@ optimize_mode_switching (void)
 		 an extra check in make_preds_opaque.  We also
 		 need this to avoid confusing pre_edge_lcm when
 		 antic is cleared but transp and comp are set.  */
-	      for (i = 0; i < no_mode; i++)
-		clear_mode_bit (transp[bb->index], j, i);
+	      bitmap_clear_bit (transp_all, bb->index);
 
 	      /* Insert a fake computing definition of MODE into entry
 		 blocks which compute no mode. This represents the mode on
@@ -688,6 +688,9 @@ optimize_mode_switching (void)
 
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
+	      if (!bitmap_bit_p (transp_all, bb->index))
+		clear_mode_bit (transp[bb->index], j, m);
+
 	      if (info[bb->index].seginfo->mode == m)
 		set_mode_bit (antic[bb->index], j, m);
 
