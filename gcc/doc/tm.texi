@@ -10440,6 +10440,22 @@ the number of modes if it does not know what mode @var{entity} has after
 Not defining the hook is equivalent to returning @var{mode}.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_MODE_CONFLUENCE (int @var{entity}, int @var{mode1}, int @var{mode2})
+By default, the mode-switching pass assumes that a given entity's modes
+are mutually exclusive.  This means that the pass can only tell
+@code{TARGET_MODE_EMIT} about an entity's previous mode if all
+incoming paths of execution leave the entity in the same state.
+
+However, some entities might have overlapping, non-exclusive modes,
+so that it is sometimes possible to represent ``mode @var{mode1} or mode
+@var{mode2}'' with something more specific than ``mode not known''.
+If this is true for at least one entity, you should define this hook
+and make it return a mode that includes @var{mode1} and @var{mode2}
+as possibilities.  (The mode can include other possibilities too.)
+The hook should return the number of modes if no suitable mode exists
+for the given arguments.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_MODE_ENTRY (int @var{entity})
 If this hook is defined, it is evaluated for every @var{entity} that
 needs mode switching.  It should return the mode that @var{entity} is

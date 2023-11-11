@@ -485,6 +485,101 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
   return pre_exit;
 }
 
+/* Return the confluence of modes MODE1 and MODE2 for entity ENTITY,
+   using NO_MODE to represent an unknown mode if nothing more precise
+   is available.  */
+
+int
+mode_confluence (int entity, int mode1, int mode2, int no_mode)
+{
+  if (mode1 == mode2)
+    return mode1;
+
+  if (mode1 != no_mode
+      && mode2 != no_mode
+      && targetm.mode_switching.confluence)
+    return targetm.mode_switching.confluence (entity, mode1, mode2);
+
+  return no_mode;
+}
+
+/* Information for the dataflow problems below.  */
+struct
+{
+  /* Information about each basic block, indexed by block id.  */
+  struct bb_info *bb_info;
+
+  /* The entity that we're processing.  */
+  int entity;
+
+  /* The number of modes defined for the entity, and thus the identifier
+     of the "don't know" mode.  */
+  int no_mode;
+} confluence_info;
+
+/* Propagate information about any mode change on edge E to the
+   destination block's mode_in.  Return true if something changed.
+
+   The mode_in and mode_out fields use no_mode + 1 to mean "not yet set".  */
+
+static bool
+forward_confluence_n (edge e)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (e->src->index == ENTRY_BLOCK || e->dest->index == EXIT_BLOCK)
+    return false;
+
+  /* We don't control mode changes across abnormal edges.  */
+  if (e->flags & EDGE_ABNORMAL)
+    return false;
+
+  /* E->aux is nonzero if we have computed the LCM problem and scheduled
+     E to change the mode to E->aux - 1.  Otherwise model the change
+     from the source to the destination.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  int no_mode = confluence_info.no_mode;
+  int src_mode = bb_info[e->src->index].mode_out;
+  if (e->aux)
+    src_mode = (int) (intptr_t) e->aux - 1;
+  if (src_mode == no_mode + 1)
+    return false;
+
+  int dest_mode = bb_info[e->dest->index].mode_in;
+  if (dest_mode == no_mode + 1)
+    {
+      bb_info[e->dest->index].mode_in = src_mode;
+      return true;
+    }
+
+  int entity = confluence_info.entity;
+  int new_mode = mode_confluence (entity, src_mode, dest_mode, no_mode);
+  if (dest_mode == new_mode)
+    return false;
+
+  bb_info[e->dest->index].mode_in = new_mode;
+  return true;
+}
+
+/* Update block BB_INDEX's mode_out based on its mode_in.  Return true if
+   something changed.  */
+
+static bool
+forward_transfer (int bb_index)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (bb_index == ENTRY_BLOCK || bb_index == EXIT_BLOCK)
+    return false;
+
+  /* Only propagate through a block if the entity is transparent.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  if (bb_info[bb_index].computing != confluence_info.no_mode
+      || bb_info[bb_index].mode_out == bb_info[bb_index].mode_in)
+    return false;
+
+  bb_info[bb_index].mode_out = bb_info[bb_index].mode_in;
+  return true;
+}
+
 /* Find all insns that need a particular mode setting, and insert the
    necessary mode switches.  Return true if we did work.  */
 
@@ -567,6 +662,39 @@ optimize_mode_switching (void)
   bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
 
   auto_sbitmap transp_all (last_basic_block_for_fn (cfun));
+
+  auto_bitmap blocks;
+
+  /* Forward-propagate mode information through blocks where the entity
+     is transparent, so that mode_in describes the mode on entry to each
+     block and mode_out describes the mode on exit from each block.  */
+  auto forwprop_mode_info = [&](struct bb_info *info,
+				int entity, int no_mode)
+    {
+      /* Use no_mode + 1 to mean "not yet set".  */
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  if (bb_has_abnormal_pred (bb))
+	    info[bb->index].mode_in = info[bb->index].seginfo->mode;
+	  else
+	    info[bb->index].mode_in = no_mode + 1;
+	  if (info[bb->index].computing != no_mode)
+	    info[bb->index].mode_out = info[bb->index].computing;
+	  else
+	    info[bb->index].mode_out = no_mode + 1;
+	}
+
+      confluence_info.bb_info = info;
+      confluence_info.entity = entity;
+      confluence_info.no_mode = no_mode;
+
+      bitmap_set_range (blocks, 0, last_basic_block_for_fn (cfun));
+      df_simple_dataflow (DF_FORWARD, NULL, NULL, forward_confluence_n,
+			  forward_transfer, blocks,
+			  df_get_postorder (DF_FORWARD),
+			  df_get_n_blocks (DF_FORWARD));
+
+    };
 
   for (j = n_entities - 1; j >= 0; j--)
     {
@@ -721,6 +849,7 @@ optimize_mode_switching (void)
   for (j = n_entities - 1; j >= 0; j--)
     {
       int no_mode = num_modes[entity_map[j]];
+      struct bb_info *info = bb_info[j];
 
       /* Insert all mode sets that have been inserted by lcm.  */
 
@@ -741,39 +870,33 @@ optimize_mode_switching (void)
 	    }
 	}
 
+      /* mode_in and mode_out can be calculated directly from avin and
+	 avout if all the modes are mutually exclusive.  Use the target-
+	 provided confluence function otherwise.  */
+      if (targetm.mode_switching.confluence)
+	forwprop_mode_info (info, entity_map[j], no_mode);
+
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  struct bb_info *info = bb_info[j];
-	  int last_mode = no_mode;
-
-	  /* intialize mode in availability for bb.  */
-	  for (i = 0; i < no_mode; i++)
-	    if (mode_bit_p (avout[bb->index], j, i))
-	      {
-		if (last_mode == no_mode)
-		  last_mode = i;
-		if (last_mode != i)
+	  auto modes_confluence = [&](sbitmap *av)
+	    {
+	      for (int i = 0; i < no_mode; ++i)
+		if (mode_bit_p (av[bb->index], j, i))
 		  {
-		    last_mode = no_mode;
-		    break;
+		    for (int i2 = i + 1; i2 < no_mode; ++i2)
+		      if (mode_bit_p (av[bb->index], j, i2))
+			return no_mode;
+		    return i;
 		  }
-	      }
-	  info[bb->index].mode_out = last_mode;
+	      return no_mode;
+	    };
 
-	  /* intialize mode out availability for bb.  */
-	  last_mode = no_mode;
-	  for (i = 0; i < no_mode; i++)
-	    if (mode_bit_p (avin[bb->index], j, i))
-	      {
-		if (last_mode == no_mode)
-		  last_mode = i;
-		if (last_mode != i)
-		  {
-		    last_mode = no_mode;
-		    break;
-		  }
-	      }
-	  info[bb->index].mode_in = last_mode;
+	  /* intialize mode in/out availability for bb.  */
+	  if (!targetm.mode_switching.confluence)
+	    {
+	      info[bb->index].mode_out = modes_confluence (avout);
+	      info[bb->index].mode_in = modes_confluence (avin);
+	    }
 
 	  for (i = 0; i < no_mode; i++)
 	    if (mode_bit_p (del[bb->index], j, i))

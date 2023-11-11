@@ -7054,6 +7054,23 @@ Not defining the hook is equivalent to returning @var{mode}.",
  int, (int entity, int mode, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
+(confluence,
+ "By default, the mode-switching pass assumes that a given entity's modes\n\
+are mutually exclusive.  This means that the pass can only tell\n\
+@code{TARGET_MODE_EMIT} about an entity's previous mode if all\n\
+incoming paths of execution leave the entity in the same state.\n\
+\n\
+However, some entities might have overlapping, non-exclusive modes,\n\
+so that it is sometimes possible to represent ``mode @var{mode1} or mode\n\
+@var{mode2}'' with something more specific than ``mode not known''.\n\
+If this is true for at least one entity, you should define this hook\n\
+and make it return a mode that includes @var{mode1} and @var{mode2}\n\
+as possibilities.  (The mode can include other possibilities too.)\n\
+The hook should return the number of modes if no suitable mode exists\n\
+for the given arguments.",
+ int, (int entity, int mode1, int mode2), NULL)
+
+DEFHOOK
 (entry,
  "If this hook is defined, it is evaluated for every @var{entity} that\n\
 needs mode switching.  It should return the mode that @var{entity} is\n\
