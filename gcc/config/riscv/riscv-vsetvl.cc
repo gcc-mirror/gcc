@@ -560,7 +560,11 @@ source_equal_p (insn_info *insn1, insn_info *insn2)
 
   rtx note1 = find_reg_equal_equiv_note (rinsn1);
   rtx note2 = find_reg_equal_equiv_note (rinsn2);
-  if (note1 && note2 && rtx_equal_p (note1, note2))
+  /* We could handle the case of similar-looking REG_EQUALs as well but
+     would need to verify that no insn in between modifies any of the source
+     operands.  */
+  if (note1 && note2 && rtx_equal_p (note1, note2)
+      && REG_NOTE_KIND (note1) == REG_EQUIV)
     return true;
   return false;
 }
