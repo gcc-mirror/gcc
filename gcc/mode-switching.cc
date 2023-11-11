@@ -541,6 +541,7 @@ optimize_mode_switching (void)
       pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
     }
 
+  df_note_add_problem ();
   df_analyze ();
 
   /* Create the bitmap vectors.  */
