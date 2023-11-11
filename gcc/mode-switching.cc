@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
    NEXT is the next insn in the same basic block.  */
 struct seginfo
 {
+  int prev_mode;
   int mode;
   rtx_insn *insn_ptr;
   struct seginfo *next;
@@ -140,20 +141,22 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
   return need_commit;
 }
 
-/* Allocate a new BBINFO structure, initialized with the MODE, INSN,
-   and REGS_LIVE parameters.
+/* Allocate a new BBINFO structure, initialized with the PREV_MODE, MODE,
+   INSN, and REGS_LIVE parameters.
    INSN may not be a NOTE_INSN_BASIC_BLOCK, unless it is an empty
    basic block; that allows us later to insert instructions in a FIFO-like
    manner.  */
 
 static struct seginfo *
-new_seginfo (int mode, rtx_insn *insn, const HARD_REG_SET &regs_live)
+new_seginfo (int prev_mode, int mode, rtx_insn *insn,
+	     const HARD_REG_SET &regs_live)
 {
   struct seginfo *ptr;
 
   gcc_assert (!NOTE_INSN_BASIC_BLOCK_P (insn)
 	      || insn == BB_END (NOTE_BASIC_BLOCK (insn)));
   ptr = XNEW (struct seginfo);
+  ptr->prev_mode = prev_mode;
   ptr->mode = mode;
   ptr->insn_ptr = insn;
   ptr->next = NULL;
@@ -590,7 +593,7 @@ optimize_mode_switching (void)
 		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
 		if (ins_pos != BB_END (bb))
 		  ins_pos = NEXT_INSN (ins_pos);
-		ptr = new_seginfo (no_mode, ins_pos, live_now);
+		ptr = new_seginfo (no_mode, no_mode, ins_pos, live_now);
 		add_seginfo (&tail_ptr, ptr);
 		for (i = 0; i < no_mode; i++)
 		  clear_mode_bit (transp[bb->index], j, i);
@@ -606,12 +609,12 @@ optimize_mode_switching (void)
 
 		  if (mode != no_mode && mode != last_mode)
 		    {
-		      any_set_required = true;
-		      last_mode = mode;
-		      ptr = new_seginfo (mode, insn, live_now);
+		      ptr = new_seginfo (last_mode, mode, insn, live_now);
 		      add_seginfo (&tail_ptr, ptr);
 		      for (i = 0; i < no_mode; i++)
 			clear_mode_bit (transp[bb->index], j, i);
+		      any_set_required = true;
+		      last_mode = mode;
 		    }
 
 		  if (targetm.mode_switching.after)
@@ -637,7 +640,7 @@ optimize_mode_switching (void)
 	     mark the block as nontransparent.  */
 	  if (!any_set_required)
 	    {
-	      ptr = new_seginfo (no_mode, BB_END (bb), live_now);
+	      ptr = new_seginfo (last_mode, no_mode, BB_END (bb), live_now);
 	      add_seginfo (&tail_ptr, ptr);
 	      if (last_mode != no_mode)
 		for (i = 0; i < no_mode; i++)
@@ -778,9 +781,9 @@ optimize_mode_switching (void)
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  struct seginfo *ptr, *next;
-	  int cur_mode = bb_info[j][bb->index].mode_in;
+	  struct seginfo *first = bb_info[j][bb->index].seginfo;
 
-	  for (ptr = bb_info[j][bb->index].seginfo; ptr; ptr = next)
+	  for (ptr = first; ptr; ptr = next)
 	    {
 	      next = ptr->next;
 	      if (ptr->mode != no_mode)
@@ -790,13 +793,14 @@ optimize_mode_switching (void)
 		  rtl_profile_for_bb (bb);
 		  start_sequence ();
 
+		  int cur_mode = (ptr == first && ptr->prev_mode == no_mode
+				  ? bb_info[j][bb->index].mode_in
+				  : ptr->prev_mode);
+
 		  targetm.mode_switching.emit (entity_map[j], ptr->mode,
 					       cur_mode, ptr->regs_live);
 		  mode_set = get_insns ();
 		  end_sequence ();
-
-		  /* modes kill each other inside a basic block.  */
-		  cur_mode = ptr->mode;
 
 		  /* Insert MODE_SET only if it is nonempty.  */
 		  if (mode_set != NULL_RTX)
