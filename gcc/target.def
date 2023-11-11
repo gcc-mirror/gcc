@@ -7031,8 +7031,9 @@ DEFHOOK
 If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this hook\n\
 to return the mode that @var{entity} must be switched into prior to the\n\
 execution of @var{insn}, or the number of modes if @var{insn} has no\n\
-such requirement.",
- int, (int entity, rtx_insn *insn), NULL)
+such requirement.  @var{regs_live} contains the set of hard registers\n\
+that are live before @var{insn}.",
+ int, (int entity, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (after,

@@ -2400,7 +2400,7 @@ epiphany_mode_priority (int entity, int priority)
 }
 
 int
-epiphany_mode_needed (int entity, rtx_insn *insn)
+epiphany_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
 {
   enum attr_fp_mode mode;
 

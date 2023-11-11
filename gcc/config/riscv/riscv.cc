@@ -9426,7 +9426,7 @@ riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
    prior to the execution of insn.  */
 
 static int
-riscv_mode_needed (int entity, rtx_insn *insn)
+riscv_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
 {
   int code = recog_memoized (insn);
 

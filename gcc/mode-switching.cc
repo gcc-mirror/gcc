@@ -254,6 +254,9 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    && GET_CODE (PATTERN (last_insn)) == USE
 	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
 	  {
+	    auto_bitmap live;
+	    df_simulate_initialize_backwards (src_bb, live);
+
 	    int ret_start = REGNO (ret_reg);
 	    int nregs = REG_NREGS (ret_reg);
 	    int ret_end = ret_start + nregs;
@@ -262,12 +265,16 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    bool forced_late_switch = false;
 	    rtx_insn *before_return_copy;
 
+	    df_simulate_one_insn_backwards (src_bb, last_insn, live);
+
 	    do
 	      {
 		rtx_insn *return_copy = PREV_INSN (last_insn);
 		rtx return_copy_pat, copy_reg;
 		int copy_start, copy_num;
 		int j;
+
+		df_simulate_one_insn_backwards (src_bb, return_copy, live);
 
 		if (NONDEBUG_INSN_P (return_copy))
 		  {
@@ -368,11 +375,14 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		       the case for floating point on SH4 - then it might
 		       be set by an arithmetic operation that needs a
 		       different mode than the exit block.  */
+		    HARD_REG_SET hard_regs_live;
+		    REG_SET_TO_HARD_REG_SET (hard_regs_live, live);
 		    for (j = n_entities - 1; j >= 0; j--)
 		      {
 			int e = entity_map[j];
 			int mode =
-			  targetm.mode_switching.needed (e, return_copy);
+			  targetm.mode_switching.needed (e, return_copy,
+							 hard_regs_live);
 
 			if (mode != num_modes[e]
 			    && mode != targetm.mode_switching.exit (e))
@@ -610,7 +620,7 @@ optimize_mode_switching (void)
 	    {
 	      if (INSN_P (insn))
 		{
-		  int mode = targetm.mode_switching.needed (e, insn);
+		  int mode = targetm.mode_switching.needed (e, insn, live_now);
 		  rtx link;
 
 		  if (mode != no_mode && mode != last_mode)
