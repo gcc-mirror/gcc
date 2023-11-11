@@ -478,27 +478,17 @@ values_equal_for_ipcp_p (tree x, tree y)
 
   if (TREE_CODE (x) == ADDR_EXPR
       && TREE_CODE (y) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
-      && TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL)
-    return operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
-			    DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
+      && (TREE_CODE (TREE_OPERAND (x, 0)) == CONST_DECL
+	  || (TREE_CODE (TREE_OPERAND (x, 0)) == VAR_DECL
+	      && DECL_IN_CONSTANT_POOL (TREE_OPERAND (x, 0))))
+      && (TREE_CODE (TREE_OPERAND (y, 0)) == CONST_DECL
+	  || (TREE_CODE (TREE_OPERAND (y, 0)) == VAR_DECL
+	      && DECL_IN_CONSTANT_POOL (TREE_OPERAND (y, 0)))))
+    return TREE_OPERAND (x, 0) == TREE_OPERAND (y, 0)
+	   || operand_equal_p (DECL_INITIAL (TREE_OPERAND (x, 0)),
+			       DECL_INITIAL (TREE_OPERAND (y, 0)), 0);
   else
     return operand_equal_p (x, y, 0);
-}
-
-/* Print V which is extracted from a value in a lattice to F.  */
-
-static void
-print_ipcp_constant_value (FILE * f, tree v)
-{
-  if (TREE_CODE (v) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (v, 0)) == CONST_DECL)
-    {
-      fprintf (f, "& ");
-      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (v, 0)));
-    }
-  else
-    print_generic_expr (f, v);
 }
 
 /* Print V which is extracted from a value in a lattice to F.  */

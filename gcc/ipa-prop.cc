@@ -365,6 +365,24 @@ ipa_initialize_node_params (struct cgraph_node *node)
     ipa_populate_param_decls (node, *info->descriptors);
 }
 
+/* Print VAL which is extracted from a jump function to F.  */
+
+static void
+ipa_print_constant_value (FILE *f, tree val)
+{
+  print_generic_expr (f, val);
+
+  /* This is in keeping with values_equal_for_ipcp_p.  */
+  if (TREE_CODE (val) == ADDR_EXPR
+      && (TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL
+	  || (TREE_CODE (TREE_OPERAND (val, 0)) == VAR_DECL
+	      && DECL_IN_CONSTANT_POOL (TREE_OPERAND (val, 0)))))
+    {
+      fputs (" -> ", f);
+      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)));
+    }
+}
+
 /* Print the jump functions associated with call graph edge CS to file F.  */
 
 static void
@@ -386,15 +404,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	fprintf (f, "UNKNOWN\n");
       else if (type == IPA_JF_CONST)
 	{
-	  tree val = jump_func->value.constant.value;
 	  fprintf (f, "CONST: ");
-	  print_generic_expr (f, val);
-	  if (TREE_CODE (val) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
-	    {
-	      fprintf (f, " -> ");
-	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)));
-	    }
+	  ipa_print_constant_value (f, jump_func->value.constant.value);
 	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_PASS_THROUGH)
@@ -468,7 +479,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	      else if (item->jftype == IPA_JF_CONST)
 		{
 		  fprintf (f, "CONST: ");
-		  print_generic_expr (f, item->value.constant);
+		  ipa_print_constant_value (f, item->value.constant);
 		}
 	      else if (item->jftype == IPA_JF_UNKNOWN)
 		fprintf (f, "UNKNOWN: " HOST_WIDE_INT_PRINT_DEC " bits",
