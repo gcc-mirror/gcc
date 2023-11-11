@@ -10368,7 +10368,7 @@ The following macros control mode switching optimizations:
 
 @defmac OPTIMIZE_MODE_SWITCHING (@var{entity})
 Define this macro if the port needs extra instructions inserted for mode
-switching in an optimizing compilation.
+switching.
 
 For an example, the SH4 can perform both single and double precision
 floating point operations, but to perform a single precision operation,
@@ -10378,73 +10378,88 @@ purpose register as a scratch register, hence these FPSCR sets have to
 be inserted before reload, i.e.@: you cannot put this into instruction emitting
 or @code{TARGET_MACHINE_DEPENDENT_REORG}.
 
-You can have multiple entities that are mode-switched, and select at run time
-which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
-return nonzero for any @var{entity} that needs mode-switching.
+You can have multiple entities that are mode-switched, some of which might
+only be needed conditionally.  The entities are identified by their index
+into the @code{NUM_MODES_FOR_MODE_SWITCHING} initializer, with the length
+of the initializer determining the number of entities.
+
+@code{OPTIMIZE_MODE_SWITCHING} should return nonzero for any @var{entity}
+that needs mode-switching.
+
 If you define this macro, you also have to define
 @code{NUM_MODES_FOR_MODE_SWITCHING}, @code{TARGET_MODE_NEEDED},
 @code{TARGET_MODE_PRIORITY} and @code{TARGET_MODE_EMIT}.
-@code{TARGET_MODE_AFTER}, @code{TARGET_MODE_ENTRY}, and @code{TARGET_MODE_EXIT}
-are optional.
+The other macros in this section are optional.
 @end defmac
 
 @defmac NUM_MODES_FOR_MODE_SWITCHING
 If you define @code{OPTIMIZE_MODE_SWITCHING}, you have to define this as
 initializer for an array of integers.  Each initializer element
 N refers to an entity that needs mode switching, and specifies the number
-of different modes that might need to be set for this entity.
-The position of the initializer in the initializer---starting counting at
+of different modes that are defined for that entity.
+The position of the element in the initializer---starting counting at
 zero---determines the integer that is used to refer to the mode-switched
 entity in question.
-In macros that take mode arguments / yield a mode result, modes are
-represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mode
-switch is needed / supplied.
+Modes are represented as numbers 0 @dots{} N @minus{} 1.
+In mode arguments and return values, N either represents an unknown
+mode or ``no mode'', depending on context.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_MODE_EMIT (int @var{entity}, int @var{mode}, int @var{prev_mode}, HARD_REG_SET @var{regs_live})
 Generate one or more insns to set @var{entity} to @var{mode}.
 @var{hard_reg_live} is the set of hard registers live at the point where
 the insn(s) are to be inserted. @var{prev_moxde} indicates the mode
-to switch from. Sets of a lower numbered entity will be emitted before
+to switch from, or is the number of modes if the previous mode is not
+known.  Sets of a lower numbered entity will be emitted before
 sets of a higher numbered entity to a mode of the same or lower priority.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.
-If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro
-to return an integer value not larger than the corresponding element
-in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity}
-must be switched into prior to the execution of @var{insn}.
+If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this hook
+to return the mode that @var{entity} must be switched into prior to the
+execution of @var{insn}, or the number of modes if @var{insn} has no
+such requirement.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.
-If this macro is defined, it is evaluated for every @var{insn} during mode
-switching.  It determines the mode that an insn results
-in (if different from the incoming mode).
+If this hook is defined, it is evaluated for every @var{insn} during mode
+switching.  It returns the mode that @var{entity} is in after @var{insn}
+has been executed.  @var{mode} is the mode that @var{entity} was in
+before @var{insn} was executed, taking account of @var{TARGET_MODE_NEEDED}.
+
+@var{mode} is equal to the number of modes defined for @var{entity}
+if the mode before @var{insn} is unknown.  The hook should likewise return
+the number of modes if it does not know what mode @var{entity} has after
+@var{insn}.
+
+Not defining the hook is equivalent to returning @var{mode}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_ENTRY (int @var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that
-needs mode switching.  It should evaluate to an integer, which is a mode
-that @var{entity} is assumed to be switched to at function entry.
+If this hook is defined, it is evaluated for every @var{entity} that
+needs mode switching.  It should return the mode that @var{entity} is
+guaranteed to be in on entry to the function, or the number of modes
+if there is no such guarantee.
 If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT}
 must be defined.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_EXIT (int @var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that
-needs mode switching.  It should evaluate to an integer, which is a mode
-that @var{entity} is assumed to be switched to at function exit.
+If this hook is defined, it is evaluated for every @var{entity} that
+needs mode switching.  It should return the mode that @var{entity} must
+be in on return from the function, or the number of modes if there is no
+such requirement.
 If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY}
 must be defined.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_PRIORITY (int @var{entity}, int @var{n})
-This macro specifies the order in which modes for @var{entity}
+This hook specifies the order in which modes for @var{entity}
 are processed. 0 is the highest priority,
 @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.
-The value of the macro should be an integer designating a mode
+The hook returns an integer designating a mode
 for @var{entity}.  For any fixed @var{entity}, @code{mode_priority}
 (@var{entity}, @var{n}) shall be a bijection in 0 @dots{}
 @code{num_modes_for_mode_switching[@var{entity}] - 1}.
