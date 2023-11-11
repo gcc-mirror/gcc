@@ -79,6 +79,12 @@ proc dg-scan { name positive testcase output_file orig_args } {
     }
     set text [read $fd]
     close $fd
+    if { [string compare -length 14 $name scan-assembler] == 0 } {
+      # Remove LTO sections.
+      # ??? Somehow, .*? is still greedy.
+      # regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_.*?\n(?=[[:space:]]*\.text\n)} $text {\1} text
+      regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    }
 
     set match [regexp -- $pattern $text]
     if { $match == $positive } {
@@ -107,6 +113,16 @@ proc scan-assembler { args } {
 }
 
 set_required_options_for scan-assembler
+
+proc scan-raw-assembler { args } {
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+    set output_file "[file rootname [file tail $filename]].s"
+    dg-scan "scan-raw-assembler" 1 $testcase $output_file $args
+}
+
+set_required_options_for scan-raw-assembler
 
 # Check that a pattern is not present in the .s file produced by the
 # compiler.  See dg-scan for details.
@@ -487,6 +503,7 @@ proc scan-assembler-times { args } {
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
+    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
 
     set result_count [llength [regexp -inline -all -- $pattern $text]]
     if {$result_count == $times} {
@@ -548,6 +565,7 @@ proc scan-assembler-dem { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
+    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
 
     if [regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem $pp_pattern"
@@ -604,6 +622,7 @@ proc scan-assembler-dem-not { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
+    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
 
     if ![regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem-not $pp_pattern"
