@@ -311,6 +311,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (this->_M_engaged)
 	  _M_destroy();
+	else // This seems redundant but improves codegen, see PR 112480.
+	  this->_M_engaged = false;
       }
     };
 
