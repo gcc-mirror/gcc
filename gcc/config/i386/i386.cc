@@ -15109,7 +15109,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 /* Return the mode that an insn results in.  */
 
 static int
-ix86_mode_after (int entity, int mode, rtx_insn *insn)
+ix86_mode_after (int entity, int mode, rtx_insn *insn, HARD_REG_SET)
 {
   switch (entity)
     {

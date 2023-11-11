@@ -7042,6 +7042,8 @@ If this hook is defined, it is evaluated for every @var{insn} during mode\n\
 switching.  It returns the mode that @var{entity} is in after @var{insn}\n\
 has been executed.  @var{mode} is the mode that @var{entity} was in\n\
 before @var{insn} was executed, taking account of @var{TARGET_MODE_NEEDED}.\n\
+@var{regs_live} is the set of hard registers that are live after @var{insn}\n\
+has been executed.\n\
 \n\
 @var{mode} is equal to the number of modes defined for @var{entity}\n\
 if the mode before @var{insn} is unknown.  The hook should likewise return\n\
@@ -7049,7 +7051,7 @@ the number of modes if it does not know what mode @var{entity} has after\n\
 @var{insn}.\n\
 \n\
 Not defining the hook is equivalent to returning @var{mode}.",
- int, (int entity, int mode, rtx_insn *insn), NULL)
+ int, (int entity, int mode, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (entry,

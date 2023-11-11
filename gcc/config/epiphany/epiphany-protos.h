@@ -46,8 +46,9 @@ extern void epiphany_insert_mode_switch_use (rtx_insn *insn, int, int);
 extern void epiphany_expand_set_fp_mode (rtx *operands);
 #ifdef HARD_CONST
 extern int epiphany_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET);
+extern int epiphany_mode_after (int entity, int last_mode, rtx_insn *insn,
+				HARD_REG_SET);
 #endif
-extern int epiphany_mode_after (int entity, int last_mode, rtx_insn *insn);
 extern bool epiphany_epilogue_uses (int regno);
 extern bool epiphany_optimize_mode_switching (int entity);
 extern bool epiphany_is_interrupt_p (tree);
