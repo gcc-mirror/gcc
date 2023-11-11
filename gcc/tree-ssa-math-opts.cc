@@ -5047,11 +5047,11 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       /* Remove some further statements which can't be kept in the IL because
 	 they can use SSA_NAMEs whose setter is going to be removed too.  */
-      while (temp_stmts.length ())
+      for (gimple *g2 : temp_stmts)
 	{
-	  g = temp_stmts.pop ();
-	  gsi2 = gsi_for_stmt (g);
+	  gsi2 = gsi_for_stmt (g2);
 	  gsi_remove (&gsi2, true);
+	  release_defs (g2);
 	}
     }
   else
@@ -5068,10 +5068,12 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	rhs1 = gimple_assign_rhs1 (g);
 	gsi2 = gsi_for_stmt (g);
 	gsi_remove (&gsi2, true);
+	release_defs (g);
       }
   gcc_checking_assert (rhs1 == gimple_assign_lhs (im2));
   gsi2 = gsi_for_stmt (im2);
   gsi_remove (&gsi2, true);
+  release_defs (im2);
   /* Replace the re2 statement with __real__ of the newly added
      .UADDC/.USUBC call.  */
   if (re2)
