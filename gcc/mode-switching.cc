@@ -106,10 +106,10 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
   for (int ed = NUM_EDGES (edge_list) - 1; ed >= 0; ed--)
     {
       edge eg = INDEX_EDGE (edge_list, ed);
-      int mode;
 
-      if ((mode = (int)(intptr_t)(eg->aux)) != -1)
+      if (eg->aux)
 	{
+	  int mode = (int) (intptr_t) eg->aux - 1;
 	  HARD_REG_SET live_at_edge;
 	  basic_block src_bb = eg->src;
 	  int cur_mode = info[src_bb->index].mode_out;
@@ -728,14 +728,14 @@ optimize_mode_switching (void)
 	{
 	  edge eg = INDEX_EDGE (edge_list, ed);
 
-	  eg->aux = (void *)(intptr_t)-1;
+	  eg->aux = (void *) (intptr_t) 0;
 
 	  for (i = 0; i < no_mode; i++)
 	    {
 	      int m = targetm.mode_switching.priority (entity_map[j], i);
 	      if (mode_bit_p (insert[ed], j, m))
 		{
-		  eg->aux = (void *)(intptr_t)m;
+		  eg->aux = (void *) (intptr_t) (m + 1);
 		  break;
 		}
 	    }
