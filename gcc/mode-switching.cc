@@ -650,34 +650,30 @@ optimize_mode_switching (void)
 	}
       if (targetm.mode_switching.entry && targetm.mode_switching.exit)
 	{
-	  int mode = targetm.mode_switching.entry (e);
-
 	  info[post_entry->index].mode_out =
 	    info[post_entry->index].mode_in = no_mode;
+
+	  int mode = targetm.mode_switching.entry (e);
+	  if (mode != no_mode)
+	    {
+	      /* Insert a fake computing definition of MODE into entry
+		 blocks which compute no mode. This represents the mode on
+		 entry.  */
+	      info[post_entry->index].computing = mode;
+	      bitmap_clear_bit (transp_all, post_entry->index);
+	    }
+
 	  if (pre_exit)
 	    {
 	      info[pre_exit->index].mode_out =
 		info[pre_exit->index].mode_in = no_mode;
-	    }
 
-	  if (mode != no_mode)
-	    {
-	      bb = post_entry;
-
-	      /* By always making this nontransparent, we save
-		 an extra check in make_preds_opaque.  We also
-		 need this to avoid confusing pre_edge_lcm when
-		 antic is cleared but transp and comp are set.  */
-	      bitmap_clear_bit (transp_all, bb->index);
-
-	      /* Insert a fake computing definition of MODE into entry
-		 blocks which compute no mode. This represents the mode on
-		 entry.  */
-	      info[bb->index].computing = mode;
-
-	      if (pre_exit)
-		info[pre_exit->index].seginfo->mode =
-		  targetm.mode_switching.exit (e);
+	      int mode = targetm.mode_switching.exit (e);
+	      if (mode != no_mode)
+		{
+		  info[pre_exit->index].seginfo->mode = mode;
+		  bitmap_clear_bit (transp_all, pre_exit->index);
+		}
 	    }
 	}
 
