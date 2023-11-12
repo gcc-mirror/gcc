@@ -14761,9 +14761,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
-      for (unsigned jx = (b->get_entity_kind () == depset::EK_BINDING
-			  || b->is_special ()) ? 1 : 0;
-	   jx != b->deps.length (); jx++)
+      for (unsigned jx = b->is_special (); jx != b->deps.length (); jx++)
 	{
 	  depset *dep = b->deps[jx];
 
