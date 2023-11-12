@@ -163,6 +163,7 @@ public:
   void visit (Literal &lit, location_t locus = UNDEF_LOCATION);
 
   void visit (FunctionParam &param);
+  void visit (VariadicParam &param);
   void visit (Attribute &attrib);
   void visit (Visibility &vis);
   void visit (std::vector<std::unique_ptr<GenericParam>> &params);

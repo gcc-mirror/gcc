@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-derive-clone.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace AST {
@@ -50,13 +51,17 @@ DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
 		   loc, loc));
   auto big_self_type = builder.single_type_path ("Self");
 
+  std::unique_ptr<SelfParam> self (new SelfParam (Lifetime::error (),
+						  /* is_mut */ false, loc));
+
+  std::vector<std::unique_ptr<Param>> params;
+  params.push_back (std::move (self));
+
   return std::unique_ptr<TraitImplItem> (
     new Function ({"clone"}, builder.fn_qualifiers (), /* generics */ {},
-		  tl::optional<SelfParam> (tl::in_place, Lifetime::error (),
-					   /* is_mut */ false, loc),
-		  /* function params */ {}, std::move (big_self_type),
-		  WhereClause::create_empty (), std::move (block),
-		  Visibility::create_private (), {}, loc));
+		  /* function params */ std::move (params),
+		  std::move (big_self_type), WhereClause::create_empty (),
+		  std::move (block), Visibility::create_private (), {}, loc));
 }
 
 /**

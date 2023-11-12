@@ -23,6 +23,7 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace Resolver {
@@ -352,11 +353,28 @@ public:
 
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly
-    for (auto &param : function.get_function_params ())
+    for (auto &p : function.get_function_params ())
       {
-	ResolveType::go (param.get_type ().get ());
-	PatternDeclaration::go (param.get_pattern ().get (),
-				Rib::ItemType::Param, bindings);
+	if (p->is_variadic ())
+	  {
+	    auto param = static_cast<AST::VariadicParam *> (p.get ());
+	    PatternDeclaration::go (param->get_pattern ().get (),
+				    Rib::ItemType::Param, bindings);
+	  }
+
+	else if (p->is_self ())
+	  {
+	    auto param = static_cast<AST::SelfParam *> (p.get ());
+	    ResolveType::go (param->get_type ().get ());
+	  }
+	else
+	  {
+	    auto param = static_cast<AST::FunctionParam *> (p.get ());
+
+	    ResolveType::go (param->get_type ().get ());
+	    PatternDeclaration::go (param->get_pattern ().get (),
+				    Rib::ItemType::Param, bindings);
+	  }
       }
 
     // resolve the function body

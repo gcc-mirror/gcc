@@ -218,34 +218,37 @@ CfgStrip::maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields)
 }
 
 void
-CfgStrip::maybe_strip_function_params (std::vector<AST::FunctionParam> &params)
+CfgStrip::maybe_strip_function_params (
+  std::vector<std::unique_ptr<AST::Param>> &params)
 {
   for (auto it = params.begin (); it != params.end ();)
     {
-      auto &param = *it;
-
-      auto &param_attrs = param.get_outer_attrs ();
-      expand_cfg_attrs (param_attrs);
-      if (fails_cfg_with_expand (param_attrs))
+      if (!(*it)->is_self () && !(*it)->is_variadic ())
 	{
-	  it = params.erase (it);
-	  continue;
+	  auto param = static_cast<AST::FunctionParam *> (it->get ());
+
+	  auto &param_attrs = param->get_outer_attrs ();
+	  expand_cfg_attrs (param_attrs);
+	  if (fails_cfg_with_expand (param_attrs))
+	    {
+	      it = params.erase (it);
+	      continue;
+	    }
+
+	  // TODO: should an unwanted strip lead to break out of loop?
+	  auto &pattern = param->get_pattern ();
+	  pattern->accept_vis (*this);
+	  if (pattern->is_marked_for_strip ())
+	    rust_error_at (pattern->get_locus (),
+			   "cannot strip pattern in this position");
+
+	  auto &type = param->get_type ();
+	  type->accept_vis (*this);
+
+	  if (type->is_marked_for_strip ())
+	    rust_error_at (type->get_locus (),
+			   "cannot strip type in this position");
 	}
-
-      // TODO: should an unwanted strip lead to break out of loop?
-      auto &pattern = param.get_pattern ();
-      pattern->accept_vis (*this);
-      if (pattern->is_marked_for_strip ())
-	rust_error_at (pattern->get_locus (),
-		       "cannot strip pattern in this position");
-
-      auto &type = param.get_type ();
-      type->accept_vis (*this);
-
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
-
       // increment
       ++it;
     }
@@ -360,22 +363,6 @@ CfgStrip::CfgStrip::maybe_strip_closure_params (
 }
 
 void
-CfgStrip::maybe_strip_self_param (AST::SelfParam &self_param)
-{
-  if (self_param.has_type ())
-    {
-      auto &type = self_param.get_type ();
-      type->accept_vis (*this);
-
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
-    }
-  /* TODO: maybe check for invariants being violated - e.g. both type and
-   * lifetime? */
-}
-
-void
 CfgStrip::maybe_strip_where_clause (AST::WhereClause &where_clause)
 {
   // items cannot be stripped conceptually, so just accept visitor
@@ -414,11 +401,6 @@ CfgStrip::maybe_strip_trait_method_decl (AST::TraitMethodDecl &decl)
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : decl.get_generic_params ())
     param->accept_vis (*this);
-
-  /* assuming you can't strip self param - wouldn't be a method
-   * anymore. spec allows outer attrs on self param, but doesn't
-   * specify whether cfg is used. */
-  maybe_strip_self_param (decl.get_self_param ());
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */
@@ -2029,13 +2011,6 @@ CfgStrip::visit (AST::Function &function)
   for (auto &param : function.get_generic_params ())
     param->accept_vis (*this);
 
-  /* assuming you can't strip self param - wouldn't be a method
-   * anymore. spec allows outer attrs on self param, but doesn't
-   * specify whether cfg is used. */
-  // TODO: verify this
-  if (function.has_self_param ())
-    maybe_strip_self_param (function.get_self_param ());
-
   /* strip function parameters if required - this is specifically
    * allowed by spec */
   maybe_strip_function_params (function.get_function_params ());
@@ -3165,6 +3140,30 @@ CfgStrip::visit (AST::BareFunctionType &type)
     }
 
   // no where clause, apparently
+}
+
+void
+CfgStrip::visit (AST::VariadicParam &type)
+{}
+
+void
+CfgStrip::visit (AST::FunctionParam &type)
+{}
+
+void
+CfgStrip::visit (AST::SelfParam &param)
+{
+  if (param.has_type ())
+    {
+      auto &type = param.get_type ();
+      type->accept_vis (*this);
+
+      if (type->is_marked_for_strip ())
+	rust_error_at (type->get_locus (),
+		       "cannot strip type in this position");
+    }
+  /* TODO: maybe check for invariants being violated - e.g. both type and
+   * lifetime? */
 }
 
 } // namespace Rust

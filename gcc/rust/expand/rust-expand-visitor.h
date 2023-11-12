@@ -67,7 +67,8 @@ public:
    * Expand all macro invocations in lieu of types within a list of function
    * parameters
    */
-  void expand_function_params (std::vector<AST::FunctionParam> &params);
+  void
+  expand_function_params (std::vector<std::unique_ptr<AST::Param>> &params);
 
   /**
    * Expand all macro invocations in lieu of types within a list of generic
@@ -82,7 +83,6 @@ public:
 
   // FIXME: Add documentation
   void expand_closure_params (std::vector<AST::ClosureParam> &params);
-  void expand_self_param (AST::SelfParam &self_param);
   void expand_where_clause (AST::WhereClause &where_clause);
   void expand_trait_function_decl (AST::TraitFunctionDecl &decl);
   void expand_trait_method_decl (AST::TraitMethodDecl &decl);
@@ -347,6 +347,9 @@ public:
   void visit (AST::SliceType &type) override;
   void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
+  void visit (AST::VariadicParam &type) override;
+  void visit (AST::FunctionParam &type) override;
+  void visit (AST::SelfParam &type) override;
 
   template <typename T>
   void expand_inner_attribute (T &item, AST::SimplePath &Path);

@@ -196,6 +196,9 @@ public:
   void visit (AST::SliceType &);
   void visit (AST::InferredType &);
   void visit (AST::BareFunctionType &);
+  void visit (AST::FunctionParam &param);
+  void visit (AST::VariadicParam &param);
+  void visit (AST::SelfParam &param);
 
 protected:
   ResolverBase ()

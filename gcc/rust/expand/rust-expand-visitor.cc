@@ -373,12 +373,11 @@ ExpandVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
 
 // FIXME: This can definitely be refactored with the method above
 void
-ExpandVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
+ExpandVisitor::expand_function_params (
+  std::vector<std::unique_ptr<AST::Param>> &params)
 {
-  for (auto &param : params)
-    {
-      maybe_expand_type (param.get_type ());
-    }
+  for (auto &p : params)
+    visit (p);
 }
 
 void
@@ -432,16 +431,6 @@ ExpandVisitor::expand_closure_params (std::vector<AST::ClosureParam> &params)
 }
 
 void
-ExpandVisitor::expand_self_param (AST::SelfParam &self_param)
-{
-  if (self_param.has_type ())
-    maybe_expand_type (self_param.get_type ());
-
-  /* TODO: maybe check for invariants being violated - e.g. both type and
-   * lifetime? */
-}
-
-void
 ExpandVisitor::expand_where_clause (AST::WhereClause &where_clause)
 {
   for (auto &item : where_clause.get_items ())
@@ -471,11 +460,6 @@ ExpandVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
 {
   for (auto &param : decl.get_generic_params ())
     visit (param);
-
-  /* assuming you can't strip self param - wouldn't be a method
-   * anymore. spec allows outer attrs on self param, but doesn't
-   * specify whether cfg is used. */
-  expand_self_param (decl.get_self_param ());
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */
@@ -1022,8 +1006,6 @@ ExpandVisitor::visit (AST::Function &function)
   for (auto &param : function.get_generic_params ())
     visit (param);
 
-  if (function.has_self_param ())
-    expand_self_param (function.get_self_param ());
   expand_function_params (function.get_function_params ());
 
   if (function.has_return_type ())
@@ -1564,6 +1546,25 @@ ExpandVisitor::visit (AST::BareFunctionType &type)
 
   if (type.has_return_type ())
     visit (type.get_return_type ());
+}
+
+void
+ExpandVisitor::visit (AST::VariadicParam &param)
+{}
+
+void
+ExpandVisitor::visit (AST::FunctionParam &param)
+{
+  maybe_expand_type (param.get_type ());
+}
+
+void
+ExpandVisitor::visit (AST::SelfParam &param)
+{
+  /* TODO: maybe check for invariants being violated - e.g. both type and
+   * lifetime? */
+  if (param.has_type ())
+    maybe_expand_type (param.get_type ());
 }
 
 template <typename T>

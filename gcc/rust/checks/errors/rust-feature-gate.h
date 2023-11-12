@@ -183,6 +183,9 @@ public:
   void visit (AST::SliceType &type) override {}
   void visit (AST::InferredType &type) override {}
   void visit (AST::BareFunctionType &type) override {}
+  void visit (AST::FunctionParam &param) override {}
+  void visit (AST::VariadicParam &param) override {}
+  void visit (AST::SelfParam &param) override {}
 
 private:
   void gate (Feature::Name name, location_t loc, const std::string &error_msg);
