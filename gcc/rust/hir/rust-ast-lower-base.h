@@ -251,6 +251,9 @@ public:
   virtual void visit (AST::SliceType &type);
   virtual void visit (AST::InferredType &type);
   virtual void visit (AST::BareFunctionType &type);
+  virtual void visit (AST::FunctionParam &param);
+  virtual void visit (AST::VariadicParam &param);
+  virtual void visit (AST::SelfParam &param);
 
 protected:
   ASTLoweringBase ()
@@ -274,7 +277,7 @@ protected:
 
   HIR::GenericArgsBinding lower_binding (AST::GenericArgsBinding &binding);
 
-  HIR::SelfParam lower_self (AST::SelfParam &self);
+  HIR::SelfParam lower_self (std::unique_ptr<AST::Param> &self);
 
   HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
 

@@ -264,6 +264,9 @@ private:
   void visit (AST::SliceType &type);
   void visit (AST::InferredType &type);
   void visit (AST::BareFunctionType &type);
+  void visit (AST::FunctionParam &param);
+  void visit (AST::VariadicParam &param);
+  void visit (AST::SelfParam &param);
 };
 
 } // namespace Analysis

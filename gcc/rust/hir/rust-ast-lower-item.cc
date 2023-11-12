@@ -26,6 +26,7 @@
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace HIR {
@@ -420,21 +421,25 @@ ASTLoweringItem::visit (AST::Function &function)
 				  : nullptr;
 
   std::vector<HIR::FunctionParam> function_params;
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
+      if (p->is_variadic () || p->is_self ())
+	continue;
+      auto param = static_cast<AST::FunctionParam *> (p.get ());
+
       auto translated_pattern = std::unique_ptr<HIR::Pattern> (
-	ASTLoweringPattern::translate (param.get_pattern ().get ()));
+	ASTLoweringPattern::translate (param->get_pattern ().get ()));
       auto translated_type = std::unique_ptr<HIR::Type> (
-	ASTLoweringType::translate (param.get_type ().get ()));
+	ASTLoweringType::translate (param->get_type ().get ()));
 
       auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+      Analysis::NodeMapping mapping (crate_num, param->get_node_id (),
 				     mappings->get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       auto hir_param
 	= HIR::FunctionParam (mapping, std::move (translated_pattern),
-			      std::move (translated_type), param.get_locus ());
+			      std::move (translated_type), param->get_locus ());
       function_params.push_back (std::move (hir_param));
     }
 

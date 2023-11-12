@@ -81,4 +81,19 @@ ASTValidation::visit (AST::ExternalFunctionItem &item)
   AST::ContextualASTVisitor::visit (item);
 }
 
+void
+ASTValidation::visit (AST::Function &function)
+{
+  std::set<Context> valid_context
+    = {Context::INHERENT_IMPL, Context::TRAIT_IMPL};
+
+  if (valid_context.find (context.back ()) == valid_context.end ()
+      && function.has_self_param ())
+    rust_error_at (
+      function.get_self_param ()->get_locus (),
+      "%<self%> parameter is only allowed in associated functions");
+
+  AST::ContextualASTVisitor::visit (function);
+}
+
 } // namespace Rust

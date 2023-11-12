@@ -277,6 +277,10 @@ private:
   virtual void visit (AST::SliceType &type);
   virtual void visit (AST::InferredType &type);
   virtual void visit (AST::BareFunctionType &type);
+
+  virtual void visit (AST::VariadicParam &type);
+  virtual void visit (AST::FunctionParam &type);
+  virtual void visit (AST::SelfParam &type);
 };
 
 } // namespace Resolver

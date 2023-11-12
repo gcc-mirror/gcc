@@ -18,6 +18,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
+#include "rust-item.h"
 
 namespace Rust {
 // Visitor used to maybe_strip attributes.
@@ -32,7 +33,8 @@ public:
 
   void maybe_strip_struct_fields (std::vector<AST::StructField> &fields);
   void maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields);
-  void maybe_strip_function_params (std::vector<AST::FunctionParam> &params);
+  void maybe_strip_function_params (
+    std::vector<std::unique_ptr<AST::Param>> &params);
   void maybe_strip_generic_args (AST::GenericArgs &args);
   void maybe_strip_qualified_path_type (AST::QualifiedPathType &path_type);
   void maybe_strip_closure_params (std::vector<AST::ClosureParam> &params);
@@ -222,5 +224,8 @@ public:
   void visit (AST::SliceType &type) override;
   void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
+  void visit (AST::VariadicParam &type) override;
+  void visit (AST::FunctionParam &type) override;
+  void visit (AST::SelfParam &type) override;
 };
 } // namespace Rust

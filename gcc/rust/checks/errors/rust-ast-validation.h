@@ -37,6 +37,7 @@ public:
   virtual void visit (AST::Lifetime &lifetime);
   virtual void visit (AST::LoopLabel &label);
   virtual void visit (AST::ExternalFunctionItem &item);
+  virtual void visit (AST::Function &function);
 };
 
 } // namespace Rust

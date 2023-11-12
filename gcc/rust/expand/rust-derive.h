@@ -220,6 +220,9 @@ private:
   virtual void visit (SliceType &type) override final{};
   virtual void visit (InferredType &type) override final{};
   virtual void visit (BareFunctionType &type) override final{};
+  virtual void visit (SelfParam &param) override final{};
+  virtual void visit (FunctionParam &param) override final{};
+  virtual void visit (VariadicParam &param) override final{};
 };
 
 } // namespace AST

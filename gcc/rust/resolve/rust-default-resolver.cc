@@ -18,6 +18,7 @@
 
 #include "rust-default-resolver.h"
 #include "rust-ast-full.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -55,10 +56,25 @@ void
 DefaultResolver::visit (AST::Function &function)
 {
   auto def_fn = [this, &function] () {
-    for (auto &param : function.get_function_params ())
+    for (auto &p : function.get_function_params ())
       {
-	param.get_pattern ()->accept_vis (*this);
-	param.get_type ()->accept_vis (*this);
+	if (p->is_variadic ())
+	  {
+	    auto param = static_cast<AST::VariadicParam *> (p.get ());
+	    param->get_pattern ()->accept_vis (*this);
+	  }
+	else if (p->is_self ())
+	  {
+	    auto param = static_cast<AST::SelfParam *> (p.get ());
+	    param->get_type ()->accept_vis (*this);
+	    param->get_lifetime ().accept_vis (*this);
+	  }
+	else
+	  {
+	    auto param = static_cast<AST::FunctionParam *> (p.get ());
+	    param->get_pattern ()->accept_vis (*this);
+	    param->get_type ()->accept_vis (*this);
+	  }
       }
 
     function.get_definition ()->accept_vis (*this);
@@ -799,6 +815,18 @@ DefaultResolver::visit (AST::InferredType &)
 
 void
 DefaultResolver::visit (AST::BareFunctionType &)
+{}
+
+void
+DefaultResolver::visit (AST::SelfParam &)
+{}
+
+void
+DefaultResolver::visit (AST::FunctionParam &)
+{}
+
+void
+DefaultResolver::visit (AST::VariadicParam &)
 {}
 
 } // namespace Resolver2_0

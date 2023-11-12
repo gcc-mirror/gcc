@@ -164,7 +164,7 @@ public:
   std::unique_ptr<AST::InherentImplItem> parse_inherent_impl_item ();
   std::unique_ptr<AST::TraitImplItem> parse_trait_impl_item ();
   AST::PathInExpression parse_path_in_expression ();
-  std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
+  std::vector<std::unique_ptr<AST::LifetimeParam>> parse_lifetime_params ();
   AST::Visibility parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::Token> parse_identifier_or_keyword_token ();
@@ -246,17 +246,17 @@ private:
   std::unique_ptr<AST::Function> parse_function (AST::Visibility vis,
 						 AST::AttrVec outer_attrs);
   AST::FunctionQualifiers parse_function_qualifiers ();
-  std::vector<std::unique_ptr<AST::GenericParam> >
+  std::vector<std::unique_ptr<AST::GenericParam>>
   parse_generic_params_in_angles ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::GenericParam> >
+  std::vector<std::unique_ptr<AST::GenericParam>>
   parse_generic_params (EndTokenPred is_end_token);
   template <typename EndTokenPred>
   std::unique_ptr<AST::GenericParam>
   parse_generic_param (EndTokenPred is_end_token);
 
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::LifetimeParam> >
+  std::vector<std::unique_ptr<AST::LifetimeParam>>
   parse_lifetime_params (EndTokenPred is_end_token);
   std::vector<AST::LifetimeParam> parse_lifetime_params_objs ();
   template <typename EndTokenPred>
@@ -268,15 +268,15 @@ private:
     std::string error_msg = "failed to parse generic param in generic params")
     -> std::vector<decltype (parsing_function ())>;
   AST::LifetimeParam parse_lifetime_param ();
-  std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params ();
+  std::vector<std::unique_ptr<AST::TypeParam>> parse_type_params ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::TypeParam> >
+  std::vector<std::unique_ptr<AST::TypeParam>>
   parse_type_params (EndTokenPred is_end_token);
   std::unique_ptr<AST::TypeParam> parse_type_param ();
   template <typename EndTokenPred>
-  std::vector<AST::FunctionParam>
+  std::vector<std::unique_ptr<AST::Param>>
   parse_function_params (EndTokenPred is_end_token);
-  AST::FunctionParam parse_function_param ();
+  std::unique_ptr<AST::Param> parse_function_param ();
   std::unique_ptr<AST::Type> parse_function_return_type ();
   AST::WhereClause parse_where_clause ();
   std::unique_ptr<AST::WhereClauseItem> parse_where_clause_item ();
@@ -286,9 +286,9 @@ private:
   parse_type_bound_where_clause_item ();
   std::vector<AST::LifetimeParam> parse_for_lifetimes ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::TypeParamBound> >
+  std::vector<std::unique_ptr<AST::TypeParamBound>>
   parse_type_param_bounds (EndTokenPred is_end_token);
-  std::vector<std::unique_ptr<AST::TypeParamBound> > parse_type_param_bounds ();
+  std::vector<std::unique_ptr<AST::TypeParamBound>> parse_type_param_bounds ();
   std::unique_ptr<AST::TypeParamBound> parse_type_param_bound ();
   std::unique_ptr<AST::TraitBound> parse_trait_bound ();
   std::vector<AST::Lifetime> parse_lifetime_bounds ();
@@ -317,9 +317,9 @@ private:
   AST::TupleField parse_tuple_field ();
   std::unique_ptr<AST::Enum> parse_enum (AST::Visibility vis,
 					 AST::AttrVec outer_attrs);
-  std::vector<std::unique_ptr<AST::EnumItem> > parse_enum_items ();
+  std::vector<std::unique_ptr<AST::EnumItem>> parse_enum_items ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::EnumItem> >
+  std::vector<std::unique_ptr<AST::EnumItem>>
   parse_enum_items (EndTokenPred is_end_token);
   std::unique_ptr<AST::EnumItem> parse_enum_item ();
   std::unique_ptr<AST::Union> parse_union (AST::Visibility vis,
@@ -334,7 +334,7 @@ private:
   parse_trait_type (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TraitItemConst>
   parse_trait_const (AST::AttrVec outer_attrs);
-  AST::SelfParam parse_self_param ();
+  std::unique_ptr<AST::Param> parse_self_param ();
   std::unique_ptr<AST::Impl> parse_impl (AST::Visibility vis,
 					 AST::AttrVec outer_attrs);
   std::unique_ptr<AST::InherentImplItem>
@@ -594,7 +594,7 @@ private:
   parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   AST::MatchArm parse_match_arm ();
-  std::vector<std::unique_ptr<AST::Pattern> >
+  std::vector<std::unique_ptr<AST::Pattern>>
   parse_match_arm_patterns (TokenId end_token_id);
   std::unique_ptr<AST::Expr> parse_labelled_loop_expr (const_TokenPtr tok,
 						       AST::AttrVec outer_attrs
@@ -692,7 +692,7 @@ public:
 
   // Parse items without parsing an entire crate. This function is the main
   // parsing loop of AST::Crate::parse_crate().
-  std::vector<std::unique_ptr<AST::Item> > parse_items ();
+  std::vector<std::unique_ptr<AST::Item>> parse_items ();
 
   // Main entry point for parser.
   std::unique_ptr<AST::Crate> parse_crate ();

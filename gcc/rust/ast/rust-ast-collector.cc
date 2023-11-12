@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-collector.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace AST {
@@ -188,6 +189,17 @@ TokenCollector::visit (FunctionParam &param)
 	}
       push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
     }
+}
+
+void
+TokenCollector::visit (VariadicParam &param)
+{
+  if (param.has_pattern ())
+    {
+      visit (param.get_pattern ());
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
+    }
+  push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
 }
 
 void
@@ -1783,13 +1795,6 @@ TokenCollector::visit (Function &function)
 
   push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
-  if (function.has_self_param ())
-    {
-      visit (function.get_self_param ());
-      if (!function.get_function_params ().empty ())
-	push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-    }
-
   visit_items_joined_by_separator (function.get_function_params ());
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
@@ -2069,13 +2074,7 @@ TokenCollector::visit (TraitItemMethod &item)
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
   push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
-  visit (method.get_self_param ());
-
-  if (!method.get_function_params ().empty ())
-    {
-      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-      visit_items_joined_by_separator (method.get_function_params (), COMMA);
-    }
+  visit_items_joined_by_separator (method.get_function_params (), COMMA);
 
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 

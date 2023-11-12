@@ -17,11 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve-item.h"
+#include "rust-ast-full-decls.h"
 #include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
 
+#include "rust-item.h"
 #include "selftest.h"
 
 namespace Rust {
@@ -87,11 +89,26 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
-			      bindings);
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
     }
 
   if (function.has_where_clause ())
@@ -133,43 +150,55 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
     ResolveType::go (function.get_return_type ().get ());
 
   // self turns into (self: Self) as a function param
-  AST::SelfParam &self_param = function.get_self_param ();
-  // FIXME: which location should be used for Rust::Identifier `self`?
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
-				       self_param.get_locus (),
-				       self_param.get_has_ref (),
-				       self_param.get_is_mut (),
-				       std::unique_ptr<AST::Pattern> (nullptr));
-  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
-
-  if (self_param.has_type ())
-    {
-      // This shouldn't happen the parser should already error for this
-      rust_assert (!self_param.get_has_ref ());
-      ResolveType::go (self_param.get_type ().get ());
-    }
-  else
-    {
-      // here we implicitly make self have a type path of Self
-      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-      AST::TypePath self_type_path (std::move (segments),
-				    self_param.get_locus ());
-      ResolveType::go (&self_type_path);
-    }
-
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
-			      bindings);
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  // FIXME: which location should be used for Rust::Identifier `self`?
+	  AST::IdentifierPattern self_pattern (
+	    param->get_node_id (), {"self"}, param->get_locus (),
+	    param->get_has_ref (), param->get_is_mut (),
+	    std::unique_ptr<AST::Pattern> (nullptr));
+
+	  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+	  if (param->has_type ())
+	    {
+	      // This shouldn't happen the parser should already error for this
+	      rust_assert (!param->get_has_ref ());
+	      ResolveType::go (param->get_type ().get ());
+	    }
+	  else
+	    {
+	      // here we implicitly make self have a type path of Self
+	      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+	      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+		new AST::TypePathSegment ("Self", false, param->get_locus ())));
+
+	      AST::TypePath self_type_path (std::move (segments),
+					    param->get_locus ());
+	      ResolveType::go (&self_type_path);
+	    }
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
     }
 
   if (function.has_where_clause ())
@@ -527,29 +556,32 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_self_param ())
     {
       // self turns into (self: Self) as a function param
-      AST::SelfParam &self_param = function.get_self_param ();
+      std::unique_ptr<AST::Param> &s_param = function.get_self_param ();
+      auto self_param = static_cast<AST::SelfParam *> (s_param.get ());
+
       // FIXME: which location should be used for Rust::Identifier `self`?
       AST::IdentifierPattern self_pattern (
-	self_param.get_node_id (), {"self"}, self_param.get_locus (),
-	self_param.get_has_ref (), self_param.get_is_mut (),
+	self_param->get_node_id (), {"self"}, self_param->get_locus (),
+	self_param->get_has_ref (), self_param->get_is_mut (),
 	std::unique_ptr<AST::Pattern> (nullptr));
       PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
-      if (self_param.has_type ())
+      if (self_param->has_type ())
 	{
 	  // This shouldn't happen the parser should already error for this
-	  rust_assert (!self_param.get_has_ref ());
-	  ResolveType::go (self_param.get_type ().get ());
+	  rust_assert (!self_param->get_has_ref ());
+	  ResolveType::go (self_param->get_type ().get ());
 	}
       else
 	{
 	  // here we implicitly make self have a type path of Self
 	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
 	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+	    new AST::TypePathSegment ("Self", false,
+				      self_param->get_locus ())));
 
 	  AST::TypePath self_type_path (std::move (segments),
-					self_param.get_locus ());
+					self_param->get_locus ());
 	  ResolveType::go (&self_type_path);
 	}
     }
@@ -559,11 +591,28 @@ ResolveItem::visit (AST::Function &function)
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
-			      bindings);
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  if (param->has_pattern ())
+	    PatternDeclaration::go (param->get_pattern ().get (),
+				    Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  if (param->has_type ())
+	    ResolveType::go (param->get_type ().get ());
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
     }
 
   // resolve the function body

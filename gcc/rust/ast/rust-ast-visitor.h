@@ -23,6 +23,7 @@
 // full include not required - only forward decls
 #include "rust-ast-full-decls.h"
 #include "rust-ast.h"
+#include "rust-item.h"
 #include "rust-system.h"
 
 namespace Rust {
@@ -129,6 +130,10 @@ public:
 
   // rust-item.h
   virtual void visit (TypeParam &param) = 0;
+  virtual void visit (SelfParam &param) = 0;
+  virtual void visit (FunctionParam &param) = 0;
+  virtual void visit (VariadicParam &param) = 0;
+
   // virtual void visit(WhereClauseItem& item) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
   virtual void visit (TypeBoundWhereClauseItem &item) = 0;
@@ -386,6 +391,9 @@ protected:
   virtual void visit (AST::SliceType &type) override;
   virtual void visit (AST::InferredType &type) override;
   virtual void visit (AST::BareFunctionType &type) override;
+  virtual void visit (AST::SelfParam &self) override;
+  virtual void visit (AST::FunctionParam &param) override;
+  virtual void visit (AST::VariadicParam &param) override;
 
   template <typename T> void visit (T &node);
 
@@ -406,9 +414,7 @@ protected:
   virtual void visit (AST::MatchArm &arm);
   virtual void visit (AST::Visibility &vis);
   virtual void visit (AST::FunctionQualifiers &qualifiers);
-  virtual void visit (AST::SelfParam &self);
   virtual void visit (AST::WhereClause &where);
-  virtual void visit (AST::FunctionParam &param);
   virtual void visit (AST::StructField &field);
   virtual void visit (AST::TupleField &field);
   virtual void visit (AST::TraitFunctionDecl &decl);

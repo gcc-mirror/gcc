@@ -708,12 +708,6 @@ DefaultASTVisitor::visit (AST::FunctionQualifiers &qualifiers)
 {}
 
 void
-DefaultASTVisitor::visit (AST::SelfParam &self)
-{
-  visit (self.get_lifetime ());
-}
-
-void
 DefaultASTVisitor::visit (AST::WhereClause &where)
 {
   for (auto &item : where.get_items ())
@@ -726,7 +720,18 @@ DefaultASTVisitor::visit (AST::FunctionParam &param)
   if (param.has_name ())
     visit (param.get_pattern ());
 
-  if (!param.is_variadic ())
+  visit (param.get_type ());
+}
+
+void
+DefaultASTVisitor::visit (AST::SelfParam &param)
+{
+  visit_outer_attrs (param);
+
+  if (param.has_lifetime ())
+    visit (param.get_lifetime ());
+
+  if (param.has_type ())
     visit (param.get_type ());
 }
 
@@ -1436,6 +1441,13 @@ DefaultASTVisitor::visit (AST::BareFunctionType &type)
       visit (attr);
   if (type.has_return_type ())
     visit (type.get_return_type ());
+}
+
+void
+DefaultASTVisitor::visit (AST::VariadicParam &param)
+{
+  if (param.has_pattern ())
+    visit (param.get_pattern ());
 }
 
 void
