@@ -930,8 +930,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr weekday
       _S_from_days(const days& __d)
       {
-	auto __n = __d.count();
-	return weekday(__n >= -4 ? (__n + 4) % 7 : (__n + 5) % 7 + 6);
+	using _Rep = days::rep;
+	using _URep = make_unsigned_t<_Rep>;
+	const auto __n = __d.count();
+	const auto __m = static_cast<_URep>(__n);
+
+	// 1970-01-01 (__n =  0, __m = 0        ) -> Thursday (4)
+	// 1969-31-12 (__n = -1, __m = _URep(-1)) -> Wednesday (3)
+	const auto __offset = __n >= 0 ? _URep(4) : 3 - _URep(-1) % 7 - 7;
+	return weekday((__m + __offset) % 7);
       }
 
     public:
