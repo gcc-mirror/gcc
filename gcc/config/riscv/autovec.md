@@ -2455,14 +2455,13 @@
   }
 )
 
-;; Add mode_size equal check as we opened the modes for different sizes.
-;; The check will be removed soon after related codegen implemented
 (define_expand "lrint<mode><v_f2si_convert>2"
   [(match_operand:<V_F2SI_CONVERT>   0 "register_operand")
    (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode,
+				    <V_F2SI_CONVERT>mode, VOIDmode);
     DONE;
   }
 )
@@ -2472,7 +2471,9 @@
    (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lrint (operands[0], operands[1], <MODE>mode,
+				    <V_F2DI_CONVERT>mode,
+				    <V_F2DI_CONVERT_BRIDGE>mode);
     DONE;
   }
 )
@@ -2482,7 +2483,8 @@
    (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode,
+				     <V_F2SI_CONVERT>mode, VOIDmode);
     DONE;
   }
 )
@@ -2492,7 +2494,10 @@
    (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lround (operands[0], operands[1], <MODE>mode,
+				     <V_F2DI_CONVERT>mode,
+				     <V_F2DI_CONVERT_BRIDGE>mode);
+
     DONE;
   }
 )

@@ -4002,6 +4002,16 @@ emit_vec_widden_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
 }
 
 static void
+emit_vec_widden_cvt_f_f (rtx op_dest, rtx op_src, insn_type type,
+			 machine_mode vec_mode)
+{
+  rtx ops[] = {op_dest, op_src};
+  insn_code icode = code_for_pred_extend (vec_mode);
+
+  emit_vlmax_insn (icode, type, ops);
+}
+
+static void
 emit_vec_cvt_f_x (rtx op_dest, rtx op_src, rtx mask,
 		  insn_type type, machine_mode vec_mode)
 {
@@ -4195,8 +4205,10 @@ expand_vec_roundeven (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 
 /* Handling the rounding from floating-point to int/long/long long.  */
 static void
-emit_vec_rounding_to_integer (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
-			      machine_mode vec_int_mode, insn_type type)
+emit_vec_rounding_to_integer (rtx op_0, rtx op_1, insn_type type,
+			      machine_mode vec_fp_mode,
+			      machine_mode vec_int_mode,
+			      machine_mode vec_bridge_mode = E_VOIDmode)
 {
   poly_uint16 vec_fp_size = GET_MODE_SIZE (vec_fp_mode);
   poly_uint16 vec_int_size = GET_MODE_SIZE (vec_int_mode);
@@ -4205,42 +4217,53 @@ emit_vec_rounding_to_integer (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
     emit_vec_cvt_x_f (op_0, op_1, type, vec_fp_mode);
   else if (maybe_eq (vec_fp_size, vec_int_size * 2)) /* DF => SI.  */
     emit_vec_narrow_cvt_x_f (op_0, op_1, type, vec_fp_mode);
-  else if (maybe_eq (vec_fp_size * 2, vec_int_size)) /* SF => DI.  */
+  else if (maybe_eq (vec_fp_size * 2, vec_int_size)) /* SF => DI, HF => SI.  */
     emit_vec_widden_cvt_x_f (op_0, op_1, type, vec_int_mode);
-  else /* HF requires additional middle-end support.  */
+  else if (maybe_eq (vec_fp_size * 4, vec_int_size)) /* HF => DI.  */
+    {
+      gcc_assert (vec_bridge_mode != E_VOIDmode);
+
+      rtx op_sf = gen_reg_rtx (vec_bridge_mode);
+
+      /* Step-1: HF => SF, no rounding here.  */
+      emit_vec_widden_cvt_f_f (op_sf, op_1, UNARY_OP, vec_bridge_mode);
+      /* Step-2: SF => DI.  */
+      emit_vec_widden_cvt_x_f (op_0, op_sf, type, vec_int_mode);
+    }
+  else
     gcc_unreachable ();
 }
 
 void
 expand_vec_lrint (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
-		  machine_mode vec_int_mode)
+		  machine_mode vec_int_mode, machine_mode vec_bridge_mode)
 {
-  emit_vec_rounding_to_integer (op_0, op_1, vec_fp_mode, vec_int_mode,
-				UNARY_OP_FRM_DYN);
+  emit_vec_rounding_to_integer (op_0, op_1, UNARY_OP_FRM_DYN, vec_fp_mode,
+				vec_int_mode, vec_bridge_mode);
 }
 
 void
 expand_vec_lround (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
-		   machine_mode vec_int_mode)
+		   machine_mode vec_int_mode, machine_mode vec_bridge_mode)
 {
-  emit_vec_rounding_to_integer (op_0, op_1, vec_fp_mode, vec_int_mode,
-				UNARY_OP_FRM_RMM);
+  emit_vec_rounding_to_integer (op_0, op_1, UNARY_OP_FRM_RMM, vec_fp_mode,
+				vec_int_mode, vec_bridge_mode);
 }
 
 void
 expand_vec_lceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 		  machine_mode vec_int_mode)
 {
-  emit_vec_rounding_to_integer (op_0, op_1, vec_fp_mode, vec_int_mode,
-				UNARY_OP_FRM_RUP);
+  emit_vec_rounding_to_integer (op_0, op_1, UNARY_OP_FRM_RUP, vec_fp_mode,
+				vec_int_mode);
 }
 
 void
 expand_vec_lfloor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 		   machine_mode vec_int_mode)
 {
-  emit_vec_rounding_to_integer (op_0, op_1, vec_fp_mode, vec_int_mode,
-				UNARY_OP_FRM_RDN);
+  emit_vec_rounding_to_integer (op_0, op_1, UNARY_OP_FRM_RDN, vec_fp_mode,
+				vec_int_mode);
 }
 
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as

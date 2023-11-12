@@ -514,8 +514,8 @@ void expand_vec_rint (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_round (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_trunc (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_roundeven (rtx, rtx, machine_mode, machine_mode);
-void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode);
-void expand_vec_lround (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_lrint (rtx, rtx, machine_mode, machine_mode, machine_mode);
+void expand_vec_lround (rtx, rtx, machine_mode, machine_mode, machine_mode);
 void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lfloor (rtx, rtx, machine_mode, machine_mode);
 #endif
