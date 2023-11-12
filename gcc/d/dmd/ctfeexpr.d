@@ -35,75 +35,98 @@ import dmd.root.rmem;
 import dmd.tokens;
 import dmd.visitor;
 
-
-/***********************************************************
- * A reference to a class, or an interface. We need this when we
- * point to a base class (we must record what the type is).
+/****************************************************************/
+/* A type meant as a union of all the Expression types,
+ * to serve essentially as a Variant that will sit on the stack
+ * during CTFE to reduce memory consumption.
  */
-extern (C++) final class ClassReferenceExp : Expression
+extern (D) struct UnionExp
 {
-    StructLiteralExp value;
-
-    extern (D) this(const ref Loc loc, StructLiteralExp lit, Type type) @safe
+    // yes, default constructor does nothing
+    extern (D) this(Expression e)
     {
-        super(loc, EXP.classReference);
-        assert(lit && lit.sd && lit.sd.isClassDeclaration());
-        this.value = lit;
-        this.type = type;
+        memcpy(&this, cast(void*)e, e.size);
     }
 
-    ClassDeclaration originalClass()
+    /* Extract pointer to Expression
+     */
+    extern (D) Expression exp() return
     {
-        return value.sd.isClassDeclaration();
+        return cast(Expression)&u;
     }
 
-    // Return index of the field, or -1 if not found
-    private int getFieldIndex(Type fieldtype, uint fieldoffset)
+    /* Convert to an allocated Expression
+     */
+    extern (D) Expression copy()
     {
-        ClassDeclaration cd = originalClass();
-        uint fieldsSoFar = 0;
-        for (size_t j = 0; j < value.elements.length; j++)
+        Expression e = exp();
+        //if (e.size > sizeof(u)) printf("%s\n", EXPtoString(e.op).ptr);
+        assert(e.size <= u.sizeof);
+        switch (e.op)
         {
-            while (j - fieldsSoFar >= cd.fields.length)
-            {
-                fieldsSoFar += cd.fields.length;
-                cd = cd.baseClass;
-            }
-            VarDeclaration v2 = cd.fields[j - fieldsSoFar];
-            if (fieldoffset == v2.offset && fieldtype.size() == v2.type.size())
-            {
-                return cast(int)(value.elements.length - fieldsSoFar - cd.fields.length + (j - fieldsSoFar));
-            }
+            case EXP.cantExpression:    return CTFEExp.cantexp;
+            case EXP.voidExpression:    return CTFEExp.voidexp;
+            case EXP.break_:            return CTFEExp.breakexp;
+            case EXP.continue_:         return CTFEExp.continueexp;
+            case EXP.goto_:             return CTFEExp.gotoexp;
+            default:                    return e.copy();
         }
-        return -1;
     }
 
-    // Return index of the field, or -1 if not found
-    // Same as getFieldIndex, but checks for a direct match with the VarDeclaration
-    int findFieldIndexByName(VarDeclaration v)
+private:
+    // Ensure that the union is suitably aligned.
+    align(8) union _AnonStruct_u
     {
-        ClassDeclaration cd = originalClass();
-        size_t fieldsSoFar = 0;
-        for (size_t j = 0; j < value.elements.length; j++)
-        {
-            while (j - fieldsSoFar >= cd.fields.length)
-            {
-                fieldsSoFar += cd.fields.length;
-                cd = cd.baseClass;
-            }
-            VarDeclaration v2 = cd.fields[j - fieldsSoFar];
-            if (v == v2)
-            {
-                return cast(int)(value.elements.length - fieldsSoFar - cd.fields.length + (j - fieldsSoFar));
-            }
-        }
-        return -1;
+        char[__traits(classInstanceSize, Expression)] exp;
+        char[__traits(classInstanceSize, IntegerExp)] integerexp;
+        char[__traits(classInstanceSize, ErrorExp)] errorexp;
+        char[__traits(classInstanceSize, RealExp)] realexp;
+        char[__traits(classInstanceSize, ComplexExp)] complexexp;
+        char[__traits(classInstanceSize, SymOffExp)] symoffexp;
+        char[__traits(classInstanceSize, StringExp)] stringexp;
+        char[__traits(classInstanceSize, ArrayLiteralExp)] arrayliteralexp;
+        char[__traits(classInstanceSize, AssocArrayLiteralExp)] assocarrayliteralexp;
+        char[__traits(classInstanceSize, StructLiteralExp)] structliteralexp;
+        char[__traits(classInstanceSize, CompoundLiteralExp)] compoundliteralexp;
+        char[__traits(classInstanceSize, NullExp)] nullexp;
+        char[__traits(classInstanceSize, DotVarExp)] dotvarexp;
+        char[__traits(classInstanceSize, AddrExp)] addrexp;
+        char[__traits(classInstanceSize, IndexExp)] indexexp;
+        char[__traits(classInstanceSize, SliceExp)] sliceexp;
+        char[__traits(classInstanceSize, VectorExp)] vectorexp;
     }
 
-    override void accept(Visitor v)
-    {
-        v.visit(this);
-    }
+    _AnonStruct_u u;
+}
+
+void emplaceExp(T : Expression, Args...)(void* p, Args args)
+{
+    static if (__VERSION__ < 2099)
+        const init = typeid(T).initializer;
+    else
+        const init = __traits(initSymbol, T);
+    p[0 .. __traits(classInstanceSize, T)] = init[];
+    (cast(T)p).__ctor(args);
+}
+
+void emplaceExp(T : UnionExp)(T* p, Expression e)
+{
+    memcpy(p, cast(void*)e, e.size);
+}
+
+// Generate an error message when this exception is not caught
+void generateUncaughtError(ThrownExceptionExp tee)
+{
+    UnionExp ue = void;
+    Expression e = resolveSlice((*tee.thrown.value.elements)[0], &ue);
+    StringExp se = e.toStringExp();
+    error(tee.thrown.loc, "uncaught CTFE exception `%s(%s)`", tee.thrown.type.toChars(), se ? se.toChars() : e.toChars());
+    /* Also give the line where the throw statement was. We won't have it
+     * in the case where the ThrowStatement is generated internally
+     * (eg, in ScopeStatement)
+     */
+    if (tee.loc.isValid() && !tee.loc.equals(tee.thrown.loc))
+        .errorSupplemental(tee.loc, "thrown from here");
 }
 
 /*************************
@@ -119,100 +142,6 @@ int findFieldIndexByName(const StructDeclaration sd, const VarDeclaration v) pur
             return cast(int)i;
     }
     return -1;
-}
-
-/***********************************************************
- * Fake class which holds the thrown exception.
- * Used for implementing exception handling.
- */
-extern (C++) final class ThrownExceptionExp : Expression
-{
-    ClassReferenceExp thrown;   // the thing being tossed
-
-    extern (D) this(const ref Loc loc, ClassReferenceExp victim) @safe
-    {
-        super(loc, EXP.thrownException);
-        this.thrown = victim;
-        this.type = victim.type;
-    }
-
-    override const(char)* toChars() const
-    {
-        return "CTFE ThrownException";
-    }
-
-    // Generate an error message when this exception is not caught
-    extern (D) void generateUncaughtError()
-    {
-        UnionExp ue = void;
-        Expression e = resolveSlice((*thrown.value.elements)[0], &ue);
-        StringExp se = e.toStringExp();
-        error(thrown.loc, "uncaught CTFE exception `%s(%s)`", thrown.type.toChars(), se ? se.toChars() : e.toChars());
-        /* Also give the line where the throw statement was. We won't have it
-         * in the case where the ThrowStatement is generated internally
-         * (eg, in ScopeStatement)
-         */
-        if (loc.isValid() && !loc.equals(thrown.loc))
-            .errorSupplemental(loc, "thrown from here");
-    }
-
-    override void accept(Visitor v)
-    {
-        v.visit(this);
-    }
-}
-
-/***********************************************************
- * This type is only used by the interpreter.
- */
-extern (C++) final class CTFEExp : Expression
-{
-    extern (D) this(EXP tok)
-    {
-        super(Loc.initial, tok);
-        type = Type.tvoid;
-    }
-
-    override const(char)* toChars() const
-    {
-        switch (op)
-        {
-        case EXP.cantExpression:
-            return "<cant>";
-        case EXP.voidExpression:
-            return "cast(void)0";
-        case EXP.showCtfeContext:
-            return "<error>";
-        case EXP.break_:
-            return "<break>";
-        case EXP.continue_:
-            return "<continue>";
-        case EXP.goto_:
-            return "<goto>";
-        default:
-            assert(0);
-        }
-    }
-
-    extern (D) __gshared CTFEExp cantexp;
-    extern (D) __gshared CTFEExp voidexp;
-    extern (D) __gshared CTFEExp breakexp;
-    extern (D) __gshared CTFEExp continueexp;
-    extern (D) __gshared CTFEExp gotoexp;
-    /* Used when additional information is needed regarding
-     * a ctfe error.
-     */
-    extern (D) __gshared CTFEExp showcontext;
-
-    extern (D) static bool isCantExp(const Expression e) @safe
-    {
-        return e && e.op == EXP.cantExpression;
-    }
-
-    extern (D) static bool isGotoExp(const Expression e) @safe
-    {
-        return e && e.op == EXP.goto_;
-    }
 }
 
 // True if 'e' is CTFEExp::cantexp, or an exception

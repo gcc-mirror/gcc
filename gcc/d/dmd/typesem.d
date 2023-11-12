@@ -53,6 +53,7 @@ import dmd.visitor;
 import dmd.mtype;
 import dmd.objc;
 import dmd.opover;
+import dmd.optimize;
 import dmd.parse;
 import dmd.root.complex;
 import dmd.root.ctfloat;
@@ -1098,7 +1099,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (isRefOrOut && !isAuto &&
                 !(global.params.previewIn && (fparam.storageClass & STC.in_)) &&
                 global.params.rvalueRefParam != FeatureState.enabled)
-                e = e.toLvalue(sc, e);
+                e = e.toLvalue(sc);
 
             fparam.defaultArg = e;
             return (e.op != EXP.error);
@@ -3748,7 +3749,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         }
         // check before alias resolution; the alias itself might be deprecated!
         if (s.isAliasDeclaration)
-            e.checkDeprecated(sc, s);
+            s.checkDeprecated(e.loc, sc);
         s = s.toAlias();
 
         if (auto em = s.isEnumMember())
@@ -5009,7 +5010,7 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     const len = buf.length;
     buf.writeByte(0);
     const str = buf.extractSlice()[0 .. len];
-    const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+    const bool doUnittests = global.params.parsingUnittestsRequired();
     auto locm = adjustLocForMixin(str, loc, global.params.mixinOut);
     scope p = new Parser!ASTCodegen(locm, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
     p.transitionIn = global.params.v.vin;

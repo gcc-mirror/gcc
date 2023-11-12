@@ -18,25 +18,19 @@ import core.stdc.stdio;
 import core.stdc.string;
 
 import dmd.aggregate;
-import dmd.aliasthis;
-import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
 import dmd.gluelayer;
-import dmd.ctfeexpr;
-import dmd.ctorflow;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dimport;
 import dmd.dmodule;
-import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.errorsink;
-import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
 import dmd.hdrgen;
@@ -45,38 +39,19 @@ import dmd.identifier;
 import dmd.init;
 import dmd.location;
 import dmd.mtype;
-import dmd.opover;
-import dmd.optimize;
 import dmd.root.complex;
 import dmd.root.ctfloat;
-import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.optional;
 import dmd.root.rmem;
 import dmd.rootobject;
 import dmd.root.string;
 import dmd.root.utf;
-import dmd.safe;
 import dmd.target;
 import dmd.tokens;
 import dmd.visitor;
 
 enum LOGSEMANTIC = false;
-
-void emplaceExp(T : Expression, Args...)(void* p, Args args)
-{
-    static if (__VERSION__ < 2099)
-        const init = typeid(T).initializer;
-    else
-        const init = __traits(initSymbol, T);
-    p[0 .. __traits(classInstanceSize, T)] = init[];
-    (cast(T)p).__ctor(args);
-}
-
-void emplaceExp(T : UnionExp)(T* p, Expression e)
-{
-    memcpy(p, cast(void*)e, e.size);
-}
 
 /// Return value for `checkModifiable`
 enum Modifiable
@@ -116,45 +91,6 @@ inout(Expression) lastComma(inout Expression e)
         ex = (cast(CommaExp)ex).e2;
     return cast(inout)ex;
 
-}
-
-/***********************************
- * Determine if a `this` is needed to access `d`.
- * Params:
- *      sc = context
- *      d = declaration to check
- * Returns:
- *      true means a `this` is needed
- */
-bool isNeedThisScope(Scope* sc, Declaration d)
-{
-    if (sc.intypeof == 1)
-        return false;
-
-    AggregateDeclaration ad = d.isThis();
-    if (!ad)
-        return false;
-    //printf("d = %s, ad = %s\n", d.toChars(), ad.toChars());
-
-    for (Dsymbol s = sc.parent; s; s = s.toParentLocal())
-    {
-        //printf("\ts = %s %s, toParent2() = %p\n", s.kind(), s.toChars(), s.toParent2());
-        if (AggregateDeclaration ad2 = s.isAggregateDeclaration())
-        {
-            if (ad2 == ad)
-                return false;
-            else if (ad2.isNested())
-                continue;
-            else
-                return true;
-        }
-        if (FuncDeclaration f = s.isFuncDeclaration())
-        {
-            if (f.isMemberLocal())
-                break;
-        }
-    }
-    return true;
 }
 
 /****************************************
@@ -313,70 +249,6 @@ TemplateDeclaration getFuncTemplateDecl(Dsymbol s) @safe
         }
     }
     return null;
-}
-
-/****************************************************************/
-/* A type meant as a union of all the Expression types,
- * to serve essentially as a Variant that will sit on the stack
- * during CTFE to reduce memory consumption.
- */
-extern (D) struct UnionExp
-{
-    // yes, default constructor does nothing
-    extern (D) this(Expression e)
-    {
-        memcpy(&this, cast(void*)e, e.size);
-    }
-
-    /* Extract pointer to Expression
-     */
-    extern (D) Expression exp() return
-    {
-        return cast(Expression)&u;
-    }
-
-    /* Convert to an allocated Expression
-     */
-    extern (D) Expression copy()
-    {
-        Expression e = exp();
-        //if (e.size > sizeof(u)) printf("%s\n", EXPtoString(e.op).ptr);
-        assert(e.size <= u.sizeof);
-        switch (e.op)
-        {
-            case EXP.cantExpression:    return CTFEExp.cantexp;
-            case EXP.voidExpression:    return CTFEExp.voidexp;
-            case EXP.break_:            return CTFEExp.breakexp;
-            case EXP.continue_:         return CTFEExp.continueexp;
-            case EXP.goto_:             return CTFEExp.gotoexp;
-            default:                    return e.copy();
-        }
-    }
-
-private:
-    // Ensure that the union is suitably aligned.
-    align(8) union _AnonStruct_u
-    {
-        char[__traits(classInstanceSize, Expression)] exp;
-        char[__traits(classInstanceSize, IntegerExp)] integerexp;
-        char[__traits(classInstanceSize, ErrorExp)] errorexp;
-        char[__traits(classInstanceSize, RealExp)] realexp;
-        char[__traits(classInstanceSize, ComplexExp)] complexexp;
-        char[__traits(classInstanceSize, SymOffExp)] symoffexp;
-        char[__traits(classInstanceSize, StringExp)] stringexp;
-        char[__traits(classInstanceSize, ArrayLiteralExp)] arrayliteralexp;
-        char[__traits(classInstanceSize, AssocArrayLiteralExp)] assocarrayliteralexp;
-        char[__traits(classInstanceSize, StructLiteralExp)] structliteralexp;
-        char[__traits(classInstanceSize, CompoundLiteralExp)] compoundliteralexp;
-        char[__traits(classInstanceSize, NullExp)] nullexp;
-        char[__traits(classInstanceSize, DotVarExp)] dotvarexp;
-        char[__traits(classInstanceSize, AddrExp)] addrexp;
-        char[__traits(classInstanceSize, IndexExp)] indexexp;
-        char[__traits(classInstanceSize, SliceExp)] sliceexp;
-        char[__traits(classInstanceSize, VectorExp)] vectorexp;
-    }
-
-    _AnonStruct_u u;
 }
 
 /************************ TypeDotIdExp ************************************/
@@ -678,71 +550,6 @@ extern (C++) abstract class Expression : ASTNode
         return false;
     }
 
-    /*******************************
-     * Give error if we're not an lvalue.
-     * If we can, convert expression to be an lvalue.
-     */
-    Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (!e)
-            e = this;
-        else if (!loc.isValid())
-            loc = e.loc;
-
-        if (e.op == EXP.type)
-            error(loc, "`%s` is a `%s` definition and cannot be modified", e.type.toChars(), e.type.kind());
-        else
-            error(loc, "`%s` is not an lvalue and cannot be modified", e.toChars());
-
-        return ErrorExp.get();
-    }
-
-    Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        //printf("Expression::modifiableLvalue() %s, type = %s\n", toChars(), type.toChars());
-        // See if this expression is a modifiable lvalue (i.e. not const)
-        if (checkModifiable(this, sc) == Modifiable.yes)
-        {
-            assert(type);
-            if (!type.isMutable())
-            {
-                if (auto dve = this.isDotVarExp())
-                {
-                    if (isNeedThisScope(sc, dve.var))
-                        for (Dsymbol s = sc.func; s; s = s.toParentLocal())
-                    {
-                        FuncDeclaration ff = s.isFuncDeclaration();
-                        if (!ff)
-                            break;
-                        if (!ff.type.isMutable)
-                        {
-                            error(loc, "cannot modify `%s` in `%s` function", toChars(), MODtoChars(type.mod));
-                            return ErrorExp.get();
-                        }
-                    }
-                }
-                error(loc, "cannot modify `%s` expression `%s`", MODtoChars(type.mod), toChars());
-                return ErrorExp.get();
-            }
-            else if (!type.isAssignable())
-            {
-                error(loc, "cannot modify struct instance `%s` of type `%s` because it contains `const` or `immutable` members",
-                    toChars(), type.toChars());
-                return ErrorExp.get();
-            }
-        }
-        return toLvalue(sc, e);
-    }
-
-    /****************************************
-     * Resolve __FILE__, __LINE__, __MODULE__, __FUNCTION__, __PRETTY_FUNCTION__, __FILE_FULL_PATH__ to loc.
-     */
-    Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        this.loc = loc;
-        return this;
-    }
-
     /****************************************
      * Check that the expression has a valid type.
      * If not, generates an error "... has no type".
@@ -835,417 +642,6 @@ extern (C++) abstract class Expression : ASTNode
         return checkValue();
     }
 
-    extern (D) final bool checkDeprecated(Scope* sc, Dsymbol s)
-    {
-        return s.checkDeprecated(loc, sc);
-    }
-
-    extern (D) final bool checkDisabled(Scope* sc, Dsymbol s)
-    {
-        if (auto d = s.isDeclaration())
-        {
-            return d.checkDisabled(loc, sc);
-        }
-
-        return false;
-    }
-
-    /*********************************************
-     * Calling function f.
-     * Check the purity, i.e. if we're in a pure function
-     * we can only call other pure functions.
-     * Returns true if error occurs.
-     */
-    extern (D) final bool checkPurity(Scope* sc, FuncDeclaration f)
-    {
-        if (!sc.func)
-            return false;
-        if (sc.func == f)
-            return false;
-        if (sc.intypeof == 1)
-            return false;
-        if (sc.flags & (SCOPE.ctfe | SCOPE.debug_))
-            return false;
-
-        // If the call has a pure parent, then the called func must be pure.
-        if (!f.isPure() && checkImpure(sc, loc, null, f))
-        {
-            error(loc, "`pure` %s `%s` cannot call impure %s `%s`",
-                sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
-                f.toPrettyChars());
-
-            if (!f.isDtorDeclaration())
-                errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.pure_);
-
-            checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().purity != PURE.impure, "impure");
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks whether `f` is a generated `DtorDeclaration` that hides a user-defined one
-     * which passes `check` while `f` doesn't (e.g. when the user defined dtor is pure but
-     * the generated dtor is not).
-     * In that case the method will identify and print all members causing the attribute
-     * missmatch.
-     *
-     * Params:
-     *   sc = scope
-     *   f  = potential `DtorDeclaration`
-     *   check = current check (e.g. whether it's pure)
-     *   checkName = the kind of check (e.g. `"pure"`)
-     */
-    extern (D) final void checkOverriddenDtor(Scope* sc, FuncDeclaration f,
-                scope bool function(DtorDeclaration) check, const string checkName
-    ) {
-        auto dd = f.isDtorDeclaration();
-        if (!dd || !dd.isGenerated())
-            return;
-
-        // DtorDeclaration without parents should fail at an earlier stage
-        auto ad = cast(AggregateDeclaration) f.toParent2();
-        assert(ad);
-
-        if (ad.userDtors.length)
-        {
-            if (!check(ad.userDtors[0])) // doesn't match check (e.g. is impure as well)
-                return;
-
-            // Sanity check
-            assert(!check(ad.fieldDtor));
-        }
-
-        dd.loc.errorSupplemental("%s`%s.~this` is %.*s because of the following field's destructors:",
-                            dd.isGenerated() ? "generated " : "".ptr,
-                            ad.toChars,
-                            cast(int) checkName.length, checkName.ptr);
-
-        // Search for the offending fields
-        foreach (field; ad.fields)
-        {
-            // Only structs may define automatically called destructors
-            auto ts = field.type.isTypeStruct();
-            if (!ts)
-            {
-                // But they might be part of a static array
-                auto ta = field.type.isTypeSArray();
-                if (!ta)
-                    continue;
-
-                ts = ta.baseElemOf().isTypeStruct();
-                if (!ts)
-                    continue;
-            }
-
-            auto fieldSym = ts.toDsymbol(sc);
-            assert(fieldSym); // Resolving ts must succeed because missing defs. should error before
-
-            auto fieldSd = fieldSym.isStructDeclaration();
-            assert(fieldSd); // ts is a TypeStruct, this would imply a malformed ASR
-
-            if (fieldSd.dtor && !check(fieldSd.dtor))
-            {
-                field.loc.errorSupplemental(" - %s %s", field.type.toChars(), field.toChars());
-
-                if (fieldSd.dtor.isGenerated())
-                    checkOverriddenDtor(sc, fieldSd.dtor, check, checkName);
-                else
-                    fieldSd.dtor.loc.errorSupplemental("   %.*s `%s.~this` is declared here",
-                                            cast(int) checkName.length, checkName.ptr, fieldSd.toChars());
-            }
-        }
-    }
-
-    /*******************************************
-     * Accessing variable v.
-     * Check for purity and safety violations.
-     * Returns true if error occurs.
-     */
-    extern (D) final bool checkPurity(Scope* sc, VarDeclaration v)
-    {
-        //printf("v = %s %s\n", v.type.toChars(), v.toChars());
-        /* Look for purity and safety violations when accessing variable v
-         * from current function.
-         */
-        if (!sc.func)
-            return false;
-        if (sc.intypeof == 1)
-            return false; // allow violations inside typeof(expression)
-        if (sc.flags & (SCOPE.ctfe | SCOPE.debug_))
-            return false; // allow violations inside compile-time evaluated expressions and debug conditionals
-        if (v.ident == Id.ctfe)
-            return false; // magic variable never violates pure and safe
-        if (v.isImmutable())
-            return false; // always safe and pure to access immutables...
-        if (v.isConst() && !v.isReference() && (v.isDataseg() || v.isParameter()) && v.type.implicitConvTo(v.type.immutableOf()))
-            return false; // or const global/parameter values which have no mutable indirections
-        if (v.storage_class & STC.manifest)
-            return false; // ...or manifest constants
-
-        // accessing empty structs is pure
-        // https://issues.dlang.org/show_bug.cgi?id=18694
-        // https://issues.dlang.org/show_bug.cgi?id=21464
-        // https://issues.dlang.org/show_bug.cgi?id=23589
-        if (v.type.ty == Tstruct)
-        {
-            StructDeclaration sd = (cast(TypeStruct)v.type).sym;
-            if (sd.members) // not opaque
-            {
-                if (sd.semanticRun >= PASS.semanticdone)
-                    sd.determineSize(v.loc);
-                if (sd.hasNoFields)
-                    return false;
-            }
-        }
-
-        bool err = false;
-        if (v.isDataseg())
-        {
-            // https://issues.dlang.org/show_bug.cgi?id=7533
-            // Accessing implicit generated __gate is pure.
-            if (v.ident == Id.gate)
-                return false;
-
-            if (checkImpure(sc, loc, "`pure` %s `%s` cannot access mutable static data `%s`", v))
-            {
-                error(loc, "`pure` %s `%s` cannot access mutable static data `%s`",
-                    sc.func.kind(), sc.func.toPrettyChars(), v.toChars());
-                err = true;
-            }
-        }
-        else
-        {
-            /* Given:
-             * void f() {
-             *   int fx;
-             *   pure void g() {
-             *     int gx;
-             *     /+pure+/ void h() {
-             *       int hx;
-             *       /+pure+/ void i() { }
-             *     }
-             *   }
-             * }
-             * i() can modify hx and gx but not fx
-             */
-
-            Dsymbol vparent = v.toParent2();
-            for (Dsymbol s = sc.func; !err && s; s = s.toParentP(vparent))
-            {
-                if (s == vparent)
-                    break;
-
-                if (AggregateDeclaration ad = s.isAggregateDeclaration())
-                {
-                    if (ad.isNested())
-                        continue;
-                    break;
-                }
-                FuncDeclaration ff = s.isFuncDeclaration();
-                if (!ff)
-                    break;
-                if (ff.isNested() || ff.isThis())
-                {
-                    if (ff.type.isImmutable() ||
-                        ff.type.isShared() && !MODimplicitConv(ff.type.mod, v.type.mod))
-                    {
-                        OutBuffer ffbuf;
-                        OutBuffer vbuf;
-                        MODMatchToBuffer(&ffbuf, ff.type.mod, v.type.mod);
-                        MODMatchToBuffer(&vbuf, v.type.mod, ff.type.mod);
-                        error(loc, "%s%s `%s` cannot access %sdata `%s`",
-                            ffbuf.peekChars(), ff.kind(), ff.toPrettyChars(), vbuf.peekChars(), v.toChars());
-                        err = true;
-                        break;
-                    }
-                    continue;
-                }
-                break;
-            }
-        }
-
-        /* Do not allow safe functions to access __gshared data
-         */
-        if (v.storage_class & STC.gshared)
-        {
-            if (sc.setUnsafe(false, this.loc,
-                "`@safe` function `%s` cannot access `__gshared` data `%s`", sc.func, v))
-            {
-                err = true;
-            }
-        }
-
-        return err;
-    }
-
-    /*
-    Check if sc.func is impure or can be made impure.
-    Returns true on error, i.e. if sc.func is pure and cannot be made impure.
-    */
-    private static bool checkImpure(Scope* sc, Loc loc, const(char)* fmt, RootObject arg0)
-    {
-        return sc.func && (isRootTraitsCompilesScope(sc)
-                ? sc.func.isPureBypassingInference() >= PURE.weak
-                : sc.func.setImpure(loc, fmt, arg0));
-    }
-
-    /*********************************************
-     * Calling function f.
-     * Check the safety, i.e. if we're in a @safe function
-     * we can only call @safe or @trusted functions.
-     * Returns true if error occurs.
-     */
-    extern (D) final bool checkSafety(Scope* sc, FuncDeclaration f)
-    {
-        if (sc.func == f)
-            return false;
-        if (sc.intypeof == 1)
-            return false;
-        if (sc.flags & SCOPE.debug_)
-            return false;
-        if ((sc.flags & SCOPE.ctfe) && sc.func)
-            return false;
-
-        if (!sc.func)
-        {
-            if (sc.varDecl && !f.safetyInprocess && !f.isSafe() && !f.isTrusted())
-            {
-                if (sc.varDecl.storage_class & STC.safe)
-                {
-                    error(loc, "`@safe` variable `%s` cannot be initialized by calling `@system` function `%s`",
-                        sc.varDecl.toChars(), f.toChars());
-                    return true;
-                }
-                else
-                {
-                    sc.varDecl.storage_class |= STC.system;
-                    sc.varDecl.systemInferred = true;
-                }
-            }
-            return false;
-        }
-
-        if (!f.isSafe() && !f.isTrusted())
-        {
-            if (isRootTraitsCompilesScope(sc) ? sc.func.isSafeBypassingInference() : sc.func.setUnsafeCall(f))
-            {
-                if (!loc.isValid()) // e.g. implicitly generated dtor
-                    loc = sc.func.loc;
-
-                const prettyChars = f.toPrettyChars();
-                error(loc, "`@safe` %s `%s` cannot call `@system` %s `%s`",
-                    sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
-                    prettyChars);
-                if (!f.isDtorDeclaration)
-                    errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.safe);
-                .errorSupplemental(f.loc, "`%s` is declared here", prettyChars);
-
-                checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
-
-                return true;
-            }
-        }
-        else if (f.isSafe() && f.safetyViolation)
-        {
-            // for dip1000 by default transition, print deprecations for calling functions that will become `@system`
-            if (sc.func.isSafeBypassingInference())
-            {
-                .deprecation(this.loc, "`@safe` function `%s` calling `%s`", sc.func.toChars(), f.toChars());
-                errorSupplementalInferredAttr(f, 10, true, STC.safe);
-            }
-            else if (!sc.func.safetyViolation)
-            {
-                import dmd.func : AttributeViolation;
-                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null, null);
-            }
-        }
-        return false;
-    }
-
-    /*********************************************
-     * Calling function f.
-     * Check the @nogc-ness, i.e. if we're in a @nogc function
-     * we can only call other @nogc functions.
-     * Returns true if error occurs.
-     */
-    extern (D) final bool checkNogc(Scope* sc, FuncDeclaration f)
-    {
-        if (!sc.func)
-            return false;
-        if (sc.func == f)
-            return false;
-        if (sc.intypeof == 1)
-            return false;
-        if (sc.flags & (SCOPE.ctfe | SCOPE.debug_))
-            return false;
-        /* The original expressions (`new S(...)` or `new S[...]``) will be
-         * verified instead. This is to keep errors related to the original code
-         * and not the lowering.
-         */
-        if (f.ident == Id._d_newitemT || f.ident == Id._d_newarrayT)
-            return false;
-
-        if (!f.isNogc())
-        {
-            if (isRootTraitsCompilesScope(sc) ? sc.func.isNogcBypassingInference() : sc.func.setGCCall(f))
-            {
-                if (loc.linnum == 0) // e.g. implicitly generated dtor
-                    loc = sc.func.loc;
-
-                // Lowered non-@nogc'd hooks will print their own error message inside of nogc.d (NOGCVisitor.visit(CallExp e)),
-                // so don't print anything to avoid double error messages.
-                if (!(f.ident == Id._d_HookTraceImpl || f.ident == Id._d_arraysetlengthT
-                    || f.ident == Id._d_arrayappendT || f.ident == Id._d_arrayappendcTX
-                    || f.ident == Id._d_arraycatnTX || f.ident == Id._d_newclassT))
-                {
-                    error(loc, "`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
-                        sc.func.kind(), sc.func.toPrettyChars(), f.kind(), f.toPrettyChars());
-
-                    if (!f.isDtorDeclaration)
-                        f.errorSupplementalInferredAttr(/*max depth*/ 10, /*deprecation*/ false, STC.nogc);
-                }
-
-                checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().isnogc, "non-@nogc");
-
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /********************************************
-     * Check that the postblit is callable if t is an array of structs.
-     * Returns true if error happens.
-     */
-    extern (D) final bool checkPostblit(Scope* sc, Type t)
-    {
-        if (auto ts = t.baseElemOf().isTypeStruct())
-        {
-            if (global.params.useTypeInfo && Type.dtypeinfo)
-            {
-                // https://issues.dlang.org/show_bug.cgi?id=11395
-                // Require TypeInfo generation for array concatenation
-                semanticTypeInfo(sc, t);
-            }
-
-            StructDeclaration sd = ts.sym;
-            if (sd.postblit)
-            {
-                if (sd.postblit.checkDisabled(loc, sc))
-                    return true;
-
-                //checkDeprecated(sc, sd.postblit);        // necessary?
-                checkPurity(sc, sd.postblit);
-                checkSafety(sc, sd.postblit);
-                checkNogc(sc, sd.postblit);
-                //checkAccess(sd, loc, sc, sd.postblit);   // necessary?
-                return false;
-            }
-        }
-        return false;
-    }
-
     /*******************************
      * Check whether the expression allows RMW operations, error with rmw operator diagnostic if not.
      * ex is the RHS expression, or NULL if ++/-- is used (for diagnostics)
@@ -1306,11 +702,6 @@ extern (C++) abstract class Expression : ASTNode
                 return e;
             }
         return this;
-    }
-
-    final Expression optimize(int result, bool keepLvalue = false)
-    {
-        return Expression_optimize(this, result, keepLvalue);
     }
 
     final int isConst()
@@ -1587,16 +978,6 @@ extern (C++) final class IntegerExp : Expression
         return typeof(return)(r);
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (!e)
-            e = this;
-        else if (!loc.isValid())
-            loc = e.loc;
-        error(e.loc, "cannot modify constant `%s`", e.toChars());
-        return ErrorExp.get();
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -1722,7 +1103,7 @@ extern (C++) final class IntegerExp : Expression
  */
 extern (C++) final class ErrorExp : Expression
 {
-    private extern (D) this()
+    extern (D) this()
     {
         super(Loc.initial, EXP.error);
         type = Type.terror;
@@ -1743,11 +1124,6 @@ extern (C++) final class ErrorExp : Expression
         }
 
         return errorexp;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -1987,11 +1363,6 @@ extern (C++) class IdentifierExp : Expression
         return true;
     }
 
-    override final Expression toLvalue(Scope* sc, Expression e)
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -2034,11 +1405,6 @@ extern (C++) final class DsymbolExp : Expression
     override bool isLvalue()
     {
         return true;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -2085,16 +1451,6 @@ extern (C++) class ThisExp : Expression
     {
         // Class `this` should be an rvalue; struct `this` should be an lvalue.
         return type.toBasetype().ty != Tclass;
-    }
-
-    override final Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (type.toBasetype().ty == Tclass)
-        {
-            // Class `this` is an rvalue; struct `this` is an lvalue.
-            return Expression.toLvalue(sc, e);
-        }
-        return this;
     }
 
     override void accept(Visitor v)
@@ -2462,18 +1818,6 @@ extern (C++) final class StringExp : Expression
          * conversion to reference of static array is only allowed.
          */
         return (type && type.toBasetype().ty == Tsarray);
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        //printf("StringExp::toLvalue(%s) type = %s\n", toChars(), type ? type.toChars() : NULL);
-        return (type && type.toBasetype().ty == Tsarray) ? this : Expression.toLvalue(sc, e);
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        error(loc, "cannot modify string literal `%s`", toChars());
-        return ErrorExp.get();
     }
 
     /********************************
@@ -3050,14 +2394,6 @@ extern (C++) final class StructLiteralExp : Expression
         return -1;
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (sc.flags & SCOPE.Cfile)
-            return this;  // C struct literals are lvalues
-        else
-            return Expression.toLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3201,15 +2537,6 @@ extern (C++) final class TemplateExp : Expression
     override bool isLvalue()
     {
         return fd !is null;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (!fd)
-            return Expression.toLvalue(sc, e);
-
-        assert(sc);
-        return symbolToExp(fd, loc, sc, true);
     }
 
     override bool checkType()
@@ -3409,43 +2736,6 @@ extern (C++) final class VarExp : SymbolExp
         return true;
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (var.storage_class & STC.manifest)
-        {
-            error(loc, "manifest constant `%s` cannot be modified", var.toChars());
-            return ErrorExp.get();
-        }
-        if (var.storage_class & STC.lazy_ && !delegateWasExtracted)
-        {
-            error(loc, "lazy variable `%s` cannot be modified", var.toChars());
-            return ErrorExp.get();
-        }
-        if (var.ident == Id.ctfe)
-        {
-            error(loc, "cannot modify compiler-generated variable `__ctfe`");
-            return ErrorExp.get();
-        }
-        if (var.ident == Id.dollar) // https://issues.dlang.org/show_bug.cgi?id=13574
-        {
-            error(loc, "cannot modify operator `$`");
-            return ErrorExp.get();
-        }
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        //printf("VarExp::modifiableLvalue('%s')\n", var.toChars());
-        if (var.storage_class & STC.manifest)
-        {
-            error(loc, "cannot modify manifest constant `%s`", toChars());
-            return ErrorExp.get();
-        }
-        // See if this expression is a modifiable lvalue (i.e. not const)
-        return Expression.modifiableLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3470,11 +2760,6 @@ extern (C++) final class OverExp : Expression
     override bool isLvalue()
     {
         return true;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -3520,52 +2805,6 @@ extern (C++) final class FuncExp : Expression
             return fd == fe.fd;
         }
         return false;
-    }
-
-    extern (D) void genIdent(Scope* sc)
-    {
-        if (fd.ident == Id.empty)
-        {
-            const(char)[] s;
-            if (fd.fes)
-                s = "__foreachbody";
-            else if (fd.tok == TOK.reserved)
-                s = "__lambda";
-            else if (fd.tok == TOK.delegate_)
-                s = "__dgliteral";
-            else
-                s = "__funcliteral";
-
-            DsymbolTable symtab;
-            if (FuncDeclaration func = sc.parent.isFuncDeclaration())
-            {
-                if (func.localsymtab is null)
-                {
-                    // Inside template constraint, symtab is not set yet.
-                    // Initialize it lazily.
-                    func.localsymtab = new DsymbolTable();
-                }
-                symtab = func.localsymtab;
-            }
-            else
-            {
-                ScopeDsymbol sds = sc.parent.isScopeDsymbol();
-                if (!sds.symtab)
-                {
-                    // Inside template constraint, symtab may not be set yet.
-                    // Initialize it lazily.
-                    assert(sds.isTemplateInstance());
-                    sds.symtab = new DsymbolTable();
-                }
-                symtab = sds.symtab;
-            }
-            assert(symtab);
-            Identifier id = Identifier.generateId(s, symtab.length() + 1);
-            fd.ident = id;
-            if (td)
-                td.ident = id;
-            symtab.insert(td ? cast(Dsymbol)td : cast(Dsymbol)fd);
-        }
     }
 
     override FuncExp syntaxCopy()
@@ -3815,12 +3054,6 @@ extern (C++) abstract class UnaExp : Expression
 
     }
 
-    override final Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        e1 = e1.resolveLoc(loc, sc);
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3934,18 +3167,6 @@ extern (C++) class BinAssignExp : BinExp
     override final bool isLvalue()
     {
         return true;
-    }
-
-    override final Expression toLvalue(Scope* sc, Expression ex)
-    {
-        // Lvalue-ness will be handled in glue layer.
-        return this;
-    }
-
-    override final Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        // should check e1.checkModifiable() ?
-        return toLvalue(sc, this);
     }
 
     override void accept(Visitor v)
@@ -4156,58 +3377,6 @@ extern (C++) final class DotVarExp : UnaExp
         return !(vd && vd.isField());
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        //printf("DotVarExp::toLvalue(%s)\n", toChars());
-        if (sc && sc.flags & SCOPE.Cfile)
-        {
-            /* C11 6.5.2.3-3: A postfix expression followed by the '.' or '->' operator
-             * is an lvalue if the first expression is an lvalue.
-             */
-            if (!e1.isLvalue())
-                return Expression.toLvalue(sc, e);
-        }
-        if (!isLvalue())
-            return Expression.toLvalue(sc, e);
-        if (e1.op == EXP.this_ && sc.ctorflow.fieldinit.length && !(sc.ctorflow.callSuper & CSX.any_ctor))
-        {
-            if (VarDeclaration vd = var.isVarDeclaration())
-            {
-                auto ad = vd.isMember2();
-                if (ad && ad.fields.length == sc.ctorflow.fieldinit.length)
-                {
-                    foreach (i, f; ad.fields)
-                    {
-                        if (f == vd)
-                        {
-                            if (!(sc.ctorflow.fieldinit[i].csx & CSX.this_ctor))
-                            {
-                                /* If the address of vd is taken, assume it is thereby initialized
-                                 * https://issues.dlang.org/show_bug.cgi?id=15869
-                                 */
-                                modifyFieldVar(loc, sc, vd, e1);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        version (none)
-        {
-            printf("DotVarExp::modifiableLvalue(%s)\n", toChars());
-            printf("e1.type = %s\n", e1.type.toChars());
-            printf("var.type = %s\n", var.type.toChars());
-        }
-
-        return Expression.modifiableLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -4237,49 +3406,6 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
     override DotTemplateInstanceExp syntaxCopy()
     {
         return new DotTemplateInstanceExp(loc, e1.syntaxCopy(), ti.name, TemplateInstance.arraySyntaxCopy(ti.tiargs));
-    }
-
-    extern (D) bool findTempDecl(Scope* sc)
-    {
-        static if (LOGSEMANTIC)
-        {
-            printf("DotTemplateInstanceExp::findTempDecl('%s')\n", toChars());
-        }
-        if (ti.tempdecl)
-            return true;
-
-        Expression e = new DotIdExp(loc, e1, ti.name);
-        e = e.expressionSemantic(sc);
-        if (e.op == EXP.dot)
-            e = (cast(DotExp)e).e2;
-
-        Dsymbol s = null;
-        switch (e.op)
-        {
-        case EXP.overloadSet:
-            s = (cast(OverExp)e).vars;
-            break;
-
-        case EXP.dotTemplateDeclaration:
-            s = (cast(DotTemplateExp)e).td;
-            break;
-
-        case EXP.scope_:
-            s = (cast(ScopeExp)e).sds;
-            break;
-
-        case EXP.dotVariable:
-            s = (cast(DotVarExp)e).var;
-            break;
-
-        case EXP.variable:
-            s = (cast(VarExp)e).var;
-            break;
-
-        default:
-            return false;
-        }
-        return ti.updateTempDecl(sc, s);
     }
 
     override bool checkType()
@@ -4486,13 +3612,6 @@ extern (C++) final class CallExp : UnaExp
         return false;
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (isLvalue())
-            return this;
-        return Expression.toLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -4598,30 +3717,6 @@ extern (C++) final class PtrExp : UnaExp
     override bool isLvalue()
     {
         return true;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        //printf("PtrExp::modifiableLvalue() %s, type %s\n", toChars(), type.toChars());
-        Declaration var;
-        if (auto se = e1.isSymOffExp())
-            var = se.var;
-        else if (auto ve = e1.isVarExp())
-            var = ve.var;
-        if (var && var.type.isFunction_Delegate_PtrToFunction())
-        {
-            if (var.type.isTypeFunction())
-                error(loc, "function `%s` is not an lvalue and cannot be modified", var.toChars());
-            else
-                error(loc, "function pointed to by `%s` is not an lvalue and cannot be modified", var.toChars());
-            return ErrorExp.get();
-        }
-        return Expression.modifiableLvalue(sc, e);
     }
 
     override void accept(Visitor v)
@@ -4755,19 +3850,6 @@ extern (C++) final class CastExp : UnaExp
             e1.type.mutableOf().unSharedOf().equals(to.mutableOf().unSharedOf());
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (sc && sc.flags & SCOPE.Cfile)
-        {
-            /* C11 6.5.4-5: A cast does not yield an lvalue.
-             */
-            return Expression.toLvalue(sc, e);
-        }
-        if (isLvalue())
-            return this;
-        return Expression.toLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -4820,12 +3902,6 @@ extern (C++) final class VectorArrayExp : UnaExp
     override bool isLvalue()
     {
         return e1.isLvalue();
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        e1 = e1.toLvalue(sc, e);
-        return this;
     }
 
     override void accept(Visitor v)
@@ -4883,18 +3959,6 @@ extern (C++) final class SliceExp : UnaExp
          * conversion to reference of static array is only allowed.
          */
         return (type && type.toBasetype().ty == Tsarray);
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        //printf("SliceExp::toLvalue(%s) type = %s\n", toChars(), type ? type.toChars() : NULL);
-        return (type && type.toBasetype().ty == Tsarray) ? this : Expression.toLvalue(sc, e);
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        error(loc, "slice expression `%s` is not a modifiable lvalue", toChars());
-        return this;
     }
 
     override Optional!bool toBool()
@@ -4964,13 +4028,6 @@ extern (C++) final class ArrayExp : UnaExp
         return true;
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (type && type.toBasetype().ty == Tvoid)
-            error(loc, "`void`s have no value");
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -5016,18 +4073,6 @@ extern (C++) final class CommaExp : BinExp
     override bool isLvalue()
     {
         return e2.isLvalue();
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        e2 = e2.toLvalue(sc, null);
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        e2 = e2.modifiableLvalue(sc, e);
-        return this;
     }
 
     override Optional!bool toBool()
@@ -5105,21 +4150,6 @@ extern (C++) final class DelegatePtrExp : UnaExp
         return e1.isLvalue();
     }
 
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        e1 = e1.toLvalue(sc, e);
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        if (sc.setUnsafe(false, this.loc, "cannot modify delegate pointer in `@safe` code `%s`", this))
-        {
-            return ErrorExp.get();
-        }
-        return Expression.modifiableLvalue(sc, e);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -5141,21 +4171,6 @@ extern (C++) final class DelegateFuncptrExp : UnaExp
     override bool isLvalue()
     {
         return e1.isLvalue();
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        e1 = e1.toLvalue(sc, e);
-        return this;
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        if (sc.setUnsafe(false, this.loc, "cannot modify delegate function pointer in `@safe` code `%s`", this))
-        {
-            return ErrorExp.get();
-        }
-        return Expression.modifiableLvalue(sc, e);
     }
 
     override void accept(Visitor v)
@@ -5203,23 +4218,6 @@ extern (C++) final class IndexExp : BinExp
             return e1.isLvalue();
         }
         return true;
-    }
-
-    override Expression toLvalue(Scope* sc, Expression e)
-    {
-        if (isLvalue())
-            return this;
-        return Expression.toLvalue(sc, e);
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        //printf("IndexExp::modifiableLvalue(%s)\n", toChars());
-        Expression ex = markSettingAAElem();
-        if (ex.op == EXP.error)
-            return ex;
-
-        return Expression.modifiableLvalue(sc, e);
     }
 
     extern (D) Expression markSettingAAElem()
@@ -5322,20 +4320,6 @@ extern (C++) class AssignExp : BinExp
             return false;
         }
         return true;
-    }
-
-    override final Expression toLvalue(Scope* sc, Expression ex)
-    {
-        if (e1.op == EXP.slice || e1.op == EXP.arrayLength)
-        {
-            return Expression.toLvalue(sc, ex);
-        }
-
-        /* In front-end level, AssignExp should make an lvalue of e1.
-         * Taking the address of e1 will be handled in low level layer,
-         * so this function does nothing.
-         */
-        return this;
     }
 
     override void accept(Visitor v)
@@ -5733,13 +4717,6 @@ extern (C++) final class CatExp : BinExp
         super(loc, EXP.concatenate, e1, e2);
     }
 
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        e1 = e1.resolveLoc(loc, sc);
-        e2 = e2.resolveLoc(loc, sc);
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -6074,28 +5051,6 @@ extern (C++) final class CondExp : BinExp
         return e1.isLvalue() && e2.isLvalue();
     }
 
-    override Expression toLvalue(Scope* sc, Expression ex)
-    {
-        // convert (econd ? e1 : e2) to *(econd ? &e1 : &e2)
-        CondExp e = cast(CondExp)copy();
-        e.e1 = e1.toLvalue(sc, null).addressOf();
-        e.e2 = e2.toLvalue(sc, null).addressOf();
-        e.type = type.pointerTo();
-        return new PtrExp(loc, e, type);
-    }
-
-    override Expression modifiableLvalue(Scope* sc, Expression e)
-    {
-        if (!e1.isLvalue() && !e2.isLvalue())
-        {
-            error(loc, "conditional expression `%s` is not a modifiable lvalue", toChars());
-            return ErrorExp.get();
-        }
-        e1 = e1.modifiableLvalue(sc, e1);
-        e2 = e2.modifiableLvalue(sc, e2);
-        return toLvalue(sc, this);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -6145,19 +5100,6 @@ extern (C++) final class FileInitExp : DefaultInitExp
         super(loc, tok);
     }
 
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        //printf("FileInitExp::resolve() %s\n", toChars());
-        const(char)* s;
-        if (op == EXP.fileFullPath)
-            s = FileName.toAbsolute(loc.isValid() ? loc.filename : sc._module.srcfile.toChars());
-        else
-            s = loc.isValid() ? loc.filename : sc._module.ident.toChars();
-
-        Expression e = new StringExp(loc, s.toDString());
-        return e.expressionSemantic(sc);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -6172,12 +5114,6 @@ extern (C++) final class LineInitExp : DefaultInitExp
     extern (D) this(const ref Loc loc) @safe
     {
         super(loc, EXP.line);
-    }
-
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        Expression e = new IntegerExp(loc, loc.linnum, Type.tint32);
-        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)
@@ -6196,13 +5132,6 @@ extern (C++) final class ModuleInitExp : DefaultInitExp
         super(loc, EXP.moduleString);
     }
 
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        const auto s = (sc.callsc ? sc.callsc : sc)._module.toPrettyChars().toDString();
-        Expression e = new StringExp(loc, s);
-        return e.expressionSemantic(sc);
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -6217,19 +5146,6 @@ extern (C++) final class FuncInitExp : DefaultInitExp
     extern (D) this(const ref Loc loc) @safe
     {
         super(loc, EXP.functionString);
-    }
-
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
-    {
-        const(char)* s;
-        if (sc.callsc && sc.callsc.func)
-            s = sc.callsc.func.Dsymbol.toPrettyChars();
-        else if (sc.func)
-            s = sc.func.Dsymbol.toPrettyChars();
-        else
-            s = "";
-        Expression e = new StringExp(loc, s.toDString());
-        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)
@@ -6248,29 +5164,153 @@ extern (C++) final class PrettyFuncInitExp : DefaultInitExp
         super(loc, EXP.prettyFunction);
     }
 
-    override Expression resolveLoc(const ref Loc loc, Scope* sc)
+    override void accept(Visitor v)
     {
-        FuncDeclaration fd = (sc.callsc && sc.callsc.func)
-                        ? sc.callsc.func
-                        : sc.func;
+        v.visit(this);
+    }
+}
 
-        const(char)* s;
-        if (fd)
-        {
-            const funcStr = fd.Dsymbol.toPrettyChars();
-            OutBuffer buf;
-            functionToBufferWithIdent(fd.type.isTypeFunction(), buf, funcStr, fd.isStatic);
-            s = buf.extractChars();
-        }
-        else
-        {
-            s = "";
-        }
+/***********************************************************
+ * A reference to a class, or an interface. We need this when we
+ * point to a base class (we must record what the type is).
+ */
+extern (C++) final class ClassReferenceExp : Expression
+{
+    StructLiteralExp value;
 
-        Expression e = new StringExp(loc, s.toDString());
-        e = e.expressionSemantic(sc);
-        e.type = Type.tstring;
-        return e;
+    extern (D) this(const ref Loc loc, StructLiteralExp lit, Type type) @safe
+    {
+        super(loc, EXP.classReference);
+        assert(lit && lit.sd && lit.sd.isClassDeclaration());
+        this.value = lit;
+        this.type = type;
+    }
+
+    ClassDeclaration originalClass()
+    {
+        return value.sd.isClassDeclaration();
+    }
+
+    // Return index of the field, or -1 if not found
+    int getFieldIndex(Type fieldtype, uint fieldoffset)
+    {
+        ClassDeclaration cd = originalClass();
+        uint fieldsSoFar = 0;
+        for (size_t j = 0; j < value.elements.length; j++)
+        {
+            while (j - fieldsSoFar >= cd.fields.length)
+            {
+                fieldsSoFar += cd.fields.length;
+                cd = cd.baseClass;
+            }
+            VarDeclaration v2 = cd.fields[j - fieldsSoFar];
+            if (fieldoffset == v2.offset && fieldtype.size() == v2.type.size())
+            {
+                return cast(int)(value.elements.length - fieldsSoFar - cd.fields.length + (j - fieldsSoFar));
+            }
+        }
+        return -1;
+    }
+
+    // Return index of the field, or -1 if not found
+    // Same as getFieldIndex, but checks for a direct match with the VarDeclaration
+    int findFieldIndexByName(VarDeclaration v)
+    {
+        ClassDeclaration cd = originalClass();
+        size_t fieldsSoFar = 0;
+        for (size_t j = 0; j < value.elements.length; j++)
+        {
+            while (j - fieldsSoFar >= cd.fields.length)
+            {
+                fieldsSoFar += cd.fields.length;
+                cd = cd.baseClass;
+            }
+            VarDeclaration v2 = cd.fields[j - fieldsSoFar];
+            if (v == v2)
+            {
+                return cast(int)(value.elements.length - fieldsSoFar - cd.fields.length + (j - fieldsSoFar));
+            }
+        }
+        return -1;
+    }
+
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+
+/***********************************************************
+ * This type is only used by the interpreter.
+ */
+extern (C++) final class CTFEExp : Expression
+{
+    extern (D) this(EXP tok)
+    {
+        super(Loc.initial, tok);
+        type = Type.tvoid;
+    }
+
+    override const(char)* toChars() const
+    {
+        switch (op)
+        {
+        case EXP.cantExpression:
+            return "<cant>";
+        case EXP.voidExpression:
+            return "cast(void)0";
+        case EXP.showCtfeContext:
+            return "<error>";
+        case EXP.break_:
+            return "<break>";
+        case EXP.continue_:
+            return "<continue>";
+        case EXP.goto_:
+            return "<goto>";
+        default:
+            assert(0);
+        }
+    }
+
+    extern (D) __gshared CTFEExp cantexp;
+    extern (D) __gshared CTFEExp voidexp;
+    extern (D) __gshared CTFEExp breakexp;
+    extern (D) __gshared CTFEExp continueexp;
+    extern (D) __gshared CTFEExp gotoexp;
+    /* Used when additional information is needed regarding
+     * a ctfe error.
+     */
+    extern (D) __gshared CTFEExp showcontext;
+
+    extern (D) static bool isCantExp(const Expression e) @safe
+    {
+        return e && e.op == EXP.cantExpression;
+    }
+
+    extern (D) static bool isGotoExp(const Expression e) @safe
+    {
+        return e && e.op == EXP.goto_;
+    }
+}
+
+/***********************************************************
+ * Fake class which holds the thrown exception.
+ * Used for implementing exception handling.
+ */
+extern (C++) final class ThrownExceptionExp : Expression
+{
+    ClassReferenceExp thrown;   // the thing being tossed
+
+    extern (D) this(const ref Loc loc, ClassReferenceExp victim) @safe
+    {
+        super(loc, EXP.thrownException);
+        this.thrown = victim;
+        this.type = victim.type;
+    }
+
+    override const(char)* toChars() const
+    {
+        return "CTFE ThrownException";
     }
 
     override void accept(Visitor v)
@@ -6327,154 +5367,6 @@ extern (C++) final class GenericExp : Expression
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-}
-
-/***************************************
- * Parameters:
- *      sc:     scope
- *      flag:   1: do not issue error message for invalid modification
-                2: the exp is a DotVarExp and a subfield of the leftmost
-                   variable is modified
- * Returns:
- *      Whether the type is modifiable
- */
-extern(D) Modifiable checkModifiable(Expression exp, Scope* sc, ModifyFlags flag = ModifyFlags.none)
-{
-    switch(exp.op)
-    {
-        case EXP.variable:
-            auto varExp = cast(VarExp)exp;
-
-            //printf("VarExp::checkModifiable %s", varExp.toChars());
-            assert(varExp.type);
-            return varExp.var.checkModify(varExp.loc, sc, null, flag);
-
-        case EXP.dotVariable:
-            auto dotVarExp = cast(DotVarExp)exp;
-
-            //printf("DotVarExp::checkModifiable %s %s\n", dotVarExp.toChars(), dotVarExp.type.toChars());
-            if (dotVarExp.e1.op == EXP.this_)
-                return dotVarExp.var.checkModify(dotVarExp.loc, sc, dotVarExp.e1, flag);
-
-            /* https://issues.dlang.org/show_bug.cgi?id=12764
-             * If inside a constructor and an expression of type `this.field.var`
-             * is encountered, where `field` is a struct declaration with
-             * default construction disabled, we must make sure that
-             * assigning to `var` does not imply that `field` was initialized
-             */
-            if (sc.func && sc.func.isCtorDeclaration())
-            {
-                // if inside a constructor scope and e1 of this DotVarExp
-                // is another DotVarExp, then check if the leftmost expression is a `this` identifier
-                if (auto dve = dotVarExp.e1.isDotVarExp())
-                {
-                    // Iterate the chain of DotVarExp to find `this`
-                    // Keep track whether access to fields was limited to union members
-                    // s.t. one can initialize an entire struct inside nested unions
-                    // (but not its members)
-                    bool onlyUnion = true;
-                    while (true)
-                    {
-                        auto v = dve.var.isVarDeclaration();
-                        assert(v);
-
-                        // Accessing union member?
-                        auto t = v.type.isTypeStruct();
-                        if (!t || !t.sym.isUnionDeclaration())
-                            onlyUnion = false;
-
-                        // Another DotVarExp left?
-                        if (!dve.e1 || dve.e1.op != EXP.dotVariable)
-                            break;
-
-                        dve = cast(DotVarExp) dve.e1;
-                    }
-
-                    if (dve.e1.op == EXP.this_)
-                    {
-                        scope v = dve.var.isVarDeclaration();
-                        /* if v is a struct member field with no initializer, no default construction
-                         * and v wasn't intialized before
-                         */
-                        if (v && v.isField() && !v._init && !v.ctorinit)
-                        {
-                            if (auto ts = v.type.isTypeStruct())
-                            {
-                                if (ts.sym.noDefaultCtor)
-                                {
-                                    /* checkModify will consider that this is an initialization
-                                     * of v while it is actually an assignment of a field of v
-                                     */
-                                    scope modifyLevel = v.checkModify(dotVarExp.loc, sc, dve.e1, !onlyUnion ? (flag | ModifyFlags.fieldAssign) : flag);
-                                    if (modifyLevel == Modifiable.initialization)
-                                    {
-                                        // https://issues.dlang.org/show_bug.cgi?id=22118
-                                        // v is a union type field that was assigned
-                                        // a variable, therefore it counts as initialization
-                                        if (v.ctorinit)
-                                            return Modifiable.initialization;
-
-                                        return Modifiable.yes;
-                                    }
-                                    return modifyLevel;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            //printf("\te1 = %s\n", e1.toChars());
-            return dotVarExp.e1.checkModifiable(sc, flag);
-
-        case EXP.star:
-            auto ptrExp = cast(PtrExp)exp;
-            if (auto se = ptrExp.e1.isSymOffExp())
-            {
-                return se.var.checkModify(ptrExp.loc, sc, null, flag);
-            }
-            else if (auto ae = ptrExp.e1.isAddrExp())
-            {
-                return ae.e1.checkModifiable(sc, flag);
-            }
-            return Modifiable.yes;
-
-        case EXP.slice:
-            auto sliceExp = cast(SliceExp)exp;
-
-            //printf("SliceExp::checkModifiable %s\n", sliceExp.toChars());
-            auto e1 = sliceExp.e1;
-            if (e1.type.ty == Tsarray || (e1.op == EXP.index && e1.type.ty != Tarray) || e1.op == EXP.slice)
-            {
-                return e1.checkModifiable(sc, flag);
-            }
-            return Modifiable.yes;
-
-        case EXP.comma:
-            return (cast(CommaExp)exp).e2.checkModifiable(sc, flag);
-
-        case EXP.index:
-            auto indexExp = cast(IndexExp)exp;
-            auto e1 = indexExp.e1;
-            if (e1.type.ty == Tsarray ||
-                e1.type.ty == Taarray ||
-                (e1.op == EXP.index && e1.type.ty != Tarray) ||
-                e1.op == EXP.slice)
-            {
-                return e1.checkModifiable(sc, flag);
-            }
-            return Modifiable.yes;
-
-        case EXP.question:
-            auto condExp = cast(CondExp)exp;
-            if (condExp.e1.checkModifiable(sc, flag) != Modifiable.no
-                && condExp.e2.checkModifiable(sc, flag) != Modifiable.no)
-                return Modifiable.yes;
-            return Modifiable.no;
-
-        default:
-            return exp.type ? Modifiable.yes : Modifiable.no; // default modifiable
     }
 }
 

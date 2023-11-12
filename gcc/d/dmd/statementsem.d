@@ -55,6 +55,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nogc;
+import dmd.optimize;
 import dmd.opover;
 import dmd.parse;
 import dmd.common.outbuffer;
@@ -4887,7 +4888,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             const len = buf.length;
             buf.writeByte(0);
             const str = buf.extractSlice()[0 .. len];
-            const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+            const bool doUnittests = global.params.parsingUnittestsRequired();
             auto loc = adjustLocForMixin(str, cs.loc, global.params.mixinOut);
             scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
             p.transitionIn = global.params.v.vin;

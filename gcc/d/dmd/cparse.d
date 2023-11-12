@@ -2023,6 +2023,9 @@ final class CParser(AST) : Parser!AST
                 }
                 symbols.push(s);
             }
+            if (level == LVL.global && !id)
+                error("expected identifier for declaration");
+
             first = false;
 
             switch (token.value)
@@ -2736,7 +2739,7 @@ final class CParser(AST) : Parser!AST
     private AST.Type cparseDeclarator(DTR declarator, AST.Type tbase,
         out Identifier pident, ref Specifier specifier)
     {
-        //printf("cparseDeclarator(%d, %p)\n", declarator, t);
+        //printf("cparseDeclarator(%d, %s)\n", declarator, tbase.toChars());
         AST.Types constTypes; // all the Types that will need `const` applied to them
 
         /* Insert tx -> t into
@@ -2755,6 +2758,7 @@ final class CParser(AST) : Parser!AST
 
         AST.Type parseDecl(AST.Type t)
         {
+            //printf("parseDecl() t: %s\n", t.toChars());
             AST.Type ts;
             while (1)
             {
@@ -2770,9 +2774,18 @@ final class CParser(AST) : Parser!AST
                     break;
 
                 case TOK.leftParenthesis:   // ( declarator )
+                    //printf("leftParen\n");
                     /* like: T (*fp)();
                      *       T ((*fp))();
                      */
+                    auto tk = &token;
+                    if (!isCDeclarator(tk, declarator))
+                    {
+                        /* Not ( declarator ), might be parameter-list
+                         */
+                        ts = t;
+                        break;
+                    }
                     nextToken();
 
                     if (token.value == TOK.__stdcall) // T (__stdcall*fp)();
@@ -2786,6 +2799,7 @@ final class CParser(AST) : Parser!AST
                     break;
 
                 case TOK.mul:               // pointer
+                    //printf("star\n");
                     t = new AST.TypePointer(t);
                     nextToken();
                     // add post fixes const/volatile/restrict/_Atomic
@@ -2797,6 +2811,7 @@ final class CParser(AST) : Parser!AST
                     continue;
 
                 default:
+                    //printf("default %s\n", token.toChars());
                     if (declarator == DTR.xdirect)
                     {
                         if (!t || t.isTypeIdentifier())
@@ -2914,7 +2929,7 @@ final class CParser(AST) : Parser!AST
                         if (specifier._pure)
                             stc |= STC.pure_;
                         AST.Type tf = new AST.TypeFunction(parameterList, t, lkg, stc);
-    //                  tf = tf.addSTC(storageClass);  // TODO
+                        //tf = tf.addSTC(storageClass);  // TODO
                         insertTx(ts, tf, t);  // ts -> ... -> tf -> t
 
                         if (ts != tf)
@@ -2927,6 +2942,8 @@ final class CParser(AST) : Parser!AST
                 }
                 break;
             }
+            if (declarator == DTR.xdirect && !pident)
+                error("expected identifier for declarator");
             return ts;
         }
 
@@ -4556,6 +4573,7 @@ final class CParser(AST) : Parser!AST
      */
     private bool isCDeclarator(ref Token* pt, DTR declarator)
     {
+        //printf("isCDeclarator()\n");
         auto t = pt;
         while (1)
         {
@@ -4578,6 +4596,8 @@ final class CParser(AST) : Parser!AST
         else if (t.value == TOK.leftParenthesis)
         {
             t = peek(t);
+            if (t.value == TOK.__stdcall)
+                t = peek(t);
             if (!isCDeclarator(t, declarator))
                 return false;
             if (t.value != TOK.rightParenthesis)

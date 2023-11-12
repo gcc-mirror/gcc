@@ -57,6 +57,7 @@ import dmd.nogc;
 import dmd.nspace;
 import dmd.objc;
 import dmd.opover;
+import dmd.optimize;
 import dmd.parse;
 import dmd.root.array;
 import dmd.root.filename;
@@ -1951,7 +1952,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         const len = buf.length;
         buf.writeByte(0);
         const str = buf.extractSlice()[0 .. len];
-        const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+        const bool doUnittests = global.params.parsingUnittestsRequired();
         auto loc = adjustLocForMixin(str, cd.loc, global.params.mixinOut);
         scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
         p.transitionIn = global.params.v.vin;
@@ -3384,9 +3385,13 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             if (!tf.isNaked() && !(funcdecl.isThis() || funcdecl.isNested()))
             {
-                OutBuffer buf;
-                MODtoBuffer(buf, tf.mod);
-                .error(funcdecl.loc, "%s `%s` without `this` cannot be `%s`", funcdecl.kind, funcdecl.toPrettyChars, buf.peekChars());
+                import core.bitop;
+                auto mods = MODtoChars(tf.mod);
+                .error(funcdecl.loc, "%s `%s` without `this` cannot be `%s`", funcdecl.kind, funcdecl.toPrettyChars, mods);
+                if (tf.next && tf.next.ty != Tvoid && popcnt(tf.mod) == 1)
+                    .errorSupplemental(funcdecl.loc,
+                        "did you mean to use `%s(%s)` as the return type?", mods, tf.next.toChars());
+
                 tf.mod = 0; // remove qualifiers
             }
 

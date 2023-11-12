@@ -41,6 +41,7 @@ import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
 import dmd.nspace;
+import dmd.optimize;
 import dmd.parse;
 import dmd.root.complex;
 import dmd.root.ctfloat;

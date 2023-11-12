@@ -38,6 +38,7 @@ import dmd.init;
 import dmd.location;
 import dmd.mtype;
 import dmd.opover;
+import dmd.optimize;
 import dmd.statement;
 import dmd.target;
 import dmd.tokens;

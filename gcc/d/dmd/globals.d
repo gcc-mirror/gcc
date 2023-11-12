@@ -250,6 +250,12 @@ extern (C++) struct Param
     const(char)[] resfile;
     const(char)[] exefile;
     const(char)[] mapfile;
+
+    ///
+    bool parsingUnittestsRequired()
+    {
+        return useUnitTests || ddoc.doOutput || dihdr.doOutput;
+    }
 }
 
 enum mars_ext = "d";        // for D source files

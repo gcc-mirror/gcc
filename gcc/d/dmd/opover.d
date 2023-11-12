@@ -34,6 +34,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
+import dmd.optimize;
 import dmd.statement;
 import dmd.tokens;
 import dmd.typesem;

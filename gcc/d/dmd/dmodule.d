@@ -793,7 +793,7 @@ extern (C++) final class Module : Package
         }
         else
         {
-            const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+            const bool doUnittests = global.params.parsingUnittestsRequired();
             scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink, &global.compileEnv, doUnittests);
             p.transitionIn = global.params.v.vin;
             p.nextToken();

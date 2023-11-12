@@ -54,6 +54,7 @@ import dmd.nspace;
 import dmd.ob;
 import dmd.objc;
 import dmd.opover;
+import dmd.optimize;
 import dmd.parse;
 import dmd.root.filename;
 import dmd.common.outbuffer;
@@ -917,7 +918,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         if (f.isref)
                         {
                             // Function returns a reference
-                            exp = exp.toLvalue(sc2, exp);
+                            exp = exp.toLvalue(sc2);
                             checkReturnEscapeRef(sc2, exp, false);
                             exp = exp.optimize(WANTvalue, /*keepLvalue*/ true);
                         }

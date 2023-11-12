@@ -38,6 +38,7 @@ import dmd.init;
 import dmd.intrange;
 import dmd.mtype;
 import dmd.opover;
+import dmd.optimize;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
