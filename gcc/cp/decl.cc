@@ -2236,8 +2236,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (newdecl))
 	      && !DECL_MODULE_EXPORT_P (not_tmpl))
 	    {
-	      error ("conflicting exporting declaration %qD", newdecl);
-	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
+	      auto_diagnostic_group d;
+	      error ("conflicting exporting for declaration %qD", newdecl);
+	      inform (olddecl_loc,
+		      "previously declared here without exporting");
 	    }
 	}
       else if (DECL_MODULE_EXPORT_P (newdecl))
@@ -16261,9 +16263,22 @@ xref_tag (enum tag_types tag_code, tree name,
 	  tree decl = TYPE_NAME (t);
 	  if (!module_may_redeclare (decl))
 	    {
+	      auto_diagnostic_group d;
 	      error ("cannot declare %qD in a different module", decl);
-	      inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	      inform (DECL_SOURCE_LOCATION (decl), "previously declared here");
 	      return error_mark_node;
+	    }
+
+	  tree not_tmpl = STRIP_TEMPLATE (decl);
+	  if (DECL_LANG_SPECIFIC (not_tmpl)
+	      && DECL_MODULE_ATTACH_P (not_tmpl)
+	      && !DECL_MODULE_EXPORT_P (not_tmpl)
+	      && module_exporting_p ())
+	    {
+	      auto_diagnostic_group d;
+	      error ("conflicting exporting for declaration %qD", decl);
+	      inform (DECL_SOURCE_LOCATION (decl),
+		      "previously declared here without exporting");
 	    }
 
 	  tree maybe_tmpl = decl;
