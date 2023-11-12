@@ -22,6 +22,7 @@ import dmd.astenums;
 import dmd.declaration;
 import dmd.denum;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.expression;
 import dmd.func;

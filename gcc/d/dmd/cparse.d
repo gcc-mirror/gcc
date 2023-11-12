@@ -2168,6 +2168,7 @@ final class CParser(AST) : Parser!AST
      * C11 Initialization
      * initializer:
      *    assignment-expression
+     *    { }                       // C23 6.7.10 addition
      *    { initializer-list }
      *    { initializer-list , }
      *
@@ -2197,6 +2198,12 @@ final class CParser(AST) : Parser!AST
         }
         nextToken();
         const loc = token.loc;
+
+        if (token.value == TOK.rightCurly)      // { }
+        {
+            nextToken();
+            return new AST.DefaultInitializer(loc);
+        }
 
         /* Collect one or more `designation (opt) initializer`
          * into ci.initializerList, but lazily create ci

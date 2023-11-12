@@ -1,10 +1,6 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_scope.d(28): Deprecation: scope parameter `da` may not be returned
-fail_compilation/fail_scope.d(30): Deprecation: scope parameter `o` may not be returned
-fail_compilation/fail_scope.d(31): Deprecation: scope parameter `dg` may not be returned
-fail_compilation/fail_scope.d(38): Deprecation: scope parameter `p` may not be returned
 fail_compilation/fail_scope.d(43): Error: returning `cast(char[])string` escapes a reference to local variable `string`
 fail_compilation/fail_scope.d(61): Error: returning `s.bar()` escapes a reference to local variable `s`
 fail_compilation/fail_scope.d(72): Error: `fail_scope.foo8` called with argument types `(int)` matches both:
@@ -22,6 +18,10 @@ fail_compilation/fail_scope.d(135): Error: returning `foo16226(i)` escapes a ref
 //fail_compilation/fail_scope.d(38): Error: scope variable `dg` may not be returned
 //fail_compilation/fail_scope.d(40): Error: scope variable `p` may not be returned
 */
+
+
+
+
 
 alias int delegate() dg_t;
 

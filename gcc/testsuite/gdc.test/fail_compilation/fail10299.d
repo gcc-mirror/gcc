@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10299.d(11): Error: `foo!string` is not an lvalue and cannot be modified
+fail_compilation/fail10299.d(11): Error: cannot take address of expression `foo!string` because it is not an lvalue
 ---
 */
 

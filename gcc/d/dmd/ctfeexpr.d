@@ -28,6 +28,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.location;
 import dmd.mtype;
+import dmd.root.bitarray;
 import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.port;
@@ -43,14 +44,14 @@ import dmd.visitor;
 extern (D) struct UnionExp
 {
     // yes, default constructor does nothing
-    extern (D) this(Expression e)
+    extern (D) this(Expression e) nothrow
     {
         memcpy(&this, cast(void*)e, e.size);
     }
 
     /* Extract pointer to Expression
      */
-    extern (D) Expression exp() return
+    extern (D) Expression exp() return nothrow
     {
         return cast(Expression)&u;
     }
@@ -109,7 +110,7 @@ void emplaceExp(T : Expression, Args...)(void* p, Args args)
     (cast(T)p).__ctor(args);
 }
 
-void emplaceExp(T : UnionExp)(T* p, Expression e)
+void emplaceExp(T : UnionExp)(T* p, Expression e) nothrow
 {
     memcpy(p, cast(void*)e, e.size);
 }
@@ -134,7 +135,7 @@ void generateUncaughtError(ThrownExceptionExp tee)
  * Returns:
  *    index of the field, or -1 if not found
  */
-int findFieldIndexByName(const StructDeclaration sd, const VarDeclaration v) pure @safe
+int findFieldIndexByName(const StructDeclaration sd, const VarDeclaration v) pure @safe nothrow
 {
     foreach (i, field; sd.fields)
     {
@@ -145,7 +146,7 @@ int findFieldIndexByName(const StructDeclaration sd, const VarDeclaration v) pur
 }
 
 // True if 'e' is CTFEExp::cantexp, or an exception
-bool exceptionOrCantInterpret(const Expression e) @safe
+bool exceptionOrCantInterpret(const Expression e) @safe nothrow
 {
     return e && (e.op == EXP.cantExpression || e.op == EXP.thrownException || e.op == EXP.showCtfeContext);
 }
@@ -153,7 +154,7 @@ bool exceptionOrCantInterpret(const Expression e) @safe
 /************** Aggregate literals (AA/string/array/struct) ******************/
 // Given expr, which evaluates to an array/AA/string literal,
 // return true if it needs to be copied
-bool needToCopyLiteral(const Expression expr)
+bool needToCopyLiteral(const Expression expr) nothrow
 {
     Expression e = cast()expr;
     for (;;)
@@ -593,7 +594,7 @@ TypeAArray toBuiltinAAType(Type t)
 
 /************** TypeInfo operations ************************************/
 // Return true if type is TypeInfo_Class
-bool isTypeInfo_Class(const Type type)
+bool isTypeInfo_Class(const Type type) nothrow
 {
     auto tc = cast()type.isTypeClass();
     return tc && (Type.dtypeinfo == tc.sym || Type.dtypeinfo.isBaseOf(tc.sym, null));
@@ -741,14 +742,14 @@ Expression pointerDifference(UnionExp* pue, const ref Loc loc, Type type, Expres
     Expression agg2 = getAggregateFromPointer(e2, &ofs2);
     if (agg1 == agg2)
     {
-        Type pointee = (cast(TypePointer)agg1.type).next;
+        Type pointee = agg1.type.nextOf();
         const sz = pointee.size();
         emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
     else if (agg1.op == EXP.string_ && agg2.op == EXP.string_ &&
              agg1.isStringExp().peekString().ptr == agg2.isStringExp().peekString().ptr)
     {
-        Type pointee = (cast(TypePointer)agg1.type).next;
+        Type pointee = agg1.type.nextOf();
         const sz = pointee.size();
         emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
@@ -794,14 +795,14 @@ Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type
         goto Lcant;
     }
     dinteger_t ofs2 = e2.toInteger();
-    Type pointee = (cast(TypeNext)agg1.type.toBasetype()).next;
+    Type pointee = agg1.type.toBasetype().nextOf();
     dinteger_t sz = pointee.size();
     sinteger_t indx;
     dinteger_t len;
-    if (agg1.op == EXP.symbolOffset)
+    if (auto soe = agg1.isSymOffExp())
     {
         indx = ofs1 / sz;
-        len = (cast(TypeSArray)agg1.isSymOffExp().var.type).dim.toInteger();
+        len = soe.var.type.isTypeSArray().dim.toInteger();
     }
     else
     {
@@ -836,9 +837,9 @@ Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type
         error(loc, "CTFE internal error: pointer arithmetic `%s`", agg1.toChars());
         goto Lcant;
     }
-    if (eptr.type.toBasetype().ty == Tsarray)
+    if (auto tsa = eptr.type.toBasetype().isTypeSArray())
     {
-        dinteger_t dim = (cast(TypeSArray)eptr.type.toBasetype()).dim.toInteger();
+        dinteger_t dim = tsa.dim.toInteger();
         // Create a CTFE pointer &agg1[indx .. indx+dim]
         auto se = ctfeEmplaceExp!SliceExp(loc, agg1,
                 ctfeEmplaceExp!IntegerExp(loc, indx, Type.tsize_t),
@@ -978,7 +979,7 @@ bool isCtfeComparable(Expression e)
 }
 
 /// Map EXP comparison ops
-private bool numCmp(N)(EXP op, N n1, N n2)
+private bool numCmp(N)(EXP op, N n1, N n2) nothrow
 {
     switch (op)
     {
@@ -997,25 +998,25 @@ private bool numCmp(N)(EXP op, N n1, N n2)
 }
 
 /// Returns cmp OP 0; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool specificCmp(EXP op, int rawCmp) @safe
+bool specificCmp(EXP op, int rawCmp) @safe nothrow
 {
     return numCmp!int(op, rawCmp, 0);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool intUnsignedCmp(EXP op, dinteger_t n1, dinteger_t n2) @safe
+bool intUnsignedCmp(EXP op, dinteger_t n1, dinteger_t n2) @safe nothrow
 {
     return numCmp!dinteger_t(op, n1, n2);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool intSignedCmp(EXP op, sinteger_t n1, sinteger_t n2) @safe
+bool intSignedCmp(EXP op, sinteger_t n1, sinteger_t n2) @safe nothrow
 {
     return numCmp!sinteger_t(op, n1, n2);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool realCmp(EXP op, real_t r1, real_t r2) @safe
+bool realCmp(EXP op, real_t r1, real_t r2) @safe nothrow
 {
     // Don't rely on compiler, handle NAN arguments separately
     if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
@@ -1105,7 +1106,7 @@ private int ctfeCmpArrays(const ref Loc loc, Expression e1, Expression e2, uinte
 /* Given a delegate expression e, return .funcptr.
  * If e is NullExp, return NULL.
  */
-private FuncDeclaration funcptrOf(Expression e) @safe
+private FuncDeclaration funcptrOf(Expression e) @safe nothrow
 {
     assert(e.type.ty == Tdelegate);
     if (auto de = e.isDelegateExp())
@@ -1116,7 +1117,7 @@ private FuncDeclaration funcptrOf(Expression e) @safe
     return null;
 }
 
-private bool isArray(const Expression e) @safe
+private bool isArray(const Expression e) @safe nothrow
 {
     return e.op == EXP.arrayLiteral || e.op == EXP.string_ || e.op == EXP.slice || e.op == EXP.null_;
 }
@@ -1270,8 +1271,8 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         size_t dim = es1.keys.length;
         if (es2.keys.length != dim)
             return 1;
-        bool* used = cast(bool*)mem.xmalloc(bool.sizeof * dim);
-        memset(used, 0, bool.sizeof * dim);
+        BitArray used;
+        used.length = dim;
         foreach (size_t i; 0 .. dim)
         {
             Expression k1 = (*es1.keys)[i];
@@ -1290,11 +1291,9 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
             }
             if (!v2 || ctfeRawCmp(loc, v1, v2, identity))
             {
-                mem.xfree(used);
                 return 1;
             }
         }
-        mem.xfree(used);
         return 0;
     }
     else if (e1.op == EXP.assocArrayLiteral && e2.op == EXP.null_)
@@ -2000,9 +1999,8 @@ void showCtfeExpr(Expression e, int level = 0)
 UnionExp voidInitLiteral(Type t, VarDeclaration var)
 {
     UnionExp ue;
-    if (t.ty == Tsarray)
+    if (auto tsa = t.isTypeSArray())
     {
-        TypeSArray tsa = cast(TypeSArray)t;
         Expression elem = voidInitLiteral(tsa.next, var).copy();
         // For aggregate value types (structs, static arrays) we must
         // create an a separate copy for each element.
@@ -2019,9 +2017,8 @@ UnionExp voidInitLiteral(Type t, VarDeclaration var)
         ArrayLiteralExp ae = ue.exp().isArrayLiteralExp();
         ae.ownedByCtfe = OwnedBy.ctfe;
     }
-    else if (t.ty == Tstruct)
+    else if (auto ts = t.isTypeStruct())
     {
-        TypeStruct ts = cast(TypeStruct)t;
         auto exps = new Expressions(ts.sym.fields.length);
         foreach (size_t i;  0 .. ts.sym.fields.length)
         {

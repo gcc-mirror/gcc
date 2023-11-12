@@ -32,6 +32,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -92,43 +93,50 @@ private Dsymbol getDsymbolWithoutExpCtx(RootObject oarg)
 }
 
 /**
- * get an array of size_t values that indicate possible pointer words in memory
- *  if interpreted as the type given as argument
- * Returns: the size of the type in bytes, ulong.max on error
+ * Fill an array of target size_t values that indicate possible pointer words in memory
+ *  if interpreted as the type given as argument.
+ *  One bit in the array per pointer-sized piece of memory
+ * Params:
+ *      loc = location for error messages
+ *      t = type to generate pointer bitmap from
+ *      data = array forming the bitmap
+ *      eSink = error message sink
+ * Returns:
+ *      size of the type `t` in bytes, ulong.max on error
  */
-ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
+ulong getTypePointerBitmap(Loc loc, Type t, ref Array!(ulong) data, ErrorSink eSink)
 {
-    ulong sz;
-    if (t.ty == Tclass && !(cast(TypeClass)t).sym.isInterfaceDeclaration())
-        sz = (cast(TypeClass)t).sym.AggregateDeclaration.size(loc);
-    else
-        sz = t.size(loc);
+    auto tc = t.isTypeClass();
+    const ulong sz = (tc && !tc.sym.isInterfaceDeclaration())
+        ? tc.sym.AggregateDeclaration.size(loc)
+        : t.size(loc);
     if (sz == SIZE_INVALID)
         return ulong.max;
 
-    const sz_size_t = Type.tsize_t.size(loc);
+    const sz_size_t = Type.tsize_t.size(loc); // size of target's size_t
+    assert(sz_size_t <= ulong.sizeof);
     if (sz > sz.max - sz_size_t)
     {
-        error(loc, "size overflow for type `%s`", t.toChars());
+        eSink.error(loc, "size overflow for type `%s`", t.toChars());
         return ulong.max;
     }
 
-    ulong bitsPerWord = sz_size_t * 8;
-    ulong cntptr = (sz + sz_size_t - 1) / sz_size_t;
-    ulong cntdata = (cntptr + bitsPerWord - 1) / bitsPerWord;
+    const ulong bitsPerElement = sz_size_t * 8;  // bits used in each array element
+    const ulong cntptr = (sz + sz_size_t - 1) / sz_size_t; // pointers have same size as sz_size_t
+    const ulong length = (cntptr + bitsPerElement - 1) / bitsPerElement; // a bit per pointer
 
-    data.setDim(cast(size_t)cntdata);
+    data.setDim(cast(size_t)length);
     data.zero();
 
     ulong offset;
-    bool error;
+    bool error;    // sticky error indicator
 
     void visit(Type t)
     {
         void setpointer(ulong off)
         {
             ulong ptroff = off / sz_size_t;
-            (*data)[cast(size_t)(ptroff / (8 * sz_size_t))] |= 1L << (ptroff % (8 * sz_size_t));
+            data[cast(size_t)(ptroff / bitsPerElement)] |= 1L << (ptroff % bitsPerElement);
         }
 
         void visitType(Type t)
@@ -247,7 +255,7 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
         visit.VisitType(t);
     }
 
-    if (auto tc = t.isTypeClass())
+    if (auto tcx = t.isTypeClass())
     {
         // a "toplevel" class is treated as an instance, while TypeClass fields are treated as references
         void visitTopLevelClass(TypeClass t)
@@ -264,7 +272,7 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
             offset = classoff;
         }
 
-        visitTopLevelClass(tc);
+        visitTopLevelClass(tcx);
     }
     else
         visit(t);
@@ -281,28 +289,28 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
  *
  *  Returns: [T.sizeof, pointerbit0-31/63, pointerbit32/64-63/128, ...]
  */
-private Expression pointerBitmap(TraitsExp e)
+private Expression pointerBitmap(TraitsExp e, ErrorSink eSink)
 {
     if (!e.args || e.args.length != 1)
     {
-        error(e.loc, "a single type expected for trait pointerBitmap");
+        eSink.error(e.loc, "a single type expected for trait pointerBitmap");
         return ErrorExp.get();
     }
 
     Type t = getType((*e.args)[0]);
     if (!t)
     {
-        error(e.loc, "`%s` is not a type", (*e.args)[0].toChars());
+        eSink.error(e.loc, "`%s` is not a type", (*e.args)[0].toChars());
         return ErrorExp.get();
     }
 
     Array!(ulong) data;
-    ulong sz = getTypePointerBitmap(e.loc, t, &data);
+    const ulong sz = getTypePointerBitmap(e.loc, t, data, eSink);
     if (sz == ulong.max)
         return ErrorExp.get();
 
     auto exps = new Expressions(data.length + 1);
-    (*exps)[0] = new IntegerExp(e.loc, sz, Type.tsize_t);
+    (*exps)[0] = new IntegerExp(e.loc, sz, Type.tsize_t);       // [0] is size in bytes of t
     foreach (size_t i; 1 .. exps.length)
         (*exps)[i] = new IntegerExp(e.loc, data[cast(size_t) (i - 1)], Type.tsize_t);
 
@@ -472,13 +480,13 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     }
     if (e.ident == Id.isAbstractClass)
     {
-        return isTypeX(t => t.toBasetype().ty == Tclass &&
-                            (cast(TypeClass)t.toBasetype()).sym.isAbstract());
+        return isTypeX(t => t.toBasetype().isTypeClass() &&
+                            t.toBasetype().isTypeClass().sym.isAbstract());
     }
     if (e.ident == Id.isFinalClass)
     {
-        return isTypeX(t => t.toBasetype().ty == Tclass &&
-                            ((cast(TypeClass)t.toBasetype()).sym.storage_class & STC.final_) != 0);
+        return isTypeX(t => t.toBasetype().isTypeClass() &&
+                            (t.toBasetype().isTypeClass().sym.storage_class & STC.final_) != 0);
     }
     if (e.ident == Id.isTemplate)
     {
@@ -508,7 +516,8 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         }
 
         Type tb = t.baseElemOf();
-        if (auto sd = tb.ty == Tstruct ? (cast(TypeStruct)tb).sym : null)
+        auto ts = tb.isTypeStruct();
+        if (auto sd = ts ? ts.sym : null)
         {
             return sd.isPOD() ? True() : False();
         }
@@ -529,7 +538,8 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         }
 
         Type tb = t.baseElemOf();
-        if (auto sd = tb.ty == Tstruct ? (cast(TypeStruct)tb).sym : null)
+        auto ts = tb.isTypeStruct();
+        if (auto sd = ts ? ts.sym : null)
         {
             return (e.ident == Id.hasPostblit) ? (sd.postblit ? True() : False())
                  : (sd.hasCopyCtor ? True() : False());
@@ -793,10 +803,10 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 {
                     if (auto p = s.toParent())         // `C`'s parent is `C!2`, believe it or not
                     {
-                        if (p.isTemplateInstance())    // `C!2` is a template instance
+                        if (auto ti = p.isTemplateInstance())    // `C!2` is a template instance
                         {
                             s = p;                     // `C!2`'s parent is `T1`
-                            auto td = (cast(TemplateInstance)p).tempdecl;
+                            auto td = ti.tempdecl;
                             if (td)
                                 s = td;                // get the declaration context just in case there's two contexts
                         }
@@ -1297,7 +1307,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         if (fd && fd.parent && fd.parent.isTemplateInstance)
         {
             fd.functionSemantic3();
-            tf = cast(TypeFunction)fd.type;
+            tf = fd.type.isTypeFunction();
         }
 
         auto mods = new Expressions();
@@ -1738,9 +1748,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 ex = ex.expressionSemantic(sc2);
                 ex = resolvePropertiesOnly(sc2, ex);
                 ex = ex.optimize(WANTvalue);
-                if (sc2.func && sc2.func.type.ty == Tfunction)
+                if (sc2.func && sc2.func.type.isTypeFunction())
                 {
-                    const tf = cast(TypeFunction)sc2.func.type;
+                    const tf = sc2.func.type.isTypeFunction();
                     err |= tf.isnothrow && canThrow(ex, sc2.func, null);
                 }
                 ex = checkGC(sc2, ex);
@@ -1868,7 +1878,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     }
     if (e.ident == Id.getPointerBitmap)
     {
-        return pointerBitmap(e);
+        return pointerBitmap(e, global.errorSink);
     }
     if (e.ident == Id.initSymbol)
     {

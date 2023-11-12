@@ -1,13 +1,13 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/fail17491.d(22): Error: `(S17491).init` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(23): Error: `S17491(0)` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(25): Error: `S17491(0).field` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(26): Error: `S17491(0).field` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(31): Error: `S17491(0)` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(32): Error: `S17491(0)` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(34): Error: `S17491(0).field` is not an lvalue and cannot be modified
-fail_compilation/fail17491.d(35): Error: `S17491(0).field` is not an lvalue and cannot be modified
+fail_compilation/fail17491.d(22): Error: cannot modify expression `(S17491).init` because it is not an lvalue
+fail_compilation/fail17491.d(23): Error: cannot take address of expression `S17491(0)` because it is not an lvalue
+fail_compilation/fail17491.d(25): Error: cannot modify expression `S17491(0).field` because it is not an lvalue
+fail_compilation/fail17491.d(26): Error: cannot take address of expression `S17491(0).field` because it is not an lvalue
+fail_compilation/fail17491.d(31): Error: cannot modify expression `S17491(0)` because it is not an lvalue
+fail_compilation/fail17491.d(32): Error: cannot take address of expression `S17491(0)` because it is not an lvalue
+fail_compilation/fail17491.d(34): Error: cannot modify expression `S17491(0).field` because it is not an lvalue
+fail_compilation/fail17491.d(35): Error: cannot take address of expression `S17491(0).field` because it is not an lvalue
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=17491

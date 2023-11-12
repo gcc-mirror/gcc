@@ -3,7 +3,7 @@ TEST_OUTPUT:
 ---
 fail_compilation/fail9891.d(13): Error: expression `i` of type `immutable(int)` is not implicitly convertible to type `ref int` of parameter `n`
 fail_compilation/fail9891.d(18): Error: expression `i` of type `immutable(int)` is not implicitly convertible to type `out int` of parameter `n`
-fail_compilation/fail9891.d(23): Error: `prop()` is not an lvalue and cannot be modified
+fail_compilation/fail9891.d(23): Error: cannot create default argument for `ref` / `out` parameter from expression `prop()` because it is not an lvalue
 ---
 */
 

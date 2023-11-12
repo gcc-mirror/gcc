@@ -70,13 +70,6 @@ DEF_D_RUNTIME (DYNAMIC_CAST, "_d_dynamic_cast", RT(OBJECT),
 DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
 	       P2(OBJECT, CLASSINFO), 0)
 
-/* Used when calling `new' on a multi-dimensional array.
-   The `i' variant is for when the initializer is nonzero.  */
-DEF_D_RUNTIME (NEWARRAYMTX, "_d_newarraymTX", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, ARRAY_SIZE_T), 0)
-DEF_D_RUNTIME (NEWARRAYMITX, "_d_newarraymiTX", RT(ARRAY_VOID),
-	       P2(CONST_TYPEINFO, ARRAY_SIZE_T), 0)
-
 /* Used for allocating an array literal on the GC heap.  */
 DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),
 	       P2(CONST_TYPEINFO, SIZE_T), 0)

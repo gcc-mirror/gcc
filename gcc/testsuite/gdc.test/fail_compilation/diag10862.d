@@ -26,10 +26,10 @@ fail_compilation/diag10862.d-mixin-78(78): Error: assignment cannot be used as a
 fail_compilation/diag10862.d-mixin-79(79): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/diag10862.d-mixin-80(80): Error: using the result of a comma expression is not allowed
 fail_compilation/diag10862.d-mixin-80(80): Error: assignment cannot be used as a condition, perhaps `==` was meant?
-fail_compilation/diag10862.d-mixin-83(83): Error: `a + b` is not an lvalue and cannot be modified
+fail_compilation/diag10862.d-mixin-83(83): Error: cannot modify expression `a + b` because it is not an lvalue
 fail_compilation/diag10862.d-mixin-84(84): Error: undefined identifier `c`
 fail_compilation/diag10862.d(86): Error: undefined identifier `semanticError`
-fail_compilation/diag10862.d(93): Error: lazy variable `bar` cannot be modified
+fail_compilation/diag10862.d(93): Error: cannot modify lazy variable `bar`
 fail_compilation/diag10862.d(95): Error: template instance `diag10862.test3.foo!int` error instantiating
 ---
 */

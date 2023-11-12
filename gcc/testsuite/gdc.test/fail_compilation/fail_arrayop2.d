@@ -207,21 +207,21 @@ fail_compilation/fail_arrayop2.d(265): Error: array operation `[1] * 6` without 
 fail_compilation/fail_arrayop2.d(268): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(269): Error: array operation `"abc"[] + '\x01'` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(272): Error: array operation `[1] * 6` without destination memory not allowed
-fail_compilation/fail_arrayop2.d(275): Error: `([1] * 6)[0..2]` is not an lvalue and cannot be modified
+fail_compilation/fail_arrayop2.d(275): Error: cannot take address of expression `([1] * 6)[0..2]` because it is not an lvalue
 fail_compilation/fail_arrayop2.d(278): Error: can only `*` a pointer, not a `int[]`
 fail_compilation/fail_arrayop2.d(281): Error: the `delete` keyword is obsolete
 fail_compilation/fail_arrayop2.d(281):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 fail_compilation/fail_arrayop2.d(284): Error: array operation `da[] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(287): Error: array operation `da[] * 6` without destination memory not allowed
-fail_compilation/fail_arrayop2.d(290): Error: `[1] * 6` is not an lvalue and cannot be modified
+fail_compilation/fail_arrayop2.d(290): Error: cannot modify expression `[1] * 6` because it is not an lvalue
 fail_compilation/fail_arrayop2.d(291): Error: array operation `[1] * 6` without destination memory not allowed
-fail_compilation/fail_arrayop2.d(294): Error: `[1] * 6` is not an lvalue and cannot be modified
-fail_compilation/fail_arrayop2.d(295): Error: `([1] * 6)[]` is not an lvalue and cannot be modified
+fail_compilation/fail_arrayop2.d(294): Error: cannot modify expression `[1] * 6` because it is not an lvalue
+fail_compilation/fail_arrayop2.d(295): Error: cannot modify expression `([1] * 6)[]` because it is not an lvalue
 fail_compilation/fail_arrayop2.d(298): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(299): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(300): Error: array operation `[1] * 6` without destination memory not allowed
-fail_compilation/fail_arrayop2.d(303): Error: `[1] * 6` is not an lvalue and cannot be modified
-fail_compilation/fail_arrayop2.d(304): Error: `[1] * 6` is not an lvalue and cannot be modified
+fail_compilation/fail_arrayop2.d(303): Error: cannot modify expression `[1] * 6` because it is not an lvalue
+fail_compilation/fail_arrayop2.d(304): Error: cannot modify expression `[1] * 6` because it is not an lvalue
 fail_compilation/fail_arrayop2.d(307): Error: `[1] * 6` is not of integral type, it is a `int[]`
 fail_compilation/fail_arrayop2.d(308): Error: `[1] * 6` is not of integral type, it is a `int[]`
 fail_compilation/fail_arrayop2.d(309): Error: `[1] * 6` is not of integral type, it is a `int[]`

@@ -32,7 +32,7 @@ import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic;
+import dmd.dsymbolsem;
 import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
@@ -121,18 +121,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
     Scope* newScope(Scope* sc)
     {
         return sc;
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        Dsymbols* d = include(sc);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-            d.foreachDsymbol( s => s.addMember(sc2, sds) );
-            if (sc2 != sc)
-                sc2.pop();
-        }
     }
 
     override void setScope(Scope* sc)
@@ -293,34 +281,6 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
             }
         }
         return t;
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        Dsymbols* d = include(sc);
-        if (d)
-        {
-            Scope* sc2 = newScope(sc);
-
-            d.foreachDsymbol( (s)
-            {
-                //printf("\taddMember %s to %s\n", s.toChars(), sds.toChars());
-                // STC.local needs to be attached before the member is added to the scope (because it influences the parent symbol)
-                if (auto decl = s.isDeclaration())
-                {
-                    decl.storage_class |= stc & STC.local;
-                    if (auto sdecl = s.isStorageClassDeclaration()) // TODO: why is this not enough to deal with the nested case?
-                    {
-                        sdecl.stc |= stc & STC.local;
-                    }
-                }
-                s.addMember(sc2, sds);
-            });
-
-            if (sc2 != sc)
-                sc2.pop();
-        }
-
     }
 
     override inout(StorageClassDeclaration) isStorageClassDeclaration() inout
@@ -638,37 +598,6 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
         if (pkg_identifiers)
             dsymbolSemantic(this, sc);
         return createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, this.visibility, 1, sc.aligndecl, sc.inlining);
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        if (pkg_identifiers)
-        {
-            Dsymbol tmp;
-            Package.resolve(pkg_identifiers, &tmp, null);
-            visibility.pkg = tmp ? tmp.isPackage() : null;
-            pkg_identifiers = null;
-        }
-        if (visibility.kind == Visibility.Kind.package_ && visibility.pkg && sc._module)
-        {
-            Module m = sc._module;
-
-            // https://issues.dlang.org/show_bug.cgi?id=17441
-            // While isAncestorPackageOf does an equality check, the fix for the issue adds a check to see if
-            // each package's .isModule() properites are equal.
-            //
-            // Properties generated from `package(foo)` i.e. visibility.pkg have .isModule() == null.
-            // This breaks package declarations of the package in question if they are declared in
-            // the same package.d file, which _do_ have a module associated with them, and hence a non-null
-            // isModule()
-            if (!m.isPackage() || !visibility.pkg.ident.equals(m.isPackage().ident))
-            {
-                Package pkg = m.parent ? m.parent.isPackage() : null;
-                if (!pkg || !visibility.pkg.isAncestorPackageOf(pkg))
-                    .error(loc, "%s `%s` does not bind to one of ancestor packages of module `%s`", kind(), toPrettyChars(false), m.toPrettyChars(true));
-            }
-        }
-        return AttribDeclaration.addMember(sc, sds);
     }
 
     override const(char)* kind() const
@@ -1054,23 +983,6 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
         }
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("StaticIfDeclaration::addMember() '%s'\n", toChars());
-        /* This is deferred until the condition evaluated later (by the include() call),
-         * so that expressions in the condition can refer to declarations
-         * in the same scope, such as:
-         *
-         * template Foo(int i)
-         * {
-         *     const int j = i + 1;
-         *     static if (j == 3)
-         *         const int k;
-         * }
-         */
-        this.scopesym = sds;
-    }
-
     override void setScope(Scope* sc)
     {
         // do not evaluate condition before semantic pass
@@ -1186,12 +1098,6 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
         return d;
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        // used only for caching the enclosing symbol
-        this.scopesym = sds;
-    }
-
     override void addComment(const(char)* comment)
     {
         // do nothing
@@ -1266,15 +1172,6 @@ extern(C++) final class ForwardingAttribDeclaration : AttribDeclaration
         return sc.push(sym);
     }
 
-    /***************************************
-     * Lazily initializes the scope to forward to.
-     */
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        sym.parent = sds;
-        return super.addMember(sc, sym);
-    }
-
     override inout(ForwardingAttribDeclaration) isForwardingAttribDeclaration() inout
     {
         return this;
@@ -1310,12 +1207,6 @@ extern (C++) final class MixinDeclaration : AttribDeclaration
     {
         //printf("MixinDeclaration::syntaxCopy('%s')\n", toChars());
         return new MixinDeclaration(loc, Expression.arraySyntaxCopy(exps));
-    }
-
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("MixinDeclaration::addMember(sc = %p, sds = %p, memnum = %d)\n", sc, sds, memnum);
-        this.scopesym = sds;
     }
 
     override void setScope(Scope* sc)

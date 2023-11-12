@@ -257,6 +257,12 @@ T va_arg(T)(ref va_list ap)
         ap += T.sizeof.alignUp;
         return *p;
     }
+    else version (LoongArch64)
+    {
+        auto p = cast(T*) ap;
+        ap += T.sizeof.alignUp;
+        return *p;
+    }
     else version (MIPS_Any)
     {
         auto p = cast(T*) ap;

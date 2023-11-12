@@ -176,6 +176,7 @@ class NewDeclaration;
 
 class Initializer;
 class VoidInitializer;
+class DefaultInitializer;
 class ErrorInitializer;
 class StructInitializer;
 class ArrayInitializer;
@@ -591,6 +592,7 @@ public:
     virtual void visit(StructInitializer *i) { visit((Initializer *)i); }
     virtual void visit(ArrayInitializer *i) { visit((Initializer *)i); }
     virtual void visit(VoidInitializer *i) { visit((Initializer *)i); }
+    virtual void visit(DefaultInitializer *i) { visit((Initializer *)i); }
     virtual void visit(CInitializer *i) { visit((Initializer *)i); }
 };
 

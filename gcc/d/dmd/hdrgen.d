@@ -1943,7 +1943,7 @@ private void visitTemplateParameters(TemplateParameters* parameters, ref OutBuff
     {
         if (i)
             buf.writestring(", ");
-        p.templateParameterToBuffer(buf, &hgs);
+        toCBuffer(p, buf, hgs);
     }
 }
 
@@ -2885,10 +2885,10 @@ void floatToBuffer(Type type, const real_t value, ref OutBuffer buf, const bool 
     }
 }
 
-private void templateParameterToBuffer(TemplateParameter tp, ref OutBuffer buf, HdrGenState* hgs)
+void toCBuffer(const TemplateParameter tp, ref OutBuffer buf, ref HdrGenState hgs)
 {
-    scope v = new TemplateParameterPrettyPrintVisitor(&buf, hgs);
-    tp.accept(v);
+    scope v = new TemplateParameterPrettyPrintVisitor(&buf, &hgs);
+    (cast() tp).accept(v);
 }
 
 private extern (C++) final class TemplateParameterPrettyPrintVisitor : Visitor
@@ -3260,12 +3260,6 @@ void argExpTypesToCBuffer(ref OutBuffer buf, Expressions* arguments)
             buf.writestring(", ");
         typeToBuffer(arg.type, null, buf, &hgs);
     }
-}
-
-void toCBuffer(const TemplateParameter tp, ref OutBuffer buf, ref HdrGenState hgs)
-{
-    scope v = new TemplateParameterPrettyPrintVisitor(&buf, &hgs);
-    (cast() tp).accept(v);
 }
 
 void arrayObjectsToBuffer(ref OutBuffer buf, Objects* objects)
@@ -3837,7 +3831,7 @@ private void visitFuncIdentWithPrefix(TypeFunction t, const Identifier ident, Te
         {
             if (i)
                 buf.writestring(", ");
-            p.templateParameterToBuffer(buf, hgs);
+            toCBuffer(p, buf, *hgs);
         }
         buf.writeByte(')');
     }
@@ -3860,6 +3854,11 @@ private void initializerToBuffer(Initializer inx, ref OutBuffer buf, HdrGenState
     void visitVoid(VoidInitializer iz)
     {
         buf.writestring("void");
+    }
+
+    void visitDefault(DefaultInitializer iz)
+    {
+        buf.writestring("{ }");
     }
 
     void visitStruct(StructInitializer si)

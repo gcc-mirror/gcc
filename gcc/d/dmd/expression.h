@@ -52,7 +52,7 @@ void expandTuples(Expressions *exps, Identifiers *names = nullptr);
 StringExp *toUTF8(StringExp *se, Scope *sc);
 Expression *resolveLoc(Expression *exp, const Loc &loc, Scope *sc);
 MATCH implicitConvTo(Expression *e, Type *t);
-Expression *toLvalue(Expression *_this, Scope *sc);
+Expression *toLvalue(Expression *_this, Scope *sc, const char* action);
 Expression *modifiableLvalue(Expression* exp, Scope *sc);
 
 typedef unsigned char OwnedBy;
@@ -1114,6 +1114,8 @@ public:
 class CatAssignExp : public BinAssignExp
 {
 public:
+    Expression *lowering;   // lowered druntime hook `_d_arrayappend{cTX,T}`
+
     void accept(Visitor *v) override { v->visit(this); }
 };
 

@@ -3801,7 +3801,7 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
 {
     version (none)
     {
-        if (global.params.useDIP1000 == FeatureState.enabled)
+        if (sc2.useDIP1000 == FeatureState.enabled)
         {
             message(loc, "To enforce `@safe`, the compiler allocates a closure unless `opApply()` uses `scope`");
         }
@@ -3809,7 +3809,7 @@ private extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
     }
     else
     {
-        if (global.params.useDIP1000 == FeatureState.enabled)
+        if (sc2.useDIP1000 == FeatureState.enabled)
             ++(cast(FuncExp)flde).fd.tookAddressOf;  // allocate a closure unless the opApply() uses 'scope'
     }
     assert(tab.ty == Tstruct || tab.ty == Tclass);

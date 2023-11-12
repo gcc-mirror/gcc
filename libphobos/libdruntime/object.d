@@ -642,7 +642,8 @@ class TypeInfo
      */
     size_t getHash(scope const void* p) @trusted nothrow const
     {
-        return hashOf(p);
+        // by default, do not assume anything about the type
+        return 0;
     }
 
     /// Compares two instances for equality.
@@ -2918,19 +2919,19 @@ alias AssociativeArray(Key, Value) = Value[Key];
  * Params:
  *      aa =     The associative array.
  */
-void clear(Value, Key)(Value[Key] aa)
+void clear(Value, Key)(Value[Key] aa) @trusted
 {
     _aaClear(*cast(AA *) &aa);
 }
 
 /** ditto */
-void clear(Value, Key)(Value[Key]* aa)
+void clear(Value, Key)(Value[Key]* aa) @trusted
 {
     _aaClear(*cast(AA *) aa);
 }
 
 ///
-@system unittest
+@safe unittest
 {
     auto aa = ["k1": 2];
     aa.clear;
@@ -4666,11 +4667,13 @@ public import core.internal.array.appending : _d_arrayappendT;
 version (D_ProfileGC)
 {
     public import core.internal.array.appending : _d_arrayappendTTrace;
+    public import core.internal.array.appending : _d_arrayappendcTXTrace;
     public import core.internal.array.concatenation : _d_arraycatnTXTrace;
     public import core.lifetime : _d_newitemTTrace;
     public import core.internal.array.construction : _d_newarrayTTrace;
+    public import core.internal.array.construction : _d_newarraymTXTrace;
 }
-public import core.internal.array.appending : _d_arrayappendcTXImpl;
+public import core.internal.array.appending : _d_arrayappendcTX;
 public import core.internal.array.comparison : __cmp;
 public import core.internal.array.equality : __equals;
 public import core.internal.array.casting: __ArrayCast;
@@ -4678,6 +4681,7 @@ public import core.internal.array.concatenation : _d_arraycatnTX;
 public import core.internal.array.construction : _d_arrayctor;
 public import core.internal.array.construction : _d_arraysetctor;
 public import core.internal.array.construction : _d_newarrayT;
+public import core.internal.array.construction : _d_newarraymTX;
 public import core.internal.array.arrayassign : _d_arrayassign_l;
 public import core.internal.array.arrayassign : _d_arrayassign_r;
 public import core.internal.array.arrayassign : _d_arraysetassign;

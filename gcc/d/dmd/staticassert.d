@@ -52,11 +52,6 @@ extern (C++) final class StaticAssert : Dsymbol
         return new StaticAssert(loc, exp.syntaxCopy(), msgs ? Expression.arraySyntaxCopy(msgs) : null);
     }
 
-    override void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        // we didn't add anything
-    }
-
     override bool oneMember(Dsymbol* ps, Identifier ident)
     {
         //printf("StaticAssert::oneMember())\n");

@@ -656,7 +656,7 @@ version (DigitalMars)
             asm pure nothrow @nogc @trusted
             {
                 naked;
-                rep; nop;
+                pause;
                 ret;
             }
         }
@@ -665,8 +665,7 @@ version (DigitalMars)
             asm pure nothrow @nogc @trusted
             {
                 naked;
-    //            pause; // TODO: DMD should add this opcode to its inline asm
-                rep; nop;
+                pause;
                 ret;
             }
         }

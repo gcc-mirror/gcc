@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag14102.d(14): Error: `-x` is not an lvalue and cannot be modified
-fail_compilation/diag14102.d(15): Error: `-(x -= 1)` is not an lvalue and cannot be modified
-fail_compilation/diag14102.d(16): Error: `-(x -= 1 -= 1)` is not an lvalue and cannot be modified
-fail_compilation/diag14102.d(17): Error: `-(x -= 1 -= 1 -= 1)` is not an lvalue and cannot be modified
+fail_compilation/diag14102.d(14): Error: cannot modify expression `-x` because it is not an lvalue
+fail_compilation/diag14102.d(15): Error: cannot modify expression `-(x -= 1)` because it is not an lvalue
+fail_compilation/diag14102.d(16): Error: cannot modify expression `-(x -= 1 -= 1)` because it is not an lvalue
+fail_compilation/diag14102.d(17): Error: cannot modify expression `-(x -= 1 -= 1 -= 1)` because it is not an lvalue
 ---
 */
 

@@ -3241,13 +3241,6 @@ unittest
     assert(mismatches.isMutable);
 }
 
-private const(char)* prependSpace(const(char)* str)
-{
-    if (!str || !*str) return "";
-
-    return (" " ~ str.toDString() ~ "\0").ptr;
-}
-
 /// Flag used by $(LREF resolveFuncCall).
 enum FuncResolveFlag : ubyte
 {
@@ -3361,14 +3354,11 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         const(char)* lastprms = parametersTypeToChars(tf1.parameterList);
         const(char)* nextprms = parametersTypeToChars(tf2.parameterList);
 
-        const(char)* mod1 = prependSpace(MODtoChars(tf1.mod));
-        const(char)* mod2 = prependSpace(MODtoChars(tf2.mod));
-
         .error(loc, "`%s.%s` called with argument types `%s` matches both:\n%s:     `%s%s%s`\nand:\n%s:     `%s%s%s`",
             s.parent.toPrettyChars(), s.ident.toChars(),
             fargsBuf.peekChars(),
-            m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, mod1,
-            m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, mod2);
+            m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, tf1.modToChars(),
+            m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, tf2.modToChars());
         return null;
     }
 
@@ -3422,15 +3412,25 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     if (!tf)
         tf = fd.originalType.toTypeFunction();
 
-    if (tthis && !MODimplicitConv(tthis.mod, tf.mod)) // modifier mismatch
+    // modifier mismatch
+    if (tthis && (fd.isCtorDeclaration() ?
+        !MODimplicitConv(tf.mod, tthis.mod) :
+        !MODimplicitConv(tthis.mod, tf.mod)))
     {
         OutBuffer thisBuf, funcBuf;
         MODMatchToBuffer(&thisBuf, tthis.mod, tf.mod);
         auto mismatches = MODMatchToBuffer(&funcBuf, tf.mod, tthis.mod);
         if (hasOverloads)
         {
-            .error(loc, "none of the overloads of `%s` are callable using a %sobject",
-                   fd.ident.toChars(), thisBuf.peekChars());
+            OutBuffer buf;
+            buf.argExpTypesToCBuffer(fargs);
+            if (fd.isCtorDeclaration())
+                .error(loc, "none of the overloads of `%s` can construct a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+            else
+                .error(loc, "none of the overloads of `%s` are callable using a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+
             if (!global.gag || global.params.v.showGaggedErrors)
                 printCandidates(loc, fd, sc.isDeprecated());
             return null;
@@ -3447,8 +3447,12 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
             return null;
         }
 
-        .error(loc, "%smethod `%s` is not callable using a %sobject",
-               funcBuf.peekChars(), fd.toPrettyChars(), thisBuf.peekChars());
+        if (fd.isCtorDeclaration())
+            .error(loc, "%s%s `%s` cannot construct a %sobject",
+                   funcBuf.peekChars(), fd.kind(), fd.toPrettyChars(), thisBuf.peekChars());
+        else
+            .error(loc, "%smethod `%s` is not callable using a %sobject",
+                   funcBuf.peekChars(), fd.toPrettyChars(), thisBuf.peekChars());
 
         if (mismatches.isNotShared)
             .errorSupplemental(fd.loc, "Consider adding `shared` here");
@@ -3535,11 +3539,17 @@ if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
             if (!print)
                 return true;
             auto tf = cast(TypeFunction) fd.type;
+            OutBuffer buf;
+            buf.writestring(fd.toPrettyChars());
+            buf.writestring(parametersTypeToChars(tf.parameterList));
+            if (tf.mod)
+            {
+                buf.writeByte(' ');
+                buf.MODtoBuffer(tf.mod);
+            }
             .errorSupplemental(fd.loc,
-                    printed ? "                `%s%s`" :
-                    single_candidate ? "Candidate is: `%s%s`" : "Candidates are: `%s%s`",
-                    fd.toPrettyChars(),
-                parametersTypeToChars(tf.parameterList));
+                printed ? "                `%s`" :
+                single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`", buf.peekChars());
         }
         else if (auto td = s.isTemplateDeclaration())
         {
@@ -4621,7 +4631,14 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
       case default_:
         if (!sc.func)
             return false;
-        if (!sc.func.isSafeBypassingInference() && !sc.func.safetyViolation)
+        if (sc.func.isSafeBypassingInference())
+        {
+            if (!gag)
+            {
+                warning(loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
+            }
+        }
+        else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
             sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);

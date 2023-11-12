@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test24157.d(23): Error: `p.self()` is not an lvalue and cannot be modified
-fail_compilation/test24157.d(27): Error: `p.unshared()` is not an lvalue and cannot be modified
+fail_compilation/test24157.d(23): Error: cannot take address of expression `p.self()` because it is not an lvalue
+fail_compilation/test24157.d(27): Error: cannot take address of expression `p.unshared()` because it is not an lvalue
 ---
 */
 

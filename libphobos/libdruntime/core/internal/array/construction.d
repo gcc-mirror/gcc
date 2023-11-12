@@ -486,3 +486,111 @@ version (D_ProfileGC)
             assert(0, "Cannot create new array if compiling without support for runtime type information!");
     }
 }
+
+/**
+ * Create a new multi-dimensional array. Also initalize elements if their type has an initializer.
+ * Otherwise, not zero-initialize the array.
+ *
+ * ---
+ * void main()
+ * {
+ *     S[][] s = new S[][](2, 3)
+ *
+ *     // lowering:
+ *     S[] s = _d_newarraymTX!(S[][], S)([2, 3]);
+ * }
+ * ---
+ *
+ * Params:
+ *    dims = array length values for each dimension
+ *    isShared = whether the array should be shared
+ *
+ * Returns:
+ *    newly allocated array
+ */
+Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trusted
+{
+    debug(PRINTF) printf("_d_newarraymTX(dims.length = %d)\n", dims.length);
+
+    if (dims.length == 0)
+        return null;
+
+    alias UnqT = Unqual!(T);
+
+    void[] __allocateInnerArray(size_t[] dims)
+    {
+        import core.internal.array.utils : __arrayStart, __setArrayAllocLength, __arrayAlloc;
+
+        auto dim = dims[0];
+
+        debug(PRINTF) printf("__allocateInnerArray(ti = %p, ti.next = %p, dim = %d, ndims = %d\n", ti, ti.next, dim, dims.length);
+        if (dims.length == 1)
+        {
+            auto r = _d_newarrayT!UnqT(dim, isShared);
+            return *cast(void[]*)(&r);
+        }
+
+        auto allocSize = (void[]).sizeof * dim;
+        auto info = __arrayAlloc!UnqT(allocSize);
+        __setArrayAllocLength!UnqT(info, allocSize, isShared);
+        auto p = __arrayStart(info)[0 .. dim];
+
+        foreach (i; 0..dim)
+        {
+            (cast(void[]*)p.ptr)[i] = __allocateInnerArray(dims[1..$]);
+        }
+        return p;
+    }
+
+    auto result = __allocateInnerArray(dims);
+    debug(PRINTF) printf("result = %llx\n", result.ptr);
+
+    return (cast(U*) result.ptr)[0 .. dims[0]];
+}
+
+unittest
+{
+    int[][] a = _d_newarraymTX!(int[][], int)([2, 3]);
+
+    assert(a.length == 2);
+    for (size_t i = 0; i < a.length; i++)
+    {
+        assert(a[i].length == 3);
+        for (size_t j = 0; j < a[i].length; j++)
+            assert(a[i][j] == 0);
+    }
+}
+
+unittest
+{
+    struct S { int x = 1; }
+
+    S[][] a = _d_newarraymTX!(S[][], S)([2, 3]);
+
+    assert(a.length == 2);
+    for (size_t i = 0; i < a.length; i++)
+    {
+        assert(a[i].length == 3);
+        for (size_t j = 0; j < a[i].length; j++)
+            assert(a[i][j].x == 1);
+    }
+}
+
+version (D_ProfileGC)
+{
+    /**
+    * TraceGC wrapper around $(REF _d_newarraymT, core,internal,array,construction).
+    */
+    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(string file, int line, string funcname, size_t[] dims, bool isShared=false) @trusted
+    {
+        version (D_TypeInfo)
+        {
+            import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
+            mixin(TraceHook!(T.stringof, "_d_newarraymTX"));
+
+            return _d_newarraymTX!(Tarr, T)(dims, isShared);
+        }
+        else
+            assert(0, "Cannot create new multi-dimensional array if compiling without support for runtime type information!");
+    }
+}

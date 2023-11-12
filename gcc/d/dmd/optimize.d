@@ -928,6 +928,14 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         }
     }
 
+    void visitCatAssign(CatAssignExp e)
+    {
+        if (auto lowering = e.lowering)
+            optimize(lowering, result, keepLvalue);
+        else
+            visitBinAssign(e);
+    }
+
     void visitBin(BinExp e)
     {
         //printf("BinExp::optimize(result = %d) %s\n", result, e.toChars());
@@ -1392,9 +1400,9 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
             case EXP.leftShiftAssign:
             case EXP.rightShiftAssign:
             case EXP.unsignedRightShiftAssign:
+            case EXP.concatenateDcharAssign: visitBinAssign(ex.isBinAssignExp()); break;
             case EXP.concatenateElemAssign:
-            case EXP.concatenateDcharAssign:
-            case EXP.concatenateAssign: visitBinAssign(ex.isBinAssignExp()); break;
+            case EXP.concatenateAssign:      visitCatAssign(cast(CatAssignExp) ex); break;
 
             case EXP.minusMinus:
             case EXP.plusPlus:

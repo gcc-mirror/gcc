@@ -66,13 +66,15 @@ enum SCOPE
 
     fullinst      = 0x10000,  /// fully instantiate templates
     ctfeBlock     = 0x20000,  /// inside a `if (__ctfe)` block
+    dip1000       = 0x40000,  /// dip1000 errors enabled for this scope
+    dip25         = 0x80000,  /// dip25 errors enabled for this scope
 }
 
 /// Flags that are carried along with a scope push()
 private enum PersistentFlags =
     SCOPE.contract | SCOPE.debug_ | SCOPE.ctfe | SCOPE.compile | SCOPE.constraint |
     SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility |
-    SCOPE.Cfile | SCOPE.ctfeBlock;
+    SCOPE.Cfile | SCOPE.ctfeBlock | SCOPE.dip1000 | SCOPE.dip25;
 
 extern (C++) struct Scope
 {
@@ -176,6 +178,10 @@ extern (C++) struct Scope
             m = m.parent;
         m.addMember(null, sc.scopesym);
         m.parent = null; // got changed by addMember()
+        if (global.params.useDIP1000 == FeatureState.enabled)
+            sc.flags |= SCOPE.dip1000;
+        if (global.params.useDIP25 == FeatureState.enabled)
+            sc.flags |= SCOPE.dip25;
         if (_module.filetype == FileType.c)
             sc.flags |= SCOPE.Cfile;
         // Create the module scope underneath the global scope
@@ -344,7 +350,7 @@ extern (C++) struct Scope
      * Returns:
      *  symbol if found, null if not
      */
-    extern (D) Dsymbol search(const ref Loc loc, Identifier ident, Dsymbol* pscopesym, int flags = IgnoreNone)
+    extern (C++) Dsymbol search(const ref Loc loc, Identifier ident, Dsymbol* pscopesym, int flags = IgnoreNone)
     {
         version (LOGSEARCH)
         {
@@ -820,5 +826,17 @@ extern (C++) struct Scope
     extern (D) bool needsCodegen()
     {
         return (flags & (SCOPE.ctfe | SCOPE.ctfeBlock | SCOPE.compile)) == 0;
+    }
+
+    /// Returns: whether to raise DIP1000 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
+    extern (D) FeatureState useDIP1000()
+    {
+        return (flags & SCOPE.dip1000) ? FeatureState.enabled : FeatureState.disabled;
+    }
+
+    /// Returns: whether to raise DIP25 warnings (FeatureStabe.default) or errors (FeatureState.enabled)
+    extern (D) FeatureState useDIP25()
+    {
+        return (flags & SCOPE.dip25) ? FeatureState.enabled : FeatureState.disabled;
     }
 }

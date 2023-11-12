@@ -54,7 +54,7 @@ $(UL
     $(LI `trace`)
     $(LI `info`)
     $(LI `warning`)
-    #(LI `error`)
+    $(LI `error`)
     $(LI `critical`)
     $(LI `fatal`)
 )

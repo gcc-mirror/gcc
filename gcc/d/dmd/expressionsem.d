@@ -2150,7 +2150,7 @@ private bool checkNogc(FuncDeclaration f, ref Loc loc, Scope* sc)
      * verified instead. This is to keep errors related to the original code
      * and not the lowering.
      */
-    if (f.ident == Id._d_newitemT || f.ident == Id._d_newarrayT)
+    if (f.ident == Id._d_newitemT || f.ident == Id._d_newarrayT || f.ident == Id._d_newarraymTX)
         return false;
 
     if (!f.isNogc())
@@ -3129,7 +3129,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                     ev = new CommaExp(arg.loc, ev, new VarExp(arg.loc, v));
                     arg = ev.expressionSemantic(sc);
                 }
-                arg = arg.toLvalue(sc);
+                arg = arg.toLvalue(sc, "create `in` parameter from");
 
                 // Look for mutable misaligned pointer, etc., in @safe mode
                 err |= checkUnsafeAccess(sc, arg, false, true);
@@ -3147,7 +3147,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                     ev = new CommaExp(arg.loc, ev, new VarExp(arg.loc, v));
                     arg = ev.expressionSemantic(sc);
                 }
-                arg = arg.toLvalue(sc);
+                arg = arg.toLvalue(sc, "create `ref` parameter from");
 
                 // Look for mutable misaligned pointer, etc., in @safe mode
                 err |= checkUnsafeAccess(sc, arg, false, true);
@@ -3166,7 +3166,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                     err |= checkUnsafeAccess(sc, arg, false, true);
                     err |= checkDefCtor(arg.loc, t); // t must be default constructible
                 }
-                arg = arg.toLvalue(sc);
+                arg = arg.toLvalue(sc, "create `out` parameter from");
             }
             else if (p.isLazy())
             {
@@ -3209,7 +3209,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             const explicitScope = p.isLazy() ||
                 ((p.storageClass & STC.scope_) && !(p.storageClass & STC.scopeinferred));
             if ((pStc & (STC.scope_ | STC.lazy_)) &&
-                ((global.params.useDIP1000 == FeatureState.enabled) || explicitScope) &&
+                ((sc.useDIP1000 == FeatureState.enabled) || explicitScope) &&
                 !(pStc & STC.return_))
             {
                 /* Argument value cannot escape from the called function.
@@ -5115,23 +5115,23 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 tb = tb.isTypeDArray().next.toBasetype();
             }
 
-            if (nargs == 1)
-            {
-                if (global.params.betterC || !sc.needsCodegen())
+            if (global.params.betterC || !sc.needsCodegen())
                     goto LskipNewArrayLowering;
 
-                /* Class types may inherit base classes that have errors.
-                 * This may leak errors from the base class to the derived one
-                 * and then to the hook. Semantic analysis is performed eagerly
-                 * to a void this.
-                 */
-                if (auto tc = exp.type.nextOf.isTypeClass())
-                {
-                    tc.sym.dsymbolSemantic(sc);
-                    if (tc.sym.errors)
-                        goto LskipNewArrayLowering;
-                }
+            /* Class types may inherit base classes that have errors.
+                * This may leak errors from the base class to the derived one
+                * and then to the hook. Semantic analysis is performed eagerly
+                * to a void this.
+                */
+            if (auto tc = exp.type.nextOf.isTypeClass())
+            {
+                tc.sym.dsymbolSemantic(sc);
+                if (tc.sym.errors)
+                    goto LskipNewArrayLowering;
+            }
 
+            if (nargs == 1)
+            {
                 auto hook = global.params.tracegc ? Id._d_newarrayTTrace : Id._d_newarrayT;
                 if (!verifyHookExist(exp.loc, *sc, hook, "new array"))
                     goto LskipNewArrayLowering;
@@ -5162,6 +5162,45 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 }
                 arguments.push((*exp.arguments)[0]);
                 arguments.push(new IntegerExp(exp.loc, isShared, Type.tbool));
+
+                lowering = new CallExp(exp.loc, lowering, arguments);
+                exp.lowering = lowering.expressionSemantic(sc);
+            }
+            else
+            {
+                auto hook = global.params.tracegc ? Id._d_newarraymTXTrace : Id._d_newarraymTX;
+                if (!verifyHookExist(exp.loc, *sc, hook, "new multi-dimensional array"))
+                    goto LskipNewArrayLowering;
+
+                /* Lower the memory allocation and initialization of `new T[][]...[](n1, n2, ...)`
+                 * to `_d_newarraymTX!(T[][]...[], T)([n1, n2, ...])`.
+                 */
+                Expression lowering = new IdentifierExp(exp.loc, Id.empty);
+                lowering = new DotIdExp(exp.loc, lowering, Id.object);
+
+                auto tbn = exp.type.nextOf();
+                while (tbn.ty == Tarray)
+                    tbn = tbn.nextOf();
+                auto unqualTbn = tbn.unqualify(MODFlags.wild | MODFlags.const_ |
+                    MODFlags.immutable_ | MODFlags.shared_);
+
+                auto tiargs = new Objects();
+                tiargs.push(exp.type);
+                tiargs.push(unqualTbn);
+                lowering = new DotTemplateInstanceExp(exp.loc, lowering, hook, tiargs);
+
+                auto arguments = new Expressions();
+                if (global.params.tracegc)
+                {
+                    auto funcname = (sc.callsc && sc.callsc.func) ?
+                        sc.callsc.func.toPrettyChars() : sc.func.toPrettyChars();
+                    arguments.push(new StringExp(exp.loc, exp.loc.filename.toDString()));
+                    arguments.push(new IntegerExp(exp.loc, exp.loc.linnum, Type.tint32));
+                    arguments.push(new StringExp(exp.loc, funcname.toDString()));
+                }
+
+                arguments.push(new ArrayLiteralExp(exp.loc, Type.tsize_t.sarrayOf(nargs), exp.arguments));
+                arguments.push(new IntegerExp(exp.loc, tbn.isShared(), Type.tbool));
 
                 lowering = new CallExp(exp.loc, lowering, arguments);
                 exp.lowering = lowering.expressionSemantic(sc);
@@ -8295,7 +8334,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 else
                 {
                     // `toLvalue` call further below is upon exp.e1, omitting & from the error message
-                    exp.toLvalue(sc);
+                    exp.toLvalue(sc, "take address of");
                     return setError();
                 }
             }
@@ -8385,7 +8424,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
         }
 
-        exp.e1 = exp.e1.toLvalue(sc);
+        exp.e1 = exp.e1.toLvalue(sc, "take address of");
         if (exp.e1.op == EXP.error)
         {
             result = exp.e1;
@@ -9015,14 +9054,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         {
             if (checkNonAssignmentArrayOp(exp.e1))
                 return setError();
-        }
-
-        // Look for casting to a vector type
-        if (tob.ty == Tvector && t1b.ty != Tvector)
-        {
-            result = new VectorExp(exp.loc, exp.e1, exp.to);
-            result = result.expressionSemantic(sc);
-            return;
         }
 
         Expression ex = exp.e1.castTo(sc, exp.to);
@@ -11727,8 +11758,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         result = res;
 
-        if ((exp.op == EXP.concatenateAssign || exp.op == EXP.concatenateElemAssign) &&
-            sc.needsCodegen())
+        if ((exp.op == EXP.concatenateAssign || exp.op == EXP.concatenateElemAssign) && sc.needsCodegen())
         {
             // if aa ordering is triggered, `res` will be a CommaExp
             // and `.e2` will be the rewritten original expression.
@@ -11772,7 +11802,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 arguments.push(exp.e1);
                 arguments.push(exp.e2);
                 Expression ce = new CallExp(exp.loc, id, arguments);
-                *output = ce.expressionSemantic(sc);
+
+                exp.lowering = ce.expressionSemantic(sc);
+                *output = exp;
             }
             else if (exp.op == EXP.concatenateElemAssign)
             {
@@ -11792,15 +11824,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 }
 
                 Identifier hook = global.params.tracegc ? Id._d_arrayappendcTXTrace : Id._d_arrayappendcTX;
-                if (!verifyHookExist(exp.loc, *sc, Id._d_arrayappendcTXImpl, "appending element to arrays", Id.object))
+                if (!verifyHookExist(exp.loc, *sc, hook, "appending element to arrays", Id.object))
                     return setError();
 
-                // Lower to object._d_arrayappendcTXImpl!(typeof(e1))._d_arrayappendcTX{,Trace}(e1, 1), e1[$-1]=e2
+                // Lower to object._d_arrayappendcTX{,Trace}(e1, 1), e1[$-1]=e2
                 Expression id = new IdentifierExp(exp.loc, Id.empty);
                 id = new DotIdExp(exp.loc, id, Id.object);
-                auto tiargs = new Objects();
-                tiargs.push(exp.e1.type);
-                id = new DotTemplateInstanceExp(exp.loc, id, Id._d_arrayappendcTXImpl, tiargs);
                 id = new DotIdExp(exp.loc, id, hook);
 
                 auto arguments = new Expressions();
@@ -11827,11 +11856,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 {
                     /* Before the template hook, this check was performed in e2ir.d
                      * for expressions like `a ~= a[$-1]`. Here, $ will be modified
-                     * by calling `_d_arrayappendcT`, so we need to save `a[$-1]` in
+                     * by calling `_d_arrayappendcTX`, so we need to save `a[$-1]` in
                      * a temporary variable.
                      */
                     value2 = extractSideEffect(sc, "__appendtmp", eValue2, value2, true);
-                    exp.e2 = value2;
 
                     // `__appendtmp*` will be destroyed together with the array `exp.e1`.
                     auto vd = eValue2.isDeclarationExp().declaration.isVarDeclaration();
@@ -11847,13 +11875,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 auto e0 = Expression.combine(ce, ae).expressionSemantic(sc);
                 e0 = Expression.combine(e0, value1);
                 e0 = Expression.combine(eValue1, e0);
-
                 e0 = Expression.combine(eValue2, e0);
 
-                *output = e0.expressionSemantic(sc);
+                exp.lowering = e0.expressionSemantic(sc);
+                *output = exp;
             }
         }
-
     }
 
     override void visit(AddExp exp)
@@ -15210,15 +15237,21 @@ Expression addDtorHook(Expression e, Scope* sc)
  * Params:
  *     _this = expression to convert
  *     sc = scope
+ *     action = for error messages, what the lvalue is needed for (e.g. take address of for `&x`, modify for `x++`)
  * Returns: converted expression, or `ErrorExp` on error
 */
-extern(C++) Expression toLvalue(Expression _this, Scope* sc)
+extern(C++) Expression toLvalue(Expression _this, Scope* sc, const(char)* action)
 {
-    return toLvalueImpl(_this, sc, _this);
+    return toLvalueImpl(_this, sc, action, _this);
 }
 
 // e = original un-lowered expression for error messages, in case of recursive calls
-private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
+private Expression toLvalueImpl(Expression _this, Scope* sc, const(char)* action, Expression e)
+{
+    if (!action)
+        action = "create lvalue of";
+
+    assert(e);
     Expression visit(Expression _this)
     {
         // BinaryAssignExp does not have an EXP associated
@@ -15230,9 +15263,11 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
             _this.loc = e.loc;
 
         if (e.op == EXP.type)
-            error(_this.loc, "`%s` is a `%s` definition and cannot be modified", e.type.toChars(), e.type.kind());
+            error(_this.loc, "cannot %s type `%s`", action, e.type.toChars());
+        else if (e.op == EXP.template_)
+            error(_this.loc, "cannot %s template `%s`, perhaps instantiate it first", action, e.toChars());
         else
-            error(_this.loc, "`%s` is not an lvalue and cannot be modified", e.toChars());
+            error(_this.loc, "cannot %s expression `%s` because it is not an lvalue", action, e.toChars());
 
         return ErrorExp.get();
     }
@@ -15241,7 +15276,7 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
     {
         if (!_this.loc.isValid())
             _this.loc = e.loc;
-        error(e.loc, "cannot modify constant `%s`", e.toChars());
+        error(e.loc, "cannot %s constant `%s`", action, e.toChars());
         return ErrorExp.get();
     }
 
@@ -15285,22 +15320,22 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
         auto var = _this.var;
         if (var.storage_class & STC.manifest)
         {
-            error(_this.loc, "manifest constant `%s` cannot be modified", var.toChars());
+            error(_this.loc, "cannot %s manifest constant `%s`", action, var.toChars());
             return ErrorExp.get();
         }
         if (var.storage_class & STC.lazy_ && !_this.delegateWasExtracted)
         {
-            error(_this.loc, "lazy variable `%s` cannot be modified", var.toChars());
+            error(_this.loc, "cannot %s lazy variable `%s`", action, var.toChars());
             return ErrorExp.get();
         }
         if (var.ident == Id.ctfe)
         {
-            error(_this.loc, "cannot modify compiler-generated variable `__ctfe`");
+            error(_this.loc, "cannot %s compiler-generated variable `__ctfe`", action);
             return ErrorExp.get();
         }
         if (var.ident == Id.dollar) // https://issues.dlang.org/show_bug.cgi?id=13574
         {
-            error(_this.loc, "cannot modify operator `$`");
+            error(_this.loc, "cannot %s operator `$`", action);
             return ErrorExp.get();
         }
         return _this;
@@ -15370,7 +15405,7 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
 
     Expression visitVectorArray(VectorArrayExp _this)
     {
-        _this.e1 = _this.e1.toLvalueImpl(sc, e);
+        _this.e1 = _this.e1.toLvalueImpl(sc, action, e);
         return _this;
     }
 
@@ -15389,19 +15424,19 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
 
     Expression visitComma(CommaExp _this)
     {
-        _this.e2 = _this.e2.toLvalue(sc);
+        _this.e2 = _this.e2.toLvalue(sc, action);
         return _this;
     }
 
     Expression visitDelegatePointer(DelegatePtrExp _this)
     {
-        _this.e1 = _this.e1.toLvalueImpl(sc, e);
+        _this.e1 = _this.e1.toLvalueImpl(sc, action, e);
         return _this;
     }
 
     Expression visitDelegateFuncptr(DelegateFuncptrExp _this)
     {
-        _this.e1 = _this.e1.toLvalueImpl(sc, e);
+        _this.e1 = _this.e1.toLvalueImpl(sc, action, e);
         return _this;
     }
 
@@ -15430,8 +15465,8 @@ private Expression toLvalueImpl(Expression _this, Scope* sc, Expression e) {
     {
         // convert (econd ? e1 : e2) to *(econd ? &e1 : &e2)
         CondExp e = cast(CondExp)(_this.copy());
-        e.e1 = _this.e1.toLvalue(sc).addressOf();
-        e.e2 = _this.e2.toLvalue(sc).addressOf();
+        e.e1 = _this.e1.toLvalue(sc, action).addressOf();
+        e.e2 = _this.e2.toLvalue(sc, action).addressOf();
         e.type = _this.type.pointerTo();
         return new PtrExp(_this.loc, e, _this.type);
 
@@ -15634,12 +15669,13 @@ extern(C++) Expression modifiableLvalue(Expression _this, Scope* sc)
 // e = original / un-lowered expression to print in error messages
 private Expression modifiableLvalueImpl(Expression _this, Scope* sc, Expression e)
 {
+    assert(e);
     Expression visit(Expression exp)
     {
         //printf("Expression::modifiableLvalue() %s, type = %s\n", exp.toChars(), exp.type.toChars());
         // See if this expression is a modifiable lvalue (i.e. not const)
         if (exp.isBinAssignExp())
-            return exp.toLvalue(sc);
+            return exp.toLvalue(sc, "modify");
 
         auto type = exp.type;
         if (checkModifiable(exp, sc) == Modifiable.yes)
@@ -15672,7 +15708,7 @@ private Expression modifiableLvalueImpl(Expression _this, Scope* sc, Expression 
                 return ErrorExp.get();
             }
         }
-        return exp.toLvalueImpl(sc, e);
+        return exp.toLvalueImpl(sc, "modify", e);
     }
 
     Expression visitString(StringExp exp)
@@ -15762,7 +15798,7 @@ private Expression modifiableLvalueImpl(Expression _this, Scope* sc, Expression 
         }
         exp.e1 = exp.e1.modifiableLvalue(sc);
         exp.e2 = exp.e2.modifiableLvalue(sc);
-        return exp.toLvalue(sc);
+        return exp.toLvalue(sc, "modify");
     }
 
     switch(_this.op)
@@ -15803,7 +15839,7 @@ bool checkAddressVar(Scope* sc, Expression exp, VarDeclaration v)
     }
     if (sc.func && !sc.intypeof && !v.isDataseg())
     {
-        if (global.params.useDIP1000 != FeatureState.enabled &&
+        if (sc.useDIP1000 != FeatureState.enabled &&
             !(v.storage_class & STC.temp) &&
             sc.setUnsafe(false, exp.loc, "cannot take address of local `%s` in `@safe` function `%s`", v, sc.func))
         {

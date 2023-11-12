@@ -339,6 +339,8 @@ enum EM_CSKY =        252;
 
 enum EM_NUM =         253;
 
+enum EM_LOONGARCH =   258;
+
 enum EM_ALPHA =        0x9026;
 
 enum EV_NONE =         0;

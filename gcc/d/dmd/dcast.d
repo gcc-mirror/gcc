@@ -1631,6 +1631,13 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         }
         else if (tob.ty == Tvector && t1b.ty != Tvector)
         {
+            if (t1b.ty == Tsarray)
+            {
+                // Casting static array to vector with same size, e.g. `cast(int4) int[4]`
+                if (t1b.size(e.loc) != tob.size(e.loc))
+                    goto Lfail;
+                return new VectorExp(e.loc, e, tob).expressionSemantic(sc);
+            }
             //printf("test1 e = %s, e.type = %s, tob = %s\n", e.toChars(), e.type.toChars(), tob.toChars());
             TypeVector tv = tob.isTypeVector();
             Expression result = new CastExp(e.loc, e, tv.elementType());

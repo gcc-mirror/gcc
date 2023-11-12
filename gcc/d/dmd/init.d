@@ -68,6 +68,11 @@ extern (C++) class Initializer : ASTNode
         return kind == InitKind.void_ ? cast(inout VoidInitializer)cast(void*)this : null;
     }
 
+    final inout(DefaultInitializer) isDefaultInitializer() inout @nogc nothrow pure
+    {
+        return kind == InitKind.default_ ? cast(inout DefaultInitializer)cast(void*)this : null;
+    }
+
     final inout(StructInitializer) isStructInitializer() inout @nogc nothrow pure
     {
         return kind == InitKind.struct_ ? cast(inout StructInitializer)cast(void*)this : null;
@@ -103,6 +108,24 @@ extern (C++) final class VoidInitializer : Initializer
     extern (D) this(const ref Loc loc) @safe
     {
         super(loc, InitKind.void_);
+    }
+
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+
+/***********************************************************
+ * The C23 default initializer `{ }`
+ */
+extern (C++) final class DefaultInitializer : Initializer
+{
+    Type type;      // type that this will initialize to
+
+    extern (D) this(const ref Loc loc) @safe
+    {
+        super(loc, InitKind.default_);
     }
 
     override void accept(Visitor v)
@@ -266,6 +289,11 @@ Initializer syntaxCopy(Initializer inx)
         return new VoidInitializer(vi.loc);
     }
 
+    static Initializer visitDefault(DefaultInitializer vi)
+    {
+        return new DefaultInitializer(vi.loc);
+    }
+
     static Initializer visitError(ErrorInitializer vi)
     {
         return vi;
@@ -352,6 +380,7 @@ mixin template VisitInitializer(Result)
         final switch (init.kind)
         {
             case InitKind.void_:    mixin(visitCase("Void"));    break;
+            case InitKind.default_: mixin(visitCase("Default")); break;
             case InitKind.error:    mixin(visitCase("Error"));   break;
             case InitKind.struct_:  mixin(visitCase("Struct"));  break;
             case InitKind.array:    mixin(visitCase("Array"));   break;

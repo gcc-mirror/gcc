@@ -108,12 +108,6 @@ public:
                 return;
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
-        else if (fd.ident == Id._d_arrayappendT || fd.ident == Id._d_arrayappendcTX)
-        {
-            if (setGC(e, "cannot use operator `~=` in `@nogc` %s `%s`"))
-                return;
-            f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
-        }
     }
 
     override void visit(ArrayLiteralExp e)
@@ -187,20 +181,14 @@ public:
 
     override void visit(CatAssignExp e)
     {
-        /* CatAssignExp will exist in `__traits(compiles, ...)` and in the `.e1` branch of a `__ctfe ? :` CondExp.
-         * The other branch will be `_d_arrayappendcTX(e1, 1), e1[$-1]=e2` which will generate the warning about
-         * GC usage. See visit(CallExp).
-         */
         if (checkOnly)
         {
             err = true;
             return;
         }
-        if (f.setGC(e.loc, null))
-        {
-            err = true;
+        if (setGC(e, "cannot use operator `~=` in `@nogc` %s `%s`"))
             return;
-        }
+        f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
     }
 
     override void visit(CatExp e)

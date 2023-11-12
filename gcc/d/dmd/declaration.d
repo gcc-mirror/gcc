@@ -421,18 +421,6 @@ extern (C++) abstract class Declaration : Dsymbol
         return Modifiable.yes;
     }
 
-    override final Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        Dsymbol s = Dsymbol.search(loc, ident, flags);
-        if (!s && type)
-        {
-            s = type.toDsymbol(_scope);
-            if (s)
-                s = s.search(loc, ident, flags);
-        }
-        return s;
-    }
-
     final bool isStatic() const pure nothrow @nogc @safe
     {
         return (storage_class & STC.static_) != 0;

@@ -918,7 +918,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         if (f.isref)
                         {
                             // Function returns a reference
-                            exp = exp.toLvalue(sc2);
+                            exp = exp.toLvalue(sc2, "`ref` return");
                             checkReturnEscapeRef(sc2, exp, false);
                             exp = exp.optimize(WANTvalue, /*keepLvalue*/ true);
                         }

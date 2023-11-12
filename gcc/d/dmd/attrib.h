@@ -26,7 +26,6 @@ public:
 
     virtual Dsymbols *include(Scope *sc);
     virtual Scope *newScope(Scope *sc);
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
     void addComment(const utf8_t *comment) override;
@@ -49,7 +48,6 @@ public:
     StorageClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override final;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     StorageClassDeclaration *isStorageClassDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -110,7 +108,6 @@ public:
 
     VisibilityDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     const char *kind() const override;
     const char *toPrettyChars(bool unused) override;
     VisibilityDeclaration *isVisibilityDeclaration() override { return this; }
@@ -179,7 +176,6 @@ public:
 
     StaticIfDeclaration *syntaxCopy(Dsymbol *s) override;
     Dsymbols *include(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
     StaticIfDeclaration *isStaticIfDeclaration() override { return this; }
@@ -199,7 +195,6 @@ public:
     StaticForeachDeclaration *syntaxCopy(Dsymbol *s) override;
     bool oneMember(Dsymbol **ps, Identifier *ident) override;
     Dsymbols *include(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void addComment(const utf8_t *comment) override;
     void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
@@ -213,7 +208,6 @@ public:
     ForwardingScopeDsymbol *sym;
 
     Scope *newScope(Scope *sc) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     ForwardingAttribDeclaration *isForwardingAttribDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -229,7 +223,6 @@ public:
     d_bool compiled;
 
     MixinDeclaration *syntaxCopy(Dsymbol *s) override;
-    void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }

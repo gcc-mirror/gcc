@@ -58,7 +58,7 @@ void semantic1()
 void semantic2a(X...)(X expr)
 {
     alias X[0] var1;
-    asm { "%0" : "=m" (var1); } // { dg-error "double' is a 'double' definition and cannot be modified" }
+    asm { "%0" : "=m" (var1); } // { dg-error "cannot modify type 'double'" }
 }
 
 void semantic2()

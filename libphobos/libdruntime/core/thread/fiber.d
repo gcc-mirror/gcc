@@ -178,8 +178,12 @@ private
     }
     else version (LoongArch64)
     {
-        version = AsmLoongArch64_Posix;
-        version = AsmExternal;
+        version (Posix)
+        {
+            version = AsmLoongArch64_Posix;
+            version = AsmExternal;
+            version = AlignFiberStackTo16Byte;
+        }
     }
 
     version (Posix)
@@ -1444,24 +1448,28 @@ private:
         }
         else version (AsmLoongArch64_Posix)
         {
-            version (StackGrowsDown) {}
-            else static assert(0);
-
-            // Like others, FP registers and return address (ra) are kept
+            // Like others, FP registers and return address ($r1) are kept
             // below the saved stack top (tstack) to hide from GC scanning.
-            // The newp stack should look like this on LoongArch64:
-            // 18: fp     <- pstack
-            // ...
-            //  9: s0     <- newp tstack
-            //  8: ra     [&fiber_entryPoint]
-            //  7: fs7
-            // ...
-            //  1: fs1
-            //  0: fs0
-            pstack -= 10 * size_t.sizeof; // skip s0-s8 and fp
-            // set $ra
-            push( cast(size_t) &fiber_entryPoint );
-            pstack += size_t.sizeof;
+            // fiber_switchContext expects newp sp to look like this:
+            //   10: $r21 (reserved)
+            //    9: $r22 (frame pointer)
+            //    8: $r23
+            //   ...
+            //    0: $r31 <-- newp tstack
+            //   -1: $r1  (return address)  [&fiber_entryPoint]
+            //   -2: $f24
+            //   ...
+            //   -9: $f31
+
+            version (StackGrowsDown) {}
+            else
+                static assert(false, "Only full descending stacks supported on LoongArch64");
+
+            // Only need to set return address ($r1).  Everything else is fine
+            // zero initialized.
+            pstack -= size_t.sizeof * 11;    // skip past space reserved for $r21-$r31
+            push (cast(size_t) &fiber_entryPoint);
+            pstack += size_t.sizeof;         // adjust sp (newp) above lr
         }
         else version (AsmAArch64_Posix)
         {

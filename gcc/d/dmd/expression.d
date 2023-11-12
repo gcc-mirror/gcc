@@ -4617,7 +4617,9 @@ extern (C++) final class UshrAssignExp : BinAssignExp
  */
 extern (C++) class CatAssignExp : BinAssignExp
 {
-    extern (D) this(const ref Loc loc, Expression e1, Expression e2) @safe
+    Expression lowering;    // lowered druntime hook `_d_arrayappend{cTX,T}`
+
+    extern (D) this(const ref Loc loc, Expression e1, Expression e2)
     {
         super(loc, EXP.concatenateAssign, e1, e2);
     }
