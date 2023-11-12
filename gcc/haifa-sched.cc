@@ -765,23 +765,6 @@ real_insn_for_shadow (rtx_insn *insn)
   return pair->i1;
 }
 
-/* Return TRUE if INSN (a USE or CLOBBER) starts a new live
-    range, FALSE otherwise.  */
-
-static bool
-use_or_clobber_starts_range_p (rtx_insn *insn)
-{
-  gcc_assert (insn);
-
-  if ((GET_CODE (PATTERN (insn)) == CLOBBER
-       || GET_CODE (PATTERN (insn)) == USE)
-      && !sd_lists_empty_p (insn, SD_LIST_FORW)
-      && sd_lists_empty_p (insn, SD_LIST_BACK))
-    return true;
-
-  return false;
-}
-
 /* For a pair P of insns, return the fixed distance in cycles from the first
    insn after which the second must be scheduled.  */
 static int
@@ -6337,39 +6320,11 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 	    }
 	  else if (recog_memoized (insn) < 0)
 	    {
-	      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
-		  || asm_noperands (PATTERN (insn)) >= 0)
-		{
-		  reason = "asm";
-		  if (!first_cycle_insn_p)
-		    cost = 1;
-		}
-	      else if (use_or_clobber_starts_range_p (insn))
-		{
-		  /* If USE or CLOBBER opens an active range, its execution should
-		     be delayed so as to be closer to the relevant instructions and
-		     avoid the generation of some redundant mov instructions.
-		     Otherwise, it should be executed as soon as possible.  */
-		  reason = "unrecog insn";
-		  if (!first_cycle_insn_p)
-		    /* If USE or CLOBBER is not in the first cycle, simply delay it
-		       by one cycle.  */
-		    cost = 1;
-		  else
-		    {
-		      /* If the USE or CLOBBER is in the first cycle and there are no
-			 other non-USE or non-CLOBBER instructions after it, we need
-			 to execute it immediately, otherwise we need to execute the
-			 non-USE or non-CLOBBER instructions first and postpone the
-			 execution of the USE or CLOBBER instructions.  */
-		      int j = i;
-		      while (n > ++j)
-			if (!use_or_clobber_starts_range_p (ready_element (&ready, j)))
-			  break;
-
-		      cost = (j == n) ? 0 : 1;
-		    }
-		}
+	      if (!first_cycle_insn_p
+		  && (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		      || asm_noperands (PATTERN (insn)) >= 0))
+		cost = 1;
+	      reason = "asm";
 	    }
 	  else if (sched_pressure != SCHED_PRESSURE_NONE)
 	    {
