@@ -2231,7 +2231,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
 
       tree not_tmpl = STRIP_TEMPLATE (olddecl);
-      if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_ATTACH_P (not_tmpl))
+      if (DECL_LANG_SPECIFIC (not_tmpl)
+	  && DECL_MODULE_ATTACH_P (not_tmpl)
+	  /* Typedefs are not entities and so are OK to be redeclared
+	     as exported: see [module.interface]/p6.  */
+	  && TREE_CODE (olddecl) != TYPE_DECL)
 	{
 	  if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (newdecl))
 	      && !DECL_MODULE_EXPORT_P (not_tmpl))
