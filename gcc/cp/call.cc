@@ -8303,15 +8303,17 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 							    totype))
 	  {
 	  case 2:
-	    if (pedwarn (loc, 0, "converting to %qH from %qI with greater "
-				 "conversion rank", totype, TREE_TYPE (expr)))
+	    if (pedwarn (loc, OPT_Wnarrowing, "ISO C++ does not allow "
+			 "converting to %qH from %qI with greater "
+			 "conversion rank", totype, TREE_TYPE (expr)))
 	      complained = 1;
 	    else if (!complained)
 	      complained = -1;
 	    break;
 	  case 3:
-	    if (pedwarn (loc, 0, "converting to %qH from %qI with unordered "
-				 "conversion ranks", totype, TREE_TYPE (expr)))
+	    if (pedwarn (loc, OPT_Wnarrowing, "ISO C++ does not allow "
+			 "converting to %qH from %qI with unordered "
+			 "conversion rank", totype, TREE_TYPE (expr)))
 	      complained = 1;
 	    else if (!complained)
 	      complained = -1;
