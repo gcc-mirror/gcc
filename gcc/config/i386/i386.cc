@@ -6465,6 +6465,24 @@ gen_push (rtx arg)
 		      arg);
 }
 
+rtx
+gen_pushfl (void)
+{
+  struct machine_function *m = cfun->machine;
+  rtx flags, mem;
+
+  if (m->fs.cfa_reg == stack_pointer_rtx)
+    m->fs.cfa_offset += UNITS_PER_WORD;
+  m->fs.sp_offset += UNITS_PER_WORD;
+
+  flags = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  mem = gen_rtx_MEM (word_mode,
+		     gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
+
+  return gen_pushfl2 (word_mode, mem, flags);
+}
+
 /* Generate an "pop" pattern for input ARG.  */
 
 rtx
@@ -6477,6 +6495,19 @@ gen_pop (rtx arg)
 		      gen_rtx_MEM (word_mode,
 				   gen_rtx_POST_INC (Pmode,
 						     stack_pointer_rtx)));
+}
+
+rtx
+gen_popfl (void)
+{
+  rtx flags, mem;
+
+  flags = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  mem = gen_rtx_MEM (word_mode,
+		     gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
+
+  return gen_popfl1 (word_mode, flags, mem);
 }
 
 /* Generate a "push2" pattern for input ARG.  */

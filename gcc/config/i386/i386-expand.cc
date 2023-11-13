@@ -14265,7 +14265,7 @@ rdseed_step:
       if (ignore)
 	return const0_rtx;
 
-      emit_insn (gen_push (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_pushfl ());
 
       if (optimize
 	  || target == NULL_RTX
@@ -14284,7 +14284,7 @@ rdseed_step:
 	op0 = copy_to_mode_reg (word_mode, op0);
 
       emit_insn (gen_push (op0));
-      emit_insn (gen_pop (gen_rtx_REG (word_mode, FLAGS_REG)));
+      emit_insn (gen_popfl ());
       return 0;
 
     case IX86_BUILTIN_KTESTC8:
