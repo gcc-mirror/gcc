@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;           H
-;;;           j               z
+;;;                             z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
