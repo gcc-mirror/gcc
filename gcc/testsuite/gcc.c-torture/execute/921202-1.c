@@ -1,5 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-add-options stack_size } */
+/* { dg-additional-options "-std=gnu89" } */
 
 #ifndef STACK_SIZE
 #define	VLEN	2055

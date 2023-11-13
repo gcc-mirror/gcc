@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 foo(int *bar)
 {
   *bar = 8;

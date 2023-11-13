@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 __extension__ typedef __PTRDIFF_TYPE__ ptr_t;
 ptr_t *wm_TR;
 ptr_t *wm_HB;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 union foo
 {
   float f;

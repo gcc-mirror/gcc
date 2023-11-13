@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #include <limits.h>
 
 void * a[255];

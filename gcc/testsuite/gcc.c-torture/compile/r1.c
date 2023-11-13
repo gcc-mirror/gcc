@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 void assert (a) {if (a != 1) abort ();}
 
 int h1 (int *p) {return *p & 255;}

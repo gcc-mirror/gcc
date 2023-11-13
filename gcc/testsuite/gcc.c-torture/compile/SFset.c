@@ -1,5 +1,6 @@
 /* { dg-require-effective-target int32plus } */
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 #define E0 ((type *)10000000)
 #define reg0 r0

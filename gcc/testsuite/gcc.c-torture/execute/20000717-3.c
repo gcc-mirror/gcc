@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 int c = -1;
 
 foo (p)

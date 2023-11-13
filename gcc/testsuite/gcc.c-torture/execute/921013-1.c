@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 f(d,x,y,n)
 int*d;
 float*x,*y;

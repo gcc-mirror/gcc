@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 static inline fu (unsigned short data)
 {
   return data;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 foo (a, b)
 {
   for (b = 0; b < 10; b++)

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 sub3 (i)
      const int *i;
 {

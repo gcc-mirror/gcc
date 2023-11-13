@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 test_opt (a, b)
      unsigned a, b;
 {

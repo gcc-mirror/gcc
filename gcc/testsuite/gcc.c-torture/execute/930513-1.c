@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wl,-u,_printf_float" { target newlib_nano_io } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 #include <stdio.h>
 char buf[2];

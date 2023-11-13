@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 int bar = 0;
 
 f (p)

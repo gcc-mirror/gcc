@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 bar (a)
 {
   return (a == 0);

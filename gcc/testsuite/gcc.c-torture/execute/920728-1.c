@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 typedef struct {int dims[0]; } *A;
 
 f(unsigned long obj)

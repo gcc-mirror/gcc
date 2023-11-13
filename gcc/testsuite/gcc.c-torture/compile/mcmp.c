@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 foo (ip, a, x)
      int a;
      int *ip;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 f (x)
 {
   if (x != 0 || x == 0)

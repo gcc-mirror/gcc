@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 foo (a, p)
      long long a;
      int *p;

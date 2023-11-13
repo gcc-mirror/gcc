@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 r (a, b)
 {
   if (a < b)

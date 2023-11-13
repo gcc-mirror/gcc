@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 cc8 (a, b)
 {
   if (a < 0)

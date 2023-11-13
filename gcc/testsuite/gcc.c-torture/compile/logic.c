@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 logic (a, b)
      int *a, b;
 {

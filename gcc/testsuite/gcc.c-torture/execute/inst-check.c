@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #include <stdarg.h>
 
 f(m)
