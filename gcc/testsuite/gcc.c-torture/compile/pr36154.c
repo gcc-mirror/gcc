@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 struct eth_test_pkt {
   unsigned short len;
   unsigned short ctr;

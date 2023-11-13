@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-fpermissive -O1 -fdump-tree-optimized" } */
 
 char *buffer1;
 char *buffer2;

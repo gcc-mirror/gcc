@@ -1,6 +1,6 @@
 /* PR c/54363 */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-fpermissive -std=gnu99" } */
 
 struct S { char **a; };
 

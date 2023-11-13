@@ -1,5 +1,6 @@
 /* PR tree-optimization/47428 */
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-additional-options "-fpermissive" } */
 
 struct S
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! int128 } } } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 /* { dg-final { scan-assembler "__builtin_" } } */
 
 int foo (int x)

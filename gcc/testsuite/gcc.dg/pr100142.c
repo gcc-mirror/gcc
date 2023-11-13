@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpreprocessed" } */
+/* { dg-options "-fpermissive -fpreprocessed" } */
 
 void
 foo (void)

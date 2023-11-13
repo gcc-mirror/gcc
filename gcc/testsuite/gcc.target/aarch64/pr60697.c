@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-w -O3 -mcpu=cortex-a53" } */
+/* { dg-options "-fpermissive -w -O3 -mcpu=cortex-a53" } */
 typedef struct __sFILE __FILE;
 typedef __FILE FILE;
 typedef int atom_id;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -mbig-endian -w" } */
+/* { dg-options "-fpermissive -Ofast -mbig-endian -w" } */
 
 int cc;
 

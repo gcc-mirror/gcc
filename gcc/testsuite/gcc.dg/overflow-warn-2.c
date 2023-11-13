@@ -1,7 +1,7 @@
 /* Test for diagnostics for constant overflow.  Test with -Wtraditional-conversion.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wtraditional-conversion" } */
+/* { dg-options "-std=c99 -fpermissive -Wtraditional-conversion" } */
 
 #include <limits.h>
 

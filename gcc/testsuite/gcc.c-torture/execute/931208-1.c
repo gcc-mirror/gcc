@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 f ()
 {
   unsigned long x, y = 1;

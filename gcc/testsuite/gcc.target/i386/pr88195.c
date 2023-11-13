@@ -1,5 +1,5 @@
 /* PR target/88195 */
-/* { dg-options "-mptwrite" } */
+/* { dg-options "-fpermissive -mptwrite" } */
 
 void
 foo (void)

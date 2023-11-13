@@ -1,6 +1,6 @@
 /* PR c/56724 */
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat -Wpedantic" } */
+/* { dg-options "-fpermissive -Wc++-compat -Wpedantic" } */
 
 enum E1 { A };
 enum E2 { B };

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 
 void
 a() {

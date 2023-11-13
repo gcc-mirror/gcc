@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -w" } */
+/* { dg-options "-fpermissive -O -w" } */
 
 /* This code snippet from glibc 2.3.5 was causing an ICE during
    optimization because we were failing to update the SSA form for

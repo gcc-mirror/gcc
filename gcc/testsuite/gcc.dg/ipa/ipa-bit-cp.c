@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -w -fipa-bit-cp"  } */
+/* { dg-options "-fpermissive -O2 -w -fipa-bit-cp"  } */
 static int
 __attribute__ ((noinline))
 test (int a)

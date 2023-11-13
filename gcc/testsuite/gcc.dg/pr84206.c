@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -fselective-scheduling -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops -fno-forward-propagate -fno-tree-fre -w" } */
+/* { dg-options "-fpermissive -O2 -fselective-scheduling -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops -fno-forward-propagate -fno-tree-fre -w" } */
 
 long long unsigned int ao;
 int hk;

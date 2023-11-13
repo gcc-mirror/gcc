@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -w" } */
+/* { dg-options "-fpermissive -O -w" } */
 
 void typedef (*cb) (void);
 

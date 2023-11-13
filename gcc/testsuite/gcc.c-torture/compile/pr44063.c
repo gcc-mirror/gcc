@@ -1,4 +1,5 @@
 /* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
+/* { dg-additional-options "-fpermissive" } */
 
 typedef signed char int8_t;
 typedef short int16_t;

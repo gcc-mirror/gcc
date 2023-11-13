@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 f (const int x)
 {
   int y = 0;

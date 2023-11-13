@@ -1,5 +1,6 @@
 /* PR middle-end/67222 - ICE in gimple_call_arg with bogus posix_memalign */
 /* { dg-do compile } */
+/* { dg-additional-options "-fpermissive" } */
 
 void
 foo (void **p)

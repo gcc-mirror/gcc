@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-fpermissive -O2" } */
 #pragma pack(1)
 struct {
   unsigned f0;

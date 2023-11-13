@@ -1,4 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-additional-options "-fpermissive" } */
+
 struct S1
 {
   short f0;

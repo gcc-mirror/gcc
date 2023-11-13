@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 int func (char *);
 void
 f (void)

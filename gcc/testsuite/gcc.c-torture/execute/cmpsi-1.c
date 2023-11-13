@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 f1 (unsigned int x, unsigned int y)
 {
   if (x == 0)

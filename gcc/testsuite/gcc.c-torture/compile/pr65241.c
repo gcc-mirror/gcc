@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 enum E { A, B, C, D };
 void fn4 (void);
 

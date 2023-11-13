@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fcommon" } */
+/* { dg-additional-options "-fpermissive -fcommon" } */
 /* { dg-require-effective-target non_strict_prototype } */
 
 struct S0 {

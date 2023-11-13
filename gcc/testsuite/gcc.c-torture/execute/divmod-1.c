@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 div1 (signed char x)
 {
   return x / -1;

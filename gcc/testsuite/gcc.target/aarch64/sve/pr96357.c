@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=armv8.2-a+sve" } */
+/* { dg-options "-fpermissive -O3 -march=armv8.2-a+sve" } */
 
 int d;
 

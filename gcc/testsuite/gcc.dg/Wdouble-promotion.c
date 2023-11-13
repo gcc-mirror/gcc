@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wdouble-promotion" } */
+/* { dg-options "-fpermissive -Wdouble-promotion" } */
 
 #include <stddef.h>
 

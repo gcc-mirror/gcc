@@ -1,6 +1,6 @@
 /* PR c/88886 - ice in get_constant, at c-family/c-format.c:292
    { dg-do compile }
-   { dg-options "-Wall" } */
+   { dg-options "-fpermissive -Wall" } */
 
 int sscanf (long, unsigned[], ...);   /* { dg-warning "conflicting types for built-in function .sscanf.; expected .int\\\(const char \\\*, const char \\\*, ...\\\)." } */
 
