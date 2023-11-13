@@ -437,7 +437,7 @@ typedef double v512df __attribute__ ((vector_size (4096)));
   void init_##TYPE1##_##TYPE2##_##NUM (VARS##NUM (TYPE2, __VA_ARGS__),         \
 				       TYPE2 *__restrict out)                  \
   {                                                                            \
-    TYPE1 v = {INIT##NUM (__VA_ARGS__)};                                       \
+    TYPE1 v = {__VA_ARGS__};                                                   \
     *(TYPE1 *) out = v;                                                        \
   }
 
