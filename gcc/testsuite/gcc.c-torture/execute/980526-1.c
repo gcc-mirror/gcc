@@ -1,5 +1,8 @@
 /* { dg-require-effective-target label_values } */
 
+void abort (void);
+void exit (int);
+
 int expect_do1 = 1, expect_do2 = 2;
  
 static int doit(int x){

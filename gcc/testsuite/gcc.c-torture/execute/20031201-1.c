@@ -3,6 +3,9 @@
    STRICT_LOW_PART was handled incorrectly in delay slots.
    Origin: Hans-Peter Nilsson.  */
 
+void abort (void);
+void exit (int);
+
 typedef struct { unsigned int e0 : 16; unsigned int e1 : 16; } s1;
 typedef struct { unsigned int e0 : 16; unsigned int e1 : 16; } s2;
 typedef struct { s1 i12; s2 i16; } io;

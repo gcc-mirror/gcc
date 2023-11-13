@@ -1,4 +1,6 @@
 /* { dg-require-effective-target return_address } */
+void abort (void);
+
 int check_fa_work (const char *, const char *) __attribute__((noinline));
 int check_fa_mid (const char *) __attribute__((noinline));
 int check_fa (char *) __attribute__((noinline));

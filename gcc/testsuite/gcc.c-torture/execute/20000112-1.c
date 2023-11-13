@@ -1,5 +1,8 @@
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 static int
 special_format (fmt)
      const char *fmt;

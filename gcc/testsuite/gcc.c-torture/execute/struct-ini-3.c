@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct
 {
   unsigned int f1:1, f2:1, f3:3, f4:3, f5:2, f6:1, f7:1;

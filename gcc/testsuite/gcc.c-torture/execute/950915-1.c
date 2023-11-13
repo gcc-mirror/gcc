@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long int a = 100000;
 long int b = 21475;
 

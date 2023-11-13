@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static unsigned int expr_hash_table_size = 1;
 
 int

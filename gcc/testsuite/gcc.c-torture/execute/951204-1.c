@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 f (char *x)
 {
   *x = 'x';

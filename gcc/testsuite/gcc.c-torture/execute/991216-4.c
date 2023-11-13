@@ -1,4 +1,7 @@
 /* Test against a problem with loop reversal.  */
+void abort (void);
+void exit (int);
+
 static void bug(int size, int tries)
 {
     int i;

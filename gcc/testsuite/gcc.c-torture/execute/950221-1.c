@@ -1,5 +1,8 @@
 /* { dg-add-options stack_size } */
 
+void abort (void);
+void exit (int);
+
 struct parsefile
 {
   long fd;

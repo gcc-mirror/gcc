@@ -1,6 +1,8 @@
 /* Distilled from try_pre_increment in flow.c.  If-conversion inserted
    new instructions at the wrong place on ppc.  */
 
+void abort(void);
+
 int foo(int a)
 {
   int x;

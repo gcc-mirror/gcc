@@ -4,6 +4,7 @@ double x = 1.0;
 
 extern void link_error (void);
 extern void abort (void);
+extern void exit (int);
 
 main ()
 {

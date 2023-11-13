@@ -1,4 +1,8 @@
 #include <stdio.h>
+
+void abort (void);
+void exit (int);
+
 g ()
 {
   return '\n';

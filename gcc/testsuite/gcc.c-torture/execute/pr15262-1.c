@@ -6,6 +6,9 @@
    
    However, if there are no common symbols between P and Q, TBAA will
    currently miss their alias relationship altogether.  */
+
+void abort (void);
+
 struct A
 {
   int t;

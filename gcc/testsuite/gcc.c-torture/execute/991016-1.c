@@ -2,6 +2,9 @@
    mode but have different alias sets.  DOIT tries to get gcse to
    invalidly hoist one of the values out of the loop.  */
 
+void abort (void);
+void exit (int);
+
 typedef int T0;
 typedef long T1;
 typedef long long T2;

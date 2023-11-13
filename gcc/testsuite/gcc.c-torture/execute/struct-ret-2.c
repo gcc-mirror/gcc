@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   unsigned char a __attribute__ ((packed));

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct {
     int v[4];
 } Test1;

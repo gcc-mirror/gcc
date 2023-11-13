@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void __attribute__((noinline))
 foo (int *p, int d1, int d2, int d3,
      short count, int s1, int s2, int s3, int s4, int s5)

@@ -1,4 +1,7 @@
 /* { dg-require-effective-target alloca } */
+void abort (void);
+void exit (int);
+
 int b;
 int foo (void)
 {

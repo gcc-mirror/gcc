@@ -13,6 +13,9 @@
  implementing signed and unsigned arithmetic.
  */
 
+void abort (void);
+void exit (int);
+
 struct X {
   unsigned int	     u3:3;
     signed long int  s31:31;

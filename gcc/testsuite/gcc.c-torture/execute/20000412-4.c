@@ -1,3 +1,6 @@
+  void abort (void);
+  void exit (int);
+
   void f(int i, int j, int radius, int width, int N)
   {
     const int diff   = i-radius;

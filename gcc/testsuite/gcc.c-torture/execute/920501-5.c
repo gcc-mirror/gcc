@@ -1,5 +1,8 @@
 /* { dg-require-effective-target label_values } */
 
+void abort (void);
+void exit (int);
+
 x (int i)
 {
   void *j[] = {&&x, &&y, &&z};

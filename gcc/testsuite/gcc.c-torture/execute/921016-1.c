@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main()
 {
 int j=1081;

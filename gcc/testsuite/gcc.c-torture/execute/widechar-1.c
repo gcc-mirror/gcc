@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 #define C L'\400'
 
 #if C

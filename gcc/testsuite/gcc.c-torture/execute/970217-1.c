@@ -1,3 +1,5 @@
+void exit (int);
+
 sub (int i, int array[i++])
 {
   return i;

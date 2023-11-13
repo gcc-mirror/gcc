@@ -1,5 +1,7 @@
 /* { dg-require-effective-target trampolines } */
 
+void exit (int);
+
 f (void (*func) ())
 {
   func ();

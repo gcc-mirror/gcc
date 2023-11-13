@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main ()
 {
   int i, j, k[3];

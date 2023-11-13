@@ -2,6 +2,9 @@
    being taken in function foo().  Without IPA, by only looking inside
    foo() we cannot tell for certain whether 'q' and 'b' alias each
    other.  */
+
+void abort (void);
+
 struct A
 {
   int t;

@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 void test (int x, ...)
 {
     va_list ap;

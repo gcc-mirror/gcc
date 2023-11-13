@@ -1,3 +1,5 @@
+void abort (void);
+
 struct F { int x; int y; };
 
 int main()

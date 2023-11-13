@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int main( void ) {
     struct {
 	int node;

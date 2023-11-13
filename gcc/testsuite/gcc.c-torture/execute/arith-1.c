@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned
 sat_add (unsigned i)
 {

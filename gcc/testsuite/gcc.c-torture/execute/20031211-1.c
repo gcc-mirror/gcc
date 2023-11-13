@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct a { unsigned int bitfield : 1; };
 
 unsigned int x;

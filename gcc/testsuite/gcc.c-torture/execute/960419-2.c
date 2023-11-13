@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 #define SIZE 8
 
 main()

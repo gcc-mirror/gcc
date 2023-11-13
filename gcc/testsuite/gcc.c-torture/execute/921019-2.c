@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main()
 {
   double x,y=0.5;

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s {
   char text[11];
   int flag;

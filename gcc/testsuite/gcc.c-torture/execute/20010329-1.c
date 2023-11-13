@@ -1,5 +1,8 @@
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 int main (void)
 {
   void *x = ((void *)((unsigned int)INT_MAX + 2));

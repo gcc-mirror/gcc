@@ -2,6 +2,9 @@
    to an unaligned mem:SC, gcc tried doing it by parts from a (concat:SC
    (reg:SF 293) (reg:SF 294)).  */
 
+void abort (void);
+void exit (int);
+
 typedef __complex__ float cf;
 struct x { char c; cf f; } __attribute__ ((__packed__));
 extern void f2 (struct x*);

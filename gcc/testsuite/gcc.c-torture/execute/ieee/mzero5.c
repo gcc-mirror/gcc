@@ -1,4 +1,5 @@
 /* Test gcse handling of IEEE 0/-0 rules.  */
+void abort (void);
 static double zero = 0.0;
 
 int

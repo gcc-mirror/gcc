@@ -9,6 +9,9 @@
  * ====================================================
 */
 
+void abort (void);
+void exit (int);
+
 #ifndef __vax__
 static const unsigned long
 	B1 = 715094163, /* B1 = (682-0.03306235651)*2**20 */

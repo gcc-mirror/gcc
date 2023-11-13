@@ -1,5 +1,8 @@
 /* { dg-require-effective-target label_values } */
 
+void abort (void);
+void exit (int);
+
 int tab[9];
 execute(oip, ip)
      unsigned short *oip, *ip;

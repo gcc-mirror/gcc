@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static int f(int) __attribute__((const));
 int main()
 {

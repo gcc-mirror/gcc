@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 #define X  5.9486574767861588254287966331400356538172e4931L
 
 long double x = X + X;

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct x { 
   unsigned x1:1;
   unsigned x2:2;

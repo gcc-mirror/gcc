@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned short Uint16;
 typedef unsigned int Uint;
 

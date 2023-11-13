@@ -4,6 +4,7 @@
    can only happen on !STRICT_ALIGNMENT targets.  */
 
 typedef __SIZE_TYPE__ size_t;
+void abort (void);
 
 struct dummy { int x __attribute__((aligned)); };
 #define BIGGEST_ALIGNMENT __alignof__(struct dummy)

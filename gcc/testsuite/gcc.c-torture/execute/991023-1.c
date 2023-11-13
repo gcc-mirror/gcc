@@ -1,4 +1,5 @@
-
+void abort (void);
+void exit (int);
 
 int blah;
 foo()

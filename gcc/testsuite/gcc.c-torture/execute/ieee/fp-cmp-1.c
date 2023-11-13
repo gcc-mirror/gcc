@@ -2,6 +2,9 @@
 #include <signal.h>
 #endif
 
+void abort (void);
+void exit (int);
+
 double dnan = 1.0/0.0 - 1.0/0.0;
 double x = 1.0;
 

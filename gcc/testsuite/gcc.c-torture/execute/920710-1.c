@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main()
 {
   if ((double) 18446744073709551615ULL < 1.84467440737095e+19 ||

@@ -2,6 +2,9 @@
 #include <signal.h>
 #endif
 
+void abort (void);
+void exit (int);
+
 float fnan = 1.0f/0.0f - 1.0f/0.0f;
 float x = 1.0f;
 

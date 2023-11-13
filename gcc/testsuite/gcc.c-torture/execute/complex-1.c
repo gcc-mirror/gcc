@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 double
 g0 (double x)
 {

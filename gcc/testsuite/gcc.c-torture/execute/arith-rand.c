@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long
 simple_rand ()
 {

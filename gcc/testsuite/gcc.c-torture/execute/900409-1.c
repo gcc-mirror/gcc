@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long f1(long a){return a&0xff000000L;}
 long f2 (long a){return a&~0xff000000L;}
 long f3(long a){return a&0x000000ffL;}

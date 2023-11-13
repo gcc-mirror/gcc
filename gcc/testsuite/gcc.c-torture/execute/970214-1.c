@@ -1,3 +1,5 @@
+void exit (int);
+
 #define L 1
 main ()
 {

@@ -4,6 +4,9 @@
    of function explicitly marked inline just because a label therein had
    its address taken.  */
 
+void abort (void);
+void exit (int);
+
 static void *ptr1, *ptr2;
 static int i = 1;
 

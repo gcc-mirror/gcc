@@ -1,5 +1,8 @@
 /* We used to mis-compile this testcase as we did not know that
    &a+offsetof(b,a) was the same as &a.b */
+
+void abort (void);
+
 struct A
 {
   int t;

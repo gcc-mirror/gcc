@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static double f (float a);
 static double (*fp) (float a);
 

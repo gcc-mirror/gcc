@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 main ()
 {
   double f (int x, ...)

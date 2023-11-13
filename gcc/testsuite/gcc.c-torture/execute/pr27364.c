@@ -1,3 +1,5 @@
+void exit (int);
+
 int f(unsigned number_of_digits_to_use)
 {
   if (number_of_digits_to_use >1294)

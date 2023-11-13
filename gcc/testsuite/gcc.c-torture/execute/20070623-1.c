@@ -1,5 +1,8 @@
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 int __attribute__((noinline)) nge(int a, int b) {return -(a >= b);}
 int __attribute__((noinline)) ngt(int a, int b) {return -(a > b);}
 int __attribute__((noinline)) nle(int a, int b) {return -(a <= b);}

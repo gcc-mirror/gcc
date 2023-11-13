@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static inline long
 g1 (double x)
 {

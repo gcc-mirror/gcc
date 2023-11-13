@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 short x1 = 17;
 
 struct

@@ -1,5 +1,7 @@
 /* submitted by kenneth zadeck */
 
+void abort (void);
+
 static int test_var;
 
 /* the idea here is that not only is inlinable, inlinable but since it

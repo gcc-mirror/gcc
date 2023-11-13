@@ -1,6 +1,10 @@
 /* Test whether a partly call-clobbered register will be moved over a call.
    Although the original test case didn't use any GNUisms, it proved
    difficult to reduce without the named register extension.  */
+
+void abort (void);
+void exit (int);
+
 #if __SH64__ == 32
 #define LOC asm ("r10")
 #else

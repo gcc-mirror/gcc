@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main ()
 {
   if ((__complex__ double) 0.0 != (__complex__ double) (-0.0))

@@ -1,3 +1,5 @@
+void abort(void);
+
 typedef struct { char *addr; long type; } object;
 
 object bar (object blah)

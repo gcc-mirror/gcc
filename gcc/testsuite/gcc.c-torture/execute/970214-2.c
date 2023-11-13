@@ -1,3 +1,5 @@
+void exit (int);
+
 #define m(L) (L'1' + (L))
 main ()
 {

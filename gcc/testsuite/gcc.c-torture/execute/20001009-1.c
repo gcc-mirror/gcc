@@ -1,3 +1,4 @@
+void abort(void);
 int a,b;
 main()
 {

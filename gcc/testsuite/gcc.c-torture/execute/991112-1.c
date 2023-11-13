@@ -1,6 +1,8 @@
 /* This code was miscompiled at -O3 on x86.
    Reported by Jim Meyering; distilled from bash.  */
 
+void abort(void);
+
 int rl_show_char (int c) { return 0; }
 
 int rl_character_len (int c, int pos)

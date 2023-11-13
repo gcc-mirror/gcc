@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s {
   unsigned long long a:8, b:32;
 };

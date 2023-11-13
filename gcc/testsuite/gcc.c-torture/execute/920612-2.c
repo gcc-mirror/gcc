@@ -1,5 +1,8 @@
 /* { dg-require-effective-target trampolines } */
 
+void abort (void);
+void exit (int);
+
 main ()
 {
   int i = 0;

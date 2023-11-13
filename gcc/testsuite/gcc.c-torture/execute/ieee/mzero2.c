@@ -1,5 +1,8 @@
 /* Test IEEE +0/-0 rules */
 
+void abort (void);
+void exit (int);
+
 static double pzero = +0.0;
 static double nzero = -0.0;
 static double pinf  = +1.0 / 0.0;

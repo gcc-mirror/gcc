@@ -1,4 +1,7 @@
 /* { dg-additional-options "-fwrapv" } */
+void abort (void);
+void exit (int);
+
 int errflag;
 
 long long

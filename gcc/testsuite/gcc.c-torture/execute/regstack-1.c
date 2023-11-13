@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long double C = 5;
 long double U = 1;
 long double Y2 = 11;

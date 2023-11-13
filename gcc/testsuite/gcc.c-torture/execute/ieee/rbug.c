@@ -2,6 +2,9 @@
 #include <ieeefp.h>
 #endif
 
+void abort (void);
+void exit (int);
+
 double d (unsigned long long k)
 {
   double x;

@@ -1,5 +1,7 @@
 /* { dg-require-effective-target trampolines } */
 
+void abort (void);
+
 int f0(int (*fn)(int *), int *p)
 {
   return (*fn) (p);

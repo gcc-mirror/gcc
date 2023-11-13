@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 struct s { int x, y; };
 
 f (int attr, ...)

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 union u {
   struct { int i1, i2; } t;
   double d;

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 const int *p;
 
 int bar (void)

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int f (int a, int b) { }
 
 main ()

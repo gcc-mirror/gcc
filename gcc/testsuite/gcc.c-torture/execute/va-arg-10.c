@@ -2,6 +2,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef va_copy
 #define va_copy __va_copy
 #endif

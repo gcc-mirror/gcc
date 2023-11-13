@@ -5,6 +5,8 @@
    compiler takes care of that.  This fails if it aborts, anything else
    is OK.  */
 
+void exit (int);
+
 struct S {
   short a;
   short b;

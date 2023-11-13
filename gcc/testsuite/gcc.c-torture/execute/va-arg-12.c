@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 /*typedef unsigned long L;*/
 typedef double L;
 void f (L p0, L p1, L p2, L p3, L p4, L p5, L p6, L p7, L p8, ...)

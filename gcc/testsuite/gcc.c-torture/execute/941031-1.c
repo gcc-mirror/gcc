@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef long mpt;
 
 int

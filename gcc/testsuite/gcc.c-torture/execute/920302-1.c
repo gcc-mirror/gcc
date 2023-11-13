@@ -1,5 +1,8 @@
 /* { dg-require-effective-target label_values } */
 
+void abort (void);
+void exit (int);
+
 short optab[5];
 char buf[10];
 execute (ip)

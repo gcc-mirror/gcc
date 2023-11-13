@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 /* Convert a decimal string to a long long unsigned.  No error check is
    performed.  */
 

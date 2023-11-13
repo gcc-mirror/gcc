@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void *foo[]={(void *)&("X"[0])};
 
 main ()

@@ -1,5 +1,7 @@
 /* { dg-add-options stack_size } */
 
+void exit (int);
+
 f()
 {
   int x = 1;

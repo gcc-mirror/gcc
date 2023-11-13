@@ -1,5 +1,7 @@
 /* Test saving and restoring of SIMD registers.  */
 
+void abort (void);
+
 typedef short Q __attribute__((vector_size(8)));
 
 Q q1 = {1, 2}, q2 = {3, 4}, q3 = {5, 6}, q4 = {7, 8};

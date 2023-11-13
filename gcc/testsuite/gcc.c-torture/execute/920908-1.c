@@ -2,6 +2,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct{int A;}T;
 
 T f(int x,...)

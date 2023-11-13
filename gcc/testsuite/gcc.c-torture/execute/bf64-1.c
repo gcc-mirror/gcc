@@ -1,4 +1,8 @@
 /* { dg-xfail-if "ABI specifies bitfields cannot exceed 32 bits" { mcore-*-* } } */
+
+void abort (void);
+void exit (int);
+
 struct tmp
 {
   long long int pad : 12;

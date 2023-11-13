@@ -2,6 +2,9 @@
 
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
 #endif

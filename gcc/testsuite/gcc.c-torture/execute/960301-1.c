@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct foo {
   unsigned : 12;
   unsigned field : 4;

@@ -1,5 +1,8 @@
 /* Tail call optimizations would reverse the order of additions in func().  */
 
+void abort (void);
+void exit (int);
+
 double func (const double *array)
 {
   double d = *array;

@@ -3,6 +3,8 @@
    Prefetch data using a variety of storage classes and address
    expressions.  */
 
+void exit (int);
+
 int glob_int_arr[100];
 int *glob_ptr_int = glob_int_arr;
 int glob_int = 4;

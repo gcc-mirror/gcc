@@ -1,3 +1,5 @@
+void exit (int);
+
 struct decision
 {
   char enforce_mode;             

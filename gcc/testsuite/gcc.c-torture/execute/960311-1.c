@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 #ifdef DEBUG
 #define abort() printf ("error, line %d\n", __LINE__)
 #endif

@@ -4,6 +4,9 @@
    regardless of if the target has SIMD instructions.
 */
 
+void abort (void);
+void exit (int);
+
 typedef int __attribute__((mode(SI))) __attribute__((vector_size (16))) vecint;
 typedef int __attribute__((mode(SI))) siint;
 

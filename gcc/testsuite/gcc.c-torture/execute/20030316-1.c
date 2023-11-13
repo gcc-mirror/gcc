@@ -1,6 +1,8 @@
 /* PR target/9164 */
 /* The comparison operand was sign extended erraneously.  */
 
+void abort (void);
+
 int
 main (void)
 {

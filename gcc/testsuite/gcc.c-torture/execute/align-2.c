@@ -1,6 +1,8 @@
 /* Simple alignment checks;
    looking for compiler/assembler alignment disagreements,
    agreement between struct initialization and access.  */
+void abort (void);
+
 struct a_short { char c; short s; } s_c_s = { 'a', 13 };
 struct a_int { char c ; int i; } s_c_i = { 'b', 14 };
 struct b_int { short s; int i; } s_s_i  = { 15, 16 };

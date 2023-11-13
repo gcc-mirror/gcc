@@ -1,3 +1,5 @@
+void abort (void);
+
 int
 foo (int x, int y, int i, int j)
 {

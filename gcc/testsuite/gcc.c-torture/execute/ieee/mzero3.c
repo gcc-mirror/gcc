@@ -3,6 +3,9 @@
 
    In the MMIX port, negdf2 was bogusly expanding -x into 0 - x.  */
 
+void abort (void);
+void exit (int);
+
 double nzerod = -0.0;
 float nzerof = -0.0;
 double zerod = 0.0;

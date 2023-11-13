@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct x {
 	int a, b;
 } z = { -4028, 4096 };

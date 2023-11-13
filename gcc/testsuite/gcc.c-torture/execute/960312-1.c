@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct S
 {
   int *sp, fc, *sc, a[2];

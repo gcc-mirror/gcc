@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 f (double *ty)
 {
   *ty = -1.0;

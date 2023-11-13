@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 extern unsigned long aa[], bb[];
 
 int seqgt (unsigned long a, unsigned short win, unsigned long b);

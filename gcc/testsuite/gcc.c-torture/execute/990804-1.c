@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int gfbyte ( void ) 
 {
  return 0;

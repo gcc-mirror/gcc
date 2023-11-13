@@ -1,5 +1,8 @@
 /* Like fp-cmp-4.c, but test that the setcc patterns are correct.  */
 
+void abort (void);
+void exit (int);
+
 static int
 test_isunordered(double x, double y)
 {

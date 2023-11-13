@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   short a __attribute__ ((aligned (2),packed));

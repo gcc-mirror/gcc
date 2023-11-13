@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 ts(a)
      int a;

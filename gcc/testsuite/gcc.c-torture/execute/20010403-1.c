@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void b (int *);
 void c (int, int);
 void d (int);

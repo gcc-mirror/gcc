@@ -1,3 +1,4 @@
+void abort (void);
  
 void bug (double *Cref, char transb, int m, int n, int k,
 	  double a, double *A, int fdA, double *B, int fdB,

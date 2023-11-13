@@ -1,6 +1,9 @@
 /* "i" overflows in f().  Check that x[i] is not treated as a giv.  */
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 #if CHAR_BIT == 8
 
 void f (unsigned int *x)

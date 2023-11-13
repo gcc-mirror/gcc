@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 char out[100];
 
 typedef struct { double d; int i[3]; } B;

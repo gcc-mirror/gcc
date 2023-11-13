@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef STACK_SIZE
 #define STACK_SIZE 200000
 #endif

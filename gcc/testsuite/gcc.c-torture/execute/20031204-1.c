@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+void abort(void);
+
 typedef unsigned long u32;
 
 u32 in_aton(const char* x)

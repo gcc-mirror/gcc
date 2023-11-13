@@ -2,6 +2,8 @@
 /* Verify that an empty initializer inside a partial
    parent initializer doesn't confuse GCC.  */
 
+void abort (void);
+
 struct X
 {
   int a;

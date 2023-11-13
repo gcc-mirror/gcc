@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long
 f (long x)
 {

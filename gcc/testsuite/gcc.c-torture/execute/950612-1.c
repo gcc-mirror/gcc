@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned int
 f1 (int diff)
 {

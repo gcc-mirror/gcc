@@ -1,6 +1,9 @@
 /* Copyright (C) 2000 Free Software Foundation */
 /* by Alexandre Oliva  <aoliva@redhat.com> */
 
+void abort (void);
+void exit (int);
+
 enum foo { FOO, BAR };
 
 /* Even though the underlying type of an enum is unspecified, the type

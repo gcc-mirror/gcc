@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned int dev_t;
 typedef unsigned int kdev_t;
 

@@ -1,3 +1,5 @@
+void abort (void);
+void exit (int);
 
 int * foo (int *x, int b)
 {

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 float __complex__
 p (float __complex__  a, float __complex__  b)
 {

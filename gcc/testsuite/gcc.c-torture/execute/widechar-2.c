@@ -1,5 +1,8 @@
 #include <stddef.h>
 
+void abort(void);
+void exit(int);
+
 const wchar_t ws[] = L"foo";
 
 int

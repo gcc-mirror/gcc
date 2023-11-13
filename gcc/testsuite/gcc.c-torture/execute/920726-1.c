@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 struct spurious
 {
     int anumber;

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 f (double x[2], double y[2])
 {
   if (x == y)

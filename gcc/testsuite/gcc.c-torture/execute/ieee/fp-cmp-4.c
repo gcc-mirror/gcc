@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 #ifndef FLOAT
 #define FLOAT double
 #endif

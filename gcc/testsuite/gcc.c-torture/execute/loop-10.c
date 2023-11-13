@@ -1,5 +1,7 @@
 /* Reduced from PR optimization/5076, PR optimization/2847 */
 
+void abort (void);
+
 static int count = 0;
 
 static void

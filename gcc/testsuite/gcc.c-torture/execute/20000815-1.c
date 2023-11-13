@@ -1,3 +1,5 @@
+void abort(void);
+
 struct table_elt
 {
   void *exp;

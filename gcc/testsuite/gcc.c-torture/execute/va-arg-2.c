@@ -5,6 +5,8 @@
 
 #include <stdarg.h>
 
+extern void abort (void);
+extern void exit (int);
 extern __SIZE_TYPE__ strlen ();
 
 int

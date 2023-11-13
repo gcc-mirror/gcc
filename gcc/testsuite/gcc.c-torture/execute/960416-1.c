@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned long int st;
 typedef unsigned long long dt;
 typedef union

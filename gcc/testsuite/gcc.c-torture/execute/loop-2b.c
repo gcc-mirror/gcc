@@ -1,5 +1,8 @@
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 int a[2];
 
 f (int i)

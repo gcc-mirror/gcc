@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned char lookup_table [257];
 
 static int 

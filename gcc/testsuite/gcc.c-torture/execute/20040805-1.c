@@ -1,5 +1,8 @@
 /* { dg-require-stack-size "0x12000" } */
 
+void abort (void);
+void exit (int);
+
 #if __INT_MAX__ < 32768
 int main () { exit (0); }
 #else

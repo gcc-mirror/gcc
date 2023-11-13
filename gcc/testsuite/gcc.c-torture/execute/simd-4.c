@@ -1,5 +1,8 @@
 /* { dg-require-effective-target stdint_types } */
 #include <stdint.h>
+
+void abort (void);
+
 typedef int32_t __attribute__((vector_size(8))) v2si;
 int64_t s64;
 

@@ -3,6 +3,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct {
   char a[32];
 } big;

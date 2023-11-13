@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s {
   int a[3];
   int c[3];

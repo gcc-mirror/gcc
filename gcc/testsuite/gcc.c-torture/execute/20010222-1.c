@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int a[2] = { 18, 6 };
 
 int main ()

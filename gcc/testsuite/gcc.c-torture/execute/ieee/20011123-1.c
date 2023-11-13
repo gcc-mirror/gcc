@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 main()
 {
   double db1 = 1.7976931348623157e+308;

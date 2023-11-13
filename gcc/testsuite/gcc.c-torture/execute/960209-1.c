@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct a_struct
 {
   unsigned char a_character;

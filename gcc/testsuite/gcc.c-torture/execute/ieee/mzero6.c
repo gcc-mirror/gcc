@@ -8,6 +8,9 @@
    which mishandles the case where 'd' is -0.  They also initialised 'acc'
    to a zero int rather than a zero double.  */
 
+void abort (void);
+void exit (int);
+
 double func (double d, int n)
 {
   if (n == 0)

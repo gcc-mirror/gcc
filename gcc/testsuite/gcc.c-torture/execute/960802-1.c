@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long val = 0x5e000000;
 
 long

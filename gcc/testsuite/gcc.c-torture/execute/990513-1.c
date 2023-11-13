@@ -1,5 +1,7 @@
 #include <string.h>
 
+void abort (void);
+
 void foo (int *BM_tab, int j)
 {
   int *BM_tab_base;

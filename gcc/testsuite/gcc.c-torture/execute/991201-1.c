@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct vc_data {
 	unsigned long	space;
 	unsigned char   vc_palette[16*3];        

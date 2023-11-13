@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int count = 0;
 int dummy;
 

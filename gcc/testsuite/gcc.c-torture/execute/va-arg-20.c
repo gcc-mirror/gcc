@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 void foo(va_list v)
 {
     unsigned long long x = va_arg (v, unsigned long long);

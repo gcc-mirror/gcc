@@ -1,5 +1,8 @@
 /* { dg-require-stack-size "128 * 128 * 4 + 1024" } */
 
+void abort (void);
+void exit (int);
+
 typedef struct {
   float wsx;
 } struct_list;

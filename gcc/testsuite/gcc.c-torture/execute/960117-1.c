@@ -1,3 +1,5 @@
+void exit (int);
+
 static char id_space[2] [32 +1];
 typedef short COUNT;
 
