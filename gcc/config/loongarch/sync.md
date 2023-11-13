@@ -50,23 +50,56 @@
   [(match_operand:SI 0 "const_int_operand" "")] ;; model
   ""
 {
-  if (INTVAL (operands[0]) != MEMMODEL_RELAXED)
-    {
-      rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
-      MEM_VOLATILE_P (mem) = 1;
-      emit_insn (gen_mem_thread_fence_1 (mem, operands[0]));
-    }
+  rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (mem) = 1;
+  emit_insn (gen_mem_thread_fence_1 (mem, operands[0]));
+
   DONE;
 })
 
-;; Until the LoongArch memory model (hence its mapping from C++) is finalized,
-;; conservatively emit a full FENCE.
+;; DBAR hint encoding for LA664 and later micro-architectures, paraphrased from
+;; the Linux patch revealing it [1]:
+;;
+;; - Bit 4: kind of constraint (0: completion, 1: ordering)
+;; - Bit 3: barrier for previous read (0: true, 1: false)
+;; - Bit 2: barrier for previous write (0: true, 1: false)
+;; - Bit 1: barrier for succeeding read (0: true, 1: false)
+;; - Bit 0: barrier for succeeding write (0: true, 1: false)
+;;
+;; [1]: https://git.kernel.org/torvalds/c/e031a5f3f1ed
+;;
+;; Implementations without support for the finer-granularity hints simply treat
+;; all as the full barrier (DBAR 0), so we can unconditionally start emiting the
+;; more precise hints right away.
 (define_insn "mem_thread_fence_1"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
    (match_operand:SI 1 "const_int_operand" "")] ;; model
   ""
-  "dbar\t0")
+  {
+    enum memmodel model = memmodel_base (INTVAL (operands[1]));
+
+    switch (model)
+      {
+      case MEMMODEL_ACQUIRE:
+	return "dbar\t0b10100";
+      case MEMMODEL_RELEASE:
+	return "dbar\t0b10010";
+      case MEMMODEL_ACQ_REL:
+      case MEMMODEL_SEQ_CST:
+	return "dbar\t0b10000";
+      default:
+	/* GCC internal: "For the '__ATOMIC_RELAXED' model no instructions
+	   need to be issued and this expansion is not invoked."
+
+	   __atomic builtins doc: "Consume is implemented using the
+	   stronger acquire memory order because of a deficiency in C++11's
+	   semantics."  See PR 59448 and get_memmodel in builtins.cc.
+
+	   Other values should not be returned by memmodel_base.  */
+	gcc_unreachable ();
+      }
+  })
 
 ;; Atomic memory operations.
 
