@@ -10418,13 +10418,16 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 
 	  case RECORD_TYPE:
 	  case UNION_TYPE:
-	    if (DECL_NAME (decl) == as_base_identifier)
-	      mk = MK_as_base;
-	    else if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
-	      mk = MK_field;
-	    break;
-
 	  case NAMESPACE_DECL:
+	    if (DECL_NAME (decl) == as_base_identifier)
+	      {
+		mk = MK_as_base;
+		break;
+	      }
+
+	    /* A lambda may have a class as its context, even though it
+	       isn't a member in the traditional sense; see the test
+	       g++.dg/modules/lambda-6_a.C.  */
 	    if (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl))
 		&& LAMBDA_TYPE_P (TREE_TYPE (decl)))
 	      if (tree scope
@@ -10436,6 +10439,13 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		    mk = MK_keyed;
 		    break;
 		  }
+
+	    if (RECORD_OR_UNION_TYPE_P (ctx))
+	      {
+		if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
+		  mk = MK_field;
+		break;
+	      }
 
 	    if (TREE_CODE (decl) == TEMPLATE_DECL
 		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
@@ -18893,18 +18903,16 @@ maybe_key_decl (tree ctx, tree decl)
   if (TREE_CODE (ctx) != VAR_DECL)
     return;
 
-  gcc_checking_assert (DECL_NAMESPACE_SCOPE_P (ctx));
-
- if (!keyed_table)
+  if (!keyed_table)
     keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
 
- auto &vec = keyed_table->get_or_insert (ctx);
- if (!vec.length ())
-   {
-     retrofit_lang_decl (ctx);
-     DECL_MODULE_KEYED_DECLS_P (ctx) = true;
-   }
- vec.safe_push (decl);
+  auto &vec = keyed_table->get_or_insert (ctx);
+  if (!vec.length ())
+    {
+      retrofit_lang_decl (ctx);
+      DECL_MODULE_KEYED_DECLS_P (ctx) = true;
+    }
+  vec.safe_push (decl);
 }
 
 /* Create the flat name string.  It is simplest to have it handy.  */
