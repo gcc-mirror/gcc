@@ -21,7 +21,8 @@ float s (unsigned long long k)
   return x;
 }
 
-main ()
+int
+main (void)
 {
   unsigned long long int k;
   double x;

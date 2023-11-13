@@ -22,7 +22,8 @@ void loop (char * pz, char * pzDta)
     abort ();
 }
 
-main()
+int
+main(void)
 {
   loop (a, b);
   exit (0);

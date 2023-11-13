@@ -11,7 +11,8 @@ struct adjust_template
 
 static struct adjust_template adjust = {1, 1};
 
-main ()
+int
+main (void)
 {
   short x = 1, y = 1;
 

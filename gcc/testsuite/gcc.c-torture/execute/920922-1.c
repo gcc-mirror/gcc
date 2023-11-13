@@ -8,7 +8,8 @@ f(p)unsigned long*p;
   return p + a;
 }
 
-main ()
+int
+main (void)
 {
   unsigned long x = 0x80000000UL;
   if (f(&x) != &x + 0x81)

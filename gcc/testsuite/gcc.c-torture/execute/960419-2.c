@@ -3,7 +3,8 @@ void exit (int);
 
 #define SIZE 8
 
-main()
+int
+main(void)
 {
   int a[SIZE] = {1};
   int i;

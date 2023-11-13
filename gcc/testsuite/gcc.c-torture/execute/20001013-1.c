@@ -12,7 +12,7 @@ int foo(struct x *p, int y)
   return 0;
 }
 
-main()
+int main(void)
 {
   if (foo (&z, 10))
     abort ();

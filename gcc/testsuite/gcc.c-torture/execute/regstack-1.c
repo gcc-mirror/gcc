@@ -6,7 +6,8 @@ long double U = 1;
 long double Y2 = 11;
 long double Y1 = 17;
 long double X, Y, Z, T, R, S;
-main ()
+int
+main (void)
 {
   X = (C + U) * Y2;
   Y = C - U - U;

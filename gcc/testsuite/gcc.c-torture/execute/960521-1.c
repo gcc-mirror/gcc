@@ -10,7 +10,8 @@ int n;
 #else
 #define BLOCK_SIZE 32768
 #endif
-foo ()
+void
+foo (void)
 {
   int i;
   for (i = 0; i < n; i++)
@@ -19,7 +20,8 @@ foo ()
     b[i] = -1;
 }
 
-main ()
+int
+main (void)
 {
   n = BLOCK_SIZE;
   a = malloc (n * sizeof(*a));

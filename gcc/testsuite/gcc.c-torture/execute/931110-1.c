@@ -11,7 +11,8 @@ struct
   small s[10];
 } x;
 
-main ()
+int
+main (void)
 {
   int i;
   for (i = 0; i < 10; i++)

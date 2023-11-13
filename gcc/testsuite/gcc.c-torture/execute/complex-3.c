@@ -18,7 +18,8 @@ f (float a, float b)
   return c;
 }
 
-main ()
+int
+main (void)
 {
   struct complex z = f (1.0, 0.0);
 

@@ -44,7 +44,8 @@ X f (B a, char b, double c, B d)
 
 X (*fp) (B, char, double, B) = &f;
 
-main ()
+int
+main (void)
 {
   X Xr;
   char tmp[100];

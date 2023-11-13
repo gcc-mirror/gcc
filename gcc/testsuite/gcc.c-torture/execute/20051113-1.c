@@ -54,7 +54,7 @@ long long Sum2 (Struct3 *instrs)
     }
     return count;
 }
-main() {
+int main(void) {
   Struct3 *p = malloc (sizeof (int) + 3 * sizeof(Union));
   memset(p, 0, sizeof(int) + 3*sizeof(Union));
   p->Count = 3;

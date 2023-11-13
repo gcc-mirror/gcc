@@ -41,7 +41,8 @@ random_bitstring ()
 
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
 
-main ()
+int
+main (void)
 {
   long int i;
 

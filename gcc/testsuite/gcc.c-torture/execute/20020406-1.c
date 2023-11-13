@@ -65,7 +65,7 @@ DUPFF DUPFFexgcd(DUPFF *fcofac, DUPFF *gcofac, const DUPFF f, const DUPFF g)
   FFelem q, lcu, lcvrecip, p;
   int df, dg, du, dv;
 
-  printf("DUPFFexgcd called on degrees %d and %d\n", DUPFFdeg(f), DUPFFdeg(g));
+  __builtin_printf("DUPFFexgcd called on degrees %d and %d\n", DUPFFdeg(f), DUPFFdeg(g));
   if (DUPFFdeg(f) < DUPFFdeg(g)) return DUPFFexgcd(gcofac, fcofac, g, f);  /*** BUG IN THIS LINE ***/
   if (DUPFFdeg(f) != 2 || DUPFFdeg(g) != 1) abort();
   if (f->coeffs[0] == 0) return f;
@@ -121,7 +121,7 @@ int main()
   f = DUPFFnew(1); f->coeffs[1] = 1; f->deg = 1;
   g = DUPFFnew(2); g->coeffs[2] = 1; g->deg = 2;
 
-  printf("calling DUPFFexgcd on degrees %d and %d\n", DUPFFdeg(f), DUPFFdeg(g)) ;
+  __builtin_printf("calling DUPFFexgcd on degrees %d and %d\n", DUPFFdeg(f), DUPFFdeg(g)) ;
   h = DUPFFexgcd(&cf, &cg, f, g);
   return 0;
 }

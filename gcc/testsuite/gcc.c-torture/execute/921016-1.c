@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main()
+int
+main(void)
 {
 int j=1081;
 struct

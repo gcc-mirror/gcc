@@ -16,6 +16,7 @@ ffs (x)
   return bit;
 }
 
+void
 f (x)
      int x;
 {
@@ -25,7 +26,8 @@ f (x)
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f (1);
   exit (0);

@@ -14,7 +14,8 @@ void exit (int);
        return data.word;
    }
 
-main()
+int
+main(void)
 {
   /* XXX This test could be generalized.  */
   if (sizeof (long) != 4)

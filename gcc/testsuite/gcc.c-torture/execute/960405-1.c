@@ -6,7 +6,8 @@ void exit (int);
 long double x = X + X;
 long double y = 2.0L * X;
 
-main ()
+int
+main (void)
 {
 #if ! defined (__vax__) && ! defined (_CRAY)
   if (x != y)

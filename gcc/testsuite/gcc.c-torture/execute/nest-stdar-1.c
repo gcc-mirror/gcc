@@ -3,7 +3,8 @@
 void abort (void);
 void exit (int);
 
-main ()
+int
+main (void)
 {
   double f (int x, ...)
     {

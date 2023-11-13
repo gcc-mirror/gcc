@@ -15,7 +15,7 @@ unsigned int foo (char *c, unsigned int x, unsigned int y)
 {
   register unsigned int z LOC;
 
-  sprintf (c, "%d", x / y);
+  __builtin_sprintf (c, "%d", x / y);
   z = x + 1;
   return z / (y + 1);
 }

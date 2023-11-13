@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main ()
+int
+main (void)
 {
   struct { long status; } h;
 

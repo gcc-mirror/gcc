@@ -9,7 +9,8 @@ void f(long i)
     exit (0);
 }
 
-main()
+int
+main(void)
 {
   f(0xffffff01);
 }

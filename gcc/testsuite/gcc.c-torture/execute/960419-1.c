@@ -11,7 +11,8 @@ check(x)
     abort();
 }
 
-main()
+int
+main(void)
 {
   int *p = &i;
 

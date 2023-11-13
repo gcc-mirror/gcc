@@ -25,7 +25,8 @@ g ()
   return ul;
 }
 
-main ()
+int
+main (void)
 {
   if (f () != (unsigned short) -1)
     abort ();

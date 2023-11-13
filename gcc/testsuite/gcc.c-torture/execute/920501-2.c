@@ -98,7 +98,8 @@ facts (t, a_int, x0, p)
     }
 }
 
-main ()
+int
+main (void)
 {
   unsigned long long t;
   unsigned x0, a;

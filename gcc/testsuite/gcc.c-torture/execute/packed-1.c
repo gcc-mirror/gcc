@@ -8,6 +8,7 @@ struct
   short i __attribute__ ((packed));
 } t;
 
+void
 f ()
 {
   t.i = x1;
@@ -15,7 +16,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

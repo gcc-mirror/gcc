@@ -16,7 +16,8 @@ void expectf (float, float);
 double negd (double);
 float negf (float);
 
-main ()
+int
+main (void)
 {
   expectd (negd (zerod), nzerod);
   expectf (negf (zerof), nzerof);
@@ -29,7 +30,8 @@ void
 expectd (double value, double expected)
 {
   if (value != expected
-      || memcmp ((void *)&value, (void *) &expected, sizeof (double)) != 0)
+      || __builtin_memcmp ((void *)&value, (void *) &expected,
+			   sizeof (double)) != 0)
     abort ();
 }
 
@@ -37,7 +39,8 @@ void
 expectf (float value, float expected)
 {
   if (value != expected
-      || memcmp ((void *)&value, (void *) &expected, sizeof (float)) != 0)
+      || __builtin_memcmp ((void *)&value, (void *) &expected,
+			   sizeof (float)) != 0)
     abort ();
 }
 

@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main ()
+int
+main (void)
 {
   unsigned long long xx;
   unsigned long long *x = (unsigned long long *) &xx;

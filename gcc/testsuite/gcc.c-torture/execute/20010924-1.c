@@ -37,7 +37,8 @@ struct {
   { 'e', 'b' }
 };
 
-main()
+int
+main(void)
 {
   if (a1.a1c != '4')
     abort();

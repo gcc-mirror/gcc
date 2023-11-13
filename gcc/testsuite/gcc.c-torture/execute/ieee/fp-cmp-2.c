@@ -13,7 +13,8 @@ void leave ()
   exit (0);
 }
 
-main ()
+int
+main (void)
 {
 #if ! defined (__vax__) && ! defined (_CRAY)
   /* Move this line earlier, for architectures (like alpha) that issue 

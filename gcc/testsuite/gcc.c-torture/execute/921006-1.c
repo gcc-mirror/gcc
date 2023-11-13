@@ -1,8 +1,9 @@
 /* REPRODUCED:RUN:SIGNAL MACHINE:i386 OPTIONS:-O */
 void abort(void);
 void exit(int);
-main()
+int
+main(void)
 {
-if(strcmp("X","")<0)abort();
+if(__builtin_strcmp("X","")<0)abort();
 exit(0);
 }

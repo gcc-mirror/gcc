@@ -34,7 +34,8 @@ f(bu i)
   return o;
 }
 
-main()
+int
+main(void)
 {
   bu a;
   bu r;

@@ -17,7 +17,8 @@ f (long n)
   return a[n - 100000];
 }
 
-main ()
+int
+main (void)
 {
   if (f (100030L) != 30)
     abort();

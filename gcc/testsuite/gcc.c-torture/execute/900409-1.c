@@ -8,7 +8,8 @@ long f4(long a){return a&~0x000000ffL;}
 long f5(long a){return a&0x0000ffffL;}
 long f6(long a){return a&~0x0000ffffL;}
 
-main ()
+int
+main (void)
 {
   long a = 0x89ABCDEF;
 

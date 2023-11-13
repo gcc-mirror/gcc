@@ -8,7 +8,7 @@ sub1 (int i, int j)
 
   if (j == 2)
     {
-      memcpy (x, y, 10 * sizeof (int));
+      __builtin_memcpy (x, y, 10 * sizeof (int));
       return sizeof (c);
     }
   else

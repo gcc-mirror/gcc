@@ -37,7 +37,8 @@ foo(struct A *locp, int i, int str)
   return T355;
 }
 
-main ()
+int
+main (void)
 {
   struct A loc;
   int str;

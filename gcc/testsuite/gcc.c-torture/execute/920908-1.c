@@ -20,7 +20,8 @@ va_end(ap);
 return X;
 }
 
-main()
+int
+main(void)
 {
 T X,Y;
 int i;

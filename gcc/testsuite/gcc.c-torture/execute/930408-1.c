@@ -8,12 +8,14 @@ struct {
   E eval;
 } s;
 
-p()
+void
+p(void)
 {
   abort();
 }
 
-f()
+void
+f(void)
 {
   switch (s.eval)
     {
@@ -22,7 +24,8 @@ f()
     }
 }
 
-main()
+int
+main(void)
 {
   s.eval = e1;
   f();

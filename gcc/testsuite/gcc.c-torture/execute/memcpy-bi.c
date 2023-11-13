@@ -23,7 +23,8 @@ TN ((n) + 1) \
 TN ((n) + 2) \
 TN ((n) + 3)
 
-main ()
+int
+main (void)
 {
   int i,j;
 

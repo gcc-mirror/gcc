@@ -17,7 +17,8 @@ bar (unsigned k)
   return 2;
 }
 
-main ()
+int
+main (void)
 {
   if (bar (1U) != 1)
     abort ();

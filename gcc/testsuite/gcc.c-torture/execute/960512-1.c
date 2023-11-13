@@ -12,7 +12,8 @@ double f ()
   return c;
 }
 
-main ()
+int
+main (void)
 {
   __complex__ double c;
 

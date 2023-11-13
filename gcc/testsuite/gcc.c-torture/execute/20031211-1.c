@@ -5,7 +5,8 @@ struct a { unsigned int bitfield : 1; };
 
 unsigned int x;
 
-main()
+int
+main(void)
 {
   struct a a = {0};
   x = 0xbeef;

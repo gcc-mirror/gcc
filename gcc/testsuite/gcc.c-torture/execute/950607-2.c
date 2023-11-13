@@ -22,7 +22,8 @@ f (Point basePt, Point pt1, Point pt2)
     return 2;
 }
 
-main ()
+int
+main (void)
 {
   Point b, p1, p2;
   int answer;

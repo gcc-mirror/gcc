@@ -10,7 +10,8 @@ struct s s = {
   c: {1, 2, 3}
 };
 
-main()
+int
+main(void)
 {
   if (s.c[0] != 1)
     abort ();

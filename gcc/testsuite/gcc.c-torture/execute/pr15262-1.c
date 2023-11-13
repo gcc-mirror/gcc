@@ -17,7 +17,8 @@ struct A
 
 int foo () { return 3; }
 
-main ()
+int
+main (void)
 {
   struct A loc, *locp;
   float f, g, *p;
@@ -32,7 +33,7 @@ main ()
     g = 1;
 
   /* Store into *locp and cache its current value.  */
-  locp = malloc (sizeof (*locp));
+  locp = __builtin_malloc (sizeof (*locp));
   locp->i = 10;
   T355 = locp->i;
 

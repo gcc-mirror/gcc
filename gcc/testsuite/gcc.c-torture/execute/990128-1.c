@@ -11,7 +11,8 @@ int count = 0;
 void sub( struct s *p, struct s **pp );
 int look( struct s *p, struct s **pp );
 
-main()
+int
+main(void)
 {
     struct s *pp;
     struct s *next;

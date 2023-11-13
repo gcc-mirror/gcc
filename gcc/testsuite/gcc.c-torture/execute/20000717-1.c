@@ -16,7 +16,8 @@ foo (trio t, int i)
   return bar (i, t);
 }
 
-main ()
+int
+main (void)
 {
   trio t = { 1, 2, 3 };
 

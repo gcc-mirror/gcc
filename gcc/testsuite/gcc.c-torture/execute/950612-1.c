@@ -25,7 +25,8 @@ f4 (unsigned long long diff)
   return ((unsigned long long) ((signed long long) diff < 0 ? -diff : diff));
 }
 
-main ()
+int
+main (void)
 {
   int i;
   for (i = 0; i <= 10; i++)

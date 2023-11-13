@@ -20,7 +20,8 @@ f (d, i)
   return d;
 }
 
-main ()
+int
+main (void)
 {
   if (! (int) (f (2.0L, 1)))
     abort ();

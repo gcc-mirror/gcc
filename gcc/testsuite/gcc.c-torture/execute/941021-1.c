@@ -3,6 +3,7 @@ void exit (int);
 
 double glob_dbl;
 
+void
 f (pdbl, value)
      double *pdbl;
      double value;
@@ -13,7 +14,8 @@ f (pdbl, value)
   *pdbl = value;
 }
 
-main ()
+int
+main (void)
 {
   f ((void *) 0, 55.1);
 

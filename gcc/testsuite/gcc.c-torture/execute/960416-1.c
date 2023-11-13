@@ -51,7 +51,8 @@ f (t afh, t bfh) \
 df(f_le, t_le)
 df(f_be, t_be)
 
-main ()
+int
+main (void)
 {
   t_be x;
   x.s.h = 0x10000000U;

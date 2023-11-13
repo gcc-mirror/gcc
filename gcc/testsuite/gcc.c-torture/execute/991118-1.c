@@ -58,7 +58,8 @@ struct tmp2 tmp2 = {0x123456789ABCDLL, 0x123};
 struct tmp3 tmp3 = {0x123, 0x1FFFF00000000LL};
 struct tmp4 tmp4 = {0x1FFFF00000000LL, 0x123};
 
-main()
+int
+main(void)
 {
 
   if (sizeof (long long) != 8)

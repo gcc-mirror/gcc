@@ -10,7 +10,7 @@ void exit (int);
 #endif
 
 __inline__ static int
-dummy (x)
+dummy (int x)
 {
   int y;
   y = (long) (x * 4711.3);
@@ -76,7 +76,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

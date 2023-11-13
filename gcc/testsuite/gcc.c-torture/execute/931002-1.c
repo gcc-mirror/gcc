@@ -2,12 +2,14 @@
 
 void exit (int);
 
+void
 f (void (*func) ())
 {
   func ();
 }
 
-main ()
+int
+main (void)
 {
   void t0 ()
     {

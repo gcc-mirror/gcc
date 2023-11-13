@@ -25,7 +25,8 @@ foo2 (value)
     return 2;
 }
 
-main ()
+int
+main (void)
 {
   unsigned long long value = 0xc000000000000001LL;
   int x, y;

@@ -2,7 +2,8 @@
 
 void exit (int);
 
-f()
+void
+f(void)
 {
   int x = 1;
 #if defined(STACK_SIZE)
@@ -21,7 +22,8 @@ f()
   exit(0);
 }
 
-main()
+int
+main(void)
 {
   f();
 }

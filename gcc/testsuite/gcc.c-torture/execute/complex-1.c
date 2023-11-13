@@ -30,7 +30,8 @@ xcexp (__complex__ double x)
   return x;
 }
 
-main ()
+int
+main (void)
 {
   __complex__ double x;
 

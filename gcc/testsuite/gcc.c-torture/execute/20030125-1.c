@@ -19,7 +19,8 @@ q1(float a)
 {
 	return floor(a);
 }
-main()
+int
+main(void)
 {
 #ifdef __OPTIMIZE__
 	if (t(0)!=0)

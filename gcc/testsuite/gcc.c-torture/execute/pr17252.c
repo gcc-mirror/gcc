@@ -5,7 +5,8 @@ void abort (void);
 
 char *a;
 
-main ()
+int
+main (void)
 {
   /* Make 'a' point to itself.  */
   a = (char *)&a;

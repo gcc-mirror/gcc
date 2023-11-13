@@ -9,6 +9,7 @@ struct tiny
   char f;
 };
 
+void
 f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
 {
   if (x.c != 10)
@@ -42,7 +43,8 @@ f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
     abort ();
 }
 
-main ()
+void
+main (int)
 {
   struct tiny x[3];
   x[0].c = 10;

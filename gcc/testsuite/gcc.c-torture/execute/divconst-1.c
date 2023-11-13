@@ -6,6 +6,7 @@ typedef struct
   unsigned a, b, c, d;
 } t1;
 
+void
 f (t1 *ps)
 {
     ps->a = 10000;
@@ -14,7 +15,8 @@ f (t1 *ps)
     ps->d = ps->c / 3;
 }
 
-main ()
+int
+main (void)
 {
   t1 s;
   f (&s);

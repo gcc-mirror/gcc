@@ -10,7 +10,8 @@ test (arg)
   return -1;
 }
 
-main ()
+int
+main (void)
 {
   if (test (0) != 0)
     abort ();

@@ -13,7 +13,8 @@ material_type foo(double x)
      return m;
 }
 
-main()
+int
+main(void)
 {
   int i;
   material_type x;

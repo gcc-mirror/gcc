@@ -23,7 +23,8 @@ b (unsigned short data)
   if (data & 0x8000) a1();
 }
 
-main ()
+int
+main (void)
 {
   count = 0;
   b (0);

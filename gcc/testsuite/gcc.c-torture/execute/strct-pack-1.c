@@ -15,7 +15,8 @@ check (TRIAL *t)
   return 0;
 }
 
-main ()
+int
+main (void)
 {
   TRIAL trial;
 

@@ -269,8 +269,9 @@ RVALUE_CONV,
   LAST_CPLUS_TREE_CODE
 };
 
-blah(){}
+void blah(void){}
 
+void
 convert_like_real (convs)
      tree convs;
 {
@@ -284,7 +285,8 @@ convert_like_real (convs)
    abort ();
 }
 
-main()
+int
+main(void)
 {
   tree convs = (void *)malloc (sizeof (struct tree_common));;
 

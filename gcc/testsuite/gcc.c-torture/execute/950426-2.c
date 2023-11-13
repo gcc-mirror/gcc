@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main()
+int
+main(void)
 {
   long int i = -2147483647L - 1L; /* 0x80000000 */
   char ca = 1;

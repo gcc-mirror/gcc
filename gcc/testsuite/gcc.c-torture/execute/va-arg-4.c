@@ -27,7 +27,8 @@ f (big x, char *s, ...)
   va_end (ap);
 }
 
-main ()
+int
+main (void)
 {
   static big x = { "abc" };
 

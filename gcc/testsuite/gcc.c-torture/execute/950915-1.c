@@ -10,7 +10,8 @@ f ()
   return ((long long) a * (long long) b) >> 16;
 }
 
-main ()
+int
+main (void)
 {
   if (f () < 0)
     abort ();

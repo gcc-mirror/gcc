@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main()
+int
+main(void)
 {
   double db1 = 1.7976931348623157e+308;
   long double ldb1 = db1;

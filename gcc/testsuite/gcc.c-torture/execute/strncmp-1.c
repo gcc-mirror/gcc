@@ -45,7 +45,8 @@ test (const unsigned char *s1, const unsigned char *s2, size_t len, int expected
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   size_t off1, off2, len, i;
   unsigned char *buf1, *buf2;

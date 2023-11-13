@@ -32,7 +32,8 @@ static union {
   long double align_fp;
 } u1, u2;
 
-main ()
+int
+main (void)
 {
   int off1, off2, len, i;
   char *p, *q, c;

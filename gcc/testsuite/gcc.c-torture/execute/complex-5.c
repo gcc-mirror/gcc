@@ -12,7 +12,8 @@ float __complex__  y = 7.0 + 5.0 * (1.0fi);
 float __complex__  w = 8.0 + 19.0 * (1.0fi);
 float __complex__  z;
 
-main ()
+int
+main (void)
 {
 
   z = p (x,y);

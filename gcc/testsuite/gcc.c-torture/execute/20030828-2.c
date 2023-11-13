@@ -6,7 +6,8 @@ struct rtx_def
   int code;
 };
 
-main()
+int
+main(void)
 {
   int tmp[2];
   struct rtx_def *r, s;

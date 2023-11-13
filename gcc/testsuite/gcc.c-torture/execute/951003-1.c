@@ -1,10 +1,11 @@
 void abort (void);
 void exit (int);
 
-int f (i) { return 12; }
+int f (int i) { return 12; }
 int g () { return 0; }
 
-main ()
+int
+main (void)
 {
   int i, s;
 

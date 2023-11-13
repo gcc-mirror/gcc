@@ -15,10 +15,11 @@ f ()
   return (v == 0 ? g () : "abc");
 }
 
-main ()
+int
+main (void)
 {
   v = 1;
-  if (!strcmp (f (), "abc"))
+  if (!__builtin_strcmp (f (), "abc"))
     exit (0);
   abort();
 }

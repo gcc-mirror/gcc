@@ -21,7 +21,8 @@ f (long i)
   return g2 (i);
 }
 
-main ()
+int
+main (void)
 {
   if (f (123456789L) != 123456789L)
     abort ();

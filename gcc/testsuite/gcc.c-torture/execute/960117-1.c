@@ -41,7 +41,8 @@ get_tok ()
   return get_id (c);
 }
 
-main ()
+int
+main (void)
 {
   get_tok ();
   exit (0);

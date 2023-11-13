@@ -4,7 +4,8 @@
 void abort (void);
 void exit (int);
 
-main()
+int
+main(void)
 {
   volatile double a;
   double c;

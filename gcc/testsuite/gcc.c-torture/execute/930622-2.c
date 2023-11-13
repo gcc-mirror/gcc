@@ -13,7 +13,8 @@ ld_to_ll (long double n)
   return n;
 }
 
-main ()
+int
+main (void)
 {
   long long n;
 

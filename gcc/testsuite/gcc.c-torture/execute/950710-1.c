@@ -50,7 +50,8 @@ f ()
     }
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

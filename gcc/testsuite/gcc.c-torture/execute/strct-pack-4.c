@@ -19,7 +19,8 @@ my_set_b (void)
   return 0x1234;
 }
 
-main ()
+int
+main (void)
 {
   three_char_t three_char;
 

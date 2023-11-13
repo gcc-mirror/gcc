@@ -29,7 +29,8 @@ sub2 (struct tmp2 tmp2)
   return tmp2;
 }
 
-main()
+int
+main(void)
 {
   struct tmp tmp = {0x123, 0xFFF000FFF000FLL};
   struct tmp2 tmp2 = {0xFFF000FFF000FLL, 0x123};

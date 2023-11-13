@@ -9,7 +9,8 @@ acc_a (long i)
   return a[i-2000000000L];
 }
 
-main ()
+int
+main (void)
 {
   if (acc_a (2000000000L) != 'd')
     abort ();

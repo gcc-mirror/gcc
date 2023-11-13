@@ -6,7 +6,8 @@ struct x {
   unsigned x2:2;
   unsigned x3:3;
 };
-   
+
+void
 foobar (int x, int y, int z)
 {
   struct x a = {x, y, z};
@@ -19,7 +20,8 @@ foobar (int x, int y, int z)
   exit (0);
 }
 
-main()
+int
+main(void)
 {
   foobar (1, 2, 3);
 }

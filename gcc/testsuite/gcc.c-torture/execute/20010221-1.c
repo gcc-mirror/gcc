@@ -3,7 +3,8 @@ void exit (int);
 
 int n = 2;
 
-main ()
+int
+main (void)
 {
   int i, x = 45;
 

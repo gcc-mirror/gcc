@@ -16,7 +16,7 @@ typedef unsigned long ull;
 
 void checkit(int);
 
-main () {
+int main (void) {
     const ull a = 0x1400000000ULL;
     const ull b = 0x80000000ULL;
     const ull c = a/b;

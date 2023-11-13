@@ -7,7 +7,8 @@ typedef struct
   short *ap[2]  __attribute__ ((aligned (2),packed));
 } A;
 
-main ()
+int
+main (void)
 {
   short i, j = 1;
   A a, *ap = &a;

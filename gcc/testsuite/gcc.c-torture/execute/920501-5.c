@@ -3,6 +3,7 @@
 void abort (void);
 void exit (int);
 
+int
 x (int i)
 {
   void *j[] = {&&x, &&y, &&z};
@@ -12,7 +13,8 @@ x (int i)
  z:return 5;
 
 }
-main ()
+int
+main (void)
 {
   if (x (0) != 2 || x (1) != 3 || x (2) != 5)
     abort();

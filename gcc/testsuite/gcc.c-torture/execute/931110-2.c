@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main ()
+int
+main (void)
 {
   static int a[] = {3, 4};
   register int *b;

@@ -13,7 +13,8 @@ special_format (fmt)
           || strchr (fmt, 'n') != 0);
 }
 
-main()
+int
+main(void)
 {
   if (special_format ("ee"))
     abort ();

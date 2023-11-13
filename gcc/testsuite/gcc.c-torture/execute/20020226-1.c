@@ -29,7 +29,8 @@ unsigned long long ull = LL_VALUE;
 int shift1 = SHIFT1;
 int shift2 = SHIFT2;
 
-main ()
+int
+main (void)
 {
   if (ROR (uc, shift1) != ROR (CHAR_VALUE, SHIFT1))
     abort ();

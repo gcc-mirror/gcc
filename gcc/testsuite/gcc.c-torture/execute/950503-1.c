@@ -1,7 +1,8 @@
 void abort (void);
 void exit (int);
 
-main ()
+int
+main (void)
 {
   int tmp;
   unsigned long long utmp1, utmp2;

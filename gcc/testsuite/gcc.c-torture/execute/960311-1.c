@@ -23,7 +23,8 @@ b (unsigned char data)
   if (data & 0x80) a1();
 }
 
-main ()
+int
+main (void)
 {
   count = 0;
   b (0);

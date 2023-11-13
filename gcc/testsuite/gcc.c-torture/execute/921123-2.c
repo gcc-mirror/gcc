@@ -15,7 +15,8 @@ void f (four_quarters j)
   a = j.b3;
 }
 
-main ()
+int
+main (void)
 {
   four_quarters x;
   x.b0 = x.b1 = x.b2 = 0;

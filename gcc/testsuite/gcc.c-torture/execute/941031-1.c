@@ -22,7 +22,8 @@ f (mpt us, mpt vs)
   return avs;
 }
 
-main ()
+int
+main (void)
 {
   if (f ((mpt) 3, (mpt) 17) != 17)
     abort ();

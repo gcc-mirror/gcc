@@ -15,7 +15,8 @@ uint64 getmask(void)
       return 0;
 }
 
-main()
+int
+main(void)
 {
     uint64 f = getmask();
     if (sizeof (long long) == 8

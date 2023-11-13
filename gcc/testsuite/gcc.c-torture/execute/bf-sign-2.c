@@ -29,7 +29,8 @@ struct X {
 
 struct X x;
 
-main ()
+int
+main (void)
 {
   if ((x.u3 - 2) >= 0)		/* promoted value should be signed */
     abort ();

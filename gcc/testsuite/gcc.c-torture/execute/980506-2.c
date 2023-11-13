@@ -16,7 +16,8 @@ f()
   return sp->i+1;
 }
 
-main()
+int
+main(void)
 {
   if (f () != 1)
     abort ();

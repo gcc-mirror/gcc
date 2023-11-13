@@ -9,7 +9,7 @@ int glob_int_arr[100];
 int *glob_ptr_int = glob_int_arr;
 int glob_int = 4;
 
-static stat_int_arr[100];
+static int stat_int_arr[100];
 static int *stat_ptr_int = stat_int_arr;
 static int stat_int;
 

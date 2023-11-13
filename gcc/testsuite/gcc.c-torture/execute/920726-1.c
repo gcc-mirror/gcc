@@ -22,7 +22,7 @@ int first(char *buf, char *fmt, ...)
       {
 	number = va_arg(args, int);
 	sprintf(bp, "%d", number);
-	bp += strlen(bp);
+	bp += __builtin_strlen(bp);
       }
     else
       *bp++ = fmt[pos];
@@ -45,7 +45,7 @@ struct spurious second(char *buf,char *fmt, ...)
       {
 	number = va_arg(args, int);
 	sprintf(bp, "%d", number);
-	bp += strlen(bp);
+	bp += __builtin_strlen(bp);
       }
     else
       *bp++ = fmt[pos];
@@ -55,12 +55,13 @@ struct spurious second(char *buf,char *fmt, ...)
   return dummy;
 }
 
-main()
+int
+main(void)
 {
   char buf1[100], buf2[100];
   first(buf1, "i i ", 5, 20);
   second(buf2, "i i ", 5, 20);
-  if (strcmp ("5 20 ", buf1) || strcmp ("5 20 ", buf2))
+  if (__builtin_strcmp ("5 20 ", buf1) || __builtin_strcmp ("5 20 ", buf2))
     abort();
   exit(0);
 }

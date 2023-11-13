@@ -41,11 +41,11 @@ int string_to_ip(const char *s)
 int main(void)
 {
   int t = string_to_ip (temp);
-  printf ("%x\n", t);
-  printf ("%x\n", result);
+  __builtin_printf ("%x\n", t);
+  __builtin_printf ("%x\n", result);
   if (t != result)
     __builtin_abort ();
-  printf ("WORKS.\n");
+  __builtin_printf ("WORKS.\n");
   return 0;
 }
 

@@ -7,7 +7,8 @@ int b = -1;
 int c = 1;
 int d = 0;
 
-main ()
+int
+main (void)
 {
   double e;
   double f;

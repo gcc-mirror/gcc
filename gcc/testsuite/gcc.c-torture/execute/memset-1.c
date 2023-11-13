@@ -32,7 +32,8 @@ static union {
 
 char A = 'A';
 
-main ()
+int
+main (void)
 {
   int off, len, i;
   char *p, *q;

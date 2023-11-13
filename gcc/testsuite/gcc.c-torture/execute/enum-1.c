@@ -37,7 +37,8 @@ atom ()
     return 0;
 }
 
-main ()
+int
+main (void)
 {
   tok = 0;
   if (atom () != 1)

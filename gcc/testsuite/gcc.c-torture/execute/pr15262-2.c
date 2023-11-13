@@ -19,6 +19,7 @@ struct B
 
 float X;
 
+int
 foo (struct B b, struct A *q, float *h)
 {
   X += *h;
@@ -27,7 +28,8 @@ foo (struct B b, struct A *q, float *h)
   return *(b.p);
 }
 
-main()
+int
+main(void)
 {
   struct A a;
   struct B b;

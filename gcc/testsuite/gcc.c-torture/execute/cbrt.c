@@ -83,7 +83,8 @@ cbrtl (double x)
   return lt;
 }
 
-main ()
+int
+main (void)
 {
   if ((int) (cbrtl (27.0) + 0.5) != 3)
     abort ();
@@ -91,5 +92,5 @@ main ()
   exit (0);
 }
 #else
-main () { exit (0); }
+int main (void) { exit (0); }
 #endif

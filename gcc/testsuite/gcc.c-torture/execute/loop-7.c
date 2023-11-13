@@ -15,7 +15,8 @@ void foo (unsigned int n)
     abort ();
 }
 
-main()
+int
+main(void)
 {
   foo (64);
   exit (0);

@@ -26,7 +26,8 @@ void x ()
 
 unsigned int n = 30;
 
-main ()
+int
+main (void)
 {
   x ();
   if (p != 1 || k != 1)

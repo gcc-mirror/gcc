@@ -3,7 +3,8 @@ void exit (int);
 
 int f (char *p) { }
 
-main ()
+int
+main (void)
 {
   char c;
   char c2;

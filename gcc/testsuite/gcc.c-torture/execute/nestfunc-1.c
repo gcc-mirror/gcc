@@ -12,6 +12,7 @@ g (int a, int b, int (*gi) (int, int))
     return b;
 }
 
+void
 f ()
 {
   int i, j;
@@ -24,7 +25,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

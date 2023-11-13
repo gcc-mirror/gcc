@@ -4,7 +4,8 @@
    This ended up causing CCP to think that 'k' was the constant '1'.  */
 void abort (void);
 
-main()
+int
+main(void)
 {
   int i, j, k;
 

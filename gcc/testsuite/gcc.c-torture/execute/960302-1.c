@@ -3,7 +3,8 @@ void exit (int);
 
 long a = 1;
 
-foo ()
+int
+foo (void)
 {
   switch (a % 2 % 2 % 2 % 2 % 2 % 2 % 2 % 2)
     {
@@ -16,7 +17,8 @@ foo ()
     }
 }
 
-main ()
+int
+main (void)
 {
   if (foo () != 1)
     abort ();

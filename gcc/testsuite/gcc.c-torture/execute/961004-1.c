@@ -3,7 +3,8 @@ void exit (int);
 
 int k = 0;
 
-main()
+int
+main(void)
 {
   int i;
   int j;

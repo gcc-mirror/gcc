@@ -18,7 +18,8 @@ struct S
 
 struct S x = {1, 1, 1};
 
-main ()
+int
+main (void)
 {
   x = (struct S) {b:0, a:0, c:({ struct S o = x; o.a == 1 ? 10 : 20;})};
   if (x.c != 10)

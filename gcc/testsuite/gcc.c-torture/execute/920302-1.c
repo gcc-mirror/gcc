@@ -5,6 +5,7 @@ void exit (int);
 
 short optab[5];
 char buf[10];
+void
 execute (ip)
      register short *ip;
 {
@@ -29,7 +30,8 @@ z:  *bp++='z';
 
 short p[5];
 
-main ()
+int
+main (void)
 {
   execute ((short *) 0);
   p[0] = optab[1];
@@ -37,7 +39,7 @@ main ()
   p[2] = optab[1];
   p[3] = optab[2];
   execute (&p);
-  if (strcmp (buf, "xyxyz"))
+  if (__builtin_strcmp (buf, "xyxyz"))
     abort ();
   exit (0);
 }

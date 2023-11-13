@@ -79,6 +79,7 @@ int plist (p0, p1, tab)
   return xp - tab;
 }
 
+int
 main (argc, argv)
      int argc;
      char *argv[];

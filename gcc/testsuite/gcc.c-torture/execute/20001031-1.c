@@ -27,7 +27,8 @@ long long t4 (void)
   return i;
 }
 
-main ()
+int
+main (void)
 {
   if (t2 () != 4096)
     abort ();

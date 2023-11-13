@@ -31,7 +31,8 @@ static union {
   long double align_fp;
 } u;
 
-main ()
+int
+main (void)
 {
   size_t off, len, len2, i;
   char *p;

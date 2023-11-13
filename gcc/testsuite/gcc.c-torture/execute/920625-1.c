@@ -33,7 +33,8 @@ static int va2(int nargs,...)
   va_end(args);
 }
 
-main()
+int
+main(void)
 {
 va1(4,pts[0],pts[1],pts[2],pts[3]);
 va2(4,ipts[0],ipts[1],ipts[2],ipts[3]);

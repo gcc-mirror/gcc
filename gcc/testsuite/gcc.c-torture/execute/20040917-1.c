@@ -22,7 +22,8 @@ not_inlinable ()
   inlinable();
 }
 
-main ()
+int
+main (void)
 {
   test_var = 10;
   /* Variable test_var should be considered call-clobbered by the call

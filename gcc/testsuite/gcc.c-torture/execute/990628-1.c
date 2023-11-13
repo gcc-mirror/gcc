@@ -23,7 +23,7 @@ fetch()
 {
     static int fetch_count;
 
-    memset(&data_tmp, 0x55, sizeof(data_tmp));
+    __builtin_memset(&data_tmp, 0x55, sizeof(data_tmp));
     sqlca.sqlcode = (++fetch_count > 1 ? 100 : 0);
 }
 
@@ -34,7 +34,7 @@ load_data() {
     int num = num_records();
 
     data_ptr = malloc(num * sizeof(struct data_record));
-    memset(data_ptr, 0xaa, num * sizeof(struct data_record));
+    __builtin_memset(data_ptr, 0xaa, num * sizeof(struct data_record));
 
     fetch();
     p = data_ptr;
@@ -44,8 +44,8 @@ load_data() {
     }
 }
 
-
-main()
+int
+main(void)
 {
     load_data();
     if (sizeof (int) == 2 && data_ptr[0].dummy != 0x5555)

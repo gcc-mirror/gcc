@@ -20,7 +20,8 @@ blah:
     goto foo;
 }
 
-main()
+int
+main(void)
 {
   struct decision *p = 0;
   clear_modes (p);

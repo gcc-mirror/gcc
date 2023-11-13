@@ -19,7 +19,8 @@ g (void)
   return 0x1234;
 }
 
-main ()
+int
+main (void)
 {
   three_byte_t three_byte;
 

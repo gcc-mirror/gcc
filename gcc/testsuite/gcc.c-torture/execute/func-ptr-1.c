@@ -4,7 +4,8 @@ void exit (int);
 static double f (float a);
 static double (*fp) (float a);
 
-main ()
+int
+main (void)
 {
   fp = f;
   if (fp ((float) 1) != 1.0)

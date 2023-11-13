@@ -7,7 +7,8 @@ f (int a)
   return ((a >= 0 && a <= 10) && ! (a >= 0));
 }
 
-main ()
+int
+main (void)
 {
   if (f (0))
     abort ();

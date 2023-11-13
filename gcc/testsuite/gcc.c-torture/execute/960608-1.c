@@ -10,6 +10,7 @@ typedef struct
   unsigned char e  : 1;
 } a_struct;
 
+int
 foo (flags)
      a_struct *flags;
 {
@@ -20,7 +21,8 @@ foo (flags)
 	  || flags->b != 3);
 }
 
-main ()
+int
+main (void)
 {
   a_struct flags;
 

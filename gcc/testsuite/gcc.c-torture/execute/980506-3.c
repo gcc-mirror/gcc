@@ -9,9 +9,9 @@ build_lookup (pattern)
 {
   int m;
 
-  m = strlen (pattern) - 1;
+  m = __builtin_strlen (pattern) - 1;
   
-  memset (lookup_table, ++m, 257);
+  __builtin_memset (lookup_table, ++m, 257);
   return m;
 }
 

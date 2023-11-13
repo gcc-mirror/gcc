@@ -7,6 +7,7 @@ struct foo
   unsigned long whole:32 __attribute__ ((packed));
 };
 
+void
 f (struct foo *q)
 {
   if (q->half != 0x1234)
@@ -15,7 +16,8 @@ f (struct foo *q)
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   struct foo bar;
 

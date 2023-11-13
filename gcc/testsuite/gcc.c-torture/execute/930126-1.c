@@ -12,7 +12,8 @@ f(struct s x)
   return x;
 }
 
-main()
+int
+main(void)
 {
   static struct s i;
   i.a = 12;
