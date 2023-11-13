@@ -415,6 +415,7 @@ public:
 
   bool repeating_sequence_use_merge_profitable_p ();
   bool combine_sequence_use_slideup_profitable_p ();
+  bool combine_sequence_use_merge_profitable_p ();
   rtx get_merge_scalar_mask (unsigned int) const;
 
   bool single_step_npatterns_p () const;
@@ -526,6 +527,34 @@ rvv_builder::combine_sequence_use_slideup_profitable_p ()
        2. Both of above are equal to nelts / 2.
      Otherwise, it is not profitable.  */
   return leading_ndups == trailing_ndups && trailing_ndups == nelts / 2;
+}
+
+/* Return true if it's worthwhile to use merge combine vector with a scalar.  */
+bool
+rvv_builder::combine_sequence_use_merge_profitable_p ()
+{
+  int nelts = full_nelts ().to_constant ();
+  int leading_ndups = this->count_dups (0, nelts - 1, 1);
+  int trailing_ndups = this->count_dups (nelts - 1, -1, -1);
+  int nregs = riscv_get_v_regno_alignment (int_mode ());
+
+  if (leading_ndups + trailing_ndups != nelts)
+    return false;
+
+  /* Leading elements num > 255 which exceeds the maximum value
+     of QImode, we will need to use HImode.  */
+  machine_mode mode;
+  if (leading_ndups > 255 || nregs > 2)
+    {
+      if (!get_vector_mode (HImode, nelts).exists (&mode))
+	return false;
+      /* We will need one more AVL/VL toggling vsetvl instruction.  */
+      return leading_ndups > 4 && trailing_ndups > 4;
+    }
+
+  /* { a, a, a, b, b, ... , b } and { b, b, b, a, a, ... , a }
+     consume 3 slide instructions.  */
+  return leading_ndups > 3 && trailing_ndups > 3;
 }
 
 /* Merge the repeating sequence into a single element and return the RTX.  */
@@ -2166,6 +2195,49 @@ expand_vector_init_slideup_combine_sequence (rtx target,
   emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
 }
 
+/* Use merge approach to merge a scalar into a vector.
+     v = {a, a, a, a, a, a, b, b}
+
+     v1 = {a, a, a, a, a, a, a, a}
+     scalar = b
+     mask = {0, 0, 0, 0, 0, 0, 1, 1}
+*/
+static void
+expand_vector_init_merge_combine_sequence (rtx target,
+					   const rvv_builder &builder)
+{
+  machine_mode mode = GET_MODE (target);
+  machine_mode imode = builder.int_mode ();
+  machine_mode mmode = builder.mask_mode ();
+  int nelts = builder.full_nelts ().to_constant ();
+  int leading_ndups = builder.count_dups (0, nelts - 1, 1);
+  if ((leading_ndups > 255 && GET_MODE_INNER (imode) == QImode)
+      || riscv_get_v_regno_alignment (imode) > 1)
+    imode = get_vector_mode (HImode, nelts).require ();
+
+  /* Generate vid = { 0, 1, 2, ..., n }.  */
+  rtx vid = gen_reg_rtx (imode);
+  expand_vec_series (vid, const0_rtx, const1_rtx);
+
+  /* Generate mask.  */
+  rtx mask = gen_reg_rtx (mmode);
+  insn_code icode = code_for_pred_cmp_scalar (imode);
+  rtx index = gen_int_mode (leading_ndups - 1, builder.inner_int_mode ());
+  rtx dup_rtx = gen_rtx_VEC_DUPLICATE (imode, index);
+  /* vmsgtu.vi/vmsgtu.vx.  */
+  rtx cmp = gen_rtx_fmt_ee (GTU, mmode, vid, dup_rtx);
+  rtx sel = builder.elt (nelts - 1);
+  rtx mask_ops[] = {mask, cmp, vid, index};
+  emit_vlmax_insn (icode, COMPARE_OP, mask_ops);
+
+  /* Duplicate the first elements.  */
+  rtx dup = expand_vector_broadcast (mode, builder.elt (0));
+  /* Merge scalar into vector according to mask.  */
+  rtx merge_ops[] = {target, dup, sel, mask};
+  icode = code_for_pred_merge_scalar (mode);
+  emit_vlmax_insn (icode, MERGE_OP, merge_ops);
+}
+
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
 
 void
@@ -2215,7 +2287,22 @@ expand_vec_init (rtx target, rtx vals)
 	  return;
 	}
 
-      /* TODO: We will support more Initialization of vector in the future.  */
+      /* Case 4: Optimize combine sequence.
+	 E.g. v = {a, a, a, a, a, a, a, a, a, a, a, b, b, b, b, b}.
+
+	 Generate vector:
+	   v = {a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a}.
+
+	 Generate mask:
+	   mask = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1}.
+
+	 Merge b into v by mask:
+	   v = {a, a, a, a, a, a, a, a, a, a, a, b, b, b, b, b}.  */
+      if (v.combine_sequence_use_merge_profitable_p ())
+	{
+	  expand_vector_init_merge_combine_sequence (target, v);
+	  return;
+	}
     }
 
   /* Handle common situation by vslide1down. This function can handle any
