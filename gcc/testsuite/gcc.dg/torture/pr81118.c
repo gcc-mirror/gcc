@@ -8,7 +8,7 @@ int c()
   for (; d; d++)
     if (a[d])
       if (b)
-	return;
+	return 0;
       else if (d >= e)
 	return 0;
 }

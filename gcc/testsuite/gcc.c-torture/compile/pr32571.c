@@ -12,6 +12,9 @@ struct mthca_fmr *to_mfmr(struct ib_fmr *ibmr)
  const struct ib_fmr *__mptr = (ibmr);
  return (struct mthca_fmr *)( (char *)__mptr );
 }
+int mthca_is_memfree(void);
+void mthca_arbel_fmr_unmap (struct mthca_fmr *);
+void mthca_tavor_fmr_unmap (struct mthca_fmr *);
 void mthca_unmap_fmr(struct list_head *fmr_list)
 {
  struct ib_fmr *fmr;

@@ -3,6 +3,9 @@
 
 /* Note: Threader causes the infinite loop in val & 1 sooner.  */
 
+unsigned long powi_lookup_cost (unsigned long, unsigned char *);
+
+void
 powi_cost (long n)
 {
   unsigned char cache[256];

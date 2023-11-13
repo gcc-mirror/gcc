@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-w" } */
 
+void f (long);
+
 void foo (void * DAG_temp117584)
 {
   char  uA;

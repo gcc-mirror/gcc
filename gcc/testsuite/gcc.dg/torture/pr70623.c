@@ -25,7 +25,7 @@ u4:
 	  }
       }
       while (wk < 3) {
-	  av = **ptr_10;
+	  av = (int *) **ptr_10;
 	  ++wk;
       }
   }

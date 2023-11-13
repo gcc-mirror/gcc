@@ -31,7 +31,7 @@ int int329 (int * const *const int32p_81, short ** p_82)
     {
       short l_85;
 lbl_89:g_67 ^= l_85;
-       for (l_85 = 0; l_85 >= 0; l_85 = bar)
+       for (l_85 = 0; l_85 >= 0; l_85 = (short) bar)
 	 if (g_31)
 	   goto lbl_89;
        func_90 (1), g_68[0][2][2][0][0].f3, 0;

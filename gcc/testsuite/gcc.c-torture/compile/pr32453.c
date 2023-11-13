@@ -1,3 +1,4 @@
+void __assert_fail (void);
 void ucs2reverse_internal_loop_single (long *irreversible, int foo)
 {
     unsigned char bytebuf[2];

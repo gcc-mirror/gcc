@@ -1,6 +1,7 @@
 /* PR middle-end/39886 */
 
 int foo (int);
+void func (int);
 
 volatile unsigned char g;
 

@@ -10,9 +10,9 @@ int main (  ) {
 L0:
     if ( e )     goto L1;
     b = c & d || a;
-    if ( !c )     printf ( "", ( long long ) main_f );
+    if ( !c )     __builtin_printf ( "", ( long long ) main_f );
     if ( d || !c )     {
-        printf ( "%llu\n", ( long long ) main );
+        __builtin_printf ( "%llu\n", ( long long ) main );
         goto L2;
     }
     unsigned g = b;

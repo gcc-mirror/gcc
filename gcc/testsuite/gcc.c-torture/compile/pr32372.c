@@ -12,6 +12,7 @@ typedef struct ScanTable
   int h263_aic;
 }
 MpegEncContext;
+void
 MPV_encode_init (AVCodecContext *avctx)
 {
   MpegEncContext *s = avctx->priv_data;

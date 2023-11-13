@@ -33,7 +33,7 @@ static unsigned int find_tmpreg(struct texture_stage_op op[8]) {
     return 0;
 }
 
-extern f(const char*);
+extern void f(const char*);
 
 void g() {
     struct texture_stage_op op[8];

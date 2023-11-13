@@ -2,10 +2,11 @@
 enum a { b, c };
 struct d {
   _Bool e;
-  enum a f
+  enum a f;
 };
-g, h;
-i() {
+int g, h;
+void
+i(void) {
   struct d j[h];
   j[0] = (struct d){.f = c};
   for (; g;)

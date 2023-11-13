@@ -7,7 +7,7 @@ int sg;
 void
 z9(void)
 {
-  int pz, oi, vz, yp, zi, hd, pw, gr, w9 = 0, j0 = -1, rb = &w9;
+  int pz, oi, vz, yp, zi, hd, pw, gr, w9 = 0, j0 = -1, rb = (int) &w9;
   int *lr;
   while (w9 < 1) {
       lr++;
@@ -24,7 +24,7 @@ ee:
       **dp = 1;
       while (**dp)
 	if (++oi) {
-	    int mq = dp;
+	    int mq = (int) dp;
 	    j0 = 1;
 	    while (pw < 1) {
 		if (++rb && mq)

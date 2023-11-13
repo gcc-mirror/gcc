@@ -18,10 +18,10 @@ void d() {
       j:
         **l = 0;
       }
-      *i = c;
+      *i = (int32_t *) c;
     }
   }
-  uint16_t i = &e;
+  uint16_t i = (uint16_t) &e;
   b = i / 0;
   goto j;
 }
