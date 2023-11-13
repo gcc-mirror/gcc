@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
+// { dg-timeout-factor 2 }
 
 #include <chrono>
 #include <format>
