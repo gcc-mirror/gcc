@@ -16469,12 +16469,9 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	return CCNOmode;
       else
 	return CCGCmode;
-      /* strcmp pattern do (use flags) and combine may ask us for proper
-	 mode.  */
-    case USE:
-      return CCmode;
     default:
-      gcc_unreachable ();
+      /* CCmode should be used in all other cases.  */
+      return CCmode;
     }
 }
 
