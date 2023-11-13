@@ -77,7 +77,6 @@ GLIBCXX_CHECK_GETTIMEOFDAY
 # For clock_gettime, nanosleep and sched_yield support.
 GLIBCXX_ENABLE_LIBSTDCXX_TIME
 
-
 AM_INIT_AUTOMAKE([1.15.1 no-define foreign no-dist -Wall -Wno-portability])
 
 AH_TEMPLATE(PACKAGE, [Name of package])

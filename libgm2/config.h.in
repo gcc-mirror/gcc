@@ -6,6 +6,9 @@
 /* function brk exists */
 #undef HAVE_BRK
 
+/* Define to 1 if the target assembler supports thread-local storage. */
+#undef HAVE_CC_TLS
+
 /* function cfmakeraw exists */
 #undef HAVE_CFMAKERAW
 
@@ -162,6 +165,9 @@
 /* function signbitl exists */
 #undef HAVE_SIGNBITL
 
+/* Defined if sleep exists. */
+#undef HAVE_SLEEP
+
 /* function stat exists */
 #undef HAVE_STAT
 
@@ -273,6 +279,9 @@
 /* function unlink exists */
 #undef HAVE_UNLINK
 
+/* Defined if usleep exists. */
+#undef HAVE_USLEEP
+
 /* function wait exists */
 #undef HAVE_WAIT
 
@@ -334,6 +343,31 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Defined if no way to sleep is available. */
+#undef _GLIBCXX_NO_SLEEP
+
+/* Defined if clock_gettime syscall has monotonic and realtime clock support.
+   */
+#undef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+
+/* Defined if clock_gettime has monotonic clock support. */
+#undef _GLIBCXX_USE_CLOCK_MONOTONIC
+
+/* Defined if clock_gettime has realtime clock support. */
+#undef _GLIBCXX_USE_CLOCK_REALTIME
+
+/* Defined if gettimeofday is available. */
+#undef _GLIBCXX_USE_GETTIMEOFDAY
+
+/* Defined if nanosleep is available. */
+#undef _GLIBCXX_USE_NANOSLEEP
+
+/* Defined if sched_yield is available. */
+#undef _GLIBCXX_USE_SCHED_YIELD
+
+/* Defined if Sleep exists. */
+#undef _GLIBCXX_USE_WIN32_SLEEP
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX
