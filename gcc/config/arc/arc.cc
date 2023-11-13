@@ -643,6 +643,9 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN arc_expand_builtin
 
+#undef  TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN arc_fold_builtin
+
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL arc_builtin_decl
 
@@ -7046,6 +7049,46 @@ arc_expand_builtin (tree exp,
     return target;
   else
     return const0_rtx;
+}
+
+/* Implement TARGET_FOLD_BUILTIN.  */
+
+static tree
+arc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
+                  bool ignore ATTRIBUTE_UNUSED)
+{
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    default:
+      break;
+
+    case ARC_BUILTIN_SWAP:
+      return fold_build2 (LROTATE_EXPR, integer_type_node, arg[0],
+                          build_int_cst (integer_type_node, 16));
+
+    case ARC_BUILTIN_NORM:
+      if (TREE_CODE (arg[0]) == INTEGER_CST
+	  && !TREE_OVERFLOW (arg[0]))
+	{
+	  wide_int arg0 = wi::to_wide (arg[0], 32);
+	  wide_int result = wi::shwi (wi::clrsb (arg0), 32);
+	  return wide_int_to_tree (integer_type_node, result);
+	}
+      break;
+
+    case ARC_BUILTIN_NORMW:
+      if (TREE_CODE (arg[0]) == INTEGER_CST
+	  && !TREE_OVERFLOW (arg[0]))
+	{
+	  wide_int arg0 = wi::to_wide (arg[0], 16);
+	  wide_int result = wi::shwi (wi::clrsb (arg0), 32);
+	  return wide_int_to_tree (integer_type_node, result);
+	}
+      break;
+    }
+  return NULL_TREE;
 }
 
 /* Returns true if the operands[opno] is a valid compile-time constant to be

@@ -116,7 +116,6 @@
   UNSPEC_TLS_OFF
   UNSPEC_ARC_NORM
   UNSPEC_ARC_NORMW
-  UNSPEC_ARC_SWAP
   UNSPEC_ARC_DIVAW
   UNSPEC_ARC_DIRECT
   UNSPEC_ARC_LP
@@ -4392,8 +4391,8 @@ archs4x, archs4xd"
 	  (clrsb:HI (match_operand:HI 1 "general_operand" "cL,Cal"))))]
   "TARGET_NORM"
   "@
-   norm%_ \t%0, %1
-   norm%_ \t%0, %1"
+   norm%_\\t%0,%1
+   norm%_\\t%0,%1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -4489,18 +4488,6 @@ archs4x, archs4xd"
 }
 [(set_attr "type" "unary")
  (set_attr "length" "20")])
-
-(define_insn "swap"
-  [(set (match_operand:SI  0 "dest_reg_operand" "=w,w,w")
-	(unspec:SI [(match_operand:SI 1 "general_operand" "L,Cal,c")]
-			    UNSPEC_ARC_SWAP))]
-  "TARGET_SWAP"
-  "@
-   swap \t%0, %1
-   swap \t%0, %1
-   swap \t%0, %1"
-  [(set_attr "length" "4,8,4")
-   (set_attr "type" "two_cycle_core,two_cycle_core,two_cycle_core")])
 
 (define_insn "divaw"
   [(set (match_operand:SI 0 "dest_reg_operand" "=&w,&w,&w")
