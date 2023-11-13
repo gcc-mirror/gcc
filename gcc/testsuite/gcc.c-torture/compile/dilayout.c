@@ -21,11 +21,13 @@ foo (int *p, struct foo a)
   return a.ab;
 }
 
+void
 str (struct ii ab, struct ii *p)
 {
   *p = ab;
 }
 
+void
 ll (long long ab, long long *p)
 {
   *p = ab;

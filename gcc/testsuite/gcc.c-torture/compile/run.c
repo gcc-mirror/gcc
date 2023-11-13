@@ -1,4 +1,5 @@
-main ()
+int
+main (void)
 {
   typedef short int xtype;
 

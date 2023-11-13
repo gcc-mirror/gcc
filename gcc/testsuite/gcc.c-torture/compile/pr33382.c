@@ -35,12 +35,12 @@ void show_configuration(char *arg)
 				       ? (__builtin_constant_p(arg)
 					  && ((size_t) (const void *) 1) ?
 					  : (__extension__( {
-							   __const * __s2 =
-							   (__const *)
+							   __const int * __s2 =
+							   (__const int *)
 							   (arg);
-							   register
+							   register int
 							   __result =
-							   (((__const
+							   (((__const int
 							      *) (arglist
 								  [i].
 								  lng))[0]

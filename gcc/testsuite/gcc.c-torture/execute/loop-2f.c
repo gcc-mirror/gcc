@@ -26,6 +26,7 @@
 
 #define OFFSET (MAP_LEN/2 - 2 * sizeof (char));
 
+void
 f (int s, char *p)
 {
   int i;
@@ -35,7 +36,8 @@ f (int s, char *p)
     }
 }
 
-main ()
+int
+main (void)
 {
 #ifdef MAP_ANON
   char *p;
@@ -44,7 +46,7 @@ main ()
   dev_zero = open ("/dev/zero", O_RDONLY);
   /* -1 is OK when we have MAP_ANON; else mmap will flag an error.  */
   if (INT_MAX != 0x7fffffffL || sizeof (char *) != sizeof (int))
-    exit (0);
+    return 0;
   p = mmap (MAP_START, MAP_LEN, PROT_READ|PROT_WRITE,
 	    MAP_ANON|MAP_FIXED|MAP_PRIVATE, dev_zero, 0);
   if (p != (char *)-1)
@@ -53,12 +55,12 @@ main ()
       p[39] = 0;
       f (0, p);
       if (p[39] != (char)-2)
-	abort ();
+	__builtin_abort ();
       p[39] = 0;
       f (-1, p);
       if (p[39] != 0)
-	abort ();
+	__builtin_abort ();
     }
 #endif
-  exit (0);
+  return 0;
 }

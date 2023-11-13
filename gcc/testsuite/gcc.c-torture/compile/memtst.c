@@ -6,6 +6,7 @@
 #define SIZE 65536
 #endif
 
+void
 memtst (int *p, int a)
 {
   do
@@ -16,11 +17,12 @@ memtst (int *p, int a)
   while (--a);
 }
 
-main ()
+int
+main (void)
 {
   int a[SIZE];
   int i;
-  bzero (a, SIZE * 4);
+  __builtin_bzero (a, SIZE * 4);
   for (i = 0;  i < 100;  i++)
     {
       memtst (a, SIZE);

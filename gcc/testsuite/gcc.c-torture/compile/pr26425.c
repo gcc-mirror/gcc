@@ -1,6 +1,7 @@
 struct keyring_list {
  struct key *keys[0];
 };
+void key_put(struct key *);
 void keyring_destroy(struct keyring_list *keyring, unsigned short a)
 {
  int loop;

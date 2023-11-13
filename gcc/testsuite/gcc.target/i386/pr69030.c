@@ -13,7 +13,7 @@ static unsigned fn1() {
     j = a;
     a = (a && (g % f && i) % h) | c | ~2;
     if (b)
-      printf("", 1);
+      __builtin_printf("", 1);
   }
   c = i;
   a = j;

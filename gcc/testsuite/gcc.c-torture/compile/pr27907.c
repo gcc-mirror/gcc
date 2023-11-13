@@ -13,6 +13,7 @@ struct fann
 {
     struct fann_layer *first_layer;
 };
+void
 fann_run (struct fann *ann, fann_type * input)
 {
   struct fann_layer *layer_it, *layer_it2, *last_layer;

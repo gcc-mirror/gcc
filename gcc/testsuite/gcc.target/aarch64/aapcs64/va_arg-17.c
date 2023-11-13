@@ -28,8 +28,8 @@ union S2844 a2844[5];
 #define HAS_DATA_INIT_FUNC
 void init_data ()
 {
-  memset (&s2844, '\0', sizeof (s2844));
-  memset (a2844, '\0', sizeof (a2844));
+  __builtin_memset (&s2844, '\0', sizeof (s2844));
+  __builtin_memset (a2844, '\0', sizeof (a2844));
   s2844.a = 799U;
   a2844[2].a = 586U;
 }

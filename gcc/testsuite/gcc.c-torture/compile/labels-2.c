@@ -1,12 +1,12 @@
 /* { dg-require-effective-target label_values } */
 
 struct bp { void *v, *b, *e; };
-f ()
+int f (void)
 {
   struct bp x = { &&L2 };
   if (&&L3 - &&L1 > 1)
-    abort ();
+    __builtin_abort ();
 L1:return 1;
-L2:abort ();
+L2:__builtin_abort ();
 L3:;
 }

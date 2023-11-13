@@ -19,6 +19,7 @@ struct cmdlineInfo
   }
     u;
 };
+void
 applyFunction (struct cmdlineInfo const cmdline, struct pam const inpam,
                struct pam const outpam, tuple * const inputRow,
                tuple * const outputRow)

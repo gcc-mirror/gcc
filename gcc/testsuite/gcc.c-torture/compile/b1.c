@@ -1,3 +1,4 @@
+int
 foo (long long x)
 {
   if (x--)
@@ -5,7 +6,8 @@ foo (long long x)
   return 0;
 }
 
-main ()
+int
+main (void)
 {
-  printf ("%d\n", foo (0));
+  __builtin_printf ("%d\n", foo (0));
 }

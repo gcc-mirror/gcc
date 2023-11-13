@@ -85,8 +85,8 @@ linit ()
 	    }
 	}
       if (!viazero && ind->numents >= 4
-	  && strcmp ((char *) (entry->affix),
-		     (char *) (ind->pu.ent->affix)) != 0)
+	  && __builtin_strcmp ((char *) (entry->affix),
+			       (char *) (ind->pu.ent->affix)) != 0)
 	{
 	}
     }

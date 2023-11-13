@@ -7,6 +7,11 @@
 
 typedef long unsigned int size_t;
 typedef union gimple_statement_d *gimple;
+int end_imm_use_stmt_p (void);
+void next_imm_use_stmt (void);
+int arf (void);
+int boo (void);
+void update_stmt (void);
 unsigned char
 propagate_with_phi ()
 {

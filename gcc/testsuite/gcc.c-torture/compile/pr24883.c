@@ -2,6 +2,7 @@ typedef struct _rec_stl rec_stl;
 struct _rec_stl {
    unsigned char **strs;
 };
+void
 orec_str_list(int count) {
    rec_stl *stl;
    int i, j;

@@ -14,7 +14,8 @@ struct foo
 
 struct foo s, ss;
 
-main ()
+int
+main (void)
 {
 
   s.b = 2;

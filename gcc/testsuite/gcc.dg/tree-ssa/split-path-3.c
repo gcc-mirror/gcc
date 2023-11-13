@@ -33,6 +33,8 @@ typedef struct VEC_int_heap
   VEC_int_base base;
 }
 VEC_int_heap;
+void *vec_heap_o_reserve (VEC_int_heap *, int, __SIZE_TYPE__, __SIZE_TYPE__);
+int VEC_int_base_length (VEC_int_base *);
 static __inline__ int
 VEC_int_heap_reserve (VEC_int_heap ** vec_, int alloc_, const char *file_,
 		      unsigned line_, const char *function_)
@@ -66,6 +68,11 @@ typedef struct
 {
 }
 bitmap_iterator;
+int bmp_iter_and_compl_init (bitmap_iterator *, bitmap_head *, bitmap, int,
+			     int *);
+int bmp_iter_and_compl (bitmap_iterator *, int *);
+void bmp_iter_next (bitmap_iterator *, int *);
+void VEC_int_heap_free (VEC_int_heap **);
 bitmap
 compute_idf (bitmap_head * dfs)
 {

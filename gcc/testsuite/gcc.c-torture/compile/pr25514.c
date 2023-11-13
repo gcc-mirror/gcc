@@ -5,6 +5,8 @@ struct node {
 
 struct node *current_node, global_list;
 
+void foo (struct node *);
+
 void
 bar (void)
 {

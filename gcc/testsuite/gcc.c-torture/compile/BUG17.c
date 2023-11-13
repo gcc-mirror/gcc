@@ -1,6 +1,7 @@
 double d;
 
-main()
+int
+main(void)
 {
   int i;
 

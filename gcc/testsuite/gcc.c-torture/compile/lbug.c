@@ -1,5 +1,6 @@
 long long x = 0;
-main()
+int
+main(void)
 {
   if (x--)
     return 255;

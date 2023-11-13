@@ -134,6 +134,8 @@ union tree_node
   struct tree_typed typed;
   struct tree_type type;
 };
+enum tree_code invert_tree_comparison (enum tree_code, int);
+int vector_type_mode (tree);
 enum tree_code
 parse_predicate (tree cond, tree * op0, tree * op1)
 {
