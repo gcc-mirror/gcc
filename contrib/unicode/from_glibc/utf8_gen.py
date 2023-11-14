@@ -350,7 +350,7 @@ if __name__ == "__main__":
             # the EastAsianWidth.txt file.
             if re.match(r'.*<reserved-.+>\.\.<reserved-.+>.*', LINE):
                 continue
-            if re.match(r'^[^;]*;[WF]', LINE):
+            if re.match(r'^[^;]*;\s*[WF]\s*', LINE):
                 EAST_ASIAN_WIDTH_LINES.append(LINE.strip())
     with open(ARGS.prop_list_file, mode='r') as PROP_LIST_FILE:
         PROP_LIST_LINES = []
