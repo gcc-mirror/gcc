@@ -1023,7 +1023,7 @@ package body Exp_Put_Image is
             null;
          elsif Is_Derived_Type (Typ) then
             return Put_Image_Enabled (Etype (Base_Type (Typ)));
-         elsif In_Predefined_Unit (Typ) then
+         elsif Is_Predefined_Unit (Get_Code_Unit (Typ)) then
             return False;
          end if;
       end if;
