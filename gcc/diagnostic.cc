@@ -211,7 +211,7 @@ diagnostic_context::initialize (int n_opts)
   this->printer = XNEW (pretty_printer);
   new (this->printer) pretty_printer ();
 
-  m_file_cache = nullptr;
+  m_file_cache = new file_cache ();
   memset (m_diagnostic_count, 0, sizeof m_diagnostic_count);
   m_warning_as_error_requested = false;
   m_n_opts = n_opts;
@@ -352,8 +352,6 @@ diagnostic_context::
 initialize_input_context (diagnostic_input_charset_callback ccb,
 			  bool should_skip_bom)
 {
-  if (!m_file_cache)
-    m_file_cache = new file_cache;
   m_file_cache->initialize_input_context (ccb, should_skip_bom);
 }
 
@@ -432,7 +430,8 @@ void
 diagnostic_context::create_edit_context ()
 {
   delete m_edit_context_ptr;
-  m_edit_context_ptr = new edit_context ();
+  gcc_assert (m_file_cache);
+  m_edit_context_ptr = new edit_context (*m_file_cache);
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -485,7 +484,8 @@ diagnostic_get_color_for_kind (diagnostic_t kind)
    Return -1 if the column is invalid (<= 0).  */
 
 static int
-convert_column_unit (enum diagnostics_column_unit column_unit,
+convert_column_unit (file_cache &fc,
+		     enum diagnostics_column_unit column_unit,
 		     int tabstop,
 		     expanded_location s)
 {
@@ -500,7 +500,7 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
     case DIAGNOSTICS_COLUMN_UNIT_DISPLAY:
       {
 	cpp_char_column_policy policy (tabstop, cpp_wcwidth);
-	return location_compute_display_column (s, policy);
+	return location_compute_display_column (fc, s, policy);
       }
 
     case DIAGNOSTICS_COLUMN_UNIT_BYTE:
@@ -514,7 +514,8 @@ convert_column_unit (enum diagnostics_column_unit column_unit,
 int
 diagnostic_context::converted_column (expanded_location s) const
 {
-  int one_based_col = convert_column_unit (m_column_unit, m_tabstop, s);
+  int one_based_col = convert_column_unit (get_file_cache (),
+					   m_column_unit, m_tabstop, s);
   if (one_based_col <= 0)
     return -1;
   return one_based_col + (m_column_origin - 1);
@@ -1205,7 +1206,8 @@ print_escaped_string (pretty_printer *pp, const char *text)
    Use TABSTOP when handling DIAGNOSTICS_COLUMN_UNIT_DISPLAY.  */
 
 static void
-print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
+print_parseable_fixits (file_cache &fc,
+			pretty_printer *pp, rich_location *richloc,
 			enum diagnostics_column_unit column_unit,
 			int tabstop)
 {
@@ -1226,9 +1228,9 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
       location_t next_loc = hint->get_next_loc ();
       expanded_location next_exploc = expand_location (next_loc);
       int start_col
-	= convert_column_unit (column_unit, tabstop, start_exploc);
+	= convert_column_unit (fc, column_unit, tabstop, start_exploc);
       int next_col
-	= convert_column_unit (column_unit, tabstop, next_exploc);
+	= convert_column_unit (fc, column_unit, tabstop, next_exploc);
       pp_printf (pp, ":{%i:%i-%i:%i}:",
 		 start_exploc.line, start_col,
 		 next_exploc.line, next_col);
@@ -1613,13 +1615,15 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     default:
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1:
-      print_parseable_fixits (this->printer, diagnostic->richloc,
+      print_parseable_fixits (get_file_cache (),
+			      this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			      m_tabstop);
       pp_flush (this->printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
-      print_parseable_fixits (this->printer, diagnostic->richloc,
+      print_parseable_fixits (get_file_cache (),
+			      this->printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			      m_tabstop);
       pp_flush (this->printer);
@@ -2687,9 +2691,10 @@ static void
 test_print_parseable_fixits_none ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("", pp_formatted_text (&pp));
 }
 
@@ -2700,6 +2705,7 @@ static void
 test_print_parseable_fixits_insert ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2708,7 +2714,7 @@ test_print_parseable_fixits_insert ()
   location_t where = linemap_position_for_column (line_table, 10);
   richloc.add_fixit_insert_before (where, "added content");
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:10}:\"added content\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2720,6 +2726,7 @@ static void
 test_print_parseable_fixits_remove ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2730,7 +2737,7 @@ test_print_parseable_fixits_remove ()
   where.m_finish = linemap_position_for_column (line_table, 20);
   richloc.add_fixit_remove (where);
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2742,6 +2749,7 @@ static void
 test_print_parseable_fixits_replace ()
 {
   pretty_printer pp;
+  file_cache fc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
 
   linemap_add (line_table, LC_ENTER, false, "test.c", 0);
@@ -2752,7 +2760,7 @@ test_print_parseable_fixits_replace ()
   where.m_finish = linemap_position_for_column (line_table, 20);
   richloc.add_fixit_replace (where, "replacement");
 
-  print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
+  print_parseable_fixits (fc, &pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE, 8);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:21}:\"replacement\"\n",
 		pp_formatted_text (&pp));
 }
@@ -2772,6 +2780,7 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
   const int tabstop = 8;
 
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  file_cache fc;
   const char *const fname = tmp.get_filename ();
 
   linemap_add (line_table, LC_ENTER, false, fname, 0);
@@ -2792,7 +2801,8 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
 
   {
     pretty_printer pp;
-    print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE,
+    print_parseable_fixits (fc, &pp, &richloc,
+			    DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			    tabstop);
     snprintf (expected, buf_len,
 	      "fix-it:%s:{1:12-1:18}:\"color\"\n", escaped_fname);
@@ -2800,7 +2810,8 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
   }
   {
     pretty_printer pp;
-    print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
+    print_parseable_fixits (fc, &pp, &richloc,
+			    DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			    tabstop);
     snprintf (expected, buf_len,
 	      "fix-it:%s:{1:10-1:16}:\"color\"\n", escaped_fname);

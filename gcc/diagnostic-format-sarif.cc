@@ -921,7 +921,8 @@ int
 sarif_builder::get_sarif_column (expanded_location exploc) const
 {
   cpp_char_column_policy policy (m_tabstop, cpp_wcwidth);
-  return location_compute_display_column (exploc, policy);
+  return location_compute_display_column (m_context->get_file_cache (),
+					  exploc, policy);
 }
 
 /* Make a region object (SARIF v2.1.0 section 3.30) for LOC,
@@ -1534,7 +1535,7 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename) const
 {
   /* Let input.cc handle any charset conversion.  */
   char_span utf8_content
-    = m_context->get_file_cache ()->get_source_file_content (filename);
+    = m_context->get_file_cache ().get_source_file_content (filename);
   if (!utf8_content)
     return NULL;
 
@@ -1562,7 +1563,7 @@ sarif_builder::get_source_lines (const char *filename,
   for (int line = start_line; line <= end_line; line++)
     {
       char_span line_content
-	= m_context->get_file_cache ()->get_source_line (filename, line);
+	= m_context->get_file_cache ().get_source_line (filename, line);
       if (!line_content.get_buffer ())
 	return NULL;
       result.reserve (line_content.length () + 1);

@@ -360,8 +360,6 @@ public:
   void color_init (int value);
   void urls_init (int value);
 
-  void file_cache_init ();
-
   void finish ();
 
   void set_set_locations_callback (set_locations_callback_t cb)
@@ -461,10 +459,11 @@ public:
     return m_escape_format;
   }
 
-  file_cache *
+  file_cache &
   get_file_cache () const
   {
-    return m_file_cache;
+    gcc_assert (m_file_cache);
+    return *m_file_cache;
   }
 
   edit_context *get_edit_context () const

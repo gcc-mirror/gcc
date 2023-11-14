@@ -51,7 +51,7 @@ test_richloc (rich_location *richloc)
   diagnostic_show_locus (&dc, richloc, DK_ERROR);
 
   /* Generate a diff.  */
-  edit_context ec;
+  edit_context ec (global_dc->get_file_cache ());
   ec.add_fixits (richloc);
   char *diff = ec.generate_diff (true);
   free (diff);

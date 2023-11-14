@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "line-map.h"
 
+class file_cache;
+
 extern GTY(()) class line_maps *line_table;
 extern GTY(()) class line_maps *saved_line_table;
 
@@ -67,7 +69,8 @@ extern expanded_location expand_location (location_t);
 class cpp_char_column_policy;
 
 extern int
-location_compute_display_column (expanded_location exploc,
+location_compute_display_column (file_cache &fc,
+				 expanded_location exploc,
 				 const cpp_char_column_policy &policy);
 
 /* A class capturing the bounds of a buffer, to allow for run-time
@@ -113,11 +116,8 @@ class char_span
   size_t m_n_elts;
 };
 
-extern char_span location_get_source_line (const char *file_path, int line);
-extern char *get_source_text_between (location_t, location_t);
-extern char_span get_source_file_content (const char *file_path);
-
-extern bool location_missing_trailing_newline (const char *file_path);
+extern char *
+get_source_text_between (file_cache &, location_t, location_t);
 
 /* Forward decl of slot within file_cache, so that the definition doesn't
    need to be in this header.  */
@@ -152,6 +152,7 @@ class file_cache
 
   char_span get_source_file_content (const char *file_path);
   char_span get_source_line (const char *file_path, int line);
+  bool missing_trailing_newline_p (const char *file_path);
 
  private:
   file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
@@ -253,8 +254,6 @@ extern location_t make_location (location_t caret, source_range src_range);
 void dump_line_table_statistics (void);
 
 void dump_location_info (FILE *stream);
-
-void diagnostics_file_cache_forcibly_evict_file (const char *file_path);
 
 class GTY(()) string_concat
 {

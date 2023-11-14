@@ -64,7 +64,7 @@ public:
 class edited_file
 {
  public:
-  edited_file (const char *filename);
+  edited_file (edit_context &ec, const char *filename);
   static void delete_cb (edited_file *file);
 
   const char *get_filename () const { return m_filename; }
@@ -84,6 +84,11 @@ class edited_file
     return 0;
   }
 
+  file_cache &get_file_cache () const
+  {
+    return m_edit_context.get_file_cache ();
+  }
+
  private:
   bool print_content (pretty_printer *pp);
   void print_diff (pretty_printer *pp, bool show_filenames);
@@ -100,6 +105,7 @@ class edited_file
 				   int start_of_run,
 				   int end_of_run);
 
+  edit_context &m_edit_context;
   const char *m_filename;
   typed_splay_tree<int, edited_line *> m_edited_lines;
   int m_num_lines;
@@ -163,7 +169,7 @@ class line_event
 class edited_line
 {
  public:
-  edited_line (const char *filename, int line_num);
+  edited_line (file_cache &fc, const char *filename, int line_num);
   ~edited_line ();
   static void delete_cb (edited_line *el);
 
@@ -208,8 +214,9 @@ print_diff_line (pretty_printer *pp, char prefix_char,
 
 /* edit_context's ctor.  */
 
-edit_context::edit_context ()
-: m_valid (true),
+edit_context::edit_context (file_cache &fc)
+: m_file_cache (fc),
+  m_valid (true),
   m_files (strcmp, NULL, edited_file::delete_cb)
 {}
 
@@ -334,7 +341,7 @@ edit_context::get_or_insert_file (const char *filename)
     return *file;
 
   /* Not found.  */
-  file = new edited_file (filename);
+  file = new edited_file (*this, filename);
   m_files.insert (filename, file);
   return *file;
 }
@@ -350,8 +357,9 @@ static int line_comparator (int a, int b)
 
 /* edited_file's constructor.  */
 
-edited_file::edited_file (const char *filename)
-: m_filename (filename),
+edited_file::edited_file (edit_context &ec, const char *filename)
+: m_edit_context (ec),
+  m_filename (filename),
   m_edited_lines (line_comparator, NULL, edited_line::delete_cb),
   m_num_lines (-1)
 {
@@ -422,7 +430,8 @@ edited_file::print_content (pretty_printer *pp)
 	el->print_content (pp);
       else
 	{
-	  char_span line = location_get_source_line (m_filename, line_num);
+	  char_span line
+	    = get_file_cache ().get_source_line (m_filename, line_num);
 	  if (!line)
 	    return false;
 	  for (size_t i = 0; i < line.length (); i++)
@@ -547,7 +556,8 @@ edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
       else
 	{
 	  /* Unchanged line.  */
-	  char_span old_line = location_get_source_line (m_filename, line_num);
+	  char_span old_line
+	    = get_file_cache ().get_source_line (m_filename, line_num);
 	  print_diff_line (pp, ' ', old_line.get_buffer (), old_line.length ());
 	  line_num++;
 	}
@@ -576,7 +586,8 @@ edited_file::print_run_of_changed_lines (pretty_printer *pp,
       gcc_assert (el_in_run);
       if (el_in_run->actually_edited_p ())
 	{
-	  char_span old_line = location_get_source_line (m_filename, line_num);
+	  char_span old_line
+	    = get_file_cache ().get_source_line (m_filename, line_num);
 	  print_diff_line (pp, '-', old_line.get_buffer (),
 			   old_line.length ());
 	}
@@ -649,7 +660,7 @@ edited_file::get_or_insert_line (int line)
   edited_line *el = get_line (line);
   if (el)
     return el;
-  el = new edited_line (m_filename, line);
+  el = new edited_line (get_file_cache (), m_filename, line);
   if (el->get_content () == NULL)
     {
       delete el;
@@ -673,14 +684,15 @@ edited_file::get_num_lines (bool *missing_trailing_newline)
       while (true)
 	{
 	  char_span line
-	    = location_get_source_line (m_filename, m_num_lines + 1);
+	    = get_file_cache ().get_source_line (m_filename, m_num_lines + 1);
 	  if (line)
 	    m_num_lines++;
 	  else
 	    break;
 	}
     }
-  *missing_trailing_newline = location_missing_trailing_newline (m_filename);
+  *missing_trailing_newline
+    = get_file_cache ().missing_trailing_newline_p (m_filename);
   return m_num_lines;
 }
 
@@ -688,13 +700,13 @@ edited_file::get_num_lines (bool *missing_trailing_newline)
 
 /* edited_line's ctor.  */
 
-edited_line::edited_line (const char *filename, int line_num)
+edited_line::edited_line (file_cache &fc, const char *filename, int line_num)
 : m_line_num (line_num),
   m_content (NULL), m_len (0), m_alloc_sz (0),
   m_line_events (),
   m_predecessors ()
 {
-  char_span line = location_get_source_line (filename, line_num);
+  char_span line = fc.get_source_line (filename, line_num);
   if (!line)
     return;
   m_len = line.length ();
@@ -913,7 +925,8 @@ test_get_content ()
   {
     const char *content = ("");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     ASSERT_STREQ ("", result);
   }
@@ -924,7 +937,8 @@ test_get_content ()
 			   "foo = bar.field;\n"
 			   "/* after */\n");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     ASSERT_STREQ ("/* before */\n"
 		  "foo = bar.field;\n"
@@ -937,7 +951,8 @@ test_get_content ()
 			   "foo = bar.field;\n"
 			   "/* after */");
     temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     auto_free <char *> result = edit.get_content (tmp.get_filename ());
     /* We should respect the omitted trailing newline.  */
     ASSERT_STREQ ("/* before */\n"
@@ -970,7 +985,8 @@ test_applying_fixits_insert_before (const line_table_case &case_)
   if (start > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (start <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1028,7 +1044,8 @@ test_applying_fixits_insert_after (const line_table_case &case_)
     return;
 
   /* Verify that the text was inserted after the end of "field". */
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ ("/* before */\n"
@@ -1070,7 +1087,8 @@ test_applying_fixits_insert_after_at_line_end (const line_table_case &case_)
   if (loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ ("/* before */\n"
@@ -1128,7 +1146,8 @@ test_applying_fixits_insert_after_failure (const line_table_case &case_)
   richloc.add_fixit_insert_after ("/* inserted */");
   ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   ASSERT_FALSE (edit.valid_p ());
   ASSERT_EQ (NULL, edit.get_content (filename));
@@ -1165,7 +1184,8 @@ test_applying_fixits_insert_containing_newline (const line_table_case &case_)
   if (case_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   ASSERT_STREQ (("    case 'a':\n"
@@ -1209,7 +1229,8 @@ test_applying_fixits_growing_replace (const line_table_case &case_)
   rich_location richloc (line_table, field);
   richloc.add_fixit_replace ("m_field");
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1254,7 +1275,8 @@ test_applying_fixits_shrinking_replace (const line_table_case &case_)
   rich_location richloc (line_table, m_field);
   richloc.add_fixit_replace ("field");
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1308,7 +1330,8 @@ test_applying_fixits_replace_containing_newline (const line_table_case &case_)
   if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   //ASSERT_STREQ ("foo\n  = bar ();\n", new_content);
@@ -1339,7 +1362,8 @@ test_applying_fixits_remove (const line_table_case &case_)
   range.m_finish = finish;
   richloc.add_fixit_remove (range);
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&richloc);
   auto_free <char *> new_content = edit.get_content (filename);
   if (finish <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1404,7 +1428,8 @@ test_applying_fixits_multiple (const line_table_case &case_)
   replace_b.add_fixit_replace (source_range::from_locations (c11, c15),
 			       "meadow");
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   edit.add_fixits (&insert_a);
   ASSERT_EQ (100, edit.get_effective_column (filename, 1, 100));
   ASSERT_EQ (1, edit.get_effective_column (filename, 2, 1));
@@ -1506,7 +1531,8 @@ test_applying_fixits_multiple_lines (const line_table_case &case_)
   linemap_add (line_table, LC_ENTER, false, filename, 1);
   linemap_position_for_column (line_table, 127);
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
 
   /* A run of consecutive lines.  */
   change_line (edit, 2);
@@ -1594,7 +1620,8 @@ test_applying_fixits_modernize_named_init (const line_table_case &case_)
 
   /* The order should not matter.  Do r1 then r2. */
   {
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     edit.add_fixits (&r1);
 
     /* Verify state after first replacement.  */
@@ -1627,7 +1654,8 @@ test_applying_fixits_modernize_named_init (const line_table_case &case_)
 
   /* Try again, doing r2 then r1; the new_content should be the same.  */
   {
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     edit.add_fixits (&r2);
     edit.add_fixits (&r1);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
@@ -1655,7 +1683,8 @@ test_applying_fixits_unreadable_file ()
   insert.add_fixit_insert_before ("change 1");
   insert.add_fixit_insert_before ("change 2");
 
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   /* Attempting to add the fixits affecting the unreadable file
      should transition the edit from valid to invalid.  */
   ASSERT_TRUE (edit.valid_p ());
@@ -1688,7 +1717,8 @@ test_applying_fixits_line_out_of_range ()
 
   /* Verify that attempting the insertion puts an edit_context
      into an invalid state.  */
-  edit_context edit;
+  file_cache fc;
+  edit_context edit (fc);
   ASSERT_TRUE (edit.valid_p ());
   edit.add_fixits (&insert);
   ASSERT_FALSE (edit.valid_p ());
@@ -1725,7 +1755,8 @@ test_applying_fixits_column_validation (const line_table_case &case_)
 
     /* Col 15 is at the end of the line, so the insertion
        should succeed.  */
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     edit.add_fixits (&richloc);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
     if (c15 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1741,7 +1772,8 @@ test_applying_fixits_column_validation (const line_table_case &case_)
 
     /* Col 16 is beyond the end of the line, so the insertion
        should fail gracefully.  */
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     ASSERT_TRUE (edit.valid_p ());
     edit.add_fixits (&richloc);
     ASSERT_FALSE (edit.valid_p ());
@@ -1759,7 +1791,8 @@ test_applying_fixits_column_validation (const line_table_case &case_)
 
     /* Col 14 is at the end of the line, so the replacement
        should succeed.  */
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     edit.add_fixits (&richloc);
     auto_free <char *> new_content = edit.get_content (tmp.get_filename ());
     if (c14 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
@@ -1776,7 +1809,8 @@ test_applying_fixits_column_validation (const line_table_case &case_)
 
     /* Col 15 is after the end of the line, so the replacement
        should fail; verify that the attempt fails gracefully.  */
-    edit_context edit;
+    file_cache fc;
+    edit_context edit (fc);
     ASSERT_TRUE (edit.valid_p ());
     edit.add_fixits (&richloc);
     ASSERT_FALSE (edit.valid_p ());
