@@ -852,3 +852,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     v##NUM##TYPE1 v = {__VA_ARGS__};                                           \
     *(v##NUM##TYPE1 *) out = v;                                                \
   }
+
+#define DEF_TRAILING(TYPE1, TYPE2, NUM, ...)                                   \
+  void init_##TYPE1##_##TYPE2##_##NUM (TYPE2 var0, TYPE2 var1, TYPE2 var2,     \
+				       TYPE2 var3, TYPE2 *__restrict out)      \
+  {                                                                            \
+    TYPE1 v = {__VA_ARGS__};                                                   \
+    *(TYPE1 *) out = v;                                                        \
+  }

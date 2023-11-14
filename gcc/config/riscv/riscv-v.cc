@@ -2268,6 +2268,47 @@ expand_vector_init_merge_combine_sequence (rtx target,
   emit_vlmax_insn (icode, MERGE_OP, merge_ops);
 }
 
+/* Subroutine of expand_vec_init to handle case
+   when all trailing elements of builder are same.
+   This works as follows:
+   (a) Use expand_insn interface to broadcast last vector element in TARGET.
+   (b) Insert remaining elements in TARGET using insr.
+
+   ??? The heuristic used is to do above if number of same trailing elements
+   is greater than leading_ndups, loosely based on
+   heuristic from mostly_zeros_p.  May need fine-tuning.  */
+
+static bool
+expand_vector_init_trailing_same_elem (rtx target,
+				       const rtx_vector_builder &builder,
+				       int nelts_reqd)
+{
+  int leading_ndups = builder.count_dups (0, nelts_reqd - 1, 1);
+  int trailing_ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
+  machine_mode mode = GET_MODE (target);
+
+  if (trailing_ndups > leading_ndups)
+    {
+      rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
+      for (int i = nelts_reqd - trailing_ndups - 1; i >= 0; i--)
+	{
+	  unsigned int unspec
+	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+	  insn_code icode = code_for_pred_slide (unspec, mode);
+	  rtx tmp = gen_reg_rtx (mode);
+	  rtx ops[] = {tmp, dup, builder.elt (i)};
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
+	  /* slide1up need source and dest to be different REG.  */
+	  dup = tmp;
+	}
+
+      emit_move_insn (target, dup);
+      return true;
+    }
+
+  return false;
+}
+
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
 
 void
@@ -2335,10 +2376,13 @@ expand_vec_init (rtx target, rtx vals)
 	}
     }
 
-  /* Handle common situation by vslide1down. This function can handle any
-     situation of vec_init<mode>. Only the cases that are not optimized above
-     will fall through here.  */
-  expand_vector_init_insert_elems (target, v, nelts);
+  /* Optimize trailing same elements sequence:
+      v = {y, y2, y3, y4, y5, x, x, x, x, x, x, x, x, x, x, x};  */
+  if (!expand_vector_init_trailing_same_elem (target, v, nelts))
+    /* Handle common situation by vslide1down. This function can handle any
+       situation of vec_init<mode>. Only the cases that are not optimized above
+       will fall through here.  */
+    expand_vector_init_insert_elems (target, v, nelts);
 }
 
 /* Get insn code for corresponding comparison.  */
