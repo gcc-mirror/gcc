@@ -1640,7 +1640,7 @@ stds[11] = ">= 201103L";
 stds[14] = ">= 201402L";
 stds[17] = ">= 201703L";
 stds[20] = ">= 202002L";
-stds[23] = ">= 202302L";
+stds[23] = ">= 202100L"; // Should be 202302L but Clang 16 uses 202101L
 stds[26] = ">  202302L"; // TODO: update when finalized
 
 // Local Variables:

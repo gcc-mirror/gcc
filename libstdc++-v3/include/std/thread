@@ -42,7 +42,7 @@
 # include <stop_token>	// std::stop_source, std::stop_token, std::nostopstate
 #endif
 
-#if __cplusplus >= 202302L
+#if __cplusplus > 202002L
 # include <format>
 #endif
 
