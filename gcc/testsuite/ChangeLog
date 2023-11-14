@@ -2209,6 +2209,29 @@
 
 2023-11-10  Pan Li  <pan2.li@intel.com>
 
+	Revert:
+	2023-11-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-9.c: New test.
+
+2023-11-10  Pan Li  <pan2.li@intel.com>
+
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-1.c: New test.
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-2.c: New test.
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-3.c: New test.

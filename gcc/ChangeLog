@@ -605,6 +605,14 @@
 
 2023-11-10  Pan Li  <pan2.li@intel.com>
 
+	Revert:
+	2023-11-10  Pan Li  <pan2.li@intel.com>
+	* config/riscv/riscv-v.cc (expand_vector_init_trailing_same_elem):
+	New fun impl to expand the insn when trailing same elements.
+	(expand_vec_init): Try trailing same elements when vec_init.
+
+2023-11-10  Pan Li  <pan2.li@intel.com>
+
 	* config/riscv/riscv-v.cc (expand_vector_init_trailing_same_elem):
 	New fun impl to expand the insn when trailing same elements.
 	(expand_vec_init): Try trailing same elements when vec_init.
