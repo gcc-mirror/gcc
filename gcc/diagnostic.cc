@@ -235,9 +235,9 @@ diagnostic_context::initialize (int n_opts)
   m_warn_system_headers = false;
   m_max_errors = 0;
   m_internal_error = nullptr;
-  m_text_callbacks.begin_diagnostic = default_diagnostic_starter;
-  m_text_callbacks.start_span = default_diagnostic_start_span_fn;
-  m_text_callbacks.end_diagnostic = default_diagnostic_finalizer;
+  m_text_callbacks.m_begin_diagnostic = default_diagnostic_starter;
+  m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
+  m_text_callbacks.m_end_diagnostic = default_diagnostic_finalizer;
   m_option_enabled = nullptr;
   m_option_state = nullptr;
   m_option_name = nullptr;

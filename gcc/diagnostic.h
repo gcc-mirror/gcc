@@ -352,6 +352,14 @@ struct diagnostic_source_printing_options
 class diagnostic_context
 {
 public:
+  /* Give access to m_text_callbacks.  */
+  friend diagnostic_starter_fn &
+  diagnostic_starter (diagnostic_context *context);
+  friend diagnostic_start_span_fn &
+  diagnostic_start_span (diagnostic_context *context);
+  friend diagnostic_finalizer_fn &
+  diagnostic_finalizer (diagnostic_context *context);
+
   typedef void (*ice_handler_callback_t) (diagnostic_context *);
   typedef void (*set_locations_callback_t) (diagnostic_context *,
 					    diagnostic_info *);
@@ -574,7 +582,6 @@ private:
   /* Maximum number of errors to report.  */
   int m_max_errors;
 
-public:
   /* Client-supplied callbacks for use in text output.  */
   struct {
     /* This function is called before any message is printed out.  It is
@@ -584,17 +591,18 @@ public:
        from "/home/gdr/src/nifty_printer.h:56:
        ...
     */
-    diagnostic_starter_fn begin_diagnostic;
+    diagnostic_starter_fn m_begin_diagnostic;
 
     /* This function is called by diagnostic_show_locus in between
        disjoint spans of source code, so that the context can print
        something to indicate that a new span of source code has begun.  */
-    diagnostic_start_span_fn start_span;
+    diagnostic_start_span_fn m_start_span;
 
     /* This function is called after the diagnostic message is printed.  */
-    diagnostic_finalizer_fn end_diagnostic;
+    diagnostic_finalizer_fn m_end_diagnostic;
   } m_text_callbacks;
 
+public:
   /* Client hook to report an internal error.  */
   void (*m_internal_error) (diagnostic_context *, const char *, va_list *);
 
@@ -734,11 +742,28 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 
 /* Client supplied function to announce a diagnostic
    (for text-based diagnostic output).  */
-#define diagnostic_starter(DC) (DC)->m_text_callbacks.begin_diagnostic
+inline diagnostic_starter_fn &
+diagnostic_starter (diagnostic_context *context)
+{
+  return context->m_text_callbacks.m_begin_diagnostic;
+}
+
+/* Client supplied function called between disjoint spans of source code,
+   so that the context can print
+   something to indicate that a new span of source code has begun.  */
+inline diagnostic_start_span_fn &
+diagnostic_start_span (diagnostic_context *context)
+{
+  return context->m_text_callbacks.m_start_span;
+}
 
 /* Client supplied function called after a diagnostic message is
    displayed (for text-based diagnostic output).  */
-#define diagnostic_finalizer(DC) (DC)->m_text_callbacks.end_diagnostic
+inline diagnostic_finalizer_fn &
+diagnostic_finalizer (diagnostic_context *context)
+{
+  return context->m_text_callbacks.m_end_diagnostic;
+}
 
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->m_client_aux_data

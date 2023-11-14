@@ -206,7 +206,7 @@ struct event_range
 	  = linemap_client_expand_location_to_spelling_point
 	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
 	if (exploc.file != LOCATION_FILE (dc->m_last_location))
-	  dc->m_text_callbacks.start_span (dc, exploc);
+	  diagnostic_start_span (dc) (dc, exploc);
       }
 
     /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the

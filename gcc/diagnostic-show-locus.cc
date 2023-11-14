@@ -2904,7 +2904,7 @@ diagnostic_context::show_locus (const rich_location &richloc,
 	    {
 	      expanded_location exploc
 		= layout.get_expanded_location (line_span);
-	      m_text_callbacks.start_span (this, exploc);
+	      m_text_callbacks.m_start_span (this, exploc);
 	    }
 	}
       /* Iterate over the lines within this span (using linenum_arith_t to
