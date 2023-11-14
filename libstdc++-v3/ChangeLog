@@ -1,3 +1,18 @@
+2023-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Break long lines. Use raw
+	strings for regular expressions. Add whitespace around
+	operators.
+	(is_member_of_namespace): Use isinstance to check type.
+	(is_specialization_of): Likewise. Adjust template_name
+	for versioned namespace instead of duplicating the re.match
+	call.
+	(StdExpAnyPrinter._string_types): New static method.
+	(StdExpAnyPrinter.to_string): Use _string_types.
+
 2023-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/integer_comparisons/greater_equal_neg.cc:
