@@ -7251,6 +7251,14 @@ DEFHOOKPOD
 @option{-fsanitize=shadow-call-stack}.  The default value is false.",
  bool, false)
 
+/* This value represents whether libatomic is available on
+   the target platform.  */
+DEFHOOKPOD
+(have_libatomic,
+ "This value is true if the target platform supports\n\
+libatomic.  The default value is false.",
+ bool, false)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 

@@ -12605,3 +12605,8 @@ The default clears the top byte of the original pointer.
 This value is true if the target platform supports
 @option{-fsanitize=shadow-call-stack}.  The default value is false.
 @end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_HAVE_LIBATOMIC
+This value is true if the target platform supports
+libatomic.  The default value is false.
+@end deftypevr
