@@ -1,3 +1,83 @@
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111917
+	* gcc.dg/torture/pr111917.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111818
+	* gcc.dg/torture/pr111818.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111764
+	* gcc.dg/vect/pr111764.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111614
+	* gcc.dg/torture/pr111614.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111583
+	* gcc.dg/tree-ssa/pr111583-1.c: New testcase.
+	* gcc.dg/tree-ssa/pr111583-2.c: Likewise.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* gcc.dg/uninit-pr111489.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111445
+	* gcc.dg/torture/pr111445.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111397
+	* gcc.dg/uninit-pr111397.c: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111253
+	* gcc.dg/Wfree-nonheap-object-7.c: New testcase.
+
+2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr112443.C: New test.
+
 2023-11-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

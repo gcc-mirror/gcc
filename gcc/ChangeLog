@@ -1,3 +1,109 @@
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111917
+	* tree-ssa-loop-unswitch.cc (hoist_guard): Always insert
+	new conditional after last stmt.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111818
+	* tree-ssa.cc (maybe_optimize_var): When clearing
+	DECL_NOT_GIMPLE_REG_P always rewrite into SSA.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111764
+	* tree-vect-loop.cc (check_reduction_path): Remove the attempt
+	to allow x + x via special-casing of assigns.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111614
+	* tree-ssa-reassoc.cc (undistribute_bitref_for_vector): Properly
+	convert the first vector when required.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111583
+	* tree-loop-distribution.cc (find_single_drs): Ensure the
+	load/store are always executed.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* params.opt (-param uninit-max-chain-len=): Raise default to 8.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111489
+	* doc/invoke.texi (--param uninit-max-chain-len): Document.
+	(--param uninit-max-num-chains): Likewise.
+	* params.opt (-param=uninit-max-chain-len=): New.
+	(-param=uninit-max-num-chains=): Likewise.
+	* gimple-predicate-analysis.cc (MAX_NUM_CHAINS): Define to
+	param_uninit_max_num_chains.
+	(MAX_CHAIN_LEN): Define to param_uninit_max_chain_len.
+	(uninit_analysis::init_use_preds): Avoid VLA.
+	(uninit_analysis::init_from_phi_def): Likewise.
+	(compute_control_dep_chain): Avoid using MAX_CHAIN_LEN in
+	template parameter.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111445
+	* tree-scalar-evolution.cc (simple_iv_with_niters):
+	Add missing check for a sign-conversion.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111397
+	* tree-ssa-propagate.cc (may_propagate_copy): Change optional
+	argument to specify whether the PHI destination doesn't flow in
+	from an abnormal PHI.
+	(propagate_value): Adjust.
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Indicate abnormal
+	PHI dest.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::before_dom_children):
+	Likewise.
+	(process_bb): Likewise.
+
+2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112443
+	* config/i386/sse.md (*avx2_pcmp<mode>3_4): Fix swap condition
+	from LT to GT since there's not in the pattern.
+	(*avx2_pcmp<mode>3_5): Ditto.
+
 2023-11-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_asm_trampoline_template): Fix typo.
