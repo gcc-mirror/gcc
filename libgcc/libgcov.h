@@ -95,17 +95,13 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED_WITH_LOCKING 0
 #endif
 
-#ifndef GCOV_SUPPORTS_ATOMIC
 /* Detect whether target can support atomic update of profilers.  */
-#if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-#define GCOV_SUPPORTS_ATOMIC 1
-#else
-#if __SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#if (__SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) || \
+    (__SIZEOF_LONG_LONG__ == 8 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) || \
+    defined (__LIBGCC_HAVE_LIBATOMIC)
 #define GCOV_SUPPORTS_ATOMIC 1
 #else
 #define GCOV_SUPPORTS_ATOMIC 0
-#endif
-#endif
 #endif
 
 /* In libgcov we need these functions to be extern, so prefix them with

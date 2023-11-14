@@ -73,6 +73,41 @@ static GTY(()) tree ic_tuple_var;
 static GTY(()) tree ic_tuple_counters_field;
 static GTY(()) tree ic_tuple_callee_field;
 
+/* Types of counter update methods.
+
+   By default, the counter updates are done for a single threaded system
+   (COUNTER_UPDATE_SINGLE_THREAD).
+
+   If the user selected atomic profile counter updates
+   (-fprofile-update=atomic), then the counter updates will be done atomically
+   on a best-effort basis.  One of three methods to do the counter updates is
+   selected according to the target capabilities.
+
+   Ideally, the counter updates are done through atomic operations in hardware
+   (COUNTER_UPDATE_ATOMIC_BUILTIN).
+
+   If the target supports only 32-bit atomic increments and gcov_type_node is a
+   64-bit integer type, then for the profile edge counters the increment is
+   performed through two separate 32-bit atomic increments
+   (COUNTER_UPDATE_ATOMIC_SPLIT or COUNTER_UPDATE_ATOMIC_PARTIAL).  If the
+   target supports libatomic (targetm.have_libatomic), then other counter
+   updates are carried out by libatomic calls (COUNTER_UPDATE_ATOMIC_SPLIT).
+   If the target does not support libatomic, then the other counter updates are
+   not done atomically (COUNTER_UPDATE_ATOMIC_PARTIAL) and a warning is
+   issued.
+
+   If the target does not support atomic operations in hardware, however,  it
+   supports libatomic, then all updates are carried out by libatomic calls
+   (COUNTER_UPDATE_ATOMIC_BUILTIN).  */
+enum counter_update_method {
+  COUNTER_UPDATE_SINGLE_THREAD,
+  COUNTER_UPDATE_ATOMIC_BUILTIN,
+  COUNTER_UPDATE_ATOMIC_SPLIT,
+  COUNTER_UPDATE_ATOMIC_PARTIAL
+};
+
+static counter_update_method counter_update = COUNTER_UPDATE_SINGLE_THREAD;
+
 /* Do initialization work for the edge profiler.  */
 
 /* Add code:
@@ -269,7 +304,8 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
   tree one = build_int_cst (type, 1);
   tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
 
-  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
+  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN ||
+      (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
@@ -277,6 +313,38 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
 				      BUILT_IN_ATOMIC_ADD_FETCH_4);
       gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
       gen_assign_counter_update (gsi, call, f, result, name);
+    }
+  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT ||
+		       counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
+    {
+      /* low = __atomic_add_fetch_4 (addr, 1, MEMMODEL_RELAXED);
+	 high_inc = low == 0 ? 1 : 0;
+	 __atomic_add_fetch_4 (addr_high, high_inc, MEMMODEL_RELAXED); */
+      tree zero32 = build_zero_cst (uint32_type_node);
+      tree one32 = build_one_cst (uint32_type_node);
+      tree addr_high = make_temp_ssa_name (TREE_TYPE (addr), NULL, name);
+      tree four = build_int_cst (size_type_node, 4);
+      gassign *assign1 = gimple_build_assign (addr_high, POINTER_PLUS_EXPR,
+					      addr, four);
+      gsi_insert_after (gsi, assign1, GSI_NEW_STMT);
+      if (WORDS_BIG_ENDIAN)
+	std::swap (addr, addr_high);
+      tree f = builtin_decl_explicit (BUILT_IN_ATOMIC_ADD_FETCH_4);
+      gcall *call1 = gimple_build_call (f, 3, addr, one, relaxed);
+      tree low = make_temp_ssa_name (uint32_type_node, NULL, name);
+      gimple_call_set_lhs (call1, low);
+      gsi_insert_after (gsi, call1, GSI_NEW_STMT);
+      tree is_zero = make_temp_ssa_name (boolean_type_node, NULL, name);
+      gassign *assign2 = gimple_build_assign (is_zero, EQ_EXPR, low,
+					      zero32);
+      gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
+      tree high_inc = make_temp_ssa_name (uint32_type_node, NULL, name);
+      gassign *assign3 = gimple_build_assign (high_inc, COND_EXPR,
+					      is_zero, one32, zero32);
+      gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
+      gcall *call2 = gimple_build_call (f, 3, addr_high, high_inc,
+					relaxed);
+      gsi_insert_after (gsi, call2, GSI_NEW_STMT);
     }
   else
     {
@@ -689,15 +757,20 @@ tree_profiling (void)
   struct cgraph_node *node;
 
   /* Verify whether we can utilize atomic update operations.  */
-  bool can_support_atomic = false;
+  bool can_support_atomic = targetm.have_libatomic;
   unsigned HOST_WIDE_INT gcov_type_size
     = tree_to_uhwi (TYPE_SIZE_UNIT (get_gcov_type ()));
-  if (gcov_type_size == 4)
-    can_support_atomic
-      = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
-  else if (gcov_type_size == 8)
-    can_support_atomic
-      = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  bool have_atomic_4
+    = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
+  bool have_atomic_8
+    = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  if (!can_support_atomic)
+    {
+      if (gcov_type_size == 4)
+	can_support_atomic = have_atomic_4;
+      else if (gcov_type_size == 8)
+	can_support_atomic = have_atomic_8;
+    }
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC
       && !can_support_atomic)
@@ -709,6 +782,16 @@ tree_profiling (void)
   else if (flag_profile_update == PROFILE_UPDATE_PREFER_ATOMIC)
     flag_profile_update = can_support_atomic
       ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
+
+  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
+    {
+      if (gcov_type_size == 8 && !have_atomic_8 && have_atomic_4)
+	counter_update = COUNTER_UPDATE_ATOMIC_SPLIT;
+      else
+	counter_update = COUNTER_UPDATE_ATOMIC_BUILTIN;
+    }
+  else if (gcov_type_size == 8 && have_atomic_4)
+      counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.cc:ipa_passes().  */

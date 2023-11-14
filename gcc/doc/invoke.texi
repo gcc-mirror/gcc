@@ -16982,7 +16982,24 @@ while the second one prevents profile corruption by emitting thread-safe code.
 Using @samp{prefer-atomic} would be transformed either to @samp{atomic},
 when supported by a target, or to @samp{single} otherwise.  The GCC driver
 automatically selects @samp{prefer-atomic} when @option{-pthread}
-is present in the command line.
+is present in the command line, otherwise the default method is @samp{single}.
+
+If @samp{atomic} is selected, then the profile information is updated using
+atomic operations on a best-effort basis.  Ideally, the profile information is
+updated through atomic operations in hardware.  If the target platform does not
+support the required atomic operations in hardware, however, @file{libatomic}
+is available, then the profile information is updated through calls to
+@file{libatomic}.  If the target platform neither supports the required atomic
+operations in hardware nor @file{libatomic}, then the profile information is
+not atomically updated and a warning is issued.  In this case, the obtained
+profiling information may be corrupt for multi-threaded applications.
+
+For performance reasons, if 64-bit counters are used for the profiling
+information and the target platform only supports 32-bit atomic operations in
+hardware, then the performance critical profiling updates are done using two
+32-bit atomic operations for each counter update.  If a signal interrupts these
+two operations updating a counter, then the profiling information may be in an
+inconsistent state.
 
 @opindex fprofile-filter-files
 @item -fprofile-filter-files=@var{regex}
