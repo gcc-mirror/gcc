@@ -764,7 +764,11 @@ extern diagnostic_context *global_dc;
 
 /* Returns whether the diagnostic framework has been intialized already and is
    ready for use.  */
-#define diagnostic_ready_p() (global_dc->printer != NULL)
+inline bool
+diagnostic_ready_p ()
+{
+  return global_dc->printer != nullptr;
+}
 
 /* The number of errors that have been issued so far.  Ideally, these
    would take a diagnostic_context as an argument.  */
