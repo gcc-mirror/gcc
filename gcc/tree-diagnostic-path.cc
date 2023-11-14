@@ -673,15 +673,14 @@ default_tree_make_json_for_path (diagnostic_context *context,
 			json_from_expanded_location (context,
 						     event.get_location ()));
       label_text event_text (event.get_desc (false));
-      event_obj->set ("description", new json::string (event_text.get ()));
+      event_obj->set_string ("description", event_text.get ());
       if (tree fndecl = event.get_fndecl ())
 	{
 	  const char *function
 	    = identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2));
-	  event_obj->set ("function", new json::string (function));
+	  event_obj->set_string ("function", function);
 	}
-      event_obj->set ("depth",
-		      new json::integer_number (event.get_stack_depth ()));
+      event_obj->set_integer ("depth", event.get_stack_depth ());
       path_array->append (event_obj);
     }
   return path_array;

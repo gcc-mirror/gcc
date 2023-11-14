@@ -128,6 +128,42 @@ object::get (const char *key) const
     return NULL;
 }
 
+/* Set value of KEY within this object to a JSON
+   string value based on UTF8_VALUE.  */
+
+void
+object::set_string (const char *key, const char *utf8_value)
+{
+  set (key, new json::string (utf8_value));
+}
+
+/* Set value of KEY within this object to a JSON
+   integer value based on V.  */
+
+void
+object::set_integer (const char *key, long v)
+{
+  set (key, new json::integer_number (v));
+}
+
+/* Set value of KEY within this object to a JSON
+   floating point value based on V.  */
+
+void
+object::set_float (const char *key, double v)
+{
+  set (key, new json::float_number (v));
+}
+
+/* Set value of KEY within this object to the JSON
+   literal true or false, based on V.  */
+
+void
+object::set_bool (const char *key, bool v)
+{
+  set (key, new json::literal (v));
+}
+
 /* class json::array, a subclass of json::value, representing
    an ordered collection of values.  */
 
@@ -311,8 +347,8 @@ static void
 test_writing_objects ()
 {
   object obj;
-  obj.set ("foo", new json::string ("bar"));
-  obj.set ("baz", new json::string ("quux"));
+  obj.set_string ("foo", "bar");
+  obj.set_string ("baz", "quux");
   /* This test relies on json::object writing out key/value pairs
      in key-insertion order.  */
   assert_print_eq (obj, "{\"foo\": \"bar\", \"baz\": \"quux\"}");
