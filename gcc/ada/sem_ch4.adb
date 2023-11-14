@@ -8473,9 +8473,21 @@ package body Sem_Ch4 is
             --  resolution does not depend on the type of the parameter that
             --  includes the indexing operation.
 
-            elsif Nkind (Parent (Par)) in N_Subprogram_Call
-              and then Is_Entity_Name (Name (Parent (Par)))
-            then
+            elsif Nkind (Parent (Par)) in N_Subprogram_Call then
+
+               if not Is_Entity_Name (Name (Parent (Par))) then
+
+                  --  ??? We don't know what to do with an N_Selected_Component
+                  --  node for a prefixed-notation call to AA.BB where AA's
+                  --  type is known, but BB has not yet been resolved. In that
+                  --  case, the preceding Is_Entity_Name call returns False.
+                  --  Incorrectly returning False here will usually work
+                  --  better than incorrectly returning True, so that's what
+                  --  we do for now.
+
+                  return False;
+               end if;
+
                declare
                   Proc : Entity_Id;
 
