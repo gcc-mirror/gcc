@@ -475,7 +475,7 @@ namespace __detail
 
       // __glibcxx_assert((__base & (__base - 1)) == 0);
       // __glibcxx_assert(_DecOnly ? __base <= 8 : __base <= 32);
-      const int __log2_base = __countr_zero(__base);
+      const int __log2_base = __countr_zero(unsigned(__base & 0x3f));
 
       const ptrdiff_t __len = __last - __first;
       ptrdiff_t __i = 0;
@@ -527,9 +527,9 @@ namespace __detail
     __from_chars_alnum(const char*& __first, const char* __last, _Tp& __val,
 		       int __base)
     {
-      // __glibcxx_assert(!_DecOnly || __base <= 10);
+      // __glibcxx_assert(_DecOnly ? __base <= 10 : __base <= 36);
 
-      const int __bits_per_digit = __bit_width(__base);
+      const int __bits_per_digit = __bit_width(unsigned(__base & 0x3f));
       int __unused_bits_lower_bound = __gnu_cxx::__int_traits<_Tp>::__digits;
       for (; __first != __last; ++__first)
 	{
