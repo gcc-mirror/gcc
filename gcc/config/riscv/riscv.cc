@@ -5825,6 +5825,10 @@ riscv_save_return_addr_reg_p (void)
   if (riscv_far_jump_used_p ())
     return true;
 
+  /* We need to save it if anyone has used that.  */
+  if (df_regs_ever_live_p (RETURN_ADDR_REGNUM))
+    return true;
+
   /* Need not to use ra for leaf when frame pointer is turned off by
      option whatever the omit-leaf-frame's value.  */
   if (frame_pointer_needed && crtl->is_leaf
