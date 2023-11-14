@@ -1043,8 +1043,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr days
       operator-(const weekday& __x, const weekday& __y) noexcept
       {
-	auto __n = static_cast<long long>(__x._M_wd) - __y._M_wd;
-	return days{__detail::__modulo(__n, 7)};
+	const auto __n = __x.c_encoding() - __y.c_encoding();
+	return static_cast<int>(__n) >= 0 ? days{__n} : days{__n + 7};
       }
     };
 
