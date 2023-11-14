@@ -21,7 +21,7 @@
 #if 'abcd' /* { dg-warning "(multi-character character constant)|(character constant (is )?too long)" "multi-character charconst" } */
 #endif
 
-#if 'abcdefghi' /* { dg-warning "character constant (is )?too long" "charconst too long" } */
+#if 'abcdefghi' /* { dg-warning "multi-character literal with \[0-9]+ characters exceeds 'int' size of \[0-9]+ bytes" } */
 #endif
 
 #if '' /* { dg-error "empty character constant" "empty charconst" } */
