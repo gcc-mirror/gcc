@@ -238,10 +238,10 @@ diagnostic_context::initialize (int n_opts)
   m_text_callbacks.m_begin_diagnostic = default_diagnostic_starter;
   m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
   m_text_callbacks.m_end_diagnostic = default_diagnostic_finalizer;
-  m_option_enabled = nullptr;
-  m_option_state = nullptr;
-  m_option_name = nullptr;
-  m_get_option_url = nullptr;
+  m_option_callbacks.m_option_enabled_cb = nullptr;
+  m_option_callbacks.m_option_state = nullptr;
+  m_option_callbacks.m_make_option_name_cb = nullptr;
+  m_option_callbacks.m_make_option_url_cb = nullptr;
   m_urlifier = nullptr;
   m_last_location = UNKNOWN_LOCATION;
   m_last_module = nullptr;
@@ -416,6 +416,19 @@ diagnostic_context::set_client_data_hooks (diagnostic_client_data_hooks *hooks)
   /* Ideally we'd use a std::unique_ptr here.  */
   delete m_client_data_hooks;
   m_client_data_hooks = hooks;
+}
+
+void
+diagnostic_context::
+set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
+		  void *option_state,
+		  diagnostic_make_option_name_cb make_option_name_cb,
+		  diagnostic_make_option_url_cb make_option_url_cb)
+{
+  m_option_callbacks.m_option_enabled_cb = option_enabled_cb;
+  m_option_callbacks.m_option_state = option_state;
+  m_option_callbacks.m_make_option_name_cb = make_option_name_cb;
+  m_option_callbacks.m_make_option_url_cb = make_option_url_cb;
 }
 
 void
@@ -1124,9 +1137,7 @@ classify_diagnostic (const diagnostic_context *context,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !context->m_option_enabled (option_index,
-						 context->m_lang_mask,
-						 context->m_option_state)
+	  old_kind = !context->option_enabled_p (option_index)
 	    ? DK_IGNORED : (context->warning_as_error_requested_p ()
 			    ? DK_ERROR : DK_WARNING);
 	  m_classify_diagnostic[option_index] = old_kind;
@@ -1412,18 +1423,12 @@ void
 diagnostic_context::print_option_information (const diagnostic_info &diagnostic,
 					      diagnostic_t orig_diag_kind)
 {
-  char *option_text;
-
-  option_text = m_option_name (this, diagnostic.option_index,
-			       orig_diag_kind, diagnostic.kind);
-
-  if (option_text)
+  if (char *option_text = make_option_name (diagnostic.option_index,
+					    orig_diag_kind, diagnostic.kind))
     {
-      char *option_url = NULL;
-      if (m_get_option_url
-	  && this->printer->url_format != URL_FORMAT_NONE)
-	option_url = m_get_option_url (this,
-				       diagnostic.option_index);
+      char *option_url = nullptr;
+      if (this->printer->url_format != URL_FORMAT_NONE)
+	option_url = make_option_url (diagnostic.option_index);
       pretty_printer * const pp = this->printer;
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
@@ -1458,9 +1463,7 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
 
   /* This tests if the user provided the appropriate -Wfoo or
      -Wno-foo option.  */
-  if (! m_option_enabled (diagnostic->option_index,
-			  m_lang_mask,
-			  m_option_state))
+  if (!option_enabled_p (diagnostic->option_index))
     return false;
 
   /* This tests for #pragma diagnostic changes.  */

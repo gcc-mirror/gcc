@@ -20,9 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_DIAGNOSTIC_H
 #define GCC_OPTS_DIAGNOSTIC_H
 
-extern char *option_name (diagnostic_context *context, int option_index,
+extern char *option_name (const diagnostic_context *context, int option_index,
 			  diagnostic_t orig_diag_kind, diagnostic_t diag_kind);
 
-extern char *get_option_url (diagnostic_context *context, int option_index);
+extern char *get_option_url (const diagnostic_context *context,
+			     int option_index);
 
 #endif

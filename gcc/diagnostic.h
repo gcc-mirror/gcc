@@ -179,6 +179,14 @@ typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
 					 diagnostic_info *,
 					 diagnostic_t);
 
+typedef int (*diagnostic_option_enabled_cb) (int, unsigned, void *);
+typedef char *(*diagnostic_make_option_name_cb) (const diagnostic_context *,
+						 int,
+						 diagnostic_t,
+						 diagnostic_t);
+typedef char *(*diagnostic_make_option_url_cb) (const diagnostic_context *,
+						int);
+
 class edit_context;
 namespace json { class value; }
 class diagnostic_client_data_hooks;
@@ -491,6 +499,41 @@ public:
     return m_diagnostic_count[kind];
   }
 
+  /* Option-related member functions.  */
+  inline bool option_enabled_p (int option_index) const
+  {
+    if (!m_option_callbacks.m_option_enabled_cb)
+      return true;
+    return m_option_callbacks.m_option_enabled_cb
+      (option_index,
+       m_lang_mask,
+       m_option_callbacks.m_option_state);
+  }
+
+  inline char *make_option_name (int option_index,
+				diagnostic_t orig_diag_kind,
+				diagnostic_t diag_kind) const
+  {
+    if (!m_option_callbacks.m_make_option_name_cb)
+      return nullptr;
+    return m_option_callbacks.m_make_option_name_cb (this, option_index,
+						     orig_diag_kind,
+						     diag_kind);
+  }
+
+  inline char *make_option_url (int option_index) const
+  {
+    if (!m_option_callbacks.m_make_option_url_cb)
+      return nullptr;
+    return m_option_callbacks.m_make_option_url_cb (this, option_index);
+  }
+
+  void
+  set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
+		    void *option_state,
+		    diagnostic_make_option_name_cb make_option_name_cb,
+		    diagnostic_make_option_url_cb make_option_url_cb);
+
 private:
   bool includes_seen_p (const line_map_ordinary *map);
 
@@ -606,32 +649,32 @@ public:
   /* Client hook to report an internal error.  */
   void (*m_internal_error) (diagnostic_context *, const char *, va_list *);
 
-  /* Client hook to say whether the option controlling a diagnostic is
-     enabled.  Returns nonzero if enabled, zero if disabled.  */
-  int (*m_option_enabled) (int, unsigned, void *);
-
-  /* Client information to pass as second argument to
-     option_enabled.  */
-  void *m_option_state;
-
-  /* Client hook to return the name of an option that controls a
-     diagnostic.  Returns malloced memory.  The first diagnostic_t
-     argument is the kind of diagnostic before any reclassification
-     (of warnings as errors, etc.); the second is the kind after any
-     reclassification.  May return NULL if no name is to be printed.
-     May be passed 0 as well as the index of a particular option.  */
-  char *(*m_option_name) (diagnostic_context *,
-			  int,
-			  diagnostic_t,
-			  diagnostic_t);
-
-  /* Client hook to return a URL describing the option that controls
-     a diagnostic.  Returns malloced memory.  May return NULL if no URL
-     is available.  May be passed 0 as well as the index of a
-     particular option.  */
-  char *(*m_get_option_url) (diagnostic_context *, int);
-
 private:
+  /* Client-supplied callbacks for working with options.  */
+  struct {
+    /* Client hook to say whether the option controlling a diagnostic is
+       enabled.  Returns nonzero if enabled, zero if disabled.  */
+    diagnostic_option_enabled_cb m_option_enabled_cb;
+
+    /* Client information to pass as second argument to
+       m_option_enabled_cb.  */
+    void *m_option_state;
+
+    /* Client hook to return the name of an option that controls a
+       diagnostic.  Returns malloced memory.  The first diagnostic_t
+       argument is the kind of diagnostic before any reclassification
+       (of warnings as errors, etc.); the second is the kind after any
+       reclassification.  May return NULL if no name is to be printed.
+       May be passed 0 as well as the index of a particular option.  */
+    diagnostic_make_option_name_cb m_make_option_name_cb;
+
+    /* Client hook to return a URL describing the option that controls
+       a diagnostic.  Returns malloced memory.  May return NULL if no URL
+       is available.  May be passed 0 as well as the index of a
+       particular option.  */
+    diagnostic_make_option_url_cb m_make_option_url_cb;
+  } m_option_callbacks;
+
   /* An optional hook for adding URLs to quoted text strings in
      diagnostics.  Only used for the main diagnostic message.  */
   urlifier *m_urlifier;

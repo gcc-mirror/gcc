@@ -1045,10 +1045,10 @@ general_init (const char *argv0, bool init_signals)
   global_dc->m_show_column
     = global_options_init.x_flag_show_column;
   global_dc->m_internal_error = internal_error_function;
-  global_dc->m_option_enabled = option_enabled;
-  global_dc->m_option_state = &global_options;
-  global_dc->m_option_name = option_name;
-  global_dc->m_get_option_url = get_option_url;
+  global_dc->set_option_hooks (option_enabled,
+			       &global_options,
+			       option_name,
+			       get_option_url);
   global_dc->set_urlifier (make_gcc_urlifier ());
 
   if (init_signals)

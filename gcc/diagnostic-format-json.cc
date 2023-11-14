@@ -217,24 +217,18 @@ json_output_format::on_end_diagnostic (diagnostic_info *diagnostic,
   diag_obj->set_string ("message", pp_formatted_text (m_context.printer));
   pp_clear_output_area (m_context.printer);
 
-  char *option_text;
-  option_text = m_context.m_option_name (&m_context, diagnostic->option_index,
-					 orig_diag_kind, diagnostic->kind);
-  if (option_text)
+  if (char *option_text = m_context.make_option_name (diagnostic->option_index,
+						      orig_diag_kind,
+						      diagnostic->kind))
     {
       diag_obj->set_string ("option", option_text);
       free (option_text);
     }
 
-  if (m_context.m_get_option_url)
+  if (char *option_url = m_context.make_option_url (diagnostic->option_index))
     {
-      char *option_url = m_context.m_get_option_url (&m_context,
-						     diagnostic->option_index);
-      if (option_url)
-	{
-	  diag_obj->set_string ("option_url", option_url);
-	  free (option_url);
-	}
+      diag_obj->set_string ("option_url", option_url);
+      free (option_url);
     }
 
   /* If we've already emitted a diagnostic within this auto_diagnostic_group,

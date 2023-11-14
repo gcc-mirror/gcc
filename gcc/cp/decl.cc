@@ -18308,9 +18308,7 @@ finish_function (bool inline_p)
 	      && current_class_ref
 	      && same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
-	      && global_dc->m_option_enabled (OPT_Wreturn_type,
-					      global_dc->m_lang_mask,
-					      global_dc->m_option_state))
+	      && global_dc->option_enabled_p (OPT_Wreturn_type))
 	    add_return_star_this_fixit (&richloc, fndecl);
 	}
       if (cxx_dialect >= cxx14
