@@ -6475,14 +6475,14 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	      }
 	  if (TREE_CODE (TREE_TYPE (args[2])) == ENUMERAL_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function "
-			"%qE has enumerated type", fndecl);
+	      error_at (ARG_LOCATION (2), "argument %u in call to function "
+			"%qE has enumerated type", 3, fndecl);
 	      return false;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (args[2])) == BOOLEAN_TYPE)
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function "
-			"%qE has boolean type", fndecl);
+	      error_at (ARG_LOCATION (2), "argument %u in call to function "
+			"%qE has boolean type", 3, fndecl);
 	      return false;
 	    }
 	  return true;
@@ -6521,6 +6521,72 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	  return true;
 	}
       return false;
+
+    case BUILT_IN_CLZG:
+    case BUILT_IN_CTZG:
+    case BUILT_IN_CLRSBG:
+    case BUILT_IN_FFSG:
+    case BUILT_IN_PARITYG:
+    case BUILT_IN_POPCOUNTG:
+      if (nargs == 2
+	  && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CLZG
+	      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CTZG))
+	{
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (args[1])))
+	    {
+	      error_at (ARG_LOCATION (1), "argument %u in call to function "
+			"%qE does not have integral type", 2, fndecl);
+	      return false;
+	    }
+	  if ((TYPE_PRECISION (TREE_TYPE (args[1]))
+	       > TYPE_PRECISION (integer_type_node))
+	      || (TYPE_PRECISION (TREE_TYPE (args[1]))
+		  == TYPE_PRECISION (integer_type_node)
+		  && TYPE_UNSIGNED (TREE_TYPE (args[1]))))
+	    {
+	      error_at (ARG_LOCATION (1), "argument %u in call to function "
+			"%qE does not have %<int%> type", 2, fndecl);
+	      return false;
+	    }
+	}
+      else if (!builtin_function_validate_nargs (loc, fndecl, nargs, 1))
+	return false;
+
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (args[0])))
+	{
+	  error_at (ARG_LOCATION (0), "argument %u in call to function "
+		    "%qE does not have integral type", 1, fndecl);
+	  return false;
+	}
+      if (TREE_CODE (TREE_TYPE (args[0])) == ENUMERAL_TYPE)
+	{
+	  error_at (ARG_LOCATION (0), "argument %u in call to function "
+		    "%qE has enumerated type", 1, fndecl);
+	  return false;
+	}
+      if (TREE_CODE (TREE_TYPE (args[0])) == BOOLEAN_TYPE)
+	{
+	  error_at (ARG_LOCATION (0), "argument %u in call to function "
+		    "%qE has boolean type", 1, fndecl);
+	  return false;
+	}
+      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FFSG
+	  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CLRSBG)
+	{
+	  if (TYPE_UNSIGNED (TREE_TYPE (args[0])))
+	    {
+	      error_at (ARG_LOCATION (0), "argument 1 in call to function "
+			"%qE has unsigned type", fndecl);
+	      return false;
+	    }
+	}
+      else if (!TYPE_UNSIGNED (TREE_TYPE (args[0])))
+	{
+	  error_at (ARG_LOCATION (0), "argument 1 in call to function "
+		    "%qE has signed type", fndecl);
+	  return false;
+	}
+      return true;
 
     default:
       return true;

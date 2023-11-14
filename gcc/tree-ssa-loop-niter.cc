@@ -2235,14 +2235,18 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
   tree call;
   if (use_ifn)
     {
-      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
-					   integer_type_node, 1, src);
       int val;
       int optab_defined_at_zero
 	= (leading
 	   ? CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val)
 	   : CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val));
-      if (define_at_zero && !(optab_defined_at_zero == 2 && val == prec))
+      tree arg2 = NULL_TREE;
+      if (define_at_zero && optab_defined_at_zero == 2 && val == prec)
+	arg2 = build_int_cst (integer_type_node, val);
+      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
+					   integer_type_node, arg2 ? 2 : 1,
+					   src, arg2);
+      if (define_at_zero && arg2 == NULL_TREE)
 	{
 	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
 				      build_zero_cst (TREE_TYPE (src)));

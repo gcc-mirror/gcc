@@ -1896,8 +1896,14 @@ cmp_operand (operand *o1, operand *o2)
     {
       expr *e1 = static_cast<expr *>(o1);
       expr *e2 = static_cast<expr *>(o2);
-      return (e1->operation == e2->operation
-	      && e1->is_generic == e2->is_generic);
+      if (e1->operation != e2->operation
+	  || e1->is_generic != e2->is_generic)
+	return false;
+      if (e1->operation->kind == id_base::FN
+	  /* For function calls also compare number of arguments.  */
+	  && e1->ops.length () != e2->ops.length ())
+	return false;
+      return true;
     }
   else
     return false;
@@ -3071,6 +3077,26 @@ dt_operand::gen_generic_expr (FILE *f, int indent, const char *opname)
   return 0;
 }
 
+/* Compare 2 fns or generic_fns vector entries for vector sorting.
+   Same operation entries with different number of arguments should
+   be adjacent.  */
+
+static int
+fns_cmp (const void *p1, const void *p2)
+{
+  dt_operand *op1 = *(dt_operand *const *) p1;
+  dt_operand *op2 = *(dt_operand *const *) p2;
+  expr *e1 = as_a <expr *> (op1->op);
+  expr *e2 = as_a <expr *> (op2->op);
+  id_base *b1 = e1->operation;
+  id_base *b2 = e2->operation;
+  if (b1->hashval < b2->hashval)
+    return -1;
+  if (b1->hashval > b2->hashval)
+    return 1;
+  return strcmp (b1->id, b2->id);
+}
+
 /* Generate matching code for the children of the decision tree node.  */
 
 void
@@ -3144,6 +3170,8 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 	     Like DT_TRUE, DT_MATCH serves as a barrier as it can cause
 	     dependent matches to get out-of-order.  Generate code now
 	     for what we have collected sofar.  */
+	  fns.qsort (fns_cmp);
+	  generic_fns.qsort (fns_cmp);
 	  gen_kids_1 (f, indent, gimple, depth, gimple_exprs, generic_exprs,
 		      fns, generic_fns, preds, others);
 	  /* And output the true operand itself.  */
@@ -3160,6 +3188,8 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
     }
 
   /* Generate code for the remains.  */
+  fns.qsort (fns_cmp);
+  generic_fns.qsort (fns_cmp);
   gen_kids_1 (f, indent, gimple, depth, gimple_exprs, generic_exprs,
 	      fns, generic_fns, preds, others);
 }
@@ -3257,14 +3287,21 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 
 	  indent += 4;
 	  fprintf_indent (f, indent, "{\n");
+	  id_base *last_op = NULL;
 	  for (unsigned i = 0; i < fns_len; ++i)
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
-	      if (user_id *u = dyn_cast <user_id *> (e->operation))
-		for (auto id : u->substitutes)
-		  fprintf_indent (f, indent, "case %s:\n", id->id);
-	      else
-		fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+	      if (e->operation != last_op)
+		{
+		  if (i)
+		    fprintf_indent (f, indent, "  break;\n");
+		  if (user_id *u = dyn_cast <user_id *> (e->operation))
+		    for (auto id : u->substitutes)
+		      fprintf_indent (f, indent, "case %s:\n", id->id);
+		  else
+		    fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+		}
+	      last_op = e->operation;
 	      /* We need to be defensive against bogus prototypes allowing
 		 calls with not enough arguments.  */
 	      fprintf_indent (f, indent,
@@ -3273,9 +3310,9 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	      fprintf_indent (f, indent, "    {\n");
 	      fns[i]->gen (f, indent + 6, true, depth);
 	      fprintf_indent (f, indent, "    }\n");
-	      fprintf_indent (f, indent, "  break;\n");
 	    }
 
+	  fprintf_indent (f, indent, "  break;\n");
 	  fprintf_indent (f, indent, "default:;\n");
 	  fprintf_indent (f, indent, "}\n");
 	  indent -= 4;
@@ -3335,18 +3372,25 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 		      "    {\n");
       indent += 4;
 
+      id_base *last_op = NULL;
       for (unsigned j = 0; j < generic_fns.length (); ++j)
 	{
 	  expr *e = as_a <expr *>(generic_fns[j]->op);
 	  gcc_assert (e->operation->kind == id_base::FN);
 
-	  fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+	  if (e->operation != last_op)
+	    {
+	      if (j)
+		fprintf_indent (f, indent, "  break;\n");
+	      fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+	    }
+	  last_op = e->operation;
 	  fprintf_indent (f, indent, "  if (call_expr_nargs (%s) == %d)\n"
 				     "    {\n", kid_opname, e->ops.length ());
 	  generic_fns[j]->gen (f, indent + 6, false, depth);
-	  fprintf_indent (f, indent, "    }\n"
-				     "  break;\n");
+	  fprintf_indent (f, indent, "    }\n");
 	}
+      fprintf_indent (f, indent, "  break;\n");
       fprintf_indent (f, indent, "default:;\n");
 
       indent -= 4;

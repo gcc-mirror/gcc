@@ -9290,7 +9290,9 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
    This is true for some builtins which don't act like normal functions.
    Return 2 if just decay_conversion and removal of excess precision should
    be done, 1 if just decay_conversion.  Return 3 for special treatment of
-   the 3rd argument for __builtin_*_overflow_p.  */
+   the 3rd argument for __builtin_*_overflow_p.  Return 4 for special
+   treatment of the 1st argument for
+   __builtin_{clz,ctz,clrsb,ffs,parity,popcount}g.  */
 
 int
 magic_varargs_p (tree fn)
@@ -9316,6 +9318,14 @@ magic_varargs_p (tree fn)
       case BUILT_IN_ISNORMAL:
       case BUILT_IN_FPCLASSIFY:
 	return 2;
+
+      case BUILT_IN_CLZG:
+      case BUILT_IN_CTZG:
+      case BUILT_IN_CLRSBG:
+      case BUILT_IN_FFSG:
+      case BUILT_IN_PARITYG:
+      case BUILT_IN_POPCOUNTG:
+	return 4;
 
       default:
 	return lookup_attribute ("type generic",
@@ -10122,7 +10132,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   for (; arg_index < vec_safe_length (args); ++arg_index)
     {
       tree a = (*args)[arg_index];
-      if (magic == 3 && arg_index == 2)
+      if ((magic == 3 && arg_index == 2) || (magic == 4 && arg_index == 0))
 	{
 	  /* Do no conversions for certain magic varargs.  */
 	  a = mark_type_use (a);

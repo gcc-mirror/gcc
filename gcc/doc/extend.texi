@@ -14960,6 +14960,48 @@ Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long long}.
 @enddefbuiltin
 
+@defbuiltin{int __builtin_ffsg (...)}
+Similar to @code{__builtin_ffs}, except the argument is type-generic
+signed integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clzg (...)}
+Similar to @code{__builtin_clz}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise) and there is
+optional second argument with int type.  No integral argument promotions
+are performed on the first argument.  If two arguments are specified,
+and first argument is 0, the result is the second argument.  If only
+one argument is specified and it is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ctzg (...)}
+Similar to @code{__builtin_ctz}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise) and there is
+optional second argument with int type.  No integral argument promotions
+are performed on the first argument.  If two arguments are specified,
+and first argument is 0, the result is the second argument.  If only
+one argument is specified and it is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clrsbg (...)}
+Similar to @code{__builtin_clrsb}, except the argument is type-generic
+signed integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountg (...)}
+Similar to @code{__builtin_popcount}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_parityg (...)}
+Similar to @code{__builtin_parity}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
 @defbuiltin{double __builtin_powi (double, int)}
 @defbuiltinx{float __builtin_powif (float, int)}
 @defbuiltinx{{long double} __builtin_powil (long double, int)}

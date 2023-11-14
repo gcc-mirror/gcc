@@ -2863,18 +2863,26 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
     }
 
   /* Check that we have a popcount/clz/ctz builtin.  */
-  if (!is_gimple_call (call) || gimple_call_num_args (call) != 1)
+  if (!is_gimple_call (call))
     return false;
 
-  arg = gimple_call_arg (call, 0);
   lhs = gimple_get_lhs (call);
 
   if (lhs == NULL_TREE)
     return false;
 
   combined_fn cfn = gimple_call_combined_fn (call);
+  if (gimple_call_num_args (call) != 1
+      && (gimple_call_num_args (call) != 2
+	  || cfn == CFN_CLZ
+	  || cfn == CFN_CTZ))
+    return false;
+
+  arg = gimple_call_arg (call, 0);
+
   internal_fn ifn = IFN_LAST;
   int val = 0;
+  bool any_val = false;
   switch (cfn)
     {
     case CFN_BUILT_IN_BSWAP16:
@@ -2889,6 +2897,23 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	{
 	  tree type = TREE_TYPE (arg);
+	  if (TREE_CODE (type) == BITINT_TYPE)
+	    {
+	      if (gimple_call_num_args (call) == 1)
+		{
+		  any_val = true;
+		  ifn = IFN_CLZ;
+		  break;
+		}
+	      if (!tree_fits_shwi_p (gimple_call_arg (call, 1)))
+		return false;
+	      HOST_WIDE_INT at_zero = tree_to_shwi (gimple_call_arg (call, 1));
+	      if ((int) at_zero != at_zero)
+		return false;
+	      ifn = IFN_CLZ;
+	      val = at_zero;
+	      break;
+	    }
 	  if (direct_internal_fn_supported_p (IFN_CLZ, type, OPTIMIZE_FOR_BOTH)
 	      && CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
 					    val) == 2)
@@ -2902,6 +2927,23 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	{
 	  tree type = TREE_TYPE (arg);
+	  if (TREE_CODE (type) == BITINT_TYPE)
+	    {
+	      if (gimple_call_num_args (call) == 1)
+		{
+		  any_val = true;
+		  ifn = IFN_CTZ;
+		  break;
+		}
+	      if (!tree_fits_shwi_p (gimple_call_arg (call, 1)))
+		return false;
+	      HOST_WIDE_INT at_zero = tree_to_shwi (gimple_call_arg (call, 1));
+	      if ((int) at_zero != at_zero)
+		return false;
+	      ifn = IFN_CTZ;
+	      val = at_zero;
+	      break;
+	    }
 	  if (direct_internal_fn_supported_p (IFN_CTZ, type, OPTIMIZE_FOR_BOTH)
 	      && CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
 					    val) == 2)
@@ -2960,8 +3002,18 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
 
   /* Check PHI arguments.  */
   if (lhs != arg0
-      || TREE_CODE (arg1) != INTEGER_CST
-      || wi::to_wide (arg1) != val)
+      || TREE_CODE (arg1) != INTEGER_CST)
+    return false;
+  if (any_val)
+    {
+      if (!tree_fits_shwi_p (arg1))
+	return false;
+      HOST_WIDE_INT at_zero = tree_to_shwi (arg1);
+      if ((int) at_zero != at_zero)
+	return false;
+      val = at_zero;
+    }
+  else if (wi::to_wide (arg1) != val)
     return false;
 
   /* And insert the popcount/clz/ctz builtin and cast stmt before the
@@ -2974,13 +3026,15 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
       reset_flow_sensitive_info (gimple_get_lhs (cast));
     }
   gsi_from = gsi_for_stmt (call);
-  if (ifn == IFN_LAST || gimple_call_internal_p (call))
+  if (ifn == IFN_LAST
+      || (gimple_call_internal_p (call) && gimple_call_num_args (call) == 2))
     gsi_move_before (&gsi_from, &gsi);
   else
     {
       /* For __builtin_c[lt]z* force .C[LT]Z ifn, because only
 	 the latter is well defined at zero.  */
-      call = gimple_build_call_internal (ifn, 1, gimple_call_arg (call, 0));
+      call = gimple_build_call_internal (ifn, 2, gimple_call_arg (call, 0),
+					 build_int_cst (integer_type_node, val));
       gimple_call_set_lhs (call, lhs);
       gsi_insert_before (&gsi, call, GSI_SAME_STMT);
       gsi_remove (&gsi_from, true);

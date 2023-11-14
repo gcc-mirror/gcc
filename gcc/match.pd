@@ -8536,31 +8536,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op (clz:s@2 @0) INTEGER_CST@1)
    (if (integer_zerop (@1) && single_use (@2))
     /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
-    (with { tree type0 = TREE_TYPE (@0);
-	    tree stype = signed_type_for (type0);
-	    HOST_WIDE_INT val = 0;
-	    /* Punt on hypothetical weird targets.  */
-	    if (clz == CFN_CLZ
-		&& CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (type0),
-					      val) == 2
-		&& val == 0)
-	      stype = NULL_TREE;
-	  }
-     (if (stype)
-      (cmp (convert:stype @0) { build_zero_cst (stype); })))
+    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+     (cmp (convert:stype @0) { build_zero_cst (stype); }))
     /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
-    (with { bool ok = true;
-	    HOST_WIDE_INT val = 0;
-	    tree type0 = TREE_TYPE (@0);
-	    /* Punt on hypothetical weird targets.  */
-	    if (clz == CFN_CLZ
-		&& CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (type0),
-					      val) == 2
-		&& val == TYPE_PRECISION (type0) - 1)
-	      ok = false;
-	  }
-     (if (ok && wi::to_wide (@1) == (TYPE_PRECISION (type0) - 1))
-      (op @0 { build_one_cst (type0); })))))))
+    (if (wi::to_wide (@1) == TYPE_PRECISION (TREE_TYPE (@0)) - 1)
+     (op @0 { build_one_cst (TREE_TYPE (@0)); }))))))
+(for op (eq ne)
+     cmp (lt ge)
+ (simplify
+  (op (IFN_CLZ:s@2 @0 @3) INTEGER_CST@1)
+  (if (integer_zerop (@1) && single_use (@2))
+   /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
+   (with { tree type0 = TREE_TYPE (@0);
+	   tree stype = signed_type_for (TREE_TYPE (@0));
+	   /* Punt if clz(0) == 0.  */
+	   if (integer_zerop (@3))
+	     stype = NULL_TREE;
+	 }
+    (if (stype)
+     (cmp (convert:stype @0) { build_zero_cst (stype); })))
+   /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
+   (with { bool ok = true;
+	   tree type0 = TREE_TYPE (@0);
+	   /* Punt if clz(0) == prec - 1.  */
+	   if (wi::to_widest (@3) == TYPE_PRECISION (type0) - 1)
+	     ok = false;
+	 }
+    (if (ok && wi::to_wide (@1) == (TYPE_PRECISION (type0) - 1))
+     (op @0 { build_one_cst (type0); }))))))
 
 /* CTZ simplifications.  */
 (for ctz (CTZ)
@@ -8585,22 +8588,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      val++;
 		  }
 	      }
-	    bool zero_res = false;
-	    HOST_WIDE_INT zero_val = 0;
 	    tree type0 = TREE_TYPE (@0);
 	    int prec = TYPE_PRECISION (type0);
-	    if (ctz == CFN_CTZ
-		&& CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (type0),
-					      zero_val) == 2)
-	      zero_res = true;
 	  }
-     (if (val <= 0)
-      (if (ok && (!zero_res || zero_val >= val))
-       { constant_boolean_node (cmp == EQ_EXPR ? true : false, type); })
-      (if (val >= prec)
-       (if (ok && (!zero_res || zero_val < val))
-	{ constant_boolean_node (cmp == EQ_EXPR ? false : true, type); })
-       (if (ok && (!zero_res || zero_val < 0 || zero_val >= prec))
+     (if (ok && prec <= MAX_FIXED_MODE_SIZE)
+      (if (val <= 0)
+       { constant_boolean_node (cmp == EQ_EXPR ? true : false, type); }
+       (if (val >= prec)
+	{ constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }
 	(cmp (bit_and @0 { wide_int_to_tree (type0,
 					     wi::mask (val, false, prec)); })
 	     { build_zero_cst (type0); })))))))
@@ -8608,19 +8603,68 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    /* __builtin_ctz (x) == C -> (x & ((1 << (C + 1)) - 1)) == (1 << C).  */
    (op (ctz:s @0) INTEGER_CST@1)
-    (with { bool zero_res = false;
-	    HOST_WIDE_INT zero_val = 0;
-	    tree type0 = TREE_TYPE (@0);
+    (with { tree type0 = TREE_TYPE (@0);
 	    int prec = TYPE_PRECISION (type0);
-	    if (ctz == CFN_CTZ
-		&& CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_TYPE_MODE (type0),
-					      zero_val) == 2)
-	      zero_res = true;
 	  }
+     (if (prec <= MAX_FIXED_MODE_SIZE)
+      (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) >= prec)
+       { constant_boolean_node (op == EQ_EXPR ? false : true, type); }
+       (op (bit_and @0 { wide_int_to_tree (type0,
+					   wi::mask (tree_to_uhwi (@1) + 1,
+						     false, prec)); })
+	   { wide_int_to_tree (type0,
+			       wi::shifted_mask (tree_to_uhwi (@1), 1,
+						 false, prec)); })))))))
+(for op (ge gt le lt)
+     cmp (eq eq ne ne)
+ (simplify
+  /* __builtin_ctz (x) >= C -> (x & ((1 << C) - 1)) == 0.  */
+  (op (IFN_CTZ:s @0 @2) INTEGER_CST@1)
+   (with { bool ok = true;
+	   HOST_WIDE_INT val = 0;
+	   if (!tree_fits_shwi_p (@1))
+	     ok = false;
+	   else
+	     {
+	       val = tree_to_shwi (@1);
+	       /* Canonicalize to >= or <.  */
+	       if (op == GT_EXPR || op == LE_EXPR)
+		 {
+		   if (val == HOST_WIDE_INT_MAX)
+		     ok = false;
+		   else
+		     val++;
+		 }
+	     }
+	   HOST_WIDE_INT zero_val = tree_to_shwi (@2);
+	   tree type0 = TREE_TYPE (@0);
+	   int prec = TYPE_PRECISION (type0);
+	   if (prec > MAX_FIXED_MODE_SIZE)
+	     ok = false;
+	  }
+     (if (val <= 0)
+      (if (ok && zero_val >= val)
+       { constant_boolean_node (cmp == EQ_EXPR ? true : false, type); })
+      (if (val >= prec)
+       (if (ok && zero_val < val)
+	{ constant_boolean_node (cmp == EQ_EXPR ? false : true, type); })
+       (if (ok && (zero_val < 0 || zero_val >= prec))
+	(cmp (bit_and @0 { wide_int_to_tree (type0,
+					     wi::mask (val, false, prec)); })
+	     { build_zero_cst (type0); })))))))
+(for op (eq ne)
+ (simplify
+  /* __builtin_ctz (x) == C -> (x & ((1 << (C + 1)) - 1)) == (1 << C).  */
+  (op (IFN_CTZ:s @0 @2) INTEGER_CST@1)
+   (with { HOST_WIDE_INT zero_val = tree_to_shwi (@2);
+	   tree type0 = TREE_TYPE (@0);
+	   int prec = TYPE_PRECISION (type0);
+	 }
+    (if (prec <= MAX_FIXED_MODE_SIZE)
      (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) >= prec)
-      (if (!zero_res || zero_val != wi::to_widest (@1))
+      (if (zero_val != wi::to_widest (@1))
        { constant_boolean_node (op == EQ_EXPR ? false : true, type); })
-      (if (!zero_res || zero_val < 0 || zero_val >= prec)
+      (if (zero_val < 0 || zero_val >= prec)
        (op (bit_and @0 { wide_int_to_tree (type0,
 					   wi::mask (tree_to_uhwi (@1) + 1,
 						     false, prec)); })
@@ -8757,13 +8801,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (ne @0 integer_zerop@1) (func (convert?@3 @0)) INTEGER_CST@2)
   (with { int val;
 	  internal_fn ifn = IFN_LAST;
-	  if (direct_internal_fn_supported_p (IFN_CLZ, type, OPTIMIZE_FOR_BOTH)
-	      && CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
-					    val) == 2)
+	  if (TREE_CODE (TREE_TYPE (@3)) == BITINT_TYPE)
+	    {
+	      if (tree_fits_shwi_p (@2))
+		{
+		  HOST_WIDE_INT valw = tree_to_shwi (@2);
+		  if ((int) valw == valw)
+		    {
+		      val = valw;
+		      ifn = IFN_CLZ;
+		    }
+		}
+	    }
+	  else if (direct_internal_fn_supported_p (IFN_CLZ, TREE_TYPE (@3),
+						   OPTIMIZE_FOR_BOTH)
+		   && CLZ_DEFINED_VALUE_AT_ZERO
+			(SCALAR_INT_TYPE_MODE (TREE_TYPE (@3)), val) == 2)
 	    ifn = IFN_CLZ;
 	}
    (if (ifn == IFN_CLZ && wi::to_widest (@2) == val)
-    (IFN_CLZ @3)))))
+    (IFN_CLZ @3 @2)))))
+(simplify
+ (cond (ne @0 integer_zerop@1) (IFN_CLZ (convert?@3 @0) INTEGER_CST@2) @2)
+  (with { int val;
+	  internal_fn ifn = IFN_LAST;
+	  if (TREE_CODE (TREE_TYPE (@3)) == BITINT_TYPE)
+	    ifn = IFN_CLZ;
+	  else if (direct_internal_fn_supported_p (IFN_CLZ, TREE_TYPE (@3),
+						   OPTIMIZE_FOR_BOTH))
+	    ifn = IFN_CLZ;
+	}
+   (if (ifn == IFN_CLZ)
+    (IFN_CLZ @3 @2))))
 
 /* a != 0 ? CTZ(a) : CST -> .CTZ(a) where CST is the result of the internal function for 0. */
 (for func (CTZ)
@@ -8771,13 +8840,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (ne @0 integer_zerop@1) (func (convert?@3 @0)) INTEGER_CST@2)
   (with { int val;
 	  internal_fn ifn = IFN_LAST;
-	  if (direct_internal_fn_supported_p (IFN_CTZ, type, OPTIMIZE_FOR_BOTH)
-	      && CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
-					    val) == 2)
+	  if (TREE_CODE (TREE_TYPE (@3)) == BITINT_TYPE)
+	    {
+	      if (tree_fits_shwi_p (@2))
+		{
+		  HOST_WIDE_INT valw = tree_to_shwi (@2);
+		  if ((int) valw == valw)
+		    {
+		      val = valw;
+		      ifn = IFN_CTZ;
+		    }
+		}
+	    }
+	  else if (direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@3),
+						   OPTIMIZE_FOR_BOTH)
+		   && CTZ_DEFINED_VALUE_AT_ZERO
+			(SCALAR_INT_TYPE_MODE (TREE_TYPE (@3)), val) == 2)
 	    ifn = IFN_CTZ;
 	}
    (if (ifn == IFN_CTZ && wi::to_widest (@2) == val)
-    (IFN_CTZ @3)))))
+    (IFN_CTZ @3 @2)))))
+(simplify
+ (cond (ne @0 integer_zerop@1) (IFN_CTZ (convert?@3 @0) INTEGER_CST@2) @2)
+  (with { int val;
+	  internal_fn ifn = IFN_LAST;
+	  if (TREE_CODE (TREE_TYPE (@3)) == BITINT_TYPE)
+	    ifn = IFN_CTZ;
+	  else if (direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@3),
+						   OPTIMIZE_FOR_BOTH))
+	    ifn = IFN_CTZ;
+	}
+   (if (ifn == IFN_CTZ)
+    (IFN_CTZ @3 @2))))
 #endif
 
 /* Common POPCOUNT/PARITY simplifications.  */

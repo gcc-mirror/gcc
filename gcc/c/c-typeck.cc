@@ -3416,6 +3416,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES (TREE_TYPE (fundecl)));
   bool type_generic_remove_excess_precision = false;
   bool type_generic_overflow_p = false;
+  bool type_generic_bit_query = false;
   tree selector;
 
   /* Change pointer to function to the function itself for
@@ -3469,6 +3470,17 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	    /* The last argument of these type-generic builtins
 	       should not be promoted.  */
 	    type_generic_overflow_p = true;
+	    break;
+
+	  case BUILT_IN_CLZG:
+	  case BUILT_IN_CTZG:
+	  case BUILT_IN_CLRSBG:
+	  case BUILT_IN_FFSG:
+	  case BUILT_IN_PARITYG:
+	  case BUILT_IN_POPCOUNTG:
+	    /* The first argument of these type-generic builtins
+	       should not be promoted.  */
+	    type_generic_bit_query = true;
 	    break;
 
 	  default:
@@ -3606,11 +3618,13 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	    }
 	}
       else if ((excess_precision && !type_generic)
-	       || (type_generic_overflow_p && parmnum == 2))
+	       || (type_generic_overflow_p && parmnum == 2)
+	       || (type_generic_bit_query && parmnum == 0))
 	/* A "double" argument with excess precision being passed
 	   without a prototype or in variable arguments.
 	   The last argument of __builtin_*_overflow_p should not be
-	   promoted.  */
+	   promoted, similarly the first argument of
+	   __builtin_{clz,ctz,clrsb,ffs,parity,popcount}g.  */
 	parmval = convert (valtype, val);
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
