@@ -1,3 +1,37 @@
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111842
+	PR c++/112498
+	* call.cc (convert_like_internal): Use OPT_Wnarrowing for
+	pedwarns about illformed conversions involving extended
+	floating-point types. Clarify that ISO C++ requires these
+	diagnostics.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* call.cc (magic_varargs_p): Return 4 for
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	(build_over_call): Don't promote first argument of
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	* cp-gimplify.cc (cp_gimplify_expr): For BUILT_IN_C{L,T}ZG use
+	c_gimplify_expr.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79620
+	* cp-tree.h (STRIP_REFERENCE_REF): Define.
+	* semantics.cc (outer_var_p): Assert REFERENCE_REF_P is false.
+	(finish_decltype_type): Look through implicit INDIRECT_REF when
+	deciding whether to call capture_decltype.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79378
+	PR c++/96917
+	* semantics.cc (finish_decltype_type): Handle an id-expression
+	naming a capture proxy specially.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* cp-tree.h (cp_omp_declare_target_attr): Add indirect field.

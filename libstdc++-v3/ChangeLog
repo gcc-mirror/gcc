@@ -1,3 +1,187 @@
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+
+2023-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/file/io.cc: Double timeout using
+	dg-timeout-factor.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/local/io.cc: Likewise.
+	* testsuite/std/time/clock/system/io.cc: Likewise.
+	* testsuite/std/time/clock/tai/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+
+2023-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112480
+	* include/std/optional (_Optional_payload_base::_M_reset): Set
+	_M_engaged to false unconditionally.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112467
+	* include/bits/stl_bvector.h (_M_assume_normalized): Do not use
+	statement form of assume attribute for Clang.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (operator==, operator<=>): Remove
+	redundant overloads (LWG 3950).
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/headers/complex.h/std_c++11.h: Moved to...
+	* testsuite/26_numerics/headers/complex.h/std_c++11.cc: ...here.
+	* testsuite/26_numerics/headers/complex.h/std_c++98.h: Moved to...
+	* testsuite/26_numerics/headers/complex.h/std_c++98.cc: ...here.
+	Check macro first and then #undef.
+	* testsuite/26_numerics/headers/complex.h/std_gnu++11.h: Moved to...
+	* testsuite/26_numerics/headers/complex.h/std_gnu++11.cc: ...here.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112473
+	* include/bits/utility.h (integer_sequence): Add static_assert.
+	* testsuite/20_util/integer_sequence/112473.cc: New test.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/pair/dangling_ref.cc: Add hosted effective
+	target for specifiers using c++17_down.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic_is_lock_free)
+	(atomic_load_explicit, atomic_load, atomic_store_explicit)
+	(atomic_store, atomic_exchange_explicit, atomic_exchange)
+	(atomic_compare_exchange_strong, atomic_compare_exchange_weak)
+	(atomic_compare_exchange_strong_explicit)
+	(atomic_compare_exchange_weak_explicit): Add deprecated
+	attribute for C++20 and later.
+	* testsuite/20_util/shared_ptr/atomic/1.cc: Suppress deprecated
+	warnings.
+	* testsuite/20_util/shared_ptr/atomic/2.cc: Likewise.
+	* testsuite/20_util/shared_ptr/atomic/3.cc: Likewise.
+	* testsuite/29_atomics/atomic/lwg3220.cc: Likewise.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_mutex.h (lock_guard): Add [[nodiscard]]
+	attribute to constructors.
+	* include/bits/unique_lock.h (unique_lock): Likewise.
+	* include/std/mutex (scoped_lock, scoped_lock<Mutex>): Likewise.
+	* testsuite/30_threads/lock_guard/cons/nodiscard.cc: New test.
+	* testsuite/30_threads/scoped_lock/cons/nodiscard.cc: New test.
+	* testsuite/30_threads/unique_lock/cons/nodiscard.cc: New test.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span, as_bytes, as_writable_bytes): Add
+	[[nodiscard]] attribute on all non-void functions.
+	* testsuite/23_containers/span/back_assert_neg.cc: Suppress
+	nodiscard warning.
+	* testsuite/23_containers/span/back_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_neg.cc: Likewise.
+	* testsuite/23_containers/span/nodiscard.cc: New test.
+
+2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111638
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* linkage.m4 (GLIBCXX_MAYBE_UNDERSCORED_FUNCS): Remove.
+	(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1): Do not check for _foo.
+	(GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1): Likewise.
+	(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2): Likewise.
+	(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3): Likewise.
+	(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2): Do not use
+	GLIBCXX_MAYBE_UNDERSCORED_FUNCS.
+
+2023-11-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/79700
+	* include/c_global/cmath (acosf, acosl, asinf, asinl, atanf)
+	(atanl, atan2f, atan2l, ceilf, ceill, cosf, cosl, coshf, coshl)
+	(expf, expl, fabsf, fabsl, floorf, floorl, fmodf, fmodl, frexpf)
+	(frexpl, ldexpf, ldexpl, logf, logl, log10f, log10l, modff)
+	(modfl, powf, powl, sinf, sinl, sinhf, sinhl, sqrtf, sqrtl, tanf)
+	(tanl, tanhf, tanhl): Add using-declarations in namespace std.
+	* testsuite/26_numerics/headers/cmath/equivalent_functions.cc:
+	New test.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++17.cc:
+	Add checks for existence of above names.
+
+2023-11-09  Arsen Arsenović  <arsen@aarsen.me>
+
+	* testsuite/20_util/scoped_allocator/noexcept.cc: Mark as
+	requiring hosted.
+
+2023-11-09  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/memoryfwd.h: Remove HOSTED check around allocator
+	and its specializations.
+
+2023-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112453
+	* include/std/ranges (__detail::__box<_Tp>::operator*): Define
+	&& overloads as well.
+	(__detail::__take_of_repeat_view): Forward __r when accessing
+	its _M_value member.
+	(__detail::__drop_of_repeat_view): Likewise.
+	* testsuite/std/ranges/repeat/1.cc (test07): New test.
+
+2023-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_RehashStateGuard): New.
+	(_Insert_base<>::_M_insert_range(_IIt, _IIt, const _NodeGet&, false_type)):
+	Adapt.
+	* include/bits/hashtable.h (__rehash_guard_t): New.
+	(__rehash_state): Remove.
+	(_M_rehash): Remove.
+	(_M_rehash_aux): Rename into _M_rehash.
+	(_M_assign_elements, _M_insert_unique_node, _M_insert_multi_node): Adapt.
+	(rehash): Adapt.
+
+2023-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(struct _NodePtrGuard<_HashtableAlloc, _NodePtr>): New.
+	(_ReuseAllocNode::operator()(_Args&&...)): Use latter to guard allocated node
+	pointer while constructing in place the value_type instance.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/110807
+	* include/bits/stl_bvector.h (_Bit_iterator_base): Add
+	_M_assume_normalized member function.  Call it in _M_bump_up,
+	_M_bump_down, _M_incr, operator==, operator<=>, operator<, and
+	operator-.
+	(_Bit_iterator): Also call it in operator*.
+	(_Bit_const_iterator): Likewise.
+
 2023-11-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h

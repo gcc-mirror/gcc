@@ -1,3 +1,24 @@
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* c-common.cc (check_builtin_function_arguments): Handle
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	* c-gimplify.cc (c_gimplify_expr): If __builtin_c[lt]zg second
+	argument hasn't been folded into constant yet, transform it to one
+	argument call inside of a COND_EXPR which for first argument 0
+	returns the second argument.
+
+2023-11-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/110815
+	PR c/112428
+	* c-attribs.cc (build_attr_access_from_parms): Synthesize
+	nonnull attribute for parameters declared with `static`.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* c.opt (Wreturn-mismatch): New.
+
 2023-11-08  Florian Weimer  <fweimer@redhat.com>
 
 	* c.opt (fpermissive): Enable for C and ObjC.

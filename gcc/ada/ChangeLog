@@ -1,3 +1,18 @@
+2023-11-10  Andris Pavēnis  <andris.pavenis@iki.fi>
+
+	* expect.c (__gnat_waitpid): fix syntax errors
+
+2023-11-09  Simon Wright  <simon@pushface.org>
+
+	PR ada/111813
+	* libgnat/a-calfor.adb (Value (2)): Allow values of
+	parameter Elapsed_Time greater than or equal to 24 hours, by doing
+	the hour calculations in Natural rather than Hour_Number (0 ..
+	23). Calculate the result directly rather than by using Seconds_Of
+	(whose Hour parameter is of type Hour_Number).
+	If an exception occurs of type Constraint_Error, re-raise it
+	rather than raising a new CE.
+
 2023-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/utils.cc (flag_isoc2x): Rename to flag_isoc23.

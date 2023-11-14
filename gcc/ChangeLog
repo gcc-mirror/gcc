@@ -1,3 +1,906 @@
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112523
+	PR ada/112514
+	* config/i386/i386.md (<insn><dwi>3_doubleword_lowpart): Move
+	operands[1] aka low part of input rather than operands[3] aka high
+	part of input to output if not the same register.
+
+2023-11-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config.gcc: Add s390-gen-builtins.h to target_gtfiles.
+	* config/s390/s390-builtins.h (s390_builtin_types)
+	(s390_builtin_fn_types, s390_builtin_decls): Add GTY marker.
+	* config/s390/t-s390 (EXTRA_GTYPE_DEPS): Add s390-gen-builtins.h.
+	Add build rule for s390-gen-builtins.h.
+
+2023-11-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-c.cc (s390_fn_types_compatible): Add a check
+	for error_mark_node.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* builtins.def (BUILT_IN_CLZG, BUILT_IN_CTZG, BUILT_IN_CLRSBG,
+	BUILT_IN_FFSG, BUILT_IN_PARITYG, BUILT_IN_POPCOUNTG): New
+	builtins.
+	* builtins.cc (fold_builtin_bit_query): New function.
+	(fold_builtin_1): Use it for
+	BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	(fold_builtin_2): Use it for BUILT_IN_{CLZ,CTZ}G.
+	* fold-const-call.cc: Fix comment typo on tm.h inclusion.
+	(fold_const_call_ss): Handle
+	CFN_BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+	(fold_const_call_sss): New function.
+	(fold_const_call_1): Call it for 2 argument functions returning
+	scalar when passed 2 INTEGER_CSTs.
+	* genmatch.cc (cmp_operand): For function calls also compare
+	number of arguments.
+	(fns_cmp): New function.
+	(dt_node::gen_kids): Sort fns and generic_fns.
+	(dt_node::gen_kids_1): Handle fns with the same id but different
+	number of arguments.
+	* match.pd (CLZ simplifications): Drop checks for defined behavior
+	at zero.  Add variant of simplifications for IFN_CLZ with 2 arguments.
+	(CTZ simplifications): Drop checks for defined behavior at zero,
+	don't optimize precisions above MAX_FIXED_MODE_SIZE.  Add variant of
+	simplifications for IFN_CTZ with 2 arguments.
+	(a != 0 ? CLZ(a) : CST -> .CLZ(a)): Use TREE_TYPE (@3) instead of
+	type, add BITINT_TYPE handling, create 2 argument IFN_CLZ rather than
+	one argument.  Add variant for matching CLZ with 2 arguments.
+	(a != 0 ? CTZ(a) : CST -> .CTZ(a)): Similarly.
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_bit_query): New
+	method.
+	(bitint_large_huge::lower_call): Use it for IFN_{CLZ,CTZ,CLRSB,FFS}
+	and IFN_{PARITY,POPCOUNT} calls.
+	* gimple-range-op.cc (cfn_clz::fold_range): Don't check
+	CLZ_DEFINED_VALUE_AT_ZERO for m_gimple_call_internal_p, instead
+	assume defined value at zero if the call has 2 arguments and use
+	second argument value for that case.
+	(cfn_ctz::fold_range): Similarly.
+	(gimple_range_op_handler::maybe_builtin_call): Use op_cfn_clz_internal
+	or op_cfn_ctz_internal only if internal fn call has 2 arguments and
+	set m_op2 in that case.
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern,
+	vect_recog_popcount_clz_ctz_ffs_pattern): For value defined at zero
+	use second argument of calls if present, otherwise assume UB at zero,
+	create 2 argument .CLZ/.CTZ calls if needed.
+	* tree-vect-stmts.cc (vectorizable_call): Handle 2 argument .CLZ/.CTZ
+	calls.
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Create 2 argument
+	.CLZ/.CTZ calls if needed.
+	* tree-ssa-forwprop.cc (simplify_count_trailing_zeroes): Create 2
+	argument .CTZ calls if needed.
+	* tree-ssa-phiopt.cc (cond_removal_in_builtin_zero_pattern): Handle
+	2 argument .CLZ/.CTZ calls, handle BITINT_TYPE, create 2 argument
+	.CLZ/.CTZ calls.
+	* doc/extend.texi (__builtin_clzg, __builtin_ctzg, __builtin_clrsbg,
+	__builtin_ffsg, __builtin_parityg, __builtin_popcountg): Document.
+
+2023-11-14  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112330
+	* config/loongarch/genopts/loongarch.opt.in: Add
+	-m[no]-pass-relax-to-as.  Change the default of -m[no]-relax to
+	account conditional branch relaxation support status.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* configure.ac (gcc_cv_as_loongarch_cond_branch_relax): Check if
+	the assembler supports conditional branch relaxation.
+	* configure: Regenerate.
+	* config.in: Regenerate.  Note that there are some unrelated
+	changes introduced by r14-5424 (which does not contain a
+	config.in regeneration).
+	* config/loongarch/loongarch-opts.h
+	(HAVE_AS_COND_BRANCH_RELAXATION): Define to 0 if not defined.
+	* config/loongarch/loongarch-driver.h (ASM_MRELAX_DEFAULT):
+	Define.
+	(ASM_MRELAX_SPEC): Define.
+	(ASM_SPEC): Use ASM_MRELAX_SPEC instead of "%{mno-relax}".
+	* config/loongarch/loongarch.cc: Take the setting of
+	-m[no-]relax into account when determining the default of
+	-mexplicit-relocs=.
+	* doc/invoke.texi: Document -m[no-]relax and
+	-m[no-]pass-mrelax-to-as for LoongArch.  Update the default
+	value of -mexplicit-relocs=.
+
+2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/112496
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Return
+	false when !tree_nop_conversion_p (TREE_TYPE (vectype),
+	TREE_TYPE (init_expr)).
+
+2023-11-14  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/sync.md (mem_thread_fence): Remove redundant
+	check.
+	(mem_thread_fence_1): Emit finer-grained DBAR hints for
+	different memory models, instead of 0.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112511
+	* tree.cc (type_contains_placeholder_1): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/112435
+	* config/i386/sse.md (avx512vl_shuf_<shuffletype>32x4_1<mask_name>,
+	<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>): Add
+	alternative with just x instead of v constraints and xjm instead of
+	vm and use vblendps as optimization only with that alternative.
+
+2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/105735
+	PR tree-optimization/111972
+	* tree-scalar-evolution.cc
+	(analyze_and_compute_bitop_with_inv_effect): Handle bitop with
+	INTEGER_CST.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+	* Makefile.in (LIBDEPS): Remove (potential) ./ prefix from
+	LIBINTL_DEP.
+	* doc/install.texi: Document new (notable) flags added by the
+	optional gettext tree and by AM_GNU_GETTEXT.  Document libintl/libc
+	with gettext dependency.
+
+2023-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.h (gen_pushfl): New prototype.
+	(gen_popfl): Ditto.
+	* config/i386/i386-expand.cc (ix86_expand_builtin)
+	[case IX86_BUILTIN_READ_FLAGS]: Use gen_pushfl.
+	[case IX86_BUILTIN_WRITE_FLAGS]: Use gen_popfl.
+	* config/i386/i386.cc (gen_pushfl): New function.
+	(gen_popfl): Ditto.
+	* config/i386/i386.md (unspec): Add UNSPEC_PUSHFL and UNSPEC_POPFL.
+	(@pushfl<mode>2): Rename from *pushfl<mode>2.
+	Rewrite as unspec using UNSPEC_PUSHFL.
+	(@popfl<mode>1): Rename from *popfl<mode>1.
+	Rewrite as unspec using UNSPEC_POPFL.
+
+2023-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112494
+	* config/i386/i386.cc (ix86_cc_mode) [default]: Return CCmode.
+
+2023-11-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-vsetvl.cc (source_equal_p): Use pointer
+	equality for REG_EQUAL.
+
+2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* tree-data-ref.cc (runtime_alias_check_p): Reject checks
+	between different address spaces.
+
+2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112487
+	* tree-inline.cc (setup_one_parameter): When the parameter
+	is unused only insert a debug bind when there's not a gross
+	mismatch in value and declared parameter type.  Do not assert
+	there effectively isn't.
+
+2023-11-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc
+	(rvv_builder::combine_sequence_use_merge_profitable_p): New function.
+	(expand_vector_init_merge_combine_sequence): Ditto.
+	(expand_vec_init): Adapt for new optimization.
+
+2023-11-13  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_expand_vector_init_duplicate): Handle V4HF/V4BF and
+	V2HF/V2BF.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_expand_vector_init_one_var): Ditto.
+	(ix86_expand_vector_init_general): Ditto.
+	(ix86_expand_vector_set_var): Ditto.
+	(ix86_expand_vector_set): Ditto.
+	(ix86_expand_vector_extract): Ditto.
+	* config/i386/mmx.md
+	(mmxdoublevecmode): Extend to V4HF/V4BF/V2HF/V2BF.
+	(*mmx_pinsrw): Extend to V4FI_64, add a new alternative (&x,
+	x, x), add a new define_split after the pattern.
+	(*mmx_pextrw<mode>): New define_insn.
+	(mmx_pshufw_1): Rename to ..
+	(mmx_pshufw<mode>_1): .. this, extend to V4FI_64.
+	(*mmx_pblendw64): Extend to V4FI_64.
+	(*vec_dup<mode>): New define_insn.
+	(vec_setv4hi): Rename to ..
+	(vec_set<mode>): .. this, and extend to V4FI_64
+	(vec_extractv4hihi): Rename to ..
+	(vec_extract<mode><mmxscalarmodelower>): .. this, and extend
+	to V4FI_64.
+	(vec_init<mode><mmxscalarmodelower>): New define_insn.
+	(*pinsrw): Extend to V2FI_32, add a new alternative (&x,
+	x, x), and add a new define_split after it.
+	(*pextrw<mode>): New define_insn.
+	(vec_setv2hi): Rename to ..
+	(vec_set<mode>): .. this, extend to V2FI_32.
+	(vec_extractv2hihi): Rename to ..
+	(vec_extract<mode><mmxscalarmodelower>): .. this, extend to
+	V2FI_32.
+	(*punpckwd): Extend to V2FI_32.
+	(*pshufw_1): Rename to ..
+	(*pshufw<mode>_1): .. this, extend to V2FI_32.
+	(vec_initv2hihi): Rename to ..
+	(vec_init<mode><mmxscalarmodelower>): .. this, and extend to
+	V2FI_32.
+	(*vec_dup<mode>): New define_insn.
+	* config/i386/sse.md (*vec_extract<mode>): Refine constraint
+	from v to Yw.
+
+2023-11-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (UNSPEC_ARC_CC_NEZ): New UNSPEC that
+	represents the carry flag being set if the operand is non-zero.
+	(adc_f): New define_insn representing adc with updated flags.
+	(ashrdi3): New define_expand that only handles shifts by 1.
+	(ashrdi3_cnt1): New pre-reload define_insn_and_split.
+	(lshrdi3): New define_expand that only handles shifts by 1.
+	(lshrdi3_cnt1): New pre-reload define_insn_and_split.
+	(rrcsi2): New define_insn for rrc (SImode rotate right through carry).
+	(rrcsi2_carry): Likewise for rrc.f, as above but updating flags.
+	(rotldi3): New define_expand that only handles rotates by 1.
+	(rotldi3_cnt1): New pre-reload define_insn_and_split.
+	(rotrdi3): New define_expand that only handles rotates by 1.
+	(rotrdi3_cnt1): New pre-reload define_insn_and_split.
+	(lshrsi3_cnt1_carry): New define_insn for lsr.f.
+	(ashrsi3_cnt1_carry): New define_insn for asr.f.
+	(btst_0_carry): New define_insn for asr.f without result.
+
+2023-11-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.cc (TARGET_FOLD_BUILTIN): Define to
+	arc_fold_builtin.
+	(arc_fold_builtin): New function.  Convert ARC_BUILTIN_SWAP
+	into a rotate.  Evaluate ARC_BUILTIN_NORM and
+	ARC_BUILTIN_NORMW of constant arguments.
+	* config/arc/arc.md (UNSPEC_ARC_SWAP): Delete.
+	(normw): Make output template/assembler whitespace consistent.
+	(swap): Remove define_insn, only use of SWAP UNSPEC.
+	* config/arc/builtins.def: Tweak indentation.
+	(SWAP): Expand using rotlsi2_cnt16 instead of using swap.
+
+2023-11-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (<insn><dwi>3_doubleword_lowpart): New
+	define_insn_and_split to optimize register usage of doubleword
+	right shifts followed by truncation.
+
+2023-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/constraints.md: Remove j constraint letter from list of
+	unused letters.
+
+2023-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/112483
+	* simplify-rtx.cc (simplify_binary_operation_1) <case COPYSIGN>:
+	Fix the simplification of (fcopysign x, NEGATIVE_CONST).
+
+2023-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111967
+	* gimple-range-cache.cc (block_range_cache::set_bb_range): Grow
+	m_ssa_ranges to num_ssa_names rather than num_ssa_names + 1.
+	(block_range_cache::dump): Iterate from 1 rather than 0.  Don't use
+	ssa_name (x) unless m_ssa_ranges[x] is non-NULL.  Iterate to
+	m_ssa_ranges.length () rather than num_ssa_names.
+
+2023-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (LD_AT_LEAST_32_BIT): New mode
+	iterator.
+	(ST_ANY): New mode iterator.
+	(define_peephole2): Use LD_AT_LEAST_32_BIT instead of GPR and
+	ST_ANY instead of QHWD for applicable patterns.
+
+2023-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112476
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vec_cond_mask_expr): Call simplify_gen_subreg
+	instead of gen_rtx_SUBREG.
+
+2023-11-13  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Add bridge mode to lrint and lround
+	pattern.
+	* config/riscv/riscv-protos.h (expand_vec_lrint): Add new arg
+	bridge machine mode.
+	(expand_vec_lround): Ditto.
+	* config/riscv/riscv-v.cc (emit_vec_widden_cvt_f_f): New helper
+	func impl to emit vfwcvt.f.f.
+	(emit_vec_rounding_to_integer): Handle the HF to DI rounding
+	with the bridge mode.
+	(expand_vec_lrint): Reorder the args.
+	(expand_vec_lround): Ditto.
+	(expand_vec_lceil): Ditto.
+	(expand_vec_lfloor): Ditto.
+	* config/riscv/vector-iterators.md: Add vector HFmode and bridge
+	mode for converting to DI.
+
+2023-11-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2023-11-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	* haifa-sched.cc (use_or_clobber_starts_range_p): New.
+	(prune_ready_list): USE or CLOBBER should delay execution
+	if it starts a new live range.
+
+2023-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*stack_protect_set_4s_<mode>_di):
+	Remove alternative 0.
+
+2023-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-cp.cc (print_ipcp_constant_value): Move to...
+	(values_equal_for_ipcp_p): Deal with VAR_DECLs from the
+	constant pool.
+	* ipa-prop.cc (ipa_print_constant_value): ...here.  Likewise.
+	(ipa_print_node_jump_functions_for_edge): Call the function
+	ipa_print_constant_value to print IPA_JF_CONST elements.
+
+2023-11-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	* haifa-sched.cc (use_or_clobber_starts_range_p): New.
+	(prune_ready_list): USE or CLOBBER should delay execution
+	if it starts a new live range.
+
+2023-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112430
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Remove temp_stmts in the
+	order they were pushed rather than in reverse order.  Call
+	release_defs after gsi_remove.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (mode_switching.backprop): New hook.
+	* doc/tm.texi.in (TARGET_MODE_BACKPROP): New @hook.
+	* doc/tm.texi: Regenerate.
+	* mode-switching.cc (struct bb_info): Add single_succ.
+	(confluence_info): Add transp field.
+	(single_succ_confluence_n, single_succ_transfer): New functions.
+	(backprop_confluence_n, backprop_transfer): Likewise.
+	(optimize_mode_switching): Use them.  Push mode transitions onto
+	a block's incoming edges, if the backprop hook requires it.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (mode_switching.confluence): New hook.
+	* doc/tm.texi (TARGET_MODE_CONFLUENCE): New @hook.
+	* doc/tm.texi.in: Regenerate.
+	* mode-switching.cc (confluence_info): New variable.
+	(mode_confluence, forward_confluence_n, forward_transfer): New
+	functions.
+	(optimize_mode_switching): Use them to calculate mode_in when
+	TARGET_MODE_CONFLUENCE is defined.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (commit_mode_sets): Use 1-based edge aux values.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (mode_switching.after): Add a regs_live parameter.
+	* doc/tm.texi: Regenerate.
+	* config/epiphany/epiphany-protos.h (epiphany_mode_after): Update
+	accordingly.
+	* config/epiphany/epiphany.cc (epiphany_mode_needed): Likewise.
+	(epiphany_mode_after): Likewise.
+	* config/i386/i386.cc (ix86_mode_after): Likewise.
+	* config/riscv/riscv.cc (riscv_mode_after): Likewise.
+	* config/sh/sh.cc (sh_mode_after): Likewise.
+	* mode-switching.cc (optimize_mode_switching): Likewise.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (mode_switching.needed): Add a regs_live parameter.
+	* doc/tm.texi: Regenerate.
+	* config/epiphany/epiphany-protos.h (epiphany_mode_needed): Update
+	accordingly.
+	* config/epiphany/epiphany.cc (epiphany_mode_needed): Likewise.
+	* config/epiphany/mode-switch-use.cc (insert_uses): Likewise.
+	* config/i386/i386.cc (ix86_mode_needed): Likewise.
+	* config/riscv/riscv.cc (riscv_mode_needed): Likewise.
+	* config/sh/sh.cc (sh_mode_needed): Likewise.
+	* mode-switching.cc (optimize_mode_switching): Likewise.
+	(create_pre_exit): Likewise, using the DF simulate functions
+	to calculate the required information.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (mode_switching.eh_handler): New hook.
+	* doc/tm.texi.in (TARGET_MODE_EH_HANDLER): New @hook.
+	* doc/tm.texi: Regenerate.
+	* mode-switching.cc (optimize_mode_switching): Use eh_handler
+	to get the mode on entry to an exception handler.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (optimize_mode_switching): Mark the exit
+	block as nontransparent if it requires a specific mode.
+	Handle the entry and exit mode as sibling rather than nested
+	concepts.  Remove outdated comment.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (optimize_mode_switching): Initially
+	compute transparency in a bit-per-block bitmap.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (seginfo): Add a prev_mode field.
+	(new_seginfo): Take and initialize the prev_mode.
+	(optimize_mode_switching): Update calls accordingly.
+	Use the recorded modes during the emit phase, rather than
+	computing one on the fly.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (add_seginfo): Replace head pointer with
+	a pointer to the tail pointer.
+	(optimize_mode_switching): Update calls accordingly.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mode-switching.cc (optimize_mode_switching): Call
+	df_note_add_problem.
+
+2023-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def: Tweak documentation of mode-switching hooks.
+	* doc/tm.texi.in (OPTIMIZE_MODE_SWITCHING): Tweak documentation.
+	(NUM_MODES_FOR_MODE_SWITCHING): Likewise.
+	* doc/tm.texi: Regenerate.
+
+2023-11-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/110815
+	PR c/112428
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_check_access_sizes):
+	remove warning for parameters declared with `static`.
+
+2023-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* doc/sourcebuild.texi (Scan the assembly output): Document change.
+
+2023-11-10  Mao  <sray@live.com>
+
+	PR middle-end/110983
+	* doc/invoke.texi (Option Summary): Add -fpatchable-function-entry.
+
+2023-11-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (length): Fix indentation for branch and
+	jump length calculation expressions.
+
+2023-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (operand_compare::operand_equal_p) <CONSTRUCTOR>:
+	Deal with nonempty constant CONSTRUCTORs.
+	(operand_compare::hash_operand) <CONSTRUCTOR>: Hash DECL_FIELD_OFFSET
+	and DECL_FIELD_BIT_OFFSET for FIELD_DECLs.
+
+2023-11-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/112337
+	* ira-costs.cc: (validate_autoinc_and_mem_addr_p): New function.
+	(equiv_can_be_consumed_p): Use it.
+
+2023-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-rtl.cc (md_reader::read_mapping): Allow iterators to
+	include other iterators.
+	* doc/md.texi: Document the change.
+	* config/aarch64/iterators.md (DREG2, VQ2, TX2, DX2, SX2): Include
+	the iterator that is being duplicated, rather than reproducing it.
+	(VSTRUCT_D): Redefine using VSTRUCT_[234]D.
+	(VSTRUCT_Q): Likewise VSTRUCT_[234]Q.
+	(VSTRUCT_2QD, VSTRUCT_3QD, VSTRUCT_4QD, VSTRUCT_QD): Redefine using
+	the individual D and Q iterators.
+
+2023-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (stack_protect_set_1 peephole2):
+	Explicitly check operand 2 for word_mode.
+	(stack_protect_set_1 peephole2 #2): Ditto.
+	(stack_protect_set_2 peephole2): Ditto.
+	(stack_protect_set_3 peephole2): Ditto.
+	(*stack_protect_set_4z_<mode>_di): New insn patter.
+	(*stack_protect_set_4s_<mode>_di): Ditto.
+	(stack_protect_set_4 peephole2): New peephole2 pattern to
+	substitute stack protector scratch register clear with unrelated
+	register initialization involving zero/sign-extend instruction.
+
+2023-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (shift): Use SAL insted of SLL
+	for ashift insn mnemonic.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/112438
+	* tree-vect-loop.cc (vectorizable_induction): Bugfix when
+	LOOP_VINFO_USING_SELECT_VL_P.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	* config/riscv/riscv-v.cc
+	(rvv_builder::combine_sequence_use_slideup_profitable_p): New function.
+	(expand_vector_init_slideup_combine_sequence): Ditto.
+	(expand_vec_init): Add slideup combine optimization.
+
+2023-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/112464
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Use
+	vect_orig_stmt on scalar_dest_def_info.
+
+2023-11-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_for_each_saved_reg): Place the interrupt
+	operation before the XTheadMemPair.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* tree-vect-slp.cc (vect_schedule_slp_node): When loop
+	masking / len is applied make sure to not schedule
+	intenal defs outside of the loop.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* expr.cc (store_constructor): Add "and" operation to uniform mask
+	generation.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/112308
+	* config/gcn/gcn-valu.md (add<mode>3<exec_clobber>): Fix B constraint
+	and switch to the new format.
+	(add<mode>3_dup<exec_clobber>): Likewise.
+	(add<mode>3_vcc<exec_vcc>): Likewise.
+	(add<mode>3_vcc_dup<exec_vcc>): Likewise.
+	(add<mode>3_vcc_zext_dup): Likewise.
+	(add<mode>3_vcc_zext_dup_exec): Likewise.
+	(add<mode>3_vcc_zext_dup2): Likewise.
+	(add<mode>3_vcc_zext_dup2_exec): Likewise.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112469
+	* match.pd (cond ? op a : b -> .COND_op (cond, a, b)): Add
+	missing view_converts.
+
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Add clobber to DImode
+	min/max instructions.
+
+2023-11-10  Chenghui Pan  <panchenghui@loongson.cn>
+
+	* config/loongarch/lsx.md: Fix instruction name typo in
+	lsx_vreplgr2vr_<lsxfmt_f> template.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vec_init<mode><vel>): Split patterns.
+
+2023-11-10  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vector_init_trailing_same_elem):
+	New fun impl to expand the insn when trailing same elements.
+	(expand_vec_init): Try trailing same elements when vec_init.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_copysign<mode>): Remove.
+	* config/riscv/autovec.md (cond_copysign<mode>): New pattern.
+
+2023-11-10  Pan Li  <pan2.li@intel.com>
+
+	PR target/112432
+	* internal-fn.def (LRINT): Add FLOATN support.
+	(LROUND): Ditto.
+	(LLRINT): Ditto.
+	(LLROUND): Ditto.
+
+2023-11-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/combiner.md (single bit sign_extract): Avoid recently
+	added patterns for H8/SX.
+	(single bit zero_extract): New patterns.
+
+2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112443
+	* config/i386/sse.md (*avx2_pcmp<mode>3_4): Fix swap condition
+	from LT to GT since there's not in the pattern.
+	(*avx2_pcmp<mode>3_5): Ditto.
+
+2023-11-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_print_register): Accept modifier code 'W'
+	to force emitting register names using the wN form.
+	* config/bpf/bpf.md (*mulsidi3_zeroextend): Force operands to
+	always use wN written form in pseudo-C assembly syntax.
+
+2023-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (layout::m_line_table): New field.
+	(compatible_locations_p): Convert to...
+	(layout::compatible_locations_p): ...this, replacing uses of
+	line_table global with m_line_table.
+	(layout::layout): Convert "richloc" param from a pointer to a
+	const reference.  Initialize m_line_table member.
+	(layout::maybe_add_location_range):  Replace uses of line_table
+	global with m_line_table.  Pass the latter to
+	linemap_client_expand_location_to_spelling_point.
+	(layout::print_leading_fixits): Pass m_line_table to
+	affects_line_p.
+	(layout::print_trailing_fixits): Likewise.
+	(gcc_rich_location::add_location_if_nearby): Update for change
+	to layout ctor params.
+	(diagnostic_show_locus): Convert to...
+	(diagnostic_context::maybe_show_locus): ...this, converting
+	richloc param from a pointer to a const reference.  Make "loc"
+	const.  Split out printing part of function to...
+	(diagnostic_context::show_locus): ...this.
+	(selftest::test_offset_impl): Update for change to layout ctor
+	params.
+	(selftest::test_layout_x_offset_display_utf8): Likewise.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	* diagnostic.h (diagnostic_context::maybe_show_locus): New decl.
+	(diagnostic_context::show_locus): New decl.
+	(diagnostic_show_locus): Convert from a decl to an inline function.
+	* gdbinit.in (break-on-diagnostic): Update from a breakpoint
+	on diagnostic_show_locus to one on
+	diagnostic_context::maybe_show_locus.
+	* genmatch.cc (linemap_client_expand_location_to_spelling_point):
+	Add "set" param and use it in place of line_table global.
+	* input.cc (expand_location_1): Likewise.
+	(expand_location): Update for new param of expand_location_1.
+	(expand_location_to_spelling_point): Likewise.
+	(linemap_client_expand_location_to_spelling_point): Add "set"
+	param and use it in place of line_table global.
+	* tree-diagnostic-path.cc (event_range::print): Pass line_table
+	for new param of linemap_client_expand_location_to_spelling_point.
+
+2023-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@stack_protect_set_1_<PTR:mode>_<W:mode>):
+	Use W mode iterator instead of SWI48.  Output MOV instead of XOR
+	for TARGET_USE_MOV0.
+	(stack_protect_set_1 peephole2): Use integer modes with
+	mode size <= word mode size for operand 3.
+	(stack_protect_set_1 peephole2 #2): New peephole2 pattern to
+	substitute stack protector scratch register clear with unrelated
+	register initialization, originally in front of stack
+	protector sequence.
+	(*stack_protect_set_3_<PTR:mode>_<SWI48:mode>): New insn pattern.
+	(stack_protect_set_1 peephole2): New peephole2 pattern to
+	substitute stack protector scratch register clear with unrelated
+	register initialization involving LEA instruction.
+
+2023-11-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/110215
+	* ira-lives.cc: (add_conflict_from_region_landing_pads): New
+	function.
+	(process_bb_node_lives): Use it.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/i386.cc (symbolic_base_address_p,
+	base_address_p): New, factored out from...
+	(extract_base_offset_in_addr): ... here and extended to
+	recognize REG+GOTOFF, as in gcc.target/i386/sse2-load-multi.c
+	and sse2-store-multi.c with PIE enabled by default.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64-sve.md (cond_copysign<mode>): New.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64.md (copysign<GPF:mode>3): Handle
+	copysign (x, -1).
+	* config/aarch64/aarch64-simd.md (copysign<mode>3): Likewise.
+	* config/aarch64/aarch64-sve.md (copysign<mode>3): Likewise.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64.md (<optab><mode>3): Add SVE split case.
+	* config/aarch64/aarch64-simd.md (ior<mode>3<vczle><vczbe>): Likewise.
+	* config/aarch64/predicates.md(aarch64_orr_imm_sve_advsimd): New.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64, *movsi_aarch64,
+	*movdi_aarch64): Add new w -> Z case.
+	* config/aarch64/iterators.md (Vbtype): Add QI and HI.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* config/aarch64/aarch64-protos.h (aarch64_simd_special_constant_p,
+	aarch64_maybe_generate_simd_constant): New.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<VQMOV:mode>,
+	*aarch64_simd_mov<VDMOV:mode>): Add new coden for special constants.
+	* config/aarch64/aarch64.cc (aarch64_extract_vec_duplicate_wide_int):
+	Take optional mode.
+	(aarch64_simd_special_constant_p,
+	aarch64_maybe_generate_simd_constant): New.
+	* config/aarch64/aarch64.md (*movdi_aarch64): Add new codegen for
+	special constants.
+	* config/aarch64/constraints.md (Dx): new.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* internal-fn.def (COPYSIGN): New.
+	* match.pd (UNCOND_BINARY, COND_BINARY): Map IFN_COPYSIGN to
+	IFN_COND_COPYSIGN.
+	* optabs.def (cond_copysign_optab, cond_len_copysign_optab): New.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* match.pd: Add new neg+abs rule, remove inverse copysign rule.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* match.pd: expand existing copysign optimizations.
+
+2023-11-09  Tatsuyuki Ishi  <ishitatsuyuki@gmail.com>
+
+	PR driver/111605
+	* collect2.cc (main): Do not prepend target triple to
+	-fuse-ld=lld,mold.
+
+2023-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111133
+	* tree-vect-stmts.cc (vect_build_scatter_store_calls):
+	Remove and refactor to ...
+	(vect_build_one_scatter_store_call): ... this new function.
+	(vectorizable_store): Use vect_check_scalar_mask to record
+	the SLP node for the mask operand.  Code generate scatters
+	with builtin decls from the main scatter vectorization
+	path and prepare that for SLP.
+	* tree-vect-slp.cc (vect_get_operand_map): Do not look
+	at the VDEF to decide between scatter or gather since that
+	doesn't work for patterns.  Use the LHS being an SSA_NAME
+	or not instead.
+
+2023-11-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_frm_emit_after_bb_end): Only
+	perform once emit when at least one succ edge is abnormal.
+
+2023-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_verify_full_masking_avx512):
+	Check we have integer mode masks as required by
+	vect_get_loop_mask.
+
+2023-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112444
+	* tree-ssa-sccvn.cc (visit_phi): Avoid using not visited
+	defs as undefined vals.
+
+2023-11-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc(mips_option_override): Set mips_abs to
+	2008, if mips_abs is default and mips_nan is 2008.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document
+	-Wreturn-mismatch.  Update -Wreturn-type documentation.
+
+2023-11-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md: Remove UNSPEC_VEC_ELTSWAP.
+	* config/s390/vector.md (eltswapv16qi): New expander.
+	(*eltswapv16qi): New insn and splitter.
+	(eltswapv8hi): New insn and splitter.
+	(eltswap<mode>): New insn and splitter for modes V_HW_4 as well
+	as V_HW_2.
+	* config/s390/vx-builtins.md (eltswap<mode>): Remove.
+	(*eltswapv16qi): Remove.
+	(*eltswap<mode>): Remove.
+	(*eltswap<mode>_emu): Remove.
+
+2023-11-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_with_rot): Remove.
+	(expand_perm_reverse_elements): New.
+	(expand_perm_with_vster): Remove.
+	(expand_perm_with_vstbrq): Remove.
+	(vectorize_vec_perm_const_1): Replace removed functions with new
+	one.
+
+2023-11-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_with_merge): Deal with cases
+	where vmr{l,h} are still applicable if the operands are swapped.
+	(expand_perm_with_vpdi): Likewise for vpdi.
+
+2023-11-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (VX_CONV_INT): Remove iterator.
+	(gf): Add float mappings.
+	(TOINT, toint): New attribute.
+	(*fixuns_trunc<VX_CONV_BFP:mode><VX_CONV_INT:mode>2_z13):
+	Remove.
+	(*fixuns_trunc<mode><toint>2_z13): Add.
+	(*fix_trunc<VX_CONV_BFP:mode><VX_CONV_INT:mode>2_bfp_z13):
+	Remove.
+	(*fix_trunc<mode><toint>2_bfp_z13): Add.
+	(*floatuns<VX_CONV_INT:mode><VX_CONV_BFP:mode>2_z13): Remove.
+	(*floatuns<toint><mode>2_z13): Add.
+	* config/s390/vector.md (VX_VEC_CONV_INT): Remove iterator.
+	(float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2): Remove.
+	(float<tointvec><mode>2): Add.
+	(floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2): Remove.
+	(floatuns<tointvec><mode>2): Add.
+	(fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2):
+	Remove.
+	(fix_trunc<mode><tointvec>2): Add.
+	(fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2):
+	Remove.
+	(fixuns_trunc<VX_VEC_CONV_BFP:mode><tointvec>2): Add.
+
+2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/112339
+	* attribs.cc (attribute_ignored_p): Only return true for
+	attr_namespace_ignored_p if as is NULL.
+	(decl_attributes): Never add ignored attributes.
+
+2023-11-09  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md: Avoid the conflict between
+	zbb and xtheadmemidx in patterns.
+
+2023-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Record
+	to the correct simd_clone_info.
+
+2023-11-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::preferred_new_lmul_p): Fix ICE.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-cfg.cc (assign_discriminators): Handle debug stmts.
+
 2023-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82524

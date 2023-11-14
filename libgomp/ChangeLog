@@ -1,3 +1,8 @@
+2023-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Impl. Status): Update for OpenMP TR12;
+	renamed section from TR11.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/linux/target-indirect.c: Move to...

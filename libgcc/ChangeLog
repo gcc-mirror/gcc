@@ -1,3 +1,33 @@
+2023-11-10  Keith Packard  <keithp@keithp.com>
+
+	* config/m68k/lb1sf68.S (__adddf3): Properly check for non-zero denorm.
+	(__divdf3): Restore sign bit properly.
+	(__addsf3): Correct exponent check.
+	* config/m68k/fpgnulib.c (EXPMASK): Define.
+	(__extendsfdf2): Handle Inf and NaN properly.
+	(__truncdfsf2): Handle underflow and overflow correctly.
+	(__extenddfxf2): Handle underflow, denorms, Inf and NaN correctly.
+	(__truncxfdf2): Handle underflow and denorms correctly.
+	(__fixxfsi): Reimplement.
+
+2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/65833
+	* config/t-softfp (softfp_bid_list): Add
+	{U,}TItype <-> _Decimal{32,64,128} conversions.
+	* soft-fp/floattisd.c: New file.
+	* soft-fp/floattidd.c: New file.
+	* soft-fp/floattitd.c: New file.
+	* soft-fp/floatuntisd.c: New file.
+	* soft-fp/floatuntidd.c: New file.
+	* soft-fp/floatuntitd.c: New file.
+	* soft-fp/fixsdti.c: New file.
+	* soft-fp/fixddti.c: New file.
+	* soft-fp/fixtdti.c: New file.
+	* soft-fp/fixunssdti.c: New file.
+	* soft-fp/fixunsddti.c: New file.
+	* soft-fp/fixunstdti.c: New file.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* offloadstuff.c (OFFLOAD_IND_FUNC_TABLE_SECTION_NAME): New.

@@ -1,3 +1,32 @@
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR bootstrap/12596
+	* .gitignore: Add '/gettext*'.
+	* configure.ac (host_libs): Replace intl with gettext.
+	(hbaseargs, bbaseargs, baseargs): Split baseargs into
+	{h,b}baseargs.
+	(skip_barg): New flag.  Skips appending current flag to
+	bbaseargs.
+	<library exemptions>: Exempt --with-libintl-{type,prefix} from
+	target and build machine argument passing.
+	* configure: Regenerate.
+	* Makefile.def (host_modules): Replace intl module with gettext
+	module.
+	(configure-ld): Depend on configure-gettext.
+	* Makefile.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* intl/*: Remove.
+
+2023-11-09  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-11-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS: Update my email address.
+
 2023-11-06  Carl Love  <cel@linux.ibm.com>
 
 	* MAINTAINERS: Update my email address.

@@ -1,3 +1,2505 @@
+2023-11-14  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/i386/apx-spill_to_egprs-1.c: Make sure that no local
+	variables are stored on the stack.
+
+2023-11-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.target/s390/zvec-templ-1.C: New test.
+
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/111842
+	PR c++/112498
+	* g++.dg/cpp23/ext-floating16.C: New test.
+	* g++.dg/cpp23/ext-floating17.C: New test.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* c-c++-common/pr111309-1.c: New test.
+	* c-c++-common/pr111309-2.c: New test.
+	* gcc.dg/torture/bitint-43.c: New test.
+	* gcc.dg/torture/bitint-44.c: New test.
+
+2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112496.c: New test.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112511
+	* gcc.dg/pr112511.c: New test.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/112435
+	* gcc.target/i386/avx512vl-pr112435-1.c: New test.
+	* gcc.target/i386/avx512vl-pr112435-2.c: New test.
+	* gcc.target/i386/avx512vl-pr112435-3.c: New test.
+
+2023-11-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/init-2.c: Fix vid.v check.
+
+2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105735-3.c: New test.
+
+2023-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112494
+	* gcc.target/i386/pr112494.c: New test.
+
+2023-11-13  Brendan Shanks  <bshanks@codeweavers.com>
+
+	* g++.dg/modules/bad-mapper-1.C: Also accept posix_spawn.
+
+2023-11-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_zbb.c: New test.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (v7a_neon): New feature-test target.
+	* gcc.dg/debug/pr57351.c: Use it.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Add test for v7a_arm.
+	* gcc.target/arm/pr60650-2.c: Use require-effective-target and
+	add-options.
+	* gcc.target/arm/pr60657.c: Likewise.
+	* gcc.target/arm/pr60663.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+	* gcc.target/arm/pr97969.c: Likewise.
+	* gcc.target/arm/pr98931.c: Likewise.
+	* gcc.target/arm/tail-long-call.c: Likewise.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	For instruction-set specific tests, check that __thumb__ is, or
+	isn't defined as appropriate.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr59575.c: Use dg-require-effective-target and
+	dg-add-options.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr19599.c: Add +fp to the architecture.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/optional_thumb-1.c: Force a soft-float ABI.
+	* gcc.target/arm/optional_thumb-3.c: Check for armv7e-m compatibility,
+	then set the architecture explicitly.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/macro_defs0.c: Use dg-effective-target and
+	dg-add-options.
+	* gcc.target/arm/macro_defs1.c: Likewise.
+	* gcc.target/arm/macro_defs2.c: Likewise.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Use soft-float ABI for armv7m.
+	* gcc.target/arm/ftest-armv7m-thumb.c: Use dg-require-effective-target
+	to check flag compatibility.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/scd42-2.c: Use modern dg- flags.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pragma_arch_switch_2.c: Use testsuite infrastructure
+	to set the architecture flags.  Add +fp to the pragma that changes the
+	architecture.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pragma_arch_attribute.c: Add +simd to pragmas that
+	set an explicit architecture.
+	* gcc.target/arm/pragma_arch_attribute_2.c: Likewise.
+	* gcc.target/arm/pragma_arch_attribute_3.c: Likewise.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr88648-asm-syntax-unified.c: It isn't necessary
+	to try to override the architecture flags specified by arm_arch_v7a.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr78353-1.c: Use dg-add-options to manage target
+	flags.
+	* gcc.target/arm/pr78353-2.c: Likewise.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr65647-2.c: Use dg-add-options to manage target
+	flags.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/lto/pr96939_1.c: Add +simd to the architecture
+	specification.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Add entry to check for xscale.
+	* gcc.target/arm/g2.c: Use it.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/attr_thumb-static2.c: Add +fp to the -march
+	specification.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/attr-crypto.c: Add +simd to the -march
+	specification.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/acle/pacbti-m-predef-11.c: Add +fp to the -march
+	specification.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Add base FPU specifications to all architectures that can support
+	one.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_hard_float): Add
+	arm-specific test.
+
+2023-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_v6t2_hw_ok):
+	New function.
+	* gcc.target/arm/acle/data-intrinsics-armv6.c: Use it.
+	* gcc.target/arm/acle/data-intrinsics-rbit.c: Likewise.
+
+2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* gcc.target/i386/pr112495.c: New testcase.
+
+2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112487
+	* gcc.dg/torture/pr112487.c: New testcase.
+
+2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111792
+	PR tree-optimization/111000
+	* gcc.dg/torture/pr111792.c: New testcase.
+
+2023-11-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Fix init test.
+	* gcc.target/riscv/rvv/autovec/vls/init-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/init-7.c: Ditto.
+
+2023-11-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/combine-merge-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/combine-merge-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/combine-merge_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/combine-merge_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-merge-9.c: New test.
+
+2023-11-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/part-vect-vec_elem-1.c: New test.
+	* gcc.target/i386/part-vect-vec_elem-2.c: New test.
+
+2023-11-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/ashrdi3-1.c: New test case.
+	* gcc.target/arc/lshrdi3-1.c: Likewise.
+	* gcc.target/arc/rotldi3-1.c: Likewise.
+	* gcc.target/arc/rotrdi3-1.c: Likewise.
+
+2023-11-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/builtin_norm-1.c: New test case.
+	* gcc.target/arc/builtin_norm-2.c: Likewise.
+	* gcc.target/arc/builtin_normw-1.c: Likewise.
+	* gcc.target/arc/builtin_normw-2.c: Likewise.
+	* gcc.target/arc/builtin_swap-1.c: Likewise.
+	* gcc.target/arc/builtin_swap-2.c: Likewise.
+	* gcc.target/arc/builtin_swap-3.c: Likewise.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/20000112-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/20000113-1.c (foobar): Add missing
+	void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/20000314-2.c (main): Likewise.
+	* gcc.c-torture/execute/20000402-1.c (main): Likewise.
+	* gcc.c-torture/execute/20000403-1.c (main): Likewise.
+	* gcc.c-torture/execute/20000503-1.c (main): Likewise.
+	* gcc.c-torture/execute/20000605-2.c (main): Likewise.
+	* gcc.c-torture/execute/20000717-1.c (main): Likewise.
+	* gcc.c-torture/execute/20000717-5.c (main): Likewise.
+	* gcc.c-torture/execute/20000726-1.c (main): Likewise.
+	* gcc.c-torture/execute/20000914-1.c(blah): Add missing
+	void types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/20001009-1.c (main): Likewise.
+	* gcc.c-torture/execute/20001013-1.c (main): Likewise.
+	* gcc.c-torture/execute/20001031-1.c (main): Likewise.
+	* gcc.c-torture/execute/20010221-1.c (main): Likewise.
+	* gcc.c-torture/execute/20010723-1.c (main): Likewise.
+	* gcc.c-torture/execute/20010915-1.c (s): Call
+	__builtin_strcmp instead of strcmp.
+	* gcc.c-torture/execute/20010924-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/20011128-1.c (main): Likewise.
+	* gcc.c-torture/execute/20020226-1.c (main): Likewise.
+	* gcc.c-torture/execute/20020328-1.c (foo): Add missing
+	void types.
+	* gcc.c-torture/execute/20020406-1.c (DUPFFexgcd): Call
+	__builtin_printf instead of printf.
+	(main): Likewise.
+	* gcc.c-torture/execute/20020508-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/20020508-2.c (main): Likewise.
+	* gcc.c-torture/execute/20020508-3.c (main): Likewise.
+	* gcc.c-torture/execute/20020611-1.c (main): Likewise.
+	* gcc.c-torture/execute/20021010-2.c (main): Likewise.
+	* gcc.c-torture/execute/20021113-1.c (foo): Add missing
+	void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/20021120-3.c (foo): Call
+	__builtin_sprintf instead of sprintf.
+	* gcc.c-torture/execute/20030125-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/20030216-1.c (main): Likewise.
+	* gcc.c-torture/execute/20030404-1.c (main): Likewise.
+	* gcc.c-torture/execute/20030606-1.c (main): Likewise.
+	Call __builtin_memset instead of memset.
+	* gcc.c-torture/execute/20030828-1.c (main): Add missing int
+	and void types.
+	* gcc.c-torture/execute/20030828-2.c (main): Likewise.
+	* gcc.c-torture/execute/20031012-1.c: Call __builtin_strlen
+	instead of strlen.
+	* gcc.c-torture/execute/20031211-1.c (main): Add missing int
+	and void types.
+	* gcc.c-torture/execute/20040319-1.c (main): Likewise.
+	* gcc.c-torture/execute/20040411-1.c (sub1): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/execute/20040423-1.c (sub1): Likewise.
+	* gcc.c-torture/execute/20040917-1.c (main): Add missing int
+	and void types.
+	* gcc.c-torture/execute/20050131-1.c (main): Likewise.
+	* gcc.c-torture/execute/20051113-1.c (main): Likewise.
+	* gcc.c-torture/execute/20121108-1.c (main): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/execute/20170401-2.c (main): Add missing int
+	and void types.
+	* gcc.c-torture/execute/900409-1.c (main): Likewise.
+	* gcc.c-torture/execute/920202-1.c (f): Add int return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/920302-1.c (execute): Add void return
+	type.
+	(main): Add missing int	and void types.
+	* gcc.c-torture/execute/920410-1.c (main): Likewise.
+	* gcc.c-torture/execute/920501-2.c (main): Likewise.
+	* gcc.c-torture/execute/920501-3.c (execute): Add void return
+	type.
+	(main): Add missing int	and void types.
+	* gcc.c-torture/execute/920501-5.c (x): Add int return type.
+	(main): Add missing int	and void types.
+	* gcc.c-torture/execute/920501-6.c (main): Add int return
+	type.
+	* gcc.c-torture/execute/920501-8.c (main): Add missing
+	int and void types.  Call __builtin_strcmp instead of strcmp.
+	* gcc.c-torture/execute/920506-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/920612-2.c (main): Likewise.
+	* gcc.c-torture/execute/920618-1.c (main): Likewise.
+	* gcc.c-torture/execute/920625-1.c (main): Likewise.
+	* gcc.c-torture/execute/920710-1.c (main): Likewise.
+	* gcc.c-torture/execute/920721-1.c (main): Likewise.
+	* gcc.c-torture/execute/920721-4.c (main): Likewise.
+	* gcc.c-torture/execute/920726-1.c (first, second): Call
+	__builtin_strlen instead of strlen.
+	(main): Add missing int	and void types.  Call __builtin_strcmp
+	instead of strcmp.
+	* gcc.c-torture/execute/920810-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/920829-1.c (main): Likewise.
+	* gcc.c-torture/execute/920908-1.c (main): Likewise.
+	* gcc.c-torture/execute/920922-1.c (main): Likewise.
+	* gcc.c-torture/execute/920929-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/921006-1.c (main): Likewise.  Call
+	__builtin_strcmp instead of strcmp.
+	* gcc.c-torture/execute/921007-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/921016-1.c (main): Likewise.
+	* gcc.c-torture/execute/921019-1.c (main): Likewise.
+	* gcc.c-torture/execute/921019-2.c (main): Likewise.
+	* gcc.c-torture/execute/921029-1.c (main): Likewise.
+	* gcc.c-torture/execute/921104-1.c (main): Likewise.
+	* gcc.c-torture/execute/921112-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/921113-1.c (w, f1, f2, gitter): Add
+	void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/921117-1.c (check): Call
+	__builtin_strcmp instead of strcmp.
+	(main): Add missing int and void types.  Call __builtin_strcpy
+	instead of strcpy.
+	* gcc.c-torture/execute/921123-2.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/921202-2.c (main): Likewise.
+	* gcc.c-torture/execute/921204-1.c (main): Likewise.
+	* gcc.c-torture/execute/921208-1.c (main): Likewise.
+	* gcc.c-torture/execute/930123-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930126-1.c (main): Likewise.
+	* gcc.c-torture/execute/930406-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930408-1.c (p, f): Add missing void
+	types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930429-1.c (main): Likewise.
+	* gcc.c-torture/execute/930603-2.c (f): Add missing void
+	types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930608-1.c (main): Likewise.
+	* gcc.c-torture/execute/930614-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930614-2.c (main): Likewise.
+	* gcc.c-torture/execute/930622-2.c (main): Likewise.
+	* gcc.c-torture/execute/930628-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/930725-1.c (main): Likewise.  Call
+	__builtin_strcmp instead of strcmp.
+	* gcc.c-torture/execute/930930-2.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/931002-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-10.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-11.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-12.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-13.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-14.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-2.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-3.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-4.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-5.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-6.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-7.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-8.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931004-9.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/931005-1.c (main): Likewise.
+	* gcc.c-torture/execute/931110-1.c (main): Likewise.
+	* gcc.c-torture/execute/931110-2.c (main): Likewise.
+	* gcc.c-torture/execute/941014-1.c (main): Likewise.
+	* gcc.c-torture/execute/941014-2.c (main): Likewise.
+	* gcc.c-torture/execute/941015-1.c (main): Likewise.
+	* gcc.c-torture/execute/941021-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/941025-1.c (main): Likewise.
+	* gcc.c-torture/execute/941031-1.c (main): Likewise.
+	* gcc.c-torture/execute/950221-1.c (g2): Add int return type.
+	(f): Add missing void types.  Call __builtin_strcpy instead
+	of strcpy.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/950426-2.c (main): Likewise.
+	* gcc.c-torture/execute/950503-1.c (main): Likewise.
+	* gcc.c-torture/execute/950511-1.c (main): Likewise.
+	* gcc.c-torture/execute/950607-1.c (main): Likewise.
+	* gcc.c-torture/execute/950607-2.c (main): Likewise.
+	* gcc.c-torture/execute/950612-1.c (main): Likewise.
+	* gcc.c-torture/execute/950628-1.c (main): Likewise.
+	* gcc.c-torture/execute/950704-1.c (main): Likewise.
+	* gcc.c-torture/execute/950706-1.c (main): Likewise.
+	* gcc.c-torture/execute/950710-1.c (main): Likewise.
+	* gcc.c-torture/execute/950714-1.c (main): Likewise.
+	* gcc.c-torture/execute/950809-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/950906-1.c (g, f): Add void return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/950915-1.c (main): Likewise.
+	* gcc.c-torture/execute/950929-1.c (main): Likewise.
+	* gcc.c-torture/execute/951003-1.c (f): Add missing int
+	parameter type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/951115-1.c (g, f): Add void return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/951204-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960116-1.c (p): Add int return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960117-1.c (main): Likewise.
+	* gcc.c-torture/execute/960209-1.c (main): Likewise.
+	* gcc.c-torture/execute/960215-1.c (main): Likewise.
+	* gcc.c-torture/execute/960219-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960301-1.c (main): Likewise.
+	* gcc.c-torture/execute/960302-1.c (foo, main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/960311-1.c (main): Likewise.
+	* gcc.c-torture/execute/960311-2.c (main): Likewise.
+	* gcc.c-torture/execute/960311-3.c (main): Likewise.
+	* gcc.c-torture/execute/960312-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960317-1.c (main): Likewise.
+	* gcc.c-torture/execute/960321-1.c (main): Likewise.
+	* gcc.c-torture/execute/960326-1.c (main): Likewise.
+	* gcc.c-torture/execute/960327-1.c (g, main): Add missing
+	int and void types.
+	(f): Add missing void types.
+	* gcc.c-torture/execute/960405-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/960416-1.c (main): Likewise.
+	* gcc.c-torture/execute/960419-1.c (main): Likewise.
+	* gcc.c-torture/execute/960419-2.c (main): Likewise.
+	* gcc.c-torture/execute/960512-1.c (main): Likewise.
+	* gcc.c-torture/execute/960513-1.c (main): Likewise.
+	* gcc.c-torture/execute/960521-1.c (f): Add missing void
+	types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960608-1.c (f): Add int return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/960801-1.c (main): Likewise.
+	* gcc.c-torture/execute/960802-1.c (main): Likewise.
+	* gcc.c-torture/execute/960909-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/961004-1.c (main): Likewise.
+	* gcc.c-torture/execute/961017-1.c (main): Likewise.
+	* gcc.c-torture/execute/961017-2.c (main): Likewise.
+	* gcc.c-torture/execute/961026-1.c (main): Likewise.
+	* gcc.c-torture/execute/961122-1.c (addhi, subhi): Add void
+	return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/961122-2.c (main): Likewise.
+	* gcc.c-torture/execute/961125-1.c (main): Likewise.
+	* gcc.c-torture/execute/961206-1.c (main): Likewise.
+	* gcc.c-torture/execute/961213-1.c (main): Likewise.
+	* gcc.c-torture/execute/970214-1.c (main): Likewise.
+	* gcc.c-torture/execute/970214-2.c (main): Likewise.
+	* gcc.c-torture/execute/970217-1.c (sub): Add int return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/970923-1.c (main): Likewise.
+	* gcc.c-torture/execute/980223.c (main): Likewise.
+	* gcc.c-torture/execute/980506-1.c (main): Likewise.
+	* gcc.c-torture/execute/980506-2.c (main): Likewise.
+	* gcc.c-torture/execute/980506-3.c (build_lookup): Call
+	__builtin_strlen instead of strlen and __builtin_memset
+	instead of memset.
+	* gcc.c-torture/execute/980526-3.c (main): Likewise.
+	* gcc.c-torture/execute/980602-1.c (main): Likewise.
+	* gcc.c-torture/execute/980604-1.c (main): Likewise.
+	* gcc.c-torture/execute/980605-1.c (dummy): Add missing int
+	parameter type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/980701-1.c (ns_name_skip): Add missing
+	int return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/980709-1.c (main): Likewise.
+	* gcc.c-torture/execute/990117-1.c (main): Likewise.
+	* gcc.c-torture/execute/990127-1.c (main): Likewise.
+	* gcc.c-torture/execute/990128-1.c (main): Likewise.
+	* gcc.c-torture/execute/990130-1.c (main): Likewise.
+	* gcc.c-torture/execute/990324-1.c (main): Likewise.
+	* gcc.c-torture/execute/990524-1.c (main): Likewise.
+	* gcc.c-torture/execute/990531-1.c (main): Likewise.
+	* gcc.c-torture/execute/990628-1.c (fetch, load_data): Call
+	__builtin_memset instead of memset.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/991019-1.c (main): Likewise.
+	* gcc.c-torture/execute/991023-1.c (foo, main): Likewise.
+	* gcc.c-torture/execute/991112-1.c (isprint): Declare.
+	* gcc.c-torture/execute/991118-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/alias-1.c (ptr2): Add cast to float *
+	in initializer.
+	(typepun): Add missing void types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/alias-2.c (main): Likewise.
+	* gcc.c-torture/execute/alias-3.c (inc): Add missing
+	void types.
+	* gcc.c-torture/execute/alias-4.c (main): Add missing int
+	return type.
+	* gcc.c-torture/execute/arith-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/arith-rand-ll.c (main): Likewise.
+	* gcc.c-torture/execute/arith-rand.c (main): Likewise.
+	* gcc.c-torture/execute/bf-layout-1.c (main): Likewise.
+	* gcc.c-torture/execute/bf-pack-1.c (foo): Add missing
+	void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/bf-sign-1.c (main): Likewise.
+	* gcc.c-torture/execute/bf-sign-2.c (main): Likewise.
+	* gcc.c-torture/execute/bf64-1.c (main): Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-2.c (stat_int_arr):
+	Add missing int array element type.
+	* gcc.c-torture/execute/builtin-prefetch-3.c (stat_int_arr):
+	Likewise.
+	* gcc.c-torture/execute/cbrt.c (main): Add missing int and
+	void types.
+	* gcc.c-torture/execute/complex-1.c (main): Likewise.
+	* gcc.c-torture/execute/complex-2.c (main): Likewise.
+	* gcc.c-torture/execute/complex-3.c (main): Likewise.
+	* gcc.c-torture/execute/complex-4.c (main): Likewise.
+	* gcc.c-torture/execute/complex-5.c (main): Likewise.
+	* gcc.c-torture/execute/compndlit-1.c (main): Likewise.
+	* gcc.c-torture/execute/conversion.c (test_integer_to_float)
+	(test_longlong_integer_to_float, test_float_to_integer)
+	(test_float_to_longlong_integer): Add missing void return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/cvt-1.c (main): Likewise.
+	* gcc.c-torture/execute/divconst-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/divconst-2.c (main): Likewise.
+	* gcc.c-torture/execute/divconst-3.c (main): Likewise.
+	* gcc.c-torture/execute/enum-1.c (main): Likewise.
+	* gcc.c-torture/execute/func-ptr-1.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/20011123-1.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/920518-1.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/920810-1.c (main): Likewise.
+	Call __builtin_strcmp instead of strcmp.
+	* gcc.c-torture/execute/ieee/930529-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/ieee/fp-cmp-1.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-3.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/minuszero.c (main): Likewise.
+	* gcc.c-torture/execute/ieee/mzero2.c (expect): Call
+	__builtin_memcmp instead of memcmp.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/ieee/mzero3.c (main): Likewise.
+	(expectd, expectf): Call __builtin_memcmp instead of memcmp.
+	* gcc.c-torture/execute/ieee/mzero5.c (negzero_check):
+	Likewise.
+	* gcc.c-torture/execute/ieee/rbug.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/index-1.c (main): Likewise.
+	* gcc.c-torture/execute/loop-1.c (main): Likewise.
+	* gcc.c-torture/execute/loop-2b.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/loop-6.c (main): Likewise.
+	* gcc.c-torture/execute/loop-7.c (main): Likewise.
+	* gcc.c-torture/execute/lto-tbaa-1.c (use_a, set_b, use_c):
+	Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/memcpy-1.c (main): Likewise.
+	* gcc.c-torture/execute/memcpy-2.c (main): Likewise.
+	* gcc.c-torture/execute/memcpy-bi.c (main): Likewise.
+	* gcc.c-torture/execute/memset-1.c (main): Likewise.
+	* gcc.c-torture/execute/memset-2.c: Include <string.h>.
+	* gcc.c-torture/execute/memset-3.c: Likewise.
+	* gcc.c-torture/execute/nest-stdar-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/nestfunc-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/packed-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/pr15262-1.c (main): Likewise.  Call
+	__builtin_malloc instead of malloc.
+	* gcc.c-torture/execute/pr15262-2.c (foo): Add int return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/pr15262.c (main): Likewise.
+	* gcc.c-torture/execute/pr17252.c (main): Likewise.
+	* gcc.c-torture/execute/pr21331.c (main): Likewise.
+	* gcc.c-torture/execute/pr34176.c (foo): Add missing int
+	type to definition of foo.
+	* gcc.c-torture/execute/pr42231.c (max): Add missing int type
+	to definition.
+	* gcc.c-torture/execute/pr42614.c (expect_func): Call
+	__builtin_abs instead of abs.
+	* gcc.c-torture/execute/pr54937.c (t): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/ptr-arith-1.c (main): Likewise.
+	* gcc.c-torture/execute/regstack-1.c (main): Likewise.
+	* gcc.c-torture/execute/scope-1.c (f): Add missing void types.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/simd-5.c (main): Call __builtin_memcmp
+	instead of memcmp.
+	* gcc.c-torture/execute/strcmp-1.c (main): Add missing
+	int and void types.
+	* gcc.c-torture/execute/strcpy-1.c (main): Likewise.
+	* gcc.c-torture/execute/strct-pack-1.c (main): Likewise.
+	* gcc.c-torture/execute/strct-pack-2.c (main): Likewise.
+	* gcc.c-torture/execute/strct-pack-4.c (main): Likewise.
+	* gcc.c-torture/execute/strct-stdarg-1.c (f): Add void return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/strct-varg-1.c (f): Add void return
+	type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/strlen-1.c (main): Likewise.
+	* gcc.c-torture/execute/strncmp-1.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ini-1.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ini-2.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ini-3.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ini-4.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ret-1.c (main): Likewise.
+	* gcc.c-torture/execute/struct-ret-2.c (main): Likewise.
+	* gcc.c-torture/execute/va-arg-1.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/va-arg-10.c (main): Likewise.
+	* gcc.c-torture/execute/va-arg-2.c (main): Likewise.
+	* gcc.c-torture/execute/va-arg-4.c (main): Likewise.
+	* gcc.c-torture/execute/va-arg-5.c (va_double)
+	(va_long_double): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/va-arg-6.c (f): Add void return type.
+	(main): Add missing int and void types.
+	* gcc.c-torture/execute/va-arg-9.c (main): Likewise.
+	* gcc.c-torture/execute/widechar-1.c (main): Likewise.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/20000112-1.c: Declare exit and abort
+	as appropriate.
+	* gcc.c-torture/execute/20000113-1.c: Likewise.
+	* gcc.c-torture/execute/20000205-1.c: Likewise.
+	* gcc.c-torture/execute/20000217-1.c: Likewise.
+	* gcc.c-torture/execute/20000223-1.c: Likewise.
+	* gcc.c-torture/execute/20000224-1.c: Likewise.
+	* gcc.c-torture/execute/20000225-1.c: Likewise.
+	* gcc.c-torture/execute/20000227-1.c: Likewise.
+	* gcc.c-torture/execute/20000313-1.c: Likewise.
+	* gcc.c-torture/execute/20000314-1.c: Likewise.
+	* gcc.c-torture/execute/20000314-2.c: Likewise.
+	* gcc.c-torture/execute/20000314-3.c: Likewise.
+	* gcc.c-torture/execute/20000402-1.c: Likewise.
+	* gcc.c-torture/execute/20000403-1.c: Likewise.
+	* gcc.c-torture/execute/20000412-1.c: Likewise.
+	* gcc.c-torture/execute/20000412-2.c: Likewise.
+	* gcc.c-torture/execute/20000412-4.c: Likewise.
+	* gcc.c-torture/execute/20000412-5.c: Likewise.
+	* gcc.c-torture/execute/20000412-6.c: Likewise.
+	* gcc.c-torture/execute/20000419-1.c: Likewise.
+	* gcc.c-torture/execute/20000422-1.c: Likewise.
+	* gcc.c-torture/execute/20000503-1.c: Likewise.
+	* gcc.c-torture/execute/20000511-1.c: Likewise.
+	* gcc.c-torture/execute/20000519-1.c: Likewise.
+	* gcc.c-torture/execute/20000519-2.c: Likewise.
+	* gcc.c-torture/execute/20000523-1.c: Likewise.
+	* gcc.c-torture/execute/20000528-1.c: Likewise.
+	* gcc.c-torture/execute/20000603-1.c: Likewise.
+	* gcc.c-torture/execute/20000605-1.c: Likewise.
+	* gcc.c-torture/execute/20000605-2.c: Likewise.
+	* gcc.c-torture/execute/20000605-3.c: Likewise.
+	* gcc.c-torture/execute/20000622-1.c: Likewise.
+	* gcc.c-torture/execute/20000717-1.c: Likewise.
+	* gcc.c-torture/execute/20000717-2.c: Likewise.
+	* gcc.c-torture/execute/20000717-5.c: Likewise.
+	* gcc.c-torture/execute/20000722-1.c: Likewise.
+	* gcc.c-torture/execute/20000726-1.c: Likewise.
+	* gcc.c-torture/execute/20000731-1.c: Likewise.
+	* gcc.c-torture/execute/20000731-2.c: Likewise.
+	* gcc.c-torture/execute/20000801-3.c: Likewise.
+	* gcc.c-torture/execute/20000801-4.c: Likewise.
+	* gcc.c-torture/execute/20000808-1.c: Likewise.
+	* gcc.c-torture/execute/20000815-1.c: Likewise.
+	* gcc.c-torture/execute/20000818-1.c: Likewise.
+	* gcc.c-torture/execute/20000819-1.c: Likewise.
+	* gcc.c-torture/execute/20000822-1.c: Likewise.
+	* gcc.c-torture/execute/20000914-1.c: Likewise.
+	* gcc.c-torture/execute/20000917-1.c: Likewise.
+	* gcc.c-torture/execute/20001009-1.c: Likewise.
+	* gcc.c-torture/execute/20001009-2.c: Likewise.
+	* gcc.c-torture/execute/20001013-1.c: Likewise.
+	* gcc.c-torture/execute/20001017-1.c: Likewise.
+	* gcc.c-torture/execute/20001017-2.c: Likewise.
+	* gcc.c-torture/execute/20001024-1.c: Likewise.
+	* gcc.c-torture/execute/20001027-1.c: Likewise.
+	* gcc.c-torture/execute/20001101.c: Likewise.
+	* gcc.c-torture/execute/20001108-1.c: Likewise.
+	* gcc.c-torture/execute/20001112-1.c: Likewise.
+	* gcc.c-torture/execute/20001124-1.c: Likewise.
+	* gcc.c-torture/execute/20001130-1.c: Likewise.
+	* gcc.c-torture/execute/20001130-2.c: Likewise.
+	* gcc.c-torture/execute/20001203-2.c: Likewise.
+	* gcc.c-torture/execute/20001221-1.c: Likewise.
+	* gcc.c-torture/execute/20001228-1.c: Likewise.
+	* gcc.c-torture/execute/20001229-1.c: Likewise.
+	* gcc.c-torture/execute/20010106-1.c: Likewise.
+	* gcc.c-torture/execute/20010118-1.c: Likewise.
+	* gcc.c-torture/execute/20010119-1.c: Likewise.
+	* gcc.c-torture/execute/20010206-1.c: Likewise.
+	* gcc.c-torture/execute/20010209-1.c: Likewise.
+	* gcc.c-torture/execute/20010221-1.c: Likewise.
+	* gcc.c-torture/execute/20010222-1.c: Likewise.
+	* gcc.c-torture/execute/20010329-1.c: Likewise.
+	* gcc.c-torture/execute/20010403-1.c: Likewise.
+	* gcc.c-torture/execute/20010409-1.c: Likewise.
+	* gcc.c-torture/execute/20010422-1.c: Likewise.
+	* gcc.c-torture/execute/20010518-1.c: Likewise.
+	* gcc.c-torture/execute/20010518-2.c: Likewise.
+	* gcc.c-torture/execute/20010520-1.c: Likewise.
+	* gcc.c-torture/execute/20010604-1.c: Likewise.
+	* gcc.c-torture/execute/20010711-1.c: Likewise.
+	* gcc.c-torture/execute/20010723-1.c: Likewise.
+	* gcc.c-torture/execute/20010904-1.c: Likewise.
+	* gcc.c-torture/execute/20010904-2.c: Likewise.
+	* gcc.c-torture/execute/20010915-1.c: Likewise.
+	* gcc.c-torture/execute/20010924-1.c: Likewise.
+	* gcc.c-torture/execute/20011024-1.c: Likewise.
+	* gcc.c-torture/execute/20011109-1.c: Likewise.
+	* gcc.c-torture/execute/20011109-2.c: Likewise.
+	* gcc.c-torture/execute/20011114-1.c: Likewise.
+	* gcc.c-torture/execute/20011121-1.c: Likewise.
+	* gcc.c-torture/execute/20011126-1.c: Likewise.
+	* gcc.c-torture/execute/20011128-1.c: Likewise.
+	* gcc.c-torture/execute/20011217-1.c: Likewise.
+	* gcc.c-torture/execute/20020213-1.c: Likewise.
+	* gcc.c-torture/execute/20020215-1.c: Likewise.
+	* gcc.c-torture/execute/20020225-2.c: Likewise.
+	* gcc.c-torture/execute/20020226-1.c: Likewise.
+	* gcc.c-torture/execute/20020227-1.c: Likewise.
+	* gcc.c-torture/execute/20020307-1.c: Likewise.
+	* gcc.c-torture/execute/20020328-1.c: Likewise.
+	* gcc.c-torture/execute/20020404-1.c: Likewise.
+	* gcc.c-torture/execute/20020406-1.c: Likewise.
+	* gcc.c-torture/execute/20020413-1.c: Likewise.
+	* gcc.c-torture/execute/20020418-1.c: Likewise.
+	* gcc.c-torture/execute/20020508-1.c: Likewise.
+	* gcc.c-torture/execute/20020508-2.c: Likewise.
+	* gcc.c-torture/execute/20020508-3.c: Likewise.
+	* gcc.c-torture/execute/20020529-1.c: Likewise.
+	* gcc.c-torture/execute/20020611-1.c: Likewise.
+	* gcc.c-torture/execute/20020615-1.c: Likewise.
+	* gcc.c-torture/execute/20020619-1.c: Likewise.
+	* gcc.c-torture/execute/20020904-1.c: Likewise.
+	* gcc.c-torture/execute/20020916-1.c: Likewise.
+	* gcc.c-torture/execute/20021010-1.c: Likewise.
+	* gcc.c-torture/execute/20021113-1.c: Likewise.
+	* gcc.c-torture/execute/20021118-1.c: Likewise.
+	* gcc.c-torture/execute/20021118-2.c: Likewise.
+	* gcc.c-torture/execute/20021120-1.c: Likewise.
+	* gcc.c-torture/execute/20021120-2.c: Likewise.
+	* gcc.c-torture/execute/20021120-3.c: Likewise.
+	* gcc.c-torture/execute/20030105-1.c: Likewise.
+	* gcc.c-torture/execute/20030109-1.c: Likewise.
+	* gcc.c-torture/execute/20030117-1.c: Likewise.
+	* gcc.c-torture/execute/20030120-1.c: Likewise.
+	* gcc.c-torture/execute/20030125-1.c: Likewise.
+	* gcc.c-torture/execute/20030128-1.c: Likewise.
+	* gcc.c-torture/execute/20030209-1.c: Likewise.
+	* gcc.c-torture/execute/20030222-1.c: Likewise.
+	* gcc.c-torture/execute/20030316-1.c: Likewise.
+	* gcc.c-torture/execute/20030403-1.c: Likewise.
+	* gcc.c-torture/execute/20030404-1.c: Likewise.
+	* gcc.c-torture/execute/20030501-1.c: Likewise.
+	* gcc.c-torture/execute/20030606-1.c: Likewise.
+	* gcc.c-torture/execute/20030828-1.c: Likewise.
+	* gcc.c-torture/execute/20030828-2.c: Likewise.
+	* gcc.c-torture/execute/20030903-1.c: Likewise.
+	* gcc.c-torture/execute/20030910-1.c: Likewise.
+	* gcc.c-torture/execute/20030913-1.c: Likewise.
+	* gcc.c-torture/execute/20030914-1.c: Likewise.
+	* gcc.c-torture/execute/20030914-2.c: Likewise.
+	* gcc.c-torture/execute/20030916-1.c: Likewise.
+	* gcc.c-torture/execute/20030928-1.c: Likewise.
+	* gcc.c-torture/execute/20031010-1.c: Likewise.
+	* gcc.c-torture/execute/20031201-1.c: Likewise.
+	* gcc.c-torture/execute/20031204-1.c: Likewise.
+	* gcc.c-torture/execute/20031211-1.c: Likewise.
+	* gcc.c-torture/execute/20040208-1.c: Likewise.
+	* gcc.c-torture/execute/20040218-1.c: Likewise.
+	* gcc.c-torture/execute/20040307-1.c: Likewise.
+	* gcc.c-torture/execute/20040319-1.c: Likewise.
+	* gcc.c-torture/execute/20040411-1.c: Likewise.
+	* gcc.c-torture/execute/20040423-1.c: Likewise.
+	* gcc.c-torture/execute/20040625-1.c: Likewise.
+	* gcc.c-torture/execute/20040703-1.c: Likewise.
+	* gcc.c-torture/execute/20040706-1.c: Likewise.
+	* gcc.c-torture/execute/20040707-1.c: Likewise.
+	* gcc.c-torture/execute/20040805-1.c: Likewise.
+	* gcc.c-torture/execute/20040917-1.c: Likewise.
+	* gcc.c-torture/execute/20041011-1.c: Likewise.
+	* gcc.c-torture/execute/20041113-1.c: Likewise.
+	* gcc.c-torture/execute/20041124-1.c: Likewise.
+	* gcc.c-torture/execute/20041210-1.c: Likewise.
+	* gcc.c-torture/execute/20041212-1.c: Likewise.
+	* gcc.c-torture/execute/20050410-1.c: Likewise.
+	* gcc.c-torture/execute/20051113-1.c: Likewise.
+	* gcc.c-torture/execute/20070623-1.c: Likewise.
+	* gcc.c-torture/execute/20091229-1.c: Likewise.
+	* gcc.c-torture/execute/20101025-1.c: Likewise.
+	* gcc.c-torture/execute/20120817-1.c: Likewise.
+	* gcc.c-torture/execute/20170401-2.c: Likewise.
+	* gcc.c-torture/execute/900409-1.c: Likewise.
+	* gcc.c-torture/execute/920202-1.c: Likewise.
+	* gcc.c-torture/execute/920302-1.c: Likewise.
+	* gcc.c-torture/execute/920410-1.c: Likewise.
+	* gcc.c-torture/execute/920501-2.c: Likewise.
+	* gcc.c-torture/execute/920501-3.c: Likewise.
+	* gcc.c-torture/execute/920501-4.c: Likewise.
+	* gcc.c-torture/execute/920501-5.c: Likewise.
+	* gcc.c-torture/execute/920501-6.c: Likewise.
+	* gcc.c-torture/execute/920501-8.c: Likewise.
+	* gcc.c-torture/execute/920506-1.c: Likewise.
+	* gcc.c-torture/execute/920604-1.c: Likewise.
+	* gcc.c-torture/execute/920612-2.c: Likewise.
+	* gcc.c-torture/execute/920618-1.c: Likewise.
+	* gcc.c-torture/execute/920625-1.c: Likewise.
+	* gcc.c-torture/execute/920710-1.c: Likewise.
+	* gcc.c-torture/execute/920721-1.c: Likewise.
+	* gcc.c-torture/execute/920721-4.c: Likewise.
+	* gcc.c-torture/execute/920726-1.c: Likewise.
+	* gcc.c-torture/execute/920829-1.c: Likewise.
+	* gcc.c-torture/execute/920908-1.c: Likewise.
+	* gcc.c-torture/execute/920922-1.c: Likewise.
+	* gcc.c-torture/execute/920929-1.c: Likewise.
+	* gcc.c-torture/execute/921006-1.c: Likewise.
+	* gcc.c-torture/execute/921007-1.c: Likewise.
+	* gcc.c-torture/execute/921016-1.c: Likewise.
+	* gcc.c-torture/execute/921019-1.c: Likewise.
+	* gcc.c-torture/execute/921019-2.c: Likewise.
+	* gcc.c-torture/execute/921029-1.c: Likewise.
+	* gcc.c-torture/execute/921104-1.c: Likewise.
+	* gcc.c-torture/execute/921112-1.c: Likewise.
+	* gcc.c-torture/execute/921113-1.c: Likewise.
+	* gcc.c-torture/execute/921117-1.c: Likewise.
+	* gcc.c-torture/execute/921123-2.c: Likewise.
+	* gcc.c-torture/execute/921202-2.c: Likewise.
+	* gcc.c-torture/execute/921204-1.c: Likewise.
+	* gcc.c-torture/execute/921208-1.c: Likewise.
+	* gcc.c-torture/execute/930123-1.c: Likewise.
+	* gcc.c-torture/execute/930126-1.c: Likewise.
+	* gcc.c-torture/execute/930406-1.c: Likewise.
+	* gcc.c-torture/execute/930408-1.c: Likewise.
+	* gcc.c-torture/execute/930429-1.c: Likewise.
+	* gcc.c-torture/execute/930603-2.c: Likewise.
+	* gcc.c-torture/execute/930608-1.c: Likewise.
+	* gcc.c-torture/execute/930614-1.c: Likewise.
+	* gcc.c-torture/execute/930614-2.c: Likewise.
+	* gcc.c-torture/execute/930622-2.c: Likewise.
+	* gcc.c-torture/execute/930628-1.c: Likewise.
+	* gcc.c-torture/execute/930725-1.c: Likewise.
+	* gcc.c-torture/execute/930930-2.c: Likewise.
+	* gcc.c-torture/execute/931002-1.c: Likewise.
+	* gcc.c-torture/execute/931004-1.c: Likewise.
+	* gcc.c-torture/execute/931004-10.c: Likewise.
+	* gcc.c-torture/execute/931004-11.c: Likewise.
+	* gcc.c-torture/execute/931004-12.c: Likewise.
+	* gcc.c-torture/execute/931004-13.c: Likewise.
+	* gcc.c-torture/execute/931004-14.c: Likewise.
+	* gcc.c-torture/execute/931004-2.c: Likewise.
+	* gcc.c-torture/execute/931004-3.c: Likewise.
+	* gcc.c-torture/execute/931004-4.c: Likewise.
+	* gcc.c-torture/execute/931004-5.c: Likewise.
+	* gcc.c-torture/execute/931004-6.c: Likewise.
+	* gcc.c-torture/execute/931004-7.c: Likewise.
+	* gcc.c-torture/execute/931004-8.c: Likewise.
+	* gcc.c-torture/execute/931004-9.c: Likewise.
+	* gcc.c-torture/execute/931005-1.c: Likewise.
+	* gcc.c-torture/execute/931110-1.c: Likewise.
+	* gcc.c-torture/execute/931110-2.c: Likewise.
+	* gcc.c-torture/execute/941014-1.c: Likewise.
+	* gcc.c-torture/execute/941015-1.c: Likewise.
+	* gcc.c-torture/execute/941021-1.c: Likewise.
+	* gcc.c-torture/execute/941025-1.c: Likewise.
+	* gcc.c-torture/execute/941031-1.c: Likewise.
+	* gcc.c-torture/execute/950221-1.c: Likewise.
+	* gcc.c-torture/execute/950426-2.c: Likewise.
+	* gcc.c-torture/execute/950503-1.c: Likewise.
+	* gcc.c-torture/execute/950511-1.c: Likewise.
+	* gcc.c-torture/execute/950607-1.c: Likewise.
+	* gcc.c-torture/execute/950607-2.c: Likewise.
+	* gcc.c-torture/execute/950612-1.c: Likewise.
+	* gcc.c-torture/execute/950628-1.c: Likewise.
+	* gcc.c-torture/execute/950704-1.c: Likewise.
+	* gcc.c-torture/execute/950706-1.c: Likewise.
+	* gcc.c-torture/execute/950710-1.c: Likewise.
+	* gcc.c-torture/execute/950714-1.c: Likewise.
+	* gcc.c-torture/execute/950809-1.c: Likewise.
+	* gcc.c-torture/execute/950906-1.c: Likewise.
+	* gcc.c-torture/execute/950915-1.c: Likewise.
+	* gcc.c-torture/execute/950929-1.c: Likewise.
+	* gcc.c-torture/execute/951003-1.c: Likewise.
+	* gcc.c-torture/execute/951115-1.c: Likewise.
+	* gcc.c-torture/execute/951204-1.c: Likewise.
+	* gcc.c-torture/execute/960116-1.c: Likewise.
+	* gcc.c-torture/execute/960117-1.c: Likewise.
+	* gcc.c-torture/execute/960209-1.c: Likewise.
+	* gcc.c-torture/execute/960215-1.c: Likewise.
+	* gcc.c-torture/execute/960219-1.c: Likewise.
+	* gcc.c-torture/execute/960301-1.c: Likewise.
+	* gcc.c-torture/execute/960302-1.c: Likewise.
+	* gcc.c-torture/execute/960311-1.c: Likewise.
+	* gcc.c-torture/execute/960311-2.c: Likewise.
+	* gcc.c-torture/execute/960311-3.c: Likewise.
+	* gcc.c-torture/execute/960312-1.c: Likewise.
+	* gcc.c-torture/execute/960317-1.c: Likewise.
+	* gcc.c-torture/execute/960321-1.c: Likewise.
+	* gcc.c-torture/execute/960326-1.c: Likewise.
+	* gcc.c-torture/execute/960327-1.c: Likewise.
+	* gcc.c-torture/execute/960405-1.c: Likewise.
+	* gcc.c-torture/execute/960416-1.c: Likewise.
+	* gcc.c-torture/execute/960419-1.c: Likewise.
+	* gcc.c-torture/execute/960419-2.c: Likewise.
+	* gcc.c-torture/execute/960512-1.c: Likewise.
+	* gcc.c-torture/execute/960513-1.c: Likewise.
+	* gcc.c-torture/execute/960608-1.c: Likewise.
+	* gcc.c-torture/execute/960801-1.c: Likewise.
+	* gcc.c-torture/execute/960802-1.c: Likewise.
+	* gcc.c-torture/execute/960909-1.c: Likewise.
+	* gcc.c-torture/execute/961004-1.c: Likewise.
+	* gcc.c-torture/execute/961017-1.c: Likewise.
+	* gcc.c-torture/execute/961017-2.c: Likewise.
+	* gcc.c-torture/execute/961026-1.c: Likewise.
+	* gcc.c-torture/execute/961122-1.c: Likewise.
+	* gcc.c-torture/execute/961122-2.c: Likewise.
+	* gcc.c-torture/execute/961125-1.c: Likewise.
+	* gcc.c-torture/execute/961206-1.c: Likewise.
+	* gcc.c-torture/execute/961213-1.c: Likewise.
+	* gcc.c-torture/execute/970214-1.c: Likewise.
+	* gcc.c-torture/execute/970214-2.c: Likewise.
+	* gcc.c-torture/execute/970217-1.c: Likewise.
+	* gcc.c-torture/execute/970923-1.c: Likewise.
+	* gcc.c-torture/execute/980205.c: Likewise.
+	* gcc.c-torture/execute/980223.c: Likewise.
+	* gcc.c-torture/execute/980424-1.c: Likewise.
+	* gcc.c-torture/execute/980505-1.c: Likewise.
+	* gcc.c-torture/execute/980505-2.c: Likewise.
+	* gcc.c-torture/execute/980506-1.c: Likewise.
+	* gcc.c-torture/execute/980506-2.c: Likewise.
+	* gcc.c-torture/execute/980506-3.c: Likewise.
+	* gcc.c-torture/execute/980526-1.c: Likewise.
+	* gcc.c-torture/execute/980526-2.c: Likewise.
+	* gcc.c-torture/execute/980526-3.c: Likewise.
+	* gcc.c-torture/execute/980602-1.c: Likewise.
+	* gcc.c-torture/execute/980602-2.c: Likewise.
+	* gcc.c-torture/execute/980604-1.c: Likewise.
+	* gcc.c-torture/execute/980605-1.c: Likewise.
+	* gcc.c-torture/execute/980612-1.c: Likewise.
+	* gcc.c-torture/execute/980617-1.c: Likewise.
+	* gcc.c-torture/execute/980618-1.c: Likewise.
+	* gcc.c-torture/execute/980701-1.c: Likewise.
+	* gcc.c-torture/execute/980709-1.c: Likewise.
+	* gcc.c-torture/execute/980716-1.c: Likewise.
+	* gcc.c-torture/execute/980929-1.c: Likewise.
+	* gcc.c-torture/execute/981001-1.c: Likewise.
+	* gcc.c-torture/execute/981019-1.c: Likewise.
+	* gcc.c-torture/execute/981130-1.c: Likewise.
+	* gcc.c-torture/execute/981206-1.c: Likewise.
+	* gcc.c-torture/execute/990106-2.c: Likewise.
+	* gcc.c-torture/execute/990117-1.c: Likewise.
+	* gcc.c-torture/execute/990128-1.c: Likewise.
+	* gcc.c-torture/execute/990130-1.c: Likewise.
+	* gcc.c-torture/execute/990208-1.c: Likewise.
+	* gcc.c-torture/execute/990222-1.c: Likewise.
+	* gcc.c-torture/execute/990324-1.c: Likewise.
+	* gcc.c-torture/execute/990326-1.c: Likewise.
+	* gcc.c-torture/execute/990404-1.c: Likewise.
+	* gcc.c-torture/execute/990513-1.c: Likewise.
+	* gcc.c-torture/execute/990524-1.c: Likewise.
+	* gcc.c-torture/execute/990525-1.c: Likewise.
+	* gcc.c-torture/execute/990525-2.c: Likewise.
+	* gcc.c-torture/execute/990527-1.c: Likewise.
+	* gcc.c-torture/execute/990531-1.c: Likewise.
+	* gcc.c-torture/execute/990604-1.c: Likewise.
+	* gcc.c-torture/execute/990804-1.c: Likewise.
+	* gcc.c-torture/execute/990811-1.c: Likewise.
+	* gcc.c-torture/execute/990826-0.c: Likewise.
+	* gcc.c-torture/execute/990827-1.c: Likewise.
+	* gcc.c-torture/execute/990829-1.c: Likewise.
+	* gcc.c-torture/execute/990923-1.c: Likewise.
+	* gcc.c-torture/execute/991014-1.c: Likewise.
+	* gcc.c-torture/execute/991016-1.c: Likewise.
+	* gcc.c-torture/execute/991019-1.c: Likewise.
+	* gcc.c-torture/execute/991023-1.c: Likewise.
+	* gcc.c-torture/execute/991030-1.c: Likewise.
+	* gcc.c-torture/execute/991112-1.c: Likewise.
+	* gcc.c-torture/execute/991118-1.c: Likewise.
+	* gcc.c-torture/execute/991201-1.c: Likewise.
+	* gcc.c-torture/execute/991202-1.c: Likewise.
+	* gcc.c-torture/execute/991202-2.c: Likewise.
+	* gcc.c-torture/execute/991202-3.c: Likewise.
+	* gcc.c-torture/execute/991216-1.c: Likewise.
+	* gcc.c-torture/execute/991216-2.c: Likewise.
+	* gcc.c-torture/execute/991216-4.c: Likewise.
+	* gcc.c-torture/execute/991221-1.c: Likewise.
+	* gcc.c-torture/execute/991227-1.c: Likewise.
+	* gcc.c-torture/execute/991228-1.c: Likewise.
+	* gcc.c-torture/execute/align-1.c: Likewise.
+	* gcc.c-torture/execute/align-2.c: Likewise.
+	* gcc.c-torture/execute/align-3.c: Likewise.
+	* gcc.c-torture/execute/alloca-1.c: Likewise.
+	* gcc.c-torture/execute/anon-1.c: Likewise.
+	* gcc.c-torture/execute/arith-1.c: Likewise.
+	* gcc.c-torture/execute/arith-rand-ll.c: Likewise.
+	* gcc.c-torture/execute/arith-rand.c: Likewise.
+	* gcc.c-torture/execute/bf-layout-1.c: Likewise.
+	* gcc.c-torture/execute/bf-pack-1.c: Likewise.
+	* gcc.c-torture/execute/bf-sign-1.c: Likewise.
+	* gcc.c-torture/execute/bf-sign-2.c: Likewise.
+	* gcc.c-torture/execute/bf64-1.c: Likewise.
+	* gcc.c-torture/execute/builtin-constant.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-1.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-2.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-3.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-4.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-5.c: Likewise.
+	* gcc.c-torture/execute/builtin-prefetch-6.c: Likewise.
+	* gcc.c-torture/execute/builtin-types-compatible-p.c: Likewise.
+	* gcc.c-torture/execute/cbrt.c: Likewise.
+	* gcc.c-torture/execute/complex-1.c: Likewise.
+	* gcc.c-torture/execute/complex-2.c: Likewise.
+	* gcc.c-torture/execute/complex-3.c: Likewise.
+	* gcc.c-torture/execute/complex-4.c: Likewise.
+	* gcc.c-torture/execute/complex-5.c: Likewise.
+	* gcc.c-torture/execute/compndlit-1.c: Likewise.
+	* gcc.c-torture/execute/conversion.c: Likewise.
+	* gcc.c-torture/execute/cvt-1.c: Likewise.
+	* gcc.c-torture/execute/divconst-1.c: Likewise.
+	* gcc.c-torture/execute/divconst-2.c: Likewise.
+	* gcc.c-torture/execute/divconst-3.c: Likewise.
+	* gcc.c-torture/execute/enum-1.c: Likewise.
+	* gcc.c-torture/execute/enum-2.c: Likewise.
+	* gcc.c-torture/execute/extzvsi.c: Likewise.
+	* gcc.c-torture/execute/frame-address.c: Likewise.
+	* gcc.c-torture/execute/func-ptr-1.c: Likewise.
+	* gcc.c-torture/execute/gofast.c: Likewise.
+	* gcc.c-torture/execute/ieee/20000320-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/20001122-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/20010226-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/20011123-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/920518-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/920810-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/930529-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/980619-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/acc1.c: Likewise.
+	* gcc.c-torture/execute/ieee/acc2.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-3.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-4.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-5.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-8.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.c: Likewise.
+	* gcc.c-torture/execute/ieee/hugeval.c: Likewise.
+	* gcc.c-torture/execute/ieee/minuszero.c: Likewise.
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/mzero2.c: Likewise.
+	* gcc.c-torture/execute/ieee/mzero3.c: Likewise.
+	* gcc.c-torture/execute/ieee/mzero5.c: Likewise.
+	* gcc.c-torture/execute/ieee/mzero6.c: Likewise.
+	* gcc.c-torture/execute/ieee/pr28634.c: Likewise.
+	* gcc.c-torture/execute/ieee/rbug.c: Likewise.
+	* gcc.c-torture/execute/index-1.c: Likewise.
+	* gcc.c-torture/execute/longlong.c: Likewise.
+	* gcc.c-torture/execute/loop-1.c: Likewise.
+	* gcc.c-torture/execute/loop-10.c: Likewise.
+	* gcc.c-torture/execute/loop-11.c: Likewise.
+	* gcc.c-torture/execute/loop-13.c: Likewise.
+	* gcc.c-torture/execute/loop-14.c: Likewise.
+	* gcc.c-torture/execute/loop-15.c: Likewise.
+	* gcc.c-torture/execute/loop-2b.c: Likewise.
+	* gcc.c-torture/execute/loop-2e.c: Likewise.
+	* gcc.c-torture/execute/loop-4.c: Likewise.
+	* gcc.c-torture/execute/loop-4b.c: Likewise.
+	* gcc.c-torture/execute/loop-5.c: Likewise.
+	* gcc.c-torture/execute/loop-6.c: Likewise.
+	* gcc.c-torture/execute/loop-7.c: Likewise.
+	* gcc.c-torture/execute/loop-8.c: Likewise.
+	* gcc.c-torture/execute/memcpy-1.c: Likewise.
+	* gcc.c-torture/execute/memcpy-2.c: Likewise.
+	* gcc.c-torture/execute/memcpy-bi.c: Likewise.
+	* gcc.c-torture/execute/memset-1.c: Likewise.
+	* gcc.c-torture/execute/memset-2.c: Likewise.
+	* gcc.c-torture/execute/memset-3.c: Likewise.
+	* gcc.c-torture/execute/multdi-1.c: Likewise.
+	* gcc.c-torture/execute/multi-ix.c: Likewise.
+	* gcc.c-torture/execute/nest-stdar-1.c: Likewise.
+	* gcc.c-torture/execute/nestfunc-1.c: Likewise.
+	* gcc.c-torture/execute/nestfunc-2.c: Likewise.
+	* gcc.c-torture/execute/nestfunc-3.c: Likewise.
+	* gcc.c-torture/execute/nestfunc-4.c: Likewise.
+	* gcc.c-torture/execute/packed-1.c: Likewise.
+	* gcc.c-torture/execute/pending-4.c: Likewise.
+	* gcc.c-torture/execute/pr15262-1.c: Likewise.
+	* gcc.c-torture/execute/pr15262-2.c: Likewise.
+	* gcc.c-torture/execute/pr15262.c: Likewise.
+	* gcc.c-torture/execute/pr15296.c: Likewise.
+	* gcc.c-torture/execute/pr17252.c: Likewise.
+	* gcc.c-torture/execute/pr17377.c: Likewise.
+	* gcc.c-torture/execute/pr19606.c: Likewise.
+	* gcc.c-torture/execute/pr21964-1.c: Likewise.
+	* gcc.c-torture/execute/pr22061-2.c: Likewise.
+	* gcc.c-torture/execute/pr22061-3.c: Likewise.
+	* gcc.c-torture/execute/pr22061-4.c: Likewise.
+	* gcc.c-torture/execute/pr23467.c: Likewise.
+	* gcc.c-torture/execute/pr27073.c: Likewise.
+	* gcc.c-torture/execute/pr27364.c: Likewise.
+	* gcc.c-torture/execute/pr28403.c: Likewise.
+	* gcc.c-torture/execute/pr31605.c: Likewise.
+	* gcc.c-torture/execute/pr38969.c: Likewise.
+	* gcc.c-torture/execute/pr40657.c: Likewise.
+	* gcc.c-torture/execute/pr44575.c: Likewise.
+	* gcc.c-torture/execute/pr56799.c: Likewise.
+	* gcc.c-torture/execute/pr58640.c: Likewise.
+	* gcc.c-torture/execute/pr71335.c: Likewise.
+	* gcc.c-torture/execute/ptr-arith-1.c: Likewise.
+	* gcc.c-torture/execute/regstack-1.c: Likewise.
+	* gcc.c-torture/execute/scope-1.c: Likewise.
+	* gcc.c-torture/execute/simd-1.c: Likewise.
+	* gcc.c-torture/execute/simd-2.c: Likewise.
+	* gcc.c-torture/execute/simd-4.c: Likewise.
+	* gcc.c-torture/execute/simd-5.c: Likewise.
+	* gcc.c-torture/execute/strcmp-1.c: Likewise.
+	* gcc.c-torture/execute/strcpy-1.c: Likewise.
+	* gcc.c-torture/execute/strct-pack-1.c: Likewise.
+	* gcc.c-torture/execute/strct-pack-2.c: Likewise.
+	* gcc.c-torture/execute/strct-pack-4.c: Likewise.
+	* gcc.c-torture/execute/strct-stdarg-1.c: Likewise.
+	* gcc.c-torture/execute/strct-varg-1.c: Likewise.
+	* gcc.c-torture/execute/strlen-1.c: Likewise.
+	* gcc.c-torture/execute/strncmp-1.c: Likewise.
+	* gcc.c-torture/execute/struct-ini-1.c: Likewise.
+	* gcc.c-torture/execute/struct-ini-2.c: Likewise.
+	* gcc.c-torture/execute/struct-ini-3.c: Likewise.
+	* gcc.c-torture/execute/struct-ini-4.c: Likewise.
+	* gcc.c-torture/execute/struct-ret-1.c: Likewise.
+	* gcc.c-torture/execute/struct-ret-2.c: Likewise.
+	* gcc.c-torture/execute/usmul.c: Likewise.
+	* gcc.c-torture/execute/va-arg-1.c: Likewise.
+	* gcc.c-torture/execute/va-arg-10.c: Likewise.
+	* gcc.c-torture/execute/va-arg-11.c: Likewise.
+	* gcc.c-torture/execute/va-arg-12.c: Likewise.
+	* gcc.c-torture/execute/va-arg-13.c: Likewise.
+	* gcc.c-torture/execute/va-arg-14.c: Likewise.
+	* gcc.c-torture/execute/va-arg-15.c: Likewise.
+	* gcc.c-torture/execute/va-arg-16.c: Likewise.
+	* gcc.c-torture/execute/va-arg-17.c: Likewise.
+	* gcc.c-torture/execute/va-arg-18.c: Likewise.
+	* gcc.c-torture/execute/va-arg-19.c: Likewise.
+	* gcc.c-torture/execute/va-arg-2.c: Likewise.
+	* gcc.c-torture/execute/va-arg-20.c: Likewise.
+	* gcc.c-torture/execute/va-arg-23.c: Likewise.
+	* gcc.c-torture/execute/va-arg-26.c: Likewise.
+	* gcc.c-torture/execute/va-arg-4.c: Likewise.
+	* gcc.c-torture/execute/va-arg-5.c: Likewise.
+	* gcc.c-torture/execute/va-arg-6.c: Likewise.
+	* gcc.c-torture/execute/va-arg-9.c: Likewise.
+	* gcc.c-torture/execute/widechar-1.c: Likewise.
+	* gcc.c-torture/execute/widechar-2.c: Likewise.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/386.c: Compile with -std=gnu89.
+	* gcc.c-torture/compile/BUG1.c: Likewise.
+	* gcc.c-torture/compile/BUG11.c: Likewise.
+	* gcc.c-torture/compile/BUG16.c: Likewise.
+	* gcc.c-torture/compile/BUG2.c: Likewise.
+	* gcc.c-torture/compile/BUG24.c: Likewise.
+	* gcc.c-torture/compile/BUG25.c: Likewise.
+	* gcc.c-torture/compile/BUG3.c: Likewise.
+	* gcc.c-torture/compile/DFcmp.c: Likewise.
+	* gcc.c-torture/compile/HIcmp.c: Likewise.
+	* gcc.c-torture/compile/HIset.c: Likewise.
+	* gcc.c-torture/compile/QIcmp.c: Likewise.
+	* gcc.c-torture/compile/QIset.c: Likewise.
+	* gcc.c-torture/compile/SFset.c: Likewise.
+	* gcc.c-torture/compile/SIcmp.c: Likewise.
+	* gcc.c-torture/compile/SIset.c: Likewise.
+	* gcc.c-torture/compile/UHIcmp.c: Likewise.
+	* gcc.c-torture/compile/UQIcmp.c: Likewise.
+	* gcc.c-torture/compile/USIcmp.c: Likewise.
+	* gcc.c-torture/compile/a.c: Likewise.
+	* gcc.c-torture/compile/a1.c: Likewise.
+	* gcc.c-torture/compile/a3.c: Likewise.
+	* gcc.c-torture/compile/aa.c: Likewise.
+	* gcc.c-torture/compile/aaa.c: Likewise.
+	* gcc.c-torture/compile/abs.c: Likewise.
+	* gcc.c-torture/compile/ac.c: Likewise.
+	* gcc.c-torture/compile/acc.c: Likewise.
+	* gcc.c-torture/compile/add.c: Likewise.
+	* gcc.c-torture/compile/add386.c: Likewise.
+	* gcc.c-torture/compile/addcc.c: Likewise.
+	* gcc.c-torture/compile/andm.c: Likewise.
+	* gcc.c-torture/compile/andmem.c: Likewise.
+	* gcc.c-torture/compile/andn.c: Likewise.
+	* gcc.c-torture/compile/andok.c: Likewise.
+	* gcc.c-torture/compile/andsi.c: Likewise.
+	* gcc.c-torture/compile/andsparc.c: Likewise.
+	* gcc.c-torture/compile/aos.c: Likewise.
+	* gcc.c-torture/compile/arr.c: Likewise.
+	* gcc.c-torture/compile/as.c: Likewise.
+	* gcc.c-torture/compile/ase.c: Likewise.
+	* gcc.c-torture/compile/band.c: Likewise.
+	* gcc.c-torture/compile/bb0.c: Likewise.
+	* gcc.c-torture/compile/bb1.c: Likewise.
+	* gcc.c-torture/compile/bc.c: Likewise.
+	* gcc.c-torture/compile/bcopy.c: Likewise.
+	* gcc.c-torture/compile/bfx.c: Likewise.
+	* gcc.c-torture/compile/bge.c: Likewise.
+	* gcc.c-torture/compile/bit.c: Likewise.
+	* gcc.c-torture/compile/bitf.c: Likewise.
+	* gcc.c-torture/compile/bitw.c: Likewise.
+	* gcc.c-torture/compile/blk.c: Likewise.
+	* gcc.c-torture/compile/bt386.c: Likewise.
+	* gcc.c-torture/compile/bug.c: Likewise.
+	* gcc.c-torture/compile/buns.c: Likewise.
+	* gcc.c-torture/compile/c.c: Likewise.
+	* gcc.c-torture/compile/c2.c: Likewise.
+	* gcc.c-torture/compile/call.c: Likewise.
+	* gcc.c-torture/compile/callind.c: Likewise.
+	* gcc.c-torture/compile/calls-void.c: Likewise.
+	* gcc.c-torture/compile/calls.c: Likewise.
+	* gcc.c-torture/compile/cc.c: Likewise.
+	* gcc.c-torture/compile/cmb.c: Likewise.
+	* gcc.c-torture/compile/cmpsi386.c: Likewise.
+	* gcc.c-torture/compile/cmul.c: Likewise.
+	* gcc.c-torture/compile/comb.c: Likewise.
+	* gcc.c-torture/compile/consec.c: Likewise.
+	* gcc.c-torture/compile/const.c: Likewise.
+	* gcc.c-torture/compile/conv_tst.c: Likewise.
+	* gcc.c-torture/compile/cvt.c: Likewise.
+	* gcc.c-torture/compile/dbl_parm.c: Likewise.
+	* gcc.c-torture/compile/dblbug.c: Likewise.
+	* gcc.c-torture/compile/dead.c: Likewise.
+	* gcc.c-torture/compile/delay.c: Likewise.
+	* gcc.c-torture/compile/di.c: Likewise.
+	* gcc.c-torture/compile/div.c: Likewise.
+	* gcc.c-torture/compile/dm.c: Likewise.
+	* gcc.c-torture/compile/dshift.c: Likewise.
+	* gcc.c-torture/compile/e.c: Likewise.
+	* gcc.c-torture/compile/ex.c: Likewise.
+	* gcc.c-torture/compile/ext.c: Likewise.
+	* gcc.c-torture/compile/flo.c: Likewise.
+	* gcc.c-torture/compile/forgetcc.c: Likewise.
+	* gcc.c-torture/compile/g.c: Likewise.
+	* gcc.c-torture/compile/gen_tst.c: Likewise.
+	* gcc.c-torture/compile/gronk.c: Likewise.
+	* gcc.c-torture/compile/hi.c: Likewise.
+	* gcc.c-torture/compile/i.c: Likewise.
+	* gcc.c-torture/compile/icmp.c: Likewise.
+	* gcc.c-torture/compile/ifreg.c: Likewise.
+	* gcc.c-torture/compile/jumptab.c: Likewise.
+	* gcc.c-torture/compile/l.c: Likewise.
+	* gcc.c-torture/compile/layout.c: Likewise.
+	* gcc.c-torture/compile/lll.c: Likewise.
+	* gcc.c-torture/compile/load8.c: Likewise.
+	* gcc.c-torture/compile/loadhicc.c: Likewise.
+	* gcc.c-torture/compile/log2.c: Likewise.
+	* gcc.c-torture/compile/logic.c: Likewise.
+	* gcc.c-torture/compile/loop-1.c: Likewise.
+	* gcc.c-torture/compile/loop386.c: Likewise.
+	* gcc.c-torture/compile/lop.c: Likewise.
+	* gcc.c-torture/compile/m1.c: Likewise.
+	* gcc.c-torture/compile/m5.c: Likewise.
+	* gcc.c-torture/compile/m68.c: Likewise.
+	* gcc.c-torture/compile/mbyte.c: Likewise.
+	* gcc.c-torture/compile/mcmp.c: Likewise.
+	* gcc.c-torture/compile/mm.c: Likewise.
+	* gcc.c-torture/compile/mod.c: Likewise.
+	* gcc.c-torture/compile/modcc.c: Likewise.
+	* gcc.c-torture/compile/move.c: Likewise.
+	* gcc.c-torture/compile/move_qhi.c: Likewise.
+	* gcc.c-torture/compile/mregtst.c: Likewise.
+	* gcc.c-torture/compile/mu.c: Likewise.
+	* gcc.c-torture/compile/mword.c: Likewise.
+	* gcc.c-torture/compile/n.c: Likewise.
+	* gcc.c-torture/compile/n1.c: Likewise.
+	* gcc.c-torture/compile/nand.c: Likewise.
+	* gcc.c-torture/compile/neg.c: Likewise.
+	* gcc.c-torture/compile/o.c: Likewise.
+	* gcc.c-torture/compile/omit.c: Likewise.
+	* gcc.c-torture/compile/opout.c: Likewise.
+	* gcc.c-torture/compile/opt.c: Likewise.
+	* gcc.c-torture/compile/or.c: Likewise.
+	* gcc.c-torture/compile/or386.c: Likewise.
+	* gcc.c-torture/compile/p.c: Likewise.
+	* gcc.c-torture/compile/parms.c: Likewise.
+	* gcc.c-torture/compile/pass.c: Likewise.
+	* gcc.c-torture/compile/pp.c: Likewise.
+	* gcc.c-torture/compile/pret-arg.c: Likewise.
+	* gcc.c-torture/compile/pyr.c: Likewise.
+	* gcc.c-torture/compile/pyr2.c: Likewise.
+	* gcc.c-torture/compile/r.c: Likewise.
+	* gcc.c-torture/compile/r1.c: Likewise.
+	* gcc.c-torture/compile/rmsc.c: Likewise.
+	* gcc.c-torture/compile/round.c: Likewise.
+	* gcc.c-torture/compile/sc.c: Likewise.
+	* gcc.c-torture/compile/scal.c: Likewise.
+	* gcc.c-torture/compile/scc.c: Likewise.
+	* gcc.c-torture/compile/scond.c: Likewise.
+	* gcc.c-torture/compile/seq.c: Likewise.
+	* gcc.c-torture/compile/set386.c: Likewise.
+	* gcc.c-torture/compile/set88.c: Likewise.
+	* gcc.c-torture/compile/sh.c: Likewise.
+	* gcc.c-torture/compile/shand.c: Likewise.
+	* gcc.c-torture/compile/shft.c: Likewise.
+	* gcc.c-torture/compile/shift.c: Likewise.
+	* gcc.c-torture/compile/signext.c: Likewise.
+	* gcc.c-torture/compile/signext2.c: Likewise.
+	* gcc.c-torture/compile/simple.c: Likewise.
+	* gcc.c-torture/compile/sparcbug.c: Likewise.
+	* gcc.c-torture/compile/stor.c: Likewise.
+	* gcc.c-torture/compile/str.c: Likewise.
+	* gcc.c-torture/compile/structret.c: Likewise.
+	* gcc.c-torture/compile/sub32.c: Likewise.
+	* gcc.c-torture/compile/subcc.c: Likewise.
+	* gcc.c-torture/compile/subcse.c: Likewise.
+	* gcc.c-torture/compile/sym.c: Likewise.
+	* gcc.c-torture/compile/symconst.c: Likewise.
+	* gcc.c-torture/compile/t.c: Likewise.
+	* gcc.c-torture/compile/test-flow.c: Likewise.
+	* gcc.c-torture/compile/test-loop.c: Likewise.
+	* gcc.c-torture/compile/test.c: Likewise.
+	* gcc.c-torture/compile/tmp.c: Likewise.
+	* gcc.c-torture/compile/trivial.c: Likewise.
+	* gcc.c-torture/compile/trunc.c: Likewise.
+	* gcc.c-torture/compile/u.c: Likewise.
+	* gcc.c-torture/compile/uns.c: Likewise.
+	* gcc.c-torture/compile/uns_tst.c: Likewise.
+	* gcc.c-torture/compile/uuarg.c: Likewise.
+	* gcc.c-torture/compile/volatile-1.c: Likewise.
+	* gcc.c-torture/compile/ww.c: Likewise.
+	* gcc.c-torture/compile/x.c: Likewise.
+	* gcc.c-torture/compile/xb.c: Likewise.
+	* gcc.c-torture/compile/xc.c: Likewise.
+	* gcc.c-torture/compile/xdi.c: Likewise.
+	* gcc.c-torture/compile/xfoo.c: Likewise.
+	* gcc.c-torture/compile/xi.c: Likewise.
+	* gcc.c-torture/compile/xlop.c: Likewise.
+	* gcc.c-torture/compile/xneg.c: Likewise.
+	* gcc.c-torture/compile/xopt.c: Likewise.
+	* gcc.c-torture/compile/xor.c: Likewise.
+	* gcc.c-torture/compile/xorn.c: Likewise.
+	* gcc.c-torture/compile/xp.c: Likewise.
+	* gcc.c-torture/compile/xpp.c: Likewise.
+	* gcc.c-torture/compile/xs.c: Likewise.
+	* gcc.c-torture/compile/xsh.c: Likewise.
+	* gcc.c-torture/compile/xzz.c: Likewise.
+	* gcc.c-torture/compile/zero-strct-1.c: Likewise.
+	* gcc.c-torture/execute/20000717-3.c: Likewise.
+	* gcc.c-torture/execute/920409-1.c: Likewise.
+	* gcc.c-torture/execute/920411-1.c: Likewise.
+	* gcc.c-torture/execute/920415-1.c: Likewise.
+	* gcc.c-torture/execute/920428-1.c: Likewise.
+	* gcc.c-torture/execute/920428-2.c: Likewise.
+	* gcc.c-torture/execute/920429-1.c: Likewise.
+	* gcc.c-torture/execute/920501-1.c: Likewise.
+	* gcc.c-torture/execute/920501-7.c: Likewise.
+	* gcc.c-torture/execute/920501-9.c: Likewise.
+	* gcc.c-torture/execute/920520-1.c: Likewise.
+	* gcc.c-torture/execute/920603-1.c: Likewise.
+	* gcc.c-torture/execute/920721-2.c: Likewise.
+	* gcc.c-torture/execute/920721-3.c: Likewise.
+	* gcc.c-torture/execute/920728-1.c: Likewise.
+	* gcc.c-torture/execute/920730-1.c: Likewise.
+	* gcc.c-torture/execute/920731-1.c: Likewise.
+	* gcc.c-torture/execute/920812-1.c: Likewise.
+	* gcc.c-torture/execute/920909-1.c: Likewise.
+	* gcc.c-torture/execute/921013-1.c: Likewise.
+	* gcc.c-torture/execute/921017-1.c: Likewise.
+	* gcc.c-torture/execute/921123-1.c: Likewise.
+	* gcc.c-torture/execute/921124-1.c: Likewise.
+	* gcc.c-torture/execute/921202-1.c: Likewise.
+	* gcc.c-torture/execute/921207-1.c: Likewise.
+	* gcc.c-torture/execute/921208-2.c: Likewise.
+	* gcc.c-torture/execute/921215-1.c: Likewise.
+	* gcc.c-torture/execute/921218-1.c: Likewise.
+	* gcc.c-torture/execute/921218-2.c: Likewise.
+	* gcc.c-torture/execute/930106-1.c: Likewise.
+	* gcc.c-torture/execute/930429-2.c: Likewise.
+	* gcc.c-torture/execute/930513-1.c: Likewise.
+	* gcc.c-torture/execute/930513-2.c: Likewise.
+	* gcc.c-torture/execute/930518-1.c: Likewise.
+	* gcc.c-torture/execute/930527-1.c: Likewise.
+	* gcc.c-torture/execute/930603-1.c: Likewise.
+	* gcc.c-torture/execute/930603-3.c: Likewise.
+	* gcc.c-torture/execute/930621-1.c: Likewise.
+	* gcc.c-torture/execute/930622-1.c: Likewise.
+	* gcc.c-torture/execute/930630-1.c: Likewise.
+	* gcc.c-torture/execute/930713-1.c: Likewise.
+	* gcc.c-torture/execute/930718-1.c: Likewise.
+	* gcc.c-torture/execute/930719-1.c: Likewise.
+	* gcc.c-torture/execute/930916-1.c: Likewise.
+	* gcc.c-torture/execute/930921-1.c: Likewise.
+	* gcc.c-torture/execute/930929-1.c: Likewise.
+	* gcc.c-torture/execute/930930-1.c: Likewise.
+	* gcc.c-torture/execute/931009-1.c: Likewise.
+	* gcc.c-torture/execute/931012-1.c: Likewise.
+	* gcc.c-torture/execute/931031-1.c: Likewise.
+	* gcc.c-torture/execute/931102-1.c: Likewise.
+	* gcc.c-torture/execute/931102-2.c: Likewise.
+	* gcc.c-torture/execute/931228-1.c: Likewise.
+	* gcc.c-torture/execute/940115-1.c: Likewise.
+	* gcc.c-torture/execute/940122-1.c: Likewise.
+	* gcc.c-torture/execute/941202-1.c: Likewise.
+	* gcc.c-torture/execute/950605-1.c: Likewise.
+	* gcc.c-torture/execute/960830-1.c: Likewise.
+	* gcc.c-torture/execute/961112-1.c: Likewise.
+	* gcc.c-torture/execute/990106-1.c: Likewise.
+	* gcc.c-torture/execute/cmpdi-1.c: Likewise.
+	* gcc.c-torture/execute/comp-goto-2.c: Likewise.
+	* gcc.c-torture/execute/dbra-1.c: Likewise.
+	* gcc.c-torture/execute/inst-check.c: Likewise.
+	* gcc.c-torture/execute/int-compare.c: Likewise.
+	* gcc.c-torture/execute/loop-2.c: Likewise.
+	* gcc.c-torture/execute/loop-2d.c: Likewise.
+	* gcc.c-torture/execute/loop-3.c: Likewise.
+	* gcc.c-torture/execute/loop-3b.c: Likewise.
+	* gcc.c-torture/execute/loop-3c.c: Likewise.
+	* gcc.c-torture/execute/mod-1.c: Likewise.
+	* gcc.c-torture/execute/strct-pack-3.c: Likewise.
+	* gcc.c-torture/execute/tstdi-1.c: Likewise.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/BUG17.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/BUG18.c (main): Likewise.  Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/BUG21.c (Nase): Add missing void
+	types.
+	* gcc.c-torture/compile/BUG23.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/BUG5.c (bar): Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/BUG6.c (main): Likewise.  Add missing
+	int return type and missing void type.
+	* gcc.c-torture/compile/b.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/b1.c (main): Likewise.  Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/b88.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/bbb.c (flset): Add missing void
+	return type and switch to prototype style.
+	* gcc.c-torture/compile/bf.c (clr, atoi): Declare.
+	(main): Add missing int return type.  Call
+	__builtin_printf instead of printf.
+	* gcc.c-torture/compile/bt.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/charmtst.c (foo, bar): Declare.
+	(c_move_tst): Add missing int return type.
+	* gcc.c-torture/compile/cmpdi-1.c (f, g): Add missing int
+	return type.
+	* gcc.c-torture/compile/cmphi.c (foo): Likewise.
+	* gcc.c-torture/compile/conv.c (main): Likewise.  Add missing
+	void type.  Call __builtin_printf instead of printf.
+	* gcc.c-torture/compile/ddd.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/dilayout.c (str, ll): Add missing
+	void return type.
+	* gcc.c-torture/compile/dimove.c (foo): Likewise.
+	* gcc.c-torture/compile/f2.c (foo): Likewise.
+	* gcc.c-torture/compile/flatten.c  (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/fnul.c (main): Likewise.
+	Call __builtin_printf instead of printf.
+	* gcc.c-torture/compile/fq.c (expand_to_ascii): Add missing
+	void return type.
+	* gcc.c-torture/compile/funcptr-1.c (g): Call __builtin_printf
+	instead of printf.
+	(f): Likewise.  Add missing void types.
+	* gcc.c-torture/compile/glob.c (foo): Add missing void types.
+	* gcc.c-torture/compile/goto-1.c (f): Likewise.
+	* gcc.c-torture/compile/i++.c (main): Call __builtin_printf
+	instead of printf.
+	* gcc.c-torture/compile/ic.c (foo): Add missing int return
+	type.
+	* gcc.c-torture/compile/iftrap-1.c (bar, baz): Declare.
+	(f4, f6): Call __builtin_abort instead of abort.
+	* gcc.c-torture/compile/iftrap-2.c (bar): Declare.
+	* gcc.c-torture/compile/jmp.c (foo): Add missing int types.
+	* gcc.c-torture/compile/labels-1.c (f): Add missing int
+	return type and missing void type.  Call __builtin_abort
+	instead of abort.
+	* gcc.c-torture/compile/labels-2.c (f): Likewise.
+	* gcc.c-torture/compile/lbug.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/memtst.c (memtst): Add missing void
+	return type.
+	(main): Add missing int	return type and missing void type.
+	Call __builtin_bzero instead of bzero.
+	* gcc.c-torture/compile/miscomp.c (main): Add missing int
+	return type and missing void type.  Call __builtin_printf
+	instead of printf.
+	* gcc.c-torture/compile/msp.c (bar): Declare.
+	(foo): Add missing void types.
+	* gcc.c-torture/compile/mtst.c (foo): Add missing int return
+	type.
+	* gcc.c-torture/compile/packed-1.c (f): Add missing void
+	types.
+	* gcc.c-torture/compile/pr17119.c (func1, func2): Declare.
+	* gcc.c-torture/compile/pr18712.c (foo, foo1): Declare.
+	* gcc.c-torture/compile/pr20412.c (bar1, bar2, bar3): Declare.
+	* gcc.c-torture/compile/pr21532.c (foo): Declare.
+	* gcc.c-torture/compile/pr22398.c (main): Call __builtin_exit
+	instead of exit.
+	* gcc.c-torture/compile/pr24883.c (orec_str_list): Add missing
+	void return type.
+	* gcc.c-torture/compile/pr25311.c (use): Declare.
+	* gcc.c-torture/compile/pr25514.c (foo): Declare.
+	* gcc.c-torture/compile/pr26425.c (key_put): Declare.
+	* gcc.c-torture/compile/pr27087.c (g): Declare.
+	* gcc.c-torture/compile/pr27282.c (colrow_equal): Add missing
+	int return type.
+	* gcc.c-torture/compile/pr27907.c (fann_run): Add missing
+	void return type.
+	* gcc.c-torture/compile/pr28489.c (c_compile): Likewise.
+	* gcc.c-torture/compile/pr28776-1.c
+	(tree_contains_struct_check_failed): Declare.
+	* gcc.c-torture/compile/pr29128.c (process_main): Add missing
+	void return type.
+	* gcc.c-torture/compile/pr29945.c (unget_char): Declare.
+	(main) Add missing void return type.
+	* gcc.c-torture/compile/pr33382.c (show_configuration): Add
+	missing int types.
+	* gcc.c-torture/compile/pr36141.c (ffi_prep_closure_loc): Add
+	missing return type.
+	* gcc.c-torture/compile/pr36988.c (__writel): Declare.
+	* gcc.c-torture/compile/pr37026.c (foo): Declare.
+	* gcc.c-torture/compile/pr37285.c (_bfd_abort): Declare.
+	(_bfd_xcoff_canonicalize_dynamic_reloc): Add missing void
+	return type.
+	* gcc.c-torture/compile/pr38554.c (applyFunction): Add missing
+	void return type.
+	* gcc.c-torture/compile/pr42164.c (swp_offset, __BUG_ON):
+	Declare.
+	* gcc.c-torture/compile/pr44788.c (foo): Declare.
+	* gcc.c-torture/compile/pr47364-1.c (arc4_init): Add missing
+	void return type.
+	* gcc.c-torture/compile/pr48596.c (_nrrdCenter): Declare.
+	* gcc.c-torture/compile/rel.c (foo): Add missing int return
+	type.
+	* gcc.c-torture/compile/run.c (main): Likewise.  Add missing
+	void type.
+	* gcc.c-torture/compile/sar.c (main): Likewise.
+	* gcc.c-torture/compile/selfrec.c (foo): Add missing int
+	parameter type.
+	* gcc.c-torture/compile/shloop.c (main): Add missing int
+	return type and missing void type.
+	* gcc.c-torture/compile/shm.c (foo): Add missing int return
+	type.
+	* gcc.c-torture/compile/sim.c (main): Likewise.  Add missing
+	void type.
+	* gcc.c-torture/compile/simd-5.c (main): Add missing int
+	return type and missing void type.  Call __builtin_printf
+	instead of printf.
+	* gcc.c-torture/compile/sne.c (foo): Add missing int return
+	type.
+	* gcc.c-torture/compile/sound.c (write): Declare.
+	(main): Add missing int return type and missing void type.
+	* gcc.c-torture/compile/speed.c (main): Likewise.
+	* gcc.c-torture/compile/store0.c (foo): Add missing void
+	return type.
+	* gcc.c-torture/compile/storecc.c (foo): Add missing int
+	return type.
+	* gcc.c-torture/compile/strcpy-1.c (rezero): Add missing
+	void types.
+	* gcc.c-torture/compile/stru.c (foo): Add missing void return
+	type.
+	* gcc.c-torture/compile/stuct.c (main): Add missing int return
+	type and missing void type.
+	* gcc.c-torture/compile/time.c (main): Likewise.
+	* gcc.c-torture/compile/unalign-1.c (f): Declare.
+	* gcc.c-torture/compile/v.c (main): Add missing int return
+	type.
+	* gcc.c-torture/compile/xcsebug.c (foo): Add missing void
+	types.
+	* gcc.c-torture/compile/xmtst.c (p2, p3, p4): Add missing
+	int return type.
+	* gcc.c-torture/compile/xz.c (foo): Add missing void return
+	type.
+	* gcc.c-torture/execute/loop-2f.c (f): Add missing void
+	return type.
+	(main): Return instead of calling exit.  Call __builtin_abort
+	instead of abort.
+	* gcc.c-torture/execute/loop-2g.c (f): Add missing void
+	return type.
+	(main): Return instead of calling exit.  Call __builtin_abort
+	instead of abort.
+	* gcc.dg/20020206-1.c: Build without -w.
+	(main): Call __builtin_abort instead of abort and
+	__builtin_exit instead of exit.
+	* gcc.dg/ipa/20040703-wpa.c (main): Call __builtin_abort
+	instead of abort and __builtin_exit instead of exit.
+	* gcc.dg/torture/pr84528.c (main): Add missing int and void
+	types.  Call __builtin_abort instead of abort, and
+	__builtin_exit instead of exit.
+	* gcc.dg/tree-ssa/pr68619-2.c (vector_type_mode, real_inf):
+	Declare.
+	* gcc.dg/tree-ssa/pr68619-3.c (iterative_hash): Declare.
+	(e_hash): Call __builtin_abort instead of abort.
+	* gcc.dg/tree-ssa/pr68619-4.c (rhs_regno, foop, arf): Declare.
+	* gcc.dg/tree-ssa/pr68619-5.c (invert_tree_comparison)
+	(vector_type_mode): Declare.
+	* gcc.dg/tree-ssa/pr69270-2.c (arf, gimple_debug_bind_p)
+	(gimple_bb, gimple_assign_rhs_to_tree)
+	(is_gimple_min_invariant, unshare_expr): Declare.
+	* gcc.dg/tree-ssa/pr69270-3.c: (end_imm_use_stmt_p)
+	(next_imm_use_stmt, arf, boo, update_stmt): Declare.
+	* gcc.dg/tree-ssa/ranger-threader-2.c (gimple_call_arg):
+	Declare.
+	(gimple_op): Call __builtin_abort instead of abort.
+	* gcc.dg/tree-ssa/ranger-threader-3.c (expand_binop): Declare.
+	* gcc.dg/tree-ssa/ssa-dom-branch-1.c (arf, foo): Declare.
+	(try_combine): Add casts to rtx.
+	* gcc.dg/tree-ssa/split-path-3.c (vec_heap_o_reserve)
+	(VEC_int_base_length, bmp_iter_and_compl_init)
+	(bmp_iter_and_compl, bmp_iter_next, VEC_int_heap_free):
+	Declare.
+	* gcc.dg/tree-ssa/split-path-7.c (linit): Call
+	__builtin_strcmp instead of strcmp.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c (gimple_call_arg):
+	Declare.
+	(gimple_op): Call __builtin_abort instead of abort.
+	* gcc.dg/tree-ssa/ssa-dom-thread-13.c (arf, error): Declare.
+	(convert): Call __builtin_abort instead of abort.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c (exand_binop): Declare.
+	* gcc.dg/tree-ssa/ssa-dom-thread-15.c
+	(ix86_target_stack_probe, pro_epilogue_adjust_stack)
+	(gen_rtx_CONST_INT, fancy_abort): Declare.
+	* gcc.dg/tree-ssa/ssa-dse-25.c (foo): Call __builtin_memset
+	instead of memset.
+	* gcc.target/aarch64/aapcs64/va_arg-17.c
+	(init_data): Call __builtin_memset instead of memset.
+	* gcc.target/i386/pr69030.c (fn1): Call __builtin_printf instead
+	of printf.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/compile/20080613-1.c (hop_sendmsg): Call
+	__builtin_memcpy instead of memcpy.
+	* gcc.c-torture/compile/complex-6.c (bar): Declare.
+	* gcc.c-torture/compile/pr23445.c (__brelse): Declare.
+	* gcc.c-torture/compile/pr23946.c (long2str): Declare.
+	(avi_parse_comments): Call __builtin_memset instead of
+	memset.  __builtin_malloc instead of malloc.  Call
+	__builtin_memcpy instead of memcpy.  Call
+	__builtin_free instead of free.
+	* gcc.c-torture/compile/pr31953.c (toggle_hexedit_mode):
+	Add missing void return type.
+	* gcc.c-torture/compile/pr32372.c (MPV_encode_init): Add
+	missing void return type.
+	* gcc.c-torture/compile/pr32355.c (sigemptyset): Declare.
+	(doSignalsSetup): Add missing void return type.
+	* gcc.c-torture/compile/pr32453.c (__assert_fail): Declare.
+	* gcc.c-torture/compile/pr32571.c (mthca_is_memfree)
+	(mthca_arbel_fmr_unmap, mthca_tavor_fmr_unmap)
+	(mthca_unmap_fmr): Declare.
+	* gcc.c-torture/compile/pr32584.c (sortpin): Add missing
+	void types.
+	* gcc.c-torture/compile/pr32919.c (read_int, _itoa_word)
+	(__strnlen): Declare.
+	* gcc.c-torture/compile/pr33173.c (test_dir_format): Add
+	missing void return type.  Add missing int types.
+	* gcc.c-torture/compile/pr33855.c (cabsl): Declare.
+	* gcc.c-torture/compile/pr34334.c (__strsep_1c)
+	(__strsep_2c): Add missing void return type.
+	* gcc.c-torture/compile/pr35006.c (grub_putchar)
+	(cl_set_pos, cl_print, grub_memmove, cl_delete): Declare.
+	(grub_cmdline_get): Add missing void return type.
+	* gcc.c-torture/compile/pr35595.c (__kernel_sinf):
+	Declare.
+	* gcc.c-torture/compile/pr35869.c (f): Add missing void
+	return type.
+	* gcc.c-torture/compile/pr36172.c (FcCharSetFreeze): Add
+	missing return value.
+	* gcc.c-torture/compile/pr36238.c (lshift_s_s): Declare.
+	* gcc.c-torture/compile/pr37207.c (func_81, func_98):
+	Declare.
+	* gcc.c-torture/compile/pr37258.c (mod_rhs, lshift_s_s)
+	(func_112, func_23): Declare.
+	* gcc.c-torture/compile/pr37305.c (safe_mod_u_u): Declare.
+	* gcc.c-torture/compile/pr37327.c (func_93, func_59)
+	(func_124, func_117, safe_add_uint64_t_u_u)
+	(safe_mul_int32_t_s_s): Declare.
+	* gcc.c-torture/compile/pr37387.c (FuncMakeConsequencesPres):
+	Call __builtin_abort instead of ErrorQuit.
+	* gcc.c-torture/compile/pr37432.c (print_wkb_bytes): Declare.
+	* gcc.c-torture/compile/pr37713.c (sdp_seq_alloc): Declare.
+	* gcc.c-torture/compile/pr39886.c (func): Declare.
+	* gcc.c-torture/compile/pr39941.c (stop): Declare.
+	* gcc.c-torture/compile/pr41016.c (CompareRNAStructures):
+	Call __builtin_abort instead of Die.
+	* gcc.c-torture/compile/pr42632.c (___pskb_trim): Add
+	forward declaration.
+	* gcc.c-torture/compile/pr49710.c (baz): Add forward
+	declaration and missing void types.
+	(bar): Add missing void type.
+	* gcc.c-torture/compile/pr52437.c (fn2): Declare.
+	* gcc.c-torture/compile/pr57441.c (func_1): Add missing void
+	return type.
+	* gcc.c-torture/compile/pr87110.c (struct d): Add missing
+	semicolon.
+	(g, h): Define as int.
+	(i): Add missing void types.
+	* gcc.c-torture/compile/pr87468.c (a): Define as int.
+	(e, f): Declare.
+	(b): Add missing void types.
+	* gcc.c-torture/execute/pr79043.c (ptr2): Use cast in
+	initializer.
+	(typepun): Add missing void return type.
+	(main): Add missing int return type and missing void type.
+	* gcc.dg/pr100349.c (b): Add missing void return type.
+	* gcc.dg/pr106189.c (T): Declare.
+	* gcc.dg/pr110777.c (_setjmp): Declare
+	* gcc.dg/pr45506.c (dynvec, relative_relocp, atexit): Declare.
+	(fini_array): Cast result of relative_relocp from int to int *.
+	* gcc.dg/pr97359.c: Compile with -Wno-pointer-to-int-cast.
+	(b): Cast point to int to avoid int-conversion warning.
+	* gcc.dg/uninit-pr78548.c: Call __builtin_printf instead
+	of printf.
+	* gcc.dg/torture/pr39829.c (f): Declare.
+	* gcc.dg/torture/pr44977.c (int329): Cast bar from pointer
+	to short.
+	* gcc.dg/torture/pr53703.c (ifa_sa_len): Declare.
+	(usagi_getifaddrs): Call __builtin_memset instead of memset
+	and __builtin_memcmp instead of memcmp.
+	* gcc.dg/torture/pr68625.c (z9): Explicitly cast
+	pointers to int.
+	* gcc.dg/torture/pr55964.c (f): Cast q to the expected type.
+	* gcc.dg/torture/pr70623.c (h9): Fix pointer cast in assignment
+	of av.
+	* gcc.dg/torture/pr81118.c (c): Return zero instead of
+	nothing.
+	* gcc.dg/torture/pr81510.c (e): Add cast from int to pointer.
+	* gcc.dg/torture/pr99694.c (d): Add missing casts between
+	pointers and integers.
+	* gcc.dg/tree-ssa/pr102563.c: Define as void (*) (void).
+	(_bdf_parse_glyphs_p): Define with prototype.
+	* gcc.dg/tree-ssa/pr92085-1.c (di): Add cast to initialization
+	of fq.
+	* gcc.dg/tree-ssa/pr92085-2.c (c1): Add casts to
+	initializations of th, lq.
+	* gcc.dg/tree-ssa/reassoc-43.c
+	(c_parser_next_token_is_keyword, chainon)
+	(c_parser_attributes): Declare.
+	* gcc.dg/tree-ssa/split-path-4.c (powi_lookup_cost): Declare.
+	(powi_cost): Add missing void return type.
+	* gcc.dg/tree-ssa/split-path-6.c (strtosichar)
+	(ichartosstr, treeinsert, stop, __srget_r): Declare
+	(givehelp, oof, lookharder): Convert to prototypes.
+	* gcc.target/i386/pr71621-1.c (y8): Cast to expected
+	pointer type in assignment of t6.
+	* gcc.target/i386/pr79571.c (g): Add missing int type.
+	(j): Add missing void types and pointer cast.
+	* gcc.target/i386/pr87246.c (s2): Add cast from integer
+	to pointer type.
+	* gcc.target/i386/pr87759.c (rc): Cast to the expected
+	pointer time in initialization of ar.
+	* gcc.target/i386/pr99454.c (tg3_start_xmit): Add
+	missing cast from int to int *.
+
+2023-11-13  Florian Weimer  <fweimer@redhat.com>
+
+	* c-c++-common/Wduplicated-branches-11.c: Compile with
+	-fpermissive.
+	* c-c++-common/Wduplicated-branches-12.c: Likewise.
+	* c-c++-common/builtins.c: Likewise.
+	* c-c++-common/pointer-to-fn1.c: Likewise.
+	* gcc.c-torture/compile/20010320-1.c: Likewise.
+	* gcc.c-torture/compile/20050105-1.c: Likewise.
+	* gcc.c-torture/compile/20080704-1.c: Likewise.
+	* gcc.c-torture/compile/20080910-1.c: Likewise.
+	* gcc.c-torture/compile/20090917-1.c: Likewise.
+	* gcc.c-torture/compile/20100915-1.c: Likewise.
+	* gcc.c-torture/compile/20101216-1.c: Likewise.
+	* gcc.c-torture/compile/20121027-1.c: Likewise.
+	* gcc.c-torture/compile/20180605-1.c: Likewise.
+	* gcc.c-torture/compile/950816-2.c: Likewise.
+	* gcc.c-torture/compile/dse.c: Likewise.
+	* gcc.c-torture/compile/pr100576.c: Likewise.
+	* gcc.c-torture/compile/pr17408.c: Likewise.
+	* gcc.c-torture/compile/pr19121.c: Likewise.
+	* gcc.c-torture/compile/pr26213.c: Likewise.
+	* gcc.c-torture/compile/pr27341-2.c: Likewise.
+	* gcc.c-torture/compile/pr28776-2.c: Likewise.
+	* gcc.c-torture/compile/pr33133.c: Likewise.
+	* gcc.c-torture/compile/pr34091.c: Likewise.
+	* gcc.c-torture/compile/pr36154.c: Likewise.
+	* gcc.c-torture/compile/pr37381.c: Likewise.
+	* gcc.c-torture/compile/pr38360.c: Likewise.
+	* gcc.c-torture/compile/pr40291.c: Likewise.
+	* gcc.c-torture/compile/pr41182-1.c: Likewise.
+	* gcc.c-torture/compile/pr43635.c: Likewise.
+	* gcc.c-torture/compile/pr44043.c: Likewise.
+	* gcc.c-torture/compile/pr44063.c: Likewise.
+	* gcc.c-torture/compile/pr44246.c: Likewise.
+	* gcc.c-torture/compile/pr45535.c: Likewise.
+	* gcc.c-torture/compile/pr46934.c: Likewise.
+	* gcc.c-torture/compile/pr47428.c: Likewise.
+	* gcc.c-torture/compile/pr49145.c: Likewise.
+	* gcc.c-torture/compile/pr49206.c: Likewise.
+	* gcc.c-torture/compile/pr51694.c: Likewise.
+	* gcc.c-torture/compile/pr53886.c: Likewise.
+	* gcc.c-torture/compile/pr65241.c: Likewise.
+	* gcc.c-torture/compile/pr72802.c: Likewise.
+	* gcc.c-torture/compile/pr81360.c: Likewise.
+	* gcc.c-torture/compile/pr82052.c: Likewise.
+	* gcc.c-torture/compile/pr90275-2.c: Likewise.
+	* gcc.c-torture/compile/pr90275.c: Likewise.
+	* gcc.c-torture/compile/pr96796.c: Likewise.
+	* gcc.c-torture/compile/regs-arg-size.c: Likewise.
+	* gcc.c-torture/compile/udivmod4.c: Likewise.
+	* gcc.c-torture/compile/widechar-1.c: Likewise.
+	* gcc.c-torture/execute/20000412-3.c: Likewise.
+	* gcc.c-torture/execute/20010605-2.c: Likewise.
+	* gcc.c-torture/execute/20020314-1.c: Likewise.
+	* gcc.c-torture/execute/20020819-1.c: Likewise.
+	* gcc.c-torture/execute/20031211-2.c: Likewise.
+	* gcc.c-torture/execute/20040223-1.c: Likewise.
+	* gcc.c-torture/execute/20041019-1.c: Likewise.
+	* gcc.c-torture/execute/20120427-1.c: Likewise.
+	* gcc.c-torture/execute/20120427-2.c: Likewise.
+	* gcc.c-torture/execute/920908-2.c: Likewise.
+	* gcc.c-torture/execute/921110-1.c: Likewise.
+	* gcc.c-torture/execute/930111-1.c: Likewise.
+	* gcc.c-torture/execute/930208-1.c: Likewise.
+	* gcc.c-torture/execute/930702-1.c: Likewise.
+	* gcc.c-torture/execute/930818-1.c: Likewise.
+	* gcc.c-torture/execute/931017-1.c: Likewise.
+	* gcc.c-torture/execute/931018-1.c: Likewise.
+	* gcc.c-torture/execute/931208-1.c: Likewise.
+	* gcc.c-torture/execute/941101-1.c: Likewise.
+	* gcc.c-torture/execute/941110-1.c: Likewise.
+	* gcc.c-torture/execute/950322-1.c: Likewise.
+	* gcc.c-torture/execute/950426-1.c: Likewise.
+	* gcc.c-torture/execute/950512-1.c: Likewise.
+	* gcc.c-torture/execute/950621-1.c: Likewise.
+	* gcc.c-torture/execute/960218-1.c: Likewise.
+	* gcc.c-torture/execute/960402-1.c: Likewise.
+	* gcc.c-torture/execute/cmpsf-1.c: Likewise.
+	* gcc.c-torture/execute/cmpsi-1.c: Likewise.
+	* gcc.c-torture/execute/cmpsi-2.c: Likewise.
+	* gcc.c-torture/execute/divmod-1.c: Likewise.
+	* gcc.c-torture/execute/pr22061-1.c: Likewise.
+	* gcc.c-torture/execute/pr55875.c: Likewise.
+	* gcc.dg/20050629-1.c: Likewise.
+	* gcc.dg/20080615-1.c: Likewise.
+	* gcc.dg/Walloca-14.c: Likewise.
+	* gcc.dg/Wbuiltin-declaration-mismatch-3.c: Likewise.
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Likewise.
+	* gcc.dg/Wdouble-promotion.c: Likewise.
+	* gcc.dg/Wrestrict-5.c: Likewise.
+	* gcc.dg/Wstringop-overflow-13.c: Likewise.
+	* gcc.dg/analyzer/fd-bind-pr107783.c: Likewise.
+	* gcc.dg/array-5.c: Likewise.
+	* gcc.dg/asan/pr56417.c: Likewise.
+	* gcc.dg/attr-access-read-only.c: Likewise.
+	* gcc.dg/attr-access-read-write.c: Likewise.
+	* gcc.dg/attr-access-write-only.c: Likewise.
+	* gcc.dg/bitint-36.c: Likewise.
+	* gcc.dg/builtin-bswap-10.c: Likewise.
+	* gcc.dg/cleanup-1.c: Likewise.
+	* gcc.dg/cpp/pr60014-1.c: Likewise.
+	* gcc.dg/cpp/pr60014-2.c: Likewise.
+	* gcc.dg/cpp/pr60014-3.c: Likewise.
+	* gcc.dg/ipa/ipa-bit-cp-1.c: Likewise.
+	* gcc.dg/ipa/ipa-bit-cp-2.c: Likewise.
+	* gcc.dg/ipa/ipa-bit-cp.c: Likewise.
+	* gcc.dg/ipa/pr105639.c: Likewise.
+	* gcc.dg/ipa/pr71981.c: Likewise.
+	* gcc.dg/lto/20081109_0.c: Likewise.
+	* gcc.dg/lto/pr54702_1.c: Likewise.
+	* gcc.dg/lto/pr55525_0.c: Likewise.
+	* gcc.dg/noncompile/20020213-1.c:: Likewise.
+	* gcc.dg/noncompile/pr71426.c: Likewise.
+	* gcc.dg/noncompile/undeclared-1.c: Likewise.
+	* gcc.dg/overflow-warn-2.c: Likewise.
+	* gcc.dg/pr100142.c: Likewise.
+	* gcc.dg/pr100790.c: Likewise.
+	* gcc.dg/pr100791.c: Likewise.
+	* gcc.dg/pr103093.c: Likewise.
+	* gcc.dg/pr105140.c: Likewise.
+	* gcc.dg/pr105250.c: Likewise.
+	* gcc.dg/pr105853.c: Likewise.
+	* gcc.dg/pr105856.c: Likewise.
+	* gcc.dg/pr26865.c: Likewise.
+	* gcc.dg/pr40989.c: Likewise.
+	* gcc.dg/pr42715.c: Likewise.
+	* gcc.dg/pr44971.c: Likewise.
+	* gcc.dg/pr46571.c: Likewise.
+	* gcc.dg/pr54363.c: Likewise.
+	* gcc.dg/pr56724-2.c: Likewise.
+	* gcc.dg/pr59630.c: Likewise.
+	* gcc.dg/pr67043.c: Likewise.
+	* gcc.dg/pr67730-1.c: Likewise.
+	* gcc.dg/pr67730-2.c: Likewise.
+	* gcc.dg/pr68320.c: Likewise.
+	* gcc.dg/pr69156.c: Likewise.
+	* gcc.dg/pr69824.c: Likewise.
+	* gcc.dg/pr70174.c: Likewise.
+	* gcc.dg/pr70281.c: Likewise.
+	* gcc.dg/pr77862.c: Likewise.
+	* gcc.dg/pr82765.c: Likewise.
+	* gcc.dg/pr83852.c: Likewise.
+	* gcc.dg/pr84206.c: Likewise.
+	* gcc.dg/pr85164-1.c: Likewise.
+	* gcc.dg/pr85955.c: Likewise.
+	* gcc.dg/pr86271.c: Likewise.
+	* gcc.dg/pr86928.c: Likewise.
+	* gcc.dg/pr99122-1.c: Likewise.
+	* gcc.dg/pr99136.c: Likewise.
+	* gcc.dg/redecl-19.c: Likewise.
+	* gcc.dg/redecl-24.c: Likewise.
+	* gcc.dg/torture/pr39204.c: Likewise.
+	* gcc.dg/torture/pr57676.c: Likewise.
+	* gcc.dg/torture/pr67222.c: Likewise.
+	* gcc.dg/torture/pr77677-2.c: Likewise.
+	* gcc.dg/torture/pr79125.c: Likewise.
+	* gcc.dg/torture/pr94479.c: Likewise.
+	* gcc.dg/tree-ssa/20070815.c:  Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-29.c: Likewise.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c: Likewise.
+	* gcc.dg/tree-ssa/pr22051-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-10.c: Likewise.
+	* gcc.target/aarch64/pr60697.c: Likewise.
+	* gcc.target/aarch64/pr87305.c: Likewise.
+	* gcc.target/aarch64/sve/pr96357.c: Likewise.
+	* gcc.target/i386/attr-nocf-check-1a.c: Likewise.
+	* gcc.target/i386/attr-nocf-check-3a.c: Likewise.
+	* gcc.target/i386/avx512bf16-pr108881.c: Likewise.
+	* gcc.target/i386/cet-notrack-2a.c: Likewise.
+	* gcc.target/i386/cet-notrack-2b.c: Likewise.
+	* gcc.target/i386/cet-notrack-5b.c: Likewise.
+	* gcc.target/i386/cet-notrack-6a.c: Likewise.
+	* gcc.target/i386/cet-notrack-6b.c: Likewise.
+	* gcc.target/i386/pr70325.c: Likewise.
+	* gcc.target/i386/pr70858.c: Likewise.
+	* gcc.target/i386/pr83488.c: Likewise.
+	* gcc.target/i386/pr85511.c: Likewise.
+	* gcc.target/i386/pr87572.c: Likewise.
+	* gcc.target/i386/pr88195.c: Likewise.
+
+2023-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111967
+	* gcc.dg/tree-ssa/pr111967.c: New test.
+
+2023-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112476
+	* gcc.target/loongarch/pr112476-1.c: New test.
+	* gcc.target/loongarch/pr112476-2.c: New test.
+
+2023-11-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: Adjust
+	the asm checker.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: Ditto.
+
+2023-11-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-llrintf16-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-llroundf16-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf16-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lrintf16-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf16-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf16-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llrintf16-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-llroundf16-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrintf16-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lrintf16-rv64-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lroundf16-rv32-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/math-lroundf16-rv64-0.c: New test.
+
+2023-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112430
+	* gcc.dg/pr112430.c: New test.
+
+2023-11-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/110815
+	PR c/112428
+	* gcc.dg/Wnonnull-8.c: Adapt test.
+	* gcc.dg/Wnonnull-9.c: New test.
+
+2023-11-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* lib/scanasm.exp (scan-assembler-times): Disregard LTO sections.
+	(scan-assembler-dem, scan-assembler-dem-not): Likewise.
+	(dg-scan): Likewise, if name starts with scan-assembler.
+	(scan-raw-assembler): New proc.
+	* gcc.dg/pr61868.c: Use scan-raw-assembler.
+	* gcc.dg/scantest-lto.c: New test.
+
+2023-11-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112469
+	* gcc.target/riscv/rvv/autovec/pr112469.c: New test.
+
+2023-11-11  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-decltype3.C: Check __cpp_init_captures.
+
+2023-11-10  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* g++.dg/vect/pr102788.cc: Remove dg-do run directive.
+
+2023-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt103.ads, gnat.dg/opt103.adb: New test.
+
+2023-11-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/112337
+	* gcc.target/arm/pr112337.c: New.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79620
+	* g++.dg/cpp0x/lambda/lambda-decltype3.C: New test.
+
+2023-11-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79378
+	PR c++/96917
+	* g++.dg/cpp1y/decltype-auto7.C: New test.
+	* g++.dg/cpp1y/lambda-init20.C: New test.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/112438
+	* gcc.target/riscv/rvv/autovec/pr112438.c: New test.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add combine test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/combine-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/combine-7.c: New test.
+
+2023-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vmul-zvfh-run.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_narrow_shift_run-3.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/pr111401.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-template.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/slp-mask-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-10.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-11.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-12.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-3.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-4.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-5.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-6.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-7.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-8.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-9.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-zvfh-run.c:
+	Ditto.
+
+2023-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/i386/pr112464.c: New test.
+
+2023-11-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadmempair-interrupt-fcsr.c: New file.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110221
+	* gfortran.dg/pr110221.f: New testcase.
+
+2023-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112469
+	* gcc.dg/torture/pr112469.c: New testcase.
+
+2023-11-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-same-tail-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-same-tail-9.c: New test.
+
+2023-11-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/pr97428.c: Add additional compile option for riscv.
+
+2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr112443.C: New test.
+
+2023-11-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/mulsidi3-zeroextend-pseudoc.c: New test.
+
+2023-11-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/ldxdw.c: Fix regexp with expected result.
+
+2023-11-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/fmax_zvfh-1.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/binop/fmax_zvfh_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/fmin_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/fmin_zvfh_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-1.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-2.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_run-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_run-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float_run-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float_run-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-3.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh_run-4.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-3.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh_run-4.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-zvfh-1.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_sqrt_run-zvfh-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_zvfh-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_zvfh_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-rv32-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-rv32-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-rv64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh-rv64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_zvfh_run-2.c: New test.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: xfail on ia32.
+	* gcc.dg/tree-ssa/scev-5.c: Likewise.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.target/aarch64/sve/fneg-abs_5.c: New test.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.target/aarch64/sve/fneg-abs_1.c: Updated.
+	* gcc.target/aarch64/sve/fneg-abs_2.c: Updated.
+	* gcc.target/aarch64/sve/fneg-abs_4.c: Updated.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.target/aarch64/fneg-abs_2.c: Updated.
+	* gcc.target/aarch64/fneg-abs_4.c: Updated.
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: Updated.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.target/aarch64/fneg-abs_1.c: Updated.
+	* gcc.target/aarch64/fneg-abs_2.c: Updated.
+	* gcc.target/aarch64/fneg-abs_4.c: Updated.
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: Updated.
+
+2023-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.dg/fold-copysign-1.c: Updated.
+	* gcc.dg/pr55152-2.c: Updated.
+	* gcc.dg/tree-ssa/abs-4.c: Updated.
+	* gcc.dg/tree-ssa/backprop-6.c: Updated.
+	* gcc.dg/tree-ssa/copy-sign-2.c: Updated.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Updated.
+	* gcc.target/aarch64/fneg-abs_1.c: New test.
+	* gcc.target/aarch64/fneg-abs_2.c: New test.
+	* gcc.target/aarch64/fneg-abs_3.c: New test.
+	* gcc.target/aarch64/fneg-abs_4.c: New test.
+	* gcc.target/aarch64/sve/fneg-abs_1.c: New test.
+	* gcc.target/aarch64/sve/fneg-abs_2.c: New test.
+	* gcc.target/aarch64/sve/fneg-abs_3.c: New test.
+	* gcc.target/aarch64/sve/fneg-abs_4.c: New test.
+
+2023-11-09  Simon Wright  <simon@pushface.org>
+
+	PR ada/111813
+	* gnat.dg/calendar_format_value.adb: New test.
+
+2023-11-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112450
+	* gcc.target/riscv/rvv/autovec/pr112450.c: New test.
+
+2023-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112444
+	* gcc.dg/torture/pr112444.c: New testcase.
+
+2023-11-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* gcc.target/mips/fabs-nan2008.c: New test.
+	* gcc.target/mips/fabsf-nan2008.c: New test.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.target/x86_64/abi/avx/avx-check.h (main): Call
+	__builtin_printf instead of printf.
+	* gcc.target/x86_64/abi/avx/test_passing_m256.c
+	(fun_check_passing_m256_8_values): Add missing void return
+	type.
+	* gcc.target/x86_64/abi/avx512f/avx512f-check.h (main): Call
+	__builtin_printf instead of printf.
+	* gcc.target/x86_64/abi/avx512f/test_passing_m512.c
+	(fun_check_passing_m512_8_values): Add missing void return
+	type.
+	* gcc.target/x86_64/abi/bf16/bf16-check.h (main): Call
+	__builtin_printf instead of printf.
+	* gcc.target/x86_64/abi/bf16/m256bf16/bf16-ymm-check.h (main):
+	Likewise.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_passing_m256.c
+	(fun_check_passing_m256bf16_8_values): Add missing void
+	return type.
+	* gcc.target/x86_64/abi/bf16/m512bf16/bf16-zmm-check.h (main):
+	Call __builtin_printf instead of printf.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_passing_m512.c
+	(fun_check_passing_m512bf16_8_values): Add missign void
+	return type.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wreturn-mismatch-1.c: New.
+	* gcc.dg/Wreturn-mismatch-2.c: New.
+	* gcc.dg/Wreturn-mismatch-3.c: New.
+	* gcc.dg/Wreturn-mismatch-4.c: New.
+	* gcc.dg/Wreturn-mismatch-5.c: New.
+	* gcc.dg/Wreturn-mismatch-6.c: New.
+	* gcc.dg/noncompile/pr55976-1.c: Change -Werror=return-type
+	to -Werror=return-mismatch.
+	* gcc.dg/noncompile/pr55976-2.c: Change -Wreturn-type
+	to -Wreturn-mismatch.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wmissing-parameter-type.c: Build with -std=gnu89
+	to trigger the -Wmissing-parameter-type warning
+	and not the default -Wimplicit warning.  Also match
+	against -Wmissing-parameter-type.
+	* gcc.dg/Wmissing-parameter-type-Wextra.c: Likewise.
+
+2023-11-09  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-reve-load-halfword-z14.c: Remove
+	vperm and substitude by vpdi et al.
+	* gcc.target/s390/zvector/vec-reve-load-halfword.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-1.c: New test.
+	* gcc.target/s390/vector/reverse-elements-2.c: New test.
+	* gcc.target/s390/vector/reverse-elements-3.c: New test.
+	* gcc.target/s390/vector/reverse-elements-4.c: New test.
+	* gcc.target/s390/vector/reverse-elements-5.c: New test.
+	* gcc.target/s390/vector/reverse-elements-6.c: New test.
+	* gcc.target/s390/vector/reverse-elements-7.c: New test.
+
+2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/65833
+	* gcc.dg/dfp/int128-1.c: New test.
+	* gcc.dg/dfp/int128-2.c: New test.
+	* gcc.dg/dfp/int128-3.c: New test.
+	* gcc.dg/dfp/int128-4.c: New test.
+
+2023-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/112339
+	* c-c++-common/ubsan/Wno-attributes-1.c: New test.
+
+2023-11-09  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadfmemidx-uindex-zbb.c: New test.
+
+2023-11-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-ice-1.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-ice-2.c: New test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-ice-3.c: New test.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/gomp/declare-target-3.C: Adjust for 32-bit targets.
+
+2023-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/pr58245-1.C: Disable PIC/PIE.
+
+2023-11-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-mixed-1.c: Adapt test.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-9.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-10.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-8.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/no-dynamic-lmul-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111848.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/rvv-costmodel-vect.exp: Run all tests.
+
 2023-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82524

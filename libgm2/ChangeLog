@@ -1,3 +1,19 @@
+2023-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove newline.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* acinclude.m4: New file.
+	* configure.host: New file.
+
 2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112110

@@ -1,3 +1,29 @@
+2023-11-14  Arsen Arsenović  <arsen@aarsen.me>
+
+	* config.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2023-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::get_expanded_location): Make
+	const.
+	(rich_location::get_line_table): New accessor.
+	(rich_location::m_line_table): Make the pointer be const.
+	(rich_location::m_have_expanded_location): Make mutable.
+	(rich_location::m_expanded_location): Likewise.
+	(fixit_hint::affects_line_p): Add const line_maps * param.
+	(linemap_client_expand_location_to_spelling_point): Likewise.
+	* line-map.cc (rich_location::get_expanded_location): Make const.
+	Pass m_line_table to
+	linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Add set param and pass to
+	linemap_client_expand_location_to_spelling_point.
+
 2023-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* directives.cc: Refer to C23 instead of C2X in diagnostics and

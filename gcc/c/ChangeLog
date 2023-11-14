@@ -1,3 +1,21 @@
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* c-typeck.cc (convert_arguments): Don't promote first argument
+	of BUILT_IN_{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT}G.
+
+2023-11-10  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (struct comptypes_data): Add anon_field flag.
+	(comptypes, comptypes_check_unum_int,
+	comptypes_check_different_types): Remove old cache.
+	(tagged_tu_types_compatible_p): Rewrite.
+
+2023-11-09  Florian Weimer  <fweimer@redhat.com>
+
+	* c-typeck.cc (c_finish_return): Use pedwarn with
+	OPT_Wreturn_mismatch for missing/extra return expressions.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-decl.cc (c_decl_attributes): Add attribute for indirect
