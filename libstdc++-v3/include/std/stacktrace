@@ -797,7 +797,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t
       operator()(const basic_stacktrace<_Allocator>& __st) const noexcept
       {
-	hash<stacktrace_entry::native_handle_type> __h;
+	hash<stacktrace_entry> __h;
 	size_t __val = _Hash_impl::hash(__st.size());
 	for (const auto& __f : __st)
 	  __val = _Hash_impl::__hash_combine(__h(__f), __val);
