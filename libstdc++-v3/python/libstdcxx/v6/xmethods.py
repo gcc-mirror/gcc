@@ -195,7 +195,7 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
     def size(self, obj):
         start = obj['_M_impl']['_M_start']
         finish = obj['_M_impl']['_M_finish']
-        if not start['_M_node']:
+        if start['_M_cur'] == finish['_M_cur']:
             return 0
         return (self._bufsize
                 * (finish['_M_node'] - start['_M_node'] - 1)
@@ -203,9 +203,13 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
                 + (start['_M_last'] - start['_M_cur']))
 
     def index(self, obj, idx):
-        first_node = obj['_M_impl']['_M_start']['_M_node']
-        index_node = first_node + int(idx) // self._bufsize
-        return index_node[0][idx % self._bufsize]
+        start = obj['_M_impl']['_M_start']
+        first_node_size = start['_M_last'] - start['_M_cur']
+        if idx < first_node_size:
+            return start['_M_cur'][idx]
+        idx = idx - first_node_size
+        index_node = start['_M_node'][1 + int(idx) // self._bufsize]
+        return index_node[idx % self._bufsize]
 
 
 class DequeEmptyWorker(DequeWorkerBase):
