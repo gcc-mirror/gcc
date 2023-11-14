@@ -1440,7 +1440,7 @@ loop_distribution::data_dep_in_cycle_p (struct graph *rdg,
   else if (DDR_NUM_DIST_VECTS (ddr) > 1)
     return true;
   else if (DDR_REVERSED_P (ddr)
-	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), DDR_NB_LOOPS (ddr)))
     return false;
 
   return true;
