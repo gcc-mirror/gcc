@@ -88,8 +88,8 @@ enum s390_builtin_ov_type_index
 
 #define MAX_OV_OPERANDS 6
 
-extern tree s390_builtin_types[BT_MAX];
-extern tree s390_builtin_fn_types[BT_FN_MAX];
+extern GTY(()) tree s390_builtin_types[BT_MAX];
+extern GTY(()) tree s390_builtin_fn_types[BT_FN_MAX];
 
   /* Builtins.  */
 
@@ -172,6 +172,6 @@ opflags_for_builtin (int fcode)
     return opflags_builtin[fcode];
 }
 
-extern tree s390_builtin_decls[S390_BUILTIN_MAX +
-			       S390_OVERLOADED_BUILTIN_MAX +
-			       S390_OVERLOADED_BUILTIN_VAR_MAX];
+extern GTY(()) tree s390_builtin_decls[S390_BUILTIN_MAX +
+				       S390_OVERLOADED_BUILTIN_MAX +
+				       S390_OVERLOADED_BUILTIN_VAR_MAX];
