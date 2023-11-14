@@ -1,6 +1,3 @@
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 struct arg_buf

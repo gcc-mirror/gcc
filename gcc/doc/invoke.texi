@@ -10415,6 +10415,12 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-negative
 -Wanalyzer-shift-count-overflow
 -Wanalyzer-stale-setjmp-buffer
+-Wanalyzer-tainted-allocation-size
+-Wanalyzer-tainted-array-index
+-Wanalyzer-tainted-assertion
+-Wanalyzer-tainted-divisor
+-Wanalyzer-tainted-offset
+-Wanalyzer-tainted-size
 -Wanalyzer-unsafe-call-within-signal-handler
 -Wanalyzer-use-after-free
 -Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -10426,13 +10432,6 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-write-to-const
 -Wanalyzer-write-to-string-literal
 }
-@ignore
--Wanalyzer-tainted-allocation-size
--Wanalyzer-tainted-array-index
--Wanalyzer-tainted-divisor
--Wanalyzer-tainted-offset
--Wanalyzer-tainted-size
-@end ignore
 
 This option is only available if GCC was configured with analyzer
 support enabled.
@@ -10880,8 +10879,7 @@ no longer exists, and likely lead to a crash (or worse).
 @opindex Wanalyzer-tainted-allocation-size
 @opindex Wno-analyzer-tainted-allocation-size
 @item -Wno-analyzer-tainted-allocation-size
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-allocation-size} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10896,8 +10894,7 @@ See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Alloc
 @opindex Wno-analyzer-tainted-assertion
 @item -Wno-analyzer-tainted-assertion
 
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-assertion} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10958,8 +10955,7 @@ despite the above not being an assertion failure, strictly speaking.
 @opindex Wanalyzer-tainted-array-index
 @opindex Wno-analyzer-tainted-array-index
 @item -Wno-analyzer-tainted-array-index
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-array-index} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10972,8 +10968,7 @@ See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Val
 @opindex Wanalyzer-tainted-divisor
 @opindex Wno-analyzer-tainted-divisor
 @item -Wno-analyzer-tainted-divisor
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-divisor} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -10986,8 +10981,7 @@ See @uref{https://cwe.mitre.org/data/definitions/369.html, CWE-369: Divide By Ze
 @opindex Wanalyzer-tainted-offset
 @opindex Wno-analyzer-tainted-offset
 @item -Wno-analyzer-tainted-offset
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-offset} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -11000,8 +10994,7 @@ See @uref{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-o
 @opindex Wanalyzer-tainted-size
 @opindex Wno-analyzer-tainted-size
 @item -Wno-analyzer-tainted-size
-This warning requires both @option{-fanalyzer} and
-@option{-fanalyzer-checker=taint} to enable it;
+This warning requires @option{-fanalyzer} which enables it;
 use @option{-Wno-analyzer-tainted-size} to disable it.
 
 This diagnostic warns for paths through the code in which a value
@@ -11250,38 +11243,6 @@ call site, and that are sufficiently complicated (as per
 @opindex fanalyzer-checker
 @item -fanalyzer-checker=@var{name}
 Restrict the analyzer to run just the named checker, and enable it.
-
-Some checkers are disabled by default (even with @option{-fanalyzer}),
-such as the @code{taint} checker that implements
-@option{-Wanalyzer-tainted-array-index}, and this option is required
-to enable them.
-
-@emph{Note:} currently, @option{-fanalyzer-checker=taint} disables the
-following warnings from @option{-fanalyzer}:
-
-@gccoptlist{
--Wanalyzer-deref-before-check
--Wanalyzer-double-fclose
--Wanalyzer-double-free
--Wanalyzer-exposure-through-output-file
--Wanalyzer-fd-access-mode-mismatch
--Wanalyzer-fd-double-close
--Wanalyzer-fd-leak
--Wanalyzer-fd-use-after-close
--Wanalyzer-fd-use-without-check
--Wanalyzer-file-leak
--Wanalyzer-free-of-non-heap
--Wanalyzer-malloc-leak
--Wanalyzer-mismatching-deallocation
--Wanalyzer-null-argument
--Wanalyzer-null-dereference
--Wanalyzer-possible-null-argument
--Wanalyzer-possible-null-dereference
--Wanalyzer-unsafe-call-within-signal-handler
--Wanalyzer-use-after-free
--Wanalyzer-va-list-leak
--Wanalyzer-va-list-use-after-va-end
-}
 
 @opindex fanalyzer-debug-text-art
 @opindex fno-analyzer-debug-text-art

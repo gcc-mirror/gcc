@@ -1,8 +1,7 @@
 /* Passing tainted sizes to external functions with attribute ((access)) with
    a size-index.  */
 
-// TODO: remove need for the explicit taint option:
-/* { dg-additional-options "-fanalyzer-checker=taint -fanalyzer-show-duplicate-count" } */
+/* { dg-additional-options "-fanalyzer-show-duplicate-count" } */
 
 #include "analyzer-decls.h"
 #include <stdio.h>
