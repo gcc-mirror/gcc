@@ -7489,7 +7489,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
 	      tmp = expand_binop (mode, and_optab, tmp,
 				  GEN_INT ((1 << nunits) - 1), target,
-				  true, OPTAB_DIRECT);
+				  true, OPTAB_WIDEN);
 	    if (tmp != target)
 	      emit_move_insn (target, tmp);
 	    break;
