@@ -193,11 +193,14 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
         self._bufsize = 512 // val_type.sizeof or 1
 
     def size(self, obj):
-        first_node = obj['_M_impl']['_M_start']['_M_node']
-        last_node = obj['_M_impl']['_M_finish']['_M_node']
-        cur = obj['_M_impl']['_M_finish']['_M_cur']
-        first = obj['_M_impl']['_M_finish']['_M_first']
-        return (last_node - first_node) * self._bufsize + (cur - first)
+        start = obj['_M_impl']['_M_start']
+        finish = obj['_M_impl']['_M_finish']
+        if not start['_M_node']:
+            return 0
+        return (self._bufsize
+                * (finish['_M_node'] - start['_M_node'] - 1)
+                + (finish['_M_cur'] - finish['_M_first'])
+                + (start['_M_last'] - start['_M_cur']))
 
     def index(self, obj, idx):
         first_node = obj['_M_impl']['_M_start']['_M_node']

@@ -67,6 +67,26 @@ main ()
 // { dg-final { whatis-test q1.back() int } }
 // { dg-final { whatis-test q3\[0\] int } }
 
+  // PR libstdc++/112491
+  std::deque<int> q5;
+  q5.push_front(0);
+// { dg-final { note-test q5.size() 1 } }
+  std::deque<int> q6 = q1;
+  q6.pop_front();
+// { dg-final { note-test {q6.size() == (q1_size-1)} true } }
+  std::deque<int> q7 = q2;
+  q7.pop_front();
+  q7.pop_front();
+// { dg-final { note-test {q7.size() == (q2_size-2)} true } }
+  std::deque<int> q8 = q3;
+  q8.pop_front();
+  q8.pop_front();
+  q8.pop_front();
+// { dg-final { note-test {q8.size() == (q3_size-3)} true } }
+  std::deque<int> q9 = q8;
+  q9.clear();
+// { dg-final { note-test q9.size() 0 } }
+
   return 0;  // Mark SPOT
 }
 
