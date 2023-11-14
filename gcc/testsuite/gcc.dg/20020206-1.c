@@ -5,6 +5,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fprefetch-loop-arrays" } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-prune-output  ".-fprefetch-loop-arrays. not supported for this target" } */
 
 
 struct reload
