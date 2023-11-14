@@ -5,7 +5,7 @@
    compiles properly.  */
 /* { dg-additional-options "-mcmodel=medany" } */
 
-#include "scatter_store-8.c"
+#include "scatter_store_64-8.c"
 #include <assert.h>
 
 int

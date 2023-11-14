@@ -319,23 +319,36 @@
   (RVVM1HF "TARGET_VECTOR_ELEN_FP_16") (RVVMF2HF "TARGET_VECTOR_ELEN_FP_16")
   (RVVMF4HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
 
-  RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+  (RVVM4SI "TARGET_64BIT")
+  (RVVM2SI "TARGET_64BIT")
+  (RVVM1SI "TARGET_64BIT")
+  (RVVMF2SI "TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 
-  (RVVM4SF "TARGET_VECTOR_ELEN_FP_32") (RVVM2SF "TARGET_VECTOR_ELEN_FP_32")
-  (RVVM1SF "TARGET_VECTOR_ELEN_FP_32") (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (RVVM4SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_64BIT")
+  (RVVM2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_64BIT")
+  (RVVM1SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_64BIT")
+  (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VEEWTRUNC4 [
   RVVM2QI RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
 
-  RVVM2HI RVVM1HI RVVMF2HI (RVVMF4HI "TARGET_MIN_VLEN > 32")
+  (RVVM2HI "TARGET_64BIT")
+  (RVVM1HI "TARGET_64BIT")
+  (RVVMF2HI "TARGET_64BIT")
+  (RVVMF4HI "TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 
-  (RVVM2HF "TARGET_VECTOR_ELEN_FP_16") (RVVM1HF "TARGET_VECTOR_ELEN_FP_16") (RVVMF2HF "TARGET_VECTOR_ELEN_FP_16")
-  (RVVMF4HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
+  (RVVM2HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_64BIT")
+  (RVVM1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_64BIT")
+  (RVVMF2HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_64BIT")
+  (RVVMF4HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VEEWTRUNC8 [
-  RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
+  (RVVM1QI "TARGET_64BIT")
+  (RVVMF2QI "TARGET_64BIT")
+  (RVVMF4QI "TARGET_64BIT")
+  (RVVMF8QI "TARGET_MIN_VLEN > 32 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VEI16 [
@@ -793,28 +806,28 @@
   (RVVMF8QI "TARGET_MIN_VLEN > 32")
   (RVVMF4HI "TARGET_MIN_VLEN > 32")
   (RVVMF2SI "TARGET_MIN_VLEN > 32")
-  (RVVM1DI "TARGET_VECTOR_ELEN_64")
+  (RVVM1DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator RATIO32I [
   RVVMF4QI
   RVVMF2HI
   RVVM1SI
-  (RVVM2DI "TARGET_VECTOR_ELEN_64")
+  (RVVM2DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator RATIO16I [
   RVVMF2QI
   RVVM1HI
   RVVM2SI
-  (RVVM4DI "TARGET_VECTOR_ELEN_64")
+  (RVVM4DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator RATIO8I [
   RVVM1QI
   RVVM2HI
   RVVM4SI
-  (RVVM8DI "TARGET_VECTOR_ELEN_64")
+  (RVVM8DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator RATIO4I [
@@ -1421,9 +1434,121 @@
   (V1024BI "riscv_vector::vls_mode_valid_p (V1024BImode) && TARGET_MIN_VLEN >= 1024")
   (V2048BI "riscv_vector::vls_mode_valid_p (V2048BImode) && TARGET_MIN_VLEN >= 2048")
   (V4096BI "riscv_vector::vls_mode_valid_p (V4096BImode) && TARGET_MIN_VLEN >= 4096")])
-  
+
 (define_mode_iterator VB [
   (RVVMF64BI "TARGET_MIN_VLEN > 32") RVVMF32BI RVVMF16BI RVVMF8BI RVVMF4BI RVVMF2BI RVVM1BI
+])
+
+;; Iterator for indexed loads and stores.  We must disallow 64-bit indices on
+;; XLEN=32 targets.  TODO:  Split iterators so more of them can be reused, i.e.
+;; VI8, VI16, VI32, VI64 and then use
+;; VINDEXED [VI8 VI16 VI32 (VI64 "TARGET_64BIT")].
+
+(define_mode_iterator VINDEXED [
+  RVVM8QI RVVM4QI RVVM2QI RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_MIN_VLEN > 32")
+
+  RVVM8HI RVVM4HI RVVM2HI RVVM1HI RVVMF2HI (RVVMF4HI "TARGET_MIN_VLEN > 32")
+
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_MIN_VLEN > 32")
+
+  (RVVM8DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (RVVM4DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (RVVM2DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (RVVM1DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+
+  (RVVM8HF "TARGET_ZVFH") (RVVM4HF "TARGET_ZVFH") (RVVM2HF "TARGET_ZVFH")
+  (RVVM1HF "TARGET_ZVFH") (RVVMF2HF "TARGET_ZVFH")
+  (RVVMF4HF "TARGET_ZVFH && TARGET_MIN_VLEN > 32")
+
+  (RVVM8SF "TARGET_VECTOR_ELEN_FP_32") (RVVM4SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVM2SF "TARGET_VECTOR_ELEN_FP_32") (RVVM1SF "TARGET_VECTOR_ELEN_FP_32")
+  (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+
+  (RVVM8DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (RVVM4DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (RVVM2DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (RVVM1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+
+  (V1QI "riscv_vector::vls_mode_valid_p (V1QImode)")
+  (V2QI "riscv_vector::vls_mode_valid_p (V2QImode)")
+  (V4QI "riscv_vector::vls_mode_valid_p (V4QImode)")
+  (V8QI "riscv_vector::vls_mode_valid_p (V8QImode)")
+  (V16QI "riscv_vector::vls_mode_valid_p (V16QImode)")
+  (V32QI "riscv_vector::vls_mode_valid_p (V32QImode)")
+  (V64QI "riscv_vector::vls_mode_valid_p (V64QImode) && TARGET_MIN_VLEN >= 64")
+  (V128QI "riscv_vector::vls_mode_valid_p (V128QImode) && TARGET_MIN_VLEN >= 128")
+  (V256QI "riscv_vector::vls_mode_valid_p (V256QImode) && TARGET_MIN_VLEN >= 256")
+  (V512QI "riscv_vector::vls_mode_valid_p (V512QImode) && TARGET_MIN_VLEN >= 512")
+  (V1024QI "riscv_vector::vls_mode_valid_p (V1024QImode) && TARGET_MIN_VLEN >= 1024")
+  (V2048QI "riscv_vector::vls_mode_valid_p (V2048QImode) && TARGET_MIN_VLEN >= 2048")
+  (V4096QI "riscv_vector::vls_mode_valid_p (V4096QImode) && TARGET_MIN_VLEN >= 4096")
+  (V1HI "riscv_vector::vls_mode_valid_p (V1HImode)")
+  (V2HI "riscv_vector::vls_mode_valid_p (V2HImode)")
+  (V4HI "riscv_vector::vls_mode_valid_p (V4HImode)")
+  (V8HI "riscv_vector::vls_mode_valid_p (V8HImode)")
+  (V16HI "riscv_vector::vls_mode_valid_p (V16HImode)")
+  (V32HI "riscv_vector::vls_mode_valid_p (V32HImode) && TARGET_MIN_VLEN >= 64")
+  (V64HI "riscv_vector::vls_mode_valid_p (V64HImode) && TARGET_MIN_VLEN >= 128")
+  (V128HI "riscv_vector::vls_mode_valid_p (V128HImode) && TARGET_MIN_VLEN >= 256")
+  (V256HI "riscv_vector::vls_mode_valid_p (V256HImode) && TARGET_MIN_VLEN >= 512")
+  (V512HI "riscv_vector::vls_mode_valid_p (V512HImode) && TARGET_MIN_VLEN >= 1024")
+  (V1024HI "riscv_vector::vls_mode_valid_p (V1024HImode) && TARGET_MIN_VLEN >= 2048")
+  (V2048HI "riscv_vector::vls_mode_valid_p (V2048HImode) && TARGET_MIN_VLEN >= 4096")
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
+  (V128SI "riscv_vector::vls_mode_valid_p (V128SImode) && TARGET_MIN_VLEN >= 512")
+  (V256SI "riscv_vector::vls_mode_valid_p (V256SImode) && TARGET_MIN_VLEN >= 1024")
+  (V512SI "riscv_vector::vls_mode_valid_p (V512SImode) && TARGET_MIN_VLEN >= 2048")
+  (V1024SI "riscv_vector::vls_mode_valid_p (V1024SImode) && TARGET_MIN_VLEN >= 4096")
+  (V1DI "riscv_vector::vls_mode_valid_p (V1DImode) && TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (V2DI "riscv_vector::vls_mode_valid_p (V2DImode) && TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (V4DI "riscv_vector::vls_mode_valid_p (V4DImode) && TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
+  (V8DI "riscv_vector::vls_mode_valid_p (V8DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 64 && TARGET_64BIT")
+  (V16DI "riscv_vector::vls_mode_valid_p (V16DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128 && TARGET_64BIT")
+  (V32DI "riscv_vector::vls_mode_valid_p (V32DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 256 && TARGET_64BIT")
+  (V64DI "riscv_vector::vls_mode_valid_p (V64DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 512 && TARGET_64BIT")
+  (V128DI "riscv_vector::vls_mode_valid_p (V128DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 1024 && TARGET_64BIT")
+  (V256DI "riscv_vector::vls_mode_valid_p (V256DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 2048 && TARGET_64BIT")
+  (V512DI "riscv_vector::vls_mode_valid_p (V512DImode) && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 4096 && TARGET_64BIT")
+
+  (V1HF "riscv_vector::vls_mode_valid_p (V1HFmode) && TARGET_ZVFH")
+  (V2HF "riscv_vector::vls_mode_valid_p (V2HFmode) && TARGET_ZVFH")
+  (V4HF "riscv_vector::vls_mode_valid_p (V4HFmode) && TARGET_ZVFH")
+  (V8HF "riscv_vector::vls_mode_valid_p (V8HFmode) && TARGET_ZVFH")
+  (V16HF "riscv_vector::vls_mode_valid_p (V16HFmode) && TARGET_ZVFH")
+  (V32HF "riscv_vector::vls_mode_valid_p (V32HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 64")
+  (V64HF "riscv_vector::vls_mode_valid_p (V64HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
+  (V128HF "riscv_vector::vls_mode_valid_p (V128HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 256")
+  (V256HF "riscv_vector::vls_mode_valid_p (V256HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 512")
+  (V512HF "riscv_vector::vls_mode_valid_p (V512HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 1024")
+  (V1024HF "riscv_vector::vls_mode_valid_p (V1024HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 2048")
+  (V2048HF "riscv_vector::vls_mode_valid_p (V2048HFmode) && TARGET_ZVFH && TARGET_MIN_VLEN >= 4096")
+  (V1SF "riscv_vector::vls_mode_valid_p (V1SFmode) && TARGET_VECTOR_ELEN_FP_32")
+  (V2SF "riscv_vector::vls_mode_valid_p (V2SFmode) && TARGET_VECTOR_ELEN_FP_32")
+  (V4SF "riscv_vector::vls_mode_valid_p (V4SFmode) && TARGET_VECTOR_ELEN_FP_32")
+  (V8SF "riscv_vector::vls_mode_valid_p (V8SFmode) && TARGET_VECTOR_ELEN_FP_32")
+  (V16SF "riscv_vector::vls_mode_valid_p (V16SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 64")
+  (V32SF "riscv_vector::vls_mode_valid_p (V32SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 128")
+  (V64SF "riscv_vector::vls_mode_valid_p (V64SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 256")
+  (V128SF "riscv_vector::vls_mode_valid_p (V128SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 512")
+  (V256SF "riscv_vector::vls_mode_valid_p (V256SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 1024")
+  (V512SF "riscv_vector::vls_mode_valid_p (V512SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 2048")
+  (V1024SF "riscv_vector::vls_mode_valid_p (V1024SFmode) && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 4096")
+  (V1DF "riscv_vector::vls_mode_valid_p (V1DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (V2DF "riscv_vector::vls_mode_valid_p (V2DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (V4DF "riscv_vector::vls_mode_valid_p (V4DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_64BIT")
+  (V8DF "riscv_vector::vls_mode_valid_p (V8DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 64 && TARGET_64BIT")
+  (V16DF "riscv_vector::vls_mode_valid_p (V16DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128 && TARGET_64BIT")
+  (V32DF "riscv_vector::vls_mode_valid_p (V32DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 256 && TARGET_64BIT")
+  (V64DF "riscv_vector::vls_mode_valid_p (V64DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 512 && TARGET_64BIT")
+  (V128DF "riscv_vector::vls_mode_valid_p (V128DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 1024 && TARGET_64BIT")
+  (V256DF "riscv_vector::vls_mode_valid_p (V256DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 2048 && TARGET_64BIT")
+  (V512DF "riscv_vector::vls_mode_valid_p (V512DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 4096 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VB_VLS [VB VLSB])
@@ -3200,30 +3325,30 @@
 
 (define_mode_attr VDEMOTE [
   (RVVM8DI "RVVM8SI") (RVVM4DI "RVVM4SI") (RVVM2DI "RVVM2SI") (RVVM1DI "RVVM1SI")
-  (V1DI "V1SI")
-  (V2DI "V2SI")
-  (V4DI "V4SI")
-  (V8DI "V8SI")
-  (V16DI "V16SI")
-  (V32DI "V32SI")
-  (V64DI "V64SI")
-  (V128DI "V128SI")
-  (V256DI "V256SI")
-  (V512DI "V512SI")
+  (V1DI "V2SI")
+  (V2DI "V4SI")
+  (V4DI "V8SI")
+  (V8DI "V16SI")
+  (V16DI "V32SI")
+  (V32DI "V64SI")
+  (V64DI "V128SI")
+  (V128DI "V256SI")
+  (V256DI "V512SI")
+  (V512DI "V1024SI")
 ])
 
 (define_mode_attr VMDEMOTE [
   (RVVM8DI "RVVMF4BI") (RVVM4DI "RVVMF8BI") (RVVM2DI "RVVMF16BI") (RVVM1DI "RVVMF32BI")
-  (V1DI "V1BI")
-  (V2DI "V2BI")
-  (V4DI "V4BI")
-  (V8DI "V8BI")
-  (V16DI "V16BI")
-  (V32DI "V32BI")
-  (V64DI "V64BI")
-  (V128DI "V128BI")
-  (V256DI "V256BI")
-  (V512DI "V512BI")
+  (V1DI "V2BI")
+  (V2DI "V4BI")
+  (V4DI "V8BI")
+  (V8DI "V16BI")
+  (V16DI "V32BI")
+  (V32DI "V64BI")
+  (V64DI "V128BI")
+  (V128DI "V256BI")
+  (V256DI "V512BI")
+  (V512DI "V1024BI")
 ])
 
 (define_mode_attr stride_predicate [

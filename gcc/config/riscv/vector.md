@@ -2201,21 +2201,21 @@
 
 ;; DEST eew is same as SOURCE eew, DEST register can overlap SOURCE.
 (define_insn "@pred_indexed_<order>load<mode>_same_eew"
-  [(set (match_operand:V 0 "register_operand"             "=vd, vr,vd, vr")
-	(if_then_else:V
+  [(set (match_operand:VINDEXED 0 "register_operand"        "=vd, vr,vd, vr")
+	(if_then_else:VINDEXED
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"  " vm,Wc1,vm,Wc1")
-	     (match_operand 5 "vector_length_operand"     " rK, rK,rK, rK")
-	     (match_operand 6 "const_int_operand"         "  i,  i, i,  i")
-	     (match_operand 7 "const_int_operand"         "  i,  i, i,  i")
-	     (match_operand 8 "const_int_operand"         "  i,  i, i,  i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"    " vm,Wc1,vm,Wc1")
+	     (match_operand 5 "vector_length_operand"       " rK, rK,rK, rK")
+	     (match_operand 6 "const_int_operand"           "  i,  i, i,  i")
+	     (match_operand 7 "const_int_operand"           "  i,  i, i,  i")
+	     (match_operand 8 "const_int_operand"           "  i,  i, i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:V
-	    [(match_operand 3 "pmode_reg_or_0_operand"    " rJ, rJ,rJ, rJ")
+	  (unspec:VINDEXED
+	    [(match_operand 3 "pmode_reg_or_0_operand"      " rJ, rJ,rJ, rJ")
 	     (mem:BLK (scratch))
-	     (match_operand:<VINDEX> 4 "register_operand" " vr, vr,vr, vr")] ORDER)
-	  (match_operand:V 2 "vector_merge_operand"       " vu, vu, 0,  0")))]
+	     (match_operand:<VINDEX> 4 "register_operand"   " vr, vr,vr, vr")] ORDER)
+	  (match_operand:VINDEXED 2 "vector_merge_operand"  " vu, vu, 0,  0")))]
   "TARGET_VECTOR"
   "vl<order>xei<sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")

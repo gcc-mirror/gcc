@@ -4024,7 +4024,14 @@ bool
 gather_scatter_valid_offset_mode_p (machine_mode mode)
 {
   machine_mode new_mode;
-  return get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists (&new_mode);
+  /* RISC-V V Spec 18.3:
+     The V extension supports all vector load and store instructions (Section
+     Vector Loads and Stores), except the V extension does not support EEW=64
+     for index values when XLEN=32.  */
+
+  if (GET_MODE_BITSIZE (GET_MODE_INNER (mode)) <= GET_MODE_BITSIZE (Pmode))
+    return get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists (&new_mode);
+  return false;
 }
 
 /* We don't have to convert the floating point to integer when the

@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-mcmodel=medany" } */
 
-#include "mask_gather_load-7.c"
+#include "mask_gather_load_64-7.c"
 #include <assert.h>
 
 int

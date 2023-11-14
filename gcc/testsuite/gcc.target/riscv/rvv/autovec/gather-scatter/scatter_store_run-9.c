@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-mcmodel=medany" } */
 
-#include "scatter_store-9.c"
+#include "scatter_store_64-9.c"
 #include <assert.h>
 
 int
