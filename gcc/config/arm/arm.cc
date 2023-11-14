@@ -13695,8 +13695,11 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
     }
   code = GET_CODE (op);
 
-  if (code == POST_INC || code == PRE_DEC
-      || code == PRE_INC || code == POST_DEC)
+  if ((code == POST_INC
+       || code == PRE_DEC
+       || code == PRE_INC
+       || code == POST_DEC)
+      && REG_P (XEXP (op, 0)))
     {
       reg_no = arm_effective_regno (XEXP (op, 0), strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
