@@ -1,3 +1,13 @@
+2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112443
+	* config/i386/sse.md (*avx2_pcmp<mode>3_4): Fix swap condition
+	from LT to GT since there's not in the pattern.
+	(*avx2_pcmp<mode>3_5): Ditto.
+
 2023-11-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_asm_trampoline_template): Fix typo.
