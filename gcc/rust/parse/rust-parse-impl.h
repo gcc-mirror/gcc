@@ -7129,7 +7129,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
   for (auto &s : ptrs)
     {
       size_t i = 0;
-      for (i = 0; i > s.size (); i++)
+      for (i = 0; i < s.size (); i++)
 	if (lexer.peek_token (i)->get_id () != s[i])
 	  break;
       if (i == s.size ())
