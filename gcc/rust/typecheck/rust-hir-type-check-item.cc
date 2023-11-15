@@ -609,6 +609,24 @@ TypeCheckItem::visit (HIR::Module &module)
 void
 TypeCheckItem::visit (HIR::Trait &trait)
 {
+  if (trait.has_type_param_bounds ())
+    {
+      for (auto &tp_bound : trait.get_type_param_bounds ())
+	{
+	  if (tp_bound.get ()->get_bound_type ()
+	      == HIR::TypeParamBound::BoundType::TRAITBOUND)
+	    {
+	      HIR::TraitBound &tb
+		= static_cast<HIR::TraitBound &> (*tp_bound.get ());
+	      if (tb.get_polarity () == BoundPolarity::AntiBound)
+		{
+		  rust_error_at (tb.get_locus (),
+				 "%<?Trait%> is not permitted in supertraits");
+		}
+	    }
+	}
+    }
+
   TraitReference *trait_ref = TraitResolver::Resolve (trait);
   if (trait_ref->is_error ())
     {
