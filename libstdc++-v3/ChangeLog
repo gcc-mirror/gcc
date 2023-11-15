@@ -1,3 +1,35 @@
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112348
+	* include/std/stacktrace (hash<basic_stacktrace<Alloc>>): Fix
+	type of hash function for entries.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: New test.
+
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112491
+	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.size): Fix
+	calculation to use _M_start._M_cur.
+	* testsuite/libstdc++-xmethods/deque.cc: Check failing cases.
+
+2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/file/io.cc: Double timeout using
+	dg-timeout-factor.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/system/io.cc: Likewise.
+	* testsuite/std/time/clock/tai/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+
 2023-11-13  Tom Tromey  <tromey@adacore.com>
 
 	Backported from master:

@@ -1,3 +1,25 @@
+2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/112496
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Return
+	false when !tree_nop_conversion_p (TREE_TYPE (vectype),
+	TREE_TYPE (init_expr)).
+
+2023-11-14  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2023-08-31  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110411
+	* config/rs6000/mma.md (define_insn_and_split movoo): Disallow
+	AltiVec address operands.
+	(define_insn_and_split movxo): Likewise.
+	* config/rs6000/predicates.md (vsx_quad_dform_memory_operand): Remove
+	redundant mode size check.
+
 2023-11-10  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
