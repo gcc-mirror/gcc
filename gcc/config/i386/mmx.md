@@ -5277,8 +5277,8 @@
    (set_attr "mode" "DI,TI")])
 
 (define_insn "*vec_dup<mode>"
-  [(set (match_operand:V4F_64 0 "register_operand" "=Yw")
-	(vec_duplicate:V4F_64
+  [(set (match_operand:V4FI_64 0 "register_operand" "=Yw")
+	(vec_duplicate:V4FI_64
 	  (match_operand:<mmxscalarmode> 1 "register_operand" "Yw")))]
   "TARGET_MMX_WITH_SSE"
   "%vpshuflw\t{$0, %1, %0|%0, %1, 0}"
@@ -5869,8 +5869,8 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*vec_dup<mode>"
-  [(set (match_operand:V2F_32 0 "register_operand" "=Yw")
-	(vec_duplicate:V2F_32
+  [(set (match_operand:V2FI_32 0 "register_operand" "=Yw")
+	(vec_duplicate:V2FI_32
 	  (match_operand:<mmxscalarmode> 1 "register_operand" "Yw")))]
   "TARGET_SSE2"
   "%vpshuflw\t{$0, %1, %0|%0, %1, 0}"
