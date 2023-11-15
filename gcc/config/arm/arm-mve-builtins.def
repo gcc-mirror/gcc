@@ -39,14 +39,14 @@ DEF_MVE_MODE (r, none, none, none)
 
 #define REQUIRES_FLOAT false
 DEF_MVE_TYPE (mve_pred16_t, boolean_type_node)
-DEF_MVE_TYPE (uint8x16_t, unsigned_intQI_type_node)
-DEF_MVE_TYPE (uint16x8_t, unsigned_intHI_type_node)
-DEF_MVE_TYPE (uint32x4_t, unsigned_intSI_type_node)
-DEF_MVE_TYPE (uint64x2_t, unsigned_intDI_type_node)
-DEF_MVE_TYPE (int8x16_t, intQI_type_node)
-DEF_MVE_TYPE (int16x8_t, intHI_type_node)
-DEF_MVE_TYPE (int32x4_t, intSI_type_node)
-DEF_MVE_TYPE (int64x2_t, intDI_type_node)
+DEF_MVE_TYPE (uint8x16_t, get_typenode_from_name (UINT8_TYPE))
+DEF_MVE_TYPE (uint16x8_t, get_typenode_from_name (UINT16_TYPE))
+DEF_MVE_TYPE (uint32x4_t, get_typenode_from_name (UINT32_TYPE))
+DEF_MVE_TYPE (uint64x2_t, get_typenode_from_name (UINT64_TYPE))
+DEF_MVE_TYPE (int8x16_t, get_typenode_from_name (INT8_TYPE))
+DEF_MVE_TYPE (int16x8_t, get_typenode_from_name (INT16_TYPE))
+DEF_MVE_TYPE (int32x4_t, get_typenode_from_name (INT32_TYPE))
+DEF_MVE_TYPE (int64x2_t, get_typenode_from_name (INT64_TYPE))
 #undef REQUIRES_FLOAT
 
 #define REQUIRES_FLOAT true
