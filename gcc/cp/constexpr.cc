@@ -8847,7 +8847,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  return RECUR (DECL_VALUE_EXPR (t), rval);
 	}
       if (want_rval
-	  && !var_in_maybe_constexpr_fn (t)
+	  && (now || !var_in_maybe_constexpr_fn (t))
 	  && !type_dependent_expression_p (t)
 	  && !decl_maybe_constant_var_p (t)
 	  && (strict
@@ -8956,7 +8956,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
         STRIP_NOPS (x);
         if (is_this_parameter (x) && !is_capture_proxy (x))
 	  {
-	    if (!var_in_maybe_constexpr_fn (x))
+	    if (now || !var_in_maybe_constexpr_fn (x))
 	      {
 		if (flags & tf_error)
 		  error_at (loc, "use of %<this%> in a constant expression");
