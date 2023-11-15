@@ -3690,7 +3690,7 @@
 }
   [(set_attr "length" "8")])
 
-(define_expand "mve_vld1q_f<mode>"
+(define_expand "@mve_vld1q_f<mode>"
   [(match_operand:MVE_0 0 "s_register_operand")
    (unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "mve_memory_operand")] VLD1Q_F)
   ]
@@ -3700,7 +3700,7 @@
   DONE;
 })
 
-(define_expand "mve_vld1q_<supf><mode>"
+(define_expand "@mve_vld1q_<supf><mode>"
   [(match_operand:MVE_2 0 "s_register_operand")
    (unspec:MVE_2 [(match_operand:MVE_2 1 "mve_memory_operand")] VLD1Q)
   ]
@@ -4408,7 +4408,7 @@
 }
   [(set_attr "length" "4")])
 
-(define_expand "mve_vst1q_f<mode>"
+(define_expand "@mve_vst1q_f<mode>"
   [(match_operand:<MVE_CNVT> 0 "mve_memory_operand")
    (unspec:<MVE_CNVT> [(match_operand:MVE_0 1 "s_register_operand")] VST1Q_F)
   ]
@@ -4418,7 +4418,7 @@
   DONE;
 })
 
-(define_expand "mve_vst1q_<supf><mode>"
+(define_expand "@mve_vst1q_<supf><mode>"
   [(match_operand:MVE_2 0 "mve_memory_operand")
    (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand")] VST1Q)
   ]
