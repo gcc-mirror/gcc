@@ -31,6 +31,7 @@ sanitizer_common_files = \
 	sanitizer_coverage_libcdep_new.cpp \
 	sanitizer_deadlock_detector1.cpp \
 	sanitizer_deadlock_detector2.cpp \
+	sanitizer_dl.cpp \
 	sanitizer_errno.cpp \
 	sanitizer_file.cpp \
 	sanitizer_flags.cpp \
@@ -57,6 +58,7 @@ sanitizer_common_files = \
 	sanitizer_procmaps_linux.cpp \
 	sanitizer_procmaps_mac.cpp \
 	sanitizer_procmaps_solaris.cpp \
+	sanitizer_range.cpp \
 	sanitizer_solaris.cpp \
 	sanitizer_stack_store.cpp \
 	sanitizer_stackdepot.cpp \
@@ -75,6 +77,7 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_posix_libcdep.cpp \
 	sanitizer_symbolizer_win.cpp \
 	sanitizer_termination.cpp \
+	sanitizer_thread_arg_retval.cpp \
 	sanitizer_thread_registry.cpp \
 	sanitizer_tls_get_addr.cpp \
 	sanitizer_unwind_linux_libcdep.cpp \

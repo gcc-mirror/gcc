@@ -148,7 +148,7 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   CHECK_EQ(pthread_getattr_np(pthread_self(), &attr), 0);
-  my_pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+  internal_pthread_attr_getstack(&attr, &stackaddr, &stacksize);
   pthread_attr_destroy(&attr);
 #endif  // SANITIZER_SOLARIS
 
@@ -698,11 +698,8 @@ static int dl_iterate_phdr_cb(dl_phdr_info *info, size_t size, void *arg) {
     return AddModuleSegments(module_name.data(), info, data->modules);
   }
 
-  if (info->dlpi_name) {
-    InternalScopedString module_name;
-    module_name.append("%s", info->dlpi_name);
-    return AddModuleSegments(module_name.data(), info, data->modules);
-  }
+  if (info->dlpi_name)
+    return AddModuleSegments(info->dlpi_name, info, data->modules);
 
   return 0;
 }
@@ -838,13 +835,9 @@ u32 GetNumberOfCPUs() {
 #elif SANITIZER_SOLARIS
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
-#if defined(CPU_COUNT)
   cpu_set_t CPUs;
   CHECK_EQ(sched_getaffinity(0, sizeof(cpu_set_t), &CPUs), 0);
   return CPU_COUNT(&CPUs);
-#else
-  return 1;
-#endif
 #endif
 }
 

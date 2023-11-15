@@ -38,7 +38,7 @@
 extern char **environ;
 #  endif
 
-#  if defined(__has_include) && __has_include(<os/trace.h>) && defined(__BLOCKS__)
+#  if defined(__has_include) && __has_include(<os/trace.h>)
 #    define SANITIZER_OS_TRACE 1
 #    include <os/trace.h>
 #  else
@@ -71,15 +71,7 @@ extern char ***_NSGetArgv(void);
 #  include <mach/mach_time.h>
 #  include <mach/vm_statistics.h>
 #  include <malloc/malloc.h>
-#  if defined(__has_builtin) && __has_builtin(__builtin_os_log_format)
-#    include <os/log.h>
-#  else
-     /* Without support for __builtin_os_log_format, fall back to the older
-        method.  */
-#    define OS_LOG_DEFAULT 0
-#    define os_log_error(A,B,C) \
-       asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "%s", (C));
-#  endif
+#  include <os/log.h>
 #  include <pthread.h>
 #  include <pthread/introspection.h>
 #  include <sched.h>
