@@ -4940,16 +4940,25 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
    type, this behavior is deprecated ([depr.arith.conv.enum]).  CODE is the
    code of the binary operation, TYPE0 and TYPE1 are the types of the operands,
    and LOC is the location for the whole binary expression.
+   For C++26 this is ill-formed rather than deprecated.
+   Return true for SFINAE errors.
    TODO: Consider combining this with -Wenum-compare in build_new_op_1.  */
 
-static void
+static bool
 do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
-			  tree type1)
+			  tree type1, tsubst_flags_t complain)
 {
   if (TREE_CODE (type0) == ENUMERAL_TYPE
       && TREE_CODE (type1) == ENUMERAL_TYPE
       && TYPE_MAIN_VARIANT (type0) != TYPE_MAIN_VARIANT (type1))
     {
+      if (cxx_dialect >= cxx26)
+	{
+	  if ((complain & tf_warning_or_error) == 0)
+	    return true;
+	}
+      else if ((complain & tf_warning) == 0)
+	return false;
       /* In C++20, -Wdeprecated-enum-enum-conversion is on by default.
 	 Otherwise, warn if -Wenum-conversion is on.  */
       enum opt_code opt;
@@ -4958,7 +4967,7 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
       else if (warn_enum_conversion)
 	opt = OPT_Wenum_conversion;
       else
-	return;
+	return false;
 
       switch (code)
 	{
@@ -4969,21 +4978,29 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	case EQ_EXPR:
 	case NE_EXPR:
 	  /* Comparisons are handled by -Wenum-compare.  */
-	  return;
+	  return false;
 	case SPACESHIP_EXPR:
 	  /* This is invalid, don't warn.  */
-	  return;
+	  return false;
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
-	  warning_at (loc, opt, "bitwise operation between different "
-		      "enumeration types %qT and %qT is deprecated",
-		      type0, type1);
-	  return;
+	  if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "bitwise operation between different "
+		     "enumeration types %qT and %qT", type0, type1);
+	  else
+	    warning_at (loc, opt, "bitwise operation between different "
+			"enumeration types %qT and %qT is deprecated",
+			type0, type1);
+	  return false;
 	default:
-	  warning_at (loc, opt, "arithmetic between different enumeration "
-		      "types %qT and %qT is deprecated", type0, type1);
-	  return;
+	  if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between different enumeration "
+		     "types %qT and %qT", type0, type1);
+	  else
+	    warning_at (loc, opt, "arithmetic between different enumeration "
+			"types %qT and %qT is deprecated", type0, type1);
+	  return false;
 	}
     }
   else if ((TREE_CODE (type0) == ENUMERAL_TYPE
@@ -4991,6 +5008,13 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	   || (SCALAR_FLOAT_TYPE_P (type0)
 	       && TREE_CODE (type1) == ENUMERAL_TYPE))
     {
+      if (cxx_dialect >= cxx26)
+	{
+	  if ((complain & tf_warning_or_error) == 0)
+	    return true;
+	}
+      else if ((complain & tf_warning) == 0)
+	return false;
       const bool enum_first_p = TREE_CODE (type0) == ENUMERAL_TYPE;
       /* In C++20, -Wdeprecated-enum-float-conversion is on by default.
 	 Otherwise, warn if -Wenum-conversion is on.  */
@@ -5000,7 +5024,7 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
       else if (warn_enum_conversion)
 	opt = OPT_Wenum_conversion;
       else
-	return;
+	return false;
 
       switch (code)
 	{
@@ -5010,7 +5034,13 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	case LE_EXPR:
 	case EQ_EXPR:
 	case NE_EXPR:
-	  if (enum_first_p)
+	  if (enum_first_p && cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "comparison of enumeration type %qT with "
+		     "floating-point type %qT", type0, type1);
+	  else if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "comparison of floating-point type %qT "
+		      "with enumeration type %qT", type0, type1);
+	  else if (enum_first_p)
 	    warning_at (loc, opt, "comparison of enumeration type %qT with "
 			"floating-point type %qT is deprecated",
 			type0, type1);
@@ -5018,12 +5048,18 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	    warning_at (loc, opt, "comparison of floating-point type %qT "
 			"with enumeration type %qT is deprecated",
 			type0, type1);
-	  return;
+	  return false;
 	case SPACESHIP_EXPR:
 	  /* This is invalid, don't warn.  */
-	  return;
+	  return false;
 	default:
-	  if (enum_first_p)
+	  if (enum_first_p && cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between enumeration type %qT "
+		     "and floating-point type %qT", type0, type1);
+	  else if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between floating-point type %qT "
+		     "and enumeration type %qT", type0, type1);
+	  else if (enum_first_p)
 	    warning_at (loc, opt, "arithmetic between enumeration type %qT "
 			"and floating-point type %qT is deprecated",
 			type0, type1);
@@ -5031,9 +5067,10 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	    warning_at (loc, opt, "arithmetic between floating-point type %qT "
 			"and enumeration type %qT is deprecated",
 			type0, type1);
-	  return;
+	  return false;
 	}
     }
+  return false;
 }
 
 /* Build a binary-operation expression without default conversions.
@@ -6163,15 +6200,13 @@ cp_build_binary_op (const op_location_t &location,
 	  return error_mark_node;
 	}
       if (complain & tf_warning)
-	{
-	  do_warn_double_promotion (result_type, type0, type1,
-				    "implicit conversion from %qH to %qI "
-				    "to match other operand of binary "
-				    "expression",
-				    location);
-	  do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
-				    TREE_TYPE (orig_op1));
-	}
+	do_warn_double_promotion (result_type, type0, type1,
+				  "implicit conversion from %qH to %qI "
+				  "to match other operand of binary "
+				  "expression", location);
+      if (do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
+				    TREE_TYPE (orig_op1), complain))
+	return error_mark_node;
     }
   if (may_need_excess_precision
       && (orig_type0 != type0 || orig_type1 != type1)
