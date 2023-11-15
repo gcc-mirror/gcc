@@ -416,7 +416,7 @@ public:
   bool repeating_sequence_use_merge_profitable_p ();
   bool combine_sequence_use_slideup_profitable_p ();
   bool combine_sequence_use_merge_profitable_p ();
-  rtx get_merge_scalar_mask (unsigned int) const;
+  rtx get_merge_scalar_mask (unsigned int, machine_mode) const;
 
   bool single_step_npatterns_p () const;
   bool npatterns_all_equal_p () const;
@@ -592,7 +592,8 @@ rvv_builder::get_merged_repeating_sequence ()
    To merge "b", the mask should be 0101....
 */
 rtx
-rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
+rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern,
+				    machine_mode inner_mode) const
 {
   unsigned HOST_WIDE_INT mask = 0;
   unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
@@ -611,7 +612,7 @@ rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
   for (int i = 0; i < limit; i++)
     mask |= base_mask << (i * npatterns ());
 
-  return gen_int_mode (mask, inner_int_mode ());
+  return gen_int_mode (mask, inner_mode);
 }
 
 /* Return true if the variable-length vector is single step.
@@ -919,17 +920,45 @@ emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
 /* Emit merge instruction.  */
 
 static machine_mode
-get_repeating_sequence_dup_machine_mode (const rvv_builder &builder)
+get_repeating_sequence_dup_machine_mode (const rvv_builder &builder,
+					 machine_mode mask_bit_mode)
 {
-  poly_uint64 dup_nunits = GET_MODE_NUNITS (builder.mode ());
+  unsigned mask_precision = GET_MODE_PRECISION (mask_bit_mode).to_constant ();
+  unsigned mask_scalar_size = mask_precision > builder.inner_bits_size ()
+    ? builder.inner_bits_size () : mask_precision;
 
-  if (known_ge (GET_MODE_SIZE (builder.mode ()), BYTES_PER_RISCV_VECTOR))
+  scalar_mode inner_mode;
+  unsigned minimal_bits_size;
+
+  switch (mask_scalar_size)
     {
-      dup_nunits = exact_div (BYTES_PER_RISCV_VECTOR,
-	builder.inner_bytes_size ());
+      case 8:
+	inner_mode = QImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 8; /* AKA RVVMF8.  */
+	break;
+      case 16:
+	inner_mode = HImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 4; /* AKA RVVMF4.  */
+	break;
+      case 32:
+	inner_mode = SImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 2; /* AKA RVVMF2.  */
+	break;
+      case 64:
+	inner_mode = DImode;
+	minimal_bits_size = TARGET_MIN_VLEN / 1; /* AKA RVVM1.  */
+	break;
+      default:
+	gcc_unreachable ();
+	break;
     }
 
-  return get_vector_mode (builder.inner_int_mode (), dup_nunits).require ();
+  gcc_assert (mask_precision % mask_scalar_size == 0);
+
+  uint64_t dup_nunit = mask_precision > mask_scalar_size
+    ? mask_precision / mask_scalar_size : minimal_bits_size / mask_scalar_size;
+
+  return get_vector_mode (inner_mode, dup_nunit).require ();
 }
 
 /* Expand series const vector.  */
@@ -2130,9 +2159,9 @@ expand_vector_init_merge_repeating_sequence (rtx target,
      since we don't have such instruction in RVV.
      Instead, we should use INT mode (QI/HI/SI/DI) with integer move
      instruction to generate the mask data we want.  */
-  machine_mode mask_int_mode
-    = get_repeating_sequence_dup_machine_mode (builder);
   machine_mode mask_bit_mode = get_mask_mode (builder.mode ());
+  machine_mode mask_int_mode
+    = get_repeating_sequence_dup_machine_mode (builder, mask_bit_mode);
   uint64_t full_nelts = builder.full_nelts ().to_constant ();
 
   /* Step 1: Broadcast the first pattern.  */
@@ -2143,7 +2172,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
   for (unsigned int i = 1; i < builder.npatterns (); i++)
     {
       /* Step 2-1: Generate mask register v0 for each merge.  */
-      rtx merge_mask = builder.get_merge_scalar_mask (i);
+      rtx merge_mask
+	= builder.get_merge_scalar_mask (i, GET_MODE_INNER (mask_int_mode));
       rtx mask = gen_reg_rtx (mask_bit_mode);
       rtx dup = gen_reg_rtx (mask_int_mode);
 
