@@ -2880,8 +2880,13 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
       return nullptr;
     }
 
-  std::unique_ptr<AST::Param> initial_param = parse_self_param ();
-  if (initial_param != nullptr)
+  auto initial_param = parse_self_param ();
+
+  if (!initial_param.has_value ()
+      && initial_param.error () != ParseSelfError::NOT_SELF)
+    return nullptr;
+
+  if (initial_param.has_value ())
     skip_token (COMMA);
 
   // parse function parameters (only if next token isn't right paren)
@@ -2891,9 +2896,9 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
     function_params
       = parse_function_params ([] (TokenId id) { return id == RIGHT_PAREN; });
 
-  if (initial_param != nullptr)
+  if (initial_param.has_value ())
     function_params.insert (function_params.begin (),
-			    std::move (initial_param));
+			    std::move (*initial_param));
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -5063,13 +5068,15 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 
 	/* now for function vs method disambiguation - method has opening
 	 * "self" param */
-	std::unique_ptr<AST::Param> initial_param = parse_self_param ();
+	auto initial_param = parse_self_param ();
+	if (!initial_param.has_value () && initial_param.error () != NOT_SELF)
+	  return nullptr;
 	/* FIXME: ensure that self param doesn't accidently consume tokens for
 	 * a function */
 	bool is_method = false;
-	if (initial_param != nullptr)
+	if (initial_param.has_value ())
 	  {
-	    if (initial_param->is_self ())
+	    if ((*initial_param)->is_self ())
 	      is_method = true;
 
 	    /* skip comma so function and method regular params can be parsed
@@ -5089,9 +5096,9 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	    return nullptr;
 	  }
 
-	if (initial_param != nullptr)
+	if (initial_param.has_value ())
 	  function_params.insert (function_params.begin (),
-				  std::move (initial_param));
+				  std::move (*initial_param));
 
 	// parse return type (optional)
 	std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
@@ -5609,14 +5616,18 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
 
   // now for function vs method disambiguation - method has opening "self"
   // param
-  std::unique_ptr<AST::Param> initial_param = parse_self_param ();
+  auto initial_param = parse_self_param ();
+
+  if (!initial_param.has_value () && initial_param.error () != NOT_SELF)
+    return nullptr;
+
   /* FIXME: ensure that self param doesn't accidently consume tokens for a
    * function one idea is to lookahead up to 4 tokens to see whether self is
    * one of them */
   bool is_method = false;
-  if (initial_param != nullptr)
+  if (initial_param.has_value ())
     {
-      if (initial_param->is_self ())
+      if ((*initial_param)->is_self ())
 	is_method = true;
 
       /* skip comma so function and method regular params can be parsed in
@@ -5629,9 +5640,9 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   std::vector<std::unique_ptr<AST::Param>> function_params
     = parse_function_params ([] (TokenId id) { return id == RIGHT_PAREN; });
 
-  if (initial_param != nullptr)
+  if (initial_param.has_value ())
     function_params.insert (function_params.begin (),
-			    std::move (initial_param));
+			    std::move (*initial_param));
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -5817,13 +5828,17 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
 
   // now for function vs method disambiguation - method has opening "self"
   // param
-  std::unique_ptr<AST::Param> initial_param = parse_self_param ();
+  auto initial_param = parse_self_param ();
+
+  if (!initial_param.has_value () && initial_param.error () != NOT_SELF)
+    return nullptr;
+
   // FIXME: ensure that self param doesn't accidently consume tokens for a
   // function
   bool is_method = false;
-  if (initial_param != nullptr)
+  if (initial_param.has_value ())
     {
-      if (initial_param->is_self ())
+      if ((*initial_param)->is_self ())
 	is_method = true;
 
       // skip comma so function and method regular params can be parsed in
@@ -5861,9 +5876,9 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
 	}
     }
 
-  if (initial_param != nullptr)
+  if (initial_param.has_value ())
     function_params.insert (function_params.begin (),
-			    std::move (initial_param));
+			    std::move (*initial_param));
 
   // DEBUG
   rust_debug ("successfully parsed function params in function or method "
@@ -7112,7 +7127,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_type ()
 
 // Parses a self param. Also handles self param not existing.
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::Param>
+tl::expected<std::unique_ptr<AST::Param>, ParseSelfError>
 Parser<ManagedTokenSource>::parse_self_param ()
 {
   bool has_reference = false;
@@ -7133,8 +7148,11 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	if (lexer.peek_token (i)->get_id () != s[i])
 	  break;
       if (i == s.size ())
-	rust_error_at (lexer.peek_token ()->get_locus (),
-		       "cannot pass %<self%> by raw pointer");
+	{
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "cannot pass %<self%> by raw pointer");
+	  return tl::make_unexpected (ParseSelfError::SELF_PTR);
+	}
     }
 
   // Trying to find those patterns:
@@ -7154,7 +7172,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
       is_self = true;
 
   if (!is_self)
-    return nullptr;
+    return tl::make_unexpected (ParseSelfError::NOT_SELF);
 
   // test if self is a reference parameter
   if (lexer.peek_token ()->get_id () == AMP)
@@ -7175,7 +7193,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	      add_error (std::move (error));
 
 	      // skip after somewhere?
-	      return nullptr;
+	      return tl::make_unexpected (ParseSelfError::PARSING);
 	    }
 	}
     }
@@ -7193,7 +7211,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
   if (self_tok->get_id () != SELF)
     {
       // skip after somewhere?
-      return nullptr;
+      return tl::make_unexpected (ParseSelfError::NOT_SELF);
     }
   lexer.skip_token ();
 
@@ -7212,7 +7230,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	  add_error (std::move (error));
 
 	  // skip after somewhere?
-	  return nullptr;
+	  return tl::make_unexpected (ParseSelfError::PARSING);
 	}
     }
 
@@ -7225,7 +7243,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
       add_error (std::move (error));
 
       // skip after somewhere?
-      return nullptr;
+      return tl::make_unexpected (ParseSelfError::PARSING);
     }
 
   if (has_reference)
