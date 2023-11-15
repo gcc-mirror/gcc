@@ -185,10 +185,7 @@ TopLevel::visit (AST::Function &function)
   insert_or_error_out (function.get_function_name (), function,
 		       Namespace::Values);
 
-  auto def_fn
-    = [this, &function] () { function.get_definition ()->accept_vis (*this); };
-
-  ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn);
+  DefaultResolver::visit (function);
 }
 
 void
