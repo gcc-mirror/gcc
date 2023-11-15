@@ -1,7 +1,7 @@
 /* Verify pattern initialization for structure type automatic variables with
    padding.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern" } */
+/* { dg-options "-O -ftrivial-auto-var-init=pattern" } */
 
 struct test_aligned {
         int internal1;

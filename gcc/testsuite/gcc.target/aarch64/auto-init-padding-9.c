@@ -1,7 +1,7 @@
 /* Verify zero initialization for array type with structure element with
    padding.  */ 
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-O -ftrivial-auto-var-init=zero" } */
 
 struct test_trailing_hole {
         int one;
@@ -11,11 +11,12 @@ struct test_trailing_hole {
         /* "sizeof(unsigned long) - 1" byte padding hole here. */
 };
 
+void bar (void *);
 
-int foo ()
+void foo ()
 {
   struct test_trailing_hole var[10]; 
-  return var[2].four;
+  bar (var);
 }
 
 /* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 5 } } */
