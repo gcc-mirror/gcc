@@ -162,11 +162,11 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD (DO, "do") /* unused */                                     \
   RS_TOKEN_KEYWORD (DYN, "dyn")                                                \
   RS_TOKEN_KEYWORD (ELSE, "else")                                              \
-  RS_TOKEN_KEYWORD (ENUM_TOK, "enum")                                          \
-  RS_TOKEN_KEYWORD (EXTERN_TOK, "extern")                                      \
+  RS_TOKEN_KEYWORD (ENUM_KW, "enum")                                           \
+  RS_TOKEN_KEYWORD (EXTERN_KW, "extern")                                       \
   RS_TOKEN_KEYWORD (FALSE_LITERAL, "false")                                    \
-  RS_TOKEN_KEYWORD (FINAL_TOK, "final") /* unused */                           \
-  RS_TOKEN_KEYWORD (FN_TOK, "fn")                                              \
+  RS_TOKEN_KEYWORD (FINAL_KW, "final") /* unused */                            \
+  RS_TOKEN_KEYWORD (FN_KW, "fn")                                               \
   RS_TOKEN_KEYWORD (FOR, "for")                                                \
   RS_TOKEN_KEYWORD (IF, "if")                                                  \
   RS_TOKEN_KEYWORD (IMPL, "impl")                                              \
@@ -174,20 +174,20 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD (LET, "let")                                                \
   RS_TOKEN_KEYWORD (LOOP, "loop")                                              \
   RS_TOKEN_KEYWORD (MACRO, "macro")                                            \
-  RS_TOKEN_KEYWORD (MATCH_TOK, "match")                                        \
+  RS_TOKEN_KEYWORD (MATCH_KW, "match")                                         \
   RS_TOKEN_KEYWORD (MOD, "mod")                                                \
   RS_TOKEN_KEYWORD (MOVE, "move")                                              \
   RS_TOKEN_KEYWORD (MUT, "mut")                                                \
-  RS_TOKEN_KEYWORD (OVERRIDE_TOK, "override") /* unused */                     \
-  RS_TOKEN_KEYWORD (PRIV, "priv")	      /* unused */                     \
+  RS_TOKEN_KEYWORD (OVERRIDE_KW, "override") /* unused */                      \
+  RS_TOKEN_KEYWORD (PRIV, "priv")	     /* unused */                      \
   RS_TOKEN_KEYWORD (PUB, "pub")                                                \
   RS_TOKEN_KEYWORD (REF, "ref")                                                \
-  RS_TOKEN_KEYWORD (RETURN_TOK, "return")                                      \
+  RS_TOKEN_KEYWORD (RETURN_KW, "return")                                       \
   RS_TOKEN_KEYWORD (SELF_ALIAS,                                                \
 		    "Self") /* mrustc does not treat this as a reserved word*/ \
   RS_TOKEN_KEYWORD (SELF, "self")                                              \
-  RS_TOKEN_KEYWORD (STATIC_TOK, "static")                                      \
-  RS_TOKEN_KEYWORD (STRUCT_TOK, "struct")                                      \
+  RS_TOKEN_KEYWORD (STATIC_KW, "static")                                       \
+  RS_TOKEN_KEYWORD (STRUCT_KW, "struct")                                       \
   RS_TOKEN_KEYWORD (SUPER, "super")                                            \
   RS_TOKEN_KEYWORD (TRAIT, "trait")                                            \
   RS_TOKEN_KEYWORD (TRUE_LITERAL, "true")                                      \
