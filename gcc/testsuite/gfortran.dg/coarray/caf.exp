@@ -81,7 +81,6 @@ if [check_effective_target_libatomic_available] {
 	}
     }
     set t [get_multilibs]
-    puts "maybe al $maybe_atomic_lib ml $t"
 }
 
 # Main loop.

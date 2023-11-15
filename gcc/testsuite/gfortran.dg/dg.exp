@@ -68,7 +68,6 @@ if [check_effective_target_libatomic_available] {
         set maybe_atomic_lib ""
     }
   set t [get_multilibs]
-  puts "dg set al $maybe_atomic_lib ml $t"
 }
 
 set all_flags $DEFAULT_FFLAGS
@@ -77,8 +76,6 @@ if { $maybe_atomic_lib != "" } {
      lappend all_flags $f
    }
 }
-
-puts "revised FFLAGS $all_flags"
 
 # Main loop.
 gfortran-dg-runtest [lsort \
