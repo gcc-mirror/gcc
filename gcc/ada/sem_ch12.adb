@@ -14001,9 +14001,10 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                      Get_Instance_Of
-                        (Designated_Type (Base_Type (Formal_Subt))) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                      Subtypes_Match
+                        (Get_Instance_Of
+                           (Designated_Type (Base_Type (Formal_Subt))),
+                         Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 
@@ -17322,8 +17323,14 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                        Designated_Type (Base_Type (Formal_Subt)) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                        Base_Type
+                          (Designated_Type (Base_Type (Formal_Subt))) =
+                        Base_Type
+                          (Designated_Type (Base_Type (Etype (Actual_Discr))))
+                    and then
+                        Subtypes_Statically_Match
+                         (Designated_Type (Base_Type (Formal_Subt)),
+                          Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 
