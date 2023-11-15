@@ -1480,7 +1480,7 @@ package Sem_Util is
    --  Is the given expression a container aggregate?
 
    function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean;
-   --  Return True if Subp is a function with side-effects, ie. it has a
+   --  Return True if Subp is a function with side effects, ie. it has a
    --  (direct or inherited) pragma Side_Effects with static value True.
 
    function Is_Newly_Constructed

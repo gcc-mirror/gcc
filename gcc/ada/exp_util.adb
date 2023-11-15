@@ -237,7 +237,7 @@ package body Exp_Util is
 
    function Side_Effect_Free_Attribute (Name : Name_Id) return Boolean;
    --  Return True if the evaluation of the given attribute is considered
-   --  side-effect free, independently of its prefix and expressions.
+   --  side-effect-free, independently of its prefix and expressions.
 
    -------------------------------------
    -- Activate_Atomic_Synchronization --
@@ -9356,7 +9356,7 @@ package body Exp_Util is
    begin
       --  Build-in-place calls usually appear in 'reference format. Note that
       --  the accessibility check machinery may add an extra 'reference due to
-      --  side effect removal.
+      --  side-effect removal.
 
       while Nkind (Call) = N_Reference loop
          Call := Prefix (Call);
@@ -12062,7 +12062,7 @@ package body Exp_Util is
       then
          return;
 
-      --  No action needed for side-effect free expressions
+      --  No action needed for side-effect-free expressions
 
       elsif Check_Side_Effects
         and then Side_Effect_Free (Exp, Name_Req, Variable_Ref)
@@ -12087,15 +12087,15 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
-      --  If this is a side-effect free attribute reference whose expressions
-      --  are also side-effect free and whose prefix is not a name, remove the
+      --  If this is a side-effect-free attribute reference whose expressions
+      --  are also side-effect-free and whose prefix is not a name, remove the
       --  side effects of the prefix. A copy of the prefix is required in this
       --  case and it is better not to make an additional one for the attribute
       --  itself, because the return type of many of them is universal integer,
       --  which is a very large type for a temporary.
       --  The prefix of an attribute reference Reduce may be syntactically an
       --  aggregate, but will be expanded into a loop, so no need to remove
-      --  side-effects.
+      --  side effects.
 
       if Nkind (Exp) = N_Attribute_Reference
         and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
@@ -12329,7 +12329,7 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the expression
 
       else
-         --  When generating C code we cannot consider side effect free object
+         --  When generating C code we cannot consider side-effect-free object
          --  declarations that have discriminants and are initialized by means
          --  of a function call since on this target there is no secondary
          --  stack to store the return value and the expander may generate an
@@ -13681,12 +13681,12 @@ package body Exp_Util is
       function Safe_Prefixed_Reference (N : Node_Id) return Boolean;
       --  The argument N is a construct where the Prefix is dereferenced if it
       --  is an access type and the result is a variable. The call returns True
-      --  if the construct is side effect free (not considering side effects in
+      --  if the construct is side-effect-free (not considering side effects in
       --  other than the prefix which are to be tested by the caller).
 
       function Within_In_Parameter (N : Node_Id) return Boolean;
       --  Determines if N is a subcomponent of a composite in-parameter. If so,
-      --  N is not side-effect free when the actual is global and modifiable
+      --  N is not side-effect-free when the actual is global and modifiable
       --  indirectly from within a subprogram, because it may be passed by
       --  reference. The front-end must be conservative here and assume that
       --  this may happen with any array or record type. On the other hand, we
@@ -13703,7 +13703,7 @@ package body Exp_Util is
 
       function Safe_Prefixed_Reference (N : Node_Id) return Boolean is
       begin
-         --  If prefix is not side effect free, definitely not safe
+         --  If prefix is not side-effect-free, definitely not safe
 
          if not Side_Effect_Free (Prefix (N), Name_Req, Variable_Ref) then
             return False;
@@ -13805,7 +13805,7 @@ package body Exp_Util is
          then
             return False;
 
-         --  All other cases are side effect free
+         --  All other cases are side-effect-free
 
          else
             return True;
@@ -13846,7 +13846,7 @@ package body Exp_Util is
       --  However, we would prefer to consider that they are side effects,
       --  since the back end CSE does not work very well on expressions which
       --  can raise Constraint_Error. On the other hand if we don't consider
-      --  them to be side effect free, then we get some awkward expansions
+      --  them to be side-effect-free, then we get some awkward expansions
       --  in -gnato mode, resulting in code insertions at a point where we
       --  do not have a clear model for performing the insertions.
 
@@ -13854,7 +13854,7 @@ package body Exp_Util is
 
       if Is_Entity_Name (N) then
 
-         --  A type reference is always side effect free
+         --  A type reference is always side-effect-free
 
          if Is_Type (Entity (N)) then
             return True;
@@ -13875,12 +13875,12 @@ package body Exp_Util is
             return True;
          end if;
 
-      --  A value known at compile time is always side effect free
+      --  A value known at compile time is always side-effect-free
 
       elsif Compile_Time_Known_Value (N) then
          return True;
 
-      --  A variable renaming is not side-effect free, because the renaming
+      --  A variable renaming is not side-effect-free, because the renaming
       --  will function like a macro in the front-end in some cases, and an
       --  assignment can modify the component designated by N, so we need to
       --  create a temporary for it.
@@ -13914,7 +13914,7 @@ package body Exp_Util is
                return Safe_Prefixed_Reference (RO);
 
             --  In all other cases, designated object cannot be changed so
-            --  we are side effect free.
+            --  we are side-effect-free.
 
             else
                return True;
@@ -13954,8 +13954,8 @@ package body Exp_Util is
 
       case Nkind (N) is
 
-         --  An attribute reference is side-effect free if its expressions
-         --  are side-effect free and its prefix is side-effect free or is
+         --  An attribute reference is side-effect-free if its expressions
+         --  are side-effect-free and its prefix is side-effect-free or is
          --  an entity reference.
 
          when N_Attribute_Reference =>
@@ -13967,8 +13967,8 @@ package body Exp_Util is
                       or else
                     Side_Effect_Free (Prefix (N), Name_Req, Variable_Ref));
 
-         --  A binary operator is side effect free if and both operands are
-         --  side effect free. For this purpose binary operators include
+         --  A binary operator is side-effect-free if and both operands are
+         --  side-effect-free. For this purpose binary operators include
          --  short circuit forms.
 
          when N_Binary_Op
@@ -13989,14 +13989,14 @@ package body Exp_Util is
                     else Side_Effect_Free
                            (Alternatives (N), Name_Req, Variable_Ref));
 
-         --  An explicit dereference is side effect free only if it is
-         --  a side effect free prefixed reference.
+         --  An explicit dereference is side-effect-free only if it is
+         --  a side-effect-free prefixed reference.
 
          when N_Explicit_Dereference =>
             return Safe_Prefixed_Reference (N);
 
-         --  An expression with action is side effect free if its expression
-         --  is side effect free and it has no actions.
+         --  An expression with action is side-effect-free if its expression
+         --  is side-effect-free and it has no actions.
 
          when N_Expression_With_Actions =>
             return
@@ -14004,14 +14004,14 @@ package body Exp_Util is
                 and then Side_Effect_Free
                            (Expression (N), Name_Req, Variable_Ref);
 
-         --  A call to _rep_to_pos is side effect free, since we generate
+         --  A call to _rep_to_pos is side-effect-free, since we generate
          --  this pure function call ourselves. Moreover it is critically
          --  important to make this exception, since otherwise we can have
-         --  discriminants in array components which don't look side effect
+         --  discriminants in array components which don't look side-effect
          --  free in the case of an array whose index type is an enumeration
          --  type with an enumeration rep clause.
 
-         --  All other function calls are not side effect free
+         --  All other function calls are not side-effect-free
 
          when N_Function_Call =>
             return
@@ -14021,8 +14021,8 @@ package body Exp_Util is
                            (First (Parameter_Associations (N)),
                             Name_Req, Variable_Ref);
 
-         --  An IF expression is side effect free if it's of a scalar type, and
-         --  all its components are all side effect free (conditions and then
+         --  An IF expression is side-effect-free if it's of a scalar type, and
+         --  all its components are all side-effect-free (conditions and then
          --  actions and else actions). We restrict to scalar types, since it
          --  is annoying to deal with things like (if A then B else C)'First
          --  where the type involved is a string type.
@@ -14033,9 +14033,9 @@ package body Exp_Util is
                 and then Side_Effect_Free
                            (Expressions (N), Name_Req, Variable_Ref);
 
-         --  An indexed component is side effect free if it is a side
+         --  An indexed component is side-effect-free if it is a side
          --  effect free prefixed reference and all the indexing
-         --  expressions are side effect free.
+         --  expressions are side-effect-free.
 
          when N_Indexed_Component =>
             return
@@ -14043,7 +14043,7 @@ package body Exp_Util is
                 and then Safe_Prefixed_Reference (N);
 
          --  A type qualification, type conversion, or unchecked expression is
-         --  side effect free if the expression is side effect free.
+         --  side-effect-free if the expression is side-effect-free.
 
          when N_Qualified_Expression
             | N_Type_Conversion
@@ -14051,35 +14051,35 @@ package body Exp_Util is
          =>
             return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
-         --  A selected component is side effect free only if it is a side
+         --  A selected component is side-effect-free only if it is a side
          --  effect free prefixed reference.
 
          when N_Selected_Component =>
             return Safe_Prefixed_Reference (N);
 
-         --  A range is side effect free if the bounds are side effect free
+         --  A range is side-effect-free if the bounds are side-effect-free
 
          when N_Range =>
             return Side_Effect_Free (Low_Bound (N),  Name_Req, Variable_Ref)
                      and then
                    Side_Effect_Free (High_Bound (N), Name_Req, Variable_Ref);
 
-         --  A slice is side effect free if it is a side effect free
-         --  prefixed reference and the bounds are side effect free.
+         --  A slice is side-effect-free if it is a side-effect-free
+         --  prefixed reference and the bounds are side-effect-free.
 
          when N_Slice =>
             return
                Side_Effect_Free (Discrete_Range (N), Name_Req, Variable_Ref)
                  and then Safe_Prefixed_Reference (N);
 
-         --  A unary operator is side effect free if the operand
-         --  is side effect free.
+         --  A unary operator is side-effect-free if the operand
+         --  is side-effect-free.
 
          when N_Unary_Op =>
             return Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
 
-         --  An unchecked type conversion is side effect free only if it
-         --  is safe and its argument is side effect free.
+         --  An unchecked type conversion is side-effect-free only if it
+         --  is safe and its argument is side-effect-free.
 
          when N_Unchecked_Type_Conversion =>
             return
@@ -14087,7 +14087,7 @@ package body Exp_Util is
                 and then Side_Effect_Free
                            (Expression (N), Name_Req, Variable_Ref);
 
-         --  A literal is side effect free
+         --  A literal is side-effect-free
 
          when N_Character_Literal
             | N_Integer_Literal
@@ -14096,7 +14096,7 @@ package body Exp_Util is
          =>
             return True;
 
-         --  An aggregate is side effect free if all its values are compile
+         --  An aggregate is side-effect-free if all its values are compile
          --  time known.
 
          when N_Aggregate =>
@@ -14112,7 +14112,7 @@ package body Exp_Util is
       end case;
    end Side_Effect_Free;
 
-   --  A list is side effect free if all elements of the list are side
+   --  A list is side-effect-free if all elements of the list are side
    --  effect free.
 
    function Side_Effect_Free

@@ -4612,7 +4612,7 @@ package body Sem_Ch6 is
 
       Analyze_SPARK_Subprogram_Specification (Specification (N));
 
-      --  A function with side-effects shall not be an expression function
+      --  A function with side effects shall not be an expression function
       --  (SPARK RM 6.1.11(6)).
 
       if Present (Spec_Id)
@@ -5240,7 +5240,7 @@ package body Sem_Ch6 is
       Analyze_Aspect_Specifications (N, Designator);
 
       --  The legality of a function specification in SPARK depends on whether
-      --  the function is a function with or without side-effects. Analyze the
+      --  the function is a function with or without side effects. Analyze the
       --  pragma in advance if present, before specific SPARK legality checks.
 
       Analyze_Pragmas_If_Present (N, Pragma_SPARK_Mode);

@@ -3726,7 +3726,7 @@ package body Inline is
             Insert_After (Parent (Entity (N)), Blk);
 
          --  If the context is an assignment, and the left-hand side is free of
-         --  side-effects, the replacement is also safe.
+         --  side effects, the replacement is also safe.
 
          elsif Nkind (Parent (N)) = N_Assignment_Statement
            and then

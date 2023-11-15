@@ -1664,7 +1664,7 @@ package body Checks is
                end if;
 
                --  If the expressions for the discriminants are identical
-               --  and it is side-effect free (for now just an entity),
+               --  and it is side-effect-free (for now just an entity),
                --  this may be a shared constraint, e.g. from a subtype
                --  without a constraint introduced as a generic actual.
                --  Examine other discriminants if any.

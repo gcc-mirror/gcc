@@ -162,7 +162,7 @@ package body Exp_Ch5 is
    procedure Expand_Assign_With_Target_Names (N : Node_Id);
    --  (AI12-0125): N is an assignment statement whose RHS contains occurrences
    --  of @ that designate the value of the LHS of the assignment. If the LHS
-   --  is side-effect free the target names can be replaced with a copy of the
+   --  is side-effect-free the target names can be replaced with a copy of the
    --  LHS; otherwise the semantics of the assignment is described in terms of
    --  a procedure with an in-out parameter, and expanded as such.
 
@@ -2304,7 +2304,7 @@ package body Exp_Ch5 is
              Name       => Relocate_Node (LHS),
              Expression => New_RHS));
 
-      --  The left-hand side is not a direct name, but is side-effect free.
+      --  The left-hand side is not a direct name, but is side-effect-free.
       --  Capture its value in a temporary to avoid generating a procedure.
       --  We don't do this optimization if the target object's type may need
       --  finalization actions, because we don't want extra finalizations to

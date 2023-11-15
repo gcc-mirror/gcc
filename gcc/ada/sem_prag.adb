@@ -13425,7 +13425,7 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_Side_Effects);
 
             --  Pragma Always_Terminates is not allowed on functions without
-            --  side-effects.
+            --  side effects.
 
             if Ekind (Spec_Id) in E_Function | E_Generic_Function
               and then not Is_Function_With_Side_Effects (Spec_Id)
@@ -16989,7 +16989,7 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_Side_Effects);
 
             --  Pragma Exceptional_Cases is not allowed on functions without
-            --  side-effects.
+            --  side effects.
 
             if Ekind (Spec_Id) in E_Function | E_Generic_Function
               and then not Is_Function_With_Side_Effects (Spec_Id)
@@ -23072,7 +23072,7 @@ package body Sem_Prag is
 
             Analyze_If_Present (Pragma_Side_Effects);
 
-            --  A function with side-effects shall not have a Pure_Function
+            --  A function with side effects shall not have a Pure_Function
             --  aspect or pragma (SPARK RM 6.1.11(5)).
 
             if Is_Function_With_Side_Effects (E) then
@@ -23949,8 +23949,8 @@ package body Sem_Prag is
 
             Add_Contract_Item (N, Spec_Id);
 
-            --  A function with side-effects cannot override a function without
-            --  side-effects (SPARK RM 7.1.2(16)). Overriding checks are
+            --  A function with side effects cannot override a function without
+            --  side effects (SPARK RM 7.1.2(16)). Overriding checks are
             --  usually performed in New_Overloaded_Entity, however at
             --  that point the pragma has not been processed yet.
 
@@ -23960,7 +23960,7 @@ package body Sem_Prag is
               and then not Is_Function_With_Side_Effects (Over_Id)
             then
                Error_Msg_N
-                 ("incompatible declaration of side-effects for function",
+                 ("incompatible declaration of side effects for function",
                   Spec_Id);
 
                Error_Msg_Sloc := Sloc (Over_Id);

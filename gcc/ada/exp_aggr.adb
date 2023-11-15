@@ -1936,7 +1936,7 @@ package body Exp_Aggr is
 
       Aggr_Low  : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_L);
       Aggr_High : constant Node_Id := Duplicate_Subexpr_No_Checks (Aggr_H);
-      --  After Duplicate_Subexpr these are side-effect free
+      --  After Duplicate_Subexpr these are side-effect-free
 
       Assoc  : Node_Id;
       Choice : Node_Id;

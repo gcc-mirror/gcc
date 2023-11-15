@@ -2691,7 +2691,7 @@ package body Sem_Ch8 is
                --  Each attempt to find a suitable primitive of a particular
                --  type operates on its own copy of the original renaming.
                --  As a result the original renaming is kept decoration and
-               --  side-effect free.
+               --  side-effect-free.
 
                --  Inherit the overloaded status of the renamed subprogram name
 

@@ -10794,7 +10794,7 @@ package body Sem_Ch13 is
                Set_Analyzed (FBody);
             end if;
 
-            --  Static predicate functions are always side-effect free, and
+            --  Static predicate functions are always side-effect-free, and
             --  in most cases dynamic predicate functions are as well. Mark
             --  them as such whenever possible, so redundant predicate checks
             --  can be optimized. If there is a variable reference within the
@@ -16141,7 +16141,7 @@ package body Sem_Ch13 is
       function Extract_Entity (Expr : Node_Id) return Entity_Id;
       --  Given an element of a Stable_Properties aspect spec, return the
       --  associated entity.
-      --  This function updates the Negated flag as a side-effect.
+      --  This function updates the Negated flag as a side effect.
 
       --------------------
       -- Extract_Entity --
