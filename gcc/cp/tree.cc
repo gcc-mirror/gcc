@@ -3601,7 +3601,12 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
 
   for (i = 0; i < length; i++)
-    TREE_OPERAND (t, i) = va_arg (p, tree);
+    {
+      tree x = va_arg (p, tree);
+      TREE_OPERAND (t, i) = x;
+      if (x && !TYPE_P (x))
+	TREE_SIDE_EFFECTS (t) |= TREE_SIDE_EFFECTS (x);
+    }
 
   va_end (p);
   return convert_from_reference (t);
@@ -3636,6 +3641,10 @@ build_min_non_dep_call_vec (tree non_dep, tree fn, vec<tree, va_gc> *argvec)
     non_dep = TREE_OPERAND (non_dep, 0);
   TREE_TYPE (t) = TREE_TYPE (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
+  if (argvec)
+    for (tree x : *argvec)
+      if (x && !TYPE_P (x))
+	TREE_SIDE_EFFECTS (t) |= TREE_SIDE_EFFECTS (x);
   return convert_from_reference (t);
 }
 
