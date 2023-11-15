@@ -425,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       at(size_type __n) const
       {
 	if (__n >= size())
-	  __throw_out_of_range("basic_stack_trace::at: bad frame number");
+	  __throw_out_of_range("basic_stacktrace::at: bad frame number");
 	return begin()[__n];
       }
 
