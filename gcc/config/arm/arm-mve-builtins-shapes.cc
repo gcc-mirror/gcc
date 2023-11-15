@@ -1428,6 +1428,38 @@ struct inherent_def : public nonoverloaded_base
 };
 SHAPE (inherent)
 
+/* sv<t0>_t svfoo[_t0](const <t0>_t *)
+
+   Example: vld1q.
+   int8x16_t [__arm_]vld1q[_s8](int8_t const *base)
+   int8x16_t [__arm_]vld1q_z[_s8](int8_t const *base, mve_pred16_t p)  */
+struct load_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "t0,al", group, MODE_none, preserve_user_namespace);
+  }
+
+  /* Resolve a call based purely on a pointer argument.  */
+  tree
+  resolve (function_resolver &r) const override
+  {
+    gcc_assert (r.mode_suffix_id == MODE_none);
+
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (1, i, nargs)
+	|| (type = r.infer_pointer_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (load)
+
 /* <T0>_t vfoo[_t0](<T0>_t)
    <T0>_t vfoo_n_t0(<sT0>_t)
 
@@ -1476,6 +1508,41 @@ struct mvn_def : public overloaded_base<0>
   }
 };
 SHAPE (mvn)
+
+/* void vfoo[_t0](<X>_t *, v<t0>[xN]_t)
+
+   where <X> might be tied to <t0> (for non-truncating stores) or might
+   depend on the function base name (for truncating stores).
+
+   Example: vst1q.
+   void [__arm_]vst1q[_s8](int8_t *base, int8x16_t value)
+   void [__arm_]vst1q_p[_s8](int8_t *base, int8x16_t value, mve_pred16_t p)  */
+struct store_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,as,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    gcc_assert (r.mode_suffix_id == MODE_none);
+
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_pointer_type (0)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (store)
 
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
 
