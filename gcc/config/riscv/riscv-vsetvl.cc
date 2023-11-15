@@ -3229,6 +3229,41 @@ pre_vsetvl::emit_vsetvl ()
       remove_vsetvl_insn (item);
     }
 
+  /* Insert vsetvl info that was not deleted after lift up.  */
+  for (const bb_info *bb : crtl->ssa->bbs ())
+    {
+      const vsetvl_block_info &block_info = get_block_info (bb);
+      if (!block_info.has_info ())
+	continue;
+
+      const vsetvl_info &footer_info = block_info.get_exit_info ();
+
+      if (footer_info.delete_p ())
+	continue;
+
+      edge eg;
+      edge_iterator eg_iterator;
+      FOR_EACH_EDGE (eg, eg_iterator, bb->cfg_bb ()->succs)
+	{
+	  gcc_assert (!(eg->flags & EDGE_ABNORMAL));
+	  if (dump_file)
+	    {
+	      fprintf (
+		dump_file,
+		"\n  Insert missed vsetvl info at edge(bb %u -> bb %u): ",
+		eg->src->index, eg->dest->index);
+	      footer_info.dump (dump_file, "    ");
+	    }
+	  start_sequence ();
+	  insert_vsetvl_insn (EMIT_DIRECT, footer_info);
+	  rtx_insn *rinsn = get_insns ();
+	  end_sequence ();
+	  default_rtl_profile ();
+	  insert_insn_on_edge (rinsn, eg);
+	  need_commit = true;
+	}
+    }
+
   /* m_insert vsetvl as LCM suggest. */
   for (int ed = 0; ed < NUM_EDGES (m_edges); ed++)
     {
@@ -3265,41 +3300,6 @@ pre_vsetvl::emit_vsetvl ()
       gcc_assert (!(eg->flags & EDGE_ABNORMAL));
       need_commit = true;
       insert_insn_on_edge (rinsn, eg);
-    }
-
-  /* Insert vsetvl info that was not deleted after lift up.  */
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      const vsetvl_block_info &block_info = get_block_info (bb);
-      if (!block_info.has_info ())
-	continue;
-
-      const vsetvl_info &footer_info = block_info.get_exit_info ();
-
-      if (footer_info.delete_p ())
-	continue;
-
-      edge eg;
-      edge_iterator eg_iterator;
-      FOR_EACH_EDGE (eg, eg_iterator, bb->cfg_bb ()->succs)
-	{
-	  gcc_assert (!(eg->flags & EDGE_ABNORMAL));
-	  if (dump_file)
-	    {
-	      fprintf (
-		dump_file,
-		"\n  Insert missed vsetvl info at edge(bb %u -> bb %u): ",
-		eg->src->index, eg->dest->index);
-	      footer_info.dump (dump_file, "    ");
-	    }
-	  start_sequence ();
-	  insert_vsetvl_insn (EMIT_DIRECT, footer_info);
-	  rtx_insn *rinsn = get_insns ();
-	  end_sequence ();
-	  default_rtl_profile ();
-	  insert_insn_on_edge (rinsn, eg);
-	  need_commit = true;
-	}
     }
 
   if (need_commit)
