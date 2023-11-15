@@ -966,6 +966,62 @@ public:
   }
 };
 
+/* A function_base that sometimes or always operates on tuples of
+   vectors.  */
+class multi_vector_function : public function_base
+{
+public:
+  CONSTEXPR multi_vector_function (unsigned int vectors_per_tuple)
+    : m_vectors_per_tuple (vectors_per_tuple) {}
+
+  unsigned int
+  vectors_per_tuple () const override
+  {
+    return m_vectors_per_tuple;
+  }
+
+  /* The number of vectors in a tuple, or 1 if the function only operates
+     on single vectors.  */
+  unsigned int m_vectors_per_tuple;
+};
+
+/* A function_base that loads or stores contiguous memory elements
+   without extending or truncating them.  */
+class full_width_access : public multi_vector_function
+{
+public:
+  CONSTEXPR full_width_access (unsigned int vectors_per_tuple = 1)
+    : multi_vector_function (vectors_per_tuple) {}
+
+  tree
+  memory_scalar_type (const function_instance &fi) const override
+  {
+    return fi.scalar_type (0);
+  }
+
+  machine_mode
+  memory_vector_mode (const function_instance &fi) const override
+  {
+    machine_mode mode = fi.vector_mode (0);
+    /* Vectors of floating-point are managed in memory as vectors of
+       integers.  */
+    switch (mode)
+      {
+      case E_V4SFmode:
+	mode = E_V4SImode;
+	break;
+      case E_V8HFmode:
+	mode = E_V8HImode;
+	break;
+      }
+
+    if (m_vectors_per_tuple != 1)
+      mode = targetm.array_mode (mode, m_vectors_per_tuple).require ();
+
+    return mode;
+  }
+};
+
 } /* end namespace arm_mve */
 
 /* Declare the global function base NAME, creating it from an instance

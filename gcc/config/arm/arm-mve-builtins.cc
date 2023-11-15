@@ -36,6 +36,7 @@
 #include "fold-const.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "explow.h"
 #include "emit-rtl.h"
 #include "langhooks.h"
 #include "stringpool.h"
@@ -527,6 +528,22 @@ matches_type_p (const_tree model_type, const_tree candidate)
     }
   return (candidate != error_mark_node
 	  && TYPE_MAIN_VARIANT (model_type) == TYPE_MAIN_VARIANT (candidate));
+}
+
+/* If TYPE is a valid MVE element type, return the corresponding type
+   suffix, otherwise return NUM_TYPE_SUFFIXES.  */
+static type_suffix_index
+find_type_suffix_for_scalar_type (const_tree type)
+{
+  /* A linear search should be OK here, since the code isn't hot and
+     the number of types is only small.  */
+  for (unsigned int suffix_i = 0; suffix_i < NUM_TYPE_SUFFIXES; ++suffix_i)
+      {
+	vector_type_index vector_i = type_suffixes[suffix_i].vector_type;
+	if (matches_type_p (scalar_types[vector_i], type))
+	  return type_suffix_index (suffix_i);
+      }
+  return NUM_TYPE_SUFFIXES;
 }
 
 /* Report an error against LOCATION that the user has tried to use
@@ -1125,6 +1142,37 @@ function_resolver::resolve_to (mode_suffix_index mode,
   return res;
 }
 
+/* Require argument ARGNO to be a pointer to a scalar type that has a
+   corresponding type suffix.  Return that type suffix on success,
+   otherwise report an error and return NUM_TYPE_SUFFIXES.  */
+type_suffix_index
+function_resolver::infer_pointer_type (unsigned int argno)
+{
+  tree actual = get_argument_type (argno);
+  if (actual == error_mark_node)
+    return NUM_TYPE_SUFFIXES;
+
+  if (TREE_CODE (actual) != POINTER_TYPE)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, which"
+		" expects a pointer type", actual, argno + 1, fndecl);
+      return NUM_TYPE_SUFFIXES;
+    }
+
+  tree target = TREE_TYPE (actual);
+  type_suffix_index type = find_type_suffix_for_scalar_type (target);
+  if (type == NUM_TYPE_SUFFIXES)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, but %qT is not"
+		" a valid MVE element type", actual, argno + 1, fndecl,
+		build_qualified_type (target, 0));
+      return NUM_TYPE_SUFFIXES;
+    }
+  unsigned int bits = type_suffixes[type].element_bits;
+
+  return type;
+}
+
 /* Require argument ARGNO to be a single vector or a tuple of NUM_VECTORS
    vectors; NUM_VECTORS is 1 for the former.  Return the associated type
    suffix on success, using TYPE_SUFFIX_b for predicates.  Report an error
@@ -1493,6 +1541,22 @@ function_resolver::require_scalar_type (unsigned int argno,
       error_at (location, "passing %qT to argument %d of %qE, which"
 		" expects %qs", get_argument_type (argno), argno + 1,
 		fndecl, expected);
+      return false;
+    }
+  return true;
+}
+
+/* Require argument ARGNO to be some form of pointer, without being specific
+   about its target type.  Return true if the argument has the right form,
+   otherwise report an appropriate error.  */
+bool
+function_resolver::require_pointer_type (unsigned int argno)
+{
+  if (!scalar_argument_p (argno))
+    {
+      error_at (location, "passing %qT to argument %d of %qE, which"
+		" expects a scalar pointer", get_argument_type (argno),
+		argno + 1, fndecl);
       return false;
     }
   return true;
@@ -1955,6 +2019,14 @@ function_expander::direct_optab_handler (optab op, unsigned int suffix_i)
   return ::direct_optab_handler (op, vector_mode (suffix_i));
 }
 
+/* Return the base address for a contiguous load or store
+   function.  */
+rtx
+function_expander::get_contiguous_base ()
+{
+  return args[0];
+}
+
 /* For a function that does the equivalent of:
 
      OUTPUT = COND ? FN (INPUTS) : FALLBACK;
@@ -2041,6 +2113,26 @@ function_expander::add_integer_operand (HOST_WIDE_INT x)
 {
   m_ops.safe_grow (m_ops.length () + 1, true);
   create_integer_operand (&m_ops.last (), x);
+}
+
+/* Add a memory operand with mode MODE and address ADDR.  */
+void
+function_expander::add_mem_operand (machine_mode mode, rtx addr)
+{
+  gcc_assert (VECTOR_MODE_P (mode));
+  rtx mem = gen_rtx_MEM (mode, memory_address (mode, addr));
+  /* The memory is only guaranteed to be element-aligned.  */
+  set_mem_align (mem, GET_MODE_ALIGNMENT (GET_MODE_INNER (mode)));
+  add_fixed_operand (mem);
+}
+
+/* Add an operand that must be X.  The only way of legitimizing an
+   invalid X is to reload the address of a MEM.  */
+void
+function_expander::add_fixed_operand (rtx x)
+{
+  m_ops.safe_grow (m_ops.length () + 1, true);
+  create_fixed_operand (&m_ops.last (), x);
 }
 
 /* Generate instruction ICODE, given that its operands have already
@@ -2134,6 +2226,30 @@ function_expander::use_cond_insn (insn_code icode, unsigned int merge_argno)
   for (unsigned int i = 0; i < nops; ++i)
     add_input_operand (icode, args[opno + i]);
   add_input_operand (icode, pred_arg);
+  return generate_insn (icode);
+}
+
+/* Implement the call using instruction ICODE, which loads memory operand 1
+   into register operand 0.  */
+rtx
+function_expander::use_contiguous_load_insn (insn_code icode)
+{
+  machine_mode mem_mode = memory_vector_mode ();
+
+  add_output_operand (icode);
+  add_mem_operand (mem_mode, get_contiguous_base ());
+  return generate_insn (icode);
+}
+
+/* Implement the call using instruction ICODE, which stores register operand 1
+   into memory operand 0.  */
+rtx
+function_expander::use_contiguous_store_insn (insn_code icode)
+{
+  machine_mode mem_mode = memory_vector_mode ();
+
+  add_mem_operand (mem_mode, get_contiguous_base ());
+  add_input_operand (icode, args[1]);
   return generate_insn (icode);
 }
 
