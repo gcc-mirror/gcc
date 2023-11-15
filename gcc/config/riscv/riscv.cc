@@ -1427,6 +1427,10 @@ static bool
 riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
 			    code_helper = ERROR_MARK)
 {
+  /* Disallow RVV modes base address.
+     E.g. (mem:SI (subreg:DI (reg:V1DI 155) 0).  */
+  if (SUBREG_P (x) && riscv_v_ext_mode_p (GET_MODE (SUBREG_REG (x))))
+    return false;
   struct riscv_address_info addr;
 
   return riscv_classify_address (&addr, x, mode, strict_p);
