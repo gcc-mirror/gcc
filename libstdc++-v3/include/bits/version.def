@@ -1569,6 +1569,14 @@ ftms = {
 };
 
 ftms = {
+  name = out_ptr;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = spanstream;
   values = {
     v = 202106;

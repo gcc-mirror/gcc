@@ -91,6 +91,10 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
+#if __cplusplus > 202002L
+#  include <bits/out_ptr.h>
+#endif
+
 #define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_assume_aligned
 #define __glibcxx_want_atomic_shared_ptr
@@ -99,6 +103,7 @@
 #define __glibcxx_want_constexpr_memory
 #define __glibcxx_want_enable_shared_from_this
 #define __glibcxx_want_make_unique
+#define __glibcxx_want_out_ptr
 #define __glibcxx_want_parallel_algorithm
 #define __glibcxx_want_ranges
 #define __glibcxx_want_raw_memory_algorithms

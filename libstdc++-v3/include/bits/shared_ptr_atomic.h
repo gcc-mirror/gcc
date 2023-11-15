@@ -388,11 +388,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  template<typename _Up>
-    static constexpr bool __is_shared_ptr = false;
-  template<typename _Up>
-    static constexpr bool __is_shared_ptr<shared_ptr<_Up>> = true;
-
   template<typename _Tp>
     class _Sp_atomic
     {

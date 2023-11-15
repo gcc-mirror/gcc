@@ -515,6 +515,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Disable copy from lvalue.
       unique_ptr(const unique_ptr&) = delete;
       unique_ptr& operator=(const unique_ptr&) = delete;
+
+    private:
+#ifdef __glibcxx_out_ptr
+      template<typename, typename, typename...>
+	friend class out_ptr_t;
+      template<typename, typename, typename...>
+	friend class inout_ptr_t;
+#endif
   };
 
   // 20.7.1.3 unique_ptr for array objects with a runtime length
@@ -789,6 +797,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Disable copy from lvalue.
       unique_ptr(const unique_ptr&) = delete;
       unique_ptr& operator=(const unique_ptr&) = delete;
+
+    private:
+#ifdef __glibcxx_out_ptr
+      template<typename, typename, typename...> friend class out_ptr_t;
+      template<typename, typename, typename...> friend class inout_ptr_t;
+#endif
     };
 
   /// @{
@@ -1139,6 +1153,13 @@ namespace __detail
       return __os;
     }
 #endif // C++20 && HOSTED
+
+#if __cpp_variable_templates
+  template<typename _Tp>
+    static constexpr bool __is_unique_ptr = false;
+  template<typename _Tp, typename _Del>
+    static constexpr bool __is_unique_ptr<unique_ptr<_Tp, _Del>> = true;
+#endif
 
   /// @} group pointer_abstractions
 

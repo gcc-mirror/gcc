@@ -549,6 +549,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
+#ifdef __glibcxx_out_ptr
+      template<typename, typename, typename...> friend class out_ptr_t;
+#endif
       _Impl _M_impl;
     };
 
@@ -1125,6 +1128,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class __weak_count<_Lp>;
 #ifdef __glibcxx_atomic_shared_ptr
       template<typename> friend class _Sp_atomic;
+#endif
+#ifdef __glibcxx_out_ptr
+      template<typename, typename, typename...> friend class out_ptr_t;
 #endif
 
       _Sp_counted_base<_Lp>*  _M_pi;
@@ -1775,6 +1781,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __glibcxx_atomic_shared_ptr
       friend _Sp_atomic<shared_ptr<_Tp>>;
+#endif
+#ifdef __glibcxx_out_ptr
+      template<typename, typename, typename...> friend class out_ptr_t;
 #endif
 
       element_type*	   _M_ptr;         // Contained pointer.
