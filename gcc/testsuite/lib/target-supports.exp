@@ -5607,9 +5607,9 @@ proc check_effective_target_arm_thumb1_cbz_ok {} {
 # Return 1 if this is an Arm target which supports the Armv6t2 extensions.
 # This can be either in Arm state or in Thumb state.
 
-proc check_effective_target_arm_arch_v6t2_hw_ok {} {
-    if [check_effective_target_arm_thumb1_ok] {
-	return [check_no_compiler_messages arm_movt object {
+proc check_effective_target_arm_arch_v6t2_hw {} {
+    if [check_effective_target_arm_arch_v6t2_ok] {
+	return [check_runtime arm_arch_v6t2 {
 	    int
 	    main (void)
 	    {
