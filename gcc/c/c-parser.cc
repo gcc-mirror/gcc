@@ -4087,7 +4087,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
       ret.spec = finish_struct (struct_loc, type, nreverse (contents),
 				chainon (std_attrs,
 					 chainon (attrs, postfix_attrs)),
-				struct_info);
+				struct_info, &expr);
       ret.kind = ctsk_tagdef;
       ret.expr = expr;
       ret.expr_const_operands = true;

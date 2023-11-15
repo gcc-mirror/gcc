@@ -4,7 +4,7 @@
 int main (void)
 {
   const int t = 2; /* count(1) */
-  struct s1 {	/* count(-) */
+  struct s1 {	/* count(1) */
     int x;
     int g[t];
   };

@@ -656,7 +656,8 @@ extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (location_t = input_location);
 extern tree finish_struct (location_t, tree, tree, tree,
-			   class c_struct_parse_info *);
+			   class c_struct_parse_info *,
+			   tree *expr = NULL);
 extern tree c_simulate_enum_decl (location_t, const char *,
 				  vec<string_int_pair> *);
 extern tree c_simulate_record_decl (location_t, const char *,
