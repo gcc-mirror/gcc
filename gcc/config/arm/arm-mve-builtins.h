@@ -277,6 +277,7 @@ public:
   bool could_trap_p () const;
 
   unsigned int vectors_per_tuple () const;
+  tree memory_scalar_type () const;
 
   const mode_suffix_info &mode_suffix () const;
 
@@ -519,6 +520,14 @@ public:
      of vectors in the tuples, otherwise return 1.  */
   virtual unsigned int vectors_per_tuple () const { return 1; }
 
+  /* If the function addresses memory, return the type of a single
+     scalar memory element.  */
+  virtual tree
+  memory_scalar_type (const function_instance &) const
+  {
+    gcc_unreachable ();
+  }
+
   /* Try to fold the given gimple call.  Return the new gimple statement
      on success, otherwise return null.  */
   virtual gimple *fold (gimple_folder &) const { return NULL; }
@@ -642,6 +651,14 @@ inline unsigned int
 function_instance::vectors_per_tuple () const
 {
   return base->vectors_per_tuple ();
+}
+
+/* If the function addresses memory, return the type of a single
+   scalar memory element.  */
+inline tree
+function_instance::memory_scalar_type () const
+{
+  return base->memory_scalar_type (*this);
 }
 
 /* Return information about the function's mode suffix.  */

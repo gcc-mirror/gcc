@@ -39,6 +39,13 @@
 
 namespace arm_mve {
 
+/* Return a representation of "const T *".  */
+static tree
+build_const_pointer (tree t)
+{
+  return build_pointer_type (build_qualified_type (t, TYPE_QUAL_CONST));
+}
+
 /* If INSTANCE has a predicate, add it to the list of argument types
    in ARGUMENT_TYPES.  RETURN_TYPE is the type returned by the
    function.  */
@@ -140,6 +147,9 @@ parse_element_type (const function_instance &instance, const char *&format)
 /* Read and return a type from FORMAT for function INSTANCE.  Advance
    FORMAT beyond the type string.  The format is:
 
+   _       - void
+   al      - array pointer for loads
+   as      - array pointer for stores
    p       - predicates with type mve_pred16_t
    s<elt>  - a scalar type with the given element suffix
    t<elt>  - a vector or tuple type with given element suffix [*1]
@@ -155,6 +165,21 @@ static tree
 parse_type (const function_instance &instance, const char *&format)
 {
   int ch = *format++;
+
+
+  if (ch == '_')
+    return void_type_node;
+
+  if (ch == 'a')
+    {
+      ch = *format++;
+      if (ch == 'l')
+	return build_const_pointer (instance.memory_scalar_type ());
+      if (ch == 's') {
+	return build_pointer_type (instance.memory_scalar_type ());
+      }
+      gcc_unreachable ();
+    }
 
   if (ch == 'p')
     return get_mve_pred16_t ();
