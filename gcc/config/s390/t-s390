@@ -33,4 +33,4 @@ s390-d.o: $(srcdir)/config/s390/s390-d.cc
 	$(POSTCOMPILE)
 
 s390-gen-builtins.h: $(srcdir)/config/s390/s390-builtins.h
-	$(COMPILER) -E $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< > $@
+	$(COMPILER) -E -P $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< > $@
