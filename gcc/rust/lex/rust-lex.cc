@@ -1940,7 +1940,7 @@ Lexer::parse_raw_identifier (location_t loc)
 
   using namespace Rust::Values;
   std::set<std::string> invalid{
-    Keywords::CRATE, Keywords::EXTERN_TOK, Keywords::SELF,
+    Keywords::CRATE, Keywords::EXTERN_KW,  Keywords::SELF,
     Keywords::SUPER, Keywords::SELF_ALIAS,
   };
 

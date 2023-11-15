@@ -160,8 +160,8 @@ can_tok_start_type (TokenId id)
     case ASYNC:
     case CONST:
     case UNSAFE:
-    case EXTERN_TOK:
-    case FN_TOK:
+    case EXTERN_KW:
+    case FN_KW:
     case IMPL:
     case DYN:
     case QUESTION_MARK:
@@ -1114,14 +1114,14 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
       return nullptr;
     case PUB:
     case MOD:
-    case EXTERN_TOK:
+    case EXTERN_KW:
     case USE:
-    case FN_TOK:
+    case FN_KW:
     case TYPE:
-    case STRUCT_TOK:
-    case ENUM_TOK:
+    case STRUCT_KW:
+    case ENUM_KW:
     case CONST:
-    case STATIC_TOK:
+    case STATIC_KW:
     case AUTO:
     case TRAIT:
     case IMPL:
@@ -1302,7 +1302,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
     {
     case MOD:
       return parse_module (std::move (vis), std::move (outer_attrs));
-    case EXTERN_TOK:
+    case EXTERN_KW:
       // lookahead to resolve syntactical production
       t = lexer.peek_token (1);
 
@@ -1310,7 +1310,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	{
 	case CRATE:
 	  return parse_extern_crate (std::move (vis), std::move (outer_attrs));
-	case FN_TOK: // extern function
+	case FN_KW: // extern function
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	case LEFT_CURLY: // extern block
 	  return parse_extern_block (std::move (vis), std::move (outer_attrs));
@@ -1320,7 +1320,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 
 	  switch (t->get_id ())
 	    {
-	    case FN_TOK:
+	    case FN_KW:
 	      return parse_function (std::move (vis), std::move (outer_attrs));
 	    case LEFT_CURLY:
 	      return parse_extern_block (std::move (vis),
@@ -1345,13 +1345,13 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	}
     case USE:
       return parse_use_decl (std::move (vis), std::move (outer_attrs));
-    case FN_TOK:
+    case FN_KW:
       return parse_function (std::move (vis), std::move (outer_attrs));
     case TYPE:
       return parse_type_alias (std::move (vis), std::move (outer_attrs));
-    case STRUCT_TOK:
+    case STRUCT_KW:
       return parse_struct (std::move (vis), std::move (outer_attrs));
-    case ENUM_TOK:
+    case ENUM_KW:
       return parse_enum (std::move (vis), std::move (outer_attrs));
     // TODO: implement union keyword but not really because of
     // context-dependence case UNION: crappy hack to do union "keyword"
@@ -1376,8 +1376,8 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	case UNDERSCORE:
 	  return parse_const_item (std::move (vis), std::move (outer_attrs));
 	case UNSAFE:
-	case EXTERN_TOK:
-	case FN_TOK:
+	case EXTERN_KW:
+	case FN_KW:
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	default:
 	  add_error (
@@ -1388,7 +1388,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	  lexer.skip_token (1); // TODO: is this right thing to do?
 	  return nullptr;
 	}
-    case STATIC_TOK:
+    case STATIC_KW:
       return parse_static_item (std::move (vis), std::move (outer_attrs));
     case AUTO:
     case TRAIT:
@@ -1404,8 +1404,8 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	case AUTO:
 	case TRAIT:
 	  return parse_trait (std::move (vis), std::move (outer_attrs));
-	case EXTERN_TOK:
-	case FN_TOK:
+	case EXTERN_KW:
+	case FN_KW:
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	case IMPL:
 	  return parse_impl (std::move (vis), std::move (outer_attrs));
@@ -2482,7 +2482,7 @@ Parser<ManagedTokenSource>::parse_extern_crate (AST::Visibility vis,
 						AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
-  if (!skip_token (EXTERN_TOK))
+  if (!skip_token (EXTERN_KW))
     {
       skip_after_semicolon ();
       return nullptr;
@@ -2854,7 +2854,7 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
   // Get qualifiers for function if they exist
   AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
-  skip_token (FN_TOK);
+  skip_token (FN_KW);
 
   // Save function name token
   const_TokenPtr function_name_tok = expect_token (IDENTIFIER);
@@ -2962,7 +2962,7 @@ Parser<ManagedTokenSource>::parse_function_qualifiers ()
       has_unsafe = true;
     }
 
-  if (lexer.peek_token ()->get_id () == EXTERN_TOK)
+  if (lexer.peek_token ()->get_id () == EXTERN_KW)
     {
       lexer.skip_token ();
       has_extern = true;
@@ -4193,7 +4193,7 @@ Parser<ManagedTokenSource>::parse_struct (AST::Visibility vis,
   /* Tuple struct <- 'struct' IDENTIFIER generic_params? '(' tuple_fields? ')'
    * where_clause? ';' */
   location_t locus = lexer.peek_token ()->get_locus ();
-  skip_token (STRUCT_TOK);
+  skip_token (STRUCT_KW);
 
   // parse struct name
   const_TokenPtr name_tok = expect_token (IDENTIFIER);
@@ -4521,7 +4521,7 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
 					AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
-  skip_token (ENUM_TOK);
+  skip_token (ENUM_KW);
 
   // parse enum name
   const_TokenPtr enum_name_tok = expect_token (IDENTIFIER);
@@ -4856,7 +4856,7 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
 					       AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
-  skip_token (STATIC_TOK);
+  skip_token (STATIC_KW);
 
   // determine whether static item is mutable
   bool is_mut = false;
@@ -5024,8 +5024,8 @@ Parser<ManagedTokenSource>::parse_trait_item ()
       // TODO: find out how to disable gcc "implicit fallthrough" error
       gcc_fallthrough ();
     case UNSAFE:
-    case EXTERN_TOK:
-      case FN_TOK: {
+    case EXTERN_KW:
+      case FN_KW: {
 	/* function and method can't be disambiguated by lookahead alone
 	 * (without a lot of work and waste), so either make a
 	 * "parse_trait_function_or_method" or parse here mostly and pass in
@@ -5035,7 +5035,7 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	// parse function or method qualifiers
 	AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
-	skip_token (FN_TOK);
+	skip_token (FN_KW);
 
 	// parse function or method name
 	const_TokenPtr ident_tok = expect_token (IDENTIFIER);
@@ -5484,9 +5484,9 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	// TODO: is a recursive call to parse_inherent_impl_item better?
 	switch (lexer.peek_token ()->get_id ())
 	  {
-	  case EXTERN_TOK:
+	  case EXTERN_KW:
 	  case UNSAFE:
-	  case FN_TOK:
+	  case FN_KW:
 	    // function or method
 	    return parse_inherent_impl_function_or_method (std::move (vis),
 							   std::move (
@@ -5503,8 +5503,8 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 		return parse_const_item (std::move (vis),
 					 std::move (outer_attrs));
 	      case UNSAFE:
-	      case EXTERN_TOK:
-	      case FN_TOK:
+	      case EXTERN_KW:
+	      case FN_KW:
 		return parse_inherent_impl_function_or_method (std::move (vis),
 							       std::move (
 								 outer_attrs));
@@ -5526,9 +5526,9 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	    return nullptr;
 	  }
       }
-    case EXTERN_TOK:
+    case EXTERN_KW:
     case UNSAFE:
-    case FN_TOK:
+    case FN_KW:
       // function or method
       return parse_inherent_impl_function_or_method (
 	AST::Visibility::create_private (), std::move (outer_attrs));
@@ -5544,8 +5544,8 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	  return parse_const_item (AST::Visibility::create_private (),
 				   std::move (outer_attrs));
 	case UNSAFE:
-	case EXTERN_TOK:
-	case FN_TOK:
+	case EXTERN_KW:
+	case FN_KW:
 	  return parse_inherent_impl_function_or_method (
 	    AST::Visibility::create_private (), std::move (outer_attrs));
 	default:
@@ -5583,7 +5583,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   // parse function or method qualifiers
   AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
-  skip_token (FN_TOK);
+  skip_token (FN_KW);
 
   // parse function or method name
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
@@ -5720,9 +5720,9 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
 	return parse_macro_invocation_semi (std::move (outer_attrs));
     case TYPE:
       return parse_type_alias (visibility, std::move (outer_attrs));
-    case EXTERN_TOK:
+    case EXTERN_KW:
     case UNSAFE:
-    case FN_TOK:
+    case FN_KW:
       // function or method
       return parse_trait_impl_function_or_method (visibility,
 						  std::move (outer_attrs));
@@ -5737,8 +5737,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
 	case UNDERSCORE:
 	  return parse_const_item (visibility, std::move (outer_attrs));
 	case UNSAFE:
-	case EXTERN_TOK:
-	case FN_TOK:
+	case EXTERN_KW:
+	case FN_KW:
 	  return parse_trait_impl_function_or_method (visibility,
 						      std::move (outer_attrs));
 	default:
@@ -5786,7 +5786,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   // parse function or method qualifiers
   AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
-  skip_token (FN_TOK);
+  skip_token (FN_KW);
 
   // parse function or method name
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
@@ -5931,7 +5931,7 @@ Parser<ManagedTokenSource>::parse_extern_block (AST::Visibility vis,
 						AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
-  skip_token (EXTERN_TOK);
+  skip_token (EXTERN_KW);
 
   // detect optional abi name
   std::string abi;
@@ -6167,7 +6167,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
     {
     case IDENTIFIER:
       return parse_macro_invocation_semi (outer_attrs);
-      case STATIC_TOK: {
+      case STATIC_KW: {
 	// parse extern static item
 	lexer.skip_token ();
 
@@ -6217,7 +6217,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 				       has_mut, std::move (vis),
 				       std::move (outer_attrs), locus));
       }
-    case FN_TOK:
+    case FN_KW:
       return parse_external_function_item (std::move (vis),
 					   std::move (outer_attrs));
     case TYPE:
@@ -6266,14 +6266,14 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
       return parse_let_stmt (std::move (outer_attrs), restrictions);
     case PUB:
     case MOD:
-    case EXTERN_TOK:
+    case EXTERN_KW:
     case USE:
-    case FN_TOK:
+    case FN_KW:
     case TYPE:
-    case STRUCT_TOK:
-    case ENUM_TOK:
+    case STRUCT_KW:
+    case ENUM_KW:
     case CONST:
-    case STATIC_TOK:
+    case STATIC_KW:
     case AUTO:
     case TRAIT:
     case IMPL:
@@ -7675,7 +7675,7 @@ Parser<ManagedTokenSource>::parse_return_expr (AST::AttrVec outer_attrs,
   if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
-      skip_token (RETURN_TOK);
+      skip_token (RETURN_KW);
     }
 
   // parse expression to return, if it exists
@@ -8448,7 +8448,7 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
   if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
-      skip_token (MATCH_TOK);
+      skip_token (MATCH_KW);
     }
 
   /* parse scrutinee expression, which is required (and HACK to prevent struct
@@ -9246,8 +9246,8 @@ Parser<ManagedTokenSource>::parse_type (bool save_errors)
     case ASYNC:
     case CONST:
     case UNSAFE:
-    case EXTERN_TOK:
-    case FN_TOK:
+    case EXTERN_KW:
+    case FN_KW:
       // bare function type (with no for lifetimes)
       return parse_bare_function_type (std::vector<AST::LifetimeParam> ());
     case IMPL:
@@ -9563,8 +9563,8 @@ Parser<ManagedTokenSource>::parse_for_prefixed_type ()
     case ASYNC:
     case CONST:
     case UNSAFE:
-    case EXTERN_TOK:
-    case FN_TOK:
+    case EXTERN_KW:
+    case FN_KW:
       return parse_bare_function_type (std::move (for_lifetimes));
     case SCOPE_RESOLUTION:
     case IDENTIFIER:
@@ -9686,7 +9686,7 @@ Parser<ManagedTokenSource>::parse_bare_function_type (
 
   AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
-  if (!skip_token (FN_TOK))
+  if (!skip_token (FN_KW))
     return nullptr;
 
   if (!skip_token (LEFT_PAREN))
@@ -10072,8 +10072,8 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
     case ASYNC:
     case CONST:
     case UNSAFE:
-    case EXTERN_TOK:
-    case FN_TOK:
+    case EXTERN_KW:
+    case FN_KW:
       // bare function type (with no for lifetimes)
       return parse_bare_function_type (std::vector<AST::LifetimeParam> ());
     case IMPL:
@@ -11632,14 +11632,14 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
       }
     case PUB:
     case MOD:
-    case EXTERN_TOK:
+    case EXTERN_KW:
     case USE:
-    case FN_TOK:
+    case FN_KW:
     case TYPE:
-    case STRUCT_TOK:
-    case ENUM_TOK:
+    case STRUCT_KW:
+    case ENUM_KW:
     case CONST:
-    case STATIC_TOK:
+    case STATIC_KW:
     case AUTO:
     case TRAIT:
       case IMPL: {
@@ -11670,8 +11670,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 		parse_vis_item (std::move (outer_attrs)));
 	      return ExprOrStmt (std::move (item));
 	    }
-	  case EXTERN_TOK:
-	    case FN_TOK: {
+	  case EXTERN_KW:
+	    case FN_KW: {
 	      // unsafe function
 	      std::unique_ptr<AST::VisItem> item (
 		parse_vis_item (std::move (outer_attrs)));
@@ -12535,7 +12535,7 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case DOT_DOT_EQ:
       // range to inclusive expr
       return parse_range_to_inclusive_expr (tok, std::move (outer_attrs));
-    case RETURN_TOK:
+    case RETURN_KW:
       // FIXME: is this really a null denotation expression?
       return parse_return_expr (std::move (outer_attrs), tok->get_locus ());
     case BREAK:
@@ -12578,7 +12578,7 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case FOR:
       return parse_for_loop_expr (std::move (outer_attrs),
 				  AST::LoopLabel::error ());
-    case MATCH_TOK:
+    case MATCH_KW:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), tok->get_locus ());
     case LEFT_SQUARE:

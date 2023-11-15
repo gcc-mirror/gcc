@@ -134,10 +134,10 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case DO:
 	case DYN:
 	case ELSE:
-	case ENUM_TOK:
-	case EXTERN_TOK:
-	case FINAL_TOK:
-	case FN_TOK:
+	case ENUM_KW:
+	case EXTERN_KW:
+	case FINAL_KW:
+	case FN_KW:
 	case FOR:
 	case IF:
 	case IMPL:
@@ -145,19 +145,19 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case LET:
 	case LOOP:
 	case MACRO:
-	case MATCH_TOK:
+	case MATCH_KW:
 	case MOD:
 	case MOVE:
 	case MUT:
-	case OVERRIDE_TOK:
+	case OVERRIDE_KW:
 	case PRIV:
 	case PUB:
 	case REF:
-	case RETURN_TOK:
+	case RETURN_KW:
 	case SELF_ALIAS:
 	case SELF:
-	case STATIC_TOK:
-	case STRUCT_TOK:
+	case STATIC_KW:
+	case STRUCT_KW:
 	case SUPER:
 	case TRAIT:
 	case TRY:
