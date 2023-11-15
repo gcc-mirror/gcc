@@ -1,3 +1,25 @@
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103499
+	* module.cc (trees_out::decl_node): Write DECL_VINDEX for
+	virtual clones.
+	(trees_in::tree_node): Read DECL_VINDEX for virtual clones.
+
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106849
+	* name-lookup.cc (do_nonmember_using_decl): Handle
+	TEMPLATE_DECLs when checking module attachment.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* decl.cc (finish_function): Update call to
+	global_dc->m_option_enabled to use option_enabled_p.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* contracts.cc (build_comment): Use global_dc's file_cache.
+
 2023-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/111842

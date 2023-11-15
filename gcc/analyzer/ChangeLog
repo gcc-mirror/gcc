@@ -1,3 +1,9 @@
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* sm-taint.cc: Remove "experimental" from comment.
+	* sm.cc (make_checkers): Always add taint state machine.
+
 2023-11-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* bounds-checking.cc: Update for changes to diagnostic_context.

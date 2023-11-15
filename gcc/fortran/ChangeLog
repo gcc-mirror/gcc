@@ -1,3 +1,7 @@
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostics_init): Use diagnostic_start_span.
+
 2023-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortran.h (gfc_real_info): Refer to C23 instead of C2X in

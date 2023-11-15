@@ -1,3 +1,301 @@
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* doc/invoke.texi (Static Analyzer Options): Add the six
+	-Wanalyzer-tainted-* warnings.  Update documentation of each
+	warning to reflect removed requirement to use
+	-fanalyzer-checker=taint.  Remove discussion of
+	-fanalyzer-checker=taint.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc
+	(json_output_format::on_end_diagnostic): Update calls to m_context
+	callbacks to use member functions; tighten up scopes.
+	* diagnostic-format-sarif.cc (sarif_builder::make_result_object):
+	Likewise.
+	(sarif_builder::make_reporting_descriptor_object_for_warning):
+	Likewise.
+	* diagnostic.cc (diagnostic_context::initialize): Update for
+	callbacks being moved into m_option_callbacks and being renamed.
+	(diagnostic_context::set_option_hooks): New.
+	(diagnostic_option_classifier::classify_diagnostic): Update call
+	to global_dc->m_option_enabled to use option_enabled_p.
+	(diagnostic_context::print_option_information): Update calls to
+	m_context callbacks to use member functions; tighten up scopes.
+	(diagnostic_context::diagnostic_enabled): Likewise.
+	* diagnostic.h (diagnostic_option_enabled_cb): New typedef.
+	(diagnostic_make_option_name_cb): New typedef.
+	(diagnostic_make_option_url_cb): New typedef.
+	(diagnostic_context::option_enabled_p): New.
+	(diagnostic_context::make_option_name): New.
+	(diagnostic_context::make_option_url): New.
+	(diagnostic_context::set_option_hooks): New decl.
+	(diagnostic_context::m_option_enabled): Rename to
+	m_option_enabled_cb and move within m_option_callbacks, using
+	typedef.
+	(diagnostic_context::m_option_state): Move within
+	m_option_callbacks.
+	(diagnostic_context::m_option_name): Rename to
+	m_make_option_name_cb and move within m_option_callbacks, using
+	typedef.
+	(diagnostic_context::m_get_option_url): Likewise, renaming to
+	m_make_option_url_cb.
+	* lto-wrapper.cc (print_lto_docs_link): Update call to m_context
+	callback to use member function.
+	(main): Use diagnostic_context::set_option_hooks.
+	* opts-diagnostic.h (option_name): Make context param const.
+	(get_option_url): Likewise.
+	* opts.cc (option_name): Likewise.
+	(get_option_url): Likewise.
+	* toplev.cc (general_init): Use
+	diagnostic_context::set_option_hooks.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest-diagnostic.cc
+	(test_diagnostic_context::test_diagnostic_context): Use
+	diagnostic_start_span.
+	* tree-diagnostic-path.cc (struct event_range): Likewise.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (diagnostic_context::show_locus):
+	Update for renaming of text callbacks fields.
+	* diagnostic.cc (diagnostic_context::initialize): Likewise.
+	* diagnostic.h (class diagnostic_context): Add "friend" for
+	accessors to m_text_callbacks.
+	(diagnostic_context::m_text_callbacks): Make private, and add an
+	"m_" prefix to field names.
+	(diagnostic_starter): Convert from macro to inline function.
+	(diagnostic_start_span): New.
+	(diagnostic_finalizer): Convert from macro to inline function.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_ready_p): Convert from macro to inline
+	function.
+
+2023-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (*addqi_ext<mode>_1_slp):
+	New define_insn_and_split pattern.
+	(*subqi_ext<mode>_1_slp): Ditto.
+	(*<any_logic:code>qi_ext<mode>_1_slp): Ditto.
+
+2023-11-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/112481
+	* expr.cc (store_constructor): Use OPTAB_WIDEN for mask adjustment.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::get_sarif_column):
+	Use m_context's file_cache.
+	(sarif_builder::maybe_make_artifact_content_object): Likewise.
+	(sarif_builder::get_source_lines): Likewise.
+	* diagnostic-show-locus.cc
+	(exploc_with_display_col::exploc_with_display_col): Add file_cache
+	param.
+	(layout::m_file_cache): New field.
+	(make_range): Add file_cache param.
+	(selftest::test_layout_range_for_single_point): Create and use a
+	temporary file_cache.
+	(selftest::test_layout_range_for_single_line): Likewise.
+	(selftest::test_layout_range_for_multiple_lines): Likewise.
+	(layout::layout): Initialize m_file_cache from the context and use it.
+	(layout::maybe_add_location_range): Use m_file_cache.
+	(layout::calculate_x_offset_display): Likewise.
+	(get_affected_range): Add file_cache param.
+	(get_printed_columns): Likewise.
+	(line_corrections::line_corrections): Likewwise.
+	(line_corrections::m_file_cache): New field.
+	(source_line::source_line): Add file_cache param.
+	(line_corrections::add_hint): Use m_file_cache.
+	(layout::print_trailing_fixits): Likewise.
+	(layout::print_line): Likewise.
+	(selftest::test_layout_x_offset_display_utf8): Create and use a
+	temporary file_cache.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_diagnostic_show_locus_one_liner_utf8): Likewise.
+	(selftest::test_add_location_if_nearby): Pass global_dc's
+	file_cache to temp_source_file ctor.
+	(selftest::test_overlapped_fixit_printing): Create and use a
+	temporary file_cache.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_2): Use dc's file_cache.
+	* diagnostic.cc (diagnostic_context::initialize): Always create a
+	file_cache.
+	(diagnostic_context::initialize_input_context): Assume
+	m_file_cache has already been created.
+	(diagnostic_context::create_edit_context): Pass m_file_cache to
+	edit_context.
+	(convert_column_unit): Add file_cache param.
+	(diagnostic_context::converted_column): Use context's file_cache.
+	(print_parseable_fixits): Add file_cache param.
+	(diagnostic_context::report_diagnostic): Use context's file_cache.
+	(selftest::test_print_parseable_fixits_none): Create and use a
+	temporary file_cache.
+	(selftest::test_print_parseable_fixits_insert): Likewise.
+	(selftest::test_print_parseable_fixits_remove): Likewise.
+	(selftest::test_print_parseable_fixits_replace): Likewise.
+	(selftest::test_print_parseable_fixits_bytes_vs_display_columns):
+	Likewise.
+	* diagnostic.h (diagnostic_context::file_cache_init): Delete.
+	(diagnostic_context::get_file_cache): Convert return type from
+	pointer to reference.
+	* edit-context.cc (edited_file::get_file_cache): New.
+	(edited_file::m_edit_context): New.
+	(edit_context::edit_context): Add file_cache param.
+	(edit_context::get_or_insert_file): Pass this to edited_file's
+	ctor.
+	(edited_file::edited_file): Add edit_context param.
+	(edited_file::print_content): Use get_file_cache.
+	(edited_file::print_diff_hunk): Likewise.
+	(edited_file::print_run_of_changed_lines): Likewise.
+	(edited_file::get_or_insert_line): Likewise.
+	(edited_file::get_num_lines): Likewise.
+	(edited_line::edited_line): Pass in file_cache and use it.
+	(selftest::test_get_content): Create and use a
+	temporary file_cache.
+	(selftest::test_applying_fixits_insert_before): Likewise.
+	(selftest::test_applying_fixits_insert_after): Likewise.
+	(selftest::test_applying_fixits_insert_after_at_line_end):
+	Likewise.
+	(selftest::test_applying_fixits_insert_after_failure): Likewise.
+	(selftest::test_applying_fixits_insert_containing_newline):
+	Likewise.
+	(selftest::test_applying_fixits_growing_replace): Likewise.
+	(selftest::test_applying_fixits_shrinking_replace): Likewise.
+	(selftest::test_applying_fixits_replace_containing_newline):
+	Likewise.
+	(selftest::test_applying_fixits_remove): Likewise.
+	(selftest::test_applying_fixits_multiple): Likewise.
+	(selftest::test_applying_fixits_multiple_lines): Likewise.
+	(selftest::test_applying_fixits_modernize_named_init): Likewise.
+	(selftest::test_applying_fixits_modernize_named_init): Likewise.
+	(selftest::test_applying_fixits_unreadable_file): Likewise.
+	(selftest::test_applying_fixits_line_out_of_range): Likewise.
+	(selftest::test_applying_fixits_column_validation): Likewise.
+	(selftest::test_applying_fixits_column_validation): Likewise.
+	(selftest::test_applying_fixits_column_validation): Likewise.
+	(selftest::test_applying_fixits_column_validation): Likewise.
+	* edit-context.h (edit_context::edit_context): Add file_cache
+	param.
+	(edit_context::get_file_cache): New.
+	(edit_context::m_file_cache): New.
+	* final.cc: Include "diagnostic.h".
+	(asm_show_source): Use global_dc's file_cache.
+	* gcc-rich-location.cc (blank_line_before_p): Add file_cache
+	param.
+	(use_new_line): Likewise.
+	(gcc_rich_location::add_fixit_insert_formatted): Use global dc's
+	file_cache.
+	* input.cc (diagnostic_file_cache_init): Delete.
+	(diagnostic_context::file_cache_init): Delete.
+	(diagnostics_file_cache_forcibly_evict_file): Delete.
+	(file_cache::missing_trailing_newline_p): New.
+	(file_cache::evicted_cache_tab_entry): Don't call
+	diagnostic_file_cache_init.
+	(location_get_source_line): Delete.
+	(get_source_text_between): Add file_cache param.
+	(get_source_file_content): Delete.
+	(location_missing_trailing_newline): Delete.
+	(location_compute_display_column): Add file_cache param.
+	(dump_location_info): Create and use temporary file_cache.
+	(get_substring_ranges_for_loc): Add file_cache param.
+	(get_location_within_string): Likewise.
+	(get_source_range_for_char): Likewise.
+	(get_num_source_ranges_for_substring): Likewise.
+	(selftest::test_reading_source_line): Create and use temporary
+	file_cache.
+	(selftest::lexer_test::m_file_cache): New field.
+	(selftest::assert_char_at_range): Use test.m_file_cache.
+	(selftest::assert_num_substring_ranges): Likewise.
+	(selftest::assert_has_no_substring_ranges): Likewise.
+	(selftest::test_lexer_string_locations_concatenation_2): Likewise.
+	* input.h (class file_cache): New forward decl.
+	(location_compute_display_column): Add file_cache param.
+	(location_get_source_line): Delete.
+	(get_source_text_between): Add file_cache param.
+	(get_source_file_content): Delete.
+	(location_missing_trailing_newline): Delete.
+	(file_cache::missing_trailing_newline_p): New decl.
+	(diagnostics_file_cache_forcibly_evict_file): Delete.
+	* selftest.cc (named_temp_file::named_temp_file): Add file_cache
+	param.
+	(named_temp_file::~named_temp_file): Optionally evict the file
+	from the given file_cache.
+	(temp_source_file::temp_source_file): Add file_cache param.
+	* selftest.h (class file_cache): New forward decl.
+	(named_temp_file::named_temp_file): Add file_cache param.
+	(named_temp_file::m_file_cache): New field.
+	(temp_source_file::temp_source_file): Add file_cache param.
+	* substring-locations.h (get_location_within_string): Add
+	file_cache param.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc: Use type-specific "set_*" functions
+	of json::object to avoid naked new of json value subclasses.
+	* diagnostic-format-sarif.cc: Likewise.
+	* gcov.cc: Likewise.
+	* json.cc (object::set_string): New.
+	(object::set_integer): New.
+	(object::set_float): New.
+	(object::set_bool): New.
+	(selftest::test_writing_objects): Use object::set_string.
+	* json.h (object::set_string): New decl.
+	(object::set_integer): New decl.
+	(object::set_float): New decl.
+	(object::set_bool): New decl.
+	* optinfo-emit-json.cc: Use type-specific "set_*" functions of
+	json::object to avoid naked new of json value subclasses.
+	* timevar.cc: Likewise.
+	* tree-diagnostic-path.cc: Likewise.
+
+2023-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/112509
+	* tree-vrp.cc (find_case_label_range): Create range from case labels.
+
+2023-11-14  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Add/remove types.
+	* config/s390/s390-builtins.def (s390_vec_scatter_element_flt):
+	The type for the offset should be UV4SI instead of V4SF.
+
+2023-11-14  Saurabh Jha  <saurabh.jha@arm.com>
+
+	PR target/112337
+	* config/arm/arm.cc (mve_vector_mem_operand): Add a REG_P check for INC
+	and DEC operations.
+
+2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111233
+	PR tree-optimization/111652
+	PR tree-optimization/111727
+	PR tree-optimization/111838
+	PR tree-optimization/112113
+	* tree-ssa-loop-split.cc (patch_loop_exit): Get the new
+	guard code instead of the old guard stmt.
+	(split_loop): Adjust.
+
+2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.cc (loop_distribution::data_dep_in_cycle_p):
+	Consider all loops in the nest when looking for
+	lambda_vector_zerop.
+
+2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* tree-loop-distribution.cc (pg_add_dependence_edges):
+	Preserve stmt order when the innermost loop has exact
+	overlap.
+
 2023-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/112523

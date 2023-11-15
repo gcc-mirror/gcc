@@ -1,3 +1,32 @@
+2023-11-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/9471
+	PR pch/47857
+	* c-opts.cc (c_common_post_options): Set cpp_opts->main_search
+	so libcpp knows it is compiling a header file separately.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-warn.cc (conversion_warning): Update call to
+	global_dc->m_option_enabled to use option_enabled_p.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (c_get_substring_location): Use global_dc's
+	file_cache.
+	* c-format.cc (get_corrected_substring): Likewise.
+	* c-indentation.cc (get_visual_column): Add file_cache param.
+	(get_first_nws_vis_column): Likewise.
+	(detect_intervening_unindent): Likewise.
+	(should_warn_for_misleading_indentation): Use global_dc's
+	file_cache.
+	(assert_get_visual_column_succeeds): Add file_cache param.
+	(ASSERT_GET_VISUAL_COLUMN_SUCCEEDS): Likewise.
+	(assert_get_visual_column_fails): Likewise.
+	(define ASSERT_GET_VISUAL_COLUMN_FAILS): Likewise.
+	(selftest::test_get_visual_column): Create and use a temporary
+	file_cache.
+
 2023-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/111309

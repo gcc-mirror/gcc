@@ -1,3 +1,156 @@
+2023-11-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/9471
+	PR pch/47857
+	* g++.dg/pch/main-file-warnings.C: New test.
+	* g++.dg/pch/main-file-warnings.Hs: New test.
+	* gcc.dg/pch/main-file-warnings.c: New test.
+	* gcc.dg/pch/main-file-warnings.hs: New test.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* c-c++-common/analyzer/attr-tainted_args-1.c: Remove use of
+	-fanalyzer-checker=taint.
+	* c-c++-common/analyzer/fread-1.c: Likewise.
+	* c-c++-common/analyzer/pr104029.c: Likewise.
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: Add params to
+	work around state explosion.
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: Likewise.
+	* gcc.dg/analyzer/pr93382.c: Remove use of
+	-fanalyzer-checker=taint.
+	* gcc.dg/analyzer/switch-enum-taint-1.c: Likewise.
+	* gcc.dg/analyzer/taint-CVE-2011-2210-1.c: Likewise.
+	* gcc.dg/analyzer/taint-CVE-2020-13143-1.c: Likewise.
+	* gcc.dg/analyzer/taint-CVE-2020-13143-2.c: Likewise.
+	* gcc.dg/analyzer/taint-CVE-2020-13143.h: Likewise.
+	* gcc.dg/analyzer/taint-alloc-1.c: Likewise.
+	* gcc.dg/analyzer/taint-alloc-2.c: Likewise.
+	* gcc.dg/analyzer/taint-alloc-3.c: Likewise.
+	* gcc.dg/analyzer/taint-alloc-4.c: Likewise.
+	* gcc.dg/analyzer/taint-alloc-5.c: Likewise.
+	* gcc.dg/analyzer/taint-assert-BUG_ON.c: Likewise.
+	* gcc.dg/analyzer/taint-assert-macro-expansion.c: Likewise.
+	* gcc.dg/analyzer/taint-assert-system-header.c: Likewise.
+	* gcc.dg/analyzer/taint-assert.c: Likewise.
+	* gcc.dg/analyzer/taint-divisor-1.c: Likewise.
+	* gcc.dg/analyzer/taint-divisor-2.c: Likewise.
+	* gcc.dg/analyzer/taint-merger.c: Likewise.
+	* gcc.dg/analyzer/taint-ops.c: Delete this test: it was a
+	duplicate of material in operations.c and data-model-1.c, with
+	-fanalyzer-checker=taint added.
+	* gcc.dg/analyzer/taint-read-index-1.c: Remove use of
+	-fanalyzer-checker=taint.
+	* gcc.dg/analyzer/taint-read-offset-1.c: Likewise.
+	* gcc.dg/analyzer/taint-realloc.c: Likewise.  Add missing
+	dg-warning for leak now that the malloc state machine is also
+	active.
+	* gcc.dg/analyzer/taint-size-1.c: Remove use of
+	-fanalyzer-checker=taint.
+	* gcc.dg/analyzer/taint-size-access-attr-1.c: Likewise.
+	* gcc.dg/analyzer/taint-write-index-1.c: Likewise.
+	* gcc.dg/analyzer/taint-write-offset-1.c: Likewise.
+	* gcc.dg/analyzer/torture/taint-read-index-2.c: Likewise.
+	* gcc.dg/analyzer/torture/taint-read-index-3.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1-fixed.c: Likewise.  Add
+	-Wno-pedantic.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2-fixed.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3-fixed.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3.c: Likewise.  Fix C++-style
+	comment.
+	* gcc.dg/plugin/taint-CVE-2011-0521-4.c: Remove use of
+	-fanalyzer-checker=taint and add -Wno-pedantic. Remove xfail and
+	add missing dg-warning.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5-fixed.c: Remove use of
+	-fanalyzer-checker=taint and add -Wno-pedantic.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-6.c: Likewise.
+	* gcc.dg/plugin/taint-antipatterns-1.c: : Remove use of
+	-fanalyzer-checker=taint.
+
+2023-11-14  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/20020206-1.c: Prune warning that
+	-fprefetch-loop-arrays is not supported.
+
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103499
+	* g++.dg/modules/pr103499_a.C: New test.
+	* g++.dg/modules/pr103499_b.C: New test.
+
+2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106849
+	* g++.dg/modules/using-9.C: New test.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Use
+	diagnostic_start_span.
+
+2023-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904-7.c: New test.
+	* gcc.target/i386/pr78904-7a.c: New test.
+	* gcc.target/i386/pr78904-7b.c: New test.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110341
+	* g++.dg/cpp26/literals1.C: New test.
+	* g++.dg/cpp26/literals2.C: New test.
+	* g++.dg/cpp23/wchar-multi1.C: Adjust expected diagnostic wordings.
+	* g++.dg/cpp23/wchar-multi2.C: Likewise.
+	* gcc.dg/c23-utf8char-3.c: Likewise.
+	* gcc.dg/cpp/charconst-4.c: Likewise.
+	* gcc.dg/cpp/charconst.c: Likewise.
+	* gcc.dg/cpp/if-2.c: Likewise.
+	* gcc.dg/utf16-4.c: Likewise.
+	* gcc.dg/utf32-4.c: Likewise.
+	* g++.dg/cpp1z/utf8-neg.C: Likewise.
+	* g++.dg/cpp2a/ucn2.C: Likewise.
+	* g++.dg/ext/utf16-4.C: Likewise.
+	* g++.dg/ext/utf32-4.C: Likewise.
+
+2023-11-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Use
+	global_dc's file cache.
+	* gcc.dg/plugin/expensive_selftests_plugin.c: Likewise.
+
+2023-11-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/112509
+	* gcc.dg/pr112509.c: New.
+
+2023-11-14  Saurabh Jha  <saurabh.jha@arm.com>
+
+	PR target/112337
+	* gcc.target/arm/mve/pr112337.c: Test for REG_P check for INC and DEC
+	operations.
+
+2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111233
+	PR tree-optimization/111652
+	PR tree-optimization/111727
+	PR tree-optimization/111838
+	PR tree-optimization/112113
+	* gcc.dg/torture/pr111233.c: New testcase.
+	* gcc.dg/torture/pr111652.c: Likewise.
+	* gcc.dg/torture/pr111727.c: Likewise.
+	* gcc.dg/torture/pr111838.c: Likewise.
+	* gcc.dg/torture/pr112113.c: Likewise.
+
+2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281.c: New testcase.
+
 2023-11-14  Lehua Ding  <lehua.ding@rivai.ai>
 
 	* gcc.target/i386/apx-spill_to_egprs-1.c: Make sure that no local

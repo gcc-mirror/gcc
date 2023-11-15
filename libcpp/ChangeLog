@@ -1,3 +1,32 @@
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update copyright year.
+	* makeuname2c.cc (write_copyright): Likewise.
+	(struct generated): Update latest Unicode version.
+	(generated_ranges): Add 2ebf0-2ee5d CJK UNIFIED IDEOGRAPH
+	range which was forgotten to be added to 4-8 table, but
+	clearly is expected to be there from the 15.1 additions.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+	* generated_cpp_wcwidth.h: Regenerated.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110341
+	* charset.cc: Implement C++26 P1854R4 - Making non-encodable string
+	literals ill-formed.
+	(one_count_chars, convert_count_chars, count_source_chars): New
+	functions.
+	(narrow_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  For C++ if pedantic and i > 1 in CPP_CHAR
+	interpret token also as CPP_STRING32 and if number of characters
+	in the CPP_STRING32 is larger than number of bytes in CPP_CHAR,
+	pedwarn on it.  Make the diagnostics more detailed.
+	(wide_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  Make the diagnostics more detailed.
+	(cpp_interpret_charconst): Adjust narrow_str_to_charconst and
+	wide_str_to_charconst callers.
+
 2023-11-14  Arsen Arsenović  <arsen@aarsen.me>
 
 	* config.in: Regenerate.
