@@ -67,21 +67,21 @@ TEST_CMP (nule)
 TEST_CMP (nuge)
 TEST_CMP (nugt)
 
-/* { dg-final { scan-assembler-times {\tvfcmp\.ceq\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.ceq\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cne\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cne\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.slt\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.slt\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.sle\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.sle\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cor\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cor\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cun\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cun\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cueq\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cueq\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cule\.s} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cule\.d} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cult\.s} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfcmp\.cult\.d} 8 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.ceq\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.ceq\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cne\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cne\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.slt\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.slt\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.sle\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.sle\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cor\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cor\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cun\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cun\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cueq\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cueq\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cule\.s} 12 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cule\.d} 12 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cult\.s} 12 } } */
+/* { dg-final { scan-assembler-times {\tvfcmp\.cult\.d} 12 } } */

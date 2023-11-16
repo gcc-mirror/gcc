@@ -67,21 +67,21 @@ TEST_CMP (nule)
 TEST_CMP (nuge)
 TEST_CMP (nugt)
 
-/* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.slt\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.slt\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.sle\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.sle\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cor\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cor\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cun\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cun\.d} 2 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cueq\.s} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cueq\.d} 4 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cule\.s} 8 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cule\.d} 8 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cult\.s} 8 } } */
-/* { dg-final { scan-assembler-times {\txvfcmp\.cult\.d} 8 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.ceq\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cne\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.slt\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.slt\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.sle\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.sle\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cor\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cor\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cun\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cun\.d} 3 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cueq\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cueq\.d} 6 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cule\.s} 12 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cule\.d} 12 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cult\.s} 12 } } */
+/* { dg-final { scan-assembler-times {\txvfcmp\.cult\.d} 12 } } */
