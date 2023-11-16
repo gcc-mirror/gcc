@@ -1,3 +1,200 @@
+2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (*movstrictqi_ext<mode>_1): New insn pattern.
+	(*addqi_ext<mode>_2_slp): New define_insn_and_split pattern.
+	(*subqi_ext<mode>_2_slp): Ditto.
+	(*<any_logic:code>qi_ext<mode>_2_slp): Ditto.
+
+2023-11-15  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_std_ext): Emit an error and skip to
+	the next extension when a non-canonical ordering is detected.
+
+2023-11-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gcc-rich-location.cc (maybe_range_label_for_tree_type_mismatch::get_text):
+	Revert using the macro CAN_HAVE_LOCATION_P.
+
+2023-11-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112447
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::emit_vsetvl): Insert
+	local vsetvl info before LCM suggested one.
+	Tested-by: Patrick O'Neill <patrick@rivosinc.com> # pre-commit-CI #679
+	Co-developed-by: Vineet Gupta <vineetg@rivosinc.com>
+
+2023-11-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_sign_extend_if_not_subreg_prom): New.
+	* (riscv_extend_comparands): Call New function on operands.
+
+2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_ext<mode>_1_slp):
+	Add "&& " before "reload_completed" in split condition.
+	(*subqi_ext<mode>_1_slp): Ditto.
+	(*<any_logic:code>qi_ext<mode>_1_slp): Ditto.
+
+2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112540
+	* config/i386/i386.md (*addqi_ext<mode>_1_slp):
+	Correct operand numbers in split pattern.  Replace !Q constraint
+	of operand 1 with !qm.  Add insn constrain.
+	(*subqi_ext<mode>_1_slp): Ditto.
+	(*<any_logic:code>qi_ext<mode>_1_slp): Ditto.
+
+2023-11-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/extend.texi (Nvidia PTX Built-in Functions): Fix
+	copy'n'paste-o in '__builtin_nvptx_brev' description.
+
+2023-11-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.md (UNSPEC_BITREV): Delete.
+	(bitrev<mode>2): Represent using bitreverse.
+
+2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
+	    Andrew Jenner   <andrew@codesourcery.com>
+
+	* config/gcn/constraints.md: Add "a" AVGPR constraint.
+	* config/gcn/gcn-valu.md (*mov<mode>): Add AVGPR alternatives.
+	(*mov<mode>_4reg): Likewise.
+	(@mov<mode>_sgprbase): Likewise.
+	(gather<mode>_insn_1offset<exec>): Likewise.
+	(gather<mode>_insn_1offset_ds<exec>): Likewise.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+	(scatter<mode>_expr<exec_scatter>): Likewise.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.cc (MAX_NORMAL_AVGPR_COUNT): Define.
+	(gcn_class_max_nregs): Handle AVGPR_REGS and ALL_VGPR_REGS.
+	(gcn_hard_regno_mode_ok): Likewise.
+	(gcn_regno_reg_class): Likewise.
+	(gcn_spill_class): Allow spilling to AVGPRs on TARGET_CDNA1_PLUS.
+	(gcn_sgpr_move_p): Handle AVGPRs.
+	(gcn_secondary_reload): Reload AVGPRs via VGPRs.
+	(gcn_conditional_register_usage): Handle AVGPRs.
+	(gcn_vgpr_equivalent_register_operand): New function.
+	(gcn_valid_move_p): Check for validity of AVGPR moves.
+	(gcn_compute_frame_offsets): Handle AVGPRs.
+	(gcn_memory_move_cost): Likewise.
+	(gcn_register_move_cost): Likewise.
+	(gcn_vmem_insn_p): Handle TYPE_VOP3P_MAI.
+	(gcn_md_reorg): Handle AVGPRs.
+	(gcn_hsa_declare_function_name): Likewise.
+	(print_reg): Likewise.
+	(gcn_dwarf_register_number): Likewise.
+	* config/gcn/gcn.h (FIRST_AVGPR_REG): Define.
+	(AVGPR_REGNO): Define.
+	(LAST_AVGPR_REG): Define.
+	(SOFT_ARG_REG): Update.
+	(FRAME_POINTER_REGNUM): Update.
+	(DWARF_LINK_REGISTER): Update.
+	(FIRST_PSEUDO_REGISTER): Update.
+	(AVGPR_REGNO_P): Define.
+	(enum reg_class): Add AVGPR_REGS and ALL_VGPR_REGS.
+	(REG_CLASS_CONTENTS): Add new register classes and add entries for
+	AVGPRs to all classes.
+	(REGISTER_NAMES): Add AVGPRs.
+	* config/gcn/gcn.md (FIRST_AVGPR_REG, LAST_AVGPR_REG): Define.
+	(AP_REGNUM, FP_REGNUM): Update.
+	(define_attr "type"): Add vop3p_mai.
+	(define_attr "unit"): Handle vop3p_mai.
+	(define_attr "gcn_version"): Add "cdna2".
+	(define_attr "enabled"): Handle cdna2.
+	(*mov<mode>_insn): Add AVGPR alternatives.
+	(*movti_insn): Likewise.
+	* config/gcn/mkoffload.cc (isa_has_combined_avgprs): New.
+	(process_asm): Process avgpr_count.
+	* config/gcn/predicates.md (gcn_avgpr_register_operand): New.
+	(gcn_avgpr_hard_register_operand): New.
+	* doc/md.texi: Document the "a" constraint.
+
+2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_sgprbase): Add @ modifier.
+	(reload_in<mode>): Delete.
+	(reload_out<mode>): Delete.
+	* config/gcn/gcn.cc (CODE_FOR): Delete.
+	(get_code_for_##PREFIX##vN##SUFFIX): Delete.
+	(CODE_FOR_OP): Delete.
+	(get_code_for_##PREFIX): Delete.
+	(gcn_secondary_reload): Replace "get_code_for" with "code_for".
+
+2023-11-15  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/t-s390: Generate s390-gen-builtins.h without
+	linemarkers.
+
+2023-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112282
+	* tree-if-conv.cc (ifcvt_hoist_invariants): Only hoist from
+	the loop header.
+
+2023-11-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_region): Also clear visited flag when
+	we skipped an instance due to -fdbg-cnt.
+
+2023-11-15  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_memmodel_needs_release_fence): Remove.
+	(loongarch_cas_failure_memorder_needs_acquire): New static
+	function.
+	(loongarch_print_operand): Redefine 'G' for the barrier on CAS
+	failure.
+	* config/loongarch/sync.md (atomic_cas_value_strong<mode>):
+	Remove the redundant barrier before the LL instruction, and
+	emit an acquire barrier on failure if needed by
+	failure_memorder.
+	(atomic_cas_value_cmp_and_7_<mode>): Likewise.
+	(atomic_cas_value_add_7_<mode>): Remove the unnecessary barrier
+	before the LL instruction.
+	(atomic_cas_value_sub_7_<mode>): Likewise.
+	(atomic_cas_value_and_7_<mode>): Likewise.
+	(atomic_cas_value_xor_7_<mode>): Likewise.
+	(atomic_cas_value_or_7_<mode>): Likewise.
+	(atomic_cas_value_nand_7_<mode>): Likewise.
+	(atomic_cas_value_exchange_7_<mode>): Likewise.
+
+2023-11-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_vector_init_trailing_same_elem): New function.
+	(expand_vec_init): Add trailing optimization.
+
+2023-11-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (rvv_builder::get_merge_scalar_mask):
+	Add inner_mode mask arg for mask int mode.
+	(get_repeating_sequence_dup_machine_mode): Add mask_bit_mode arg
+	to get the good enough vector int mode on precision.
+	(expand_vector_init_merge_repeating_sequence): Pass required args
+	to above func.
+
+2023-11-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112535
+	* config/riscv/riscv.cc (riscv_legitimate_address_p): Disallow RVV modes base address.
+
+2023-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (selftest::assert_print_eq): Add "loc" param and use
+	ASSERT_STREQ_AT.
+	(ASSERT_PRINT_EQ): New macro.
+	(selftest::test_writing_objects): Use ASSERT_PRINT_EQ to capture
+	source location of assertion.
+	(selftest::test_writing_arrays): Likewise.
+	(selftest::test_writing_float_numbers): Likewise.
+	(selftest::test_writing_integer_numbers): Likewise.
+	(selftest::test_writing_strings): Likewise.
+	(selftest::test_writing_literals): Likewise.
+
 2023-11-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103533

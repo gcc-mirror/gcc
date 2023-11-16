@@ -1,3 +1,7 @@
+2023-11-15  Mark Wielaard  <mjw@redhat.com>
+
+	* aclocal.m4: Rebuild.
+
 2023-11-10  Brendan Shanks  <bshanks@codeweavers.com>
 
 	* configure.ac (AC_CHECK_HEADERS): Add spawn.h.

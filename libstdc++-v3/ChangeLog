@@ -1,3 +1,29 @@
+2023-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112491
+	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.index):
+	Correctly handle unused capacity at the start of the first node.
+	* testsuite/libstdc++-xmethods/deque.cc: Check index operator
+	when elements have been removed from the front.
+
+2023-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::at): Fix class name
+	in exception message.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: Do not fail if
+	current() returns a non-empty stacktrace.
+
+2023-11-15  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2023-11-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/bits/stl_bvector.h (_GLIBCXX_ALWAYS_INLINE): Undef.
+
+2023-11-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/bits/stl_bvector.h (_GLIBCXX_ALWAYS_INLINE): Undef.
+
 2023-11-14  Cassio Neri  <cassio.neri@gmail.com>
 
 	* include/std/chrono (operator-(const weekday&, const weekday&)):

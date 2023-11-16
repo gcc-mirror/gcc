@@ -1,3 +1,20 @@
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* LOCAL_PATCHES: Update revisions.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan/ubsan_handlers_cxx.h (FunctionTypeMismatchData): Forward
+	declare.
+	(__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): Declare.
+	* ubsan/ubsan_handlers_cxx.cpp (handleFunctionTypeMismatch,
+	__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): New functions readded
+	for backwards compatibility from older ubsan.
+	* ubsan/ubsan_interface.inc (__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): Readd.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* asan/Makefile.am: Handle Darwin rpaths.

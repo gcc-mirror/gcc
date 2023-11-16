@@ -1,3 +1,9 @@
+2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
+	    Andrew Jenner   <andrew@codesourcery.com>
+
+	* plugin/plugin-gcn.c (max_isa_vgprs): New.
+	(run_kernel): CDNA2 devices have more VGPRs.
+
 2023-11-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Impl. Status): Update for OpenMP TR12;

@@ -1,3 +1,154 @@
+2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904-8.c: New test.
+	* gcc.target/i386/pr78904-8a.c: New test.
+	* gcc.target/i386/pr78904-8b.c: New test.
+	* gcc.target/i386/pr78904-9.c: New test.
+	* gcc.target/i386/pr78904-9a.c: New test.
+	* gcc.target/i386/pr78904-9b.c: New test.
+
+2023-11-15  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/arch-27.c: New test.
+	* gcc.target/riscv/arch-28.c: New test.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112515
+	* g++.dg/template/non-dependent30.C: New test.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101043
+	* g++.dg/cpp2a/concepts-requires37.C: New test.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112427
+	* g++.dg/template/non-dependent29.C: New test.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/112269
+	* g++.dg/cpp2a/concepts-fn8.C: New test.
+
+2023-11-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/nvptx/brev-2-O2.c: Adjust.
+	* gcc.target/nvptx/brevll-2-O2.c: Likewise.
+
+2023-11-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/nvptx/brev-1.c: Extend.
+	* gcc.target/nvptx/brev-2.c: Rename to...
+	* gcc.target/nvptx/brev-2-O2.c: ... this, and extend.  Copy to...
+	* gcc.target/nvptx/brev-2-O0.c: ... this, and adapt for '-O0'.
+	* gcc.target/nvptx/brevll-1.c: Extend.
+	* gcc.target/nvptx/brevll-2.c: Rename to...
+	* gcc.target/nvptx/brevll-2-O2.c: ... this, and extend.  Copy to...
+	* gcc.target/nvptx/brevll-2-O0.c: ... this, and adapt for '-O0'.
+
+2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
+	    Andrew Jenner   <andrew@codesourcery.com>
+
+	* gcc.target/gcn/avgpr-mem-double.c: New test.
+	* gcc.target/gcn/avgpr-mem-int.c: New test.
+	* gcc.target/gcn/avgpr-mem-long.c: New test.
+	* gcc.target/gcn/avgpr-mem-short.c: New test.
+	* gcc.target/gcn/avgpr-spill-double.c: New test.
+	* gcc.target/gcn/avgpr-spill-int.c: New test.
+	* gcc.target/gcn/avgpr-spill-long.c: New test.
+	* gcc.target/gcn/avgpr-spill-short.c: New test.
+
+2023-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112282
+	* gcc.dg/torture/pr112282.c: New testcase.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/sanity-check-pure-c-1.c: Adjust for interceptor_
+	or wrap_ substrings possibly not being emitted in newer libasan.
+
+2023-11-15  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/cas-acquire.c: New test.
+
+2023-11-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_v6t2_hw_ok):
+	Rename to...
+	(check_effective_target_arm_arch_v6t2_hw): ... this.  Fix checks.
+	* gcc.target/arm/acle/data-intrinsics-armv6.c: Update pre-check.
+	* gcc.target/arm/acle/data-intrinsics-rbit.c: Likewise.
+
+2023-11-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add trailing tests.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/trailing-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/trailing-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/trailing_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/trailing_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/trailing-7.c: New test.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/if-2.c: Adjust expected diagnostics for 16-bit targets.
+
+2023-11-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-0.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/init-repeat-sequence-8.c: New test.
+
+2023-11-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112535
+	* gcc.target/riscv/rvv/autovec/pr112535.c: New test.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/enum-conv1.C: New test.
+	* g++.dg/cpp2a/enum-conv1.C: Adjust expected diagnostics in C++26.
+	* g++.dg/diagnostic/enum3.C: Likewise.
+	* g++.dg/parse/attr3.C: Likewise.
+	* g++.dg/cpp0x/linkage2.C: Likewise.
+
+2023-11-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/tsan/pthread_cond_clockwait.C: Add fallback overload.
+
+2023-11-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr95126-m32-3.c: Add
+	-mno-accumulate-outgoing-args.
+	* gcc.target/i386/pr95126-m32-4.c: Likewise.
+
 2023-11-14  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR pch/9471

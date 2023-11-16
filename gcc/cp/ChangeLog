@@ -1,3 +1,59 @@
+2023-11-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* tree.cc (build_cplus_array_type): Revert using the macro
+	CAN_HAVE_LOCATION_P.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112515
+	* decl.cc (is_direct_enum_init): Check type-dependence of the
+	single element.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101043
+	* tree.cc (strip_typedefs_expr) <case TREE_LIST>: Handle
+	non-empty TREE_PURPOSE.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112427
+	* tree.cc (build_min_non_dep): Propagate TREE_SIDE_EFFECTS from
+	the original arguments.
+	(build_min_non_dep_call_vec): Likewise.
+	* typeck2.cc (build_m_component_ref): Use cp_convert, build2 and
+	cp_fully_fold instead of fold_build_pointer_plus and fold_convert.
+	Don't build the POINTER_PLUS_EXPR in a template context.
+
+2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/112269
+	* constexpr.cc (potential_constant_expression_1) <case VAR_DECL>:
+	Only consider var_in_maybe_constexpr_fn if 'now' is false.
+	<case INDIRECT_REF>: Likewise.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc: Implement C++26 P2864R2 - Remove Deprecated Arithmetic
+	Conversion on Enumerations From C++26.
+	(do_warn_enum_conversions): Return bool rather than void, add COMPLAIN
+	argument.  Use pedwarn rather than warning_at for C++26 and remove
+	" is deprecated" part of the diagnostics in that case.  For SFINAE
+	in C++26 return true on newly erroneous cases.
+	(cp_build_binary_op): For C++26 call do_warn_enum_conversions
+	unconditionally, pass complain argument to it and if it returns true,
+	return error_mark_node.
+	* call.cc (build_conditional_expr): Use pedwarn rather than warning_at
+	for C++26 and remove " is deprecated" part of the diagnostics in that
+	case and check for complain & tf_warning_or_error.  Use emit_diagnostic
+	with cxx_dialect >= cxx26 ? DK_PEDWARN : DK_WARNING.  For SFINAE in
+	C++26 return error_mark_node on newly erroneous cases.
+	(build_new_op): Use emit_diagnostic with cxx_dialect >= cxx26
+	? DK_PEDWARN : DK_WARNING and complain & tf_warning_or_error check
+	for C++26.  For SFINAE in C++26 return error_mark_node on newly
+	erroneous cases.
+
 2023-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/103499
