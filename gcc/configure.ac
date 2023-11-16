@@ -5441,6 +5441,12 @@ x:
       [a:pcalau12i $t0,%pc_hi20(a)],,
       [AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
 	  [Define if your assembler supports explicit relocation.])])
+    gcc_GAS_CHECK_FEATURE([call36 relocation support],
+      gcc_cv_as_loongarch_call36,,
+      [pcaddu18i $r1, %call36(a)
+       jirl $r1, $r1, 0],,
+      [AC_DEFINE(HAVE_AS_SUPPORT_CALL36, 1,
+	  [Define if your assembler supports call36 relocation.])])
     gcc_GAS_CHECK_FEATURE([eh_frame pcrel encoding support],
       gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support,,
       [.cfi_startproc

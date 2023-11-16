@@ -97,6 +97,10 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 #define HAVE_AS_EXPLICIT_RELOCS 0
 #endif
 
+#ifndef HAVE_AS_SUPPORT_CALL36
+#define HAVE_AS_SUPPORT_CALL36 0
+#endif
+
 #ifndef HAVE_AS_MRELAX_OPTION
 #define HAVE_AS_MRELAX_OPTION 0
 #endif

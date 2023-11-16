@@ -3006,12 +3006,16 @@ loongarch_legitimize_call_address (rtx addr)
 
   enum loongarch_symbol_type symbol_type = loongarch_classify_symbol (addr);
 
-  /* Split function call insn 'bl sym' or 'bl %plt(sym)' to :
-     pcalau12i $rd, %pc_hi20(sym)
-     jr $rd, %pc_lo12(sym).  */
+  /* If add the compilation option '-cmodel=medium', and the assembler does
+     not support call36.  The following sequence of instructions will be
+     used for the function call:
+	pcalau12i $rd, %pc_hi20(sym)
+	jr $rd, %pc_lo12(sym)
+  */
 
   if (TARGET_CMODEL_MEDIUM
-      && TARGET_EXPLICIT_RELOCS
+      && !HAVE_AS_SUPPORT_CALL36
+      && (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE)
       && (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
       && (symbol_type == SYMBOL_PCREL
 	  || (symbol_type == SYMBOL_GOT_DISP && flag_plt)))

@@ -781,6 +781,12 @@
 #endif
 
 
+/* Define if your assembler supports call36 relocation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SUPPORT_CALL36
+#endif
+
+
 /* Define if your assembler and linker support thread-local storage. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_TLS

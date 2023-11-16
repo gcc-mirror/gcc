@@ -13176,6 +13176,15 @@ proc check_effective_target_loongarch_asx_hw { } {
     } "-mlasx"]
 }
 
+# Check whether LoongArch binutils supports call36 relocation.
+proc check_effective_target_loongarch_call36_support { } {
+  return [check_no_compiler_messages loongarch_call36_support object {
+/* Assembly code */
+	pcaddu18i $r1,%call36(a)
+	jirl $r1,$r1,0
+  } ""]
+}
+
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.
 # Otherwise, modifies dg-do-what.
 proc dg-require-python-h { args } {

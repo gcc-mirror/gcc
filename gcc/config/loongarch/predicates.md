@@ -443,7 +443,9 @@
     {
     case SYMBOL_PCREL:
       if (TARGET_CMODEL_EXTREME
-	  || (TARGET_CMODEL_MEDIUM && !TARGET_EXPLICIT_RELOCS))
+	  || (TARGET_CMODEL_MEDIUM
+	      && HAVE_AS_SUPPORT_CALL36
+	      && (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)))
 	return false;
       else
 	return 1;
@@ -452,7 +454,8 @@
       if (TARGET_CMODEL_EXTREME
 	  || !flag_plt
 	  || (flag_plt && TARGET_CMODEL_MEDIUM
-	      && !TARGET_EXPLICIT_RELOCS))
+	      && HAVE_AS_SUPPORT_CALL36
+	      && (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)))
 	return false;
       else
 	return 1;
