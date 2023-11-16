@@ -120,8 +120,6 @@ enum PrimitiveCoreType
   RS_TOKEN (SCOPE_RESOLUTION, "::") /* dodgy */                                \
   RS_TOKEN (SINGLE_QUOTE, "'") /* should i differentiate from lifetime? */     \
   RS_TOKEN (DOUBLE_QUOTE, "\"")                                                \
-  RS_TOKEN (UNDERSCORE,                                                        \
-	    "_") /* TODO: treat as reserved word like mrustc instead? */       \
   RS_TOKEN (IDENTIFIER, "identifier")                                          \
   RS_TOKEN (INT_LITERAL,                                                       \
 	    "integer literal") /* do different int and float types need        \
@@ -194,6 +192,7 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD_2015 (TRY, "try") /* unused */                              \
   RS_TOKEN_KEYWORD_2015 (TYPE, "type")                                         \
   RS_TOKEN_KEYWORD_2015 (TYPEOF, "typeof") /* unused */                        \
+  RS_TOKEN_KEYWORD_2015 (UNDERSCORE, "_")                                      \
   RS_TOKEN_KEYWORD_2015 (UNSAFE, "unsafe")                                     \
   RS_TOKEN_KEYWORD_2015 (UNSIZED, "unsized") /* unused */                      \
   RS_TOKEN_KEYWORD_2015 (USE, "use")                                           \
