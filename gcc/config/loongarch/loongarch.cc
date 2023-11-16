@@ -3893,11 +3893,9 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case scalar_stmt:
       case scalar_load:
       case vector_stmt:
-      case vector_load:
       case vec_to_scalar:
       case scalar_to_vec:
       case scalar_store:
-      case vector_store:
 	return 1;
 
       case vec_promote_demote:
@@ -3905,6 +3903,8 @@ loongarch_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return LASX_SUPPORTED_MODE_P (mode)
 	  && !LSX_SUPPORTED_MODE_P (mode) ? 2 : 1;
 
+      case vector_load:
+      case vector_store:
       case unaligned_load:
       case unaligned_store:
 	return 2;
