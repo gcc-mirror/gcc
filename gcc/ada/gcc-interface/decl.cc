@@ -6285,6 +6285,12 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
 	  if (debug_info_p)
 	    rest_of_record_type_compilation (gnu_cico_return_type);
+
+	  /* Declare it now since it will never be declared otherwise.  This
+	     is necessary to ensure that its subtrees are properly marked.  */
+	  create_type_decl (TYPE_NAME (gnu_cico_return_type),
+			    gnu_cico_return_type,
+			    true, debug_info_p, gnat_subprog);
 	}
 
       gnu_return_type = gnu_cico_return_type;
