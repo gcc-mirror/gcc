@@ -31,9 +31,11 @@ get_token_description (TokenId id)
 #define RS_TOKEN(name, descr)                                                  \
   case name:                                                                   \
     return descr;
-#define RS_TOKEN_KEYWORD(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2015(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
       RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
       rust_unreachable ();
@@ -50,9 +52,11 @@ token_id_to_str (TokenId id)
 #define RS_TOKEN(name, _)                                                      \
   case name:                                                                   \
     return #name;
-#define RS_TOKEN_KEYWORD(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2015(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
       RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
       rust_unreachable ();
@@ -65,10 +69,12 @@ token_id_is_keyword (TokenId id)
 {
   switch (id)
     {
-#define RS_TOKEN_KEYWORD(name, _) case name:
+#define RS_TOKEN_KEYWORD_2015(name, _) case name:
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
 #define RS_TOKEN(a, b)
       RS_TOKEN_LIST return true;
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
       return false;
@@ -81,15 +87,17 @@ token_id_keyword_string (TokenId id)
 {
   switch (id)
     {
-#define RS_TOKEN_KEYWORD(id, str_ptr)                                          \
+#define RS_TOKEN_KEYWORD_2015(id, str_ptr)                                     \
     case id: {                                                                 \
       static const std::string str (str_ptr);                                  \
       return str;                                                              \
     }                                                                          \
     rust_unreachable ();
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
 #define RS_TOKEN(a, b)
       RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
       rust_unreachable ();
