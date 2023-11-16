@@ -1,7 +1,12 @@
 /* { dg-do run } */
 
 int printf(const char *, ...);
-void __assert_fail();
+void abort ();
+/* We need an abort that isn't noreturn.  */
+void __attribute__((noipa)) my_abort ()
+{
+  abort ();
+}
 int a, g, h, i, v, w = 2, x, y, ab, ac, ad, ae, af, ag;
 static int f, j, m, n, p, r, u, aa;
 struct b {
@@ -72,7 +77,7 @@ ak:
         ah.e = l.c % q.d;
         q.c = au.e;
         if ((q.d && q.c) || ah.e)
-          __assert_fail();
+          my_abort ();
         q.c = 0;
         if (au.d > m || ah.e)
           w = au.c | (n & ah.c);
@@ -93,7 +98,7 @@ ak:
       if (ah.d)
         o.c = l.c & o.c & q.c;
       if (q.d)
-        __assert_fail();
+        my_abort ();
       printf("", an);
       printf("", q);
       printf("", au);
