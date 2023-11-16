@@ -59,8 +59,8 @@ enum PrimitiveCoreType
 };
 
 // RS_TOKEN(name, description)
-// RS_TOKEN_KEYWORD(name, identifier)
-//
+// RS_TOKEN_KEYWORD_{2015,2018}(name, identifier)
+
 // Keep RS_TOKEN_KEYWORD sorted
 
 /* note that abstract, async, become, box, do, final, macro, override, priv,
@@ -148,68 +148,70 @@ enum PrimitiveCoreType
   RS_TOKEN (INNER_DOC_COMMENT, "#![doc]")                                      \
   RS_TOKEN (OUTER_DOC_COMMENT, "#[doc]")                                       \
   /* have "weak" union and 'static keywords? */                                \
-  RS_TOKEN_KEYWORD (ABSTRACT, "abstract") /* unused */                         \
-  RS_TOKEN_KEYWORD (AS, "as")                                                  \
-  RS_TOKEN_KEYWORD (ASYNC, "async") /* unused */                               \
-  RS_TOKEN_KEYWORD (AUTO, "auto")                                              \
-  RS_TOKEN_KEYWORD (BECOME, "become") /* unused */                             \
-  RS_TOKEN_KEYWORD (BOX, "box")	      /* unused */                             \
-  RS_TOKEN_KEYWORD (BREAK, "break")                                            \
-  RS_TOKEN_KEYWORD (CONST, "const")                                            \
-  RS_TOKEN_KEYWORD (CONTINUE, "continue")                                      \
-  RS_TOKEN_KEYWORD (CRATE, "crate")                                            \
+  RS_TOKEN_KEYWORD_2015 (ABSTRACT, "abstract") /* unused */                    \
+  RS_TOKEN_KEYWORD_2015 (AS, "as")                                             \
+  RS_TOKEN_KEYWORD_2018 (ASYNC, "async") /* unused */                          \
+  RS_TOKEN_KEYWORD_2015 (AUTO, "auto")                                         \
+  RS_TOKEN_KEYWORD_2015 (BECOME, "become") /* unused */                        \
+  RS_TOKEN_KEYWORD_2015 (BOX, "box")	   /* unused */                        \
+  RS_TOKEN_KEYWORD_2015 (BREAK, "break")                                       \
+  RS_TOKEN_KEYWORD_2015 (CONST, "const")                                       \
+  RS_TOKEN_KEYWORD_2015 (CONTINUE, "continue")                                 \
+  RS_TOKEN_KEYWORD_2015 (CRATE, "crate")                                       \
   /* FIXME: Do we need to add $crate (DOLLAR_CRATE) as a reserved kw? */       \
-  RS_TOKEN_KEYWORD (DO, "do") /* unused */                                     \
-  RS_TOKEN_KEYWORD (DYN, "dyn")                                                \
-  RS_TOKEN_KEYWORD (ELSE, "else")                                              \
-  RS_TOKEN_KEYWORD (ENUM_KW, "enum")                                           \
-  RS_TOKEN_KEYWORD (EXTERN_KW, "extern")                                       \
-  RS_TOKEN_KEYWORD (FALSE_LITERAL, "false")                                    \
-  RS_TOKEN_KEYWORD (FINAL_KW, "final") /* unused */                            \
-  RS_TOKEN_KEYWORD (FN_KW, "fn")                                               \
-  RS_TOKEN_KEYWORD (FOR, "for")                                                \
-  RS_TOKEN_KEYWORD (IF, "if")                                                  \
-  RS_TOKEN_KEYWORD (IMPL, "impl")                                              \
-  RS_TOKEN_KEYWORD (IN, "in")                                                  \
-  RS_TOKEN_KEYWORD (LET, "let")                                                \
-  RS_TOKEN_KEYWORD (LOOP, "loop")                                              \
-  RS_TOKEN_KEYWORD (MACRO, "macro")                                            \
-  RS_TOKEN_KEYWORD (MATCH_KW, "match")                                         \
-  RS_TOKEN_KEYWORD (MOD, "mod")                                                \
-  RS_TOKEN_KEYWORD (MOVE, "move")                                              \
-  RS_TOKEN_KEYWORD (MUT, "mut")                                                \
-  RS_TOKEN_KEYWORD (OVERRIDE_KW, "override") /* unused */                      \
-  RS_TOKEN_KEYWORD (PRIV, "priv")	     /* unused */                      \
-  RS_TOKEN_KEYWORD (PUB, "pub")                                                \
-  RS_TOKEN_KEYWORD (REF, "ref")                                                \
-  RS_TOKEN_KEYWORD (RETURN_KW, "return")                                       \
-  RS_TOKEN_KEYWORD (SELF_ALIAS,                                                \
-		    "Self") /* mrustc does not treat this as a reserved word*/ \
-  RS_TOKEN_KEYWORD (SELF, "self")                                              \
-  RS_TOKEN_KEYWORD (STATIC_KW, "static")                                       \
-  RS_TOKEN_KEYWORD (STRUCT_KW, "struct")                                       \
-  RS_TOKEN_KEYWORD (SUPER, "super")                                            \
-  RS_TOKEN_KEYWORD (TRAIT, "trait")                                            \
-  RS_TOKEN_KEYWORD (TRUE_LITERAL, "true")                                      \
-  RS_TOKEN_KEYWORD (TRY, "try") /* unused */                                   \
-  RS_TOKEN_KEYWORD (TYPE, "type")                                              \
-  RS_TOKEN_KEYWORD (TYPEOF, "typeof") /* unused */                             \
-  RS_TOKEN_KEYWORD (UNSAFE, "unsafe")                                          \
-  RS_TOKEN_KEYWORD (UNSIZED, "unsized") /* unused */                           \
-  RS_TOKEN_KEYWORD (USE, "use")                                                \
-  RS_TOKEN_KEYWORD (VIRTUAL, "virtual") /* unused */                           \
-  RS_TOKEN_KEYWORD (WHERE, "where")                                            \
-  RS_TOKEN_KEYWORD (WHILE, "while")                                            \
-  RS_TOKEN_KEYWORD (YIELD, "yield") /* unused */                               \
+  RS_TOKEN_KEYWORD_2015 (DO, "do") /* unused */                                \
+  RS_TOKEN_KEYWORD_2018 (DYN, "dyn")                                           \
+  RS_TOKEN_KEYWORD_2015 (ELSE, "else")                                         \
+  RS_TOKEN_KEYWORD_2015 (ENUM_KW, "enum")                                      \
+  RS_TOKEN_KEYWORD_2015 (EXTERN_KW, "extern")                                  \
+  RS_TOKEN_KEYWORD_2015 (FALSE_LITERAL, "false")                               \
+  RS_TOKEN_KEYWORD_2015 (FINAL_KW, "final") /* unused */                       \
+  RS_TOKEN_KEYWORD_2015 (FN_KW, "fn")                                          \
+  RS_TOKEN_KEYWORD_2015 (FOR, "for")                                           \
+  RS_TOKEN_KEYWORD_2015 (IF, "if")                                             \
+  RS_TOKEN_KEYWORD_2015 (IMPL, "impl")                                         \
+  RS_TOKEN_KEYWORD_2015 (IN, "in")                                             \
+  RS_TOKEN_KEYWORD_2015 (LET, "let")                                           \
+  RS_TOKEN_KEYWORD_2015 (LOOP, "loop")                                         \
+  RS_TOKEN_KEYWORD_2015 (MACRO, "macro")                                       \
+  RS_TOKEN_KEYWORD_2015 (MATCH_KW, "match")                                    \
+  RS_TOKEN_KEYWORD_2015 (MOD, "mod")                                           \
+  RS_TOKEN_KEYWORD_2015 (MOVE, "move")                                         \
+  RS_TOKEN_KEYWORD_2015 (MUT, "mut")                                           \
+  RS_TOKEN_KEYWORD_2015 (OVERRIDE_KW, "override") /* unused */                 \
+  RS_TOKEN_KEYWORD_2015 (PRIV, "priv")		  /* unused */                 \
+  RS_TOKEN_KEYWORD_2015 (PUB, "pub")                                           \
+  RS_TOKEN_KEYWORD_2015 (REF, "ref")                                           \
+  RS_TOKEN_KEYWORD_2015 (RETURN_KW, "return")                                  \
+  RS_TOKEN_KEYWORD_2015 (                                                      \
+    SELF_ALIAS, "Self") /* mrustc does not treat this as a reserved word*/     \
+  RS_TOKEN_KEYWORD_2015 (SELF, "self")                                         \
+  RS_TOKEN_KEYWORD_2015 (STATIC_KW, "static")                                  \
+  RS_TOKEN_KEYWORD_2015 (STRUCT_KW, "struct")                                  \
+  RS_TOKEN_KEYWORD_2015 (SUPER, "super")                                       \
+  RS_TOKEN_KEYWORD_2015 (TRAIT, "trait")                                       \
+  RS_TOKEN_KEYWORD_2015 (TRUE_LITERAL, "true")                                 \
+  RS_TOKEN_KEYWORD_2015 (TRY, "try") /* unused */                              \
+  RS_TOKEN_KEYWORD_2015 (TYPE, "type")                                         \
+  RS_TOKEN_KEYWORD_2015 (TYPEOF, "typeof") /* unused */                        \
+  RS_TOKEN_KEYWORD_2015 (UNSAFE, "unsafe")                                     \
+  RS_TOKEN_KEYWORD_2015 (UNSIZED, "unsized") /* unused */                      \
+  RS_TOKEN_KEYWORD_2015 (USE, "use")                                           \
+  RS_TOKEN_KEYWORD_2015 (VIRTUAL, "virtual") /* unused */                      \
+  RS_TOKEN_KEYWORD_2015 (WHERE, "where")                                       \
+  RS_TOKEN_KEYWORD_2015 (WHILE, "while")                                       \
+  RS_TOKEN_KEYWORD_2015 (YIELD, "yield") /* unused */                          \
   RS_TOKEN (LAST_TOKEN, "<last-token-marker>")
 
 // Contains all token types. Crappy implementation via x-macros.
 enum TokenId
 {
 #define RS_TOKEN(name, _) name,
-#define RS_TOKEN_KEYWORD(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2015(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
   RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
 };
 

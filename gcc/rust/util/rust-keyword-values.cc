@@ -28,9 +28,11 @@ get_keywords ()
 {
   std::map<std::string, TokenId> m = {
 #define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(tok, key) {key, tok},
+#define RS_TOKEN_KEYWORD_2015(tok, key) {key, tok},
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
     RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
   };
   return m;

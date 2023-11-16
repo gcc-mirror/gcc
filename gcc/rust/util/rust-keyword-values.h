@@ -33,9 +33,11 @@ public:
   // Rust keyword values
 public:
 #define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(tok, key) static constexpr auto &tok = key;
+#define RS_TOKEN_KEYWORD_2015(tok, key) static constexpr auto &tok = key;
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
   RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
 };
 
