@@ -21,6 +21,14 @@
 
 #include "rust-token.h"
 
+// Append keywords made from multiple tokens to the existing token-keyword list
+#define RS_KEYWORD_LIST                                                        \
+  RS_TOKEN_LIST                                                                \
+  RS_TOKEN_KEYWORD_2015 (DOLLAR_CRATE, "$crate")                               \
+  RS_TOKEN_KEYWORD_2015 (PATH_ROOT, "{{root}}")                                \
+  RS_TOKEN_KEYWORD_2015 (STATIC_LIFETIME, "'static")                           \
+  RS_TOKEN_KEYWORD_2015 (UNDERSCORE_LIFETIME, "'_")
+
 namespace Rust {
 namespace Values {
 
@@ -28,14 +36,15 @@ namespace Values {
 class Keywords
 {
 public:
-  const static std::map<std::string, TokenId> keywords;
+  const static std::map<std::string, TokenId> keywords_tokens;
 
+  const static std::set<std::string> keywords;
   // Rust keyword values
 public:
 #define RS_TOKEN(x, y)
 #define RS_TOKEN_KEYWORD_2015(tok, key) static constexpr auto &tok = key;
 #define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
-  RS_TOKEN_LIST
+  RS_KEYWORD_LIST
 #undef RS_TOKEN_KEYWORD_2015
 #undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
