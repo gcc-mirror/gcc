@@ -41,6 +41,20 @@ public:
 #undef RS_TOKEN
 };
 
+class WeakKeywords
+{
+public:
+  static constexpr auto &AUTO = "auto";
+  static constexpr auto &BUILTIN = "builtin";
+  static constexpr auto &CATCH = "catch";
+  static constexpr auto &DEFAULT = "default";
+  static constexpr auto &GEN = "gen";
+  static constexpr auto &MACRO_RULES = "macro_rules";
+  static constexpr auto &RAW = "raw";
+  static constexpr auto &UNION = "union";
+  static constexpr auto &YEET = "yeet";
+};
+
 } // namespace Values
 } // namespace Rust
 
