@@ -1,3 +1,15 @@
+2023-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111828
+	* config.in: Regenerate.
+	* config/rs6000/rs6000.cc (rs6000_update_ipa_fn_target_info): Guard
+	inline asm handling under !HAVE_AS_POWER10_HTM.
+	* configure: Regenerate.
+	* configure.ac: Detect assembler support for HTM insns at power10.
+
 2023-11-10  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

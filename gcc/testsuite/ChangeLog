@@ -1,3 +1,14 @@
+2023-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/111828
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_as_p10_htm): New proc.
+	* g++.target/powerpc/pr111828-1.C: New test.
+	* g++.target/powerpc/pr111828-2.C: New test.
+
 2023-11-10  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
