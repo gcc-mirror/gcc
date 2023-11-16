@@ -260,7 +260,7 @@ Lexer::replace_current_token (TokenPtr replacement)
 TokenId
 Lexer::classify_keyword (const std::string &str)
 {
-  auto &keywords = Rust::Values::Keywords::keywords;
+  auto &keywords = Rust::Values::Keywords::keywords_tokens;
   auto keyword = keywords.find (str);
 
   if (keyword == keywords.end ())

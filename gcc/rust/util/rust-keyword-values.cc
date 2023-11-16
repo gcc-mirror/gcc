@@ -38,7 +38,18 @@ get_keywords ()
   return m;
 }
 
-const std::map<std::string, TokenId> Keywords::keywords = get_keywords ();
+const std::map<std::string, TokenId> Keywords::keywords_tokens
+  = get_keywords ();
+
+const std::set<std::string> Keywords::keywords = {
+#define RS_TOKEN(x, y)
+#define RS_TOKEN_KEYWORD_2015(tok, key) {key},
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
+  RS_KEYWORD_LIST
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
+#undef RS_TOKEN
+};
 
 } // namespace Values
 } // namespace Rust

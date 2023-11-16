@@ -145,7 +145,6 @@ enum PrimitiveCoreType
   /* Doc Comments */                                                           \
   RS_TOKEN (INNER_DOC_COMMENT, "#![doc]")                                      \
   RS_TOKEN (OUTER_DOC_COMMENT, "#[doc]")                                       \
-  /* have "weak" union and 'static keywords? */                                \
   RS_TOKEN_KEYWORD_2015 (ABSTRACT, "abstract") /* unused */                    \
   RS_TOKEN_KEYWORD_2015 (AS, "as")                                             \
   RS_TOKEN_KEYWORD_2018 (ASYNC, "async") /* unused */                          \
@@ -157,7 +156,6 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD_2015 (CONST, "const")                                       \
   RS_TOKEN_KEYWORD_2015 (CONTINUE, "continue")                                 \
   RS_TOKEN_KEYWORD_2015 (CRATE, "crate")                                       \
-  /* FIXME: Do we need to add $crate (DOLLAR_CRATE) as a reserved kw? */       \
   RS_TOKEN_KEYWORD_2015 (DO, "do") /* unused */                                \
   RS_TOKEN_KEYWORD_2018 (DYN, "dyn")                                           \
   RS_TOKEN_KEYWORD_2015 (ELSE, "else")                                         \
