@@ -2418,6 +2418,10 @@ recording::memento_of_get_type::get_size ()
       m = targetm.c.mode_for_floating_type (TI_FLOAT_TYPE);
       size = GET_MODE_PRECISION (m).to_constant ();
       break;
+#ifdef HAVE_BFmode
+    case GCC_JIT_TYPE_BFLOAT16:
+      return GET_MODE_UNIT_SIZE (BFmode);
+#endif
     case GCC_JIT_TYPE_DOUBLE:
       m = targetm.c.mode_for_floating_type (TI_DOUBLE_TYPE);
       size = GET_MODE_PRECISION (m).to_constant ();
@@ -2479,6 +2483,7 @@ recording::memento_of_get_type::dereference ()
     case GCC_JIT_TYPE_INT64_T:
     case GCC_JIT_TYPE_INT128_T:
     case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
     case GCC_JIT_TYPE_COMPLEX_FLOAT:
@@ -2543,6 +2548,7 @@ recording::memento_of_get_type::is_int () const
       return true;
 
     case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
       return false;
@@ -2601,6 +2607,7 @@ recording::memento_of_get_type::is_signed () const
     case GCC_JIT_TYPE_UINT128_T:
 
     case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
 
@@ -2660,6 +2667,7 @@ recording::memento_of_get_type::is_float () const
       return false;
 
     case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
       return true;
@@ -2723,6 +2731,7 @@ recording::memento_of_get_type::is_bool () const
       return false;
 
     case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_BFLOAT16:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
       return false;
@@ -2803,6 +2812,7 @@ static const char * const get_type_strings[] = {
   "__int64_t",    /* GCC_JIT_TYPE_INT64_T */
   "__int128_t",   /* GCC_JIT_TYPE_INT128_T */
 
+  "bfloat16", /* GCC_JIT_TYPE_BFLOAT16 */
 };
 
 /* Implementation of recording::memento::make_debug_string for
@@ -2848,6 +2858,7 @@ static const char * const get_type_enum_strings[] = {
   "GCC_JIT_TYPE_INT32_T",
   "GCC_JIT_TYPE_INT64_T",
   "GCC_JIT_TYPE_INT128_T",
+  "GCC_JIT_TYPE_BFLOAT16",
 };
 
 void

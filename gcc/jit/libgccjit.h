@@ -604,7 +604,9 @@ enum gcc_jit_types
   GCC_JIT_TYPE_INT16_T,
   GCC_JIT_TYPE_INT32_T,
   GCC_JIT_TYPE_INT64_T,
-  GCC_JIT_TYPE_INT128_T
+  GCC_JIT_TYPE_INT128_T,
+
+  GCC_JIT_TYPE_BFLOAT16,
 };
 
 extern gcc_jit_type *

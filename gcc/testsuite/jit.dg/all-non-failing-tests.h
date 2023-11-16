@@ -80,6 +80,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-bfloat16.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-builtin-memcpy.c */
 #define create_code create_code_builtin_memcpy
 #define verify_code verify_code_builtin_memcpy

@@ -113,6 +113,8 @@ Standard types
        - C99's ``__int128_t``
      * - :c:data:`GCC_JIT_TYPE_FLOAT`
        -
+     * - :c:data:`GCC_JIT_TYPE_BFLOAT16`
+       - C's ``__bfloat16``
      * - :c:data:`GCC_JIT_TYPE_DOUBLE`
        -
      * - :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`
