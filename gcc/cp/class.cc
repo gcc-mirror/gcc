@@ -6962,7 +6962,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	     check_bitfield_decl eventually sets DECL_SIZE (field)
 	     to that width.  */
 	  && (DECL_SIZE (field) == NULL_TREE
-	      || integer_zerop (DECL_SIZE (field))))
+	      || integer_zerop (DECL_SIZE (field)))
+	  && TREE_TYPE (field) != error_mark_node)
 	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field, 1);
       check_non_pod_aggregate (field);
     }
