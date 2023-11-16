@@ -1639,9 +1639,17 @@ cross: all-build all-gas all-ld
 @endif gcc-no-bootstrap
 
 @if gcc
+
+.PHONY: gcc-site.exp
+gcc-site.exp:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) site.exp);
+
 [+ FOR languages +]
 .PHONY: check-gcc-[+language+] check-[+language+]
-check-gcc-[+language+]:
+check-gcc-[+language+]: gcc-site.exp
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
