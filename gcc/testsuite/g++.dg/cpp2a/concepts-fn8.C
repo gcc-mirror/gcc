@@ -15,10 +15,12 @@ struct P {
 };
 
 void (*f)(P);
+P (*h)(P);
 
 template<class T>
 constexpr bool g() {
   P x;
   f(x); // { dg-bogus "from here" }
+  f(h(x)); // { dg-bogus "from here" }
   return true;
 }
