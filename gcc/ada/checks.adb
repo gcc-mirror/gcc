@@ -2851,6 +2851,27 @@ package body Checks is
                 (Typ, Duplicate_Subexpr (Name (Par))));
             return;
 
+         --  Similarly, if the expression is a qualified aggregate in an
+         --  allocator, apply the check to the dereference of the access
+         --  value, rather than create a temporary. This is necessary for
+         --  inherently limited types, for which the temporary is illegal.
+
+         elsif Nkind (Par) = N_Allocator then
+            declare
+               Deref : constant Node_Id :=
+                         Make_Explicit_Dereference (Sloc (N),
+                           Prefix => Duplicate_Subexpr (Par));
+
+            begin
+               --  This is required by Predicate_Check_In_Scope ???
+
+               Preserve_Comes_From_Source (Deref, N);
+
+               Insert_Action_After (Parent (Par),
+                 Make_Predicate_Check (Typ, Deref));
+               return;
+            end;
+
          --  Similarly, if the expression is an aggregate in an object
          --  declaration, apply it to the object after the declaration.
 
