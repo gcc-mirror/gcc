@@ -6061,7 +6061,7 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       if (loongarch_cas_failure_memorder_needs_acquire (
 	    memmodel_from_int (INTVAL (op))))
 	fputs ("dbar\t0b10100", file);
-      else
+      else if (!TARGET_LD_SEQ_SA)
 	fputs ("dbar\t0x700", file);
       break;
 

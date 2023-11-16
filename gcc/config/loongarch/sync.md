@@ -119,13 +119,14 @@
     case MEMMODEL_SEQ_CST:
       return "dbar\t0x11\\n\\t"
 	     "ld.<size>\t%0,%1\\n\\t"
-	     "dbar\t0x14\\n\\t";
+	     "dbar\t0x14";
     case MEMMODEL_ACQUIRE:
       return "ld.<size>\t%0,%1\\n\\t"
-	     "dbar\t0x14\\n\\t";
+	     "dbar\t0x14";
     case MEMMODEL_RELAXED:
-      return "ld.<size>\t%0,%1\\n\\t"
-	     "dbar\t0x700\\n\\t";
+      return TARGET_LD_SEQ_SA ? "ld.<size>\t%0,%1\\n\\t"
+			      : "ld.<size>\t%0,%1\\n\\t"
+				"dbar\t0x700";
 
     default:
       /* The valid memory order variants are __ATOMIC_RELAXED, __ATOMIC_SEQ_CST,
