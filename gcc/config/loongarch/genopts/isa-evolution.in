@@ -1,0 +1,2 @@
+2	26	div32		Support div.w[u] and mod.w[u] instructions with inputs not sign-extended.
+3	23	ld-seq-sa	Do not need load-load barriers (dbar 0x700).

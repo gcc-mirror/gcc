@@ -7455,6 +7455,10 @@ loongarch_option_override_internal (struct gcc_options *opts,
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
+  /* If the user hasn't disabled a feature added during ISA evolution,
+     use the processor's default.  */
+  isa_evolution |= (la_target.isa.evolution &
+		    ~global_options_set.x_isa_evolution);
 
   /* Enable sw prefetching at -O3 and higher.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -11434,6 +11438,30 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 						      is_packed);
 }
 
+/* If -fverbose-asm, dump some info for debugging.  */
+static void
+loongarch_asm_code_end (void)
+{
+#define DUMP_FEATURE(PRED) \
+  fprintf (asm_out_file, "%s %s: %s\n", ASM_COMMENT_START, #PRED, \
+	   (PRED) ? "enabled" : "disabled")
+
+  if (flag_verbose_asm)
+    {
+      fprintf (asm_out_file, "\n%s CPU: %s\n", ASM_COMMENT_START,
+	       loongarch_cpu_strings [la_target.cpu_arch]);
+      fprintf (asm_out_file, "%s Tune: %s\n", ASM_COMMENT_START,
+	       loongarch_cpu_strings [la_target.cpu_tune]);
+      fprintf (asm_out_file, "%s Base ISA: %s\n", ASM_COMMENT_START,
+	       loongarch_isa_base_strings [la_target.isa.base]);
+      DUMP_FEATURE (TARGET_DIV32);
+      DUMP_FEATURE (TARGET_LD_SEQ_SA);
+    }
+
+  fputs ("\n\n", asm_out_file);
+#undef DUMP_FEATURE
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11452,6 +11480,9 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 #define TARGET_ASM_SELECT_RTX_SECTION loongarch_select_rtx_section
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION loongarch_function_rodata_section
+
+#undef TARGET_ASM_CODE_END
+#define TARGET_ASM_CODE_END loongarch_asm_code_end
 
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT loongarch_sched_init

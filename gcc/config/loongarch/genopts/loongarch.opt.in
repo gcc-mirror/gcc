@@ -247,3 +247,10 @@ Target Undocumented Joined UInteger Var(loongarch_vect_issue_info) Init(4) Integ
 Indicate how many non memory access vector instructions can be issued per
 cycle, it's used in unroll factor determination for autovectorizer.  The
 default value is 4.
+
+; Features added during ISA evolution.  This concept is different from ISA
+; extension, read Section 1.5 of LoongArch v1.10 Volume 1 for the
+; explanation.  These features may be implemented and enumerated with
+; CPUCFG independantly, so we use bit flags to specify them.
+Variable
+HOST_WIDE_INT isa_evolution = 0

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_DEF_H
 #define LOONGARCH_DEF_H
 
+#include <stdint.h>
 #include "loongarch-tune.h"
 
 #ifdef __cplusplus
@@ -121,6 +122,12 @@ struct loongarch_isa
   int base;	    /* ISA_BASE_ */
   int fpu;	    /* ISA_EXT_FPU_ */
   int simd;	    /* ISA_EXT_SIMD_ */
+
+  /* ISA evolution features implied by -march=, for -march=native probed
+     via CPUCFG.  The features implied by base may be not included here.
+
+     Using int64_t instead of HOST_WIDE_INT for C compatibility.  */
+  int64_t evolution;
 };
 
 struct loongarch_abi
