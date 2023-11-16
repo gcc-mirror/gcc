@@ -231,6 +231,7 @@ enum cp_tree_index
     CPTI_RETHROW_FN,
     CPTI_ATEXIT_FN_PTR_TYPE,
     CPTI_ATEXIT,
+    CPTI_THREAD_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
 
@@ -374,6 +375,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 /* A pointer to `std::atexit'.  */
 #define atexit_node			cp_global_trees[CPTI_ATEXIT]
+
+/* A pointer to `__cxa_thread_atexit'.  */
+#define thread_atexit_node		cp_global_trees[CPTI_THREAD_ATEXIT]
 
 /* A pointer to `__dso_handle'.  */
 #define dso_handle_node			cp_global_trees[CPTI_DSO_HANDLE]
