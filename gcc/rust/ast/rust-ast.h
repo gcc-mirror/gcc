@@ -25,6 +25,7 @@
 #include "rust-token.h"
 #include "rust-location.h"
 #include "rust-diagnostics.h"
+#include "rust-keyword-values.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
@@ -393,14 +394,20 @@ public:
   const std::string &get_segment_name () const { return segment_name; }
   bool is_super_path_seg () const
   {
-    return as_string ().compare ("super") == 0;
+    return as_string ().compare (Values::Keywords::SUPER) == 0;
   }
   bool is_crate_path_seg () const
   {
-    return as_string ().compare ("crate") == 0;
+    return as_string ().compare (Values::Keywords::CRATE) == 0;
   }
-  bool is_lower_self_seg () const { return as_string ().compare ("self") == 0; }
-  bool is_big_self () const { return as_string ().compare ("Self") == 0; }
+  bool is_lower_self_seg () const
+  {
+    return as_string ().compare (Values::Keywords::SELF) == 0;
+  }
+  bool is_big_self () const
+  {
+    return as_string ().compare (Values::Keywords::SELF_ALIAS) == 0;
+  }
 };
 
 // A simple path without generic or type arguments
@@ -562,7 +569,8 @@ public:
 				  location_t crate_vis_location)
   {
     return Visibility (PUB_CRATE,
-		       SimplePath::from_str ("crate", crate_tok_location),
+		       SimplePath::from_str (Values::Keywords::CRATE,
+					     crate_tok_location),
 		       crate_vis_location);
   }
 
@@ -571,7 +579,8 @@ public:
 				 location_t self_vis_location)
   {
     return Visibility (PUB_SELF,
-		       SimplePath::from_str ("self", self_tok_location),
+		       SimplePath::from_str (Values::Keywords::SELF,
+					     self_tok_location),
 		       self_vis_location);
   }
 
@@ -580,7 +589,8 @@ public:
 				  location_t super_vis_location)
   {
     return Visibility (PUB_SUPER,
-		       SimplePath::from_str ("super", super_tok_location),
+		       SimplePath::from_str (Values::Keywords::SUPER,
+					     super_tok_location),
 		       super_vis_location);
   }
 

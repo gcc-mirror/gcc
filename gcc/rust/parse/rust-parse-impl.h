@@ -743,19 +743,20 @@ Parser<ManagedTokenSource>::parse_path_ident_segment ()
     case SUPER:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("super", t->get_locus ());
+      return AST::PathIdentSegment (Values::Keywords::SUPER, t->get_locus ());
     case SELF:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("self", t->get_locus ());
+      return AST::PathIdentSegment (Values::Keywords::SELF, t->get_locus ());
     case SELF_ALIAS:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("Self", t->get_locus ());
+      return AST::PathIdentSegment (Values::Keywords::SELF_ALIAS,
+				    t->get_locus ());
     case CRATE:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("crate", t->get_locus ());
+      return AST::PathIdentSegment (Values::Keywords::CRATE, t->get_locus ());
     case DOLLAR_SIGN:
       if (lexer.peek_token (1)->get_id () == CRATE)
 	{
@@ -2141,7 +2142,7 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
   Identifier ident;
   auto identifier = lexer.peek_token ();
   if (identifier->get_id () == UNDERSCORE)
-    ident = {"_", identifier->get_locus ()};
+    ident = {Values::Keywords::UNDERSCORE, identifier->get_locus ()};
   else
     ident = {identifier};
 
@@ -2506,7 +2507,7 @@ Parser<ManagedTokenSource>::parse_extern_crate (AST::Visibility vis,
       lexer.skip_token ();
       break;
     case SELF:
-      crate_name = "self";
+      crate_name = Values::Keywords::SELF;
       lexer.skip_token ();
       break;
     default:
@@ -2547,7 +2548,7 @@ Parser<ManagedTokenSource>::parse_extern_crate (AST::Visibility vis,
       lexer.skip_token ();
       break;
     case UNDERSCORE:
-      as_name = "_";
+      as_name = Values::Keywords::UNDERSCORE;
       lexer.skip_token ();
       break;
     default:
@@ -2806,7 +2807,8 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 		return std::unique_ptr<AST::UseTreeRebind> (
 		  new AST::UseTreeRebind (AST::UseTreeRebind::WILDCARD,
 					  std::move (path), locus,
-					  {"_", t->get_locus ()}));
+					  {Values::Keywords::UNDERSCORE,
+					   t->get_locus ()}));
 	      default:
 		add_error (Error (
 		  t->get_locus (),
@@ -4788,7 +4790,7 @@ Parser<ManagedTokenSource>::parse_const_item (AST::Visibility vis,
    * wildcard */
   const_TokenPtr ident_tok = lexer.peek_token ();
   // make default identifier the underscore wildcard one
-  std::string ident ("_");
+  std::string ident (Values::Keywords::UNDERSCORE);
   switch (ident_tok->get_id ())
     {
     case IDENTIFIER:
@@ -7640,12 +7642,12 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
     // use true and false keywords rather than "bool literal" Rust terminology
     case TRUE_LITERAL:
       type = AST::Literal::BOOL;
-      literal_value = "true";
+      literal_value = Values::Keywords::TRUE_LITERAL;
       lexer.skip_token ();
       break;
     case FALSE_LITERAL:
       type = AST::Literal::BOOL;
-      literal_value = "false";
+      literal_value = Values::Keywords::FALSE_LITERAL;
       lexer.skip_token ();
       break;
     default:
@@ -9654,7 +9656,7 @@ Parser<ManagedTokenSource>::parse_maybe_named_param (AST::AttrVec outer_attrs)
   else if (current->get_id () == UNDERSCORE && next->get_id () == COLON)
     {
       // wildcard param
-      name = {"_", current->get_locus ()};
+      name = {Values::Keywords::UNDERSCORE, current->get_locus ()};
       kind = AST::MaybeNamedParam::WILDCARD;
       lexer.skip_token (1);
     }
@@ -10548,12 +10550,14 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
     case TRUE_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
-	new AST::LiteralPattern ("true", AST::Literal::BOOL, t->get_locus (),
+	new AST::LiteralPattern (Values::Keywords::TRUE_LITERAL,
+				 AST::Literal::BOOL, t->get_locus (),
 				 t->get_type_hint ()));
     case FALSE_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
-	new AST::LiteralPattern ("false", AST::Literal::BOOL, t->get_locus (),
+	new AST::LiteralPattern (Values::Keywords::FALSE_LITERAL,
+				 AST::Literal::BOOL, t->get_locus (),
 				 t->get_type_hint ()));
     case CHAR_LITERAL:
     case BYTE_CHAR_LITERAL:
@@ -12383,12 +12387,14 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 			      tok->get_type_hint (), {}, tok->get_locus ()));
     case TRUE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
-	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_type_hint (),
-			      {}, tok->get_locus ()));
+	new AST::LiteralExpr (Values::Keywords::TRUE_LITERAL,
+			      AST::Literal::BOOL, tok->get_type_hint (), {},
+			      tok->get_locus ()));
     case FALSE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
-	new AST::LiteralExpr ("false", AST::Literal::BOOL,
-			      tok->get_type_hint (), {}, tok->get_locus ()));
+	new AST::LiteralExpr (Values::Keywords::FALSE_LITERAL,
+			      AST::Literal::BOOL, tok->get_type_hint (), {},
+			      tok->get_locus ()));
     case LEFT_PAREN:
       return parse_grouped_or_tuple_expr (std::move (outer_attrs),
 					  tok->get_locus ());
@@ -12877,7 +12883,7 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
 
 	const_TokenPtr next_tok = lexer.peek_token ();
 	if (next_tok->get_id () == IDENTIFIER
-	    && next_tok->get_str () == "await")
+	    && next_tok->get_str () == Values::Keywords::AWAIT)
 	  {
 	    // await expression
 	    return parse_await_expr (tok, std::move (left),
@@ -14367,16 +14373,16 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
       initial_str = tok->get_str ();
       break;
     case SUPER:
-      initial_str = "super";
+      initial_str = Values::Keywords::SUPER;
       break;
     case SELF:
-      initial_str = "self";
+      initial_str = Values::Keywords::SELF;
       break;
     case SELF_ALIAS:
-      initial_str = "Self";
+      initial_str = Values::Keywords::SELF_ALIAS;
       break;
     case CRATE:
-      initial_str = "crate";
+      initial_str = Values::Keywords::CRATE;
       break;
     case DOLLAR_SIGN:
       if (lexer.peek_token ()->get_id () == CRATE)
