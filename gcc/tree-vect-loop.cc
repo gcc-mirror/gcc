@@ -8483,15 +8483,28 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
   /* Get NCOPIES vector definitions for all operands except the reduction
      definition.  */
-  vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
-		     single_defuse_cycle && reduc_index == 0
-		     ? NULL_TREE : op.ops[0], &vec_oprnds0,
-		     single_defuse_cycle && reduc_index == 1
-		     ? NULL_TREE : op.ops[1], &vec_oprnds1,
-		     op.num_ops == 4
-		     || (op.num_ops == 3
-			 && !(single_defuse_cycle && reduc_index == 2))
-		     ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+  if (!cond_fn_p)
+    {
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
+			 single_defuse_cycle && reduc_index == 0
+			 ? NULL_TREE : op.ops[0], &vec_oprnds0,
+			 single_defuse_cycle && reduc_index == 1
+			 ? NULL_TREE : op.ops[1], &vec_oprnds1,
+			 op.num_ops == 3
+			 && !(single_defuse_cycle && reduc_index == 2)
+			 ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+    }
+  else
+    {
+      /* For a conditional operation pass the truth type as mask
+	 vectype.  */
+      gcc_assert (single_defuse_cycle && reduc_index == 1);
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
+			 op.ops[0], &vec_oprnds0,
+			 truth_type_for (vectype_in),
+			 NULL_TREE, &vec_oprnds1, NULL_TREE,
+			 op.ops[2], &vec_oprnds2, NULL_TREE);
+    }
 
   /* For single def-use cycles get one copy of the vectorized reduction
      definition.  */
