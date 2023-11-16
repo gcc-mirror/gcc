@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-collector.h"
 #include "rust-item.h"
+#include "rust-keyword-values.h"
 
 namespace Rust {
 namespace AST {
@@ -461,11 +462,11 @@ TokenCollector::visit (Lifetime &lifetime)
       break;
     case Lifetime::LifetimeType::STATIC:
       push (Rust::Token::make_lifetime (lifetime.get_locus (),
-					std::move ("static")));
+					Values::Keywords::STATIC_KW));
       break;
     case Lifetime::LifetimeType::WILDCARD:
-      push (
-	Rust::Token::make_lifetime (lifetime.get_locus (), std::move ("_")));
+      push (Rust::Token::make_lifetime (lifetime.get_locus (),
+					Values::Keywords::UNDERSCORE));
       break;
     }
 }
@@ -787,9 +788,9 @@ TokenCollector::visit (Literal &lit, location_t locus)
 				     lit.get_type_hint ()));
       break;
       case Literal::LitType::BOOL: {
-	if (value == "false")
+	if (value == Values::Keywords::FALSE_LITERAL)
 	  push (Rust::Token::make (FALSE_LITERAL, locus));
-	else if (value == "true")
+	else if (value == Values::Keywords::TRUE_LITERAL)
 	  push (Rust::Token::make (TRUE_LITERAL, locus));
 	else
 	  rust_unreachable (); // Not a boolean
@@ -1484,7 +1485,7 @@ TokenCollector::visit (AwaitExpr &expr)
   visit (expr.get_awaited_expr ());
   push (Rust::Token::make (DOT, expr.get_locus ()));
   // TODO: Check status of await keyword (Context dependant ?)
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, "await"));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, Values::Keywords::AWAIT));
 }
 
 void
