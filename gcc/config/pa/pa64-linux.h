@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* 64-bit ELF target.  */
+#undef TARGET_ELF64
+#define TARGET_ELF64 1
+
 #if 0 /* needs some work :-( */
 /* If defined, this macro specifies a table of register pairs used to
    eliminate unneeded registers that point into the stack frame.  */
