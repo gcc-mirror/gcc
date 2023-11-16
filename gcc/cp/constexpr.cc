@@ -9547,7 +9547,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  }
 	else if (fun)
           {
-	    if (RECUR (fun, FUNCTION_POINTER_TYPE_P (fun) ? rval : any))
+	    if (TREE_TYPE (fun)
+		&& FUNCTION_POINTER_TYPE_P (TREE_TYPE (fun)))
+	      want_rval = rval;
+	    else
+	      want_rval = any;
+	    if (RECUR (fun, want_rval))
 	      /* Might end up being a constant function pointer.  But it
 		 could also be a function object with constexpr op(), so
 		 we pass 'any' so that the underlying VAR_DECL is deemed
