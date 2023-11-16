@@ -506,7 +506,7 @@ public:
       return true;
     return m_option_callbacks.m_option_enabled_cb
       (option_index,
-       m_lang_mask,
+       m_option_callbacks.m_lang_mask,
        m_option_callbacks.m_option_state);
   }
 
@@ -532,7 +532,13 @@ public:
   set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
 		    void *option_state,
 		    diagnostic_make_option_name_cb make_option_name_cb,
-		    diagnostic_make_option_url_cb make_option_url_cb);
+		    diagnostic_make_option_url_cb make_option_url_cb,
+		    unsigned lang_mask);
+
+  unsigned get_lang_mask () const
+  {
+    return m_option_callbacks.m_lang_mask;
+  }
 
 private:
   bool includes_seen_p (const line_map_ordinary *map);
@@ -673,6 +679,9 @@ private:
        is available.  May be passed 0 as well as the index of a
        particular option.  */
     diagnostic_make_option_url_cb m_make_option_url_cb;
+
+    /* A copy of lang_hooks.option_lang_mask ().  */
+    unsigned m_lang_mask;
   } m_option_callbacks;
 
   /* An optional hook for adding URLs to quoted text strings in
@@ -698,9 +707,6 @@ private:
   int m_lock;
 
 public:
-  /* A copy of lang_hooks.option_lang_mask ().  */
-  unsigned m_lang_mask;
-
   bool m_inhibit_notes_p;
 
   diagnostic_source_printing_options m_source_printing;

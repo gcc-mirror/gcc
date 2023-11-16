@@ -2149,7 +2149,8 @@ main (int argc, char *argv[])
   global_dc->set_option_hooks (nullptr,
 			       nullptr,
 			       nullptr,
-			       get_option_url);
+			       get_option_url,
+			       0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

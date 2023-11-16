@@ -715,7 +715,7 @@ init_asm_output (const char *name)
 		     "cannot open %qs for writing: %m", asm_file_name);
     }
 
-  if (!flag_syntax_only && !(global_dc->m_lang_mask & CL_LTODump))
+  if (!flag_syntax_only && !(global_dc->get_lang_mask () & CL_LTODump))
     {
       targetm.asm_out.file_start ();
 
@@ -1020,7 +1020,6 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
-  global_dc->m_lang_mask = lang_hooks.option_lang_mask ();
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   tree_diagnostics_defaults (global_dc);
@@ -1048,7 +1047,8 @@ general_init (const char *argv0, bool init_signals)
   global_dc->set_option_hooks (option_enabled,
 			       &global_options,
 			       option_name,
-			       get_option_url);
+			       get_option_url,
+			       lang_hooks.option_lang_mask ());
   global_dc->set_urlifier (make_gcc_urlifier ());
 
   if (init_signals)

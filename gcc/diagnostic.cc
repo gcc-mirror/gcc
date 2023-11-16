@@ -423,12 +423,14 @@ diagnostic_context::
 set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
 		  void *option_state,
 		  diagnostic_make_option_name_cb make_option_name_cb,
-		  diagnostic_make_option_url_cb make_option_url_cb)
+		  diagnostic_make_option_url_cb make_option_url_cb,
+		  unsigned lang_mask)
 {
   m_option_callbacks.m_option_enabled_cb = option_enabled_cb;
   m_option_callbacks.m_option_state = option_state;
   m_option_callbacks.m_make_option_name_cb = make_option_name_cb;
   m_option_callbacks.m_make_option_url_cb = make_option_url_cb;
+  m_option_callbacks.m_lang_mask = lang_mask;
 }
 
 void
