@@ -2,9 +2,10 @@
 
 package body Varsize4 is
 
-   function Func (bytes_read : out Natural) return Arr is
+   function Func (Bytes_Read : out Natural) return Arr is
       Ret : Arr := (others => False);
    begin
+      Bytes_Read := 0;
       return Ret;
    end;
 
