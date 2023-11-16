@@ -300,10 +300,12 @@
       (match_test "known_eq (GET_MODE_SIZE (mode),
 			     GET_MODE_SIZE (GET_MODE (op)))"))))
 
-(define_predicate "aarch64_mem_pair_operand"
-  (and (match_code "mem")
-       (match_test "aarch64_legitimate_address_p (mode, XEXP (op, 0), false,
-						  ADDR_QUERY_LDP_STP)")))
+;; Like aarch64_mem_pair_operator, but additionally check the
+;; address is suitable.
+(define_special_predicate "aarch64_mem_pair_operand"
+  (and (match_operand 0 "aarch64_mem_pair_operator")
+       (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
+						  false, ADDR_QUERY_LDP_STP)")))
 
 (define_predicate "pmode_plus_operator"
   (and (match_code "plus")

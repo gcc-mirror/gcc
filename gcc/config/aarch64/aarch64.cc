@@ -5239,15 +5239,17 @@ aarch64_sme_mode_switch_regs::emit_mem_128_moves (sequence seq)
 	rtx set2 = gen_rtx_SET (ops[lhs + 2], ops[3 - lhs]);
 
 	/* Combine the sets with any stack allocation/deallocation.  */
-	rtvec vec;
+	rtx pat;
 	if (prev_loc->index == 0)
 	  {
 	    rtx plus_sp = plus_constant (Pmode, sp, sp_adjust);
-	    vec = gen_rtvec (3, gen_rtx_SET (sp, plus_sp), set1, set2);
+	    rtvec vec = gen_rtvec (3, gen_rtx_SET (sp, plus_sp), set1, set2);
+	    pat = gen_rtx_PARALLEL (VOIDmode, vec);
 	  }
+	else if (seq == PROLOGUE)
+	  pat = aarch64_gen_store_pair (ops[1], ops[0], ops[2]);
 	else
-	  vec = gen_rtvec (2, set1, set2);
-	rtx pat = gen_rtx_PARALLEL (VOIDmode, vec);
+	  pat = aarch64_gen_load_pair (ops[0], ops[2], ops[1]);
 
 	/* Queue a deallocation to the end, otherwise emit the
 	   instruction now.  */
@@ -8201,59 +8203,85 @@ aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
     }
 }
 
-/* Generate and return a store pair instruction of mode MODE to store
-   register REG1 to MEM1 and register REG2 to MEM2.  */
+/* Given an ldp/stp register operand mode MODE, return a suitable mode to use
+   for a mem rtx representing the entire pair.  */
 
-static rtx
-aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
-			rtx reg2)
+static machine_mode
+aarch64_pair_mode_for_mode (machine_mode mode)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_store_pair_dw_didi (mem1, reg1, mem2, reg2);
-
-    case E_DFmode:
-      return gen_store_pair_dw_dfdf (mem1, reg1, mem2, reg2);
-
-    case E_TFmode:
-      return gen_store_pair_dw_tftf (mem1, reg1, mem2, reg2);
-
-    case E_V4SImode:
-      return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
-
-    case E_V16QImode:
-      return gen_vec_store_pairv16qiv16qi (mem1, reg1, mem2, reg2);
-
-    default:
-      gcc_unreachable ();
-    }
+  if (known_eq (GET_MODE_SIZE (mode), 4))
+    return V2x4QImode;
+  else if (known_eq (GET_MODE_SIZE (mode), 8))
+    return V2x8QImode;
+  else if (known_eq (GET_MODE_SIZE (mode), 16))
+    return V2x16QImode;
+  else
+    gcc_unreachable ();
 }
 
-/* Generate and regurn a load pair isntruction of mode MODE to load register
-   REG1 from MEM1 and register REG2 from MEM2.  */
+/* Given a base mem MEM with mode and address suitable for a single ldp/stp
+   operand, return an rtx like MEM which instead represents the entire pair.  */
 
 static rtx
-aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
-		       rtx mem2)
+aarch64_pair_mem_from_base (rtx mem)
 {
-  switch (mode)
-    {
-    case E_DImode:
-      return gen_load_pair_dw_didi (reg1, mem1, reg2, mem2);
+  auto pair_mode = aarch64_pair_mode_for_mode (GET_MODE (mem));
+  mem = adjust_bitfield_address_nv (mem, pair_mode, 0);
+  gcc_assert (aarch64_mem_pair_lanes_operand (mem, pair_mode));
+  return mem;
+}
 
-    case E_DFmode:
-      return gen_load_pair_dw_dfdf (reg1, mem1, reg2, mem2);
+/* Generate and return a store pair instruction to store REG1 and REG2
+   into memory starting at BASE_MEM.  All three rtxes should have modes of the
+   same size.  */
 
-    case E_TFmode:
-      return gen_load_pair_dw_tftf (reg1, mem1, reg2, mem2);
+rtx
+aarch64_gen_store_pair (rtx base_mem, rtx reg1, rtx reg2)
+{
+  rtx pair_mem = aarch64_pair_mem_from_base (base_mem);
 
-    case E_V4SImode:
-      return gen_load_pairv4siv4si (reg1, mem1, reg2, mem2);
+  return gen_rtx_SET (pair_mem,
+		      gen_rtx_UNSPEC (GET_MODE (pair_mem),
+				      gen_rtvec (2, reg1, reg2),
+				      UNSPEC_STP));
+}
 
-    default:
-      gcc_unreachable ();
-    }
+/* Generate and return a load pair instruction to load a pair of
+   registers starting at BASE_MEM into REG1 and REG2.  If CODE is
+   UNKNOWN, all three rtxes should have modes of the same size.
+   Otherwise, CODE is {SIGN,ZERO}_EXTEND, base_mem should be in SImode,
+   and REG{1,2} should be in DImode.  */
+
+rtx
+aarch64_gen_load_pair (rtx reg1, rtx reg2, rtx base_mem, enum rtx_code code)
+{
+  rtx pair_mem = aarch64_pair_mem_from_base (base_mem);
+
+  const bool any_extend_p = (code == ZERO_EXTEND || code == SIGN_EXTEND);
+  if (any_extend_p)
+    gcc_checking_assert (GET_MODE (base_mem) == SImode
+			 && GET_MODE (reg1) == DImode
+			 && GET_MODE (reg2) == DImode);
+  else
+    gcc_assert (code == UNKNOWN);
+
+  rtx unspecs[2] = {
+    gen_rtx_UNSPEC (any_extend_p ? SImode : GET_MODE (reg1),
+		    gen_rtvec (1, pair_mem),
+		    UNSPEC_LDP_FST),
+    gen_rtx_UNSPEC (any_extend_p ? SImode : GET_MODE (reg2),
+		    gen_rtvec (1, copy_rtx (pair_mem)),
+		    UNSPEC_LDP_SND)
+  };
+
+  if (any_extend_p)
+    for (int i = 0; i < 2; i++)
+      unspecs[i] = gen_rtx_fmt_e (code, DImode, unspecs[i]);
+
+  return gen_rtx_PARALLEL (VOIDmode,
+			   gen_rtvec (2,
+				      gen_rtx_SET (reg1, unspecs[0]),
+				      gen_rtx_SET (reg2, unspecs[1])));
 }
 
 /* Return TRUE if return address signing should be enabled for the current
@@ -8436,7 +8464,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  emit_move_insn (move_src, gen_int_mode (aarch64_sve_vg, DImode));
 	}
       rtx base_rtx = stack_pointer_rtx;
-      poly_int64 sp_offset = offset;
+      poly_int64 cfa_offset = offset;
 
       HOST_WIDE_INT const_offset;
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
@@ -8461,8 +8489,17 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	  offset -= fp_offset;
 	}
       rtx mem = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-      bool need_cfa_note_p = (base_rtx != stack_pointer_rtx);
 
+      rtx cfa_base = stack_pointer_rtx;
+      if (hard_fp_valid_p && frame_pointer_needed)
+	{
+	  cfa_base = hard_frame_pointer_rtx;
+	  cfa_offset += (bytes_below_sp - frame.bytes_below_hard_fp);
+	}
+
+      rtx cfa_mem = gen_frame_mem (mode,
+				   plus_constant (Pmode,
+						  cfa_base, cfa_offset));
       unsigned int regno2;
       if (!aarch64_sve_mode_p (mode)
 	  && reg == move_src
@@ -8472,12 +8509,9 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
-	  rtx mem2;
 
 	  offset += GET_MODE_SIZE (mode);
-	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-	  insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2,
-						    reg2));
+	  insn = emit_insn (aarch64_gen_store_pair (mem, reg, reg2));
 
 	  /* The first part of a frame-related parallel insn is
 	     always assumed to be relevant to the frame
@@ -8485,31 +8519,28 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	     frame-related if explicitly marked.  */
 	  if (aarch64_emit_cfi_for_reg_p (regno2))
 	    {
-	      if (need_cfa_note_p)
-		aarch64_add_cfa_expression (insn, reg2, stack_pointer_rtx,
-					    sp_offset + GET_MODE_SIZE (mode));
-	      else
-		RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+	      const auto off = cfa_offset + GET_MODE_SIZE (mode);
+	      rtx cfa_mem2 = gen_frame_mem (mode,
+					    plus_constant (Pmode,
+							   cfa_base,
+							   off));
+	      add_reg_note (insn, REG_CFA_OFFSET,
+			    gen_rtx_SET (cfa_mem2, reg2));
 	    }
 
 	  regno = regno2;
 	  ++i;
 	}
       else if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
-	{
-	  insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
-	  need_cfa_note_p = true;
-	}
+	insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
       else if (aarch64_sve_mode_p (mode))
 	insn = emit_insn (gen_rtx_SET (mem, move_src));
       else
 	insn = emit_move_insn (mem, move_src);
 
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      if (frame_related_p && need_cfa_note_p)
-	aarch64_add_cfa_expression (insn, reg, stack_pointer_rtx, sp_offset);
-      else if (frame_related_p && move_src != reg)
-	add_reg_note (insn, REG_FRAME_RELATED_EXPR, gen_rtx_SET (mem, reg));
+      if (frame_related_p)
+	add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (cfa_mem, reg));
 
       /* Emit a fake instruction to indicate that the VG save slot has
 	 been initialized.  */
@@ -8573,11 +8604,9 @@ aarch64_restore_callee_saves (poly_int64 bytes_below_sp,
 		       frame.reg_offset[regno2] - frame.reg_offset[regno]))
 	{
 	  rtx reg2 = gen_rtx_REG (mode, regno2);
-	  rtx mem2;
 
 	  offset += GET_MODE_SIZE (mode);
-	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
-	  emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
+	  emit_insn (aarch64_gen_load_pair (reg, reg2, mem));
 
 	  *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg2, *cfi_ops);
 	  regno = regno2;
@@ -8921,9 +8950,9 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 			     : gen_rtx_SET (reg2, mem2);
 
       if (prologue_p)
-	insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2, reg2));
+	insn = emit_insn (aarch64_gen_store_pair (mem, reg, reg2));
       else
-	insn = emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
+	insn = emit_insn (aarch64_gen_load_pair (reg, reg2, mem));
 
       if (frame_related_p || frame_related2_p)
 	{
@@ -10319,12 +10348,18 @@ aarch64_classify_address (struct aarch64_address_info *info,
      mode of the corresponding addressing mode is half of that.  */
   if (type == ADDR_QUERY_LDP_STP_N)
     {
-      if (known_eq (GET_MODE_SIZE (mode), 16))
+      if (known_eq (GET_MODE_SIZE (mode), 32))
+	mode = V16QImode;
+      else if (known_eq (GET_MODE_SIZE (mode), 16))
 	mode = DFmode;
       else if (known_eq (GET_MODE_SIZE (mode), 8))
 	mode = SFmode;
       else
 	return false;
+
+      /* This isn't really an Advanced SIMD struct mode, but a mode
+	 used to represent the complete mem in a load/store pair.  */
+      advsimd_struct_p = false;
     }
 
   bool allow_reg_index_p = (!load_store_pair_p
@@ -10942,9 +10977,7 @@ aarch64_init_tpidr2_block ()
   /* The first word of the block points to the save buffer and the second
      word is the number of ZA slices to save.  */
   rtx block_0 = adjust_address (block, DImode, 0);
-  rtx block_8 = adjust_address (block, DImode, 8);
-  emit_insn (gen_store_pair_dw_didi (block_0, za_save_buffer,
-				     block_8, svl_bytes_reg));
+  emit_insn (aarch64_gen_store_pair (block_0, za_save_buffer, svl_bytes_reg));
 
   if (!memory_operand (block, V16QImode))
     block = replace_equiv_address (block, force_reg (Pmode, XEXP (block, 0)));
@@ -12293,7 +12326,8 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	if (!MEM_P (x)
 	    || (code == 'y'
 		&& maybe_ne (GET_MODE_SIZE (mode), 8)
-		&& maybe_ne (GET_MODE_SIZE (mode), 16)))
+		&& maybe_ne (GET_MODE_SIZE (mode), 16)
+		&& maybe_ne (GET_MODE_SIZE (mode), 32)))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
@@ -25441,13 +25475,11 @@ aarch64_copy_one_block (copy_ops &ops, rtx src, rtx dst,
     {
       mode = V4SImode;
       rtx src1 = adjust_address (src, mode, offset);
-      rtx src2 = adjust_address (src, mode, offset + 16);
       rtx dst1 = adjust_address (dst, mode, offset);
-      rtx dst2 = adjust_address (dst, mode, offset + 16);
       rtx reg1 = gen_reg_rtx (mode);
       rtx reg2 = gen_reg_rtx (mode);
-      rtx load = aarch64_gen_load_pair (mode, reg1, src1, reg2, src2);
-      rtx store = aarch64_gen_store_pair (mode, dst1, reg1, dst2, reg2);
+      rtx load = aarch64_gen_load_pair (reg1, reg2, src1);
+      rtx store = aarch64_gen_store_pair (dst1, reg1, reg2);
       ops.safe_push ({ load, store });
       return;
     }
@@ -25599,8 +25631,7 @@ aarch64_set_one_block_and_progress_pointer (rtx src, rtx *dst,
       /* "Cast" the *dst to the correct mode.  */
       *dst = adjust_address (*dst, mode, 0);
       /* Emit the memset.  */
-      emit_insn (aarch64_gen_store_pair (mode, *dst, src,
-					 aarch64_progress_pointer (*dst), src));
+      emit_insn (aarch64_gen_store_pair (*dst, src, src));
 
       /* Move the pointers forward.  */
       *dst = aarch64_move_pointer (*dst, 32);
@@ -26797,6 +26828,29 @@ aarch64_swap_ldrstr_operands (rtx* operands, bool load)
     }
 }
 
+/* Helper function used for generation of load/store pair instructions, called
+   from peepholes in aarch64-ldpstp.md.  OPERANDS is an array of
+   operands as matched by the peepholes in that file.  LOAD_P is true if we're
+   generating a load pair, otherwise we're generating a store pair.  CODE is
+   either {ZERO,SIGN}_EXTEND for extending loads or UNKNOWN if we're generating a
+   standard load/store pair.  */
+
+void
+aarch64_finish_ldpstp_peephole (rtx *operands, bool load_p, enum rtx_code code)
+{
+  aarch64_swap_ldrstr_operands (operands, load_p);
+
+  if (load_p)
+    emit_insn (aarch64_gen_load_pair (operands[0], operands[2],
+				      operands[1], code));
+  else
+    {
+      gcc_assert (code == UNKNOWN);
+      emit_insn (aarch64_gen_store_pair (operands[0], operands[1],
+					 operands[3]));
+    }
+}
+
 /* Taking X and Y to be HOST_WIDE_INT pointers, return the result of a
    comparison between the two.  */
 int
@@ -26978,10 +27032,10 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     machine_mode mode, RTX_CODE code)
 {
-  rtx base, offset_1, offset_3, t1, t2;
-  rtx mem_1, mem_2, mem_3, mem_4;
+  rtx base, offset_1, offset_2;
+  rtx mem_1, mem_2;
   rtx temp_operands[8];
-  HOST_WIDE_INT off_val_1, off_val_3, base_off, new_off_1, new_off_3,
+  HOST_WIDE_INT off_val_1, off_val_2, base_off, new_off_1, new_off_2,
 		stp_off_upper_limit, stp_off_lower_limit, msize;
 
   /* We make changes on a copy as we may still bail out.  */
@@ -27004,23 +27058,19 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   if (load)
     {
       mem_1 = copy_rtx (temp_operands[1]);
-      mem_2 = copy_rtx (temp_operands[3]);
-      mem_3 = copy_rtx (temp_operands[5]);
-      mem_4 = copy_rtx (temp_operands[7]);
+      mem_2 = copy_rtx (temp_operands[5]);
     }
   else
     {
       mem_1 = copy_rtx (temp_operands[0]);
-      mem_2 = copy_rtx (temp_operands[2]);
-      mem_3 = copy_rtx (temp_operands[4]);
-      mem_4 = copy_rtx (temp_operands[6]);
+      mem_2 = copy_rtx (temp_operands[4]);
       gcc_assert (code == UNKNOWN);
     }
 
   extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_3, &base, &offset_3);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
   gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
-	      && offset_3 != NULL_RTX);
+	      && offset_2 != NULL_RTX);
 
   /* Adjust offset so it can fit in LDP/STP instruction.  */
   msize = GET_MODE_SIZE (mode).to_constant();
@@ -27028,11 +27078,11 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   stp_off_lower_limit = - msize * 0x40;
 
   off_val_1 = INTVAL (offset_1);
-  off_val_3 = INTVAL (offset_3);
+  off_val_2 = INTVAL (offset_2);
 
   /* The base offset is optimally half way between the two STP/LDP offsets.  */
   if (msize <= 4)
-    base_off = (off_val_1 + off_val_3) / 2;
+    base_off = (off_val_1 + off_val_2) / 2;
   else
     /* However, due to issues with negative LDP/STP offset generation for
        larger modes, for DF, DD, DI and vector modes. we must not use negative
@@ -27072,73 +27122,58 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   new_off_1 = off_val_1 - base_off;
 
   /* Offset of the second STP/LDP.  */
-  new_off_3 = off_val_3 - base_off;
+  new_off_2 = off_val_2 - base_off;
 
   /* The offsets must be within the range of the LDP/STP instructions.  */
   if (new_off_1 > stp_off_upper_limit || new_off_1 < stp_off_lower_limit
-      || new_off_3 > stp_off_upper_limit || new_off_3 < stp_off_lower_limit)
+      || new_off_2 > stp_off_upper_limit || new_off_2 < stp_off_lower_limit)
     return false;
 
   replace_equiv_address_nv (mem_1, plus_constant (Pmode, operands[8],
 						  new_off_1), true);
   replace_equiv_address_nv (mem_2, plus_constant (Pmode, operands[8],
-						  new_off_1 + msize), true);
-  replace_equiv_address_nv (mem_3, plus_constant (Pmode, operands[8],
-						  new_off_3), true);
-  replace_equiv_address_nv (mem_4, plus_constant (Pmode, operands[8],
-						  new_off_3 + msize), true);
+						  new_off_2), true);
 
   if (!aarch64_mem_pair_operand (mem_1, mode)
-      || !aarch64_mem_pair_operand (mem_3, mode))
+      || !aarch64_mem_pair_operand (mem_2, mode))
     return false;
-
-  if (code == ZERO_EXTEND)
-    {
-      mem_1 = gen_rtx_ZERO_EXTEND (DImode, mem_1);
-      mem_2 = gen_rtx_ZERO_EXTEND (DImode, mem_2);
-      mem_3 = gen_rtx_ZERO_EXTEND (DImode, mem_3);
-      mem_4 = gen_rtx_ZERO_EXTEND (DImode, mem_4);
-    }
-  else if (code == SIGN_EXTEND)
-    {
-      mem_1 = gen_rtx_SIGN_EXTEND (DImode, mem_1);
-      mem_2 = gen_rtx_SIGN_EXTEND (DImode, mem_2);
-      mem_3 = gen_rtx_SIGN_EXTEND (DImode, mem_3);
-      mem_4 = gen_rtx_SIGN_EXTEND (DImode, mem_4);
-    }
 
   if (load)
     {
       operands[0] = temp_operands[0];
       operands[1] = mem_1;
       operands[2] = temp_operands[2];
-      operands[3] = mem_2;
       operands[4] = temp_operands[4];
-      operands[5] = mem_3;
+      operands[5] = mem_2;
       operands[6] = temp_operands[6];
-      operands[7] = mem_4;
     }
   else
     {
       operands[0] = mem_1;
       operands[1] = temp_operands[1];
-      operands[2] = mem_2;
       operands[3] = temp_operands[3];
-      operands[4] = mem_3;
+      operands[4] = mem_2;
       operands[5] = temp_operands[5];
-      operands[6] = mem_4;
       operands[7] = temp_operands[7];
     }
 
   /* Emit adjusting instruction.  */
   emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, base_off)));
   /* Emit ldp/stp instructions.  */
-  t1 = gen_rtx_SET (operands[0], operands[1]);
-  t2 = gen_rtx_SET (operands[2], operands[3]);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
-  t1 = gen_rtx_SET (operands[4], operands[5]);
-  t2 = gen_rtx_SET (operands[6], operands[7]);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
+  if (load)
+    {
+      emit_insn (aarch64_gen_load_pair (operands[0], operands[2],
+					operands[1], code));
+      emit_insn (aarch64_gen_load_pair (operands[4], operands[6],
+					operands[5], code));
+    }
+  else
+    {
+      emit_insn (aarch64_gen_store_pair (operands[0], operands[1],
+					 operands[3]));
+      emit_insn (aarch64_gen_store_pair (operands[4], operands[5],
+					 operands[7]));
+    }
   return true;
 }
 

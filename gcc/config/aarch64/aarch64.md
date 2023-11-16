@@ -228,6 +228,9 @@
     UNSPEC_GOTSMALLTLS
     UNSPEC_GOTTINYPIC
     UNSPEC_GOTTINYTLS
+    UNSPEC_STP
+    UNSPEC_LDP_FST
+    UNSPEC_LDP_SND
     UNSPEC_LD1
     UNSPEC_LD2
     UNSPEC_LD2_DREG
@@ -547,6 +550,11 @@
   "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided,
    luti_consecutive,luti_strided"
   (const_string "none"))
+
+;; Attribute used to identify load pair and store pair instructions.
+;; Currently the attribute is only applied to the non-writeback ldp/stp
+;; patterns.
+(define_attr "ldpstp" "ldp,stp,none" (const_string "none"))
 
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
@@ -1863,100 +1871,62 @@
   FAIL;
 })
 
-;; Operands 1 and 3 are tied together by the final condition; so we allow
-;; fairly lax checking on the second memory operation.
-(define_insn "load_pair_sw_<SX:mode><SX2:mode>"
-  [(set (match_operand:SX 0 "register_operand")
-	(match_operand:SX 1 "aarch64_mem_pair_operand"))
-   (set (match_operand:SX2 2 "register_operand")
-	(match_operand:SX2 3 "memory_operand"))]
-   "rtx_equal_p (XEXP (operands[3], 0),
-		 plus_constant (Pmode,
-				XEXP (operands[1], 0),
-				GET_MODE_SIZE (<SX:MODE>mode)))"
-  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
-     [ r        , Ump , r  , m ; load_8          , *    ] ldp\t%w0, %w2, %z1
-     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%s0, %s2, %z1
+(define_insn "*load_pair_<ldst_sz>"
+  [(set (match_operand:GPI 0 "aarch64_ldp_reg_operand")
+	(unspec [
+	  (match_operand:<VPAIR> 1 "aarch64_mem_pair_lanes_operand")
+	] UNSPEC_LDP_FST))
+   (set (match_operand:GPI 2 "aarch64_ldp_reg_operand")
+	(unspec [
+	  (match_dup 1)
+	] UNSPEC_LDP_SND))]
+  ""
+  {@ [cons: =0, 1,   =2; attrs: type,	   arch]
+     [	     r, Umn,  r; load_<ldpstp_sz>, *   ] ldp\t%<w>0, %<w>2, %y1
+     [	     w, Umn,  w; neon_load1_2reg,  fp  ] ldp\t%<v>0, %<v>2, %y1
   }
+  [(set_attr "ldpstp" "ldp")]
 )
 
-;; Storing different modes that can still be merged
-(define_insn "load_pair_dw_<DX:mode><DX2:mode>"
-  [(set (match_operand:DX 0 "register_operand")
-	(match_operand:DX 1 "aarch64_mem_pair_operand"))
-   (set (match_operand:DX2 2 "register_operand")
-	(match_operand:DX2 3 "memory_operand"))]
-   "rtx_equal_p (XEXP (operands[3], 0),
-		 plus_constant (Pmode,
-				XEXP (operands[1], 0),
-				GET_MODE_SIZE (<DX:MODE>mode)))"
-  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
-     [ r        , Ump , r  , m ; load_16         , *    ] ldp\t%x0, %x2, %z1
-     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%d0, %d2, %z1
-  }
-)
-
-(define_insn "load_pair_dw_<TX:mode><TX2:mode>"
-  [(set (match_operand:TX 0 "register_operand" "=w")
-	(match_operand:TX 1 "aarch64_mem_pair_operand" "Ump"))
-   (set (match_operand:TX2 2 "register_operand" "=w")
-	(match_operand:TX2 3 "memory_operand" "m"))]
-   "TARGET_BASE_SIMD
-    && rtx_equal_p (XEXP (operands[3], 0),
-		    plus_constant (Pmode,
-				   XEXP (operands[1], 0),
-				   GET_MODE_SIZE (<TX:MODE>mode)))"
-  "ldp\\t%q0, %q2, %z1"
+(define_insn "*load_pair_16"
+  [(set (match_operand:TI 0 "aarch64_ldp_reg_operand" "=w")
+	(unspec [
+	  (match_operand:V2x16QI 1 "aarch64_mem_pair_lanes_operand" "Umn")
+	] UNSPEC_LDP_FST))
+   (set (match_operand:TI 2 "aarch64_ldp_reg_operand" "=w")
+	(unspec [
+	  (match_dup 1)
+	] UNSPEC_LDP_SND))]
+  "TARGET_FLOAT"
+  "ldp\\t%q0, %q2, %y1"
   [(set_attr "type" "neon_ldp_q")
-   (set_attr "fp" "yes")]
+   (set_attr "fp" "yes")
+   (set_attr "ldpstp" "ldp")]
 )
 
-;; Operands 0 and 2 are tied together by the final condition; so we allow
-;; fairly lax checking on the second memory operation.
-(define_insn "store_pair_sw_<SX:mode><SX2:mode>"
-  [(set (match_operand:SX 0 "aarch64_mem_pair_operand")
-	(match_operand:SX 1 "aarch64_reg_zero_or_fp_zero"))
-   (set (match_operand:SX2 2 "memory_operand")
-	(match_operand:SX2 3 "aarch64_reg_zero_or_fp_zero"))]
-   "rtx_equal_p (XEXP (operands[2], 0),
-		 plus_constant (Pmode,
-				XEXP (operands[0], 0),
-				GET_MODE_SIZE (<SX:MODE>mode)))"
-  {@ [ cons: =0 , 1   , =2 , 3   ; attrs: type      , arch ]
-     [ Ump      , rYZ , m  , rYZ ; store_8          , *    ] stp\t%w1, %w3, %z0
-     [ Ump      , w   , m  , w   ; neon_store1_2reg , fp   ] stp\t%s1, %s3, %z0
+(define_insn "*store_pair_<ldst_sz>"
+  [(set (match_operand:<VPAIR> 0 "aarch64_mem_pair_lanes_operand")
+	(unspec:<VPAIR>
+	  [(match_operand:GPI 1 "aarch64_stp_reg_operand")
+	   (match_operand:GPI 2 "aarch64_stp_reg_operand")] UNSPEC_STP))]
+  ""
+  {@ [cons:  =0,   1,   2; attrs: type      , arch]
+     [	    Umn, rYZ, rYZ; store_<ldpstp_sz>, *   ] stp\t%<w>1, %<w>2, %y0
+     [	    Umn,   w,   w; neon_store1_2reg , fp  ] stp\t%<v>1, %<v>2, %y0
   }
+  [(set_attr "ldpstp" "stp")]
 )
 
-;; Storing different modes that can still be merged
-(define_insn "store_pair_dw_<DX:mode><DX2:mode>"
-  [(set (match_operand:DX 0 "aarch64_mem_pair_operand")
-	(match_operand:DX 1 "aarch64_reg_zero_or_fp_zero"))
-   (set (match_operand:DX2 2 "memory_operand")
-	(match_operand:DX2 3 "aarch64_reg_zero_or_fp_zero"))]
-   "rtx_equal_p (XEXP (operands[2], 0),
-		 plus_constant (Pmode,
-				XEXP (operands[0], 0),
-				GET_MODE_SIZE (<DX:MODE>mode)))"
-  {@ [ cons: =0 , 1   , =2 , 3   ; attrs: type      , arch ]
-     [ Ump      , rYZ , m  , rYZ ; store_16         , *    ] stp\t%x1, %x3, %z0
-     [ Ump      , w   , m  , w   ; neon_store1_2reg , fp   ] stp\t%d1, %d3, %z0
-  }
-)
-
-(define_insn "store_pair_dw_<TX:mode><TX2:mode>"
-  [(set (match_operand:TX 0 "aarch64_mem_pair_operand" "=Ump")
-	(match_operand:TX 1 "register_operand" "w"))
-   (set (match_operand:TX2 2 "memory_operand" "=m")
-	(match_operand:TX2 3 "register_operand" "w"))]
-   "TARGET_BASE_SIMD
-    && rtx_equal_p (XEXP (operands[2], 0),
-		    plus_constant (Pmode,
-				   XEXP (operands[0], 0),
-				   GET_MODE_SIZE (TFmode)))"
-  "stp\\t%q1, %q3, %z0"
+(define_insn "*store_pair_16"
+  [(set (match_operand:V2x16QI 0 "aarch64_mem_pair_lanes_operand" "=Umn")
+	(unspec:V2x16QI
+	  [(match_operand:TI 1 "aarch64_ldp_reg_operand" "w")
+	   (match_operand:TI 2 "aarch64_ldp_reg_operand" "w")] UNSPEC_STP))]
+  "TARGET_FLOAT"
+  "stp\t%q1, %q2, %y0"
   [(set_attr "type" "neon_stp_q")
-   (set_attr "fp" "yes")]
+   (set_attr "fp" "yes")
+   (set_attr "ldpstp" "stp")]
 )
 
 ;; Writeback load/store pair patterns.
@@ -2186,14 +2156,15 @@
 
 (define_insn "*load_pair_extendsidi2_aarch64"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump")))
+	(sign_extend:DI (unspec:SI [
+	  (match_operand:V2x4QI 1 "aarch64_mem_pair_lanes_operand" "Umn")
+	] UNSPEC_LDP_FST)))
    (set (match_operand:DI 2 "register_operand" "=r")
-	(sign_extend:DI (match_operand:SI 3 "memory_operand" "m")))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (SImode)))"
-  "ldpsw\\t%0, %2, %z1"
+	(sign_extend:DI (unspec:SI [
+	  (match_dup 1)
+	] UNSPEC_LDP_SND)))]
+  ""
+  "ldpsw\\t%0, %2, %y1"
   [(set_attr "type" "load_8")]
 )
 
@@ -2213,16 +2184,17 @@
 
 (define_insn "*load_pair_zero_extendsidi2_aarch64"
   [(set (match_operand:DI 0 "register_operand")
-	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand")))
+	(zero_extend:DI (unspec:SI [
+	  (match_operand:V2x4QI 1 "aarch64_mem_pair_lanes_operand")
+	] UNSPEC_LDP_FST)))
    (set (match_operand:DI 2 "register_operand")
-	(zero_extend:DI (match_operand:SI 3 "memory_operand")))]
-  "rtx_equal_p (XEXP (operands[3], 0),
-		plus_constant (Pmode,
-			       XEXP (operands[1], 0),
-			       GET_MODE_SIZE (SImode)))"
-  {@ [ cons: =0 , 1   , =2 , 3 ; attrs: type     , arch ]
-     [ r        , Ump , r  , m ; load_8          , *    ] ldp\t%w0, %w2, %z1
-     [ w        , Ump , w  , m ; neon_load1_2reg , fp   ] ldp\t%s0, %s2, %z1
+	(zero_extend:DI (unspec:SI [
+	  (match_dup 1)
+	] UNSPEC_LDP_SND)))]
+  ""
+  {@ [ cons: =0 , 1   , =2; attrs: type    , arch]
+     [ r	, Umn , r ; load_8	   , *   ] ldp\t%w0, %w2, %y1
+     [ w	, Umn , w ; neon_load1_2reg, fp  ] ldp\t%s0, %s2, %y1
   }
 )
 

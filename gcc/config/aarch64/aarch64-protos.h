@@ -982,6 +982,8 @@ void aarch64_split_compare_and_swap (rtx op[]);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
 bool aarch64_gen_adjusted_ldpstp (rtx *, bool, machine_mode, RTX_CODE);
+void aarch64_finish_ldpstp_peephole (rtx *, bool,
+				     enum rtx_code = (enum rtx_code)0);
 
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
@@ -1043,8 +1045,9 @@ bool aarch64_mergeable_load_pair_p (machine_mode, rtx, rtx);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_mem_ok_with_ldpstp_policy_model (rtx, bool, machine_mode);
-void aarch64_swap_ldrstr_operands (rtx *, bool);
 bool aarch64_ldpstp_operand_mode_p (machine_mode);
+rtx aarch64_gen_load_pair (rtx, rtx, rtx, enum rtx_code = (enum rtx_code)0);
+rtx aarch64_gen_store_pair (rtx, rtx, rtx);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);
