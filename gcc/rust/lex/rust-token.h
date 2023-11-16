@@ -150,6 +150,7 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD_2015 (AS, "as")                                             \
   RS_TOKEN_KEYWORD_2018 (ASYNC, "async") /* unused */                          \
   RS_TOKEN_KEYWORD_2015 (AUTO, "auto")                                         \
+  RS_TOKEN_KEYWORD_2018 (AWAIT, "await")                                       \
   RS_TOKEN_KEYWORD_2015 (BECOME, "become") /* unused */                        \
   RS_TOKEN_KEYWORD_2015 (BOX, "box")	   /* unused */                        \
   RS_TOKEN_KEYWORD_2015 (BREAK, "break")                                       \
