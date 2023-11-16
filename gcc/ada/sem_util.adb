@@ -4370,21 +4370,24 @@ package body Sem_Util is
                              and then Has_No_Output (Subp_Id))
               and then not Is_Wrapper (Subp_Id)
             then
-               if Pragma_Name (Prag) = Name_Contract_Cases then
-                  Error_Msg_NE (Adjust_Message
-                    ("contract case does not check the outcome of calling "
-                     & "&?.t?"), Expr, Subp_Id);
+               case Pragma_Name (Prag) is
+                  when Name_Contract_Cases =>
+                     Error_Msg_NE (Adjust_Message
+                       ("contract case does not check the outcome of calling "
+                        & "&?.t?"), Expr, Subp_Id);
 
-               elsif Pragma_Name (Prag) = Name_Refined_Post then
-                  Error_Msg_NE (Adjust_Message
-                    ("refined postcondition does not check the outcome of "
-                     & "calling &?.t?"), Err_Node, Subp_Id);
+                  when Name_Refined_Post =>
+                     Error_Msg_NE (Adjust_Message
+                       ("refined postcondition does not check the outcome of "
+                        & "calling &?.t?"), Err_Node, Subp_Id);
 
-               else
-                  Error_Msg_NE (Adjust_Message
-                    ("postcondition does not check the outcome of calling "
-                     & "&?.t?"), Err_Node, Subp_Id);
-               end if;
+                  when Name_Postcondition =>
+                     Error_Msg_NE (Adjust_Message
+                       ("postcondition does not check the outcome of calling "
+                        & "&?.t?"), Err_Node, Subp_Id);
+
+                  when others => pragma Assert (False);
+               end case;
             end if;
          end Check_Conjunct;
 
@@ -4555,11 +4558,16 @@ package body Sem_Util is
    --  Start of processing for Check_Result_And_Post_State
 
    begin
+      --  Do not check in instances, because we already checked the generic
+
+      if In_Instance then
+         return;
+
       --  The lack of attribute 'Result or a post-state is classified as a
       --  suspicious contract. Do not perform the check if the corresponding
-      --  swich is not set.
+      --  switch is not set.
 
-      if not Warn_On_Suspicious_Contract then
+      elsif not Warn_On_Suspicious_Contract then
          return;
 
       --  Nothing to do if there is no contract
