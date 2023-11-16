@@ -740,7 +740,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  std::ostringstream __os;
 	  __os << __x;
-	  return __format::__write(__fc.out(), __os.view());
+	  auto __str = __os.view();
+	  return __format::__write_padded_as_spec(__str, __str.size(),
+						  __fc, _M_spec);
 	}
 
     private:
