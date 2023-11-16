@@ -2657,6 +2657,19 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
     = (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
        && need_peeling_or_partial_vectors_p);
 
+  /* We set LOOP_VINFO_USING_SELECT_VL_P as true before loop vectorization
+     analysis that we don't know whether the loop is vectorized by partial
+     vectors (More details see tree-vect-loop-manip.cc).
+
+     However, SELECT_VL vectorizaton style should only applied on partial
+     vectorization since SELECT_VL is the GIMPLE IR that calculates the
+     number of elements to be process for each iteration.
+
+     After loop vectorization analysis, Clear LOOP_VINFO_USING_SELECT_VL_P
+     if it is not partial vectorized loop.  */
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
+
   return opt_result::success ();
 }
 
