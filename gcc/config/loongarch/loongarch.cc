@@ -10177,6 +10177,7 @@ loongarch_cpu_sched_reassociation_width (struct loongarch_target *target,
     {
     case CPU_LOONGARCH64:
     case CPU_LA464:
+    case CPU_LA664:
       /* Vector part.  */
       if (LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode))
 	{

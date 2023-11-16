@@ -106,6 +106,10 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       native_cpu_type = CPU_LA464;
       break;
 
+    case 0x0014d000:   /* LA664 */
+      native_cpu_type = CPU_LA664;
+      break;
+
     default:
       /* Unknown PRID.  */
       if (tune_native_p)

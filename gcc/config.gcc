@@ -5039,7 +5039,7 @@ case "${target}" in
 
 		# Perform initial sanity checks on --with-* options.
 		case ${with_arch} in
-		"" | abi-default | loongarch64 | la464) ;; # OK, append here.
+		"" | abi-default | loongarch64 | la[46]64) ;; # OK, append here.
 		native)
 			if test x${host} != x${target}; then
 				echo "--with-arch=native is illegal for cross-compiler." 1>&2
@@ -5088,7 +5088,7 @@ case "${target}" in
 		case ${abi_base}/${abi_ext} in
 		lp64*/base)
 			# architectures that support lp64* ABI
-			arch_pattern="native|abi-default|loongarch64|la464"
+			arch_pattern="native|abi-default|loongarch64|la[46]64"
 			# default architecture for lp64* ABI
 			arch_default="abi-default"
 			;;
@@ -5163,7 +5163,7 @@ case "${target}" in
 		# Check default with_tune configuration using with_arch.
 		case ${with_arch} in
 		loongarch64)
-			tune_pattern="native|abi-default|loongarch64|la464"
+			tune_pattern="native|abi-default|loongarch64|la[46]64"
 			;;
 		*)
 			# By default, $with_tune == $with_arch
@@ -5219,7 +5219,7 @@ case "${target}" in
 					# Fixed: use the default gcc configuration for all multilib
 					# builds by default.
 					with_multilib_default="" ;;
-				arch,native|arch,loongarch64|arch,la464) # OK, append here.
+				arch,native|arch,loongarch64|arch,la[46]64) # OK, append here.
 					with_multilib_default="/march=${component}" ;;
 				arch,*)
 					with_multilib_default="/march=abi-default"
@@ -5307,7 +5307,7 @@ case "${target}" in
 				if test x${parse_state} = x"arch"; then
 					# -march option
 					case ${component} in
-					native | abi-default | loongarch64 | la464) # OK, append here.
+					native | abi-default | loongarch64 | la[46]64) # OK, append here.
 						# Append -march spec for each multilib variant.
 						loongarch_multilib_list_make="${loongarch_multilib_list_make}/march=${component}"
 						parse_state="opts"

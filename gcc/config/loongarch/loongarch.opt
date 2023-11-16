@@ -114,6 +114,9 @@ Enum(cpu_type) String(loongarch64) Value(CPU_LOONGARCH64)
 EnumValue
 Enum(cpu_type) String(la464) Value(CPU_LA464)
 
+EnumValue
+Enum(cpu_type) String(la664) Value(CPU_LA664)
+
 march=
 Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET)
 -march=PROCESSOR	Generate code for the given PROCESSOR ISA.

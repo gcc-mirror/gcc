@@ -28,6 +28,7 @@ loongarch_cpu_strings[N_TUNE_TYPES] = {
   [CPU_ABI_DEFAULT]	  = STR_CPU_ABI_DEFAULT,
   [CPU_LOONGARCH64]	  = STR_CPU_LOONGARCH64,
   [CPU_LA464]		  = STR_CPU_LA464,
+  [CPU_LA664]		  = STR_CPU_LA664,
 };
 
 struct loongarch_isa
@@ -39,6 +40,11 @@ loongarch_cpu_default_isa[N_ARCH_TYPES] = {
   },
   [CPU_LA464] = {
       .base = ISA_BASE_LA64V100,
+      .fpu = ISA_EXT_FPU64,
+      .simd = ISA_EXT_SIMD_LASX,
+  },
+  [CPU_LA664] = {
+      .base = ISA_BASE_LA64V110,
       .fpu = ISA_EXT_FPU64,
       .simd = ISA_EXT_SIMD_LASX,
   },
@@ -58,6 +64,12 @@ loongarch_cpu_cache[N_TUNE_TYPES] = {
       .l2d_size = 256,
       .simultaneous_prefetches = 4,
   },
+  [CPU_LA664] = {
+      .l1d_line_size = 64,
+      .l1d_size = 64,
+      .l2d_size = 256,
+      .simultaneous_prefetches = 4,
+  },
 };
 
 struct loongarch_align
@@ -67,6 +79,10 @@ loongarch_cpu_align[N_TUNE_TYPES] = {
     .label = "16",
   },
   [CPU_LA464] = {
+    .function = "32",
+    .label = "16",
+  },
+  [CPU_LA664] = {
     .function = "32",
     .label = "16",
   },
@@ -104,6 +120,9 @@ loongarch_cpu_rtx_cost_data[N_TUNE_TYPES] = {
   [CPU_LA464] = {
       DEFAULT_COSTS
   },
+  [CPU_LA664] = {
+      DEFAULT_COSTS
+  },
 };
 
 /* RTX costs to use when optimizing for size.  */
@@ -127,6 +146,7 @@ loongarch_cpu_issue_rate[N_TUNE_TYPES] = {
   [CPU_NATIVE]	      = 4,
   [CPU_LOONGARCH64]   = 4,
   [CPU_LA464]	      = 4,
+  [CPU_LA664]	      = 6,
 };
 
 int
@@ -134,6 +154,7 @@ loongarch_cpu_multipass_dfa_lookahead[N_TUNE_TYPES] = {
   [CPU_NATIVE]	      = 4,
   [CPU_LOONGARCH64]   = 4,
   [CPU_LA464]	      = 4,
+  [CPU_LA664]	      = 6,
 };
 
 /* Wiring string definitions from loongarch-str.h to global arrays
