@@ -33972,6 +33972,16 @@ package body Sem_Prag is
    --  Start of processing for Validate_Compile_Time_Warning_Errors
 
    begin
+
+      --  These error/warning messages were deferred because they could not be
+      --  evaluated in the front-end and they needed additional information
+      --  from the back-end. There is no reason to run these checks again if
+      --  the back-end was not activated by this point.
+
+      if not Generating_Code then
+         return;
+      end if;
+
       Expander_Mode_Save_And_Set (False);
       In_Compile_Time_Warning_Or_Error := True;
 
