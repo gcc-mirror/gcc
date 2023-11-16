@@ -1085,7 +1085,7 @@ Parser<ManagedTokenSource>::is_macro_rules_def (const_TokenPtr t)
 
   bool allowed_macro_name = (macro_name == IDENTIFIER || macro_name == TRY);
 
-  return t->get_str () == "macro_rules"
+  return t->get_str () == Values::WeakKeywords::MACRO_RULES
 	 && lexer.peek_token (1)->get_id () == EXCLAM && allowed_macro_name;
 }
 
@@ -1146,13 +1146,13 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
     // crappy hack to do union "keyword"
     case IDENTIFIER:
       // TODO: ensure std::string and literal comparison works
-      if (t->get_str () == "union"
+      if (t->get_str () == Values::WeakKeywords::UNION
 	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "default"
+      else if (t->get_str () == Values::WeakKeywords::DEFAULT
 	       && lexer.peek_token (1)->get_id () != EXCLAM)
 	{
 	  add_error (Error (t->get_locus (),
@@ -1357,7 +1357,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
     // TODO: implement union keyword but not really because of
     // context-dependence case UNION: crappy hack to do union "keyword"
     case IDENTIFIER:
-      if (t->get_str () == "union"
+      if (t->get_str () == Values::WeakKeywords::UNION
 	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_union (std::move (vis), std::move (outer_attrs));
@@ -1436,7 +1436,8 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
 {
   // ensure that first token is identifier saying "macro_rules"
   const_TokenPtr t = lexer.peek_token ();
-  if (t->get_id () != IDENTIFIER || t->get_str () != "macro_rules")
+  if (t->get_id () != IDENTIFIER
+      || t->get_str () != Values::WeakKeywords::MACRO_RULES)
     {
       Error error (
 	t->get_locus (),
@@ -4734,7 +4735,7 @@ Parser<ManagedTokenSource>::parse_union (AST::Visibility vis,
   /* hack - "weak keyword" by finding identifier called "union" (lookahead in
    * item switch) */
   const_TokenPtr union_keyword = expect_token (IDENTIFIER);
-  rust_assert (union_keyword->get_str () == "union");
+  rust_assert (union_keyword->get_str () == Values::WeakKeywords::UNION);
   location_t locus = union_keyword->get_locus ();
 
   // parse actual union name
@@ -5715,7 +5716,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
       // semi
       return parse_macro_invocation_semi (std::move (outer_attrs));
     case IDENTIFIER:
-      if (lexer.peek_token ()->get_str () == "default")
+      if (lexer.peek_token ()->get_str () == Values::WeakKeywords::DEFAULT)
 	return parse_trait_impl_function_or_method (visibility,
 						    std::move (outer_attrs));
       else
@@ -5779,7 +5780,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
 
   auto is_default = false;
   auto t = lexer.peek_token ();
-  if (t->get_id () == IDENTIFIER && t->get_str () == "default")
+  if (t->get_id () == IDENTIFIER
+      && t->get_str () == Values::WeakKeywords::DEFAULT)
     {
       is_default = true;
       lexer.skip_token ();
@@ -6300,7 +6302,7 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
       break;
     // crappy hack to do union "keyword"
     case IDENTIFIER:
-      if (t->get_str () == "union"
+      if (t->get_str () == Values::WeakKeywords::UNION
 	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_vis_item (std::move (outer_attrs));
@@ -11704,7 +11706,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 
     // crappy hack to do union "keyword"
     case IDENTIFIER:
-      if (t->get_str () == "union"
+      if (t->get_str () == Values::WeakKeywords::UNION
 	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  std::unique_ptr<AST::VisItem> item (
@@ -11712,7 +11714,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	  return ExprOrStmt (std::move (item));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "macro_rules"
+      else if (t->get_str () == Values::WeakKeywords::MACRO_RULES
 	       && lexer.peek_token (1)->get_id () == EXCLAM)
 	{
 	  // macro_rules! macro item

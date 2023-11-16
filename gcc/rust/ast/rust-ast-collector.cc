@@ -1875,7 +1875,8 @@ TokenCollector::visit (Union &union_item)
 {
   visit_items_as_lines (union_item.get_outer_attrs ());
   auto id = union_item.get_identifier ().as_string ();
-  push (Rust::Token::make_identifier (union_item.get_locus (), "union"));
+  push (Rust::Token::make_identifier (union_item.get_locus (),
+				      Values::WeakKeywords::UNION));
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
   if (union_item.has_generics ())
@@ -2256,7 +2257,8 @@ TokenCollector::visit (MacroRulesDefinition &rules_def)
 
   auto rule_name = rules_def.get_rule_name ().as_string ();
 
-  push (Rust::Token::make_identifier (rules_def.get_locus (), "macro_rules"));
+  push (Rust::Token::make_identifier (rules_def.get_locus (),
+				      Values::WeakKeywords::MACRO_RULES));
   push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
 
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (rule_name)));
