@@ -86,7 +86,12 @@
 #define __glibcxx_want_lcm
 #define __glibcxx_want_parallel_algorithm
 #define __glibcxx_want_ranges_iota
+#define __glibcxx_want_saturation_arithmetic
 #include <bits/version.h>
+
+#ifdef __glibcxx_saturation_arithmetic // C++ >= 26
+# include <bits/sat_arith.h>
+#endif
 
 /**
  * @defgroup numerics Numerics

@@ -2000,6 +2000,17 @@
 #undef __glibcxx_want_ratio
 
 // from version.def line 1635
+#if !defined(__cpp_lib_saturation_arithmetic)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_saturation_arithmetic 202311L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_saturation_arithmetic)
+#   define __cpp_lib_saturation_arithmetic 202311L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_saturation_arithmetic) && defined(__glibcxx_want_saturation_arithmetic) */
+#undef __glibcxx_want_saturation_arithmetic
+
+// from version.def line 1643
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L

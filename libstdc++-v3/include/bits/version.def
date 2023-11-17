@@ -1632,6 +1632,14 @@ ftms = {
 };
 
 ftms = {
+  name = saturation_arithmetic;
+  values = {
+    v = 202311;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = to_string;
   values = {
     v = 202306;

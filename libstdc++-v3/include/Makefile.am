@@ -142,6 +142,7 @@ bits_freestanding = \
 	${bits_srcdir}/ranges_uninitialized.h \
 	${bits_srcdir}/ranges_util.h \
 	${bits_srcdir}/refwrap.h \
+	${bits_srcdir}/sat_arith.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_construct.h \
