@@ -1239,3 +1239,8 @@ struct GTY (()) machine_function
 
 #define TARGET_EXPLICIT_RELOCS \
   (la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS)
+
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
