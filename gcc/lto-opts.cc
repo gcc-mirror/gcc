@@ -152,6 +152,7 @@ lto_write_options (void)
 	case OPT_fprofile_prefix_map_:
 	case OPT_fcanon_prefix_map:
 	case OPT_fwhole_program:
+	case OPT_fltrans_output_list_:
 	  continue;
 
 	default:
