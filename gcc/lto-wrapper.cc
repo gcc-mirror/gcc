@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define INCLUDE_STRING
+#define INCLUDE_ARRAY
+#define INCLUDE_MAP
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -53,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opt-suggestions.h"
 #include "opts-jobserver.h"
 #include "make-unique.h"
+#include "lto-ltrans-cache.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -80,7 +84,7 @@ static char *flto_out;
 static unsigned int nr;
 static int *ltrans_priorities;
 static char **input_names;
-static char **output_names;
+static char const**output_names;
 static char **offload_names;
 static char *offload_objects_file_name;
 static char *makefile;
@@ -1434,6 +1438,8 @@ run_gcc (unsigned argc, char *argv[])
 #endif
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
+  const char *ltrans_cache_dir = NULL;
+  size_t ltrans_cache_size = 4096;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -1559,6 +1565,16 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_flto_partition_:
 	  if (strcmp (option->arg, "none") == 0)
 	    no_partition = true;
+	  break;
+
+	case OPT_flto_incremental_:
+	  /* Exists.  */
+	  if (access (option->arg, W_OK) == 0)
+	    ltrans_cache_dir = option->arg;
+	  break;
+
+	case OPT_flto_incremental_cache_size_:
+	  ltrans_cache_size = atoi (option->arg);
 	  break;
 
 	case OPT_flto_:
@@ -1854,7 +1870,17 @@ cont1:
       char *dumpbase = concat (dumppfx, "wpa", NULL);
       obstack_ptr_grow (&argv_obstack, dumpbase);
 
-      if (save_temps)
+      if (ltrans_cache_dir)
+	{
+	  /* Results of wpa phase must be on the same disk partition as
+	     cache.  */
+	  char* file = concat (ltrans_cache_dir, "/ccXXXXXX.ltrans.out", NULL);
+	  int fd = mkstemps (file, strlen (".ltrans.out"));
+	  gcc_assert (fd != -1 && !close (fd));
+
+	  ltrans_output_file = file;
+	}
+      else if (save_temps)
 	ltrans_output_file = concat (dumppfx, "ltrans.out", NULL);
       else
 	ltrans_output_file = make_temp_file (".ltrans.out");
@@ -1980,7 +2006,8 @@ cont:
 	  ltrans_priorities
 	     = (int *)xrealloc (ltrans_priorities, nr * sizeof (int) * 2);
 	  input_names = (char **)xrealloc (input_names, nr * sizeof (char *));
-	  output_names = (char **)xrealloc (output_names, nr * sizeof (char *));
+	  output_names = (char const**)
+	    xrealloc (output_names, nr * sizeof (char const*));
 	  ltrans_priorities[(nr-1)*2] = priority;
 	  ltrans_priorities[(nr-1)*2+1] = nr-1;
 	  input_names[nr-1] = input_name;
@@ -2015,21 +2042,80 @@ cont:
 	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
 
+      ltrans_file_cache ltrans_cache (ltrans_cache_dir, "ltrans", ".o",
+				      ltrans_cache_size);
+
+      if (ltrans_cache)
+	{
+	  if (!lockfile::lockfile_supported ())
+	    {
+	      warning (0, "using ltrans cache without file locking support,"
+		       " do not use in parallel");
+	    }
+	  ltrans_cache.deletion_lock.lock_read ();
+	  ltrans_cache.creation_lock.lock_write ();
+
+	  ltrans_cache.load_cache ();
+
+	  int recompiling = 0;
+
+	  for (i = 0; i < nr; ++i)
+	    {
+	      /* If it's a pass-through file do nothing.  */
+	      if (output_names[i])
+		continue;
+
+	      ltrans_file_cache::item* item;
+	      bool existed = ltrans_cache.add_to_cache (input_names[i], item);
+	      free (input_names[i]);
+	      input_names[i] = xstrdup (item->input.c_str ());
+
+	      if (existed)
+		{
+		  /* Fill the output_name to skip compilation.  */
+		  output_names[i] = item->output.c_str ();
+		}
+	      else
+		{
+		  /* Lock so no other process can access until the file is
+		     compiled.  */
+		  item->lock.lock_write ();
+		  recompiling++;
+		}
+	    }
+	  if (verbose)
+	    fprintf (stderr, "LTRANS: recompiling %d/%d\n", recompiling, nr);
+
+	  ltrans_cache.save_cache ();
+	  ltrans_cache.creation_lock.unlock ();
+	}
+
       /* Execute the LTRANS stage for each input file (or prepare a
 	 makefile to invoke this in parallel).  */
       for (i = 0; i < nr; ++i)
 	{
-	  char *output_name;
+	  char const* output_name;
 	  char *input_name = input_names[i];
-	  /* If it's a pass-through file do nothing.  */
+	  /* If it's a pass-through or cached file do nothing.  */
 	  if (output_names[i])
 	    continue;
 
-	  /* Replace the .o suffix with a .ltrans.o suffix and write
-	     the resulting name to the LTRANS output list.  */
-	  obstack_grow (&env_obstack, input_name, strlen (input_name) - 2);
-	  obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
-	  output_name = XOBFINISH (&env_obstack, char *);
+	  if (ltrans_cache)
+	    {
+	      ltrans_file_cache::item* item;
+	      item = ltrans_cache.get_item (input_name);
+	      gcc_assert (item);
+
+	      output_name = item->output.c_str ();
+	    }
+	  else
+	    {
+	      /* Replace the .o suffix with a .ltrans.o suffix and write
+		 the resulting name to the LTRANS output list.  */
+	      obstack_grow (&env_obstack, input_name, strlen (input_name) - 2);
+	      obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
+	      output_name = XOBFINISH (&env_obstack, char const*);
+	    }
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
 	  int dumpbase_len = (strlen (dumppfx)
@@ -2052,7 +2138,7 @@ cont:
 	      /* If we are not preserving the ltrans input files then
 	         truncate them as soon as we have processed it.  This
 		 reduces temporary disk-space usage.  */
-	      if (! save_temps)
+	      if (!ltrans_cache && !save_temps)
 		fprintf (mstream, " -truncate '%s'", input_name);
 	      fprintf (mstream, "\n");
 	    }
@@ -2066,7 +2152,8 @@ cont:
 			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
 			    true, save_temps ? argsuffix : NULL);
-	      maybe_unlink (input_name);
+	      if (!ltrans_cache)
+		maybe_unlink (input_names[i]);
 	    }
 
 	  output_names[i] = output_name;
@@ -2121,15 +2208,66 @@ cont:
 	  freeargv (make_argv);
 	  maybe_unlink (makefile);
 	  makefile = NULL;
-	  for (i = 0; i < nr; ++i)
-	    maybe_unlink (input_names[i]);
+
+	  if (!ltrans_cache)
+	    for (i = 0; i < nr; ++i)
+	      maybe_unlink (input_names[i]);
 	}
+
+      if (ltrans_cache)
+	{
+	  for (i = 0; i < nr; ++i)
+	    {
+	      char *input_name = input_names[i];
+	      char const *output_name = output_names[i];
+
+	      ltrans_file_cache::item* item;
+	      item = ltrans_cache.get_item (input_name);
+
+	      if (item && !save_temps)
+		{
+		  item->lock.lock_read ();
+		  /* Ensure that cached compiled file is not deleted.
+		     Create copy.  */
+
+		  obstack_grow (&env_obstack, output_name,
+				strlen (output_name) - 2);
+		  obstack_grow (&env_obstack, ".cache_copy.XXX.o",
+				sizeof (".cache_copy.XXX.o"));
+
+		  char* output_name_link = XOBFINISH (&env_obstack, char *);
+		  char* name_idx = output_name_link + strlen (output_name_link)
+				   - strlen ("XXX.o");
+
+		  /* lto-wrapper can run in parallel and access
+		     the same partition.  */
+		  for (int j = 0; ; j++)
+		    {
+		      gcc_assert (j < 1000);
+		      sprintf (name_idx, "%03d.o", j);
+
+		      if (link (output_name, output_name_link) != EEXIST)
+			break;
+		    }
+
+		  output_names[i] = output_name_link;
+		  item->lock.unlock ();
+		}
+	    }
+
+	  ltrans_cache.deletion_lock.unlock ();
+	}
+
       for (i = 0; i < nr; ++i)
 	{
 	  fputs (output_names[i], stdout);
 	  putc ('\n', stdout);
 	  free (input_names[i]);
 	}
+
+      if (ltrans_cache && !save_temps)
+	ltrans_cache.try_prune ();
+
       if (!skip_debug)
 	{
 	  for (i = 0; i < ltoobj_argc; ++i)
