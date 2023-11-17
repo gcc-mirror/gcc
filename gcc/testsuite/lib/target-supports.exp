@@ -9257,7 +9257,8 @@ proc check_effective_target_vect_call_roundf { } {
 proc check_effective_target_vect_logical_reduc { } {
     return [expr { [check_effective_target_aarch64_sve]
 	           || [istarget amdgcn-*-*]
-		   || [check_effective_target_riscv_v] }]
+		   || [check_effective_target_riscv_v]
+		   || [istarget i?86-*-*] || [istarget x86_64-*-*]}]
 }
 
 # Return 1 if the target supports the fold_extract_last optab.
