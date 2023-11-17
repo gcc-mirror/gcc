@@ -102,6 +102,18 @@ enum riscv_entity
   MAX_RISCV_ENTITIES
 };
 
+/* RISC-V stringop strategy. */
+enum riscv_stringop_strategy_enum {
+  /* Use scalar or vector instructions. */
+  USE_AUTO,
+  /* Always use a library call. */
+  USE_LIBCALL,
+  /* Only use scalar instructions. */
+  USE_SCALAR,
+  /* Only use vector instructions. */
+  USE_VECTOR
+};
+
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
 
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is

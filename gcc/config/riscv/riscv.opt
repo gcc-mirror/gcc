@@ -527,3 +527,23 @@ Target Var(TARGET_ADJUST_LMUL_COST) Init(0)
 Target Undocumented Bool Var(riscv_vector_abi) Init(0)
 Enable the use of vector registers for function arguments and return value.
 This is an experimental switch and may be subject to change in the future.
+
+Enum
+Name(riscv_stringop_strategy) Type(enum riscv_stringop_strategy_enum)
+Valid arguments to -mmemcpy-strategy=:
+
+EnumValue
+Enum(riscv_stringop_strategy) String(auto) Value(USE_AUTO)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(libcall) Value(USE_LIBCALL)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(scalar) Value(USE_SCALAR)
+
+EnumValue
+Enum(riscv_stringop_strategy) String(vector) Value(USE_VECTOR)
+
+mmemcpy-strategy=
+Target RejectNegative Joined Enum(riscv_stringop_strategy) Var(riscv_memcpy_strategy) Init(USE_AUTO)
+Specify memcpy expansion strategy.
