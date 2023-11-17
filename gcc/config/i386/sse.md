@@ -514,6 +514,12 @@
    (V16SI "TARGET_AVX512F && TARGET_EVEX512") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F && TARGET_EVEX512") (V4DI "TARGET_AVX2") V2DI])
 
+(define_mode_iterator VI_AVX_AVX512F
+  [(V64QI "TARGET_AVX512F && TARGET_EVEX512") (V32QI "TARGET_AVX") V16QI
+   (V32HI "TARGET_AVX512F && TARGET_EVEX512") (V16HI "TARGET_AVX") V8HI
+   (V16SI "TARGET_AVX512F && TARGET_EVEX512") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F && TARGET_EVEX512") (V4DI "TARGET_AVX") V2DI])
+
 ;; All QImode vector integer modes
 (define_mode_iterator VI1
   [(V32QI "TARGET_AVX") V16QI])
@@ -27910,8 +27916,8 @@
 
 (define_expand "cbranch<mode>4"
   [(set (reg:CC FLAGS_REG)
-	(compare:CC (match_operand:VI48_AVX_AVX512F 1 "register_operand")
-		    (match_operand:VI48_AVX_AVX512F 2 "nonimmediate_operand")))
+	(compare:CC (match_operand:VI_AVX_AVX512F 1 "register_operand")
+		    (match_operand:VI_AVX_AVX512F 2 "nonimmediate_operand")))
    (set (pc) (if_then_else
 	       (match_operator 0 "bt_comparison_operator"
 		[(reg:CC FLAGS_REG) (const_int 0)])
