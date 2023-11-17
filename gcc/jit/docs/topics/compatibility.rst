@@ -404,3 +404,12 @@ on functions and variables:
 --------------------
 ``LIBGCCJIT_ABI_28`` covers the addition of
 :func:`gcc_jit_context_new_alignof`
+
+.. _LIBGCCJIT_ABI_29:
+
+``LIBGCCJIT_ABI_29``
+--------------------
+``LIBGCCJIT_ABI_29`` covers the addition of functions to manipulate vectors:
+
+  * :func:`gcc_jit_context_new_rvalue_vector_perm`
+  * :func:`gcc_jit_context_new_vector_access`
