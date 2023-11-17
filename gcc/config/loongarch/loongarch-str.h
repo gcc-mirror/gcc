@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_CPU_LA664 "la664"
 
 #define STR_ISA_BASE_LA64V100 "la64"
+#define STR_ISA_BASE_LA64V110 "la64v1.1"
 
 #define OPTSTR_ISA_EXT_FPU "fpu"
 #define STR_NONE "none"

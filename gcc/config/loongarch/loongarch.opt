@@ -39,6 +39,9 @@ Basic ISAs of LoongArch:
 EnumValue
 Enum(isa_base) String(la64) Value(ISA_BASE_LA64V100)
 
+EnumValue
+Enum(isa_base) String(la64v1.1) Value(ISA_BASE_LA64V110)
+
 ;; ISA extensions / adjustments
 Enum
 Name(isa_ext_fpu) Type(int)

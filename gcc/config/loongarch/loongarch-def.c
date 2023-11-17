@@ -165,6 +165,7 @@ loongarch_cpu_multipass_dfa_lookahead[N_TUNE_TYPES] = {
 const char*
 loongarch_isa_base_strings[N_ISA_BASE_TYPES] = {
   [ISA_BASE_LA64V100] = STR_ISA_BASE_LA64V100,
+  [ISA_BASE_LA64V110] = STR_ISA_BASE_LA64V110,
 };
 
 const char*

@@ -30,6 +30,7 @@ STR_CPU_LA664	      la664
 
 # Base architecture
 STR_ISA_BASE_LA64V100 la64
+STR_ISA_BASE_LA64V110 la64v1.1
 
 # -mfpu
 OPTSTR_ISA_EXT_FPU    fpu
