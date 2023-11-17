@@ -1730,6 +1730,9 @@ typedef struct rs6000_args
    in one reasonably fast instruction.  */
 #define MOVE_MAX (! TARGET_POWERPC64 ? 4 : 8)
 #define MAX_MOVE_MAX 8
+#define MOVE_MAX_PIECES (TARGET_EFFICIENT_UNALIGNED_VSX \
+			 ? 16 : (TARGET_POWERPC64 ? 8 : 4))
+#define STORE_MAX_PIECES (TARGET_POWERPC64 ? 8 : 4)
 
 /* Nonzero if access to memory by bytes is no faster than for words.
    Also nonzero if doing byte operations (specifically shifts) in registers
