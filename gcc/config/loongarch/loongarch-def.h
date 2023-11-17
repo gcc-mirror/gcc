@@ -55,11 +55,16 @@ extern "C" {
 
 /* enum isa_base */
 extern const char* loongarch_isa_base_strings[];
+
 /* LoongArch V1.00.  */
 #define ISA_BASE_LA64V100     0
 /* LoongArch V1.10.  */
 #define ISA_BASE_LA64V110     1
 #define N_ISA_BASE_TYPES      2
+
+/* Unlike other arrays, this is defined in loongarch-cpu.cc.  The problem is
+   we cannot use the C++ header options.h in loongarch-def.c.  */
+extern int64_t loongarch_isa_base_features[];
 
 /* enum isa_ext_* */
 extern const char* loongarch_isa_ext_strings[];

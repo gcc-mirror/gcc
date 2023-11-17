@@ -32,6 +32,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-cpucfg-map.h"
 #include "loongarch-str.h"
 
+/* loongarch_isa_base_features defined here instead of loongarch-def.c
+   because we need to use options.h.  Pay attention on the order of elements
+   in the initializer becaue ISO C++ does not allow C99 designated
+   initializers!  */
+
+#define ISA_BASE_LA64V110_FEATURES \
+  (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA)
+
+int64_t loongarch_isa_base_features[N_ISA_BASE_TYPES] = {
+  /* [ISA_BASE_LA64V100] = */ 0,
+  /* [ISA_BASE_LA64V110] = */ ISA_BASE_LA64V110_FEATURES,
+};
+
 /* Native CPU detection with "cpucfg" */
 static uint32_t cpucfg_cache[N_CPUCFG_WORDS] = { 0 };
 
@@ -127,24 +140,22 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	 With: base architecture (ARCH)
 	 At:   cpucfg_words[1][1:0] */
 
-      switch (cpucfg_cache[1] & 0x3)
-	{
-	  case 0x02:
-	    tmp = ISA_BASE_LA64V100;
-	    break;
+      if (native_cpu_type != CPU_NATIVE)
+	tmp = loongarch_cpu_default_isa[native_cpu_type].base;
+      else
+	switch (cpucfg_cache[1] & 0x3)
+	  {
+	    case 0x02:
+	      tmp = ISA_BASE_LA64V100;
+	      break;
 
-	  default:
-	    fatal_error (UNKNOWN_LOCATION,
-			 "unknown native base architecture %<0x%x%>, "
-			 "%qs failed", (unsigned int) (cpucfg_cache[1] & 0x3),
-			 "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
-	}
-
-      /* Check consistency with PRID presets.  */
-      if (native_cpu_type != CPU_NATIVE && tmp != preset.base)
-	warning (0, "base architecture %qs differs from PRID preset %qs",
-		 loongarch_isa_base_strings[tmp],
-		 loongarch_isa_base_strings[preset.base]);
+	    default:
+	      fatal_error (UNKNOWN_LOCATION,
+			   "unknown native base architecture %<0x%x%>, "
+			   "%qs failed",
+			   (unsigned int) (cpucfg_cache[1] & 0x3),
+			   "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
+	  }
 
       /* Use the native value anyways.  */
       preset.base = tmp;
@@ -227,6 +238,21 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       for (const auto &entry: cpucfg_map)
 	if (cpucfg_cache[entry.cpucfg_word] & entry.cpucfg_bit)
 	  preset.evolution |= entry.isa_evolution_bit;
+
+      if (native_cpu_type != CPU_NATIVE)
+	{
+	  /* Check if the local CPU really supports the features of the base
+	     ISA of probed native_cpu_type.  If any feature is not detected,
+	     either GCC or the hardware is buggy.  */
+	  auto base_isa_feature = loongarch_isa_base_features[preset.base];
+	  if ((preset.evolution & base_isa_feature) != base_isa_feature)
+	    warning (0,
+		     "detected base architecture %qs, but some of its "
+		     "features are not detected; the detected base "
+		     "architecture may be unreliable, only detected "
+		     "features will be enabled",
+		     loongarch_isa_base_strings[preset.base]);
+	}
     }
 
   if (tune_native_p)

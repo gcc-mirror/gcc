@@ -284,6 +284,9 @@ config_target_isa:
   /* Get default ISA from "-march" or its default value.  */
   t.isa = loongarch_cpu_default_isa[t.cpu_arch];
 
+  if (t.cpu_arch != CPU_NATIVE)
+    t.isa.evolution |= loongarch_isa_base_features[t.isa.base];
+
   /* Apply incremental changes.  */
   /* "-march=native" overrides the default FPU type.  */
 
