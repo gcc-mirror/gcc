@@ -43,8 +43,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef __glibcxx_out_ptr // C++ >= 23
-  /// Adapt a smart pointer for functions taking an output pointer parameter.
+  /// Smart pointer adaptor for functions taking an output pointer parameter.
+  /**
+   * @tparam _Smart The type of pointer to adapt.
+   * @tparam _Pointer The type of pointer to convert to.
+   * @tparam _Args... Argument types used when resetting the smart pointer.
+   * @since C++23
+   * @headerfile <memory>
+   */
   template<typename _Smart, typename _Pointer, typename... _Args>
     class out_ptr_t
     {
@@ -276,7 +282,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename, typename, typename...> friend class inout_ptr_t;
     };
 
-  /// Adapt a smart pointer for functions taking an output pointer parameter.
+  /// Smart pointer adaptor for functions taking an inout pointer parameter.
+  /**
+   * @tparam _Smart The type of pointer to adapt.
+   * @tparam _Pointer The type of pointer to convert to.
+   * @tparam _Args... Argument types used when resetting the smart pointer.
+   * @since C++23
+   * @headerfile <memory>
+   */
   template<typename _Smart, typename _Pointer, typename... _Args>
     class inout_ptr_t
     {
@@ -367,6 +380,15 @@ namespace __detail
 }
 /// @endcond
 
+  /// Adapt a smart pointer for functions taking an output pointer parameter.
+  /**
+   * @tparam _Pointer The type of pointer to convert to.
+   * @param __s The pointer that should take ownership of the result.
+   * @param __args... Arguments to use when resetting the smart pointer.
+   * @return A std::inout_ptr_t referring to `__s`.
+   * @since C++23
+   * @headerfile <memory>
+   */
   template<typename _Pointer = void, typename _Smart, typename... _Args>
     inline auto
     out_ptr(_Smart& __s, _Args&&... __args)
@@ -379,6 +401,15 @@ namespace __detail
       return _Ret(__s, std::forward<_Args>(__args)...);
     }
 
+  /// Adapt a smart pointer for functions taking an inout pointer parameter.
+  /**
+   * @tparam _Pointer The type of pointer to convert to.
+   * @param __s The pointer that should take ownership of the result.
+   * @param __args... Arguments to use when resetting the smart pointer.
+   * @return A std::inout_ptr_t referring to `__s`.
+   * @since C++23
+   * @headerfile <memory>
+   */
   template<typename _Pointer = void, typename _Smart, typename... _Args>
     inline auto
     inout_ptr(_Smart& __s, _Args&&... __args)
@@ -391,6 +422,7 @@ namespace __detail
       return _Ret(__s, std::forward<_Args>(__args)...);
     }
 
+  /// @cond undocumented
   template<typename _Smart, typename _Pointer, typename... _Args>
   template<typename _Smart2, typename _Pointer2, typename... _Args2>
     inline
@@ -422,11 +454,10 @@ namespace __detail
       else
 	__reset();
     }
-#endif // __glibcxx_out_ptr
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif // __glibcxx_out_ptr
 #endif /* _GLIBCXX_OUT_PTR_H */
-
