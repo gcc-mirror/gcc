@@ -4312,7 +4312,6 @@ _LT_TAGDECL([link_static_flag], [lt_prog_compiler_static], [1],
 	[Compiler flag to prevent dynamic linking])
 ])# _LT_COMPILER_PIC
 
-_LT_TAGVAR(enable_darwin_at_rpath, $1)=no
 
 # _LT_LINKER_SHLIBS([TAGNAME])
 # ----------------------------
