@@ -2242,7 +2242,7 @@ namespace __detail
     using _Parser_t = _Parser<common_type_t<_Duration, seconds>>;
 
 } // namespace __detail
-/// ~endcond
+/// @endcond
 
   template<typename _CharT, typename _Traits, typename _Rep, typename _Period,
 	   typename _Alloc = allocator<_CharT>>
