@@ -8672,6 +8672,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			       wi::shifted_mask (tree_to_uhwi (@1), 1,
 						 false, prec)); })))))))
 
+#if GIMPLE
+/* ctz(ext(X)) == ctz(X).  Valid just for the UB at zero cases though.  */
+(simplify
+  (CTZ (convert@1 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_PRECISION (TREE_TYPE (@1)) > TYPE_PRECISION (TREE_TYPE (@0)))
+   (with { combined_fn cfn = CFN_LAST;
+	   tree type0 = TREE_TYPE (@0);
+	   if (TREE_CODE (type0) == BITINT_TYPE)
+	     {
+	       if (TYPE_PRECISION (type0) > MAX_FIXED_MODE_SIZE)
+		 cfn = CFN_CTZ;
+	       else
+		 type0
+		   = build_nonstandard_integer_type (TYPE_PRECISION (type0),
+						     1);
+	     }
+	   type0 = unsigned_type_for (type0);
+	   if (cfn == CFN_LAST
+	       && direct_internal_fn_supported_p (IFN_CTZ, type0,
+						  OPTIMIZE_FOR_BOTH))
+	     cfn = CFN_CTZ;
+	   if (cfn == CFN_LAST
+	       && TYPE_PRECISION (TREE_TYPE (@1)) > BITS_PER_WORD
+	       && !direct_internal_fn_supported_p (IFN_CTZ,
+						   TREE_TYPE (@1),
+						   OPTIMIZE_FOR_BOTH))
+	     {
+	       if (TYPE_PRECISION (type0)
+		   == TYPE_PRECISION (unsigned_type_node))
+		 cfn = CFN_BUILT_IN_CTZ;
+	       else if (TYPE_PRECISION (type0)
+			== TYPE_PRECISION (long_long_unsigned_type_node))
+		 cfn = CFN_BUILT_IN_CTZLL;
+	     } }
+    (if (cfn == CFN_CTZ)
+     (IFN_CTZ (convert:type0 @0))
+     (if (cfn == CFN_BUILT_IN_CTZ)
+      (BUILT_IN_CTZ (convert:type0 @0))
+      (if (cfn == CFN_BUILT_IN_CTZLL)
+       (BUILT_IN_CTZLL (convert:type0 @0))))))))
+#endif
+
 /* POPCOUNT simplifications.  */
 /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
 (simplify
@@ -8742,6 +8786,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      (popcount:s @1))
       (popcount (log2 @0 @1)))))
 
+#if GIMPLE
+/* popcount(zext(X)) == popcount(X).  */
+(simplify
+  (POPCOUNT (convert@1 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_PRECISION (TREE_TYPE (@1)) > TYPE_PRECISION (TREE_TYPE (@0)))
+   (with { combined_fn cfn = CFN_LAST;
+	   tree type0 = TREE_TYPE (@0);
+	   if (TREE_CODE (type0) == BITINT_TYPE)
+	     {
+	       if (TYPE_PRECISION (type0) > MAX_FIXED_MODE_SIZE)
+		 cfn = CFN_POPCOUNT;
+	       else
+		 type0
+		   = build_nonstandard_integer_type (TYPE_PRECISION (type0),
+						     1);
+	     }
+	   if (cfn == CFN_LAST
+	       && direct_internal_fn_supported_p (IFN_POPCOUNT, type0,
+						  OPTIMIZE_FOR_BOTH))
+	     cfn = CFN_POPCOUNT;
+	   if (cfn == CFN_LAST
+	       && TYPE_PRECISION (TREE_TYPE (@1)) > BITS_PER_WORD
+	       && !direct_internal_fn_supported_p (IFN_POPCOUNT,
+						   TREE_TYPE (@1),
+						   OPTIMIZE_FOR_BOTH))
+	     {
+	       if (TYPE_PRECISION (type0)
+		   == TYPE_PRECISION (unsigned_type_node))
+		 cfn = CFN_BUILT_IN_POPCOUNT;
+	       else if (TYPE_PRECISION (type0)
+			== TYPE_PRECISION (long_long_unsigned_type_node))
+		 cfn = CFN_BUILT_IN_POPCOUNTLL;
+	     } }
+    (if (cfn == CFN_POPCOUNT)
+     (IFN_POPCOUNT (convert:type0 @0))
+     (if (cfn == CFN_BUILT_IN_POPCOUNT)
+      (BUILT_IN_POPCOUNT (convert:type0 @0))
+      (if (cfn == CFN_BUILT_IN_POPCOUNTLL)
+       (BUILT_IN_POPCOUNTLL (convert:type0 @0))))))))
+#endif
+
 /* PARITY simplifications.  */
 /* parity(~X) is parity(X).  */
 (simplify
@@ -8779,6 +8867,54 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (bit_xor (PARITY:s @0) (PARITY:s @1))
   (PARITY (bit_xor @0 @1)))
+
+#if GIMPLE
+/* parity(zext(X)) == parity(X).  */
+/* parity(sext(X)) == parity(X) if the difference in precision is even.  */
+(simplify
+  (PARITY (convert@1 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_PRECISION (TREE_TYPE (@1)) > TYPE_PRECISION (TREE_TYPE (@0))
+       && (TYPE_UNSIGNED (TREE_TYPE (@0))
+	   || ((TYPE_PRECISION (TREE_TYPE (@1))
+		- TYPE_PRECISION (TREE_TYPE (@0))) & 1) == 0))
+   (with { combined_fn cfn = CFN_LAST;
+	   tree type0 = TREE_TYPE (@0);
+	   if (TREE_CODE (type0) == BITINT_TYPE)
+	     {
+	       if (TYPE_PRECISION (type0) > MAX_FIXED_MODE_SIZE)
+		 cfn = CFN_PARITY;
+	       else
+		 type0
+		   = build_nonstandard_integer_type (TYPE_PRECISION (type0),
+						     1);
+	     }
+	   type0 = unsigned_type_for (type0);
+	   if (cfn == CFN_LAST
+	       && direct_internal_fn_supported_p (IFN_PARITY, type0,
+						  OPTIMIZE_FOR_BOTH))
+	     cfn = CFN_PARITY;
+	   if (cfn == CFN_LAST
+	       && TYPE_PRECISION (TREE_TYPE (@1)) > BITS_PER_WORD
+	       && !direct_internal_fn_supported_p (IFN_PARITY,
+						   TREE_TYPE (@1),
+						   OPTIMIZE_FOR_BOTH))
+	     {
+	       if (TYPE_PRECISION (type0)
+		   == TYPE_PRECISION (unsigned_type_node))
+		 cfn = CFN_BUILT_IN_PARITY;
+	       else if (TYPE_PRECISION (type0)
+			== TYPE_PRECISION (long_long_unsigned_type_node))
+		 cfn = CFN_BUILT_IN_PARITYLL;
+	     } }
+    (if (cfn == CFN_PARITY)
+     (IFN_PARITY (convert:type0 @0))
+     (if (cfn == CFN_BUILT_IN_PARITY)
+      (BUILT_IN_PARITY (convert:type0 @0))
+      (if (cfn == CFN_BUILT_IN_PARITYLL)
+       (BUILT_IN_PARITYLL (convert:type0 @0))))))))
+#endif
 
 /* a != 0 ? FUN(a) : 0 -> Fun(a) for some builtin functions. */
 (for func (POPCOUNT BSWAP FFS PARITY)
@@ -8987,8 +9123,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (plus (CTZ:type (convert:utype @0)) { build_one_cst (type); }))))
 #endif
 
-(for ffs (BUILT_IN_FFS BUILT_IN_FFSL BUILT_IN_FFSLL
-	  BUILT_IN_FFSIMAX)
+(for ffs (FFS)
  /* __builtin_ffs (X) == 0 -> X == 0.
     __builtin_ffs (X) == 6 -> (X & 63) == 32.  */
  (for cmp (eq ne)
@@ -9034,6 +9169,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						  wi::mask (tree_to_uhwi (@1),
 						  false, prec)); })
 		     { build_zero_cst (TREE_TYPE (@0)); }))))))))
+
+#if GIMPLE
+/* ffs(ext(X)) == ffs(X).  */
+(simplify
+  (FFS (convert@1 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_PRECISION (TREE_TYPE (@1)) > TYPE_PRECISION (TREE_TYPE (@0)))
+   (with { combined_fn cfn = CFN_LAST;
+	   tree type0 = TREE_TYPE (@0);
+	   if (TREE_CODE (type0) == BITINT_TYPE)
+	     {
+	       if (TYPE_PRECISION (type0) > MAX_FIXED_MODE_SIZE)
+		 cfn = CFN_FFS;
+	       else
+		 type0
+		   = build_nonstandard_integer_type (TYPE_PRECISION (type0),
+						     0);
+	     }
+	   type0 = signed_type_for (type0);
+	   if (cfn == CFN_LAST
+	       && direct_internal_fn_supported_p (IFN_FFS, type0,
+						  OPTIMIZE_FOR_BOTH))
+	     cfn = CFN_FFS;
+	   if (cfn == CFN_LAST
+	       && TYPE_PRECISION (TREE_TYPE (@1)) > BITS_PER_WORD
+	       && !direct_internal_fn_supported_p (IFN_FFS,
+						   TREE_TYPE (@1),
+						   OPTIMIZE_FOR_BOTH))
+	     {
+	       if (TYPE_PRECISION (type0)
+		   == TYPE_PRECISION (integer_type_node))
+		 cfn = CFN_BUILT_IN_FFS;
+	       else if (TYPE_PRECISION (type0)
+			== TYPE_PRECISION (long_long_integer_type_node))
+		 cfn = CFN_BUILT_IN_FFSLL;
+	     } }
+    (if (cfn == CFN_FFS)
+     (IFN_FFS (convert:type0 @0))
+     (if (cfn == CFN_BUILT_IN_FFS)
+      (BUILT_IN_FFS (convert:type0 @0))
+      (if (cfn == CFN_BUILT_IN_FFSLL)
+       (BUILT_IN_FFSLL (convert:type0 @0))))))))
+#endif
 
 #if GIMPLE
 
