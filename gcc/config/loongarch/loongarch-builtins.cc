@@ -419,8 +419,6 @@ AVAIL_ALL (lasx, ISA_HAS_LASX)
 #define CODE_FOR_lsx_vabsd_hu CODE_FOR_lsx_vabsd_u_hu
 #define CODE_FOR_lsx_vabsd_wu CODE_FOR_lsx_vabsd_u_wu
 #define CODE_FOR_lsx_vabsd_du CODE_FOR_lsx_vabsd_u_du
-#define CODE_FOR_lsx_vftint_w_s CODE_FOR_lsx_vftint_s_w_s
-#define CODE_FOR_lsx_vftint_l_d CODE_FOR_lsx_vftint_s_l_d
 #define CODE_FOR_lsx_vftint_wu_s CODE_FOR_lsx_vftint_u_wu_s
 #define CODE_FOR_lsx_vftint_lu_d CODE_FOR_lsx_vftint_u_lu_d
 #define CODE_FOR_lsx_vandn_v CODE_FOR_vandnv16qi3
@@ -725,8 +723,6 @@ AVAIL_ALL (lasx, ISA_HAS_LASX)
 #define CODE_FOR_lasx_xvssrlrn_bu_h CODE_FOR_lasx_xvssrlrn_u_bu_h
 #define CODE_FOR_lasx_xvssrlrn_hu_w CODE_FOR_lasx_xvssrlrn_u_hu_w
 #define CODE_FOR_lasx_xvssrlrn_wu_d CODE_FOR_lasx_xvssrlrn_u_wu_d
-#define CODE_FOR_lasx_xvftint_w_s CODE_FOR_lasx_xvftint_s_w_s
-#define CODE_FOR_lasx_xvftint_l_d CODE_FOR_lasx_xvftint_s_l_d
 #define CODE_FOR_lasx_xvftint_wu_s CODE_FOR_lasx_xvftint_u_wu_s
 #define CODE_FOR_lasx_xvftint_lu_d CODE_FOR_lasx_xvftint_u_lu_d
 #define CODE_FOR_lasx_xvsllwil_h_b CODE_FOR_lasx_xvsllwil_s_h_b

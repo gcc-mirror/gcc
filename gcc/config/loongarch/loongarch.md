@@ -4026,11 +4026,8 @@
 (include "generic.md")
 (include "la464.md")
 
-; The LoongArch SX Instructions.
-(include "lsx.md")
-
-; The LoongArch ASX Instructions.
-(include "lasx.md")
+; The LoongArch SIMD Instructions.
+(include "simd.md")
 
 (define_c_enum "unspec" [
   UNSPEC_ADDRESS_FIRST
