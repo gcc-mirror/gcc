@@ -957,10 +957,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "xor<mode>3"
-  [(set (match_operand:ILSX 0 "register_operand" "=f,f,f")
-	(xor:ILSX
-	  (match_operand:ILSX 1 "register_operand" "f,f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
+	(xor:LSX
+	  (match_operand:LSX 1 "register_operand" "f,f,f")
+	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
   "ISA_HAS_LSX"
   "@
    vxor.v\t%w0,%w1,%w2
@@ -2785,6 +2785,21 @@
   operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = gen_reg_rtx (<MODE>mode);
 })
+
+(define_expand "@xorsign<mode>3"
+  [(set (match_dup 4)
+    (and:FLSX (match_dup 3)
+        (match_operand:FLSX 2 "register_operand")))
+   (set (match_operand:FLSX 0 "register_operand")
+    (xor:FLSX (match_dup 4)
+         (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  operands[3] = loongarch_build_signbit_mask (<MODE>mode, 1, 0);
+
+  operands[4] = gen_reg_rtx (<MODE>mode);
+})
+
 
 (define_insn "absv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "=f")

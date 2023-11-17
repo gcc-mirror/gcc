@@ -1164,6 +1164,23 @@
   "fcopysign.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcopysign")
    (set_attr "mode" "<UNITMODE>")])
+
+(define_expand "@xorsign<mode>3"
+  [(match_operand:ANYF 0 "register_operand")
+   (match_operand:ANYF 1 "register_operand")
+   (match_operand:ANYF 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  machine_mode lsx_mode
+    = <MODE>mode == SFmode ? V4SFmode : V2DFmode;
+  rtx tmp = gen_reg_rtx (lsx_mode);
+  rtx op1 = lowpart_subreg (lsx_mode, operands[1], <MODE>mode);
+  rtx op2 = lowpart_subreg (lsx_mode, operands[2], <MODE>mode);
+  emit_insn (gen_xorsign3 (lsx_mode, tmp, op1, op2));
+  emit_move_insn (operands[0],
+          lowpart_subreg (<MODE>mode, tmp, lsx_mode));
+  DONE;
+})
 
 ;;
 ;;  ....................

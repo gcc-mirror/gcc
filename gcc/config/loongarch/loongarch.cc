@@ -6707,6 +6707,11 @@ loongarch_can_change_mode_class (machine_mode from, machine_mode to,
   if (LSX_SUPPORTED_MODE_P (from) && LSX_SUPPORTED_MODE_P (to))
     return true;
 
+  /* Allow conversion between LSX vector mode and scalar fp mode. */
+  if ((LSX_SUPPORTED_MODE_P (from) && SCALAR_FLOAT_MODE_P (to))
+      || ((SCALAR_FLOAT_MODE_P (from) && LSX_SUPPORTED_MODE_P (to))))
+    return true;
+
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
