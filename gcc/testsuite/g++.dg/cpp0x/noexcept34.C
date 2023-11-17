@@ -7,13 +7,13 @@ template<typename> struct A
 {
   constexpr int f () { return 0; }
   bool b = true;
-  void g () noexcept (f()) { } // { dg-error ".this. is not a constant" }
-  void g2 () noexcept (this->f()) { } // { dg-error ".this. is not a constant" }
+  void g () noexcept (f()) { }
+  void g2 () noexcept (this->f()) { }
   void g3 () noexcept (b) { } // { dg-error "use of .this. in a constant expression|use of parameter|.this. is not a constant" }
   void g4 (int i) noexcept (i) { } // { dg-error "use of parameter" }
-  void g5 () noexcept (A::f()) { } // { dg-error ".this. is not a constant" }
+  void g5 () noexcept (A::f()) { }
   void g6 () noexcept (foo(b)) { } // { dg-error "use of .this. in a constant expression|use of parameter|.this. is not a constant" }
-  void g7 () noexcept (int{f()}) { } // { dg-error ".this. is not a constant" }
+  void g7 () noexcept (int{f()}) { }
 };
 
 int main ()

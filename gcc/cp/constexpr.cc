@@ -7336,7 +7336,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
-      if (DECL_P (r))
+      if (DECL_P (r)
+	  /* P2280 allows references to unknown.  */
+	  && !(VAR_P (t) && TYPE_REF_P (TREE_TYPE (t))))
 	{
 	  if (!ctx->quiet)
 	    non_const_var_error (loc, r, /*fundef_p*/false);
@@ -7378,6 +7380,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = build_constructor (TREE_TYPE (t), NULL);
 	  TREE_CONSTANT (r) = true;
 	}
+      else if (TYPE_REF_P (TREE_TYPE (t)))
+	/* P2280 allows references to unknown...  */;
+      else if (is_this_parameter (t))
+	/* ...as well as the this pointer.  */;
       else
 	{
 	  if (!ctx->quiet)

@@ -40,7 +40,7 @@ void f(a ap, a& arp)
   static_assert (g(ar2),"");	// { dg-error "constant" }
   static_assert (h(ar2),"");	// { dg-error "constant" }
 
-  static_assert (arp.g(),"");	// { dg-error "constant" }
-  static_assert (g(arp),"");	// { dg-error "constant" }
+  static_assert (arp.g(),"");
+  static_assert (g(arp),"");
   static_assert (h(arp),"");	// { dg-error "constant" }
 }
