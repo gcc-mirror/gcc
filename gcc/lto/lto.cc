@@ -554,6 +554,8 @@ do_whole_program_analysis (void)
   else if (flag_lto_partition == LTO_PARTITION_BALANCED)
     lto_balanced_map (param_lto_partitions,
 		      param_max_partition_size);
+  else if (flag_lto_partition == LTO_PARTITION_CACHE)
+    lto_cache_map (param_lto_partitions, param_max_partition_size);
   else
     gcc_unreachable ();
 

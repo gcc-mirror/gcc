@@ -2233,6 +2233,9 @@ Enum(lto_partition_model) String(1to1) Value(LTO_PARTITION_1TO1)
 EnumValue
 Enum(lto_partition_model) String(max) Value(LTO_PARTITION_MAX)
 
+EnumValue
+Enum(lto_partition_model) String(cache) Value(LTO_PARTITION_CACHE)
+
 flto-partition=
 Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
 Specify the algorithm to partition symbols and vars at linktime.

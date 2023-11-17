@@ -396,7 +396,8 @@ enum lto_partition_model {
   LTO_PARTITION_ONE = 1,
   LTO_PARTITION_BALANCED = 2,
   LTO_PARTITION_1TO1 = 3,
-  LTO_PARTITION_MAX = 4
+  LTO_PARTITION_MAX = 4,
+  LTO_PARTITION_CACHE = 5
 };
 
 /* flag_lto_linker_output initialization values.  */
