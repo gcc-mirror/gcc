@@ -1,3 +1,28 @@
+2023-11-16  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-11-15  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_memmodel_needs_release_fence): Remove.
+	(loongarch_cas_failure_memorder_needs_acquire): New static
+	function.
+	(loongarch_print_operand): Redefine 'G' for the barrier on CAS
+	failure.
+	* config/loongarch/sync.md (atomic_cas_value_strong<mode>):
+	Remove the redundant barrier before the LL instruction, and
+	emit an acquire barrier on failure if needed by
+	failure_memorder.
+	(atomic_cas_value_cmp_and_7_<mode>): Likewise.
+	(atomic_cas_value_add_7_<mode>): Remove the unnecessary barrier
+	before the LL instruction.
+	(atomic_cas_value_sub_7_<mode>): Likewise.
+	(atomic_cas_value_and_7_<mode>): Likewise.
+	(atomic_cas_value_xor_7_<mode>): Likewise.
+	(atomic_cas_value_or_7_<mode>): Likewise.
+	(atomic_cas_value_nand_7_<mode>): Likewise.
+	(atomic_cas_value_exchange_7_<mode>): Likewise.
+
 2023-11-15  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
