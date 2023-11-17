@@ -54,7 +54,9 @@ extern "C" {
 
 /* enum isa_base */
 extern const char* loongarch_isa_base_strings[];
+/* LoongArch V1.00.  */
 #define ISA_BASE_LA64V100     0
+/* LoongArch V1.10.  */
 #define ISA_BASE_LA64V110     1
 #define N_ISA_BASE_TYPES      2
 

@@ -38,7 +38,7 @@
   [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ;; This attribute gives the format suffix for atomic memory operations.
-(define_mode_attr amo [(SI "w") (DI "d")])
+(define_mode_attr amo [(QI "b") (HI "h") (SI "w") (DI "d")])
 
 ;; <amop> expands to the name of the atomic operand that implements a
 ;; particular code.
@@ -123,7 +123,18 @@
 	 UNSPEC_SYNC_OLD_OP))]
   ""
   "am<amop>%A2.<amo>\t$zero,%z1,%0"
-  [(set (attr "length") (const_int 8))])
+  [(set (attr "length") (const_int 4))])
+
+(define_insn "atomic_add<mode>"
+  [(set (match_operand:SHORT 0 "memory_operand" "+ZB")
+	(unspec_volatile:SHORT
+	  [(plus:SHORT (match_dup 0)
+		       (match_operand:SHORT 1 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 2 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_BASE_IS_LA64V110"
+  "amadd%A2.<amo>\t$zero,%z1,%0"
+  [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_fetch_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -131,12 +142,12 @@
    (set (match_dup 1)
 	(unspec_volatile:GPR
 	  [(any_atomic:GPR (match_dup 1)
-		     (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
+			   (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   ""
   "am<amop>%A3.<amo>\t%0,%z2,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -148,7 +159,19 @@
 	(match_operand:GPR 2 "register_operand" "r"))]
   ""
   "amswap%A3.<amo>\t%0,%z2,%1"
-  [(set (attr "length") (const_int 8))])
+  [(set (attr "length") (const_int 4))])
+
+(define_insn "atomic_exchange<mode>_short"
+  [(set (match_operand:SHORT 0 "register_operand" "=&r")
+	(unspec_volatile:SHORT
+	  [(match_operand:SHORT 1 "memory_operand" "+ZB")
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	  UNSPEC_SYNC_EXCHANGE))
+   (set (match_dup 1)
+	(match_operand:SHORT 2 "register_operand" "r"))]
+  "ISA_BASE_IS_LA64V110"
+  "amswap%A3.<amo>\t%0,%z2,%1"
+  [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_cas_value_strong<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -156,24 +179,35 @@
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")
 			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")
-			      (match_operand:SI 4 "const_int_operand")  ;; mod_s
-			      (match_operand:SI 5 "const_int_operand")] ;; mod_f
+			      (match_operand:SI 4 "const_int_operand")]  ;; mod_s
 	 UNSPEC_COMPARE_AND_SWAP))
-   (clobber (match_scratch:GPR 6 "=&r"))]
+   (clobber (match_scratch:GPR 5 "=&r"))]
   ""
 {
   return "1:\\n\\t"
 	 "ll.<amo>\\t%0,%1\\n\\t"
 	 "bne\\t%0,%z2,2f\\n\\t"
-	 "or%i3\\t%6,$zero,%3\\n\\t"
-	 "sc.<amo>\\t%6,%1\\n\\t"
-	 "beqz\\t%6,1b\\n\\t"
+	 "or%i3\\t%5,$zero,%3\\n\\t"
+	 "sc.<amo>\\t%5,%1\\n\\t"
+	 "beqz\\t%5,1b\\n\\t"
 	 "b\\t3f\\n\\t"
 	 "2:\\n\\t"
-	 "%G5\\n\\t"
+	 "%G4\\n\\t"
 	 "3:\\n\\t";
 }
   [(set (attr "length") (const_int 28))])
+
+(define_insn "atomic_cas_value_strong<mode>_amcas"
+  [(set (match_operand:QHWD 0 "register_operand" "=&r")
+	(match_operand:QHWD 1 "memory_operand" "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:QHWD [(match_operand:QHWD 2 "reg_or_0_operand" "rJ")
+			       (match_operand:QHWD 3 "reg_or_0_operand" "rJ")
+			       (match_operand:SI 4 "const_int_operand")]  ;; mod_s
+	 UNSPEC_COMPARE_AND_SWAP))]
+  "ISA_BASE_IS_LA64V110"
+  "ori\t%0,%z2,0\n\tamcas%A4.<amo>\t%0,%z3,%1"
+  [(set (attr "length") (const_int 8))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -186,9 +220,29 @@
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
   ""
 {
-  emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
-						operands[3], operands[4],
-						operands[6], operands[7]));
+  rtx mod_s, mod_f;
+
+  mod_s = operands[6];
+  mod_f = operands[7];
+
+  /* Normally the succ memory model must be stronger than fail, but in the
+     unlikely event of fail being ACQUIRE and succ being RELEASE we need to
+     promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
+
+  if (is_mm_acquire (memmodel_base (INTVAL (mod_f)))
+      && is_mm_release (memmodel_base (INTVAL (mod_s))))
+    mod_s = GEN_INT (MEMMODEL_ACQ_REL);
+
+  operands[6] = mod_s;
+
+  if (ISA_BASE_IS_LA64V110)
+    emit_insn (gen_atomic_cas_value_strong<mode>_amcas (operands[1], operands[2],
+							 operands[3], operands[4],
+							 operands[6]));
+  else
+    emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
+						  operands[3], operands[4],
+						  operands[6]));
 
   rtx compare = operands[1];
   if (operands[3] != const0_rtx)
@@ -292,31 +346,53 @@
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
   ""
 {
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_cmp_and_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[1], operands[2],
-				operands[3], operands[4], operands[7]);
+  rtx mod_s, mod_f;
 
-  rtx compare = operands[1];
-  if (operands[3] != const0_rtx)
+  mod_s = operands[6];
+  mod_f = operands[7];
+
+  /* Normally the succ memory model must be stronger than fail, but in the
+     unlikely event of fail being ACQUIRE and succ being RELEASE we need to
+     promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
+
+  if (is_mm_acquire (memmodel_base (INTVAL (mod_f)))
+      && is_mm_release (memmodel_base (INTVAL (mod_s))))
+    mod_s = GEN_INT (MEMMODEL_ACQ_REL);
+
+  operands[6] = mod_s;
+
+  if (ISA_BASE_IS_LA64V110)
+    emit_insn (gen_atomic_cas_value_strong<mode>_amcas (operands[1], operands[2],
+						       operands[3], operands[4],
+						       operands[6]));
+  else
     {
-      machine_mode mode = GET_MODE (operands[3]);
-      rtx op1 = convert_modes (SImode, mode, operands[1], true);
-      rtx op3 = convert_modes (SImode, mode, operands[3], true);
-      rtx difference = gen_rtx_MINUS (SImode, op1, op3);
-      compare = gen_reg_rtx (SImode);
-      emit_insn (gen_rtx_SET (compare, difference));
+      union loongarch_gen_fn_ptrs generator;
+      generator.fn_7 = gen_atomic_cas_value_cmp_and_7_si;
+      loongarch_expand_atomic_qihi (generator, operands[1], operands[2],
+				    operands[3], operands[4], operands[6]);
     }
 
-  if (word_mode != <MODE>mode)
-    {
-      rtx reg = gen_reg_rtx (word_mode);
-      emit_insn (gen_rtx_SET (reg, gen_rtx_SIGN_EXTEND (word_mode, compare)));
-      compare = reg;
-    }
+      rtx compare = operands[1];
+      if (operands[3] != const0_rtx)
+	{
+	  machine_mode mode = GET_MODE (operands[3]);
+	  rtx op1 = convert_modes (SImode, mode, operands[1], true);
+	  rtx op3 = convert_modes (SImode, mode, operands[3], true);
+	  rtx difference = gen_rtx_MINUS (SImode, op1, op3);
+	  compare = gen_reg_rtx (SImode);
+	  emit_insn (gen_rtx_SET (compare, difference));
+	}
 
-  emit_insn (gen_rtx_SET (operands[0],
-			  gen_rtx_EQ (SImode, compare, const0_rtx)));
+      if (word_mode != <MODE>mode)
+	{
+	  rtx reg = gen_reg_rtx (word_mode);
+	  emit_insn (gen_rtx_SET (reg, gen_rtx_SIGN_EXTEND (word_mode, compare)));
+	  compare = reg;
+	}
+
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_EQ (SImode, compare, const0_rtx)));
   DONE;
 })
 
@@ -505,12 +581,30 @@
 	(match_operand:SHORT 2 "register_operand"))]
   ""
 {
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_exchange_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				const0_rtx, operands[2], operands[3]);
+  if (ISA_BASE_IS_LA64V110)
+    emit_insn (gen_atomic_exchange<mode>_short (operands[0], operands[1], operands[2], operands[3]));
+  else
+    {
+      union loongarch_gen_fn_ptrs generator;
+      generator.fn_7 = gen_atomic_cas_value_exchange_7_si;
+      loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
+				    const0_rtx, operands[2], operands[3]);
+    }
   DONE;
 })
+
+(define_insn "atomic_fetch_add<mode>_short"
+  [(set (match_operand:SHORT 0 "register_operand" "=&r")
+	(match_operand:SHORT 1 "memory_operand" "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:SHORT
+	  [(plus:SHORT (match_dup 1)
+		     (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_BASE_IS_LA64V110"
+  "amadd%A3.<amo>\t%0,%z2,%1"
+  [(set (attr "length") (const_int 4))])
 
 (define_expand "atomic_fetch_add<mode>"
   [(set (match_operand:SHORT 0 "register_operand" "=&r")
@@ -523,10 +617,16 @@
 	 UNSPEC_SYNC_OLD_OP))]
   ""
 {
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_add_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				operands[1], operands[2], operands[3]);
+  if (ISA_BASE_IS_LA64V110)
+    emit_insn (gen_atomic_fetch_add<mode>_short (operands[0], operands[1],
+					     operands[2], operands[3]));
+  else
+    {
+      union loongarch_gen_fn_ptrs generator;
+      generator.fn_7 = gen_atomic_cas_value_add_7_si;
+      loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
+				    operands[1], operands[2], operands[3]);
+    }
   DONE;
 })
 

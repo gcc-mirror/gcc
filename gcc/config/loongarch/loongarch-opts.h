@@ -86,10 +86,10 @@ loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				   || la_target.isa.simd == ISA_EXT_SIMD_LASX)
 #define ISA_HAS_LASX		  (la_target.isa.simd == ISA_EXT_SIMD_LASX)
 
-
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)
 #define TARGET_uARCH_LA664	  (la_target.cpu_tune == CPU_LA664)
+#define ISA_BASE_IS_LA64V110	  (la_target.isa.base == ISA_BASE_LA64V110)
 
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */

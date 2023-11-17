@@ -5817,16 +5817,12 @@ loongarch_print_operand_punct_valid_p (unsigned char code)
 static bool
 loongarch_memmodel_needs_rel_acq_fence (enum memmodel model)
 {
-  switch (model)
+  switch (memmodel_base (model))
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
       case MEMMODEL_ACQUIRE:
-      case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
 	return true;
 
       case MEMMODEL_RELAXED:
