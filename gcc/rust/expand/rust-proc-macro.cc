@@ -183,7 +183,8 @@ generate_proc_macro_decls_symbol (std::uint32_t stable_crate_id)
   // Size could be hardcoded since we know the input size but I elected to
   // calculate it everytime so we won't have any desync between code and data.
   int size = std::snprintf (nullptr, 0, PROC_MACRO_DECLS_FMT_ARGS);
-  std::vector<char> buf (size + 1);
+  std::vector<char> buf;
+  buf.resize (size + 1, '\0');
   std::sprintf (buf.data (), PROC_MACRO_DECLS_FMT_ARGS);
 #undef PROC_MACRO_DECLS_FMT_ARGS
 
