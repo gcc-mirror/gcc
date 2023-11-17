@@ -30,6 +30,7 @@
   UNSPEC_SYNC_OLD_OP
   UNSPEC_SYNC_EXCHANGE
   UNSPEC_ATOMIC_STORE
+  UNSPEC_ATOMIC_LOAD
   UNSPEC_MEMORY_BARRIER
 ])
 
@@ -103,16 +104,75 @@
 
 ;; Atomic memory operations.
 
+(define_insn "atomic_load<mode>"
+  [(set (match_operand:QHWD 0 "register_operand" "=r")
+    (unspec_volatile:QHWD
+      [(match_operand:QHWD 1 "memory_operand" "+m")
+       (match_operand:SI 2 "const_int_operand")]                        ;; model
+      UNSPEC_ATOMIC_LOAD))]
+  ""
+{
+  enum memmodel model = memmodel_base (INTVAL (operands[2]));
+
+  switch (model)
+    {
+    case MEMMODEL_SEQ_CST:
+      return "dbar\t0x11\\n\\t"
+	     "ld.<size>\t%0,%1\\n\\t"
+	     "dbar\t0x14\\n\\t";
+    case MEMMODEL_ACQUIRE:
+      return "ld.<size>\t%0,%1\\n\\t"
+	     "dbar\t0x14\\n\\t";
+    case MEMMODEL_RELAXED:
+      return "ld.<size>\t%0,%1\\n\\t"
+	     "dbar\t0x700\\n\\t";
+
+    default:
+      /* The valid memory order variants are __ATOMIC_RELAXED, __ATOMIC_SEQ_CST,
+	 __ATOMIC_CONSUME and __ATOMIC_ACQUIRE.
+	 The expand_builtin_atomic_store function converts all invalid memmodels
+	 to MEMMODEL_SEQ_CST.
+
+	 __atomic builtins doc: "Consume is implemented using the
+	 stronger acquire memory order because of a deficiency in C++11's
+	 semantics."  See PR 59448 and get_memmodel in builtins.cc.  */
+      gcc_unreachable ();
+    }
+}
+  [(set (attr "length") (const_int 12))])
+
 ;; Implement atomic stores with amoswap.  Fall back to fences for atomic loads.
 (define_insn "atomic_store<mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "+ZB")
-    (unspec_volatile:GPR
-      [(match_operand:GPR 1 "reg_or_0_operand" "rJ")
+  [(set (match_operand:QHWD 0 "memory_operand" "+m")
+    (unspec_volatile:QHWD
+      [(match_operand:QHWD 1 "reg_or_0_operand" "rJ")
        (match_operand:SI 2 "const_int_operand")]      ;; model
       UNSPEC_ATOMIC_STORE))]
   ""
-  "amswap%A2.<amo>\t$zero,%z1,%0"
-  [(set (attr "length") (const_int 8))])
+{
+  enum memmodel model = memmodel_base (INTVAL (operands[2]));
+
+  switch (model)
+    {
+    case MEMMODEL_SEQ_CST:
+      return "dbar\t0x12\\n\\t"
+	     "st.<size>\t%z1,%0\\n\\t"
+	     "dbar\t0x18\\n\\t";
+    case MEMMODEL_RELEASE:
+      return "dbar\t0x12\\n\\t"
+	     "st.<size>\t%z1,%0\\n\\t";
+    case MEMMODEL_RELAXED:
+      return "st.<size>\t%z1,%0";
+
+    default:
+      /* The valid memory order variants are __ATOMIC_RELAXED, __ATOMIC_SEQ_CST,
+	 and __ATOMIC_RELEASE.
+	 The expand_builtin_atomic_store function converts all invalid memmodels
+	 to MEMMODEL_SEQ_CST.  */
+      gcc_unreachable ();
+    }
+}
+  [(set (attr "length") (const_int 12))])
 
 (define_insn "atomic_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+ZB")
