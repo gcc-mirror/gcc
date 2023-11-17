@@ -1162,7 +1162,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
           RTSERR = $(error NO SUCH RUNTIME)
         endif
       endif
-      EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxinco.o i-vxwork.o i-vxwoio.o
+      EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxwork.o i-vxwoio.o
     endif
   endif
 
@@ -1279,7 +1279,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vend
       RTSERR = $(error NO SUCH RUNTIME)
     endif
 
-    EXTRA_GNATRTL_NONTASKING_OBJS += i-vxinco.o i-vxwork.o i-vxwoio.o
+    EXTRA_GNATRTL_NONTASKING_OBJS += i-vxwork.o i-vxwoio.o
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
@@ -1371,7 +1371,7 @@ ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_ven
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += i-vxwork.o i-vxwoio.o s-stchop.o
-  EXTRA_GNATRTL_TASKING_OBJS += i-vxinco.o s-vxwork.o s-vxwext.o
+  EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
@@ -2890,7 +2890,7 @@ ADA_EXCLUDE_SRCS =\
   g-allein.ads g-alleve.adb g-alleve.ads g-altcon.adb g-altcon.ads \
   g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
-  i-vxinco.adb i-vxinco.ads i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
+  i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
   s-stchop.ads s-stchop.adb \
   s-strcom.adb s-strcom.ads s-thread.ads \

@@ -360,7 +360,6 @@ package body Impunit is
     ("i-java  ", F),  -- Interfaces.Java
     ("i-javjni", F),  -- Interfaces.Java.JNI
     ("i-pacdec", F),  -- Interfaces.Packed_Decimal
-    ("i-vxinco", F),  -- Interfaces.VxWorks.Int_Connection
     ("i-vxwoio", F),  -- Interfaces.VxWorks.IO
     ("i-vxwork", F),  -- Interfaces.VxWorks
 

@@ -29,7 +29,7 @@
 --  This package provides vxworks specific support functions needed
 --  by System.OS_Interface.
 
---  This is the VxWorks 6 kernel version of this package
+--  This is the VxWorks 7 kernel version of this package
 
 with Interfaces.C;
 
