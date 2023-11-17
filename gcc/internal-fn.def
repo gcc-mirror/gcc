@@ -533,7 +533,9 @@ DEF_INTERNAL_FN (ATOMIC_AND_FETCH_CMP_0, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ATOMIC_OR_FETCH_CMP_0, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ATOMIC_XOR_FETCH_CMP_0, ECF_LEAF, NULL)
 
-/* To implement [[fallthrough]].  */
+/* To implement [[fallthrough]].  If the TREE_NOTHROW or GF_CALL_NOTHROW flag
+   is set on the call (normally redundant with ECF_NOTHROW), it marks
+   [[fallthrough]] at the end of C++ loop body.  */
 DEF_INTERNAL_FN (FALLTHROUGH, ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* To implement __builtin_launder.  */

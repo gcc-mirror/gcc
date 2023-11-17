@@ -307,6 +307,27 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     }
 
   append_to_statement_list (body, &stmt_list);
+  if (c_dialect_cxx ()
+      && stmt_list
+      && TREE_CODE (stmt_list) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator tsi = tsi_last (stmt_list);
+      if (!tsi_end_p (tsi))
+	{
+	  tree t = *tsi;
+	  while (TREE_CODE (t) == CLEANUP_POINT_EXPR
+		 || TREE_CODE (t) == EXPR_STMT
+		 || CONVERT_EXPR_CODE_P (TREE_CODE (t)))
+	    t = TREE_OPERAND (t, 0);
+	  /* For C++, if iteration statement body ends with fallthrough
+	     statement, mark it such that we diagnose it even if next
+	     statement would be labeled statement with case/default label.  */
+	  if (TREE_CODE (t) == CALL_EXPR
+	      && !CALL_EXPR_FN (t)
+	      && CALL_EXPR_IFN (t) == IFN_FALLTHROUGH)
+	    TREE_NOTHROW (t) = 1;
+	}
+    }
   finish_bc_block (&stmt_list, bc_continue, clab);
   if (incr)
     {
