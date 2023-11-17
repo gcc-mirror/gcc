@@ -455,6 +455,13 @@
 /* test-weak-attribute.c: This can't be in the testcases array as it
    doesn't have a verify_code implementation.  */
 
+/* test-vector-perm.c */
+#define create_code create_code_vector_perm
+#define verify_code verify_code_vector_perm
+#include "test-vector-perm.c"
+#undef create_code
+#undef verify_code
+
 /* Now expose the individual testcases as instances of this struct.  */
 
 struct testcase
@@ -622,7 +629,10 @@ const struct testcase testcases[] = {
    verify_code_version},
   {"volatile",
    create_code_volatile,
-   verify_code_volatile}
+   verify_code_volatile},
+  {"vector_perm",
+   create_code_vector_perm,
+   verify_code_vector_perm},
 };
 
 const int num_testcases = (sizeof (testcases) / sizeof (testcases[0]));

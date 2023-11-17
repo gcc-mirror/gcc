@@ -179,6 +179,12 @@ public:
 			  const auto_vec<rvalue *> &elements);
 
   rvalue *
+  new_rvalue_vector_perm (location *loc,
+			  rvalue* elements1,
+			  rvalue* elements2,
+			  rvalue* mask);
+
+  rvalue *
   new_unary_op (location *loc,
 		enum gcc_jit_unary_op op,
 		type *result_type,
@@ -226,6 +232,10 @@ public:
   convert_vector (location *loc,
 		  rvalue *vector,
 		  type *type);
+  lvalue *
+  new_vector_access (location *loc,
+		     rvalue *vector,
+		     rvalue *index);
 
   void
   set_str_option (enum gcc_jit_str_option opt,

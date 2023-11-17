@@ -418,3 +418,13 @@ on functions and variables:
 --------------------
 ``LIBGCCJIT_ABI_30`` covers the addition of
 :func:`gcc_jit_context_convert_vector`
+=======
+
+.. _LIBGCCJIT_ABI_31:
+
+``LIBGCCJIT_ABI_31``
+--------------------
+``LIBGCCJIT_ABI_31`` covers the addition of functions to manipulate vectors:
+
+  * :func:`gcc_jit_context_new_rvalue_vector_perm`
+  * :func:`gcc_jit_context_new_vector_access`

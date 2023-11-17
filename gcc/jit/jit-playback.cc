@@ -1173,6 +1173,26 @@ playback::context::new_rvalue_from_vector (location *,
   return new rvalue (this, t_ctor);
 }
 
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector perm.  */
+
+playback::rvalue *
+playback::context::new_rvalue_vector_perm (location *loc,
+					   rvalue* elements1,
+					   rvalue* elements2,
+					   rvalue* mask)
+{
+  tree t_elements1 = elements1->as_tree ();
+  tree t_elements2 = elements2->as_tree ();
+  tree t_mask = mask->as_tree ();
+
+  tree t_vector_perm = build3 (VEC_PERM_EXPR, TREE_TYPE (t_elements1),
+			       t_elements1, t_elements2, t_mask);
+  if (loc)
+    set_tree_location (t_vector_perm, loc);
+  return new rvalue (this, t_vector_perm);
+}
+
 /* Coerce a tree expression into a boolean tree expression.  */
 
 tree
@@ -1715,6 +1735,136 @@ convert_vector (location *loc,
     set_tree_location (t_result, loc);
 
   return new rvalue (this, t_result);
+}
+
+/* The following functions come from c-common.h.  */
+/* Like c_mark_addressable but don't check register qualifier.  */
+void
+common_mark_addressable_vec (tree t)
+{
+  while (handled_component_p (t) || TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    {
+      t = TREE_OPERAND (t, 0);
+    }
+  if (!VAR_P (t)
+      && TREE_CODE (t) != PARM_DECL
+      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR
+      && TREE_CODE (t) != TARGET_EXPR)
+    return;
+  if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
+    TREE_ADDRESSABLE (t) = 1;
+  if (TREE_CODE (t) == COMPOUND_LITERAL_EXPR)
+    TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (t)) = 1;
+  else if (TREE_CODE (t) == TARGET_EXPR)
+    TREE_ADDRESSABLE (TARGET_EXPR_SLOT (t)) = 1;
+}
+
+/* Return true if TYPE is a vector type that should be subject to the GNU
+   vector extensions (as opposed to a vector type that is used only for
+   the purposes of defining target-specific built-in functions).  */
+
+inline bool
+gnu_vector_type_p (const_tree type)
+{
+  return TREE_CODE (type) == VECTOR_TYPE && !TYPE_INDIVISIBLE_P (type);
+}
+
+/* Return nonzero if REF is an lvalue valid for this language.
+   Lvalues can be assigned, unless their type has TYPE_READONLY.
+   Lvalues can have their address taken, unless they have C_DECL_REGISTER.  */
+
+bool
+lvalue_p (const_tree ref)
+{
+  const enum tree_code code = TREE_CODE (ref);
+
+  switch (code)
+    {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case COMPONENT_REF:
+      return lvalue_p (TREE_OPERAND (ref, 0));
+
+    case C_MAYBE_CONST_EXPR:
+      return lvalue_p (TREE_OPERAND (ref, 1));
+
+    case COMPOUND_LITERAL_EXPR:
+    case STRING_CST:
+      return true;
+
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* MEM_REFs can appear from -fgimple parsing or folding, so allow them
+	 here as well.  */
+    case INDIRECT_REF:
+    case ARRAY_REF:
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+    case ERROR_MARK:
+      return (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE);
+
+    case BIND_EXPR:
+      return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
+
+    default:
+      return false;
+    }
+}
+
+bool
+convert_vector_to_array_for_subscript (tree *vecp)
+{
+  bool ret = false;
+  if (gnu_vector_type_p (TREE_TYPE (*vecp)))
+    {
+      tree type = TREE_TYPE (*vecp);
+
+      ret = !lvalue_p (*vecp);
+
+      /* We are building an ARRAY_REF so mark the vector as addressable
+	to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P
+	 for function parameters.  */
+      /* NOTE: that was the missing piece for making vector access work with
+	optimizations enabled.  */
+      common_mark_addressable_vec (*vecp);
+
+      *vecp = build1 (VIEW_CONVERT_EXPR,
+		      build_array_type_nelts (TREE_TYPE (type),
+					      TYPE_VECTOR_SUBPARTS (type)),
+		      *vecp);
+    }
+  return ret;
+}
+
+/* Construct a playback::lvalue instance (wrapping a tree) for a
+   vector access.  */
+
+playback::lvalue *
+playback::context::
+new_vector_access (location *loc,
+		   rvalue *vector,
+		   rvalue *index)
+{
+  gcc_assert (vector);
+  gcc_assert (index);
+
+  /* For comparison, see:
+       c/c-typeck.cc: build_array_ref
+  */
+
+  tree t_vector = vector->as_tree ();
+  bool non_lvalue = convert_vector_to_array_for_subscript (&t_vector);
+  tree type = TREE_TYPE (TREE_TYPE (t_vector));
+  tree t_result = build4 (ARRAY_REF, type, t_vector, index->as_tree (),
+			  NULL_TREE, NULL_TREE);
+  if (non_lvalue)
+    t_result = non_lvalue (t_result);
+
+  if (loc)
+    set_tree_location (t_result, loc);
+  return new lvalue (this, t_result);
 }
 
 /* Construct a tree for a field access.  */

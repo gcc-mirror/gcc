@@ -323,6 +323,35 @@ Vector expressions
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector
 
+.. function:: gcc_jit_rvalue * \
+              gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt, \
+                                                      gcc_jit_location *loc, \
+                                                      gcc_jit_rvalue *elements1, \
+                                                      gcc_jit_rvalue *elements2, \
+                                                      gcc_jit_rvalue *mask);
+
+   Build a permutation of two vectors.
+
+   "elements1" and "elements2" should have the same type.
+   The length of "mask" and "elements1" should be the same.
+   The element type of "mask" should be integral.
+   The size of the element type of "mask" and "elements1" should be the same.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_31`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_VECTOR_OPERATIONS
+
+    Analogous to:
+
+    .. code-block:: c
+
+       __builtin_shuffle (elements1, elements2, mask)
+
+    in C.
+
 Unary Operations
 ****************
 
@@ -1096,3 +1125,27 @@ Field access is provided separately for both lvalues and rvalues.
       PTR[INDEX]
 
    in C (or, indeed, to ``PTR + INDEX``).
+
+.. function:: gcc_jit_lvalue *\
+              gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,\
+                                                 gcc_jit_location *loc,\
+                                                 gcc_jit_rvalue *vector,\
+                                                 gcc_jit_rvalue *index)
+
+   Given an rvalue of vector type ``T __attribute__ ((__vector_size__ (SIZE)))``,
+   get the element `T` at the given index.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_31`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_VECTOR_OPERATIONS
+
+   Analogous to:
+
+   .. code-block:: c
+
+      VECTOR[INDEX]
+
+   in C.

@@ -2500,6 +2500,9 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  gcc::jit::recording::vector_type *vector_type = type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL (vector_type == NULL, ctxt, loc,
+		       "cannot cast vector types");
   RETURN_NULL_IF_FAIL_PRINTF3 (
     is_valid_cast (rvalue->get_type (), type),
     ctxt, loc,
@@ -2600,6 +2603,39 @@ gcc_jit_context_convert_vector (gcc_jit_context *ctxt,
     vector->get_debug_string (), type->get_debug_string ());
 
   return (gcc_jit_rvalue *)ctxt->new_convert_vector (loc, vector, type);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_vector_access method in
+   jit-recording.cc.  */
+
+extern gcc_jit_lvalue *
+gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   gcc_jit_rvalue *vector,
+				   gcc_jit_rvalue *index)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (vector, ctxt, loc, "NULL vector");
+  RETURN_NULL_IF_FAIL (index, ctxt, loc, "NULL index");
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    vector->get_type ()->dyn_cast_vector_type (),
+    ctxt, loc,
+    "vector: %s (type: %s) is not a vector",
+    vector->get_debug_string (),
+    vector->get_type ()->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    index->get_type ()->is_numeric (),
+    ctxt, loc,
+    "index: %s (type: %s) is not of numeric type",
+    index->get_debug_string (),
+    index->get_type ()->get_debug_string ());
+
+  return (gcc_jit_lvalue *)ctxt->new_vector_access (loc, vector, index);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -4251,6 +4287,82 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
     (loc,
      as_vec_type,
      (gcc::jit::recording::rvalue **)elements);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_rvalue_vector_perm method, in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_rvalue *elements1,
+					gcc_jit_rvalue *elements2,
+					gcc_jit_rvalue *mask)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL ctxt");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (elements1, ctxt, loc, "NULL elements1");
+  RETURN_NULL_IF_FAIL (elements2, ctxt, loc, "NULL elements2");
+  RETURN_NULL_IF_FAIL (mask, ctxt, loc, "NULL mask");
+
+  /* LOC can be NULL.  */
+
+  gcc::jit::recording::type *elements1_type = elements1->get_type ();
+  gcc::jit::recording::type *elements2_type = elements2->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF4 (
+    compatible_types (elements1->get_type ()->unqualified (),
+		      elements2->get_type ()->unqualified ()),
+    ctxt, loc,
+    "mismatching types for vector perm:"
+    " elements1: %s (type: %s) elements2: %s (type: %s)",
+    elements1->get_debug_string (),
+    elements1_type->get_debug_string (),
+    elements2->get_debug_string (),
+    elements2_type->get_debug_string ());
+
+  gcc::jit::recording::type *mask_type = mask->get_type ();
+  gcc::jit::recording::vector_type *mask_vector_type =
+    mask_type->dyn_cast_vector_type ();
+  gcc::jit::recording::vector_type *elements1_vector_type =
+    elements1_type->dyn_cast_vector_type ();
+
+  size_t mask_len = mask_vector_type->get_num_units ();
+  size_t elements1_len = elements1_vector_type->get_num_units ();
+
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    mask_len == elements1_len,
+    ctxt, loc,
+    "mismatching length for mask:"
+    " elements1 length: %ld mask length: %ld",
+    mask_len,
+    elements1_len);
+
+  gcc::jit::recording::type *mask_element_type =
+    mask_vector_type->get_element_type ();
+
+  RETURN_NULL_IF_FAIL (
+    mask_element_type->is_int (),
+    ctxt, loc,
+    "elements of mask must be of an integer type");
+
+  gcc::jit::recording::type *elements1_element_type =
+    elements1_vector_type->get_element_type ();
+  size_t mask_element_size = mask_element_type->get_size ();
+  size_t elements1_element_size = elements1_element_type->get_size ();
+
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    mask_element_size == elements1_element_size,
+    ctxt, loc,
+    "mismatching size for mask element type:"
+    " elements1 element type: %ld mask element type: %ld",
+    mask_element_size,
+    elements1_element_size);
+
+  return (gcc_jit_rvalue *)ctxt->new_rvalue_vector_perm (loc, elements1,
+							 elements2, mask);
 }
 
 /* A mutex around the cached state in parse_basever.

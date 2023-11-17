@@ -1141,6 +1141,19 @@ recording::context::new_rvalue_from_vector (location *loc,
 }
 
 recording::rvalue *
+recording::context::new_rvalue_vector_perm (location *loc,
+			  rvalue *elements1,
+			  rvalue *elements2,
+			  rvalue *mask)
+{
+  recording::rvalue *result
+    = new memento_of_new_rvalue_vector_perm (this, loc, elements1, elements2,
+					     mask);
+  record (result);
+  return result;
+}
+
+recording::rvalue *
 recording::context::new_ctor (recording::location *loc,
 			      recording::type *type,
 			      size_t num_values,
@@ -1354,6 +1367,22 @@ recording::context::new_convert_vector (recording::location *loc,
 {
   // TODO: instead have an "internal function" memento?
   recording::rvalue *result = new convert_vector (this, loc, vector, type);
+  record (result);
+  return result;
+}
+
+/* Create a recording::vector_access instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_vector_access.  */
+
+recording::lvalue *
+recording::context::new_vector_access (recording::location *loc,
+				      recording::rvalue *vector,
+				      recording::rvalue *index)
+{
+  recording::lvalue *result = new vector_access (this, loc, vector, index);
   record (result);
   return result;
 }
@@ -5719,6 +5748,90 @@ recording::memento_of_new_rvalue_from_vector::write_reproducer (reproducer &r)
 	   elements_id);
 }
 
+/* The implementation of class
+   gcc::jit::recording::memento_of_new_rvalue_vector_perm.  */
+
+/* The constructor for
+   gcc::jit::recording::memento_of_new_rvalue_vector_perm.  */
+
+recording::memento_of_new_rvalue_vector_perm::
+memento_of_new_rvalue_vector_perm (context *ctxt,
+				   location *loc,
+				   rvalue *elements1,
+				   rvalue *elements2,
+				   rvalue *mask)
+: rvalue (ctxt, loc, elements1->get_type ()),
+  m_elements1 (elements1),
+  m_elements2 (elements2),
+  m_mask (mask)
+{
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_new_rvalue_vector_perm.  */
+
+void
+recording::memento_of_new_rvalue_vector_perm::replay_into (replayer *r)
+{
+  playback::rvalue *playback_elements1 = m_elements1->playback_rvalue ();
+  playback::rvalue *playback_elements2 = m_elements2->playback_rvalue ();
+  playback::rvalue *playback_mask = m_mask->playback_rvalue ();
+
+  set_playback_obj (r->new_rvalue_vector_perm (playback_location (r, m_loc),
+		    playback_elements1,
+		    playback_elements2,
+		    playback_mask));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::memento_of_new_rvalue_from_vector.  */
+
+    void
+recording::memento_of_new_rvalue_vector_perm::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_elements1);
+  v->visit (m_elements2);
+  v->visit (m_mask);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   vectors.  */
+
+    recording::string *
+recording::memento_of_new_rvalue_vector_perm::make_debug_string ()
+{
+    /* Now build a string.  */
+    string *result = string::from_printf (m_ctxt,
+		"shufflevector (%s, %s, %s)",
+		m_elements1->get_debug_string (),
+		m_elements2->get_debug_string (),
+		m_mask->get_debug_string ());
+
+    return result;
+
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   vectors.  */
+
+    void
+recording::memento_of_new_rvalue_vector_perm::write_reproducer (reproducer &r)
+{
+    const char *id = r.make_identifier (this, "vector");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_rvalue_vector_perm (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                            %s, /* gcc_jit_location *loc */\n"
+	   "                                            %s, /* gcc_jit_rvalue **elements1*/\n"
+	   "                                            %s, /* gcc_jit_rvalue **elements2*/\n"
+	   "                                            %s); /* gcc_jit_rvalue **mask*/\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_elements1),
+	   r.get_identifier_as_rvalue (m_elements2),
+	   r.get_identifier_as_rvalue (m_mask));
+}
+
 void
 recording::ctor::visit_children (rvalue_visitor *v)
 {
@@ -6612,6 +6725,30 @@ recording::convert_vector::visit_children (rvalue_visitor *v)
   v->visit (m_vector);
 }
 
+/* The implementation of class gcc::jit::recording::vector_access.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::vector_access.  */
+
+void
+recording::vector_access::replay_into (replayer *r)
+{
+  set_playback_obj (
+    r->new_vector_access (playback_location (r, m_loc),
+			  m_vector->playback_rvalue (),
+			  m_index->playback_rvalue ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::vector_access.  */
+
+void
+recording::vector_access::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_vector);
+  v->visit (m_index);
+}
+
 /* Implementation of recording::memento::make_debug_string for
    array accesses.  */
 
@@ -6642,6 +6779,35 @@ recording::convert_vector::write_reproducer (reproducer &r)
 	   r.get_identifier (m_loc),
 	   r.get_identifier_as_rvalue (m_vector),
 	   r.get_identifier_as_type (m_type));
+}
+
+recording::string *
+recording::vector_access::make_debug_string ()
+{
+  enum precedence prec = get_precedence ();
+  return string::from_printf (m_ctxt,
+			      "%s[%s]",
+			      m_vector->get_debug_string_parens (prec),
+			      m_index->get_debug_string_parens (prec));
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   vector_access.  */
+
+void
+recording::vector_access::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "lvalue");
+  r.write ("  gcc_jit_lvalue *%s = \n"
+	   "    gcc_jit_context_new_vector_access (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                       %s, /*gcc_jit_location *loc */\n"
+	   "                                       %s, /* gcc_jit_rvalue *vector */\n"
+	   "                                       %s); /* gcc_jit_rvalue *index */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_vector),
+	   r.get_identifier_as_rvalue (m_index));
 }
 
 /* The implementation of class gcc::jit::recording::access_field_of_lvalue.  */
