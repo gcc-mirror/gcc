@@ -210,6 +210,73 @@
    (set_attr "type" "fmove")
    (set_attr "mode" "DF")])
 
+;; XTheadInt
+
+(define_constants
+  [(T0_REGNUM	5)
+   (T1_REGNUM	6)
+   (T2_REGNUM	7)
+   (A0_REGNUM	10)
+   (A1_REGNUM	11)
+   (A2_REGNUM	12)
+   (A3_REGNUM	13)
+   (A4_REGNUM	14)
+   (A5_REGNUM	15)
+   (A6_REGNUM	16)
+   (A7_REGNUM	17)
+   (T3_REGNUM	28)
+   (T4_REGNUM	29)
+   (T5_REGNUM	30)
+   (T6_REGNUM	31)
+])
+
+(define_insn "th_int_push"
+  [(unspec_volatile [(const_int 0)] UNSPECV_XTHEADINT_PUSH)
+   (use (reg:SI RETURN_ADDR_REGNUM))
+   (use (reg:SI T0_REGNUM))
+   (use (reg:SI T1_REGNUM))
+   (use (reg:SI T2_REGNUM))
+   (use (reg:SI A0_REGNUM))
+   (use (reg:SI A1_REGNUM))
+   (use (reg:SI A2_REGNUM))
+   (use (reg:SI A3_REGNUM))
+   (use (reg:SI A4_REGNUM))
+   (use (reg:SI A5_REGNUM))
+   (use (reg:SI A6_REGNUM))
+   (use (reg:SI A7_REGNUM))
+   (use (reg:SI T3_REGNUM))
+   (use (reg:SI T4_REGNUM))
+   (use (reg:SI T5_REGNUM))
+   (use (reg:SI T6_REGNUM))]
+  "TARGET_XTHEADINT && !TARGET_64BIT"
+  "th.ipush"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SI")])
+
+(define_insn "th_int_pop"
+  [(unspec_volatile [(const_int 0)] UNSPECV_XTHEADINT_POP)
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
+   (clobber (reg:SI T0_REGNUM))
+   (clobber (reg:SI T1_REGNUM))
+   (clobber (reg:SI T2_REGNUM))
+   (clobber (reg:SI A0_REGNUM))
+   (clobber (reg:SI A1_REGNUM))
+   (clobber (reg:SI A2_REGNUM))
+   (clobber (reg:SI A3_REGNUM))
+   (clobber (reg:SI A4_REGNUM))
+   (clobber (reg:SI A5_REGNUM))
+   (clobber (reg:SI A6_REGNUM))
+   (clobber (reg:SI A7_REGNUM))
+   (clobber (reg:SI T3_REGNUM))
+   (clobber (reg:SI T4_REGNUM))
+   (clobber (reg:SI T5_REGNUM))
+   (clobber (reg:SI T6_REGNUM))
+   (return)]
+  "TARGET_XTHEADINT && !TARGET_64BIT"
+  "th.ipop"
+  [(set_attr "type"	"ret")
+   (set_attr "mode"	"SI")])
+
 ;; XTheadMac
 
 (define_insn "*th_mula<mode>"

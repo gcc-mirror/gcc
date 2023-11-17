@@ -726,6 +726,9 @@ extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,
 						      int, HOST_WIDE_INT,
 						      int, HOST_WIDE_INT);
 extern void th_mempair_save_restore_regs (rtx[4], bool, machine_mode);
+extern unsigned int th_int_get_mask (unsigned int);
+extern unsigned int th_int_get_save_adjustment (void);
+extern rtx th_int_adjust_cfi_prologue (unsigned int);
 #ifdef RTX_CODE
 extern const char*
 th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);

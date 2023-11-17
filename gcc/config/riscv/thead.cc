@@ -912,3 +912,80 @@ th_print_operand_address (FILE *file, machine_mode mode, rtx x)
 
   gcc_unreachable ();
 }
+
+/* Number array of registers X1, X5-X7, X10-X17, X28-X31, to be
+   operated on by instruction th.ipush/th.ipop in XTheadInt.  */
+
+int th_int_regs[] ={
+  RETURN_ADDR_REGNUM,
+  T0_REGNUM, T1_REGNUM, T2_REGNUM,
+  A0_REGNUM, A1_REGNUM, A2_REGNUM, A3_REGNUM,
+  A4_REGNUM, A5_REGNUM, A6_REGNUM, A7_REGNUM,
+  T3_REGNUM, T4_REGNUM, T5_REGNUM, T6_REGNUM,
+};
+
+/* If MASK contains registers X1, X5-X7, X10-X17, X28-X31, then
+   return the mask composed of these registers, otherwise return
+   zero.  */
+
+unsigned int
+th_int_get_mask (unsigned int mask)
+{
+  unsigned int xtheadint_mask = 0;
+
+  if (!TARGET_XTHEADINT || TARGET_64BIT)
+    return 0;
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (th_int_regs); i++)
+    {
+      if (!BITSET_P (mask, th_int_regs[i]))
+	return 0;
+
+      xtheadint_mask |= (1 << th_int_regs[i]);
+    }
+
+  return xtheadint_mask; /* Usually 0xf003fce2.  */
+}
+
+/* Returns the occupied frame needed to save registers X1, X5-X7,
+   X10-X17, X28-X31.  */
+
+unsigned int
+th_int_get_save_adjustment (void)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+  return ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+}
+
+rtx
+th_int_adjust_cfi_prologue (unsigned int mask)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+
+  rtx dwarf = NULL_RTX;
+  rtx adjust_sp_rtx, reg, mem, insn;
+  int saved_size = ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+  int offset = saved_size;
+
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (mask, regno - GP_REG_FIRST))
+      {
+	offset -= UNITS_PER_WORD;
+	reg = gen_rtx_REG (SImode, regno);
+	mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						    stack_pointer_rtx,
+						    offset));
+
+	insn = gen_rtx_SET (mem, reg);
+	dwarf = alloc_reg_note (REG_CFA_OFFSET, insn, dwarf);
+      }
+
+  /* Debug info for adjust sp.  */
+  adjust_sp_rtx =
+    gen_rtx_SET (stack_pointer_rtx,
+		 gen_rtx_PLUS (GET_MODE (stack_pointer_rtx),
+			       stack_pointer_rtx, GEN_INT (-saved_size)));
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx, dwarf);
+
+  return dwarf;
+}

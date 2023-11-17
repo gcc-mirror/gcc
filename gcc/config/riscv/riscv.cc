@@ -95,14 +95,21 @@ along with GCC; see the file COPYING3.  If not see
 #define UNSPEC_ADDRESS_TYPE(X) \
   ((enum riscv_symbol_type) (XINT (X, 1) - UNSPEC_ADDRESS_FIRST))
 
-/* True if bit BIT is set in VALUE.  */
-#define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
-
 /* Extract the backup dynamic frm rtl.  */
 #define DYNAMIC_FRM_RTL(c) ((c)->machine->mode_sw_info.dynamic_frm)
 
 /* True the mode switching has static frm, or false.  */
 #define STATIC_FRM_P(c) ((c)->machine->mode_sw_info.static_frm_p)
+
+/* True if we can use the instructions in the XTheadInt extension
+   to handle interrupts, or false.  */
+#define TH_INT_INTERRUPT(c)						\
+  (TARGET_XTHEADINT							\
+   /* The XTheadInt extension only supports rv32.  */			\
+   && !TARGET_64BIT							\
+   && (c)->machine->interrupt_handler_p					\
+   /* The XTheadInt instructions can only be executed in M-mode.  */	\
+   && (c)->machine->interrupt_mode == MACHINE_MODE)
 
 /* Information about a function's frame layout.  */
 struct GTY(())  riscv_frame_info {
@@ -7101,6 +7108,7 @@ riscv_expand_prologue (void)
   unsigned fmask = frame->fmask;
   int spimm, multi_push_additional, stack_adj;
   rtx insn, dwarf = NULL_RTX;
+  unsigned th_int_mask = 0;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = constant_lower_bound (remaining_size);
@@ -7165,6 +7173,28 @@ riscv_expand_prologue (void)
       insn = emit_insn (riscv_gen_gpr_save_insn (frame));
       frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn) = dwarf;
+    }
+
+  th_int_mask = th_int_get_mask (frame->mask);
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask &= ~th_int_mask;
+
+      /* RISCV_PROLOGUE_TEMP may be used to handle some CSR for
+	 interrupts, such as fcsr.  */
+      if ((TARGET_HARD_FLOAT  && frame->fmask)
+	  || (TARGET_ZFINX && frame->mask))
+	frame->mask |= (1 << RISCV_PROLOGUE_TEMP_REGNUM);
+
+      unsigned save_adjustment = th_int_get_save_adjustment ();
+      frame->gp_sp_offset -= save_adjustment;
+      remaining_size -= save_adjustment;
+
+      insn = emit_insn (gen_th_int_push ());
+
+      rtx dwarf = th_int_adjust_cfi_prologue (th_int_mask);
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = dwarf;
     }
@@ -7397,6 +7427,7 @@ riscv_expand_epilogue (int style)
     = use_multi_pop ? frame->multi_push_adj_base + frame->multi_push_adj_addi
 		    : 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+  unsigned th_int_mask = 0;
   rtx insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
@@ -7559,11 +7590,31 @@ riscv_expand_epilogue (int style)
   else if (use_restore_libcall)
     frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
 
+  th_int_mask = th_int_get_mask (frame->mask);
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask &= ~th_int_mask;
+
+      /* RISCV_PROLOGUE_TEMP may be used to handle some CSR for
+	 interrupts, such as fcsr.  */
+      if ((TARGET_HARD_FLOAT  && frame->fmask)
+	  || (TARGET_ZFINX && frame->mask))
+	frame->mask |= (1 << RISCV_PROLOGUE_TEMP_REGNUM);
+    }
+
   /* Restore the registers.  */
   riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
 			      - multipop_size,
 			    riscv_restore_reg, true, style == EXCEPTION_RETURN);
+
+  if (th_int_mask && TH_INT_INTERRUPT (cfun))
+    {
+      frame->mask = mask; /* Undo the above fib.  */
+      unsigned save_adjustment = th_int_get_save_adjustment ();
+      gcc_assert (step2.to_constant () >= save_adjustment);
+      step2 -= save_adjustment;
+    }
 
   if (use_restore_libcall)
     frame->mask = mask; /* Undo the above fib.  */
@@ -7627,7 +7678,9 @@ riscv_expand_epilogue (int style)
 
       gcc_assert (mode != UNKNOWN_MODE);
 
-      if (mode == MACHINE_MODE)
+      if (th_int_mask && TH_INT_INTERRUPT (cfun))
+	emit_jump_insn (gen_th_int_pop ());
+      else if (mode == MACHINE_MODE)
 	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
 	emit_jump_insn (gen_riscv_sret ());
