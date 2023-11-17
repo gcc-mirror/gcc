@@ -883,6 +883,10 @@ std=f2018
 Fortran
 Conform to the ISO Fortran 2018 standard.
 
+std=f2023
+Fortran
+Conform to the ISO Fortran 2023 standard.
+
 std=f95
 Fortran
 Conform to the ISO Fortran 95 standard.

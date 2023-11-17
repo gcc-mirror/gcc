@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "" }
+! { dg-options "-std=f2018" }
 !
 ! By default, for free-form source code: Error out
 !

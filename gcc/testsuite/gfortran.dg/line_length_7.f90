@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wno-error" }
+! { dg-options "-std=f2018 -Wno-error" }
 !
 ! By default, for free-form source code: Error out
 ! But due to -Wno-error, we only expect a warning

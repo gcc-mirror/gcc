@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-additional-options "-std=f2018" }
 !
 ! PR fortran/94709
 !

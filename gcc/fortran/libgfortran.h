@@ -19,9 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Flags to specify which standard/extension contains a feature.
-   Note that no features were obsoleted nor deleted in F2003.
+   Note that no features were obsoleted nor deleted in F2003 nor in F2023.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
+#define GFC_STD_F2023		(1<<12)	/* New in F2023.  */
 #define GFC_STD_F2018_DEL	(1<<11)	/* Deleted in F2018.  */
 #define GFC_STD_F2018_OBS	(1<<10)	/* Obsolescent in F2018.  */
 #define GFC_STD_F2018		(1<<9)	/* New in F2018.  */
@@ -45,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_STD_OPT_F08		(GFC_STD_OPT_F03 | GFC_STD_F2008)
 #define GFC_STD_OPT_F18		((GFC_STD_OPT_F08 | GFC_STD_F2018) \
 				& (~GFC_STD_F2018_DEL))
+#define GFC_STD_OPT_F23		(GFC_STD_OPT_F18 | GFC_STD_F2023)
 
 /* Bitmasks for the various FPE that can be enabled.  These need to be straight integers
    e.g., 8 instead of (1<<3), because they will be included in Fortran source.  */
