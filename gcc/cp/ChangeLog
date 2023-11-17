@@ -1,3 +1,24 @@
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112365
+	* class.cc (layout_class_type): Don't
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD on FIELD_DECLs with
+	error_mark_node type.
+
+2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/107939
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>:
+	Fix FUNCTION_POINTER_TYPE_P test.
+
+2023-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112410
+	* parser.cc (cp_parser_direct_declarator): Maybe call
+	abort_fully_implicit_template if it turned out the parameter list was
+	ill-formed.
+
 2023-11-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* tree.cc (build_cplus_array_type): Revert using the macro

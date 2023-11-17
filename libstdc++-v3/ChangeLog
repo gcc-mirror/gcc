@@ -1,3 +1,397 @@
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112564
+	* include/std/stacktrace (formatter::format): Format according
+	to format-spec.
+	* include/std/thread (formatter::format): Use _Align_right as
+	default.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Check
+	fill-and-align handling. Change compile test to run.
+	* testsuite/30_threads/thread/id/output.cc: Check fill-and-align
+	handling.
+
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111667
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/out_ptr.h: New file.
+	* include/bits/shared_ptr.h (__is_shared_ptr): Move definition
+	to here ...
+	* include/bits/shared_ptr_atomic.h (__is_shared_ptr): ... from
+	here.
+	* include/bits/shared_ptr_base.h (__shared_count): Declare
+	out_ptr_t as a friend.
+	(_Sp_counted_deleter, __shared_ptr): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr, unique_ptr<T[], D>):
+	Declare out_ptr_t and inout_ptr_t as friends.
+	(__is_unique_ptr): Define new variable template.
+	* include/bits/version.def (out_ptr): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory: Include new header.
+	* testsuite/20_util/smartptr.adapt/inout_ptr/1.cc: New test.
+	* testsuite/20_util/smartptr.adapt/inout_ptr/2.cc: New test.
+	* testsuite/20_util/smartptr.adapt/inout_ptr/shared_ptr_neg.cc:
+	New test.
+	* testsuite/20_util/smartptr.adapt/inout_ptr/void_ptr.cc: New
+	test.
+	* testsuite/20_util/smartptr.adapt/out_ptr/1.cc: New test.
+	* testsuite/20_util/smartptr.adapt/out_ptr/2.cc: New test.
+	* testsuite/20_util/smartptr.adapt/out_ptr/shared_ptr_neg.cc:
+	New test.
+	* testsuite/20_util/smartptr.adapt/out_ptr/void_ptr.cc: New
+	test.
+
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h: Do not define standard feature
+	test macro here.
+	* include/bits/align.h: Likewise. Test internal macros instead
+	of standard macros.
+	* include/bits/alloc_traits.h: Likewise.
+	* include/bits/allocator.h: Likewise.
+	* include/bits/atomic_base.h: Likewise.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/atomic_wait.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/char_traits.h: Likewise.
+	* include/bits/chrono.h: Likewise.
+	* include/bits/cow_string.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/memory_resource.h: Likewise.
+	* include/bits/move.h: Likewise.
+	* include/bits/move_only_function.h: Likewise.
+	* include/bits/node_handle.h: Likewise.
+	* include/bits/ptr_traits.h: Likewise.
+	* include/bits/range_access.h: Likewise.
+	* include/bits/ranges_algo.h: Likewise.
+	* include/bits/ranges_cmp.h: Likewise.
+	* include/bits/ranges_util.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_atomic.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/stl_function.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/uses_allocator_args.h: Likewise.
+	* include/bits/utility.h: Likewise.
+	* include/bits/erase_if.h: Add comment.
+	* include/std/algorithm: Define standard feature test macros
+	here.
+	* include/std/atomic: Likewise.
+	* include/std/array: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/format: Likewise.
+	* include/std/functional: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/ios: Likewise.
+	* include/std/iterator: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/memory: Likewise.
+	* include/std/numeric: Likewise.
+	* include/std/queue: Likewise.
+	* include/std/ranges: Likewise.
+	* include/std/regex: Likewise.
+	* include/std/set: Likewise.
+	* include/std/stack: Likewise.
+	* include/std/stop_token: Likewise.
+	* include/std/string: Likewise.
+	* include/std/string_view:
+	* include/std/tuple: Likewise.
+	* include/std/unordered_map:
+	* include/std/unordered_set:
+	* include/std/utility: Likewise.
+	* include/std/vector: Likewise.
+	* include/std/scoped_allocator: Query internal macros instead of
+	standard macros.
+
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/byte/requirements.cc: Disable PCH.
+	* testsuite/18_support/destroying_delete.cc: Likewise.
+	* testsuite/18_support/source_location/1.cc: Likewise.
+	* testsuite/18_support/source_location/version.cc: Likewise.
+	* testsuite/18_support/type_info/constexpr.cc: Likewise.
+	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc:
+	Likewise.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/version.cc: Likewise.
+	* testsuite/20_util/addressof/requirements/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/allocator_traits/header-2.cc: Likewise.
+	* testsuite/20_util/allocator_traits/header.cc: Likewise.
+	* testsuite/20_util/as_const/1.cc: Likewise. Likewise.
+	* testsuite/20_util/bitset/cons/constexpr_c++23.cc: Likewise.
+	* testsuite/20_util/bitset/version.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc:
+	Likewise.
+	* testsuite/20_util/duration_cast/rounding.cc: Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
+	Likewise.
+	* testsuite/20_util/exchange/constexpr.cc: Likewise.
+	* testsuite/20_util/expected/synopsis.cc: Likewise.
+	* testsuite/20_util/expected/version.cc: Likewise.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Likewise.
+	* testsuite/20_util/function_objects/bind_front/2.cc: Likewise.
+	* testsuite/20_util/function_objects/invoke/3.cc: Likewise.
+	* testsuite/20_util/function_objects/invoke/4.cc: Likewise.
+	* testsuite/20_util/function_objects/invoke/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/function_objects/invoke/version.cc:
+	Likewise.
+	* testsuite/20_util/function_objects/searchers.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/1.cc: Likewise.
+	* testsuite/20_util/integer_comparisons/2.cc: Likewise.
+	* testsuite/20_util/is_bounded_array/value.cc: Likewise.
+	* testsuite/20_util/is_layout_compatible/value.cc: Likewise.
+	* testsuite/20_util/is_layout_compatible/version.cc: Likewise.
+	* testsuite/20_util/is_nothrow_swappable/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_swappable/value.h: Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/explicit_instantiation.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/value.cc: Disable
+	PCH.
+	* testsuite/20_util/is_pointer_interconvertible/value.cc:
+	Likewise.
+	* testsuite/20_util/is_pointer_interconvertible/version.cc:
+	Likewise.
+	* testsuite/20_util/is_scoped_enum/value.cc: Likewise.
+	* testsuite/20_util/is_scoped_enum/version.cc: Likewise.
+	* testsuite/20_util/is_swappable/requirements/explicit_instantiation.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/20_util/is_swappable/requirements/typedefs.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/20_util/is_swappable/value.cc: Disable PCH.
+	* testsuite/20_util/is_swappable/value.h: Reorder headers.
+	* testsuite/20_util/is_swappable_with/requirements/explicit_instantiation.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/20_util/is_swappable_with/requirements/typedefs.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/20_util/is_swappable_with/value.cc: Disable PCH.
+	* testsuite/20_util/is_unbounded_array/value.cc: Likewise.
+	* testsuite/20_util/move_only_function/cons.cc: Likewise.
+	* testsuite/20_util/move_only_function/version.cc: Likewise.
+	* testsuite/20_util/optional/monadic/and_then.cc: Likewise.
+	* testsuite/20_util/optional/requirements.cc: Likewise.
+	* testsuite/20_util/optional/version.cc: Likewise.
+	* testsuite/20_util/owner_less/void.cc: Likewise.
+	* testsuite/20_util/reference_from_temporary/value.cc: Likewise.
+	* testsuite/20_util/reference_from_temporary/version.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/array.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/overwrite.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/version.cc: Likewise.
+	* testsuite/20_util/time_point_cast/rounding.cc: Likewise.
+	* testsuite/20_util/to_chars/constexpr.cc: Likewise.
+	* testsuite/20_util/to_chars/result.cc: Likewise.
+	* testsuite/20_util/to_chars/version.cc: Likewise.
+	* testsuite/20_util/to_underlying/1.cc: Likewise.
+	* testsuite/20_util/to_underlying/version.cc: Likewise.
+	* testsuite/20_util/tuple/apply/1.cc: Likewise.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc:
+	Likewise.
+	* testsuite/20_util/tuple/make_from_tuple/1.cc: Likewise.
+	* testsuite/20_util/tuple/p2321r2.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_element_t.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/constexpr_c++20.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc:
+	Likewise.
+	* testsuite/20_util/unreachable/1.cc: Likewise.
+	* testsuite/20_util/unreachable/version.cc: Likewise.
+	* testsuite/20_util/unwrap_reference/1.cc: Likewise.
+	* testsuite/20_util/unwrap_reference/3.cc: Likewise.
+	* testsuite/20_util/variant/constexpr.cc: Likewise.
+	* testsuite/20_util/variant/version.cc: Likewise.
+	* testsuite/20_util/variant/visit_inherited.cc: Likewise.
+	* testsuite/20_util/void_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/constexpr.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/constexpr.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/erasure.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/to_string_float.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/version.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/version.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operations/contains/char.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/constexpr.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/version.cc:
+	Likewise.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/array/creation/1.cc: Likewise.
+	* testsuite/23_containers/array/creation/2.cc: Likewise.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	Likewise.
+	* testsuite/23_containers/array/requirements/constexpr_fill.cc:
+	Likewise.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc:
+	Likewise.
+	* testsuite/23_containers/deque/erasure.cc: Likewise.
+	* testsuite/23_containers/forward_list/erasure.cc: Likewise.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+	* testsuite/23_containers/map/erasure.cc: Likewise.
+	* testsuite/23_containers/queue/cons_from_iters.cc: Likewise.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/span/1.cc: Likewise.
+	* testsuite/23_containers/span/2.cc: Likewise.
+	* testsuite/23_containers/stack/cons_from_iters.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/constexpr.cc: Likewise.
+	* testsuite/23_containers/vector/erasure.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/version.cc:
+	Likewise.
+	* testsuite/24_iterators/insert_iterator/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/clamp/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/clamp/requirements/explicit_instantiation/1.cc:
+	Remove redundant checks already tested elsewhere.
+	* testsuite/25_algorithms/constexpr_macro.cc: Likewise.
+	* testsuite/25_algorithms/cpp_lib_constexpr.cc: Likewise.
+	* testsuite/25_algorithms/fold_left/1.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-2.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-3.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-4.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-5.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.byteswap/byteswap.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.byteswap/version.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.cast/bit_cast.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.cast/version.cc: Likewise.
+	* testsuite/26_numerics/bit/header-2.cc: Likewise.
+	* testsuite/26_numerics/bit/header.cc: Likewise.
+	* testsuite/26_numerics/complex/1.cc: Likewise.
+	* testsuite/26_numerics/complex/2.cc: Likewise.
+	* testsuite/26_numerics/endian/2.cc: Likewise.
+	* testsuite/26_numerics/endian/3.cc: Likewise.
+	* testsuite/26_numerics/gcd/1.cc: Likewise.
+	* testsuite/26_numerics/lcm/1.cc: Likewise.
+	* testsuite/26_numerics/lerp/1.cc: Likewise.
+	* testsuite/26_numerics/lerp/version.cc: Likewise.
+	* testsuite/26_numerics/midpoint/integral.cc: Likewise.
+	* testsuite/26_numerics/midpoint/version.cc: Likewise.
+	* testsuite/26_numerics/numbers/1.cc: Likewise.
+	* testsuite/26_numerics/numbers/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/native_handle/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/native_handle/version.cc:
+	Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/noreplace.cc:
+	Likewise.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/noreplace.cc:
+	Likewise.
+	* testsuite/27_io/basic_syncbuf/1.cc: Likewise.
+	* testsuite/27_io/basic_syncbuf/2.cc: Likewise.
+	* testsuite/27_io/basic_syncstream/1.cc: Likewise.
+	* testsuite/27_io/basic_syncstream/2.cc: Likewise.
+	* testsuite/27_io/spanstream/1.cc: Likewise.
+	* testsuite/27_io/spanstream/version.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/value_init.cc: Likewise.
+	* testsuite/29_atomics/atomic/lock_free_aliases.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/2.cc: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc:
+	Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/version.cc: Likewise.
+	* testsuite/30_threads/barrier/1.cc: Likewise.
+	* testsuite/30_threads/barrier/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/stop_token/1.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc:
+	Likewise.
+	* testsuite/30_threads/jthread/1.cc: Likewise.
+	* testsuite/30_threads/jthread/version.cc: Likewise.
+	* testsuite/30_threads/latch/1.cc: Likewise.
+	* testsuite/30_threads/latch/2.cc: Likewise.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/30_threads/semaphore/1.cc: Likewise.
+	* testsuite/30_threads/semaphore/2.cc: Likewise.
+	* testsuite/30_threads/stop_token/1.cc: Likewise.
+	* testsuite/30_threads/stop_token/2.cc: Likewise.
+	* testsuite/experimental/feat-char8_t.cc: Likewise.
+	* testsuite/experimental/iterator/ostream_joiner.cc: Likewise.
+	* testsuite/experimental/numeric/gcd.cc: Likewise.
+	* testsuite/experimental/scopeguard/uniqueres.cc: Likewise.
+	* testsuite/std/concepts/1.cc: Likewise.
+	* testsuite/std/concepts/2.cc: Likewise.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/chunk/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/chunk_by/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/enumerate/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join_with/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/slide/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/stride/1.cc: Likewise.
+	* testsuite/std/ranges/cartesian_product/1.cc: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: Likewise.
+	* testsuite/std/ranges/repeat/1.cc: Likewise.
+	* testsuite/std/ranges/version_c++23.cc: Likewise.
+	* testsuite/std/ranges/zip/1.cc: Likewise.
+	* testsuite/std/time/syn_c++20.cc: Likewise.
+	* testsuite/experimental/feat-cxx14.cc: Likewise. Include
+	<algorithm> and <iterator>.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (stds): Use >= 202100 for C++23
+	condition.
+	* include/bits/version.h: Regenerate.
+	* include/std/thread: Use > C++20 instead of >= C++23 for
+	__cplusplus condition.
+
+2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (__rvalue_stream_extraction_t): Test
+	__cpp_concepts instead of __cpp_lib_concepts.
+	* include/std/ostream (__derived_from_ios_base): Likewise.
+	(__rvalue_stream_insertion_t): Likewise.
+
 2023-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112491

@@ -1,3 +1,154 @@
+2023-11-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR rtl-optimization/112483
+	* simplify-rtx.cc (simplify_binary_operation_1) <case COPYSIGN>:
+	Call simplify_unary_operation for NEG instead of
+	simplify_gen_unary.
+
+2023-11-16  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/111557
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): update macro name
+
+2023-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* config/i386/i386.md (*addqi_ext2<mode>_0):
+	New define_insn_and_split pattern.
+	(*subqi_ext2<mode>_0): Ditto.
+	(*<code>qi_ext2<mode>_0): Ditto.
+
+2023-11-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/112415
+	* config/pa/pa.cc (pa_legitimate_address_p): Allow 14-bit
+	displacements before reload.  Simplify logic flow.  Revise
+	comments.
+	* config/pa/pa.h (TARGET_ELF64): New define.
+	(INT14_OK_STRICT): Update define and comment.
+	* config/pa/pa64-linux.h (TARGET_ELF64): Define.
+	* config/pa/predicates.md (base14_operand): Don't check
+	alignment of short displacements.
+	(integer_store_memory_operand): Don't return true when
+	reload_in_progress is true.  Remove INT_5_BITS check.
+	(floating_point_store_memory_operand): Don't return true when
+	reload_in_progress is true.  Use INT14_OK_STRICT to check
+	whether long displacements are always okay.
+
+2023-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112567
+	* config/i386/i386.md (*<any_logic:code>qi_ext<mode>_1_slp):
+	Fix generation of invalid RTX in split pattern.
+
+2023-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::set_option_hooks): Add
+	"lang_mask" param.
+	* diagnostic.h (diagnostic_context::option_enabled_p): Update for
+	move of m_lang_mask.
+	(diagnostic_context::set_option_hooks): Add "lang_mask" param.
+	(diagnostic_context::get_lang_mask): New.
+	(diagnostic_context::m_lang_mask): Move into m_option_callbacks,
+	thus making private.
+	* lto-wrapper.cc (main): Update for new lang_mask param of
+	set_option_hooks.
+	* toplev.cc (init_asm_output): Use get_lang_mask.
+	(general_init): Move initialization of global_dc's lang_mask to
+	new lang_mask param of set_option_hooks.
+
+2023-11-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111878
+	* tree-vect-loop-manip.cc (find_loop_location): Skip edges check if
+	latch incorrect.
+
+2023-11-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv): Add riscv-target-attr.o.
+	* config/riscv/riscv-protos.h (riscv_declare_function_size) New.
+	(riscv_option_valid_attribute_p): New.
+	(riscv_override_options_internal): New.
+	(struct riscv_tune_info): New.
+	(riscv_parse_tune): New.
+	* config/riscv/riscv-target-attr.cc
+	(class riscv_target_attr_parser): New.
+	(struct riscv_attribute_info): New.
+	(riscv_attributes): New.
+	(riscv_target_attr_parser::parse_arch): New.
+	(riscv_target_attr_parser::handle_arch): New.
+	(riscv_target_attr_parser::handle_cpu): New.
+	(riscv_target_attr_parser::handle_tune): New.
+	(riscv_target_attr_parser::update_settings): New.
+	(riscv_process_one_target_attr): New.
+	(num_occurences_in_str): New.
+	(riscv_process_target_attr): New.
+	(riscv_option_valid_attribute_p): New.
+	* config/riscv/riscv.cc: Include target-globals.h and
+	riscv-subset.h.
+	(struct riscv_tune_info): Move to riscv-protos.h.
+	(get_tune_str): New.
+	(riscv_parse_tune): New parameter null_p.
+	(riscv_declare_function_size): New.
+	(riscv_option_override): Build target_option_default_node and
+	target_option_current_node.
+	(riscv_save_restore_target_globals): New.
+	(riscv_option_restore): New.
+	(riscv_previous_fndecl): New.
+	(riscv_set_current_function): Apply the target attribute.
+	(TARGET_OPTION_RESTORE): Define.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Ditto.
+	* config/riscv/riscv.h (SWITCHABLE_TARGET): Define to 1.
+	(ASM_DECLARE_FUNCTION_SIZE) Define.
+	* config/riscv/riscv.opt (mtune=): Add Save attribute.
+	(mcpu=): Ditto.
+	(mcmodel=): Ditto.
+	* config/riscv/t-riscv: Add build rule for riscv-target-attr.o
+	* doc/extend.texi: Add doc for target attribute.
+
+2023-11-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/112478
+	* config/riscv/riscv.cc (riscv_save_return_addr_reg_p): Check ra
+	is ever lived.
+
+2023-11-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112532
+	* config/i386/mmx.md (*vec_dup<mode>): Extend for V4HI and
+	V2HI.
+
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112526
+	* config/i386/i386.md
+	(mov imm,%rax; mov %rdi,%rdx; mulx %rax -> mov imm,%rdx; mulx %rdi):
+	Verify in define_peephole2 that operands[2] dies or is overwritten
+	at the end of multiplication.
+
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112536
+	* tree-vect-slp.cc (arg0_map): New variable.
+	(vect_get_operand_map): For IFN_CLZ or IFN_CTZ, return arg0_map.
+
+2023-11-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR middle-end/112554
+	* tree-vect-loop.cc (vect_determine_partial_vectors_and_peeling):
+	Clear SELECT_VL_P for non-partial vectorization.
+
+2023-11-16  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (vec_extract_hi_<mode>): Add noavx512vl
+	alternative with attr addr gpr16 and "jm" constraint.
+	(vec_extract_hi_<mode>): Likewise for SF vector modes.
+	(@vec_extract_hi_<mode>): Likewise.
+	(*vec_extractv2ti): Likewise.
+	(vec_set_hi_<mode><mask_name>): Likewise.
+	* config/i386/mmx.md (@sse4_1_insertps_<mode>): Correct gpr16 attr for
+	each alternative.
+
 2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904

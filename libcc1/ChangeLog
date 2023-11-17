@@ -1,3 +1,8 @@
+2023-11-16  Tom Tromey  <tom@tromey.com>
+
+	* libcc1plugin.cc (plugin_build_enum_type): Set
+	ENUM_UNDERLYING_TYPE.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

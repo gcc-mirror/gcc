@@ -1,3 +1,116 @@
+2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/varsize4.adb (Func): Initialize Byte_Read parameter.
+
+2023-11-16  Edwin Lu  <ewlu@rivosinc.com>
+
+	PR target/111557
+	* gcc.target/riscv/attribute-1.c: update macro name
+	* gcc.target/riscv/attribute-4.c: ditto
+	* gcc.target/riscv/attribute-5.c: ditto
+	* gcc.target/riscv/predef-align-1.c: ditto
+	* gcc.target/riscv/predef-align-2.c: ditto
+	* gcc.target/riscv/predef-align-3.c: ditto
+	* gcc.target/riscv/predef-align-4.c: ditto
+	* gcc.target/riscv/predef-align-5.c: ditto
+	* gcc.target/riscv/predef-align-6.c: ditto
+
+2023-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	* gcc.target/i386/pr78904-10.c: New test.
+	* gcc.target/i386/pr78904-10a.c: New test.
+	* gcc.target/i386/pr78904-10b.c: New test.
+
+2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/varsize4.ads, gnat.dg/varsize4.adb: New test.
+	* gnat.dg/varsize4_pkg.ads: New helper.
+
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112365
+	* g++.dg/cpp0x/pr112365.C: New test.
+
+2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98614
+	PR c++/104802
+	* g++.dg/cpp1z/nontype-auto22.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec14.C: New test.
+
+2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/107939
+	* g++.dg/cpp2a/concepts-fn8.C: Extend test.
+	* g++.dg/diagnostic/constexpr4.C: New test.
+
+2023-11-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/111878
+	* gcc.dg/graphite/pr111878.c: New test.
+
+2023-11-16  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.c-torture/execute/931004-13.c (main): Fix mistakenly swapped
+	int/void types.
+
+2023-11-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/target-attr-01.c: New.
+	* gcc.target/riscv/target-attr-02.c: Ditto.
+	* gcc.target/riscv/target-attr-03.c: Ditto.
+	* gcc.target/riscv/target-attr-04.c: Ditto.
+	* gcc.target/riscv/target-attr-05.c: Ditto.
+	* gcc.target/riscv/target-attr-06.c: Ditto.
+	* gcc.target/riscv/target-attr-07.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-01.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-02.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-03.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-04.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-05.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-06.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-07.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-08.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-09.c: Ditto.
+	* gcc.target/riscv/target-attr-bad-10.c: Ditto.
+
+2023-11-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/112478
+	* gcc.target/riscv/pr112478.c: New.
+
+2023-11-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112532.c: New test.
+
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112526
+	* gcc.target/i386/bmi2-pr112526.c: New test.
+
+2023-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112536
+	* gcc.dg/pr112536.c: New test.
+
+2023-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112282
+	* gcc.dg/torture/pr112282.c: Do not use __assert_fail.
+
+2023-11-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR middle-end/112554
+	* gcc.target/riscv/rvv/autovec/pr112554.c: New test.
+
+2023-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112410
+	* g++.dg/cpp23/auto-fncast13.C: New test.
+	* g++.dg/cpp23/auto-fncast14.C: New test.
+
 2023-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78904
