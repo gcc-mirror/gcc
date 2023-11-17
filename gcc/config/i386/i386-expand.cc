@@ -17748,6 +17748,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       tem = gen_mmx_lshrv1si3 (d, gen_lowpart (V1SImode, src),
 			       GEN_INT (i / 2));
       break;
+    case E_V8QImode:
     case E_V4HImode:
       d = gen_reg_rtx (V1DImode);
       tem = gen_mmx_lshrv1di3 (d, gen_lowpart (V1DImode, src),
