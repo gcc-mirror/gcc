@@ -4118,9 +4118,9 @@ pop:
 	/* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
 	   op1 twice (once as definition, once as else) in the same operation.
 	   Allow this.  */
-	  if (cond_fn_p)
+	  if (cond_fn_p && op_use_stmt == use_stmt)
 	    {
-	      gcall *call = dyn_cast<gcall *> (use_stmt);
+	      gcall *call = as_a<gcall *> (use_stmt);
 	      unsigned else_pos
 		= internal_fn_else_index (internal_fn (op.code));
 
