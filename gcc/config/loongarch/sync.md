@@ -124,7 +124,7 @@
       return "ld.<size>\t%0,%1\\n\\t"
 	     "dbar\t0x14";
     case MEMMODEL_RELAXED:
-      return TARGET_LD_SEQ_SA ? "ld.<size>\t%0,%1\\n\\t"
+      return TARGET_LD_SEQ_SA ? "ld.<size>\t%0,%1"
 			      : "ld.<size>\t%0,%1\\n\\t"
 				"dbar\t0x700";
 
@@ -193,7 +193,7 @@
 		       (match_operand:SHORT 1 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_BASE_IS_LA64V110"
+  "TARGET_LAM_BH"
   "amadd%A2.<amo>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
 
@@ -230,7 +230,7 @@
 	  UNSPEC_SYNC_EXCHANGE))
    (set (match_dup 1)
 	(match_operand:SHORT 2 "register_operand" "r"))]
-  "ISA_BASE_IS_LA64V110"
+  "TARGET_LAM_BH"
   "amswap%A3.<amo>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
@@ -266,7 +266,7 @@
 			       (match_operand:QHWD 3 "reg_or_0_operand" "rJ")
 			       (match_operand:SI 4 "const_int_operand")]  ;; mod_s
 	 UNSPEC_COMPARE_AND_SWAP))]
-  "ISA_BASE_IS_LA64V110"
+  "TARGET_LAMCAS"
   "ori\t%0,%z2,0\n\tamcas%A4.<amo>\t%0,%z3,%1"
   [(set (attr "length") (const_int 8))])
 
@@ -296,7 +296,7 @@
 
   operands[6] = mod_s;
 
-  if (ISA_BASE_IS_LA64V110)
+  if (TARGET_LAMCAS)
     emit_insn (gen_atomic_cas_value_strong<mode>_amcas (operands[1], operands[2],
 							 operands[3], operands[4],
 							 operands[6]));
@@ -422,7 +422,7 @@
 
   operands[6] = mod_s;
 
-  if (ISA_BASE_IS_LA64V110)
+  if (TARGET_LAMCAS)
     emit_insn (gen_atomic_cas_value_strong<mode>_amcas (operands[1], operands[2],
 						       operands[3], operands[4],
 						       operands[6]));
@@ -642,7 +642,7 @@
 	(match_operand:SHORT 2 "register_operand"))]
   ""
 {
-  if (ISA_BASE_IS_LA64V110)
+  if (TARGET_LAM_BH)
     emit_insn (gen_atomic_exchange<mode>_short (operands[0], operands[1], operands[2], operands[3]));
   else
     {
@@ -663,7 +663,7 @@
 		     (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_BASE_IS_LA64V110"
+  "TARGET_LAM_BH"
   "amadd%A3.<amo>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
@@ -678,7 +678,7 @@
 	 UNSPEC_SYNC_OLD_OP))]
   ""
 {
-  if (ISA_BASE_IS_LA64V110)
+  if (TARGET_LAM_BH)
     emit_insn (gen_atomic_fetch_add<mode>_short (operands[0], operands[1],
 					     operands[2], operands[3]));
   else

@@ -11455,6 +11455,8 @@ loongarch_asm_code_end (void)
       fprintf (asm_out_file, "%s Base ISA: %s\n", ASM_COMMENT_START,
 	       loongarch_isa_base_strings [la_target.isa.base]);
       DUMP_FEATURE (TARGET_DIV32);
+      DUMP_FEATURE (TARGET_LAM_BH);
+      DUMP_FEATURE (TARGET_LAMCAS);
       DUMP_FEATURE (TARGET_LD_SEQ_SA);
     }
 

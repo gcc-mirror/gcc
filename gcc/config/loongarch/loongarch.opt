@@ -267,6 +267,14 @@ mdiv32
 Target Mask(ISA_DIV32) Var(isa_evolution)
 Support div.w[u] and mod.w[u] instructions with inputs not sign-extended.
 
+mlam-bh
+Target Mask(ISA_LAM_BH) Var(isa_evolution)
+Support am{swap/add}[_db].{b/h} instructions.
+
+mlamcas
+Target Mask(ISA_LAMCAS) Var(isa_evolution)
+Support amcas[_db].{b/h/w/d} instructions.
+
 mld-seq-sa
 Target Mask(ISA_LD_SEQ_SA) Var(isa_evolution)
 Do not need load-load barriers (dbar 0x700).

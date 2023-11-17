@@ -38,7 +38,8 @@ along with GCC; see the file COPYING3.  If not see
    initializers!  */
 
 #define ISA_BASE_LA64V110_FEATURES \
-  (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA)
+  (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA \
+   | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS)
 
 int64_t loongarch_isa_base_features[N_ISA_BASE_TYPES] = {
   /* [ISA_BASE_LA64V100] = */ 0,
