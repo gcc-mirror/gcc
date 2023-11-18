@@ -2539,6 +2539,16 @@ write_type (tree type)
 	    case TEMPLATE_TYPE_PARM:
 	      if (is_auto (type))
 		{
+		  if (template_placeholder_p (type)
+		      && abi_check (19))
+		    {
+		      /* ABI #109: placeholder is mangled as its template.  */
+		      type = CLASS_PLACEHOLDER_TEMPLATE (type);
+		      if (find_substitution (type))
+			return;
+		      write_name (type, 0);
+		      break;
+		    }
 		  if (AUTO_IS_DECLTYPE (type))
 		    write_identifier ("Dc");
 		  else

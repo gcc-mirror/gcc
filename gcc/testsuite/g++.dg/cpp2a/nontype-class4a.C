@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fabi-version=18 -fabi-compat-version=18 -Wabi=0" }
+// { dg-additional-options "-fabi-version=0 -fabi-compat-version=0 -Wabi=18" }
 
 template <class T>
 struct A {
@@ -15,5 +15,4 @@ int main()
   f<1>();
 }
 
-// { dg-final { scan-assembler "_Z1fIXtl1AIiEEEEvv" } }
-// { dg-final { scan-assembler-not "_Z1fIXtlK1AIiEEEEvv" } }
+// { dg-final { scan-assembler "_Z1fITn1AXtlS0_IiEEEEvv" } }
