@@ -1,3 +1,28 @@
+2023-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112301
+	PR c++/102191
+	PR c++/33799
+	* except.cc (maybe_splice_retval_cleanup): Clear
+	current_retval_sentinel when destroying retval.
+	* semantics.cc (nrv_data): Add in_nrv_cleanup.
+	(finalize_nrv): Set it.
+	(finalize_nrv_r): Fix handling of throwing cleanups.
+
+2023-11-17  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (finalize_nrv_r): [RETURN_EXPR]: Only replace the
+	INIT_EXPR.
+
+2023-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33799
+	* except.cc (maybe_splice_retval_cleanup): Change
+	recognition of function body and try scopes.
+	* semantics.cc (do_poplevel): Call it after poplevel.
+	(at_try_scope): New.
+	* cp-tree.h (maybe_splice_retval_cleanup): Adjust.
+
 2023-08-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106310
