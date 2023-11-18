@@ -2092,12 +2092,14 @@ package body Bindgen is
 
       WBI ("   begin");
 
-      --  Acquire command-line arguments if present on target
+      --  Acquire command-line arguments if present and supported on the
+      --  target. Do not acquire command-line arguments if pragma No_Run_Time
+      --  is in effect as the run-time symbols will not be available.
 
       if CodePeer_Mode then
          null;
 
-      elsif Command_Line_Args_On_Target then
+      elsif Command_Line_Args_On_Target and then not No_Run_Time_Mode then
 
          --  Initialize gnat_argc/gnat_argv only if not already initialized,
          --  to avoid losing the result of any command-line processing done by
@@ -2109,20 +2111,6 @@ package body Bindgen is
          WBI ("      end if;");
          WBI ("      gnat_envp := envp;");
          WBI ("");
-
-      --  If configurable run-time and no command-line args, then nothing needs
-      --  to be done since the gnat_argc/argv/envp variables are suppressed in
-      --  this case.
-
-      elsif Configurable_Run_Time_On_Target then
-         null;
-
-      --  Otherwise set dummy values (to be filled in by some other unit?)
-
-      else
-         WBI ("      gnat_argc := 0;");
-         WBI ("      gnat_argv := System.Null_Address;");
-         WBI ("      gnat_envp := System.Null_Address;");
       end if;
 
       if Opt.Default_Exit_Status /= 0
@@ -2199,7 +2187,11 @@ package body Bindgen is
          if No_Main_Subprogram
            or else ALIs.Table (ALIs.First).Main_Program = Proc
          then
-            WBI ("      return (gnat_exit_status);");
+            if No_Run_Time_Mode then
+               WBI ("      return (0);");
+            else
+               WBI ("      return (gnat_exit_status);");
+            end if;
          else
             WBI ("      return (Result);");
          end if;
@@ -2595,38 +2587,28 @@ package body Bindgen is
       if Bind_Main_Program then
          --  Generate argc/argv stuff unless suppressed
 
-         if Command_Line_Args_On_Target
-           or not Configurable_Run_Time_On_Target
-         then
+         --  A run-time configured to support command line arguments defines
+         --  a number of internal symbols that need to be set by the binder.
+
+         if Command_Line_Args_On_Target and then not No_Run_Time_Mode then
             WBI ("");
             WBI ("   gnat_argc : Integer;");
             WBI ("   gnat_argv : System.Address;");
             WBI ("   gnat_envp : System.Address;");
 
-            --  If the standard library is not suppressed, these variables
-            --  are in the run-time data area for easy run time access.
-
-            if not Suppress_Standard_Library_On_Target then
-               WBI ("");
-               WBI ("   pragma Import (C, gnat_argc);");
-               WBI ("   pragma Import (C, gnat_argv);");
-               WBI ("   pragma Import (C, gnat_envp);");
-            end if;
+            WBI ("");
+            WBI ("   pragma Import (C, gnat_argc);");
+            WBI ("   pragma Import (C, gnat_argv);");
+            WBI ("   pragma Import (C, gnat_envp);");
          end if;
 
-         --  Define exit status. Again in normal mode, this is in the run-time
-         --  library, and is initialized there, but in the configurable
-         --  run-time case, the variable is declared and initialized in this
-         --  file.
+         --  Define exit status. The exit status is stored in the run-time
+         --  library to allow applications set the state through
+         --  Ada.Command_Line. It is initialized there.
 
          WBI ("");
 
-         if Configurable_Run_Time_Mode then
-            if Exit_Status_Supported_On_Target then
-               WBI ("   gnat_exit_status : Integer := 0;");
-            end if;
-
-         else
+         if Exit_Status_Supported_On_Target and then not No_Run_Time_Mode then
             WBI ("   gnat_exit_status : Integer;");
             WBI ("   pragma Import (C, gnat_exit_status);");
          end if;
