@@ -3220,10 +3220,14 @@ namespace __format
 	    return type_identity<__format::__float128_t>();
 # endif
 #endif
-	  else if constexpr (__is_specialization_of<_Td, basic_string_view>)
-	    return type_identity<basic_string_view<_CharT>>();
-	  else if constexpr (__is_specialization_of<_Td, basic_string>)
-	    return type_identity<basic_string_view<_CharT>>();
+	  else if constexpr (__is_specialization_of<_Td, basic_string_view>
+			    || __is_specialization_of<_Td, basic_string>)
+	    {
+	      if constexpr (is_same_v<typename _Td::value_type, _CharT>)
+		return type_identity<basic_string_view<_CharT>>();
+	      else
+		return type_identity<handle>();
+	    }
 	  else if constexpr (is_same_v<decay_t<_Td>, const _CharT*>)
 	    return type_identity<const _CharT*>();
 	  else if constexpr (is_same_v<decay_t<_Td>, _CharT*>)
