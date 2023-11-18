@@ -647,6 +647,9 @@ can_reassociate_op_p (tree op)
 {
   if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
     return false;
+  /* Uninitialized variables can't participate in reassociation. */
+  if (TREE_CODE (op) == SSA_NAME && ssa_name_maybe_undef_p (op))
+    return false;
   /* Make sure asm goto outputs do not participate in reassociation since
      we have no way to find an insertion place after asm goto.  */
   if (TREE_CODE (op) == SSA_NAME
@@ -2600,7 +2603,8 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	}
 
       if (TREE_CODE (arg0) != SSA_NAME
-	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0))
+	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0)
+	  || ssa_name_maybe_undef_p (arg0))
 	break;
       loc = gimple_location (stmt);
       switch (code)
@@ -7418,6 +7422,7 @@ init_reassoc (void)
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   plus_negates = vNULL;
+  mark_ssa_maybe_undefs ();
 }
 
 /* Cleanup after the reassociation pass, and print stats if
