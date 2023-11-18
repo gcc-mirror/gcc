@@ -1,3 +1,8 @@
+2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Also create a
+	TYPE_DECL for the return type built for the CI/CO mechanism.
+
 2023-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/111434
