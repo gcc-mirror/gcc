@@ -13572,7 +13572,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       /* If the argument pack is a single pack expansion, pull it out.  */
       if (TREE_VEC_LENGTH (args) == 1
 	  && pack_expansion_args_count (args))
-	return TREE_VEC_ELT (args, 0);
+	{
+	  tree arg = TREE_VEC_ELT (args, 0);
+	  if (PACK_EXPANSION_SIZEOF_P (t)
+	      && !TEMPLATE_PARM_P (PACK_EXPANSION_PATTERN (arg)))
+	    /* Except if this isn't a simple sizeof...(T) which gets sZ
+	       mangling, keep the TREE_VEC to get sP mangling.  */;
+	  else
+	    return TREE_VEC_ELT (args, 0);
+	}
 
       /* Types need no adjustment, nor does sizeof..., and if we still have
 	 some pack expansion args we won't do anything yet.  */
@@ -20261,8 +20269,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      if (PACK_EXPANSION_P (expanded))
 		/* OK.  */;
-	      else if (TREE_VEC_LENGTH (expanded) == 1)
-		expanded = TREE_VEC_ELT (expanded, 0);
 	      else
 		expanded = make_argument_pack (expanded);
 
