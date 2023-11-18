@@ -448,6 +448,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes-3
 -fdump-analyzer-exploded-paths
 -fdump-analyzer-feasibility
+-fdump-analyzer-infinite-loop
 -fdump-analyzer-json
 -fdump-analyzer-state-purge
 -fdump-analyzer-stderr
@@ -467,6 +468,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak
 -Wno-analyzer-free-of-non-heap
 -Wno-analyzer-imprecise-fp-arithmetic
+-Wno-analyzer-infinite-loop
 -Wno-analyzer-infinite-recursion
 -Wno-analyzer-jump-through-null
 -Wno-analyzer-malloc-leak
@@ -10401,6 +10403,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak
 -Wanalyzer-free-of-non-heap
 -Wanalyzer-imprecise-fp-arithmetic
+-Wanalyzer-infinite-loop
 -Wanalyzer-infinite-recursion
 -Wanalyzer-jump-through-null
 -Wanalyzer-malloc-leak
@@ -10666,6 +10669,57 @@ arithmetic is used in locations where precise computation is needed.  This
 diagnostic only warns on use of floating-point operands inside the
 calculation of an allocation size at the moment.
 
+@opindex Wanalyzer-infinite-loop
+@opindex Wno-analyzer-infinite-loop
+@item -Wno-analyzer-infinite-loop
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-infinite-loop} to disable it.
+
+This diagnostics warns for paths through the code which appear to
+lead to an infinite loop.
+
+Specifically, the analyzer will issue this warning when it "sees" a loop
+in which:
+@itemize @bullet
+@item
+no externally-visible work could be being done within the loop
+@item
+there is no way to escape from the loop
+@item
+the analyzer is sufficiently confident about the program state
+throughout the loop to know that the above are true
+@end itemize
+
+One way for this warning to be emitted is when there is an execution
+path through a loop for which taking the path on one iteration implies
+that the same path will be taken on all subsequent iterations.
+
+For example, consider:
+
+@smallexample
+  while (1)
+    @{
+      char opcode = *cpu_state.pc;
+      switch (opcode)
+       @{
+       case OPCODE_FOO:
+         handle_opcode_foo (&cpu_state);
+         break;
+       case OPCODE_BAR:
+         handle_opcode_bar (&cpu_state);
+         break;
+       @}
+    @}
+@end smallexample
+
+The analyzer will complain for the above case because if @code{opcode}
+ever matches none of the cases, the @code{switch} will follow the
+implicit @code{default} case, making the body of the loop be a ``no-op''
+with @code{cpu_state.pc} unchanged, and thus using the same value of
+@code{opcode} on all subseqent iterations, leading to an infinite loop.
+
+See @uref{https://cwe.mitre.org/data/definitions/835.html, CWE-835: Loop with Unreachable Exit Condition ('Infinite Loop')}.
+
 @opindex Wanalyzer-infinite-recursion
 @opindex Wno-analyzer-infinite-recursion
 @item -Wno-analyzer-infinite-recursion
@@ -10689,6 +10743,8 @@ this diagnostic.
 
 Compare with @option{-Winfinite-recursion}, which provides a similar
 diagnostic, but is implemented in a different way.
+
+See @uref{https://cwe.mitre.org/data/definitions/674.html, CWE-674: Uncontrolled Recursion}.
 
 @opindex Wanalyzer-jump-through-null
 @opindex Wno-analyzer-jump-through-null
@@ -11454,6 +11510,12 @@ Dump internal details about the analyzer's search for feasible paths.
 The details are written in a form suitable for viewing with GraphViz
 to filenames of the form @file{@var{file}.*.fg.dot},
 @file{@var{file}.*.tg.dot}, and @file{@var{file}.*.fpath.txt}.
+
+@opindex dump-analyzer-infinite-loop
+@item -fdump-analyzer-infinite-loop
+Dump internal details about the analyzer's search for infinite loops.
+The details are written in a form suitable for viewing with GraphViz
+to filenames of the form @file{@var{file}.*.infinite-loop.dot}.
 
 @opindex fdump-analyzer-json
 @item -fdump-analyzer-json

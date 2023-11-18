@@ -1145,15 +1145,22 @@ program_state::on_edge (exploded_graph &eg,
 				  this,
 				  uncertainty, &path_ctxt,
 				  last_stmt);
+  std::unique_ptr<rejected_constraint> rc;
+  logger * const logger = eg.get_logger ();
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
-					      &ctxt, NULL))
+					      &ctxt,
+					      logger ? &rc : nullptr))
     {
-      logger * const logger = eg.get_logger ();
       if (logger)
-	logger->log ("edge to SN: %i is impossible"
-		     " due to region_model constraints",
-		     succ->m_dest->m_index);
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("edge to SN: %i is impossible"
+			       " due to region_model constraint: ",
+			       succ->m_dest->m_index);
+	  rc->dump_to_pp (logger->get_printer ());
+	  logger->end_log_line ();
+	}
       return false;
     }
   if (terminated)

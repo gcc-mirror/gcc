@@ -444,11 +444,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override;
+  label_text get_desc (bool can_colorize) const override;
 
- private:
+protected:
   label_text maybe_describe_condition (bool can_colorize) const;
 
+private:
   static label_text maybe_describe_condition (bool can_colorize,
 					      tree lhs,
 					      enum tree_code op,

@@ -1324,6 +1324,7 @@ ANALYZER_OBJS = \
 	analyzer/engine.o \
 	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
+	analyzer/infinite-loop.o \
 	analyzer/infinite-recursion.o \
 	analyzer/kf.o \
 	analyzer/kf-analyzer.o \

@@ -1179,6 +1179,15 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 
   const region *lhs_reg = get_lvalue (lhs, ctxt);
 
+  /* Any writes other than to the stack are treated
+     as externally visible.  */
+  if (ctxt)
+    {
+      enum memory_space memspace = lhs_reg->get_memory_space ();
+      if (memspace != MEMSPACE_STACK)
+	ctxt->maybe_did_work ();
+    }
+
   /* Most assignments are handled by:
        set_value (lhs_reg, SVALUE, CTXT)
      for some SVALUE.  */
@@ -1277,6 +1286,8 @@ region_model::on_stmt_pre (const gimple *stmt,
       {
 	const gasm *asm_stmt = as_a <const gasm *> (stmt);
 	on_asm_stmt (asm_stmt, ctxt);
+	if (ctxt)
+	  ctxt->maybe_did_work ();
       }
       break;
 
@@ -1701,7 +1712,11 @@ region_model::on_call_post (const gcall *call,
     }
 
   if (unknown_side_effects)
-    handle_unrecognized_call (call, ctxt);
+    {
+      handle_unrecognized_call (call, ctxt);
+      if (ctxt)
+	ctxt->maybe_did_work ();
+    }
 }
 
 /* Purge state involving SVAL from this region_model, using CTXT
@@ -2236,6 +2251,7 @@ void
 region_model::handle_phi (const gphi *phi,
 			  tree lhs, tree rhs,
 			  const region_model &old_state,
+			  hash_set<const svalue *> &svals_changing_meaning,
 			  region_model_context *ctxt)
 {
   /* For now, don't bother tracking the .MEM SSA names.  */
@@ -2246,6 +2262,10 @@ region_model::handle_phi (const gphi *phi,
 
   const svalue *src_sval = old_state.get_rvalue (rhs, ctxt);
   const region *dst_reg = old_state.get_lvalue (lhs, ctxt);
+
+  const svalue *sval = old_state.get_rvalue (lhs, nullptr);
+  if (sval->get_kind () == SK_WIDENING)
+    svals_changing_meaning.add (sval);
 
   set_value (dst_reg, src_sval, ctxt);
 
@@ -4661,6 +4681,14 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   return add_constraint (lhs_sval, op, rhs_sval, ctxt);
 }
 
+static bool
+unusable_in_infinite_loop_constraint_p (const svalue *sval)
+{
+  if (sval->get_kind () == SK_WIDENING)
+    return true;
+  return false;
+}
+
 /* Attempt to add the constraint "LHS OP RHS" to this region_model.
    If it is consistent with existing constraints, add it, and return true.
    Return false if it contradicts existing constraints.
@@ -4672,6 +4700,20 @@ region_model::add_constraint (const svalue *lhs,
 			      const svalue *rhs,
 			      region_model_context *ctxt)
 {
+  const bool checking_for_infinite_loop
+    = ctxt ? ctxt->checking_for_infinite_loop_p () : false;
+
+  if (checking_for_infinite_loop)
+    {
+      if (unusable_in_infinite_loop_constraint_p (lhs)
+	  || unusable_in_infinite_loop_constraint_p (rhs))
+	{
+	  gcc_assert (ctxt);
+	  ctxt->on_unusable_in_infinite_loop ();
+	  return false;
+	}
+    }
+
   tristate t_cond = eval_condition (lhs, op, rhs);
 
   /* If we already have the condition, do nothing.  */
@@ -4682,6 +4724,15 @@ region_model::add_constraint (const svalue *lhs,
      unsatisfiable.  */
   if (t_cond.is_false ())
     return false;
+
+  if (checking_for_infinite_loop)
+    {
+      /* Here, we don't have a definite true/false value, so bail out
+	 when checking for infinite loops.  */
+      gcc_assert (ctxt);
+      ctxt->on_unusable_in_infinite_loop ();
+      return false;
+    }
 
   bool out;
   if (add_constraints_from_binop (lhs, op, rhs, &out, ctxt))
@@ -5068,6 +5119,8 @@ region_model::update_for_phis (const supernode *snode,
      are effectively handled simultaneously.  */
   const region_model old_state (*this);
 
+  hash_set<const svalue *> svals_changing_meaning;
+
   for (gphi_iterator gpi = const_cast<supernode *>(snode)->start_phis ();
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
@@ -5077,8 +5130,11 @@ region_model::update_for_phis (const supernode *snode,
       tree lhs = gimple_phi_result (phi);
 
       /* Update next_state based on phi and old_state.  */
-      handle_phi (phi, lhs, src, old_state, ctxt);
+      handle_phi (phi, lhs, src, old_state, svals_changing_meaning, ctxt);
     }
+
+  for (auto iter : svals_changing_meaning)
+    m_constraints->purge_state_involving (iter);
 }
 
 /* Attempt to update this model for taking EDGE (where the last statement
@@ -5245,6 +5301,9 @@ region_model::replay_call_summary (call_summary_replay &r,
   gcc_assert (summary.get_stack_depth () == 1);
 
   m_store.replay_call_summary (r, summary.m_store);
+
+  if (r.get_ctxt ())
+    r.get_ctxt ()->maybe_did_work ();
 
   if (!m_constraints->replay_call_summary (r, *summary.m_constraints))
     return false;
@@ -5806,6 +5865,9 @@ region_model::can_merge_with_p (const region_model &other_model,
   constraint_manager::merge (*m_constraints,
 			      *other_model.m_constraints,
 			      out_model->m_constraints);
+
+  for (auto iter : m.m_svals_changing_meaning)
+    out_model->m_constraints->purge_state_involving (iter);
 
   return true;
 }
@@ -6656,6 +6718,14 @@ model_merger::mergeable_svalue_p (const svalue *sval) const
 	  return false;
     }
   return true;
+}
+
+/* Mark WIDENING_SVAL as changing meaning during the merge.  */
+
+void
+model_merger::on_widening_reuse (const widening_svalue *widening_sval)
+{
+  m_svals_changing_meaning.add (widening_sval);
 }
 
 } // namespace ana
@@ -8364,7 +8434,6 @@ test_iteration_1 ()
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_1 = build_int_cst (integer_type_node, 1);
   tree int_256 = build_int_cst (integer_type_node, 256);
-  tree int_257 = build_int_cst (integer_type_node, 257);
   tree i = build_global_decl ("i", integer_type_node);
 
   test_region_model_context ctxt;
@@ -8426,8 +8495,6 @@ test_iteration_1 ()
   ASSERT_TRUE (model5.can_merge_with_p (model2, point, &model6));
   const svalue *merged_widening = model6.get_rvalue (i, &ctxt);
   ASSERT_EQ (merged_widening->get_kind (), SK_WIDENING);
-
-  ASSERT_CONDITION_TRUE (model6, i, LT_EXPR, int_257);
 }
 
 /* Verify that if we mark a pointer to a malloc-ed region as non-NULL,

@@ -26,9 +26,10 @@ int test_2 (struct state *s)
   while (1)
     {
       __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
+      /* { dg-warning "infinite loop" "" { target *-*-* } .-1 } */
       __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
       /* TODO: why does the above need an extra stmt to merge state?  */
-      switch (s->mode)
+      switch (s->mode) /* { dg-message "if it ever follows 'default:' branch, it will always do so\.\.\." } */
 	{
 	case 0:
 	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */

@@ -134,6 +134,10 @@ Wanalyzer-imprecise-fp-arithmetic
 Common Var(warn_analyzer_imprecise_fp_arithmetic) Init(1) Warning
 Warn about code paths in which floating-point arithmetic is used in locations where precise computation is needed.
 
+Wanalyzer-infinite-loop
+Common Var(warn_analyzer_infinite_loop) Init(1) Warning
+Warn about code paths which appear to lead to an infinite loop.
+
 Wanalyzer-infinite-recursion
 Common Var(warn_analyzer_infinite_recursion) Init(1) Warning
 Warn about code paths which appear to lead to infinite recursion.
@@ -353,6 +357,10 @@ Dump a textual representation of each diagnostic's exploded path to SRCFILE.IDX.
 fdump-analyzer-feasibility
 Common RejectNegative Var(flag_dump_analyzer_feasibility)
 Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot.
+
+fdump-analyzer-infinite-loop
+Common RejectNegative Var(flag_dump_analyzer_infinite_loop)
+Dump various analyzer internals to SRCFILE.*.infinite-loop.dot.
 
 fdump-analyzer-json
 Common RejectNegative Var(flag_dump_analyzer_json)
