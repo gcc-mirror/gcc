@@ -8607,8 +8607,9 @@ void
 loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   machine_mode vmode = GET_MODE (target);
+  machine_mode vimode = GET_MODE (sel);
   auto nelt = GET_MODE_NUNITS (vmode);
-  auto round_reg = gen_reg_rtx (vmode);
+  auto round_reg = gen_reg_rtx (vimode);
   rtx round_data[MAX_VECT_LEN];
 
   for (int i = 0; i < nelt; i += 1)
@@ -8616,8 +8617,15 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       round_data[i] = GEN_INT (0x1f);
     }
 
-  rtx round_data_rtx = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, round_data));
+  rtx round_data_rtx = gen_rtx_CONST_VECTOR (vimode, gen_rtvec_v (nelt, round_data));
   emit_move_insn (round_reg, round_data_rtx);
+
+  if (vmode != vimode)
+    {
+      target = lowpart_subreg (vimode, target, vmode);
+      op0 = lowpart_subreg (vimode, op0, vmode);
+      op1 = lowpart_subreg (vimode, op1, vmode);
+    }
 
   switch (vmode)
     {
@@ -8626,17 +8634,11 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       emit_insn (gen_lsx_vshuf_b (target, op1, op0, sel));
       break;
     case E_V2DFmode:
-      emit_insn (gen_andv2di3 (sel, sel, round_reg));
-      emit_insn (gen_lsx_vshuf_d_f (target, sel, op1, op0));
-      break;
     case E_V2DImode:
       emit_insn (gen_andv2di3 (sel, sel, round_reg));
       emit_insn (gen_lsx_vshuf_d (target, sel, op1, op0));
       break;
     case E_V4SFmode:
-      emit_insn (gen_andv4si3 (sel, sel, round_reg));
-      emit_insn (gen_lsx_vshuf_w_f (target, sel, op1, op0));
-      break;
     case E_V4SImode:
       emit_insn (gen_andv4si3 (sel, sel, round_reg));
       emit_insn (gen_lsx_vshuf_w (target, sel, op1, op0));
