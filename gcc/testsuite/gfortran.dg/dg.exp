@@ -67,7 +67,6 @@ if [check_effective_target_libatomic_available] {
     } else {
         set maybe_atomic_lib ""
     }
-  set t [get_multilibs]
 }
 
 set all_flags $DEFAULT_FFLAGS

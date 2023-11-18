@@ -80,7 +80,6 @@ if [check_effective_target_libatomic_available] {
 	    set maybe_atomic_lib "[atomic_link_flags [get_multilibs]]"
 	}
     }
-    set t [get_multilibs]
 }
 
 # Main loop.
