@@ -288,6 +288,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       [[nodiscard]]
+      constexpr reference
+      at(size_type __idx) const
+      {
+	if (__idx >= size())
+	  __throw_out_of_range_fmt(__N("span::at(%zu) out-of-range for span "
+				       "of size %zu"), __idx, this->size());
+	return *(this->_M_ptr + __idx);
+      }
+
+      [[nodiscard]]
       constexpr pointer
       data() const noexcept
       { return this->_M_ptr; }

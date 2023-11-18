@@ -18,10 +18,23 @@
 // { dg-do compile { target c++20 } }
 // { dg-add-options no_pch }
 
+#include <span>
+
+#ifndef __cpp_lib_span
+# error "Feature-test macro for span missing in <span>"
+#elif __cplusplus <= 202302L && __cpp_lib_span != 202002L
+# error "Feature-test macro for span has wrong value in <span>"
+#elif __cplusplus > 202302L && __cpp_lib_span != 202311L
+# error "Feature-test macro for span has wrong value in <span>"
+#endif
+
+#undef __cpp_lib_span
 #include <version>
 
 #ifndef __cpp_lib_span
 # error "Feature-test macro for span missing in <version>"
-#elif __cpp_lib_span != 202002L
+#elif __cplusplus <= 202302L && __cpp_lib_span != 202002L
+# error "Feature-test macro for span has wrong value in <version>"
+#elif __cplusplus > 202302L && __cpp_lib_span != 202311L
 # error "Feature-test macro for span has wrong value in <version>"
 #endif

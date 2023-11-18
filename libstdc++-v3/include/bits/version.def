@@ -960,6 +960,11 @@ ftms = {
 ftms = {
   name = span;
   values = {
+    v = 202311;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = {
     v = 202002;
     cxxmin = 20;
     extra_cond = "__glibcxx_concepts";
@@ -1344,6 +1349,16 @@ ftms = {
 };
 
 ftms = {
+  name = freestanding_expected;
+  values = {
+    v = 202311;
+    cxxmin = 23;
+    extra_cond = "__cpp_lib_expected";
+  };
+};
+
+
+ftms = {
   name = invoke_r;
   values = {
     v = 202106;
@@ -1571,7 +1586,7 @@ ftms = {
 ftms = {
   name = out_ptr;
   values = {
-    v = 202106;
+    v = 202311;
     cxxmin = 23;
   };
 };
