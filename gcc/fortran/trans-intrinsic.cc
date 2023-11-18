@@ -5642,7 +5642,24 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   if (!(maskexpr && maskexpr->rank > 0))
     {
       mpz_t asize;
-      if (gfc_array_size (arrayexpr, &asize))
+      bool reduction_size_known;
+
+      if (dim_present)
+	{
+	  int reduction_dim;
+	  if (dim_arg->expr->expr_type == EXPR_CONSTANT)
+	    reduction_dim = mpz_get_si (dim_arg->expr->value.integer) - 1;
+	  else if (arrayexpr->rank == 1)
+	    reduction_dim = 0;
+	  else
+	    gcc_unreachable ();
+	  reduction_size_known = gfc_array_dimen_size (arrayexpr, reduction_dim,
+						       &asize);
+	}
+      else
+	reduction_size_known = gfc_array_size (arrayexpr, &asize);
+
+      if (reduction_size_known)
 	{
 	  nonempty = gfc_conv_mpz_to_tree (asize, gfc_index_integer_kind);
 	  mpz_clear (asize);
