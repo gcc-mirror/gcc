@@ -1,3 +1,15 @@
+2023-11-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.texi (_gfortran_set_options): Document GFC_STD_F2023.
+	* invoke.texi (std,pedantic,Wampersand,Wtabs): Add -std=2023.
+	* lang.opt (std=f2023): Add.
+	* libgfortran.h (GFC_STD_F2023, GFC_STD_OPT_F23): Add.
+	* options.cc (set_default_std_flags): Add GFC_STD_F2023.
+	(gfc_init_options): Set max_continue_free to 1,000,000.
+	(gfc_post_options): Set flag_free_line_length if unset.
+	(gfc_handle_option): Add OPT_std_f2023, set max_continue_free = 255
+	for -std=f2003, f2008 and f2018.
+
 2023-11-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc (gfc_diagnostics_init): Use diagnostic_start_span.

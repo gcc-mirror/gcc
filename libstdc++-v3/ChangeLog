@@ -1,3 +1,36 @@
+2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config.h.in: Regenerate.
+
+2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def (saturation_arithmetic): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/numeric: Include new header.
+	* include/bits/sat_arith.h: New file.
+	* testsuite/26_numerics/saturation/add.cc: New test.
+	* testsuite/26_numerics/saturation/cast.cc: New test.
+	* testsuite/26_numerics/saturation/div.cc: New test.
+	* testsuite/26_numerics/saturation/mul.cc: New test.
+	* testsuite/26_numerics/saturation/sub.cc: New test.
+	* testsuite/26_numerics/saturation/version.cc: New test.
+
+2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (in_range): Rename _Up parameter to _Res.
+
+2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/out_ptr.h: Add Doxygen comments. Remove a
+	redundant preprocessor condition.
+	* testsuite/20_util/smartptr.adapt/version.cc: New test.
+
+2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h: Fix Doxygen markup.
+
 2023-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112564

@@ -1,3 +1,99 @@
+2023-11-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/aarch64/pr112406.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr112552.c: New test.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107571
+	* g++.dg/DRs/dr2406.C: New test.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112566
+	PR tree-optimization/83171
+	* gcc.dg/pr112566-1.c: New test.
+	* gcc.dg/pr112566-2.c: New test.
+	* gcc.target/i386/pr78057.c (foo): Pass another long long argument
+	and use it in __builtin_ia32_*zcnt_u64 instead of the int one.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112374
+	* gcc.dg/pr112374-1.c: New test.
+	* gcc.dg/pr112374-2.c: New test.
+	* g++.dg/opt/pr112374.C: New test.
+
+2023-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112585
+	* gcc.dg/torture/pr112585.c: New testcase.
+
+2023-11-17  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281.c: New testcase.
+
+2023-11-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/warn_truncated.f90: Add -std=f2018 option.
+	* gfortran.dg/gomp/warn_truncated.f90: Likewise.
+	* gfortran.dg/line_length_10.f90: Likewise.
+	* gfortran.dg/line_length_11.f90: Likewise.
+	* gfortran.dg/line_length_2.f90: Likewise.
+	* gfortran.dg/line_length_5.f90: Likewise.
+	* gfortran.dg/line_length_6.f90: Likewise.
+	* gfortran.dg/line_length_7.f90: Likewise.
+	* gfortran.dg/line_length_8.f90: Likewise.
+	* gfortran.dg/line_length_9.f90: Likewise.
+	* gfortran.dg/continuation_17.f90: New test.
+	* gfortran.dg/continuation_18.f90: New test.
+	* gfortran.dg/continuation_19.f: New test.
+	* gfortran.dg/line_length_12.f90: New test.
+	* gfortran.dg/line_length_13.f90: New test.
+
+2023-11-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/53372
+	* gcc.target/avr/pr53372-1.c: New test.
+	* gcc.target/avr/pr53372-2.c: New test.
+
+2023-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/coarray/caf.exp: Remove some output.
+	* gfortran.dg/dg.exp: Remove some output.
+
+2023-11-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.target/loongarch/vect-copysign-negconst.C: New test.
+	* g++.target/loongarch/vect-copysign-negconst-run.C: New test.
+
+2023-11-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* gcc.target/powerpc/pr111449-2.c: New.
+
+2023-11-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* gcc.target/powerpc/pr111449-1.c: New.
+	* gcc.dg/tree-ssa/sra-17.c: Add additional options for 32-bit powerpc.
+	* gcc.dg/tree-ssa/sra-18.c: Likewise.
+
+2023-11-17  Li Wei  <liwei@loongson.cn>
+
+	* gcc.dg/pr90838.c: add clz/ctz test support on LoongArch.
+
+2023-11-17  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-1.c: Adjust assembler times.
+	* gcc.target/loongarch/vector/lasx/lasx-vcond-2.c: Ditto.
+	* gcc.target/loongarch/vector/lsx/lsx-vcond-1.c: Ditto.
+	* gcc.target/loongarch/vector/lsx/lsx-vcond-2.c: Ditto.
+
 2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/varsize4.adb (Func): Initialize Byte_Read parameter.

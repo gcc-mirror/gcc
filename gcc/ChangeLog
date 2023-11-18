@@ -1,3 +1,100 @@
+2023-11-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/112406
+	PR middle-end/112552
+	* tree-vect-loop.cc (vect_transform_reduction): Pass truth
+	vectype for mask operand.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107571
+	* gimplify.cc (expand_FALLTHROUGH_r): Use wi->removed_stmt after
+	gsi_remove, change the way of passing fallthrough stmt at the end
+	of sequence to expand_FALLTHROUGH.  Diagnose IFN_FALLTHROUGH
+	with GF_CALL_NOTHROW flag.
+	(expand_FALLTHROUGH): Change loc into array of 2 location_t elts,
+	don't test wi.callback_result, instead check whether first
+	elt is not UNKNOWN_LOCATION and in that case pedwarn with the
+	second location.
+	* gimple-walk.cc (walk_gimple_seq_mod): Clear wi->removed_stmt
+	after the flag has been used.
+	* internal-fn.def (FALLTHROUGH): Mention in comment the special
+	meaning of the TREE_NOTHROW/GF_CALL_NOTHROW flag on the calls.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112566
+	PR tree-optimization/83171
+	* match.pd (ctz(ext(X)) -> ctz(X), popcount(zext(X)) -> popcount(X),
+	parity(ext(X)) -> parity(X), ffs(ext(X)) -> ffs(X)): New
+	simplifications.
+	( __builtin_ffs (X) == 0 -> X == 0): Use FFS rather than
+	BUILT_IN_FFS BUILT_IN_FFSL BUILT_IN_FFSLL BUILT_IN_FFSIMAX.
+
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112374
+	* tree-vect-loop.cc (check_reduction_path): Perform the cond_fn_p
+	special case only if op_use_stmt == use_stmt, use as_a rather than
+	dyn_cast in that case.
+
+2023-11-17  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* tree-loop-distribution.cc (pg_add_dependence_edges):
+	Preserve stmt order when the innermost loop has exact
+	overlap.
+
+2023-11-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/53372
+	* config/avr/avr.cc (avr_asm_named_section) [AVR_SECTION_PROGMEM]:
+	Only return some .progmem*.data section if the user did not
+	specify a section attribute.
+	(avr_section_type_flags) [avr_progmem_p]: Unset SECTION_NOTYPE
+	in returned section flags.
+
+2023-11-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (copysign<mode>3): Allow operand[2] to
+	be an reg_or_vector_same_val_operand.  If it's a const vector
+	with same negative elements, expand the copysign with a bitset
+	instruction.  Otherwise, force it into an register.
+	* config/loongarch/lasx.md (copysign<mode>3): Likewise.
+
+2023-11-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* config/rs6000/vsx.md (*vsx_le_mem_to_mem_mov_ti): New.
+
+2023-11-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/111449
+	* config/rs6000/altivec.md (cbranchv16qi4): New expand pattern.
+	* config/rs6000/rs6000.cc (rs6000_generate_compare): Generate
+	insn sequence for V16QImode equality compare.
+	* config/rs6000/rs6000.h (MOVE_MAX_PIECES): Define.
+	(STORE_MAX_PIECES): Define.
+
+2023-11-17  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.h (CLZ_DEFINED_VALUE_AT_ZERO):
+	Implement.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Same.
+
+2023-11-17  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.cc (add_AT_die_ref): Assert we do not add
+	a self-ref DW_AT_abstract_origin or DW_AT_specification.
+
+2023-11-17  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_builtin_vectorization_cost): Adjust.
+
 2023-11-16  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-optimization/112483

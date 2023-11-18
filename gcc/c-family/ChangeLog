@@ -1,3 +1,9 @@
+2023-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107571
+	* c-gimplify.cc (genericize_c_loop): For C++ mark IFN_FALLTHROUGH
+	call at the end of loop body as TREE_NOTHROW.
+
 2023-11-14  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR pch/9471
