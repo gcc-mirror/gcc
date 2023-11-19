@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include <cpplib.h>
+#include "rich-location.h"
 #include "errors.h"
 #include "hash-table.h"
 #include "hash-set.h"

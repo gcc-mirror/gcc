@@ -1038,6 +1038,7 @@ SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h \
 	$(HASHTAB_H)
 PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
+	$(srcdir)/../libcpp/include/rich-location.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 CODYLIB_H = $(srcdir)/../libcody/cody.hh
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h

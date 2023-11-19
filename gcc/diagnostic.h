@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_H
 #define GCC_DIAGNOSTIC_H
 
+#include "rich-location.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h"
 

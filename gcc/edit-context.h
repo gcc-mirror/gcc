@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "typed-splay-tree.h"
 
+class fixit_hint;
 class edit_context;
 class edited_file;
 

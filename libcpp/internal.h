@@ -24,6 +24,7 @@ along with this program; see the file COPYING3.  If not see
 
 #include "symtab.h"
 #include "cpplib.h"
+#include "rich-location.h"
 
 #if HAVE_ICONV
 #include <iconv.h>

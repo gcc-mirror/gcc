@@ -38,6 +38,8 @@ typedef struct cpp_dir cpp_dir;
 
 struct _cpp_file;
 
+class rich_location;
+
 /* The first three groups, apart from '=', can appear in preprocessor
    expressions (+= and -= are used to indicate unary + and - resp.).
    This allows a lookup table to be implemented in _cpp_parse_expr.
