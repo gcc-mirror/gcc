@@ -1,3 +1,60 @@
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/div-div32.c: New test.
+	* gcc.target/loongarch/div-no-div32.c: New test.
+
+2023-11-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/coarray/caf.exp: Remove unused variable.
+	* gfortran.dg/dg.exp: Remove unused variable.
+
+2023-11-18  Lulu Cheng  <chenglulu@loongson.cn>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/func-call-medium-5.c: If the assembler supports call36,
+	the test is abandoned.
+	* gcc.target/loongarch/func-call-medium-6.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-7.c: Likewise.
+	* gcc.target/loongarch/func-call-medium-8.c: Likewise.
+	* lib/target-supports.exp: Added a function to see if the assembler supports
+	the call36 relocation.
+	* gcc.target/loongarch/func-call-medium-call36-1.c: New test.
+	* gcc.target/loongarch/func-call-medium-call36.c: New test.
+
+2023-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* c-c++-common/analyzer/gzio-2.c: Add dg-warning for infinite
+	loop, marked as xfail.
+	* c-c++-common/analyzer/infinite-loop-2.c: New test.
+	* c-c++-common/analyzer/infinite-loop-4.c: New test.
+	* c-c++-common/analyzer/infinite-loop-crc32c.c: New test.
+	* c-c++-common/analyzer/infinite-loop-doom-d_main-IdentifyVersion.c:
+	New test.
+	* c-c++-common/analyzer/infinite-loop-doom-v_video.c: New test.
+	* c-c++-common/analyzer/infinite-loop-g_error.c: New test.
+	* c-c++-common/analyzer/infinite-loop-linked-list.c: New test.
+	* c-c++-common/analyzer/infinite-recursion-inlining.c: Add
+	dg-warning directives for infinite loop.
+	* c-c++-common/analyzer/inlining-4-multiline.c: Update expected
+	paths for event 5 having a location.
+	* gcc.dg/analyzer/boxed-malloc-1.c: Add dg-warning for infinite
+	loop.
+	* gcc.dg/analyzer/data-model-20.c: Likewise.  Add comment about
+	suspect code, and create...
+	* gcc.dg/analyzer/data-model-20a.c: ...this new test by cleaning
+	it up.
+	* gcc.dg/analyzer/edges-1.c: Add a placeholder statement to avoid
+	the "...to here" from the if stmt occurring at the "while", and
+	thus being treated as a bogus event.
+	* gcc.dg/analyzer/explode-2a.c: Add dg-warning for infinite loop.
+	* gcc.dg/analyzer/infinite-loop-1.c: New test.
+	* gcc.dg/analyzer/malloc-1.c: Add dg-warning for infinite loop.
+	* gcc.dg/analyzer/out-of-bounds-coreutils.c: Add TODO.
+	* gcc.dg/analyzer/paths-4.c: Add dg-warning for infinite loop.
+	* gcc.dg/analyzer/pr103892.c: Likewise.
+	* gcc.dg/analyzer/pr93546.c: Likewise.
+
 2023-11-17  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/aarch64/pr112406.c: New test.

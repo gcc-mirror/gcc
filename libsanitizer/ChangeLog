@@ -1,3 +1,8 @@
+2023-11-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* asan/asan_mac.cpp: Protect Apple blocks behind the
+	MISSING_BLOCKS_SUPPORT macro.
+
 2023-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* LOCAL_PATCHES: Update revisions.

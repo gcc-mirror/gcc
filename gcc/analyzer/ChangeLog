@@ -1,3 +1,115 @@
+2023-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* analyzer.opt (Wanalyzer-infinite-loop): New option.
+	(fdump-analyzer-infinite-loop): New option.
+	* checker-event.h (start_cfg_edge_event::get_desc): Drop "final".
+	(start_cfg_edge_event::maybe_describe_condition): Convert from
+	private to protected.
+	* checker-path.h (checker_path::get_logger): New.
+	* diagnostic-manager.cc (process_worklist_item): Update for
+	new context param of maybe_update_for_edge.
+	* engine.cc
+	(impl_region_model_context::impl_region_model_context): Add
+	out_could_have_done_work param to both ctors and use it to
+	initialize mm_out_could_have_done_work.
+	(impl_region_model_context::maybe_did_work): New vfunc
+	implementation.
+	(exploded_node::on_stmt): Add out_could_have_done_work param and
+	pass to ctxt ctor.
+	(exploded_node::on_stmt_pre): Treat setjmp and longjmp as "doing
+	work".
+	(exploded_node::on_longjmp): Likewise.
+	(exploded_edge::exploded_edge): Add "could_do_work" param and use
+	it to initialize m_could_do_work_p.
+	(exploded_edge::dump_dot_label): Add result of could_do_work_p.
+	(exploded_graph::add_function_entry): Mark edge as doing no work.
+	(exploded_graph::add_edge): Add "could_do_work" param and pass to
+	exploded_edge ctor.
+	(add_tainted_args_callback): Treat as doing no work.
+	(exploded_graph::process_worklist): Likewise when merging nodes.
+	(maybe_process_run_of_before_supernode_enodes::item): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::process_node): Likewise for phi nodes.
+	Pass in a "could_have_done_work" bool when handling stmts and use
+	when creating edges.  Assume work is done at bifurcation.
+	(exploded_path::feasible_p): Update for new context param of
+	maybe_update_for_edge.
+	(feasibility_state::feasibility_state): New ctor.
+	(feasibility_state::operator=): New.
+	(feasibility_state::maybe_update_for_edge): Add ctxt param and use
+	it.  Fix missing newline when logging state.
+	(impl_run_checkers): Call exploded_graph::detect_infinite_loops.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Add
+	out_could_have_done_work param to both ctors.
+	(impl_region_model_context::maybe_did_work): New decl.
+	(impl_region_model_context::checking_for_infinite_loop_p): New.
+	(impl_region_model_context::on_unusable_in_infinite_loop): New.
+	(impl_region_model_context::m_out_could_have_done_work): New
+	field.
+	(exploded_node::on_stmt): Add "out_could_have_done_work" param.
+	(exploded_edge::exploded_edge): Add "could_do_work" param.
+	(exploded_edge::could_do_work_p): New accessor.
+	(exploded_edge::m_could_do_work_p): New field.
+	(exploded_graph::add_edge): Add "could_do_work" param.
+	(exploded_graph::detect_infinite_loops): New decl.
+	(feasibility_state::feasibility_state): New ctor.
+	(feasibility_state::operator=): New decl.
+	(feasibility_state::maybe_update_for_edge): Add ctxt param.
+	* infinite-loop.cc: New file.
+	* program-state.cc (program_state::on_edge): Log the rejected
+	constraint when region_model::maybe_update_for_edge fails.
+	* region-model.cc (region_model::on_assignment): Treat any writes
+	other than to the stack as "doing work".
+	(region_model::on_stmt_pre): Treat all asm stmts as "doing work".
+	(region_model::on_call_post): Likewise for all calls to functions
+	with unknown side effects.
+	(region_model::handle_phi): Add svals_changing_meaning param.
+	Mark widening svalue in phi nodes as changing meaning.
+	(unusable_in_infinite_loop_constraint_p): New.
+	(region_model::add_constraint): If we're checking for an infinite
+	loop, bail out on unusable svalues, or if we don't have a definite
+	true/false for the constraint.
+	(region_model::update_for_phis): Gather all svalues changing
+	meaning in phi nodes, and purge constraints involving them.
+	(region_model::replay_call_summary): Treat all call summaries as
+	doing work.
+	(region_model::can_merge_with_p): Purge constraints involving
+	svalues that change meaning.
+	(model_merger::on_widening_reuse): New.
+	(test_iteration_1): Likewise.
+	(selftest::test_iteration_1): Remove assertion that model6 "knows"
+	that i < 157.
+	* region-model.h (region_model::handle_phi): Add
+	svals_changing_meaning param
+	(region_model_context::maybe_did_work): New pure virtual func.
+	(region_model_context::checking_for_infinite_loop_p): Likewise.
+	(region_model_context::on_unusable_in_infinite_loop): Likewise.
+	(noop_region_model_context::maybe_did_work): Implement.
+	(noop_region_model_context::checking_for_infinite_loop_p):
+	Likewise.
+	(noop_region_model_context::on_unusable_in_infinite_loop):
+	Likewise.
+	(region_model_context_decorator::maybe_did_work): Implement.
+	(region_model_context_decorator::checking_for_infinite_loop_p):
+	Likewise.
+	(region_model_context_decorator::on_unusable_in_infinite_loop):
+	Likewise.
+	(model_merger::on_widening_reuse): New decl.
+	(model_merger::m_svals_changing_meaning): New field.
+	* sm-signal.cc (register_signal_handler::impl_transition): Assume
+	the edge "does work".
+	* supergraph.cc (supernode::get_start_location): Use CFG edge's
+	goto_locus if available.
+	(supernode::get_end_location): Likewise.
+	(cfg_superedge::dump_label_to_pp): Dump edges with a "goto_locus"
+	* supergraph.h (cfg_superedge::get_goto_locus): New.
+	* svalue.cc (svalue::can_merge_p): Call on_widening_reuse for
+	widening values.
+	(involvement_visitor::visit_widening_svalue): New.
+	(svalue::involves_p): Update assertion to allow widening svalues.
+
 2023-11-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103533

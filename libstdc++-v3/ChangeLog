@@ -1,3 +1,23 @@
+2023-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112607
+	* include/std/format (basic_format_arg::_S_to_arg_type): Check
+	value_type for basic_string_view and basic_string
+	specializations.
+	* testsuite/std/format/arguments/112607.cc: New test.
+
+2023-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110801
+	* include/std/format (_Sink_iter::_M_reserve): New member
+	function.
+	(_Sink::_Reservation): New nested class.
+	(_Sink::_M_reserve, _Sink::_M_bump): New virtual functions.
+	(_Seq_sink::_M_reserve, _Seq_sink::_M_bump): New virtual
+	overrides.
+	(_Iter_sink<O, ContigIter>::_M_reserve): Likewise.
+	(__do_vformat_to): Use new functions to optimize "{}" case.
+
 2023-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config.h.in: Regenerate.

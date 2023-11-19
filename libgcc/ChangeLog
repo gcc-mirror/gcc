@@ -1,3 +1,16 @@
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Always define it.
+	Set it also to 1, if __LIBGCC_HAVE_LIBATOMIC is defined.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Revert:
+	2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.
+	(gcov_type_unsigned): Likewise.
+
 2023-11-10  Keith Packard  <keithp@keithp.com>
 
 	* config/m68k/lb1sf68.S (__adddf3): Properly check for non-zero denorm.

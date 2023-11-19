@@ -1,3 +1,222 @@
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md (const_call_insn_operand):
+	Remove buggy "HAVE_AS_SUPPORT_CALL36" conditions.  Change "1" to
+	"true" to make the coding style consistent.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/isa-evolution.in: (lam-bh, lamcas):
+	Add.
+	* config/loongarch/loongarch-str.h: Regenerate.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch-cpucfg-map.h: Regenerate.
+	* config/loongarch/loongarch-cpu.cc
+	(ISA_BASE_LA64V110_FEATURES): Include OPTION_MASK_ISA_LAM_BH
+	and OPTION_MASK_ISA_LAMCAS.
+	* config/loongarch/sync.md (atomic_add<mode:SHORT>): Use
+	TARGET_LAM_BH instead of ISA_BASE_IS_LA64V110.  Remove empty
+	lines from assembly output.
+	(atomic_exchange<mode>_short): Likewise.
+	(atomic_exchange<mode:SHORT>): Likewise.
+	(atomic_fetch_add<mode>_short): Likewise.
+	(atomic_fetch_add<mode:SHORT>): Likewise.
+	(atomic_cas_value_strong<mode>_amcas): Use TARGET_LAMCAS instead
+	of ISA_BASE_IS_LA64V110.
+	(atomic_compare_and_swap<mode>): Likewise.
+	(atomic_compare_and_swap<mode:GPR>): Likewise.
+	(atomic_compare_and_swap<mode:SHORT>): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_asm_code_end): Dump
+	status if -mlam-bh and -mlamcas if -fverbose-asm.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand): Don't
+	print dbar 0x700 if TARGET_LD_SEQ_SA.
+	* config/loongarch/sync.md (atomic_load<mode>): Likewise.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (DIV): New mode iterator.
+	(<optab:ANY_DIV><mode:GPR>3): Don't expand if TARGET_DIV32.
+	(<optab:ANY_DIV>di3_fake): Disable if TARGET_DIV32.
+	(*<optab:ANY_DIV><mode:GPR>3): Allow SImode if TARGET_DIV32.
+	(<optab:ANY_DIV>si3_extended): New insn if TARGET_DIV32.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-def.h:
+	(loongarch_isa_base_features): Declare.  Define it in ...
+	* config/loongarch/loongarch-cpu.cc
+	(loongarch_isa_base_features): ... here.
+	(fill_native_cpu_config): If we know the base ISA of the CPU
+	model from PRID, use it instead of la64 (v1.0).  Check if all
+	expected features of this base ISA is available, emit a warning
+	if not.
+	* config/loongarch/loongarch-opts.cc (config_target_isa): Enable
+	the features implied by the base ISA if not -march=native.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/isa-evolution.in: New data file.
+	* config/loongarch/genopts/genstr.sh: Translate info in
+	isa-evolution.in when generating loongarch-str.h, loongarch.opt,
+	and loongarch-cpucfg-map.h.
+	* config/loongarch/genopts/loongarch.opt.in (isa_evolution):
+	New variable.
+	* config/loongarch/t-loongarch: (loongarch-cpucfg-map.h): New
+	rule.
+	(loongarch-str.h): Depend on isa-evolution.in.
+	(loongarch.opt): Depend on isa-evolution.in.
+	(loongarch-cpu.o): Depend on loongarch-cpucfg-map.h.
+	* config/loongarch/loongarch-str.h: Regenerate.
+	* config/loongarch/loongarch-def.h (loongarch_isa):  Add field
+	for evolution features.  Add helper function to enable features
+	in this field.
+	Probe native CPU capability and save the corresponding options
+	into preset.
+	* config/loongarch/loongarch-cpu.cc (fill_native_cpu_config):
+	Probe native CPU capability and save the corresponding options
+	into preset.
+	(cache_cpucfg): Simplify with C++11-style for loop.
+	(cpucfg_useful_idx, N_CPUCFG_WORDS): Move to ...
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Enable the ISA evolution
+	feature options implied by -march and not explicitly disabled.
+	(loongarch_asm_code_end): New function, print ISA information as
+	comments in the assembly if -fverbose-asm.  It makes easier to
+	debug things like -march=native.
+	(TARGET_ASM_CODE_END): Define.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch-cpucfg-map.h: Generate.
+	(cpucfg_useful_idx, N_CPUCFG_WORDS) ... here.
+
+2023-11-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch-strings:
+	(STR_ISA_BASE_LA64V110): Add.
+	* config/loongarch/genopts/loongarch.opt.in:
+	(ISA_BASE_LA64V110): Add.
+	* config/loongarch/loongarch-def.c
+	(loongarch_isa_base_strings): Initialize [ISA_BASE_LA64V110]
+	to STR_ISA_BASE_LA64V110.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch-str.h: Regenerate.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/invoke.texi (-fprofile-update): Clarify default method.  Document
+	the atomic method behaviour.
+	* tree-profile.cc (enum counter_update_method): New.
+	(counter_update): Likewise.
+	(gen_counter_update): Use counter_update_method.  Split the
+	atomic counter update in two 32-bit atomic operations if
+	necessary.
+	(tree_profiling): Select counter_update_method.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* tree-profile.cc (gen_assign_counter_update): New.
+	(gen_counter_update): Likewise.
+	(gimple_gen_edge_profiler): Use gen_counter_update().
+	(gimple_gen_time_profiler): Likewise.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (TARGET_HAVE_LIBATOMIC): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_HAVE_LIBATOMIC): Add.
+	* target.def (have_libatomic): New.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Revert:
+	2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/rtemself.h (SPARC_GCOV_TYPE_SIZE): Define.
+	* config/sparc/sparc.c (sparc_gcov_type_size): New.
+	(TARGET_GCOV_TYPE_SIZE): Redefine if SPARC_GCOV_TYPE_SIZE is defined.
+	* coverage.c (get_gcov_type): Use targetm.gcov_type_size().
+	* doc/tm.texi (TARGET_GCOV_TYPE_SIZE): Add hook under "Misc".
+	* doc/tm.texi.in: Regenerate.
+	* target.def (gcov_type_size): New target hook.
+	* targhooks.c (default_gcov_type_size): New.
+	* targhooks.h (default_gcov_type_size): Declare.
+	* tree-profile.c (gimple_gen_edge_profiler): Use precision of
+	gcov_type_node.
+	(gimple_gen_time_profiler): Likewise.
+
+2023-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::parse_arch): Use char[] for
+	std::unique_ptr to prevent mismatched new delete issue.
+	(riscv_process_one_target_attr): Ditto.
+	(riscv_process_target_attr): Ditto.
+
+2023-11-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Refactor iterators.
+
+2023-11-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/sync.md (atomic_load<mode>): New template.
+
+2023-11-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-def.h: Add comments.
+	* config/loongarch/loongarch-opts.h (ISA_BASE_IS_LA64V110): Define macro.
+	* config/loongarch/loongarch.cc (loongarch_memmodel_needs_rel_acq_fence):
+	Remove redundant code implementations.
+	* config/loongarch/sync.md (d): Added QI, HI support.
+	(atomic_add<mode>): New template.
+	(atomic_exchange<mode>_short): Likewise.
+	(atomic_cas_value_strong<mode>_amcas): Likewise..
+	(atomic_fetch_add<mode>_short): Likewise.
+
+2023-11-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.gcc: Support LA664.
+	* config/loongarch/genopts/loongarch-strings: Likewise.
+	* config/loongarch/genopts/loongarch.opt.in: Likewise.
+	* config/loongarch/loongarch-cpu.cc (fill_native_cpu_config): Likewise.
+	* config/loongarch/loongarch-def.c: Likewise.
+	* config/loongarch/loongarch-def.h (N_ISA_BASE_TYPES): Likewise.
+	(ISA_BASE_LA64V110): Define macro.
+	(N_ARCH_TYPES): Update value.
+	(N_TUNE_TYPES): Update value.
+	(CPU_LA664): New macro.
+	* config/loongarch/loongarch-opts.cc (isa_default_abi): Likewise.
+	(isa_base_compat_p): Likewise.
+	* config/loongarch/loongarch-opts.h (TARGET_64BIT): This parameter is enabled
+	when la_target.isa.base is equal to ISA_BASE_LA64V100 or ISA_BASE_LA64V110.
+	(TARGET_uARCH_LA664): Define macro.
+	* config/loongarch/loongarch-str.h (STR_CPU_LA664): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_cpu_sched_reassociation_width):
+	Add LA664 support.
+	* config/loongarch/loongarch.opt: Regenerate.
+
+2023-11-18  Lulu Cheng  <chenglulu@loongson.cn>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* config.in: Regenerate.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_SUPPORT_CALL36): Define macro.
+	* config/loongarch/loongarch.cc (loongarch_legitimize_call_address):
+	If binutils supports call36, the function call is not split over expand.
+	* config/loongarch/loongarch.md: Add call36 generation code.
+	* config/loongarch/predicates.md: Likewise.
+	* configure: Regenerate.
+	* configure.ac: Check whether binutils supports call36.
+
+2023-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/infinite-loop.o.
+	* doc/invoke.texi: Add -fdump-analyzer-infinite-loop and
+	-Wanalyzer-infinite-loop.  Add missing CWE link for
+	-Wanalyzer-infinite-recursion.
+	* timevar.def (TV_ANALYZER_INFINITE_LOOPS): New.
+
 2023-11-17  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR middle-end/112406

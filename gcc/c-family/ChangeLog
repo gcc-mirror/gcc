@@ -1,3 +1,16 @@
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-cppbuiltin.cc (c_cpp_builtins):  Define
+	__LIBGCC_HAVE_LIBATOMIC for libgcov.
+
+2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Revert:
+	2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__LIBGCC_GCOV_TYPE_SIZE if flag_building_libgcc is true.
+
 2023-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107571
