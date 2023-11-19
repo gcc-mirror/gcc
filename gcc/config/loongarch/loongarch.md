@@ -585,9 +585,6 @@
 (define_int_attr lrint_submenmonic [(UNSPEC_FTINT "")
 				    (UNSPEC_FTINTRM "rm")
 				    (UNSPEC_FTINTRP "rp")])
-(define_int_attr lrint_allow_inexact [(UNSPEC_FTINT "1")
-				      (UNSPEC_FTINTRM "0")
-				      (UNSPEC_FTINTRP "0")])
 
 ;; Iterator and attributes for bytepick.d
 (define_int_iterator bytepick_w_ashift_amount [8 16 24])
@@ -2384,7 +2381,7 @@
 	(unspec:ANYFI [(match_operand:ANYF 1 "register_operand" "f")]
 		      LRINT))]
   "TARGET_HARD_FLOAT &&
-   (<lrint_allow_inexact>
+   (<LRINT> == UNSPEC_FTINT
     || flag_fp_int_builtin_inexact
     || !flag_trapping_math)"
   "ftint<lrint_submenmonic>.<ANYFI:ifmt>.<ANYF:fmt> %0,%1"
