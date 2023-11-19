@@ -91,6 +91,13 @@
 			   (V8HI "16") (V16HI "16")
 			   (V16QI "8") (V32QI "8")])
 
+;; This attribute is used to form an immediate operand constraint using
+;; "const_<bitimm>_operand".
+(define_mode_attr bitimm [(V16QI "uimm3") (V32QI "uimm3")
+			  (V8HI  "uimm4") (V16HI "uimm4")
+			  (V4SI  "uimm5") (V8SI "uimm5")
+			  (V2DI  "uimm6") (V4DI "uimm6")])
+
 ;; =======================================================================
 ;; For many LASX instructions, the only difference of it from the LSX
 ;; counterpart is the length of vector operands.  Describe these LSX/LASX
@@ -219,6 +226,28 @@
    (any_extend (const_int 0))]
   ""
   "<x>vmuh.<simdfmt><u>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<MODE>")])
+
+;; <x>vrotr.{b/h/w/d}
+
+(define_insn "vrotr<mode>3"
+  [(set (match_operand:IVEC 0 "register_operand" "=f")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand" "f")
+		       (match_operand:IVEC 2 "register_operand" "f")))]
+  ""
+  "<x>vrotr.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<MODE>")])
+
+;; <x>vrotri.{b/h/w/d}
+
+(define_insn "rotr<mode>3"
+  [(set (match_operand:IVEC 0 "register_operand" "=f")
+	(rotatert:IVEC (match_operand:IVEC 1 "register_operand" "f")
+		       (match_operand:SI 2 "const_<bitimm>_operand")))]
+  ""
+  "<x>vrotri.<simdfmt>\t%<wu>0,%<wu>1,%2";
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 

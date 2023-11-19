@@ -141,7 +141,6 @@
   UNSPEC_LSX_VMADDWOD
   UNSPEC_LSX_VMADDWOD2
   UNSPEC_LSX_VMADDWOD3
-  UNSPEC_LSX_VROTR
   UNSPEC_LSX_VADD_Q
   UNSPEC_LSX_VSUB_Q
   UNSPEC_LSX_VEXTH_Q_D
@@ -362,14 +361,6 @@
    (V4SI "exp_4")
    (V8HI "exp_8")
    (V16QI "exp_16")])
-
-;; This attribute is used to form an immediate operand constraint using
-;; "const_<bitimm>_operand".
-(define_mode_attr bitimm
-  [(V16QI "uimm3")
-   (V8HI  "uimm4")
-   (V4SI  "uimm5")
-   (V2DI  "uimm6")])
 
 (define_expand "vec_init<mode><unitmode>"
   [(match_operand:LSX 0 "register_operand")
@@ -4152,16 +4143,6 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V2DI")])
 
-(define_insn "lsx_vrotr_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VROTR))]
-  "ISA_HAS_LSX"
-  "vrotr.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lsx_vadd_q"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "f")
@@ -4254,15 +4235,6 @@
   "vexth.qu.du\t%w0,%w1"
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V2DI")])
-
-(define_insn "lsx_vrotri_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(rotatert:ILSX (match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand 2 "const_<bitimm>_operand" "")))]
-  "ISA_HAS_LSX"
-  "vrotri.<lsxfmt>\t%w0,%w1,%2"
-  [(set_attr "type" "simd_shf")
-   (set_attr "mode" "<MODE>")])
 
 (define_insn "lsx_vextl_q_d"
   [(set (match_operand:V2DI 0 "register_operand" "=f")

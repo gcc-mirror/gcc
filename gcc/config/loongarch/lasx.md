@@ -138,7 +138,6 @@
   UNSPEC_LASX_XVHSUBW_Q_D
   UNSPEC_LASX_XVHADDW_QU_DU
   UNSPEC_LASX_XVHSUBW_QU_DU
-  UNSPEC_LASX_XVROTR
   UNSPEC_LASX_XVADD_Q
   UNSPEC_LASX_XVSUB_Q
   UNSPEC_LASX_XVREPLVE
@@ -4232,18 +4231,6 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V4DI")])
 
-;;XVROTR.B   XVROTR.H   XVROTR.W   XVROTR.D
-;;TODO-478
-(define_insn "lasx_xvrotr_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVROTR))]
-  "ISA_HAS_LASX"
-  "xvrotr.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
 ;;XVADD.Q
 ;;TODO2
 (define_insn "lasx_xvadd_q"
@@ -4425,15 +4412,6 @@
   "xvexth.qu.du\t%u0,%u1"
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V4DI")])
-
-(define_insn "lasx_xvrotri_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(rotatert:ILASX (match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")))]
-  "ISA_HAS_LASX"
-  "xvrotri.<lasxfmt>\t%u0,%u1,%2"
-  [(set_attr "type" "simd_shf")
-   (set_attr "mode" "<MODE>")])
 
 (define_insn "lasx_xvextl_q_d"
   [(set (match_operand:V4DI 0 "register_operand" "=f")
