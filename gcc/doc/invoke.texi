@@ -490,6 +490,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-offset
 -Wno-analyzer-tainted-size
 -Wanalyzer-too-complex
+-Wno-analyzer-undefined-behavior-strtok
 -Wno-analyzer-unsafe-call-within-signal-handler
 -Wno-analyzer-use-after-free
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame
@@ -10424,6 +10425,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-divisor
 -Wanalyzer-tainted-offset
 -Wanalyzer-tainted-size
+-Wanalyzer-undefined-behavior-strtok
 -Wanalyzer-unsafe-call-within-signal-handler
 -Wanalyzer-use-after-free
 -Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -11059,6 +11061,18 @@ an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
 See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@opindex Wanalyzer-undefined-behavior-strtok
+@opindex Wno-analyzer-undefined-behavior-strtok
+@item -Wno-analyzer-undefined-behavior-strtok
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-undefined-behavior-strtok} to disable it.
+
+This diagnostic warns for paths through the code in which a
+call is made to @code{strtok} with undefined behavior.
+
+Specifically, passing NULL as the first parameter for the initial
+call to @code{strtok} within a process has undefined behavior.
 
 @opindex Wanalyzer-unsafe-call-within-signal-handler
 @opindex Wno-analyzer-unsafe-call-within-signal-handler

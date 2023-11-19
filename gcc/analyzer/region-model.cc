@@ -3884,8 +3884,10 @@ region_model::scan_for_null_terminator (const region *reg,
   byte_range bytes_to_read (src_byte_offset, 1);
   const svalue *sval = get_store_bytes (base_reg, bytes_to_read, ctxt);
   tree byte_expr
-    = get_tree_for_byte_offset (expr,
-				src_byte_offset - initial_src_byte_offset);
+    = (expr
+       ? get_tree_for_byte_offset (expr,
+				   src_byte_offset - initial_src_byte_offset)
+       : NULL_TREE);
   check_for_poison (sval, byte_expr, nullptr, ctxt);
   if (base_reg->can_have_initial_svalue_p ())
     {
@@ -5077,6 +5079,7 @@ region_model::get_representative_path_var_1 (const region *reg,
     case RK_VAR_ARG:
     case RK_ERRNO:
     case RK_UNKNOWN:
+    case RK_PRIVATE:
       return path_var (NULL_TREE, 0);
     }
 }

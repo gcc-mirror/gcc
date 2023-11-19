@@ -326,7 +326,8 @@ public:
   void impl_call_pre (const call_details &cd) const override;
 };
 
-extern void register_known_functions (known_function_manager &mgr);
+extern void register_known_functions (known_function_manager &kfm,
+				      region_model_manager &rmm);
 extern void register_known_analyzer_functions (known_function_manager &kfm);
 extern void register_known_fd_functions (known_function_manager &kfm);
 extern void register_known_file_functions (known_function_manager &kfm);

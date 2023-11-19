@@ -6174,7 +6174,8 @@ impl_run_checkers (logger *logger)
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
 
-  register_known_functions (*eng.get_known_function_manager ());
+  register_known_functions (*eng.get_known_function_manager (),
+			    *eng.get_model_manager ());
 
   plugin_analyzer_init_impl data (&checkers,
 				  eng.get_known_function_manager (),

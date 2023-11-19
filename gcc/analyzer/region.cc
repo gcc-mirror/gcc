@@ -514,6 +514,8 @@ region::get_memory_space () const
 	  return MEMSPACE_HEAP;
 	case RK_STRING:
 	  return MEMSPACE_READONLY_DATA;
+	case RK_PRIVATE:
+	  return MEMSPACE_PRIVATE;
 	}
       if (iter->get_kind () == RK_CAST)
 	iter = iter->dyn_cast_cast_region ()->get_original_region ();
@@ -543,6 +545,7 @@ region::can_have_initial_svalue_p () const
     case MEMSPACE_CODE:
     case MEMSPACE_GLOBALS:
     case MEMSPACE_READONLY_DATA:
+    case MEMSPACE_PRIVATE:
       /* Such regions have initial_svalues.  */
       return true;
 
@@ -2257,6 +2260,17 @@ errno_region::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_string (pp, "errno_region");
   else
     pp_string (pp, "errno_region()");
+}
+
+/* class private_region : public region.  */
+
+void
+private_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    pp_printf (pp, "PRIVATE_REG(%qs)", m_desc);
+  else
+    pp_printf (pp, "private_region(%qs)", m_desc);
 }
 
 /* class unknown_region : public region.  */

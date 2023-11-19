@@ -3372,6 +3372,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
     case RK_HEAP_ALLOCATED:
     case RK_DECL:
     case RK_ERRNO:
+    case RK_PRIVATE:
       {
 	const region *caller_dest_reg
 	  = r.convert_region_from_summary (summary_base_reg);

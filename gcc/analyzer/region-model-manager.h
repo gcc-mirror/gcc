@@ -79,7 +79,8 @@ public:
 					       const binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
 					       const region *id_reg,
-					       const conjured_purge &p);
+					       const conjured_purge &p,
+					       unsigned idx = 0);
   const svalue *
   get_or_create_asm_output_svalue (tree type,
 				   const gasm *asm_stmt,
@@ -105,6 +106,7 @@ public:
   const svalue *create_unique_svalue (tree type);
 
   /* region consolidation.  */
+  const root_region *get_root_region () const { return &m_root_region; }
   const stack_region * get_stack_region () const { return &m_stack_region; }
   const heap_region *get_heap_region () const { return &m_heap_region; }
   const code_region *get_code_region () const { return &m_code_region; }

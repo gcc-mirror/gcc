@@ -559,6 +559,8 @@ class region_model
 	callback (model, prev_model, retval, ctxt);
   }
 
+  bool called_from_main_p () const;
+
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -606,7 +608,6 @@ private:
 			   bool nonnull,
 			   region_model_context *ctxt);
 
-  bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
   const region * get_region_for_poisoned_expr (tree expr) const;

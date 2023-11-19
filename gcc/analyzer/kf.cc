@@ -40,6 +40,40 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* Abstract subclass for describing undefined behavior of an API.  */
+
+class undefined_function_behavior
+  : public pending_diagnostic_subclass<undefined_function_behavior>
+{
+public:
+  undefined_function_behavior (const call_details &cd)
+  : m_call_stmt (cd.get_call_stmt ()),
+    m_callee_fndecl (cd.get_fndecl_for_call ())
+  {
+    gcc_assert (m_call_stmt);
+    gcc_assert (m_callee_fndecl);
+  }
+
+  const char *get_kind () const final override
+  {
+    return "undefined_behavior";
+  }
+
+  bool operator== (const undefined_function_behavior &other) const
+  {
+    return (m_call_stmt == other.m_call_stmt
+	    && m_callee_fndecl == other.m_callee_fndecl);
+  }
+
+  bool terminate_path_p () const final override { return true; }
+
+  tree get_callee_fndecl () const { return m_callee_fndecl; }
+
+private:
+  const gimple *m_call_stmt;
+  tree m_callee_fndecl;
+};
+
 /* class pure_known_function_with_default_return : public known_function.  */
 
 void
@@ -1679,6 +1713,288 @@ kf_strstr::impl_call_post (const call_details &cd) const
     }
 }
 
+/* Handle calls to "strtok".
+   See e.g.
+     https://en.cppreference.com/w/c/string/byte/strtok
+     https://man7.org/linux/man-pages/man3/strtok.3.html  */
+
+class kf_strtok : public known_function
+{
+public:
+  class undefined_behavior : public undefined_function_behavior
+  {
+  public:
+    undefined_behavior (const call_details &cd)
+    : undefined_function_behavior (cd)
+    {
+    }
+    int get_controlling_option () const final override
+    {
+      return OPT_Wanalyzer_undefined_behavior_strtok;
+    }
+
+    bool emit (rich_location *rich_loc, logger *) final override
+    {
+      /* CWE-476: NULL Pointer Dereference.  */
+      diagnostic_metadata m;
+      m.add_cwe (476);
+      if (warning_meta
+	  (rich_loc, m, get_controlling_option (),
+	   "calling %qD for first time with NULL as argument 1"
+	   " has undefined behavior",
+	   get_callee_fndecl ()))
+	{
+	  inform (rich_loc->get_loc (),
+		  "some implementations of %qD may crash on such input",
+		  get_callee_fndecl ());
+	  return true;
+	}
+      return false;
+    }
+
+    label_text describe_final_event (const evdesc::final_event &ev)
+      final override
+    {
+      return ev.formatted_print
+	("calling %qD for first time with NULL as argument 1"
+	 " has undefined behavior",
+	 get_callee_fndecl ());
+    }
+  };
+
+  /* An outcome of a "strtok" call.
+     We have a four-way bifurcation of the analysis via the
+     4 combinations of two flags:
+     - m_nonnull_str covers whether the "str" param was null or non-null
+     - m_found covers whether the result is null or non-null
+   */
+  class strtok_call_info : public call_info
+  {
+  public:
+    strtok_call_info (const call_details &cd,
+		      const private_region &private_reg,
+		      bool nonnull_str,
+		      bool found)
+    : call_info (cd),
+      m_private_reg (private_reg),
+      m_nonnull_str (nonnull_str),
+      m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_nonnull_str)
+	{
+	  if (m_found)
+	    return make_label_text
+	      (can_colorize,
+	       "when %qE on non-NULL string returns non-NULL",
+	       get_fndecl ());
+	  else
+	    return make_label_text
+	      (can_colorize,
+	       "when %qE on non-NULL string returns NULL",
+	       get_fndecl ());
+	}
+      else
+	{
+	  if (m_found)
+	    return make_label_text
+	      (can_colorize,
+	       "when %qE with NULL string (using prior) returns non-NULL",
+	       get_fndecl ());
+	  else
+	    return make_label_text
+	      (can_colorize,
+	       "when %qE with NULL string (using prior) returns NULL",
+	       get_fndecl ());
+	}
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      region_model_manager *mgr = model->get_manager ();
+      const call_details cd (get_call_details (model, ctxt));
+      const svalue *str_sval = cd.get_arg_svalue (0);
+      /* const svalue *delim_sval = cd.get_arg_svalue (1); */
+
+      cd.check_for_null_terminated_string_arg (1);
+      /* We check that either arg 0 or the private region is null
+	 terminated below.  */
+
+      const svalue *null_ptr_sval
+	= mgr->get_or_create_null_ptr (cd.get_arg_type (0));;
+      if (!model->add_constraint (str_sval,
+				  m_nonnull_str ? NE_EXPR : EQ_EXPR,
+				  null_ptr_sval,
+				  cd.get_ctxt ()))
+	return false;
+
+      if (m_nonnull_str)
+	{
+	  /* Update internal buffer.  */
+	  model->set_value (&m_private_reg,
+			    mgr->get_or_create_unmergeable (str_sval),
+			    ctxt);
+	}
+      else
+	{
+	  /* Read from internal buffer.  */
+	  str_sval = model->get_store_value (&m_private_reg, ctxt);
+
+	  /* The initial value of the private region is NULL when we're
+	     on a path from main.  */
+	  if (const initial_svalue *initial_sval
+		= str_sval->dyn_cast_initial_svalue ())
+	    if (initial_sval->get_region () == &m_private_reg
+		&& model->called_from_main_p ())
+	      {
+		/* Implementations of strtok do not necessarily check for NULL
+		   here, and may crash; see PR analyzer/107573.
+		   Warn for this, if we were definitely passed NULL.  */
+		if (cd.get_arg_svalue (0)->all_zeroes_p ())
+		  {
+		    if (ctxt)
+		      ctxt->warn (::make_unique<undefined_behavior> (cd));
+		  }
+
+		/* Assume that "str" was actually non-null; terminate
+		   this path.  */
+		return false;
+	      }
+
+	  /* Now assume str_sval is non-null.  */
+	  if (!model->add_constraint (str_sval,
+				      NE_EXPR,
+				      null_ptr_sval,
+				      cd.get_ctxt ()))
+	    return false;
+	}
+
+      const region *buf_reg = model->deref_rvalue (str_sval, NULL_TREE, ctxt);
+      model->scan_for_null_terminator (buf_reg,
+				       NULL_TREE,
+				       nullptr,
+				       ctxt);
+
+      if (m_found)
+	{
+	  const region *str_reg
+	    = model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				   cd.get_ctxt ());
+	  /* We want to figure out the start and nul terminator
+	     for the token.
+	     For each, we want str_sval + OFFSET for some unknown OFFSET.
+	     Use a conjured_svalue to represent the offset,
+	     using the str_reg as the id of the conjured_svalue.  */
+	  const svalue *start_offset
+	    = mgr->get_or_create_conjured_svalue (size_type_node,
+						  cd.get_call_stmt (),
+						  str_reg,
+						  conjured_purge (model,
+								  ctxt),
+						  0);
+	  const svalue *nul_offset
+	    = mgr->get_or_create_conjured_svalue (size_type_node,
+						  cd.get_call_stmt (),
+						  str_reg,
+						  conjured_purge (model,
+								  ctxt),
+						  1);
+
+	  tree char_ptr_type = build_pointer_type (char_type_node);
+	  const svalue *result
+	    = mgr->get_or_create_binop (char_ptr_type, POINTER_PLUS_EXPR,
+					str_sval, start_offset);
+	  cd.maybe_set_lhs (result);
+
+	  /* nul_offset + 1; the offset to use for the next call.  */
+	  const svalue *next_offset
+	    = mgr->get_or_create_binop (size_type_node, PLUS_EXPR,
+					nul_offset,
+					mgr->get_or_create_int_cst
+					(char_type_node, 1));
+
+	  /* Write '\0' to str_sval[nul_offset].  */
+	  const svalue *ptr_to_term
+	    = mgr->get_or_create_binop (char_ptr_type, POINTER_PLUS_EXPR,
+					str_sval, nul_offset);
+	  const region *terminator_reg
+	    = model->deref_rvalue (ptr_to_term, NULL_TREE, cd.get_ctxt ());
+	  model->set_value (terminator_reg,
+			    mgr->get_or_create_unmergeable
+			    (mgr->get_or_create_int_cst (char_type_node,
+							 0)),
+			    cd.get_ctxt ());
+
+	  /* Update saved ptr to be at [nul_offset + 1].  */
+	  const svalue *ptr_to_next
+	    = mgr->get_or_create_binop (cd.get_lhs_type (), POINTER_PLUS_EXPR,
+					str_sval, next_offset);
+	  model->set_value (&m_private_reg, ptr_to_next, ctxt);
+	}
+      else
+	if (tree lhs_type = cd.get_lhs_type ())
+	  {
+	    const svalue *result
+	      = mgr->get_or_create_int_cst (lhs_type, 0);
+	    cd.maybe_set_lhs (result);
+	  }
+      return true;
+    }
+  private:
+    const private_region &m_private_reg;
+    bool m_nonnull_str;
+    bool m_found;
+  }; // class strtok_call_info
+
+  kf_strtok (region_model_manager &mgr)
+  : m_private_reg (mgr.alloc_symbol_id (),
+		   mgr.get_root_region (),
+		   get_region_type (),
+		   "strtok buffer")
+  {
+  }
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && POINTER_TYPE_P (cd.get_arg_type (0))
+	    && POINTER_TYPE_P (cd.get_arg_type (1)));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	/* Four-way bifurcation, based on whether:
+	   - the str is non-null
+	   - the result is non-null
+	   Typically the str is either null or non-null at a particular site,
+	   so hopefully this will generally just lead to two out-edges.  */
+	cd.get_ctxt ()->bifurcate
+	  (make_unique<strtok_call_info> (cd, m_private_reg, false, false));
+	cd.get_ctxt ()->bifurcate
+	  (make_unique<strtok_call_info> (cd, m_private_reg, false, true));
+	cd.get_ctxt ()->bifurcate
+	  (make_unique<strtok_call_info> (cd, m_private_reg, true, false));
+	cd.get_ctxt ()->bifurcate
+	  (make_unique<strtok_call_info> (cd, m_private_reg, true, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+
+private:
+  static tree get_region_type ()
+  {
+    return build_pointer_type (char_type_node);
+  }
+  const private_region m_private_reg;
+};
+
 class kf_ubsan_bounds : public internal_known_function
 {
   /* Empty.  */
@@ -1823,7 +2139,8 @@ register_atomic_builtins (known_function_manager &kfm)
    analyzer (as opposed to plugins).  */
 
 void
-register_known_functions (known_function_manager &kfm)
+register_known_functions (known_function_manager &kfm,
+			  region_model_manager &rmm)
 {
   /* Debugging/test support functions, all  with a "__analyzer_" prefix.  */
   register_known_analyzer_functions (kfm);
@@ -1911,6 +2228,7 @@ register_known_functions (known_function_manager &kfm)
   {
     kfm.add ("fopen", make_unique<kf_fopen> ());
     kfm.add ("putenv", make_unique<kf_putenv> ());
+    kfm.add ("strtok", make_unique<kf_strtok> (rmm));
 
     register_known_fd_functions (kfm);
     register_known_file_functions (kfm);
