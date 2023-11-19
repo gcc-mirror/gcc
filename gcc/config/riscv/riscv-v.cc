@@ -2033,6 +2033,10 @@ expand_tuple_move (rtx *ops)
 	  offset = ops[2];
 	}
 
+      /* Non-fractional LMUL has whole register moves that don't require a
+	 vsetvl for VLMAX.  */
+      if (fractional_p)
+	emit_vlmax_vsetvl (subpart_mode, ops[4]);
       if (MEM_P (ops[1]))
 	{
 	  /* Load operations.  */
