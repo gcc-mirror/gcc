@@ -626,6 +626,7 @@ extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
 extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Routines implemented in thead.cc.  */
+extern bool extract_base_offset_in_addr (rtx, rtx *, rtx *);
 extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);
 extern void th_mempair_order_operands (rtx[4], bool, machine_mode);
 extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,
