@@ -374,10 +374,24 @@ void
 emit_vlmax_insn_lra (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
 {
   gcc_assert (!can_create_pseudo_p ());
+  machine_mode mode = GET_MODE (ops[0]);
 
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
-  e.set_vl (vl);
-  e.emit_insn ((enum insn_code) icode, ops);
+  if (imm_avl_p (mode))
+    {
+      /* Even though VL is a real hardreg already allocated since
+	 it is post-RA now, we still gain benefits that we emit
+	 vsetivli zero, imm instead of vsetvli VL, zero which is
+	 we can be more flexible in post-RA instruction scheduling.  */
+      insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, false);
+      e.set_vl (gen_int_mode (GET_MODE_NUNITS (mode), Pmode));
+      e.emit_insn ((enum insn_code) icode, ops);
+    }
+  else
+    {
+      insn_expander<RVV_INSN_OPERANDS_MAX> e (insn_flags, true);
+      e.set_vl (vl);
+      e.emit_insn ((enum insn_code) icode, ops);
+    }
 }
 
 /* Emit an RVV insn with a predefined vector length.  Contrary to
