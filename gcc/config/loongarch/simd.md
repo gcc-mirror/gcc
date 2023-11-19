@@ -169,6 +169,34 @@
 		     UNSPEC_SIMD_FRINTRZ))]
   "")
 
+;; Use LSX for scalar ceil/floor/trunc/roundeven when -mlsx and -ffp-int-
+;; builtin-inexact.  The base FP instruction set lacks these operations.
+;; Yes we are wasting 50% or even 75% of the CPU horsepower, but it's still
+;; much faster than calling a libc function: on LA464 and LA664 there is a
+;; 3x ~ 5x speed up.
+;;
+;; Note that a vreplvei instruction is needed or we'll also operate on the
+;; junk in high bits of the vector register and produce random FP exceptions.
+
+(define_int_iterator LSX_SCALAR_FRINT
+  [UNSPEC_SIMD_FRINTRP
+   UNSPEC_SIMD_FRINTRZ
+   UNSPEC_SIMD_FRINTRM
+   UNSPEC_SIMD_FRINTRNE])
+
+(define_mode_attr VLSX_FOR_FMODE [(DF "V2DF") (SF "V4SF")])
+
+(define_expand "<simd_frint_pattern><mode>2"
+  [(set (match_dup 2)
+     (vec_duplicate:<VLSX_FOR_FMODE>
+       (match_operand:ANYF 1 "register_operand")))
+   (set (match_dup 2)
+	(unspec:<VLSX_FOR_FMODE> [(match_dup 2)] LSX_SCALAR_FRINT))
+   (set (match_operand:ANYF 0 "register_operand")
+	(vec_select:ANYF (match_dup 2) (parallel [(const_int 0)])))]
+  "ISA_HAS_LSX && (flag_fp_int_builtin_inexact || !flag_trapping_math)"
+  "operands[2] = gen_reg_rtx (<VLSX_FOR_FMODE>mode);")
+
 ;; <x>vftint.{/rp/rz/rm}
 (define_insn
   "<simd_isa>_<x>vftint<simd_frint_rounding>_<simdifmt_for_f>_<simdfmt>"
