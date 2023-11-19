@@ -5592,7 +5592,7 @@ proc check_effective_target_arm_thumb1_movt_ok {} {
 
 proc check_effective_target_arm_thumb1_cbz_ok {} {
     if [check_effective_target_arm_thumb1_ok] {
-	return [check_no_compiler_messages arm_movt object {
+	return [check_no_compiler_messages arm_cbz object {
 	    int
 	    foo (void)
 	    {
