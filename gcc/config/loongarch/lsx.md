@@ -64,8 +64,6 @@
   UNSPEC_LSX_VSRLR
   UNSPEC_LSX_VSRLRI
   UNSPEC_LSX_VSHUF
-  UNSPEC_LSX_VMUH_S
-  UNSPEC_LSX_VMUH_U
   UNSPEC_LSX_VEXTW_S
   UNSPEC_LSX_VEXTW_U
   UNSPEC_LSX_VSLLWIL_S
@@ -2504,26 +2502,6 @@
   "ISA_HAS_LSX"
   "vneg.<lsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_logic")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vmuh_s_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VMUH_S))]
-  "ISA_HAS_LSX"
-  "vmuh.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vmuh_u_<lsxfmt_u>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VMUH_U))]
-  "ISA_HAS_LSX"
-  "vmuh.<lsxfmt_u>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "lsx_vextw_s_d"

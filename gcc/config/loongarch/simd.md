@@ -206,6 +206,22 @@
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "<MODE>")])
 
+;; <x>vmuh.{b/h/w/d}
+
+(define_code_attr muh
+  [(sign_extend "smul_highpart")
+   (zero_extend "umul_highpart")])
+
+(define_insn "<su>mul<mode>3_highpart"
+  [(set (match_operand:IVEC 0 "register_operand" "=f")
+	(<muh>:IVEC (match_operand:IVEC 1 "register_operand" "f")
+		    (match_operand:IVEC 2 "register_operand" "f")))
+   (any_extend (const_int 0))]
+  ""
+  "<x>vmuh.<simdfmt><u>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<MODE>")])
+
 ; The LoongArch SX Instructions.
 (include "lsx.md")
 

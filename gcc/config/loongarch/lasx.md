@@ -68,8 +68,6 @@
   UNSPEC_LASX_BRANCH
   UNSPEC_LASX_BRANCH_V
 
-  UNSPEC_LASX_XVMUH_S
-  UNSPEC_LASX_XVMUH_U
   UNSPEC_LASX_MXVEXTW_U
   UNSPEC_LASX_XVSLLWIL_S
   UNSPEC_LASX_XVSLLWIL_U
@@ -2821,26 +2819,6 @@
   "ISA_HAS_LASX"
   "xvneg.<lasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_logic")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvmuh_s_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVMUH_S))]
-  "ISA_HAS_LASX"
-  "xvmuh.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvmuh_u_<lasxfmt_u>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand:ILASX 2 "register_operand" "f")]
-		      UNSPEC_LASX_XVMUH_U))]
-  "ISA_HAS_LASX"
-  "xvmuh.<lasxfmt_u>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "lasx_xvsllwil_s_<dlasxfmt>_<lasxfmt>"
