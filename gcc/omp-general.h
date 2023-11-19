@@ -112,6 +112,7 @@ struct omp_for_data
    OMP_TS_SCORE_NODE.  */
 
 #define OMP_TS_SCORE_NODE integer_minus_one_node
+#define OMP_TP_NAMELIST_NODE integer_one_node
 
 #define OMP_TSS_ID(NODE) \
   TREE_PURPOSE (NODE)

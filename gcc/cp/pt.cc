@@ -11939,7 +11939,9 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 		    }
 		  properties = copy_list (OMP_TS_PROPERTIES (ts));
 		  for (tree p = properties; p; p = TREE_CHAIN (p))
-		    if (OMP_TP_VALUE (p))
+		    if (OMP_TP_NAME (p) == OMP_TP_NAMELIST_NODE)
+		      continue;
+		    else if (OMP_TP_VALUE (p))
 		      {
 			bool allow_string
 			  = (OMP_TS_ID (ts) != condition || set[0] != 'u');

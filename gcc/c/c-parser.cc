@@ -24571,11 +24571,12 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	    case CTX_PROPERTY_NAME_LIST:
 	      do
 		{
-		  tree prop = NULL_TREE, value = NULL_TREE;
+		  tree prop = OMP_TP_NAMELIST_NODE;
+		  tree value = NULL_TREE;
 		  if (c_parser_next_token_is (parser, CPP_KEYWORD)
 		      || c_parser_next_token_is (parser, CPP_NAME))
 		    {
-		      prop = c_parser_peek_token (parser)->value;
+		      value = c_parser_peek_token (parser)->value;
 		      c_parser_consume_token (parser);
 		    }
 		  else if (c_parser_next_token_is (parser, CPP_STRING))

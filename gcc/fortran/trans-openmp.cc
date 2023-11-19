@@ -8428,9 +8428,10 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		      break;
 		    case CTX_PROPERTY_NAME_LIST:
 		      {
-			tree prop = NULL_TREE, value = NULL_TREE;
+			tree prop = OMP_TP_NAMELIST_NODE;
+			tree value = NULL_TREE;
 			if (otp->is_name)
-			  prop = get_identifier (otp->name);
+			  value = get_identifier (otp->name);
 			else
 			  value = gfc_conv_constant_to_tree (otp->expr);
 

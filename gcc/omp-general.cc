@@ -1116,6 +1116,30 @@ omp_maybe_offloaded (void)
   return false;
 }
 
+/* Return a name from PROP, a property in selectors accepting
+   name lists.  */
+
+static const char *
+omp_context_name_list_prop (tree prop)
+{
+  gcc_assert (OMP_TP_NAME (prop) == OMP_TP_NAMELIST_NODE);
+  tree val = OMP_TP_VALUE (prop);
+  switch (TREE_CODE (val))
+    {
+    case IDENTIFIER_NODE:
+      return IDENTIFIER_POINTER (val);
+    case STRING_CST:
+      {
+	const char *ret = TREE_STRING_POINTER (val);
+	if ((size_t) TREE_STRING_LENGTH (val)
+	    == strlen (ret) + (lang_GNU_Fortran () ? 0 : 1))
+	  return ret;
+	return NULL;
+      }
+    default:
+      return NULL;
+    }
+}
 
 /* Diagnose errors in an OpenMP context selector, return CTX if
    it is correct or error_mark_node otherwise.  */
@@ -1200,23 +1224,29 @@ omp_check_context_selector (location_t loc, tree ctx)
 				    "atomic_default_mem_order");
 			  return error_mark_node;
 			}
+		      else if (OMP_TP_NAME (p) == OMP_TP_NAMELIST_NODE
+			       && (TREE_CODE (OMP_TP_VALUE (p)) == STRING_CST))
+			warning_at (loc, 0,
+				    "unknown property %qE of %qs selector",
+				    OMP_TP_VALUE (p),
+				    props[i].selector);
+		      else if (OMP_TP_NAME (p) == OMP_TP_NAMELIST_NODE)
+			warning_at (loc, 0,
+				    "unknown property %qs of %qs selector",
+				    omp_context_name_list_prop (p),
+				    props[i].selector);
 		      else if (OMP_TP_NAME (p))
 			warning_at (loc, OPT_Wopenmp,
 				    "unknown property %qs of %qs selector",
 				    IDENTIFIER_POINTER (OMP_TP_NAME (p)),
 				    props[i].selector);
-		      else
-			warning_at (loc, OPT_Wopenmp,
-				    "unknown property %qE of %qs selector",
-				    OMP_TP_VALUE (p), props[i].selector);
 		      break;
 		    }
-		  else if (OMP_TP_NAME (p) == NULL_TREE)
+		  else if (OMP_TP_NAME (p) == OMP_TP_NAMELIST_NODE)
+		    /* Property-list traits.  */
 		    {
-		      const char *str = TREE_STRING_POINTER (OMP_TP_VALUE (p));
-		      if (!strcmp (str, props[i].props[j])
-			  && ((size_t) TREE_STRING_LENGTH (OMP_TP_VALUE (p))
-			      == strlen (str) + (lang_GNU_Fortran () ? 0 : 1)))
+		      const char *str = omp_context_name_list_prop (p);
+		      if (str && !strcmp (str, props[i].props[j]))
 			break;
 		    }
 		  else if (!strcmp (IDENTIFIER_POINTER (OMP_TP_NAME (p)),
@@ -1277,24 +1307,6 @@ tree
 make_trait_property (tree name, tree value, tree chain)
 {
   return tree_cons (name, value, chain);
-}
-
-/* Return a name from PROP, a property in selectors accepting
-   name lists.  */
-
-static const char *
-omp_context_name_list_prop (tree prop)
-{
-  if (OMP_TP_NAME (prop))
-    return IDENTIFIER_POINTER (OMP_TP_NAME (prop));
-  else
-    {
-      const char *ret = TREE_STRING_POINTER (OMP_TP_VALUE (prop));
-      if ((size_t) TREE_STRING_LENGTH (OMP_TP_VALUE (prop))
-	  == strlen (ret) + (lang_GNU_Fortran () ? 0 : 1))
-	return ret;
-      return NULL;
-    }
 }
 
 /* Return 1 if context selector matches the current OpenMP context, 0
@@ -1795,16 +1807,16 @@ omp_context_selector_props_compare (const char *set, const char *sel,
 		  if (simple_cst_equal (OMP_TP_VALUE (p1), OMP_TP_VALUE (p2)))
 		    break;
 		}
+	      else if (OMP_TP_NAME (p1) == OMP_TP_NAMELIST_NODE)
+		{
+		  /* Handle string constant vs identifier comparison for
+		     name-list properties.  */
+		  const char *n1 = omp_context_name_list_prop (p1);
+		  const char *n2 = omp_context_name_list_prop (p2);
+		  if (n1 && n2 && !strcmp (n1, n2))
+		    break;
+		}
 	      else
-		break;
-	    }
-	  else
-	    {
-	      /* Handle string constant vs identifier comparison for
-		 name-list properties.  */
-	      const char *n1 = omp_context_name_list_prop (p1);
-	      const char *n2 = omp_context_name_list_prop (p2);
-	      if (n1 && n2 && !strcmp (n1, n2))
 		break;
 	    }
 	if (p2 == NULL_TREE)
