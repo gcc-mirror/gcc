@@ -3805,7 +3805,7 @@ proc check_effective_target___float128 { } {
 }
 
 proc add_options_for___float128 { flags } {
-    if { [istarget powerpc*-*-*] } {
+    if { [istarget powerpc*-*-linux*] } {
 	return "$flags -mfloat128 -mvsx"
     }
     return "$flags"
@@ -7178,7 +7178,7 @@ proc check_effective_target_powerpc_vsx_ok { } {
 	    return 0
 	}
 	# Darwin doesn't have VSX, even if it's used with an assembler
-	# which recognises the insns.
+	# which recognises the insns.
 	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
@@ -11090,7 +11090,7 @@ proc check_effective_target_gas { } {
 	if { [ string first "GNU" $as_output ] >= 0 } {
 	    # Some Darwin versions have an assembler which is based on an old
 	    # version of GAS (and reports GNU assembler in its -v output) but
-	    # but doesn't support many of the modern GAS features.
+	    # but doesn't support many of the modern GAS features.
 	    if { [ string first "cctools" $as_output ] >= 0 } {
 	        set use_gas_saved 0
 	    } else {
