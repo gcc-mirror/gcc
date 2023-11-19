@@ -47432,7 +47432,10 @@ static const char *const omp_user_selectors[] = {
      trait-selector-name[([trait-score:]trait-property[,trait-property[,...]])]
 
    trait-score:
-     score(score-expression)  */
+     score(score-expression)
+
+   Note that this function returns a list of trait selectors for the
+   trait-selector-set SET.  */
 
 static tree
 cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
@@ -47451,6 +47454,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	}
 
       tree properties = NULL_TREE;
+      tree scoreval = NULL_TREE;
       const char *const *selectors = NULL;
       bool allow_score = true;
       bool allow_user = false;
@@ -47557,8 +47561,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		    {
 		      score = fold_non_dependent_expr (score);
 		      if (value_dependent_expression_p (score))
-			properties = tree_cons (get_identifier (" score"),
-						score, properties);
+			scoreval = score;
 		      else if (!INTEGRAL_TYPE_P (TREE_TYPE (score))
 			       || TREE_CODE (score) != INTEGER_CST)
 			error_at (token->location, "score argument must be "
@@ -47567,8 +47570,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 			error_at (token->location, "score argument must be "
 				  "non-negative");
 		      else
-			properties = tree_cons (get_identifier (" score"),
-						score, properties);
+			scoreval = score;
 		    }
 		}
 	      else
@@ -47588,7 +47590,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		    {
 		      t = fold_non_dependent_expr (t);
 		      if (TREE_CODE (t) == STRING_CST)
-			properties = tree_cons (NULL_TREE, t, properties);
+			properties = make_trait_property (NULL_TREE, t,
+							  properties);
 		      else if (!value_dependent_expression_p (t)
 			       && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
 				   || !tree_fits_shwi_p (t)))
@@ -47596,7 +47599,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 				  "constant integer expression or string "
 				  "literal");
 		      else
-			properties = tree_cons (NULL_TREE, t, properties);
+			properties = make_trait_property (NULL_TREE, t,
+							  properties);
 		    }
 		  else
 		    return error_mark_node;
@@ -47614,7 +47618,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		{
 		  tree prop = cp_lexer_peek_token (parser->lexer)->u.value;
 		  cp_lexer_consume_token (parser->lexer);
-		  properties = tree_cons (prop, NULL_TREE, properties);
+		  properties = make_trait_property (prop, NULL_TREE,
+						    properties);
 		}
 	      else
 		{
@@ -47643,7 +47648,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		      return error_mark_node;
 		    }
 
-		  properties = tree_cons (prop, value, properties);
+		  properties = make_trait_property (prop, value, properties);
 
 		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 		    cp_lexer_consume_token (parser->lexer);
@@ -47663,7 +47668,8 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		    error_at (token->location, "property must be "
 			      "constant integer expression");
 		  else
-		    properties = tree_cons (NULL_TREE, t, properties);
+		    properties = make_trait_property (NULL_TREE, t,
+						      properties);
 		}
 	      else
 		return error_mark_node;
@@ -47698,7 +47704,7 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 	  return error_mark_node;
 	}
 
-      ret = tree_cons (selector, properties, ret);
+      ret = make_trait_selector (selector, scoreval, properties, ret);
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
@@ -47780,7 +47786,7 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 	  ret = error_mark_node;
 	}
       else if (ret != error_mark_node)
-	ret = tree_cons (set, selectors, ret);
+	ret = make_trait_set_selector (set, selectors, ret);
 
       braces.require_close (parser);
 

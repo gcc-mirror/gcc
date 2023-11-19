@@ -1019,13 +1019,13 @@ omp_max_simt_vf (void)
    return their number.  */
 
 int
-omp_constructor_traits_to_codes (tree ctx, enum tree_code *constructs)
+omp_construct_traits_to_codes (tree ctx, enum tree_code *constructs)
 {
   int nconstructs = list_length (ctx);
   int i = nconstructs - 1;
-  for (tree t2 = ctx; t2; t2 = TREE_CHAIN (t2), i--)
+  for (tree ts = ctx; ts; ts = TREE_CHAIN (ts), i--)
     {
-      const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+      const char *sel = IDENTIFIER_POINTER (OMP_TS_ID (ts));
       if (!strcmp (sel, "target"))
 	constructs[i] = OMP_TARGET;
       else if (!strcmp (sel, "teams"))
@@ -1127,38 +1127,40 @@ omp_check_context_selector (location_t loc, tree ctx)
      There are just 4 set names.  */
   for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
     for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
-      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+      if (OMP_TSS_ID (t1) == OMP_TSS_ID (t2))
 	{
 	  error_at (loc, "selector set %qs specified more than once",
-		    IDENTIFIER_POINTER (TREE_PURPOSE (t1)));
+		    IDENTIFIER_POINTER (OMP_TSS_ID (t1)));
 	  return error_mark_node;
 	}
-  for (tree t = ctx; t; t = TREE_CHAIN (t))
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
     {
       /* Each trait-selector-name can only be specified once.  */
-      if (list_length (TREE_VALUE (t)) < 5)
+      if (list_length (OMP_TSS_TRAIT_SELECTORS (tss)) < 5)
 	{
-	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
-	    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
-	      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	  for (tree ts1 = OMP_TSS_TRAIT_SELECTORS (tss); ts1;
+	       ts1 = TREE_CHAIN (ts1))
+	    for (tree ts2 = TREE_CHAIN (ts1); ts2; ts2 = TREE_CHAIN (ts2))
+	      if (OMP_TS_ID (ts1) == OMP_TS_ID (ts2))
 		{
 		  error_at (loc,
 			    "selector %qs specified more than once in set %qs",
-			    IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-			    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+			    IDENTIFIER_POINTER (OMP_TS_ID (ts1)),
+			    IDENTIFIER_POINTER (OMP_TSS_ID (tss)));
 		  return error_mark_node;
 		}
 	}
       else
 	{
 	  hash_set<tree> pset;
-	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
-	    if (pset.add (TREE_PURPOSE (t1)))
+	  for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts;
+	       ts = TREE_CHAIN (ts))
+	    if (pset.add (OMP_TS_ID (ts)))
 	      {
 		error_at (loc,
 			  "selector %qs specified more than once in set %qs",
-			  IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-			  IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+			  IDENTIFIER_POINTER (OMP_TS_ID (ts)),
+			  IDENTIFIER_POINTER (OMP_TSS_ID (tss)));
 		return error_mark_node;
 	      }
 	}
@@ -1179,49 +1181,45 @@ omp_check_context_selector (location_t loc, tree ctx)
 	{ "implementation", "extension", extension },
 	{ "implementation", "atomic_default_mem_order",
 	  atomic_default_mem_order } };
-      for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+      for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts; ts = TREE_CHAIN (ts))
 	for (unsigned i = 0; i < ARRAY_SIZE (props); i++)
-	  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+	  if (!strcmp (IDENTIFIER_POINTER (OMP_TS_ID (ts)),
 					   props[i].selector)
-	      && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)),
+	      && !strcmp (IDENTIFIER_POINTER (OMP_TSS_ID (tss)),
 					      props[i].set))
-	    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	    for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 	      for (unsigned j = 0; ; j++)
 		{
 		  if (props[i].props[j] == NULL)
 		    {
-		      if (TREE_PURPOSE (t2)
-			  && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				      " score"))
-			break;
 		      if (props[i].props == atomic_default_mem_order)
 			{
 			  error_at (loc,
 				    "incorrect property %qs of %qs selector",
-				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    IDENTIFIER_POINTER (TREE_PURPOSE (p)),
 				    "atomic_default_mem_order");
 			  return error_mark_node;
 			}
-		      else if (TREE_PURPOSE (t2))
+		      else if (OMP_TP_NAME (p))
 			warning_at (loc, OPT_Wopenmp,
 				    "unknown property %qs of %qs selector",
-				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    IDENTIFIER_POINTER (OMP_TP_NAME (p)),
 				    props[i].selector);
 		      else
 			warning_at (loc, OPT_Wopenmp,
 				    "unknown property %qE of %qs selector",
-				    TREE_VALUE (t2), props[i].selector);
+				    OMP_TP_VALUE (p), props[i].selector);
 		      break;
 		    }
-		  else if (TREE_PURPOSE (t2) == NULL_TREE)
+		  else if (OMP_TP_NAME (p) == NULL_TREE)
 		    {
-		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
+		      const char *str = TREE_STRING_POINTER (OMP_TP_VALUE (p));
 		      if (!strcmp (str, props[i].props[j])
-			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
+			  && ((size_t) TREE_STRING_LENGTH (OMP_TP_VALUE (p))
 			      == strlen (str) + (lang_GNU_Fortran () ? 0 : 1)))
 			break;
 		    }
-		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+		  else if (!strcmp (IDENTIFIER_POINTER (OMP_TP_NAME (p)),
 				    props[i].props[j]))
 		    break;
 		}
@@ -1256,18 +1254,43 @@ omp_mark_declare_variant (location_t loc, tree variant, tree construct)
 }
 
 
+/* Constructors for context selectors.  */
+
+tree
+make_trait_set_selector (tree name, tree selectors, tree chain)
+{
+  return tree_cons (name, selectors, chain);
+}
+
+tree
+make_trait_selector (tree name, tree score, tree properties, tree chain)
+{
+  if (score == NULL_TREE)
+    return tree_cons (name, properties, chain);
+  else
+    return tree_cons (name,
+		      tree_cons (OMP_TS_SCORE_NODE, score, properties),
+		      chain);
+}
+
+tree
+make_trait_property (tree name, tree value, tree chain)
+{
+  return tree_cons (name, value, chain);
+}
+
 /* Return a name from PROP, a property in selectors accepting
    name lists.  */
 
 static const char *
 omp_context_name_list_prop (tree prop)
 {
-  if (TREE_PURPOSE (prop))
-    return IDENTIFIER_POINTER (TREE_PURPOSE (prop));
+  if (OMP_TP_NAME (prop))
+    return IDENTIFIER_POINTER (OMP_TP_NAME (prop));
   else
     {
-      const char *ret = TREE_STRING_POINTER (TREE_VALUE (prop));
-      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop))
+      const char *ret = TREE_STRING_POINTER (OMP_TP_VALUE (prop));
+      if ((size_t) TREE_STRING_LENGTH (OMP_TP_VALUE (prop))
 	  == strlen (ret) + (lang_GNU_Fortran () ? 0 : 1))
 	return ret;
       return NULL;
@@ -1284,9 +1307,9 @@ int
 omp_context_selector_matches (tree ctx)
 {
   int ret = 1;
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
     {
-      char set = IDENTIFIER_POINTER (TREE_PURPOSE (t1))[0];
+      char set = IDENTIFIER_POINTER (OMP_TSS_ID (tss))[0];
       if (set == 'c')
 	{
 	  /* For now, ignore the construct set.  While something can be
@@ -1304,7 +1327,8 @@ omp_context_selector_matches (tree ctx)
 
 	  enum tree_code constructs[5];
 	  int nconstructs
-	    = omp_constructor_traits_to_codes (TREE_VALUE (t1), constructs);
+	    = omp_construct_traits_to_codes (OMP_TSS_TRAIT_SELECTORS (tss),
+					     constructs);
 
 	  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
 	    {
@@ -1335,20 +1359,19 @@ omp_context_selector_matches (tree ctx)
 	    ret = -1;
 	  continue;
 	}
-      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+      for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts; ts = TREE_CHAIN (ts))
 	{
-	  const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
+	  const char *sel = IDENTIFIER_POINTER (OMP_TS_ID (ts));
 	  switch (*sel)
 	    {
 	    case 'v':
 	      if (set == 'i' && !strcmp (sel, "vendor"))
-		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 		  {
-		    const char *prop = omp_context_name_list_prop (t3);
+		    const char *prop = omp_context_name_list_prop (p);
 		    if (prop == NULL)
 		      return 0;
-		    if ((!strcmp (prop, " score") && TREE_PURPOSE (t3))
-			|| !strcmp (prop, "gnu"))
+		    if (!strcmp (prop, "gnu"))
 		      continue;
 		    return 0;
 		  }
@@ -1379,13 +1402,8 @@ omp_context_selector_matches (tree ctx)
 		      else
 			omo = OMP_MEMORY_ORDER_RELAXED;
 		    }
-		  tree t3 = TREE_VALUE (t2);
-		  const char *prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
-		  if (!strcmp (prop, " score"))
-		    {
-		      t3 = TREE_CHAIN (t3);
-		      prop = IDENTIFIER_POINTER (TREE_PURPOSE (t3));
-		    }
+		  tree p = OMP_TS_PROPERTIES (ts);
+		  const char *prop = IDENTIFIER_POINTER (OMP_TP_NAME (p));
 		  if (!strcmp (prop, "relaxed")
 		      && omo != OMP_MEMORY_ORDER_RELAXED)
 		    return 0;
@@ -1397,9 +1415,9 @@ omp_context_selector_matches (tree ctx)
 		    return 0;
 		}
 	      if (set == 'd' && !strcmp (sel, "arch"))
-		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 		  {
-		    const char *arch = omp_context_name_list_prop (t3);
+		    const char *arch = omp_context_name_list_prop (p);
 		    if (arch == NULL)
 		      return 0;
 		    int r = 0;
@@ -1499,9 +1517,9 @@ omp_context_selector_matches (tree ctx)
 	      break;
 	    case 'k':
 	      if (set == 'd' && !strcmp (sel, "kind"))
-		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 		  {
-		    const char *prop = omp_context_name_list_prop (t3);
+		    const char *prop = omp_context_name_list_prop (p);
 		    if (prop == NULL)
 		      return 0;
 		    if (!strcmp (prop, "any"))
@@ -1560,9 +1578,9 @@ omp_context_selector_matches (tree ctx)
 	      break;
 	    case 'i':
 	      if (set == 'd' && !strcmp (sel, "isa"))
-		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
+		for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 		  {
-		    const char *isa = omp_context_name_list_prop (t3);
+		    const char *isa = omp_context_name_list_prop (p);
 		    if (isa == NULL)
 		      return 0;
 		    int r = 0;
@@ -1613,12 +1631,12 @@ omp_context_selector_matches (tree ctx)
 	      break;
 	    case 'c':
 	      if (set == 'u' && !strcmp (sel, "condition"))
-		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
-		  if (TREE_PURPOSE (t3) == NULL_TREE)
+		for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+		  if (OMP_TP_NAME (p) == NULL_TREE)
 		    {
-		      if (integer_zerop (TREE_VALUE (t3)))
+		      if (integer_zerop (OMP_TP_VALUE (p)))
 			return 0;
-		      if (integer_nonzerop (TREE_VALUE (t3)))
+		      if (integer_nonzerop (OMP_TP_VALUE (p)))
 			break;
 		      ret = -1;
 		    }
@@ -1749,6 +1767,7 @@ omp_construct_simd_compare (tree clauses1, tree clauses2)
 }
 
 /* Compare properties of selectors SEL from SET other than construct.
+   CTX1 and CTX2 are the lists of properties to compare.
    Return 0/-1/1/2 as in omp_context_selector_set_compare.
    Unlike set names or selector names, properties can have duplicates.  */
 
@@ -1758,57 +1777,37 @@ omp_context_selector_props_compare (const char *set, const char *sel,
 {
   int ret = 0;
   for (int pass = 0; pass < 2; pass++)
-    for (tree t1 = pass ? ctx2 : ctx1; t1; t1 = TREE_CHAIN (t1))
+    for (tree p1 = pass ? ctx2 : ctx1; p1; p1 = TREE_CHAIN (p1))
       {
-	tree t2;
-	for (t2 = pass ? ctx1 : ctx2; t2; t2 = TREE_CHAIN (t2))
-	  if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	tree p2;
+	for (p2 = pass ? ctx1 : ctx2; p2; p2 = TREE_CHAIN (p2))
+	  if (OMP_TP_NAME (p1) == OMP_TP_NAME (p2))
 	    {
-	      if (TREE_PURPOSE (t1) == NULL_TREE)
+	      if (OMP_TP_NAME (p1) == NULL_TREE)
 		{
 		  if (set[0] == 'u' && strcmp (sel, "condition") == 0)
 		    {
-		      if (integer_zerop (TREE_VALUE (t1))
-			  != integer_zerop (TREE_VALUE (t2)))
+		      if (integer_zerop (OMP_TP_VALUE (p1))
+			  != integer_zerop (OMP_TP_VALUE (p2)))
 			return 2;
 		      break;
 		    }
-		  if (simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+		  if (simple_cst_equal (OMP_TP_VALUE (p1), OMP_TP_VALUE (p2)))
 		    break;
-		}
-	      else if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-			       " score") == 0)
-		{
-		  if (!simple_cst_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
-		    return 2;
-		  break;
 		}
 	      else
 		break;
 	    }
-	  else if (TREE_PURPOSE (t1)
-		   && TREE_PURPOSE (t2) == NULL_TREE
-		   && TREE_CODE (TREE_VALUE (t2)) == STRING_CST)
+	  else
 	    {
-	      const char *p1 = omp_context_name_list_prop (t1);
-	      const char *p2 = omp_context_name_list_prop (t2);
-	      if (p2
-		  && strcmp (p1, p2) == 0
-		  && strcmp (p1, " score"))
+	      /* Handle string constant vs identifier comparison for
+		 name-list properties.  */
+	      const char *n1 = omp_context_name_list_prop (p1);
+	      const char *n2 = omp_context_name_list_prop (p2);
+	      if (n1 && n2 && !strcmp (n1, n2))
 		break;
 	    }
-	  else if (TREE_PURPOSE (t1) == NULL_TREE
-		   && TREE_PURPOSE (t2)
-		   && TREE_CODE (TREE_VALUE (t1)) == STRING_CST)
-	    {
-	      const char *p1 = omp_context_name_list_prop (t1);
-	      const char *p2 = omp_context_name_list_prop (t2);
-	      if (p1
-		  && strcmp (p1, p2) == 0
-		  && strcmp (p1, " score"))
-		break;
-	    }
-	if (t2 == NULL_TREE)
+	if (p2 == NULL_TREE)
 	  {
 	    int r = pass ? -1 : 1;
 	    if (ret && ret != r)
@@ -1826,6 +1825,7 @@ omp_context_selector_props_compare (const char *set, const char *sel,
 }
 
 /* Compare single context selector sets CTX1 and CTX2 with SET name.
+   CTX1 and CTX2 are lists of trait-selectors.
    Return 0 if CTX1 is equal to CTX2,
    -1 if CTX1 is a strict subset of CTX2,
    1 if CTX2 is a strict subset of CTX1, or
@@ -1847,26 +1847,26 @@ omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
     }
   if (set[0] == 'c')
     {
-      tree t1;
-      tree t2 = ctx2;
+      tree ts1;
+      tree ts2 = ctx2;
       tree simd = get_identifier ("simd");
       /* Handle construct set specially.  In this case the order
 	 of the selector matters too.  */
-      for (t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
-	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+      for (ts1 = ctx1; ts1; ts1 = TREE_CHAIN (ts1))
+	if (OMP_TS_ID (ts1) == OMP_TS_ID (ts2))
 	  {
 	    int r = 0;
-	    if (TREE_PURPOSE (t1) == simd)
-	      r = omp_construct_simd_compare (TREE_VALUE (t1),
-					      TREE_VALUE (t2));
+	    if (OMP_TS_ID (ts1) == simd)
+	      r = omp_construct_simd_compare (OMP_TS_PROPERTIES (ts1),
+					      OMP_TS_PROPERTIES (ts2));
 	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
 	      return 2;
 	    if (ret == 0)
 	      ret = r;
-	    t2 = TREE_CHAIN (t2);
-	    if (t2 == NULL_TREE)
+	    ts2 = TREE_CHAIN (ts2);
+	    if (ts2 == NULL_TREE)
 	      {
-		t1 = TREE_CHAIN (t1);
+		ts1 = TREE_CHAIN (ts1);
 		break;
 	      }
 	  }
@@ -1874,9 +1874,9 @@ omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
 	  return 2;
 	else
 	  ret = 1;
-      if (t2 != NULL_TREE)
+      if (ts2 != NULL_TREE)
 	return 2;
-      if (t1 != NULL_TREE)
+      if (ts1 != NULL_TREE)
 	{
 	  if (ret < 0)
 	    return 2;
@@ -1886,16 +1886,21 @@ omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
 	return 0;
       return swapped ? -ret : ret;
     }
-  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+  for (tree ts1 = ctx1; ts1; ts1 = TREE_CHAIN (ts1))
     {
-      tree t2;
-      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
-	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+      tree ts2;
+      for (ts2 = ctx2; ts2; ts2 = TREE_CHAIN (ts2))
+	if (OMP_TS_ID (ts1) == OMP_TS_ID (ts2))
 	  {
-	    const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
+	    tree score1 = OMP_TS_SCORE (ts1);
+	    tree score2 = OMP_TS_SCORE (ts2);
+	    if (score1 && score2 && !simple_cst_equal (score1, score2))
+	      return 2;
+
+	    const char *sel = IDENTIFIER_POINTER (OMP_TS_ID (ts1));
 	    int r = omp_context_selector_props_compare (set, sel,
-							TREE_VALUE (t1),
-							TREE_VALUE (t2));
+							OMP_TS_PROPERTIES (ts1),
+							OMP_TS_PROPERTIES (ts2));
 	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
 	      return 2;
 	    if (ret == 0)
@@ -1903,7 +1908,7 @@ omp_context_selector_set_compare (const char *set, tree ctx1, tree ctx2)
 	    cnt++;
 	    break;
 	  }
-      if (t2 == NULL_TREE)
+      if (ts2 == NULL_TREE)
 	{
 	  if (ret == -1)
 	    return 2;
@@ -1937,15 +1942,17 @@ omp_context_selector_compare (tree ctx1, tree ctx2)
       std::swap (ctx1, ctx2);
       std::swap (len1, len2);
     }
-  for (tree t1 = ctx1; t1; t1 = TREE_CHAIN (t1))
+  for (tree tss1 = ctx1; tss1; tss1 = TREE_CHAIN (tss1))
     {
-      tree t2;
-      for (t2 = ctx2; t2; t2 = TREE_CHAIN (t2))
-	if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+      tree tss2;
+      for (tss2 = ctx2; tss2; tss2 = TREE_CHAIN (tss2))
+	if (OMP_TSS_ID (tss1) == OMP_TSS_ID (tss2))
 	  {
-	    const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
-	    int r = omp_context_selector_set_compare (set, TREE_VALUE (t1),
-						      TREE_VALUE (t2));
+	    const char *set = IDENTIFIER_POINTER (OMP_TSS_ID (tss1));
+	    int r
+	      = omp_context_selector_set_compare
+		  (set, OMP_TSS_TRAIT_SELECTORS (tss1),
+		   OMP_TSS_TRAIT_SELECTORS (tss2));
 	    if (r == 2 || (ret && r && (ret < 0) != (r < 0)))
 	      return 2;
 	    if (ret == 0)
@@ -1953,7 +1960,7 @@ omp_context_selector_compare (tree ctx1, tree ctx2)
 	    cnt++;
 	    break;
 	  }
-      if (t2 == NULL_TREE)
+      if (tss2 == NULL_TREE)
 	{
 	  if (ret == -1)
 	    return 2;
@@ -1976,14 +1983,14 @@ omp_get_context_selector (tree ctx, const char *set, const char *sel)
 {
   tree setid = get_identifier (set);
   tree selid = sel ? get_identifier (sel) : NULL_TREE;
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    if (TREE_PURPOSE (t1) == setid)
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
+    if (OMP_TSS_ID (tss) == setid)
       {
 	if (sel == NULL)
-	  return TREE_VALUE (t1);
-	for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-	  if (TREE_PURPOSE (t2) == selid)
-	    return t2;
+	  return OMP_TSS_TRAIT_SELECTORS (tss);
+	for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts; ts = TREE_CHAIN (ts))
+	  if (OMP_TS_ID (ts) == selid)
+	    return ts;
       }
   return NULL_TREE;
 }
@@ -2006,25 +2013,23 @@ omp_context_compute_score (tree ctx, score_wide_int *score, bool declare_simd)
   bool has_isa = omp_get_context_selector (ctx, "device", "isa");
   bool ret = false;
   *score = 1;
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    if (TREE_VALUE (t1) != construct)
-      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-	if (tree t3 = TREE_VALUE (t2))
-	  if (TREE_PURPOSE (t3)
-	      && strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)), " score") == 0
-	      && TREE_CODE (TREE_VALUE (t3)) == INTEGER_CST)
-	    {
-	      tree t4 = TREE_VALUE (t3);
-	      *score += score_wide_int::from (wi::to_wide (t4),
-					      TYPE_SIGN (TREE_TYPE (t4)));
-	    }
+  for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
+    if (OMP_TSS_TRAIT_SELECTORS (tss) != construct)
+      for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts; ts = TREE_CHAIN (ts))
+	{
+	  tree s = OMP_TS_SCORE (ts);
+	  if (s && TREE_CODE (s) == INTEGER_CST)
+	    *score += score_wide_int::from (wi::to_wide (s),
+					    TYPE_SIGN (TREE_TYPE (s)));
+	}
+
   if (construct || has_kind || has_arch || has_isa)
     {
       int scores[12];
       enum tree_code constructs[5];
       int nconstructs = 0;
       if (construct)
-	nconstructs = omp_constructor_traits_to_codes (construct, constructs);
+	nconstructs = omp_construct_traits_to_codes (construct, constructs);
       if (omp_construct_selector_matches (constructs, nconstructs, scores)
 	  == 2)
 	ret = true;

@@ -92,6 +92,52 @@ struct omp_for_data
 
 #define OACC_FN_ATTRIB "oacc function"
 
+/* Accessors for OMP context selectors, used by variant directives.
+   These are represented internally by a multilevel TREE_LIST structure, but
+   these accessors should be used to avoid confusion.  The grammar is:
+
+   context-set-selector-specification:
+     trait-set-selector [, trait-set-selector [, ...]]
+   trait-set-selector:
+     trait-set-selector-name = { trait-selector [, trait-selector [, ... ]] }
+   trait-selector:
+     trait-selector-name [ ( [trait-score: ]
+			     trait-property [, trait-property  [, ...]] ) ]
+
+   trait-properties can variously be identifiers, strings, clauses, or
+   expressions.
+
+   All the lists are chained via TREE_CHAIN.  If a score is present, it is
+   internally tacked on to the properties with a TREE_PURPOSE of
+   OMP_TS_SCORE_NODE.  */
+
+#define OMP_TS_SCORE_NODE integer_minus_one_node
+
+#define OMP_TSS_ID(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TSS_TRAIT_SELECTORS(NODE) \
+  TREE_VALUE (NODE)
+#define OMP_TS_ID(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TS_SCORE(NODE) \
+  ((TREE_VALUE (NODE)					      \
+    && TREE_CODE (TREE_VALUE (NODE)) == TREE_LIST	      \
+    && TREE_PURPOSE (TREE_VALUE (NODE)) == OMP_TS_SCORE_NODE) \
+   ? TREE_VALUE (TREE_VALUE (NODE)) : NULL_TREE)
+#define OMP_TS_PROPERTIES(NODE) \
+  ((TREE_VALUE (NODE)					      \
+    && TREE_CODE (TREE_VALUE (NODE)) == TREE_LIST	      \
+    && TREE_PURPOSE (TREE_VALUE (NODE)) == OMP_TS_SCORE_NODE) \
+   ? TREE_CHAIN (TREE_VALUE (NODE)) : TREE_VALUE (NODE))
+#define OMP_TP_NAME(NODE) \
+  TREE_PURPOSE (NODE)
+#define OMP_TP_VALUE(NODE) \
+  TREE_VALUE (NODE)
+
+extern tree make_trait_set_selector (tree, tree, tree);
+extern tree make_trait_selector (tree, tree, tree, tree);
+extern tree make_trait_property (tree, tree, tree);
+
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
 extern bool omp_is_allocatable_or_ptr (tree decl);
 extern tree omp_check_optional_argument (tree decl, bool for_present_check);
@@ -106,7 +152,7 @@ extern gimple *omp_build_barrier (tree lhs);
 extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
-extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
+extern int omp_construct_traits_to_codes (tree, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);

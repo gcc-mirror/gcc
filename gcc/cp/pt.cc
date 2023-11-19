@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "target.h"
 #include "builtins.h"
+#include "omp-general.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -11888,50 +11889,72 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
       tree simd = get_identifier ("simd");
-      tree score = get_identifier (" score");
       tree condition = get_identifier ("condition");
-      for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+      for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{
-	  const char *set = IDENTIFIER_POINTER (TREE_PURPOSE (t1));
-	  TREE_VALUE (t1) = copy_list (TREE_VALUE (t1));
-	  for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	  const char *set = IDENTIFIER_POINTER (OMP_TSS_ID (tss));
+	  tree selectors = NULL_TREE;
+	  for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss); ts;
+	       ts = TREE_CHAIN (ts))
 	    {
-	      if (TREE_PURPOSE (t2) == simd && set[0] == 'c')
+	      tree properties = NULL_TREE;
+	      tree scoreval = NULL_TREE;
+	      if (OMP_TS_ID (ts) == simd && set[0] == 'c')
 		{
-		  tree clauses = TREE_VALUE (t2);
+		  tree clauses = OMP_TS_PROPERTIES (ts);
 		  clauses = tsubst_omp_clauses (clauses,
 						C_ORT_OMP_DECLARE_SIMD, args,
 						complain, in_decl);
 		  c_omp_declare_simd_clauses_to_decls (*decl_p, clauses);
 		  clauses = finish_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD);
-		  TREE_VALUE (t2) = clauses;
+		  properties = clauses;
 		}
 	      else
 		{
-		  TREE_VALUE (t2) = copy_list (TREE_VALUE (t2));
-		  for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
-		    if (TREE_VALUE (t3))
+		  tree v = OMP_TS_SCORE (ts);
+		  if (v)
+		    {
+		      v = tsubst_expr (v, args, complain, in_decl);
+		      v = fold_non_dependent_expr (v);
+		      if (!INTEGRAL_TYPE_P (TREE_TYPE (v))
+			  || TREE_CODE (v) != INTEGER_CST)
+			{
+			  location_t loc
+			    = cp_expr_loc_or_loc (OMP_TS_SCORE (ts),
+						  match_loc);
+			  error_at (loc, "score argument must be "
+				    "constant integer expression");
+			  return NULL_TREE;
+			}
+		      else if (tree_int_cst_sgn (v) < 0)
+			{
+			  location_t loc
+			    = cp_expr_loc_or_loc (OMP_TS_SCORE (ts),
+						  match_loc);
+			  error_at (loc, "score argument must be "
+				    "non-negative");
+			  return NULL_TREE;
+			}
+		      scoreval = v;
+		    }
+		  properties = copy_list (OMP_TS_PROPERTIES (ts));
+		  for (tree p = properties; p; p = TREE_CHAIN (p))
+		    if (OMP_TP_VALUE (p))
 		      {
 			bool allow_string
-			  = ((TREE_PURPOSE (t2) != condition || set[0] != 'u')
-			     && TREE_PURPOSE (t3) != score);
-			tree v = TREE_VALUE (t3);
+			  = (OMP_TS_ID (ts) != condition || set[0] != 'u');
+			tree v = OMP_TP_VALUE (p);
 			if (TREE_CODE (v) == STRING_CST && allow_string)
 			  continue;
 			v = tsubst_expr (v, args, complain, in_decl);
 			v = fold_non_dependent_expr (v);
 			if (!INTEGRAL_TYPE_P (TREE_TYPE (v))
-			    || (TREE_PURPOSE (t3) == score
-				? TREE_CODE (v) != INTEGER_CST
-				: !tree_fits_shwi_p (v)))
+			    || !tree_fits_shwi_p (v))
 			  {
 			    location_t loc
-			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
+			      = cp_expr_loc_or_loc (OMP_TP_VALUE (p),
 						    match_loc);
-			    if (TREE_PURPOSE (t3) == score)
-			      error_at (loc, "score argument must be "
-					     "constant integer expression");
-			    else if (allow_string)
+			    if (allow_string)
 			      error_at (loc, "property must be constant "
 					     "integer expression or string "
 					     "literal");
@@ -11940,20 +11963,13 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 					     "integer expression");
 			    return NULL_TREE;
 			  }
-			else if (TREE_PURPOSE (t3) == score
-				 && tree_int_cst_sgn (v) < 0)
-			  {
-			    location_t loc
-			      = cp_expr_loc_or_loc (TREE_VALUE (t3),
-						    match_loc);
-			    error_at (loc, "score argument must be "
-					   "non-negative");
-			    return NULL_TREE;
-			  }
-			TREE_VALUE (t3) = v;
+			OMP_TP_VALUE (p) = v;
 		      }
 		}
+	      selectors = make_trait_selector (OMP_TS_ID (ts), scoreval,
+					       properties, selectors);
 	    }
+	  OMP_TSS_TRAIT_SELECTORS (tss) = nreverse (selectors);
 	}
       val = tree_cons (varid, ctx, chain);
     }

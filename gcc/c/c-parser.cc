@@ -24386,7 +24386,10 @@ static const char *const omp_user_selectors[] = {
      trait-selector-name[([trait-score:]trait-property[,trait-property[,...]])]
 
    trait-score:
-     score(score-expression)  */
+     score(score-expression)
+
+   Note that this function returns a list of trait selectors for the
+   trait-selector-set SET.  */
 
 static tree
 c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
@@ -24405,6 +24408,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	}
 
       tree properties = NULL_TREE;
+      tree scoreval = NULL_TREE;
       const char *const *selectors = NULL;
       bool allow_score = true;
       bool allow_user = false;
@@ -24511,8 +24515,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		    error_at (token->location, "score argument must be "
 			      "non-negative");
 		  else
-		    properties = tree_cons (get_identifier (" score"),
-					    score, properties);
+		    scoreval = score;
 		}
 	      token = c_parser_peek_token (parser);
 	    }
@@ -24525,7 +24528,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		{
 		  t = c_parser_expr_no_commas (parser, NULL).value;
 		  if (TREE_CODE (t) == STRING_CST)
-		    properties = tree_cons (NULL_TREE, t, properties);
+		    properties = make_trait_property (NULL_TREE, t,
+						      properties);
 		  else if (t != error_mark_node)
 		    {
 		      mark_exp_read (t);
@@ -24536,7 +24540,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 				  "constant integer expression or string "
 				  "literal");
 		      else
-			properties = tree_cons (NULL_TREE, t, properties);
+			properties = make_trait_property (NULL_TREE, t,
+							  properties);
 		    }
 		  else
 		    return error_mark_node;
@@ -24554,7 +24559,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		{
 		  tree prop = c_parser_peek_token (parser)->value;
 		  c_parser_consume_token (parser);
-		  properties = tree_cons (prop, NULL_TREE, properties);
+		  properties = make_trait_property (prop, NULL_TREE,
+						    properties);
 		}
 	      else
 		{
@@ -24582,7 +24588,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		      return error_mark_node;
 		    }
 
-		  properties = tree_cons (prop, value, properties);
+		  properties = make_trait_property (prop, value, properties);
 
 		  if (c_parser_next_token_is (parser, CPP_COMMA))
 		    c_parser_consume_token (parser);
@@ -24602,7 +24608,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		    error_at (token->location, "property must be "
 			      "constant integer expression");
 		  else
-		    properties = tree_cons (NULL_TREE, t, properties);
+		    properties = make_trait_property (NULL_TREE, t,
+						      properties);
 		}
 	      else
 		return error_mark_node;
@@ -24640,7 +24647,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 	  return error_mark_node;
 	}
 
-      ret = tree_cons (selector, properties, ret);
+      ret = make_trait_selector (selector, scoreval, properties, ret);
 
       if (c_parser_next_token_is (parser, CPP_COMMA))
 	c_parser_consume_token (parser);
@@ -24716,7 +24723,7 @@ c_parser_omp_context_selector_specification (c_parser *parser, tree parms)
       if (selectors == error_mark_node)
 	ret = error_mark_node;
       else if (ret != error_mark_node)
-	ret = tree_cons (set, selectors, ret);
+	ret = make_trait_set_selector (set, selectors, ret);
 
       braces.skip_until_found_close (parser);
 

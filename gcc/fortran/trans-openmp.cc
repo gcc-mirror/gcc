@@ -8403,6 +8403,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	  gfc_omp_selector *os;
 	  for (os = oss->trait_selectors; os; os = os->next)
 	    {
+	      tree scoreval = NULL_TREE;
 	      tree properties = NULL_TREE;
 	      gfc_omp_trait_property *otp;
 
@@ -8416,13 +8417,14 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			gfc_se se;
 			gfc_init_se (&se, NULL);
 			gfc_conv_expr (&se, otp->expr);
-			properties = tree_cons (NULL_TREE, se.expr,
-						properties);
+			properties = make_trait_property (NULL_TREE, se.expr,
+							  properties);
 		      }
 		      break;
 		    case CTX_PROPERTY_ID:
-		      properties = tree_cons (get_identifier (otp->name),
-					      NULL_TREE, properties);
+		      properties
+			= make_trait_property (get_identifier (otp->name),
+					       NULL_TREE, properties);
 		      break;
 		    case CTX_PROPERTY_NAME_LIST:
 		      {
@@ -8432,7 +8434,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			else
 			  value = gfc_conv_constant_to_tree (otp->expr);
 
-			properties = tree_cons (prop, value, properties);
+			properties = make_trait_property (prop, value,
+							  properties);
 		      }
 		      break;
 		    case CTX_PROPERTY_SIMD:
@@ -8449,17 +8452,17 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		  gfc_se se;
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_expr (&se, os->score);
-		  properties = tree_cons (get_identifier (" score"),
-					  se.expr, properties);
+		  scoreval = se.expr;
 		}
 
-	      selectors = tree_cons (get_identifier (os->trait_selector_name),
-				     properties, selectors);
+	      tree ts_name = get_identifier (os->trait_selector_name);
+	      selectors	= make_trait_selector (ts_name, scoreval,
+					       properties, selectors);
 	    }
 
-	  set_selectors
-	    = tree_cons (get_identifier (oss->trait_set_selector_name),
-			 selectors, set_selectors);
+	  tree tss_name = get_identifier (oss->trait_set_selector_name);
+	  set_selectors = make_trait_set_selector (tss_name, selectors,
+						   set_selectors);
 	}
 
       const char *variant_proc_name = odv->variant_proc_symtree->name;

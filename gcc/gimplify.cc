@@ -14484,8 +14484,8 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
       int variant_nconstructs = 0;
       if (!target_seen)
 	variant_nconstructs
-	  = omp_constructor_traits_to_codes (TREE_VALUE (attr),
-					     variant_constructs);
+	  = omp_construct_traits_to_codes (TREE_VALUE (attr),
+					   variant_constructs);
       for (int i = 0; i < variant_nconstructs; i++)
 	{
 	  ++cnt;
