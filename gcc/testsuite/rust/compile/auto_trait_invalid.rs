@@ -2,7 +2,9 @@
 
 #![feature(optin_builtin_traits)]
 
-unsafe auto trait Invalid { // { dg-error "auto traits cannot have associated items" }
+auto trait Invalid {
+    // { dg-error "auto traits cannot have methods or associated items" "" { target *-*-* } .-1 }
+
     fn foo(); // { dg-message "remove this item" }
 
     fn bar() {} // { dg-message "remove this item" }
@@ -13,4 +15,3 @@ unsafe auto trait Invalid { // { dg-error "auto traits cannot have associated it
 
     const BAR: i32 = 15; // { dg-message "remove this item" }
 }
-// { dg-error "failed to parse item in crate" "" {target *-*-* } .+1 }
