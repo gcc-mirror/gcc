@@ -105,6 +105,10 @@ ASTValidation::visit (AST::Trait &trait)
 	rust_error_at (trait.get_generic_params ()[0]->get_locus (),
 		       ErrorCode::E0567,
 		       "auto traits cannot have generic parameters");
+      if (trait.has_type_param_bounds ())
+	rust_error_at (trait.get_type_param_bounds ()[0]->get_locus (),
+		       ErrorCode::E0568,
+		       "auto traits cannot have super traits");
     }
 
   AST::ContextualASTVisitor::visit (trait);
