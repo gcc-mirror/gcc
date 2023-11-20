@@ -4285,6 +4285,7 @@ set_edom_supported_p (void)
   {							\
     expand_##TYPE##_optab_fn (fn, stmt, OPTAB##_optab);	\
   }
+#define DEF_INTERNAL_INT_EXT_FN(CODE, FLAGS, OPTAB, TYPE)
 #define DEF_INTERNAL_SIGNED_OPTAB_FN(CODE, FLAGS, SELECTOR, SIGNED_OPTAB, \
 				     UNSIGNED_OPTAB, TYPE)		\
   static void								\
@@ -5096,4 +5097,68 @@ expand_BITINTTOFLOAT (internal_fn, gcall *stmt)
 				     arg0, ptr_mode, arg1, SImode);
   if (val != target)
     emit_move_insn (target, val);
+}
+
+void
+expand_POPCOUNT (internal_fn fn, gcall *stmt)
+{
+  if (gimple_call_num_args (stmt) == 1)
+    {
+      expand_unary_optab_fn (fn, stmt, popcount_optab);
+      return;
+    }
+  /* If .POPCOUNT call has 2 arguments, match_single_bit_test marked it
+     because the result is only used in an equality comparison against 1.
+     Use rtx costs in that case to determine if .POPCOUNT (arg) == 1
+     or (arg ^ (arg - 1)) > arg - 1 is cheaper.  */
+  bool speed_p = optimize_insn_for_speed_p ();
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg = gimple_call_arg (stmt, 0);
+  tree type = TREE_TYPE (arg);
+  machine_mode mode = TYPE_MODE (type);
+  do_pending_stack_adjust ();
+  start_sequence ();
+  expand_unary_optab_fn (fn, stmt, popcount_optab);
+  rtx_insn *popcount_insns = get_insns ();
+  end_sequence ();
+  start_sequence ();
+  rtx plhs = expand_normal (lhs);
+  rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, mode, 0, 0);
+  if (pcmp == NULL_RTX)
+    {
+    fail:
+      end_sequence ();
+      emit_insn (popcount_insns);
+      return;
+    }
+  rtx_insn *popcount_cmp_insns = get_insns ();
+  end_sequence ();
+  start_sequence ();
+  rtx op0 = expand_normal (arg);
+  rtx argm1 = expand_simple_binop (mode, PLUS, op0, constm1_rtx, NULL_RTX,
+				   1, OPTAB_DIRECT);
+  if (argm1 == NULL_RTX)
+    goto fail;
+  rtx argxorargm1 = expand_simple_binop (mode, XOR, op0, argm1, NULL_RTX,
+					 1, OPTAB_DIRECT);
+  if (argxorargm1 == NULL_RTX)
+    goto fail;
+  rtx cmp = emit_store_flag (NULL_RTX, GTU, argxorargm1, argm1, mode, 1, 1);
+  if (cmp == NULL_RTX)
+    goto fail;
+  rtx_insn *cmp_insns = get_insns ();
+  end_sequence ();
+  unsigned popcount_cost = (seq_cost (popcount_insns, speed_p)
+			    + seq_cost (popcount_cmp_insns, speed_p));
+  unsigned cmp_cost = seq_cost (cmp_insns, speed_p);
+  if (popcount_cost <= cmp_cost)
+    emit_insn (popcount_insns);
+  else
+    {
+      emit_insn (cmp_insns);
+      plhs = expand_normal (lhs);
+      if (GET_MODE (cmp) != GET_MODE (plhs))
+	cmp = convert_to_mode (GET_MODE (plhs), cmp, 1);
+      emit_move_insn (plhs, cmp);
+    }
 }

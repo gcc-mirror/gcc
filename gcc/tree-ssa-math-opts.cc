@@ -5195,7 +5195,16 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
   if (!INTEGRAL_TYPE_P (type))
     return;
   if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, OPTIMIZE_FOR_BOTH))
-    return;
+    {
+      /* Tell expand_POPCOUNT the popcount result is only used in equality
+	 comparison with one, so that it can decide based on rtx costs.  */
+      gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
+					      integer_one_node);
+      gimple_call_set_lhs (g, gimple_call_lhs (call));
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+      gsi_replace (&gsi2, g, true);
+      return;
+    }
   tree argm1 = make_ssa_name (type);
   gimple *g = gimple_build_assign (argm1, PLUS_EXPR, arg,
 				   build_int_cst (type, -1));
