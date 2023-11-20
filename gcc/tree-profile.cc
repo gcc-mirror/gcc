@@ -354,7 +354,7 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
       tree tmp2 = make_temp_ssa_name (type, NULL, name);
       gassign *assign2 = gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
       gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
-      gassign *assign3 = gimple_build_assign (counter, tmp2);
+      gassign *assign3 = gimple_build_assign (unshare_expr (counter), tmp2);
       gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
       if (result)
 	{
