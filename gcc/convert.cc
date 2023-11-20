@@ -292,7 +292,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	case NEGATE_EXPR:
 	  if (!flag_rounding_math
 	      && FLOAT_TYPE_P (itype)
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (itype))
+	      && element_precision (type) < element_precision (itype))
 	    {
 	      tree arg = convert_to_real_1 (type, TREE_OPERAND (expr, 0),
 					    fold_p);
@@ -332,6 +332,10 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       error ("pointer value used where a floating-point was expected");
+      return error_mark_node;
+
+    case VECTOR_TYPE:
+      error ("vector value used where a floating-point was expected");
       return error_mark_node;
 
     default:
