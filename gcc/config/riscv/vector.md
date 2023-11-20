@@ -8096,8 +8096,11 @@
 	   (match_operand:<VEL> 4 "reg_or_int_operand")] VSLIDES1))]
   "TARGET_VECTOR"
 {
+  poly_uint64 nunits = GET_MODE_NUNITS (<MODE>mode) * 2;
+  machine_mode vsimode = riscv_vector::get_vector_mode (SImode, nunits).require ();
+  machine_mode vbimode = riscv_vector::get_vector_mode (BImode, nunits).require ();
   if (riscv_vector::slide1_sew64_helper (<UNSPEC>, <MODE>mode,
-					 <VDEMOTE>mode, <VMDEMOTE>mode,
+					 vsimode, vbimode,
 					 operands))
     DONE;
 })

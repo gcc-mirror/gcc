@@ -3323,34 +3323,6 @@
   (V512DF "riscv_vector::vls_mode_valid_p (V512DFmode) && TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 4096")
 ])
 
-(define_mode_attr VDEMOTE [
-  (RVVM8DI "RVVM8SI") (RVVM4DI "RVVM4SI") (RVVM2DI "RVVM2SI") (RVVM1DI "RVVM1SI")
-  (V1DI "V2SI")
-  (V2DI "V4SI")
-  (V4DI "V8SI")
-  (V8DI "V16SI")
-  (V16DI "V32SI")
-  (V32DI "V64SI")
-  (V64DI "V128SI")
-  (V128DI "V256SI")
-  (V256DI "V512SI")
-  (V512DI "V1024SI")
-])
-
-(define_mode_attr VMDEMOTE [
-  (RVVM8DI "RVVMF4BI") (RVVM4DI "RVVMF8BI") (RVVM2DI "RVVMF16BI") (RVVM1DI "RVVMF32BI")
-  (V1DI "V2BI")
-  (V2DI "V4BI")
-  (V4DI "V8BI")
-  (V8DI "V16BI")
-  (V16DI "V32BI")
-  (V32DI "V64BI")
-  (V64DI "V128BI")
-  (V128DI "V256BI")
-  (V256DI "V512BI")
-  (V512DI "V1024BI")
-])
-
 (define_mode_attr stride_predicate [
   (RVVM8QI "vector_eew8_stride_operand") (RVVM4QI "vector_eew8_stride_operand")
   (RVVM2QI "vector_eew8_stride_operand") (RVVM1QI "vector_eew8_stride_operand")
