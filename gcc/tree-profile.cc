@@ -281,10 +281,13 @@ gen_assign_counter_update (gimple_stmt_iterator *gsi, gcall *call, tree func,
   if (result)
     {
       tree result_type = TREE_TYPE (TREE_TYPE (func));
-      tree tmp = make_temp_ssa_name (result_type, NULL, name);
-      gimple_set_lhs (call, tmp);
+      tree tmp1 = make_temp_ssa_name (result_type, NULL, name);
+      gimple_set_lhs (call, tmp1);
       gsi_insert_after (gsi, call, GSI_NEW_STMT);
-      gassign *assign = gimple_build_assign (result, tmp);
+      tree tmp2 = make_temp_ssa_name (TREE_TYPE (result), NULL, name);
+      gassign *assign = gimple_build_assign (tmp2, NOP_EXPR, tmp1);
+      gsi_insert_after (gsi, assign, GSI_NEW_STMT);
+      assign = gimple_build_assign (result, tmp2);
       gsi_insert_after (gsi, assign, GSI_NEW_STMT);
     }
   else
@@ -309,8 +312,8 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
-				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
-				      BUILT_IN_ATOMIC_ADD_FETCH_4);
+				      ? BUILT_IN_ATOMIC_ADD_FETCH_8
+				      : BUILT_IN_ATOMIC_ADD_FETCH_4);
       gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
       gen_assign_counter_update (gsi, call, f, result, name);
     }
