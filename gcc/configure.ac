@@ -1894,6 +1894,23 @@ if test $force_sjlj_exceptions = yes; then
     [Define 0/1 to force the choice for exception handling model.])
 fi
 
+# Windows32 UTF-8 manifest support for running the driver and compiler
+# executables with the UTF-8 active code page on mingw hosts.
+# Non-mingw hosts ignore this option.
+# The shell variables this sets are picked up from the mingw branches
+# of config.host so they have to be set before it gets sourced.
+AC_ARG_ENABLE(win32-utf8-manifest,
+[AS_HELP_STRING([--disable-win32-utf8-manifest],
+                [disable embedding a utf8 manifest on mingw hosts])
+AS_HELP_STRING([--enable-win32-utf8-manifest],
+               [enable embedding a utf8 manifest on mingw hosts (default)])],,)
+
+if test "x$enable_win32_utf8_manifest" != xno; then
+  host_xmake_mingw=i386/x-mingw32-utf8
+  host_extra_gcc_objs_mingw=utf8rc-mingw32.o
+  host_extra_objs_mingw=utf8-mingw32.o
+fi
+
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------

@@ -1009,6 +1009,7 @@ enable_rpath
 with_libiconv_prefix
 with_libiconv_type
 enable_sjlj_exceptions
+enable_win32_utf8_manifest
 with_gcc_major_version_only
 enable_nls
 with_libintl_prefix
@@ -1740,6 +1741,11 @@ Optional Features:
   --disable-rpath         do not hardcode runtime library paths
   --enable-sjlj-exceptions
                           arrange to use setjmp/longjmp exception handling
+  --disable-win32-utf8-manifest
+                          disable embedding a utf8 manifest on mingw hosts
+  --enable-win32-utf8-manifest
+                          enable embedding a utf8 manifest on mingw hosts
+                          (default)
   --disable-nls           do not use Native Language Support
   --enable-secureplt      enable -msecure-plt by default for PowerPC
   --enable-mingw-wildcard Set whether to expand wildcard on command-line.
@@ -13046,6 +13052,23 @@ _ACEOF
 
 fi
 
+# Windows32 UTF-8 manifest support for running the driver and compiler
+# executables with the UTF-8 active code page on mingw hosts.
+# Non-mingw hosts ignore this option.
+# The shell variables this sets are picked up from the mingw branches
+# of config.host so they have to be set before it gets sourced.
+# Check whether --enable-win32-utf8-manifest was given.
+if test "${enable_win32_utf8_manifest+set}" = set; then :
+  enableval=$enable_win32_utf8_manifest;
+fi
+
+
+if test "x$enable_win32_utf8_manifest" != xno; then
+  host_xmake_mingw=i386/x-mingw32-utf8
+  host_extra_gcc_objs_mingw=utf8rc-mingw32.o
+  host_extra_objs_mingw=utf8-mingw32.o
+fi
+
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------
@@ -21602,7 +21625,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21605 "configure"
+#line 21628 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21708,7 +21731,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21711 "configure"
+#line 21734 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
