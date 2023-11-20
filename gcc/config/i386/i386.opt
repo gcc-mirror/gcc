@@ -36,6 +36,13 @@ HOST_WIDE_INT ix86_isa_flags_explicit
 Variable
 HOST_WIDE_INT ix86_isa_flags2_explicit
 
+; Indicate if AVX512 and AVX10.1 are explicitly set no.
+Variable
+int ix86_no_avx512_explicit = 0
+
+Variable
+int ix86_no_avx10_1_explicit = 0
+
 ; Additional target flags
 Variable
 int ix86_target_flags
@@ -95,6 +102,14 @@ HOST_WIDE_INT x_ix86_isa_flags2_explicit
 ;; which flags were passed by the user
 TargetSave
 HOST_WIDE_INT x_ix86_isa_flags_explicit
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_no_avx512_explicit
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_no_avx10_1_explicit
 
 ;; whether -mtune was not specified
 TargetSave
@@ -1348,3 +1363,18 @@ Support 512 bit vector built-in functions and code generation.
 musermsr
 Target Mask(ISA2_USER_MSR) Var(ix86_isa_flags2) Save
 Support USER_MSR built-in functions and code generation.
+
+mavx10.1-256
+Target Mask(ISA2_AVX10_1_256) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1 built-in functions and code generation.
+
+mavx10.1-512
+Target Mask(ISA2_AVX10_1_512) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1-512 built-in functions and code generation.
+
+mavx10.1
+Target Alias(mavx10.1-256)
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1 built-in functions and code generation.

@@ -258,7 +258,9 @@ static struct ix86_target_opts isa2_opts[] =
   { "-msha512",		OPTION_MASK_ISA2_SHA512 },
   { "-msm4",            OPTION_MASK_ISA2_SM4 },
   { "-mevex512",	OPTION_MASK_ISA2_EVEX512 },
-  { "-musermsr",	OPTION_MASK_ISA2_USER_MSR }
+  { "-musermsr",	OPTION_MASK_ISA2_USER_MSR },
+  { "-mavx10.1-256",	OPTION_MASK_ISA2_AVX10_1_256 },
+  { "-mavx10.1-512",	OPTION_MASK_ISA2_AVX10_1_512 }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -705,6 +707,8 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->x_ix86_apx_features = opts->x_ix86_apx_features;
   ptr->x_ix86_isa_flags_explicit = opts->x_ix86_isa_flags_explicit;
   ptr->x_ix86_isa_flags2_explicit = opts->x_ix86_isa_flags2_explicit;
+  ptr->x_ix86_no_avx512_explicit = opts->x_ix86_no_avx512_explicit;
+  ptr->x_ix86_no_avx10_1_explicit = opts->x_ix86_no_avx10_1_explicit;
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
   ptr->x_ix86_arch_string = opts->x_ix86_arch_string;
   ptr->x_ix86_tune_string = opts->x_ix86_tune_string;
@@ -847,6 +851,8 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_ix86_apx_features = ptr->x_ix86_apx_features;
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
   opts->x_ix86_isa_flags2_explicit = ptr->x_ix86_isa_flags2_explicit;
+  opts->x_ix86_no_avx512_explicit = ptr->x_ix86_no_avx512_explicit;
+  opts->x_ix86_no_avx10_1_explicit = ptr->x_ix86_no_avx10_1_explicit;
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
   opts->x_ix86_arch_string = ptr->x_ix86_arch_string;
   opts->x_ix86_tune_string = ptr->x_ix86_tune_string;
@@ -1125,6 +1131,9 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("apxf", OPT_mapxf),
     IX86_ATTR_ISA ("evex512", OPT_mevex512),
     IX86_ATTR_ISA ("usermsr", OPT_musermsr),
+    IX86_ATTR_ISA ("avx10.1", OPT_mavx10_1_256),
+    IX86_ATTR_ISA ("avx10.1-256", OPT_mavx10_1_256),
+    IX86_ATTR_ISA ("avx10.1-512", OPT_mavx10_1_512),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -1411,6 +1420,17 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
 					    target_clone_attr))
     return error_mark_node;
 
+  /* AVX10.1-256 will enable only 256 bit AVX512F features by setting all
+     AVX512 related ISA flags and not setting EVEX512.  When it is used
+     with avx512 related function attribute, we need to enable 512 bit to
+     align with the command line behavior.  Manually set EVEX512 for this
+     scenario.  */
+  if ((def->x_ix86_isa_flags2 & OPTION_MASK_ISA2_AVX10_1_256)
+      && (opts->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512F)
+      && !(def->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512)
+      && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512))
+    opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512;
+
   /* If the changed options are different from the default, rerun
      ix86_option_override_internal, and then save the options away.
      The string options are attribute options, and will be undone
@@ -1421,7 +1441,10 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
       || option_strings[IX86_FUNCTION_SPECIFIC_TUNE]
       || enum_opts_set.x_ix86_fpmath
-      || enum_opts_set.x_prefer_vector_width_type)
+      || enum_opts_set.x_prefer_vector_width_type
+      || (!(def->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_AVX10_1_256)
+	  && (opts->x_ix86_isa_flags2_explicit
+	      & OPTION_MASK_ISA2_AVX10_1_256)))
     {
       /* If we are using the default tune= or arch=, undo the string assigned,
 	 and use the default.  */
@@ -1963,7 +1986,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts_set)
 {
   unsigned int i;
-  unsigned HOST_WIDE_INT ix86_arch_mask;
+  unsigned HOST_WIDE_INT ix86_arch_mask, avx512_isa_flags, avx512_isa_flags2;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
 
   /* -mrecip options.  */
@@ -1982,6 +2005,14 @@ ix86_option_override_internal (bool main_args_p,
       { "vec-sqrt",  RECIP_MASK_VEC_SQRT },
     };
 
+  avx512_isa_flags = OPTION_MASK_ISA_AVX512F | OPTION_MASK_ISA_AVX512CD
+    | OPTION_MASK_ISA_AVX512DQ | OPTION_MASK_ISA_AVX512BW
+    | OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_AVX512IFMA
+    | OPTION_MASK_ISA_AVX512VBMI | OPTION_MASK_ISA_AVX512VBMI2
+    | OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VPOPCNTDQ
+    | OPTION_MASK_ISA_AVX512BITALG;
+  avx512_isa_flags2 = OPTION_MASK_ISA2_AVX512FP16
+    | OPTION_MASK_ISA2_AVX512BF16;
 
   /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
      TARGET_64BIT_DEFAULT is true and TARGET_64BIT is false.  */
@@ -2590,11 +2621,98 @@ ix86_option_override_internal (bool main_args_p,
       &= ~((OPTION_MASK_ISA_BMI | OPTION_MASK_ISA_BMI2 | OPTION_MASK_ISA_TBM)
 	   & ~opts->x_ix86_isa_flags_explicit);
 
-  /* Set EVEX512 target if it is not explicitly set
-     when AVX512 is enabled.  */
-  if (TARGET_AVX512F_P(opts->x_ix86_isa_flags)
-      && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512))
+  /* Emit a warning if AVX10.1 options is used with AVX512/EVEX512 options except
+     for the following option combinations:
+     1. Both AVX10.1-512 and AVX512 with 512 bit vector width are enabled with no
+	explicit disable on other AVX512 features.
+     2. Both AVX10.1-256 and AVX512 w/o 512 bit vector width are enabled with no
+	explicit disable on other AVX512 features.
+     3. Both AVX10.1 and AVX512 are disabled.  */
+  if (TARGET_AVX10_1_512_P (opts->x_ix86_isa_flags2))
+    {
+      if (opts->x_ix86_no_avx512_explicit
+	  && (((~(avx512_isa_flags & opts->x_ix86_isa_flags)
+	       & (avx512_isa_flags & opts->x_ix86_isa_flags_explicit)))
+	      || ((~((avx512_isa_flags2 | OPTION_MASK_ISA2_EVEX512)
+		     & opts->x_ix86_isa_flags2)
+		   & ((avx512_isa_flags2 | OPTION_MASK_ISA2_EVEX512)
+		      & opts->x_ix86_isa_flags2_explicit)))))
+	warning (0, "%<-mno-evex512%> or %<-mno-avx512XXX%> cannot disable "
+		    "AVX10 instructions when AVX10.1-512 is available");
+    }
+  else if (TARGET_AVX10_1_256_P (opts->x_ix86_isa_flags2))
+    {
+      if (TARGET_EVEX512_P (opts->x_ix86_isa_flags2)
+	  && (OPTION_MASK_ISA2_EVEX512 & opts->x_ix86_isa_flags2_explicit))
+	{
+	  if (!TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	      || !(OPTION_MASK_ISA_AVX512F & opts->x_ix86_isa_flags_explicit))
+	    {
+	      /* We should not emit 512 bit instructions under AVX10.1-256
+		 when EVEX512 is enabled w/o any AVX512 features enabled.
+		 Disable EVEX512 bit for this.  */
+	      warning (0, "Using %<-mevex512%> without any AVX512 features "
+			  "enabled together with AVX10.1 only will not enable "
+			  "any AVX512 or AVX10.1-512 features, using 256 as "
+			  "max vector size");
+	      opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_EVEX512;
+	    }
+	  else
+	    warning (0, "Vector size conflicts between AVX10.1 and AVX512, "
+			"using 512 as max vector size");
+	}
+      else if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	       && !(OPTION_MASK_ISA2_EVEX512
+		    & opts->x_ix86_isa_flags2_explicit))
+	warning (0, "Vector size conflicts between AVX10.1 and AVX512, using "
+		    "512 as max vector size");
+      else if (opts->x_ix86_no_avx512_explicit
+	       && (((~(avx512_isa_flags & opts->x_ix86_isa_flags)
+		    & (avx512_isa_flags & opts->x_ix86_isa_flags_explicit)))
+		   || ((~(avx512_isa_flags2 & opts->x_ix86_isa_flags2)
+			& (avx512_isa_flags2
+			   & opts->x_ix86_isa_flags2_explicit)))))
+	warning (0, "%<-mno-avx512XXX%> cannot disable AVX10 instructions "
+		    "when AVX10 is available");
+    }
+  else if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	   && (OPTION_MASK_ISA_AVX512F & opts->x_ix86_isa_flags_explicit))
+    {
+      if (opts->x_ix86_no_avx10_1_explicit
+	  && ((OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1_512)
+	      & opts->x_ix86_isa_flags2_explicit))
+	{
+	  warning (0, "%<-mno-avx10.1, -mno-avx10.1-256, -mno-avx10.1-512%> "
+		      "cannot disable AVX512 instructions when "
+		      "%<-mavx512XXX%>");
+	  /* Reset those unset AVX512 flags set by AVX10 options when AVX10 is
+	     disabled.  */
+	  if (OPTION_MASK_ISA2_AVX10_1_256 & opts->x_ix86_isa_flags2_explicit)
+	    {
+	      opts->x_ix86_isa_flags = (~avx512_isa_flags
+					& opts->x_ix86_isa_flags)
+		| (avx512_isa_flags & opts->x_ix86_isa_flags_explicit);
+	      opts->x_ix86_isa_flags2 = (~avx512_isa_flags
+					 & opts->x_ix86_isa_flags2)
+		| (avx512_isa_flags2 & opts->x_ix86_isa_flags2_explicit);
+	    }
+	}
+    }
+
+  /* Set EVEX512 if one of the following conditions meets:
+     1. AVX512 is enabled while EVEX512 is not explicitly set/unset.
+     2. AVX10.1-512 is enabled.  */
+  if (TARGET_AVX10_1_512_P (opts->x_ix86_isa_flags2)
+      || (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	  && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512)))
     opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512;
+
+  /* Enable all AVX512 related ISAs when AVX10.1 is enabled.  */
+  if (TARGET_AVX10_1_256_P (opts->x_ix86_isa_flags2))
+    {
+      opts->x_ix86_isa_flags |= avx512_isa_flags;
+      opts->x_ix86_isa_flags2 |= avx512_isa_flags2;
+    }
 
   /* Disable AVX512{PF,ER,4VNNIW,4FAMPS} for -mno-evex512.  */
   if (!TARGET_EVEX512_P(opts->x_ix86_isa_flags2))

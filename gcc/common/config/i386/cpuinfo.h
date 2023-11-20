@@ -715,6 +715,9 @@ get_available_features (struct __processor_model *cpu_model,
   int apx_usable = 0;
   /* Check if KL is usable.  */
   int has_kl = 0;
+  /* Record AVX10 version.  */
+  int avx10_set = 0;
+  int version = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -941,6 +944,9 @@ get_available_features (struct __processor_model *cpu_model,
 	    {
 	      if (eax & bit_AVX512BF16)
 		set_feature (FEATURE_AVX512BF16);
+	      /* AVX10 has the same XSTATE with AVX512.  */
+	      if (edx & bit_AVX10)
+		avx10_set = 1;
 	    }
 	  if (amx_usable)
 	    {
@@ -990,6 +996,33 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (has_kl)
 	    set_feature (FEATURE_KL);
 	}
+    }
+
+  /* Get Advanced Features at level 0x24 (eax = 0x24).  */
+  if (avx10_set && max_cpuid_level >= 0x24)
+    {
+      __cpuid (0x24, eax, ebx, ecx, edx);
+      version = ebx & 0xff;
+      if (ebx & bit_AVX10_256)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  }
+      if (ebx & bit_AVX10_512)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  }
     }
 
   /* Check cpuid level of extended features.  */

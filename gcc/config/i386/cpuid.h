@@ -150,6 +150,7 @@
 #define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
 #define bit_USER_MSR	(1 << 15)
+#define bit_AVX10	(1 << 19)
 #define bit_APX_F	(1 << 21)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
@@ -166,6 +167,10 @@
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
 
+/* AVX10 sub leaf (%eax == 0x24) */
+/* %ebx */
+#define bit_AVX10_256	(1 << 17)
+#define bit_AVX10_512	(1 << 18)
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

@@ -7341,6 +7341,21 @@ Enable/disable the generation of the SM4 instructions.
 @itemx no-usermsr
 Enable/disable the generation of the USER_MSR instructions.
 
+@cindex @code{target("avx10.1")} function attribute, x86
+@item avx10.1
+@itemx no-avx10.1
+Enable/disable the generation of the AVX10.1 instructions.
+
+@cindex @code{target("avx10.1-256")} function attribute, x86
+@item avx10.1-256
+@itemx no-avx10.1-256
+Enable/disable the generation of the AVX10.1 instructions.
+
+@cindex @code{target("avx10.1-512")} function attribute, x86
+@item avx10.1-512
+@itemx no-avx10.1-512
+Enable/disable the generation of the AVX10.1 512 bit instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
