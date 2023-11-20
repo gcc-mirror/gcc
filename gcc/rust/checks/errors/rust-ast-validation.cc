@@ -109,6 +109,13 @@ ASTValidation::visit (AST::Trait &trait)
 	rust_error_at (trait.get_type_param_bounds ()[0]->get_locus (),
 		       ErrorCode::E0568,
 		       "auto traits cannot have super traits");
+      if (trait.has_trait_items ())
+	{
+	  rust_error_at (trait.get_identifier ().get_locus (), ErrorCode::E0380,
+			 "auto traits cannot have methods or associated items");
+	  for (const auto &item : trait.get_trait_items ())
+	    Error::Hint (item->get_locus (), "remove this item").emit ();
+	}
     }
 
   AST::ContextualASTVisitor::visit (trait);

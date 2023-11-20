@@ -4989,18 +4989,6 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
       return nullptr;
     }
 
-  if (is_auto_trait && !trait_items.empty ())
-    {
-      add_error (Error (locus, ErrorCode::E0380,
-			"auto traits cannot have associated items"));
-
-      // FIXME: unsure if this should be done at parsing time or not
-      for (const auto &item : trait_items)
-	add_error (Error::Hint (item->get_locus (), "remove this item"));
-
-      return nullptr;
-    }
-
   trait_items.shrink_to_fit ();
   return std::unique_ptr<AST::Trait> (
     new AST::Trait (std::move (ident), is_unsafe, is_auto_trait,
