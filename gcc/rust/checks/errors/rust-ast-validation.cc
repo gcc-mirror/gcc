@@ -18,6 +18,7 @@
 
 #include "rust-ast-validation.h"
 #include "rust-diagnostics.h"
+#include "rust-item.h"
 #include "rust-keyword-values.h"
 
 namespace Rust {
@@ -77,6 +78,15 @@ ASTValidation::visit (AST::ExternalFunctionItem &item)
       rust_error_at (
 	it->get_locus (),
 	"%<...%> must be the last argument of a C-variadic function");
+
+  AST::ContextualASTVisitor::visit (item);
+}
+
+void
+ASTValidation::visit (AST::Union &item)
+{
+  if (item.get_variants ().empty ())
+    rust_error_at (item.get_locus (), "unions cannot have zero fields");
 
   AST::ContextualASTVisitor::visit (item);
 }
