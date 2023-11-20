@@ -5154,6 +5154,72 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   return true;
 }
 
+/* Replace .POPCOUNT (x) == 1 or .POPCOUNT (x) != 1 with
+   (x & (x - 1)) > x - 1 or (x & (x - 1)) <= x - 1 if .POPCOUNT
+   isn't a direct optab.  */
+
+static void
+match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
+{
+  tree clhs, crhs;
+  enum tree_code code;
+  if (gimple_code (stmt) == GIMPLE_COND)
+    {
+      clhs = gimple_cond_lhs (stmt);
+      crhs = gimple_cond_rhs (stmt);
+      code = gimple_cond_code (stmt);
+    }
+  else
+    {
+      clhs = gimple_assign_rhs1 (stmt);
+      crhs = gimple_assign_rhs2 (stmt);
+      code = gimple_assign_rhs_code (stmt);
+    }
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+  if (TREE_CODE (clhs) != SSA_NAME || !integer_onep (crhs))
+    return;
+  gimple *call = SSA_NAME_DEF_STMT (clhs);
+  combined_fn cfn = gimple_call_combined_fn (call);
+  switch (cfn)
+    {
+    CASE_CFN_POPCOUNT:
+      break;
+    default:
+      return;
+    }
+  if (!has_single_use (clhs))
+    return;
+  tree arg = gimple_call_arg (call, 0);
+  tree type = TREE_TYPE (arg);
+  if (!INTEGRAL_TYPE_P (type))
+    return;
+  if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, OPTIMIZE_FOR_BOTH))
+    return;
+  tree argm1 = make_ssa_name (type);
+  gimple *g = gimple_build_assign (argm1, PLUS_EXPR, arg,
+				   build_int_cst (type, -1));
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type), BIT_XOR_EXPR, arg, argm1);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  if (gcond *cond = dyn_cast <gcond *> (stmt))
+    {
+      gimple_cond_set_lhs (cond, gimple_assign_lhs (g));
+      gimple_cond_set_rhs (cond, argm1);
+      gimple_cond_set_code (cond, code == EQ_EXPR ? GT_EXPR : LE_EXPR);
+    }
+  else
+    {
+      gimple_assign_set_rhs1 (stmt, gimple_assign_lhs (g));
+      gimple_assign_set_rhs2 (stmt, argm1);
+      gimple_assign_set_rhs_code (stmt, code == EQ_EXPR ? GT_EXPR : LE_EXPR);
+    }
+  update_stmt (stmt);
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+  gsi_remove (&gsi2, true);
+  release_defs (call);
+}
+
 /* Return true if target has support for divmod.  */
 
 static bool
@@ -5807,6 +5873,11 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      match_uaddc_usubc (&gsi, stmt, code);
 	      break;
 
+	    case EQ_EXPR:
+	    case NE_EXPR:
+	      match_single_bit_test (&gsi, stmt);
+	      break;
+
 	    default:;
 	    }
 	}
@@ -5872,7 +5943,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    }
 	}
       else if (gimple_code (stmt) == GIMPLE_COND)
-	optimize_spaceship (as_a <gcond *> (stmt));
+	{
+	  match_single_bit_test (&gsi, stmt);
+	  optimize_spaceship (as_a <gcond *> (stmt));
+	}
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p
