@@ -43,7 +43,7 @@ int C::foo (int i)
   return i + 3;
 }
 
-int __attribute__ ((noinline,noclone)) get_input(void)
+int __attribute__ ((noinline,noclone,noipa)) get_input(void)
 {
   return 1;
 }

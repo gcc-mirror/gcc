@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-icf-optimized-all"  } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized-all -fno-ipa-vrp"  } */
 
 static int zip();
 static int zap();

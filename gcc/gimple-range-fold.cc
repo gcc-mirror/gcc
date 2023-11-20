@@ -44,6 +44,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-query.h"
 #include "gimple-range-op.h"
 #include "gimple-range.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "ipa-prop.h"
 // Construct a fur_source, and set the m_query field.
 
 fur_source::fur_source (range_query *q)
@@ -1012,6 +1017,25 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
     r.set_nonzero (type);
   else
     r.set_varying (type);
+
+  tree callee = gimple_call_fndecl (call);
+  if (callee
+      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)), type))
+    {
+      Value_Range val;
+      if (ipa_return_value_range (val, callee))
+	{
+	  r.intersect (val);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Using return value range of ");
+	      print_generic_expr (dump_file, callee, TDF_SLIM);
+	      fprintf (dump_file, ": ");
+	      val.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+    }
 
   // If there is an LHS, intersect that with what is known.
   if (lhs)

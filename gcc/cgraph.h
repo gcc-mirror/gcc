@@ -1190,6 +1190,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   bool set_pure_flag (bool pure, bool looping);
 
+  /* Add attribute ATTR to cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool add_detected_attribute (const char *attr);
+
   /* Call callback on function and aliases associated to the function.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
      skipped. */

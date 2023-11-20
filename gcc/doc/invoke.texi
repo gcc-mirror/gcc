@@ -8093,7 +8093,7 @@ if the array is referenced as a flexible array member.
 
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}returns_nonnull@r{|}
 Warn for cases where adding an attribute may be beneficial. The
 attributes currently supported are listed below.
 
@@ -8113,9 +8113,11 @@ attributes currently supported are listed below.
 @itemx -Wsuggest-attribute=noreturn
 @itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
+@itemx -Wsuggest-attribute=returns_nonnull
+@itemx -Wno-suggest-attribute=returns_nonnull
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const} or @code{noreturn} or @code{malloc}. The compiler
+@code{pure}, @code{const}, @code{noreturn}, @code{malloc} or @code{returns_nonnull}. The compiler
 only warns for functions visible in other compilation units or (in the case of
 @code{pure} and @code{const}) if it cannot prove that the function returns
 normally. A function returns normally if it doesn't contain an infinite loop or

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-g -O3 -fdump-tree-optimized -fvar-tracking-assignments -fno-selective-scheduling -fno-selective-scheduling2" } */
 
-int __attribute__((noinline))
+int __attribute__((noinline,noipa))
 f1 (int i)
 {
   char a[i + 1];

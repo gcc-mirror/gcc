@@ -1,7 +1,7 @@
 /* Verify that IPA-CP can do devirtualization even if the virtual call
    comes from a method that has been early-inlined into a descendant.  */
 /* { dg-do run } */
-/* { dg-options "-O3 -fdump-ipa-cp"  } */
+/* { dg-options "-O3 -fdump-ipa-cp -fno-ipa-vrp"  } */
 /* { dg-add-options bind_pic_locally } */
 
 extern "C" void abort (void);

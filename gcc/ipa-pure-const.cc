@@ -292,6 +292,15 @@ warn_function_cold (tree decl)
 			 true, warned_about, "cold");
 }
 
+void
+warn_function_returns_nonnull (tree decl)
+{
+  static hash_set<tree> *warned_about;
+  warned_about
+    = suggest_attribute (OPT_Wsuggest_attribute_returns_nonnull, decl,
+			 true, warned_about, "returns_nonnull");
+}
+
 /* Check to see if the use (or definition when CHECKING_WRITE is true)
    variable T is legal in a function that is either pure or const.  */
 

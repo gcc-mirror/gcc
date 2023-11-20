@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-ipa-profile -fno-ipa-vrp" } */
 
 __attribute__ ((noinline))
 int foo()

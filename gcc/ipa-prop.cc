@@ -237,6 +237,35 @@ gt_ggc_mx (ipa_vr *&x)
   return gt_ggc_mx ((ipa_vr *) x);
 }
 
+/* Analysis summery of function call return value.  */
+struct GTY(()) ipa_return_value_summary
+{
+  /* Known value range.
+     This needs to be wrapped in struccture due to specific way
+     we allocate ipa_vr. */
+  ipa_vr *vr;
+};
+
+/* Function summary for return values.  */
+class ipa_return_value_sum_t : public function_summary <ipa_return_value_summary *>
+{
+public:
+  ipa_return_value_sum_t (symbol_table *table, bool ggc):
+    function_summary <ipa_return_value_summary *> (table, ggc) { }
+
+  /* Hook that is called by summary when a node is duplicated.  */
+  void duplicate (cgraph_node *,
+		  cgraph_node *,
+		  ipa_return_value_summary *data,
+		  ipa_return_value_summary *data2) final override
+  {
+    *data2=*data;
+  }
+};
+
+/* Variable hoding the return value summary.  */
+static GTY(()) function_summary <ipa_return_value_summary *> *ipa_return_value_sum;
+
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -5913,6 +5942,50 @@ ipcp_transform_function (struct cgraph_node *node)
     delete_unreachable_blocks_update_callgraph (node, false);
 
   return modified_mem_access ? TODO_update_ssa_only_virtuals : 0;
+}
+
+/* Record that current function return value range is VAL.  */
+
+void
+ipa_record_return_value_range (Value_Range val)
+{
+  cgraph_node *n = cgraph_node::get (current_function_decl);
+  if (!ipa_return_value_sum)
+    {
+      if (!ipa_vr_hash_table)
+	ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
+      ipa_return_value_sum = new (ggc_alloc_no_dtor <ipa_return_value_sum_t> ())
+	      ipa_return_value_sum_t (symtab, true);
+      ipa_return_value_sum->disable_insertion_hook ();
+    }
+  ipa_return_value_sum->get_create (n)->vr = ipa_get_value_range (val);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Recording return range ");
+      val.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+}
+
+/* Return true if value range of DECL is known and if so initialize RANGE.  */
+
+bool
+ipa_return_value_range (Value_Range &range, tree decl)
+{
+  cgraph_node *n = cgraph_node::get (decl);
+  if (!n || !ipa_return_value_sum)
+    return false;
+  enum availability avail;
+  n = n->ultimate_alias_target (&avail);
+  if (avail < AVAIL_AVAILABLE)
+    return false;
+  if (n->decl != decl && !useless_type_conversion_p (TREE_TYPE (decl), TREE_TYPE (n->decl)))
+    return false;
+  ipa_return_value_summary *v = ipa_return_value_sum->get (n);
+  if (!v)
+    return false;
+  v->vr->get_vrange (range);
+  return true;
 }
 
 
