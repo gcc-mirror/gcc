@@ -10929,6 +10929,11 @@ sign flag set
 ``not'' @var{flag}, or inverted versions of those above
 @end table
 
+@item s390
+The flag output constraint for s390 is @samp{=@@cc}.  Only one such
+constraint is allowed.  The variable has to be stored in a @samp{int}
+variable.
+
 @end table
 
 @anchor{InputOperands}

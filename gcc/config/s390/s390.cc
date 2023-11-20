@@ -1874,6 +1874,97 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  *code = new_code;
 	}
     }
+  /* Remove UNSPEC_CC_TO_INT from connectives.  This happens for
+     checks against multiple condition codes. */
+  if (GET_CODE (*op0) == AND
+      && GET_CODE (XEXP (*op0, 0)) == UNSPEC
+      && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
+      && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
+      && CONST_INT_P (XEXP (*op0, 1))
+      && CONST_INT_P (*op1)
+      && INTVAL (XEXP (*op0, 1)) == -3
+      && *code == EQ)
+    {
+      if (INTVAL (*op1) == 0)
+	{
+	  /* case cc == 0 || cc = 2 => mask = 0xa */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0xa);
+	}
+      else if (INTVAL (*op1) == 1)
+	{
+	  /* case cc == 1 || cc == 3 => mask = 0x5 */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0x5);
+	}
+    }
+  if (GET_CODE (*op0) == PLUS
+      && GET_CODE (XEXP (*op0, 0)) == UNSPEC
+      && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
+      && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
+      && CONST_INT_P (XEXP (*op0, 1))
+      && CONST_INT_P (*op1)
+      && (*code == LEU || *code == GTU))
+    {
+      if (INTVAL (*op1) == 1)
+	{
+	  if (INTVAL (XEXP (*op0, 1)) == -1)
+	    {
+	      /* case cc == 1 || cc == 2 => mask = 0x6 */
+	      *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0x6);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (XEXP (*op0, 1)) == -2)
+	    {
+	      /* case cc == 2 || cc == 3 => mask = 0x3 */
+	      *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0x3);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	}
+      else if (INTVAL (*op1) == 2
+	       && INTVAL (XEXP (*op0, 1)) == -1)
+	{
+	  /* case cc == 1 || cc == 2 || cc == 3 => mask = 0x7 */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0x7);
+	  *code = *code == GTU ? NE : EQ;
+	}
+    }
+  else if (*code == LEU || *code == GTU)
+    {
+      if (GET_CODE (*op0) == UNSPEC
+	  && XINT (*op0, 1) == UNSPEC_CC_TO_INT
+	  && XVECLEN (*op0, 0) == 1
+	  && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
+	  && CONST_INT_P (*op1))
+	{
+	  if (INTVAL (*op1) == 1)
+	    {
+	      /* case cc == 0 || cc == 1 => mask = 0xc */
+	      *op0 = XVECEXP (*op0, 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0xc);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (*op1) == 2)
+	    {
+	      /* case cc == 0 || cc == 1 || cc == 2 => mask = 0xd */
+	      *op0 = XVECEXP (*op0, 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0xd);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (*op1) == 3)
+	    {
+	      /* always true */
+	      *op0 = const0_rtx;
+	      *op1 = const0_rtx;
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	}
+    }
 
   /* Simplify cascaded EQ, NE with const0_rtx.  */
   if ((*code == NE || *code == EQ)
@@ -17425,22 +17516,60 @@ static rtx_insn *
 s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> &input_modes,
 		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
-		    HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
+		    HARD_REG_SET &clobbered_regs, location_t loc)
 {
-  if (!TARGET_VXE)
-    /* Long doubles are stored in FPR pairs - nothing to do.  */
-    return NULL;
 
   rtx_insn *after_md_seq = NULL, *after_md_end = NULL;
+  bool saw_cc = false;
 
   unsigned ninputs = inputs.length ();
   unsigned noutputs = outputs.length ();
   for (unsigned i = 0; i < noutputs; i++)
     {
+      const char *constraint = constraints[i];
+      if (strncmp (constraint, "=@cc", 4) == 0)
+	{
+	  if (constraint[4] != 0)
+	    {
+	      error_at (loc, "invalid cc output constraint: %qs", constraint);
+	      continue;
+	    }
+	  if (saw_cc)
+	    {
+	      error_at (loc, "multiple cc output constraints not supported");
+	      continue;
+	    }
+	  if (TEST_HARD_REG_BIT (clobbered_regs, CC_REGNUM))
+	    {
+	      error_at (loc, "%<asm%> specifier for cc output conflicts with %<asm%> clobber list");
+	      continue;
+	    }
+	  rtx dest = outputs[i];
+	  if (GET_MODE (dest) != SImode)
+	    {
+	      error ("invalid type for cc output constraint");
+	      continue;
+	    }
+	  saw_cc = true;
+	  constraints[i] = "=c";
+	  outputs[i] = gen_rtx_REG (CCRAWmode, CC_REGNUM);
+
+	  push_to_sequence2 (after_md_seq, after_md_end);
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_UNSPEC (SImode,
+						  gen_rtvec (1, outputs[i]),
+						  UNSPEC_CC_TO_INT)));
+	  after_md_seq = get_insns ();
+	  after_md_end = get_last_insn ();
+	  end_sequence ();
+	  continue;
+	}
+      if (!TARGET_VXE)
+	/* Long doubles are stored in FPR pairs - nothing to do.  */
+	continue;
       if (GET_MODE (outputs[i]) != TFmode)
 	/* Not a long double - nothing to do.  */
 	continue;
-      const char *constraint = constraints[i];
       bool allows_mem, allows_reg, is_inout;
       bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
 					 &allows_mem, &allows_reg, &is_inout);
