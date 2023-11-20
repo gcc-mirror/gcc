@@ -96,4 +96,18 @@ ASTValidation::visit (AST::Function &function)
   AST::ContextualASTVisitor::visit (function);
 }
 
+void
+ASTValidation::visit (AST::Trait &trait)
+{
+  if (trait.is_auto ())
+    {
+      if (trait.has_generics ())
+	rust_error_at (trait.get_generic_params ()[0]->get_locus (),
+		       ErrorCode::E0567,
+		       "auto traits cannot have generic parameters");
+    }
+
+  AST::ContextualASTVisitor::visit (trait);
+}
+
 } // namespace Rust
