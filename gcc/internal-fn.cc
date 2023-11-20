@@ -102,8 +102,6 @@ lookup_hilo_internal_fn (internal_fn ifn, internal_fn *lo, internal_fn *hi)
     {
     default:
       gcc_unreachable ();
-#undef DEF_INTERNAL_FN
-#undef DEF_INTERNAL_WIDENING_OPTAB_FN
 #define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
 #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
     case IFN_##NAME:						\
@@ -111,8 +109,6 @@ lookup_hilo_internal_fn (internal_fn ifn, internal_fn *lo, internal_fn *hi)
       *hi = internal_fn (IFN_##NAME##_HI);			\
       break;
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
-#undef DEF_INTERNAL_WIDENING_OPTAB_FN
     }
 }
 
@@ -129,8 +125,6 @@ lookup_evenodd_internal_fn (internal_fn ifn, internal_fn *even,
     {
     default:
       gcc_unreachable ();
-#undef DEF_INTERNAL_FN
-#undef DEF_INTERNAL_WIDENING_OPTAB_FN
 #define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
 #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
     case IFN_##NAME:						\
@@ -138,8 +132,6 @@ lookup_evenodd_internal_fn (internal_fn ifn, internal_fn *even,
       *odd = internal_fn (IFN_##NAME##_ODD);			\
       break;
 #include "internal-fn.def"
-#undef DEF_INTERNAL_FN
-#undef DEF_INTERNAL_WIDENING_OPTAB_FN
     }
 }
 
@@ -4261,7 +4253,6 @@ widening_fn_p (code_helper code)
   internal_fn fn = as_internal_fn ((combined_fn) code);
   switch (fn)
     {
-    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
     #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T) \
     case IFN_##NAME:						  \
     case IFN_##NAME##_HI:					  \
@@ -4270,7 +4261,6 @@ widening_fn_p (code_helper code)
     case IFN_##NAME##_ODD:					  \
       return true;
     #include "internal-fn.def"
-    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
 
     default:
       return false;
@@ -4305,8 +4295,6 @@ set_edom_supported_p (void)
     expand_##TYPE##_optab_fn (fn, stmt, which_optab);			\
   }
 #include "internal-fn.def"
-#undef DEF_INTERNAL_OPTAB_FN
-#undef DEF_INTERNAL_SIGNED_OPTAB_FN
 
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
@@ -4465,8 +4453,6 @@ get_len_internal_fn (internal_fn fn)
 {
   switch (fn)
     {
-#undef DEF_INTERNAL_COND_FN
-#undef DEF_INTERNAL_SIGNED_COND_FN
 #define DEF_INTERNAL_COND_FN(NAME, ...)                                        \
   case IFN_COND_##NAME:                                                        \
     return IFN_COND_LEN_##NAME;
@@ -4474,8 +4460,6 @@ get_len_internal_fn (internal_fn fn)
   case IFN_COND_##NAME:                                                        \
     return IFN_COND_LEN_##NAME;
 #include "internal-fn.def"
-#undef DEF_INTERNAL_COND_FN
-#undef DEF_INTERNAL_SIGNED_COND_FN
     default:
       return IFN_LAST;
     }
