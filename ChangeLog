@@ -1,3 +1,8 @@
+2023-11-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Add dependency on site.exp to check-gcc-* targets
+
 2023-11-18  Petter Tomner  <tomner@bahnhof.se>
 
 	* MAINTAINERS: Update my email address.

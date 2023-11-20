@@ -1,3 +1,58 @@
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_insn_lra): Optimize constant AVL.
+
+2023-11-19  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv-protos.h (extract_base_offset_in_addr): Prototype.
+	* config/riscv/riscv.cc (riscv_fusion_pairs): New enum.
+	(riscv_tune_param): Add fusible_ops field.
+	(riscv_tune_param_rocket_tune_info): Initialize new field.
+	(riscv_tune_param_sifive_7_tune_info): Likewise.
+	(thead_c906_tune_info): Likewise.
+	(generic_oo_tune_info): Likewise.
+	(optimize_size_tune_info): Likewise.
+	(riscv_macro_fusion_p): New function.
+	(riscv_fusion_enabled_p): Likewise.
+	(riscv_macro_fusion_pair_p): Likewise.
+	(TARGET_SCHED_MACRO_FUSION_P): Define.
+	(TARGET_SCHED_MACRO_FUSION_PAIR_P): Likewise.
+	(extract_base_offset_in_addr): Moved into riscv.cc from...
+	* config/riscv/thead.cc: Here.
+	Co-authored-by: Raphael Zinsly <rzinsly@ventanamicro.com>
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-11-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/c6x/c6x.md (mvilc): Add mode to UNSPEC source.
+	* config/mips/mips.md (rdhwr_synci_step_<mode>): Likewise.
+	* config/riscv/riscv.md (riscv_frcsr, riscv_frflags): Likewise.
+	* config/s390/s390.md (@split_stack_call<mode>): Likewise.
+	(@split_stack_cond_call<mode>): Likewise.
+	* config/sh/sh.md (sp_switch_1): Likewise.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h: Include "rich-location.h".
+	* edit-context.h (class fixit_hint): New forward decl.
+	* gcc-rich-location.h: Include "rich-location.h".
+	* genmatch.cc: Likewise.
+	* pretty-print.h: Likewise.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (CPPLIB_H): Add libcpp/include/rich-location.h.
+	* coretypes.h (class rich_location): New forward decl.
+
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_tuple_move): Fix bug.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107573
+	* doc/invoke.texi: Add -Wanalyzer-undefined-behavior-strtok.
+
 2023-11-18  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/loongarch/predicates.md (const_call_insn_operand):

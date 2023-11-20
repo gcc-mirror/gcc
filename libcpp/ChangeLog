@@ -1,3 +1,14 @@
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): Add "include/rich-location.h".
+	* include/cpplib.h (class rich_location): New forward decl.
+	* include/line-map.h (class range_label)
+	(enum range_display_kind, struct location_range)
+	(class semi_embedded_vec, class rich_location, class label_text)
+	(class range_label, class fixit_hint): Move to...
+	* include/rich-location.h: ...this new file.
+	* internal.h: Include "rich-location.h".
+
 2023-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeucnid.cc (write_copyright): Update copyright year.

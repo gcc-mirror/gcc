@@ -1,3 +1,30 @@
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/post-ra-avl.c: New test.
+
+2023-11-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99187
+	* g++.dg/modules/pr99187.C: New test.
+
+2023-11-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp (add_options_for___float128): Only add
+	-mfloat128 to powerpc*-*-linux*.
+
+2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/pr112561.c: New test.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107573
+	* c-c++-common/analyzer/strtok-1.c: New test.
+	* c-c++-common/analyzer/strtok-2.c: New test.
+	* c-c++-common/analyzer/strtok-3.c: New test.
+	* c-c++-common/analyzer/strtok-4.c: New test.
+	* c-c++-common/analyzer/strtok-cppreference.c: New test.
+
 2023-11-18  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/div-div32.c: New test.

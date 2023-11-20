@@ -1,3 +1,14 @@
+2023-11-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99187
+	* cp-tree.h (enum cp_tree_index): Add CPTI_THREAD_ATEXIT.
+	(thread_atexit_node): New.
+	* decl.cc (get_thread_atexit_node): Cache in thread_atexit_node.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* mapper-client.cc: Include "rich-location.h".
+
 2023-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/112365
