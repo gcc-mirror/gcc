@@ -1983,6 +1983,17 @@ proc check_effective_target_riscv_ztso { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zbb extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zbb { } {
+    return [check_no_compiler_messages riscv_ext_zbb assembly {
+       #ifndef __riscv_zbb
+       #error "Not __riscv_zbb"
+       #endif
+    }]
+}
+
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {

@@ -1461,4 +1461,12 @@ main ()
   RUN_ALL ()
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 229 "vect" } } */
+/* TODO: Due to an over-zealous check in tree-vect-patterns we do not vectorize
+   e.g.
+     uint64_t dst[];
+     uint32_t src[];
+     dst[i] = __builtin_popcountll (src[i]);
+   even though we could.  Therefore, for now, adjust the following checks.
+   This difference was exposed in r14-5557-g6dd4c703be17fa.  */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 229 "vect" { target { { rv64 } && { ! riscv_zbb } } } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 250 "vect" { target { { rv32 } || { riscv_zbb } } } } } */
