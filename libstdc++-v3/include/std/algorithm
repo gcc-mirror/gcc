@@ -65,6 +65,7 @@
 
 #define __glibcxx_want_clamp
 #define __glibcxx_want_constexpr_algorithms
+#define __glibcxx_want_freestanding_algorithm
 #define __glibcxx_want_parallel_algorithm
 #define __glibcxx_want_ranges_contains
 #define __glibcxx_want_ranges_find_last

@@ -32,6 +32,7 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional
 #include <bits/version.h>
 

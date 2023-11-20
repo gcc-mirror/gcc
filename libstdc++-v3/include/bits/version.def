@@ -1349,14 +1349,59 @@ ftms = {
 };
 
 ftms = {
+  name = freestanding_algorithm;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_array;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = freestanding_expected;
   values = {
     v = 202311;
     cxxmin = 23;
+    // This is a C++26 feature, but we support it in C++23.
     extra_cond = "__cpp_lib_expected";
   };
 };
 
+ftms = {
+  name = freestanding_optional;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_string_view;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_variant;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
 
 ftms = {
   name = invoke_r;
