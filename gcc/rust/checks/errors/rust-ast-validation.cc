@@ -93,6 +93,11 @@ ASTValidation::visit (AST::Function &function)
       function.get_self_param ()->get_locus (),
       "%<self%> parameter is only allowed in associated functions");
 
+  if (function.is_variadic ())
+    rust_error_at (
+      function.get_function_params ().back ()->get_locus (),
+      "only foreign or %<unsafe extern \"C\"%> functions may be C-variadic");
+
   AST::ContextualASTVisitor::visit (function);
 }
 
