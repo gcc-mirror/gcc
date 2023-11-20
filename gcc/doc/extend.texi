@@ -14746,11 +14746,11 @@ The @code{__builtin_classify_type} returns a small integer with a category
 of @var{arg} argument's type, like void type, integer type, enumeral type,
 boolean type, pointer type, reference type, offset type, real type, complex
 type, function type, method type, record type, union type, array type,
-string type, etc.  When the argument is an expression, for
-backwards compatibility reason the argument is promoted like arguments
-passed to @code{...} in varargs function, so some classes are never returned
-in certain languages.  Alternatively, the argument of the built-in
-function can be a typename, such as the @code{typeof} specifier.
+string type, bit-precise integer type, vector type, etc.  When the argument
+is an expression, for backwards compatibility reason the argument is promoted
+like arguments passed to @code{...} in varargs function, so some classes are
+never returned in certain languages.  Alternatively, the argument of the
+built-in function can be a typename, such as the @code{typeof} specifier.
 
 @smallexample
 int a[2];

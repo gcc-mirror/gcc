@@ -1859,6 +1859,7 @@ type_to_class (tree type)
     case LANG_TYPE:	   return lang_type_class;
     case OPAQUE_TYPE:      return opaque_type_class;
     case BITINT_TYPE:	   return bitint_type_class;
+    case VECTOR_TYPE:	   return vector_type_class;
     default:		   return no_type_class;
     }
 }
