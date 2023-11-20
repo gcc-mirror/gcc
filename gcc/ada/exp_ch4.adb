@@ -563,8 +563,6 @@ package body Exp_Ch4 is
       DesigT         : constant Entity_Id  := Designated_Type (PtrT);
       Special_Return : constant Boolean    := For_Special_Return_Object (N);
 
-      --  Local variables
-
       Adj_Call      : Node_Id;
       Aggr_In_Place : Boolean;
       Node          : Node_Id;
@@ -576,8 +574,6 @@ package body Exp_Ch4 is
 
       TagR : Node_Id := Empty;
       --  Target reference for tag assignment
-
-   --  Start of processing for Expand_Allocator_Expression
 
    begin
       --  Handle call to C++ constructor
@@ -598,7 +594,15 @@ package body Exp_Ch4 is
 
       Apply_Constraint_Check (Exp, T, No_Sliding => True);
 
-      Apply_Predicate_Check (Exp, T);
+      Aggr_In_Place := Is_Delayed_Aggregate (Exp);
+
+      --  If the expression is an aggregate to be built in place, then we need
+      --  to delay applying predicate checks, because this would result in the
+      --  creation of a temporary, which is illegal for limited types,
+
+      if not Aggr_In_Place then
+         Apply_Predicate_Check (Exp, T);
+      end if;
 
       --  Check that any anonymous access discriminants are suitable
       --  for use in an allocator.
@@ -658,8 +662,6 @@ package body Exp_Ch4 is
          Set_Etype (N, PtrT);
          return;
       end if;
-
-      Aggr_In_Place := Is_Delayed_Aggregate (Exp);
 
       --  Case of tagged type or type requiring finalization
 
@@ -972,6 +974,10 @@ package body Exp_Ch4 is
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
+         if Aggr_In_Place then
+            Apply_Predicate_Check (N, T, Deref => True);
+         end if;
+
          --  Ada 2005 (AI-251): Displace the pointer to reference the record
          --  component containing the secondary dispatch table of the interface
          --  type.
@@ -1011,6 +1017,10 @@ package body Exp_Ch4 is
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
+
+         if Aggr_In_Place then
+            Apply_Predicate_Check (N, T, Deref => True);
+         end if;
 
       elsif Is_Access_Type (T) and then Can_Never_Be_Null (T) then
          Install_Null_Excluding_Check (Exp);

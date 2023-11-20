@@ -4735,7 +4735,7 @@ package body Sem_Res is
                --  leads to an infinite recursion.
 
                if Predicate_Tests_On_Arguments (Nam) then
-                  Apply_Predicate_Check (A, F_Typ, Nam);
+                  Apply_Predicate_Check (A, F_Typ, Fun => Nam);
                end if;
 
                --  Apply required constraint checks
