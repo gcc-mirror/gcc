@@ -554,7 +554,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	tm_file="$tm_file arm/bpabi-lib.h"
 	case ${host} in
 	arm*-*-eabi* | arm*-*-rtems*)
-	  tmake_file="${tmake_file} arm/t-bpabi t-crtfm"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-sync t-crtfm"
 	  extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	  ;;
 	arm*-*-symbianelf*)
