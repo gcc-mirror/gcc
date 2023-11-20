@@ -11564,7 +11564,6 @@ proc check_vect_support_and_set_flags { } {
         set dg-do-what-default run
     } elseif [istarget riscv64-*-*] {
 	if [check_effective_target_riscv_vector_hw] {
-	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-autovec-preference=scalable"
 	    lappend DEFAULT_VECTCFLAGS "--param" "riscv-vector-abi"
 	    set dg-do-what-default run
 	} else {
