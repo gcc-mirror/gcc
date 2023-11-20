@@ -40,4 +40,5 @@ __BB(6):
 
 }
 
-/* { dg-final { scan-tree-dump-times "&a" 1 "ivopts" { xfail ia32 } } } */
+/* Not all 32-bit systems fail this, but several do.  */
+/* { dg-final { scan-tree-dump-times "&a" 1 "ivopts" { xfail ilp32 } } } */
