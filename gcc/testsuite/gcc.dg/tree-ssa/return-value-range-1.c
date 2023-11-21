@@ -1,5 +1,5 @@
-/* { dg-do ling } */
-/* { dg-options "-O1 -dump-tree-evrp-details" } */
+/* { dg-do link } */
+/* { dg-options "-O2 -fdump-tree-evrp-details" } */
 __attribute__ ((__noinline__))
 int a(char c)
 {
