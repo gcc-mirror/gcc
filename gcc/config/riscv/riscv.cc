@@ -1598,6 +1598,14 @@ riscv_const_insns (rtx x)
 	    rtx elt;
 	    if (const_vec_duplicate_p (x, &elt))
 	      {
+		/* We don't allow CONST_VECTOR for DI vector on RV32
+		   system since the ELT constant value can not held
+		   within a single register to disable reload a DI
+		   register vec_duplicate into vmv.v.x.  */
+		scalar_mode smode = GET_MODE_INNER (GET_MODE (x));
+		if (maybe_gt (GET_MODE_SIZE (smode), UNITS_PER_WORD)
+		    && !immediate_operand (elt, Pmode))
+		  return 0;
 		/* Constants from -16 to 15 can be loaded with vmv.v.i.
 		   The Wc0, Wc1 constraints are already covered by the
 		   vi constraint so we do not need to check them here
