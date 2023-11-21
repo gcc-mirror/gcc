@@ -85,7 +85,7 @@ proc plugin-test-execute { plugin_src plugin_tests } {
     set gcc_objdir "$objdir/../../.."
     set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
                   -I${gcc_srcdir}/include -I${gcc_srcdir}/libcpp/include \
-                  $GMPINC -I${gcc_objdir}/intl"
+                  $GMPINC -I${gcc_objdir}/gettext/intl"
 
     if { [ ishost *-*-darwin* ] } {
 	# -mdynamic-no-pic is incompatible with -fPIC.
