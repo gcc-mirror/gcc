@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-validation.h"
+#include "rust-common.h"
 #include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
@@ -134,6 +135,15 @@ ASTValidation::visit (AST::Trait &trait)
     }
 
   AST::ContextualASTVisitor::visit (trait);
+}
+
+void
+ASTValidation::visit (AST::Module &module)
+{
+  if (module.get_unsafety () == Unsafety::Unsafe)
+    rust_error_at (module.get_locus (), "module cannot be declared unsafe");
+
+  AST::ContextualASTVisitor::visit (module);
 }
 
 } // namespace Rust

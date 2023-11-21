@@ -2429,6 +2429,8 @@ std::unique_ptr<AST::Module>
 Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 					  AST::AttrVec outer_attrs)
 {
+  location_t locus = lexer.peek_token ()->get_locus ();
+
   Unsafety safety = Unsafety::Normal;
   if (lexer.peek_token ()->get_id () == UNSAFE)
     {
@@ -2436,7 +2438,6 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
       skip_token (UNSAFE);
     }
 
-  location_t locus = lexer.peek_token ()->get_locus ();
   skip_token (MOD);
 
   const_TokenPtr module_name = expect_token (IDENTIFIER);
