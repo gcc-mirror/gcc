@@ -2029,26 +2029,60 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "vec_unpack<su>_hi_<mode>"
+(define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
+   (match_operand:VQW 1 "register_operand")]
   "TARGET_SIMD"
   {
-    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-    emit_insn (gen_aarch64_simd_vec_unpack<su>_hi_<mode> (operands[0],
-							  operands[1], p));
+    rtx res = gen_reg_rtx (<MODE>mode);
+    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
+    if (BYTES_BIG_ENDIAN)
+      emit_insn (gen_aarch64_zip2<mode> (res, tmp, operands[1]));
+    else
+     emit_insn (gen_aarch64_zip2<mode> (res, operands[1], tmp));
+    emit_move_insn (operands[0],
+		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
     DONE;
   }
 )
 
-(define_expand "vec_unpack<su>_lo_<mode>"
+(define_expand "vec_unpacks_hi_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
+   (match_operand:VQW 1 "register_operand")]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_simd_vec_unpacks_hi_<mode> (operands[0],
+						       operands[1], p));
+    DONE;
+  }
+)
+
+(define_expand "vec_unpacku_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (match_operand:VQW 1 "register_operand")]
+  "TARGET_SIMD"
+  {
+    rtx res = gen_reg_rtx (<MODE>mode);
+    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
+    if (BYTES_BIG_ENDIAN)
+	emit_insn (gen_aarch64_zip1<mode> (res, tmp, operands[1]));
+    else
+	emit_insn (gen_aarch64_zip1<mode> (res, operands[1], tmp));
+    emit_move_insn (operands[0],
+		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
+    DONE;
+  }
+)
+
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (match_operand:VQW 1 "register_operand")]
   "TARGET_SIMD"
   {
     rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    emit_insn (gen_aarch64_simd_vec_unpack<su>_lo_<mode> (operands[0],
-							  operands[1], p));
+    emit_insn (gen_aarch64_simd_vec_unpacks_lo_<mode> (operands[0],
+						       operands[1], p));
     DONE;
   }
 )
@@ -4774,6 +4808,34 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su>subw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "type" "neon_sub_widen")]
+)
+
+(define_insn "aarch64_usubw<mode>_<PERM_EXTEND:perm_hilo>_zip"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(minus:<VWIDE>
+	  (match_operand:<VWIDE> 1 "register_operand" "w")
+	  (subreg:<VWIDE>
+	    (unspec:<MODE> [
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_operand:VQW 3 "aarch64_simd_imm_zero")
+	       ] PERM_EXTEND) 0)))]
+  "TARGET_SIMD"
+  "usubw<PERM_EXTEND:perm_index>\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
+  [(set_attr "type" "neon_sub_widen")]
+)
+
+(define_insn "aarch64_uaddw<mode>_<PERM_EXTEND:perm_hilo>_zip"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(plus:<VWIDE>
+	  (subreg:<VWIDE>
+	    (unspec:<MODE> [
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_operand:VQW 3 "aarch64_simd_imm_zero")
+	       ] PERM_EXTEND) 0)
+	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "uaddw<PERM_EXTEND:perm_index>\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
+  [(set_attr "type" "neon_add_widen")]
 )
 
 (define_insn "aarch64_<ANY_EXTEND:su>addw<mode>"

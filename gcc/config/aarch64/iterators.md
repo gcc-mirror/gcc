@@ -2645,6 +2645,9 @@
 (define_int_iterator OPTAB_PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
 				    UNSPEC_UZP1 UNSPEC_UZP2])
 
+;; Permutes for zero extends
+(define_int_iterator PERM_EXTEND [UNSPEC_ZIP1 UNSPEC_ZIP2])
+
 (define_int_iterator REVERSE [UNSPEC_REV64 UNSPEC_REV32 UNSPEC_REV16])
 
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
@@ -3467,7 +3470,10 @@
 			 (UNSPEC_REV16 "16")])
 
 (define_int_attr perm_hilo [(UNSPEC_UNPACKSHI "hi") (UNSPEC_UNPACKUHI "hi")
-			    (UNSPEC_UNPACKSLO "lo") (UNSPEC_UNPACKULO "lo")])
+			    (UNSPEC_UNPACKSLO "lo") (UNSPEC_UNPACKULO "lo")
+			    (UNSPEC_ZIP2 "hi") (UNSPEC_ZIP1 "lo")])
+
+(define_int_attr perm_index [(UNSPEC_ZIP2 "2") (UNSPEC_ZIP1 "")])
 
 ;; Return true if the associated optab refers to the high-numbered lanes,
 ;; false if it refers to the low-numbered lanes.  The convention is for
