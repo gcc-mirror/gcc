@@ -317,18 +317,10 @@ TokenCollector::visit (FunctionQualifiers &qualifiers)
   //    `const`? `async`? `unsafe`? (`extern` Abi?)?
   //    unsafe? (extern Abi?)?
 
-  switch (qualifiers.get_const_status ())
-    {
-    case NONE:
-      break;
-    case CONST_FN:
-      push (Rust::Token::make (CONST, qualifiers.get_locus ()));
-      break;
-    case ASYNC_FN:
-      push (Rust::Token::make (ASYNC, qualifiers.get_locus ()));
-      break;
-    }
-
+  if (qualifiers.is_async ())
+    push (Rust::Token::make (ASYNC, qualifiers.get_locus ()));
+  if (qualifiers.is_const ())
+    push (Rust::Token::make (CONST, qualifiers.get_locus ()));
   if (qualifiers.is_unsafe ())
     push (Rust::Token::make (UNSAFE, qualifiers.get_locus ()));
   if (qualifiers.is_extern ())

@@ -24,6 +24,7 @@
 
 #include "rust-common.h"
 #include "rust-item.h"
+#include "rust-common.h"
 #include "rust-token.h"
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
@@ -2987,33 +2988,40 @@ template <typename ManagedTokenSource>
 AST::FunctionQualifiers
 Parser<ManagedTokenSource>::parse_function_qualifiers ()
 {
-  AsyncConstStatus const_status = NONE;
-  bool has_unsafe = false;
+  Async async_status = Async::No;
+  Const const_status = Const::No;
+  Unsafety unsafe_status = Unsafety::Normal;
   bool has_extern = false;
   std::string abi;
 
+  const_TokenPtr t;
+  location_t locus;
   // Check in order of const, unsafe, then extern
-  const_TokenPtr t = lexer.peek_token ();
-  location_t locus = t->get_locus ();
-  switch (t->get_id ())
+  for (int i = 0; i < 2; i++)
     {
-    case CONST:
-      lexer.skip_token ();
-      const_status = CONST_FN;
-      break;
-    case ASYNC:
-      lexer.skip_token ();
-      const_status = ASYNC_FN;
-      break;
-    default:
-      // const status is still none
-      break;
+      t = lexer.peek_token ();
+      locus = t->get_locus ();
+
+      switch (t->get_id ())
+	{
+	case CONST:
+	  lexer.skip_token ();
+	  const_status = Const::Yes;
+	  break;
+	case ASYNC:
+	  lexer.skip_token ();
+	  async_status = Async::Yes;
+	  break;
+	default:
+	  // const status is still none
+	  break;
+	}
     }
 
   if (lexer.peek_token ()->get_id () == UNSAFE)
     {
       lexer.skip_token ();
-      has_unsafe = true;
+      unsafe_status = Unsafety::Unsafe;
     }
 
   if (lexer.peek_token ()->get_id () == EXTERN_KW)
@@ -3030,8 +3038,8 @@ Parser<ManagedTokenSource>::parse_function_qualifiers ()
 	}
     }
 
-  return AST::FunctionQualifiers (locus, const_status, has_unsafe, has_extern,
-				  std::move (abi));
+  return AST::FunctionQualifiers (locus, async_status, const_status,
+				  unsafe_status, has_extern, std::move (abi));
 }
 
 // Parses generic (lifetime or type) params inside angle brackets (optional).

@@ -1947,25 +1947,12 @@ FunctionQualifiers::as_string () const
 {
   std::string str;
 
-  switch (const_status)
-    {
-    case NONE:
-      // do nothing
-      break;
-    case CONST_FN:
-      str += "const ";
-      break;
-    case ASYNC_FN:
-      str += "async ";
-      break;
-    default:
-      return "ERROR_MARK_STRING: async-const status failure";
-    }
-
-  if (unsafety == Unsafety::Unsafe)
-    {
-      str += "unsafe ";
-    }
+  if (is_const ())
+    str += "const ";
+  if (is_async ())
+    str += "async ";
+  if (is_unsafe ())
+    str += "unsafe ";
 
   if (has_extern)
     {

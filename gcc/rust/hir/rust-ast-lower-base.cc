@@ -721,7 +721,8 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
 		       "invalid ABI: found %qs", extern_abi.c_str ());
     }
 
-  return HIR::FunctionQualifiers (qualifiers.get_const_status (), unsafety,
+  return HIR::FunctionQualifiers (qualifiers.get_async_status (),
+				  qualifiers.get_const_status (), unsafety,
 				  has_extern, abi);
 }
 
