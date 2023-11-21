@@ -36,4 +36,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-offload-ipa-dump-not "Generated .* clone" "simdclone" } } */
+/* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-ipa-dump-not "Generated .* clone" "simdclone" } } */
