@@ -1367,6 +1367,15 @@ ftms = {
 };
 
 ftms = {
+  name = freestanding_cstring;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = freestanding_expected;
   values = {
     v = 202311;
