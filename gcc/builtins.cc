@@ -9819,6 +9819,8 @@ fold_builtin_bit_query (location_t loc, enum built_in_function fcode,
 	  if (!direct_internal_fn_supported_p (ifn, arg0_type,
 					       OPTIMIZE_FOR_BOTH))
 	    arg2 = NULL_TREE;
+	  if (arg2 == NULL_TREE)
+	    arg0 = save_expr (arg0);
 	}
       if (fcodei == END_BUILTINS || arg2)
 	call = build_call_expr_internal_loc (loc, ifn, integer_type_node,
