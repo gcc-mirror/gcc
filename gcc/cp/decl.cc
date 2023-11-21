@@ -17392,8 +17392,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   gcc_assert (TREE_CHAIN (void_list_node) == NULL_TREE);
 
   tree fntype = TREE_TYPE (decl1);
-  if (TREE_CODE (fntype) == METHOD_TYPE)
-    ctype = TYPE_METHOD_BASETYPE (fntype);
+  if (DECL_CLASS_SCOPE_P (decl1))
+    ctype = DECL_CONTEXT (decl1);
   else
     {
       ctype = DECL_FRIEND_CONTEXT (decl1);
@@ -17424,15 +17424,13 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   /* Sometimes we don't notice that a function is a static member, and
      build a METHOD_TYPE for it.  Fix that up now.  */
-  gcc_assert (!(ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
+  gcc_assert (!(DECL_STATIC_FUNCTION_P (decl1)
 		&& TREE_CODE (TREE_TYPE (decl1)) == METHOD_TYPE));
 
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
   if (ctype)
     push_nested_class (ctype);
-  else if (DECL_STATIC_FUNCTION_P (decl1))
-    push_nested_class (DECL_CONTEXT (decl1));
 
   /* Now that we have entered the scope of the class, we must restore
      the bindings for any template parameters surrounding DECL1, if it
@@ -17469,7 +17467,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       tree newdecl1 = push_template_decl (decl1, doing_friend);
       if (newdecl1 == error_mark_node)
 	{
-	  if (ctype || DECL_STATIC_FUNCTION_P (decl1))
+	  if (ctype)
 	    pop_nested_class ();
 	  return false;
 	}
@@ -17621,7 +17619,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* Start the statement-tree, start the tree now.  */
   DECL_SAVED_TREE (decl1) = push_stmt_list ();
 
-  if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1))
     {
       /* We know that this was set up by `grokclassfn'.  We do not
 	 wait until `store_parm_decls', since evil parse errors may
