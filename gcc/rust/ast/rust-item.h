@@ -840,6 +840,8 @@ public:
   // Returns the kind of the module
   enum ModuleKind get_kind () const { return kind; }
 
+  Unsafety get_unsafety () const { return safety; }
+
   // TODO: think of better way to do this - mutable getter seems dodgy
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
