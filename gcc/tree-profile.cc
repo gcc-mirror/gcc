@@ -304,8 +304,8 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
   tree one = build_int_cst (type, 1);
   tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
 
-  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN ||
-      (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
+  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN
+      || (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
@@ -314,8 +314,8 @@ gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
       gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
       gen_assign_counter_update (gsi, call, f, result, name);
     }
-  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT ||
-		       counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
+  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT
+		       || counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
     {
       /* low = __atomic_add_fetch_4 (addr, 1, MEMMODEL_RELAXED);
 	 high_inc = low == 0 ? 1 : 0;
@@ -780,8 +780,8 @@ tree_profiling (void)
       flag_profile_update = PROFILE_UPDATE_SINGLE;
     }
   else if (flag_profile_update == PROFILE_UPDATE_PREFER_ATOMIC)
-    flag_profile_update = can_support_atomic
-      ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
+    flag_profile_update
+      = can_support_atomic ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
@@ -791,7 +791,7 @@ tree_profiling (void)
 	counter_update = COUNTER_UPDATE_ATOMIC_BUILTIN;
     }
   else if (gcov_type_size == 8 && have_atomic_4)
-      counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
+    counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.cc:ipa_passes().  */
