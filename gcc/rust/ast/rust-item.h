@@ -533,19 +533,20 @@ public:
 // Qualifiers for function, i.e. const, unsafe, extern etc.
 class FunctionQualifiers
 {
-  AsyncConstStatus const_status;
-  bool has_unsafe;
+  Async async_status;
+  Const const_status;
+  Unsafety unsafe_status;
   bool has_extern;
   std::string extern_abi;
   location_t locus;
 
 public:
-  FunctionQualifiers (location_t locus, AsyncConstStatus const_status,
-		      bool has_unsafe, bool has_extern = false,
+  FunctionQualifiers (location_t locus, Async async_status, Const const_status,
+		      Unsafety unsafe_status, bool has_extern = false,
 		      std::string extern_abi = std::string ())
-    : const_status (const_status), has_unsafe (has_unsafe),
-      has_extern (has_extern), extern_abi (std::move (extern_abi)),
-      locus (locus)
+    : async_status (async_status), const_status (const_status),
+      unsafe_status (unsafe_status), has_extern (has_extern),
+      extern_abi (std::move (extern_abi)), locus (locus)
   {
     if (!this->extern_abi.empty ())
       {
@@ -556,11 +557,14 @@ public:
 
   std::string as_string () const;
 
-  AsyncConstStatus get_const_status () const { return const_status; }
-  bool is_unsafe () const { return has_unsafe; }
+  bool is_unsafe () const { return unsafe_status == Unsafety::Unsafe; }
   bool is_extern () const { return has_extern; }
+  bool is_const () const { return const_status == Const::Yes; }
+  bool is_async () const { return async_status == Async::Yes; }
   std::string get_extern_abi () const { return extern_abi; }
   bool has_abi () const { return !extern_abi.empty (); }
+  Const get_const_status () const { return const_status; }
+  Async get_async_status () const { return async_status; }
 
   location_t get_locus () const { return locus; }
 };

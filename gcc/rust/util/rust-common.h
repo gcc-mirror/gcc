@@ -25,16 +25,28 @@
 
 namespace Rust {
 
-enum Mutability
+enum class Mutability
 {
   Imm,
   Mut
 };
 
-enum Unsafety
+enum class Unsafety
 {
   Unsafe,
   Normal
+};
+
+enum class Const
+{
+  Yes,
+  No,
+};
+
+enum class Async
+{
+  Yes,
+  No
 };
 
 enum BoundPolarity

@@ -46,7 +46,7 @@ AstBuilder::tuple_idx (std::string receiver, int idx)
 FunctionQualifiers
 AstBuilder::fn_qualifiers ()
 {
-  return FunctionQualifiers (loc, AsyncConstStatus::NONE, false);
+  return FunctionQualifiers (loc, Async::No, Const::No, Unsafety::Normal);
 }
 
 PathExprSegment
