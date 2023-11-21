@@ -2817,9 +2817,6 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
 			 "can't determine vectorization factor.\n");
       return ok;
     }
-  if (max_vf != MAX_VECTORIZATION_FACTOR
-      && maybe_lt (max_vf, LOOP_VINFO_VECT_FACTOR (loop_vinfo)))
-    return opt_result::failure_at (vect_location, "bad data dependence.\n");
 
   /* Compute the scalar iteration cost.  */
   vect_compute_single_scalar_iteration_cost (loop_vinfo);
@@ -2880,6 +2877,10 @@ start_over:
       dump_printf (MSG_NOTE, ", niters = %wd\n",
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
+
+  if (max_vf != MAX_VECTORIZATION_FACTOR
+      && maybe_lt (max_vf, LOOP_VINFO_VECT_FACTOR (loop_vinfo)))
+    return opt_result::failure_at (vect_location, "bad data dependence.\n");
 
   loop_vinfo->vector_costs = init_cost (loop_vinfo, false);
 
