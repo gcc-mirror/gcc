@@ -3443,8 +3443,8 @@ stands for zero or more unmatched lines; the whitespace after
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa}, and
-@code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa},
+@code{offload-ipa}, and @code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
@@ -3478,6 +3478,39 @@ occurrences of the string ``code has been optimized'', use:
 /* @{ dg-options "-fdump-tree-mypass" @} */
 /* @{ dg-final @{ scan-tree-dump "code has been optimized" "mypass\[1-3\]" @} @} */
 @end smallexample
+
+The @code{offload-@dots{}} ones by default separately scan the dump
+file of each enabled offload target.
+You may use the @code{only_for_offload_target} wrapper to restrict the
+scanning to one specific offload target:
+
+@smallexample
+/* @{ dg-do link @{ target offload_target_amdgcn @} @} */
+/* @{ dg-additional-options -foffload-options=-fdump-ipa-simdclone-details @} */
+/* @{ dg-final @{ only_for_offload_target amdgcn-amdhsa scan-offload-ipa-dump @var{regex_amdgcn} simdclone @} @} */
+@end smallexample
+
+This test case is active if GCN offload compilation is enabled (but
+potentially also additional offload targets).
+The @code{simdclone} IPA dump file is (potentially) produced for all
+offload targets, but only the GCN offload one is scanned.
+
+If a test case doesn't have a @samp{@{ target @var{selector} @}}, and
+you need to scan, for example, for different @var{regex}es for each of
+host and potentially several offload targets, use a pattern like this:
+
+@smallexample
+/* @{ dg-final @{ scan-tree-dump @var{regex_host} optimized @} @}
+   @{ dg-final @{ only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump @var{regex_amdgcn} optimized @{ target offload_target_amdgcn @} @} @}
+   @{ dg-final @{ only_for_offload_target nvptx-none scan-offload-tree-dump @var{regex_nvptx} optimized @{ target offload_target_nvptx @} @} @} */
+@end smallexample
+
+Here, unconditionally @var{regex_host} is scanned for in the host dump
+file.
+If GCN offloading compilation is actually enabled, @var{regex_amdgcn}
+is scanned for in the GCN offload compilation dump file.
+If nvptx offloading compilation is actually enabled, @var{regex_nvptx}
+is scanned for in the nvptx offload compilation dump file.
 
 
 @subsubsection Check for output files
