@@ -1418,6 +1418,8 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	case IMPL:
 	  return parse_impl (std::move (vis), std::move (outer_attrs));
+	case MOD:
+	  return parse_module (std::move (vis), std::move (outer_attrs));
 	default:
 	  add_error (
 	    Error (t->get_locus (),
@@ -2427,6 +2429,13 @@ std::unique_ptr<AST::Module>
 Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 					  AST::AttrVec outer_attrs)
 {
+  Unsafety safety = Unsafety::Normal;
+  if (lexer.peek_token ()->get_id () == UNSAFE)
+    {
+      safety = Unsafety::Unsafe;
+      skip_token (UNSAFE);
+    }
+
   location_t locus = lexer.peek_token ()->get_locus ();
   skip_token (MOD);
 
@@ -2447,7 +2456,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
       // Construct an external module
       return std::unique_ptr<AST::Module> (
 	new AST::Module (std::move (name), std::move (vis),
-			 std::move (outer_attrs), locus, Unsafety::Normal,
+			 std::move (outer_attrs), locus, safety,
 			 lexer.get_filename (), inline_module_stack));
       case LEFT_CURLY: {
 	lexer.skip_token ();
@@ -2504,8 +2513,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 
 	return std::unique_ptr<AST::Module> (
 	  new AST::Module (std::move (name), locus, std::move (items),
-			   std::move (vis), Unsafety::Normal,
-			   std::move (inner_attrs),
+			   std::move (vis), safety, std::move (inner_attrs),
 			   std::move (outer_attrs))); // module name?
       }
     default:
