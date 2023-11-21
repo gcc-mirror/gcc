@@ -523,8 +523,6 @@ ForeverStack<N>::to_canonical_path (NodeId id)
 
     // Finally, append the name
     path = path.append (Resolver::CanonicalPath::new_seg (id, name));
-    rust_debug ("[ARTHUR] found path: %s. Size: %lu", path.get ().c_str (),
-		segments.size ());
 
     return path;
   });
