@@ -1,7 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -fdump-tree-evrp-details" } */
 __attribute__ ((__noinline__))
-int a(char c)
+int a(signed char c)
 {
 	return c;
 }
