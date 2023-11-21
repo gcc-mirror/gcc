@@ -65,10 +65,15 @@ main (void)
   #pragma omp target map(from:v)
   v = f ();
 
+#ifdef OFFLOAD_DEVICE_NVPTX
   if (v == 0)
     __builtin_abort ();
 
   __builtin_printf ("Nvptx accelerator: sm_%d\n", v);
+#else
+  if (v != 0)
+    __builtin_abort ();
+#endif
 
   return 0;
 }
