@@ -2857,6 +2857,7 @@ preprocess_constraints (int n_operands, int n_alternatives,
       for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	{
 	  op_alt[i].cl = NO_REGS;
+	  op_alt[i].register_filters = 0;
 	  op_alt[i].constraint = p;
 	  op_alt[i].matches = -1;
 	  op_alt[i].matched = -1;
@@ -2919,7 +2920,12 @@ preprocess_constraints (int n_operands, int n_alternatives,
 		    case CT_REGISTER:
 		      cl = reg_class_for_constraint (cn);
 		      if (cl != NO_REGS)
-			op_alt[i].cl = reg_class_subunion[op_alt[i].cl][cl];
+			{
+			  op_alt[i].cl = reg_class_subunion[op_alt[i].cl][cl];
+			  auto filter_id = get_register_filter_id (cn);
+			  if (filter_id >= 0)
+			    op_alt[i].register_filters |= 1U << filter_id;
+			}
 		      break;
 
 		    case CT_CONST_INT:
@@ -3219,13 +3225,17 @@ constrain_operands (int strict, alternative_mask alternatives)
 		  enum reg_class cl = reg_class_for_constraint (cn);
 		  if (cl != NO_REGS)
 		    {
+		      auto *filter = get_register_filter (cn);
 		      if (strict < 0
 			  || (strict == 0
 			      && REG_P (op)
 			      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			  || (strict == 0 && GET_CODE (op) == SCRATCH)
 			  || (REG_P (op)
-			      && reg_fits_class_p (op, cl, offset, mode)))
+			      && reg_fits_class_p (op, cl, offset, mode)
+			      && (!filter
+				  || TEST_HARD_REG_BIT (*filter,
+							REGNO (op) + offset))))
 			win = true;
 		    }
 

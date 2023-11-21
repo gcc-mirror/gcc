@@ -42,6 +42,7 @@ enum op_type {
   OP_INOUT
 };
 
+#ifndef GENERATOR_FILE
 struct operand_alternative
 {
   /* Pointer to the beginning of the constraint string for this alternative,
@@ -62,6 +63,11 @@ struct operand_alternative
      matches this one.  */
   int matched : 8;
 
+  /* Bit ID is set if the constraint string includes a register constraint with
+     register filter ID.  Use test_register_filters (REGISTER_FILTERS, REGNO)
+     to test whether REGNO is a valid start register for the operand.  */
+  unsigned int register_filters : MAX (NUM_REGISTER_FILTERS, 1);
+
   /* Nonzero if '&' was found in the constraint string.  */
   unsigned int earlyclobber : 1;
   /* Nonzero if TARGET_MEM_CONSTRAINT was found in the constraint
@@ -72,8 +78,6 @@ struct operand_alternative
   /* Nonzero if 'X' was found in the constraint string, or if the constraint
      string for this alternative was empty.  */
   unsigned int anything_ok : 1;
-
-  unsigned int unused : 12;
 };
 
 /* Return the class for operand I of alternative ALT, taking matching
@@ -84,6 +88,18 @@ alternative_class (const operand_alternative *alt, int i)
 {
   return alt[i].matches >= 0 ? alt[alt[i].matches].cl : alt[i].cl;
 }
+
+/* Return the mask of register filters that should be applied to operand I
+   of alternative ALT, taking matching constraints into account.  */
+
+inline unsigned int
+alternative_register_filters (const operand_alternative *alt, int i)
+{
+  return (alt[i].matches >= 0
+	  ? alt[alt[i].matches].register_filters
+	  : alt[i].register_filters);
+}
+#endif
 
 /* A class for substituting one rtx for another within an instruction,
    or for recursively simplifying the instruction as-is.  Derived classes
@@ -242,9 +258,11 @@ extern void extract_insn (rtx_insn *);
 extern void extract_constrain_insn (rtx_insn *insn);
 extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
+#ifndef GENERATOR_FILE
 extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *, rtx **);
 extern const operand_alternative *preprocess_insn_constraints (unsigned int);
+#endif
 extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
 extern bool peep2_regno_dead_p (int, int);
@@ -380,6 +398,7 @@ struct recog_data_d
 
 extern struct recog_data_d recog_data;
 
+#ifndef GENERATOR_FILE
 extern const operand_alternative *recog_op_alt;
 
 /* Return a pointer to an array in which index OP describes the constraints
@@ -393,6 +412,7 @@ which_op_alt ()
 				 recog_data.n_alternatives - 1));
   return &recog_op_alt[which_alternative * recog_data.n_operands];
 }
+#endif
 
 /* A table defined in insn-output.cc that give information about
    each insn-code value.  */
