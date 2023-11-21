@@ -191,6 +191,7 @@ AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG,
 
 /* Generic Architecture Processors.  */
 AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)
-AARCH64_CORE("generic-armv8-a",  generic_armv8_a, cortexa53, V8A,  (), generic_armv8_a, 0x0, 0x0, -1)
+AARCH64_CORE("generic-armv8-a",  generic_armv8_a, cortexa53, V8A, (), generic_armv8_a, 0x0, 0x0, -1)
+AARCH64_CORE("generic-armv9-a",  generic_armv9_a, cortexa53, V9A, (), generic_armv9_a, 0x0, 0x0, -1)
 
 #undef AARCH64_CORE
