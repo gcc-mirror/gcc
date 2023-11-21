@@ -5,4 +5,4 @@
 
 #include "declare-variant-3.h"
 
-/* { dg-final { scan-offload-tree-dump "= f30 \\(\\);" "optimized" } } */
+/* { dg-final { only_for_offload_target nvptx-none scan-offload-tree-dump "= f30 \\(\\);" "optimized" } } */

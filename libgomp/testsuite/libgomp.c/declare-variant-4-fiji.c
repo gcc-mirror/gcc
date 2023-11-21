@@ -5,4 +5,4 @@
 #define USE_FIJI_FOR_GFX803
 #include "declare-variant-4.h"
 
-/* { dg-final { scan-offload-tree-dump "= gfx803 \\(\\);" "optimized" } } */
+/* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump "= gfx803 \\(\\);" "optimized" } } */

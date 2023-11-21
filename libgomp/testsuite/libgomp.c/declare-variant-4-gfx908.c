@@ -4,4 +4,4 @@
 
 #include "declare-variant-4.h"
 
-/* { dg-final { scan-offload-tree-dump "= gfx908 \\(\\);" "optimized" } } */
+/* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump "= gfx908 \\(\\);" "optimized" } } */
