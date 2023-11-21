@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-march=armv8-a+crypto -mcpu=generic -save-temps" } */
+/* { dg-options "-mcpu=generic+crypto -save-temps" } */
 
 /* Check that "+nothing" clears the ISA flags.  */
 
