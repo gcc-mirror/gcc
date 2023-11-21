@@ -31,3 +31,4 @@ float * __restrict out, float x)
 }
 
 /* We don't want to see vect_vec_iv_.21_25 + { POLY_INT_CST [4, 4], ... }.  */
+/* { dg-final { scan-tree-dump-not "\\+ \{ POLY_INT_CST" "optimized" } } */
