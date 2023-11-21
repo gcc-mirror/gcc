@@ -1,34 +1,41 @@
 #pragma omp declare target
+
+__attribute__ ((noipa))
 int
 f30 (void)
 {
   return 30;
 }
 
+__attribute__ ((noipa))
 int
 f35 (void)
 {
   return 35;
 }
 
+__attribute__ ((noipa))
 int
 f53 (void)
 {
   return 53;
 }
 
+__attribute__ ((noipa))
 int
 f70 (void)
 {
   return 70;
 }
 
+__attribute__ ((noipa))
 int
 f75 (void)
 {
   return 75;
 }
 
+__attribute__ ((noipa))
 int
 f80 (void)
 {
@@ -41,6 +48,7 @@ f80 (void)
 #pragma omp declare variant (f70) match (device={isa("sm_70")})
 #pragma omp declare variant (f75) match (device={isa("sm_75")})
 #pragma omp declare variant (f80) match (device={isa("sm_80")})
+__attribute__ ((noipa))
 int
 f (void)
 {
