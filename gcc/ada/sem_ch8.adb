@@ -2691,7 +2691,7 @@ package body Sem_Ch8 is
                --  Each attempt to find a suitable primitive of a particular
                --  type operates on its own copy of the original renaming.
                --  As a result the original renaming is kept decoration and
-               --  side-effect-free.
+               --  side-effect free.
 
                --  Inherit the overloaded status of the renamed subprogram name
 
@@ -6549,6 +6549,16 @@ package body Sem_Ch8 is
                      end if;
 
                      Decl := Enclosing_Declaration (E);
+
+                     --  Enclosing_Declaration does not always return a
+                     --  declaration; cope with this irregularity.
+                     if Decl in N_Subprogram_Specification_Id
+                       and then Nkind (Parent (Decl)) in
+                         N_Subprogram_Body | N_Subprogram_Declaration
+                           | N_Subprogram_Renaming_Declaration
+                     then
+                        Decl := Parent (Decl);
+                     end if;
 
                      --  Look for the suprogram renaming declaration built
                      --  for a generic actual subprogram. Unclear why
