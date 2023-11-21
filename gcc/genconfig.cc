@@ -360,6 +360,8 @@ main (int argc, const char **argv)
       printf ("#define MAX_INSNS_PER_PEEP2 0\n");
     }
 
+  printf ("#define NUM_REGISTER_FILTERS %d\n", register_filters.length ());
+
   puts ("\n#endif /* GCC_INSN_CONFIG_H */");
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))

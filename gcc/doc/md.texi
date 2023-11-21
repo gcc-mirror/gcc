@@ -4516,8 +4516,8 @@ Register constraints correspond directly to register classes.
 @xref{Register Classes}.  There is thus not much flexibility in their
 definitions.
 
-@deffn {MD Expression} define_register_constraint name regclass docstring
-All three arguments are string constants.
+@deffn {MD Expression} define_register_constraint name regclass docstring [filter]
+All arguments are string constants.
 @var{name} is the name of the constraint, as it will appear in
 @code{match_operand} expressions.  If @var{name} is a multi-letter
 constraint its length shall be the same for all constraints starting
@@ -4528,6 +4528,43 @@ If it is an expression, it must have no side effects, and it cannot
 look at the operand.  The usual use of expressions is to map some
 register constraints to @code{NO_REGS} when the register class
 is not available on a given subarchitecture.
+
+If an operand occupies multiple hard registers, the constraint
+requires all of those registers to belong to @var{regclass}.
+For example, if @var{regclass} is @code{GENERAL_REGS} and
+@code{GENERAL_REGS} contains registers @code{r0} to @code{r15},
+the constraint does not allow @var{r15} to be used for modes
+that occupy more than one register.
+
+@cindex @code{TARGET_HARD_REGNO_MODE_OK} and constraints
+The choice of register is also constrained by @code{TARGET_HARD_REGNO_MODE_OK}.
+For example, if @code{TARGET_HARD_REGNO_MODE_OK} disallows @samp{(reg:DI r1)},
+that requirement applies to all constraints whose classes include @code{r1}.
+
+However, it is sometimes useful to impose extra operand-specific
+requirements on the register number.  For example, a target might not
+want to prevent @emph{all} odd-even pairs from holding @code{DImode}
+values, but it might still need to prevent specific operands from
+having an odd-numbered register.  The optional @var{filter} argument
+exists for such cases.  When given, @var{filter} is a C++ expression
+that evaluates to true if @code{regno} is a valid register for the
+operand.  If an operand occupies multiple registers, the condition
+applies only to the first register.
+
+For example:
+
+@smallexample
+(define_register_constraint "e" "GENERAL_REGS" "..." "regno % 2 == 0")
+@end smallexample
+
+defines a constraint that requires an even-numbered general register.
+
+Filter conditions that impose an alignment are encouraged to test
+the alignment of @code{regno} itself, as in the example, rather than
+calculate an offset relative to the start of the class.  If it is
+sometimes necessary for a register of class @var{c} to be aligned
+to @var{n}, the first register in @var{c} should itself by divisible
+by @var{n}.
 
 @var{docstring} is a sentence documenting the meaning of the
 constraint.  Docstrings are explained further below.
