@@ -189,4 +189,7 @@ AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPER
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
+/* Generic Architecture Processors.  */
+AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)
+
 #undef AARCH64_CORE

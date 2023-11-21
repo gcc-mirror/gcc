@@ -427,8 +427,6 @@ static const struct processor all_cores[] =
   {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH, \
    feature_deps::cpu_##IDENT, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {"generic", generic, cortexa53, AARCH64_ARCH_V8A,
-   feature_deps::V8A ().enable, &generic_tunings},
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
