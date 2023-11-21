@@ -16436,12 +16436,22 @@ aarch64_override_options (void)
   if (cpu && arch)
     {
       /* If both -mcpu and -march are specified, warn if they are not
-	 architecturally compatible and prefer the -march ISA flags.  */
-      if (arch->arch != cpu->arch)
+	 feature compatible.  feature compatible means that the inclusion of the
+	 cpu features would end up disabling an achitecture feature.  In
+	 otherwords the cpu features need to be a strict superset of the arch
+	 features and if so prefer the -march ISA flags.  */
+      auto full_arch_flags = arch->flags | arch_isa;
+      auto full_cpu_flags = cpu->flags | cpu_isa;
+      if (~full_cpu_flags & full_arch_flags)
 	{
-	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
+	  std::string ext_diff
+	    = aarch64_get_extension_string_for_isa_flags (full_arch_flags,
+							  full_cpu_flags);
+	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch "
+		      "and resulted in options %<%s%> being added",
 		       aarch64_cpu_string,
-		       aarch64_arch_string);
+		       aarch64_arch_string,
+		       ext_diff.c_str ());
 	}
 
       selected_arch = arch->arch;
