@@ -17007,7 +17007,7 @@ aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
 	}
 
       gassign *assign = dyn_cast<gassign *> (STMT_VINFO_STMT (stmt_info));
-      if (assign)
+      if ((kind == scalar_stmt || kind == vector_stmt) && assign)
 	{
 	  /* For MLA we need to reduce the cost since MLA is 1 instruction.  */
 	  if (!vect_is_reduction (stmt_info)
@@ -17088,15 +17088,18 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	ops->reduction_latency = MAX (ops->reduction_latency, base);
     }
 
-  /* Assume that multiply-adds will become a single operation.  */
-  if (stmt_info && aarch64_multiply_add_p (m_vinfo, stmt_info, m_vec_flags))
-    return;
+  if (stmt_info && (kind == scalar_stmt || kind == vector_stmt))
+    {
+      /* Assume that multiply-adds will become a single operation.  */
+      if (aarch64_multiply_add_p (m_vinfo, stmt_info, m_vec_flags))
+	return;
 
-  /* Assume that bool AND with compare operands will become a single
-     operation.  */
-  if (stmt_info
-      && aarch64_bool_compound_p (m_vinfo, stmt_info, m_vec_flags))
-    return;
+      /* Assume that bool AND with compare operands will become a single
+	 operation.  */
+      if (aarch64_bool_compound_p (m_vinfo, stmt_info, m_vec_flags))
+	return;
+    }
+
 
   /* Count the basic operation cost associated with KIND.  */
   switch (kind)
