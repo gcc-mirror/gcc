@@ -27666,12 +27666,10 @@ aarch64_mem_ok_with_ldpstp_policy_model (rtx mem, bool load, machine_mode mode)
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge
-   them into ldp/stp.  LOAD is true if they are load instructions.
-   MODE is the mode of memory operands.  */
+   them into ldp/stp.  LOAD is true if they are load instructions.  */
 
 bool
-aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
-				machine_mode mode)
+aarch64_operands_ok_for_ldpstp (rtx *operands, bool load)
 {
   enum reg_class rclass_1, rclass_2;
   rtx mem_1, mem_2, reg_1, reg_2;
@@ -27700,10 +27698,6 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2))
     return false;
 
-  /* Check if mem_1 is ok with the ldp-stp policy model.  */
-  if (!aarch64_mem_ok_with_ldpstp_policy_model (mem_1, load, mode))
-    return false;
-
   /* Check if the addresses are in the form of [base+offset].  */
   bool reversed = false;
   if (!aarch64_check_consecutive_mems (&mem_1, &mem_2, &reversed))
@@ -27715,7 +27709,13 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
   /* The lower memory access must be a mem-pair operand.  */
   rtx lower_mem = reversed ? mem_2 : mem_1;
-  if (!aarch64_mem_pair_operand (lower_mem, GET_MODE (lower_mem)))
+  machine_mode lower_mem_mode = GET_MODE (lower_mem);
+  if (!aarch64_mem_pair_operand (lower_mem, lower_mem_mode))
+    return false;
+
+  /* Check if lower_mem is ok with the ldp-stp policy model.  */
+  if (!aarch64_mem_ok_with_ldpstp_policy_model (lower_mem, load,
+						lower_mem_mode))
     return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
