@@ -889,10 +889,6 @@ ada.install-pdf: $(ADA_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
-ada.html:
-
-ada.install-html:
-
 doc/gnat_ugn.dvi: ada/gnat_ugn.texi \
 	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
@@ -916,6 +912,37 @@ doc/gnat_rm.pdf: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 
 doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
+
+ADA_TEXI_FILES = \
+       ada/gnat_rm.texi \
+       ada/gnat_ugn.texi \
+       $(gcc_docdir)/include/fdl.texi \
+       $(gcc_docdir)/include/gpl_v3.texi \
+       $(gcc_docdir)/include/gcc-common.texi \
+       gcc-vers.texi
+
+$(build_htmldir)/ada/index.html: $(ADA_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/ada -o $(@D) $<
+
+ada.html: $(build_htmldir)/ada/index.html
+ada.install-html: $(build_htmldir)/ada
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/ada; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).
