@@ -185,6 +185,11 @@ package body Errout is
    --  Outputs up to N levels of qualification for the given entity. For
    --  example, the entity A.B.C.D will output B.C. if N = 2.
 
+   function Should_Ignore_Pragma_SPARK_Mode return Boolean;
+   --  Return whether pragma Ignore_Pragma (SPARK_Mode) was specified. This is
+   --  similar to Sem_Util.Should_Ignore_Pragma_Par but located here to avoid
+   --  problematic dependency on Sem_Util.
+
    function Special_Msg_Delete
      (Msg : String;
       N   : Node_Or_Entity_Id;
@@ -4459,6 +4464,15 @@ package body Errout is
       end if;
    end Set_Qualification;
 
+   -------------------------------------
+   -- Should_Ignore_Pragma_SPARK_Mode --
+   -------------------------------------
+
+   function Should_Ignore_Pragma_SPARK_Mode return Boolean is
+   begin
+      return Get_Name_Table_Boolean3 (Name_SPARK_Mode);
+   end Should_Ignore_Pragma_SPARK_Mode;
+
    ------------------------
    -- Special_Msg_Delete --
    ------------------------
@@ -4522,7 +4536,14 @@ package body Errout is
 
    procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
    begin
-      if SPARK_Mode /= Off then
+      --  If SPARK_Mode is Off, we do not report SPARK legality errors to give
+      --  the flexibility to opt out of SPARK checking completely. We do the
+      --  same if pragma Ignore_Pragma (SPARK_Mode) was specified, as a way
+      --  for tools to ignore SPARK checking even on SPARK code.
+
+      if SPARK_Mode /= Off
+        and then not Should_Ignore_Pragma_SPARK_Mode
+      then
          Error_Msg_N (Msg, N);
       end if;
    end SPARK_Msg_N;
@@ -4537,7 +4558,9 @@ package body Errout is
       E   : Node_Or_Entity_Id)
    is
    begin
-      if SPARK_Mode /= Off then
+      if SPARK_Mode /= Off
+        and then not Should_Ignore_Pragma_SPARK_Mode
+      then
          Error_Msg_NE (Msg, N, E);
       end if;
    end SPARK_Msg_NE;

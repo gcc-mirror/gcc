@@ -2472,7 +2472,9 @@ Syntax:
 This is a configuration pragma
 that takes a single argument that is a simple identifier. Any subsequent
 use of a pragma whose pragma identifier matches this argument will be
-silently ignored. This may be useful when legacy code or code intended
+silently ignored. Any preceding use of a pragma whose pragma identifier
+matches this argument will be parsed and then ignored.
+This may be useful when legacy code or code intended
 for compilation with some other compiler contains pragmas that match the
 name, but not the exact implementation, of a GNAT pragma. The use of this
 pragma allows such pragmas to be ignored, which may be useful in CodePeer
