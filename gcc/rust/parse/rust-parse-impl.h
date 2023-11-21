@@ -30,6 +30,7 @@
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
 #include "rust-keyword-values.h"
+#include "rust-session-manager.h"
 
 #include "optional.h"
 
@@ -1113,6 +1114,8 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
 	  add_error (std::move (error));
 	}
       return nullptr;
+
+    case ASYNC:
     case PUB:
     case MOD:
     case EXTERN_KW:
@@ -1389,6 +1392,10 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	  lexer.skip_token (1); // TODO: is this right thing to do?
 	  return nullptr;
 	}
+    // for async functions
+    case ASYNC:
+      return parse_async_item (std::move (vis), std::move (outer_attrs));
+
     case STATIC_KW:
       return parse_static_item (std::move (vis), std::move (outer_attrs));
     case AUTO:
@@ -1427,6 +1434,39 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
       break;
     }
   return nullptr;
+}
+
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Function>
+Parser<ManagedTokenSource>::parse_async_item (AST::Visibility vis,
+					      AST::AttrVec outer_attrs)
+{
+  const_TokenPtr t = lexer.peek_token ();
+  if (Session::get_instance ().options.get_edition ()
+      == CompileOptions::Edition::E2015)
+    {
+      add_error (Error (t->get_locus (), ErrorCode::E0670,
+			"%<async fn%> is not permitted in Rust 2015"));
+      add_error (
+	Error::Hint (t->get_locus (),
+		     "to use %<async fn%>, switch to Rust 2018 or later"));
+    }
+
+  t = lexer.peek_token (1);
+
+  switch (t->get_id ())
+    {
+    case UNSAFE:
+    case FN_KW:
+      return parse_function (std::move (vis), std::move (outer_attrs));
+
+    default:
+      add_error (
+	Error (t->get_locus (), "expected item, found keyword %<async%>"));
+
+      lexer.skip_token (1);
+      return nullptr;
+    }
 }
 
 // Parses a macro rules definition syntax extension whatever thing.
