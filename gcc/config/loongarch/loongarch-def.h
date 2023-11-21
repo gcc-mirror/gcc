@@ -46,7 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_DEF_H
 #define LOONGARCH_DEF_H
 
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 #include <stdint.h>
+#endif
+
 #include "loongarch-tune.h"
 
 #ifdef __cplusplus
@@ -62,9 +65,11 @@ extern const char* loongarch_isa_base_strings[];
 #define ISA_BASE_LA64V110     1
 #define N_ISA_BASE_TYPES      2
 
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 /* Unlike other arrays, this is defined in loongarch-cpu.cc.  The problem is
    we cannot use the C++ header options.h in loongarch-def.c.  */
 extern int64_t loongarch_isa_base_features[];
+#endif
 
 /* enum isa_ext_* */
 extern const char* loongarch_isa_ext_strings[];
@@ -121,6 +126,7 @@ extern const char* loongarch_cmodel_strings[];
 #define M_OPT_ABSENT(opt_enum)  ((opt_enum) == M_OPT_UNSET)
 
 
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 /* Internal representation of the target.  */
 struct loongarch_isa
 {
@@ -150,6 +156,9 @@ struct loongarch_target
   int cmodel;	    /* CMODEL_ */
 };
 
+extern struct loongarch_isa loongarch_cpu_default_isa[];
+#endif
+
 /* CPU properties.  */
 /* index */
 #define CPU_NATIVE	  0
@@ -162,7 +171,6 @@ struct loongarch_target
 
 /* parallel tables.  */
 extern const char* loongarch_cpu_strings[];
-extern struct loongarch_isa loongarch_cpu_default_isa[];
 extern int loongarch_cpu_issue_rate[];
 extern int loongarch_cpu_multipass_dfa_lookahead[];
 
