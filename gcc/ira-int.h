@@ -328,6 +328,13 @@ struct ira_allocno
 
      This is only ever true for non-cap allocnos.  */
   unsigned int might_conflict_with_parent_p : 1;
+#ifndef NUM_REGISTER_FILTERS
+#error "insn-config.h not included"
+#elif NUM_REGISTER_FILTERS
+  /* The set of register filters applied to the allocno by operand
+     alternatives that accept class ACLASS.  */
+  unsigned int register_filters : NUM_REGISTER_FILTERS;
+#endif
   /* Accumulated usage references of the allocno.  Here and below,
      word 'accumulated' means info for given region and all nested
      subregions.  In this case, 'accumulated' means sum of references
@@ -432,6 +439,13 @@ struct ira_allocno
 #define ALLOCNO_FREQ(A) ((A)->freq)
 #define ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P(A) \
   ((A)->might_conflict_with_parent_p)
+#if NUM_REGISTER_FILTERS
+#define ALLOCNO_REGISTER_FILTERS(A) (A)->register_filters
+#define ALLOCNO_SET_REGISTER_FILTERS(A, X) ((A)->register_filters = (X))
+#else
+#define ALLOCNO_REGISTER_FILTERS(A) 0
+#define ALLOCNO_SET_REGISTER_FILTERS(A, X) ((void) (A), gcc_assert ((X) == 0))
+#endif
 #define ALLOCNO_HARD_REGNO(A) ((A)->hard_regno)
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)

@@ -1066,6 +1066,66 @@ process_single_reg_class_operands (bool in_p, int freq)
     }
 }
 
+/* Go through the operands of the extracted insn looking for operand
+   alternatives that apply a register filter.  Record any such filters
+   in the operand's allocno.  */
+static void
+process_register_constraint_filters ()
+{
+  for (int opno = 0; opno < recog_data.n_operands; ++opno)
+    {
+      rtx op = recog_data.operand[opno];
+      if (SUBREG_P (op))
+	op = SUBREG_REG (op);
+      if (REG_P (op) && !HARD_REGISTER_P (op))
+	{
+	  ira_allocno_t a = ira_curr_regno_allocno_map[REGNO (op)];
+	  for (int alt = 0; alt < recog_data.n_alternatives; alt++)
+	    {
+	      if (!TEST_BIT (preferred_alternatives, alt))
+		continue;
+
+	      auto *op_alt = &recog_op_alt[alt * recog_data.n_operands];
+	      auto cl = alternative_class (op_alt, opno);
+	      /* The two extremes are easy:
+
+		 - We should record the filter if CL matches the
+		   allocno class.
+
+		 - We should ignore the filter if CL and the allocno class
+		   are disjoint.  We'll either pick a different alternative
+		   or reload the operand.
+
+		 Things are trickier if the classes overlap.  However:
+
+		 - If the allocno class includes registers that are not
+		   in CL, some choices of hard register will need a reload
+		   anyway.  It isn't obvious that reloads due to filters
+		   are worse than reloads due to regnos being outside CL.
+
+		 - Conversely, if the allocno class is a subset of CL,
+		   any allocation will satisfy the class requirement.
+		   We should try to make sure it satisfies the filter
+		   requirement too.  This is useful if, for example,
+		   an allocno needs to be in "low" registers to satisfy
+		   some uses, and its allocno class is therefore those
+		   low registers, but the allocno is elsewhere allowed
+		   to be in any even-numbered register.  Picking an
+		   even-numbered low register satisfies both types of use.  */
+	      if (!ira_class_subset_p[ALLOCNO_CLASS (a)][cl])
+		continue;
+
+	      auto filters = alternative_register_filters (op_alt, opno);
+	      if (!filters)
+		continue;
+
+	      filters |= ALLOCNO_REGISTER_FILTERS (a);
+	      ALLOCNO_SET_REGISTER_FILTERS (a, filters);
+	    }
+	}
+    }
+}
+
 /* Look through the CALL_INSN_FUNCTION_USAGE of a call insn INSN, and see if
    we find a SET rtx that we can use to deduce that a register can be cheaply
    caller-saved.  Return such a register, or NULL_RTX if none is found.  */
@@ -1378,6 +1438,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      }
 
 	  preferred_alternatives = ira_setup_alts (insn);
+	  process_register_constraint_filters ();
 	  process_single_reg_class_operands (false, freq);
 
 	  if (call_p)
