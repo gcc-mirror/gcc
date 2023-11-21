@@ -736,6 +736,7 @@ private:
   Identifier module_name;
   location_t locus;
   ModuleKind kind;
+  Unsafety safety;
 
   // Name of the file including the module
   std::string outer_filename;
@@ -766,11 +767,12 @@ public:
 
   // Unloaded module constructor
   Module (Identifier module_name, Visibility visibility,
-	  std::vector<Attribute> outer_attrs, location_t locus,
+	  std::vector<Attribute> outer_attrs, location_t locus, Unsafety safety,
 	  std::string outer_filename, std::vector<std::string> module_scope)
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       module_name (module_name), locus (locus), kind (ModuleKind::UNLOADED),
-      outer_filename (outer_filename), inner_attrs (std::vector<Attribute> ()),
+      safety (safety), outer_filename (outer_filename),
+      inner_attrs (std::vector<Attribute> ()),
       items (std::vector<std::unique_ptr<Item>> ()),
       module_scope (std::move (module_scope))
   {}
@@ -779,18 +781,19 @@ public:
   Module (Identifier name, location_t locus,
 	  std::vector<std::unique_ptr<Item>> items,
 	  Visibility visibility = Visibility::create_error (),
+	  Unsafety safety = Unsafety::Normal,
 	  std::vector<Attribute> inner_attrs = std::vector<Attribute> (),
 	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       module_name (name), locus (locus), kind (ModuleKind::LOADED),
-      outer_filename (std::string ()), inner_attrs (std::move (inner_attrs)),
-      items (std::move (items))
+      safety (safety), outer_filename (std::string ()),
+      inner_attrs (std::move (inner_attrs)), items (std::move (items))
   {}
 
   // Copy constructor with vector clone
   Module (Module const &other)
     : VisItem (other), module_name (other.module_name), locus (other.locus),
-      kind (other.kind), inner_attrs (other.inner_attrs),
+      kind (other.kind), safety (other.safety), inner_attrs (other.inner_attrs),
       module_scope (other.module_scope)
   {
     // We need to check whether we are copying a loaded module or an unloaded
