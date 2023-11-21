@@ -1,5 +1,6 @@
-/* { dg-do run { target { offload_target_amdgcn } } } */
-/* { dg-skip-if "gfx90a only" { ! amdgcn-*-* } { "*" } { "-foffload=-march=gfx90a" } } */
+/* { dg-do link { target { offload_target_amdgcn } } } */
+/* { dg-additional-options -foffload=amdgcn-amdhsa } */
+/* { dg-additional-options -foffload=-march=gfx90a } */
 /* { dg-additional-options "-foffload=-fdump-tree-optimized" } */
 
 #include "declare-variant-4.h"

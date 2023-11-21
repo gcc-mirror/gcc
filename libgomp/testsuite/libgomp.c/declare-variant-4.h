@@ -61,10 +61,15 @@ main (void)
 #pragma omp target map(from : v)
   v = f ();
 
+#ifdef OFFLOAD_DEVICE_GCN
   if (v == 0)
     __builtin_abort ();
 
   __builtin_printf ("AMDGCN accelerator: gfx%x\n", v);
+#else
+  if (v != 0)
+    __builtin_abort ();
+#endif
 
   return 0;
 }
