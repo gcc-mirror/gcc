@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_v && riscv_zvfh_hw } } } */
+/* { dg-do run { target { riscv_v && riscv_zvfh } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include <assert.h>
