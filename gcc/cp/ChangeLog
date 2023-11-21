@@ -1,3 +1,21 @@
+2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	* lambda.cc (compare_lambda_sig): Fix typo in variadic.
+
+2023-11-20  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (comp_template_parms): Just one level.
+	(template_parameter_lists_equivalent_p): Likewise.
+
+2023-11-20  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_TEMPLATE_PARM_CHECK): New.
+	(DECL_IMPLICIT_TEMPLATE_PARM_P): New.
+	(decl_template_parm_check): New.
+	* mangle.cc (write_closure_template_head): Use it.
+	* parser.cc (synthesize_implicit_template_parm): Likewise.
+	* pt.cc (template_parameters_equivalent_p): Likewise.
+
 2023-11-19  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/99187

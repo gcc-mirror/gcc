@@ -1,3 +1,269 @@
+2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	* config/nvptx/nvptx.h (struct machine_function): Fix typo in variadic.
+	* config/nvptx/nvptx.cc (nvptx_function_arg_advance): Adjust to use fixed name.
+	(nvptx_declare_function_name): Likewise.
+	(nvptx_call_args): Likewise.
+	(nvptx_expand_call): Likewise.
+
+2023-11-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* tree-profile.cc (gen_counter_update): Use unshare_expr() for the
+	counter expression in the second gimple_build_assign().
+
+2023-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.cc (add_detected_attribute_1): New function.
+	(cgraph_node::add_detected_attribute): Likewise.
+	* cgraph.h (cgraph_node::add_detected_attribute): Declare.
+	* common.opt: Add -Wsuggest-attribute=returns_nonnull.
+	* doc/invoke.texi: Document new flag.
+	* gimple-range-fold.cc (fold_using_range::range_of_call):
+	Use known reutrn value ranges.
+	* ipa-prop.cc (struct ipa_return_value_summary): New type.
+	(class ipa_return_value_sum_t): New type.
+	(ipa_return_value_sum): New summary.
+	(ipa_record_return_value_range): New function.
+	(ipa_return_value_range): New function.
+	* ipa-prop.h (ipa_return_value_range): Declare.
+	(ipa_record_return_value_range): Declare.
+	* ipa-pure-const.cc (warn_function_returns_nonnull): New funcion.
+	* ipa-utils.h (warn_function_returns_nonnull): Declare.
+	* symbol-summary.h: Fix comment.
+	* tree-vrp.cc (execute_ranger_vrp): Record return values.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112618
+	* tree-vect-loop.cc (vect_transform_loop_stmt): For not
+	relevant and unused .MASK_CALL make sure we remove the
+	scalar stmt.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For = in the
+	innermost common loop record a partition conflict.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112622
+	* convert.cc (convert_to_real_1): Use element_precision
+	where a vector type might appear.  Provide specific
+	diagnostic for unexpected vector argument.
+
+2023-11-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112597
+	* config/riscv/vector-iterators.md: Remove VDEMOTE and VMDEMOTE.
+	* config/riscv/vector.md: Fix slide1 intermediate mode bug.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (gather_scatter_valid_offset_mode_p):
+	Add check for XLEN == 32.
+	* config/riscv/vector-iterators.md: Change VLS part of the
+	demote iterator to 2x elements modes
+	* config/riscv/vector.md: Adjust iterators and insn conditions.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vld1_impl, vld1q)
+	(vst1_impl, vst1q): New.
+	* config/arm/arm-mve-builtins-base.def (vld1q, vst1q): New.
+	* config/arm/arm-mve-builtins-base.h (vld1q, vst1q): New.
+	* config/arm/arm_mve.h
+	(vld1q): Delete.
+	(vst1q): Delete.
+	(vld1q_s8): Delete.
+	(vld1q_s32): Delete.
+	(vld1q_s16): Delete.
+	(vld1q_u8): Delete.
+	(vld1q_u32): Delete.
+	(vld1q_u16): Delete.
+	(vld1q_f32): Delete.
+	(vld1q_f16): Delete.
+	(vst1q_f32): Delete.
+	(vst1q_f16): Delete.
+	(vst1q_s8): Delete.
+	(vst1q_s32): Delete.
+	(vst1q_s16): Delete.
+	(vst1q_u8): Delete.
+	(vst1q_u32): Delete.
+	(vst1q_u16): Delete.
+	(__arm_vld1q_s8): Delete.
+	(__arm_vld1q_s32): Delete.
+	(__arm_vld1q_s16): Delete.
+	(__arm_vld1q_u8): Delete.
+	(__arm_vld1q_u32): Delete.
+	(__arm_vld1q_u16): Delete.
+	(__arm_vst1q_s8): Delete.
+	(__arm_vst1q_s32): Delete.
+	(__arm_vst1q_s16): Delete.
+	(__arm_vst1q_u8): Delete.
+	(__arm_vst1q_u32): Delete.
+	(__arm_vst1q_u16): Delete.
+	(__arm_vld1q_f32): Delete.
+	(__arm_vld1q_f16): Delete.
+	(__arm_vst1q_f32): Delete.
+	(__arm_vst1q_f16): Delete.
+	(__arm_vld1q): Delete.
+	(__arm_vst1q): Delete.
+	* config/arm/mve.md (mve_vld1q_f<mode>): Rename into ...
+	(@mve_vld1q_f<mode>): ... this.
+	(mve_vld1q_<supf><mode>): Rename into ...
+	(@mve_vld1q_<supf><mode>) ... this.
+	(mve_vst1q_f<mode>): Rename into ...
+	(@mve_vst1q_f<mode>): ... this.
+	(mve_vst1q_<supf><mode>): Rename into ...
+	(@mve_vst1q_<supf><mode>) ... this.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (load, store): New.
+	* config/arm/arm-mve-builtins-shapes.h (load, store): New.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-functions.h (multi_vector_function)
+	(full_width_access): New classes.
+	* config/arm/arm-mve-builtins.cc
+	(find_type_suffix_for_scalar_type, infer_pointer_type)
+	(require_pointer_type, get_contiguous_base, add_mem_operand)
+	(add_fixed_operand, use_contiguous_load_insn)
+	(use_contiguous_store_insn): New.
+	* config/arm/arm-mve-builtins.h (memory_vector_mode)
+	(infer_pointer_type, require_pointer_type, get_contiguous_base)
+	(add_mem_operand)
+	(add_fixed_operand, use_contiguous_load_insn)
+	(use_contiguous_store_insn): New.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (build_const_pointer):
+	New.
+	(parse_type): Add support for '_', 'al' and 'as'.
+	* config/arm/arm-mve-builtins.h (function_instance): Add
+	memory_scalar_type.
+	(function_base): Likewise.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_init_simd_builtin_types): Fix
+	initialization of arm_simd_types[].eltype.
+	* config/arm/arm-mve-builtins.def (DEF_MVE_TYPE): Fix scalar
+	types.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeclass.h (enum type_class): Add vector_type_class.
+	* builtins.cc (type_to_class): Return vector_type_class for
+	VECTOR_TYPE.
+	* doc/extend.texi (__builtin_classify_type): Mention bit-precise
+	integer types and vector types.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/112406
+	* tree-vect-patterns.cc (vect_recog_mask_conversion_pattern):
+	Convert masks for conditional operations as well.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* tree-ssa-math-opts.cc (match_single_bit_test): Mark POPCOUNT with
+	result only used in equality comparison against 1 with direct optab
+	support as .POPCOUNT call with 2 arguments.
+	* internal-fn.h (expand_POPCOUNT): Declare.
+	* internal-fn.def (DEF_INTERNAL_INT_EXT_FN): New macro, document it,
+	undefine at the end.
+	(POPCOUNT): Use it instead of DEF_INTERNAL_INT_FN.
+	* internal-fn.cc (DEF_INTERNAL_INT_EXT_FN): Define to nothing before
+	inclusion to define expanders.
+	(expand_POPCOUNT): New function.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* tree-ssa-math-opts.cc (match_single_bit_test): New function.
+	(math_opts_dom_walker::after_dom_children): Call it for EQ_EXPR
+	and NE_EXPR assignments and GIMPLE_CONDs.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.def: Document missing DEF_INTERNAL* macros and make sure
+	they are all undefined at the end.
+	* internal-fn.cc (lookup_hilo_internal_fn, lookup_evenodd_internal_fn,
+	widening_fn_p, get_len_internal_fn): Don't undef DEF_INTERNAL_*FN
+	macros after inclusion of internal-fn.def.
+
+2023-11-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Add avx10_set and version and detect avx10.1.
+	(cpu_indicator_init): Handle avx10.1-512.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX10_1_256_SET): New.
+	(OPTION_MASK_ISA2_AVX10_1_256_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Modify for AVX10.1.
+	(ix86_handle_option): Handle -mavx10.1-256 and -mavx10.1-512.
+	Add indicator for explicit no-avx512 and no-avx10.1 options.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVX10_1_256 and FEATURE_AVX10_1_512.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	AVX10_1_256 and AVX10_1_512.
+	* config/i386/cpuid.h (bit_AVX10): New.
+	(bit_AVX10_256): Ditto.
+	(bit_AVX10_512): Ditto.
+	* config/i386/driver-i386.cc (check_avx10_avx512_features): New.
+	(host_detect_local_cpu): Do not append "-mno-" options under
+	specific scenarios to avoid emitting a warning.
+	* config/i386/i386-isa.def
+	(EVEX512): Add DEF_PTA(EVEX512).
+	(AVX10_1_256): Add DEF_PTA(AVX10_1_256).
+	(AVX10_1_512): Add DEF_PTA(AVX10_1_512).
+	* config/i386/i386-options.cc (isa2_opts): Add -mavx10.1-256 and
+	-mavx10.1-512.
+	(ix86_function_specific_save): Save explicit no indicator.
+	(ix86_function_specific_restore): Restore explicit no indicator.
+	(ix86_valid_target_attribute_inner_p): Handle avx10.1, avx10.1-256 and
+	avx10.1-512.
+	(ix86_valid_target_attribute_tree): Handle avx512 function
+	attributes with avx10.1 command line option.
+	(ix86_option_override_internal): Handle AVX10.1 options.
+	* config/i386/i386.h: Add PTA_EVEX512 for AVX512 target
+	machines.
+	* config/i386/i386.opt: Add variable ix86_no_avx512_explicit and
+	ix86_no_avx10_1_explicit, option -mavx10.1, -mavx10.1-256 and
+	-mavx10.1-512.
+	* doc/extend.texi: Document avx10.1, avx10.1-256 and avx10.1-512.
+	* doc/invoke.texi: Document -mavx10.1, -mavx10.1-256 and -mavx10.1-512.
+	* doc/sourcebuild.texi: Document target avx10.1, avx10.1-256
+	and avx10.1-512.
+
+2023-11-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112325
+	* config/i386/sse.md (reduc_<code>_scal_<mode>): New expander.
+	(REDUC_ANY_LOGIC_MODE): New iterator.
+	(REDUC_PLUS_MODE): Extend to VxHI/SI/DImode.
+	(REDUC_SSE_PLUS_MODE): Ditto.
+
+2023-11-20  xuli  <xuli1@eswincomputing.com>
+
+	PR target/112537
+	* config/riscv/riscv-opts.h (enum riscv_stringop_strategy_enum): Strategy enum.
+	* config/riscv/riscv-string.cc (riscv_expand_block_move): Disabled based on options.
+	(expand_block_move): Ditto.
+	* config/riscv/riscv.opt: Add -mmemcpy-strategy=.
+
+2023-11-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/gnu-user.h (MUSL_ABI_SPEC): Modify suffix.
+
 2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-v.cc (emit_vlmax_insn_lra): Optimize constant AVL.

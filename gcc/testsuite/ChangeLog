@@ -1,3 +1,331 @@
+2023-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-2.C: Add noipa attribute to prevent ipa-vrp.
+	* g++.dg/ipa/devirt-7.C: Disable ipa-vrp.
+	* g++.dg/ipa/ipa-icf-2.C: Disable ipa-vrp.
+	* g++.dg/ipa/ipa-icf-3.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-3.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-5.C: Disable ipa-vrp.
+	* g++.dg/ipa/ivinline-8.C: Disable ipa-vrp.
+	* g++.dg/ipa/nothrow-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/pure-const-1.C: Disable ipa-vrp.
+	* g++.dg/ipa/pure-const-2.C: Disable ipa-vrp.
+	* g++.dg/lto/inline-crossmodule-1_0.C: Disable ipa-vrp.
+	* gcc.c-torture/compile/pr106433.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.c-torture/execute/frame-address.c: Likewise.
+	* gcc.dg/vla-1.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.dg/ipa/fopt-info-inline-1.c: Disable ipa-vrp.
+	* gcc.dg/ipa/ipa-icf-25.c: Disable ipa-vrp.
+	* gcc.dg/ipa/ipa-icf-38.c: Disable ipa-vrp.
+	* gcc.dg/ipa/pure-const-1.c: Disable ipa-vrp.
+	* gcc.dg/ipa/remref-0.c: Add noipa attribute to prevent ipa-vrp.
+	* gcc.dg/tree-prof/time-profiler-1.c: Disable ipa-vrp.
+	* gcc.dg/tree-prof/time-profiler-2.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/pr110269.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/pr20701.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/vrp05.c: Disable ipa-vrp.
+	* gcc.dg/tree-ssa/return-value-range-1.c: New test.
+	* gcc.dg/nonnull-7.c: New file.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112618
+	* gcc.dg/pr112618.c: New testcase.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281-1.c: New testcase.
+	* gcc.dg/torture/pr112281-2.c: Likewise.
+
+2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112622
+	* gcc.dg/pr112622.c: New testcase.
+	* gcc.dg/simd-2.c: Adjust.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c: Likewise.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c: Likewise.
+
+2023-11-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112597
+	* gcc.target/riscv/rvv/autovec/pr112597-1.c: New test.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-11.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-11.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-12.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-12.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-11.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-11.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-3.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-1.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-1.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-10.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-10.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-3.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-4.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-4.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-5.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-5.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-6.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-6.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-7.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-7.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-8.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-9.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-9.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-2.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-2.c: ...here.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-1.c:
+	Adjust include.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-9.c: New test.
+
+2023-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: Remove 'return'.
+	* gcc.target/arm/mve/intrinsics/vst1q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_u8.c: Likewise.
+
+2023-11-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lib/target-supports.exp: Remove scalable compile option.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-classify-type-1.c (main): Add tests for vector
+	types.
+
+2023-11-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gfortran.dg/pr112406.f90: New test.
+
+2023-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* gcc.target/i386/pr90693.c: New test.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_thumb1_cbz_ok): Fix prop name
+	cut&pasto.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Expect "unaligned pointer value" warning on short_enums
+	targets, but not in c++.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.
+
+2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: xfail on all ilp32 targets,
+	though some of these do pass.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+	* gcc.dg/tree-ssa/scev-5.c: Likewise.
+
+2023-11-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-1.c: New test.
+	* gcc.target/i386/avx10_1-10.c: Ditto.
+	* gcc.target/i386/avx10_1-11.c: Ditto.
+	* gcc.target/i386/avx10_1-12.c: Ditto.
+	* gcc.target/i386/avx10_1-13.c: Ditto.
+	* gcc.target/i386/avx10_1-14.c: Ditto.
+	* gcc.target/i386/avx10_1-15.c: Ditto.
+	* gcc.target/i386/avx10_1-16.c: Ditto.
+	* gcc.target/i386/avx10_1-17.c: Ditto.
+	* gcc.target/i386/avx10_1-18.c: Ditto.
+	* gcc.target/i386/avx10_1-19.c: Ditto.
+	* gcc.target/i386/avx10_1-2.c: Ditto.
+	* gcc.target/i386/avx10_1-20.c: Ditto.
+	* gcc.target/i386/avx10_1-21.c: Ditto.
+	* gcc.target/i386/avx10_1-22.c: Ditto.
+	* gcc.target/i386/avx10_1-23.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-4.c: Ditto.
+	* gcc.target/i386/avx10_1-5.c: Ditto.
+	* gcc.target/i386/avx10_1-6.c: Ditto.
+	* gcc.target/i386/avx10_1-7.c: Ditto.
+	* gcc.target/i386/avx10_1-8.c: Ditto.
+	* gcc.target/i386/avx10_1-9.c: Ditto.
+
+2023-11-20  liuhongt  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp (vect_logical_reduc): Add i?86-*-*
+	and x86_64-*-*.
+
+2023-11-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112325-1.c: New test.
+	* gcc.target/i386/pr112325-2.c: New test.
+
+2023-11-20  xuli  <xuli1@eswincomputing.com>
+
+	PR target/112537
+	* gcc.target/riscv/rvv/base/cpymem-strategy-1.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-2.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-3.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-4.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-5.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-strategy.h: New test.
+
 2023-11-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/post-ra-avl.c: New test.

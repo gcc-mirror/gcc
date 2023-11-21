@@ -1,3 +1,8 @@
+2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	* macro.cc (parse_params): Fix typo in variadic.
+	(create_iso_definition): Likewise.
+
 2023-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (TAGS_SOURCES): Add "include/rich-location.h".
