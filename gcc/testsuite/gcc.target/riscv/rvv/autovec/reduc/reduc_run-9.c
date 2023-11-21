@@ -1,5 +1,4 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math -fno-vect-cost-model" } */
 
 #define N 0x1100
 
@@ -14,8 +13,8 @@ main (void)
 
   if (add_loop (x, 0, 33) != 33
       || add_loop (x, 11, 30) != 4078
-      || add_loop (x, 0x100, 45) != 45001773
-      || add_loop (x, 0x11f, 300) != 63369900)
+      || add_loop (x, 0x100, 45) != 45001776
+      || add_loop (x, 0x11f, 300) != 63369904)
     __builtin_abort ();
 
   return 0;
