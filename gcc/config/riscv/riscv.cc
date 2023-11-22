@@ -3808,6 +3808,7 @@ riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1,
 	  *op1 = const0_rtx;
 	  return;
 	}
+      gcc_unreachable ();
     }
 
   if (splittable_const_int_operand (*op1, VOIDmode))
