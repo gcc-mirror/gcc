@@ -12349,14 +12349,15 @@ package body Sem_Util is
 
    function Is_Container_Aggregate (Exp : Node_Id) return Boolean is
 
-      function Is_Record_Aggregate return Boolean is (False);
-      --  ??? Unimplemented. Given an aggregate whose type is a
-      --  record type with specified Aggregate aspect, how do we
-      --  determine whether it is a record aggregate or a container
-      --  aggregate? If the code where the aggregate occurs can see only
-      --  a partial view of the aggregate's type then the aggregate
-      --  cannot be a record type; an aggregate of a private type has to
-      --  be a container aggregate.
+      function Is_Record_Aggregate return Boolean is
+        (Is_Parenthesis_Aggregate (Exp));
+      --  Given an aggregate whose type is a record type with specified
+      --  Aggregate aspect, we determine whether it is a record aggregate or
+      --  a container aggregate by ckecking whether it uses parentheses () or
+      --  square brackets []. If the code where the aggregate occurs can see
+      --  only a partial view of the aggregate's type then the aggregate cannot
+      --  be a record type and must then use []; an aggregate of a private type
+      --  has to be a container aggregate and must then use [].
 
    begin
       return Nkind (Exp) = N_Aggregate
