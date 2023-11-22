@@ -109,6 +109,16 @@ ASTValidation::visit (AST::Function &function)
       function.get_self_param ()->get_locus (),
       "%<self%> parameter is only allowed in associated functions");
 
+  if (!function.has_body ())
+    {
+      if (context.back () == Context::INHERENT_IMPL
+	  || context.back () == Context::TRAIT_IMPL)
+	rust_error_at (function.get_locus (),
+		       "associated function in %<impl%> without body");
+      else if (context.back () != Context::TRAIT)
+	rust_error_at (function.get_locus (), "free function without a body");
+    }
+
   if (function.is_variadic ())
     rust_error_at (
       function.get_function_params ().back ()->get_locus (),
