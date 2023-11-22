@@ -839,13 +839,13 @@ emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
   insn_code icode;
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = GET_MODE (sel);
-  if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
-    icode = code_for_pred_gatherei16 (data_mode);
-  else if (const_vec_duplicate_p (sel, &elt))
+  if (const_vec_duplicate_p (sel, &elt))
     {
       icode = code_for_pred_gather_scalar (data_mode);
       sel = elt;
     }
+  else if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
+    icode = code_for_pred_gatherei16 (data_mode);
   else if (CONST_VECTOR_P (sel)
            && GET_MODE_BITSIZE (GET_MODE_INNER (sel_mode)) > 16
            && riscv_get_v_regno_alignment (data_mode) > 1)
@@ -3261,11 +3261,26 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   if (!pow2p_hwi (d->perm.encoding().npatterns ()))
     return false;
 
-  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
-     Otherwise, it could overflow the index range.  */
-  if (!nunits.is_constant () && GET_MODE_INNER (d->vmode) == QImode
-      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
-    return false;
+  if (GET_MODE_INNER (d->vmode) == QImode)
+    {
+      if (nunits.is_constant ())
+	{
+	  /* If indice is LMUL8 CONST_VECTOR and any element value
+	     exceed the range of 0 ~ 255, Forbid such permutation
+	     since we need vector HI mode to hold such indice and
+	     we don't have it.  */
+	  if (!d->perm.all_in_range_p (0, 255)
+	      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return false;
+	}
+      else
+	{
+	  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
+	     Otherwise, it could overflow the index range.  */
+	  if (!get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return false;
+	}
+    }
 
   /* Success! */
   if (d->testing_p)
