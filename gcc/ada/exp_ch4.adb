@@ -5912,6 +5912,14 @@ package body Exp_Ch4 is
         and then not Generate_C_Code
         and then not Unnest_Subprogram_Mode
       then
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
+
+         Process_Transients_In_Expression (N, Then_Actions (N));
+         Process_Transients_In_Expression (N, Else_Actions (N));
+
          declare
             Ityp : constant Entity_Id := Base_Type (Etype (First_Index (Typ)));
 
