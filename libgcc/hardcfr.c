@@ -206,6 +206,10 @@ __hardcfr_debug_cfg (size_t const blocks,
    enabled, it also forces __hardcfr_debug_cfg (above) to be compiled into an
    out-of-line function, that could be called from a debugger.
    */
+
+#ifdef __BPF__
+__attribute__((__always_inline__))
+#endif
 static inline void
 __hardcfr_check_fail (size_t const blocks ATTRIBUTE_UNUSED,
 		      vword const *const visited ATTRIBUTE_UNUSED,
