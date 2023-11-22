@@ -3994,7 +3994,8 @@ riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1,
 /* Like riscv_emit_int_compare, but for floating-point comparisons.  */
 
 static void
-riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
+riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1,
+			  bool *invert_ptr = nullptr)
 {
   rtx tmp0, tmp1, cmp_op0 = *op0, cmp_op1 = *op1;
   enum rtx_code fp_code = *code;
@@ -4058,10 +4059,15 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 #undef UNORDERED_COMPARISON
 
     case NE:
-      *code = EQ;
-      *op0 = riscv_force_binary (word_mode, EQ, cmp_op0, cmp_op1);
-      *op1 = const0_rtx;
-      break;
+      fp_code = EQ;
+      if (invert_ptr != nullptr)
+	*invert_ptr = !*invert_ptr;
+      else
+	{
+	  cmp_op0 = riscv_force_binary (word_mode, fp_code, cmp_op0, cmp_op1);
+	  cmp_op1 = const0_rtx;
+	}
+      gcc_fallthrough ();
 
     case EQ:
     case LE:
@@ -4107,9 +4113,10 @@ riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1, bool *in
 /* Like riscv_expand_int_scc, but for floating-point comparisons.  */
 
 void
-riscv_expand_float_scc (rtx target, enum rtx_code code, rtx op0, rtx op1)
+riscv_expand_float_scc (rtx target, enum rtx_code code, rtx op0, rtx op1,
+			bool *invert_ptr)
 {
-  riscv_emit_float_compare (&code, &op0, &op1);
+  riscv_emit_float_compare (&code, &op0, &op1, invert_ptr);
 
   machine_mode mode = GET_MODE (target);
   if (mode != word_mode)
@@ -4200,7 +4207,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	    riscv_expand_int_scc (tmp, code, op0, op1, invert_ptr);
 	  else if (FLOAT_MODE_P (mode0)
 		   && fp_scc_comparison (op, GET_MODE (op)))
-	    riscv_expand_float_scc (tmp, code, op0, op1);
+	    riscv_expand_float_scc (tmp, code, op0, op1, &invert);
 	  else
 	    return false;
 

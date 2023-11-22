@@ -2697,7 +2697,7 @@
   if (INTEGRAL_MODE_P (mode0))
     riscv_expand_int_scc (reg0, code, cmp0, cmp1, &invert);
   else if (FLOAT_MODE_P (mode0) && fp_scc_comparison (cmp, GET_MODE (cmp)))
-    riscv_expand_float_scc (reg0, code, cmp0, cmp1);
+    riscv_expand_float_scc (reg0, code, cmp0, cmp1, &invert);
   else
     FAIL;
 
