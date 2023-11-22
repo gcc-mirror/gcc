@@ -2655,8 +2655,6 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-;; Patterns for implementations that optimize short forward branches.
-
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
@@ -2670,6 +2668,8 @@
   else
     FAIL;
 })
+
+;; Patterns for implementations that optimize short forward branches.
 
 (define_insn "*mov<GPR:mode><X:mode>cc"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
