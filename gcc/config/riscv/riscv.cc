@@ -4028,8 +4028,8 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 arm of the conditional move.  That allows us to support more
 	 cases for extensions which are more general than SFB.  But
 	 does mean we need to force CONS into a register at this point.  */
-      cons = force_reg (GET_MODE (dest), cons);
-      emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
+      cons = force_reg (mode, cons);
+      emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode,
 							  cond, cons, alt)));
       return true;
     }
