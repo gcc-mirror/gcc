@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "function.h"
 #include "explow.h"
+#include "ifcvt.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
 #include "reload.h"
@@ -3322,6 +3323,118 @@ riscv_address_cost (rtx addr, machine_mode mode,
       && !riscv_compressed_lw_address_p (addr))
     return riscv_address_insns (addr, mode, false) + 1;
   return riscv_address_insns (addr, mode, false);
+}
+
+/* Implement TARGET_INSN_COST.  We factor in the branch cost in the cost
+   calculation for conditional branches: one unit is considered the cost
+   of microarchitecture-dependent actual branch execution and therefore
+   multiplied by BRANCH_COST and any remaining units are considered fixed
+   branch overhead.  */
+
+static int
+riscv_insn_cost (rtx_insn *insn, bool speed)
+{
+  rtx x = PATTERN (insn);
+  int cost = pattern_cost (x, speed);
+
+  if (JUMP_P (insn)
+      && GET_CODE (x) == SET
+      && GET_CODE (SET_DEST (x)) == PC
+      && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
+    cost += COSTS_N_INSNS (BRANCH_COST (speed, false) - 1);
+  return cost;
+}
+
+/* Implement TARGET_MAX_NOCE_IFCVT_SEQ_COST.  Like the default implementation,
+   but we consider cost units of branch instructions equal to cost units of
+   other instructions.  */
+
+static unsigned int
+riscv_max_noce_ifcvt_seq_cost (edge e)
+{
+  bool predictable_p = predictable_edge_p (e);
+
+  if (predictable_p)
+    {
+      if (OPTION_SET_P (param_max_rtl_if_conversion_predictable_cost))
+	return param_max_rtl_if_conversion_predictable_cost;
+    }
+  else
+    {
+      if (OPTION_SET_P (param_max_rtl_if_conversion_unpredictable_cost))
+	return param_max_rtl_if_conversion_unpredictable_cost;
+    }
+
+  return COSTS_N_INSNS (BRANCH_COST (true, predictable_p));
+}
+
+/* Implement TARGET_NOCE_CONVERSION_PROFITABLE_P.  We replace the cost of a
+   conditional branch assumed by `noce_find_if_block' at `COSTS_N_INSNS (2)'
+   by our actual conditional branch cost, observing that our branches test
+   conditions directly, so there is no preparatory extra condition-set
+   instruction.  */
+
+static bool
+riscv_noce_conversion_profitable_p (rtx_insn *seq,
+				    struct noce_if_info *if_info)
+{
+  struct noce_if_info riscv_if_info = *if_info;
+
+  riscv_if_info.original_cost -= COSTS_N_INSNS (2);
+  riscv_if_info.original_cost += insn_cost (if_info->jump, if_info->speed_p);
+
+  /* Hack alert!  When `noce_try_store_flag_mask' uses `cstore<mode>4'
+     to emit a conditional set operation on DImode output it comes up
+     with a sequence such as:
+
+     (insn 26 0 27 (set (reg:SI 140)
+	     (eq:SI (reg/v:DI 137 [ c ])
+		 (const_int 0 [0]))) 302 {*seq_zero_disi}
+	  (nil))
+     (insn 27 26 28 (set (reg:DI 139)
+	     (zero_extend:DI (reg:SI 140))) 116 {*zero_extendsidi2_internal}
+	  (nil))
+
+     because our `cstore<mode>4' pattern expands to an insn that gives
+     a SImode output.  The output of conditional set is 0 or 1 boolean,
+     so it is valid for input in any scalar integer mode and therefore
+     combine later folds the zero extend operation into an equivalent
+     conditional set operation that produces a DImode output, however
+     this redundant zero extend operation counts towards the cost of
+     the replacement sequence.  Compensate for that by incrementing the
+     cost of the original sequence as well as the maximum sequence cost
+     accordingly.  */
+  rtx last_dest = NULL_RTX;
+  for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      rtx x = PATTERN (insn);
+      if (NONJUMP_INSN_P (insn)
+	  && GET_CODE (x) == SET)
+	{
+	  rtx src = SET_SRC (x);
+	  if (last_dest != NULL_RTX
+	      && GET_CODE (src) == ZERO_EXTEND
+	      && REG_P (XEXP (src, 0))
+	      && REGNO (XEXP (src, 0)) == REGNO (last_dest))
+	    {
+	      riscv_if_info.original_cost += COSTS_N_INSNS (1);
+	      riscv_if_info.max_seq_cost += COSTS_N_INSNS (1);
+	    }
+	  last_dest = NULL_RTX;
+	  rtx dest = SET_DEST (x);
+	  if (COMPARISON_P (src)
+	      && REG_P (dest)
+	      && GET_MODE (dest) == SImode)
+	    last_dest = dest;
+	}
+      else
+	last_dest = NULL_RTX;
+    }
+
+  return default_noce_conversion_profitable_p (seq, &riscv_if_info);
 }
 
 /* Return one word of double-word value OP.  HIGH_P is true to select the
@@ -10143,6 +10256,13 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 #define TARGET_RTX_COSTS riscv_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST riscv_address_cost
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST riscv_insn_cost
+
+#undef TARGET_MAX_NOCE_IFCVT_SEQ_COST
+#define TARGET_MAX_NOCE_IFCVT_SEQ_COST riscv_max_noce_ifcvt_seq_cost
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P riscv_noce_conversion_profitable_p
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START riscv_file_start
