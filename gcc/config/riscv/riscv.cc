@@ -4053,7 +4053,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       if (!equality_operator (op, VOIDmode) || op1 != CONST0_RTX (mode))
 	{
 	  enum rtx_code new_code = NE;
-	  bool *invert_ptr = 0;
+	  bool *invert_ptr = nullptr;
 	  bool invert = false;
 
 	  if (code == LE || code == GE)
