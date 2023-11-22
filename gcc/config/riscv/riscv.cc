@@ -2943,7 +2943,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      *total = COSTS_N_INSNS (SINGLE_SHIFT_COST + 1);
 	      return true;
 	    }
-	  if (order_operator (XEXP (x, 0), mode))
+	  if (ordered_comparison_operator (XEXP (x, 0), mode))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      return true;

@@ -339,9 +339,6 @@
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
 
-(define_predicate "order_operator"
-  (match_code "eq,ne,lt,ltu,le,leu,ge,geu,gt,gtu"))
-
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))
 

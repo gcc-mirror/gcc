@@ -2640,7 +2640,7 @@
 (define_insn "*branch<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 1 "order_operator"
+	 (match_operator 1 "ordered_comparison_operator"
 			 [(match_operand:X 2 "register_operand" "r")
 			  (match_operand:X 3 "reg_or_0_operand" "rJ")])
 	 (label_ref (match_operand 0 "" ""))
@@ -2716,7 +2716,7 @@
 (define_insn "*mov<GPR:mode><X:mode>cc"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(if_then_else:GPR
-	 (match_operator 5 "order_operator"
+	 (match_operator 5 "ordered_comparison_operator"
 		[(match_operand:X 1 "register_operand" "r,r")
 		 (match_operand:X 2 "reg_or_0_operand" "rJ,rJ")])
 	 (match_operand:GPR 3 "register_operand" "0,0")
@@ -2902,7 +2902,7 @@
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand")
-	(match_operator:SI 1 "order_operator"
+	(match_operator:SI 1 "ordered_comparison_operator"
 	    [(match_operand:GPR 2 "register_operand")
 	     (match_operand:GPR 3 "nonmemory_operand")]))]
   ""
