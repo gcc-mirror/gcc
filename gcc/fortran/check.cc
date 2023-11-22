@@ -6774,6 +6774,8 @@ bool
 gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 			gfc_expr *count_max)
 {
+  int first_int_kind = -1;
+
   if (count != NULL)
     {
       if (!scalar_check (count, 0))
@@ -6788,8 +6790,17 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 			      &count->where))
 	return false;
 
+      if (count->ts.kind < gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "COUNT argument to SYSTEM_CLOCK at %L "
+			      "with kind smaller than default integer",
+			      &count->where))
+	return false;
+
       if (!variable_check (count, 0, false))
 	return false;
+
+      first_int_kind = count->ts.kind;
     }
 
   if (count_rate != NULL)
@@ -6816,6 +6827,16 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 				  "SYSTEM_CLOCK at %L has non-default kind",
 				  &count_rate->where))
 	    return false;
+
+	  if (count_rate->ts.kind < gfc_default_integer_kind
+	      && !gfc_notify_std (GFC_STD_F2023_DEL,
+				  "COUNT_RATE argument to SYSTEM_CLOCK at %L "
+				  "with kind smaller than default integer",
+				  &count_rate->where))
+	    return false;
+
+	  if (first_int_kind < 0)
+	    first_int_kind = count_rate->ts.kind;
 	}
 
     }
@@ -6835,6 +6856,35 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 	return false;
 
       if (!variable_check (count_max, 2, false))
+	return false;
+
+      if (count_max->ts.kind < gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "COUNT_MAX argument to SYSTEM_CLOCK at %L "
+			      "with kind smaller than default integer",
+			      &count_max->where))
+	return false;
+
+      if (first_int_kind < 0)
+	first_int_kind = count_max->ts.kind;
+    }
+
+  if (first_int_kind > 0)
+    {
+      if (count_rate
+	  && count_rate->ts.type == BT_INTEGER
+	  && count_rate->ts.kind != first_int_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "integer arguments to SYSTEM_CLOCK at %L "
+			      "with different kind parameters",
+			      &count_rate->where))
+	return false;
+
+      if (count_max && count_max->ts.kind != first_int_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "integer arguments to SYSTEM_CLOCK at %L "
+			      "with different kind parameters",
+			      &count_max->where))
 	return false;
     }
 

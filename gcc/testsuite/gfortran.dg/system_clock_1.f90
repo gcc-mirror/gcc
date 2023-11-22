@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=f2003" }
 
   integer :: i, j, k
   integer(kind=8) :: i8, j8, k8

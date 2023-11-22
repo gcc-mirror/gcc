@@ -980,7 +980,11 @@ char const*
 notify_std_msg(int std)
 {
 
-  if (std & GFC_STD_F2018_DEL)
+  if (std & GFC_STD_F2023_DEL)
+    return _("Prohibited in Fortran 2023:");
+  else if (std & GFC_STD_F2023)
+    return _("Fortran 2023:");
+  else if (std & GFC_STD_F2018_DEL)
     return _("Fortran 2018 deleted feature:");
   else if (std & GFC_STD_F2018_OBS)
     return _("Fortran 2018 obsolescent feature:");
