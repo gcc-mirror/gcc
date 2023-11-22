@@ -3410,9 +3410,28 @@ template <typename _Tp>
   inline constexpr bool is_trivially_move_assignable_v
     = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
 				__add_rval_ref_t<_Tp>);
+
+#if __cpp_concepts
+template <typename _Tp>
+  inline constexpr bool is_trivially_destructible_v = false;
+
+template <typename _Tp>
+  requires (!is_reference_v<_Tp>) && requires (_Tp& __t) { __t.~_Tp(); }
+  inline constexpr bool is_trivially_destructible_v<_Tp>
+    = __has_trivial_destructor(_Tp);
+template <typename _Tp>
+  inline constexpr bool is_trivially_destructible_v<_Tp&> = true;
+template <typename _Tp>
+  inline constexpr bool is_trivially_destructible_v<_Tp&&> = true;
+template <typename _Tp, size_t _Nm>
+  inline constexpr bool is_trivially_destructible_v<_Tp[_Nm]>
+    = is_trivially_destructible_v<_Tp>;
+#else
 template <typename _Tp>
   inline constexpr bool is_trivially_destructible_v =
     is_trivially_destructible<_Tp>::value;
+#endif
+
 template <typename _Tp, typename... _Args>
   inline constexpr bool is_nothrow_constructible_v
     = __is_nothrow_constructible(_Tp, _Args...);
