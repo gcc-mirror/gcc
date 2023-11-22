@@ -4058,9 +4058,10 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 #undef UNORDERED_COMPARISON
 
     case NE:
-      fp_code = EQ;
       *code = EQ;
-      /* Fall through.  */
+      *op0 = riscv_force_binary (word_mode, EQ, cmp_op0, cmp_op1);
+      *op1 = const0_rtx;
+      break;
 
     case EQ:
     case LE:
@@ -4068,8 +4069,9 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
     case GE:
     case GT:
       /* We have instructions for these cases.  */
-      *op0 = riscv_force_binary (word_mode, fp_code, cmp_op0, cmp_op1);
-      *op1 = const0_rtx;
+      *code = fp_code;
+      *op0 = cmp_op0;
+      *op1 = cmp_op1;
       break;
 
     case LTGT:
@@ -4109,10 +4111,14 @@ riscv_expand_float_scc (rtx target, enum rtx_code code, rtx op0, rtx op1)
 {
   riscv_emit_float_compare (&code, &op0, &op1);
 
-  rtx cmp = riscv_force_binary (word_mode, code, op0, op1);
-  if (GET_MODE (target) != word_mode)
-    cmp = lowpart_subreg (GET_MODE (target), cmp, word_mode);
-  riscv_emit_set (target, cmp);
+  machine_mode mode = GET_MODE (target);
+  if (mode != word_mode)
+    {
+      rtx cmp = riscv_force_binary (word_mode, code, op0, op1);
+      riscv_emit_set (target, lowpart_subreg (mode, cmp, word_mode));
+    }
+  else
+    riscv_emit_binary (code, target, op0, op1);
 }
 
 /* Jump to LABEL if (CODE OP0 OP1) holds.  */
@@ -4124,6 +4130,13 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
     riscv_emit_float_compare (&code, &op0, &op1);
   else
     riscv_emit_int_compare (&code, &op0, &op1);
+
+  if (FLOAT_MODE_P (GET_MODE (op0)))
+    {
+      op0 = riscv_force_binary (word_mode, code, op0, op1);
+      op1 = const0_rtx;
+      code = NE;
+    }
 
   rtx condition = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
   emit_jump_insn (gen_condjump (condition, label));
