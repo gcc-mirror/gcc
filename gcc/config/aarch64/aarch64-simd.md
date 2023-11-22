@@ -4810,7 +4810,7 @@
   [(set_attr "type" "neon_sub_widen")]
 )
 
-(define_insn "aarch64_usubw<mode>_<PERM_EXTEND:perm_hilo>_zip"
+(define_insn "aarch64_usubw<mode>_lo_zip"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(minus:<VWIDE>
 	  (match_operand:<VWIDE> 1 "register_operand" "w")
@@ -4818,23 +4818,51 @@
 	    (unspec:<MODE> [
 		(match_operand:VQW 2 "register_operand" "w")
 		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] PERM_EXTEND) 0)))]
+	       ] UNSPEC_ZIP1) 0)))]
   "TARGET_SIMD"
-  "usubw<PERM_EXTEND:perm_index>\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
+  "usubw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
   [(set_attr "type" "neon_sub_widen")]
 )
 
-(define_insn "aarch64_uaddw<mode>_<PERM_EXTEND:perm_hilo>_zip"
+(define_insn "aarch64_uaddw<mode>_lo_zip"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(plus:<VWIDE>
 	  (subreg:<VWIDE>
 	    (unspec:<MODE> [
 		(match_operand:VQW 2 "register_operand" "w")
 		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] PERM_EXTEND) 0)
+	       ] UNSPEC_ZIP1) 0)
 	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
   "TARGET_SIMD"
-  "uaddw<PERM_EXTEND:perm_index>\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
+  "uaddw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
+  [(set_attr "type" "neon_add_widen")]
+)
+
+(define_insn "aarch64_usubw<mode>_hi_zip"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(minus:<VWIDE>
+	  (match_operand:<VWIDE> 1 "register_operand" "w")
+	  (subreg:<VWIDE>
+	    (unspec:<MODE> [
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_operand:VQW 3 "aarch64_simd_imm_zero")
+	       ] UNSPEC_ZIP2) 0)))]
+  "TARGET_SIMD"
+  "usubw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_sub_widen")]
+)
+
+(define_insn "aarch64_uaddw<mode>_hi_zip"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(plus:<VWIDE>
+	  (subreg:<VWIDE>
+	    (unspec:<MODE> [
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_operand:VQW 3 "aarch64_simd_imm_zero")
+	       ] UNSPEC_ZIP2) 0)
+	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "uaddw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "type" "neon_add_widen")]
 )
 

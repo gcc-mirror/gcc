@@ -16,5 +16,5 @@ void d2 (SIGN TYPE2 * restrict a, SIGN TYPE1 *b, int n)
 /* { dg-final { scan-assembler-not {\tzip1\t} } } */
 /* { dg-final { scan-assembler-not {\tzip2\t} } } */
 /* { dg-final { scan-assembler-times {\tsxtl\t} 1 } } */
-/* { dg-final { scan-assembler-time {\tsxtl2\t} 1 } } */
+/* { dg-final { scan-assembler-times {\tsxtl2\t} 1 } } */
 
