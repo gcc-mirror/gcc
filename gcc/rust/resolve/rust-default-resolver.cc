@@ -77,7 +77,8 @@ DefaultResolver::visit (AST::Function &function)
 	  }
       }
 
-    function.get_definition ()->accept_vis (*this);
+    if (function.has_body ())
+      function.get_definition ().value ()->accept_vis (*this);
   };
 
   ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn);

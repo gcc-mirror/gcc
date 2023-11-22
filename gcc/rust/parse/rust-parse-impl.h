@@ -23,6 +23,7 @@
  * This is also the reason why there are no include guards. */
 
 #include "rust-common.h"
+#include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-common.h"
 #include "rust-token.h"
@@ -2976,14 +2977,21 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
   // parse where clause - if exists
   AST::WhereClause where_clause = parse_where_clause ();
 
-  // parse block expression
-  std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
+  tl::optional<std::unique_ptr<AST::BlockExpr>> body = tl::nullopt;
+  if (lexer.peek_token ()->get_id () == SEMICOLON)
+    lexer.skip_token ();
+  else
+    {
+      std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
+      if (block_expr != nullptr)
+	body = std::move (block_expr);
+    }
 
   return std::unique_ptr<AST::Function> (
     new AST::Function (std::move (function_name), std::move (qualifiers),
 		       std::move (generic_params), std::move (function_params),
 		       std::move (return_type), std::move (where_clause),
-		       std::move (block_expr), std::move (vis),
+		       std::move (body), std::move (vis),
 		       std::move (outer_attrs), locus));
 }
 
@@ -5710,49 +5718,33 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   // parse where clause (optional)
   AST::WhereClause where_clause = parse_where_clause ();
 
-  // parse function definition (in block) - semicolon not allowed
+  tl::optional<std::unique_ptr<AST::BlockExpr>> body = tl::nullopt;
   if (lexer.peek_token ()->get_id () == SEMICOLON)
-    {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "%s declaration in inherent impl not allowed - must have "
-		   "a definition",
-		   is_method ? "method" : "function");
-      add_error (std::move (error));
-
-      lexer.skip_token ();
-      return nullptr;
-    }
-  std::unique_ptr<AST::BlockExpr> body = parse_block_expr ();
-  if (body == nullptr)
-    {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "could not parse definition in inherent impl %s definition",
-		   is_method ? "method" : "function");
-      add_error (std::move (error));
-
-      skip_after_end_block ();
-      return nullptr;
-    }
-
-  // do actual if instead of ternary for return value optimisation
-  if (is_method)
-    {
-      return std::unique_ptr<AST::Function> (
-	new AST::Function (std::move (ident), std::move (qualifiers),
-			   std::move (generic_params),
-			   std::move (function_params), std::move (return_type),
-			   std::move (where_clause), std::move (body),
-			   std::move (vis), std::move (outer_attrs), locus));
-    }
+    lexer.skip_token ();
   else
     {
-      return std::unique_ptr<AST::Function> (
-	new AST::Function (std::move (ident), std::move (qualifiers),
-			   std::move (generic_params),
-			   std::move (function_params), std::move (return_type),
-			   std::move (where_clause), std::move (body),
-			   std::move (vis), std::move (outer_attrs), locus));
+      auto result = parse_block_expr ();
+
+      if (result == nullptr)
+	{
+	  Error error (
+	    lexer.peek_token ()->get_locus (),
+	    "could not parse definition in inherent impl %s definition",
+	    is_method ? "method" : "function");
+	  add_error (std::move (error));
+
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+      body = std::move (result);
     }
+
+  return std::unique_ptr<AST::Function> (
+    new AST::Function (std::move (ident), std::move (qualifiers),
+		       std::move (generic_params), std::move (function_params),
+		       std::move (return_type), std::move (where_clause),
+		       std::move (body), std::move (vis),
+		       std::move (outer_attrs), locus));
 }
 
 // Parses a single trait impl item (item inside a trait impl block).
@@ -5960,27 +5952,24 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
     "successfully parsed where clause in function or method trait impl item");
 
   // parse function definition (in block) - semicolon not allowed
+  tl::optional<std::unique_ptr<AST::BlockExpr>> body = tl::nullopt;
+
   if (lexer.peek_token ()->get_id () == SEMICOLON)
+    lexer.skip_token ();
+  else
     {
-      Error error (
-	lexer.peek_token ()->get_locus (),
-	"%s declaration in trait impl not allowed - must have a definition",
-	is_method ? "method" : "function");
-      add_error (std::move (error));
+      auto result = parse_block_expr ();
+      if (result == nullptr)
+	{
+	  Error error (lexer.peek_token ()->get_locus (),
+		       "could not parse definition in trait impl %s definition",
+		       is_method ? "method" : "function");
+	  add_error (std::move (error));
 
-      lexer.skip_token ();
-      return nullptr;
-    }
-  std::unique_ptr<AST::BlockExpr> body = parse_block_expr ();
-  if (body == nullptr)
-    {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "could not parse definition in trait impl %s definition",
-		   is_method ? "method" : "function");
-      add_error (std::move (error));
-
-      skip_after_end_block ();
-      return nullptr;
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+      body = std::move (result);
     }
 
   return std::unique_ptr<AST::Function> (

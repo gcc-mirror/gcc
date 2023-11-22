@@ -667,7 +667,8 @@ AttributeChecker::visit (AST::Function &fun)
       else if (result.name == "no_mangle")
 	check_no_mangle_function (attribute, fun);
     }
-  fun.get_definition ()->accept_vis (*this);
+  if (fun.has_body ())
+    fun.get_definition ().value ()->accept_vis (*this);
 }
 
 void

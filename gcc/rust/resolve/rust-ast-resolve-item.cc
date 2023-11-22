@@ -616,7 +616,7 @@ ResolveItem::visit (AST::Function &function)
     }
 
   // resolve the function body
-  ResolveExpr::go (function.get_definition ().get (), path, cpath);
+  ResolveExpr::go (function.get_definition ()->get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();

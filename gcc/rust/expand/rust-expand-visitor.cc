@@ -1001,8 +1001,9 @@ ExpandVisitor::visit (AST::UseDeclaration &use_decl)
 void
 ExpandVisitor::visit (AST::Function &function)
 {
-  visit_inner_using_attrs (function,
-			   function.get_definition ()->get_inner_attrs ());
+  if (function.has_body ())
+    visit_inner_using_attrs (
+      function, function.get_definition ().value ()->get_inner_attrs ());
   for (auto &param : function.get_generic_params ())
     visit (param);
 
@@ -1014,7 +1015,8 @@ ExpandVisitor::visit (AST::Function &function)
   if (function.has_where_clause ())
     expand_where_clause (function.get_where_clause ());
 
-  visit (function.get_definition ());
+  if (function.has_body ())
+    visit (*function.get_definition ());
 }
 
 void

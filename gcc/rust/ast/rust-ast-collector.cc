@@ -1730,11 +1730,10 @@ TokenCollector::visit (Function &function)
   if (function.has_where_clause ())
     visit (function.get_where_clause ());
 
-  auto &block = function.get_definition ();
-  if (!block)
-    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
+  if (function.has_body ())
+    visit (*function.get_definition ());
   else
-    visit (block);
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 

@@ -2031,13 +2031,17 @@ CfgStrip::visit (AST::Function &function)
   /* body should always exist - if error state, should have returned
    * before now */
   // can't strip block itself, but can strip sub-expressions
-  auto &block_expr = function.get_definition ();
-  block_expr->accept_vis (*this);
-  if (block_expr->is_marked_for_strip ())
-    rust_error_at (block_expr->get_locus (),
-		   "cannot strip block expression in this position - outer "
-		   "attributes not allowed");
+  if (function.has_body ())
+    {
+      auto &block_expr = function.get_definition ().value ();
+      block_expr->accept_vis (*this);
+      if (block_expr->is_marked_for_strip ())
+	rust_error_at (block_expr->get_locus (),
+		       "cannot strip block expression in this position - outer "
+		       "attributes not allowed");
+    }
 }
+
 void
 CfgStrip::visit (AST::TypeAlias &type_alias)
 {

@@ -1299,7 +1299,7 @@ class Function : public VisItem,
   std::vector<std::unique_ptr<Param>> function_params;
   std::unique_ptr<Type> return_type;
   WhereClause where_clause;
-  std::unique_ptr<BlockExpr> function_body;
+  tl::optional<std::unique_ptr<BlockExpr>> function_body;
   location_t locus;
   bool is_default;
 
@@ -1323,14 +1323,16 @@ public:
     return function_params.size () > 0 && function_params[0]->is_self ();
   }
 
+  bool has_body () const { return function_body.has_value (); }
+
   // Mega-constructor with all possible fields
   Function (Identifier function_name, FunctionQualifiers qualifiers,
 	    std::vector<std::unique_ptr<GenericParam>> generic_params,
 	    std::vector<std::unique_ptr<Param>> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
-	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    std::vector<Attribute> outer_attrs, location_t locus,
-	    bool is_default = false)
+	    tl::optional<std::unique_ptr<BlockExpr>> function_body,
+	    Visibility vis, std::vector<Attribute> outer_attrs,
+	    location_t locus, bool is_default = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
@@ -1390,9 +1392,8 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
+  tl::optional<std::unique_ptr<BlockExpr>> &get_definition ()
   {
-    rust_assert (function_body != nullptr);
     return function_body;
   }
 

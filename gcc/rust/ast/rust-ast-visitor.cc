@@ -777,7 +777,8 @@ DefaultASTVisitor::visit (AST::Function &function)
   if (function.has_return_type ())
     visit (function.get_return_type ());
   visit (function.get_where_clause ());
-  visit (function.get_definition ());
+  if (function.has_body ())
+    visit (*function.get_definition ());
 }
 
 void
