@@ -3005,14 +3005,15 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   if (compress_point < 0)
     return false;
 
-  /* It must be series increasing from compress point.  */
-  if (!d->perm.series_p (compress_point, 1, d->perm[compress_point], 1))
-    return false;
-
   /* We can only apply compress approach when all index values from 0 to
      compress point are increasing.  */
   for (int i = 1; i < compress_point; i++)
-    if (known_le (d->perm[i], d->perm[i - 1]))
+    if (maybe_le (d->perm[i], d->perm[i - 1]))
+      return false;
+
+  /* It must be series increasing from compress point.  */
+  for (int i = 1 + compress_point; i < vlen; i++)
+    if (maybe_ne (d->perm[i], d->perm[i - 1] + 1))
       return false;
 
   /* Success!  */
@@ -3080,10 +3081,10 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   if (need_slideup_p)
     {
       int slideup_cnt = vlen - (d->perm[vlen - 1].to_constant () % vlen) - 1;
-      rtx ops[] = {d->target, d->op1, gen_int_mode (slideup_cnt, Pmode)};
+      merge = gen_reg_rtx (vmode);
+      rtx ops[] = {merge, d->op1, gen_int_mode (slideup_cnt, Pmode)};
       insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
       emit_vlmax_insn (icode, BINARY_OP, ops);
-      merge = d->target;
     }
 
   insn_code icode = code_for_pred_compress (vmode);
