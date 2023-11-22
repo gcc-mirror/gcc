@@ -4123,8 +4123,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 
   if (TARGET_XTHEADCONDMOV
       && GET_MODE_CLASS (mode) == MODE_INT
-      && reg_or_0_operand (cons, mode)
-      && reg_or_0_operand (alt, mode)
       && (GET_MODE (op) == mode || GET_MODE (op) == E_VOIDmode)
       && (GET_MODE (op0) == mode || CONST_INT_P (op0))
       && (GET_MODE (op1) == mode || CONST_INT_P (op1))
@@ -4142,6 +4140,8 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 cases for extensions which are more general than SFB.  But
 	 does mean we need to force CONS into a register at this point.  */
       cons = force_reg (mode, cons);
+      /* With XTheadCondMov we need to force ALT into a register too.  */
+      alt = force_reg (mode, alt);
       emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode,
 							  cond, cons, alt)));
       return true;
