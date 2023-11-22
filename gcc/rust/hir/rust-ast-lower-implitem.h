@@ -168,7 +168,7 @@ public:
     bool terminated = false;
     std::unique_ptr<HIR::BlockExpr> function_body
       = std::unique_ptr<HIR::BlockExpr> (
-	ASTLoweringBlock::translate (function.get_definition ().get (),
+	ASTLoweringBlock::translate (function.get_definition ()->get (),
 				     &terminated));
 
     auto crate_num = mappings->get_current_crate ();

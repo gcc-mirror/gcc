@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "rust-ast.h"
+#include "optional.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -1100,8 +1101,10 @@ Function::Function (Function const &other)
     return_type = other.return_type->clone_type ();
 
   // guard to prevent null dereference (only required if error state)
-  if (other.function_body != nullptr)
-    function_body = other.function_body->clone_block_expr ();
+  if (other.has_body ())
+    function_body = other.function_body.value ()->clone_block_expr ();
+  else
+    function_body = tl::nullopt;
 
   generic_params.reserve (other.generic_params.size ());
   for (const auto &e : other.generic_params)
@@ -1131,10 +1134,10 @@ Function::operator= (Function const &other)
     return_type = nullptr;
 
   // guard to prevent null dereference (only required if error state)
-  if (other.function_body != nullptr)
-    function_body = other.function_body->clone_block_expr ();
+  if (other.has_body ())
+    function_body = other.function_body.value ()->clone_block_expr ();
   else
-    function_body = nullptr;
+    function_body = tl::nullopt;
 
   generic_params.reserve (other.generic_params.size ());
   for (const auto &e : other.generic_params)
@@ -1221,15 +1224,8 @@ Function::as_string () const
 
   str += "\n";
 
-  // DEBUG: null pointer check
-  if (function_body == nullptr)
-    {
-      rust_debug (
-	"something really terrible has gone wrong - null pointer function "
-	"body in function.");
-      return "NULL_POINTER_MARK";
-    }
-  str += function_body->as_string () + "\n";
+  if (has_body ())
+    str += function_body.value ()->as_string () + "\n";
 
   return str;
 }
