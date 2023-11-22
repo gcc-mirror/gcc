@@ -4161,9 +4161,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	return false;
 
       /* Canonicalize the comparison.  It must be an equality comparison
-	 against 0.  If it isn't, then emit an SCC instruction so that
-	 we can then use an equality comparison against zero.  */
-      if (!equality_operator (op, VOIDmode) || op1 != CONST0_RTX (mode))
+	 of integer operands.  If it isn't, then emit an SCC instruction
+	 so that we can then use an equality comparison against zero.  */
+      if (!equality_operator (op, VOIDmode) || !INTEGRAL_MODE_P (mode0))
 	{
 	  bool *invert_ptr = nullptr;
 	  bool invert = false;
