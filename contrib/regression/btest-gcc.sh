@@ -32,12 +32,13 @@ dashj=''
 while : ; do
   case "$1" in
    --add-passes-despite-regression)
-    add_passes_despite_regression=1; shift;;
+    add_passes_despite_regression=1;;
    -j*)
-    dashj=$1; shift;;
+    dashj=$1;;
    -*) echo "Invalid option: $1"; exit 2;;
    *) break;;
   esac
+  shift
 done
 
 # TARGET is the target triplet.  It should be the same one as used in
