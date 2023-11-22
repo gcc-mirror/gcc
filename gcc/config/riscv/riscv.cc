@@ -4119,35 +4119,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
   rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
   rtx op1 = XEXP (op, 1);
-  bool need_eq_ne_p = false;
 
-  if (TARGET_XTHEADCONDMOV
-      && GET_MODE_CLASS (mode) == MODE_INT
-      && (GET_MODE (op) == mode || GET_MODE (op) == E_VOIDmode)
-      && (GET_MODE (op0) == mode || CONST_INT_P (op0))
-      && (GET_MODE (op1) == mode || CONST_INT_P (op1))
-      && (code == EQ || code == NE))
-    need_eq_ne_p = true;
-
-  if (need_eq_ne_p
-      || (TARGET_SFB_ALU && GET_MODE (op0) == word_mode))
-    {
-      riscv_emit_int_compare (&code, &op0, &op1, need_eq_ne_p);
-      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
-
-      /* The expander is a bit loose in its specification of the true
-	 arm of the conditional move.  That allows us to support more
-	 cases for extensions which are more general than SFB.  But
-	 does mean we need to force CONS into a register at this point.  */
-      cons = force_reg (mode, cons);
-      /* With XTheadCondMov we need to force ALT into a register too.  */
-      alt = force_reg (mode, alt);
-      emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode,
-							  cond, cons, alt)));
-      return true;
-    }
-  else if (TARGET_ZICOND_LIKE
-	   && GET_MODE_CLASS (mode) == MODE_INT)
+  if ((TARGET_ZICOND_LIKE && GET_MODE_CLASS (mode) == MODE_INT)
+      || TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
     {
       machine_mode mode0 = GET_MODE (op0);
       machine_mode mode1 = GET_MODE (op1);
@@ -4161,9 +4135,11 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	return false;
 
       /* Canonicalize the comparison.  It must be an equality comparison
-	 of integer operands.  If it isn't, then emit an SCC instruction
+	 of integer operands, or with SFB it can be any comparison of
+	 integer operands.  If it isn't, then emit an SCC instruction
 	 so that we can then use an equality comparison against zero.  */
-      if (!equality_operator (op, VOIDmode) || !INTEGRAL_MODE_P (mode0))
+      if ((!TARGET_SFB_ALU && !equality_operator (op, VOIDmode))
+	  || !INTEGRAL_MODE_P (mode0))
 	{
 	  bool *invert_ptr = nullptr;
 	  bool invert = false;
@@ -4195,10 +4171,26 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  op1 = XEXP (op, 1);
 	}
 
+      if (TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+	{
+	  riscv_emit_int_compare (&code, &op0, &op1, !TARGET_SFB_ALU);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+
+	  /* The expander is a bit loose in its specification of the true
+	     arm of the conditional move.  That allows us to support more
+	     cases for extensions which are more general than SFB.  But
+	     does mean we need to force CONS into a register at this point.  */
+	  cons = force_reg (mode, cons);
+	  /* With XTheadCondMov we need to force ALT into a register too.  */
+	  alt = force_reg (mode, alt);
+	  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode, cond,
+							      cons, alt)));
+	  return true;
+	}
       /* 0, reg or 0, imm */
-      if (cons == CONST0_RTX (mode)
-	  && (REG_P (alt)
-	      || (CONST_INT_P (alt) && alt != CONST0_RTX (mode))))
+      else if (cons == CONST0_RTX (mode)
+	       && (REG_P (alt)
+		   || (CONST_INT_P (alt) && alt != CONST0_RTX (mode))))
 	{
 	  riscv_emit_int_compare (&code, &op0, &op1, true);
 	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
