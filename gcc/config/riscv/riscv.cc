@@ -4100,7 +4100,9 @@ riscv_expand_float_scc (rtx target, enum rtx_code code, rtx op0, rtx op1)
   riscv_emit_float_compare (&code, &op0, &op1);
 
   rtx cmp = riscv_force_binary (word_mode, code, op0, op1);
-  riscv_emit_set (target, lowpart_subreg (SImode, cmp, word_mode));
+  if (GET_MODE (target) != word_mode)
+    cmp = lowpart_subreg (GET_MODE (target), cmp, word_mode);
+  riscv_emit_set (target, cmp);
 }
 
 /* Jump to LABEL if (CODE OP0 OP1) holds.  */
