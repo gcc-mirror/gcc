@@ -22,13 +22,13 @@ program main
   call f (ii)
   call f (489)
   call f ()
-  call f (null())
+  call f (null(kk))
   call f (kk)
   if (j /= 2) STOP 1
 
   j = 0
   nullify (ll)
-  call g (null())
+  call g (null(ll))
   call g (ll)
   call g (ii)
   if (j /= 1) STOP 2
