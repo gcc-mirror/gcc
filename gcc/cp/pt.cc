@@ -13976,6 +13976,7 @@ tsubst_aggr_type (tree t,
       if (entering_scope
 	  && CLASS_TYPE_P (t)
 	  && dependent_type_p (t)
+	  && TYPE_TEMPLATE_INFO (t)
 	  && TYPE_CANONICAL (t) == TREE_TYPE (TYPE_TI_TEMPLATE (t)))
 	t = TYPE_CANONICAL (t);
 
