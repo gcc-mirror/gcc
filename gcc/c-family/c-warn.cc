@@ -2991,10 +2991,9 @@ check_alignment_of_packed_member (tree type, tree field, bool rvalue)
   return NULL_TREE;
 }
 
-/* Return struct or union type if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
+/* Return struct or union type if the right hand value, RHS
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.
    Otherwise, return NULL_TREE.  */
 
 static tree
@@ -3020,57 +3019,6 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
     return NULL_TREE;
 
   type = TREE_TYPE (type);
-
-  if (TREE_CODE (rhs) == PARM_DECL
-      || VAR_P (rhs)
-      || TREE_CODE (rhs) == CALL_EXPR)
-    {
-      tree rhstype = TREE_TYPE (rhs);
-      if (TREE_CODE (rhs) == CALL_EXPR)
-	{
-	  rhs = CALL_EXPR_FN (rhs);	/* Pointer expression.  */
-	  if (rhs == NULL_TREE)
-	    return NULL_TREE;
-	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
-	  /* We could be called while processing a template and RHS could be
-	     a functor.  In that case it's a class, not a pointer.  */
-	  if (!rhs || !POINTER_TYPE_P (rhs))
-	    return NULL_TREE;
-	  rhs = TREE_TYPE (rhs);	/* Function type.  */
-	  rhstype = TREE_TYPE (rhs);
-	  if (!rhstype || !POINTER_TYPE_P (rhstype))
-	    return NULL_TREE;
-	  rvalue = true;
-	}
-      if (rvalue && POINTER_TYPE_P (rhstype))
-	rhstype = TREE_TYPE (rhstype);
-      while (TREE_CODE (rhstype) == ARRAY_TYPE)
-	rhstype = TREE_TYPE (rhstype);
-      if (TYPE_PACKED (rhstype))
-	{
-	  unsigned int type_align = min_align_of_type (type);
-	  unsigned int rhs_align = min_align_of_type (rhstype);
-	  if (rhs_align < type_align)
-	    {
-	      auto_diagnostic_group d;
-	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
-	      if (warning_at (location, OPT_Waddress_of_packed_member,
-			      "converting a packed %qT pointer (alignment %d) "
-			      "to a %qT pointer (alignment %d) may result in "
-			      "an unaligned pointer value",
-			      rhstype, rhs_align, type, type_align))
-		{
-		  tree decl = TYPE_STUB_DECL (rhstype);
-		  if (decl)
-		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
-		  decl = TYPE_STUB_DECL (type);
-		  if (decl)
-		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
-		}
-	    }
-	}
-      return NULL_TREE;
-    }
 
   tree context = NULL_TREE;
 
