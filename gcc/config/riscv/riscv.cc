@@ -3337,7 +3337,9 @@ riscv_address_cost (rtx addr, machine_mode mode,
    calculation for conditional branches: one unit is considered the cost
    of microarchitecture-dependent actual branch execution and therefore
    multiplied by BRANCH_COST and any remaining units are considered fixed
-   branch overhead.  */
+   branch overhead.  Branches on a floating-point condition incur an extra
+   instruction cost as they will be split into an FCMP operation followed
+   by a branch on an integer condition.  */
 
 static int
 riscv_insn_cost (rtx_insn *insn, bool speed)
@@ -3345,11 +3347,19 @@ riscv_insn_cost (rtx_insn *insn, bool speed)
   rtx x = PATTERN (insn);
   int cost = pattern_cost (x, speed);
 
-  if (JUMP_P (insn)
-      && GET_CODE (x) == SET
-      && GET_CODE (SET_DEST (x)) == PC
-      && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
-    cost += COSTS_N_INSNS (BRANCH_COST (speed, false) - 1);
+  if (JUMP_P (insn))
+    {
+      if (GET_CODE (x) == PARALLEL)
+	x = XVECEXP (x, 0, 0);
+      if (GET_CODE (x) == SET
+	  && GET_CODE (SET_DEST (x)) == PC
+	  && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
+	{
+	  cost += COSTS_N_INSNS (BRANCH_COST (speed, false) - 1);
+	  if (FLOAT_MODE_P (GET_MODE (XEXP (XEXP (SET_SRC (x), 0), 0))))
+	    cost += COSTS_N_INSNS (1);
+	}
+    }
   return cost;
 }
 

@@ -20,7 +20,7 @@ movsifge (double w, double x, int_t y, int_t z)
  */
 
 /* { dg-final { scan-rtl-dump-times "Conversion succeeded on pass 1\\." 1 "ce1" } } */
-/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_try_cmove" 1 "ce1" } } */
+/* { dg-final { scan-rtl-dump-not "if-conversion succeeded through" "ce1" } } */
 /* { dg-final { scan-assembler-times "\\s(?:fge\\.d|fle\\.d)\\s" 1 } } */
 /* { dg-final { scan-assembler-times "\\s(?:beq|bne)\\s\[^\\s\]+\\s# movcc\\s" 1 } } */
 /* { dg-final { scan-assembler-not "\\s(?:seqz|snez)\\s" } } */

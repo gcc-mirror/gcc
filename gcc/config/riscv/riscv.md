@@ -2750,19 +2750,88 @@
   DONE;
 })
 
-(define_expand "@cbranch<mode>4"
-  [(set (pc)
-	(if_then_else (match_operator 0 "fp_branch_comparison"
-		       [(match_operand:ANYF 1 "register_operand")
-			(match_operand:ANYF 2 "register_operand")])
-		      (label_ref (match_operand 3 ""))
-		      (pc)))]
+(define_expand "@cbranch<ANYF:mode>4"
+  [(parallel [(set (pc)
+		   (if_then_else (match_operator 0 "fp_branch_comparison"
+				  [(match_operand:ANYF 1 "register_operand")
+				   (match_operand:ANYF 2 "register_operand")])
+				 (label_ref (match_operand 3 ""))
+				 (pc)))
+	      (clobber (match_operand 4 ""))])]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
-  riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
-				   operands[1], operands[2]);
-  DONE;
+  if (!signed_order_operator (operands[0], GET_MODE (operands[0])))
+    {
+      riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
+				       operands[1], operands[2]);
+      DONE;
+    }
+  operands[4] = gen_reg_rtx (TARGET_64BIT ? DImode : SImode);
 })
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "fp_native_comparison"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(match_op_dup:X 1 [(match_dup 2) (match_dup 3)]))
+   (set (pc)
+	(if_then_else (ne:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
+
+(define_insn_and_split "*cbranch<ANYF:mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 1 "ne_operator"
+		       [(match_operand:ANYF 2 "register_operand" "f")
+			(match_operand:ANYF 3 "register_operand" "f")])
+		      (label_ref (match_operand 0 ""))
+		      (pc)))
+   (clobber (match_operand:X 4 "register_operand" "=r"))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(eq:X (match_dup 2) (match_dup 3)))
+   (set (pc)
+	(if_then_else (eq:X (match_dup 4) (const_int 0))
+		      (label_ref (match_operand 0))
+		      (pc)))]
+  ""
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (and (le (minus (match_dup 0) (pc))
+			       (const_int 4084))
+			   (le (minus (pc) (match_dup 0))
+			       (const_int 4096)))
+		      (const_int 8)
+		      (if_then_else (and (le (minus (match_dup 0) (pc))
+					     (const_int 1048564))
+					 (le (minus (pc) (match_dup 0))
+					     (const_int 1048576)))
+				    (const_int 12)
+				    (const_int 16))))])
 
 (define_insn_and_split "*branch_on_bit<X:mode>"
   [(set (pc)
