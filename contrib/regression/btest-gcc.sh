@@ -22,17 +22,22 @@
 
 add_passes_despite_regression=0
 dashj=''
+handle_xpass_as_fail=false
 
 # <options> can be
 # --add-passes-despite-regression:
 #  Add new "PASSes" despite there being some regressions.
 # -j<n>:
 #  Pass '-j<n>' to make.
+# --handle-xpass-as-fail:
+#  Count XPASS as a FAIL (default ignored).
 
 while : ; do
   case "$1" in
    --add-passes-despite-regression)
     add_passes_despite_regression=1;;
+   --handle-xpass-as-fail)
+    handle_xpass_as_fail=true;;
    -j*)
     dashj=$1;;
    -*) echo "Invalid option: $1"; exit 2;;
@@ -203,7 +208,11 @@ done
 # Work out what failed
 for LOG in $TESTLOGS ; do
   L=`basename $LOG`
-  awk '/^FAIL: / { print "'$L'",$2; }' $LOG || exit 1
+  if $handle_xpass_as_fail ; then
+   awk '/^(FAIL|XPASS): / { print "'$L'",$2; }' $LOG || exit 1
+  else
+   awk '/^FAIL: / { print "'$L'",$2; }' $LOG || exit 1
+  fi
 done | sort | uniq > $FAILED || exit 1
 comm -12 $FAILED $PASSES >> $REGRESS || exit 1
 NUMREGRESS=`wc -l < $REGRESS | tr -d ' '`
