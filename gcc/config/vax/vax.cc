@@ -1830,7 +1830,9 @@ nonindexed_address_p (rtx x, bool strict)
 }
 
 /* True if PROD is either a reg times size of mode MODE and MODE is less
-   than or equal 8 bytes, or just a reg if MODE is one byte.  */
+   than or equal 8 bytes, or just a reg if MODE is one byte.  For a MULT
+   RTX we accept its operands in either order, however ASHIFT is not
+   commutative, so in that case reg has to be the left operand.  */
 
 static bool
 index_term_p (rtx prod, machine_mode mode, bool strict)
@@ -1849,8 +1851,9 @@ index_term_p (rtx prod, machine_mode mode, bool strict)
   xfoo0 = XEXP (prod, 0);
   xfoo1 = XEXP (prod, 1);
 
-  if (CONST_INT_P (xfoo0)
-      && GET_MODE_SIZE (mode) == (log_p ? 1 << INTVAL (xfoo0) : INTVAL (xfoo0))
+  if (!log_p
+      && CONST_INT_P (xfoo0)
+      && GET_MODE_SIZE (mode) == INTVAL (xfoo0)
       && INDEX_REGISTER_P (xfoo1, strict))
     return true;
 
