@@ -50,9 +50,9 @@ program test
 
  is_present = .false.
 
- call fpa(null(), null()) ! No copy back
- call fpi(null(), null()) ! No copy back
- call fno(null(), null()) ! No copy back
+ call fpa(null(iip), null(jjp)) ! No copy back
+ call fpi(null(iip), null(jjp)) ! No copy back
+ call fno(null(iip), null(jjp)) ! No copy back
 
  call fno() ! No copy back
 
