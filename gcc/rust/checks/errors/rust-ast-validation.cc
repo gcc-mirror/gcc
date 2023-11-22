@@ -98,6 +98,11 @@ ASTValidation::visit (AST::Function &function)
   std::set<Context> valid_context
     = {Context::INHERENT_IMPL, Context::TRAIT_IMPL};
 
+  const auto &qualifiers = function.get_qualifiers ();
+  if (qualifiers.is_async () && qualifiers.is_const ())
+    rust_error_at (function.get_locus (),
+		   "functions cannot be both %<const%> and %<async%>");
+
   if (valid_context.find (context.back ()) == valid_context.end ()
       && function.has_self_param ())
     rust_error_at (
