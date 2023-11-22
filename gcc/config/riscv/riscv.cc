@@ -1732,6 +1732,14 @@ riscv_emit_set (rtx target, rtx src)
   return target;
 }
 
+/* Emit an instruction of the form (set DEST (CODE X)).  */
+
+rtx
+riscv_emit_unary (enum rtx_code code, rtx dest, rtx x)
+{
+  return riscv_emit_set (dest, gen_rtx_fmt_e (code, GET_MODE (dest), x));
+}
+
 /* Emit an instruction of the form (set DEST (CODE X Y)).  */
 
 rtx
