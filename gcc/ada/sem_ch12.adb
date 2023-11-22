@@ -7059,9 +7059,13 @@ package body Sem_Ch12 is
          end if;
       end Check_Actual_Type;
 
+      --  Local variables
+
       Astype : Entity_Id;
       E      : Entity_Id;
       Formal : Node_Id;
+
+   --  Start of processing for Check_Generic_Actuals
 
    begin
       E := First_Entity (Instance);
@@ -8495,38 +8499,46 @@ package body Sem_Ch12 is
             Set_Associated_Node (N, New_N);
 
          else
-            if Present (Get_Associated_Node (N))
-              and then Nkind (Get_Associated_Node (N)) = Nkind (N)
-            then
-               --  In the generic the aggregate has some composite type. If at
-               --  the point of instantiation the type has a private view,
-               --  install the full view (and that of its ancestors, if any).
+            --  If, in the generic, the aggregate has a global composite type
+            --  and, at the point of instantiation, the type has a private view
+            --  then install the full view.
 
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
+
+            begin
+               if Present (Assoc)
+                 and then Nkind (Assoc) = Nkind (N)
+                 and then Present (Etype (Assoc))
+                 and then Is_Private_Type (Etype (Assoc))
+               then
+                  Switch_View (Etype (Assoc));
+               end if;
+            end;
+
+            --  Moreover, for a full aggregate, if the type is a derived tagged
+            --  type and has a global ancestor, then also restore the full view
+            --  of this ancestor, and do so up to the root type.
+
+            if Nkind (N) = N_Aggregate
+              and then Present (Ancestor_Type (N))
+            then
                declare
-                  T   : Entity_Id := Etype (Get_Associated_Node (N));
-                  Rt  : Entity_Id;
+                  Root_Typ : constant Entity_Id :=
+                               Root_Type (Ancestor_Type (N));
+
+                  Typ : Entity_Id := Ancestor_Type (N);
 
                begin
-                  if Present (T) and then Is_Private_Type (T) then
-                     Switch_View (T);
-                  end if;
+                  loop
+                     if Is_Private_Type (Typ) then
+                        Switch_View (Typ);
+                     end if;
 
-                  if Present (T)
-                    and then Is_Tagged_Type (T)
-                    and then Is_Derived_Type (T)
-                  then
-                     Rt := Root_Type (T);
+                     exit when Typ = Root_Typ;
 
-                     loop
-                        T := Etype (T);
-
-                        if Is_Private_Type (T) then
-                           Switch_View (T);
-                        end if;
-
-                        exit when T = Rt;
-                     end loop;
-                  end if;
+                     Typ := Etype (Typ);
+                  end loop;
                end;
             end if;
          end if;
@@ -16505,6 +16517,36 @@ package body Sem_Ch12 is
             if No (N2) or else No (Typ) or else not Is_Global (Typ) then
                Set_Associated_Node (N, Empty);
 
+               --  For a full aggregate, if the type is local but is a derived
+               --  tagged type of a global ancestor, we will need to have the
+               --  full view of this global ancestor available in the instance
+               --  in order to analyze the full aggregate.
+
+               if Present (N2)
+                 and then Nkind (N2) = N_Aggregate
+                 and then Present (Typ)
+                 and then Is_Tagged_Type (Typ)
+                 and then Is_Derived_Type (Typ)
+               then
+                  declare
+                     Root_Typ : constant Entity_Id := Root_Type (Typ);
+
+                     Parent_Typ : Entity_Id := Typ;
+
+                  begin
+                     loop
+                        Parent_Typ := Etype (Parent_Typ);
+
+                        if Is_Global (Parent_Typ) then
+                           Set_Ancestor_Type (N, Parent_Typ);
+                           exit;
+                        end if;
+
+                        exit when Parent_Typ = Root_Typ;
+                     end loop;
+                  end;
+               end if;
+
                --  If the aggregate is an actual in a call, it has been
                --  resolved in the current context, to some local type. The
                --  enclosing call may have been disambiguated by the aggregate,
@@ -16543,6 +16585,19 @@ package body Sem_Ch12 is
                       Subtype_Mark => Nam,
                       Expression   => Relocate_Node (N));
                end if;
+
+            --  For a full aggregate, if the type is global and a derived
+            --  tagged type, we will also need to have the full view of its
+            --  ancestor available in the instance in order to analyze the
+            --  full aggregate.
+
+            elsif Present (N2)
+              and then Nkind (N2) = N_Aggregate
+              and then Present (Typ)
+              and then Is_Tagged_Type (Typ)
+              and then Is_Derived_Type (Typ)
+            then
+               Set_Ancestor_Type (N, Etype (Typ));
             end if;
 
             if Nkind (N) = N_Aggregate then

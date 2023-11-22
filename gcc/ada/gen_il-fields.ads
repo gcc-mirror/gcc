@@ -66,7 +66,7 @@ package Gen_IL.Fields is
       Acts_As_Spec,
       Actual_Designated_Subtype,
       Address_Warning_Posted,
-      Aggregate_Bounds,
+      Aggregate_Bounds_Or_Ancestor_Type,
       Aliased_Present,
       All_Others,
       All_Present,

@@ -5644,18 +5644,14 @@ package body Sem_Aggr is
                Parent_Typ := Etype (Parent_Typ);
 
                --  Check whether a private parent requires the use of
-               --  an extension aggregate. This test does not apply in
-               --  an instantiation: if the generic unit is legal so is
-               --  the instance.
+               --  an extension aggregate.
 
                if Nkind (Parent (Base_Type (Parent_Typ))) =
                                         N_Private_Type_Declaration
                  or else Nkind (Parent (Base_Type (Parent_Typ))) =
                                         N_Private_Extension_Declaration
                then
-                  if Nkind (N) /= N_Extension_Aggregate
-                    and then not In_Instance
-                  then
+                  if Nkind (N) /= N_Extension_Aggregate then
                      Error_Msg_NE
                        ("type of aggregate has private ancestor&!",
                         N, Parent_Typ);

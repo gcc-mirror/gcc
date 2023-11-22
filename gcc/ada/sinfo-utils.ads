@@ -157,6 +157,22 @@ package Sinfo.Utils is
      (N : N_Inclusive_Has_Entity; Val : Node_Id)
       renames Set_Entity_Or_Associated_Node;
 
+   ---------------------------------------------------
+   -- Aliases for Aggregate_Bounds_Or_Ancestor_Type --
+   ---------------------------------------------------
+
+   function Aggregate_Bounds (N : Node_Id) return Node_Id
+      renames Aggregate_Bounds_Or_Ancestor_Type;
+
+   function Ancestor_Type (N : Node_Id) return Node_Id
+      renames Aggregate_Bounds_Or_Ancestor_Type;
+
+   procedure Set_Aggregate_Bounds (N : Node_Id; Val : Node_Id)
+      renames Set_Aggregate_Bounds_Or_Ancestor_Type;
+
+   procedure Set_Ancestor_Type (N : Node_Id; Val : Node_Id)
+      renames Set_Aggregate_Bounds_Or_Ancestor_Type;
+
    ---------------
    -- Debugging --
    ---------------

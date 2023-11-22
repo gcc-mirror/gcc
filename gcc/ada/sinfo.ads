@@ -845,6 +845,11 @@ package Sinfo is
    --    is used for translation of the at end handler into a normal exception
    --    handler.
 
+   --  Ancestor_Type
+   --    Present in record N_Aggregate nodes. Used to store the first global
+   --    ancestor of the type of the aggregate in a generic context, if any,
+   --    when the type is a derived tagged type. Otherwise Empty.
+
    --  Aspect_On_Partial_View
    --    Present on an N_Aspect_Specification node. For an aspect that applies
    --    to a type entity, indicates whether the specification appears on the
@@ -4081,7 +4086,7 @@ package Sinfo is
       --  Expressions (set to No_List if none or null record case)
       --  Component_Associations (set to No_List if none)
       --  Null_Record_Present
-      --  Aggregate_Bounds
+      --  Aggregate_Bounds (array) or Ancestor_Type (record)
       --  Associated_Node
       --  Compile_Time_Known_Aggregate
       --  Expansion_Delayed
