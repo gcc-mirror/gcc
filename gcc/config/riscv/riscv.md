@@ -2655,6 +2655,8 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
+;; Conditional move and add patterns.
+
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
@@ -2668,6 +2670,45 @@
     DONE;
   else
     FAIL;
+})
+
+(define_expand "add<mode>cc"
+  [(match_operand:GPR 0 "register_operand")
+   (match_operand     1 "comparison_operator")
+   (match_operand:GPR 2 "arith_operand")
+   (match_operand:GPR 3 "arith_operand")]
+  "TARGET_MOVCC"
+{
+  rtx cmp = operands[1];
+  rtx cmp0 = XEXP (cmp, 0);
+  rtx cmp1 = XEXP (cmp, 1);
+  machine_mode mode0 = GET_MODE (cmp0);
+
+  /* We only handle word mode integer compares for now.  */
+  if (INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
+    FAIL;
+
+  enum rtx_code code = GET_CODE (cmp);
+  rtx reg0 = gen_reg_rtx (<MODE>mode);
+  rtx reg1 = gen_reg_rtx (<MODE>mode);
+  rtx reg2 = gen_reg_rtx (<MODE>mode);
+  bool invert = false;
+
+  if (INTEGRAL_MODE_P (mode0))
+    riscv_expand_int_scc (reg0, code, cmp0, cmp1, &invert);
+  else if (FLOAT_MODE_P (mode0) && fp_scc_comparison (cmp, GET_MODE (cmp)))
+    riscv_expand_float_scc (reg0, code, cmp0, cmp1);
+  else
+    FAIL;
+
+  if (invert)
+    riscv_emit_binary (PLUS, reg1, reg0, constm1_rtx);
+  else
+    riscv_emit_unary (NEG, reg1, reg0);
+  riscv_emit_binary (AND, reg2, reg1, operands[3]);
+  riscv_emit_binary (PLUS, operands[0], reg2, operands[2]);
+
+  DONE;
 })
 
 ;; Patterns for implementations that optimize short forward branches.
