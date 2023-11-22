@@ -1770,7 +1770,6 @@ amdgcn-*-amdhsa)
 	native_system_header_dir=/include
 	extra_modes=gcn/gcn-modes.def
 	extra_objs="${extra_objs} gcn-tree.o"
-	extra_gcc_objs="driver-gcn.o"
 	case "$host" in
 	x86_64*-*-linux-gnu )
 		if test "$ac_cv_search_dlopen" != no; then
