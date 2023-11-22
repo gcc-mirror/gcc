@@ -460,6 +460,10 @@ misa-spec=
 Target RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
 Set the version of RISC-V ISA spec.
 
+mmovcc
+Target Var(TARGET_MOVCC)
+Enable conditional moves unconditionally.
+
 minline-atomics
 Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.

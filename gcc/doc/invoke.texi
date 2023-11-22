@@ -1245,6 +1245,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check
+-mmovcc  -mno-movcc
 -minline-atomics  -mno-inline-atomics
 -minline-strlen  -mno-inline-strlen
 -minline-strcmp  -mno-inline-strcmp
@@ -29680,6 +29681,14 @@ Put global and static data smaller than @var{n} bytes into a special section
 Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
+
+@opindex mmovcc
+@item -mmovcc
+@itemx -mno-movcc
+Do or don't produce branchless conditional-move code sequences even with
+targets that do not have specific instructions for conditional operations.
+If enabled, sequences of ALU operations are produced using base integer
+ISA instructions where profitable.
 
 @opindex minline-atomics
 @item -minline-atomics

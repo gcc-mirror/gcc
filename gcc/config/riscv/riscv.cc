@@ -4128,7 +4128,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
   rtx op0 = XEXP (op, 0);
   rtx op1 = XEXP (op, 1);
 
-  if ((TARGET_ZICOND_LIKE && GET_MODE_CLASS (mode) == MODE_INT)
+  if (((TARGET_ZICOND_LIKE
+	|| (arith_operand (cons, mode) && arith_operand (alt, mode)))
+       && (GET_MODE_CLASS (mode) == MODE_INT))
       || TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
     {
       machine_mode mode0 = GET_MODE (op0);
@@ -4142,6 +4144,15 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  || (mode1 != word_mode && mode1 != VOIDmode))
 	return false;
 
+      /* In the fallback generic case use MODE rather than WORD_MODE for
+	 the output of the SCC instruction, to match the mode of the NEG
+	 operation below.  The output of SCC is 0 or 1 boolean, so it is
+	 valid for input in any scalar integer mode.  */
+      rtx tmp = gen_reg_rtx ((TARGET_ZICOND_LIKE
+			      || TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+			     ? word_mode : mode);
+      bool invert = false;
+
       /* Canonicalize the comparison.  It must be an equality comparison
 	 of integer operands, or with SFB it can be any comparison of
 	 integer operands.  If it isn't, then emit an SCC instruction
@@ -4150,7 +4161,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  || !INTEGRAL_MODE_P (mode0))
 	{
 	  bool *invert_ptr = nullptr;
-	  bool invert = false;
 
 	  /* If riscv_expand_int_scc inverts the condition, then it will
 	     flip the value of INVERT.  We need to know where so that
@@ -4158,11 +4168,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  if (code == LE || code == LEU || code == GE || code == GEU)
 	    invert_ptr = &invert;
 
-	  /* Emit an scc like instruction into a temporary
-	     so that we can use an EQ/NE comparison.  */
-	  rtx tmp = gen_reg_rtx (word_mode);
-
-	  /* We can support both FP and integer conditional moves.  */
+	  /* Emit an SCC-like instruction into a temporary so that we can
+	     use an EQ/NE comparison.  We can support both FP and integer
+	     conditional moves.  */
 	  if (INTEGRAL_MODE_P (mode0))
 	    riscv_expand_int_scc (tmp, code, op0, op1, invert_ptr);
 	  else if (FLOAT_MODE_P (mode0)
@@ -4178,6 +4186,8 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  op0 = XEXP (op, 0);
 	  op1 = XEXP (op, 1);
 	}
+      else if (!TARGET_ZICOND_LIKE && !TARGET_SFB_ALU && !TARGET_XTHEADCONDMOV)
+	riscv_expand_int_scc (tmp, code, op0, op1, &invert);
 
       if (TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
 	{
@@ -4193,6 +4203,23 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  alt = force_reg (mode, alt);
 	  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode, cond,
 							      cons, alt)));
+	  return true;
+	}
+      else if (!TARGET_ZICOND_LIKE)
+	{
+	  if (invert)
+	    std::swap (cons, alt);
+
+	  rtx reg1 = gen_reg_rtx (mode);
+	  rtx reg2 = gen_reg_rtx (mode);
+	  rtx reg3 = gen_reg_rtx (mode);
+	  rtx reg4 = gen_reg_rtx (mode);
+
+	  riscv_emit_unary (NEG, reg1, tmp);
+	  riscv_emit_binary (AND, reg2, reg1, cons);
+	  riscv_emit_unary (NOT, reg3, reg1);
+	  riscv_emit_binary (AND, reg4, reg3, alt);
+	  riscv_emit_binary (IOR, dest, reg2, reg4);
 	  return true;
 	}
       /* 0, reg or 0, imm */
