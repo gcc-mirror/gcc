@@ -1,3 +1,82 @@
+2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (freestanding_cstring): Add.
+	* include/bits/version.h: Regenerate.
+	* include/c_compatibility/string.h (strtok): Do not declare for
+	C++26 freestanding.
+	* include/c_global/cstring (strtok): Likewise.
+	* testsuite/21_strings/headers/cstring/version.cc: New test.
+
+2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (freestanding_algorithm)
+	(freestanding_array, freestanding_optional)
+	(freestanding_string_view, freestanding_variant): Add.
+	* include/bits/version.h: Regenerate.
+	* include/std/algorithm (__glibcxx_want_freestanding_algorithm):
+	Define.
+	* include/std/array (__glibcxx_want_freestanding_array):
+	Define.
+	* include/std/optional (__glibcxx_want_freestanding_optional):
+	Define.
+	* include/std/string_view
+	(__glibcxx_want_freestanding_string_view): Define.
+	* include/std/variant (__glibcxx_want_freestanding_variant):
+	Define.
+	* testsuite/20_util/optional/version.cc: Add checks for
+	__cpp_lib_freestanding_optional.
+	* testsuite/20_util/variant/version.cc: Add checks for
+	__cpp_lib_freestanding_variant.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/21_strings/basic_string_view/requirements/version.cc:
+	New test.
+	* testsuite/23_containers/array/requirements/version.cc: New
+	test.
+	* testsuite/25_algorithms/fill_n/requirements/version.cc: New
+	test.
+	* testsuite/25_algorithms/swap_ranges/requirements/version.cc:
+	New test.
+
+2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (freestanding_expected): New macro.
+	(span): Add C++26 value.
+	* include/bits/version.h: Regenerate.
+	* include/std/expected (__glibcxx_want_freestanding_expected):
+	Define.
+	* include/std/span (span::at): New member function.
+	* testsuite/20_util/expected/version.cc: Add checks for
+	__cpp_lib_freestanding_expected.
+	* testsuite/23_containers/span/2.cc: Moved to...
+	* testsuite/23_containers/span/version.cc: ...here. Add checks
+	for __cpp_lib_span in <span> as well as in <version>.
+	* testsuite/23_containers/span/1.cc: Removed.
+	* testsuite/23_containers/span/at.cc: New test.
+
+2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/dynamic_bitset (dynamic_bitset): Pass zero and one
+	characters to _M_copy_from_string.
+	* testsuite/tr2/dynamic_bitset/string.cc: New test.
+
+2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+	* doc/xml/faq.xml: Remove reference to buildstat.html pages.
+	* doc/xml/manual/test.xml: Likewise
+
+2023-11-21  Jan Hubicka  <jh@suse.cz>
+
+	PR libstdc++/110287
+	PR middle-end/109811
+	PR middle-end/109849
+	* include/bits/stl_vector.h (_M_realloc_append): New member function.
+	(push_back): Use it.
+	* include/bits/vector.tcc: (emplace_back): Use it.
+	(_M_realloc_insert): Let compiler know that new vector size is non-zero.
+	(_M_realloc_append): New member function.
+
 2023-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/112607

@@ -1,3 +1,17 @@
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ff57fec515.
+	* dmd/VERSION: Bump version to v2.106.0-rc.1.
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Update for new
+	front-end interface.
+	(ExprVisitor::visit (NewExp *)): Likewise.
+	* runtime.def (NEWARRAYMTX): Remove.
+	(NEWARRAYMITX): Remove.
+
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 65a3da148c.
+
 2023-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 643b1261bb.

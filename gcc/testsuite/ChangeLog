@@ -1,3 +1,114 @@
+2023-11-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/tree-ssa/return-value-range-1.c: Fix.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/aarch64/pr112406-2.c: New test.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/popcount.c: Adjust check.
+	* lib/target-supports.exp: Add riscv_zbb.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* g++.target/riscv/rvv/base/bug-14.C: Add
+	dg-require-effective-target rv64.
+	* g++.target/riscv/rvv/base/bug-9.C: Ditto.
+
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/rvv.exp:  Remove -march and -mabi from
+	default CFLAGS.
+
+2023-11-21  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gfortran.dg/vect/pr107254.f90: Remove dg-do run directive.
+	* gfortran.dg/vect/pr85853.f90: Ditto.
+	* gfortran.dg/vect/vect-alias-check-1.F90: Ditto.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112623
+	* gcc.target/i386/pr112623.c: New testcase.
+
+2023-11-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Adjust expected diagnostic.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-1.c: New test.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* gcc.target/aarch64/sve/cond_asrd_1.c: Updated.
+	* gcc.target/aarch64/sve/cond_cnot_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_5.c: Likewise.
+	* gcc.target/aarch64/target_attr_13.c: Likewise.
+	* gcc.target/aarch64/target_attr_15.c: Likewise.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/simd/vmovl_high_1.c: Update codegen.
+	* gcc.target/aarch64/uxtl-combine-1.c: New test.
+	* gcc.target/aarch64/uxtl-combine-2.c: New test.
+	* gcc.target/aarch64/uxtl-combine-3.c: New test.
+	* gcc.target/aarch64/uxtl-combine-4.c: New test.
+	* gcc.target/aarch64/uxtl-combine-5.c: New test.
+	* gcc.target/aarch64/uxtl-combine-6.c: New test.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/pr112438.c: Add missing dump check.
+
+2023-11-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/tree-ssa/return-value-range-1.c: Fix.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn25.adb: Add xfail.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/111309
+	* c-c++-common/pr111309-2.c (foo): Don't expect errors for C++ with
+	-fshort-enums if second argument is E0.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112639
+	* gcc.dg/torture/pr112639.c: New test.
+
+2023-11-21  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-interrupt-1.c: Adjust option to restrict them
+	under certain subfeatures.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_interrupt-1.c: Likewise.
+	* gcc.target/i386/apx-ppx-1.c: New test.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: Adjust.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: Likewise.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_1.c: Likewise.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_2.c: Likewise.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-9.c: Fix bug.
+
+2023-11-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112325-mmx-1.c: New test.
+
 2023-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/devirt-2.C: Add noipa attribute to prevent ipa-vrp.

@@ -1,3 +1,307 @@
+2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/112406
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Allow
+	reduction index != 1.
+	(vect_transform_reduction): Handle reduction index != 1.
+
+2023-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common.md (aligned_register_operand): New predicate.
+
+2023-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-int.h (ira_allocno): Add a register_filters field.
+	(ALLOCNO_REGISTER_FILTERS): New macro.
+	(ALLOCNO_SET_REGISTER_FILTERS): Likewise.
+	* ira-build.cc (ira_create_allocno): Initialize register_filters.
+	(create_cap_allocno): Propagate register_filters.
+	(propagate_allocno_info): Likewise.
+	(propagate_some_info_from_allocno): Likewise.
+	* ira-lives.cc (process_register_constraint_filters): New function.
+	(process_bb_node_lives): Use it to record register filter
+	information.
+	* ira-color.cc (assign_hard_reg): Check register filters.
+	(improve_allocation, fast_allocation): Likewise.
+
+2023-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lra-constraints.cc (process_alt_operands): Check register filters.
+
+2023-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (operand_alternative): Add a register_filters field.
+	(alternative_register_filters): New function.
+	* recog.cc (preprocess_constraints): Calculate the filters field.
+	(constrain_operands): Check register filters.
+
+2023-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.def (DEFINE_REGISTER_CONSTRAINT): Add an optional filter
+	operand.
+	* doc/md.texi (define_register_constraint): Document it.
+	* doc/tm.texi.in: Reference it in discussion about aligned registers.
+	* doc/tm.texi: Regenerate.
+	* gensupport.h (register_filters, get_register_filter_id): Declare.
+	* gensupport.cc (register_filter_map, register_filters): New variables.
+	(get_register_filter_id): New function.
+	(process_define_register_constraint): Likewise.
+	(process_rtx): Pass define_register_constraints to
+	process_define_register_constraint.
+	* genconfig.cc (main): Emit a definition of NUM_REGISTER_FILTERS.
+	* genpreds.cc (constraint_data): Add a filter field.
+	(add_constraint): Update accordingly.
+	(process_define_register_constraint): Pass the filter operand.
+	(write_init_reg_class_start_regs): New function.
+	(write_get_register_filter): Likewise.
+	(write_get_register_filter_id): Likewise.
+	(write_tm_preds_h): Write a definition of target_constraints,
+	plus helpers to test its contents.  Write the get_register_filter*
+	functions.
+	(write_insn_preds_c): Write init_reg_class_start_regs.
+	* reginfo.cc (init_reg_class_start_regs): Declare.
+	(init_reg_sets): Call it.
+	* target-globals.h (this_target_constraints): Declare.
+	(target_globals): Add a constraints field.
+	(restore_target_globals): Update accordingly.
+	* target-globals.cc: Include tm_p.h.
+	(default_target_globals): Initialize the constraints field.
+	(save_target_globals): Handle the constraints field.
+	(target_globals::~target_globals): Likewise.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112623
+	* tree-ssa-forwprop.cc (simplify_vector_constructor):
+	Check the source mode of the insn for vector pack/unpacks.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Move check
+	of VF against max_vf until VF is final.
+
+2023-11-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* config/riscv/riscv.cc (riscv_const_insns): Disallow DI CONST_VECTOR on RV32.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options): Rework warnings.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* config/aarch64/aarch64-arches.def (armv9-a, armv9.1-a, armv9.2-a,
+	armv9.3-a): Update to generic-armv9-a.
+	* config/aarch64/aarch64-cores.def (generic-armv9-a): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc: Include generic_armv9_a.h.
+	* config/aarch64/tuning_models/generic_armv9_a.h: New file.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* config/aarch64/aarch64-arches.def (armv8-9, armv8-a, armv8.1-a,
+	armv8.2-a, armv8.3-a, armv8.4-a, armv8.5-a, armv8.6-a, armv8.7-a,
+	armv8.8-a): Update to generic_armv8_a.
+	* config/aarch64/aarch64-cores.def (generic-armv8-a): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc: Include generic_armv8_a.h
+	* config/aarch64/aarch64.h (TARGET_CPU_DEFAULT): Change to
+	TARGET_CPU_generic_armv8_a.
+	* config/aarch64/tuning_models/generic_armv8_a.h: New file.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* config/aarch64/aarch64-cores.def: Add generic.
+	* config/aarch64/aarch64-opts.h (enum aarch64_proc): Remove generic.
+	* config/aarch64/aarch64-tune.md: Regenerate
+	* config/aarch64/aarch64.cc (all_cores): Remove generic
+	* config/aarch64/aarch64.h (enum target_cpus): Remove
+	TARGET_CPU_generic.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/111370
+	* config/aarch64/aarch64.cc (generic_addrcost_table,
+	exynosm1_addrcost_table,
+	xgene1_addrcost_table,
+	thunderx2t99_addrcost_table,
+	thunderx3t110_addrcost_table,
+	tsv110_addrcost_table,
+	qdf24xx_addrcost_table,
+	a64fx_addrcost_table,
+	neoversev1_addrcost_table,
+	neoversen2_addrcost_table,
+	neoversev2_addrcost_table,
+	generic_regmove_cost,
+	cortexa57_regmove_cost,
+	cortexa53_regmove_cost,
+	exynosm1_regmove_cost,
+	thunderx_regmove_cost,
+	xgene1_regmove_cost,
+	qdf24xx_regmove_cost,
+	thunderx2t99_regmove_cost,
+	thunderx3t110_regmove_cost,
+	tsv110_regmove_cost,
+	a64fx_regmove_cost,
+	neoversen2_regmove_cost,
+	neoversev1_regmove_cost,
+	neoversev2_regmove_cost,
+	generic_vector_cost,
+	a64fx_vector_cost,
+	qdf24xx_vector_cost,
+	thunderx_vector_cost,
+	tsv110_vector_cost,
+	cortexa57_vector_cost,
+	exynosm1_vector_cost,
+	xgene1_vector_cost,
+	thunderx2t99_vector_cost,
+	thunderx3t110_vector_cost,
+	ampere1_vector_cost,
+	generic_branch_cost,
+	generic_tunings,
+	cortexa35_tunings,
+	cortexa53_tunings,
+	cortexa57_tunings,
+	cortexa72_tunings,
+	cortexa73_tunings,
+	exynosm1_tunings,
+	thunderxt88_tunings,
+	thunderx_tunings,
+	tsv110_tunings,
+	xgene1_tunings,
+	emag_tunings,
+	qdf24xx_tunings,
+	saphira_tunings,
+	thunderx2t99_tunings,
+	thunderx3t110_tunings,
+	neoversen1_tunings,
+	ampere1_tunings,
+	ampere1a_tunings,
+	neoversev1_vector_cost,
+	neoversev1_tunings,
+	neoverse512tvb_vector_cost,
+	neoverse512tvb_tunings,
+	neoversen2_vector_cost,
+	neoversen2_tunings,
+	neoversev2_vector_cost,
+	neoversev2_tunings
+	a64fx_tunings): Split into own files.
+	* config/aarch64/tuning_models/a64fx.h: New file.
+	* config/aarch64/tuning_models/ampere1.h: New file.
+	* config/aarch64/tuning_models/ampere1a.h: New file.
+	* config/aarch64/tuning_models/cortexa35.h: New file.
+	* config/aarch64/tuning_models/cortexa53.h: New file.
+	* config/aarch64/tuning_models/cortexa57.h: New file.
+	* config/aarch64/tuning_models/cortexa72.h: New file.
+	* config/aarch64/tuning_models/cortexa73.h: New file.
+	* config/aarch64/tuning_models/emag.h: New file.
+	* config/aarch64/tuning_models/exynosm1.h: New file.
+	* config/aarch64/tuning_models/generic.h: New file.
+	* config/aarch64/tuning_models/neoverse512tvb.h: New file.
+	* config/aarch64/tuning_models/neoversen1.h: New file.
+	* config/aarch64/tuning_models/neoversen2.h: New file.
+	* config/aarch64/tuning_models/neoversev1.h: New file.
+	* config/aarch64/tuning_models/neoversev2.h: New file.
+	* config/aarch64/tuning_models/qdf24xx.h: New file.
+	* config/aarch64/tuning_models/saphira.h: New file.
+	* config/aarch64/tuning_models/thunderx.h: New file.
+	* config/aarch64/tuning_models/thunderx2t99.h: New file.
+	* config/aarch64/tuning_models/thunderx3t110.h: New file.
+	* config/aarch64/tuning_models/thunderxt88.h: New file.
+	* config/aarch64/tuning_models/tsv110.h: New file.
+	* config/aarch64/tuning_models/xgene1.h: New file.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_unpack<su>_lo_<mode,
+	vec_unpack<su>_lo_<mode): Split into...
+	(vec_unpacku_lo_<mode, vec_unpacks_lo_<mode,
+	vec_unpacku_lo_<mode, vec_unpacks_lo_<mode): ...These.
+	(aarch64_usubw<mode>_<PERM_EXTEND:perm_hilo>_zip): New.
+	(aarch64_uaddw<mode>_<PERM_EXTEND:perm_hilo>_zip): New.
+	* config/aarch64/iterators.md (PERM_EXTEND, perm_index): New.
+	(perm_hilo): Add UNSPEC_ZIP1, UNSPEC_ZIP2.
+
+2023-11-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_adjust_stmt_cost): Guard mla.
+	(aarch64_vector_costs::count_ops): Likewise.
+
+2023-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR middle-end/112634
+	* tree-profile.cc (gen_assign_counter_update): Cast the unsigned result type of
+	__atomic_add_fetch() to the signed counter type.
+	(gen_counter_update): Fix formatting.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-profile.cc (gen_counter_update, tree_profiling): Formatting
+	fixes.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112639
+	* builtins.cc (fold_builtin_bit_query): If arg0 has side-effects, arg1
+	is specified but cleared, call save_expr on arg0.
+
+2023-11-21  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.h (gen_push): Add default bool
+	parameter.
+	(gen_pop): Likewise.
+	* config/i386/i386-opts.h (enum apx_features): Add apx_ppx, add
+	it to apx_all.
+	* config/i386/i386.cc (ix86_emit_restore_reg_using_pop): Add
+	ppx_p parameter for function declaration.
+	(gen_push2): Add ppx_p parameter, emit push2p if ppx_p is true.
+	(gen_push): Likewise.
+	(ix86_emit_restore_reg_using_pop2): Likewise for pop2p.
+	(ix86_emit_save_regs): Emit pushp/push2p under TARGET_APX_PPX.
+	(ix86_emit_restore_reg_using_pop): Add ppx_p, emit popp insn
+	and adjust cfi when ppx_p is ture.
+	(ix86_emit_restore_reg_using_pop2): Add ppx_p and parse to its
+	callee.
+	(ix86_emit_restore_regs_using_pop2): Likewise.
+	(ix86_expand_epilogue): Parse TARGET_APX_PPX to
+	ix86_emit_restore_reg_using_pop.
+	* config/i386/i386.h (TARGET_APX_PPX): New.
+	* config/i386/i386.md (UNSPEC_APX_PPX): New unspec.
+	(pushp_di): New define_insn.
+	(popp_di): Likewise.
+	(push2p_di): Likewise.
+	(pop2p_di): Likewise.
+	* config/i386/i386.opt: Add apx_ppx enum.
+
+2023-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111970
+	* tree-vect-stmts.cc (vectorizable_load): Fix offset calculation
+	for SLP gather load.
+	(vectorizable_store): Likewise for SLP scatter store.
+
+2023-11-21  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-def.h (stdint.h): Guard with #if to
+	exclude it for target libraries.
+	(loongarch_isa_base_features): Likewise.
+	(loongarch_isa): Likewise.
+	(loongarch_abi): Likewise.
+	(loongarch_target): Likewise.
+	(loongarch_cpu_default_isa): Likewise.
+
+2023-11-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112325
+	* config/i386/i386-expand.cc (emit_reduc_half): Hanlde
+	V8QImode.
+	* config/i386/mmx.md (reduc_<code>_scal_<mode>): New expander.
+	(reduc_<code>_scal_v4qi): Ditto.
+
 2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
 
 	* config/nvptx/nvptx.h (struct machine_function): Fix typo in variadic.

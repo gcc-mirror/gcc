@@ -1,3 +1,7 @@
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Formatting fixes.
+
 2023-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Always define it.

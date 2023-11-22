@@ -1,3 +1,190 @@
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Loop_Statement_to_gnu): Always use the
+	simpler form for a loop with a boolean iteration variable.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Subtype>: Put
+	the alignment directly on the type in the constrained case too.
+	* gcc-interface/utils.cc (maybe_pad_type): For an array type, take
+	the alignment of the element type as the original alignment.
+
+2023-11-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Container_Aggregate): In the case where Comp
+	is an N_Iterated_Component_Association, pick up Discrete_Choices rather
+	than Choices.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer): For package specs and bodies, push
+	and pop the specs onto the scope stack only once.
+	* inline.adb (Cleanup_Scopes): Call Pop_Scope instead of End_Scope.
+
+2023-11-21  Steve Baird  <baird@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): In the case of a
+	deep delta choice, the expected type for the expression will
+	typically not be the component type of the array type, so a call
+	to Analyze_And_Resolve that assumes otherwise would be an error.
+	It turns out that such a call, while wrong, is usually harmless
+	because the expression has already been marked as analyzed. This
+	doesn't work if the aggregate occurs in a postcondition and, in
+	any case, we don't want to rely on this. So do not perform the
+	call in the deep case.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_warn.adb (Check_References.Type_OK_For_No_Value_Assigned):
+	New predicate.
+	(Check_References): For Warn_On_No_Value_Assigned, use the same test
+	on the type in the address-not-taken and default cases.
+
+2023-11-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Container): Retrieve the
+	iteration type's iteration interface progenitor via
+	Iterator_Interface_Ancestor, in the case of both "in" and "of"
+	iterators. Narrow the scope of Pack, so it's declared and
+	initialized only within the code related to "of" iterators, and
+	change its name to Cont_Type_Pack. Adjust comments.
+	* sem_ch5.adb (Get_Cursor_Type): In the case of a derived type,
+	retrieve the iteration type's iterator interface progenitor (if it
+	exists) via Iterator_Interface_Ancestor rather than assuming that
+	the parent type is the interface progenitor.
+	* sem_util.ads (Iterator_Interface_Ancestor): New function.
+	* sem_util.adb (Iterator_Interface_Ancestor): New function
+	returning a type's associated iterator interface type, if any, by
+	collecting and traversing the type's interfaces.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Address>: Remove the
+	bypass for prefixes with task type.
+
+2023-11-21  Viljar Indus  <indus@adacore.com>
+
+	* par.adb: Restore Style_Checks after parsing each unit.
+
+2023-11-21  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Aggregate): Fix type.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Test Expander_Active
+	to detect generic contexts for the generation of cleanup actions.
+
+2023-11-21  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/g-catiio.adb (Value): Modify conditionals to use 'Last
+	instead of 'Length
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Null_Status): Deal with unchecked type conversions.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Do not treat initialization
+	procedures specially when it comes to creating a transient scope.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Likewise.
+	* exp_util.adb (Requires_Cleanup_Actions): Likewise.
+
+2023-11-21  Doug Rupp  <rupp@adacore.com>
+
+	* s-oscons-tmplt.c: #define CLOCK_RT_Ada "CLOCK_MONOTONIC" for
+	__vxworks
+
+2023-11-21  Steve Baird  <baird@adacore.com>
+
+	* sem_aggr.adb: Replace "not Present (...)" call with "No (...)" call.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Is_Finalization_Wrapper
+	* gen_il-gen-gen_nodes.adb (N_Block_Statement): Likewise.
+	* sinfo.ads (Is_Finalization_Wrapper): Delete.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Adjust comment
+	and remove obsolete code testing the Is_Finalization_Wrapper flag.
+	* exp_util.adb (Requires_Cleanup_Actions): Likewise.
+
+2023-11-21  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/libada.gpr: Revise section 1
+
+2023-11-21  Steve Baird  <baird@adacore.com>
+
+	* par.adb: Add new Boolean variable Inside_Delta_Aggregate.
+	* par-ch4.adb (P_Simple_Expression): Add support for a deep delta
+	aggregate choice. We turn a sequence of selectors into a peculiar
+	tree. We build a component (Indexed or Selected) whose prefix is
+	another such component, etc. The leftmost prefix at the bottom of
+	the tree has a "name" which is the first selector, without any
+	further prefix. For something like "with delta (1)(2) => 3" where
+	the type of the aggregate is an array of arrays of integers, we'll
+	build an N_Indexed_Component whose prefix is an integer literal 1.
+	This is consistent with the trees built for "regular"
+	(Ada-defined) delta aggregates.
+	* sem_aggr.adb (Is_Deep_Choice, Is_Root_Prefix_Of_Deep_Choice):
+	New queries.
+	(Resolve_Deep_Delta_Assoc): new procedure.
+	(Resolve_Delta_Array_Aggregate): call Resolve_Deep_Delta_Assoc in
+	deep case.
+	(Resolve_Delta_Record_Aggregate): call Resolve_Deep_Delta_Assoc in
+	deep case.
+	(Get_Component_Type): new function replaces old Get_Component
+	function.
+	* sem_aggr.ads (Is_Deep_Choice, Is_Root_Prefix_Of_Deep_Choice):
+	New queries.
+	* exp_aggr.adb (Expand_Delta_Array_Aggregate): add nested function
+	Make_Array_Delta_Assignment_LHS; call it instead of
+	Make_Indexed_Component.
+	(Expand_Delta_Record_Aggregate): add nested function
+	Make_Record_Delta_Assignment_LHS; call it instead of
+	Make_Selected_Component.
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Update): Insert range
+	checks for indexes in deep delta aggregates.
+
+2023-11-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* adaint.c (__gnat_unlink): Add new parameter and fix text
+	conversion on Windows. Remove unnecessary curly braces.
+	* adaint.h (__gnat_unlink): Add new parameter.
+	* libgnat/i-cstrea.ads (unlink): Adapt to __gnat_unlink signature
+	change.
+	* libgnat/i-cstrea.adb (unlink): New Subprogram definition.
+	* libgnat/s-crtl.ads (unlink): Adapt to __gnat_unlink signature
+	change.
+	* libgnat/s-fileio.adb (Delete): Pass encoding argument to unlink.
+
+2023-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Save_Global_References.Set_Global_Type): Beef up
+	comment about the setting of the full view.
+	* sem_res.adb (Resolve_Actuals.Insert_Default): Add another bypass
+	for the case of a generic context.
+
+2023-11-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Move index
+	directives.
+	* gnat_ugn.texi: Regenerate.
+
+2023-11-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* par_sco.adb (Process_Decisions)<Process_Node>: Skip aspect
+	specifications.
+
+2023-11-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/libgnat_common.gpr: Unconditionally pass -gnatg.
+
+2023-11-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_util.ads: Typo fix.
+
 2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Also create a
