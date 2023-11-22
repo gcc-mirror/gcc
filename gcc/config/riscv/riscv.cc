@@ -4171,7 +4171,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  /* If riscv_expand_int_scc inverts the condition, then it will
 	     flip the value of INVERT.  We need to know where so that
 	     we can adjust it for our needs.  */
-	  if (code == LE || code == GE)
+	  if (code == LE || code == LEU || code == GE || code == GEU)
 	    invert_ptr = &invert;
 
 	  /* Emit an scc like instruction into a temporary
