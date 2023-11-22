@@ -7000,7 +7000,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
     {
-      warn_for_address_or_pointer_of_packed_member (type, orig_rhs);
+      warn_for_address_of_packed_member (type, orig_rhs);
       return rhs;
     }
 
@@ -7658,7 +7658,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       /* If RHS isn't an address, check pointer or array of packed
 	 struct or union.  */
-      warn_for_address_or_pointer_of_packed_member (type, orig_rhs);
+      warn_for_address_of_packed_member (type, orig_rhs);
 
       return convert (type, rhs);
     }

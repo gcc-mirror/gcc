@@ -9304,7 +9304,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
     }
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (type, val);
+    warn_for_address_of_packed_member (type, val);
 
   return val;
 }

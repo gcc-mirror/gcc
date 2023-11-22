@@ -10384,7 +10384,7 @@ convert_for_assignment (tree type, tree rhs,
     maybe_warn_unparenthesized_assignment (rhs, complain);
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (type, rhs);
+    warn_for_address_of_packed_member (type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);

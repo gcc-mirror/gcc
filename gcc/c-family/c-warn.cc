@@ -2991,13 +2991,13 @@ check_alignment_of_packed_member (tree type, tree field, bool rvalue)
   return NULL_TREE;
 }
 
-/* Return struct or union type if the right hand value, RHS
+/* Return struct or union type if the right hand value, RHS,
    is an address which takes the unaligned address of packed member
    of struct or union when assigning to TYPE.
    Otherwise, return NULL_TREE.  */
 
 static tree
-check_address_or_pointer_of_packed_member (tree type, tree rhs)
+check_address_of_packed_member (tree type, tree rhs)
 {
   bool rvalue = true;
   bool indirect = false;
@@ -3042,14 +3042,12 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
   return context;
 }
 
-/* Check and warn if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
- */
+/* Check and warn if the right hand value, RHS,
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.  */
 
 static void
-check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
+check_and_warn_address_of_packed_member (tree type, tree rhs)
 {
   bool nop_p = false;
   tree orig_rhs;
@@ -3067,11 +3065,11 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
   if (TREE_CODE (rhs) == COND_EXPR)
     {
       /* Check the THEN path.  */
-      check_and_warn_address_or_pointer_of_packed_member
+      check_and_warn_address_of_packed_member
 	(type, TREE_OPERAND (rhs, 1));
 
       /* Check the ELSE path.  */
-      check_and_warn_address_or_pointer_of_packed_member
+      check_and_warn_address_of_packed_member
 	(type, TREE_OPERAND (rhs, 2));
     }
   else
@@ -3095,7 +3093,7 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
 	}
 
       tree context
-	= check_address_or_pointer_of_packed_member (type, rhs);
+	= check_address_of_packed_member (type, rhs);
       if (context)
 	{
 	  location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
@@ -3107,14 +3105,12 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
     }
 }
 
-/* Warn if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
-*/
+/* Warn if the right hand value, RHS,
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.  */
 
 void
-warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
+warn_for_address_of_packed_member (tree type, tree rhs)
 {
   if (!warn_address_of_packed_member)
     return;
@@ -3123,7 +3119,7 @@ warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
   if (!POINTER_TYPE_P (type))
     return;
 
-  check_and_warn_address_or_pointer_of_packed_member (type, rhs);
+  check_and_warn_address_of_packed_member (type, rhs);
 }
 
 /* Return EXPR + 1.  Convenience helper used below.  */

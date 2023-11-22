@@ -1572,7 +1572,7 @@ extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
 extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
-extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
+extern void warn_for_address_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
 extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
 extern void do_warn_array_compare (location_t, tree_code, tree, tree);
