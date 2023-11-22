@@ -4036,12 +4036,15 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
   else if (TARGET_ZICOND_LIKE
 	   && GET_MODE_CLASS (mode) == MODE_INT)
     {
+      machine_mode mode0 = GET_MODE (op0);
+      machine_mode mode1 = GET_MODE (op1);
+
       /* The comparison must be comparing WORD_MODE objects.   We must
 	 enforce that so that we don't strip away a sign_extension
 	 thinking it is unnecessary.  We might consider using
 	 riscv_extend_operands if they are not already properly extended.  */
-      if ((GET_MODE (op0) != word_mode && GET_MODE (op0) != VOIDmode)
-	  || (GET_MODE (op1) != word_mode && GET_MODE (op1) != VOIDmode))
+      if ((mode0 != word_mode && mode0 != VOIDmode)
+	  || (mode1 != word_mode && mode1 != VOIDmode))
 	return false;
 
       /* Canonicalize the comparison.  It must be an equality comparison
@@ -4061,9 +4064,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  rtx tmp = gen_reg_rtx (word_mode);
 
 	  /* We can support both FP and integer conditional moves.  */
-	  if (INTEGRAL_MODE_P (GET_MODE (XEXP (op, 0))))
+	  if (INTEGRAL_MODE_P (mode0))
 	    riscv_expand_int_scc (tmp, code, op0, op1, invert_ptr);
-	  else if (FLOAT_MODE_P (GET_MODE (XEXP (op, 0)))
+	  else if (FLOAT_MODE_P (mode0)
 		   && fp_scc_comparison (op, GET_MODE (op)))
 	    riscv_expand_float_scc (tmp, code, op0, op1);
 	  else
