@@ -29,13 +29,16 @@ dashj=''
 # -j<n>:
 #  Pass '-j<n>' to make.
 
-case "$1" in
- --add-passes-despite-regression)
-  add_passes_despite_regression=1; shift;;
- -j*)
-  dashj=$1; shift;;
- -*) echo "Invalid option: $1"; exit 2;;
-esac
+while : ; do
+  case "$1" in
+   --add-passes-despite-regression)
+    add_passes_despite_regression=1; shift;;
+   -j*)
+    dashj=$1; shift;;
+   -*) echo "Invalid option: $1"; exit 2;;
+   *) break;;
+  esac
+done
 
 # TARGET is the target triplet.  It should be the same one as used in
 # constructing PREFIX.  Or it can be the keyword 'native', indicating
