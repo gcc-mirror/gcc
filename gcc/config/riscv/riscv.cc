@@ -4126,8 +4126,8 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       && reg_or_0_operand (cons, mode)
       && reg_or_0_operand (alt, mode)
       && (GET_MODE (op) == mode || GET_MODE (op) == E_VOIDmode)
-      && GET_MODE (op0) == mode
-      && GET_MODE (op1) == mode
+      && (GET_MODE (op0) == mode || CONST_INT_P (op0))
+      && (GET_MODE (op1) == mode || CONST_INT_P (op1))
       && (code == EQ || code == NE))
     need_eq_ne_p = true;
 
