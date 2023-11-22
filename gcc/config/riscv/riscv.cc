@@ -4052,10 +4052,12 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 we can then use an equality comparison against zero.  */
       if (!equality_operator (op, VOIDmode) || op1 != CONST0_RTX (mode))
 	{
-	  enum rtx_code new_code = NE;
 	  bool *invert_ptr = nullptr;
 	  bool invert = false;
 
+	  /* If riscv_expand_int_scc inverts the condition, then it will
+	     flip the value of INVERT.  We need to know where so that
+	     we can adjust it for our needs.  */
 	  if (code == LE || code == GE)
 	    invert_ptr = &invert;
 
@@ -4072,13 +4074,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  else
 	    return false;
 
-	  /* If riscv_expand_int_scc inverts the condition, then it will
-	     flip the value of INVERT.  We need to know where so that
-	     we can adjust it for our needs.  */
-	  if (invert)
-	    new_code = EQ;
-
-	  op = gen_rtx_fmt_ee (new_code, mode, tmp, const0_rtx);
+	  op = gen_rtx_fmt_ee (invert ? EQ : NE, mode, tmp, const0_rtx);
 
 	  /* We've generated a new comparison.  Update the local variables.  */
 	  code = GET_CODE (op);
