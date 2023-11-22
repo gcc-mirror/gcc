@@ -4138,12 +4138,12 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       machine_mode mode0 = GET_MODE (op0);
       machine_mode mode1 = GET_MODE (op1);
 
-      /* The comparison must be comparing WORD_MODE objects.   We must
-	 enforce that so that we don't strip away a sign_extension
+      /* An integer comparison must be comparing WORD_MODE objects.  We
+	 must enforce that so that we don't strip away a sign_extension
 	 thinking it is unnecessary.  We might consider using
 	 riscv_extend_operands if they are not already properly extended.  */
-      if ((mode0 != word_mode && mode0 != VOIDmode)
-	  || (mode1 != word_mode && mode1 != VOIDmode))
+      if ((INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
+	  || (INTEGRAL_MODE_P (mode1) && mode1 != word_mode))
 	return false;
 
       /* In the fallback generic case use MODE rather than WORD_MODE for
