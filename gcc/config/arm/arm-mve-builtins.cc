@@ -1168,7 +1168,6 @@ function_resolver::infer_pointer_type (unsigned int argno)
 		build_qualified_type (target, 0));
       return NUM_TYPE_SUFFIXES;
     }
-  unsigned int bits = type_suffixes[type].element_bits;
 
   return type;
 }
