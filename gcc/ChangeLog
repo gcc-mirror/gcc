@@ -1,3 +1,12 @@
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR target/111815
+	* config/vax/vax.cc (index_term_p): Only accept the index scaler
+	as the RHS operand to ASHIFT.
+
 2023-11-20  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

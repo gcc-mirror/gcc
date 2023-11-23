@@ -1,3 +1,11 @@
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR target/111815
+	* gcc.dg/torture/pr111815.c: New test.
+
 2023-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/112301
