@@ -776,7 +776,8 @@ DefaultASTVisitor::visit (AST::Function &function)
     visit (param);
   if (function.has_return_type ())
     visit (function.get_return_type ());
-  visit (function.get_where_clause ());
+  if (function.has_where_clause ())
+    visit (function.get_where_clause ());
   if (function.has_body ())
     visit (*function.get_definition ());
 }
@@ -788,7 +789,8 @@ DefaultASTVisitor::visit (AST::TypeAlias &type_alias)
   visit (type_alias.get_visibility ());
   for (auto &generic : type_alias.get_generic_params ())
     visit (generic);
-  visit (type_alias.get_where_clause ());
+  if (type_alias.has_where_clause ())
+    visit (type_alias.get_where_clause ());
   visit (type_alias.get_type_aliased ());
 }
 
@@ -807,7 +809,8 @@ DefaultASTVisitor::visit (AST::StructStruct &struct_item)
   visit (struct_item.get_visibility ());
   for (auto &generic : struct_item.get_generic_params ())
     visit (generic);
-  visit (struct_item.get_where_clause ());
+  if (struct_item.has_where_clause ())
+    visit (struct_item.get_where_clause ());
   for (auto &field : struct_item.get_fields ())
     visit (field);
 }
@@ -827,7 +830,8 @@ DefaultASTVisitor::visit (AST::TupleStruct &tuple_struct)
   visit (tuple_struct.get_visibility ());
   for (auto &generic : tuple_struct.get_generic_params ())
     visit (generic);
-  visit (tuple_struct.get_where_clause ());
+  if (tuple_struct.has_where_clause ())
+    visit (tuple_struct.get_where_clause ());
   for (auto &field : tuple_struct.get_fields ())
     visit (field);
 }
@@ -869,7 +873,8 @@ DefaultASTVisitor::visit (AST::Enum &enum_item)
   visit (enum_item.get_visibility ());
   for (auto &generic : enum_item.get_generic_params ())
     visit (generic);
-  visit (enum_item.get_where_clause ());
+  if (enum_item.has_where_clause ())
+    visit (enum_item.get_where_clause ());
   for (auto &item : enum_item.get_variants ())
     visit (item);
 }
@@ -881,7 +886,8 @@ DefaultASTVisitor::visit (AST::Union &union_item)
   visit (union_item.get_visibility ());
   for (auto &generic : union_item.get_generic_params ())
     visit (generic);
-  visit (union_item.get_where_clause ());
+  if (union_item.has_where_clause ())
+    visit (union_item.get_where_clause ());
   for (auto &variant : union_item.get_variants ())
     visit (variant);
 }
@@ -978,7 +984,8 @@ DefaultASTVisitor::visit (AST::Trait &trait)
   for (auto &generic : trait.get_generic_params ())
     visit (generic);
 
-  visit (trait.get_where_clause ());
+  if (trait.has_where_clause ())
+    visit (trait.get_where_clause ());
 
   for (auto &bound : trait.get_type_param_bounds ())
     visit (bound);
@@ -995,7 +1002,8 @@ DefaultASTVisitor::visit (AST::InherentImpl &impl)
 
   for (auto &generic : impl.get_generic_params ())
     visit (generic);
-  visit (impl.get_where_clause ());
+  if (impl.has_where_clause ())
+    visit (impl.get_where_clause ());
   visit (impl.get_type ());
   visit_inner_attrs (impl);
   for (auto &item : impl.get_impl_items ())
@@ -1010,7 +1018,8 @@ DefaultASTVisitor::visit (AST::TraitImpl &impl)
 
   for (auto &generic : impl.get_generic_params ())
     visit (generic);
-  visit (impl.get_where_clause ());
+  if (impl.has_where_clause ())
+    visit (impl.get_where_clause ());
   visit (impl.get_type ());
   visit_inner_attrs (impl);
   for (auto &item : impl.get_impl_items ())
@@ -1048,7 +1057,8 @@ DefaultASTVisitor::visit (AST::ExternalFunctionItem &item)
   for (auto &generic : item.get_generic_params ())
     visit (generic);
 
-  visit (item.get_where_clause ());
+  if (item.has_where_clause ())
+    visit (item.get_where_clause ());
 
   for (auto &param : item.get_function_params ())
     visit (param);
