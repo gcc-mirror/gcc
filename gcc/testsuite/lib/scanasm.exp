@@ -505,7 +505,7 @@ proc scan-assembler-times { args } {
     close $fd
     regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
 
-    set result_count [llength [regexp -inline -all -- $pattern $text]]
+    set result_count [regexp -all -- $pattern $text]
     if {$result_count == $times} {
 	pass "$testcase scan-assembler-times $pp_pattern $times"
     } else {
