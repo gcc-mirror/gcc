@@ -11743,6 +11743,297 @@ c_parser_postfix_expression (c_parser *parser)
 	    set_c_expr_source_range (&expr, start_loc, end_loc);
 	  }
 	  break;
+	case RID_BUILTIN_STDC:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    c_expr_t *arg_p;
+	    location_t close_paren_loc;
+	    enum c_builtin_stdc {
+	      C_BUILTIN_STDC_BIT_CEIL,
+	      C_BUILTIN_STDC_BIT_FLOOR,
+	      C_BUILTIN_STDC_BIT_WIDTH,
+	      C_BUILTIN_STDC_COUNT_ONES,
+	      C_BUILTIN_STDC_COUNT_ZEROS,
+	      C_BUILTIN_STDC_FIRST_LEADING_ONE,
+	      C_BUILTIN_STDC_FIRST_LEADING_ZERO,
+	      C_BUILTIN_STDC_FIRST_TRAILING_ONE,
+	      C_BUILTIN_STDC_FIRST_TRAILING_ZERO,
+	      C_BUILTIN_STDC_HAS_SINGLE_BIT,
+	      C_BUILTIN_STDC_LEADING_ONES,
+	      C_BUILTIN_STDC_LEADING_ZEROS,
+	      C_BUILTIN_STDC_TRAILING_ONES,
+	      C_BUILTIN_STDC_TRAILING_ZEROS,
+	      C_BUILTIN_STDC_MAX
+	    } stdc_rid = C_BUILTIN_STDC_MAX;
+	    const char *name
+	      = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	    switch (name[sizeof ("__builtin_stdc_") - 1])
+	      {
+	      case 'b':
+		switch (name[sizeof ("__builtin_stdc_bit_") - 1])
+		  {
+		  case 'c':
+		    stdc_rid = C_BUILTIN_STDC_BIT_CEIL;
+		    break;
+		  case 'f':
+		    stdc_rid = C_BUILTIN_STDC_BIT_FLOOR;
+		    break;
+		  default:
+		    stdc_rid = C_BUILTIN_STDC_BIT_WIDTH;
+		    break;
+		  }
+		break;
+	      case 'c':
+		if (name[sizeof ("__builtin_stdc_count_") - 1] == 'o')
+		  stdc_rid = C_BUILTIN_STDC_COUNT_ONES;
+		else
+		  stdc_rid = C_BUILTIN_STDC_COUNT_ZEROS;
+		break;
+	      case 'f':
+		switch (name[sizeof ("__builtin_stdc_first_trailing_") - 1])
+		  {
+		  case 'n':
+		    stdc_rid = C_BUILTIN_STDC_FIRST_LEADING_ONE;
+		    break;
+		  case 'e':
+		    stdc_rid = C_BUILTIN_STDC_FIRST_LEADING_ZERO;
+		    break;
+		  case 'o':
+		    stdc_rid = C_BUILTIN_STDC_FIRST_TRAILING_ONE;
+		    break;
+		  default:
+		    stdc_rid = C_BUILTIN_STDC_FIRST_TRAILING_ZERO;
+		    break;
+		  }
+		break;
+	      case 'h':
+		stdc_rid = C_BUILTIN_STDC_HAS_SINGLE_BIT;
+		break;
+	      case 'l':
+		if (name[sizeof ("__builtin_stdc_leading_") - 1] == 'o')
+		  stdc_rid = C_BUILTIN_STDC_LEADING_ONES;
+		else
+		  stdc_rid = C_BUILTIN_STDC_LEADING_ZEROS;
+		break;
+	      case 't':
+		if (name[sizeof ("__builtin_stdc_trailing_") - 1] == 'o')
+		  stdc_rid = C_BUILTIN_STDC_TRAILING_ONES;
+		else
+		  stdc_rid = C_BUILTIN_STDC_TRAILING_ZEROS;
+		break;
+	      }
+	    gcc_checking_assert (stdc_rid != C_BUILTIN_STDC_MAX);
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser, name,
+					    &cexpr_list, false,
+					    &close_paren_loc))
+	      {
+		expr.set_error ();
+		break;
+	      }
+
+	    if (vec_safe_length (cexpr_list) != 1)
+	      {
+		error_at (loc, "wrong number of arguments to %qs", name);
+		expr.set_error ();
+		break;
+	      }
+
+	    arg_p = &(*cexpr_list)[0];
+	    *arg_p = convert_lvalue_to_rvalue (loc, *arg_p, true, true);
+	    if (!INTEGRAL_TYPE_P (TREE_TYPE (arg_p->value)))
+	      {
+		error_at (loc, "%qs operand not an integral type", name);
+		expr.set_error ();
+		break;
+	      }
+	    tree arg = arg_p->value;
+	    tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg));
+	    /* Expand:
+	       __builtin_stdc_leading_zeros (arg) as
+		 (unsigned int) __builtin_clzg (arg, prec)
+	       __builtin_stdc_leading_ones (arg) as
+		 (unsigned int) __builtin_clzg ((type) ~arg, prec)
+	       __builtin_stdc_trailing_zeros (arg) as
+		 (unsigned int) __builtin_ctzg (arg, prec)
+	       __builtin_stdc_trailing_ones (arg) as
+		 (unsigned int) __builtin_ctzg ((type) ~arg, prec)
+	       __builtin_stdc_first_leading_zero (arg) as
+		 __builtin_clzg ((type) ~arg, -1) + 1U
+	       __builtin_stdc_first_leading_one (arg) as
+		 __builtin_clzg (arg, -1) + 1U
+	       __builtin_stdc_first_trailing_zero (arg) as
+		 __builtin_ctzg ((type) ~arg, -1) + 1U
+	       __builtin_stdc_first_trailing_one (arg) as
+		 __builtin_ctzg (arg, -1) + 1U
+	       __builtin_stdc_count_zeros (arg) as
+		 (unsigned int) __builtin_popcountg ((type) ~arg)
+	       __builtin_stdc_count_ones (arg) as
+		 (unsigned int) __builtin_popcountg (arg)
+	       __builtin_stdc_has_single_bit (arg) as
+		 (_Bool) (__builtin_popcountg (arg) == 1)
+	       __builtin_stdc_bit_width (arg) as
+		 (unsigned int) (prec - __builtin_clzg (arg, prec))
+	       __builtin_stdc_bit_floor (arg) as
+		 arg == 0 ? (type) 0
+			  : (type) 1 << (prec - 1 - __builtin_clzg (arg))
+	       __builtin_stdc_bit_ceil (arg) as
+		 arg <= 1 ? (type) 1
+			  : (type) 2 << (prec - 1 - __builtin_clzg (arg - 1))
+	       without evaluating arg multiple times, type being
+	       __typeof (arg) and prec __builtin_popcountg ((type) ~0)).  */
+	    int prec = TYPE_PRECISION (type);
+	    tree barg1 = arg;
+	    switch (stdc_rid)
+	      {
+	      case C_BUILTIN_STDC_BIT_CEIL:
+		arg = save_expr (arg);
+		barg1 = build2_loc (loc, PLUS_EXPR, type, arg,
+				    build_int_cst (type, -1));
+		break;
+	      case C_BUILTIN_STDC_BIT_FLOOR:
+		barg1 = arg = save_expr (arg);
+		break;
+	      case C_BUILTIN_STDC_COUNT_ZEROS:
+	      case C_BUILTIN_STDC_FIRST_LEADING_ZERO:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ZERO:
+	      case C_BUILTIN_STDC_LEADING_ONES:
+	      case C_BUILTIN_STDC_TRAILING_ONES:
+		barg1 = build1_loc (loc, BIT_NOT_EXPR, type, arg);
+		break;
+	      default:
+		break;
+	      }
+	    tree barg2 = NULL_TREE;
+	    switch (stdc_rid)
+	      {
+	      case C_BUILTIN_STDC_BIT_WIDTH:
+	      case C_BUILTIN_STDC_LEADING_ONES:
+	      case C_BUILTIN_STDC_LEADING_ZEROS:
+	      case C_BUILTIN_STDC_TRAILING_ONES:
+	      case C_BUILTIN_STDC_TRAILING_ZEROS:
+		barg2 = build_int_cst (integer_type_node, prec);
+		break;
+	      case C_BUILTIN_STDC_FIRST_LEADING_ONE:
+	      case C_BUILTIN_STDC_FIRST_LEADING_ZERO:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ONE:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ZERO:
+		barg2 = integer_minus_one_node;
+		break;
+	      default:
+		break;
+	      }
+	    tree fndecl = NULL_TREE;
+	    switch (stdc_rid)
+	      {
+	      case C_BUILTIN_STDC_BIT_CEIL:
+	      case C_BUILTIN_STDC_BIT_FLOOR:
+	      case C_BUILTIN_STDC_BIT_WIDTH:
+	      case C_BUILTIN_STDC_FIRST_LEADING_ONE:
+	      case C_BUILTIN_STDC_FIRST_LEADING_ZERO:
+	      case C_BUILTIN_STDC_LEADING_ONES:
+	      case C_BUILTIN_STDC_LEADING_ZEROS:
+		fndecl = builtin_decl_explicit (BUILT_IN_CLZG);
+		break;
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ONE:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ZERO:
+	      case C_BUILTIN_STDC_TRAILING_ONES:
+	      case C_BUILTIN_STDC_TRAILING_ZEROS:
+		fndecl = builtin_decl_explicit (BUILT_IN_CTZG);
+		break;
+	      case C_BUILTIN_STDC_COUNT_ONES:
+	      case C_BUILTIN_STDC_COUNT_ZEROS:
+	      case C_BUILTIN_STDC_HAS_SINGLE_BIT:
+		fndecl = builtin_decl_explicit (BUILT_IN_POPCOUNTG);
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    /* Construct a call to __builtin_{clz,ctz,popcount}g.  */
+	    int nargs = barg2 != NULL_TREE ? 2 : 1;
+	    vec<tree, va_gc> *args;
+	    vec_alloc (args, nargs);
+	    vec<tree, va_gc> *origtypes;
+	    vec_alloc (origtypes, nargs);
+	    auto_vec<location_t> arg_loc (nargs);
+	    args->quick_push (barg1);
+	    arg_loc.quick_push (arg_p->get_location ());
+	    origtypes->quick_push (arg_p->original_type);
+	    if (nargs == 2)
+	      {
+		args->quick_push (barg2);
+		arg_loc.quick_push (loc);
+		origtypes->quick_push (integer_type_node);
+	      }
+	    expr.value = c_build_function_call_vec (loc, arg_loc, fndecl,
+						    args, origtypes);
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
+	    if (expr.value == error_mark_node)
+	      break;
+	    switch (stdc_rid)
+	      {
+	      case C_BUILTIN_STDC_BIT_CEIL:
+	      case C_BUILTIN_STDC_BIT_FLOOR:
+		--prec;
+		/* FALLTHRU */
+	      case C_BUILTIN_STDC_BIT_WIDTH:
+		expr.value = build2_loc (loc, MINUS_EXPR, integer_type_node,
+					 build_int_cst (integer_type_node,
+							prec), expr.value);
+		break;
+	      case C_BUILTIN_STDC_FIRST_LEADING_ONE:
+	      case C_BUILTIN_STDC_FIRST_LEADING_ZERO:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ONE:
+	      case C_BUILTIN_STDC_FIRST_TRAILING_ZERO:
+		expr.value = build2_loc (loc, PLUS_EXPR, integer_type_node,
+					 expr.value, integer_one_node);
+		break;
+	      case C_BUILTIN_STDC_HAS_SINGLE_BIT:
+		expr.value = build2_loc (loc, EQ_EXPR, boolean_type_node,
+					 expr.value, integer_one_node);
+		break;
+	      default:
+		break;
+	      }
+
+	    if (stdc_rid != C_BUILTIN_STDC_BIT_CEIL
+		&& stdc_rid != C_BUILTIN_STDC_BIT_FLOOR)
+	      {
+		if (stdc_rid != C_BUILTIN_STDC_HAS_SINGLE_BIT)
+		  expr.value = fold_convert_loc (loc, unsigned_type_node,
+						 expr.value);
+		break;
+	      }
+	    /* For __builtin_stdc_bit_ceil (0U) or __builtin_stdc_bit_ceil (1U)
+	       or __builtin_stdc_bit_floor (0U) avoid bogus -Wshift-count-*
+	       warnings.  The LSHIFT_EXPR is in dead code in that case.  */
+	    if (integer_zerop (arg)
+		|| (stdc_rid == C_BUILTIN_STDC_BIT_CEIL && integer_onep (arg)))
+	      expr.value = build_int_cst (type, 0);
+	    else
+	      expr.value
+		= build2_loc (loc, LSHIFT_EXPR, type,
+			      build_int_cst (type,
+					     (stdc_rid
+					      == C_BUILTIN_STDC_BIT_CEIL
+					      ? 2 : 1)), expr.value);
+	    if (stdc_rid == C_BUILTIN_STDC_BIT_CEIL)
+	      expr.value = build3_loc (loc, COND_EXPR, type,
+				       build2_loc (loc, LE_EXPR,
+						   boolean_type_node, arg,
+						   build_int_cst (type, 1)),
+				       build_int_cst (type, 1),
+				       expr.value);
+	    else
+	      expr.value = build3_loc (loc, COND_EXPR, type,
+				       build2_loc (loc, EQ_EXPR,
+						   boolean_type_node, arg,
+						   build_int_cst (type, 0)),
+				       build_int_cst (type, 0),
+				       expr.value);
+	    break;
+	  }
 	case RID_AT_SELECTOR:
 	  {
 	    gcc_assert (c_dialect_objc ());
