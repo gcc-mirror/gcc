@@ -767,6 +767,7 @@ tree_profiling (void)
     = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
   bool have_atomic_8
     = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  bool needs_split = gcov_type_size == 8 && !have_atomic_8 && have_atomic_4;
   if (!can_support_atomic)
     {
       if (gcov_type_size == 4)
@@ -774,6 +775,9 @@ tree_profiling (void)
       else if (gcov_type_size == 8)
 	can_support_atomic = have_atomic_8;
     }
+
+  if (flag_profile_update != PROFILE_UPDATE_SINGLE && needs_split)
+    counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC
       && !can_support_atomic)
@@ -788,13 +792,11 @@ tree_profiling (void)
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
-      if (gcov_type_size == 8 && !have_atomic_8 && have_atomic_4)
+      if (needs_split)
 	counter_update = COUNTER_UPDATE_ATOMIC_SPLIT;
       else
 	counter_update = COUNTER_UPDATE_ATOMIC_BUILTIN;
     }
-  else if (gcov_type_size == 8 && have_atomic_4)
-    counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.cc:ipa_passes().  */
