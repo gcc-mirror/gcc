@@ -14790,6 +14790,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
+  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (r) = false;
+
   if (!lambda_fntype && !class_p)
     {
       /* Record this non-type partial instantiation.  */
