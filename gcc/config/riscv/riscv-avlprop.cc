@@ -104,10 +104,21 @@ avlprop_type_to_str (enum avlprop_type type)
     }
 }
 
+/* Return true if the AVL of the INSN can be propagated.  */
+static bool
+alv_can_be_propagated_p (rtx_insn *rinsn)
+{
+  /* The index of "vrgather dest, source, index" may pick up the
+     element which has index >= AVL, so we can't strip the elements
+     that has index >= AVL of source register.  */
+  return get_attr_type (rinsn) != TYPE_VGATHER;
+}
+
 static bool
 vlmax_ta_p (rtx_insn *rinsn)
 {
-  return vlmax_avl_type_p (rinsn) && tail_agnostic_p (rinsn);
+  return vlmax_avl_type_p (rinsn) && tail_agnostic_p (rinsn)
+	 && alv_can_be_propagated_p (rinsn);
 }
 
 static machine_mode
