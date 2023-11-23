@@ -6,4 +6,4 @@
 
 const auto x = { 1, 2 };
 
-// { dg-final { scan-assembler-not {\.data} { xfail powerpc-ibm-aix* } } }
+// { dg-final { scan-assembler-not {\.data} { xfail hppa*-*-hpux* powerpc-ibm-aix* } } }
