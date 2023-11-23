@@ -1297,6 +1297,11 @@
    (V32QI "V16HI") (V16HI "V8SI") (V8SI "V4DI")
    (V32HI "V16SI") (V64QI "V32HI") (V16SI "V8DI")])
 
+(define_mode_attr sseunpackmodelower
+  [(V16QI "v8hi") (V8HI "v4si") (V4SI "v2di")
+   (V32QI "v16hi") (V16HI "v8si") (V8SI "v4di")
+   (V32HI "v16si") (V64QI "v32hi") (V16SI "v8di")])
+
 (define_mode_attr ssepackmode
   [(V8HI "V16QI") (V4SI "V8HI") (V2DI "V4SI")
    (V16HI "V32QI") (V8SI "V16HI") (V4DI "V8SI")
@@ -30753,20 +30758,78 @@
 
 (define_expand "sdot_prod<mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
-   (match_operand:VI1 1 "register_operand")
-   (match_operand:VI1 2 "register_operand")
+   (match_operand:VI1_AVX2 1 "register_operand")
+   (match_operand:VI1_AVX2 2 "register_operand")
    (match_operand:<ssedvecmode> 3 "register_operand")]
-  "TARGET_AVXVNNIINT8"
+  "TARGET_SSE2"
 {
-  operands[1] = lowpart_subreg (<ssedvecmode>mode,
-                                force_reg (<MODE>mode, operands[1]),
-                                <MODE>mode);
-  operands[2] = lowpart_subreg (<ssedvecmode>mode,
-                                force_reg (<MODE>mode, operands[2]),
-                                <MODE>mode);
-  emit_insn (gen_rtx_SET (operands[0], operands[3]));
-  emit_insn (gen_vpdpbssd_<ssedvecmodelower> (operands[0], operands[3],
-				   operands[1], operands[2]));
+  if (TARGET_AVXVNNIINT8)
+    {
+      operands[1] = lowpart_subreg (<ssedvecmode>mode,
+				    force_reg (<MODE>mode, operands[1]),
+				    <MODE>mode);
+      operands[2] = lowpart_subreg (<ssedvecmode>mode,
+				    force_reg (<MODE>mode, operands[2]),
+				    <MODE>mode);
+      emit_insn (gen_rtx_SET (operands[0], operands[3]));
+      emit_insn (gen_vpdpbssd_<ssedvecmodelower> (operands[0], operands[3],
+						  operands[1], operands[2]));
+    }
+  else
+    {
+      /* Emulate with vpdpwssd.  */
+      rtx op1_lo = gen_reg_rtx (<sseunpackmode>mode);
+      rtx op1_hi = gen_reg_rtx (<sseunpackmode>mode);
+      rtx op2_lo = gen_reg_rtx (<sseunpackmode>mode);
+      rtx op2_hi = gen_reg_rtx (<sseunpackmode>mode);
+
+      emit_insn (gen_vec_unpacks_lo_<mode> (op1_lo, operands[1]));
+      emit_insn (gen_vec_unpacks_lo_<mode> (op2_lo, operands[2]));
+      emit_insn (gen_vec_unpacks_hi_<mode> (op1_hi, operands[1]));
+      emit_insn (gen_vec_unpacks_hi_<mode> (op2_hi, operands[2]));
+
+      rtx res1 = gen_reg_rtx (<ssedvecmode>mode);
+      rtx res2 = gen_reg_rtx (<ssedvecmode>mode);
+      rtx sum = gen_reg_rtx (<ssedvecmode>mode);
+
+      emit_move_insn (sum, CONST0_RTX (<ssedvecmode>mode));
+      emit_insn (gen_sdot_prod<sseunpackmodelower> (res1, op1_lo,
+						    op2_lo, sum));
+      emit_insn (gen_sdot_prod<sseunpackmodelower> (res2, op1_hi,
+						    op2_hi, operands[3]));
+      emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
+    }
+
+  DONE;
+})
+
+(define_expand "sdot_prodv64qi"
+  [(match_operand:V16SI 0 "register_operand")
+   (match_operand:V64QI 1 "register_operand")
+   (match_operand:V64QI 2 "register_operand")
+   (match_operand:V16SI 3 "register_operand")]
+  "(TARGET_AVX512VNNI || TARGET_AVX512BW) && TARGET_EVEX512"
+{
+  /* Emulate with vpdpwssd.  */
+  rtx op1_lo = gen_reg_rtx (V32HImode);
+  rtx op1_hi = gen_reg_rtx (V32HImode);
+  rtx op2_lo = gen_reg_rtx (V32HImode);
+  rtx op2_hi = gen_reg_rtx (V32HImode);
+
+  emit_insn (gen_vec_unpacks_lo_v64qi (op1_lo, operands[1]));
+  emit_insn (gen_vec_unpacks_lo_v64qi (op2_lo, operands[2]));
+  emit_insn (gen_vec_unpacks_hi_v64qi (op1_hi, operands[1]));
+  emit_insn (gen_vec_unpacks_hi_v64qi (op2_hi, operands[2]));
+
+  rtx res1 = gen_reg_rtx (V16SImode);
+  rtx res2 = gen_reg_rtx (V16SImode);
+  rtx sum = gen_reg_rtx (V16SImode);
+
+  emit_move_insn (sum, CONST0_RTX (V16SImode));
+  emit_insn (gen_sdot_prodv32hi (res1, op1_lo, op2_lo, sum));
+  emit_insn (gen_sdot_prodv32hi (res2, op1_hi, op2_hi, operands[3]));
+
+  emit_insn (gen_addv16si3 (operands[0], res1, res2));
   DONE;
 })
 
