@@ -294,8 +294,6 @@ public:
 	       "vsetvl zero, rs1/imm".  */
 	    poly_uint64 nunits = GET_MODE_NUNITS (vtype_mode);
 	    len = gen_int_mode (nunits, Pmode);
-	    if (!satisfies_constraint_K (len))
-	      len = force_reg (Pmode, len);
 	    vls_p = true;
 	  }
 	else if (can_create_pseudo_p ())
@@ -846,24 +844,6 @@ emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
     }
   else if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
     icode = code_for_pred_gatherei16 (data_mode);
-  else if (CONST_VECTOR_P (sel)
-           && GET_MODE_BITSIZE (GET_MODE_INNER (sel_mode)) > 16
-           && riscv_get_v_regno_alignment (data_mode) > 1)
-    {
-      /* If the inner mode of data is not QI or HI and data_lmul > 1,
-         emitting vrgatherei16.vv instruction will lower register
-         pressure.
-         data_mode  sel_mode  ei16
-         RVVM1QI    RVVM1QI   RVVM2HI  not needed
-         RVVM2QI    RVVM2QI   RVVM4HI  not needed
-         RVVM2HI    RVVM2HI   RVVM2HI  not needed
-         RVVM2SI    RVVM2SI   RVVM1HI  need
-         RVVM4SI    RVVM4SI   RVVM2HI  need
-         RVVM8DI    RVVM8DI   RVVM2HI  need */
-      PUT_MODE (sel, get_vector_mode (HImode,
-                GET_MODE_NUNITS (data_mode)).require ());
-      icode = code_for_pred_gatherei16 (data_mode);
-    }
   else
     icode = code_for_pred_gather (data_mode);
   rtx ops[] = {target, op, sel};
@@ -877,13 +857,13 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
   insn_code icode;
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = GET_MODE (sel);
-  if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
-    icode = code_for_pred_gatherei16 (data_mode);
-  else if (const_vec_duplicate_p (sel, &elt))
+  if (const_vec_duplicate_p (sel, &elt))
     {
       icode = code_for_pred_gather_scalar (data_mode);
       sel = elt;
     }
+  else if (maybe_ne (GET_MODE_SIZE (data_mode), GET_MODE_SIZE (sel_mode)))
+    icode = code_for_pred_gatherei16 (data_mode);
   else
     icode = code_for_pred_gather (data_mode);
   rtx ops[] = {target, mask, target, op, sel};
@@ -2703,15 +2683,21 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
-/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].  */
+/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].
+   MAX_SEL is nunits - 1 if rtx_equal_p (op0, op1). Otherwise, it is
+   2 * nunits - 1.  */
 static rtx
-modulo_sel_indices (rtx sel, poly_uint64 max_sel)
+modulo_sel_indices (rtx op0, rtx op1, rtx sel)
 {
   rtx sel_mod;
   machine_mode sel_mode = GET_MODE (sel);
   poly_uint64 nunits = GET_MODE_NUNITS (sel_mode);
-  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.  */
-  if (!nunits.is_constant () && CONST_VECTOR_P (sel))
+  poly_uint64 max_sel = rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1;
+  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.
+     Or if SEL is constant-length within [0, MAX_SEL], no need to modulo the
+     indice.  */
+  if (CONST_VECTOR_P (sel)
+      && (!nunits.is_constant () || const_vec_all_in_range_p (sel, 0, max_sel)))
     sel_mod = sel;
   else
     {
@@ -2761,9 +2747,7 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
      out-of-range indices, so we need to modulo all the vec_perm indices
      to ensure they are all in range of [0, nunits - 1] when op0 == op1
      or all in range of [0, 2 * nunits - 1] when op0 != op1.  */
-  rtx sel_mod
-    = modulo_sel_indices (sel,
-			  rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1);
+  rtx sel_mod = modulo_sel_indices (op0, op1, sel);
 
   /* Check if the two values vectors are the same.  */
   if (rtx_equal_p (op0, op1))
@@ -2772,15 +2756,13 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
       return;
     }
 
-  rtx max_sel = gen_const_vector_dup (sel_mode, 2 * nunits - 1);
-
   /* This following sequence is handling the case that:
      __builtin_shufflevector (vec1, vec2, index...), the index can be any
      value in range of [0, 2 * nunits - 1].  */
   machine_mode mask_mode;
   mask_mode = get_mask_mode (data_mode);
   rtx mask = gen_reg_rtx (mask_mode);
-  max_sel = gen_const_vector_dup (sel_mode, nunits);
+  rtx max_sel = gen_const_vector_dup (sel_mode, nunits);
 
   /* Step 1: generate a mask that should select everything >= nunits into the
    * mask.  */
@@ -3282,15 +3264,15 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
 	    return false;
 	}
     }
+  else if (riscv_get_v_regno_alignment (sel_mode) > 1
+	   && GET_MODE_INNER (sel_mode) != HImode)
+    sel_mode = get_vector_mode (HImode, nunits).require ();
 
   /* Success! */
   if (d->testing_p)
     return true;
 
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  /* 'mov<mode>' generte interleave vector.  */
-  if (!nunits.is_constant ())
-    sel = force_reg (sel_mode, sel);
   /* Some FIXED-VLMAX/VLS vector permutation situations call targethook
      instead of expand vec_perm<mode>, we handle it directly.  */
   expand_vec_perm (d->target, d->op0, d->op1, sel);
