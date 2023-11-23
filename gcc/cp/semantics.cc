@@ -11434,6 +11434,7 @@ finish_static_assert (tree condition, tree message, location_t location,
 		      bool member_p, bool show_expr_p)
 {
   tsubst_flags_t complain = tf_warning_or_error;
+  tree message_sz = NULL_TREE, message_data = NULL_TREE;
 
   if (message == NULL_TREE
       || message == error_mark_node
@@ -11441,13 +11442,61 @@ finish_static_assert (tree condition, tree message, location_t location,
       || condition == error_mark_node)
     return;
 
-  if (check_for_bare_parameter_packs (condition))
-    condition = error_mark_node;
+  if (check_for_bare_parameter_packs (condition)
+      || check_for_bare_parameter_packs (message))
+    return;
+
+  if (TREE_CODE (message) != STRING_CST
+      && !type_dependent_expression_p (message))
+    {
+      message_sz
+	= finish_class_member_access_expr (message,
+					   get_identifier ("size"),
+					   false, complain);
+      if (message_sz != error_mark_node)
+	message_data
+	  = finish_class_member_access_expr (message,
+					     get_identifier ("data"),
+					     false, complain);
+      if (message_sz == error_mark_node || message_data == error_mark_node)
+	{
+	  error_at (location, "%<static_assert%> message must be a string "
+			      "literal or object with %<size%> and "
+			      "%<data%> members");
+	  return;
+	}
+      releasing_vec size_args, data_args;
+      message_sz = finish_call_expr (message_sz, &size_args, false, false,
+				     complain);
+      message_data = finish_call_expr (message_data, &data_args, false, false,
+				       complain);
+      if (message_sz == error_mark_node || message_data == error_mark_node)
+	return;
+      message_sz = build_converted_constant_expr (size_type_node, message_sz,
+						  complain);
+      if (message_sz == error_mark_node)
+	{
+	  error_at (location, "%<static_assert%> message %<size()%> "
+			      "must be implicitly convertible to "
+			      "%<std::size_t%>");
+	  return;
+	}
+      message_data = build_converted_constant_expr (const_string_type_node,
+						    message_data, complain);
+      if (message_data == error_mark_node)
+	{
+	  error_at (location, "%<static_assert%> message %<data()%> "
+			      "must be implicitly convertible to "
+			      "%<const char*%>");
+	  return;
+	}
+    }
 
   /* Save the condition in case it was a concept check.  */
   tree orig_condition = condition;
 
-  if (instantiation_dependent_expression_p (condition))
+  if (instantiation_dependent_expression_p (condition)
+      || instantiation_dependent_expression_p (message))
     {
       /* We're in a template; build a STATIC_ASSERT and put it in
          the right place. */
@@ -11485,9 +11534,89 @@ finish_static_assert (tree condition, tree message, location_t location,
 	  if (processing_template_decl)
 	    goto defer;
 
-	  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT
-				     (TREE_TYPE (TREE_TYPE (message))));
-	  int len = TREE_STRING_LENGTH (message) / sz - 1;
+	  int len;
+	  const char *msg = NULL;
+	  char *buf = NULL;
+	  if (message_sz && message_data)
+	    {
+	      tree msz = cxx_constant_value (message_sz, NULL_TREE, complain);
+	      if (!tree_fits_uhwi_p (msz))
+		{
+		  error_at (location,
+			    "%<static_assert%> message %<size()%> "
+			    "must be a constant expression");
+		  return;
+		}
+	      else if ((unsigned HOST_WIDE_INT) (int) tree_to_uhwi (msz)
+		       != tree_to_uhwi (msz))
+		{
+		  error_at (location,
+			    "%<static_assert%> message %<size()%> "
+			    "%qE too large", msz);
+		  return;
+		}
+	      len = tree_to_uhwi (msz);
+	      tree data = maybe_constant_value (message_data, NULL_TREE,
+						mce_true);
+	      if (!reduced_constant_expression_p (data))
+		data = NULL_TREE;
+	      if (len)
+		{
+		  if (data)
+		    msg = c_getstr (data);
+		  if (msg == NULL)
+		    buf = XNEWVEC (char, len);
+		  for (int i = 0; i < len; ++i)
+		    {
+		      tree t = message_data;
+		      if (i)
+			t = build2 (POINTER_PLUS_EXPR,
+				    TREE_TYPE (message_data), message_data,
+				    size_int (i));
+		      t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
+		      tree t2 = cxx_constant_value (t, NULL_TREE, complain);
+		      if (!tree_fits_shwi_p (t2))
+			{
+			  error_at (location,
+				    "%<static_assert%> message %<data()[%d]%> "
+				    "must be a constant expression", i);
+			  return;
+			}
+		      if (msg == NULL)
+			buf[i] = tree_to_shwi (t2);
+		      /* If c_getstr worked, just verify the first and
+			 last characters using constant evaluation.  */
+		      else if (len > 2 && i == 0)
+			i = len - 2;
+		    }
+		  if (msg == NULL)
+		    msg = buf;
+		}
+	      else if (!data)
+		{
+		  /* We don't have any function to test whether some
+		     expression is a core constant expression.  So, instead
+		     test whether (message.data (), 0) is a constant
+		     expression.  */
+		  data = build2 (COMPOUND_EXPR, integer_type_node,
+				 message_data, integer_zero_node);
+		  tree t = cxx_constant_value (data, NULL_TREE, complain);
+		  if (!integer_zerop (t))
+		    {
+		      error_at (location,
+				"%<static_assert%> message %<data()%> "
+				"must be a core constant expression");
+		      return;
+		    }
+		}
+	    }
+	  else
+	    {
+	      tree eltype = TREE_TYPE (TREE_TYPE (message));
+	      int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (eltype));
+	      msg = TREE_STRING_POINTER (message);
+	      len = TREE_STRING_LENGTH (message) / sz - 1;
+	    }
 
 	  /* See if we can find which clause was failing (for logical AND).  */
 	  tree bad = find_failing_clause (NULL, orig_condition);
@@ -11497,12 +11626,13 @@ finish_static_assert (tree condition, tree message, location_t location,
 
 	  auto_diagnostic_group d;
 
-          /* Report the error. */
+	  /* Report the error. */
 	  if (len == 0)
 	    error_at (cloc, "static assertion failed");
 	  else
-	    error_at (cloc, "static assertion failed: %s",
-		      TREE_STRING_POINTER (message));
+	    error_at (cloc, "static assertion failed: %.*s", len, msg);
+
+	  XDELETEVEC (buf);
 
 	  diagnose_failing_condition (bad, cloc, show_expr_p);
 	}

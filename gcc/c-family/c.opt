@@ -498,6 +498,10 @@ Wc++23-extensions
 C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
 
+Wc++26-extensions
+C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1)
+Warn about C++26 constructs in code compiled with an older standard.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.

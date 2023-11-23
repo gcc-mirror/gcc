@@ -9107,6 +9107,13 @@ Do not warn about C++23 constructs in code being compiled using
 an older C++ standard.  Even without this option, some C++23 constructs
 will only be diagnosed if @option{-Wpedantic} is used.
 
+@opindex Wc++26-extensions
+@opindex Wno-c++26-extensions
+@item -Wno-c++26-extensions @r{(C++ and Objective-C++ only)}
+Do not warn about C++26 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++26 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
 @opindex Wcast-qual
 @opindex Wno-cast-qual
 @item -Wcast-qual

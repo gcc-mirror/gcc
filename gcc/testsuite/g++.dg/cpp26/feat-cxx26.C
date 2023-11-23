@@ -304,8 +304,8 @@
 
 #ifndef __cpp_static_assert
 #  error "__cpp_static_assert"
-#elif __cpp_static_assert != 201411
-#  error "__cpp_static_assert != 201411"
+#elif __cpp_static_assert != 202306
+#  error "__cpp_static_assert != 202306"
 #endif
 
 #ifndef __cpp_namespace_attributes

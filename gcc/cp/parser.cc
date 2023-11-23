@@ -16616,6 +16616,7 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
    static_assert-declaration:
      static_assert ( constant-expression , string-literal ) ;
      static_assert ( constant-expression ) ; (C++17)
+     static_assert ( constant-expression, conditional-expression ) ; (C++26)
 
    If MEMBER_P, this static_assert is a class member.  */
 
@@ -16646,10 +16647,10 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
 
   /* Parse the constant-expression.  Allow a non-constant expression
      here in order to give better diagnostics in finish_static_assert.  */
-  condition =
-    cp_parser_constant_expression (parser,
-                                   /*allow_non_constant_p=*/true,
-				   /*non_constant_p=*/nullptr);
+  condition
+    = cp_parser_constant_expression (parser,
+				     /*allow_non_constant_p=*/true,
+				     /*non_constant_p=*/nullptr);
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
@@ -16668,8 +16669,32 @@ cp_parser_static_assert (cp_parser *parser, bool member_p)
       /* Parse the separating `,'.  */
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 
-      /* Parse the string-literal message.  */
-      if (cxx_dialect >= cxx26)
+      /* Parse the message expression.  */
+      bool string_lit = true;
+      for (unsigned int i = 1; ; ++i)
+	{
+	  cp_token *tok = cp_lexer_peek_nth_token (parser->lexer, i);
+	  if (cp_parser_is_pure_string_literal (tok))
+	    continue;
+	  else if (tok->type == CPP_CLOSE_PAREN)
+	    break;
+	  string_lit = false;
+	  break;
+	}
+      if (!string_lit)
+	{
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  if (cxx_dialect < cxx26)
+	    pedwarn (loc, OPT_Wc__26_extensions,
+		     "%<static_assert%> with non-string message only "
+		     "available with %<-std=c++2c%> or %<-std=gnu++2c%>");
+
+	  message = cp_parser_conditional_expression (parser);
+	  if (TREE_CODE (message) == STRING_CST)
+	    message = build1_loc (loc, PAREN_EXPR, TREE_TYPE (message),
+				  message);
+	}
+      else if (cxx_dialect >= cxx26)
 	message = cp_parser_unevaluated_string_literal (parser);
       else
 	message = cp_parser_string_literal (parser, /*translate=*/false,
