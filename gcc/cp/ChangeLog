@@ -1,3 +1,12 @@
+2023-11-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-11-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112633
+	* pt.cc (tsubst_aggr_type): Handle empty TYPE_TEMPLATE_INFO
+	in the entering_scope adjustment.
+
 2023-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/112301
