@@ -877,7 +877,14 @@ proc parse_function_bodies { config filename result } {
 		set in_function 0
 	    }
 	} elseif { $in_function } {
-	    if { [regexp $up_config(end) $line] } {
+	    # We allow multiple function start labels, taking the last one seen
+	    # as the function name.
+	    if { [regexp [lindex $up_config(start) 0] \
+			 $line dummy maybe_function_name] } {
+		verbose "parse_function_bodies: overriding $function_name with $maybe_function_name"
+		set function_name $maybe_function_name
+		set in_function 1
+	    } elseif { [regexp $up_config(end) $line] } {
 		verbose "parse_function_bodies: $function_name:\n$function_body"
 		set up_result($function_name) $function_body
 		set in_function 0
