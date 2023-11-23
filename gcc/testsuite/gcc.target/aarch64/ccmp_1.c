@@ -86,8 +86,8 @@ f13 (int a, int b)
 /* { dg-final { scan-assembler "cmp\t(.)+35" } } */
 
 /* { dg-final { scan-assembler-times "\tcmp\tw\[0-9\]+, 0" 4 } } */
-/* { dg-final { scan-assembler-times "fcmpe\t(.)+0\\.0" 2 } } */
-/* { dg-final { scan-assembler-times "fcmp\t(.)+0\\.0" 2 } } */
+/* { dg-final { scan-assembler-times "fcmpe\t(?:.)+0\\.0" 1 } } */
+/* { dg-final { scan-assembler-times "fcmp\t(?:.)+0\\.0" 1 } } */
 
 /* { dg-final { scan-assembler "adds\t" } } */
 /* { dg-final { scan-assembler-times "\tccmp\t" 11 } } */
