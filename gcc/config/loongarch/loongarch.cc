@@ -4269,7 +4269,7 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   else if (loongarch_addu16i_imm12_operand_p (v, mode))
     a = (v & ~HWIT_UC_0xFFF) + ((v & 0x800) << 1);
   else if (mode == DImode && DUAL_ADDU16I_OPERAND (v))
-    a = (v > 0 ? 0x7fff : -0x8000) << 16;
+    a = (v > 0 ? 0x7fff0000 : ~0x7fffffff);
   else
     gcc_unreachable ();
 
