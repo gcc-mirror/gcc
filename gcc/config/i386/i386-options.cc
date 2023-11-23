@@ -2691,10 +2691,12 @@ ix86_option_override_internal (bool main_args_p,
 	    {
 	      opts->x_ix86_isa_flags = (~avx512_isa_flags
 					& opts->x_ix86_isa_flags)
-		| (avx512_isa_flags & opts->x_ix86_isa_flags_explicit);
-	      opts->x_ix86_isa_flags2 = (~avx512_isa_flags
+		| (avx512_isa_flags & opts->x_ix86_isa_flags
+		   & opts->x_ix86_isa_flags_explicit);
+	      opts->x_ix86_isa_flags2 = (~avx512_isa_flags2
 					 & opts->x_ix86_isa_flags2)
-		| (avx512_isa_flags2 & opts->x_ix86_isa_flags2_explicit);
+		| (avx512_isa_flags2 & opts->x_ix86_isa_flags2
+		   & opts->x_ix86_isa_flags2_explicit);
 	    }
 	}
     }

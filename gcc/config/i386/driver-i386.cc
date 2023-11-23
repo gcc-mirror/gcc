@@ -377,15 +377,10 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
    enabled and the other disabled.  Add this function to avoid push "-mno-"
    options under this scenario for -march=native.  */
 
-bool check_avx10_avx512_features (__processor_model &cpu_model,
-				  unsigned int (&cpu_features2)[SIZE_OF_CPU_FEATURES],
-				  const enum processor_features feature)
+bool check_avx512_features (__processor_model &cpu_model,
+			    unsigned int (&cpu_features2)[SIZE_OF_CPU_FEATURES],
+			    const enum processor_features feature)
 {
-  if (has_feature (FEATURE_AVX512F)
-      && ((feature == FEATURE_AVX10_1_256)
-	  || (feature == FEATURE_AVX10_1_512)))
-    return false;
-
   if (has_feature (FEATURE_AVX10_1_256)
       && ((feature == FEATURE_AVX512F)
 	  || (feature == FEATURE_AVX512CD)
@@ -900,8 +895,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  options = concat (options, " ",
 				    isa_names_table[i].option, NULL);
 	      }
-	    else if (check_avx10_avx512_features (cpu_model, cpu_features2,
-						  isa_names_table[i].feature))
+	    /* Never push -mno-avx10.1-{256,512} under -march=native to
+	       avoid unnecessary warnings when building librarys.  */
+	    else if ((isa_names_table[i].feature != FEATURE_AVX10_1_256)
+		     && (isa_names_table[i].feature != FEATURE_AVX10_1_512)
+		     && check_avx512_features (cpu_model, cpu_features2,
+					       isa_names_table[i].feature))
 	      options = concat (options, neg_option,
 				isa_names_table[i].option + 2, NULL);
 	  }
