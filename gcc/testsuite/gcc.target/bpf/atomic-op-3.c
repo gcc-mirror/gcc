@@ -20,7 +20,7 @@ void
 test_atomic_and (int x)
 {
   __atomic_and_fetch (&val, x, __ATOMIC_ACQUIRE);
-}
+} /* { dg-error "call to external builtin" } */
 
 void
 test_atomic_nand (int x)

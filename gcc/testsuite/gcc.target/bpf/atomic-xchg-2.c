@@ -7,7 +7,7 @@ int foo (int *p, int *new)
   int old;
   __atomic_exchange (p, new, &old, __ATOMIC_RELAXED);
   return old;
-}
+} /* { dg-error "call to external builtin" } */
 
 int foo64 (long *p, long *new)
 {

@@ -7,6 +7,6 @@ foo ()
 {
   signed int x = 5;
   signed int y = 2;
-  signed int z = x % y;
+  signed int z = x % y; /* { dg-error "call to external libcall" } */
 }
 /* { dg-final { scan-assembler-not "smod(32)?\t%r" } } */

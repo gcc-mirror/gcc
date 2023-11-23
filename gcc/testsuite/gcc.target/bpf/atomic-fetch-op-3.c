@@ -9,7 +9,7 @@ long
 test_atomic_fetch_add (long x)
 {
   return __atomic_fetch_add (&val, x, __ATOMIC_ACQUIRE);
-}
+} /* { dg-error "call to external builtin" } */
 
 long
 test_atomic_fetch_sub (long x)
