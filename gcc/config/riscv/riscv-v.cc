@@ -3237,6 +3237,42 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize the pattern that can be shuffled by vec_extract and slide1up
+   approach.  */
+
+static bool
+shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
+{
+  poly_int64 nunits = GET_MODE_NUNITS (d->vmode);
+
+  /* Recognize { nunits - 1, nunits, nunits + 1, ... }.  */
+  if (!d->perm.series_p (0, 2, nunits - 1, 2)
+      || !d->perm.series_p (1, 2, nunits, 2))
+    return false;
+
+  /* Disable when nunits < 4 since the later generic approach
+     is more profitable on indice = { nunits - 1, nunits }.  */
+  if (!known_gt (nunits, 2))
+    return false;
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  /* Extract the last element of the first vector.  */
+  scalar_mode smode = GET_MODE_INNER (d->vmode);
+  rtx tmp = gen_reg_rtx (smode);
+  emit_vec_extract (tmp, d->op0, nunits - 1);
+
+  /* Insert the scalar into element 0.  */
+  unsigned int unspec
+    = FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+  insn_code icode = code_for_pred_slide (unspec, d->vmode);
+  rtx ops[] = {d->target, d->op1, tmp};
+  emit_vlmax_insn (icode, BINARY_OP, ops);
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -3314,6 +3350,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_decompress_patterns (d))
 	    return true;
 	  if (shuffle_bswap_pattern (d))
+	    return true;
+	  if (shuffle_extract_and_slide1up_patterns (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
