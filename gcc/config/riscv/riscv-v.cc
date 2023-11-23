@@ -4636,4 +4636,26 @@ can_be_broadcasted_p (rtx op)
   return can_create_pseudo_p () && nonmemory_operand (op, mode);
 }
 
+/* Helper function to emit vec_extract_optab.  */
+void
+emit_vec_extract (rtx target, rtx src, poly_int64 index)
+{
+  machine_mode vmode = GET_MODE (src);
+  machine_mode smode = GET_MODE (target);
+  class expand_operand ops[3];
+  enum insn_code icode
+    = convert_optab_handler (vec_extract_optab, vmode, smode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  create_output_operand (&ops[0], target, smode);
+  ops[0].target = 1;
+  create_input_operand (&ops[1], src, vmode);
+  if (index.is_constant ())
+    create_integer_operand (&ops[2], index);
+  else
+    create_input_operand (&ops[2], gen_int_mode (index, Pmode), Pmode);
+  expand_insn (icode, 3, ops);
+  if (ops[0].value != target)
+    emit_move_insn (target, ops[0].value);
+}
+
 } // namespace riscv_vector

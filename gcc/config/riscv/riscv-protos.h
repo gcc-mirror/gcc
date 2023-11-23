@@ -558,6 +558,7 @@ void expand_cond_binop (unsigned, rtx *);
 void expand_cond_ternop (unsigned, rtx *);
 void expand_popcount (rtx *);
 void expand_rawmemchr (machine_mode, rtx, rtx, rtx);
+void emit_vec_extract (rtx, rtx, poly_int64);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

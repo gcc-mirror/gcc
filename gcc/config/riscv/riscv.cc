@@ -2616,14 +2616,10 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	  nunits = nunits * 2;
 	}
       vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
-      enum insn_code icode
-	= convert_optab_handler (vec_extract_optab, vmode, smode);
-      gcc_assert (icode != CODE_FOR_nothing);
       rtx v = gen_lowpart (vmode, SUBREG_REG (src));
 
       for (unsigned int i = 0; i < num; i++)
 	{
-	  class expand_operand ops[3];
 	  rtx result;
 	  if (num == 1)
 	    result = dest;
@@ -2631,13 +2627,7 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	    result = gen_lowpart (smode, dest);
 	  else
 	    result = gen_reg_rtx (smode);
-	  create_output_operand (&ops[0], result, smode);
-	  ops[0].target = 1;
-	  create_input_operand (&ops[1], v, vmode);
-	  create_integer_operand (&ops[2], index + i);
-	  expand_insn (icode, 3, ops);
-	  if (ops[0].value != result)
-	    emit_move_insn (result, ops[0].value);
+	  riscv_vector::emit_vec_extract (result, v, index + i);
 
 	  if (i == 1)
 	    {
