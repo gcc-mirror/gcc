@@ -22,10 +22,12 @@
 
 namespace Rust {
 // Visitor used to maybe_strip attributes.
-class CfgStrip : public AST::ASTVisitor
+class CfgStrip : public AST::DefaultASTVisitor
 {
 private:
 public:
+  using DefaultASTVisitor::visit;
+
   CfgStrip () {}
 
   /* Run the AttrVisitor on an entire crate */
@@ -63,29 +65,18 @@ public:
       }
   }
 
-  void visit (AST::Token &) override;
-  void visit (AST::DelimTokenTree &) override;
-  void visit (AST::AttrInputMetaItemContainer &) override;
+  void visit (AST::Crate &crate) override;
   void visit (AST::IdentifierExpr &ident_expr) override;
-  void visit (AST::Lifetime &) override;
-  void visit (AST::LifetimeParam &) override;
-  void visit (AST::ConstGenericParam &) override;
 
   void visit (AST::MacroInvocation &macro_invoc) override;
 
   void visit (AST::PathInExpression &path) override;
-  void visit (AST::TypePathSegment &) override;
   void visit (AST::TypePathSegmentGeneric &segment) override;
   void visit (AST::TypePathSegmentFunction &segment) override;
-  void visit (AST::TypePath &path) override;
   void visit (AST::QualifiedPathInExpression &path) override;
   void visit (AST::QualifiedPathInType &path) override;
 
   void visit (AST::LiteralExpr &expr) override;
-  void visit (AST::AttrInputLiteral &) override;
-  void visit (AST::AttrInputMacro &) override;
-  void visit (AST::MetaItemLitExpr &) override;
-  void visit (AST::MetaItemPathLit &) override;
   void visit (AST::BorrowExpr &expr) override;
   void visit (AST::DereferenceExpr &expr) override;
   void visit (AST::ErrorPropagationExpr &expr) override;
@@ -104,7 +95,6 @@ public:
   void visit (AST::TupleExpr &expr) override;
   void visit (AST::TupleIndexExpr &expr) override;
   void visit (AST::StructExprStruct &expr) override;
-  void visit (AST::StructExprFieldIdentifier &) override;
   void visit (AST::StructExprFieldIdentifierValue &field) override;
 
   void visit (AST::StructExprFieldIndexValue &field) override;
@@ -123,7 +113,6 @@ public:
   void visit (AST::RangeFromToExpr &expr) override;
   void visit (AST::RangeFromExpr &expr) override;
   void visit (AST::RangeToExpr &expr) override;
-  void visit (AST::RangeFullExpr &) override;
   void visit (AST::RangeFromToInclExpr &expr) override;
   void visit (AST::RangeToInclExpr &expr) override;
   void visit (AST::ReturnExpr &expr) override;
@@ -140,13 +129,9 @@ public:
   void visit (AST::AwaitExpr &expr) override;
   void visit (AST::AsyncBlockExpr &expr) override;
   void visit (AST::TypeParam &param) override;
-  void visit (AST::LifetimeWhereClauseItem &) override;
   void visit (AST::TypeBoundWhereClauseItem &item) override;
   void visit (AST::Module &module) override;
   void visit (AST::ExternCrate &crate) override;
-  void visit (AST::UseTreeGlob &) override;
-  void visit (AST::UseTreeList &) override;
-  void visit (AST::UseTreeRebind &) override;
   void visit (AST::UseDeclaration &use_decl) override;
   void visit (AST::Function &function) override;
   void visit (AST::TypeAlias &type_alias) override;
@@ -173,24 +158,10 @@ public:
   void visit (AST::ExternBlock &block) override;
 
   // I don't think it would be possible to strip macros without expansion
-  void visit (AST::MacroMatchFragment &) override;
-  void visit (AST::MacroMatchRepetition &) override;
-  void visit (AST::MacroMatcher &) override;
   void visit (AST::MacroRulesDefinition &rules_def) override;
-  void visit (AST::MetaItemPath &) override;
-  void visit (AST::MetaItemSeq &) override;
-  void visit (AST::MetaWord &) override;
-  void visit (AST::MetaNameValueStr &) override;
-  void visit (AST::MetaListPaths &) override;
-  void visit (AST::MetaListNameValueStr &) override;
-  void visit (AST::LiteralPattern &) override;
   void visit (AST::IdentifierPattern &pattern) override;
-  void visit (AST::WildcardPattern &) override;
-  void visit (AST::RestPattern &) override;
-  void visit (AST::RangePatternBoundLiteral &) override;
   void visit (AST::RangePatternBoundPath &bound) override;
   void visit (AST::RangePatternBoundQualPath &bound) override;
-  void visit (AST::RangePattern &pattern) override;
   void visit (AST::ReferencePattern &pattern) override;
   void visit (AST::StructPatternFieldTuplePat &field) override;
   void visit (AST::StructPatternFieldIdentPat &field) override;
@@ -201,31 +172,26 @@ public:
   void visit (AST::TupleStructPattern &pattern) override;
   void visit (AST::TuplePatternItemsMultiple &tuple_items) override;
   void visit (AST::TuplePatternItemsRanged &tuple_items) override;
-  void visit (AST::TuplePattern &pattern) override;
   void visit (AST::GroupedPattern &pattern) override;
   void visit (AST::SlicePattern &pattern) override;
   void visit (AST::AltPattern &pattern) override;
 
-  void visit (AST::EmptyStmt &) override;
   void visit (AST::LetStmt &stmt) override;
   void visit (AST::ExprStmt &stmt) override;
 
   void visit (AST::TraitBound &bound) override;
-  void visit (AST::ImplTraitType &type) override;
-  void visit (AST::TraitObjectType &type) override;
   void visit (AST::ParenthesisedType &type) override;
-  void visit (AST::ImplTraitTypeOneBound &type) override;
-  void visit (AST::TraitObjectTypeOneBound &type) override;
   void visit (AST::TupleType &type) override;
-  void visit (AST::NeverType &) override;
   void visit (AST::RawPointerType &type) override;
   void visit (AST::ReferenceType &type) override;
   void visit (AST::ArrayType &type) override;
   void visit (AST::SliceType &type) override;
-  void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
-  void visit (AST::VariadicParam &type) override;
-  void visit (AST::FunctionParam &type) override;
   void visit (AST::SelfParam &type) override;
+
+  template <typename T> void visit (T &item)
+  {
+    DefaultASTVisitor::visit (item);
+  }
 };
 } // namespace Rust
