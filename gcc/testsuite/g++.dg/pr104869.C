@@ -68,6 +68,9 @@ struct ControlFlow {
     foo(2);
   return false;
 }
+#ifdef __hpux__
+extern int main(void);
+#endif
 int
 main() {
   ControlFlow cf = { nullptr, ControlFlow::UnwindType::EE };
