@@ -10698,6 +10698,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     && mode != BLKmode							\
     && modifier != EXPAND_MEMORY					\
     && modifier != EXPAND_WRITE						\
+    && modifier != EXPAND_INITIALIZER					\
     && modifier != EXPAND_CONST_ADDRESS)				\
    ? reduce_to_bit_field_precision ((expr), NULL_RTX, type) : (expr))
 
