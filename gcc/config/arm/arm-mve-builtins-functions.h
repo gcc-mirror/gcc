@@ -1013,6 +1013,8 @@ public:
       case E_V8HFmode:
 	mode = E_V8HImode;
 	break;
+      default:
+	break;
       }
 
     if (m_vectors_per_tuple != 1)
