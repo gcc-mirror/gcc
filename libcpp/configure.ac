@@ -185,12 +185,6 @@ if test x$ac_assert_checking != x ; then
 [Define if you want assertions enabled.  This is a cheap check.])
 fi
 
-if test x$ac_valgrind_checking != x ; then
-  AC_DEFINE(ENABLE_VALGRIND_CHECKING, 1,
-[Define if you want to workaround valgrind (a memory checker) warnings about
- possible memory leaks because of libcpp use of interior pointers.])
-fi
-
 AC_ARG_ENABLE(canonical-system-headers,
 [  --enable-canonical-system-headers
                           enable or disable system headers canonicalization],
@@ -241,54 +235,15 @@ case x$enable_languages in
 esac
 AC_SUBST(CET_HOST_FLAGS)
 
-dnl # This check AC_REQUIREs various stuff, so it *must not* be inside
-dnl # an if statement.  This was the source of very frustrating bugs
-dnl # in converting to autoconf 2.5x!
-AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
-
-# It is certainly possible that there's valgrind but no valgrind.h.
-# GCC relies on making annotations so we must have both.
-AC_MSG_CHECKING(for VALGRIND_DISCARD in <valgrind/memcheck.h>)
-AC_PREPROC_IFELSE([AC_LANG_SOURCE(
-  [[#include <valgrind/memcheck.h>
-#ifndef VALGRIND_DISCARD
-#error VALGRIND_DISCARD not defined
-#endif]])],
-  [gcc_cv_header_valgrind_memcheck_h=yes],
-  [gcc_cv_header_valgrind_memcheck_h=no])
-AC_MSG_RESULT($gcc_cv_header_valgrind_memcheck_h)
-AC_MSG_CHECKING(for VALGRIND_DISCARD in <memcheck.h>)
-AC_PREPROC_IFELSE([AC_LANG_SOURCE(
-  [[#include <memcheck.h>
-#ifndef VALGRIND_DISCARD
-#error VALGRIND_DISCARD not defined
-#endif]])],
-  [gcc_cv_header_memcheck_h=yes],
-  [gcc_cv_header_memcheck_h=no])
-AC_MSG_RESULT($gcc_cv_header_memcheck_h)
-if test $gcc_cv_header_valgrind_memcheck_h = yes; then
-  AC_DEFINE(HAVE_VALGRIND_MEMCHECK_H, 1,
-	[Define if valgrind's valgrind/memcheck.h header is installed.])
-fi
-if test $gcc_cv_header_memcheck_h = yes; then
-  AC_DEFINE(HAVE_MEMCHECK_H, 1,
-	[Define if valgrind's memcheck.h header is installed.])
-fi
-
 AC_ARG_ENABLE(valgrind-annotations,
 [AS_HELP_STRING([--enable-valgrind-annotations],
 		[enable valgrind runtime interaction])], [],
 [enable_valgrind_annotations=no])
 if test x$enable_valgrind_annotations != xno \
     || test x$ac_valgrind_checking != x; then
-  if (test $have_valgrind_h = no \
-      && test $gcc_cv_header_memcheck_h = no \
-      && test $gcc_cv_header_valgrind_memcheck_h = no); then
-    AC_MSG_ERROR([*** valgrind annotations requested, but])
-    AC_MSG_ERROR([*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h])
-  fi
-  AC_DEFINE(ENABLE_VALGRIND_ANNOTATIONS, 1,
-[Define to get calls to the valgrind runtime enabled.])
+  AC_DEFINE(ENABLE_VALGRIND_WORKAROUNDS, 1,
+[Define if you want to workaround Valgrind warnings about
+ possible memory leaks because of libcpp use of interior pointers.])
 fi
 
 # Output.
