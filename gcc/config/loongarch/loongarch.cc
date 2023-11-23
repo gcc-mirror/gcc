@@ -142,12 +142,16 @@ struct loongarch_address_info
 
    METHOD_LU52I:
      Load 52-63 bit of the immediate number.
+
+   METHOD_MIRROR:
+     Copy 0-31 bit of the immediate number to 32-63bit.
 */
 enum loongarch_load_imm_method
 {
   METHOD_NORMAL,
   METHOD_LU32I,
-  METHOD_LU52I
+  METHOD_LU52I,
+  METHOD_MIRROR
 };
 
 struct loongarch_integer_op
@@ -1556,11 +1560,23 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
 
       int sign31 = (value & (HOST_WIDE_INT_1U << 31)) >> 31;
       int sign51 = (value & (HOST_WIDE_INT_1U << 51)) >> 51;
+
+      uint32_t hival = (uint32_t) (value >> 32);
+      uint32_t loval = (uint32_t) value;
+
       /* Determine whether the upper 32 bits are sign-extended from the lower
 	 32 bits. If it is, the instructions to load the high order can be
 	 ommitted.  */
       if (lu32i[sign31] && lu52i[sign31])
 	return cost;
+      /* If the lower 32 bits are the same as the upper 32 bits, just copy
+	 the lower 32 bits to the upper 32 bits.  */
+      else if (loval == hival)
+	{
+	  codes[cost].method = METHOD_MIRROR;
+	  codes[cost].curr_value = value;
+	  return cost + 1;
+	}
       /* Determine whether bits 32-51 are sign-extended from the lower 32
 	 bits. If so, directly load 52-63 bits.  */
       else if (lu32i[sign31])
@@ -3233,6 +3249,10 @@ loongarch_move_integer (rtx temp, rtx dest, unsigned HOST_WIDE_INT value)
 	  x = gen_rtx_IOR (DImode,
 			   gen_rtx_AND (DImode, x, GEN_INT (0xfffffffffffff)),
 			   GEN_INT (codes[i].value));
+	  break;
+	case METHOD_MIRROR:
+	  gcc_assert (mode == DImode);
+	  emit_insn (gen_insvdi (x, GEN_INT (32), GEN_INT (32), x));
 	  break;
 	default:
 	  gcc_unreachable ();

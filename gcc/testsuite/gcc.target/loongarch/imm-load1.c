@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mabi=lp64d -O2" } */
-/* { dg-final { scan-assembler "test:.*lu52i\.d.*\n\taddi\.w.*\n\.L2:" } } */
+/* { dg-final { scan-assembler-not "test:.*lu52i\.d.*\n\taddi\.w.*\n\.L2:" } } */
+/* { dg-final { scan-assembler "test:.*lu12i\.w.*\n\tbstrins\.d.*\n\.L2:" } } */
 
 
 extern long long b[10];
