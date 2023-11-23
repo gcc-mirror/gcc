@@ -1,3 +1,13 @@
+2023-11-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112633
+	* pt.cc (tsubst_aggr_type): Handle empty TYPE_TEMPLATE_INFO
+	in the entering_scope adjustment.
+
+2023-11-22  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (start_preparsed_function): Clarify ctype logic.
+
 2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
 
 	* lambda.cc (compare_lambda_sig): Fix typo in variadic.

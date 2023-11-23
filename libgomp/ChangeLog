@@ -1,3 +1,10 @@
+2023-11-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3.h (f30, f35, f53, f70)
+	(f75, f80, f): Add '__attribute__ ((noipa))'.
+	* testsuite/libgomp.c/declare-variant-4.h (gfx803, gfx900, gfx906)
+	(gfx908, gfx90a, f): Likewise.
+
 2023-11-15  Andrew Stubbs  <ams@codesourcery.com>
 	    Andrew Jenner   <andrew@codesourcery.com>
 

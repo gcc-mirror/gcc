@@ -1,3 +1,225 @@
+2023-11-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/112592
+	* config/pa/pa.h (MAX_FIXED_MODE_SIZE): Define.
+
+2023-11-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/112617
+	* config/pa/predicates.md (integer_store_memory_operand): Return
+	true for REG+D addresses when reload_in_progress is true.
+
+2023-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112344
+	* tree-chrec.cc (chrec_apply): Perform the overall increment
+	calculation and increment in an unsigned type.
+
+2023-11-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (*mov<mode>_4reg): Disparage AVGPR use when a
+	reload is required.
+
+2023-11-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112610
+	* ira-costs.cc: (find_costs_and_classes): Remove arg.
+	Use ira_dump_file for printing.
+	(print_allocno_costs, print_pseudo_costs): Ditto.
+	(ira_costs): Adjust call of find_costs_and_classes.
+	(ira_set_pseudo_classes): Set up and restore ira_dump_file.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* config/riscv/riscv-v.cc (shuffle_compress_patterns): Fix vcompress bug.
+
+2023-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_uaddw<mode>_<PERM_EXTEND:perm_hilo>_zip,
+	aarch64_usubw<mode>_<PERM_EXTEND:perm_hilo>_zip): Split into...
+	(aarch64_uaddw<mode>_lo_zip, aarch64_uaddw<mode>_hi_zip,
+	"aarch64_usubw<mode>_lo_zip, "aarch64_usubw<mode>_hi_zip): ... This.
+	* config/aarch64/iterators.md (PERM_EXTEND, perm_index): Remove.
+	(perm_hilo): Remove UNSPEC_ZIP1, UNSPEC_ZIP2.
+
+2023-11-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins.cc
+	(function_resolver::infer_pointer_type): Remove spurious line.
+
+2023-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (vec_perm<mode:LSX>): Make the
+	selector VIMODE.
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm):
+	Use the mode of the selector (instead of the shuffled vector)
+	for truncating it.  Operate on subregs in the selector mode if
+	the shuffled vector has a different mode (i. e. it's a
+	floating-point vector).
+
+2023-11-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (push2_di): Adjust operand order for AT&T
+	syntax.
+	(pop2_di): Likewise.
+	(push2p_di): Likewise.
+	(pop2p_di): Likewise.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* config/riscv/riscv-v.cc (emit_vlmax_gather_insn): Adapt the priority.
+	(shuffle_generic_patterns): Fix permutation indice bug.
+	* config/riscv/vector-iterators.md: Fix VEI16 bug.
+
+2023-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cbranch<mode>4): Extend to Vector
+	HI/QImode.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR target/111815
+	* config/vax/vax.cc (index_term_p): Only accept the index scaler
+	as the RHS operand to ASHIFT.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/predicates.md (order_operator): Remove predicate.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Update accordingly.
+	* config/riscv/riscv.md (*branch<mode>, *mov<GPR:mode><X:mode>cc)
+	(cstore<mode>4): Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_float_scc): Add
+	`invert_ptr' parameter.
+	* config/riscv/riscv.cc (riscv_emit_float_compare): Add NE
+	inversion handling.
+	(riscv_expand_float_scc): Pass `invert_ptr' through to
+	`riscv_emit_float_compare'.
+	(riscv_expand_conditional_move): Pass `&invert' to
+	`riscv_expand_float_scc'.
+	* config/riscv/riscv.md (add<mode>cc): Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_emit_float_compare) <NE>: Handle
+	separately.
+	<EQ, LE, LT, GE, GT>: Return operands supplied as is.
+	(riscv_emit_binary): Call `riscv_emit_binary' directly rather
+	than going through a temporary register for word-mode targets.
+	(riscv_expand_conditional_branch): Canonicalize the comparison
+	if not against constant zero.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/predicates.md (ne_operator): New predicate.
+	* config/riscv/riscv.cc (riscv_insn_cost): Handle branches on a
+	floating-point condition.
+	* config/riscv/riscv.md (@cbranch<mode>4): Rename expander to...
+	(@cbranch<ANYF:mode>4): ... this.  Only expand the RTX via
+	`riscv_expand_conditional_branch' for `!signed_order_operator'
+	operators, otherwise let it through.
+	(*cbranch<ANYF:mode>4, *cbranch<ANYF:mode>4): New insns and
+	splitters.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Don't
+	bail out in floating-point conditions.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_float_scc): Suppress the
+	use of SUBREG if the conditional-set target is word-mode.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (add<mode>cc): New expander.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/predicates.md (movcc_operand): New predicate.
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Handle
+	generic targets.
+	* config/riscv/riscv.md (mov<mode>cc): Likewise.
+	* config/riscv/riscv.opt (mmovcc): New option.
+	* doc/invoke.texi (Option Summary): Document it.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv-protos.h (riscv_emit_unary): New prototype.
+	* config/riscv/riscv.cc (riscv_emit_unary): New function.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Unify
+	conditional-move handling across all the relevant targets.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Also
+	accept constants for T-Head data input operands.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Also
+	accept constants for T-Head comparison operands.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Remove
+	the check for operand 1 being constant 0 in the Ventana/Zicond
+	case for equality comparisons.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Also
+	invert the condition for GEU and LEU.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_insn_cost): New function.
+	(riscv_max_noce_ifcvt_seq_cost): Likewise.
+	(riscv_noce_conversion_profitable_p): Likewise.
+	(TARGET_INSN_COST): New macro.
+	(TARGET_MAX_NOCE_IFCVT_SEQ_COST): New macro.
+	(TARGET_NOCE_CONVERSION_PROFITABLE_P): New macro.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Remove
+	extraneous variable for EQ vs NE operation selection.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use
+	`nullptr' rather than 0 to initialize a pointer.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use
+	`mode0' and `mode1' for `GET_MODE (op0)' and `GET_MODE (op1)'.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use
+	`mode' for `GET_MODE (dest)' throughout.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_emit_int_compare): Bail out if
+	NEED_EQ_NE_P but the comparison is neither EQ nor NE.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (mov<mode>cc): Move comment on SFB
+	patterns over to...
+	(*mov<GPR:mode><X:mode>cc): ... here.
+
 2023-11-21  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR middle-end/112406

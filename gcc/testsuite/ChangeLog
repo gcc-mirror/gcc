@@ -1,3 +1,614 @@
+2023-11-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112633
+	* g++.dg/cpp0x/alias-decl-75.C: New test.
+
+2023-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/plugin-support.exp: Update the expected path to an
+	in-tree build of libintl.
+
+2023-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp: Initial handling for Mach-O function body scans.
+
+2023-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112344
+	* gcc.dg/torture/pr112344.c: New testcase.
+
+2023-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.misc-tests/linkage-y.c (puts): Declare.
+	(main): Add int return type and return 0.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-3.c: New test.
+
+2023-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/uxtl-combine-4.c: Fix typo.
+	* gcc.target/aarch64/uxtl-combine-5.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-6.c: Likewise.
+
+2023-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112518
+	* gcc.target/i386/bmi2-pr112518.c: New test.
+
+2023-11-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-shuf-fp.c: New test.
+
+2023-11-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-push2pop2-1.c: Adjust output scan.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+
+2023-11-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112598
+	* gcc.target/riscv/rvv/autovec/pr112598-2.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR target/111815
+	* gcc.dg/torture/pr111815.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddifne.c: New test.
+	* gcc.target/riscv/addsifne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibfne.c: New test.
+	* gcc.target/riscv/addsibfne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifeq-sfb.c: New test.
+	* gcc.target/riscv/movdifeq-thead.c: New test.
+	* gcc.target/riscv/movdifeq-ventana.c: New test.
+	* gcc.target/riscv/movdifeq-zicond.c: New test.
+	* gcc.target/riscv/movdifeq.c: New test.
+	* gcc.target/riscv/movsifeq-sfb.c: New test.
+	* gcc.target/riscv/movsifeq-thead.c: New test.
+	* gcc.target/riscv/movsifeq-ventana.c: New test.
+	* gcc.target/riscv/movsifeq-zicond.c: New test.
+	* gcc.target/riscv/movsifeq.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfeq-ventana.c: New test.
+	* gcc.target/riscv/movdibfeq-zicond.c: New test.
+	* gcc.target/riscv/movdibfeq.c: New test.
+	* gcc.target/riscv/movsibfeq-ventana.c: New test.
+	* gcc.target/riscv/movsibfeq-zicond.c: New test.
+	* gcc.target/riscv/movsibfeq.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddifeq.c: New test.
+	* gcc.target/riscv/adddifge.c: New test.
+	* gcc.target/riscv/adddifgt.c: New test.
+	* gcc.target/riscv/adddifle.c: New test.
+	* gcc.target/riscv/adddiflt.c: New test.
+	* gcc.target/riscv/addsifeq.c: New test.
+	* gcc.target/riscv/addsifge.c: New test.
+	* gcc.target/riscv/addsifgt.c: New test.
+	* gcc.target/riscv/addsifle.c: New test.
+	* gcc.target/riscv/addsiflt.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibfeq.c: New test.
+	* gcc.target/riscv/adddibfge.c: New test.
+	* gcc.target/riscv/adddibfgt.c: New test.
+	* gcc.target/riscv/adddibfle.c: New test.
+	* gcc.target/riscv/adddibflt.c: New test.
+	* gcc.target/riscv/addsibfeq.c: New test.
+	* gcc.target/riscv/addsibfge.c: New test.
+	* gcc.target/riscv/addsibfgt.c: New test.
+	* gcc.target/riscv/addsibfle.c: New test.
+	* gcc.target/riscv/addsibflt.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge.c: New test.
+	* gcc.target/riscv/movdifgt.c: New test.
+	* gcc.target/riscv/movdifle.c: New test.
+	* gcc.target/riscv/movdiflt.c: New test.
+	* gcc.target/riscv/movdifne.c: New test.
+	* gcc.target/riscv/movsifge.c: New test.
+	* gcc.target/riscv/movsifgt.c: New test.
+	* gcc.target/riscv/movsifle.c: New test.
+	* gcc.target/riscv/movsiflt.c: New test.
+	* gcc.target/riscv/movsifne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfge.c: New test.
+	* gcc.target/riscv/movdibfgt.c: New test.
+	* gcc.target/riscv/movdibfle.c: New test.
+	* gcc.target/riscv/movdibflt.c: New test.
+	* gcc.target/riscv/movdibfne.c: New test.
+	* gcc.target/riscv/movsibfge.c: New test.
+	* gcc.target/riscv/movsibfgt.c: New test.
+	* gcc.target/riscv/movsibfle.c: New test.
+	* gcc.target/riscv/movsibflt.c: New test.
+	* gcc.target/riscv/movsibfne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge-sfb.c: Reject "if-conversion
+	succeeded through" rather than accepting it.
+	* gcc.target/riscv/movdifge-thead.c: Likewise.
+	* gcc.target/riscv/movdifge-ventana.c: Likewise.
+	* gcc.target/riscv/movdifge-zicond.c: Likewise.
+	* gcc.target/riscv/movdifgt-sfb.c: Likewise.
+	* gcc.target/riscv/movdifgt-thead.c: Likewise.
+	* gcc.target/riscv/movdifgt-ventana.c: Likewise.
+	* gcc.target/riscv/movdifgt-zicond.c: Likewise.
+	* gcc.target/riscv/movdifle-sfb.c: Likewise.
+	* gcc.target/riscv/movdifle-thead.c: Likewise.
+	* gcc.target/riscv/movdifle-ventana.c: Likewise.
+	* gcc.target/riscv/movdifle-zicond.c: Likewise.
+	* gcc.target/riscv/movdiflt-sfb.c: Likewise.
+	* gcc.target/riscv/movdiflt-thead.c: Likewise.
+	* gcc.target/riscv/movdiflt-ventana.c: Likewise.
+	* gcc.target/riscv/movdiflt-zicond.c: Likewise.
+	* gcc.target/riscv/movsifge-sfb.c: Likewise.
+	* gcc.target/riscv/movsifge-thead.c: Likewise.
+	* gcc.target/riscv/movsifge-ventana.c: Likewise.
+	* gcc.target/riscv/movsifge-zicond.c: Likewise.
+	* gcc.target/riscv/movsifgt-sfb.c: Likewise.
+	* gcc.target/riscv/movsifgt-thead.c: Likewise.
+	* gcc.target/riscv/movsifgt-ventana.c: Likewise.
+	* gcc.target/riscv/movsifgt-zicond.c: Likewise.
+	* gcc.target/riscv/movsifle-sfb.c: Likewise.
+	* gcc.target/riscv/movsifle-thead.c: Likewise.
+	* gcc.target/riscv/movsifle-ventana.c: Likewise.
+	* gcc.target/riscv/movsifle-zicond.c: Likewise.
+	* gcc.target/riscv/movsiflt-sfb.c: Likewise.
+	* gcc.target/riscv/movsiflt-thead.c: Likewise.
+	* gcc.target/riscv/movsiflt-ventana.c: Likewise.
+	* gcc.target/riscv/movsiflt-zicond.c: Likewise.
+	* gcc.target/riscv/smax-ieee.c: Also accept FLT.D.
+	* gcc.target/riscv/smaxf-ieee.c: Also accept FLT.S.
+	* gcc.target/riscv/smin-ieee.c: Also accept FGT.D.
+	* gcc.target/riscv/sminf-ieee.c: Also accept FGT.S.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddieq.c: New test.
+	* gcc.target/riscv/adddige.c: New test.
+	* gcc.target/riscv/adddigeu.c: New test.
+	* gcc.target/riscv/adddigt.c: New test.
+	* gcc.target/riscv/adddigtu.c: New test.
+	* gcc.target/riscv/adddile.c: New test.
+	* gcc.target/riscv/adddileu.c: New test.
+	* gcc.target/riscv/adddilt.c: New test.
+	* gcc.target/riscv/adddiltu.c: New test.
+	* gcc.target/riscv/adddine.c: New test.
+	* gcc.target/riscv/addsieq.c: New test.
+	* gcc.target/riscv/addsige.c: New test.
+	* gcc.target/riscv/addsigeu.c: New test.
+	* gcc.target/riscv/addsigt.c: New test.
+	* gcc.target/riscv/addsigtu.c: New test.
+	* gcc.target/riscv/addsile.c: New test.
+	* gcc.target/riscv/addsileu.c: New test.
+	* gcc.target/riscv/addsilt.c: New test.
+	* gcc.target/riscv/addsiltu.c: New test.
+	* gcc.target/riscv/addsine.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/adddibeq.c: New test.
+	* gcc.target/riscv/adddibge.c: New test.
+	* gcc.target/riscv/adddibgeu.c: New test.
+	* gcc.target/riscv/adddibgt.c: New test.
+	* gcc.target/riscv/adddibgtu.c: New test.
+	* gcc.target/riscv/adddible.c: New test.
+	* gcc.target/riscv/adddibleu.c: New test.
+	* gcc.target/riscv/adddiblt.c: New test.
+	* gcc.target/riscv/adddibltu.c: New test.
+	* gcc.target/riscv/adddibne.c: New test.
+	* gcc.target/riscv/addsibeq.c: New test.
+	* gcc.target/riscv/addsibge.c: New test.
+	* gcc.target/riscv/addsibgeu.c: New test.
+	* gcc.target/riscv/addsibgt.c: New test.
+	* gcc.target/riscv/addsibgtu.c: New test.
+	* gcc.target/riscv/addsible.c: New test.
+	* gcc.target/riscv/addsibleu.c: New test.
+	* gcc.target/riscv/addsiblt.c: New test.
+	* gcc.target/riscv/addsibltu.c: New test.
+	* gcc.target/riscv/addsibne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq.c: New test.
+	* gcc.target/riscv/movdige.c: New test.
+	* gcc.target/riscv/movdigeu.c: New test.
+	* gcc.target/riscv/movdigt.c: New test.
+	* gcc.target/riscv/movdigtu.c: New test.
+	* gcc.target/riscv/movdile.c: New test.
+	* gcc.target/riscv/movdileu.c: New test.
+	* gcc.target/riscv/movdilt.c: New test.
+	* gcc.target/riscv/movdiltu.c: New test.
+	* gcc.target/riscv/movdine.c: New test.
+	* gcc.target/riscv/movsieq.c: New test.
+	* gcc.target/riscv/movsige.c: New test.
+	* gcc.target/riscv/movsigeu.c: New test.
+	* gcc.target/riscv/movsigt.c: New test.
+	* gcc.target/riscv/movsigtu.c: New test.
+	* gcc.target/riscv/movsile.c: New test.
+	* gcc.target/riscv/movsileu.c: New test.
+	* gcc.target/riscv/movsilt.c: New test.
+	* gcc.target/riscv/movsiltu.c: New test.
+	* gcc.target/riscv/movsine.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq.c: New test.
+	* gcc.target/riscv/movdibge.c: New test.
+	* gcc.target/riscv/movdibgeu.c: New test.
+	* gcc.target/riscv/movdibgt.c: New test.
+	* gcc.target/riscv/movdibgtu.c: New test.
+	* gcc.target/riscv/movdible.c: New test.
+	* gcc.target/riscv/movdibleu.c: New test.
+	* gcc.target/riscv/movdiblt.c: New test.
+	* gcc.target/riscv/movdibltu.c: New test.
+	* gcc.target/riscv/movdibne.c: New test.
+	* gcc.target/riscv/movsibeq.c: New test.
+	* gcc.target/riscv/movsibge.c: New test.
+	* gcc.target/riscv/movsibgeu.c: New test.
+	* gcc.target/riscv/movsibgt.c: New test.
+	* gcc.target/riscv/movsibgtu.c: New test.
+	* gcc.target/riscv/movsible.c: New test.
+	* gcc.target/riscv/movsibleu.c: New test.
+	* gcc.target/riscv/movsiblt.c: New test.
+	* gcc.target/riscv/movsibltu.c: New test.
+	* gcc.target/riscv/movsibne.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zbs-bext-02.c: Adjust to reject SLL rather
+	than AND.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdige-thead.c: New test.
+	* gcc.target/riscv/movdigeu-thead.c: New test.
+	* gcc.target/riscv/movdigt-thead.c: New test.
+	* gcc.target/riscv/movdigtu-thead.c: New test.
+	* gcc.target/riscv/movdile-thead.c: New test.
+	* gcc.target/riscv/movdileu-thead.c: New test.
+	* gcc.target/riscv/movdilt-thead.c: New test.
+	* gcc.target/riscv/movdiltu-thead.c: New test.
+	* gcc.target/riscv/movsige-thead.c: New test.
+	* gcc.target/riscv/movsigeu-thead.c: New test.
+	* gcc.target/riscv/movsigt-thead.c: New test.
+	* gcc.target/riscv/movsigtu-thead.c: New test.
+	* gcc.target/riscv/movsile-thead.c: New test.
+	* gcc.target/riscv/movsileu-thead.c: New test.
+	* gcc.target/riscv/movsilt-thead.c: New test.
+	* gcc.target/riscv/movsiltu-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibge-thead.c: New test.
+	* gcc.target/riscv/movdibgeu-thead.c: New test.
+	* gcc.target/riscv/movdibgt-thead.c: New test.
+	* gcc.target/riscv/movdibgtu-thead.c: New test.
+	* gcc.target/riscv/movdible-thead.c: New test.
+	* gcc.target/riscv/movdibleu-thead.c: New test.
+	* gcc.target/riscv/movdiblt-thead.c: New test.
+	* gcc.target/riscv/movdibltu-thead.c: New test.
+	* gcc.target/riscv/movsibge-thead.c: New test.
+	* gcc.target/riscv/movsibgeu-thead.c: New test.
+	* gcc.target/riscv/movsibgt-thead.c: New test.
+	* gcc.target/riscv/movsibgtu-thead.c: New test.
+	* gcc.target/riscv/movsible-thead.c: New test.
+	* gcc.target/riscv/movsibleu-thead.c: New test.
+	* gcc.target/riscv/movsiblt-thead.c: New test.
+	* gcc.target/riscv/movsibltu-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-ventana.c: New test.
+	* gcc.target/riscv/movdieq-zicond.c: New test.
+	* gcc.target/riscv/movdine-ventana.c: New test.
+	* gcc.target/riscv/movdine-zicond.c: New test.
+	* gcc.target/riscv/movsieq-ventana.c: New test.
+	* gcc.target/riscv/movsieq-zicond.c: New test.
+	* gcc.target/riscv/movsine-ventana.c: New test.
+	* gcc.target/riscv/movsine-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq-ventana.c: New test.
+	* gcc.target/riscv/movdibeq-zicond.c: New test.
+	* gcc.target/riscv/movdibne-ventana.c: New test.
+	* gcc.target/riscv/movdibne-zicond.c: New test.
+	* gcc.target/riscv/movsibeq-ventana.c: New test.
+	* gcc.target/riscv/movsibeq-zicond.c: New test.
+	* gcc.target/riscv/movsibne-ventana.c: New test.
+	* gcc.target/riscv/movsibne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_imm.c:
+	Lower `-mbranch-cost=' setting.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_reg_reg.c:
+	Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdigtu-ventana.c: New test.
+	* gcc.target/riscv/movdigtu-zicond.c: New test.
+	* gcc.target/riscv/movdiltu-ventana.c: New test.
+	* gcc.target/riscv/movdiltu-zicond.c: New test.
+	* gcc.target/riscv/movsigtu-ventana.c: New test.
+	* gcc.target/riscv/movsigtu-zicond.c: New test.
+	* gcc.target/riscv/movsiltu-ventana.c: New test.
+	* gcc.target/riscv/movsiltu-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibgtu-ventana.c: New test.
+	* gcc.target/riscv/movdibgtu-zicond.c: New test.
+	* gcc.target/riscv/movdibltu-ventana.c: New test.
+	* gcc.target/riscv/movdibltu-zicond.c: New test.
+	* gcc.target/riscv/movsibgtu-ventana.c: New test.
+	* gcc.target/riscv/movsibgtu-zicond.c: New test.
+	* gcc.target/riscv/movsibltu-ventana.c: New test.
+	* gcc.target/riscv/movsibltu-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdifge-sfb.c: New test.
+	* gcc.target/riscv/movdifge-thead.c: New test.
+	* gcc.target/riscv/movdifge-ventana.c: New test.
+	* gcc.target/riscv/movdifge-zicond.c: New test.
+	* gcc.target/riscv/movdifgt-sfb.c: New test.
+	* gcc.target/riscv/movdifgt-thead.c: New test.
+	* gcc.target/riscv/movdifgt-ventana.c: New test.
+	* gcc.target/riscv/movdifgt-zicond.c: New test.
+	* gcc.target/riscv/movdifle-sfb.c: New test.
+	* gcc.target/riscv/movdifle-thead.c: New test.
+	* gcc.target/riscv/movdifle-ventana.c: New test.
+	* gcc.target/riscv/movdifle-zicond.c: New test.
+	* gcc.target/riscv/movdiflt-sfb.c: New test.
+	* gcc.target/riscv/movdiflt-thead.c: New test.
+	* gcc.target/riscv/movdiflt-ventana.c: New test.
+	* gcc.target/riscv/movdiflt-zicond.c: New test.
+	* gcc.target/riscv/movdifne-sfb.c: New test.
+	* gcc.target/riscv/movdifne-thead.c: New test.
+	* gcc.target/riscv/movdifne-ventana.c: New test.
+	* gcc.target/riscv/movdifne-zicond.c: New test.
+	* gcc.target/riscv/movsifge-sfb.c: New test.
+	* gcc.target/riscv/movsifge-thead.c: New test.
+	* gcc.target/riscv/movsifge-ventana.c: New test.
+	* gcc.target/riscv/movsifge-zicond.c: New test.
+	* gcc.target/riscv/movsifgt-sfb.c: New test.
+	* gcc.target/riscv/movsifgt-thead.c: New test.
+	* gcc.target/riscv/movsifgt-ventana.c: New test.
+	* gcc.target/riscv/movsifgt-zicond.c: New test.
+	* gcc.target/riscv/movsifle-sfb.c: New test.
+	* gcc.target/riscv/movsifle-thead.c: New test.
+	* gcc.target/riscv/movsifle-ventana.c: New test.
+	* gcc.target/riscv/movsifle-zicond.c: New test.
+	* gcc.target/riscv/movsiflt-sfb.c: New test.
+	* gcc.target/riscv/movsiflt-thead.c: New test.
+	* gcc.target/riscv/movsiflt-ventana.c: New test.
+	* gcc.target/riscv/movsiflt-zicond.c: New test.
+	* gcc.target/riscv/movsifne-sfb.c: New test.
+	* gcc.target/riscv/movsifne-thead.c: New test.
+	* gcc.target/riscv/movsifne-ventana.c: New test.
+	* gcc.target/riscv/movsifne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibfge-ventana.c: New test.
+	* gcc.target/riscv/movdibfge-zicond.c: New test.
+	* gcc.target/riscv/movdibfgt-ventana.c: New test.
+	* gcc.target/riscv/movdibfgt-zicond.c: New test.
+	* gcc.target/riscv/movdibfle-ventana.c: New test.
+	* gcc.target/riscv/movdibfle-zicond.c: New test.
+	* gcc.target/riscv/movdibflt-ventana.c: New test.
+	* gcc.target/riscv/movdibflt-zicond.c: New test.
+	* gcc.target/riscv/movdibfne-ventana.c: New test.
+	* gcc.target/riscv/movdibfne-zicond.c: New test.
+	* gcc.target/riscv/movsibfge-ventana.c: New test.
+	* gcc.target/riscv/movsibfge-zicond.c: New test.
+	* gcc.target/riscv/movsibfgt-ventana.c: New test.
+	* gcc.target/riscv/movsibfgt-zicond.c: New test.
+	* gcc.target/riscv/movsibfle-ventana.c: New test.
+	* gcc.target/riscv/movsibfle-zicond.c: New test.
+	* gcc.target/riscv/movsibflt-ventana.c: New test.
+	* gcc.target/riscv/movsibflt-zicond.c: New test.
+	* gcc.target/riscv/movsibfne-ventana.c: New test.
+	* gcc.target/riscv/movsibfne-zicond.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-thead.c: New test.
+	* gcc.target/riscv/movdige-ventana.c: New test.
+	* gcc.target/riscv/movdige-zicond.c: New test.
+	* gcc.target/riscv/movdigeu-ventana.c: New test.
+	* gcc.target/riscv/movdigeu-zicond.c: New test.
+	* gcc.target/riscv/movdigt-ventana.c: New test.
+	* gcc.target/riscv/movdigt-zicond.c: New test.
+	* gcc.target/riscv/movdile-ventana.c: New test.
+	* gcc.target/riscv/movdile-zicond.c: New test.
+	* gcc.target/riscv/movdileu-ventana.c: New test.
+	* gcc.target/riscv/movdileu-zicond.c: New test.
+	* gcc.target/riscv/movdilt-ventana.c: New test.
+	* gcc.target/riscv/movdilt-zicond.c: New test.
+	* gcc.target/riscv/movdine-thead.c: New test.
+	* gcc.target/riscv/movsieq-thead.c: New test.
+	* gcc.target/riscv/movsige-ventana.c: New test.
+	* gcc.target/riscv/movsige-zicond.c: New test.
+	* gcc.target/riscv/movsigeu-ventana.c: New test.
+	* gcc.target/riscv/movsigeu-zicond.c: New test.
+	* gcc.target/riscv/movsigt-ventana.c: New test.
+	* gcc.target/riscv/movsigt-zicond.c: New test.
+	* gcc.target/riscv/movsile-ventana.c: New test.
+	* gcc.target/riscv/movsile-zicond.c: New test.
+	* gcc.target/riscv/movsileu-ventana.c: New test.
+	* gcc.target/riscv/movsileu-zicond.c: New test.
+	* gcc.target/riscv/movsilt-ventana.c: New test.
+	* gcc.target/riscv/movsilt-zicond.c: New test.
+	* gcc.target/riscv/movsine-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdibeq-thead.c: New test.
+	* gcc.target/riscv/movdibge-ventana.c: New test.
+	* gcc.target/riscv/movdibge-zicond.c: New test.
+	* gcc.target/riscv/movdibgeu-ventana.c: New test.
+	* gcc.target/riscv/movdibgeu-zicond.c: New test.
+	* gcc.target/riscv/movdibgt-ventana.c: New test.
+	* gcc.target/riscv/movdibgt-zicond.c: New test.
+	* gcc.target/riscv/movdible-ventana.c: New test.
+	* gcc.target/riscv/movdible-zicond.c: New test.
+	* gcc.target/riscv/movdibleu-ventana.c: New test.
+	* gcc.target/riscv/movdibleu-zicond.c: New test.
+	* gcc.target/riscv/movdiblt-ventana.c: New test.
+	* gcc.target/riscv/movdiblt-zicond.c: New test.
+	* gcc.target/riscv/movdibne-thead.c: New test.
+	* gcc.target/riscv/movsibeq-thead.c: New test.
+	* gcc.target/riscv/movsibge-ventana.c: New test.
+	* gcc.target/riscv/movsibge-zicond.c: New test.
+	* gcc.target/riscv/movsibgeu-ventana.c: New test.
+	* gcc.target/riscv/movsibgeu-zicond.c: New test.
+	* gcc.target/riscv/movsibgt-ventana.c: New test.
+	* gcc.target/riscv/movsibgt-zicond.c: New test.
+	* gcc.target/riscv/movsible-ventana.c: New test.
+	* gcc.target/riscv/movsible-zicond.c: New test.
+	* gcc.target/riscv/movsibleu-ventana.c: New test.
+	* gcc.target/riscv/movsibleu-zicond.c: New test.
+	* gcc.target/riscv/movsiblt-ventana.c: New test.
+	* gcc.target/riscv/movsiblt-zicond.c: New test.
+	* gcc.target/riscv/movsibne-thead.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_imm.c:
+	Explicitly set the branch cost.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_imm_return_reg_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_imm.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_imm_reg.c:
+	Likewise.
+	* gcc.target/riscv/zicond-primitiveSemantics_compare_reg_return_reg_reg.c:
+	Likewise.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/movdieq-sfb.c: New test.
+	* gcc.target/riscv/movdige-sfb.c: New test.
+	* gcc.target/riscv/movdigeu-sfb.c: New test.
+	* gcc.target/riscv/movdigt-sfb.c: New test.
+	* gcc.target/riscv/movdigtu-sfb.c: New test.
+	* gcc.target/riscv/movdile-sfb.c: New test.
+	* gcc.target/riscv/movdileu-sfb.c: New test.
+	* gcc.target/riscv/movdilt-sfb.c: New test.
+	* gcc.target/riscv/movdiltu-sfb.c: New test.
+	* gcc.target/riscv/movdine-sfb.c: New test.
+	* gcc.target/riscv/movsieq-sfb.c: New test.
+	* gcc.target/riscv/movsige-sfb.c: New test.
+	* gcc.target/riscv/movsigeu-sfb.c: New test.
+	* gcc.target/riscv/movsigt-sfb.c: New test.
+	* gcc.target/riscv/movsigtu-sfb.c: New test.
+	* gcc.target/riscv/movsile-sfb.c: New test.
+	* gcc.target/riscv/movsileu-sfb.c: New test.
+	* gcc.target/riscv/movsilt-sfb.c: New test.
+	* gcc.target/riscv/movsiltu-sfb.c: New test.
+	* gcc.target/riscv/movsine-sfb.c: New test.
+
+2023-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/torture/addieq.c: New test.
+	* gcc.dg/torture/addifeq.c: New test.
+	* gcc.dg/torture/addifge.c: New test.
+	* gcc.dg/torture/addifgt.c: New test.
+	* gcc.dg/torture/addifle.c: New test.
+	* gcc.dg/torture/addiflt.c: New test.
+	* gcc.dg/torture/addifne.c: New test.
+	* gcc.dg/torture/addige.c: New test.
+	* gcc.dg/torture/addigeu.c: New test.
+	* gcc.dg/torture/addigt.c: New test.
+	* gcc.dg/torture/addigtu.c: New test.
+	* gcc.dg/torture/addile.c: New test.
+	* gcc.dg/torture/addileu.c: New test.
+	* gcc.dg/torture/addilt.c: New test.
+	* gcc.dg/torture/addiltu.c: New test.
+	* gcc.dg/torture/addine.c: New test.
+	* gcc.dg/torture/addleq.c: New test.
+	* gcc.dg/torture/addlfeq.c: New test.
+	* gcc.dg/torture/addlfge.c: New test.
+	* gcc.dg/torture/addlfgt.c: New test.
+	* gcc.dg/torture/addlfle.c: New test.
+	* gcc.dg/torture/addlflt.c: New test.
+	* gcc.dg/torture/addlfne.c: New test.
+	* gcc.dg/torture/addlge.c: New test.
+	* gcc.dg/torture/addlgeu.c: New test.
+	* gcc.dg/torture/addlgt.c: New test.
+	* gcc.dg/torture/addlgtu.c: New test.
+	* gcc.dg/torture/addlle.c: New test.
+	* gcc.dg/torture/addlleu.c: New test.
+	* gcc.dg/torture/addllt.c: New test.
+	* gcc.dg/torture/addlltu.c: New test.
+	* gcc.dg/torture/addlne.c: New test.
+	* gcc.dg/torture/movieq.c: New test.
+	* gcc.dg/torture/movifeq.c: New test.
+	* gcc.dg/torture/movifge.c: New test.
+	* gcc.dg/torture/movifgt.c: New test.
+	* gcc.dg/torture/movifle.c: New test.
+	* gcc.dg/torture/moviflt.c: New test.
+	* gcc.dg/torture/movifne.c: New test.
+	* gcc.dg/torture/movige.c: New test.
+	* gcc.dg/torture/movigeu.c: New test.
+	* gcc.dg/torture/movigt.c: New test.
+	* gcc.dg/torture/movigtu.c: New test.
+	* gcc.dg/torture/movile.c: New test.
+	* gcc.dg/torture/movileu.c: New test.
+	* gcc.dg/torture/movilt.c: New test.
+	* gcc.dg/torture/moviltu.c: New test.
+	* gcc.dg/torture/movine.c: New test.
+	* gcc.dg/torture/movleq.c: New test.
+	* gcc.dg/torture/movlfeq.c: New test.
+	* gcc.dg/torture/movlfge.c: New test.
+	* gcc.dg/torture/movlfgt.c: New test.
+	* gcc.dg/torture/movlfle.c: New test.
+	* gcc.dg/torture/movlflt.c: New test.
+	* gcc.dg/torture/movlfne.c: New test.
+	* gcc.dg/torture/movlge.c: New test.
+	* gcc.dg/torture/movlgeu.c: New test.
+	* gcc.dg/torture/movlgt.c: New test.
+	* gcc.dg/torture/movlgtu.c: New test.
+	* gcc.dg/torture/movlle.c: New test.
+	* gcc.dg/torture/movlleu.c: New test.
+	* gcc.dg/torture/movllt.c: New test.
+	* gcc.dg/torture/movlltu.c: New test.
+	* gcc.dg/torture/movlne.c: New test.
+
 2023-11-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/tree-ssa/return-value-range-1.c: Fix.

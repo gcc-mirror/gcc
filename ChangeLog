@@ -1,3 +1,7 @@
+2023-11-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libtool.m4: Fix stray call
+
 2023-11-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* Makefile.in: Regenerate.
