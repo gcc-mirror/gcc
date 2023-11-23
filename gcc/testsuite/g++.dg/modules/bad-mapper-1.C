@@ -4,6 +4,6 @@ import unique1.bob;
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "failed to read" }
 // { dg-prune-output "compilation terminated" }
-// { dg-error "-:failed mapper handshake communication" "" { target { *-*-darwin[89]* *-*-darwin10* } } 0 }
+// { dg-error "-:failed mapper handshake communication" "" { target { *-*-darwin[89]* *-*-darwin10* hppa*-*-hpux* } } 0 }
 // { dg-prune-output "trying to exec .this-will-not-work."  }
 // { dg-prune-output "unknown Compiled Module Interface"  }
