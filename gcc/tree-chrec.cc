@@ -646,9 +646,21 @@ chrec_apply (unsigned var,
 	      res = chrec_fold_multiply (utype,
 					 chrec_convert (utype, chrecr, NULL),
 					 res);
-	      res = chrec_fold_plus (utype,
-				     chrec_convert (utype, chrecl, NULL), res);
-	      res = chrec_convert (type, res, NULL);
+	      /* When the resulting increment fits the original type
+		 do the increment in it.  */
+	      if (TREE_CODE (res) == INTEGER_CST
+		  && int_fits_type_p (res, TREE_TYPE (chrecr)))
+		{
+		  res = chrec_convert (TREE_TYPE (chrecr), res, NULL);
+		  res = chrec_fold_plus (type, chrecl, res);
+		}
+	      else
+		{
+		  res = chrec_fold_plus (utype,
+					 chrec_convert (utype, chrecl, NULL),
+					 res);
+		  res = chrec_convert (type, res, NULL);
+		}
 	    }
 	}
       else if (TREE_CODE (x) == INTEGER_CST
