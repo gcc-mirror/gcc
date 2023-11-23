@@ -1886,12 +1886,6 @@
 #endif
 
 
-/* Define if valgrind's memcheck.h header is installed. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_MEMCHECK_H
-#endif
-
-
 /* Define to 1 if you have the <memory.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MEMORY_H
@@ -2151,12 +2145,6 @@
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_UNSIGNED_LONG_LONG_INT
-#endif
-
-
-/* Define if valgrind's valgrind/memcheck.h header is installed. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_VALGRIND_MEMCHECK_H
 #endif
 
 

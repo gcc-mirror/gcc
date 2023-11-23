@@ -7685,63 +7685,6 @@ $as_echo "#define ENABLE_FOLD_CHECKING 1" >>confdefs.h
 fi
 valgrind_path_defines=
 valgrind_command=
-
-ac_fn_cxx_check_header_mongrel "$LINENO" "valgrind.h" "ac_cv_header_valgrind_h" "$ac_includes_default"
-if test "x$ac_cv_header_valgrind_h" = xyes; then :
-  have_valgrind_h=yes
-else
-  have_valgrind_h=no
-fi
-
-
-
-# It is certainly possible that there's valgrind but no valgrind.h.
-# GCC relies on making annotations so we must have both.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
-$as_echo_n "checking for VALGRIND_DISCARD in <valgrind/memcheck.h>... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <valgrind/memcheck.h>
-#ifndef VALGRIND_DISCARD
-#error VALGRIND_DISCARD not defined
-#endif
-_ACEOF
-if ac_fn_cxx_try_cpp "$LINENO"; then :
-  gcc_cv_header_valgrind_memcheck_h=yes
-else
-  gcc_cv_header_valgrind_memcheck_h=no
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
-$as_echo "$gcc_cv_header_valgrind_memcheck_h" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
-$as_echo_n "checking for VALGRIND_DISCARD in <memcheck.h>... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <memcheck.h>
-#ifndef VALGRIND_DISCARD
-#error VALGRIND_DISCARD not defined
-#endif
-_ACEOF
-if ac_fn_cxx_try_cpp "$LINENO"; then :
-  gcc_cv_header_memcheck_h=yes
-else
-  gcc_cv_header_memcheck_h=no
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
-$as_echo "$gcc_cv_header_memcheck_h" >&6; }
-if test $gcc_cv_header_valgrind_memcheck_h = yes; then
-
-$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
-
-fi
-if test $gcc_cv_header_memcheck_h = yes; then
-
-$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
-
-fi
-
 if test x$ac_valgrind_checking != x ; then
 
 # Prepare PATH_SEPARATOR.
@@ -7810,11 +7753,8 @@ else
 $as_echo "no" >&6; }
 fi
 
-  if test "x$valgrind_path" = "x" \
-    || (test $have_valgrind_h = no \
-	&& test $gcc_cv_header_memcheck_h = no \
-	&& test $gcc_cv_header_valgrind_memcheck_h = no); then
-	as_fn_error $? "*** Can't find both valgrind and valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
+  if test "x$valgrind_path" = "x"; then
+    as_fn_error $? "*** Cannot find valgrind" "$LINENO" 5
   fi
   valgrind_path_defines=-DVALGRIND_PATH='\"'$valgrind_path'\"'
   valgrind_command="$valgrind_path -q"
@@ -7870,12 +7810,16 @@ else
   enable_valgrind_annotations=no
 fi
 
+ac_fn_cxx_check_header_mongrel "$LINENO" "valgrind/memcheck.h" "ac_cv_header_valgrind_memcheck_h" "$ac_includes_default"
+if test "x$ac_cv_header_valgrind_memcheck_h" = xyes; then :
+
+fi
+
+
 if test x$enable_valgrind_annotations != xno \
     || test x$ac_valgrind_checking != x; then
-  if (test $have_valgrind_h = no \
-      && test $gcc_cv_header_memcheck_h = no \
-      && test $gcc_cv_header_valgrind_memcheck_h = no); then
-    as_fn_error $? "*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
+  if test $ac_cv_header_valgrind_memcheck_h = no; then
+    as_fn_error $? "*** Cannot find valgrind/memcheck.h" "$LINENO" 5
   fi
 
 $as_echo "#define ENABLE_VALGRIND_ANNOTATIONS 1" >>confdefs.h
@@ -21625,7 +21569,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21628 "configure"
+#line 21572 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21731,7 +21675,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21734 "configure"
+#line 21678 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
