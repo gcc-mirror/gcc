@@ -10481,6 +10481,8 @@ ix86_expand_split_stack_prologue (void)
 	      SYMBOL_REF_FLAGS (split_stack_fn_large) |= SYMBOL_FLAG_LOCAL;
 	    }
 
+	  fn = split_stack_fn_large;
+
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
 	      rtx_code_label *label;
@@ -10494,16 +10496,15 @@ ix86_expand_split_stack_prologue (void)
 	      emit_insn (gen_set_rip_rex64 (reg10, label));
 	      emit_insn (gen_set_got_offset_rex64 (reg11, label));
 	      emit_insn (gen_add2_insn (reg10, reg11));
-	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, split_stack_fn_large),
-				  UNSPEC_GOT);
+	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, fn), UNSPEC_GOT);
 	      x = gen_rtx_CONST (Pmode, x);
 	      emit_move_insn (reg11, x);
 	      x = gen_rtx_PLUS (Pmode, reg10, reg11);
 	      x = gen_const_mem (Pmode, x);
 	      fn = copy_to_suggested_reg (x, reg11, Pmode);
 	    }
-	  else
-	    fn = split_stack_fn_large;
+	  else if (ix86_cmodel == CM_LARGE)
+	    fn = copy_to_suggested_reg (fn, reg11, Pmode);
 
 	  /* When using the large model we need to load the address
 	     into a register, and we've run out of registers.  So we
