@@ -18,11 +18,18 @@
 
 #include "rust-feature-gate.h"
 #include "rust-abi.h"
+#include "rust-ast-visitor.h"
 
 namespace Rust {
 
 void
 FeatureGate::check (AST::Crate &crate)
+{
+  visit (crate);
+}
+
+void
+FeatureGate::visit (AST::Crate &crate)
 {
   valid_features.clear ();
 
@@ -56,12 +63,7 @@ FeatureGate::check (AST::Crate &crate)
 	}
     }
 
-  auto &items = crate.items;
-  for (auto it = items.begin (); it != items.end (); it++)
-    {
-      auto &item = *it;
-      item->accept_vis (*this);
-    }
+  AST::DefaultASTVisitor::visit (crate);
 }
 
 void
@@ -103,10 +105,7 @@ FeatureGate::visit (AST::ExternBlock &block)
 	gate (Feature::Name::INTRINSICS, block.get_locus (),
 	      "intrinsics are subject to change");
     }
-  for (const auto &item : block.get_extern_items ())
-    {
-      item->accept_vis (*this);
-    }
+  AST::DefaultASTVisitor::visit (block);
 }
 
 void
@@ -127,24 +126,6 @@ void
 FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
 {
   check_rustc_attri (rules_def.get_outer_attrs ());
-}
-
-void
-FeatureGate::visit (AST::InherentImpl &impl)
-{
-  for (const auto &item : impl.get_impl_items ())
-    {
-      item->accept_vis (*this);
-    }
-}
-
-void
-FeatureGate::visit (AST::TraitImpl &impl)
-{
-  for (const auto &item : impl.get_impl_items ())
-    {
-      item->accept_vis (*this);
-    }
 }
 
 void

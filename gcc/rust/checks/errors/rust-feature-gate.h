@@ -25,12 +25,15 @@
 
 namespace Rust {
 
-class FeatureGate : public AST::ASTVisitor
+class FeatureGate : public AST::DefaultASTVisitor
 {
 public:
   FeatureGate () {}
 
+  using AST::DefaultASTVisitor::visit;
+
   void check (AST::Crate &crate);
+  void visit (AST::Crate &crate) override;
 
   void visit (AST::Token &tok) override {}
   void visit (AST::DelimTokenTree &delim_tok_tree) override {}
@@ -127,8 +130,6 @@ public:
   void visit (AST::TraitItemConst &item) override {}
   void visit (AST::TraitItemType &item) override {}
   void visit (AST::Trait &trait) override {}
-  void visit (AST::InherentImpl &impl) override;
-  void visit (AST::TraitImpl &impl) override;
   void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
