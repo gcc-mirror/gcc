@@ -5635,6 +5635,21 @@ gimple_lower_bitint (void)
 		break;
 	    }
 	}
+      /* Similarly, e.g. with -frounding-math casts from _BitInt INTEGER_CSTs
+	 to floating point types need to be rewritten.  */
+      else if (SCALAR_FLOAT_TYPE_P (type))
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  if (is_gimple_assign (g) && gimple_assign_rhs_code (g) == FLOAT_EXPR)
+	    {
+	      tree t = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (t) == INTEGER_CST
+		  && TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && (bitint_precision_kind (TREE_TYPE (t))
+		      != bitint_prec_small))
+		break;
+	    }
+	}
     }
   if (i == num_ssa_names)
     return 0;
@@ -5850,6 +5865,21 @@ gimple_lower_bitint (void)
 	    {
 	      tree t = gimple_assign_rhs1 (g);
 	      if (TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && (bitint_precision_kind (TREE_TYPE (t))
+		      >= bitint_prec_large))
+		has_large_huge = true;
+	    }
+	}
+      /* Similarly, e.g. with -frounding-math casts from _BitInt INTEGER_CSTs
+	 to floating point types need to be rewritten.  */
+      else if (SCALAR_FLOAT_TYPE_P (type))
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  if (is_gimple_assign (g) && gimple_assign_rhs_code (g) == FLOAT_EXPR)
+	    {
+	      tree t = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (t) == INTEGER_CST
+		  && TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
 		  && (bitint_precision_kind (TREE_TYPE (t))
 		      >= bitint_prec_large))
 		has_large_huge = true;
@@ -6179,6 +6209,19 @@ gimple_lower_bitint (void)
 	    {
 	      t = gimple_assign_rhs1 (stmt);
 	      if (TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE)
+		{
+		  bitint_prec_kind this_kind
+		    = bitint_precision_kind (TREE_TYPE (t));
+		  if (this_kind > kind)
+		    kind = this_kind;
+		}
+	    }
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_code (stmt) == FLOAT_EXPR)
+	    {
+	      t = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && TREE_CODE (t) == INTEGER_CST)
 		{
 		  bitint_prec_kind this_kind
 		    = bitint_precision_kind (TREE_TYPE (t));
