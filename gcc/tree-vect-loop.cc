@@ -7385,7 +7385,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vectype_in = NULL_TREE;
-  tree vectype_op[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum vect_def_type cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
@@ -7617,6 +7616,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op.num_ops);
+  tree *vectype_op = XALLOCAVEC (tree, op.num_ops);
   /* We need to skip an extra operand for COND_EXPRs with embedded
      comparison.  */
   unsigned opno_adjust = 0;
