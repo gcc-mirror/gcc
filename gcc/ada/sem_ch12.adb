@@ -8518,10 +8518,12 @@ package body Sem_Ch12 is
 
             --  Moreover, for a full aggregate, if the type is a derived tagged
             --  type and has a global ancestor, then also restore the full view
-            --  of this ancestor, and do so up to the root type.
+            --  of this ancestor and do so up to the root type. Beware that the
+            --  Ancestor_Type field is overloaded, so test that it's an entity.
 
             if Nkind (N) = N_Aggregate
               and then Present (Ancestor_Type (N))
+              and then Nkind (Ancestor_Type (N)) in N_Entity
             then
                declare
                   Root_Typ : constant Entity_Id :=
