@@ -1,3 +1,21 @@
+2023-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/ranges_base.h (from_range_t): Define new tag
+	type.
+	(from_range): Define new tag object.
+	* include/bits/version.def (ranges_to_container): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (ranges::to): Define.
+	* testsuite/std/ranges/conv/1.cc: New test.
+	* testsuite/std/ranges/conv/2_neg.cc: New test.
+	* testsuite/std/ranges/conv/version.cc: New test.
+
+2023-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (uneq_allocator): Fix
+	equality operator for heterogeneous comparisons.
+
 2023-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/version.def (freestanding_cstring): Add.

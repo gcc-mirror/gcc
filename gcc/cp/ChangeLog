@@ -1,3 +1,17 @@
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110348
+	* parser.cc: Implement C++26 P2741R3 - user-generated static_assert
+	messages.
+	(cp_parser_static_assert): Parse message argument as
+	conditional-expression if it is not a pure string literal or
+	several of them concatenated followed by closing paren.
+	* semantics.cc (finish_static_assert): Handle message which is not
+	STRING_CST.  For condition with bare parameter packs return early.
+	* pt.cc (tsubst_expr) <case STATIC_ASSERT>: Also tsubst_expr
+	message and make sure that if it wasn't originally STRING_CST, it
+	isn't after tsubst_expr either.
+
 2023-11-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/112633

@@ -1,3 +1,165 @@
+2023-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/86776
+	* config/avr/avr.cc (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define
+	to speculation_safe_value_not_needed.
+
+2023-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* common.opt (Whardened, fhardened): New options.
+	* config.in: Regenerate.
+	* config/bpf/bpf.cc: Include "opts.h".
+	(bpf_option_override): If flag_stack_protector_set_by_fhardened_p, do
+	not inform that -fstack-protector does not work.
+	* config/i386/i386-options.cc (ix86_option_override_internal): When
+	-fhardened, maybe enable -fcf-protection=full.
+	* config/linux-protos.h (linux_fortify_source_default_level): Declare.
+	* config/linux.cc (linux_fortify_source_default_level): New.
+	* config/linux.h (TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL): Redefine.
+	* configure: Regenerate.
+	* configure.ac: Check if the linker supports '-z now' and '-z relro'.
+	Check if -fhardened is supported on $target_os.
+	* doc/invoke.texi: Document -fhardened and -Whardened.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL): Add.
+	* gcc.cc (driver_handle_option): Remember if any link options or -static
+	were specified on the command line.
+	(process_command): When -fhardened, maybe enable -pie and
+	-Wl,-z,relro,-z,now.
+	* opts.cc (flag_stack_protector_set_by_fhardened_p): New global.
+	(finish_options): When -fhardened, enable
+	-ftrivial-auto-var-init=zero and -fstack-protector-strong.
+	(print_help_hardened): New.
+	(print_help): Call it.
+	* opts.h (flag_stack_protector_set_by_fhardened_p): Declare.
+	* target.def (fortify_source_default_level): New target hook.
+	* targhooks.cc (default_fortify_source_default_level): New.
+	* targhooks.h (default_fortify_source_default_level): Declare.
+	* toplev.cc (process_options): When -fhardened, enable
+	-fstack-clash-protection.  If flag_stack_protector_set_by_fhardened_p,
+	do not warn that -fstack-protector not supported for this target.
+	Don't enable -fhardened when !HAVE_FHARDENED_SUPPORT.
+
+2023-11-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-functions.h
+	(full_width_access::memory_vector_mode): Add default clause.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112672
+	* config/i386/i386.md (parityhi2):
+	Use temporary register in the call to gen_parityhi2_cmp.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/89316
+	* config/i386/i386.cc (ix86_expand_split_stack_prologue): Obtain
+	scratch regno when flag_force_indirect_call is set.  On 64-bit
+	targets, call __morestack_large_model when  flag_force_indirect_call
+	is set and on 32-bit targets with -fpic, manually expand PIC sequence
+	to call __morestack.  Move the function address to an indirect
+	call scratch register.
+
+2023-11-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR tree-optimization/112678
+	* tree-profile.cc (tree_profiling): Do not use atomic operations
+	for -fprofile-update=single.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390-c.cc (s390_cpu_cpp_builtins): Define
+	__GCC_ASM_FLAG_OUTPUTS__.
+	* config/s390/s390.cc (s390_canonicalize_comparison): More
+	UNSPEC_CC_TO_INT cases.
+	(s390_md_asm_adjust): Implement flags output.
+	* config/s390/s390.md (ccstore4): Allow mask operands.
+	* doc/extend.texi: Document flags output.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.md: Split TImode loads.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md: (*vec_extract) Fix.
+
+2023-11-23  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* tree-ssa-reassoc.cc (get_reassociation_width): check
+	for loop dependent FMAs.
+	(reassociate_bb): For 3 ops, refine the condition to call
+	swap_ops_for_binary_stmt.
+
+2023-11-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (emit_vec_extract): New function.
+	* config/riscv/riscv-v.cc (emit_vec_extract): Ditto.
+	* config/riscv/riscv.cc (riscv_legitimize_move): Refine codes.
+
+2023-11-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	PR target/112670
+	* config/riscv/riscv-avlprop.cc (alv_can_be_propagated_p): New function.
+	(vlmax_ta_p): Disable vrgather AVL propagation.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112336
+	* expr.cc (EXTEND_BITINT): Don't call reduce_to_bit_field_precision
+	if modifier is EXPAND_INITIALIZER.
+
+2023-11-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_gather_insn): Refine codes.
+	(emit_vlmax_masked_gather_mu_insn): Ditto.
+	(modulo_sel_indices): Ditto.
+	(expand_vec_perm): Ditto.
+	(shuffle_generic_patterns): Ditto.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (__builtin_stdc_bit_ceil, __builtin_stdc_bit_floor,
+	__builtin_stdc_bit_width, __builtin_stdc_count_ones,
+	__builtin_stdc_count_zeros, __builtin_stdc_first_leading_one,
+	__builtin_stdc_first_leading_zero, __builtin_stdc_first_trailing_one,
+	__builtin_stdc_first_trailing_zero, __builtin_stdc_has_single_bit,
+	__builtin_stdc_leading_ones, __builtin_stdc_leading_zeros,
+	__builtin_stdc_trailing_ones, __builtin_stdc_trailing_zeros): Document.
+
+2023-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/32667
+	* doc/md.texi (cpymem): Document that exact overlap of source
+	and destination needs to work.
+	* doc/standards.texi (ffreestanding): Mention memcpy is required
+	to handle the exact overlap case.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110348
+	* doc/invoke.texi (-Wno-c++26-extensions): Document.
+
+2023-11-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* ifcvt.cc (noce_convert_multiple_sets_1): Remove old code.
+
+2023-11-23  Pan Li  <pan2.li@intel.com>
+
+	PR target/111720
+	* dse.cc (get_stored_val): Allow vector mode if read size is
+	less than or equal to stored size.
+
+2023-11-23  Costas Argyris  <costas.argyris@gmail.com>
+
+	* configure.ac: Handle new --enable-win32-utf8-manifest
+	option.
+	* config.host: allow win32 utf8 manifest to be disabled
+	by user.
+	* configure: Regenerate.
+
 2023-11-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/112592

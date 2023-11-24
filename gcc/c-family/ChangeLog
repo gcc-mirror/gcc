@@ -1,3 +1,29 @@
+2023-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.cc: Include "target.h".
+	(c_finish_options): Maybe cpp_define _FORTIFY_SOURCE
+	and _GLIBCXX_ASSERTIONS.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_BUILTIN_STDC: New.
+	* c-common.cc (c_common_reswords): Add __builtin_stdc_bit_ceil,
+	__builtin_stdc_bit_floor, __builtin_stdc_bit_width,
+	__builtin_stdc_count_ones, __builtin_stdc_count_zeros,
+	__builtin_stdc_first_leading_one, __builtin_stdc_first_leading_zero,
+	__builtin_stdc_first_trailing_one, __builtin_stdc_first_trailing_zero,
+	__builtin_stdc_has_single_bit, __builtin_stdc_leading_ones,
+	__builtin_stdc_leading_zeros, __builtin_stdc_trailing_ones and
+	__builtin_stdc_trailing_zeros.  Move __builtin_assoc_barrier
+	alphabetically earlier.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110348
+	* c.opt (Wc++26-extensions): New option.
+	* c-cppbuiltin.cc (c_cpp_builtins): For C++26 predefine
+	__cpp_static_assert to 202306L rather than 201411L.
+
 2023-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lex.cc: Include "rich-location.h".

@@ -1,3 +1,15 @@
+2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112609
+	* check.cc (gfc_check_system_clock): Add checks on integer arguments
+	to SYSTEM_CLOCK specific to F2023.
+	* error.cc (notify_std_msg): Adjust to handle new features added
+	in F2023.
+	* gfortran.texi (_gfortran_set_options): Document GFC_STD_F2023_DEL,
+	remove obsolete option GFC_STD_F2008_TS and fix enumeration values.
+	* libgfortran.h (GFC_STD_F2023_DEL): Add and use in GFC_STD_OPT_F23.
+	* options.cc (set_default_std_flags): Add GFC_STD_F2023_DEL.
+
 2023-11-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.texi (_gfortran_set_options): Document GFC_STD_F2023.

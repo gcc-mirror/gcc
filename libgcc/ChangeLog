@@ -1,3 +1,7 @@
+2023-11-23  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* hardcfr.c (__hardcfr_check_fail): Mark as always_inline.
+
 2023-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcov.h (GCOV_SUPPORTS_ATOMIC): Formatting fixes.

@@ -1,3 +1,7 @@
+2023-11-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO
+
 2023-11-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libtool.m4: Fix stray call

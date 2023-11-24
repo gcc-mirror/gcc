@@ -1,3 +1,156 @@
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/bad-mapper-1.C: Add hppa*-*-hpux* to dg-error
+	"-:failed mapper handshake communication" targets.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/fd-4.c: Define _MODE_T on hpux.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/pr104869.C: Export main on hpux.
+
+2023-11-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp: Allow multiple function start symbols,
+	taking the last as the function name.
+
+2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* gfortran.dg/assumed_rank_10.f90: Add MOLD argument to NULL().
+	* gfortran.dg/assumed_rank_8.f90: Likewise.
+
+2023-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112609
+	* gfortran.dg/system_clock_1.f90: Add option -std=f2003.
+	* gfortran.dg/system_clock_3.f08: Add option -std=f2008.
+	* gfortran.dg/system_clock_4.f90: New test.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/cpp0x/initlist-const1.C: xfail scan-assembler-not
+	check on hppa*-*-hpux*.
+
+2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/Wattributes.c: Don't skip check for warning
+	at line 411 in Wattributes.c on hppa*64*-*-*.
+
+2023-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.misc-tests/help.exp: Test -fhardened.
+	* c-c++-common/fhardened-1.S: New test.
+	* c-c++-common/fhardened-1.c: New test.
+	* c-c++-common/fhardened-10.c: New test.
+	* c-c++-common/fhardened-11.c: New test.
+	* c-c++-common/fhardened-12.c: New test.
+	* c-c++-common/fhardened-13.c: New test.
+	* c-c++-common/fhardened-14.c: New test.
+	* c-c++-common/fhardened-15.c: New test.
+	* c-c++-common/fhardened-2.c: New test.
+	* c-c++-common/fhardened-3.c: New test.
+	* c-c++-common/fhardened-4.c: New test.
+	* c-c++-common/fhardened-5.c: New test.
+	* c-c++-common/fhardened-6.c: New test.
+	* c-c++-common/fhardened-7.c: New test.
+	* c-c++-common/fhardened-8.c: New test.
+	* c-c++-common/fhardened-9.c: New test.
+	* gcc.target/i386/cf_check-6.c: New test.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* lib/scanasm.exp (scan-assembler-times): Remove the `-inline'
+	option to `regexp' and the wrapping `llength' call.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/aarch64/ccmp_1.c: Use non-capturing parentheses
+	with `scan-assembler-times'.
+
+2023-11-23  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/arm/pr53447-5.c: Use non-capturing parentheses with
+	`scan-assembler-times'.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112672
+	* gcc.target/i386/pr112672.c: New test.
+
+2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/89316
+	* g++.target/i386/pr89316.C: New test.
+	* gcc.target/i386/pr112605-1.c: New test.
+	* gcc.target/i386/pr112605-2.c: New test.
+	* gcc.target/i386/pr112605.c: New test.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/ccor.c: New test.
+
+2023-11-23  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/int128load.c: New test.
+
+2023-11-23  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* gcc.dg/pr110279-1.c: New test.
+
+2023-11-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	PR target/112670
+	* gcc.target/riscv/rvv/autovec/pr112599-1.c: New test.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112336
+	* gcc.dg/bitint-41.c: New test.
+
+2023-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110879
+	* g++.dg/opt/pr110879.C: Require C++11 or later.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-1.c: New test.
+	* gcc.dg/builtin-stdc-bit-2.c: New test.
+
+2023-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110348
+	* g++.dg/cpp26/static_assert1.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_static_assert): Expect
+	202306L rather than 201411L.
+	* g++.dg/cpp0x/udlit-error1.C: Expect different diagnostics for
+	static_assert with user-defined literal.
+
+2023-11-23  Pan Li  <pan2.li@intel.com>
+
+	PR target/111720
+	* gcc.target/riscv/rvv/base/pr111720-0.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-6.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr111720-9.c: New test.
+
+2023-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/106120
+	* g++.dg/warn/Wstringop-overflow-4.C:144 XFAIL bogus warning for
+	lp64 targets with c++98.
+
 2023-11-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/112633
