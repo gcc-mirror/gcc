@@ -1177,7 +1177,7 @@ Warn about potentially suboptimal choices related to OpenACC parallelism.
 
 Wopenmp
 C ObjC C++ ObjC++ Warning Var(warn_openmp) Init(1)
-Warn about suspicious OpenMP code
+Warn about suspicious OpenMP code.
 
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
