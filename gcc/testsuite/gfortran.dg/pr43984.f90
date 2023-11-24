@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-pre" }
+! { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-pre -fno-tree-sra" }
 module test
 
    type shell1quartet_type
