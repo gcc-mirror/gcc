@@ -3201,6 +3201,11 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
     if (!d->perm.series_p (i, step, diff - i, step))
       return false;
 
+  /* Disable when nunits < 4 since the later generic approach
+     is more profitable on BSWAP.  */
+  if (!known_gt (GET_MODE_NUNITS (d->vmode), 2))
+    return false;
+
   if (d->testing_p)
     return true;
 
