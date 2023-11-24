@@ -337,7 +337,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Esize, Uint),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Finalized_Transient, Flag),
-        Sm (Is_Ignored_Transient, Flag),
+        Sm (Is_Ignored_For_Finalization, Flag),
         Sm (Linker_Section_Pragma, Node_Id),
         Sm (Related_Expression, Node_Id),
         Sm (Status_Flag_Or_Transient_Decl, Node_Id)));

@@ -2727,19 +2727,17 @@ package Einfo is
 --       instantiation of a child unit, and whose entities are not visible
 --       during analysis of the instance.
 
+--    Is_Ignored_For_Finalization
+--       Defined in constants and variables. Set when an object must be ignored
+--       by the general finalization mechanism because its cleanup actions are
+--       already accounted for.
+
 --    Is_Ignored_Ghost_Entity
 --       Applies to all entities. Set for abstract states, [generic] packages,
 --       [generic] subprograms, components, discriminants, formal parameters,
 --       objects, package bodies, subprogram bodies, and [sub]types subject to
 --       pragma Ghost or inherit "ghostness" from an enclosing construct, and
 --       subject to Assertion_Policy Ghost => Ignore.
-
---    Is_Ignored_Transient
---       Defined in constants, loop parameters of generalized iterators, and
---       variables. Set when a transient object must be processed by one of
---       the transient finalization mechanisms. Once marked, a transient is
---       intentionally ignored by the general finalization mechanism because
---       its clean up actions are context specific.
 
 --    Is_Immediately_Visible
 --       Defined in all entities. Set if entity is immediately visible, i.e.
@@ -5325,7 +5323,7 @@ package Einfo is
    --    Is_Elaboration_Warnings_OK_Id         (constants only)
    --    Is_Eliminated
    --    Is_Finalized_Transient
-   --    Is_Ignored_Transient
+   --    Is_Ignored_For_Finalization
    --    Is_Independent
    --    Is_Return_Object
    --    Is_True_Constant
@@ -6213,7 +6211,7 @@ package Einfo is
    --    Is_Elaboration_Warnings_OK_Id
    --    Is_Eliminated
    --    Is_Finalized_Transient
-   --    Is_Ignored_Transient
+   --    Is_Ignored_For_Finalization
    --    Is_Independent
    --    Is_Return_Object
    --    Is_Safe_To_Reevaluate

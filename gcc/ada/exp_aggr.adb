@@ -6317,7 +6317,7 @@ package body Exp_Aggr is
            and then No_Ctrl_Actions (Parent_Node)
          then
             Mutate_Ekind (Tmp, E_Variable);
-            Set_Is_Ignored_Transient (Tmp);
+            Set_Is_Ignored_For_Finalization (Tmp);
          end if;
 
          Insert_Action (N, Tmp_Decl);
