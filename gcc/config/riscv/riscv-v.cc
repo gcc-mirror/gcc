@@ -2088,32 +2088,23 @@ expand_tuple_move (rtx *ops)
 machine_mode
 preferred_simd_mode (scalar_mode mode)
 {
-  /* We will disable auto-vectorization when TARGET_MIN_VLEN < 128 &&
-     riscv_autovec_lmul < RVV_M2. Since GCC loop vectorizer report ICE when we
-     enable -march=rv64gc_zve32* and -march=rv32gc_zve64*. in the
-     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since both
-     RVVM1SImode in -march=*zve32*_zvl32b and RVVM1DImode in
-     -march=*zve64*_zvl64b are NUNITS = poly (1, 1), they will cause ICE in loop
-     vectorizer when we enable them in this target hook. Currently, we can
-     support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
-     -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
   if (autovec_use_vlmax_p ())
     {
-      if (TARGET_MIN_VLEN < 128 && TARGET_MAX_LMUL < RVV_M2)
-	return word_mode;
       /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
 	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
 	 get the auto-vectorization mode.  */
       poly_uint64 nunits;
       poly_uint64 vector_size = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
       poly_uint64 scalar_size = GET_MODE_SIZE (mode);
-      gcc_assert (multiple_p (vector_size, scalar_size, &nunits));
+      /* Disable vectorization when we can't find a RVV mode for it.
+	 E.g. -march=rv64gc_zve32x doesn't have a vector mode to vectorize
+	 a double (DFmode) type.  */
+      if (!multiple_p (vector_size, scalar_size, &nunits))
+	return word_mode;
       machine_mode rvv_mode;
       if (get_vector_mode (mode, nunits).exists (&rvv_mode))
 	return rvv_mode;
     }
-  /* TODO: We will support minimum length VLS auto-vectorization in
-     the future.  */
   return word_mode;
 }
 
