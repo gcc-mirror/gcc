@@ -1294,6 +1294,11 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      g = gimple_build_assign (n, RSHIFT_EXPR, t, lpm1);
 	      insert_before (g);
 	      m_data[save_data_cnt + 1] = add_cast (m_limb_type, n);
+	      m_init_gsi = m_gsi;
+	      if (gsi_end_p (m_init_gsi))
+		m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	      else
+		gsi_prev (&m_init_gsi);
 	      m_gsi = save_gsi;
 	    }
 	  else if (m_upwards_2limb * limb_prec < TYPE_PRECISION (rhs_type))
@@ -1523,6 +1528,11 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      insert_before (g);
 	      rext = add_cast (m_limb_type, gimple_assign_lhs (g));
 	    }
+	  m_init_gsi = m_gsi;
+	  if (gsi_end_p (m_init_gsi))
+	    m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	  else
+	    gsi_prev (&m_init_gsi);
 	  m_gsi = save_gsi;
 	}
       tree t;
@@ -1687,9 +1697,23 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 		      edge e = split_block (gsi_bb (m_gsi), g);
 		      make_edge (e->src, eh_edge->dest, EDGE_EH)->probability
 			= profile_probability::very_unlikely ();
-		      m_init_gsi.bb = e->dest;
+		      m_gsi = gsi_after_labels (e->dest);
+		      if (gsi_bb (save_gsi) == e->src)
+			{
+			  if (gsi_end_p (save_gsi))
+			    save_gsi = gsi_end_bb (e->dest);
+			  else
+			    save_gsi = gsi_for_stmt (gsi_stmt (save_gsi));
+			}
+		      if (m_preheader_bb == e->src)
+			m_preheader_bb = e->dest;
 		    }
 		}
+	      m_init_gsi = m_gsi;
+	      if (gsi_end_p (m_init_gsi))
+		m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	      else
+		gsi_prev (&m_init_gsi);
 	      m_gsi = save_gsi;
 	      tree out;
 	      prepare_data_in_out (iv, idx, &out);
@@ -2359,11 +2383,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
       edge_bb = e->src;
       if (kind == bitint_prec_large)
-	{
-	  m_gsi = gsi_last_bb (edge_bb);
-	  if (!gsi_end_p (m_gsi))
-	    gsi_next (&m_gsi);
-	}
+	m_gsi = gsi_end_bb (edge_bb);
     }
   else
     m_after_stmt = stmt;
@@ -2816,9 +2836,7 @@ bitint_large_huge::lower_comparison_stmt (gimple *stmt, tree_code &cmp_code,
   gsi_prev (&gsi);
   edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
   edge_bb = e->src;
-  m_gsi = gsi_last_bb (edge_bb);
-  if (!gsi_end_p (m_gsi))
-    gsi_next (&m_gsi);
+  m_gsi = gsi_end_bb (edge_bb);
 
   edge *edges = XALLOCAVEC (edge, cnt * 2);
   for (unsigned i = 0; i < cnt; i++)
@@ -4288,9 +4306,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 	  gsi_prev (&gsi);
 	  edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
 	  edge_bb = e->src;
-	  m_gsi = gsi_last_bb (edge_bb);
-	  if (!gsi_end_p (m_gsi))
-	    gsi_next (&m_gsi);
+	  m_gsi = gsi_end_bb (edge_bb);
 
 	  tree cmp = build_zero_cst (m_limb_type);
 	  for (unsigned i = 0; i < cnt; i++)
@@ -4560,11 +4576,7 @@ bitint_large_huge::lower_bit_query (gimple *stmt)
 	  edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
 	  edge_bb = e->src;
 	  if (kind == bitint_prec_large)
-	    {
-	      m_gsi = gsi_last_bb (edge_bb);
-	      if (!gsi_end_p (m_gsi))
-		gsi_next (&m_gsi);
-	    }
+	    m_gsi = gsi_end_bb (edge_bb);
 	  bqp = XALLOCAVEC (struct bq_details, cnt);
 	}
       else
@@ -4717,9 +4729,7 @@ bitint_large_huge::lower_bit_query (gimple *stmt)
       gsi_prev (&gsi);
       edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
       edge_bb = e->src;
-      m_gsi = gsi_last_bb (edge_bb);
-      if (!gsi_end_p (m_gsi))
-	gsi_next (&m_gsi);
+      m_gsi = gsi_end_bb (edge_bb);
 
       if (ifn == IFN_CLZ)
 	bqp = XALLOCAVEC (struct bq_details, cnt);
