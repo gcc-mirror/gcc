@@ -21605,6 +21605,9 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
      destroy
      update (dependence-type)
 
+   OpenMP 5.2 additionally:
+     destroy ( depobj )
+
    dependence-type:
      in
      out
@@ -21663,7 +21666,26 @@ c_parser_omp_depobj (c_parser *parser)
 	    clause = error_mark_node;
 	}
       else if (!strcmp ("destroy", p))
-	kind = OMP_CLAUSE_DEPEND_LAST;
+	{
+	  matching_parens c_parens;
+	  kind = OMP_CLAUSE_DEPEND_LAST;
+	  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
+	      && c_parens.require_open (parser))
+	    {
+	      tree destobj = c_parser_expr_no_commas (parser, NULL).value;
+	      if (!lvalue_p (destobj))
+		error_at (EXPR_LOC_OR_LOC (destobj, c_loc),
+			  "%<destroy%> expression is not lvalue expression");
+	      else if (depobj != error_mark_node
+		       && !operand_equal_p (destobj, depobj,
+					    OEP_MATCH_SIDE_EFFECTS
+					    | OEP_LEXICOGRAPHIC))
+		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), 0,
+			    "the %<destroy%> expression %qE should be the same "
+			    "as the %<depobj%> argument %qE", destobj, depobj);
+	      c_parens.skip_until_found_close (parser);
+	    }
+	}
       else if (!strcmp ("update", p))
 	{
 	  matching_parens c_parens;

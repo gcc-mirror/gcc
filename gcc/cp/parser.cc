@@ -43173,6 +43173,9 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
      destroy
      update (dependence-type)
 
+   OpenMP 5.2 additionally:
+     destroy ( depobj )
+
    dependence-type:
      in
      out
@@ -43219,7 +43222,27 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 	    clause = error_mark_node;
 	}
       else if (!strcmp ("destroy", p))
-	kind = OMP_CLAUSE_DEPEND_LAST;
+	{
+	  kind = OMP_CLAUSE_DEPEND_LAST;
+	  matching_parens c_parens;
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+	      && c_parens.require_open (parser))
+	    {
+	      tree destobj = cp_parser_assignment_expression (parser);
+	      if (depobj != error_mark_node
+		  && destobj != error_mark_node
+		  && !operand_equal_p (destobj, depobj, OEP_MATCH_SIDE_EFFECTS
+							| OEP_LEXICOGRAPHIC))
+		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), 0,
+			    "the %<destroy%> expression %qE should be the same "
+			    "as the %<depobj%> argument %qE", destobj, depobj);
+	      if (!c_parens.require_close (parser))
+		cp_parser_skip_to_closing_parenthesis (parser,
+						       /*recovering=*/true,
+						       /*or_comma=*/false,
+						       /*consume_paren=*/true);
+	    }
+	}
       else if (!strcmp ("update", p))
 	{
 	  matching_parens c_parens;

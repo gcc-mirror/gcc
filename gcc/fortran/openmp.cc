@@ -4731,10 +4731,20 @@ gfc_match_omp_depobj (void)
 	  goto error;
 	}
     }
-  else if (gfc_match ("destroy") == MATCH_YES)
+  else if (gfc_match ("destroy ") == MATCH_YES)
     {
+      gfc_expr *destroyobj = NULL;
       c = gfc_get_omp_clauses ();
       c->destroy = true;
+
+      if (gfc_match (" ( %v ) ", &destroyobj) == MATCH_YES)
+	{
+	  if (destroyobj->symtree != depobj->symtree)
+	    gfc_warning (0, "The same depend object should be used as DEPOBJ "
+			 "argument at %L and as DESTROY argument at %L",
+			 &depobj->where, &destroyobj->where);
+	  gfc_free_expr (destroyobj);
+	}
     }
   else if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_DEPEND), true, false)
 	   != MATCH_YES)
