@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-ast-visitor.h"
 #include "rust-system.h"
 #include "rust-session-manager.h"
 #include "rust-attributes.h"
@@ -94,6 +95,12 @@ AttributeChecker::AttributeChecker () {}
 
 void
 AttributeChecker::go (AST::Crate &crate)
+{
+  visit (crate);
+}
+
+void
+AttributeChecker::visit (AST::Crate &crate)
 {
   check_attributes (crate.get_inner_attrs ());
 
@@ -468,8 +475,8 @@ AttributeChecker::visit (AST::BlockExpr &expr)
 	  check_proc_macro_non_root (item->get_outer_attrs (),
 				     item->get_locus ());
 	}
-      stmt->accept_vis (*this);
     }
+  AST::DefaultASTVisitor::visit (expr);
 }
 
 void
@@ -511,12 +518,6 @@ AttributeChecker::visit (AST::RangeToInclExpr &)
 void
 AttributeChecker::visit (AST::ReturnExpr &)
 {}
-
-void
-AttributeChecker::visit (AST::UnsafeBlockExpr &expr)
-{
-  expr.get_block_expr ()->accept_vis (*this);
-}
 
 void
 AttributeChecker::visit (AST::LoopExpr &)
@@ -582,8 +583,8 @@ AttributeChecker::visit (AST::Module &module)
   for (auto &item : module.get_items ())
     {
       check_proc_macro_non_root (item->get_outer_attrs (), item->get_locus ());
-      item->accept_vis (*this);
     }
+  AST::DefaultASTVisitor::visit (module);
 }
 
 void
@@ -754,16 +755,14 @@ void
 AttributeChecker::visit (AST::InherentImpl &impl)
 {
   check_proc_macro_non_function (impl.get_outer_attrs ());
-  for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+  AST::DefaultASTVisitor::visit (impl);
 }
 
 void
 AttributeChecker::visit (AST::TraitImpl &impl)
 {
   check_proc_macro_non_function (impl.get_outer_attrs ());
-  for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+  AST::DefaultASTVisitor::visit (impl);
 }
 
 void
