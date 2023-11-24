@@ -1090,18 +1090,16 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
   unsigned HOST_WIDE_INT n_insns = 0;
   fixed_size_mode mode;
 
-  if (targetm.overlap_op_by_pieces_p () && op != COMPARE_BY_PIECES)
+  if (targetm.overlap_op_by_pieces_p ())
     {
       /* NB: Round up L and ALIGN to the widest integer mode for
 	 MAX_SIZE.  */
       mode = widest_fixed_size_mode_for_size (max_size, op);
-      if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
-	{
-	  unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
-	  if (up > l)
-	    l = up;
-	  align = GET_MODE_ALIGNMENT (mode);
-	}
+      gcc_assert (optab_handler (mov_optab, mode) != CODE_FOR_nothing);
+      unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
+      if (up > l)
+	l = up;
+      align = GET_MODE_ALIGNMENT (mode);
     }
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
@@ -1109,12 +1107,11 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
   while (max_size > 1 && l > 0)
     {
       mode = widest_fixed_size_mode_for_size (max_size, op);
-      enum insn_code icode;
+      gcc_assert (optab_handler (mov_optab, mode) != CODE_FOR_nothing);
 
       unsigned int modesize = GET_MODE_SIZE (mode);
 
-      icode = optab_handler (mov_optab, mode);
-      if (icode != CODE_FOR_nothing && align >= GET_MODE_ALIGNMENT (mode))
+      if (align >= GET_MODE_ALIGNMENT (mode))
 	{
 	  unsigned HOST_WIDE_INT n_pieces = l / modesize;
 	  l %= modesize;
