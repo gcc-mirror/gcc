@@ -1872,9 +1872,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
       if (reg_plus_base_memory_operand (op1, GET_MODE (op1)))
 	{
-	  if (!(TARGET_PA_20
-		&& !TARGET_ELF32
-		&& INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	  if (!(INT14_OK_STRICT && INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
 	      && !INT_5_BITS (XEXP (XEXP (op1, 0), 1)))
 	    {
 	      /* SCRATCH_REG will hold an address and maybe the actual data.
@@ -1923,9 +1921,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
       if (reg_plus_base_memory_operand (op0, GET_MODE (op0)))
 	{
-	  if (!(TARGET_PA_20
-		&& !TARGET_ELF32
-		&& INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	  if (!(INT14_OK_STRICT && INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
 	      && !INT_5_BITS (XEXP (XEXP (op0, 0), 1)))
 	    {
 	      /* SCRATCH_REG will hold an address and maybe the actual data.
