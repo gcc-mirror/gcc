@@ -16071,7 +16071,7 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
       protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0,
+	  warning_at (expr_loc, OPT_Wopenmp,
 		      "%<num_threads%> value must be positive");
 	  t = integer_one_node;
 	}
@@ -16132,7 +16132,8 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
 	SET_EXPR_LOCATION (c, expr_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0, "%<num_tasks%> value must be positive");
+	  warning_at (expr_loc, OPT_Wopenmp,
+		      "%<num_tasks%> value must be positive");
 	  t = integer_one_node;
 	}
 
@@ -16193,7 +16194,8 @@ c_parser_omp_clause_grainsize (c_parser *parser, tree list)
 	SET_EXPR_LOCATION (c, expr_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0, "%<grainsize%> value must be positive");
+	  warning_at (expr_loc, OPT_Wopenmp,
+		      "%<grainsize%> value must be positive");
 	  t = integer_one_node;
 	}
 
@@ -16241,7 +16243,8 @@ c_parser_omp_clause_priority (c_parser *parser, tree list)
 	SET_EXPR_LOCATION (c, expr_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0, "%<priority%> value must be non-negative");
+	  warning_at (expr_loc, OPT_Wopenmp,
+		      "%<priority%> value must be non-negative");
 	  t = integer_one_node;
 	}
 
@@ -17383,7 +17386,7 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
 	  protected_set_expr_location (s, loc);
 	  if (s == boolean_true_node)
 	    {
-	      warning_at (loc, 0,
+	      warning_at (loc, OPT_Wopenmp,
 			  "chunk size value must be positive");
 	      t = integer_one_node;
 	    }
@@ -17545,7 +17548,8 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
       protected_set_expr_location (c, upper_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (upper_loc, 0, "%<num_teams%> value must be positive");
+	  warning_at (upper_loc, OPT_Wopenmp,
+		      "%<num_teams%> value must be positive");
 	  upper = integer_one_node;
 	}
       if (lower)
@@ -17555,15 +17559,17 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
 	  protected_set_expr_location (c, lower_loc);
 	  if (c == boolean_true_node)
 	    {
-	      warning_at (lower_loc, 0, "%<num_teams%> value must be positive");
+	      warning_at (lower_loc, OPT_Wopenmp,
+			  "%<num_teams%> value must be positive");
 	      lower = NULL_TREE;
 	    }
 	  else if (TREE_CODE (lower) == INTEGER_CST
 		   && TREE_CODE (upper) == INTEGER_CST
 		   && tree_int_cst_lt (upper, lower))
 	    {
-	      warning_at (lower_loc, 0, "%<num_teams%> lower bound %qE bigger "
-					"than upper bound %qE", lower, upper);
+	      warning_at (lower_loc, OPT_Wopenmp,
+			  "%<num_teams%> lower bound %qE bigger than upper "
+			  "bound %qE", lower, upper);
 	      lower = NULL_TREE;
 	    }
 	}
@@ -17610,7 +17616,8 @@ c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
       protected_set_expr_location (c, expr_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0, "%<thread_limit%> value must be positive");
+	  warning_at (expr_loc, OPT_Wopenmp,
+		      "%<thread_limit%> value must be positive");
 	  t = integer_one_node;
 	}
 
@@ -18840,7 +18847,7 @@ c_parser_omp_clause_dist_schedule (c_parser *parser, tree list)
   /* check_no_duplicate_clause (list, OMP_CLAUSE_DIST_SCHEDULE,
 				"dist_schedule"); */
   if (omp_find_clause (list, OMP_CLAUSE_DIST_SCHEDULE))
-    warning_at (loc, 0, "too many %qs clauses", "dist_schedule");
+    warning_at (loc, OPT_Wopenmp, "too many %qs clauses", "dist_schedule");
   if (t == error_mark_node)
     return list;
 
@@ -21680,7 +21687,7 @@ c_parser_omp_depobj (c_parser *parser)
 		       && !operand_equal_p (destobj, depobj,
 					    OEP_MATCH_SIDE_EFFECTS
 					    | OEP_LEXICOGRAPHIC))
-		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), 0,
+		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), OPT_Wopenmp,
 			    "the %<destroy%> expression %qE should be the same "
 			    "as the %<depobj%> argument %qE", destobj, depobj);
 	      c_parens.skip_until_found_close (parser);
@@ -21915,7 +21922,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
     substmt = c_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
   else
     {
-      warning_at (c_parser_peek_token (parser)->location, 0,
+      warning_at (c_parser_peek_token (parser)->location, OPT_Wopenmp,
 		  "%<#pragma omp scan%> with zero preceding executable "
 		  "statements");
       substmt = build_empty_stmt (loc);
@@ -21963,8 +21970,9 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
   else
     {
       if (found_scan)
-	warning_at (loc, 0, "%<#pragma omp scan%> with zero succeeding "
-			    "executable statements");
+	warning_at (loc, OPT_Wopenmp,
+		    "%<#pragma omp scan%> with zero succeeding executable "
+		    "statements");
       substmt = build_empty_stmt (loc);
     }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, clauses);
@@ -26270,7 +26278,7 @@ c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 	}
       else if (startswith (p, "ext_"))
 	{
-	  warning_at (cloc, 0, "unknown assumption clause %qs", p);
+	  warning_at (cloc, OPT_Wopenmp, "unknown assumption clause %qs", p);
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
 	    {

@@ -1201,12 +1201,12 @@ omp_check_context_selector (location_t loc, tree ctx)
 			  return error_mark_node;
 			}
 		      else if (TREE_PURPOSE (t2))
-			warning_at (loc, 0,
+			warning_at (loc, OPT_Wopenmp,
 				    "unknown property %qs of %qs selector",
 				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    props[i].selector);
 		      else
-			warning_at (loc, 0,
+			warning_at (loc, OPT_Wopenmp,
 				    "unknown property %qE of %qs selector",
 				    TREE_VALUE (t2), props[i].selector);
 		      break;

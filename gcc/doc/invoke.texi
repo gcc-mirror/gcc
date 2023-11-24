@@ -383,7 +383,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 -Wnull-dereference  -Wno-odr
 -Wopenacc-parallelism
--Wopenmp-simd
+-Wopenmp -Wopenmp-simd
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
 -Wparentheses  -Wno-pedantic-ms-format
@@ -9956,6 +9956,11 @@ Enabled by default.
 @cindex OpenACC accelerator programming
 @item -Wopenacc-parallelism
 Warn about potentially suboptimal choices related to OpenACC parallelism.
+
+@opindex Wopenmp
+@opindex Wno-openmp
+@item -Wno-openmp
+Warn about suspicious OpenMP code.
 
 @opindex Wopenmp-simd
 @opindex Wno-openmp-simd

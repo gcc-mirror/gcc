@@ -7561,7 +7561,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				      "positive");
 			  break;
 			default:
-			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			  warning_at (OMP_CLAUSE_LOCATION (c),
+				      (flag_openmp || flag_openmp_simd)
+				      ? OPT_Wopenmp : 0,
 				      "%qs value must be positive",
 				      omp_clause_code_name
 				      [OMP_CLAUSE_CODE (c)]);
@@ -7596,7 +7598,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      if (TREE_CODE (t) == INTEGER_CST
 			  && tree_int_cst_sgn (t) != 1)
 			{
-			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			  warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 				      "%qs value must be positive",
 				      omp_clause_code_name
 				      [OMP_CLAUSE_CODE (c)]);
@@ -7610,7 +7612,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && TREE_CODE (upper) == INTEGER_CST
 			  && tree_int_cst_lt (upper, t))
 			{
-			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			  warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 				      "%<num_teams%> lower bound %qE bigger "
 				      "than upper bound %qE", t, upper);
 			  t = NULL_TREE;
@@ -7643,7 +7645,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) != 1)
 		  {
-		    warning_at (OMP_CLAUSE_LOCATION (c), 0,
+		    warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 			      "chunk size value must be positive");
 		    t = integer_one_node;
 		  }
@@ -7739,7 +7741,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) != 1)
 		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+		      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 				  "%<thread_limit%> value must be positive");
 		      t = integer_one_node;
 		    }
@@ -7935,7 +7937,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
 	    {
-	      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+	      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 			"%qD appears more than once in %<allocate%> clauses",
 			t);
 	      remove = true;
@@ -8707,7 +8709,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) != 1)
 		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+		      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 				  "%<grainsize%> value must be positive");
 		      t = integer_one_node;
 		    }
@@ -8737,7 +8739,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) == -1)
 		    {
-		      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+		      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 				  "%<priority%> value must be non-negative");
 		      t = integer_one_node;
 		    }

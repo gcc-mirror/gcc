@@ -41161,7 +41161,7 @@ cp_parser_omp_clause_dist_schedule (cp_parser *parser, tree list,
   /* check_no_duplicate_clause (list, OMP_CLAUSE_DIST_SCHEDULE,
 				"dist_schedule", location); */
   if (omp_find_clause (list, OMP_CLAUSE_DIST_SCHEDULE))
-    warning_at (location, 0, "too many %qs clauses", "dist_schedule");
+    warning_at (location, OPT_Wopenmp, "too many %qs clauses", "dist_schedule");
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -43233,7 +43233,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 		  && destobj != error_mark_node
 		  && !operand_equal_p (destobj, depobj, OEP_MATCH_SIDE_EFFECTS
 							| OEP_LEXICOGRAPHIC))
-		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), 0,
+		warning_at (EXPR_LOC_OR_LOC (destobj, c_loc), OPT_Wopenmp,
 			    "the %<destroy%> expression %qE should be the same "
 			    "as the %<depobj%> argument %qE", destobj, depobj);
 	      if (!c_parens.require_close (parser))
@@ -44106,8 +44106,9 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
   else
     {
-      warning_at (tok->location, 0, "%<#pragma omp scan%> with zero preceding "
-				    "executable statements");
+      warning_at (tok->location, OPT_Wopenmp,
+		  "%<#pragma omp scan%> with zero preceding executable "
+		  "statements");
       substmt = build_empty_stmt (tok->location);
     }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
@@ -44153,8 +44154,9 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   else
     {
       if (found_scan)
-	warning_at (tok->location, 0, "%<#pragma omp scan%> with zero "
-				      "succeeding executable statements");
+	warning_at (tok->location, OPT_Wopenmp,
+		    "%<#pragma omp scan%> with zero succeeding executable "
+		    "statements");
       substmt = build_empty_stmt (tok->location);
     }
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
@@ -47851,7 +47853,7 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	}
       else if (startswith (p, "ext_"))
 	{
-	  warning_at (cloc, 0, "unknown assumption clause %qs", p);
+	  warning_at (cloc, OPT_Wopenmp, "unknown assumption clause %qs", p);
 	  cp_lexer_consume_token (parser->lexer);
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	    for (size_t n = cp_parser_skip_balanced_tokens (parser, 1) - 1;

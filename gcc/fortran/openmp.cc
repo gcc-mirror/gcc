@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "options.h"
 #include "gfortran.h"
 #include "arith.h"
 #include "match.h"
@@ -5563,8 +5564,9 @@ gfc_match_omp_declare_target (void)
       && !c->lists[OMP_LIST_ENTER]
       && !c->lists[OMP_LIST_TO]
       && !c->lists[OMP_LIST_LINK])
-    gfc_warning_now (0, "OMP DECLARE TARGET directive at %L with only "
-			"DEVICE_TYPE clause is ignored", &old_loc);
+    gfc_warning_now (OPT_Wopenmp,
+		     "OMP DECLARE TARGET directive at %L with only "
+		     "DEVICE_TYPE clause is ignored", &old_loc);
 
   gfc_buffer_error (true);
 
@@ -7030,7 +7032,8 @@ resolve_positive_int_expr (gfc_expr *expr, const char *clause)
   if (expr->expr_type == EXPR_CONSTANT
       && expr->ts.type == BT_INTEGER
       && mpz_sgn (expr->value.integer) <= 0)
-    gfc_warning (0, "INTEGER expression of %s clause at %L must be positive",
+    gfc_warning ((flag_openmp || flag_openmp_simd) ? OPT_Wopenmp : 0,
+		 "INTEGER expression of %s clause at %L must be positive",
 		 clause, &expr->where);
 }
 
@@ -7041,8 +7044,9 @@ resolve_nonnegative_int_expr (gfc_expr *expr, const char *clause)
   if (expr->expr_type == EXPR_CONSTANT
       && expr->ts.type == BT_INTEGER
       && mpz_sgn (expr->value.integer) < 0)
-    gfc_warning (0, "INTEGER expression of %s clause at %L must be "
-		 "non-negative", clause, &expr->where);
+    gfc_warning ((flag_openmp || flag_openmp_simd) ? OPT_Wopenmp : 0,
+		 "INTEGER expression of %s clause at %L must be non-negative",
+		 clause, &expr->where);
 }
 
 /* Emits error when symbol is pointer, cray pointer or cray pointee
@@ -7605,8 +7609,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
       else if (expr->expr_type == EXPR_CONSTANT
 	       && expr->ts.type == BT_INTEGER
 	       && mpz_sgn (expr->value.integer) <= 0)
-	gfc_warning (0, "INTEGER expression of SCHEDULE clause's chunk_size "
-		     "at %L must be positive", &expr->where);
+	gfc_warning (OPT_Wopenmp, "INTEGER expression of SCHEDULE clause's "
+		     "chunk_size at %L must be positive", &expr->where);
     }
   if (omp_clauses->sched_kind != OMP_SCHED_NONE
       && omp_clauses->sched_nonmonotonic)
@@ -7916,8 +7920,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    }
 	  if (n->sym->mark == 1)
 	    {
-	      gfc_warning (0, "%qs appears more than once in %<allocate%> "
-			   "at %L" , n->sym->name, &n->where);
+	      gfc_warning (OPT_Wopenmp, "%qs appears more than once in "
+			   "%<allocate%> at %L" , n->sym->name, &n->where);
 	      /* We have already seen this variable so it is a duplicate.
 		 Remove it.  */
 	      if (prev != NULL && prev->next == n)
@@ -8915,8 +8919,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
       && omp_clauses->num_teams_upper->expr_type == EXPR_CONSTANT
       && mpz_cmp (omp_clauses->num_teams_lower->value.integer,
 		  omp_clauses->num_teams_upper->value.integer) > 0)
-    gfc_warning (0, "NUM_TEAMS lower bound at %L larger than upper bound at %L",
-		 &omp_clauses->num_teams_lower->where,
+    gfc_warning (OPT_Wopenmp, "NUM_TEAMS lower bound at %L larger than upper "
+		 "bound at %L", &omp_clauses->num_teams_lower->where,
 		 &omp_clauses->num_teams_upper->where);
   if (omp_clauses->device)
     resolve_scalar_int_expr (omp_clauses->device, "DEVICE");
@@ -9753,13 +9757,15 @@ gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 	      else
 		{
 		  if (block->op == EXEC_OMP_SCAN)
-		    gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+		    gfc_warning (OPT_Wopenmp,
+				 "!$OMP SCAN at %L with zero executable "
 				 "statements in preceding structured block "
 				 "sequence", &block->loc);
 		  if ((block->op == EXEC_OMP_SCAN && !block->next)
 		      || (block->next && block->next->op == EXEC_OMP_SCAN
 			  && !block->next->next))
-		    gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+		    gfc_warning (OPT_Wopenmp,
+				 "!$OMP SCAN at %L with zero executable "
 				 "statements in succeeding structured block "
 				 "sequence", block->op == EXEC_OMP_SCAN
 				 ? &block->loc : &block->next->loc);
