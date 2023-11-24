@@ -2461,6 +2461,10 @@ contains_pointers_p (tree type)
    it all the way to final.  See PR 17982 for further discussion.  */
 static GTY(()) tree pending_assemble_externals;
 
+/* A similar list of pending libcall symbols.  We only want to declare
+   symbols that are actually used in the final assembly.  */
+static GTY(()) rtx pending_libcall_symbols;
+
 #ifdef ASM_OUTPUT_EXTERNAL
 /* Some targets delay some output to final using TARGET_ASM_FILE_END.
    As a result, assemble_external can be called after the list of externals
@@ -2520,8 +2524,17 @@ process_pending_assemble_externals (void)
   for (list = pending_assemble_externals; list; list = TREE_CHAIN (list))
     assemble_external_real (TREE_VALUE (list));
 
+  for (rtx list = pending_libcall_symbols; list; list = XEXP (list, 1))
+    {
+      rtx symbol = XEXP (list, 0);
+      tree id = get_identifier (XSTR (symbol, 0));
+      if (TREE_SYMBOL_REFERENCED (id))
+	targetm.asm_out.external_libcall (symbol);
+    }
+
   pending_assemble_externals = 0;
   pending_assemble_externals_processed = true;
+  pending_libcall_symbols = NULL_RTX;
   delete pending_assemble_externals_set;
 #endif
 }
@@ -2594,8 +2607,15 @@ assemble_external_libcall (rtx fun)
   /* Declare library function name external when first used, if nec.  */
   if (! SYMBOL_REF_USED (fun))
     {
+      gcc_assert (!pending_assemble_externals_processed);
       SYMBOL_REF_USED (fun) = 1;
-      targetm.asm_out.external_libcall (fun);
+      /* Make sure the libcall symbol is in the symtab so any
+         reference to it will mark its tree node as referenced, via
+         assemble_name_resolve.  These are eventually emitted, if
+         used, in process_pending_assemble_externals. */
+      get_identifier (XSTR (fun, 0));
+      pending_libcall_symbols = gen_rtx_EXPR_LIST (VOIDmode, fun,
+						   pending_libcall_symbols);
     }
 }
 
