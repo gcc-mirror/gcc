@@ -8285,7 +8285,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 (simplify
  (BIT_FIELD_REF (view_convert @0) @1 @2)
- (BIT_FIELD_REF @0 @1 @2))
+ (if (! INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      || type_has_mode_precision_p (TREE_TYPE (@0)))
+  (BIT_FIELD_REF @0 @1 @2)))
 
 (simplify
  (BIT_FIELD_REF @0 @1 integer_zerop)
