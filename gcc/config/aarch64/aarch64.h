@@ -177,10 +177,13 @@ enum class aarch64_feature : unsigned char {
 
 #endif
 
-/* Macros to test ISA flags.  */
+/* Macros to test ISA flags.
+
+   There is intentionally no macro for AARCH64_FL_CRYPTO, since this flag bit
+   is not always set when its constituent features are present.
+   Check (TARGET_AES && TARGET_SHA2) instead.  */
 
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
-#define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
@@ -223,9 +226,6 @@ enum class aarch64_feature : unsigned char {
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
 #define AARCH64_ISA_RCPC           (aarch64_isa_flags & AARCH64_FL_RCPC)
-
-/* Crypto is an optional extension to AdvSIMD.  */
-#define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
 
 /* SHA2 is an optional extension to AdvSIMD.  */
 #define TARGET_SHA2 (AARCH64_ISA_SHA2)
