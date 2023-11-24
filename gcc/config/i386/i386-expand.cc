@@ -2453,7 +2453,8 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	  /* Generate XOR since we can't check that one operand is zero
 	     vector.  */
 	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
+	  rtx ops[3] = { tmp, op0, op1 };
+	  ix86_expand_vector_logical_operator (XOR, mode, ops);
 	  tmp = gen_lowpart (p_mode, tmp);
 	  emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
 				  gen_rtx_UNSPEC (CCZmode,
