@@ -149,9 +149,6 @@ struct aarch64_option_extension
   aarch64_feature_flags flags_on;
   /* If this feature is turned off, these bits also need to be turned off.  */
   aarch64_feature_flags flags_off;
-  /* Indicates whether this feature is taken into account during native cpu
-     detection.  */
-  bool native_detect_p;
 };
 
 /* ISA extensions in AArch64.  */
@@ -159,10 +156,9 @@ static constexpr aarch64_option_extension all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
-   feature_deps::get_flags_off (feature_deps::root_off_##IDENT), \
-   FEATURE_STRING[0]},
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT)},
 #include "config/aarch64/aarch64-option-extensions.def"
-  {NULL, 0, 0, 0, false}
+  {NULL, 0, 0, 0}
 };
 
 struct processor_name_to_arch
@@ -358,8 +354,7 @@ aarch64_get_extension_string_for_isa_flags
 	/* If either crypto flag needs removing here, then both do.  */
 	flags = flags_crypto;
 
-      if (opt.native_detect_p
-	  && (flags & current_flags & ~isa_flags))
+      if (flags & current_flags & ~isa_flags)
 	{
 	  current_flags &= ~opt.flags_off;
 	  outstr += "+no";
