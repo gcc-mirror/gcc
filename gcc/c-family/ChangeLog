@@ -1,3 +1,17 @@
+2023-11-24  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/112319
+	* c-ppoutput.cc (cb_read_pch): Reinitialize the frontend parser
+	after loading a PCH.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c.opt (-Wopenmp): Add missing tailing '.'.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c.opt (Wopenmp): Add, enable by default.
+
 2023-11-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.cc: Include "target.h".

@@ -1,3 +1,13 @@
+2023-11-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (ENABLE_VALGRIND_CHECKING): Delete.
+	(ENABLE_VALGRIND_ANNOTATIONS): Rename to
+	ENABLE_VALGRIND_WORKAROUNDS.  Delete Valgrind header checks.
+	* lex.cc (new_buff): Adjust for renaming.
+	(_cpp_free_buff): Ditto.
+
 2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
 
 	* macro.cc (parse_params): Fix typo in variadic.

@@ -1,3 +1,194 @@
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (amdgcn-*-amdhsa): Fix URL to ROCm;
+	change 'in the future' to 'in LLVM 18'.
+
+2023-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_emit_move_sequence): Use INT14_OK_STRICT
+	in a couple of places.
+
+2023-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/109849
+	* tree-sra.cc (passed_by_ref_in_call): New.
+	(sra_initialize): Allocate passed_by_ref_in_call.
+	(sra_deinitialize): Free passed_by_ref_in_call.
+	(create_access): Add decl pool candidates only if they are not
+	already	candidates.
+	(build_access_from_expr_1): Bail out on ADDR_EXPRs.
+	(build_access_from_call_arg): New function.
+	(asm_visit_addr): Rename to scan_visit_addr, change the
+	disqualification dump message.
+	(scan_function): Check taken addresses for all non-call statements,
+	including phi nodes.  Process all call arguments, including the static
+	chain, build_access_from_call_arg.
+	(maybe_add_sra_candidate): Relax need_to_live_in_memory check to allow
+	non-escaped local variables.
+	(sort_and_splice_var_accesses): Disallow smaller-than-precision
+	replacements for aggregates passed by reference to functions.
+	(sra_modify_expr): Use a separate stmt iterator for adding satements
+	before the processed statement and after it.
+	(enum out_edge_check): New type.
+	(abnormal_edge_after_stmt_p): New function.
+	(sra_modify_call_arg): New function.
+	(sra_modify_assign): Adjust calls to sra_modify_expr.
+	(sra_modify_function_body): Likewise, use sra_modify_call_arg to
+	process call arguments, including the static chain.
+
+2023-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112686
+	* config/i386/i386.cc (ix86_expand_split_stack_prologue): Load
+	function address to a register for ix86_cmodel == CM_LARGE.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-Wopenmp): Add.
+	* gimplify.cc (gimplify_omp_for): Add OPT_Wopenmp to warning_at.
+	* omp-expand.cc (expand_omp_ordered_sink): Likewise.
+	* omp-general.cc (omp_check_context_selector): Likewise.
+	* omp-low.cc (scan_omp_for, check_omp_nesting_restrictions,
+	lower_omp_ordered_clauses): Likewise.
+	* omp-simd-clone.cc (simd_clone_clauses_extract): Likewise.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* config/riscv/riscv-v.cc (preferred_simd_mode): Allow poly_int (1,1) vectors.
+
+2023-11-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Delete manual checks for old Valgrind headers.
+	* system.h (VALGRIND_MAKE_MEM_NOACCESS): Delete.
+	(VALGRIND_MAKE_MEM_DEFINED): Delete.
+	(VALGRIND_MAKE_MEM_UNDEFINED): Delete.
+	(VALGRIND_MALLOCLIKE_BLOCK): Delete.
+	(VALGRIND_FREELIKE_BLOCK): Delete.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112681
+	* config/i386/i386-expand.cc (ix86_expand_branch): Use
+	ix86_expand_vector_logical_operator to expand vector XOR rather than
+	gen_rtx_SET on gen_rtx_XOR.
+
+2023-11-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/access-utils.h (filter_accesses): New.
+	(remove_regno_access): New.
+	(check_remove_regno_access): New.
+	* rtl-ssa/accesses.cc (rtl_ssa::remove_note_accesses_base): Use
+	new filter_accesses helper.
+
+2023-11-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* rtl-ssa/accesses.cc (function_info::create_set): New.
+	* rtl-ssa/accesses.h (access_info::is_temporary): New.
+	* rtl-ssa/changes.cc (move_insn): Handle new (temporary) insns.
+	(function_info::finalize_new_accesses): Handle new/temporary
+	user-created accesses.
+	(function_info::apply_changes_to_insn): Ensure m_is_temp flag
+	on new insns gets cleared.
+	(function_info::change_insns): Handle new/temporary insns.
+	(function_info::create_insn): New.
+	* rtl-ssa/changes.h (class insn_change): Make function_info a
+	friend class.
+	* rtl-ssa/functions.h (function_info): Declare new entry points:
+	create_set, create_insn.  Declare new change_alloc helper.
+	* rtl-ssa/insns.cc (insn_info::print_full): Identify temporary insns in
+	dump.
+	* rtl-ssa/insns.h (insn_info): Add new m_is_temp flag and accompanying
+	is_temporary accessor.
+	* rtl-ssa/internals.inl (insn_info::insn_info): Initialize m_is_temp to
+	false.
+	* rtl-ssa/member-fns.inl (function_info::change_alloc): New.
+	* rtl-ssa/movement.h (restrict_movement_for_defs_ignoring): Add
+	handling for temporary defs.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112673
+	* match.pd (bit_field_ref (vce @0) -> bit_field_ref @0): Only simplify
+	if either @0 doesn't have scalar integral type or if it has mode
+	precision.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112679
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Also stop first loop on
+	floating point SSA_NAME set in FLOAT_EXPR assignment from BITINT_TYPE
+	INTEGER_CST.  Set has_large_huge for those if that BITINT_TYPE is large
+	or huge.  Set kind to such FLOAT_EXPR assignment rhs1 BITINT_TYPE's kind.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112677
+	* tree-vect-loop.cc (vectorizable_reduction): Use alloca
+	to allocate vectype_op.
+
+2023-11-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* expr.cc (by_pieces_ninsns): Include by pieces compare when
+	do the adjustment for overlap operations.  Replace mov_optab
+	checks with gcc assertion.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112668
+	* gimple-iterator.h (gsi_end, gsi_end_bb): New inline functions.
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): After
+	temporarily adding statements after m_init_gsi, update m_init_gsi
+	such that later additions after it will be after the added statements.
+	(bitint_large_huge::handle_load): Likewise.  When splitting
+	gsi_bb (m_init_gsi) basic block, update m_preheader_bb if needed
+	and update saved m_gsi as well if needed.
+	(bitint_large_huge::lower_mergeable_stmt,
+	bitint_large_huge::lower_comparison_stmt,
+	bitint_large_huge::lower_mul_overflow,
+	bitint_large_huge::lower_bit_query): Use gsi_end_bb.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112619
+	* tree.cc (try_catch_may_fallthru): If second operand of
+	TRY_CATCH_EXPR is not a STATEMENT_LIST, handle it as if it was a
+	STATEMENT_LIST containing a single statement.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112344
+	* tree-chrec.cc (chrec_apply): Only use an unsigned add
+	when the overall increment doesn't fit the signed type.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* config/riscv/riscv-v.cc (shuffle_extract_and_slide1up_patterns): New function.
+	(expand_vec_perm_const_1): Add new optimization.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_bswap_pattern): Disable for NUNIT < 4.
+
+2023-11-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/112643
+	* config/i386/driver-i386.cc (check_avx10_avx512_features):
+	Renamed to ...
+	(check_avx512_features): this and remove avx10 check.
+	(host_detect_local_cpu): Never append -mno-avx10.1-{256,512} to
+	avoid emitting warnings when building GCC with native arch.
+	* config/i386/i386-builtin.def (BDESC): Add missing AVX512VL for
+	128/256 bit builtin for AVX512VP2INTERSECT.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Also check whether the AVX512 flags is set when trying to reset.
+	* config/i386/i386.h
+	(PTA_SKYLAKE_AVX512): Add missing PTA_EVEX512.
+	(PTA_ZNVER4): Ditto.
+
 2023-11-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/86776

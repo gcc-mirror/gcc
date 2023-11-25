@@ -1,3 +1,35 @@
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_dist_schedule,
+	cp_parser_omp_scan_loop_body, cp_parser_omp_assumption_clauses,
+	cp_parser_omp_depobj): Add OPT_Wopenmp to warning_at.
+	* semantics.cc (finish_omp_clauses): Likewise.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_depobj): Accept optionally an argument
+	to the destroy clause.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99232
+	* decl.cc (grokvardecl): Don't mark variables attached to
+	modules as internal.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107398
+	* module.cc (trees_out::get_merge_kind): Handle lambdas in class
+	scope.
+	(maybe_key_decl): Remove assertion and fix whitespace.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98885
+	* decl.cc (duplicate_decls): Adjust error message.
+	(xref_tag): Adjust error message. Check exporting decl that is
+	already declared as non-exporting.
+
 2023-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/110348

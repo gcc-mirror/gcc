@@ -1,3 +1,15 @@
+2023-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.host (arm*-*-eabi* | arm*-*-rtems*):
+	Add arm/t-sync to the makefile rules.
+	* config/arm/lib1funcs.S (__sync_synchronize_none)
+	(__sync_synchronize_cp15dmb, __sync_synchronize_dmb)
+	(__sync_synchronize): New functions.
+	* config/arm/t-sync: New file.
+	* config/arm/sync-none.specs: Likewise.
+	* config/arm/sync-dmb.specs: Likewise.
+	* config/arm/sync-cp15dmb.specs: Likewise.
+
 2023-11-23  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* hardcfr.c (__hardcfr_check_fail): Mark as always_inline.

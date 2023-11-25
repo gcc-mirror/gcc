@@ -1,3 +1,8 @@
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.2 Impl. Status): An argument to the destroy clause
+	is now supported.
+
 2023-11-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/declare-variant-3.h (f30, f35, f53, f70)

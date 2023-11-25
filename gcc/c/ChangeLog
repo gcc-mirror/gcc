@@ -1,3 +1,18 @@
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_num_threads,
+	c_parser_omp_clause_num_tasks, c_parser_omp_clause_grainsize,
+	c_parser_omp_clause_priority, c_parser_omp_clause_schedule,
+	c_parser_omp_clause_num_teams, c_parser_omp_clause_thread_limit,
+	c_parser_omp_clause_dist_schedule, c_parser_omp_depobj,
+	c_parser_omp_scan_loop_body, c_parser_omp_assumption_clauses):
+	Add OPT_Wopenmp to warning_at.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_depobj): Accept optionally an argument
+	to the destroy clause.
+
 2023-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_postfix_expression): Handle RID_BUILTIN_STDC.

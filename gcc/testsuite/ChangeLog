@@ -1,3 +1,88 @@
+2023-11-24  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/112319
+	* g++.dg/pch/pr112319.C: New test.
+	* g++.dg/pch/pr112319.Hs: New test.
+	* gcc.dg/pch/pr112319.c: New test.
+	* gcc.dg/pch/pr112319.hs: New test.
+
+2023-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/109849
+	* g++.dg/tree-ssa/pr109849.C: New test.
+	* g++.dg/tree-ssa/sra-eh-1.C: Likewise.
+	* gcc.dg/tree-ssa/pr109849.c: Likewise.
+	* gcc.dg/tree-ssa/sra-longjmp-1.c: Likewise.
+	* gfortran.dg/pr43984.f90: Added -fno-tree-sra to dg-options.
+
+2023-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112686
+	* gcc.target/i386/pr112686.c: New test.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/depobj-3.c: New test.
+	* gfortran.dg/gomp/depobj-3.f90: New test.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99232
+	* g++.dg/modules/pr99232_a.C: New test.
+	* g++.dg/modules/pr99232_b.C: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* gcc.target/riscv/rvv/autovec/pr112694-1.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112681
+	* gcc.target/i386/sse4-pr112681.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112673
+	* gcc.dg/pr112673.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112679
+	* gcc.dg/bitint-42.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112668
+	* gcc.dg/bitint-40.c: New test.
+
+2023-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112619
+	* g++.dg/eh/pr112619.C: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* gcc.target/riscv/rvv/autovec/pr112599-2.c: New test.
+
+2023-11-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/vls/perm-4.c: Ditto.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107398
+	* g++.dg/modules/lambda-6_a.C: New test.
+	* g++.dg/modules/lambda-6_b.C: New test.
+
+2023-11-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98885
+	* g++.dg/modules/export-1.C: Adjust error messages. Remove
+	xfails for working case. Add new test case.
+
 2023-11-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* g++.dg/modules/bad-mapper-1.C: Add hppa*-*-hpux* to dg-error

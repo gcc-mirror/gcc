@@ -1,3 +1,15 @@
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lang.opt (Wopenmp): Add, enabled by dafault and documented in C.
+	* openmp.cc (gfc_match_omp_declare_target, resolve_positive_int_expr,
+	resolve_nonnegative_int_expr, resolve_omp_clauses,
+	gfc_resolve_omp_do_blocks): Use OPT_Wopenmp with gfc_warning{,_now}.
+
+2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_depobj): Accept optionally an argument
+	to the destroy clause.
+
 2023-11-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/112609
