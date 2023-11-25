@@ -269,7 +269,7 @@
   "TARGET_SIMD"
   {@ [ cons: =0 , 1 ; attrs: type            ]
      [ Umn      , w ; neon_stp               ] stp\t%<Vetype>1, %<Vetype>1, %y0
-     [ Umn      , r ; store_<ldpstp_vel_sz>  ] stp\t%<vw>1, %<vw>1, %y0
+     [ Umn      , r ; store_<ldpstp_vel_sz>  ] stp\t%<vwcore>1, %<vwcore>1, %y0
   }
 )
 
