@@ -628,9 +628,9 @@ HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The source distribution includes the C, C++, Objective-C, Fortran,
-and Ada (in the case of GCC 3.1 and later) compilers, as well as
-runtime libraries for C++, Objective-C, and Fortran.
+The source distribution includes the Ada, C, C++, Objective-C, D (GCC 9
+and later), Fortran, Go, and Modula-2 (GCC 13 and later) compilers, as
+well as runtime libraries for C++, Objective-C, and Fortran.
 For previous versions these were downloadable as separate components such
 as the core GCC distribution, which included the C language front end and
 shared components, and language-specific distributions including the
