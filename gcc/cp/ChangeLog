@@ -1,3 +1,24 @@
+2023-11-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/107939
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>:
+	Fix FUNCTION_POINTER_TYPE_P test.
+
+2023-11-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/112269
+	* constexpr.cc (potential_constant_expression_1) <case VAR_DECL>:
+	Only consider var_in_maybe_constexpr_fn if 'now' is false.
+	<case INDIRECT_REF>: Likewise.
+
 2023-11-23  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

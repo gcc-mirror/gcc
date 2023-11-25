@@ -1,3 +1,38 @@
+2023-11-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/107939
+	* g++.dg/cpp2a/concepts-fn8.C: Extend test.
+	* g++.dg/diagnostic/constexpr4.C: New test.
+
+2023-11-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111703
+	PR c++/112269
+	* g++.dg/cpp2a/concepts-fn8.C: New test.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111465
+	* g++.dg/torture/pr111465.C: New testcase.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111137
+	* gcc.dg/torture/pr111137.c: New testcase.
+
 2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

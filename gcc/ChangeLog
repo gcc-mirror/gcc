@@ -1,3 +1,35 @@
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111465
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::thread_block_1):
+	Cancel the path when a EDGE_NO_COPY_SRC_BLOCK became non-empty.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111137
+	* tree-vect-data-refs.cc (vect_slp_analyze_load_dependences):
+	Properly handle grouped stores from other SLP instances.
+
+2023-11-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_slp_analyze_store_dependences):
+	Split out from vect_slp_analyze_node_dependences, remove
+	dead code.
+	(vect_slp_analyze_load_dependences): Split out from
+	vect_slp_analyze_node_dependences, adjust comments.  Process
+	queued stores before any disambiguation.
+	(vect_slp_analyze_node_dependences): Remove.
+	(vect_slp_analyze_instance_dependence): Adjust.
+
 2023-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
