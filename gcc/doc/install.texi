@@ -4126,14 +4126,6 @@ This configuration is intended for embedded systems.
 @end html
 @anchor{x-x-freebsd}
 @heading *-*-freebsd*
-In order to better utilize FreeBSD base system functionality and match
-the configuration of the system compiler, GCC 4.5 and above as well as
-GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
-on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
-(on FreeBSD 6 or later).  The use of @code{dl_iterate_phdr} inside
-@file{libgcc_s.so.1} and boehm-gc (on FreeBSD 7 or later) is enabled
-by GCC 4.5 and above.
-
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  There are
 no known issues with mixing object files and libraries with different
