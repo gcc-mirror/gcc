@@ -240,7 +240,7 @@ new specification.  For further details see
 To select this standard in GCC, use the option @option{-std=c++20}.
 
 More information about the C++ standards is available on the ISO C++
-committee's web site at @uref{http://www.open-std.org/@/jtc1/@/sc22/@/wg21/}.
+committee's web site at @uref{https://www.open-std.org/@/jtc1/@/sc22/@/wg21/}.
 
 To obtain all the diagnostics required by any of the standard versions
 described above you should specify @option{-pedantic}
