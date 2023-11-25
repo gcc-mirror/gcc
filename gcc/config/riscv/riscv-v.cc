@@ -3676,7 +3676,7 @@ expand_gather_scatter (rtx *ops, bool is_load)
 	 offset elements.
 
 	 RVV spec only refers to the scale_log == 0 case.  */
-      if (!zero_extend_p || (zero_extend_p && scale_log2 != 0))
+      if (!zero_extend_p || scale_log2 != 0)
 	{
 	  if (zero_extend_p)
 	    inner_idx_mode
@@ -4048,21 +4048,6 @@ vls_mode_valid_p (machine_mode vls_mode)
       return GET_MODE_PRECISION (vls_mode).to_constant () < min_vlmax_bitsize;
     }
 
-  return false;
-}
-
-/* Return true if the gather/scatter offset mode is valid.  */
-bool
-gather_scatter_valid_offset_mode_p (machine_mode mode)
-{
-  machine_mode new_mode;
-  /* RISC-V V Spec 18.3:
-     The V extension supports all vector load and store instructions (Section
-     Vector Loads and Stores), except the V extension does not support EEW=64
-     for index values when XLEN=32.  */
-
-  if (GET_MODE_BITSIZE (GET_MODE_INNER (mode)) <= GET_MODE_BITSIZE (Pmode))
-    return get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists (&new_mode);
   return false;
 }
 

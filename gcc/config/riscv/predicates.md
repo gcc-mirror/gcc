@@ -84,6 +84,10 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
 
+(define_predicate "const_1_or_8_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))
+
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "register_operand")))
@@ -485,10 +489,6 @@
 (define_predicate "vector_perm_operand"
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
-
-(define_predicate "vector_gs_scale_operand_64"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || (INTVAL (op) == 8 && Pmode == DImode)")))
 
 (define_predicate "vector_gs_extension_operand"
   (ior (match_operand 0 "const_1_operand")

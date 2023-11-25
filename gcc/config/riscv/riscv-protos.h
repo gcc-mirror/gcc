@@ -594,7 +594,6 @@ opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);
 bool cmp_lmul_le_one (machine_mode);
 bool cmp_lmul_gt_one (machine_mode);
-bool gather_scatter_valid_offset_mode_p (machine_mode);
 bool vls_mode_valid_p (machine_mode);
 bool vlmax_avl_type_p (rtx_insn *);
 bool has_vl_op (rtx_insn *);

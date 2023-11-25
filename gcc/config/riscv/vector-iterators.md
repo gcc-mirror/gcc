@@ -744,6 +744,17 @@
   (RVVM2DI "TARGET_FULL_V") (RVVM1DI "TARGET_FULL_V")
 ])
 
+;; All RATIO mode iterators are used on gather/scatter vectorization.
+;; RISC-V V Spec 18.3:
+;; The V extension supports all vector load and store instructions (Section
+;; Vector Loads and Stores), except the V extension does not support EEW=64
+;; for index values when XLEN=32.
+;; According to RVV ISA description above, all RATIO index DI mode need TARGET_64BIT.
+;;
+;; In gather/scatter expand, we need to sign/zero extend the index mode into vector
+;; Pmode, so we need to check whether vector Pmode is available.
+;; E.g. when index mode = RVVM8QImde and Pmode = SImode, if it is not zero_extend or
+;; scalar != 1, such gather/scatter is not allowed since we don't have RVVM32SImode.
 (define_mode_iterator RATIO64 [
   (RVVMF8QI "TARGET_MIN_VLEN > 32")
   (RVVMF4HI "TARGET_MIN_VLEN > 32")
@@ -3411,8 +3422,8 @@
 ])
 
 (define_mode_attr gs_extension [
-  (RVVM8QI "const_1_operand") (RVVM4QI "vector_gs_extension_operand")
-  (RVVM2QI "immediate_operand") (RVVM1QI "immediate_operand") (RVVMF2QI "immediate_operand")
+  (RVVM8QI "const_1_operand") (RVVM4QI "const_1_operand")
+  (RVVM2QI "vector_gs_extension_operand") (RVVM1QI "immediate_operand") (RVVMF2QI "immediate_operand")
   (RVVMF4QI "immediate_operand") (RVVMF8QI "immediate_operand")
 
   (RVVM8HI "const_1_operand") (RVVM4HI "vector_gs_extension_operand")
@@ -3455,11 +3466,11 @@
   (RVVM8SF "vector_gs_scale_operand_32_rv32") (RVVM4SF "const_1_or_4_operand") (RVVM2SF "const_1_or_4_operand")
   (RVVM1SF "const_1_or_4_operand") (RVVMF2SF "const_1_or_4_operand")
 
-  (RVVM8DI "vector_gs_scale_operand_64") (RVVM4DI "vector_gs_scale_operand_64")
-  (RVVM2DI "vector_gs_scale_operand_64") (RVVM1DI "vector_gs_scale_operand_64")
+  (RVVM8DI "const_1_or_8_operand") (RVVM4DI "const_1_or_8_operand")
+  (RVVM2DI "const_1_or_8_operand") (RVVM1DI "const_1_or_8_operand")
 
-  (RVVM8DF "vector_gs_scale_operand_64") (RVVM4DF "vector_gs_scale_operand_64")
-  (RVVM2DF "vector_gs_scale_operand_64") (RVVM1DF "vector_gs_scale_operand_64")
+  (RVVM8DF "const_1_or_8_operand") (RVVM4DF "const_1_or_8_operand")
+  (RVVM2DF "const_1_or_8_operand") (RVVM1DF "const_1_or_8_operand")
 ])
 
 (define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
