@@ -1,6 +1,6 @@
 /* Example from glibc manual (16.10.3).  */
 /* { dg-require-effective-target sockets } */
-/* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "" { hppa*-*-hpux* powerpc*-*-aix* } } */
 
 #include <stdio.h>
 #include <errno.h>
