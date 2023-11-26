@@ -1,4 +1,4 @@
-/* { dg-skip-if "no strndup in libc" { *-*-darwin[789]* *-*-darwin10* *-*-mingw* *-*-vxworks* } } */
+/* { dg-skip-if "no strndup in libc" { *-*-darwin[789]* *-*-darwin10* hppa*-*-hpux* *-*-mingw* *-*-vxworks* } } */
 
 #include <string.h>
 #include <stdlib.h>
