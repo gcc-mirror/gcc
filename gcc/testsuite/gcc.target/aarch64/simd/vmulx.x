@@ -33,13 +33,13 @@
   while (0)								\
 
 /* Functions used to return values that won't be optimised away.  */
-float32_t  __attribute__ ((noinline))
+float32_t  __attribute__ ((noipa))
 foo32 ()
 {
   return 1.0;
 }
 
-float64_t  __attribute__ ((noinline))
+float64_t  __attribute__ ((noipa))
 foo64 ()
 {
   return 1.0;
