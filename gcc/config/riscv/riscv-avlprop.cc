@@ -108,17 +108,29 @@ avlprop_type_to_str (enum avlprop_type type)
 static bool
 avl_can_be_propagated_p (rtx_insn *rinsn)
 {
-  /* The index of "vrgather dest, source, index" may pick up the
-     element which has index >= AVL, so we can't strip the elements
-     that has index >= AVL of source register.  */
-  return get_attr_type (rinsn) != TYPE_VGATHER;
+  /* We can't do AVL propagation when the instruction is potentially
+     touching the element with i > AVL.  So, we don't do AVL propagation
+     on these following situations:
+
+       - The index of "vrgather dest, source, index" may pick up the
+	 element which has index >= AVL, so we can't strip the elements
+	 that has index >= AVL of source register.
+       - The last element of vslide1down is AVL + 1 according to RVV ISA:
+	 vstart <= i < vl-1    vd[i] = vs2[i+1] if v0.mask[i] enabled
+       - The last multiple elements of vslidedown can be the element
+	 has index >= AVL according to RVV ISA:
+	 0 <= i+OFFSET < VLMAX   src[i] = vs2[i+OFFSET]
+	 vstart <= i < vl vd[i] = src[i] if v0.mask[i] enabled.  */
+  return get_attr_type (rinsn) != TYPE_VGATHER
+	 && get_attr_type (rinsn) != TYPE_VSLIDEDOWN
+	 && get_attr_type (rinsn) != TYPE_VISLIDE1DOWN
+	 && get_attr_type (rinsn) != TYPE_VFSLIDE1DOWN;
 }
 
 static bool
 vlmax_ta_p (rtx_insn *rinsn)
 {
-  return vlmax_avl_type_p (rinsn) && tail_agnostic_p (rinsn)
-	 && avl_can_be_propagated_p (rinsn);
+  return vlmax_avl_type_p (rinsn) && tail_agnostic_p (rinsn);
 }
 
 static machine_mode
@@ -271,6 +283,8 @@ pass_avlprop::get_preferred_avl (
 rtx
 pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 {
+  if (!avl_can_be_propagated_p (insn->rtl ()))
+    return NULL_RTX;
   int sew = get_sew (insn->rtl ());
   enum vlmul_type vlmul = get_vlmul (insn->rtl ());
   int ratio = calculate_ratio (sew, vlmul);

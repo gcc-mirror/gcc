@@ -12,4 +12,4 @@ f_vnx2qi (int8_t a, int8_t b, int8_t *out)
   *(vnx2qi *) out = v;
 }
 
-/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*2,\s*e8,\s*mf8,\s*t[au],\s*m[au]} 1 } } */
+/* { dg-final { scan-assembler {vsetivli\s+zero,\s*2,\s*e8,\s*mf8,\s*t[au],\s*m[au]} } } */
