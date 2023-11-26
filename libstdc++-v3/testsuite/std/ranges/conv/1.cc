@@ -203,33 +203,51 @@ test_2_1_3()
   VERIFY( c2.c.get_allocator() == Alloc(78) );
 }
 
-template<typename C, bool UsePushBack = true>
+enum AppendKind { None, EmplaceBack, PushBack, Emplace, Insert };
+
+template<typename C, AppendKind Kind>
 struct Cont4
 {
-  using value_type = typename C::value_type;
-
   // Only support construction with no args or an allocator.
-  // This forces the use of either push_back or insert to fill the container.
+  // This forces the use of either emplace_back, push_back, emplace or insert.
   Cont4() { }
   Cont4(typename C::allocator_type a) : c(a) { }
 
-  // Satisfying container-insertable requires either this ...
   template<typename T>
-    requires UsePushBack
+    requires (Kind <= EmplaceBack)
+    && requires(C& c, T&& t) { c.emplace_back(std::forward<T>(t)); }
+    void
+    emplace_back(T&& t)
+    {
+      kind = EmplaceBack;
+      c.emplace_back(std::forward<T>(t));
+    }
+
+  template<typename T>
+    requires (Kind <= PushBack)
     && requires(C& c, T&& t) { c.push_back(std::forward<T>(t)); }
     void
     push_back(T&& t)
     {
+      kind = PushBack;
       c.push_back(std::forward<T>(t));
-      used_push_back = true;
     }
 
-  // ... or this:
+  template<typename T>
+    requires (Kind <= Emplace)
+    && requires(C& c, T&& t) { c.emplace(c.end(), std::forward<T>(t)); }
+    typename C::iterator
+    emplace(typename C::iterator, T&& t)
+    {
+      kind = Emplace;
+      return c.emplace(c.end(), std::forward<T>(t));
+    }
+
   template<typename T>
     typename C::iterator
     insert(typename C::iterator, T&& t)
     {
-      used_push_back = false;
+      kind = Insert;
       return c.insert(c.end(), std::forward<T>(t));
     }
 
@@ -254,7 +272,7 @@ struct Cont4
   auto max_size() const { return c.max_size(); }
 
   C c;
-  bool used_push_back = false;
+  AppendKind kind{};
   bool used_reserve = false;
 };
 
@@ -265,38 +283,113 @@ test_2_1_4()
   // container-insertable<C, range_reference_t<R>>
 
   using Alloc = __gnu_test::uneq_allocator<int>;
+  using Alloc2 = __gnu_test::uneq_allocator<short>;
   using V = std::vector<int, Alloc>;
+  using List = std::list<short, Alloc2>;
 
   std::list<unsigned> l{1u, 2u, 3u};
-  auto c = std::ranges::to<Cont4<V>>(l);
-  static_assert(std::is_same_v<decltype(c), Cont4<V>>);
+  std::list<long> l2{4l, 5l, 6l};
+
+  // use vector::emplace_back and vector::reserve
+  auto c = std::ranges::to<Cont4<V, EmplaceBack>>(l);
+  static_assert(std::is_same_v<decltype(c), Cont4<V, EmplaceBack>>);
   VERIFY( c.c == V(l.begin(), l.end()) );
-  VERIFY( c.used_push_back );
+  VERIFY( c.kind == EmplaceBack );
   VERIFY( c.used_reserve );
 
-  std::list<long> l2{4l, 5l, 6l};
-  auto c2 = std::ranges::to<Cont4<V>>(l2, Alloc(78));
-  static_assert(std::is_same_v<decltype(c2), Cont4<V>>);
+  // use vector::emplace_back and vector::reserve
+  auto c2 = std::ranges::to<Cont4<V, EmplaceBack>>(l2, Alloc(78));
+  static_assert(std::is_same_v<decltype(c2), Cont4<V, EmplaceBack>>);
   VERIFY( c2.c == V(l2.begin(), l2.end()) );
   VERIFY( c2.c.get_allocator() == Alloc(78) );
-  VERIFY( c2.used_push_back );
+  VERIFY( c2.kind == EmplaceBack );
   VERIFY( c2.used_reserve );
 
-  using Alloc2 = __gnu_test::uneq_allocator<short>;
-  using List = std::list<short, Alloc2>;
-  auto c3 = std::ranges::to<Cont4<List>>(c.c, Alloc2(99));
-  static_assert(std::is_same_v<decltype(c3), Cont4<List>>);
+  // use list::emplace_back
+  auto c3 = std::ranges::to<Cont4<List, EmplaceBack>>(c.c, Alloc2(99));
+  static_assert(std::is_same_v<decltype(c3), Cont4<List, EmplaceBack>>);
   VERIFY( c3.c == List(l.begin(), l.end()) );
   VERIFY( c3.c.get_allocator() == Alloc(99) );
-  VERIFY( c3.used_push_back );
+  VERIFY( c3.kind == EmplaceBack );
   VERIFY( ! c3.used_reserve );
 
-  auto c4 = std::ranges::to<Cont4<List, false>>(c.c, Alloc2(111));
-  static_assert(std::is_same_v<decltype(c4), Cont4<List, false>>);
-  VERIFY( c4.c == List(l.begin(), l.end()) );
-  VERIFY( c4.c.get_allocator() == Alloc(111) );
-  VERIFY( ! c4.used_push_back );
-  VERIFY( ! c4.used_reserve );
+  // use vector::push_back and vector::reserve
+  auto c4 = std::ranges::to<Cont4<V, PushBack>>(l);
+  static_assert(std::is_same_v<decltype(c4), Cont4<V, PushBack>>);
+  VERIFY( c4.c == V(l.begin(), l.end()) );
+  VERIFY( c4.kind == PushBack );
+  VERIFY( c4.used_reserve );
+
+  // use vector::push_back and vector::reserve
+  auto c5 = std::ranges::to<Cont4<V, PushBack>>(l2, Alloc(78));
+  static_assert(std::is_same_v<decltype(c5), Cont4<V, PushBack>>);
+  VERIFY( c5.c == V(l2.begin(), l2.end()) );
+  VERIFY( c5.c.get_allocator() == Alloc(78) );
+  VERIFY( c5.kind == PushBack );
+  VERIFY( c5.used_reserve );
+
+  // use list::push_back
+  auto c6 = std::ranges::to<Cont4<List, PushBack>>(c.c, Alloc2(99));
+  static_assert(std::is_same_v<decltype(c6), Cont4<List, PushBack>>);
+  VERIFY( c6.c == List(l.begin(), l.end()) );
+  VERIFY( c6.c.get_allocator() == Alloc(99) );
+  VERIFY( c6.kind == PushBack );
+  VERIFY( ! c6.used_reserve );
+
+  // use vector::emplace and vector::reserve
+  auto c7 = std::ranges::to<Cont4<V, Emplace>>(l);
+  static_assert(std::is_same_v<decltype(c7), Cont4<V, Emplace>>);
+  VERIFY( c7.c == V(l.begin(), l.end()) );
+  VERIFY( c7.kind == Emplace );
+  VERIFY( c7.used_reserve );
+
+  // use vector::emplace and vector::reserve
+  auto c8 = std::ranges::to<Cont4<V, Emplace>>(l2, Alloc(78));
+  static_assert(std::is_same_v<decltype(c8), Cont4<V, Emplace>>);
+  VERIFY( c8.c == V(l2.begin(), l2.end()) );
+  VERIFY( c8.c.get_allocator() == Alloc(78) );
+  VERIFY( c8.kind == Emplace );
+  VERIFY( c8.used_reserve );
+
+  // use list::emplace
+  auto c9 = std::ranges::to<Cont4<List, Emplace>>(c.c, Alloc2(99));
+  static_assert(std::is_same_v<decltype(c9), Cont4<List, Emplace>>);
+  VERIFY( c9.c == List(l.begin(), l.end()) );
+  VERIFY( c9.c.get_allocator() == Alloc(99) );
+  VERIFY( c9.kind == Emplace );
+  VERIFY( ! c9.used_reserve );
+
+  // use vector::insert and vector::reserve
+  auto c10 = std::ranges::to<Cont4<V, Insert>>(l);
+  static_assert(std::is_same_v<decltype(c10), Cont4<V, Insert>>);
+  VERIFY( c10.c == V(l.begin(), l.end()) );
+  VERIFY( c10.kind == Insert );
+  VERIFY( c10.used_reserve );
+
+  // use vector::insert and vector::reserve
+  auto c11 = std::ranges::to<Cont4<V, Insert>>(l2, Alloc(78));
+  static_assert(std::is_same_v<decltype(c11), Cont4<V, Insert>>);
+  VERIFY( c11.c == V(l2.begin(), l2.end()) );
+  VERIFY( c11.c.get_allocator() == Alloc(78) );
+  VERIFY( c11.kind == Insert );
+  VERIFY( c11.used_reserve );
+
+  // use list::insert
+  auto c12 = std::ranges::to<Cont4<List, Insert>>(c.c, Alloc2(99));
+  static_assert(std::is_same_v<decltype(c12), Cont4<List, Insert>>);
+  VERIFY( c12.c == List(l.begin(), l.end()) );
+  VERIFY( c12.c.get_allocator() == Alloc(99) );
+  VERIFY( c12.kind == Insert );
+  VERIFY( ! c12.used_reserve );
+
+  struct NoCopyPls
+  {
+    NoCopyPls(int) { }
+    NoCopyPls(const NoCopyPls&) { throw; }
+  };
+
+  // Uses list::emplace_back(const int&) not list::push_back(NoCopyPls&&).
+  (void) std::ranges::to<std::list<NoCopyPls>>(l);
 }
 
 void

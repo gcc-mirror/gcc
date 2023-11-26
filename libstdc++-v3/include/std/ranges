@@ -9229,26 +9229,6 @@ namespace __detail
 	{ __c.max_size() } -> same_as<decltype(__n)>;
       };
 
-  template<typename _Container, typename _Ref>
-    constexpr bool __container_insertable
-      = requires(_Container& __c, _Ref&& __ref) {
-	typename _Container::value_type;
-	requires (
-	  requires { __c.push_back(std::forward<_Ref>(__ref)); }
-	  || requires { __c.insert(__c.end(), std::forward<_Ref>(__ref)); }
-	);
-      };
-
-  template<typename _Ref, typename _Container>
-    constexpr auto
-    __container_inserter(_Container& __c)
-    {
-      if constexpr (requires { __c.push_back(std::declval<_Ref>()); })
-	return std::back_inserter(__c);
-      else
-	return std::inserter(__c, __c.end());
-    }
-
   template<typename _Cont, typename _Range>
     constexpr bool __toable = requires {
       requires (!input_range<_Cont>
@@ -9301,17 +9281,33 @@ namespace __detail
 			 std::forward<_Args>(__args)...);
 	  else
 	    {
-	      using __detail::__container_insertable;
-	      using __detail::__reservable_container;
 	      using _RefT = range_reference_t<_Rg>;
 	      static_assert(constructible_from<_Cont, _Args...>);
-	      static_assert(__container_insertable<_Cont, _RefT>);
 	      _Cont __c(std::forward<_Args>(__args)...);
-	      if constexpr (sized_range<_Rg> && __reservable_container<_Cont>)
+	      if constexpr (sized_range<_Rg>
+			      && __detail::__reservable_container<_Cont>)
 		__c.reserve(static_cast<range_size_t<_Cont>>(ranges::size(__r)));
-	      auto __ins = __detail::__container_inserter<_RefT>(__c);
-	      for (auto&& __e : __r)
-		*__ins++ = std::forward<decltype(__e)>(__e);
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 4016. container-insertable checks do not match what
+	      // container-inserter does
+	      auto __it = ranges::begin(__r);
+	      const auto __sent = ranges::end(__r);
+	      while (__it != __sent)
+		{
+		  if constexpr (requires { __c.emplace_back(*__it); })
+		    __c.emplace_back(*__it);
+		  else if constexpr (requires { __c.push_back(*__it); })
+		    __c.push_back(*__it);
+		  else
+		    {
+		      auto __end = __c.end();
+		      if constexpr (requires { __c.emplace(__end, *__it); })
+			__end = __c.emplace(__end, *__it);
+		      else
+			__end = __c.insert(__end, *__it);
+		    }
+		  ++__it;
+		}
 	      return __c;
 	    }
 	}
