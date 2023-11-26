@@ -1,3 +1,15 @@
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (check_can_export_using_decl): New.
+	(do_nonmember_using_decl): Use above to check if names can be
+	exported.
+
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102341
+	* decl.cc (duplicate_decls): Allow exporting a redeclaration of
+	a typedef.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_clause_dist_schedule,

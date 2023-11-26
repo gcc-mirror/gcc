@@ -1,3 +1,33 @@
+2023-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR other/69374
+	* doc/install.texi (Downloading the source): Sort the list of
+	front ends and add D, Go, and Modula-2.
+
+2023-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <*-*-freebsd*>: Remove older
+	contents referencing GCC 4.x.
+
+2023-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Update ISO C++ reference.
+
+2023-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111408
+	* config/i386/i386.md (*jcc_bt<mode>_mask,
+	*jcc_bt<SWI48:mode>_mask_1): Add (const_int 0) as expected
+	second operand of bt_comparison_operator.
+
+2023-11-25  Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109977
+	* config/aarch64/aarch64-simd.md (aarch64_simd_stp<mode>): Use <vwcore>
+	rather than %<vw> for alternative with r constraint on input operand.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/install.texi (amdgcn-*-amdhsa): Fix URL to ROCm;

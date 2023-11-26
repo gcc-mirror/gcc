@@ -1,3 +1,32 @@
+2023-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112688
+	* gcc.target/aarch64/movk.c: Add noipa on dummy_number_generator
+	and remove -fno-inline option.
+
+2023-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111408
+	* gcc.c-torture/execute/pr111408.c: New test.
+
+2023-11-25  Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109977
+	* gcc.dg/pr109977.c: New test.
+
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-10.C: New test.
+	* g++.dg/modules/using-enum-2.C: New test.
+
+2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102341
+	* g++.dg/modules/export-1.C: Adjust test.
+	* g++.dg/modules/export-2_a.C: New test.
+	* g++.dg/modules/export-2_b.C: New test.
+
 2023-11-24  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR pch/112319
