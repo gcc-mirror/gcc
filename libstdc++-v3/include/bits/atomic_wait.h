@@ -35,6 +35,7 @@
 #include <bits/version.h>
 
 #if __glibcxx_atomic_wait
+#include <stdint.h>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
