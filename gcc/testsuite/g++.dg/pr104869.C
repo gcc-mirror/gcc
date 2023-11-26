@@ -69,7 +69,7 @@ struct ControlFlow {
   return false;
 }
 #ifdef __hpux__
-extern int main(void);
+extern int main(void) __attribute__ ((visibility ("default")));
 #endif
 int
 main() {
