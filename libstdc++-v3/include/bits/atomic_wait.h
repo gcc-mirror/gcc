@@ -34,6 +34,7 @@
 
 #include <bits/c++config.h>
 #if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
+#include <stdint.h>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
