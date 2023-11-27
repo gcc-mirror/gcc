@@ -18,6 +18,7 @@
 
 #include "rust-default-resolver.h"
 #include "rust-ast-full.h"
+#include "rust-ast-visitor.h"
 #include "rust-item.h"
 
 namespace Rust {
@@ -148,24 +149,9 @@ DefaultResolver::visit (AST::StructStruct &type)
   // we also can't visit `StructField`s by default, so there's nothing to do -
   // correct? or should we do something like
 
-  for (auto &field : type.get_fields ())
-    field.get_field_type ()->accept_vis (*this);
+  AST::DefaultASTVisitor::visit (type);
 
   // FIXME: ???
-}
-
-void
-DefaultResolver::visit (AST::TupleStruct &type)
-{
-  for (auto &field : type.get_fields ())
-    field.get_field_type ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::Union &type)
-{
-  for (auto &field : type.get_variants ())
-    field.get_field_type ()->accept_vis (*this);
 }
 
 void
@@ -183,146 +169,12 @@ DefaultResolver::visit (AST::Enum &type)
 }
 
 void
-DefaultResolver::visit (AST::BorrowExpr &expr)
-{
-  expr.get_borrowed_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::DereferenceExpr &expr)
-{
-  expr.get_dereferenced_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ErrorPropagationExpr &expr)
-{
-  expr.get_propagating_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::NegationExpr &expr)
-{
-  expr.get_negated_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ArithmeticOrLogicalExpr &expr)
-{
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ComparisonExpr &expr)
-{
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::LazyBooleanExpr &expr)
-{
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::TypeCastExpr &expr)
-{
-  expr.get_type_to_cast_to ()->accept_vis (*this);
-  expr.get_casted_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::AssignmentExpr &expr)
-{
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::CompoundAssignmentExpr &expr)
-{
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::GroupedExpr &expr)
-{
-  expr.get_expr_in_parens ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ArrayElemsValues &array)
-{
-  for (auto &value : array.get_values ())
-    value->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ArrayElemsCopied &array)
-{
-  array.get_elem_to_copy ()->accept_vis (*this);
-  array.get_num_copies ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ArrayExpr &expr)
-{
-  expr.get_array_elems ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ArrayIndexExpr &expr)
-{
-  expr.get_array_expr ()->accept_vis (*this);
-  expr.get_index_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::TupleExpr &expr)
-{
-  for (auto &element : expr.get_tuple_elems ())
-    element->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::TupleIndexExpr &expr)
-{
-  expr.get_tuple_expr ()->accept_vis (*this);
-}
-
-void
 DefaultResolver::visit (AST::StructExprFieldIdentifierValue &)
 {}
 
 void
 DefaultResolver::visit (AST::StructExprFieldIndexValue &)
 {}
-
-void
-DefaultResolver::visit (AST::CallExpr &expr)
-{
-  expr.get_function_expr ()->accept_vis (*this);
-  for (auto &param : expr.get_params ())
-    param->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::MethodCallExpr &expr)
-{
-  expr.get_receiver_expr ()->accept_vis (*this);
-  for (auto &param : expr.get_params ())
-    param->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::FieldAccessExpr &expr)
-{
-  expr.get_receiver_expr ()->accept_vis (*this);
-}
 
 void
 DefaultResolver::visit (AST::ClosureExprInner &)
@@ -337,13 +189,6 @@ DefaultResolver::visit (AST::ContinueExpr &expr)
 {}
 
 void
-DefaultResolver::visit (AST::BreakExpr &expr)
-{
-  if (expr.has_break_expr ())
-    expr.get_break_expr ()->accept_vis (*this);
-}
-
-void
 DefaultResolver::visit (AST::RangeFromToExpr &expr)
 {}
 
@@ -353,10 +198,6 @@ DefaultResolver::visit (AST::RangeFromExpr &expr)
 
 void
 DefaultResolver::visit (AST::RangeToExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeFullExpr &expr)
 {}
 
 void
@@ -416,28 +257,6 @@ DefaultResolver::visit (AST::AsyncBlockExpr &expr)
 {}
 
 void
-DefaultResolver::visit (AST::LetStmt &let_stmt)
-{
-  let_stmt.get_pattern ()->accept_vis (*this);
-
-  if (let_stmt.has_type ())
-    let_stmt.get_type ()->accept_vis (*this);
-
-  if (let_stmt.has_init_expr ())
-    let_stmt.get_init_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::ExprStmt &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::Token &)
-{}
-
-void
 DefaultResolver::visit (AST::DelimTokenTree &)
 {}
 
@@ -450,10 +269,6 @@ DefaultResolver::visit (AST::IdentifierExpr &expr)
 {}
 
 void
-DefaultResolver::visit (AST::Lifetime &)
-{}
-
-void
 DefaultResolver::visit (AST::LifetimeParam &)
 {}
 
@@ -463,10 +278,6 @@ DefaultResolver::visit (AST::ConstGenericParam &)
 
 void
 DefaultResolver::visit (AST::PathInExpression &)
-{}
-
-void
-DefaultResolver::visit (AST::TypePathSegment &)
 {}
 
 void
@@ -511,10 +322,6 @@ DefaultResolver::visit (AST::MetaItemPathLit &)
 
 void
 DefaultResolver::visit (AST::StructExprStruct &)
-{}
-
-void
-DefaultResolver::visit (AST::StructExprFieldIdentifier &)
 {}
 
 void
@@ -624,10 +431,6 @@ DefaultResolver::visit (AST::ExternalFunctionItem &)
 {}
 
 void
-DefaultResolver::visit (AST::MacroMatchFragment &)
-{}
-
-void
 DefaultResolver::visit (AST::MacroMatchRepetition &)
 {}
 
@@ -652,42 +455,11 @@ DefaultResolver::visit (AST::MetaItemSeq &)
 {}
 
 void
-DefaultResolver::visit (AST::MetaWord &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaNameValueStr &)
-{}
-
-void
 DefaultResolver::visit (AST::MetaListPaths &)
 {}
 
 void
 DefaultResolver::visit (AST::MetaListNameValueStr &)
-{}
-
-void
-DefaultResolver::visit (AST::LiteralPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::IdentifierPattern &pattern)
-{
-  if (pattern.has_pattern_to_bind ())
-    pattern.get_pattern_to_bind ()->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::WildcardPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::RestPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::RangePatternBoundLiteral &)
 {}
 
 void
@@ -791,10 +563,6 @@ DefaultResolver::visit (AST::TupleType &)
 {}
 
 void
-DefaultResolver::visit (AST::NeverType &)
-{}
-
-void
 DefaultResolver::visit (AST::RawPointerType &)
 {}
 
@@ -808,10 +576,6 @@ DefaultResolver::visit (AST::ArrayType &)
 
 void
 DefaultResolver::visit (AST::SliceType &)
-{}
-
-void
-DefaultResolver::visit (AST::InferredType &)
 {}
 
 void
