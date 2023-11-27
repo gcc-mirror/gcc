@@ -1,3 +1,69 @@
+2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Remove xfail for line 20.  Pass
+	--param=logical-op-non-short-circuit=0.  Comment why.
+
+2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Remove xfail for MMIX from line 23.
+
+2023-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111880
+	* gfortran.dg/pr111880.f90: New test.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip on hppa*-*-hpux*.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/fd-glibc-datagram-client.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/analyzer/fd-glibc-datagram-socket.c: Likewise.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/pr104869.C: Add attribute visibility default to
+	main prototype.
+
+2023-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/bad-mapper-1.C: Add hppa*-*-hpux* to dg-error
+	"this-will-not-work" targets.
+
+2023-11-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/cf_check-6.c: Only run on Linux.
+
+2023-11-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr112686.c: Add a requirement for split_stack.
+
+2023-11-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* gcc.target/riscv/rvv/base/vf_avl-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/pr112599-3.c: New test.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112691
+	* gcc.dg/vla-1.c: Add -fno-ipa-vrp.
+	Remove noipa from f1.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112688
+	* gcc.target/aarch64/simd/vmulx.x (foo32): Mark as noipa rather
+	than noinline.
+	(foo4): Likewise.
+
+2023-11-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/108321
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Add -fsigned-char
+	to options.
+
 2023-11-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/112688

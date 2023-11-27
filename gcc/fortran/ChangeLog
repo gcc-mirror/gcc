@@ -1,3 +1,9 @@
+2023-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111880
+	* resolve.cc (resolve_common_vars): Do not call gfc_add_in_common
+	for symbols that are USE associated or used in a submodule.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* lang.opt (Wopenmp): Add, enabled by dafault and documented in C.

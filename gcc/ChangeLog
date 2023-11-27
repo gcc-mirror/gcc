@@ -1,3 +1,20 @@
+2023-11-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sort.cc: Use 'sorting networks' in comments.
+
+2023-11-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112599
+	* config/riscv/riscv-avlprop.cc (avl_can_be_propagated_p): Add slidedown.
+	(vlmax_ta_p): Ditto.
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Ditto.
+
+2023-11-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-avlprop.cc (alv_can_be_propagated_p): Fix typo.
+	(avl_can_be_propagated_p): Ditto.
+	(vlmax_ta_p): Ditto.
+
 2023-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR other/69374
