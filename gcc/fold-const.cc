@@ -10803,27 +10803,38 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
   unsigned res_npatterns, res_nelts_per_pattern;
   unsigned HOST_WIDE_INT res_nelts;
 
-  /* (1) If SEL is a suitable mask as determined by
-     valid_mask_for_fold_vec_perm_cst_p, then:
-     res_npatterns = max of npatterns between ARG0, ARG1, and SEL
-     res_nelts_per_pattern = max of nelts_per_pattern between
-			     ARG0, ARG1 and SEL.
-     (2) If SEL is not a suitable mask, and TYPE is VLS then:
-     res_npatterns = nelts in result vector.
-     res_nelts_per_pattern = 1.
-     This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
+  /* First try to implement the fold in a VLA-friendly way.
+
+     (1) If the selector is simply a duplication of N elements, the
+	 result is likewise a duplication of N elements.
+
+     (2) If the selector is N elements followed by a duplication
+	 of N elements, the result is too.
+
+     (3) If the selector is N elements followed by an interleaving
+	 of N linear series, the situation is more complex.
+
+	 valid_mask_for_fold_vec_perm_cst_p detects whether we
+	 can handle this case.  If we can, then each of the N linear
+	 series either (a) selects the same element each time or
+	 (b) selects a linear series from one of the input patterns.
+
+	 If (b) holds for one of the linear series, the result
+	 will contain a linear series, and so the result will have
+	 the same shape as the selector.  If (a) holds for all of
+	 the linear series, the result will be the same as (2) above.
+
+	 (b) can only hold if one of the input patterns has a
+	 stepped encoding.  */
+
   if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
     {
-      res_npatterns
-	= std::max (VECTOR_CST_NPATTERNS (arg0),
-		    std::max (VECTOR_CST_NPATTERNS (arg1),
-			      sel.encoding ().npatterns ()));
-
-      res_nelts_per_pattern
-	= std::max (VECTOR_CST_NELTS_PER_PATTERN (arg0),
-		    std::max (VECTOR_CST_NELTS_PER_PATTERN (arg1),
-			      sel.encoding ().nelts_per_pattern ()));
-
+      res_npatterns = sel.encoding ().npatterns ();
+      res_nelts_per_pattern = sel.encoding ().nelts_per_pattern ();
+      if (res_nelts_per_pattern == 3
+	  && VECTOR_CST_NELTS_PER_PATTERN (arg0) < 3
+	  && VECTOR_CST_NELTS_PER_PATTERN (arg1) < 3)
+	res_nelts_per_pattern = 2;
       res_nelts = res_npatterns * res_nelts_per_pattern;
     }
   else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
@@ -17622,6 +17633,29 @@ test_nunits_min_2 (machine_mode vmode)
 	tree expected_res[] = { ARG0(0), ARG1(0), ARG1(1) };
 	validate_res (1, 3, res, expected_res);
       }
+
+      /* Case 8: Same as aarch64/sve/slp_3.c:
+	 arg0, arg1 are dup vectors.
+	 sel = { 0, len, 1, len+1, 2, len+2, ... } // (2, 3)
+	 So res = { arg0[0], arg1[0], ... } // (2, 1)
+
+	 In this case, since the input vectors are dup, only the first two
+	 elements per pattern in sel are considered significant.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1, 2, len + 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (2, 1, res, expected_res);
+      }
     }
 }
 
@@ -17789,6 +17823,44 @@ test_nunits_min_4 (machine_mode vmode)
 
 	ASSERT_TRUE (res == NULL_TREE);
 	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
+      }
+
+      /* Case 8: PR111754: When input vector is not a stepped sequence,
+	 check that the result is not a stepped sequence either, even
+	 if sel has a stepped sequence.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, 1, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 1, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg0, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(1) };
+	validate_res (sel.encoding ().npatterns (), 2, res, expected_res);
+      }
+
+      /* Case 9: If sel doesn't contain a stepped sequence,
+	 check that the result has same encoding as sel, irrespective
+	 of shape of input vectors.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 2);
+	poly_uint64 mask_elems[] = { 0, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (sel.encoding ().npatterns (),
+		      sel.encoding ().nelts_per_pattern (), res, expected_res);
       }
     }
 }
