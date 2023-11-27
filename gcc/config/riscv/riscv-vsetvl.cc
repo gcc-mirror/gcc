@@ -1433,9 +1433,23 @@ private:
 
   inline bool modify_or_use_vl_p (insn_info *i, const vsetvl_info &info)
   {
-    return info.has_vl ()
-	   && (find_access (i->uses (), REGNO (info.get_vl ()))
-	       || find_access (i->defs (), REGNO (info.get_vl ())));
+    if (info.has_vl ())
+      {
+	if (find_access (i->defs (), REGNO (info.get_vl ())))
+	  return true;
+	if (find_access (i->uses (), REGNO (info.get_vl ())))
+	  {
+	    resource_info resource = full_register (REGNO (info.get_vl ()));
+	    def_lookup dl1 = crtl->ssa->find_def (resource, i);
+	    def_lookup dl2 = crtl->ssa->find_def (resource, info.get_insn ());
+	    if (dl1.matching_set () || dl2.matching_set ())
+	      return true;
+	    /* If their VLs are coming from same def, we still want to fuse
+	       their VSETVL demand info to gain better performance.  */
+	    return dl1.prev_def (i) != dl2.prev_def (i);
+	  }
+      }
+    return false;
   }
   inline bool modify_avl_p (insn_info *i, const vsetvl_info &info)
   {
@@ -1702,7 +1716,7 @@ public:
 	for (insn_info *i = next_insn->prev_nondebug_insn (); i != prev_insn;
 	     i = i->prev_nondebug_insn ())
 	  {
-	    // no def amd use of vl
+	    // no def and use of vl
 	    if (!ignore_vl && modify_or_use_vl_p (i, info))
 	      return false;
 
@@ -2635,11 +2649,8 @@ pre_vsetvl::compute_lcm_local_properties ()
 
 	      for (const insn_info *insn : bb->real_nondebug_insns ())
 		{
-		  if ((info.has_nonvlmax_reg_avl ()
-		       && find_access (insn->defs (), REGNO (info.get_avl ())))
-		      || (info.has_vl ()
-			  && find_access (insn->uses (),
-					  REGNO (info.get_vl ()))))
+		  if (info.has_nonvlmax_reg_avl ()
+		      && find_access (insn->defs (), REGNO (info.get_avl ())))
 		    {
 		      bitmap_clear_bit (m_transp[bb_index], i);
 		      break;
