@@ -3037,10 +3037,10 @@ B_DEF      (s390_vstrszf,                vstrszv4si,        0,                  
 
 /* arch 14 builtins */
 
-B_DEF      (s390_vclfnhs,                vclfnhs_v8hi,      0,                  B_NNPA,             O2_U4,              BT_FN_V4SF_V8HI_UINT)
-B_DEF      (s390_vclfnls,                vclfnls_v8hi,      0,                  B_NNPA,             O2_U4,              BT_FN_V4SF_V8HI_UINT)
+B_DEF      (s390_vclfnhs,                vclfnhs_v8hi,      0,                  B_NNPA,             O2_U4,              BT_FN_V4SF_UV8HI_UINT)
+B_DEF      (s390_vclfnls,                vclfnls_v8hi,      0,                  B_NNPA,             O2_U4,              BT_FN_V4SF_UV8HI_UINT)
 
-B_DEF      (s390_vcrnfs,                 vcrnfs_v8hi,       0,                  B_NNPA,             O3_U4,              BT_FN_V8HI_V4SF_V4SF_UINT)
+B_DEF      (s390_vcrnfs,                 vcrnfs_v8hi,       0,                  B_NNPA,             O3_U4,              BT_FN_UV8HI_V4SF_V4SF_UINT)
 
-B_DEF      (s390_vcfn,                   vcfn_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_V8HI_V8HI_UINT)
-B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_V8HI_V8HI_UINT)
+B_DEF      (s390_vcfn,                   vcfn_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_UV8HI_UV8HI_UINT)
+B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  B_NNPA,             O2_U4,              BT_FN_UV8HI_UV8HI_UINT)

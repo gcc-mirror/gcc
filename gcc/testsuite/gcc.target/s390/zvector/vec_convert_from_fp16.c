@@ -3,8 +3,8 @@
 
 #include <vecintrin.h>
 
-vector short int
-test_vec_convert_from_fp16 (vector short int a)
+vector unsigned short int
+test_vec_convert_from_fp16 (vector unsigned short int a)
 {
   return vec_convert_from_fp16 (a, 0);
 }

@@ -4,7 +4,7 @@
 #include <vecintrin.h>
 
 vector float
-test_vec_extend_to_fp32_hi (vector short int a)
+test_vec_extend_to_fp32_hi (vector unsigned short int a)
 {
   return vec_extend_to_fp32_hi (a, 0);
 }

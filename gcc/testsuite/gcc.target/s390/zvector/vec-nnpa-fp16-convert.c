@@ -10,10 +10,10 @@ main ()
   vector float fp1 = (vector float){ 1.0f, 2.0f, 3.0f, 4.0f };
   vector float fp2 = (vector float){ 5.0f, 6.0f, 7.0f, 8.0f };
 
-  vector short int tmp1 = vec_round_from_fp32 (fp1, fp2, 0);
+  vector unsigned short int tmp1 = vec_round_from_fp32 (fp1, fp2, 0);
 
-  vector short int tmp2 = vec_convert_to_fp16 (tmp1, 0);
-  vector short int tmp3 = vec_convert_from_fp16 (tmp2, 0);
+  vector unsigned short int tmp2 = vec_convert_to_fp16 (tmp1, 0);
+  vector unsigned short int tmp3 = vec_convert_from_fp16 (tmp2, 0);
 
   vector float fp1_ret = vec_extend_to_fp32_hi (tmp3, 0);
   vector float fp2_ret = vec_extend_to_fp32_lo (tmp3, 0);
