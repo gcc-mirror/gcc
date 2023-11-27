@@ -2561,6 +2561,17 @@ vector_cst_all_same (tree v, unsigned int step)
   return true;
 }
 
+/* Return true if V is a constant predicate that acts as a ptrue when
+   predicating STEP-byte elements.  */
+bool
+is_ptrue (tree v, unsigned int step)
+{
+  return (TREE_CODE (v) == VECTOR_CST
+	  && TYPE_MODE (TREE_TYPE (v)) == VNx16BImode
+	  && integer_nonzerop (VECTOR_CST_ENCODED_ELT (v, 0))
+	  && vector_cst_all_same (v, step));
+}
+
 gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 			      gimple_stmt_iterator *gsi_in, gcall *call_in)
   : function_call_info (gimple_location (call_in), instance, fndecl),
@@ -2635,6 +2646,37 @@ gimple_folder::redirect_call (const function_instance &instance)
   return call;
 }
 
+/* Redirect _z and _m calls to _x functions if the predicate is all-true.
+   This allows us to use unpredicated instructions, where available.  */
+gimple *
+gimple_folder::redirect_pred_x ()
+{
+  if (pred != PRED_z && pred != PRED_m)
+    return nullptr;
+
+  if (gimple_call_num_args (call) < 2)
+    return nullptr;
+
+  tree lhs_type = TREE_TYPE (TREE_TYPE (fndecl));
+  tree arg0_type = type_argument_type (TREE_TYPE (fndecl), 1);
+  tree arg1_type = type_argument_type (TREE_TYPE (fndecl), 2);
+  if (!VECTOR_TYPE_P (lhs_type)
+      || !VECTOR_TYPE_P (arg0_type)
+      || !VECTOR_TYPE_P (arg1_type))
+    return nullptr;
+
+  auto lhs_step = element_precision (lhs_type);
+  auto rhs_step = element_precision (arg1_type);
+  auto step = MAX (lhs_step, rhs_step);
+  if (!multiple_p (step, BITS_PER_UNIT)
+      || !is_ptrue (gimple_call_arg (call, 0), step / BITS_PER_UNIT))
+    return nullptr;
+
+  function_instance instance (*this);
+  instance.pred = PRED_x;
+  return redirect_call (instance);
+}
+
 /* Fold the call to constant VAL.  */
 gimple *
 gimple_folder::fold_to_cstu (poly_uint64 val)
@@ -2706,6 +2748,10 @@ gimple_folder::fold ()
      remove the calls if appropriate.  */
   if (!lhs && TREE_TYPE (gimple_call_fntype (call)) != void_type_node)
     return NULL;
+
+  /* First try some simplifications that are common to many functions.  */
+  if (auto *call = redirect_pred_x ())
+    return call;
 
   return base->fold (*this);
 }

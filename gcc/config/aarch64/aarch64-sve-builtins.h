@@ -500,6 +500,8 @@ public:
   tree load_store_cookie (tree);
 
   gimple *redirect_call (const function_instance &);
+  gimple *redirect_pred_x ();
+
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
@@ -673,6 +675,7 @@ extern tree acle_svpattern;
 extern tree acle_svprfop;
 
 bool vector_cst_all_same (tree, unsigned int);
+bool is_ptrue (tree, unsigned int);
 
 /* Return the ACLE type svbool_t.  */
 inline tree
