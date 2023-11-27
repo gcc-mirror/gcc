@@ -672,6 +672,8 @@ extern tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
 extern tree acle_svpattern;
 extern tree acle_svprfop;
 
+bool vector_cst_all_same (tree, unsigned int);
+
 /* Return the ACLE type svbool_t.  */
 inline tree
 get_svbool_t (void)

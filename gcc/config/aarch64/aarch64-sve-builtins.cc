@@ -2541,6 +2541,26 @@ function_checker::check ()
   return shape->check (*this);
 }
 
+/* Return true if V is a vector constant and if, for every in-range integer I,
+   element STEP*I is equal to element 0.  */
+bool
+vector_cst_all_same (tree v, unsigned int step)
+{
+  if (TREE_CODE (v) != VECTOR_CST)
+    return false;
+
+  /* VECTOR_CST_NELTS_PER_PATTERN applies to any multiple of
+     VECTOR_CST_NPATTERNS.  */
+  unsigned int lcm = least_common_multiple (step, VECTOR_CST_NPATTERNS (v));
+  unsigned int nelts = lcm * VECTOR_CST_NELTS_PER_PATTERN (v);
+  tree first_el = VECTOR_CST_ENCODED_ELT (v, 0);
+  for (unsigned int i = 0; i < nelts; i += step)
+    if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (v, i), first_el, 0))
+      return false;
+
+  return true;
+}
+
 gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 			      gimple_stmt_iterator *gsi_in, gcall *call_in)
   : function_call_info (gimple_location (call_in), instance, fndecl),
