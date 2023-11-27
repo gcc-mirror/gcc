@@ -1231,6 +1231,14 @@ riscv_subset_list::check_conflict_ext ()
   /* 'H' hypervisor extension requires base ISA with 32 registers.  */
   if (lookup ("e") && lookup ("h"))
     error_at (m_loc, "%<-march=%s%>: h extension requires i extension", m_arch);
+
+  if (lookup ("zcd"))
+    {
+      if (lookup ("zcmt"))
+	error_at (m_loc, "%<-march=%s%>: zcd conflicts with zcmt", m_arch);
+      if (lookup ("zcmp"))
+	error_at (m_loc, "%<-march=%s%>: zcd conflicts with zcmp", m_arch);
+    }
 }
 
 /* Parsing function for multi-letter extensions.
