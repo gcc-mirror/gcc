@@ -1119,7 +1119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __cpp_lib_is_constant_evaluated
 	  if (std::is_constant_evaluated())
 	    {
-	      // Can't use memcpu. Wrap the pointer so that __relocate_a_1
+	      // Can't use memcpy. Wrap the pointer so that __relocate_a_1
 	      // resolves to the non-trivial overload above.
 	      __gnu_cxx::__normal_iterator<_Tp*, void> __out(__result);
 	      __out = std::__relocate_a_1(__first, __last, __out, __alloc);
