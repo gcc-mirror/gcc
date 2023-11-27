@@ -2214,7 +2214,7 @@ LSYM(Lchange_\register):
 	.ascii "no effect.  Relink with\n"
 	.ascii "  -specs=sync-{none,dmb,cp15dmb}.specs\n"
 	.ascii "to specify exactly which barrier format to use and avoid "
-	.ascii "this warning.\n\0"
+	.ascii "this warning\0"
 #endif
 #endif
 #endif
