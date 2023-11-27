@@ -2649,47 +2649,6 @@ namespace selftest
 
 typedef std::pair<const char *, const char *> excl_pair;
 
-struct excl_hash_traits: typed_noop_remove<excl_pair>
-{
-  typedef excl_pair  value_type;
-  typedef value_type compare_type;
-
-  static hashval_t hash (const value_type &x)
-  {
-    hashval_t h1 = htab_hash_string (x.first);
-    hashval_t h2 = htab_hash_string (x.second);
-    return h1 ^ h2;
-  }
-
-  static bool equal (const value_type &x, const value_type &y)
-  {
-    return !strcmp (x.first, y.first) && !strcmp (x.second, y.second);
-  }
-
-  static void mark_deleted (value_type &x)
-  {
-    x = value_type (NULL, NULL);
-  }
-
-  static const bool empty_zero_p = false;
-
-  static void mark_empty (value_type &x)
-  {
-    x = value_type ("", "");
-  }
-
-  static bool is_deleted (const value_type &x)
-  {
-    return !x.first && !x.second;
-  }
-
-  static bool is_empty (const value_type &x)
-  {
-    return !*x.first && !*x.second;
-  }
-};
-
-
 /* Self-test to verify that each attribute exclusion is symmetric,
    meaning that if attribute A is encoded as incompatible with
    attribute B then the opposite relationship is also encoded.
@@ -2699,13 +2658,15 @@ struct excl_hash_traits: typed_noop_remove<excl_pair>
 static void
 test_attribute_exclusions ()
 {
+  using excl_hash_traits = pair_hash<nofree_string_hash, nofree_string_hash>;
+
   /* Iterate over the array of attribute tables first (with TI0 as
      the index) and over the array of attribute_spec in each table
      (with SI0 as the index).  */
   const size_t ntables = ARRAY_SIZE (attribute_tables);
 
   /* Set of pairs of mutually exclusive attributes.  */
-  typedef hash_set<excl_pair, false, excl_hash_traits> exclusion_set;
+  typedef hash_set<excl_hash_traits> exclusion_set;
   exclusion_set excl_set;
 
   for (size_t ti0 = 0; ti0 != ntables; ++ti0)
