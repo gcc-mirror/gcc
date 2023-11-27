@@ -2026,7 +2026,7 @@ maybe_add_sra_candidate (tree var)
        /* There are cases where non-addressable variables fail the
 	  pt_solutions_check test, e.g in gcc.dg/uninit-40.c. */
        || (TREE_ADDRESSABLE (var)
-	   && pt_solution_includes (&cfun->gimple_df->escaped, var))
+	   && pt_solution_includes (&cfun->gimple_df->escaped_return, var))
        || (TREE_CODE (var) == RESULT_DECL
 	   && !DECL_BY_REFERENCE (var)
 	   && aggregate_value_p (var, current_function_decl)))
