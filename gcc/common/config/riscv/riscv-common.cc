@@ -1185,6 +1185,24 @@ riscv_subset_list::handle_combine_ext ()
     }
 }
 
+void
+riscv_subset_list::check_conflict_ext ()
+{
+  if (lookup ("zcf") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
+	      m_arch);
+
+  if (lookup ("zfinx") && lookup ("f"))
+    error_at (m_loc,
+	      "%<-march=%s%>: z*inx conflicts with floating-point "
+	      "extensions",
+	      m_arch);
+
+  /* 'H' hypervisor extension requires base ISA with 32 registers.  */
+  if (lookup ("e") && lookup ("h"))
+    error_at (m_loc, "%<-march=%s%>: h extension requires i extension", m_arch);
+}
+
 /* Parsing function for multi-letter extensions.
 
    Return Value:
@@ -1495,18 +1513,7 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   gcc_assert (subset_list->check_implied_ext ());
 
   subset_list->handle_combine_ext ();
-
-  if (subset_list->lookup ("zcf") && subset_list->m_xlen == 64)
-    error_at (loc, "%<-march=%s%>: zcf extension supports in rv32 only"
-		  , arch);
-
-  if (subset_list->lookup ("zfinx") && subset_list->lookup ("f"))
-    error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
-		   "extensions", arch);
-
-  /* 'H' hypervisor extension requires base ISA with 32 registers.  */
-  if (subset_list->lookup ("e") && subset_list->lookup ("h"))
-    error_at (loc, "%<-march=%s%>: h extension requires i extension", arch);
+  subset_list->check_conflict_ext ();
 
   return subset_list;
 
