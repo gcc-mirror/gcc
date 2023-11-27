@@ -1651,7 +1651,6 @@ bpf-*-*)
         tm_file="elfos.h ${tm_file}"
         tmake_file="${tmake_file} bpf/t-bpf"
         use_collect2=no
-        extra_headers="bpf-helpers.h"
         use_gcc_stdint=provide
         extra_objs="coreout.o core-builtins.o"
         target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc \$(srcdir)/config/bpf/core-builtins.cc"

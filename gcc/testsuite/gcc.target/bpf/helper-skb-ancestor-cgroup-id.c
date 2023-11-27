@@ -1,8 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99 -O2" } */
 
 #include <stdint.h>
-#include <bpf-helpers.h>
+
+struct __sk_buff;
+static uint64_t (*bpf_skb_ancestor_cgroup_id)(struct __sk_buff *skb, int ancestor_level) = (void *) 83;
 
 void
 foo ()
