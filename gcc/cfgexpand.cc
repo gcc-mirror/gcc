@@ -859,7 +859,8 @@ update_alias_info_with_stack_vars (void)
 
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
 				     decls_to_partitions, &visited, temp);
-
+      add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped_return,
+				     decls_to_partitions, &visited, temp);
       delete decls_to_partitions;
       BITMAP_FREE (temp);
     }

@@ -76,8 +76,10 @@ struct GTY(()) gimple_df {
   /* Artificial variable used for the virtual operand FUD chain.  */
   tree vop;
 
-  /* The PTA solution for the ESCAPED artificial variable.  */
+  /* The PTA solution for the ESCAPED and ESCAPED_RETURN artificial
+     variables.  */
   struct pt_solution escaped;
+  struct pt_solution escaped_return;
 
   /* A map of decls to artificial ssa-names that point to the partition
      of the decl.  */
