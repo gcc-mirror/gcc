@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+sve} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+sve\n} } } */
 
 /* Test one where sve is enabled.  */

@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\n} } } */
 
 /* Test where asimd and fp are the only ones provided, these are default
    and so shouldn't emit anything.  */

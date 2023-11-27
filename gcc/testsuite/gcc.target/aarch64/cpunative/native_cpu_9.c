@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+sve2-sm4} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+sve2-sm4\n} } } */
 
 /* Test one here a feature that is a prefix of another is enabled.
    In this case sve is a prefix to svesm4, but sve2-sm4 should be

@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+ssbs} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+ssbs\n} } } */
 
 /* Test one where the longer feature overlaps with a shorter one.  */
