@@ -2596,6 +2596,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @0 @1))))
+/* And similar for pointers.  */
+(for op (eq ne)
+ (simplify
+  (op (pointer_plus @0 @1) (pointer_plus @0 @2))
+  (op @1 @2)))
+(simplify
+ (pointer_diff (pointer_plus @0 @1) (pointer_plus @0 @2))
+ (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
+  (convert (minus @1 @2))))
 
 /* X - Z < Y - Z is the same as X < Y when there is no overflow.  */
 (for op (lt le ge gt)
