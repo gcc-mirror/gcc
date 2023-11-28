@@ -12,7 +12,7 @@ test_at()
   VERIFY(s.at(2) == 2);
 #if __cpp_exceptions
   try {
-    s.at(4); // { dg-warning "ignoring return value" }
+    s.at(4); // { dg-warning "ignoring return value" "" { target exceptions_enabled } }
     VERIFY(false);
   } catch (const std::out_of_range&) {
   }
@@ -23,7 +23,7 @@ test_at()
   VERIFY(s2.at(1) == 2);
 #if __cpp_exceptions
   try {
-    s2.at(2); // { dg-warning "ignoring return value" }
+    s2.at(2); // { dg-warning "ignoring return value" "" { target exceptions_enabled } }
     VERIFY(false);
   } catch (const std::out_of_range&) {
   }
