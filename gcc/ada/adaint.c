@@ -85,6 +85,7 @@
 
 #if defined (__APPLE__)
 #include <unistd.h>
+#include <TargetConditionals.h>
 #endif
 
 #if defined (__hpux__)
@@ -613,11 +614,18 @@ __gnat_get_file_names_case_sensitive (void)
       else
 	{
 	  /* By default, we suppose filesystems aren't case sensitive on
-	     Windows and Darwin (but they are on arm-darwin).  */
-#if defined (WINNT) || defined (__DJGPP__) \
-  || (defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__)))
+	     Windows or DOS.  */
+#if defined (WINNT) || defined (__DJGPP__)
 	  file_names_case_sensitive_cache = 0;
+#elif defined (__APPLE__)
+	  /* By default, macOS volumes are case-insensitive, iOS
+	     volumes are case-sensitive.  */
+#if TARGET_OS_IOS
+	  file_names_case_sensitive_cache = 1;
 #else
+	  file_names_case_sensitive_cache = 0;
+#endif
+#else /* Neither Windows nor Apple.  */
 	  file_names_case_sensitive_cache = 1;
 #endif
 	}
