@@ -236,7 +236,30 @@ build_call_internal (internal_fn fn, gimple_match_op *res_op)
       tree_pair types = direct_internal_fn_types (fn, res_op->type,
 						  res_op->ops);
       if (!direct_internal_fn_supported_p (fn, types, OPTIMIZE_FOR_BOTH))
-	return NULL;
+	{
+	  switch (fn)
+	    {
+	    case IFN_CLZ:
+	    case IFN_CTZ:
+	    case IFN_CLRSB:
+	    case IFN_FFS:
+	    case IFN_POPCOUNT:
+	    case IFN_PARITY:
+	      /* For these 6 builtins large/huge _BitInt operand is ok
+		 before bitint lowering pass.  */
+	      if (res_op->num_ops >= 1
+		  && TREE_CODE (TREE_TYPE (res_op->ops[0])) == BITINT_TYPE
+		  && (TYPE_PRECISION (TREE_TYPE (res_op->ops[0]))
+		      > MAX_FIXED_MODE_SIZE)
+		  && cfun
+		  && (cfun->curr_properties & PROP_gimple_lbitint) == 0)
+		break;
+	      return NULL;
+
+	    default:
+	      return NULL;
+	    }
+	}
     }
   return gimple_build_call_internal (fn, res_op->num_ops,
 				     res_op->op_or_null (0),
