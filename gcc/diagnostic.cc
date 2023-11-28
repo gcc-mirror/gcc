@@ -558,14 +558,12 @@ maybe_line_and_column (int line, int col)
   return result;
 }
 
-/* Return a malloc'd string describing a location e.g. "foo.c:42:10".
-   The caller is responsible for freeing the memory.  */
+/* Return a string describing a location e.g. "foo.c:42:10".  */
 
-static char *
-diagnostic_get_location_text (diagnostic_context *context,
-			      expanded_location s)
+label_text
+diagnostic_context::get_location_text (const expanded_location &s) const
 {
-  pretty_printer *pp = context->printer;
+  pretty_printer *pp = this->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   const char *file = s.file ? s.file : progname;
@@ -574,13 +572,13 @@ diagnostic_get_location_text (diagnostic_context *context,
   if (strcmp (file, special_fname_builtin ()))
     {
       line = s.line;
-      if (context->m_show_column)
-	col = context->converted_column (s);
+      if (m_show_column)
+	col = this->converted_column (s);
     }
 
   const char *line_col = maybe_line_and_column (line, col);
-  return build_message_string ("%s%s%s:%s", locus_cs, file,
-			       line_col, locus_ce);
+  return label_text::take (build_message_string ("%s%s%s:%s", locus_cs, file,
+						 line_col, locus_ce));
 }
 
 static const char *const diagnostic_kind_text[] = {
@@ -610,12 +608,11 @@ diagnostic_build_prefix (diagnostic_context *context,
       text_ce = colorize_stop (pp_show_color (pp));
     }
 
-  expanded_location s = diagnostic_expand_location (diagnostic);
-  char *location_text = diagnostic_get_location_text (context, s);
+  const expanded_location s = diagnostic_expand_location (diagnostic);
+  label_text location_text = context->get_location_text (s);
 
-  char *result = build_message_string ("%s %s%s%s", location_text,
+  char *result = build_message_string ("%s %s%s%s", location_text.get (),
 				       text_cs, text, text_ce);
-  free (location_text);
   return result;
 }
 
@@ -1091,9 +1088,8 @@ void
 default_diagnostic_start_span_fn (diagnostic_context *context,
 				  expanded_location exploc)
 {
-  char *text = diagnostic_get_location_text (context, exploc);
-  pp_string (context->printer, text);
-  free (text);
+  label_text text = context->get_location_text (exploc);
+  pp_string (context->printer, text.get ());
   pp_newline (context->printer);
 }
 
@@ -2852,9 +2848,8 @@ assert_location_text (const char *expected_loc_text,
   xloc.data = NULL;
   xloc.sysp = false;
 
-  char *actual_loc_text = diagnostic_get_location_text (&dc, xloc);
-  ASSERT_STREQ (expected_loc_text, actual_loc_text);
-  free (actual_loc_text);
+  label_text actual_loc_text = dc.get_location_text (xloc);
+  ASSERT_STREQ (expected_loc_text, actual_loc_text.get ());
 }
 
 /* Verify that diagnostic_get_location_text works as expected.  */
