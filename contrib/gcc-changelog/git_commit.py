@@ -69,6 +69,7 @@ default_changelog_locations = {
     'libgfortran',
     'libgm2',
     'libgomp',
+    'libgrust',
     'libhsail-rt',
     'libiberty',
     'libitm',
