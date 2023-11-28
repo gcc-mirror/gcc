@@ -1180,7 +1180,7 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  std::function<std::unique_ptr<AST::InherentImplItem> (AST::SingleASTNode)>
+  std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
     extractor = [] (AST::SingleASTNode node) { return node.take_impl_item (); };
 
   expand_macro_children (MacroExpander::ContextType::IMPL,

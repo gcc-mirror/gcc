@@ -64,7 +64,7 @@ SingleASTNode::SingleASTNode (SingleASTNode const &other)
       break;
 
     case IMPL:
-      impl_item = other.impl_item->clone_inherent_impl_item ();
+      impl_item = other.impl_item->clone_associated_item ();
       break;
 
     case TRAIT_IMPL:
@@ -104,7 +104,7 @@ SingleASTNode::operator= (SingleASTNode const &other)
       break;
 
     case IMPL:
-      impl_item = other.impl_item->clone_inherent_impl_item ();
+      impl_item = other.impl_item->clone_associated_item ();
       break;
 
     case TRAIT_IMPL:

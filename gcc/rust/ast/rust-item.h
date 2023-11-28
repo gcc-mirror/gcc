@@ -1285,7 +1285,9 @@ protected:
 class LetStmt;
 
 // Rust function declaration AST node
-class Function : public VisItem, public InherentImplItem, public TraitImplItem
+class Function : public VisItem,
+		 virtual public AssociatedItem,
+		 public TraitImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -2308,7 +2310,7 @@ protected:
 /* "Constant item" AST node - used for constant, compile-time expressions
  * within module scope (like constexpr) */
 class ConstantItem : public VisItem,
-		     public InherentImplItem,
+		     virtual public AssociatedItem,
 		     public TraitImplItem
 {
   // either has an identifier or "_" - maybe handle in identifier?
@@ -3408,7 +3410,7 @@ protected:
 class InherentImpl : public Impl
 {
   // bool has_impl_items;
-  std::vector<std::unique_ptr<InherentImplItem>> impl_items;
+  std::vector<std::unique_ptr<AssociatedItem>> impl_items;
 
 public:
   std::string as_string () const override;
@@ -3417,7 +3419,7 @@ public:
   bool has_impl_items () const { return !impl_items.empty (); }
 
   // Mega-constructor
-  InherentImpl (std::vector<std::unique_ptr<InherentImplItem>> impl_items,
+  InherentImpl (std::vector<std::unique_ptr<AssociatedItem>> impl_items,
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		std::unique_ptr<Type> trait_type, WhereClause where_clause,
 		Visibility vis, std::vector<Attribute> inner_attrs,
@@ -3433,7 +3435,7 @@ public:
   {
     impl_items.reserve (other.impl_items.size ());
     for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
+      impl_items.push_back (e->clone_associated_item ());
   }
 
   // Overloaded assignment operator with vector clone
@@ -3443,7 +3445,7 @@ public:
 
     impl_items.reserve (other.impl_items.size ());
     for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
+      impl_items.push_back (e->clone_associated_item ());
 
     return *this;
   }
@@ -3455,11 +3457,11 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<InherentImplItem>> &get_impl_items () const
+  const std::vector<std::unique_ptr<AssociatedItem>> &get_impl_items () const
   {
     return impl_items;
   }
-  std::vector<std::unique_ptr<InherentImplItem>> &get_impl_items ()
+  std::vector<std::unique_ptr<AssociatedItem>> &get_impl_items ()
   {
     return impl_items;
   }

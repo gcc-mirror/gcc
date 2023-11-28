@@ -599,7 +599,7 @@ class MacroInvocation : public TypeNoBounds,
 			public Item,
 			public TraitItem,
 			public TraitImplItem,
-			public InherentImplItem,
+			virtual public AssociatedItem,
 			public ExternalItem,
 			public ExprWithoutBlock
 {
