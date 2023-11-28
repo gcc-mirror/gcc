@@ -5,7 +5,7 @@
 /* Test MAC operation for MPY_OPTION = 8.  */
 #include "tmac.h"
 
-/* { dg-final { scan-assembler "macd " } } */
+/* { dg-final { scan-assembler "macd\\\s+" } } */
 /* { dg-final { scan-assembler "macdu" } } */
-/* { dg-final { scan-assembler "mpyd\\t" } } */
+/* { dg-final { scan-assembler "mpyd\\\s+" } } */
 /* { dg-final { scan-assembler "mpydu" } } */
