@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mapx-features=push2pop2" } */
+/* { dg-options "-O2 -mapx-features=push2pop2 -fomit-frame-pointer" } */
 /* { dg-skip-if "does not emit .cfi_xxx" "*-*-darwin*" } */
 
 extern int bar (int);
