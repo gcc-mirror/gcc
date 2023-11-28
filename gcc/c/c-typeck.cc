@@ -1748,7 +1748,7 @@ array_to_pointer_conversion (location_t loc, tree exp)
       if (!TREE_READONLY (decl) && !TREE_STATIC (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
 		    "converting an array compound literal to a pointer "
-		    "is ill-formed in C++");
+		    "leads to a dangling pointer in C++");
     }
 
   adr = build_unary_op (loc, ADDR_EXPR, exp, true);

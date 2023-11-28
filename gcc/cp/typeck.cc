@@ -2534,15 +2534,6 @@ decay_conversion (tree exp,
 	  return error_mark_node;
 	}
 
-      /* Don't let an array compound literal decay to a pointer.  It can
-	 still be used to initialize an array or bind to a reference.  */
-      if (TREE_CODE (exp) == TARGET_EXPR)
-	{
-	  if (complain & tf_error)
-	    error_at (loc, "taking address of temporary array");
-	  return error_mark_node;
-	}
-
       ptrtype = build_pointer_type (TREE_TYPE (type));
 
       if (VAR_P (exp))
@@ -10535,6 +10526,9 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
       if (TYPE_REF_P (valtype))
 	warning_at (loc, OPT_Wreturn_local_addr,
 		    "returning reference to temporary");
+      else if (TYPE_PTR_P (valtype))
+	warning_at (loc, OPT_Wreturn_local_addr,
+		    "returning pointer to temporary");
       else if (is_std_init_list (valtype))
 	warning_at (loc, OPT_Winit_list_lifetime,
 		    "returning temporary %<initializer_list%> does not extend "
