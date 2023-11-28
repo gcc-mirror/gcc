@@ -280,7 +280,13 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       for (tree var = BIND_EXPR_VARS (stmt); var; var = DECL_CHAIN (var))
 	if (VAR_P (var)
 	    && !DECL_EXTERNAL (var))
-	  add_local_decl (cfun, var);
+	  {
+	    add_local_decl (cfun, var);
+	    /* When the middle-end re-gimplifies any expression we might
+	       run into the assertion that we've seen the decl in a BIND.  */
+	    if (!TREE_STATIC (var))
+	      DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
+	  }
       /* We have a CFG.  Build the edges.  */
       for (unsigned i = 0; i < parser.edges.length (); ++i)
 	{
