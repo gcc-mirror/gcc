@@ -2607,7 +2607,9 @@ assemble_external_libcall (rtx fun)
   /* Declare library function name external when first used, if nec.  */
   if (! SYMBOL_REF_USED (fun))
     {
+#ifdef ASM_OUTPUT_EXTERNAL
       gcc_assert (!pending_assemble_externals_processed);
+#endif
       SYMBOL_REF_USED (fun) = 1;
       /* Make sure the libcall symbol is in the symtab so any
          reference to it will mark its tree node as referenced, via
