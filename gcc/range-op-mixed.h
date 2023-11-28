@@ -138,6 +138,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_not_equal : public range_operator
@@ -174,6 +177,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_lt :  public range_operator
@@ -207,6 +213,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_le :  public range_operator
@@ -243,6 +252,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_gt :  public range_operator
@@ -278,6 +290,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_ge :  public range_operator
@@ -314,6 +329,9 @@ public:
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree, tree t1, tree t2) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 class operator_identity : public range_operator
@@ -409,7 +427,10 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -436,6 +457,9 @@ class operator_abs : public range_operator
 		  relation_trio rel = TRIO_VARYING) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -477,7 +501,10 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -506,6 +533,9 @@ class operator_negate : public range_operator
   bool op1_range (frange &r, tree type,
 		  const frange &lhs, const frange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
 };
 
 
@@ -557,7 +587,10 @@ public:
 		relation_kind kind) const final override;
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 };
 
 class operator_addr_expr : public range_operator
@@ -586,6 +619,10 @@ public:
 		  relation_trio rel = TRIO_VARYING) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 };
 
 class operator_bitwise_xor : public range_operator
@@ -606,6 +643,10 @@ public:
 					relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -629,6 +670,10 @@ public:
 				  relation_kind) const override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -651,6 +696,10 @@ public:
 		  relation_trio rel = TRIO_VARYING) const override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -662,6 +711,10 @@ class operator_min : public range_operator
 public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -673,6 +726,10 @@ class operator_max : public range_operator
 public:
   void update_bitmask (irange &r, const irange &lh,
       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
