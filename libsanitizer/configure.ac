@@ -214,6 +214,19 @@ if test "$libsanitizer_cv_sys_atomic" = "yes"; then
 	    [Define to 1 if you have the __atomic functions])
 fi
 
+# Check if assembler supports symbol assignment.
+AC_CACHE_CHECK([assembler symbol assignment],
+[libsanitizer_cv_as_sym_assign],
+[AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([],
+		   [asm("a = b");])],
+  [libsanitizer_cv_as_sym_assign=yes],
+  [libsanitizer_cv_as_sym_assign=no])])
+if test "$libsanitizer_cv_as_sym_assign" = "yes"; then
+  as_sym_assign_defs=-DHAVE_AS_SYM_ASSIGN=1
+fi
+AC_SUBST(AS_SYM_ASSIGN_DEFS, [$as_sym_assign_defs])
+
 # The library needs to be able to read the executable itself.  Compile
 # a file to determine the executable format.  The awk script
 # filetype.awk prints out the file type.

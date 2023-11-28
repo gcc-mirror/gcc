@@ -651,6 +651,7 @@ ALLOC_FILE
 VIEW_FILE
 BACKTRACE_SUPPORTED
 FORMAT_FILE
+AS_SYM_ASSIGN_DEFS
 SANITIZER_SUPPORTED_FALSE
 SANITIZER_SUPPORTED_TRUE
 USING_MAC_INTERPOSE_FALSE
@@ -12474,7 +12475,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12477 "configure"
+#line 12478 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12580,7 +12581,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12583 "configure"
+#line 12584 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16332,6 +16333,38 @@ if test "$libsanitizer_cv_sys_atomic" = "yes"; then
 $as_echo "#define HAVE_ATOMIC_FUNCTIONS 1" >>confdefs.h
 
 fi
+
+# Check if assembler supports symbol assignment.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler symbol assignment" >&5
+$as_echo_n "checking assembler symbol assignment... " >&6; }
+if ${libsanitizer_cv_as_sym_assign+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("a = b");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libsanitizer_cv_as_sym_assign=yes
+else
+  libsanitizer_cv_as_sym_assign=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libsanitizer_cv_as_sym_assign" >&5
+$as_echo "$libsanitizer_cv_as_sym_assign" >&6; }
+if test "$libsanitizer_cv_as_sym_assign" = "yes"; then
+  as_sym_assign_defs=-DHAVE_AS_SYM_ASSIGN=1
+fi
+AS_SYM_ASSIGN_DEFS=$as_sym_assign_defs
+
 
 # The library needs to be able to read the executable itself.  Compile
 # a file to determine the executable format.  The awk script
