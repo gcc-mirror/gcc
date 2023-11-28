@@ -145,7 +145,7 @@ static constexpr cp_feature_info cp_feature_table[] =
   { "cxx_contextual_conversions", { cxx14, cxx98 } },
   { "cxx_decltype_auto", cxx14 },
   { "cxx_aggregate_nsdmi", cxx14 },
-  { "cxx_init_captures", cxx14 },
+  { "cxx_init_captures", { cxx14, cxx11 } },
   { "cxx_generic_lambdas", cxx14 },
   { "cxx_relaxed_constexpr", cxx14 },
   { "cxx_return_type_deduction", cxx14 },
