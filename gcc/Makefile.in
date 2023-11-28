@@ -3821,7 +3821,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
   lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
   pass-instances.def params.list $(srcdir)/../include/gomp-constants.h \
-  $(EXPR_H)
+  $(EXPR_H) $(srcdir)/analyzer/*.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -3844,8 +3844,9 @@ install-gengtype: installdirs gengtype$(exeext) gtype.state
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
-# We keep the directory structure for files in config, common/config or
-# c-family and .def files. All other files are flattened to a single directory.
+# We keep the directory structure for files in analyzer, config, common/config
+# or c-family and .def files.
+# All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
 	headers=`echo $(sort $(PLUGIN_HEADERS)) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
@@ -3857,7 +3858,8 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 	  else continue; \
 	  fi; \
 	  case $$path in \
-	  "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
+	  "$(srcdir)"/analyzer/* \
+	  | "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
 	  | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
 	  *) base=`basename $$path` ;; \
