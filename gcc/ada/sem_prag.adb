@@ -283,8 +283,7 @@ package body Sem_Prag is
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
    --  pragma Depends. Determine whether the type of dependency item Item is
-   --  tagged, unconstrained array, unconstrained record or a record with at
-   --  least one unconstrained component.
+   --  tagged, unconstrained array or unconstrained record.
 
    procedure Record_Possible_Body_Reference
      (State_Id : Entity_Id;
@@ -32957,36 +32956,7 @@ package body Sem_Prag is
    function Is_Unconstrained_Or_Tagged_Item
      (Item : Entity_Id) return Boolean
    is
-      function Has_Unconstrained_Component (Typ : Entity_Id) return Boolean;
-      --  Determine whether record type Typ has at least one unconstrained
-      --  component.
-
-      ---------------------------------
-      -- Has_Unconstrained_Component --
-      ---------------------------------
-
-      function Has_Unconstrained_Component (Typ : Entity_Id) return Boolean is
-         Comp : Entity_Id;
-
-      begin
-         Comp := First_Component (Typ);
-         while Present (Comp) loop
-            if Is_Unconstrained_Or_Tagged_Item (Comp) then
-               return True;
-            end if;
-
-            Next_Component (Comp);
-         end loop;
-
-         return False;
-      end Has_Unconstrained_Component;
-
-      --  Local variables
-
       Typ : constant Entity_Id := Etype (Item);
-
-   --  Start of processing for Is_Unconstrained_Or_Tagged_Item
-
    begin
       if Is_Tagged_Type (Typ) then
          return True;
@@ -32995,11 +32965,7 @@ package body Sem_Prag is
          return True;
 
       elsif Is_Record_Type (Typ) then
-         if Has_Discriminants (Typ) and then not Is_Constrained (Typ) then
-            return True;
-         else
-            return Has_Unconstrained_Component (Typ);
-         end if;
+         return Has_Discriminants (Typ) and then not Is_Constrained (Typ);
 
       elsif Is_Private_Type (Typ) and then Has_Discriminants (Typ) then
          return True;
