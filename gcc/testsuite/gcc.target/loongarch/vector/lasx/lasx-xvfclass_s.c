@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-mlasx -w -fno-strict-aliasing" } */
 /* { dg-timeout 500 } */
 #include "../simd_correctness_check.h"
