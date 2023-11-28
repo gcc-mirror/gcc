@@ -2474,16 +2474,16 @@ package Einfo is
 --       and subtypes, string types and subtypes, and all numeric types).
 --       Set if the type or subtype is constrained.
 
+--    Is_Constr_Array_Subt_With_Bounds
+--       Defined in all types and subtypes. Set only for an array subtype
+--       which is constrained but nevertheless requires objects of this
+--       subtype to be allocated with their bounds. This flag is used by
+--       the back end to determine whether the bounds must be constructed.
+
 --    Is_Constr_Subt_For_U_Nominal
 --       Defined in all types and subtypes. Set only for the constructed
 --       subtype of an object whose nominal subtype is unconstrained. Note
 --       that the constructed subtype itself will be constrained.
-
---    Is_Constr_Subt_For_UN_Aliased
---       Defined in all types and subtypes. This flag can be set only if
---       Is_Constr_Subt_For_U_Nominal is also set. It indicates that in
---       addition the object concerned is aliased. This flag is used by
---       the backend to determine whether a template must be constructed.
 
 --    Is_Constructor
 --       Defined in function and procedure entities. Set if a pragma
@@ -5058,8 +5058,8 @@ package Einfo is
    --    Is_Abstract_Type
    --    Is_Asynchronous
    --    Is_Atomic
+   --    Is_Constr_Array_Subt_With_Bounds
    --    Is_Constr_Subt_For_U_Nominal
-   --    Is_Constr_Subt_For_UN_Aliased
    --    Is_Controlled_Active                 (base type only)
    --    Is_Eliminated
    --    Is_Frozen

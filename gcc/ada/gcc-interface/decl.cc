@@ -889,7 +889,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     || (TYPE_SIZE (gnu_type)
 		 && integer_zerop (TYPE_SIZE (gnu_type))
 		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
-	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && !Is_Constr_Array_Subt_With_Bounds (gnat_type)
 	    && No (gnat_renamed_obj)
 	    && No (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
@@ -907,7 +907,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    && kind != E_Exception
 		    && kind != E_Out_Parameter
 		    && Is_Composite_Type (gnat_type)
-		    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
+		    && !Is_Constr_Array_Subt_With_Bounds (gnat_type)
 		    && !Is_Exported (gnat_entity)
 		    && !imported_p
 		    && No (gnat_renamed_obj)
@@ -932,11 +932,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    check_ok_for_atomic_type (gnu_inner, gnat_entity, true);
 	  }
 
-	/* If this is an aliased object with an unconstrained array nominal
-	   subtype, make a type that includes the template.  We will either
-	   allocate or create a variable of that type, see below.  */
-	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (gnat_und_type)
+	/* If this is an array allocated with its bounds, make a type that
+	   includes the template.  We will either allocate it or create a
+	   variable of that type, see below.  */
+	if (Is_Constr_Array_Subt_With_Bounds (gnat_type)
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
@@ -986,7 +985,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   size might be zero at run time, we force at least the unit size.  */
 	if (Is_Aliased (gnat_entity)
 	    && Is_Constrained (gnat_type)
-	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
+	    && !Is_Constr_Array_Subt_With_Bounds (gnat_type)
 	    && Is_Array_Type (gnat_und_type)
 	    && !TREE_CONSTANT (gnu_object_size))
 	  gnu_size = size_binop (MAX_EXPR, gnu_object_size, bitsize_unit_node);
@@ -1145,12 +1144,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		   the entity as indirect reference to the renamed object.  */
 		if (Materialize_Entity (gnat_entity))
 		  {
-		    /* If this is an aliased object with an unconstrained array
-		       nominal subtype, we make its type a thin reference, i.e.
-		       the reference counterpart of a thin pointer, exactly as
-		       we would have done in the non-renaming case below.  */
-		    if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-			&& Is_Array_Type (gnat_und_type)
+		    /* If this is an array allocated with its bounds, we make
+		       its type a thin reference, the reference counterpart of
+		       a thin pointer, exactly as we would have done in the
+		       non-renaming case below.  */
+		    if (Is_Constr_Array_Subt_With_Bounds (gnat_type)
 			&& !type_annotate_only)
 		      {
 			tree gnu_array
@@ -1253,8 +1251,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    /* If this is an aliased object with an unconstrained array nominal
 	       subtype, then it can overlay only another aliased object with an
 	       unconstrained array nominal subtype and compatible template.  */
-	    if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-		&& Is_Array_Type (gnat_und_type)
+	    if (Is_Constr_Array_Subt_With_Bounds (gnat_type)
 		&& !type_annotate_only)
 	      {
 		tree rec_type = TREE_TYPE (gnu_type);
@@ -1488,14 +1485,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
 	  static_flag = true;
 
-	/* If this is an aliased object with an unconstrained array nominal
-	   subtype, we make its type a thin reference, i.e. the reference
-	   counterpart of a thin pointer, so it points to the array part.
-	   This is aimed to make it easier for the debugger to decode the
-	   object.  Note that we have to do it this late because of the
-	   couple of allocation adjustments that might be made above.  */
-	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (gnat_und_type)
+	/* If this is an array allocated with its bounds, we make its type a
+	   thin reference, i.e. the reference counterpart of a thin pointer,
+	   so that it points to the array part.  This is aimed at making it
+	   easier for the debugger to decode the object.  Note that we have
+	   to do it this late because of the couple of allocation adjustments
+	   that might be made above.  */
+	if (Is_Constr_Array_Subt_With_Bounds (gnat_type)
 	    && !type_annotate_only)
 	  {
 	    /* In case the object with the template has already been allocated
