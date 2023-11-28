@@ -1687,22 +1687,6 @@ public:
   location_t get_locus () const override { return locus; }
 };
 
-/* Abstract base class for items used within an inherent impl block (the impl
- * name {} one) */
-class InherentImplItem : virtual public AssociatedItem
-{
-protected:
-  // Clone function implementation as pure virtual method
-  virtual InherentImplItem *clone_associated_item_impl () const override = 0;
-
-public:
-  // Unique pointer custom clone function
-  std::unique_ptr<InherentImplItem> clone_inherent_impl_item () const
-  {
-    return std::unique_ptr<InherentImplItem> (clone_associated_item_impl ());
-  }
-};
-
 // Abstract base class for items used in a trait impl
 class TraitImplItem : virtual public AssociatedItem
 {
@@ -1860,7 +1844,7 @@ private:
   std::unique_ptr<Stmt> stmt;
   std::unique_ptr<ExternalItem> external_item;
   std::unique_ptr<TraitItem> trait_item;
-  std::unique_ptr<InherentImplItem> impl_item;
+  std::unique_ptr<AssociatedItem> impl_item;
   std::unique_ptr<TraitImplItem> trait_impl_item;
   std::unique_ptr<Type> type;
 
@@ -1885,7 +1869,7 @@ public:
     : kind (TRAIT), trait_item (std::move (item))
   {}
 
-  SingleASTNode (std::unique_ptr<InherentImplItem> item)
+  SingleASTNode (std::unique_ptr<AssociatedItem> item)
     : kind (IMPL), impl_item (std::move (item))
   {}
 
@@ -1959,7 +1943,7 @@ public:
     return std::move (external_item);
   }
 
-  std::unique_ptr<InherentImplItem> take_impl_item ()
+  std::unique_ptr<AssociatedItem> take_impl_item ()
   {
     rust_assert (!is_error ());
     return std::move (impl_item);
