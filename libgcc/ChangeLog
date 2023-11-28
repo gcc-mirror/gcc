@@ -1,3 +1,7 @@
+2023-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/lib1funcs.S (__sync_synchronize): Adjust warning message.
+
 2023-11-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.host (arm*-*-eabi* | arm*-*-rtems*):

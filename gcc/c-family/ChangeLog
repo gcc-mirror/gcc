@@ -1,3 +1,21 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* c-common.cc (struct hf_feature_info): New.
+	(c_common_register_feature): New.
+	(init_has_feature): New.
+	(has_feature_p): New.
+	* c-common.h (c_common_has_feature): New.
+	(c_family_register_lang_features): New.
+	(c_common_register_feature): New.
+	(has_feature_p): New.
+	* c-lex.cc (init_c_lex): Plumb through has_feature callback.
+	(c_common_has_builtin): Generalize and move common part ...
+	(c_common_lex_availability_macro): ... here.
+	(c_common_has_feature): New.
+	* c-ppoutput.cc (init_pp_output): Plumb through has_feature.
+
 2023-11-24  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR pch/112319

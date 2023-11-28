@@ -1,3 +1,13 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* include/cpplib.h (struct cpp_callbacks): Add has_feature.
+	(enum cpp_builtin_type): Add BT_HAS_{FEATURE,EXTENSION}.
+	* init.cc: Add __has_{feature,extension}.
+	* macro.cc (_cpp_builtin_macro_text): Handle
+	BT_HAS_{FEATURE,EXTENSION}.
+
 2023-11-24  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config.in: Regenerate.

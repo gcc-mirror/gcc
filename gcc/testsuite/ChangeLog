@@ -1,3 +1,240 @@
+2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/csinc-3.c: New test.
+
+2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/112689
+	* gcc.dg/tree-prof/time-profiler-3.c: Add -fno-ipa-vrp.
+
+2023-11-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/111754
+	* gcc.target/aarch64/sve/slp_3.c: Adjust code-gen.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.dg/vect/pr111754.c: New test.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/aapcs64/func-ret-1.c: Disable branch-protection.
+	* gcc.target/aarch64/aapcs64/func-ret-2.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-3.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-4.c: Likewise.
+	* gcc.target/aarch64/aapcs64/func-ret-64x1_1.c: Likewise.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/eh_return-2.c: New test.
+	* gcc.target/aarch64/eh_return-3.c: New test.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/return_address_sign_1.c: Move func4 to ...
+	* gcc.target/aarch64/return_address_sign_2.c: ... here and fix the
+	scan asm check.
+	* gcc.target/aarch64/return_address_sign_b_1.c: Move func4 to ...
+	* gcc.target/aarch64/return_address_sign_b_2.c: ... here and fix the
+	scan asm check.
+
+2023-11-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106326
+	* gcc.target/aarch64/sve/acle/general/pr106326_1.c: New test.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112653
+	* gcc.dg/tree-ssa/pta-return-1.c: New testcase.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/vect/pr36648.cc: Remove XFAIL for VLA load-lanes.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* c-c++-common/has-feature-common.c: New test.
+	* c-c++-common/has-feature-pedantic.c: New test.
+	* g++.dg/ext/has-feature.C: New test.
+	* gcc.dg/asan/has-feature-asan.c: New test.
+	* gcc.dg/has-feature.c: New test.
+	* gcc.dg/ubsan/has-feature-ubsan.c: New test.
+	* obj-c++.dg/has-feature.mm: New test.
+	* objc.dg/has-feature.m: New test.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112706
+	* gcc.dg/tree-ssa/pr112706.c: New testcase.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-nnpa-fp16-convert.c: Replace V8HI
+	types with UV8HI.
+	* gcc.target/s390/zvector/vec-nnpa-fp32-convert-1.c: Dito.
+	* gcc.target/s390/zvector/vec_convert_from_fp16.c: Dito.
+	* gcc.target/s390/zvector/vec_convert_to_fp16.c: Dito.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_hi.c: Dito.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_lo.c: Dito.
+	* gcc.target/s390/zvector/vec_round_from_fp32.c: Dito.
+
+2023-11-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-9.c: Ditto.
+
+2023-11-27  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-1.c: Test for __riscv_64e.
+	* gcc.target/riscv/predef-2.c: Ditto.
+	* gcc.target/riscv/predef-3.c: Ditto.
+	* gcc.target/riscv/predef-4.c: Ditto.
+	* gcc.target/riscv/predef-5.c: Ditto.
+	* gcc.target/riscv/predef-6.c: Ditto.
+	* gcc.target/riscv/predef-7.c: Ditto.
+	* gcc.target/riscv/predef-8.c: Ditto.
+	* gcc.target/riscv/predef-9.c: New test for RV64E and LP64E,
+	based on predef-7.c.
+
+2023-11-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/helper-bind.c: Do not include bpf-helpers.h.
+	* gcc.target/bpf/helper-skb-ancestor-cgroup-id.c: Likewise, and
+	renamed from skb-ancestor-cgroup-id.c.
+	* gcc.target/bpf/helper-bpf-redirect.c: Remove.
+	* gcc.target/bpf/helper-clone-redirect.c: Likewise.
+	* gcc.target/bpf/helper-csum-diff.c: Likewise.
+	* gcc.target/bpf/helper-csum-update.c: Likewise.
+	* gcc.target/bpf/helper-current-task-under-cgroup.c: Likewise.
+	* gcc.target/bpf/helper-fib-lookup.c: Likewise.
+	* gcc.target/bpf/helper-get-cgroup-classid.c: Likewise.
+	* gcc.target/bpf/helper-get-current-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-get-current-comm.c: Likewise.
+	* gcc.target/bpf/helper-get-current-pid-tgid.c: Likewise.
+	* gcc.target/bpf/helper-get-current-task.c: Likewise.
+	* gcc.target/bpf/helper-get-current-uid-gid.c: Likewise.
+	* gcc.target/bpf/helper-get-hash-recalc.c: Likewise.
+	* gcc.target/bpf/helper-get-listener-sock.c: Likewise.
+	* gcc.target/bpf/helper-get-local-storage.c: Likewise.
+	* gcc.target/bpf/helper-get-numa-node-id.c: Likewise.
+	* gcc.target/bpf/helper-get-prandom-u32.c: Likewise.
+	* gcc.target/bpf/helper-get-route-realm.c: Likewise.
+	* gcc.target/bpf/helper-get-smp-processor-id.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-cookie.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-uid.c: Likewise.
+	* gcc.target/bpf/helper-get-stack.c: Likewise.
+	* gcc.target/bpf/helper-get-stackid.c: Likewise.
+	* gcc.target/bpf/helper-getsockopt.c: Likewise.
+	* gcc.target/bpf/helper-ktime-get-ns.c: Likewise.
+	* gcc.target/bpf/helper-l3-csum-replace.c: Likewise.
+	* gcc.target/bpf/helper-l4-csum-replace.c: Likewise.
+	* gcc.target/bpf/helper-lwt-push-encap.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-action.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-adjust-srh.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-store-bytes.c: Likewise.
+	* gcc.target/bpf/helper-map-delete-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-lookup-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-peek-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-pop-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-push-elem.c: Likewise.
+	* gcc.target/bpf/helper-map-update-elem.c: Likewise.
+	* gcc.target/bpf/helper-msg-apply-bytes.c: Likewise.
+	* gcc.target/bpf/helper-msg-cork-bytes.c: Likewise.
+	* gcc.target/bpf/helper-msg-pop-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-pull-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-push-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-redirect-hash.c: Likewise.
+	* gcc.target/bpf/helper-msg-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-override-return.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-output.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-read-value.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-read.c: Likewise.
+	* gcc.target/bpf/helper-perf-prog-read-value.c: Likewise.
+	* gcc.target/bpf/helper-probe-read-str.c: Likewise.
+	* gcc.target/bpf/helper-probe-read.c: Likewise.
+	* gcc.target/bpf/helper-probe-write-user.c: Likewise.
+	* gcc.target/bpf/helper-rc-keydown.c: Likewise.
+	* gcc.target/bpf/helper-rc-pointer-rel.c: Likewise.
+	* gcc.target/bpf/helper-rc-repeat.c: Likewise.
+	* gcc.target/bpf/helper-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-set-hash-invalid.c: Likewise.
+	* gcc.target/bpf/helper-set-hash.c: Likewise.
+	* gcc.target/bpf/helper-setsockopt.c: Likewise.
+	* gcc.target/bpf/helper-sk-fullsock.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-tcp.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-upd.c: Likewise.
+	* gcc.target/bpf/helper-sk-redirect-hash.c: Likewise.
+	* gcc.target/bpf/helper-sk-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-sk-release.c: Likewise.
+	* gcc.target/bpf/helper-sk-select-reuseport.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-delete.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-get.c: Likewise.
+	* gcc.target/bpf/helper-skb-adjust-room.c: Likewise.
+	* gcc.target/bpf/helper-skb-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-head.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-proto.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-tail.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-type.c: Likewise.
+	* gcc.target/bpf/helper-skb-ecn-set-ce.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-tunnel-key.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-tunnel-opt.c: Likewise.
+	* gcc.target/bpf/helper-skb-get-xfrm-state.c: Likewise.
+	* gcc.target/bpf/helper-skb-load-bytes-relative.c: Likewise.
+	* gcc.target/bpf/helper-skb-load-bytes.c: Likewise.
+	* gcc.target/bpf/helper-skb-pull-data.c: Likewise.
+	* gcc.target/bpf/helper-skb-set-tunnel-key.c: Likewise.
+	* gcc.target/bpf/helper-skb-set-tunnel-opt.c: Likewise.
+	* gcc.target/bpf/helper-skb-store-bytes.c: Likewise.
+	* gcc.target/bpf/helper-skb-under-cgroup.c: Likewise.
+	* gcc.target/bpf/helper-skb-vlan-pop.c: Likewise.
+	* gcc.target/bpf/helper-skb-vlan-push.c: Likewise.
+	* gcc.target/bpf/helper-skc-lookup-tcp.c: Likewise.
+	* gcc.target/bpf/helper-sock-hash-update.c: Likewise.
+	* gcc.target/bpf/helper-sock-map-update.c: Likewise.
+	* gcc.target/bpf/helper-sock-ops-cb-flags-set.c: Likewise.
+	* gcc.target/bpf/helper-spin-lock.c: Likewise.
+	* gcc.target/bpf/helper-spin-unlock.c: Likewise.
+	* gcc.target/bpf/helper-strtol.c: Likewise.
+	* gcc.target/bpf/helper-strtoul.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-current-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-name.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-new-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-set-new-value.c: Likewise.
+	* gcc.target/bpf/helper-tail-call.c: Likewise.
+	* gcc.target/bpf/helper-tcp-check-syncookie.c: Likewise.
+	* gcc.target/bpf/helper-tcp-sock.c: Likewise.
+	* gcc.target/bpf/helper-trace-printk.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-head.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-meta.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-tail.c: Likewise.
+	* gcc.target/bpf/skb-ancestor-cgroup-id.c: Likewise.
+
+2023-11-27  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/imm-load1.c: Change old check.
+
 2023-11-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/uninit-pred-9_b.c: Remove xfail for line 20.  Pass

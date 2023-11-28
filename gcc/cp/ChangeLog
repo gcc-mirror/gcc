@@ -1,3 +1,14 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* cp-lang.cc (c_family_register_lang_features): New.
+	* cp-objcp-common.cc (struct cp_feature_selector): New.
+	(cp_feature_selector::has_feature): New.
+	(struct cp_feature_info): New.
+	(cp_register_features): New.
+	* cp-objcp-common.h (cp_register_features): New.
+
 2023-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* name-lookup.cc (check_can_export_using_decl): New.

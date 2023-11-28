@@ -1,3 +1,12 @@
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* c-lang.cc (c_family_register_lang_features): New.
+	* c-objc-common.cc (struct c_feature_info): New.
+	(c_register_features): New.
+	* c-objc-common.h (c_register_features): New.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_num_threads,

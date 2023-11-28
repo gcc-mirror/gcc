@@ -1,3 +1,235 @@
+2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64.cc (aarch64_if_then_else_costs):
+	Handle csinv/csinc case of 1/-1.
+
+2023-11-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/111754
+	* fold-const.cc (fold_vec_perm_cst): Set result's encoding to sel's
+	encoding, and set res_nelts_per_pattern to 2 if sel contains stepped
+	sequence but input vectors do not.
+	(test_nunits_min_2): New test Case 8.
+	(test_nunits_min_4): New tests Case 8 and Case 9.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_needs_frame_chain): Do not
+	force frame chain for eh_return.
+
+2023-11-27  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_eh_return_handler_rtx):
+	Remove.
+	* config/aarch64/aarch64.cc (aarch64_return_address_signing_enabled):
+	Sign return address even in functions with eh_return.
+	(aarch64_expand_epilogue): Conditionally return with br or ret.
+	(aarch64_eh_return_handler_rtx): Remove.
+	* config/aarch64/aarch64.h (EH_RETURN_TAKEN_RTX): Define.
+	(EH_RETURN_STACKADJ_RTX): Change to R5.
+	(EH_RETURN_HANDLER_RTX): Change to R6.
+	* df-scan.cc: Handle EH_RETURN_TAKEN_RTX.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Document EH_RETURN_TAKEN_RTX.
+	* except.cc (expand_eh_return): Handle EH_RETURN_TAKEN_RTX.
+
+2023-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc <amdgcn-*-amdhsa> (extra_gcc_objs): Don't set.
+	* config/gcn/driver-gcn.cc: Remove.
+	* config/gcn/gcn-hsa.h (ASM_SPEC, EXTRA_SPEC_FUNCTIONS): Remove
+	'last_arg' spec function.
+	* config/gcn/t-gcn-hsa (driver-gcn.o): Remove.
+
+2023-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/112669
+	* config/gcn/gcn.opt (march=, mtune=): Tag as 'Negative' of
+	themselves.
+
+2023-11-27  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/i386/gnu.h: Use PIE_SPEC, add static-pie case.
+	* config/i386/gnu64.h: Use PIE_SPEC, add static-pie case.
+
+2023-11-27  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/i386/t-gnu64: New file.
+	* config.gcc [x86_64-*-gnu*]: Add i386/t-gnu64 to
+	tmake_file.
+
+2023-11-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106326
+	* config/aarch64/aarch64-sve-builtins.h (is_ptrue): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc (is_ptrue): New function.
+	(gimple_folder::redirect_pred_x): Likewise.
+	(gimple_folder::fold): Use it.
+
+2023-11-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h (vector_cst_all_same): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc (vector_cst_all_same): New
+	function, a generalized replacement of...
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svlast_impl::vect_all_same): ...this.
+	(svlast_impl::fold): Update accordingly.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112653
+	* gimple-ssa.h (gimple_df): Add escaped_return solution.
+	* tree-ssa.cc (init_tree_ssa): Reset it.
+	(delete_tree_ssa): Likewise.
+	* tree-ssa-structalias.cc (escaped_return_id): New.
+	(find_func_aliases): Handle non-IPA return stmts by
+	adding to ESCAPED_RETURN.
+	(set_uids_in_ptset): Adjust HEAP escaping to also cover
+	escapes through return.
+	(init_base_vars): Initialize ESCAPED_RETURN.
+	(compute_points_to_sets): Replace ESCAPED post-processing
+	with recording the ESCAPED_RETURN solution.
+	* tree-ssa-alias.cc (ref_may_alias_global_p_1): Check
+	the ESCAPED_RETUNR solution.
+	(dump_alias_info): Dump it.
+	* cfgexpand.cc (update_alias_info_with_stack_vars): Update it.
+	* ipa-icf.cc (sem_item_optimizer::fixup_points_to_sets):
+	Likewise.
+	* tree-inline.cc (expand_call_inline): Reset it.
+	* tree-parloops.cc (parallelize_loops): Likewise.
+	* tree-sra.cc (maybe_add_sra_candidate): Check it.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/112661
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Defer duplicate-and-
+	interleave test to...
+	(vect_build_slp_tree_2): ...here, once we have all the operands.
+	Skip the test for uniform vectors.
+	(vect_create_constant_vectors): Detect uniform vectors.  Avoid
+	redundant conversions in that case.  Use gimple_build_vector_from_val
+	to build the vector.
+
+2023-11-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* attribs.cc (excl_hash_traits): Delete.
+	(test_attribute_exclusions): Use pair_hash and nofree_string_hash
+	instead.
+
+2023-11-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_vectorize_vec_perm_const): Disallow TImode.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def (BT_FN_UV8HI_UV8HI_UINT):
+	Add missing builtin type.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Remove types.
+	* config/s390/s390-builtins.def (O_U64): Remove 64-bit literal support.
+	Don't restrict s390_vec_rli and s390_verll[bhfg] to immediates.
+	* config/s390/s390.cc (s390_const_operand_ok): Remove 64-bit
+	literal support.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* doc/cpp.texi: Document __has_{feature,extension}.
+
+2023-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112706
+	* match.pd (ptr + o ==/!=/- ptr + o'): New patterns.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Add/remove types.
+	* config/s390/s390-builtins.def
+	(s390_vclfnhs,s390_vclfnls,s390_vcrnfs,s390_vcfn,s390_vcnf):
+	Replace type V8HI with UV8HI.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-builtins.def
+	(s390_vcefb,s390_vcdgb,s390_vcelfb,s390_vcdlgb,s390_vcfeb,s390_vcgdb,
+	s390_vclfeb,s390_vclgdb): Remove flags for non-existing operands
+	2 and 3.
+
+2023-11-27  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (*cmphi_ccu): For immediate operand 1 make
+	use of constraint n instead of D and chop of high bits in the
+	output template.
+
+2023-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112300
+	* config.gcc (mips*-sde-elf*): Append to tm_defines rather than
+	overwriting them.
+
+2023-11-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md
+	(mask_len_gather_load<RATIO1:mode><RATIO1:mode>):
+	Remove gather_scatter_valid_offset_mode_p.
+	(mask_len_gather_load<mode><mode>): Ditto.
+	(mask_len_scatter_store<RATIO1:mode><RATIO1:mode>): Ditto.
+	(mask_len_scatter_store<mode><mode>): Ditto.
+	* config/riscv/predicates.md (const_1_or_8_operand): New predicate.
+	(vector_gs_scale_operand_64): Remove.
+	* config/riscv/riscv-protos.h (gather_scatter_valid_offset_mode_p): Remove.
+	* config/riscv/riscv-v.cc (expand_gather_scatter): Refine code.
+	(gather_scatter_valid_offset_mode_p): Remove.
+	* config/riscv/vector-iterators.md: Fix iterator bugs.
+
+2023-11-27  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_ext_version_table): Set version to ratified 2.0.
+	(riscv_subset_list::parse_std_ext): Allow RV64E.
+	* config.gcc: Parse base ISA 'rv64e' and ABI 'lp64e'.
+	* config/riscv/arch-canonicalize: Parse base ISA 'rv64e'.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Define different macro per XLEN.  Add handling for ABI_LP64E.
+	* config/riscv/riscv-d.cc (riscv_d_handle_target_float_abi):
+	Add handling for ABI_LP64E.
+	* config/riscv/riscv-opts.h (enum riscv_abi_type): Add ABI_LP64E.
+	* config/riscv/riscv.cc (riscv_option_override): Enhance error
+	handling to support RV64E and LP64E.
+	(riscv_conditional_register_usage): Change "RV32E" in a comment
+	to "RV32E/RV64E".
+	* config/riscv/riscv.h
+	(UNITS_PER_FP_ARG): Add handling for ABI_LP64E.
+	(STACK_BOUNDARY): Ditto.
+	(ABI_STACK_BOUNDARY): Ditto.
+	(MAX_ARGS_IN_REGISTERS): Ditto.
+	(ABI_SPEC): Add support for "lp64e".
+	* config/riscv/riscv.opt: Parse -mabi=lp64e as ABI_LP64E.
+	* doc/invoke.texi: Add documentation of the LP64E ABI.
+
+2023-11-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf-helpers.h: Remove.
+	* config.gcc: Adapt accordingly.
+
+2023-11-27  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_split_plus_constant):
+	avoid left shift of negative value -0x8000.
+
+2023-11-27  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(enum loongarch_load_imm_method): Add new method.
+	(loongarch_build_integer): Add relevant implementations for
+	new method.
+	(loongarch_move_integer): Ditto.
+
 2023-11-26  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sort.cc: Use 'sorting networks' in comments.
