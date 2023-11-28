@@ -9936,7 +9936,8 @@ trans_get_upoly_len (stmtblock_t *block, gfc_expr *expr)
 static tree
 trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 				 gfc_expr * re, gfc_se *rse,
-				 tree * to_lenp, tree * from_lenp)
+				 tree * to_lenp, tree * from_lenp,
+				 tree * from_vptrp)
 {
   gfc_se se;
   gfc_expr * vptr_expr;
@@ -9944,10 +9945,11 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
   bool set_vptr = false, temp_rhs = false;
   stmtblock_t *pre = block;
   tree class_expr = NULL_TREE;
+  tree from_vptr = NULL_TREE;
 
   /* Create a temporary for complicated expressions.  */
   if (re->expr_type != EXPR_VARIABLE && re->expr_type != EXPR_NULL
-      && rse->expr != NULL_TREE && !DECL_P (rse->expr))
+      && rse->expr != NULL_TREE)
     {
       if (re->ts.type == BT_CLASS && !GFC_CLASS_TYPE_P (TREE_TYPE (rse->expr)))
 	class_expr = gfc_get_class_from_expr (rse->expr);
@@ -10044,6 +10046,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 		tmp = rse->expr;
 
 	      se.expr = gfc_class_vptr_get (tmp);
+	      from_vptr = se.expr;
 	      if (UNLIMITED_POLY (re))
 		from_len = gfc_class_len_get (tmp);
 
@@ -10065,6 +10068,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 	  gfc_free_expr (vptr_expr);
 	  gfc_add_block_to_block (block, &se.pre);
 	  gcc_assert (se.post.head == NULL_TREE);
+	  from_vptr = se.expr;
 	}
       gfc_add_modify (pre, lhs_vptr, fold_convert (TREE_TYPE (lhs_vptr),
 						se.expr));
@@ -10093,11 +10097,13 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 	}
     }
 
-  /* Return the _len trees only, when requested.  */
+  /* Return the _len and _vptr trees only, when requested.  */
   if (to_lenp)
     *to_lenp = to_len;
   if (from_lenp)
     *from_lenp = from_len;
+  if (from_vptrp)
+    *from_vptrp = from_vptr;
   return lhs_vptr;
 }
 
@@ -10166,7 +10172,7 @@ trans_class_pointer_fcn (stmtblock_t *block, gfc_se *lse, gfc_se *rse,
     {
       expr1_vptr = trans_class_vptr_len_assignment (block, expr1,
 						    expr2, rse,
-						    NULL, NULL);
+						    NULL, NULL, NULL);
       gfc_add_block_to_block (block, &rse->pre);
       tmp = gfc_create_var (TREE_TYPE (rse->expr), "ptrtemp");
       gfc_add_modify (&lse->pre, tmp, rse->expr);
@@ -10242,7 +10248,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       if (non_proc_ptr_assign && expr1->ts.type == BT_CLASS)
 	{
 	  trans_class_vptr_len_assignment (&block, expr1, expr2, &rse, NULL,
-					   NULL);
+					   NULL, NULL);
 	  lse.expr = gfc_class_data_get (lse.expr);
 	}
 
@@ -10371,7 +10377,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	      if (expr1->ts.type == BT_CLASS)
 		expr1_vptr = trans_class_vptr_len_assignment (&block, expr1,
 							      expr2, &rse,
-							      NULL, NULL);
+							      NULL, NULL,
+							      NULL);
 	    }
 	}
       else if (expr2->expr_type == EXPR_VARIABLE)
@@ -10388,7 +10395,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	      rse.expr = NULL_TREE;
 	      rse.string_length = strlen_rhs;
 	      trans_class_vptr_len_assignment (&block, expr1, expr2, &rse,
-					       NULL, NULL);
+					       NULL, NULL, NULL);
 	    }
 
 	  if (remap == NULL)
@@ -10421,7 +10428,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    {
 	      expr1_vptr = trans_class_vptr_len_assignment (&block, expr1,
 							    expr2, &rse, NULL,
-							    NULL);
+							    NULL, NULL);
 	      gfc_add_block_to_block (&block, &rse.pre);
 	      tmp = gfc_create_var (TREE_TYPE (rse.expr), "ptrtemp");
 	      gfc_add_modify (&lse.pre, tmp, rse.expr);
@@ -11819,7 +11826,7 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 			gfc_se *lse, gfc_se *rse, bool use_vptr_copy,
 			bool class_realloc)
 {
-  tree tmp, fcn, stdcopy, to_len, from_len, vptr, old_vptr;
+  tree tmp, fcn, stdcopy, to_len, from_len, vptr, old_vptr, rhs_vptr;
   vec<tree, va_gc> *args = NULL;
   bool final_expr;
 
@@ -11843,7 +11850,9 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
     }
 
   vptr = trans_class_vptr_len_assignment (block, lhs, rhs, rse, &to_len,
-					 &from_len);
+					  &from_len, &rhs_vptr);
+  if (rhs_vptr == NULL_TREE)
+    rhs_vptr = vptr;
 
   /* Generate (re)allocation of the lhs.  */
   if (class_realloc)
@@ -11856,7 +11865,7 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
       else
 	old_vptr = build_int_cst (TREE_TYPE (vptr), 0);
 
-      size = gfc_vptr_size_get (vptr);
+      size = gfc_vptr_size_get (rhs_vptr);
       tmp = lse->expr;
       class_han = GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
 	  ? gfc_class_data_get (tmp) : tmp;
@@ -11870,12 +11879,14 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 
       /* Reallocate if dynamic types are different. */
       gfc_init_block (&re_alloc);
+      tmp = fold_convert (pvoid_type_node, class_han);
       re = build_call_expr_loc (input_location,
 				builtin_decl_explicit (BUILT_IN_REALLOC), 2,
-				fold_convert (pvoid_type_node, class_han),
-				size);
+				tmp, size);
+      re = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp), tmp,
+			    re);
       tmp = fold_build2_loc (input_location, NE_EXPR,
-			     logical_type_node, vptr, old_vptr);
+			     logical_type_node, rhs_vptr, old_vptr);
       re = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			    tmp, re, build_empty_stmt (input_location));
       gfc_add_expr_to_block (&re_alloc, re);
