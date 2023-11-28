@@ -8509,9 +8509,18 @@ package body Exp_Aggr is
          Set_No_Ctrl_Actions (Init_Stmt);
 
          if Tagged_Type_Expansion and then Is_Tagged_Type (Comp_Typ) then
-            Append_To (Blk_Stmts,
-              Make_Tag_Assignment_From_Type
-                (Loc, New_Copy_Tree (Comp), Underlying_Type (Comp_Typ)));
+            declare
+               Typ : Entity_Id := Underlying_Type (Comp_Typ);
+
+            begin
+               if Is_Concurrent_Type (Typ) then
+                  Typ := Corresponding_Record_Type (Typ);
+               end if;
+
+               Append_To (Blk_Stmts,
+                 Make_Tag_Assignment_From_Type
+                   (Loc, New_Copy_Tree (Comp), Typ));
+            end;
          end if;
       end if;
 

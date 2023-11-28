@@ -941,9 +941,13 @@ package Exp_Util is
    function Make_Tag_Assignment_From_Type
      (Loc    : Source_Ptr;
       Target : Node_Id;
-      Typ    : Entity_Id) return Node_Id;
+      Typ    : Entity_Id) return Node_Id
+   with
+     Pre => (not Is_Concurrent_Type (Typ));
    --  Return an assignment of the tag of tagged type Typ to prefix Target,
-   --  which must be a record object of a descendant of Typ.
+   --  which must be a record object of a descendant of Typ. Typ cannot be a
+   --  concurrent type; for concurrent types, the corresponding record types
+   --  should be passed to this function instead.
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
