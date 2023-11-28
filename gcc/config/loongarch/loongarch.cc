@@ -8673,6 +8673,12 @@ loongarch_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 }
 
 static bool
+loongarch_is_odd_extraction (struct expand_vec_perm_d *);
+
+static bool
+loongarch_is_even_extraction (struct expand_vec_perm_d *);
+
+static bool
 loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
 {
   int i;
@@ -8693,6 +8699,24 @@ loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
 
       if (d->testing_p)
 	return true;
+
+      /* If match extract-even and extract-odd permutations pattern, use
+       * vselect much better than vshuf.  */
+      if (loongarch_is_odd_extraction (d)
+	  || loongarch_is_even_extraction (d))
+	{
+	  if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
+						d->perm, d->nelt))
+	    return true;
+
+	  unsigned char perm2[MAX_VECT_LEN];
+	  for (i = 0; i < d->nelt; ++i)
+	    perm2[i] = (d->perm[i] + d->nelt) & (2 * d->nelt - 1);
+
+	  if (loongarch_expand_vselect_vconcat (d->target, d->op1, d->op0,
+						perm2, d->nelt))
+	    return true;
+	}
 
       for (i = 0; i < d->nelt; i += 1)
 	{
@@ -8878,7 +8902,7 @@ loongarch_is_even_extraction (struct expand_vec_perm_d *d)
 	  result = false;
 	  break;
 	}
-      buf += 1;
+      buf += 2;
     }
 
   return result;
@@ -8900,7 +8924,7 @@ loongarch_is_extraction_permutation (struct expand_vec_perm_d *d)
 	  result = false;
 	  break;
 	}
-      buf += 2;
+      buf += 1;
     }
 
   return result;
@@ -9377,6 +9401,11 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	 Selector after: { 1, 3, 1, 3 }.
 	 Even extraction selector sample: E_V4DImode, { 0, 2, 4, 6 }
 	 Selector after: { 0, 2, 0, 2 }.  */
+
+      /* Better implement of extract-even and extract-odd permutations.  */
+      if (loongarch_expand_vec_perm_even_odd (d))
+	return true;
+
       for (i = 0; i < d->nelt / 2; i += 1)
 	{
 	  idx = d->perm[i];
