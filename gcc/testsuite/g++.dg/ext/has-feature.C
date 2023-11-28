@@ -5,7 +5,11 @@
 #define CXX11 (__cplusplus >= 201103L)
 #define CXX14 (__cplusplus >= 201402L)
 
-#if !FEAT(cxx_exceptions) || !FEAT(cxx_rtti)
+#if FEAT(cxx_exceptions) != !!__cpp_exceptions
+#error
+#endif
+
+#if FEAT(cxx_rtti) != !!__cpp_rtti
 #error
 #endif
 
