@@ -6,7 +6,7 @@ foo (int *p, int *expected, int desired)
 {
   return __atomic_compare_exchange (p, expected, &desired, 0,
 				    __ATOMIC_ACQUIRE, __ATOMIC_RELAXED);
-} /* { dg-error "call to external builtin" } */
+}
 
 int
 foo64 (long *p, long *expected, long desired)

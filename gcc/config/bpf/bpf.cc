@@ -746,15 +746,6 @@ bpf_output_call (rtx target)
 	    xops[0] = GEN_INT (TREE_INT_CST_LOW (TREE_VALUE (attr_args)));
 	    output_asm_insn ("call\t%0", xops);
 	  }
-	else if (fndecl_built_in_p (decl))
-	  {
-	    /* For now lets report this as an error while we are not able to
-	       link eBPF object files.  In particular with libgcc.  */
-	    tree name = DECL_NAME (decl);
-	    error ("call to external builtin %s in function, which is not supported by "
-		   "eBPF", name != NULL_TREE ? IDENTIFIER_POINTER (name) : "(anon)");
-	    output_asm_insn ("call 0", NULL);
-	  }
 	else
 	  output_asm_insn ("call\t%0", &target);
 
@@ -773,18 +764,6 @@ bpf_output_call (rtx target)
 
   return "";
 }
-
-static void
-bpf_external_libcall (rtx fun)
-{
-  tree decl = SYMBOL_REF_DECL (fun);
-  tree name = DECL_NAME (decl);
-  error ("call to external libcall %s in function, which is not supported by "
-	 "eBPF", name != NULL_TREE ? IDENTIFIER_POINTER (name) : "(anon)");
-}
-
-#undef  TARGET_ASM_EXTERNAL_LIBCALL
-#define TARGET_ASM_EXTERNAL_LIBCALL bpf_external_libcall
 
 /* Print register name according to assembly dialect.  In normal
    syntax registers are printed like %rN where N is the register

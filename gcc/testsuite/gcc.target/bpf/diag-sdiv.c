@@ -7,6 +7,6 @@ foo ()
 {
   signed int x = 5;
   signed int y = 2;
-  signed int z = x / y; /* { dg-error "call to external libcall" } */
+  signed int z = x / y;
 }
 /* { dg-final { scan-assembler-not "sdiv(32)?\t%r" } } */
