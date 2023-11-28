@@ -8732,8 +8732,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (plus (POPCOUNT:s @0) (POPCOUNT:s @1))
   (if (INTEGRAL_TYPE_P (type)
-       && wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
-    (POPCOUNT (bit_ior @0 @1))))
+       && (wi::bit_and (widest_int::from (tree_nonzero_bits (@0), UNSIGNED),
+			widest_int::from (tree_nonzero_bits (@1), UNSIGNED))
+	   == 0))
+   (with { tree utype = TREE_TYPE (@0);
+	   if (TYPE_PRECISION (utype) < TYPE_PRECISION (TREE_TYPE (@1)))
+	     utype = TREE_TYPE (@1); }
+    (POPCOUNT (bit_ior (convert:utype @0) (convert:utype @1))))))
 
 /* popcount(X) == 0 is X == 0, and related (in)equalities.  */
 (for popcount (POPCOUNT)
