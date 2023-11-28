@@ -1033,12 +1033,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (nop_outer_cast)-(inner_cast)var -> -(outer_cast)(var)
    if var is smaller in precision.
    This is always safe for both doing the negative in signed or unsigned
-   as the value for undefined will not show up.  */
+   as the value for undefined will not show up.
+   Note the outer cast cannot be a boolean type as the only valid values
+   are 0,-1/1 (depending on the signedness of the boolean) and the negative
+   is there to get the correct value.  */
 (simplify
  (convert (negate:s@1 (convert:s @0)))
  (if (INTEGRAL_TYPE_P (type)
       && tree_nop_conversion_p (type, TREE_TYPE (@1))
-      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0)))
+      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
+      && TREE_CODE (type) != BOOLEAN_TYPE)
     (negate (convert @0))))
 
 (for op (negate abs)
