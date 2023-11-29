@@ -14563,7 +14563,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && TREE_CODE (op2) == INTEGER_CST
 	      && integer_pow2p (bottom)
 	      && wi::multiple_of_p (wi::to_widest (op2),
-				    wi::to_widest (bottom), UNSIGNED))
+				    wi::to_widest (bottom), SIGNED))
 	    return true;
 
 	  op1 = gimple_assign_rhs1 (stmt);
