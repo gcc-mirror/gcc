@@ -89,9 +89,6 @@ struct Cont1
     : c(r, args...)
     { }
 
-  typename C::iterator begin();
-  typename C::iterator end();
-
   C c;
 };
 
@@ -153,9 +150,6 @@ struct Cont2
     : c(r, args...)
     { }
 
-  typename C::iterator begin();
-  typename C::iterator end();
-
   C c;
 };
 
@@ -185,9 +179,6 @@ struct Cont3
     Cont3(It first, Sent last, Args&&... args)
     : c(first, last, args...)
     { }
-
-  typename C::iterator begin();
-  typename C::iterator end();
 
   C c;
 };
@@ -222,10 +213,6 @@ struct Cont4
   Cont4() { }
   Cont4(typename C::allocator_type a) : c(a) { }
 
-  // Required to satisfy range
-  typename C::iterator begin() { return c.begin(); }
-  typename C::iterator end() { return c.end(); }
-
   // Satisfying container-insertable requires either this ...
   template<typename T>
     requires UsePushBack
@@ -254,7 +241,9 @@ struct Cont4
     used_reserve = true;
   }
 
-  // Required to satisfy reservable-container
+  // Satisfying sized_range is required to satisfy reservable-container
+  typename C::iterator begin() { return c.begin(); }
+  typename C::iterator end() { return c.end(); }
   auto size() const { return c.size(); }
 
   // Required to satisfy reservable-container
@@ -355,6 +344,17 @@ test_nodiscard()
   std::ranges::to<std::vector>();        // { dg-warning "ignoring return" }
 }
 
+void
+test_constexpr()
+{
+  constexpr int x = [](int i) {
+    auto c1 = std::views::iota(1, i) | std::ranges::to<std::vector<int>>();
+    auto c2 = std::views::iota(i, 10) | std::ranges::to<std::vector>();
+    return c1[0] + c2[0];
+  }(5);
+  static_assert(x == 6);
+}
+
 int main()
 {
   test_p1206r7_examples();
@@ -366,4 +366,5 @@ int main()
   test_2_2();
   test_lwg3984();
   test_nodiscard();
+  test_constexpr();
 }

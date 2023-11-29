@@ -9251,7 +9251,7 @@ namespace __detail
 
   template<typename _Cont, typename _Range>
     constexpr bool __toable = requires {
-      requires (!input_range<_Range>
+      requires (!input_range<_Cont>
 		  || convertible_to<range_reference_t<_Range>,
 				    range_value_t<_Cont>>);
     };
@@ -9290,7 +9290,7 @@ namespace __detail
 	  else if constexpr (constructible_from<_Cont, from_range_t, _Rg, _Args...>)
 	    return _Cont(from_range, std::forward<_Rg>(__r),
 			 std::forward<_Args>(__args)...);
-	  else if constexpr (requires { common_range<_Rg>;
+	  else if constexpr (requires { requires common_range<_Rg>;
 		typename __iter_category_t<iterator_t<_Rg>>;
 		requires derived_from<__iter_category_t<iterator_t<_Rg>>,
 				      input_iterator_tag>;
@@ -9346,26 +9346,6 @@ namespace __detail
       bool operator==(const _InputIter&) const;
     };
 
-#if 0
-  template<template<typename...> typename _Cont, typename _Rg,
-	   typename... _Args>
-    concept __deduce_expr_1 = requires {
-      _Cont(std::declval<_Rg>(), std::declval<_Args>()...);
-    };
-
-  template<template<typename...> typename _Cont, typename _Rg,
-	   typename... _Args>
-    concept __deduce_expr_2 = requires {
-      _Cont(from_range, std::declval<_Rg>(), std::declval<_Args>()...);
-    };
-
-  template<template<typename...> typename _Cont, typename _Rg,
-	   typename... _Args>
-    concept __deduce_expr_3 = requires(_InputIter<_Rg> __i) {
-      _Cont(std::move(__i), std::move(__i), std::declval<_Args>()...);
-    };
-#endif
-
   template<template<typename...> typename _Cont, input_range _Rg,
 	   typename... _Args>
     using _DeduceExpr1
@@ -9418,6 +9398,7 @@ namespace __detail
       tuple<decay_t<_Args>...> _M_bound_args;
 
     public:
+      constexpr
       _ToClosure(_Args&&... __args)
       : _M_bound_args(std::forward<_Args>(__args)...)
       { }
@@ -9498,6 +9479,7 @@ namespace __detail
       tuple<decay_t<_Args>...> _M_bound_args;
 
     public:
+      constexpr
       _ToClosure2(_Args&&... __args)
       : _M_bound_args(std::forward<_Args>(__args)...)
       { }
