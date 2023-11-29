@@ -8826,13 +8826,13 @@ loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
       if (d->vmode == E_V2DFmode)
 	{
 	  sel = gen_rtx_CONST_VECTOR (E_V2DImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = gen_rtx_SUBREG (E_V2DImode, d->target, 0);
+	  tmp = simplify_gen_subreg (E_V2DImode, d->target, d->vmode, 0);
 	  emit_move_insn (tmp, sel);
 	}
       else if (d->vmode == E_V4SFmode)
 	{
 	  sel = gen_rtx_CONST_VECTOR (E_V4SImode, gen_rtvec_v (d->nelt, rperm));
-	  tmp = gen_rtx_SUBREG (E_V4SImode, d->target, 0);
+	  tmp = simplify_gen_subreg (E_V4SImode, d->target, d->vmode, 0);
 	  emit_move_insn (tmp, sel);
 	}
       else
@@ -9616,8 +9616,8 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  /* Adjust op1 for selecting correct value in high 128bit of target
 	     register.
 	     op1: E_V4DImode, { 4, 5, 6, 7 } -> { 2, 3, 4, 5 }.  */
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, d->op0, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
 	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
 					      conv_op0, GEN_INT (0x21)));
 
@@ -9646,8 +9646,8 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op0_alt, d->op0);
 
 	  /* Generate subreg for fitting into insn gen function.  */
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
 
 	  /* Adjust op value in temp register.
 	     op0 = {0,1,2,3}, op1 = {4,5,0,1}  */
@@ -9693,9 +9693,10 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op1_alt, d->op1);
 	  emit_move_insn (op0_alt, d->op0);
 
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
-	  rtx conv_target = gen_rtx_SUBREG (E_V4DImode, d->target, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
+	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
+						 d->vmode, 0);
 
 	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
 					      conv_op0, GEN_INT (0x02)));
@@ -9727,9 +9728,10 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	 Selector sample: E_V4DImode, { 0, 1, 4 ,5 }  */
       if (!d->testing_p)
 	{
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, d->op1, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, d->op0, 0);
-	  rtx conv_target = gen_rtx_SUBREG (E_V4DImode, d->target, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
+	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
+						 d->vmode, 0);
 
 	  /* We can achieve the expectation by using sinple xvpermi.q insn.  */
 	  emit_move_insn (conv_target, conv_op1);
@@ -9754,8 +9756,8 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op1_alt, d->op1);
 	  emit_move_insn (op0_alt, d->op0);
 
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
 	  /* Adjust op value in temp regiter.
 	     op0 = { 0, 1, 2, 3 }, op1 = { 6, 7, 2, 3 }  */
 	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
@@ -9799,9 +9801,10 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op1_alt, d->op1);
 	  emit_move_insn (op0_alt, d->op0);
 
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
-	  rtx conv_target = gen_rtx_SUBREG (E_V4DImode, d->target, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, op1_alt, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, op0_alt, d->vmode, 0);
+	  rtx conv_target = simplify_gen_subreg (E_V4DImode, d->target,
+						 d->vmode, 0);
 
 	  emit_insn (gen_lasx_xvpermi_q_v4di (conv_op1, conv_op1,
 					      conv_op0, GEN_INT (0x13)));
@@ -9833,10 +9836,11 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	 Selector sample:E_V8SImode, { 2, 2, 2, 2, 2, 2, 2, 2 }  */
       if (!d->testing_p)
 	{
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, d->op1, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, d->op0, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
 	  rtx temp_reg = gen_reg_rtx (d->vmode);
-	  rtx conv_temp = gen_rtx_SUBREG (E_V4DImode, temp_reg, 0);
+	  rtx conv_temp = simplify_gen_subreg (E_V4DImode, temp_reg,
+					       d->vmode, 0);
 
 	  emit_move_insn (temp_reg, d->op0);
 
@@ -9945,9 +9949,11 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op0_alt, d->op0);
 	  emit_move_insn (op1_alt, d->op1);
 
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, d->op0, 0);
-	  rtx conv_op0a = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
-	  rtx conv_op1a = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
+	  rtx conv_op0a = simplify_gen_subreg (E_V4DImode, op0_alt,
+					       d->vmode, 0);
+	  rtx conv_op1a = simplify_gen_subreg (E_V4DImode, op1_alt,
+					       d->vmode, 0);
 
 	  /* Duplicate op0's low 128bit in op0, then duplicate high 128bit
 	     in op1.  After this, xvshuf.* insn's selector argument can
@@ -9980,10 +9986,12 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
 	  emit_move_insn (op0_alt, d->op0);
 	  emit_move_insn (op1_alt, d->op1);
 
-	  rtx conv_op0a = gen_rtx_SUBREG (E_V4DImode, op0_alt, 0);
-	  rtx conv_op1a = gen_rtx_SUBREG (E_V4DImode, op1_alt, 0);
-	  rtx conv_op0 = gen_rtx_SUBREG (E_V4DImode, d->op0, 0);
-	  rtx conv_op1 = gen_rtx_SUBREG (E_V4DImode, d->op1, 0);
+	  rtx conv_op0a = simplify_gen_subreg (E_V4DImode, op0_alt,
+					       d->vmode, 0);
+	  rtx conv_op1a = simplify_gen_subreg (E_V4DImode, op1_alt,
+					       d->vmode, 0);
+	  rtx conv_op0 = simplify_gen_subreg (E_V4DImode, d->op0, d->vmode, 0);
+	  rtx conv_op1 = simplify_gen_subreg (E_V4DImode, d->op1, d->vmode, 0);
 
 	  /* Reorganize op0's hi/lo 128bit and op1's hi/lo 128bit, to make sure
 	     that selector's low 128bit can access all op0's elements, and
@@ -10103,12 +10111,12 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
     {
     case E_V4DFmode:
       sel = gen_rtx_CONST_VECTOR (E_V4DImode, gen_rtvec_v (d->nelt, rperm));
-      tmp = gen_rtx_SUBREG (E_V4DImode, d->target, 0);
+      tmp = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
       emit_move_insn (tmp, sel);
       break;
     case E_V8SFmode:
       sel = gen_rtx_CONST_VECTOR (E_V8SImode, gen_rtvec_v (d->nelt, rperm));
-      tmp = gen_rtx_SUBREG (E_V8SImode, d->target, 0);
+      tmp = simplify_gen_subreg (E_V8SImode, d->target, d->vmode, 0);
       emit_move_insn (tmp, sel);
       break;
     default:
@@ -10194,7 +10202,7 @@ loongarch_expand_vec_perm_const_2 (struct expand_vec_perm_d *d)
      64bit in target vector register.  */
   else if (extract_ev_od)
     {
-      rtx converted = gen_rtx_SUBREG (E_V4DImode, d->target, 0);
+      rtx converted = simplify_gen_subreg (E_V4DImode, d->target, d->vmode, 0);
       emit_insn (gen_lasx_xvpermi_d_v4di (converted, converted,
 					  GEN_INT (0xD8)));
     }
@@ -11284,7 +11292,9 @@ loongarch_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop1 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop1, gen_rtx_SUBREG (vimode, operands[1], 0));
+	      emit_move_insn (xop1,
+			      simplify_gen_subreg (vimode, operands[1],
+						   mode, 0));
 	    }
 	  emit_move_insn (src1, xop1);
 	}
@@ -11301,7 +11311,9 @@ loongarch_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
 	  if (mode != vimode)
 	    {
 	      xop2 = gen_reg_rtx (vimode);
-	      emit_move_insn (xop2, gen_rtx_SUBREG (vimode, operands[2], 0));
+	      emit_move_insn (xop2,
+			      simplify_gen_subreg (vimode, operands[2],
+						   mode, 0));
 	    }
 	  emit_move_insn (src2, xop2);
 	}
@@ -11320,7 +11332,8 @@ loongarch_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
 			  gen_rtx_AND (vimode, mask, src1));
       /* The result is placed back to a register with the mask.  */
       emit_insn (gen_rtx_SET (mask, bsel));
-      emit_move_insn (operands[0], gen_rtx_SUBREG (mode, mask, 0));
+      emit_move_insn (operands[0],
+		      simplify_gen_subreg (mode, mask, vimode, 0));
     }
 }
 
