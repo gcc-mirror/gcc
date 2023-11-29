@@ -13509,6 +13509,19 @@ $as_echo "#define HAVE_LOADQUERY 1" >>confdefs.h
 
 fi
 
+for ac_header in windows.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "windows.h" "ac_cv_header_windows_h" "$ac_includes_default"
+if test "x$ac_cv_header_windows_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_WINDOWS_H 1
+_ACEOF
+
+fi
+
+done
+
+
 # Check for the fcntl function.
 if test -n "${with_target_subdir}"; then
    case "${host}" in
