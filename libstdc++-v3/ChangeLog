@@ -1,3 +1,11 @@
+2023-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Include <stdint.h>.
+
+2023-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h: Fix typo in comment.
+
 2023-11-24  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/109849

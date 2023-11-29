@@ -1,3 +1,8 @@
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* sha1.h (sha1_process_bytes_fn): New typedef.
+	(sha1_choose_process_bytes): Declare.
+
 2023-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gomp-constants.h (GOMP_VERSION): Increment to 3.

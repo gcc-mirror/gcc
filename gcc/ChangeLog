@@ -1,3 +1,130 @@
+2023-11-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md: Make output template whitespace consistent.
+
+2023-11-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* varasm.cc (assemble_external_libcall): Refer in assert only ifdef
+	ASM_OUTPUT_EXTERNAL.
+
+2023-11-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112738
+	* match.pd (`(nop_convert)-(convert)a`): Reject
+	when the outer type is boolean.
+
+2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112732
+	* tree.cc (build_opaque_vector_type): Reset TYPE_ALIAS_SET
+	of the newly built type.
+
+2023-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112494
+	* config/i386/i386.md (cmpstrnqi_1): Set FLAGS_REG to its previous
+	value when operand 2 equals zero.
+	(*cmpstrnqi_1): Ditto.
+	(*cmpstrnqi_1 peephole2): Ditto.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	Revert:
+	2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_output_call): Report error in case the
+	function call is for a builtin.
+	(bpf_external_libcall): Added target hook to detect and report
+	error when other external calls that are not builtins.
+
+2023-11-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/109253
+	* varasm.cc (pending_libcall_symbols): New variable.
+	(process_pending_assemble_externals): Process
+	pending_libcall_symbols.
+	(assemble_external_libcall): Defer emitting external libcall
+	symbols to process_pending_assemble_externals.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (btf_calc_num_vbytes): Fixed logic for enum64.
+	(btf_asm_enum_const): Corrected logic for enum64 and smaller
+	than 4 bytes values.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_output_call): Report error in case the
+	function call is for a builtin.
+	(bpf_external_libcall): Added target hook to detect and report
+	error when other external calls that are not builtins.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_use_by_pieces_infrastructure_p): Added
+	function to bypass default behaviour.
+	* config/bpf/bpf.h (COMPARE_MAX_PIECES): Defined to 1024 bytes.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc (core_mark_as_access_index):
+	Corrected check.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc
+	(bpf_resolve_overloaded_core_builtin): Removed call.
+	(execute_lower_bpf_core): Added all to remove_parser_plugin.
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* config/riscv/riscv-v.cc (expand_vec_perm_const): Disallow poly size (1, 1) VLA SLP.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* match.pd (parity(X)^parity(Y) -> parity(X^Y)): Handle case of
+	mismatched types.
+	* gimple-match-exports.cc (build_call_internal): Add special-case for
+	bit query ifns on large/huge BITINT_TYPE before bitint lowering.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* match.pd (popcount (X) + popcount (Y) -> POPCOUNT (X | Y)): Deal
+	with argument types with different precisions.
+
+2023-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109077
+	* Makefile.in (PLUGIN_HEADERS): Add analyzer headers.
+	(install-plugin): Keep the directory structure for files in
+	"analyzer".
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112713
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::compute_lcm_local_properties): Fix regression.
+
+2023-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (layout::maybe_add_location_range):
+	Don't print annotation lines for ranges when there's no column
+	info.
+	(selftest::test_one_liner_no_column): New.
+	(selftest::test_diagnostic_show_locus_one_liner): Call it.
+
+2023-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_get_location_text): Convert to...
+	(diagnostic_context::get_location_text): ...this, and convert
+	return type from char * to label_text.
+	(diagnostic_build_prefix): Update for above change.
+	(default_diagnostic_start_span_fn): Likewise.
+	(selftest::assert_location_text): Likewise.
+	* diagnostic.h (diagnostic_context::get_location_text): New decl.
+
 2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* config/aarch64/aarch64.cc (aarch64_if_then_else_costs):

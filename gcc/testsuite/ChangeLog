@@ -1,3 +1,106 @@
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* c-c++-common/array-lit.c: Adjust.
+	* g++.dg/cpp1z/array-prvalue1.C: New test.
+	* g++.dg/ext/complit17.C: New test.
+
+2023-11-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/jli-1.c: Update dg-final whitespace.
+	* gcc.target/arc/jli-2.c: Likewise.
+	* gcc.target/arc/naked-1.c: Likewise.
+	* gcc.target/arc/naked-2.c: Likewise.
+	* gcc.target/arc/tmac-1.c: Likewise.
+	* gcc.target/arc/tmac-2.c: Likewise.
+
+2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112741
+	* gcc.dg/ubsan/pr112741.c: New testcase.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	Revert:
+	2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-2.c: Adapted.
+	* gcc.target/bpf/atomic-fetch-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-xchg-2.c: Adapted.
+	* gcc.target/bpf/diag-sdiv.c: Adapted.
+	* gcc.target/bpf/diag-smod.c: Adapted.
+
+2023-11-28  Andrew Jenner  <andrew@codesourcery.com>
+	    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/110415
+	* gfortran.dg/pr110415.f90: New test.
+	* gfortran.dg/asan/pr110415-2.f90: New test.
+	* gfortran.dg/asan/pr110415-3.f90: New test.
+
+2023-11-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/109253
+	* gcc.target/bpf/divmod-libcall-1.c: New test.
+	* gcc.target/bpf/divmod-libcall-2.c: Likewise.
+	* gcc.c-torture/compile/libcall-2.c: Likewise.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.dg/debug/btf/btf-enum-small.c: Added test.
+
+2023-11-28  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-2.c: Adapted.
+	* gcc.target/bpf/atomic-fetch-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-op-3.c: Adapted.
+	* gcc.target/bpf/atomic-xchg-2.c: Adapted.
+	* gcc.target/bpf/diag-sdiv.c: Adapted.
+	* gcc.target/bpf/diag-smod.c: Adapted.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr111409.c: Allow for " before .debug_macro.
+	Quote literals dots.
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112694
+	* gcc.target/riscv/rvv/autovec/pr112694-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr112694-3.c: New test.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111754
+	* gcc.dg/vect/pr111754.c: Use dg-additional-options rather than
+	dg-options, add -Wno-psabi and use -fdump-tree-forwprop1 rather than
+	-fdump-tree-optimized.  Scan forwprop1 dump rather than optimized and
+	scan for either direct return or setting of <retval> to the vector.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* gcc.dg/bitint-43.c: New test.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112719
+	* gcc.dg/pr112719.c: New file.
+
+2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/112701
+	* gcc.dg/cpp/expr.c: Add additional tests to cover divide by 0 in an
+	unevaluated context, where the unsignedness still matters.
+
+2023-11-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112713
+	* gcc.target/riscv/rvv/vsetvl/pr112713-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr112713-2.c: New test.
+
 2023-11-27  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gcc.target/aarch64/csinc-3.c: New test.

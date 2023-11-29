@@ -1,3 +1,17 @@
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* call.cc (convert_like_internal): Remove obsolete comment.
+	* typeck.cc (decay_conversion): Allow array prvalue.
+	(maybe_warn_about_returning_address_of_local): Check
+	for returning pointer to temporary.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.cc (cp_feature_table): Evaluate
+	__has_extension (cxx_init_captures) to 1 even for -std=c++11.
+
 2023-11-27  Alex Coplan  <alex.coplan@arm.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

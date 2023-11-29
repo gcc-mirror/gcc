@@ -1,3 +1,16 @@
+2023-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94264
+	PR c++/53220
+	* c-typeck.cc (array_to_pointer_conversion): Adjust -Wc++-compat
+	diagnostic.
+
+2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112741
+	* gimple-parser.cc (c_parser_parse_gimple_body): Also
+	set DECL_SEEN_IN_BIND_EXPR_Pfor locals.
+
 2023-11-27  Alex Coplan  <alex.coplan@arm.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

@@ -1,3 +1,9 @@
+2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/112701
+	* expr.cc (num_div_op): Set unsignedp appropriately when returning a
+	stub value for divide by 0.
+
 2023-11-27  Alex Coplan  <alex.coplan@arm.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

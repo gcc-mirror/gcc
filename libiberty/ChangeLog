@@ -1,3 +1,13 @@
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): New check.
+	* sha1.c: If HAVE_X86_SHA1_HW_SUPPORT is defined, include x86intrin.h
+	and cpuid.h.
+	(sha1_hw_process_bytes, sha1_hw_process_block,
+	sha1_choose_process_bytes): New functions.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2023-11-15  Mark Wielaard  <mjw@redhat.com>
 
 	* aclocal.m4: Rebuild.
