@@ -10082,6 +10082,18 @@ proc check_effective_target_c99_runtime { } {
     }]
 }
 
+# Return 1 if the target supports DWARF CFI directives.
+
+proc check_effective_target_cfi { } {
+    return [check_no_compiler_messages cfi assembly {
+	#ifdef __GCC_HAVE_DWARF2_CFI_ASM
+        /* ok */
+	#else
+	#error unsupported
+	#endif
+    } ""]
+}
+
 # Return 1 if the target provides the D runtime.
 
 proc check_effective_target_d_runtime { } {

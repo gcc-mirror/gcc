@@ -2671,6 +2671,9 @@ The language for the compiler under test is C++.
 @item c99_runtime
 Target provides a full C99 runtime.
 
+@item cfi
+Target supports DWARF CFI directives.
+
 @item correct_iso_cpp_string_wchar_protos
 Target @code{string.h} and @code{wchar.h} headers provide C++ required
 overloads for @code{strchr} etc. functions.

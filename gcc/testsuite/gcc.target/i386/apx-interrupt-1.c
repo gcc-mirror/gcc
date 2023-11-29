@@ -1,6 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target { { ! ia32 } && cfi } } } */
 /* { dg-options "-mapx-features=egpr -m64 -O2 -mgeneral-regs-only -mno-cld -mno-push-args -maccumulate-outgoing-args -fomit-frame-pointer" } */
-/* { dg-skip-if "does not emit .cfi_xxx" "*-*-darwin*" } */
 
 extern void foo (void *) __attribute__ ((interrupt));
 extern int bar (int);
