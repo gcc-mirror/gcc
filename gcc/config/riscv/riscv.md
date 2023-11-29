@@ -501,6 +501,27 @@
   ]
   (const_string "no")))
 
+(define_attr "vconstraint" "no,W21,W42,W84,W41,W81,W82"
+  (const_string "no"))
+
+(define_attr "vconstraint_enabled" "no,yes"
+  (cond [(eq_attr "vconstraint" "no")
+         (const_string "yes")
+
+         (and (eq_attr "vconstraint" "W21")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 2"))
+	 (const_string "no")
+
+         (and (eq_attr "vconstraint" "W42,W41")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4"))
+	 (const_string "no")
+
+         (and (eq_attr "vconstraint" "W84,W81,W82")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8"))
+	 (const_string "no")
+        ]
+       (const_string "yes")))
+
 ;; Attribute to control enable or disable instructions.
 (define_attr "enabled" "no,yes"
   (cond [
@@ -508,6 +529,9 @@
     (const_string "no")
 
     (eq_attr "fp_vector_disabled" "yes")
+    (const_string "no")
+
+    (eq_attr "vconstraint_enabled" "no")
     (const_string "no")
   ]
   (const_string "yes")))
