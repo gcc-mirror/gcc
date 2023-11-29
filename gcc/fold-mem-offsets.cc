@@ -154,7 +154,7 @@ static int stats_fold_count;
    The definition is desired for REG used in INSN.
    Return the definition insn or NULL if there's no definition with
    the desired criteria.  */
-static rtx_insn*
+static rtx_insn *
 get_single_def_in_bb (rtx_insn *insn, rtx reg)
 {
   df_ref use;
@@ -205,11 +205,10 @@ get_single_def_in_bb (rtx_insn *insn, rtx reg)
 /* Get all uses of REG which is set in INSN.  Return the use list or NULL if a
    use is missing / irregular.  If SUCCESS is not NULL then set it to false if
    there are missing / irregular uses and true otherwise.  */
-static struct df_link*
+static df_link *
 get_uses (rtx_insn *insn, rtx reg, bool *success)
 {
   df_ref def;
-  struct df_link *ref_chain, *ref_link;
 
   if (success)
     *success = false;
@@ -221,17 +220,29 @@ get_uses (rtx_insn *insn, rtx reg, bool *success)
   if (!def)
     return NULL;
 
-  ref_chain = DF_REF_CHAIN (def);
+  df_link *ref_chain = DF_REF_CHAIN (def);
+  int insn_luid = DF_INSN_LUID (insn);
+  basic_block insn_bb = BLOCK_FOR_INSN (insn);
 
-  for (ref_link = ref_chain; ref_link; ref_link = ref_link->next)
+  for (df_link *ref_link = ref_chain; ref_link; ref_link = ref_link->next)
     {
       /* Problem getting a use for this instruction.  */
       if (ref_link->ref == NULL)
 	return NULL;
       if (DF_REF_CLASS (ref_link->ref) != DF_REF_REGULAR)
 	return NULL;
+
+      rtx_insn *use = DF_REF_INSN (ref_link->ref);
+      if (DEBUG_INSN_P (use))
+	continue;
+
       /* We do not handle REG_EQUIV/REG_EQ notes for now.  */
       if (DF_REF_FLAGS (ref_link->ref) & DF_REF_IN_NOTE)
+	return NULL;
+      if (BLOCK_FOR_INSN (use) != insn_bb)
+	return NULL;
+      /* Punt if use appears before def in the basic block.  See PR111601.  */
+      if (DF_INSN_LUID (use) < insn_luid)
 	return NULL;
     }
 
@@ -255,8 +266,7 @@ fold_offsets (rtx_insn *insn, rtx reg, bool analyze, bitmap foldable_insns);
 
     If DO_RECURSION is true and ANALYZE is false then offset that would result
     from folding is computed and is returned through the pointer OFFSET_OUT.
-    The instructions that can be folded are recorded in FOLDABLE_INSNS.
-*/
+    The instructions that can be folded are recorded in FOLDABLE_INSNS.  */
 static bool
 fold_offsets_1 (rtx_insn *insn, bool analyze, bool do_recursion,
 		HOST_WIDE_INT *offset_out, bitmap foldable_insns)
@@ -846,8 +856,8 @@ pass_fold_mem_offsets::execute (function *fn)
   FOR_ALL_BB_FN (bb, fn)
     {
       /* There is a conflict between this pass and RISCV's shorten-memrefs
-	  pass.  For now disable folding if optimizing for size because
-	  otherwise this cancels the effects of shorten-memrefs.  */
+	 pass.  For now disable folding if optimizing for size because
+	 otherwise this cancels the effects of shorten-memrefs.  */
       if (optimize_bb_for_size_p (bb))
 	continue;
 
