@@ -393,7 +393,7 @@ enum reg_class
 
 /*** The Overall Framework of an Assembler File.  */
 
-#define ASM_COMMENT_START ";"
+#define ASM_COMMENT_START "#"
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
