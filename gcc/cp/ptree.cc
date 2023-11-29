@@ -265,8 +265,6 @@ cxx_print_identifier (FILE *file, tree node, int indent)
 void
 cxx_print_lambda_node (FILE *file, tree node, int indent)
 {
-  if (LAMBDA_EXPR_MUTABLE_P (node))
-    fprintf (file, " /mutable");
   fprintf (file, " default_capture_mode=[");
   switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (node))
     {

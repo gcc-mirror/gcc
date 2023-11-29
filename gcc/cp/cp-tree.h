@@ -461,7 +461,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
       STMT_IS_FULL_EXPR_P (in _STMT)
       TARGET_EXPR_LIST_INIT_P (in TARGET_EXPR)
-      LAMBDA_EXPR_MUTABLE_P (in LAMBDA_EXPR)
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       CONSTRUCTOR_IS_DEPENDENT (in CONSTRUCTOR)
@@ -1477,10 +1476,6 @@ enum cp_lambda_default_capture_mode_type {
 /* Predicate tracking whether `this' is in the effective capture set.  */
 #define LAMBDA_EXPR_CAPTURES_THIS_P(NODE) \
   LAMBDA_EXPR_THIS_CAPTURE(NODE)
-
-/* Predicate tracking whether the lambda was declared 'mutable'.  */
-#define LAMBDA_EXPR_MUTABLE_P(NODE) \
-  TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \

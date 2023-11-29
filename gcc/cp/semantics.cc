@@ -12792,9 +12792,12 @@ capture_decltype (tree decl)
 
   if (!TYPE_REF_P (type))
     {
-      if (!LAMBDA_EXPR_MUTABLE_P (lam))
-	type = cp_build_qualified_type (type, (cp_type_quals (type)
-					       |TYPE_QUAL_CONST));
+      int quals = cp_type_quals (type);
+      tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
+      gcc_checking_assert (!WILDCARD_TYPE_P (non_reference (obtype)));
+      if (INDIRECT_TYPE_P (obtype))
+	quals |= cp_type_quals (TREE_TYPE (obtype));
+      type = cp_build_qualified_type (type, quals);
       type = build_reference_type (type);
     }
   return type;

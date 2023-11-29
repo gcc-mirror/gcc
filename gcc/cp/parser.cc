@@ -11770,7 +11770,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
   if (lambda_specs.storage_class == sc_mutable)
     {
-      LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
       quals = TYPE_UNQUALIFIED;
     }
   else if (lambda_specs.storage_class == sc_static)

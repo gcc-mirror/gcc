@@ -19341,7 +19341,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     = LAMBDA_EXPR_LOCATION (t);
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
     = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
-  LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
     LAMBDA_EXPR_REGEN_INFO (r)
       = build_template_info (t, add_to_template_args (TI_ARGS (ti),
