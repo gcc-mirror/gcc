@@ -1826,7 +1826,8 @@ convert_and_check (location_t loc, tree type, tree expr, bool init_const)
 
   if (c_inhibit_evaluation_warnings == 0
       && !TREE_OVERFLOW_P (expr)
-      && result != error_mark_node)
+      && result != error_mark_node
+      && !c_hardbool_type_attr (type))
     warnings_for_convert_and_check (loc, type, expr_for_warning, result);
 
   return result;
@@ -9986,6 +9987,24 @@ has_feature_p (const char *ident, bool strict_p)
     return false;
 
   return !strict_p || *feat_p;
+}
+
+/* This is the slow path of c-common.h's c_hardbool_type_attr.  */
+
+tree
+c_hardbool_type_attr_1 (tree type, tree *false_value, tree *true_value)
+{
+  tree attr = lookup_attribute ("hardbool", TYPE_ATTRIBUTES (type));
+  if (!attr)
+    return attr;
+
+  if (false_value)
+    *false_value = TREE_VALUE (TYPE_VALUES (type));
+
+  if (true_value)
+    *true_value = TREE_VALUE (TREE_CHAIN (TYPE_VALUES (type)));
+
+  return attr;
 }
 
 #include "gt-c-family-c-common.h"

@@ -8962,6 +8962,71 @@ initialization will result in future breakage.
 GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
 
+@cindex @code{hardbool} type attribute
+@item hardbool
+@itemx hardbool (@var{false_value})
+@itemx hardbool (@var{false_value}, @var{true_value})
+This attribute may only be applied to integral types in C, to introduce
+hardened boolean types.  It turns the integral type into a boolean-like
+type with the same size and precision, that uses the specified values as
+representations for @code{false} and @code{true}.  Underneath, it is
+actually an enumerate type, but its observable behavior is like that of
+@code{_Bool}, except for the strict internal representations, verified
+by runtime checks.
+
+If @var{true_value} is omitted, the bitwise negation of
+@var{false_value} is used.  If @var{false_value} is omitted, zero is
+used.  The named representation values must be different when converted
+to the original integral type.  Narrower bitfields are rejected if the
+representations become indistinguishable.
+
+Values of such types automatically decay to @code{_Bool}, at which
+point, the selected representation values are mapped to the
+corresponding @code{_Bool} values.  When the represented value is not
+determined, at compile time, to be either @var{false_value} or
+@var{true_value}, runtime verification calls @code{__builtin_trap} if it
+is neither.  This is what makes them hardened boolean types.
+
+When converting scalar types to such hardened boolean types, implicitly
+or explicitly, behavior corresponds to a conversion to @code{_Bool},
+followed by a mapping from @code{false} and @code{true} to
+@var{false_value} and @var{true_value}, respectively.
+
+@smallexample
+typedef char __attribute__ ((__hardbool__ (0x5a))) hbool;
+hbool first = 0;       /* False, stored as (char)0x5a.  */
+hbool second = !first; /* True, stored as ~(char)0x5a.  */
+
+static hbool zeroinit; /* False, stored as (char)0x5a.  */
+auto hbool uninit;     /* Undefined, may trap.  */
+@end smallexample
+
+When zero-initializing a variable or field of hardened boolean type
+(presumably held in static storage) the implied zero initializer gets
+converted to @code{_Bool}, and then to the hardened boolean type, so
+that the initial value is the hardened representation for @code{false}.
+Using that value is well defined.  This is @emph{not} the case when
+variables and fields of such types are uninitialized (presumably held in
+automatic or dynamic storage): their values are indeterminate, and using
+them invokes undefined behavior.  Using them may trap or not, depending
+on the bits held in the storage (re)used for the variable, if any, and
+on optimizations the compiler may perform on the grounds that using
+uninitialized values invokes undefined behavior.
+
+Users of @option{-ftrivial-auto-var-init} should be aware that the bit
+patterns used as initializers are @emph{not} converted to
+@code{hardbool} types, so using a @code{hardbool} variable that is
+implicitly initialized by the @option{-ftrivial-auto-var-init} may trap
+if the representations values chosen for @code{false} and @code{true} do
+not match the initializer.
+
+Since this is a language extension only available in C, interoperation
+with other languages may pose difficulties.  It should interoperate with
+Ada Booleans defined with the same size and equivalent representation
+clauses, and with enumerations or other languages' integral types that
+correspond to C's chosen integral type.
+
+
 @cindex @code{may_alias} type attribute
 @item may_alias
 Accesses through pointers to types with this attribute are not subject

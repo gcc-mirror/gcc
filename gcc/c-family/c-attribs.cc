@@ -176,6 +176,7 @@ static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
 static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_hardbool_attribute (tree *, tree, tree, int, bool *);
 static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
 static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int, bool *);
@@ -294,6 +295,8 @@ const struct attribute_spec c_common_attribute_table[] =
        affects_type_identity, handler, exclude } */
   { "signed_bool_precision",  1, 1, false, true, false, true,
 			      handle_signed_bool_precision_attribute, NULL },
+  { "hardbool",               0, 2, false, true, false, true,
+			      handle_hardbool_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -993,6 +996,96 @@ handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
 
   tree new_type = build_nonstandard_boolean_type (prec);
   *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
+
+/* Handle a "hardbool" attribute; arguments as in struct
+   attribute_spec.handler.  */
+
+static tree
+handle_hardbool_attribute (tree *node, tree name, tree args,
+			   int /* flags */, bool *no_add_attrs)
+{
+  if (c_language != clk_c)
+    {
+      error ("%qE attribute only supported in C", name);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != INTEGER_TYPE)
+    {
+      error ("%qE attribute only supported on "
+	     "integral types", name);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  tree orig = *node;
+  *node = build_duplicate_type (orig);
+
+  TREE_SET_CODE (*node, ENUMERAL_TYPE);
+  ENUM_UNDERLYING_TYPE (*node) = orig;
+
+  tree false_value;
+  if (args)
+    false_value = fold_convert (*node, TREE_VALUE (args));
+  else
+    false_value = fold_convert (*node, integer_zero_node);
+
+  if (TREE_OVERFLOW_P (false_value))
+    {
+      warning (OPT_Wattributes,
+	       "overflows in conversion from %qT to %qT "
+	       "changes value from %qE to %qE",
+	       TREE_TYPE (TREE_VALUE (args)), *node,
+	       TREE_VALUE (args), false_value);
+      TREE_OVERFLOW (false_value) = false;
+    }
+
+  tree true_value;
+  if (args && TREE_CHAIN (args))
+    true_value = fold_convert (*node, TREE_VALUE (TREE_CHAIN (args)));
+  else
+    true_value = fold_build1 (BIT_NOT_EXPR, *node, false_value);
+
+  if (TREE_OVERFLOW_P (true_value))
+    {
+      warning (OPT_Wattributes,
+	       "overflows in conversion from %qT to %qT "
+	       "changes value from %qE to %qE",
+	       TREE_TYPE (TREE_VALUE (TREE_CHAIN (args))), *node,
+	       TREE_VALUE (TREE_CHAIN (args)), true_value);
+      TREE_OVERFLOW (true_value) = false;
+    }
+
+  if (tree_int_cst_compare (false_value, true_value) == 0)
+    {
+      error ("%qE attribute requires different values for"
+	     " %<false%> and %<true%> for type %qT",
+	     name, *node);
+      *no_add_attrs = TRUE;
+      return NULL_TREE;
+    }
+
+  tree values = build_tree_list (get_identifier ("false"),
+				 false_value);
+  TREE_CHAIN (values) = build_tree_list (get_identifier ("true"),
+					 true_value);
+
+  /* Do *not* set TYPE_MIN_VALUE, TYPE_MAX_VALUE, nor TYPE_PRECISION according
+     to the false and true values.  That might cause the constants to be the
+     only acceptable values, which would drop the very hardening checks this
+     attribute is supposed to add.  */
+
+  TYPE_ATTRIBUTES (*node) = tree_cons (name, args,
+				       TYPE_ATTRIBUTES (*node));
+  *no_add_attrs = TRUE;
+
+  gcc_checking_assert (!TYPE_CACHED_VALUES_P (*node));
+  TYPE_VALUES (*node) = values;
+  TYPE_NAME (*node) = orig;
 
   return NULL_TREE;
 }
@@ -4408,7 +4501,8 @@ static tree
 type_valid_for_vector_size (tree type, tree atname, tree args,
 			    unsigned HOST_WIDE_INT *ptrnunits)
 {
-  bool error_p = ptrnunits != NULL;
+  bool hardbool_p = c_hardbool_type_attr (type);
+  bool error_p = ptrnunits != NULL || hardbool_p;
 
   /* Get the mode of the type being modified.  */
   machine_mode orig_mode = TYPE_MODE (type);
@@ -4421,6 +4515,7 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
       || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE
+      || hardbool_p
       || TREE_CODE (type) == BITINT_TYPE)
     {
       if (error_p)

@@ -13744,6 +13744,27 @@ The values used for pattern initialization might be changed in the future.
 
 The default is @samp{uninitialized}.
 
+Note that the initializer values, whether @samp{zero} or @samp{pattern},
+refer to data representation (in memory or machine registers), rather
+than to their interpretation as numerical values.  This distinction may
+be important in languages that support types with biases or implicit
+multipliers, and with such extensions as @samp{hardbool} (@pxref{Type
+Attributes}).  For example, a variable that uses 8 bits to represent
+(biased) quantities in the @code{range 160..400} will be initialized
+with the bit patterns @code{0x00} or @code{0xFE}, depending on
+@var{choice}, whether or not these representations stand for values in
+that range, and even if they do, the interpretation of the value held by
+the variable will depend on the bias.  A @samp{hardbool} variable that
+uses say @code{0X5A} and @code{0xA5} for @code{false} and @code{true},
+respectively, will trap with either @samp{choice} of trivial
+initializer, i.e., @samp{zero} initialization will not convert to the
+representation for @code{false}, even if it would for a @code{static}
+variable of the same type.  This means the initializer pattern doesn't
+generally depend on the type of the initialized variable.  One notable
+exception is that (non-hardened) boolean variables that fit in registers
+are initialized with @code{false} (zero), even when @samp{pattern} is
+requested.
+
 You can control this behavior for a specific variable by using the variable
 attribute @code{uninitialized} (@pxref{Variable Attributes}).
 

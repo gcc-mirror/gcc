@@ -911,6 +911,7 @@ extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
 extern unsigned int c_strict_flex_array_level_of (tree);
 extern bool c_option_is_from_cpp_diagnostics (int);
+extern tree c_hardbool_type_attr_1 (tree, tree *, tree *);
 
 /* Used by convert_and_check; in front ends.  */
 extern tree convert_init (tree, tree);
@@ -1354,6 +1355,23 @@ c_tree_chain_next (tree t)
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
     return TREE_CHAIN (t);
   return NULL;
+}
+
+/* Return the hardbool attribute associated with TYPE, if there is one, provided
+   that TYPE looks like an enumeral type that might have been set up by
+   handle_hardbool_attribute.  Return NULL otherwise.
+
+   If FALSE_VALUE or TRUE_VALUE are non-NULL and TYPE is a hardened boolean
+   type, store the corresponding representation values.  */
+static inline tree
+c_hardbool_type_attr (tree type,
+		      tree *false_value = NULL, tree *true_value = NULL)
+{
+  if (TREE_CODE (type) != ENUMERAL_TYPE
+      || TYPE_LANG_SPECIFIC (type))
+    return NULL_TREE;
+
+  return c_hardbool_type_attr_1 (type, false_value, true_value);
 }
 
 /* Mask used by tm_stmt_attr.  */

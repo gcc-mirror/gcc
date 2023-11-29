@@ -105,6 +105,20 @@ c_convert (tree type, tree expr, bool init_const)
       return error_mark_node;
     }
 
+  {
+    tree false_value, true_value;
+    if (c_hardbool_type_attr (type, &false_value, &true_value))
+      {
+	bool save = in_late_binary_op;
+	in_late_binary_op = true;
+	expr = c_objc_common_truthvalue_conversion (input_location, expr);
+	in_late_binary_op = save;
+
+	return fold_build3_loc (loc, COND_EXPR, type,
+				expr, true_value, false_value);
+      }
+  }
+
   switch (code)
     {
     case VOID_TYPE:

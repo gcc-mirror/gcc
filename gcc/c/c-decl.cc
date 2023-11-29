@@ -6532,6 +6532,12 @@ check_bitfield_type_and_width (location_t loc, tree *type, tree *width,
   else
     w = tree_to_uhwi (*width);
 
+  /* Truncation of hardbool false and true representation values is always safe:
+     either the values remain different, or we'll report a problem when creating
+     the narrower type.  */
+  if (c_hardbool_type_attr (*type))
+    return;
+
   if (TREE_CODE (*type) == ENUMERAL_TYPE)
     {
       struct lang_type *lt = TYPE_LANG_SPECIFIC (*type);
@@ -9469,6 +9475,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 		TREE_TYPE (field)
 		  = c_build_bitfield_integer_type (width,
 						   TYPE_UNSIGNED (type));
+	      if (tree attr = c_hardbool_type_attr (type))
+		decl_attributes (&TREE_TYPE (field),
+				 copy_list (attr),
+				 0, NULL_TREE);
 	      SET_DECL_MODE (field, TYPE_MODE (TREE_TYPE (field)));
 	    }
 	  DECL_INITIAL (field) = NULL_TREE;

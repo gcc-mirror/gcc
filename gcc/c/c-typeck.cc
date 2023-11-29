@@ -2065,6 +2065,35 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   if (force_non_npc)
     exp.value = build1 (NOP_EXPR, TREE_TYPE (exp.value), exp.value);
+
+  {
+    tree false_value, true_value;
+    if (convert_p && !error_operand_p (exp.value)
+	&& c_hardbool_type_attr (TREE_TYPE (exp.value),
+				 &false_value, &true_value))
+      {
+	tree t = save_expr (exp.value);
+
+	mark_exp_read (exp.value);
+
+	tree trapfn = builtin_decl_explicit (BUILT_IN_TRAP);
+	tree expr = build_call_expr_loc (loc, trapfn, 0);
+	expr = build_compound_expr (loc, expr, boolean_true_node);
+	expr = fold_build3_loc (loc, COND_EXPR, boolean_type_node,
+				fold_build2_loc (loc, NE_EXPR,
+						 boolean_type_node,
+						 t, true_value),
+				expr, boolean_true_node);
+	expr = fold_build3_loc (loc, COND_EXPR, boolean_type_node,
+				fold_build2_loc (loc, NE_EXPR,
+						 boolean_type_node,
+						 t, false_value),
+				expr, boolean_false_node);
+
+	exp.value = expr;
+      }
+  }
+
   return exp;
 }
 
@@ -8396,7 +8425,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	    }
 	}
 
-      if (code == VECTOR_TYPE)
+      if (code == VECTOR_TYPE || c_hardbool_type_attr (type))
 	/* Although the types are compatible, we may require a
 	   conversion.  */
 	inside_init = convert (type, inside_init);
