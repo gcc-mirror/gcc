@@ -66,6 +66,12 @@ Aspect Abstract_State
 
 This aspect is equivalent to :ref:`pragma Abstract_State<Pragma-Abstract_State>`.
 
+Aspect Always_Terminates
+========================
+.. index:: Always_Terminates
+
+This boolean aspect is equivalent to :ref:`pragma Always_Terminates<Pragma-Always_Terminates>`.
+
 Aspect Annotate
 ===============
 
