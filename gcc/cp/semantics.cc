@@ -871,8 +871,7 @@ is_assignment_op_expr_p (tree t)
 void
 maybe_warn_unparenthesized_assignment (tree t, tsubst_flags_t complain)
 {
-  if (REFERENCE_REF_P (t))
-    t = TREE_OPERAND (t, 0);
+  t = STRIP_REFERENCE_REF (t);
 
   if ((complain & tf_warning)
       && warn_parentheses
@@ -2176,8 +2175,7 @@ finish_parenthesized_expr (cp_expr expr)
     {
       /* This inhibits warnings in maybe_warn_unparenthesized_assignment
 	 and c_common_truthvalue_conversion.  */
-      tree inner = REFERENCE_REF_P (expr) ? TREE_OPERAND (expr, 0) : *expr;
-      suppress_warning (inner, OPT_Wparentheses);
+      suppress_warning (STRIP_REFERENCE_REF (*expr), OPT_Wparentheses);
     }
 
   if (TREE_CODE (expr) == OFFSET_REF
