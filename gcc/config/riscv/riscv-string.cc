@@ -866,6 +866,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 		if (TARGET_MIN_VLEN * lmul <= nunits * BITS_PER_UNIT
 		    /* Avoid loosing the option of using vsetivli .  */
 		    && (nunits <= 31 * lmul || nunits > 31 * 8)
+		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew)
 		    && (riscv_vector::get_vector_mode
 			 (elem_mode, exact_div (BYTES_PER_RISCV_VECTOR * lmul,
 				     potential_ew)).exists (&vmode)))
