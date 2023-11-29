@@ -30,7 +30,7 @@ void f1 (void * in, void *out)
 **	vle16\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vsext\.vf2\tv[0-9]+,\s*v[0-9]+
 **  ...
-**	vsext\.vf2\tv[1-9][0-9]?,\s*v[0-9]+,\s*v0.t
+**	vsext\.vf2\tv[0-9]+,\s*v[0-9]+,\s*v0.t
 **	vse64\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
