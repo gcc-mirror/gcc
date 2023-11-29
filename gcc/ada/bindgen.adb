@@ -65,6 +65,15 @@ package body Bindgen is
    --  Number of default-sized primary stacks the binder needs to allocate for
    --  task objects declared in the program.
 
+   Command_Line_Used : Boolean := False;
+   --  Flag indicating whether the unit Ada.Command_Line is in the closure of
+   --  the partition. This is set by Resolve_Binder_Options, and is used to
+   --  determine whether or not to import and use symbols defined in
+   --  Ada.Command_Line's support packages (gnat_argc, gnat_argv, gnat_envp
+   --  and gnat_exit_status). Conservatively, it is always set to True for
+   --  non-configurable run-times as parts of the compiler and run-time assume
+   --  these symbols are available and can be imported directly.
+
    System_Restrictions_Used : Boolean := False;
    --  Flag indicating whether the unit System.Restrictions is in the closure
    --  of the partition. This is set by Resolve_Binder_Options, and is used
@@ -2092,15 +2101,13 @@ package body Bindgen is
 
       WBI ("   begin");
 
-      --  Acquire command-line arguments if present and supported on the
-      --  target. Do not acquire command-line arguments if pragma No_Run_Time
-      --  is in effect as the run-time symbols will not be available.
+      --  Acquire command-line arguments if supported on the target and used
+      --  by the program.
 
       if CodePeer_Mode then
          null;
 
-      elsif Command_Line_Args_On_Target and then not No_Run_Time_Mode then
-
+      elsif Command_Line_Args_On_Target and then Command_Line_Used then
          --  Initialize gnat_argc/gnat_argv only if not already initialized,
          --  to avoid losing the result of any command-line processing done by
          --  earlier GNAT run-time initialization.
@@ -2187,10 +2194,13 @@ package body Bindgen is
          if No_Main_Subprogram
            or else ALIs.Table (ALIs.First).Main_Program = Proc
          then
-            if No_Run_Time_Mode then
-               WBI ("      return (0);");
-            else
+            --  Return gnat_exit_status if Ada.Command_Line is used otherwise
+            --  return 0.
+
+            if Command_Line_Used then
                WBI ("      return (gnat_exit_status);");
+            else
+               WBI ("      return (0);");
             end if;
          else
             WBI ("      return (Result);");
@@ -2589,8 +2599,11 @@ package body Bindgen is
 
          --  A run-time configured to support command line arguments defines
          --  a number of internal symbols that need to be set by the binder.
+         --  We do not do this in cases where the program does not use
+         --  Ada.Command_Line, as the package and it's support files may not be
+         --  present.
 
-         if Command_Line_Args_On_Target and then not No_Run_Time_Mode then
+         if Command_Line_Args_On_Target and then Command_Line_Used then
             WBI ("");
             WBI ("   gnat_argc : Integer;");
             WBI ("   gnat_argv : System.Address;");
@@ -2602,13 +2615,17 @@ package body Bindgen is
             WBI ("   pragma Import (C, gnat_envp);");
          end if;
 
-         --  Define exit status. The exit status is stored in the run-time
-         --  library to allow applications set the state through
-         --  Ada.Command_Line. It is initialized there.
+         --  Define exit status if supported by the target. The exit status is
+         --  stored in the run-time library to allow applications set the state
+         --  through Ada.Command_Line and is initialized in the run-time. Like
+         --  command line arguments, skip if Ada.Command_Line is not used in
+         --  the enclosure of the partition because this package may not be
+         --  available in the runtime.
 
          WBI ("");
 
-         if Exit_Status_Supported_On_Target and then not No_Run_Time_Mode then
+         if Exit_Status_Supported_On_Target and then Command_Line_Used
+         then
             WBI ("   gnat_exit_status : Integer;");
             WBI ("   pragma Import (C, gnat_exit_status);");
          end if;
@@ -3371,6 +3388,18 @@ package body Bindgen is
 
          Check_Package (System_Version_Control_Used,
                         "system.version_control%s");
+
+         --  Ditto for the use of Ada.Command_Line, except we always set
+         --  Command_Line_Used to True if on a non-configurable run-time
+         --  as parts of the compiler and run-time assume the GNAT command
+         --  line symbols are available and can be imported directly (as
+         --  long as No_Run_Time mode is not set).
+
+         if Configurable_Run_Time_On_Target then
+            Check_Package (Command_Line_Used, "ada.command_line%s");
+         elsif not No_Run_Time_Mode then
+            Command_Line_Used := True;
+         end if;
       end loop;
    end Resolve_Binder_Options;
 
