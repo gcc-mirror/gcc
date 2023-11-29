@@ -1,4 +1,5 @@
 // PR c++/112765
+// { dg-additional-options "-Wparentheses" }
 
 struct A {
   A& operator=(const A&);
