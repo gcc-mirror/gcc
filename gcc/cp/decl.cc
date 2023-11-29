@@ -17926,16 +17926,31 @@ store_parm_decls (tree current_function_parms)
 }
 
 
+/* Mark CDTOR's implicit THIS argument for returning, if required by
+   the ABI..  Return the decl for THIS, if it is to be returned, and
+   NULL otherwise.  */
+
+tree
+maybe_prepare_return_this (tree cdtor)
+{
+  if (targetm.cxx.cdtor_returns_this ())
+    if (tree val = DECL_ARGUMENTS (cdtor))
+      {
+	suppress_warning (val, OPT_Wuse_after_free);
+	return val;
+      }
+
+  return NULL_TREE;
+}
+
 /* Set the return value of the [cd]tor if the ABI wants that.  */
 
 void
-maybe_return_this (void)
+maybe_return_this ()
 {
-  if (targetm.cxx.cdtor_returns_this ())
+  if (tree val = maybe_prepare_return_this (current_function_decl))
     {
       /* Return the address of the object.  */
-      tree val = DECL_ARGUMENTS (current_function_decl);
-      suppress_warning (val, OPT_Wuse_after_free);
       val = fold_convert (TREE_TYPE (DECL_RESULT (current_function_decl)), val);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
