@@ -17,9 +17,7 @@
 // { dg-final { scan-assembler-times "jsr\[^\n\]*xyzzy" 2 { target alpha*-*-* } } }
 // Unless the assembler supports -relax, the 32-bit SPARC compiler generates
 // sethi/jmp instead of just call, so the scans need to be more specific.
-// With subexpressions, Tcl regexp -inline -all returns both the complete
-// match and the subexpressions, so double the count.
-// { dg-final { scan-assembler-times "\(jmp|call\)\[^\n\]*xyzzy" 4 { target sparc*-*-* } } }
+// { dg-final { scan-assembler-times "\(jmp|call\)\[^\n\]*xyzzy" 2 { target sparc*-*-* } } }
 
 struct S { S(); virtual void xyzzy(); };
 struct R { int a; S s; R(); };
