@@ -447,6 +447,17 @@ enum gfc_convert
 };
 
 
+/* Inline String Operations functions.  */
+enum ilsop_fn
+{
+  ILSOP_NONE = 0,
+  ILSOP_MEMSET = 1 << 0,
+  ILSOP_MEMCPY = 1 << 1,
+  ILSOP_MEMMOVE = 1 << 2,
+  ILSOP_MEMCMP = 1 << 3,
+  ILSOP_ALL = -1
+};
+
 /* Control-Flow Protection values.  */
 enum cf_protection_level
 {

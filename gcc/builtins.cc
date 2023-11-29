@@ -3751,7 +3751,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 				     expected_align, expected_size,
 				     min_size, max_size, probable_max_size,
 				     use_mempcpy_call, &is_move_done,
-				     might_overlap);
+				     might_overlap, tree_ctz (len));
 
   /* Bail out when a mempcpy call would be expanded as libcall and when
      we have a target that provides a fast implementation
@@ -4313,6 +4313,10 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
   int tst_bits = (max_bits != min_bits ? max_bits
 		  : floor_log2 (max_len ^ min_len));
 
+  /* Save the pre-blksize values.  */
+  int orig_max_bits = max_bits;
+  int orig_tst_bits = tst_bits;
+
   /* Check whether it's profitable to start by storing a fixed BLKSIZE
      bytes, to lower max_bits.  In the unlikely case of a constant LEN
      (implied by identical MAX_LEN and MIN_LEN), we want to issue a
@@ -4352,9 +4356,81 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
   if (max_bits >= 0)
     xlenest += ((HOST_WIDE_INT_1U << max_bits) * 2
 		- (HOST_WIDE_INT_1U << ctz_len));
-  if (!can_store_by_pieces (xlenest, builtin_memset_read_str,
-			    &valc, align, true))
-    return false;
+  bool max_loop = false;
+  bool use_store_by_pieces = true;
+  /* Skip the test in case of overflow in xlenest.  It shouldn't
+     happen because of the way max_bits and blksize are related, but
+     it doesn't hurt to test.  */
+  if (blksize > xlenest
+      || !can_store_by_pieces (xlenest, builtin_memset_read_str,
+			       &valc, align, true))
+    {
+      if (!(flag_inline_stringops & ILSOP_MEMSET))
+	return false;
+
+      for (max_bits = orig_max_bits;
+	   max_bits >= sctz_len;
+	   --max_bits)
+	{
+	  xlenest = ((HOST_WIDE_INT_1U << max_bits) * 2
+		     - (HOST_WIDE_INT_1U << ctz_len));
+	  /* Check that blksize plus the bits to be stored as blocks
+	     sized at powers of two can be stored by pieces.  This is
+	     like the test above, but with smaller max_bits.  Skip
+	     orig_max_bits (it would be redundant).  Also skip in case
+	     of overflow.  */
+	  if (max_bits < orig_max_bits
+	      && xlenest + blksize >= xlenest
+	      && can_store_by_pieces (xlenest + blksize,
+				      builtin_memset_read_str,
+				      &valc, align, true))
+	    {
+	      max_loop = true;
+	      break;
+	    }
+	  if (blksize
+	      && can_store_by_pieces (xlenest,
+				      builtin_memset_read_str,
+				      &valc, align, true))
+	    {
+	      max_len += blksize;
+	      min_len += blksize;
+	      tst_bits = orig_tst_bits;
+	      blksize = 0;
+	      max_loop = true;
+	      break;
+	    }
+	  if (max_bits == sctz_len)
+	    {
+	      /* We'll get here if can_store_by_pieces refuses to
+		 store even a single QImode.  We'll fall back to
+		 QImode stores then.  */
+	      if (!sctz_len)
+		{
+		  blksize = 0;
+		  max_loop = true;
+		  use_store_by_pieces = false;
+		  break;
+		}
+	      --sctz_len;
+	      --ctz_len;
+	    }
+	}
+      if (!max_loop)
+	return false;
+      /* If the boundaries are such that min and max may run a
+	 different number of trips in the initial loop, the remainder
+	 needs not be between the moduli, so set tst_bits to cover all
+	 bits.  Otherwise, if the trip counts are the same, max_len
+	 has the common prefix, and the previously-computed tst_bits
+	 is usable.  */
+      if (max_len >> max_bits > min_len >> max_bits)
+	tst_bits = max_bits;
+    }
+  /* ??? Do we have to check that all powers of two lengths from
+     max_bits down to ctz_len pass can_store_by_pieces?  As in, could
+     it possibly be that xlenest passes while smaller power-of-two
+     sizes don't?  */
 
   by_pieces_constfn constfun;
   void *constfundata;
@@ -4396,7 +4472,9 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
      the least significant bit possibly set in the length.  */
   for (int i = max_bits; i >= sctz_len; i--)
     {
+      rtx_code_label *loop_label = NULL;
       rtx_code_label *label = NULL;
+
       blksize = HOST_WIDE_INT_1U << i;
 
       /* If we're past the bits shared between min_ and max_len, expand
@@ -4410,24 +4488,56 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 				   profile_probability::even ());
 	}
       /* If we are at a bit that is in the prefix shared by min_ and
-	 max_len, skip this BLKSIZE if the bit is clear.  */
-      else if ((max_len & blksize) == 0)
+	 max_len, skip the current BLKSIZE if the bit is clear, but do
+	 not skip the loop, even if it doesn't require
+	 prechecking.  */
+      else if ((max_len & blksize) == 0
+	       && !(max_loop && i == max_bits))
 	continue;
 
-      /* Issue a store of BLKSIZE bytes.  */
-      to = store_by_pieces (to, blksize,
-			    constfun, constfundata,
-			    align, true,
-			    i != sctz_len ? RETURN_END : RETURN_BEGIN);
-
-      /* Adjust REM and PTR, unless this is the last iteration.  */
-      if (i != sctz_len)
+      if (max_loop && i == max_bits)
 	{
-	  emit_move_insn (ptr, force_operand (XEXP (to, 0), NULL_RTX));
+	  loop_label = gen_label_rtx ();
+	  emit_label (loop_label);
+	  /* Since we may run this multiple times, don't assume we
+	     know anything about the offset.  */
+	  clear_mem_offset (to);
+	}
+
+      bool update_needed = i != sctz_len || loop_label;
+      rtx next_ptr = NULL_RTX;
+      if (!use_store_by_pieces)
+	{
+	  gcc_checking_assert (blksize == 1);
+	  if (!val)
+	    val = gen_int_mode (valc, QImode);
+	  to = change_address (to, QImode, 0);
+	  emit_move_insn (to, val);
+	  if (update_needed)
+	    next_ptr = plus_constant (ptr_mode, ptr, blksize);
+	}
+      else
+	{
+	  /* Issue a store of BLKSIZE bytes.  */
+	  to = store_by_pieces (to, blksize,
+				constfun, constfundata,
+				align, true,
+				update_needed ? RETURN_END : RETURN_BEGIN);
+	  next_ptr = XEXP (to, 0);
+	}
+      /* Adjust REM and PTR, unless this is the last iteration.  */
+      if (update_needed)
+	{
+	  emit_move_insn (ptr, force_operand (next_ptr, NULL_RTX));
 	  to = replace_equiv_address (to, ptr);
 	  rtx rem_minus_blksize = plus_constant (ptr_mode, rem, -blksize);
 	  emit_move_insn (rem, force_operand (rem_minus_blksize, NULL_RTX));
 	}
+
+      if (loop_label)
+	emit_cmp_and_jump_insns (rem, GEN_INT (blksize), GE, NULL,
+				 ptr_mode, 1, loop_label,
+				 profile_probability::likely ());
 
       if (label)
 	{
@@ -4715,7 +4825,8 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   result = emit_block_cmp_hints (arg1_rtx, arg2_rtx, len_rtx,
 				 TREE_TYPE (len), target,
 				 result_eq, constfn,
-				 CONST_CAST (char *, rep));
+				 CONST_CAST (char *, rep),
+				 tree_ctz (len));
 
   if (result)
     {
@@ -7358,7 +7469,15 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_CLEAR_CACHE
       && !ALLOCA_FUNCTION_CODE_P (fcode)
-      && fcode != BUILT_IN_FREE)
+      && fcode != BUILT_IN_FREE
+      && (fcode != BUILT_IN_MEMSET
+	  || !(flag_inline_stringops & ILSOP_MEMSET))
+      && (fcode != BUILT_IN_MEMCPY
+	  || !(flag_inline_stringops & ILSOP_MEMCPY))
+      && (fcode != BUILT_IN_MEMMOVE
+	  || !(flag_inline_stringops & ILSOP_MEMMOVE))
+      && (fcode != BUILT_IN_MEMCMP
+	  || !(flag_inline_stringops & ILSOP_MEMCMP)))
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx

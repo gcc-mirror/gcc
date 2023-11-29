@@ -560,6 +560,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
+-finline-stringops[=@var{fn}]
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
 -finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
@@ -12372,6 +12373,20 @@ Optimize various standard C string functions (e.g.@: @code{strlen},
 their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@opindex finline-stringops
+@item -finline-stringops[=@var{fn}]
+Expand memory and string operations (for now, only @code{memset})
+inline, even when the length is variable or big enough as to require
+looping.  This is most useful along with @option{-ffreestanding} and
+@option{-fno-builtin}.
+
+In some circumstances, it enables the compiler to generate code that
+takes advantage of known alignment and length multipliers, but even then
+it may be less efficient than optimized runtime implementations, and
+grow code size so much that even a less performant but shared
+implementation runs faster due to better use of code caches.  This
+option is disabled by default.
 
 @opindex fno-inline
 @opindex finline

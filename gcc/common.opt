@@ -1955,6 +1955,40 @@ finline-atomics
 Common Var(flag_inline_atomics) Init(1) Optimization
 Inline __atomic operations when a lock free instruction sequence is available.
 
+finline-stringops
+Common RejectNegative Enum(ilsop_fn) Var(flag_inline_stringops, ILSOP_ALL) Enum(ilsop_fn) Init(ILSOP_NONE) Optimization Undocumented
+
+fno-inline-stringops
+Common RejectNegative Enum(ilsop_fn) Var(flag_inline_stringops, ILSOP_NONE) Enum(ilsop_fn) Optimization Undocumented
+
+finline-stringops=
+Common Joined Var(flag_inline_stringops) EnumSet Enum(ilsop_fn) Optimization
+-finline-stringops[=memcmp|memcpy|memmove|memset]
+Expand supported mem/str operations inline, even if against optimization.
+
+Enum
+Name(ilsop_fn) Type(enum ilsop_fn) UnknownError(unavailable stringop for inlining %qs)
+
+; This is not part of any set.
+; EnumValue
+; Enum(ilsop_fn) String(none) Value(ILSOP_NONE)
+
+EnumValue
+Enum(ilsop_fn) String(memcmp) Value(ILSOP_MEMCMP) Set(1)
+
+EnumValue
+Enum(ilsop_fn) String(memcpy) Value(ILSOP_MEMCPY) Set(2)
+
+EnumValue
+Enum(ilsop_fn) String(memmove) Value(ILSOP_MEMMOVE) Set(3)
+
+EnumValue
+Enum(ilsop_fn) String(memset) Value(ILSOP_MEMSET) Set(4)
+
+; This is not part of any set either.
+; EnumValue
+; Enum(ilsop_fn) String(all) Value(ILSOP_ALL)
+
 fcf-protection
 Common RejectNegative Alias(fcf-protection=,full)
 

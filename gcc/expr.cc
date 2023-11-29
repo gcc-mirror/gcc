@@ -80,7 +80,11 @@ static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned,
 					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT, bool);
-static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
+static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned, int);
+static void emit_block_move_via_sized_loop (rtx, rtx, rtx, unsigned, unsigned);
+static void emit_block_move_via_oriented_loop (rtx, rtx, rtx, unsigned, unsigned);
+static rtx emit_block_cmp_via_loop (rtx, rtx, rtx, tree, rtx, bool,
+				    unsigned, unsigned);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
@@ -1982,6 +1986,8 @@ compare_by_pieces (rtx arg0, rtx arg1, unsigned HOST_WIDE_INT len,
    MIN_SIZE is the minimal size of block to move
    MAX_SIZE is the maximal size of block to move, if it cannot be represented
    in unsigned HOST_WIDE_INT, than it is mask of all ones.
+   CTZ_SIZE is the trailing-zeros count of SIZE; even a nonconstant SIZE is
+   known to be a multiple of 1<<CTZ_SIZE.
 
    Return the address of the new block, if memcpy is called and returns it,
    0 otherwise.  */
@@ -1993,7 +1999,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size,
 		       bool bail_out_libcall, bool *is_move_done,
-		       bool might_overlap)
+		       bool might_overlap, unsigned ctz_size)
 {
   int may_use_call;
   rtx retval = 0;
@@ -2079,6 +2085,14 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	}
     }
 
+  bool dynamic_direction = false;
+  if (!pattern_ok && !pieces_ok && may_use_call
+      && (flag_inline_stringops & (might_overlap ? ILSOP_MEMMOVE : ILSOP_MEMCPY)))
+    {
+      may_use_call = 0;
+      dynamic_direction = might_overlap;
+    }
+
   if (pattern_ok)
     ;
   else if (pieces_ok)
@@ -2100,10 +2114,12 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
+  else if (dynamic_direction)
+    emit_block_move_via_oriented_loop (x, y, size, align, ctz_size);
   else if (might_overlap)
     *is_move_done = false;
   else
-    emit_block_move_via_loop (x, y, size, align);
+    emit_block_move_via_sized_loop (x, y, size, align, ctz_size);
 
   if (method == BLOCK_OP_CALL_PARM)
     OK_DEFER_POP;
@@ -2112,7 +2128,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 }
 
 rtx
-emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
+emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method,
+		 unsigned int ctz_size)
 {
   unsigned HOST_WIDE_INT max, min = 0;
   if (GET_CODE (size) == CONST_INT)
@@ -2120,7 +2137,8 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
   else
     max = GET_MODE_MASK (GET_MODE (size));
   return emit_block_move_hints (x, y, size, method, 0, -1,
-				min, max, max);
+				min, max, max,
+				false, NULL, false, ctz_size);
 }
 
 /* A subroutine of emit_block_move.  Returns true if calling the
@@ -2282,13 +2300,117 @@ emit_block_move_via_pattern (rtx x, rtx y, rtx size, unsigned int align,
   return false;
 }
 
+/* Like emit_block_move_via_loop, but choose a suitable INCR based on
+   ALIGN and CTZ_SIZE.  */
+
+static void
+emit_block_move_via_sized_loop (rtx x, rtx y, rtx size,
+				unsigned int align,
+				unsigned int ctz_size)
+{
+  int incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (size))
+    ctz_size = MAX (ctz_size, (unsigned) wi::ctz (UINTVAL (size)));
+
+  if (HOST_WIDE_INT_1U << ctz_size < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_size;
+
+  while (incr > 1 && !can_move_by_pieces (incr, align))
+    incr >>= 1;
+
+  gcc_checking_assert (incr);
+
+  return emit_block_move_via_loop (x, y, size, align, incr);
+}
+
+/* Like emit_block_move_via_sized_loop, but besides choosing INCR so
+   as to ensure safe moves even in case of overlap, output dynamic
+   tests to choose between two loops, one moving downwards, another
+   moving upwards.  */
+
+static void
+emit_block_move_via_oriented_loop (rtx x, rtx y, rtx size,
+				   unsigned int align,
+				   unsigned int ctz_size)
+{
+  int incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (size))
+    ctz_size = MAX (ctz_size, (unsigned) wi::ctz (UINTVAL (size)));
+
+  if (HOST_WIDE_INT_1U << ctz_size < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_size;
+
+  while (incr > 1 && !int_mode_for_size (incr, 0).exists ())
+    incr >>= 1;
+
+  gcc_checking_assert (incr);
+
+  rtx_code_label *upw_label, *end_label;
+  upw_label = gen_label_rtx ();
+  end_label = gen_label_rtx ();
+
+  rtx x_addr = force_operand (XEXP (x, 0), NULL_RTX);
+  rtx y_addr = force_operand (XEXP (y, 0), NULL_RTX);
+  do_pending_stack_adjust ();
+
+  machine_mode mode = GET_MODE (x_addr);
+  if (mode != GET_MODE (y_addr))
+    {
+      scalar_int_mode xmode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode));
+      scalar_int_mode ymode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE
+				      (GET_MODE (y_addr)));
+      if (GET_MODE_BITSIZE (xmode) < GET_MODE_BITSIZE (ymode))
+	mode = ymode;
+      else
+	mode = xmode;
+
+#ifndef POINTERS_EXTEND_UNSIGNED
+      const int POINTERS_EXTEND_UNSIGNED = 1;
+#endif
+      x_addr = convert_modes (mode, GET_MODE (x_addr), x_addr,
+			      POINTERS_EXTEND_UNSIGNED);
+      y_addr = convert_modes (mode, GET_MODE (y_addr), y_addr,
+			      POINTERS_EXTEND_UNSIGNED);
+    }
+
+  /* Test for overlap: if (x >= y || x + size <= y) goto upw_label.  */
+  emit_cmp_and_jump_insns (x_addr, y_addr, GEU, NULL_RTX, mode,
+			   true, upw_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (5, 10));
+  rtx tmp = convert_modes (GET_MODE (x_addr), GET_MODE (size), size, true);
+  tmp = simplify_gen_binary (PLUS, GET_MODE (x_addr), x_addr, tmp);
+
+  emit_cmp_and_jump_insns (tmp, y_addr, LEU, NULL_RTX, mode,
+			   true, upw_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (8, 10));
+
+  emit_block_move_via_loop (x, y, size, align, -incr);
+
+  emit_jump (end_label);
+  emit_label (upw_label);
+
+  emit_block_move_via_loop (x, y, size, align, incr);
+
+  emit_label (end_label);
+}
+
 /* A subroutine of emit_block_move.  Copy the data via an explicit
-   loop.  This is used only when libcalls are forbidden.  */
-/* ??? It'd be nice to copy in hunks larger than QImode.  */
+   loop.  This is used only when libcalls are forbidden, or when
+   inlining is required.  INCR is the block size to be copied in each
+   loop iteration.  If it is negative, the absolute value is used, and
+   the block is copied backwards.  INCR must be a power of two, an
+   exact divisor for SIZE and ALIGN, and imply a mode that can be
+   safely copied per iteration assuming no overlap.  */
 
 static void
 emit_block_move_via_loop (rtx x, rtx y, rtx size,
-			  unsigned int align ATTRIBUTE_UNUSED)
+			  unsigned int align, int incr)
 {
   rtx_code_label *cmp_label, *top_label;
   rtx iter, x_addr, y_addr, tmp;
@@ -2304,7 +2426,38 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
   cmp_label = gen_label_rtx ();
   iter = gen_reg_rtx (iter_mode);
 
-  emit_move_insn (iter, const0_rtx);
+  bool downwards = incr < 0;
+  rtx iter_init;
+  rtx_code iter_cond;
+  rtx iter_limit;
+  rtx iter_incr;
+  machine_mode move_mode;
+  if (downwards)
+    {
+      incr = -incr;
+      iter_init = size;
+      iter_cond = GEU;
+      iter_limit = const0_rtx;
+      iter_incr = GEN_INT (incr);
+    }
+  else
+    {
+      iter_init = const0_rtx;
+      iter_cond = LTU;
+      iter_limit = size;
+      iter_incr = GEN_INT (incr);
+    }
+  emit_move_insn (iter, iter_init);
+
+  scalar_int_mode int_move_mode
+    = smallest_int_mode_for_size (incr * BITS_PER_UNIT);
+  if (GET_MODE_BITSIZE (int_move_mode) != incr * BITS_PER_UNIT)
+    {
+      move_mode = BLKmode;
+      gcc_checking_assert (can_move_by_pieces (incr, align));
+    }
+  else
+    move_mode = int_move_mode;
 
   x_addr = force_operand (XEXP (x, 0), NULL_RTX);
   y_addr = force_operand (XEXP (y, 0), NULL_RTX);
@@ -2320,19 +2473,32 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
     tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
   y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
 
-  x = change_address (x, QImode, x_addr);
-  y = change_address (y, QImode, y_addr);
+  x = change_address (x, move_mode, x_addr);
+  y = change_address (y, move_mode, y_addr);
 
-  emit_move_insn (x, y);
+  if (move_mode == BLKmode)
+    {
+      bool done;
+      emit_block_move_hints (x, y, iter_incr, BLOCK_OP_NO_LIBCALL,
+			     align, incr, incr, incr, incr,
+			     false, &done, false);
+      gcc_checking_assert (done);
+    }
+  else
+    emit_move_insn (x, y);
 
-  tmp = expand_simple_binop (iter_mode, PLUS, iter, const1_rtx, iter,
+  if (downwards)
+    emit_label (cmp_label);
+
+  tmp = expand_simple_binop (iter_mode, PLUS, iter, iter_incr, iter,
 			     true, OPTAB_LIB_WIDEN);
   if (tmp != iter)
     emit_move_insn (iter, tmp);
 
-  emit_label (cmp_label);
+  if (!downwards)
+    emit_label (cmp_label);
 
-  emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
+  emit_cmp_and_jump_insns (iter, iter_limit, iter_cond, NULL_RTX, iter_mode,
 			   true, top_label,
 			   profile_probability::guessed_always ()
 				.apply_scale (9, 10));
@@ -2432,7 +2598,8 @@ emit_block_cmp_via_cmpmem (rtx x, rtx y, rtx len, tree len_type, rtx target,
 
    Both X and Y must be MEM rtx's.  LEN is an rtx that says how long
    they are.  LEN_TYPE is the type of the expression that was used to
-   calculate it.
+   calculate it, and CTZ_LEN is the known trailing-zeros count of LEN,
+   so LEN must be a multiple of 1<<CTZ_LEN even if it's not constant.
 
    If EQUALITY_ONLY is true, it means we don't have to return the tri-state
    value of a normal memcmp call, instead we can just compare for equality.
@@ -2448,7 +2615,7 @@ emit_block_cmp_via_cmpmem (rtx x, rtx y, rtx len, tree len_type, rtx target,
 rtx
 emit_block_cmp_hints (rtx x, rtx y, rtx len, tree len_type, rtx target,
 		      bool equality_only, by_pieces_constfn y_cfn,
-		      void *y_cfndata)
+		      void *y_cfndata, unsigned ctz_len)
 {
   rtx result = 0;
 
@@ -2470,8 +2637,203 @@ emit_block_cmp_hints (rtx x, rtx y, rtx len, tree len_type, rtx target,
   else
     result = emit_block_cmp_via_cmpmem (x, y, len, len_type, target, align);
 
+  if (!result && (flag_inline_stringops & ILSOP_MEMCMP))
+    result = emit_block_cmp_via_loop (x, y, len, len_type,
+				      target, equality_only,
+				      align, ctz_len);
+
   return result;
 }
+
+/* Like emit_block_cmp_hints, but with known alignment and no support
+   for constats.  Always expand to a loop with iterations that compare
+   blocks of the largest compare-by-pieces size that divides both len
+   and align, and then, if !EQUALITY_ONLY, identify the word and then
+   the unit that first differs to return the result.  */
+
+rtx
+emit_block_cmp_via_loop (rtx x, rtx y, rtx len, tree len_type, rtx target,
+			 bool equality_only, unsigned align, unsigned ctz_len)
+{
+  unsigned incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (len))
+    ctz_len = MAX (ctz_len, (unsigned) wi::ctz (UINTVAL (len)));
+
+  if (HOST_WIDE_INT_1U << ctz_len < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_len;
+
+  while (incr > 1
+	 && !can_do_by_pieces (incr, align, COMPARE_BY_PIECES))
+    incr >>= 1;
+
+  rtx_code_label *cmp_label, *top_label, *ne_label, *res_label;
+  rtx iter, x_addr, y_addr, tmp;
+  machine_mode x_addr_mode = get_address_mode (x);
+  machine_mode y_addr_mode = get_address_mode (y);
+  machine_mode iter_mode;
+
+  iter_mode = GET_MODE (len);
+  if (iter_mode == VOIDmode)
+    iter_mode = word_mode;
+
+  rtx iter_init = const0_rtx;
+  rtx_code iter_cond = LTU;
+  rtx_code entry_cond = GEU;
+  rtx iter_limit = len;
+  rtx iter_incr = GEN_INT (incr);
+  machine_mode cmp_mode;
+
+  /* We can drop the loop back edge if we know there's exactly one
+     iteration.  */
+  top_label = (!rtx_equal_p (len, iter_incr)
+	       ? gen_label_rtx ()
+	       : NULL);
+  /* We need not test before entering the loop if len is known
+     nonzero.  ??? This could be even stricter, testing whether a
+     nonconstant LEN could possibly be zero.  */
+  cmp_label = (!CONSTANT_P (len) || rtx_equal_p (len, iter_init)
+	       ? gen_label_rtx ()
+	       : NULL);
+  ne_label = gen_label_rtx ();
+  res_label = gen_label_rtx ();
+
+  iter = gen_reg_rtx (iter_mode);
+  emit_move_insn (iter, iter_init);
+
+  scalar_int_mode int_cmp_mode
+    = smallest_int_mode_for_size (incr * BITS_PER_UNIT);
+  if (GET_MODE_BITSIZE (int_cmp_mode) != incr * BITS_PER_UNIT
+      || !can_compare_p (NE, int_cmp_mode, ccp_jump))
+    {
+      cmp_mode = BLKmode;
+      gcc_checking_assert (incr != 1);
+    }
+  else
+    cmp_mode = int_cmp_mode;
+
+  /* Save the base addresses.  */
+  x_addr = force_operand (XEXP (x, 0), NULL_RTX);
+  y_addr = force_operand (XEXP (y, 0), NULL_RTX);
+  do_pending_stack_adjust ();
+
+  if (cmp_label)
+    {
+      if (top_label)
+	emit_jump (cmp_label);
+      else
+	emit_cmp_and_jump_insns (iter, iter_limit, entry_cond,
+				 NULL_RTX, iter_mode,
+				 true, cmp_label,
+				 profile_probability::guessed_always ()
+				 .apply_scale (1, 10));
+    }
+  if (top_label)
+    emit_label (top_label);
+
+  /* Offset the base addresses by ITER.  */
+  tmp = convert_modes (x_addr_mode, iter_mode, iter, true);
+  x_addr = simplify_gen_binary (PLUS, x_addr_mode, x_addr, tmp);
+
+  if (x_addr_mode != y_addr_mode)
+    tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
+  y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
+
+  x = change_address (x, cmp_mode, x_addr);
+  y = change_address (y, cmp_mode, y_addr);
+
+  /* Compare one block.  */
+  rtx part_res;
+  if (cmp_mode == BLKmode)
+    part_res = compare_by_pieces (x, y, incr, target, align, 0, 0);
+  else
+    part_res = expand_binop (cmp_mode, sub_optab, x, y, NULL_RTX,
+			     true, OPTAB_LIB_WIDEN);
+
+  /* Stop if we found a difference.  */
+  emit_cmp_and_jump_insns (part_res, GEN_INT (0), NE, NULL_RTX,
+			   GET_MODE (part_res), true, ne_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (1, 10));
+
+  /* Increment ITER.  */
+  tmp = expand_simple_binop (iter_mode, PLUS, iter, iter_incr, iter,
+			     true, OPTAB_LIB_WIDEN);
+  if (tmp != iter)
+    emit_move_insn (iter, tmp);
+
+  if (cmp_label)
+    emit_label (cmp_label);
+  /* Loop until we reach the limit.  */
+
+  if (top_label)
+    emit_cmp_and_jump_insns (iter, iter_limit, iter_cond, NULL_RTX, iter_mode,
+			     true, top_label,
+			     profile_probability::guessed_always ()
+			     .apply_scale (9, 10));
+
+  /* We got to the end without differences, so the result is zero.  */
+  if (target == NULL_RTX
+      || !REG_P (target) || REGNO (target) < FIRST_PSEUDO_REGISTER)
+    target = gen_reg_rtx (TYPE_MODE (integer_type_node));
+
+  emit_move_insn (target, const0_rtx);
+  emit_jump (res_label);
+
+  emit_label (ne_label);
+
+  /* Return nonzero, or pinpoint the difference to return the expected
+     result for non-equality tests.  */
+  if (equality_only)
+    emit_move_insn (target, const1_rtx);
+  else
+    {
+      if (incr > UNITS_PER_WORD)
+	/* ??? Re-compare the block found to be different one word at a
+	   time.  */
+	part_res = emit_block_cmp_via_loop (x, y, GEN_INT (incr), len_type,
+					    target, equality_only,
+					    BITS_PER_WORD, 0);
+      else if (incr > 1)
+	/* ??? Re-compare the block found to be different one byte at a
+	   time.  We could do better using part_res, and being careful
+	   about endianness.  */
+	part_res = emit_block_cmp_via_loop (x, y, GEN_INT (incr), len_type,
+					    target, equality_only,
+					    BITS_PER_UNIT, 0);
+      else if (known_gt (GET_MODE_BITSIZE (GET_MODE (target)),
+			 GET_MODE_BITSIZE (cmp_mode)))
+	part_res = expand_binop (GET_MODE (target), sub_optab, x, y, target,
+				 true, OPTAB_LIB_WIDEN);
+      else
+	{
+	  /* In the odd chance target is QImode, we can't count on
+	     widening subtract to capture the result of the unsigned
+	     compares.  */
+	  rtx_code_label *ltu_label;
+	  ltu_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (x, y, LTU, NULL_RTX,
+				   cmp_mode, true, ltu_label,
+				   profile_probability::guessed_always ()
+				   .apply_scale (5, 10));
+
+	  emit_move_insn (target, const1_rtx);
+	  emit_jump (res_label);
+
+	  emit_label (ltu_label);
+	  emit_move_insn (target, constm1_rtx);
+	  part_res = target;
+	}
+
+      if (target != part_res)
+	convert_move (target, part_res, false);
+    }
+
+  emit_label (res_label);
+
+  return target;
+}
+
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */

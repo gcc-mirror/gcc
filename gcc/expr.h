@@ -126,7 +126,8 @@ struct by_pieces_prev
   fixed_size_mode mode;
 };
 
-extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
+extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods,
+			    unsigned ctz_size = 0);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 			          unsigned int, HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
@@ -134,9 +135,11 @@ extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 				  unsigned HOST_WIDE_INT,
 				  bool bail_out_libcall = false,
 				  bool *is_move_done = NULL,
-				  bool might_overlap = false);
+				  bool might_overlap = false,
+				  unsigned ctz_size = 0);
 extern rtx emit_block_cmp_hints (rtx, rtx, rtx, tree, rtx, bool,
-				 by_pieces_constfn, void *);
+				 by_pieces_constfn, void *,
+				 unsigned ctz_len = 0);
 extern bool emit_storent_insn (rtx to, rtx from);
 
 /* Copy all or part of a value X into registers starting at REGNO.
