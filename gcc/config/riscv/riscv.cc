@@ -8671,10 +8671,12 @@ riscv_option_override (void)
 
   /* RVE requires specific ABI.  */
   if (TARGET_RVE)
-    if (!TARGET_64BIT && riscv_abi != ABI_ILP32E)
-      error ("rv32e requires ilp32e ABI");
-    else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
-      error ("rv64e requires lp64e ABI");
+    {
+      if (!TARGET_64BIT && riscv_abi != ABI_ILP32E)
+	error ("rv32e requires ilp32e ABI");
+      else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
+	error ("rv64e requires lp64e ABI");
+    }
 
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
   if (TARGET_ZFINX
