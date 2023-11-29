@@ -5016,6 +5016,8 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
       clone = copy_fndecl_with_name (fn, name, ERROR_MARK,
 				     need_vtt_parm_p, omit_inherited_parms_p);
       DECL_CLONED_FUNCTION (clone) = fn;
+
+      maybe_prepare_return_this (clone);
     }
 
   /* Remember where this function came from.  */
