@@ -1268,18 +1268,27 @@ abnormal_edge_after_stmt_p (gimple *stmt, enum out_edge_check *oe_check)
 }
 
 /* Scan expression EXPR which is an argument of a call and create access
-   structures for all accesses to candidates for scalarization.  Return true if
-   any access has been inserted.  STMT must be the statement from which the
-   expression is taken.  */
+   structures for all accesses to candidates for scalarization.  Return true
+   if any access has been inserted.  STMT must be the statement from which the
+   expression is taken.  CAN_BE_RETURNED must be true if call argument flags
+   do not rule out that the argument is directly returned.  OE_CHECK is used
+   to remember result of a test for abnormal outgoing edges after this
+   statement.  */
 
 static bool
-build_access_from_call_arg (tree expr, gimple *stmt,
+build_access_from_call_arg (tree expr, gimple *stmt, bool can_be_returned,
 			    enum out_edge_check *oe_check)
 {
   if (TREE_CODE (expr) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (expr, 0));
 
+      if (can_be_returned)
+	{
+	  disqualify_base_of_expr (base, "Address possibly returned, "
+				   "leading to an alis SRA may not know.");
+	  return false;
+	}
       if (abnormal_edge_after_stmt_p (stmt, oe_check))
 	{
 	  disqualify_base_of_expr (base, "May lead to need to add statements "
@@ -1508,12 +1517,25 @@ scan_function (void)
 	    case GIMPLE_CALL:
 	      {
 		enum out_edge_check oe_check = SRA_OUTGOING_EDGES_UNCHECKED;
-		for (i = 0; i < gimple_call_num_args (stmt); i++)
-		  ret |= build_access_from_call_arg (gimple_call_arg (stmt, i),
-						     stmt, &oe_check);
+		gcall *call = as_a <gcall *> (stmt);
+		for (i = 0; i < gimple_call_num_args (call); i++)
+		  {
+		    bool can_be_returned;
+		    if (gimple_call_lhs (call))
+		      {
+			int af = gimple_call_arg_flags (call, i);
+			can_be_returned = !(af & EAF_NOT_RETURNED_DIRECTLY);
+		      }
+		    else
+		      can_be_returned = false;
+		    ret |= build_access_from_call_arg (gimple_call_arg (call,
+									i),
+						       stmt, can_be_returned,
+						       &oe_check);
+		  }
 		if (gimple_call_chain(stmt))
-		  ret |= build_access_from_call_arg (gimple_call_chain(stmt),
-						     stmt, &oe_check);
+		  ret |= build_access_from_call_arg (gimple_call_chain(call),
+						     stmt, false,  &oe_check);
 	      }
 
 	      t = gimple_call_lhs (stmt);
