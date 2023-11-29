@@ -3700,7 +3700,7 @@
   "v<sz>ext.vf2\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")
-   (set_attr "vconstraint" "W21,W21,W42,W42,W84,W84,no,no")])
+   (set_attr "group_overlap" "W21,W21,W42,W42,W84,W84,none,none")])
 
 ;; Vector Quad-Widening Sign-extend and Zero-extend.
 (define_insn "@pred_<optab><mode>_vf4"
@@ -3923,7 +3923,7 @@
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[5])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[6])"))
    (set (attr "avl_type_idx") (const_int 7))
-   (set_attr "vconstraint" "W21,W21,W42,W42,W84,W84,no,no")])
+   (set_attr "group_overlap" "W21,W21,W42,W42,W84,W84,none,none")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated integer Narrowing operations

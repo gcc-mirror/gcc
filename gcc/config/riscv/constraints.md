@@ -183,14 +183,14 @@
 (define_register_constraint "W84" "TARGET_VECTOR ? V_REGS : NO_REGS"
   "A vector register has register number % 8 == 4." "regno % 8 == 4")
 
-(define_register_constraint "W41" "TARGET_VECTOR ? V_REGS : NO_REGS"
-  "A vector register has register number % 4 == 1." "regno % 4 == 1")
+(define_register_constraint "W43" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "A vector register has register number % 4 == 3." "regno % 4 == 3")
 
-(define_register_constraint "W81" "TARGET_VECTOR ? V_REGS : NO_REGS"
-  "A vector register has register number % 8 == 1." "regno % 8 == 1")
+(define_register_constraint "W86" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "A vector register has register number % 8 == 6." "regno % 8 == 6")
 
-(define_register_constraint "W82" "TARGET_VECTOR ? V_REGS : NO_REGS"
-  "A vector register has register number % 8 == 2." "regno % 8 == 2")
+(define_register_constraint "W87" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "A vector register has register number % 8 == 7." "regno % 8 == 7")
 
 ;; This constraint is used to match instruction "csrr %0, vlenb" which is generated in "mov<mode>".
 ;; VLENB is a run-time constant which represent the vector register length in bytes.
