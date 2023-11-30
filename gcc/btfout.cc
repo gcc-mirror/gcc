@@ -1105,17 +1105,20 @@ static void
 output_btf_strs (ctf_container_ref ctfc)
 {
   ctf_string_t * ctf_string = ctfc->ctfc_strtable.ctstab_head;
+  static int str_pos = 0;
 
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 
   ctf_string = ctfc->ctfc_aux_strtable.ctstab_head;
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 }
