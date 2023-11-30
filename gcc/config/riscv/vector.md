@@ -3831,7 +3831,7 @@
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_single_widen_<plus_minus:optab><any_extend:su><mode>_scalar"
-  [(set (match_operand:VWEXTI 0 "register_operand"                  "=&vr,&vr")
+  [(set (match_operand:VWEXTI 0 "register_operand"                   "=vr,   vr")
 	(if_then_else:VWEXTI
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1,vmWc1")
@@ -7112,7 +7112,7 @@
 	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_single_widen_<plus_minus:optab><mode>_scalar"
-  [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
+  [(set (match_operand:VWEXTF 0 "register_operand"                   "=vr,   vr")
 	(if_then_else:VWEXTF
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1,vmWc1")
