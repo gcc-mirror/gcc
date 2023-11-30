@@ -1,3 +1,35 @@
+2023-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106650
+	* constexpr.cc (cxx_eval_constant_expression) <case PARM_DECL>: Allow
+	reference to unknown/this as per P2280.
+	<case VAR_DECL>: Allow reference to unknown as per P2280.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* pt.cc (tsubst_expr) <case MODOP_EXPR>: Look through implicit
+	INDIRECT_REF when propagating -Wparentheses warning suppression.
+	* semantics.cc (maybe_warn_unparenthesized_assignment): Replace
+	REFERENCE_REF_P handling with STRIP_REFERENCE_REF.
+	(finish_parenthesized_expr): Likewise.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.cc (finish_static_assert): Free buf on error return.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* decl.cc (maybe_prepare_return_this): Split out of...
+	(maybe_return_this): ... this.
+	* cp-tree.h (maybe_prepare_return_this): Declare.
+	* class.cc (build_clone): Call it.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* contracts.cc (check_postcondition_result): Cope with
+	cdtor_return_this.
+
 2023-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94264

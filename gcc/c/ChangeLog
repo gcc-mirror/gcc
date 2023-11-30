@@ -1,3 +1,14 @@
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-typeck.cc (convert_lvalue_to_rvalue): Decay hardbools.
+	* c-convert.cc (convert): Convert to hardbool through
+	truthvalue.
+	* c-decl.cc (check_bitfield_type_and_width): Skip enumeral
+	truncation warnings for hardbool.
+	(finish_struct): Propagate hardbool attribute to bitfield
+	types.
+	(digest_init): Convert to hardbool.
+
 2023-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94264

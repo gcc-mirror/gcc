@@ -1,3 +1,178 @@
+2023-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106650
+	* g++.dg/cpp0x/constexpr-array-ptr6.C: Remove dg-error.
+	* g++.dg/cpp0x/constexpr-ref12.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref2.C: Adjust dg-error.
+	* g++.dg/cpp0x/noexcept34.C: Remove dg-error.
+	* g++.dg/cpp1y/lambda-generic-const10.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref13.C: New test.
+	* g++.dg/cpp1z/constexpr-ref1.C: New test.
+	* g++.dg/cpp1z/constexpr-ref2.C: New test.
+	* g++.dg/cpp2a/constexpr-ref1.C: New test.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* g++.dg/warn/Wparentheses-33.C: Compile with -Wparentheses.
+
+2023-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112765
+	* g++.dg/warn/Wparentheses-33.C: New test.
+
+2023-11-29  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: Change dg-final
+	scans to not assume a specific comment character.
+	* gcc.target/bpf/core-builtin-enumvalue.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-based.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-id.c: Likewise.
+
+2023-11-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111922
+	* gcc.dg/pr111922.c: New.
+
+2023-11-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/112711
+	PR tree-optimization/112721
+	* g++.dg/tree-ssa/pr112711.C: New test.
+	* gcc.dg/tree-ssa/pr112721.c: Likewise.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scanoffload.exp (only_for_offload_target): New 'proc'.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/112729
+	* lib/target-supports.exp (check_effective_target_cfi): New proc.
+	* gcc.target/i386/apx-interrupt-1.c: Require cfi instead of
+	skipping on *-*-darwin*.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/cpp26/static_assert1.C: Fix for '-fno-exceptions'
+	configurations.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/ext/has-feature.C: Adjust for default-'-fno-exceptions',
+	'-fno-rtti' configurations.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* gcc.dg/pr112733.c: New test.
+
+2023-11-29  Iain Sandoe  <iains.gcc@gmail.com>
+
+	* lib/target-supports.exp: Test an asm line that fails on broken
+	Darwin assembler versions.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/opt/devirt2.C: Adjust scan-assembler-count on sparc for
+	removal of -inline from regexp.  Update comment.
+
+2023-11-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+	    kito-cheng  <kito.cheng@gmail.com>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-3.c: New test.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/112728
+	* lib/scanasm.exp (dg-scan): Allow for double-quoted LTO section names.
+	(scan-assembler-times): Likewise.
+	(scan-assembler-dem-not): Likewise.
+
+2023-11-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.c-torture/compile/libcall-2.c: Remove.
+	* gcc.target/i386/libcall-1.c: Moved from
+	gcc.c-torture/compile/libcall-2.c and adapted to use
+	effective-target for int128_t.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/111601
+	* g++.dg/opt/pr111601.C: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-frint-scalar.c: New test.
+	* gcc.target/loongarch/vect-frint-scalar-no-inexact.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-rotr.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-muh.c: New test.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112578
+	* gcc.target/loongarch/vect-frint.c: New test.
+	* gcc.target/loongarch/vect-frint-no-inexact.c: New test.
+	* gcc.target/loongarch/vect-ftint.c: New test.
+	* gcc.target/loongarch/vect-ftint-no-inexact.c: New test.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/hardbool-err.c: New.
+	* gcc.dg/hardbool-trap.c: New.
+	* gcc.dg/torture/hardbool.c: New.
+	* gcc.dg/torture/hardbool-s.c: New.
+	* gcc.dg/torture/hardbool-us.c: New.
+	* gcc.dg/torture/hardbool-i.c: New.
+	* gcc.dg/torture/hardbool-ul.c: New.
+	* gcc.dg/torture/hardbool-ll.c: New.
+	* gcc.dg/torture/hardbool-5a.c: New.
+	* gcc.dg/torture/hardbool-s-5a.c: New.
+	* gcc.dg/torture/hardbool-us-5a.c: New.
+	* gcc.dg/torture/hardbool-i-5a.c: New.
+	* gcc.dg/torture/hardbool-ul-5a.c: New.
+	* gcc.dg/torture/hardbool-ll-5a.c: New.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/warn/Wuse-after-free3.C: xfail on arm_eabi.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/torture/inline-mem-cmp-1.c: New.
+	* gcc.dg/torture/inline-mem-cpy-1.c: New.
+	* gcc.dg/torture/inline-mem-cpy-cmp-1.c: New.
+	* gcc.dg/torture/inline-mem-move-1.c: New.
+	* gcc.dg/torture/inline-mem-set-1.c: New.
+
+2023-11-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/112743
+	* gcc.target/riscv/rvv/base/pr112743-1.c: New test.
+
+2023-11-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.c-torture/compile/libcall-2.c: Skip test in -m32.
+
+2023-11-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112729
+	* gcc.target/i386/apx-interrupt-1.c: Add -fomit-frame-pointer.
+	* gcc.target/i386/apx-push2pop2-1.c: Likewise.
+	* gcc.target/i386/apx-push2pop2_force_drap-1.c: Likewise.
+
 2023-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/94264

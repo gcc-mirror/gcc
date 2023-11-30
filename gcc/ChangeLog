@@ -1,3 +1,287 @@
+2023-11-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add ampere-1b
+	* config/aarch64/aarch64-cost-tables.h: Add ampere1b_extra_costs
+	* config/aarch64/aarch64-tune.md: Regenerate
+	* config/aarch64/aarch64.cc: Include ampere1b tuning model
+	* doc/invoke.texi: Document -mcpu=ampere1b
+	* config/aarch64/tuning_models/ampere1b.h: New file.
+
+2023-11-29  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.h (ASM_COMMENT_START): Change from ';' to '#'.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112725
+	* config/rs6000/rs6000.cc (invalid_arg_for_unprototyped_fn): Return
+	NULL for __builtin_classify_type calls with vector arguments.
+
+2023-11-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111922
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Check the
+	operands are valid before calling fold_range.
+
+2023-11-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_equal::operand_check_p): New.
+	(operator_not_equal::operand_check_p): New.
+	(operator_lt::operand_check_p): New.
+	(operator_le::operand_check_p): New.
+	(operator_gt::operand_check_p): New.
+	(operator_ge::operand_check_p): New.
+	(operator_plus::operand_check_p): New.
+	(operator_abs::operand_check_p): New.
+	(operator_minus::operand_check_p): New.
+	(operator_negate::operand_check_p): New.
+	(operator_mult::operand_check_p): New.
+	(operator_bitwise_not::operand_check_p): New.
+	(operator_bitwise_xor::operand_check_p): New.
+	(operator_bitwise_and::operand_check_p): New.
+	(operator_bitwise_or::operand_check_p): New.
+	(operator_min::operand_check_p): New.
+	(operator_max::operand_check_p): New.
+	* range-op.cc (range_op_handler::fold_range): Check operand
+	parameter types.
+	(range_op_handler::op1_range): Ditto.
+	(range_op_handler::op2_range): Ditto.
+	(range_op_handler::operand_check_p): New.
+	(range_operator::operand_check_p): New.
+	(operator_lshift::operand_check_p): New.
+	(operator_rshift::operand_check_p): New.
+	(operator_logical_and::operand_check_p): New.
+	(operator_logical_or::operand_check_p): New.
+	(operator_logical_not::operand_check_p): New.
+	* range-op.h (range_operator::operand_check_p): New.
+	(range_op_handler::operand_check_p): New.
+
+2023-11-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/112711
+	PR tree-optimization/112721
+	* tree-sra.cc (build_access_from_call_arg): New parameter
+	CAN_BE_RETURNED, disqualify any candidate passed by reference if it is
+	true.  Adjust leading comment.
+	(scan_function): Pass appropriate value to CAN_BE_RETURNED of
+	build_access_from_call_arg.
+
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/sourcebuild.texi (Final Actions): Document
+	'only_for_offload_target' wrapper.
+
+2023-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/112729
+	* doc/sourcebuild.texi (Effective-Target Keywords, Environment
+	attributes): Document cfi.
+
+2023-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110237
+	* internal-fn.cc (expand_partial_load_optab_fn): Clear
+	MEM_EXPR and MEM_OFFSET.
+	(expand_partial_store_optab_fn): Likewise.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* fold-const.cc (multiple_of_p): Pass SIGNED rather than
+	UNSIGNED for wi::multiple_of_p on widest_int arguments.
+
+2023-11-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+	    kito-cheng  <kito.cheng@gmail.com>
+
+	PR target/112431
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): New register filters.
+	* config/riscv/riscv.md (no,W21,W42,W84,W41,W81,W82): Ditto.
+	(no,yes): Ditto.
+	* config/riscv/vector.md: Support highpart register overlap for vwcvt.
+
+2023-11-29  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_option_override): Eliminate warning.
+
+2023-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/111601
+	* fold-mem-offsets.cc (get_uses): Ignore DEBUG_INSN uses.  Otherwise,
+	punt if use is in a different basic block from INSN or appears before
+	INSN in the same basic block.  Formatting fixes.
+	(get_single_def_in_bb): Formatting fixes.
+	(fold_offsets_1, pass_fold_mem_offsets::execute): Comment formatting
+	fixes.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (LSX_SCALAR_FRINT): New int iterator.
+	(VLSX_FOR_FMODE): New mode attribute.
+	(<simd_for_scalar_frint_pattern><mode>2): New expander,
+	expanding to vreplvei.{w/d} + frint{rp/rz/rm/rne}.{s.d}.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (lrint_allow_inexact): Remove.
+	(<lrint_pattern><ANYF:mode><ANYFI:mode>2): Check if <LRINT>
+	== UNSPEC_FTINT instead of <lrint_allow_inexact>.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (bitimm): Move to ...
+	(UNSPEC_LSX_VROTR): Remove.
+	(lsx_vrotr_<lsxfmt>): Remove.
+	(lsx_vrotri_<lsxfmt>): Remove.
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVROTR): Remove.
+	(lsx_vrotr_<lsxfmt>): Remove.
+	(lsx_vrotri_<lsxfmt>): Remove.
+	* config/loongarch/simd.md (bitimm): ... here.  Expand it to
+	cover LASX modes.
+	(vrotr<mode>3): New define_insn.
+	(vrotri<mode>3): New define_insn.
+	* config/loongarch/loongarch-builtins.cc:
+	(CODE_FOR_lsx_vrotr_b): Use standard pattern name.
+	(CODE_FOR_lsx_vrotr_h): Likewise.
+	(CODE_FOR_lsx_vrotr_w): Likewise.
+	(CODE_FOR_lsx_vrotr_d): Likewise.
+	(CODE_FOR_lasx_xvrotr_b): Likewise.
+	(CODE_FOR_lasx_xvrotr_h): Likewise.
+	(CODE_FOR_lasx_xvrotr_w): Likewise.
+	(CODE_FOR_lasx_xvrotr_d): Likewise.
+	(CODE_FOR_lsx_vrotri_b): Define to standard pattern name.
+	(CODE_FOR_lsx_vrotri_h): Likewise.
+	(CODE_FOR_lsx_vrotri_w): Likewise.
+	(CODE_FOR_lsx_vrotri_d): Likewise.
+	(CODE_FOR_lasx_xvrotri_b): Likewise.
+	(CODE_FOR_lasx_xvrotri_h): Likewise.
+	(CODE_FOR_lasx_xvrotri_w): Likewise.
+	(CODE_FOR_lasx_xvrotri_d): Likewise.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (muh): New code attribute mapping
+	any_extend to smul_highpart or umul_highpart.
+	(<su>mul<mode>3_highpart): New define_insn.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VMUH_S): Remove.
+	(UNSPEC_LSX_VMUH_U): Remove.
+	(lsx_vmuh_s_<lsxfmt>): Remove.
+	(lsx_vmuh_u_<lsxfmt>): Remove.
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVMUH_S): Remove.
+	(UNSPEC_LASX_XVMUH_U): Remove.
+	(lasx_xvmuh_s_<lasxfmt>): Remove.
+	(lasx_xvmuh_u_<lasxfmt>): Remove.
+	* config/loongarch/loongarch-builtins.cc (CODE_FOR_lsx_vmuh_b):
+	Redefine to standard pattern name.
+	(CODE_FOR_lsx_vmuh_h): Likewise.
+	(CODE_FOR_lsx_vmuh_w): Likewise.
+	(CODE_FOR_lsx_vmuh_d): Likewise.
+	(CODE_FOR_lsx_vmuh_bu): Likewise.
+	(CODE_FOR_lsx_vmuh_hu): Likewise.
+	(CODE_FOR_lsx_vmuh_wu): Likewise.
+	(CODE_FOR_lsx_vmuh_du): Likewise.
+	(CODE_FOR_lasx_xvmuh_b): Likewise.
+	(CODE_FOR_lasx_xvmuh_h): Likewise.
+	(CODE_FOR_lasx_xvmuh_w): Likewise.
+	(CODE_FOR_lasx_xvmuh_d): Likewise.
+	(CODE_FOR_lasx_xvmuh_bu): Likewise.
+	(CODE_FOR_lasx_xvmuh_hu): Likewise.
+	(CODE_FOR_lasx_xvmuh_wu): Likewise.
+	(CODE_FOR_lasx_xvmuh_du): Likewise.
+
+2023-11-29  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/112578
+	* config/loongarch/lsx.md (UNSPEC_LSX_VFTINT_S,
+	UNSPEC_LSX_VFTINTRNE, UNSPEC_LSX_VFTINTRP,
+	UNSPEC_LSX_VFTINTRM, UNSPEC_LSX_VFRINTRNE_S,
+	UNSPEC_LSX_VFRINTRNE_D, UNSPEC_LSX_VFRINTRZ_S,
+	UNSPEC_LSX_VFRINTRZ_D, UNSPEC_LSX_VFRINTRP_S,
+	UNSPEC_LSX_VFRINTRP_D, UNSPEC_LSX_VFRINTRM_S,
+	UNSPEC_LSX_VFRINTRM_D): Remove.
+	(ILSX, FLSX): Move into ...
+	(VIMODE): Move into ...
+	(FRINT_S, FRINT_D): Remove.
+	(frint_pattern_s, frint_pattern_d, frint_suffix): Remove.
+	(lsx_vfrint_<flsxfmt>, lsx_vftint_s_<ilsxfmt>_<flsxfmt>,
+	lsx_vftintrne_w_s, lsx_vftintrne_l_d, lsx_vftintrp_w_s,
+	lsx_vftintrp_l_d, lsx_vftintrm_w_s, lsx_vftintrm_l_d,
+	lsx_vfrintrne_s, lsx_vfrintrne_d, lsx_vfrintrz_s,
+	lsx_vfrintrz_d, lsx_vfrintrp_s, lsx_vfrintrp_d,
+	lsx_vfrintrm_s, lsx_vfrintrm_d,
+	<FRINT_S:frint_pattern_s>v4sf2,
+	<FRINT_D:frint_pattern_d>v2df2, round<mode>2,
+	fix_trunc<mode>2): Remove.
+	* config/loongarch/lasx.md: Likewise.
+	* config/loongarch/simd.md: New file.
+	(ILSX, ILASX, FLSX, FLASX, VIMODE): ... here.
+	(IVEC, FVEC): New mode iterators.
+	(VIMODE): ... here.  Extend it to work for all LSX/LASX vector
+	modes.
+	(x, wu, simd_isa, WVEC, vimode, simdfmt, simdifmt_for_f,
+	elebits): New mode attributes.
+	(UNSPEC_SIMD_FRINTRP, UNSPEC_SIMD_FRINTRZ, UNSPEC_SIMD_FRINT,
+	UNSPEC_SIMD_FRINTRM, UNSPEC_SIMD_FRINTRNE): New unspecs.
+	(SIMD_FRINT): New int iterator.
+	(simd_frint_rounding, simd_frint_pattern): New int attributes.
+	(<simd_isa>_<x>vfrint<simd_frint_rounding>_<simdfmt>): New
+	define_insn template for frint instructions.
+	(<simd_isa>_<x>vftint<simd_frint_rounding>_<simdifmt_for_f>_<simdfmt>):
+	Likewise, but for ftint instructions.
+	(<simd_frint_pattern><mode>2): New define_expand with
+	flag_fp_int_builtin_inexact checked.
+	(l<simd_frint_pattern><mode><vimode>2): Likewise.
+	(ftrunc<mode>2): New define_expand.  It does not require
+	flag_fp_int_builtin_inexact.
+	(fix_trunc<mode><vimode>2): New define_insn_and_split.  It does
+	not require flag_fp_int_builtin_inexact.
+	(include): Add lsx.md and lasx.md.
+	* config/loongarch/loongarch.md (include): Include simd.md,
+	instead of including lsx.md and lasx.md directly.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vftint_w_s, CODE_FOR_lsx_vftint_l_d,
+	CODE_FOR_lasx_xvftint_w_s, CODE_FOR_lasx_xvftint_l_d):
+	Remove.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/extend.texi (hardbool): New type attribute.
+	* doc/invoke.texi (-ftrivial-auto-var-init): Document
+	representation vs values.
+
+2023-11-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* expr.cc (emit_block_move_hints): Take ctz of len.  Obey
+	-finline-stringops.  Use oriented or sized loop.
+	(emit_block_move): Take ctz of len, and pass it on.
+	(emit_block_move_via_sized_loop): New.
+	(emit_block_move_via_oriented_loop): New.
+	(emit_block_move_via_loop): Take incr.  Move an incr-sized
+	block per iteration.
+	(emit_block_cmp_via_cmpmem): Take ctz of len.  Obey
+	-finline-stringops.
+	(emit_block_cmp_via_loop): New.
+	* expr.h (emit_block_move): Add ctz of len defaulting to zero.
+	(emit_block_move_hints): Likewise.
+	(emit_block_cmp_hints): Likewise.
+	* builtins.cc (expand_builtin_memory_copy_args): Pass ctz of
+	len to emit_block_move_hints.
+	(try_store_by_multiple_pieces): Support starting with a loop.
+	(expand_builtin_memcmp): Pass ctz of len to
+	emit_block_cmp_hints.
+	(expand_builtin): Allow inline expansion of memset, memcpy,
+	memmove and memcmp if requested.
+	* common.opt (finline-stringops): New.
+	(ilsop_fn): New enum.
+	* flag-types.h (enum ilsop_fn): New.
+	* doc/invoke.texi (-finline-stringops): Add.
+
+2023-11-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/112743
+	* config/riscv/riscv-string.cc (expand_block_move): Add
+	precondition check for exact_div.
+
 2023-11-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/arc/arc.md: Make output template whitespace consistent.

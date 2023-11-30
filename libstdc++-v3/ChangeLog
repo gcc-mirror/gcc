@@ -1,3 +1,8 @@
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/23_containers/span/at.cc: Fix for '-fno-exceptions'
+	configurations.
+
 2023-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_wait.h: Include <stdint.h>.

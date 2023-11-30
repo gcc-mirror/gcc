@@ -1,3 +1,11 @@
+2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-simd-clone-1.c: Restrict
+	'scan-offload-ipa-dump's to
+	'only_for_offload_target amdgcn-amdhsa'.
+	* testsuite/libgomp.c/target-simd-clone-2.c: Likewise.
+	* testsuite/libgomp.c/target-simd-clone-3.c: Likewise.
+
 2023-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (5.2 Impl. Status): An argument to the destroy clause
