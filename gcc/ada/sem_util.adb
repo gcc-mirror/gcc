@@ -15980,7 +15980,7 @@ package body Sem_Util is
             Param_Typ := Etype (Param);
          end if;
 
-      --  In the case where an Itype was created for a dispatchin call, the
+      --  In the case where an Itype was created for a dispatching call, the
       --  procedure call has been rewritten. The actual may be an access to
       --  interface type in which case it is the designated type that is the
       --  controlling type.

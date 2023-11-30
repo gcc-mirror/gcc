@@ -7264,7 +7264,7 @@ package body Exp_Ch9 is
             --  Generate:
             --    if K = Ada.Tags.TK_Limited_Tagged
             --         or else K = Ada.Tags.TK_Tagged
-            --       then
+            --    then
             --       Lim_Typ_Stmts
             --    else
             --       Conc_Typ_Stmts
@@ -12740,7 +12740,7 @@ package body Exp_Ch9 is
          --  Generate:
          --    if K = Ada.Tags.TK_Limited_Tagged
          --         or else K = Ada.Tags.TK_Tagged
-         --       then
+         --    then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
