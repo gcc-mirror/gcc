@@ -2605,41 +2605,64 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       unsigned int nunits = vmode_size > mode_size ? vmode_size / mode_size : 1;
       scalar_mode smode = as_a<scalar_mode> (mode);
       unsigned int index = SUBREG_BYTE (src).to_constant () / mode_size;
-      unsigned int num = smode == DImode && !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+      unsigned int num = known_eq (GET_MODE_SIZE (smode), 8)
+	&& !TARGET_VECTOR_ELEN_64 ? 2 : 1;
+      bool need_int_reg_p = false;
 
       if (num == 2)
 	{
 	  /* If we want to extract 64bit value but ELEN < 64,
 	     we use RVV vector mode with EEW = 32 to extract
 	     the highpart and lowpart.  */
+	  need_int_reg_p = smode == DFmode;
 	  smode = SImode;
 	  nunits = nunits * 2;
 	}
-      vmode = riscv_vector::get_vector_mode (smode, nunits).require ();
-      rtx v = gen_lowpart (vmode, SUBREG_REG (src));
 
-      for (unsigned int i = 0; i < num; i++)
+      if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode))
 	{
-	  rtx result;
-	  if (num == 1)
-	    result = dest;
-	  else if (i == 0)
-	    result = gen_lowpart (smode, dest);
-	  else
-	    result = gen_reg_rtx (smode);
-	  riscv_vector::emit_vec_extract (result, v, index + i);
+	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
+	  rtx int_reg = dest;
 
-	  if (i == 1)
+	  if (need_int_reg_p)
 	    {
-	      rtx tmp
-		= expand_binop (Pmode, ashl_optab, gen_lowpart (Pmode, result),
-				gen_int_mode (32, Pmode), NULL_RTX, 0,
-				OPTAB_DIRECT);
-	      rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, dest, NULL_RTX, 0,
-				       OPTAB_DIRECT);
-	      emit_move_insn (dest, tmp2);
+	      int_reg = gen_reg_rtx (DImode);
+	      emit_move_insn (int_reg, gen_lowpart (GET_MODE (int_reg), dest));
 	    }
+
+	  for (unsigned int i = 0; i < num; i++)
+	    {
+	      rtx result;
+	      if (num == 1)
+		result = int_reg;
+	      else if (i == 0)
+		result = gen_lowpart (smode, int_reg);
+	      else
+		result = gen_reg_rtx (smode);
+
+	      riscv_vector::emit_vec_extract (result, v, index + i);
+
+	      if (i == 1)
+		{
+		  rtx tmp = expand_binop (Pmode, ashl_optab,
+					  gen_lowpart (Pmode, result),
+					  gen_int_mode (32, Pmode), NULL_RTX, 0,
+					  OPTAB_DIRECT);
+		  rtx tmp2 = expand_binop (Pmode, ior_optab, tmp, int_reg,
+					   NULL_RTX, 0,
+					   OPTAB_DIRECT);
+		  emit_move_insn (int_reg, tmp2);
+		}
+	    }
+
+	  if (need_int_reg_p)
+	    emit_move_insn (dest, gen_lowpart (GET_MODE (dest), int_reg));
+	  else
+	    emit_move_insn (dest, int_reg);
 	}
+      else
+	gcc_unreachable ();
+
       return true;
     }
   /* Expand
