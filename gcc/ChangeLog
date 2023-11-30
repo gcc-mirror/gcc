@@ -1,3 +1,14 @@
+2023-11-29  Costas Argyris  <costas.argyris@gmail.com>
+
+	Backported from master:
+	2023-11-23  Costas Argyris  <costas.argyris@gmail.com>
+
+	* configure.ac: Handle new --enable-win32-utf8-manifest
+	option.
+	* config.host: allow win32 utf8 manifest to be disabled
+	by user.
+	* configure: Regenerate.
+
 2023-11-24  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
