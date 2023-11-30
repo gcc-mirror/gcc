@@ -3704,43 +3704,45 @@
 
 ;; Vector Quad-Widening Sign-extend and Zero-extend.
 (define_insn "@pred_<optab><mode>_vf4"
-  [(set (match_operand:VQEXTI 0 "register_operand"          "=&vr,&vr")
+  [(set (match_operand:VQEXTI 0 "register_operand"               "=vr,   vr,   vr,   vr, ?&vr, ?&vr")
 	(if_then_else:VQEXTI
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1")
-	     (match_operand 4 "vector_length_operand"          "   rK,   rK")
-	     (match_operand 5 "const_int_operand"              "    i,    i")
-	     (match_operand 6 "const_int_operand"              "    i,    i")
-	     (match_operand 7 "const_int_operand"              "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 4 "vector_length_operand"          "   rK,   rK,   rK,   rK,   rK,   rK")
+	     (match_operand 5 "const_int_operand"              "    i,    i,    i,    i,    i,    i")
+	     (match_operand 6 "const_int_operand"              "    i,    i,    i,    i,    i,    i")
+	     (match_operand 7 "const_int_operand"              "    i,    i,    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_extend:VQEXTI
-	    (match_operand:<V_QUAD_TRUNC> 3 "register_operand" "   vr,   vr"))
-	  (match_operand:VQEXTI 2 "vector_merge_operand"       "   vu,    0")))]
+	    (match_operand:<V_QUAD_TRUNC> 3 "register_operand" "  W43,  W43,  W86,  W86,   vr,   vr"))
+	  (match_operand:VQEXTI 2 "vector_merge_operand"       "   vu,    0,   vu,    0,   vu,    0")))]
   "TARGET_VECTOR"
   "v<sz>ext.vf4\t%0,%3%p1"
   [(set_attr "type" "vext")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "group_overlap" "W43,W43,W86,W86,none,none")])
 
 ;; Vector Oct-Widening Sign-extend and Zero-extend.
 (define_insn "@pred_<optab><mode>_vf8"
-  [(set (match_operand:VOEXTI 0 "register_operand"         "=&vr,&vr")
+  [(set (match_operand:VOEXTI 0 "register_operand"              "=vr,   vr, ?&vr, ?&vr")
 	(if_then_else:VOEXTI
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1")
-	     (match_operand 4 "vector_length_operand"         "   rK,   rK")
-	     (match_operand 5 "const_int_operand"             "    i,    i")
-	     (match_operand 6 "const_int_operand"             "    i,    i")
-	     (match_operand 7 "const_int_operand"             "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 4 "vector_length_operand"         "   rK,   rK,   rK,   rK")
+	     (match_operand 5 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 6 "const_int_operand"             "    i,    i,    i,    i")
+	     (match_operand 7 "const_int_operand"             "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_extend:VOEXTI
-	    (match_operand:<V_OCT_TRUNC> 3 "register_operand" "   vr,   vr"))
-	  (match_operand:VOEXTI 2 "vector_merge_operand"      "   vu,    0")))]
+	    (match_operand:<V_OCT_TRUNC> 3 "register_operand" "  W87,  W87,   vr,   vr"))
+	  (match_operand:VOEXTI 2 "vector_merge_operand"      "   vu,    0,   vu,    0")))]
   "TARGET_VECTOR"
   "v<sz>ext.vf8\t%0,%3%p1"
   [(set_attr "type" "vext")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "group_overlap" "W87,W87,none,none")])
 
 ;; Vector Widening Add/Subtract/Multiply.
 (define_insn "@pred_dual_widen_<any_widen_binop:optab><any_extend:su><mode>"
