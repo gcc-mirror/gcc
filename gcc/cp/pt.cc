@@ -19353,7 +19353,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
   vec<tree,va_gc>* field_packs = NULL;
-
+  unsigned name_independent_cnt = 0;
   for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t); cap;
        cap = TREE_CHAIN (cap))
     {
@@ -19383,7 +19383,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  bool by_ref = (TYPE_REF_P (ftype)
 			 || (TREE_CODE (ftype) == DECLTYPE_TYPE
 			     && DECLTYPE_FOR_REF_CAPTURE (ftype)));
-	  add_capture (r, name, init, by_ref, !DECL_NORMAL_CAPTURE_P (ofield));
+	  add_capture (r, name, init, by_ref, !DECL_NORMAL_CAPTURE_P (ofield),
+		       &name_independent_cnt);
 	  continue;
 	}
 

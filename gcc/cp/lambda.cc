@@ -411,7 +411,11 @@ build_capture_proxy (tree member, tree init)
     object = TREE_OPERAND (object, 0);
 
   /* Remove the __ inserted by add_capture.  */
-  name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
+  if (IDENTIFIER_POINTER (DECL_NAME (member))[2] == '_'
+      && IDENTIFIER_POINTER (DECL_NAME (member))[3] == '.')
+    name = get_identifier ("_");
+  else
+    name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
 
   type = lambda_proxy_type (object);
 
@@ -515,7 +519,7 @@ vla_capture_type (tree array_type)
 
 tree
 add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
-	     bool explicit_init_p)
+	     bool explicit_init_p, unsigned *name_independent_cnt)
 {
   char *buf;
   tree type, member, name;
@@ -609,11 +613,28 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
      won't find the field with name lookup.  We can't just leave the name
      unset because template instantiation uses the name to find
      instantiated fields.  */
-  buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
-  buf[1] = buf[0] = '_';
-  memcpy (buf + 2, IDENTIFIER_POINTER (id),
-	  IDENTIFIER_LENGTH (id) + 1);
-  name = get_identifier (buf);
+  if (id_equal (id, "_") && name_independent_cnt)
+    {
+      if (*name_independent_cnt == 0)
+	name = get_identifier ("___");
+      else
+	{
+	  /* For 2nd and later name-independent capture use
+	     unique names.  */
+	  char buf2[5 + (HOST_BITS_PER_INT + 2) / 3];
+	  sprintf (buf2, "___.%u", *name_independent_cnt);
+	  name = get_identifier (buf2);
+	}
+      name_independent_cnt[0]++;
+    }
+  else
+    {
+      buf = XALLOCAVEC (char, IDENTIFIER_LENGTH (id) + 3);
+      buf[1] = buf[0] = '_';
+      memcpy (buf + 2, IDENTIFIER_POINTER (id),
+	      IDENTIFIER_LENGTH (id) + 1);
+      name = get_identifier (buf);
+    }
 
   if (variadic)
     {
@@ -717,7 +738,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 			    (this_capture_p
 			     || (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda)
 				 == CPLD_REFERENCE)),
-			    /*explicit_init_p=*/false);
+			    /*explicit_init_p=*/false, NULL);
       initializer = convert_from_reference (var);
 
       /* Warn about deprecated implicit capture of this via [=].  */

@@ -584,7 +584,7 @@
 #  error "__cpp_auto_cast != 202110"
 #endif
 
-//  C++23 attributes:
+// C++23 attributes:
 
 #ifdef __has_cpp_attribute
 #  if ! __has_cpp_attribute(assume)
@@ -594,4 +594,12 @@
 #  endif
 #else
 #  error "__has_cpp_attribute"
+#endif
+
+// C++26 features:
+
+#ifndef __cpp_placeholder_variables
+#  error "__cpp_placeholder_variables"
+#elif __cpp_placeholder_variables != 202306
+#  error "__cpp_placeholder_variables != 202306"
 #endif

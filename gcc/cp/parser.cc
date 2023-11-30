@@ -11381,6 +11381,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
   hash_set<tree, true> ids;
   tree first_capture_id = NULL_TREE;
+  unsigned name_independent_cnt = 0;
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
     {
       cp_token* capture_token;
@@ -11425,7 +11426,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  else
 	    add_capture (lambda_expr, /*id=*/this_identifier,
 			 /*initializer=*/finish_this_expr (),
-			 /*by_reference_p=*/true, explicit_init_p);
+			 /*by_reference_p=*/true, explicit_init_p, NULL);
 	  continue;
 	}
 
@@ -11447,7 +11448,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  else
 	    add_capture (lambda_expr, /*id=*/this_identifier,
 			 /*initializer=*/finish_this_expr (),
-			 /*by_reference_p=*/false, explicit_init_p);
+			 /*by_reference_p=*/false, explicit_init_p, NULL);
 	  continue;
 	}
 
@@ -11634,13 +11635,15 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  ids.add (first_capture_id);
 	  ids.add (capture_id);
 	}
+      if (found && explicit_init_p && id_equal (capture_id, "_"))
+	found = false;
       if (found)
 	pedwarn (input_location, 0,
 		 "already captured %qD in lambda expression", capture_id);
       else
 	add_capture (lambda_expr, capture_id, capture_init_expr,
 		     /*by_reference_p=*/capture_kind == BY_REFERENCE,
-		     explicit_init_p);
+		     explicit_init_p, &name_independent_cnt);
 
       /* If there is any qualification still in effect, clear it
 	 now; we will be starting fresh with the next capture.  */
@@ -15873,6 +15876,8 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   cp_decl_specifier_seq decl_specs;
   clear_decl_specs (&decl_specs);
   decl_specs.type = make_auto ();
+  if (decl_specifiers->storage_class == sc_static)
+    decl_specs.storage_class = sc_static;
   tree prev = decl;
   FOR_EACH_VEC_ELT (v, i, e)
     {

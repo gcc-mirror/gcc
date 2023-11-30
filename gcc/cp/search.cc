@@ -1091,13 +1091,24 @@ lookup_field_r (tree binfo, void *data)
 	    }
 
 	  /* Add the new value.  */
-	  lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
-	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
+	  if (TREE_CODE (nval) == TREE_LIST)
+	    lfi->ambiguous = chainon (nval, lfi->ambiguous);
+	  else
+	    {
+	      lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
+	      TREE_TYPE (lfi->ambiguous) = error_mark_node;
+	    }
 	}
     }
   else
     {
-      lfi->rval = nval;
+      if (TREE_CODE (nval) == TREE_LIST)
+	{
+	  lfi->ambiguous = chainon (nval, lfi->ambiguous);
+	  lfi->rval = TREE_VALUE (nval);
+	}
+      else
+	lfi->rval = nval;
       lfi->rval_binfo = binfo;
     }
 

@@ -680,6 +680,8 @@ poplevel (int keep, int reverse, int functionbody)
 	       subobjects.  */
 	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_DECOMP_BASE (decl)
 		: (DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)))
+	    /* Don't warn about name-independent declarations.  */
+	    && !name_independent_decl_p (decl)
 	    && type != error_mark_node
 	    && (!CLASS_TYPE_P (type)
 		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
@@ -2063,6 +2065,44 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		    (DECL_INITIAL (olddecl) && namespace_bindings_p ())
 		    ? G_("%q#D previously defined here")
 		    : G_("%q#D previously declared here"), olddecl);
+	  if (cxx_dialect >= cxx26
+	      && DECL_NAME (newdecl)
+	      && id_equal (DECL_NAME (newdecl), "_")
+	      && !name_independent_decl_p (newdecl))
+	    {
+	      if (TREE_CODE (newdecl) == PARM_DECL)
+		inform (newdecl_loc,
+			"parameter declaration is not name-independent");
+	      else if (DECL_DECOMPOSITION_P (newdecl))
+		{
+		  if (at_namespace_scope_p ())
+		    inform (newdecl_loc,
+			    "structured binding at namespace scope is not "
+			    "name-independent");
+		  else if (TREE_STATIC (newdecl))
+		    inform (newdecl_loc,
+			    "static structured binding is not "
+			    "name-independent");
+		  else if (DECL_EXTERNAL (newdecl))
+		    inform (newdecl_loc,
+			    "extern structured binding is not "
+			    "name-independent");
+		}
+	      else if (at_class_scope_p ()
+		       && VAR_P (newdecl)
+		       && TREE_STATIC (newdecl))
+		inform (newdecl_loc,
+			"static data member is not name-independent");
+	      else if (VAR_P (newdecl) && at_namespace_scope_p ())
+		inform (newdecl_loc,
+			"variable at namespace scope is not name-independent");
+	      else if (VAR_P (newdecl) && TREE_STATIC (newdecl))
+		inform (newdecl_loc,
+			"static variable is not name-independent");
+	      else if (VAR_P (newdecl) && DECL_EXTERNAL (newdecl))
+		inform (newdecl_loc,
+			"extern variable is not name-independent");
+	    }
 	  return error_mark_node;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -6869,8 +6909,17 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  if (!field || TREE_CODE (field) != FIELD_DECL)
 	    {
 	      if (complain & tf_error)
-		error ("%qT has no non-static data member named %qD", type,
-		       d->cur->index);
+		{
+		  if (field && TREE_CODE (field) == TREE_LIST)
+		    {
+		      error ("request for member %qD is ambiguous",
+			     d->cur->index);
+		      print_candidates (field);
+		    }
+		  else
+		    error ("%qT has no non-static data member named %qD", type,
+			   d->cur->index);
+		}
 	      return error_mark_node;
 	    }
 
