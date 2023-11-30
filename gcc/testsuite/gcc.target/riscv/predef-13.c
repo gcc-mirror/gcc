@@ -19,7 +19,7 @@ int main () {
 #error "__riscv_c"
 #endif
 
-#if !defined(__riscv_e) || (__riscv_e != (1 * 1000 * 1000 + 9 * 1000))
+#if !defined(__riscv_e) || (__riscv_e != (2 * 1000 * 1000 + 0 * 1000))
 #error "__riscv_e"
 #endif
 
