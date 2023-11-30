@@ -157,6 +157,9 @@ public:
   static tl::optional<AST::Fragment> line_handler (location_t invoc_locus,
 						   AST::MacroInvocData &invoc);
 
+  static tl::optional<AST::Fragment>
+  format_args_handler (location_t invoc_locus, AST::MacroInvocData &invoc);
+
   static tl::optional<AST::Fragment> sorry (location_t invoc_locus,
 					    AST::MacroInvocData &invoc);
 

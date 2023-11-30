@@ -30,6 +30,7 @@
 #include "rust-parse.h"
 #include "rust-session-manager.h"
 #include "rust-attribute-values.h"
+#include "rust-fmt.h"
 
 namespace Rust {
 
@@ -89,8 +90,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"env", MacroBuiltin::env_handler},
     {"cfg", MacroBuiltin::cfg_handler},
     {"include", MacroBuiltin::include_handler},
+    {"format_args", MacroBuiltin::format_args_handler},
     /* Unimplemented macro builtins */
-    {"format_args", MacroBuiltin::sorry},
     {"option_env", MacroBuiltin::sorry},
     {"format_args_nl", MacroBuiltin::sorry},
     {"concat_idents", MacroBuiltin::sorry},
@@ -940,6 +941,15 @@ MacroBuiltin::stringify_handler (location_t invoc_locus,
   auto token
     = make_token (Token::make_string (invoc_locus, std::move (content)));
   return AST::Fragment ({node}, std::move (token));
+}
+
+tl::optional<AST::Fragment>
+MacroBuiltin::format_args_handler (location_t invoc_locus,
+				   AST::MacroInvocData &invoc)
+{
+  Fmt::Pieces::collect ("heyo this {is} what I {} want to {3}, {parse}");
+
+  return AST::Fragment::create_empty ();
 }
 
 tl::optional<AST::Fragment>

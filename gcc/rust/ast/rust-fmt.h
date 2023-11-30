@@ -19,115 +19,134 @@
 #ifndef RUST_FMT_H
 #define RUST_FMT_H
 
-#include "expected.h"
-#include "optional.h"
-#include "rust-ast.h"
+#include "rust-diagnostics.h"
 #include "rust-system.h"
 
 namespace Rust {
+namespace Fmt {
 
-/**
- * This class implements the parsing of Rust format strings according to the
- * grammar here: https://doc.rust-lang.org/std/fmt/index.html#syntax
- */
-// TODO: Are there features that are only present in specific Rust editions?
-class Fmt
+struct RustHamster
 {
-public:
-  // TODO: Keep location information
-  // TODO: Switch to a Rust::AST::Literal here
-  using Input = std::string;
-
-  enum class Error
-  {
-    Align,
-    Sign,
-  };
-
-  template <typename T> class Result
-  {
-  public:
-    explicit Result (Input remaining_input, T result)
-      : remaining_input (remaining_input), result (result)
-    {}
-
-  private:
-    Input remaining_input;
-    T result;
-  };
-
-  // FIXME: Do not use an owned string here
-  static tl::expected<Fmt, Fmt::Error> parse_fmt_string (Input input);
-
-private:
-  // the parse functions should return the remaining input as well as the
-  // expected node let's look at nom
-  // TODO: no string view :( use an owned string for now?
-
-  template <typename T> struct ParseResult
-  {
-    tl::expected<Result<T>, Error> inner;
-
-    ParseResult (tl::expected<Result<T>, Error> inner) : inner (inner) {}
-    ParseResult operator= (tl::expected<Result<T>, Error> inner)
-    {
-      return ParseResult (inner);
-    }
-
-    Input remaining_input () { return inner->remaining_input; }
-    T value () { return inner->value; }
-  };
-
-  struct Format
-  {
-  };
-
-  struct Argument
-  {
-    enum struct Kind
-    {
-      Integer,
-      Identifier,
-    } kind;
-
-    int integer;
-    Identifier identifier;
-  };
-
-  struct FormatSpec
-  {
-  };
-
-  struct Fill
-  {
-    char to_fill;
-  };
-
-  enum class Align
-  {
-    Left,
-    Top,
-    Right
-  };
-
-  enum class Sign
-  {
-    Plus,
-    Minus
-  };
-
-  // let's do one function per rule in the BNF
-  static tl::expected<Result<std::string>, Error> text (Input input);
-  static tl::expected<Result<tl::optional<Format>>, Error>
-  maybe_format (Input input);
-  static tl::expected<Result<Format>, Error> format (Input input);
-  static tl::expected<Result<Argument>, Error> argument (Input input);
-  static tl::expected<Result<FormatSpec>, Error> format_spec (Input input);
-  static tl::expected<Result<Fill>, Error> fill (Input input);
-  static tl::expected<Result<Align>, Error> align (Input input);
-  static tl::expected<Result<Sign>, Error> sign (Input input);
+  // hehe
 };
 
+struct InnerSpan
+{
+};
+
+struct Count
+{
+  enum class Kind
+  {
+    Is,
+    IsName,
+    IsParam,
+    IsStar,
+    Implied
+  } kind;
+
+  union
+  {
+    size_t is;
+    std::pair<RustHamster, InnerSpan> is_name;
+    size_t is_param;
+    size_t is_star;
+  } data;
+};
+
+struct DebugHex
+{
+};
+
+struct Sign
+{
+};
+
+struct Alignment
+{
+};
+
+struct RustString
+{
+  // hehe
+};
+
+struct Position
+{
+};
+
+struct FormatSpec
+{
+  /// Optionally specified character to fill alignment with.
+  tl::optional<char /* FIXME: This is a Rust char, not a C++ char - use an uint32_t instead?  */> fill;
+  /// Span of the optionally specified fill character.
+  tl::optional<InnerSpan> fill_span;
+  /// Optionally specified alignment.
+  Alignment align;
+  /// The `+` or `-` flag.
+  tl::optional<Sign> sign;
+  /// The `#` flag.
+  bool alternate;
+  /// The `0` flag.
+  bool zero_pad;
+  /// The `x` or `X` flag. (Only for `Debug`.)
+  tl::optional<DebugHex> debug_hex;
+  /// The integer precision to use.
+  // Count <'a> precision;
+  /// The span of the precision formatting flag (for diagnostics).
+  tl::optional<InnerSpan> precision_span;
+  /// The string width requested for the resulting format.
+  // Count <'a> width;
+  /// The span of the width formatting flag (for diagnostics).
+  tl::optional<InnerSpan> width_span;
+  /// The descriptor string representing the name of the format desired for
+  /// this argument, this can be empty or any number of characters, although
+  /// it is required to be one word.
+  RustHamster ty;
+  // &'a str ty;
+  /// The span of the descriptor string (for diagnostics).
+  tl::optional<InnerSpan> ty_span;
+};
+
+struct Argument
+{
+  Position position;
+  InnerSpan inner_span;
+  FormatSpec format;
+};
+
+struct Piece
+{
+  enum class Kind
+  {
+    String,
+    NextArgument
+  } kind;
+
+  union
+  {
+    RustString string;
+    Argument *next_argument;
+  } data;
+};
+
+struct PieceSlice
+{
+  Piece *ptr;
+  size_t len;
+};
+
+extern "C" {
+PieceSlice
+collect_pieces (const char *);
+}
+
+struct Pieces
+{
+  static Pieces collect (const std::string &to_parse);
+};
+
+} // namespace Fmt
 } // namespace Rust
 
 #endif // ! RUST_FMT_H

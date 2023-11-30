@@ -19,78 +19,23 @@
 #include "rust-fmt.h"
 
 namespace Rust {
-tl::expected<Fmt, Fmt::Error>
-Fmt::parse_fmt_string (Fmt::Input input)
+namespace Fmt {
+
+Pieces
+Pieces::collect (const std::string &to_parse)
 {
-  return Fmt ();
+  auto piece_slice = collect_pieces (to_parse.c_str ());
+
+  rust_debug ("[ARTHUR] %p, %lu", (void *) piece_slice.ptr, piece_slice.len);
+
+  // this performs multiple copies, can we avoid them maybe?
+  auto pieces
+    = std::vector (piece_slice.ptr, piece_slice.ptr + piece_slice.len);
+
+  rust_debug ("[ARTHUR] %p, %lu", (void *) pieces.data (), pieces.size ());
+
+  return Pieces{};
 }
 
-tl::expected<Fmt::Result<tl::optional<Fmt::Format>>, Fmt::Error>
-Fmt::maybe_format (Fmt::Input input)
-{
-  tl::optional<Fmt::Format> none = tl::nullopt;
-
-  return Fmt::Result (input, none);
-}
-
-tl::expected<Fmt::Result<Fmt::Format>, Fmt::Error>
-Fmt::format (Input input)
-{
-  return Fmt::Result (input, Format ());
-}
-
-tl::expected<Fmt::Result<Fmt::Argument>, Fmt::Error>
-Fmt::argument (Input input)
-{
-  return Fmt::Result (input, Argument ());
-}
-
-tl::expected<Fmt::Result<Fmt::FormatSpec>, Fmt::Error>
-Fmt::format_spec (Input input)
-{
-  return Fmt::Result (input, FormatSpec ());
-}
-
-tl::expected<Fmt::Result<Fmt::Fill>, Fmt::Error>
-Fmt::fill (Input input)
-{
-  return Fmt::Result (input, Fill ());
-}
-
-tl::expected<Fmt::Result<Fmt::Align>, Fmt::Error>
-Fmt::align (Input input)
-{
-  switch (input[0])
-    {
-    case '<':
-      return Fmt::Result (input.substr (1), Align::Left);
-    case '^':
-      return Fmt::Result (input.substr (1), Align::Top);
-    case '>':
-      return Fmt::Result (input.substr (1), Align::Right);
-    default:
-      // TODO: Store the character here
-      // TODO: Can we have proper error locations?
-      // TODO: Maybe we should use a Rust::Literal string instead of a string
-      return tl::make_unexpected (Error::Align);
-    }
-}
-
-tl::expected<Fmt::Result<Fmt::Sign>, Fmt::Error>
-Fmt::sign (Input input)
-{
-  switch (input[0])
-    {
-    case '+':
-      return Fmt::Result (input.substr (1), Sign::Plus);
-    case '-':
-      return Fmt::Result (input.substr (1), Sign::Minus);
-    default:
-      // TODO: Store the character here
-      // TODO: Can we have proper error locations?
-      // TODO: Maybe we should use a Rust::Literal string instead of a string
-      return tl::make_unexpected (Error::Sign);
-    }
-}
-
+} // namespace Fmt
 } // namespace Rust
