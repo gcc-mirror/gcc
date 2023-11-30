@@ -7,6 +7,7 @@ dnl  HWCAP_CFLAGS='-Wa,-nH' if possible.
 dnl
 AC_DEFUN([GCC_CHECK_ASSEMBLER_HWCAP], [
   test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
+  AC_REQUIRE([AC_CANONICAL_TARGET])
 
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
