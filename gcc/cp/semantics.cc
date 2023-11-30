@@ -2262,6 +2262,16 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
       else if (PACK_EXPANSION_P (type))
 	/* Don't bother trying to represent this.  */
 	type = NULL_TREE;
+      else if (WILDCARD_TYPE_P (TREE_TYPE (object)))
+	/* We don't know what the eventual quals will be, so punt until
+	   instantiation time.
+
+	   This can happen when called from build_capture_proxy for an explicit
+	   object lambda.  It's a bit marginal to call this function in that
+	   case, since this function is for references to members of 'this',
+	   but the deduced type is required to be derived from the closure
+	   type, so it works.  */
+	type = NULL_TREE;
       else
 	{
 	  /* Set the cv qualifiers.  */
@@ -11682,6 +11692,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
   if (instantiation_dependent_uneval_expression_p (expr))
     {
+    dependent:
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
@@ -11856,7 +11867,11 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (outer_automatic_var_p (STRIP_REFERENCE_REF (expr))
 	  && current_function_decl
 	  && LAMBDA_FUNCTION_P (current_function_decl))
-	type = capture_decltype (STRIP_REFERENCE_REF (expr));
+	{
+	  type = capture_decltype (STRIP_REFERENCE_REF (expr));
+	  if (!type)
+	    goto dependent;
+	}
       else if (error_operand_p (expr))
 	type = error_mark_node;
       else if (expr == current_class_ptr)
@@ -12754,7 +12769,8 @@ apply_deduced_return_type (tree fco, tree return_type)
 
 /* DECL is a local variable or parameter from the surrounding scope of a
    lambda-expression.  Returns the decltype for a use of the capture field
-   for DECL even if it hasn't been captured yet.  */
+   for DECL even if it hasn't been captured yet.  Or NULL_TREE if we can't give
+   a correct answer at this point and we should build a DECLTYPE_TYPE.  */
 
 static tree
 capture_decltype (tree decl)
@@ -12792,9 +12808,11 @@ capture_decltype (tree decl)
 
   if (!TYPE_REF_P (type))
     {
-      int quals = cp_type_quals (type);
       tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
-      gcc_checking_assert (!WILDCARD_TYPE_P (non_reference (obtype)));
+      if (WILDCARD_TYPE_P (non_reference (obtype)))
+	/* We don't know what the eventual obtype quals will be.  */
+	return NULL_TREE;
+      int quals = cp_type_quals (type);
       if (INDIRECT_TYPE_P (obtype))
 	quals |= cp_type_quals (TREE_TYPE (obtype));
       type = cp_build_qualified_type (type, quals);
