@@ -1365,6 +1365,15 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
       tmp = build3_loc (input_location, COND_EXPR, void_type_node,
 			cond, tmp, tmp2);
       gfc_add_expr_to_block (&parmse->pre, tmp);
+
+      if (!elemental && full_array && copyback)
+	{
+	  tmp2 = build_empty_stmt (input_location);
+	  tmp = gfc_finish_block (&parmse->post);
+	  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
+			    cond, tmp, tmp2);
+	  gfc_add_expr_to_block (&parmse->post, tmp);
+	}
     }
   else
     gfc_add_block_to_block (&parmse->pre, &block);
