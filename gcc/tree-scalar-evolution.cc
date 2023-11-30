@@ -3841,10 +3841,19 @@ final_value_replacement_loop (class loop *loop)
 	  print_gimple_stmt (dump_file, phi, 0);
 	  fprintf (dump_file, " with expr: ");
 	  print_generic_expr (dump_file, def);
+	  fprintf (dump_file, "\n");
 	}
       any = true;
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
+
+      /* Propagate constants immediately.  */
+      if (CONSTANT_CLASS_P (def))
+	{
+	  replace_uses_by (rslt, def);
+	  release_ssa_name (rslt);
+	  continue;
+	}
 
       /* Create the replacement statements.  */
       gimple_seq stmts;
@@ -3877,7 +3886,7 @@ final_value_replacement_loop (class loop *loop)
       gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n final stmt:\n  ");
+	  fprintf (dump_file, " final stmt:\n  ");
 	  print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (rslt), 0);
 	  fprintf (dump_file, "\n");
 	}
