@@ -460,19 +460,6 @@ package body Sinput is
       end if;
    end Get_Logical_Line_Number;
 
-   ---------------------------------
-   -- Get_Logical_Line_Number_Img --
-   ---------------------------------
-
-   function Get_Logical_Line_Number_Img
-     (P : Source_Ptr) return String
-   is
-   begin
-      Name_Len := 0;
-      Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (P)));
-      return Name_Buffer (1 .. Name_Len);
-   end Get_Logical_Line_Number_Img;
-
    ------------------------------
    -- Get_Physical_Line_Number --
    ------------------------------
