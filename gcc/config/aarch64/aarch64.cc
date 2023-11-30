@@ -21272,11 +21272,11 @@ aarch64_split_compare_and_swap (rtx operands[])
   mem = operands[1];
   oldval = operands[2];
   newval = operands[3];
-  is_weak = (operands[4] != const0_rtx);
   model_rtx = operands[5];
   scratch = operands[7];
   mode = GET_MODE (mem);
   model = memmodel_from_int (INTVAL (model_rtx));
+  is_weak = operands[4] != const0_rtx && mode != TImode;
 
   /* When OLDVAL is zero and we want the strong version we can emit a tighter
     loop:
@@ -21336,6 +21336,33 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
   else
     aarch64_gen_compare_reg (NE, scratch, const0_rtx);
+
+  /* 128-bit LDAXP is not atomic unless STLXP succeeds.  So for a mismatch,
+     store the returned value and loop if the STLXP fails.  */
+  if (mode == TImode)
+    {
+      rtx_code_label *label3 = gen_label_rtx ();
+      emit_jump_insn (gen_rtx_SET (pc_rtx, gen_rtx_LABEL_REF (Pmode, label3)));
+      emit_barrier ();
+
+      emit_label (label2);
+      aarch64_emit_store_exclusive (mode, scratch, mem, rval, model_rtx);
+
+      if (aarch64_track_speculation)
+	{
+	  /* Emit an explicit compare instruction, so that we can correctly
+	     track the condition codes.  */
+	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
+	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
+	}
+      else
+	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
+      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+
+      label2 = label3;
+    }
 
   emit_label (label2);
 
