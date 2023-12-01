@@ -18415,8 +18415,8 @@ round to odd as the rounding mode.
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0 or later:
 
-@defbuiltin{long long __builtin_darn (void)}
-@defbuiltinx{long long __builtin_darn_raw (void)}
+@defbuiltin{{long long} __builtin_darn (void)}
+@defbuiltinx{{long long} __builtin_darn_raw (void)}
 @defbuiltinx{int __builtin_darn_32 (void)}
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
 functions require a
@@ -21306,12 +21306,12 @@ multiplying the bottom 16 bits of the two arguments into the
 accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfachi (void)}
+@defbuiltin{int __builtin_rx_mvfachi (void)}
 Generates the @code{mvfachi} machine instruction to read the top
 32 bits of the accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfacmi (void)}
+@defbuiltin{int __builtin_rx_mvfacmi (void)}
 Generates the @code{mvfacmi} machine instruction to read the middle
 32 bits of the accumulator.
 @enddefbuiltin
@@ -22665,7 +22665,7 @@ Generates the @code{extractps} machine instruction.
 Generates the @code{pextrd} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{long long __builtin_ia32_vec_ext_v2di (v2di, const int)}
+@defbuiltin{{long long} __builtin_ia32_vec_ext_v2di (v2di, const int)}
 Generates the @code{pextrq} machine instruction in 64bit mode.
 @enddefbuiltin
 
@@ -22694,19 +22694,19 @@ v2di __builtin_ia32_pcmpgtq (v2di, v2di);
 The following built-in functions are available when @option{-msse4.2} is
 used.
 
-@defbuiltin{unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32qi (unsigned int, unsigned char)}
 Generates the @code{crc32b} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32hi (unsigned int, unsigned short)}
 Generates the @code{crc32w} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32si (unsigned int, unsigned int)}
 Generates the @code{crc32l} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
+@defbuiltin{{unsigned long long} __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
 Generates the @code{crc32q} machine instruction.
 @enddefbuiltin
 
