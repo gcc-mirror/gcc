@@ -1,6 +1,6 @@
 /* PR c/81233 */
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat -Wpedantic" } */
+/* { dg-options "-fpermissive -Wc++-compat -Wpedantic" } */
 /* Test we're printing the types, like the good compiler we are.  */
 
 enum E1 { A } e;

@@ -1,6 +1,6 @@
 /* PR c/35738 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* { dg-options "-fpermissive -fopenmp" } */
 
 void foo (void);
 

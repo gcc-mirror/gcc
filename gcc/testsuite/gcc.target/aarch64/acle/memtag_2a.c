@@ -2,7 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-fpermissive -O3 -march=armv8.5-a+memtag" } */
+/* { dg-options "-O3 -march=armv8.5-a+memtag" } */
 
 #include "arm_acle.h"
 
@@ -32,23 +32,6 @@ void
 test_memtag_warning_argument (void)
 {
   const char *c;
-  uint64_t i;
-  __arm_mte_exclude_tag(i, 0);		/* { dg-warning {argument} } */
-  __arm_mte_create_random_tag (i, 0);	/* { dg-warning {argument} } */
-  __arm_mte_set_tag(i);			/* { dg-warning {argument} } */
-  __arm_mte_get_tag(i);			/* { dg-warning {argument} } */
-  __arm_mte_increment_tag (i, 15);	/* { dg-warning {argument} } */
-  __arm_mte_ptrdiff(c, i);		/* { dg-warning {argument} } */
-  __arm_mte_ptrdiff(i, c);		/* { dg-warning {argument} } */
-
-  __arm_mte_exclude_tag(1, 0);		/* { dg-warning {argument} } */
-  __arm_mte_create_random_tag (1, 0);	/* { dg-warning {argument} } */
-  __arm_mte_set_tag(1);			/* { dg-warning {argument} } */
-  __arm_mte_get_tag(1);			/* { dg-warning {argument} } */
-  __arm_mte_increment_tag (1, 15);	/* { dg-warning {argument} } */
-  __arm_mte_ptrdiff(c, 1);		/* { dg-warning {argument} } */
-  __arm_mte_ptrdiff(1, c);		/* { dg-warning {argument} } */
-
   __arm_mte_exclude_tag(0, 0);		/* No warning.  */
   __arm_mte_create_random_tag (0, 0);	/* No warning.  */
   __arm_mte_set_tag(0);			/* No warning.  */
@@ -67,4 +50,22 @@ test_memtag_error_argument (void)
   __arm_mte_ptrdiff(no_decl2, 0);	/* { dg-error {} } */
   __arm_mte_ptrdiff(0);			/* { dg-error {} } */
   __arm_mte_ptrdiff();			/* { dg-error {} } */
+
+  const char *c;
+  uint64_t i;
+  __arm_mte_exclude_tag(i, 0);		/* { dg-error {argument} } */
+  __arm_mte_create_random_tag (i, 0);	/* { dg-error {argument} } */
+  __arm_mte_set_tag(i);			/* { dg-error {argument} } */
+  __arm_mte_get_tag(i);			/* { dg-error {argument} } */
+  __arm_mte_increment_tag (i, 15);	/* { dg-error {argument} } */
+  __arm_mte_ptrdiff(c, i);		/* { dg-error {argument} } */
+  __arm_mte_ptrdiff(i, c);		/* { dg-error {argument} } */
+
+  __arm_mte_exclude_tag(1, 0);		/* { dg-error {argument} } */
+  __arm_mte_create_random_tag (1, 0);	/* { dg-error {argument} } */
+  __arm_mte_set_tag(1);			/* { dg-error {argument} } */
+  __arm_mte_get_tag(1);			/* { dg-error {argument} } */
+  __arm_mte_increment_tag (1, 15);	/* { dg-error {argument} } */
+  __arm_mte_ptrdiff(c, 1);		/* { dg-error {argument} } */
+  __arm_mte_ptrdiff(1, c);		/* { dg-error {argument} } */
 }

@@ -26,26 +26,26 @@ int *
 int_conversion_1 (int flag)
 {
   void f2 (int *);
-  flag ? "1" : 1; /* { dg-warning "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" } */
-  flag ? 1 : "1"; /* { dg-warning "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" } */
-  f2 (flag); /* { dg-warning "passing argument 1 of 'f2' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
+  flag ? "1" : 1; /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" } */
+  flag ? 1 : "1"; /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" } */
+  f2 (flag); /* { dg-error "passing argument 1 of 'f2' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
   {
-    int i1 = &flag; /* { dg-warning "initialization of 'int' from 'int \\\*' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
-    i1 = &flag; /* { dg-warning "assignment to 'int' from 'int \\\*' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
+    int i1 = &flag; /* { dg-error "initialization of 'int' from 'int \\\*' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
+    i1 = &flag; /* { dg-error "assignment to 'int' from 'int \\\*' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
   }
-  return flag; /* { dg-warning "returning 'int' from a function with return type 'int \\\*' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
+  return flag; /* { dg-error "returning 'int' from a function with return type 'int \\\*' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
 }
 
 int
 int_conversion_2 (int flag)
 {
   void f3 (int);
-  f3 (&flag); /* { dg-warning "passing argument 1 of 'f3' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
+  f3 (&flag); /* { dg-error "passing argument 1 of 'f3' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
   {
-    int *i1 = flag; /* { dg-warning "initialization of 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
-    i1 = flag; /* { dg-warning "assignment to 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
+    int *i1 = flag; /* { dg-error "initialization of 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
+    i1 = flag; /* { dg-error "assignment to 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" } */
   }
-  return &flag; /* { dg-warning "returning 'int \\\*' from a function with return type 'int' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
+  return &flag; /* { dg-error "returning 'int \\\*' from a function with return type 'int' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" } */
 }
 
 int *
