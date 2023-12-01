@@ -505,7 +505,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type -Wmissing-prototypes -Wmissing-variable-declarations
+-Wmissing-parameter-type -Wdeclaration-missing-parameter-type
+-Wmissing-prototypes -Wmissing-variable-declarations
 -Wnested-externs -Wold-style-declaration  -Wold-style-definition
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
@@ -6184,6 +6185,7 @@ only by this flag, but it also downgrades some C and C++ diagnostics
 that have their own flag:
 
 @gccoptlist{
+-Wdeclaration-missing-parameter-type @r{(C and Objective-C only)}
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
 -Wimplicit-int @r{(C and Objective-C only)}
 -Wincompatible-pointer-types @r{(C and Objective-C only)}
@@ -9757,6 +9759,20 @@ void foo(bar) @{ @}
 @end smallexample
 
 This warning is also enabled by @option{-Wextra}.
+
+@opindex Wno-declaration-missing-parameter-type
+@opindex Wdeclaration-missing-parameter-type
+@item -Wno-declaration-missing-parameter-type @r{(C and Objective-C only)}
+Do not warn if a function declaration contains a parameter name without
+a type.  Such function declarations do not provide a function prototype
+and prevent most type checking in function calls.
+
+This warning is enabled by default.  In C99 and later dialects of C, it
+is treated as an error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=declaration-missing-parameter-type}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wmissing-prototypes
 @opindex Wno-missing-prototypes

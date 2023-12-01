@@ -1,4 +1,4 @@
-/* { dg-options "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch" } */
+/* { dg-options "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch -Wno-error=declaration-missing-parameter-type" } */
 
 /* This test should emulate the effect of -fpermissive by adding all the
    -Wno-error= options that are implied by -fpermissive.  It needs to be
@@ -19,7 +19,7 @@ implicit_int_4 (i) /* { dg-warning "return type defaults to 'int' \\\[-Wimplicit
   (const) 0; /* { dg-warning "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" } */
 }
 
-extern int missing_parameter_type (i); /* { dg-warning "parameter names \\\(without types\\\) in function declaration\n" } */
+extern int missing_parameter_type (i); /* { dg-warning "parameter names \\\(without types\\\) in function declaration \\\[-Wdeclaration-missing-parameter-type\\\]" } */
 
 
 int *

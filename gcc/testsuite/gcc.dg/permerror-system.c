@@ -17,6 +17,8 @@
 /* { dg-error "type of 'i' defaults to 'int' \\\[-Wimplicit-int\\\]" "" { target *-*-*} 16 } */
 /* { dg-error "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" "" { target *-*-* } 19 } */
 
+/* { dg-error "parameter names \\\(without types\\\) in function declaration \\\[-Wdeclaration-missing-parameter-type\\\]" "" { target *-*-* } 22 } */
+
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 29 } */
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 30 } */
 /* { dg-error "passing argument 1 of 'f2' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" "" { target *-*-* } 31 } */

@@ -19,7 +19,7 @@ implicit_int_4 (i) /* { dg-error "return type defaults to 'int' \\\[-Wimplicit-i
   (const) 0; /* { dg-error "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" } */
 }
 
-extern int missing_parameter_type (i); /* { dg-warning "parameter names \\\(without types\\\) in function declaration\n" } */
+extern int missing_parameter_type (i); /* { dg-error "parameter names \\\(without types\\\) in function declaration \\\[-Wdeclaration-missing-parameter-type\\\]" } */
 
 
 int *

@@ -8343,8 +8343,10 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
     {
       if (!funcdef_flag)
 	{
-	  pedwarn (input_location, 0, "parameter names (without types) in "
-		   "function declaration");
+	  permerror_opt (input_location,
+			 OPT_Wdeclaration_missing_parameter_type,
+			 "parameter names (without types) in "
+			 "function declaration");
 	  arg_info->parms = NULL_TREE;
 	}
       else

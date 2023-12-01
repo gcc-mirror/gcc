@@ -595,6 +595,10 @@ Wdeclaration-after-statement
 C ObjC Var(warn_declaration_after_statement) Init(-1) Warning
 Warn when a declaration is found after a statement.
 
+Wdeclaration-missing-parameter-type
+C ObjC Var(warn_declaration_missing_parameter) Warning Init(1)
+Warn for missing parameter types in function declarations.
+
 Wdelete-incomplete
 C++ ObjC++ Var(warn_delete_incomplete) Init(1) Warning
 Warn when deleting a pointer to incomplete type.
