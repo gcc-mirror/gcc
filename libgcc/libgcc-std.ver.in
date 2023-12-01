@@ -1956,4 +1956,5 @@ GCC_14.0.0 {
   __PFX__fixdfbitint
   __PFX__floatbitintsf
   __PFX__floatbitintdf
+  __PFX__hardcfr_check
 }
