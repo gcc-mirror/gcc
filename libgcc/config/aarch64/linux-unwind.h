@@ -77,7 +77,10 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
     }
 
   rt_ = context->cfa;
-  sc = &rt_->uc.uc_mcontext;
+  /* Historically, the uc_mcontext member was of type struct sigcontext, but
+     glibc uses a different type now with member names in the implementation
+     namespace.  */
+  sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
 
 /* This define duplicates the definition in aarch64.md */
 #define SP_REGNUM 31
