@@ -2179,6 +2179,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	  *prec = MIN ((int) -min_prec, -2);
 	}
       mp = CEIL (min_prec, limb_prec) * limb_prec;
+      if (mp == 0)
+	mp = 1;
       if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op)))
 	type = TREE_TYPE (op);
       else
