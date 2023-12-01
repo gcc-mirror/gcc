@@ -51433,6 +51433,7 @@ esac
 
   test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
 
+
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
   case ${target_os} in
