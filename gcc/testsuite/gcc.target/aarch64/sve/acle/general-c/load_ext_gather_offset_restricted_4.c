@@ -16,7 +16,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svldnt1sb_gather_offset (pg, s8_ptr, s64); /* { dg-error {implicit declaration of function 'svldnt1sb_gather_offset'; did you mean 'svldnt1_gather_offset'} } */
   svldnt1sb_gather_offset_u64 (pg, s8_ptr); /* { dg-error {too few arguments to function 'svldnt1sb_gather_offset_u64'} } */
   svldnt1sb_gather_offset_u64 (pg, s8_ptr, s64, 0); /* { dg-error {too many arguments to function 'svldnt1sb_gather_offset_u64'} } */
-  svldnt1sb_gather_offset_u64 (pg, s16_ptr, s64); /* { dg-warning {passing argument 2 of 'svldnt1sb_gather_s64offset_u64' from incompatible pointer type} } */
+  svldnt1sb_gather_offset_u64 (pg, s16_ptr, s64); /* { dg-error {passing argument 2 of 'svldnt1sb_gather_s64offset_u64' from incompatible pointer type} } */
   svldnt1sb_gather_offset_u64 (pg, s8_ptr, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svldnt1sb_gather_offset_u64', which expects a vector of 64-bit integers} } */
   svldnt1sb_gather_offset_u64 (pg, s8_ptr, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svldnt1sb_gather_offset_u64', which expects a vector of 64-bit integers} } */
   svldnt1sb_gather_offset_u64 (pg, s8_ptr, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svldnt1sb_gather_offset_u64', which expects a vector of 64-bit integers} } */

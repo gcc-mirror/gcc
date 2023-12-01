@@ -5,7 +5,7 @@
    are not permitted.  PR c/11234.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -pedantic" } */
+/* { dg-options "-pedantic" } */
 
 void f(void);
 
@@ -14,8 +14,8 @@ void *v2 = &f; /* { dg-warning "12:pointer" "bad conversion" } */
 void *v3 = (void *)f; /* { dg-warning "12:pointer" "bad conversion" } */
 void *v4 = (void *)&f; /* { dg-warning "12:pointer" "bad conversion" } */
 void *v5;
-char *c1 = f; /* { dg-warning "12:pointer" "bad conversion" } */
-char *c2 = &f; /* { dg-warning "12:pointer" "bad conversion" } */
+char *c1 = f; /* { dg-error "12:pointer" "bad conversion" } */
+char *c2 = &f; /* { dg-error "12:pointer" "bad conversion" } */
 char *c3 = (char *)f; /* { dg-warning "12:pointer" "bad conversion" } */
 char *c4 = (char *)&f; /* { dg-warning "12:pointer" "bad conversion" } */
 char *c5;
@@ -29,12 +29,12 @@ g(void)
   v5 = &f; /* { dg-warning "6:pointer" "bad conversion" } */
   v5 = (void *)f; /* { dg-warning "8:pointer" "bad conversion" } */
   v5 = (void *)&f; /* { dg-warning "8:pointer" "bad conversion" } */
-  c5 = f; /* { dg-warning "6:pointer" "bad conversion" } */
-  c5 = &f; /* { dg-warning "6:pointer" "bad conversion" } */
+  c5 = f; /* { dg-error "6:pointer" "bad conversion" } */
+  c5 = &f; /* { dg-error "6:pointer" "bad conversion" } */
   c5 = (char *)f; /* { dg-warning "8:pointer" "bad conversion" } */
   c5 = (char *)&f; /* { dg-warning "8:pointer" "bad conversion" } */
   fp = v5; /* { dg-warning "6:pointer" "bad conversion" } */
-  fp = c5; /* { dg-warning "6:pointer" "bad conversion" } */
+  fp = c5; /* { dg-error "6:pointer" "bad conversion" } */
   fp = (void (*)(void))v5; /* { dg-warning "8:pointer" "bad conversion" } */
   fp = (void (*)(void))c5; /* { dg-warning "8:pointer" "bad conversion" } */
   (a ? f : v3); /* { dg-warning "10:pointer" "bad conversion" } */

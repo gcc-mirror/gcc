@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -fplan9-extensions" } */
+/* { dg-options "-fplan9-extensions" } */
 
 /* Test for ambiguity when using the Plan 9 extensions.  */
 
@@ -27,7 +27,7 @@ f2 (struct A *p)	/* { dg-message "expected" } */
 void
 f3 (struct B *p)
 {
-  f2 (p);		/* { dg-warning "incompatible pointer type" } */
+  f2 (p);		/* { dg-error "incompatible pointer type" } */
 }
 
 struct C
@@ -60,7 +60,7 @@ f6 (struct C *p)	/* { dg-message "expected" } */
 void
 f7 (struct E *p)
 {
-  f6 (p);		/* { dg-warning "incompatible pointer type" } */
+  f6 (p);		/* { dg-error "incompatible pointer type" } */
 }
 
 struct A

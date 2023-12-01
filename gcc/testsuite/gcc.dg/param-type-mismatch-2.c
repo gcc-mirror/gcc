@@ -152,7 +152,7 @@ extern int callee_8 (int one, float *two, float (three)); /* { dg-line callee_8 
 
 int test_8 (int first, int *second, float third)
 {
-  return callee_8 (first, second, third); /* { dg-warning "passing argument 2 of 'callee_8' from incompatible pointer type" } */
+  return callee_8 (first, second, third); /* { dg-error "passing argument 2 of 'callee_8' from incompatible pointer type" } */
   /* { dg-begin-multiline-output "" }
    return callee_8 (first, second, third);
                            ^~~~~~

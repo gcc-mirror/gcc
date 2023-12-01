@@ -1,6 +1,6 @@
 /* PR c/90628 */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "" } */
 
 _Atomic int a = 1, b = 2, c = 3;
 _Atomic long d = 4, e = 5, f = 6;
@@ -27,17 +27,17 @@ f3 ()
 void
 f4 ()
 {
-  __builtin_sadd_overflow (a, b, &c);	/* { dg-warning "passing argument 3 of '__builtin_sadd_overflow' from incompatible pointer type" } */
+  __builtin_sadd_overflow (a, b, &c);	/* { dg-error "passing argument 3 of '__builtin_sadd_overflow' from incompatible pointer type" } */
 }
 
 void
 f5 ()
 {
-  __builtin_ssubl_overflow (d, e, &f);	/* { dg-warning "passing argument 3 of '__builtin_ssubl_overflow' from incompatible pointer type" } */
+  __builtin_ssubl_overflow (d, e, &f);	/* { dg-error "passing argument 3 of '__builtin_ssubl_overflow' from incompatible pointer type" } */
 }
 
 void
 f6 ()
 {
-  __builtin_smulll_overflow (g, h, &i);	/* { dg-warning "passing argument 3 of '__builtin_smulll_overflow' from incompatible pointer type" } */
+  __builtin_smulll_overflow (g, h, &i);	/* { dg-error "passing argument 3 of '__builtin_smulll_overflow' from incompatible pointer type" } */
 }

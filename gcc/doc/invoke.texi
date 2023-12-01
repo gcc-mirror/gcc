@@ -6186,6 +6186,7 @@ that have their own flag:
 @gccoptlist{
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
 -Wimplicit-int @r{(C and Objective-C only)}
+-Wincompatible-pointer-types @r{(C and Objective-C only)}
 -Wint-conversion @r{(C and Objective-C only)}
 -Wnarrowing @r{(C++)}
 -Wreturn-mismatch @r{(C and Objective-C only)}
@@ -8565,6 +8566,11 @@ Do not warn when there is a conversion between pointers that have incompatible
 types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
 which warns for pointer argument passing or assignment with different
 signedness.
+
+By default, in C99 and later dialects of C, GCC treats this issue as an
+error.  The error can be downgraded to a warning using
+@option{-fpermissive} (along with certain other errors), or for this
+error alone, with @option{-Wno-error=incompatible-pointer-types}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 

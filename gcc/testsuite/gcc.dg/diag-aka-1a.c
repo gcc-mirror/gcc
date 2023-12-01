@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -Wc++-compat" } */
+/* { dg-options "-Wc++-compat" } */
 
 typedef struct A { int i; } B;
 typedef struct T { int i; } *T; /* { dg-warning "using 'T' as both a typedef and a tag is invalid" } */
@@ -16,8 +16,8 @@ void fn2 (TFC *);
 void 
 bar (B *b, int *i)
 {
-  fn1 ((struct B *) b); /* { dg-warning "passing argument" } */
-  fn2 (i); /* { dg-warning "passing argument" } */
+  fn1 ((struct B *) b); /* { dg-error "passing argument" } */
+  fn2 (i); /* { dg-error "passing argument" } */
   sizeof (arr); /* { dg-error "invalid application of .sizeof. to incomplete type .int \\(\\*\\\[\\\]\\)\\\[\\\]." } */
 }
 

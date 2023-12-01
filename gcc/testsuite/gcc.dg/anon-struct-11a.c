@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 
-/* Also turn off the default -pedantic-errors option.  */
-/* { dg-options "-fpermissive" } */
+/* No special options--in particular, turn off the default
+   -pedantic-errors option.  */
+/* { dg-options "" } */
 
 /* When not using -fplan9-extensions, we don't support automatic
    conversion of pointer types, and we don't support referring to a
@@ -32,12 +33,12 @@ test1 (void)
 
   b.b = 2;
   b.c = 3;
-  f1 (&b);		/* { dg-warning "incompatible pointer type" } */
+  f1 (&b);		/* { dg-error "incompatible pointer type" } */
   if (b.a != 1)		/* { dg-error "no member" } */
     abort ();
   if (b.b != 2 || b.c != 3)
     abort ();
-  p = &b;		/* { dg-warning "incompatible pointer type" } */
+  p = &b;		/* { dg-error "incompatible pointer type" } */
   if (p->a != 1)
     abort ();
 }
@@ -82,18 +83,18 @@ test2 (void)
   e.b = 2;
   e.c = 3;
   e.e = 5;
-  f2 (&e);		/* { dg-warning "incompatible pointer type" } */
-  f3 (&e);		/* { dg-warning "incompatible pointer type" } */
+  f2 (&e);		/* { dg-error "incompatible pointer type" } */
+  f3 (&e);		/* { dg-error "incompatible pointer type" } */
   if (e.d != 4)		/* { dg-error "no member" } */
     abort ();
   if (e.f != 6)		/* { dg-error "no member" } */
     abort ();
   if (e.b != 2 || e.c != 3 || e.e != 5)
     abort ();
-  pf = &e;		/* { dg-warning "incompatible pointer type" } */
+  pf = &e;		/* { dg-error "incompatible pointer type" } */
   if (pf->f != 6)
     abort ();
-  pd = &e;		/* { dg-warning "incompatible pointer type" } */
+  pd = &e;		/* { dg-error "incompatible pointer type" } */
   if (pd->d != 4)
     abort ();
   d = e.D;		/* { dg-error "no member" } */

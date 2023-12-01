@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -O -Wall -ftrack-macro-expansion=0" } */
+/* { dg-options "-O -Wall -ftrack-macro-expansion=0" } */
 
 /* C99 6.2.7: Compatible type and composite type.  */
 
@@ -47,9 +47,9 @@ DECIMAL_COMPOSITE_DECL(128); /* { dg-error "incompatible types when assigning to
 
 int main()
 {
-  DECIMAL_COMPOSITE_TEST(32);  /* { dg-warning "incompatible pointer type" } */
-  DECIMAL_COMPOSITE_TEST(64);  /* { dg-warning "incompatible pointer type" } */
-  DECIMAL_COMPOSITE_TEST(128); /* { dg-warning "incompatible pointer type" } */
+  DECIMAL_COMPOSITE_TEST(32);  /* { dg-error "incompatible pointer type" } */
+  DECIMAL_COMPOSITE_TEST(64);  /* { dg-error "incompatible pointer type" } */
+  DECIMAL_COMPOSITE_TEST(128); /* { dg-error "incompatible pointer type" } */
 
   return 0;
 }

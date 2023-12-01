@@ -84,9 +84,9 @@ void test(void)
 	(void)(1 ? x0 : z0);
 	(void)(1 ? x1 : z1);
 	(void)(1 ? x2 : z2);
-	(void)(1 ? x0 : x1); /* { dg-warning "pointer type mismatch in conditional expression" } */
-	(void)(1 ? x1 : x2); /* { dg-warning "pointer type mismatch in conditional expression" } */
-	(void)(1 ? x2 : x0); /* { dg-warning "pointer type mismatch in conditional expression" } */
+	(void)(1 ? x0 : x1); /* { dg-error "pointer type mismatch in conditional expression" } */
+	(void)(1 ? x1 : x2); /* { dg-error "pointer type mismatch in conditional expression" } */
+	(void)(1 ? x2 : x0); /* { dg-error "pointer type mismatch in conditional expression" } */
 	v0p = (1 ? z0 : v0p); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
 	v1p = (1 ? z1 : v1p); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
 	v2p = (1 ? z2 : v2p); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */

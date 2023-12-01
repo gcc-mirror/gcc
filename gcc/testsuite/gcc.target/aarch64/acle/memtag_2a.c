@@ -17,12 +17,12 @@ test_memtag_warning_return_qualifier (void)
 
   v = __arm_mte_get_tag(c);		  /* { dg-warning {assignment} } */
   n = __arm_mte_get_tag(c);		  /* { dg-warning {assignment} } */
-  i = __arm_mte_get_tag(c);		  /* { dg-warning {assignment} } */
+  i = __arm_mte_get_tag(c);		  /* { dg-error {assignment} } */
   c = __arm_mte_get_tag(v);		  /* { dg-warning {assignment} } */
   n = __arm_mte_get_tag(v);		  /* { dg-warning {assignment} } */
 
-  i = __arm_mte_create_random_tag (c, 0); /* { dg-warning {assignment} } */
-  i = __arm_mte_increment_tag (c, 0);	  /* { dg-warning {assignment} } */
+  i = __arm_mte_create_random_tag (c, 0); /* { dg-error {assignment} } */
+  i = __arm_mte_increment_tag (c, 0);	  /* { dg-error {assignment} } */
 
   c = __arm_mte_get_tag(n);		  /* No warning.  */
   d = __arm_mte_ptrdiff(c, i);		  /* No warning.  */

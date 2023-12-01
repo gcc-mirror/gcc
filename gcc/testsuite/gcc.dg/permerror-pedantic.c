@@ -52,7 +52,7 @@ int *
 incompatible_pointer_types (int flag)
 {
   void f4 (int *);
-  flag ? __builtin_abs : __builtin_labs; /* { dg-warning "pointer type mismatch in conditional expression \\\[-Wincompatible-pointer-types\\\]" } */
+  flag ? __builtin_abs : __builtin_labs; /* { dg-error "pointer type mismatch in conditional expression \\\[-Wincompatible-pointer-types\\\]" } */
   {
     int *p1 = __builtin_abs; /* { dg-error "initialization of 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
     p1 = __builtin_abs; /* { dg-error "assignment to 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */

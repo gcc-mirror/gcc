@@ -52,24 +52,24 @@ int *
 incompatible_pointer_types (int flag)
 {
   void f4 (int *);
-  flag ? __builtin_abs : __builtin_labs; /* { dg-warning "pointer type mismatch in conditional expression \\\[-Wincompatible-pointer-types\\\]" } */
+  flag ? __builtin_abs : __builtin_labs; /* { dg-error "pointer type mismatch in conditional expression \\\[-Wincompatible-pointer-types\\\]" } */
   {
-    int *p1 = __builtin_abs; /* { dg-warning "initialization of 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
-    p1 = __builtin_abs; /* { dg-warning "assignment to 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
+    int *p1 = __builtin_abs; /* { dg-error "initialization of 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
+    p1 = __builtin_abs; /* { dg-error "assignment to 'int \\\*' from pointer to '__builtin_abs' with incompatible type 'int \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
   }
   {
-    int *p2 = incompatible_pointer_types; /* { dg-warning "initialization of 'int \\\*' from incompatible pointer type 'int \\\* \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
-    p2 = incompatible_pointer_types; /* { dg-warning "assignment to 'int \\\*' from incompatible pointer type 'int \\\* \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
+    int *p2 = incompatible_pointer_types; /* { dg-error "initialization of 'int \\\*' from incompatible pointer type 'int \\\* \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
+    p2 = incompatible_pointer_types; /* { dg-error "assignment to 'int \\\*' from incompatible pointer type 'int \\\* \\\(\\\*\\\)\\\(int\\\)' \\\[-Wincompatible-pointer-types\\\]" } */
     {
-      int *p3 = &p2; /* { dg-warning "initialization of 'int \\\*' from incompatible pointer type 'int \\\*\\\*' \\\[-Wincompatible-pointer-types\\\]" } */
-      p3 = &p2; /* { dg-warning "assignment to 'int \\\*' from incompatible pointer type 'int \\\*\\\*' \\\[-Wincompatible-pointer-types\\\]" } */
+      int *p3 = &p2; /* { dg-error "initialization of 'int \\\*' from incompatible pointer type 'int \\\*\\\*' \\\[-Wincompatible-pointer-types\\\]" } */
+      p3 = &p2; /* { dg-error "assignment to 'int \\\*' from incompatible pointer type 'int \\\*\\\*' \\\[-Wincompatible-pointer-types\\\]" } */
     }
-    f4 (&p2); /* { dg-warning "passing argument 1 of 'f4' from incompatible pointer type \\\[-Wincompatible-pointer-types\\\]" } */
+    f4 (&p2); /* { dg-error "passing argument 1 of 'f4' from incompatible pointer type \\\[-Wincompatible-pointer-types\\\]" } */
   }
   if (flag)
-    return __builtin_abs; /* { dg-warning "returning pointer to '__builtin_abs' of type 'int \\\(\\\*\\\)\\\(int\\\)' from a function with incompatible type 'int \\\*' \\\[-Wincompatible-pointer-types\\\]" } */
+    return __builtin_abs; /* { dg-error "returning pointer to '__builtin_abs' of type 'int \\\(\\\*\\\)\\\(int\\\)' from a function with incompatible type 'int \\\*' \\\[-Wincompatible-pointer-types\\\]" } */
   else
-    return incompatible_pointer_types; /* { dg-warning "returning 'int \\\* \\\(\\\*\\\)\\\(int\\\)' from a function with incompatible return type 'int \\\*' \\\[-Wincompatible-pointer-types\\\]" } */
+    return incompatible_pointer_types; /* { dg-error "returning 'int \\\* \\\(\\\*\\\)\\\(int\\\)' from a function with incompatible return type 'int \\\*' \\\[-Wincompatible-pointer-types\\\]" } */
 }
 
 void

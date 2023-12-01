@@ -1,6 +1,6 @@
 /* PR c/37724 */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -pedantic" } */
+/* { dg-options "-fpermissive -std=gnu99 -pedantic" } */
 
 struct f
 {

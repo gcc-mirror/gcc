@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c11" } */
+/* { dg-options "-fpermissive -std=c11" } */
 /* Origin: Martin Uecker <uecker@eecs.berkeley.edu> */
 void tvoid(void* x);
 void transpose0(double* out, _Atomic double* in) { }

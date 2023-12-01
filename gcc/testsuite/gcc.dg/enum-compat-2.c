@@ -3,7 +3,7 @@
 /* Origin: Joseph Myers <jsm@polyomino.org.uk>, based on
    PR c/6024 from Richard Earnshaw <rearnsha@arm.com> */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "" } */
 
 /* Original test from PR c/6024.  */
 enum e1 {a, b};
@@ -22,7 +22,7 @@ enum e3 { A };
 enum e4 { B };
 
 enum e3 v3;
-enum e4 *p = &v3; /* { dg-warning "incompatible" "incompatible pointer" } */
+enum e4 *p = &v3; /* { dg-error "incompatible" "incompatible pointer" } */
 enum e3 *q = &v3;
 
 void g(enum e3); /* { dg-message "note: previous declaration" "error at first decl" } */

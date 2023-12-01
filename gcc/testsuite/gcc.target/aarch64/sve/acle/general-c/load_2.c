@@ -15,8 +15,8 @@ f1 (svbool_t pg, signed char *s8_ptr, void *void_ptr, struct s *s_ptr,
   svld1_s8 (pg, 0);
   svld1_s32 (pg, (int32_t *) 0);
   svld1_s8 (pg, void_ptr);
-  svld1_s8 (pg, s_ptr); /* { dg-warning {passing argument 2 of 'svld1_s8' from incompatible pointer type} } */
+  svld1_s8 (pg, s_ptr); /* { dg-error {passing argument 2 of 'svld1_s8' from incompatible pointer type} } */
   svld1_f32 (pg, f32_ptr);
-  svld1_f32 (pg, cf32_ptr); /* { dg-warning {passing argument 2 of 'svld1_f32' from incompatible pointer type} } */
+  svld1_f32 (pg, cf32_ptr); /* { dg-error {passing argument 2 of 'svld1_f32' from incompatible pointer type} } */
   return svld1_s8 (pg, s8_ptr); /* { dg-error {incompatible types when returning type 'svint8_t' but 'svuint8_t' was expected} } */
 }
