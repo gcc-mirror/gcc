@@ -7635,7 +7635,6 @@ package body Exp_Ch6 is
                        Dynamic_Call_Helper (CW_Subp);
          Actuals   : constant List_Id := New_List;
          A         : Node_Id   := First_Actual (Call_Node);
-         F         : Entity_Id := First_Formal (Helper_Id);
 
       begin
          while Present (A) loop
@@ -7646,7 +7645,7 @@ package body Exp_Ch6 is
             Remove_Side_Effects (A);
 
             Append_To (Actuals, New_Copy_Tree (A));
-            Next_Formal (F);
+
             Next_Actual (A);
          end loop;
 
