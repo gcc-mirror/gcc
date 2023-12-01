@@ -1100,6 +1100,61 @@ bpf_debug_unwind_info ()
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
 
+/* Implement target hook TARGET_ASM_NAMED_SECTION.  */
+
+static void
+bpf_asm_named_section (const char *name, unsigned int flags,
+                       tree decl)
+{
+  /* In BPF section names are used to encode the kind of BPF program
+     and other metadata, involving all sort of non alphanumeric
+     characters.  This includes for example names like /foo//bar/baz.
+     This makes it necessary to quote section names to make sure the
+     assembler doesn't get confused.  For example, the example above
+     would be interpreted unqouted as a section name "/foo" followed
+     by a line comment "//bar/baz".
+
+     Note that we only quote the section name if it contains any
+     character not in the set [0-9a-zA-Z_].  This is because
+     default_elf_asm_named_section generally expects unquoted names
+     and checks for particular names like
+     __patchable_function_entries.  */
+
+  bool needs_quoting = false;
+
+  for (const char *p = name; *p != '\0'; ++p)
+    if (!(*p == '_'
+          || (*p >= '0' && *p <= '9')
+          || (*p >= 'a' && *p <= 'z')
+          || (*p >= 'A' && *p <= 'Z')))
+      needs_quoting = true;
+
+  if (needs_quoting)
+    {
+      char *quoted_name
+        = (char *) xcalloc (1, strlen (name) * 2 + 2);
+      char *q = quoted_name;
+
+      *(q++) = '"';
+      for (const char *p = name; *p != '\0'; ++p)
+        {
+          if (*p == '"' || *p == '\\')
+            *(q++) = '\\';
+          *(q++) = *p;
+        }
+      *(q++) = '"';
+      *(q++) = '\0';
+
+      default_elf_asm_named_section (quoted_name, flags, decl);
+      free (quoted_name);
+    }
+  else
+    default_elf_asm_named_section (name, flags, decl);
+}
+
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION bpf_asm_named_section
+
 /* Implement target hook small_register_classes_for_mode_p.  */
 
 static bool
