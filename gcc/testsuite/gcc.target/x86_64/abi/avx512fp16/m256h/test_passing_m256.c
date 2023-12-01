@@ -25,6 +25,7 @@ int failed = 0;
   assert (memcmp (&X1, &X2, sizeof (T)) == 0); \
 } while (0)
 
+void
 fun_check_passing_m256_8_values (__m256 i0 ATTRIBUTE_UNUSED,
 				 __m256 i1 ATTRIBUTE_UNUSED,
 				 __m256 i2 ATTRIBUTE_UNUSED,
@@ -45,6 +46,7 @@ fun_check_passing_m256_8_values (__m256 i0 ATTRIBUTE_UNUSED,
   compare (values.i7, i7, __m256);
 }
 
+void
 fun_check_passing_m256h_8_values (__m256h i0 ATTRIBUTE_UNUSED,
 				  __m256h i1 ATTRIBUTE_UNUSED,
 				  __m256h i2 ATTRIBUTE_UNUSED,
