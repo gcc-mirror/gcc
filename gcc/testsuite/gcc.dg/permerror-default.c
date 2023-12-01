@@ -75,11 +75,11 @@ incompatible_pointer_types (int flag)
 void
 return_mismatch_1 (void)
 {
-  return 0; /* { dg-warning "'return' with a value, in function returning void \\\[-Wreturn-mismatch\\\]" } */
+  return 0; /* { dg-error "'return' with a value, in function returning void \\\[-Wreturn-mismatch\\\]" } */
 }
 
 int
 return_mismatch_2 (void)
 {
-  return; /* { dg-warning "return' with no value, in function returning non-void \\\[-Wreturn-mismatch\\\]" } */
+  return; /* { dg-error "return' with no value, in function returning non-void \\\[-Wreturn-mismatch\\\]" } */
 }

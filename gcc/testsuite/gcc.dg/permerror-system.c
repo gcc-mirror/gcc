@@ -27,3 +27,6 @@
 /* { dg-error "initialization of 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" "" { target *-*-* } 45 } */
 /* { dg-error "assignment to 'int \\\*' from 'int' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" "" { target *-*-* } 46 } */
 /* { dg-error "returning 'int \\\*' from a function with return type 'int' makes integer from pointer without a cast \\\[-Wint-conversion\\\]" "" { target *-*-* } 48 } */
+
+/* { dg-error "'return' with a value, in function returning void \\\[-Wreturn-mismatch\\\]" "" { target *-*-* } 78 } */
+/* { dg-error "return' with no value, in function returning non-void \\\[-Wreturn-mismatch\\\]" "" { target *-*-* } 84 } */

@@ -1,11 +1,11 @@
 /* PR c/23075 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fpermissive -Wreturn-type" } */
+/* { dg-options "-O2 -Wreturn-type" } */
 
 int
 foo (void)
 {
-  return;	/* { dg-warning "with no value" } */
+  return;	/* { dg-error "with no value" } */
 }		/* { dg-bogus "control reaches end" } */
 
 int

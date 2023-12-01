@@ -1,4 +1,4 @@
-/* { dg-options "-fpermissive -fdiagnostics-show-caret -Wreturn-local-addr" } */
+/* { dg-options "-fdiagnostics-show-caret -Wreturn-local-addr" } */
 
 int *address_of_local (void)
 {
@@ -12,7 +12,7 @@ int *address_of_local (void)
 
 void surplus_return_when_void_1 (void)
 {
-  return 500; /* { dg-warning "'return' with a value, in function returning void" } */
+  return 500; /* { dg-error "'return' with a value, in function returning void" } */
 /* { dg-begin-multiline-output "" }
    return 500;
           ^~~
@@ -25,7 +25,7 @@ void surplus_return_when_void_1 (void)
 
 void surplus_return_when_void_2 (int i, int j)
 {
-  return i * j; /* { dg-warning "'return' with a value, in function returning void" } */
+  return i * j; /* { dg-error "'return' with a value, in function returning void" } */
 /* { dg-begin-multiline-output "" }
    return i * j;
           ~~^~~
@@ -38,7 +38,7 @@ void surplus_return_when_void_2 (int i, int j)
 
 int missing_return_value (void)
 {
-  return; /* { dg-warning "'return' with no value, in function returning non-void" } */
+  return; /* { dg-error "'return' with no value, in function returning non-void" } */
 /* { dg-begin-multiline-output "" }
    return;
    ^~~~~~

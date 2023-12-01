@@ -6188,6 +6188,7 @@ that have their own flag:
 -Wimplicit-int @r{(C and Objective-C only)}
 -Wint-conversion @r{(C and Objective-C only)}
 -Wnarrowing @r{(C++)}
+-Wreturn-mismatch @r{(C and Objective-C only)}
 }
 
 The @option{-fpermissive} option is the default for historic C language
@@ -7390,7 +7391,10 @@ Attempting to use the return value of a non-@code{void} function other
 than @code{main} that flows off the end by reaching the closing curly
 brace that terminates the function is undefined.
 
-This warning is specific to C and enabled by default.
+This warning is specific to C and enabled by default.  In C99 and later
+language dialects, it is treated as an error.  It can be downgraded
+to a warning using @option{-fpermissive} (along with other warnings),
+or for just this warning, with @option{-Wno-error=return-mismatch}.
 
 @opindex Wreturn-type
 @opindex Wno-return-type

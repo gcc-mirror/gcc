@@ -2,7 +2,7 @@
    Copyright (C) 2003 Free Software Foundation Inc.  */
 
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -O -finline-functions -Wreturn-type" } */
+/* { dg-options "-O -finline-functions -Wreturn-type" } */
 
 extern int i;
 extern int foo (void);
@@ -16,6 +16,6 @@ int foo (void)
 
 int bar (void)
 {
-  if( i ) return; /* { dg-warning "'return' with no value, in function returning non-void" } */
+  if( i ) return; /* { dg-error "'return' with no value, in function returning non-void" } */
   else    return 1;
 }		

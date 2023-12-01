@@ -1,7 +1,7 @@
 /* Check that a conditional return is used.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-O2 -fpermissive -w" } */
 
 /* { dg-final { scan-assembler {\mbeqlr\M} } } */
 

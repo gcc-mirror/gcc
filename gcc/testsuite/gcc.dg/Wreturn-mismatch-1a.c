@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "" } */
 
 void f1 (void);
 
@@ -18,7 +18,7 @@ f3 (void)
 void
 f4 (void)
 {
-  return 1; /* { dg-warning "'return' with a value\[^\n\r\]*-Wreturn-mismatch" } */
+  return 1; /* { dg-error "'return' with a value\[^\n\r\]*-Wreturn-mismatch" } */
 }
 
 void
@@ -30,7 +30,7 @@ f5 (void)
 int
 f6 (void)
 {
-  return; /* { dg-warning "'return' with no value\[^\n\r\]*-Wreturn-mismatch" } */
+  return; /* { dg-error "'return' with no value\[^\n\r\]*-Wreturn-mismatch" } */
 }
 
 int

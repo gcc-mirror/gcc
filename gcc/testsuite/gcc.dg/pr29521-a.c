@@ -1,6 +1,6 @@
 /* PR 29521 : warning for return with expression in function returning void */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "" } */
 
 void func (void) { }
 
@@ -11,5 +11,5 @@ void func2 (void)
 
 void func3 (void)
 {
-  return 1;  /* { dg-warning "'return' with a value" } */
+  return 1;  /* { dg-error "'return' with a value" } */
 }
