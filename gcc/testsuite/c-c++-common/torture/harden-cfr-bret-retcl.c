@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-fharden-control-flow-redundancy -fhardcfr-check-noreturn-calls=never -fdump-tree-hardcfr -ffat-lto-objects" } */
+/* { dg-options "-fharden-control-flow-redundancy -fhardcfr-check-noreturn-calls=never -fno-exceptions -fdump-tree-hardcfr -ffat-lto-objects" } */
+/* { dg-require-effective-target untyped_assembly } */
 
 /* Check that, even disabling checks before noreturn calls (leaving returning
    calls enabled), we still get checks before __builtin_return.  */
