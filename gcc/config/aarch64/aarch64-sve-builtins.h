@@ -530,6 +530,8 @@ public:
   insn_code direct_optab_handler_for_sign (optab, optab, unsigned int = 0,
 					   machine_mode = E_VOIDmode);
 
+  machine_mode result_mode () const;
+
   bool overlaps_input_p (rtx);
 
   rtx convert_to_pmode (rtx);
@@ -880,6 +882,13 @@ function_base::call_properties (const function_instance &instance) const
   if (instance.type_suffix (0).float_p || instance.type_suffix (1).float_p)
     flags |= CP_READ_FPCR | CP_RAISE_FP_EXCEPTIONS;
   return flags;
+}
+
+/* Return the mode of the result of a call.  */
+inline machine_mode
+function_expander::result_mode () const
+{
+  return TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl)));
 }
 
 }

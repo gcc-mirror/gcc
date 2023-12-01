@@ -1493,7 +1493,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    machine_mode tuple_mode = TYPE_MODE (TREE_TYPE (e.call_expr));
+    machine_mode tuple_mode = e.result_mode ();
     insn_code icode = convert_optab_handler (vec_mask_load_lanes_optab,
 					     tuple_mode, e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);

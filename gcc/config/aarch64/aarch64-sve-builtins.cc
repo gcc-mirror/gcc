@@ -2862,7 +2862,7 @@ function_expander::get_fallback_value (machine_mode mode, unsigned int nops,
 rtx
 function_expander::get_reg_target ()
 {
-  machine_mode target_mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl)));
+  machine_mode target_mode = result_mode ();
   if (!possible_target || GET_MODE (possible_target) != target_mode)
     possible_target = gen_reg_rtx (target_mode);
   return possible_target;
