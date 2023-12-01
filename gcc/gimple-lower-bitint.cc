@@ -4028,11 +4028,11 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  edge edge_true_true, edge_true_false, edge_false;
 		  gimple *g2 = NULL;
 		  if (!single_comparison)
-		    g2 = gimple_build_cond (EQ_EXPR, idx,
+		    g2 = gimple_build_cond (NE_EXPR, idx,
 					    size_int (startlimb), NULL_TREE,
 					    NULL_TREE);
 		  if_then_if_then_else (g, g2, profile_probability::likely (),
-					profile_probability::unlikely (),
+					profile_probability::likely (),
 					edge_true_true, edge_true_false,
 					edge_false);
 		  unsigned tidx = startlimb + (cmp_code == GT_EXPR);
