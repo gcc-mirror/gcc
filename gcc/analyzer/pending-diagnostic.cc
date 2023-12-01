@@ -109,6 +109,51 @@ evdesc::event_desc::formatted_print (const char *fmt, ...) const
   return result;
 }
 
+/* class diagnostic_emission_context.  */
+
+/* Get the pending_diagnostic being emitted.  */
+
+const pending_diagnostic &
+diagnostic_emission_context::get_pending_diagnostic () const
+{
+  return *m_sd.m_d.get ();
+}
+
+/* Emit a warning, using the rich_location, metadata, and the
+   pending_diagnostic's option.  */
+
+bool
+diagnostic_emission_context::warn (const char *gmsgid, ...)
+{
+  const pending_diagnostic &pd = get_pending_diagnostic ();
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  const bool result = emit_diagnostic_valist (DK_WARNING,
+					      &m_rich_loc, &m_metadata,
+					      pd.get_controlling_option (),
+					      gmsgid, &ap);
+  va_end (ap);
+  return result;
+}
+
+/* Emit a note, using the rich_location and metadata (and the
+   pending_diagnostic's option).  */
+
+void
+diagnostic_emission_context::inform (const char *gmsgid, ...)
+{
+  const pending_diagnostic &pd = get_pending_diagnostic ();
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  emit_diagnostic_valist (DK_NOTE,
+			  &m_rich_loc, &m_metadata,
+			  pd.get_controlling_option (),
+			  gmsgid, &ap);
+  va_end (ap);
+}
+
 /* Return true if T1 and T2 are "the same" for the purposes of
    diagnostic deduplication.  */
 

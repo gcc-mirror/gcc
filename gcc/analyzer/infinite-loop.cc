@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "function.h"
 #include "pretty-print.h"
 #include "sbitmap.h"
@@ -178,13 +177,11 @@ public:
     return OPT_Wanalyzer_infinite_loop;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     /* "CWE-835: Loop with Unreachable Exit Condition ('Infinite Loop')". */
-    diagnostic_metadata m;
-    m.add_cwe (835);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "infinite loop");
+    ctxt.add_cwe (835);
+    return ctxt.warn ("infinite loop");
   }
 
   bool maybe_add_custom_events_for_superedge (const exploded_edge &,

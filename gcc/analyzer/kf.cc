@@ -719,32 +719,29 @@ public:
     return OPT_Wanalyzer_putenv_of_auto_var;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
 
     /* SEI CERT C Coding Standard: "POS34-C. Do not call putenv() with a
        pointer to an automatic variable as the argument".  */
     diagnostic_metadata::precanned_rule
       rule ("POS34-C", "https://wiki.sei.cmu.edu/confluence/x/6NYxBQ");
-    m.add_rule (rule);
+    ctxt.add_rule (rule);
 
     bool warned;
     if (m_var_decl)
-      warned = warning_meta (rich_loc, m, get_controlling_option (),
-			     "%qE on a pointer to automatic variable %qE",
-			     m_fndecl, m_var_decl);
+      warned = ctxt.warn ("%qE on a pointer to automatic variable %qE",
+			  m_fndecl, m_var_decl);
     else
-      warned = warning_meta (rich_loc, m, get_controlling_option (),
-			     "%qE on a pointer to an on-stack buffer",
-			     m_fndecl);
+      warned = ctxt.warn ("%qE on a pointer to an on-stack buffer",
+			  m_fndecl);
     if (warned)
       {
 	if (m_var_decl)
 	  inform (DECL_SOURCE_LOCATION (m_var_decl),
 		  "%qE declared on stack here", m_var_decl);
-	inform (rich_loc->get_loc (), "perhaps use %qs rather than %qE",
+	inform (ctxt.get_location (), "perhaps use %qs rather than %qE",
 		"setenv", m_fndecl);
       }
 
@@ -1733,18 +1730,15 @@ public:
       return OPT_Wanalyzer_undefined_behavior_strtok;
     }
 
-    bool emit (rich_location *rich_loc, logger *) final override
+    bool emit (diagnostic_emission_context &ctxt) final override
     {
       /* CWE-476: NULL Pointer Dereference.  */
-      diagnostic_metadata m;
-      m.add_cwe (476);
-      if (warning_meta
-	  (rich_loc, m, get_controlling_option (),
-	   "calling %qD for first time with NULL as argument 1"
-	   " has undefined behavior",
-	   get_callee_fndecl ()))
+      ctxt.add_cwe (476);
+      if (ctxt.warn ("calling %qD for first time with NULL as argument 1"
+		     " has undefined behavior",
+		     get_callee_fndecl ()))
 	{
-	  inform (rich_loc->get_loc (),
+	  inform (ctxt.get_location (),
 		  "some implementations of %qD may crash on such input",
 		  get_callee_fndecl ());
 	  return true;

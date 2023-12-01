@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "bitmap.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -114,15 +113,13 @@ public:
     return OPT_Wanalyzer_unsafe_call_within_signal_handler;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
-    m.add_cwe (479);
-    if (warning_meta (rich_loc, m, get_controlling_option (),
-		      "call to %qD from within signal handler",
-		      m_unsafe_fndecl))
+    ctxt.add_cwe (479);
+    if (ctxt.warn ("call to %qD from within signal handler",
+		   m_unsafe_fndecl))
       {
 	/* If we know a possible alternative function, add a note
 	   suggesting the replacement.  */

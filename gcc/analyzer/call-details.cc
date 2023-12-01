@@ -445,14 +445,12 @@ public:
     return OPT_Wanalyzer_overlapping_buffers;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
     auto_diagnostic_group d;
 
-    bool warned;
-    warned = warning_at (rich_loc, get_controlling_option (),
-			 "overlapping buffers passed as arguments to %qD",
-			 m_fndecl);
+    bool warned = ctxt.warn ("overlapping buffers passed as arguments to %qD",
+			     m_fndecl);
 
     // TODO: draw a picture?
 

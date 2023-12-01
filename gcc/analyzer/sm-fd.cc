@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -465,19 +464,16 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
     /*CWE-775: Missing Release of File Descriptor or Handle after Effective
       Lifetime
      */
-    diagnostic_metadata m;
-    m.add_cwe (775);
+    ctxt.add_cwe (775);
     if (m_arg)
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of file descriptor %qE", m_arg);
+      return ctxt.warn ("leak of file descriptor %qE", m_arg);
     else
-      return warning_meta (rich_loc, m, get_controlling_option (),
-			   "leak of file descriptor");
+      return ctxt.warn ("leak of file descriptor");
   }
 
   label_text
@@ -550,20 +546,18 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
     bool warned;
     switch (m_fd_dir)
       {
       case DIRS_READ:
-	warned =  warning_at (rich_loc, get_controlling_option (),
-			   "%qE on read-only file descriptor %qE",
-			   m_callee_fndecl, m_arg);
+	warned =  ctxt.warn ("%qE on read-only file descriptor %qE",
+			     m_callee_fndecl, m_arg);
 	break;
       case DIRS_WRITE:
-	warned = warning_at (rich_loc, get_controlling_option (),
-			   "%qE on write-only file descriptor %qE",
-			   m_callee_fndecl, m_arg);
+	warned = ctxt.warn ("%qE on write-only file descriptor %qE",
+			    m_callee_fndecl, m_arg);
 	break;
       default:
 	gcc_unreachable ();
@@ -612,13 +606,11 @@ public:
     return OPT_Wanalyzer_fd_double_close;
   }
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     // CWE-1341: Multiple Releases of Same Resource or Handle
-    m.add_cwe (1341);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "double %<close%> of file descriptor %qE", m_arg);
+    ctxt.add_cwe (1341);
+    return ctxt.warn ("double %<close%> of file descriptor %qE", m_arg);
   }
 
   label_text
@@ -677,12 +669,10 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
-    bool warned;
-    warned = warning_at (rich_loc, get_controlling_option (),
-		       "%qE on closed file descriptor %qE", m_callee_fndecl,
-		       m_arg);
+    bool warned = ctxt.warn ("%qE on closed file descriptor %qE",
+			     m_callee_fndecl, m_arg);
     if (warned)
       inform_filedescriptor_attribute (DIRS_READ_WRITE);
     return warned;
@@ -748,12 +738,10 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
-    bool warned;
-    warned = warning_at (rich_loc, get_controlling_option (),
-			"%qE on possibly invalid file descriptor %qE",
-			m_callee_fndecl, m_arg);
+    bool warned = ctxt.warn ("%qE on possibly invalid file descriptor %qE",
+			     m_callee_fndecl, m_arg);
     if (warned)
      inform_filedescriptor_attribute (DIRS_READ_WRITE);
     return warned;
@@ -859,14 +847,12 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
     /* CWE-666: Operation on Resource in Wrong Phase of Lifetime.  */
-    diagnostic_metadata m;
-    m.add_cwe (666);
-    return warning_at (rich_loc, get_controlling_option (),
-		       "%qE on file descriptor %qE in wrong phase",
-		       m_callee_fndecl, m_arg);
+    ctxt.add_cwe (666);
+    return ctxt.warn ("%qE on file descriptor %qE in wrong phase",
+		      m_callee_fndecl, m_arg);
   }
 
   label_text
@@ -1019,25 +1005,22 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
     switch (m_expected_type)
       {
       default:
 	gcc_unreachable ();
       case EXPECTED_TYPE_SOCKET:
-	return warning_at (rich_loc, get_controlling_option (),
-			   "%qE on non-socket file descriptor %qE",
-			   m_callee_fndecl, m_arg);
+	return ctxt.warn ("%qE on non-socket file descriptor %qE",
+			  m_callee_fndecl, m_arg);
       case EXPECTED_TYPE_STREAM_SOCKET:
 	if (m_sm.is_datagram_socket_fd_p (m_actual_state))
-	  return warning_at (rich_loc, get_controlling_option (),
-			     "%qE on datagram socket file descriptor %qE",
-			     m_callee_fndecl, m_arg);
+	  return ctxt.warn ("%qE on datagram socket file descriptor %qE",
+			    m_callee_fndecl, m_arg);
 	else
-	  return warning_at (rich_loc, get_controlling_option (),
-			     "%qE on non-stream-socket file descriptor %qE",
-			     m_callee_fndecl, m_arg);
+	  return ctxt.warn ("%qE on non-stream-socket file descriptor %qE",
+			    m_callee_fndecl, m_arg);
       }
   }
 
