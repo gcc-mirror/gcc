@@ -345,7 +345,7 @@ Target Joined UInteger Var(aarch64_mops_memcpy_size_threshold) Init(256) Param
 Constant memcpy size in bytes above which to start using MOPS sequence.
 
 -param=aarch64-mops-memmove-size-threshold=
-Target Joined UInteger Var(aarch64_mops_memmove_size_threshold) Init(0) Param
+Target Joined UInteger Var(aarch64_mops_memmove_size_threshold) Init(256) Param
 Constant memmove size in bytes above which to start using MOPS sequence.
 
 -param=aarch64-mops-memset-size-threshold=

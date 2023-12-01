@@ -1768,7 +1768,7 @@
    (match_operand:DI 3 "immediate_operand")]
    ""
 {
-  if (aarch64_expand_cpymem (operands))
+  if (aarch64_expand_cpymem (operands, false))
     DONE;
   FAIL;
 }
@@ -1812,17 +1812,9 @@
    (match_operand:BLK 1 "memory_operand")
    (match_operand:DI 2 "general_operand")
    (match_operand:DI 3 "immediate_operand")]
-   "TARGET_MOPS"
+   ""
 {
-   rtx sz_reg = operands[2];
-   /* For constant-sized memmoves check the threshold.
-      FIXME: We should add a non-MOPS memmove expansion for smaller,
-      constant-sized memmove to avoid going to a libcall.  */
-   if (CONST_INT_P (sz_reg)
-       && INTVAL (sz_reg) < aarch64_mops_memmove_size_threshold)
-     FAIL;
-
-  if (aarch64_expand_cpymem_mops (operands, true))
+  if (aarch64_expand_cpymem (operands, true))
     DONE;
   FAIL;
 }

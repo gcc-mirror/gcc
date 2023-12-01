@@ -25428,52 +25428,40 @@ aarch64_progress_pointer (rtx pointer)
   return aarch64_move_pointer (pointer, GET_MODE_SIZE (GET_MODE (pointer)));
 }
 
-/* Copy one MODE sized block from SRC to DST, then progress SRC and DST by
-   MODE bytes.  */
+typedef auto_vec<std::pair<rtx, rtx>, 12> copy_ops;
 
+/* Copy one block of size MODE from SRC to DST at offset OFFSET.  */
 static void
-aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
-					      machine_mode mode)
+aarch64_copy_one_block (copy_ops &ops, rtx src, rtx dst,
+			int offset, machine_mode mode)
 {
-  /* Handle 256-bit memcpy separately.  We do this by making 2 adjacent memory
-     address copies using V4SImode so that we can use Q registers.  */
-  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+  /* Emit explict load/store pair instructions for 32-byte copies.  */
+  if (known_eq (GET_MODE_SIZE (mode), 32))
     {
       mode = V4SImode;
+      rtx src1 = adjust_address (src, mode, offset);
+      rtx src2 = adjust_address (src, mode, offset + 16);
+      rtx dst1 = adjust_address (dst, mode, offset);
+      rtx dst2 = adjust_address (dst, mode, offset + 16);
       rtx reg1 = gen_reg_rtx (mode);
       rtx reg2 = gen_reg_rtx (mode);
-      /* "Cast" the pointers to the correct mode.  */
-      *src = adjust_address (*src, mode, 0);
-      *dst = adjust_address (*dst, mode, 0);
-      /* Emit the memcpy.  */
-      emit_insn (aarch64_gen_load_pair (mode, reg1, *src, reg2,
-					aarch64_progress_pointer (*src)));
-      emit_insn (aarch64_gen_store_pair (mode, *dst, reg1,
-					 aarch64_progress_pointer (*dst), reg2));
-      /* Move the pointers forward.  */
-      *src = aarch64_move_pointer (*src, 32);
-      *dst = aarch64_move_pointer (*dst, 32);
+      rtx load = aarch64_gen_load_pair (mode, reg1, src1, reg2, src2);
+      rtx store = aarch64_gen_store_pair (mode, dst1, reg1, dst2, reg2);
+      ops.safe_push ({ load, store });
       return;
     }
 
   rtx reg = gen_reg_rtx (mode);
-
-  /* "Cast" the pointers to the correct mode.  */
-  *src = adjust_address (*src, mode, 0);
-  *dst = adjust_address (*dst, mode, 0);
-  /* Emit the memcpy.  */
-  emit_move_insn (reg, *src);
-  emit_move_insn (*dst, reg);
-  /* Move the pointers forward.  */
-  *src = aarch64_progress_pointer (*src);
-  *dst = aarch64_progress_pointer (*dst);
+  rtx load = gen_move_insn (reg, adjust_address (src, mode, offset));
+  rtx store = gen_move_insn (adjust_address (dst, mode, offset), reg);
+  ops.safe_push ({ load, store });
 }
 
 /* Expand a cpymem/movmem using the MOPS extension.  OPERANDS are taken
    from the cpymem/movmem pattern.  IS_MEMMOVE is true if this is a memmove
    rather than memcpy.  Return true iff we succeeded.  */
 bool
-aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
+aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove)
 {
   if (!TARGET_MOPS)
     return false;
@@ -25492,55 +25480,51 @@ aarch64_expand_cpymem_mops (rtx *operands, bool is_memmove = false)
   return true;
 }
 
-/* Expand cpymem, as if from a __builtin_memcpy.  Return true if
-   we succeed, otherwise return false, indicating that a libcall to
-   memcpy should be emitted.  */
-
+/* Expand cpymem/movmem, as if from a __builtin_memcpy/memmove.
+   OPERANDS are taken from the cpymem/movmem pattern.  IS_MEMMOVE is true
+   if this is a memmove rather than memcpy.  Return true if we succeed,
+   otherwise return false, indicating that a libcall should be emitted.  */
 bool
-aarch64_expand_cpymem (rtx *operands)
+aarch64_expand_cpymem (rtx *operands, bool is_memmove)
 {
-  int mode_bits;
+  int mode_bytes;
   rtx dst = operands[0];
   rtx src = operands[1];
   unsigned align = UINTVAL (operands[3]);
   rtx base;
-  machine_mode cur_mode = BLKmode;
-  bool size_p = optimize_function_for_size_p (cfun);
+  machine_mode cur_mode = BLKmode, next_mode;
 
   /* Variable-sized or strict-align copies may use the MOPS expansion.  */
   if (!CONST_INT_P (operands[2]) || (STRICT_ALIGNMENT && align < 16))
-    return aarch64_expand_cpymem_mops (operands);
+    return aarch64_expand_cpymem_mops (operands, is_memmove);
 
   unsigned HOST_WIDE_INT size = UINTVAL (operands[2]);
+  bool use_ldpq = TARGET_SIMD && !(aarch64_tune_params.extra_tuning_flags
+				   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS);
 
-  /* Try to inline up to 256 bytes.  */
-  unsigned max_copy_size = 256;
-  unsigned mops_threshold = aarch64_mops_memcpy_size_threshold;
+  /* Set inline limits for memmove/memcpy.  MOPS has a separate threshold.  */
+  unsigned max_copy_size = use_ldpq ? 256 : 128;
+  unsigned mops_threshold = is_memmove ? aarch64_mops_memmove_size_threshold
+				       : aarch64_mops_memcpy_size_threshold;
+
+  /* Reduce the maximum size with -Os.  */
+  if (optimize_function_for_size_p (cfun))
+    max_copy_size /= 4;
 
   /* Large copies use MOPS when available or a library call.  */
   if (size > max_copy_size || (TARGET_MOPS && size > mops_threshold))
-    return aarch64_expand_cpymem_mops (operands);
+    return aarch64_expand_cpymem_mops (operands, is_memmove);
 
-  int copy_bits = 256;
+  unsigned copy_max = 32;
 
-  /* Default to 256-bit LDP/STP on large copies, however small copies, no SIMD
-     support or slow 256-bit LDP/STP fall back to 128-bit chunks.
+  /* Default to 32-byte LDP/STP on large copies, however small copies, no SIMD
+     support or slow LDP/STP fall back to 16-byte chunks.
 
      ??? Although it would be possible to use LDP/STP Qn in streaming mode
      (so using TARGET_BASE_SIMD instead of TARGET_SIMD), it isn't clear
      whether that would improve performance.  */
-  if (size <= 24
-      || !TARGET_SIMD
-      || (aarch64_tune_params.extra_tuning_flags
-	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
-    copy_bits = 128;
-
-  /* Emit an inline load+store sequence and count the number of operations
-     involved.  We use a simple count of just the loads and stores emitted
-     rather than rtx_insn count as all the pointer adjustments and reg copying
-     in this function will get optimized away later in the pipeline.  */
-  start_sequence ();
-  unsigned nops = 0;
+  if (size <= 24 || !use_ldpq)
+    copy_max = 16;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -25548,69 +25532,55 @@ aarch64_expand_cpymem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Convert size to bits to make the rest of the code simpler.  */
-  int n = size * BITS_PER_UNIT;
+  copy_ops ops;
+  int offset = 0;
 
-  while (n > 0)
+  while (size > 0)
     {
       /* Find the largest mode in which to do the copy in without over reading
 	 or writing.  */
       opt_scalar_int_mode mode_iter;
       FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
-	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_bits))
+	if (GET_MODE_SIZE (mode_iter.require ()) <= MIN (size, copy_max))
 	  cur_mode = mode_iter.require ();
 
       gcc_assert (cur_mode != BLKmode);
 
-      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      mode_bytes = GET_MODE_SIZE (cur_mode).to_constant ();
 
       /* Prefer Q-register accesses for the last bytes.  */
-      if (mode_bits == 128 && copy_bits == 256)
+      if (mode_bytes == 16 && copy_max == 32)
 	cur_mode = V4SImode;
-
-      aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
-      /* A single block copy is 1 load + 1 store.  */
-      nops += 2;
-      n -= mode_bits;
+      aarch64_copy_one_block (ops, src, dst, offset, cur_mode);
+      size -= mode_bytes;
+      offset += mode_bytes;
 
       /* Emit trailing copies using overlapping unaligned accesses
-	(when !STRICT_ALIGNMENT) - this is smaller and faster.  */
-      if (n > 0 && n < copy_bits / 2 && !STRICT_ALIGNMENT)
+	 (when !STRICT_ALIGNMENT) - this is smaller and faster.  */
+      if (size > 0 && size < copy_max / 2 && !STRICT_ALIGNMENT)
 	{
-	  machine_mode next_mode = smallest_mode_for_size (n, MODE_INT);
-	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
-	  gcc_assert (n_bits <= mode_bits);
-	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
-	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
-	  n = n_bits;
+	  next_mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  int n_bytes = GET_MODE_SIZE (next_mode).to_constant ();
+	  gcc_assert (n_bytes <= mode_bytes);
+	  offset -= n_bytes - size;
+	  size = n_bytes;
 	}
     }
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
-  /* MOPS sequence requires 3 instructions for the memory copying + 1 to move
-     the constant size into a register.  */
-  unsigned mops_cost = 3 + 1;
 
-  /* If MOPS is available at this point we don't consider the libcall as it's
-     not a win even on code size.  At this point only consider MOPS if
-     optimizing for size.  For speed optimizations we will have chosen between
-     the two based on copy size already.  */
-  if (TARGET_MOPS)
+  /* Memcpy interleaves loads with stores, memmove emits all loads first.  */
+  int nops = ops.length();
+  int inc = is_memmove ? nops : nops == 4 ? 2 : 3;
+
+  for (int i = 0; i < nops; i += inc)
     {
-      if (size_p && mops_cost < nops)
-	return aarch64_expand_cpymem_mops (operands);
-      emit_insn (seq);
-      return true;
+      int m = MIN (nops, i + inc);
+      /* Emit loads.  */
+      for (int j = i; j < m; j++)
+	emit_insn (ops[j].first);
+      /* Emit stores.  */
+      for (int j = i; j < m; j++)
+	emit_insn (ops[j].second);
     }
-
-  /* A memcpy libcall in the worst case takes 3 instructions to prepare the
-     arguments + 1 for the call.  When MOPS is not available and we're
-     optimizing for size a libcall may be preferable.  */
-  unsigned libcall_cost = 4;
-  if (size_p && libcall_cost < nops)
-    return false;
-
-  emit_insn (seq);
   return true;
 }
 
