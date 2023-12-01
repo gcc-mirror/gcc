@@ -1017,6 +1017,8 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   machine_mode mask_mode = riscv_vector::get_mask_mode (vmode);
 
   rtx cnt = gen_reg_rtx (Pmode);
+  emit_move_insn (cnt, CONST0_RTX (Pmode));
+
   rtx end = gen_reg_rtx (Pmode);
   rtx vec = gen_reg_rtx (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
@@ -1032,6 +1034,11 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   emit_label (loop);
 
   rtx vsrc = change_address (src, vmode, src_addr);
+
+  /* Bump the pointer.  */
+  rtx step = gen_reg_rtx (Pmode);
+  emit_insn (gen_rtx_SET (step, gen_rtx_ASHIFT (Pmode, cnt, GEN_INT (shift))));
+  emit_insn (gen_rtx_SET (src_addr, gen_rtx_PLUS (Pmode, src_addr, step)));
 
   /* Emit a first-fault load.  */
   rtx vlops[] = {vec, vsrc};
@@ -1055,15 +1062,9 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   emit_nonvlmax_insn (code_for_pred_ffs (mask_mode, Pmode),
 		      riscv_vector::CPOP_OP, vfops, cnt);
 
-  /* Bump the pointer.  */
-  emit_insn (gen_rtx_SET (src_addr, gen_rtx_PLUS (Pmode, src_addr, cnt)));
-
   /* Emit the loop condition.  */
   rtx test = gen_rtx_LT (VOIDmode, end, const0_rtx);
   emit_jump_insn (gen_cbranch4 (Pmode, test, end, const0_rtx, loop));
-
-  /*  We overran by CNT, subtract it.  */
-  emit_insn (gen_rtx_SET (src_addr, gen_rtx_MINUS (Pmode, src_addr, cnt)));
 
   /*  We found something at SRC + END * [1,2,4,8].  */
   emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));
