@@ -3743,7 +3743,8 @@
 		     (match_operand:SI 2 "const_int_operand")
 		     (match_operand:SI 3 "const_int_operand")]
 		  UNSPEC_STRLEN))]
-  "riscv_inline_strlen && !optimize_size && (TARGET_ZBB || TARGET_XTHEADBB)"
+  "riscv_inline_strlen && !optimize_size
+    && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
   rtx search_char = operands[2];
 

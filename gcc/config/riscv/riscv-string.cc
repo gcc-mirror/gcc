@@ -588,9 +588,16 @@ riscv_expand_strlen_scalar (rtx result, rtx src, rtx align)
 bool
 riscv_expand_strlen (rtx result, rtx src, rtx search_char, rtx align)
 {
+  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR)
+    {
+      riscv_vector::expand_rawmemchr (E_QImode, result, src, search_char,
+				      /* strlen */ true);
+      return true;
+    }
+
   gcc_assert (search_char == const0_rtx);
 
-  if (TARGET_ZBB || TARGET_XTHEADBB)
+  if ((TARGET_ZBB || TARGET_XTHEADBB) && stringop_strategy & STRATEGY_SCALAR)
     return riscv_expand_strlen_scalar (result, src, align);
 
   return false;
@@ -979,12 +986,13 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 }
 
 
-/* Implement rawmemchr<mode> using vector instructions.
+/* Implement rawmemchr<mode> and strlen using vector instructions.
    It can be assumed that the needle is in the haystack, otherwise the
    behavior is undefined.  */
 
 void
-expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
+expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
+		  bool strlen)
 {
   /*
     rawmemchr:
@@ -1004,6 +1012,9 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
        ret
   */
   gcc_assert (TARGET_VECTOR);
+
+  if (strlen)
+    gcc_assert (mode == E_QImode);
 
   unsigned int isize = GET_MODE_SIZE (mode).to_constant ();
   int lmul = TARGET_MAX_LMUL;
@@ -1028,12 +1039,13 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
      return a pointer to the matching byte.  */
   unsigned int shift = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
 
-  rtx src_addr = copy_addr_to_reg (XEXP (src, 0));
+  rtx src_addr = copy_addr_to_reg (XEXP (haystack, 0));
+  rtx start_addr = copy_addr_to_reg (XEXP (haystack, 0));
 
   rtx loop = gen_label_rtx ();
   emit_label (loop);
 
-  rtx vsrc = change_address (src, vmode, src_addr);
+  rtx vsrc = change_address (haystack, vmode, src_addr);
 
   /* Bump the pointer.  */
   rtx step = gen_reg_rtx (Pmode);
@@ -1052,8 +1064,8 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
     emit_insn (gen_read_vldi_zero_extend (cnt));
 
   /* Compare needle with haystack and store in a mask.  */
-  rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, pat), vec);
-  rtx vmsops[] = {mask, eq, vec, pat};
+  rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, needle), vec);
+  rtx vmsops[] = {mask, eq, vec, needle};
   emit_nonvlmax_insn (code_for_pred_eqne_scalar (vmode),
 		      riscv_vector::COMPARE_OP, vmsops, cnt);
 
@@ -1066,9 +1078,18 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx src, rtx pat)
   rtx test = gen_rtx_LT (VOIDmode, end, const0_rtx);
   emit_jump_insn (gen_cbranch4 (Pmode, test, end, const0_rtx, loop));
 
-  /*  We found something at SRC + END * [1,2,4,8].  */
-  emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));
-  emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+  if (strlen)
+    {
+      /* For strlen, return the length.  */
+      emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+      emit_insn (gen_rtx_SET (dst, gen_rtx_MINUS (Pmode, dst, start_addr)));
+    }
+  else
+    {
+      /*  For rawmemchr, return the position at SRC + END * [1,2,4,8].  */
+      emit_insn (gen_rtx_SET (end, gen_rtx_ASHIFT (Pmode, end, GEN_INT (shift))));
+      emit_insn (gen_rtx_SET (dst, gen_rtx_PLUS (Pmode, src_addr, end)));
+    }
 }
 
 }
