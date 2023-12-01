@@ -10,7 +10,12 @@
 
 /* { dg-error "'f1' \\\[-Wimplicit-function-declaration\\\]" "" { target *-*-* } 10 } */
 
+/* { dg-error "'implicit_int_1' \\\[-Wimplicit-int\\\]" "" { target *-*-* } 13 } */
+/* { dg-error "'implicit_int_2' \\\[-Wimplicit-int\\\]" "" { target *-*-* } 14 } */
+/* { dg-error "'implicit_int_3' \\\[-Wimplicit-int\\]" "" { target *-*-* } 15 } */
+/* { dg-error "return type defaults to 'int' \\\[-Wimplicit-int\\\]" "" { target *-*-* } 16 } */
 /* { dg-error "type of 'i' defaults to 'int' \\\[-Wimplicit-int\\\]" "" { target *-*-*} 16 } */
+/* { dg-error "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" "" { target *-*-* } 19 } */
 
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 29 } */
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 30 } */

@@ -6851,7 +6851,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* Diagnose defaulting to "int".  */
 
-  if (declspecs->default_int_p && !in_system_header_at (input_location))
+  if (declspecs->default_int_p)
     {
       /* Issue a warning if this is an ISO C 99 program or if
 	 -Wreturn-type and this is a function, or if -Wimplicit;
