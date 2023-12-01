@@ -2493,7 +2493,7 @@ public:
     { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
   // Check compatibility of LHS and op1.
   bool operand_check_p (tree t1, tree t2, tree) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 } op_lshift;
 
 class operator_rshift : public cross_product_operator
@@ -2525,7 +2525,7 @@ public:
     { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
   // Check compatibility of LHS and op1.
   bool operand_check_p (tree t1, tree t2, tree) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 } op_rshift;
 
 
@@ -3103,8 +3103,7 @@ public:
 			  relation_trio rel = TRIO_VARYING) const;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 } op_logical_and;
 
 bool
@@ -3608,8 +3607,7 @@ public:
 			  relation_trio rel = TRIO_VARYING) const;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 } op_logical_or;
 
 bool
@@ -4038,7 +4036,7 @@ public:
 			  relation_trio rel = TRIO_VARYING) const;
   // Check compatibility of LHS and op1.
   bool operand_check_p (tree t1, tree t2, tree) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 } op_logical_not;
 
 // Folding a logical NOT, oddly enough, involves doing nothing on the

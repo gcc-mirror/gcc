@@ -89,18 +89,6 @@ gimple_range_ssa_p (tree exp)
   return NULL_TREE;
 }
 
-// Return true if TYPE1 and TYPE2 are compatible range types.
-
-inline bool
-range_compatible_p (tree type1, tree type2)
-{
-  // types_compatible_p requires conversion in both directions to be useless.
-  // GIMPLE only requires a cast one way in order to be compatible.
-  // Ranges really only need the sign and precision to be the same.
-  return (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
-	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
-}
-
 // Source of all operands for fold_using_range and gori_compute.
 // It abstracts out the source of an operand so it can come from a stmt or
 // and edge or anywhere a derived class of fur_source wants.

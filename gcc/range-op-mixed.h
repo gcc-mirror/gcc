@@ -140,7 +140,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_not_equal : public range_operator
@@ -179,7 +179,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_lt :  public range_operator
@@ -215,7 +215,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_le :  public range_operator
@@ -254,7 +254,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_gt :  public range_operator
@@ -292,7 +292,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_ge :  public range_operator
@@ -331,7 +331,7 @@ public:
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
   bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 class operator_identity : public range_operator
@@ -429,8 +429,7 @@ public:
 				relation_trio = TRIO_VARYING) const;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -459,7 +458,7 @@ class operator_abs : public range_operator
 		       const irange &rh) const final override;
   // Check compatibility of LHS and op1.
   bool operand_check_p (tree t1, tree t2, tree) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -503,8 +502,7 @@ public:
 				relation_trio = TRIO_VARYING) const;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -535,7 +533,7 @@ class operator_negate : public range_operator
 		  relation_trio rel = TRIO_VARYING) const final override;
   // Check compatibility of LHS and op1.
   bool operand_check_p (tree t1, tree t2, tree) const final override
-    { return TYPE_PRECISION (t1) == TYPE_PRECISION (t2); }
+    { return range_compatible_p (t1, t2); }
 };
 
 
@@ -589,8 +587,7 @@ public:
 				relation_trio = TRIO_VARYING) const;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 };
 
 class operator_addr_expr : public range_operator
@@ -621,8 +618,7 @@ public:
 		       const irange &rh) const final override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 };
 
 class operator_bitwise_xor : public range_operator
@@ -645,8 +641,7 @@ public:
 		       const irange &rh) const final override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -672,8 +667,7 @@ public:
 		       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -698,8 +692,7 @@ public:
 		       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -713,8 +706,7 @@ public:
 		       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -728,8 +720,7 @@ public:
       const irange &rh) const override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return (TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-	      && TYPE_PRECISION (t1) == TYPE_PRECISION (t3)); }
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
