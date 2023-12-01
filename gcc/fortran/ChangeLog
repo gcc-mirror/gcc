@@ -1,3 +1,21 @@
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111880
+	* resolve.cc (resolve_common_vars): Do not call gfc_add_in_common
+	for symbols that are USE associated or used in a submodule.
+
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112764
+	* primary.cc (gfc_variable_attr): Set TARGET attribute of associating
+	entity dependent on TARGET or POINTER attribute of selector.
+
 2023-11-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

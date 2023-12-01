@@ -1,3 +1,13 @@
+2023-11-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* lra-constraints.cc (lra_constraints): Copy substituted
+	equivalence.
+	* lra.cc (lra): Change comment for calling unshare_all_rtl_again.
+
 2023-11-29  Costas Argyris  <costas.argyris@gmail.com>
 
 	Backported from master:

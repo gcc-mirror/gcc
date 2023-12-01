@@ -1,3 +1,27 @@
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111880
+	* gfortran.dg/pr111880.f90: New test.
+
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112764
+	* gfortran.dg/associate_62.f90: New test.
+
+2023-11-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* g++.target/i386/pr111497.C: new test.
+
 2023-11-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
