@@ -6336,7 +6336,13 @@ gimple_lower_bitint (void)
 		    type = build_nonstandard_integer_type (prec, uns);
 		    tree lhs2 = make_ssa_name (type);
 		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
-		    gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+		    if (stmt_ends_bb_p (stmt))
+		      {
+			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
+			gsi_insert_on_edge_immediate (e, g);
+		      }
+		    else
+		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
 		    gimple_set_lhs (stmt, lhs2);
 		  }
 	      unsigned int nops = gimple_num_ops (stmt);
