@@ -4204,9 +4204,8 @@ pointers.  In the latter case, any function used as an initializer of
 such a callback field will be treated as being called with tainted
 arguments.
 
-The analyzer will pay particular attention to such functions when both
-@option{-fanalyzer} and @option{-fanalyzer-checker=taint} are supplied,
-potentially issuing warnings guarded by
+The analyzer will pay particular attention to such functions when
+@option{-fanalyzer} is supplied, potentially issuing warnings guarded by
 @option{-Wanalyzer-tainted-allocation-size},
 @option{-Wanalyzer-tainted-array-index},
 @option{-Wanalyzer-tainted-divisor},
