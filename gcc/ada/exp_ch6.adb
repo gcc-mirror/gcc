@@ -7868,6 +7868,7 @@ package body Exp_Ch6 is
                         Present (Controlling_Argument (Call_Node));
       Class_Subp    : Entity_Id;
       Cond          : Node_Id;
+      Fail          : Node_Id;
       Subp          : Entity_Id;
 
    --  Start of processing for Install_Class_Preconditions_Check
@@ -7913,30 +7914,29 @@ package body Exp_Ch6 is
       end if;
 
       if Exception_Locations_Suppressed then
-         Insert_Action (Call_Node,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Cond),
-             Then_Statements => New_List (
-               Make_Raise_Statement (Loc,
-                 Name =>
-                   New_Occurrence_Of
-                     (RTE (RE_Assert_Failure), Loc)))));
+         Fail :=
+           Make_Raise_Statement (Loc,
+             Name =>
+               New_Occurrence_Of
+                 (RTE (RE_Assert_Failure), Loc));
 
       --  Failed check with message indicating the failed precondition and the
       --  call that caused it.
 
       else
-         Insert_Action (Call_Node,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Cond),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of
-                     (RTE (RE_Raise_Assert_Failure), Loc),
-                 Parameter_Associations =>
-                   New_List (Build_Error_Message (Subp))))));
+         Fail :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of
+                 (RTE (RE_Raise_Assert_Failure), Loc),
+             Parameter_Associations =>
+               New_List (Build_Error_Message (Subp)));
       end if;
+
+      Insert_Action (Call_Node,
+        Make_If_Statement (Loc,
+          Condition       => Make_Op_Not (Loc, Cond),
+          Then_Statements => New_List (Fail)));
    end Install_Class_Preconditions_Check;
 
    ------------------------------
