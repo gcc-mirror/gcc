@@ -3682,6 +3682,8 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
 	      else
 		g = gimple_build_assign (lhs2, NOP_EXPR, ovf);
 	      gsi_replace (&gsi, g, true);
+	      if (gsi_stmt (m_gsi) == use_stmt)
+		m_gsi = gsi_for_stmt (g);
 	      break;
 	    }
 	}
