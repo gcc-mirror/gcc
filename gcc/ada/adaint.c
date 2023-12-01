@@ -85,6 +85,8 @@
 
 #if defined (__APPLE__)
 #include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
 #include <TargetConditionals.h>
 #endif
 

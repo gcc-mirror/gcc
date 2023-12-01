@@ -31,7 +31,7 @@
 
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 
-/* First all usupported platforms. Add stubs for exported routines. */
+/* First all unsupported platforms. Add stubs for exported routines. */
 
 #if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
   || defined (__ANDROID__) || defined (__PikeOS__) || defined(__DJGPP__)
@@ -1089,7 +1089,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 {
 }
 
-#else /* defined(_WIN32, implementatin for all UNIXes */
+#else /* defined(_WIN32, implementation for all UNIXes */
 
 /* First defined some macro to identify easily some systems */
 #if defined (__FreeBSD__) \
@@ -1104,6 +1104,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -1120,6 +1121,9 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #endif
 #if defined (__hpux__)
 #   include <sys/stropts.h>
+#endif
+#if defined (__APPLE__)
+#   include <util.h>
 #endif
 
 #define CDISABLE _POSIX_VDISABLE
