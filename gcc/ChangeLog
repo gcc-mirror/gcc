@@ -1,3 +1,89 @@
+2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111404
+	* config/aarch64/aarch64.cc (aarch64_split_compare_and_swap):
+	For 128-bit store the loaded value and loop if needed.
+
+2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/103100
+	* config/aarch64/aarch64.md (cpymemdi): Remove pattern condition.
+	(setmemdi): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem): Support
+	strict-align.  Cleanup condition for using MOPS.
+	(aarch64_expand_setmem): Likewise.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112767
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Propagate constants to immediate uses immediately.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112766
+	* gimple-predicate-analysis.cc (find_var_cmp_const):
+	Support continuing the iteration and report every candidate.
+	(uninit_analysis::overlap): Iterate over all flag var
+	candidates.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add widening overlap of vf2/vf4.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Remove earlyclobber for wx/wf instructions.
+
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112733
+	* wide-int.cc (wi::mul_internal): Don't allocate twice as much
+	space for u, v and r as needed.
+	(divmod_internal_2): Change return type from void to int, for n == 1
+	return 1, otherwise before writing b_dividend into b_remainder set
+	n to MIN (n, m) and at the end return it.
+	(wi::divmod_internal): Don't allocate 4 times as much space for
+	b_quotient, b_remainder, b_dividend and b_divisor.  Set n to
+	result of divmod_internal_2.
+	(wide_int_cc_tests): Add test for unsigned widest_int
+	wi::multiple_of_p of 1 and -128.
+
+2023-11-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (sdot_prodv64qi): New expander.
+	(sseunpackmodelower): New mode attr.
+	(sdot_prod<mode>): Emulate sdot_prodv*qi with sodt_prov*hi
+	when TARGET_VNNIINT8 is not available.
+
+2023-11-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md: (reduc_plus_scal_<mode>): Use
+	vec_extract_lo instead of subreg.
+	(reduc_<code>_scal_<mode>): Ditto.
+	(reduc_<code>_scal_<mode>): Ditto.
+	(reduc_<code>_scal_<mode>): Ditto.
+	(reduc_<code>_scal_<mode>): Ditto.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add widenning overlap.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): Fix constraint.
+	* config/riscv/riscv.md (no,W21,W42,W84,W41,W81,W82): Rename vconstraint into group_overlap.
+	(no,yes): Ditto.
+	(none,W21,W42,W84,W43,W86,W87): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Support highpart overlap for vext.vf2
+
 2023-11-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add ampere-1b

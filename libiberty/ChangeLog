@@ -1,3 +1,9 @@
+2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_CHECK_ASSEMBLER_HWCAP): Invoke.
+	* configure, aclocal.m4: Regenerate.
+	* Makefile.in (COMPILE.c): Add HWCAP_CFLAGS.
+
 2023-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): New check.

@@ -1,3 +1,49 @@
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Adjust.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4.h: Likewise.
+	* testsuite/libgomp.c/declare-variant-4.c: New.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Turn 'dg-do run'
+	into 'dg-do link'.
+	* testsuite/libgomp.c/declare-variant-3.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Extend.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Restrict
+	'scan-offload-tree-dump' to 'only_for_offload_target nvptx-none'.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Restrict
+	'scan-offload-tree-dump' to
+	'only_for_offload_target amdgcn-amdhsa'.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c:
+	'dg-additional-options -foffload=nvptx-none'.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Likewise.
+
 2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/target-simd-clone-1.c: Restrict

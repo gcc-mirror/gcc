@@ -1,3 +1,127 @@
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Apply_Predicate_Check): Add Deref boolean parameter.
+	* checks.adb (Apply_Predicate_Check): Revert latest change. Use
+	Loc local variable to hold the source location. Use a common code
+	path for the generic processing and make a dereference if Deref is
+	True.
+	* exp_ch4.adb (Expand_Allocator_Expression): Compute Aggr_In_Place
+	earlier. If it is true, do not call Apply_Predicate_Check on the
+	expression on entry but on the temporary on exit with a
+	dereference.
+	* sem_res.adb (Resolve_Actuals): Add explicit parameter
+	association in call to Apply_Predicate_Check.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb (Put_Image_Enabled): Return True in more
+	cases. In particular, when testing to see if a type occurs in a
+	predefined unit, test the type's code unit
+	(obtained by calling Get_Code_Unit). In the case of type within a
+	user-defined instance of a predefined generic, Is_Predefined_Unit
+	will return True for the type and False for the type's code unit.
+
+2023-11-30  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):
+	Remove checking on volatility. Remove handling of SPARK_Mode, not
+	needed anymore.
+	(Analyze_Entry_Or_Subprogram_Contract): Remove checking on
+	volatility.
+	(Check_Type_Or_Object_External_Properties): Same.
+	(Analyze_Object_Contract): Same.
+	* freeze.adb (Freeze_Record_Type): Same. Also remove checking on
+	synchronized types and ghost types.
+	* sem_ch12.adb (Instantiate_Object): Remove checking on
+	volatility.
+	(Instantiate_Type): Same.
+	* sem_ch3.adb (Access_Type_Declaration): Same.
+	(Derived_Type_Declaration): Remove checking related to untagged
+	partial view.
+	(Process_Discriminants): Remove checking on volatility.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Same.
+	* sem_ch6.adb (Analyze_Procedure_Call): Fix use of SPARK_Mode
+	where GNATprove_Mode was intended.
+	* sem_disp.adb (Inherited_Subprograms): Protect against Empty
+	node.
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Remove checking on
+	volatility.
+	(Analyze_Pragma): Same.
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Remove.
+	(Resolve_Actuals): Remove checking on volatility.
+	(Resolve_Entity_Name): Same.
+	* sem_util.adb (Check_Nonvolatile_Function_Profile): Remove.
+	(Check_Volatility_Compatibility): Remove.
+	* sem_util.ads: Same.
+
+2023-11-30  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/i-cstrin.adb (Free): Rewrite code so there is only one
+	return, to remove Improper_Returns violation.
+	(Position_Of_Nul): Add pragma to exempt Improper_Returns
+	violation.
+	(To_Chars_Ptr): Likewise.
+	(Value): Likewise
+
+2023-11-30  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Validate_Compile_Time_Warning_Errors): Avoid
+	checking compile time warnings and errors if backend has not been
+	activated.
+
+2023-11-30  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_ch4.ads, exp_ch5.adb,
+	exp_util.adb, exp_util.ads, inline.adb, sem_ch13.adb,
+	sem_ch6.adb, sem_ch8.adb, sem_prag.adb, sem_util.ads: Fix comments
+	and typos.
+
+2023-11-30  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Declared_In_Expanded_Body): New subprogram.
+	(In_Expanded_Body): Minor code cleanup.
+	(Freeze_Expression): Code cleanup plus factorize in a new function
+	the code that identifies entities declared in the body of expander
+	generated subprograms, since such case must be checked also for
+	other node kinds when climbing the tree to locate the place to
+	insert the freezing node.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): In the case of a resolving a
+	name that occurs within an instantiation, add code to detect and
+	filter out unwanted candidate resolutions. The filtering is
+	performed via a call to Remove_Interp.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* libgnarl/a-rttiev.ads: add a comment
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch12.adb (Validate_Discriminated_Formal_Type): Replace
+	Entity_Id equality test with a call to Subtypes_Match. Distinct
+	subtypes which are statically matching should pass this test.
+	(Check_Discriminated_Formal): Replace Entity_Id equality test with
+	a call to Subtypes_Statically_Match (preceded by a check that the
+	preconditions for the call are satisfied).
+
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Add Special_Return
+	boolean constant to hold the value of For_Special_Return_Object
+	for the allocator and use it throughout the procedure.
+
+2023-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Also deal specifically with
+	an expression that is a qualified aggregate in an allocator.
+
+2023-11-30  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): As a temporary stopgap,
+	return False in the case of an unanalyzed prefixed-view call.
+
 2023-11-28  Simon Wright  <simon@pushface.org>
 
 	PR ada/111909

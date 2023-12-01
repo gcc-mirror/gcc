@@ -1,3 +1,8 @@
+2023-11-30  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c: Include <windows.h> if available.
+	(coff_add): On Windows call GetModuleHandle to get base address.
+
 2023-11-29  Ian Lance Taylor  <iant@golang.org>
 
 	* fileline.c: Include <windows.h> if available.

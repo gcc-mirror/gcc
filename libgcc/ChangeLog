@@ -1,3 +1,9 @@
+2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/111404
+	* config/aarch64/lse.S (__aarch64_cas16_acq_rel): Execute STLXP using
+	either new value or loaded value.
+
 2023-11-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/lib1funcs.S (__sync_synchronize): Adjust warning message.

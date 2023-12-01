@@ -1,3 +1,9 @@
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112764
+	* primary.cc (gfc_variable_attr): Set TARGET attribute of associating
+	entity dependent on TARGET or POINTER attribute of selector.
+
 2023-11-28  Andrew Jenner  <andrew@codesourcery.com>
 	    Tobias Burnus   <tobias@codesourcery.com>
 

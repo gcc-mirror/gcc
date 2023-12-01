@@ -1,3 +1,111 @@
+2023-11-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112744
+	* g++.dg/lookup/scoped11.C: New test.
+	* g++.dg/lookup/scoped12.C: New test.
+	* g++.dg/lookup/scoped13.C: New test.
+	* g++.dg/lookup/scoped14.C: New test.
+	* g++.dg/lookup/scoped15.C: New test.
+
+2023-11-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/112698
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: Update expected
+	error message.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: Likewise.
+
+2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/gcn/avgpr-mem-double.c: Remove
+	'dg-skip-if "incompatible ISA" [...]'.
+	* gcc.target/gcn/avgpr-mem-int.c: Likewise.
+	* gcc.target/gcn/avgpr-mem-long.c: Likewise.
+	* gcc.target/gcn/avgpr-mem-short.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-double.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-int.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-long.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-short.c: Likewise.
+
+2023-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112764
+	* gfortran.dg/associate_62.f90: New test.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112767
+	* gcc.dg/tree-ssa/pr112767.c: New testcase.
+	* gcc.dg/graphite/pr83255.c: Disable SCCP.
+
+2023-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112766
+	* g++.dg/torture/uninit-pr112766.C: New testcase.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-16.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-17.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-18.c: New test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-19.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-20.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-21.c: New test.
+
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110349
+	* g++.dg/cpp26/name-independent-decl1.C: New test.
+	* g++.dg/cpp26/name-independent-decl2.C: New test.
+	* g++.dg/cpp26/name-independent-decl3.C: New test.
+	* g++.dg/cpp26/name-independent-decl4.C: New test.
+	* g++.dg/cpp26/name-independent-decl5.C: New test.
+	* g++.dg/cpp26/name-independent-decl6.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C: Add __cpp_placeholder_variables test.
+
+2023-11-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sdotprodint8_emulate.c: New test.
+
+2023-11-30  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2023-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Expect "unaligned pointer value" warning on short_enums
+	targets, but not in c++.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.
+
+2023-11-30  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-13.c: Fix 'E' extension version to test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-11.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-12.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-13.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-14.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-15.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-9.c: New test.
+
+2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/unop_v_constraint-2.c: Adapt test.
+	* gcc.target/riscv/rvv/base/pr112431-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-6.c: New test.
+
 2023-11-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106650

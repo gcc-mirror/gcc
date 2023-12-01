@@ -1,3 +1,71 @@
+2023-11-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112744
+	* typeck.cc (finish_class_member_access_expr): When accessing
+	a static data member, use ba_any for lookup_base.
+
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110349
+	* cp-tree.h: Implement C++26 P2169R4 - Placeholder variables with no
+	name.
+	(OVL_NAME_INDEPENDENT_DECL_P): Define.
+	(add_capture): Add unsigned * argument.
+	(name_independent_decl_p): New inline function.
+	* name-lookup.cc (class name_lookup): Make ambiguous and
+	add_value members public.
+	(name_independent_linear_search): New function.
+	(get_class_binding_direct): Handle member_vec_binary_search
+	returning OVL_NAME_INDEPENDENT_DECL_P OVERLOAD.  Use
+	name_independent_linear_search rather than fields_linear_search
+	for linear lookup of _ name if !want_type.
+	(member_name_cmp): Sort name-independent declarations first.
+	(member_vec_dedup): Handle name-independent declarations.
+	(pop_local_binding): Handle binding->value being a TREE_LIST for
+	ambiguous name-independent declarations.
+	(supplement_binding): Handle name-independent declarations.
+	(update_binding): Likewise.
+	(check_local_shadow): Return tree rather than void, normally
+	NULL_TREE but old for name-independent declarations which used
+	to conflict with outer scope declaration.  Don't emit -Wshadow*
+	warnings for name-independent declarations.
+	(pushdecl): Handle name-independent declarations.
+	* search.cc (lookup_field_r): Handle nval being a TREE_LIST.
+	* lambda.cc (build_capture_proxy): Adjust for ___.<number>
+	names of members.
+	(add_capture): Add NAME_INDEPENDENT_CNT argument.  Use ___.<number>
+	name rather than ___ for second and following capture with
+	_ name.
+	(add_default_capture): Adjust add_capture caller.
+	* decl.cc (poplevel): Don't warn about name-independent declarations.
+	(duplicate_decls): If in C++26 a _ named declaration conflicts with
+	earlier declarations, emit explaining note why the new declaration
+	is not name-independent.
+	(reshape_init_class): If field is a TREE_LIST, emit an ambiguity
+	error with list of candidates rather than error about non-existing
+	non-static data member.
+	* parser.cc (cp_parser_lambda_introducer): Adjust add_capture callers.
+	Allow name-independent capture redeclarations.
+	(cp_parser_decomposition_declaration): Set decl_specs.storage_class
+	to sc_static for static structured bindings.
+	* pt.cc (tsubst_lambda_expr): Adjust add_capture caller.
+
+2023-11-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* decl.cc (finish_enum_value_list): Set TYPE_PACKED if
+	use_short_enum, and propagate it to variants.
+
+2023-11-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LAMBDA_EXPR_MUTABLE_P): Remove.
+	* cp-tree.def: Remove documentation.
+	* lambda.cc (build_lambda_expr): Remove reference.
+	* parser.cc (cp_parser_lambda_declarator_opt): Likewise.
+	* pt.cc (tsubst_lambda_expr): Likewise.
+	* ptree.cc (cxx_print_lambda_node): Likewise.
+	* semantics.cc (capture_decltype): Get the object quals
+	from the object instead.
+
 2023-11-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106650

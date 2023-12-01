@@ -1,3 +1,14 @@
+2023-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__detail::__toable): Fix incorrect use of
+	_Range instead of _Cont.
+	(__detail::_ToClosure, __detail::_ToClosure2): Add missing
+	constexpr specifier on constructors.
+	* testsuite/std/ranges/conv/1.cc (_Cont, _Cont2, _Cont3): Remove
+	unnecessary begin() and end() members.
+	(test_constexpr): New function to check range adaptors are
+	usable in constant expressions.
+
 2023-11-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/23_containers/span/at.cc: Fix for '-fno-exceptions'

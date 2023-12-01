@@ -1,3 +1,9 @@
+2023-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110349
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_placeholder_variables=202306L for C++26.
+
 2023-11-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-attribs.cc (c_common_attribute_table): Add hardbool.
