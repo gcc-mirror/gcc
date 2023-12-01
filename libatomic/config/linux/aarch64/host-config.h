@@ -35,11 +35,12 @@
 #endif
 #define IFUNC_NCOND(N)	(1)
 
-#if N == 16 && IFUNC_ALT != 0
+#endif /* HAVE_IFUNC */
+
+/* All 128-bit atomic functions are defined in aarch64/atomic_16.S.  */
+#if N == 16
 # define DONE 1
 #endif
-
-#endif /* HAVE_IFUNC */
 
 #ifdef HWCAP_USCAT
 
