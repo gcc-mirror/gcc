@@ -12650,7 +12650,8 @@ s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, 
 	   && VECTOR_TYPE_P (TREE_TYPE (val))
 	   && (funcdecl == NULL_TREE
 	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
-		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
+		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD
+		   && !fndecl_built_in_p (funcdecl, BUILT_IN_CLASSIFY_TYPE))))
 	  ? N_("vector argument passed to unprototyped function")
 	  : NULL);
 }
