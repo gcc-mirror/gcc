@@ -2223,67 +2223,70 @@
 
 ;; DEST eew is greater than SOURCE eew.
 (define_insn "@pred_indexed_<order>load<mode>_x2_greater_eew"
-  [(set (match_operand:VEEWEXT2 0 "register_operand"                    "=&vr,  &vr")
+  [(set (match_operand:VEEWEXT2 0 "register_operand"                     "=vr,   vr,   vr,   vr,   vr,   vr, ?&vr, ?&vr")
 	(if_then_else:VEEWEXT2
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1")
-	     (match_operand 5 "vector_length_operand"                  "   rK,   rK")
-	     (match_operand 6 "const_int_operand"                      "    i,    i")
-	     (match_operand 7 "const_int_operand"                      "    i,    i")
-	     (match_operand 8 "const_int_operand"                      "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 5 "vector_length_operand"                  "   rK,   rK,   rK,   rK,   rK,   rK,   rK,   rK")
+	     (match_operand 6 "const_int_operand"                      "    i,    i,    i,    i,    i,    i,    i,    i")
+	     (match_operand 7 "const_int_operand"                      "    i,    i,    i,    i,    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"                      "    i,    i,    i,    i,    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VEEWEXT2
-	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ")
+	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ,   rJ,   rJ,   rJ,   rJ,   rJ,   rJ")
 	     (mem:BLK (scratch))
-	     (match_operand:<VINDEX_DOUBLE_TRUNC> 4 "register_operand" "   vr,   vr")] ORDER)
-	  (match_operand:VEEWEXT2 2 "vector_merge_operand"             "   vu,    0")))]
+	     (match_operand:<VINDEX_DOUBLE_TRUNC> 4 "register_operand" "  W21,  W21,  W42,  W42,  W84,  W84,   vr,   vr")] ORDER)
+	  (match_operand:VEEWEXT2 2 "vector_merge_operand"             "   vu,    0,   vu,    0,   vu,    0,   vu,    0")))]
   "TARGET_VECTOR"
   "vl<order>xei<double_trunc_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "group_overlap" "W21,W21,W42,W42,W84,W84,none,none")])
 
 (define_insn "@pred_indexed_<order>load<mode>_x4_greater_eew"
-  [(set (match_operand:VEEWEXT4 0 "register_operand"                    "=&vr,  &vr")
+  [(set (match_operand:VEEWEXT4 0 "register_operand"                    "=vr,    vr,   vr,   vr, ?&vr, ?&vr")
 	(if_then_else:VEEWEXT4
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1")
-	     (match_operand 5 "vector_length_operand"                  "   rK,   rK")
-	     (match_operand 6 "const_int_operand"                      "    i,    i")
-	     (match_operand 7 "const_int_operand"                      "    i,    i")
-	     (match_operand 8 "const_int_operand"                      "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1,vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 5 "vector_length_operand"                  "   rK,   rK,   rK,   rK,   rK,   rK")
+	     (match_operand 6 "const_int_operand"                      "    i,    i,    i,    i,    i,    i")
+	     (match_operand 7 "const_int_operand"                      "    i,    i,    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"                      "    i,    i,    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VEEWEXT4
-	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ")
+	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ,   rJ,   rJ,   rJ,   rJ")
 	     (mem:BLK (scratch))
-	     (match_operand:<VINDEX_QUAD_TRUNC> 4 "register_operand"   "   vr,   vr")] ORDER)
-	  (match_operand:VEEWEXT4 2 "vector_merge_operand"             "   vu,    0")))]
+	     (match_operand:<VINDEX_QUAD_TRUNC> 4 "register_operand"   "  W43,  W43,  W86,  W86,   vr,   vr")] ORDER)
+	  (match_operand:VEEWEXT4 2 "vector_merge_operand"             "   vu,    0,   vu,    0,   vu,    0")))]
   "TARGET_VECTOR"
   "vl<order>xei<quad_trunc_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "group_overlap" "W43,W43,W86,W86,none,none")])
 
 (define_insn "@pred_indexed_<order>load<mode>_x8_greater_eew"
-  [(set (match_operand:VEEWEXT8 0 "register_operand"                    "=&vr,  &vr")
+  [(set (match_operand:VEEWEXT8 0 "register_operand"                    "=vr,    vr, ?&vr, ?&vr")
 	(if_then_else:VEEWEXT8
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1")
-	     (match_operand 5 "vector_length_operand"                  "   rK,   rK")
-	     (match_operand 6 "const_int_operand"                      "    i,    i")
-	     (match_operand 7 "const_int_operand"                      "    i,    i")
-	     (match_operand 8 "const_int_operand"                      "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"               "vmWc1,vmWc1,vmWc1,vmWc1")
+	     (match_operand 5 "vector_length_operand"                  "   rK,   rK,   rK,   rK")
+	     (match_operand 6 "const_int_operand"                      "    i,    i,    i,    i")
+	     (match_operand 7 "const_int_operand"                      "    i,    i,    i,    i")
+	     (match_operand 8 "const_int_operand"                      "    i,    i,    i,    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VEEWEXT8
-	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ")
+	    [(match_operand 3 "pmode_reg_or_0_operand"                 "   rJ,   rJ,   rJ,   rJ")
 	     (mem:BLK (scratch))
-	     (match_operand:<VINDEX_OCT_TRUNC> 4 "register_operand"    "   vr,   vr")] ORDER)
-	  (match_operand:VEEWEXT8 2 "vector_merge_operand"             "   vu,    0")))]
+	     (match_operand:<VINDEX_OCT_TRUNC> 4 "register_operand"    "  W87,  W87,   vr,   vr")] ORDER)
+	  (match_operand:VEEWEXT8 2 "vector_merge_operand"             "   vu,    0,   vu,    0")))]
   "TARGET_VECTOR"
   "vl<order>xei<oct_trunc_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "group_overlap" "W87,W87,none,none")])
 
 ;; DEST eew is smaller than SOURCE eew.
 (define_insn "@pred_indexed_<order>load<mode>_x2_smaller_eew"
