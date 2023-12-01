@@ -1963,7 +1963,7 @@ range_to_prec (tree op, gimple *stmt)
       if (TYPE_UNSIGNED (type))
 	return prec;
       else
-	return -prec;
+	return MIN ((int) -prec, -2);
     }
 
   if (!TYPE_UNSIGNED (TREE_TYPE (op)))
@@ -3792,11 +3792,45 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
   int prec = TYPE_PRECISION (type);
   int prec0 = range_to_prec (arg0, stmt);
   int prec1 = range_to_prec (arg1, stmt);
-  int prec2 = ((prec0 < 0) == (prec1 < 0)
-	       ? MAX (prec0 < 0 ? -prec0 : prec0,
-		      prec1 < 0 ? -prec1 : prec1) + 1
-	       : MAX (prec0 < 0 ? -prec0 : prec0 + 1,
-		      prec1 < 0 ? -prec1 : prec1 + 1) + 1);
+  /* If PREC0 >= 0 && PREC1 >= 0 and CODE is not MINUS_EXPR, PREC2 is
+     the be minimum unsigned precision of any possible operation's
+     result, otherwise it is minimum signed precision.
+     Some examples:
+     If PREC0 or PREC1 is 8, it means that argument is [0, 0xff],
+     if PREC0 or PREC1 is 10, it means that argument is [0, 0x3ff],
+     if PREC0 or PREC1 is -8, it means that argument is [-0x80, 0x7f],
+     if PREC0 or PREC1 is -10, it means that argument is [-0x200, 0x1ff].
+     PREC0  CODE  PREC1  RESULT          PREC2  SIGNED vs. UNSIGNED
+       8      +     8    [0, 0x1fe]        9    UNSIGNED
+       8      +    10    [0, 0x4fe]       11    UNSIGNED
+      -8      +    -8    [-0x100, 0xfe]    9    SIGNED
+      -8      +   -10    [-0x280, 0x27e]  11    SIGNED
+       8      +    -8    [-0x80, 0x17e]   10    SIGNED
+       8      +   -10    [-0x200, 0x2fe]  11    SIGNED
+      10      +    -8    [-0x80, 0x47e]   12    SIGNED
+       8      -     8    [-0xff, 0xff]     9    SIGNED
+       8      -    10    [-0x3ff, 0xff]   11    SIGNED
+      10      -     8    [-0xff, 0x3ff]   11    SIGNED
+      -8      -    -8    [-0xff, 0xff]     9    SIGNED
+      -8      -   -10    [-0x27f, 0x27f]  11    SIGNED
+     -10      -    -8    [-0x27f, 0x27f]  11    SIGNED
+       8      -    -8    [-0x7f, 0x17f]   10    SIGNED
+       8      -   -10    [-0x1ff, 0x2ff]  11    SIGNED
+      10      -    -8    [-0x7f, 0x47f]   12    SIGNED
+      -8      -     8    [-0x17f, 0x7f]   10    SIGNED
+      -8      -    10    [-0x47f, 0x7f]   12    SIGNED
+     -10      -     8    [-0x2ff, 0x1ff]  11    SIGNED  */
+  int prec2 = MAX (prec0 < 0 ? -prec0 : prec0,
+		   prec1 < 0 ? -prec1 : prec1);
+	    /* If operands are either both signed or both unsigned,
+	       we need just one additional bit.  */
+  prec2 = (((prec0 < 0) == (prec1 < 0)
+	       /* If one operand is signed and one unsigned and
+		  the signed one has larger precision, we need
+		  just one extra bit, otherwise two.  */
+	    || (prec0 < 0 ? (prec2 == -prec0 && prec2 != prec1)
+			  : (prec2 == -prec1 && prec2 != prec0)))
+	   ? prec2 + 1 : prec2 + 2);
   int prec3 = MAX (prec0 < 0 ? -prec0 : prec0,
 		   prec1 < 0 ? -prec1 : prec1);
   prec3 = MAX (prec3, prec);
@@ -4201,8 +4235,9 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
   arg0 = handle_operand_addr (arg0, stmt, NULL, &prec0);
   arg1 = handle_operand_addr (arg1, stmt, NULL, &prec1);
   int prec2 = ((prec0 < 0 ? -prec0 : prec0)
-	       + (prec1 < 0 ? -prec1 : prec1)
-	       + ((prec0 < 0) != (prec1 < 0)));
+	       + (prec1 < 0 ? -prec1 : prec1));
+  if (prec0 == 1 || prec1 == 1)
+    --prec2;
   tree var = NULL_TREE;
   tree orig_obj = obj;
   bool force_var = false;
