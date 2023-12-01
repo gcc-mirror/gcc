@@ -16,6 +16,6 @@ void unnamed (int, ...);
 
 void foo ()
 {
-  name (0, aaaa);
+  named (0, aaaa);
   unnamed (0, aaaa);
 }
