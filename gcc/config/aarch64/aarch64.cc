@@ -16083,6 +16083,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
     opts->x_flag_prefetch_loop_arrays = 1;
 
+  /* Avoid loop-dependant FMA chains.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_AVOID_CROSS_LOOP_FMA)
+    SET_OPTION_IF_UNSET (opts, &global_options_set, param_avoid_fma_max_bits,
+			 512);
+
   aarch64_override_options_after_change_1 (opts);
 }
 
