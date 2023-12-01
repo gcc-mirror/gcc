@@ -10,13 +10,13 @@ implicit_function_declaration (void)
   f1 (); /* { dg-error "'f1' \\\[-Wimplicit-function-declaration\\\]" } */
 }
 
-extern implicit_int_1; /* { dg-warning "'implicit_int_1' \\\[-Wimplicit-int\\\]" } */
-typedef implicit_int_2; /* { dg-warning "'implicit_int_2' \\\[-Wimplicit-int\\\]" } */
-extern implicit_int_3 (void); /* { dg-warning "'implicit_int_3' \\\[-Wimplicit-int\\]" } */
-implicit_int_4 (i) /* { dg-warning "return type defaults to 'int' \\\[-Wimplicit-int\\\]" } */
-/* { dg-warning "type of 'i' defaults to 'int' \\\[-Wimplicit-int\\\]" "" { target *-*-*} .-1 } */
+extern implicit_int_1; /* { dg-error "'implicit_int_1' \\\[-Wimplicit-int\\\]" } */
+typedef implicit_int_2; /* { dg-error "'implicit_int_2' \\\[-Wimplicit-int\\\]" } */
+extern implicit_int_3 (void); /* { dg-error "'implicit_int_3' \\\[-Wimplicit-int\\]" } */
+implicit_int_4 (i) /* { dg-error "return type defaults to 'int' \\\[-Wimplicit-int\\\]" } */
+/* { dg-error "type of 'i' defaults to 'int' \\\[-Wimplicit-int\\\]" "" { target *-*-*} .-1 } */
 {
-  (const) 0; /* { dg-warning "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" } */
+  (const) 0; /* { dg-error "type defaults to 'int' in type name \\\[-Wimplicit-int\\\]" } */
 }
 
 extern int missing_parameter_type (i); /* { dg-warning "parameter names \\\(without types\\\) in function declaration\n" } */

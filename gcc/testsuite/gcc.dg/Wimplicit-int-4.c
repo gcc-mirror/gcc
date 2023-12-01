@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wno-implicit -Wimplicit-int" } */
+/* { dg-options "-fpermissive -Wno-implicit -Wimplicit-int" } */
 
 static l; /* { dg-warning "type defaults to" } */
 

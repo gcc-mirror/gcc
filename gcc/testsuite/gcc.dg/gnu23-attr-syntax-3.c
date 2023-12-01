@@ -1,7 +1,7 @@
 /* Test C23 attribute syntax.  Invalid uses of attributes with GNU C
-   features.  */
+   features.  Non-permissive variant.  */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -std=gnu23 -w" } */
+/* { dg-options "-std=gnu23 -w" } */
 
 /* Attributes cannot be used as prefix attributes on old-style
    parameter declarations or on function declarators with identifier
@@ -10,6 +10,7 @@
 void (*f(a, b) [[]])() int a, b; { } /* { dg-error "expected" } */
 
 void f(x, y) int x; [[]] int y; { } /* { dg-error "expected" } */
+/* { dg-error "type of 'y' defaults to 'int'" "" { target *-*-* } .-1 } */
 
 /* Nonempty attributes cannot be used as postfix attributes with
    __auto_type.  */

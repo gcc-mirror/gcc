@@ -647,8 +647,6 @@ static tree grokdeclarator (const struct c_declarator *,
 			    bool *, enum deprecated_states);
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
-static void warn_defaults_to (location_t, int, const char *, ...)
-    ATTRIBUTE_GCC_DIAG(3,4);
 static const char *header_for_builtin_fn (tree);
 
 /* T is a statement.  Add it to the statement-tree.  This is the
@@ -6576,23 +6574,6 @@ warn_variable_length_array (tree name, tree size)
     }
 }
 
-/* Print warning about defaulting to int if necessary.  */
-
-static void
-warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-  rich_location richloc (line_table, location);
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-                       flag_isoc99 ? DK_PEDWARN : DK_WARNING);
-  diagnostic.option_index = opt;
-  diagnostic_report_diagnostic (global_dc, &diagnostic);
-  va_end (ap);
-}
-
 /* Returns the smallest location != UNKNOWN_LOCATION in LOCATIONS,
    considering only those c_declspec_words found in LIST, which
    must be terminated by cdw_number_of_elements.  */
@@ -6881,12 +6862,12 @@ grokdeclarator (const struct c_declarator *declarator,
       else
 	{
 	  if (name)
-	    warn_defaults_to (loc, OPT_Wimplicit_int,
-			      "type defaults to %<int%> in declaration "
-			      "of %qE", name);
+	    permerror_opt (loc, OPT_Wimplicit_int,
+			   "type defaults to %<int%> in declaration "
+			   "of %qE", name);
 	  else
-	    warn_defaults_to (loc, OPT_Wimplicit_int,
-			      "type defaults to %<int%> in type name");
+	    permerror_opt (loc, OPT_Wimplicit_int,
+			   "type defaults to %<int%> in type name");
 	}
     }
 
@@ -10300,10 +10281,10 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     }
 
   if (warn_about_return_type)
-    warn_defaults_to (loc, flag_isoc99 ? OPT_Wimplicit_int
-			   : (warn_return_type > 0 ? OPT_Wreturn_type
-			      : OPT_Wimplicit_int),
-		      "return type defaults to %<int%>");
+    permerror_opt (loc, flag_isoc99 ? OPT_Wimplicit_int
+		   : (warn_return_type > 0 ? OPT_Wreturn_type
+		      : OPT_Wimplicit_int),
+		   "return type defaults to %<int%>");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in pop_scope) with the BLOCK.  */
@@ -10645,9 +10626,9 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  warn_if_shadowing (decl);
 
 	  if (flag_isoc99)
-	    pedwarn (DECL_SOURCE_LOCATION (decl),
-		     OPT_Wimplicit_int, "type of %qD defaults to %<int%>",
-		     decl);
+	    permerror_opt (DECL_SOURCE_LOCATION (decl),
+			   OPT_Wimplicit_int, "type of %qD defaults to %<int%>",
+			   decl);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (decl),
 			OPT_Wmissing_parameter_type,

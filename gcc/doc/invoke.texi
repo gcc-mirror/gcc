@@ -6185,6 +6185,7 @@ that have their own flag:
 
 @gccoptlist{
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
+-Wimplicit-int @r{(C and Objective-C only)}
 -Wint-conversion @r{(C and Objective-C only)}
 -Wnarrowing @r{(C++)}
 }
@@ -6856,8 +6857,10 @@ This warning is enabled by @option{-Wall} in C++.
 @opindex Wno-implicit-int
 @item -Wno-implicit-int @r{(C and Objective-C only)}
 This option controls warnings when a declaration does not specify a type.
-This warning is enabled by default in C99 and later dialects of C,
-and also by @option{-Wall}.
+This warning is enabled by default, as an error, in C99 and later
+dialects of C, and also by @option{-Wall}.  The error can be downgraded
+to a warning using @option{-fpermissive} (along with certain other
+errors), or for this error alone, with @option{-Wno-error=implicit-int}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
 
