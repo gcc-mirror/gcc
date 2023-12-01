@@ -21,7 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_OPTS_H
 #define LOONGARCH_OPTS_H
 
+/* This is a C++ header and it shouldn't be used by target libraries.  */
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 #include "loongarch-def.h"
+#endif
 
 /* Target configuration */
 extern struct loongarch_target la_target;
@@ -33,7 +36,6 @@ struct loongarch_flags {
     int sx[2];
 };
 
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
 /* Initialize loongarch_target from separate option variables.  */
 void
@@ -54,7 +56,6 @@ void
 loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				 struct gcc_options *opts,
 				 struct gcc_options *opts_set);
-#endif
 
 
 /* Macros for common conditional expressions used in loongarch.{c,h,md} */

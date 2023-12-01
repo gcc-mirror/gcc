@@ -163,6 +163,7 @@ loongarch_config_target (struct loongarch_target *target,
 			 int follow_multilib_list_p)
 {
   struct loongarch_target t;
+
   if (!target)
     return;
 
@@ -657,12 +658,18 @@ abi_str (struct loongarch_abi abi)
 		     strlen (loongarch_abi_base_strings[abi.base]));
   else
     {
+      /* This situation has not yet occurred, so in order to avoid the
+	 -Warray-bounds warning during C++ syntax checking, this part
+	 of the code is commented first.  */
+      /*
       APPEND_STRING (loongarch_abi_base_strings[abi.base])
       APPEND1 ('/')
       APPEND_STRING (loongarch_abi_ext_strings[abi.ext])
       APPEND1 ('\0')
 
       return XOBFINISH (&msg_obstack, const char *);
+      */
+      gcc_unreachable ();
     }
 }
 
