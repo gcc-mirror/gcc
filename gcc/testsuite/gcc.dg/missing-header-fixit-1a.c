@@ -5,12 +5,13 @@
 /* This is padding (to avoid the generated patch containing DejaGnu
    directives).  */
 
-/* { dg-options "-fpermissive -fdiagnostics-generate-patch" } */
+/* { dg-options "-fdiagnostics-generate-patch" } */
 
 void test (int i, int j)
 {
-  printf ("%i of %i\n", i, j); /* { dg-warning "implicit declaration" } */
+  printf ("%i of %i\n", i, j); /* { dg-error "implicit declaration" } */
   /* { dg-message "include '<stdio.h>' or provide a declaration of 'printf'" "" { target *-*-* } .-1 } */
+  /* { dg-warning "incompatible implicit declaration of built-in function 'printf'" "" { target *-*-* } .-2 } */
 }
 
 /* Verify the output from -fdiagnostics-generate-patch.

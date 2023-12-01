@@ -6,10 +6,10 @@
 #include "missing-header-fixit-2.h"
 
 /* These directives actually apply to the header.  */
-/* { dg-warning "implicit declaration of function 'printf'" "" { target *-*-* } 6 } */
+/* { dg-error "implicit declaration of function 'printf'" "" { target *-*-* } 6 } */
 /* { dg-warning "incompatible implicit declaration of built-in function 'printf'" "" { target *-*-* } 6 } */
 
-/* { dg-options "-fpermissive -fdiagnostics-generate-patch" } */
+/* { dg-options "-fdiagnostics-generate-patch" } */
 
 /* Verify the output from -fdiagnostics-generate-patch.
    We expect the patch to begin with a header, containing the

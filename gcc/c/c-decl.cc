@@ -3493,12 +3493,12 @@ pushdecl (tree x)
 }
 
 
-/* Issue a warning about implicit function declaration.  ID is the function
+/* Issue a permerror about implicit function declaration.  ID is the function
    identifier, OLDDECL is a declaration of the function in a different scope,
    or NULL_TREE.  */
 
 static void
-implicit_decl_warning (location_t loc, tree id, tree olddecl)
+implicit_decl_permerror (location_t loc, tree id, tree olddecl)
 {
   if (!warn_implicit_function_declaration)
     return;
@@ -3515,14 +3515,14 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_replace (suggestion);
-	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
-			    "implicit declaration of function %qE;"
-			    " did you mean %qs?",
-			    id, suggestion);
+	  warned = permerror_opt (&richloc, OPT_Wimplicit_function_declaration,
+				  "implicit declaration of function %qE;"
+				  " did you mean %qs?",
+				  id, suggestion);
 	}
       else
-	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
-			  "implicit declaration of function %qE", id);
+	warned = permerror_opt (loc, OPT_Wimplicit_function_declaration,
+				"implicit declaration of function %qE", id);
     }
   else if (const char *suggestion = hint.suggestion ())
     {
@@ -3812,7 +3812,7 @@ implicitly_declare (location_t loc, tree functionid)
 	     then recycle the old declaration but with the new type.  */
 	  if (!C_DECL_IMPLICIT (decl))
 	    {
-	      implicit_decl_warning (loc, functionid, decl);
+	      implicit_decl_permerror (loc, functionid, decl);
 	      C_DECL_IMPLICIT (decl) = 1;
 	    }
 	  if (fndecl_built_in_p (decl))
@@ -3865,7 +3865,7 @@ implicitly_declare (location_t loc, tree functionid)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   C_DECL_IMPLICIT (decl) = 1;
-  implicit_decl_warning (loc, functionid, 0);
+  implicit_decl_permerror (loc, functionid, 0);
   asmspec_tree = maybe_apply_renaming_pragma (decl, /*asmname=*/NULL);
   if (asmspec_tree)
     set_user_assembler_name (decl, TREE_STRING_POINTER (asmspec_tree));

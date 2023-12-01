@@ -8,6 +8,8 @@
 
 /* These errors come from permerror-default.c.  */
 
+/* { dg-error "'f1' \\\[-Wimplicit-function-declaration\\\]" "" { target *-*-* } 10 } */
+
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 29 } */
 /* { dg-error "pointer/integer type mismatch in conditional expression \\\[-Wint-conversion\\\]" "" { target *-*-* } 30 } */
 /* { dg-error "passing argument 1 of 'f2' makes pointer from integer without a cast \\\[-Wint-conversion\\\]" "" { target *-*-* } 31 } */

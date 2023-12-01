@@ -7,7 +7,7 @@
 void
 implicit_function_declaration (void)
 {
-  f1 (); /* { dg-warning "'f1' \\\[-Wimplicit-function-declaration\\\]" } */
+  f1 (); /* { dg-error "'f1' \\\[-Wimplicit-function-declaration\\\]" } */
 }
 
 extern implicit_int_1; /* { dg-warning "'implicit_int_1' \\\[-Wimplicit-int\\\]" } */

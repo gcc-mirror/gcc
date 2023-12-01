@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -fdiagnostics-show-caret" } */
+/* { dg-options "-fdiagnostics-show-caret" } */
 
 typedef struct GtkWidget { int dummy; } GtkWidget;
 
@@ -8,7 +8,7 @@ extern void gtk_widget_show_all (GtkWidget *w);
 void
 test_1 (GtkWidget *w)
 {
-  gtk_widget_showall (w); /* { dg-warning "3: implicit declaration of function .gtk_widget_showall.; did you mean .gtk_widget_show_all.?" } */
+  gtk_widget_showall (w); /* { dg-error "3: implicit declaration of function .gtk_widget_showall.; did you mean .gtk_widget_show_all.?" } */
   /* { dg-begin-multiline-output "" }
    gtk_widget_showall (w);
    ^~~~~~~~~~~~~~~~~~
@@ -17,14 +17,14 @@ test_1 (GtkWidget *w)
 
   /* Ensure we don't try to suggest "gtk_widget_showall" for subsequent
      corrections.  */
-  gtk_widget_showall_ (w); /* { dg-warning "3: implicit declaration of function .gtk_widget_showall_.; did you mean .gtk_widget_show_all.?" } */
+  gtk_widget_showall_ (w); /* { dg-error "3: implicit declaration of function .gtk_widget_showall_.; did you mean .gtk_widget_show_all.?" } */
   /* { dg-begin-multiline-output "" }
    gtk_widget_showall_ (w);
    ^~~~~~~~~~~~~~~~~~~
    gtk_widget_show_all
    { dg-end-multiline-output "" } */
 
-  GtkWidgetShowAll (w); /* { dg-warning "3: implicit declaration of function .GtkWidgetShowAll.; did you mean .gtk_widget_show_all.?" } */
+  GtkWidgetShowAll (w); /* { dg-error "3: implicit declaration of function .GtkWidgetShowAll.; did you mean .gtk_widget_show_all.?" } */
   /* { dg-begin-multiline-output "" }
    GtkWidgetShowAll (w);
    ^~~~~~~~~~~~~~~~
@@ -48,7 +48,7 @@ test_2 (int param)
 int
 test_3 (int i)
 {
-  return MACRAME (i); /* { dg-warning "10: implicit declaration of function .MACRAME.; did you mean .MACRO.?" } */
+  return MACRAME (i); /* { dg-error "10: implicit declaration of function .MACRAME.; did you mean .MACRO.?" } */
   /* { dg-begin-multiline-output "" }
    return MACRAME (i);
           ^~~~~~~
@@ -61,7 +61,7 @@ test_3 (int i)
 int
 test_4 (int node)
 {
-  return IDENTIFIER_PTR (node); /* { dg-warning "10: implicit declaration of function .IDENTIFIER_PTR.; did you mean .IDENTIFIER_POINTER.?" } */
+  return IDENTIFIER_PTR (node); /* { dg-error "10: implicit declaration of function .IDENTIFIER_PTR.; did you mean .IDENTIFIER_POINTER.?" } */
   /* { dg-begin-multiline-output "" }
    return IDENTIFIER_PTR (node);
           ^~~~~~~~~~~~~~
@@ -127,7 +127,7 @@ void
 test_7 (int i, int j)
 {
   int buffer[100];
-  snprint (buffer, 100, "%i of %i", i, j); /* { dg-warning "3: implicit declaration of function .snprint.; did you mean .snprintf.." } */
+  snprint (buffer, 100, "%i of %i", i, j); /* { dg-error "3: implicit declaration of function .snprint.; did you mean .snprintf.." } */
   /* { dg-begin-multiline-output "" }
    snprint (buffer, 100, "%i of %i", i, j);
    ^~~~~~~
