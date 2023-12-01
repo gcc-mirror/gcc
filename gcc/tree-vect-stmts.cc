@@ -1267,10 +1267,10 @@ vect_get_vec_defs_for_operand (vec_info *vinfo, stmt_vec_info stmt_vinfo,
 void
 vect_get_vec_defs (vec_info *vinfo, stmt_vec_info stmt_info, slp_tree slp_node,
 		   unsigned ncopies,
-		   tree op0, vec<tree> *vec_oprnds0, tree vectype0,
-		   tree op1, vec<tree> *vec_oprnds1, tree vectype1,
-		   tree op2, vec<tree> *vec_oprnds2, tree vectype2,
-		   tree op3, vec<tree> *vec_oprnds3, tree vectype3)
+		   tree op0, tree vectype0, vec<tree> *vec_oprnds0,
+		   tree op1, tree vectype1, vec<tree> *vec_oprnds1,
+		   tree op2, tree vectype2, vec<tree> *vec_oprnds2,
+		   tree op3, tree vectype3, vec<tree> *vec_oprnds3)
 {
   if (slp_node)
     {
@@ -1309,10 +1309,10 @@ vect_get_vec_defs (vec_info *vinfo, stmt_vec_info stmt_info, slp_tree slp_node,
 		   tree op3, vec<tree> *vec_oprnds3)
 {
   vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		     op0, vec_oprnds0, NULL_TREE,
-		     op1, vec_oprnds1, NULL_TREE,
-		     op2, vec_oprnds2, NULL_TREE,
-		     op3, vec_oprnds3, NULL_TREE);
+		     op0, NULL_TREE, vec_oprnds0,
+		     op1, NULL_TREE, vec_oprnds1,
+		     op2, NULL_TREE, vec_oprnds2,
+		     op3, NULL_TREE, vec_oprnds3);
 }
 
 /* Helper function called by vect_finish_replace_stmt and
@@ -5657,7 +5657,7 @@ vectorizable_conversion (vec_info *vinfo,
     {
     case NONE:
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-			 op0, &vec_oprnds0);
+			 op0, vectype_in, &vec_oprnds0);
       /* vec_dest is intermediate type operand when multi_step_cvt.  */
       if (multi_step_cvt)
 	{
@@ -5696,9 +5696,9 @@ vectorizable_conversion (vec_info *vinfo,
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies * ninputs,
-			 op0, &vec_oprnds0,
+			 op0, vectype_in, &vec_oprnds0,
 			 code == WIDEN_LSHIFT_EXPR ? NULL_TREE : op1,
-			 &vec_oprnds1);
+			 vectype_in, &vec_oprnds1);
       if (code == WIDEN_LSHIFT_EXPR)
 	{
 	  int oprnds_size = vec_oprnds0.length ();
@@ -5753,7 +5753,7 @@ vectorizable_conversion (vec_info *vinfo,
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies * ninputs,
-			 op0, &vec_oprnds0);
+			 op0, vectype_in, &vec_oprnds0);
       /* Arguments are ready.  Create the new vector stmts.  */
       if (cvt_type && modifier == NARROW_DST)
 	FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
@@ -12248,17 +12248,17 @@ vectorizable_condition (vec_info *vinfo,
   /* Handle cond expr.  */
   if (masked)
     vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		       cond_expr, &vec_oprnds0, comp_vectype,
-		       then_clause, &vec_oprnds2, vectype,
+		       cond_expr, comp_vectype, &vec_oprnds0,
+		       then_clause, vectype, &vec_oprnds2,
 		       reduction_type != EXTRACT_LAST_REDUCTION
-		       ? else_clause : NULL, &vec_oprnds3, vectype);
+		       ? else_clause : NULL, vectype, &vec_oprnds3);
   else
     vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		       cond_expr0, &vec_oprnds0, comp_vectype,
-		       cond_expr1, &vec_oprnds1, comp_vectype,
-		       then_clause, &vec_oprnds2, vectype,
+		       cond_expr0, comp_vectype, &vec_oprnds0,
+		       cond_expr1, comp_vectype, &vec_oprnds1,
+		       then_clause, vectype, &vec_oprnds2,
 		       reduction_type != EXTRACT_LAST_REDUCTION
-		       ? else_clause : NULL, &vec_oprnds3, vectype);
+		       ? else_clause : NULL, vectype, &vec_oprnds3);
 
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_cond_lhs)
@@ -12621,8 +12621,8 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   mask = vect_create_destination_var (lhs, mask_type);
 
   vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		     rhs1, &vec_oprnds0, vectype,
-		     rhs2, &vec_oprnds1, vectype);
+		     rhs1, vectype, &vec_oprnds0,
+		     rhs2, vectype, &vec_oprnds1);
   if (swap_p)
     std::swap (vec_oprnds0, vec_oprnds1);
 

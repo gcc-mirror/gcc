@@ -8504,11 +8504,11 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
       gcc_assert (single_defuse_cycle
 		  && (reduc_index == 1 || reduc_index == 2));
       vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
-			 op.ops[0], &vec_oprnds0, truth_type_for (vectype_in),
+			 op.ops[0], truth_type_for (vectype_in), &vec_oprnds0,
 			 reduc_index == 1 ? NULL_TREE : op.ops[1],
-			 &vec_oprnds1, NULL_TREE,
+			 NULL_TREE, &vec_oprnds1,
 			 reduc_index == 2 ? NULL_TREE : op.ops[2],
-			 &vec_oprnds2, NULL_TREE);
+			 NULL_TREE, &vec_oprnds2);
     }
 
   /* For single def-use cycles get one copy of the vectorized reduction
