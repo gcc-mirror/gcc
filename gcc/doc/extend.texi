@@ -13237,9 +13237,9 @@ after addition, conditional jump on carry etc.
  
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{unsigned long int __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{unsigned long long int __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -13259,9 +13259,9 @@ emitted if one of them (preferrably the third one) has only values
 
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{unsigned long int __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{unsigned long long int __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -15166,7 +15166,7 @@ where @var{prec} is bit width of @var{type}, except that side-effects
 in @var{arg} are evaluated just once.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_bit_width (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_bit_width (@var{type} @var{arg})}
 The @code{__builtin_stdc_bit_width} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15175,7 +15175,7 @@ performed on the argument.  It is equivalent to
 where @var{prec} is bit width of @var{type}.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_count_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_count_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_count_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15183,7 +15183,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_popcountg (@var{arg})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_count_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_count_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_count_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15191,7 +15191,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_popcountg ((@var{type}) ~@var{arg})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_leading_one (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_one (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_leading_one} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15199,7 +15199,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_clzg (@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_leading_zero} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15207,7 +15207,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_clzg ((@var{type}) ~@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_trailing_one} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15215,7 +15215,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_ctzg (@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
 The @code{__builtin_stdc_first_trailing_zero} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15223,7 +15223,7 @@ performed on the argument.  It is equivalent to
 @code{__builtin_ctzg ((@var{type}) ~@var{arg}, -1) + 1U}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_has_single_bit (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_has_single_bit (@var{type} @var{arg})}
 The @code{__builtin_stdc_has_single_bit} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15231,7 +15231,7 @@ performed on the argument.  It is equivalent to
 @code{(_Bool) (__builtin_popcountg (@var{arg}) == 1)}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_leading_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_leading_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_leading_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15239,7 +15239,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_clzg ((@var{type}) ~@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_leading_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_leading_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_leading_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15247,7 +15247,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_clzg (@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_trailing_ones (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_ones (@var{type} @var{arg})}
 The @code{__builtin_stdc_trailing_ones} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -15255,7 +15255,7 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_ctzg ((@var{type}) ~@var{arg}, @var{prec})}
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
 The @code{__builtin_stdc_trailing_zeros} function is available only
 in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
@@ -18730,11 +18730,11 @@ Disable global interrupt.
 
 These built-in functions are available for the Nvidia PTX target:
 
-@defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
+@defbuiltin{{unsigned int} __builtin_nvptx_brev (unsigned int @var{x})}
 Reverse the bit order of a 32-bit unsigned integer.
 @enddefbuiltin
 
-@defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
+@defbuiltin{{unsigned long long} __builtin_nvptx_brevll (unsigned long long @var{x})}
 Reverse the bit order of a 64-bit unsigned integer.
 @enddefbuiltin
 
@@ -19231,8 +19231,8 @@ round to odd as the rounding mode.
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0 or later:
 
-@defbuiltin{long long __builtin_darn (void)}
-@defbuiltinx{long long __builtin_darn_raw (void)}
+@defbuiltin{{long long} __builtin_darn (void)}
+@defbuiltinx{{long long} __builtin_darn_raw (void)}
 @defbuiltinx{int __builtin_darn_32 (void)}
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
 functions require a
@@ -22316,12 +22316,12 @@ multiplying the bottom 16 bits of the two arguments into the
 accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfachi (void)}
+@defbuiltin{int __builtin_rx_mvfachi (void)}
 Generates the @code{mvfachi} machine instruction to read the top
 32 bits of the accumulator.
 @enddefbuiltin
 
-@defbuiltin{int  __builtin_rx_mvfacmi (void)}
+@defbuiltin{int __builtin_rx_mvfacmi (void)}
 Generates the @code{mvfacmi} machine instruction to read the middle
 32 bits of the accumulator.
 @enddefbuiltin
@@ -23690,7 +23690,7 @@ Generates the @code{extractps} machine instruction.
 Generates the @code{pextrd} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{long long __builtin_ia32_vec_ext_v2di (v2di, const int)}
+@defbuiltin{{long long} __builtin_ia32_vec_ext_v2di (v2di, const int)}
 Generates the @code{pextrq} machine instruction in 64bit mode.
 @enddefbuiltin
 
@@ -23719,19 +23719,19 @@ v2di __builtin_ia32_pcmpgtq (v2di, v2di);
 The following built-in functions are available when @option{-msse4.2} is
 used.
 
-@defbuiltin{unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32qi (unsigned int, unsigned char)}
 Generates the @code{crc32b} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32hi (unsigned int, unsigned short)}
 Generates the @code{crc32w} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)}
+@defbuiltin{{unsigned int} __builtin_ia32_crc32si (unsigned int, unsigned int)}
 Generates the @code{crc32l} machine instruction.
 @enddefbuiltin
 
-@defbuiltin{unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
+@defbuiltin{{unsigned long long} __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
 Generates the @code{crc32q} machine instruction.
 @enddefbuiltin
 
