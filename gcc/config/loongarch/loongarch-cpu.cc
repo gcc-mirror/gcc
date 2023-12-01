@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "diagnostic-core.h"
 
 #include "loongarch-def.h"
@@ -32,19 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-cpucfg-map.h"
 #include "loongarch-str.h"
 
-/* loongarch_isa_base_features defined here instead of loongarch-def.c
-   because we need to use options.h.  Pay attention on the order of elements
-   in the initializer becaue ISO C++ does not allow C99 designated
-   initializers!  */
-
-#define ISA_BASE_LA64V110_FEATURES \
-  (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA \
-   | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS)
-
-int64_t loongarch_isa_base_features[N_ISA_BASE_TYPES] = {
-  /* [ISA_BASE_LA64V100] = */ 0,
-  /* [ISA_BASE_LA64V110] = */ ISA_BASE_LA64V110_FEATURES,
-};
 
 /* Native CPU detection with "cpucfg" */
 static uint32_t cpucfg_cache[N_CPUCFG_WORDS] = { 0 };
@@ -235,18 +221,20 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       /* Use the native value anyways.  */
       preset.simd = tmp;
 
+
+      int64_t hw_isa_evolution = 0;
+
       /* Features added during ISA evolution.  */
       for (const auto &entry: cpucfg_map)
 	if (cpucfg_cache[entry.cpucfg_word] & entry.cpucfg_bit)
-	  preset.evolution |= entry.isa_evolution_bit;
+	  hw_isa_evolution |= entry.isa_evolution_bit;
 
       if (native_cpu_type != CPU_NATIVE)
 	{
 	  /* Check if the local CPU really supports the features of the base
 	     ISA of probed native_cpu_type.  If any feature is not detected,
 	     either GCC or the hardware is buggy.  */
-	  auto base_isa_feature = loongarch_isa_base_features[preset.base];
-	  if ((preset.evolution & base_isa_feature) != base_isa_feature)
+	  if ((preset.evolution & hw_isa_evolution) != hw_isa_evolution)
 	    warning (0,
 		     "detected base architecture %qs, but some of its "
 		     "features are not detected; the detected base "
@@ -254,6 +242,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 		     "features will be enabled",
 		     loongarch_isa_base_strings[preset.base]);
 	}
+      preset.evolution = hw_isa_evolution;
     }
 
   if (tune_native_p)

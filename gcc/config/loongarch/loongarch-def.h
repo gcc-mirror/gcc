@@ -56,18 +56,10 @@ along with GCC; see the file COPYING3.  If not see
 /* enum isa_base */
 
 /* LoongArch V1.00.  */
-#define ISA_BASE_LA64V100     0
-/* LoongArch V1.10.  */
-#define ISA_BASE_LA64V110     1
-#define N_ISA_BASE_TYPES      2
+#define ISA_BASE_LA64V100	0
+#define N_ISA_BASE_TYPES	1
 extern loongarch_def_array<const char *, N_ISA_BASE_TYPES>
   loongarch_isa_base_strings;
-
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
-/* Unlike other arrays, this is defined in loongarch-cpu.cc.  The problem is
-   we cannot use the C++ header options.h in loongarch-def.c.  */
-extern int64_t loongarch_isa_base_features[];
-#endif
 
 /* enum isa_ext_* */
 #define ISA_EXT_NONE	      0

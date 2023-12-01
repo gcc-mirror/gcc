@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+
 #include "loongarch-def.h"
 #include "loongarch-str.h"
 
@@ -51,9 +56,11 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
 	    .simd_ (ISA_EXT_SIMD_LASX))
     .set (CPU_LA664,
 	  loongarch_isa ()
-	    .base_ (ISA_BASE_LA64V110)
+	    .base_ (ISA_BASE_LA64V100)
 	    .fpu_ (ISA_EXT_FPU64)
-	    .simd_ (ISA_EXT_SIMD_LASX));
+	    .simd_ (ISA_EXT_SIMD_LASX)
+	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
+		    | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS));
 
 static inline loongarch_cache la464_cache ()
 {
@@ -136,8 +143,7 @@ array_tune<int> loongarch_cpu_multipass_dfa_lookahead = array_tune<int> ()
 
 array<const char *, N_ISA_BASE_TYPES> loongarch_isa_base_strings =
   array<const char *, N_ISA_BASE_TYPES> ()
-    .set (ISA_BASE_LA64V100, STR_ISA_BASE_LA64V100)
-    .set (ISA_BASE_LA64V110, STR_ISA_BASE_LA64V110);
+    .set (ISA_BASE_LA64V100, STR_ISA_BASE_LA64V100);
 
 array<const char *, N_ISA_EXT_TYPES> loongarch_isa_ext_strings =
   array<const char *, N_ISA_EXT_TYPES> ()
