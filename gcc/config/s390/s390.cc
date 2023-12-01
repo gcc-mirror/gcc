@@ -17605,6 +17605,10 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       outputs[i] = fprx2;
     }
 
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing left to do.  */
+    return after_md_seq;
+
   for (unsigned i = 0; i < ninputs; i++)
     {
       if (GET_MODE (inputs[i]) != TFmode)
