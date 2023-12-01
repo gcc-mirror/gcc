@@ -2354,9 +2354,7 @@
 	      (use (match_operand:SI 3 "const_int_operand"))])]
   ""
 {
-  if (riscv_vector::expand_block_move (operands[0], operands[1], operands[2]))
-    DONE;
-  else if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
+  if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
     DONE;
   else
     FAIL;

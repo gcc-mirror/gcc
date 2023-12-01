@@ -104,15 +104,15 @@ enum riscv_entity
 };
 
 /* RISC-V stringop strategy. */
-enum riscv_stringop_strategy_enum {
-  /* Use scalar or vector instructions. */
-  USE_AUTO,
-  /* Always use a library call. */
-  USE_LIBCALL,
-  /* Only use scalar instructions. */
-  USE_SCALAR,
-  /* Only use vector instructions. */
-  USE_VECTOR
+enum stringop_strategy_enum {
+  /* No expansion. */
+  STRATEGY_LIBCALL = 1,
+  /* Use scalar expansion if possible. */
+  STRATEGY_SCALAR = 2,
+  /* Only vector expansion if possible. */
+  STRATEGY_VECTOR = 4,
+  /* Use any. */
+  STRATEGY_AUTO = STRATEGY_SCALAR | STRATEGY_VECTOR
 };
 
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))

@@ -538,21 +538,21 @@ Enable the use of vector registers for function arguments and return value.
 This is an experimental switch and may be subject to change in the future.
 
 Enum
-Name(riscv_stringop_strategy) Type(enum riscv_stringop_strategy_enum)
-Valid arguments to -mmemcpy-strategy=:
+Name(stringop_strategy) Type(enum stringop_strategy_enum)
+Valid arguments to -mstringop-strategy=:
 
 EnumValue
-Enum(riscv_stringop_strategy) String(auto) Value(USE_AUTO)
+Enum(stringop_strategy) String(auto) Value(STRATEGY_AUTO)
 
 EnumValue
-Enum(riscv_stringop_strategy) String(libcall) Value(USE_LIBCALL)
+Enum(stringop_strategy) String(libcall) Value(STRATEGY_LIBCALL)
 
 EnumValue
-Enum(riscv_stringop_strategy) String(scalar) Value(USE_SCALAR)
+Enum(stringop_strategy) String(scalar) Value(STRATEGY_SCALAR)
 
 EnumValue
-Enum(riscv_stringop_strategy) String(vector) Value(USE_VECTOR)
+Enum(stringop_strategy) String(vector) Value(STRATEGY_VECTOR)
 
-mmemcpy-strategy=
-Target RejectNegative Joined Enum(riscv_stringop_strategy) Var(riscv_memcpy_strategy) Init(USE_AUTO)
-Specify memcpy expansion strategy.
+mstringop-strategy=
+Target RejectNegative Joined Enum(stringop_strategy) Var(stringop_strategy) Init(STRATEGY_AUTO)
+Specify stringop expansion strategy.
