@@ -1497,9 +1497,6 @@ private:
   {
     gcc_assert (prev.valid_p () && next.valid_p ());
 
-    if (prev.get_ratio () != next.get_ratio ())
-      return false;
-
     if (next.has_vl () && next.vl_used_by_non_rvv_insn_p ())
       return false;
 
@@ -2188,7 +2185,7 @@ private:
     return true;
   }
 
-  bool preds_has_same_avl_p (const vsetvl_info &curr_info)
+  bool preds_all_same_avl_and_ratio_p (const vsetvl_info &curr_info)
   {
     gcc_assert (
       !bitmap_empty_p (m_vsetvl_def_in[curr_info.get_bb ()->index ()]));
@@ -2200,7 +2197,8 @@ private:
       {
 	const vsetvl_info &prev_info = *m_vsetvl_def_exprs[expr_index];
 	if (!prev_info.valid_p ()
-	    || !m_dem.avl_available_p (prev_info, curr_info))
+	    || !m_dem.avl_available_p (prev_info, curr_info)
+	    || prev_info.get_ratio () != curr_info.get_ratio ())
 	  return false;
       }
 
@@ -3171,7 +3169,7 @@ pre_vsetvl::pre_global_vsetvl_info ()
 	  curr_info = block_info.local_infos[0];
 	}
       if (curr_info.valid_p () && !curr_info.vl_used_by_non_rvv_insn_p ()
-	  && preds_has_same_avl_p (curr_info))
+	  && preds_all_same_avl_and_ratio_p (curr_info))
 	curr_info.set_change_vtype_only ();
 
       vsetvl_info prev_info = vsetvl_info ();
@@ -3179,7 +3177,8 @@ pre_vsetvl::pre_global_vsetvl_info ()
       for (auto &curr_info : block_info.local_infos)
 	{
 	  if (prev_info.valid_p () && curr_info.valid_p ()
-	      && m_dem.avl_available_p (prev_info, curr_info))
+	      && m_dem.avl_available_p (prev_info, curr_info)
+	      && prev_info.get_ratio () == curr_info.get_ratio ())
 	    curr_info.set_change_vtype_only ();
 	  prev_info = curr_info;
 	}
