@@ -6,6 +6,7 @@ extern  void m2pim_M2_M2RTS_init (int argc, char *argv[]);
 extern  void m2pim_M2_M2RTS_fini (void);
 extern  void m2pim_M2_RTExceptions_init (int argc, char *argv[]);
 extern  void m2pim_M2_RTExceptions_fini (void);
+extern  void m2pim_M2RTS_Terminate (void);
 extern  void _M2_hello_init (int argc, char *argv[]);
 extern  void _M2_hello_fini (void);
 
