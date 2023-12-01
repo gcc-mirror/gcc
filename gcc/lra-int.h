@@ -278,6 +278,7 @@ typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 /* lra.cc: */
 
 extern FILE *lra_dump_file;
+extern int lra_verbose;
 
 extern bool lra_hard_reg_split_p;
 extern bool lra_asm_error_p;
@@ -311,6 +312,9 @@ extern void lra_emit_add (rtx, rtx, rtx);
 extern void lra_emit_move (rtx, rtx);
 extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
 extern void lra_asm_insn_error (rtx_insn *insn);
+
+extern void lra_dump_insns (FILE *f);
+extern void lra_dump_insns_if_possible (const char *title);
 
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);

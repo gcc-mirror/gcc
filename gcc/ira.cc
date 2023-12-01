@@ -5970,7 +5970,7 @@ do_reload (void)
 
       ira_destroy ();
 
-      lra (ira_dump_file);
+      lra (ira_dump_file, internal_flag_ira_verbose);
       /* ???!!! Move it before lra () when we use ira_reg_equiv in
 	 LRA.  */
       vec_free (reg_equivs);

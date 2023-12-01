@@ -5537,6 +5537,8 @@ lra_constraints (bool first_p)
 	      lra_assert (df_regs_ever_live_p (hard_regno + j));
 	  }
     }
+  if (changed_p)
+    lra_dump_insns_if_possible ("changed func after local");
   return changed_p;
 }
 
@@ -7277,7 +7279,7 @@ lra_inheritance (void)
   bitmap_release (&invalid_invariant_regs);
   bitmap_release (&check_only_regs);
   free (usage_insns);
-
+  lra_dump_insns_if_possible ("func after inheritance");
   timevar_pop (TV_LRA_INHERITANCE);
 }
 
@@ -7477,13 +7479,16 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 			       == get_regno (lra_reg_info[prev_sregno].restore_rtx))))
 		      && ! bitmap_bit_p (remove_pseudos, prev_sregno))
 		    {
+		      int restore_regno = get_regno (lra_reg_info[sregno].restore_rtx);
+		      if (restore_regno < 0)
+			restore_regno = prev_sregno;
 		      lra_assert (GET_MODE (SET_SRC (prev_set))
-				  == GET_MODE (regno_reg_rtx[sregno]));
+				  == GET_MODE (regno_reg_rtx[restore_regno]));
 		      /* Although we have a single set, the insn can
 			 contain more one sregno register occurrence
 			 as a source.  Change all occurrences.  */
 		      lra_substitute_pseudo_within_insn (curr_insn, sregno,
-							 SET_SRC (prev_set),
+							 regno_reg_rtx[restore_regno],
 							 false);
 		      /* As we are finishing with processing the insn
 			 here, check the destination too as it might
@@ -7745,5 +7750,7 @@ lra_undo_inheritance (void)
   EXECUTE_IF_SET_IN_BITMAP (&lra_split_regs, 0, regno, bi)
     lra_reg_info[regno].restore_rtx = NULL_RTX;
   change_p = undo_optional_reloads () || change_p;
+  if (change_p)
+    lra_dump_insns_if_possible ("changed func after undoing inheritance");
   return change_p;
 }

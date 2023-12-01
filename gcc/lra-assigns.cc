@@ -1835,6 +1835,7 @@ lra_split_hard_reg_for (void)
   if (spill_p)
     {
       bitmap_clear (&failed_reload_pseudos);
+      lra_dump_insns_if_possible ("changed func after splitting hard regs");
       return true;
     }
   bitmap_clear (&non_reload_pseudos);
