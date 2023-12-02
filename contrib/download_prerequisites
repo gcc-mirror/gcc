@@ -36,16 +36,18 @@ gettext='gettext-0.22.tar.gz'
 base_url='http://gcc.gnu.org/pub/gcc/infrastructure/'
 
 echo_archives() {
+    echo "${gettext}"
+    if "${only_gettext}"; then return; fi
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
-    echo "${gettext}"
     if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
 }
 
 graphite=1
 verify=1
 force=0
+only_gettext=false
 OS=$(uname)
 
 if type wget > /dev/null ; then
@@ -74,6 +76,7 @@ The following options are available:
  --no-verify      don't verify package integrity
  --sha512         use SHA512 checksum to verify package integrity (default)
  --md5            use MD5 checksum to verify package integrity
+ --only-gettext   inhibit downloading any package but gettext
  --help           show this text and exit
  --version        show version information and exit
 "
@@ -158,6 +161,9 @@ do
             --md5)
                 chksum_extension='md5'
                 verify=1
+                ;;
+            --only-gettext)
+                only_gettext=true
                 ;;
             -*)
                 die "unknown option: ${arg}"
