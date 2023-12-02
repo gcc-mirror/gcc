@@ -1,3 +1,32 @@
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* mangle.cc (write_type): Mangle placeholder as its template.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (TEMPLATE_ARGS_TYPE_CONSTRAINT_P): New.
+	(get_concept_check_template): Declare.
+	* constraint.cc (combine_constraint_expressions)
+	(finish_shorthand_constraint): Use UNKNOWN_LOCATION.
+	* pt.cc (convert_generic_types_to_packs): Likewise.
+	* mangle.cc (write_constraint_expression)
+	(write_tparms_constraints, write_type_constraint)
+	(template_parm_natural_p, write_requirement)
+	(write_requires_expr): New.
+	(write_encoding): Mangle trailing requires-clause.
+	(write_name): Pass parms to write_template_args.
+	(write_template_param_decl): Factor out from...
+	(write_closure_template_head): ...here.
+	(write_template_args): Mangle non-natural parms
+	and requires-clause.
+	(write_expression): Handle REQUIRES_EXPR.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (finish_non_static_data_member)
+	(finish_decltype_type, capture_decltype):
+	Handle deduced closure parameter.
+
 2023-11-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/112744

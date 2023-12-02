@@ -1,3 +1,218 @@
+2023-12-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.h (range_compatible_p): Relocate.
+	* value-range.h (range_compatible_p): Here.
+	* range-op-mixed.h (operand_equal::operand_check_p): Call
+	range_compatible_p rather than comparing precision.
+	(operand_not_equal::operand_check_p): Ditto.
+	(operand_not_lt::operand_check_p): Ditto.
+	(operand_not_le::operand_check_p): Ditto.
+	(operand_not_gt::operand_check_p): Ditto.
+	(operand_not_ge::operand_check_p): Ditto.
+	(operand_plus::operand_check_p): Ditto.
+	(operand_abs::operand_check_p): Ditto.
+	(operand_minus::operand_check_p): Ditto.
+	(operand_negate::operand_check_p): Ditto.
+	(operand_mult::operand_check_p): Ditto.
+	(operand_bitwise_not::operand_check_p): Ditto.
+	(operand_bitwise_xor::operand_check_p): Ditto.
+	(operand_bitwise_and::operand_check_p): Ditto.
+	(operand_bitwise_or::operand_check_p): Ditto.
+	(operand_min::operand_check_p): Ditto.
+	(operand_max::operand_check_p): Ditto.
+	* range-op.cc (operand_lshift::operand_check_p): Ditto.
+	(operand_rshift::operand_check_p): Ditto.
+	(operand_logical_and::operand_check_p): Ditto.
+	(operand_logical_or::operand_check_p): Ditto.
+	(operand_logical_not::operand_check_p): Ditto.
+
+2023-12-01  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/112445
+	* lra.h (lra): Add one more arg.
+	* lra-int.h (lra_verbose, lra_dump_insns): New externals.
+	(lra_dump_insns_if_possible): Ditto.
+	* lra.cc (lra_dump_insns): Dump all insns.
+	(lra_dump_insns_if_possible):  Dump all insns for lra_verbose >= 7.
+	(lra_verbose): New global.
+	(lra): Add new arg.  Setup lra_verbose from its value.
+	* lra-assigns.cc (lra_split_hard_reg_for): Dump insns if rtl
+	was changed.
+	* lra-remat.cc (lra_remat): Dump insns if rtl was changed.
+	* lra-constraints.cc (lra_inheritance): Dump insns.
+	(lra_constraints, lra_undo_inheritance): Dump insns if rtl
+	was changed.
+	(remove_inheritance_pseudos): Use restore reg if it is set up.
+	* ira.cc: (lra): Pass internal_flag_ira_verbose.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (__builtin_addc, __builtin_addcl, __builtin_addcll,
+	__builtin_subc, __builtin_subcl, __builtin_subcll,
+	__builtin_stdc_bit_width, __builtin_stdc_count_ones,
+	__builtin_stdc_count_zeros, __builtin_stdc_first_leading_one,
+	__builtin_stdc_first_leading_zero, __builtin_stdc_first_trailing_one,
+	__builtin_stdc_first_trailing_zero, __builtin_stdc_has_single_bit,
+	__builtin_stdc_leading_ones, __builtin_stdc_leading_zeros,
+	__builtin_stdc_trailing_ones, __builtin_stdc_trailing_zeros,
+	__builtin_nvptx_brev, __builtin_nvptx_brevll, __builtin_darn,
+	__builtin_darn_raw, __builtin_ia32_vec_ext_v2di,
+	__builtin_ia32_crc32qi, __builtin_ia32_crc32hi,
+	__builtin_ia32_crc32si, __builtin_ia32_crc32di): Put {}s around
+	return type with spaces in it.
+	(__builtin_rx_mvfachi, __builtin_rx_mvfacmi): Remove superfluous
+	whitespace.
+
+2023-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (emit_diagnostic_valist): New overload decl.
+	* diagnostic-format-sarif.cc (sarif_builder::make_result_object):
+	When we have metadata, call its maybe_add_sarif_properties vfunc.
+	* diagnostic-metadata.h (class sarif_object): Forward decl.
+	(diagnostic_metadata::~diagnostic_metadata): New.
+	(diagnostic_metadata::maybe_add_sarif_properties): New vfunc.
+	* diagnostic.cc (emit_diagnostic_valist): New overload.
+
+2023-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* doc/extend.texi: Remove stray reference to
+	-fanalyzer-checker=taint.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highpart overlap for vx/vf.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highpart overlap for indexed load.
+
+2023-12-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs): Re-order arguments.
+	* tree-vect-stmts.cc (vect_get_vec_defs): Likewise.
+	(vectorizable_condition): Update caller.
+	(vectorizable_comparison_1): Likewise.
+	(vectorizable_conversion): Specify the vector type to be
+	used for invariant/external defs.
+	* tree-vect-loop.cc (vect_transform_reduction): Update caller.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112770
+	* gimple-lower-bitint.cc (gimple_lower_bitint): When adjusting
+	lhs of middle _BitInt setter which ends bb, insert cast on
+	the fallthru edge rather than after stmt.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112771
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_operand_addr):
+	Use mp = 1 if it is zero.
+
+2023-12-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_asm_named_section): New function.
+	(TARGET_ASM_NAMED_SECTION): Set to bpf_asm_named_section.
+
+2023-12-01  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNING_OPTION): New tuning option to avoid
+	cross-loop FMA.
+	* config/aarch64/aarch64.cc
+	(aarch64_override_options_internal): Set
+	param_avoid_fma_max_bits according to tuning option.
+	* config/aarch64/tuning_models/ampere1.h (ampere1_tunings):
+	Modify tunings related with FMA.
+	* config/aarch64/tuning_models/ampere1a.h (ampere1a_tunings):
+	Likewise.
+	* config/aarch64/tuning_models/ampere1b.h (ampere1b_tunings):
+	Likewise.
+
+2023-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::result_mode): New member function.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svld234_impl::expand): Use it.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::get_reg_target): Likewise.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (range_to_prec): Don't return -1 for
+	signed types.
+	(bitint_large_huge::lower_addsub_overflow): Fix up computation of
+	prec2.
+	(bitint_large_huge::lower_mul_overflow): Likewise.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (bitint_large_huge::finish_arith_overflow):
+	When replacing use_stmt which is gsi_stmt (m_gsi), update m_gsi to
+	the new statement.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112750
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_addsub_overflow):
+	Use NE_EXPR rather than EQ_EXPR for g2 if !single_comparison and
+	adjust probabilities.
+
+2023-12-01  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/install.texi: Deem srcdir == objdir broken, but objdir
+	as a subdirectory of srcdir fine.
+
+2023-12-01  Juergen Christ  <jchrist@linux.ibm.com>
+
+	PR target/112753
+	* config/s390/s390.cc (s390_md_asm_adjust): Return after dealing
+	with the outputs, if no further processing of long doubles is
+	required.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112725
+	* config/s390/s390.cc (s390_invalid_arg_for_unprototyped_fn): Return
+	NULL for __builtin_classify_type calls with vector arguments.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document
+	-Wdeclaration-missing-parameter-type.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document changes.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document that
+	-Wreturn-mismatch is a permerror in C99 and later.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/91093
+	PR c/96284
+	* doc/invoke.texi (Warning Options): Document changes.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document changes.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document changes.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112776
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::pre_global_vsetvl_info): Fix ratio.
+
 2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/111404

@@ -1,3 +1,10 @@
+2023-12-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112772
+	* trans-expr.cc (gfc_conv_class_to_class): Make copy-out conditional
+	on the presence of an OPTIONAL CLASS argument passed to an OPTIONAL
+	CLASS dummy.
+
 2023-11-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/112764

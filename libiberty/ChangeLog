@@ -1,3 +1,14 @@
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONSTRAINTS.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_maybe_constraints): New.
+	(d_encoding, d_template_args_1): Call it.
+	(d_parmlist): Handle 'Q'.
+	* testsuite/demangle-expected: Add some constraint tests.
+
 2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (GCC_CHECK_ASSEMBLER_HWCAP): Invoke.

@@ -1,3 +1,8 @@
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_CONSTRAINTS.
+
 2023-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* sha1.h (sha1_process_bytes_fn): New typedef.

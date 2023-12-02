@@ -1,3 +1,466 @@
+2023-12-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/112772
+	* gfortran.dg/missing_optional_dummy_7.f90: New test.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class4.C: Specify ABI v18.
+	* g++.dg/cpp2a/nontype-class4a.C: New test.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle10.C: Disable compat aliases.
+	* g++.dg/abi/mangle52.C: Specify ABI 18.
+	* g++.dg/cpp2a/class-deduction-alias3.C
+	* g++.dg/cpp2a/class-deduction-alias8.C:
+	Avoid builtins in requires-clauses.
+	* g++.dg/abi/mangle-concepts1.C: New test.
+	* g++.dg/abi/mangle-ttp1.C: New test.
+
+2023-12-01  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112334
+	* c-c++-common/torture/harden-cfr-bret.c: Rework for stricter
+	untyped_return requirements.  Require untyped_assembly.
+	* c-c++-common/torture/harden-cfr-bret-except.c: New.
+	* c-c++-common/torture/harden-cfr-bret-always.c: Require
+	untyped_assembly.
+	* c-c++-common/torture/harden-cfr-bret-never.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-noopt.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-noret.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-no-xthrow.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-nothrow.c: Likewise.
+	* c-c++-common/torture/harden-cfr-bret-retcl.c: Likewise.
+
+2023-12-01  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/112445
+	* gcc.target/i386/pr112445.c: New test.
+
+2023-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/fd-accept.c: Update for fix to missing CWE
+	metadata for -Wanalyzer-fd-phase-mismatch.
+	* gcc.dg/analyzer/fd-bind.c: Likewise.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Likewise.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Update for changes to
+	pending_diagnostic::emit.
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Likewise.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-22.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-23.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-24.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-25.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-26.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-27.c: New test.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-28.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-29.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-30.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-31.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-32.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-33.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/x86_64/abi/avx512fp16/m512h/test_passing_m512.c
+	(fun_check_passing_m512_8_values, fun_check_passing_m512h_8_values):
+	Add missing void return type.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/test_passing_m256.c
+	(fun_check_passing_m256_8_values, fun_check_passing_m256h_8_values):
+	Likewise.
+	* gcc.dg/graphite/pr83126.c (ew): Add missing casts to __INTPTR_TYPE__
+	and then to int *.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112770
+	* gcc.dg/bitint-45.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112771
+	* gcc.dg/bitint-44.c: New test.
+
+2023-12-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/section-name-quoting-1.c: New test.
+
+2023-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112750
+	* gcc.dg/bitint-41.c: Use -std=c23 rather than -std=c2x.
+	* gcc.dg/torture/bitint-43.c: Likewise.
+	* gcc.dg/torture/bitint-44.c: Likewise.
+	* gcc.dg/torture/bitint-45.c: New test.
+
+2023-12-01  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/pr112753.c: New test.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (missing_parameter_type):
+	Expect error.
+	* gcc.dg/permerror-fpermissive.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-gnu89-nopermissive.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type error.
+	* gcc.dg/permerror-gnu89-pedantic.c (missing_parameter_type):
+	Likewise.
+	* gcc.dg/permerror-gnu89.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-noerror.c: Add
+	-Wno-error=declaration-missing-parameter-type to build flags.
+	(missing_parameter_type): Expect
+	-Wdeclaration-missing-parameter-type warning.
+	* gcc.dg/permerror-nowarning.c: Build with
+	-Wno-declaration-missing-parameter-type.  Remove previously
+	expected warning.
+	* gcc.dg/permerror-fpermissive-nowarning.c: Likewise.
+	* gcc.dg/permerror-pedantic.c (missing_parameter_type):
+	Expect -Wdeclaration-missing-parameter-type error.
+	* gcc.dg/permerror-system.c (missing_parameter_type):
+	Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (incompatible_pointer_types):
+	Expect new permerror.
+	* gcc.dg/permerror-gnu89-nopermissive.c
+	(incompatible_pointer_types): Likewise.
+	* gcc.dg/permerror-pedantic.c (incompatible_pointer_types):
+	Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* gcc.dg/Wincompatible-pointer-types-2.c: Compile with
+	-fpermissive due to expected errors.
+	* gcc.dg/Wincompatible-pointer-types-5.c: New test.  Copied
+	from gcc.dg/Wincompatible-pointer-types-2.c.  Expect errors.
+	* gcc.dg/anon-struct-11.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/anon-struct-11a.c: New test.  Copied from
+	gcc.dg/anon-struct-11.c.  Expect errors.
+	* gcc.dg/anon-struct-13.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/anon-struct-13a.c: New test.  Copied from
+	gcc.dg/anon-struct-13.c.  Expect errors.
+	* gcc.dg/builtin-arith-overflow-4.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/builtin-arith-overflow-4a.c: New test.  Copied from
+	gcc.dg/builtin-arith-overflow-4.c.  Expect errors.
+	* gcc.dg/c23-qual-4.c: Expect -Wincompatible-pointer-types errors.
+	* gcc.dg/dfp/composite-type.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/dfp/composite-type-2.c: New test.  Copied from
+	gcc.dg/dfp/composite-type.c.  Expect errors.
+	* gcc.dg/diag-aka-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/diag-aka-1a.c: New test.  Copied from
+	gcc.dg/diag-aka-1a.c.  Expect errors.
+	* gcc.dg/enum-compat-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/enum-compat-2.c: New test.  Copied from
+	gcc.dg/enum-compat-1.c.  Expect errors.
+	* gcc.dg/func-ptr-conv-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/func-ptr-conv-2.c: New test.  Copied from
+	gcc.dg/func-ptr-conv-1.c.  Expect errors.
+	* gcc.dg/init-bad-7.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/init-bad-7a.c: New test.  Copied from gcc.dg/init-bad-7.c.
+	Expect errors.
+	* gcc.dg/noncompile/incomplete-3.c (foo): Expect
+	-Wincompatible-pointer-types error.
+	* gcc.dg/param-type-mismatch-2.c (test8): Likewise.
+	* gcc.dg/pointer-array-atomic.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/pointer-array-atomic-2.c: New test.  Copied from
+	gcc.dg/pointer-array-atomic.c.  Expect errors.
+	* gcc.dg/pointer-array-quals-1.c (test): Expect
+	-Wincompatible-pointer-types errors.
+	* gcc.dg/transparent-union-1.c: Compile with -fpermissive
+	due to expected errors.
+	* gcc.dg/transparent-union-1a.c: New test.  Copied from
+	gcc.dg/transparent-union-1.c.  Expect errors.
+	* gcc.target/aarch64/acle/memtag_2a.c
+	(test_memtag_warning_return_qualifier): Expect additional
+	errors.
+	* gcc.target/aarch64/sve/acle/general-c/load_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_3.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_4.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_5.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c
+	(f1): Likewise.
+	* gcc.target/i386/sse2-bfloat16-scalar-typecheck.c (footest):
+	Expect -Wincompatible-pointer-types errors.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c (footest): Likewise.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c (footest): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (return_mismatch_1)
+	(return_mismatch_2): Expect new permerror.
+	* gcc.dg/permerror-gnu89-nopermissive.c (return_mismatch_1):
+	Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* gcc.dg/20030906-1.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/20030906-1a.c: New test.  Copied from
+	gcc.dg/20030906-1.c.  Expect the error.
+	* gcc.dg/20030906-2.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/20030906-2a.c: New test.  Copied from
+	gcc.dg/20030906-2.c.  Expect the error.
+	* gcc.dg/Wreturn-mismatch-1.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/Wreturn-mismatch-1a.c: New test.  Copied from
+	gcc.dg/Wreturn-mismatch-1.c.  Expect the error.
+	* gcc.dg/Wreturn-mismatch-2.c: Compile with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/Wreturn-mismatch-2a.c: New test.  Copied from
+	gcc.dg/Wreturn-mismatch-2.c.  Expect the error.
+	* gcc.dg/diagnostic-range-bad-return.c: Compile with
+	-fpermissive due to expected -Wreturn-mismatch error.
+	* gcc.dg/diagnostic-range-bad-return-2.c: New test.
+	Copied from gcc.dg/diagnostic-range-bad-return.c.  Expect the
+	error.
+	* gcc.dg/pr105635-2.c: Expect -Wreturn-mismatch error.
+	* gcc.dg/pr23075.c: Build with -fpermissive due to
+	expected -Wreturn-mismatch error.
+	* gcc.dg/pr23075-2.c: New test.  Copied from gcc.dg/pr23075.c.
+	Expect the error.
+	* gcc.dg/pr29521.c: Compile with -fpermissive due to expected
+	-Wreturn-mismatch error.
+	* gcc.dg/pr29521-a.c: New test. Copied from gcc.dg/pr29521.c.
+	Expect error.
+	* gcc.dg/pr67730.c: Compile with -fpermissive due to expected
+	-Wreturn-mismatch error.
+	* gcc.dg/pr67730-a.c: New test.  Copied from
+	gcc.dg/pr67730-a.c.  Expect error.
+	* gcc.target/powerpc/conditional-return.c: Compile with
+	-fpermissive due to expected -Wreturn-mismatch error.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-system.c: Expect all -Wimplicit-int
+	permerrors.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (implicit_int_1, implicit_int_2)
+	(implicit_int_3, implicit_int_4): Expect new permerror.
+	* gcc.dg/permerror-system.c: Expect a single new permerror.
+	* gcc.dg/Wimplicit-int-1.c: Compile with -fpermissive due to
+	expected warning.
+	* gcc.dg/Wimplicit-int-4.c: Likewise.
+	* gcc.dg/Wimplicit-int-1a.c: New test.  Copied from
+	gcc.dg/Wimplicit-int-1.c, but expect errors.
+	* gcc.dg/Wimplicit-int-4a.c: New test.  Copied from
+	gcc.dg/Wimplicit-int-4.c, but expect errors.
+	* gcc.dg/gnu23-attr-syntax-2.c: Compile with -fpermissive
+	due to expected implicit-int error.
+	* gcc.dg/gnu23-attr-syntax-3.c: New test.  Copied from
+	gcc.dg/gnu23-attr-syntax-2.c, but expect an error.
+	* gcc.dg/pr105635.c: Build with -fpermissive due to implicit
+	int.
+	* gcc.dg/pr105635-2.c: New test.  Copied from
+	gcc.dg/pr105635.c.  Expect implicit int error.
+	* gcc.dg/noncompile/pr79758.c: Build with -fpermissive due to
+	implicit int.
+	* gcc.dg/noncompile/pr79758-2.c: New test.  Copied from
+	gcc.dg/noncompile/pr79758.c.  Expect implicit int error.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (implicit_function_declaration):
+	Expect the new permerror.
+	* gcc.dg/permerror-system.c: Likewise.
+	* c-c++-common/spellcheck-reserved.c (test, test_2): Expect
+	error instead of warning.
+	(f): Expect error instead of warning.
+	* gcc.dg/Wimplicit-function-declaration-c99.c: Compile with
+	-fpermissive due to expected warning.
+	* gcc.dg/Wimplicit-function-declaration-c99-2.c: New test.
+	Copied from gcc.dg/Wimplicit-function-declaration-c99.c.
+	Expect error.
+	* gcc.dg/missing-header-fixit-1.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-1a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-1.c, but expect error.
+	* gcc.dg/missing-header-fixit-2.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-2a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-2.c, but expect error.
+	* gcc.dg/missing-header-fixit-4.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-4a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-4.c, but expect error.
+	* gcc.dg/missing-header-fixit-5.c: Compile with -fpermissive
+	due to expect error.
+	* gcc.dg/missing-header-fixit-5a.c: New test.  Copied from
+	gcc.dg/missing-header-fixit-5.c, but expect error.
+	* gcc.dg/pr61852.c: Expect implicit-function-declaration
+	error instead of warning.
+	* gcc.dg/spellcheck-identifiers-2.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-2a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect errors.
+	* gcc.dg/spellcheck-identifiers-3.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-3a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect errors.
+	* gcc.dg/spellcheck-identifiers-4.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-4a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers-2a.c.  Expect error.
+	* gcc.dg/spellcheck-identifiers.c: Compile with
+	-fpermissive due to expected warnings.
+	* gcc.dg/spellcheck-identifiers-1a.c: New test.  Copied
+	from gcc.dg/spellcheck-identifiers.c.  Expect errors.
+	* gcc.target/aarch64/sve/acle/general-c/ld1sh_gather_1.c (f1):
+	Expect error.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_restricted_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_2.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_3.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_4.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_5.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c:
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c:
+	(f1): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c (int_conversion_1)
+	(int_conversion_2): Expect the new permerrors.
+	* gcc.dg/permerror-gnu89-nopermissive.c (int_conversion_1)
+	(int_conversion_2): Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+	* c-c++-common/pr77624-1.c (foo, bar): Expect
+	error instead of warning.
+	* gcc.dg/Wint-conversion-2.c: Compile with -fpermissive due
+	to expected int-conversion warning.
+	* gcc.dg/Wint-conversion-3.c: Likewise.
+	* gcc.dg/Wint-conversion-4.c: New test.  Based on
+	gcc.dg/Wint-conversion-3.c.  Expect int-conversion errors.
+	* gcc.dg/assign-warn-1.c: Compile with -fpermissive.
+	* gcc.dg/assign-warn-4.c: New file.  Extracted from
+	assign-warn1.c.  Expect int-conversion errors.
+	* gcc.dg/diagnostic-types-1.c: Compile with -fpermissive.
+	* gcc.dg/diagnostic-types-2.c: New file.  Extracted from
+	gcc.dg/diagnostic-types-1.c.  Expect some errors instead of
+	warnings.
+	* gcc.dg/gomp/pr35738.c: Compile with -fpermissive due to
+	expected int-conversion error.
+	* gcc.dg/gomp/pr35738-2.c: New test.  Based on
+	gcc.dg/gomp/pr35738.c.  Expect int-converison errors.
+	* gcc.dg/init-excess-3.c: Expect int-converison errors.
+	* gcc.dg/overflow-warn-1.c: Likewise.
+	* gcc.dg/overflow-warn-3.c: Likewise.
+	* gcc.dg/param-type-mismatch.c: Compile with -fpermissive.
+	* gcc.dg/param-type-mismatch-2.c: New test.  Copied from
+	gcc.dg/param-type-mismatch.c.  Expect errors.
+	* gcc.dg/pr61162-2.c: Compile with -fpermissive.
+	* gcc.dg/pr61162-3.c: New test. Extracted from
+	gcc.dg/pr61162-2.c.  Expect int-conversion errors.
+	* gcc.dg/spec-barrier-3.c: Use -fpermissive due to expected
+	int-conversion error.
+	* gcc.dg/spec-barrier-3a.c: New test.  Based on
+	gcc.dg/spec-barrier-3.c.  Expect int-conversion errors.
+	* gcc.target/aarch64/acle/memtag_2.c: Use -fpermissive due to expected
+	int-conversion error.
+	* gcc.target/aarch64/acle/memtag_2a.c: New test.  Copied from
+	gcc.target/aarch64/acle/memtag_2.c.  Expect error.
+	* gcc.target/aarch64/sve/acle/general-c/load_3.c (f1): Expect
+	error.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/permerror-default.c: New test.
+	* gcc.dg/permerror-fpermissive.c: Likewise.
+	* gcc.dg/permerror-fpermissive-nowarning.c: Likewise.
+	* gcc.dg/permerror-gnu89-nopermissive.c: Likewise.
+	No permerrors yet, so this matches gcc.dg/permerror-gnu89.c
+	for now.
+	* gcc.dg/permerror-gnu89-pedantic.c: New test.
+	* gcc.dg/permerror-gnu89.c: Likewise.
+	* gcc.dg/permerror-noerror.c: Likewise.
+	* gcc.dg/permerror-nowarning.c: Likewise.
+	* gcc.dg/permerror-pedantic.c: Likewise.
+	* gcc.dg/permerror-system.c: Likewise.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gm2/link/externalscaffold/pass/scaffold.c (m2pim_M2RTS_Terminate):
+	Declare.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.target/aarch64/aapcs64/ice_1.c (foo): Call named.
+
+2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112776
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/pr111037-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr112776.c: New test.
+
 2023-11-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/112744

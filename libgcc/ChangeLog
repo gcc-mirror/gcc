@@ -1,3 +1,19 @@
+2023-12-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgcc-std.ver.in (__hardcfr_check): Add to GCC_14.0.0.
+
+2023-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/112777
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC):  Honor that __LIBGCC_HAVE_LIBATOMIC is
+	always defined as either 0 or 1.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* config/aarch64/linux-unwind.h
+	(aarch64_fallback_frame_state): Add cast to the expected type
+	in sc assignment.
+
 2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/111404

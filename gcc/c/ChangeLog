@@ -1,3 +1,56 @@
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR other/44209
+	* c-decl.cc (grokparms): Issue permerror for
+	OPT_Wdeclaration_missing_parameter_type instead of a pedwarn.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	* c-typeck.cc (build_conditional_expr): Upgrade most pointer
+	type mismatches to a permerror.
+	(convert_for_assignment): Use permerror_opt and
+	permerror_init for OPT_Wincompatible_pointer_types warnings.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	* c-typeck.cc (c_finish_return): Use permerrors
+	for OPT_Wreturn_mismatch diagnostics.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* c-decl.cc (grokdeclarator): Do not skip -Wimplicit-int
+	warnings or errors in system headers.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	* c-decl.cc (warn_defaults_to): Remove.
+	(grok_declarator, start_function): Call permerror_opt
+	instead of warn_defaults_to.
+	(store_parm_decls_oldstyle): Call permerror_opt for
+	OPT_Wimplicit_int.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/91092
+	PR c/96284
+	* c-decl.cc (implicit_decl_permerror): Rename from
+	implicit_decl_warning.  Call permerror_opt instead of
+	pedwarn and warning_at.
+	(implicitly_declare): Adjust callers.
+
+2023-12-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/96284
+	PR c/106416
+	* c-typeck.cc (build_conditional_expr): Use permerror_opt for
+	pointer/integer type mismatches, based on -Wint-conversion.
+	(pedwarn_permerror_init, permerror_init): New function.
+	(pedwarn_init): Call pedwarn_permerror_init.
+	(convert_for_assignment): Use permerror_opt and
+	permerror_init for -Wint-conversion warnings.
+
 2023-11-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-typeck.cc (convert_lvalue_to_rvalue): Decay hardbools.
