@@ -6678,6 +6678,142 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
     }
 }
 
+/* Helper function to split TImode ashl under NDD.  */
+void
+ix86_split_ashl_ndd (rtx *operands, rtx scratch)
+{
+  gcc_assert (TARGET_APX_NDD);
+  int half_width = GET_MODE_BITSIZE (TImode) >> 1;
+
+  rtx low[2], high[2];
+  int count;
+
+  split_double_mode (TImode, operands, 2, low, high);
+  if (CONST_INT_P (operands[2]))
+    {
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (TImode) - 1);
+
+      if (count >= half_width)
+	{
+	  count = count - half_width;
+	  if (count == 0)
+	    {
+	      if (!rtx_equal_p (high[0], low[1]))
+		emit_move_insn (high[0], low[1]);
+	    }
+	  else if (count == 1)
+	    emit_insn (gen_adddi3 (high[0], low[1], low[1]));
+	  else
+	    emit_insn (gen_ashldi3 (high[0], low[1], GEN_INT (count)));
+
+	  ix86_expand_clear (low[0]);
+	}
+      else if (count == 1)
+	{
+	  rtx x3 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  rtx x4 = gen_rtx_LTU (TImode, x3, const0_rtx);
+	  emit_insn (gen_add3_cc_overflow_1 (DImode, low[0],
+					     low[1], low[1]));
+	  emit_insn (gen_add3_carry (DImode, high[0], high[1], high[1],
+				     x3, x4));
+	}
+      else
+	{
+	  emit_insn (gen_x86_64_shld_ndd (high[0], high[1], low[1],
+					  GEN_INT (count)));
+	  emit_insn (gen_ashldi3 (low[0], low[1], GEN_INT (count)));
+	}
+    }
+  else
+    {
+      emit_insn (gen_x86_64_shld_ndd (high[0], high[1], low[1],
+				      operands[2]));
+      emit_insn (gen_ashldi3 (low[0], low[1], operands[2]));
+      if (TARGET_CMOVE && scratch)
+	{
+	  ix86_expand_clear (scratch);
+	  emit_insn (gen_x86_shift_adj_1
+		     (DImode, high[0], low[0], operands[2], scratch));
+	}
+      else
+	emit_insn (gen_x86_shift_adj_2 (DImode, high[0], low[0], operands[2]));
+    }
+}
+
+/* Helper function to split TImode l/ashr under NDD.  */
+void
+ix86_split_rshift_ndd (enum rtx_code code, rtx *operands, rtx scratch)
+{
+  gcc_assert (TARGET_APX_NDD);
+  int half_width = GET_MODE_BITSIZE (TImode) >> 1;
+  bool ashr_p = code == ASHIFTRT;
+  rtx (*gen_shr)(rtx, rtx, rtx) = ashr_p ? gen_ashrdi3
+					 : gen_lshrdi3;
+
+  rtx low[2], high[2];
+  int count;
+
+  split_double_mode (TImode, operands, 2, low, high);
+  if (CONST_INT_P (operands[2]))
+    {
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (TImode) - 1);
+
+      if (ashr_p && (count == GET_MODE_BITSIZE (TImode) - 1))
+	{
+	  emit_insn (gen_shr (high[0], high[1],
+			      GEN_INT (half_width - 1)));
+	  emit_move_insn (low[0], high[0]);
+	}
+      else if (count >= half_width)
+	{
+	  if (ashr_p)
+	    emit_insn (gen_shr (high[0], high[1],
+				GEN_INT (half_width - 1)));
+	  else
+	    ix86_expand_clear (high[0]);
+
+	  if (count > half_width)
+	    emit_insn (gen_shr (low[0], high[1],
+				GEN_INT (count - half_width)));
+	  else
+	    emit_move_insn (low[0], high[1]);
+	}
+      else
+	{
+	  emit_insn (gen_x86_64_shrd_ndd (low[0], low[1], high[1],
+					  GEN_INT (count)));
+	  emit_insn (gen_shr (high[0], high[1], GEN_INT (count)));
+	}
+    }
+  else
+    {
+      emit_insn (gen_x86_64_shrd_ndd (low[0], low[1], high[1],
+				      operands[2]));
+      emit_insn (gen_shr (high[0], high[1], operands[2]));
+
+      if (TARGET_CMOVE && scratch)
+	{
+	  if (ashr_p)
+	    {
+	      emit_move_insn (scratch, high[0]);
+	      emit_insn (gen_shr (scratch, scratch,
+				  GEN_INT (half_width - 1)));
+	    }
+	  else
+	    ix86_expand_clear (scratch);
+
+	  emit_insn (gen_x86_shift_adj_1
+		     (DImode, low[0], high[0], operands[2], scratch));
+	}
+      else if (ashr_p)
+	emit_insn (gen_x86_shift_adj_3
+		   (DImode, low[0], high[0], operands[2]));
+      else
+	emit_insn (gen_x86_shift_adj_2
+		   (DImode, low[0], high[0], operands[2]));
+    }
+}
+
 /* Expand move of V1TI mode register X to a new TI mode register.  */
 static rtx
 ix86_expand_v1ti_to_ti (rtx x)
