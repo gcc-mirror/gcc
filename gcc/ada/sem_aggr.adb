@@ -3436,11 +3436,25 @@ package body Sem_Aggr is
             Key_Type  : constant Entity_Id := Etype (Next_Formal (Container));
             Elmt_Type : constant Entity_Id :=
                                  Etype (Next_Formal (Next_Formal (Container)));
-            Comp   : Node_Id;
-            Choice : Node_Id;
+
+            Comp_Assocs : constant List_Id := Component_Associations (N);
+            Comp        : Node_Id;
+            Choice      : Node_Id;
 
          begin
-            Comp := First (Component_Associations (N));
+            --  In the Add_Named case, the aggregate must consist of named
+            --  associations (Add_Unnnamed is not allowed), so we issue an
+            --  error if there are positional associations.
+
+            if not Present (Comp_Assocs)
+              and then Present (Expressions (N))
+            then
+               Error_Msg_N ("container aggregate must be "
+                 & "named, not positional", N);
+               return;
+            end if;
+
+            Comp := First (Comp_Assocs);
             while Present (Comp) loop
                if Nkind (Comp) = N_Component_Association then
                   Choice := First (Choices (Comp));
