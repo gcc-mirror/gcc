@@ -583,6 +583,23 @@ attribute_ignored_p (const attribute_spec *const as)
   return as->max_length == -2;
 }
 
+/* See whether LIST contains at least one instance of attribute ATTR
+   (possibly with different arguments).  Return the first such attribute
+   if so, otherwise return null.  */
+
+static tree
+find_same_attribute (const_tree attr, tree list)
+{
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  tree ns = get_attribute_namespace (attr);
+  tree name = get_attribute_name (attr);
+  return private_lookup_attribute (ns ? IDENTIFIER_POINTER (ns) : nullptr,
+				   IDENTIFIER_POINTER (name),
+				   ns ? IDENTIFIER_LENGTH (ns) : 0,
+				   IDENTIFIER_LENGTH (name), list);
+}
+
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
    it should be modified in place; if a TYPE, a copy should be created
@@ -915,9 +932,9 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  else
 	    old_attrs = TYPE_ATTRIBUTES (*anode);
 
-	  for (a = lookup_attribute (spec->name, old_attrs);
+	  for (a = find_same_attribute (attr, old_attrs);
 	       a != NULL_TREE;
-	       a = lookup_attribute (spec->name, TREE_CHAIN (a)))
+	       a = find_same_attribute (attr, TREE_CHAIN (a)))
 	    {
 	      if (simple_cst_equal (TREE_VALUE (a), args) == 1)
 		break;
@@ -948,8 +965,8 @@ decl_attributes (tree *node, tree attributes, int flags,
 			  if (TYPE_ATTRIBUTES (variant) == old_attrs)
 			    TYPE_ATTRIBUTES (variant)
 			      = TYPE_ATTRIBUTES (*anode);
-			  else if (!lookup_attribute
-				   (spec->name, TYPE_ATTRIBUTES (variant)))
+			  else if (!find_same_attribute
+				   (attr, TYPE_ATTRIBUTES (variant)))
 			    TYPE_ATTRIBUTES (variant) = tree_cons
 			      (name, args, TYPE_ATTRIBUTES (variant));
 			}
@@ -1462,7 +1479,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
       if (!as || as->affects_type_identity == false)
 	continue;
 
-      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
+      attr = find_same_attribute (a, CONST_CAST_TREE (a2));
       if (!attr || !attribute_value_equal (a, attr))
 	break;
     }
@@ -1476,7 +1493,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
 	  if (!as || as->affects_type_identity == false)
 	    continue;
 
-	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
+	  if (!find_same_attribute (a, CONST_CAST_TREE (a1)))
 	    break;
 	  /* We don't need to compare trees again, as we did this
 	     already in first loop.  */
