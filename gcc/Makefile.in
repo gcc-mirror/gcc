@@ -2816,7 +2816,8 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/symtab-thunks.h $(srcdir)/symtab-thunks.cc \
   $(srcdir)/symtab-clones.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.cc $(srcdir)/symtab.cc \
-  $(srcdir)/alias.cc $(srcdir)/bitmap.cc $(srcdir)/cselib.cc $(srcdir)/cgraph.cc \
+  $(srcdir)/alias.cc $(srcdir)/attribs.cc \
+  $(srcdir)/bitmap.cc $(srcdir)/cselib.cc $(srcdir)/cgraph.cc \
   $(srcdir)/ipa-prop.cc $(srcdir)/ipa-cp.cc $(srcdir)/ipa-utils.h \
   $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.cc \
   $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.cc \

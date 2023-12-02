@@ -102,6 +102,19 @@ static const struct attribute_spec *lookup_scoped_attribute_spec (const_tree,
 
 static bool attributes_initialized = false;
 
+/* Do not use directly; go through get_gnu_namespace instead.  */
+static GTY(()) tree gnu_namespace_cache;
+
+/* Return the IDENTIFIER_NODE for the gnu namespace.  */
+
+static tree
+get_gnu_namespace ()
+{
+  if (!gnu_namespace_cache)
+    gnu_namespace_cache = get_identifier ("gnu");
+  return gnu_namespace_cache;
+}
+
 /* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.
    To avoid need for copying, we simply return length of the string.  */
 
@@ -403,7 +416,7 @@ lookup_attribute_spec (const_tree name)
       name = TREE_VALUE (name);
     }
   else
-    ns = get_identifier ("gnu");
+    ns = get_gnu_namespace ();
   return lookup_scoped_attribute_spec (ns, name);
 }
 
@@ -420,7 +433,7 @@ get_attribute_namespace (const_tree attr)
 {
   if (cxx11_attribute_p (attr))
     return TREE_PURPOSE (TREE_PURPOSE (attr));
-  return get_identifier ("gnu");
+  return get_gnu_namespace ();
 }
 
 /* Check LAST_DECL and NODE of the same symbol for attributes that are
@@ -2692,3 +2705,5 @@ attribs_cc_tests ()
 } /* namespace selftest */
 
 #endif /* CHECKING_P */
+
+#include "gt-attribs.h"
