@@ -123,13 +123,16 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 #undef LANG_HOOKS_FINALIZE_EARLY_DEBUG
 #define LANG_HOOKS_FINALIZE_EARLY_DEBUG c_common_finalize_early_debug
 
-/* Attribute hooks.  */
-#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
-#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
+static const scoped_attribute_specs *const cp_objcp_attribute_table[] =
+{
+  &std_attribute_table,
+  &cxx_gnu_attribute_table,
+  &c_common_gnu_attribute_table,
+  &c_common_format_attribute_table
+};
+
 #undef LANG_HOOKS_ATTRIBUTE_TABLE
-#define LANG_HOOKS_ATTRIBUTE_TABLE cxx_attribute_table
+#define LANG_HOOKS_ATTRIBUTE_TABLE cp_objcp_attribute_table
 
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P cp_var_mod_type_p

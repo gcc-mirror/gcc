@@ -162,7 +162,7 @@ extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
 
 /* Table of machine-independent attributes.
    For internal use (marking of built-ins) only.  */
-const attribute_spec d_langhook_common_attribute_table[] =
+static const attribute_spec d_langhook_common_attributes[] =
 {
   ATTR_SPEC ("noreturn", 0, 0, true, false, false, false,
 	     handle_noreturn_attribute, attr_noreturn_exclusions),
@@ -190,11 +190,15 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_fnspec_attribute, NULL),
   ATTR_SPEC ("omp declare simd", 0, -1, true,  false, false, false,
 	     handle_omp_declare_simd_attribute, NULL),
-  ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
+};
+
+const scoped_attribute_specs d_langhook_common_attribute_table =
+{
+  "gnu", d_langhook_common_attributes
 };
 
 /* Table of D language attributes exposed by `gcc.attribute' UDAs.  */
-const attribute_spec d_langhook_attribute_table[] =
+static const attribute_spec d_langhook_gnu_attributes[] =
 {
   ATTR_SPEC ("noinline", 0, 0, true, false, false, false,
 	     d_handle_noinline_attribute, attr_noinline_exclusions),
@@ -238,9 +242,12 @@ const attribute_spec d_langhook_attribute_table[] =
 	     d_handle_used_attribute, NULL),
   ATTR_SPEC ("visibility", 1, 1, false, false, false, false,
 	     d_handle_visibility_attribute, NULL),
-  ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
+const scoped_attribute_specs d_langhook_gnu_attribute_table =
+{
+  "gnu", d_langhook_gnu_attributes
+};
 
 /* Insert the type attribute ATTRNAME with value VALUE into TYPE.
    Returns a new variant of the original type declaration.  */
@@ -283,20 +290,14 @@ uda_attribute_p (const char *name)
 
   /* Search both our language, and target attribute tables.
      Common and format attributes are kept internal.  */
-  for (const attribute_spec *p = d_langhook_attribute_table; p->name; p++)
-    {
-      if (get_identifier (p->name) == ident)
-	return true;
-    }
+  for (const attribute_spec &p : d_langhook_gnu_attributes)
+    if (get_identifier (p.name) == ident)
+      return true;
 
-  if (targetm.attribute_table)
-    {
-      for (const attribute_spec *p = targetm.attribute_table; p->name; p++)
-	{
-	  if (get_identifier (p->name) == ident)
-	    return true;
-	}
-    }
+  for (auto scoped_attributes : targetm.attribute_table)
+    for (const attribute_spec &p : scoped_attributes->attributes)
+      if (get_identifier (p.name) == ident)
+	return true;
 
   return false;
 }

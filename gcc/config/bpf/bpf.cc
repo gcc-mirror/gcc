@@ -140,7 +140,7 @@ bpf_handle_preserve_access_index_attribute (tree *node, tree name,
 
 /* Target-specific attributes.  */
 
-static const struct attribute_spec bpf_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (bpf_attribute_table,
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
@@ -157,11 +157,8 @@ static const struct attribute_spec bpf_attribute_table[] =
 
  /* Support for `naked' function attribute.  */
  { "naked", 0, 1, false, false, false, false,
-   bpf_handle_fndecl_attribute, NULL },
-
- /* The last attribute spec is set to be NULL.  */
- { NULL,	0,  0, false, false, false, false, NULL, NULL }
-};
+   bpf_handle_fndecl_attribute, NULL }
+});
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE bpf_attribute_table

@@ -1352,6 +1352,11 @@ get_lang_specific (tree node)
   return TYPE_LANG_SPECIFIC (node);
 }
 
+const struct scoped_attribute_specs *const gnat_attribute_table[] =
+{
+  &gnat_internal_attribute_table
+};
+
 /* Definitions for our language-specific hooks.  */
 
 #undef  LANG_HOOKS_NAME
@@ -1417,7 +1422,7 @@ get_lang_specific (tree node)
 #undef  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO
 #define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO gnat_get_fixed_point_type_info
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
-#define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
+#define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
 #undef  LANG_HOOKS_INIT_TS

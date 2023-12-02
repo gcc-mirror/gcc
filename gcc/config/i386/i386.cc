@@ -25968,6 +25968,11 @@ ix86_run_selftests (void)
 
 #endif /* CHECKING_P */
 
+static const scoped_attribute_specs *const ix86_attribute_table[] =
+{
+  &ix86_gnu_attribute_table
+};
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory

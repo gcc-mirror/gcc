@@ -7840,15 +7840,13 @@ loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
   return NULL_TREE;
 }
 
-static const struct attribute_spec loongarch_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (loongarch_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "model", 1, 1, true, false, false, false,
-    loongarch_handle_model_attribute, NULL },
-  /* The last attribute spec is set to be NULL.  */
-  {}
-};
+    loongarch_handle_model_attribute, NULL }
+});
 
 bool
 loongarch_use_anchors_for_symbol_p (const_rtx symbol)

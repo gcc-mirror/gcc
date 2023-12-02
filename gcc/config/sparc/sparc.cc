@@ -721,13 +721,12 @@ static HARD_REG_SET sparc_zero_call_used_regs (HARD_REG_SET);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
-static const struct attribute_spec sparc_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (sparc_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        do_diagnostic, handler, exclude } */
-  SUBTARGET_ATTRIBUTE_TABLE,
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+  SUBTARGET_ATTRIBUTE_TABLE
+});
 #endif
 
 char sparc_hard_reg_printed[8];

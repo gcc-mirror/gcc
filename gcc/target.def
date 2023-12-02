@@ -2218,15 +2218,36 @@ merging.",
  merge_type_attributes)
 
 /* Table of machine attributes and functions to handle them.
-   Ignored if NULL.  */
+   Ignored if empty.  */
 DEFHOOKPOD
 (attribute_table,
- "If defined, this target hook points to an array of @samp{struct\n\
-attribute_spec} (defined in @file{tree-core.h}) specifying the machine\n\
-specific attributes for this target and some of the restrictions on the\n\
-entities to which these attributes are applied and the arguments they\n\
-take.",
- const struct attribute_spec *, NULL)
+ "If defined, this target hook provides an array of\n\
+@samp{scoped_attribute_spec}s (defined in @file{attribs.h}) that specify the\n\
+machine-specific attributes for this target.  The information includes some\n\
+of the restrictions on the entities to which these attributes are applied\n\
+and the arguments that the attributes take.\n\
+\n\
+In C and C++, these attributes are associated with two syntaxes:\n\
+the traditional GNU @code{__attribute__} syntax and the standard\n\
+@samp{[[]]} syntax.  Attributes that support the GNU syntax must be\n\
+placed in the @code{gnu} namespace.  Such attributes can then also be\n\
+written @samp{[[gnu::@dots{}]]}.  Attributes that use only the standard\n\
+syntax should be placed in whichever namespace the attribute specification\n\
+requires.  For example, a target might choose to support vendor-specific\n\
+@samp{[[]]} attributes that the vendor places in their own namespace.\n\
+\n\
+Targets that only define attributes in the @code{gnu} namespace\n\
+can uase the following shorthand to define the table:\n\
+\n\
+@smallexample\n\
+TARGET_GNU_ATTRIBUTES (@var{cpu_attribute_table}, @{\n\
+  @{ \"@var{attribute1}\", @dots{} @},\n\
+  @{ \"@var{attribute2}\", @dots{} @},\n\
+  @dots{},\n\
+  @{ \"@var{attributen}\", @dots{} @},\n\
+@});\n\
+@end smallexample",
+ array_slice<const struct scoped_attribute_specs *const>, {})
 
 /* Return true iff attribute NAME expects a plain identifier as its first
    argument.  */

@@ -361,7 +361,7 @@ static void m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int);
 #undef TARGET_ASM_FINAL_POSTSCAN_INSN
 #define TARGET_ASM_FINAL_POSTSCAN_INSN m68k_asm_final_postscan_insn
 
-static const struct attribute_spec m68k_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (m68k_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -370,9 +370,8 @@ static const struct attribute_spec m68k_attribute_table[] =
   { "interrupt_handler", 0, 0, true,  false, false, false,
     m68k_handle_fndecl_attribute, NULL },
   { "interrupt_thread", 0, 0, true,  false, false, false,
-    m68k_handle_fndecl_attribute, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
-};
+    m68k_handle_fndecl_attribute, NULL }
+});
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

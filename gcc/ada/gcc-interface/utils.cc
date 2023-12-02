@@ -136,7 +136,7 @@ static tree fake_attribute_handler (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
    this minimal set of attributes to accommodate the needs of builtins.  */
-const struct attribute_spec gnat_internal_attribute_table[] =
+static const attribute_spec gnat_internal_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -217,9 +217,11 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   /* This is handled entirely in the front end.  */
   { "hardbool",     0, 0,  false, true, false, true,
     fake_attribute_handler, NULL },
+};
 
-  { NULL,           0, 0,  false, false, false, false,
-    NULL, NULL }
+const scoped_attribute_specs gnat_internal_attribute_table =
+{
+  "gnu", gnat_internal_attributes
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in

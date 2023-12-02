@@ -7482,14 +7482,13 @@ common_object_handler (tree *node, tree name ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-static const struct attribute_spec vms_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (vms_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { COMMON_OBJECT,   0, 1, true,  false, false, false, common_object_handler,
-    NULL },
-  { NULL,            0, 0, false, false, false, false, NULL, NULL }
-};
+    NULL }
+});
 
 void
 vms_output_aligned_decl_common(FILE *file, tree decl, const char *name,

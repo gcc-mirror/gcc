@@ -5086,7 +5086,7 @@ handle_likeliness_attribute (tree *node, tree name, tree args,
 }
 
 /* Table of valid C++ attributes.  */
-const struct attribute_spec cxx_attribute_table[] =
+static const attribute_spec cxx_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -5094,11 +5094,15 @@ const struct attribute_spec cxx_attribute_table[] =
     handle_init_priority_attribute, NULL },
   { "abi_tag", 1, -1, false, false, false, true,
     handle_abi_tag_attribute, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
+};
+
+const scoped_attribute_specs cxx_gnu_attribute_table =
+{
+  "gnu", cxx_gnu_attributes
 };
 
 /* Table of C++ standard attributes.  */
-const struct attribute_spec std_attribute_table[] =
+static const attribute_spec std_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -5119,9 +5123,10 @@ const struct attribute_spec std_attribute_table[] =
   { "pre", 0, -1, false, false, false, false,
     handle_contract_attribute, NULL },
   { "post", 0, -1, false, false, false, false,
-    handle_contract_attribute, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
+    handle_contract_attribute, NULL }
 };
+
+const scoped_attribute_specs std_attribute_table = { nullptr, std_attributes };
 
 /* Handle an "init_priority" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -5718,7 +5723,6 @@ void
 init_tree (void)
 {
   list_hash_table = hash_table<list_hasher>::create_ggc (61);
-  register_scoped_attributes (std_attribute_table, NULL);
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)

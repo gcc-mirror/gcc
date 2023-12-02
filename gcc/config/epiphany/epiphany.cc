@@ -458,7 +458,7 @@ epiphany_init_reg_tables (void)
                      They unmask them while calling an interruptible
 		     function, though.  */
 
-static const struct attribute_spec epiphany_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (epiphany_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -468,9 +468,8 @@ static const struct attribute_spec epiphany_attribute_table[] =
     epiphany_handle_forwarder_attribute, NULL },
   { "long_call",  0, 0, false, true, true, false, NULL, NULL },
   { "short_call", 0, 0, false, true, true, false, NULL, NULL },
-  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL },
-  { NULL,         0, 0, false, false, false, false, NULL, NULL }
-};
+  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL }
+});
 
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */

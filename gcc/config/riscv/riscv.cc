@@ -434,7 +434,7 @@ static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
-static const struct attribute_spec riscv_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
@@ -450,11 +450,8 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
   {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
-  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
-
-  /* The last attribute spec is set to be NULL.  */
-  { NULL,	0,  0, false, false, false, false, NULL, NULL }
-};
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL}
+});
 
 /* Order for the CLOBBERs/USEs of gpr_save.  */
 static const unsigned gpr_save_reg_order[] = {

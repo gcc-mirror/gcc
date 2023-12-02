@@ -350,7 +350,7 @@ struct attrib
 };
 
 /* Table of machine-independent internal attributes.  */
-extern const struct attribute_spec gnat_internal_attribute_table[];
+extern const struct scoped_attribute_specs gnat_internal_attribute_table;
 
 /* Define the entries in the standard data array.  */
 enum standard_datatypes

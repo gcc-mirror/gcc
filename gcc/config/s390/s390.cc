@@ -1303,7 +1303,7 @@ s390_handle_string_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-static const struct attribute_spec s390_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (s390_attribute_table, {
   { "hotpatch", 2, 2, true, false, false, false,
     s390_handle_hotpatch_attribute, NULL },
   { "s390_vector_bool", 0, 0, false, true, false, true,
@@ -1319,11 +1319,8 @@ static const struct attribute_spec s390_attribute_table[] = {
   { "function_return_reg", 1, 1, true, false, false, false,
     s390_handle_string_attribute, NULL },
   { "function_return_mem", 1, 1, true, false, false, false,
-    s390_handle_string_attribute, NULL },
-
-  /* End element.  */
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+    s390_handle_string_attribute, NULL }
+});
 
 /* Return the alignment for LABEL.  We default to the -falign-labels
    value except for the literal pool base label.  */

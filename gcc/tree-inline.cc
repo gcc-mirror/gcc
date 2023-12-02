@@ -4098,17 +4098,16 @@ inline_forbidden_p (tree fndecl)
 static bool
 function_attribute_inlinable_p (const_tree fndecl)
 {
-  if (targetm.attribute_table)
+  for (auto scoped_attributes : targetm.attribute_table)
     {
       const_tree a;
 
       for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
 	{
 	  const_tree name = get_attribute_name (a);
-	  int i;
 
-	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)
-	    if (is_attribute_p (targetm.attribute_table[i].name, name))
+	  for (const attribute_spec &attribute : scoped_attributes->attributes)
+	    if (is_attribute_p (attribute.name, name))
 	      return targetm.function_attribute_inlinable_p (fndecl);
 	}
     }

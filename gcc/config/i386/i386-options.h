@@ -82,7 +82,7 @@ void ix86_function_specific_print (FILE *, int,
 				   struct cl_target_option *);
 bool ix86_valid_target_attribute_p (tree, tree, tree, int);
 
-extern const struct attribute_spec ix86_attribute_table[];
+extern const struct scoped_attribute_specs ix86_gnu_attribute_table;
 
 
 #endif  /* GCC_I386_OPTIONS_H */

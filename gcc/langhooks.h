@@ -532,9 +532,7 @@ struct lang_hooks
      table of attributes specific to the language, a table of
      attributes common to two or more languages (to allow easy
      sharing), and a table of attributes for checking formats.  */
-  const struct attribute_spec *attribute_table;
-  const struct attribute_spec *common_attribute_table;
-  const struct attribute_spec *format_attribute_table;
+  array_slice<const struct scoped_attribute_specs *const> attribute_table;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
 

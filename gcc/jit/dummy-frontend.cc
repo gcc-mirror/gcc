@@ -87,7 +87,7 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
 };
 
 /* Table of machine-independent attributes supported in libgccjit.  */
-const struct attribute_spec jit_attribute_table[] =
+static const attribute_spec jit_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -128,22 +128,36 @@ const struct attribute_spec jit_attribute_table[] =
   /* For internal use only.  The leading '*' both prevents its usage in
      source code and signals that it may be overridden by machine tables.  */
   { "*tm regparm",            0, 0, false, true, true, false,
-			      ignore_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      ignore_attribute, NULL }
+};
+
+static const scoped_attribute_specs jit_gnu_attribute_table =
+{
+  "gnu", jit_gnu_attributes
 };
 
 /* Give the specifications for the format attributes, used by C and all
    descendants.  */
 
-const struct attribute_spec jit_format_attribute_table[] =
+static const attribute_spec jit_format_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "format",                 3, 3, false, true,  true, false,
 			      handle_format_attribute, NULL },
   { "format_arg",             1, 1, false, true,  true, false,
-			      handle_format_arg_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      handle_format_arg_attribute, NULL }
+};
+
+static const scoped_attribute_specs jit_format_attribute_table =
+{
+  "gnu", jit_format_attributes
+};
+
+static const scoped_attribute_specs *const jit_attribute_table[] =
+{
+  &jit_gnu_attribute_table,
+  &jit_format_attribute_table
 };
 
 /* Attribute handlers.  */
@@ -719,10 +733,8 @@ jit_langhook_getdecls (void)
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
 
 /* Attribute hooks.  */
-#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE jit_attribute_table
-#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE jit_format_attribute_table
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE jit_attribute_table
 
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true

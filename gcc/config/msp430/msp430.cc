@@ -2057,7 +2057,7 @@ static const struct attribute_spec::exclusions attr_either_exclusions[] =
 #define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
 
 /* Table of MSP430-specific attributes.  */
-const struct attribute_spec msp430_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (msp430_attribute_table,
   {
     /* { name, min_num_args, max_num_args, decl_req, type_req, fn_type_req,
 	 affects_type_identity, handler, exclude } */
@@ -2075,10 +2075,8 @@ const struct attribute_spec msp430_attribute_table[] =
     { ATTR_UPPER,       0, 0, true,  false, false, false, msp430_section_attr,
       attr_upper_exclusions },
     { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
-      attr_either_exclusions },
-
-    { NULL,		0, 0, false, false, false, false, NULL,  NULL }
-  };
+      attr_either_exclusions }
+  });
 
 #undef TARGET_HANDLE_GENERIC_ATTRIBUTE
 #define TARGET_HANDLE_GENERIC_ATTRIBUTE msp430_handle_generic_attribute

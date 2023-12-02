@@ -332,7 +332,7 @@ static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 static const char *arm_identify_fpu_from_isa (sbitmap);
 
 /* Table of machine attributes.  */
-static const struct attribute_spec arm_attribute_table[] =
+static const attribute_spec arm_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -380,8 +380,17 @@ static const struct attribute_spec arm_attribute_table[] =
     arm_handle_cmse_nonsecure_entry, NULL },
   { "cmse_nonsecure_call", 0, 0, false, false, false, true,
     arm_handle_cmse_nonsecure_call, NULL },
-  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
+  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL }
+};
+
+static const scoped_attribute_specs arm_gnu_attribute_table =
+{
+  "gnu", arm_gnu_attributes
+};
+
+static const scoped_attribute_specs *const arm_attribute_table[] =
+{
+  &arm_gnu_attribute_table
 };
 
 /* Initialize the GCC target structure.  */

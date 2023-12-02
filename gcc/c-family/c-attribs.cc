@@ -289,7 +289,7 @@ static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
-const struct attribute_spec c_common_attribute_table[] =
+const struct attribute_spec c_common_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -579,23 +579,31 @@ const struct attribute_spec c_common_attribute_table[] =
   { "fd_arg_write",       1, 1, false, true, true, false,
             handle_fd_arg_attribute, NULL},         
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
-			      handle_null_terminated_string_arg_attribute, NULL},
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      handle_null_terminated_string_arg_attribute, NULL}
+};
+
+const struct scoped_attribute_specs c_common_gnu_attribute_table =
+{
+  "gnu", c_common_gnu_attributes
 };
 
 /* Give the specifications for the format attributes, used by C and all
    descendants.
 
    Current list of processed format attributes: format, format_arg.  */
-const struct attribute_spec c_common_format_attribute_table[] =
+const struct attribute_spec c_common_format_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "format",                 3, 3, false, true,  true, false,
 			      handle_format_attribute, NULL },
   { "format_arg",             1, 1, false, true,  true, false,
-			      handle_format_arg_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      handle_format_arg_attribute, NULL }
+};
+
+const struct scoped_attribute_specs c_common_format_attribute_table =
+{
+  "gnu", c_common_format_attributes
 };
 
 /* Returns TRUE iff the attribute indicated by ATTR_ID takes a plain

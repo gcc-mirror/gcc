@@ -821,8 +821,8 @@ enum conversion_safety {
 extern struct visibility_flags visibility_options;
 
 /* Attribute table common to the C front ends.  */
-extern const struct attribute_spec c_common_attribute_table[];
-extern const struct attribute_spec c_common_format_attribute_table[];
+extern const struct scoped_attribute_specs c_common_gnu_attribute_table;
+extern const struct scoped_attribute_specs c_common_format_attribute_table;
 
 /* Pointer to function to lazily generate the VAR_DECL for __FUNCTION__ etc.
    ID is the identifier to use, NAME is the string.

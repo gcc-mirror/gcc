@@ -358,7 +358,7 @@ static bool ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
 
 
 /* Table of valid machine attributes.  */
-static const struct attribute_spec ia64_attribute_table[] =
+static const attribute_spec ia64_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -370,8 +370,17 @@ static const struct attribute_spec ia64_attribute_table[] =
     ia64_vms_common_object_attribute, NULL },
 #endif
   { "version_id",      1, 1, true, false, false, false,
-    ia64_handle_version_id_attribute, NULL },
-  { NULL,	       0, 0, false, false, false, false, NULL, NULL }
+    ia64_handle_version_id_attribute, NULL }
+};
+
+static const scoped_attribute_specs ia64_gnu_attribute_table =
+{
+  "gnu", ia64_gnu_attributes
+};
+
+static const scoped_attribute_specs *const ia64_attribute_table[] =
+{
+  &ia64_gnu_attribute_table
 };
 
 /* Initialize the GCC target structure.  */
