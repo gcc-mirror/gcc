@@ -438,6 +438,7 @@ run_rust_tests ()
 {
   // Call tests for the rust frontend here
   rust_input_source_test ();
+  rust_nfc_qc_test ();
   rust_utf8_normalize_test ();
   rust_punycode_encode_test ();
   rust_cfg_parser_test ();

@@ -40,6 +40,7 @@ struct Codepoint
   static Codepoint eof () { return Codepoint (UINT32_MAX); }
   bool is_eof () const { return value == UINT32_MAX; }
   bool is_ascii () const { return value <= MAX_ASCII_CODEPOINT; }
+  bool is_supplementary_character () const { return value > 0xFFFF; }
 
   // Returns a C++ string containing string value of codepoint.
   std::string as_string ();

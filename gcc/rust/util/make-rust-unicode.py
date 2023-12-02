@@ -250,6 +250,30 @@ def write_numeric() -> None:
     print("}};")
 
 
+def write_nfc_qc():
+    print(
+        "const std::array<std::pair<uint32_t, uint32_t>, {}> NFC_QC_NO_RANGES = {{{{".format(
+            len(nfc_qc_no_ranges)
+        )
+    )
+    print("  // clang-format off")
+    for r in nfc_qc_no_ranges:
+        print("  {{{:#06x}, {:#06x}}},".format(r[0], r[1]))
+    print("  // clang-format on")
+    print("}};")
+
+    print(
+        "const std::array<std::pair<uint32_t, uint32_t>, {}> NFC_QC_MAYBE_RANGES = {{{{".format(
+            len(nfc_qc_maybe_ranges)
+        )
+    )
+    print("  // clang-format off")
+    for r in nfc_qc_maybe_ranges:
+        print("  {{{:#06x}, {:#06x}}},".format(r[0], r[1]))
+    print("  // clang-format on")
+    print("}};")
+
+
 def main() -> None:
     if len(sys.argv) != 4:
         print("too few arguments", file=sys.stderr)
@@ -265,13 +289,12 @@ def main() -> None:
     print(COPYRIGHT)
     print()
 
-    print('#include "rust-system.h"')
-    print()
-    print("namespace Rust {")
-    print()
+    print('#include "rust-system.h"\n')
+    print("namespace Rust {\n")
     print("const uint32_t NUM_ALPHABETIC_RANGES = {};".format(len(alphabetic_ranges)))
-    print("const uint32_t NUM_NUMERIC_CODEPOINTS = {};".format(len(numeric_codepoints)))
-    print()
+    print(
+        "const uint32_t NUM_NUMERIC_CODEPOINTS = {};\n".format(len(numeric_codepoints))
+    )
 
     write_decomposition()
     print()
@@ -283,8 +306,8 @@ def main() -> None:
     print()
     write_numeric()
     print()
-
-    # TODO: write NFC_QC table
+    write_nfc_qc()
+    print()
 
     print("} // namespace Rust")
 
