@@ -68,11 +68,30 @@ is_ascii_only (const std::string &str);
 bool
 is_numeric (uint32_t codepoint);
 
+bool
+is_nfc_qc_no (uint32_t codepoint);
+
+bool
+is_nfc_qc_maybe (uint32_t codepoint);
+
+enum class QuickCheckResult
+{
+  YES,
+  NO,
+  MAYBE
+};
+
+QuickCheckResult
+nfc_quick_check (const std::vector<Codepoint> &s);
+
 } // namespace Rust
 
 #if CHECKING_P
 
 namespace selftest {
+
+void
+rust_nfc_qc_test ();
 
 void
 rust_utf8_normalize_test ();

@@ -39,75 +39,27 @@ const uint32_t L_COUNT = 19, V_COUNT = 21, T_COUNT = 28;
 const uint32_t N_COUNT = V_COUNT * T_COUNT;
 const uint32_t S_COUNT = L_COUNT * N_COUNT;
 
+// Check if the codepoint is in any of the ranges (half-open intervals [a,b)).
 template <std::size_t SIZE>
-int64_t
+bool
 binary_search_ranges (
-  // FIXME: use binray search function from <algorithm>
   const std::array<std::pair<uint32_t, uint32_t>, SIZE> &ranges,
   uint32_t target_cp)
 {
-  if (SIZE == 0)
-    return -1;
-
-  uint32_t low, high, mid;
-  uint32_t start, end;
-  low = 0;
-  high = SIZE - 1;
-  mid = (low + high) / 2;
-  while (high - low > 1)
-    {
-      start = ranges[mid].first;
-      end = ranges[mid].second;
-      if (start <= target_cp && target_cp < end)
-	{
-	  return mid;
-	}
-      else if (end <= target_cp)
-	low = mid + 1;
-      else
-	high = mid - 1;
-      mid = (low + high) / 2;
-    }
-
-  if (ranges[mid].first <= target_cp && target_cp < ranges[mid].second)
-    return mid;
+  auto it = std::lower_bound (ranges.begin (), ranges.end (), target_cp,
+			      [] (const std::pair<uint32_t, uint32_t> &a,
+				  uint32_t b) { return a.second <= b; });
+  if (it == ranges.end ())
+    return false;
   else
-    return -1;
-}
-
-template <std::size_t SIZE>
-int64_t
-binary_search_sorted_array (const std::array<uint32_t, SIZE> &array,
-			    uint32_t target)
-{
-  // FIXME: use binray search function from <algorithm>
-  if (SIZE == 0)
-    return -1;
-
-  uint32_t low, high, mid;
-  low = 0;
-  high = SIZE;
-  mid = (low + high) / 2;
-  while (high - low > 1)
-    {
-      if (array[mid] <= target)
-	low = mid;
-      else
-	high = mid;
-      mid = (low + high) / 2;
-    }
-
-  if (array[mid] == target)
-    return mid;
-  else
-    return -1;
+    return it->first <= target_cp && target_cp < it->second;
 }
 
 int
 lookup_cc (codepoint_t c)
 {
-  auto it = Rust::CCC_TABLE.find (c.value);
-  if (it != Rust::CCC_TABLE.end ())
+  auto it = CCC_TABLE.find (c.value);
+  if (it != CCC_TABLE.end ())
     return it->second;
   else
     // Starter. Returns zero.
@@ -289,10 +241,44 @@ recomp (string_t s)
   return buf;
 }
 
-string_t
-nfc_normalize (string_t s)
+// see https://unicode.org/reports/tr15/#Detecting_Normalization_Forms
+QuickCheckResult
+nfc_quick_check (const string_t &s)
 {
-  // TODO: Quick Check
+  int last_canonical_class = 0;
+  QuickCheckResult res = QuickCheckResult::YES;
+
+  for (unsigned long i = 0; i < s.size (); i++)
+    {
+      codepoint_t c = s[i];
+
+      if (c.is_supplementary_character ())
+	i++;
+
+      int canonical_class = lookup_cc (c);
+      if (last_canonical_class > canonical_class && canonical_class != 0)
+	return QuickCheckResult::NO;
+
+      if (is_nfc_qc_no (c.value))
+	return QuickCheckResult::NO;
+
+      if (is_nfc_qc_maybe (c.value))
+	res = QuickCheckResult::MAYBE;
+
+      last_canonical_class = canonical_class;
+    }
+  return res;
+}
+
+string_t
+nfc_normalize (const string_t &s)
+{
+  if (nfc_quick_check (s) == QuickCheckResult::YES)
+    return s;
+
+  // TODO: optimize normalization.
+  // i.e. only normalize a limited area around MAYBE character, instead of
+  // performing complete normlization of the entire string
 
   // decompose
   string_t d = decomp_cano (s);
@@ -312,21 +298,26 @@ Utf8String::nfc_normalize () const
 bool
 is_alphabetic (uint32_t codepoint)
 {
-  int64_t res = binary_search_ranges (ALPHABETIC_RANGES, codepoint);
-  if (res < 0)
-    return false;
-  else
-    return true;
+  return binary_search_ranges (ALPHABETIC_RANGES, codepoint);
 }
 
 bool
 is_numeric (uint32_t codepoint)
 {
-  int64_t res = binary_search_sorted_array (NUMERIC_CODEPOINTS, codepoint);
-  if (res < 0)
-    return false;
-  else
-    return true;
+  return std::binary_search (NUMERIC_CODEPOINTS.begin (),
+			     NUMERIC_CODEPOINTS.end (), codepoint);
+}
+
+bool
+is_nfc_qc_maybe (uint32_t codepoint)
+{
+  return binary_search_ranges (NFC_QC_MAYBE_RANGES, codepoint);
+}
+
+bool
+is_nfc_qc_no (uint32_t codepoint)
+{
+  return binary_search_ranges (NFC_QC_NO_RANGES, codepoint);
 }
 
 bool
@@ -343,6 +334,18 @@ is_ascii_only (const std::string &str)
 #if CHECKING_P
 
 namespace selftest {
+
+void
+rust_nfc_qc_test ()
+{
+  ASSERT_EQ (Rust::nfc_quick_check ({0x1e0a /* NFC_QC_YES */}),
+	     Rust::QuickCheckResult::YES);
+  ASSERT_EQ (Rust::nfc_quick_check (
+	       {0x1e0a /* NFC_QC_YES */, 0x0323 /* NFC_QC_MAYBE */}),
+	     Rust::QuickCheckResult::MAYBE);
+  ASSERT_EQ (Rust::nfc_quick_check ({0x0340 /* NFC_QC_NO */}),
+	     Rust::QuickCheckResult::NO);
+}
 
 void
 assert_normalize (const std::vector<Rust::Codepoint> origin,
