@@ -987,11 +987,11 @@ public:
 
     /* Determine the demand info of the RVV insn.  */
     m_max_sew = get_max_int_sew ();
-    unsigned demand_flags = 0;
+    unsigned dflags = 0;
     if (vector_config_insn_p (insn->rtl ()))
       {
-	demand_flags |= demand_flags::DEMAND_AVL_P;
-	demand_flags |= demand_flags::DEMAND_RATIO_P;
+	dflags |= demand_flags::DEMAND_AVL_P;
+	dflags |= demand_flags::DEMAND_RATIO_P;
       }
     else
       {
@@ -1006,39 +1006,39 @@ public:
 		   available.
 		 */
 		if (has_non_zero_avl ())
-		  demand_flags |= demand_flags::DEMAND_NON_ZERO_AVL_P;
+		  dflags |= demand_flags::DEMAND_NON_ZERO_AVL_P;
 		else
-		  demand_flags |= demand_flags::DEMAND_AVL_P;
+		  dflags |= demand_flags::DEMAND_AVL_P;
 	      }
 	    else
-	      demand_flags |= demand_flags::DEMAND_AVL_P;
+	      dflags |= demand_flags::DEMAND_AVL_P;
 	  }
 
 	if (get_attr_ratio (insn->rtl ()) != INVALID_ATTRIBUTE)
-	  demand_flags |= demand_flags::DEMAND_RATIO_P;
+	  dflags |= demand_flags::DEMAND_RATIO_P;
 	else
 	  {
 	    if (scalar_move_insn_p (insn->rtl ()) && m_ta)
 	      {
-		demand_flags |= demand_flags::DEMAND_GE_SEW_P;
+		dflags |= demand_flags::DEMAND_GE_SEW_P;
 		m_max_sew = get_attr_type (insn->rtl ()) == TYPE_VFMOVFV
 			      ? get_max_float_sew ()
 			      : get_max_int_sew ();
 	      }
 	    else
-	      demand_flags |= demand_flags::DEMAND_SEW_P;
+	      dflags |= demand_flags::DEMAND_SEW_P;
 
 	    if (!ignore_vlmul_insn_p (insn->rtl ()))
-	      demand_flags |= demand_flags::DEMAND_LMUL_P;
+	      dflags |= demand_flags::DEMAND_LMUL_P;
 	  }
 
 	if (!m_ta)
-	  demand_flags |= demand_flags::DEMAND_TAIL_POLICY_P;
+	  dflags |= demand_flags::DEMAND_TAIL_POLICY_P;
 	if (!m_ma)
-	  demand_flags |= demand_flags::DEMAND_MASK_POLICY_P;
+	  dflags |= demand_flags::DEMAND_MASK_POLICY_P;
       }
 
-    normalize_demand (demand_flags);
+    normalize_demand (dflags);
 
     /* Optimize AVL from the vsetvl instruction.  */
     insn_info *def_insn = extract_single_source (get_avl_def ());
