@@ -12,6 +12,11 @@ TEST=all-gcc
 # supply an absolute path.
 GCC_SRC_DIR=../../gcc
 
+# Define this to ,m2 if you want to build Modula-2.  Modula-2 builds target
+# objects during all-gcc, so it can only be included if you've installed
+# binutils (or an equivalent) for each target.
+OPT_IN_LANGUAGES=
+
 # Use -j / -l make arguments and nice to assure a smooth resource-efficient
 # load on the build machine, e.g. for 24 cores:
 # svn co svn://gcc.gnu.org/svn/gcc/branches/foo-branch gcc
@@ -128,17 +133,23 @@ $(LIST): make-log-dir
 		TGT=`echo $@ | awk 'BEGIN { FS = "OPT" }; { print $$1 }'` &&			\
 		TGT=`$(GCC_SRC_DIR)/config.sub $$TGT` &&					\
 		case $$TGT in									\
-			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix* | bpf-*-*)			\
+			bpf-*-*)								\
 				ADDITIONAL_LANGUAGES="";					\
 				;;								\
-			*)									\
+			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)			\
+				ADDITIONAL_LANGUAGES=",fortran";				\
+				;;								\
+			mmix-*-*)								\
 				ADDITIONAL_LANGUAGES=",go";					\
+				;;								\
+			*)									\
+				ADDITIONAL_LANGUAGES=",fortran,go";				\
 				;;								\
 		esac &&										\
 		$(GCC_SRC_DIR)/configure							\
 			--target=$(subst SCRIPTS,`pwd`/../scripts/,$(subst OPT,$(empty) -,$@))	\
 			--enable-werror-always ${host_options}					\
-			--enable-languages=all,ada$$ADDITIONAL_LANGUAGES;			\
+			--enable-languages=c,ada,c++,d,lto,objc,obj-c++,rust$$ADDITIONAL_LANGUAGES$(OPT_IN_LANGUAGES); \
 	) > log/$@-config.out 2>&1
 
 $(LOGFILES) : log/%-make.out : %
