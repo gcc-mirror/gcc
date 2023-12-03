@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-options "-Os -mh -mint32 -w" }  */
+/* { dg-options "-Os -mh -mint32 -w -fpermissive" }  */
 
  typedef unsigned short __u16;
  typedef __signed__ int __s32;
