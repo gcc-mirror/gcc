@@ -443,6 +443,8 @@ public:
   // Returns whether the self-param has a valid lifetime.
   bool has_lifetime () const { return !lifetime.is_error (); }
 
+  const Lifetime &get_lifetime () const { return lifetime; }
+
   // Returns whether the self-param is in an error state.
   bool is_error () const { return self_kind == ImplicitSelfKind::NONE; }
 
