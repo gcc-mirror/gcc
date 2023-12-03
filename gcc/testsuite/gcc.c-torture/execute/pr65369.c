@@ -6,7 +6,7 @@ static const char data[] =
   "123456789012345678901234567890";
 
 __attribute__ ((noinline))
-static void foo (const unsigned int *buf)
+static void foo (const uint32_t *buf)
 {
   if (__builtin_memcmp (buf, data, 64))
     __builtin_abort ();
