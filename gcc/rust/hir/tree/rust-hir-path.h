@@ -218,6 +218,10 @@ public:
   std::string as_string () const;
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; }
+  const std::vector<Lifetime> &get_lifetime_args () const
+  {
+    return lifetime_args;
+  }
 
   std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
 
