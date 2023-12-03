@@ -442,14 +442,9 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       root_tyty = lookup;
 
       // this enforces the proper get_segments checks to take place
-      bool is_adt = root_tyty->get_kind () == TyTy::TypeKind::ADT;
-      if (is_adt)
-	{
-	  const TyTy::ADTType &adt
-	    = *static_cast<const TyTy::ADTType *> (root_tyty);
-	  if (adt.is_enum ())
-	    return root_tyty;
-	}
+      auto *maybe_adt = root_tyty->try_as<const TyTy::ADTType> ();
+      if (maybe_adt && maybe_adt->is_enum ())
+	return root_tyty;
     }
 
   return root_tyty;
