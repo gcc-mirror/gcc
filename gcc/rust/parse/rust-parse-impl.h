@@ -4158,11 +4158,11 @@ Parser<ManagedTokenSource>::lifetime_from_token (const_TokenPtr tok)
   location_t locus = tok->get_locus ();
   std::string lifetime_ident = tok->get_str ();
 
-  if (lifetime_ident == "'static")
+  if (lifetime_ident == "static")
     {
       return AST::Lifetime (AST::Lifetime::STATIC, "", locus);
     }
-  else if (lifetime_ident == "'_")
+  else if (lifetime_ident == "_")
     {
       return AST::Lifetime (AST::Lifetime::WILDCARD, "", locus);
     }
