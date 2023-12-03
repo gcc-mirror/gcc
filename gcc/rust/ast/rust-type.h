@@ -547,7 +547,7 @@ public:
 
   // Constructor
   ReferenceType (bool is_mut, std::unique_ptr<TypeNoBounds> type_no_bounds,
-		 location_t locus, Lifetime lifetime = Lifetime::error ())
+		 location_t locus, Lifetime lifetime = Lifetime::elided ())
     : lifetime (std::move (lifetime)), has_mut (is_mut),
       type (std::move (type_no_bounds)), locus (locus)
   {}

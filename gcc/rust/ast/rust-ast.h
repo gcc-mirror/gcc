@@ -1512,6 +1512,8 @@ public:
   // Creates an "error" lifetime.
   static Lifetime error () { return Lifetime (NAMED, ""); }
 
+  static Lifetime elided () { return Lifetime (WILDCARD, ""); }
+
   // Returns true if the lifetime is in an error state.
   bool is_error () const
   {
