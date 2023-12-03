@@ -515,12 +515,27 @@
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 2"))
 	 (const_string "no")
 
-         (and (eq_attr "group_overlap" "W42,W43")
+         (and (eq_attr "group_overlap" "W42")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4"))
 	 (const_string "no")
 
-         (and (eq_attr "group_overlap" "W84,W86,W87")
+         (and (eq_attr "group_overlap" "W84")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8"))
+	 (const_string "no")
+
+         ;; According to RVV ISA:
+         ;; The destination EEW is greater than the source EEW, the source EMUL is at least 1,
+	 ;; and the overlap is in the highest-numbered part of the destination register group
+	 ;; (e.g., when LMUL=8, vzext.vf4 v0, v6 is legal, but a source of v0, v2, or v4 is not).
+	 ;; So the source operand should have LMUL >= 1.
+         (and (eq_attr "group_overlap" "W43")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4
+			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
+	 (const_string "no")
+
+         (and (eq_attr "group_overlap" "W86,W87")
+	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8
+			   && riscv_get_v_regno_alignment (GET_MODE (operands[3])) >= 1"))
 	 (const_string "no")
         ]
        (const_string "yes")))
