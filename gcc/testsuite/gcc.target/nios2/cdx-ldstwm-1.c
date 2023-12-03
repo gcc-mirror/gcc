@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O3 -fomit-frame-pointer -funroll-all-loops -finline-functions -march=r2 -mcdx -w" } */
+/* { dg-options "-O3 -fomit-frame-pointer -funroll-all-loops -finline-functions -march=r2 -mcdx -w -fpermissive" } */
 
 /* Based on gcc.c-torture/compile/920501-23.c.
    This test used to result in assembler errors with R2 CDX because of
