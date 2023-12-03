@@ -177,7 +177,7 @@ public:
   virtual BaseType *clone () const = 0;
 
   // Check if TyTy::BaseType is of a specific type.
-  template <typename T>[[nodiscard]] bool is () const
+  template <typename T> WARN_UNUSED_RESULT bool is () const
   {
     static_assert (std::is_base_of<BaseType, T>::value,
 		   "Can only safely cast to TyTy types.");
