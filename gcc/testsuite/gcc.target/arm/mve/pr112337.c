@@ -5,8 +5,8 @@
 #include <arm_mve.h>
 
 void g(int32x4_t);
-void f(int, int, int, short, int *p) {
-  int *bias = p;
+void f(int, int, int, short, int32_t *p) {
+  int32_t *bias = p;
   for (;;) {
     int32x4_t d = vldrwq_s32 (p);
     bias += 4;
