@@ -63,7 +63,8 @@ class ASTLoweringType : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Type *translate (AST::Type *type);
+  static HIR::Type *translate (AST::Type *type,
+			       bool default_to_static_lifetime = false);
 
   void visit (AST::BareFunctionType &fntype) override;
   void visit (AST::TupleType &tuple) override;
@@ -79,7 +80,14 @@ public:
   void visit (AST::TraitObjectType &type) override;
 
 private:
-  ASTLoweringType () : ASTLoweringBase (), translated (nullptr) {}
+  ASTLoweringType (bool default_to_static_lifetime)
+    : ASTLoweringBase (),
+      default_to_static_lifetime (default_to_static_lifetime),
+      translated (nullptr)
+  {}
+
+  /** Used when compiling const and static items. */
+  bool default_to_static_lifetime;
 
   HIR::Type *translated;
 };

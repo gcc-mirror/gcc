@@ -264,7 +264,8 @@ protected:
   Analysis::Mappings *mappings;
   Analysis::BuiltinAttributeMappings *attr_mappings;
 
-  HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime);
+  HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime,
+				bool default_to_static_lifetime = false);
 
   HIR::LoopLabel lower_loop_label (AST::LoopLabel &loop_label);
 

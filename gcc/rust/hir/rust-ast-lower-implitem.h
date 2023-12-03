@@ -88,7 +88,8 @@ public:
   {
     HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
-    HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+    HIR::Type *type
+      = ASTLoweringType::translate (constant.get_type ().get (), true);
     HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
 
     auto crate_num = mappings->get_current_crate ();
