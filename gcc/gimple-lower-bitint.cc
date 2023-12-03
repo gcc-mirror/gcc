@@ -3911,15 +3911,18 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 
   tree type0 = TREE_TYPE (arg0);
   tree type1 = TREE_TYPE (arg1);
-  if (TYPE_PRECISION (type0) < prec3)
+  int prec5 = prec3;
+  if (bitint_precision_kind (prec5) < bitint_prec_large)
+    prec5 = MAX (TYPE_PRECISION (type0), TYPE_PRECISION (type1));
+  if (TYPE_PRECISION (type0) < prec5)
     {
-      type0 = build_bitint_type (prec3, TYPE_UNSIGNED (type0));
+      type0 = build_bitint_type (prec5, TYPE_UNSIGNED (type0));
       if (TREE_CODE (arg0) == INTEGER_CST)
 	arg0 = fold_convert (type0, arg0);
     }
-  if (TYPE_PRECISION (type1) < prec3)
+  if (TYPE_PRECISION (type1) < prec5)
     {
-      type1 = build_bitint_type (prec3, TYPE_UNSIGNED (type1));
+      type1 = build_bitint_type (prec5, TYPE_UNSIGNED (type1));
       if (TREE_CODE (arg1) == INTEGER_CST)
 	arg1 = fold_convert (type1, arg1);
     }
