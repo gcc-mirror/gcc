@@ -1561,23 +1561,23 @@ for riscv*-*-elf*.  The accepted values and meanings are given below.
 Every config is constructed with four components: architecture string, ABI,
 reuse rule with architecture string and reuse rule with sub-extension.
 
-Example 1: Add multi-lib suppport for rv32i with ilp32.
+Example 1: Add multi-lib support for rv32i with ilp32.
 @smallexample
 rv32i-ilp32--
 @end smallexample
 
-Example 2: Add multi-lib suppport for rv32i with ilp32 and rv32imafd with ilp32.
+Example 2: Add multi-lib support for rv32i with ilp32 and rv32imafd with ilp32.
 @smallexample
 rv32i-ilp32--;rv32imafd-ilp32--
 @end smallexample
 
-Example 3: Add multi-lib suppport for rv32i with ilp32; rv32im with ilp32 and
+Example 3: Add multi-lib support for rv32i with ilp32; rv32im with ilp32 and
 rv32ic with ilp32 will reuse this multi-lib set.
 @smallexample
 rv32i-ilp32-rv32im-c
 @end smallexample
 
-Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
+Example 4: Add multi-lib support for rv64ima with lp64; rv64imaf with lp64,
 rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 @smallexample
 rv64ima-lp64--f,c,fc
@@ -1588,13 +1588,13 @@ rv64ima-lp64--f,c,fc
 config options, @var{val} is a comma separated list of possible code model,
 currently we support medlow and medany.
 
-Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 5: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow
 @end smallexample
 
-Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+Example 6: Add multi-lib support for rv64ima with lp64; rv64ima with lp64 and
 medlow code model; rv64ima with lp64 and medany code model
 @smallexample
 rv64ima-lp64--;--cmodel=medlow,medany
@@ -1723,7 +1723,7 @@ libraries.  This option is only supported on Epiphany targets.
 
 @item --with-fpmath=@var{isa}
 This options sets @option{-mfpmath=sse} by default and specifies the default
-ISA for floating-point arithmetics.  You can select either @samp{sse} which
+ISA for floating-point arithmetic.  You can select either @samp{sse} which
 enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
 This option is only supported on i386 and x86-64 targets.
 
