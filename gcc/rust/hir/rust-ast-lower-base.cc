@@ -530,16 +530,24 @@ ASTLoweringBase::visit (AST::SelfParam &param)
 {}
 
 HIR::Lifetime
-ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime)
+ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime,
+				 bool default_to_static_lifetime)
 {
+  auto lifetime_type = lifetime.get_lifetime_type ();
+  if (lifetime_type == AST::Lifetime::WILDCARD && default_to_static_lifetime)
+    {
+      // If compiling in a static context.
+      lifetime_type = AST::Lifetime::STATIC;
+    }
+
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   mappings->insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
 
-  return HIR::Lifetime (mapping, lifetime.get_lifetime_type (),
-			lifetime.get_lifetime_name (), lifetime.get_locus ());
+  return HIR::Lifetime (mapping, lifetime_type, lifetime.get_lifetime_name (),
+			lifetime.get_locus ());
 }
 
 HIR::LoopLabel
