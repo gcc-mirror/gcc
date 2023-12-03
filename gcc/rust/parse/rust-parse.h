@@ -303,7 +303,7 @@ private:
   std::vector<AST::Lifetime> parse_lifetime_bounds ();
   template <typename EndTokenPred>
   std::vector<AST::Lifetime> parse_lifetime_bounds (EndTokenPred is_end_token);
-  AST::Lifetime parse_lifetime ();
+  AST::Lifetime parse_lifetime (bool allow_elided);
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
