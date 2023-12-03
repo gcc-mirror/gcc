@@ -3,6 +3,9 @@
 /* { dg-skip-if "PIC not available for ARC6xx" { arc6xx } } */
 /* { dg-options "-mno-sdata -w -Os -fpic" } */
 
+void e (char);
+
+void 
 a() {
   char *b = "";
   char c;
