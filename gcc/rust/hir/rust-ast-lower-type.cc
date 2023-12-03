@@ -199,6 +199,13 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
 {
   bool is_variadic = false;
   std::vector<HIR::LifetimeParam> lifetime_params;
+  for (auto &lifetime_param : fntype.get_for_lifetimes ())
+    {
+      auto generic_param = ASTLowerGenericParam::translate (&lifetime_param);
+      lifetime_params.push_back (
+	*static_cast<HIR::LifetimeParam *> (generic_param));
+    }
+
   HIR::FunctionQualifiers qualifiers
     = lower_qualifiers (fntype.get_function_qualifiers ());
 
