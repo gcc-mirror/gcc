@@ -3470,8 +3470,6 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
       return AST::LifetimeParam::create_error ();
     }
   lexer.skip_token ();
-  /* TODO: does this always create a named lifetime? or can a different type
-   * be made? */
   AST::Lifetime lifetime (AST::Lifetime::NAMED, lifetime_tok->get_str (),
 			  lifetime_tok->get_locus ());
 
@@ -4141,10 +4139,9 @@ AST::Lifetime
 Parser<ManagedTokenSource>::parse_lifetime ()
 {
   const_TokenPtr lifetime_tok = lexer.peek_token ();
-  // create error lifetime if doesn't exist
   if (lifetime_tok->get_id () != LIFETIME)
     {
-      return AST::Lifetime::error ();
+      return AST::Lifetime::elided ();
     }
   lexer.skip_token ();
 
@@ -4164,6 +4161,7 @@ Parser<ManagedTokenSource>::lifetime_from_token (const_TokenPtr tok)
     }
   else if (lifetime_ident == "_")
     {
+      // Explicitly and implicitly elided lifetimes follow the same rules.
       return AST::Lifetime (AST::Lifetime::WILDCARD, "", locus);
     }
   else
@@ -7177,7 +7175,7 @@ tl::expected<std::unique_ptr<AST::Param>, ParseSelfError>
 Parser<ManagedTokenSource>::parse_self_param ()
 {
   bool has_reference = false;
-  AST::Lifetime lifetime = AST::Lifetime::error ();
+  AST::Lifetime lifetime = AST::Lifetime::elided ();
 
   location_t locus = lexer.peek_token ()->get_locus ();
 
@@ -9837,7 +9835,7 @@ std::unique_ptr<AST::ReferenceType>
 Parser<ManagedTokenSource>::parse_reference_type_inner (location_t locus)
 {
   // parse optional lifetime
-  AST::Lifetime lifetime = AST::Lifetime::error ();
+  AST::Lifetime lifetime = AST::Lifetime::elided ();
   if (lexer.peek_token ()->get_id () == LIFETIME)
     {
       lifetime = parse_lifetime ();
