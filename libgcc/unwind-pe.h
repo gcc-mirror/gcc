@@ -173,6 +173,8 @@ read_sleb128 (const unsigned char *p, _sleb128_t *val)
   return p;
 }
 
+extern _Unwind_Ptr _Unwind_gnu_Find_got (_Unwind_Ptr);
+
 /* Load an encoded value from memory at P.  The value is returned in VAL;
    The function returns P incremented past the value.  BASE is as given
    by base_of_encoded_value for this encoding in the appropriate context.  */
