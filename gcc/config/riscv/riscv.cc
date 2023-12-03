@@ -481,7 +481,6 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
-static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
 TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
@@ -2472,7 +2471,7 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
 
 /* Analyze src and emit const_poly_int mov sequence.  */
 
-static void
+void
 riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
 {
   poly_int64 value = rtx_to_poly_int64 (src);
@@ -2687,7 +2686,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	      else
 		result = gen_reg_rtx (smode);
 
-	      riscv_vector::emit_vec_extract (result, v, index + i);
+	      riscv_vector::emit_vec_extract (result, v,
+					      gen_int_mode (index + i, Pmode));
 
 	      if (i == 1)
 		{
