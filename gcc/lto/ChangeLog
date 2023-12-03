@@ -1,3 +1,16 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lto-lang.cc (lto_format_attribute_table): Change type to
+	scoped_attribute_specs, using...
+	(lto_format_attributes): ...this as the underlying array.
+	(lto_attribute_table): Change to an array of scoped_attribute_specs
+	pointers, using...
+	(lto_gnu_attributes, lto_gnu_attribute_table): ...these new globals
+	for the original array.  Include the format attributes.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Define.
+
 2023-11-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-lang.cc (flag_isoc2x): Rename to flag_isoc23.

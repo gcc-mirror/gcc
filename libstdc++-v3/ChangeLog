@@ -1,3 +1,8 @@
+2023-12-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* libsupc++/atexit_thread.cc [__GXX_WEAK__]: Add dynamic
+	detection of __cxa_thread_atexit_impl.
+
 2023-12-01  Jason Merrill  <jason@redhat.com>
 
 	* include/std/bit: Avoid builtins in requires-clauses.

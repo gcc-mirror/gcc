@@ -1,3 +1,142 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* attribs.cc (comp_type_attributes): Pass the full TREE_PURPOSE
+	to lookup_attribute_spec, rather than just the name.
+	(remove_attributes_matching): Likewise.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* attribs.cc (find_same_attribute): New function.
+	(decl_attributes, comp_type_attributes): Use it when looking
+	up one list's attributes in another list.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (GTFILES): Add attribs.cc.
+	* attribs.cc (gnu_namespace_cache): New variable.
+	(get_gnu_namespace): New function.
+	(lookup_attribute_spec): Use it instead of get_identifier ("gnu").
+	(get_attribute_namespace, attribs_cc_tests): Likewise.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* attribs.h (scoped_attribute_specs): New structure.
+	(register_scoped_attributes): Take a reference to a
+	scoped_attribute_specs instead of separate namespace and array
+	parameters.
+	* plugin.h (register_scoped_attributes): Likewise.
+	* attribs.cc (register_scoped_attributes): Likewise.
+	(attribute_tables): Change into an array of scoped_attribute_specs
+	pointers.  Reduce to 1 element for frontends and 1 element for targets.
+	(empty_attribute_table): Delete.
+	(check_attribute_tables): Update for changes to attribute_tables.
+	Use a hash_set to identify duplicates.
+	(handle_ignored_attributes_option): Update for above changes.
+	(init_attributes): Likewise.
+	(excl_pair): Delete.
+	(test_attribute_exclusions): Update for above changes.  Don't
+	enforce symmetry for standard attributes in the top-level namespace.
+	* langhooks-def.h (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Likewise.
+	(LANG_HOOKS_INITIALIZER): Update accordingly.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Define to an empty constructor.
+	* langhooks.h (lang_hooks::common_attribute_table): Delete.
+	(lang_hooks::format_attribute_table): Likewise.
+	(lang_hooks::attribute_table): Redefine to an array of
+	scoped_attribute_specs pointers.
+	* target-def.h (TARGET_GNU_ATTRIBUTES): New macro.
+	* target.def (attribute_spec): Redefine to return an array of
+	scoped_attribute_specs pointers.
+	* tree-inline.cc (function_attribute_inlinable_p): Update accordingly.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.cc (aarch64_attribute_table): Define using
+	TARGET_GNU_ATTRIBUTES.
+	* config/alpha/alpha.cc (vms_attribute_table): Likewise.
+	* config/avr/avr.cc (avr_attribute_table): Likewise.
+	* config/bfin/bfin.cc (bfin_attribute_table): Likewise.
+	* config/bpf/bpf.cc (bpf_attribute_table): Likewise.
+	* config/csky/csky.cc (csky_attribute_table): Likewise.
+	* config/epiphany/epiphany.cc (epiphany_attribute_table): Likewise.
+	* config/gcn/gcn.cc (gcn_attribute_table): Likewise.
+	* config/h8300/h8300.cc (h8300_attribute_table): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_attribute_table): Likewise.
+	* config/m32c/m32c.cc (m32c_attribute_table): Likewise.
+	* config/m32r/m32r.cc (m32r_attribute_table): Likewise.
+	* config/m68k/m68k.cc (m68k_attribute_table): Likewise.
+	* config/mcore/mcore.cc (mcore_attribute_table): Likewise.
+	* config/microblaze/microblaze.cc (microblaze_attribute_table):
+	Likewise.
+	* config/mips/mips.cc (mips_attribute_table): Likewise.
+	* config/msp430/msp430.cc (msp430_attribute_table): Likewise.
+	* config/nds32/nds32.cc (nds32_attribute_table): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_attribute_table): Likewise.
+	* config/riscv/riscv.cc (riscv_attribute_table): Likewise.
+	* config/rl78/rl78.cc (rl78_attribute_table): Likewise.
+	* config/rx/rx.cc (rx_attribute_table): Likewise.
+	* config/s390/s390.cc (s390_attribute_table): Likewise.
+	* config/sh/sh.cc (sh_attribute_table): Likewise.
+	* config/sparc/sparc.cc (sparc_attribute_table): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_attribute_table): Likewise.
+	* config/v850/v850.cc (v850_attribute_table): Likewise.
+	* config/visium/visium.cc (visium_attribute_table): Likewise.
+	* config/arc/arc.cc (arc_attribute_table): Likewise.  Move further
+	down file.
+	* config/arm/arm.cc (arm_attribute_table): Update for above changes,
+	using...
+	(arm_gnu_attributes, arm_gnu_attribute_table): ...these new globals.
+	* config/i386/i386-options.h (ix86_attribute_table): Delete.
+	(ix86_gnu_attribute_table): Declare.
+	* config/i386/i386-options.cc (ix86_attribute_table): Replace with...
+	(ix86_gnu_attributes, ix86_gnu_attribute_table): ...these two globals.
+	* config/i386/i386.cc (ix86_attribute_table): Define as an array of
+	scoped_attribute_specs pointers.
+	* config/ia64/ia64.cc (ia64_attribute_table): Update for above changes,
+	using...
+	(ia64_gnu_attributes, ia64_gnu_attribute_table): ...these new globals.
+	* config/rs6000/rs6000.cc (rs6000_attribute_table): Update for above
+	changes, using...
+	(rs6000_gnu_attributes, rs6000_gnu_attribute_table): ...these new
+	globals.
+
+2023-12-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/riscv/riscv-vsetvl.cc (csetvl_info::parse_insn): Rename
+	local variable from demand_flags to dflags, to avoid conflicting
+	with (enumeration) type of the same name.
+
+2023-12-02  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_is_odd_extraction):
+	Supplementary function prototype.
+	(loongarch_is_even_extraction): Adjust.
+	(loongarch_try_expand_lsx_vshuf_const): Adjust.
+	(loongarch_is_extraction_permutation): Adjust.
+	(loongarch_expand_vec_perm_const_2): Adjust.
+
+2023-12-02  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.md (v2di): Used to simplify the
+	following templates.
+	(popcount<mode>2): New.
+
+2023-12-02  Li Wei  <liwei@loongson.cn>
+
+	* config/loongarch/loongarch.h (CTZ_DEFINED_VALUE_AT_ZERO): Add
+	description.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Remove duplicate definition.
+
+2023-12-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112801
+	* config/riscv/vector.md: Add !TARGET_64BIT.
+
+2023-12-02  Pan Li  <pan2.li@intel.com>
+
+	PR target/112743
+	* config/riscv/riscv.cc (riscv_legitimize_move): Take the
+	exist (U *mode) and handle DFmode like DImode when EEW is
+	32bits for ZVE32F.
+
 2023-12-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-fold.h (range_compatible_p): Relocate.

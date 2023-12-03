@@ -1,3 +1,15 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (std_attribute_table): Declare.
+	* c-decl.cc (std_attribute_table): Change type to
+	scoped_attribute_specs, using...
+	(std_attributes): ...this as the underlying array.
+	(c_init_decl_processing): Remove call to register_scoped_attributes.
+	* c-objc-common.h (c_objc_attribute_table): New global.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Use it.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+
 2023-12-01  Florian Weimer  <fweimer@redhat.com>
 
 	PR other/44209

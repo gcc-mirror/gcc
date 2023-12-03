@@ -1,3 +1,16 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (c_common_attribute_table): Replace with...
+	(c_common_gnu_attribute_table): ...this.
+	(c_common_format_attribute_table): Change type to
+	scoped_attribute_specs.
+	* c-attribs.cc (c_common_attribute_table): Replace with...
+	(c_common_gnu_attributes, c_common_gnu_attribute_table): ...these
+	new globals.
+	(c_common_format_attribute_table): Change type to
+	scoped_attribute_specs, using...
+	(c_common_format_attributes): ...this as the underlying array.
+
 2023-12-01  Florian Weimer  <fweimer@redhat.com>
 
 	* c.opt (Wdeclaration-missing-parameter-type): New.

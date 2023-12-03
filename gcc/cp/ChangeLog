@@ -1,3 +1,17 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (cxx_attribute_table): Delete.
+	(cxx_gnu_attribute_table, std_attribute_table): Declare.
+	* cp-objcp-common.h (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+	(cp_objcp_attribute_table): New table.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Redefine.
+	* tree.cc (cxx_attribute_table): Replace with...
+	(cxx_gnu_attributes, cxx_gnu_attribute_table): ...these globals.
+	(std_attribute_table): Change type to scoped_attribute_specs, using...
+	(std_attributes): ...this as the underlying array.
+	(init_tree): Remove call to register_scoped_attributes.
+
 2023-12-01  Jason Merrill  <jason@redhat.com>
 
 	* mangle.cc (write_type): Mangle placeholder as its template.

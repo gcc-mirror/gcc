@@ -1,3 +1,13 @@
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/gigi.h (gnat_internal_attribute_table): Change
+	type to scoped_attribute_specs.
+	* gcc-interface/utils.cc (gnat_internal_attribute_table): Likewise,
+	using...
+	(gnat_internal_attributes): ...this as the underlying array.
+	* gcc-interface/misc.cc (gnat_attribute_table): New global.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Use it.
+
 2023-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* adaint.c [__APPLE__]: Include <signal.h>, <sys/time.h>.
