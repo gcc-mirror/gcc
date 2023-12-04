@@ -3739,7 +3739,6 @@ final_value_replacement_loop (class loop *loop)
     split_loop_exit_edge (exit);
 
   /* Set stmt insertion pointer.  All stmts are inserted before this point.  */
-  gimple_stmt_iterator gsi = gsi_after_labels (exit->dest);
 
   class loop *ex_loop
     = superloop_at_depth (loop,
@@ -3880,6 +3879,7 @@ final_value_replacement_loop (class loop *loop)
 	      gsi_next (&gsi2);
 	    }
 	}
+      gimple_stmt_iterator gsi = gsi_after_labels (exit->dest);
       gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
       if (dump_file)
 	{
