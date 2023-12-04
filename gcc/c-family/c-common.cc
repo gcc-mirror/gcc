@@ -2362,6 +2362,15 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
     return (unsignedp ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
 
+  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    {
+      tree type = TREE_VALUE (t);
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && bits == TYPE_PRECISION (type)
+	  && !!unsignedp == !!TYPE_UNSIGNED (type))
+	return type;
+    }
+
   if (bits <= TYPE_PRECISION (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
