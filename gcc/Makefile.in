@@ -3735,7 +3735,6 @@ distclean: clean lang.distclean
 	-rm -f testsuite/*.log testsuite/*.sum
 	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.cc
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
-	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f .gdbinit configargs.h
 	-rm -f gcov.pod
 # Delete po/*.gmo only if we are not building in the source directory.
@@ -4416,58 +4415,6 @@ check-parallel-% : site.exp
 	    touch $${rootme}/$(TESTSUITEDIR)/$(check_p_tool)-parallel/finished; \
 	  fi ; \
 	fi )
-
-# QMTest targets
-
-# The path to qmtest.
-QMTEST_PATH=qmtest
-
-# The flags to pass to qmtest.
-QMTESTFLAGS=
-
-# The flags to pass to "qmtest run".
-QMTESTRUNFLAGS=-f none --result-stream dejagnu_stream.DejaGNUStream
-
-# The command to use to invoke qmtest.
-QMTEST=${QMTEST_PATH} ${QMTESTFLAGS}
-
-# The tests (or suites) to run.
-QMTEST_GPP_TESTS=g++
-
-# The subdirectory of the OBJDIR that will be used to store the QMTest
-# test database configuration and that will be used for temporary
-# scratch space during QMTest's execution.
-QMTEST_DIR=qmtestsuite
-
-# Create the QMTest database configuration.
-${QMTEST_DIR} stamp-qmtest:
-	${QMTEST} -D ${QMTEST_DIR} create-tdb \
-	    -c gcc_database.GCCDatabase \
-	    -a srcdir=`cd ${srcdir}/testsuite && ${PWD_COMMAND}` && \
-	    $(STAMP) stamp-qmtest
-
-# Create the QMTest context file.
-${QMTEST_DIR}/context: stamp-qmtest
-	rm -f $@
-	echo "CompilerTable.languages=c cplusplus" >> $@
-	echo "CompilerTable.c_kind=GCC" >> $@
-	echo "CompilerTable.c_path=${objdir}/xgcc" >> $@
-	echo "CompilerTable.c_options=-B${objdir}/" >> $@
-	echo "CompilerTable.cplusplus_kind=GCC" >> $@
-	echo "CompilerTable.cplusplus_path=${objdir}/xg++" >> $@
-	echo "CompilerTable.cplusplus_options=-B${objdir}/" >> $@
-	echo "DejaGNUTest.target=${target_noncanonical}" >> $@
-
-# Run the G++ testsuite using QMTest.
-qmtest-g++: ${QMTEST_DIR}/context
-	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
-	   -o g++.qmr ${QMTEST_GPP_TESTS}
-
-# Use the QMTest GUI.
-qmtest-gui: ${QMTEST_DIR}/context
-	cd ${QMTEST_DIR} && ${QMTEST} gui -C context
-
-.PHONY: qmtest-g++
 
 # Run Paranoia on real.cc.
 
