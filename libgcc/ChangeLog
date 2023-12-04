@@ -1,3 +1,17 @@
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* unwind-pe.h (_Unwind_gnu_Find_got): Add prototype.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/rx/rx-abi-functions.c (__ltdf2, __gtdf2): Add prototype.
+	(__ledf2, __gedf2, __eqdf2, __nedf2): Likewise.
+	(__ltsf2, __gtsf2, __lesf2, __gesf2, __eqsf2, __nesf2): Likewise.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/frv/frvbegin.c (atexit): Add prototype.
+
 2023-12-01  Alexandre Oliva  <oliva@adacore.com>
 
 	* libgcc-std.ver.in (__hardcfr_check): Add to GCC_14.0.0.

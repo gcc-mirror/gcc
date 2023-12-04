@@ -1,3 +1,58 @@
+2023-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112406
+	* gcc.target/aarch64/pr112406.c (MagickPixelPacket): Add missing
+	semicolon.
+	(GetImageChannelMoments_image): Avoid using implicit int.
+	(SetMagickPixelPacket): Use void return type instead of implicit int.
+	(GetImageChannelMoments): Likewise.  Use __builtin_atan instead of
+	atan.
+
+2023-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112807
+	* gcc.dg/bitint-46.c: New test.
+
+2023-12-03  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/arm/mve/pr112337.c: Use int32_t instead of int.
+
+2023-12-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112743-1.c: Fix typo.
+	* gcc.target/riscv/rvv/base/pr112743-2.c: Ditto.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/gnu23-builtins-no-dfp-1.c: Add -fpermissive.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.c-torture/execute/pr65369.c: Fix type mismatch.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.c-torture/execute/comp-goto-1.c: Fix return value of main for
+	16 bit targets.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arc/lra-1.c: Fix missing prototypes and implicit
+	types in variable definitions.
+	* gcc.target/arc/pic-1.c: Similarly.
+	* gcc.target/arc/pr9001191897.c: Similarly.
+	* gcc.target/arc/pr9001195952.c: Add -fpermissive.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/nios2/cdx-ldstwm-1.c: Add -fpermissive.
+	* gcc.target/nios2/cdx-ldstwm-2.c: Add prototypes fro abort and exit.
+
+2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/h8300/pr58400.c: Add -fpermissive.
+	* gcc.target/h8300/pr17306-2.c: Add missing prototype.
+
 2023-12-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93762
