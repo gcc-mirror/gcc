@@ -7377,7 +7377,7 @@ extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
 extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
-				  unsigned short, bool);
+				  tree, bool);
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &);
 extern void cp_finish_omp_range_for (tree, tree);
@@ -7698,19 +7698,16 @@ extern void begin_else_clause			(tree);
 extern void finish_else_clause			(tree);
 extern void finish_if_stmt			(tree);
 extern tree begin_while_stmt			(void);
-extern void finish_while_stmt_cond	(tree, tree, bool, unsigned short,
-					 bool);
+extern void finish_while_stmt_cond	(tree, tree, bool, tree, bool);
 extern void finish_while_stmt			(tree);
 extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
-extern void finish_do_stmt		(tree, tree, bool, unsigned short,
-					 bool);
+extern void finish_do_stmt		(tree, tree, bool, tree, bool);
 extern tree finish_return_stmt			(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
-extern void finish_for_cond		(tree, tree, bool, unsigned short,
-					 bool);
+extern void finish_for_cond		(tree, tree, bool, tree, bool);
 extern void finish_for_expr			(tree, tree);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);

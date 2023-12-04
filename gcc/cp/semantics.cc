@@ -1166,7 +1166,7 @@ begin_while_stmt (void)
 
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
-			unsigned short unroll, bool novector)
+			tree unroll, bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&WHILE_COND (while_stmt), cond);
@@ -1184,8 +1184,7 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
 				      WHILE_COND (while_stmt),
 				      build_int_cst (integer_type_node,
 						     annot_expr_unroll_kind),
-				      build_int_cst (integer_type_node,
-						     unroll));
+				      unroll);
   if (novector && cond != error_mark_node)
     WHILE_COND (while_stmt) = build3 (ANNOTATE_EXPR,
 				      TREE_TYPE (WHILE_COND (while_stmt)),
@@ -1237,7 +1236,7 @@ finish_do_body (tree do_stmt)
    COND is as indicated.  */
 
 void
-finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll,
+finish_do_stmt (tree cond, tree do_stmt, bool ivdep, tree unroll,
 		bool novector)
 {
   cond = maybe_convert_cond (cond);
@@ -1254,7 +1253,7 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll,
   if (unroll && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_unroll_kind),
-		   build_int_cst (integer_type_node, unroll));
+		   unroll);
   if (novector && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
@@ -1357,7 +1356,8 @@ finish_init_stmt (tree for_stmt)
    FOR_STMT.  */
 
 void
-finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll, bool novector)
+finish_for_cond (tree cond, tree for_stmt, bool ivdep, tree unroll,
+		 bool novector)
 {
   cond = maybe_convert_cond (cond);
   finish_cond (&FOR_COND (for_stmt), cond);
@@ -1375,8 +1375,7 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, unsigned short unroll, bo
 				  FOR_COND (for_stmt),
 				  build_int_cst (integer_type_node,
 						 annot_expr_unroll_kind),
-				  build_int_cst (integer_type_node,
-						 unroll));
+				  unroll);
   if (novector && cond != error_mark_node)
     FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),

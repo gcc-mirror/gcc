@@ -18418,8 +18418,7 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 	else
 	  {
-	    unsigned short unroll = (RANGE_FOR_UNROLL (t)
-				     ? tree_to_uhwi (RANGE_FOR_UNROLL (t)) : 0);
+	    tree unroll = RECUR (RANGE_FOR_UNROLL (t));
 	    stmt = cp_convert_range_for (stmt, decl, expr, decomp,
 					 RANGE_FOR_IVDEP (t), unroll,
 					 RANGE_FOR_NOVECTOR (t));
@@ -21501,11 +21500,39 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case ANNOTATE_EXPR:
-      op1 = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (op1), op1,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
+      {
+	op1 = RECUR (TREE_OPERAND (t, 0));
+	tree op2 = RECUR (TREE_OPERAND (t, 1));
+	tree op3 = RECUR (TREE_OPERAND (t, 2));
+	if (TREE_CODE (op2) == INTEGER_CST
+	    && wi::to_widest (op2) == (int) annot_expr_unroll_kind)
+	  {
+	    HOST_WIDE_INT lunroll;
+	    if (type_dependent_expression_p (op3))
+	      ;
+	    else if (!INTEGRAL_TYPE_P (TREE_TYPE (op3))
+		     || (!value_dependent_expression_p (op3)
+			 && (!tree_fits_shwi_p (op3)
+			     || (lunroll = tree_to_shwi (op3)) < 0
+			     || lunroll >= USHRT_MAX)))
+	      {
+		error_at (EXPR_LOCATION (TREE_OPERAND (t, 2)),
+			  "%<#pragma GCC unroll%> requires an "
+			  "assignment-expression that evaluates to a "
+			  "non-negative integral constant less than %u",
+			  USHRT_MAX);
+		op3 = integer_one_node;
+	      }
+	    else if (TREE_CODE (op3) == INTEGER_CST)
+	      {
+		op3 = fold_convert (integer_type_node, op3);
+		if (integer_zerop (op3))
+		  op3 = integer_one_node;
+	      }
+	  }
+	RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			    TREE_TYPE (op1), op1, op2, op3));
+      }
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
