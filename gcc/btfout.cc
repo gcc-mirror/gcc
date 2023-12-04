@@ -820,6 +820,10 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 	btf_kind = BTF_KIND_ENUM64;
    }
 
+  /* PR debug/112656.  BTF_KIND_FUNC_PROTO is always anonymous.  */
+  if (btf_kind == BTF_KIND_FUNC_PROTO)
+    dtd->dtd_data.ctti_name = 0;
+
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
 		       "TYPE %" PRIu64 " BTF_KIND_%s '%s'",
 		       get_btf_id (dtd->dtd_type), btf_kind_name (btf_kind),
