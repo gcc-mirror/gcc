@@ -12,8 +12,12 @@
 **	cbz	x4, .*
 **	add	sp, sp, x5
 **	br	x6
+** (
 **	hint	29 // autiasp
 **	ret
+** |
+**	retaa
+** )
 **	mov	x5, x0
 **	mov	x4, 1
 **	mov	x6, x1
