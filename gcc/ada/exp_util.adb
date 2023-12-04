@@ -12012,19 +12012,71 @@ package body Exp_Util is
 
       function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean is
       begin
-        --  Side-effect removal in SPARK should only occur when not inside a
-        --  generic and not doing a preanalysis, inside an object renaming or
-        --  a type declaration or a for-loop iteration scheme.
+         --  Side-effect removal in SPARK should only occur when not inside a
+         --  generic and not doing a preanalysis, inside an object renaming or
+         --  a type declaration or a for-loop iteration scheme.
 
-         return not Inside_A_Generic
+         if not Inside_A_Generic
            and then Full_Analysis
-           and then Nkind (Enclosing_Declaration (Exp)) in
-                      N_Component_Declaration
-                    | N_Full_Type_Declaration
-                    | N_Iterator_Specification
-                    | N_Loop_Parameter_Specification
-                    | N_Object_Renaming_Declaration
-                    | N_Subtype_Declaration;
+         then
+
+            case Nkind (Enclosing_Declaration (Exp)) is
+               when N_Component_Declaration
+                  | N_Full_Type_Declaration
+                  | N_Iterator_Specification
+                  | N_Loop_Parameter_Specification
+                  | N_Object_Renaming_Declaration
+               =>
+                  return True;
+
+               --  If the expression belongs to an itype declaration, then
+               --  check if side effects are allowed in the original
+               --  associated node.
+
+               when N_Subtype_Declaration =>
+                  declare
+                     Subt : constant Entity_Id :=
+                       Defining_Identifier (Enclosing_Declaration (Exp));
+                  begin
+                     if Is_Itype (Subt) then
+
+                        --  When this routine is called while the itype
+                        --  is being created, the entity might not yet be
+                        --  decorated with the associated node, but should
+                        --  have the related expression.
+
+                        if Present (Associated_Node_For_Itype (Subt)) then
+                           return
+                             Possible_Side_Effect_In_SPARK
+                               (Associated_Node_For_Itype (Subt));
+
+                        elsif Present (Related_Expression (Subt)) then
+                           return
+                             Possible_Side_Effect_In_SPARK
+                               (Related_Expression (Subt));
+
+                        --  When the itype doesn't have any indication of its
+                        --  origin (which currently only happens for packed
+                        --  array types created by freezing that shouldn't
+                        --  be picked by GNATprove anyway), then we can
+                        --  conservatively assume that the expression can
+                        --  be kept as it appears in the source code.
+
+                        else
+                           pragma Assert (Is_Packed_Array_Impl_Type (Subt));
+                           return False;
+                        end if;
+                     else
+                        return True;
+                     end if;
+                  end;
+
+               when others =>
+                  return False;
+            end case;
+         else
+            return False;
+         end if;
       end Possible_Side_Effect_In_SPARK;
 
       --  Local variables
