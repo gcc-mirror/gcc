@@ -5,6 +5,7 @@ public:
   int e();
   void j();
 };
+
 float *d;
 class k {
   int f;
@@ -21,6 +22,7 @@ public:
     }
   }
 };
+
 c l;
 void o() {
   int b = l.e();
