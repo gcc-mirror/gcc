@@ -158,6 +158,19 @@ get_btf_kind (uint32_t ctf_kind)
   return BTF_KIND_UNKN;
 }
 
+/* Some BTF types, like BTF_KIND_FUNC_PROTO, are anonymous.  The machinery
+   in btfout to emit BTF, may reset dtd_data->ctti_name, but does not update
+   the name in the ctf_dtdef_ref type object (deliberate choice).  This
+   interface helps abstract out that state of affairs, while giving access to
+   the name of the type as intended.  */
+
+static const char *
+get_btf_type_name (ctf_dtdef_ref dtd)
+{
+  const char *anon = "";
+  return (dtd->dtd_data.ctti_name) ? dtd->dtd_name : anon;
+}
+
 /* Helper routines to map between 'relative' and 'absolute' IDs.
 
    In BTF all records (including variables) are output in one long list, and all
@@ -425,6 +438,7 @@ btf_collect_datasec (ctf_container_ref ctfc)
       func_dtd->dtd_data = dtd->dtd_data;
       func_dtd->dtd_data.ctti_type = dtd->dtd_type;
       func_dtd->linkage = dtd->linkage;
+      func_dtd->dtd_name = dtd->dtd_name;
       func_dtd->dtd_type = num_types_added + num_types_created;
 
       /* Only the BTF_KIND_FUNC type actually references the name. The
@@ -722,7 +736,7 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
       size_t func_id = btf_relative_func_id (ref_id);
       ctf_dtdef_ref ref_type = (*funcs)[func_id];
       dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_FUNC '%s')",
-			   prefix, ref_type->dtd_name);
+			   prefix, get_btf_type_name (ref_type));
     }
   else
     {
@@ -733,7 +747,7 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
 
       dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_%s '%s')",
 			   prefix, btf_kind_name (ref_kind),
-			   ref_type->dtd_name);
+			   get_btf_type_name (ref_type));
     }
 }
 
@@ -809,7 +823,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
 		       "TYPE %" PRIu64 " BTF_KIND_%s '%s'",
 		       get_btf_id (dtd->dtd_type), btf_kind_name (btf_kind),
-		       dtd->dtd_name);
+		       get_btf_type_name (dtd));
   dw2_asm_output_data (4, BTF_TYPE_INFO (btf_kind, btf_kflag, btf_vlen),
 		       "btt_info: kind=%u, kflag=%u, vlen=%u",
 		       btf_kind, btf_kflag, btf_vlen);
@@ -950,7 +964,7 @@ btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
   ctf_id_t ref_id = dtd->dtd_data.ctti_type;
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
 		       "TYPE %" PRIu64 " BTF_KIND_FUNC '%s'",
-		       btf_absolute_func_id (id), dtd->dtd_name);
+		       btf_absolute_func_id (id), get_btf_type_name (dtd));
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0, dtd->linkage),
 		       "btt_info: kind=%u, kflag=%u, linkage=%u",
 		       BTF_KIND_FUNC, 0, dtd->linkage);
