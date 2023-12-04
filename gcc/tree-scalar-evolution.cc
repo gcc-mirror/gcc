@@ -3847,13 +3847,10 @@ final_value_replacement_loop (class loop *loop)
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
 
-      /* Propagate constants immediately.  */
+      /* Propagate constants immediately, but leave an unused initialization
+	 around to avoid invalidating the SCEV cache.  */
       if (CONSTANT_CLASS_P (def))
-	{
-	  replace_uses_by (rslt, def);
-	  release_ssa_name (rslt);
-	  continue;
-	}
+	replace_uses_by (rslt, def);
 
       /* Create the replacement statements.  */
       gimple_seq stmts;
