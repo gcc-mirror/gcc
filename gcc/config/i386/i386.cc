@@ -8607,10 +8607,11 @@ ix86_elim_entry_set_got (rtx reg)
       rtx pat = PATTERN (c_insn);
       if (GET_CODE (pat) == PARALLEL)
 	{
-	  rtx vec = XVECEXP (pat, 0, 0);
-	  if (GET_CODE (vec) == SET
-	      && XINT (XEXP (vec, 1), 1) == UNSPEC_SET_GOT
-	      && REGNO (XEXP (vec, 0)) == REGNO (reg))
+	  rtx set = XVECEXP (pat, 0, 0);
+	  if (GET_CODE (set) == SET
+	      && GET_CODE (SET_SRC (set)) == UNSPEC
+	      && XINT (SET_SRC (set), 1) == UNSPEC_SET_GOT
+	      && REGNO (SET_DEST (set)) == REGNO (reg))
 	    delete_insn (c_insn);
 	}
     }
