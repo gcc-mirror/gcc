@@ -1089,8 +1089,8 @@
   "@
    addik\t%0,r0,%1\t# %X1
    addk\t%0,%1,r0
-   lhui\t%0,%1
-   lhui\t%0,%1
+   lhu%i1\t%0,%1
+   lhu%i1\t%0,%1
    sh%i0\t%z1,%0
    sh%i0\t%z1,%0"
   [(set_attr "type"	"arith,move,load,no_delay_load,store,no_delay_store")
