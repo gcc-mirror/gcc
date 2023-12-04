@@ -1347,6 +1347,9 @@ get_memory_rtx (tree exp, tree len)
   tree orig_exp = exp, base;
   rtx addr, mem;
 
+  gcc_checking_assert
+    (ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)))));
+
   /* When EXP is not resolved SAVE_EXPR, MEM_ATTRS can be still derived
      from its expression, for expr->a.b only <variable>.a.b is recorded.  */
   if (TREE_CODE (exp) == SAVE_EXPR && !SAVE_EXPR_RESOLVED_P (exp))

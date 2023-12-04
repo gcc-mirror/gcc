@@ -4673,6 +4673,16 @@ verify_gimple_assign_single (gassign *stmt)
       error ("%qs in gimple IL", code_name);
       return true;
 
+    case WITH_SIZE_EXPR:
+      if (!is_gimple_val (TREE_OPERAND (rhs1, 1)))
+	{
+	  error ("invalid %qs size argument in load", code_name);
+	  debug_generic_stmt (lhs);
+	  debug_generic_stmt (rhs1);
+	  return true;
+	}
+      rhs1 = TREE_OPERAND (rhs1, 0);
+      /* Fallthru.  */
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
@@ -4809,12 +4819,6 @@ verify_gimple_assign_single (gassign *stmt)
 	  return true;
 	}
       return res;
-
-    case WITH_SIZE_EXPR:
-      error ("%qs RHS in assignment statement",
-	     get_tree_code_name (rhs_code));
-      debug_generic_expr (rhs1);
-      return true;
 
     case OBJ_TYPE_REF:
       /* FIXME.  */
