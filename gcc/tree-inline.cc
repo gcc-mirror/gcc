@@ -1002,7 +1002,7 @@ remap_dependence_clique (copy_body_data *id, unsigned short clique)
       /* Clique 1 is reserved for local ones set by PTA.  */
       if (cfun->last_clique == 0)
 	cfun->last_clique = 1;
-      newc = ++cfun->last_clique;
+      newc = get_new_clique (cfun);
     }
   return newc;
 }

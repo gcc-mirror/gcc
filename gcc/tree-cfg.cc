@@ -6595,7 +6595,7 @@ gimple_duplicate_bb (basic_block bb, copy_bb_data *id)
 		if (!existed)
 		  {
 		    gcc_assert (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
-		    newc = ++cfun->last_clique;
+		    newc = get_new_clique (cfun);
 		  }
 		MR_DEPENDENCE_CLIQUE (op) = newc;
 	      }

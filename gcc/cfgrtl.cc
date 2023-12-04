@@ -4385,7 +4385,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
 			  {
 			    gcc_assert
 			      (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
-			    newc = ++cfun->last_clique;
+			    newc = get_new_clique (cfun);
 			  }
 			/* We cannot adjust MR_DEPENDENCE_CLIQUE in-place
 			   since MEM_EXPR is shared so make a copy and
