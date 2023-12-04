@@ -319,6 +319,8 @@ Mask(ZVBB) Var(riscv_zvb_subext)
 
 Mask(ZVBC) Var(riscv_zvb_subext)
 
+Mask(ZVKB) Var(riscv_zvb_subext)
+
 TargetVariable
 int riscv_zvk_subext
 

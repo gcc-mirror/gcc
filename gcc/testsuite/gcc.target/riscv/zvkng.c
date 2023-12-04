@@ -18,8 +18,8 @@
 #error "Feature macro for `Zvknhb' not defined"
 #endif
 
-#ifndef __riscv_zvbb
-#error "Feature macro for `Zvbb' not defined"
+#ifndef __riscv_zvkb
+#error "Feature macro for `Zvkb' not defined"
 #endif
 
 #ifndef __riscv_zvkt

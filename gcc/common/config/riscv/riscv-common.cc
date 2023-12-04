@@ -131,7 +131,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zvkn", "zvkned"},
   {"zvkn", "zvknhb"},
-  {"zvkn", "zvbb"},
+  {"zvkn", "zvkb"},
   {"zvkn", "zvkt"},
   {"zvknc", "zvkn"},
   {"zvknc", "zvbc"},
@@ -139,7 +139,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvkng", "zvkg"},
   {"zvks", "zvksed"},
   {"zvks", "zvksh"},
-  {"zvks", "zvbb"},
+  {"zvks", "zvkb"},
   {"zvks", "zvkt"},
   {"zvksc", "zvks"},
   {"zvksc", "zvbc"},
@@ -283,6 +283,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zvbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvbc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvkb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvkg", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvkned", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvknha", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1653,6 +1654,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zvbb",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBB},
   {"zvbc",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBC},
+  {"zvkb",     &gcc_options::x_riscv_zvb_subext, MASK_ZVKB},
   {"zvkg",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKG},
   {"zvkned",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNED},
   {"zvknha",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNHA},
