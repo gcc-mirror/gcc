@@ -486,7 +486,15 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       /* Mark extern variables.  */
       if (DECL_EXTERNAL (node->decl))
-	dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
+	{
+	  dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
+
+	  /* PR112849: avoid assuming a section for extern decls without
+	     an explicit section, which would result in incorrectly
+	     emitting a BTF_KIND_DATASEC entry for them.  */
+	  if (node->get_section () == NULL)
+	    continue;
+	}
 
       const char *section_name = get_section_name (node);
       if (section_name == NULL)
