@@ -16263,6 +16263,7 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 
 	  t = build_variant_type_copy (type);
 	  TREE_TYPE (t) = element_type;
+	  TYPE_ADDR_SPACE (t) = TYPE_ADDR_SPACE (element_type);
 
           if (TYPE_STRUCTURAL_EQUALITY_P (element_type)
               || (domain && TYPE_STRUCTURAL_EQUALITY_P (domain)))
