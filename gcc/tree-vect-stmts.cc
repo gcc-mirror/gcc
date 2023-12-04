@@ -2976,6 +2976,15 @@ vectorizable_bswap (vec_info *vinfo,
 
   gcc_assert (ncopies >= 1);
 
+  if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mismatched vector sizes %T and %T\n",
+			 vectype_in, vectype);
+      return false;
+    }
+
   tree char_vectype = get_same_sized_vectype (char_type_node, vectype_in);
   if (! char_vectype)
     return false;
