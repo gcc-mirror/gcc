@@ -2327,8 +2327,8 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
   else
     byref = 0;
 
-  restricted = !sym->attr.target && !sym->attr.pointer
-               && !sym->attr.proc_pointer && !sym->attr.cray_pointee;
+  restricted = (!sym->attr.target && !IS_POINTER (sym)
+		&& !IS_PROC_POINTER (sym) && !sym->attr.cray_pointee);
   if (!restricted)
     type = gfc_nonrestricted_type (type);
 
@@ -2384,11 +2384,10 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 	  || (sym->ns->proc_name && sym->ns->proc_name->attr.entry_master))
 	type = build_pointer_type (type);
       else
-	{
-	  type = build_reference_type (type);
-	  if (restricted)
-	    type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
-	}
+	type = build_reference_type (type);
+
+      if (restricted)
+	type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
     }
 
   return (type);
