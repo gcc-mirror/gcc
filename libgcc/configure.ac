@@ -665,6 +665,25 @@ aarch64*-*-*)
 esac])
 LIBGCC_CHECK_AS_VARIANT_PCS
 
+# Check __getauxval ABI symbol for CPU feature detection.
+case ${target} in
+aarch64*-linux-*)
+  # No link check because the libc may not be present.
+  AC_CACHE_CHECK([for __getauxval],
+		 [libgcc_cv_have___getauxval],
+		 [case ${target} in
+		  *-linux-gnu*)
+		    libgcc_cv_have___getauxval=yes
+		    ;;
+		  *)
+		    libgcc_cv_have___getauxval=no
+		  esac])
+  if test x$libgcc_cv_have___getauxval = xyes; then
+    AC_DEFINE(HAVE___GETAUXVAL, 1,
+	      [Define to 1 if __getauxval is available.])
+  fi
+esac
+
 dnl Check if as supports RTM instructions.
 AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
