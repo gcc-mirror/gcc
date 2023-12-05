@@ -7,7 +7,7 @@ check_remove_prefix()
 {
   std::string_view sv("123");
   sv.remove_prefix(4);
-  // { dg-error "not a constant expression" "" { target *-*-* } 0 }
+  // { dg-error "assert_fail" "" { target *-*-* } 0 }
   return true;
 }
 

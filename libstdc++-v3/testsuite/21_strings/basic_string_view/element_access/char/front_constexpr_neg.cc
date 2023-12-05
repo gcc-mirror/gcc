@@ -31,5 +31,4 @@ front()
 
 static_assert(front() != 'a'); // { dg-error "non-constant condition" }
 
-// { dg-prune-output "in 'constexpr' expansion" }
-// { dg-prune-output "unreachable" }
+// { dg-error "assert_fail" "" { target *-*-* } 0 }
