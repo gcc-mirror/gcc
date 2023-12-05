@@ -537,7 +537,8 @@ aarch64_check_state_string (tree name, tree value)
     }
 
   const char *state_name = TREE_STRING_POINTER (value);
-  if (strcmp (state_name, "za") != 0)
+  if (strcmp (state_name, "za") != 0
+      && strcmp (state_name, "zt0") != 0)
     {
       error ("unrecognized state string %qs", state_name);
       return false;
@@ -2083,7 +2084,8 @@ aarch64_fntype_shared_flags (const_tree fntype, const char *state_name)
 static aarch64_feature_flags
 aarch64_fntype_pstate_za (const_tree fntype)
 {
-  if (aarch64_fntype_shared_flags (fntype, "za"))
+  if (aarch64_fntype_shared_flags (fntype, "za")
+      || aarch64_fntype_shared_flags (fntype, "zt0"))
     return AARCH64_FL_ZA_ON;
 
   return 0;
@@ -2138,7 +2140,8 @@ aarch64_fndecl_has_state (tree fndecl, const char *state_name)
 static aarch64_feature_flags
 aarch64_fndecl_pstate_za (const_tree fndecl)
 {
-  if (aarch64_fndecl_has_new_state (fndecl, "za"))
+  if (aarch64_fndecl_has_new_state (fndecl, "za")
+      || aarch64_fndecl_has_new_state (fndecl, "zt0"))
     return AARCH64_FL_ZA_ON;
 
   return aarch64_fntype_pstate_za (TREE_TYPE (fndecl));
@@ -6956,9 +6959,11 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 						  pcum->pcs_variant);
       rtx sme_mode_switch_args = aarch64_finish_sme_mode_switch_args (pcum);
       rtx shared_za_flags = gen_int_mode (pcum->shared_za_flags, SImode);
-      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, abi_cookie,
+      rtx shared_zt0_flags = gen_int_mode (pcum->shared_zt0_flags, SImode);
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (4, abi_cookie,
 						    sme_mode_switch_args,
-						    shared_za_flags));
+						    shared_za_flags,
+						    shared_zt0_flags));
     }
 
   aarch64_layout_arg (pcum_v, arg);
@@ -6996,6 +7001,8 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
   pcum->silent_p = silent_p;
   pcum->shared_za_flags
     = (fntype ? aarch64_fntype_shared_flags (fntype, "za") : 0U);
+  pcum->shared_zt0_flags
+    = (fntype ? aarch64_fntype_shared_flags (fntype, "zt0") : 0U);
   pcum->num_sme_mode_switch_args = 0;
 
   if (!silent_p
@@ -9130,6 +9137,13 @@ aarch64_extra_live_on_entry (bitmap regs)
       auto za_flags = aarch64_cfun_shared_flags ("za");
       if (za_flags != (AARCH64_STATE_SHARED | AARCH64_STATE_OUT))
 	bitmap_set_bit (regs, ZA_REGNUM);
+
+      /* Since ZT0 is call-clobbered, it is only live on input if
+	 it is explicitly shared, and is not a pure output.  */
+      auto zt0_flags = aarch64_cfun_shared_flags ("zt0");
+      if (zt0_flags != 0
+	  && zt0_flags != (AARCH64_STATE_SHARED | AARCH64_STATE_OUT))
+	bitmap_set_bit (regs, ZT0_REGNUM);
     }
 }
 
@@ -9157,6 +9171,8 @@ aarch64_epilogue_uses (int regno)
   if (regno == ZA_SAVED_REGNUM && aarch64_cfun_incoming_pstate_za () != 0)
     return 1;
   if (regno == ZA_REGNUM && aarch64_cfun_shared_flags ("za") != 0)
+    return 1;
+  if (regno == ZT0_REGNUM && aarch64_cfun_shared_flags ("zt0") != 0)
     return 1;
   return 0;
 }
@@ -10828,6 +10844,40 @@ aarch64_restore_za (rtx tpidr2_block)
   emit_insn (gen_aarch64_tpidr2_restore ());
 }
 
+/* Return the ZT0 save buffer, creating one if necessary.  */
+
+static rtx
+aarch64_get_zt0_save_buffer ()
+{
+  if (!cfun->machine->zt0_save_buffer)
+    cfun->machine->zt0_save_buffer = assign_stack_local (V8DImode, 64, 128);
+  return cfun->machine->zt0_save_buffer;
+}
+
+/* Save ZT0 to the current function's save buffer.  */
+
+static void
+aarch64_save_zt0 ()
+{
+  rtx mem = aarch64_get_zt0_save_buffer ();
+  mem = replace_equiv_address (mem, force_reg (Pmode, XEXP (mem, 0)));
+  emit_insn (gen_aarch64_sme_str_zt0 (mem));
+}
+
+/* Restore ZT0 from the current function's save buffer.  FROM_LAZY_SAVE_P
+   is true if the load is happening after a call to a private-ZA function,
+   false if it can be treated as a normal load.  */
+
+static void
+aarch64_restore_zt0 (bool from_lazy_save_p)
+{
+  rtx mem = aarch64_get_zt0_save_buffer ();
+  mem = replace_equiv_address (mem, force_reg (Pmode, XEXP (mem, 0)));
+  emit_insn (from_lazy_save_p
+	     ? gen_aarch64_restore_zt0 (mem)
+	     : gen_aarch64_sme_ldr_zt0 (mem));
+}
+
 /* Implement TARGET_START_CALL_ARGS.  */
 
 static void
@@ -10848,6 +10898,10 @@ aarch64_start_call_args (cumulative_args_t ca_v)
       && !aarch64_cfun_has_state ("za"))
     error ("call to a function that shares %qs state from a function"
 	   " that has no %qs state", "za", "za");
+  else if ((ca->shared_zt0_flags & (AARCH64_STATE_IN | AARCH64_STATE_OUT))
+	   && !aarch64_cfun_has_state ("zt0"))
+    error ("call to a function that shares %qs state from a function"
+	   " that has no %qs state", "zt0", "zt0");
   else if (!TARGET_ZA && (ca->isa_mode & AARCH64_FL_ZA_ON))
     error ("call to a function that shares SME state from a function"
 	   " that has no SME state");
@@ -10857,6 +10911,13 @@ aarch64_start_call_args (cumulative_args_t ca_v)
      The code itself is inserted by the mode-switching pass.  */
   if (TARGET_ZA && !(ca->isa_mode & AARCH64_FL_ZA_ON))
     emit_insn (gen_aarch64_start_private_za_call ());
+
+  /* If this is a call to a shared-ZA function that doesn't share ZT0,
+     save and restore ZT0 around the call.  */
+  if (aarch64_cfun_has_state ("zt0")
+      && (ca->isa_mode & AARCH64_FL_ZA_ON)
+      && ca->shared_zt0_flags == 0)
+    aarch64_save_zt0 ();
 }
 
 /* This function is used by the call expanders of the machine description.
@@ -10869,8 +10930,8 @@ aarch64_start_call_args (cumulative_args_t ca_v)
        The second element is a PARALLEL that lists all the argument
        registers that need to be saved and restored around a change
        in PSTATE.SM, or const0_rtx if no such switch is needed.
-       The third element is a const_int that contains the sharing flags
-       for ZA.
+       The third and fourth elements are const_ints that contain the
+       sharing flags for ZA and ZT0 respectively.
    SIBCALL indicates whether this function call is normal call or sibling call.
    It will generate different pattern accordingly.  */
 
@@ -10884,15 +10945,27 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
   rtx callee_abi = cookie;
   rtx sme_mode_switch_args = const0_rtx;
   unsigned int shared_za_flags = 0;
+  unsigned int shared_zt0_flags = 0;
   if (GET_CODE (cookie) == PARALLEL)
     {
       callee_abi = XVECEXP (cookie, 0, 0);
       sme_mode_switch_args = XVECEXP (cookie, 0, 1);
       shared_za_flags = INTVAL (XVECEXP (cookie, 0, 2));
+      shared_zt0_flags = INTVAL (XVECEXP (cookie, 0, 3));
     }
 
   gcc_assert (CONST_INT_P (callee_abi));
   auto callee_isa_mode = aarch64_callee_isa_mode (callee_abi);
+
+  if (aarch64_cfun_has_state ("za")
+      && (callee_isa_mode & AARCH64_FL_ZA_ON)
+      && !shared_za_flags)
+    {
+      sorry ("call to a function that shares state other than %qs"
+	     " from a function that has %qs state", "za", "za");
+      inform (input_location, "use %<__arm_preserves(\"za\")%> if the"
+	      " callee preserves ZA");
+    }
 
   gcc_assert (MEM_P (mem));
   callee = XEXP (mem, 0);
@@ -10926,6 +10999,8 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
      we want to know whether the call committed a lazy save.  */
   if (TARGET_ZA && !shared_za_flags)
     return_values.safe_push (gen_rtx_REG (VNx16BImode, ZA_SAVED_REGNUM));
+  if (shared_zt0_flags & AARCH64_STATE_OUT)
+    return_values.safe_push (gen_rtx_REG (V8DImode, ZT0_REGNUM));
 
   /* Create the new return value, if necessary.  */
   if (orig_num_return_values != return_values.length ())
@@ -11011,10 +11086,12 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
     }
 
   /* Add any ZA-related information.
+
      ZA_REGNUM represents the current function's ZA state, rather than
      the contents of the ZA register itself.  We ensure that the function's
      ZA state is preserved by private-ZA call sequences, so the call itself
-     does not use or clobber ZA_REGNUM.  */
+     does not use or clobber ZA_REGNUM.  The same thing applies to
+     ZT0_REGNUM.  */
   if (TARGET_ZA)
     {
       /* The callee requires ZA to be active if the callee is shared-ZA,
@@ -11034,10 +11111,14 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
 		 gen_rtx_REG (VNx16BImode, LOWERING_REGNUM));
 
       /* If the callee is a shared-ZA function, record whether it uses the
-	 current value of ZA.  */
+	 current value of ZA and ZT0.  */
       if (shared_za_flags & AARCH64_STATE_IN)
 	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
 		 gen_rtx_REG (VNx16BImode, ZA_REGNUM));
+
+      if (shared_zt0_flags & AARCH64_STATE_IN)
+	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+		 gen_rtx_REG (V8DImode, ZT0_REGNUM));
     }
 }
 
@@ -11053,6 +11134,13 @@ aarch64_end_call_args (cumulative_args_t ca_v)
      The code itself is inserted by the mode-switching pass.  */
   if (TARGET_ZA && !(ca->isa_mode & AARCH64_FL_ZA_ON))
     emit_insn (gen_aarch64_end_private_za_call ());
+
+  /* If this is a call to a shared-ZA function that doesn't share ZT0,
+     save and restore ZT0 around the call.  */
+  if (aarch64_cfun_has_state ("zt0")
+      && (ca->isa_mode & AARCH64_FL_ZA_ON)
+      && ca->shared_zt0_flags == 0)
+    aarch64_restore_zt0 (false);
 }
 
 /* Emit call insn with PAT and do aarch64-specific handling.  */
@@ -18604,6 +18692,20 @@ aarch64_set_current_function (tree fndecl)
 		       : AARCH64_FL_DEFAULT_ISA_MODE);
   auto isa_flags = TREE_TARGET_OPTION (new_tree)->x_aarch64_isa_flags;
 
+  static bool reported_zt0_p;
+  if (!reported_zt0_p
+      && !(isa_flags & AARCH64_FL_SME2)
+      && fndecl
+      && aarch64_fndecl_has_state (fndecl, "zt0"))
+    {
+      error ("functions with %qs state require the ISA extension %qs",
+	     "zt0", "sme2");
+      inform (input_location, "you can enable %qs using the command-line"
+	      " option %<-march%>, or by using the %<target%>"
+	      " attribute or pragma", "sme2");
+      reported_zt0_p = true;
+    }
+
   /* If nothing to do, return.  #pragma GCC reset or #pragma GCC pop to
      the default have been handled by aarch64_save_restore_target_globals from
      aarch64_pragma_target_parse.  */
@@ -19215,9 +19317,10 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 static bool
 aarch64_function_attribute_inlinable_p (const_tree fndecl)
 {
-  /* A function that has local ZA state cannot be inlined into its caller,
-     since we only support managing ZA switches at function scope.  */
-  return !aarch64_fndecl_has_new_state (fndecl, "za");
+  /* A function that has local SME state cannot be inlined into its caller,
+     since we only support managing PSTATE.ZA switches at function scope.  */
+  return (!aarch64_fndecl_has_new_state (fndecl, "za")
+	  && !aarch64_fndecl_has_new_state (fndecl, "zt0"));
 }
 
 /* Helper for aarch64_can_inline_p.  In the case where CALLER and CALLEE are
@@ -19248,9 +19351,10 @@ aarch64_tribools_ok_for_inlining_p (int caller, int callee,
    Not meaningful for streaming-compatible functions.  */
 constexpr auto AARCH64_IPA_SM_FIXED = 1U << 0;
 
-/* Set if the function clobbers ZA.  Not meaningful for functions that
+/* Set if the function clobbers ZA and ZT0.  Not meaningful for functions that
    have ZA state.  */
 constexpr auto AARCH64_IPA_CLOBBERS_ZA = 1U << 1;
+constexpr auto AARCH64_IPA_CLOBBERS_ZT0 = 1U << 2;
 
 /* Implement TARGET_NEED_IPA_FN_TARGET_INFO.  */
 
@@ -19278,6 +19382,8 @@ aarch64_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
 	  const char *clobber = TREE_STRING_POINTER (TREE_VALUE (op));
 	  if (strcmp (clobber, "za") == 0)
 	    info |= AARCH64_IPA_CLOBBERS_ZA;
+	  if (strcmp (clobber, "zt0") == 0)
+	    info |= AARCH64_IPA_CLOBBERS_ZT0;
 	}
     }
   if (auto *call = dyn_cast<const gcall *> (stmt))
@@ -19353,20 +19459,24 @@ aarch64_can_inline_p (tree caller, tree callee)
       && callee_has_property (AARCH64_IPA_SM_FIXED))
     return false;
 
-  /* aarch64_function_attribute_inlinable_p prevents new-ZA functions
-     from being inlined into others.  We also need to prevent inlining
-     of shared-ZA functions into functions without ZA state, since this
-     is an error condition.
+  /* aarch64_function_attribute_inlinable_p prevents new-ZA and new-ZT0
+     functions from being inlined into others.  We also need to prevent
+     inlining of shared-ZA functions into functions without ZA state,
+     since this is an error condition.
 
      The only other problematic case for ZA is inlining a function that
-     directly clobbers ZA into a function that has ZA state.  */
+     directly clobbers ZA or ZT0 into a function that has ZA or ZT0 state.  */
   auto caller_za = (caller_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
   auto callee_za = (callee_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
   if (!caller_za && callee_za)
     return false;
-  if (caller_za
-      && !callee_za
+  if (!callee_za
+      && aarch64_fndecl_has_state (caller, "za")
       && callee_has_property (AARCH64_IPA_CLOBBERS_ZA))
+    return false;
+  if (!callee_za
+      && aarch64_fndecl_has_state (caller, "zt0")
+      && callee_has_property (AARCH64_IPA_CLOBBERS_ZT0))
     return false;
 
   /* Allow non-strict aligned functions inlining into strict
@@ -27467,6 +27577,9 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
   if (aarch64_lookup_shared_state_flags (TYPE_ATTRIBUTES (type1), "za")
       != aarch64_lookup_shared_state_flags (TYPE_ATTRIBUTES (type2), "za"))
     return 0;
+  if (aarch64_lookup_shared_state_flags (TYPE_ATTRIBUTES (type1), "zt0")
+      != aarch64_lookup_shared_state_flags (TYPE_ATTRIBUTES (type2), "zt0"))
+    return 0;
   return 1;
 }
 
@@ -27934,7 +28047,9 @@ aarch64_optimize_mode_switching (aarch64_mode_entity entity)
 {
   bool have_sme_state = (aarch64_cfun_incoming_pstate_za () != 0
 			 || (aarch64_cfun_has_new_state ("za")
-			     && df_regs_ever_live_p (ZA_REGNUM)));
+			     && df_regs_ever_live_p (ZA_REGNUM))
+			 || (aarch64_cfun_has_new_state ("zt0")
+			     && df_regs_ever_live_p (ZT0_REGNUM)));
 
   if (have_sme_state && nonlocal_goto_handler_labels)
     {
@@ -28021,6 +28136,11 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	     In that case, ZA still contains the current function's ZA state,
 	     and we just need to cancel the lazy save.  */
 	  emit_insn (gen_aarch64_clear_tpidr2 ());
+
+	  /* Restore the ZT0 state, if we have some.  */
+	  if (aarch64_cfun_has_state ("zt0"))
+	    aarch64_restore_zt0 (true);
+
 	  return;
 	}
 
@@ -28029,6 +28149,10 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	  /* Retrieve the current function's ZA state from the lazy save
 	     buffer.  */
 	  aarch64_restore_za (aarch64_get_tpidr2_ptr ());
+
+	  /* Restore the ZT0 state, if we have some.  */
+	  if (aarch64_cfun_has_state ("zt0"))
+	    aarch64_restore_zt0 (true);
 	  return;
 	}
 
@@ -28045,6 +28169,11 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 
 	     Both cases leave ZA zeroed.  */
 	  emit_insn (gen_aarch64_smstart_za ());
+
+	  /* Restore the ZT0 state, if we have some.  */
+	  if (prev_mode == aarch64_local_sme_state::OFF
+	      && aarch64_cfun_has_state ("zt0"))
+	    aarch64_restore_zt0 (true);
 	  return;
 	}
 
@@ -28063,6 +28192,10 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	  || prev_mode == aarch64_local_sme_state::ACTIVE_DEAD
 	  || prev_mode == aarch64_local_sme_state::INACTIVE_CALLER)
 	{
+	  /* Save the ZT0 state, if we have some.  */
+	  if (aarch64_cfun_has_state ("zt0"))
+	    aarch64_save_zt0 ();
+
 	  /* A transition from ACTIVE_LIVE to INACTIVE_LOCAL is the usual
 	     case of setting up a lazy save buffer before a call.
 	     A transition from INACTIVE_CALLER is similar, except that
@@ -28090,6 +28223,13 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
   if (mode == aarch64_local_sme_state::INACTIVE_CALLER
       || mode == aarch64_local_sme_state::OFF)
     {
+      /* Save the ZT0 state, if we have some.  */
+      if ((prev_mode == aarch64_local_sme_state::ACTIVE_LIVE
+	   || prev_mode == aarch64_local_sme_state::ACTIVE_DEAD)
+	  && mode == aarch64_local_sme_state::OFF
+	  && aarch64_cfun_has_state ("zt0"))
+	aarch64_save_zt0 ();
+
       /* The transition to INACTIVE_CALLER is used before returning from
 	 new("za") functions.  Any state in ZA belongs to the current
 	 function rather than a caller, but that state is no longer
@@ -28238,8 +28378,10 @@ aarch64_mode_needed_local_sme_state (rtx_insn *insn, HARD_REG_SET live)
 	    : aarch64_local_sme_state::OFF);
 
   /* Force ZA to contain the current function's ZA state if INSN wants
-     to access it.  */
-  if (aarch64_insn_references_sme_state_p (insn, ZA_REGNUM))
+     to access it.  Do the same for accesses to ZT0, since ZA and ZT0
+     are both controlled by PSTATE.ZA.  */
+  if (aarch64_insn_references_sme_state_p (insn, ZA_REGNUM)
+      || aarch64_insn_references_sme_state_p (insn, ZT0_REGNUM))
     return (TEST_HARD_REG_BIT (live, ZA_REGNUM)
 	    ? aarch64_local_sme_state::ACTIVE_LIVE
 	    : aarch64_local_sme_state::ACTIVE_DEAD);
@@ -28457,6 +28599,8 @@ aarch64_mode_entry (int entity)
     case aarch64_mode_entity::LOCAL_SME_STATE:
       return int (aarch64_cfun_shared_flags ("za") != 0
 		  ? aarch64_local_sme_state::ACTIVE_LIVE
+		  : aarch64_cfun_incoming_pstate_za () != 0
+		  ? aarch64_local_sme_state::ACTIVE_DEAD
 		  : aarch64_local_sme_state::INACTIVE_CALLER);
     }
   gcc_unreachable ();
@@ -28475,6 +28619,8 @@ aarch64_mode_exit (int entity)
     case aarch64_mode_entity::LOCAL_SME_STATE:
       return int (aarch64_cfun_shared_flags ("za") != 0
 		  ? aarch64_local_sme_state::ACTIVE_LIVE
+		  : aarch64_cfun_incoming_pstate_za () != 0
+		  ? aarch64_local_sme_state::ACTIVE_DEAD
 		  : aarch64_local_sme_state::INACTIVE_CALLER);
     }
   gcc_unreachable ();
@@ -28524,27 +28670,34 @@ aarch64_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
      write directly.   Use a separate insn to model the effect.
 
      We must ensure that ZA is active on entry, which is enforced by using
-     SME_STATE_REGNUM.  The asm must ensure that ZA is active on return.  */
+     SME_STATE_REGNUM.  The asm must ensure that ZA is active on return.
+
+     The same thing applies to ZT0.  */
   if (TARGET_ZA)
     for (unsigned int i = clobbers.length (); i-- > 0; )
       {
 	rtx x = clobbers[i];
-	if (REG_P (x) && REGNO (x) == ZA_REGNUM)
+	if (REG_P (x)
+	    && (REGNO (x) == ZA_REGNUM || REGNO (x) == ZT0_REGNUM))
 	  {
 	    auto id = cfun->machine->next_asm_update_za_id++;
 
 	    start_sequence ();
 	    if (seq)
 	      emit_insn (seq);
-	    emit_insn (gen_aarch64_asm_update_za (gen_int_mode (id, SImode)));
+	    rtx id_rtx = gen_int_mode (id, SImode);
+	    emit_insn (REGNO (x) == ZA_REGNUM
+		       ? gen_aarch64_asm_update_za (id_rtx)
+		       : gen_aarch64_asm_update_zt0 (id_rtx));
 	    seq = get_insns ();
 	    end_sequence ();
 
-	    uses.safe_push (gen_rtx_REG (VNx16QImode, ZA_REGNUM));
+	    auto mode = REGNO (x) == ZA_REGNUM ? VNx16QImode : V8DImode;
+	    uses.safe_push (gen_rtx_REG (mode, REGNO (x)));
 	    uses.safe_push (gen_rtx_REG (DImode, SME_STATE_REGNUM));
 
 	    clobbers.ordered_remove (i);
-	    CLEAR_HARD_REG_BIT (clobbered_regs, ZA_REGNUM);
+	    CLEAR_HARD_REG_BIT (clobbered_regs, REGNO (x));
 	  }
       }
   return seq;

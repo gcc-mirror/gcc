@@ -27,7 +27,9 @@
 ;;
 ;; == Loads, stores and moves
 ;; ---- Single-vector loads
+;; ---- Table loads
 ;; ---- Single-vector stores
+;; ---- Table stores
 ;; ---- Single-vector moves
 ;; ---- Zeroing
 ;;
@@ -209,6 +211,7 @@
 
 (define_c_enum "unspecv" [
   UNSPECV_ASM_UPDATE_ZA
+  UNSPECV_ASM_UPDATE_ZT0
 ])
 
 ;; Use the ABI-defined routine to commit an uncommitted lazy save.
@@ -400,6 +403,19 @@
   [(set_attr "type" "no_insn")]
 )
 
+;; A similar pattern for ZT0.
+(define_insn "aarch64_asm_update_zt0"
+  [(set (reg:V8DI ZT0_REGNUM)
+	(unspec_volatile:V8DI
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand 0 "const_int_operand")]
+	  UNSPECV_ASM_UPDATE_ZT0))]
+  ""
+  ""
+  [(set_attr "type" "no_insn")]
+)
+
 ;; This pseudo-instruction is emitted as part of a call to a private-ZA
 ;; function from a function with ZA state.  It marks a natural place to set
 ;; up a lazy save, if that turns out to be necessary.  The save itself
@@ -545,6 +561,38 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- Table loads
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - LDR
+;; -------------------------------------------------------------------------
+
+(define_c_enum "unspec" [
+  UNSPEC_RESTORE_ZT0
+])
+
+(define_insn "aarch64_sme_ldr_zt0"
+  [(set (reg:V8DI ZT0_REGNUM)
+	(match_operand:V8DI 0 "aarch64_sync_memory_operand" "Q"))
+   (use (reg:DI SME_STATE_REGNUM))]
+  "TARGET_SME2"
+  "ldr\tzt0, %0"
+)
+
+;; This version is used after calls to private-ZA functions.  Since ZT0_REGNUM
+;; represents the current function's state, it isn't clobbered by private-ZA
+;; functions, so we need to make it depend on the ZA reinitialization code.
+(define_insn "aarch64_restore_zt0"
+  [(set (reg:V8DI ZT0_REGNUM)
+	(unspec:V8DI
+	  [(reg:DI SME_STATE_REGNUM)
+	   (match_operand:V8DI 0 "aarch64_sync_memory_operand" "Q")]
+	  UNSPEC_RESTORE_ZT0))]
+  "TARGET_SME2"
+  "ldr\tzt0, %0"
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- Single-vector stores
 ;; -------------------------------------------------------------------------
 ;; Includes:
@@ -612,6 +660,21 @@
   "TARGET_SME
    && aarch64_sme_ldr_vnum_offset_p (operands[1], operands[3])"
   "str\tza[%w0, %1], [%2, #%1, mul vl]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- Table stores
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - STR
+;; -------------------------------------------------------------------------
+
+(define_insn "aarch64_sme_str_zt0"
+  [(set (match_operand:V8DI 0 "aarch64_sync_memory_operand" "=Q")
+	(reg:V8DI ZT0_REGNUM))
+   (use (reg:DI SME_STATE_REGNUM))]
+  "TARGET_SME2"
+  "str\tzt0, %0"
 )
 
 ;; -------------------------------------------------------------------------

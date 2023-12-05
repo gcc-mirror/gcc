@@ -156,9 +156,12 @@
     ;; The contents persist even when the architected ZA is off.  Private-ZA
     ;; functions have no effect on its contents.
     (ZA_REGNUM 92)
-    ;; ----------------------------------------------------------------
+
+    ;; Similarly represents the contents of the current function's ZT0 state.
+    (ZT0_REGNUM 93)
+
     (FIRST_FAKE_REGNUM	LOWERING_REGNUM)
-    (LAST_FAKE_REGNUM	ZA_REGNUM)
+    (LAST_FAKE_REGNUM	ZT0_REGNUM)
     ;; ----------------------------------------------------------------
 
     ;; The pair of scratch registers used for stack probing with -fstack-check.

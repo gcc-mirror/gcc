@@ -74,6 +74,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
 
   builtin_define ("__ARM_STATE_ZA");
+  builtin_define ("__ARM_STATE_ZT0");
 
   /* Define keyword attributes like __arm_streaming as macros that expand
      to the associated [[...]] attribute.  Use __extension__ in the attribute

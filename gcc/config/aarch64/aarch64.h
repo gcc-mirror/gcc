@@ -485,7 +485,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
     1, 1,			/* FFR and FFRT */	\
-    1, 1, 1, 1, 1, 1, 1		/* Fake registers */	\
+    1, 1, 1, 1, 1, 1, 1, 1	/* Fake registers */	\
   }
 
 /* X30 is marked as caller-saved which is in line with regular function call
@@ -509,7 +509,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
     1, 1,			/* FFR and FFRT */	\
-    0, 0, 0, 0, 0, 0, 0		/* Fake registers */	\
+    0, 0, 0, 0, 0, 0, 0, 0	/* Fake registers */	\
   }
 
 #define REGISTER_NAMES						\
@@ -527,7 +527,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
     "ffr", "ffrt",						\
     "lowering", "tpidr2_block", "sme_state", "tpidr2_setup",	\
-    "za_free", "za_saved", "za"					\
+    "za_free", "za_saved", "za", "zt0"				\
   }
 
 /* Generate the register aliases for core register N */
@@ -773,7 +773,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
   { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
   { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
-  { 0x00000000, 0x00000000, 0x1fc00000 },	/* FAKE_REGS */		\
+  { 0x00000000, 0x00000000, 0x3fc00000 },	/* FAKE_REGS */		\
   { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
 }
 
@@ -982,6 +982,9 @@ typedef struct GTY (()) machine_function
      or null if none.  */
   rtx za_save_buffer;
 
+  /* A stack slot that stores the contents of the function's ZT0 state.  */
+  rtx zt0_save_buffer;
+
   bool label_is_assembled;
 
   /* True if we've expanded at least one call to a function that changes
@@ -1063,8 +1066,9 @@ typedef struct
 				   raise an error for invalid calls.  */
 
   /* AARCH64_STATE_* flags that describe whether the function shares ZA
-     with its callers.  */
+     and ZT0 with its callers.  */
   unsigned int shared_za_flags;
+  unsigned int shared_zt0_flags;
 
   /* A list of registers that need to be saved and restored around a
      change to PSTATE.SM.  An auto_vec would be more convenient, but those
