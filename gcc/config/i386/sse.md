@@ -16614,6 +16614,18 @@
   DONE;
 })
 
+(define_split
+  [(set (match_operand:VI248_AVX2 0 "register_operand")
+        (eq:VI248_AVX2
+	  (eq:VI248_AVX2
+	    (lshiftrt:VI248_AVX2
+	      (match_operand:VI248_AVX2 1 "register_operand")
+	      (match_operand:SI 2 "const_int_operand"))
+	    (match_operand:VI248_AVX2 3 "const0_operand"))
+	  (match_operand:VI248_AVX2 4 "const0_operand")))]
+  "INTVAL (operands[2]) == GET_MODE_PRECISION (<ssescalarmode>mode) - 1"
+  [(set (match_dup 0) (ashiftrt:VI248_AVX2 (match_dup 1) (match_dup 2)))])
+
 (define_expand "rotlv1ti3"
   [(set (match_operand:V1TI 0 "register_operand")
 	(rotate:V1TI
