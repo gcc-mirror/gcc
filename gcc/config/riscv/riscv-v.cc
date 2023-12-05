@@ -1728,7 +1728,12 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
     }
 
   if (CONST_INT_P (*scalar_op))
-    *scalar_op = force_reg (scalar_mode, *scalar_op);
+    {
+      if (maybe_gt (GET_MODE_SIZE (scalar_mode), GET_MODE_SIZE (Pmode)))
+	*scalar_op = force_const_mem (scalar_mode, *scalar_op);
+      else
+	*scalar_op = force_reg (scalar_mode, *scalar_op);
+    }
 
   rtx tmp = gen_reg_rtx (vector_mode);
   rtx ops[] = {tmp, *scalar_op};
