@@ -1983,9 +1983,9 @@ package body Inline is
       then
          declare
             Len1 : constant Positive :=
-              String (String'("cannot inline"))'Length;
+              String'("cannot inline")'Length;
             Len2 : constant Positive :=
-              String (String'("info: no contextual analysis of"))'Length;
+              String'("info: no contextual analysis of")'Length;
 
             New_Msg : String (1 .. Msg'Length + Len2 - Len1);
 
@@ -2043,17 +2043,6 @@ package body Inline is
          --  Remove last character (question mark) to make this into an error.
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
-
-      --  In GNATprove mode, issue an info message when -gnatd_f is set and
-      --  Suppress_Info is False, and indicate that the subprogram is not
-      --  always inlined by setting flag Is_Inlined_Always to False.
-
-      elsif GNATprove_Mode then
-         Set_Is_Inlined_Always (Subp, False);
-
-         if Debug_Flag_Underscore_F and not Suppress_Info then
-            Error_Msg_NE (Msg, N, Subp);
-         end if;
 
       else
 
