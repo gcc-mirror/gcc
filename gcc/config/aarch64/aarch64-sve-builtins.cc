@@ -525,7 +525,7 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, preds_##PREDS, \
-    REQUIRED_EXTENSIONS | AARCH64_FL_SVE },
+    REQUIRED_EXTENSIONS },
 #include "aarch64-sve-builtins.def"
 };
 

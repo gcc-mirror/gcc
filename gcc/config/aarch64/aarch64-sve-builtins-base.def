@@ -17,7 +17,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#define REQUIRED_EXTENSIONS 0
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE
 DEF_SVE_FUNCTION (svabd, binary_opt_n, all_arith, mxz)
 DEF_SVE_FUNCTION (svabs, unary, all_float_and_signed, mxz)
 DEF_SVE_FUNCTION (svacge, compare_opt_n, all_float, implicit)
@@ -318,7 +318,7 @@ DEF_SVE_FUNCTION (svzip2, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2, binary_pred, all_pred, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_BF16
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_BF16
 DEF_SVE_FUNCTION (svbfdot, ternary_bfloat_opt_n, s_float, none)
 DEF_SVE_FUNCTION (svbfdot_lane, ternary_bfloat_lanex2, s_float, none)
 DEF_SVE_FUNCTION (svbfmlalb, ternary_bfloat_opt_n, s_float, none)
@@ -330,7 +330,7 @@ DEF_SVE_FUNCTION (svcvt, unary_convert, cvt_bfloat, mxz)
 DEF_SVE_FUNCTION (svcvtnt, unary_convert_narrowt, cvt_bfloat, mx)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_I8MM
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_I8MM
 DEF_SVE_FUNCTION (svmmla, mmla, s_integer, none)
 DEF_SVE_FUNCTION (svusmmla, ternary_uintq_intq, s_signed, none)
 DEF_SVE_FUNCTION (svsudot, ternary_intq_uintq_opt_n, s_signed, none)
@@ -339,11 +339,11 @@ DEF_SVE_FUNCTION (svusdot, ternary_uintq_intq_opt_n, s_signed, none)
 DEF_SVE_FUNCTION (svusdot_lane, ternary_uintq_intq_lane, s_signed, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_F32MM
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_F32MM
 DEF_SVE_FUNCTION (svmmla, mmla, s_float, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_F64MM
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_F64MM
 DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
 DEF_SVE_FUNCTION (svmmla, mmla, d_float, none)
 DEF_SVE_FUNCTION (svtrn1q, binary, all_data, none)
