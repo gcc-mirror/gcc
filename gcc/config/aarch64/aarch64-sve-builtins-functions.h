@@ -234,18 +234,21 @@ class unspec_based_function_base : public function_base
 public:
   CONSTEXPR unspec_based_function_base (int unspec_for_sint,
 					int unspec_for_uint,
-					int unspec_for_fp)
+					int unspec_for_fp,
+					unsigned int suffix_index = 0)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
-      m_unspec_for_fp (unspec_for_fp)
+      m_unspec_for_fp (unspec_for_fp),
+      m_suffix_index (suffix_index)
   {}
 
   /* Return the unspec code to use for INSTANCE, based on type suffix 0.  */
   int
   unspec_for (const function_instance &instance) const
   {
-    return (!instance.type_suffix (0).integer_p ? m_unspec_for_fp
-	    : instance.type_suffix (0).unsigned_p ? m_unspec_for_uint
+    auto &suffix = instance.type_suffix (m_suffix_index);
+    return (!suffix.integer_p ? m_unspec_for_fp
+	    : suffix.unsigned_p ? m_unspec_for_uint
 	    : m_unspec_for_sint);
   }
 
@@ -254,6 +257,9 @@ public:
   int m_unspec_for_sint;
   int m_unspec_for_uint;
   int m_unspec_for_fp;
+
+  /* Which type suffix is used to choose between the unspecs.  */
+  unsigned int m_suffix_index;
 };
 
 /* A function_base for functions that have an associated unspec code.
@@ -306,7 +312,8 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    return e.use_exact_insn (CODE (unspec_for (e), e.vector_mode (0)));
+    return e.use_exact_insn (CODE (unspec_for (e),
+				   e.vector_mode (m_suffix_index)));
   }
 };
 
@@ -360,16 +367,16 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (0).float_p)
+    if (e.type_suffix (m_suffix_index).float_p)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand
 	   in the asm output.  */
 	e.rotate_inputs_left (0, e.pred != PRED_none ? 4 : 3);
-	icode = code_for_aarch64_sve (unspec, e.vector_mode (0));
+	icode = code_for_aarch64_sve (unspec, e.vector_mode (m_suffix_index));
       }
     else
-      icode = INT_CODE (unspec, e.vector_mode (0));
+      icode = INT_CODE (unspec, e.vector_mode (m_suffix_index));
     return e.use_exact_insn (icode);
   }
 };
@@ -390,16 +397,16 @@ public:
   {
     int unspec = unspec_for (e);
     insn_code icode;
-    if (e.type_suffix (0).float_p)
+    if (e.type_suffix (m_suffix_index).float_p)
       {
 	/* Put the operands in the normal (fma ...) order, with the accumulator
 	   last.  This fits naturally since that's also the unprinted operand
 	   in the asm output.  */
 	e.rotate_inputs_left (0, e.pred != PRED_none ? 5 : 4);
-	icode = code_for_aarch64_lane (unspec, e.vector_mode (0));
+	icode = code_for_aarch64_lane (unspec, e.vector_mode (m_suffix_index));
       }
     else
-      icode = INT_CODE (unspec, e.vector_mode (0));
+      icode = INT_CODE (unspec, e.vector_mode (m_suffix_index));
     return e.use_exact_insn (icode);
   }
 };
