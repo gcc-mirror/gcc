@@ -863,16 +863,7 @@
   [(clobber (const_int 0))]
   ""
   "
-  aarch64_expand_epilogue (false);
-  DONE;
-  "
-)
-
-(define_expand "sibcall_epilogue"
-  [(clobber (const_int 0))]
-  ""
-  "
-  aarch64_expand_epilogue (true);
+  aarch64_expand_epilogue (nullptr);
   DONE;
   "
 )

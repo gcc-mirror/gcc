@@ -11898,6 +11898,14 @@ the hook might return true if the prologue and epilogue need to switch
 between instruction sets.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_EMIT_EPILOGUE_FOR_SIBCALL (rtx_call_insn *@var{call})
+If defined, this hook emits an epilogue sequence for sibling (tail)
+call instruction @var{call}.  Another way of providing epilogues
+for sibling calls is to define the @code{sibcall_epilogue} instruction
+pattern; the main advantage of this hook over the pattern is that it
+has access to the call instruction.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_MACHINE_DEPENDENT_REORG (void)
 If non-null, this hook performs a target-specific pass over the
 instruction stream.  The compiler will run it at all optimization levels,

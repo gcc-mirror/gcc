@@ -888,7 +888,7 @@ const char * aarch64_gen_far_branch (rtx *, int, const char *, const char *);
 const char * aarch64_output_probe_stack_range (rtx, rtx);
 const char * aarch64_output_probe_sve_stack_clash (rtx, rtx, rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode);
-void aarch64_expand_epilogue (bool);
+void aarch64_expand_epilogue (rtx_call_insn *);
 rtx aarch64_ptrue_all (unsigned int);
 opt_machine_mode aarch64_ptrue_all_mode (rtx);
 rtx aarch64_convert_sve_data_to_pred (rtx, machine_mode, rtx);

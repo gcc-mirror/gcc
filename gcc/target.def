@@ -4174,6 +4174,15 @@ between instruction sets.",
  bool, (),
  hook_bool_void_false)
 
+DEFHOOK
+(emit_epilogue_for_sibcall,
+ "If defined, this hook emits an epilogue sequence for sibling (tail)\n\
+call instruction @var{call}.  Another way of providing epilogues\n\
+for sibling calls is to define the @code{sibcall_epilogue} instruction\n\
+pattern; the main advantage of this hook over the pattern is that it\n\
+has access to the call instruction.",
+ void, (rtx_call_insn *call), NULL)
+
 /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
 DEFHOOK

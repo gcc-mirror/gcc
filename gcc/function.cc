@@ -6208,7 +6208,17 @@ thread_prologue_and_epilogue_insns (void)
       if (!(CALL_P (insn) && SIBLING_CALL_P (insn)))
 	continue;
 
-      if (rtx_insn *ep_seq = targetm.gen_sibcall_epilogue ())
+      rtx_insn *ep_seq;
+      if (targetm.emit_epilogue_for_sibcall)
+	{
+	  start_sequence ();
+	  targetm.emit_epilogue_for_sibcall (as_a<rtx_call_insn *> (insn));
+	  ep_seq = get_insns ();
+	  end_sequence ();
+	}
+      else
+	ep_seq = targetm.gen_sibcall_epilogue ();
+      if (ep_seq)
 	{
 	  start_sequence ();
 	  emit_note (NOTE_INSN_EPILOGUE_BEG);
@@ -6268,7 +6278,8 @@ reposition_prologue_and_epilogue_notes (void)
 {
   if (!targetm.have_prologue ()
       && !targetm.have_epilogue ()
-      && !targetm.have_sibcall_epilogue ())
+      && !targetm.have_sibcall_epilogue ()
+      && !targetm.emit_epilogue_for_sibcall)
     return;
 
   /* Since the hash table is created on demand, the fact that it is

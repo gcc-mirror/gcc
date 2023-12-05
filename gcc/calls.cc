@@ -2502,7 +2502,8 @@ can_implement_as_sibling_call_p (tree exp,
 				 tree addr,
 				 const args_size &args_size)
 {
-  if (!targetm.have_sibcall_epilogue ())
+  if (!targetm.have_sibcall_epilogue ()
+      && !targetm.emit_epilogue_for_sibcall)
     {
       maybe_complain_about_tail_call
 	(exp,
