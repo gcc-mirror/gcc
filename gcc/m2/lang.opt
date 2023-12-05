@@ -405,6 +405,10 @@ iquote
 Modula-2
 ; Documented in c.opt
 
+isysroot
+Modula-2
+; Documented in c.opt
+
 isystem
 Modula-2
 ; Documented in c.opt
