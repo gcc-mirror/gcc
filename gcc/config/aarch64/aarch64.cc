@@ -846,7 +846,7 @@ pure_scalable_type_info::piece::get_rtx (unsigned int first_zr,
   if (num_zr > 0 && num_pr == 0)
     return gen_rtx_REG (mode, first_zr);
 
-  if (num_zr == 0 && num_pr == 1)
+  if (num_zr == 0 && num_pr <= 2)
     return gen_rtx_REG (mode, first_pr);
 
   gcc_unreachable ();
@@ -1069,6 +1069,7 @@ pure_scalable_type_info::add_piece (const piece &p)
       gcc_assert (VECTOR_MODE_P (p.mode) && VECTOR_MODE_P (prev.mode));
       unsigned int nelems1, nelems2;
       if (prev.orig_mode == p.orig_mode
+	  && GET_MODE_CLASS (p.orig_mode) != MODE_VECTOR_BOOL
 	  && known_eq (prev.offset + GET_MODE_SIZE (prev.mode), p.offset)
 	  && constant_multiple_p (GET_MODE_NUNITS (prev.mode),
 				  GET_MODE_NUNITS (p.orig_mode), &nelems1)
@@ -1370,8 +1371,7 @@ aarch64_sve_pred_mode_p (machine_mode mode)
 const unsigned int VEC_ADVSIMD  = 1;
 const unsigned int VEC_SVE_DATA = 2;
 const unsigned int VEC_SVE_PRED = 4;
-/* Can be used in combination with VEC_ADVSIMD or VEC_SVE_DATA to indicate
-   a structure of 2, 3 or 4 vectors.  */
+/* Indicates a structure of 2, 3 or 4 vectors or predicates.  */
 const unsigned int VEC_STRUCT   = 8;
 /* Can be used in combination with VEC_SVE_DATA to indicate that the
    vector has fewer significant bytes than a full SVE vector.  */
@@ -1534,6 +1534,9 @@ aarch64_classify_vector_mode (machine_mode mode, bool any_target_p = false)
     case E_V2DFmode:
       return (TARGET_FLOAT || any_target_p) ? VEC_ADVSIMD : 0;
 
+    case E_VNx32BImode:
+      return TARGET_SVE ? VEC_SVE_PRED | VEC_STRUCT : 0;
+
     default:
       return 0;
     }
@@ -1661,12 +1664,24 @@ aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
 static opt_machine_mode
 aarch64_array_mode (machine_mode mode, unsigned HOST_WIDE_INT nelems)
 {
-  if (aarch64_classify_vector_mode (mode) == VEC_SVE_DATA
-      && IN_RANGE (nelems, 2, 4))
+  if (TARGET_SVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    {
+      /* Use VNx32BI for pairs of predicates, but explicitly reject giving
+	 a mode to other array sizes.  Using integer modes requires a round
+	 trip through memory and generates terrible code.  */
+      if (nelems == 1)
+	return mode;
+      if (mode == VNx16BImode && nelems == 2)
+	return VNx32BImode;
+      return BLKmode;
+    }
+
+  auto flags = aarch64_classify_vector_mode (mode);
+  if (flags == VEC_SVE_DATA && IN_RANGE (nelems, 2, 4))
     return aarch64_sve_data_mode (GET_MODE_INNER (mode),
 				  GET_MODE_NUNITS (mode) * nelems);
-  if (aarch64_classify_vector_mode (mode) == VEC_ADVSIMD
-      && IN_RANGE (nelems, 2, 4))
+
+  if (flags == VEC_ADVSIMD && IN_RANGE (nelems, 2, 4))
     return aarch64_advsimd_vector_array_mode (mode, nelems);
 
   return opt_machine_mode ();
@@ -1886,13 +1901,17 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
 	  return GET_MODE_SIZE (mode).to_constant () / 8;
 	return CEIL (lowest_size, UNITS_PER_VREG);
       }
+
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
+      return mode == VNx32BImode ? 2 : 1;
+
     case FFR_REGS:
     case PR_AND_FFR_REGS:
     case FAKE_REGS:
       return 1;
+
     default:
       return CEIL (lowest_size, UNITS_PER_WORD);
     }
@@ -1916,8 +1935,11 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-  if (vec_flags & VEC_SVE_PRED)
+  if (vec_flags == VEC_SVE_PRED)
     return pr_or_ffr_regnum_p (regno);
+
+  if (vec_flags == (VEC_SVE_PRED | VEC_STRUCT))
+    return PR_REGNUM_P (regno);
 
   if (pr_or_ffr_regnum_p (regno))
     return false;
@@ -3000,6 +3022,33 @@ aarch64_emit_binop (rtx dest, optab binoptab, rtx op0, rtx op1)
     emit_move_insn (dest, tmp);
 }
 
+/* Split a move from SRC to DST into two moves of mode SINGLE_MODE.  */
+
+void
+aarch64_split_double_move (rtx dst, rtx src, machine_mode single_mode)
+{
+  machine_mode mode = GET_MODE (dst);
+
+  rtx dst0 = simplify_gen_subreg (single_mode, dst, mode, 0);
+  rtx dst1 = simplify_gen_subreg (single_mode, dst, mode,
+				  GET_MODE_SIZE (single_mode));
+  rtx src0 = simplify_gen_subreg (single_mode, src, mode, 0);
+  rtx src1 = simplify_gen_subreg (single_mode, src, mode,
+				  GET_MODE_SIZE (single_mode));
+
+  /* At most one pairing may overlap.  */
+  if (reg_overlap_mentioned_p (dst0, src1))
+    {
+      aarch64_emit_move (dst1, src1);
+      aarch64_emit_move (dst0, src0);
+    }
+  else
+    {
+      aarch64_emit_move (dst0, src0);
+      aarch64_emit_move (dst1, src1);
+    }
+}
+
 /* Split a 128-bit move operation into two 64-bit move operations,
    taking care to handle partial overlap of register to register
    copies.  Special cases are needed when moving between GP regs and
@@ -3009,9 +3058,6 @@ aarch64_emit_binop (rtx dest, optab binoptab, rtx op0, rtx op1)
 void
 aarch64_split_128bit_move (rtx dst, rtx src)
 {
-  rtx dst_lo, dst_hi;
-  rtx src_lo, src_hi;
-
   machine_mode mode = GET_MODE (dst);
 
   gcc_assert (mode == TImode || mode == TFmode || mode == TDmode);
@@ -3026,8 +3072,8 @@ aarch64_split_128bit_move (rtx dst, rtx src)
       /* Handle FP <-> GP regs.  */
       if (FP_REGNUM_P (dst_regno) && GP_REGNUM_P (src_regno))
 	{
-	  src_lo = gen_lowpart (word_mode, src);
-	  src_hi = gen_highpart (word_mode, src);
+	  rtx src_lo = gen_lowpart (word_mode, src);
+	  rtx src_hi = gen_highpart (word_mode, src);
 
 	  emit_insn (gen_aarch64_movlow_di (mode, dst, src_lo));
 	  emit_insn (gen_aarch64_movhigh_di (mode, dst, src_hi));
@@ -3035,8 +3081,8 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 	}
       else if (GP_REGNUM_P (dst_regno) && FP_REGNUM_P (src_regno))
 	{
-	  dst_lo = gen_lowpart (word_mode, dst);
-	  dst_hi = gen_highpart (word_mode, dst);
+	  rtx dst_lo = gen_lowpart (word_mode, dst);
+	  rtx dst_hi = gen_highpart (word_mode, dst);
 
 	  emit_insn (gen_aarch64_movdi_low (mode, dst_lo, src));
 	  emit_insn (gen_aarch64_movdi_high (mode, dst_hi, src));
@@ -3044,22 +3090,7 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 	}
     }
 
-  dst_lo = gen_lowpart (word_mode, dst);
-  dst_hi = gen_highpart (word_mode, dst);
-  src_lo = gen_lowpart (word_mode, src);
-  src_hi = gen_highpart_mode (word_mode, mode, src);
-
-  /* At most one pairing may overlap.  */
-  if (reg_overlap_mentioned_p (dst_lo, src_hi))
-    {
-      aarch64_emit_move (dst_hi, src_hi);
-      aarch64_emit_move (dst_lo, src_lo);
-    }
-  else
-    {
-      aarch64_emit_move (dst_lo, src_lo);
-      aarch64_emit_move (dst_hi, src_hi);
-    }
+  aarch64_split_double_move (dst, src, word_mode);
 }
 
 /* Return true if we should split a move from 128-bit value SRC
@@ -3325,7 +3356,7 @@ aarch64_ptrue_all (unsigned int elt_size)
 rtx
 aarch64_ptrue_reg (machine_mode mode)
 {
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  gcc_assert (aarch64_sve_pred_mode_p (mode));
   rtx reg = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
   return gen_lowpart (mode, reg);
 }
@@ -3335,7 +3366,7 @@ aarch64_ptrue_reg (machine_mode mode)
 rtx
 aarch64_pfalse_reg (machine_mode mode)
 {
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  gcc_assert (aarch64_sve_pred_mode_p (mode));
   rtx reg = force_reg (VNx16BImode, CONST0_RTX (VNx16BImode));
   return gen_lowpart (mode, reg);
 }
@@ -3351,7 +3382,7 @@ bool
 aarch64_sve_same_pred_for_ptest_p (rtx *pred1, rtx *pred2)
 {
   machine_mode mode = GET_MODE (pred1[0]);
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+  gcc_assert (aarch64_sve_pred_mode_p (mode)
 	      && mode == GET_MODE (pred2[0])
 	      && aarch64_sve_ptrue_flag (pred1[1], SImode)
 	      && aarch64_sve_ptrue_flag (pred2[1], SImode));
@@ -4824,7 +4855,9 @@ aarch64_sme_mode_switch_regs::add_reg (machine_mode mode, unsigned int regno)
       machine_mode submode = mode;
       if (vec_flags & VEC_STRUCT)
 	{
-	  if (vec_flags & VEC_SVE_DATA)
+	  if (vec_flags & VEC_SVE_PRED)
+	    submode = VNx16BImode;
+	  else if (vec_flags & VEC_SVE_DATA)
 	    submode = SVE_BYTE_MODE;
 	  else if (vec_flags & VEC_PARTIAL)
 	    submode = V8QImode;
@@ -4833,7 +4866,7 @@ aarch64_sme_mode_switch_regs::add_reg (machine_mode mode, unsigned int regno)
 	}
       save_location loc;
       loc.reg = gen_rtx_REG (submode, regno);
-      if (vec_flags == VEC_SVE_PRED)
+      if (vec_flags & VEC_SVE_PRED)
 	{
 	  gcc_assert (PR_REGNUM_P (regno));
 	  loc.group = MEM_SVE_PRED;
@@ -5845,7 +5878,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
   if (!CONST_INT_P (imm))
     {
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+      if (aarch64_sve_pred_mode_p (mode))
 	{
 	  /* Only the low bit of each .H, .S and .D element is defined,
 	     so we can set the upper bits to whatever we like.  If the
@@ -10311,6 +10344,15 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  if (vec_flags == VEC_SVE_PRED)
 	    return offset_9bit_signed_scaled_p (mode, offset);
 
+	  if (vec_flags == (VEC_SVE_PRED | VEC_STRUCT))
+	    {
+	      poly_int64 end_offset = (offset
+				       + GET_MODE_SIZE (mode)
+				       - BYTES_PER_SVE_PRED);
+	      return (offset_9bit_signed_scaled_p (VNx16BImode, end_offset)
+		      && offset_9bit_signed_scaled_p (VNx16BImode, offset));
+	    }
+
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
 		     || known_eq (GET_MODE_SIZE (mode), 8)
@@ -12611,10 +12653,12 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
 	      ? CEIL (lowest_size, UNITS_PER_VREG)
 	      : CEIL (lowest_size, UNITS_PER_WORD));
 
-    case STACK_REG:
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
+      return mode == VNx32BImode ? 2 : 1;
+
+    case STACK_REG:
     case FFR_REGS:
     case PR_AND_FFR_REGS:
     case FAKE_REGS:
@@ -20252,11 +20296,11 @@ aarch64_member_type_forces_blk (const_tree field_or_array, machine_mode mode)
      an ARRAY_TYPE.  In both cases we're interested in the TREE_TYPE.  */
   const_tree type = TREE_TYPE (field_or_array);
 
-  /* Assign BLKmode to anything that contains multiple SVE predicates.
+  /* Assign BLKmode to anything that contains more than 2 SVE predicates.
      For structures, the "multiple" case is indicated by MODE being
      VOIDmode.  */
   unsigned int num_zr, num_pr;
-  if (aarch64_sve::builtin_type_p (type, &num_zr, &num_pr) && num_pr != 0)
+  if (aarch64_sve::builtin_type_p (type, &num_zr, &num_pr) && num_pr > 2)
     {
       if (TREE_CODE (field_or_array) == ARRAY_TYPE)
 	return !simple_cst_equal (TYPE_SIZE (field_or_array),
@@ -21496,6 +21540,9 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   if ((vec_flags & VEC_ADVSIMD) && !TARGET_SIMD)
     return false;
 
+  if (vec_flags == (VEC_SVE_PRED | VEC_STRUCT))
+    return op == CONST0_RTX (mode) || op == CONSTM1_RTX (mode);
+
   if (vec_flags & VEC_SVE_PRED)
     return aarch64_sve_pred_valid_immediate (op, info);
 
@@ -21669,7 +21716,8 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 	 force everything to have a canonical form.  */
       if (!lra_in_progress
 	  && !reload_completed
-	  && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_BOOL
+	  && aarch64_sve_pred_mode_p (GET_MODE (x))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (x)), BYTES_PER_SVE_PRED)
 	  && GET_MODE (x) != VNx16BImode)
 	return false;
 
@@ -24272,7 +24320,7 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 
   /* The first element always refers to the first vector.
      Check if the extracted indices are increasing by one.  */
-  if (d->vec_flags == VEC_SVE_PRED
+  if ((d->vec_flags & VEC_SVE_PRED)
       || !d->perm[0].is_constant (&location)
       || !d->perm.series_p (0, 1, location, 1))
     return false;
@@ -24316,7 +24364,7 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   unsigned int i, size, unspec;
   machine_mode pred_mode;
 
-  if (d->vec_flags == VEC_SVE_PRED
+  if ((d->vec_flags & VEC_SVE_PRED)
       || !d->one_vector_p
       || !d->perm[0].is_constant (&diff)
       || !diff)
@@ -24397,7 +24445,7 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   machine_mode vmode = d->vmode;
   rtx lane;
 
-  if (d->vec_flags == VEC_SVE_PRED
+  if ((d->vec_flags & VEC_SVE_PRED)
       || d->perm.encoding ().encoded_nelts () != 1
       || !d->perm[0].is_constant (&elt))
     return false;

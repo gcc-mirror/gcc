@@ -3949,6 +3949,9 @@ register_vector_type (vector_type_index type)
 static void
 register_tuple_type (unsigned int num_vectors, vector_type_index type)
 {
+  tree vector_type = acle_vector_types[0][type];
+  bool is_pred = GET_MODE_CLASS (TYPE_MODE (vector_type)) == MODE_VECTOR_BOOL;
+
   /* Work out the structure name.  */
   char buffer[sizeof ("svbfloat16x4_t")];
   const char *vector_type_name = vector_types[type].acle_name;
@@ -3969,17 +3972,19 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
 
      Using arrays simplifies the handling of svget and svset for variable
      arguments.  */
-  tree vector_type = acle_vector_types[0][type];
   tree array_type = build_array_type_nelts (vector_type, num_vectors);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (array_type))
 	      && TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type)
-	      && TYPE_ALIGN (array_type) == 128);
+	      && TYPE_ALIGN (array_type) == (is_pred ? 16 : 128));
 
   tree tuple_type = wrap_type_in_struct (array_type);
-  add_sve_type_attribute (tuple_type, num_vectors, 0, NULL, buffer);
+  if (is_pred)
+    add_sve_type_attribute (tuple_type, 0, num_vectors, NULL, buffer);
+  else
+    add_sve_type_attribute (tuple_type, num_vectors, 0, NULL, buffer);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
-	      && TYPE_ALIGN (tuple_type) == 128);
+	      && TYPE_ALIGN (tuple_type) == TYPE_ALIGN (array_type));
 
   register_type_decl (tuple_type, buffer);
 
@@ -4031,9 +4036,10 @@ handle_arm_sve_h ()
     {
       vector_type_index type = vector_type_index (type_i);
       register_vector_type (type);
-      if (scalar_types[type_i] != boolean_type_node)
+      if (type != VECTOR_TYPE_svcount_t)
 	for (unsigned int count = 2; count <= MAX_TUPLE_SIZE; ++count)
-	  register_tuple_type (count, type);
+	  if (type != VECTOR_TYPE_svbool_t || count == 2)
+	    register_tuple_type (count, type);
     }
 
   /* Define the enums.  */

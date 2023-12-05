@@ -42,6 +42,10 @@
 (define_register_constraint "Upa" "PR_REGS"
   "SVE predicate registers p0 - p15.")
 
+(define_register_constraint "Up2" "PR_REGS"
+  "An even SVE predicate register, p0 - p14."
+  "regno % 2 == 0")
+
 (define_register_constraint "Upl" "PR_LO_REGS"
   "SVE predicate registers p0 - p7.")
 

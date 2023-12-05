@@ -33,6 +33,7 @@
 ;; ---- Moves of single vectors
 ;; ---- Moves of multiple vectors
 ;; ---- Moves of predicates
+;; ---- Moves of multiple predicates
 ;; ---- Moves relating to the FFR
 ;;
 ;; == Loads
@@ -1066,6 +1067,27 @@
   {
     operands[2] = CONSTM1_RTX (VNx16BImode);
     operands[3] = CONSTM1_RTX (<MODE>mode);
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- Moves of multiple predicates
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "movvnx32bi"
+  [(set (match_operand:VNx32BI 0 "nonimmediate_operand")
+	(match_operand:VNx32BI 1 "aarch64_mov_operand"))]
+  "TARGET_SVE"
+  {@ [ cons: =0 , 1   ]
+     [ Upa      , Upa ] #
+     [ Upa      , m   ] #
+     [ m        , Upa ] #
+  }
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_double_move (operands[0], operands[1], VNx16BImode);
+    DONE;
   }
 )
 
