@@ -1990,13 +1990,17 @@ asm_noperands (const_rtx body)
 	{
 	  /* Multiple output operands, or 1 output plus some clobbers:
 	     body is
-	     [(set OUTPUT (asm_operands ...))... (clobber (reg ...))...].  */
-	  /* Count backwards through CLOBBERs to determine number of SETs.  */
+	     [(set OUTPUT (asm_operands ...))...
+	      (use (reg ...))...
+	      (clobber (reg ...))...].  */
+	  /* Count backwards through USEs and CLOBBERs to determine
+	     number of SETs.  */
 	  for (i = XVECLEN (body, 0); i > 0; i--)
 	    {
 	      if (GET_CODE (XVECEXP (body, 0, i - 1)) == SET)
 		break;
-	      if (GET_CODE (XVECEXP (body, 0, i - 1)) != CLOBBER)
+	      if (GET_CODE (XVECEXP (body, 0, i - 1)) != USE
+		  && GET_CODE (XVECEXP (body, 0, i - 1)) != CLOBBER)
 		return -1;
 	    }
 
@@ -2023,10 +2027,13 @@ asm_noperands (const_rtx body)
       else
 	{
 	  /* 0 outputs, but some clobbers:
-	     body is [(asm_operands ...) (clobber (reg ...))...].  */
+	     body is [(asm_operands ...)
+		      (use (reg ...))...
+		      (clobber (reg ...))...].  */
 	  /* Make sure all the other parallel things really are clobbers.  */
 	  for (i = XVECLEN (body, 0) - 1; i > 0; i--)
-	    if (GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
+	    if (GET_CODE (XVECEXP (body, 0, i)) != USE
+		&& GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
 	      return -1;
 	}
     }
@@ -2093,7 +2100,8 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	       the SETs.  Their constraints are in the ASM_OPERANDS itself.  */
 	    for (i = 0; i < nparallel; i++)
 	      {
-		if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+		if (GET_CODE (XVECEXP (body, 0, i)) == USE
+		    || GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
 		  break;		/* Past last SET */
 		gcc_assert (GET_CODE (XVECEXP (body, 0, i)) == SET);
 		if (operands)

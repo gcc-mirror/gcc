@@ -23681,8 +23681,9 @@ static void map_egpr_constraints (vec<const char *> &constraints)
 static rtx_insn *
 ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		    vec<machine_mode> & /*input_modes*/,
-		    vec<const char *> &constraints, vec<rtx> &clobbers,
-		    HARD_REG_SET &clobbered_regs, location_t loc)
+		    vec<const char *> &constraints, vec<rtx> &/*uses*/,
+		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
+		    location_t loc)
 {
   bool saw_asm_flag = false;
 

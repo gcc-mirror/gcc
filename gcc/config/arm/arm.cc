@@ -328,7 +328,7 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<machine_mode> &,
 				       vec<const char *> &, vec<rtx> &,
-				       HARD_REG_SET &, location_t);
+				       vec<rtx> &, HARD_REG_SET &, location_t);
 static const char *arm_identify_fpu_from_isa (sbitmap);
 
 /* Table of machine attributes.  */
@@ -34646,7 +34646,8 @@ arm_stack_protect_guard (void)
 rtx_insn *
 thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
-		      vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		      vec<const char *> &constraints,
+		      vec<rtx> &, vec<rtx> & /*clobbers*/,
 		      HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)

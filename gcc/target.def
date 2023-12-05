@@ -4342,7 +4342,8 @@ DEFHOOK
 (md_asm_adjust,
  "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
 @var{clobbered_regs} for any hard regs the port wishes to automatically\n\
-clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
+clobber for an asm.  It can also add hard registers that are used by the\n\
+asm to @var{uses}.  The @var{outputs} and @var{inputs} may be inspected\n\
 to avoid clobbering a register that is already used by the asm.  @var{loc}\n\
 is the source location of the asm.\n\
 \n\
@@ -4353,7 +4354,7 @@ changes to @var{inputs} must be accompanied by the corresponding changes\n\
 to @var{input_modes}.",
  rtx_insn *,
  (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
-  vec<const char *>& constraints, vec<rtx>& clobbers,
+  vec<const char *>& constraints, vec<rtx>& usess, vec<rtx>& clobbers,
   HARD_REG_SET& clobbered_regs, location_t loc),
  NULL)
 

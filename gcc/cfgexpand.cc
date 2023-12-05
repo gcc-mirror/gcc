@@ -2874,6 +2874,7 @@ expand_asm_loc (tree string, int vol, location_t locus)
       auto_vec<rtx> input_rvec, output_rvec;
       auto_vec<machine_mode> input_mode;
       auto_vec<const char *> constraints;
+      auto_vec<rtx> use_rvec;
       auto_vec<rtx> clobber_rvec;
       HARD_REG_SET clobbered_regs;
       CLEAR_HARD_REG_SET (clobbered_regs);
@@ -2883,16 +2884,20 @@ expand_asm_loc (tree string, int vol, location_t locus)
 
       if (targetm.md_asm_adjust)
 	targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
-			       constraints, clobber_rvec, clobbered_regs,
-			       locus);
+			       constraints, use_rvec, clobber_rvec,
+			       clobbered_regs, locus);
 
       asm_op = body;
       nclobbers = clobber_rvec.length ();
-      body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (1 + nclobbers));
+      auto nuses = use_rvec.length ();
+      body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (1 + nuses + nclobbers));
 
-      XVECEXP (body, 0, 0) = asm_op;
-      for (i = 0; i < nclobbers; i++)
-	XVECEXP (body, 0, i + 1) = gen_rtx_CLOBBER (VOIDmode, clobber_rvec[i]);
+      i = 0;
+      XVECEXP (body, 0, i++) = asm_op;
+      for (rtx use : use_rvec)
+	XVECEXP (body, 0, i++) = gen_rtx_USE (VOIDmode, use);
+      for (rtx clobber : clobber_rvec)
+	XVECEXP (body, 0, i++) = gen_rtx_CLOBBER (VOIDmode, clobber);
     }
 
   emit_insn (body);
@@ -3444,11 +3449,12 @@ expand_asm_stmt (gasm *stmt)
      maintaining source-level compatibility means automatically clobbering
      the flags register.  */
   rtx_insn *after_md_seq = NULL;
+  auto_vec<rtx> use_rvec;
   if (targetm.md_asm_adjust)
     after_md_seq
 	= targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
-				 constraints, clobber_rvec, clobbered_regs,
-				 locus);
+				 constraints, use_rvec, clobber_rvec,
+				 clobbered_regs, locus);
 
   /* Do not allow the hook to change the output and input count,
      lest it mess up the operand numbering.  */
@@ -3456,7 +3462,8 @@ expand_asm_stmt (gasm *stmt)
   gcc_assert (input_rvec.length() == ninputs);
   gcc_assert (constraints.length() == noutputs + ninputs);
 
-  /* But it certainly can adjust the clobbers.  */
+  /* But it certainly can adjust the uses and clobbers.  */
+  unsigned nuses = use_rvec.length ();
   unsigned nclobbers = clobber_rvec.length ();
 
   /* Third pass checks for easy conflicts.  */
@@ -3528,7 +3535,7 @@ expand_asm_stmt (gasm *stmt)
 			       ARGVEC CONSTRAINTS OPNAMES))
      If there is more than one, put them inside a PARALLEL.  */
 
-  if (noutputs == 0 && nclobbers == 0)
+  if (noutputs == 0 && nuses == 0 && nclobbers == 0)
     {
       /* No output operands: put in a raw ASM_OPERANDS rtx.  */
       if (nlabels > 0)
@@ -3536,7 +3543,7 @@ expand_asm_stmt (gasm *stmt)
       else
 	emit_insn (body);
     }
-  else if (noutputs == 1 && nclobbers == 0)
+  else if (noutputs == 1 && nuses == 0 && nclobbers == 0)
     {
       ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
       if (nlabels > 0)
@@ -3552,7 +3559,8 @@ expand_asm_stmt (gasm *stmt)
       if (num == 0)
 	num = 1;
 
-      body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num + nclobbers));
+      body = gen_rtx_PARALLEL (VOIDmode,
+			       rtvec_alloc (num + nuses + nclobbers));
 
       /* For each output operand, store a SET.  */
       for (i = 0; i < noutputs; ++i)
@@ -3578,6 +3586,11 @@ expand_asm_stmt (gasm *stmt)
 	 store the bare ASM_OPERANDS into the PARALLEL.  */
       if (i == 0)
 	XVECEXP (body, 0, i++) = obody;
+
+      /* Add the uses specified by the target hook.  No checking should
+	 be needed since this doesn't come directly from user code.  */
+      for (rtx use : use_rvec)
+	XVECEXP (body, 0, i++) = gen_rtx_USE (VOIDmode, use);
 
       /* Store (clobber REG) for each clobbered register specified.  */
       for (unsigned j = 0; j < nclobbers; ++j)
