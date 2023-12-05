@@ -535,4 +535,19 @@ lra_assign_reg_val (int from, int to)
   lra_reg_info[to].offset = lra_reg_info[from].offset;
 }
 
+/* Update REGNO's biggest recorded mode so that it includes a reference
+   in mode MODE.  */
+inline void
+lra_update_biggest_mode (int regno, machine_mode mode)
+{
+  if (!ordered_p (GET_MODE_SIZE (lra_reg_info[regno].biggest_mode),
+		  GET_MODE_SIZE (mode)))
+    {
+      gcc_checking_assert (HARD_REGISTER_NUM_P (regno));
+      lra_reg_info[regno].biggest_mode = reg_raw_mode[regno];
+    }
+  else if (partial_subreg_p (lra_reg_info[regno].biggest_mode, mode))
+    lra_reg_info[regno].biggest_mode = mode;
+}
+
 #endif /* GCC_LRA_INT_H */

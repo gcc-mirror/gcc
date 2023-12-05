@@ -581,9 +581,8 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
   lra_insn_reg *ir = lra_insn_reg_pool.allocate ();
   ir->type = type;
   ir->biggest_mode = mode;
-  if (NONDEBUG_INSN_P (insn)
-      && partial_subreg_p (lra_reg_info[regno].biggest_mode, mode))
-    lra_reg_info[regno].biggest_mode = mode;
+  if (NONDEBUG_INSN_P (insn))
+    lra_update_biggest_mode (regno, mode);
   ir->subreg_p = subreg_p;
   ir->early_clobber_alts = early_clobber_alts;
   ir->regno = regno;
