@@ -281,11 +281,6 @@ hook_void_FILEptr_tree (FILE *, tree)
 }
 
 void
-hook_void_rtx_tree (rtx, tree)
-{
-}
-
-void
 hook_void_constcharptr (const char *)
 {
 }

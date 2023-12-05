@@ -5503,26 +5503,59 @@ except the last are treated as named.
 You need not define this hook if it always returns @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_CALL_ARGS (rtx, @var{tree})
+@deftypefn {Target Hook} void TARGET_START_CALL_ARGS (cumulative_args_t @var{complete_args})
+This target hook is invoked while generating RTL for a function call,
+after the argument values have been computed, and after stack arguments
+have been initialized, but before register arguments have been moved into
+their ABI-defined hard register locations.  It precedes calls to the related
+hooks @code{TARGET_CALL_ARGS} and @code{TARGET_END_CALL_ARGS}.
+The significance of this position in the call expansion is that:
+
+@itemize @bullet
+@item
+No argument registers are live.
+@item
+Although a call sequence can in general involve subcalls (such as using
+@code{memcpy} to copy large arguments), no such subcall will occur between
+the call to this hook and the generation of the main call instruction.
+@end itemize
+
+The single argument @var{complete_args} is the state of the target
+function's cumulative argument information after the final call to
+@code{TARGET_FUNCTION_ARG}.
+
+The hook can be used for things like switching processor mode, in cases
+where different calls need different processor modes.  Most ports do not
+need to implement anything for this hook.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_CALL_ARGS (cumulative_args_t @var{complete_args}, rtx @var{loc}, tree @var{type})
 While generating RTL for a function call, this target hook is invoked once
 for each argument passed to the function, either a register returned by
 @code{TARGET_FUNCTION_ARG} or a memory location.  It is called just
-before the point where argument registers are stored.  The type of the
-function to be called is also passed as the second argument; it is
-@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is
-invoked just after the code to copy the return reg has been emitted.
-This functionality can be used to perform special setup of call argument
-registers if a target needs it.
+before the point where argument registers are stored.
+
+@var{complete_args} is the state of the target function's cumulative
+argument information after the final call to @code{TARGET_FUNCTION_ARG}.
+@var{loc} is the location of the argument.  @var{type} is the type of
+the function being called, or @code{NULL_TREE} for libcalls.
+
 For functions without arguments, the hook is called once with @code{pc_rtx}
 passed instead of an argument register.
-Most ports do not need to implement anything for this hook.
+
+This functionality can be used to perform special setup of call argument
+registers, if a target needs it.  Most ports do not need to implement
+anything for this hook.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_END_CALL_ARGS (void)
+@deftypefn {Target Hook} void TARGET_END_CALL_ARGS (cumulative_args_t @var{complete_args})
 This target hook is invoked while generating RTL for a function call,
 just after the point where the return reg is copied into a pseudo.  It
 signals that all the call argument and return registers for the just
-emitted call are now no longer in use.
+emitted call are now no longer in use.  @var{complete_args} is the
+state of the target function's cumulative argument information after
+the final call to @code{TARGET_FUNCTION_ARG}.
+
 Most ports do not need to implement anything for this hook.
 @end deftypefn
 

@@ -1791,7 +1791,7 @@ nvptx_get_drap_rtx (void)
    argument to the next call.  */
 
 static void
-nvptx_call_args (rtx arg, tree fntype)
+nvptx_call_args (cumulative_args_t, rtx arg, tree fntype)
 {
   if (!cfun->machine->doing_call)
     {
@@ -1819,7 +1819,7 @@ nvptx_call_args (rtx arg, tree fntype)
    information we recorded.  */
 
 static void
-nvptx_end_call_args (void)
+nvptx_end_call_args (cumulative_args_t)
 {
   cfun->machine->doing_call = false;
   free_EXPR_LIST_list (&cfun->machine->call_args);
