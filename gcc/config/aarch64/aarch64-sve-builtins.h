@@ -263,6 +263,40 @@ struct group_suffix_info
   unsigned int vectors_per_tuple;
 };
 
+/* Represents an SVE vector, predicate, tuple of vectors, or tuple of
+   predicates.  There is also a representation of "no type"/"invalid type".  */
+struct sve_type
+{
+  sve_type () = default;
+  sve_type (type_suffix_index type) : type (type), num_vectors (1) {}
+  sve_type (type_suffix_index type, unsigned int num_vectors)
+    : type (type), num_vectors (num_vectors) {}
+
+  /* Return true if the type is valid.  */
+  explicit operator bool () const { return type != NUM_TYPE_SUFFIXES; }
+
+  bool operator== (const sve_type &) const;
+  bool operator!= (const sve_type &x) const { return !operator== (x); }
+
+  /* This is one of:
+
+     - TYPE_SUFFIX_b for svbool_t-based types
+     - TYPE_SUFFIX_c for svcount_t-based types
+     - the type suffix of a data element for SVE data vectors and tuples
+     - NUM_TYPE_SUFFIXES for invalid types.  */
+  type_suffix_index type = NUM_TYPE_SUFFIXES;
+
+  /* If the type is a tuple, this is the number of vectors in the tuple,
+     otherwise it is 1.  */
+  unsigned int num_vectors = 1;
+};
+
+inline bool
+sve_type::operator== (const sve_type &other) const
+{
+  return type == other.type && num_vectors == other.num_vectors;
+}
+
 /* Static information about a set of functions.  */
 struct function_group_info
 {
@@ -413,12 +447,11 @@ public:
   function_resolver (location_t, const function_instance &, tree,
 		     vec<tree, va_gc> &);
 
-  tree get_vector_type (type_suffix_index);
   const char *get_scalar_type_name (type_suffix_index);
   tree get_argument_type (unsigned int);
   bool scalar_argument_p (unsigned int);
 
-  tree report_no_such_form (type_suffix_index);
+  tree report_no_such_form (sve_type);
   tree lookup_form (mode_suffix_index,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,

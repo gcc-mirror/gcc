@@ -659,6 +659,14 @@ find_type_suffix_for_scalar_type (const_tree type)
   return NUM_TYPE_SUFFIXES;
 }
 
+/* Return the vector type associated with TYPE.  */
+static tree
+get_vector_type (sve_type type)
+{
+  auto vector_type = type_suffixes[type.type].vector_type;
+  return acle_vector_types[type.num_vectors - 1][vector_type];
+}
+
 /* Report an error against LOCATION that the user has tried to use
    function FNDECL when extension EXTENSION is disabled.  */
 static void
@@ -1190,13 +1198,6 @@ function_resolver::function_resolver (location_t location,
 {
 }
 
-/* Return the vector type associated with type suffix TYPE.  */
-tree
-function_resolver::get_vector_type (type_suffix_index type)
-{
-  return acle_vector_types[0][type_suffixes[type].vector_type];
-}
-
 /* Return the <stdint.h> name associated with TYPE.  Using the <stdint.h>
    name should be more user-friendly than the underlying canonical type,
    since it makes the signedness and bitwidth explicit.  */
@@ -1227,10 +1228,10 @@ function_resolver::scalar_argument_p (unsigned int i)
 	  || SCALAR_FLOAT_TYPE_P (type));
 }
 
-/* Report that the function has no form that takes type suffix TYPE.
+/* Report that the function has no form that takes type TYPE.
    Return error_mark_node.  */
 tree
-function_resolver::report_no_such_form (type_suffix_index type)
+function_resolver::report_no_such_form (sve_type type)
 {
   error_at (location, "%qE has no form that takes %qT arguments",
 	    fndecl, get_vector_type (type));
@@ -1352,6 +1353,25 @@ function_resolver::infer_pointer_type (unsigned int argno,
   return type;
 }
 
+/* If TYPE is an SVE predicate or vector type, or a tuple of such a type,
+   return the associated sve_type, otherwise return an invalid sve_type.  */
+static sve_type
+find_sve_type (const_tree type)
+{
+  /* A linear search should be OK here, since the code isn't hot and
+     the number of types is only small.  */
+  for (unsigned int size_i = 0; size_i < MAX_TUPLE_SIZE; ++size_i)
+    for (unsigned int suffix_i = 0; suffix_i < NUM_TYPE_SUFFIXES; ++suffix_i)
+      {
+	vector_type_index type_i = type_suffixes[suffix_i].vector_type;
+	tree this_type = acle_vector_types[size_i][type_i];
+	if (this_type && matches_type_p (this_type, type))
+	  return { type_suffix_index (suffix_i), size_i + 1 };
+      }
+
+  return {};
+}
+
 /* Require argument ARGNO to be a single vector or a tuple of NUM_VECTORS
    vectors; NUM_VECTORS is 1 for the former.  Return the associated type
    suffix on success, using TYPE_SUFFIX_b for predicates.  Report an error
@@ -1364,37 +1384,30 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
   if (actual == error_mark_node)
     return NUM_TYPE_SUFFIXES;
 
-  /* A linear search should be OK here, since the code isn't hot and
-     the number of types is only small.  */
-  for (unsigned int size_i = 0; size_i < MAX_TUPLE_SIZE; ++size_i)
-    for (unsigned int suffix_i = 0; suffix_i < NUM_TYPE_SUFFIXES; ++suffix_i)
-      {
-	vector_type_index type_i = type_suffixes[suffix_i].vector_type;
-	tree type = acle_vector_types[size_i][type_i];
-	if (type && matches_type_p (type, actual))
-	  {
-	    if (size_i + 1 == num_vectors)
-	      return type_suffix_index (suffix_i);
+  if (auto sve_type = find_sve_type (actual))
+    {
+      if (sve_type.num_vectors == num_vectors)
+	return sve_type.type;
 
-	    if (num_vectors == 1)
-	      error_at (location, "passing %qT to argument %d of %qE, which"
-			" expects a single SVE vector rather than a tuple",
-			actual, argno + 1, fndecl);
-	    else if (size_i == 0 && type_i != VECTOR_TYPE_svbool_t)
-	      /* num_vectors is always != 1, so the singular isn't needed.  */
-	      error_n (location, num_vectors, "%qT%d%qE%d",
-		       "passing single vector %qT to argument %d"
-		       " of %qE, which expects a tuple of %d vectors",
-		       actual, argno + 1, fndecl, num_vectors);
-	    else
-	      /* num_vectors is always != 1, so the singular isn't needed.  */
-	      error_n (location, num_vectors, "%qT%d%qE%d",
-		       "passing %qT to argument %d of %qE, which"
-		       " expects a tuple of %d vectors", actual, argno + 1,
-		       fndecl, num_vectors);
-	    return NUM_TYPE_SUFFIXES;
-	  }
-      }
+      if (num_vectors == 1)
+	error_at (location, "passing %qT to argument %d of %qE, which"
+		  " expects a single SVE vector rather than a tuple",
+		  actual, argno + 1, fndecl);
+      else if (sve_type.num_vectors == 1
+	       && sve_type.type != TYPE_SUFFIX_b)
+	/* num_vectors is always != 1, so the singular isn't needed.  */
+	error_n (location, num_vectors, "%qT%d%qE%d",
+		 "passing single vector %qT to argument %d"
+		 " of %qE, which expects a tuple of %d vectors",
+		 actual, argno + 1, fndecl, num_vectors);
+      else
+	/* num_vectors is always != 1, so the singular isn't needed.  */
+	error_n (location, num_vectors, "%qT%d%qE%d",
+		 "passing %qT to argument %d of %qE, which"
+		 " expects a tuple of %d vectors", actual, argno + 1,
+		 fndecl, num_vectors);
+      return NUM_TYPE_SUFFIXES;
+    }
 
   if (num_vectors == 1)
     error_at (location, "passing %qT to argument %d of %qE, which"
