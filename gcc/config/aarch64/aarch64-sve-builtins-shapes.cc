@@ -66,8 +66,8 @@ apply_predication (const function_instance &instance, tree return_type,
 	 the same type as the result.  For unary_convert_narrowt it also
 	 provides the "bottom" half of active elements, and is present
 	 for all types of predication.  */
-      if ((argument_types.length () == 2 && instance.pred == PRED_m)
-	  || instance.shape == shapes::unary_convert_narrowt)
+      auto nargs = argument_types.length () - 1;
+      if (instance.shape->has_merge_argument_p (instance, nargs))
 	argument_types.quick_insert (0, return_type);
     }
 }
@@ -3271,6 +3271,12 @@ SHAPE (unary_convert)
    predicate.  */
 struct unary_convert_narrowt_def : public overloaded_base<1>
 {
+  bool
+  has_merge_argument_p (const function_instance &, unsigned int) const override
+  {
+    return true;
+  }
+
   void
   build (function_builder &b, const function_group_info &group) const override
   {

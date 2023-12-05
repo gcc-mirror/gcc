@@ -712,6 +712,9 @@ public:
 class function_shape
 {
 public:
+  virtual bool has_merge_argument_p (const function_instance &,
+				     unsigned int) const;
+
   virtual bool explicit_type_suffix_p (unsigned int) const = 0;
 
   /* True if the group suffix is present in overloaded names.
@@ -985,6 +988,16 @@ inline unsigned int
 function_base::vectors_per_tuple (const function_instance &instance) const
 {
   return instance.group_suffix ().vectors_per_tuple;
+}
+
+/* Return true if INSTANCE (which has NARGS arguments) has an initial
+   vector argument whose only purpose is to specify the values of
+   inactive lanes.  */
+inline bool
+function_shape::has_merge_argument_p (const function_instance &instance,
+				      unsigned int nargs) const
+{
+  return nargs == 1 && instance.pred == PRED_m;
 }
 
 /* Return the mode of the result of a call.  */

@@ -2287,7 +2287,7 @@ function_resolver::check_gp_argument (unsigned int nops,
   if (pred != PRED_none)
     {
       /* Unary merge operations should use resolve_unary instead.  */
-      gcc_assert (nops != 1 || pred != PRED_m);
+      gcc_assert (!shape->has_merge_argument_p (*this, nops));
       nargs = nops + 1;
       if (!check_num_arguments (nargs)
 	  || !require_vector_type (i, VECTOR_TYPE_svbool_t))
@@ -2997,7 +2997,7 @@ function_expander::get_fallback_value (machine_mode mode, unsigned int nops,
 
   gcc_assert (pred == PRED_m || pred == PRED_x);
   if (merge_argno == DEFAULT_MERGE_ARGNO)
-    merge_argno = nops == 1 && pred == PRED_m ? 0 : 1;
+    merge_argno = shape->has_merge_argument_p (*this, nops) ? 0 : 1;
 
   if (merge_argno == 0)
     return args[argno++];
