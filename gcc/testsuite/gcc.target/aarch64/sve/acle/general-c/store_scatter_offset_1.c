@@ -13,8 +13,8 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8, svint16_t s16, svuint16_t u16,
   svst1_scatter (pg, u32); /* { dg-error {too few arguments to function 'svst1_scatter'} } */
   svst1_scatter (pg, u32, u32, 0); /* { dg-error {too many arguments to function 'svst1_scatter'} } */
   svst1_scatter (0, u32, u32); /* { dg-error {passing 'int' to argument 1 of 'svst1_scatter', which expects 'svbool_t'} } */
-  svst1_scatter (pg, 0, u32); /* { dg-error {passing 'int' to argument 2 of 'svst1_scatter', which expects an SVE vector type} } */
-  svst1_scatter (pg, u32, 0); /* { dg-error {passing 'int' to argument 3 of 'svst1_scatter', which expects an SVE vector type} } */
+  svst1_scatter (pg, 0, u32); /* { dg-error {passing 'int' to argument 2 of 'svst1_scatter', which expects an SVE type rather than a scalar} } */
+  svst1_scatter (pg, u32, 0); /* { dg-error {passing 'int' to argument 3 of 'svst1_scatter', which expects an SVE type rather than a scalar} } */
 
   svst1_scatter (pg, u32, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svst1_scatter', which expects a vector of 32-bit or 64-bit elements} } */
 

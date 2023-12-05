@@ -9,7 +9,7 @@ test (svbool_t pg, svint8_t s8, svuint8_t u8,
   svcvt_f64_x (pg); /* { dg-error {too few arguments to function 'svcvt_f64_x'} } */
   svcvt_f64_x (pg, s32, 0); /* { dg-error {too many arguments to function 'svcvt_f64_x'} } */
   svcvt_f64_x (s32, s32); /* { dg-error {passing 'svint32_t' to argument 1 of 'svcvt_f64_x', which expects 'svbool_t'} } */
-  svcvt_f64_x (pg, 0); /* { dg-error {passing 'int' to argument 2 of 'svcvt_f64_x', which expects an SVE vector type} } */
+  svcvt_f64_x (pg, 0); /* { dg-error {passing 'int' to argument 2 of 'svcvt_f64_x', which expects an SVE type rather than a scalar} } */
 
   svcvt_f64_x (pg, s8); /* { dg-error {'svcvt_f64_x' has no form that takes 'svint8_t' arguments} } */
   svcvt_f64_x (pg, s16); /* { dg-error {'svcvt_f64_x' has no form that takes 'svint16_t' arguments} } */

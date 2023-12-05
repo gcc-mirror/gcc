@@ -23,12 +23,12 @@ f2 (svbool_t pg, svint8_t s8, svuint8_t u8, svuint32_t u32,
 {
   svsudot (s32, s8); /* { dg-error {too few arguments to function 'svsudot'} } */
   svsudot (s32, s8, u8, u8); /* { dg-error {too many arguments to function 'svsudot'} } */
-  svsudot (0, s8, u8); /* { dg-error {passing 'int' to argument 1 of 'svsudot', which expects an SVE vector type} } */
+  svsudot (0, s8, u8); /* { dg-error {passing 'int' to argument 1 of 'svsudot', which expects an SVE type rather than a scalar} } */
   svsudot (pg, s8, u8); /* { dg-error {'svsudot' has no form that takes 'svbool_t' arguments} } */
   svsudot (u8, s8, u8); /* { dg-error {'svsudot' has no form that takes 'svuint8_t' arguments} } */
   svsudot (f32, s8, u8); /* { dg-error {'svsudot' has no form that takes 'svfloat32_t' arguments} } */
   svsudot (s32, s8, u8);
-  svsudot (s32, 0, u8); /* { dg-error {passing 'int' to argument 2 of 'svsudot', which expects an SVE vector type} } */
+  svsudot (s32, 0, u8); /* { dg-error {passing 'int' to argument 2 of 'svsudot', which expects an SVE type rather than a scalar} } */
   svsudot (s32, u8, u8); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svsudot', which expects a vector of signed integers} } */
   svsudot (s32, s8, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svsudot', which expects a vector of unsigned integers} } */
   svsudot (s32, s8, 0);

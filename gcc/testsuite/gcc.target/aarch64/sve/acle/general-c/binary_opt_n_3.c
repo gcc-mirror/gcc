@@ -10,7 +10,7 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svand_z (pg, u8, u8, u8); /* { dg-error {too many arguments to function 'svand_z'} } */
   svand_z (u8, u8, u8); /* { dg-error {passing 'svuint8_t' to argument 1 of 'svand_z', which expects 'svbool_t'} } */
   svand_z (pg, pg, pg);
-  svand_z (pg, 1, u8); /* { dg-error {passing 'int' to argument 2 of 'svand_z', which expects an SVE vector type} } */
+  svand_z (pg, 1, u8); /* { dg-error {passing 'int' to argument 2 of 'svand_z', which expects an SVE type rather than a scalar} } */
   svand_z (pg, u8, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svand_z', but previous arguments had type 'svuint8_t'} } */
   svand_z (pg, u8, u8);
   svand_z (pg, u8, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svand_z', but previous arguments had type 'svuint8_t'} } */

@@ -10,14 +10,14 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8, svint16_t s16, svuint16_t u16,
 {
   svusdot_lane (s32, u8, s8); /* { dg-error {too few arguments to function 'svusdot_lane'} } */
   svusdot_lane (s32, u8, s8, 0, 0); /* { dg-error {too many arguments to function 'svusdot_lane'} } */
-  svusdot_lane (0, u8, s8, 0); /* { dg-error {passing 'int' to argument 1 of 'svusdot_lane', which expects an SVE vector type} } */
+  svusdot_lane (0, u8, s8, 0); /* { dg-error {passing 'int' to argument 1 of 'svusdot_lane', which expects an SVE type rather than a scalar} } */
   svusdot_lane (pg, u8, s8, 0); /* { dg-error {'svusdot_lane' has no form that takes 'svbool_t' arguments} } */
   svusdot_lane (u8, u8, s8, 0); /* { dg-error {'svusdot_lane' has no form that takes 'svuint8_t' arguments} } */
   svusdot_lane (f32, u8, s8, 0); /* { dg-error {'svusdot_lane' has no form that takes 'svfloat32_t' arguments} } */
   svusdot_lane (u32, u8, s8, 0); /* { dg-error {'svusdot_lane' has no form that takes 'svuint32_t' arguments} } */
   svusdot_lane (s32, u8, s8, 0);
-  svusdot_lane (s32, 0, s8, 0); /* { dg-error {passing 'int' to argument 2 of 'svusdot_lane', which expects an SVE vector type} } */
-  svusdot_lane (s32, u8, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svusdot_lane', which expects an SVE vector type} } */
+  svusdot_lane (s32, 0, s8, 0); /* { dg-error {passing 'int' to argument 2 of 'svusdot_lane', which expects an SVE type rather than a scalar} } */
+  svusdot_lane (s32, u8, 0, 0); /* { dg-error {passing 'int' to argument 3 of 'svusdot_lane', which expects an SVE type rather than a scalar} } */
 
   svusdot_lane (s32, u8, s8, 0);
   svusdot_lane (s32, s8, s8, 0); /* { dg-error {passing 'svint8_t' to argument 2 of 'svusdot_lane', which expects a vector of unsigned integers} } */

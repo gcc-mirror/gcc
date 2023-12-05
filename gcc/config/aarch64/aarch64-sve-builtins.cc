@@ -1228,6 +1228,32 @@ function_resolver::scalar_argument_p (unsigned int i)
 	  || SCALAR_FLOAT_TYPE_P (type));
 }
 
+/* Report that argument ARGNO was expected to have NUM_VECTORS vectors.
+   TYPE is the type that ARGNO actually has.  */
+void
+function_resolver::report_incorrect_num_vectors (unsigned int argno,
+						 sve_type type,
+						 unsigned int num_vectors)
+{
+  if (num_vectors == 1)
+    error_at (location, "passing %qT to argument %d of %qE, which"
+	      " expects a single SVE vector rather than a tuple",
+	      get_vector_type (type), argno + 1, fndecl);
+  else if (type.num_vectors == 1
+	   && type.type != TYPE_SUFFIX_b)
+    /* num_vectors is always != 1, so the singular isn't needed.  */
+    error_n (location, num_vectors, "%qT%d%qE%d",
+	     "passing single vector %qT to argument %d"
+	     " of %qE, which expects a tuple of %d vectors",
+	     get_vector_type (type), argno + 1, fndecl, num_vectors);
+  else
+    /* num_vectors is always != 1, so the singular isn't needed.  */
+    error_n (location, num_vectors, "%qT%d%qE%d",
+	     "passing %qT to argument %d of %qE, which"
+	     " expects a tuple of %d vectors", get_vector_type (type),
+	     argno + 1, fndecl, num_vectors);
+}
+
 /* Report that the function has no form that takes type TYPE.
    Return error_mark_node.  */
 tree
@@ -1372,6 +1398,30 @@ find_sve_type (const_tree type)
   return {};
 }
 
+/* Require argument ARGNO to be an SVE type (i.e. something that can be
+   represented by sve_type).  Return the (valid) type if it is, otherwise
+   report an error and return an invalid type.  */
+sve_type
+function_resolver::infer_sve_type (unsigned int argno)
+{
+  tree actual = get_argument_type (argno);
+  if (actual == error_mark_node)
+    return {};
+
+  if (sve_type type = find_sve_type (actual))
+    return type;
+
+  if (scalar_argument_p (argno))
+    error_at (location, "passing %qT to argument %d of %qE, which"
+	      " expects an SVE type rather than a scalar type",
+	      actual, argno + 1, fndecl);
+  else
+    error_at (location, "passing %qT to argument %d of %qE, which"
+	      " expects an SVE type",
+	      actual, argno + 1, fndecl);
+  return {};
+}
+
 /* Require argument ARGNO to be a single vector or a tuple of NUM_VECTORS
    vectors; NUM_VECTORS is 1 for the former.  Return the associated type
    suffix on success, using TYPE_SUFFIX_b for predicates.  Report an error
@@ -1380,41 +1430,14 @@ type_suffix_index
 function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 					       unsigned int num_vectors)
 {
-  tree actual = get_argument_type (argno);
-  if (actual == error_mark_node)
+  auto type = infer_sve_type (argno);
+  if (!type)
     return NUM_TYPE_SUFFIXES;
 
-  if (auto sve_type = find_sve_type (actual))
-    {
-      if (sve_type.num_vectors == num_vectors)
-	return sve_type.type;
+  if (type.num_vectors == num_vectors)
+    return type.type;
 
-      if (num_vectors == 1)
-	error_at (location, "passing %qT to argument %d of %qE, which"
-		  " expects a single SVE vector rather than a tuple",
-		  actual, argno + 1, fndecl);
-      else if (sve_type.num_vectors == 1
-	       && sve_type.type != TYPE_SUFFIX_b)
-	/* num_vectors is always != 1, so the singular isn't needed.  */
-	error_n (location, num_vectors, "%qT%d%qE%d",
-		 "passing single vector %qT to argument %d"
-		 " of %qE, which expects a tuple of %d vectors",
-		 actual, argno + 1, fndecl, num_vectors);
-      else
-	/* num_vectors is always != 1, so the singular isn't needed.  */
-	error_n (location, num_vectors, "%qT%d%qE%d",
-		 "passing %qT to argument %d of %qE, which"
-		 " expects a tuple of %d vectors", actual, argno + 1,
-		 fndecl, num_vectors);
-      return NUM_TYPE_SUFFIXES;
-    }
-
-  if (num_vectors == 1)
-    error_at (location, "passing %qT to argument %d of %qE, which"
-	      " expects an SVE vector type", actual, argno + 1, fndecl);
-  else
-    error_at (location, "passing %qT to argument %d of %qE, which"
-	      " expects an SVE tuple type", actual, argno + 1, fndecl);
+  report_incorrect_num_vectors (argno, type, num_vectors);
   return NUM_TYPE_SUFFIXES;
 }
 

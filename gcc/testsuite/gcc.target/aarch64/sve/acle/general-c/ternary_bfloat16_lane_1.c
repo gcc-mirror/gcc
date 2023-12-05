@@ -10,7 +10,7 @@ f1 (svbool_t pg, svuint8_t u8, svuint16_t u16, svint32_t s32,
 {
   svbfmlalb_lane (f32, bf16, bf16); /* { dg-error {too few arguments to function 'svbfmlalb_lane'} } */
   svbfmlalb_lane (f32, bf16, bf16, 0, 0); /* { dg-error {too many arguments to function 'svbfmlalb_lane'} } */
-  svbfmlalb_lane (0, bf16, bf16, 0); /* { dg-error {passing 'int' to argument 1 of 'svbfmlalb_lane', which expects an SVE vector type} } */
+  svbfmlalb_lane (0, bf16, bf16, 0); /* { dg-error {passing 'int' to argument 1 of 'svbfmlalb_lane', which expects an SVE type rather than a scalar} } */
   svbfmlalb_lane (pg, bf16, bf16, 0); /* { dg-error {'svbfmlalb_lane' has no form that takes 'svbool_t' arguments} } */
   svbfmlalb_lane (u8, bf16, bf16, 0); /* { dg-error {'svbfmlalb_lane' has no form that takes 'svuint8_t' arguments} } */
   svbfmlalb_lane (u16, bf16, bf16, 0); /* { dg-error {'svbfmlalb_lane' has no form that takes 'svuint16_t' arguments} } */

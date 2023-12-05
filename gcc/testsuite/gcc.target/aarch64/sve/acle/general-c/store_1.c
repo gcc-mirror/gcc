@@ -13,7 +13,7 @@ f1 (svbool_t pg, signed char *s8_ptr, void *void_ptr, struct s *s_ptr,
   svst1 (pg, s8_ptr); /* { dg-error {too few arguments to function 'svst1'} } */
   svst1 (pg, s8_ptr, s8, 0); /* { dg-error {too many arguments to function 'svst1'} } */
   svst1 (0, s8_ptr, s8); /* { dg-error {passing 'int' to argument 1 of 'svst1', which expects 'svbool_t'} } */
-  svst1 (pg, void_ptr, 0); /* { dg-error {passing 'int' to argument 3 of 'svst1', which expects an SVE vector type} } */
+  svst1 (pg, void_ptr, 0); /* { dg-error {passing 'int' to argument 3 of 'svst1', which expects an SVE type rather than a scalar} } */
   svst1 (pg, void_ptr, pg); /* { dg-error {'svst1' has no form that takes 'svbool_t' arguments} } */
   svst1 (pg, 0, s8);
   svst1 (pg, (int32_t *) 0, s8); /* { dg-error "passing argument 2 of 'svst1_s8' from incompatible pointer type" } */

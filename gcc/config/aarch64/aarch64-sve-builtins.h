@@ -451,6 +451,8 @@ public:
   tree get_argument_type (unsigned int);
   bool scalar_argument_p (unsigned int);
 
+  void report_incorrect_num_vectors (unsigned int, sve_type, unsigned int);
+
   tree report_no_such_form (sve_type);
   tree lookup_form (mode_suffix_index,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
@@ -463,6 +465,7 @@ public:
 
   type_suffix_index infer_integer_scalar_type (unsigned int);
   type_suffix_index infer_pointer_type (unsigned int, bool = false);
+  sve_type infer_sve_type (unsigned int);
   type_suffix_index infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
   type_suffix_index infer_integer_vector_type (unsigned int);

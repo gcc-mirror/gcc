@@ -13,8 +13,8 @@ f1 (svbool_t pg, svuint8_t u8, svint8_t s8, svuint16_t u16, svint16_t s16,
   svtbx (pg, pg, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svtbx', which expects a vector of unsigned integers} } */
   svtbx (pg, pg, u8); /* { dg-error {'svtbx' has no form that takes 'svbool_t' arguments} } */
 
-  svtbx (u8, 0, u8); /* { dg-error {passing 'int' to argument 2 of 'svtbx', which expects an SVE vector type} } */
-  svtbx (u8, u8, 0); /* { dg-error {passing 'int' to argument 3 of 'svtbx', which expects an SVE vector type} } */
+  svtbx (u8, 0, u8); /* { dg-error {passing 'int' to argument 2 of 'svtbx', which expects an SVE type rather than a scalar} } */
+  svtbx (u8, u8, 0); /* { dg-error {passing 'int' to argument 3 of 'svtbx', which expects an SVE type rather than a scalar} } */
   svtbx (u8, s8, u8); /* { dg-error {passing 'svint8_t' to argument 2 of 'svtbx', but previous arguments had type 'svuint8_t'} } */
   svtbx (u8, u8, u8);
   svtbx (u8, u8, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svtbx', which expects a vector of unsigned integers} } */
@@ -29,7 +29,7 @@ f1 (svbool_t pg, svuint8_t u8, svint8_t s8, svuint16_t u16, svint16_t s16,
   svtbx (s8, s8, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svtbx', which expects a vector of unsigned integers} } */
   svtbx (s8, s8, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svtbx', which expects a vector of unsigned integers} } */
 
-  svtbx (u16, 0, u16); /* { dg-error {passing 'int' to argument 2 of 'svtbx', which expects an SVE vector type} } */
+  svtbx (u16, 0, u16); /* { dg-error {passing 'int' to argument 2 of 'svtbx', which expects an SVE type rather than a scalar} } */
   svtbx (u16, u16, u8); /* { dg-error {arguments 1 and 3 of 'svtbx' must have the same element size, but the values passed here have type 'svuint16_t' and 'svuint8_t' respectively} } */
   svtbx (u16, u16, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svtbx', which expects a vector of unsigned integers} } */
   svtbx (u16, u16, u16);
