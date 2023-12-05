@@ -36,8 +36,8 @@ namespace N
     X operator+(T, std::size_t)
     { return X(); }
 
-  template<typename T>
-    X operator-(T, T)
+  template<typename T, typename U>
+    X operator-(T, U)
     { return X(); }
 }
 
