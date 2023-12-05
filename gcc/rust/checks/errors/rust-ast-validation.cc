@@ -103,6 +103,10 @@ ASTValidation::visit (AST::Function &function)
     rust_error_at (function.get_locus (),
 		   "functions cannot be both %<const%> and %<async%>");
 
+  if (qualifiers.is_const () && context.back () == Context::TRAIT_IMPL)
+    rust_error_at (function.get_locus (), ErrorCode::E0379,
+		   "functions in traits cannot be declared const");
+
   if (valid_context.find (context.back ()) == valid_context.end ()
       && function.has_self_param ())
     rust_error_at (
