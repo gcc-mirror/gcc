@@ -12116,9 +12116,56 @@ The list below describes the supported modifiers and their effects for LoongArch
 @item @code{d} @tab Same as @code{c}.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is not a register.
 @item @code{m} @tab Same as @code{c}, but the printed value is @code{operand - 1}.
+@item @code{u} @tab Print a LASX register.
+@item @code{w} @tab Print a LSX register.
 @item @code{X} @tab Print a constant integer operand in hexadecimal.
 @item @code{z} @tab Print the operand in its unmodified form, followed by a comma.
 @end multitable
+
+References to input and output operands in the assembler template of extended
+asm statements can use modifiers to affect the way the operands are formatted
+in the code output to the assembler.  For example, the following code uses the
+'w' modifier for LoongArch:
+
+@example
+test-asm.c:
+
+#include <lsxintrin.h>
+
+__m128i foo (void)
+@{
+__m128i  a,b,c;
+__asm__ ("vadd.d %w0,%w1,%w2\n\t"
+   :"=f" (c)
+   :"f" (a),"f" (b));
+
+return c;
+@}
+
+@end example
+
+@noindent
+The compile command for the test case is as follows:
+
+@example
+gcc test-asm.c -mlsx -S -o test-asm.s
+@end example
+
+@noindent
+The assembly statement produces the following assembly code:
+
+@example
+vadd.d $vr0,$vr0,$vr1
+@end example
+
+This is a 128-bit vector addition instruction, @code{c} (referred to in the
+template string as %0) is the output, and @code{a} (%1) and @code{b} (%2) are
+the inputs.  @code{__m128i} is a vector data type defined in the  file
+@code{lsxintrin.h} (@xref{LoongArch SX Vector Intrinsics}).  The symbol '=f'
+represents a constraint using a floating-point register as an output type, and
+the 'f' in the input operand represents a constraint using a floating-point
+register operand, which can refer to the definition of a constraint
+(@xref{Constraints}) in gcc.
 
 @anchor{riscvOperandmodifiers}
 @subsubsection RISC-V Operand Modifiers

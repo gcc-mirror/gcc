@@ -2881,7 +2881,7 @@ $r1h
 @item LoongArch---@file{config/loongarch/constraints.md}
 @table @code
 @item f
-A floating-point register (if available).
+A floating-point or vector register (if available).
 @item k
 A memory operand whose address is formed by a base register and
 (optionally scaled) index register.
