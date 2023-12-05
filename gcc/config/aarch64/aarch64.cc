@@ -88,6 +88,9 @@
 #include "except.h"
 #include "tree-pass.h"
 #include "cfgbuild.h"
+#include "symbol-summary.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -19155,6 +19158,17 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   return ret;
 }
 
+/* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out
+   rather than an opt-in list.  */
+
+static bool
+aarch64_function_attribute_inlinable_p (const_tree fndecl)
+{
+  /* A function that has local ZA state cannot be inlined into its caller,
+     since we only support managing ZA switches at function scope.  */
+  return !aarch64_fndecl_has_new_state (fndecl, "za");
+}
+
 /* Helper for aarch64_can_inline_p.  In the case where CALLER and CALLEE are
    tri-bool options (yes, no, don't care) and the default value is
    DEF, determine whether to reject inlining.  */
@@ -19174,6 +19188,60 @@ aarch64_tribools_ok_for_inlining_p (int caller, int callee,
   /* Otherwise, allow inlining if either the callee and caller values
      agree, or if the callee is using the default value.  */
   return (callee == caller || callee == def);
+}
+
+/* Bit allocations for ipa_fn_summary::target_info.  */
+
+/* Set if the function contains a stmt that relies on the function's
+   choice of PSTATE.SM setting (0 for non-streaming, 1 for streaming).
+   Not meaningful for streaming-compatible functions.  */
+constexpr auto AARCH64_IPA_SM_FIXED = 1U << 0;
+
+/* Set if the function clobbers ZA.  Not meaningful for functions that
+   have ZA state.  */
+constexpr auto AARCH64_IPA_CLOBBERS_ZA = 1U << 1;
+
+/* Implement TARGET_NEED_IPA_FN_TARGET_INFO.  */
+
+static bool
+aarch64_need_ipa_fn_target_info (const_tree, unsigned int &)
+{
+  /* We could in principle skip this for streaming-compatible functions
+     that have ZA state, but that's a rare combination.  */
+  return true;
+}
+
+/* Implement TARGET_UPDATE_IPA_FN_TARGET_INFO.  */
+
+static bool
+aarch64_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
+{
+  if (auto *ga = dyn_cast<const gasm *> (stmt))
+    {
+      /* We don't know what the asm does, so conservatively assume that
+	 it requires the function's current SM mode.  */
+      info |= AARCH64_IPA_SM_FIXED;
+      for (unsigned int i = 0; i < gimple_asm_nclobbers (ga); ++i)
+	{
+	  tree op = gimple_asm_clobber_op (ga, i);
+	  const char *clobber = TREE_STRING_POINTER (TREE_VALUE (op));
+	  if (strcmp (clobber, "za") == 0)
+	    info |= AARCH64_IPA_CLOBBERS_ZA;
+	}
+    }
+  if (auto *call = dyn_cast<const gcall *> (stmt))
+    {
+      if (gimple_call_builtin_p (call, BUILT_IN_MD))
+	{
+	  /* The attributes on AArch64 builtins are supposed to be accurate.
+	     If the function isn't marked streaming-compatible then it
+	     needs whichever SM mode it selects.  */
+	  tree decl = gimple_call_fndecl (call);
+	  if (aarch64_fndecl_pstate_sm (decl) != 0)
+	    info |= AARCH64_IPA_SM_FIXED;
+	}
+    }
+  return true;
 }
 
 /* Implement TARGET_CAN_INLINE_P.  Decide whether it is valid
@@ -19198,12 +19266,56 @@ aarch64_can_inline_p (tree caller, tree callee)
 					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
-  if ((caller_opts->x_aarch64_asm_isa_flags
-       & callee_opts->x_aarch64_asm_isa_flags)
-      != callee_opts->x_aarch64_asm_isa_flags)
+  auto caller_asm_isa = (caller_opts->x_aarch64_asm_isa_flags
+			 & ~AARCH64_FL_ISA_MODES);
+  auto callee_asm_isa = (callee_opts->x_aarch64_asm_isa_flags
+			 & ~AARCH64_FL_ISA_MODES);
+  if (callee_asm_isa & ~caller_asm_isa)
     return false;
-  if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)
-      != callee_opts->x_aarch64_isa_flags)
+
+  auto caller_isa = (caller_opts->x_aarch64_isa_flags
+		     & ~AARCH64_FL_ISA_MODES);
+  auto callee_isa = (callee_opts->x_aarch64_isa_flags
+		     & ~AARCH64_FL_ISA_MODES);
+  if (callee_isa & ~caller_isa)
+    return false;
+
+  /* Return true if the callee might have target_info property PROPERTY.
+     The answer must be true unless we have positive proof to the contrary.  */
+  auto callee_has_property = [&](unsigned int property)
+    {
+      if (ipa_fn_summaries)
+	if (auto *summary = ipa_fn_summaries->get (cgraph_node::get (callee)))
+	  if (!(summary->target_info & property))
+	    return false;
+      return true;
+    };
+
+  /* Streaming-compatible code can be inlined into functions with any
+     PSTATE.SM mode.  Otherwise the caller and callee must agree on
+     PSTATE.SM mode, unless we can prove that the callee is naturally
+     streaming-compatible.  */
+  auto caller_sm = (caller_opts->x_aarch64_isa_flags & AARCH64_FL_SM_STATE);
+  auto callee_sm = (callee_opts->x_aarch64_isa_flags & AARCH64_FL_SM_STATE);
+  if (callee_sm
+      && caller_sm != callee_sm
+      && callee_has_property (AARCH64_IPA_SM_FIXED))
+    return false;
+
+  /* aarch64_function_attribute_inlinable_p prevents new-ZA functions
+     from being inlined into others.  We also need to prevent inlining
+     of shared-ZA functions into functions without ZA state, since this
+     is an error condition.
+
+     The only other problematic case for ZA is inlining a function that
+     directly clobbers ZA into a function that has ZA state.  */
+  auto caller_za = (caller_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
+  auto callee_za = (callee_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
+  if (!caller_za && callee_za)
+    return false;
+  if (caller_za
+      && !callee_za
+      && callee_has_property (AARCH64_IPA_CLOBBERS_ZA))
     return false;
 
   /* Allow non-strict aligned functions inlining into strict
@@ -28759,6 +28871,16 @@ aarch64_run_selftests (void)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE aarch64_can_eliminate
+
+#undef TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P \
+  aarch64_function_attribute_inlinable_p
+
+#undef TARGET_NEED_IPA_FN_TARGET_INFO
+#define TARGET_NEED_IPA_FN_TARGET_INFO aarch64_need_ipa_fn_target_info
+
+#undef TARGET_UPDATE_IPA_FN_TARGET_INFO
+#define TARGET_UPDATE_IPA_FN_TARGET_INFO aarch64_update_ipa_fn_target_info
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P aarch64_can_inline_p
