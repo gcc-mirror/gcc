@@ -787,8 +787,8 @@
 ;; This is equivalent to a subreg on little-endian targets but not for
 ;; big-endian; see the comment at the head of the file for details.
 (define_expand "@aarch64_sve_reinterpret<mode>"
-  [(set (match_operand:SVE_ALL 0 "register_operand")
-	(unspec:SVE_ALL
+  [(set (match_operand:SVE_ALL_STRUCT 0 "register_operand")
+	(unspec:SVE_ALL_STRUCT
 	  [(match_operand 1 "aarch64_any_register_operand")]
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"
@@ -805,8 +805,8 @@
 ;; A pattern for handling type punning on big-endian targets.  We use a
 ;; special predicate for operand 1 to reduce the number of patterns.
 (define_insn_and_split "*aarch64_sve_reinterpret<mode>"
-  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
-	(unspec:SVE_ALL
+  [(set (match_operand:SVE_ALL_STRUCT 0 "register_operand" "=w")
+	(unspec:SVE_ALL_STRUCT
 	  [(match_operand 1 "aarch64_any_register_operand" "w")]
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"

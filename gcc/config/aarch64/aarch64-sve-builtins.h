@@ -364,6 +364,7 @@ public:
   tree tuple_type (unsigned int) const;
   unsigned int elements_per_vq (unsigned int i) const;
   machine_mode vector_mode (unsigned int) const;
+  machine_mode tuple_mode (unsigned int) const;
   machine_mode gp_mode (unsigned int) const;
 
   /* The properties of the function.  */
@@ -666,7 +667,7 @@ public:
 
   /* If the function operates on tuples of vectors, return the number
      of vectors in the tuples, otherwise return 1.  */
-  virtual unsigned int vectors_per_tuple () const { return 1; }
+  virtual unsigned int vectors_per_tuple (const function_instance &) const;
 
   /* If the function addresses memory, return the type of a single
      scalar memory element.  */
@@ -841,7 +842,7 @@ function_instance::operator!= (const function_instance &other) const
 inline unsigned int
 function_instance::vectors_per_tuple () const
 {
-  return base->vectors_per_tuple ();
+  return base->vectors_per_tuple (*this);
 }
 
 /* If the function addresses memory, return the type of a single
@@ -945,6 +946,15 @@ function_instance::vector_mode (unsigned int i) const
   return type_suffix (i).vector_mode;
 }
 
+/* Return the mode of tuple_type (I).  */
+inline machine_mode
+function_instance::tuple_mode (unsigned int i) const
+{
+  if (group_suffix ().vectors_per_tuple > 1)
+    return TYPE_MODE (tuple_type (i));
+  return vector_mode (i);
+}
+
 /* Return the mode of the governing predicate to use when operating on
    type suffix I.  */
 inline machine_mode
@@ -969,6 +979,12 @@ function_base::call_properties (const function_instance &instance) const
   if (instance.type_suffix (0).float_p || instance.type_suffix (1).float_p)
     flags |= CP_READ_FPCR | CP_RAISE_FP_EXCEPTIONS;
   return flags;
+}
+
+inline unsigned int
+function_base::vectors_per_tuple (const function_instance &instance) const
+{
+  return instance.group_suffix ().vectors_per_tuple;
 }
 
 /* Return the mode of the result of a call.  */

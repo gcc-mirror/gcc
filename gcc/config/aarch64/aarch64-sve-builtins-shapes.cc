@@ -2400,6 +2400,34 @@ struct reduction_wide_def : public overloaded_base<0>
 };
 SHAPE (reduction_wide)
 
+/* sv<t0>x<g>_t svfoo_t0[_t1_g](sv<t1>x<g>_t)
+
+   where the target type <t0> must be specified explicitly but the source
+   type <t1> can be inferred.  */
+struct reinterpret_def : public overloaded_base<1>
+{
+  bool explicit_group_suffix_p () const override { return false; }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "t0,t1", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    sve_type type;
+    if (!r.check_num_arguments (1)
+	|| !(type = r.infer_sve_type (0)))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (reinterpret)
+
 /* sv<t0>xN_t svfoo[_t0](sv<t0>xN_t, uint64_t, sv<t0>_t)
 
    where the second argument is an integer constant expression in the

@@ -48,8 +48,13 @@ public:
     : m_vectors_per_tuple (vectors_per_tuple) {}
 
   unsigned int
-  vectors_per_tuple () const override
+  vectors_per_tuple (const function_instance &fi) const override
   {
+    if (fi.group_suffix_id != GROUP_none)
+      {
+	gcc_checking_assert (m_vectors_per_tuple == 1);
+	return fi.group_suffix ().vectors_per_tuple;
+      }
     return m_vectors_per_tuple;
   }
 

@@ -133,6 +133,7 @@ namespace aarch64_sve
     extern const function_shape *const rdffr;
     extern const function_shape *const reduction;
     extern const function_shape *const reduction_wide;
+    extern const function_shape *const reinterpret;
     extern const function_shape *const set;
     extern const function_shape *const setffr;
     extern const function_shape *const shift_left_imm_long;

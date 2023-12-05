@@ -494,6 +494,10 @@ static const group_suffix_index groups_none[] = {
   GROUP_none, NUM_GROUP_SUFFIXES
 };
 
+static const group_suffix_index groups_x1234[] = {
+  GROUP_none, GROUP_x2, GROUP_x3, GROUP_x4, NUM_GROUP_SUFFIXES
+};
+
 /* Used by functions that have no governing predicate.  */
 static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
 
@@ -534,8 +538,8 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 
 /* A list of all SVE ACLE functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
-#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_none, \
+#define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
     preds_##PREDS, REQUIRED_EXTENSIONS },
 #include "aarch64-sve-builtins.def"
 };

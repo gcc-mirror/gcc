@@ -421,4 +421,18 @@
     return z0_res;						\
   }
 
+#define TEST_DUAL_XN(NAME, TTYPE1, TTYPE2, RES, CODE1, CODE2)	\
+  PROTO (NAME, void, ())					\
+  {								\
+    register TTYPE1 z0 __asm ("z0");				\
+    register TTYPE2 z4 __asm ("z4");				\
+    register TTYPE1 z18 __asm ("z18");				\
+    register TTYPE2 z23 __asm ("z23");				\
+    register TTYPE1 z28 __asm ("z28");				\
+    __asm volatile ("" : "=w" (z0), "=w" (z4), "=w" (z18),	\
+		    "=w" (z23), "=w" (z28));			\
+    INVOKE (RES = CODE1, RES = CODE2);				\
+    __asm volatile ("" :: "w" (RES));				\
+  }
+
 #endif

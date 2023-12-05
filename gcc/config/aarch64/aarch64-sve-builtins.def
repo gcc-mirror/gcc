@@ -33,8 +33,13 @@
 #define DEF_SVE_GROUP_SUFFIX(A, B, C)
 #endif
 
+#ifndef DEF_SVE_FUNCTION_GS
+#define DEF_SVE_FUNCTION_GS(A, B, C, D, E)
+#endif
+
 #ifndef DEF_SVE_FUNCTION
-#define DEF_SVE_FUNCTION(A, B, C, D)
+#define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
+  DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 #endif
 
 DEF_SVE_MODE (n, none, none, none)
@@ -107,6 +112,7 @@ DEF_SVE_GROUP_SUFFIX (x4, 0, 4)
 #include "aarch64-sve-builtins-sve2.def"
 
 #undef DEF_SVE_FUNCTION
+#undef DEF_SVE_FUNCTION_GS
 #undef DEF_SVE_GROUP_SUFFIX
 #undef DEF_SVE_TYPE_SUFFIX
 #undef DEF_SVE_TYPE

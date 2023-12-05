@@ -2148,6 +2148,9 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () > 1)
+      return NULL;
+
     /* Punt to rtl if the effect of the reinterpret on registers does not
        conform to GCC's endianness model.  */
     if (!targetm.can_change_mode_class (f.vector_mode (0),
@@ -2164,7 +2167,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    machine_mode mode = e.vector_mode (0);
+    machine_mode mode = e.tuple_mode (0);
     return e.use_exact_insn (code_for_aarch64_sve_reinterpret (mode));
   }
 };
