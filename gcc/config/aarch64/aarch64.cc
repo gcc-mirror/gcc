@@ -6124,6 +6124,11 @@ aarch64_function_ok_for_sibcall (tree, tree exp)
   if (crtl->abi->id () != expr_callee_abi (exp).id ())
     return false;
 
+  tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
+  if (aarch64_fntype_pstate_sm (fntype) & ~aarch64_cfun_incoming_pstate_sm ())
+    return false;
+  if (aarch64_fntype_pstate_za (fntype) != aarch64_cfun_incoming_pstate_za ())
+    return false;
   return true;
 }
 
@@ -9564,7 +9569,9 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 						      aarch64_isa_flags);
       aarch64_sme_mode_switch_regs return_switch;
-      if (crtl->return_rtx && REG_P (crtl->return_rtx))
+      if (sibcall)
+	return_switch.add_call_args (sibcall);
+      else if (crtl->return_rtx && REG_P (crtl->return_rtx))
 	return_switch.add_reg (GET_MODE (crtl->return_rtx),
 			       REGNO (crtl->return_rtx));
       return_switch.emit_prologue ();
