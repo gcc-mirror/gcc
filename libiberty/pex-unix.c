@@ -308,8 +308,8 @@ static pid_t pex_unix_exec_child (struct pex_obj *, int, const char *,
 				 int, int, int, int,
 				 const char **, int *);
 static int pex_unix_close (struct pex_obj *, int);
-static int pex_unix_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
-			  int, const char **, int *);
+static pid_t pex_unix_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
+			   int, const char **, int *);
 static int pex_unix_pipe (struct pex_obj *, int *, int);
 static FILE *pex_unix_fdopenr (struct pex_obj *, int, int);
 static FILE *pex_unix_fdopenw (struct pex_obj *, int, int);
@@ -934,7 +934,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
 /* Wait for a child process to complete.  */
 
-static int
+static pid_t
 pex_unix_wait (struct pex_obj *obj, pid_t pid, int *status,
 	       struct pex_time *time, int done, const char **errmsg,
 	       int *err)
