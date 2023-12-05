@@ -243,6 +243,7 @@ UINT __gnat_current_ccs_encoding;
 #define DIR_SEPARATOR '\\'
 
 #else
+#include <signal.h>
 #include <utime.h>
 #endif
 

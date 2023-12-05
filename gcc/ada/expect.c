@@ -41,6 +41,7 @@
 
 #include "adaint.h"
 #include <sys/types.h>
+#include <string.h>
 
 #if defined (__vxworks) && defined (__RTP__)
 # include <wait.h>
