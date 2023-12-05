@@ -1707,6 +1707,19 @@ require_derived_vector_type (unsigned int argno,
   if (!actual_type)
     return false;
 
+  if (orig_expected_tclass == SAME_TYPE_CLASS
+      && orig_expected_bits == SAME_SIZE)
+    {
+      if (actual_type.type == first_type.type)
+	return true;
+
+      error_at (location, "passing %qT to argument %d of %qE, but"
+		" argument %d was a tuple of %qT",
+		get_vector_type (actual_type), argno + 1, fndecl,
+		first_argno + 1, get_vector_type (first_type.type));
+      return false;
+    }
+
   /* Exit now if we got the right type.  */
   auto &actual_type_suffix = type_suffixes[actual_type.type];
   bool tclass_ok_p = (actual_type_suffix.tclass == expected_tclass);

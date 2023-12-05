@@ -16,8 +16,8 @@ f1 (svbool_t pg, svint32_t s32, svint32x4_t s32x4, svint32x2_t s32x2, int x)
   s32x4 = svset4 (s32x2, 0, s32); /* { dg-error {passing 'svint32x2_t' to argument 1 of 'svset4', which expects a tuple of 4 vectors} } */
   s32x4 = svset4 (pg, 0, s32); /* { dg-error {passing 'svbool_t' to argument 1 of 'svset4', which expects a tuple of 4 vectors} } */
   s32x4 = svset4 (s32x4, 0, s32x4); /* { dg-error {passing 'svint32x4_t' to argument 3 of 'svset4', which expects a single SVE vector rather than a tuple} } */
-  s32x4 = svset4 (s32x4, 0, f64); /* { dg-error {passing 'svfloat64_t' instead of the expected 'svint32_t' to argument 3 of 'svset4', after passing 'svint32x4_t' to argument 1} } */
-  s32x4 = svset4 (s32x4, 0, pg); /* { dg-error {passing 'svbool_t' instead of the expected 'svint32_t' to argument 3 of 'svset4', after passing 'svint32x4_t' to argument 1} } */
+  s32x4 = svset4 (s32x4, 0, f64); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svset4', but argument 1 was a tuple of 'svint32_t'} } */
+  s32x4 = svset4 (s32x4, 0, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svset4', but argument 1 was a tuple of 'svint32_t'} } */
   s32x4 = svset4 (s32x4, x, s32); /* { dg-error {argument 2 of 'svset4' must be an integer constant expression} } */
   s32x4 = svset4 (s32x4, 0, s32);
   f64 = svset4 (s32x4, 0, s32); /* { dg-error {incompatible types when assigning to type 'svfloat64_t' from type 'svint32x4_t'} } */
