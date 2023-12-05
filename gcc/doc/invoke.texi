@@ -21279,7 +21279,8 @@ Enable the Scalable Matrix Extension.
 Enable the FEAT_SME_I16I64 extension to SME.
 @item sme-f64f64
 Enable the FEAT_SME_F64F64 extension to SME.
-
++@item sme2
+Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
 @end table
 
 Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},

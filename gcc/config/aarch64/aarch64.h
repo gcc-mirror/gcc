@@ -227,6 +227,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SME		   (aarch64_isa_flags & AARCH64_FL_SME)
 #define AARCH64_ISA_SME_I16I64	   (aarch64_isa_flags & AARCH64_FL_SME_I16I64)
 #define AARCH64_ISA_SME_F64F64	   (aarch64_isa_flags & AARCH64_FL_SME_F64F64)
+#define AARCH64_ISA_SME2	   (aarch64_isa_flags & AARCH64_FL_SME2)
 #define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3A)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -331,6 +332,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* The FEAT_SME_F64F64 extension to SME, enabled through +sme-f64f64.  */
 #define TARGET_SME_F64F64 (AARCH64_ISA_SME_F64F64)
+
+/* SME2 instructions, enabled through +sme2.  */
+#define TARGET_SME2 (AARCH64_ISA_SME2)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)

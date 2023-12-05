@@ -4398,6 +4398,18 @@ proc check_effective_target_aarch64_sme { } {
     }]
 }
 
+# Return 1 if this is an AArch64 target that generates instructions for SME.
+proc check_effective_target_aarch64_sme2 { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages aarch64_sme2 assembly {
+	#if !defined (__ARM_FEATURE_SME2)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if this is a compiler supporting ARC atomic operations
 proc check_effective_target_arc_atomic { } {
     return [check_no_compiler_messages arc_atomic assembly {
@@ -11628,7 +11640,7 @@ proc check_effective_target_aarch64_tiny { } {
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
 			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64"
-			  "sme" "sme-i16i64" } {
+			  "sme" "sme-i16i64" "sme2" } {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
