@@ -184,11 +184,17 @@
   (and (match_code "const_poly_int")
        (match_test "aarch64_add_offset_temporaries (op) == 1")))
 
+(define_predicate "aarch64_addsvl_addspl_immediate"
+  (and (match_code "const")
+       (match_test "aarch64_addsvl_addspl_immediate_p (op)")))
+
 (define_predicate "aarch64_pluslong_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_pluslong_immediate")
        (and (match_test "TARGET_SVE")
-	    (match_operand 0 "aarch64_sve_plus_immediate"))))
+	    (match_operand 0 "aarch64_sve_plus_immediate"))
+       (and (match_test "TARGET_SME")
+	    (match_operand 0 "aarch64_addsvl_addspl_immediate"))))
 
 (define_predicate "aarch64_pluslong_or_poly_operand"
   (ior (match_operand 0 "aarch64_pluslong_operand")

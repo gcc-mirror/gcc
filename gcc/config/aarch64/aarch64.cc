@@ -3574,13 +3574,24 @@ aarch64_output_sve_scalar_inc_dec (rtx offset)
 }
 
 /* Return true if a single RDVL instruction can multiply FACTOR by the
-   number of 128-bit quadwords in an SVE vector.  */
+   number of 128-bit quadwords in an SVE vector.  This is also the
+   range of ADDVL.  */
 
 static bool
-aarch64_sve_rdvl_factor_p (HOST_WIDE_INT factor)
+aarch64_sve_rdvl_addvl_factor_p (HOST_WIDE_INT factor)
 {
   return (multiple_p (factor, 16)
 	  && IN_RANGE (factor, -32 * 16, 31 * 16));
+}
+
+/* Return true if ADDPL can be used to add FACTOR multiplied by the number
+   of quadwords in an SVE vector.  */
+
+static bool
+aarch64_sve_addpl_factor_p (HOST_WIDE_INT factor)
+{
+  return (multiple_p (factor, 2)
+	  && IN_RANGE (factor, -32 * 2, 31 * 2));
 }
 
 /* Return true if we can move VALUE into a register using a single
@@ -3590,7 +3601,7 @@ static bool
 aarch64_sve_rdvl_immediate_p (poly_int64 value)
 {
   HOST_WIDE_INT factor = value.coeffs[0];
-  return value.coeffs[1] == factor && aarch64_sve_rdvl_factor_p (factor);
+  return value.coeffs[1] == factor && aarch64_sve_rdvl_addvl_factor_p (factor);
 }
 
 /* Likewise for rtx X.  */
@@ -3626,10 +3637,8 @@ aarch64_sve_addvl_addpl_immediate_p (poly_int64 value)
   HOST_WIDE_INT factor = value.coeffs[0];
   if (factor == 0 || value.coeffs[1] != factor)
     return false;
-  /* FACTOR counts VG / 2, so a value of 2 is one predicate width
-     and a value of 16 is one vector width.  */
-  return (((factor & 15) == 0 && IN_RANGE (factor, -32 * 16, 31 * 16))
-	  || ((factor & 1) == 0 && IN_RANGE (factor, -32 * 2, 31 * 2)));
+  return (aarch64_sve_rdvl_addvl_factor_p (factor)
+	  || aarch64_sve_addpl_factor_p (factor));
 }
 
 /* Likewise for rtx X.  */
@@ -3729,11 +3738,11 @@ aarch64_output_sve_vector_inc_dec (const char *operands, rtx x)
    number of 128-bit quadwords in an SME vector.  ISA_MODE is the
    ISA mode in which the calculation is being performed.  */
 
-static rtx
+rtx
 aarch64_sme_vq_immediate (machine_mode mode, HOST_WIDE_INT factor,
 			  aarch64_feature_flags isa_mode)
 {
-  gcc_assert (aarch64_sve_rdvl_factor_p (factor));
+  gcc_assert (aarch64_sve_rdvl_addvl_factor_p (factor));
   if (isa_mode & AARCH64_FL_SM_ON)
     /* We're in streaming mode, so we can use normal poly-int values.  */
     return gen_int_mode ({ factor, factor }, mode);
@@ -3776,7 +3785,7 @@ aarch64_rdsvl_immediate_p (const_rtx x)
 {
   HOST_WIDE_INT factor;
   return (aarch64_sme_vq_unspec_p (x, &factor)
-	  && aarch64_sve_rdvl_factor_p (factor));
+	  && aarch64_sve_rdvl_addvl_factor_p (factor));
 }
 
 /* Return the asm string for an RDSVL instruction that calculates X,
@@ -3790,6 +3799,38 @@ aarch64_output_rdsvl (const_rtx x)
   x = XVECEXP (XEXP (x, 0), 0, 0);
   snprintf (buffer, sizeof (buffer), "rdsvl\t%%x0, #%d",
 	    (int) INTVAL (x) / 16);
+  return buffer;
+}
+
+/* Return true if X is a constant that can be added using ADDSVL or ADDSPL.  */
+
+bool
+aarch64_addsvl_addspl_immediate_p (const_rtx x)
+{
+  HOST_WIDE_INT factor;
+  return (aarch64_sme_vq_unspec_p (x, &factor)
+	  && (aarch64_sve_rdvl_addvl_factor_p (factor)
+	      || aarch64_sve_addpl_factor_p (factor)));
+}
+
+/* X is a constant that satisfies aarch64_addsvl_addspl_immediate_p.
+   Return the asm string for the associated instruction.  */
+
+char *
+aarch64_output_addsvl_addspl (rtx x)
+{
+  static char buffer[sizeof ("addspl\t%x0, %x1, #-") + 3 * sizeof (int)];
+  HOST_WIDE_INT factor;
+  if (!aarch64_sme_vq_unspec_p (x, &factor))
+    gcc_unreachable ();
+  if (aarch64_sve_rdvl_addvl_factor_p (factor))
+    snprintf (buffer, sizeof (buffer), "addsvl\t%%x0, %%x1, #%d",
+	      (int) factor / 16);
+  else if (aarch64_sve_addpl_factor_p (factor))
+    snprintf (buffer, sizeof (buffer), "addspl\t%%x0, %%x1, #%d",
+	      (int) factor / 2);
+  else
+    gcc_unreachable ();
   return buffer;
 }
 
@@ -4428,7 +4469,7 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 	{
 	  /* Try to use an unshifted CNT[BHWD] or RDVL.  */
 	  if (aarch64_sve_cnt_factor_p (factor)
-	      || aarch64_sve_rdvl_factor_p (factor))
+	      || aarch64_sve_rdvl_addvl_factor_p (factor))
 	    {
 	      val = gen_int_mode (poly_int64 (factor, factor), mode);
 	      shift = 0;
@@ -9803,7 +9844,7 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (index))])
     index = SUBREG_REG (index);
 
-  if (aarch64_sve_data_mode_p (mode))
+  if (aarch64_sve_data_mode_p (mode) || mode == VNx1TImode)
     {
       if (type != ADDRESS_REG_REG
 	  || (1 << shift) != GET_MODE_UNIT_SIZE (mode))
@@ -9906,7 +9947,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    && ((vec_flags == 0
 				 && known_lt (GET_MODE_SIZE (mode), 16))
 				|| vec_flags == VEC_ADVSIMD
-				|| vec_flags & VEC_SVE_DATA));
+				|| vec_flags & VEC_SVE_DATA
+				|| mode == VNx1TImode));
 
   /* For SVE, only accept [Rn], [Rn, #offset, MUL VL] and [Rn, Rm, LSL #shift].
      The latter is not valid for SVE predicates, and that's rejected through
@@ -10025,7 +10067,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  /* Make "m" use the LD1 offset range for SVE data modes, so
 	     that pre-RTL optimizers like ivopts will work to that
 	     instead of the wider LDR/STR range.  */
-	  if (vec_flags == VEC_SVE_DATA)
+	  if (vec_flags == VEC_SVE_DATA || mode == VNx1TImode)
 	    return (type == ADDR_QUERY_M
 		    ? offset_4bit_signed_scaled_p (mode, offset)
 		    : offset_9bit_signed_scaled_p (mode, offset));
@@ -12496,6 +12538,51 @@ aarch64_output_casesi (rtx *operands)
   return "";
 }
 
+/* Return the asm string for an SME ZERO instruction whose 8-bit mask
+   operand is MASK.  */
+const char *
+aarch64_output_sme_zero_za (rtx mask)
+{
+  auto mask_val = UINTVAL (mask);
+  if (mask_val == 0)
+    return "zero\t{}";
+
+  if (mask_val == 0xff)
+    return "zero\t{ za }";
+
+  static constexpr std::pair<unsigned int, char> tiles[] = {
+    { 0xff, 'b' },
+    { 0x55, 'h' },
+    { 0x11, 's' },
+    { 0x01, 'd' }
+  };
+  /* The last entry in the list has the form "za7.d }", but that's the
+     same length as "za7.d, ".  */
+  static char buffer[sizeof("zero\t{ ") + sizeof ("za7.d, ") * 8 + 1];
+  unsigned int i = 0;
+  i += snprintf (buffer + i, sizeof (buffer) - i, "zero\t");
+  const char *prefix = "{ ";
+  for (auto &tile : tiles)
+    {
+      auto tile_mask = tile.first;
+      unsigned int tile_index = 0;
+      while (tile_mask < 0x100)
+	{
+	  if ((mask_val & tile_mask) == tile_mask)
+	    {
+	      i += snprintf (buffer + i, sizeof (buffer) - i, "%sza%d.%c",
+			     prefix, tile_index, tile.second);
+	      prefix = ", ";
+	      mask_val &= ~tile_mask;
+	    }
+	  tile_mask <<= 1;
+	  tile_index += 1;
+	}
+    }
+  gcc_assert (mask_val == 0 && i + 3 <= sizeof (buffer));
+  snprintf (buffer + i, sizeof (buffer) - i, " }");
+  return buffer;
+}
 
 /* Return size in bits of an arithmetic operand which is shifted/scaled and
    masked such that it is suitable for a UXTB, UXTH, or UXTW extend
@@ -21584,6 +21671,31 @@ aarch64_sve_struct_memory_operand_p (rtx op)
   poly_int64 last = first + GET_MODE_SIZE (mode) - BYTES_PER_SVE_VECTOR;
   return (offset_4bit_signed_scaled_p (SVE_BYTE_MODE, first)
 	  && offset_4bit_signed_scaled_p (SVE_BYTE_MODE, last));
+}
+
+/* Return true if OFFSET is a constant integer and if VNUM is
+   OFFSET * the number of bytes in an SVE vector.  This is the requirement
+   that exists in SME LDR and STR instructions, where the VL offset must
+   equal the ZA slice offset.  */
+bool
+aarch64_sme_ldr_vnum_offset_p (rtx offset, rtx vnum)
+{
+  if (!CONST_INT_P (offset) || !IN_RANGE (INTVAL (offset), 0, 15))
+    return false;
+
+  if (TARGET_STREAMING)
+    {
+      poly_int64 const_vnum;
+      return (poly_int_rtx_p (vnum, &const_vnum)
+	      && known_eq (const_vnum,
+			   INTVAL (offset) * BYTES_PER_SVE_VECTOR));
+    }
+  else
+    {
+      HOST_WIDE_INT factor;
+      return (aarch64_sme_vq_unspec_p (vnum, &factor)
+	      && factor == INTVAL (offset) * 16);
+    }
 }
 
 /* Emit a register copy from operand to operand, taking care not to

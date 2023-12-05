@@ -97,6 +97,8 @@ const unsigned int CP_PREFETCH_MEMORY = 1U << 3;
 const unsigned int CP_WRITE_MEMORY = 1U << 4;
 const unsigned int CP_READ_FFR = 1U << 5;
 const unsigned int CP_WRITE_FFR = 1U << 6;
+const unsigned int CP_READ_ZA = 1U << 7;
+const unsigned int CP_WRITE_ZA = 1U << 8;
 
 /* Enumerates the SVE predicate and (data) vector types, together called
    "vector types" for brevity.  */
@@ -142,6 +144,10 @@ enum predication_index
   /* Zero predication: set inactive lanes of the vector result to zero.  */
   PRED_z,
 
+  /* Merging predication for SME's ZA: merge into slices of the array
+     instead of overwriting the whole slices.  */
+  PRED_za_m,
+
   NUM_PREDS
 };
 
@@ -175,6 +181,8 @@ enum mode_suffix_index
 enum type_suffix_index
 {
 #define DEF_SVE_TYPE_SUFFIX(NAME, ACLE_TYPE, CLASS, BITS, MODE) \
+  TYPE_SUFFIX_ ## NAME,
+#define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE) \
   TYPE_SUFFIX_ ## NAME,
 #include "aarch64-sve-builtins.def"
   NUM_TYPE_SUFFIXES
@@ -240,9 +248,13 @@ struct type_suffix_info
   unsigned int unsigned_p : 1;
   /* True if the suffix is for a floating-point type.  */
   unsigned int float_p : 1;
+  /* True if the suffix is for a vector type (integer or float).  */
+  unsigned int vector_p : 1;
   /* True if the suffix is for a boolean type.  */
   unsigned int bool_p : 1;
-  unsigned int spare : 12;
+  /* True if the suffix is for SME's ZA.  */
+  unsigned int za_p : 1;
+  unsigned int spare : 10;
 
   /* The associated vector or predicate mode.  */
   machine_mode vector_mode : 16;
@@ -356,13 +368,15 @@ public:
   tree displacement_vector_type () const;
   units_index displacement_units () const;
 
+  unsigned int num_za_tiles () const;
+
   const type_suffix_info &type_suffix (unsigned int) const;
   const group_suffix_info &group_suffix () const;
 
   tree scalar_type (unsigned int) const;
   tree vector_type (unsigned int) const;
   tree tuple_type (unsigned int) const;
-  unsigned int elements_per_vq (unsigned int i) const;
+  unsigned int elements_per_vq (unsigned int) const;
   machine_mode vector_mode (unsigned int) const;
   machine_mode tuple_mode (unsigned int) const;
   machine_mode gp_mode (unsigned int) const;
@@ -401,7 +415,7 @@ private:
 
   char *get_name (const function_instance &, bool);
 
-  tree get_attributes (const function_instance &);
+  tree get_attributes (const function_instance &, aarch64_feature_flags);
 
   registered_function &add_function (const function_instance &,
 				     const char *, tree, tree,
@@ -607,7 +621,8 @@ public:
   bool overlaps_input_p (rtx);
 
   rtx convert_to_pmode (rtx);
-  rtx get_contiguous_base (machine_mode);
+  rtx get_contiguous_base (machine_mode, unsigned int = 1, unsigned int = 2,
+			   aarch64_feature_flags = 0);
   rtx get_fallback_value (machine_mode, unsigned int,
 			  unsigned int, unsigned int &);
   rtx get_reg_target ();
@@ -615,7 +630,7 @@ public:
 
   void add_output_operand (insn_code);
   void add_input_operand (insn_code, rtx);
-  void add_integer_operand (HOST_WIDE_INT);
+  void add_integer_operand (poly_int64);
   void add_mem_operand (machine_mode, rtx);
   void add_address_operand (rtx);
   void add_fixed_operand (rtx);
@@ -740,7 +755,7 @@ public:
 class sve_switcher : public aarch64_simd_switcher
 {
 public:
-  sve_switcher ();
+  sve_switcher (aarch64_feature_flags = 0);
   ~sve_switcher ();
 
 private:
@@ -748,11 +763,18 @@ private:
   bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
 
+/* Extends sve_switch enough for defining arm_sme.h.  */
+class sme_switcher : public sve_switcher
+{
+public:
+  sme_switcher () : sve_switcher (AARCH64_FL_SME) {}
+};
+
 extern const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1];
 extern const mode_suffix_info mode_suffixes[MODE_none + 1];
 extern const group_suffix_info group_suffixes[NUM_GROUP_SUFFIXES];
 
-extern tree scalar_types[NUM_VECTOR_TYPES];
+extern tree scalar_types[NUM_VECTOR_TYPES + 1];
 extern tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
 extern tree acle_svpattern;
 extern tree acle_svprfop;
@@ -886,6 +908,16 @@ inline tree
 function_instance::displacement_vector_type () const
 {
   return acle_vector_types[0][mode_suffix ().displacement_vector_type];
+}
+
+/* Return the number of ZA tiles associated with the _za<N> suffix
+   (which is always the first type suffix).  */
+inline unsigned int
+function_instance::num_za_tiles () const
+{
+  auto &suffix = type_suffix (0);
+  gcc_checking_assert (suffix.za_p);
+  return suffix.element_bytes;
 }
 
 /* If the function takes a vector or scalar displacement, return the units

@@ -12,10 +12,20 @@
 #endif
 
 #ifdef STREAMING_COMPATIBLE
-#define ATTR __arm_streaming_compatible
+#define SM_ATTR __arm_streaming_compatible
+#elif defined(STREAMING)
+#define SM_ATTR __arm_streaming
 #else
-#define ATTR
+#define SM_ATTR
 #endif
+
+#ifdef SHARED_ZA
+#define ZA_ATTR __arm_inout("za")
+#else
+#define ZA_ATTR
+#endif
+
+#define ATTR SM_ATTR ZA_ATTR
 
 #ifdef __cplusplus
 #define PROTO(NAME, RET, ARGS) \

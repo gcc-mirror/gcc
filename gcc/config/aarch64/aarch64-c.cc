@@ -253,6 +253,10 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_LS64", pfile);
   aarch64_def_or_undef (AARCH64_ISA_RCPC, "__ARM_FEATURE_RCPC", pfile);
 
+  aarch64_def_or_undef (TARGET_SME, "__ARM_FEATURE_SME", pfile);
+  aarch64_def_or_undef (TARGET_SME_I16I64, "__ARM_FEATURE_SME_I16I64", pfile);
+  aarch64_def_or_undef (TARGET_SME_F64F64, "__ARM_FEATURE_SME_F64F64", pfile);
+
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
      16-bit floating-point extensions.  */
@@ -337,6 +341,8 @@ aarch64_pragma_aarch64 (cpp_reader *)
   const char *name = TREE_STRING_POINTER (x);
   if (strcmp (name, "arm_sve.h") == 0)
     aarch64_sve::handle_arm_sve_h ();
+  else if (strcmp (name, "arm_sme.h") == 0)
+    aarch64_sve::handle_arm_sme_h ();
   else if (strcmp (name, "arm_neon.h") == 0)
     handle_arm_neon_h ();
   else if (strcmp (name, "arm_acle.h") == 0)

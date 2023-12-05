@@ -2166,6 +2166,7 @@
      [ r        , rk  , Uaa ; multiple    , *     ] #
      [ r        , 0   , Uai ; alu_imm     , sve   ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
      [ rk       , rk  , Uav ; alu_imm     , sve   ] << aarch64_output_sve_addvl_addpl (operands[2]);
+     [ rk       , rk  , UaV ; alu_imm     , sme   ] << aarch64_output_addsvl_addspl (operands[2]);
   }
   ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
 )

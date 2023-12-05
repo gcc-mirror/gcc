@@ -1,0 +1,76 @@
+/* ACLE support for AArch64 SME.
+   Copyright (C) 2023 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#define REQUIRED_EXTENSIONS 0
+DEF_SVE_FUNCTION (arm_has_sme, bool_inherent, none, none)
+DEF_SVE_FUNCTION (arm_in_streaming_mode, bool_inherent, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME
+DEF_SVE_FUNCTION (svcntsb, count_inherent, none, none)
+DEF_SVE_FUNCTION (svcntsd, count_inherent, none, none)
+DEF_SVE_FUNCTION (svcntsh, count_inherent, none, none)
+DEF_SVE_FUNCTION (svcntsw, count_inherent, none, none)
+DEF_SME_ZA_FUNCTION (svldr, ldr_za, za, none)
+DEF_SME_ZA_FUNCTION (svstr, str_za, za, none)
+DEF_SME_ZA_FUNCTION (svundef, inherent_za, za, none)
+DEF_SME_ZA_FUNCTION (svzero, inherent_za, za, none)
+DEF_SME_ZA_FUNCTION (svzero_mask, inherent_mask_za, za, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SM_ON
+DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_s_integer, za_m)
+DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_s_integer, za_m)
+DEF_SME_ZA_FUNCTION (svld1_hor, load_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svld1_ver, load_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, mop_base, za_m)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, d_za, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, mop_base, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, d_za, za_m)
+DEF_SME_ZA_FUNCTION (svread_hor, read_za_m, za_all_data, m)
+DEF_SME_ZA_FUNCTION (svread_ver, read_za_m, za_all_data, m)
+DEF_SME_ZA_FUNCTION (svst1_hor, store_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svst1_ver, store_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svsumopa, binary_za_uint_m, mop_base_signed, za_m)
+DEF_SME_ZA_FUNCTION (svsumops, binary_za_uint_m, mop_base_signed, za_m)
+DEF_SME_ZA_FUNCTION (svusmopa, binary_za_int_m, mop_base_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svusmops, binary_za_int_m, mop_base_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svwrite_hor, write_za_m, za_all_data, za_m)
+DEF_SME_ZA_FUNCTION (svwrite_ver, write_za_m, za_all_data, za_m)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME_I16I64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_d_integer, za_m)
+DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_d_integer, za_m)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, mop_i16i64, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, mop_i16i64, za_m)
+DEF_SME_ZA_FUNCTION (svsumopa, binary_za_uint_m, mop_i16i64_signed, za_m)
+DEF_SME_ZA_FUNCTION (svsumops, binary_za_uint_m, mop_i16i64_signed, za_m)
+DEF_SME_ZA_FUNCTION (svusmopa, binary_za_int_m, mop_i16i64_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svusmops, binary_za_int_m, mop_i16i64_unsigned, za_m)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME_F64F64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, za_d_float, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, za_d_float, za_m)
+#undef REQUIRED_EXTENSIONS

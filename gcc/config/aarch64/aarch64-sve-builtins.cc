@@ -51,6 +51,7 @@
 #include "aarch64-sve-builtins.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-sve2.h"
+#include "aarch64-sve-builtins-sme.h"
 #include "aarch64-sve-builtins-shapes.h"
 
 namespace aarch64_sve {
@@ -112,6 +113,7 @@ static const char *const pred_suffixes[NUM_PREDS + 1] = {
   "_m",
   "_x",
   "_z",
+  "_m",
   ""
 };
 
@@ -136,12 +138,28 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     TYPE_##CLASS == TYPE_signed || TYPE_##CLASS == TYPE_unsigned, \
     TYPE_##CLASS == TYPE_unsigned, \
     TYPE_##CLASS == TYPE_float, \
+    TYPE_##CLASS != TYPE_bool, \
     TYPE_##CLASS == TYPE_bool, \
+    false, \
+    0, \
+    MODE },
+#define DEF_SME_ZA_SUFFIX(NAME, BITS, MODE) \
+  { "_" #NAME, \
+    NUM_VECTOR_TYPES, \
+    NUM_TYPE_CLASSES, \
+    BITS, \
+    BITS / BITS_PER_UNIT, \
+    false, \
+    false, \
+    false, \
+    false, \
+    false, \
+    true, \
     0, \
     MODE },
 #include "aarch64-sve-builtins.def"
   { "", NUM_VECTOR_TYPES, TYPE_bool, 0, 0, false, false, false, false,
-    0, VOIDmode }
+    false, false, 0, VOIDmode }
 };
 
 CONSTEXPR const group_suffix_info group_suffixes[] = {
@@ -422,6 +440,79 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_while1 (D, b32), \
   TYPES_while1 (D, b64)
 
+/* _za8 _za16 _za32 _za64 _za128.  */
+#define TYPES_all_za(S, D) \
+  S (za8), S (za16), S (za32), S (za64), S (za128)
+
+/* _za64.  */
+#define TYPES_d_za(S, D) \
+  S (za64)
+
+/* {   _za8 } x {             _s8  _u8 }
+
+   {  _za16 } x { _bf16 _f16 _s16 _u16 }
+
+   {  _za32 } x {       _f32 _s32 _u32 }
+
+   {  _za64 } x {       _f64 _s64 _u64 }.  */
+#define TYPES_za_bhsd_data(S, D) \
+  D (za8, s8), D (za8, u8), \
+  D (za16, bf16), D (za16, f16), D (za16, s16), D (za16, u16), \
+  D (za32, f32), D (za32, s32), D (za32, u32), \
+  D (za64, f64), D (za64, s64), D (za64, u64)
+
+/* Likewise, plus:
+
+   { _za128 } x {      _bf16           }
+		{       _f16 _f32 _f64 }
+		{ _s8   _s16 _s32 _s64 }
+		{ _u8   _u16 _u32 _u64 }.  */
+
+#define TYPES_za_all_data(S, D) \
+  TYPES_za_bhsd_data (S, D), \
+  TYPES_reinterpret1 (D, za128)
+
+/* _za32 x { _s32 _u32 }.  */
+#define TYPES_za_s_integer(S, D) \
+  D (za32, s32), D (za32, u32)
+
+
+/* _za64_f64.  */
+#define TYPES_za_d_float(S, D) \
+  D (za64, f64)
+
+/* _za64 x { _s64 _u64 }.  */
+#define TYPES_za_d_integer(S, D) \
+  D (za64, s64), D (za64, u64)
+
+/* _za32 x { _s8 _u8 _bf16 _f16 _f32 }.  */
+#define TYPES_mop_base(S, D) \
+  D (za32, s8), D (za32, u8), D (za32, bf16), D (za32, f16), D (za32, f32)
+
+/* _za32_s8.  */
+#define TYPES_mop_base_signed(S, D) \
+  D (za32, s8)
+
+/* _za32_u8.  */
+#define TYPES_mop_base_unsigned(S, D) \
+  D (za32, u8)
+
+/* _za64 x { _s16 _u16 }.  */
+#define TYPES_mop_i16i64(S, D) \
+  D (za64, s16), D (za64, u16)
+
+/* _za64_s16.  */
+#define TYPES_mop_i16i64_signed(S, D) \
+  D (za64, s16)
+
+/* _za64_u16.  */
+#define TYPES_mop_i16i64_unsigned(S, D) \
+  D (za64, u16)
+
+/* _za.  */
+#define TYPES_za(S, D) \
+  S (za)
+
 /* Describe a pair of type suffixes in which only the first is used.  */
 #define DEF_VECTOR_TYPE(X) { TYPE_SUFFIX_ ## X, NUM_TYPE_SUFFIXES }
 
@@ -489,6 +580,19 @@ DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (reinterpret);
 DEF_SVE_TYPES_ARRAY (while);
+DEF_SVE_TYPES_ARRAY (all_za);
+DEF_SVE_TYPES_ARRAY (d_za);
+DEF_SVE_TYPES_ARRAY (za_all_data);
+DEF_SVE_TYPES_ARRAY (za_s_integer);
+DEF_SVE_TYPES_ARRAY (za_d_float);
+DEF_SVE_TYPES_ARRAY (za_d_integer);
+DEF_SVE_TYPES_ARRAY (mop_base);
+DEF_SVE_TYPES_ARRAY (mop_base_signed);
+DEF_SVE_TYPES_ARRAY (mop_base_unsigned);
+DEF_SVE_TYPES_ARRAY (mop_i16i64);
+DEF_SVE_TYPES_ARRAY (mop_i16i64_signed);
+DEF_SVE_TYPES_ARRAY (mop_i16i64_unsigned);
+DEF_SVE_TYPES_ARRAY (za);
 
 static const group_suffix_index groups_none[] = {
   GROUP_none, NUM_GROUP_SUFFIXES
@@ -504,6 +608,9 @@ static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
 /* Used by functions that have a governing predicate but do not have an
    explicit suffix.  */
 static const predication_index preds_implicit[] = { PRED_implicit, NUM_PREDS };
+
+/* Used by functions that only support "_m" predication.  */
+static const predication_index preds_m[] = { PRED_m, NUM_PREDS };
 
 /* Used by functions that allow merging and "don't care" predication,
    but are not suitable for predicated MOVPRFX.  */
@@ -536,17 +643,23 @@ static const predication_index preds_z_or_none[] = {
 /* Used by (mostly predicate) functions that only support "_z" predication.  */
 static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 
+/* Used by SME instructions that always merge into ZA.  */
+static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
+
 /* A list of all SVE ACLE functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
     preds_##PREDS, REQUIRED_EXTENSIONS },
+#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
+    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
 #include "aarch64-sve-builtins.def"
 };
 
 /* The scalar type associated with each vector type.  */
-extern GTY(()) tree scalar_types[NUM_VECTOR_TYPES];
-tree scalar_types[NUM_VECTOR_TYPES];
+extern GTY(()) tree scalar_types[NUM_VECTOR_TYPES + 1];
+tree scalar_types[NUM_VECTOR_TYPES + 1];
 
 /* The single-predicate and single-vector types, with their built-in
    "__SV..._t" name.  Allow an index of NUM_VECTOR_TYPES, which always
@@ -654,7 +767,7 @@ find_type_suffix_for_scalar_type (const_tree type)
   /* A linear search should be OK here, since the code isn't hot and
      the number of types is only small.  */
   for (unsigned int suffix_i = 0; suffix_i < NUM_TYPE_SUFFIXES; ++suffix_i)
-    if (!type_suffixes[suffix_i].bool_p)
+    if (type_suffixes[suffix_i].vector_p)
       {
 	vector_type_index vector_i = type_suffixes[suffix_i].vector_type;
 	if (matches_type_p (scalar_types[vector_i], type))
@@ -745,6 +858,20 @@ check_required_extensions (location_t location, tree fndecl,
       return false;
     }
 
+  if (missing_extensions & AARCH64_FL_SM_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_ZA_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called from"
+		" a function that has %qs state", fndecl, "za");
+      return false;
+    }
+
   static const struct {
     aarch64_feature_flags flag;
     const char *name;
@@ -780,9 +907,13 @@ report_out_of_range (location_t location, tree fndecl, unsigned int argno,
 		     HOST_WIDE_INT actual, HOST_WIDE_INT min,
 		     HOST_WIDE_INT max)
 {
-  error_at (location, "passing %wd to argument %d of %qE, which expects"
-	    " a value in the range [%wd, %wd]", actual, argno + 1, fndecl,
-	    min, max);
+  if (min == max)
+    error_at (location, "passing %wd to argument %d of %qE, which expects"
+	      " the value %wd", actual, argno + 1, fndecl, min);
+  else
+    error_at (location, "passing %wd to argument %d of %qE, which expects"
+	      " a value in the range [%wd, %wd]", actual, argno + 1, fndecl,
+	      min, max);
 }
 
 /* Report that LOCATION has a call to FNDECL in which argument ARGNO has
@@ -869,7 +1000,7 @@ function_instance::reads_global_state_p () const
     return true;
 
   /* Handle direct reads of global state.  */
-  return flags & (CP_READ_MEMORY | CP_READ_FFR);
+  return flags & (CP_READ_MEMORY | CP_READ_FFR | CP_READ_ZA);
 }
 
 /* Return true if calls to the function could modify some form of
@@ -890,7 +1021,7 @@ function_instance::modifies_global_state_p () const
     return true;
 
   /* Handle direct modifications of global state.  */
-  return flags & (CP_WRITE_MEMORY | CP_WRITE_FFR);
+  return flags & (CP_WRITE_MEMORY | CP_WRITE_FFR | CP_WRITE_ZA);
 }
 
 /* Return true if calls to the function could raise a signal.  */
@@ -922,8 +1053,8 @@ registered_function_hasher::equal (value_type value, const compare_type &key)
   return value->instance == key;
 }
 
-sve_switcher::sve_switcher ()
-  : aarch64_simd_switcher (AARCH64_FL_F16 | AARCH64_FL_SVE)
+sve_switcher::sve_switcher (aarch64_feature_flags flags)
+  : aarch64_simd_switcher (AARCH64_FL_F16 | AARCH64_FL_SVE | flags)
 {
   /* Changing the ISA flags and have_regs_of_mode should be enough here.
      We shouldn't need to pay the compile-time cost of a full target
@@ -979,6 +1110,10 @@ char *
 function_builder::get_name (const function_instance &instance,
 			    bool overloaded_p)
 {
+  /* __arm_* functions are listed as arm_*, so that the associated GCC
+     code is not in the implementation namespace.  */
+  if (strncmp (instance.base_name, "arm_", 4) == 0)
+    append_name ("__");
   append_name (instance.base_name);
   if (overloaded_p)
     switch (instance.displacement_units ())
@@ -1016,11 +1151,71 @@ add_attribute (const char *name, tree attrs)
   return tree_cons (get_identifier (name), NULL_TREE, attrs);
 }
 
-/* Return the appropriate function attributes for INSTANCE.  */
+/* Add attribute NS::NAME to ATTRS.  */
+static tree
+add_attribute (const char *ns, const char *name, tree value, tree attrs)
+{
+  return tree_cons (build_tree_list (get_identifier (ns),
+				     get_identifier (name)),
+		    value, attrs);
+}
+
+/* Attribute arm::NAME describes shared state that is an input if IS_IN
+   and an output if IS_OUT.  Check whether a call with call properties
+   CALL_FLAGS needs such an attribute.  Add it to in-progress attribute
+   list ATTRS if so.  Return the new attribute list.  */
+static tree
+add_shared_state_attribute (const char *name, bool is_in, bool is_out,
+			    unsigned int call_flags, tree attrs)
+{
+  struct state_flag_info
+  {
+    const char *name;
+    unsigned int read_flag;
+    unsigned int write_flag;
+  };
+  static state_flag_info state_flags[] =
+  {
+    { "za", CP_READ_ZA, CP_WRITE_ZA }
+  };
+
+  tree args = NULL_TREE;
+  for (const auto &state_flag : state_flags)
+    {
+      auto all_flags = state_flag.read_flag | state_flag.write_flag;
+      auto these_flags = ((is_in ? state_flag.read_flag : 0)
+			  | (is_out ? state_flag.write_flag : 0));
+      if ((call_flags & all_flags) == these_flags)
+	{
+	  tree value = build_string (strlen (state_flag.name) + 1,
+				     state_flag.name);
+	  args = tree_cons (NULL_TREE, value, args);
+	}
+    }
+  if (args)
+    attrs = add_attribute ("arm", name, args, attrs);
+  return attrs;
+}
+
+/* Return the appropriate function attributes for INSTANCE, which requires
+   the feature flags in REQUIRED_EXTENSIONS.  */
 tree
-function_builder::get_attributes (const function_instance &instance)
+function_builder::get_attributes (const function_instance &instance,
+				  aarch64_feature_flags required_extensions)
 {
   tree attrs = NULL_TREE;
+
+  if (required_extensions & AARCH64_FL_SM_ON)
+    attrs = add_attribute ("arm", "streaming", NULL_TREE, attrs);
+  else if (!(required_extensions & AARCH64_FL_SM_OFF))
+    attrs = add_attribute ("arm", "streaming_compatible", NULL_TREE, attrs);
+
+  attrs = add_shared_state_attribute ("in", true, false,
+				      instance.call_properties (), attrs);
+  attrs = add_shared_state_attribute ("out", false, true,
+				      instance.call_properties (), attrs);
+  attrs = add_shared_state_attribute ("inout", true, true,
+				      instance.call_properties (), attrs);
 
   if (!instance.modifies_global_state_p ())
     {
@@ -1097,7 +1292,7 @@ add_unique_function (const function_instance &instance,
   tree fntype = build_function_type_array (return_type,
 					   argument_types.length (),
 					   argument_types.address ());
-  tree attrs = get_attributes (instance);
+  tree attrs = get_attributes (instance, required_extensions);
   registered_function &rfn = add_function (instance, name, fntype, attrs,
 					   required_extensions, false, false);
 
@@ -1114,7 +1309,7 @@ add_unique_function (const function_instance &instance,
   if (strcmp (name, overload_name) != 0)
     {
       /* Attribute lists shouldn't be shared.  */
-      tree attrs = get_attributes (instance);
+      tree attrs = get_attributes (instance, required_extensions);
       bool placeholder_p = !(m_direct_overloads || force_direct_overloads);
       add_function (instance, overload_name, fntype, attrs,
 		    required_extensions, false, placeholder_p);
@@ -2283,6 +2478,7 @@ bool
 function_resolver::check_gp_argument (unsigned int nops,
 				      unsigned int &i, unsigned int &nargs)
 {
+  gcc_assert (pred != PRED_za_m);
   i = 0;
   if (pred != PRED_none)
     {
@@ -2488,9 +2684,7 @@ function_checker::function_checker (location_t location,
 				    unsigned int nargs, tree *args)
   : function_call_info (location, instance, fndecl),
     m_fntype (fntype), m_nargs (nargs), m_args (args),
-    /* We don't have to worry about unary _m operations here, since they
-       never have arguments that need checking.  */
-    m_base_arg (pred != PRED_none ? 1 : 0)
+    m_base_arg (pred != PRED_none && pred != PRED_za_m ? 1 : 0)
 {
 }
 
@@ -2955,21 +3149,51 @@ function_expander::convert_to_pmode (rtx x)
 }
 
 /* Return the base address for a contiguous load or store function.
-   MEM_MODE is the mode of the addressed memory.  */
+   MEM_MODE is the mode of the addressed memory, BASE_ARGNO is
+   the index of the base argument, and VNUM_ARGNO is the index of
+   the vnum offset argument (if any).  VL_ISA_MODE is AARCH64_FL_SM_ON
+   if the vnum argument is a factor of the SME vector length, 0 if it
+   is a factor of the current prevailing vector length.  */
 rtx
-function_expander::get_contiguous_base (machine_mode mem_mode)
+function_expander::get_contiguous_base (machine_mode mem_mode,
+					unsigned int base_argno,
+					unsigned int vnum_argno,
+					aarch64_feature_flags vl_isa_mode)
 {
-  rtx base = convert_to_pmode (args[1]);
+  rtx base = convert_to_pmode (args[base_argno]);
   if (mode_suffix_id == MODE_vnum)
     {
-      /* Use the size of the memory mode for extending loads and truncating
-	 stores.  Use the size of a full vector for non-extending loads
-	 and non-truncating stores (including svld[234] and svst[234]).  */
-      poly_int64 size = ordered_min (GET_MODE_SIZE (mem_mode),
-				     BYTES_PER_SVE_VECTOR);
-      rtx offset = gen_int_mode (size, Pmode);
-      offset = simplify_gen_binary (MULT, Pmode, args[2], offset);
-      base = simplify_gen_binary (PLUS, Pmode, base, offset);
+      rtx vnum = args[vnum_argno];
+      if (vnum != const0_rtx)
+	{
+	  /* Use the size of the memory mode for extending loads and truncating
+	     stores.  Use the size of a full vector for non-extending loads
+	     and non-truncating stores (including svld[234] and svst[234]).  */
+	  poly_int64 size = ordered_min (GET_MODE_SIZE (mem_mode),
+					 BYTES_PER_SVE_VECTOR);
+	  rtx offset;
+	  if ((vl_isa_mode & AARCH64_FL_SM_ON)
+	      && !TARGET_STREAMING
+	      && !size.is_constant ())
+	    {
+	      gcc_assert (known_eq (size, BYTES_PER_SVE_VECTOR));
+	      if (CONST_INT_P (vnum) && IN_RANGE (INTVAL (vnum), -32, 31))
+		offset = aarch64_sme_vq_immediate (Pmode, INTVAL (vnum) * 16,
+						   AARCH64_ISA_MODE);
+	      else
+		{
+		  offset = aarch64_sme_vq_immediate (Pmode, 16,
+						     AARCH64_ISA_MODE);
+		  offset = simplify_gen_binary (MULT, Pmode, vnum, offset);
+		}
+	    }
+	  else
+	    {
+	      offset = gen_int_mode (size, Pmode);
+	      offset = simplify_gen_binary (MULT, Pmode, vnum, offset);
+	    }
+	  base = simplify_gen_binary (PLUS, Pmode, base, offset);
+	}
     }
   return base;
 }
@@ -3057,11 +3281,18 @@ function_expander::add_input_operand (insn_code icode, rtx x)
   machine_mode mode = operand.mode;
   if (mode == VOIDmode)
     {
-      /* The only allowable use of VOIDmode is the wildcard
-	 aarch64_any_register_operand, which is used to avoid
-	 combinatorial explosion in the reinterpret patterns.  */
-      gcc_assert (operand.predicate == aarch64_any_register_operand);
-      mode = GET_MODE (x);
+      /* The only allowable uses of VOIDmode are:
+
+	 - the wildcard aarch64_any_register_operand, which is used
+	   to avoid combinatorial explosion in the reinterpret patterns
+
+	 - pmode_register_operand, which always has mode Pmode.  */
+      if (operand.predicate == aarch64_any_register_operand)
+	mode = GET_MODE (x);
+      else if (operand.predicate == pmode_register_operand)
+	mode = Pmode;
+      else
+	gcc_unreachable ();
     }
   else if (!VECTOR_MODE_P (GET_MODE (x)) && VECTOR_MODE_P (mode))
     x = expand_vector_broadcast (mode, x);
@@ -3076,7 +3307,7 @@ function_expander::add_input_operand (insn_code icode, rtx x)
 
 /* Add an integer operand with value X to the instruction.  */
 void
-function_expander::add_integer_operand (HOST_WIDE_INT x)
+function_expander::add_integer_operand (poly_int64 x)
 {
   m_ops.safe_grow (m_ops.length () + 1, true);
   create_integer_operand (&m_ops.last (), x);
@@ -3621,7 +3852,10 @@ init_builtins ()
   sve_switcher sve;
   register_builtin_types ();
   if (in_lto_p)
-    handle_arm_sve_h ();
+    {
+      handle_arm_sve_h ();
+      handle_arm_sme_h ();
+    }
 }
 
 /* Register vector type TYPE under its arm_sve.h name.  */
@@ -3771,7 +4005,8 @@ handle_arm_sve_h ()
   function_table = new hash_table<registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    builder.register_function_group (function_groups[i]);
+    if (!(function_groups[i].required_extensions & AARCH64_FL_SME))
+      builder.register_function_group (function_groups[i]);
 }
 
 /* Return the function decl with SVE function subcode CODE, or error_mark_node
@@ -3782,6 +4017,33 @@ builtin_decl (unsigned int code, bool)
   if (code >= vec_safe_length (registered_functions))
     return error_mark_node;
   return (*registered_functions)[code]->decl;
+}
+
+/* Implement #pragma GCC aarch64 "arm_sme.h".  */
+void
+handle_arm_sme_h ()
+{
+  if (!function_table)
+    {
+      error ("%qs defined without first defining %qs",
+	     "arm_sme.h", "arm_sve.h");
+      return;
+    }
+
+  static bool initialized_p;
+  if (initialized_p)
+    {
+      error ("duplicate definition of %qs", "arm_sme.h");
+      return;
+    }
+  initialized_p = true;
+
+  sme_switcher sme;
+
+  function_builder builder;
+  for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
+    if (function_groups[i].required_extensions & AARCH64_FL_SME)
+      builder.register_function_group (function_groups[i]);
 }
 
 /* If we're implementing manual overloading, check whether the SVE

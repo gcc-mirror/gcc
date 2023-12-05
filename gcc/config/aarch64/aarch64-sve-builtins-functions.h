@@ -39,6 +39,27 @@ public:
   }
 };
 
+/* Wrap T, which is derived from function_base, and indicate that it
+   additionally has the call properties in PROPERTIES.  */
+template<typename T, unsigned int PROPERTIES>
+class add_call_properties : public T
+{
+public:
+  using T::T;
+
+  unsigned int
+  call_properties (const function_instance &fi) const override
+  {
+    return T::call_properties (fi) | PROPERTIES;
+  }
+};
+
+template<typename T>
+using read_write_za = add_call_properties<T, CP_READ_ZA | CP_WRITE_ZA>;
+
+template<typename T>
+using write_za = add_call_properties<T, CP_WRITE_ZA>;
+
 /* A function_base that sometimes or always operates on tuples of
    vectors.  */
 class multi_vector_function : public function_base
@@ -352,6 +373,49 @@ typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub>
   unspec_based_sub_function;
 typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub_lane>
   unspec_based_sub_lane_function;
+
+/* General SME unspec-based functions, parameterized on the vector mode.  */
+class sme_1mode_function : public read_write_za<unspec_based_function_base>
+{
+public:
+  using parent = read_write_za<unspec_based_function_base>;
+
+  CONSTEXPR sme_1mode_function (int unspec_for_sint, int unspec_for_uint,
+				int unspec_for_fp)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    auto icode = code_for_aarch64_sme (unspec_for (e), e.tuple_mode (1));
+    return e.use_exact_insn (icode);
+  }
+};
+
+/* General SME unspec-based functions, parameterized on both the ZA mode
+   and the vector mode.  */
+template<insn_code (*CODE) (int, machine_mode, machine_mode)>
+class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
+{
+public:
+  using parent = read_write_za<unspec_based_function_base>;
+
+  CONSTEXPR sme_2mode_function_t (int unspec_for_sint, int unspec_for_uint,
+				  int unspec_for_fp)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, 1)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode = CODE (unspec_for (e), e.vector_mode (0),
+			    e.tuple_mode (1));
+    return e.use_exact_insn (icode);
+  }
+};
+
+using sme_2mode_function = sme_2mode_function_t<code_for_aarch64_sme>;
 
 /* A function that acts like unspec_based_function_exact_insn<INT_CODE>
    when operating on integers, but that expands to an (fma ...)-style

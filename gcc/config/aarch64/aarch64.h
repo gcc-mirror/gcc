@@ -207,6 +207,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /* Macros to test ISA flags.  */
 
 #define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
+#define AARCH64_ISA_SM_ON          (aarch64_isa_flags & AARCH64_FL_SM_ON)
 #define AARCH64_ISA_ZA_ON          (aarch64_isa_flags & AARCH64_FL_ZA_ON)
 #define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
@@ -224,6 +225,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
 #define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
 #define AARCH64_ISA_SME		   (aarch64_isa_flags & AARCH64_FL_SME)
+#define AARCH64_ISA_SME_I16I64	   (aarch64_isa_flags & AARCH64_FL_SME_I16I64)
+#define AARCH64_ISA_SME_F64F64	   (aarch64_isa_flags & AARCH64_FL_SME_F64F64)
 #define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3A)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -256,6 +259,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
+
+/* The current function has a streaming body.  */
+#define TARGET_STREAMING (AARCH64_ISA_SM_ON)
 
 /* The current function has a streaming-compatible body.  */
 #define TARGET_STREAMING_COMPATIBLE \
@@ -316,6 +322,15 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /* SME instructions, enabled through +sme.  Note that this does not
    imply anything about the state of PSTATE.SM.  */
 #define TARGET_SME (AARCH64_ISA_SME)
+
+/* Streaming-mode SME instructions.  */
+#define TARGET_STREAMING_SME (TARGET_STREAMING && TARGET_SME)
+
+/* The FEAT_SME_I16I64 extension to SME, enabled through +sme-i16i64.  */
+#define TARGET_SME_I16I64 (AARCH64_ISA_SME_I16I64)
+
+/* The FEAT_SME_F64F64 extension to SME, enabled through +sme-f64f64.  */
+#define TARGET_SME_F64F64 (AARCH64_ISA_SME_F64F64)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)

@@ -21,6 +21,9 @@
 (define_register_constraint "k" "STACK_REG"
   "@internal The stack register.")
 
+(define_register_constraint "Ucj" "W12_W15_REGS"
+  "@internal r12-r15, which can be used to index ZA.")
+
 (define_register_constraint "Ucs" "TAILCALL_ADDR_REGS"
   "@internal Registers suitable for an indirect tail call")
 
@@ -73,6 +76,12 @@
    A constraint that matches a VG-based constant that can be added by
    a single ADDVL or ADDPL."
  (match_operand 0 "aarch64_sve_addvl_addpl_immediate"))
+
+(define_constraint "UaV"
+  "@internal
+   A constraint that matches a VG-based constant that can be added by
+   a single ADDSVL or ADDSPL."
+ (match_operand 0 "aarch64_addsvl_addspl_immediate"))
 
 (define_constraint "Uat"
   "@internal

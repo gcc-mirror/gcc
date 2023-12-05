@@ -805,7 +805,11 @@ bool aarch64_sve_vector_inc_dec_immediate_p (rtx);
 int aarch64_add_offset_temporaries (rtx);
 void aarch64_split_add_offset (scalar_int_mode, rtx, rtx, rtx, rtx, rtx);
 bool aarch64_rdsvl_immediate_p (const_rtx);
+rtx aarch64_sme_vq_immediate (machine_mode mode, HOST_WIDE_INT,
+			      aarch64_feature_flags);
 char *aarch64_output_rdsvl (const_rtx);
+bool aarch64_addsvl_addspl_immediate_p (const_rtx);
+char *aarch64_output_addsvl_addspl (rtx);
 bool aarch64_mov_operand_p (rtx, machine_mode);
 rtx aarch64_reverse_mask (machine_mode, unsigned int);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, poly_int64);
@@ -854,6 +858,7 @@ bool aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 const char *aarch64_output_load_tp (rtx);
+const char *aarch64_output_sme_zero_za (rtx);
 
 arm_pcs aarch64_tlsdesc_abi_id ();
 enum aarch64_symbol_type aarch64_classify_symbol (rtx, HOST_WIDE_INT);
@@ -867,7 +872,6 @@ machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
 rtx aarch64_mask_from_zextract_ops (rtx, rtx);
-const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr_rtx (void);
 rtx aarch64_return_addr (int, rtx);
 rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
@@ -881,6 +885,7 @@ bool aarch64_sve_ldnf1_operand_p (rtx);
 bool aarch64_sve_ldr_operand_p (rtx);
 bool aarch64_sve_prefetch_operand_p (rtx, machine_mode);
 bool aarch64_sve_struct_memory_operand_p (rtx);
+bool aarch64_sme_ldr_vnum_offset_p (rtx, rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
@@ -997,6 +1002,7 @@ void handle_arm_neon_h (void);
 namespace aarch64_sve {
   void init_builtins ();
   void handle_arm_sve_h ();
+  void handle_arm_sme_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
   bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
