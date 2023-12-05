@@ -4686,4 +4686,22 @@ emit_vec_extract (rtx target, rtx src, poly_int64 index)
     emit_move_insn (target, ops[0].value);
 }
 
+/* Return true if the offset mode is valid mode that we use for gather/scatter
+   autovectorization.  */
+bool
+gather_scatter_valid_offset_p (machine_mode mode)
+{
+  /* If the element size of offset mode is already >= Pmode size,
+     we don't need any extensions.  */
+  if (known_ge (GET_MODE_SIZE (GET_MODE_INNER (mode)), UNITS_PER_WORD))
+    return true;
+
+  /* Since we are very likely extend the offset mode into vector Pmode,
+     Disable gather/scatter autovectorization if we can't extend the offset
+     mode into vector Pmode.  */
+  if (!get_vector_mode (Pmode, GET_MODE_NUNITS (mode)).exists ())
+    return false;
+  return true;
+}
+
 } // namespace riscv_vector

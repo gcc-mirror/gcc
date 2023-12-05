@@ -59,7 +59,7 @@
    (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO64I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -74,7 +74,7 @@
    (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO32I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -89,7 +89,7 @@
    (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO16I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -104,7 +104,7 @@
    (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO8I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -119,7 +119,7 @@
    (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO4I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -134,7 +134,7 @@
    (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO2I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, true);
   DONE;
@@ -172,7 +172,7 @@
    (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO64I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -187,7 +187,7 @@
    (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO32I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -202,7 +202,7 @@
    (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO16I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -217,7 +217,7 @@
    (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO8I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -232,7 +232,7 @@
    (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO4I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
@@ -247,7 +247,7 @@
    (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && riscv_vector::gather_scatter_valid_offset_p (<RATIO2I:MODE>mode)"
 {
   riscv_vector::expand_gather_scatter (operands, false);
   DONE;
