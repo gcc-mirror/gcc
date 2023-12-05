@@ -1952,14 +1952,14 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
       break;
     case BT_CLASS:
       {
-	  int unit = dtp->u.p.current_unit->unit_number;
+	  GFC_INTEGER_4 unit = dtp->u.p.current_unit->unit_number;
 	  char iotype[] = "LISTDIRECTED";
 	  gfc_charlen_type iotype_len = 12;
 	  char tmp_iomsg[IOMSG_LEN] = "";
 	  char *child_iomsg;
 	  gfc_charlen_type child_iomsg_len;
-	  int noiostat;
-	  int *child_iostat = NULL;
+	  GFC_INTEGER_4 noiostat;
+	  GFC_INTEGER_4 *child_iostat = NULL;
 	  gfc_full_array_i4 vlist;
 
 	  GFC_DESCRIPTOR_DATA(&vlist) = NULL;
@@ -1967,8 +1967,8 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 
 	  /* Set iostat, intent(out).  */
 	  noiostat = 0;
-	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
-			  dtp->common.iostat : &noiostat;
+	  child_iostat = ((dtp->common.flags & IOPARM_HAS_IOSTAT)
+			  ? dtp->common.iostat : &noiostat);
 
 	  /* Set iomsge, intent(inout).  */
 	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
@@ -2277,14 +2277,14 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 	      /* First ext_name => get length of all possible components  */
 	      if (obj->dtio_sub != NULL)
 		{
-		  int unit = dtp->u.p.current_unit->unit_number;
+		  GFC_INTEGER_4 unit = dtp->u.p.current_unit->unit_number;
 		  char iotype[] = "NAMELIST";
 		  gfc_charlen_type iotype_len = 8;
 		  char tmp_iomsg[IOMSG_LEN] = "";
 		  char *child_iomsg;
 		  gfc_charlen_type child_iomsg_len;
-		  int noiostat;
-		  int *child_iostat = NULL;
+		  GFC_INTEGER_4 noiostat;
+		  GFC_INTEGER_4 *child_iostat = NULL;
 		  gfc_full_array_i4 vlist;
 		  formatted_dtio dtio_ptr = (formatted_dtio)obj->dtio_sub;
 
@@ -2292,8 +2292,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 
 		  /* Set iostat, intent(out).  */
 		  noiostat = 0;
-		  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
-				  dtp->common.iostat : &noiostat;
+		  child_iostat = ((dtp->common.flags & IOPARM_HAS_IOSTAT)
+				  ? dtp->common.iostat : &noiostat);
 
 		  /* Set iomsg, intent(inout).  */
 		  if (dtp->common.flags & IOPARM_HAS_IOMSG)
