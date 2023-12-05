@@ -68,8 +68,7 @@ TEST_ALL (LOOP)
 /* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.s, w[0-9]+, w[0-9]+\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.s, p[0-7]+/z, \[x[0-9]+, x[0-9]+, lsl 2\]} 8 } } */
 /* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s, p[0-7]+, \[x[0-9]+, x[0-9]+, lsl 2\]} 8 } } */
-/* 2 for the calculations of -17 and 17.  */
-/* { dg-final { scan-assembler-times {\tincw\tx[0-9]+\n} 10 } } */
+/* { dg-final { scan-assembler-times {\tincw\tx[0-9]+\n} 8 } } */
 
 /* { dg-final { scan-assembler-times {\tdecw\tz[0-9]+\.s, all, mul #16\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tdecw\tz[0-9]+\.s, all, mul #15\n} 1 } } */
@@ -86,8 +85,7 @@ TEST_ALL (LOOP)
 /* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.d, x[0-9]+, x[0-9]+\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d, p[0-7]+/z, \[x[0-9]+, x[0-9]+, lsl 3\]} 8 } } */
 /* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d, p[0-7]+, \[x[0-9]+, x[0-9]+, lsl 3\]} 8 } } */
-/* 2 for the calculations of -17 and 17.  */
-/* { dg-final { scan-assembler-times {\tincd\tx[0-9]+\n} 10 } } */
+/* { dg-final { scan-assembler-times {\tincd\tx[0-9]+\n} 8 } } */
 
 /* { dg-final { scan-assembler-times {\tdecd\tz[0-9]+\.d, all, mul #16\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tdecd\tz[0-9]+\.d, all, mul #15\n} 1 } } */

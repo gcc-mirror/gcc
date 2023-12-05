@@ -2933,6 +2933,18 @@ aarch64_fold_sve_cnt_pat (aarch64_svpattern pattern, unsigned int nelts_per_vq)
   return -1;
 }
 
+/* Return true if a single CNT[BHWD] instruction can multiply FACTOR
+   by the number of 128-bit quadwords in an SVE vector.  */
+
+static bool
+aarch64_sve_cnt_factor_p (HOST_WIDE_INT factor)
+{
+  /* The coefficient must be [1, 16] * {2, 4, 8, 16}.  */
+  return (IN_RANGE (factor, 2, 16 * 16)
+	  && (factor & 1) == 0
+	  && factor <= 16 * (factor & -factor));
+}
+
 /* Return true if we can move VALUE into a register using a single
    CNT[BHWD] instruction.  */
 
@@ -2940,11 +2952,7 @@ static bool
 aarch64_sve_cnt_immediate_p (poly_int64 value)
 {
   HOST_WIDE_INT factor = value.coeffs[0];
-  /* The coefficient must be [1, 16] * {2, 4, 8, 16}.  */
-  return (value.coeffs[1] == factor
-	  && IN_RANGE (factor, 2, 16 * 16)
-	  && (factor & 1) == 0
-	  && factor <= 16 * (factor & -factor));
+  return value.coeffs[1] == factor && aarch64_sve_cnt_factor_p (factor);
 }
 
 /* Likewise for rtx X.  */
@@ -3058,6 +3066,50 @@ aarch64_output_sve_scalar_inc_dec (rtx offset)
   else
     return aarch64_output_sve_cnt_immediate ("dec", "%x0", AARCH64_SV_ALL,
 					     -offset_value.coeffs[1], 0);
+}
+
+/* Return true if a single RDVL instruction can multiply FACTOR by the
+   number of 128-bit quadwords in an SVE vector.  */
+
+static bool
+aarch64_sve_rdvl_factor_p (HOST_WIDE_INT factor)
+{
+  return (multiple_p (factor, 16)
+	  && IN_RANGE (factor, -32 * 16, 31 * 16));
+}
+
+/* Return true if we can move VALUE into a register using a single
+   RDVL instruction.  */
+
+static bool
+aarch64_sve_rdvl_immediate_p (poly_int64 value)
+{
+  HOST_WIDE_INT factor = value.coeffs[0];
+  return value.coeffs[1] == factor && aarch64_sve_rdvl_factor_p (factor);
+}
+
+/* Likewise for rtx X.  */
+
+bool
+aarch64_sve_rdvl_immediate_p (rtx x)
+{
+  poly_int64 value;
+  return poly_int_rtx_p (x, &value) && aarch64_sve_rdvl_immediate_p (value);
+}
+
+/* Return the asm string for moving RDVL immediate OFFSET into register
+   operand 0.  */
+
+char *
+aarch64_output_sve_rdvl (rtx offset)
+{
+  static char buffer[sizeof ("rdvl\t%x0, #-") + 3 * sizeof (int)];
+  poly_int64 offset_value = rtx_to_poly_int64 (offset);
+  gcc_assert (aarch64_sve_rdvl_immediate_p (offset_value));
+
+  int factor = offset_value.coeffs[1];
+  snprintf (buffer, sizeof (buffer), "rdvl\t%%x0, #%d", factor / 16);
+  return buffer;
 }
 
 /* Return true if we can add VALUE to a register using a single ADDVL
@@ -3689,13 +3741,13 @@ aarch64_offset_temporaries (bool add_p, poly_int64 offset)
     count += 1;
   else if (factor != 0)
     {
-      factor = abs (factor);
-      if (factor > 16 * (factor & -factor))
-	/* Need one register for the CNT result and one for the multiplication
-	   factor.  If necessary, the second temporary can be reused for the
-	   constant part of the offset.  */
+      factor /= (HOST_WIDE_INT) least_bit_hwi (factor);
+      if (!IN_RANGE (factor, -32, 31))
+	/* Need one register for the CNT or RDVL result and one for the
+	   multiplication factor.  If necessary, the second temporary
+	   can be reused for the constant part of the offset.  */
 	return 2;
-      /* Need one register for the CNT result (which might then
+      /* Need one register for the CNT or RDVL result (which might then
 	 be shifted).  */
       count += 1;
     }
@@ -3784,85 +3836,100 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
   /* Otherwise use a CNT-based sequence.  */
   else if (factor != 0)
     {
-      /* Use a subtraction if we have a negative factor.  */
+      /* Calculate CNTB * FACTOR / 16 as CNTB * REL_FACTOR * 2**SHIFT,
+	 with negative shifts indicating a shift right.  */
+      HOST_WIDE_INT low_bit = least_bit_hwi (factor);
+      HOST_WIDE_INT rel_factor = factor / low_bit;
+      int shift = exact_log2 (low_bit) - 4;
+      gcc_assert (shift >= -4 && (rel_factor & 1) != 0);
+
+      /* Set CODE, VAL and SHIFT so that [+-] VAL * 2**SHIFT is
+	 equal to CNTB * FACTOR / 16, with CODE being the [+-].
+
+	 We can avoid a multiplication if REL_FACTOR is in the range
+	 of RDVL, although there are then various optimizations that
+	 we can try on top.  */
       rtx_code code = PLUS;
-      if (factor < 0)
-	{
-	  factor = -factor;
-	  code = MINUS;
-	}
-
-      /* Calculate CNTD * FACTOR / 2.  First try to fold the division
-	 into the multiplication.  */
       rtx val;
-      int shift = 0;
-      if (factor & 1)
-	/* Use a right shift by 1.  */
-	shift = -1;
-      else
-	factor /= 2;
-      HOST_WIDE_INT low_bit = factor & -factor;
-      if (factor <= 16 * low_bit)
+      if (IN_RANGE (rel_factor, -32, 31))
 	{
-	  if (factor > 16 * 8)
+	  /* Try to use an unshifted CNT[BHWD] or RDVL.  */
+	  if (aarch64_sve_cnt_factor_p (factor)
+	      || aarch64_sve_rdvl_factor_p (factor))
 	    {
-	      /* "CNTB Xn, ALL, MUL #FACTOR" is out of range, so calculate
-		 the value with the minimum multiplier and shift it into
-		 position.  */
-	      int extra_shift = exact_log2 (low_bit);
-	      shift += extra_shift;
-	      factor >>= extra_shift;
+	      val = gen_int_mode (poly_int64 (factor, factor), mode);
+	      shift = 0;
 	    }
-	  val = gen_int_mode (poly_int64 (factor * 2, factor * 2), mode);
+	  /* Try to subtract an unshifted CNT[BHWD].  */
+	  else if (aarch64_sve_cnt_factor_p (-factor))
+	    {
+	      code = MINUS;
+	      val = gen_int_mode (poly_int64 (-factor, -factor), mode);
+	      shift = 0;
+	    }
+	  /* If subtraction is free, prefer to load a positive constant.
+	     In the best case this will fit a shifted CNTB.  */
+	  else if (src != const0_rtx && rel_factor < 0)
+	    {
+	      code = MINUS;
+	      val = gen_int_mode (-rel_factor * BYTES_PER_SVE_VECTOR, mode);
+	    }
+	  /* Otherwise use a shifted RDVL or CNT[BHWD].  */
+	  else
+	    val = gen_int_mode (rel_factor * BYTES_PER_SVE_VECTOR, mode);
 	}
       else
 	{
-	  /* Base the factor on LOW_BIT if we can calculate LOW_BIT
-	     directly, since that should increase the chances of being
-	     able to use a shift and add sequence.  If LOW_BIT itself
-	     is out of range, just use CNTD.  */
-	  if (low_bit <= 16 * 8)
-	    factor /= low_bit;
+	  /* If we can calculate CNTB << SHIFT directly, prefer to do that,
+	     since it should increase the chances of being able to use
+	     a shift and add sequence for the multiplication.
+	     If CNTB << SHIFT is out of range, stick with the current
+	     shift factor.  */
+	  if (IN_RANGE (low_bit, 2, 16 * 16))
+	    {
+	      val = gen_int_mode (poly_int64 (low_bit, low_bit), mode);
+	      shift = 0;
+	    }
 	  else
-	    low_bit = 1;
+	    val = gen_int_mode (BYTES_PER_SVE_VECTOR, mode);
 
-	  val = gen_int_mode (poly_int64 (low_bit * 2, low_bit * 2), mode);
 	  val = aarch64_force_temporary (mode, temp1, val);
+
+	  /* Prefer to multiply by a positive factor and subtract rather
+	     than multiply by a negative factor and add, since positive
+	     values are usually easier to move.  */
+	  if (rel_factor < 0 && src != const0_rtx)
+	    {
+	      rel_factor = -rel_factor;
+	      code = MINUS;
+	    }
 
 	  if (can_create_pseudo_p ())
 	    {
-	      rtx coeff1 = gen_int_mode (factor, mode);
+	      rtx coeff1 = gen_int_mode (rel_factor, mode);
 	      val = expand_mult (mode, val, coeff1, NULL_RTX, true, true);
 	    }
 	  else
 	    {
-	      /* Go back to using a negative multiplication factor if we have
-		 no register from which to subtract.  */
-	      if (code == MINUS && src == const0_rtx)
-		{
-		  factor = -factor;
-		  code = PLUS;
-		}
-	      rtx coeff1 = gen_int_mode (factor, mode);
+	      rtx coeff1 = gen_int_mode (rel_factor, mode);
 	      coeff1 = aarch64_force_temporary (mode, temp2, coeff1);
 	      val = gen_rtx_MULT (mode, val, coeff1);
 	    }
 	}
 
+      /* Multiply by 2 ** SHIFT.  */
       if (shift > 0)
 	{
-	  /* Multiply by 1 << SHIFT.  */
 	  val = aarch64_force_temporary (mode, temp1, val);
 	  val = gen_rtx_ASHIFT (mode, val, GEN_INT (shift));
 	}
-      else if (shift == -1)
+      else if (shift < 0)
 	{
-	  /* Divide by 2.  */
 	  val = aarch64_force_temporary (mode, temp1, val);
-	  val = gen_rtx_ASHIFTRT (mode, val, const1_rtx);
+	  val = gen_rtx_ASHIFTRT (mode, val, GEN_INT (-shift));
 	}
 
-      /* Calculate SRC +/- CNTD * FACTOR / 2.  */
+      /* Add the result to SRC or subtract the result from SRC.  */
       if (src != const0_rtx)
 	{
 	  val = aarch64_force_temporary (mode, temp1, val);
@@ -4508,7 +4575,9 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      aarch64_report_sve_required ();
 	      return;
 	    }
-	  if (base == const0_rtx && aarch64_sve_cnt_immediate_p (offset))
+	  if (base == const0_rtx
+	      && (aarch64_sve_cnt_immediate_p (offset)
+		  || aarch64_sve_rdvl_immediate_p (offset)))
 	    emit_insn (gen_rtx_SET (dest, imm));
 	  else
 	    {
@@ -19641,7 +19710,9 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
   if (SYMBOL_REF_P (x) && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  if (TARGET_SVE && aarch64_sve_cnt_immediate_p (x))
+  if (TARGET_SVE
+      && (aarch64_sve_cnt_immediate_p (x)
+	  || aarch64_sve_rdvl_immediate_p (x)))
     return true;
 
   return aarch64_classify_symbolic_expression (x)

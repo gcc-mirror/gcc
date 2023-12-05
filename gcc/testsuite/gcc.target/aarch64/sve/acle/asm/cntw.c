@@ -54,8 +54,8 @@ PROTO (cntw_16, uint64_t, ()) { return svcntw () * 16; }
 /* Other sequences would be OK.  */
 /*
 ** cntw_17:
-**	cntb	x0, all, mul #4
-**	incw	x0
+**	rdvl	(x[0-9]+), #17
+**	asr	x0, \1, 2
 **	ret
 */
 PROTO (cntw_17, uint64_t, ()) { return svcntw () * 17; }
@@ -76,8 +76,8 @@ PROTO (cntw_64, uint64_t, ()) { return svcntw () * 64; }
 
 /*
 ** cntw_128:
-**	cntd	(x[0-9]+)
-**	lsl	x0, \1, 8
+**	cntb	(x[0-9]+)
+**	lsl	x0, \1, 5
 **	ret
 */
 PROTO (cntw_128, uint64_t, ()) { return svcntw () * 128; }
@@ -108,8 +108,7 @@ PROTO (cntw_m15, uint64_t, ()) { return -svcntw () * 15; }
 
 /*
 ** cntw_m16:
-**	cntb	(x[0-9]+), all, mul #4
-**	neg	x0, \1
+**	rdvl	(x[0-9]+), #-4
 **	ret
 */
 PROTO (cntw_m16, uint64_t, ()) { return -svcntw () * 16; }
@@ -117,9 +116,8 @@ PROTO (cntw_m16, uint64_t, ()) { return -svcntw () * 16; }
 /* Other sequences would be OK.  */
 /*
 ** cntw_m17:
-**	cntb	x0, all, mul #4
-**	incw	x0
-**	neg	x0, x0
+**	rdvl	(x[0-9]+), #-17
+**	asr	x0, \1, 2
 **	ret
 */
 PROTO (cntw_m17, uint64_t, ()) { return -svcntw () * 17; }

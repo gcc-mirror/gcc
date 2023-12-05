@@ -1230,6 +1230,7 @@
      [w, D<hq>; neon_move      , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
      /* The "mov_imm" type for CNT is just a placeholder.  */
      [r, Usv  ; mov_imm        , sve   ] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, Usr  ; mov_imm        , sve   ] << aarch64_output_sve_rdvl (operands[1]);
      [r, m    ; load_4         , *     ] ldr<size>\t%w0, %1
      [w, m    ; load_4         , *     ] ldr\t%<size>0, %1
      [m, r Z  ; store_4        , *     ] str<size>\\t%w1, %0
@@ -1289,6 +1290,7 @@
      [r  , n  ; mov_imm  , *   ,16] #
      /* The "mov_imm" type for CNT is just a placeholder.  */
      [r  , Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r  , Usr; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
      [r  , m  ; load_4   , *   , 4] ldr\t%w0, %1
      [w  , m  ; load_4   , fp  , 4] ldr\t%s0, %1
      [m  , r Z; store_4  , *   , 4] str\t%w1, %0
@@ -1324,6 +1326,7 @@
      [r, n  ; mov_imm  , *   ,16] #
      /* The "mov_imm" type for CNT is just a placeholder.  */
      [r, Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, Usr; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
      [r, m  ; load_8   , *   , 4] ldr\t%x0, %1
      [w, m  ; load_8   , fp  , 4] ldr\t%d0, %1
      [m, r Z; store_8  , *   , 4] str\t%x1, %0
