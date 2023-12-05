@@ -366,7 +366,8 @@
 ;; As a convenience, "fp_q" means "fp" + the ability to move between
 ;; Q registers and is equivalent to "simd".
 
-(define_enum "arches" [ any rcpc8_4 fp fp_q simd nosimd sve fp16])
+(define_enum "arches" [any rcpc8_4 fp fp_q base_simd nobase_simd
+		       simd nosimd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -393,6 +394,12 @@
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))
+
+	(and (eq_attr "arch" "base_simd")
+	     (match_test "TARGET_BASE_SIMD"))
+
+	(and (eq_attr "arch" "nobase_simd")
+	     (match_test "!TARGET_BASE_SIMD"))
 
 	(and (eq_attr "arch" "fp_q, simd")
 	     (match_test "TARGET_SIMD"))
@@ -1224,23 +1231,23 @@
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
   {@ [cons: =0, 1; attrs: type, arch]
-     [w, Z    ; neon_move      , simd  ] movi\t%0.<Vbtype>, #0
-     [r, r    ; mov_reg        , *     ] mov\t%w0, %w1
-     [r, M    ; mov_imm        , *     ] mov\t%w0, %1
-     [w, D<hq>; neon_move      , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
+     [w, Z    ; neon_move      , simd       ] movi\t%0.<Vbtype>, #0
+     [r, r    ; mov_reg        , *          ] mov\t%w0, %w1
+     [r, M    ; mov_imm        , *          ] mov\t%w0, %1
+     [w, D<hq>; neon_move      , simd       ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
      /* The "mov_imm" type for CNT is just a placeholder.  */
-     [r, Usv  ; mov_imm        , sve   ] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
-     [r, Usr  ; mov_imm        , sve   ] << aarch64_output_sve_rdvl (operands[1]);
-     [r, m    ; load_4         , *     ] ldr<size>\t%w0, %1
-     [w, m    ; load_4         , *     ] ldr\t%<size>0, %1
-     [m, r Z  ; store_4        , *     ] str<size>\\t%w1, %0
-     [m, w    ; store_4        , *     ] str\t%<size>1, %0
-     [r, w    ; neon_to_gp<q>  , simd  ] umov\t%w0, %1.<v>[0]
-     [r, w    ; neon_to_gp<q>  , nosimd] fmov\t%w0, %s1
-     [w, r Z  ; neon_from_gp<q>, simd  ] dup\t%0.<Vallxd>, %w1
-     [w, r Z  ; neon_from_gp<q>, nosimd] fmov\t%s0, %w1
-     [w, w    ; neon_dup       , simd  ] dup\t%<Vetype>0, %1.<v>[0]
-     [w, w    ; neon_dup       , nosimd] fmov\t%s0, %s1
+     [r, Usv  ; mov_imm        , sve        ] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, Usr  ; mov_imm        , sve        ] << aarch64_output_sve_rdvl (operands[1]);
+     [r, m    ; load_4         , *          ] ldr<size>\t%w0, %1
+     [w, m    ; load_4         , *          ] ldr\t%<size>0, %1
+     [m, r Z  ; store_4        , *          ] str<size>\\t%w1, %0
+     [m, w    ; store_4        , *          ] str\t%<size>1, %0
+     [r, w    ; neon_to_gp<q>  , base_simd  ] umov\t%w0, %1.<v>[0]
+     [r, w    ; neon_to_gp<q>  , nobase_simd] fmov\t%w0, %s1
+     [w, r Z  ; neon_from_gp<q>, simd       ] dup\t%0.<Vallxd>, %w1
+     [w, r Z  ; neon_from_gp<q>, nosimd     ] fmov\t%s0, %w1
+     [w, w    ; neon_dup       , simd       ] dup\t%<Vetype>0, %1.<v>[0]
+     [w, w    ; neon_dup       , nosimd     ] fmov\t%s0, %s1
   }
 )
 
@@ -1405,9 +1412,9 @@
 
 (define_insn "*movti_aarch64"
   [(set (match_operand:TI 0
-	 "nonimmediate_operand"  "=   r,w,w,w, r,w,r,m,m,w,m")
+	 "nonimmediate_operand"  "=   r,w,w,w, r,w,w,r,m,m,w,m")
 	(match_operand:TI 1
-	 "aarch64_movti_operand" " rUti,Z,Z,r, w,w,m,r,Z,m,w"))]
+	 "aarch64_movti_operand" " rUti,Z,Z,r, w,w,w,m,r,Z,m,w"))]
   "(register_operand (operands[0], TImode)
     || aarch64_reg_or_zero (operands[1], TImode))"
   "@
@@ -1417,16 +1424,17 @@
    #
    #
    mov\\t%0.16b, %1.16b
+   mov\\t%Z0.d, %Z1.d
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0
    stp\\txzr, xzr, %0
    ldr\\t%q0, %1
    str\\t%q1, %0"
-  [(set_attr "type" "multiple,neon_move,f_mcr,f_mcr,f_mrc,neon_logic_q, \
+  [(set_attr "type" "multiple,neon_move,f_mcr,f_mcr,f_mrc,neon_logic_q,*,\
 		             load_16,store_16,store_16,\
                              load_16,store_16")
-   (set_attr "length" "8,4,4,8,8,4,4,4,4,4,4")
-   (set_attr "arch" "*,simd,*,*,*,simd,*,*,*,fp,fp")]
+   (set_attr "length" "8,4,4,8,8,4,4,4,4,4,4,4")
+   (set_attr "arch" "*,simd,*,*,*,simd,sve,*,*,*,fp,fp")]
 )
 
 ;; Split a TImode register-register or register-immediate move into
@@ -1553,13 +1561,14 @@
 
 (define_insn "*mov<mode>_aarch64"
   [(set (match_operand:TFD 0
-	 "nonimmediate_operand" "=w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
+	 "nonimmediate_operand" "=w,w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
 	(match_operand:TFD 1
-	 "general_operand"      " w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
+	 "general_operand"      " w,w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
   "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    mov\\t%0.16b, %1.16b
+   mov\\t%Z0.d, %Z1.d
    #
    #
    #
@@ -1570,10 +1579,10 @@
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0
    stp\\txzr, xzr, %0"
-  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
+  [(set_attr "type" "logic_reg,*,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
                      f_loadd,f_stored,load_16,store_16,store_16")
-   (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
-   (set_attr "arch" "simd,*,*,*,simd,*,*,*,*,*,*")]
+   (set_attr "length" "4,4,8,8,8,4,4,4,4,4,4,4")
+   (set_attr "arch" "simd,sve,*,*,*,simd,*,*,*,*,*,*")]
 )
 
 (define_split
@@ -1767,7 +1776,7 @@
 	(match_operand:TX 1 "aarch64_mem_pair_operand" "Ump"))
    (set (match_operand:TX2 2 "register_operand" "=w")
 	(match_operand:TX2 3 "memory_operand" "m"))]
-   "TARGET_SIMD
+   "TARGET_BASE_SIMD
     && rtx_equal_p (XEXP (operands[3], 0),
 		    plus_constant (Pmode,
 				   XEXP (operands[1], 0),
@@ -1815,11 +1824,11 @@
 	(match_operand:TX 1 "register_operand" "w"))
    (set (match_operand:TX2 2 "memory_operand" "=m")
 	(match_operand:TX2 3 "register_operand" "w"))]
-   "TARGET_SIMD &&
-    rtx_equal_p (XEXP (operands[2], 0),
-		 plus_constant (Pmode,
-				XEXP (operands[0], 0),
-				GET_MODE_SIZE (TFmode)))"
+   "TARGET_BASE_SIMD
+    && rtx_equal_p (XEXP (operands[2], 0),
+		    plus_constant (Pmode,
+				   XEXP (operands[0], 0),
+				   GET_MODE_SIZE (TFmode)))"
   "stp\\t%q1, %q3, %z0"
   [(set_attr "type" "neon_stp_q")
    (set_attr "fp" "yes")]
@@ -1867,7 +1876,7 @@
      (set (match_operand:TX 3 "register_operand" "=w")
           (mem:TX (plus:P (match_dup 1)
 			  (match_operand:P 5 "const_int_operand" "n"))))])]
-  "TARGET_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
+  "TARGET_BASE_SIMD && INTVAL (operands[5]) == GET_MODE_SIZE (<TX:MODE>mode)"
   "ldp\\t%q2, %q3, [%1], %4"
   [(set_attr "type" "neon_ldp_q")]
 )
@@ -1917,7 +1926,7 @@
      (set (mem:TX (plus:P (match_dup 0)
 			  (match_operand:P 5 "const_int_operand" "n")))
           (match_operand:TX 3 "register_operand" "w"))])]
-  "TARGET_SIMD
+  "TARGET_BASE_SIMD
    && INTVAL (operands[5])
       == INTVAL (operands[4]) + GET_MODE_SIZE (<TX:MODE>mode)"
   "stp\\t%q2, %q3, [%0, %4]!"

@@ -1400,7 +1400,7 @@ static bool
 aarch64_array_mode_supported_p (machine_mode mode,
 				unsigned HOST_WIDE_INT nelems)
 {
-  if (TARGET_SIMD
+  if (TARGET_BASE_SIMD
       && (AARCH64_VALID_SIMD_QREG_MODE (mode)
 	  || AARCH64_VALID_SIMD_DREG_MODE (mode))
       && (nelems >= 2 && nelems <= 4))
@@ -10762,8 +10762,8 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
       return NO_REGS;
     }
 
-  /* Without the TARGET_SIMD instructions we cannot move a Q register
-     to a Q register directly.  We need a scratch.  */
+  /* Without the TARGET_SIMD or TARGET_SVE instructions we cannot move a
+     Q register to a Q register directly.  We need a scratch.  */
   if (REG_P (x)
       && (mode == TFmode
 	  || mode == TImode
@@ -13368,7 +13368,7 @@ aarch64_register_move_cost (machine_mode mode,
 	 secondary reload.  A general register is used as a scratch to move
 	 the upper DI value and the lower DI value is moved directly,
 	 hence the cost is the sum of three moves. */
-      if (! TARGET_SIMD)
+      if (!TARGET_SIMD && !TARGET_SVE)
 	return regmove_cost->GP2FP + regmove_cost->FP2GP + regmove_cost->FP2FP;
 
       return regmove_cost->FP2FP;
@@ -18996,7 +18996,7 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
     return aarch64_full_sve_mode (mode).else_mode (word_mode);
 
   gcc_assert (known_eq (width, 64) || known_eq (width, 128));
-  if (TARGET_SIMD)
+  if (TARGET_BASE_SIMD)
     {
       if (known_eq (width, 128))
 	return aarch64_vq_mode (mode).else_mode (word_mode);
@@ -23409,7 +23409,11 @@ aarch64_expand_cpymem (rtx *operands)
   int copy_bits = 256;
 
   /* Default to 256-bit LDP/STP on large copies, however small copies, no SIMD
-     support or slow 256-bit LDP/STP fall back to 128-bit chunks.  */
+     support or slow 256-bit LDP/STP fall back to 128-bit chunks.
+
+     ??? Although it would be possible to use LDP/STP Qn in streaming mode
+     (so using TARGET_BASE_SIMD instead of TARGET_SIMD), it isn't clear
+     whether that would improve performance.  */
   if (size <= 24
       || !TARGET_SIMD
       || (aarch64_tune_params.extra_tuning_flags

@@ -61,8 +61,15 @@
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
 /* AdvSIMD is supported in the default configuration, unless disabled by
-   -mgeneral-regs-only or by the +nosimd extension.  */
-#define TARGET_SIMD (AARCH64_ISA_SIMD)
+   -mgeneral-regs-only or by the +nosimd extension.  The set of available
+   instructions is then subdivided into:
+
+   - the "base" set, available both in SME streaming mode and in
+     non-streaming mode
+
+   - the full set, available only in non-streaming mode.  */
+#define TARGET_BASE_SIMD (AARCH64_ISA_SIMD)
+#define TARGET_SIMD (AARCH64_ISA_SIMD && AARCH64_ISA_SM_OFF)
 #define TARGET_FLOAT (AARCH64_ISA_FP)
 
 #define UNITS_PER_WORD		8
@@ -199,6 +206,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* Macros to test ISA flags.  */
 
+#define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
 #define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
