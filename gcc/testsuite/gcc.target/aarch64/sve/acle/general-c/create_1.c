@@ -15,7 +15,7 @@ f1 (svuint8x2_t *ptr, svbool_t pg, svuint8_t u8, svfloat64_t f64,
   *ptr = svcreate2 (u8, x); /* { dg-error {passing 'int' to argument 2 of 'svcreate2', which expects an SVE type rather than a scalar} } */
   *ptr = svcreate2 (x, u8); /* { dg-error {passing 'int' to argument 1 of 'svcreate2', which expects an SVE type rather than a scalar} } */
   *ptr = svcreate2 (pg, u8); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svcreate2', but argument 1 had type 'svbool_t'} } */
-  *ptr = svcreate2 (pg, pg); /* { dg-error {'svcreate2' has no form that takes 'svbool_t' arguments} } */
+  *ptr = svcreate2 (pg, pg); /* { dg-error {incompatible types when assigning to type 'svuint8x2_t' from type 'svboolx2_t'} } */
   *ptr = svcreate2 (u8, u8);
   *ptr = svcreate2 (f64, f64); /* { dg-error {incompatible types when assigning to type 'svuint8x2_t' from type 'svfloat64x2_t'} } */
 }

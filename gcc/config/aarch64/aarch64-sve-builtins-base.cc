@@ -240,7 +240,7 @@ public:
       {
 	machine_mode mode = GET_MODE_INNER (e.vector_mode (0));
 	e.args[2] = simplify_unary_operation (NOT, mode, e.args[2], mode);
-	return e.map_to_rtx_codes (AND, AND, -1);
+	return e.map_to_rtx_codes (AND, AND, -1, -1);
       }
 
     if (e.type_suffix_ids[0] == TYPE_SUFFIX_b)
@@ -573,6 +573,12 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    if (e.type_suffix (0).tclass == TYPE_count)
+      {
+	unsigned int bits = e.type_suffix (0).element_bits;
+	return e.use_exact_insn (code_for_aarch64_sve_cntp_c (bits));
+      }
+
     machine_mode mode = e.vector_mode (0);
     e.add_ptrue_hint (0, mode);
     return e.use_exact_insn (code_for_aarch64_pred_cntp (mode));
@@ -640,9 +646,24 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    insn_code icode;
+    if (e.pred == PRED_none)
+      {
+	machine_mode mode0 = e.result_mode ();
+	machine_mode mode1 = GET_MODE (e.args[0]);
+	convert_optab optab;
+	if (e.type_suffix (0).integer_p)
+	  optab = e.type_suffix (0).unsigned_p ? ufix_optab : sfix_optab;
+	else if (e.type_suffix (1).integer_p)
+	  optab = e.type_suffix (1).unsigned_p ? ufloat_optab : sfloat_optab;
+	else
+	  optab = trunc_optab;
+	icode = convert_optab_handler (optab, mode0, mode1);
+	gcc_assert (icode != CODE_FOR_nothing);
+	return e.use_exact_insn (icode);
+      }
     machine_mode mode0 = e.vector_mode (0);
     machine_mode mode1 = e.vector_mode (1);
-    insn_code icode;
     /* All this complication comes from the need to select four things
        simultaneously:
 
@@ -706,9 +727,17 @@ public:
     /* In the optab, the multiplication operands come before the accumulator
        operand.  The optab is keyed off the multiplication mode.  */
     e.rotate_inputs_left (0, 3);
-    insn_code icode
-      = e.direct_optab_handler_for_sign (sdot_prod_optab, udot_prod_optab,
-					 0, GET_MODE (e.args[0]));
+    insn_code icode;
+    if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
+      icode = e.direct_optab_handler_for_sign (sdot_prod_optab,
+					       udot_prod_optab,
+					       0, GET_MODE (e.args[0]));
+    else
+      icode = (e.type_suffix (0).float_p
+	       ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
+	       : e.type_suffix (0).unsigned_p
+	       ? CODE_FOR_aarch64_sve_udotvnx4sivnx8hi
+	       : CODE_FOR_aarch64_sve_sdotvnx4sivnx8hi);
     return e.use_unpred_insn (icode);
   }
 };
@@ -721,12 +750,18 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    machine_mode mode0 = GET_MODE (e.args[0]);
+    machine_mode mode1 = GET_MODE (e.args[1]);
     /* Use the same ordering as the dot_prod_optab, with the
        accumulator last.  */
     e.rotate_inputs_left (0, 4);
     int unspec = unspec_for (e);
-    machine_mode mode = e.vector_mode (0);
-    return e.use_exact_insn (code_for_aarch64_dot_prod_lane (unspec, mode));
+    insn_code icode;
+    if (unspec == UNSPEC_FDOT)
+      icode = CODE_FOR_aarch64_fdot_prod_lanevnx4sfvnx8hf;
+    else
+      icode = code_for_aarch64_dot_prod_lane (unspec, mode0, mode1);
+    return e.use_exact_insn (icode);
   }
 };
 
@@ -1013,7 +1048,7 @@ public:
 	     with an extra argument on the end.  Take the inactive elements
 	     from this extra argument.  */
 	  e.rotate_inputs_left (0, 4);
-	return e.map_to_rtx_codes (AND, AND, -1, 3);
+	return e.map_to_rtx_codes (AND, AND, -1, -1, 3);
       }
 
     machine_mode wide_mode = e.vector_mode (0);
@@ -1244,6 +1279,9 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () != 1)
+      return nullptr;
+
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
@@ -1262,8 +1300,12 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = convert_optab_handler (maskload_optab,
-					     e.vector_mode (0), e.gp_mode (0));
+    insn_code icode;
+    if (e.vectors_per_tuple () == 1)
+      icode = convert_optab_handler (maskload_optab,
+				     e.vector_mode (0), e.gp_mode (0));
+    else
+      icode = code_for_aarch64_ld1 (e.tuple_mode (0));
     return e.use_contiguous_load_insn (icode);
   }
 };
@@ -1563,7 +1605,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = code_for_aarch64_ldnt1 (e.vector_mode (0));
+    insn_code icode = code_for_aarch64_ldnt1 (e.tuple_mode (0));
     return e.use_contiguous_load_insn (icode);
   }
 };
@@ -1823,7 +1865,10 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    return f.fold_to_pfalse ();
+    if (f.type_suffix (0).tclass == TYPE_bool)
+      return f.fold_to_pfalse ();
+
+    return nullptr;
   }
 
   rtx
@@ -1968,13 +2013,20 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    return f.fold_to_ptrue ();
+    if (f.type_suffix (0).tclass == TYPE_bool)
+      return f.fold_to_ptrue ();
+
+    return nullptr;
   }
 
   rtx
   expand (function_expander &e) const override
   {
-    return aarch64_ptrue_all (e.type_suffix (0).element_bytes);
+    if (e.type_suffix (0).tclass == TYPE_bool)
+      return aarch64_ptrue_all (e.type_suffix (0).element_bytes);
+
+    auto bits = e.type_suffix (0).element_bits;
+    return e.use_exact_insn (code_for_aarch64_sve_ptrue_c (bits));
   }
 };
 
@@ -2202,12 +2254,37 @@ public:
   }
 };
 
+class svrint_impl : public function_base
+{
+public:
+  CONSTEXPR svrint_impl (optab_tag optab, int cond_unspec)
+    : m_optab (optab), m_cond_unspec (cond_unspec)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    if (e.pred == PRED_none)
+      {
+	auto icode = direct_optab_handler (m_optab, e.tuple_mode (0));
+	return e.use_exact_insn (icode);
+      }
+    return e.map_to_unspecs (-1, -1, m_cond_unspec);
+  }
+
+  optab_tag m_optab;
+  int m_cond_unspec;
+};
+
 class svsel_impl : public quiet<function_base>
 {
 public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () > 1)
+      return nullptr;
+
     /* svsel corresponds exactly to VEC_COND_EXPR.  */
     gimple_seq stmts = NULL;
     tree pred = f.convert_pred (stmts, f.vector_type (0), 0);
@@ -2222,9 +2299,11 @@ public:
   {
     /* svsel (cond, truev, falsev) is vcond_mask (truev, falsev, cond).  */
     e.rotate_inputs_left (0, 3);
-    insn_code icode = convert_optab_handler (vcond_mask_optab,
-					     e.vector_mode (0),
-					     e.gp_mode (0));
+    insn_code icode = (e.vectors_per_tuple () > 1
+		       ? code_for_aarch64_sve_sel (e.tuple_mode (0))
+		       : convert_optab_handler (vcond_mask_optab,
+						e.vector_mode (0),
+						e.gp_mode (0)));
     return e.use_exact_insn (icode);
   }
 };
@@ -2311,6 +2390,9 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () != 1)
+      return nullptr;
+
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
@@ -2328,8 +2410,12 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = convert_optab_handler (maskstore_optab,
-					     e.vector_mode (0), e.gp_mode (0));
+    insn_code icode;
+    if (e.vectors_per_tuple () == 1)
+      icode = convert_optab_handler (maskstore_optab,
+				     e.vector_mode (0), e.gp_mode (0));
+    else
+      icode = code_for_aarch64_st1 (e.tuple_mode (0));
     return e.use_contiguous_store_insn (icode);
   }
 };
@@ -2447,7 +2533,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = code_for_aarch64_stnt1 (e.vector_mode (0));
+    insn_code icode = code_for_aarch64_stnt1 (e.tuple_mode (0));
     return e.use_contiguous_store_insn (icode);
   }
 };
@@ -2464,7 +2550,7 @@ public:
     /* Canonicalize subtractions of constants to additions.  */
     machine_mode mode = e.vector_mode (0);
     if (e.try_negating_argument (2, mode))
-      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD);
+      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD, -1);
 
     return rtx_code_function::expand (e);
   }
@@ -2675,6 +2761,9 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () > 1)
+      return nullptr;
+
     if (f.type_suffix (1).unsigned_p)
       return fold_type<poly_uint64> (f);
     else
@@ -2812,7 +2901,8 @@ FUNCTION (svcvtnt, CODE_FOR_MODE0 (aarch64_sve_cvtnt),)
 FUNCTION (svdiv, rtx_code_function, (DIV, UDIV, UNSPEC_COND_FDIV))
 FUNCTION (svdivr, rtx_code_function_rotated, (DIV, UDIV, UNSPEC_COND_FDIV))
 FUNCTION (svdot, svdot_impl,)
-FUNCTION (svdot_lane, svdotprod_lane_impl, (UNSPEC_SDOT, UNSPEC_UDOT, -1))
+FUNCTION (svdot_lane, svdotprod_lane_impl, (UNSPEC_SDOT, UNSPEC_UDOT,
+					    UNSPEC_FDOT))
 FUNCTION (svdup, svdup_impl,)
 FUNCTION (svdup_lane, svdup_lane_impl,)
 FUNCTION (svdupq, svdupq_impl,)
@@ -2878,12 +2968,16 @@ FUNCTION (svlsl_wide, shift_wide, (ASHIFT, UNSPEC_ASHIFT_WIDE))
 FUNCTION (svlsr, rtx_code_function, (LSHIFTRT, LSHIFTRT))
 FUNCTION (svlsr_wide, shift_wide, (LSHIFTRT, UNSPEC_LSHIFTRT_WIDE))
 FUNCTION (svmad, svmad_impl,)
-FUNCTION (svmax, rtx_code_function, (SMAX, UMAX, UNSPEC_COND_FMAX))
-FUNCTION (svmaxnm, unspec_based_function, (-1, -1, UNSPEC_COND_FMAXNM))
+FUNCTION (svmax, rtx_code_function, (SMAX, UMAX, UNSPEC_COND_FMAX,
+				     UNSPEC_FMAX))
+FUNCTION (svmaxnm, cond_or_uncond_unspec_function, (UNSPEC_COND_FMAXNM,
+						    UNSPEC_FMAXNM))
 FUNCTION (svmaxnmv, reduction, (UNSPEC_FMAXNMV))
 FUNCTION (svmaxv, reduction, (UNSPEC_SMAXV, UNSPEC_UMAXV, UNSPEC_FMAXV))
-FUNCTION (svmin, rtx_code_function, (SMIN, UMIN, UNSPEC_COND_FMIN))
-FUNCTION (svminnm, unspec_based_function, (-1, -1, UNSPEC_COND_FMINNM))
+FUNCTION (svmin, rtx_code_function, (SMIN, UMIN, UNSPEC_COND_FMIN,
+				     UNSPEC_FMIN))
+FUNCTION (svminnm, cond_or_uncond_unspec_function, (UNSPEC_COND_FMINNM,
+						    UNSPEC_FMINNM))
 FUNCTION (svminnmv, reduction, (UNSPEC_FMINNMV))
 FUNCTION (svminv, reduction, (UNSPEC_SMINV, UNSPEC_UMINV, UNSPEC_FMINV))
 FUNCTION (svmla, svmla_impl,)
@@ -2955,13 +3049,13 @@ FUNCTION (svrev, svrev_impl,)
 FUNCTION (svrevb, unspec_based_function, (UNSPEC_REVB, UNSPEC_REVB, -1))
 FUNCTION (svrevh, unspec_based_function, (UNSPEC_REVH, UNSPEC_REVH, -1))
 FUNCTION (svrevw, unspec_based_function, (UNSPEC_REVW, UNSPEC_REVW, -1))
-FUNCTION (svrinta, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTA))
-FUNCTION (svrinti, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTI))
-FUNCTION (svrintm, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTM))
-FUNCTION (svrintn, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTN))
-FUNCTION (svrintp, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTP))
-FUNCTION (svrintx, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTX))
-FUNCTION (svrintz, unspec_based_function, (-1, -1, UNSPEC_COND_FRINTZ))
+FUNCTION (svrinta, svrint_impl, (round_optab, UNSPEC_COND_FRINTA))
+FUNCTION (svrinti, svrint_impl, (nearbyint_optab, UNSPEC_COND_FRINTI))
+FUNCTION (svrintm, svrint_impl, (floor_optab, UNSPEC_COND_FRINTM))
+FUNCTION (svrintn, svrint_impl, (roundeven_optab, UNSPEC_COND_FRINTN))
+FUNCTION (svrintp, svrint_impl, (ceil_optab, UNSPEC_COND_FRINTP))
+FUNCTION (svrintx, svrint_impl, (rint_optab, UNSPEC_COND_FRINTX))
+FUNCTION (svrintz, svrint_impl, (btrunc_optab, UNSPEC_COND_FRINTZ))
 FUNCTION (svrsqrte, unspec_based_function, (-1, UNSPEC_RSQRTE, UNSPEC_RSQRTE))
 FUNCTION (svrsqrts, unspec_based_function, (-1, -1, UNSPEC_RSQRTS))
 FUNCTION (svscale, unspec_based_function, (-1, -1, UNSPEC_COND_FSCALE))

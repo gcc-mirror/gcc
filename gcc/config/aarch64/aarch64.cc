@@ -11689,6 +11689,7 @@ sizetochar (int size)
      '0':		Print a normal operand, if it's a general register,
 			then we assume DImode.
      'k':		Print NZCV for conditional compare instructions.
+     'K':		Print a predicate register as pn<N> rather than p<N>
      'A':		Output address constant representing the first
 			argument of X, specifying a relocation offset
 			if appropriate.
@@ -11865,14 +11866,17 @@ aarch64_print_operand (FILE *f, rtx x, int code)
     case 'T':
     case 'U':
     case 'V':
-      if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
+      if (!REG_P (x) || (!FP_REGNUM_P (REGNO (x)) && !PR_REGNUM_P (REGNO (x))))
 	{
-	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
+	  output_operand_lossage ("incompatible operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "%c%d",
-		   aarch64_sve_data_mode_p (GET_MODE (x)) ? 'z' : 'v',
-		   REGNO (x) - V0_REGNUM + (code - 'S'));
+      if (PR_REGNUM_P (REGNO (x)))
+	asm_fprintf (f, "p%d", REGNO (x) - P0_REGNUM + (code - 'S'));
+      else
+	asm_fprintf (f, "%c%d",
+		     aarch64_sve_data_mode_p (GET_MODE (x)) ? 'z' : 'v',
+		     REGNO (x) - V0_REGNUM + (code - 'S'));
       break;
 
     case 'R':
@@ -12153,6 +12157,15 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       }
       break;
 
+    case 'K':
+      if (!REG_P (x) || !PR_REGNUM_P (REGNO (x)))
+	{
+	  output_operand_lossage ("invalid operand for '%%%c'", code);
+	  return;
+	}
+      asm_fprintf (f, "pn%d", REGNO (x) - P0_REGNUM);
+      break;
+
     case 'y':
     case 'z':
       {
@@ -12355,6 +12368,9 @@ aarch64_label_mentioned_p (rtx x)
 enum reg_class
 aarch64_regno_regclass (unsigned regno)
 {
+  if (W8_W11_REGNUM_P (regno))
+    return W8_W11_REGS;
+
   if (W12_W15_REGNUM_P (regno))
     return W12_W15_REGS;
 
@@ -12722,6 +12738,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
   unsigned int nregs, vec_flags;
   switch (regclass)
     {
+    case W8_W11_REGS:
     case W12_W15_REGS:
     case STUB_REGS:
     case TAILCALL_ADDR_REGS:

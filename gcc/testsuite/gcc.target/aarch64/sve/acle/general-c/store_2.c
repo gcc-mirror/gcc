@@ -11,7 +11,7 @@ f1 (svbool_t pg, signed char *s8_ptr, void *void_ptr, struct s *s_ptr,
 {
   svst1_vnum (pg, s8_ptr, 0); /* { dg-error {too few arguments to function 'svst1_vnum'} } */
   svst1_vnum (pg, s8_ptr, 0, s8, 0); /* { dg-error {too many arguments to function 'svst1_vnum'} } */
-  svst1_vnum (0, s8_ptr, 0, s8); /* { dg-error {passing 'int' to argument 1 of 'svst1_vnum', which expects 'svbool_t'} } */
+  svst1_vnum (0, s8_ptr, 0, s8); /* { dg-error {passing 'int' to argument 1 of 'svst1_vnum', which expects an 'svbool_t' or 'svcount_t'} } */
   svst1_vnum (pg, s8_ptr, pg, s8); /* { dg-error {passing 'svbool_t' to argument 3 of 'svst1_vnum', which expects 'int64_t'} } */
   svst1_vnum (pg, s8_ptr, s8, s8); /* { dg-error {passing 'svint8_t' to argument 3 of 'svst1_vnum', which expects 'int64_t'} } */
   svst1_vnum (pg, s8_ptr, void_ptr, s8); /* { dg-error "passing argument 3 of 'svst1_vnum_s8' makes integer from pointer without a cast" } */

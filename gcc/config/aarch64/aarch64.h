@@ -324,7 +324,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    imply anything about the state of PSTATE.SM.  */
 #define TARGET_SME (AARCH64_ISA_SME)
 
-/* Streaming-mode SME instructions.  */
+/* Same with streaming mode enabled.  */
 #define TARGET_STREAMING_SME (TARGET_STREAMING && TARGET_SME)
 
 /* The FEAT_SME_I16I64 extension to SME, enabled through +sme-i16i64.  */
@@ -335,6 +335,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* SME2 instructions, enabled through +sme2.  */
 #define TARGET_SME2 (AARCH64_ISA_SME2)
+
+/* Same with streaming mode enabled.  */
+#define TARGET_STREAMING_SME2 (TARGET_STREAMING && TARGET_SME2)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)
@@ -541,6 +544,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
                      {"b" # N, V0_REGNUM + (N)}, \
                      {"z" # N, V0_REGNUM + (N)}
 
+#define P_ALIASES(N) {"pn" # N, P0_REGNUM + (N)}
+
 /* Provide aliases for all of the ISA defined register name forms.
    These aliases are convenient for use in the clobber lists of inline
    asm statements.  */
@@ -561,7 +566,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     V_ALIASES(16), V_ALIASES(17), V_ALIASES(18), V_ALIASES(19), \
     V_ALIASES(20), V_ALIASES(21), V_ALIASES(22), V_ALIASES(23), \
     V_ALIASES(24), V_ALIASES(25), V_ALIASES(26), V_ALIASES(27), \
-    V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31)  \
+    V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31), \
+    P_ALIASES(0),  P_ALIASES(1),  P_ALIASES(2),  P_ALIASES(3),  \
+    P_ALIASES(4),  P_ALIASES(5),  P_ALIASES(6),  P_ALIASES(7),  \
+    P_ALIASES(8),  P_ALIASES(9),  P_ALIASES(10), P_ALIASES(11), \
+    P_ALIASES(12), P_ALIASES(13), P_ALIASES(14), P_ALIASES(15)  \
   }
 
 #define EPILOGUE_USES(REGNO) (aarch64_epilogue_uses (REGNO))
@@ -682,6 +691,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    && (REGNO) != R17_REGNUM \
    && (REGNO) != R30_REGNUM) \
 
+#define W8_W11_REGNUM_P(REGNO) \
+  IN_RANGE (REGNO, R8_REGNUM, R11_REGNUM)
+
 #define W12_W15_REGNUM_P(REGNO) \
   IN_RANGE (REGNO, R12_REGNUM, R15_REGNUM)
 
@@ -711,6 +723,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 enum reg_class
 {
   NO_REGS,
+  W8_W11_REGS,
   W12_W15_REGS,
   TAILCALL_ADDR_REGS,
   STUB_REGS,
@@ -736,6 +749,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
+  "W8_W11_REGS",				\
   "W12_W15_REGS",				\
   "TAILCALL_ADDR_REGS",				\
   "STUB_REGS",					\
@@ -758,6 +772,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
+  { 0x00000f00, 0x00000000, 0x00000000 },	/* W8_W11_REGS */	\
   { 0x0000f000, 0x00000000, 0x00000000 },	/* W12_W15_REGS */	\
   { 0x00030000, 0x00000000, 0x00000000 },	/* TAILCALL_ADDR_REGS */\
   { 0x3ffcffff, 0x00000000, 0x00000000 },	/* STUB_REGS */		\

@@ -99,6 +99,8 @@ const unsigned int CP_READ_FFR = 1U << 5;
 const unsigned int CP_WRITE_FFR = 1U << 6;
 const unsigned int CP_READ_ZA = 1U << 7;
 const unsigned int CP_WRITE_ZA = 1U << 8;
+const unsigned int CP_READ_ZT0 = 1U << 9;
+const unsigned int CP_WRITE_ZT0 = 1U << 10;
 
 /* Enumerates the SVE predicate and (data) vector types, together called
    "vector types" for brevity.  */
@@ -361,6 +363,9 @@ public:
   bool modifies_global_state_p () const;
   bool could_trap_p () const;
 
+  vector_type_index gp_type_index () const;
+  tree gp_type () const;
+
   unsigned int vectors_per_tuple () const;
   tree memory_scalar_type () const;
   machine_mode memory_vector_mode () const;
@@ -469,6 +474,8 @@ public:
   bool scalar_argument_p (unsigned int);
 
   void report_incorrect_num_vectors (unsigned int, sve_type, unsigned int);
+  void report_mismatched_num_vectors (unsigned int, sve_type,
+				      unsigned int, sve_type);
 
   tree report_no_such_form (sve_type);
   tree lookup_form (mode_suffix_index,
@@ -481,8 +488,11 @@ public:
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   group_suffix_index = GROUP_none);
   tree resolve_to (mode_suffix_index, sve_type);
+  tree resolve_conversion (mode_suffix_index, sve_type);
 
+  vector_type_index infer_predicate_type (unsigned int);
   type_suffix_index infer_integer_scalar_type (unsigned int);
+  type_suffix_index infer_64bit_scalar_integer_pair (unsigned int);
   type_suffix_index infer_pointer_type (unsigned int, bool = false);
   sve_type infer_sve_type (unsigned int);
   sve_type infer_vector_or_tuple_type (unsigned int, unsigned int);
@@ -494,13 +504,16 @@ public:
 
   bool require_vector_or_scalar_type (unsigned int);
 
+  bool require_matching_predicate_type (vector_type_index, sve_type);
   bool require_vector_type (unsigned int, vector_type_index);
   bool require_matching_vector_type (unsigned int, unsigned int, sve_type);
   bool require_derived_vector_type (unsigned int, unsigned int, sve_type,
 				    type_class_index = SAME_TYPE_CLASS,
-				    unsigned int = SAME_SIZE);
+				    unsigned int = SAME_SIZE,
+				    unsigned int = 1);
 
   bool require_scalar_type (unsigned int, const char *);
+  bool require_nonscalar_type (unsigned int);
   bool require_pointer_type (unsigned int);
   bool require_matching_integer_scalar_type (unsigned int, unsigned int,
 					     type_suffix_index);
@@ -529,6 +542,8 @@ public:
 				type_class_index = SAME_TYPE_CLASS,
 				unsigned int = SAME_SIZE,
 				type_suffix_index = NUM_TYPE_SUFFIXES);
+  tree finish_opt_single_resolution (unsigned int, unsigned int, sve_type,
+				     type_class_index = SAME_TYPE_CLASS);
 
   tree resolve ();
 
@@ -653,7 +668,7 @@ public:
   rtx use_contiguous_prefetch_insn (insn_code);
   rtx use_contiguous_store_insn (insn_code);
 
-  rtx map_to_rtx_codes (rtx_code, rtx_code, int,
+  rtx map_to_rtx_codes (rtx_code, rtx_code, int, int,
 			unsigned int = DEFAULT_MERGE_ARGNO);
   rtx map_to_unspecs (int, int, int, unsigned int = DEFAULT_MERGE_ARGNO);
 
@@ -784,13 +799,6 @@ extern tree acle_svprfop;
 bool vector_cst_all_same (tree, unsigned int);
 bool is_ptrue (tree, unsigned int);
 
-/* Return the ACLE type svbool_t.  */
-inline tree
-get_svbool_t (void)
-{
-  return acle_vector_types[0][VECTOR_TYPE_svbool_t];
-}
-
 /* Try to find a mode with the given mode_suffix_info fields.  Return the
    mode on success or MODE_none on failure.  */
 inline mode_suffix_index
@@ -862,6 +870,24 @@ inline bool
 function_instance::operator!= (const function_instance &other) const
 {
   return !operator== (other);
+}
+
+/* Return the index of the type that should be used as the governing
+   predicate of this function.  */
+inline vector_type_index
+function_instance::gp_type_index () const
+{
+  if (group_suffix ().vectors_per_tuple > 1)
+    return VECTOR_TYPE_svcount_t;
+  return VECTOR_TYPE_svbool_t;
+}
+
+/* Return the type that should be used as the governing predicate of
+   this function.  */
+inline tree
+function_instance::gp_type () const
+{
+  return acle_vector_types[0][gp_type_index ()];
 }
 
 /* If the function operates on tuples of vectors, return the number
@@ -997,6 +1023,10 @@ function_instance::tuple_mode (unsigned int i) const
 inline machine_mode
 function_instance::gp_mode (unsigned int i) const
 {
+  /* Multi-vector operations are predicated on an svcount_t, which has
+     mode VNx16BI.  */
+  if (group_suffix ().vectors_per_tuple > 1)
+    return VNx16BImode;
   return aarch64_sve_pred_mode (type_suffix (i).element_bytes).require ();
 }
 

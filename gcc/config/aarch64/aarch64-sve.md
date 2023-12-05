@@ -1266,7 +1266,7 @@
 ;; - LD4W
 ;; -------------------------------------------------------------------------
 
-;; Predicated LD1.
+;; Predicated LD1 (single).
 (define_insn "maskload<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL
@@ -1275,6 +1275,17 @@
 	  UNSPEC_LD1_SVE))]
   "TARGET_SVE"
   "ld1<Vesize>\t%0.<Vctype>, %2/z, %1"
+)
+
+;; Predicated LD1 (multi), with a count as predicate.
+(define_insn "@aarch64_ld1<mode>"
+  [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
+	  UNSPEC_LD1_SVE_COUNT))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "ld1<Vesize>\t%0, %K2/z, %1"
 )
 
 ;; Unpredicated LD[234].
@@ -1408,7 +1419,7 @@
 ;; - LDNT1W
 ;; -------------------------------------------------------------------------
 
-;; Predicated contiguous non-temporal load.
+;; Predicated contiguous non-temporal load (single).
 (define_insn "@aarch64_ldnt1<mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
 	(unspec:SVE_FULL
@@ -1417,6 +1428,17 @@
 	  UNSPEC_LDNT1_SVE))]
   "TARGET_SVE"
   "ldnt1<Vesize>\t%0.<Vetype>, %2/z, %1"
+)
+
+;; Predicated contiguous non-temporal load (multi).
+(define_insn "@aarch64_ldnt1<mode>"
+  [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
+	  UNSPEC_LDNT1_SVE_COUNT))]
+  "TARGET_SVE"
+  "ldnt1<Vesize>\t%0, %K2/z, %1"
 )
 
 ;; -------------------------------------------------------------------------
@@ -2229,7 +2251,7 @@
 ;; - ST4W
 ;; -------------------------------------------------------------------------
 
-;; Predicated ST1.
+;; Predicated ST1 (single).
 (define_insn "maskstore<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "memory_operand" "+m")
 	(unspec:SVE_ALL
@@ -2239,6 +2261,17 @@
 	  UNSPEC_ST1_SVE))]
   "TARGET_SVE"
   "st1<Vesize>\t%1.<Vctype>, %2, %0"
+)
+
+(define_insn "@aarch64_st1<mode>"
+  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_dup 0)]
+	  UNSPEC_ST1_SVE_COUNT))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "st1<Vesize>\t%1, %K2, %0"
 )
 
 ;; Unpredicated ST[234].  This is always a full update, so the dependence
@@ -2338,6 +2371,17 @@
 	  UNSPEC_STNT1_SVE))]
   "TARGET_SVE"
   "stnt1<Vesize>\t%1.<Vetype>, %2, %0"
+)
+
+(define_insn "@aarch64_stnt1<mode>"
+  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_dup 0)]
+	  UNSPEC_STNT1_SVE_COUNT))]
+  "TARGET_SME2 && TARGET_STREAMING"
+  "stnt1<Vesize>\t%1, %K2, %0"
 )
 
 ;; -------------------------------------------------------------------------
@@ -7133,21 +7177,25 @@
 )
 
 ;; Four-element integer dot-product by selected lanes with accumulation.
-(define_insn "@aarch64_<sur>dot_prod_lane<vsi2qi>"
+(define_insn "@aarch64_<sur>dot_prod_lane<SVE_FULL_SDI:mode><SVE_FULL_BHI:mode>"
   [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
 	(plus:SVE_FULL_SDI
 	  (unspec:SVE_FULL_SDI
-	    [(match_operand:<VSI2QI> 1 "register_operand")
-	     (unspec:<VSI2QI>
-	       [(match_operand:<VSI2QI> 2 "register_operand")
+	    [(match_operand:SVE_FULL_BHI 1 "register_operand")
+	     (unspec:SVE_FULL_BHI
+	       [(match_operand:SVE_FULL_BHI 2 "register_operand")
 		(match_operand:SI 3 "const_int_operand")]
 	       UNSPEC_SVE_LANE_SELECT)]
 	    DOTPROD)
 	  (match_operand:SVE_FULL_SDI 4 "register_operand")))]
-  "TARGET_SVE"
-  {@ [ cons: =0 , 1 , 2              , 4 ; attrs: movprfx ]
-     [ w        , w , <sve_lane_con> , 0 ; *              ] <sur>dot\t%0.<Vetype>, %1.<Vetype_fourth>, %2.<Vetype_fourth>[%3]
-     [ ?&w      , w , <sve_lane_con> , w ; yes            ] movprfx\t%0, %4\;<sur>dot\t%0.<Vetype>, %1.<Vetype_fourth>, %2.<Vetype_fourth>[%3]
+  "TARGET_SVE
+   && (<SVE_FULL_SDI:elem_bits> == <SVE_FULL_BHI:elem_bits> * 4
+       || (TARGET_STREAMING_SME2
+	   && <SVE_FULL_SDI:elem_bits> == 32
+	   && <SVE_FULL_BHI:elem_bits> == 16))"
+  {@ [ cons: =0 , 1 , 2                           , 4 ; attrs: movprfx ]
+     [ w        , w , <SVE_FULL_SDI:sve_lane_con> , 0 ; *              ] <sur>dot\t%0.<SVE_FULL_SDI:Vetype>, %1.<SVE_FULL_BHI:Vetype>, %2.<SVE_FULL_BHI:Vetype>[%3]
+     [ ?&w      , w , <SVE_FULL_SDI:sve_lane_con> , w ; yes            ] movprfx\t%0, %4\;<sur>dot\t%0.<SVE_FULL_SDI:Vetype>, %1.<SVE_FULL_BHI:Vetype>, %2.<SVE_FULL_BHI:Vetype>[%3]
   }
 )
 
@@ -7166,13 +7214,13 @@
   }
 )
 
-(define_insn "@aarch64_<sur>dot_prod_lane<vsi2qi>"
+(define_insn "@aarch64_<sur>dot_prod_lane<VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>"
   [(set (match_operand:VNx4SI_ONLY 0 "register_operand")
 	(plus:VNx4SI_ONLY
 	  (unspec:VNx4SI_ONLY
-	    [(match_operand:<VSI2QI> 1 "register_operand")
-	     (unspec:<VSI2QI>
-	       [(match_operand:<VSI2QI> 2 "register_operand")
+	    [(match_operand:VNx16QI_ONLY 1 "register_operand")
+	     (unspec:VNx16QI_ONLY
+	       [(match_operand:VNx16QI_ONLY 2 "register_operand")
 		(match_operand:SI 3 "const_int_operand")]
 	       UNSPEC_SVE_LANE_SELECT)]
 	    DOTPROD_I8MM)
@@ -7758,6 +7806,8 @@
 ;; - BFDOT (BF16)
 ;; - BFMLALB (BF16)
 ;; - BFMLALT (BF16)
+;; - BFMLSLB (SME2)
+;; - BFMLSLT (SME2)
 ;; - BFMMLA (BF16)
 ;; -------------------------------------------------------------------------
 
@@ -8239,11 +8289,18 @@
 ;; - WHILEWR (SVE2)
 ;; -------------------------------------------------------------------------
 
+(define_constants [
+  (SVE_WHILE_B 0)
+  (SVE_WHILE_B_X2 1)
+  (SVE_WHILE_C 2)
+])
+
 ;; Set element I of the result if (cmp (plus operand1 J) operand2) is
 ;; true for all J in [0, I].
 (define_insn "@while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>"
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
-	(unspec:PRED_ALL [(match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	(unspec:PRED_ALL [(const_int SVE_WHILE_B)
+			  (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
 			  (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
 			 SVE_WHILE))
    (clobber (reg:CC_NZC CC_REGNUM))]
@@ -8261,12 +8318,14 @@
 	   (match_operand 4)
 	   (const_int SVE_KNOWN_PTRUE)
 	   (unspec:PRED_ALL
-	     [(match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	     [(const_int SVE_WHILE_B)
+	      (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
 	      (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
 	     SVE_WHILE)]
 	  UNSPEC_PTEST))
    (set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
-	(unspec:PRED_ALL [(match_dup 1)
+	(unspec:PRED_ALL [(const_int SVE_WHILE_B)
+			  (match_dup 1)
 			  (match_dup 2)]
 			 SVE_WHILE))]
   "TARGET_SVE"
@@ -8288,7 +8347,8 @@
 	   (match_operand 4)
 	   (const_int SVE_KNOWN_PTRUE)
 	   (unspec:PRED_ALL
-	     [(match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	     [(const_int SVE_WHILE_B)
+	      (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
 	      (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
 	     SVE_WHILE)]
 	  UNSPEC_PTEST))

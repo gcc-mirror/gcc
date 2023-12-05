@@ -39,7 +39,7 @@
 (define_mode_attr cas_short_expected_pred
   [(QI "aarch64_reg_or_imm") (HI "aarch64_plushi_operand")])
 (define_mode_attr cas_short_expected_imm
-  [(QI "n") (HI "Uph")])
+  [(QI "n") (HI "Uih")])
 
 (define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out

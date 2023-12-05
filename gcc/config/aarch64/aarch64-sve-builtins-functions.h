@@ -60,6 +60,12 @@ using read_write_za = add_call_properties<T, CP_READ_ZA | CP_WRITE_ZA>;
 template<typename T>
 using write_za = add_call_properties<T, CP_WRITE_ZA>;
 
+template<typename T>
+using read_zt0 = add_call_properties<T, CP_READ_ZT0>;
+
+template<typename T>
+using write_zt0 = add_call_properties<T, CP_WRITE_ZT0>;
+
 /* A function_base that sometimes or always operates on tuples of
    vectors.  */
 class multi_vector_function : public function_base
@@ -102,8 +108,9 @@ public:
   memory_vector_mode (const function_instance &fi) const override
   {
     machine_mode mode = fi.vector_mode (0);
-    if (m_vectors_per_tuple != 1)
-      mode = targetm.array_mode (mode, m_vectors_per_tuple).require ();
+    auto vectors_per_tuple = fi.vectors_per_tuple ();
+    if (vectors_per_tuple != 1)
+      mode = targetm.array_mode (mode, vectors_per_tuple).require ();
     return mode;
   }
 };
@@ -196,9 +203,11 @@ class rtx_code_function_base : public function_base
 public:
   CONSTEXPR rtx_code_function_base (rtx_code code_for_sint,
 				    rtx_code code_for_uint,
-				    int unspec_for_fp = -1)
+				    int unspec_for_cond_fp = -1,
+				    int unspec_for_uncond_fp = -1)
     : m_code_for_sint (code_for_sint), m_code_for_uint (code_for_uint),
-      m_unspec_for_fp (unspec_for_fp) {}
+      m_unspec_for_cond_fp (unspec_for_cond_fp),
+      m_unspec_for_uncond_fp (unspec_for_uncond_fp) {}
 
   /* The rtx code to use for signed and unsigned integers respectively.
      Can be UNKNOWN for functions that don't have integer forms.  */
@@ -207,7 +216,11 @@ public:
 
   /* The UNSPEC_COND_* to use for floating-point operations.  Can be -1
      for functions that only operate on integers.  */
-  int m_unspec_for_fp;
+  int m_unspec_for_cond_fp;
+
+  /* The UNSPEC_* to use for unpredicated floating-point operations.
+     Can be -1 if there is no such operation.  */
+  int m_unspec_for_uncond_fp;
 };
 
 /* A function_base for functions that have an associated rtx code.
@@ -221,7 +234,7 @@ public:
   expand (function_expander &e) const override
   {
     return e.map_to_rtx_codes (m_code_for_sint, m_code_for_uint,
-			       m_unspec_for_fp);
+			       m_unspec_for_cond_fp, m_unspec_for_uncond_fp);
   }
 };
 
@@ -242,7 +255,8 @@ public:
     unsigned int nargs = e.args.length ();
     e.rotate_inputs_left (e.pred != PRED_none ? 1 : 0, nargs);
     return e.map_to_rtx_codes (m_code_for_sint, m_code_for_uint,
-			       m_unspec_for_fp, nargs - 1);
+			       m_unspec_for_cond_fp, m_unspec_for_uncond_fp,
+			       nargs - 1);
   }
 };
 
@@ -334,9 +348,12 @@ public:
   expand (function_expander &e) const override
   {
     return e.use_exact_insn (CODE (unspec_for (e),
-				   e.vector_mode (m_suffix_index)));
+				   e.tuple_mode (m_suffix_index)));
   }
 };
+
+typedef unspec_based_function_exact_insn<code_for_aarch64_sve>
+  unspec_based_uncond_function;
 
 /* A function that performs an unspec and then adds it to another value.  */
 typedef unspec_based_function_exact_insn<code_for_aarch64_sve_add>
@@ -374,6 +391,34 @@ typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub>
 typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub_lane>
   unspec_based_sub_lane_function;
 
+/* A function that has conditional and unconditional forms, with both
+   forms being associated with a single unspec each.  */
+class cond_or_uncond_unspec_function : public function_base
+{
+public:
+  CONSTEXPR cond_or_uncond_unspec_function (int cond_unspec, int uncond_unspec)
+    : m_cond_unspec (cond_unspec), m_uncond_unspec (uncond_unspec) {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    if (e.pred == PRED_none)
+      {
+	auto mode = e.tuple_mode (0);
+	auto icode = (e.mode_suffix_id == MODE_single
+		      ? code_for_aarch64_sve_single (m_uncond_unspec, mode)
+		      : code_for_aarch64_sve (m_uncond_unspec, mode));
+	return e.use_exact_insn (icode);
+      }
+    return e.map_to_unspecs (m_cond_unspec, m_cond_unspec, m_cond_unspec);
+  }
+
+  /* The unspecs for the conditional and unconditional instructions,
+     respectively.  */
+  int m_cond_unspec;
+  int m_uncond_unspec;
+};
+
 /* General SME unspec-based functions, parameterized on the vector mode.  */
 class sme_1mode_function : public read_write_za<unspec_based_function_base>
 {
@@ -388,14 +433,19 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    auto icode = code_for_aarch64_sme (unspec_for (e), e.tuple_mode (1));
+    insn_code icode;
+    if (e.mode_suffix_id == MODE_single)
+      icode = code_for_aarch64_sme_single (unspec_for (e), e.tuple_mode (1));
+    else
+      icode = code_for_aarch64_sme (unspec_for (e), e.tuple_mode (1));
     return e.use_exact_insn (icode);
   }
 };
 
 /* General SME unspec-based functions, parameterized on both the ZA mode
    and the vector mode.  */
-template<insn_code (*CODE) (int, machine_mode, machine_mode)>
+template<insn_code (*CODE) (int, machine_mode, machine_mode),
+	 insn_code (*CODE_SINGLE) (int, machine_mode, machine_mode)>
 class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
 {
 public:
@@ -409,13 +459,21 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = CODE (unspec_for (e), e.vector_mode (0),
-			    e.tuple_mode (1));
+    insn_code icode;
+    if (e.mode_suffix_id == MODE_single)
+      icode = CODE_SINGLE (unspec_for (e), e.vector_mode (0),
+			   e.tuple_mode (1));
+    else
+      icode = CODE (unspec_for (e), e.vector_mode (0), e.tuple_mode (1));
     return e.use_exact_insn (icode);
   }
 };
 
-using sme_2mode_function = sme_2mode_function_t<code_for_aarch64_sme>;
+using sme_2mode_function
+  = sme_2mode_function_t<code_for_aarch64_sme, code_for_aarch64_sme_single>;
+
+using sme_2mode_lane_function
+  = sme_2mode_function_t<code_for_aarch64_sme_lane, nullptr>;
 
 /* A function that acts like unspec_based_function_exact_insn<INT_CODE>
    when operating on integers, but that expands to an (fma ...)-style
@@ -565,6 +623,77 @@ public:
   int m_unspec;
 };
 
+/* A function that implements a x2 or x4 permute instruction.  Both forms
+   of intrinsic have a single x2 or x4 tuple argument, but the underlying
+   x2 instruction takes two separate input operands.  */
+class multireg_permute : public function_base
+{
+public:
+  CONSTEXPR multireg_permute (int unspec) : m_unspec (unspec) {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode = code_for_aarch64_sve (m_unspec, e.tuple_mode (0));
+    if (e.group_suffix ().vectors_per_tuple == 2)
+      {
+	machine_mode elt_mode = e.vector_mode (0);
+	rtx arg = e.args[0];
+	e.args[0] = simplify_gen_subreg (elt_mode, arg, GET_MODE (arg), 0);
+	e.args.safe_push (simplify_gen_subreg (elt_mode, arg, GET_MODE (arg),
+					       GET_MODE_SIZE (elt_mode)));
+      }
+    return e.use_exact_insn (icode);
+  }
+
+  /* The unspec associated with the permutation.  */
+  int m_unspec;
+};
+
+/* A function that has two type integer type suffixes, which might agree
+   or disagree on signedness.  There are separate instructions for each
+   signed/unsigned combination.  */
+class integer_conversion : public function_base
+{
+public:
+  CONSTEXPR integer_conversion (int unspec_for_sint, int unspec_for_sintu,
+				int unspec_for_uint, int unspec_for_uints)
+    : m_unspec_for_sint (unspec_for_sint),
+      m_unspec_for_sintu (unspec_for_sintu),
+      m_unspec_for_uint (unspec_for_uint),
+      m_unspec_for_uints (unspec_for_uints)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode0 = e.vector_mode (0);
+    machine_mode mode1 = GET_MODE (e.args[0]);
+    int unspec;
+    if (e.type_suffix (0).unsigned_p == e.type_suffix (1).unsigned_p)
+      unspec = (e.type_suffix (0).unsigned_p
+		? m_unspec_for_uint
+		: m_unspec_for_sint);
+    else
+      unspec = (e.type_suffix (0).unsigned_p
+		? m_unspec_for_sintu
+		: m_unspec_for_uints);
+    return e.use_exact_insn (code_for_aarch64_sve (unspec, mode0, mode1));
+  }
+
+  /* The unspec for signed -> signed.  */
+  int m_unspec_for_sint;
+
+  /* The unspec for signed -> unsigned.  */
+  int m_unspec_for_sintu;
+
+  /* The unspec for unsigned -> signed.  */
+  int m_unspec_for_uint;
+
+  /* The unspec for unsigned -> unsigned.  */
+  int m_unspec_for_uints;
+};
+
 /* A function_base for functions that reduce a vector to a scalar.  */
 class reduction : public function_base
 {
@@ -623,7 +752,7 @@ public:
     if (aarch64_simd_shift_imm_p (shift, elem_mode, m_code == ASHIFT))
       {
 	e.args.last () = shift;
-	return e.map_to_rtx_codes (m_code, m_code, -1);
+	return e.map_to_rtx_codes (m_code, m_code, -1, -1);
       }
 
     if (e.pred == PRED_x)
@@ -679,6 +808,19 @@ public:
     int unspec = (e.type_suffix (1).unsigned_p
 		  ? m_unspec_for_uint
 		  : m_unspec_for_sint);
+    if (e.vectors_per_tuple () > 1)
+      {
+	auto bits = e.type_suffix (0).element_bits;
+	auto icode = code_for_aarch64_sve_while_b_x2 (unspec, bits);
+	return e.use_exact_insn (icode);
+      }
+    if (e.type_suffix (0).tclass == TYPE_count)
+      {
+	auto bits = e.type_suffix (0).element_bits;
+	auto icode = code_for_aarch64_sve_while_c (unspec, bits);
+	return e.use_exact_insn (icode);
+      }
+
     machine_mode pred_mode = e.vector_mode (0);
     scalar_mode reg_mode = GET_MODE_INNER (e.vector_mode (1));
     return e.use_exact_insn (code_for_while (unspec, reg_mode, pred_mode));

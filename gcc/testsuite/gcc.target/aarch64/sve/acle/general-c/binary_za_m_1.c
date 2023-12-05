@@ -20,7 +20,6 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8, svint16_t s16, svint32_t s32,
   svmopa_za32_m (0, pg, pg, u8, s8); /* { dg-error {passing 'svint8_t'.* to argument 5 of 'svmopa_za32_m', but argument 4 had type 'svuint8_t'} } */
   svmopa_za32_m (0, pg, pg, s8, f16); /* { dg-error {passing 'svfloat16_t'.* to argument 5 of 'svmopa_za32_m', but argument 4 had type 'svint8_t'} } */
   svmopa_za32_m (0, pg, pg, pg, pg); /* { dg-error {'svmopa_za32_m' has no form that takes 'svbool_t' arguments} } */
-  svmopa_za32_m (0, pg, pg, s16, s16); /* { dg-error {'svmopa_za32_m' has no form that takes 'svint16_t' arguments} } */
   svmopa_za32_m (0, pg, pg, s32, s32); /* { dg-error {'svmopa_za32_m' has no form that takes 'svint32_t' arguments} } */
   svmopa_za32_m (0, pg, pg, f64, f64); /* { dg-error {'svmopa_za32_m' has no form that takes 'svfloat64_t' arguments} } */
 

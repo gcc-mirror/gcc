@@ -26,31 +26,57 @@ namespace aarch64_sve
   {
     extern const function_base *const arm_has_sme;
     extern const function_base *const arm_in_streaming_mode;
+    extern const function_base *const svadd_za;
+    extern const function_base *const svadd_write_za;
     extern const function_base *const svaddha_za;
     extern const function_base *const svaddva_za;
+    extern const function_base *const svbmopa_za;
+    extern const function_base *const svbmops_za;
     extern const function_base *const svcntsb;
     extern const function_base *const svcntsd;
     extern const function_base *const svcntsh;
     extern const function_base *const svcntsw;
+    extern const function_base *const svdot_za;
+    extern const function_base *const svdot_lane_za;
     extern const function_base *const svld1_hor_za;
     extern const function_base *const svld1_ver_za;
     extern const function_base *const svldr_za;
+    extern const function_base *const svldr_zt;
+    extern const function_base *const svluti2_lane_zt;
+    extern const function_base *const svluti4_lane_zt;
+    extern const function_base *const svmla_za;
+    extern const function_base *const svmla_lane_za;
+    extern const function_base *const svmls_za;
+    extern const function_base *const svmls_lane_za;
     extern const function_base *const svmopa_za;
     extern const function_base *const svmops_za;
+    extern const function_base *const svread_za;
     extern const function_base *const svread_hor_za;
     extern const function_base *const svread_ver_za;
     extern const function_base *const svst1_hor_za;
     extern const function_base *const svst1_ver_za;
     extern const function_base *const svstr_za;
+    extern const function_base *const svstr_zt;
+    extern const function_base *const svsub_za;
+    extern const function_base *const svsub_write_za;
+    extern const function_base *const svsudot_za;
+    extern const function_base *const svsudot_lane_za;
+    extern const function_base *const svsuvdot_lane_za;
     extern const function_base *const svsumopa_za;
     extern const function_base *const svsumops_za;
+    extern const function_base *const svusdot_za;
+    extern const function_base *const svusdot_lane_za;
+    extern const function_base *const svusvdot_lane_za;
     extern const function_base *const svusmopa_za;
     extern const function_base *const svusmops_za;
+    extern const function_base *const svwrite_za;
     extern const function_base *const svwrite_hor_za;
     extern const function_base *const svwrite_ver_za;
     extern const function_base *const svundef_za;
-    extern const function_base *const svzero_za;
+    extern const function_base *const svvdot_lane_za;
     extern const function_base *const svzero_mask_za;
+    extern const function_base *const svzero_za;
+    extern const function_base *const svzero_zt;
   }
 }
 
