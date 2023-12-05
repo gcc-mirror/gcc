@@ -2440,20 +2440,26 @@ function_checker::require_immediate_enum (unsigned int rel_argno, tree type)
   return false;
 }
 
-/* Check that argument REL_ARGNO is suitable for indexing argument
-   REL_ARGNO - 1, in groups of GROUP_SIZE elements.  REL_ARGNO counts
-   from the end of the predication arguments.  */
+/* The intrinsic conceptually divides vector argument REL_VEC_ARGNO into
+   groups of GROUP_SIZE elements.  Return true if argument REL_ARGNO is
+   a suitable constant index for selecting one of these groups.  The
+   selection happens within a 128-bit quadword, rather than the whole vector.
+
+   REL_ARGNO and REL_VEC_ARGNO count from the end of the predication
+   arguments.  */
 bool
 function_checker::require_immediate_lane_index (unsigned int rel_argno,
+						unsigned int rel_vec_argno,
 						unsigned int group_size)
 {
   unsigned int argno = m_base_arg + rel_argno;
   if (!argument_exists_p (argno))
     return true;
 
-  /* Get the type of the previous argument.  tree_argument_type wants a
-     1-based number, whereas ARGNO is 0-based.  */
-  machine_mode mode = TYPE_MODE (type_argument_type (m_fntype, argno));
+  /* Get the type of the vector argument.  tree_argument_type wants a
+     1-based number, whereas VEC_ARGNO is 0-based.  */
+  unsigned int vec_argno = m_base_arg + rel_vec_argno;
+  machine_mode mode = TYPE_MODE (type_argument_type (m_fntype, vec_argno + 1));
   gcc_assert (VECTOR_MODE_P (mode));
   unsigned int nlanes = 128 / (group_size * GET_MODE_UNIT_BITSIZE (mode));
   return require_immediate_range (rel_argno, 0, nlanes - 1);

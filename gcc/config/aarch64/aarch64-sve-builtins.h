@@ -463,7 +463,8 @@ public:
   bool require_immediate_either_or (unsigned int, HOST_WIDE_INT,
 				    HOST_WIDE_INT);
   bool require_immediate_enum (unsigned int, tree);
-  bool require_immediate_lane_index (unsigned int, unsigned int = 1);
+  bool require_immediate_lane_index (unsigned int, unsigned int,
+				     unsigned int = 1);
   bool require_immediate_one_of (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
 				 HOST_WIDE_INT, HOST_WIDE_INT);
   bool require_immediate_range (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT);

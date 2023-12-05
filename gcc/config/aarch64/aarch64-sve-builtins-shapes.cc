@@ -941,7 +941,7 @@ struct ternary_bfloat_lane_base
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (3, N);
+    return c.require_immediate_lane_index (3, 2, N);
   }
 };
 
@@ -956,7 +956,7 @@ struct ternary_qq_lane_base
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (3, 4);
+    return c.require_immediate_lane_index (3, 0);
   }
 };
 
@@ -1123,7 +1123,7 @@ struct binary_lane_def : public overloaded_base<0>
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (2);
+    return c.require_immediate_lane_index (2, 1);
   }
 };
 SHAPE (binary_lane)
@@ -1162,7 +1162,7 @@ struct binary_long_lane_def : public overloaded_base<0>
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (2);
+    return c.require_immediate_lane_index (2, 1);
   }
 };
 SHAPE (binary_long_lane)
@@ -2817,7 +2817,7 @@ struct ternary_lane_def : public overloaded_base<0>
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (3);
+    return c.require_immediate_lane_index (3, 2);
   }
 };
 SHAPE (ternary_lane)
@@ -2845,7 +2845,7 @@ struct ternary_lane_rotate_def : public overloaded_base<0>
   bool
   check (function_checker &c) const override
   {
-    return (c.require_immediate_lane_index (3, 2)
+    return (c.require_immediate_lane_index (3, 2, 2)
 	    && c.require_immediate_one_of (4, 0, 90, 180, 270));
   }
 };
@@ -2868,7 +2868,7 @@ struct ternary_long_lane_def
   bool
   check (function_checker &c) const override
   {
-    return c.require_immediate_lane_index (3);
+    return c.require_immediate_lane_index (3, 2);
   }
 };
 SHAPE (ternary_long_lane)
@@ -2965,7 +2965,7 @@ struct ternary_qq_lane_rotate_def : public overloaded_base<0>
   bool
   check (function_checker &c) const override
   {
-    return (c.require_immediate_lane_index (3, 4)
+    return (c.require_immediate_lane_index (3, 0)
 	    && c.require_immediate_one_of (4, 0, 90, 180, 270));
   }
 };
