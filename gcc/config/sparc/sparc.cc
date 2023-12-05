@@ -1130,6 +1130,7 @@ next_active_non_empty_insn (rtx_insn *insn)
   while (insn
 	 && (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
 	     || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	     || get_attr_length (insn) == 0
 	     || (USEFUL_INSN_P (insn)
 		 && (asm_noperands (PATTERN (insn)) >= 0)
 		 && !strcmp (decode_asm_operands (PATTERN (insn),
