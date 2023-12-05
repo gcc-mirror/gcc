@@ -771,6 +771,8 @@ void foo (__m128i *buf, unsigned int e, __m128i msg0, __m128i msg1)
 int bar (void)
 {
   unsigned int eax, ebx, ecx, edx;
+  (void) __get_cpuid;
+  (void) __get_cpuid_count;
   if (__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx)
       && (ebx & bit_SHA) != 0
       && __get_cpuid (1, &eax, &ebx, &ecx, &edx)
