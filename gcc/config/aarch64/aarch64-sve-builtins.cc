@@ -738,6 +738,13 @@ check_required_extensions (location_t location, tree fndecl,
   if (missing_extensions == 0)
     return check_required_registers (location, fndecl);
 
+  if (missing_extensions & AARCH64_FL_SM_OFF)
+    {
+      error_at (location, "ACLE function %qD cannot be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
   static const struct {
     aarch64_feature_flags flag;
     const char *name;

@@ -1,3 +1,4 @@
+/* { dg-skip-if "" { *-*-* } { "-DSTREAMING_COMPATIBLE" } { "" } } */
 /* { dg-require-effective-target aarch64_asm_i8mm_ok } */
 /* { dg-additional-options "-march=armv8.2-a+sve+i8mm" } */
 /* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */

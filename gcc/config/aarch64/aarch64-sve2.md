@@ -109,7 +109,7 @@
 	   (match_operand:<V_INT_EQUIV> 3 "register_operand")
 	   (mem:BLK (scratch))]
 	  UNSPEC_LDNT1_GATHER))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   {@ [cons: =0, 1, 2, 3]
      [&w, Upl, Z, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
      [?w, Upl, Z, 0    ] ^
@@ -132,6 +132,7 @@
 	       UNSPEC_LDNT1_GATHER))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4]
      [&w, Upl, Z, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
@@ -165,7 +166,7 @@
 	   (match_operand:SVE_FULL_SD 3 "register_operand")]
 
 	  UNSPEC_STNT1_SCATTER))]
-  "TARGET_SVE"
+  "TARGET_SVE && TARGET_NON_STREAMING"
   {@ [ cons: 0 , 1 , 2 , 3  ]
      [ Upl     , Z , w , w  ] stnt1<Vesize>\t%3.<Vetype>, %0, [%2.<Vetype>]
      [ Upl     , r , w , w  ] stnt1<Vesize>\t%3.<Vetype>, %0, [%2.<Vetype>, %1]
@@ -183,6 +184,7 @@
 	     (match_operand:SVE_FULL_SDI 3 "register_operand"))]
 	  UNSPEC_STNT1_SCATTER))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   {@ [ cons: 0 , 1 , 2 , 3  ]
      [ Upl     , Z , w , w  ] stnt1<SVE_PARTIAL_I:Vesize>\t%3.<SVE_FULL_SDI:Vetype>, %0, [%2.<SVE_FULL_SDI:Vetype>]
@@ -2469,7 +2471,7 @@
 	   (match_operand:SVE_FULL_SDI 2 "register_operand" "w")
 	   (match_operand:SVE_FULL_SDI 3 "register_operand" "w")]
 	  UNSPEC_HISTCNT))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "histcnt\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
@@ -2479,7 +2481,7 @@
 	  [(match_operand:VNx16QI_ONLY 1 "register_operand" "w")
 	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")]
 	  UNSPEC_HISTSEG))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "histseg\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
 )
 
@@ -2503,7 +2505,7 @@
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_SVE2"
+  "TARGET_SVE2 && TARGET_NON_STREAMING"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
 )
 
@@ -2534,6 +2536,7 @@
 	     SVE2_MATCH)]
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
   "&& !rtx_equal_p (operands[4], operands[6])"
@@ -2561,6 +2564,7 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:<VPRED> 0 "=Upa"))]
   "TARGET_SVE2
+   && TARGET_NON_STREAMING
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "<sve_int_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
   "&& !rtx_equal_p (operands[4], operands[6])"

@@ -253,6 +253,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
 
+/* The current function is a normal non-streaming function.  */
+#define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
+
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
 
@@ -291,16 +294,16 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define TARGET_SVE2 (AARCH64_ISA_SVE2)
 
 /* SVE2 AES instructions, enabled through +sve2-aes.  */
-#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES)
+#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES && TARGET_NON_STREAMING)
 
 /* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
-#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM)
+#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM && TARGET_NON_STREAMING)
 
 /* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
-#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3)
+#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3 && TARGET_NON_STREAMING)
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
-#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
+#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4 && TARGET_NON_STREAMING)
 
 /* SME instructions, enabled through +sme.  Note that this does not
    imply anything about the state of PSTATE.SM.  */

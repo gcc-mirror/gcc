@@ -11,10 +11,17 @@
 #error "Please define -DTEST_OVERLOADS or -DTEST_FULL"
 #endif
 
-#ifdef __cplusplus
-#define PROTO(NAME, RET, ARGS) extern "C" RET NAME ARGS; RET NAME ARGS
+#ifdef STREAMING_COMPATIBLE
+#define ATTR __arm_streaming_compatible
 #else
-#define PROTO(NAME, RET, ARGS) RET NAME ARGS
+#define ATTR
+#endif
+
+#ifdef __cplusplus
+#define PROTO(NAME, RET, ARGS) \
+  extern "C" RET NAME ARGS ATTR; RET NAME ARGS ATTR
+#else
+#define PROTO(NAME, RET, ARGS) RET NAME ARGS ATTR
 #endif
 
 #define TEST_UNIFORM_Z(NAME, TYPE, CODE1, CODE2)		\

@@ -51,24 +51,9 @@ DEF_SVE_FUNCTION (sveor3, ternary_opt_n, all_integer, none)
 DEF_SVE_FUNCTION (sveorbt, ternary_opt_n, all_integer, none)
 DEF_SVE_FUNCTION (sveortb, ternary_opt_n, all_integer, none)
 DEF_SVE_FUNCTION (svhadd, binary_opt_n, all_integer, mxz)
-DEF_SVE_FUNCTION (svhistcnt, binary_to_uint, sd_integer, z)
-DEF_SVE_FUNCTION (svhistseg, binary_to_uint, b_integer, none)
 DEF_SVE_FUNCTION (svhsub, binary_opt_n, all_integer, mxz)
 DEF_SVE_FUNCTION (svhsubr, binary_opt_n, all_integer, mxz)
-DEF_SVE_FUNCTION (svldnt1_gather, load_gather_sv_restricted, sd_data, implicit)
-DEF_SVE_FUNCTION (svldnt1_gather, load_gather_vs, sd_data, implicit)
-DEF_SVE_FUNCTION (svldnt1sb_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1sh_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1sh_gather, load_ext_gather_index_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1sw_gather, load_ext_gather_offset_restricted, d_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1sw_gather, load_ext_gather_index_restricted, d_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1ub_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1uh_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1uh_gather, load_ext_gather_index_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1uw_gather, load_ext_gather_offset_restricted, d_integer, implicit)
-DEF_SVE_FUNCTION (svldnt1uw_gather, load_ext_gather_index_restricted, d_integer, implicit)
 DEF_SVE_FUNCTION (svlogb, unary_to_int, all_float, mxz)
-DEF_SVE_FUNCTION (svmatch, compare, bh_integer, implicit)
 DEF_SVE_FUNCTION (svmaxp, binary, all_arith, mx)
 DEF_SVE_FUNCTION (svmaxnmp, binary, all_float, mx)
 DEF_SVE_FUNCTION (svmla_lane, ternary_lane, hsd_integer, none)
@@ -91,7 +76,6 @@ DEF_SVE_FUNCTION (svmullb_lane, binary_long_lane, sd_integer, none)
 DEF_SVE_FUNCTION (svmullt, binary_long_opt_n, hsd_integer, none)
 DEF_SVE_FUNCTION (svmullt_lane, binary_long_lane, sd_integer, none)
 DEF_SVE_FUNCTION (svnbsl, ternary_opt_n, all_integer, none)
-DEF_SVE_FUNCTION (svnmatch, compare, bh_integer, implicit)
 DEF_SVE_FUNCTION (svpmul, binary_opt_n, b_unsigned, none)
 DEF_SVE_FUNCTION (svpmullb, binary_long_opt_n, hd_unsigned, none)
 DEF_SVE_FUNCTION (svpmullb_pair, binary_opt_n, bs_unsigned, none)
@@ -164,13 +148,6 @@ DEF_SVE_FUNCTION (svsli, ternary_shift_left_imm, all_integer, none)
 DEF_SVE_FUNCTION (svsqadd, binary_int_opt_n, all_unsigned, mxz)
 DEF_SVE_FUNCTION (svsra, ternary_shift_right_imm, all_integer, none)
 DEF_SVE_FUNCTION (svsri, ternary_shift_right_imm, all_integer, none)
-DEF_SVE_FUNCTION (svstnt1_scatter, store_scatter_index_restricted, sd_data, implicit)
-DEF_SVE_FUNCTION (svstnt1_scatter, store_scatter_offset_restricted, sd_data, implicit)
-DEF_SVE_FUNCTION (svstnt1b_scatter, store_scatter_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svstnt1h_scatter, store_scatter_index_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svstnt1h_scatter, store_scatter_offset_restricted, sd_integer, implicit)
-DEF_SVE_FUNCTION (svstnt1w_scatter, store_scatter_index_restricted, d_integer, implicit)
-DEF_SVE_FUNCTION (svstnt1w_scatter, store_scatter_offset_restricted, d_integer, implicit)
 DEF_SVE_FUNCTION (svsubhnb, binary_narrowb_opt_n, hsd_integer, none)
 DEF_SVE_FUNCTION (svsubhnt, binary_narrowt_opt_n, hsd_integer, none)
 DEF_SVE_FUNCTION (svsublb, binary_long_opt_n, hsd_integer, none)
@@ -191,7 +168,36 @@ DEF_SVE_FUNCTION (svxar, ternary_shift_right_imm, all_integer, none)
 
 #define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
 			     | AARCH64_FL_SVE2 \
-			     | AARCH64_FL_SVE2_AES)
+			     | AARCH64_FL_SM_OFF)
+DEF_SVE_FUNCTION (svhistcnt, binary_to_uint, sd_integer, z)
+DEF_SVE_FUNCTION (svhistseg, binary_to_uint, b_integer, none)
+DEF_SVE_FUNCTION (svldnt1_gather, load_gather_sv_restricted, sd_data, implicit)
+DEF_SVE_FUNCTION (svldnt1_gather, load_gather_vs, sd_data, implicit)
+DEF_SVE_FUNCTION (svldnt1sb_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1sh_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1sh_gather, load_ext_gather_index_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1sw_gather, load_ext_gather_offset_restricted, d_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1sw_gather, load_ext_gather_index_restricted, d_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1ub_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1uh_gather, load_ext_gather_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1uh_gather, load_ext_gather_index_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1uw_gather, load_ext_gather_offset_restricted, d_integer, implicit)
+DEF_SVE_FUNCTION (svldnt1uw_gather, load_ext_gather_index_restricted, d_integer, implicit)
+DEF_SVE_FUNCTION (svmatch, compare, bh_integer, implicit)
+DEF_SVE_FUNCTION (svnmatch, compare, bh_integer, implicit)
+DEF_SVE_FUNCTION (svstnt1_scatter, store_scatter_index_restricted, sd_data, implicit)
+DEF_SVE_FUNCTION (svstnt1_scatter, store_scatter_offset_restricted, sd_data, implicit)
+DEF_SVE_FUNCTION (svstnt1b_scatter, store_scatter_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svstnt1h_scatter, store_scatter_index_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svstnt1h_scatter, store_scatter_offset_restricted, sd_integer, implicit)
+DEF_SVE_FUNCTION (svstnt1w_scatter, store_scatter_index_restricted, d_integer, implicit)
+DEF_SVE_FUNCTION (svstnt1w_scatter, store_scatter_offset_restricted, d_integer, implicit)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
+			     | AARCH64_FL_SVE2 \
+			     | AARCH64_FL_SVE2_AES \
+			     | AARCH64_FL_SM_OFF)
 DEF_SVE_FUNCTION (svaesd, binary, b_unsigned, none)
 DEF_SVE_FUNCTION (svaese, binary, b_unsigned, none)
 DEF_SVE_FUNCTION (svaesmc, unary, b_unsigned, none)
@@ -202,7 +208,8 @@ DEF_SVE_FUNCTION (svpmullt_pair, binary_opt_n, d_unsigned, none)
 
 #define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
 			     | AARCH64_FL_SVE2 \
-			     | AARCH64_FL_SVE2_BITPERM)
+			     | AARCH64_FL_SVE2_BITPERM \
+			     | AARCH64_FL_SM_OFF)
 DEF_SVE_FUNCTION (svbdep, binary_opt_n, all_unsigned, none)
 DEF_SVE_FUNCTION (svbext, binary_opt_n, all_unsigned, none)
 DEF_SVE_FUNCTION (svbgrp, binary_opt_n, all_unsigned, none)
@@ -210,13 +217,15 @@ DEF_SVE_FUNCTION (svbgrp, binary_opt_n, all_unsigned, none)
 
 #define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
 			     | AARCH64_FL_SVE2 \
-			     | AARCH64_FL_SVE2_SHA3)
+			     | AARCH64_FL_SVE2_SHA3 \
+			     | AARCH64_FL_SM_OFF)
 DEF_SVE_FUNCTION (svrax1, binary, d_integer, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS (AARCH64_FL_SVE \
 			     | AARCH64_FL_SVE2 \
-			     | AARCH64_FL_SVE2_SM4)
+			     | AARCH64_FL_SVE2_SM4 \
+			     | AARCH64_FL_SM_OFF)
 DEF_SVE_FUNCTION (svsm4e, binary, s_unsigned, none)
 DEF_SVE_FUNCTION (svsm4ekey, binary, s_unsigned, none)
 #undef REQUIRED_EXTENSIONS
