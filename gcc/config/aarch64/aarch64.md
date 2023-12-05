@@ -956,7 +956,7 @@
 					 operands[1]);
 })
 
-(define_insn "*tb<optab><ALLI:mode><GPI:mode>1"
+(define_insn "@aarch64_tb<optab><ALLI:mode><GPI:mode>"
   [(set (pc) (if_then_else
 	      (EQL (zero_extract:GPI (match_operand:ALLI 0 "register_operand" "r")
 				     (const_int 1)
@@ -1043,7 +1043,7 @@
   [(parallel
      [(call (match_operand 0 "memory_operand")
 	    (match_operand 1 "general_operand"))
-      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (unspec:DI [(match_operand 2)] UNSPEC_CALLEE_ABI)
       (clobber (reg:DI LR_REGNUM))])]
   ""
   "
@@ -1070,7 +1070,7 @@
      [(set (match_operand 0 "")
 	   (call (match_operand 1 "memory_operand")
 		 (match_operand 2 "general_operand")))
-     (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+     (unspec:DI [(match_operand 3)] UNSPEC_CALLEE_ABI)
      (clobber (reg:DI LR_REGNUM))])]
   ""
   "
@@ -1097,7 +1097,7 @@
   [(parallel
      [(call (match_operand 0 "memory_operand")
 	    (match_operand 1 "general_operand"))
-      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (unspec:DI [(match_operand 2)] UNSPEC_CALLEE_ABI)
       (return)])]
   ""
   {
@@ -1111,7 +1111,7 @@
      [(set (match_operand 0 "")
 	   (call (match_operand 1 "memory_operand")
 		 (match_operand 2 "general_operand")))
-      (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (unspec:DI [(match_operand 3)] UNSPEC_CALLEE_ABI)
       (return)])]
   ""
   {
@@ -8048,3 +8048,6 @@
 
 ;; SVE2.
 (include "aarch64-sve2.md")
+
+;; SME and extensions
+(include "aarch64-sme.md")

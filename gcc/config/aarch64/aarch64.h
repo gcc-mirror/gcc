@@ -256,6 +256,10 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
 
+/* The current function has a streaming-compatible body.  */
+#define TARGET_STREAMING_COMPATIBLE \
+  ((aarch64_isa_flags & AARCH64_FL_SM_STATE) == 0)
+
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
 
@@ -477,7 +481,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     0, 0, 0, 0,   0, 0, 0, 0,	/* V8 - V15 */		\
     1, 1, 1, 1,   1, 1, 1, 1,   /* V16 - V23 */         \
     1, 1, 1, 1,   1, 1, 1, 1,   /* V24 - V31 */         \
-    1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
+    1, 1, 1, 0,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
     1, 1			/* FFR and FFRT */	\
@@ -816,6 +820,13 @@ struct GTY (()) aarch64_frame
   vec<unsigned, va_gc_atomic> *saved_fprs;
   vec<unsigned, va_gc_atomic> *saved_prs;
 
+  /* The offset from the base of the frame of a 64-bit slot whose low
+     bit contains the incoming value of PSTATE.SM.  This slot must be
+     within reach of the hard frame pointer.
+
+     The offset is -1 if such a slot isn't needed.  */
+  poly_int64 old_svcr_offset;
+
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the
      frame.  This value is rounded up to a multiple of
@@ -924,6 +935,12 @@ typedef struct GTY (()) machine_function
   /* One entry for each general purpose register.  */
   rtx call_via[SP_REGNUM];
   bool label_is_assembled;
+
+  /* True if we've expanded at least one call to a function that changes
+     PSTATE.SM.  This should only be used for saving compile time: false
+     guarantees that no such mode switch exists.  */
+  bool call_switches_pstate_sm;
+
   /* A set of all decls that have been passed to a vld1 intrinsic in the
      current function.  This is used to help guide the vector cost model.  */
   hash_set<tree> *vector_load_decls;
@@ -992,6 +1009,12 @@ typedef struct
 				   stack arg area so far.  */
   bool silent_p;		/* True if we should act silently, rather than
 				   raise an error for invalid calls.  */
+
+  /* A list of registers that need to be saved and restored around a
+     change to PSTATE.SM.  An auto_vec would be more convenient, but those
+     can't be copied.  */
+  unsigned int num_sme_mode_switch_args;
+  rtx sme_mode_switch_args[12];
 } CUMULATIVE_ARGS;
 #endif
 

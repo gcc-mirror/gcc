@@ -85,6 +85,8 @@
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
 #include "ssa.h"
+#include "tree-pass.h"
+#include "cfgbuild.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1791,6 +1793,26 @@ aarch64_fndecl_isa_mode (const_tree fndecl)
   return aarch64_fndecl_pstate_sm (fndecl);
 }
 
+/* Return the state of PSTATE.SM on entry to the current function.
+   This might be different from the state of PSTATE.SM in the function
+   body.  */
+
+static aarch64_feature_flags
+aarch64_cfun_incoming_pstate_sm ()
+{
+  return aarch64_fntype_pstate_sm (TREE_TYPE (cfun->decl));
+}
+
+/* Return true if a call from the current function to a function with
+   ISA mode CALLEE_MODE would involve a change to PSTATE.SM around
+   the BL instruction.  */
+
+static bool
+aarch64_call_switches_pstate_sm (aarch64_feature_flags callee_mode)
+{
+  return (callee_mode & ~AARCH64_ISA_MODE & AARCH64_FL_SM_STATE) != 0;
+}
+
 /* Implement TARGET_COMPATIBLE_VECTOR_TYPES_P.  */
 
 static bool
@@ -1814,7 +1836,7 @@ aarch64_emit_cfi_for_reg_p (unsigned int regno)
 static machine_mode
 aarch64_reg_save_mode (unsigned int regno)
 {
-  if (GP_REGNUM_P (regno))
+  if (GP_REGNUM_P (regno) || regno == VG_REGNUM)
     return DImode;
 
   if (FP_REGNUM_P (regno))
@@ -1873,6 +1895,16 @@ aarch64_callee_abi (rtx cookie)
   return function_abis[UINTVAL (cookie) >> AARCH64_NUM_ISA_MODES];
 }
 
+/* COOKIE is a CONST_INT from an UNSPEC_CALLEE_ABI rtx.  Return the
+   required ISA mode on entry to the callee, which is also the ISA
+   mode on return from the callee.  */
+
+static aarch64_feature_flags
+aarch64_callee_isa_mode (rtx cookie)
+{
+  return UINTVAL (cookie) & AARCH64_FL_ISA_MODES;
+}
+
 /* INSN is a call instruction.  Return the CONST_INT stored in its
    UNSPEC_CALLEE_ABI rtx.  */
 
@@ -1893,6 +1925,15 @@ const predefined_function_abi &
 aarch64_insn_callee_abi (const rtx_insn *insn)
 {
   return aarch64_callee_abi (aarch64_insn_callee_cookie (insn));
+}
+
+/* INSN is a call instruction.  Return the required ISA mode on entry to
+   the callee, which is also the ISA mode on return from the callee.  */
+
+static aarch64_feature_flags
+aarch64_insn_callee_isa_mode (const rtx_insn *insn)
+{
+  return aarch64_callee_isa_mode (aarch64_insn_callee_cookie (insn));
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -4108,6 +4149,437 @@ aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta, bool frame_related_p,
 		      temp1, temp2, frame_related_p, emit_move_imm);
 }
 
+/* A streaming-compatible function needs to switch temporarily to the known
+   PSTATE.SM mode described by LOCAL_MODE.  The low bit of OLD_SVCR contains
+   the runtime state of PSTATE.SM in the streaming-compatible code, before
+   the start of the switch to LOCAL_MODE.
+
+   Emit instructions to branch around the mode switch if PSTATE.SM already
+   matches LOCAL_MODE.  Return the label that the branch jumps to.  */
+
+static rtx_insn *
+aarch64_guard_switch_pstate_sm (rtx old_svcr, aarch64_feature_flags local_mode)
+{
+  local_mode &= AARCH64_FL_SM_STATE;
+  gcc_assert (local_mode != 0);
+  auto already_ok_cond = (local_mode & AARCH64_FL_SM_ON ? NE : EQ);
+  auto *label = gen_label_rtx ();
+  auto *jump = emit_jump_insn (gen_aarch64_tb (already_ok_cond, DImode, DImode,
+					       old_svcr, const0_rtx, label));
+  JUMP_LABEL (jump) = label;
+  return label;
+}
+
+/* Emit code to switch from the PSTATE.SM state in OLD_MODE to the PSTATE.SM
+   state in NEW_MODE.  This is known to involve either an SMSTART SM or
+   an SMSTOP SM.  */
+
+static void
+aarch64_switch_pstate_sm (aarch64_feature_flags old_mode,
+			  aarch64_feature_flags new_mode)
+{
+  old_mode &= AARCH64_FL_SM_STATE;
+  new_mode &= AARCH64_FL_SM_STATE;
+  gcc_assert (old_mode != new_mode);
+
+  if ((new_mode & AARCH64_FL_SM_ON)
+      || (new_mode == 0 && (old_mode & AARCH64_FL_SM_OFF)))
+    emit_insn (gen_aarch64_smstart_sm ());
+  else
+    emit_insn (gen_aarch64_smstop_sm ());
+}
+
+/* As a side-effect, SMSTART SM and SMSTOP SM clobber the contents of all
+   FP and predicate registers.  This class emits code to preserve any
+   necessary registers around the mode switch.
+
+   The class uses four approaches to saving and restoring contents, enumerated
+   by group_type:
+
+   - GPR: save and restore the contents of FP registers using GPRs.
+     This is used if the FP register contains no more than 64 significant
+     bits.  The registers used are FIRST_GPR onwards.
+
+   - MEM_128: save and restore 128-bit SIMD registers using memory.
+
+   - MEM_SVE_PRED: save and restore full SVE predicate registers using memory.
+
+   - MEM_SVE_DATA: save and restore full SVE vector registers using memory.
+
+   The save slots within each memory group are consecutive, with the
+   MEM_SVE_PRED slots occupying a region below the MEM_SVE_DATA slots.
+
+   There will only be two mode switches for each use of SME, so they should
+   not be particularly performance-sensitive.  It's also rare for SIMD, SVE
+   or predicate registers to be live across mode switches.  We therefore
+   don't preallocate the save slots but instead allocate them locally on
+   demand.  This makes the code emitted by the class self-contained.  */
+
+class aarch64_sme_mode_switch_regs
+{
+public:
+  static const unsigned int FIRST_GPR = R10_REGNUM;
+
+  void add_reg (machine_mode, unsigned int);
+  void add_call_args (rtx_call_insn *);
+  void add_call_result (rtx_call_insn *);
+
+  void emit_prologue ();
+  void emit_epilogue ();
+
+  /* The number of GPRs needed to save FP registers, starting from
+     FIRST_GPR.  */
+  unsigned int num_gprs () { return m_group_count[GPR]; }
+
+private:
+  enum sequence { PROLOGUE, EPILOGUE };
+  enum group_type { GPR, MEM_128, MEM_SVE_PRED, MEM_SVE_DATA, NUM_GROUPS };
+
+  /* Information about the save location for one FP, SIMD, SVE data, or
+     SVE predicate register.  */
+  struct save_location {
+    /* The register to be saved.  */
+    rtx reg;
+
+    /* Which group the save location belongs to.  */
+    group_type group;
+
+    /* A zero-based index of the register within the group.  */
+    unsigned int index;
+  };
+
+  unsigned int sve_data_headroom ();
+  rtx get_slot_mem (machine_mode, poly_int64);
+  void emit_stack_adjust (sequence, poly_int64);
+  void emit_mem_move (sequence, const save_location &, poly_int64);
+
+  void emit_gpr_moves (sequence);
+  void emit_mem_128_moves (sequence);
+  void emit_sve_sp_adjust (sequence);
+  void emit_sve_pred_moves (sequence);
+  void emit_sve_data_moves (sequence);
+
+  /* All save locations, in no particular order.  */
+  auto_vec<save_location, 12> m_save_locations;
+
+  /* The number of registers in each group.  */
+  unsigned int m_group_count[NUM_GROUPS] = {};
+};
+
+/* Record that (reg:MODE REGNO) needs to be preserved around the mode
+   switch.  */
+
+void
+aarch64_sme_mode_switch_regs::add_reg (machine_mode mode, unsigned int regno)
+{
+  if (!FP_REGNUM_P (regno) && !PR_REGNUM_P (regno))
+    return;
+
+  unsigned int end_regno = end_hard_regno (mode, regno);
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  gcc_assert ((vec_flags & VEC_STRUCT) || end_regno == regno + 1);
+  for (; regno < end_regno; regno++)
+    {
+      machine_mode submode = mode;
+      if (vec_flags & VEC_STRUCT)
+	{
+	  if (vec_flags & VEC_SVE_DATA)
+	    submode = SVE_BYTE_MODE;
+	  else if (vec_flags & VEC_PARTIAL)
+	    submode = V8QImode;
+	  else
+	    submode = V16QImode;
+	}
+      save_location loc;
+      loc.reg = gen_rtx_REG (submode, regno);
+      if (vec_flags == VEC_SVE_PRED)
+	{
+	  gcc_assert (PR_REGNUM_P (regno));
+	  loc.group = MEM_SVE_PRED;
+	}
+      else
+	{
+	  gcc_assert (FP_REGNUM_P (regno));
+	  if (known_le (GET_MODE_SIZE (submode), 8))
+	    loc.group = GPR;
+	  else if (known_eq (GET_MODE_SIZE (submode), 16))
+	    loc.group = MEM_128;
+	  else
+	    loc.group = MEM_SVE_DATA;
+	}
+      loc.index = m_group_count[loc.group]++;
+      m_save_locations.quick_push (loc);
+    }
+}
+
+/* Record that the arguments to CALL_INSN need to be preserved around
+   the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::add_call_args (rtx_call_insn *call_insn)
+{
+  for (rtx node = CALL_INSN_FUNCTION_USAGE (call_insn);
+       node; node = XEXP (node, 1))
+    {
+      rtx item = XEXP (node, 0);
+      if (GET_CODE (item) != USE)
+	continue;
+      item = XEXP (item, 0);
+      if (!REG_P (item))
+	continue;
+      add_reg (GET_MODE (item), REGNO (item));
+    }
+}
+
+/* Record that the return value from CALL_INSN (if any) needs to be
+   preserved around the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::add_call_result (rtx_call_insn *call_insn)
+{
+  rtx pat = PATTERN (call_insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  pat = XVECEXP (pat, 0, 0);
+  if (GET_CODE (pat) == CALL)
+    return;
+  rtx dest = SET_DEST (pat);
+  if (GET_CODE (dest) == PARALLEL)
+    for (int i = 0; i < XVECLEN (dest, 0); ++i)
+      {
+	rtx x = XVECEXP (dest, 0, i);
+	gcc_assert (GET_CODE (x) == EXPR_LIST);
+	rtx reg = XEXP (x, 0);
+	add_reg (GET_MODE (reg), REGNO (reg));
+      }
+  else
+    add_reg (GET_MODE (dest), REGNO (dest));
+}
+
+/* Emit code to save registers before the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_prologue ()
+{
+  emit_sve_sp_adjust (PROLOGUE);
+  emit_sve_pred_moves (PROLOGUE);
+  emit_sve_data_moves (PROLOGUE);
+  emit_mem_128_moves (PROLOGUE);
+  emit_gpr_moves (PROLOGUE);
+}
+
+/* Emit code to restore registers after the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_epilogue ()
+{
+  emit_gpr_moves (EPILOGUE);
+  emit_mem_128_moves (EPILOGUE);
+  emit_sve_pred_moves (EPILOGUE);
+  emit_sve_data_moves (EPILOGUE);
+  emit_sve_sp_adjust (EPILOGUE);
+}
+
+/* The SVE predicate registers are stored below the SVE data registers,
+   with the predicate save area being padded to a data-register-sized
+   boundary.  Return the size of this padded area as a whole number
+   of data register slots.  */
+
+unsigned int
+aarch64_sme_mode_switch_regs::sve_data_headroom ()
+{
+  return CEIL (m_group_count[MEM_SVE_PRED], 8);
+}
+
+/* Return a memory reference of mode MODE to OFFSET bytes from the
+   stack pointer.  */
+
+rtx
+aarch64_sme_mode_switch_regs::get_slot_mem (machine_mode mode,
+					    poly_int64 offset)
+{
+  rtx addr = plus_constant (Pmode, stack_pointer_rtx, offset);
+  return gen_rtx_MEM (mode, addr);
+}
+
+/* Allocate or deallocate SIZE bytes of stack space: SEQ decides which.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_stack_adjust (sequence seq,
+						 poly_int64 size)
+{
+  if (seq == PROLOGUE)
+    size = -size;
+  emit_insn (gen_rtx_SET (stack_pointer_rtx,
+			  plus_constant (Pmode, stack_pointer_rtx, size)));
+}
+
+/* Save or restore the register in LOC, whose slot is OFFSET bytes from
+   the stack pointer.  SEQ chooses between saving and restoring.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_mem_move (sequence seq,
+					     const save_location &loc,
+					     poly_int64 offset)
+{
+  rtx mem = get_slot_mem (GET_MODE (loc.reg), offset);
+  if (seq == PROLOGUE)
+    emit_move_insn (mem, loc.reg);
+  else
+    emit_move_insn (loc.reg, mem);
+}
+
+/* Emit instructions to save or restore the GPR group.  SEQ chooses between
+   saving and restoring.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_gpr_moves (sequence seq)
+{
+  for (auto &loc : m_save_locations)
+    if (loc.group == GPR)
+      {
+	gcc_assert (loc.index < 8);
+	rtx gpr = gen_rtx_REG (GET_MODE (loc.reg), FIRST_GPR + loc.index);
+	if (seq == PROLOGUE)
+	  emit_move_insn (gpr, loc.reg);
+	else
+	  emit_move_insn (loc.reg, gpr);
+      }
+}
+
+/* Emit instructions to save or restore the MEM_128 group.  SEQ chooses
+   between saving and restoring.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_mem_128_moves (sequence seq)
+{
+  HOST_WIDE_INT count = m_group_count[MEM_128];
+  if (count == 0)
+    return;
+
+  auto sp = stack_pointer_rtx;
+  auto sp_adjust = (seq == PROLOGUE ? -count : count) * 16;
+
+  /* Pick a common mode that supports LDR & STR with pre/post-modification
+     and LDP & STP with pre/post-modification.  */
+  auto mode = TFmode;
+
+  /* An instruction pattern that should be emitted at the end.  */
+  rtx last_pat = NULL_RTX;
+
+  /* A previous MEM_128 location that hasn't been handled yet.  */
+  save_location *prev_loc = nullptr;
+
+  /* Look for LDP/STPs and record any leftover LDR/STR in PREV_LOC.  */
+  for (auto &loc : m_save_locations)
+    if (loc.group == MEM_128)
+      {
+	if (!prev_loc)
+	  {
+	    prev_loc = &loc;
+	    continue;
+	  }
+	gcc_assert (loc.index == prev_loc->index + 1);
+
+	/* The offset of the base of the save area from the current
+	   stack pointer.  */
+	HOST_WIDE_INT bias = 0;
+	if (prev_loc->index == 0 && seq == PROLOGUE)
+	  bias = sp_adjust;
+
+	/* Get the two sets in the LDP/STP.  */
+	rtx ops[] = {
+	  gen_rtx_REG (mode, REGNO (prev_loc->reg)),
+	  get_slot_mem (mode, prev_loc->index * 16 + bias),
+	  gen_rtx_REG (mode, REGNO (loc.reg)),
+	  get_slot_mem (mode, loc.index * 16 + bias)
+	};
+	unsigned int lhs = (seq == PROLOGUE);
+	rtx set1 = gen_rtx_SET (ops[lhs], ops[1 - lhs]);
+	rtx set2 = gen_rtx_SET (ops[lhs + 2], ops[3 - lhs]);
+
+	/* Combine the sets with any stack allocation/deallocation.  */
+	rtvec vec;
+	if (prev_loc->index == 0)
+	  {
+	    rtx plus_sp = plus_constant (Pmode, sp, sp_adjust);
+	    vec = gen_rtvec (3, gen_rtx_SET (sp, plus_sp), set1, set2);
+	  }
+	else
+	  vec = gen_rtvec (2, set1, set2);
+	rtx pat = gen_rtx_PARALLEL (VOIDmode, vec);
+
+	/* Queue a deallocation to the end, otherwise emit the
+	   instruction now.  */
+	if (seq == EPILOGUE && prev_loc->index == 0)
+	  last_pat = pat;
+	else
+	  emit_insn (pat);
+	prev_loc = nullptr;
+      }
+
+  /* Handle any leftover LDR/STR.  */
+  if (prev_loc)
+    {
+      rtx reg = gen_rtx_REG (mode, REGNO (prev_loc->reg));
+      rtx addr;
+      if (prev_loc->index != 0)
+	addr = plus_constant (Pmode, sp, prev_loc->index * 16);
+      else if (seq == PROLOGUE)
+	{
+	  rtx allocate = plus_constant (Pmode, sp, -count * 16);
+	  addr = gen_rtx_PRE_MODIFY (Pmode, sp, allocate);
+	}
+      else
+	{
+	  rtx deallocate = plus_constant (Pmode, sp, count * 16);
+	  addr = gen_rtx_POST_MODIFY (Pmode, sp, deallocate);
+	}
+      rtx mem = gen_rtx_MEM (mode, addr);
+      if (seq == PROLOGUE)
+	emit_move_insn (mem, reg);
+      else
+	emit_move_insn (reg, mem);
+    }
+
+  if (last_pat)
+    emit_insn (last_pat);
+}
+
+/* Allocate or deallocate the stack space needed by the SVE groups.
+   SEQ chooses between allocating and deallocating.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_sve_sp_adjust (sequence seq)
+{
+  if (unsigned int count = m_group_count[MEM_SVE_DATA] + sve_data_headroom ())
+    emit_stack_adjust (seq, count * BYTES_PER_SVE_VECTOR);
+}
+
+/* Save or restore the MEM_SVE_DATA group.  SEQ chooses between saving
+   and restoring.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_sve_data_moves (sequence seq)
+{
+  for (auto &loc : m_save_locations)
+    if (loc.group == MEM_SVE_DATA)
+      {
+	auto index = loc.index + sve_data_headroom ();
+	emit_mem_move (seq, loc, index * BYTES_PER_SVE_VECTOR);
+      }
+}
+
+/* Save or restore the MEM_SVE_PRED group.  SEQ chooses between saving
+   and restoring.  */
+
+void
+aarch64_sme_mode_switch_regs::emit_sve_pred_moves (sequence seq)
+{
+  for (auto &loc : m_save_locations)
+    if (loc.group == MEM_SVE_PRED)
+      emit_mem_move (seq, loc, loc.index * BYTES_PER_SVE_PRED);
+}
+
 /* Set DEST to (vec_series BASE STEP).  */
 
 static void
@@ -5806,6 +6278,40 @@ on_stack:
   return;
 }
 
+/* Add the current argument register to the set of those that need
+   to be saved and restored around a change to PSTATE.SM.  */
+
+static void
+aarch64_record_sme_mode_switch_args (CUMULATIVE_ARGS *pcum)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, pcum->aapcs_reg, NONCONST)
+    {
+      rtx x = *iter;
+      if (REG_P (x) && (FP_REGNUM_P (REGNO (x)) || PR_REGNUM_P (REGNO (x))))
+	{
+	  unsigned int i = pcum->num_sme_mode_switch_args++;
+	  gcc_assert (i < ARRAY_SIZE (pcum->sme_mode_switch_args));
+	  pcum->sme_mode_switch_args[i] = x;
+	}
+    }
+}
+
+/* Return a parallel that contains all the registers that need to be
+   saved around a change to PSTATE.SM.  Return const0_rtx if there is
+   no such mode switch, or if no registers need to be saved.  */
+
+static rtx
+aarch64_finish_sme_mode_switch_args (CUMULATIVE_ARGS *pcum)
+{
+  if (!pcum->num_sme_mode_switch_args)
+    return const0_rtx;
+
+  auto argvec = gen_rtvec_v (pcum->num_sme_mode_switch_args,
+			     pcum->sme_mode_switch_args);
+  return gen_rtx_PARALLEL (VOIDmode, argvec);
+}
+
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
@@ -5817,7 +6323,13 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	      || pcum->pcs_variant == ARM_PCS_SVE);
 
   if (arg.end_marker_p ())
-    return aarch64_gen_callee_cookie (pcum->isa_mode, pcum->pcs_variant);
+    {
+      rtx abi_cookie = aarch64_gen_callee_cookie (pcum->isa_mode,
+						  pcum->pcs_variant);
+      rtx sme_mode_switch_args = aarch64_finish_sme_mode_switch_args (pcum);
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, abi_cookie,
+						    sme_mode_switch_args));
+    }
 
   aarch64_layout_arg (pcum_v, arg);
   return pcum->aapcs_reg;
@@ -5852,6 +6364,7 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
   pcum->aapcs_stack_words = 0;
   pcum->aapcs_stack_size = 0;
   pcum->silent_p = silent_p;
+  pcum->num_sme_mode_switch_args = 0;
 
   if (!silent_p
       && !TARGET_FLOAT
@@ -5892,6 +6405,10 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
       aarch64_layout_arg (pcum_v, arg);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
 		  != (pcum->aapcs_stack_words != 0));
+      if (pcum->aapcs_reg
+	  && aarch64_call_switches_pstate_sm (pcum->isa_mode))
+	aarch64_record_sme_mode_switch_args (pcum);
+
       pcum->aapcs_arg_processed = false;
       pcum->aapcs_ncrn = pcum->aapcs_nextncrn;
       pcum->aapcs_nvrn = pcum->aapcs_nextnvrn;
@@ -6345,6 +6862,30 @@ aarch64_save_regs_above_locals_p ()
   return crtl->stack_protect_guard;
 }
 
+/* Return true if the current function needs to record the incoming
+   value of PSTATE.SM.  */
+static bool
+aarch64_need_old_pstate_sm ()
+{
+  /* Exit early if the incoming value of PSTATE.SM is known at
+     compile time.  */
+  if (aarch64_cfun_incoming_pstate_sm () != 0)
+    return false;
+
+  if (cfun->machine->call_switches_pstate_sm)
+    for (auto insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      if (auto *call = dyn_cast<rtx_call_insn *> (insn))
+	if (!SIBLING_CALL_P (call))
+	  {
+	    /* Return true if there is a call to a non-streaming-compatible
+	       function.  */
+	    auto callee_isa_mode = aarch64_insn_callee_isa_mode (call);
+	    if (aarch64_call_switches_pstate_sm (callee_isa_mode))
+	      return true;
+	  }
+  return false;
+}
+
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
    and LR may be omitted).  */
@@ -6378,6 +6919,7 @@ aarch64_layout_frame (void)
   /* First mark all the registers that really need to be saved...  */
   for (regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
     frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
+  frame.old_svcr_offset = SLOT_NOT_REQUIRED;
 
   /* ... that includes the eh data registers (if needed)...  */
   if (crtl->calls_eh_return)
@@ -6530,6 +7072,21 @@ aarch64_layout_frame (void)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
       allocate_gpr_slot (regno);
 
+  if (aarch64_need_old_pstate_sm ())
+    {
+      frame.old_svcr_offset = offset;
+      offset += UNITS_PER_WORD;
+    }
+
+  /* If the current function changes the SVE vector length, ensure that the
+     old value of the DWARF VG register is saved and available in the CFI,
+     so that outer frames with VL-sized offsets can be processed correctly.  */
+  if (cfun->machine->call_switches_pstate_sm)
+    {
+      frame.reg_offset[VG_REGNUM] = offset;
+      offset += UNITS_PER_WORD;
+    }
+
   poly_int64 max_int_offset = offset;
   offset = aligned_upper_bound (offset, STACK_BOUNDARY / BITS_PER_UNIT);
   bool has_align_gap = maybe_ne (offset, max_int_offset);
@@ -6567,8 +7124,6 @@ aarch64_layout_frame (void)
       if (push_regs.size () > 1)
 	frame.wb_push_candidate2 = push_regs[1];
     }
-  else
-    gcc_assert (known_eq (saved_regs_size, below_hard_fp_saved_regs_size));
 
   /* With stack-clash, a register must be saved in non-leaf functions.
      The saving of the bottommost register counts as an implicit probe,
@@ -6676,7 +7231,8 @@ aarch64_layout_frame (void)
       frame.initial_adjust = frame.frame_size - frame.bytes_below_saved_regs;
       frame.final_adjust = frame.bytes_below_saved_regs;
     }
-  else if (frame.bytes_above_hard_fp.is_constant (&const_above_fp)
+  else if (frame.wb_push_candidate1 != INVALID_REGNUM
+	   && frame.bytes_above_hard_fp.is_constant (&const_above_fp)
 	   && const_above_fp < max_push_offset)
     {
       /* Frame with large area below the saved registers, or with SVE saves,
@@ -7100,7 +7656,13 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 
       machine_mode mode = aarch64_reg_save_mode (regno);
       rtx reg = gen_rtx_REG (mode, regno);
+      rtx move_src = reg;
       offset = frame.reg_offset[regno] - bytes_below_sp;
+      if (regno == VG_REGNUM)
+	{
+	  move_src = gen_rtx_REG (DImode, IP0_REGNUM);
+	  emit_move_insn (move_src, gen_int_mode (aarch64_sve_vg, DImode));
+	}
       rtx base_rtx = stack_pointer_rtx;
       poly_int64 sp_offset = offset;
 
@@ -7108,7 +7670,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
       if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	aarch64_adjust_sve_callee_save_base (mode, base_rtx, anchor_reg,
 					     offset, ptrue);
-      else if (GP_REGNUM_P (regno)
+      else if (GP_REGNUM_P (REGNO (reg))
 	       && (!offset.is_constant (&const_offset) || const_offset >= 512))
 	{
 	  poly_int64 fp_offset = frame.bytes_below_hard_fp - bytes_below_sp;
@@ -7131,6 +7693,7 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 
       unsigned int regno2;
       if (!aarch64_sve_mode_p (mode)
+	  && reg == move_src
 	  && i + 1 < regs.size ()
 	  && (regno2 = regs[i + 1], !skip_save_p (regno2))
 	  && known_eq (GET_MODE_SIZE (mode),
@@ -7162,17 +7725,24 @@ aarch64_save_callee_saves (poly_int64 bytes_below_sp,
 	}
       else if (mode == VNx2DImode && BYTES_BIG_ENDIAN)
 	{
-	  insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, reg));
+	  insn = emit_insn (gen_aarch64_pred_mov (mode, mem, ptrue, move_src));
 	  need_cfa_note_p = true;
 	}
       else if (aarch64_sve_mode_p (mode))
-	insn = emit_insn (gen_rtx_SET (mem, reg));
+	insn = emit_insn (gen_rtx_SET (mem, move_src));
       else
-	insn = emit_move_insn (mem, reg);
+	insn = emit_move_insn (mem, move_src);
 
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
       if (frame_related_p && need_cfa_note_p)
 	aarch64_add_cfa_expression (insn, reg, stack_pointer_rtx, sp_offset);
+      else if (frame_related_p && move_src != reg)
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR, gen_rtx_SET (mem, reg));
+
+      /* Emit a fake instruction to indicate that the VG save slot has
+	 been initialized.  */
+      if (regno == VG_REGNUM)
+	emit_insn (gen_aarch64_old_vg_saved (move_src, mem));
     }
 }
 
@@ -7394,6 +7964,10 @@ aarch64_get_separate_components (void)
       if (frame.hard_fp_save_and_probe != INVALID_REGNUM)
 	bitmap_clear_bit (components, frame.hard_fp_save_and_probe);
     }
+
+  /* The VG save sequence needs a temporary GPR.  Punt for now on trying
+     to find one.  */
+  bitmap_clear_bit (components, VG_REGNUM);
 
   return components;
 }
@@ -7890,6 +8464,47 @@ aarch64_epilogue_uses (int regno)
   return 0;
 }
 
+/* The current function's frame has a save slot for the incoming state
+   of SVCR.  Return a legitimate memory for the slot, based on the hard
+   frame pointer.  */
+
+static rtx
+aarch64_old_svcr_mem ()
+{
+  gcc_assert (frame_pointer_needed
+	      && known_ge (cfun->machine->frame.old_svcr_offset, 0));
+  rtx base = hard_frame_pointer_rtx;
+  poly_int64 offset = (0
+		       /* hard fp -> bottom of frame.  */
+		       - cfun->machine->frame.bytes_below_hard_fp
+		       /* bottom of frame -> save slot.  */
+		       + cfun->machine->frame.old_svcr_offset);
+  return gen_frame_mem (DImode, plus_constant (Pmode, base, offset));
+}
+
+/* The current function's frame has a save slot for the incoming state
+   of SVCR.  Load the slot into register REGNO and return the register.  */
+
+static rtx
+aarch64_read_old_svcr (unsigned int regno)
+{
+  rtx svcr = gen_rtx_REG (DImode, regno);
+  emit_move_insn (svcr, aarch64_old_svcr_mem ());
+  return svcr;
+}
+
+/* Like the rtx version of aarch64_guard_switch_pstate_sm, but first
+   load the incoming value of SVCR from its save slot into temporary
+   register REGNO.  */
+
+static rtx_insn *
+aarch64_guard_switch_pstate_sm (unsigned int regno,
+				aarch64_feature_flags local_mode)
+{
+  rtx old_svcr = aarch64_read_old_svcr (regno);
+  return aarch64_guard_switch_pstate_sm (old_svcr, local_mode);
+}
+
 /* AArch64 stack frames generated by this compiler look like:
 
 	+-------------------------------+
@@ -8104,6 +8719,12 @@ aarch64_expand_prologue (void)
 
   aarch64_save_callee_saves (bytes_below_sp, frame.saved_gprs, true,
 			     emit_frame_chain);
+  if (maybe_ge (frame.reg_offset[VG_REGNUM], 0))
+    {
+      unsigned int saved_regs[] = { VG_REGNUM };
+      aarch64_save_callee_saves (bytes_below_sp, saved_regs, true,
+				 emit_frame_chain);
+    }
   if (maybe_ne (sve_callee_adjust, 0))
     {
       gcc_assert (!flag_stack_clash_protection
@@ -8125,6 +8746,40 @@ aarch64_expand_prologue (void)
 					  !frame_pointer_needed, true);
   if (emit_frame_chain && maybe_ne (final_adjust, 0))
     aarch64_emit_stack_tie (hard_frame_pointer_rtx);
+
+  /* Save the incoming value of PSTATE.SM, if required.  */
+  if (known_ge (frame.old_svcr_offset, 0))
+    {
+      rtx mem = aarch64_old_svcr_mem ();
+      MEM_VOLATILE_P (mem) = 1;
+      if (TARGET_SME)
+	{
+	  rtx reg = gen_rtx_REG (DImode, IP0_REGNUM);
+	  emit_insn (gen_aarch64_read_svcr (reg));
+	  emit_move_insn (mem, reg);
+	}
+      else
+	{
+	  rtx old_r0 = NULL_RTX, old_r1 = NULL_RTX;
+	  auto &args = crtl->args.info;
+	  if (args.aapcs_ncrn > 0)
+	    {
+	      old_r0 = gen_rtx_REG (DImode, PROBE_STACK_FIRST_REGNUM);
+	      emit_move_insn (old_r0, gen_rtx_REG (DImode, R0_REGNUM));
+	    }
+	  if (args.aapcs_ncrn > 1)
+	    {
+	      old_r1 = gen_rtx_REG (DImode, PROBE_STACK_SECOND_REGNUM);
+	      emit_move_insn (old_r1, gen_rtx_REG (DImode, R1_REGNUM));
+	    }
+	  emit_insn (gen_aarch64_get_sme_state ());
+	  emit_move_insn (mem, gen_rtx_REG (DImode, R0_REGNUM));
+	  if (old_r0)
+	    emit_move_insn (gen_rtx_REG (DImode, R0_REGNUM), old_r0);
+	  if (old_r1)
+	    emit_move_insn (gen_rtx_REG (DImode, R1_REGNUM), old_r1);
+	}
+    }
 }
 
 /* Return TRUE if we can use a simple_return insn.
@@ -9349,16 +10004,32 @@ aarch64_start_call_args (cumulative_args_t ca_v)
    RESULT is the register in which the result is returned.  It's NULL for
    "call" and "sibcall".
    MEM is the location of the function call.
-   CALLEE_ABI is a const_int that gives the arm_pcs of the callee.
+   COOKIE is either:
+     - a const_int that gives the argument to the call's UNSPEC_CALLEE_ABI.
+     - a PARALLEL that contains such a const_int as its first element.
+       The second element is a PARALLEL that lists all the argument
+       registers that need to be saved and restored around a change
+       in PSTATE.SM, or const0_rtx if no such switch is needed.
    SIBCALL indicates whether this function call is normal call or sibling call.
    It will generate different pattern accordingly.  */
 
 void
-aarch64_expand_call (rtx result, rtx mem, rtx callee_abi, bool sibcall)
+aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
 {
   rtx call, callee, tmp;
   rtvec vec;
   machine_mode mode;
+
+  rtx callee_abi = cookie;
+  rtx sme_mode_switch_args = const0_rtx;
+  if (GET_CODE (cookie) == PARALLEL)
+    {
+      callee_abi = XVECEXP (cookie, 0, 0);
+      sme_mode_switch_args = XVECEXP (cookie, 0, 1);
+    }
+
+  gcc_assert (CONST_INT_P (callee_abi));
+  auto callee_isa_mode = aarch64_callee_isa_mode (callee_abi);
 
   gcc_assert (MEM_P (mem));
   callee = XEXP (mem, 0);
@@ -9384,26 +10055,75 @@ aarch64_expand_call (rtx result, rtx mem, rtx callee_abi, bool sibcall)
   else
     tmp = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNUM));
 
-  gcc_assert (CONST_INT_P (callee_abi));
   callee_abi = gen_rtx_UNSPEC (DImode, gen_rtvec (1, callee_abi),
 			       UNSPEC_CALLEE_ABI);
 
   vec = gen_rtvec (3, call, callee_abi, tmp);
   call = gen_rtx_PARALLEL (VOIDmode, vec);
 
-  aarch64_emit_call_insn (call);
+  auto call_insn = aarch64_emit_call_insn (call);
+
+  /* Check whether the call requires a change to PSTATE.SM.  We can't
+     emit the instructions to change PSTATE.SM yet, since they involve
+     a change in vector length and a change in instruction set, which
+     cannot be represented in RTL.
+
+     For now, just record which registers will be clobbered and used
+     by the changes to PSTATE.SM.  */
+  if (!sibcall && aarch64_call_switches_pstate_sm (callee_isa_mode))
+    {
+      aarch64_sme_mode_switch_regs args_switch;
+      if (sme_mode_switch_args != const0_rtx)
+	{
+	  unsigned int num_args = XVECLEN (sme_mode_switch_args, 0);
+	  for (unsigned int i = 0; i < num_args; ++i)
+	    {
+	      rtx x = XVECEXP (sme_mode_switch_args, 0, i);
+	      args_switch.add_reg (GET_MODE (x), REGNO (x));
+	    }
+	}
+
+      aarch64_sme_mode_switch_regs result_switch;
+      if (result)
+	result_switch.add_call_result (call_insn);
+
+      unsigned int num_gprs = MAX (args_switch.num_gprs (),
+				   result_switch.num_gprs ());
+      for (unsigned int i = 0; i < num_gprs; ++i)
+	clobber_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+		     gen_rtx_REG (DImode, args_switch.FIRST_GPR + i));
+
+      for (int regno = V0_REGNUM; regno < V0_REGNUM + 32; regno += 4)
+	clobber_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+		     gen_rtx_REG (V4x16QImode, regno));
+
+      for (int regno = P0_REGNUM; regno < P0_REGNUM + 16; regno += 1)
+	clobber_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+		     gen_rtx_REG (VNx16BImode, regno));
+
+      /* Ensure that the VG save slot has been initialized.  Also emit
+	 an instruction to model the effect of the temporary clobber
+	 of VG, so that the prologue/epilogue pass sees the need to
+	 save the old value.  */
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+	       gen_rtx_REG (DImode, VG_REGNUM));
+      emit_insn_before (gen_aarch64_update_vg (), call_insn);
+
+      cfun->machine->call_switches_pstate_sm = true;
+    }
 }
 
 /* Emit call insn with PAT and do aarch64-specific handling.  */
 
-void
+rtx_call_insn *
 aarch64_emit_call_insn (rtx pat)
 {
-  rtx insn = emit_call_insn (pat);
+  auto insn = emit_call_insn (pat);
 
   rtx *fusage = &CALL_INSN_FUNCTION_USAGE (insn);
   clobber_reg (fusage, gen_rtx_REG (word_mode, IP0_REGNUM));
   clobber_reg (fusage, gen_rtx_REG (word_mode, IP1_REGNUM));
+  return as_a<rtx_call_insn *> (insn);
 }
 
 machine_mode
@@ -10813,6 +11533,16 @@ aarch64_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 	return true;
     }
   return false;
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.  */
+
+static bool
+aarch64_frame_pointer_required ()
+{
+  /* If the function needs to record the incoming value of PSTATE.SM,
+     make sure that the slot is accessible from the frame pointer.  */
+  return aarch64_need_old_pstate_sm ();
 }
 
 static bool
@@ -18427,7 +19157,8 @@ aarch64_conditional_register_usage (void)
 	call_used_regs[i] = 1;
       }
 
-  /* Only allow the FFR and FFRT to be accessed via special patterns.  */
+  /* Only allow these registers to be accessed via special patterns.  */
+  CLEAR_HARD_REG_BIT (operand_reg_set, VG_REGNUM);
   CLEAR_HARD_REG_BIT (operand_reg_set, FFR_REGNUM);
   CLEAR_HARD_REG_BIT (operand_reg_set, FFRT_REGNUM);
 
@@ -26017,6 +26748,123 @@ aarch64_pars_overlap_p (rtx par1, rtx par2)
   return false;
 }
 
+/* If CALL involves a change in PSTATE.SM, emit the instructions needed
+   to switch to the new mode and the instructions needed to restore the
+   original mode.  Return true if something changed.  */
+static bool
+aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
+{
+  /* Mode switches for sibling calls are handled via the epilogue.  */
+  if (SIBLING_CALL_P (call))
+    return false;
+
+  auto callee_isa_mode = aarch64_insn_callee_isa_mode (call);
+  if (!aarch64_call_switches_pstate_sm (callee_isa_mode))
+    return false;
+
+  /* Switch mode before the call, preserving any argument registers
+     across the switch.  */
+  start_sequence ();
+  rtx_insn *args_guard_label = nullptr;
+  if (TARGET_STREAMING_COMPATIBLE)
+    args_guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
+						       callee_isa_mode);
+  aarch64_sme_mode_switch_regs args_switch;
+  args_switch.add_call_args (call);
+  args_switch.emit_prologue ();
+  aarch64_switch_pstate_sm (AARCH64_ISA_MODE, callee_isa_mode);
+  args_switch.emit_epilogue ();
+  if (args_guard_label)
+    emit_label (args_guard_label);
+  auto args_seq = get_insns ();
+  end_sequence ();
+  emit_insn_before (args_seq, call);
+
+  if (find_reg_note (call, REG_NORETURN, NULL_RTX))
+    return true;
+
+  /* Switch mode after the call, preserving any return registers across
+     the switch.  */
+  start_sequence ();
+  rtx_insn *return_guard_label = nullptr;
+  if (TARGET_STREAMING_COMPATIBLE)
+    return_guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
+							 callee_isa_mode);
+  aarch64_sme_mode_switch_regs return_switch;
+  return_switch.add_call_result (call);
+  return_switch.emit_prologue ();
+  aarch64_switch_pstate_sm (callee_isa_mode, AARCH64_ISA_MODE);
+  return_switch.emit_epilogue ();
+  if (return_guard_label)
+    emit_label (return_guard_label);
+  auto result_seq = get_insns ();
+  end_sequence ();
+  emit_insn_after (result_seq, call);
+  return true;
+}
+
+namespace {
+
+const pass_data pass_data_switch_pstate_sm =
+{
+  RTL_PASS, // type
+  "smstarts", // name
+  OPTGROUP_NONE, // optinfo_flags
+  TV_NONE, // tv_id
+  0, // properties_required
+  0, // properties_provided
+  0, // properties_destroyed
+  0, // todo_flags_start
+  TODO_df_finish, // todo_flags_finish
+};
+
+class pass_switch_pstate_sm : public rtl_opt_pass
+{
+public:
+  pass_switch_pstate_sm (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_switch_pstate_sm, ctxt)
+  {}
+
+  // opt_pass methods:
+  bool gate (function *) override final;
+  unsigned int execute (function *) override final;
+};
+
+bool
+pass_switch_pstate_sm::gate (function *)
+{
+  return cfun->machine->call_switches_pstate_sm;
+}
+
+/* Emit any instructions needed to switch PSTATE.SM.  */
+unsigned int
+pass_switch_pstate_sm::execute (function *fn)
+{
+  basic_block bb;
+
+  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
+  bitmap_clear (blocks);
+  FOR_EACH_BB_FN (bb, fn)
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	if (auto *call = dyn_cast<rtx_call_insn *> (insn))
+	  if (aarch64_switch_pstate_sm_for_call (call))
+	    bitmap_set_bit (blocks, bb->index);
+    }
+  find_many_sub_basic_blocks (blocks);
+  clear_aux_for_blocks ();
+  return 0;
+}
+
+}
+
+rtl_opt_pass *
+make_pass_switch_pstate_sm (gcc::context *ctxt)
+{
+  return new pass_switch_pstate_sm (ctxt);
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -26203,6 +27051,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_false
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED aarch64_frame_pointer_required
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE aarch64_can_eliminate
