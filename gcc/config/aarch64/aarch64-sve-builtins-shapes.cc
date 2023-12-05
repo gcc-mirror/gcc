@@ -275,18 +275,20 @@ parse_signature (const function_instance &instance, const char *format,
 }
 
 /* Add one function instance for GROUP, using mode suffix MODE_SUFFIX_ID,
-   the type suffixes at index TI and the predication suffix at index PI.
-   The other arguments are as for build_all.  */
+   the type suffixes at index TI, the group suffixes at index GI, and the
+   predication suffix at index PI.  The other arguments are as for
+   build_all.  */
 static void
 build_one (function_builder &b, const char *signature,
 	   const function_group_info &group, mode_suffix_index mode_suffix_id,
-	   unsigned int ti, unsigned int pi, bool force_direct_overloads)
+	   unsigned int ti, unsigned int gi, unsigned int pi,
+	   bool force_direct_overloads)
 {
   /* Byte forms of svdupq take 16 arguments.  */
   auto_vec<tree, 16> argument_types;
   function_instance instance (group.base_name, *group.base, *group.shape,
 			      mode_suffix_id, group.types[ti],
-			      group.preds[pi]);
+			      group.groups[gi], group.preds[pi]);
   tree return_type = parse_signature (instance, signature, argument_types);
   apply_predication (instance, return_type, argument_types);
   b.add_unique_function (instance, return_type, argument_types,
@@ -312,24 +314,26 @@ build_32_64 (function_builder &b, const char *signature,
 	     mode_suffix_index mode64, bool force_direct_overloads = false)
 {
   for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
-    if (group.types[0][0] == NUM_TYPE_SUFFIXES)
-      {
-	gcc_assert (mode32 != MODE_none && mode64 != MODE_none);
-	build_one (b, signature, group, mode32, 0, pi,
-		   force_direct_overloads);
-	build_one (b, signature, group, mode64, 0, pi,
-		   force_direct_overloads);
-      }
-    else
-      for (unsigned int ti = 0; group.types[ti][0] != NUM_TYPE_SUFFIXES; ++ti)
+    for (unsigned int gi = 0; group.groups[gi] != NUM_GROUP_SUFFIXES; ++gi)
+      if (group.types[0][0] == NUM_TYPE_SUFFIXES)
 	{
-	  unsigned int bits = type_suffixes[group.types[ti][0]].element_bits;
-	  gcc_assert (bits == 32 || bits == 64);
-	  mode_suffix_index mode = bits == 32 ? mode32 : mode64;
-	  if (mode != MODE_none)
-	    build_one (b, signature, group, mode, ti, pi,
-		       force_direct_overloads);
+	  gcc_assert (mode32 != MODE_none && mode64 != MODE_none);
+	  build_one (b, signature, group, mode32, 0, gi, pi,
+		     force_direct_overloads);
+	  build_one (b, signature, group, mode64, 0, gi, pi,
+		     force_direct_overloads);
 	}
+      else
+	for (unsigned int ti = 0; group.types[ti][0] != NUM_TYPE_SUFFIXES;
+	     ++ti)
+	  {
+	    unsigned int bits = type_suffixes[group.types[ti][0]].element_bits;
+	    gcc_assert (bits == 32 || bits == 64);
+	    mode_suffix_index mode = bits == 32 ? mode32 : mode64;
+	    if (mode != MODE_none)
+	      build_one (b, signature, group, mode, ti, gi, pi,
+			 force_direct_overloads);
+	  }
 }
 
 /* For every type and predicate combination in GROUP, add one function
@@ -423,10 +427,11 @@ build_all (function_builder &b, const char *signature,
 	   bool force_direct_overloads = false)
 {
   for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
-    for (unsigned int ti = 0;
-	 ti == 0 || group.types[ti][0] != NUM_TYPE_SUFFIXES; ++ti)
-      build_one (b, signature, group, mode_suffix_id, ti, pi,
-		 force_direct_overloads);
+    for (unsigned int gi = 0; group.groups[gi] != NUM_GROUP_SUFFIXES; ++gi)
+      for (unsigned int ti = 0;
+	   ti == 0 || group.types[ti][0] != NUM_TYPE_SUFFIXES; ++ti)
+	build_one (b, signature, group, mode_suffix_id, ti, gi, pi,
+		   force_direct_overloads);
 }
 
 /* TYPE is the largest type suffix associated with the arguments of R,

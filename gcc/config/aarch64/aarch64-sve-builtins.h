@@ -180,6 +180,17 @@ enum type_suffix_index
   NUM_TYPE_SUFFIXES
 };
 
+/* Enumerates the possible group suffixes.  Each suffix combines two
+   optional pieces of information: the vector group size in a ZA index,
+   and the number of vectors in the largest tuple argument.  */
+enum group_suffix_index
+{
+#define DEF_SVE_GROUP_SUFFIX(NAME, VG, VECTORS_PER_TUPLE) GROUP_##NAME,
+#include "aarch64-sve-builtins.def"
+  GROUP_none,
+  NUM_GROUP_SUFFIXES
+};
+
 /* Combines two type suffixes.  */
 typedef enum type_suffix_index type_suffix_pair[2];
 
@@ -237,6 +248,21 @@ struct type_suffix_info
   machine_mode vector_mode : 16;
 };
 
+/* Static information about a group suffix.  */
+struct group_suffix_info
+{
+  /* The suffix string itself.  */
+  const char *string;
+
+  /* If the suffix describes a vector group in a ZA index, this is the
+     size of that group, otherwise it is zero.  */
+  unsigned int vg;
+
+  /* The number of vectors in the largest (or only) tuple argument,
+     or 1 if the suffix does not convey this information.  */
+  unsigned int vectors_per_tuple;
+};
+
 /* Static information about a set of functions.  */
 struct function_group_info
 {
@@ -251,14 +277,16 @@ struct function_group_info
      shapes.  */
   const function_shape *const *shape;
 
-  /* A list of the available type suffixes, and of the available predication
-     types.  The function supports every combination of the two.
+  /* A list of the available type suffixes, group suffixes, and predication
+     types.  The function supports every combination of the three.
 
-     The list of type suffixes is terminated by two NUM_TYPE_SUFFIXES
-     while the list of predication types is terminated by NUM_PREDS.
-     The list of type suffixes is lexicographically ordered based
-     on the index value.  */
+     The list of type suffixes is terminated by two NUM_TYPE_SUFFIXES.
+     It is lexicographically ordered based on the index value.
+
+     The list of group suffixes is terminated by NUM_GROUP_SUFFIXES
+     and the list of predication types is terminated by NUM_PREDS.  */
   const type_suffix_pair *types;
+  const group_suffix_index *groups;
   const predication_index *preds;
 
   /* The architecture extensions that the functions require, as a set of
@@ -273,7 +301,8 @@ class GTY((user)) function_instance
 public:
   function_instance (const char *, const function_base *,
 		     const function_shape *, mode_suffix_index,
-		     const type_suffix_pair &, predication_index);
+		     const type_suffix_pair &, group_suffix_index,
+		     predication_index);
 
   bool operator== (const function_instance &) const;
   bool operator!= (const function_instance &) const;
@@ -294,6 +323,8 @@ public:
   units_index displacement_units () const;
 
   const type_suffix_info &type_suffix (unsigned int) const;
+  const group_suffix_info &group_suffix () const;
+
   tree scalar_type (unsigned int) const;
   tree vector_type (unsigned int) const;
   tree tuple_type (unsigned int) const;
@@ -301,14 +332,14 @@ public:
   machine_mode vector_mode (unsigned int) const;
   machine_mode gp_mode (unsigned int) const;
 
-  /* The properties of the function.  (The explicit "enum"s are required
-     for gengtype.)  */
+  /* The properties of the function.  */
   const char *base_name;
   const function_base *base;
   const function_shape *shape;
-  enum mode_suffix_index mode_suffix_id;
+  mode_suffix_index mode_suffix_id;
   type_suffix_pair type_suffix_ids;
-  enum predication_index pred;
+  group_suffix_index group_suffix_id;
+  predication_index pred;
 };
 
 class registered_function;
@@ -390,10 +421,12 @@ public:
   tree report_no_such_form (type_suffix_index);
   tree lookup_form (mode_suffix_index,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
-		    type_suffix_index = NUM_TYPE_SUFFIXES);
+		    type_suffix_index = NUM_TYPE_SUFFIXES,
+		    group_suffix_index = GROUP_none);
   tree resolve_to (mode_suffix_index,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
-		   type_suffix_index = NUM_TYPE_SUFFIXES);
+		   type_suffix_index = NUM_TYPE_SUFFIXES,
+		   group_suffix_index = GROUP_none);
 
   type_suffix_index infer_integer_scalar_type (unsigned int);
   type_suffix_index infer_pointer_type (unsigned int, bool = false);
@@ -643,6 +676,11 @@ class function_shape
 public:
   virtual bool explicit_type_suffix_p (unsigned int) const = 0;
 
+  /* True if the group suffix is present in overloaded names.
+     This isn't meaningful for pre-SME intrinsics, and true is
+     more common than false, so provide a default definition.  */
+  virtual bool explicit_group_suffix_p () const { return true; }
+
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,
 		      const function_group_info &) const = 0;
@@ -671,6 +709,7 @@ private:
 
 extern const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1];
 extern const mode_suffix_info mode_suffixes[MODE_none + 1];
+extern const group_suffix_info group_suffixes[NUM_GROUP_SUFFIXES];
 
 extern tree scalar_types[NUM_VECTOR_TYPES];
 extern tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
@@ -733,9 +772,11 @@ function_instance (const char *base_name_in,
 		   const function_shape *shape_in,
 		   mode_suffix_index mode_suffix_id_in,
 		   const type_suffix_pair &type_suffix_ids_in,
+		   group_suffix_index group_suffix_id_in,
 		   predication_index pred_in)
   : base_name (base_name_in), base (base_in), shape (shape_in),
-    mode_suffix_id (mode_suffix_id_in), pred (pred_in)
+    mode_suffix_id (mode_suffix_id_in), group_suffix_id (group_suffix_id_in),
+    pred (pred_in)
 {
   memcpy (type_suffix_ids, type_suffix_ids_in, sizeof (type_suffix_ids));
 }
@@ -746,9 +787,10 @@ function_instance::operator== (const function_instance &other) const
   return (base == other.base
 	  && shape == other.shape
 	  && mode_suffix_id == other.mode_suffix_id
-	  && pred == other.pred
 	  && type_suffix_ids[0] == other.type_suffix_ids[0]
-	  && type_suffix_ids[1] == other.type_suffix_ids[1]);
+	  && type_suffix_ids[1] == other.type_suffix_ids[1]
+	  && group_suffix_id == other.group_suffix_id
+	  && pred == other.pred);
 }
 
 inline bool
@@ -818,6 +860,13 @@ inline const type_suffix_info &
 function_instance::type_suffix (unsigned int i) const
 {
   return type_suffixes[type_suffix_ids[i]];
+}
+
+/* Return information about the function's group suffix.  */
+inline const group_suffix_info &
+function_instance::group_suffix () const
+{
+  return group_suffixes[group_suffix_id];
 }
 
 /* Return the scalar type associated with type suffix I.  */

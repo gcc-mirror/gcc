@@ -144,6 +144,13 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     0, VOIDmode }
 };
 
+CONSTEXPR const group_suffix_info group_suffixes[] = {
+#define DEF_SVE_GROUP_SUFFIX(NAME, VG, VECTORS_PER_TUPLE) \
+  { "_" #NAME, VG, VECTORS_PER_TUPLE },
+#include "aarch64-sve-builtins.def"
+  { "", 0, 1 }
+};
+
 /* Define a TYPES_<combination> macro for each combination of type
    suffixes that an ACLE function can have, where <combination> is the
    name used in DEF_SVE_FUNCTION entries.
@@ -483,6 +490,10 @@ DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (reinterpret);
 DEF_SVE_TYPES_ARRAY (while);
 
+static const group_suffix_index groups_none[] = {
+  GROUP_none, NUM_GROUP_SUFFIXES
+};
+
 /* Used by functions that have no governing predicate.  */
 static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
 
@@ -524,8 +535,8 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 /* A list of all SVE ACLE functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, preds_##PREDS, \
-    REQUIRED_EXTENSIONS },
+  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_none, \
+    preds_##PREDS, REQUIRED_EXTENSIONS },
 #include "aarch64-sve-builtins.def"
 };
 
@@ -788,6 +799,7 @@ function_instance::hash () const
   h.add_int (mode_suffix_id);
   h.add_int (type_suffix_ids[0]);
   h.add_int (type_suffix_ids[1]);
+  h.add_int (group_suffix_id);
   h.add_int (pred);
   return h.end ();
 }
@@ -957,6 +969,8 @@ function_builder::get_name (const function_instance &instance,
   for (unsigned int i = 0; i < 2; ++i)
     if (!overloaded_p || instance.shape->explicit_type_suffix_p (i))
       append_name (instance.type_suffix (i).string);
+  if (!overloaded_p || instance.shape->explicit_group_suffix_p ())
+    append_name (instance.group_suffix ().string);
   append_name (pred_suffixes[instance.pred]);
   return finish_name ();
 }
@@ -1113,19 +1127,26 @@ void
 function_builder::add_overloaded_functions (const function_group_info &group,
 					    mode_suffix_index mode)
 {
-  unsigned int explicit_type0 = (*group.shape)->explicit_type_suffix_p (0);
-  unsigned int explicit_type1 = (*group.shape)->explicit_type_suffix_p (1);
-  for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
+  bool explicit_type0 = (*group.shape)->explicit_type_suffix_p (0);
+  bool explicit_type1 = (*group.shape)->explicit_type_suffix_p (1);
+  bool explicit_group = (*group.shape)->explicit_group_suffix_p ();
+  auto add_function = [&](const type_suffix_pair &types,
+			  group_suffix_index group_suffix_id,
+			  unsigned int pi)
+    {
+      function_instance instance (group.base_name, *group.base,
+				  *group.shape, mode, types,
+				  group_suffix_id, group.preds[pi]);
+      add_overloaded_function (instance, group.required_extensions);
+    };
+
+  auto add_group_suffix = [&](group_suffix_index group_suffix_id,
+			      unsigned int pi)
     {
       if (!explicit_type0 && !explicit_type1)
-	{
-	  /* Deal with the common case in which there is one overloaded
-	     function for all type combinations.  */
-	  function_instance instance (group.base_name, *group.base,
-				      *group.shape, mode, types_none[0],
-				      group.preds[pi]);
-	  add_overloaded_function (instance, group.required_extensions);
-	}
+	/* Deal with the common case in which there is one overloaded
+	   function for all type combinations.  */
+	add_function (types_none[0], group_suffix_id, pi);
       else
 	for (unsigned int ti = 0; group.types[ti][0] != NUM_TYPE_SUFFIXES;
 	     ++ti)
@@ -1136,12 +1157,16 @@ function_builder::add_overloaded_functions (const function_group_info &group,
 	      explicit_type0 ? group.types[ti][0] : NUM_TYPE_SUFFIXES,
 	      explicit_type1 ? group.types[ti][1] : NUM_TYPE_SUFFIXES
 	    };
-	    function_instance instance (group.base_name, *group.base,
-					*group.shape, mode, types,
-					group.preds[pi]);
-	    add_overloaded_function (instance, group.required_extensions);
+	    add_function (types, group_suffix_id, pi);
 	  }
-    }
+    };
+
+  for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
+    if (explicit_group)
+      for (unsigned int gi = 0; group.groups[gi] != NUM_GROUP_SUFFIXES; ++gi)
+	add_group_suffix (group.groups[gi], pi);
+    else
+      add_group_suffix (GROUP_none, pi);
 }
 
 /* Register all the functions in GROUP.  */
@@ -1213,29 +1238,34 @@ function_resolver::report_no_such_form (type_suffix_index type)
 }
 
 /* Silently check whether there is an instance of the function with the
-   mode suffix given by MODE and the type suffixes given by TYPE0 and TYPE1.
-   Return its function decl if so, otherwise return null.  */
+   mode suffix given by MODE, the type suffixes given by TYPE0 and TYPE1,
+   and the group suffix given by GROUP.  Return its function decl if so,
+   otherwise return null.  */
 tree
 function_resolver::lookup_form (mode_suffix_index mode,
 				type_suffix_index type0,
-				type_suffix_index type1)
+				type_suffix_index type1,
+				group_suffix_index group)
 {
   type_suffix_pair types = { type0, type1 };
-  function_instance instance (base_name, base, shape, mode, types, pred);
+  function_instance instance (base_name, base, shape, mode, types,
+			      group, pred);
   registered_function *rfn
     = function_table->find_with_hash (instance, instance.hash ());
   return rfn ? rfn->decl : NULL_TREE;
 }
 
-/* Resolve the function to one with the mode suffix given by MODE and the
-   type suffixes given by TYPE0 and TYPE1.  Return its function decl on
-   success, otherwise report an error and return error_mark_node.  */
+/* Resolve the function to one with the mode suffix given by MODE, the
+   type suffixes given by TYPE0 and TYPE1, and group suffix given by
+   GROUP.  Return its function decl on success, otherwise report an
+   error and return error_mark_node.  */
 tree
 function_resolver::resolve_to (mode_suffix_index mode,
 			       type_suffix_index type0,
-			       type_suffix_index type1)
+			       type_suffix_index type1,
+			       group_suffix_index group)
 {
-  tree res = lookup_form (mode, type0, type1);
+  tree res = lookup_form (mode, type0, type1, group);
   if (!res)
     {
       if (type1 == NUM_TYPE_SUFFIXES)
