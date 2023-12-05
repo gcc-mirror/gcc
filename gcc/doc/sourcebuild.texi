@@ -2316,6 +2316,8 @@ AArch64 target which generates instruction sequences for big endian.
 @item aarch64_small_fpic
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.
+@item aarch64_sme
+AArch64 target that generates instructions for SME.
 @item aarch64_sve_hw
 AArch64 target that is able to generate and execute SVE code (regardless of
 whether it does so by default).

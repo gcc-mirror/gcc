@@ -21273,6 +21273,8 @@ Enable the Flag Manipulation instructions Extension.
 Enable the Pointer Authentication Extension.
 @item cssc
 Enable the Common Short Sequence Compression instructions.
+@item sme
+Enable the Scalable Matrix Extension.
 
 @end table
 

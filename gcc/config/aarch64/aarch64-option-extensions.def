@@ -151,4 +151,6 @@ AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
+AARCH64_OPT_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
+
 #undef AARCH64_OPT_EXTENSION

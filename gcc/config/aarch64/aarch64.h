@@ -214,6 +214,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
 #define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
 #define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
+#define AARCH64_ISA_SME		   (aarch64_isa_flags & AARCH64_FL_SME)
 #define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3A)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -292,6 +293,10 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
 #define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
+
+/* SME instructions, enabled through +sme.  Note that this does not
+   imply anything about the state of PSTATE.SM.  */
+#define TARGET_SME (AARCH64_ISA_SME)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)

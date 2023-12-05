@@ -9328,6 +9328,23 @@ aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
   return true;
 }
 
+/* Implement TARGET_START_CALL_ARGS.  */
+
+static void
+aarch64_start_call_args (cumulative_args_t ca_v)
+{
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
+  if (!TARGET_SME && (ca->isa_mode & AARCH64_FL_SM_ON))
+    {
+      error ("calling a streaming function requires the ISA extension %qs",
+	     "sme");
+      inform (input_location, "you can enable %qs using the command-line"
+	      " option %<-march%>, or by using the %<target%>"
+	      " attribute or pragma", "sme");
+    }
+}
+
 /* This function is used by the call expanders of the machine description.
    RESULT is the register in which the result is returned.  It's NULL for
    "call" and "sibcall".
@@ -16146,6 +16163,19 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
       && !fixed_regs[R18_REGNUM])
     error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
+
+  if ((opts->x_aarch64_isa_flags & AARCH64_FL_SM_ON)
+      && !(opts->x_aarch64_isa_flags & AARCH64_FL_SME))
+    {
+      error ("streaming functions require the ISA extension %qs", "sme");
+      inform (input_location, "you can enable %qs using the command-line"
+	      " option %<-march%>, or by using the %<target%>"
+	      " attribute or pragma", "sme");
+      opts->x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+      auto new_flags = (opts->x_aarch64_asm_isa_flags
+			| feature_deps::SME ().enable);
+      aarch64_set_asm_isa_flags (opts, new_flags);
+    }
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
@@ -26247,6 +26277,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P aarch64_function_value_regno_p
+
+#undef TARGET_START_CALL_ARGS
+#define TARGET_START_CALL_ARGS aarch64_start_call_args
 
 #undef TARGET_GIMPLE_FOLD_BUILTIN
 #define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin
