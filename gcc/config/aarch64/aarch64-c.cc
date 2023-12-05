@@ -73,6 +73,8 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
 
   builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
 
+  builtin_define ("__ARM_STATE_ZA");
+
   /* Define keyword attributes like __arm_streaming as macros that expand
      to the associated [[...]] attribute.  Use __extension__ in the attribute
      for C, since the [[...]] syntax was only added in C23.  */
@@ -86,6 +88,36 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   DEFINE_ARM_KEYWORD_MACRO ("streaming_compatible");
 
 #undef DEFINE_ARM_KEYWORD_MACRO
+
+  /* Same for the keyword attributes that take arguments.  The snag here
+     is that some old modes warn about or reject variadic arguments.  */
+  auto *cpp_opts = cpp_get_options (parse_in);
+  if (!cpp_opts->traditional)
+    {
+      auto old_warn_variadic_macros = cpp_opts->warn_variadic_macros;
+      auto old_cpp_warn_c90_c99_compat = cpp_opts->cpp_warn_c90_c99_compat;
+
+      cpp_opts->warn_variadic_macros = false;
+      cpp_opts->cpp_warn_c90_c99_compat = 0;
+
+#define DEFINE_ARM_KEYWORD_MACRO_ARGS(NAME) \
+  builtin_define_with_value ("__arm_" NAME "(...)", \
+			     lang_GNU_CXX () \
+			     ? "[[arm::" NAME "(__VA_ARGS__)]]" \
+			     : "[[__extension__ arm::" NAME \
+			       "(__VA_ARGS__)]]", 0);
+
+      DEFINE_ARM_KEYWORD_MACRO_ARGS ("new");
+      DEFINE_ARM_KEYWORD_MACRO_ARGS ("preserves");
+      DEFINE_ARM_KEYWORD_MACRO_ARGS ("in");
+      DEFINE_ARM_KEYWORD_MACRO_ARGS ("out");
+      DEFINE_ARM_KEYWORD_MACRO_ARGS ("inout");
+
+#undef DEFINE_ARM_KEYWORD_MACRO_ARGS
+
+      cpp_opts->warn_variadic_macros = old_warn_variadic_macros;
+      cpp_opts->cpp_warn_c90_c99_compat = old_cpp_warn_c90_c99_compat;
+    }
 }
 
 /* Undefine/redefine macros that depend on the current backend state and may

@@ -225,6 +225,12 @@
  (and (match_code "const_poly_int")
       (match_test "aarch64_sve_rdvl_immediate_p (op)")))
 
+(define_constraint "UsR"
+  "@internal
+   A constraint that matches a value produced by RDSVL."
+ (and (match_code "const")
+      (match_test "aarch64_rdsvl_immediate_p (op)")))
+
 (define_constraint "Usv"
   "@internal
    A constraint that matches a VG-based constant that can be loaded by

@@ -32,4 +32,9 @@
 DEF_AARCH64_ISA_MODE(SM_ON)
 DEF_AARCH64_ISA_MODE(SM_OFF)
 
+/* Indicates that PSTATE.ZA is known to be 1.  The converse is that
+   PSTATE.ZA might be 0 or 1, depending on whether there is an uncommitted
+   lazy save.  */
+DEF_AARCH64_ISA_MODE(ZA_ON)
+
 #undef DEF_AARCH64_ISA_MODE

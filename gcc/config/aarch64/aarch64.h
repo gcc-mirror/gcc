@@ -207,6 +207,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /* Macros to test ISA flags.  */
 
 #define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
+#define AARCH64_ISA_ZA_ON          (aarch64_isa_flags & AARCH64_FL_ZA_ON)
 #define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
@@ -259,6 +260,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 /* The current function has a streaming-compatible body.  */
 #define TARGET_STREAMING_COMPATIBLE \
   ((aarch64_isa_flags & AARCH64_FL_SM_STATE) == 0)
+
+/* PSTATE.ZA is enabled in the current function body.  */
+#define TARGET_ZA (AARCH64_ISA_ZA_ON)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
@@ -461,7 +465,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
-    1, 1			/* FFR and FFRT */	\
+    1, 1,			/* FFR and FFRT */	\
+    1, 1, 1, 1, 1, 1, 1		/* Fake registers */	\
   }
 
 /* X30 is marked as caller-saved which is in line with regular function call
@@ -471,7 +476,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    true but not until function epilogues have been generated.  This ensures
    that X30 is available for use in leaf functions if needed.  */
 
-#define CALL_USED_REGISTERS				\
+#define CALL_REALLY_USED_REGISTERS			\
   {							\
     1, 1, 1, 1,   1, 1, 1, 1,	/* R0 - R7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* R8 - R15 */		\
@@ -484,7 +489,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     1, 1, 1, 0,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
-    1, 1			/* FFR and FFRT */	\
+    1, 1,			/* FFR and FFRT */	\
+    0, 0, 0, 0, 0, 0, 0		/* Fake registers */	\
   }
 
 #define REGISTER_NAMES						\
@@ -500,7 +506,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
-    "ffr", "ffrt"						\
+    "ffr", "ffrt",						\
+    "lowering", "tpidr2_block", "sme_state", "tpidr2_setup",	\
+    "za_free", "za_saved", "za"					\
   }
 
 /* Generate the register aliases for core register N */
@@ -549,7 +557,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define FRAME_POINTER_REGNUM		SFP_REGNUM
 #define STACK_POINTER_REGNUM		SP_REGNUM
 #define ARG_POINTER_REGNUM		AP_REGNUM
-#define FIRST_PSEUDO_REGISTER		(FFRT_REGNUM + 1)
+#define FIRST_PSEUDO_REGISTER		(LAST_FAKE_REGNUM + 1)
 
 /* The number of argument registers available for each class.  */
 #define NUM_ARG_REGS			8
@@ -672,6 +680,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 #define FP_SIMD_SAVED_REGNUM_P(REGNO)			\
   (((unsigned) (REGNO - V8_REGNUM)) <= (V23_REGNUM - V8_REGNUM))
+
+#define FAKE_REGNUM_P(REGNO) \
+  IN_RANGE (REGNO, FIRST_FAKE_REGNUM, LAST_FAKE_REGNUM)
 
 /* Register and constant classes.  */
 
@@ -692,6 +703,7 @@ enum reg_class
   PR_REGS,
   FFR_REGS,
   PR_AND_FFR_REGS,
+  FAKE_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
 };
@@ -715,6 +727,7 @@ enum reg_class
   "PR_REGS",					\
   "FFR_REGS",					\
   "PR_AND_FFR_REGS",				\
+  "FAKE_REGS",					\
   "ALL_REGS"					\
 }
 
@@ -735,6 +748,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
   { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
   { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
+  { 0x00000000, 0x00000000, 0x1fc00000 },	/* FAKE_REGS */		\
   { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
 }
 
@@ -934,12 +948,25 @@ typedef struct GTY (()) machine_function
   bool reg_is_wrapped_separately[LAST_SAVED_REGNUM];
   /* One entry for each general purpose register.  */
   rtx call_via[SP_REGNUM];
+
+  /* A pseudo register that points to the function's TPIDR2 block, or null
+     if the function doesn't have a TPIDR2 block.  */
+  rtx tpidr2_block;
+
+  /* A pseudo register that points to the function's ZA save buffer,
+     or null if none.  */
+  rtx za_save_buffer;
+
   bool label_is_assembled;
 
   /* True if we've expanded at least one call to a function that changes
      PSTATE.SM.  This should only be used for saving compile time: false
      guarantees that no such mode switch exists.  */
   bool call_switches_pstate_sm;
+
+  /* Used to generated unique identifiers for each update to ZA by an
+     asm statement.  */
+  unsigned int next_asm_update_za_id;
 
   /* A set of all decls that have been passed to a vld1 intrinsic in the
      current function.  This is used to help guide the vector cost model.  */
@@ -1009,6 +1036,10 @@ typedef struct
 				   stack arg area so far.  */
   bool silent_p;		/* True if we should act silently, rather than
 				   raise an error for invalid calls.  */
+
+  /* AARCH64_STATE_* flags that describe whether the function shares ZA
+     with its callers.  */
+  unsigned int shared_za_flags;
 
   /* A list of registers that need to be saved and restored around a
      change to PSTATE.SM.  An auto_vec would be more convenient, but those
@@ -1380,5 +1411,62 @@ extern poly_uint16 aarch64_sve_vg;
 ((T) == TRUNCATE					\
  || ((T) == US_TRUNCATE && (S) == LSHIFTRT)		\
  || ((T) == SS_TRUNCATE && (S) == ASHIFTRT))
+
+#ifndef USED_FOR_TARGET
+
+/* Enumerates the mode-switching "entities" for AArch64.  */
+enum class aarch64_mode_entity : int
+{
+  /* An aarch64_tristate_mode that says whether we have created a local
+     save buffer for the current function's ZA state.  The only transition
+     is from NO to YES.  */
+  HAVE_ZA_SAVE_BUFFER,
+
+  /* An aarch64_local_sme_state that reflects the state of all data
+     controlled by PSTATE.ZA.  */
+  LOCAL_SME_STATE
+};
+
+/* Describes the state of all data controlled by PSTATE.ZA  */
+enum class aarch64_local_sme_state : int
+{
+  /* ZA is in the off or dormant state.  If it is dormant, the contents
+     of ZA belong to a caller.  */
+  INACTIVE_CALLER,
+
+  /* ZA is in the off state: PSTATE.ZA is 0 and TPIDR2_EL0 is null.  */
+  OFF,
+
+  /* ZA is in the off or dormant state.  If it is dormant, the contents
+     of ZA belong to the current function.  */
+  INACTIVE_LOCAL,
+
+  /* ZA is in the off state and the current function's ZA contents are
+     stored in the lazy save buffer.  This is the state on entry to
+     exception handlers.  */
+  SAVED_LOCAL,
+
+  /* ZA is in the active state: PSTATE.ZA is 1 and TPIDR2_EL0 is null.
+     The contents of ZA are live.  */
+  ACTIVE_LIVE,
+
+  /* ZA is in the active state: PSTATE.ZA is 1 and TPIDR2_EL0 is null.
+     The contents of ZA are dead.  */
+  ACTIVE_DEAD,
+
+  /* ZA could be in multiple states.  */
+  ANY
+};
+
+enum class aarch64_tristate_mode : int { NO, YES, MAYBE };
+
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) \
+  aarch64_optimize_mode_switching (aarch64_mode_entity (ENTITY))
+
+#define NUM_MODES_FOR_MODE_SWITCHING \
+  { int (aarch64_tristate_mode::MAYBE), \
+    int (aarch64_local_sme_state::ANY) }
+
+#endif
 
 #endif /* GCC_AARCH64_H */

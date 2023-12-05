@@ -804,6 +804,8 @@ bool aarch64_sve_addvl_addpl_immediate_p (rtx);
 bool aarch64_sve_vector_inc_dec_immediate_p (rtx);
 int aarch64_add_offset_temporaries (rtx);
 void aarch64_split_add_offset (scalar_int_mode, rtx, rtx, rtx, rtx, rtx);
+bool aarch64_rdsvl_immediate_p (const_rtx);
+char *aarch64_output_rdsvl (const_rtx);
 bool aarch64_mov_operand_p (rtx, machine_mode);
 rtx aarch64_reverse_mask (machine_mode, unsigned int);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, poly_int64);
@@ -1082,5 +1084,8 @@ extern bool aarch64_harden_sls_blr_p (void);
 extern void aarch64_output_patchable_area (unsigned int, bool);
 
 extern void aarch64_adjust_reg_alloc_order ();
+
+bool aarch64_optimize_mode_switching (aarch64_mode_entity);
+void aarch64_restore_za (rtx);
 
 #endif /* GCC_AARCH64_PROTOS_H */
