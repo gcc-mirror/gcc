@@ -2247,7 +2247,7 @@ TARGET_GNU_ATTRIBUTES (@var{cpu_attribute_table}, @{\n\
   @{ \"@var{attributen}\", @dots{} @},\n\
 @});\n\
 @end smallexample",
- array_slice<const struct scoped_attribute_specs *const>, {})
+ array_slice<const struct scoped_attribute_specs *const>,)
 
 /* Return true iff attribute NAME expects a plain identifier as its first
    argument.  */

@@ -102,7 +102,7 @@ static const attribute_spec gfc_gnu_attributes[] =
 
 static const scoped_attribute_specs gfc_gnu_attribute_table =
 {
-  "gnu", gfc_gnu_attributes
+  "gnu", { gfc_gnu_attributes }
 };
 
 static const scoped_attribute_specs *const gfc_attribute_table[] =

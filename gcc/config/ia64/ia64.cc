@@ -375,7 +375,7 @@ static const attribute_spec ia64_gnu_attributes[] =
 
 static const scoped_attribute_specs ia64_gnu_attribute_table =
 {
-  "gnu", ia64_gnu_attributes
+  "gnu", { ia64_gnu_attributes }
 };
 
 static const scoped_attribute_specs *const ia64_attribute_table[] =

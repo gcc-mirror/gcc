@@ -133,7 +133,7 @@ static const attribute_spec jit_gnu_attributes[] =
 
 static const scoped_attribute_specs jit_gnu_attribute_table =
 {
-  "gnu", jit_gnu_attributes
+  "gnu", { jit_gnu_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -151,7 +151,7 @@ static const attribute_spec jit_format_attributes[] =
 
 static const scoped_attribute_specs jit_format_attribute_table =
 {
-  "gnu", jit_format_attributes
+  "gnu", { jit_format_attributes }
 };
 
 static const scoped_attribute_specs *const jit_attribute_table[] =

@@ -221,7 +221,7 @@ static const attribute_spec gnat_internal_attributes[] =
 
 const scoped_attribute_specs gnat_internal_attribute_table =
 {
-  "gnu", gnat_internal_attributes
+  "gnu", { gnat_internal_attributes }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in

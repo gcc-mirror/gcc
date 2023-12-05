@@ -194,7 +194,7 @@ static const attribute_spec d_langhook_common_attributes[] =
 
 const scoped_attribute_specs d_langhook_common_attribute_table =
 {
-  "gnu", d_langhook_common_attributes
+  "gnu", { d_langhook_common_attributes }
 };
 
 /* Table of D language attributes exposed by `gcc.attribute' UDAs.  */
@@ -246,7 +246,7 @@ static const attribute_spec d_langhook_gnu_attributes[] =
 
 const scoped_attribute_specs d_langhook_gnu_attribute_table =
 {
-  "gnu", d_langhook_gnu_attributes
+  "gnu", { d_langhook_gnu_attributes }
 };
 
 /* Insert the type attribute ATTRNAME with value VALUE into TYPE.

@@ -140,7 +140,7 @@ static const attribute_spec lto_gnu_attributes[] =
 
 static const scoped_attribute_specs lto_gnu_attribute_table =
 {
-  "gnu", lto_gnu_attributes
+  "gnu", { lto_gnu_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -158,7 +158,7 @@ static const attribute_spec lto_format_attributes[] =
 
 static const scoped_attribute_specs lto_format_attribute_table =
 {
-  "gnu", lto_format_attributes
+  "gnu", { lto_format_attributes }
 };
 
 static const scoped_attribute_specs *const lto_attribute_table[] =

@@ -4653,7 +4653,7 @@ static const attribute_spec std_attributes[] =
 
 const scoped_attribute_specs std_attribute_table =
 {
-  nullptr, std_attributes
+  nullptr, { std_attributes }
 };
 
 /* Create the predefined scalar types of C,

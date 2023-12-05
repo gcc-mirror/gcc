@@ -1276,7 +1276,7 @@ static const attribute_spec rs6000_gnu_attributes[] =
 
 static const scoped_attribute_specs rs6000_gnu_attribute_table =
 {
-  "gnu", rs6000_gnu_attributes
+  "gnu", { rs6000_gnu_attributes }
 };
 
 static const scoped_attribute_specs *const rs6000_attribute_table[] =

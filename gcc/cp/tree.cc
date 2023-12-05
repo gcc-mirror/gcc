@@ -5098,7 +5098,7 @@ static const attribute_spec cxx_gnu_attributes[] =
 
 const scoped_attribute_specs cxx_gnu_attribute_table =
 {
-  "gnu", cxx_gnu_attributes
+  "gnu", { cxx_gnu_attributes }
 };
 
 /* Table of C++ standard attributes.  */
@@ -5126,7 +5126,10 @@ static const attribute_spec std_attributes[] =
     handle_contract_attribute, NULL }
 };
 
-const scoped_attribute_specs std_attribute_table = { nullptr, std_attributes };
+const scoped_attribute_specs std_attribute_table =
+{
+  nullptr, { std_attributes }
+};
 
 /* Handle an "init_priority" attribute; arguments as in
    struct attribute_spec.handler.  */

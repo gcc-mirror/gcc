@@ -385,7 +385,7 @@ static const attribute_spec arm_gnu_attributes[] =
 
 static const scoped_attribute_specs arm_gnu_attribute_table =
 {
-  "gnu", arm_gnu_attributes
+  "gnu", { arm_gnu_attributes }
 };
 
 static const scoped_attribute_specs *const arm_attribute_table[] =

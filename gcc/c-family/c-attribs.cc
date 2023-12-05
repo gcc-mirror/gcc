@@ -584,7 +584,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 
 const struct scoped_attribute_specs c_common_gnu_attribute_table =
 {
-  "gnu", c_common_gnu_attributes
+  "gnu", { c_common_gnu_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -603,7 +603,7 @@ const struct attribute_spec c_common_format_attributes[] =
 
 const struct scoped_attribute_specs c_common_format_attribute_table =
 {
-  "gnu", c_common_format_attributes
+  "gnu", { c_common_format_attributes }
 };
 
 /* Returns TRUE iff the attribute indicated by ATTR_ID takes a plain

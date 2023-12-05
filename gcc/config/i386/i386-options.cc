@@ -4171,7 +4171,7 @@ static const attribute_spec ix86_gnu_attributes[] =
 
 const scoped_attribute_specs ix86_gnu_attribute_table =
 {
-  "gnu", ix86_gnu_attributes
+  "gnu", { ix86_gnu_attributes }
 };
 
 #include "gt-i386-options.h"

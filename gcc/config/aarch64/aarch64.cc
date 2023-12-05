@@ -758,7 +758,7 @@ static const attribute_spec aarch64_gnu_attributes[] =
 
 static const scoped_attribute_specs aarch64_gnu_attribute_table =
 {
-  "gnu", aarch64_gnu_attributes
+  "gnu", { aarch64_gnu_attributes }
 };
 
 static const attribute_spec aarch64_arm_attributes[] =
@@ -782,7 +782,7 @@ static const attribute_spec aarch64_arm_attributes[] =
 
 static const scoped_attribute_specs aarch64_arm_attribute_table =
 {
-  "arm", aarch64_arm_attributes
+  "arm", { aarch64_arm_attributes }
 };
 
 static const scoped_attribute_specs *const aarch64_attribute_table[] =

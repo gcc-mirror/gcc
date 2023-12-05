@@ -302,7 +302,7 @@ handle_ignored_attributes_option (vec<char *> *v)
 	  attrs = { table, 1 };
 	}
       const scoped_attribute_specs scoped_specs = {
-	IDENTIFIER_POINTER (vendor_id), attrs
+	IDENTIFIER_POINTER (vendor_id), { attrs }
       };
       register_scoped_attributes (scoped_specs, attrs.empty ());
     }

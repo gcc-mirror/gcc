@@ -129,7 +129,7 @@
 
 #define TARGET_GNU_ATTRIBUTES(NAME, ...) \
   static const attribute_spec NAME##_2[] = __VA_ARGS__; \
-  static const scoped_attribute_specs NAME##_1 = { "gnu", NAME##_2 }; \
+  static const scoped_attribute_specs NAME##_1 = { "gnu", { NAME##_2 } }; \
   static const scoped_attribute_specs *const NAME[] = { &NAME##_1 }
 
 #include "target-hooks-def.h"
