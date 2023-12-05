@@ -157,10 +157,13 @@
 
 #ifndef USED_FOR_TARGET
 
-/* Define an enum of all features (architectures and extensions).  */
+/* Define an enum of all features (ISA modes, architectures and extensions).
+   The ISA modes must come first.  */
 enum class aarch64_feature : unsigned char {
+#define DEF_AARCH64_ISA_MODE(IDENT) IDENT,
 #define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F) IDENT,
 #define AARCH64_ARCH(A, B, IDENT, D, E) IDENT,
+#include "aarch64-isa-modes.def"
 #include "aarch64-option-extensions.def"
 #include "aarch64-arches.def"
 };
@@ -169,16 +172,34 @@ enum class aarch64_feature : unsigned char {
 #define HANDLE(IDENT) \
   constexpr auto AARCH64_FL_##IDENT \
     = aarch64_feature_flags (1) << int (aarch64_feature::IDENT);
+#define DEF_AARCH64_ISA_MODE(IDENT) HANDLE (IDENT)
 #define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F) HANDLE (IDENT)
 #define AARCH64_ARCH(A, B, IDENT, D, E) HANDLE (IDENT)
+#include "aarch64-isa-modes.def"
 #include "aarch64-option-extensions.def"
 #include "aarch64-arches.def"
 #undef HANDLE
+
+constexpr auto AARCH64_FL_SM_STATE = AARCH64_FL_SM_ON | AARCH64_FL_SM_OFF;
+
+constexpr unsigned int AARCH64_NUM_ISA_MODES = (0
+#define DEF_AARCH64_ISA_MODE(IDENT) + 1
+#include "aarch64-isa-modes.def"
+);
+
+/* The mask of all ISA modes.  */
+constexpr auto AARCH64_FL_ISA_MODES
+  = (aarch64_feature_flags (1) << AARCH64_NUM_ISA_MODES) - 1;
+
+/* The default ISA mode, for functions with no attributes that specify
+   something to the contrary.  */
+constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 #endif
 
 /* Macros to test ISA flags.  */
 
+#define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
@@ -935,6 +956,7 @@ enum arm_pcs
 typedef struct
 {
   enum arm_pcs pcs_variant;
+  aarch64_feature_flags isa_mode;
   int aapcs_arg_processed;	/* No need to lay out this argument again.  */
   int aapcs_ncrn;		/* Next Core register number.  */
   int aapcs_nextncrn;		/* Next next core register number.  */

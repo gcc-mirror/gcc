@@ -72,6 +72,20 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define_with_int_value ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);
 
   builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
+
+  /* Define keyword attributes like __arm_streaming as macros that expand
+     to the associated [[...]] attribute.  Use __extension__ in the attribute
+     for C, since the [[...]] syntax was only added in C23.  */
+#define DEFINE_ARM_KEYWORD_MACRO(NAME) \
+  builtin_define_with_value ("__arm_" NAME, \
+			     lang_GNU_CXX () \
+			     ? "[[arm::" NAME "]]" \
+			     : "[[__extension__ arm::" NAME "]]", 0);
+
+  DEFINE_ARM_KEYWORD_MACRO ("streaming");
+  DEFINE_ARM_KEYWORD_MACRO ("streaming_compatible");
+
+#undef DEFINE_ARM_KEYWORD_MACRO
 }
 
 /* Undefine/redefine macros that depend on the current backend state and may

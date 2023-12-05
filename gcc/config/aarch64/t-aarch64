@@ -20,7 +20,10 @@
 
 TM_H += $(srcdir)/config/aarch64/aarch64-fusion-pairs.def \
 	$(srcdir)/config/aarch64/aarch64-tuning-flags.def \
-	$(srcdir)/config/aarch64/aarch64-option-extensions.def
+	$(srcdir)/config/aarch64/aarch64-option-extensions.def \
+	$(srcdir)/config/aarch64/aarch64-cores.def \
+	$(srcdir)/config/aarch64/aarch64-isa-modes.def \
+	$(srcdir)/config/aarch64/aarch64-arches.def
 OPTIONS_H_EXTRA += $(srcdir)/config/aarch64/aarch64-cores.def \
 		   $(srcdir)/config/aarch64/aarch64-arches.def
 

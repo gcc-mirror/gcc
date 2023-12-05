@@ -7335,7 +7335,8 @@
   {
     if (TARGET_SVE)
       {
-	rtx abi = gen_int_mode (aarch64_tlsdesc_abi_id (), DImode);
+	rtx abi = aarch64_gen_callee_cookie (AARCH64_ISA_MODE,
+					     aarch64_tlsdesc_abi_id ());
 	rtx_insn *call
 	  = emit_call_insn (gen_tlsdesc_small_sve_<mode> (operands[0], abi));
 	RTL_CONST_CALL_P (call) = 1;

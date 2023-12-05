@@ -464,8 +464,18 @@ handle_aarch64_vector_pcs_attribute (tree *node, tree name, tree,
   gcc_unreachable ();
 }
 
+/* Mutually-exclusive function type attributes for controlling PSTATE.SM.  */
+static const struct attribute_spec::exclusions attr_streaming_exclusions[] =
+{
+  /* Attribute name     exclusion applies to:
+			function, type, variable */
+  { "streaming", false, true, false },
+  { "streaming_compatible", false, true, false },
+  { NULL, false, false, false }
+};
+
 /* Table of machine attributes.  */
-TARGET_GNU_ATTRIBUTES (aarch64_attribute_table,
+static const attribute_spec aarch64_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -477,7 +487,31 @@ TARGET_GNU_ATTRIBUTES (aarch64_attribute_table,
   { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL }
-});
+};
+
+static const scoped_attribute_specs aarch64_gnu_attribute_table =
+{
+  "gnu", aarch64_gnu_attributes
+};
+
+static const attribute_spec aarch64_arm_attributes[] =
+{
+  { "streaming",	  0, 0, false, true,  true,  true,
+			  NULL, attr_streaming_exclusions },
+  { "streaming_compatible", 0, 0, false, true,  true,  true,
+			  NULL, attr_streaming_exclusions },
+};
+
+static const scoped_attribute_specs aarch64_arm_attribute_table =
+{
+  "arm", aarch64_arm_attributes
+};
+
+static const scoped_attribute_specs *const aarch64_attribute_table[] =
+{
+  &aarch64_gnu_attribute_table,
+  &aarch64_arm_attribute_table
+};
 
 typedef enum aarch64_cond_code
 {
@@ -1715,6 +1749,48 @@ aarch64_fntype_abi (const_tree fntype)
   return default_function_abi;
 }
 
+/* Return the state of PSTATE.SM on entry to functions of type FNTYPE.  */
+
+static aarch64_feature_flags
+aarch64_fntype_pstate_sm (const_tree fntype)
+{
+  if (lookup_attribute ("arm", "streaming", TYPE_ATTRIBUTES (fntype)))
+    return AARCH64_FL_SM_ON;
+
+  if (lookup_attribute ("arm", "streaming_compatible",
+			TYPE_ATTRIBUTES (fntype)))
+    return 0;
+
+  return AARCH64_FL_SM_OFF;
+}
+
+/* Return the ISA mode on entry to functions of type FNTYPE.  */
+
+static aarch64_feature_flags
+aarch64_fntype_isa_mode (const_tree fntype)
+{
+  return aarch64_fntype_pstate_sm (fntype);
+}
+
+/* Return the state of PSTATE.SM when compiling the body of
+   function FNDECL.  This might be different from the state of
+   PSTATE.SM on entry.  */
+
+static aarch64_feature_flags
+aarch64_fndecl_pstate_sm (const_tree fndecl)
+{
+  return aarch64_fntype_pstate_sm (TREE_TYPE (fndecl));
+}
+
+/* Return the ISA mode that should be used to compile the body of
+   function FNDECL.  */
+
+static aarch64_feature_flags
+aarch64_fndecl_isa_mode (const_tree fndecl)
+{
+  return aarch64_fndecl_pstate_sm (fndecl);
+}
+
 /* Implement TARGET_COMPATIBLE_VECTOR_TYPES_P.  */
 
 static bool
@@ -1777,17 +1853,46 @@ aarch64_reg_save_mode (unsigned int regno)
   gcc_unreachable ();
 }
 
-/* Implement TARGET_INSN_CALLEE_ABI.  */
+/* Given the ISA mode on entry to a callee and the ABI of the callee,
+   return the CONST_INT that should be placed in an UNSPEC_CALLEE_ABI rtx.  */
 
-const predefined_function_abi &
-aarch64_insn_callee_abi (const rtx_insn *insn)
+rtx
+aarch64_gen_callee_cookie (aarch64_feature_flags isa_mode, arm_pcs pcs_variant)
+{
+  return gen_int_mode ((unsigned int) isa_mode
+		       | (unsigned int) pcs_variant << AARCH64_NUM_ISA_MODES,
+		       DImode);
+}
+
+/* COOKIE is a CONST_INT from an UNSPEC_CALLEE_ABI rtx.  Return the
+   callee's ABI.  */
+
+static const predefined_function_abi &
+aarch64_callee_abi (rtx cookie)
+{
+  return function_abis[UINTVAL (cookie) >> AARCH64_NUM_ISA_MODES];
+}
+
+/* INSN is a call instruction.  Return the CONST_INT stored in its
+   UNSPEC_CALLEE_ABI rtx.  */
+
+static rtx
+aarch64_insn_callee_cookie (const rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   gcc_assert (GET_CODE (pat) == PARALLEL);
   rtx unspec = XVECEXP (pat, 0, 1);
   gcc_assert (GET_CODE (unspec) == UNSPEC
 	      && XINT (unspec, 1) == UNSPEC_CALLEE_ABI);
-  return function_abis[INTVAL (XVECEXP (unspec, 0, 0))];
+  return XVECEXP (unspec, 0, 0);
+}
+
+/* Implement TARGET_INSN_CALLEE_ABI.  */
+
+const predefined_function_abi &
+aarch64_insn_callee_abi (const rtx_insn *insn)
+{
+  return aarch64_callee_abi (aarch64_insn_callee_cookie (insn));
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -5712,7 +5817,7 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	      || pcum->pcs_variant == ARM_PCS_SVE);
 
   if (arg.end_marker_p ())
-    return gen_int_mode (pcum->pcs_variant, DImode);
+    return aarch64_gen_callee_cookie (pcum->isa_mode, pcum->pcs_variant);
 
   aarch64_layout_arg (pcum_v, arg);
   return pcum->aapcs_reg;
@@ -5733,9 +5838,15 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
   pcum->aapcs_nextnvrn = 0;
   pcum->aapcs_nextnprn = 0;
   if (fntype)
-    pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
+    {
+      pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
+      pcum->isa_mode = aarch64_fntype_isa_mode (fntype);
+    }
   else
-    pcum->pcs_variant = ARM_PCS_AAPCS64;
+    {
+      pcum->pcs_variant = ARM_PCS_AAPCS64;
+      pcum->isa_mode = AARCH64_FL_DEFAULT_ISA_MODE;
+    }
   pcum->aapcs_reg = NULL_RTX;
   pcum->aapcs_arg_processed = false;
   pcum->aapcs_stack_words = 0;
@@ -8306,7 +8417,9 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  rtx callee_abi = gen_int_mode (fndecl_abi (function).id (), DImode);
+  auto isa_mode = aarch64_fntype_isa_mode (TREE_TYPE (function));
+  auto pcs_variant = arm_pcs (fndecl_abi (function).id ());
+  rtx callee_abi = aarch64_gen_callee_cookie (isa_mode, pcs_variant);
   insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, callee_abi));
   SIBLING_CALL_P (insn) = 1;
 
@@ -16485,6 +16598,7 @@ aarch64_override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  auto isa_mode = AARCH64_FL_DEFAULT_ISA_MODE;
   if (cpu && arch)
     {
       /* If both -mcpu and -march are specified, warn if they are not
@@ -16507,25 +16621,25 @@ aarch64_override_options (void)
 	}
 
       selected_arch = arch->arch;
-      aarch64_set_asm_isa_flags (arch_isa);
+      aarch64_set_asm_isa_flags (arch_isa | isa_mode);
     }
   else if (cpu)
     {
       selected_arch = cpu->arch;
-      aarch64_set_asm_isa_flags (cpu_isa);
+      aarch64_set_asm_isa_flags (cpu_isa | isa_mode);
     }
   else if (arch)
     {
       cpu = &all_cores[arch->ident];
       selected_arch = arch->arch;
-      aarch64_set_asm_isa_flags (arch_isa);
+      aarch64_set_asm_isa_flags (arch_isa | isa_mode);
     }
   else
     {
       /* No -mcpu or -march specified, so use the default CPU.  */
       cpu = &all_cores[TARGET_CPU_DEFAULT];
       selected_arch = cpu->arch;
-      aarch64_set_asm_isa_flags (cpu->flags);
+      aarch64_set_asm_isa_flags (cpu->flags | isa_mode);
     }
 
   selected_tune = tune ? tune->ident : cpu->ident;
@@ -16698,6 +16812,21 @@ aarch64_save_restore_target_globals (tree new_tree)
     TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
 }
 
+/* Return the target_option_node for FNDECL, or the current options
+   if FNDECL is null.  */
+
+static tree
+aarch64_fndecl_options (tree fndecl)
+{
+  if (!fndecl)
+    return target_option_current_node;
+
+  if (tree options = DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+    return options;
+
+  return target_option_default_node;
+}
+
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Unpack the codegen decisions
    like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
    of the function, if such exists.  This function may be called multiple
@@ -16707,25 +16836,24 @@ aarch64_save_restore_target_globals (tree new_tree)
 static void
 aarch64_set_current_function (tree fndecl)
 {
-  if (!fndecl || fndecl == aarch64_previous_fndecl)
-    return;
+  tree old_tree = aarch64_fndecl_options (aarch64_previous_fndecl);
+  tree new_tree = aarch64_fndecl_options (fndecl);
 
-  tree old_tree = (aarch64_previous_fndecl
-		   ? DECL_FUNCTION_SPECIFIC_TARGET (aarch64_previous_fndecl)
-		   : NULL_TREE);
-
-  tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
-
-  /* If current function has no attributes but the previous one did,
-     use the default node.  */
-  if (!new_tree && old_tree)
-    new_tree = target_option_default_node;
+  auto new_isa_mode = (fndecl
+		       ? aarch64_fndecl_isa_mode (fndecl)
+		       : AARCH64_FL_DEFAULT_ISA_MODE);
+  auto isa_flags = TREE_TARGET_OPTION (new_tree)->x_aarch64_isa_flags;
 
   /* If nothing to do, return.  #pragma GCC reset or #pragma GCC pop to
      the default have been handled by aarch64_save_restore_target_globals from
      aarch64_pragma_target_parse.  */
-  if (old_tree == new_tree)
-    return;
+  if (old_tree == new_tree
+      && (!fndecl || aarch64_previous_fndecl)
+      && (isa_flags & AARCH64_FL_ISA_MODES) == new_isa_mode)
+    {
+      gcc_assert (AARCH64_ISA_MODE == new_isa_mode);
+      return;
+    }
 
   aarch64_previous_fndecl = fndecl;
 
@@ -16733,7 +16861,28 @@ aarch64_set_current_function (tree fndecl)
   cl_target_option_restore (&global_options, &global_options_set,
 			    TREE_TARGET_OPTION (new_tree));
 
+  /* The ISA mode can vary based on function type attributes and
+     function declaration attributes.  Make sure that the target
+     options correctly reflect these attributes.  */
+  if ((isa_flags & AARCH64_FL_ISA_MODES) != new_isa_mode)
+    {
+      auto base_flags = (aarch64_asm_isa_flags & ~AARCH64_FL_ISA_MODES);
+      aarch64_set_asm_isa_flags (base_flags | new_isa_mode);
+
+      aarch64_override_options_internal (&global_options);
+      new_tree = build_target_option_node (&global_options,
+					   &global_options_set);
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_tree;
+
+      tree new_optimize = build_optimization_node (&global_options,
+						   &global_options_set);
+      if (new_optimize != optimization_default_node)
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
+    }
+
   aarch64_save_restore_target_globals (new_tree);
+
+  gcc_assert (AARCH64_ISA_MODE == new_isa_mode);
 }
 
 /* Enum describing the various ways we can handle attributes.
@@ -16783,7 +16932,7 @@ aarch64_handle_attr_arch (const char *str)
     {
       gcc_assert (tmp_arch);
       selected_arch = tmp_arch->arch;
-      aarch64_set_asm_isa_flags (tmp_flags);
+      aarch64_set_asm_isa_flags (tmp_flags | AARCH64_ISA_MODE);
       return true;
     }
 
@@ -16824,7 +16973,7 @@ aarch64_handle_attr_cpu (const char *str)
       gcc_assert (tmp_cpu);
       selected_tune = tmp_cpu->ident;
       selected_arch = tmp_cpu->arch;
-      aarch64_set_asm_isa_flags (tmp_flags);
+      aarch64_set_asm_isa_flags (tmp_flags | AARCH64_ISA_MODE);
       return true;
     }
 
@@ -16924,7 +17073,7 @@ aarch64_handle_attr_isa_flags (char *str)
      features if the user wants to handpick specific features.  */
   if (strncmp ("+nothing", str, 8) == 0)
     {
-      isa_flags = 0;
+      isa_flags = AARCH64_ISA_MODE;
       str += 8;
     }
 
@@ -17417,7 +17566,7 @@ aarch64_can_inline_p (tree caller, tree callee)
 /* Return the ID of the TLDESC ABI, initializing the descriptor if hasn't
    been already.  */
 
-unsigned int
+arm_pcs
 aarch64_tlsdesc_abi_id ()
 {
   predefined_function_abi &tlsdesc_abi = function_abis[ARM_PCS_TLSDESC];
@@ -17431,7 +17580,7 @@ aarch64_tlsdesc_abi_id ()
 	SET_HARD_REG_BIT (full_reg_clobbers, regno);
       tlsdesc_abi.initialize (ARM_PCS_TLSDESC, full_reg_clobbers);
     }
-  return tlsdesc_abi.id ();
+  return ARM_PCS_TLSDESC;
 }
 
 /* Return true if SYMBOL_REF X binds locally.  */
@@ -25386,22 +25535,26 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
 static int
 aarch64_comp_type_attributes (const_tree type1, const_tree type2)
 {
-  auto check_attr = [&](const char *name) {
-    tree attr1 = lookup_attribute (name, TYPE_ATTRIBUTES (type1));
-    tree attr2 = lookup_attribute (name, TYPE_ATTRIBUTES (type2));
+  auto check_attr = [&](const char *ns, const char *name) {
+    tree attr1 = lookup_attribute (ns, name, TYPE_ATTRIBUTES (type1));
+    tree attr2 = lookup_attribute (ns, name, TYPE_ATTRIBUTES (type2));
     if (!attr1 && !attr2)
       return true;
 
     return attr1 && attr2 && attribute_value_equal (attr1, attr2);
   };
 
-  if (!check_attr ("aarch64_vector_pcs"))
+  if (!check_attr ("gnu", "aarch64_vector_pcs"))
     return 0;
-  if (!check_attr ("Advanced SIMD type"))
+  if (!check_attr ("gnu", "Advanced SIMD type"))
     return 0;
-  if (!check_attr ("SVE type"))
+  if (!check_attr ("gnu", "SVE type"))
     return 0;
-  if (!check_attr ("SVE sizeless type"))
+  if (!check_attr ("gnu", "SVE sizeless type"))
+    return 0;
+  if (!check_attr ("arm", "streaming"))
+    return 0;
+  if (!check_attr ("arm", "streaming_compatible"))
     return 0;
   return 1;
 }
