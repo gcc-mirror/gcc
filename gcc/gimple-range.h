@@ -52,7 +52,6 @@ public:
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   virtual bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
-  virtual void update_stmt (gimple *) override;
   void range_on_entry (vrange &r, basic_block bb, tree name);
   void range_on_exit (vrange &r, basic_block bb, tree name);
   void export_global_ranges ();

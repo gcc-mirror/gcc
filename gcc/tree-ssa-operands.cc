@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "print-tree.h"
 #include "dumpfile.h"
-#include "value-query.h"
 
 
 /* This file contains the code required to manage the operands cache of the
@@ -1146,8 +1145,6 @@ update_stmt_operands (struct function *fn, gimple *stmt)
   gcc_assert (gimple_modified_p (stmt));
   operands_scanner (fn, stmt).build_ssa_operands ();
   gimple_set_modified (stmt, false);
-  // Inform the active range query an update has happened.
-  get_range_query (fn)->update_stmt (stmt);
 
   timevar_pop (TV_TREE_OPS);
 }
