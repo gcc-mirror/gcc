@@ -2153,8 +2153,9 @@ public:
 
     /* Punt to rtl if the effect of the reinterpret on registers does not
        conform to GCC's endianness model.  */
-    if (!targetm.can_change_mode_class (f.vector_mode (0),
-					f.vector_mode (1), FP_REGS))
+    if (GET_MODE_CLASS (f.vector_mode (0)) != MODE_VECTOR_BOOL
+	&& !targetm.can_change_mode_class (f.vector_mode (0),
+					   f.vector_mode (1), FP_REGS))
       return NULL;
 
     /* Otherwise svreinterpret corresponds directly to a VIEW_CONVERT_EXPR
@@ -2168,6 +2169,9 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.tuple_mode (0);
+    /* Handle svbool_t <-> svcount_t.  */
+    if (mode == e.tuple_mode (1))
+      return e.args[0];
     return e.use_exact_insn (code_for_aarch64_sve_reinterpret (mode));
   }
 };

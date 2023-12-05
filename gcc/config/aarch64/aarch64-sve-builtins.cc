@@ -430,6 +430,12 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_reinterpret1 (D, u32), \
   TYPES_reinterpret1 (D, u64)
 
+/* _b_c
+   _c_b.  */
+#define TYPES_reinterpret_b(S, D) \
+  D (b, c), \
+  D (c, b)
+
 /* { _b8 _b16 _b32 _b64 } x { _s32 _s64 }
 			    { _u32 _u64 } */
 #define TYPES_while1(D, bn) \
@@ -579,6 +585,7 @@ DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
 DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (reinterpret);
+DEF_SVE_TYPES_ARRAY (reinterpret_b);
 DEF_SVE_TYPES_ARRAY (while);
 DEF_SVE_TYPES_ARRAY (all_za);
 DEF_SVE_TYPES_ARRAY (d_za);
@@ -3789,6 +3796,49 @@ function_expander::expand ()
   return base->expand (*this);
 }
 
+/* Return a structure type that contains a single field of type FIELD_TYPE.
+   The field is called __val, but that's an internal detail rather than
+   an exposed part of the API.  */
+static tree
+wrap_type_in_struct (tree field_type)
+{
+  tree field = build_decl (input_location, FIELD_DECL,
+			   get_identifier ("__val"), field_type);
+  tree struct_type = lang_hooks.types.make_type (RECORD_TYPE);
+  DECL_FIELD_CONTEXT (field) = struct_type;
+  TYPE_FIELDS (struct_type) = field;
+  make_type_sizeless (struct_type);
+  layout_type (struct_type);
+  return struct_type;
+}
+
+/* Register a built-in TYPE_DECL called NAME for TYPE.  This is used/needed
+   when TYPE is a structure type.  */
+static void
+register_type_decl (tree type, const char *name)
+{
+  tree decl = build_decl (input_location, TYPE_DECL,
+			  get_identifier (name), type);
+  TYPE_NAME (type) = decl;
+  TYPE_STUB_DECL (type) = decl;
+  lang_hooks.decls.pushdecl (decl);
+  /* ??? Undo the effect of set_underlying_type for C.  The C frontend
+     doesn't recognize DECL as a built-in because (as intended) the decl has
+     a real location instead of BUILTINS_LOCATION.  The frontend therefore
+     treats the decl like a normal C "typedef struct foo foo;", expecting
+     the type for tag "struct foo" to have a dummy unnamed TYPE_DECL instead
+     of the named one we attached above.  It then sets DECL_ORIGINAL_TYPE
+     on the supposedly unnamed decl, creating a circularity that upsets
+     dwarf2out.
+
+     We don't want to follow the normal C model and create "struct foo"
+     tags for tuple types since (a) the types are supposed to be opaque
+     and (b) they couldn't be defined as a real struct anyway.  Treating
+     the TYPE_DECLs as "typedef struct foo foo;" without creating
+     "struct foo" would lead to confusing error messages.  */
+  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+}
+
 /* Register the built-in SVE ABI types, such as __SVBool_t.  */
 static void
 register_builtin_types ()
@@ -3799,48 +3849,63 @@ register_builtin_types ()
 
   for (unsigned int i = 0; i < NUM_VECTOR_TYPES; ++i)
     {
-      tree eltype = scalar_types[i];
       tree vectype;
       unsigned int num_zr = 0, num_pr = 0;
-      if (eltype == boolean_type_node)
+      if (vector_type_index (i) == VECTOR_TYPE_svcount_t)
 	{
-	  vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
-						      VNx16BImode);
-	  gcc_assert (TYPE_MODE (vectype) == VNx16BImode
-		      && TYPE_MODE (vectype) == TYPE_MODE_RAW (vectype)
-		      && TYPE_ALIGN (vectype) == 16
-		      && known_eq (wi::to_poly_offset (TYPE_SIZE (vectype)),
-				   BYTES_PER_SVE_VECTOR));
+	  vectype = abi_vector_types[VECTOR_TYPE_svbool_t];
+	  vectype = wrap_type_in_struct (vectype);
 	  num_pr = 1;
 	}
       else
 	{
-	  scalar_mode elmode = SCALAR_TYPE_MODE (eltype);
-	  unsigned int elbytes = GET_MODE_SIZE (elmode);
-	  poly_uint64 nunits = exact_div (BYTES_PER_SVE_VECTOR, elbytes);
-	  machine_mode mode
-	    = aarch64_sve_data_mode (elmode, nunits).require ();
-	  vectype = build_vector_type_for_mode (eltype, mode);
-	  gcc_assert (VECTOR_MODE_P (TYPE_MODE (vectype))
-		      && TYPE_MODE (vectype) == mode
-		      && TYPE_MODE_RAW (vectype) == mode
-		      && TYPE_ALIGN (vectype) == 128
-		      && known_eq (wi::to_poly_offset (TYPE_SIZE (vectype)),
-				   BITS_PER_SVE_VECTOR));
-	  num_zr = 1;
+	  tree eltype = scalar_types[i];
+	  if (eltype == boolean_type_node)
+	    {
+	      vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
+							  VNx16BImode);
+	      num_pr = 1;
+	    }
+	  else
+	    {
+	      scalar_mode elmode = SCALAR_TYPE_MODE (eltype);
+	      unsigned int elbytes = GET_MODE_SIZE (elmode);
+	      poly_uint64 nunits = exact_div (BYTES_PER_SVE_VECTOR, elbytes);
+	      machine_mode mode
+		= aarch64_sve_data_mode (elmode, nunits).require ();
+	      vectype = build_vector_type_for_mode (eltype, mode);
+	      auto size = wi::to_poly_offset (TYPE_SIZE (vectype));
+	      gcc_assert (VECTOR_MODE_P (TYPE_MODE (vectype))
+			  && TYPE_MODE (vectype) == mode
+			  && TYPE_MODE_RAW (vectype) == mode
+			  && TYPE_ALIGN (vectype) == 128
+			  && known_eq (size, BITS_PER_SVE_VECTOR));
+	      num_zr = 1;
+	    }
+	  vectype = build_distinct_type_copy (vectype);
+	  gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
+	  SET_TYPE_STRUCTURAL_EQUALITY (vectype);
+	  TYPE_ARTIFICIAL (vectype) = 1;
+	  TYPE_INDIVISIBLE_P (vectype) = 1;
+	  make_type_sizeless (vectype);
 	}
-      vectype = build_distinct_type_copy (vectype);
-      gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
-      SET_TYPE_STRUCTURAL_EQUALITY (vectype);
-      TYPE_ARTIFICIAL (vectype) = 1;
-      TYPE_INDIVISIBLE_P (vectype) = 1;
+      if (num_pr)
+	{
+	  auto size = wi::to_poly_offset (TYPE_SIZE (vectype));
+	  gcc_assert (TYPE_MODE (vectype) == VNx16BImode
+		      && TYPE_MODE (vectype) == TYPE_MODE_RAW (vectype)
+		      && TYPE_ALIGN (vectype) == 16
+		      && known_eq (size, BYTES_PER_SVE_VECTOR));
+	}
       add_sve_type_attribute (vectype, num_zr, num_pr,
 			      vector_types[i].mangled_name,
 			      vector_types[i].acle_name);
-      make_type_sizeless (vectype);
       abi_vector_types[i] = vectype;
-      lang_hooks.types.register_builtin_type (vectype,
-					      vector_types[i].abi_name);
+      if (TREE_CODE (vectype) == RECORD_TYPE)
+	register_type_decl (vectype, vector_types[i].abi_name);
+      else
+	lang_hooks.types.register_builtin_type (vectype,
+						vector_types[i].abi_name);
     }
 }
 
@@ -3884,8 +3949,6 @@ register_vector_type (vector_type_index type)
 static void
 register_tuple_type (unsigned int num_vectors, vector_type_index type)
 {
-  tree tuple_type = lang_hooks.types.make_type (RECORD_TYPE);
-
   /* Work out the structure name.  */
   char buffer[sizeof ("svbfloat16x4_t")];
   const char *vector_type_name = vector_types[type].acle_name;
@@ -3912,37 +3975,13 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
 	      && TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type)
 	      && TYPE_ALIGN (array_type) == 128);
 
-  tree field = build_decl (input_location, FIELD_DECL,
-			   get_identifier ("__val"), array_type);
-  DECL_FIELD_CONTEXT (field) = tuple_type;
-  TYPE_FIELDS (tuple_type) = field;
+  tree tuple_type = wrap_type_in_struct (array_type);
   add_sve_type_attribute (tuple_type, num_vectors, 0, NULL, buffer);
-  make_type_sizeless (tuple_type);
-  layout_type (tuple_type);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
 	      && TYPE_ALIGN (tuple_type) == 128);
 
-  tree decl = build_decl (input_location, TYPE_DECL,
-			  get_identifier (buffer), tuple_type);
-  TYPE_NAME (tuple_type) = decl;
-  TYPE_STUB_DECL (tuple_type) = decl;
-  lang_hooks.decls.pushdecl (decl);
-  /* ??? Undo the effect of set_underlying_type for C.  The C frontend
-     doesn't recognize DECL as a built-in because (as intended) the decl has
-     a real location instead of BUILTINS_LOCATION.  The frontend therefore
-     treats the decl like a normal C "typedef struct foo foo;", expecting
-     the type for tag "struct foo" to have a dummy unnamed TYPE_DECL instead
-     of the named one we attached above.  It then sets DECL_ORIGINAL_TYPE
-     on the supposedly unnamed decl, creating a circularity that upsets
-     dwarf2out.
-
-     We don't want to follow the normal C model and create "struct foo"
-     tags for tuple types since (a) the types are supposed to be opaque
-     and (b) they couldn't be defined as a real struct anyway.  Treating
-     the TYPE_DECLs as "typedef struct foo foo;" without creating
-     "struct foo" would lead to confusing error messages.  */
-  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+  register_type_decl (tuple_type, buffer);
 
   acle_vector_types[num_vectors - 1][type] = tuple_type;
 }
@@ -3992,7 +4031,7 @@ handle_arm_sve_h ()
     {
       vector_type_index type = vector_type_index (type_i);
       register_vector_type (type);
-      if (type != VECTOR_TYPE_svbool_t)
+      if (scalar_types[type_i] != boolean_type_node)
 	for (unsigned int count = 2; count <= MAX_TUPLE_SIZE; ++count)
 	  register_tuple_type (count, type);
     }

@@ -85,6 +85,21 @@
     return z0_res;						\
   }
 
+#define TEST_DUAL_P(NAME, TYPE1, TYPE2, CODE1, CODE2)		\
+  PROTO (NAME, TYPE1, (TYPE1 p0, TYPE1 p1, TYPE2 p2, TYPE2 p3))	\
+  {								\
+    INVOKE (CODE1, CODE2);					\
+    return p0;							\
+  }
+
+#define TEST_DUAL_P_REV(NAME, TYPE1, TYPE2, CODE1, CODE2)	\
+  PROTO (NAME, TYPE1, (TYPE2 p0, TYPE2 p1, TYPE1 p2, TYPE1 p3))	\
+  {								\
+    TYPE1 p0_res;						\
+    INVOKE (CODE1, CODE2);					\
+    return p0_res;						\
+  }
+
 #define TEST_TRIPLE_Z(NAME, TYPE1, TYPE2, TYPE3, CODE1, CODE2)	\
   PROTO (NAME, TYPE1, (TYPE1 z0, TYPE1 z1, TYPE2 z2, TYPE2 z3,	\
 		       TYPE3 z4, TYPE3 z5,			\

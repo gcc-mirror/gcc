@@ -4,6 +4,8 @@
 
 void fn_b (svbool_t x) {}
 
+void fn_c (svcount_t x) {}
+
 void fn_s8 (svint8_t x) {}
 void fn_s16 (svint16_t x) {}
 void fn_s32 (svint32_t x) {}
@@ -57,6 +59,8 @@ void fn_f32x4 (svfloat32x4_t x) {}
 void fn_f64x4 (svfloat64x4_t x) {}
 
 /* { dg-final { scan-assembler {\t\.variant_pcs\tfn_b\n} } } */
+
+/* { dg-final { scan-assembler {\t\.variant_pcs\tfn_c\n} } } */
 
 /* { dg-final { scan-assembler {\t\.variant_pcs\tfn_s8\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tfn_s16\n} } } */

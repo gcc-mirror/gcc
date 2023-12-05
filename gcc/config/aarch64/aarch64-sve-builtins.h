@@ -152,11 +152,13 @@ enum predication_index
 };
 
 /* Classifies element types, based on type suffixes with the bit count
-   removed.  */
+   removed.  "count" isn't really an element type, but we pretend it is
+   for consistency.  */
 enum type_class_index
 {
   TYPE_bool,
   TYPE_bfloat,
+  TYPE_count,
   TYPE_float,
   TYPE_signed,
   TYPE_unsigned,

@@ -27,6 +27,7 @@ typedef svint32x2_t bad_type_6 __attribute__ ((arm_sve_vector_bits (N))); // { d
 typedef svint8_t bad_type_7 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to type 'svint8_t __attribute__\(\(arm_sve_vector_bits\([0-9]+\)\)\)', which already has a size} }
 typedef fixed_bool_t bad_type_8 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to type 'fixed_bool_t' {aka 'svbool_t __attribute__\(\(arm_sve_vector_bits\([0-9]+\)\)\)'}, which already has a size} }
 typedef gnu_int8_t bad_type_9 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to non-SVE type 'gnu_int8_t'} }
+typedef svcount_t bad_type_10 __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to non-vector type 'svcount_t'} }
 
 void
 f (int c)

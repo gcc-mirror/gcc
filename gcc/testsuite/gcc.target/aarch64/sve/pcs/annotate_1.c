@@ -4,6 +4,8 @@
 
 svbool_t ret_b (void) { return svptrue_b8 (); }
 
+svcount_t ret_c (svcount_t *ptr) { return *ptr; }
+
 svint8_t ret_s8 (void) { return svdup_s8 (0); }
 svint16_t ret_s16 (void) { return svdup_s16 (0); }
 svint32_t ret_s32 (void) { return svdup_s32 (0); }
@@ -57,6 +59,8 @@ svfloat32x4_t ret_f32x4 (void) { return svundef4_f32 (); }
 svfloat64x4_t ret_f64x4 (void) { return svundef4_f64 (); }
 
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_b\n} } } */
+
+/* { dg-final { scan-assembler {\t\.variant_pcs\tret_c\n} } } */
 
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s8\n} } } */
 /* { dg-final { scan-assembler {\t\.variant_pcs\tret_s16\n} } } */
