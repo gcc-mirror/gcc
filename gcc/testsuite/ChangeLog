@@ -1,3 +1,152 @@
+2023-12-04  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-noreturn1.C: New test.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/copysign-zvfh-run.c:
+	Replace riscv_zvfh_hw with riscv_zvfh.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-zvfh-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-10.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-6.c: Allow
+	overriding N.
+	* gcc.target/riscv/rvv/autovec/unop/abs-zvfh-run.c: Replace
+	riscv zvfh_hw with riscv_zvfh.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-8.c: Ditto.
+	* lib/target-supports.exp: Remove riscv_vector_hw and
+	riscv_zvfh_hw.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr112552.c: Add
+	-Wno-incompatible-pointer-types.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-10.c:
+	Add -std=gnu99.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-strategy-1.c: Change to
+	-mstringop-strategy.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/cpymem-strategy-5.c: Ditto.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-34.c: New test.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-37.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-38.c: New test.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112818
+	* gcc.dg/vect/pr112818.c: New testcase.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/autovec/bug-01.C: Moved to...
+	* g++.target/riscv/rvv/autovec/bug-1.C: ...here.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112827
+	* gcc.dg/torture/pr112827-1.c: New testcase.
+	* gcc.dg/torture/pr112827-2.c: Likewise.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-35.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-36.c: New test.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112656
+	* gcc.dg/debug/btf/btf-function-7.c: New test.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112768
+	* gcc.dg/debug/btf/btf-function-6.c: Empty string expected with
+	BTF_KIND_FUNC_PROTO.
+
+2023-12-04  Pan Li  <pan2.li@intel.com>
+
+	PR target/112813
+	* gcc.target/riscv/rvv/vsetvl/pr112813-1.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112837
+	* gcc.dg/pr112837.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* gcc.target/i386/sse2-pr112816.c: New test.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* g++.dg/ext/unroll-5.C: New test.
+	* g++.dg/ext/unroll-6.C: New test.
+
+2023-12-04  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/zvkn-1.c: Replace zvbb with zvkb.
+	* gcc.target/riscv/zvkn.c:   Ditto.
+	* gcc.target/riscv/zvknc-1.c:Ditto.
+	* gcc.target/riscv/zvknc-2.c:Ditto.
+	* gcc.target/riscv/zvknc.c:  Ditto.
+	* gcc.target/riscv/zvkng-1.c:Ditto.
+	* gcc.target/riscv/zvkng-2.c:Ditto.
+	* gcc.target/riscv/zvkng.c:  Ditto.
+	* gcc.target/riscv/zvks-1.c: Ditto.
+	* gcc.target/riscv/zvks.c:   Ditto.
+	* gcc.target/riscv/zvksc-1.c:Ditto.
+	* gcc.target/riscv/zvksc-2.c:Ditto.
+	* gcc.target/riscv/zvksc.c:  Ditto.
+	* gcc.target/riscv/zvksg-1.c:Ditto.
+	* gcc.target/riscv/zvksg-2.c:Ditto.
+	* gcc.target/riscv/zvksg.c:  Ditto.
+
+2023-12-04  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-sfb-primitiveSemantics.c: New test.
+
+2023-12-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/mcpu-sifive-x280.c: New test.
+
+2023-12-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/user_msr-1.c: Correct the MSR index for give the user
+	an proper example.
+
 2023-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/112406

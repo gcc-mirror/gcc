@@ -1,3 +1,37 @@
+2023-12-04  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Fix
+	check for loading volatile lvalue.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112795
+	* cp-tree.h (cp_convert_range_for): Change UNROLL type from
+	unsigned short to tree.
+	(finish_while_stmt_cond, finish_do_stmt, finish_for_cond): Likewise.
+	* parser.cc (cp_parser_statement): Pass NULL_TREE rather than 0 to
+	cp_parser_iteration_statement UNROLL argument.
+	(cp_parser_for, cp_parser_c_for): Change UNROLL type from
+	unsigned short to tree.
+	(cp_parser_range_for): Likewise.  Set RANGE_FOR_UNROLL to just UNROLL
+	rather than build_int_cst from it.
+	(cp_convert_range_for, cp_parser_iteration_statement): Change UNROLL
+	type from unsigned short to tree.
+	(cp_parser_omp_loop_nest): Pass NULL_TREE rather than 0 to
+	cp_parser_range_for UNROLL argument.
+	(cp_parser_pragma_unroll): Return tree rather than unsigned short.
+	If parsed expression is type dependent, just return it, don't diagnose
+	issues with value if it is value dependent.
+	(cp_parser_pragma): Change UNROLL type from unsigned short to tree.
+	* semantics.cc (finish_while_stmt_cond): Change UNROLL type from
+	unsigned short to tree.  Build ANNOTATE_EXPR with UNROLL as its last
+	operand rather than build_int_cst from it.
+	(finish_do_stmt, finish_for_cond): Likewise.
+	* pt.cc (tsubst_stmt) <case RANGE_FOR_STMT>: Change UNROLL type from
+	unsigned short to tree and set it to RECUR on RANGE_FOR_UNROLL (t).
+	(tsubst_expr) <case ANNOTATE_EXPR>: For annot_expr_unroll_kind repeat
+	checks on UNROLL value from cp_parser_pragma_unroll.
+
 2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* cp-tree.h (cxx_attribute_table): Delete.

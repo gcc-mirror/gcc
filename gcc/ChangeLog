@@ -1,3 +1,153 @@
+2023-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* match.pd (zero_one_valued_p): For convert
+	make sure type is not a signed 1-bit integer.
+
+2023-12-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/microblaze/microblaze.md (movhi): Use %i for half-word
+	loads to properly select between lhu/lhui.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc (expand_rawmemchr): Increment
+	source address by vl * element_size.
+
+2023-12-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-opts.h (enum riscv_stringop_strategy_enum):
+	Rename...
+	(enum stringop_strategy_enum): ... to this.
+	* config/riscv/riscv-string.cc (riscv_expand_block_move): New
+	wrapper expander handling the strategies and delegation.
+	(riscv_expand_block_move_scalar): Rename function and make
+	static.
+	(expand_block_move): Remove strategy handling.
+	* config/riscv/riscv.md: Call expander wrapper.
+	* config/riscv/riscv.opt: Rename.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112785
+	* function.h (get_new_clique): New inline function handling
+	last_clique overflow.
+	* cfgrtl.cc (duplicate_insn_chain): Use it.
+	* tree-cfg.cc (gimple_duplicate_bb): Likewise.
+	* tree-inline.cc (remap_dependence_clique): Likewise.
+
+2023-12-04  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/112650
+	* doc/invoke.texi: Document riscv-strcmp-inline-limit.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Fix incorrect overlap in v0.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add highest-number overlap support.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112818
+	* tree-vect-stmts.cc (vectorizable_bswap): Check input and
+	output vector types have the same size.
+
+2023-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112827
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Do not release SSA name but keep a dead initialization around.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Remove earlyclobber from widen reduction.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112656
+	* btfout.cc (btf_asm_type): Fixup ctti_name for all
+	BTF types of kind BTF_KIND_FUNC_PROTO.
+
+2023-12-04  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112768
+	* btfout.cc (get_btf_type_name): New definition.
+	(btf_collect_datasec): Update dtd_name to the original type name
+	string.
+	(btf_asm_type_ref): Use the new get_btf_type_name function
+	instead.
+	(btf_asm_type): Likewise.
+	(btf_asm_func_type): Likewise.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112837
+	* config/i386/i386.cc (ix86_elim_entry_set_got): Before checking
+	for UNSPEC_SET_GOT check that SET_SRC is UNSPEC.  Use SET_SRC and
+	SET_DEST macros instead of XEXP, rename vec variable to set.
+
+2023-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* config/i386/sse.md (signbit<mode>2): Force operands[1] into a REG.
+
+2023-12-04  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc: Add zvkb ISA info.
+	* config/riscv/riscv.opt: Add Mask(ZVKB)
+
+2023-12-04  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.md (*mov<GPR:mode><X:mode>cc):move to sfb.md
+	* config/riscv/sfb.md: New file.
+
+2023-12-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-cores.def: Add sifive-x280.
+	* doc/invoke.texi (RISC-V Options): Add sifive-x280
+
+2023-12-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_predicator_t): New.
+	(riscv_implied_info_t::riscv_implied_info_t): New.
+	(riscv_implied_info_t::match): New.
+	(riscv_implied_info): New entry for zcf.
+	(riscv_subset_list::handle_implied_ext): Use
+	riscv_implied_info_t::match.
+	(riscv_subset_list::check_implied_ext): Ditto.
+	(riscv_subset_list::handle_combine_ext): Ditto.
+	(riscv_subset_list::parse): Move zcf implication handling to
+	riscv_implied_infos.
+
+2023-12-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): New.
+	(riscv_subset_list::parse): Move checking conflict ext. to
+	check_conflict_ext.
+	* config/riscv/riscv-subset.h:
+	Add riscv_subset_list::check_conflict_ext.
+
+2023-12-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Move USER_MSR
+	to the correct location.
+
+2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Rostify the constraints.
+
+2023-12-04  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* doc/extend.texi: Add information about the intrinsic function of the vector
+	instruction.
+
 2023-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/112807

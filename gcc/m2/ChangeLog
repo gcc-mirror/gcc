@@ -1,3 +1,8 @@
+2023-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112825
+	* tools-src/makeSystem: Change all occurrences of -c to -S.
+
 2023-11-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/102989
