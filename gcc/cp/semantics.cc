@@ -13016,4 +13016,33 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
   return ret;
 }
 
+/* Diagnose invalid #pragma GCC unroll argument and adjust
+   it if needed.  */
+
+tree
+cp_check_pragma_unroll (location_t loc, tree unroll)
+{
+  HOST_WIDE_INT lunroll = 0;
+  if (type_dependent_expression_p (unroll))
+    ;
+  else if (!INTEGRAL_TYPE_P (TREE_TYPE (unroll))
+	   || (!value_dependent_expression_p (unroll)
+	       && (!tree_fits_shwi_p (unroll)
+		   || (lunroll = tree_to_shwi (unroll)) < 0
+		   || lunroll >= USHRT_MAX)))
+    {
+      error_at (loc, "%<#pragma GCC unroll%> requires an"
+		" assignment-expression that evaluates to a non-negative"
+		" integral constant less than %u", USHRT_MAX);
+      unroll = integer_one_node;
+    }
+  else if (TREE_CODE (unroll) == INTEGER_CST)
+    {
+      unroll = fold_convert (integer_type_node, unroll);
+      if (integer_zerop (unroll))
+	unroll = integer_one_node;
+    }
+  return unroll;
+}
+
 #include "gt-cp-semantics.h"

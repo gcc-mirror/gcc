@@ -50261,27 +50261,7 @@ cp_parser_pragma_unroll (cp_parser *parser, cp_token *pragma_tok)
 {
   location_t location = cp_lexer_peek_token (parser->lexer)->location;
   tree unroll = cp_parser_constant_expression (parser);
-  unroll = fold_non_dependent_expr (unroll);
-  HOST_WIDE_INT lunroll = 0;
-  if (type_dependent_expression_p (unroll))
-    ;
-  else if (!INTEGRAL_TYPE_P (TREE_TYPE (unroll))
-	   || (!value_dependent_expression_p (unroll)
-	       && (!tree_fits_shwi_p (unroll)
-		   || (lunroll = tree_to_shwi (unroll)) < 0
-		   || lunroll >= USHRT_MAX)))
-    {
-      error_at (location, "%<#pragma GCC unroll%> requires an"
-		" assignment-expression that evaluates to a non-negative"
-		" integral constant less than %u", USHRT_MAX);
-      unroll = NULL_TREE;
-    }
-  else if (TREE_CODE (unroll) == INTEGER_CST)
-    {
-      unroll = fold_convert (integer_type_node, unroll);
-      if (integer_zerop (unroll))
-	unroll = integer_one_node;
-    }
+  unroll = cp_check_pragma_unroll (location, fold_non_dependent_expr (unroll));
   cp_parser_skip_to_pragma_eol (parser, pragma_tok);
   return unroll;
 }

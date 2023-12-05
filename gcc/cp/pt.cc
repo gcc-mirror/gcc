@@ -18407,22 +18407,24 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					complain, in_decl, decomp);
 	  }
 
+	tree unroll = RECUR (RANGE_FOR_UNROLL (t));
+	if (unroll)
+	  unroll
+	    = cp_check_pragma_unroll (EXPR_LOCATION (RANGE_FOR_UNROLL (t)),
+				      unroll);
 	if (processing_template_decl)
 	  {
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
-	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
+	    RANGE_FOR_UNROLL (stmt) = unroll;
 	    RANGE_FOR_NOVECTOR (stmt) = RANGE_FOR_NOVECTOR (t);
 	    finish_range_for_decl (stmt, decl, expr);
 	    if (decomp && decl != error_mark_node)
 	      cp_finish_decomp (decl, decomp);
 	  }
 	else
-	  {
-	    tree unroll = RECUR (RANGE_FOR_UNROLL (t));
-	    stmt = cp_convert_range_for (stmt, decl, expr, decomp,
-					 RANGE_FOR_IVDEP (t), unroll,
-					 RANGE_FOR_NOVECTOR (t));
-	  }
+	  stmt = cp_convert_range_for (stmt, decl, expr, decomp,
+				       RANGE_FOR_IVDEP (t), unroll,
+				       RANGE_FOR_NOVECTOR (t));
 
 	bool prev = note_iteration_stmt_body_start ();
         RECUR (RANGE_FOR_BODY (t));
@@ -21506,30 +21508,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree op3 = RECUR (TREE_OPERAND (t, 2));
 	if (TREE_CODE (op2) == INTEGER_CST
 	    && wi::to_widest (op2) == (int) annot_expr_unroll_kind)
-	  {
-	    HOST_WIDE_INT lunroll;
-	    if (type_dependent_expression_p (op3))
-	      ;
-	    else if (!INTEGRAL_TYPE_P (TREE_TYPE (op3))
-		     || (!value_dependent_expression_p (op3)
-			 && (!tree_fits_shwi_p (op3)
-			     || (lunroll = tree_to_shwi (op3)) < 0
-			     || lunroll >= USHRT_MAX)))
-	      {
-		error_at (EXPR_LOCATION (TREE_OPERAND (t, 2)),
-			  "%<#pragma GCC unroll%> requires an "
-			  "assignment-expression that evaluates to a "
-			  "non-negative integral constant less than %u",
-			  USHRT_MAX);
-		op3 = integer_one_node;
-	      }
-	    else if (TREE_CODE (op3) == INTEGER_CST)
-	      {
-		op3 = fold_convert (integer_type_node, op3);
-		if (integer_zerop (op3))
-		  op3 = integer_one_node;
-	      }
-	  }
+	  op3 = cp_check_pragma_unroll (EXPR_LOCATION (TREE_OPERAND (t, 2)),
+					op3);
 	RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
 			    TREE_TYPE (op1), op1, op2, op3));
       }
