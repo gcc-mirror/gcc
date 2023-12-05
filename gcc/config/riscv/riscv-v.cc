@@ -4051,7 +4051,21 @@ vls_mode_valid_p (machine_mode vls_mode)
     return false;
 
   if (riscv_autovec_preference == RVV_SCALABLE)
-    return true;
+    {
+      if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL
+	  && !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
+			 GET_MODE_PRECISION (vls_mode)))
+	/* We enable VLS modes which are aligned with TARGET_MAX_LMUL and
+	   BITS_PER_RISCV_VECTOR.
+
+	   e.g. When TARGET_MAX_LMUL = 1 and BITS_PER_RISCV_VECTOR = (128,128).
+	   We enable VLS modes have fixed size <= 128bit.  Since ordered_p is
+	   false between VLA modes with size = (128, 128) bits and VLS mode
+	   with size = 128 bits, we will end up with multiple ICEs in
+	   middle-end generic codes.  */
+	return false;
+      return true;
+    }
 
   if (riscv_autovec_preference == RVV_FIXED_VLMAX)
     {
