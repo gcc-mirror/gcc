@@ -533,6 +533,9 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_stack_regs_run);
 	  POP_INSERT_PASSES ()
       POP_INSERT_PASSES ()
+      NEXT_PASS (pass_late_thread_prologue_and_epilogue);
+      /* No target-independent code motion is allowed beyond this point,
+         excepting the legacy delayed-branch pass.  */
       NEXT_PASS (pass_late_compilation);
       PUSH_INSERT_PASSES_WITHIN (pass_late_compilation)
 	  NEXT_PASS (pass_zero_call_used_regs);

@@ -7784,6 +7784,8 @@ of the if-block in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
 
+@hook TARGET_USE_LATE_PROLOGUE_EPILOGUE
+
 @hook TARGET_MACHINE_DEPENDENT_REORG
 
 @hook TARGET_INIT_BUILTINS

@@ -11879,6 +11879,25 @@ of the if-block in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_USE_LATE_PROLOGUE_EPILOGUE ()
+Return true if the current function's prologue and epilogue should
+be emitted late in the pass pipeline, instead of at the usual point.
+
+Normally, the prologue and epilogue sequences are introduced soon after
+register allocation is complete.  The advantage of this approach is that
+it allows the prologue and epilogue instructions to be optimized and
+scheduled with other code in the function.  However, some targets
+require the prologue and epilogue to be the first and last sequences
+executed by the function, with no variation allowed.  This hook should
+return true on such targets.
+
+The default implementation returns false, which is correct for most
+targets.  The hook should only return true if there is a specific
+target limitation that cannot be described in RTL.  For example,
+the hook might return true if the prologue and epilogue need to switch
+between instruction sets.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_MACHINE_DEPENDENT_REORG (void)
 If non-null, this hook performs a target-specific pass over the
 instruction stream.  The compiler will run it at all optimization levels,

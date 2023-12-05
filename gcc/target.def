@@ -4153,6 +4153,27 @@ returns @code{VOIDmode}.",
  machine_mode, (machine_mode m1, machine_mode m2),
  default_cc_modes_compatible)
 
+DEFHOOK
+(use_late_prologue_epilogue,
+ "Return true if the current function's prologue and epilogue should\n\
+be emitted late in the pass pipeline, instead of at the usual point.\n\
+\n\
+Normally, the prologue and epilogue sequences are introduced soon after\n\
+register allocation is complete.  The advantage of this approach is that\n\
+it allows the prologue and epilogue instructions to be optimized and\n\
+scheduled with other code in the function.  However, some targets\n\
+require the prologue and epilogue to be the first and last sequences\n\
+executed by the function, with no variation allowed.  This hook should\n\
+return true on such targets.\n\
+\n\
+The default implementation returns false, which is correct for most\n\
+targets.  The hook should only return true if there is a specific\n\
+target limitation that cannot be described in RTL.  For example,\n\
+the hook might return true if the prologue and epilogue need to switch\n\
+between instruction sets.",
+ bool, (),
+ hook_bool_void_false)
+
 /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
 DEFHOOK
