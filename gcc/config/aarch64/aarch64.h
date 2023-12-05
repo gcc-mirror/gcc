@@ -663,6 +663,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    && (REGNO) != R17_REGNUM \
    && (REGNO) != R30_REGNUM) \
 
+#define W12_W15_REGNUM_P(REGNO) \
+  IN_RANGE (REGNO, R12_REGNUM, R15_REGNUM)
+
 #define FP_REGNUM_P(REGNO)			\
   (((unsigned) (REGNO - V0_REGNUM)) <= (V31_REGNUM - V0_REGNUM))
 
@@ -689,6 +692,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 enum reg_class
 {
   NO_REGS,
+  W12_W15_REGS,
   TAILCALL_ADDR_REGS,
   STUB_REGS,
   GENERAL_REGS,
@@ -713,6 +717,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
+  "W12_W15_REGS",				\
   "TAILCALL_ADDR_REGS",				\
   "STUB_REGS",					\
   "GENERAL_REGS",				\
@@ -734,6 +739,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
+  { 0x0000f000, 0x00000000, 0x00000000 },	/* W12_W15_REGS */	\
   { 0x00030000, 0x00000000, 0x00000000 },	/* TAILCALL_ADDR_REGS */\
   { 0x3ffcffff, 0x00000000, 0x00000000 },	/* STUB_REGS */		\
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\

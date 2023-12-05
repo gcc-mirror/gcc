@@ -11959,6 +11959,9 @@ aarch64_label_mentioned_p (rtx x)
 enum reg_class
 aarch64_regno_regclass (unsigned regno)
 {
+  if (W12_W15_REGNUM_P (regno))
+    return W12_W15_REGS;
+
   if (STUB_REGNUM_P (regno))
     return STUB_REGS;
 
@@ -12323,6 +12326,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
   unsigned int nregs, vec_flags;
   switch (regclass)
     {
+    case W12_W15_REGS:
     case STUB_REGS:
     case TAILCALL_ADDR_REGS:
     case POINTER_REGS:
@@ -14693,13 +14697,11 @@ aarch64_register_move_cost (machine_mode mode,
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params.regmove_cost;
 
-  /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
-  if (to == TAILCALL_ADDR_REGS || to == POINTER_REGS
-      || to == STUB_REGS)
+  /* Trest any subset of POINTER_REGS as though it were GENERAL_REGS.  */
+  if (reg_class_subset_p (to, POINTER_REGS))
     to = GENERAL_REGS;
 
-  if (from == TAILCALL_ADDR_REGS || from == POINTER_REGS
-      || from == STUB_REGS)
+  if (reg_class_subset_p (from, POINTER_REGS))
     from = GENERAL_REGS;
 
   /* Make RDFFR very expensive.  In particular, if we know that the FFR
