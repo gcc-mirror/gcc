@@ -85,6 +85,7 @@
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
 #include "ssa.h"
+#include "except.h"
 #include "tree-pass.h"
 #include "cfgbuild.h"
 
@@ -4758,6 +4759,8 @@ public:
   void add_reg (machine_mode, unsigned int);
   void add_call_args (rtx_call_insn *);
   void add_call_result (rtx_call_insn *);
+  void add_call_preserved_reg (unsigned int);
+  void add_call_preserved_regs (bitmap);
 
   void emit_prologue ();
   void emit_epilogue ();
@@ -4888,6 +4891,46 @@ aarch64_sme_mode_switch_regs::add_call_result (rtx_call_insn *call_insn)
       }
   else
     add_reg (GET_MODE (dest), REGNO (dest));
+}
+
+/* REGNO is a register that is call-preserved under the current function's ABI.
+   Record that it must be preserved around the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::add_call_preserved_reg (unsigned int regno)
+{
+  if (FP_REGNUM_P (regno))
+    switch (crtl->abi->id ())
+      {
+      case ARM_PCS_SVE:
+	add_reg (VNx16QImode, regno);
+	break;
+      case ARM_PCS_SIMD:
+	add_reg (V16QImode, regno);
+	break;
+      case ARM_PCS_AAPCS64:
+	add_reg (DImode, regno);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  else if (PR_REGNUM_P (regno))
+    add_reg (VNx16BImode, regno);
+}
+
+/* The hard registers in REGS are call-preserved under the current function's
+   ABI.  Record that they must be preserved around the mode switch.  */
+
+void
+aarch64_sme_mode_switch_regs::add_call_preserved_regs (bitmap regs)
+{
+  bitmap_iterator bi;
+  unsigned int regno;
+  EXECUTE_IF_SET_IN_BITMAP (regs, 0, regno, bi)
+    if (HARD_REGISTER_NUM_P (regno))
+      add_call_preserved_reg (regno);
+    else
+      break;
 }
 
 /* Emit code to save registers before the mode switch.  */
@@ -7421,6 +7464,23 @@ aarch64_need_old_pstate_sm ()
     return false;
 
   if (aarch64_cfun_enables_pstate_sm ())
+    return true;
+
+  /* Non-local goto receivers are entered with PSTATE.SM equal to 0,
+     but the function needs to return with PSTATE.SM unchanged.  */
+  if (nonlocal_goto_handler_labels)
+    return true;
+
+  /* Likewise for exception handlers.  */
+  eh_landing_pad lp;
+  for (unsigned int i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
+    if (lp && lp->post_landing_pad)
+      return true;
+
+  /* Non-local gotos need to set PSTATE.SM to zero.  It's possible to call
+     streaming-compatible functions without SME being available, so PSTATE.SM
+     should only be changed if it is currently set to one.  */
+  if (crtl->has_nonlocal_goto)
     return true;
 
   if (cfun->machine->call_switches_pstate_sm)
@@ -28323,6 +28383,59 @@ aarch64_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
   return seq;
 }
 
+/* BB is the target of an exception or nonlocal goto edge, which means
+   that PSTATE.SM is known to be 0 on entry.  Put it into the state that
+   the current function requires.  */
+
+static bool
+aarch64_switch_pstate_sm_for_landing_pad (basic_block bb)
+{
+  if (TARGET_NON_STREAMING)
+    return false;
+
+  start_sequence ();
+  rtx_insn *guard_label = nullptr;
+  if (TARGET_STREAMING_COMPATIBLE)
+    guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
+						  AARCH64_FL_SM_OFF);
+  aarch64_sme_mode_switch_regs args_switch;
+  args_switch.add_call_preserved_regs (df_get_live_in (bb));
+  args_switch.emit_prologue ();
+  aarch64_switch_pstate_sm (AARCH64_FL_SM_OFF, AARCH64_FL_SM_ON);
+  args_switch.emit_epilogue ();
+  if (guard_label)
+    emit_label (guard_label);
+  auto seq = get_insns ();
+  end_sequence ();
+
+  emit_insn_after (seq, bb_note (bb));
+  return true;
+}
+
+/* JUMP is a nonlocal goto.  Its target requires PSTATE.SM to be 0 on entry,
+   so arrange to make it so.  */
+
+static bool
+aarch64_switch_pstate_sm_for_jump (rtx_insn *jump)
+{
+  if (TARGET_NON_STREAMING)
+    return false;
+
+  start_sequence ();
+  rtx_insn *guard_label = nullptr;
+  if (TARGET_STREAMING_COMPATIBLE)
+    guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
+						  AARCH64_FL_SM_OFF);
+  aarch64_switch_pstate_sm (AARCH64_FL_SM_ON, AARCH64_FL_SM_OFF);
+  if (guard_label)
+    emit_label (guard_label);
+  auto seq = get_insns ();
+  end_sequence ();
+
+  emit_insn_before (seq, jump);
+  return true;
+}
+
 /* If CALL involves a change in PSTATE.SM, emit the instructions needed
    to switch to the new mode and the instructions needed to restore the
    original mode.  Return true if something changed.  */
@@ -28406,9 +28519,10 @@ public:
 };
 
 bool
-pass_switch_pstate_sm::gate (function *)
+pass_switch_pstate_sm::gate (function *fn)
 {
-  return cfun->machine->call_switches_pstate_sm;
+  return (aarch64_fndecl_pstate_sm (fn->decl) != AARCH64_FL_SM_OFF
+	  || cfun->machine->call_switches_pstate_sm);
 }
 
 /* Emit any instructions needed to switch PSTATE.SM.  */
@@ -28421,11 +28535,24 @@ pass_switch_pstate_sm::execute (function *fn)
   bitmap_clear (blocks);
   FOR_EACH_BB_FN (bb, fn)
     {
-      rtx_insn *insn;
-      FOR_BB_INSNS (bb, insn)
-	if (auto *call = dyn_cast<rtx_call_insn *> (insn))
-	  if (aarch64_switch_pstate_sm_for_call (call))
-	    bitmap_set_bit (blocks, bb->index);
+      if (has_abnormal_call_or_eh_pred_edge_p (bb)
+	  && aarch64_switch_pstate_sm_for_landing_pad (bb))
+	bitmap_set_bit (blocks, bb->index);
+
+      if (cfun->machine->call_switches_pstate_sm)
+	{
+	  rtx_insn *insn;
+	  FOR_BB_INSNS (bb, insn)
+	    if (auto *call = dyn_cast<rtx_call_insn *> (insn))
+	      if (aarch64_switch_pstate_sm_for_call (call))
+		bitmap_set_bit (blocks, bb->index);
+	}
+
+      auto end = BB_END (bb);
+      if (JUMP_P (end)
+	  && find_reg_note (end, REG_NON_LOCAL_GOTO, NULL_RTX)
+	  && aarch64_switch_pstate_sm_for_jump (end))
+	bitmap_set_bit (blocks, bb->index);
     }
   find_many_sub_basic_blocks (blocks);
   clear_aux_for_blocks ();
