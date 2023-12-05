@@ -762,6 +762,7 @@ static const attribute_spec aarch64_arm_attributes[] =
 			  NULL, attr_streaming_exclusions },
   { "streaming_compatible", 0, 0, false, true,  true,  true,
 			  NULL, attr_streaming_exclusions },
+  { "locally_streaming",  0, 0, true, false, false, false, NULL, NULL },
   { "new",		  1, -1, true, false, false, false,
 			  handle_arm_new, NULL },
   { "preserves",	  1, -1, false, true,  true,  true,
@@ -2071,6 +2072,16 @@ aarch64_fntype_isa_mode (const_tree fntype)
 	  | aarch64_fntype_pstate_za (fntype));
 }
 
+/* Return true if FNDECL uses streaming mode internally, as an
+   implementation choice.  */
+
+static bool
+aarch64_fndecl_is_locally_streaming (const_tree fndecl)
+{
+  return lookup_attribute ("arm", "locally_streaming",
+			   DECL_ATTRIBUTES (fndecl));
+}
+
 /* Return the state of PSTATE.SM when compiling the body of
    function FNDECL.  This might be different from the state of
    PSTATE.SM on entry.  */
@@ -2078,6 +2089,9 @@ aarch64_fntype_isa_mode (const_tree fntype)
 static aarch64_feature_flags
 aarch64_fndecl_pstate_sm (const_tree fndecl)
 {
+  if (aarch64_fndecl_is_locally_streaming (fndecl))
+    return AARCH64_FL_SM_ON;
+
   return aarch64_fntype_pstate_sm (TREE_TYPE (fndecl));
 }
 
@@ -2151,6 +2165,16 @@ static bool
 aarch64_cfun_has_new_state (const char *state_name)
 {
   return aarch64_fndecl_has_new_state (cfun->decl, state_name);
+}
+
+/* Return true if PSTATE.SM is 1 in the body of the current function,
+   but is not guaranteed to be 1 on entry.  */
+
+static bool
+aarch64_cfun_enables_pstate_sm ()
+{
+  return (aarch64_fndecl_is_locally_streaming (cfun->decl)
+	  && aarch64_cfun_incoming_pstate_sm () != AARCH64_FL_SM_ON);
 }
 
 /* Return true if the current function has state STATE_NAME, either by
@@ -4394,6 +4418,10 @@ aarch64_add_offset_temporaries (rtx x)
    TEMP2, if nonnull, is a second temporary register that doesn't
    overlap either DEST or REG.
 
+   FORCE_ISA_MODE is AARCH64_FL_SM_ON if any variable component of OFFSET
+   is measured relative to the SME vector length instead of the current
+   prevailing vector length.  It is 0 otherwise.
+
    Since this function may be used to adjust the stack pointer, we must
    ensure that it cannot cause transient stack deallocation (for example
    by first incrementing SP and then decrementing when adjusting by a
@@ -4402,6 +4430,7 @@ aarch64_add_offset_temporaries (rtx x)
 static void
 aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 		    poly_int64 offset, rtx temp1, rtx temp2,
+		    aarch64_feature_flags force_isa_mode,
 		    bool frame_related_p, bool emit_move_imm = true)
 {
   gcc_assert (emit_move_imm || temp1 != NULL_RTX);
@@ -4414,9 +4443,18 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
   /* Try using ADDVL or ADDPL to add the whole value.  */
   if (src != const0_rtx && aarch64_sve_addvl_addpl_immediate_p (offset))
     {
-      rtx offset_rtx = gen_int_mode (offset, mode);
+      gcc_assert (offset.coeffs[0] == offset.coeffs[1]);
+      rtx offset_rtx;
+      if (force_isa_mode == 0)
+	offset_rtx = gen_int_mode (offset, mode);
+      else
+	offset_rtx = aarch64_sme_vq_immediate (mode, offset.coeffs[0], 0);
       rtx_insn *insn = emit_insn (gen_add3_insn (dest, src, offset_rtx));
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      if (frame_related_p && (force_isa_mode & AARCH64_FL_SM_ON))
+	add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		      gen_rtx_SET (dest, plus_constant (Pmode, src,
+							offset)));
       return;
     }
 
@@ -4432,11 +4470,19 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
   if (src != const0_rtx
       && aarch64_sve_addvl_addpl_immediate_p (poly_offset))
     {
-      rtx offset_rtx = gen_int_mode (poly_offset, mode);
+      rtx offset_rtx;
+      if (force_isa_mode == 0)
+	offset_rtx = gen_int_mode (poly_offset, mode);
+      else
+	offset_rtx = aarch64_sme_vq_immediate (mode, factor, 0);
       if (frame_related_p)
 	{
 	  rtx_insn *insn = emit_insn (gen_add3_insn (dest, src, offset_rtx));
 	  RTX_FRAME_RELATED_P (insn) = true;
+	  if (force_isa_mode & AARCH64_FL_SM_ON)
+	    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+			  gen_rtx_SET (dest, plus_constant (Pmode, src,
+							    poly_offset)));
 	  src = dest;
 	}
       else
@@ -4467,9 +4513,19 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
       rtx val;
       if (IN_RANGE (rel_factor, -32, 31))
 	{
+	  if (force_isa_mode & AARCH64_FL_SM_ON)
+	    {
+	      /* Try to use an unshifted RDSVL, otherwise fall back on
+		 a shifted RDSVL #1.  */
+	      if (aarch64_sve_rdvl_addvl_factor_p (factor))
+		shift = 0;
+	      else
+		factor = rel_factor * 16;
+	      val = aarch64_sme_vq_immediate (mode, factor, 0);
+	    }
 	  /* Try to use an unshifted CNT[BHWD] or RDVL.  */
-	  if (aarch64_sve_cnt_factor_p (factor)
-	      || aarch64_sve_rdvl_addvl_factor_p (factor))
+	  else if (aarch64_sve_cnt_factor_p (factor)
+		   || aarch64_sve_rdvl_addvl_factor_p (factor))
 	    {
 	      val = gen_int_mode (poly_int64 (factor, factor), mode);
 	      shift = 0;
@@ -4499,9 +4555,16 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 	     a shift and add sequence for the multiplication.
 	     If CNTB << SHIFT is out of range, stick with the current
 	     shift factor.  */
-	  if (IN_RANGE (low_bit, 2, 16 * 16))
+	  if (force_isa_mode == 0
+	      && IN_RANGE (low_bit, 2, 16 * 16))
 	    {
 	      val = gen_int_mode (poly_int64 (low_bit, low_bit), mode);
+	      shift = 0;
+	    }
+	  else if ((force_isa_mode & AARCH64_FL_SM_ON)
+		   && aarch64_sve_rdvl_addvl_factor_p (low_bit))
+	    {
+	      val = aarch64_sme_vq_immediate (mode, low_bit, 0);
 	      shift = 0;
 	    }
 	  else
@@ -4591,30 +4654,34 @@ aarch64_split_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 			  rtx offset_rtx, rtx temp1, rtx temp2)
 {
   aarch64_add_offset (mode, dest, src, rtx_to_poly_int64 (offset_rtx),
-		      temp1, temp2, false);
+		      temp1, temp2, 0, false);
 }
 
 /* Add DELTA to the stack pointer, marking the instructions frame-related.
-   TEMP1 is available as a temporary if nonnull.  EMIT_MOVE_IMM is false
-   if TEMP1 already contains abs (DELTA).  */
+   TEMP1 is available as a temporary if nonnull.  FORCE_ISA_MODE is as
+   for aarch64_add_offset.  EMIT_MOVE_IMM is false if TEMP1 already
+   contains abs (DELTA).  */
 
 static inline void
-aarch64_add_sp (rtx temp1, rtx temp2, poly_int64 delta, bool emit_move_imm)
+aarch64_add_sp (rtx temp1, rtx temp2, poly_int64 delta,
+		aarch64_feature_flags force_isa_mode, bool emit_move_imm)
 {
   aarch64_add_offset (Pmode, stack_pointer_rtx, stack_pointer_rtx, delta,
-		      temp1, temp2, true, emit_move_imm);
+		      temp1, temp2, force_isa_mode, true, emit_move_imm);
 }
 
 /* Subtract DELTA from the stack pointer, marking the instructions
-   frame-related if FRAME_RELATED_P.  TEMP1 is available as a temporary
-   if nonnull.  */
+   frame-related if FRAME_RELATED_P.  FORCE_ISA_MODE is as for
+   aarch64_add_offset.  TEMP1 is available as a temporary if nonnull.  */
 
 static inline void
-aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta, bool frame_related_p,
-		bool emit_move_imm = true)
+aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta,
+		aarch64_feature_flags force_isa_mode,
+		bool frame_related_p, bool emit_move_imm = true)
 {
   aarch64_add_offset (Pmode, stack_pointer_rtx, stack_pointer_rtx, -delta,
-		      temp1, temp2, frame_related_p, emit_move_imm);
+		      temp1, temp2, force_isa_mode, frame_related_p,
+		      emit_move_imm);
 }
 
 /* A streaming-compatible function needs to switch temporarily to the known
@@ -5640,11 +5707,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 		{
 		  base = aarch64_force_temporary (int_mode, dest, base);
 		  aarch64_add_offset (int_mode, dest, base, offset,
-				      NULL_RTX, NULL_RTX, false);
+				      NULL_RTX, NULL_RTX, 0, false);
 		}
 	      else
 		aarch64_add_offset (int_mode, dest, base, offset,
-				    dest, NULL_RTX, false);
+				    dest, NULL_RTX, 0, false);
 	    }
 	  return;
 	}
@@ -5671,7 +5738,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      gcc_assert (can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
 	      aarch64_add_offset (int_mode, dest, base, const_offset,
-				  NULL_RTX, NULL_RTX, false);
+				  NULL_RTX, NULL_RTX, 0, false);
 	      return;
 	    }
 
@@ -5711,7 +5778,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      gcc_assert(can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
 	      aarch64_add_offset (int_mode, dest, base, const_offset,
-				  NULL_RTX, NULL_RTX, false);
+				  NULL_RTX, NULL_RTX, 0, false);
 	      return;
 	    }
 	  /* FALLTHRU */
@@ -7353,6 +7420,9 @@ aarch64_need_old_pstate_sm ()
   if (aarch64_cfun_incoming_pstate_sm () != 0)
     return false;
 
+  if (aarch64_cfun_enables_pstate_sm ())
+    return true;
+
   if (cfun->machine->call_switches_pstate_sm)
     for (auto insn = get_insns (); insn; insn = NEXT_INSN (insn))
       if (auto *call = dyn_cast<rtx_call_insn *> (insn))
@@ -7379,6 +7449,7 @@ aarch64_layout_frame (void)
   bool frame_related_fp_reg_p = false;
   aarch64_frame &frame = cfun->machine->frame;
   poly_int64 top_of_locals = -1;
+  bool enables_pstate_sm = aarch64_cfun_enables_pstate_sm ();
 
   vec_safe_truncate (frame.saved_gprs, 0);
   vec_safe_truncate (frame.saved_fprs, 0);
@@ -7416,7 +7487,7 @@ aarch64_layout_frame (void)
       frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    if (df_regs_ever_live_p (regno)
+    if ((enables_pstate_sm || df_regs_ever_live_p (regno))
 	&& !fixed_regs[regno]
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
@@ -7445,7 +7516,7 @@ aarch64_layout_frame (void)
     }
 
   for (regno = P0_REGNUM; regno <= P15_REGNUM; regno++)
-    if (df_regs_ever_live_p (regno)
+    if ((enables_pstate_sm || df_regs_ever_live_p (regno))
 	&& !fixed_regs[regno]
 	&& !crtl->abi->clobbers_full_reg_p (regno))
       frame.reg_offset[regno] = SLOT_REQUIRED;
@@ -7562,7 +7633,8 @@ aarch64_layout_frame (void)
   /* If the current function changes the SVE vector length, ensure that the
      old value of the DWARF VG register is saved and available in the CFI,
      so that outer frames with VL-sized offsets can be processed correctly.  */
-  if (cfun->machine->call_switches_pstate_sm)
+  if (cfun->machine->call_switches_pstate_sm
+      || aarch64_cfun_enables_pstate_sm ())
     {
       frame.reg_offset[VG_REGNUM] = offset;
       offset += UNITS_PER_WORD;
@@ -8390,9 +8462,16 @@ aarch64_get_separate_components (void)
   bitmap_clear (components);
 
   /* The registers we need saved to the frame.  */
+  bool enables_pstate_sm = aarch64_cfun_enables_pstate_sm ();
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
     if (aarch64_register_saved_on_entry (regno))
       {
+	/* Disallow shrink wrapping for registers that will be clobbered
+	   by an SMSTART SM in the prologue.  */
+	if (enables_pstate_sm
+	    && (FP_REGNUM_P (regno) || PR_REGNUM_P (regno)))
+	  continue;
+
 	/* Punt on saves and restores that use ST1D and LD1D.  We could
 	   try to be smarter, but it would involve making sure that the
 	   spare predicate register itself is safe to use at the save
@@ -8711,11 +8790,16 @@ aarch64_emit_stack_tie (rtx reg)
    events, e.g. if we were to allow the stack to be dropped by more than a page
    and then have multiple probes up and we take a signal somewhere in between
    then the signal handler doesn't know the state of the stack and can make no
-   assumptions about which pages have been probed.  */
+   assumptions about which pages have been probed.
+
+   FORCE_ISA_MODE is AARCH64_FL_SM_ON if any variable component of POLY_SIZE
+   is measured relative to the SME vector length instead of the current
+   prevailing vector length.  It is 0 otherwise.  */
 
 static void
 aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 					poly_int64 poly_size,
+					aarch64_feature_flags force_isa_mode,
 					bool frame_related_p,
 					bool final_adjustment_p)
 {
@@ -8757,7 +8841,8 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
   if (known_lt (poly_size, min_probe_threshold)
       || !flag_stack_clash_protection)
     {
-      aarch64_sub_sp (temp1, temp2, poly_size, frame_related_p);
+      aarch64_sub_sp (temp1, temp2, poly_size, force_isa_mode,
+		      frame_related_p);
       return;
     }
 
@@ -8774,7 +8859,8 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 
       /* First calculate the amount of bytes we're actually spilling.  */
       aarch64_add_offset (Pmode, temp1, CONST0_RTX (Pmode),
-			  poly_size, temp1, temp2, false, true);
+			  poly_size, temp1, temp2, force_isa_mode,
+			  false, true);
 
       rtx_insn *insn = get_last_insn ();
 
@@ -8832,7 +8918,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
     {
       for (HOST_WIDE_INT i = 0; i < rounded_size; i += guard_size)
 	{
-	  aarch64_sub_sp (NULL, temp2, guard_size, true);
+	  aarch64_sub_sp (NULL, temp2, guard_size, force_isa_mode, true);
 	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
 					   guard_used_by_caller));
 	  emit_insn (gen_blockage ());
@@ -8843,7 +8929,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
     {
       /* Compute the ending address.  */
       aarch64_add_offset (Pmode, temp1, stack_pointer_rtx, -rounded_size,
-			  temp1, NULL, false, true);
+			  temp1, NULL, force_isa_mode, false, true);
       rtx_insn *insn = get_last_insn ();
 
       /* For the initial allocation, we don't have a frame pointer
@@ -8909,7 +8995,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
       if (final_adjustment_p && rounded_size != 0)
 	min_probe_threshold = 0;
 
-      aarch64_sub_sp (temp1, temp2, residual, frame_related_p);
+      aarch64_sub_sp (temp1, temp2, residual, force_isa_mode, frame_related_p);
       if (residual >= min_probe_threshold)
 	{
 	  if (dump_file)
@@ -8972,6 +9058,14 @@ aarch64_epilogue_uses (int regno)
   if (regno == ZA_REGNUM && aarch64_cfun_shared_flags ("za") != 0)
     return 1;
   return 0;
+}
+
+/* Implement TARGET_USE_LATE_PROLOGUE_EPILOGUE.  */
+
+static bool
+aarch64_use_late_prologue_epilogue ()
+{
+  return aarch64_cfun_enables_pstate_sm ();
 }
 
 /* The current function's frame has a save slot for the incoming state
@@ -9110,6 +9204,9 @@ aarch64_expand_prologue (void)
   unsigned reg2 = frame.wb_push_candidate2;
   bool emit_frame_chain = frame.emit_frame_chain;
   rtx_insn *insn;
+  aarch64_feature_flags force_isa_mode = 0;
+  if (aarch64_cfun_enables_pstate_sm ())
+    force_isa_mode = AARCH64_FL_SM_ON;
 
   if (flag_stack_clash_protection && known_eq (callee_adjust, 0))
     {
@@ -9171,7 +9268,7 @@ aarch64_expand_prologue (void)
      less the amount of the guard reserved for use by the caller's
      outgoing args.  */
   aarch64_allocate_and_probe_stack_space (tmp0_rtx, tmp1_rtx, initial_adjust,
-					  true, false);
+					  force_isa_mode, true, false);
 
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
@@ -9194,7 +9291,8 @@ aarch64_expand_prologue (void)
 	gcc_assert (known_eq (chain_offset, 0));
       aarch64_add_offset (Pmode, hard_frame_pointer_rtx,
 			  stack_pointer_rtx, chain_offset,
-			  tmp1_rtx, tmp0_rtx, frame_pointer_needed);
+			  tmp1_rtx, tmp0_rtx, force_isa_mode,
+			  frame_pointer_needed);
       if (frame_pointer_needed && !frame_size.is_constant ())
 	{
 	  /* Variable-sized frames need to describe the save slot
@@ -9241,6 +9339,7 @@ aarch64_expand_prologue (void)
 		  || known_eq (initial_adjust, 0));
       aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx,
 					      sve_callee_adjust,
+					      force_isa_mode,
 					      !frame_pointer_needed, false);
       bytes_below_sp -= sve_callee_adjust;
     }
@@ -9253,12 +9352,15 @@ aarch64_expand_prologue (void)
      that is assumed by the called.  */
   gcc_assert (known_eq (bytes_below_sp, final_adjust));
   aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx, final_adjust,
+					  force_isa_mode,
 					  !frame_pointer_needed, true);
   if (emit_frame_chain && maybe_ne (final_adjust, 0))
     aarch64_emit_stack_tie (hard_frame_pointer_rtx);
 
-  /* Save the incoming value of PSTATE.SM, if required.  */
-  if (known_ge (frame.old_svcr_offset, 0))
+  /* Save the incoming value of PSTATE.SM, if required.  Code further
+     down does this for locally-streaming functions.  */
+  if (known_ge (frame.old_svcr_offset, 0)
+      && !aarch64_cfun_enables_pstate_sm ())
     {
       rtx mem = aarch64_old_svcr_mem ();
       MEM_VOLATILE_P (mem) = 1;
@@ -9289,6 +9391,34 @@ aarch64_expand_prologue (void)
 	  if (old_r1)
 	    emit_move_insn (gen_rtx_REG (DImode, R1_REGNUM), old_r1);
 	}
+    }
+
+  /* Enable PSTATE.SM, if required.  */
+  if (aarch64_cfun_enables_pstate_sm ())
+    {
+      rtx_insn *guard_label = nullptr;
+      if (known_ge (cfun->machine->frame.old_svcr_offset, 0))
+	{
+	  /* The current function is streaming-compatible.  Save the
+	     original state of PSTATE.SM.  */
+	  rtx svcr = gen_rtx_REG (DImode, IP0_REGNUM);
+	  emit_insn (gen_aarch64_read_svcr (svcr));
+	  emit_move_insn (aarch64_old_svcr_mem (), svcr);
+	  guard_label = aarch64_guard_switch_pstate_sm (svcr,
+							aarch64_isa_flags);
+	}
+      aarch64_sme_mode_switch_regs args_switch;
+      auto &args = crtl->args.info;
+      for (unsigned int i = 0; i < args.num_sme_mode_switch_args; ++i)
+	{
+	  rtx x = args.sme_mode_switch_args[i];
+	  args_switch.add_reg (GET_MODE (x), REGNO (x));
+	}
+      args_switch.emit_prologue ();
+      emit_insn (gen_aarch64_smstart_sm ());
+      args_switch.emit_epilogue ();
+      if (guard_label)
+	emit_label (guard_label);
     }
 }
 
@@ -9336,6 +9466,9 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
   HOST_WIDE_INT guard_size
     = 1 << param_stack_clash_protection_guard_size;
   HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
+  aarch64_feature_flags force_isa_mode = 0;
+  if (aarch64_cfun_enables_pstate_sm ())
+    force_isa_mode = AARCH64_FL_SM_ON;
 
   /* We can re-use the registers when:
 
@@ -9360,6 +9493,24 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
     = maybe_ne (get_frame_size ()
 		+ frame.saved_varargs_size, 0);
 
+  /* Reset PSTATE.SM, if required.  */
+  if (aarch64_cfun_enables_pstate_sm ())
+    {
+      rtx_insn *guard_label = nullptr;
+      if (known_ge (cfun->machine->frame.old_svcr_offset, 0))
+	guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
+						      aarch64_isa_flags);
+      aarch64_sme_mode_switch_regs return_switch;
+      if (crtl->return_rtx && REG_P (crtl->return_rtx))
+	return_switch.add_reg (GET_MODE (crtl->return_rtx),
+			       REGNO (crtl->return_rtx));
+      return_switch.emit_prologue ();
+      emit_insn (gen_aarch64_smstop_sm ());
+      return_switch.emit_epilogue ();
+      if (guard_label)
+	emit_label (guard_label);
+    }
+
   /* Emit a barrier to prevent loads from a deallocated stack.  */
   if (maybe_gt (final_adjust, crtl->outgoing_args_size)
       || cfun->calls_alloca
@@ -9380,19 +9531,21 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
     aarch64_add_offset (Pmode, stack_pointer_rtx,
 			hard_frame_pointer_rtx,
 			-bytes_below_hard_fp + final_adjust,
-			tmp1_rtx, tmp0_rtx, callee_adjust == 0);
+			tmp1_rtx, tmp0_rtx, force_isa_mode,
+			callee_adjust == 0);
   else
      /* The case where we need to re-use the register here is very rare, so
 	avoid the complicated condition and just always emit a move if the
 	immediate doesn't fit.  */
-     aarch64_add_sp (tmp1_rtx, tmp0_rtx, final_adjust, true);
+     aarch64_add_sp (tmp1_rtx, tmp0_rtx, final_adjust, force_isa_mode, true);
 
   /* Restore the vector registers before the predicate registers,
      so that we can use P4 as a temporary for big-endian SVE frames.  */
   aarch64_restore_callee_saves (final_adjust, frame.saved_fprs, &cfi_ops);
   aarch64_restore_callee_saves (final_adjust, frame.saved_prs, &cfi_ops);
   if (maybe_ne (sve_callee_adjust, 0))
-    aarch64_add_sp (NULL_RTX, NULL_RTX, sve_callee_adjust, true);
+    aarch64_add_sp (NULL_RTX, NULL_RTX, sve_callee_adjust,
+		    force_isa_mode, true);
 
   /* When shadow call stack is enabled, the scs_pop in the epilogue will
      restore x30, we don't need to restore x30 again in the traditional
@@ -9422,7 +9575,7 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 
   /* Liveness of EP0_REGNUM can not be trusted across function calls either, so
      add restriction on emit_move optimization to leaf functions.  */
-  aarch64_add_sp (tmp0_rtx, tmp1_rtx, initial_adjust,
+  aarch64_add_sp (tmp0_rtx, tmp1_rtx, initial_adjust, force_isa_mode,
 		  (!can_inherit_p || !crtl->is_leaf
 		   || df_regs_ever_live_p (EP0_REGNUM)));
 
@@ -9532,7 +9685,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   temp1 = gen_rtx_REG (Pmode, EP1_REGNUM);
 
   if (vcall_offset == 0)
-    aarch64_add_offset (Pmode, this_rtx, this_rtx, delta, temp1, temp0, false);
+    aarch64_add_offset (Pmode, this_rtx, this_rtx, delta, temp1, temp0,
+			0, false);
   else
     {
       gcc_assert ((vcall_offset & (POINTER_BYTES - 1)) == 0);
@@ -9545,7 +9699,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 				       plus_constant (Pmode, this_rtx, delta));
 	  else
 	    aarch64_add_offset (Pmode, this_rtx, this_rtx, delta,
-				temp1, temp0, false);
+				temp1, temp0, 0, false);
 	}
 
       if (Pmode == ptr_mode)
@@ -28995,6 +29149,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY aarch64_extra_live_on_entry
+
+#undef TARGET_USE_LATE_PROLOGUE_EPILOGUE
+#define TARGET_USE_LATE_PROLOGUE_EPILOGUE aarch64_use_late_prologue_epilogue
 
 #undef TARGET_EMIT_EPILOGUE_FOR_SIBCALL
 #define TARGET_EMIT_EPILOGUE_FOR_SIBCALL aarch64_expand_epilogue

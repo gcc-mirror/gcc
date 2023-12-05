@@ -86,6 +86,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
 
   DEFINE_ARM_KEYWORD_MACRO ("streaming");
   DEFINE_ARM_KEYWORD_MACRO ("streaming_compatible");
+  DEFINE_ARM_KEYWORD_MACRO ("locally_streaming");
 
 #undef DEFINE_ARM_KEYWORD_MACRO
 
