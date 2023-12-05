@@ -1,3 +1,15 @@
+2023-12-04  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): In the case of a
+	Reduce attribute reference, fix bugs in initializing Accum_Typ.
+	The previous version was incorrect in the case where E1 refers to
+	the first of multiple possible overload resolution candidates and
+	that candidate does not turn out to be the right one. The previous
+	version also had code to compute Accum_Typ via a different method
+	if the initial computation turned out to yield a universal numeric
+	type. Delete that initial computation and use the second method in
+	all cases.
+
 2023-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Also create a
