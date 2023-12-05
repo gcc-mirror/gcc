@@ -9845,7 +9845,7 @@ BEGIN
       IF IsVar(Var) OR IsConst(Var)
       THEN
          ReturnVar := MakeTemporary (combinedtok, AreConstant (IsConst (Var))) ;
-         PutVar (ReturnVar, ComplexToScalar (GetSType (Var))) ;
+         PutVar (ReturnVar, ComplexToScalar (GetDType (Var))) ;
          GenQuadO (combinedtok, StandardFunctionOp, ReturnVar, Re, Var, FALSE) ;
          PopN (NoOfParam+1) ;  (* destroy arguments to this function *)
          PushTFtok (ReturnVar, GetSType (ReturnVar), combinedtok)
@@ -9913,7 +9913,7 @@ BEGIN
       IF IsVar(Var) OR IsConst(Var)
       THEN
          ReturnVar := MakeTemporary (combinedtok, AreConstant (IsConst (Var))) ;
-         PutVar (ReturnVar, ComplexToScalar (GetSType (Var))) ;
+         PutVar (ReturnVar, ComplexToScalar (GetDType (Var))) ;
          GenQuadO (combinedtok, StandardFunctionOp, ReturnVar, Im, Var, FALSE) ;
          PopN (NoOfParam+1) ;  (* destroy arguments to this function *)
          PushTFtok (ReturnVar, GetSType (ReturnVar), combinedtok)
