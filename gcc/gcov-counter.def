@@ -49,3 +49,6 @@ DEF_GCOV_COUNTER(GCOV_COUNTER_IOR, "ior", _ior)
 
 /* Time profile collecting first run of a function */
 DEF_GCOV_COUNTER(GCOV_TIME_PROFILER, "time_profiler", _time_profile)
+
+/* Conditions.  The counter is interpreted as a bit-set.  */
+DEF_GCOV_COUNTER(GCOV_COUNTER_CONDS, "conditions", _ior)

@@ -124,6 +124,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-a}|@option{--all-blocks}]
      [@option{-b}|@option{--branch-probabilities}]
      [@option{-c}|@option{--branch-counts}]
+     [@option{-g}|@option{--conditions}]
      [@option{-d}|@option{--display-progress}]
      [@option{-f}|@option{--function-summaries}]
      [@option{-j}|@option{--json-format}]
@@ -168,6 +169,14 @@ be shown, unless the @option{-u} option is given.
 @itemx --branch-counts
 Write branch frequencies as the number of branches taken, rather than
 the percentage of branches taken.
+
+@item -g
+@itemx --conditions
+Write condition coverage to the output file, and write condition summary info
+to the standard output.  This option allows you to see if the conditions in
+your program at least once had an independent effect on the outcome of the
+boolean expression (modified condition/decision coverage).  This requires you
+to compile the source with @option{-fcondition-coverage}.
 
 @item -d
 @itemx --display-progress
@@ -301,6 +310,7 @@ Each @var{line} has the following form:
   "branches": ["$branch"],
   "calls": ["$call"],
   "count": 2,
+  "conditions": ["$condition"],
   "line_number": 15,
   "unexecuted_block": false,
   "function_name": "foo",
@@ -382,6 +392,34 @@ to @var{line::count})
 
 @item
 @var{destination_block_id}: ID of the basic block this calls continues after return
+@end itemize
+
+Each @var{condition} has the following form:
+
+@smallexample
+@{
+  "count": 4,
+  "covered": 2,
+  "not_covered_false": [],
+  "not_covered_true": [0, 1],
+@}
+
+@end smallexample
+
+Fields of the @var{condition} element have following semantics:
+
+@itemize @bullet
+@item
+@var{count}: number of condition outcomes in this expression
+
+@item
+@var{covered}: number of covered condition outcomes in this expression
+
+@item
+@var{not_covered_true}: terms, by index, not seen as true in this expression
+
+@item
+@var{not_covered_false}: terms, by index, not seen as false in this expression
 @end itemize
 
 @item -H

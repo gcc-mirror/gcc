@@ -33,6 +33,11 @@ void __gcov_merge_add (gcov_type *counters  __attribute__ ((unused)),
                        unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
+#ifdef L_gcov_merge_ior
+void __gcov_merge_ior (gcov_type *counters  __attribute__ ((unused)),
+		       unsigned n_counters __attribute__ ((unused))) {}
+#endif
+
 #ifdef L_gcov_merge_topn
 void __gcov_merge_topn (gcov_type *counters  __attribute__ ((unused)),
 			unsigned n_counters __attribute__ ((unused))) {}

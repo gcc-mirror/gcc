@@ -1165,7 +1165,7 @@ proper position among the other output files.  */
 	%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     " STACK_SPLIT_SPEC "\
-    %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
+    %{fprofile-arcs|fcondition-coverage|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
     %{!nostdlib:%{!r:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*}  \n%(post_link) }}}}}}"
 #endif
@@ -1288,7 +1288,7 @@ static const char *cc1_options =
  %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %w%b.s}}}\
  %{fsyntax-only:-o %j} %{-param*}\
  %{coverage:-fprofile-arcs -ftest-coverage}\
- %{fprofile-arcs|fprofile-generate*|coverage:\
+ %{fprofile-arcs|fcondition-coverage|fprofile-generate*|coverage:\
    %{!fprofile-update=single:\
      %{pthread:-fprofile-update=prefer-atomic}}}";
 

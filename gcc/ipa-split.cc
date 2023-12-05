@@ -1939,7 +1939,7 @@ pass_split_functions::gate (function *)
   /* When doing profile feedback, we want to execute the pass after profiling
      is read.  So disable one in early optimization.  */
   return (flag_partial_inlining
-	  && !profile_arc_flag && !flag_branch_probabilities);
+      && !profile_arc_flag && !flag_branch_probabilities);
 }
 
 } // anon namespace

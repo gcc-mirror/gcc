@@ -1358,6 +1358,10 @@ class auto_suppress_location_wrappers
   ~auto_suppress_location_wrappers () { --suppress_location_wrappers; }
 };
 
+/* COND_EXPR identificer/discriminator accessors.  */
+#define SET_EXPR_UID(t, v) EXPR_CHECK ((t))->exp.condition_uid = (v)
+#define EXPR_COND_UID(t) EXPR_CHECK ((t))->exp.condition_uid
+
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)

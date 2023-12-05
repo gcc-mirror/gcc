@@ -175,6 +175,252 @@ proc verify-branches { testname testcase file } {
 }
 
 #
+# verify-conditions -- check that conditions are checked as expected
+#
+# TESTNAME is the name of the test, including unique flags.
+# TESTCASE is the name of the test file.
+# FILE is the name of the gcov output file.
+#
+# Checks are based on comments in the source file. Condition coverage comes
+# with with two types of output, a summary and a list of the uncovered
+# conditions. Both must be checked to pass the test
+#
+# To check for conditions, add a comment the line of a conditional:
+# /* conditions(n/m) true(0 1) false(1) */
+#
+# where n/m are the covered and total conditions in the expression. The true()
+# and false() take the indices expected *not* covered.
+#
+# This means that all coverage statements should have been seen:
+# /* conditions(end) */
+#
+# If all conditions are covered i.e. n == m, then conditions(end) can be
+# omitted. If either true() or false() are empty they can be omitted too.
+#
+# In some very specific cases there is a need to match multiple conditions on
+# the same line, for example if (a && fn (b || c) && d), which is interpreted
+# roughly as tmp _bc = b || c; if (a && _bc && d).  The argument to fn is
+# considered its own expression and its coverage report will be written on the
+# same line.  For these cases, use conditions(n/m; n/m;...) true(0 1;;...)
+# where ; marks the end of the list element where the ith list matches the ith
+# expression. The true()/false() matchers can be omitted if no expression
+# expects them, otherwise use the empty list if all true/false outcomes are
+# covered.
+#
+# C++ can insert conditionals in the CFG that are not present in source code.
+# These must be manually suppressed since unexpected and unhandled conditions
+# are an error (to help combat regressions). Output can be suppressed with
+# conditions(suppress) and conditions(end). suppress should usually be on a
+# closing brace.
+#
+# Some expressions, when using unnamed temporaries as operands, will have
+# destructors in expressions. The coverage of the destructor will be reported
+# on the same line as the expression itself, but suppress() would also swallow
+# the expected tested-for messages. To handle these, use the destructor() [1]
+# which will suppress everything from and including the second "conditions
+# covered".
+#
+# [1] it is important that the destructor() is *on the same line* as the
+#     conditions(m/n)
+proc verify-conditions { testname testcase file } {
+    set failed 0
+    set suppress 0
+    set destructor 0
+    set should ""
+    set shouldt ""
+    set shouldf ""
+    set shouldall ""
+    set fd [open $file r]
+    set lineno 0
+    set checks [list]
+    set keywords {"end" "suppress"}
+    while {[gets $fd line] >= 0} {
+	regexp "^\[^:\]+: *(\[0-9\]+):" "$line" all lineno
+	set prefix "$testname line $lineno"
+
+	if {![regexp "condition" $line]} {
+	    continue
+	}
+
+	# Missing coverage for both true and false will cause a failure, but
+	# only count it once for the report.
+	set ok 1
+	if [regexp {conditions *\([0-9a-z/; ]+\)} "$line" all] {
+	    # *Very* coarse sanity check: conditions() should either be a
+	    # keyword or n/m, anything else means a buggy test case. end is
+	    # optional for cases where all conditions are covered, since it
+	    # only expects a single line of output.
+	    regexp {conditions *\(([0-9a-z/]+)\)} "$line" all e
+	    if {([lsearch -exact $keywords $e] >= 0 || [regexp {\d+/\d+} "$e"]) == 0} {
+		fail "$prefix: expected conditions (n/m), (suppress) or (end); was ($e)"
+		incr failed
+		continue
+	    }
+
+	    # Any keyword means a new context. Set the error flag if not all
+	    # expected output has been seen, and reset the state.
+	    if {[llength $shouldt] != 0} {
+		fail "$prefix: expected 'not covered (true)' for terms: $shouldt"
+		set ok 0
+	    }
+
+	    if {[llength $shouldf] != 0} {
+		fail "$prefix: expected 'not covered (false)' for terms: $shouldf"
+		set ok 0
+	    }
+
+	    if {$shouldall ne ""} {
+		fail "$prefix: coverage summary not found; expected $shouldall"
+		set ok 0
+	    }
+
+	    if {[llength $checks] != 0} {
+		set missing [llength checks]
+		fail "$prefix: expected $missing more conditions"
+		set ok 0
+	    }
+
+	    set suppress 0
+	    set destructor 0
+	    set setup 0
+	    set checks [list]
+
+	    if [regexp {destructor\(\)} "$line"] {
+		set destructor 1
+	    }
+
+	    # Find the expressions on this line. There may be more, to support
+	    # constructs like (a && fn (b && c) && d).
+	    # The match produces lists like [conditions(n/m) n m]
+	    set argconds ""
+	    set argtrue ""
+	    set argfalse ""
+	    regexp {conditions *\(([0-9 /;]+)\)} $line _ argconds
+	    regexp {true *\(([0-9 ;]+)\)} $line _ argtrue
+	    regexp {false *\(([0-9 ;]+)\)} $line _ argfalse
+	    set condv [split $argconds ";"]
+	    set truev [split $argtrue ";"]
+	    set falsev [split $argfalse ";"]
+	    set ncases [llength $condv]
+
+	    for {set i 0} {$i < $ncases} {incr i} {
+		set summary [lindex $condv $i]
+		set n [lindex [split $summary "/"] 0]
+		set m [lindex [split $summary "/"] 1]
+		set newt [lindex $truev $i]
+		set newf [lindex $falsev $i]
+
+		# Sanity check - if the true() and false() vectors should have
+		# m-n elements to cover all uncovered conditions. Because of
+		# masking it can sometimes be surprising what terms are
+		# independent, so this makes for more robust test at the cost
+		# of being slightly more annoying to write.
+		set nterms [expr [llength $newt] + [llength $newf]]
+		set nexpected [expr {$m - $n}]
+		if {$nterms != $nexpected} {
+		    fail "$prefix: expected $nexpected uncovered terms; got $nterms"
+		    set ok 0
+		}
+		set shouldall $e
+		set should ""
+		set shouldt $newt
+		set shouldf $newf
+		set shouldall [regsub -all { } "$n/$m" ""]
+		lappend checks [list $should $shouldt $shouldf $shouldall $newt $newf]
+	    }
+
+	    if {[llength $checks] > 0} {
+		# no-op - the stack of checks to do is set up
+	    } elseif {$e == "end"} {
+		# no-op - state should already been reset, and errors flagged
+	    } elseif {$e == "suppress"} {
+		set suppress 1
+	    } else {
+		# this should be unreachable, 
+		fail "$prefix: unhandled control ($e), should be unreachable"
+		set ok 0
+	    }
+	} elseif {$suppress == 1} {
+	    # ignore everything in a suppress block. C++ especially can insert
+	    # conditionals in exceptions and destructors which would otherwise
+	    # be considered unhandled.
+	    continue
+	} elseif [regexp {condition +(\d+) not covered \((.*)\)} "$line" all cond condv] {
+	    foreach v {true false} {
+		if [regexp $v $condv] {
+		    if {"$v" == "true"} {
+			set should shouldt
+		    } else {
+			set should shouldf
+		    }
+
+		    set i [lsearch [set $should] $cond]
+		    if {$i != -1} {
+			set $should [lreplace [set $should] $i $i]
+		    } else {
+			fail "$prefix: unexpected uncovered term $cond ($v)"
+			set ok 0
+		    }
+		}
+	    }
+	} elseif [regexp {condition outcomes covered (\d+/\d+)} "$line" all cond] {
+	    # the destructor-generated "conditions covered" lines will be
+	    # written after all expression-related output. Handle these by
+	    # turning on suppression if the destructor-suppression is
+	    # requested.
+	    if {$shouldall == "" && $destructor == 1} {
+		set suppress 1
+		continue
+	    }
+
+	    if {[llength $checks] == 0} {
+		fail "$prefix: unexpected summary $cond"
+		set ok 0
+	    } else {
+		# Report any missing conditions from the previous set if this
+		# is not the first condition block
+		if {$setup == 1} {
+		    if {[llength $shouldt] != 0} {
+			fail "$prefix: expected 'not covered (true)' for terms: $shouldt"
+			set ok 0
+		    }
+		    if {[llength $shouldf] != 0} {
+			fail "$prefix: expected 'not covered (false)' for terms: $shouldf"
+			set ok 0
+		    }
+		    if {$shouldall ne ""} {
+			fail "$prefix: coverage summary not found; expected $shouldall"
+			set ok 0
+		    }
+		}
+		set setup 1
+		set current [lindex $checks 0]
+		set checks [lreplace $checks 0 0]
+		set should  [lindex $current 0]
+		set shouldt  [lindex $current 1]
+		set shouldf  [lindex $current 2]
+		set shouldall  [lindex $current 3]
+		set newt  [lindex $current 4]
+		set newf  [lindex $current 5]
+
+		if {$cond == $shouldall} {
+		    set shouldall ""
+		} else {
+		    fail "$prefix: unexpected summary - expected $shouldall, got $cond"
+		    set ok 0
+		}
+	    }
+	}
+
+	if {$ok != 1} {
+	    incr failed
+	}
+    }
+    close $fd
+    return $failed
+}
+
+#
 # verify-calls -- check that call return percentages are as expected
 #
 # TESTNAME is the name of the test, including unique flags.
@@ -321,6 +567,7 @@ proc run-gcov { args } {
     set gcov_args ""
     set gcov_verify_calls 0
     set gcov_verify_branches 0
+    set gcov_verify_conditions 0
     set gcov_verify_lines 1
     set gcov_verify_intermediate 0
     set gcov_remove_gcda 0
@@ -331,10 +578,13 @@ proc run-gcov { args } {
 	  set gcov_verify_calls 1
 	} elseif { $a == "branches" } {
 	  set gcov_verify_branches 1
+	} elseif { $a == "conditions" } {
+	  set gcov_verify_conditions 1
 	} elseif { $a == "intermediate" } {
 	  set gcov_verify_intermediate 1
 	  set gcov_verify_calls 0
 	  set gcov_verify_branches 0
+	  set gcov_verify_conditions 0
 	  set gcov_verify_lines 0
 	} elseif { $a == "remove-gcda" } {
 	  set gcov_remove_gcda 1
@@ -404,6 +654,11 @@ proc run-gcov { args } {
     } else {
 	set bfailed 0
     }
+    if { $gcov_verify_conditions } {
+	set cdfailed [verify-conditions $testname $testcase $testcase.gcov]
+    } else {
+	set cdfailed 0
+    }
     if { $gcov_verify_calls } {
 	set cfailed [verify-calls $testname $testcase $testcase.gcov]
     } else {
@@ -418,12 +673,12 @@ proc run-gcov { args } {
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + $bfailed + $cfailed + $ifailed]
+    set tfailed [expr $lfailed + $bfailed + $cdfailed + $cfailed + $ifailed]
     if { $xfailed } {
 	setup_xfail "*-*-*"
     }
     if { $tfailed > 0 } {
-	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cfailed in return percentages, $ifailed in intermediate format"
+	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $cfailed in return percentages, $ifailed in intermediate format"
 	if { $xfailed } {
 	    clean-gcov $testcase
 	}

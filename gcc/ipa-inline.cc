@@ -689,7 +689,7 @@ can_early_inline_edge_p (struct cgraph_edge *e)
     }
   gcc_assert (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->caller->decl))
 	      && gimple_in_ssa_p (DECL_STRUCT_FUNCTION (callee->decl)));
-  if (profile_arc_flag
+  if ((profile_arc_flag || condition_coverage_flag)
       && ((lookup_attribute ("no_profile_instrument_function",
 			    DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
 	  != (lookup_attribute ("no_profile_instrument_function",
