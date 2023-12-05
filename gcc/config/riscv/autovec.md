@@ -394,6 +394,22 @@
   }
 )
 
+;; Provide a vec_init for mask registers by initializing
+;; a QImode vector and comparing it against 0.
+(define_expand "vec_init<mode>qi"
+  [(match_operand:VB 0 "register_operand")
+   (match_operand 1 "")]
+  "TARGET_VECTOR"
+  {
+    machine_mode qimode = riscv_vector::get_vector_mode
+	(QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
+    rtx tmp = gen_reg_rtx (qimode);
+    riscv_vector::expand_vec_init (tmp, operands[1]);
+    riscv_vector::expand_vec_cmp (operands[0], NE, tmp, CONST0_RTX (qimode));
+    DONE;
+  }
+)
+
 ;; Slide an RVV vector left and insert a scalar into element 0.
 (define_expand "vec_shl_insert_<mode>"
   [(match_operand:VI 0 "register_operand")
