@@ -8,9 +8,9 @@ namespace P {}
 void
 foo ()
 {
-  [[]] asm ("");				// { dg-error "expected" }
+  [[]] asm ("");
   [[]] __extension__ asm ("");			// { dg-error "expected" }
-  __extension__ [[]] asm ("");			// { dg-error "expected" }
+  __extension__ [[]] asm ("");
   [[]] namespace M = ::N;			// { dg-error "expected" }
   [[]] using namespace N;			// { dg-bogus "expected" }
   using namespace P [[]];			// { dg-error "expected" }
@@ -22,9 +22,9 @@ foo ()
 void
 bar ()
 {
-  [[gnu::unused]] asm ("");			// { dg-error "expected" }
+  [[gnu::unused]] asm ("");
   [[gnu::unused]] __extension__ asm ("");	// { dg-error "expected" }
-  __extension__ [[gnu::unused]] asm ("");	// { dg-error "expected" }
+  __extension__ [[gnu::unused]] asm ("");
   [[gnu::unused]] namespace M = ::N;		// { dg-error "expected" }
   [[gnu::unused]] using namespace N;		// { dg-bogus "expected" }
   using namespace P [[gnu::unused]];		// { dg-error "expected" }

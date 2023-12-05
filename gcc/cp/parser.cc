@@ -15398,7 +15398,6 @@ cp_parser_block_declaration (cp_parser *parser,
   /* Peek at the next token to figure out which kind of declaration is
      present.  */
   cp_token *token1 = cp_lexer_peek_token (parser->lexer);
-  size_t attr_idx;
 
   /* If the next keyword is `asm', we have an asm-definition.  */
   if (token1->keyword == RID_ASM)
@@ -15452,22 +15451,36 @@ cp_parser_block_declaration (cp_parser *parser,
   /* If the next token is `static_assert' we have a static assertion.  */
   else if (token1->keyword == RID_STATIC_ASSERT)
     cp_parser_static_assert (parser, /*member_p=*/false);
-  /* If the next tokens after attributes is `using namespace', then we have
-     a using-directive.  */
-  else if ((attr_idx = cp_parser_skip_std_attribute_spec_seq (parser, 1)) != 1
-	   && cp_lexer_nth_token_is_keyword (parser->lexer, attr_idx,
-					     RID_USING)
-	   && cp_lexer_nth_token_is_keyword (parser->lexer, attr_idx + 1,
-					     RID_NAMESPACE))
-    {
-      if (statement_p)
-	cp_parser_commit_to_tentative_parse (parser);
-      cp_parser_using_directive (parser);
-    }
-  /* Anything else must be a simple-declaration.  */
   else
-    cp_parser_simple_declaration (parser, !statement_p,
-				  /*maybe_range_for_decl*/NULL);
+    {
+      size_t attr_idx = cp_parser_skip_std_attribute_spec_seq (parser, 1);
+      cp_token *after_attr = NULL;
+      if (attr_idx != 1)
+	after_attr = cp_lexer_peek_nth_token (parser->lexer, attr_idx);
+      /* If the next tokens after attributes is `using namespace', then we have
+	 a using-directive.  */
+      if (after_attr
+	  && after_attr->keyword == RID_USING
+	  && cp_lexer_nth_token_is_keyword (parser->lexer, attr_idx + 1,
+					    RID_NAMESPACE))
+	{
+	  if (statement_p)
+	    cp_parser_commit_to_tentative_parse (parser);
+	  cp_parser_using_directive (parser);
+	}
+      /* If the next token after attributes is `asm', then we have
+	 an asm-definition.  */
+      else if (after_attr && after_attr->keyword == RID_ASM)
+	{
+	  if (statement_p)
+	    cp_parser_commit_to_tentative_parse (parser);
+	  cp_parser_asm_definition (parser);
+	}
+      /* Anything else must be a simple-declaration.  */
+      else
+	cp_parser_simple_declaration (parser, !statement_p,
+				      /*maybe_range_for_decl*/NULL);
+    }
 }
 
 /* Parse a simple-declaration.
@@ -22424,6 +22437,7 @@ cp_parser_asm_definition (cp_parser* parser)
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
   required_token missing = RT_NONE;
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
   location_t asm_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Look for the `asm' keyword.  */
@@ -22657,6 +22671,10 @@ cp_parser_asm_definition (cp_parser* parser)
       else
 	symtab->finalize_toplevel_asm (string);
     }
+
+  if (std_attrs)
+    warning_at (asm_loc, OPT_Wattributes,
+		"attributes ignored on %<asm%> declaration");
 }
 
 /* Given the type TYPE of a declaration with declarator DECLARATOR, return the
