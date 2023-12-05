@@ -6329,27 +6329,9 @@ gimple_lower_bitint (void)
 	      tree type = NULL_TREE;
 	      /* Middle _BitInt(N) is rewritten to casts to INTEGER_TYPEs
 		 with the same precision and back.  */
-	      if (tree lhs = gimple_get_lhs (stmt))
-		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-		    && (bitint_precision_kind (TREE_TYPE (lhs))
-			== bitint_prec_middle))
-		  {
-		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
-		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
-		    type = build_nonstandard_integer_type (prec, uns);
-		    tree lhs2 = make_ssa_name (type);
-		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
-		    if (stmt_ends_bb_p (stmt))
-		      {
-			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
-			gsi_insert_on_edge_immediate (e, g);
-		      }
-		    else
-		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
-		    gimple_set_lhs (stmt, lhs2);
-		  }
 	      unsigned int nops = gimple_num_ops (stmt);
-	      for (unsigned int i = 0; i < nops; ++i)
+	      for (unsigned int i = is_gimple_assign (stmt) ? 1 : 0;
+		   i < nops; ++i)
 		if (tree op = gimple_op (stmt, i))
 		  {
 		    tree nop = maybe_cast_middle_bitint (&gsi, op, type);
@@ -6375,6 +6357,25 @@ gimple_lower_bitint (void)
 			  = maybe_cast_middle_bitint (&gsi, CASE_HIGH (op),
 						      type);
 		      }
+		  }
+	      if (tree lhs = gimple_get_lhs (stmt))
+		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+		    && (bitint_precision_kind (TREE_TYPE (lhs))
+			== bitint_prec_middle))
+		  {
+		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
+		    type = build_nonstandard_integer_type (prec, uns);
+		    tree lhs2 = make_ssa_name (type);
+		    gimple_set_lhs (stmt, lhs2);
+		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
+		    if (stmt_ends_bb_p (stmt))
+		      {
+			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
+			gsi_insert_on_edge_immediate (e, g);
+		      }
+		    else
+		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
 		  }
 	      update_stmt (stmt);
 	      continue;
