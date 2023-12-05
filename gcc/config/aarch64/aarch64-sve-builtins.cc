@@ -659,6 +659,21 @@ find_type_suffix_for_scalar_type (const_tree type)
   return NUM_TYPE_SUFFIXES;
 }
 
+/* Return the implicit group suffix for intrinsics that operate on NVECTORS
+   vectors.  */
+static group_suffix_index
+num_vectors_to_group (unsigned int nvectors)
+{
+  switch (nvectors)
+    {
+    case 1: return GROUP_none;
+    case 2: return GROUP_x2;
+    case 3: return GROUP_x3;
+    case 4: return GROUP_x4;
+    }
+  gcc_unreachable ();
+}
+
 /* Return the vector type associated with TYPE.  */
 static tree
 get_vector_type (sve_type type)
@@ -1282,6 +1297,27 @@ function_resolver::lookup_form (mode_suffix_index mode,
   return rfn ? rfn->decl : NULL_TREE;
 }
 
+/* Silently check whether there is an instance of the function that has the
+   mode suffix given by MODE and the type and group suffixes implied by TYPE.
+   If the overloaded function has an explicit first type suffix (like
+   conversions do), TYPE describes the implicit second type suffix.
+   Otherwise, TYPE describes the only type suffix.
+
+   Return the decl of the function if it exists, otherwise return null.  */
+tree
+function_resolver::lookup_form (mode_suffix_index mode, sve_type type)
+{
+  type_suffix_index type0 = type_suffix_ids[0];
+  type_suffix_index type1 = type_suffix_ids[1];
+  (type0 == NUM_TYPE_SUFFIXES ? type0 : type1) = type.type;
+
+  group_suffix_index group = group_suffix_id;
+  if (group == GROUP_none && type.num_vectors != vectors_per_tuple ())
+    group = num_vectors_to_group (type.num_vectors);
+
+  return lookup_form (mode, type0, type1, group);
+}
+
 /* Resolve the function to one with the mode suffix given by MODE, the
    type suffixes given by TYPE0 and TYPE1, and group suffix given by
    GROUP.  Return its function decl on success, otherwise report an
@@ -1303,6 +1339,19 @@ function_resolver::resolve_to (mode_suffix_index mode,
       gcc_unreachable ();
     }
   return res;
+}
+
+/* Resolve the function to one that has the suffixes associated with MODE
+   and TYPE; see lookup_form for how TYPE is interpreted.  Return the
+   function decl on success, otherwise report an error and return
+   error_mark_node.  */
+tree
+function_resolver::resolve_to (mode_suffix_index mode, sve_type type)
+{
+  if (tree res = lookup_form (mode, type))
+    return res;
+
+  return report_no_such_form (type);
 }
 
 /* Require argument ARGNO to be a 32-bit or 64-bit scalar integer type.
@@ -1424,21 +1473,20 @@ function_resolver::infer_sve_type (unsigned int argno)
 
 /* Require argument ARGNO to be a single vector or a tuple of NUM_VECTORS
    vectors; NUM_VECTORS is 1 for the former.  Return the associated type
-   suffix on success, using TYPE_SUFFIX_b for predicates.  Report an error
-   and return NUM_TYPE_SUFFIXES on failure.  */
-type_suffix_index
+   on success.  Report an error on failure.  */
+sve_type
 function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 					       unsigned int num_vectors)
 {
   auto type = infer_sve_type (argno);
   if (!type)
-    return NUM_TYPE_SUFFIXES;
+    return type;
 
   if (type.num_vectors == num_vectors)
-    return type.type;
+    return type;
 
   report_incorrect_num_vectors (argno, type, num_vectors);
-  return NUM_TYPE_SUFFIXES;
+  return {};
 }
 
 /* Require argument ARGNO to have some form of vector type.  Return the
@@ -1447,7 +1495,9 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 type_suffix_index
 function_resolver::infer_vector_type (unsigned int argno)
 {
-  return infer_vector_or_tuple_type (argno, 1);
+  if (auto type = infer_vector_or_tuple_type (argno, 1))
+    return type.type;
+  return NUM_TYPE_SUFFIXES;
 }
 
 /* Like infer_vector_type, but also require the type to be integral.  */
@@ -1512,10 +1562,9 @@ function_resolver::infer_sd_vector_type (unsigned int argno)
 
 /* If the function operates on tuples of vectors, require argument ARGNO to be
    a tuple with the appropriate number of vectors, otherwise require it to be
-   a single vector.  Return the associated type suffix on success, using
-   TYPE_SUFFIX_b for predicates.  Report an error and return NUM_TYPE_SUFFIXES
+   a single vector.  Return the associated type on success.  Report an error
    on failure.  */
-type_suffix_index
+sve_type
 function_resolver::infer_tuple_type (unsigned int argno)
 {
   return infer_vector_or_tuple_type (argno, vectors_per_tuple ());
@@ -1567,10 +1616,10 @@ function_resolver::require_vector_type (unsigned int argno,
 bool
 function_resolver::require_matching_vector_type (unsigned int argno,
 						 unsigned int first_argno,
-						 type_suffix_index type)
+						 sve_type type)
 {
-  type_suffix_index new_type = infer_vector_type (argno);
-  if (new_type == NUM_TYPE_SUFFIXES)
+  sve_type new_type = infer_sve_type (argno);
+  if (!new_type)
     return false;
 
   if (type != new_type)
@@ -1613,15 +1662,13 @@ function_resolver::require_matching_vector_type (unsigned int argno,
 bool function_resolver::
 require_derived_vector_type (unsigned int argno,
 			     unsigned int first_argno,
-			     type_suffix_index first_type,
+			     sve_type first_type,
 			     type_class_index expected_tclass,
 			     unsigned int expected_bits)
 {
   /* If the type needs to match FIRST_ARGNO exactly, use the preferred
-     error message for that case.  The VECTOR_TYPE_P test excludes tuple
-     types, which we handle below instead.  */
-  bool both_vectors_p = VECTOR_TYPE_P (get_argument_type (first_argno));
-  if (both_vectors_p
+     error message for that case.  */
+  if (first_type.num_vectors == 1
       && expected_tclass == SAME_TYPE_CLASS
       && expected_bits == SAME_SIZE)
     {
@@ -1631,17 +1678,18 @@ require_derived_vector_type (unsigned int argno,
     }
 
   /* Use FIRST_TYPE to get the expected type class and element size.  */
+  auto &first_type_suffix = type_suffixes[first_type.type];
   type_class_index orig_expected_tclass = expected_tclass;
   if (expected_tclass == NUM_TYPE_CLASSES)
-    expected_tclass = type_suffixes[first_type].tclass;
+    expected_tclass = first_type_suffix.tclass;
 
   unsigned int orig_expected_bits = expected_bits;
   if (expected_bits == SAME_SIZE)
-    expected_bits = type_suffixes[first_type].element_bits;
+    expected_bits = first_type_suffix.element_bits;
   else if (expected_bits == HALF_SIZE)
-    expected_bits = type_suffixes[first_type].element_bits / 2;
+    expected_bits = first_type_suffix.element_bits / 2;
   else if (expected_bits == QUARTER_SIZE)
-    expected_bits = type_suffixes[first_type].element_bits / 4;
+    expected_bits = first_type_suffix.element_bits / 4;
 
   /* If the expected type doesn't depend on FIRST_TYPE at all,
      just check for the fixed choice of vector type.  */
@@ -1655,13 +1703,14 @@ require_derived_vector_type (unsigned int argno,
 
   /* Require the argument to be some form of SVE vector type,
      without being specific about the type of vector we want.  */
-  type_suffix_index actual_type = infer_vector_type (argno);
-  if (actual_type == NUM_TYPE_SUFFIXES)
+  sve_type actual_type = infer_vector_type (argno);
+  if (!actual_type)
     return false;
 
   /* Exit now if we got the right type.  */
-  bool tclass_ok_p = (type_suffixes[actual_type].tclass == expected_tclass);
-  bool size_ok_p = (type_suffixes[actual_type].element_bits == expected_bits);
+  auto &actual_type_suffix = type_suffixes[actual_type.type];
+  bool tclass_ok_p = (actual_type_suffix.tclass == expected_tclass);
+  bool size_ok_p = (actual_type_suffix.element_bits == expected_bits);
   if (tclass_ok_p && size_ok_p)
     return true;
 
@@ -1701,7 +1750,9 @@ require_derived_vector_type (unsigned int argno,
 
   /* If the arguments have consistent type classes, but a link between
      the sizes has been broken, try to describe the error in those terms.  */
-  if (both_vectors_p && tclass_ok_p && orig_expected_bits == SAME_SIZE)
+  if (first_type.num_vectors == 1
+      && tclass_ok_p
+      && orig_expected_bits == SAME_SIZE)
     {
       if (argno < first_argno)
 	{
@@ -1718,11 +1769,11 @@ require_derived_vector_type (unsigned int argno,
 
   /* Likewise in reverse: look for cases in which the sizes are consistent
      but a link between the type classes has been broken.  */
-  if (both_vectors_p
+  if (first_type.num_vectors == 1
       && size_ok_p
       && orig_expected_tclass == SAME_TYPE_CLASS
-      && type_suffixes[first_type].integer_p
-      && type_suffixes[actual_type].integer_p)
+      && first_type_suffix.integer_p
+      && actual_type_suffix.integer_p)
     {
       if (argno < first_argno)
 	{

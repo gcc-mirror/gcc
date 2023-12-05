@@ -458,28 +458,28 @@ public:
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
 		    group_suffix_index = GROUP_none);
+  tree lookup_form (mode_suffix_index, sve_type);
   tree resolve_to (mode_suffix_index,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   group_suffix_index = GROUP_none);
+  tree resolve_to (mode_suffix_index, sve_type);
 
   type_suffix_index infer_integer_scalar_type (unsigned int);
   type_suffix_index infer_pointer_type (unsigned int, bool = false);
   sve_type infer_sve_type (unsigned int);
-  type_suffix_index infer_vector_or_tuple_type (unsigned int, unsigned int);
+  sve_type infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
   type_suffix_index infer_integer_vector_type (unsigned int);
   type_suffix_index infer_unsigned_vector_type (unsigned int);
   type_suffix_index infer_sd_vector_type (unsigned int);
-  type_suffix_index infer_tuple_type (unsigned int);
+  sve_type infer_tuple_type (unsigned int);
 
   bool require_vector_or_scalar_type (unsigned int);
 
   bool require_vector_type (unsigned int, vector_type_index);
-  bool require_matching_vector_type (unsigned int, unsigned int,
-				     type_suffix_index);
-  bool require_derived_vector_type (unsigned int, unsigned int,
-				    type_suffix_index,
+  bool require_matching_vector_type (unsigned int, unsigned int, sve_type);
+  bool require_derived_vector_type (unsigned int, unsigned int, sve_type,
 				    type_class_index = SAME_TYPE_CLASS,
 				    unsigned int = SAME_SIZE);
 

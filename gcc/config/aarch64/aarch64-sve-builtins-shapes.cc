@@ -1904,9 +1904,9 @@ struct get_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    sve_type type;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_tuple_type (i)) == NUM_TYPE_SUFFIXES
+	|| !(type = r.infer_tuple_type (i))
 	|| !r.require_integer_immediate (i + 1))
       return error_mark_node;
 
@@ -2417,9 +2417,9 @@ struct set_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    sve_type type;
     if (!r.check_gp_argument (3, i, nargs)
-	|| (type = r.infer_tuple_type (i)) == NUM_TYPE_SUFFIXES
+	|| !(type = r.infer_tuple_type (i))
 	|| !r.require_integer_immediate (i + 1)
 	|| !r.require_derived_vector_type (i + 2, i, type))
       return error_mark_node;
@@ -2592,11 +2592,11 @@ struct store_def : public overloaded_base<0>
     gcc_assert (r.mode_suffix_id == MODE_none || vnum_p);
 
     unsigned int i, nargs;
-    type_suffix_index type;
+    sve_type type;
     if (!r.check_gp_argument (vnum_p ? 3 : 2, i, nargs)
 	|| !r.require_pointer_type (i)
 	|| (vnum_p && !r.require_scalar_type (i + 1, "int64_t"))
-	|| ((type = r.infer_tuple_type (nargs - 1)) == NUM_TYPE_SUFFIXES))
+	|| !(type = r.infer_tuple_type (nargs - 1)))
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
@@ -2713,9 +2713,9 @@ struct tbl_tuple_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    sve_type type;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_tuple_type (i)) == NUM_TYPE_SUFFIXES
+	|| !(type = r.infer_tuple_type (i))
 	|| !r.require_derived_vector_type (i + 1, i, type, TYPE_unsigned))
       return error_mark_node;
 
