@@ -822,11 +822,19 @@
 )
 
 ;; XTheadFMemIdx
+;; Note, that we might get GP registers in FP-mode (reg:DF a2)
+;; which cannot be handled by the XTheadFMemIdx instructions.
+;; This might even happend after register allocation.
+;; We could implement splitters that undo the combiner results
+;; if "after_reload && !HARDFP_REG_P (operands[0])", but this
+;; raises even more questions (e.g. split into what?).
+;; So let's solve this by simply requiring XTheadMemIdx
+;; which provides the necessary instructions to cover this case.
 
 (define_insn "*th_fmemidx_movsf_hardfloat"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,th_m_mir,f,th_m_miu")
 	(match_operand:SF 1 "move_operand"         " th_m_mir,f,th_m_miu,f"))]
-  "TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX
+  "TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX && TARGET_XTHEADMEMIDX
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
@@ -837,6 +845,7 @@
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,th_m_mir,f,th_m_miu")
 	(match_operand:DF 1 "move_operand"         " th_m_mir,f,th_m_miu,f"))]
   "TARGET_64BIT && TARGET_DOUBLE_FLOAT && TARGET_XTHEADFMEMIDX
+   && TARGET_XTHEADMEMIDX
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
@@ -845,14 +854,6 @@
 
 ;; XTheadFMemIdx optimizations
 ;; Similar like XTheadMemIdx optimizations, but less cases.
-;; Note, that we might get GP registers in FP-mode (reg:DF a2)
-;; which cannot be handled by the XTheadFMemIdx instructions.
-;; This might even happend after register allocation.
-;; We could implement splitters that undo the combiner results
-;; if "after_reload && !HARDFP_REG_P (operands[0])", but this
-;; raises even more questions (e.g. split into what?).
-;; So let's solve this by simply requiring XTheadMemIdx
-;; which provides the necessary instructions to cover this case.
 
 (define_insn_and_split "*th_fmemidx_I_a"
   [(set (match_operand:TH_M_NOEXTF 0 "register_operand" "=f")

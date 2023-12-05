@@ -603,7 +603,8 @@ th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
 {
   /* Ensure that the mode is supported.  */
   if (!(TARGET_XTHEADMEMIDX && is_memidx_mode (mode))
-      && !(TARGET_XTHEADFMEMIDX && is_fmemidx_mode (mode)))
+      && !(TARGET_XTHEADMEMIDX
+	   && TARGET_XTHEADFMEMIDX && is_fmemidx_mode (mode)))
     return false;
 
   if (GET_CODE (x) != PLUS)
