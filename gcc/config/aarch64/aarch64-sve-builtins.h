@@ -476,7 +476,8 @@ public:
   bool require_vector_or_scalar_type (unsigned int);
 
   bool require_vector_type (unsigned int, vector_type_index);
-  bool require_matching_vector_type (unsigned int, type_suffix_index);
+  bool require_matching_vector_type (unsigned int, unsigned int,
+				     type_suffix_index);
   bool require_derived_vector_type (unsigned int, unsigned int,
 				    type_suffix_index,
 				    type_class_index = SAME_TYPE_CLASS,

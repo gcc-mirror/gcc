@@ -1153,7 +1153,7 @@ struct binary_long_lane_def : public overloaded_base<0>
     type_suffix_index type, result_type;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
-	|| !r.require_matching_vector_type (i + 1, type)
+	|| !r.require_matching_vector_type (i + 1, i, type)
 	|| !r.require_integer_immediate (i + 2)
 	|| (result_type = long_type_suffix (r, type)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
@@ -1608,7 +1608,7 @@ struct clast_def : public overloaded_base<0>
       {
 	type_suffix_index type;
 	if ((type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
-	    || !r.require_matching_vector_type (i + 1, type))
+	    || !r.require_matching_vector_type (i + 1, i, type))
 	  return error_mark_node;
 	return r.resolve_to (MODE_none, type);
       }
@@ -3108,7 +3108,7 @@ struct ternary_uint_def : public overloaded_base<0>
     type_suffix_index type;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
-	|| !r.require_matching_vector_type (i + 1, type)
+	|| !r.require_matching_vector_type (i + 1, i, type)
 	|| !r.require_derived_vector_type (i + 2, i, type, TYPE_unsigned))
       return error_mark_node;
 

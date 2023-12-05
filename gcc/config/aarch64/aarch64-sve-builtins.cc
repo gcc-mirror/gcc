@@ -1561,11 +1561,12 @@ function_resolver::require_vector_type (unsigned int argno,
   return true;
 }
 
-/* Like require_vector_type, but TYPE is inferred from previous arguments
+/* Like require_vector_type, but TYPE is inferred from argument FIRST_ARGNO
    rather than being a fixed part of the function signature.  This changes
    the nature of the error messages.  */
 bool
 function_resolver::require_matching_vector_type (unsigned int argno,
+						 unsigned int first_argno,
 						 type_suffix_index type)
 {
   type_suffix_index new_type = infer_vector_type (argno);
@@ -1575,9 +1576,9 @@ function_resolver::require_matching_vector_type (unsigned int argno,
   if (type != new_type)
     {
       error_at (location, "passing %qT to argument %d of %qE, but"
-		" previous arguments had type %qT",
+		" argument %d had type %qT",
 		get_vector_type (new_type), argno + 1, fndecl,
-		get_vector_type (type));
+		first_argno + 1, get_vector_type (type));
       return false;
     }
   return true;
@@ -1626,7 +1627,7 @@ require_derived_vector_type (unsigned int argno,
     {
       /* There's no need to resolve this case out of order.  */
       gcc_assert (argno > first_argno);
-      return require_matching_vector_type (argno, first_type);
+      return require_matching_vector_type (argno, first_argno, first_type);
     }
 
   /* Use FIRST_TYPE to get the expected type class and element size.  */
@@ -2314,7 +2315,7 @@ function_resolver::resolve_unary (type_class_index merge_tclass,
 	     so we can use normal left-to-right resolution.  */
 	  if ((type = infer_vector_type (0)) == NUM_TYPE_SUFFIXES
 	      || !require_vector_type (1, VECTOR_TYPE_svbool_t)
-	      || !require_matching_vector_type (2, type))
+	      || !require_matching_vector_type (2, 0, type))
 	    return error_mark_node;
 	}
       else
@@ -2359,9 +2360,9 @@ function_resolver::resolve_uniform (unsigned int nops, unsigned int nimm)
       || (type = infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
     return error_mark_node;
 
-  i += 1;
+  unsigned int first_arg = i++;
   for (; i < nargs - nimm; ++i)
-    if (!require_matching_vector_type (i, type))
+    if (!require_matching_vector_type (i, first_arg, type))
       return error_mark_node;
 
   for (; i < nargs; ++i)
@@ -2390,7 +2391,7 @@ function_resolver::resolve_uniform_opt_n (unsigned int nops)
 
   unsigned int first_arg = i++;
   for (; i < nargs - 1; ++i)
-    if (!require_matching_vector_type (i, type))
+    if (!require_matching_vector_type (i, first_arg, type))
       return error_mark_node;
 
   return finish_opt_n_resolution (i, first_arg, type);
