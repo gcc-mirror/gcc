@@ -60,6 +60,7 @@
   UNSPEC_TIE
 
   ;; RSQRT
+  UNSPEC_RSQRT
   UNSPEC_RSQRTE
 
   ;; RECIP
@@ -1134,25 +1135,14 @@
    (set_attr "mode" "<UNITMODE>")
    (set_attr "insn_count" "1")])
 
-(define_insn "*rsqrt<mode>a"
+(define_insn "*rsqrt<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
-		  (sqrt:ANYF (match_operand:ANYF 2 "register_operand" "f"))))]
-  "flag_unsafe_math_optimizations"
-  "frsqrt.<fmt>\t%0,%2"
+    (unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+	     UNSPEC_RSQRT))]
+  "TARGET_HARD_FLOAT"
+  "frsqrt.<fmt>\t%0,%1"
   [(set_attr "type" "frsqrt")
-   (set_attr "mode" "<UNITMODE>")
-   (set_attr "insn_count" "1")])
-
-(define_insn "*rsqrt<mode>b"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(sqrt:ANYF (div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
-			     (match_operand:ANYF 2 "register_operand" "f"))))]
-  "flag_unsafe_math_optimizations"
-  "frsqrt.<fmt>\t%0,%2"
-  [(set_attr "type" "frsqrt")
-   (set_attr "mode" "<UNITMODE>")
-   (set_attr "insn_count" "1")])
+   (set_attr "mode" "<UNITMODE>")])
 
 ;; Approximate Reciprocal Square Root Instructions.
 

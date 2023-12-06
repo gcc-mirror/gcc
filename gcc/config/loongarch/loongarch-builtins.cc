@@ -500,6 +500,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
 #define CODE_FOR_lsx_vssrlrn_bu_h CODE_FOR_lsx_vssrlrn_u_bu_h
 #define CODE_FOR_lsx_vssrlrn_hu_w CODE_FOR_lsx_vssrlrn_u_hu_w
 #define CODE_FOR_lsx_vssrlrn_wu_d CODE_FOR_lsx_vssrlrn_u_wu_d
+#define CODE_FOR_lsx_vfrsqrt_d CODE_FOR_rsqrtv2df2
+#define CODE_FOR_lsx_vfrsqrt_s CODE_FOR_rsqrtv4sf2
 
 /* LoongArch ASX define CODE_FOR_lasx_mxxx */
 #define CODE_FOR_lasx_xvsadd_b CODE_FOR_ssaddv32qi3
@@ -776,6 +778,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
 #define CODE_FOR_lasx_xvsat_hu CODE_FOR_lasx_xvsat_u_hu
 #define CODE_FOR_lasx_xvsat_wu CODE_FOR_lasx_xvsat_u_wu
 #define CODE_FOR_lasx_xvsat_du CODE_FOR_lasx_xvsat_u_du
+#define CODE_FOR_lasx_xvfrsqrt_d CODE_FOR_rsqrtv4df2
+#define CODE_FOR_lasx_xvfrsqrt_s CODE_FOR_rsqrtv8sf2
 
 static const struct loongarch_builtin_description loongarch_builtins[] = {
 #define LARCH_MOVFCSR2GR 0

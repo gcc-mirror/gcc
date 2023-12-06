@@ -1559,10 +1559,10 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrsqrt_<flsxfmt>"
+(define_insn "rsqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRSQRT))]
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRT))]
   "ISA_HAS_LSX"
   "vfrsqrt.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")

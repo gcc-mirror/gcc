@@ -11492,6 +11492,30 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 						      is_packed);
 }
 
+static bool
+use_rsqrt_p (void)
+{
+  return (flag_finite_math_only
+	  && !flag_trapping_math
+	  && flag_unsafe_math_optimizations);
+}
+
+/* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
+
+static bool
+loongarch_optab_supported_p (int op, machine_mode, machine_mode,
+			     optimization_type opt_type)
+{
+  switch (op)
+    {
+    case rsqrt_optab:
+      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p ();
+
+    default:
+      return true;
+    }
+}
+
 /* If -fverbose-asm, dump some info for debugging.  */
 static void
 loongarch_asm_code_end (void)
@@ -11629,6 +11653,9 @@ loongarch_asm_code_end (void)
 #define TARGET_FUNCTION_ARG_ADVANCE loongarch_function_arg_advance
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY loongarch_function_arg_boundary
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P loongarch_optab_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P loongarch_vector_mode_supported_p

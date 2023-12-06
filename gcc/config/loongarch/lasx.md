@@ -1646,10 +1646,10 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvfrsqrt_<flasxfmt>"
+(define_insn "rsqrt<mode>2"
   [(set (match_operand:FLASX 0 "register_operand" "=f")
-	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
-		      UNSPEC_LASX_XVFRSQRT))]
+    (unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
+		  UNSPEC_LASX_XVFRSQRT))]
   "ISA_HAS_LASX"
   "xvfrsqrt.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fdiv")
