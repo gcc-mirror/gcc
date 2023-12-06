@@ -1083,7 +1083,25 @@
   [(set_attr "type" "simd_fmul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "div<mode>3"
+(define_expand "div<mode>3"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (div:FLSX (match_operand:FLSX 1 "reg_or_vecotr_1_operand")
+	      (match_operand:FLSX 2 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+    && TARGET_RECIP_VEC_DIV
+    && optimize_insn_for_speed_p ()
+    && flag_finite_math_only && !flag_trapping_math
+    && flag_unsafe_math_optimizations)
+  {
+    loongarch_emit_swdivsf (operands[0], operands[1],
+	operands[2], V4SFmode);
+    DONE;
+  }
+})
+
+(define_insn "*div<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(div:FLSX (match_operand:FLSX 1 "register_operand" "f")
 		  (match_operand:FLSX 2 "register_operand" "f")))]
@@ -1112,7 +1130,23 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (sqrt:FLSX (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+      && TARGET_RECIP_VEC_SQRT
+      && flag_unsafe_math_optimizations
+      && optimize_insn_for_speed_p ()
+      && flag_finite_math_only && !flag_trapping_math)
+    {
+      loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 0);
+      DONE;
+    }
+})
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(sqrt:FLSX (match_operand:FLSX 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
@@ -1559,7 +1593,20 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "rsqrt<mode>2"
+(define_expand "rsqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+	     UNSPEC_LSX_VFRSQRT))]
+ "ISA_HAS_LSX"
+{
+ if (<MODE>mode == V4SFmode && TARGET_RECIP_VEC_RSQRT)
+   {
+     loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 1);
+     DONE;
+   }
+})
+
+(define_insn "*rsqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
     (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		 UNSPEC_LSX_VFRSQRT))]

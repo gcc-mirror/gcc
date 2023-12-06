@@ -7552,6 +7552,71 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &loongarch_init_machine_status;
+
+  /* -mrecip options.  */
+  static struct
+    {
+      const char *string;	    /* option name.  */
+      unsigned int mask;	    /* mask bits to set.  */
+    }
+  const recip_options[] = {
+	{ "all",       RECIP_MASK_ALL },
+	{ "none",      RECIP_MASK_NONE },
+	{ "div",       RECIP_MASK_DIV },
+	{ "sqrt",      RECIP_MASK_SQRT },
+	{ "rsqrt",     RECIP_MASK_RSQRT },
+	{ "vec-div",   RECIP_MASK_VEC_DIV },
+	{ "vec-sqrt",  RECIP_MASK_VEC_SQRT },
+	{ "vec-rsqrt", RECIP_MASK_VEC_RSQRT },
+  };
+
+  if (loongarch_recip_name)
+    {
+      char *p = ASTRDUP (loongarch_recip_name);
+      char *q;
+      unsigned int mask, i;
+      bool invert;
+
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  p = NULL;
+	  if (*q == '!')
+	    {
+	      invert = true;
+	      q++;
+	    }
+	  else
+	    invert = false;
+
+	  if (!strcmp (q, "default"))
+	    mask = RECIP_MASK_ALL;
+	  else
+	    {
+	      for (i = 0; i < ARRAY_SIZE (recip_options); i++)
+		if (!strcmp (q, recip_options[i].string))
+		  {
+		    mask = recip_options[i].mask;
+		    break;
+		  }
+
+	      if (i == ARRAY_SIZE (recip_options))
+		{
+		  error ("unknown option for %<-mrecip=%s%>", q);
+		  invert = false;
+		  mask = RECIP_MASK_NONE;
+		}
+	    }
+
+	  if (invert)
+	    recip_mask &= ~mask;
+	  else
+	    recip_mask |= mask;
+	}
+    }
+  if (loongarch_recip)
+    recip_mask |= RECIP_MASK_ALL;
+  if (!TARGET_FRECIPE)
+    recip_mask = RECIP_MASK_NONE;
 }
 
 
@@ -11475,6 +11540,126 @@ loongarch_build_signbit_mask (machine_mode mode, bool vect, bool invert)
   return force_reg (vec_mode, v);
 }
 
+/* Use rsqrte instruction and Newton-Rhapson to compute the approximation of
+   a single precision floating point [reciprocal] square root.  */
+
+void loongarch_emit_swrsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
+{
+  rtx x0, e0, e1, e2, mhalf, monehalf;
+  REAL_VALUE_TYPE r;
+  int unspec;
+
+  x0 = gen_reg_rtx (mode);
+  e0 = gen_reg_rtx (mode);
+  e1 = gen_reg_rtx (mode);
+  e2 = gen_reg_rtx (mode);
+
+  real_arithmetic (&r, ABS_EXPR, &dconsthalf, NULL);
+  mhalf = const_double_from_real_value (r, SFmode);
+
+  real_arithmetic (&r, PLUS_EXPR, &dconsthalf, &dconst1);
+  monehalf = const_double_from_real_value (r, SFmode);
+  unspec = UNSPEC_RSQRTE;
+
+  if (VECTOR_MODE_P (mode))
+    {
+      mhalf = loongarch_build_const_vector (mode, true, mhalf);
+      monehalf = loongarch_build_const_vector (mode, true, monehalf);
+      unspec = GET_MODE_SIZE (mode) == 32 ? UNSPEC_LASX_XVFRSQRTE
+					  : UNSPEC_LSX_VFRSQRTE;
+    }
+
+  /* rsqrt(a) =  rsqrte(a) * (1.5 - 0.5 * a * rsqrte(a) * rsqrte(a))
+     sqrt(a)  =  a * rsqrte(a) * (1.5 - 0.5 * a * rsqrte(a) * rsqrte(a))  */
+
+  a = force_reg (mode, a);
+
+  /* x0 = rsqrt(a) estimate.  */
+  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
+					      unspec)));
+
+  /* If (a == 0.0) Filter out infinity to prevent NaN for sqrt(0.0).  */
+  if (!recip)
+    {
+      rtx zero = force_reg (mode, CONST0_RTX (mode));
+
+      if (VECTOR_MODE_P (mode))
+	{
+	  machine_mode imode = related_int_vector_mode (mode).require ();
+	  rtx mask = gen_reg_rtx (imode);
+	  emit_insn (gen_rtx_SET (mask, gen_rtx_NE (imode, a, zero)));
+	  emit_insn (gen_rtx_SET (x0, gen_rtx_AND (mode, x0,
+						   gen_lowpart (mode, mask))));
+	}
+      else
+	{
+	  rtx target = emit_conditional_move (x0, { GT, a, zero, mode },
+					      x0, zero, mode, 0);
+	  if (target != x0)
+	    emit_move_insn (x0, target);
+	}
+    }
+
+  /* e0 = x0 * a  */
+  emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, a)));
+  /* e1 = e0 * x0  */
+  emit_insn (gen_rtx_SET (e1, gen_rtx_MULT (mode, e0, x0)));
+
+  /* e2 = 1.5 - e1 * 0.5  */
+  mhalf = force_reg (mode, mhalf);
+  monehalf = force_reg (mode, monehalf);
+  emit_insn (gen_rtx_SET (e2, gen_rtx_FMA (mode,
+					   gen_rtx_NEG (mode, e1),
+							mhalf, monehalf)));
+
+  if (recip)
+    /* res = e2 * x0  */
+    emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, x0, e2)));
+  else
+    /* res = e2 * e0  */
+    emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e2, e0)));
+}
+
+/* Use recipe instruction and Newton-Rhapson to compute the approximation of
+   a single precision floating point divide.  */
+
+void loongarch_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
+{
+  rtx x0, e0, mtwo;
+  REAL_VALUE_TYPE r;
+  x0 = gen_reg_rtx (mode);
+  e0 = gen_reg_rtx (mode);
+  int unspec = UNSPEC_RECIPE;
+
+  real_arithmetic (&r, ABS_EXPR, &dconst2, NULL);
+  mtwo = const_double_from_real_value (r, SFmode);
+
+  if (VECTOR_MODE_P (mode))
+    {
+      mtwo = loongarch_build_const_vector (mode, true, mtwo);
+      unspec = GET_MODE_SIZE (mode) == 32 ? UNSPEC_LASX_XVFRECIPE
+					  : UNSPEC_LSX_VFRECIPE;
+    }
+
+  mtwo = force_reg (mode, mtwo);
+
+  /* a / b = a * recipe(b) * (2.0 - b * recipe(b))  */
+
+  /* x0 = 1./b estimate.  */
+  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
+					      unspec)));
+  /* 2.0 - b * x0  */
+  emit_insn (gen_rtx_SET (e0, gen_rtx_FMA (mode,
+					   gen_rtx_NEG (mode, b), x0, mtwo)));
+
+  /* x0 = a * x0  */
+  if (a != CONST1_RTX (mode))
+    emit_insn (gen_rtx_SET (x0, gen_rtx_MULT (mode, a, x0)));
+
+  /* res = e0 * x0  */
+  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, e0, x0)));
+}
+
 static bool
 loongarch_builtin_support_vector_misalignment (machine_mode mode,
 					       const_tree type,
@@ -11669,6 +11854,9 @@ loongarch_asm_code_end (void)
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
   loongarch_autovectorize_vector_modes
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P loongarch_optab_supported_p
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS loongarch_init_builtins

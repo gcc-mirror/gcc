@@ -23,6 +23,9 @@ config/loongarch/loongarch-opts.h
 HeaderInclude
 config/loongarch/loongarch-str.h
 
+TargetVariable
+unsigned int recip_mask = 0
+
 ; ISA related options
 ;; Base ISA
 Enum
@@ -193,6 +196,14 @@ Use %reloc() assembly operators.
 mexplicit-relocs
 Target Var(la_opt_explicit_relocs_backward) Init(M_OPT_UNSET)
 Use %reloc() assembly operators (for backward compatibility).
+
+mrecip
+Target RejectNegative Var(loongarch_recip)
+Generate approximate reciprocal divide and square root for better throughput.
+
+mrecip=
+Target RejectNegative Joined Var(loongarch_recip_name)
+Control generation of reciprocal estimates.
 
 ; The code model option names for -mcmodel.
 Enum

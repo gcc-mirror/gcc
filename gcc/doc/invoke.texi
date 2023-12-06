@@ -1056,6 +1056,7 @@ Objective-C and Objective-C++ Dialects}.
 -mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
 -mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as}
+-mrecip  -mrecip=@var{opt}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -26756,6 +26757,59 @@ detecting corresponding assembler support:
 @option{-mrelax} option, @option{-mno-pass-mrelax-to-as} otherwise.
 This option is mostly useful for debugging, or interoperation with
 assemblers different from the build-time one.
+
+@opindex mrecip
+@item -mrecip
+This option enables use of the reciprocal estimate and reciprocal square
+root estimate instructions with additional Newton-Raphson steps to increase
+precision instead of doing a divide or square root and divide for
+floating-point arguments.
+These instructions are generated only when @option{-funsafe-math-optimizations}
+is enabled together with @option{-ffinite-math-only} and
+@option{-fno-trapping-math}.
+This option is off by default. Before you can use this option, you must sure the
+target CPU supports frecipe and frsqrte instructions.
+Note that while the throughput of the sequence is higher than the throughput of
+the non-reciprocal instruction, the precision of the sequence can be decreased
+by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
+
+@opindex mrecip=opt
+@item -mrecip=@var{opt}
+This option controls which reciprocal estimate instructions
+may be used.  @var{opt} is a comma-separated list of options, which may
+be preceded by a @samp{!} to invert the option:
+
+@table @samp
+@item all
+Enable all estimate instructions.
+
+@item default
+Enable the default instructions, equivalent to @option{-mrecip}.
+
+@item none
+Disable all estimate instructions, equivalent to @option{-mno-recip}.
+
+@item div
+Enable the approximation for scalar division.
+
+@item vec-div
+Enable the approximation for vectorized division.
+
+@item sqrt
+Enable the approximation for scalar square root.
+
+@item vec-sqrt
+Enable the approximation for vectorized square root.
+
+@item rsqrt
+Enable the approximation for scalar reciprocal square root.
+
+@item vec-rsqrt
+Enable the approximation for vectorized reciprocal square root.
+@end table
+
+So, for example, @option{-mrecip=all,!sqrt} enables
+all of the reciprocal approximations, except for scalar square root.
 
 @item loongarch-vect-unroll-limit
 The vectorizer will use available tuning information to determine whether it

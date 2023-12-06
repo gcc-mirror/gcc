@@ -235,6 +235,10 @@
   (ior (match_operand 0 "const_1_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "reg_or_vecotr_1_operand"
+  (ior (match_operand 0 "const_vector_1_operand")
+       (match_operand 0 "register_operand")))
+
 ;; These are used in vec_merge, hence accept bitmask as const_int.
 (define_predicate "const_exp_2_operand"
   (and (match_code "const_int")

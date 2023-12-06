@@ -702,6 +702,24 @@ enum reg_class
    && (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
        || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT))
 
+#define RECIP_MASK_NONE         0x00
+#define RECIP_MASK_DIV          0x01
+#define RECIP_MASK_SQRT         0x02
+#define RECIP_MASK_RSQRT        0x04
+#define RECIP_MASK_VEC_DIV      0x08
+#define RECIP_MASK_VEC_SQRT     0x10
+#define RECIP_MASK_VEC_RSQRT    0x20
+#define RECIP_MASK_ALL (RECIP_MASK_DIV | RECIP_MASK_SQRT \
+			| RECIP_MASK_RSQRT | RECIP_MASK_VEC_SQRT \
+			| RECIP_MASK_VEC_DIV | RECIP_MASK_VEC_RSQRT)
+
+#define TARGET_RECIP_DIV        ((recip_mask & RECIP_MASK_DIV) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_SQRT       ((recip_mask & RECIP_MASK_SQRT) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_RSQRT      ((recip_mask & RECIP_MASK_RSQRT) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_VEC_DIV    ((recip_mask & RECIP_MASK_VEC_DIV) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_VEC_SQRT   ((recip_mask & RECIP_MASK_VEC_SQRT) != 0 || TARGET_uARCH_LA664)
+#define TARGET_RECIP_VEC_RSQRT  ((recip_mask & RECIP_MASK_VEC_RSQRT) != 0 || TARGET_uARCH_LA664)
+
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
 

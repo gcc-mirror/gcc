@@ -893,9 +893,21 @@
 ;; Float division and modulus.
 (define_expand "div<mode>3"
   [(set (match_operand:ANYF 0 "register_operand")
-	(div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
-		  (match_operand:ANYF 2 "register_operand")))]
-  "")
+    (div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
+	      (match_operand:ANYF 2 "register_operand")))]
+  ""
+{
+  if (<MODE>mode == SFmode
+    && TARGET_RECIP_DIV
+    && optimize_insn_for_speed_p ()
+    && flag_finite_math_only && !flag_trapping_math
+    && flag_unsafe_math_optimizations)
+  {
+    loongarch_emit_swdivsf (operands[0], operands[1],
+	operands[2], SFmode);
+    DONE;
+  }
+})
 
 (define_insn "*div<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -1126,7 +1138,23 @@
 ;;
 ;;  ....................
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand")
+    (sqrt:ANYF (match_operand:ANYF 1 "register_operand")))]
+  ""
+ {
+  if (<MODE>mode == SFmode
+      && TARGET_RECIP_SQRT
+      && flag_unsafe_math_optimizations
+      && !optimize_insn_for_size_p ()
+      && flag_finite_math_only && !flag_trapping_math)
+    {
+      loongarch_emit_swrsqrtsf (operands[0], operands[1], SFmode, 0);
+      DONE;
+    }
+ })
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(sqrt:ANYF (match_operand:ANYF 1 "register_operand" "f")))]
   ""
@@ -1134,6 +1162,19 @@
   [(set_attr "type" "fsqrt")
    (set_attr "mode" "<UNITMODE>")
    (set_attr "insn_count" "1")])
+
+(define_expand "rsqrt<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand")
+    (unspec:ANYF [(match_operand:ANYF 1 "register_operand")]
+	   UNSPEC_RSQRT))]
+  "TARGET_HARD_FLOAT"
+{
+   if (<MODE>mode == SFmode && TARGET_RECIP_RSQRT)
+     {
+       loongarch_emit_swrsqrtsf (operands[0], operands[1], SFmode, 1);
+       DONE;
+     }
+})
 
 (define_insn "*rsqrt<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
