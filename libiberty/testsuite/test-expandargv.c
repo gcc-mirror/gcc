@@ -142,6 +142,40 @@ const char *test_data[] = {
   "b",
   0,
 
+  /* Test 7 - No backslash removal within single quotes.  */
+  "'a\\$VAR' '\\\"'",    /* Test 7 data */
+  ARGV0,
+  "@test-expandargv-7.lst",
+  0,
+  ARGV0,
+  "a\\$VAR",
+  "\\\"",
+  0,
+
+  /* Test 8 - Remove backslash / newline pairs.  */
+  "\"ab\\\ncd\" ef\\\ngh",    /* Test 8 data */
+  ARGV0,
+  "@test-expandargv-8.lst",
+  0,
+  ARGV0,
+  "abcd",
+  "efgh",
+  0,
+
+  /* Test 9 - Backslash within double quotes.  */
+  "\"\\$VAR\" \"\\`\" \"\\\"\" \"\\\\\" \"\\n\" \"\\t\"",    /* Test 9 data */
+  ARGV0,
+  "@test-expandargv-9.lst",
+  0,
+  ARGV0,
+  "$VAR",
+  "`",
+  "\"",
+  "\\",
+  "\\n",
+  "\\t",
+  0,
+
   0 /* Test done marker, don't remove. */
 };
 

@@ -224,9 +224,13 @@ char **buildargv (const char *input)
 		  if (bsquote)
 		    {
 		      bsquote = 0;
-		      *arg++ = *input;
+		      if (*input != '\n')
+			*arg++ = *input;
 		    }
-		  else if (*input == '\\')
+		  else if (*input == '\\'
+			   && !squote
+			   && (!dquote
+			       || strchr ("$`\"\\\n", *(input + 1)) != NULL))
 		    {
 		      bsquote = 1;
 		    }
