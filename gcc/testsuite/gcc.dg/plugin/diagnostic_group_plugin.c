@@ -165,7 +165,7 @@ pass_test_groups::execute (function *fun)
 
 void
 test_diagnostic_starter (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 const diagnostic_info *diagnostic)
 {
   pp_set_prefix (context->printer, xstrdup ("PREFIX: "));
 }

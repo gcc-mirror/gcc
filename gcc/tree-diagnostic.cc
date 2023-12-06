@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    that caused an error.  Called from all error and warning functions.  */
 void
 diagnostic_report_current_function (diagnostic_context *context,
-				    diagnostic_info *diagnostic)
+				    const diagnostic_info *diagnostic)
 {
   location_t loc = diagnostic_location (diagnostic);
   diagnostic_report_current_module (context, loc);
@@ -44,7 +44,7 @@ diagnostic_report_current_function (diagnostic_context *context,
 
 static void
 default_tree_diagnostic_starter (diagnostic_context *context,
-				 diagnostic_info *diagnostic)
+				 const diagnostic_info *diagnostic)
 {
   diagnostic_report_current_function (context, diagnostic);
   pp_set_prefix (context->printer, diagnostic_build_prefix (context,
@@ -241,7 +241,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
     template instantiation contexts.  */
 void
 virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
-				     diagnostic_info *diagnostic)
+				     const diagnostic_info *diagnostic)
 {
   maybe_unwind_expanded_macro_loc (context, diagnostic_location (diagnostic));
 }

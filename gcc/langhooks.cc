@@ -369,7 +369,7 @@ lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
    an error.  */
 void
 lhd_print_error_function (diagnostic_context *context, const char *file,
-			  diagnostic_info *diagnostic)
+			  const diagnostic_info *diagnostic)
 {
   if (diagnostic_last_function_changed (context, diagnostic))
     {
