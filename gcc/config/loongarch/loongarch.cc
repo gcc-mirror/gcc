@@ -3974,7 +3974,9 @@ protected:
   /* Reduction factor for suggesting unroll factor.  */
   unsigned m_reduc_factor = 0;
   /* True if the loop contains an average operation. */
-  bool m_has_avg =false;
+  bool m_has_avg = false;
+  /* True if the loop uses approximation instruction sequence.  */
+  bool m_has_recip = false;
 };
 
 /* Implement TARGET_VECTORIZE_CREATE_COSTS.  */
@@ -4021,7 +4023,7 @@ loongarch_vector_costs::determine_suggested_unroll_factor (loop_vec_info loop_vi
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  if (m_has_avg)
+  if (m_has_avg || m_has_recip)
     return 1;
 
   /* Don't unroll if it's specified explicitly not to be unrolled.  */
@@ -4075,6 +4077,36 @@ loongarch_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	    case IFN_AVG_FLOOR:
 	    case IFN_AVG_CEIL:
 	      m_has_avg = true;
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  combined_fn cfn;
+  if (kind == vector_stmt
+      && stmt_info
+      && stmt_info->stmt)
+    {
+      /* Detect the use of approximate instruction sequence.  */
+      if ((TARGET_RECIP_VEC_SQRT || TARGET_RECIP_VEC_RSQRT)
+	  && (cfn = gimple_call_combined_fn (stmt_info->stmt)) != CFN_LAST)
+	switch (cfn)
+	  {
+	  case CFN_BUILT_IN_SQRTF:
+	    m_has_recip = true;
+	  default:
+	    break;
+	  }
+      else if (TARGET_RECIP_VEC_DIV
+	       && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
+	{
+	  machine_mode mode = TYPE_MODE (vectype);
+	  switch (gimple_assign_rhs_code (stmt_info->stmt))
+	    {
+	    case RDIV_EXPR:
+	      if (GET_MODE_INNER (mode) == SFmode)
+		m_has_recip = true;
 	    default:
 	      break;
 	    }
