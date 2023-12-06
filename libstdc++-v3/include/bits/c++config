@@ -538,6 +538,7 @@ namespace std
   // This can be used without checking if the compiler supports the feature.
   // The macro _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED can be used to check if
   // the compiler support is present to make this function work as expected.
+  __attribute__((__always_inline__))
   _GLIBCXX_CONSTEXPR inline bool
   __is_constant_evaluated() _GLIBCXX_NOEXCEPT
   {
@@ -598,19 +599,31 @@ namespace std
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define _GLIBCXX_DO_ASSERT true
-#elif _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-# define _GLIBCXX_DO_ASSERT std::__is_constant_evaluated()
-#else
-# define _GLIBCXX_DO_ASSERT false
-#endif
-
+// Enable runtime assertion checks, and also check in constant expressions.
 # define __glibcxx_assert(cond)						\
   do {									\
-    if _GLIBCXX17_CONSTEXPR (_GLIBCXX_DO_ASSERT)			\
-      if (__builtin_expect(!bool(cond), false))				\
-	_GLIBCXX_ASSERT_FAIL(cond);					\
+    if (__builtin_expect(!bool(cond), false))				\
+      _GLIBCXX_ASSERT_FAIL(cond);					\
   } while (false)
+#elif _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
+// Only check assertions during constant evaluation.
+namespace std
+{
+  __attribute__((__always_inline__,__visibility__("default")))
+  inline void
+  __glibcxx_assert_fail()
+  { }
+}
+# define __glibcxx_assert(cond)						\
+  do {									\
+    if (std::__is_constant_evaluated())					\
+      if (__builtin_expect(!bool(cond), false))				\
+	std::__glibcxx_assert_fail();					\
+  } while (false)
+#else
+// Don't check any assertions.
+# define __glibcxx_assert(cond)
+#endif
 
 // Macro indicating that TSAN is in use.
 #if __SANITIZE_THREAD__
