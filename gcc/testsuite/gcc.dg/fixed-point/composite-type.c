@@ -68,39 +68,39 @@ FIXED_POINT_COMPOSITE_DECL(_Sat unsigned long long _Accum, Sullk);  /* { dg-erro
 
 int main()
 {
-  FIXED_POINT_COMPOSITE_TEST(short _Fract, sf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Fract, f);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(long _Fract, lf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(long long _Fract, llf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned short _Fract, usf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned _Fract, uf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned long _Fract, ulf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned long long _Fract, ullf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat short _Fract, Ssf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat _Fract, Sf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat long _Fract, Slf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat long long _Fract, Sllf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned short _Fract, Susf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned _Fract, Suf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long _Fract, Sulf);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long long _Fract, Sullf);  /* { dg-warning "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(short _Fract, sf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Fract, f);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(long _Fract, lf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(long long _Fract, llf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned short _Fract, usf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned _Fract, uf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned long _Fract, ulf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned long long _Fract, ullf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat short _Fract, Ssf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat _Fract, Sf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat long _Fract, Slf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat long long _Fract, Sllf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned short _Fract, Susf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned _Fract, Suf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long _Fract, Sulf);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long long _Fract, Sullf);  /* { dg-error "incompatible pointer type" } */
 
-  FIXED_POINT_COMPOSITE_TEST(short _Accum, sk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Accum, k);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(long _Accum, lk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(long long _Accum, llk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned short _Accum, usk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned _Accum, uk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned long _Accum, ulk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(unsigned long long _Accum, ullk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat short _Accum, Ssk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat _Accum, Sk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat long _Accum, Slk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat long long _Accum, Sllk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned short _Accum, Susk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned _Accum, Suk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long _Accum, Sulk);  /* { dg-warning "incompatible pointer type" } */
-  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long long _Accum, Sullk);  /* { dg-warning "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(short _Accum, sk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Accum, k);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(long _Accum, lk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(long long _Accum, llk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned short _Accum, usk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned _Accum, uk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned long _Accum, ulk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(unsigned long long _Accum, ullk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat short _Accum, Ssk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat _Accum, Sk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat long _Accum, Slk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat long long _Accum, Sllk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned short _Accum, Susk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned _Accum, Suk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long _Accum, Sulk);  /* { dg-error "incompatible pointer type" } */
+  FIXED_POINT_COMPOSITE_TEST(_Sat unsigned long long _Accum, Sullk);  /* { dg-error "incompatible pointer type" } */
 
   return 0;
 }
