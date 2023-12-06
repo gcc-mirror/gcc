@@ -502,6 +502,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
 #define CODE_FOR_lsx_vssrlrn_wu_d CODE_FOR_lsx_vssrlrn_u_wu_d
 #define CODE_FOR_lsx_vfrsqrt_d CODE_FOR_rsqrtv2df2
 #define CODE_FOR_lsx_vfrsqrt_s CODE_FOR_rsqrtv4sf2
+#define CODE_FOR_lsx_vfrecip_d CODE_FOR_recipv2df3
+#define CODE_FOR_lsx_vfrecip_s CODE_FOR_recipv4sf3
 
 /* LoongArch ASX define CODE_FOR_lasx_mxxx */
 #define CODE_FOR_lasx_xvsadd_b CODE_FOR_ssaddv32qi3
@@ -780,6 +782,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
 #define CODE_FOR_lasx_xvsat_du CODE_FOR_lasx_xvsat_u_du
 #define CODE_FOR_lasx_xvfrsqrt_d CODE_FOR_rsqrtv4df2
 #define CODE_FOR_lasx_xvfrsqrt_s CODE_FOR_rsqrtv8sf2
+#define CODE_FOR_lasx_xvfrecip_d CODE_FOR_recipv4df3
+#define CODE_FOR_lasx_xvfrecip_s CODE_FOR_recipv8sf3
 
 static const struct loongarch_builtin_description loongarch_builtins[] = {
 #define LARCH_MOVFCSR2GR 0
@@ -3023,6 +3027,22 @@ loongarch_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
   opno = 0;
   if (has_target_p)
     create_output_operand (&ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
+
+  /* For the vector reciprocal instructions, we need to construct a temporary
+     parameter const1_vector.  */
+  switch (icode)
+    {
+    case CODE_FOR_recipv8sf3:
+    case CODE_FOR_recipv4df3:
+    case CODE_FOR_recipv4sf3:
+    case CODE_FOR_recipv2df3:
+      loongarch_prepare_builtin_arg (&ops[2], exp, 0);
+      create_input_operand (&ops[1], CONST1_RTX (ops[0].mode), ops[0].mode);
+      return loongarch_expand_builtin_insn (icode, 3, ops, has_target_p);
+
+    default:
+      break;
+    }
 
   /* Map the arguments to the other operands.  */
   gcc_assert (opno + call_expr_nargs (exp)

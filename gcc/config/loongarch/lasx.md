@@ -1626,12 +1626,12 @@
   [(set_attr "type" "simd_fminmax")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvfrecip_<flasxfmt>"
+(define_insn "recip<mode>3"
   [(set (match_operand:FLASX 0 "register_operand" "=f")
-	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
-		      UNSPEC_LASX_XVFRECIP))]
+       (div:FLASX (match_operand:FLASX 1 "const_vector_1_operand" "")
+		  (match_operand:FLASX 2 "register_operand" "f")))]
   "ISA_HAS_LASX"
-  "xvfrecip.<flasxfmt>\t%u0,%u1"
+  "xvfrecip.<flasxfmt>\t%u0,%u2"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 

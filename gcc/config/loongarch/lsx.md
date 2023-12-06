@@ -1539,12 +1539,12 @@
   [(set_attr "type" "simd_fminmax")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrecip_<flsxfmt>"
+(define_insn "recip<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRECIP))]
+       (div:FLSX (match_operand:FLSX 1 "const_vector_1_operand" "")
+		 (match_operand:FLSX 2 "register_operand" "f")))]
   "ISA_HAS_LSX"
-  "vfrecip.<flsxfmt>\t%w0,%w1"
+  "vfrecip.<flsxfmt>\t%w0,%w2"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 

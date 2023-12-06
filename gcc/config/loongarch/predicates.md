@@ -227,6 +227,10 @@
   (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op == CONST1_RTX (GET_MODE (op))")))
 
+(define_predicate "const_vector_1_operand"
+  (and (match_code "const_vector")
+       (match_test "op == CONST1_RTX (GET_MODE (op))")))
+
 (define_predicate "reg_or_1_operand"
   (ior (match_operand 0 "const_1_operand")
        (match_operand 0 "register_operand")))
