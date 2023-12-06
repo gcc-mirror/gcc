@@ -2624,7 +2624,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	{
 	  if (kind == bitint_prec_large || (i == 0 && bo_bit != 0))
 	    idx = size_int (start + i);
-	  else if (i == cnt - 1)
+	  else if (i == cnt - 1 && (rem != 0))
 	    idx = size_int (end);
 	  else if (i == (bo_bit != 0))
 	    idx = create_loop (size_int (start + i), &idx_next);
