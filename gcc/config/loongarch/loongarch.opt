@@ -260,6 +260,10 @@ default value is 4.
 Variable
 HOST_WIDE_INT isa_evolution = 0
 
+mfrecipe
+Target Mask(ISA_FRECIPE) Var(isa_evolution)
+Support frecipe.{s/d} and frsqrte.{s/d} instructions.
+
 mdiv32
 Target Mask(ISA_DIV32) Var(isa_evolution)
 Support div.w[u] and mod.w[u] instructions with inputs not sign-extended.

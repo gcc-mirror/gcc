@@ -29,6 +29,7 @@ static constexpr struct {
   unsigned int cpucfg_bit;
   HOST_WIDE_INT isa_evolution_bit;
 } cpucfg_map[] = {
+  { 2, 1u << 25, OPTION_MASK_ISA_FRECIPE },
   { 2, 1u << 26, OPTION_MASK_ISA_DIV32 },
   { 2, 1u << 27, OPTION_MASK_ISA_LAM_BH },
   { 2, 1u << 28, OPTION_MASK_ISA_LAMCAS },

@@ -120,6 +120,9 @@ struct loongarch_builtin_description
 AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 AVAIL_ALL (lsx, ISA_HAS_LSX)
 AVAIL_ALL (lasx, ISA_HAS_LASX)
+AVAIL_ALL (frecipe, TARGET_FRECIPE && TARGET_HARD_FLOAT_ABI)
+AVAIL_ALL (lsx_frecipe, ISA_HAS_LSX && TARGET_FRECIPE)
+AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
 
 /* Construct a loongarch_builtin_description from the given arguments.
 
@@ -164,6 +167,15 @@ AVAIL_ALL (lasx, ISA_HAS_LASX)
     "__builtin_lsx_" #INSN,  LARCH_BUILTIN_DIRECT,			\
     FUNCTION_TYPE, loongarch_builtin_avail_lsx }
 
+ /* Define an LSX LARCH_BUILTIN_DIRECT function __builtin_lsx_<INSN>
+    for instruction CODE_FOR_lsx_<INSN>.  FUNCTION_TYPE is a builtin_description
+    field. AVAIL is the name of the availability predicate, without the leading
+    loongarch_builtin_avail_.  */
+#define LSX_EXT_BUILTIN(INSN, FUNCTION_TYPE, AVAIL)                     \
+  { CODE_FOR_lsx_ ## INSN,                                              \
+    "__builtin_lsx_" #INSN,  LARCH_BUILTIN_DIRECT,                      \
+    FUNCTION_TYPE, loongarch_builtin_avail_##AVAIL }
+
 
 /* Define an LSX LARCH_BUILTIN_LSX_TEST_BRANCH function __builtin_lsx_<INSN>
    for instruction CODE_FOR_lsx_<INSN>.  FUNCTION_TYPE is a builtin_description
@@ -188,6 +200,15 @@ AVAIL_ALL (lasx, ISA_HAS_LASX)
   { CODE_FOR_lasx_ ## INSN,						\
     "__builtin_lasx_" #INSN,  LARCH_BUILTIN_LASX,			\
     FUNCTION_TYPE, loongarch_builtin_avail_lasx }
+
+/* Define an LASX LARCH_BUILTIN_DIRECT function __builtin_lasx_<INSN>
+   for instruction CODE_FOR_lasx_<INSN>.  FUNCTION_TYPE is a builtin_description
+   field. AVAIL is the name of the availability predicate, without the leading
+   loongarch_builtin_avail_.  */
+#define LASX_EXT_BUILTIN(INSN, FUNCTION_TYPE, AVAIL)                    \
+  { CODE_FOR_lasx_ ## INSN,                                             \
+    "__builtin_lasx_" #INSN,  LARCH_BUILTIN_LASX,                       \
+    FUNCTION_TYPE, loongarch_builtin_avail_##AVAIL }
 
 /* Define an LASX LARCH_BUILTIN_DIRECT_NO_TARGET function __builtin_lasx_<INSN>
    for instruction CODE_FOR_lasx_<INSN>.  FUNCTION_TYPE is a builtin_description
@@ -803,6 +824,27 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   DIRECT_NO_TARGET_BUILTIN (asrtgt_d, LARCH_VOID_FTYPE_DI_DI, default),
   DIRECT_NO_TARGET_BUILTIN (syscall, LARCH_VOID_FTYPE_USI, default),
   DIRECT_NO_TARGET_BUILTIN (break, LARCH_VOID_FTYPE_USI, default),
+
+  /* Built-in functions for frecipe.{s/d} and frsqrte.{s/d}.  */
+
+  DIRECT_BUILTIN (frecipe_s, LARCH_SF_FTYPE_SF, frecipe),
+  DIRECT_BUILTIN (frecipe_d, LARCH_DF_FTYPE_DF, frecipe),
+  DIRECT_BUILTIN (frsqrte_s, LARCH_SF_FTYPE_SF, frecipe),
+  DIRECT_BUILTIN (frsqrte_d, LARCH_DF_FTYPE_DF, frecipe),
+
+  /* Built-in functions for new LSX instructions.  */
+
+  LSX_EXT_BUILTIN (vfrecipe_s, LARCH_V4SF_FTYPE_V4SF, lsx_frecipe),
+  LSX_EXT_BUILTIN (vfrecipe_d, LARCH_V2DF_FTYPE_V2DF, lsx_frecipe),
+  LSX_EXT_BUILTIN (vfrsqrte_s, LARCH_V4SF_FTYPE_V4SF, lsx_frecipe),
+  LSX_EXT_BUILTIN (vfrsqrte_d, LARCH_V2DF_FTYPE_V2DF, lsx_frecipe),
+
+  /* Built-in functions for new LASX instructions.  */
+
+  LASX_EXT_BUILTIN (xvfrecipe_s, LARCH_V8SF_FTYPE_V8SF, lasx_frecipe),
+  LASX_EXT_BUILTIN (xvfrecipe_d, LARCH_V4DF_FTYPE_V4DF, lasx_frecipe),
+  LASX_EXT_BUILTIN (xvfrsqrte_s, LARCH_V8SF_FTYPE_V8SF, lasx_frecipe),
+  LASX_EXT_BUILTIN (xvfrsqrte_d, LARCH_V4DF_FTYPE_V4DF, lasx_frecipe),
 
   /* Built-in functions for LSX.  */
   LSX_BUILTIN (vsll_b, LARCH_V16QI_FTYPE_V16QI_V16QI),

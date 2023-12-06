@@ -40,8 +40,10 @@
   UNSPEC_LASX_XVFCVTL
   UNSPEC_LASX_XVFLOGB
   UNSPEC_LASX_XVFRECIP
+  UNSPEC_LASX_XVFRECIPE
   UNSPEC_LASX_XVFRINT
   UNSPEC_LASX_XVFRSQRT
+  UNSPEC_LASX_XVFRSQRTE
   UNSPEC_LASX_XVFCMP_SAF
   UNSPEC_LASX_XVFCMP_SEQ
   UNSPEC_LASX_XVFCMP_SLE
@@ -1633,12 +1635,34 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
+;; Approximate Reciprocal Instructions.
+
+(define_insn "lasx_xvfrecipe_<flasxfmt>"
+  [(set (match_operand:FLASX 0 "register_operand" "=f")
+    (unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
+		  UNSPEC_LASX_XVFRECIPE))]
+  "ISA_HAS_LASX && TARGET_FRECIPE"
+  "xvfrecipe.<flasxfmt>\t%u0,%u1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "lasx_xvfrsqrt_<flasxfmt>"
   [(set (match_operand:FLASX 0 "register_operand" "=f")
 	(unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
 		      UNSPEC_LASX_XVFRSQRT))]
   "ISA_HAS_LASX"
   "xvfrsqrt.<flasxfmt>\t%u0,%u1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
+;; Approximate Reciprocal Square Root Instructions.
+
+(define_insn "lasx_xvfrsqrte_<flasxfmt>"
+  [(set (match_operand:FLASX 0 "register_operand" "=f")
+    (unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
+		  UNSPEC_LASX_XVFRSQRTE))]
+  "ISA_HAS_LASX && TARGET_FRECIPE"
+  "xvfrsqrte.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 

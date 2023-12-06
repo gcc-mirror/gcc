@@ -60,7 +60,8 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
 	    .fpu_ (ISA_EXT_FPU64)
 	    .simd_ (ISA_EXT_SIMD_LASX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
-		    | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS));
+			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
+			 | OPTION_MASK_ISA_FRECIPE));
 
 static inline loongarch_cache la464_cache ()
 {

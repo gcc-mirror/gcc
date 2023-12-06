@@ -333,6 +333,44 @@ __iocsrwr_d (unsigned long int _1, unsigned int _2)
 }
 #endif
 
+#ifdef __loongarch_frecipe
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  SF, SF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frecipe_s (float _1)
+{
+  __builtin_loongarch_frecipe_s ((float) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  DF, DF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frecipe_d (double _1)
+{
+  __builtin_loongarch_frecipe_d ((double) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  SF, SF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frsqrte_s (float _1)
+{
+  __builtin_loongarch_frsqrte_s ((float) _1);
+}
+
+/* Assembly instruction format: fd, fj.  */
+/* Data types in instruction templates:  DF, DF.  */
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+__frsqrte_d (double _1)
+{
+  __builtin_loongarch_frsqrte_d ((double) _1);
+}
+#endif
+
 /* Assembly instruction format:	ui15.  */
 /* Data types in instruction templates:  USI.  */
 #define __dbar(/*ui15*/ _1) __builtin_loongarch_dbar ((_1))

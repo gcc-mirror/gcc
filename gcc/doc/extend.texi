@@ -17339,6 +17339,14 @@ The intrinsics provided are listed below:
     void __builtin_loongarch_break (imm0_32767)
 @end smallexample
 
+These instrisic functions are available by using @option{-mfrecipe}.
+@smallexample
+    float __builtin_loongarch_frecipe_s (float);
+    double  __builtin_loongarch_frecipe_d (double);
+    float __builtin_loongarch_frsqrte_s (float);
+    double  __builtin_loongarch_frsqrte_d (double);
+@end smallexample
+
 @emph{Note:}Since the control register is divided into 32-bit and 64-bit,
 but the access instruction is not distinguished. So GCC renames the control
 instructions when implementing intrinsics.
@@ -17409,6 +17417,15 @@ function you need to include @code{larchintrin.h}.
 
     void __syscall (imm0_32767)
     void __break (imm0_32767)
+@end smallexample
+
+These instrisic functions are available by including @code{larchintrin.h} and
+using @option{-mfrecipe}.
+@smallexample
+    float __frecipe_s (float);
+    double __frecipe_d (double);
+    float __frsqrte_s (float);
+    double __frsqrte_d (double);
 @end smallexample
 
 Additional built-in functions are available for LoongArch family
@@ -18251,6 +18268,15 @@ __m128i __lsx_vxori_b (__m128i, imm0_255);
 __m128i __lsx_vxor_v (__m128i, __m128i);
 @end smallexample
 
+These instrisic functions are available by including @code{lsxintrin.h} and
+using @option{-mfrecipe} and @option{-mlsx}.
+@smallexample
+__m128d __lsx_vfrecipe_d (__m128d);
+__m128 __lsx_vfrecipe_s (__m128);
+__m128d __lsx_vfrsqrte_d (__m128d);
+__m128 __lsx_vfrsqrte_s (__m128);
+@end smallexample
+
 @node LoongArch ASX Vector Intrinsics
 @subsection LoongArch ASX Vector Intrinsics
 
@@ -19088,6 +19114,15 @@ __m256i __lasx_xvsubwod_w_h (__m256i, __m256i);
 __m256i __lasx_xvsubwod_w_hu (__m256i, __m256i);
 __m256i __lasx_xvxori_b (__m256i, imm0_255);
 __m256i __lasx_xvxor_v (__m256i, __m256i);
+@end smallexample
+
+These instrisic functions are available by including @code{lasxintrin.h} and
+using @option{-mfrecipe} and @option{-mlasx}.
+@smallexample
+__m256d __lasx_xvfrecipe_d (__m256d);
+__m256 __lasx_xvfrecipe_s (__m256);
+__m256d __lasx_xvfrsqrte_d (__m256d);
+__m256 __lasx_xvfrsqrte_s (__m256);
 @end smallexample
 
 @node MIPS DSP Built-in Functions

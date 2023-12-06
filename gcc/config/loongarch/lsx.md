@@ -42,8 +42,10 @@
   UNSPEC_LSX_VFCVTL
   UNSPEC_LSX_VFLOGB
   UNSPEC_LSX_VFRECIP
+  UNSPEC_LSX_VFRECIPE
   UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
+  UNSPEC_LSX_VFRSQRTE
   UNSPEC_LSX_VFCMP_SAF
   UNSPEC_LSX_VFCMP_SEQ
   UNSPEC_LSX_VFCMP_SLE
@@ -1546,12 +1548,34 @@
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
+;; Approximate Reciprocal Instructions.
+
+(define_insn "lsx_vfrecipe_<flsxfmt>"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRECIPE))]
+  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "vfrecipe.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "lsx_vfrsqrt_<flsxfmt>"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		     UNSPEC_LSX_VFRSQRT))]
   "ISA_HAS_LSX"
   "vfrsqrt.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
+   (set_attr "mode" "<MODE>")])
+
+;; Approximate Reciprocal Square Root Instructions.
+
+(define_insn "lsx_vfrsqrte_<flsxfmt>"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRTE))]
+  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "vfrsqrte.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 

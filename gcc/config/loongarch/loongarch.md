@@ -59,6 +59,12 @@
   ;; Stack tie
   UNSPEC_TIE
 
+  ;; RSQRT
+  UNSPEC_RSQRTE
+
+  ;; RECIP
+  UNSPEC_RECIPE
+
   ;; CRC
   UNSPEC_CRC
   UNSPEC_CRCC
@@ -220,6 +226,7 @@
 ;; fmadd	floating point multiply-add
 ;; fdiv		floating point divide
 ;; frdiv	floating point reciprocal divide
+;; frecipe      floating point approximate reciprocal
 ;; fabs		floating point absolute value
 ;; flogb	floating point exponent extract
 ;; fneg		floating point negation
@@ -229,6 +236,7 @@
 ;; fscaleb	floating point scale
 ;; fsqrt	floating point square root
 ;; frsqrt       floating point reciprocal square root
+;; frsqrte      floating point approximate reciprocal square root
 ;; multi	multiword sequence (or user asm statements)
 ;; atomic	atomic memory update instruction
 ;; syncloop	memory atomic operation implemented as a sync loop
@@ -238,8 +246,8 @@
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
-   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,flogb,fneg,fcmp,fcopysign,fcvt,
-   fscaleb,fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost,
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,frecipe,fabs,flogb,fneg,fcmp,fcopysign,fcvt,
+   fscaleb,fsqrt,frsqrt,frsqrte,accext,accmod,multi,atomic,syncloop,nop,ghost,
    simd_div,simd_fclass,simd_flog2,simd_fadd,simd_fcvt,simd_fmul,simd_fmadd,
    simd_fdiv,simd_bitins,simd_bitmov,simd_insert,simd_sld,simd_mul,simd_fcmp,
    simd_fexp2,simd_int_arith,simd_bit,simd_shift,simd_splat,simd_fill,
@@ -908,6 +916,18 @@
   [(set_attr "type" "frdiv")
    (set_attr "mode" "<UNITMODE>")])
 
+;; Approximate Reciprocal Instructions.
+
+(define_insn "loongarch_frecipe_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+    (unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+	     UNSPEC_RECIPE))]
+  "TARGET_FRECIPE"
+  "frecipe.<fmt>\t%0,%1"
+  [(set_attr "type" "frecipe")
+   (set_attr "mode" "<UNITMODE>")
+   (set_attr "insn_count" "1")])
+
 ;; Integer division and modulus.
 (define_expand "<optab><mode>3"
   [(set (match_operand:GPR 0 "register_operand")
@@ -1133,6 +1153,17 @@
   [(set_attr "type" "frsqrt")
    (set_attr "mode" "<UNITMODE>")
    (set_attr "insn_count" "1")])
+
+;; Approximate Reciprocal Square Root Instructions.
+
+(define_insn "loongarch_frsqrte_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+    (unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+		 UNSPEC_RSQRTE))]
+  "TARGET_FRECIPE"
+  "frsqrte.<fmt>\t%0,%1"
+  [(set_attr "type" "frsqrte")
+   (set_attr "mode" "<UNITMODE>")])
 
 ;;
 ;;  ....................
