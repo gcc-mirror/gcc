@@ -5,7 +5,7 @@
      * number of callee-saved reg == 1.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -fomit-frame-pointer --save-temps" } */
+/* { dg-options "-O2 -fomit-frame-pointer --save-temps -fno-stack-protector" } */
 
 #include "test_frame_common.h"
 

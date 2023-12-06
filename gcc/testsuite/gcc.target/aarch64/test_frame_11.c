@@ -5,7 +5,7 @@
      * optimized code should use "stp !" for stack adjustment.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 --save-temps" } */
+/* { dg-options "-O2 --save-temps -fno-stack-protector" } */
 
 #include "test_frame_common.h"
 

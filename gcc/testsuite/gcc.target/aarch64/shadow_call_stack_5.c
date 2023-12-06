@@ -7,7 +7,7 @@
      * optimized code should use "ldr	x29, [sp]" to restore x29 only.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-omit-frame-pointer -fsanitize=shadow-call-stack -fno-exceptions -ffixed-x18 --save-temps" } */
+/* { dg-options "-O2 -fno-omit-frame-pointer -fsanitize=shadow-call-stack -fno-exceptions -ffixed-x18 --save-temps -fno-stack-protector" } */
 
 #include "test_frame_common.h"
 
