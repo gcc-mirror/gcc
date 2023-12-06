@@ -596,6 +596,14 @@ extract_single_source (set_info *set)
   return first_insn;
 }
 
+static insn_info *
+extract_single_source (def_info *def)
+{
+  if (!def)
+    return nullptr;
+  return extract_single_source (dyn_cast<set_info *> (def));
+}
+
 static bool
 same_equiv_note_p (set_info *set1, set_info *set2)
 {
@@ -2692,9 +2700,7 @@ pre_vsetvl::compute_lcm_local_properties ()
 			  def_lookup dl = crtl->ssa->find_def (resource, insn);
 			  def_info *def
 			    = dl.matching_set_or_last_def_of_prev_group ();
-			  gcc_assert (def);
-			  insn_info *def_insn = extract_single_source (
-			    dyn_cast<set_info *> (def));
+			  insn_info *def_insn = extract_single_source (def);
 			  if (def_insn && vsetvl_insn_p (def_insn->rtl ()))
 			    {
 			      vsetvl_info def_info = vsetvl_info (def_insn);
