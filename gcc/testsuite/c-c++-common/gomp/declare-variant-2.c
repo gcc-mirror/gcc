@@ -105,9 +105,9 @@ void f50 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { 
 void f51 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order})	/* { dg-error "expected '\\(' before '\\\}' token" } */
 void f52 (void);
-#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(acquire)})	/* { dg-error "incorrect property 'acquire' of 'atomic_default_mem_order' selector" } */
+#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(acquire)})
 void f53 (void);
-#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(release)})	/* { dg-error "incorrect property 'release' of 'atomic_default_mem_order' selector" } */
+#pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(release)})
 void f54 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(foobar)})	/* { dg-error "incorrect property 'foobar' of 'atomic_default_mem_order' selector" } */
 void f55 (void);

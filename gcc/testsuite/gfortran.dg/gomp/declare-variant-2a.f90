@@ -29,10 +29,10 @@ contains
     !$omp declare variant (f1) match(implementation={vendor("foobar")}) ! { dg-warning "unknown property '.foobar.' of 'vendor' selector" }
   end subroutine
   subroutine f53 ()
-    !$omp declare variant (f1) match(implementation={atomic_default_mem_order(acquire)})  ! { dg-error "incorrect property 'acquire' of 'atomic_default_mem_order' selector" }
+    !$omp declare variant (f1) match(implementation={atomic_default_mem_order(acquire)})
   end subroutine
   subroutine f54 ()
-    !$omp declare variant (f1) match(implementation={atomic_default_mem_order(release)})  ! { dg-error "incorrect property 'release' of 'atomic_default_mem_order' selector" }
+    !$omp declare variant (f1) match(implementation={atomic_default_mem_order(release)})
   end subroutine
   subroutine f55 ()
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order(foobar)}) ! { dg-error "incorrect property 'foobar' of 'atomic_default_mem_order' selector" }

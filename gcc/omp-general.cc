@@ -1128,12 +1128,12 @@ const char *omp_tss_map[] =
 static const char *const kind_properties[] =
   { "host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
 static const char *const vendor_properties[] =
-  { "amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
+  { "amd", "arm", "bsc", "cray", "fujitsu", "gnu", "hpe", "ibm", "intel",
     "llvm", "nvidia", "pgi", "ti", "unknown", NULL };
 static const char *const extension_properties[] =
   { NULL };
 static const char *const atomic_default_mem_order_properties[] =
-  { "seq_cst", "relaxed", "acq_rel", NULL };
+  { "seq_cst", "relaxed", "acq_rel", "acquire", "release", NULL };
 
 struct omp_ts_info omp_ts_map[] =
   {
@@ -1556,6 +1556,12 @@ omp_context_selector_matches (tree ctx)
 		    return 0;
 		  else if (!strcmp (prop, "acq_rel")
 			   && omo != OMP_MEMORY_ORDER_ACQ_REL)
+		    return 0;
+		  else if (!strcmp (prop, "acquire")
+			   && omo != OMP_MEMORY_ORDER_ACQUIRE)
+		    return 0;
+		  else if (!strcmp (prop, "release")
+			   && omo != OMP_MEMORY_ORDER_RELEASE)
 		    return 0;
 		}
 	      break;
