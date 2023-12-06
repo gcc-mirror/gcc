@@ -1600,13 +1600,13 @@ generate_results (const char *file_name)
     {
       if (flag_use_stdout)
 	{
-	  root->dump (stdout);
+	  root->dump (stdout, false);
 	  printf ("\n");
 	}
       else
 	{
 	  pretty_printer pp;
-	  root->print (&pp);
+	  root->print (&pp, false);
 	  pp_formatted_text (&pp);
 
 	  fnotice (stdout, "Creating '%s'\n",

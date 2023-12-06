@@ -1391,6 +1391,10 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
+fdiagnostics-json-formatting
+Common Var(flag_diagnostics_json_formatting) Init(1)
+Enable formatting of JSON output.
+
 fdiagnostics-urls=
 Driver Common Joined RejectNegative Var(flag_diagnostics_show_urls) Enum(diagnostic_url_rule) Init(DIAGNOSTICS_URL_AUTO)
 -fdiagnostics-urls=[never|always|auto]	Embed URLs in diagnostics.

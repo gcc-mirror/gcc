@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fdiagnostics-format=sarif-file" } */
+/* { dg-additional-options " -fno-diagnostics-json-formatting -fdiagnostics-format=sarif-file" } */
 
 #include <stdlib.h>
 

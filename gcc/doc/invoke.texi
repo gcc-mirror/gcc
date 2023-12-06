@@ -306,6 +306,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}
+-fno-diagnostics-json-formatting
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers
 -fno-diagnostics-show-cwe
@@ -5754,8 +5755,7 @@ where the JSON is emitted to - with the former, the JSON is emitted to stderr,
 whereas with @samp{json-file} it is written to @file{@var{source}.gcc.json}.
 
 The emitted JSON consists of a top-level JSON array containing JSON objects
-representing the diagnostics.  The JSON is emitted as one line, without
-formatting; the examples below have been formatted for clarity.
+representing the diagnostics.
 
 Diagnostics can have child diagnostics.  For example, this error and note:
 
@@ -6017,6 +6017,24 @@ For example, the intraprocedural example shown for
 Diagnostics have a boolean attribute @code{escape-source}, hinting whether
 non-ASCII bytes should be escaped when printing the pertinent lines of
 source code (@code{true} for diagnostics involving source encoding issues).
+
+@opindex fno-diagnostics-json-formatting
+@opindex fdiagnostics-json-formatting
+@item -fno-diagnostics-json-formatting
+By default, when JSON is emitted for diagnostics (via
+@option{-fdiagnostics-format=sarif-stderr},
+@option{-fdiagnostics-format=sarif-file},
+@option{-fdiagnostics-format=json},
+@option{-fdiagnostics-format=json-stderr},
+@option{-fdiagnostics-format=json-file}),
+GCC will add newlines and indentation to visually emphasize the
+hierarchical structure of the JSON.
+
+Use @option{-fno-diagnostics-json-formatting} to suppress this whitespace.
+It must be passed before the option it is to affect.
+
+This is intended for compatibility with tools that do not expect the output
+to contain newlines, such as that emitted by older GCC releases.
 
 @end table
 

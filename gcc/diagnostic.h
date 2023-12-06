@@ -1062,14 +1062,20 @@ extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 extern void diagnostic_output_format_init (diagnostic_context *,
 					   const char *base_file_name,
-					   enum diagnostics_output_format);
-extern void diagnostic_output_format_init_json_stderr (diagnostic_context *context);
+					   enum diagnostics_output_format,
+					   bool json_formatting);
+extern void diagnostic_output_format_init_json_stderr (diagnostic_context *context,
+						       bool formatted);
 extern void diagnostic_output_format_init_json_file (diagnostic_context *context,
+						     bool formatted,
 						     const char *base_file_name);
-extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context);
+extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context,
+							bool formatted);
 extern void diagnostic_output_format_init_sarif_file (diagnostic_context *context,
+						      bool formatted,
 						      const char *base_file_name);
 extern void diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+							bool formatted,
 							FILE *stream);
 
 /* Compute the number of digits in the decimal representation of an integer.  */
