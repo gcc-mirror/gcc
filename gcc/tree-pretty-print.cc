@@ -3488,7 +3488,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, CHREC_LEFT (node), spc, flags, false);
       pp_string (pp, ", +, ");
       dump_generic_node (pp, CHREC_RIGHT (node), spc, flags, false);
-      pp_string (pp, "}_");
+      pp_string (pp, !CHREC_NOWRAP (node) ? "}_" : "}<nw>_");
       pp_scalar (pp, "%u", CHREC_VARIABLE (node));
       is_stmt = false;
       break;

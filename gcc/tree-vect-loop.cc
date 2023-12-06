@@ -3570,6 +3570,10 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	 analysis are done under the assumptions.  */
       loop_constraint_set (loop, LOOP_C_FINITE);
     }
+  else
+    /* Clear the existing niter information to make sure the nonwrapping flag
+       will be calculated and set propriately.  */
+    free_numbers_of_iterations_estimates (loop);
 
   auto_vector_modes vector_modes;
   /* Autodetect first vector size we try.  */
