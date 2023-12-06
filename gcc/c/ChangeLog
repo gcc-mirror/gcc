@@ -1,3 +1,14 @@
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.cc (std_attribute_table): Add extra braces to work
+	around PR 16333 in older compilers.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/86869
+	* c-typeck.cc (c_build_qualified_type): Preserve address-space
+	info for ARRAY_TYPE.
+
 2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-tree.h (std_attribute_table): Declare.

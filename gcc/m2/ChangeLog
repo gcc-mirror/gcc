@@ -1,3 +1,18 @@
+2023-12-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112865
+	* gm2-compiler/M2Quads.mod (BuildReFunction): Use
+	GetDType to retrieve the type of the operand when
+	converting the complex type to its scalar equivalent.
+	(BuildImFunction): Use GetDType to retrieve the type of the
+	operand when converting the complex type to its scalar
+	equivalent.
+
+2023-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* mc/mc.flex [__GNUC__]: Define alloca as __builtin_alloca.
+	(handleDate): Use strchr instead of index.
+
 2023-12-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112825

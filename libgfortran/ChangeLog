@@ -1,3 +1,15 @@
+2023-12-05  Florian Weimer  <fweimer@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* io/list_read.c (list_formatted_read_scalar) <case BT_CLASS>:
+	Change types of unit and noiostat to GFC_INTEGER_4 from int, change
+	type of child_iostat from to GFC_INTEGER_4 * from int *, formatting
+	fixes.
+	(nml_read_obj): Likewise.
+	* io/write.c (list_formatted_write_scalar) <case BT_CLASS>: Likewise.
+	(nml_write_obj): Likewise.
+	* io/transfer.c (unformatted_read, unformatted_write): Likewise.
+
 2023-11-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/112371

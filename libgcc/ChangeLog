@@ -1,3 +1,12 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIB2ADD): Add strub.c.
+	* libgcc2.h (__strub_enter, __strub_update, __strub_leave):
+	Declare.
+	* strub.c: New.
+	* libgcc-std.ver.in (__strub_enter): Add to GCC_14.0.0.
+	(__strub_update, __strub_leave): Likewise.
+
 2023-12-03  Jeff Law  <jlaw@ventanamicro.com>
 
 	* unwind-pe.h (_Unwind_gnu_Find_got): Add prototype.

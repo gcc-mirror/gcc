@@ -1,3 +1,70 @@
+2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111948
+	* include/bits/ranges_util.h (subrange): Add constructor to
+	_Size to aoid setting member in constructor.
+	* testsuite/std/ranges/subrange/111948.cc: New test.
+
+2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__detail::__container_insertable): Remove.
+	(__detail::__container_inserter): Remove.
+	(ranges::to): Use emplace_back or emplace, as per LWG 4016.
+	* testsuite/std/ranges/conv/1.cc (Cont4, test_2_1_4): Check for
+	use of emplace_back and emplace.
+
+2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__glibcxx_assert_fail): Declare even
+	when assertions are not enabled.
+	(__glibcxx_constexpr_assert): Remove macro.
+	(__glibcxx_assert_impl): Remove macro.
+	(_GLIBCXX_ASSERT_FAIL): New macro.
+	(_GLIBCXX_DO_ASSERT): New macro.
+	(__glibcxx_assert): Simplify to a single definition that works
+	at runtime and during constant evaluation.
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	Adjust expected errors.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/debug.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/debug.cc:
+	Likewise.
+	* testsuite/23_containers/span/back_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+	* testsuite/26_numerics/lcm/105844.cc: Likewise.
+
+2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112832
+	* include/std/format (formatter::set_debug_format): Ensure this
+	member is defined conditionally for all specializations.
+	* testsuite/std/format/formatter/112832.cc: New test.
+
+2023-12-05  Will Hawkins  <hawkinsw@obs.cr>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/smartptr.adapt/inout_ptr/2.cc: Add check
+	for LWG Issue 3897.
+
+2023-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107687
+	PR c++/110997
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: Add
+	dg-prune-output.
+	* testsuite/std/format/string_neg.cc: Add dg-error.
+
 2023-12-02  Alexandre Oliva  <oliva@adacore.com>
 
 	* libsupc++/atexit_thread.cc [__GXX_WEAK__]: Add dynamic

@@ -1,3 +1,9 @@
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dummy-frontend.cc (jit_gnu_attribute_table): Add extra braces
+	to work around PR 16333 in older compilers.
+	(jit_format_attribute_table): Likewise.
+
 2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* dummy-frontend.cc (jit_format_attribute_table): Change type to

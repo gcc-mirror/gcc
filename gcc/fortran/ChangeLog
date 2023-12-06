@@ -1,3 +1,18 @@
+2023-12-05  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/100988
+	* gfortran.h (IS_PROC_POINTER): New macro.
+	* trans-types.cc (gfc_sym_type): Use macro in determination if the
+	restrict qualifier can be used for a dummy variable.  Fix logic to
+	allow the restrict qualifier also for optional arguments, and to
+	not apply it to pointer or proc_pointer arguments.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* f95-lang.cc (gfc_gnu_attribute_table): Add extra braces to work
+	around PR 16333 in older compilers.
+
 2023-12-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93762

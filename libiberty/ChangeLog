@@ -1,3 +1,13 @@
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): Verify __get_cpuid and
+	__get_cpuid_count are not implicitly declared.
+	* configure: Regenerated.
+
+2023-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* pex-unix.c (pex_unix_wait): Change return type to pid_t.
+
 2023-12-01  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_make_comp): Handle

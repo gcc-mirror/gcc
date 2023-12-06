@@ -1,3 +1,1526 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (OBJS): Add ipa-strub.o.
+	(GTFILES): Add ipa-strub.cc.
+	* builtins.def (BUILT_IN_STACK_ADDRESS): New.
+	(BUILT_IN___STRUB_ENTER): New.
+	(BUILT_IN___STRUB_UPDATE): New.
+	(BUILT_IN___STRUB_LEAVE): New.
+	* builtins.cc: Include ipa-strub.h.
+	(STACK_STOPS, STACK_UNSIGNED): Define.
+	(expand_builtin_stack_address): New.
+	(expand_builtin_strub_enter): New.
+	(expand_builtin_strub_update): New.
+	(expand_builtin_strub_leave): New.
+	(expand_builtin): Call them.
+	* common.opt (fstrub=*): New options.
+	* doc/extend.texi (strub): New type attribute.
+	(__builtin_stack_address): New function.
+	(Stack Scrubbing): New section.
+	* doc/invoke.texi (-fstrub=*): New options.
+	(-fdump-ipa-*): New passes.
+	* gengtype-lex.l: Ignore multi-line pp-directives.
+	* ipa-inline.cc: Include ipa-strub.h.
+	(can_inline_edge_p): Test strub_inlinable_to_p.
+	* ipa-split.cc: Include ipa-strub.h.
+	(execute_split_functions): Test strub_splittable_p.
+	* ipa-strub.cc, ipa-strub.h: New.
+	* passes.def: Add strub_mode and strub passes.
+	* tree-cfg.cc (gimple_verify_flow_info): Note on debug stmts.
+	* tree-pass.h (make_pass_ipa_strub_mode): Declare.
+	(make_pass_ipa_strub): Declare.
+	(make_pass_ipa_function_and_variable_visibility): Fix
+	formatting.
+	* tree-ssa-ccp.cc (optimize_stack_restore): Keep restores
+	before strub leave.
+	* attribs.cc: Include ipa-strub.h.
+	(decl_attributes): Support applying attributes to function
+	type, rather than pointer type, at handler's request.
+	(comp_type_attributes): Combine strub_comptypes and target
+	comp_type results.
+	* doc/tm.texi.in (TARGET_STRUB_USE_DYNAMIC_ARRAY): New.
+	(TARGET_STRUB_MAY_USE_MEMSET): New.
+	* doc/tm.texi: Rebuilt.
+	* cgraph.h (symtab_node::reset): Add preserve_comdat_group
+	param, with a default.
+	* cgraphunit.cc (symtab_node::reset): Use it.
+
+2023-12-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112851
+	PR target/112852
+	* config/riscv/riscv-v.cc (vls_mode_valid_p): Block VLSmodes according
+	TARGET_MAX_LMUL and BITS_PER_RISCV_VECTOR.
+
+2023-12-05  David Faust  <david.faust@oracle.com>
+
+	PR debug/112849
+	* btfout.cc (btf_collect_datasec): Avoid incorrectly creating an
+	entry in a BTF_KIND_DATASEC record for extern variable decls without
+	a known section.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112606
+	* config/rs6000/rs6000.md (copysign<mode>3): Change predicate
+	of the last argument from gpc_reg_operand to any_operand.  If
+	operands[2] is CONST_DOUBLE, emit abs or neg abs depending on
+	its sign, otherwise if it doesn't satisfy gpc_reg_operand,
+	force it to REG using copy_to_mode_reg.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* attribs.cc (handle_ignored_attributes_option): Add extra
+	braces to work around PR 16333 in older compilers.
+	* config/aarch64/aarch64.cc (aarch64_gnu_attribute_table): Likewise.
+	(aarch64_arm_attribute_table): Likewise.
+	* config/arm/arm.cc (arm_gnu_attribute_table): Likewise.
+	* config/i386/i386-options.cc (ix86_gnu_attribute_table): Likewise.
+	* config/ia64/ia64.cc (ia64_gnu_attribute_table): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_gnu_attribute_table): Likewise.
+	* target-def.h (TARGET_GNU_ATTRIBUTES): Likewise.
+	* genhooks.cc (emit_init_macros): Likewise, when emitting the
+	instantiation of TARGET_ATTRIBUTE_TABLE.
+	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Likewise, when
+	instantiating LANG_HOOKS_ATTRIBUTE_TABLE.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Define to be empty by default.
+	* target.def (attribute_table): Likewise.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112860
+	* passes.cc (should_skip_pass_p): Do not skip ISEL.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/111736
+	* asan.cc (asan_protect_global): Do not protect globals
+	in non-generic address-space.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/92606
+	* ipa-icf.cc (sem_variable::equals_wpa): Compare address-spaces.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112830
+	* gimplify.cc (gimplify_modify_expr): Avoid turning aggregate
+	copy of non-generic address-spaces to memcpy.
+	(gimplify_modify_expr_to_memcpy): Assert we are dealing with
+	a copy inside the generic address-space.
+	(gimplify_modify_expr_to_memset): Likewise.
+	* tree-cfg.cc (verify_gimple_assign_single): Allow
+	WITH_SIZE_EXPR as part of the RHS of an assignment.
+	* builtins.cc (get_memory_address): Assert we are dealing
+	with the generic address-space.
+	* tree-ssa-dce.cc (ref_may_be_aliased): Handle WITH_SIZE_EXPR.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109689
+	PR tree-optimization/112856
+	* cfgloopmanip.h (unloop_loops): Adjust API.
+	* tree-ssa-loop-ivcanon.cc (unloop_loops): Take edges_to_remove
+	as parameter.
+	(canonicalize_induction_variables): Adjust.
+	(tree_unroll_loops_completely): Likewise.
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Rewrite into
+	LC SSA if we unlooped some loops and we are in LC SSA.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112845
+	* config/i386/i386.md (movabsq $(i32 << shift), r64 peephole2): FAIL
+	if the new immediate is ix86_endbr_immediate_operand.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_STREAMING_SME2): New macro.
+	(P_ALIASES): Likewise.
+	(REGISTER_NAMES): Add pn aliases of the predicate registers.
+	(W8_W11_REGNUM_P): New macro.
+	(W8_W11_REGS): New register class.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update accordingly.
+	* config/aarch64/aarch64.cc (aarch64_print_operand): Add support
+	for %K, which prints a predicate as a counter.  Handle tuples of
+	predicates.
+	(aarch64_regno_regclass): Handle W8_W11_REGS.
+	(aarch64_class_max_nregs): Likewise.
+	* config/aarch64/constraints.md (Uci, Uw2, Uw4): New constraints.
+	(x, y): Move further up file.
+	(Uph): Redefine as the high predicate registers, renaming the old
+	constraint to...
+	(Uih): ...this.
+	* config/aarch64/predicates.md (const_0_to_7_operand): New predicate.
+	(const_0_to_4_step_4_operand, const_0_to_6_step_2_operand): Likewise.
+	(const_0_to_12_step_4_operand, const_0_to_14_step_2_operand): Likewise.
+	(aarch64_simd_shift_imm_qi): Use const_0_to_7_operand.
+	* config/aarch64/iterators.md (VNx16SI_ONLY, VNx8SI_ONLY)
+	(VNx8DI_ONLY, SVE_FULL_BHSIx2, SVE_FULL_HF, SVE_FULL_SIx2_SDIx4)
+	(SVE_FULL_BHS, SVE_FULLx24, SVE_DIx24, SVE_BHSx24, SVE_Ix24)
+	(SVE_Fx24, SVE_SFx24, SME_ZA_BIx24, SME_ZA_BHIx124, SME_ZA_BHIx24)
+	(SME_ZA_HFx124, SME_ZA_HFx24, SME_ZA_HIx124, SME_ZA_HIx24)
+	(SME_ZA_SDIx24, SME_ZA_SDFx24): New mode iterators.
+	(UNSPEC_REVD, UNSPEC_CNTP_C, UNSPEC_PEXT, UNSPEC_PEXTx2): New unspecs.
+	(UNSPEC_PSEL, UNSPEC_PTRUE_C, UNSPEC_SQRSHR, UNSPEC_SQRSHRN)
+	(UNSPEC_SQRSHRU, UNSPEC_SQRSHRUN, UNSPEC_UQRSHR, UNSPEC_UQRSHRN)
+	(UNSPEC_UZP, UNSPEC_UZPQ, UNSPEC_ZIP, UNSPEC_ZIPQ, UNSPEC_BFMLSLB)
+	(UNSPEC_BFMLSLT, UNSPEC_FCVTN, UNSPEC_FDOT, UNSPEC_SQCVT): Likewise.
+	(UNSPEC_SQCVTN, UNSPEC_SQCVTU, UNSPEC_SQCVTUN, UNSPEC_UQCVT): Likewise.
+	(UNSPEC_SME_ADD, UNSPEC_SME_ADD_WRITE, UNSPEC_SME_BMOPA): Likewise.
+	(UNSPEC_SME_BMOPS, UNSPEC_SME_FADD, UNSPEC_SME_FDOT, UNSPEC_SME_FVDOT)
+	(UNSPEC_SME_FMLA, UNSPEC_SME_FMLS, UNSPEC_SME_FSUB, UNSPEC_SME_READ)
+	(UNSPEC_SME_SDOT, UNSPEC_SME_SVDOT, UNSPEC_SME_SMLA, UNSPEC_SME_SMLS)
+	(UNSPEC_SME_SUB, UNSPEC_SME_SUB_WRITE, UNSPEC_SME_SUDOT): Likewise.
+	(UNSPEC_SME_SUVDOT, UNSPEC_SME_UDOT, UNSPEC_SME_UVDOT): Likewise.
+	(UNSPEC_SME_UMLA, UNSPEC_SME_UMLS, UNSPEC_SME_USDOT): Likewise.
+	(UNSPEC_SME_USVDOT, UNSPEC_SME_WRITE): Likewise.
+	(Vetype, VNARROW, V2XWIDE, Ventype, V_INT_EQUIV, v_int_equiv)
+	(VSINGLE, vsingle, b): Add tuple modes.
+	(v2xwide, za32_offset_range, za64_offset_range, za32_long)
+	(za32_last_offset, vg_modifier, z_suffix, aligned_operand)
+	(aligned_fpr): New mode attributes.
+	(SVE_INT_BINARY_MULTI, SVE_INT_BINARY_SINGLE, SVE_INT_BINARY_MULTI)
+	(SVE_FP_BINARY_MULTI): New int iterators.
+	(SVE_BFLOAT_TERNARY_LONG): Add UNSPEC_BFMLSLB and UNSPEC_BFMLSLT.
+	(SVE_BFLOAT_TERNARY_LONG_LANE): Likewise.
+	(SVE_WHILE_ORDER, SVE2_INT_SHIFT_IMM_NARROWxN, SVE_QCVTxN)
+	(SVE2_SFx24_UNARY, SVE2_x24_PERMUTE, SVE2_x24_PERMUTEQ)
+	(UNSPEC_REVD_ONLY, SME2_INT_MOP, SME2_BMOP, SME_BINARY_SLICE_SDI)
+	(SME_BINARY_SLICE_SDF, SME_BINARY_WRITE_SLICE_SDI, SME_INT_DOTPROD)
+	(SME_INT_DOTPROD_LANE, SME_FP_DOTPROD, SME_FP_DOTPROD_LANE)
+	(SME_INT_TERNARY_SLICE, SME_FP_TERNARY_SLICE, BHSD_BITS)
+	(LUTI_BITS): New int iterators.
+	(optab, sve_int_op): Handle the new unspecs.
+	(sme_int_op, has_16bit_form): New int attributes.
+	(bits_etype): Handle 64.
+	* config/aarch64/aarch64.md (UNSPEC_LD1_SVE_COUNT): New unspec.
+	(UNSPEC_ST1_SVE_COUNT, UNSPEC_LDNT1_SVE_COUNT): Likewise.
+	(UNSPEC_STNT1_SVE_COUNT): Likewise.
+	* config/aarch64/atomics.md (cas_short_expected_imm): Use Uhi
+	rather than Uph for HImode immediates.
+	* config/aarch64/aarch64-sve.md (@aarch64_ld1<SVE_FULLx24:mode>)
+	(@aarch64_ldnt1<SVE_FULLx24:mode>, @aarch64_st1<SVE_FULLx24:mode>)
+	(@aarch64_stnt1<SVE_FULLx24:mode>): New patterns.
+	(@aarch64_<sur>dot_prod_lane<vsi2qi>): Extend to...
+	(@aarch64_<sur>dot_prod_lane<SVE_FULL_SDI:mode><SVE_FULL_BHI:mode>)
+	(@aarch64_<sur>dot_prod_lane<VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>):
+	...these new patterns.
+	(SVE_WHILE_B, SVE_WHILE_B_X2, SVE_WHILE_C): New constants.  Add
+	SVE_WHILE_B to existing while patterns.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_ptrue_c<BHSD_BITS>)
+	(@aarch64_sve_pext<BHSD_BITS>, @aarch64_sve_pext<BHSD_BITS>x2)
+	(@aarch64_sve_psel<BHSD_BITS>, *aarch64_sve_psel<BHSD_BITS>_plus)
+	(@aarch64_sve_cntp_c<BHSD_BITS>, <frint_pattern><mode>2)
+	(<optab><mode>3, *<optab><mode>3, @aarch64_sve_single_<optab><mode>)
+	(@aarch64_sve_<sve_int_op><mode>): New patterns.
+	(@aarch64_sve_single_<sve_int_op><mode>, @aarch64_sve_<su>clamp<mode>)
+	(*aarch64_sve_<su>clamp<mode>_x, @aarch64_sve_<su>clamp_single<mode>)
+	(@aarch64_sve_fclamp<mode>, *aarch64_sve_fclamp<mode>_x)
+	(@aarch64_sve_fclamp_single<mode>, <optab><mode><v2xwide>2)
+	(@aarch64_sve_<sur>dotvnx4sivnx8hi): New patterns.
+	(@aarch64_sve_<maxmin_uns_op><mode>): Likewise.
+	(*aarch64_sve_<maxmin_uns_op><mode>): Likewise.
+	(@aarch64_sve_single_<maxmin_uns_op><mode>): Likewise.
+	(aarch64_sve_fdotvnx4sfvnx8hf): Likewise.
+	(aarch64_fdot_prod_lanevnx4sfvnx8hf): Likewise.
+	(@aarch64_sve_<optab><VNx16QI_ONLY:mode><VNx16SI_ONLY:mode>): Likewise.
+	(@aarch64_sve_<optab><VNx8HI_ONLY:mode><VNx8SI_ONLY:mode>): Likewise.
+	(@aarch64_sve_<optab><VNx8HI_ONLY:mode><VNx8DI_ONLY:mode>): Likewise.
+	(truncvnx8sf<mode>2, @aarch64_sve_cvtn<mode>): Likewise.
+	(<optab><v_int_equiv><mode>2, <optab><mode><v_int_equiv>2): Likewise.
+	(@aarch64_sve_sel<mode>): Likewise.
+	(@aarch64_sve_while<while_optab_cmp>_b<BHSD_BITS>_x2): Likewise.
+	(@aarch64_sve_while<while_optab_cmp>_c<BHSD_BITS>): Likewise.
+	(@aarch64_pred_<optab><mode>, @cond_<optab><mode>): Likewise.
+	(@aarch64_sve_<optab><mode>): Likewise.
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_<optab><mode><mode>)
+	(*aarch64_sme_<optab><mode><mode>_plus, @aarch64_sme_read<mode>)
+	(*aarch64_sme_read<mode>_plus, @aarch64_sme_write<mode>): New patterns.
+	(*aarch64_sme_write<mode>_plus aarch64_sme_zero_zt0): Likewise.
+	(@aarch64_sme_<optab><mode>, *aarch64_sme_<optab><mode>_plus)
+	(@aarch64_sme_single_<optab><mode>): Likewise.
+	(*aarch64_sme_single_<optab><mode>_plus): Likewise.
+	(@aarch64_sme_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>)
+	(*aarch64_sme_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>_plus)
+	(@aarch64_sme_single_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>)
+	(*aarch64_sme_single_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>_plus)
+	(@aarch64_sme_single_sudot<VNx4SI_ONLY:mode><SME_ZA_BIx24:mode>)
+	(*aarch64_sme_single_sudot<VNx4SI_ONLY:mode><SME_ZA_BIx24:mode>_plus)
+	(@aarch64_sme_lane_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>)
+	(*aarch64_sme_lane_<optab><SME_ZA_SDI:mode><SME_ZA_BHIx24:mode>_plus)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><SVE_FULL_BHI:mode>)
+	(*aarch64_sme_<optab><VNx4SI_ONLY:mode><SVE_FULL_BHI:mode>_plus)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx24:mode>)
+	(*aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx24:mode>_plus)
+	(@aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx24:mode>)
+	(*aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx24:mode>_plus)
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx124:mode>)
+	(*aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_BHIx124:mode>)
+	(@aarch64_sme_<optab><VNx2DI_ONLY:mode><VNx8HI_ONLY:mode>)
+	(*aarch64_sme_<optab><VNx2DI_ONLY:mode><VNx8HI_ONLY:mode>_plus)
+	(@aarch64_sme_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx24:mode>)
+	(*aarch64_sme_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx24:mode>_plus)
+	(@aarch64_sme_single_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx24:mode>)
+	(*aarch64_sme_single_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx24:mode>_plus)
+	(@aarch64_sme_lane_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx124:mode>)
+	(*aarch64_sme_lane_<optab><VNx2DI_ONLY:mode><SME_ZA_HIx124:mode>)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><VNx8HI_ONLY:mode>)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><VNx4SI_ONLY:mode>)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>)
+	(*aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>_plus)
+	(@aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>)
+	(*aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>_plus)
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>)
+	(*aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx24:mode>_plus)
+	(@aarch64_sme_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>)
+	(*aarch64_sme_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>_plus)
+	(@aarch64_sme_single_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>)
+	(*aarch64_sme_single_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>_plus)
+	(@aarch64_sme_lane_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>)
+	(*aarch64_sme_lane_<optab><SME_ZA_SDF_I:mode><SME_ZA_SDFx24:mode>)
+	(@aarch64_sme_<optab><VNx4SI_ONLY:mode><SVE_FULL_HF:mode>)
+	(*aarch64_sme_<optab><VNx4SI_ONLY:mode><SVE_FULL_HF:mode>_plus)
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx124:mode>)
+	(*aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_HFx124:mode>)
+	(@aarch64_sme_lut<LUTI_BITS><mode>): Likewise.
+	(UNSPEC_SME_LUTI): New unspec.
+	* config/aarch64/aarch64-sve-builtins.def (single): New mode suffix.
+	(c8, c16, c32, c64): New type suffixes.
+	(vg1x2, vg1x4, vg2, vg2x1, vg2x2, vg2x4, vg4, vg4x1, vg4x2)
+	(vg4x4): New group suffixes.
+	* config/aarch64/aarch64-sve-builtins.h (CP_READ_ZT0)
+	(CP_WRITE_ZT0): New constants.
+	(get_svbool_t): Delete.
+	(function_resolver::report_mismatched_num_vectors): New member
+	function.
+	(function_resolver::resolve_conversion): Likewise.
+	(function_resolver::infer_predicate_type): Likewise.
+	(function_resolver::infer_64bit_scalar_integer_pair): Likewise.
+	(function_resolver::require_matching_predicate_type): Likewise.
+	(function_resolver::require_nonscalar_type): Likewise.
+	(function_resolver::finish_opt_single_resolution): Likewise.
+	(function_resolver::require_derived_vector_type): Add an
+	expected_num_vectors parameter.
+	(function_expander::map_to_rtx_codes): Add an extra parameter
+	for unconditional FP unspecs.
+	(function_instance::gp_type_index): New member function.
+	(function_instance::gp_type): Likewise.
+	(function_instance::gp_mode): Handle multi-vector operations.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_all_count)
+	(TYPES_all_pred_count, TYPES_c, TYPES_bhs_data, TYPES_bhs_widen)
+	(TYPES_hs_data, TYPES_cvt_h_s_float, TYPES_cvt_s_s, TYPES_qcvt_x2)
+	(TYPES_qcvt_x4, TYPES_qrshr_x2, TYPES_qrshru_x2, TYPES_qrshr_x4)
+	(TYPES_qrshru_x4, TYPES_while_x, TYPES_while_x_c, TYPES_s_narrow_fsu)
+	(TYPES_za_s_b_signed, TYPES_za_s_b_unsigned, TYPES_za_s_b_integer)
+	(TYPES_za_s_h_integer, TYPES_za_s_h_data, TYPES_za_s_unsigned)
+	(TYPES_za_s_float, TYPES_za_s_data, TYPES_za_d_h_integer): New type
+	macros.
+	(groups_x2, groups_x12, groups_x4, groups_x24, groups_x124)
+	(groups_vg1x2, groups_vg1x4, groups_vg1x24, groups_vg2, groups_vg4)
+	(groups_vg24): New group arrays.
+	(function_instance::reads_global_state_p): Handle CP_READ_ZT0.
+	(function_instance::modifies_global_state_p): Handle CP_WRITE_ZT0.
+	(add_shared_state_attribute): Handle zt0 state.
+	(function_builder::add_overloaded_functions): Skip MODE_single
+	for non-tuple groups.
+	(function_resolver::report_mismatched_num_vectors): New function.
+	(function_resolver::resolve_to): Add a fallback error message for
+	the general two-type case.
+	(function_resolver::resolve_conversion): New function.
+	(function_resolver::infer_predicate_type): Likewise.
+	(function_resolver::infer_64bit_scalar_integer_pair): Likewise.
+	(function_resolver::require_matching_predicate_type): Likewise.
+	(function_resolver::require_matching_vector_type): Specifically
+	diagnose mismatched vector counts.
+	(function_resolver::require_derived_vector_type): Add an
+	expected_num_vectors parameter.  Extend to handle cases where
+	tuples are expected.
+	(function_resolver::require_nonscalar_type): New function.
+	(function_resolver::check_gp_argument): Use gp_type_index rather
+	than hard-coding VECTOR_TYPE_svbool_t.
+	(function_resolver::finish_opt_single_resolution): New function.
+	(function_checker::require_immediate_either_or): Remove hard-coded
+	constants.
+	(function_expander::direct_optab_handler): New function.
+	(function_expander::use_pred_x_insn): Only add a strictness flag
+	is the insn has an operand for it.
+	(function_expander::map_to_rtx_codes): Take an unconditional
+	FP unspec as an extra parameter.  Handle tuples and MODE_single.
+	(function_expander::map_to_unspecs): Handle tuples and MODE_single.
+	* config/aarch64/aarch64-sve-builtins-functions.h (read_zt0)
+	(write_zt0): New typedefs.
+	(full_width_access::memory_vector): Use the function's
+	vectors_per_tuple.
+	(rtx_code_function_base): Add an optional unconditional FP unspec.
+	(rtx_code_function::expand): Update accordingly.
+	(rtx_code_function_rotated::expand): Likewise.
+	(unspec_based_function_exact_insn::expand): Use tuple_mode instead
+	of vector_mode.
+	(unspec_based_uncond_function): New typedef.
+	(cond_or_uncond_unspec_function): New class.
+	(sme_1mode_function::expand): Handle single forms.
+	(sme_2mode_function_t): Likewise, adding a template parameter for them.
+	(sme_2mode_function): Update accordingly.
+	(sme_2mode_lane_function): New typedef.
+	(multireg_permute): New class.
+	(class integer_conversion): Likewise.
+	(while_comparison::expand): Handle svcount_t and svboolx2_t results.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(binary_int_opt_single_n, binary_opt_single_n, binary_single)
+	(binary_za_slice_lane, binary_za_slice_int_opt_single)
+	(binary_za_slice_opt_single, binary_za_slice_uint_opt_single)
+	(binaryx, clamp, compare_scalar_count, count_pred_c)
+	(dot_za_slice_int_lane, dot_za_slice_lane, dot_za_slice_uint_lane)
+	(extract_pred, inherent_zt, ldr_zt, read_za, read_za_slice)
+	(select_pred, shift_right_imm_narrowxn, storexn, str_zt)
+	(unary_convertxn, unary_za_slice, unaryxn, write_za)
+	(write_za_slice): Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(za_group_is_pure_overload): New function.
+	(apply_predication): Use the function's gp_type for the predicate,
+	instead of hard-coding the use of svbool_t.
+	(parse_element_type): Add support for "c" (svcount_t).
+	(parse_type): Add support for "c0" and "c1" (conversion destination
+	and source types).
+	(binary_za_slice_lane_base): New class.
+	(binary_za_slice_opt_single_base): Likewise.
+	(load_contiguous_base::resolve): Pass the group suffix to r.resolve.
+	(luti_lane_zt_base): New class.
+	(binary_int_opt_single_n, binary_opt_single_n, binary_single)
+	(binary_za_slice_lane, binary_za_slice_int_opt_single)
+	(binary_za_slice_opt_single, binary_za_slice_uint_opt_single)
+	(binaryx, clamp): New shapes.
+	(compare_scalar_def::build): Allow the return type to be a tuple.
+	(compare_scalar_def::expand): Pass the group suffix to r.resolve.
+	(compare_scalar_count, count_pred_c, dot_za_slice_int_lane)
+	(dot_za_slice_lane, dot_za_slice_uint_lane, extract_pred, inherent_zt)
+	(ldr_zt, read_za, read_za_slice, select_pred, shift_right_imm_narrowxn)
+	(storexn, str_zt): New shapes.
+	(ternary_qq_lane_def, ternary_qq_opt_n_def): Replace with...
+	(ternary_qq_or_011_lane_def, ternary_qq_opt_n_or_011_def): ...these
+	new classes.  Allow a second suffix that specifies the type of the
+	second vector argument, and that is used to derive the third.
+	(unary_def::build): Extend to handle tuple types.
+	(unary_convert_def::build): Use the new c0 and c1 format specifiers.
+	(unary_convertxn, unary_za_slice, unaryxn, write_za): New shapes.
+	(write_za_slice): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svbic_impl::expand)
+	(svext_bhw_impl::expand): Update call to map_to_rtx_costs.
+	(svcntp_impl::expand): Handle svcount_t variants.
+	(svcvt_impl::expand): Handle unpredicated conversions separately,
+	dealing with tuples.
+	(svdot_impl::expand): Handle 2-way dot products.
+	(svdotprod_lane_impl::expand): Likewise.
+	(svld1_impl::fold): Punt on tuple loads.
+	(svld1_impl::expand): Handle tuple loads.
+	(svldnt1_impl::expand): Likewise.
+	(svpfalse_impl::fold): Punt on svcount_t forms.
+	(svptrue_impl::fold): Likewise.
+	(svptrue_impl::expand): Handle svcount_t forms.
+	(svrint_impl): New class.
+	(svsel_impl::fold): Punt on tuple forms.
+	(svsel_impl::expand): Handle tuple forms.
+	(svst1_impl::fold): Punt on tuple loads.
+	(svst1_impl::expand): Handle tuple loads.
+	(svstnt1_impl::expand): Likewise.
+	(svwhilelx_impl::fold): Punt on tuple forms.
+	(svdot_lane): Use UNSPEC_FDOT.
+	(svmax, svmaxnm, svmin, svminmm): Add unconditional FP unspecs.
+	(rinta, rinti, rintm, rintn, rintp, rintx, rintz): Use svrint_impl.
+	* config/aarch64/aarch64-sve-builtins-base.def (svcreate2, svget2)
+	(svset2, svundef2): Add _b variants.
+	(svcvt): Use unary_convertxn.
+	(svdot): Use ternary_qq_opt_n_or_011.
+	(svdot_lane): Use ternary_qq_or_011_lane.
+	(svmax, svmaxnm, svmin, svminnm): Use binary_opt_single_n.
+	(svpfalse): Add a form that returns svcount_t results.
+	(svrinta, svrintm, svrintn, svrintp): Use unaryxn.
+	(svsel): Use binaryxn.
+	(svst1, svstnt1): Use storexn.
+	* config/aarch64/aarch64-sve-builtins-sme.h
+	(svadd_za, svadd_write_za, svbmopa_za, svbmops_za, svdot_za)
+	(svdot_lane_za, svldr_zt, svluti2_lane_zt, svluti4_lane_zt)
+	(svmla_za, svmla_lane_za, svmls_za, svmls_lane_za, svread_za)
+	(svstr_zt, svsub_za, svsub_write_za, svsudot_za, svsudot_lane_za)
+	(svsuvdot_lane_za, svusdot_za, svusdot_lane_za, svusvdot_lane_za)
+	(svvdot_lane_za, svwrite_za, svzero_zt): Declare.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (load_store_za_base):
+	Rename to...
+	(load_store_za_zt0_base): ...this and extend to tuples.
+	(load_za_base, store_za_base): Update accordingly.
+	(expand_ldr_str_zt0): New function.
+	(svldr_zt_impl, svluti_lane_zt_impl, svread_za_impl, svstr_zt_impl)
+	(svsudot_za_impl, svwrite_za_impl, svzero_zt_impl): New classes.
+	(svadd_za, svadd_write_za, svbmopa_za, svbmops_za, svdot_za)
+	(svdot_lane_za, svldr_zt, svluti2_lane_zt, svluti4_lane_zt)
+	(svmla_za, svmla_lane_za, svmls_za, svmls_lane_za, svread_za)
+	(svstr_zt, svsub_za, svsub_write_za, svsudot_za, svsudot_lane_za)
+	(svsuvdot_lane_za, svusdot_za, svusdot_lane_za, svusvdot_lane_za)
+	(svvdot_lane_za, svwrite_za, svzero_zt): New functions.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Add SME2 intrinsics.
+	* config/aarch64/aarch64-sve-builtins-sve2.h
+	(svbfmlslb, svbfmlslb_lane, svbfmlslt, svbfmlslt_lane, svclamp)
+	(svcvtn, svpext, svpsel, svqcvt, svqcvtn, svqrshr, svqrshrn)
+	(svqrshru, svqrshrun, svrevd, svunpk, svuzp, svuzpq, svzip)
+	(svzipq): Declare.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svclamp_impl)
+	(svcvtn_impl, svpext_impl, svpsel_impl): New classes.
+	(svqrshl_impl::fold): Update for change to svrshl shape.
+	(svrshl_impl::fold): Punt on tuple forms.
+	(svsqadd_impl::expand): Update call to map_to_rtx_codes.
+	(svunpk_impl): New class.
+	(svbfmlslb, svbfmlslb_lane, svbfmlslt, svbfmlslt_lane, svclamp)
+	(svcvtn, svpext, svpsel, svqcvt, svqcvtn, svqrshr, svqrshrn)
+	(svqrshru, svqrshrun, svrevd, svunpk, svuzp, svuzpq, svzip)
+	(svzipq): New functions.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Add SME2 intrinsics.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	or undefine __ARM_FEATURE_SME2.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (ZT0_REGNUM): New constant.
+	(LAST_FAKE_REGNUM): Bump to include it.
+	* config/aarch64/aarch64.h (FIXED_REGISTERS): Add an entry for ZT0.
+	(CALL_REALLY_USED_REGISTERS, REGISTER_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(machine_function): Add zt0_save_buffer.
+	(CUMULATIVE_ARGS): Add shared_zt0_flags;
+	* config/aarch64/aarch64.cc (aarch64_check_state_string): Handle zt0.
+	(aarch64_fntype_pstate_za, aarch64_fndecl_pstate_za): Likewise.
+	(aarch64_function_arg): Add the shared ZT0 flags as an extra
+	limb of the parallel.
+	(aarch64_init_cumulative_args): Initialize shared_zt0_flags.
+	(aarch64_extra_live_on_entry): Handle ZT0_REGNUM.
+	(aarch64_epilogue_uses): Likewise.
+	(aarch64_get_zt0_save_buffer, aarch64_save_zt0): New functions.
+	(aarch64_restore_zt0): Likewise.
+	(aarch64_start_call_args): Reject calls to functions that share
+	ZT0 from functions that have no ZT0 state.  Save ZT0 around shared-ZA
+	calls that do not share ZT0.
+	(aarch64_expand_call): Handle ZT0.  Reject calls to functions that
+	share ZT0 but not ZA from functions with ZA state.
+	(aarch64_end_call_args): Restore ZT0 after calls to shared-ZA functions
+	that do not share ZT0.
+	(aarch64_set_current_function): Require +sme2 for functions that
+	have ZT0 state.
+	(aarch64_function_attribute_inlinable_p): Don't allow functions to
+	be inlined if they have local zt0 state.
+	(AARCH64_IPA_CLOBBERS_ZT0): New constant.
+	(aarch64_update_ipa_fn_target_info): Record asms that clobber ZT0.
+	(aarch64_can_inline_p): Don't inline callees that clobber ZT0
+	into functions that have ZT0 state.
+	(aarch64_comp_type_attributes): Check for compatible ZT0 sharing.
+	(aarch64_optimize_mode_switching): Use mode switching if the
+	function has ZT0 state.
+	(aarch64_mode_emit_local_sme_state): Save and restore ZT0 around
+	calls to private-ZA functions.
+	(aarch64_mode_needed_local_sme_state): Require ZA to be active
+	for instructions that access ZT0.
+	(aarch64_mode_entry): Mark ZA as dead on entry if the function
+	only shares state other than "za" itself.
+	(aarch64_mode_exit): Likewise mark ZA as dead on return.
+	(aarch64_md_asm_adjust): Extend handling of ZA clobbers to ZT0.
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Define __ARM_STATE_ZT0.
+	* config/aarch64/aarch64-sme.md (UNSPECV_ASM_UPDATE_ZT0): New unspecv.
+	(aarch64_asm_update_zt0): New insn.
+	(UNSPEC_RESTORE_ZT0): New unspec.
+	(aarch64_sme_ldr_zt0, aarch64_restore_zt0): New insns.
+	(aarch64_sme_str_zt0): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VNx32BI): New mode.
+	* config/aarch64/aarch64-protos.h (aarch64_split_double_move): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(register_tuple_type): Handle tuples of predicates.
+	(handle_arm_sve_h): Define svboolx2_t as a pair of two svbool_ts.
+	* config/aarch64/aarch64-sve.md (movvnx32bi): New insn.
+	* config/aarch64/aarch64.cc
+	(pure_scalable_type_info::piece::get_rtx): Use VNx32BI for pairs
+	of predicates.
+	(pure_scalable_type_info::add_piece): Don't try to form pairs of
+	predicates.
+	(VEC_STRUCT): Generalize comment.
+	(aarch64_classify_vector_mode): Handle VNx32BI.
+	(aarch64_array_mode): Likewise.  Return BLKmode for arrays of
+	predicates that have no associated mode, rather than allowing
+	an integer mode to be chosen.
+	(aarch64_hard_regno_nregs): Handle VNx32BI.
+	(aarch64_hard_regno_mode_ok): Likewise.
+	(aarch64_split_double_move): New function, split out from...
+	(aarch64_split_128bit_move): ...here.
+	(aarch64_ptrue_reg): Tighten assert to aarch64_sve_pred_mode_p.
+	(aarch64_pfalse_reg): Likewise.
+	(aarch64_sve_same_pred_for_ptest_p): Likewise.
+	(aarch64_sme_mode_switch_regs::add_reg): Handle VNx32BI.
+	(aarch64_expand_mov_immediate): Restrict handling of boolean vector
+	constants to single-predicate modes.
+	(aarch64_classify_address): Handle VNx32BI, ensuring that both halves
+	can be addressed.
+	(aarch64_class_max_nregs): Handle VNx32BI.
+	(aarch64_member_type_forces_blk): Don't for BLKmode for svboolx2_t.
+	(aarch64_simd_valid_immediate): Allow all-zeros and all-ones for
+	VNx32BI.
+	(aarch64_mov_operand_p): Restrict predicate constant canonicalization
+	to single-predicate modes.
+	(aarch64_evpc_ext): Generalize exclusion to all predicate modes.
+	(aarch64_evpc_rev_local, aarch64_evpc_dup): Likewise.
+	* config/aarch64/constraints.md (PR_REGS): New predicate.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svreinterpret_impl::fold): Handle reinterprets between svbool_t
+	and svcount_t.
+	(svreinterpret_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.def (svreinterpret): Add
+	b<->c forms.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_reinterpret_b): New
+	type suffix list.
+	(wrap_type_in_struct, register_type_decl): New functions, split out
+	from...
+	(register_tuple_type): ...here.
+	(register_builtin_types): Handle svcount_t.
+	(handle_arm_sve_h): Don't create tuples of svcount_t.
+	* config/aarch64/aarch64-sve-builtins.def (svcount_t): New type.
+	(c): New type suffix.
+	* config/aarch64/aarch64-sve-builtins.h (TYPE_count): New type class.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Document +sme2.
+	* doc/sourcebuild.texi: Document aarch64_sme2.
+	* config/aarch64/aarch64-option-extensions.def (AARCH64_OPT_EXTENSION):
+	Add sme2.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SME2, TARGET_SME2): New macros.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_function_ok_for_sibcall):
+	Enforce PSTATE.SM and PSTATE.ZA restrictions.
+	(aarch64_expand_epilogue): Save and restore the arguments
+	to a sibcall around any change to PSTATE.SM.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc: Include symbol-summary.h, ipa-prop.h,
+	and ipa-fnsummary.h
+	(aarch64_function_attribute_inlinable_p): New function.
+	(AARCH64_IPA_SM_FIXED, AARCH64_IPA_CLOBBERS_ZA): New constants.
+	(aarch64_need_ipa_fn_target_info): New function.
+	(aarch64_update_ipa_fn_target_info): Likewise.
+	(aarch64_can_inline_p): Restrict the previous ISA flag checks
+	to non-modal features.  Prevent callees that require a particular
+	PSTATE.SM state from being inlined into callers that can't guarantee
+	that state.  Also prevent callees that have ZA state from being
+	inlined into callers that don't.  Finally, prevent callees that
+	clobber ZA from being inlined into callers that have ZA state.
+	(TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P): Define.
+	(TARGET_NEED_IPA_FN_TARGET_INFO): Likewise.
+	(TARGET_UPDATE_IPA_FN_TARGET_INFO): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc: Include except.h
+	(aarch64_sme_mode_switch_regs::add_call_preserved_reg): New function.
+	(aarch64_sme_mode_switch_regs::add_call_preserved_regs): Likewise.
+	(aarch64_need_old_pstate_sm): Return true if the function has
+	a nonlocal-goto or exception receiver.
+	(aarch64_switch_pstate_sm_for_landing_pad): New function.
+	(aarch64_switch_pstate_sm_for_jump): Likewise.
+	(pass_switch_pstate_sm::gate): Enable the pass for all
+	streaming and streaming-compatible functions.
+	(pass_switch_pstate_sm::execute): Handle non-local gotos and their
+	receivers.  Handle exception handler entry points.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_arm_attribute_table): Add
+	arm::locally_streaming.
+	(aarch64_fndecl_is_locally_streaming): New function.
+	(aarch64_fndecl_sm_state): Handle locally-streaming functions.
+	(aarch64_cfun_enables_pstate_sm): New function.
+	(aarch64_add_offset): Add an argument that specifies whether
+	the streaming vector length should be used instead of the
+	prevailing one.
+	(aarch64_split_add_offset, aarch64_add_sp, aarch64_sub_sp): Likewise.
+	(aarch64_allocate_and_probe_stack_space): Likewise.
+	(aarch64_expand_mov_immediate): Update calls accordingly.
+	(aarch64_need_old_pstate_sm): Return true for locally-streaming
+	streaming-compatible functions.
+	(aarch64_layout_frame): Force all call-preserved Z and P registers
+	to be saved and restored if the function switches PSTATE.SM in the
+	prologue.
+	(aarch64_get_separate_components): Disable shrink-wrapping of
+	such Z and P saves and restores.
+	(aarch64_use_late_prologue_epilogue): New function.
+	(aarch64_expand_prologue): Measure SVE lengths in the streaming
+	vector length for locally-streaming functions, then emit code
+	to enable streaming mode.
+	(aarch64_expand_epilogue): Likewise in reverse.
+	(TARGET_USE_LATE_PROLOGUE_EPILOGUE): Define.
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Define __arm_locally_streaming.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Document +sme-i16i64 and +sme-f64f64.
+	* config.gcc (aarch64*-*-*): Add arm_sme.h to the list of headers
+	to install and aarch64-sve-builtins-sme.o to the list of objects
+	to build.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	or undefine TARGET_SME, TARGET_SME_I16I64 and TARGET_SME_F64F64.
+	(aarch64_pragma_aarch64): Handle arm_sme.h.
+	* config/aarch64/aarch64-option-extensions.def (sme-i16i64)
+	(sme-f64f64): New extensions.
+	* config/aarch64/aarch64-protos.h (aarch64_sme_vq_immediate)
+	(aarch64_addsvl_addspl_immediate_p, aarch64_output_addsvl_addspl)
+	(aarch64_output_sme_zero_za): Declare.
+	(aarch64_output_move_struct): Delete.
+	(aarch64_sme_ldr_vnum_offset): Declare.
+	(aarch64_sve::handle_arm_sme_h): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SM_ON): New macro.
+	(AARCH64_ISA_SME_I16I64, AARCH64_ISA_SME_F64F64): Likewise.
+	(TARGET_STREAMING, TARGET_STREAMING_SME): Likewise.
+	(TARGET_SME_I16I64, TARGET_SME_F64F64): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_sve_rdvl_factor_p): Rename to...
+	(aarch64_sve_rdvl_addvl_factor_p): ...this.
+	(aarch64_sve_rdvl_immediate_p): Update accordingly.
+	(aarch64_rdsvl_immediate_p, aarch64_add_offset): Likewise.
+	(aarch64_sme_vq_immediate): Likewise.  Make public.
+	(aarch64_sve_addpl_factor_p): New function.
+	(aarch64_sve_addvl_addpl_immediate_p): Use
+	aarch64_sve_rdvl_addvl_factor_p and aarch64_sve_addpl_factor_p.
+	(aarch64_addsvl_addspl_immediate_p): New function.
+	(aarch64_output_addsvl_addspl): Likewise.
+	(aarch64_cannot_force_const_mem): Return true for RDSVL immediates.
+	(aarch64_classify_index): Handle .Q scaling for VNx1TImode.
+	(aarch64_classify_address): Likewise for vnum offsets.
+	(aarch64_output_sme_zero_za): New function.
+	(aarch64_sme_ldr_vnum_offset_p): Likewise.
+	* config/aarch64/predicates.md (aarch64_addsvl_addspl_immediate):
+	New predicate.
+	(aarch64_pluslong_operand): Include it for SME.
+	* config/aarch64/constraints.md (Ucj, Uav): New constraints.
+	* config/aarch64/iterators.md (VNx1TI_ONLY): New mode iterator.
+	(SME_ZA_I, SME_ZA_SDI, SME_ZA_SDF_I, SME_MOP_BHI): Likewise.
+	(SME_MOP_HSDF): Likewise.
+	(UNSPEC_SME_ADDHA, UNSPEC_SME_ADDVA, UNSPEC_SME_FMOPA)
+	(UNSPEC_SME_FMOPS, UNSPEC_SME_LD1_HOR, UNSPEC_SME_LD1_VER)
+	(UNSPEC_SME_READ_HOR, UNSPEC_SME_READ_VER, UNSPEC_SME_SMOPA)
+	(UNSPEC_SME_SMOPS, UNSPEC_SME_ST1_HOR, UNSPEC_SME_ST1_VER)
+	(UNSPEC_SME_SUMOPA, UNSPEC_SME_SUMOPS, UNSPEC_SME_UMOPA)
+	(UNSPEC_SME_UMOPS, UNSPEC_SME_USMOPA, UNSPEC_SME_USMOPS)
+	(UNSPEC_SME_WRITE_HOR, UNSPEC_SME_WRITE_VER): New unspecs.
+	(elem_bits): Handle x2 and x4 structure modes, plus VNx1TI.
+	(Vetype, Vesize, VPRED): Handle VNx1TI.
+	(b): New mode attribute.
+	(SME_LD1, SME_READ, SME_ST1, SME_WRITE, SME_BINARY_SDI, SME_INT_MOP)
+	(SME_FP_MOP): New int iterators.
+	(optab): Handle SME unspecs.
+	(hv): New int attribute.
+	* config/aarch64/aarch64.md (*add<mode>3_aarch64): Handle ADDSVL
+	and ADDSPL.
+	* config/aarch64/aarch64-sme.md (UNSPEC_SME_LDR): New unspec.
+	(@aarch64_sme_<optab><mode>, @aarch64_sme_<optab><mode>_plus)
+	(aarch64_sme_ldr0, @aarch64_sme_ldrn<mode>): New patterns.
+	(UNSPEC_SME_STR): New unspec.
+	(@aarch64_sme_<optab><mode>, @aarch64_sme_<optab><mode>_plus)
+	(aarch64_sme_str0, @aarch64_sme_strn<mode>): New patterns.
+	(@aarch64_sme_<optab><v_int_container><mode>): Likewise.
+	(*aarch64_sme_<optab><v_int_container><mode>_plus): Likewise.
+	(@aarch64_sme_<optab><VNx1TI_ONLY:mode><SVE_FULL:mode>): Likewise.
+	(@aarch64_sme_<optab><v_int_container><mode>): Likewise.
+	(*aarch64_sme_<optab><v_int_container><mode>_plus): Likewise.
+	(@aarch64_sme_<optab><VNx1TI_ONLY:mode><SVE_FULL:mode>): Likewise.
+	(UNSPEC_SME_ZERO): New unspec.
+	(aarch64_sme_zero): New pattern.
+	(@aarch64_sme_<SME_BINARY_SDI:optab><mode>): Likewise.
+	(@aarch64_sme_<SME_INT_MOP:optab><mode>): Likewise.
+	(@aarch64_sme_<SME_FP_MOP:optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve-builtins.def: Add ZA type suffixes.
+	Include aarch64-sve-builtins-sme.def.
+	(DEF_SME_ZA_FUNCTION): New macro.
+	* config/aarch64/aarch64-sve-builtins.h (CP_READ_ZA): New call
+	property.
+	(CP_WRITE_ZA): Likewise.
+	(PRED_za_m): New predication type.
+	(type_suffix_index): Handle DEF_SME_ZA_SUFFIX.
+	(type_suffix_info): Add vector_p and za_p fields.
+	(function_instance::num_za_tiles): New member function.
+	(function_builder::get_attributes): Add an aarch64_feature_flags
+	argument.
+	(function_expander::get_contiguous_base): Take a base argument
+	number, a vnum argument number, and an argument that indicates
+	whether the vnum parameter is a factor of the SME vector length
+	or the prevailing vector length.
+	(function_expander::add_integer_operand): Take a poly_int64.
+	(sve_switcher::sve_switcher): Take a base set of flags.
+	(sme_switcher): New class.
+	(scalar_types): Add a null entry for NUM_VECTOR_TYPES.
+	* config/aarch64/aarch64-sve-builtins.cc: Include
+	aarch64-sve-builtins-sme.h.
+	(pred_suffixes): Add an entry for PRED_za_m.
+	(type_suffixes): Initialize vector_p and za_p.  Handle ZA suffixes.
+	(TYPES_all_za, TYPES_d_za, TYPES_za_bhsd_data, TYPES_za_all_data)
+	(TYPES_za_s_integer, TYPES_za_d_integer, TYPES_mop_base)
+	(TYPES_mop_base_signed, TYPES_mop_base_unsigned, TYPES_mop_i16i64)
+	(TYPES_mop_i16i64_signed, TYPES_mop_i16i64_unsigned, TYPES_za): New
+	type suffix macros.
+	(preds_m, preds_za_m): New predication lists.
+	(function_groups): Handle DEF_SME_ZA_FUNCTION.
+	(scalar_types): Add an entry for NUM_VECTOR_TYPES.
+	(find_type_suffix_for_scalar_type): Check positively for vectors
+	rather than negatively for predicates.
+	(check_required_extensions): Handle PSTATE.SM and PSTATE.ZA
+	requirements.
+	(report_out_of_range): Handle the case where the minimum and
+	maximum are the same.
+	(function_instance::reads_global_state_p): Return true for functions
+	that read ZA.
+	(function_instance::modifies_global_state_p): Return true for functions
+	that write to ZA.
+	(sve_switcher::sve_switcher): Add a base flags argument.
+	(function_builder::get_name): Handle "__arm_" prefixes.
+	(add_attribute): Add an overload that takes a namespaces.
+	(add_shared_state_attribute): New function.
+	(function_builder::get_attributes): Take the required feature flags
+	as argument.  Add streaming and ZA attributes where appropriate.
+	(function_builder::add_unique_function): Update calls accordingly.
+	(function_resolver::check_gp_argument): Assert that the predication
+	isn't ZA _m predication.
+	(function_checker::function_checker): Don't bias the argument
+	number for ZA _m predication.
+	(function_expander::get_contiguous_base): Add arguments that
+	specify the base argument number, the vnum argument number,
+	and an argument that indicates whether the vnum parameter is
+	a factor of the SME vector length or the prevailing vector length.
+	Handle the SME case.
+	(function_expander::add_input_operand): Handle pmode_register_operand.
+	(function_expander::add_integer_operand): Take a poly_int64.
+	(init_builtins): Call handle_arm_sme_h for LTO.
+	(handle_arm_sve_h): Skip SME intrinsics.
+	(handle_arm_sme_h): New function.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(read_write_za, write_za): New classes.
+	(unspec_based_sme_function, za_arith_function): New using aliases.
+	(quiet_za_arith_function): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h
+	(binary_za_int_m, binary_za_m, binary_za_uint_m, bool_inherent)
+	(inherent_za, inherent_mask_za, ldr_za, load_za, read_za_m, store_za)
+	(str_za, unary_za_m, write_za_m): Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (apply_predication):
+	Expect za_m functions to have an existing governing predicate.
+	(binary_za_m_base, binary_za_int_m_def, binary_za_m_def): New classes.
+	(binary_za_uint_m_def, bool_inherent_def, inherent_za_def): Likewise.
+	(inherent_mask_za_def, ldr_za_def, load_za_def, read_za_m_def)
+	(store_za_def, str_za_def, unary_za_m_def, write_za_m_def): Likewise.
+	* config/aarch64/arm_sme.h: New file.
+	* config/aarch64/aarch64-sve-builtins-sme.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Likewise.
+	* config/aarch64/t-aarch64 (aarch64-sve-builtins.o): Depend on
+	aarch64-sve-builtins-sme.def and aarch64-sve-builtins-sme.h.
+	(aarch64-sve-builtins-sme.o): New rule.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_shape::has_merge_argument_p): New member function.
+	* config/aarch64/aarch64-sve-builtins.cc:
+	(function_resolver::check_gp_argument): Use it.
+	(function_expander::get_fallback_value): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(apply_predication): Likewise.
+	(unary_convert_narrowt_def::has_merge_argument_p): New function.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(unspec_based_function_base): Allow type suffix 1 to determine
+	the mode of the operation.
+	(unspec_based_function): Update accordingly.
+	(unspec_based_fused_function): Likewise.
+	(unspec_based_fused_lane_function): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def: Add VNx1TI.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (W12_W15_REGNUM_P): New macro.
+	(W12_W15_REGS): New register class.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add entries for it.
+	* config/aarch64/aarch64.cc (aarch64_regno_regclass)
+	(aarch64_class_max_nregs, aarch64_register_move_cost): Handle
+	W12_W15_REGS.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-isa-modes.def (ZA_ON): New ISA mode.
+	* config/aarch64/aarch64-protos.h (aarch64_rdsvl_immediate_p)
+	(aarch64_output_rdsvl, aarch64_optimize_mode_switching)
+	(aarch64_restore_za): Declare.
+	* config/aarch64/constraints.md (UsR): New constraint.
+	* config/aarch64/aarch64.md (LOWERING_REGNUM, TPIDR_BLOCK_REGNUM)
+	(SME_STATE_REGNUM, TPIDR2_SETUP_REGNUM, ZA_FREE_REGNUM)
+	(ZA_SAVED_REGNUM, ZA_REGNUM, FIRST_FAKE_REGNUM): New constants.
+	(LAST_FAKE_REGNUM): Likewise.
+	(UNSPEC_SAVE_NZCV, UNSPEC_RESTORE_NZCV, UNSPEC_SME_VQ): New unspecs.
+	(arches): Add sme.
+	(arch_enabled): Handle it.
+	(*cb<optab><mode>1): Rename to...
+	(aarch64_cb<optab><mode>1): ...this.
+	(*movsi_aarch64): Add an alternative for RDSVL.
+	(*movdi_aarch64): Likewise.
+	(aarch64_save_nzcv, aarch64_restore_nzcv): New insns.
+	* config/aarch64/aarch64-sme.md (UNSPEC_SMSTOP_ZA)
+	(UNSPEC_INITIAL_ZERO_ZA, UNSPEC_TPIDR2_SAVE, UNSPEC_TPIDR2_RESTORE)
+	(UNSPEC_READ_TPIDR2, UNSPEC_WRITE_TPIDR2, UNSPEC_SETUP_LOCAL_TPIDR2)
+	(UNSPEC_RESTORE_ZA, UNSPEC_START_PRIVATE_ZA_CALL): New unspecs.
+	(UNSPEC_END_PRIVATE_ZA_CALL, UNSPEC_COMMIT_LAZY_SAVE): Likewise.
+	(UNSPECV_ASM_UPDATE_ZA): New unspecv.
+	(aarch64_tpidr2_save, aarch64_smstart_za, aarch64_smstop_za)
+	(aarch64_initial_zero_za, aarch64_setup_local_tpidr2)
+	(aarch64_clear_tpidr2, aarch64_write_tpidr2, aarch64_read_tpidr2)
+	(aarch64_tpidr2_restore, aarch64_restore_za, aarch64_asm_update_za)
+	(aarch64_start_private_za_call, aarch64_end_private_za_call)
+	(aarch64_commit_lazy_save): New patterns.
+	* config/aarch64/aarch64.h (AARCH64_ISA_ZA_ON, TARGET_ZA): New macros.
+	(FIXED_REGISTERS, REGISTER_NAMES): Add the new fake ZA registers.
+	(CALL_USED_REGISTERS): Replace with...
+	(CALL_REALLY_USED_REGISTERS): ...this and add the fake ZA registers.
+	(FIRST_PSEUDO_REGISTER): Bump to include the fake ZA registers.
+	(FAKE_REGS): New register class.
+	(REG_CLASS_NAMES): Update accordingly.
+	(REG_CLASS_CONTENTS): Likewise.
+	(machine_function::tpidr2_block): New member variable.
+	(machine_function::tpidr2_block_ptr): Likewise.
+	(machine_function::za_save_buffer): Likewise.
+	(machine_function::next_asm_update_za_id): Likewise.
+	(CUMULATIVE_ARGS::shared_za_flags): Likewise.
+	(aarch64_mode_entity, aarch64_local_sme_state): New enums.
+	(aarch64_tristate_mode): Likewise.
+	(OPTIMIZE_MODE_SWITCHING, NUM_MODES_FOR_MODE_SWITCHING): Define.
+	* config/aarch64/aarch64.cc (AARCH64_STATE_SHARED, AARCH64_STATE_IN)
+	(AARCH64_STATE_OUT): New constants.
+	(aarch64_attribute_shared_state_flags): New function.
+	(aarch64_lookup_shared_state_flags, aarch64_fndecl_has_new_state)
+	(aarch64_check_state_string, cmp_string_csts): Likewise.
+	(aarch64_merge_string_arguments, aarch64_check_arm_new_against_type)
+	(handle_arm_new, handle_arm_shared): Likewise.
+	(handle_arm_new_za_attribute): New
+	(aarch64_arm_attribute_table): Add new, preserves, in, out, and inout.
+	(aarch64_hard_regno_nregs): Handle FAKE_REGS.
+	(aarch64_hard_regno_mode_ok): Likewise.
+	(aarch64_fntype_shared_flags, aarch64_fntype_pstate_za): New functions.
+	(aarch64_fntype_isa_mode): Include aarch64_fntype_pstate_za.
+	(aarch64_fndecl_has_state, aarch64_fndecl_pstate_za): New functions.
+	(aarch64_fndecl_isa_mode): Include aarch64_fndecl_pstate_za.
+	(aarch64_cfun_incoming_pstate_za, aarch64_cfun_shared_flags)
+	(aarch64_cfun_has_new_state, aarch64_cfun_has_state): New functions.
+	(aarch64_sme_vq_immediate, aarch64_sme_vq_unspec_p): Likewise.
+	(aarch64_rdsvl_immediate_p, aarch64_output_rdsvl): Likewise.
+	(aarch64_expand_mov_immediate): Handle RDSVL immediates.
+	(aarch64_function_arg): Add the ZA sharing flags as a third limb
+	of the PARALLEL.
+	(aarch64_init_cumulative_args): Record the ZA sharing flags.
+	(aarch64_extra_live_on_entry): New function.  Handle the new
+	ZA-related fake registers.
+	(aarch64_epilogue_uses): Handle the new ZA-related fake registers.
+	(aarch64_cannot_force_const_mem): Handle UNSPEC_SME_VQ constants.
+	(aarch64_get_tpidr2_block, aarch64_get_tpidr2_ptr): New functions.
+	(aarch64_init_tpidr2_block, aarch64_restore_za): Likewise.
+	(aarch64_layout_frame): Check whether the current function creates
+	new ZA state.  Record that it clobbers LR if so.
+	(aarch64_expand_prologue): Handle functions that create new ZA state.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_create_tpidr2_block): New function.
+	(aarch64_restore_za): Likewise.
+	(aarch64_start_call_args): Disallow calls to shared-ZA functions
+	from functions that have no ZA state.  Emit a marker instruction
+	before calls to private-ZA functions from functions that have
+	SME state.
+	(aarch64_expand_call): Add return registers for state that is
+	managed via attributes.  Record the use and clobber information
+	for the ZA registers.
+	(aarch64_end_call_args): New function.
+	(aarch64_regno_regclass): Handle FAKE_REGS.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_override_options_internal): Require TARGET_SME for
+	functions that have ZA state.
+	(aarch64_conditional_register_usage): Handle FAKE_REGS.
+	(aarch64_mov_operand_p): Handle RDSVL immediates.
+	(aarch64_comp_type_attributes): Check that the ZA sharing flags
+	are equal.
+	(aarch64_merge_decl_attributes): New function.
+	(aarch64_optimize_mode_switching, aarch64_mode_emit_za_save_buffer)
+	(aarch64_mode_emit_local_sme_state, aarch64_mode_emit):  Likewise.
+	(aarch64_insn_references_sme_state_p): Likewise.
+	(aarch64_mode_needed_local_sme_state): Likewise.
+	(aarch64_mode_needed_za_save_buffer, aarch64_mode_needed): Likewise.
+	(aarch64_mode_after_local_sme_state, aarch64_mode_after): Likewise.
+	(aarch64_local_sme_confluence, aarch64_mode_confluence): Likewise.
+	(aarch64_one_shot_backprop, aarch64_local_sme_backprop): Likewise.
+	(aarch64_mode_backprop, aarch64_mode_entry): Likewise.
+	(aarch64_mode_exit, aarch64_mode_eh_handler): Likewise.
+	(aarch64_mode_priority, aarch64_md_asm_adjust): Likewise.
+	(TARGET_END_CALL_ARGS, TARGET_MERGE_DECL_ATTRIBUTES): Define.
+	(TARGET_MODE_EMIT, TARGET_MODE_NEEDED, TARGET_MODE_AFTER): Likewise.
+	(TARGET_MODE_CONFLUENCE, TARGET_MODE_BACKPROP): Likewise.
+	(TARGET_MODE_ENTRY, TARGET_MODE_EXIT): Likewise.
+	(TARGET_MODE_EH_HANDLER, TARGET_MODE_PRIORITY): Likewise.
+	(TARGET_EXTRA_LIVE_ON_ENTRY): Likewise.
+	(TARGET_MD_ASM_ADJUST): Use aarch64_md_asm_adjust.
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Define __arm_new, __arm_preserves,__arm_in, __arm_out, and __arm_inout.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-passes.def
+	(pass_late_thread_prologue_and_epilogue): New pass.
+	* config/aarch64/aarch64-sme.md: New file.
+	* config/aarch64/aarch64.md: Include it.
+	(*tb<optab><mode>1): Rename to...
+	(@aarch64_tb<optab><mode>): ...this.
+	(call, call_value, sibcall, sibcall_value): Don't require operand 2
+	to be a CONST_INT.
+	* config/aarch64/aarch64-protos.h (aarch64_emit_call_insn): Return
+	the insn.
+	(make_pass_switch_sm_state): Declare.
+	* config/aarch64/aarch64.h (TARGET_STREAMING_COMPATIBLE): New macro.
+	(CALL_USED_REGISTER): Mark VG as call-preserved.
+	(aarch64_frame::old_svcr_offset): New member variable.
+	(machine_function::call_switches_sm_state): Likewise.
+	(CUMULATIVE_ARGS::num_sme_mode_switch_args): Likewise.
+	(CUMULATIVE_ARGS::sme_mode_switch_args): Likewise.
+	* config/aarch64/aarch64.cc: Include tree-pass.h and cfgbuild.h.
+	(aarch64_cfun_incoming_pstate_sm): New function.
+	(aarch64_call_switches_pstate_sm): Likewise.
+	(aarch64_reg_save_mode): Return DImode for VG_REGNUM.
+	(aarch64_callee_isa_mode): New function.
+	(aarch64_insn_callee_isa_mode): Likewise.
+	(aarch64_guard_switch_pstate_sm): Likewise.
+	(aarch64_switch_pstate_sm): Likewise.
+	(aarch64_sme_mode_switch_regs): New class.
+	(aarch64_record_sme_mode_switch_args): New function.
+	(aarch64_finish_sme_mode_switch_args): Likewise.
+	(aarch64_function_arg): Handle the end marker by returning a
+	PARALLEL that contains the ABI cookie that we used previously
+	alongside the result of aarch64_finish_sme_mode_switch_args.
+	(aarch64_init_cumulative_args): Initialize num_sme_mode_switch_args.
+	(aarch64_function_arg_advance): If a call would switch SM state,
+	record all argument registers that would need to be saved around
+	the mode switch.
+	(aarch64_need_old_pstate_sm): New function.
+	(aarch64_layout_frame): Decide whether the frame needs to store the
+	incoming value of PSTATE.SM and allocate a save slot for it if so.
+	If a function switches SME state, arrange to save the old value
+	of the DWARF VG register.  Handle the case where this is the only
+	register save slot above the FP.
+	(aarch64_save_callee_saves): Handles saves of the DWARF VG register.
+	(aarch64_get_separate_components): Prevent such saves from being
+	shrink-wrapped.
+	(aarch64_old_svcr_mem): New function.
+	(aarch64_read_old_svcr): Likewise.
+	(aarch64_guard_switch_pstate_sm): Likewise.
+	(aarch64_expand_prologue): Handle saves of the DWARF VG register.
+	Initialize any SVCR save slot.
+	(aarch64_expand_call): Allow the cookie to be PARALLEL that contains
+	both the UNSPEC_CALLEE_ABI value and a list of registers that need
+	to be preserved across a change to PSTATE.SM.  If the call does
+	involve such a change to PSTATE.SM, record the registers that
+	would be clobbered by this process.  Also emit an instruction
+	to mark the temporary change in VG.  Update call_switches_pstate_sm.
+	(aarch64_emit_call_insn): Return the emitted instruction.
+	(aarch64_frame_pointer_required): New function.
+	(aarch64_conditional_register_usage): Prevent VG_REGNUM from being
+	treated as a register operand.
+	(aarch64_switch_pstate_sm_for_call): New function.
+	(pass_data_switch_pstate_sm): New pass variable.
+	(pass_switch_pstate_sm): New pass class.
+	(make_pass_switch_pstate_sm): New function.
+	(TARGET_FRAME_POINTER_REQUIRED): Define.
+	* config/aarch64/t-aarch64 (s-check-sve-md): Add aarch64-sme.md.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_NON_STREAMING): New macro.
+	(TARGET_SVE2_AES, TARGET_SVE2_BITPERM): Use it.
+	(TARGET_SVE2_SHA3, TARGET_SVE2_SM4): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.def: Separate out
+	the functions that require PSTATE.SM to be 0 and guard them
+	with AARCH64_FL_SM_OFF.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (check_required_extensions):
+	Enforce AARCH64_FL_SM_OFF requirements.
+	* config/aarch64/aarch64-sve.md (aarch64_wrffr): Require
+	TARGET_NON_STREAMING
+	(aarch64_rdffr, aarch64_rdffr_z, *aarch64_rdffr_z_ptest): Likewise.
+	(*aarch64_rdffr_ptest, *aarch64_rdffr_z_cc, *aarch64_rdffr_cc)
+	(@aarch64_ld<fn>f1<mode>): Likewise.
+	(@aarch64_ld<fn>f1_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>)
+	(gather_load<mode><v_int_container>): Likewise
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>)
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked)
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>, @aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	(@aarch64_sve_gather_prefetch<SVE_FULL_I:mode><VNx4SI_ONLY:mode>)
+	(@aarch64_sve_gather_prefetch<SVE_FULL_I:mode><VNx2DI_ONLY:mode>)
+	(*aarch64_sve_gather_prefetch<SVE_FULL_I:mode><VNx2DI_ONLY:mode>_sxtw)
+	(*aarch64_sve_gather_prefetch<SVE_FULL_I:mode><VNx2DI_ONLY:mode>_uxtw)
+	(scatter_store<mode><v_int_container>): Likewise.
+	(mask_scatter_store<mode><v_int_container>): Likewise.
+	(*mask_scatter_store<mode><v_int_container>_<su>xtw_unpacked)
+	(*mask_scatter_store<mode><v_int_container>_sxtw): Likewise.
+	(*mask_scatter_store<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_scatter_store_trunc<VNx4_NARROW:mode><VNx4_WIDE:mode>)
+	(@aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_sxtw)
+	(*aarch64_scatter_store_trunc<VNx2_NARROW:mode><VNx2_WIDE:mode>_uxtw)
+	(@aarch64_sve_ld1ro<mode>, @aarch64_adr<mode>): Likewise.
+	(*aarch64_adr_sxtw, *aarch64_adr_uxtw_unspec): Likewise.
+	(*aarch64_adr_uxtw_and, @aarch64_adr<mode>_shift): Likewise.
+	(*aarch64_adr<mode>_shift, *aarch64_adr_shift_sxtw): Likewise.
+	(*aarch64_adr_shift_uxtw, @aarch64_sve_add_<optab><vsi2qi>): Likewise.
+	(@aarch64_sve_<sve_fp_op><mode>, fold_left_plus_<mode>): Likewise.
+	(mask_fold_left_plus_<mode>, @aarch64_sve_compact<mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>)
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+	(@aarch64_sve2_histcnt<mode>, @aarch64_sve2_histseg<mode>): Likewise.
+	(@aarch64_pred_<SVE2_MATCH:sve_int_op><mode>): Likewise.
+	(*aarch64_pred_<SVE2_MATCH:sve_int_op><mode>_cc): Likewise.
+	(*aarch64_pred_<SVE2_MATCH:sve_int_op><mode>_ptest): Likewise.
+	* config/aarch64/iterators.md (SVE_FP_UNARY_INT): Make FEXPA
+	depend on TARGET_NON_STREAMING.
+	(SVE_BFLOAT_TERNARY_LONG): Likewise BFMMLA.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_BASE_SIMD): New macro.
+	(TARGET_SIMD): Require PSTATE.SM to be 0.
+	(AARCH64_ISA_SM_OFF): New macro.
+	* config/aarch64/aarch64.cc (aarch64_array_mode_supported_p):
+	Allow Advanced SIMD structure modes for TARGET_BASE_SIMD.
+	(aarch64_print_operand): Support '%Z'.
+	(aarch64_secondary_reload): Expect SVE moves to be used for
+	Advanced SIMD modes if SVE is enabled and non-streaming
+	Advanced SIMD isn't.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_simd_container_mode): Extend Advanced SIMD mode
+	handling to TARGET_BASE_SIMD.
+	(aarch64_expand_cpymem): Expand commentary.
+	* config/aarch64/aarch64.md (arches): Add base_simd and nobase_simd.
+	(arch_enabled): Handle it.
+	(*mov<mode>_aarch64): Extend UMOV alternative to TARGET_BASE_SIMD.
+	(*movti_aarch64): Use an SVE move instruction if non-streaming
+	SIMD isn't available.
+	(*mov<TFD:mode>_aarch64): Likewise.
+	(load_pair_dw_tftf): Extend to TARGET_BASE_SIMD.
+	(store_pair_dw_tftf): Likewise.
+	(loadwb_pair<TX:mode>_<P:mode>): Likewise.
+	(storewb_pair<TX:mode>_<P:mode>): Likewise.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<VDMOV:mode>):
+	Allow UMOV in streaming mode.
+	(*aarch64_simd_mov<VQMOV:mode>): Use an SVE move instruction
+	if non-streaming SIMD isn't available.
+	(aarch64_store_lane0<mode>): Depend on TARGET_FLOAT rather than
+	TARGET_SIMD.
+	(aarch64_simd_mov_from_<mode>low): Likewise.  Use fmov if
+	Advanced SIMD is completely disabled.
+	(aarch64_simd_mov_from_<mode>high): Use SVE EXT instructions if
+	non-streaming SIMD isn't available.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Document SME.
+	* doc/sourcebuild.texi: Document aarch64_sve.
+	* config/aarch64/aarch64-option-extensions.def (sme): Define.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SME): New macro.
+	(TARGET_SME): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal):
+	Ensure that SME is present when compiling streaming code.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-isa-modes.def: New file.
+	* config/aarch64/aarch64.h: Include it in the feature enumerations.
+	(AARCH64_FL_SM_STATE, AARCH64_FL_ISA_MODES): New constants.
+	(AARCH64_FL_DEFAULT_ISA_MODE): Likewise.
+	(AARCH64_ISA_MODE): New macro.
+	(CUMULATIVE_ARGS): Add an isa_mode field.
+	* config/aarch64/aarch64-protos.h (aarch64_gen_callee_cookie): Declare.
+	(aarch64_tlsdesc_abi_id): Return an arm_pcs.
+	* config/aarch64/aarch64.cc (attr_streaming_exclusions)
+	(aarch64_gnu_attributes, aarch64_gnu_attribute_table)
+	(aarch64_arm_attributes, aarch64_arm_attribute_table): New tables.
+	(aarch64_attribute_table): Redefine to include the gnu and arm
+	attributes.
+	(aarch64_fntype_pstate_sm, aarch64_fntype_isa_mode): New functions.
+	(aarch64_fndecl_pstate_sm, aarch64_fndecl_isa_mode): Likewise.
+	(aarch64_gen_callee_cookie, aarch64_callee_abi): Likewise.
+	(aarch64_insn_callee_cookie, aarch64_insn_callee_abi): Use them.
+	(aarch64_function_arg, aarch64_output_mi_thunk): Likewise.
+	(aarch64_init_cumulative_args): Initialize the isa_mode field.
+	(aarch64_output_mi_thunk): Use aarch64_gen_callee_cookie to get
+	the ABI cookie.
+	(aarch64_override_options): Add the ISA mode to the feature set.
+	(aarch64_temporary_target::copy_from_fndecl): Likewise.
+	(aarch64_fndecl_options, aarch64_handle_attr_arch): Likewise.
+	(aarch64_set_current_function): Maintain the correct ISA mode.
+	(aarch64_tlsdesc_abi_id): Return an arm_pcs.
+	(aarch64_comp_type_attributes): Handle arm::streaming and
+	arm::streaming_compatible.
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Define __arm_streaming and __arm_streaming_compatible.
+	* config/aarch64/aarch64.md (tlsdesc_small_<mode>): Use
+	aarch64_gen_callee_cookie to get the ABI cookie.
+	* config/aarch64/t-aarch64 (TM_H): Add all feature-related .def files.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svreinterpret_impl::fold): Punt on tuple forms.
+	(svreinterpret_impl::expand): Use tuple_mode instead of vector_mode.
+	* config/aarch64/aarch64-sve-builtins-base.def (svreinterpret):
+	Extend to x1234 groups.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(multi_vector_function::vectors_per_tuple): If the function has
+	a group suffix, get the number of vectors from there.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (reinterpret): Declare.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (reinterpret_def)
+	(reinterpret): New function shape.
+	* config/aarch64/aarch64-sve-builtins.cc (function_groups): Handle
+	DEF_SVE_FUNCTION_GS.
+	* config/aarch64/aarch64-sve-builtins.def (DEF_SVE_FUNCTION_GS): New
+	macro.
+	(DEF_SVE_FUNCTION): Forward to DEF_SVE_FUNCTION_GS by default.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_instance::tuple_mode): New member function.
+	(function_base::vectors_per_tuple): Take the function instance
+	as argument and get the number from the group suffix.
+	(function_instance::vectors_per_tuple): Update accordingly.
+	* config/aarch64/iterators.md (SVE_FULLx2, SVE_FULLx3, SVE_FULLx4)
+	(SVE_ALL_STRUCT): New mode iterators.
+	(SVE_STRUCT): Redefine in terms of SVE_FULL*.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_reinterpret<mode>)
+	(*aarch64_sve_reinterpret<mode>): Extend to SVE structure modes.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::require_derived_vector_type): Add a specific
+	error message for the case in which the caller wants a single
+	vector whose element type matches a previous tuyple argument.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_resolver::lookup_form): Add an overload that takes
+	an sve_type rather than type and group suffixes.
+	(function_resolver::resolve_to): Likewise.
+	(function_resolver::infer_vector_or_tuple_type): Return an sve_type.
+	(function_resolver::infer_tuple_type): Likewise.
+	(function_resolver::require_matching_vector_type): Take an sve_type
+	rather than a type_suffix_index.
+	(function_resolver::require_derived_vector_type): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (num_vectors_to_group):
+	New function.
+	(function_resolver::lookup_form): Add an overload that takes
+	an sve_type rather than type and group suffixes.
+	(function_resolver::resolve_to): Likewise.
+	(function_resolver::infer_vector_or_tuple_type): Return an sve_type.
+	(function_resolver::infer_tuple_type): Likewise.
+	(function_resolver::infer_vector_type): Update accordingly.
+	(function_resolver::require_matching_vector_type): Take an sve_type
+	rather than a type_suffix_index.
+	(function_resolver::require_derived_vector_type): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (get_def::resolve)
+	(set_def::resolve, store_def::resolve, tbl_tuple_def::resolve): Update
+	calls accordingly.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_resolver::require_matching_vector_type): Add a parameter
+	that specifies the number of the earlier argument that is being
+	matched against.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::require_matching_vector_type): Likewise.
+	(require_derived_vector_type): Update calls accordingly.
+	(function_resolver::resolve_unary): Likewise.
+	(function_resolver::resolve_uniform): Likewise.
+	(function_resolver::resolve_uniform_opt_n): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(binary_long_lane_def::resolve): Likewise.
+	(clast_def::resolve, ternary_uint_def::resolve): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_resolver::infer_sve_type): New member function.
+	(function_resolver::report_incorrect_num_vectors): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::infer_sve_type): New function,.
+	(function_resolver::report_incorrect_num_vectors): New function,
+	split out from...
+	(function_resolver::infer_vector_or_tuple_type): ...here.  Use
+	infer_sve_type.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h (sve_type): New struct.
+	(sve_type::operator==): New function.
+	(function_resolver::get_vector_type): Delete.
+	(function_resolver::report_no_such_form): Take an sve_type rather
+	than a type_suffix_index.
+	* config/aarch64/aarch64-sve-builtins.cc (get_vector_type): New
+	function.
+	(function_resolver::get_vector_type): Delete.
+	(function_resolver::report_no_such_form): Take an sve_type rather
+	than a type_suffix_index.
+	(find_sve_type): New function, split out from...
+	(function_resolver::infer_vector_or_tuple_type): ...here.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (build_one): Take
+	a group suffix index parameter.
+	(build_32_64, build_all): Update accordingly.  Iterate over all
+	group suffixes.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svqrshl_impl::fold)
+	(svqshl_impl::fold, svrshl_impl::fold): Update function_instance
+	constructors.
+	* config/aarch64/aarch64-sve-builtins.cc (group_suffixes): New array.
+	(groups_none): New constant.
+	(function_groups): Initialize the groups field.
+	(function_instance::hash): Hash the group index.
+	(function_builder::get_name): Add the group suffix.
+	(function_builder::add_overloaded_functions): Iterate over all
+	group suffixes.
+	(function_resolver::lookup_form): Take a group suffix parameter.
+	(function_resolver::resolve_to): Likewise.
+	* config/aarch64/aarch64-sve-builtins.def (DEF_SVE_GROUP_SUFFIX): New
+	macro.
+	(x2, x3, x4): New group suffixes.
+	* config/aarch64/aarch64-sve-builtins.h (group_suffix_index): New enum.
+	(group_suffix_info): New structure.
+	(function_group_info::groups): New member variable.
+	(function_instance::group_suffix_id): Likewise.
+	(group_suffixes): New array.
+	(function_instance::operator==): Compare the group suffixes.
+	(function_instance::group_suffix): New function.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (function_groups): Remove
+	implied requirement on SVE.
+	* config/aarch64/aarch64-sve-builtins-base.def: Explicitly require SVE.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_rdvl_immediate_p)
+	(aarch64_output_sve_rdvl): Declare.
+	* config/aarch64/aarch64.cc (aarch64_sve_cnt_factor_p): New
+	function, split out from...
+	(aarch64_sve_cnt_immediate_p): ...here.
+	(aarch64_sve_rdvl_factor_p): New function.
+	(aarch64_sve_rdvl_immediate_p): Likewise.
+	(aarch64_output_sve_rdvl): Likewise.
+	(aarch64_offset_temporaries): Rewrite the SVE handling to use RDVL
+	for some cases.
+	(aarch64_expand_mov_immediate): Handle RDVL immediates.
+	(aarch64_mov_operand_p): Likewise.
+	* config/aarch64/constraints.md (Usr): New constraint.
+	* config/aarch64/aarch64.md (*mov<SHORT:mode>_aarch64): Add an RDVL
+	alternative.
+	(*movsi_aarch64, *movdi_aarch64): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h:
+	(function_checker::require_immediate_lane_index): Add an argument
+	for the index of the indexed vector argument.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_checker::require_immediate_lane_index): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(ternary_bfloat_lane_base::check): Update accordingly.
+	(ternary_qq_lane_base::check): Likewise.
+	(binary_lane_def::check): Likewise.
+	(binary_long_lane_def::check): Likewise.
+	(ternary_lane_def::check): Likewise.
+	(ternary_lane_rotate_def::check): Likewise.
+	(ternary_long_lane_def::check): Likewise.
+	(ternary_qq_lane_rotate_def::check): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (md_asm_adjust): Add a uses parameter.
+	* doc/tm.texi: Regenerate.
+	* cfgexpand.cc (expand_asm_loc): Update call to md_asm_adjust.
+	Handle any USEs created by the target.
+	(expand_asm_stmt): Likewise.
+	* recog.cc (asm_noperands): Handle asms with USEs.
+	(decode_asm_operands): Likewise.
+	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Add uses
+	parameter.
+	* config/arm/aarch-common.cc (arm_md_asm_adjust): Likewise.
+	* config/arm/arm.cc (thumb1_md_asm_adjust): Likewise.
+	* config/avr/avr.cc (avr_md_asm_adjust): Likewise.
+	* config/cris/cris.cc (cris_md_asm_adjust): Likewise.
+	* config/i386/i386.cc (ix86_md_asm_adjust): Likewise.
+	* config/mn10300/mn10300.cc (mn10300_md_asm_adjust): Likewise.
+	* config/nds32/nds32.cc (nds32_md_asm_adjust): Likewise.
+	* config/pdp11/pdp11.cc (pdp11_md_asm_adjust): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_md_asm_adjust): Likewise.
+	* config/s390/s390.cc (s390_md_asm_adjust): Likewise.
+	* config/vax/vax.cc (vax_md_asm_adjust): Likewise.
+	* config/visium/visium.cc (visium_md_asm_adjust): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/tm.texi.in: Add TARGET_START_CALL_ARGS.
+	* doc/tm.texi: Regenerate.
+	* target.def (start_call_args): New hook.
+	(call_args, end_call_args): Add a parameter for the cumulative
+	argument information.
+	* hooks.h (hook_void_rtx_tree): Delete.
+	* hooks.cc (hook_void_rtx_tree): Likewise.
+	* targhooks.h (hook_void_CUMULATIVE_ARGS): Declare.
+	(hook_void_CUMULATIVE_ARGS_rtx_tree): Likewise.
+	* targhooks.cc (hook_void_CUMULATIVE_ARGS): New function.
+	(hook_void_CUMULATIVE_ARGS_rtx_tree): Likewise.
+	* calls.cc (expand_call): Call start_call_args before computing
+	and storing stack parameters.  Pass the cumulative argument
+	information to call_args and end_call_args.
+	(emit_library_call_value_1): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_call_args): Add a cumulative
+	argument parameter.
+	(nvptx_end_call_args): Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/tm.texi.in: Add TARGET_EMIT_EPILOGUE_FOR_SIBCALL.
+	* doc/tm.texi: Regenerate.
+	* target.def (emit_epilogue_for_sibcall): New hook.
+	* calls.cc (can_implement_as_sibling_call_p): Use it.
+	* function.cc (thread_prologue_and_epilogue_insns): Likewise.
+	(reposition_prologue_and_epilogue_notes): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_epilogue): Take
+	an rtx_call_insn * rather than a bool.
+	* config/aarch64/aarch64.cc (aarch64_expand_epilogue): Likewise.
+	(TARGET_EMIT_EPILOGUE_FOR_SIBCALL): Define.
+	* config/aarch64/aarch64.md (epilogue): Update call.
+	(sibcall_epilogue): Delete.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (use_late_prologue_epilogue): New hook.
+	* doc/tm.texi.in: Add TARGET_USE_LATE_PROLOGUE_EPILOGUE.
+	* doc/tm.texi: Regenerate.
+	* passes.def (pass_late_thread_prologue_and_epilogue): New pass.
+	* tree-pass.h (make_pass_late_thread_prologue_and_epilogue): Declare.
+	* function.cc (pass_thread_prologue_and_epilogue::gate): New function.
+	(pass_data_late_thread_prologue_and_epilogue): New pass variable.
+	(pass_late_thread_prologue_and_epilogue): New pass class.
+	(make_pass_late_thread_prologue_and_epilogue): New function.
+
+2023-12-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): Check zcd conflicts
+	with zcmt and zcmp.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/112278
+	* lra-int.h (lra_update_biggest_mode): New function.
+	* lra-coalesce.cc (merge_pseudos): Use it.
+	* lra-lives.cc (process_bb_lives): Likewise.
+	* lra.cc (new_insn_reg): Likewise.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112843
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Change lhs of stmt
+	to lhs2 before building and inserting lhs = (cast) lhs2; assignment.
+	Adjust stmt operands before adjusting lhs.
+
+2023-12-05  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-v.cc (sew64_scalar_helper): Bugfix.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112816
+	* config/i386/sse.md ((eq (eq (lshiftrt x elt_bits-1) 0) 0)): New
+	splitter to turn psrld $31; pcmpeq; pcmpeq into psrad $31.
+
+2023-12-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add blocker.
+	* config/riscv/riscv-protos.h (gather_scatter_valid_offset_p): New function.
+	* config/riscv/riscv-v.cc (gather_scatter_valid_offset_p): Ditto.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112827
+	PR tree-optimization/112848
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Compute the insert location for each insert.
+
+2023-12-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Count sse_reg/gpr_regs for components not loaded from memory.
+	(ix86_vector_costs:ix86_vector_costs): New constructor.
+	(ix86_vector_costs::m_num_gpr_needed[3]): New private memeber.
+	(ix86_vector_costs::m_num_sse_needed[3]): Ditto.
+	(ix86_vector_costs::finish_cost): Estimate overall register
+	pressure cost.
+	(ix86_vector_costs::ix86_vect_estimate_reg_pressure): New
+	function.
+
+2023-12-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (udot_prodv64qi): New expander.
+	(udot_prod<mode>): Emulates with VEC_UNPACKU_EXPR +
+	DOT_PROD (short, int).
+
+2023-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107687
+	PR c++/110997
+	* doc/invoke.texi: Document -fno-immediate-escalation.
+
 2023-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* match.pd (zero_one_valued_p): For convert

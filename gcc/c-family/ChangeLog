@@ -1,3 +1,29 @@
+2023-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-attribs.cc: Include ipa-strub.h.
+	(handle_strub_attribute): New.
+	(c_common_attribute_table): Add strub.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-attribs.cc (c_common_gnu_attribute_table): Add extra
+	braces to work around PR 16333 in older compilers.
+
+2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/89270
+	* c-common.cc (c_common_type_for_size): Consider
+	registered_builtin_types.
+
+2023-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107687
+	PR c++/110997
+	* c-cppbuiltin.cc (c_cpp_builtins): Update __cpp_consteval.
+	* c-opts.cc (c_common_post_options): Pre-C++20, unset
+	flag_immediate_escalation.
+	* c.opt (fimmediate-escalation): New option.
+
 2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-common.h (c_common_attribute_table): Replace with...
