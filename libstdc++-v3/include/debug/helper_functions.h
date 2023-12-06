@@ -324,6 +324,7 @@ namespace __gnu_debug
 
   /* Remove debug mode safe iterator layer, if any. */
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline _Iterator
     __unsafe(_Iterator __it)
     { return __it; }

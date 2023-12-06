@@ -40,6 +40,7 @@
 #endif
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, _BadMsgId, _DiffMsgId) \
+  if (!std::__is_constant_evaluated()) {				\
   _GLIBCXX_DEBUG_VERIFY((!_Lhs._M_singular() && !_Rhs._M_singular())	\
 			|| (_Lhs._M_value_initialized()			\
 			    && _Rhs._M_value_initialized()),		\
@@ -49,7 +50,8 @@
   _GLIBCXX_DEBUG_VERIFY(_Lhs._M_can_compare(_Rhs),			\
 			_M_message(_DiffMsgId)				\
 			._M_iterator(_Lhs, #_Lhs)			\
-			._M_iterator(_Rhs, #_Rhs))
+			._M_iterator(_Rhs, #_Rhs));			\
+  }
 
 #define _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(_Lhs, _Rhs)			\
   _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, __msg_iter_compare_bad,	\
@@ -131,9 +133,13 @@ namespace __gnu_debug
 
       struct _Unchecked { };
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x, _Unchecked) _GLIBCXX_NOEXCEPT
       : _Iter_base(__x.base()), _Safe_base()
-      { _M_attach(__x._M_sequence); }
+      {
+	if (!std::__is_constant_evaluated())
+	  _M_attach(__x._M_sequence);
+      }
 
     public:
       typedef _Iterator					iterator_type;
@@ -148,6 +154,7 @@ namespace __gnu_debug
 #endif
 
       /// @post the iterator is singular and unattached
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator() _GLIBCXX_NOEXCEPT : _Iter_base() { }
 
       /**
@@ -157,6 +164,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Iter_base(__i), _Safe_base(__seq, _S_constant())
@@ -165,9 +173,13 @@ namespace __gnu_debug
       /**
        * @brief Copy construction.
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
       : _Iter_base(__x.base()), _Safe_base()
       {
+	if (std::__is_constant_evaluated())
+	  return;
+
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
@@ -183,9 +195,16 @@ namespace __gnu_debug
        * @brief Move construction.
        * @post __x is singular and unattached
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(_Safe_iterator&& __x) noexcept
       : _Iter_base()
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    base() = __x.base();
+	    return;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
 			      || __x._M_value_initialized(),
 			      _M_message(__msg_init_copy_singular)
@@ -203,6 +222,7 @@ namespace __gnu_debug
        *  constant iterator.
       */
       template<typename _MutableIterator>
+	_GLIBCXX20_CONSTEXPR
 	_Safe_iterator(
 	  const _Safe_iterator<_MutableIterator, _Sequence,
 	    typename __gnu_cxx::__enable_if<_IsConstant::__value &&
@@ -211,6 +231,9 @@ namespace __gnu_debug
 	_GLIBCXX_NOEXCEPT
 	: _Iter_base(__x.base())
 	{
+	  if (std::__is_constant_evaluated())
+	    return;
+
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
@@ -224,9 +247,16 @@ namespace __gnu_debug
       /**
        * @brief Copy assignment.
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator=(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    base() = __x.base();
+	    return *this;
+	  }
+
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
@@ -256,9 +286,16 @@ namespace __gnu_debug
        * @brief Move assignment.
        * @post __x is singular and unattached
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator=(_Safe_iterator&& __x) noexcept
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    base() = __x.base();
+	    return *this;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
 			      || __x._M_value_initialized(),
 			      _M_message(__msg_copy_singular)
@@ -292,12 +329,16 @@ namespace __gnu_debug
        *  @pre iterator is dereferenceable
        */
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reference
       operator*() const _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
-			      _M_message(__msg_bad_deref)
-			      ._M_iterator(*this, "this"));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
+				  _M_message(__msg_bad_deref)
+				  ._M_iterator(*this, "this"));
+	  }
 	return *base();
       }
 
@@ -306,12 +347,16 @@ namespace __gnu_debug
        *  @pre iterator is dereferenceable
        */
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
-			      _M_message(__msg_bad_deref)
-			      ._M_iterator(*this, "this"));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
+				  _M_message(__msg_bad_deref)
+				  ._M_iterator(*this, "this"));
+	  }
 	return base().operator->();
       }
 
@@ -320,9 +365,16 @@ namespace __gnu_debug
        *  @brief Iterator preincrement
        *  @pre iterator is incrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    ++base();
+	    return *this;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
@@ -335,12 +387,16 @@ namespace __gnu_debug
        *  @brief Iterator postincrement
        *  @pre iterator is incrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
-			      _M_message(__msg_bad_inc)
-			      ._M_iterator(*this, "this"));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
+				  _M_message(__msg_bad_inc)
+				  ._M_iterator(*this, "this"));
+	  }
 	_Safe_iterator __ret(*this, _Unchecked());
 	++*this;
 	return __ret;
@@ -356,9 +412,11 @@ namespace __gnu_debug
       /**
        * @brief Return the underlying iterator
        */
+      _GLIBCXX20_CONSTEXPR
       _Iterator&
       base() _GLIBCXX_NOEXCEPT { return *this; }
 
+      _GLIBCXX20_CONSTEXPR
       const _Iterator&
       base() const _GLIBCXX_NOEXCEPT { return *this; }
 
@@ -366,6 +424,7 @@ namespace __gnu_debug
        * @brief Conversion to underlying non-debug iterator to allow
        * better interaction with non-debug containers.
        */
+      _GLIBCXX20_CONSTEXPR
       operator _Iterator() const _GLIBCXX_NOEXCEPT { return *this; }
 
       /** Attach iterator to the given sequence. */
@@ -440,6 +499,7 @@ namespace __gnu_debug
       _M_get_distance_to_end() const;
 
       /// Is this iterator equal to the sequence's begin() iterator?
+      _GLIBCXX20_CONSTEXPR
       bool
       _M_is_begin() const
       { return base() == _M_get_sequence()->_M_base().begin(); }
@@ -466,6 +526,7 @@ namespace __gnu_debug
       typedef _Safe_iterator<_Iterator, _Sequence, iterator_category> _Self;
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend bool
       operator==(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -475,6 +536,7 @@ namespace __gnu_debug
 
       template<typename _IteR>
 	_GLIBCXX_NODISCARD
+	_GLIBCXX20_CONSTEXPR
 	friend bool
 	operator==(const _Self& __lhs,
 	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
@@ -518,6 +580,7 @@ namespace __gnu_debug
 
       typedef typename _Safe_base::_Unchecked _Unchecked;
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x,
 		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
 	: _Safe_base(__x, __unchecked)
@@ -525,6 +588,7 @@ namespace __gnu_debug
 
     public:
       /// @post the iterator is singular and unattached
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator() _GLIBCXX_NOEXCEPT { }
 
       /**
@@ -534,6 +598,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Safe_base(__i, __seq)
@@ -542,12 +607,14 @@ namespace __gnu_debug
       /**
        * @brief Copy construction.
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
       : _Safe_base(__x)
       { }
 
 #if __cplusplus >= 201103L
       /** @brief Move construction. */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(_Safe_iterator&&) = default;
 #endif
 
@@ -556,6 +623,7 @@ namespace __gnu_debug
        *  constant iterator.
       */
       template<typename _MutableIterator>
+	_GLIBCXX20_CONSTEXPR
 	_Safe_iterator(
 	  const _Safe_iterator<_MutableIterator, _Sequence,
 	    typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
@@ -588,6 +656,7 @@ namespace __gnu_debug
        *  @brief Iterator preincrement
        *  @pre iterator is incrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
@@ -615,9 +684,16 @@ namespace __gnu_debug
        *  @brief Iterator predecrement
        *  @pre iterator is decrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    --this->base();
+	    return *this;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
@@ -663,6 +739,8 @@ namespace __gnu_debug
 			     std::random_access_iterator_tag> _OtherSelf;
 
       typedef typename _Safe_base::_Unchecked _Unchecked;
+
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x,
 		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
 	: _Safe_base(__x, __unchecked)
@@ -673,6 +751,7 @@ namespace __gnu_debug
       typedef typename _Safe_base::reference		reference;
 
       /// @post the iterator is singular and unattached
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator() _GLIBCXX_NOEXCEPT { }
 
       /**
@@ -682,6 +761,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Safe_base(__i, __seq)
@@ -690,6 +770,7 @@ namespace __gnu_debug
       /**
        * @brief Copy construction.
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
       : _Safe_base(__x)
       { }
@@ -704,6 +785,7 @@ namespace __gnu_debug
        *  constant iterator.
       */
       template<typename _MutableIterator>
+	_GLIBCXX20_CONSTEXPR
 	_Safe_iterator(
 	  const _Safe_iterator<_MutableIterator, _Sequence,
 	    typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
@@ -742,6 +824,7 @@ namespace __gnu_debug
        *  @brief Iterator preincrement
        *  @pre iterator is incrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
@@ -753,12 +836,16 @@ namespace __gnu_debug
        *  @brief Iterator postincrement
        *  @pre iterator is incrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
-			      _M_message(__msg_bad_inc)
-			      ._M_iterator(*this, "this"));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
+				  _M_message(__msg_bad_inc)
+				  ._M_iterator(*this, "this"));
+	  }
 	_Safe_iterator __ret(*this, _Unchecked());
 	++*this;
 	return __ret;
@@ -769,6 +856,7 @@ namespace __gnu_debug
        *  @brief Iterator predecrement
        *  @pre iterator is decrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
@@ -780,12 +868,16 @@ namespace __gnu_debug
        *  @brief Iterator postdecrement
        *  @pre iterator is decrementable
        */
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
-			      _M_message(__msg_bad_dec)
-			      ._M_iterator(*this, "this"));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
+				  _M_message(__msg_bad_dec)
+				  ._M_iterator(*this, "this"));
+	  }
 	_Safe_iterator __ret(*this, _Unchecked());
 	--*this;
 	return __ret;
@@ -793,19 +885,30 @@ namespace __gnu_debug
 
       // ------ Random access iterator requirements ------
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       reference
       operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n)
-			      && this->_M_can_advance(__n + 1),
-			      _M_message(__msg_iter_subscript_oob)
-			      ._M_iterator(*this)._M_integer(__n));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n)
+				  && this->_M_can_advance(__n + 1),
+				  _M_message(__msg_iter_subscript_oob)
+				  ._M_iterator(*this)._M_integer(__n));
+	  }
 	return this->base()[__n];
       }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator+=(difference_type __n) _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    this->base() += __n;
+	    return *this;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
 			      _M_message(__msg_advance_oob)
 			      ._M_iterator(*this)._M_integer(__n));
@@ -814,9 +917,16 @@ namespace __gnu_debug
 	return *this;
       }
 
+      _GLIBCXX20_CONSTEXPR
       _Safe_iterator&
       operator-=(difference_type __n) _GLIBCXX_NOEXCEPT
       {
+	if (std::__is_constant_evaluated())
+	  {
+	    this->base() -= __n;
+	    return *this;
+	  }
+
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
 			      _M_message(__msg_retreat_oob)
 			      ._M_iterator(*this)._M_integer(__n));
@@ -827,6 +937,7 @@ namespace __gnu_debug
 
 #if __cpp_lib_three_way_comparison
       [[nodiscard]]
+      _GLIBCXX20_CONSTEXPR
       friend auto
       operator<=>(const _Self& __lhs, const _Self& __rhs) noexcept
       {
@@ -835,6 +946,7 @@ namespace __gnu_debug
       }
 
       [[nodiscard]]
+      _GLIBCXX20_CONSTEXPR
       friend auto
       operator<=>(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
       {
@@ -912,6 +1024,7 @@ namespace __gnu_debug
       // operators but also operator- must accept mixed iterator/const_iterator
       // parameters.
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend difference_type
       operator-(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -920,6 +1033,7 @@ namespace __gnu_debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend difference_type
       operator-(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -928,32 +1042,44 @@ namespace __gnu_debug
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend _Self
       operator+(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
-			      _M_message(__msg_advance_oob)
-			      ._M_iterator(__x)._M_integer(__n));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
+				  _M_message(__msg_advance_oob)
+				  ._M_iterator(__x)._M_integer(__n));
+	  }
 	return _Safe_iterator(__x.base() + __n, __x._M_sequence);
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend _Self
       operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
-			      _M_message(__msg_advance_oob)
-			      ._M_iterator(__x)._M_integer(__n));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
+				  _M_message(__msg_advance_oob)
+				  ._M_iterator(__x)._M_integer(__n));
+	  }
 	return _Safe_iterator(__n + __x.base(), __x._M_sequence);
       }
 
       _GLIBCXX_NODISCARD
+      _GLIBCXX20_CONSTEXPR
       friend _Self
       operator-(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(-__n),
-			      _M_message(__msg_retreat_oob)
-			      ._M_iterator(__x)._M_integer(__n));
+	if (!std::__is_constant_evaluated())
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(-__n),
+				  _M_message(__msg_retreat_oob)
+				  ._M_iterator(__x)._M_integer(__n));
+	  }
 	return _Safe_iterator(__x.base() - __n, __x._M_sequence);
       }
     };

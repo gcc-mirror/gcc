@@ -1,5 +1,4 @@
 // { dg-do compile { target c++20 } }
-// { dg-xfail-if "not supported" { debug_mode } }
 
 #include <vector>
 #include <utility>
@@ -49,6 +48,7 @@ test_member_swap()
 
 static_assert(test_member_swap());
 
+#ifndef _GLIBCXX_DEBUG
 constexpr bool
 test_reference_swap()
 {
@@ -63,3 +63,4 @@ test_reference_swap()
 }
 
 static_assert(test_reference_swap());
+#endif
