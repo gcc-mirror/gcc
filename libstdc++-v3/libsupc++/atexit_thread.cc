@@ -138,24 +138,11 @@ namespace {
   }
 }
 
-#if __GXX_WEAK__
-extern "C"
-int __attribute__ ((__weak__))
-__cxa_thread_atexit_impl (void (_GLIBCXX_CDTOR_CALLABI *func) (void *),
-			  void *arg, void *d);
-#endif
-
-// ??? We can't make it an ifunc, can we?
 extern "C" int
 __cxxabiv1::__cxa_thread_atexit (void (_GLIBCXX_CDTOR_CALLABI *dtor)(void *),
-				 void *obj, void *dso_handle)
+				 void *obj, void */*dso_handle*/)
   _GLIBCXX_NOTHROW
 {
-#if __GXX_WEAK__
-  if (__cxa_thread_atexit_impl)
-    return __cxa_thread_atexit_impl (dtor, obj, dso_handle);
-#endif
-
   // Do this initialization once.
   if (__gthread_active_p ())
     {
