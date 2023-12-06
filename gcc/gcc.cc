@@ -4617,6 +4617,7 @@ driver_handle_option (struct gcc_options *opts,
       /* -pie is turned on by default.  */
       validated = true;
 #endif
+      /* FALLTHROUGH */
     case OPT_r:
     case OPT_shared:
     case OPT_no_pie:
