@@ -510,8 +510,9 @@ extern gimple_opt_pass *make_pass_adjust_alignment (gcc::context *ctxt);
 
 /* IPA Passes */
 extern simple_ipa_opt_pass *make_pass_ipa_lower_emutls (gcc::context *ctxt);
-extern simple_ipa_opt_pass
-							      *make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_strub_mode (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_strub (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_tree_profile (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_auto_profile (gcc::context *ctxt);
 

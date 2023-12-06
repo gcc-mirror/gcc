@@ -3073,7 +3073,9 @@ optimize_stack_restore (gimple_stmt_iterator i)
       if (!callee
 	  || !fndecl_built_in_p (callee, BUILT_IN_NORMAL)
 	  /* All regular builtins are ok, just obviously not alloca.  */
-	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee)))
+	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee))
+	  /* Do not remove stack updates before strub leave.  */
+	  || fndecl_built_in_p (callee, BUILT_IN___STRUB_LEAVE))
 	return NULL_TREE;
 
       if (fndecl_built_in_p (callee, BUILT_IN_STACK_RESTORE))

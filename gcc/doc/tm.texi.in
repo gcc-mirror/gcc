@@ -2686,6 +2686,25 @@ in DWARF 2 debug information.  The default is zero.  A different value
 may reduce the size of debug information on some ports.
 @end defmac
 
+@defmac TARGET_STRUB_USE_DYNAMIC_ARRAY
+If defined to nonzero, @code{__strub_leave} will allocate a dynamic
+array covering the stack range that needs scrubbing before clearing it.
+Allocating the array tends to make scrubbing slower, but it enables the
+scrubbing to be safely implemented with a @code{memset} call, which
+could make up for the difference.
+@end defmac
+
+@defmac TARGET_STRUB_MAY_USE_MEMSET
+If defined to nonzero, enable @code{__strub_leave} to be optimized so as
+to call @code{memset} for stack scrubbing.  This is only enabled by
+default if @code{TARGET_STRUB_USE_DYNAMIC_ARRAY} is enabled; it's not
+advisable to enable it otherwise, since @code{memset} would then likely
+overwrite its own stack frame, but it might work if the target ABI
+enables @code{memset} to not use the stack at all, not even for
+arguments or its return address, and its implementation is trivial
+enough that it doesn't use a stack frame.
+@end defmac
+
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling

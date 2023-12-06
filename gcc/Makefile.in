@@ -1557,6 +1557,7 @@ OBJS = \
 	ipa-reference.o \
 	ipa-ref.o \
 	ipa-utils.o \
+	ipa-strub.o \
 	ipa.o \
 	ira.o \
 	ira-build.o \
@@ -2879,6 +2880,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/sanopt.cc \
   $(srcdir)/sancov.cc \
   $(srcdir)/ipa-devirt.cc \
+  $(srcdir)/ipa-strub.cc \
   $(srcdir)/internal-fn.h \
   $(srcdir)/calls.cc \
   $(srcdir)/omp-general.h \

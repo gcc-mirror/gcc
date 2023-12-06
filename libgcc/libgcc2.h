@@ -554,6 +554,10 @@ extern int __parityDI2 (UDWtype);
 
 extern void __enable_execute_stack (void *);
 
+extern void __strub_enter (void **);
+extern void __strub_update (void**);
+extern void __strub_leave (void **);
+
 #ifndef HIDE_EXPORTS
 #pragma GCC visibility pop
 #endif

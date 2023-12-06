@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
+#include "ipa-strub.h" /* strub_watermark_parm()  */
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
@@ -151,6 +152,7 @@ static rtx expand_builtin_strnlen (tree, rtx, machine_mode);
 static rtx expand_builtin_alloca (tree);
 static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
+static rtx expand_builtin_stack_address ();
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static rtx expand_builtin_expect_with_probability (tree, rtx);
@@ -5373,6 +5375,252 @@ expand_builtin_frame_address (tree fndecl, tree exp)
     }
 }
 
+#if ! STACK_GROWS_DOWNWARD
+# define STACK_TOPS GT
+#else
+# define STACK_TOPS LT
+#endif
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+# define STACK_UNSIGNED POINTERS_EXTEND_UNSIGNED
+#else
+# define STACK_UNSIGNED true
+#endif
+
+/* Expand a call to builtin function __builtin_stack_address.  */
+
+static rtx
+expand_builtin_stack_address ()
+{
+  return convert_to_mode (ptr_mode, copy_to_reg (stack_pointer_rtx),
+			  STACK_UNSIGNED);
+}
+
+/* Expand a call to builtin function __builtin_strub_enter.  */
+
+static rtx
+expand_builtin_strub_enter (tree exp)
+{
+  if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  if (optimize < 1 || flag_no_inline)
+    return NULL_RTX;
+
+  rtx stktop = expand_builtin_stack_address ();
+
+  tree wmptr = CALL_EXPR_ARG (exp, 0);
+  tree wmtype = TREE_TYPE (TREE_TYPE (wmptr));
+  tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
+			     build_int_cst (TREE_TYPE (wmptr), 0));
+  rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+
+  emit_move_insn (wmark, stktop);
+
+  return const0_rtx;
+}
+
+/* Expand a call to builtin function __builtin_strub_update.  */
+
+static rtx
+expand_builtin_strub_update (tree exp)
+{
+  if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  if (optimize < 2 || flag_no_inline)
+    return NULL_RTX;
+
+  rtx stktop = expand_builtin_stack_address ();
+
+#ifdef RED_ZONE_SIZE
+  /* Here's how the strub enter, update and leave functions deal with red zones.
+
+     If it weren't for red zones, update, called from within a strub context,
+     would bump the watermark to the top of the stack.  Enter and leave, running
+     in the caller, would use the caller's top of stack address both to
+     initialize the watermark passed to the callee, and to start strubbing the
+     stack afterwards.
+
+     Ideally, we'd update the watermark so as to cover the used amount of red
+     zone, and strub starting at the caller's other end of the (presumably
+     unused) red zone.  Normally, only leaf functions use the red zone, but at
+     this point we can't tell whether a function is a leaf, nor can we tell how
+     much of the red zone it uses.  Furthermore, some strub contexts may have
+     been inlined so that update and leave are called from the same stack frame,
+     and the strub builtins may all have been inlined, turning a strub function
+     into a leaf.
+
+     So cleaning the range from the caller's stack pointer (one end of the red
+     zone) to the (potentially inlined) callee's (other end of the) red zone
+     could scribble over the caller's own red zone.
+
+     We avoid this possibility by arranging for callers that are strub contexts
+     to use their own watermark as the strub starting point.  So, if A calls B,
+     and B calls C, B will tell A to strub up to the end of B's red zone, and
+     will strub itself only the part of C's stack frame and red zone that
+     doesn't overlap with B's.  With that, we don't need to know who's leaf and
+     who isn't: inlined calls will shrink their strub window to zero, each
+     remaining call will strub some portion of the stack, and eventually the
+     strub context will return to a caller that isn't a strub context itself,
+     that will therefore use its own stack pointer as the strub starting point.
+     It's not a leaf, because strub contexts can't be inlined into non-strub
+     contexts, so it doesn't use the red zone, and it will therefore correctly
+     strub up the callee's stack frame up to the end of the callee's red zone.
+     Neat!  */
+  if (true /* (flags_from_decl_or_type (current_function_decl) & ECF_LEAF) */)
+    {
+      poly_int64 red_zone_size = RED_ZONE_SIZE;
+#if STACK_GROWS_DOWNWARD
+      red_zone_size = -red_zone_size;
+#endif
+      stktop = plus_constant (ptr_mode, stktop, red_zone_size);
+      stktop = force_reg (ptr_mode, stktop);
+    }
+#endif
+
+  tree wmptr = CALL_EXPR_ARG (exp, 0);
+  tree wmtype = TREE_TYPE (TREE_TYPE (wmptr));
+  tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
+			     build_int_cst (TREE_TYPE (wmptr), 0));
+  rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+
+  rtx wmarkr = force_reg (ptr_mode, wmark);
+
+  rtx_code_label *lab = gen_label_rtx ();
+  do_compare_rtx_and_jump (stktop, wmarkr, STACK_TOPS, STACK_UNSIGNED,
+			   ptr_mode, NULL_RTX, lab, NULL,
+			   profile_probability::very_likely ());
+  emit_move_insn (wmark, stktop);
+
+  /* If this is an inlined strub function, also bump the watermark for the
+     enclosing function.  This avoids a problem with the following scenario: A
+     calls B and B calls C, and both B and C get inlined into A.  B allocates
+     temporary stack space before calling C.  If we don't update A's watermark,
+     we may use an outdated baseline for the post-C strub_leave, erasing B's
+     temporary stack allocation.  We only need this if we're fully expanding
+     strub_leave inline.  */
+  tree xwmptr = (optimize > 2
+		 ? strub_watermark_parm (current_function_decl)
+		 : wmptr);
+  if (wmptr != xwmptr)
+    {
+      wmptr = xwmptr;
+      wmtype = TREE_TYPE (TREE_TYPE (wmptr));
+      wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
+			    build_int_cst (TREE_TYPE (wmptr), 0));
+      wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+      wmarkr = force_reg (ptr_mode, wmark);
+
+      do_compare_rtx_and_jump (stktop, wmarkr, STACK_TOPS, STACK_UNSIGNED,
+			       ptr_mode, NULL_RTX, lab, NULL,
+			       profile_probability::very_likely ());
+      emit_move_insn (wmark, stktop);
+    }
+
+  emit_label (lab);
+
+  return const0_rtx;
+}
+
+
+/* Expand a call to builtin function __builtin_strub_leave.  */
+
+static rtx
+expand_builtin_strub_leave (tree exp)
+{
+  if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  if (optimize < 2 || optimize_size || flag_no_inline)
+    return NULL_RTX;
+
+  rtx stktop = NULL_RTX;
+
+  if (tree wmptr = (optimize
+		    ? strub_watermark_parm (current_function_decl)
+		    : NULL_TREE))
+    {
+      tree wmtype = TREE_TYPE (TREE_TYPE (wmptr));
+      tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
+				 build_int_cst (TREE_TYPE (wmptr), 0));
+      rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+      stktop = force_reg (ptr_mode, wmark);
+    }
+
+  if (!stktop)
+    stktop = expand_builtin_stack_address ();
+
+  tree wmptr = CALL_EXPR_ARG (exp, 0);
+  tree wmtype = TREE_TYPE (TREE_TYPE (wmptr));
+  tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
+			     build_int_cst (TREE_TYPE (wmptr), 0));
+  rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+
+  rtx wmarkr = force_reg (ptr_mode, wmark);
+
+#if ! STACK_GROWS_DOWNWARD
+  rtx base = stktop;
+  rtx end = wmarkr;
+#else
+  rtx base = wmarkr;
+  rtx end = stktop;
+#endif
+
+  /* We're going to modify it, so make sure it's not e.g. the stack pointer.  */
+  base = copy_to_reg (base);
+
+  rtx_code_label *done = gen_label_rtx ();
+  do_compare_rtx_and_jump (base, end, LT, STACK_UNSIGNED,
+			   ptr_mode, NULL_RTX, done, NULL,
+			   profile_probability::very_likely ());
+
+  if (optimize < 3)
+    expand_call (exp, NULL_RTX, true);
+  else
+    {
+      /* Ok, now we've determined we want to copy the block, so convert the
+	 addresses to Pmode, as needed to dereference them to access ptr_mode
+	 memory locations, so that we don't have to convert anything within the
+	 loop.  */
+      base = memory_address (ptr_mode, base);
+      end = memory_address (ptr_mode, end);
+
+      rtx zero = force_operand (const0_rtx, NULL_RTX);
+      int ulen = GET_MODE_SIZE (ptr_mode);
+
+      /* ??? It would be nice to use setmem or similar patterns here,
+	 but they do not necessarily obey the stack growth direction,
+	 which has security implications.  We also have to avoid calls
+	 (memset, bzero or any machine-specific ones), which are
+	 likely unsafe here (see TARGET_STRUB_MAY_USE_MEMSET).  */
+#if ! STACK_GROWS_DOWNWARD
+      rtx incr = plus_constant (Pmode, base, ulen);
+      rtx dstm = gen_rtx_MEM (ptr_mode, base);
+
+      rtx_code_label *loop = gen_label_rtx ();
+      emit_label (loop);
+      emit_move_insn (dstm, zero);
+      emit_move_insn (base, force_operand (incr, NULL_RTX));
+#else
+      rtx decr = plus_constant (Pmode, end, -ulen);
+      rtx dstm = gen_rtx_MEM (ptr_mode, end);
+
+      rtx_code_label *loop = gen_label_rtx ();
+      emit_label (loop);
+      emit_move_insn (end, force_operand (decr, NULL_RTX));
+      emit_move_insn (dstm, zero);
+#endif
+      do_compare_rtx_and_jump (base, end, LT, STACK_UNSIGNED,
+			       Pmode, NULL_RTX, NULL, loop,
+			       profile_probability::very_likely ());
+    }
+
+  emit_label (done);
+
+  return const0_rtx;
+}
+
 /* Expand EXP, a call to the alloca builtin.  Return NULL_RTX if we
    failed and the caller should emit a normal call.  */
 
@@ -7707,6 +7955,27 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_FRAME_ADDRESS:
     case BUILT_IN_RETURN_ADDRESS:
       return expand_builtin_frame_address (fndecl, exp);
+
+    case BUILT_IN_STACK_ADDRESS:
+      return expand_builtin_stack_address ();
+
+    case BUILT_IN___STRUB_ENTER:
+      target = expand_builtin_strub_enter (exp);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN___STRUB_UPDATE:
+      target = expand_builtin_strub_update (exp);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN___STRUB_LEAVE:
+      target = expand_builtin_strub_leave (exp);
+      if (target)
+	return target;
+      break;
 
     /* Returns the address of the area where the structure is returned.
        0 otherwise.  */

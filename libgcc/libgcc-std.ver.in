@@ -1957,4 +1957,7 @@ GCC_14.0.0 {
   __PFX__floatbitintsf
   __PFX__floatbitintdf
   __PFX__hardcfr_check
+  __PFX__strub_enter
+  __PFX__strub_update
+  __PFX__strub_leave
 }

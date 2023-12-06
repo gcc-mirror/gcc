@@ -2917,6 +2917,35 @@ fstrict-overflow
 Common
 Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer.
 
+fstrub=disable
+Common RejectNegative Var(flag_strub, 0)
+Disable stack scrub entirely, disregarding strub attributes.
+
+fstrub=strict
+Common RejectNegative Var(flag_strub, -4)
+Enable stack scrub as per attributes, with strict call checking.
+
+; If any strub-enabling attribute is seen when the default or strict
+; initializer values are in effect, flag_strub is bumped up by 2.  The
+; scrub mode gate function will then bump these initializer values to
+; 0 if no strub-enabling attribute is seen.  This minimizes the strub
+; overhead.
+fstrub=relaxed
+Common RejectNegative Var(flag_strub, -3) Init(-3)
+Restore default strub mode: as per attributes, with relaxed checking.
+
+fstrub=all
+Common RejectNegative Var(flag_strub, 3)
+Enable stack scrubbing for all viable functions.
+
+fstrub=at-calls
+Common RejectNegative Var(flag_strub, 1)
+Enable at-calls stack scrubbing for all viable functions.
+
+fstrub=internal
+Common RejectNegative Var(flag_strub, 2)
+Enable internal stack scrubbing for all viable functions.
+
 fsync-libcalls
 Common Var(flag_sync_libcalls) Init(1)
 Implement __atomic operations via libcalls to legacy __sync functions.

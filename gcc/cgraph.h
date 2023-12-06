@@ -153,7 +153,7 @@ public:
   void remove (void);
 
   /* Undo any definition or use of the symbol.  */
-  void reset (void);
+  void reset (bool preserve_comdat_group = false);
 
   /* Dump symtab node to F.  */
   void dump (FILE *f);

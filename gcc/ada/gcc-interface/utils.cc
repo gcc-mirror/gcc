@@ -39,6 +39,7 @@
 #include "varasm.h"
 #include "toplev.h"
 #include "opts.h"
+#include "ipa-strub.h"
 #include "output.h"
 #include "debug.h"
 #include "convert.h"
@@ -6742,9 +6743,77 @@ handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_strub_attribute (tree *, tree, tree, int, bool *no_add_attrs)
+handle_strub_attribute (tree *node, tree name,
+			tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  *no_add_attrs = true;
+  bool enable = true;
+
+  if (args && FUNCTION_POINTER_TYPE_P (*node))
+    *node = TREE_TYPE (*node);
+
+  if (args && FUNC_OR_METHOD_TYPE_P (*node))
+    {
+      switch (strub_validate_fn_attr_parm (TREE_VALUE (args)))
+	{
+	case 1:
+	case 2:
+	  enable = true;
+	  break;
+
+	case 0:
+	  warning (OPT_Wattributes,
+		   "%qE attribute ignored because of argument %qE",
+		   name, TREE_VALUE (args));
+	  *no_add_attrs = true;
+	  enable = false;
+	  break;
+
+	case -1:
+	case -2:
+	  enable = false;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      args = TREE_CHAIN (args);
+    }
+
+  if (args)
+    {
+      warning (OPT_Wattributes,
+	       "ignoring attribute %qE because of excess arguments"
+	       " starting at %qE",
+	       name, TREE_VALUE (args));
+      *no_add_attrs = true;
+      enable = false;
+    }
+
+  /* Warn about unmet expectations that the strub attribute works like a
+     qualifier.  ??? Could/should we extend it to the element/field types
+     here?  */
+  if (TREE_CODE (*node) == ARRAY_TYPE
+      || VECTOR_TYPE_P (*node)
+      || TREE_CODE (*node) == COMPLEX_TYPE)
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to elements"
+	     " of non-scalar type %qT",
+	     name, *node);
+  else if (RECORD_OR_UNION_TYPE_P (*node))
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to fields"
+	     " of aggregate type %qT",
+	     name, *node);
+
+  /* If we see a strub-enabling attribute, and we're at the default setting,
+     implicitly or explicitly, note that the attribute was seen, so that we can
+     reduce the compile-time overhead to nearly zero when the strub feature is
+     not used.  */
+  if (enable && flag_strub < -2)
+    flag_strub += 2;
+
   return NULL_TREE;
 }
 

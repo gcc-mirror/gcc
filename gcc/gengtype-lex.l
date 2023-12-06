@@ -165,6 +165,9 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|m
 [(){},*:<>;=%/|+\!\?\.-]	{ return yytext[0]; }
 
    /* ignore pp-directives */
+^{HWS}"#"{HWS}[a-z_]+([^\n]*"\\"\n)+[^\n]*\n   {
+  update_lineno (yytext, yyleng);
+}
 ^{HWS}"#"{HWS}[a-z_]+[^\n]*\n   {lexer_line.line++;}
 
 .				{

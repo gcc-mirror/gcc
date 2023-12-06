@@ -77,6 +77,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Function Names::      Printable strings which are the name of the current
                         function.
 * Return Address::      Getting the return or frame address of a function.
+* Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
 * __sync Builtins::     Legacy built-in functions for atomic memory access.
@@ -9225,6 +9226,268 @@ pid_t wait (wait_status_ptr_t p)
 @}
 @end smallexample
 
+@cindex @code{strub} type attribute
+@item strub
+This attribute defines stack-scrubbing properties of functions and
+variables, so that functions that access sensitive data can have their
+stack frames zeroed-out upon returning or propagating exceptions.  This
+may be enabled explicitly, by selecting certain @code{strub} modes for
+specific functions, or implicitly, by means of @code{strub} variables.
+
+Being a type attribute, it attaches to types, even when specified in
+function and variable declarations.  When applied to function types, it
+takes an optional string argument.  When applied to a
+pointer-to-function type, if the optional argument is given, it gets
+propagated to the function type.
+
+@smallexample
+/* A strub variable.  */
+int __attribute__ ((strub)) var;
+/* A strub variable that happens to be a pointer.  */
+__attribute__ ((strub)) int *strub_ptr_to_int;
+/* A pointer type that may point to a strub variable.  */
+typedef int __attribute__ ((strub)) *ptr_to_strub_int_type;
+
+/* A declaration of a strub function.  */
+extern int __attribute__ ((strub)) foo (void);
+/* A pointer to that strub function.  */
+int __attribute__ ((strub ("at-calls"))) (*ptr_to_strub_fn)(void) = foo;
+@end smallexample
+
+A function associated with @code{at-calls} @code{strub} mode
+(@code{strub("at-calls")}, or just @code{strub}) undergoes interface
+changes.  Its callers are adjusted to match the changes, and to scrub
+(overwrite with zeros) the stack space used by the called function after
+it returns.  The interface change makes the function type incompatible
+with an unadorned but otherwise equivalent type, so @emph{every}
+declaration and every type that may be used to call the function must be
+associated with this strub mode.
+
+A function associated with @code{internal} @code{strub} mode
+(@code{strub("internal")}) retains an unmodified, type-compatible
+interface, but it may be turned into a wrapper that calls the wrapped
+body using a custom interface.  The wrapper then scrubs the stack space
+used by the wrapped body.  Though the wrapped body has its stack space
+scrubbed, the wrapper does not, so arguments and return values may
+remain unscrubbed even when such a function is called by another
+function that enables @code{strub}.  This is why, when compiling with
+@option{-fstrub=strict}, a @code{strub} context is not allowed to call
+@code{internal} @code{strub} functions.
+
+@smallexample
+/* A declaration of an internal-strub function.  */
+extern int __attribute__ ((strub ("internal"))) bar (void);
+
+int __attribute__ ((strub))
+baz (void)
+@{
+  /* Ok, foo was declared above as an at-calls strub function.  */
+  foo ();
+  /* Not allowed in strict mode, otherwise allowed.  */
+  bar ();
+@}
+@end smallexample
+
+An automatically-allocated variable associated with the @code{strub}
+attribute causes the (immediately) enclosing function to have
+@code{strub} enabled.
+
+A statically-allocated variable associated with the @code{strub}
+attribute causes functions that @emph{read} it, through its @code{strub}
+data type, to have @code{strub} enabled.  Reading data by dereferencing
+a pointer to a @code{strub} data type has the same effect.  Note: The
+attribute does not carry over from a composite type to the types of its
+components, so the intended effect may not be obtained with non-scalar
+types.
+
+When selecting a @code{strub}-enabled mode for a function that is not
+explicitly associated with one, because of @code{strub} variables or
+data pointers, the function must satisfy @code{internal} mode viability
+requirements (see below), even when @code{at-calls} mode is also viable
+and, being more efficient, ends up selected as an optimization.
+
+@smallexample
+/* zapme is implicitly strub-enabled because of strub variables.
+   Optimization may change its strub mode, but not the requirements.  */
+static int
+zapme (int i)
+@{
+  /* A local strub variable enables strub.  */
+  int __attribute__ ((strub)) lvar;
+  /* Reading strub data through a pointer-to-strub enables strub.  */
+  lvar = * (ptr_to_strub_int_type) &i;
+  /* Writing to a global strub variable does not enable strub.  */
+  var = lvar;
+  /* Reading from a global strub variable enables strub.  */
+  return var;
+@}
+@end smallexample
+
+A @code{strub} context is the body (as opposed to the interface) of a
+function that has @code{strub} enabled, be it explicitly, by
+@code{at-calls} or @code{internal} mode, or implicitly, due to
+@code{strub} variables or command-line options.
+
+A function of a type associated with the @code{disabled} @code{strub}
+mode (@code{strub("disabled")} will not have its own stack space
+scrubbed.  Such functions @emph{cannot} be called from within
+@code{strub} contexts.
+
+In order to enable a function to be called from within @code{strub}
+contexts without having its stack space scrubbed, associate it with the
+@code{callable} @code{strub} mode (@code{strub("callable")}).
+
+When a function is not assigned a @code{strub} mode, explicitly or
+implicitly, the mode defaults to @code{callable}, except when compiling
+with @option{-fstrub=strict}, that causes @code{strub} mode to default
+to @code{disabled}.
+
+@example
+extern int __attribute__ ((strub ("callable"))) bac (void);
+extern int __attribute__ ((strub ("disabled"))) bad (void);
+ /* Implicitly disabled with -fstrub=strict, otherwise callable.  */
+extern int bah (void);
+
+int __attribute__ ((strub))
+bal (void)
+@{
+  /* Not allowed, bad is not strub-callable.  */
+  bad ();
+  /* Ok, bac is strub-callable.  */
+  bac ();
+  /* Not allowed with -fstrub=strict, otherwise allowed.  */
+  bah ();
+@}
+@end example
+
+Function types marked @code{callable} and @code{disabled} are not
+mutually compatible types, but the underlying interfaces are compatible,
+so it is safe to convert pointers between them, and to use such pointers
+or alternate declarations to call them.  Interfaces are also
+interchangeable between them and @code{internal} (but not
+@code{at-calls}!), but adding @code{internal} to a pointer type will not
+cause the pointed-to function to perform stack scrubbing.
+
+@example
+void __attribute__ ((strub))
+bap (void)
+@{
+  /* Assign a callable function to pointer-to-disabled.
+     Flagged as not quite compatible with -Wpedantic.  */
+  int __attribute__ ((strub ("disabled"))) (*d_p) (void) = bac;
+  /* Not allowed: calls disabled type in a strub context.  */
+  d_p ();
+
+  /* Assign a disabled function to pointer-to-callable.
+     Flagged as not quite compatible with -Wpedantic.  */
+  int __attribute__ ((strub ("callable"))) (*c_p) (void) = bad;
+  /* Ok, safe.  */
+  c_p ();
+
+  /* Assign an internal function to pointer-to-callable.
+     Flagged as not quite compatible with -Wpedantic.  */
+  c_p = bar;
+  /* Ok, safe.  */
+  c_p ();
+
+  /* Assign an at-calls function to pointer-to-callable.
+     Flaggged as incompatible.  */
+  c_p = bal;
+  /* The call through an interface-incompatible type will not use the
+     modified interface expected by the at-calls function, so it is
+     likely to misbehave at runtime.  */
+  c_p ();
+@}
+@end example
+
+@code{Strub} contexts are never inlined into non-@code{strub} contexts.
+When an @code{internal}-strub function is split up, the wrapper can
+often be inlined, but the wrapped body @emph{never} is.  A function
+marked as @code{always_inline}, even if explicitly assigned
+@code{internal} strub mode, will not undergo wrapping, so its body gets
+inlined as required.
+
+@example
+inline int __attribute__ ((strub ("at-calls")))
+inl_atc (void)
+@{
+  /* This body may get inlined into strub contexts.  */
+@}
+
+inline int __attribute__ ((strub ("internal")))
+inl_int (void)
+@{
+  /* This body NEVER gets inlined, though its wrapper may.  */
+@}
+
+inline int __attribute__ ((strub ("internal"), always_inline))
+inl_int_ali (void)
+@{
+  /* No internal wrapper, so this body ALWAYS gets inlined,
+     but it cannot be called from non-strub contexts.  */
+@}
+
+void __attribute__ ((strub ("disabled")))
+bat (void)
+@{
+  /* Not allowed, cannot inline into a non-strub context.  */
+  inl_int_ali ();
+@}
+@end example
+
+@cindex strub eligibility and viability
+Some @option{-fstrub=*} command line options enable @code{strub} modes
+implicitly where viable.  A @code{strub} mode is only viable for a
+function if the function is eligible for that mode, and if other
+conditions, detailed below, are satisfied.  If it's not eligible for a
+mode, attempts to explicitly associate it with that mode are rejected
+with an error message.  If it is eligible, that mode may be assigned
+explicitly through this attribute, but implicit assignment through
+command-line options may involve additional viability requirements.
+
+A function is ineligible for @code{at-calls} @code{strub} mode if a
+different @code{strub} mode is explicitly requested, if attribute
+@code{noipa} is present, or if it calls @code{__builtin_apply_args}.
+@code{At-calls} @code{strub} mode, if not requested through the function
+type, is only viable for an eligible function if the function is not
+visible to other translation units, if it doesn't have its address
+taken, and if it is never called with a function type overrider.
+
+@smallexample
+/* bar is eligible for at-calls strub mode,
+   but not viable for that mode because it is visible to other units.
+   It is eligible and viable for internal strub mode.  */
+void bav () @{@}
+
+/* setp is eligible for at-calls strub mode,
+   but not viable for that mode because its address is taken.
+   It is eligible and viable for internal strub mode.  */
+void setp (void) @{ static void (*p)(void); = setp; @}
+@end smallexample
+
+A function is ineligible for @code{internal} @code{strub} mode if a
+different @code{strub} mode is explicitly requested, or if attribute
+@code{noipa} is present.  For an @code{always_inline} function, meeting
+these requirements is enough to make it eligible.  Any function that has
+attribute @code{noclone}, that uses such extensions as non-local labels,
+computed gotos, alternate variable argument passing interfaces,
+@code{__builtin_next_arg}, or @code{__builtin_return_address}, or that
+takes too many (about 64Ki) arguments is ineligible, unless it is
+@code{always_inline}.  For @code{internal} @code{strub} mode, all
+eligible functions are viable.
+
+@smallexample
+/* flop is not eligible, thus not viable, for at-calls strub mode.
+   Likewise for internal strub mode.  */
+__attribute__ ((noipa)) void flop (void) @{@}
+
+/* flip is eligible and viable for at-calls strub mode.
+   It would be ineligible for internal strub mode, because of noclone,
+   if it weren't for always_inline.  With always_inline, noclone is not
+   an obstacle, so it is also eligible and viable for internal strub mode.  */
+inline __attribute__ ((noclone, always_inline)) void flip (void) @{@}
+@end smallexample
+
 @cindex @code{unused} type attribute
 @item unused
 When attached to a type (including a @code{union} or a @code{struct}),
@@ -12374,6 +12637,55 @@ that are considered unsafe are diagnosed when the @option{-Wframe-address}
 option is in effect.  Such calls should only be made in debugging
 situations.
 @enddefbuiltin
+
+@deftypefn {Built-in Function} {void *} __builtin_stack_address ()
+This function returns the value of the stack pointer register.
+@end deftypefn
+
+@node Stack Scrubbing
+@section Stack scrubbing internal interfaces
+
+Stack scrubbing involves cooperation between a @code{strub} context,
+i.e., a function whose stack frame is to be zeroed-out, and its callers.
+The caller initializes a stack watermark, the @code{strub} context
+updates the watermark according to its stack use, and the caller zeroes
+it out once it regains control, whether by the callee's returning or by
+an exception.
+
+Each of these steps is performed by a different builtin function call.
+Calls to these builtins are introduced automatically, in response to
+@code{strub} attributes and command-line options; they are not expected
+to be explicitly called by source code.
+
+The functions that implement the builtins are available in libgcc but,
+depending on optimization levels, they are expanded internally, adjusted
+to account for inlining, and sometimes combined/deferred (e.g. passing
+the caller-supplied watermark on to callees, refraining from erasing
+stack areas that the caller will) to enable tail calls and to optimize
+for code size.
+
+@deftypefn {Built-in Function} {void} __builtin___strub_enter (void **@var{wmptr})
+This function initializes a stack @var{watermark} variable with the
+current top of the stack.  A call to this builtin function is introduced
+before entering a @code{strub} context.  It remains as a function call
+if optimization is not enabled.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin___strub_update (void **@var{wmptr})
+This function updates a stack @var{watermark} variable with the current
+top of the stack, if it tops the previous watermark.  A call to this
+builtin function is inserted within @code{strub} contexts, whenever
+additional stack space may have been used.  It remains as a function
+call at optimization levels lower than 2.
+@end deftypefn
+
+@deftypefn {Built-in Function} {void} __builtin___strub_leave (void **@var{wmptr})
+This function overwrites the memory area between the current top of the
+stack, and the @var{watermark}ed address.  A call to this builtin
+function is inserted after leaving a @code{strub} context.  It remains
+as a function call at optimization levels lower than 3, and it is guarded by
+a condition at level 2.
+@end deftypefn
 
 @node Vector Extensions
 @section Using Vector Instructions through Built-in Functions

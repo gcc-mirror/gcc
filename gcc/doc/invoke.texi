@@ -655,6 +655,8 @@ Objective-C and Objective-C++ Dialects}.
 -fstack-protector-explicit  -fstack-check
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
 -fno-stack-limit  -fsplit-stack
+-fstrub=disable  -fstrub=strict  -fstrub=relaxed
+-fstrub=all  -fstrub=at-calls  -fstrub=internal
 -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 -fvtv-counts  -fvtv-debug
 -finstrument-functions  -finstrument-functions-once
@@ -17924,6 +17926,56 @@ without @option{-fsplit-stack} always has a large stack.  Support for
 this is implemented in the gold linker in GNU binutils release 2.21
 and later.
 
+@opindex -fstrub=disable
+@item -fstrub=disable
+Disable stack scrubbing entirely, ignoring any @code{strub} attributes.
+See @xref{Common Type Attributes}.
+
+@opindex fstrub=strict
+@item -fstrub=strict
+Functions default to @code{strub} mode @code{disabled}, and apply
+@option{strict}ly the restriction that only functions associated with
+@code{strub}-@code{callable} modes (@code{at-calls}, @code{callable} and
+@code{always_inline} @code{internal}) are @code{callable} by functions
+with @code{strub}-enabled modes (@code{at-calls} and @code{internal}).
+
+@opindex fstrub=relaxed
+@item -fstrub=relaxed
+Restore the default stack scrub (@code{strub}) setting, namely,
+@code{strub} is only enabled as required by @code{strub} attributes
+associated with function and data types.  @code{Relaxed} means that
+strub contexts are only prevented from calling functions explicitly
+associated with @code{strub} mode @code{disabled}.  This option is only
+useful to override other @option{-fstrub=*} options that precede it in
+the command line.
+
+@opindex fstrub=at-calls
+@item -fstrub=at-calls
+Enable @code{at-calls} @code{strub} mode where viable.  The primary use
+of this option is for testing.  It exercises the @code{strub} machinery
+in scenarios strictly local to a translation unit.  This @code{strub}
+mode modifies function interfaces, so any function that is visible to
+other translation units, or that has its address taken, will @emph{not}
+be affected by this option.  Optimization options may also affect
+viability.  See the @code{strub} attribute documentation for details on
+viability and eligibility requirements.
+
+@opindex fstrub=internal
+@item -fstrub=internal
+Enable @code{internal} @code{strub} mode where viable.  The primary use
+of this option is for testing.  This option is intended to exercise
+thoroughly parts of the @code{strub} machinery that implement the less
+efficient, but interface-preserving @code{strub} mode.  Functions that
+would not be affected by this option are quite uncommon.
+
+@opindex fstrub=all
+@item -fstrub=all
+Enable some @code{strub} mode where viable.  When both strub modes are
+viable, @code{at-calls} is preferred.  @option{-fdump-ipa-strubm} adds
+function attributes that tell which mode was selected for each function.
+The primary use of this option is for testing, to exercise thoroughly
+the @code{strub} machinery.
+
 @opindex fvtable-verify
 @item -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
 This option is only available when compiling C++ code.
@@ -19842,6 +19894,14 @@ and inlining decisions.
 
 @item inline
 Dump after function inlining.
+
+@item strubm
+Dump after selecting @code{strub} modes, and recording the selections as
+function attributes.
+
+@item strub
+Dump @code{strub} transformations: interface changes, function wrapping,
+and insertion of builtin calls for stack scrubbing and watermarking.
 
 @end table
 

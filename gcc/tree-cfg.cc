@@ -5794,6 +5794,7 @@ gimple_verify_flow_info (void)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  /* Do NOT disregard debug stmts after found_ctrl_stmt.  */
 	  if (found_ctrl_stmt)
 	    {
 	      error ("control flow in the middle of basic block %d",

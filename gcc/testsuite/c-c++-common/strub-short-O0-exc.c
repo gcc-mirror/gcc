@@ -1,0 +1,10 @@
+/* { dg-do compile } */
+/* { dg-options "-O0 -fstrub=strict -fexceptions -fdump-ipa-strub" } */
+
+/* Check that the expected strub calls are issued.  */
+
+#include "torture/strub-callable1.c"
+
+/* { dg-final { scan-ipa-dump-times "strub_enter" 45 "strub" } } */
+/* { dg-final { scan-ipa-dump-times "strub_update" 4 "strub" } } */
+/* { dg-final { scan-ipa-dump-times "strub_leave" 89 "strub" } } */
