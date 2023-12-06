@@ -50,6 +50,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern void *malloc (size_t);
 #endif
 
+#ifndef calloc
+extern void *calloc(size_t, size_t);
+#endif
+
+#ifndef realloc
+extern void *realloc(void *, size_t);
+#endif
+
 #ifndef free
 extern void free (void *);
 #endif
