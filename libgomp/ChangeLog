@@ -1,3 +1,12 @@
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/111413
+	* env.c (initialize_env): Don't dereference environ if it is NULL.
+	Reindent.
+
 2023-08-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
