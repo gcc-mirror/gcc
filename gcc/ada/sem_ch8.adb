@@ -6562,16 +6562,6 @@ package body Sem_Ch8 is
 
                      Decl := Enclosing_Declaration (E);
 
-                     --  Enclosing_Declaration does not always return a
-                     --  declaration; cope with this irregularity.
-                     if Decl in N_Subprogram_Specification_Id
-                       and then Nkind (Parent (Decl)) in
-                         N_Subprogram_Body | N_Subprogram_Declaration
-                           | N_Subprogram_Renaming_Declaration
-                     then
-                        Decl := Parent (Decl);
-                     end if;
-
                      --  Look for the suprogram renaming declaration built
                      --  for a generic actual subprogram. Unclear why
                      --  Original_Node call is needed, but sometimes it is.

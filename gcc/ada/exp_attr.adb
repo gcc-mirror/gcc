@@ -8653,17 +8653,8 @@ package body Exp_Attr is
       --------------------------
 
       function In_Available_Context (Ent : Entity_Id) return Boolean is
-         Decl : Node_Id := Enclosing_Declaration (Ent);
+         Decl : constant Node_Id := Enclosing_Declaration (Ent);
       begin
-         --  Enclosing_Declaration does not always return a declaration;
-         --  cope with this irregularity.
-         if Decl in N_Subprogram_Specification_Id
-           and then Nkind (Parent (Decl)) in
-                      N_Subprogram_Body | N_Subprogram_Declaration
-         then
-            Decl := Parent (Decl);
-         end if;
-
          if Has_Declarations (Parent (Decl)) then
             return In_Subtree (Attr_Ref, Root => Parent (Decl));
          elsif Is_List_Member (Decl) then
