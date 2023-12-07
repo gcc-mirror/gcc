@@ -86,6 +86,9 @@
 #if !__has_builtin (__is_final)
 # error "__has_builtin (__is_final) failed"
 #endif
+#if !__has_builtin (__is_function)
+# error "__has_builtin (__is_function) failed"
+#endif
 #if !__has_builtin (__is_layout_compatible)
 # error "__has_builtin (__is_layout_compatible) failed"
 #endif
