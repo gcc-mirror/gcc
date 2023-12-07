@@ -12726,6 +12726,11 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 	type1 = TREE_TYPE (type1);
       return cv_unqualified (type1);
 
+    case CPTK_REMOVE_POINTER:
+      if (TYPE_PTR_P (type1))
+	type1 = TREE_TYPE (type1);
+      return type1;
+
     case CPTK_REMOVE_REFERENCE:
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
