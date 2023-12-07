@@ -543,7 +543,7 @@ void expand_tuple_move (rtx *);
 bool expand_block_move (rtx, rtx, rtx);
 machine_mode preferred_simd_mode (scalar_mode);
 machine_mode get_mask_mode (machine_mode);
-void expand_vec_series (rtx, rtx, rtx);
+void expand_vec_series (rtx, rtx, rtx, rtx = 0);
 void expand_vec_init (rtx, rtx);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
