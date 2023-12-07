@@ -12398,6 +12398,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 	      && (same_type_ignoring_top_level_qualifiers_p (type1, type2)
 		  || DERIVED_FROM_P (type1, type2)));
 
+    case CPTK_IS_BOUNDED_ARRAY:
+      return type_code1 == ARRAY_TYPE && TYPE_DOMAIN (type1);
+
     case CPTK_IS_CLASS:
       return NON_UNION_CLASS_TYPE_P (type1);
 
@@ -12618,6 +12621,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       break;
 
     case CPTK_IS_ARRAY:
+    case CPTK_IS_BOUNDED_ARRAY:
     case CPTK_IS_CLASS:
     case CPTK_IS_ENUM:
     case CPTK_IS_SAME:

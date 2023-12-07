@@ -65,6 +65,9 @@
 #if !__has_builtin (__is_base_of)
 # error "__has_builtin (__is_base_of) failed"
 #endif
+#if !__has_builtin (__is_bounded_array)
+# error "__has_builtin (__is_bounded_array) failed"
+#endif
 #if !__has_builtin (__is_class)
 # error "__has_builtin (__is_class) failed"
 #endif

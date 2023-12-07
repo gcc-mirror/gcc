@@ -3728,6 +3728,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_BASE_OF:
       inform (loc, "  %qT is not a base of %qT", t1, t2);
       break;
+    case CPTK_IS_BOUNDED_ARRAY:
+      inform (loc, "  %qT is not a bounded array", t1);
+      break;
     case CPTK_IS_CLASS:
       inform (loc, "  %qT is not a class", t1);
       break;
