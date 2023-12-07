@@ -4967,6 +4967,33 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_load1_2reg<q>")]
 )
 
+(define_insn "neon_vld1_x3<mode>"
+  [(set (match_operand:CI 0 "s_register_operand" "=w")
+        (unspec:CI [(match_operand:EI 1 "neon_struct_operand" "Um")
+                    (unspec:VQXBF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VLD3A))]
+  "TARGET_NEON"
+{
+  int regno = REGNO (operands[0]);
+  rtx ops[4];
+  ops[0] = gen_rtx_REG (DImode, regno);
+  ops[1] = gen_rtx_REG (DImode, regno + 2);
+  ops[2] = gen_rtx_REG (DImode, regno + 4);
+  ops[3] = operands[1];
+
+  output_asm_insn ("vld1.<V_sz_elem>\t{%P0, %P1, %P2}, %A3", ops);
+
+  ops[0] = gen_rtx_REG (DImode, regno + 6);
+  ops[1] = gen_rtx_REG (DImode, regno + 8);
+  ops[2] = gen_rtx_REG (DImode, regno + 10);
+  ops[3] = operands[1];
+
+  output_asm_insn ("vld1.<V_sz_elem>\t{%P0, %P1, %P2}, %A3", ops);
+  return "";
+}
+  [(set_attr "type" "neon_load1_3reg<q>")]
+)
+
 ;; The lane numbers in the RTL are in GCC lane order, having been flipped
 ;; in arm_expand_neon_args. The lane numbers are restored to architectural
 ;; lane order here.
