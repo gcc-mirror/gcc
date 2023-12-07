@@ -7021,6 +7021,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
     case REFERENCE_TYPE:
     case NULLPTR_TYPE:
     case OPAQUE_TYPE:
+    case BITINT_TYPE:
       return 1;
 
     case ERROR_MARK:
