@@ -26691,8 +26691,8 @@ The text segment and data segment must be within 2GB addressing space.
 
 @item extreme
 This mode does not limit the size of the code segment and data segment.
-The @option{-mcmodel=extreme} option is incompatible with @option{-fplt},
-and it requires @option{-mexplicit-relocs=always}.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt}
+and/or @option{-mexplicit-relocs=none}.
 @end table
 The default code model is @code{normal}.
 

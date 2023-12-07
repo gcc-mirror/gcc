@@ -1972,9 +1972,16 @@ loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
       case SYMBOL_TLS_LE:
       case SYMBOL_TLSGD:
       case SYMBOL_TLSLDM:
-	/* The linker don't know how to relax TLS accesses.  */
+      case SYMBOL_PCREL64:
+	/* The linker don't know how to relax TLS accesses or 64-bit
+	   pc-relative accesses.  */
 	return true;
       case SYMBOL_GOT_DISP:
+	/* The linker don't know how to relax GOT accesses in extreme
+	   code model.  */
+	if (TARGET_CMODEL_EXTREME)
+	  return true;
+
 	/* If we are performing LTO for a final link, and we have the
 	   linker plugin so we know the resolution of the symbols, then
 	   all GOT references are binding to external symbols or
@@ -3138,7 +3145,7 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 
   if (loongarch_symbol_extreme_p (symbol_type) && can_create_pseudo_p ())
     {
-      gcc_assert (TARGET_EXPLICIT_RELOCS);
+      gcc_assert (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE);
 
       temp1 = gen_reg_rtx (Pmode);
       emit_move_insn (temp1, gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, 0),
@@ -5937,7 +5944,7 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
     loongarch_classify_symbolic_expression (op);
 
   if (loongarch_symbol_extreme_p (symbol_type))
-    gcc_assert (TARGET_EXPLICIT_RELOCS);
+    gcc_assert (la_opt_explicit_relocs != EXPLICIT_RELOCS_NONE);
 
   switch (symbol_type)
     {
@@ -7544,9 +7551,9 @@ loongarch_option_override_internal (struct gcc_options *opts,
   switch (la_target.cmodel)
     {
       case CMODEL_EXTREME:
-	if (!TARGET_EXPLICIT_RELOCS)
-	  error ("code model %qs needs %s",
-		 "extreme", "-mexplicit-relocs=always");
+	if (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)
+	  error ("code model %qs is not compatible with %s",
+		 "extreme", "-mexplicit-relocs=none");
 
 	if (opts->x_flag_plt)
 	  {
@@ -7912,11 +7919,11 @@ loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
-      if (!TARGET_EXPLICIT_RELOCS)
+      if (la_opt_explicit_relocs == EXPLICIT_RELOCS_NONE)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "%qE attribute requires %s", name,
-		    "-mexplicit-relocs=always");
+		    "%qE attribute is not compatible with %s", name,
+		    "-mexplicit-relocs=none");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
