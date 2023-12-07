@@ -95,6 +95,9 @@
 #if !__has_builtin (__is_member_function_pointer)
 # error "__has_builtin (__is_member_function_pointer) failed"
 #endif
+#if !__has_builtin (__is_member_object_pointer)
+# error "__has_builtin (__is_member_object_pointer) failed"
+#endif
 #if !__has_builtin (__is_member_pointer)
 # error "__has_builtin (__is_member_pointer) failed"
 #endif

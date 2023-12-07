@@ -3761,6 +3761,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_MEMBER_FUNCTION_POINTER:
       inform (loc, "  %qT is not a member function pointer", t1);
       break;
+    case CPTK_IS_MEMBER_OBJECT_POINTER:
+      inform (loc, "  %qT is not a member object pointer", t1);
+      break;
     case CPTK_IS_MEMBER_POINTER:
       inform (loc, "  %qT is not a member pointer", t1);
       break;
