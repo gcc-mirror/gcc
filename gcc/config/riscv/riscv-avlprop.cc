@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "insn-attr.h"
 #include "tm-constrs.h"
+#include "insn-opinit.h"
 
 using namespace rtl_ssa;
 using namespace riscv_vector;
@@ -142,6 +143,34 @@ get_insn_vtype_mode (rtx_insn *rinsn)
   return GET_MODE (recog_data.operand[mode_idx]);
 }
 
+/* Return new pattern for AVL propagation.
+   Normally, we just replace AVL operand only for most
+   of the instructions.  However, for instructions like
+   fault load which use AVL TYPE twice in the pattern which
+   will cause ICE in the later AVL TYPE change so we regenerate
+   the whole pattern for such instructions.  */
+static rtx
+simplify_replace_avl (rtx_insn *rinsn, rtx new_avl)
+{
+  /* Replace AVL operand.  */
+  extract_insn_cached (rinsn);
+  rtx avl = recog_data.operand[get_attr_vl_op_idx (rinsn)];
+  int count = count_regno_occurrences (rinsn, REGNO (avl));
+  gcc_assert (count == 1);
+  rtx new_pat = simplify_replace_rtx (PATTERN (rinsn), avl, new_avl);
+  if (get_attr_type (rinsn) == TYPE_VLDFF
+      || get_attr_type (rinsn) == TYPE_VLSEGDFF)
+    new_pat
+      = gen_pred_fault_load (recog_data.operand_mode[0], recog_data.operand[0],
+			     recog_data.operand[1], recog_data.operand[2],
+			     recog_data.operand[3], new_avl,
+			     recog_data.operand[5], recog_data.operand[6],
+			     get_avl_type_rtx (avl_type::NONVLMAX));
+  else
+    new_pat = simplify_replace_rtx (PATTERN (rinsn), avl, new_avl);
+  return new_pat;
+}
+
 static void
 simplify_replace_vlmax_avl (rtx_insn *rinsn, rtx new_avl)
 {
@@ -152,12 +181,7 @@ simplify_replace_vlmax_avl (rtx_insn *rinsn, rtx new_avl)
       fprintf (dump_file, "into: ");
       print_rtl_single (dump_file, rinsn);
     }
-  /* Replace AVL operand.  */
-  extract_insn_cached (rinsn);
-  rtx avl = recog_data.operand[get_attr_vl_op_idx (rinsn)];
-  int count = count_regno_occurrences (rinsn, REGNO (avl));
-  gcc_assert (count == 1);
-  rtx new_pat = simplify_replace_rtx (PATTERN (rinsn), avl, new_avl);
+  rtx new_pat = simplify_replace_avl (rinsn, new_avl);
   validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat, false);
 
   /* Change AVL TYPE into NONVLMAX if it is VLMAX.  */
