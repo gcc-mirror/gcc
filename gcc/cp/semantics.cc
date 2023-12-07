@@ -12425,6 +12425,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_LITERAL_TYPE:
       return literal_type_p (type1);
 
+    case CPTK_IS_MEMBER_FUNCTION_POINTER:
+      return TYPE_PTRMEMFUNC_P (type1);
+
     case CPTK_IS_MEMBER_POINTER:
       return TYPE_PTRMEM_P (type1);
 
@@ -12630,6 +12633,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_BOUNDED_ARRAY:
     case CPTK_IS_CLASS:
     case CPTK_IS_ENUM:
+    case CPTK_IS_MEMBER_FUNCTION_POINTER:
     case CPTK_IS_MEMBER_POINTER:
     case CPTK_IS_SAME:
     case CPTK_IS_SCOPED_ENUM:
