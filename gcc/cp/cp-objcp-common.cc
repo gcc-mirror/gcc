@@ -565,6 +565,10 @@ names_builtin_p (const char *name)
 	}
     }
 
+  /* Check for built-in traits.  */
+  if (IDENTIFIER_TRAIT_P (id))
+    return true;
+
   /* Also detect common reserved C++ words that aren't strictly built-in
      functions.  */
   switch (C_RID_CODE (id))
@@ -578,10 +582,6 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
-#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
-    case RID_##CODE:
-#include "cp-trait.def"
-#undef DEFTRAIT
       return true;
     default:
       break;

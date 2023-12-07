@@ -246,6 +246,12 @@ static void cp_lexer_start_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
 static void cp_lexer_stop_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
+static const cp_trait *cp_lexer_lookup_trait
+  (const cp_token *);
+static const cp_trait *cp_lexer_lookup_trait_expr
+  (const cp_token *);
+static const cp_trait *cp_lexer_lookup_trait_type
+  (const cp_token *);
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
@@ -1173,12 +1179,6 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_CONSTEVAL:
       return true;
 
-#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
-    case RID_##CODE:
-#include "cp-trait.def"
-#undef DEFTRAIT_TYPE
-      return true;
-
     default:
       if (keyword >= RID_FIRST_INT_N
 	  && keyword < RID_FIRST_INT_N + NUM_INT_N_ENTS
@@ -1186,6 +1186,44 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
 	return true;
       return false;
     }
+}
+
+/* Look ups the corresponding built-in trait if a given token is
+   a built-in trait.  Otherwise, returns nullptr.  */
+
+static const cp_trait *
+cp_lexer_lookup_trait (const cp_token *token)
+{
+  if (token->type == CPP_NAME && IDENTIFIER_TRAIT_P (token->u.value))
+    return &cp_traits[IDENTIFIER_CP_INDEX (token->u.value)];
+
+  return nullptr;
+}
+
+/* Similarly, but only if the token is an expression-yielding
+   built-in trait.  */
+
+static const cp_trait *
+cp_lexer_lookup_trait_expr (const cp_token *token)
+{
+  const cp_trait *trait = cp_lexer_lookup_trait (token);
+  if (trait && !trait->type)
+    return trait;
+
+  return nullptr;
+}
+
+/* Similarly, but only if the token is a type-yielding
+   built-in trait.  */
+
+static const cp_trait *
+cp_lexer_lookup_trait_type (const cp_token *token)
+{
+  const cp_trait *trait = cp_lexer_lookup_trait (token);
+  if (trait && trait->type)
+    return trait;
+
+  return nullptr;
 }
 
 /* Return true if the next token is a keyword for a decl-specifier.  */
@@ -1196,6 +1234,8 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
   cp_token *token;
 
   token = cp_lexer_peek_token (lexer);
+  if (cp_lexer_lookup_trait_type (token))
+    return true;
   return cp_keyword_starts_decl_specifier_p (token->keyword);
 }
 
@@ -2861,7 +2901,7 @@ static void cp_parser_late_parsing_default_args
 static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
 static cp_expr cp_parser_trait
-  (cp_parser *, enum rid);
+  (cp_parser *, const cp_trait *);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
 static void cp_parser_set_storage_class
@@ -6055,12 +6095,6 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_OFFSETOF:
 	  return cp_parser_builtin_offsetof (parser);
 
-#define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
-	case RID_##CODE:
-#include "cp-trait.def"
-#undef DEFTRAIT_EXPR
-	  return cp_parser_trait (parser, token->keyword);
-
 	// C++ concepts
 	case RID_REQUIRES:
 	  return cp_parser_requires_expression (parser);
@@ -6099,6 +6133,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	 `::' as the beginning of a qualified-id, or the "operator"
 	 keyword.  */
     case CPP_NAME:
+      if (const cp_trait* trait = cp_lexer_lookup_trait_expr (token))
+	return cp_parser_trait (parser, trait);
+      /* FALLTHRU */
     case CPP_SCOPE:
     case CPP_TEMPLATE_ID:
     case CPP_NESTED_NAME_SPECIFIER:
@@ -11029,28 +11066,13 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 /* Parse a builtin trait expression or type.  */
 
 static cp_expr
-cp_parser_trait (cp_parser* parser, enum rid keyword)
+cp_parser_trait (cp_parser* parser, const cp_trait* trait)
 {
-  cp_trait_kind kind;
+  const cp_trait_kind kind = trait->kind;
   tree type1, type2 = NULL_TREE;
-  bool binary = false;
-  bool variadic = false;
-  bool type = false;
-
-  switch (keyword)
-    {
-#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
-    case RID_##CODE:			 \
-      kind = CPTK_##CODE;		 \
-      binary = (ARITY == 2);		 \
-      variadic = (ARITY == -1);		 \
-      type = (TCC == tcc_type);		 \
-      break;
-#include "cp-trait.def"
-#undef DEFTRAIT
-    default:
-      gcc_unreachable ();
-    }
+  const bool binary = (trait->arity == 2);
+  const bool variadic = (trait->arity == -1);
+  const bool type = trait->type;
 
   /* Get location of initial token.  */
   location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -20126,20 +20148,21 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       return type;
 
-#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
-    case RID_##CODE:
-#include "cp-trait.def"
-#undef DEFTRAIT_TYPE
-      type = cp_parser_trait (parser, token->keyword);
+    default:
+      break;
+    }
+
+  /* If token is a type-yielding built-in traits, parse it.  */
+  const cp_trait* trait = cp_lexer_lookup_trait_type (token);
+  if (trait)
+    {
+      type = cp_parser_trait (parser, trait);
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token,
 				      /*type_definition_p=*/false);
 
       return type;
-
-    default:
-      break;
     }
 
   /* If token is an already-parsed decltype not followed by ::,
