@@ -2541,6 +2541,12 @@ package body Sem_Ch12 is
          end if;
       end if;
 
+      if Subtype_Mark (Def) <= Empty_Or_Error then
+         pragma Assert (Serious_Errors_Detected > 0);
+         --  avoid passing bad argument to Entity
+         return;
+      end if;
+
       --  If the parent type has a known size, so does the formal, which makes
       --  legal representation clauses that involve the formal.
 

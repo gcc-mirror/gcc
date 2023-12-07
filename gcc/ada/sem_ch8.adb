@@ -861,7 +861,19 @@ package body Sem_Ch8 is
                    Defining_Identifier => Subt,
                    Subtype_Indication  =>
                      Make_Subtype_From_Expr (Nam, Typ)));
-               Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
+
+               declare
+                  New_Subtype_Mark : constant Node_Id :=
+                    New_Occurrence_Of (Subt, Loc);
+               begin
+                  if Present (Subtype_Mark (N)) then
+                     Rewrite (Subtype_Mark (N), New_Subtype_Mark);
+                  else
+                     --  An Ada2022 renaming with no subtype mark
+                     Set_Subtype_Mark (N, New_Subtype_Mark);
+                  end if;
+               end;
+
                Set_Etype (Nam, Subt);
 
                --  Suppress discriminant checks on this subtype if the original

@@ -3668,7 +3668,7 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Analyze_Number_Declaration (N : Node_Id) is
-      E     : constant Node_Id   := Expression (N);
+      E     : Node_Id            := Expression (N);
       Id    : constant Entity_Id := Defining_Identifier (N);
       Index : Interp_Index;
       It    : Interp;
@@ -3694,14 +3694,13 @@ package body Sem_Ch3 is
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
-      --  Process expression, replacing error by integer zero, to avoid
-      --  cascaded errors or aborts further along in the processing
-
       --  Replace Error by integer zero, which seems least likely to cause
       --  cascaded errors.
 
       if E = Error then
-         Rewrite (E, Make_Integer_Literal (Sloc (E), Uint_0));
+         pragma Assert (Serious_Errors_Detected > 0);
+         E := Make_Integer_Literal (Sloc (N), Uint_0);
+         Set_Expression (N, E);
          Set_Error_Posted (E);
       end if;
 
@@ -18615,7 +18614,10 @@ package body Sem_Ch3 is
       --  Otherwise we have a subtype mark without a constraint
 
       elsif Error_Posted (S) then
-         Rewrite (S, New_Occurrence_Of (Any_Id, Sloc (S)));
+         --  Don't rewrite if S is Empty or Error
+         if S > Empty_Or_Error then
+            Rewrite (S, New_Occurrence_Of (Any_Id, Sloc (S)));
+         end if;
          return Any_Type;
 
       else
