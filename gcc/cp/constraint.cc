@@ -3782,6 +3782,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_NOTHROW_CONVERTIBLE:
 	  inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
+    case CPTK_IS_OBJECT:
+      inform (loc, "  %qT is not an object type", t1);
+      break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       inform (loc, "  %qT is not pointer-interconvertible base of %qT",
 	      t1, t2);

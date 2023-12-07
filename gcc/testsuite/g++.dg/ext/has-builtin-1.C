@@ -113,6 +113,9 @@
 #if !__has_builtin (__is_nothrow_convertible)
 # error "__has_builtin (__is_nothrow_convertible) failed"
 #endif
+#if !__has_builtin (__is_object)
+# error "__has_builtin (__is_object) failed"
+#endif
 #if !__has_builtin (__is_pointer_interconvertible_base_of)
 # error "__has_builtin (__is_pointer_interconvertible_base_of) failed"
 #endif
