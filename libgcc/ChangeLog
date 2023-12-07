@@ -1,3 +1,10 @@
+2023-12-06  Thomas Schwinge  <thomas@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/109289
+	* emutls.c: Add GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+	pragma.
+
 2023-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* Makefile.in (LIB2ADD): Add strub.c.

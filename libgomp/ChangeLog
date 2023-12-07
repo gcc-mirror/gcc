@@ -1,3 +1,78 @@
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h (TEAM_ARENA_START): Move to here.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	(GCN_LOWLAT_HEAP): New.
+	* config/gcn/team.c (LITTLEENDIAN_CPU): New, and import hsa.h.
+	(__gcn_lowlat_init): New prototype.
+	(gomp_gcn_enter_kernel): Initialize the low-latency heap.
+	* libgomp.h (TEAM_ARENA_START): Move to libgomp.h.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	* plugin/plugin-gcn.c (lowlat_size): New variable.
+	(print_kernel_dispatch): Label the group_segment_size purpose.
+	(init_environment_variables): Read GOMP_GCN_LOWLAT_POOL.
+	(create_kernel_dispatch): Pass low-latency head allocation to kernel.
+	(run_kernel): Use shadow; don't assume values.
+	* testsuite/libgomp.c/omp_alloc-traits.c: Enable for amdgcn.
+	* config/gcn/allocator.c: New file.
+	* libgomp.texi: Document low-latency implementation details.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* allocator.c (MEMSPACE_VALIDATE): New macro.
+	(omp_init_allocator): Use MEMSPACE_VALIDATE.
+	(omp_aligned_alloc): Use OMP_LOW_LAT_MEM_ALLOC_INVALID.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* config/nvptx/allocator.c (nvptx_memspace_validate): New function.
+	(MEMSPACE_VALIDATE): New macro.
+	(OMP_LOW_LAT_MEM_ALLOC_INVALID): New define.
+	* libgomp.texi: Document low-latency implementation details.
+	* testsuite/libgomp.c/omp_alloc-1.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-2.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-3.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-4.c (main): Add access trait.
+	* testsuite/libgomp.c/omp_alloc-5.c (main): Add gnu_lowlat.
+	* testsuite/libgomp.c/omp_alloc-6.c (main): Add access trait.
+	* testsuite/libgomp.c/omp_alloc-traits.c: New test.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung   <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* allocator.c (MEMSPACE_ALLOC): New macro.
+	(MEMSPACE_CALLOC): New macro.
+	(MEMSPACE_REALLOC): New macro.
+	(MEMSPACE_FREE): New macro.
+	(predefined_alloc_mapping): New array.  Add _Static_assert to match.
+	(ARRAY_SIZE): New macro.
+	(omp_aligned_alloc): Use MEMSPACE_ALLOC.
+	Implement fall-backs for predefined allocators.  Simplify existing
+	fall-backs.
+	(omp_free): Use MEMSPACE_FREE.
+	(omp_calloc): Use MEMSPACE_CALLOC. Implement fall-backs for
+	predefined allocators.  Simplify existing fall-backs.
+	(omp_realloc): Use MEMSPACE_REALLOC, MEMSPACE_ALLOC, and MEMSPACE_FREE.
+	Implement fall-backs for predefined allocators.  Simplify existing
+	fall-backs.
+	* config/nvptx/team.c (__nvptx_lowlat_pool): New asm variable.
+	(__nvptx_lowlat_init): New prototype.
+	(gomp_nvptx_main): Call __nvptx_lowlat_init.
+	* libgomp.texi: Update memory space table.
+	* plugin/plugin-nvptx.c (lowlat_pool_size): New variable.
+	(GOMP_OFFLOAD_init_device): Read the GOMP_NVPTX_LOWLAT_POOL envvar.
+	(GOMP_OFFLOAD_run): Apply lowlat_pool_size.
+	* basic-allocator.c: New file.
+	* config/nvptx/allocator.c: New file.
+	* testsuite/libgomp.c/omp_alloc-1.c: New test.
+	* testsuite/libgomp.c/omp_alloc-2.c: New test.
+	* testsuite/libgomp.c/omp_alloc-3.c: New test.
+	* testsuite/libgomp.c/omp_alloc-4.c: New test.
+	* testsuite/libgomp.c/omp_alloc-5.c: New test.
+	* testsuite/libgomp.c/omp_alloc-6.c: New test.
+
 2023-11-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/declare-variant-4-fiji.c: Adjust.

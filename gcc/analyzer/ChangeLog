@@ -1,3 +1,8 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (dump_analyzer_json): Use
+	flag_diagnostics_json_formatting.
+
 2023-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (class saved_diagnostic): New forward decl.

@@ -1,3 +1,306 @@
+2023-12-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (extract_single_source): new function.
+	(pre_vsetvl::compute_lcm_local_properties): Fix ICE.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (AARCH64_RSR128): New
+	`enum aarch64_builtins' value.
+	(AARCH64_WSR128): Likewise.
+	(aarch64_init_rwsr_builtins): Init `__builtin_aarch64_rsr128'
+	and `__builtin_aarch64_wsr128' builtins.
+	(aarch64_expand_rwsr_builtin): Extend function to handle
+	`__builtin_aarch64_{rsr|wsr}128'.
+	* config/aarch64/aarch64-protos.h (aarch64_retrieve_sysreg):
+	Update function signature.
+	* config/aarch64/aarch64.cc (F_REG_128): New.
+	(aarch64_retrieve_sysreg): Add 128-bit register mode check.
+	* config/aarch64/aarch64.md (UNSPEC_SYSREG_RTI): New.
+	(UNSPEC_SYSREG_WTI): Likewise.
+	(aarch64_read_sysregti): Likewise.
+	(aarch64_write_sysregti): Likewise.
+	* config/aarch64/arm_acle.h (__arm_rsr128): New.
+	(__arm_wsr128): Likewise.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (gcs): New.
+	* config/aarch64/aarch64.h (AARCH64_ISA_GCS): New.
+	(TARGET_THE):  Likewise.
+	* doc/invoke.texi (AArch64 Options): Describe GCS.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-c.cc (__ARM_FEATURE_SYSREG128): New.
+	* config/aarch64/aarch64-arches.def (armv8.9-a): New.
+	(armv9.4-a): Likewise.
+	* config/aarch64/aarch64-option-extensions.def (d128): Likewise.
+	(the): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_ISA_V9_4A): Likewise.
+	(AARCH64_ISA_V8_9A): Likewise.
+	(TARGET_ARMV9_4): Likewise.
+	(AARCH64_ISA_D128): Likewise.
+	(AARCH64_ISA_THE): Likewise.
+	(TARGET_D128): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document new -march flags
+	and extensions.
+
+2023-12-06  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* Makefile.in: Remove qmtest-related targets.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-json-formatting): New.
+	* diagnostic-format-json.cc: Add "formatted" boolean
+	to json_output_format and subclasses, and to the
+	diagnostic_output_format_init_json_* functions.  Use it when
+	printing JSON.
+	* diagnostic-format-sarif.cc: Likewise for sarif_builder,
+	sarif_output_format, and the various
+	diagnostic_output_format_init_sarif_* functions.
+	* diagnostic.cc (diagnostic_output_format_init): Add
+	"json_formatting" boolean and pass on to the various cases.
+	* diagnostic.h (diagnostic_output_format_init): Add
+	"json_formatted" param.
+	(diagnostic_output_format_init_json_stderr): Add "formatted" param
+	(diagnostic_output_format_init_json_file): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* doc/invoke.texi (-fdiagnostics-format=json): Remove discussion
+	about JSON output needing formatting.
+	(-fno-diagnostics-json-formatting): Add.
+	* gcc.cc (driver_handle_option): Use
+	opts->x_flag_diagnostics_json_formatting.
+	* gcov.cc (generate_results): Pass "false" for new formatting
+	option when printing json.
+	* json.cc (value::dump): Add new "formatted" param.
+	(object::print): Likewise, using it to add whitespace to format
+	the JSON output.
+	(array::print): Likewise.
+	(float_number::print): Add new "formatted" param.
+	(integer_number::print): Likewise.
+	(string::print): Likewise.
+	(literal::print): Likewise.
+	(selftest::assert_print_eq): Add "formatted" param.
+	(ASSERT_PRINT_EQ): Add "FORMATTED" param.
+	(selftest::test_writing_objects): Test both formatted and
+	unformatted printing.
+	(selftest::test_writing_arrays): Likewise.
+	(selftest::test_writing_float_numbers): Update for new param of
+	ASSERT_PRINT_EQ.
+	(selftest::test_writing_integer_numbers): Likewise.
+	(selftest::test_writing_strings): Likewise.
+	(selftest::test_writing_literals): Likewise.
+	(selftest::test_formatting): New.
+	(selftest::json_cc_tests): Call it.
+	* json.h (value::print): Add "formatted" param.
+	(value::dump): Likewise.
+	(object::print): Likewise.
+	(array::print): Likewise.
+	(float_number::print): Likewise.
+	(integer_number::print): Likewise.
+	(string::print): Likewise.
+	(literal::print): Likewise.
+	* optinfo-emit-json.cc (optrecord_json_writer::write): Pass
+	"false" for new formatting option when printing json.
+	(selftest::test_building_json_from_dump_calls): Likewise.
+	* opts.cc (common_handle_option): Use
+	opts->x_flag_diagnostics_json_formatting.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (on_begin_diagnostic): Convert param
+	to const reference.
+	(on_end_diagnostic): Likewise.
+	(json_output_format::on_end_diagnostic): Likewise.
+	* diagnostic-format-sarif.cc
+	(sarif_invocation::add_notification_for_ice): Likewise.
+	(sarif_result::on_nested_diagnostic): Likewise.
+	(sarif_ice_notification::sarif_ice_notification): Likewise.
+	(sarif_builder::end_diagnostic): Likewise.
+	(sarif_builder::make_result_object): Likewise.
+	(make_reporting_descriptor_object_for_warning): Likewise.
+	(sarif_builder::make_locations_arr): Likewise.
+	(sarif_output_format::on_begin_diagnostic): Likewise.
+	(sarif_output_format::on_end_diagnostic): Likewise.
+	* diagnostic.cc (default_diagnostic_starter): Make diagnostic_info
+	param const.
+	(default_diagnostic_finalizer): Likewise.
+	(diagnostic_context::report_diagnostic): Pass diagnostic by
+	reference to on_{begin,end}_diagnostic.
+	(diagnostic_text_output_format::on_begin_diagnostic): Convert
+	param to const reference.
+	(diagnostic_text_output_format::on_end_diagnostic): Likewise.
+	* diagnostic.h (diagnostic_starter_fn): Make diagnostic_info param
+	const.
+	(diagnostic_finalizer_fn): Likeewise.
+	(diagnostic_output_format::on_begin_diagnostic): Convert param to
+	const reference.
+	(diagnostic_output_format::on_end_diagnostic): Likewise.
+	(diagnostic_text_output_format::on_begin_diagnostic): Likewise.
+	(diagnostic_text_output_format::on_end_diagnostic): Likewise.
+	(default_diagnostic_starter): Make diagnostic_info param const.
+	(default_diagnostic_finalizer): Likewise.
+	* langhooks-def.h (lhd_print_error_function): Make diagnostic_info
+	param const.
+	* langhooks.cc (lhd_print_error_function): Likewise.
+	* langhooks.h (lang_hooks::print_error_function): Likewise.
+	* tree-diagnostic.cc (diagnostic_report_current_function):
+	Likewise.
+	(default_tree_diagnostic_starter): Likewise.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	* tree-diagnostic.h (diagnostic_report_current_function):
+	Likewise.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+
+2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (DISPATCH_PTR): New built-in.
+	* config/gcn/gcn.cc (gcn_init_machine_status): Disable global
+	addressing.
+	(gcn_expand_builtin_1): Implement GCN_BUILTIN_DISPATCH_PTR.
+
+2023-12-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112855
+	* config/riscv/riscv-vsetvl.cc
+	(pre_vsetvl::compute_lcm_local_properties): Fix transparant LCM data.
+	(pre_vsetvl::earliest_fuse_vsetvl_info): Disable earliest fusion for unrelated edge.
+
+2023-12-06  Marek Polacek  <polacek@redhat.com>
+
+	PR target/112762
+	* config/linux.h: Redefine TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL for
+	glibc only.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_test_sysreg_encoding_clashes): New.
+	(aarch64_run_selftests): add call to
+	aarch64_test_sysreg_encoding_clashes selftest.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_general_check_builtin_call):
+	New.
+	* config/aarch64/aarch64-c.cc (aarch64_check_builtin_call):
+	Add `aarch64_general_check_builtin_call' call.
+	* config/aarch64/aarch64-protos.h (aarch64_general_check_builtin_call):
+	New.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins):
+	Add enums for new builtins.
+	(aarch64_init_rwsr_builtins): New.
+	(aarch64_general_init_builtins): Call aarch64_init_rwsr_builtins.
+	(aarch64_expand_rwsr_builtin):  New.
+	(aarch64_general_expand_builtin): Call aarch64_general_expand_builtin.
+	* config/aarch64/aarch64.md (read_sysregdi): New insn_and_split.
+	(write_sysregdi): Likewise.
+	* config/aarch64/arm_acle.h (__arm_rsr): New.
+	(__arm_rsrp): Likewise.
+	(__arm_rsr64): Likewise.
+	(__arm_rsrf): Likewise.
+	(__arm_rsrf64): Likewise.
+	(__arm_wsr): Likewise.
+	(__arm_wsrp): Likewise.
+	(__arm_wsr64): Likewise.
+	(__arm_wsrf): Likewise.
+	(__arm_wsrf64): Likewise.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_valid_sysreg_name_p): New.
+	(aarch64_retrieve_sysreg): Likewise.
+	* config/aarch64/aarch64.cc (is_implem_def_reg): Likewise.
+	(aarch64_valid_sysreg_name_p): Likewise.
+	(aarch64_retrieve_sysreg): Likewise.
+	(aarch64_register_sysreg): Likewise.
+	(aarch64_init_sysregs): Likewise.
+	(aarch64_lookup_sysreg_map): Likewise.
+	* config/aarch64/predicates.md (aarch64_sysreg_string): New.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64.cc (sysreg_t): New.
+	(aarch64_sysregs): Likewise.
+	(AARCH64_FEATURE): Likewise.
+	(AARCH64_FEATURES): Likewise.
+	(AARCH64_NO_FEATURES): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_ISA_V8A): Add missing
+	ISA flag.
+	(AARCH64_ISA_V8_1A): Likewise.
+	(AARCH64_ISA_V8_7A): Likewise.
+	(AARCH64_ISA_V8_8A): Likewise.
+	(AARCH64_NO_FEATURES): Likewise.
+	(AARCH64_FL_RAS): New ISA flag alias.
+	(AARCH64_FL_LOR): Likewise.
+	(AARCH64_FL_PAN): Likewise.
+	(AARCH64_FL_AMU): Likewise.
+	(AARCH64_FL_SCXTNUM): Likewise.
+	(AARCH64_FL_ID_PFR2): Likewise.
+	(F_DEPRECATED): New.
+	(F_REG_READ): Likewise.
+	(F_REG_WRITE): Likewise.
+	(F_ARCHEXT): Likewise.
+	(F_REG_ALIAS): Likewise.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: New.
+
+2023-12-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112854
+	PR target/112872
+	* config/riscv/autovec.md (vec_init<mode>qi): New expander.
+
+2023-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112760
+	* config/i386/i386-passes.def (pass_insert_vzeroupper): Insert
+	after pass_postreload_cse rather than pass_reload.
+	* config/i386/i386-features.cc (rest_of_handle_insert_vzeroupper):
+	Adjust comment for it.
+
+2023-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112809
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt): For
+	separate_ext in kind == bitint_prec_huge mode if rem == 0, create for
+	i == cnt - 1 the loop rather than using size_int (end).
+
+2023-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.cc (driver_handle_option): Add /* FALLTHROUGH */ comment
+	between OPT_pie and OPT_r cases.
+
+2023-12-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* tsystem.h (calloc, realloc): Declare when inhibit_libc.
+
+2023-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112843
+	* tree-ssa-operands.cc (update_stmt_operands): Do not call
+	update_stmt from ranger.
+	* value-query.h (range_query::update_stmt): Remove.
+	* gimple-range.h (gimple_ranger::update_stmt): Likewise.
+	* gimple-range.cc (gimple_ranger::update_stmt): Likewise.
+
+2023-12-06  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv.md: Remove.
+
 2023-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* Makefile.in (OBJS): Add ipa-strub.o.

@@ -1,3 +1,17 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (cxx_print_error_function): Make diagnostic_info param
+	const.
+	* error.cc (cxx_print_error_function): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_print_error_function): Likewise.
+
+2023-12-06  Jason Merrill  <jason@redhat.com>
+
+	DR 532
+	PR c++/53499
+	* pt.cc (more_specialized_fn): Fix object parameter handling.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/112795

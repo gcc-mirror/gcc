@@ -1,3 +1,19 @@
+2023-12-06  Jason Merrill  <jason@redhat.com>
+
+	DR 532
+	PR c++/53499
+	* testsuite/23_containers/vector/ext_pointer/types/1.cc
+	* testsuite/23_containers/vector/ext_pointer/types/2.cc
+	(N::operator-): Make less specialized.
+
+2023-12-06  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2023-12-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* libsupc++/atexit_thread.cc [__GXX_WEAK__]: Add dynamic
+	detection of __cxa_thread_atexit_impl.
+
 2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/111948

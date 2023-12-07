@@ -1,3 +1,8 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc (c_diagnostic_finalizer): Make "diagnostic" param
+	const.
+
 2023-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-attribs.cc: Include ipa-strub.h.

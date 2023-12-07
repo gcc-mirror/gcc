@@ -1,3 +1,9 @@
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_diagnostic_starter): Make diagnostic_info param
+	const.
+	(gfc_diagnostic_finalizer): Likewise.
+
 2023-12-05  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus   <tobias@codesourcery.com>
 

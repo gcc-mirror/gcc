@@ -1,3 +1,97 @@
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr.c (get_rsr128): New.
+	(set_wsr128): Likewise.
+
+2023-12-06  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Remove xfail
+
+2023-12-06  Yang Yujie  <yangyujie@loongson.cn>
+
+	* gcc.dg/fixed-point/composite-type.c: Replace dg-warning with dg-error.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-json-1.c: Update expected JSON
+	output to reflect whitespace.
+	* c-c++-common/diagnostic-format-json-2.c: Likewise.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* c-c++-common/diagnostic-format-json-4.c: Likewise.
+	* c-c++-common/diagnostic-format-json-5.c: Likewise.
+	* c-c++-common/diagnostic-format-json-stderr-1.c: Likewise.
+	* g++.dg/pr90462.C: Add -fno-diagnostics-json-formatting.
+	* gcc.dg/analyzer/malloc-sarif-1.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-paths-3.c: Update expected JSON
+	output to reflect whitespace.
+	* gfortran.dg/diagnostic-format-json-1.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/show_template_tree_color_plugin.c
+	(noop_starter_fn): Make diagnostic_info param const.
+	* gcc.dg/plugin/diagnostic_group_plugin.c
+	(test_diagnostic_starter): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.c
+	(verify_unpacked_ranges): Likewise.
+	(verify_no_columns): Likewise.
+
+2023-12-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/fhardened-1.c: Ignore __SSP_STRONG__ define
+	if __hppa__ is defined.
+	* c-c++-common/fhardened-2.c: Ignore __SSP__ define
+	if __hppa__ is defined.
+
+2023-12-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112855
+	* gcc.target/riscv/rvv/autovec/pr112855.c: New test.
+
+2023-12-06  Jason Merrill  <jason@redhat.com>
+
+	DR 532
+	PR c++/53499
+	* g++.dg/template/partial-order4.C: New test.
+	* g++.dg/template/spec26.C: Adjust for CWG532.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-3.c: New.
+
+2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr.c: New.
+	* gcc.target/aarch64/acle/rwsr-1.c: Likewise.
+	* gcc.target/aarch64/acle/rwsr-2.c: Likewise.
+	* gcc.dg/pch/rwsr-pch.c: Likewise.
+	* gcc.dg/pch/rwsr-pch.hs: Likewise.
+
+2023-12-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr112854.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr112872.c: New test.
+
+2023-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/112760
+	* gcc.dg/pr112760.c: New test.
+
+2023-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112809
+	* gcc.dg/bitint-48.c: New test.
+
+2023-12-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/112419
+	* gcc.dg/Wnonnull-4.c (test_fda_n_5): Expect warning for exceeding
+	maximum object size for 32-bit targets.
+
 2023-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-c++-common/strub-O0.c: New.
