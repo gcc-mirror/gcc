@@ -6745,7 +6745,7 @@ package body Sem_Ch8 is
                                  Id : Entity_Id := Gen_Trailer;
                               begin
                                  loop
-                                    if not Present (Id) then
+                                    if No (Id) then
                                        --  E_Trailer presumably occurred
                                        --  earlier on the entity list than
                                        --  Gen_Trailer. So E preceded the

@@ -3445,7 +3445,7 @@ package body Sem_Aggr is
             --  associations (Add_Unnnamed is not allowed), so we issue an
             --  error if there are positional associations.
 
-            if not Present (Comp_Assocs)
+            if No (Comp_Assocs)
               and then Present (Expressions (N))
             then
                Error_Msg_N ("container aggregate must be "
