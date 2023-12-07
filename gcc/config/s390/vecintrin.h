@@ -59,8 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 				    | __VEC_CLASS_FP_INFINITY)
 
 /* This also accepts a type for its parameter, so it is not enough
-   to #define vec_step to __builtin_vec_step.  */
-#define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
+   to #define vec_step to __builtin_s390_vec_step.  */
+#define vec_step(x) __builtin_s390_vec_step (* (__typeof__ (x) *) 0)
 
 static inline int
 __lcbb(const void *ptr, int bndry)
