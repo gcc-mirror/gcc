@@ -78,6 +78,7 @@ DEFTRAIT_EXPR (IS_POINTER_INTERCONVERTIBLE_BASE_OF, "__is_pointer_interconvertib
 DEFTRAIT_EXPR (IS_POD, "__is_pod", 1)
 DEFTRAIT_EXPR (IS_POLYMORPHIC, "__is_polymorphic", 1)
 DEFTRAIT_EXPR (IS_SAME, "__is_same", 2)
+DEFTRAIT_EXPR (IS_SCOPED_ENUM, "__is_scoped_enum", 1)
 DEFTRAIT_EXPR (IS_STD_LAYOUT, "__is_standard_layout", 1)
 DEFTRAIT_EXPR (IS_TRIVIAL, "__is_trivial", 1)
 DEFTRAIT_EXPR (IS_TRIVIALLY_ASSIGNABLE, "__is_trivially_assignable", 2)

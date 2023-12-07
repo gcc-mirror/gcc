@@ -3783,6 +3783,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
       break;
+    case CPTK_IS_SCOPED_ENUM:
+      inform (loc, "  %qT is not a scoped enum", t1);
+      break;
     case CPTK_IS_STD_LAYOUT:
       inform (loc, "  %qT is not an standard layout type", t1);
       break;
