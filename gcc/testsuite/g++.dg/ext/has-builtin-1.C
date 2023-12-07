@@ -56,6 +56,9 @@
 #if !__has_builtin (__is_aggregate)
 # error "__has_builtin (__is_aggregate) failed"
 #endif
+#if !__has_builtin (__is_array)
+# error "__has_builtin (__is_array) failed"
+#endif
 #if !__has_builtin (__is_assignable)
 # error "__has_builtin (__is_assignable) failed"
 #endif

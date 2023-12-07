@@ -59,6 +59,7 @@ DEFTRAIT_EXPR (HAS_UNIQUE_OBJ_REPRESENTATIONS, "__has_unique_object_representati
 DEFTRAIT_EXPR (HAS_VIRTUAL_DESTRUCTOR, "__has_virtual_destructor", 1)
 DEFTRAIT_EXPR (IS_ABSTRACT, "__is_abstract", 1)
 DEFTRAIT_EXPR (IS_AGGREGATE, "__is_aggregate", 1)
+DEFTRAIT_EXPR (IS_ARRAY, "__is_array", 1)
 DEFTRAIT_EXPR (IS_ASSIGNABLE, "__is_assignable", 2)
 DEFTRAIT_EXPR (IS_BASE_OF, "__is_base_of", 2)
 DEFTRAIT_EXPR (IS_CLASS, "__is_class", 1)
