@@ -24207,7 +24207,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
 
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
-  ASM_OUTPUT_LABEL (stream, name);
+  ASM_OUTPUT_FUNCTION_LABEL (stream, name, fndecl);
 
   cfun->machine->label_is_assembled = true;
 }
