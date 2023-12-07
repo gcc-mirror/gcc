@@ -178,6 +178,10 @@ extern void assemble_asm (tree);
 /* Get the function's name from a decl, as described by its RTL.  */
 extern const char *get_fnname_from_decl (tree);
 
+/* Output function label, possibly with accompanying metadata.  No additional
+   code or data is output after the label.  */
+extern void assemble_function_label_raw (FILE *, const char *);
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current

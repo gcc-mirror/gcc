@@ -8323,7 +8323,7 @@ s390_asm_output_function_label (FILE *out_file, const char *fname,
       asm_fprintf (out_file, "\t# fn:%s wd%d\n", fname,
 		   s390_warn_dynamicstack_p);
     }
-  ASM_OUTPUT_LABEL (out_file, fname);
+  assemble_function_label_raw (out_file, fname);
   if (hw_after > 0)
     asm_fprintf (out_file,
 		 "\t# post-label NOPs for hotpatch (%d halfwords)\n",

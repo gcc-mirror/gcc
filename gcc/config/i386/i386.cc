@@ -1640,7 +1640,7 @@ ix86_asm_output_function_label (FILE *out_file, const char *fname,
   SUBTARGET_ASM_UNWIND_INIT (out_file);
 #endif
 
-  ASM_OUTPUT_LABEL (out_file, fname);
+  assemble_function_label_raw (out_file, fname);
 
   /* Output magic byte marker, if hot-patch attribute is set.  */
   if (is_ms_hook)
