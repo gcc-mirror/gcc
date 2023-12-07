@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 struct node
 {
   struct node *next;

@@ -1,7 +1,7 @@
 /* Verify that we handle unknown values passed to  __attribute__ ((const))
    (by imposing a complexity limit).  */
 
-/* { dg-additional-options "--param analyzer-max-svalue-depth=4" } */
+/* { dg-additional-options "--param analyzer-max-svalue-depth=4 -Wno-analyzer-symbol-too-complex" } */
 
 #include "analyzer-decls.h"
 

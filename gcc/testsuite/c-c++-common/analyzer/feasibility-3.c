@@ -1,6 +1,8 @@
 /* Reduced and adapted from Linux: fs/proc/inode.c: proc_reg_open
    (GPL v2.0).  */
 
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
+
 /* Types.  */
 
 typedef unsigned char u8;

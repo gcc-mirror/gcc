@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 extern char *strtok (char *str, const char *delim)

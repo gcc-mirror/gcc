@@ -2043,6 +2043,11 @@ struct null_assignment_sm_context : public sm_context
     /* No-op.  */
   }
 
+  void clear_all_per_svalue_state () final override
+  {
+    /* No-op.  */
+  }
+
   void on_custom_transition (custom_transition *) final override
   {
   }

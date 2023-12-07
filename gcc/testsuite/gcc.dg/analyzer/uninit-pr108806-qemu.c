@@ -5,6 +5,8 @@
      struct omap_intr_handler_bank_s* bank;
  */
 
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 typedef unsigned char __uint8_t;
 typedef unsigned int __uint32_t;
 typedef unsigned long int __uint64_t;

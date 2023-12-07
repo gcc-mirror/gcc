@@ -526,6 +526,14 @@ sm_state_map::clear_any_state (const svalue *sval)
   m_map.remove (sval);
 }
 
+/* Clear all per-svalue state within this state map.  */
+
+void
+sm_state_map::clear_all_per_svalue_state ()
+{
+  m_map.empty ();
+}
+
 /* Set the "global" state within this state map to STATE.  */
 
 void

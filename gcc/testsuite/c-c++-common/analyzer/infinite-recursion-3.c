@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fno-analyzer-call-summaries -Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-fno-analyzer-call-summaries -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 
 struct node
 {

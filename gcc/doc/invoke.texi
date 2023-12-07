@@ -491,6 +491,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-divisor
 -Wno-analyzer-tainted-offset
 -Wno-analyzer-tainted-size
+-Wanalyzer-symbol-too-complex
 -Wanalyzer-too-complex
 -Wno-analyzer-undefined-behavior-strtok
 -Wno-analyzer-unsafe-call-within-signal-handler
@@ -10561,6 +10562,19 @@ Enabling this option effectively enables the following warnings:
 
 This option is only available if GCC was configured with analyzer
 support enabled.
+
+@opindex Wanalyzer-symbol-too-complex
+@opindex Wno-analyzer-symbol-too-complex
+@item -Wanalyzer-symbol-too-complex
+If @option{-fanalyzer} is enabled, the analyzer uses various heuristics
+to attempt to track the state of memory, but these can be defeated by
+sufficiently complicated code.
+
+By default, the analysis silently stops tracking values of expressions
+if they exceed the threshold defined by
+@option{--param analyzer-max-svalue-depth=@var{value}}, and falls back
+to an imprecise representation for such expressions.
+The @option{-Wanalyzer-symbol-too-complex} option warns if this occurs.
 
 @opindex Wanalyzer-too-complex
 @opindex Wno-analyzer-too-complex

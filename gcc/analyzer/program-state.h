@@ -146,6 +146,7 @@ public:
 		       const svalue *origin,
 		       const extrinsic_state &ext_state);
   void clear_any_state (const svalue *sval);
+  void clear_all_per_svalue_state ();
 
   void set_global_state (state_machine::state_t state);
   state_machine::state_t get_global_state () const;

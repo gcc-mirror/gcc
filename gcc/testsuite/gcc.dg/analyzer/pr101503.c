@@ -1,4 +1,4 @@
-/* { dg-additional-options "--param analyzer-max-svalue-depth=0" } */
+/* { dg-additional-options "--param analyzer-max-svalue-depth=0 -Wno-analyzer-symbol-too-complex" } */
 
 int val;
 

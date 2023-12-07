@@ -474,6 +474,11 @@ public:
     m_new_state->m_checker_states[m_sm_idx]->set_global_state (state);
   }
 
+  void clear_all_per_svalue_state () final override
+  {
+    m_new_state->m_checker_states[m_sm_idx]->clear_all_per_svalue_state ();
+  }
+
   void on_custom_transition (custom_transition *transition) final override
   {
     transition->impl_transition (&m_eg,

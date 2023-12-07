@@ -1038,6 +1038,20 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
   if (stmt == NULL)
     return;
 
+  if (lhs->get_kind () == SK_UNKNOWN
+      || rhs->get_kind () == SK_UNKNOWN)
+    {
+      /* If we have a comparison against UNKNOWN, then
+	 we've presumably hit the svalue complexity limit,
+	 and we don't know what is being sanitized.
+	 Give up on any taint already found on this execution path.  */
+      // TODO: warn about this
+      if (get_logger ())
+	get_logger ()->log ("comparison against UNKNOWN; removing all taint");
+      sm_ctxt->clear_all_per_svalue_state ();
+      return;
+    }
+
   // TODO
   switch (op)
     {
