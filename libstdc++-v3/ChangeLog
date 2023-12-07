@@ -1,3 +1,54 @@
+2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111948
+	* include/bits/ranges_util.h (subrange): Add constructor to
+	_Size to avoid setting member in constructor.
+	* testsuite/std/ranges/subrange/111948.cc: New test.
+
+2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112480
+	* include/std/optional (_Optional_payload_base::_M_reset): Set
+	_M_engaged to false unconditionally.
+
+2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112473
+	* include/bits/utility.h (integer_sequence): Add static_assert.
+	* testsuite/20_util/integer_sequence/112473.cc: New test.
+
+2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112832
+	* include/std/format (formatter::set_debug_format): Ensure this
+	member is defined conditionally for all specializations.
+	* testsuite/std/format/formatter/112832.cc: New test.
+
+2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110133
+	* include/std/system_error (system_error::system_error): Group
+	arguments so that concatenation can reuse rvalue's capacity.
+	* src/c++11/system_error.cc (strerror_string): New function.
+	[_GLIBCXX_HAVE_STRERROR_R] (use_strerror_result): New functions.
+	(generic_error_category::message): Use strerror_string.
+	(system_error_category::message): Likewise.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
