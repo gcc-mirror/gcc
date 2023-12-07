@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=relaxed -Wpedantic" } */
+/* { dg-require-effective-target strub } */
 
 /* C++ does not warn about the partial incompatibilities.
 

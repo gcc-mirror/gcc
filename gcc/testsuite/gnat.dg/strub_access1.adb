@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=relaxed" }
+--  { dg-require-effective-target strub }
 
 --  Check that we reject 'Access of a strub variable whose type does
 --  not carry a strub modifier.

@@ -694,6 +694,19 @@ AC_SUBST(tm_defines)
 # Map from thread model to thread header.
 GCC_AC_THREAD_HEADER([$target_thread_file])
 
+AC_CACHE_CHECK([for strub support],
+  [libgcc_cv_strub_support],
+  [AC_COMPILE_IFELSE(
+    [AC_LANG_SOURCE([void __attribute__ ((__strub__)) fn (void) {}])],
+    [libgcc_cv_strub_support=yes],
+    [libgcc_cv_strub_support=no])])
+if test "x$libgcc_cv_strub_support" != xno; then
+  HAVE_STRUB_SUPPORT=
+else
+  HAVE_STRUB_SUPPORT='# '
+fi
+AC_SUBST(HAVE_STRUB_SUPPORT)
+
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 

@@ -1302,6 +1302,13 @@ proc check_stack_check_available { stack_kind } {
     } "$stack_opt"]
 }
 
+# Return 1 if the target supports stack scrubbing.
+proc check_effective_target_strub {} {
+    return [check_no_compiler_messages strub assembly {
+	void __attribute__ ((__strub__)) fn (void) {}
+    } ""]
+}
+
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
 # for trivial code, 0 otherwise.  As some targets (ARM for example) only
 # warn when -fprofile-use is also supplied we test that combination too.

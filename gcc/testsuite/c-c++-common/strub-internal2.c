@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=internal -fdump-ipa-strubm -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* g becomes STRUB_INTERNAL, because of the flag.  */
 static void

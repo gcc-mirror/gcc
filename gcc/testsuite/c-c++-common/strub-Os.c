@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fstrub=strict -fdump-rtl-expand" } */
+/* { dg-require-effective-target strub } */
 
 /* At -Os, without -fno-inline, we fully expand enter, and also update.  The
    expanded update might be larger than a call proper, but argument saving and

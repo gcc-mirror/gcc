@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=strict -fdump-ipa-strub" }
+--  { dg-require-effective-target strub }
 
 procedure Strub_Renm2 is
    V : Integer := 0;

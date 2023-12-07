@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict" } */
+/* { dg-require-effective-target strub } */
 
 typedef void ft (void);
 typedef void ft2 (int, int);

@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-fstrub=strict" }
+--  { dg-require-effective-target strub }
 
 --  This is essentially the same test as strub_attr.adb, 
 --  but applying attributes to access types as well.

@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-require-effective-target strub }
 
 with Strub_Attr;
 procedure Strub_Var1 is

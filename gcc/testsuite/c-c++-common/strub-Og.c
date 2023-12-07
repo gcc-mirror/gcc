@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Og -fstrub=strict -fdump-rtl-expand" } */
+/* { dg-require-effective-target strub } */
 
 /* At -Og, without -fno-inline, we fully expand enter, but neither update nor
    leave.  */

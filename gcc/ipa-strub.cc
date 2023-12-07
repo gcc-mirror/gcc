@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-strub.h"
 #include "symtab-thunks.h"
 #include "attr-fnspec.h"
+#include "target.h"
 
 /* This file introduces two passes that, together, implement
    machine-independent stack scrubbing, strub for short.  It arranges
@@ -631,16 +632,59 @@ strub_always_inline_p (cgraph_node *node)
   return lookup_attribute ("always_inline", DECL_ATTRIBUTES (node->decl));
 }
 
+/* Return TRUE iff the target has strub support for T, a function
+   decl, or a type used in an indirect call, and optionally REPORT the
+   reasons for ineligibility.  If T is a type and error REPORTing is
+   enabled, the LOCation (of the indirect call) should be provided.  */
+static inline bool
+strub_target_support_p (tree t, bool report = false,
+			location_t loc = UNKNOWN_LOCATION)
+{
+  bool result = true;
+
+  if (!targetm.have_strub_support_for (t))
+    {
+      result = false;
+
+      if (!report)
+	return result;
+
+      if (DECL_P (t))
+	sorry_at (DECL_SOURCE_LOCATION (t),
+		  "%qD is not eligible for %<strub%>"
+		  " on the target system", t);
+      else
+	sorry_at (loc,
+		  "unsupported %<strub%> call"
+		  " on the target system");
+    }
+
+  return result;
+}
+
 /* Return TRUE iff NODE is potentially eligible for any strub-enabled mode, and
    optionally REPORT the reasons for ineligibility.  */
 
 static inline bool
 can_strub_p (cgraph_node *node, bool report = false)
 {
-  bool result = true;
+  bool result = strub_target_support_p (node->decl, report);
 
-  if (!report && strub_always_inline_p (node))
+  if (!report && (!result || strub_always_inline_p (node)))
     return result;
+
+  if (flag_split_stack)
+    {
+      result = false;
+
+      if (!report)
+	return result;
+
+      sorry_at (DECL_SOURCE_LOCATION (node->decl),
+		"%qD is not eligible for %<strub%>"
+		" because %<-fsplit-stack%> is enabled",
+		node->decl);
+    }
 
   if (lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)))
     {
@@ -2416,6 +2460,12 @@ pass_ipa_strub::adjust_at_calls_call (cgraph_edge *e, int named_args,
   gcc_checking_assert (!(int (gimple_call_num_args (ocall)) > named_args
 			 && (TREE_TYPE (gimple_call_arg (ocall, named_args))
 			     == get_pwmt ())));
+
+  tree tsup;
+  if (!(tsup = gimple_call_fndecl (ocall)))
+    tsup = TREE_TYPE (TREE_TYPE (gimple_call_fn (ocall)));
+  if (!strub_target_support_p (tsup, true, gimple_location (ocall)))
+    return;
 
   /* If we're already within a strub context, pass on the incoming watermark
      pointer, and omit the enter and leave calls around the modified call, as an

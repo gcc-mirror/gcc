@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=all -fdump-ipa-strubm -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* g becomes STRUB_INTERNAL, because of the flag.  Without inline, force_output
    is set for static non-inline functions when not optimizing, and that keeps

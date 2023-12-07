@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-require-effective-target strub }
 
 procedure Strub_Disp is
    package Foo is

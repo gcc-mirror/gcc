@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fstrub=all" } */
 /* { dg-require-effective-target alloca } */
+/* { dg-require-effective-target strub } */
 
 /* Check that multi-level, multi-inlined functions still get cleaned up as
    expected, without overwriting temporary stack allocations while they should

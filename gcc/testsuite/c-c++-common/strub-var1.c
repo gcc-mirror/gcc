@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target strub } */
 
 int __attribute__ ((strub)) x;
 float __attribute__ ((strub)) f;

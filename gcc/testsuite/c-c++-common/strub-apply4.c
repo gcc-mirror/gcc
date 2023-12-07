@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fstrub=strict -fdump-ipa-strubm" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that implicit enabling of strub mode selects internal strub when the
    function uses __builtin_apply_args, that prevents the optimization to

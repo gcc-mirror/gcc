@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=strict -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* Check that uses of a strub variable implicitly enables internal strub for
    publicly-visible functions, and causes the same transformations to their

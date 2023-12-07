@@ -4458,6 +4458,14 @@ otherwise return false.  The default implementation always returns true.",
  hook_bool_void_true)
 
 DEFHOOK
+(have_strub_support_for,
+ "Returns true if the target supports stack scrubbing for the given function\n\
+or type, otherwise return false.  The default implementation always returns\n\
+true.",
+ bool, (tree),
+ hook_bool_tree_true)
+
+DEFHOOK
 (have_speculation_safe_value,
 "This hook is used to determine the level of target support for\n\
  @code{__builtin_speculation_safe_value}.  If called with an argument\n\

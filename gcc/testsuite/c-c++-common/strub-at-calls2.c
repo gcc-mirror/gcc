@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fstrub=at-calls -fdump-ipa-strubm -fdump-ipa-strub" } */
+/* { dg-require-effective-target strub } */
 
 /* g does NOT become STRUB_AT_CALLS because it's not viable.  Without inline,
    force_output is set for static non-inline functions when not optimizing, and
