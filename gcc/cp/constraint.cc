@@ -3789,6 +3789,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_POLYMORPHIC:
       inform (loc, "  %qT is not a polymorphic type", t1);
       break;
+    case CPTK_IS_REFERENCE:
+      inform (loc, "  %qT is not a reference", t1);
+      break;
     case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
       break;

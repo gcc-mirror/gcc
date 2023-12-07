@@ -119,6 +119,9 @@
 #if !__has_builtin (__is_polymorphic)
 # error "__has_builtin (__is_polymorphic) failed"
 #endif
+#if !__has_builtin (__is_reference)
+# error "__has_builtin (__is_reference) failed"
+#endif
 #if !__has_builtin (__is_same)
 # error "__has_builtin (__is_same) failed"
 #endif
