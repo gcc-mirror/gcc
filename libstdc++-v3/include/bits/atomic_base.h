@@ -34,7 +34,6 @@
 
 #include <bits/c++config.h>
 #include <new> // For placement new
-#include <stdint.h>
 #include <bits/atomic_lockfree_defines.h>
 #include <bits/move.h>
 
@@ -1504,7 +1503,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp& __t) : _M_ptr(std::__addressof(__t))
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1615,7 +1616,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp& __t) : _M_ptr(&__t)
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1788,7 +1791,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Fp& __t) : _M_ptr(&__t)
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1915,7 +1920,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp*& __t) : _M_ptr(std::__addressof(__t))
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 

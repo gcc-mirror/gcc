@@ -48,6 +48,7 @@
 #include <bits/version.h>
 
 #include <bits/atomic_base.h>
+#include <cstdint>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
