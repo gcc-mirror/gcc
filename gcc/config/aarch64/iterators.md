@@ -926,6 +926,8 @@
     UNSPEC_FMLSLT	; Used in aarch64-sve2.md.
     UNSPEC_HISTCNT	; Used in aarch64-sve2.md.
     UNSPEC_HISTSEG	; Used in aarch64-sve2.md.
+    UNSPEC_LD1_COUNT	; Used in aarch64-sve2.md.
+    UNSPEC_LDNT1_COUNT	; Used in aarch64-sve2.md.
     UNSPEC_MATCH	; Used in aarch64-sve2.md.
     UNSPEC_NMATCH	; Used in aarch64-sve2.md.
     UNSPEC_PEXT		; Used in aarch64-sve2.md.
@@ -994,6 +996,8 @@
     UNSPEC_SSUBLTB	; Used in aarch64-sve2.md.
     UNSPEC_SSUBWB	; Used in aarch64-sve2.md.
     UNSPEC_SSUBWT	; Used in aarch64-sve2.md.
+    UNSPEC_ST1_COUNT	; Used in aarch64-sve2.md.
+    UNSPEC_STNT1_COUNT	; Used in aarch64-sve2.md.
     UNSPEC_SUBHNB	; Used in aarch64-sve2.md.
     UNSPEC_SUBHNT	; Used in aarch64-sve2.md.
     UNSPEC_TBL2		; Used in aarch64-sve2.md.
@@ -3163,6 +3167,10 @@
 
 (define_int_attr pred_load [(UNSPEC_PRED_X "_x") (UNSPEC_LD1_SVE "")])
 
+(define_int_iterator LD1_COUNT [UNSPEC_LD1_COUNT UNSPEC_LDNT1_COUNT])
+
+(define_int_iterator ST1_COUNT [UNSPEC_ST1_COUNT UNSPEC_STNT1_COUNT])
+
 (define_int_iterator SVE2_U32_UNARY [UNSPEC_URECPE UNSPEC_RSQRTE])
 
 (define_int_iterator SVE2_INT_UNARY_NARROWB [UNSPEC_SQXTNB
@@ -3578,6 +3586,8 @@
 			(UNSPEC_FEXPA "fexpa")
 			(UNSPEC_FTSMUL "ftsmul")
 			(UNSPEC_FTSSEL "ftssel")
+			(UNSPEC_LD1_COUNT "ld1")
+			(UNSPEC_LDNT1_COUNT "ldnt1")
 			(UNSPEC_PMULLB "pmullb")
 			(UNSPEC_PMULLB_PAIR "pmullb_pair")
 			(UNSPEC_PMULLT "pmullt")
@@ -3641,6 +3651,8 @@
 			(UNSPEC_SQRDCMLAH90 "sqrdcmlah90")
 			(UNSPEC_SQRDCMLAH180 "sqrdcmlah180")
 			(UNSPEC_SQRDCMLAH270 "sqrdcmlah270")
+			(UNSPEC_ST1_COUNT "st1")
+			(UNSPEC_STNT1_COUNT "stnt1")
 			(UNSPEC_TRN1Q "trn1q")
 			(UNSPEC_TRN2Q "trn2q")
 			(UNSPEC_UMATMUL "umatmul")

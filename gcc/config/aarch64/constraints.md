@@ -56,6 +56,14 @@
   "4-tuple-aligned floating point and SIMD vector registers."
   "regno % 4 == 0")
 
+(define_register_constraint "Uwd" "FP_REGS"
+  "@internal The first register in a tuple of 2 strided FPRs."
+  "(regno & 0x8) == 0")
+
+(define_register_constraint "Uwt" "FP_REGS"
+  "@internal The first register in a tuple of 4 strided FPRs."
+  "(regno & 0xc) == 0")
+
 (define_register_constraint "Upa" "PR_REGS"
   "SVE predicate registers p0 - p15.")
 

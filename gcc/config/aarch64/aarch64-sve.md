@@ -1277,17 +1277,6 @@
   "ld1<Vesize>\t%0.<Vctype>, %2/z, %1"
 )
 
-;; Predicated LD1 (multi), with a count as predicate.
-(define_insn "@aarch64_ld1<mode>"
-  [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
-	(unspec:SVE_FULLx24
-	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
-	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
-	  UNSPEC_LD1_SVE_COUNT))]
-  "TARGET_SME2 && TARGET_STREAMING"
-  "ld1<Vesize>\t%0, %K2/z, %1"
-)
-
 ;; Unpredicated LD[234].
 (define_expand "vec_load_lanes<mode><vsingle>"
   [(set (match_operand:SVE_STRUCT 0 "register_operand")
@@ -1428,17 +1417,6 @@
 	  UNSPEC_LDNT1_SVE))]
   "TARGET_SVE"
   "ldnt1<Vesize>\t%0.<Vetype>, %2/z, %1"
-)
-
-;; Predicated contiguous non-temporal load (multi).
-(define_insn "@aarch64_ldnt1<mode>"
-  [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
-	(unspec:SVE_FULLx24
-	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
-	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
-	  UNSPEC_LDNT1_SVE_COUNT))]
-  "TARGET_SVE"
-  "ldnt1<Vesize>\t%0, %K2/z, %1"
 )
 
 ;; -------------------------------------------------------------------------
@@ -2263,17 +2241,6 @@
   "st1<Vesize>\t%1.<Vctype>, %2, %0"
 )
 
-(define_insn "@aarch64_st1<mode>"
-  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
-	(unspec:SVE_FULLx24
-	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
-	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
-	   (match_dup 0)]
-	  UNSPEC_ST1_SVE_COUNT))]
-  "TARGET_SME2 && TARGET_STREAMING"
-  "st1<Vesize>\t%1, %K2, %0"
-)
-
 ;; Unpredicated ST[234].  This is always a full update, so the dependence
 ;; on the old value of the memory location (via (match_dup 0)) is redundant.
 ;; There doesn't seem to be any obvious benefit to treating the all-true
@@ -2371,17 +2338,6 @@
 	  UNSPEC_STNT1_SVE))]
   "TARGET_SVE"
   "stnt1<Vesize>\t%1.<Vetype>, %2, %0"
-)
-
-(define_insn "@aarch64_stnt1<mode>"
-  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
-	(unspec:SVE_FULLx24
-	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
-	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
-	   (match_dup 0)]
-	  UNSPEC_STNT1_SVE_COUNT))]
-  "TARGET_SME2 && TARGET_STREAMING"
-  "stnt1<Vesize>\t%1, %K2, %0"
 )
 
 ;; -------------------------------------------------------------------------

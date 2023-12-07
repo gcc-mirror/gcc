@@ -22113,6 +22113,19 @@ aarch64_stepped_int_parallel_p (rtx op, int step)
   return true;
 }
 
+/* Return true if OPERANDS[0] to OPERANDS[NUM_OPERANDS - 1] form a
+   sequence of strided registers, with the stride being equal STRIDE.
+   The operands are already known to be FPRs.  */
+bool
+aarch64_strided_registers_p (rtx *operands, unsigned int num_operands,
+			     unsigned int stride)
+{
+  for (unsigned int i = 1; i < num_operands; ++i)
+    if (REGNO (operands[i]) != REGNO (operands[0]) + i * stride)
+      return false;
+  return true;
+}
+
 /* Bounds-check lanes.  Ensure OPERAND lies between LOW (inclusive) and
    HIGH (exclusive).  */
 void

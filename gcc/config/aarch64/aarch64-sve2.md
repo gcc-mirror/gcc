@@ -21,8 +21,12 @@
 ;; The file is organised into the following sections (search for the full
 ;; line):
 ;;
-;; == Moves
+;; == Loads
+;; ---- Multi-register loads predicated by a counter
 ;; ---- Non-temporal gather loads
+;;
+;; == Stores
+;; ---- Multi-register stores predicated by a counter
 ;; ---- Non-temporal scatter stores
 ;;
 ;; == Predicate manipulation
@@ -112,8 +116,84 @@
 ;; ---- Optional SM4 extensions
 
 ;; =========================================================================
-;; == Moves
+;; == Loads
 ;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- Multi-register loads predicated by a counter
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - LD1B
+;; - LD1D
+;; - LD1H
+;; - LD1W
+;; - LDNT1B
+;; - LDNT1D
+;; - LDNT1H
+;; - LDNT1W
+;; -------------------------------------------------------------------------
+
+;; Predicated LD1 (multi), with a count as predicate.
+(define_insn "@aarch64_<optab><mode>"
+  [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
+	  LD1_COUNT))]
+  "TARGET_STREAMING_SME2"
+  "<optab><Vesize>\t%0, %K2/z, %1"
+  [(set_attr "stride_type" "ld1_consecutive")]
+)
+
+(define_insn "@aarch64_<optab><mode>_strided2"
+  [(set (match_operand:<VSINGLE> 0 "aarch64_simd_register" "=Uwd")
+	(unspec:<VSINGLE>
+	  [(match_operand:VNx16BI 3 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx2 2 "memory_operand" "m")
+	   (const_int 0)]
+	  LD1_COUNT))
+   (set (match_operand:<VSINGLE> 1 "aarch64_simd_register" "=w")
+	(unspec:<VSINGLE>
+	  [(match_dup 3)
+	   (match_dup 2)
+	   (const_int 1)]
+	  LD1_COUNT))]
+  "TARGET_STREAMING_SME2
+   && aarch64_strided_registers_p (operands, 2, 8)"
+  "<optab><Vesize>\t{%0.<Vetype>, %1.<Vetype>}, %K3/z, %2"
+  [(set_attr "stride_type" "ld1_strided")]
+)
+
+(define_insn "@aarch64_<optab><mode>_strided4"
+  [(set (match_operand:<VSINGLE> 0 "aarch64_simd_register" "=Uwt")
+	(unspec:<VSINGLE>
+	  [(match_operand:VNx16BI 5 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx4 4 "memory_operand" "m")
+	   (const_int 0)]
+	  LD1_COUNT))
+   (set (match_operand:<VSINGLE> 1 "aarch64_simd_register" "=w")
+	(unspec:<VSINGLE>
+	  [(match_dup 5)
+	   (match_dup 4)
+	   (const_int 1)]
+	  LD1_COUNT))
+   (set (match_operand:<VSINGLE> 2 "aarch64_simd_register" "=w")
+	(unspec:<VSINGLE>
+	  [(match_dup 5)
+	   (match_dup 4)
+	   (const_int 2)]
+	  LD1_COUNT))
+   (set (match_operand:<VSINGLE> 3 "aarch64_simd_register" "=w")
+	(unspec:<VSINGLE>
+	  [(match_dup 5)
+	   (match_dup 4)
+	   (const_int 3)]
+	  LD1_COUNT))]
+  "TARGET_STREAMING_SME2
+   && aarch64_strided_registers_p (operands, 4, 4)"
+  "<optab><Vesize>\t{%0.<Vetype>, %1.<Vetype>, %2.<Vetype>, %3.<Vetype>}, %K5/z, %4"
+  [(set_attr "stride_type" "ld1_strided")]
+)
 
 ;; -------------------------------------------------------------------------
 ;; ---- Non-temporal gather loads
@@ -169,6 +249,66 @@
   {
     operands[4] = CONSTM1_RTX (<SVE_FULL_SDI:VPRED>mode);
   }
+)
+
+;; =========================================================================
+;; == Stores
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- Multi-register stores predicated by a counter
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - ST1B
+;; - ST1D
+;; - ST1H
+;; - ST1W
+;; - STNT1B
+;; - STNT1D
+;; - STNT1H
+;; - STNT1W
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_<optab><mode>"
+  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
+	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_dup 0)]
+	  ST1_COUNT))]
+  "TARGET_STREAMING_SME2"
+  "<optab><Vesize>\t%1, %K2, %0"
+  [(set_attr "stride_type" "st1_consecutive")]
+)
+
+(define_insn "@aarch64_<optab><mode>_strided2"
+  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 1 "register_operand" "Uph")
+	   (match_operand:<VSINGLE> 2 "aarch64_simd_register" "Uwd")
+	   (match_operand:<VSINGLE> 3 "aarch64_simd_register" "w")
+	   (match_dup 0)]
+	  ST1_COUNT))]
+  "TARGET_STREAMING_SME2
+   && aarch64_strided_registers_p (operands + 2, 2, 8)"
+  "<optab><Vesize>\t{%2.<Vetype>, %3.<Vetype>}, %K1, %0"
+  [(set_attr "stride_type" "st1_strided")]
+)
+
+(define_insn "@aarch64_<optab><mode>_strided4"
+  [(set (match_operand:SVE_FULLx24 0 "memory_operand" "+m")
+	(unspec:SVE_FULLx24
+	  [(match_operand:VNx16BI 1 "register_operand" "Uph")
+	   (match_operand:<VSINGLE> 2 "aarch64_simd_register" "Uwt")
+	   (match_operand:<VSINGLE> 3 "aarch64_simd_register" "w")
+	   (match_operand:<VSINGLE> 4 "aarch64_simd_register" "w")
+	   (match_operand:<VSINGLE> 5 "aarch64_simd_register" "w")
+	   (match_dup 0)]
+	  ST1_COUNT))]
+  "TARGET_STREAMING_SME2
+   && aarch64_strided_registers_p (operands + 2, 4, 4)"
+  "<optab><Vesize>\t{%2.<Vetype>, %3.<Vetype>, %4.<Vetype>, %5.<Vetype>}, %K1, %0"
+  [(set_attr "stride_type" "st1_strided")]
 )
 
 ;; -------------------------------------------------------------------------

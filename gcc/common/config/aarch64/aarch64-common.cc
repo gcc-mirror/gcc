@@ -55,6 +55,7 @@ static const struct default_options aarch_option_optimization_table[] =
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_mearly_ra_, NULL, AARCH64_EARLY_RA_ALL },
 #if (TARGET_DEFAULT_ASYNC_UNWIND_TABLES == 1)
     { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_funwind_tables, NULL, 1},

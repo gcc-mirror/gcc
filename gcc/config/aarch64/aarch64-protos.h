@@ -891,6 +891,7 @@ bool aarch64_sme_ldr_vnum_offset_p (rtx, rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
+bool aarch64_strided_registers_p (rtx *, unsigned int, unsigned int);
 rtx aarch64_tls_get_addr (void);
 unsigned aarch64_debugger_regno (unsigned);
 unsigned aarch64_trampoline_size (void);
@@ -1063,6 +1064,7 @@ void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
 							aarch64_feature_flags);
 
+rtl_opt_pass *make_pass_aarch64_early_ra (gcc::context *);
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
 rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);

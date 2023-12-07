@@ -290,13 +290,9 @@
     UNSPEC_NZCV
     UNSPEC_XPACLRI
     UNSPEC_LD1_SVE
-    UNSPEC_LD1_SVE_COUNT
     UNSPEC_ST1_SVE
-    UNSPEC_ST1_SVE_COUNT
     UNSPEC_LDNT1_SVE
-    UNSPEC_LDNT1_SVE_COUNT
     UNSPEC_STNT1_SVE
-    UNSPEC_STNT1_SVE_COUNT
     UNSPEC_LD1RQ
     UNSPEC_LD1_GATHER
     UNSPEC_LDFF1_GATHER
@@ -530,6 +526,26 @@
 ;; in the tracking register before the insn issues.  Otherwise the compiler
 ;; may chose to hold the tracking state encoded in SP.
 (define_attr "speculation_barrier" "true,false" (const_string "false"))
+
+;; This attribute is attached to multi-register instructions that have
+;; two forms: one in which the registers are consecutive and one in
+;; which they are strided.  The consecutive and strided forms have
+;; different define_insns, with different operands.  The mapping between
+;; the RTL of the consecutive form and the RTL of the strided form varies
+;; from one type of instruction to another.
+;;
+;; The attribute gives two pieces of information:
+;; - does the current instruction have consecutive or strided registers?
+;; - what kind of RTL rewrite is needed to move between forms?
+;;
+;; For example, all consecutive LD*1 instructions have the same basic
+;; RTL structure.  The same applies to all strided LD*1 instructions.
+;; The RTL mapping therefore applies at LD1 granularity, rather than
+;; being broken down into individual types of load.
+(define_attr "stride_type"
+  "none,ld1_consecutive,ld1_strided,st1_consecutive,st1_strided,
+   luti_consecutive,luti_strided"
+  (const_string "none"))
 
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling

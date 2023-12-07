@@ -1305,7 +1305,7 @@ public:
       icode = convert_optab_handler (maskload_optab,
 				     e.vector_mode (0), e.gp_mode (0));
     else
-      icode = code_for_aarch64_ld1 (e.tuple_mode (0));
+      icode = code_for_aarch64 (UNSPEC_LD1_COUNT, e.tuple_mode (0));
     return e.use_contiguous_load_insn (icode);
   }
 };
@@ -1605,7 +1605,10 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = code_for_aarch64_ldnt1 (e.tuple_mode (0));
+    insn_code icode = (e.vectors_per_tuple () == 1
+		       ? code_for_aarch64_ldnt1 (e.vector_mode (0))
+		       : code_for_aarch64 (UNSPEC_LDNT1_COUNT,
+					   e.tuple_mode (0)));
     return e.use_contiguous_load_insn (icode);
   }
 };
@@ -2415,7 +2418,7 @@ public:
       icode = convert_optab_handler (maskstore_optab,
 				     e.vector_mode (0), e.gp_mode (0));
     else
-      icode = code_for_aarch64_st1 (e.tuple_mode (0));
+      icode = code_for_aarch64 (UNSPEC_ST1_COUNT, e.tuple_mode (0));
     return e.use_contiguous_store_insn (icode);
   }
 };
@@ -2533,7 +2536,10 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    insn_code icode = code_for_aarch64_stnt1 (e.tuple_mode (0));
+    insn_code icode = (e.vectors_per_tuple () == 1
+		       ? code_for_aarch64_stnt1 (e.vector_mode (0))
+		       : code_for_aarch64 (UNSPEC_STNT1_COUNT,
+					   e.tuple_mode (0)));
     return e.use_contiguous_store_insn (icode);
   }
 };
