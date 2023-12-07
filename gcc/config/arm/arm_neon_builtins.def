@@ -303,7 +303,8 @@ VAR13 (LOAD1, vld1,
         v4bf, v8bf)
 VAR7 (LOAD1, vld1_x2, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
 VAR7 (LOAD1, vld1q_x2, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
-VAR7 (LOAD1, vld1_x3, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
+VAR7 (LOAD1, vld1_x3, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (LOAD1, vld1q_x3, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
 VAR7 (LOAD1, vld1_x4, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
 VAR12 (LOAD1LANE, vld1_lane,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di, v4bf, v8bf)
