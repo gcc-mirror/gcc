@@ -92,6 +92,9 @@
 #if !__has_builtin (__is_literal_type)
 # error "__has_builtin (__is_literal_type) failed"
 #endif
+#if !__has_builtin (__is_member_pointer)
+# error "__has_builtin (__is_member_pointer) failed"
+#endif
 #if !__has_builtin (__is_nothrow_assignable)
 # error "__has_builtin (__is_nothrow_assignable) failed"
 #endif
