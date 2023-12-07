@@ -628,16 +628,17 @@ void getAMDcacheinfo()
 
     if (max_extended_cpuid >= 0x8000_0006) {
         // AMD K6-III or K6-2+ or later.
-        ubyte numcores = 1;
+        uint numcores = 1;
         if (max_extended_cpuid >= 0x8000_0008) {
+            // read the number of physical cores (minus 1) from the 8 lowest ECX bits
             version (GNU_OR_LDC) asm pure nothrow @nogc {
                 "cpuid" : "=a" (dummy), "=c" (numcores) : "a" (0x8000_0008) : "ebx", "edx";
             } else asm pure nothrow @nogc {
                 mov EAX, 0x8000_0008;
                 cpuid;
-                mov numcores, CL;
+                mov numcores, ECX;
             }
-            ++numcores;
+            numcores = (numcores & 0xFF) + 1;
             if (numcores>cpuFeatures.maxCores) cpuFeatures.maxCores = numcores;
         }
 

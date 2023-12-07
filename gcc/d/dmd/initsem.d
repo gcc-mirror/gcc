@@ -199,7 +199,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         uint length;
         const(uint) amax = 0x80000000;
         bool errors = false;
-        //printf("ArrayInitializer::semantic(%s), ai: %s %p\n", t.toChars(), i.toChars(), i);
+        //printf("ArrayInitializer::semantic(%s), ai: %s\n", t.toChars(), toChars(i));
         if (i.sem) // if semantic() already run
         {
             return i;
@@ -600,7 +600,17 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
 
     Initializer visitC(CInitializer ci)
     {
-        //printf("CInitializer::semantic() tx: %s t: %s ci: %s\n", (tx ? tx.toChars() : "".ptr), t.toChars(), ci.toChars());
+        //printf("CInitializer::semantic() tx: %s t: %s ci: %s\n", (tx ? tx.toChars() : "".ptr), t.toChars(), toChars(ci));
+        static if (0)
+            if (auto ts = tx.isTypeStruct())
+            {
+                import dmd.common.outbuffer;
+                OutBuffer buf;
+                HdrGenStage hgs;
+                toCBuffer(ts.sym, buf, hgs);
+                printf("%s\n", buf.peekChars());
+            }
+
         /* Rewrite CInitializer into ExpInitializer, ArrayInitializer, or StructInitializer
          */
         t = t.toBasetype();
@@ -794,6 +804,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             for (size_t index = 0; index < ci.initializerList.length; )
             {
                 CInitializer cprev;
+                size_t indexprev;
              L1:
                 DesigInit di = ci.initializerList[index];
                 Designators* dlist = di.designatorList;
@@ -827,6 +838,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                         /* The peeling didn't work, so unpeel it
                          */
                         ci = cprev;
+                        index = indexprev;
                         di = ci.initializerList[index];
                         goto L2;
                     }
@@ -837,12 +849,14 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 {
                     if (fieldi == nfields)
                         break;
-                    if (index == 0 && ci.initializerList.length == 1 && di.initializer.isCInitializer())
+                    if (/*index == 0 && ci.initializerList.length == 1 &&*/ di.initializer.isCInitializer())
                     {
                         /* Try peeling off this set of { } and see if it works
                          */
                         cprev = ci;
                         ci = di.initializer.isCInitializer();
+                        indexprev = index;
+                        index = 0;
                         goto L1;
                     }
 

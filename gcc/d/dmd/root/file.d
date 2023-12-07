@@ -24,7 +24,7 @@ import dmd.root.rmem;
 import dmd.root.string;
 
 import dmd.common.file;
-import dmd.common.string;
+import dmd.common.smallbuffer;
 
 nothrow:
 

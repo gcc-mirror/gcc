@@ -83,13 +83,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         return ed;
     }
 
-    override void setScope(Scope* sc)
-    {
-        if (semanticRun > PASS.initial)
-            return;
-        ScopeDsymbol.setScope(sc);
-    }
-
     override bool oneMember(Dsymbol* ps, Identifier ident)
     {
         if (isAnonymous())

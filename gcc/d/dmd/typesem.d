@@ -372,6 +372,64 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
         pt = t.merge();
 }
 
+/***************************************
+ * Search for identifier id as a member of `this`.
+ * `id` may be a template instance.
+ *
+ * Params:
+ *  loc = location to print the error messages
+ *  sc = the scope where the symbol is located
+ *  id = the id of the symbol
+ *  flags = the search flags which can be `SearchLocalsOnly` or `IgnorePrivateImports`
+ *
+ * Returns:
+ *      symbol found, NULL if not
+ */
+private Dsymbol searchX(Dsymbol dsym, const ref Loc loc, Scope* sc, RootObject id, int flags)
+{
+    //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
+    Dsymbol s = dsym.toAlias();
+    Dsymbol sm;
+    if (Declaration d = s.isDeclaration())
+    {
+        if (d.inuse)
+        {
+            .error(loc, "circular reference to `%s`", d.toPrettyChars());
+            return null;
+        }
+    }
+    switch (id.dyncast())
+    {
+    case DYNCAST.identifier:
+        sm = s.search(loc, cast(Identifier)id, flags);
+        break;
+    case DYNCAST.dsymbol:
+        {
+            // It's a template instance
+            //printf("\ttemplate instance id\n");
+            Dsymbol st = cast(Dsymbol)id;
+            TemplateInstance ti = st.isTemplateInstance();
+            sm = s.search(loc, ti.name);
+            if (!sm)
+                return null;
+            sm = sm.toAlias();
+            TemplateDeclaration td = sm.isTemplateDeclaration();
+            if (!td)
+                return null; // error but handled later
+            ti.tempdecl = td;
+            if (!ti.semanticRun)
+                ti.dsymbolSemantic(sc);
+            sm = ti.toAlias();
+            break;
+        }
+    case DYNCAST.type:
+    case DYNCAST.expression:
+    default:
+        assert(0);
+    }
+    return sm;
+}
+
 /******************************************
  * We've mistakenly parsed `t` as a type.
  * Redo `t` as an Expression only if there are no type modifiers.

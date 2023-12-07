@@ -95,7 +95,7 @@ D_FRONTEND_OBJS = \
 	d/common-bitfields.o \
 	d/common-file.o \
 	d/common-outbuffer.o \
-	d/common-string.o \
+	d/common-smallbuffer.o \
 	d/compiler.o \
 	d/cond.o \
 	d/constfold.o \

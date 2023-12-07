@@ -43,7 +43,6 @@ public:
     Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
     void importAll(Scope *sc) override;
     Dsymbol *toAlias() override;
-    void setScope(Scope* sc) override;
     bool overloadInsert(Dsymbol *s) override;
 
     Import *isImport() override { return this; }

@@ -4387,7 +4387,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         auto e = initializerToExpression(init, t, (sc.flags & SCOPE.Cfile) != 0);
         if (!e)
         {
-            error(cle.loc, "cannot convert initializer `%s` to expression", init.toChars());
+            error(cle.loc, "cannot convert initializer `%s` to expression", toChars(init));
             return setError();
         }
         result = e;

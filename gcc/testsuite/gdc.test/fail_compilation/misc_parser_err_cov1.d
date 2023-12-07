@@ -7,7 +7,7 @@ fail_compilation/misc_parser_err_cov1.d(30): Error: basic type expected, not `)`
 fail_compilation/misc_parser_err_cov1.d(31): Error: `__traits(identifier, args...)` expected
 fail_compilation/misc_parser_err_cov1.d(31): Error: semicolon expected following auto declaration, not `o`
 fail_compilation/misc_parser_err_cov1.d(31): Error: expression expected, not `)`
-fail_compilation/misc_parser_err_cov1.d(32): Error: `type identifier : specialization` expected following `is`
+fail_compilation/misc_parser_err_cov1.d(32): Error: expected `(` following `is`, not `;`
 fail_compilation/misc_parser_err_cov1.d(33): Error: semicolon expected following auto declaration, not `auto`
 fail_compilation/misc_parser_err_cov1.d(33): Error: found `+` when expecting `(` following `mixin`
 fail_compilation/misc_parser_err_cov1.d(35): Error: `key:value` expected for associative array literal

@@ -178,16 +178,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return sc2;
     }
 
-    override final void setScope(Scope* sc)
-    {
-        // Might need a scope to resolve forward references. The check for
-        // semanticRun prevents unnecessary setting of _scope during deferred
-        // setScope phases for aggregates which already finished semantic().
-        // See https://issues.dlang.org/show_bug.cgi?id=16607
-        if (semanticRun < PASS.semanticdone)
-            ScopeDsymbol.setScope(sc);
-    }
-
     /***************************************
      * Returns:
      *      The total number of fields minus the number of hidden fields.

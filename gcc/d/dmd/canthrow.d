@@ -22,7 +22,6 @@ import dmd.declaration;
 import dmd.dsymbol;
 import dmd.errorsink;
 import dmd.expression;
-import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
 import dmd.init;
@@ -81,6 +80,7 @@ CT canThrow(Expression e, FuncDeclaration func, ErrorSink eSink)
                     if (!f.isDtorDeclaration())
                         errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
+                    import dmd.expressionsem : checkOverriddenDtor;
                     f.checkOverriddenDtor(null, e.loc, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
                 }
                 else if (func)

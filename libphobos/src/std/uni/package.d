@@ -7706,6 +7706,12 @@ public:
         return this.tupleof == other.tupleof;
     }
 
+    // Define a default toHash to allow AA usage
+    size_t toHash() const @trusted
+    {
+        return hashOf(slen_, hashOf(small_));
+    }
+
     /++
         True if this object contains valid extended grapheme cluster.
         Decoding primitives of this module always return a valid `Grapheme`.
@@ -7905,6 +7911,12 @@ static assert(Grapheme.sizeof == size_t.sizeof*4);
     foreach (dchar v; iota(cast(int)'A', cast(int)'Z'+1).map!"cast(dchar)a"())
         h ~= v;
     assert(equal(h[], iota(cast(int)'A', cast(int)'Z'+1)));
+}
+
+// ensure Grapheme can be used as an AA key.
+@safe unittest
+{
+    int[Grapheme] aa;
 }
 
 /++

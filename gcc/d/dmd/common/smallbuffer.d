@@ -4,11 +4,11 @@
  * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/string.d, common/_string.d)
- * Documentation: https://dlang.org/phobos/dmd_common_string.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/common/string.d
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/smallbuffer.d, common/_smallbuffer.d)
+ * Documentation: https://dlang.org/phobos/dmd_common_smallbuffer.html
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/common/smallbuffer
  */
-module dmd.common.string;
+module dmd.common.smallbuffer;
 
 nothrow:
 
@@ -107,33 +107,11 @@ unittest
 }
 
 /**
-Converts a zero-terminated C string to a D slice. Takes linear time and allocates no memory.
-
-Params:
-stringz = the C string to be converted
-
-Returns:
-a slice comprehending the string. The terminating 0 is not part of the slice.
-*/
-auto asDString(C)(C* stringz) pure @nogc nothrow
-{
-    import core.stdc.string : strlen;
-    return stringz[0 .. strlen(stringz)];
-}
-
-///
-unittest
-{
-    const char* p = "123".ptr;
-    assert(p.asDString == "123");
-}
-
-/**
 (Windows only) Converts a narrow string to a wide string using `buffer` as strorage. Returns a slice managed by
 `buffer` containing the converted string. The terminating zero is not part of the returned slice,
 but is guaranteed to follow it.
 */
-version(Windows) wchar[] toWStringz(const(char)[] narrow, ref SmallBuffer!wchar buffer) nothrow
+version(Windows) wchar[] toWStringz(scope const(char)[] narrow, ref SmallBuffer!wchar buffer) nothrow
 {
     import core.sys.windows.winnls : MultiByteToWideChar;
     import dmd.common.file : CodePage;
@@ -141,16 +119,17 @@ version(Windows) wchar[] toWStringz(const(char)[] narrow, ref SmallBuffer!wchar 
     if (narrow is null)
         return null;
 
-    const requiredLength = MultiByteToWideChar(CodePage, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
-    if (requiredLength < cast(int) buffer.length)
+    size_t length;
+    int i;
+    while (1)
     {
-        buffer[requiredLength] = 0;
-        return buffer[0 .. requiredLength];
+        // https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
+        length = MultiByteToWideChar(CodePage, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
+        if (length < buffer.length)
+            break;
+        buffer.create(length + 1);
+        assert(++i == 1);   // ensure loop should only execute once or twice
     }
-
-    buffer.create(requiredLength + 1);
-    const length = MultiByteToWideChar(CodePage, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, requiredLength);
-    assert(length == requiredLength);
     buffer[length] = 0;
     return buffer[0 .. length];
 }

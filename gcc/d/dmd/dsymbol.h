@@ -205,7 +205,6 @@ public:
     const char *locToChars();
     bool equals(const RootObject * const o) const override;
     bool isAnonymous() const;
-    bool checkDeprecated(const Loc &loc, Scope *sc);
     Module *getModule();
     bool isCsymbol();
     Module *getAccessModule();
@@ -228,7 +227,6 @@ public:
     virtual const char *kind() const;
     virtual Dsymbol *toAlias();                 // resolve real symbol
     virtual Dsymbol *toAlias2();
-    virtual void setScope(Scope *sc);
     virtual void importAll(Scope *sc);
     virtual bool overloadInsert(Dsymbol *s);
     virtual uinteger_t size(const Loc &loc);
@@ -342,7 +340,6 @@ public:
     bool isforwardRef() override final;
     static void multiplyDefined(const Loc &loc, Dsymbol *s1, Dsymbol *s2);
     const char *kind() const override;
-    FuncDeclaration *findGetMembers();
     virtual Dsymbol *symtabInsert(Dsymbol *s);
     virtual Dsymbol *symtabLookup(Dsymbol *s, Identifier *id);
     bool hasStaticCtorOrDtor() override;
@@ -431,3 +428,5 @@ public:
 
 void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
 Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
+bool checkDeprecated(Dsymbol *d, const Loc &loc, Scope *sc);
+void setScope(Dsymbol *d, Scope *sc);

@@ -1025,7 +1025,18 @@ if (Ranges.length > 0 &&
             }
             else
             {
-                @property bool empty() => frontIndex >= backIndex;
+                @property bool empty()
+                {
+                    if (frontIndex == 0)
+                    {
+                        // special handling: we might be in Range.init state!
+                        // For instance, `format!"%s"` uses Range.init to ensure
+                        // that formatting is possible.
+                        // In that case, we must still behave in an internally consistent way.
+                        return source[0].empty;
+                    }
+                    return frontIndex >= backIndex;
+                }
             }
 
             static if (allSatisfy!(isForwardRange, R))
@@ -1703,6 +1714,17 @@ pure @safe nothrow @nogc unittest
     {
         int n = el.v;
     }
+}
+
+/// https://issues.dlang.org/show_bug.cgi?id=24243
+pure @safe nothrow unittest
+{
+    import std.algorithm.iteration : filter;
+
+    auto range = chain([2], [3].filter!"a");
+
+    // This might happen in format!"%s"(range), for instance.
+    assert(typeof(range).init.empty);
 }
 
 /**

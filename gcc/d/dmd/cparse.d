@@ -1890,6 +1890,14 @@ final class CParser(AST) : Parser!AST
                 if (specifier.alignExps)
                     error("no alignment-specifier for typedef declaration"); // C11 6.7.5-2
 
+                if (specifier.vector_size)
+                {
+                    auto length = new AST.IntegerExp(token.loc, specifier.vector_size / dt.size(), AST.Type.tuns32);
+                    auto tsa = new AST.TypeSArray(dt, length);
+                    dt = new AST.TypeVector(tsa);
+                    specifier.vector_size = 0;          // used it up
+                }
+
                 bool isalias = true;
                 if (auto ts = dt.isTypeStruct())
                 {

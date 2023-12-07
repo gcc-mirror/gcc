@@ -33,6 +33,7 @@ import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.file_manager;
+import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -969,7 +970,7 @@ extern (C++) final class Module : Package
          * If this works out well, it can be extended to all modules
          * before any semantic() on any of them.
          */
-        setScope(sc); // remember module scope for semantic
+        this.setScope(sc); // remember module scope for semantic
         for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
@@ -1575,4 +1576,37 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
     }
 
     return buf;
+}
+
+/*******************************************
+ * Look for member of the form:
+ *      const(MemberInfo)[] getMembers(string);
+ * Returns NULL if not found
+ */
+extern(C++) FuncDeclaration findGetMembers(ScopeDsymbol dsym)
+{
+    import dmd.opover : search_function;
+    Dsymbol s = search_function(dsym, Id.getmembers);
+    FuncDeclaration fdx = s ? s.isFuncDeclaration() : null;
+    version (none)
+    {
+        // Finish
+        __gshared TypeFunction tfgetmembers;
+        if (!tfgetmembers)
+        {
+            Scope sc;
+            sc.eSink = global.errorSink;
+            auto parameters = new Parameters();
+            Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
+            parameters.push(p);
+            Type tret = null;
+            TypeFunction tf = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
+            tfgetmembers = tf.dsymbolSemantic(Loc.initial, &sc).isTypeFunction();
+        }
+        if (fdx)
+            fdx = fdx.overloadExactMatch(tfgetmembers);
+    }
+    if (fdx && fdx.isVirtual())
+        fdx = null;
+    return fdx;
 }
