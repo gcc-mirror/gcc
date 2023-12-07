@@ -12334,6 +12334,20 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 		      && classtype_has_nothrow_assign_or_copy_p (type1,
 								 true))));
 
+    case CPTK_HAS_NOTHROW_CONSTRUCTOR:
+      type1 = strip_array_types (type1);
+      return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2)
+	      || (CLASS_TYPE_P (type1)
+		  && (t = locate_ctor (type1))
+		  && maybe_instantiate_noexcept (t)
+		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
+
+    case CPTK_HAS_NOTHROW_COPY:
+      type1 = strip_array_types (type1);
+      return (trait_expr_value (CPTK_HAS_TRIVIAL_COPY, type1, type2)
+	      || (CLASS_TYPE_P (type1)
+		  && classtype_has_nothrow_assign_or_copy_p (type1, false)));
+
     case CPTK_HAS_TRIVIAL_ASSIGN:
       /* ??? The standard seems to be missing the "or array of such a class
 	 type" wording for this trait.  */
@@ -12343,24 +12357,10 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 		    || (CLASS_TYPE_P (type1)
 			&& TYPE_HAS_TRIVIAL_COPY_ASSIGN (type1))));
 
-    case CPTK_HAS_NOTHROW_CONSTRUCTOR:
-      type1 = strip_array_types (type1);
-      return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2)
-	      || (CLASS_TYPE_P (type1)
-		  && (t = locate_ctor (type1))
-		  && maybe_instantiate_noexcept (t)
-		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
-
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);
       return (trivial_type_p (type1)
 	      || (CLASS_TYPE_P (type1) && TYPE_HAS_TRIVIAL_DFLT (type1)));
-
-    case CPTK_HAS_NOTHROW_COPY:
-      type1 = strip_array_types (type1);
-      return (trait_expr_value (CPTK_HAS_TRIVIAL_COPY, type1, type2)
-	      || (CLASS_TYPE_P (type1)
-		  && classtype_has_nothrow_assign_or_copy_p (type1, false)));
 
     case CPTK_HAS_TRIVIAL_COPY:
       /* ??? The standard seems to be missing the "or array of such a class
@@ -12375,17 +12375,20 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 	      || (CLASS_TYPE_P (type1)
 		  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type1)));
 
-    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
-      return type_has_virtual_destructor (type1);
-
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       return type_has_unique_obj_representations (type1);
+
+    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
+      return type_has_virtual_destructor (type1);
 
     case CPTK_IS_ABSTRACT:
       return ABSTRACT_CLASS_TYPE_P (type1);
 
     case CPTK_IS_AGGREGATE:
       return CP_AGGREGATE_TYPE_P (type1);
+
+    case CPTK_IS_ASSIGNABLE:
+      return is_xible (MODIFY_EXPR, type1, type2);
 
     case CPTK_IS_BASE_OF:
       return (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
@@ -12394,6 +12397,12 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_CLASS:
       return NON_UNION_CLASS_TYPE_P (type1);
+
+    case CPTK_IS_CONSTRUCTIBLE:
+      return is_xible (INIT_EXPR, type1, type2);
+
+    case CPTK_IS_CONVERTIBLE:
+      return is_convertible (type1, type2);
 
     case CPTK_IS_EMPTY:
       return NON_UNION_CLASS_TYPE_P (type1) && CLASSTYPE_EMPTY_P (type1);
@@ -12409,6 +12418,15 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_LITERAL_TYPE:
       return literal_type_p (type1);
+
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      return is_nothrow_xible (MODIFY_EXPR, type1, type2);
+
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      return is_nothrow_xible (INIT_EXPR, type1, type2);
+
+    case CPTK_IS_NOTHROW_CONVERTIBLE:
+      return is_nothrow_convertible (type1, type2);
 
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       return pointer_interconvertible_base_of_p (type1, type2);
@@ -12439,24 +12457,6 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_UNION:
       return type_code1 == UNION_TYPE;
-
-    case CPTK_IS_ASSIGNABLE:
-      return is_xible (MODIFY_EXPR, type1, type2);
-
-    case CPTK_IS_CONSTRUCTIBLE:
-      return is_xible (INIT_EXPR, type1, type2);
-
-    case CPTK_IS_NOTHROW_ASSIGNABLE:
-      return is_nothrow_xible (MODIFY_EXPR, type1, type2);
-
-    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
-      return is_nothrow_xible (INIT_EXPR, type1, type2);
-
-    case CPTK_IS_CONVERTIBLE:
-      return is_convertible (type1, type2);
-
-    case CPTK_IS_NOTHROW_CONVERTIBLE:
-      return is_nothrow_convertible (type1, type2);
 
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       return ref_xes_from_temporary (type1, type2, /*direct_init=*/true);
@@ -12570,9 +12570,9 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 	return error_mark_node;
       break;
 
+    case CPTK_IS_ABSTRACT:
     case CPTK_IS_EMPTY:
     case CPTK_IS_POLYMORPHIC:
-    case CPTK_IS_ABSTRACT:
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       if (!check_trait_type (type1, /* kind = */ 3))
 	return error_mark_node;
@@ -12592,12 +12592,12 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 	return error_mark_node;
       break;
 
-    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
-    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+    case CPTK_IS_CONVERTIBLE:
     case CPTK_IS_NOTHROW_ASSIGNABLE:
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
-    case CPTK_IS_CONVERTIBLE:
     case CPTK_IS_NOTHROW_CONVERTIBLE:
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       if (!check_trait_type (type1)
@@ -12616,8 +12616,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_CLASS:
     case CPTK_IS_ENUM:
-    case CPTK_IS_UNION:
     case CPTK_IS_SAME:
+    case CPTK_IS_UNION:
       break;
 
     case CPTK_IS_LAYOUT_COMPATIBLE:
@@ -12680,10 +12680,12 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 
   switch (kind)
     {
-    case CPTK_UNDERLYING_TYPE:
-      return finish_underlying_type (type1);
-
     case CPTK_REMOVE_CV:
+      return cv_unqualified (type1);
+
+    case CPTK_REMOVE_CVREF:
+      if (TYPE_REF_P (type1))
+	type1 = TREE_TYPE (type1);
       return cv_unqualified (type1);
 
     case CPTK_REMOVE_REFERENCE:
@@ -12691,13 +12693,11 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
 	type1 = TREE_TYPE (type1);
       return type1;
 
-    case CPTK_REMOVE_CVREF:
-      if (TYPE_REF_P (type1))
-	type1 = TREE_TYPE (type1);
-      return cv_unqualified (type1);
-
     case CPTK_TYPE_PACK_ELEMENT:
       return finish_type_pack_element (type1, type2, complain);
+
+    case CPTK_UNDERLYING_TYPE:
+      return finish_underlying_type (type1);
 
 #define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
     case CPTK_##CODE:

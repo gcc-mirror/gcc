@@ -8,8 +8,20 @@
 #if !__has_builtin (__builtin_bit_cast)
 # error "__has_builtin (__builtin_bit_cast) failed"
 #endif
+#if !__has_builtin (__builtin_is_constant_evaluated)
+# error "__has_builtin (__builtin_is_constant_evaluated) failed"
+#endif
+#if !__has_builtin (__builtin_is_corresponding_member)
+# error "__has_builtin (__builtin_is_corresponding_member) failed"
+#endif
+#if !__has_builtin (__builtin_is_pointer_interconvertible_with_class)
+# error "__has_builtin (__builtin_is_pointer_interconvertible_with_class) failed"
+#endif
 #if !__has_builtin (__builtin_launder)
 # error "__has_builtin (__builtin_launder) failed"
+#endif
+#if !__has_builtin (__builtin_source_location)
+# error "__has_builtin (__builtin_source_location) failed"
 #endif
 #if !__has_builtin (__has_nothrow_assign)
 # error "__has_builtin (__has_nothrow_assign) failed"
@@ -44,11 +56,20 @@
 #if !__has_builtin (__is_aggregate)
 # error "__has_builtin (__is_aggregate) failed"
 #endif
+#if !__has_builtin (__is_assignable)
+# error "__has_builtin (__is_assignable) failed"
+#endif
 #if !__has_builtin (__is_base_of)
 # error "__has_builtin (__is_base_of) failed"
 #endif
 #if !__has_builtin (__is_class)
 # error "__has_builtin (__is_class) failed"
+#endif
+#if !__has_builtin (__is_constructible)
+# error "__has_builtin (__is_constructible) failed"
+#endif
+#if !__has_builtin (__is_convertible)
+# error "__has_builtin (__is_convertible) failed"
 #endif
 #if !__has_builtin (__is_empty)
 # error "__has_builtin (__is_empty) failed"
@@ -64,6 +85,15 @@
 #endif
 #if !__has_builtin (__is_literal_type)
 # error "__has_builtin (__is_literal_type) failed"
+#endif
+#if !__has_builtin (__is_nothrow_assignable)
+# error "__has_builtin (__is_nothrow_assignable) failed"
+#endif
+#if !__has_builtin (__is_nothrow_constructible)
+# error "__has_builtin (__is_nothrow_constructible) failed"
+#endif
+#if !__has_builtin (__is_nothrow_convertible)
+# error "__has_builtin (__is_nothrow_convertible) failed"
 #endif
 #if !__has_builtin (__is_pointer_interconvertible_base_of)
 # error "__has_builtin (__is_pointer_interconvertible_base_of) failed"
@@ -98,51 +128,21 @@
 #if !__has_builtin (__is_union)
 # error "__has_builtin (__is_union) failed"
 #endif
-#if !__has_builtin (__underlying_type)
-# error "__has_builtin (__underlying_type) failed"
-#endif
-#if !__has_builtin (__is_assignable)
-# error "__has_builtin (__is_assignable) failed"
-#endif
-#if !__has_builtin (__is_constructible)
-# error "__has_builtin (__is_constructible) failed"
-#endif
-#if !__has_builtin (__is_nothrow_assignable)
-# error "__has_builtin (__is_nothrow_assignable) failed"
-#endif
-#if !__has_builtin (__is_nothrow_constructible)
-# error "__has_builtin (__is_nothrow_constructible) failed"
-#endif
 #if !__has_builtin (__reference_constructs_from_temporary)
 # error "__has_builtin (__reference_constructs_from_temporary) failed"
 #endif
 #if !__has_builtin (__reference_converts_from_temporary)
 # error "__has_builtin (__reference_converts_from_temporary) failed"
 #endif
-#if !__has_builtin (__builtin_is_constant_evaluated)
-# error "__has_builtin (__builtin_is_constant_evaluated) failed"
-#endif
-#if !__has_builtin (__builtin_source_location)
-# error "__has_builtin (__builtin_source_location) failed"
-#endif
-#if !__has_builtin (__builtin_is_corresponding_member)
-# error "__has_builtin (__builtin_is_corresponding_member) failed"
-#endif
-#if !__has_builtin (__builtin_is_pointer_interconvertible_with_class)
-# error "__has_builtin (__builtin_is_pointer_interconvertible_with_class) failed"
-#endif
-#if !__has_builtin (__is_convertible)
-# error "__has_builtin (__is_convertible) failed"
-#endif
-#if !__has_builtin (__is_nothrow_convertible)
-# error "__has_builtin (__is_nothrow_convertible) failed"
-#endif
 #if !__has_builtin (__remove_cv)
 # error "__has_builtin (__remove_cv) failed"
+#endif
+#if !__has_builtin (__remove_cvref)
+# error "__has_builtin (__remove_cvref) failed"
 #endif
 #if !__has_builtin (__remove_reference)
 # error "__has_builtin (__remove_reference) failed"
 #endif
-#if !__has_builtin (__remove_cvref)
-# error "__has_builtin (__remove_cvref) failed"
+#if !__has_builtin (__underlying_type)
+# error "__has_builtin (__underlying_type) failed"
 #endif

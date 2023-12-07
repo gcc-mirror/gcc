@@ -3707,17 +3707,35 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       inform (loc, "  %qT is not trivially destructible", t1);
       break;
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+      inform (loc, "  %qT does not have unique object representations", t1);
+      break;
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       inform (loc, "  %qT does not have a virtual destructor", t1);
       break;
     case CPTK_IS_ABSTRACT:
       inform (loc, "  %qT is not an abstract class", t1);
       break;
+    case CPTK_IS_AGGREGATE:
+      inform (loc, "  %qT is not an aggregate", t1);
+      break;
+    case CPTK_IS_ASSIGNABLE:
+      inform (loc, "  %qT is not assignable from %qT", t1, t2);
+      break;
     case CPTK_IS_BASE_OF:
       inform (loc, "  %qT is not a base of %qT", t1, t2);
       break;
     case CPTK_IS_CLASS:
       inform (loc, "  %qT is not a class", t1);
+      break;
+    case CPTK_IS_CONSTRUCTIBLE:
+      if (!t2)
+    inform (loc, "  %qT is not default constructible", t1);
+      else
+    inform (loc, "  %qT is not constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_CONVERTIBLE:
+      inform (loc, "  %qT is not convertible from %qE", t2, t1);
       break;
     case CPTK_IS_EMPTY:
       inform (loc, "  %qT is not an empty class", t1);
@@ -3733,6 +3751,18 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_LITERAL_TYPE:
       inform (loc, "  %qT is not a literal type", t1);
+      break;
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      if (!t2)
+	inform (loc, "  %qT is not nothrow default constructible", t1);
+      else
+	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_CONVERTIBLE:
+	  inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       inform (loc, "  %qT is not pointer-interconvertible base of %qT",
@@ -3753,29 +3783,8 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_TRIVIAL:
       inform (loc, "  %qT is not a trivial type", t1);
       break;
-    case CPTK_IS_UNION:
-      inform (loc, "  %qT is not a union", t1);
-      break;
-    case CPTK_IS_AGGREGATE:
-      inform (loc, "  %qT is not an aggregate", t1);
-      break;
-    case CPTK_IS_TRIVIALLY_COPYABLE:
-      inform (loc, "  %qT is not trivially copyable", t1);
-      break;
-    case CPTK_IS_ASSIGNABLE:
-      inform (loc, "  %qT is not assignable from %qT", t1, t2);
-      break;
     case CPTK_IS_TRIVIALLY_ASSIGNABLE:
       inform (loc, "  %qT is not trivially assignable from %qT", t1, t2);
-      break;
-    case CPTK_IS_NOTHROW_ASSIGNABLE:
-      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
-      break;
-    case CPTK_IS_CONSTRUCTIBLE:
-      if (!t2)
-	inform (loc, "  %qT is not default constructible", t1);
-      else
-	inform (loc, "  %qT is not constructible from %qE", t1, t2);
       break;
     case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
       if (!t2)
@@ -3783,20 +3792,11 @@ diagnose_trait_expr (tree expr, tree args)
       else
 	inform (loc, "  %qT is not trivially constructible from %qE", t1, t2);
       break;
-    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
-      if (!t2)
-	inform (loc, "  %qT is not nothrow default constructible", t1);
-      else
-	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      inform (loc, "  %qT is not trivially copyable", t1);
       break;
-    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-      inform (loc, "  %qT does not have unique object representations", t1);
-      break;
-    case CPTK_IS_CONVERTIBLE:
-      inform (loc, "  %qT is not convertible from %qE", t2, t1);
-      break;
-    case CPTK_IS_NOTHROW_CONVERTIBLE:
-	inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
+    case CPTK_IS_UNION:
+      inform (loc, "  %qT is not a union", t1);
       break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "
