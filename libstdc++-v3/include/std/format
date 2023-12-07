@@ -2809,7 +2809,6 @@ namespace __format
     requires same_as<iter_value_t<_OutIter>, _CharT>
     class _Iter_sink<_CharT, _OutIter> : public _Sink<_CharT>
     {
-      using uint64_t = __UINTPTR_TYPE__;
       _OutIter _M_first;
       iter_difference_t<_OutIter> _M_max = -1;
     protected:
@@ -2883,7 +2882,7 @@ namespace __format
 	  return {__ptr, __bytes / sizeof(_CharT)};
 #endif
 	// Avoid forming a pointer to a different memory page.
-	uint64_t __off = reinterpret_cast<uint64_t>(__ptr) % 1024;
+	const auto __off = reinterpret_cast<__UINTPTR_TYPE__>(__ptr) % 1024;
 	__n = (1024 - __off) / sizeof(_CharT);
 	if (__n > 0) [[likely]]
 	  return {__ptr, static_cast<size_t>(__n)};
