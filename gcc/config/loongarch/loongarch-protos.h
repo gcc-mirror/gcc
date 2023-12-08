@@ -60,7 +60,7 @@ enum loongarch_symbol_type {
 extern rtx loongarch_emit_move (rtx, rtx);
 extern HOST_WIDE_INT loongarch_initial_elimination_offset (int, int);
 extern void loongarch_expand_prologue (void);
-extern void loongarch_expand_epilogue (bool);
+extern void loongarch_expand_epilogue (int);
 extern bool loongarch_can_use_return_insn (void);
 
 extern bool loongarch_symbolic_constant_p (rtx, enum loongarch_symbol_type *);

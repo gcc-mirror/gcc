@@ -1012,7 +1012,8 @@ loongarch_save_restore_reg (machine_mode mode, int regno, HOST_WIDE_INT offset,
 
 static void
 loongarch_for_each_saved_reg (HOST_WIDE_INT sp_offset,
-			      loongarch_save_restore_fn fn)
+			      loongarch_save_restore_fn fn,
+			      bool skip_eh_data_regs_p)
 {
   HOST_WIDE_INT offset;
 
@@ -1021,7 +1022,15 @@ loongarch_for_each_saved_reg (HOST_WIDE_INT sp_offset,
   for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	loongarch_save_restore_reg (word_mode, regno, offset, fn);
+	/* Special care needs to be taken for $r4-$r7 (EH_RETURN_DATA_REGNO)
+	   when returning normally from a function that calls
+	   __builtin_eh_return.  In this case, these registers are saved but
+	   should not be restored, or the return value may be clobbered.  */
+
+	if (!(skip_eh_data_regs_p
+	      && GP_ARG_FIRST <= regno && regno < GP_ARG_FIRST + 4))
+	  loongarch_save_restore_reg (word_mode, regno, offset, fn);
+
 	offset -= UNITS_PER_WORD;
       }
 
@@ -1290,7 +1299,7 @@ loongarch_expand_prologue (void)
 			    GEN_INT (-step1));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
       size -= step1;
-      loongarch_for_each_saved_reg (size, loongarch_save_reg);
+      loongarch_for_each_saved_reg (size, loongarch_save_reg, false);
     }
 
   /* Set up the frame pointer, if we're using one.  */
@@ -1375,11 +1384,13 @@ loongarch_can_use_return_insn (void)
   return reload_completed && cfun->machine->frame.total_size == 0;
 }
 
-/* Expand an "epilogue" or "sibcall_epilogue" pattern; SIBCALL_P
-   says which.  */
+/* Expand function epilogue using the following insn patterns:
+   "epilogue"	      (style == NORMAL_RETURN)
+   "sibcall_epilogue" (style == SIBCALL_RETURN)
+   "eh_return"	      (style == EXCEPTION_RETURN) */
 
 void
-loongarch_expand_epilogue (bool sibcall_p)
+loongarch_expand_epilogue (int style)
 {
   /* Split the frame into two.  STEP1 is the amount of stack we should
      deallocate before restoring the registers.  STEP2 is the amount we
@@ -1396,7 +1407,8 @@ loongarch_expand_epilogue (bool sibcall_p)
   bool need_barrier_p
     = (get_frame_size () + cfun->machine->frame.arg_pointer_offset) != 0;
 
-  if (!sibcall_p && loongarch_can_use_return_insn ())
+  /* Handle simple returns.  */
+  if (style == NORMAL_RETURN && loongarch_can_use_return_insn ())
     {
       emit_jump_insn (gen_return ());
       return;
@@ -1472,7 +1484,9 @@ loongarch_expand_epilogue (bool sibcall_p)
 
   /* Restore the registers.  */
   loongarch_for_each_saved_reg (frame->total_size - step2,
-				loongarch_restore_reg);
+				loongarch_restore_reg,
+				crtl->calls_eh_return
+				&& style != EXCEPTION_RETURN);
 
   if (need_barrier_p)
     loongarch_emit_stack_tie ();
@@ -1493,11 +1507,12 @@ loongarch_expand_epilogue (bool sibcall_p)
     }
 
   /* Add in the __builtin_eh_return stack adjustment.  */
-  if (crtl->calls_eh_return)
+  if (crtl->calls_eh_return && style == EXCEPTION_RETURN)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (!sibcall_p)
+  /* Emit return unless doing sibcall.  */
+  if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
 }
 
