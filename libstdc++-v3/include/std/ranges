@@ -9300,14 +9300,10 @@ namespace __detail
 		    __c.emplace_back(*__it);
 		  else if constexpr (requires { __c.push_back(*__it); })
 		    __c.push_back(*__it);
+		  else if constexpr (requires { __c.emplace(__c.end(), *__it); })
+		    __c.emplace(__c.end(), *__it);
 		  else
-		    {
-		      auto __end = __c.end();
-		      if constexpr (requires { __c.emplace(__end, *__it); })
-			__end = __c.emplace(__end, *__it);
-		      else
-			__end = __c.insert(__end, *__it);
-		    }
+		    __c.insert(__c.end(), *__it);
 		  ++__it;
 		}
 	      return __c;

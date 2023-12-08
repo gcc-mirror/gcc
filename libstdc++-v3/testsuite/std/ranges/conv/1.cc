@@ -236,19 +236,19 @@ struct Cont4
   template<typename T>
     requires (Kind <= Emplace)
     && requires(C& c, T&& t) { c.emplace(c.end(), std::forward<T>(t)); }
-    typename C::iterator
-    emplace(typename C::iterator, T&& t)
+    void
+    emplace(typename C::iterator pos, T&& t)
     {
       kind = Emplace;
-      return c.emplace(c.end(), std::forward<T>(t));
+      c.emplace(pos, std::forward<T>(t));
     }
 
   template<typename T>
-    typename C::iterator
-    insert(typename C::iterator, T&& t)
+    void
+    insert(typename C::iterator pos, T&& t)
     {
       kind = Insert;
-      return c.insert(c.end(), std::forward<T>(t));
+      c.insert(pos, std::forward<T>(t));
     }
 
   // Required to satisfy reservable-container
