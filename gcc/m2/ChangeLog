@@ -1,3 +1,29 @@
+2023-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112893
+	* gm2-compiler/M2Base.mod (Ass): Extend array to include proc row
+	and column.  Allow PIM to assign cardinal variables to address
+	variables.
+	(Expr): Ditto.
+	(Comp): Ditto.
+	* gm2-compiler/M2Check.mod (getSType): New procedure function.
+	Replace all occurances of GetSType with getSType.
+	* gm2-compiler/M2GenGCC.mod (CodeParam): Rewrite format specifier
+	error message.
+	* gm2-compiler/M2Quads.mod (CheckProcTypeAndProcedure): Add tokno
+	parameter.
+	* gm2-compiler/M2Range.def (InitTypesParameterCheck): Add tokno
+	parameter.
+	(InitParameterRangeCheck): Add tokno parameter.
+	Remove EXPORT QUALIFIED list.
+	(InitParameterRangeCheck): Add tokno parameter.
+	* gm2-compiler/M2Range.mod (InitTypesParameterCheck): Add tokno
+	parameter and pass tokno to PutRangeParam.
+	(InitParameterRangeCheck): Add tokno parameter and pass tokno to
+	PutRangeParam.
+	(PutRangeParam): Add tokno parameter and assign to tokenNo.
+	(FoldTypeParam): Rewrite format string.
+
 2023-12-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lang.opt (-isysroot): New.

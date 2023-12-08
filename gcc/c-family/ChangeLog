@@ -1,3 +1,10 @@
+2023-12-07  Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/111965
+	* c-opts.cc (c_common_handle_option) <case OPT_fdebug_cpp>: Set
+	cpp_opts->debug to value rather than 1.
+
 2023-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-opts.cc (c_diagnostic_finalizer): Make "diagnostic" param

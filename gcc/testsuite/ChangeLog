@@ -1,3 +1,430 @@
+2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/slp-interleave-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/slp-interleave-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/slp-interleave-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/slp-interleave-4.c: New test.
+
+2023-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/106694
+	PR rtl-optimization/109078
+	PR rtl-optimization/109391
+	* gcc.target/aarch64/ldp_stp_16.c (cons4_4_float): Tighten expected
+	output test.
+	* gcc.target/aarch64/sve/shift_1.c: Allow reversed shifts for .s
+	as well as .d.
+	* gcc.target/aarch64/sme/strided_1.c: New test.
+	* gcc.target/aarch64/pr109078.c: Likewise.
+	* gcc.target/aarch64/pr109391.c: Likewise.
+	* gcc.target/aarch64/sve/pr106694.c: Likewise.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new test.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new test.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new tests.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new test.
+
+2023-12-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/aarch64/ldp_stp_unaligned_2.c: Use -fno-stack-protector.
+	* gcc.target/aarch64/shadow_call_stack_5.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_6.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_7.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_8.c: Likewise.
+	* gcc.target/aarch64/stack-check-12.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-11.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-12.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-13.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-14.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-15.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-17.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-18.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-2.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-5.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-6.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-8.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-9.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_24.c: Likewise.
+	* gcc.target/aarch64/test_frame_1.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+	* gcc.target/aarch64/test_frame_11.c: Likewise.
+	* gcc.target/aarch64/test_frame_13.c: Likewise.
+	* gcc.target/aarch64/test_frame_15.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/strub-split-stack.c: New.
+	* c-c++-common/strub-unsupported.c: New.
+	* c-c++-common/strub-unsupported-2.c: New.
+	* c-c++-common/strub-unsupported-3.c: New.
+	* lib/target-supports.exp (check_effective_target_strub): New.
+	* c-c++-common/strub-O0.c: Require effective target strub.
+	* c-c++-common/strub-O1.c: Likewise.
+	* c-c++-common/strub-O2.c: Likewise.
+	* c-c++-common/strub-O2fni.c: Likewise.
+	* c-c++-common/strub-O3.c: Likewise.
+	* c-c++-common/strub-O3fni.c: Likewise.
+	* c-c++-common/strub-Og.c: Likewise.
+	* c-c++-common/strub-Os.c: Likewise.
+	* c-c++-common/strub-all1.c: Likewise.
+	* c-c++-common/strub-all2.c: Likewise.
+	* c-c++-common/strub-apply1.c: Likewise.
+	* c-c++-common/strub-apply2.c: Likewise.
+	* c-c++-common/strub-apply3.c: Likewise.
+	* c-c++-common/strub-apply4.c: Likewise.
+	* c-c++-common/strub-at-calls1.c: Likewise.
+	* c-c++-common/strub-at-calls2.c: Likewise.
+	* c-c++-common/strub-defer-O1.c: Likewise.
+	* c-c++-common/strub-defer-O2.c: Likewise.
+	* c-c++-common/strub-defer-O3.c: Likewise.
+	* c-c++-common/strub-defer-Os.c: Likewise.
+	* c-c++-common/strub-internal1.c: Likewise.
+	* c-c++-common/strub-internal2.c: Likewise.
+	* c-c++-common/strub-parms1.c: Likewise.
+	* c-c++-common/strub-parms2.c: Likewise.
+	* c-c++-common/strub-parms3.c: Likewise.
+	* c-c++-common/strub-relaxed1.c: Likewise.
+	* c-c++-common/strub-relaxed2.c: Likewise.
+	* c-c++-common/strub-short-O0-exc.c: Likewise.
+	* c-c++-common/strub-short-O0.c: Likewise.
+	* c-c++-common/strub-short-O1.c: Likewise.
+	* c-c++-common/strub-short-O2.c: Likewise.
+	* c-c++-common/strub-short-O3.c: Likewise.
+	* c-c++-common/strub-short-Os.c: Likewise.
+	* c-c++-common/strub-strict1.c: Likewise.
+	* c-c++-common/strub-strict2.c: Likewise.
+	* c-c++-common/strub-tail-O1.c: Likewise.
+	* c-c++-common/strub-tail-O2.c: Likewise.
+	* c-c++-common/strub-var1.c: Likewise.
+	* c-c++-common/torture/strub-callable1.c: Likewise.
+	* c-c++-common/torture/strub-callable2.c: Likewise.
+	* c-c++-common/torture/strub-const1.c: Likewise.
+	* c-c++-common/torture/strub-const2.c: Likewise.
+	* c-c++-common/torture/strub-const3.c: Likewise.
+	* c-c++-common/torture/strub-const4.c: Likewise.
+	* c-c++-common/torture/strub-data1.c: Likewise.
+	* c-c++-common/torture/strub-data2.c: Likewise.
+	* c-c++-common/torture/strub-data3.c: Likewise.
+	* c-c++-common/torture/strub-data4.c: Likewise.
+	* c-c++-common/torture/strub-data5.c: Likewise.
+	* c-c++-common/torture/strub-indcall1.c: Likewise.
+	* c-c++-common/torture/strub-indcall2.c: Likewise.
+	* c-c++-common/torture/strub-indcall3.c: Likewise.
+	* c-c++-common/torture/strub-inlinable1.c: Likewise.
+	* c-c++-common/torture/strub-inlinable2.c: Likewise.
+	* c-c++-common/torture/strub-ptrfn1.c: Likewise.
+	* c-c++-common/torture/strub-ptrfn2.c: Likewise.
+	* c-c++-common/torture/strub-ptrfn3.c: Likewise.
+	* c-c++-common/torture/strub-ptrfn4.c: Likewise.
+	* c-c++-common/torture/strub-pure1.c: Likewise.
+	* c-c++-common/torture/strub-pure2.c: Likewise.
+	* c-c++-common/torture/strub-pure3.c: Likewise.
+	* c-c++-common/torture/strub-pure4.c: Likewise.
+	* c-c++-common/torture/strub-run1.c: Likewise.
+	* c-c++-common/torture/strub-run2.c: Likewise.
+	* c-c++-common/torture/strub-run3.c: Likewise.
+	* c-c++-common/torture/strub-run4.c: Likewise.
+	* c-c++-common/torture/strub-run4c.c: Likewise.
+	* c-c++-common/torture/strub-run4d.c: Likewise.
+	* c-c++-common/torture/strub-run4i.c: Likewise.
+	* g++.dg/strub-run1.C: Likewise.
+	* g++.dg/torture/strub-init1.C: Likewise.
+	* g++.dg/torture/strub-init2.C: Likewise.
+	* g++.dg/torture/strub-init3.C: Likewise.
+	* gnat.dg/strub_attr.adb: Likewise.
+	* gnat.dg/strub_ind.adb: Likewise.
+	* gnat.dg/strub_access.adb: Likewise.
+	* gnat.dg/strub_access1.adb: Likewise.
+	* gnat.dg/strub_disp.adb: Likewise.
+	* gnat.dg/strub_disp1.adb: Likewise.
+	* gnat.dg/strub_ind1.adb: Likewise.
+	* gnat.dg/strub_ind2.adb: Likewise.
+	* gnat.dg/strub_intf.adb: Likewise.
+	* gnat.dg/strub_intf1.adb: Likewise.
+	* gnat.dg/strub_intf2.adb: Likewise.
+	* gnat.dg/strub_renm.adb: Likewise.
+	* gnat.dg/strub_renm1.adb: Likewise.
+	* gnat.dg/strub_renm2.adb: Likewise.
+	* gnat.dg/strub_var.adb: Likewise.
+	* gnat.dg/strub_var1.adb: Likewise.
+
+2023-12-07  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.target/i386/pr106910-1.c: Disable for newlib.
+
+2023-12-07  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.dg/analyzer/fd-4.c: Fix for newlib.
+
+2023-12-07  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.dg/vect/vect-ifcvt-18.c: Add dep on avx_runtime.
+	* gcc.dg/vect/vect-simd-clone-16f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+
+2023-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112893
+	* gm2/iso/fail/proccard.mod: New test.
+	* gm2/pim/pass/proccard.mod: New test.
+
+2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_prop-2.c: New test.
+
+2023-12-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmemidx-inline-asm-1.c: New test.
+
+2023-12-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-without-xtheadmemidx.c: New test.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111068
+	* gcc.target/i386/pr111068.c: New test.
+
+2023-12-07  Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/111965
+	* gcc.dg/cpp/pr111965-1.c: New test.
+	* gcc.dg/cpp/pr111965-2.c: New test.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112881
+	* gcc.dg/bitint-50.c: New test.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112880
+	* gcc.dg/bitint-49.c: New test.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96127
+	* gcc.target/s390/pr96127.c (c1): Add casts to long int *.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/switch-short-enum-1.c: New.
+	* gcc.dg/analyzer/switch-no-short-enum-1.c: New.
+
+2023-12-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/acle/rcpc3.c: New.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd-ti-shift.c: New test.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd-cmov.c: New test.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd-shld-shrd.c: New test.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add test for left/right rotate.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add l/ashiftrt tests.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add tests for sal.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add or and xor test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add and test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add not test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add neg test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd-sbb.c: New test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add test for ndd sub.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd-adc.c: New test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add more test.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: New test.
+
+2023-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	PR analyzer/112850
+	* c-c++-common/analyzer/call-summaries-pr107158-2.c: Add
+	-Wno-analyzer-symbol-too-complex.
+	* c-c++-common/analyzer/call-summaries-pr107158.c: Likewise.
+	* c-c++-common/analyzer/deref-before-check-pr109060-haproxy-cfgparse.c:
+	Likewise.
+	* c-c++-common/analyzer/feasibility-3.c: Add
+	-Wno-analyzer-too-complex and -Wno-analyzer-symbol-too-complex.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Add
+	-Wno-analyzer-symbol-too-complex.  Remove fail for
+	PR analyzer/103546 leak false positive.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Remove
+	xfail for PR analyzer/103546 leak false positive.
+	* c-c++-common/analyzer/infinite-recursion-3.c: Add
+	-Wno-analyzer-symbol-too-complex.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Likewise.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.
+	* c-c++-common/analyzer/null-deref-pr108400-SoftEtherVPN-WebUi.c:
+	Likewise.
+	* c-c++-common/analyzer/null-deref-pr108806-qemu.c: Likewise.
+	* c-c++-common/analyzer/null-deref-pr108830.c: Likewise.
+	* c-c++-common/analyzer/pr94596.c: Likewise.
+	* c-c++-common/analyzer/strtok-2.c: Likewise.
+	* c-c++-common/analyzer/strtok-4.c: Add -Wno-analyzer-too-complex
+	and -Wno-analyzer-symbol-too-complex.
+	* c-c++-common/analyzer/strtok-cppreference.c: Likewise.
+	* gcc.dg/analyzer/analyzer.exp: Add -Wanalyzer-symbol-too-complex
+	to DEFAULT_CFLAGS.
+	* gcc.dg/analyzer/attr-const-3.c: Add
+	-Wno-analyzer-symbol-too-complex.
+	* gcc.dg/analyzer/call-summaries-pr107072.c: Likewise.
+	* gcc.dg/analyzer/doom-s_sound-pr108867.c: Likewise.
+	* gcc.dg/analyzer/explode-4.c: Likewise.
+	* gcc.dg/analyzer/null-deref-pr102671-1.c: Likewise.
+	* gcc.dg/analyzer/null-deref-pr105755.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-curl.c: Likewise.
+	* gcc.dg/analyzer/pr101503.c: Likewise.
+	* gcc.dg/analyzer/pr103892.c: Add -Wno-analyzer-too-complex and
+	-Wno-analyzer-symbol-too-complex.
+	* gcc.dg/analyzer/pr94851-4.c: Add
+	-Wno-analyzer-symbol-too-complex.
+	* gcc.dg/analyzer/pr96860-1.c: Likewise.
+	* gcc.dg/analyzer/pr96860-2.c: Likewise.
+	* gcc.dg/analyzer/pr98918.c: Likewise.
+	* gcc.dg/analyzer/pr99044-2.c: Likewise.
+	* gcc.dg/analyzer/uninit-pr108806-qemu.c: Likewise.
+	* gcc.dg/analyzer/use-after-free.c: Add -Wno-analyzer-too-complex
+	and -Wno-analyzer-symbol-too-complex.
+	* gcc.dg/plugin/plugin.exp: Add new tests for
+	analyzer_kernel_plugin.c.
+	* gcc.dg/plugin/taint-CVE-2011-0521-4.c: Update expected results.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-6.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5-fixed.c: Remove xfail.
+	* gcc.dg/plugin/taint-pr112850-precise.c: New test.
+	* gcc.dg/plugin/taint-pr112850-too-complex.c: New test.
+	* gcc.dg/plugin/taint-pr112850-unsanitized.c: New test.
+	* gcc.dg/plugin/taint-pr112850.c: New test.
+
 2023-12-06  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* gcc.target/aarch64/acle/rwsr.c (get_rsr128): New.

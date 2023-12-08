@@ -1,3 +1,578 @@
+2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (expand_vec_series): Adapt function.
+	* config/riscv/riscv-v.cc (rvv_builder::double_steps_npatterns_p): New function.
+	(expand_vec_series): Adapt function.
+	(expand_const_vector): Support new interleave vector with different step.
+
+2023-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/106694
+	PR rtl-optimization/109078
+	PR rtl-optimization/109391
+	* config.gcc: Add aarch64-early-ra.o for AArch64 targets.
+	* config/aarch64/t-aarch64 (aarch64-early-ra.o): New rule.
+	* config/aarch64/aarch64-opts.h (aarch64_early_ra_scope): New enum.
+	* config/aarch64/aarch64.opt (mearly_ra): New option.
+	* doc/invoke.texi: Document it.
+	* common/config/aarch64/aarch64-common.cc
+	(aarch_option_optimization_table): Use -mearly-ra=strided by
+	default for -O2 and above.
+	* config/aarch64/aarch64-passes.def (pass_aarch64_early_ra): New pass.
+	* config/aarch64/aarch64-protos.h (aarch64_strided_registers_p)
+	(make_pass_aarch64_early_ra): Declare.
+	* config/aarch64/aarch64-sme.md (@aarch64_sme_lut<LUTI_BITS><mode>):
+	Add a stride_type attribute.
+	(@aarch64_sme_lut<LUTI_BITS><mode>_strided2): New pattern.
+	(@aarch64_sme_lut<LUTI_BITS><mode>_strided4): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svld1_impl::expand)
+	(svldnt1_impl::expand, svst1_impl::expand, svstn1_impl::expand): Handle
+	new way of defining multi-register loads and stores.
+	* config/aarch64/aarch64-sve.md (@aarch64_ld1<SVE_FULLx24:mode>)
+	(@aarch64_ldnt1<SVE_FULLx24:mode>, @aarch64_st1<SVE_FULLx24:mode>)
+	(@aarch64_stnt1<SVE_FULLx24:mode>): Delete.
+	* config/aarch64/aarch64-sve2.md (@aarch64_<LD1_COUNT:optab><mode>)
+	(@aarch64_<LD1_COUNT:optab><mode>_strided2): New patterns.
+	(@aarch64_<LD1_COUNT:optab><mode>_strided4): Likewise.
+	(@aarch64_<ST1_COUNT:optab><mode>): Likewise.
+	(@aarch64_<ST1_COUNT:optab><mode>_strided2): Likewise.
+	(@aarch64_<ST1_COUNT:optab><mode>_strided4): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_strided_registers_p): New
+	function.
+	* config/aarch64/aarch64.md (UNSPEC_LD1_SVE_COUNT): Delete.
+	(UNSPEC_ST1_SVE_COUNT, UNSPEC_LDNT1_SVE_COUNT): Likewise.
+	(UNSPEC_STNT1_SVE_COUNT): Likewise.
+	(stride_type): New attribute.
+	* config/aarch64/constraints.md (Uwd, Uwt): New constraints.
+	* config/aarch64/iterators.md (UNSPEC_LD1_COUNT, UNSPEC_LDNT1_COUNT)
+	(UNSPEC_ST1_COUNT, UNSPEC_STNT1_COUNT): New unspecs.
+	(optab): Handle them.
+	(LD1_COUNT, ST1_COUNT): New iterators.
+	* config/aarch64/aarch64-early-ra.cc: New file.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x4, vld1_u16_x4, vld1_u32_x4, vld1_u64_x4): New
+	(vld1_s8_x4, vld1_s16_x4, vld1_s32_x4, vld1_s64_x4): New.
+	(vld1_f16_x4, vld1_f32_x4): New.
+	(vld1_p8_x4, vld1_p16_x4, vld1_p64_x4): New.
+	(vld1_bf16_x4): New.
+	(vld1q_types_x4): Updated to use vld1q_x4
+	from arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x4): Updated entries.
+	(vld1q_x4): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md (neon_vld1q_x4<mode>):
+	Updated from neon_vld1_x4<mode>.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x3, vld1_u16_x3, vld1_u32_x3, vld1_u64_x3): New
+	(vld1_s8_x3, vld1_s16_x3, vld1_s32_x3, vld1_s64_x3): New.
+	(vld1_f16_x3, vld1_f32_x3): New.
+	(vld1_p8_x3, vld1_p16_x3, vld1_p64_x3): New.
+	(vld1_bf16_x3): New.
+	(vld1q_types_x3): Updated to use vld1q_x3 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x3): Updated entries.
+	(vld1q_x3): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md (neon_vld1q_x3<mode>): Updated from
+	neon_vld1_x3<mode>.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x2, vld1_u16_x2, vld1_u32_x2, vld1_u64_x2): New
+	(vld1_s8_x2, vld1_s16_x2, vld1_s32_x2, vld1_s64_x2): New.
+	(vld1_f16_x2, vld1_f32_x2): New.
+	(vld1_p8_x2, vld1_p16_x2, vld1_p64_x2): New.
+	(vld1_bf16_x2): New.
+	(vld1q_types_x2): Updated to use vld1q_x2 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x2): Updated entries.
+	(vld1q_x2): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md
+	(neon_vld1<VMEMX2_q>_x2<VDQX:mode>): Updated
+	from neon_vld1_x2<mode>.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x4, vst1q_u16_x4, vst1q_u32_x4, vst1q_u64_x4): New.
+	(vst1q_s8_x4, vst1q_s16_x4, vst1q_s32_x4, vst1q_s64_x4): New.
+	(vst1q_f16_x4, vst1q_f32_x4): New.
+	(vst1q_p8_x4, vst1q_p16_x4, vst1q_p64_x4): New.
+	(vst1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x4): New entries.
+	* config/arm/neon.md (neon_vst1q_x4<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x3, vst1q_u16_x3, vst1q_u32_x3, vst1q_u64_x3): New.
+	(vst1q_s8_x3, vst1q_s16_x3, vst1q_s32_x3, vst1q_s64_x3): New.
+	(vst1q_f16_x3, vst1q_f32_x3): New.
+	(vst1q_p8_x3, vst1q_p16_x3, vst1q_p64_x3): New.
+	(vst1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x3): New entries.
+	* config/arm/neon.md (neon_vst1q_x3<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x2, vst1q_u16_x2, vst1q_u32_x2, vst1q_u64_x2): New.
+	(vst1q_s8_x2, vst1q_s16_x2, vst1q_s32_x2, vst1q_s64_x2): New.
+	(vst1q_f16_x2, vst1q_f32_x2): New.
+	(vst1q_p8_x2, vst1q_p16_x2, vst1q_p64_x2): New.
+	(vst1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x2): New entries.
+	* config/arm/neon.md
+	(neon_vst1<VMEMX2_q>_x2<VDQX:mode>): Updated from
+	neon_vst1_x2<mode>.
+	* config/arm/iterators.md (VMEMX2): New mode iterator.
+	(VMEMX2_q): New mode attribute.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x4, vst1_u16_x4, vst1_u32_x4, vst1_u64_x4): New.
+	(vst1_s8_x4, vst1_s16_x4, vst1_s32_x4, vst1_s64_x4): New.
+	(vst1_f16_x4, vst1_f32_x4): New.
+	(vst1_p8_x4, vst1_p16_x4, vst1_p64_x4): New.
+	(vst1_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1_x4): New entries.
+	* config/arm/neon.md (vst1_x4<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x3, vst1_u16_x3, vst1_u32_x3, vst1_u64_x3): New.
+	(vst1_s8_x3, vst1_s16_x3, vst1_s32_x3, vst1_s64_x3): New.
+	(vst1_f16_x3, vst1_f32_x3): New.
+	(vst1_p8_x3, vst1_p16_x3, vst1_p64_x3): New.
+	(vst1_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1_x3): New entries.
+	* config/arm/neon.md (vst1_x3<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x2, vst1_u16_x2, vst1_u32_x2, vst1_u64_x2): New.
+	(vst1_s8_x2, vst1_s16_x2, vst1_s32_x2, vst1_s64_x2): New.
+	(vst1_f16_x2, vst1_f32_x2): New.
+	(vst1_p8_x2, vst1_p16_x2, vst1_p64_x2): New.
+	(vst1_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1_x2): New entries.
+	* config/arm/neon.md (vst1_x2<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x4, vld1q_u16_x4, vld1q_u32_x4, vld1q_u64_x4): New.
+	(vld1q_s8_x4, vld1q_s16_x4, vld1q_s32_x4, vld1q_s64_x4): New.
+	(vld1q_f16_x4, vld1q_f32_x4): New.
+	(vld1q_p8_x4, vld1q_p16_x4, vld1q_p64_x4): New.
+	(vld1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vld1_x4): New entries.
+	* config/arm/neon.md (vld1_x4<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x3, vld1q_u16_x3, vld1q_u32_x3, vld1q_u64_x3): New.
+	(vld1q_s8_x3, vld1q_s16_x3, vld1q_s32_x3, vld1q_s64_x3): New.
+	(vld1q_f16_x3, vld1q_f32_x3): New.
+	(vld1q_p8_x3, vld1q_p16_x3, vld1q_p64_x3): New.
+	(vld1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vld1_x3): New entries.
+	* config/arm/neon.md (vld1_x3<mode>): New.
+
+2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x2, vld1q_u16_x2, vld1q_u32_x2, vld1q_u64_x2): New.
+	(vld1q_s8_x2, vld1q_s16_x2, vld1q_s32_x2, vld1q_s64_x2): New.
+	(vld1q_f16_x2, vld1q_f32_x2): New.
+	(vld1q_p8_x2, vld1q_p16_x2, vld1q_p64_x2): New.
+	(vld1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vld1_x2): New entries.
+	* config/arm/neon.md (vld1_x2<mode>): New.
+
+2023-12-07  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/vecintrin.h (vec_step): Expand vec_step to
+	__builtin_s390_vec_step.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* target.def (have_strub_support_for): New hook.
+	* doc/tm.texi.in: Document it.
+	* doc/tm.texi: Rebuild.
+	* ipa-strub.cc: Include target.h.
+	(strub_target_support_p): New.
+	(can_strub_p): Call it.  Test for no flag_split_stack.
+	(pass_ipa_strub::adjust_at_calls_call): Check for target
+	support.
+	* config/nvptx/nvptx.cc (TARGET_HAVE_STRUB_SUPPORT_FOR):
+	Disable.
+	* doc/sourcebuild.texi (strub): Document new effective
+	target.
+
+2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-avlprop.cc (simplify_replace_avl): New function.
+	(simplify_replace_vlmax_avl): Fix bug.
+	* config/riscv/t-riscv: Add a new include file.
+
+2023-12-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.cc (th_memidx_classify_address_index):
+	Require TARGET_XTHEADMEMIDX for FP modes.
+	* config/riscv/thead.md: Require TARGET_XTHEADMEMIDX for all
+	XTheadFMemIdx pattern.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112881
+	* expr.cc (count_type_elements): Handle BITINT_TYPE like INTEGER_TYPE.
+
+2023-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112880
+	* tree-ssa-dce.cc (maybe_optimize_arith_overflow): Use
+	unsigned_type_for instead of conditionally calling
+	build_nonstandard_integer_type.
+
+2023-12-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/arm_neon.h (vldap1_lane_u64): New.
+	(vldap1q_lane_u64): Likewise.
+	(vldap1_lane_s64): Likewise.
+	(vldap1q_lane_s64): Likewise.
+	(vldap1_lane_f64): Likewise.
+	(vldap1q_lane_f64): Likewise.
+	(vldap1_lane_p64): Likewise.
+	(vldap1q_lane_p64): Likewise.
+	(vstl1_lane_u64): Likewise.
+	(vstl1q_lane_u64): Likewise.
+	(vstl1_lane_s64): Likewise.
+	(vstl1q_lane_s64): Likewise.
+	(vstl1_lane_f64): Likewise.
+	(vstl1q_lane_f64): Likewise.
+	(vstl1_lane_p64): Likewise.
+	(vstl1q_lane_p64): Likewise.
+
+2023-12-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(vec_ldap1_lane): New.
+	(vec_stl1_lane): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vec_stl1_lanes<mode>_lane<Vel>): New.
+	(aarch64_vec_stl1_lane<mode>): Likewise.
+	(aarch64_vec_ldap1_lanes<mode>_lane<Vel>): Likewise.
+	(aarch64_vec_ldap1_lane<mode>): Likewise.
+	* config/aarch64/aarch64.md (UNSPEC_LDAP1_LANE): New.
+	(UNSPEC_STL1_LANE): Likewise.
+
+2023-12-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/iterators.md (V12DIF): New.
+	(V12DUP): Likewise.
+	(VEL): Add support for all V12DIF-associated modes.
+	(Vetype): Add support for V1DI and V1DF.
+	(Vel): Likewise.
+
+2023-12-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (rcpc3): New.
+	* config/aarch64/aarch64.h (AARCH64_ISA_RCPC3): Likewise.
+	(TARGET_RCPC3): Likewise.
+	* doc/invoke.texi (rcpc3): Document feature in AArch64 Options.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_split_ashl_ndd): New
+	function to split NDD form lshift.
+	(ix86_split_rshift_ndd): Likewise for l/ashiftrt.
+	* config/i386/i386-protos.h (ix86_split_ashl_ndd): New
+	prototype.
+	(ix86_split_rshift_ndd): Likewise.
+	* config/i386/i386.md (ashl<mode>3_doubleword): Add NDD
+	alternative, call ndd split function when operands[0]
+	not equal to operands[1].
+	(define_split for doubleword lshift): Likewise.
+	(define_peephole for doubleword lshift): Likewise.
+	(<insn><mode>3_doubleword): Likewise for l/ashiftrt.
+	(define_split for doubleword l/ashiftrt): Likewise.
+	(define_peephole for doubleword l/ashiftrt): Likewise.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (*mov<mode>cc_noc): Extend with new constraints
+	to support NDD.
+	(*movsicc_noc_zext): Likewise.
+	(*movsicc_noc_zext_1): Likewise.
+	(*movqicc_noc): Likewise.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (x86_64_shld_ndd): New define_insn.
+	(x86_64_shld_ndd_1): Likewise.
+	(*x86_64_shld_ndd_2): Likewise.
+	(x86_shld_ndd): Likewise.
+	(x86_shld_ndd_1): Likewise.
+	(*x86_shld_ndd_2): Likewise.
+	(x86_64_shrd_ndd): Likewise.
+	(x86_64_shrd_ndd_1): Likewise.
+	(*x86_64_shrd_ndd_2): Likewise.
+	(x86_shrd_ndd): Likewise.
+	(x86_shrd_ndd_1): Likewise.
+	(*x86_shrd_ndd_2): Likewise.
+	(*x86_64_shld_shrd_1_nozext): Adjust codegen under TARGET_APX_NDD.
+	(*x86_shld_shrd_1_nozext): Likewise.
+	(*x86_64_shrd_shld_1_nozext): Likewise.
+	(*x86_shrd_shld_1_nozext): Likewise.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (*<insn><mode>3_1): Extend with a new
+	alternative to support NDD for SI/DI rotate, and adjust output
+	template.
+	(*<insn>si3_1_zext): Likewise.
+	(*<insn><mode>3_1): Likewise for QI/HI modes.
+	(rcrsi2): Likewise, and use nonimmediate_operand for operands[1]
+	to accept memory input for NDD alternative.
+	(rcrdi2): Likewise.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (ashr<mode>3_cvt): Extend with new
+	alternatives to support NDD, and adjust output templates.
+	(*ashr<mode>3_1): Likewise for SI/DI mode.
+	(*lshr<mode>3_1): Likewise.
+	(*<insn>si3_1_zext): Likewise.
+	(*ashr<mode>3_1): Likewise for QI/HI mode.
+	(*lshrqi3_1): Likewise.
+	(*lshrhi3_1): Likewise.
+	(<insn><mode>3_cmp): Likewise.
+	(*<insn><mode>3_cconly): Likewise.
+	(*ashrsi3_cvt_zext): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+	(*highpartdisi2): Likewise.
+	(*<insn>si3_cmp_zext): Likewise.
+	(<insn><mode>3_carry): Likewise.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (*ashl<mode>3_1): Extend with new
+	alternatives to support NDD, limit the new alternative to
+	generate sal only, and adjust output template for NDD.
+	(*ashlsi3_1_zext): Likewise.
+	(*ashlhi3_1): Likewise.
+	(*ashlqi3_1): Likewise.
+	(*ashl<mode>3_cmp): Likewise.
+	(*ashlsi3_cmp_zext): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+	(*ashl<mode>3_cconly): Likewise.
+	(*ashl<dwi>3_doubleword_highpart): Adjust codegen for NDD.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (<code><mode>3): Add new alternative for NDD
+	and adjust output templates.
+	(*<code><mode>_1): Likewise.
+	(*<code>qi_1): Likewise.
+	(*notxor<mode>_1): Likewise.
+	(*<code>si_1_zext): Likewise.
+	(*notxorqi_1): Likewise.
+	(*<code><mode>_2): Likewise.
+	(*<code>si_2_zext): Likewise.
+	(*<code>si_2_zext_imm): Likewise.
+	(*<code>si_1_zext_imm): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+	(*one_cmplsi2_2_zext): Likewise.
+	(define_split for *one_cmplsi2_2_zext): Use nonimmediate_operand for
+	operands[3].
+	(*<code><dwi>3_doubleword): Add NDD constraints, adopt '&' to NDD dest
+	and emit move for optimized case if operands[0] != operands[1] or
+	operands[4] != operands[5].
+	(define_split for QI highpart OR/XOR): Prohibit splitter to split NDD
+	form OR/XOR insn to <any_logic:code>qi_ext<mode>_3.
+	(define_split for QI strict_lowpart optimization): Prohibit splitter to
+	split NDD form AND insn to *<code><mode>3_1_slp.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (and<mode>3): Add NDD alternatives and adjust
+	output template.
+	(*anddi_1): Likewise.
+	(*and<mode>_1): Likewise.
+	(*andqi_1): Likewise.
+	(*andsi_1_zext): Likewise.
+	(*anddi_2): Likewise.
+	(*andsi_2_zext): Likewise.
+	(*andqi_2_maybe_si): Likewise.
+	(*and<mode>_2): Likewise.
+	(*and<dwi>3_doubleword): Add NDD alternative, adopt '&' to NDD dest and
+	emit move for optimized case if operands[0] not equal to operands[1].
+	(define_split for QI highpart AND): Prohibit splitter to split NDD
+	form AND insn to <any_logic:code>qi_ext<mode>_3.
+	(define_split for QI strict_lowpart optimization): Prohibit splitter to
+	split NDD form AND insn to *<code><mode>3_1_slp.
+	(define_split for zero_extend and optimization): Prohibit splitter to
+	split NDD form AND insn to zero_extend insn.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (one_cmpl<mode>2): Add new constraints for NDD
+	and adjust output template.
+	(*one_cmpl<mode>2_1): Likewise.
+	(*one_cmplqi2_1): Likewise.
+	(*one_cmpl<dwi>2_doubleword): Likewise, and adopt '&' to NDD dest.
+	(*one_cmpl<mode>2_2): Likewise.
+	(*one_cmplsi2_1_zext): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_unary_operator): Add use_ndd
+	parameter and adjust for NDD.
+	* config/i386/i386-protos.h: Add use_ndd parameter for
+	ix86_unary_operator_ok and ix86_expand_unary_operator.
+	* config/i386/i386.cc (ix86_unary_operator_ok): Add use_ndd parameter
+	and adjust for NDD.
+	* config/i386/i386.md (neg<mode>2): Add new constraint for NDD and
+	adjust output template.
+	(*neg<mode>_1): Likewise.
+	(*neg<dwi>2_doubleword): Likewise and adopt '&' to NDD dest.
+	(*neg<mode>_2): Likewise.
+	(*neg<mode>_ccc_1): Likewise.
+	(*neg<mode>_ccc_2): Likewise.
+	(*negsi_1_zext): Likewise, and use nonimmediate_operand for operands[1]
+	to accept memory input for NDD alternatives.
+	(*negsi_2_zext): Likewise.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*sub<dwi>3_doubleword): Add new alternative for
+	NDD, adopt '&' modifier to NDD dest and emit move when operands[0] not
+	equal to operands[1].
+	(*sub<dwi>3_doubleword_zext): Likewise.
+	(*subv<dwi>4_doubleword): Likewise.
+	(*subv<dwi>4_doubleword_1): Likewise.
+	(*subv<mode>4_overflow_1): Add NDD alternatives and adjust output
+	templates.
+	(*subv<mode>4_overflow_2): Likewise.
+	(@sub<mode>3_carry): Likewise.
+	(*addsi3_carry_zext_0r): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+	(*subsi3_carry_zext): Likewise.
+	(subborrow<mode>): Parse TARGET_APX_NDD to ix86_binary_operator_ok.
+	(subborrow<mode>_0): Likewise.
+	(*sub<mode>3_eq): Likewise.
+	(*sub<mode>3_ne): Likewise.
+	(*sub<mode>3_eq_1): Likewise.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_fixup_binary_operands_no_copy):
+	Add use_ndd parameter and parse it.
+	* config/i386/i386-protos.h (ix86_fixup_binary_operands_no_copy):
+	Change define.
+	* config/i386/i386.md (sub<mode>3): Add new alternatives for NDD
+	and adjust output templates.
+	(*sub<mode>_1): Likewise.
+	(*sub<mode>_2): Likewise.
+	(subv<mode>4): Likewise.
+	(*subv<mode>4): Likewise.
+	(subv<mode>4_1): Likewise.
+	(usubv<mode>4): Likewise.
+	(*sub<mode>_3): Likewise.
+	(*subsi_1_zext): Likewise, and use nonimmediate_operand for operands[1]
+	to accept memory input for NDD alternatives.
+	(*subsi_2_zext): Likewise.
+	(*subsi_3_zext): Likewise.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*add<dwi>3_doubleword): Add ndd alternatives,
+	adopt '&' to ndd dest and move operands[1] to operands[0] when they are
+	not equal.
+	(*add<dwi>3_doubleword_cc_overflow_1): Likewise.
+	(*addv<dwi>4_doubleword): Likewise.
+	(*addv<dwi>4_doubleword_1): Likewise.
+	(*add<dwi>3_doubleword_zext): Likewise.
+	(addv<mode>4_overflow_1): Add ndd alternatives.
+	(*addv<mode>4_overflow_2): Likewise.
+	(@add<mode>3_carry): Likewise.
+	(*add<mode>3_carry_0): Likewise.
+	(*addsi3_carry_zext): Likewise.
+	(addcarry<mode>): Likewise.
+	(addcarry<mode>_0): Likewise.
+	(*addcarry<mode>_1): Likewise.
+	(*add<mode>3_eq): Likewise.
+	(*add<mode>3_ne): Likewise.
+	(*addsi3_carry_zext_0): Likewise, and use nonimmediate_operand for
+	operands[1] to accept memory input for NDD alternative.
+
+2023-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/constraints.md (je): New constraint.
+	* config/i386/i386-protos.h (x86_poff_operand_p): New function to
+	check any *POFF constant in operand.
+	* config/i386/i386.cc (x86_poff_operand_p): New prototype.
+	* config/i386/i386.md (*add<mode>_1): Split out je alternative for add.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386.md: (addsi_1_zext): Add new alternatives for
+	NDD and adjust output templates.
+	(*add<mode>_2): Likewise.
+	(*addsi_2_zext): Likewise.
+	(*add<mode>_3): Likewise.
+	(*addsi_3_zext): Likewise.
+	(*adddi_4): Likewise.
+	(*add<mode>_4): Likewise.
+	(*add<mode>_5): Likewise.
+	(*addv<mode>4): Likewise.
+	(*addv<mode>4_1): Likewise.
+	(*add<mode>3_cconly_overflow_1): Likewise.
+	(*add<mode>3_cc_overflow_1): Likewise.
+	(*addsi3_zext_cc_overflow_1): Likewise.
+	(*add<mode>3_cconly_overflow_2): Likewise.
+	(*add<mode>3_cc_overflow_2): Likewise.
+	(*addsi3_zext_cc_overflow_2): Likewise.
+
+2023-12-07  Kong Lingling  <lingling.kong@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_fixup_binary_operands): Add
+	new use_ndd flag to check whether ndd can be used for this binop
+	and adjust operand emit.
+	(ix86_binary_operator_ok): Likewise.
+	(ix86_expand_binary_operator): Likewise, and void postreload
+	expand generate lea pattern when use_ndd is explicit parsed.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Prohibit apx subfeatures when not in 64bit mode.
+	* config/i386/i386-protos.h (ix86_binary_operator_ok):
+	Add use_ndd flag.
+	(ix86_fixup_binary_operand): Likewise.
+	(ix86_expand_binary_operand): Likewise.
+	* config/i386/i386.md (*add<mode>_1): Extend with new alternatives
+	to support NDD, and adjust output template.
+	(*addhi_1): Likewise.
+	(*addqi_1): Likewise.
+
+2023-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	PR analyzer/112850
+	* doc/invoke.texi: Add -Wanalyzer-symbol-too-complex.
+
 2023-12-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (extract_single_source): new function.

@@ -1,3 +1,41 @@
+2023-12-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::_ToClosure): Replace with ...
+	(__detail::_To): ... this.
+	(__detail::_ToClosure2): Replace with ...
+	(__detail::To2): ... this.
+	(to): Simplify using the existing _Partial range adaptor
+	closure object.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Iter_sink<charT, contiguous_iterator>):
+	Remove uint64_t local type.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Include <cstdint> instead of
+	<stdint.h>.
+
+2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112882
+	* include/bits/c++config (__is_constant_evaluated): Add
+	always_inline attribute.
+	(_GLIBCXX_DO_ASSERT): Remove macro.
+	(__glibcxx_assert): Define separately for assertions-enabled and
+	constexpr-only cases.
+
+2023-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/112858
+	* config/os/gnu-linux/os_defines.h
+	(_GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL): Define.
+	* libsupc++/atexit_thread.cc [__GXX_WEAK__ &&
+	_GLIBCXX_MAY_HAVE___CXA_THREAD_ATEXIT_IMPL]
+	(__cxa_thread_atexit): Add dynamic detection of
+	__cxa_thread_atexit_impl.
+
 2023-12-06  Jason Merrill  <jason@redhat.com>
 
 	DR 532
