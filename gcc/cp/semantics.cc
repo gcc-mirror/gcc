@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree maybe_convert_cond (tree);
 static tree finalize_nrv_r (tree *, int *, void *);
-static tree capture_decltype (tree);
 
 /* Used for OpenMP non-static data member privatization.  */
 
@@ -11855,21 +11854,52 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else
     {
-      /* Within a lambda-expression:
-
-	 Every occurrence of decltype((x)) where x is a possibly
-	 parenthesized id-expression that names an entity of
-	 automatic storage duration is treated as if x were
-	 transformed into an access to a corresponding data member
-	 of the closure type that would have been declared if x
-	 were a use of the denoted entity.  */
       if (outer_automatic_var_p (STRIP_REFERENCE_REF (expr))
 	  && current_function_decl
 	  && LAMBDA_FUNCTION_P (current_function_decl))
 	{
-	  type = capture_decltype (STRIP_REFERENCE_REF (expr));
-	  if (!type)
-	    goto dependent;
+	  /* [expr.prim.id.unqual]/3: If naming the entity from outside of an
+	     unevaluated operand within S would refer to an entity captured by
+	     copy in some intervening lambda-expression, then let E be the
+	     innermost such lambda-expression.
+
+	     If there is such a lambda-expression and if P is in E's function
+	     parameter scope but not its parameter-declaration-clause, then the
+	     type of the expression is the type of a class member access
+	     expression naming the non-static data member that would be declared
+	     for such a capture in the object parameter of the function call
+	     operator of E."  */
+	  /* FIXME: This transformation needs to happen for all uses of an outer
+	     local variable inside decltype, not just decltype((x)) (PR83167).
+	     And we don't handle nested lambdas properly, where we need to
+	     consider the outer lambdas as well (PR112926). */
+	  tree decl = STRIP_REFERENCE_REF (expr);
+	  tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
+	  tree cap = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
+				  LOOK_want::HIDDEN_LAMBDA);
+
+	  if (cap && is_capture_proxy (cap))
+	    type = TREE_TYPE (cap);
+	  else if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_COPY)
+	    {
+	      type = TREE_TYPE (decl);
+	      if (TYPE_REF_P (type)
+		  && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
+		type = TREE_TYPE (type);
+	    }
+
+	  if (type && !TYPE_REF_P (type))
+	    {
+	      tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
+	      if (WILDCARD_TYPE_P (non_reference (obtype)))
+		/* We don't know what the eventual obtype quals will be.  */
+		goto dependent;
+	      int quals = cp_type_quals (type);
+	      if (INDIRECT_TYPE_P (obtype))
+		quals |= cp_type_quals (TREE_TYPE (obtype));
+	      type = cp_build_qualified_type (type, quals);
+	      type = build_reference_type (type);
+	    }
 	}
       else if (error_operand_p (expr))
 	type = error_mark_node;
@@ -11877,7 +11907,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	/* If the expression is just "this", we want the
 	   cv-unqualified pointer for the "this" type.  */
 	type = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
-      else
+
+      if (!type)
 	{
 	  /* Otherwise, where T is the type of e, if e is an lvalue,
 	     decltype(e) is defined as T&; if an xvalue, T&&; otherwise, T. */
@@ -12764,60 +12795,6 @@ apply_deduced_return_type (tree fco, tree return_type)
 #endif
 	fun->returns_struct = aggr;
       }
-}
-
-/* DECL is a local variable or parameter from the surrounding scope of a
-   lambda-expression.  Returns the decltype for a use of the capture field
-   for DECL even if it hasn't been captured yet.  Or NULL_TREE if we can't give
-   a correct answer at this point and we should build a DECLTYPE_TYPE.  */
-
-static tree
-capture_decltype (tree decl)
-{
-  tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
-  tree cap = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
-			  LOOK_want::HIDDEN_LAMBDA);
-  tree type;
-
-  if (cap && is_capture_proxy (cap))
-    type = TREE_TYPE (cap);
-  else
-    switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam))
-      {
-      case CPLD_NONE:
-	error ("%qD is not captured", decl);
-	return error_mark_node;
-
-      case CPLD_COPY:
-	type = TREE_TYPE (decl);
-	if (TYPE_REF_P (type)
-	    && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
-	  type = TREE_TYPE (type);
-	break;
-
-      case CPLD_REFERENCE:
-	type = TREE_TYPE (decl);
-	if (!TYPE_REF_P (type))
-	  type = build_reference_type (TREE_TYPE (decl));
-	break;
-
-      default:
-	gcc_unreachable ();
-      }
-
-  if (!TYPE_REF_P (type))
-    {
-      tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
-      if (WILDCARD_TYPE_P (non_reference (obtype)))
-	/* We don't know what the eventual obtype quals will be.  */
-	return NULL_TREE;
-      int quals = cp_type_quals (type);
-      if (INDIRECT_TYPE_P (obtype))
-	quals |= cp_type_quals (TREE_TYPE (obtype));
-      type = cp_build_qualified_type (type, quals);
-      type = build_reference_type (type);
-    }
-  return type;
 }
 
 /* Build a unary fold expression of EXPR over OP. If IS_RIGHT is true,
