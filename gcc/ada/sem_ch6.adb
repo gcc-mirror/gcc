@@ -5373,6 +5373,7 @@ package body Sem_Ch6 is
 
          if Ada_Version >= Ada_2005
            and then not Is_Invariant_Procedure_Or_Body (Designator)
+           and then not Is_Init_Proc (Designator)
          then
             declare
                Formal     : Entity_Id;
