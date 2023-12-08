@@ -83,6 +83,9 @@ endif
 if DRUNTIME_CPU_ARM
     DRUNTIME_SOURCES_CONFIGURED += config/arm/switchcontext.S
 endif
+if DRUNTIME_CPU_LOONGARCH
+    DRUNTIME_SOURCES_CONFIGURED += config/loongarch/switchcontext.S
+endif
 if DRUNTIME_CPU_MIPS
     DRUNTIME_SOURCES_CONFIGURED += config/mips/switchcontext.S
 endif
