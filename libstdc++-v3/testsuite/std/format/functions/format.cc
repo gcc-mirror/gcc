@@ -5,7 +5,7 @@
 
 #ifndef __cpp_lib_format
 # error "Feature test macro for std::format is missing in <format>"
-#elif __cpp_lib_format < 202106L
+#elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <format>"
 #endif
 
@@ -13,7 +13,7 @@
 #include <version>
 #ifndef __cpp_lib_format
 # error "Feature test macro for std::format is missing in <version>"
-#elif __cpp_lib_format < 202106L
+#elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <version>"
 #endif
 
