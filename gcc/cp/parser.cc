@@ -12964,6 +12964,9 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
       if (statement == error_mark_node
 	  && !cp_parser_uncommitted_to_tentative_parse_p (parser))
 	{
+	  /* If we ran into a problem, make sure we complained.  */
+	  gcc_assert (seen_error ());
+
 	  cp_parser_skip_to_end_of_block_or_statement (parser);
 	  return error_mark_node;
 	}
