@@ -1,3 +1,39 @@
+2023-12-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-12-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/aarch64/ldp_stp_unaligned_2.c: Use -fno-stack-protector.
+	* gcc.target/aarch64/shadow_call_stack_5.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_6.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_7.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_8.c: Likewise.
+	* gcc.target/aarch64/stack-check-12.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-11.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-12.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-13.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-14.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-15.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-17.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-18.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-2.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-5.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-6.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-8.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-9.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_24.c: Likewise.
+	* gcc.target/aarch64/test_frame_1.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+	* gcc.target/aarch64/test_frame_11.c: Likewise.
+	* gcc.target/aarch64/test_frame_13.c: Likewise.
+	* gcc.target/aarch64/test_frame_15.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
