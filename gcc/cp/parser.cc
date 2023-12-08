@@ -20164,20 +20164,20 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       return type;
 
     default:
+      /* If token is a type-yielding built-in traits, parse it.  */
+      const cp_trait* trait = cp_lexer_peek_trait_type (parser->lexer);
+      if (trait)
+	{
+	  type = cp_parser_trait (parser, trait);
+	  if (decl_specs)
+	    cp_parser_set_decl_spec_type (decl_specs, type,
+					  token,
+					  /*type_definition_p=*/false);
+
+	  return type;
+	}
+
       break;
-    }
-
-  /* If token is a type-yielding built-in traits, parse it.  */
-  const cp_trait* trait = cp_lexer_peek_trait_type (parser->lexer);
-  if (trait)
-    {
-      type = cp_parser_trait (parser, trait);
-      if (decl_specs)
-	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token,
-				      /*type_definition_p=*/false);
-
-      return type;
     }
 
   /* If token is an already-parsed decltype not followed by ::,
