@@ -5989,10 +5989,11 @@ gimple_lower_bitint (void)
 		    {
 		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
 			  || (bitint_precision_kind (TREE_TYPE (rhs1))
-			      < bitint_prec_large)
-			  || (TYPE_PRECISION (TREE_TYPE (rhs1))
-			      >= TYPE_PRECISION (TREE_TYPE (s)))
-			  || mergeable_op (SSA_NAME_DEF_STMT (s)))
+			      < bitint_prec_large))
+			continue;
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   >= TYPE_PRECISION (TREE_TYPE (s)))
+			  && mergeable_op (use_stmt))
 			continue;
 		      /* Prevent merging a widening non-mergeable cast
 			 on result of some narrower mergeable op
@@ -6011,7 +6012,9 @@ gimple_lower_bitint (void)
 			  || !mergeable_op (SSA_NAME_DEF_STMT (rhs1))
 			  || gimple_store_p (use_stmt))
 			continue;
-		      if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   < TYPE_PRECISION (TREE_TYPE (s)))
+			  && gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
 			{
 			  /* Another exception is if the widening cast is
 			     from mergeable same precision cast from something
