@@ -126,8 +126,9 @@ by type.  Explanations are in the following sections.
 -ffree-form -ffree-line-length-@var{n} -ffree-line-length-none
 -fimplicit-none -finteger-4-integer-8 -fmax-identifier-length
 -fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp
--freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10
--freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
+-fopenmp-allocators -fopenmp-simd -freal-4-real-10 -freal-4-real-16
+-freal-4-real-8 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4
+-std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -410,26 +411,64 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 Enable the Cray pointer extension, which provides C-like pointer
 functionality.
 
-@opindex @code{fopenacc}
-@cindex OpenACC
-@item -fopenacc
-Enable the OpenACC extensions.  This includes OpenACC @code{!$acc}
-directives in free form and @code{c$acc}, @code{*$acc} and
-@code{!$acc} directives in fixed form, @code{!$} conditional
-compilation sentinels in free form and @code{c$}, @code{*$} and
-@code{!$} sentinels in fixed form, and when linking arranges for the
-OpenACC runtime library to be linked in.
 
-@opindex @code{fopenmp}
-@cindex OpenMP
+@opindex fopenacc
+@cindex OpenACC accelerator programming
+@item -fopenacc
+Enable handling of OpenACC directives @samp{!$acc} in free-form Fortran and
+@samp{!$acc}, @samp{c$acc} and @samp{*$acc} in fixed-form Fortran.  When
+@option{-fopenacc} is specified, the compiler generates accelerated code
+according to the OpenACC Application Programming Interface v2.6
+@w{@uref{https://www.openacc.org}}.  This option implies @option{-pthread},
+and thus is only supported on targets that have support for @option{-pthread}.
+The option @option{-fopenacc} implies @option{-frecursive}.
+
+@opindex fopenmp
+@cindex OpenMP parallel
 @item -fopenmp
-Enable the OpenMP extensions.  This includes OpenMP @code{!$omp} directives
-in free form
-and @code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form,
-@code{!$} conditional compilation sentinels in free form
-and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form, 
-and when linking arranges for the OpenMP runtime library to be linked
-in.  The option @option{-fopenmp} implies @option{-frecursive}.
+Enable handling of OpenMP directives @samp{!$omp} in Fortran.  It
+additionally enables the conditional compilation sentinel @samp{!$} in
+Fortran.  In fixed source form Fortran, the sentinels can also start with
+@samp{c} or @samp{*}.  When @option{-fopenmp} is specified, the
+compiler generates parallel code according to the OpenMP Application
+Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
+implies @option{-pthread}, and thus is only supported on targets that
+have support for @option{-pthread}. @option{-fopenmp} implies
+@option{-fopenmp-simd} and @option{-frecursive}.
+
+@opindex fopenmp-allocators
+@cindex OpenMP Allocators
+@item -fopenmp-allocators
+Enables handling of allocation, reallocation and deallocation of Fortran
+allocatable and pointer variables that are allocated using the
+@samp{!$omp allocators} and @samp{!$omp allocate} constructs.  Files
+containing either directive have to be compiled with this option in addition
+to @option{-fopenmp}.  Additionally, all files that might deallocate or
+reallocate a variable that has been allocated with an OpenMP allocator
+have to be compiled with this option.  This includes intrinsic assignment
+to allocatable variables when reallocation may occur and deallocation
+due to either of the following: end of scope, explicit deallocation,
+@samp{intent(out)}, deallocation of allocatable components etc.
+Files not changing the allocation status or only for components of
+a derived type that have not been allocated using those two directives
+do not need to be compiled with this option.  Nor do files that handle
+such variables after they have been deallocated or allocated by the
+normal Fortran allocator.
+
+@opindex fopenmp-simd
+@cindex OpenMP SIMD
+@cindex SIMD
+@item -fopenmp-simd
+Enable handling of OpenMP's @code{simd}, @code{declare simd},
+@code{declare reduction}, @code{assume}, @code{ordered}, @code{scan}
+and @code{loop} directive, and of combined or composite directives with
+@code{simd} as constituent with  @code{!$omp} in Fortran.  It additionally
+enables the conditional compilation sentinel @samp{!$} in Fortran.  In
+fixed source form Fortran, the sentinels can also start with @samp{c} or
+@samp{*}.  Other OpenMP directives are ignored.  Unless @option{-fopenmp}
+is additionally specified, the @code{loop} region binds to the current task
+region, independent of the specified @code{bind} clause.
+
 
 @opindex @code{frange-check}
 @item -fno-range-check

@@ -1364,6 +1364,8 @@ decode_omp_directive (void)
 	  prog_unit->omp_target_seen = true;
 	break;
       }
+    case ST_OMP_ALLOCATE_EXEC:
+    case ST_OMP_ALLOCATORS:
     case ST_OMP_TEAMS:
     case ST_OMP_TEAMS_DISTRIBUTE:
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
@@ -1386,7 +1388,10 @@ decode_omp_directive (void)
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_SIMD:
-	      stk->tail->ext.omp_clauses->contains_teams_construct = 1;
+	      if (ret == ST_OMP_ALLOCATE_EXEC || ret == ST_OMP_ALLOCATORS)
+		new_st.ext.omp_clauses->contained_in_target_construct = 1;
+	      else
+		stk->tail->ext.omp_clauses->contains_teams_construct = 1;
 	      break;
 	    default:
 	      break;

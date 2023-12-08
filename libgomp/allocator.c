@@ -35,6 +35,69 @@
 #include <dlfcn.h>
 #endif
 
+/* Keeping track whether a Fortran scalar allocatable/pointer has been
+   allocated via 'omp allocators'/'omp allocate'.  */
+
+struct fort_alloc_splay_tree_key_s {
+  void *ptr;
+};
+
+typedef struct fort_alloc_splay_tree_node_s *fort_alloc_splay_tree_node;
+typedef struct fort_alloc_splay_tree_s *fort_alloc_splay_tree;
+typedef struct fort_alloc_splay_tree_key_s *fort_alloc_splay_tree_key;
+
+static inline int
+fort_alloc_splay_compare (fort_alloc_splay_tree_key x, fort_alloc_splay_tree_key y)
+{
+  if (x->ptr < y->ptr)
+    return -1;
+  if (x->ptr > y->ptr)
+    return 1;
+  return 0;
+}
+#define splay_tree_prefix fort_alloc
+#define splay_tree_static
+#include "splay-tree.h"
+
+#define splay_tree_prefix fort_alloc
+#define splay_tree_static
+#define splay_tree_c
+#include "splay-tree.h"
+
+static struct fort_alloc_splay_tree_s fort_alloc_scalars;
+
+/* Add pointer as being alloced by GOMP_alloc.  */
+void
+GOMP_add_alloc (void *ptr)
+{
+  if (ptr == NULL)
+    return;
+  fort_alloc_splay_tree_node item;
+  item = gomp_malloc (sizeof (struct splay_tree_node_s));
+  item->key.ptr = ptr;
+  item->left = NULL;
+  item->right = NULL;
+  fort_alloc_splay_tree_insert (&fort_alloc_scalars, item);
+}
+
+/* Remove pointer, either called by FREE or by REALLOC,
+   either of them can change the allocation status.  */
+bool
+GOMP_is_alloc (void *ptr)
+{
+  struct fort_alloc_splay_tree_key_s needle;
+  fort_alloc_splay_tree_node n;
+  needle.ptr = ptr;
+  n = fort_alloc_splay_tree_lookup_node (&fort_alloc_scalars, &needle);
+  if (n)
+    {
+      fort_alloc_splay_tree_remove (&fort_alloc_scalars, &n->key);
+      free (n);
+    }
+  return n != NULL;
+}
+
+
 #define omp_max_predefined_alloc omp_thread_mem_alloc
 
 /* These macros may be overridden in config/<target>/allocator.c.

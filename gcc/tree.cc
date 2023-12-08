@@ -15023,6 +15023,8 @@ fndecl_dealloc_argno (tree fndecl)
 	{
 	case BUILT_IN_FREE:
 	case BUILT_IN_REALLOC:
+	case BUILT_IN_GOMP_FREE:
+	case BUILT_IN_GOMP_REALLOC:
 	  return 0;
 	default:
 	  break;

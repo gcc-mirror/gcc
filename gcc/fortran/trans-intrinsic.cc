@@ -12819,9 +12819,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
-      tmp = gfc_conv_descriptor_data_get (to_se.expr);
-      tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE, NULL_TREE,
-					NULL_TREE, true, to_expr,
+      tmp = gfc_deallocate_with_status (to_se.expr, NULL_TREE, NULL_TREE,
+					NULL_TREE, NULL_TREE, true, to_expr,
 					GFC_CAF_COARRAY_NOCOARRAY);
       gfc_add_expr_to_block (&block, tmp);
     }

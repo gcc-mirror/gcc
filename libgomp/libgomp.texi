@@ -232,7 +232,9 @@ The OpenMP 4.5 specification is fully supported.
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab See also @ref{Memory allocation}
 @item Memory management routines @tab Y @tab
-@item @code{allocate} directive @tab P @tab Only C and Fortran, only stack variables
+@item @code{allocate} directive @tab P
+      @tab Only C for stack/automatic and Fortran for stack/automatic
+      and allocatable/pointer variables
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause @tab Y @tab
@@ -304,7 +306,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
 @item @code{align} clause in @code{allocate} directive @tab P
-      @tab Only C and Fortran (and only stack variables)
+      @tab Only C and Fortran (and not for static variables)
 @item @code{align} modifier in @code{allocate} clause @tab Y @tab
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
@@ -402,7 +404,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
       @tab Y @tab
-@item New @code{allocators} directive for Fortran @tab N @tab
+@item New @code{allocators} directive for Fortran @tab Y @tab
 @item Deprecation of @code{allocate} directive for Fortran
       allocatables/pointers @tab N @tab
 @item Optional paired @code{end} directive with @code{dispatch} @tab N @tab
@@ -5697,8 +5699,12 @@ The description below applies to:
       @option{-fstack-arrays}].)
 @item Using the @code{allocate} directive for variable in static memory is
       currently not supported (compile time error).
-@item Using the @code{allocators} directive for Fortran pointers and
-      allocatables is currently not supported (compile time error).
+@item In Fortran, the @code{allocators} directive and the executable
+      @code{allocate} directive for Fortran pointers and allocatables is
+      supported, but requires that files containing those directives has to be
+      compiled with @option{-fopenmp-allocators}.  Additionally, all files that
+      might explicitly or implicitly deallocate memory allocated that way must
+      also be compiled with that option.
 @end itemize
 
 For the available predefined allocators and, as applicable, their associated

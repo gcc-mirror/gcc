@@ -47,6 +47,7 @@
 
 /* Define another splay tree instantiation - for reverse offload.  */
 #define splay_tree_prefix reverse
+#define splay_tree_static
 #define splay_tree_c
 #include "splay-tree.h"
 

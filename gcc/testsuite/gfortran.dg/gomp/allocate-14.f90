@@ -93,3 +93,44 @@ subroutine c_and_func_ptrs
   !$omp allocate(cfunptr) ! OK? A normal derived-type var?
   !$omp allocate(p)  ! { dg-error "Argument 'p' at .1. to declarative !.OMP ALLOCATE directive must be a variable" }
 end
+
+
+subroutine coarray_2
+  use m
+  implicit none
+  integer :: x
+  integer, allocatable :: a, b, c[:], d
+  x = 5 ! executable stmt
+  !$omp allocate(a,b) align(16)
+  !$omp allocate        ! { dg-error "Unexpected coarray 'c' in 'allocate' at .1., implicitly listed in '!.OMP ALLOCATE' at .2." }
+  !$omp allocate(d) align(32)
+  allocate(a,b,c[*],d)  ! { dg-error "Unexpected coarray 'c' in 'allocate' at .1., implicitly listed in '!.OMP ALLOCATE' at .2." }
+end
+
+
+subroutine coarray_3
+  use m
+  implicit none
+  integer :: x
+  integer, allocatable :: a, b, c[:], d
+  x = 5 ! executable stmt
+  !$omp allocators allocate(align(16): a,b) allocate(align(32) : d) 
+  allocate(a,b,c[*],d)  ! OK - Fortran allocator used for 'C'
+end
+
+
+subroutine unclear
+  use m
+  implicit none
+  integer :: x
+  integer, allocatable :: a, b, c[:], d
+
+  ! OpenMP is unclear which allocator is used for 'C' - the fortran one or the OpenMP one.
+  ! GCC therefore rejects it.
+
+  x = 5 ! executable stmt
+
+  !$omp allocate(a,b) align(16)
+  !$omp allocate(d) align(32)
+  allocate(a,b,c[*],d)  ! { dg-error "'c' listed in 'allocate' statement at .1. but it is neither explicitly in listed in the '!.OMP ALLOCATE' directive nor exists a directive without argument list" }
+end

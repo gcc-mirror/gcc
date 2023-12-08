@@ -4842,6 +4842,30 @@ static tree gfc_trans_omp_sections (gfc_code *, gfc_omp_clauses *);
 static tree gfc_trans_omp_workshare (gfc_code *, gfc_omp_clauses *);
 
 static tree
+gfc_trans_omp_allocators (gfc_code *code)
+{
+  static bool warned = false;
+  gfc_omp_namelist *omp_allocate
+    = code->ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+  if (!flag_openmp_allocators && !warned)
+    {
+      omp_allocate = NULL;
+      gfc_error ("%<!$OMP %s%> at %L requires %<-fopenmp-allocators%>",
+		 code->op == EXEC_OMP_ALLOCATE ? "ALLOCATE" : "ALLOCATORS",
+		 &code->loc);
+      warning (0, "All files that might deallocate such a variable must be "
+		  "compiled with %<-fopenmp-allocators%>");
+      inform (UNKNOWN_LOCATION,
+	      "This includes explicit DEALLOCATE, reallocation on intrinsic "
+	      "assignment, INTENT(OUT) for allocatable dummy arguments, and "
+	      "reallocation of allocatable components allocated with an "
+	      "OpenMP allocator");
+      warned = true;
+    }
+  return gfc_trans_allocate (code->block->next, omp_allocate);
+}
+
+static tree
 gfc_trans_omp_assume (gfc_code *code)
 {
   stmtblock_t block;
@@ -7992,9 +8016,7 @@ gfc_trans_omp_directive (gfc_code *code)
     {
     case EXEC_OMP_ALLOCATE:
     case EXEC_OMP_ALLOCATORS:
-      sorry ("%<!$OMP %s%> not yet supported",
-	     code->op == EXEC_OMP_ALLOCATE ? "ALLOCATE" : "ALLOCATORS");
-      return NULL_TREE;
+      return gfc_trans_omp_allocators (code);
     case EXEC_OMP_ASSUME:
       return gfc_trans_omp_assume (code);
     case EXEC_OMP_ATOMIC:
@@ -8328,4 +8350,37 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	    }
 	}
     }
+}
+
+/* Add ptr for tracking as being allocated by GOMP_alloc. */
+
+tree
+gfc_omp_call_add_alloc (tree ptr)
+{
+  static tree fn = NULL_TREE;
+  if (fn == NULL_TREE)
+    {
+      fn = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+      fn = build_fn_decl ("GOMP_add_alloc", fn);
+/* FIXME: attributes.  */
+    }
+  return build_call_expr_loc (input_location, fn, 1, ptr);
+}
+
+/* Generated function returns true when it was tracked via GOMP_add_alloc and
+   removes it from the tracking.  As called just before GOMP_free or omp_realloc
+   the pointer is or might become invalid, thus, it is always removed. */
+
+tree
+gfc_omp_call_is_alloc (tree ptr)
+{
+  static tree fn = NULL_TREE;
+  if (fn == NULL_TREE)
+    {
+      fn = build_function_type_list (boolean_type_node, ptr_type_node,
+				     NULL_TREE);
+      fn = build_fn_decl ("GOMP_is_alloc", fn);
+/* FIXME: attributes.  */
+    }
+  return build_call_expr_loc (input_location, fn, 1, ptr);
 }

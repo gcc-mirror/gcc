@@ -363,6 +363,21 @@ gfc_conv_descriptor_rank (tree desc)
 }
 
 
+tree
+gfc_conv_descriptor_version (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (dtype)), GFC_DTYPE_VERSION);
+  gcc_assert (tmp != NULL_TREE
+	      && TREE_TYPE (tmp) == integer_type_node);
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
+			  dtype, tmp, NULL_TREE);
+}
+
+
 /* Return the element length from the descriptor dtype field.  */
 
 tree
@@ -6196,7 +6211,7 @@ bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 		    tree errlen, tree label_finish, tree expr3_elem_size,
 		    tree *nelems, gfc_expr *expr3, tree e3_arr_desc,
-		    bool e3_has_nodescriptor)
+		    bool e3_has_nodescriptor, gfc_omp_namelist *omp_alloc)
 {
   tree tmp;
   tree pointer;
@@ -6218,6 +6233,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   gfc_ref *ref, *prev_ref = NULL, *coref;
   bool allocatable, coarray, dimension, alloc_w_e3_arr_spec = false,
       non_ulimate_coarray_ptr_comp;
+  tree omp_cond = NULL_TREE, omp_alt_alloc = NULL_TREE;
 
   ref = expr->ref;
 
@@ -6368,7 +6384,11 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
       token = gfc_build_addr_expr (NULL_TREE, token);
     }
   else
-    pointer = gfc_conv_descriptor_data_get (se->expr);
+    {
+      pointer = gfc_conv_descriptor_data_get (se->expr);
+      if (omp_alloc)
+	omp_cond = boolean_true_node;
+    }
   STRIP_NOPS (pointer);
 
   if (allocatable)
@@ -6384,18 +6404,66 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_start_block (&elseblock);
 
+  tree succ_add_expr = NULL_TREE;
+  if (omp_cond)
+    {
+      tree align, alloc, sz;
+      gfc_se se2;
+      if (omp_alloc->u2.allocator)
+	{
+	  gfc_init_se (&se2, NULL);
+	  gfc_conv_expr (&se2, omp_alloc->u2.allocator);
+	  gfc_add_block_to_block (&elseblock, &se2.pre);
+	  alloc = gfc_evaluate_now (se2.expr, &elseblock);
+	  gfc_add_block_to_block (&elseblock, &se2.post);
+	}
+      else
+	alloc = build_zero_cst (ptr_type_node);
+      tmp = TREE_TYPE (TREE_TYPE (pointer));
+      if (tmp == void_type_node)
+	tmp = gfc_typenode_for_spec (&expr->ts, 0);
+      if (omp_alloc->u.align)
+	{
+	  gfc_init_se (&se2, NULL);
+	  gfc_conv_expr (&se2, omp_alloc->u.align);
+	  gcc_assert (CONSTANT_CLASS_P (se2.expr)
+		      && se2.pre.head == NULL
+		      && se2.post.head == NULL);
+	  align = build_int_cst (size_type_node,
+				 MAX (tree_to_uhwi (se2.expr),
+				      TYPE_ALIGN_UNIT (tmp)));
+	}
+      else
+	align = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (tmp));
+      sz = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+			    fold_convert (size_type_node, size),
+			    build_int_cst (size_type_node, 1));
+      omp_alt_alloc = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+      DECL_ATTRIBUTES (omp_alt_alloc)
+	= tree_cons (get_identifier ("omp allocator"),
+		     build_tree_list (NULL_TREE, alloc),
+		     DECL_ATTRIBUTES (omp_alt_alloc));
+      omp_alt_alloc = build_call_expr (omp_alt_alloc, 3, align, sz, alloc);
+      succ_add_expr = fold_build2_loc (input_location, MODIFY_EXPR,
+				       void_type_node,
+				       gfc_conv_descriptor_version (se->expr),
+				       build_int_cst (integer_type_node, 1));
+    }
+
   /* The allocatable variant takes the old pointer as first argument.  */
   if (allocatable)
     gfc_allocate_allocatable (&elseblock, pointer, size, token,
 			      status, errmsg, errlen, label_finish, expr,
-			      coref != NULL ? coref->u.ar.as->corank : 0);
+			      coref != NULL ? coref->u.ar.as->corank : 0,
+			      omp_cond, omp_alt_alloc, succ_add_expr);
   else if (non_ulimate_coarray_ptr_comp && token)
     /* The token is set only for GFC_FCOARRAY_LIB mode.  */
     gfc_allocate_using_caf_lib (&elseblock, pointer, size, token, status,
 				errmsg, errlen,
 				GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY);
   else
-    gfc_allocate_using_malloc (&elseblock, pointer, size, status);
+    gfc_allocate_using_malloc (&elseblock, pointer, size, status,
+			       omp_cond, omp_alt_alloc, succ_add_expr);
 
   if (dimension)
     {
@@ -9603,11 +9671,6 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  else if (attr->dimension && !attr->proc_pointer)
 		    caf_token = gfc_conv_descriptor_token (comp);
 		}
-	      if (attr->dimension && !attr->codimension && !attr->proc_pointer)
-		/* When this is an array but not in conjunction with a coarray
-		   then add the data-ref.  For coarray'ed arrays the data-ref
-		   is added by deallocate_with_status.  */
-		comp = gfc_conv_descriptor_data_get (comp);
 
 	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, NULL_TREE,
 						NULL_TREE, NULL_TREE, true,
@@ -10292,29 +10355,50 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
-	  if (c->attr.pdt_array)
+	  if (c->attr.pdt_array || c->attr.pdt_string)
 	    {
-	      tmp = gfc_conv_descriptor_data_get (comp);
+	      tmp = comp;
+	      if (c->attr.pdt_array)
+		tmp = gfc_conv_descriptor_data_get (comp);
 	      null_cond = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node, tmp,
 					   build_int_cst (TREE_TYPE (tmp), 0));
-	      tmp = gfc_call_free (tmp);
+	      if (flag_openmp_allocators)
+		{
+		  tree cd, t;
+		  if (c->attr.pdt_array)
+		    cd = fold_build2_loc (input_location, EQ_EXPR,
+					  boolean_type_node,
+					  gfc_conv_descriptor_version (comp),
+					  build_int_cst (integer_type_node, 1));
+		  else
+		    cd = gfc_omp_call_is_alloc (tmp);
+		  t = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  t = build_call_expr_loc (input_location, t, 1, tmp);
+
+		  stmtblock_t tblock;
+		  gfc_init_block (&tblock);
+		  gfc_add_expr_to_block (&tblock, t);
+		  if (c->attr.pdt_array)
+		    gfc_add_modify (&tblock, gfc_conv_descriptor_version (comp),
+				    build_zero_cst (integer_type_node));
+		  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
+				    cd, gfc_finish_block (&tblock),
+				    gfc_call_free (tmp));
+		}
+	      else
+		tmp = gfc_call_free (tmp);
 	      tmp = build3_v (COND_EXPR, null_cond, tmp,
 			      build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&fnblock, tmp);
-	      gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
-	    }
-	  else if (c->attr.pdt_string)
-	    {
-	      null_cond = fold_build2_loc (input_location, NE_EXPR,
-					   logical_type_node, comp,
-					   build_int_cst (TREE_TYPE (comp), 0));
-	      tmp = gfc_call_free (comp);
-	      tmp = build3_v (COND_EXPR, null_cond, tmp,
-			      build_empty_stmt (input_location));
-	      gfc_add_expr_to_block (&fnblock, tmp);
-	      tmp = fold_convert (TREE_TYPE (comp), null_pointer_node);
-	      gfc_add_modify (&fnblock, comp, tmp);
+
+	      if (c->attr.pdt_array)
+		gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
+	      else
+		{
+		  tmp = fold_convert (TREE_TYPE (comp), null_pointer_node);
+		  gfc_add_modify (&fnblock, comp, tmp);
+		}
 	    }
 
 	  break;
@@ -11248,8 +11332,22 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 				 builtin_decl_explicit (BUILT_IN_REALLOC), 2,
 				 fold_convert (pvoid_type_node, array1),
 				 size2);
-      gfc_conv_descriptor_data_set (&realloc_block,
-				    desc, tmp);
+      if (flag_openmp_allocators)
+	{
+	  tree cond, omp_tmp;
+	  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				  gfc_conv_descriptor_version (desc),
+				  build_int_cst (integer_type_node, 1));
+	  omp_tmp = builtin_decl_explicit (BUILT_IN_GOMP_REALLOC);
+	  omp_tmp = build_call_expr_loc (input_location, omp_tmp, 4,
+				 fold_convert (pvoid_type_node, array1), size2,
+				 build_zero_cst (ptr_type_node),
+				 build_zero_cst (ptr_type_node));
+	  tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
+			    omp_tmp, tmp);
+	}
+
+      gfc_conv_descriptor_data_set (&realloc_block, desc, tmp);
     }
   else
     {

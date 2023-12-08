@@ -2346,6 +2346,7 @@ evaluate_stmt (gimple *stmt)
 	    {
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_REALLOC:
+	    case BUILT_IN_GOMP_REALLOC:
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_STRDUP:
 	    case BUILT_IN_STRNDUP:

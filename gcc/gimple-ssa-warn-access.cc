@@ -1574,6 +1574,7 @@ fndecl_alloc_p (tree fndecl, bool all_alloc)
 	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
 	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_GOMP_REALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -1801,9 +1802,20 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	case BUILT_IN_ALLOCA_WITH_ALIGN:
 	  return false;
 
+	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_GOMP_REALLOC:
+	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	    return false;
+
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_GOMP_FREE,
+					       BUILT_IN_GOMP_REALLOC))
+	    return true;
+
+	  alloc_dealloc_kind = alloc_kind_t::builtin;
+	  break;
+
 	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
-	case BUILT_IN_GOMP_ALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -1829,7 +1841,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
   if (fndecl_built_in_p (dealloc_decl, BUILT_IN_NORMAL))
     {
       built_in_function dealloc_code = DECL_FUNCTION_CODE (dealloc_decl);
-      if (dealloc_code == BUILT_IN_REALLOC)
+      if (dealloc_code == BUILT_IN_REALLOC
+	  || dealloc_code == BUILT_IN_GOMP_REALLOC)
 	realloc_kind = alloc_kind_t::builtin;
 
       for (tree amats = DECL_ATTRIBUTES (alloc_decl);
@@ -1882,6 +1895,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	    case BUILT_IN_ALIGNED_ALLOC:
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_GOMP_ALLOC:
+	    case BUILT_IN_GOMP_REALLOC:
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_REALLOC:
 	    case BUILT_IN_STRDUP:

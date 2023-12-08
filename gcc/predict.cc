@@ -2566,6 +2566,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		*predictor = PRED_COMPARE_AND_SWAP;
 		return boolean_true_node;
 	      case BUILT_IN_REALLOC:
+	      case BUILT_IN_GOMP_REALLOC:
 		if (predictor)
 		  *predictor = PRED_MALLOC_NONNULL;
 		/* FIXME: This is wrong and we need to convert the logic
