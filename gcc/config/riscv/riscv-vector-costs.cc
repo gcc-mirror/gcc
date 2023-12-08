@@ -630,9 +630,6 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 {
   auto other = static_cast<const costs *> (uncast_other);
 
-  if (!flag_vect_cost_model)
-    return vector_costs::better_main_loop_than_p (other);
-
   if (riscv_autovec_lmul == RVV_DYNAMIC)
     {
       bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
