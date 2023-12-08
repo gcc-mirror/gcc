@@ -141,9 +141,6 @@
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
 
-;; Opaque structure types for x2 variants of VSTR1/VSTR1Q or VLD1/VLD1Q.
-(define_mode_iterator VMEMX2 [TI OI])
-
 ;; Widenable modes.
 (define_mode_iterator VW [V8QI V4HI V2SI])
 
@@ -1535,9 +1532,6 @@
 
 ;; vtbl<n> suffix for NEON vector modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])
-
-;; Suffix for x2 variants of vld1 and vst1.
-(define_mode_attr VMEMX2_q [(TI "") (OI "q")])
 
 ;; fp16 or bf16 marker for 16-bit float modes.
 (define_mode_attr fporbf [(HF "fp16") (BF "bf16")])
