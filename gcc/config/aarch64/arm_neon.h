@@ -13456,7 +13456,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1_lane_u64 (const uint64_t *__src, uint64x1_t __vec, const int __lane)
 {
   return __builtin_aarch64_vec_ldap1_lanev1di_usus (
-	  (__builtin_aarch64_simd_di *) __src, __vec, __lane);
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline uint64x2_t
@@ -13464,35 +13464,39 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1q_lane_u64 (const uint64_t *__src, uint64x2_t __vec, const int __lane)
 {
   return __builtin_aarch64_vec_ldap1_lanev2di_usus (
-	  (__builtin_aarch64_simd_di *) __src, __vec, __lane);
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1_lane_s64 (const int64_t *__src, int64x1_t __vec, const int __lane)
 {
-  return __builtin_aarch64_vec_ldap1_lanev1di (__src, __vec, __lane);
+  return __builtin_aarch64_vec_ldap1_lanev1di (
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1q_lane_s64 (const int64_t *__src, int64x2_t __vec, const int __lane)
 {
-  return __builtin_aarch64_vec_ldap1_lanev2di (__src, __vec, __lane);
+  return __builtin_aarch64_vec_ldap1_lanev2di (
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1_lane_f64 (const float64_t *__src, float64x1_t __vec, const int __lane)
 {
-  return __builtin_aarch64_vec_ldap1_lanev1df (__src, __vec, __lane);
+  return __builtin_aarch64_vec_ldap1_lanev1df (
+	  (const __builtin_aarch64_simd_df *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline float64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1q_lane_f64 (const float64_t *__src, float64x2_t __vec, const int __lane)
 {
-  return __builtin_aarch64_vec_ldap1_lanev2df (__src, __vec, __lane);
+  return __builtin_aarch64_vec_ldap1_lanev2df (
+	  (const __builtin_aarch64_simd_df *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline poly64x1_t
@@ -13500,7 +13504,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1_lane_p64 (const poly64_t *__src, poly64x1_t __vec, const int __lane)
 {
   return __builtin_aarch64_vec_ldap1_lanev1di_psps (
-	  (__builtin_aarch64_simd_di *) __src, __vec, __lane);
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 __extension__ extern __inline poly64x2_t
@@ -13508,14 +13512,14 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vldap1q_lane_p64 (const poly64_t *__src, poly64x2_t __vec, const int __lane)
 {
   return __builtin_aarch64_vec_ldap1_lanev2di_psps (
-	  (__builtin_aarch64_simd_di *) __src, __vec, __lane);
+	  (const __builtin_aarch64_simd_di *) __src, __vec, __lane);
 }
 
 /* vstl1_lane.  */
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vstl1_lane_u64 (const uint64_t *__src, uint64x1_t __vec, const int __lane)
+vstl1_lane_u64 (uint64_t *__src, uint64x1_t __vec, const int __lane)
 {
   __builtin_aarch64_vec_stl1_lanev1di_sus ((__builtin_aarch64_simd_di *) __src,
 					   __vec, __lane);
@@ -13533,28 +13537,32 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vstl1_lane_s64 (int64_t *__src, int64x1_t __vec, const int __lane)
 {
-  __builtin_aarch64_vec_stl1_lanev1di (__src, __vec, __lane);
+  __builtin_aarch64_vec_stl1_lanev1di ((__builtin_aarch64_simd_di *) __src,
+				       __vec, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vstl1q_lane_s64 (int64_t *__src, int64x2_t __vec, const int __lane)
 {
-  __builtin_aarch64_vec_stl1_lanev2di (__src, __vec, __lane);
+  __builtin_aarch64_vec_stl1_lanev2di ((__builtin_aarch64_simd_di *) __src,
+				       __vec, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vstl1_lane_f64 (float64_t *__src, float64x1_t __vec, const int __lane)
 {
-  __builtin_aarch64_vec_stl1_lanev1df (__src, __vec, __lane);
+  __builtin_aarch64_vec_stl1_lanev1df ((__builtin_aarch64_simd_df *) __src,
+				       __vec, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vstl1q_lane_f64 (float64_t *__src, float64x2_t __vec, const int __lane)
 {
-  __builtin_aarch64_vec_stl1_lanev2df (__src, __vec, __lane);
+  __builtin_aarch64_vec_stl1_lanev2df ((__builtin_aarch64_simd_df *) __src,
+				       __vec, __lane);
 }
 
 __extension__ extern __inline void
