@@ -306,9 +306,18 @@ private:
     // equivalent to EQUIV_ALLOCNO for the whole of this allocno's lifetime.
     unsigned int equiv_allocno;
 
-    // The next chained allocno in program order (i.e. at lower program
-    // points), or INVALID_ALLOCNO if none.
-    unsigned int chain_next;
+    union
+    {
+      // The program point at which the allocno was last defined,
+      // or START_OF_REGION if none.  This is only used temporarily
+      // while recording allocnos; after that, chain_next below is
+      // used instead.
+      unsigned int last_def_point;
+
+      // The next chained allocno in program order (i.e. at lower program
+      // points), or INVALID_ALLOCNO if none.
+      unsigned int chain_next;
+    };
 
     // The previous chained allocno in program order (i.e. at higher
     // program points), or INVALID_ALLOCNO if none.
@@ -406,6 +415,7 @@ private:
   void record_fpr_def (unsigned int);
   void record_allocno_use (allocno_info *);
   void record_allocno_def (allocno_info *);
+  bool valid_equivalence_p (allocno_info *, allocno_info *);
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
@@ -478,6 +488,9 @@ private:
 
   // The basic block that we're currently processing.
   basic_block m_current_bb;
+
+  // The lowest-numbered program point in the current basic block.
+  unsigned int m_current_bb_point;
 
   // The program point that we're currently processing (described above).
   unsigned int m_current_point;
@@ -576,21 +589,26 @@ likely_operand_match_p (const operand_alternative &op_alt, rtx op)
 	return true;
 
       auto cn = lookup_constraint (constraint);
-      if (REG_P (op) || SUBREG_P (op))
+      switch (get_constraint_type (cn))
 	{
-	  if (insn_extra_register_constraint (cn))
+	case CT_REGISTER:
+	  if (REG_P (op) || SUBREG_P (op))
 	    return true;
-	}
-      else if (MEM_P (op))
-	{
-	  if (insn_extra_memory_constraint (cn))
+	  break;
+
+	case CT_MEMORY:
+	case CT_SPECIAL_MEMORY:
+	case CT_RELAXED_MEMORY:
+	  if (MEM_P (op))
 	    return true;
-	}
-      else
-	{
-	  if (!insn_extra_memory_constraint (cn)
-	      && constraint_satisfied_p (op, cn))
+	  break;
+
+	case CT_CONST_INT:
+	case CT_ADDRESS:
+	case CT_FIXED_FORM:
+	  if (constraint_satisfied_p (op, cn))
 	    return true;
+	  break;
 	}
 
       constraint += len;
@@ -1407,10 +1425,14 @@ early_ra::record_allocno_use (allocno_info *allocno)
 {
   bitmap_set_bit (m_live_allocnos, allocno->id);
   if (allocno->end_point > m_current_point)
-    allocno->end_point = m_current_point;
+    {
+      allocno->end_point = m_current_point;
+      allocno->last_def_point = START_OF_REGION;
+    }
   allocno->start_point = m_current_point;
   allocno->is_copy_dest = false;
   allocno->is_strong_copy_dest = false;
+  allocno->equiv_allocno = INVALID_ALLOCNO;
 }
 
 // Record a definition of the allocno with index AI at the current program
@@ -1419,12 +1441,37 @@ early_ra::record_allocno_use (allocno_info *allocno)
 void
 early_ra::record_allocno_def (allocno_info *allocno)
 {
+  allocno->last_def_point = m_current_point;
   allocno->start_point = m_current_point;
   allocno->num_defs = MIN (allocno->num_defs + 1, 2);
   gcc_checking_assert (!allocno->is_copy_dest
 		       && !allocno->is_strong_copy_dest);
   if (!bitmap_clear_bit (m_live_allocnos, allocno->id))
     gcc_unreachable ();
+}
+
+// Return true if a move from SRC_ALLOCNO to DEST_ALLOCNO could be treated
+// as an equivalence.
+bool
+early_ra::valid_equivalence_p (allocno_info *dest_allocno,
+			       allocno_info *src_allocno)
+{
+  if (src_allocno->end_point > dest_allocno->end_point)
+    // The src allocno dies first.
+    return false;
+
+  if (src_allocno->num_defs != 0)
+    {
+      if (dest_allocno->end_point < m_current_bb_point)
+	// We don't currently track enough information to handle multiple
+	// definitions across basic block boundaries.
+	return false;
+
+      if (src_allocno->last_def_point >= dest_allocno->end_point)
+	// There is another definition during the destination's live range.
+	return false;
+    }
+  return dest_allocno->num_defs == 1;
 }
 
 // Record any relevant allocno-related information for an actual or imagined
@@ -1512,9 +1559,7 @@ early_ra::record_copy (rtx dest, rtx src, bool from_move_p)
 	      dest_allocno->is_copy_dest = 1;
 	    }
 	  else if (from_move_p
-		   && src_allocno->end_point <= dest_allocno->end_point
-		   && src_allocno->num_defs == 0
-		   && dest_allocno->num_defs == 1)
+		   && valid_equivalence_p (dest_allocno, src_allocno))
 	    dest_allocno->equiv_allocno = src_allocno->id;
 	}
     }
@@ -3048,6 +3093,9 @@ early_ra::apply_allocation ()
 void
 early_ra::process_region ()
 {
+  for (auto *allocno : m_allocnos)
+    allocno->chain_next = INVALID_ALLOCNO;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       dump_fpr_ranges ();
@@ -3117,6 +3165,8 @@ void
 early_ra::process_block (basic_block bb, bool is_isolated)
 {
   m_current_bb = bb;
+  m_current_point += 1;
+  m_current_bb_point = m_current_point;
 
   // Process live-out FPRs.
   bitmap live_out = df_get_live_out (bb);
@@ -3414,8 +3464,7 @@ pass_early_ra::execute (function *fn)
 
 } // end namespace
 
-// Create a new CC fusion pass instance.
-
+// Create a new instance of the pass.
 rtl_opt_pass *
 make_pass_aarch64_early_ra (gcc::context *ctxt)
 {
