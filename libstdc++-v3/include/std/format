@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // 202106 std::format improvements.
 // 202110 Fixing locale handling in chrono formatters, generator-like types.
 // 202207 Encodings in localized formatting of chrono, basic-format-string.
-#define __cpp_lib_format 202106L
+#define __cpp_lib_format 202110L
 
 #if __cplusplus > 202002L
 // 202207 P2286R8 Formatting Ranges

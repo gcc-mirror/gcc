@@ -294,7 +294,7 @@
 #endif
 #define __cpp_lib_constexpr_vector 201907L
 #define __cpp_lib_erase_if 202002L
-#define __cpp_lib_format 202106L
+#define __cpp_lib_format 202110L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
