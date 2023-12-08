@@ -182,7 +182,7 @@ pid_t
 __gcov_fork (void)
 {
   pid_t pid;
-  pid = fork ();
+  pid = __builtin_fork ();
   if (pid == 0)
     {
       __GTHREAD_MUTEX_INIT_FUNCTION (&__gcov_mx);
