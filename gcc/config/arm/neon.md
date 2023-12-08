@@ -5169,32 +5169,6 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_store1_3reg<q>")]
 )
 
-(define_insn "neon_vst1q_x4<mode>"
-  [(set (match_operand:XI 0 "neon_struct_operand" "=Um")
-        (unspec:XI [(match_operand:XI 1 "s_register_operand" "w")
-                    (unspec:VDQX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_VST1))]
-  "TARGET_NEON"
-{
-  int regno = REGNO (operands[1]);
-  rtx ops[5];
-  ops[0] = operands[0];
-  ops[1] = gen_rtx_REG (DImode, regno);
-  ops[2] = gen_rtx_REG (DImode, regno + 2);
-  ops[3] = gen_rtx_REG (DImode, regno + 4);
-  ops[4] = gen_rtx_REG (DImode, regno + 6);
-  output_asm_insn ("vst1.<V_sz_elem>\t{%P1, %P2, %P3, %P4}, %A0", ops);
-
-  ops[1] = gen_rtx_REG (DImode, regno + 8);
-  ops[2] = gen_rtx_REG (DImode, regno + 10);
-  ops[3] = gen_rtx_REG (DImode, regno + 12);
-  ops[4] = gen_rtx_REG (DImode, regno + 14);
-  output_asm_insn ("vst1.<V_sz_elem>\t{%P1, %P2, %P3, %P4}, %A0", ops);
-  return "";
-}
-  [(set_attr "type" "neon_store1_4reg<q>")]
-)
-
 (define_insn "neon_vst1_x4<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
         (unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
