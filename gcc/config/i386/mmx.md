@@ -4137,11 +4137,33 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*xop_pcmov_<mode>"
+  [(set (match_operand:V4F_64 0 "register_operand" "=x")
+        (if_then_else:V4F_64
+          (match_operand:V4F_64 3 "register_operand" "x")
+          (match_operand:V4F_64 1 "register_operand" "x")
+          (match_operand:V4F_64 2 "register_operand" "x")))]
+  "TARGET_XOP && TARGET_MMX_WITH_SSE"
+  "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "mode" "TI")])
+
+(define_insn "*xop_pcmov_<mode>"
   [(set (match_operand:VI_16_32 0 "register_operand" "=x")
         (if_then_else:VI_16_32
           (match_operand:VI_16_32 3 "register_operand" "x")
           (match_operand:VI_16_32 1 "register_operand" "x")
           (match_operand:VI_16_32 2 "register_operand" "x")))]
+  "TARGET_XOP"
+  "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "mode" "TI")])
+
+(define_insn "*xop_pcmov_<mode>"
+  [(set (match_operand:V2F_32 0 "register_operand" "=x")
+        (if_then_else:V2F_32
+          (match_operand:V2F_32 3 "register_operand" "x")
+          (match_operand:V2F_32 1 "register_operand" "x")
+          (match_operand:V2F_32 2 "register_operand" "x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
