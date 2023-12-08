@@ -2627,7 +2627,9 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   gfc_component *comp;
   bool has_inquiry_part;
 
-  if (expr->expr_type != EXPR_VARIABLE && expr->expr_type != EXPR_FUNCTION)
+  if (expr->expr_type != EXPR_VARIABLE
+      && expr->expr_type != EXPR_FUNCTION
+      && !(expr->expr_type == EXPR_NULL && expr->ts.type != BT_UNKNOWN))
     gfc_internal_error ("gfc_variable_attr(): Expression isn't a variable");
 
   sym = expr->symtree->n.sym;
