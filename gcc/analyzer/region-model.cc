@@ -6576,22 +6576,33 @@ private:
 static bool
 contains_uninit_p (const svalue *sval)
 {
-  struct uninit_finder : public visitor
-  {
-  public:
-    uninit_finder () : m_found_uninit (false) {}
-    void visit_poisoned_svalue (const poisoned_svalue *sval)
+  switch (sval->get_kind ())
     {
-      if (sval->get_poison_kind () == POISON_KIND_UNINIT)
-	m_found_uninit = true;
+    default:
+      return false;
+    case SK_POISONED:
+      {
+	const poisoned_svalue *psval
+	  = as_a <const poisoned_svalue *> (sval);
+	return psval->get_poison_kind () == POISON_KIND_UNINIT;
+      }
+    case SK_COMPOUND:
+      {
+	const compound_svalue *compound_sval
+	  = as_a <const compound_svalue *> (sval);
+
+	for (auto iter : *compound_sval)
+	  {
+	    const svalue *sval = iter.second;
+	    if (const poisoned_svalue *psval
+		= sval->dyn_cast_poisoned_svalue ())
+	      if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+		return true;
+	  }
+
+	return false;
+      }
     }
-    bool m_found_uninit;
-  };
-
-  uninit_finder v;
-  sval->accept (&v);
-
-  return v.m_found_uninit;
 }
 
 /* Function for use by plugins when simulating writing data through a
