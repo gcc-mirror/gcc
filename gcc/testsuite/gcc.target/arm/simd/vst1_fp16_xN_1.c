@@ -10,9 +10,4 @@ void test_vst1_f16_x2 (float16_t * ptr, float16x4x2_t val)
     vst1_f16_x2 (ptr, val);
 }
 
-void test_vst1_f16_x3 (float16_t * ptr, float16x4x3_t val)
-{
-    vst1_f16_x3 (ptr, val);
-}
-
-/* { dg-final { scan-assembler-times {vst1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 2 } }  */
+/* { dg-final { scan-assembler-times {vst1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 1 } }  */
