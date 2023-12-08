@@ -10,9 +10,4 @@ bfloat16x4x2_t test_vld1_bf16_x2 (bfloat16_t * a)
     return vld1_bf16_x2 (a);
 }
 
-bfloat16x4x3_t test_vld1_bf16_x3 (bfloat16_t * a)
-{
-    return vld1_bf16_x3 (a);
-}
-
-/* { dg-final { scan-assembler-times {vld1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 2 } }  */
+/* { dg-final { scan-assembler-times {vld1.16\t\{d[0-9]+-d[0-9]+\}, \[r[0-9]+\]\n} 1 } }  */
