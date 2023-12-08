@@ -1378,12 +1378,15 @@ expand_const_vector (rtx target, rtx src)
 	     { base0, base1, base1 + step, base1 + step * 2, ... }  */
 	  rtx base0 = builder.elt (0);
 	  rtx base1 = builder.elt (1);
-	  rtx step = builder.elt (2);
+	  rtx base2 = builder.elt (2);
+
+	  scalar_mode elem_mode = GET_MODE_INNER (mode);
+	  rtx step = simplify_binary_operation (MINUS, elem_mode, base2, base1);
+
 	  /* Step 1 - { base1, base1 + step, base1 + step * 2, ... }  */
 	  rtx tmp = gen_reg_rtx (mode);
 	  expand_vec_series (tmp, base1, step);
 	  /* Step 2 - { base0, base1, base1 + step, base1 + step * 2, ... }  */
-	  scalar_mode elem_mode = GET_MODE_INNER (mode);
 	  if (!rtx_equal_p (base0, const0_rtx))
 	    base0 = force_reg (elem_mode, base0);
 
@@ -3395,6 +3398,63 @@ shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+static bool
+shuffle_series_patterns (struct expand_vec_perm_d *d)
+{
+  if (!d->one_vector_p || d->perm.encoding ().npatterns () != 1)
+    return false;
+
+  poly_int64 el1 = d->perm[0];
+  poly_int64 el2 = d->perm[1];
+  poly_int64 el3 = d->perm[2];
+
+  poly_int64 step1 = el2 - el1;
+  poly_int64 step2 = el3 - el2;
+
+  bool need_insert = false;
+  bool have_series = false;
+
+  /* Check for a full series.  */
+  if (known_ne (step1, 0) && d->perm.series_p (0, 1, el1, step1))
+    have_series = true;
+
+  /* Check for a series starting at the second element.  */
+  else if (known_ne (step2, 0) && d->perm.series_p (1, 1, el2, step2))
+    {
+      have_series = true;
+      need_insert = true;
+    }
+
+  if (!have_series)
+    return false;
+
+  /* Get a vector int-mode to be used for the permute selector.  */
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
+  insn_code icode = optab_handler (vec_shl_insert_optab, sel_mode);
+
+  /* We need to be able to insert an element and shift the vector.  */
+  if (need_insert && icode == CODE_FOR_nothing)
+    return false;
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  /* Create the series.  */
+  machine_mode eltmode = Pmode;
+  rtx series = gen_reg_rtx (sel_mode);
+  expand_vec_series (series, gen_int_mode (need_insert ? el2 : el1, eltmode),
+		     gen_int_mode (need_insert ? step2 : step1, eltmode));
+
+  /* Insert the remaining element if necessary.  */
+  if (need_insert)
+    emit_insn (GEN_FCN (icode) (series, series, gen_int_mode (el1, eltmode)));
+
+  emit_vlmax_gather_insn (d->target, d->op0, series);
+
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -3474,6 +3534,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_bswap_pattern (d))
 	    return true;
 	  if (shuffle_extract_and_slide1up_patterns (d))
+	    return true;
+	  if (shuffle_series_patterns (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
