@@ -736,7 +736,7 @@
 
 (define_insn "sub<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r")
-	(minus:GPR (match_operand:GPR 1 "register_operand" "rJ")
+	(minus:GPR (match_operand:GPR 1 "register_operand" "r")
 		   (match_operand:GPR 2 "register_operand" "r")))]
   ""
   "sub.<d>\t%0,%z1,%2"
@@ -1412,13 +1412,13 @@
   [(set_attr "alu_type"	"sub")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "one_cmpl<mode>2"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(not:GPR (match_operand:GPR 1 "register_operand" "r")))]
-  ""
-  "nor\t%0,%.,%1"
-  [(set_attr "alu_type" "not")
-   (set_attr "mode" "<MODE>")])
+(define_insn "*negsi2_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (neg:SI (match_operand:SI 1 "register_operand" "r"))))]
+  "TARGET_64BIT"
+  "sub.w\t%0,%.,%1"
+  [(set_attr "alu_type" "sub")
+   (set_attr "mode" "SI")])
 
 (define_insn "neg<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -1438,13 +1438,38 @@
 ;;
 
 (define_insn "<optab><mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=r,r")
-	(any_bitwise:GPR (match_operand:GPR 1 "register_operand" "%r,r")
-			 (match_operand:GPR 2 "uns_arith_operand" "r,K")))]
+  [(set (match_operand:X 0 "register_operand" "=r,r")
+	(any_bitwise:X (match_operand:X 1 "register_operand" "%r,r")
+		       (match_operand:X 2 "uns_arith_operand" "r,K")))]
   ""
   "<insn>%i2\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "*<optab>si3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(any_bitwise:SI (match_operand:SI 1 "register_operand" "%r,r")
+			(match_operand:SI 2 "uns_arith_operand"    " r,K")))]
+  "TARGET_64BIT"
+  "<insn>%i2\t%0,%1,%2"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "SI")])
+
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(not:X (match_operand:X 1 "register_operand" "r")))]
+  ""
+  "nor\t%0,%.,%1"
+  [(set_attr "alu_type" "not")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*one_cmplsi2_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI (match_operand:SI 1 "register_operand" " r")))]
+  "TARGET_64BIT"
+  "nor\t%0,%.,%1"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "SI")])
 
 (define_insn "and<mode>3_extended"
   [(set (match_operand:GPR 0 "register_operand" "=r")
@@ -1561,25 +1586,43 @@
   [(set_attr "type" "logical")
    (set_attr "mode" "HI")])
 
-(define_insn "*nor<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(and:GPR (not:GPR (match_operand:GPR 1 "register_operand" "%r"))
-		 (not:GPR (match_operand:GPR 2 "register_operand" "r"))))]
+(define_insn "nor<mode>3"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (not:X (match_operand:X 1 "register_operand" "%r"))
+		 (not:X (match_operand:X 2 "register_operand" "r"))))]
   ""
   "nor\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*norsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "%r"))
+		 (not:SI (match_operand:SI 2 "register_operand" "r"))))]
+  "TARGET_64BIT"
+  "nor\t%0,%1,%2"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "SI")])
+
 (define_insn "<optab>n<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(neg_bitwise:GPR
-	    (not:GPR (match_operand:GPR 1 "register_operand" "r"))
-	    (match_operand:GPR 2 "register_operand" "r")))]
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(neg_bitwise:X
+	    (not:X (match_operand:X 1 "register_operand" "r"))
+	    (match_operand:X 2 "register_operand" "r")))]
   ""
   "<insn>n\t%0,%2,%1"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*<optab>nsi_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(neg_bitwise:SI
+	    (not:SI (match_operand:SI 1 "register_operand" "r"))
+	    (match_operand:SI 2 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "<insn>n\t%0,%2,%1"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "SI")])
 
 ;;
 ;;  ....................
@@ -3167,7 +3210,6 @@
 		      (label_ref (match_operand 1))
 		      (pc)))])
 
-
 
 ;;
 ;;  ....................
@@ -3967,10 +4009,13 @@
 (define_insn "bytepick_w_<bytepick_imm>_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	  (ior:SI (lshiftrt (match_operand:SI 1 "register_operand" "r")
-			    (const_int <bytepick_w_lshiftrt_amount>))
-		  (ashift (match_operand:SI 2 "register_operand" "r")
-			  (const_int bytepick_w_ashift_amount)))))]
+	 (subreg:SI
+	  (ior:DI (subreg:DI (lshiftrt
+			      (match_operand:SI 1 "register_operand" "r")
+			      (const_int <bytepick_w_lshiftrt_amount>)) 0)
+		  (subreg:DI (ashift
+			      (match_operand:SI 2 "register_operand" "r")
+			      (const_int bytepick_w_ashift_amount)) 0)) 0)))]
   "TARGET_64BIT"
   "bytepick.w\t%0,%1,%2,<bytepick_imm>"
   [(set_attr "mode" "SI")])
