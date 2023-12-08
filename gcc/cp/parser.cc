@@ -30265,7 +30265,11 @@ void cp_parser_late_contract_condition (cp_parser *parser,
      [ [ assert :  contract-mode [opt] : conditional-expression ] ]
      [ [ pre :  contract-mode [opt] : conditional-expression ] ]
      [ [ post :  contract-mode [opt] identifier [opt] :
-	 conditional-expression ] ]  */
+	 conditional-expression ] ]
+
+   Return void_list_node if the current token doesn't start an
+   attribute-specifier to differentiate from NULL_TREE returned e.g.
+   for [ [ ] ].  */
 
 static tree
 cp_parser_std_attribute_spec (cp_parser *parser)
@@ -30345,7 +30349,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       if (token->type != CPP_KEYWORD
 	  || token->keyword != RID_ALIGNAS)
-	return NULL_TREE;
+	return void_list_node;
 
       cp_lexer_consume_token (parser->lexer);
       maybe_warn_cpp0x (CPP0X_ATTRIBUTES);
@@ -30418,8 +30422,12 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
   while (true)
     {
       tree attr_spec = cp_parser_std_attribute_spec (parser);
-      if (attr_spec == NULL_TREE)
+      if (attr_spec == void_list_node)
 	break;
+      /* Accept [[]][[]]; for which cp_parser_std_attribute_spec
+	 returns NULL_TREE as there are no attributes.  */
+      if (attr_spec == NULL_TREE)
+	continue;
       if (attr_spec == error_mark_node)
 	return error_mark_node;
 
