@@ -1656,6 +1656,11 @@ simplify_using_ranges::simplify_float_conversion_using_ranges
       || vr.undefined_p ())
     return false;
 
+  /* The code below doesn't work for large/huge _BitInt, nor is really
+     needed for those, bitint lowering does use ranges already.  */
+  if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
+      && TYPE_MODE (TREE_TYPE (rhs1)) == BLKmode)
+    return false;
   /* First check if we can use a signed type in place of an unsigned.  */
   scalar_int_mode rhs_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs1));
   if (TYPE_UNSIGNED (TREE_TYPE (rhs1))
