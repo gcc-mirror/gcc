@@ -463,7 +463,7 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
 
       break;
 
-    case Rust::ABI::WIN64:
+    case Rust::ABI::WIN_64:
       abi_tree = get_identifier ("ms_abi");
 
       break;
