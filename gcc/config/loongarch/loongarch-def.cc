@@ -92,15 +92,15 @@ array_tune<loongarch_align> loongarch_cpu_align =
 
 /* Default RTX cost initializer.  */
 loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
-  : fp_add (COSTS_N_INSNS (1)),
-    fp_mult_sf (COSTS_N_INSNS (2)),
-    fp_mult_df (COSTS_N_INSNS (4)),
-    fp_div_sf (COSTS_N_INSNS (6)),
+  : fp_add (COSTS_N_INSNS (5)),
+    fp_mult_sf (COSTS_N_INSNS (5)),
+    fp_mult_df (COSTS_N_INSNS (5)),
+    fp_div_sf (COSTS_N_INSNS (8)),
     fp_div_df (COSTS_N_INSNS (8)),
-    int_mult_si (COSTS_N_INSNS (1)),
-    int_mult_di (COSTS_N_INSNS (1)),
-    int_div_si (COSTS_N_INSNS (4)),
-    int_div_di (COSTS_N_INSNS (6)),
+    int_mult_si (COSTS_N_INSNS (4)),
+    int_mult_di (COSTS_N_INSNS (4)),
+    int_div_si (COSTS_N_INSNS (5)),
+    int_div_di (COSTS_N_INSNS (5)),
     branch_cost (6),
     memory_latency (4) {}
 
@@ -111,18 +111,21 @@ loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
 array_tune<loongarch_rtx_cost_data> loongarch_cpu_rtx_cost_data =
   array_tune<loongarch_rtx_cost_data> ();
 
-/* RTX costs to use when optimizing for size.  */
+/* RTX costs to use when optimizing for size.
+   We use a value slightly larger than COSTS_N_INSNS (1) for all of them
+   because they are slower than simple instructions.  */
+#define COST_COMPLEX_INSN (COSTS_N_INSNS (1) + 1)
 const loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size =
   loongarch_rtx_cost_data ()
-    .fp_add_ (4)
-    .fp_mult_sf_ (4)
-    .fp_mult_df_ (4)
-    .fp_div_sf_ (4)
-    .fp_div_df_ (4)
-    .int_mult_si_ (4)
-    .int_mult_di_ (4)
-    .int_div_si_ (4)
-    .int_div_di_ (4);
+    .fp_add_ (COST_COMPLEX_INSN)
+    .fp_mult_sf_ (COST_COMPLEX_INSN)
+    .fp_mult_df_ (COST_COMPLEX_INSN)
+    .fp_div_sf_ (COST_COMPLEX_INSN)
+    .fp_div_df_ (COST_COMPLEX_INSN)
+    .int_mult_si_ (COST_COMPLEX_INSN)
+    .int_mult_di_ (COST_COMPLEX_INSN)
+    .int_div_si_ (COST_COMPLEX_INSN)
+    .int_div_di_ (COST_COMPLEX_INSN);
 
 array_tune<int> loongarch_cpu_issue_rate = array_tune<int> ()
   .set (CPU_NATIVE, 4)

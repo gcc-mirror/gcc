@@ -3801,8 +3801,6 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = (speed
 		  ? loongarch_cost->int_mult_si * 3 + 6
 		  : COSTS_N_INSNS (7));
-      else if (!speed)
-	*total = COSTS_N_INSNS (1) + 1;
       else if (mode == DImode)
 	*total = loongarch_cost->int_mult_di;
       else
@@ -3837,14 +3835,18 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case UDIV:
     case UMOD:
-      if (!speed)
-	{
-	  *total = COSTS_N_INSNS (loongarch_idiv_insns (mode));
-	}
-      else if (mode == DImode)
+      if (mode == DImode)
 	*total = loongarch_cost->int_div_di;
       else
-	*total = loongarch_cost->int_div_si;
+	{
+	  *total = loongarch_cost->int_div_si;
+	  if (TARGET_64BIT && !TARGET_DIV32)
+	    *total += COSTS_N_INSNS (2);
+	}
+
+      if (TARGET_CHECK_ZERO_DIV)
+	*total += COSTS_N_INSNS (2);
+
       return false;
 
     case SIGN_EXTEND:
@@ -3876,9 +3878,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1))
 		      == ZERO_EXTEND))))
 	{
-	  if (!speed)
-	    *total = COSTS_N_INSNS (1) + 1;
-	  else if (mode == DImode)
+	  if (mode == DImode)
 	    *total = loongarch_cost->int_mult_di;
 	  else
 	    *total = loongarch_cost->int_mult_si;
