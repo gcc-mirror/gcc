@@ -2874,6 +2874,18 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "alslsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (plus:SI
+	    (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		       (match_operand 2 "const_immalsl_operand" ""))
+	    (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "alsl.w\t%0,%1,%3,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
 
 
 ;; Reverse the order of bytes of operand 1 and store the result in operand 0.
