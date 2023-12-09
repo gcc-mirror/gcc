@@ -30,7 +30,7 @@ enum ABI
   CDECL,
   STDCALL,
   FASTCALL,
-  WIN64,
+  WIN_64,
   SYSV64
 };
 
