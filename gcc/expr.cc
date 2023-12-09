@@ -10209,8 +10209,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       /* Expand X*Y as X&-Y when Y must be zero or one.  */
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  bool bit0_p = tree_nonzero_bits (treeop0) == 1;
-	  bool bit1_p = tree_nonzero_bits (treeop1) == 1;
+	  bool gimple_zero_one_valued_p (tree, tree (*)(tree));
+	  bool bit0_p = gimple_zero_one_valued_p (treeop0, nullptr);
+	  bool bit1_p = gimple_zero_one_valued_p (treeop1, nullptr);
 
 	  /* Expand X*Y as X&Y when both X and Y must be zero or one.  */
 	  if (bit0_p && bit1_p)
