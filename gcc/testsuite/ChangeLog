@@ -1,3 +1,381 @@
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83167
+	* g++.dg/cpp0x/lambda/lambda-decltype4.C: New test.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/taint-modulus-1.c: New test.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/infoleak-uninit-size-1.c: New test.
+	* gcc.dg/plugin/infoleak-uninit-size-2.c: New test.
+	* gcc.dg/plugin/plugin.exp: Add the new tests.
+
+2023-12-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112875
+	* gcc.target/i386/pr112875.c: New test.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/gen-attrs-79.C: New test.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112727
+	* c-c++-common/ubsan/pr112727.c: New test.
+
+2023-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88848
+	* g++.dg/inherit/multiple2.C: New test.
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112658
+	PR c++/94264
+	* g++.dg/cpp0x/initlist-array20.C: New test.
+
+2023-12-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/builtin/strcmp-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/builtin/strcmp.c: New test.
+	* gcc.target/riscv/rvv/autovec/builtin/strncmp-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/builtin/strncmp.c: New test.
+
+2023-12-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/builtin/strlen-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/builtin/strlen.c: New test.
+
+2023-12-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/strided_2.c: New test.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new test.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1q_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new test.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1_base_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_bf16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_fp16_xN_1.c: Add new test.
+	* gcc.target/arm/simd/vst1_p64_xN_1.c: Add new test.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vst1q_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vst1q_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-08  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/arm/simd/vld1_base_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_bf16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_fp16_xN_1.c: Add new tests.
+	* gcc.target/arm/simd/vld1_p64_xN_1.c: Add new tests.
+
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-14.f90: Add coarray and
+	not-listed tests.
+	* gfortran.dg/gomp/allocate-5.f90: Remove sorry dg-message.
+	* gfortran.dg/bind_c_array_params_2.f90: Update expected
+	dump for dtype '.version=0'.
+	* gfortran.dg/gomp/allocate-16.f90: New test.
+	* gfortran.dg/gomp/allocators-3.f90: New test.
+	* gfortran.dg/gomp/allocators-4.f90: New test.
+
+2023-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112909
+	* gcc.dg/uninit-pr112909.c: New testcase.
+
+2023-12-08  Marc Poulhiès  <poulhies@adacore.com>
+
+	Revert:
+	2023-12-07  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.dg/vect/vect-ifcvt-18.c: Add dep on avx_runtime.
+	* gcc.dg/vect/vect-simd-clone-16f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/pr112476-3.c: New test.
+	* gcc.target/loongarch/pr112476-4.c: New test.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	PR target/112611
+	* gcc.target/loongarch/vector/lasx/lasx-xvshuf_b.c: Sure index less than 64.
+	* gcc.target/loongarch/vector/lsx/lsx-vshuf.c: Ditto.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/divf.c: New test.
+	* gcc.target/loongarch/recip-divf.c: New test.
+	* gcc.target/loongarch/recip-sqrtf.c: New test.
+	* gcc.target/loongarch/sqrtf.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-divf.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-recip-divf.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-recip-sqrtf.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-recip.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-sqrtf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-divf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-recip-divf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-recip-sqrtf.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-recip.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-sqrtf.c: New test.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-rsqrt.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-rsqrt.c: New test.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/larch-frecipe-builtin.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-frecipe-builtin.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-frecipe-builtin.c: New test.
+
+2023-12-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/math-lroundf16-rv64-ice-1.c: New test.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-xorsign-run.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xorsign.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-xorsign-run.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-xorsign.c: New test.
+	* gcc.target/loongarch/xorsign-run.c: New test.
+	* gcc.target/loongarch/xorsign.c: New test.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112902
+	* gcc.dg/bitint-52.c: New test.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112901
+	* gcc.dg/bitint-51.c: New test.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112411
+	* gcc.dg/params/blocksort-part.c: Add dg-skip-if for
+	--param min-nondebug-insn-uid=1073741824.
+
+2023-12-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Adjust testcases.
+	* g++.dg/other/i386-3.C: Ditto.
+	* g++.dg/pr80481.C: Ditto.
+	* gcc.dg/pr71279.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-2.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-2.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-3.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-4.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-3.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-4.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-5.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-6.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-gather-1.c: Ditto.
+	* gcc.target/i386/avx512f-gather-2.c: Ditto.
+	* gcc.target/i386/avx512f-gather-3.c: Ditto.
+	* gcc.target/i386/avx512f-gather-4.c: Ditto.
+	* gcc.target/i386/avx512f-gather-5.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherpd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherpd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherps512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vect-perm-1.c: Ditto.
+	* gcc.target/i386/avx512f-vect-perm-2.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qps-1.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc.target/i386/pr103404.c: Ditto.
+	* gcc.target/i386/pr104448.c: Ditto.
+	* gcc.target/i386/pr107934.c: Ditto.
+	* gcc.target/i386/pr64387.c: Ditto.
+	* gcc.target/i386/pr70728.c: Ditto.
+	* gcc.target/i386/pr71346.c: Ditto.
+	* gcc.target/i386/pr82941-2.c: Ditto.
+	* gcc.target/i386/pr82942-1.c: Ditto.
+	* gcc.target/i386/pr82942-2.c: Ditto.
+	* gcc.target/i386/pr82990-1.c: Ditto.
+	* gcc.target/i386/pr82990-3.c: Ditto.
+	* gcc.target/i386/pr82990-4.c: Ditto.
+	* gcc.target/i386/pr82990-6.c: Ditto.
+	* gcc.target/i386/pr88713-3.c: Ditto.
+	* gcc.target/i386/pr89523-5.c: Ditto.
+	* gcc.target/i386/pr89523-6.c: Ditto.
+	* gcc.target/i386/pr91033.c: Ditto.
+	* gcc.target/i386/pr94561.c: Ditto.
+	* gcc.target/i386/prefetchwt1-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-26.c: Ditto.
+	* gcc.target/i386/pr69471-3.c: Removed.
+
+2023-12-08  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* gcc.dg/tree-ssa/scev-16.c: New test.
+
+2023-12-08  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/zicond_ifcvt_opt.c: New file.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112889
+	* c-c++-common/analyzer/ice-pr112889.c: New test.
+
 2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/slp-interleave-1.c: New test.

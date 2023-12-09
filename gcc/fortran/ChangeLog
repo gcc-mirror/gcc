@@ -1,3 +1,45 @@
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_ALLOCATE
+	and EXEC_OMP_ALLOCATORS.
+	* f95-lang.cc (ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST):
+	Add 'ECF_LEAF | ECF_MALLOC' to existing 'ECF_NOTHROW'.
+	(ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LEAF_LIST): Define.
+	* gfortran.h (gfc_omp_clauses): Add contained_in_target_construct.
+	* invoke.texi (-fopenacc, -fopenmp): Update based on C version.
+	(-fopenmp-simd): New, based on C version.
+	(-fopenmp-allocators): New.
+	* lang.opt (fopenmp-allocators): Add.
+	* openmp.cc (resolve_omp_clauses): For allocators/allocate directive,
+	add target and no dynamic_allocators diagnostic and more invalid
+	diagnostic.
+	* parse.cc (decode_omp_directive): Set contains_teams_construct.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+	(gfc_conv_descriptor_version): New prototype.
+	* trans-decl.cc (gfc_init_default_dt): Fix comment.
+	* trans-array.cc (gfc_conv_descriptor_version): New.
+	(gfc_array_allocate): Support GOMP_alloc allocation.
+	(gfc_alloc_allocatable_for_assignment, structure_alloc_comps):
+	Handle GOMP_free/omp_realloc as needed.
+	* trans-expr.cc (gfc_conv_procedure_call): Likewise.
+	(alloc_scalar_allocatable_for_assignment): Likewise.
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_allocators,
+	gfc_trans_omp_directive): Handle allocators/allocate directive.
+	(gfc_omp_call_add_alloc, gfc_omp_call_is_alloc): New.
+	* trans-stmt.h (gfc_trans_allocate): Update prototype.
+	* trans-stmt.cc (gfc_trans_allocate): Support GOMP_alloc.
+	* trans-types.cc (gfc_get_dtype_rank_type): Set version field.
+	* trans.cc (gfc_allocate_using_malloc, gfc_allocate_allocatable):
+	Update to handle GOMP_alloc.
+	(gfc_deallocate_with_status, gfc_deallocate_scalar_with_status):
+	Handle GOMP_free.
+	(trans_code): Update call.
+	* trans.h (gfc_allocate_allocatable, gfc_allocate_using_malloc):
+	Update prototype.
+	(gfc_omp_call_add_alloc, gfc_omp_call_is_alloc): New prototype.
+	* types.def (BT_FN_PTR_PTR_SIZE_PTRMODE_PTRMODE): New.
+
 2023-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc (gfc_diagnostic_starter): Make diagnostic_info param

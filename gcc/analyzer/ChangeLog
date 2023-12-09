@@ -1,3 +1,25 @@
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (taint_state_machine::alt_get_inherited_state): Fix
+	handling of TRUNC_MOD_EXPR.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (contains_uninit_p): Only check for
+	svalues that the infoleak warning can handle.
+
+2023-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112889
+	* store.h (concrete_binding::concrete_binding): Strengthen
+	assertion to require size to be be positive, rather than just
+	non-zero.
+	(concrete_binding::mark_deleted): Use size rather than start bit
+	offset.
+	(concrete_binding::mark_empty): Likewise.
+	(concrete_binding::is_deleted): Likewise.
+	(concrete_binding::is_empty): Likewise.
+
 2023-12-07  Alexandre Oliva  <oliva@adacore.com>
 
 	* region-model.cc (has_nondefault_case_for_value_p): Take

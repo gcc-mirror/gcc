@@ -1,3 +1,40 @@
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83167
+	* semantics.cc (capture_decltype): Inline into its only caller ...
+	(finish_decltype_type): ... here.  Update nearby comment to refer
+	to recent standard.  Add FIXME.  Restrict uncaptured variable type
+	transformation to happen only for lambdas with a by-copy
+	capture-default.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_std_attribute_spec): Return void_list_node
+	rather than NULL_TREE if token is neither CPP_OPEN_SQUARE nor
+	RID_ALIGNAS CPP_KEYWORD.
+	(cp_parser_std_attribute_spec_seq): For attr_spec == void_list_node
+	break, for attr_spec == NULL_TREE continue.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112727
+	* cp-gimplify.cc (cp_fold): If SAVE_EXPR has been previously
+	folded, unshare_expr what is returned.
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112658
+	* parser.cc (cp_parser_expression_statement): If the statement
+	is error_mark_node, make sure we've seen_error().
+
+2023-12-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112658
+	PR c++/94264
+	* typeck.cc (cp_build_c_cast): If we're committed to a const_cast
+	and the result is erroneous, call build_const_cast_1 a second
+	time to issue errors.  Use complain=tf_none instead of =false.
+
 2023-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-tree.h (cxx_print_error_function): Make diagnostic_info param

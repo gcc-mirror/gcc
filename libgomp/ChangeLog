@@ -1,3 +1,25 @@
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c (struct fort_alloc_splay_tree_key_s,
+	fort_alloc_splay_compare, GOMP_add_alloc, GOMP_is_alloc): New.
+	* libgomp.h: Define splay_tree_static for 'reverse' splay tree.
+	* libgomp.map (GOMP_5.1.2): New; add GOMP_add_alloc and
+	GOMP_is_alloc; move GOMP_target_map_indirect_ptr from ...
+	(GOMP_5.1.1): ... here.
+	* libgomp.texi (Impl. Status, Memory management): Update for
+	allocators/allocate directives.
+	* splay-tree.c: Handle splay_tree_static define to declare all
+	functions as static.
+	(splay_tree_lookup_node): New.
+	* splay-tree.h: Handle splay_tree_decl_only define.
+	(splay_tree_lookup_node): New prototype.
+	* target.c: Define splay_tree_static for 'reverse'.
+	* testsuite/libgomp.fortran/allocators-1.f90: New test.
+	* testsuite/libgomp.fortran/allocators-2.f90: New test.
+	* testsuite/libgomp.fortran/allocators-3.f90: New test.
+	* testsuite/libgomp.fortran/allocators-4.f90: New test.
+	* testsuite/libgomp.fortran/allocators-5.f90: New test.
+
 2023-12-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/libgomp-gcn.h (TEAM_ARENA_START): Move to here.

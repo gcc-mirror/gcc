@@ -1,3 +1,522 @@
+2023-12-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/112875
+	* lra-eliminations.cc (lra_eliminate_regs_1): Change an assert.
+	Add ASM_OPERANDS case.
+
+2023-12-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112109
+	* config/riscv/riscv-protos.h (expand_strcmp): Declare.
+	* config/riscv/riscv-string.cc (riscv_expand_strcmp): Add
+	strategy handling and delegation to scalar and vector expanders.
+	(expand_strcmp): Vectorized implementation.
+	* config/riscv/riscv.md: Add TARGET_VECTOR to strcmp and strncmp
+	expander.
+
+2023-12-08  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112109
+	* config/riscv/riscv-protos.h (expand_rawmemchr): Add strlen
+	parameter.
+	* config/riscv/riscv-string.cc (riscv_expand_strlen): Call
+	rawmemchr.
+	(expand_rawmemchr): Add strlen handling.
+	* config/riscv/riscv.md: Add TARGET_VECTOR to strlen expander.
+
+2023-12-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc (allocno_info::chain_next):
+	Put into an enum with...
+	(allocno_info::last_def_point):	...new member variable.
+	(allocno_info::m_current_bb_point): New member variable.
+	(likely_operand_match_p): Switch based on get_constraint_type,
+	rather than based on rtx code.  Handle relaxed and special memory
+	constraints.
+	(early_ra::record_copy): Allow the source of an equivalence to be
+	assigned to more than once.
+	(early_ra::record_allocno_use): Invalidate any previous equivalence.
+	Initialize last_def_point.
+	(early_ra::record_allocno_def): Set last_def_point.
+	(early_ra::valid_equivalence_p): New function, split out from...
+	(early_ra::record_copy): ...here.  Use last_def_point to handle
+	source registers that have a later definition.
+	(make_pass_aarch64_early_ra): Fix comment.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x2, vld1q_u16_x2, vld1q_u32_x2, vld1q_u64_x2): New.
+	(vld1q_s8_x2, vld1q_s16_x2, vld1q_s32_x2, vld1q_s64_x2): New.
+	(vld1q_f16_x2, vld1q_f32_x2): New.
+	(vld1q_p8_x2, vld1q_p16_x2, vld1q_p64_x2): New.
+	(vld1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vld1_x2): New entries.
+	* config/arm/neon.md (vld1_x2<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x3, vld1q_u16_x3, vld1q_u32_x3, vld1q_u64_x3): New.
+	(vld1q_s8_x3, vld1q_s16_x3, vld1q_s32_x3, vld1q_s64_x3): New.
+	(vld1q_f16_x3, vld1q_f32_x3): New.
+	(vld1q_p8_x3, vld1q_p16_x3, vld1q_p64_x3): New.
+	(vld1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vld1_x3): New entries.
+	* config/arm/neon.md (vld1_x3<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1q_u8_x4, vld1q_u16_x4, vld1q_u32_x4, vld1q_u64_x4): New.
+	(vld1q_s8_x4, vld1q_s16_x4, vld1q_s32_x4, vld1q_s64_x4): New.
+	(vld1q_f16_x4, vld1q_f32_x4): New.
+	(vld1q_p8_x4, vld1q_p16_x4, vld1q_p64_x4): New.
+	(vld1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vld1_x4): New entries.
+	* config/arm/neon.md (vld1_x4<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x2, vst1_u16_x2, vst1_u32_x2, vst1_u64_x2): New.
+	(vst1_s8_x2, vst1_s16_x2, vst1_s32_x2, vst1_s64_x2): New.
+	(vst1_f16_x2, vst1_f32_x2): New.
+	(vst1_p8_x2, vst1_p16_x2, vst1_p64_x2): New.
+	(vst1_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1_x2): New entries.
+	* config/arm/neon.md (vst1_x2<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x3, vst1_u16_x3, vst1_u32_x3, vst1_u64_x3): New.
+	(vst1_s8_x3, vst1_s16_x3, vst1_s32_x3, vst1_s64_x3): New.
+	(vst1_f16_x3, vst1_f32_x3): New.
+	(vst1_p8_x3, vst1_p16_x3, vst1_p64_x3): New.
+	(vst1_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1_x3): New entries.
+	* config/arm/neon.md (vst1_x3<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1_u8_x4, vst1_u16_x4, vst1_u32_x4, vst1_u64_x4): New.
+	(vst1_s8_x4, vst1_s16_x4, vst1_s32_x4, vst1_s64_x4): New.
+	(vst1_f16_x4, vst1_f32_x4): New.
+	(vst1_p8_x4, vst1_p16_x4, vst1_p64_x4): New.
+	(vst1_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1_x4): New entries.
+	* config/arm/neon.md (vst1_x4<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x2, vst1q_u16_x2, vst1q_u32_x2, vst1q_u64_x2): New.
+	(vst1q_s8_x2, vst1q_s16_x2, vst1q_s32_x2, vst1q_s64_x2): New.
+	(vst1q_f16_x2, vst1q_f32_x2): New.
+	(vst1q_p8_x2, vst1q_p16_x2, vst1q_p64_x2): New.
+	(vst1q_bf16_x2): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x2): New entries.
+	* config/arm/neon.md
+	(neon_vst1<VMEMX2_q>_x2<VDQX:mode>): Updated from
+	neon_vst1_x2<mode>.
+	* config/arm/iterators.md (VMEMX2): New mode iterator.
+	(VMEMX2_q): New mode attribute.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x3, vst1q_u16_x3, vst1q_u32_x3, vst1q_u64_x3): New.
+	(vst1q_s8_x3, vst1q_s16_x3, vst1q_s32_x3, vst1q_s64_x3): New.
+	(vst1q_f16_x3, vst1q_f32_x3): New.
+	(vst1q_p8_x3, vst1q_p16_x3, vst1q_p64_x3): New.
+	(vst1q_bf16_x3): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x3): New entries.
+	* config/arm/neon.md (neon_vst1q_x3<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vst1q_u8_x4, vst1q_u16_x4, vst1q_u32_x4, vst1q_u64_x4): New.
+	(vst1q_s8_x4, vst1q_s16_x4, vst1q_s32_x4, vst1q_s64_x4): New.
+	(vst1q_f16_x4, vst1q_f32_x4): New.
+	(vst1q_p8_x4, vst1q_p16_x4, vst1q_p64_x4): New.
+	(vst1q_bf16_x4): New.
+	* config/arm/arm_neon_builtins.def (vst1q_x4): New entries.
+	* config/arm/neon.md (neon_vst1q_x4<mode>): New.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x2, vld1_u16_x2, vld1_u32_x2, vld1_u64_x2): New
+	(vld1_s8_x2, vld1_s16_x2, vld1_s32_x2, vld1_s64_x2): New.
+	(vld1_f16_x2, vld1_f32_x2): New.
+	(vld1_p8_x2, vld1_p16_x2, vld1_p64_x2): New.
+	(vld1_bf16_x2): New.
+	(vld1q_types_x2): Updated to use vld1q_x2 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x2): Updated entries.
+	(vld1q_x2): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md
+	(neon_vld1<VMEMX2_q>_x2<VDQX:mode>): Updated
+	from neon_vld1_x2<mode>.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x3, vld1_u16_x3, vld1_u32_x3, vld1_u64_x3): New
+	(vld1_s8_x3, vld1_s16_x3, vld1_s32_x3, vld1_s64_x3): New.
+	(vld1_f16_x3, vld1_f32_x3): New.
+	(vld1_p8_x3, vld1_p16_x3, vld1_p64_x3): New.
+	(vld1_bf16_x3): New.
+	(vld1q_types_x3): Updated to use vld1q_x3 from
+	arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x3): Updated entries.
+	(vld1q_x3): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md (neon_vld1q_x3<mode>): Updated from
+	neon_vld1_x3<mode>.
+
+2023-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2023-12-07  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/arm/arm_neon.h
+	(vld1_u8_x4, vld1_u16_x4, vld1_u32_x4, vld1_u64_x4): New
+	(vld1_s8_x4, vld1_s16_x4, vld1_s32_x4, vld1_s64_x4): New.
+	(vld1_f16_x4, vld1_f32_x4): New.
+	(vld1_p8_x4, vld1_p16_x4, vld1_p64_x4): New.
+	(vld1_bf16_x4): New.
+	(vld1q_types_x4): Updated to use vld1q_x4
+	from arm_neon_builtins.def
+	* config/arm/arm_neon_builtins.def
+	(vld1_x4): Updated entries.
+	(vld1q_x4): New entries, but comes from the old vld1_x2
+	* config/arm/neon.md (neon_vld1q_x4<mode>):
+	Updated from neon_vld1_x4<mode>.
+
+2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* builtin-types.def (BT_FN_PTR_PTR_SIZE_PTRMODE_PTRMODE): New.
+	* omp-builtins.def (BUILT_IN_GOMP_REALLOC): New.
+	* builtins.cc (builtin_fnspec): Handle it.
+	* gimple-ssa-warn-access.cc (fndecl_alloc_p,
+	matching_alloc_calls_p): Likewise.
+	* gimple.cc (nonfreeing_call_p): Likewise.
+	* predict.cc (expr_expected_value_1): Likewise.
+	* tree-ssa-ccp.cc (evaluate_stmt): Likewise.
+	* tree.cc (fndecl_dealloc_argno): Likewise.
+
+2023-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112909
+	* tree-ssa-uninit.cc (find_uninit_use): Look through a
+	single level of SSA name copies with single use.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_try_expand_lsx_vshuf_const): Use
+	simplify_gen_subreg instead of gen_rtx_SUBREG.
+	(loongarch_expand_vec_perm_const_2): Ditto.
+	(loongarch_expand_vec_cond_expr): Ditto.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_vector_costs::determine_suggested_unroll_factor):
+	If m_has_recip is true, uf return 1.
+	(loongarch_vector_costs::add_stmt_cost): Detect the use of approximate instruction sequence.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/genopts/loongarch.opt.in (recip_mask): New variable.
+	(-mrecip, -mrecip): New options.
+	* config/loongarch/lasx.md (div<mode>3): New expander.
+	(*div<mode>3): Rename.
+	(sqrt<mode>2): New expander.
+	(*sqrt<mode>2): Rename.
+	(rsqrt<mode>2): New expander.
+	* config/loongarch/loongarch-protos.h (loongarch_emit_swrsqrtsf): New prototype.
+	(loongarch_emit_swdivsf): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_option_override_internal): Set
+	recip_mask for -mrecip and -mrecip= options.
+	(loongarch_emit_swrsqrtsf): New function.
+	(loongarch_emit_swdivsf): Ditto.
+	* config/loongarch/loongarch.h (RECIP_MASK_NONE, RECIP_MASK_DIV, RECIP_MASK_SQRT
+	RECIP_MASK_RSQRT, RECIP_MASK_VEC_DIV, RECIP_MASK_VEC_SQRT, RECIP_MASK_VEC_RSQRT
+	RECIP_MASK_ALL): New bitmasks.
+	(TARGET_RECIP_DIV, TARGET_RECIP_SQRT, TARGET_RECIP_RSQRT, TARGET_RECIP_VEC_DIV
+	TARGET_RECIP_VEC_SQRT, TARGET_RECIP_VEC_RSQRT): New tests.
+	* config/loongarch/loongarch.md (sqrt<mode>2): New expander.
+	(*sqrt<mode>2): Rename.
+	(rsqrt<mode>2): New expander.
+	* config/loongarch/loongarch.opt (recip_mask): New variable.
+	(-mrecip, -mrecip): New options.
+	* config/loongarch/lsx.md (div<mode>3): New expander.
+	(*div<mode>3): Rename.
+	(sqrt<mode>2): New expander.
+	(*sqrt<mode>2): Rename.
+	(rsqrt<mode>2): New expander.
+	* config/loongarch/predicates.md (reg_or_vecotr_1_operand): New predicate.
+	* doc/invoke.texi (LoongArch Options): Document new options.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvfrecip_<flasxfmt>): Renamed to ..
+	(recip<mode>3): .. this.
+	* config/loongarch/loongarch-builtins.cc (CODE_FOR_lsx_vfrecip_d): Redefine
+	to new pattern name.
+	(CODE_FOR_lsx_vfrecip_s): Ditto.
+	(CODE_FOR_lasx_xvfrecip_d): Ditto.
+	(CODE_FOR_lasx_xvfrecip_s): Ditto.
+	(loongarch_expand_builtin_direct): For the vector recip instructions, construct a
+	temporary parameter const1_vector.
+	* config/loongarch/lsx.md (lsx_vfrecip_<flsxfmt>): Renamed to ..
+	(recip<mode>3): .. this.
+	* config/loongarch/predicates.md (const_vector_1_operand): New predicate.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvfrsqrt_<flasxfmt>): Renamed to ..
+	(rsqrt<mode>2): .. this.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vfrsqrt_d): Redefine to standard pattern name.
+	(CODE_FOR_lsx_vfrsqrt_s): Ditto.
+	(CODE_FOR_lasx_xvfrsqrt_d): Ditto.
+	(CODE_FOR_lasx_xvfrsqrt_s): Ditto.
+	* config/loongarch/loongarch.cc (use_rsqrt_p): New function.
+	(loongarch_optab_supported_p): Ditto.
+	(TARGET_OPTAB_SUPPORTED_P): New hook.
+	* config/loongarch/loongarch.md (*rsqrt<mode>a): Remove.
+	(*rsqrt<mode>2): New insn pattern.
+	(*rsqrt<mode>b): Remove.
+	* config/loongarch/lsx.md (lsx_vfrsqrt_<flsxfmt>): Renamed to ..
+	(rsqrt<mode>2): .. this.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/genopts/isa-evolution.in (fecipe): Add.
+	* config/loongarch/larchintrin.h (__frecipe_s): New intrinsic.
+	(__frecipe_d): Ditto.
+	(__frsqrte_s): Ditto.
+	(__frsqrte_d): Ditto.
+	* config/loongarch/lasx.md (lasx_xvfrecipe_<flasxfmt>): New insn pattern.
+	(lasx_xvfrsqrte_<flasxfmt>): Ditto.
+	* config/loongarch/lasxintrin.h (__lasx_xvfrecipe_s): New intrinsic.
+	(__lasx_xvfrecipe_d): Ditto.
+	(__lasx_xvfrsqrte_s): Ditto.
+	(__lasx_xvfrsqrte_d): Ditto.
+	* config/loongarch/loongarch-builtins.cc (AVAIL_ALL): Add predicates.
+	(LSX_EXT_BUILTIN): New macro.
+	(LASX_EXT_BUILTIN): Ditto.
+	* config/loongarch/loongarch-cpucfg-map.h: Regenerate.
+	* config/loongarch/loongarch-c.cc: Add builtin macro "__loongarch_frecipe".
+	* config/loongarch/loongarch-def.cc: Regenerate.
+	* config/loongarch/loongarch-str.h (OPTSTR_FRECIPE): Regenerate.
+	* config/loongarch/loongarch.cc (loongarch_asm_code_end): Dump status for TARGET_FRECIPE.
+	* config/loongarch/loongarch.md (loongarch_frecipe_<fmt>): New insn pattern.
+	(loongarch_frsqrte_<fmt>): Ditto.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/lsx.md (lsx_vfrecipe_<flsxfmt>): New insn pattern.
+	(lsx_vfrsqrte_<flsxfmt>): Ditto.
+	* config/loongarch/lsxintrin.h (__lsx_vfrecipe_s): New intrinsic.
+	(__lsx_vfrecipe_d): Ditto.
+	(__lsx_vfrsqrte_s): Ditto.
+	(__lsx_vfrsqrte_d): Ditto.
+	* doc/extend.texi: Add documentation for LoongArch new builtins and intrinsics.
+
+2023-12-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-outof-ssa.cc (rewrite_out_of_ssa): Dump GIMPLE once only,
+	after final IL adjustments.
+
+2023-12-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector-iterators.md: Replace RVVM2SI to RVVM2SF
+	for mode attr V_F2DI_CONVERT_BRIDGE.
+
+2023-12-08  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (xorsign<mode>3): New expander.
+	* config/loongarch/loongarch.cc (loongarch_can_change_mode_class): Allow
+	conversion between LSX vector mode and scalar fp mode.
+	* config/loongarch/loongarch.md (@xorsign<mode>3): New expander.
+	* config/loongarch/lsx.md (@xorsign<mode>3): Ditto.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112902
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For a narrowing
+	or same precision cast don't set SSA_NAME_VERSION in m_names only
+	if use_stmt is mergeable_op or fall through into the check that
+	use is a store or rhs1 is not mergeable or other reasons prevent
+	merging.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112901
+	* vr-values.cc
+	(simplify_using_ranges::simplify_float_conversion_using_ranges):
+	Return false if rhs1 has BITINT_TYPE type with BLKmode TYPE_MODE.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112411
+	* haifa-sched.cc (extend_h_i_d): Use 3U instead of 3 in
+	3 * get_max_uid () / 2 calculation.
+
+2023-12-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/loongarch-strings: Delete STR_ISA_BASE_LA64V110.
+	* config/loongarch/genopts/loongarch.opt.in: Likewise.
+	* config/loongarch/loongarch-cpu.cc (ISA_BASE_LA64V110_FEATURES): Delete macro.
+	(fill_native_cpu_config): Define a new variable hw_isa_evolution record the
+	extended instruction set support read from cpucfg.
+	* config/loongarch/loongarch-def.cc: Set evolution at initialization.
+	* config/loongarch/loongarch-def.h (ISA_BASE_LA64V100): Delete.
+	(ISA_BASE_LA64V110): Likewise.
+	(N_ISA_BASE_TYPES): Likewise.
+	(defined): Likewise.
+	* config/loongarch/loongarch-opts.cc: Likewise.
+	* config/loongarch/loongarch-opts.h (TARGET_64BIT): Likewise.
+	(ISA_BASE_IS_LA64V110): Likewise.
+	* config/loongarch/loongarch-str.h (STR_ISA_BASE_LA64V110): Likewise.
+	* config/loongarch/loongarch.opt: Regenerate.
+
+2023-12-08  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-def.h: Remove extern "C".
+	(loongarch_isa_base_strings): Declare as loongarch_def_array
+	instead of plain array.
+	(loongarch_isa_ext_strings): Likewise.
+	(loongarch_abi_base_strings): Likewise.
+	(loongarch_abi_ext_strings): Likewise.
+	(loongarch_cmodel_strings): Likewise.
+	(loongarch_cpu_strings): Likewise.
+	(loongarch_cpu_default_isa): Likewise.
+	(loongarch_cpu_issue_rate): Likewise.
+	(loongarch_cpu_multipass_dfa_lookahead): Likewise.
+	(loongarch_cpu_cache): Likewise.
+	(loongarch_cpu_align): Likewise.
+	(loongarch_cpu_rtx_cost_data): Likewise.
+	(loongarch_isa): Add a constructor and field setter functions.
+	* config/loongarch/loongarch-opts.h (loongarch-defs.h): Do not
+	include for target libraries.
+	* config/loongarch/loongarch-opts.cc: Comment code that doesn't
+	run and causes compilation errors.
+	* config/loongarch/loongarch-tune.h (LOONGARCH_TUNE_H): Likewise.
+	(struct loongarch_rtx_cost_data): Likewise.
+	(struct loongarch_cache): Likewise.
+	(struct loongarch_align): Likewise.
+	* config/loongarch/t-loongarch: Compile loongarch-def.cc with the
+	C++ compiler.
+	* config/loongarch/loongarch-def-array.h: New file for a
+	std:array like data structure with position setter function.
+	* config/loongarch/loongarch-def.c: Rename to ...
+	* config/loongarch/loongarch-def.cc: ... here.
+	(loongarch_cpu_strings): Define as loongarch_def_array instead
+	of plain array.
+	(loongarch_cpu_default_isa): Likewise.
+	(loongarch_cpu_cache): Likewise.
+	(loongarch_cpu_align): Likewise.
+	(loongarch_cpu_rtx_cost_data): Likewise.
+	(loongarch_cpu_issue_rate): Likewise.
+	(loongarch_cpu_multipass_dfa_lookahead): Likewise.
+	(loongarch_isa_base_strings): Likewise.
+	(loongarch_isa_ext_strings): Likewise.
+	(loongarch_abi_base_strings): Likewise.
+	(loongarch_abi_ext_strings): Likewise.
+	(loongarch_cmodel_strings): Likewise.
+	(abi_minimal_isa): Likewise.
+	(loongarch_rtx_cost_optimize_size): Use field setter functions
+	instead of designated initializers.
+	(loongarch_rtx_cost_data): Implement default constructor.
+
+2023-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112411
+	* params.opt (-param=min-nondebug-insn-uid=): Add
+	IntegerRange(0, 1073741824).
+	* lra.cc (check_and_expand_insn_recog_data): Use 3U rather than 3
+	in * 3 / 2 computation and if the result is smaller or equal to
+	index, use index + 1.
+
+2023-12-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Do not append "-mno-" for Xeon Phi ISAs.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Emit a warning for KNL/KNM targets.
+	* config/i386/i386.opt: Emit a warning for Xeon Phi ISAs.
+
+2023-12-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::better_main_loop_than_p):
+	Remove redundant check.
+
+2023-12-08  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/112774
+	* tree-pretty-print.cc: if nonwrapping flag is set, chrec will be
+	printed with additional <nw> info.
+	* tree-scalar-evolution.cc: add record_nonwrapping_chrec and
+	nonwrapping_chrec_p to set and check the new flag respectively.
+	* tree-scalar-evolution.h: Likewise.
+	* tree-ssa-loop-niter.cc (idx_infer_loop_bounds,
+	infer_loop_bounds_from_pointer_arith, infer_loop_bounds_from_signedness,
+	scev_probably_wraps_p): call record_nonwrapping_chrec before
+	record_nonwrapping_iv, call nonwrapping_chrec_p to check the flag is
+	set and	return false from scev_probably_wraps_p.
+	* tree-vect-loop.cc (vect_analyze_loop): call
+	free_numbers_of_iterations_estimates explicitly.
+	* tree-core.h: document the nothrow_flag usage in CHREC_NOWRAP
+	* tree.h: add CHREC_NOWRAP(NODE), base.nothrow_flag is used to
+	represent the nonwrapping info.
+
+2023-12-08  Fei Gao  <gaofei@eswincomputing.com>
+
+	* ifcvt.cc (noce_try_cond_zero_arith): New function.
+	(noce_emit_czero, get_base_reg): Likewise.
+	(noce_cond_zero_binary_op_supported): Likewise.
+	(noce_bbs_ok_for_cond_zero_arith): Likewise.
+	(noce_process_if_block): Use noce_try_cond_zero_arith.
+	Co-authored-by: Xiao Zeng<zengxiao@eswincomputing.com>
+
 2023-12-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-protos.h (expand_vec_series): Adapt function.

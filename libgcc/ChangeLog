@@ -1,3 +1,41 @@
+2023-12-08  Florian Weimer  <fweimer@redhat.com>
+
+	* libgcov-interface.c (__gcov_fork): Use __builtin_fork instead
+	of fork.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Regenerate.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/__arm_za_disable.S: Add hidden alias.
+	* config/aarch64/aarch64-unwind.h: Reset the SME state before
+	EH return via the _Unwind_Frames_Extra hook.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/t-aarch64: Add sources to the build.
+	* config/aarch64/__aarch64_have_sme.c: New file.
+	* config/aarch64/__arm_sme_state.S: New file.
+	* config/aarch64/__arm_tpidr2_restore.S: New file.
+	* config/aarch64/__arm_tpidr2_save.S: New file.
+	* config/aarch64/__arm_za_disable.S: New file.
+	* config/aarch64/aarch64-asm.h: New file.
+	* config/aarch64/libgcc-sme.ver: New file.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Undef HAVE___GETAUXVAL.
+	* configure: Regenerate.
+	* configure.ac: Check for __getauxval.
+
+2023-12-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.in: Undef HAVE_AS_VARIANT_PCS.
+	* configure: Regenerate.
+	* configure.ac: Check for .variant_pcs.
+
 2023-12-07  Alexandre Oliva  <oliva@adacore.com>
 
 	* configure.ac: Check for strub support.
