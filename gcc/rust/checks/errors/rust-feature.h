@@ -43,6 +43,8 @@ public:
     DECL_MACRO,
     AUTO_TRAITS,
     EXTERN_TYPES,
+    LANG_ITEMS,
+    NO_CORE,
   };
 
   const std::string &as_string () { return m_name_str; }
