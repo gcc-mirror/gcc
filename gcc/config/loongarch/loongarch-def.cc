@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "rtl.h"
 
 #include "loongarch-def.h"
 #include "loongarch-str.h"
@@ -88,8 +89,6 @@ array_tune<loongarch_align> loongarch_cpu_align =
     .set (CPU_LOONGARCH64, la464_align ())
     .set (CPU_LA464, la464_align ())
     .set (CPU_LA664, la464_align ());
-
-#define COSTS_N_INSNS(N) ((N) * 4)
 
 /* Default RTX cost initializer.  */
 loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
