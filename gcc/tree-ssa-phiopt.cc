@@ -3757,8 +3757,8 @@ static void
 hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 		      basic_block bb2, basic_block bb3)
 {
-  int param_align = param_l1_cache_line_size;
-  unsigned param_align_bits = (unsigned) (param_align * BITS_PER_UNIT);
+  unsigned HOST_WIDE_INT param_align = param_l1_cache_line_size;
+  unsigned HOST_WIDE_INT param_align_bits = param_align * BITS_PER_UNIT;
   gphi_iterator gsi;
 
   /* Walk the phis in bb3 looking for an opportunity.  We are looking
@@ -3770,8 +3770,7 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       gimple *def1, *def2;
       tree arg1, arg2, ref1, ref2, field1, field2;
       tree tree_offset1, tree_offset2, tree_size2, next;
-      int offset1, offset2, size2;
-      unsigned align1;
+      unsigned HOST_WIDE_INT offset1, offset2, size2, align1;
       gimple_stmt_iterator gsi2;
       basic_block bb_for_def1, bb_for_def2;
 
