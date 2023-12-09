@@ -56,6 +56,8 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   // later Rust versions
   {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
   {"extern_types", Feature::Name::EXTERN_TYPES},
+  {"lang_items", Feature::Name::LANG_ITEMS},
+  {"no_core", Feature::Name::NO_CORE},
 }; // namespace Rust
 
 tl::optional<Feature::Name>
