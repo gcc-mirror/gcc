@@ -1334,31 +1334,12 @@
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
 
-(define_expand "movmisalign<mode>"
-  [(set (match_operand:VLS 0 "nonimmediate_operand")
-	(match_operand:VLS 1 "general_operand"))]
-  "TARGET_VECTOR"
-  {
-    /* To support misalign data movement, we should use
-       minimum element alignment load/store.  */
-    unsigned int size = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode));
-    poly_int64 nunits = GET_MODE_NUNITS (<MODE>mode) * size;
-    machine_mode mode = riscv_vector::get_vector_mode (QImode, nunits).require ();
-    operands[0] = gen_lowpart (mode, operands[0]);
-    operands[1] = gen_lowpart (mode, operands[1]);
-    if (MEM_P (operands[0]) && !register_operand (operands[1], mode))
-      operands[1] = force_reg (mode, operands[1]);
-    riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::UNARY_OP, operands);
-    DONE;
-  }
-)
-
 ;; According to RVV ISA:
 ;; If an element accessed by a vector memory instruction is not naturally aligned to the size of the element,
 ;; either the element is transferred successfully or an address misaligned exception is raised on that element.
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand")
-	(match_operand:V 1 "general_operand"))]
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand")
+	(match_operand:V_VLS 1 "general_operand"))]
   "TARGET_VECTOR && TARGET_VECTOR_MISALIGN_SUPPORTED"
   {
     emit_move_insn (operands[0], operands[1]);

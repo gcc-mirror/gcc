@@ -21,7 +21,5 @@ foo ()
     abort ();
 }
 
-/* { dg-final { scan-assembler-times {vle8\.v} 1 } } */
-/* { dg-final { scan-assembler-times {vle8\.v} 1 } } */
-/* { dg-final { scan-assembler-not {vle16\.v} } } */
-/* { dg-final { scan-assembler-not {vle16\.v} } } */
+/* { dg-final { scan-assembler-times {vsetvli} 1 } } */
+
