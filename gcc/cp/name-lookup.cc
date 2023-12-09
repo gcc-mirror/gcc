@@ -6356,7 +6356,7 @@ handle_namespace_attrs (tree ns, tree attributes)
 	    DECL_ATTRIBUTES (ns) = tree_cons (name, args,
 					      DECL_ATTRIBUTES (ns));
 	}
-      else
+      else if (!attribute_ignored_p (d))
 	{
 	  warning (OPT_Wattributes, "%qD attribute directive ignored",
 		   name);
@@ -8703,7 +8703,7 @@ finish_using_directive (tree target, tree attribs)
 		diagnosed = true;
 	      }
 	  }
-	else
+	else if (!attribute_ignored_p (a))
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);
       }
 }

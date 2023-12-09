@@ -12778,9 +12778,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     SET_EXPR_LOCATION (statement, statement_location);
 
   /* Allow "[[fallthrough]];" or "[[assume(cond)]];", but warn otherwise.  */
-  if (std_attrs != NULL_TREE)
-    warning_at (attrs_loc,
-		OPT_Wattributes,
+  if (std_attrs != NULL_TREE && any_nonignored_attribute_p (std_attrs))
+    warning_at (attrs_loc, OPT_Wattributes,
 		"attributes at the beginning of statement are ignored");
 }
 
@@ -12989,7 +12988,7 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
     }
 
   /* Allow "[[fallthrough]];", but warn otherwise.  */
-  if (attr != NULL_TREE)
+  if (attr != NULL_TREE && any_nonignored_attribute_p (attr))
     warning_at (loc, OPT_Wattributes,
 		"attributes at the beginning of statement are ignored");
 
@@ -15194,7 +15193,7 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 	    }
 	}
 
-      if (std_attrs != NULL_TREE && !attribute_ignored_p (std_attrs))
+      if (std_attrs != NULL_TREE && any_nonignored_attribute_p (std_attrs))
 	warning_at (make_location (attrs_loc, attrs_loc, parser->lexer),
 		    OPT_Wattributes, "attribute ignored");
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -22675,7 +22674,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	symtab->finalize_toplevel_asm (string);
     }
 
-  if (std_attrs)
+  if (std_attrs && any_nonignored_attribute_p (std_attrs))
     warning_at (asm_loc, OPT_Wattributes,
 		"attributes ignored on %<asm%> declaration");
 }

@@ -584,6 +584,19 @@ attribute_ignored_p (const attribute_spec *const as)
   return as->max_length == -2;
 }
 
+/* Return true if the ATTRS chain contains at least one attribute which
+   is not ignored.  */
+
+bool
+any_nonignored_attribute_p (tree attrs)
+{
+  for (tree attr = attrs; attr; attr = TREE_CHAIN (attr))
+    if (!attribute_ignored_p (attr))
+      return true;
+
+  return false;
+}
+
 /* See whether LIST contains at least one instance of attribute ATTR
    (possibly with different arguments).  Return the first such attribute
    if so, otherwise return null.  */

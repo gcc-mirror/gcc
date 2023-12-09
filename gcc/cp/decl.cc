@@ -13058,7 +13058,8 @@ grokdeclarator (const cp_declarator *declarator,
       && !diagnose_misapplied_contracts (declspecs->std_attributes))
     {
       location_t attr_loc = declspecs->locations[ds_std_attribute];
-      if (warning_at (attr_loc, OPT_Wattributes, "attribute ignored"))
+      if (any_nonignored_attribute_p (declspecs->std_attributes)
+	  && warning_at (attr_loc, OPT_Wattributes, "attribute ignored"))
 	inform (attr_loc, "an attribute that appertains to a type-specifier "
 		"is ignored");
     }
