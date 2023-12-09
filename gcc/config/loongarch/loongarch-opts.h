@@ -21,21 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LOONGARCH_OPTS_H
 #define LOONGARCH_OPTS_H
 
-/* This is a C++ header and it shouldn't be used by target libraries.  */
+/* The loongarch-def.h file is a C++ header and it shouldn't be used by
+   target libraries.  Exclude it and everything using the C++ structs
+   (struct loongarch_target and gcc_options) from target libraries.  */
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 #include "loongarch-def.h"
-#endif
 
 /* Target configuration */
 extern struct loongarch_target la_target;
-
-/* Flag status */
-struct loongarch_flags {
-    int flt; const char* flt_str;
-#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
-    int sx[2];
-};
-
 
 /* Initialize loongarch_target from separate option variables.  */
 void
@@ -56,7 +49,14 @@ void
 loongarch_update_gcc_opt_status (struct loongarch_target *target,
 				 struct gcc_options *opts,
 				 struct gcc_options *opts_set);
+#endif
 
+/* Flag status */
+struct loongarch_flags {
+    int flt; const char* flt_str;
+#define SX_FLAG_TYPE(x) ((x) < 0 ? -(x) : (x))
+    int sx[2];
+};
 
 /* Macros for common conditional expressions used in loongarch.{c,h,md} */
 #define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
