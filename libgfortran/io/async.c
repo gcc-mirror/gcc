@@ -42,6 +42,10 @@ DEBUG_LINE (__thread const char *aio_prefix = MPREFIX);
 
 DEBUG_LINE (__gthread_mutex_t debug_queue_lock = __GTHREAD_MUTEX_INIT;)
 DEBUG_LINE (aio_lock_debug *aio_debug_head = NULL;)
+#ifdef __GTHREAD_RWLOCK_INIT
+DEBUG_LINE (aio_rwlock_debug *aio_rwlock_debug_head = NULL;)
+DEBUG_LINE (__gthread_rwlock_t debug_queue_rwlock = __GTHREAD_RWLOCK_INIT;)
+#endif
 
 /* Current unit for asynchronous I/O.  Needed for error reporting.  */
 

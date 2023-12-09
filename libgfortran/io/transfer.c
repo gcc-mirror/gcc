@@ -4538,9 +4538,9 @@ st_read_done_worker (st_parameter_dt *dtp, bool unlock)
    if (free_newunit)
      {
        /* Avoid inverse lock issues by placing after unlock_unit.  */
-       LOCK (&unit_lock);
+       WRLOCK (&unit_rwlock);
        newunit_free (dtp->common.unit);
-       UNLOCK (&unit_lock);
+       RWUNLOCK (&unit_rwlock);
      }
 }
 
@@ -4634,9 +4634,9 @@ st_write_done_worker (st_parameter_dt *dtp, bool unlock)
    if (free_newunit)
      {
        /* Avoid inverse lock issues by placing after unlock_unit.  */
-       LOCK (&unit_lock);
+       WRLOCK (&unit_rwlock);
        newunit_free (dtp->common.unit);
-       UNLOCK (&unit_lock);
+       RWUNLOCK (&unit_rwlock);
      }
 }
 

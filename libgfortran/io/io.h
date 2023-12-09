@@ -690,7 +690,7 @@ typedef struct gfc_unit
      from the UNIT_ROOT tree, but doesn't free it and the
      last of the waiting threads will do that.
      This must be either atomically increased/decreased, or
-     always guarded by UNIT_LOCK.  */
+     always guarded by UNIT_RWLOCK.  */
   int waiting;
   /* Flag set by close_unit if the unit as been closed.
      Must be manipulated under unit's lock.  */
@@ -769,8 +769,13 @@ internal_proto(default_recl);
 extern gfc_unit *unit_root;
 internal_proto(unit_root);
 
-extern __gthread_mutex_t unit_lock;
-internal_proto(unit_lock);
+#ifdef __GTHREAD_RWLOCK_INIT
+extern __gthread_rwlock_t unit_rwlock;
+internal_proto(unit_rwlock);
+#else
+extern __gthread_mutex_t unit_rwlock;
+internal_proto(unit_rwlock);
+#endif
 
 extern int close_unit (gfc_unit *);
 internal_proto(close_unit);
@@ -1015,9 +1020,9 @@ dec_waiting_unlocked (gfc_unit *u)
 #ifdef HAVE_ATOMIC_FETCH_ADD
   (void) __atomic_fetch_add (&u->waiting, -1, __ATOMIC_RELAXED);
 #else
-  __gthread_mutex_lock (&unit_lock);
+  WRLOCK (&unit_rwlock);
   u->waiting--;
-  __gthread_mutex_unlock (&unit_lock);
+  RWUNLOCK (&unit_rwlock);
 #endif
 }
 
