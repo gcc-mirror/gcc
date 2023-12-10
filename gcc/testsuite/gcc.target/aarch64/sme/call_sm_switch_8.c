@@ -7,7 +7,7 @@ svint8_t produce_z0 ();
 void consume_z0 (svint8_t);
 
 /*
-** test_z0:
+** test_z0:	{ target aarch64_little_endian }
 **	...
 **	smstop	sm
 **	bl	produce_z0
@@ -32,7 +32,7 @@ svint8x4_t produce_z3 ();
 void consume_z3 (svint8x4_t);
 
 /*
-** test_z3:
+** test_z3:	{ target aarch64_little_endian }
 **	...
 **	smstop	sm
 **	bl	produce_z3
@@ -61,7 +61,7 @@ svbool_t produce_p0 ();
 void consume_p0 (svbool_t);
 
 /*
-** test_p0:
+** test_p0:	{ target aarch64_little_endian }
 **	...
 **	smstop	sm
 **	bl	produce_p0
