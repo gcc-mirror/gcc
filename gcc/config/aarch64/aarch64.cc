@@ -4956,14 +4956,17 @@ aarch64_sme_mode_switch_regs::add_reg (machine_mode mode, unsigned int regno)
   gcc_assert ((vec_flags & VEC_STRUCT) || end_regno == regno + 1);
   for (; regno < end_regno; regno++)
     {
+      /* Force the mode of SVE saves and restores even for single registers.
+	 This is necessary because big-endian targets only allow LDR Z and
+	 STR Z to be used with byte modes.  */
       machine_mode submode = mode;
-      if (vec_flags & VEC_STRUCT)
+      if (vec_flags & VEC_SVE_PRED)
+	submode = VNx16BImode;
+      else if (vec_flags & VEC_SVE_DATA)
+	submode = SVE_BYTE_MODE;
+      else if (vec_flags & VEC_STRUCT)
 	{
-	  if (vec_flags & VEC_SVE_PRED)
-	    submode = VNx16BImode;
-	  else if (vec_flags & VEC_SVE_DATA)
-	    submode = SVE_BYTE_MODE;
-	  else if (vec_flags & VEC_PARTIAL)
+	  if (vec_flags & VEC_PARTIAL)
 	    submode = V8QImode;
 	  else
 	    submode = V16QImode;
