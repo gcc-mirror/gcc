@@ -20,6 +20,7 @@
 // Class template day [time.cal.month]
 
 #include <chrono>
+#include <limits>
 
 constexpr void
 constexpr_month()
@@ -33,6 +34,24 @@ constexpr_month()
   dm--;
   dm += months{3};
   dm -= months{3};
+
+  // Test for UB (overflow).
+  {
+    using rep = months::rep;
+    using std::numeric_limits;
+
+    auto constexpr months_min = months{numeric_limits<rep>::min()};
+    auto constexpr month_000_plus_months_min  = month{ 0 } + months_min;
+    auto constexpr month_255_plus_months_min  = month{255} + months_min;
+    auto constexpr month_000_minus_months_min = month{ 0 } - months_min;
+    auto constexpr month_255_minus_months_min = month{255} - months_min;
+
+    auto constexpr months_max = months{numeric_limits<rep>::max()};
+    auto constexpr month_000_plus_months_max  = month{ 0 } + months_max;
+    auto constexpr month_255_plus_months_max  = month{255} + months_max;
+    auto constexpr month_000_minus_months_max = month{ 0 } - months_max;
+    auto constexpr month_255_minus_months_max = month{255} - months_max;
+  }
 
   static_assert(February + months{11} == January);
   static_assert(January + months{1200} == January);

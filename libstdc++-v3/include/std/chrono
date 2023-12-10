@@ -501,18 +501,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     namespace __detail
     {
-      // Compute the remainder of the Euclidean division of __n divided by __d.
-      // Euclidean division truncates toward negative infinity and always
-      // produces a remainder in the range of [0,__d-1] (whereas standard
-      // division truncates toward zero and yields a nonpositive remainder
-      // for negative __n).
-      constexpr unsigned
-      __modulo(long long __n, unsigned __d)
+      // Helper to __add_modulo and __sub_modulo.
+      template <unsigned __d, typename _Tp>
+      consteval auto
+      __modulo_offset()
       {
-	if (__n >= 0)
-	  return __n % __d;
-	else
-	  return (__d + (__n % __d)) % __d;
+	using _Up = make_unsigned_t<_Tp>;
+	auto constexpr __a = _Up(-1) - _Up(255 + __d - 2);
+	auto constexpr __b = _Up(__d * (__a / __d) - 1);
+	// Notice: b <= a - 1 <= _Up(-1) - (255 + d - 1) and b % d = d - 1.
+	return _Up(-1) - __b; // >= 255 + d - 1
+      }
+
+      // Compute the remainder of the Euclidean division of __x + __y divided by
+      // __d without overflowing.  Typically, __x <= 255 + d - 1 is sum of
+      // weekday/month with a shift in [0, d - 1] and __y is a duration count.
+      template <unsigned __d, typename _Tp>
+      constexpr unsigned
+      __add_modulo(unsigned __x, _Tp __y)
+      {
+	using _Up = make_unsigned_t<_Tp>;
+	// For __y >= 0, _Up(__y) has the same mathematical value as __y and
+	// this function simply returns (__x + _Up(__y)) % d.  Typically, this
+	// doesn't overflow since the range of _Up contains many more positive
+	// values than _Tp's.  For __y < 0, _Up(__y) has a mathematical value in
+	// the upper-half range of _Up so that adding a positive value to it
+	// might overflow.  Moreover, most likely, _Up(__y) != __y mod d.  To
+	// fix both issues we subtract from _Up(__y) an __offset >=
+	// 255 + d - 1 to make room for the addition to __x and shift the modulo
+	// to the correct value.
+	auto const __offset = __y >= 0 ? _Up(0) : __modulo_offset<__d, _Tp>();
+	return (__x + _Up(__y) - __offset) % __d;
+      }
+
+      // Similar to __add_modulo but for __x - __y.
+      template <unsigned __d, typename _Tp>
+      constexpr unsigned
+      __sub_modulo(unsigned __x, _Tp __y)
+      {
+	using _Up = make_unsigned_t<_Tp>;
+	auto const __offset = __y <= 0 ? _Up(0) : __modulo_offset<__d, _Tp>();
+	return (__x - _Up(__y) - __offset) % __d;
       }
 
       inline constexpr unsigned __days_per_month[12]
@@ -704,8 +733,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr month
       operator+(const month& __x, const months& __y) noexcept
       {
-	auto __n = static_cast<long long>(unsigned{__x}) + (__y.count() - 1);
-	return month{__detail::__modulo(__n, 12) + 1};
+	// modulo(x + (y - 1), 12) = modulo(x + (y - 1) + 12, 12)
+	//                         = modulo((x + 11) + y    , 12)
+	return month{1 + __detail::__add_modulo<12>(
+	  unsigned{__x} + 11, __y.count())};
       }
 
       friend constexpr month
@@ -714,7 +745,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr month
       operator-(const month& __x, const months& __y) noexcept
-      { return __x + -__y; }
+      {
+	// modulo(x + (-y - 1), 12) = modulo(x + (-y - 1) + 12, 12)
+	//                          = modulo((x + 11) - y     , 12)
+	return month{1 + __detail::__sub_modulo<12>(
+	  unsigned{__x} + 11, __y.count())};
+      }
 
       friend constexpr months
       operator-(const month& __x,  const month& __y) noexcept
@@ -934,15 +970,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr weekday
       _S_from_days(const days& __d)
       {
-	using _Rep = days::rep;
-	using _URep = make_unsigned_t<_Rep>;
-	const auto __n = __d.count();
-	const auto __m = static_cast<_URep>(__n);
-
-	// 1970-01-01 (__n =  0, __m = 0        ) -> Thursday (4)
-	// 1969-31-12 (__n = -1, __m = _URep(-1)) -> Wednesday (3)
-	const auto __offset = __n >= 0 ? _URep(4) : 3 - _URep(-1) % 7 - 7;
-	return weekday((__m + __offset) % 7);
+	return weekday{__detail::__add_modulo<7>(4, __d.count())};
       }
 
     public:
@@ -1032,8 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr weekday
       operator+(const weekday& __x, const days& __y) noexcept
       {
-	auto __n = static_cast<long long>(__x._M_wd) + __y.count();
-	return weekday{__detail::__modulo(__n, 7)};
+	return weekday{__detail::__add_modulo<7>(__x._M_wd, __y.count())};
       }
 
       friend constexpr weekday
@@ -1042,7 +1069,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr weekday
       operator-(const weekday& __x, const days& __y) noexcept
-      { return __x + -__y; }
+      {
+	return weekday{__detail::__sub_modulo<7>(__x._M_wd, __y.count())};
+      }
 
       friend constexpr days
       operator-(const weekday& __x, const weekday& __y) noexcept
