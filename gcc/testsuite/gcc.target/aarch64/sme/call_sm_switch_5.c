@@ -1,4 +1,4 @@
-// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls" }
+// { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls -funwind-tables" }
 // { dg-final { check-function-bodies "**" "" } }
 
 #include <arm_sve.h>
