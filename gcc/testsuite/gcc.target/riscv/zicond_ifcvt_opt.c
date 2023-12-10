@@ -562,5 +562,58 @@ test_XOR_eqz_x_2_reverse_bin_oprands (long x, long z, long c)
   return x;
 }
 
+long
+test_ShiftLeft_eqz (long x, long y, long z, long c)
+{
+  if (c)
+    x = y << z;
+  else
+    x = y;
+  return x;
+}
+
+long
+test_ShiftR_eqz (long x, long y, long z, long c)
+{
+  if (c)
+    x = y >> z;
+  else
+    x = y;
+  return x;
+}
+
+unsigned long
+test_ShiftR_logical_eqz (unsigned long x, unsigned long y, unsigned long z,
+			 unsigned long c)
+{
+  if (c)
+    x = y >> z;
+  else
+    x = y;
+  return x;
+}
+
+unsigned long
+test_RotateL_eqz (unsigned long x, unsigned long y, unsigned long z,
+		  unsigned long c)
+{
+  if (c)
+    x = (y << z) | (y >> (64 - z));
+  else
+    x = y;
+  return x;
+}
+
+unsigned long
+test_RotateR_eqz (unsigned long x, unsigned long y, unsigned long z,
+		  unsigned long c)
+{
+  if (c)
+    x = (y >> z) | (y << (64 - z));
+  else
+    x = y;
+  return x;
+}
+
 /* { dg-final { scan-assembler-times {czero\.eqz} 28 } } */
 /* { dg-final { scan-assembler-times {czero\.nez} 28 } } */

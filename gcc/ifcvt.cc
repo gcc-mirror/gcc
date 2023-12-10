@@ -2920,7 +2920,9 @@ noce_cond_zero_binary_op_supported (rtx op)
 {
   enum rtx_code opcode = GET_CODE (op);
 
-  if (opcode == PLUS || opcode == MINUS || opcode == IOR || opcode == XOR)
+  if (opcode == PLUS || opcode == MINUS || opcode == IOR || opcode == XOR
+      || opcode == ASHIFT || opcode == ASHIFTRT || opcode == LSHIFTRT
+      || opcode == ROTATE || opcode == ROTATERT)
     return true;
 
   return false;
