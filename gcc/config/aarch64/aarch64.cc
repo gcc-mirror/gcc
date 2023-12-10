@@ -23936,6 +23936,10 @@ aarch64_float_const_representable_p (rtx x)
       || REAL_VALUE_MINUS_ZERO (r))
     return false;
 
+  /* For BFmode, only handle 0.0. */
+  if (GET_MODE (x) == BFmode)
+    return real_iszero (&r, false);
+
   /* Extract exponent.  */
   r = real_value_abs (&r);
   exponent = REAL_EXP (&r);
