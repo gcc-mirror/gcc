@@ -6246,7 +6246,7 @@ that have their own flag:
 -Wimplicit-int @r{(C and Objective-C only)}
 -Wincompatible-pointer-types @r{(C and Objective-C only)}
 -Wint-conversion @r{(C and Objective-C only)}
--Wnarrowing @r{(C++)}
+-Wnarrowing @r{(C++ and Objective-C++ only)}
 -Wreturn-mismatch @r{(C and Objective-C only)}
 }
 
