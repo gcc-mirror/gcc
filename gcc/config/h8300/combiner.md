@@ -1269,7 +1269,54 @@
 ;; 		      (pc)))]
 ;;   "")
 
-;; Various ways to extract a single bit bitfield and sign extend it
+;; This is a signed bitfield extraction starting at bit 0
+;; It's usually faster than using shifts, but not always,
+;; particularly on the H8/S and H8/SX variants.
+(define_insn_and_split "*extvsi_n_0"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand 2 "const_int_operand")
+			 (const_int 0)))]
+  "INTVAL (operands[2]) > 1
+   && INTVAL (operands[2]) < (TARGET_H8300S ? 26 - TARGET_H8300SX : 29)
+   && (!TARGET_H8300SX || (INTVAL (operands[2]) != 24 && INTVAL (operands[2]) != 17))"
+  "#"
+  "&& reload_completed"
+[(parallel [(set (match_dup 0) (and:SI (match_dup 0) (match_dup 3)))
+	    (clobber (reg:CC CC_REG))])
+ (parallel [(set (match_dup 0) (xor:SI (match_dup 0) (match_dup 4)))
+	    (clobber (reg:CC CC_REG))])
+ (parallel [(set (match_dup 0) (minus:SI (match_dup 0) (match_dup 4)))
+	    (clobber (reg:CC CC_REG))])]
+{
+  int tmp = INTVAL (operands[2]);
+  operands[3] = GEN_INT (~(HOST_WIDE_INT_M1U << tmp));
+  operands[4] = GEN_INT (HOST_WIDE_INT_1U << (tmp - 1));
+})
+
+(define_insn_and_split "*extvsi_n_n"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand 2 "const_int_operand")
+			 (match_operand 3 "const_int_operand")))]
+  "(!h8300_shift_needs_scratch_p (INTVAL (operands[3]), SImode, LSHIFTRT)
+    && use_extvsi (INTVAL (operands[2]), INTVAL (operands[3])))"
+  "#"
+  "&& reload_completed"
+[(parallel [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 3)))
+	    (clobber (reg:CC CC_REG))])
+ (parallel [(set (match_dup 0) (and:SI (match_dup 0) (match_dup 4)))
+	    (clobber (reg:CC CC_REG))])
+ (parallel [(set (match_dup 0) (xor:SI (match_dup 0) (match_dup 5)))
+	    (clobber (reg:CC CC_REG))])
+ (parallel [(set (match_dup 0) (minus:SI (match_dup 0) (match_dup 5)))
+	    (clobber (reg:CC CC_REG))])]
+{
+  int tmp = INTVAL (operands[2]);
+  operands[4] = gen_int_mode (~(HOST_WIDE_INT_M1U << tmp), SImode);
+  operands[5] = gen_int_mode (HOST_WIDE_INT_1U << (tmp - 1), SImode);
+})
+
 ;;
 ;; Testing showed this only triggering with SImode, probably because
 ;; of how insv/extv are defined.
