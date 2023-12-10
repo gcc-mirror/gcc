@@ -1,3 +1,29 @@
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112887
+	* gcc.dg/pr112887.c: New test.
+
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112924
+	* gcc.dg/pr112924.c: New test.
+
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Wno-attributes-1.C: New test.
+
+2023-12-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112932
+	* gcc.target/riscv/rvv/autovec/vls/misalign-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr112932.c: New test.
+
+2023-12-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/112786
+	* gcc.dg/tree-ssa/scev-3.c, gcc.dg/tree-ssa/scev-4.c,
+	gcc.dg/tree-ssa/scev-5.c: Remove.
+
 2023-12-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/83167

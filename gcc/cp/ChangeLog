@@ -1,3 +1,12 @@
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_statement, cp_parser_expression_statement,
+	cp_parser_declaration, cp_parser_asm_definition): Don't diagnose
+	ignored attributes if !any_nonignored_attribute_p.
+	* decl.cc (grokdeclarator): Likewise.
+	* name-lookup.cc (handle_namespace_attrs, finish_using_directive):
+	Don't diagnose ignoring of attr_ignored_p attributes.
+
 2023-12-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/83167

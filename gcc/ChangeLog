@@ -1,3 +1,32 @@
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112887
+	* tree-ssa-phiopt.cc (hoist_adjacent_loads): Change type of
+	param_align, param_align_bits, offset1, offset2, size2 and align1
+	variables from int or unsigned int to unsigned HOST_WIDE_INT.
+
+2023-12-09  Costas Argyris  <costas.argyris@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/93019
+	* gcc.cc (driver::finalize): Call XDELETEVEC on mdswitches before
+	clearing it.
+
+2023-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.h (any_nonignored_attribute_p): Declare.
+	* attribs.cc (any_nonignored_attribute_p): New function.
+
+2023-12-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112932
+	* config/riscv/vector.md (movmisalign<mode>): Fix VLSmode bugs.
+
+2023-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-emutls.cc: Include diagnostic-core.h.
+	(pass_ipa_lower_emutls::gate): Skip if errors were seen.
+
 2023-12-08  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/112875

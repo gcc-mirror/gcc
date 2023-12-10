@@ -1,3 +1,18 @@
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111826
+	* include/bits/version.def (format): Update value.
+	* include/bits/version.h: Regenerate.
+	* testsuite/std/format/functions/format.cc:
+
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112876
+	* include/std/ranges (ranges::to): Do not try to use an iterator
+	returned by the container's emplace or insert member functions.
+	* testsuite/std/ranges/conv/1.cc (Cont4::emplace, Cont4::insert):
+	Use the iterator parameter. Do not return an iterator.
+
 2023-12-07  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__detail::_ToClosure): Replace with ...
