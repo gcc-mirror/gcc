@@ -1358,7 +1358,7 @@
      to get that bit into the destination, properly extended.  */
   return "subx\t%s0,%s0\;exts.w %T0\;exts.l %0";
 }
-  [(set_attr "length" "10")])
+  [(set (attr "length") (symbol_ref "INTVAL (operands[2]) >= 16 ? 10 : 8"))])
 
 ;; For shift counts >= 16 we can always do better than the
 ;; generic sequences.  Other patterns handle smaller counts.
