@@ -1,3 +1,30 @@
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111826
+	* include/std/format (__cpp_lib_format): Update value.
+	* include/std/version (__cpp_lib_format): Likewise.
+	* testsuite/std/format/functions/format.cc: Update expected
+	value.
+
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Iter_sink<charT, contiguous_iterator>):
+	Remove uint64_t local type.
+
+2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-12-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Include <cstdint> instead of
+	<stdint.h>.
+
 2023-12-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
