@@ -3226,6 +3226,28 @@ aarch64_split_simd_move (rtx dst, rtx src)
     }
 }
 
+/* Return a register that contains SVE value X reinterpreted as SVE mode MODE.
+   The semantics of those of svreinterpret rather than those of subregs;
+   see the comment at the head of aarch64-sve.md for details about the
+   difference.  */
+
+rtx
+aarch64_sve_reinterpret (machine_mode mode, rtx x)
+{
+  if (GET_MODE (x) == mode)
+    return x;
+
+  /* can_change_mode_class must only return true if subregs and svreinterprets
+     have the same semantics.  */
+  if (targetm.can_change_mode_class (GET_MODE (x), mode, FP_REGS))
+    return lowpart_subreg (mode, x, GET_MODE (x));
+
+  rtx res = gen_reg_rtx (mode);
+  x = force_reg (GET_MODE (x), x);
+  emit_insn (gen_aarch64_sve_reinterpret (mode, res, x));
+  return res;
+}
+
 bool
 aarch64_zero_extend_const_eq (machine_mode xmode, rtx x,
 			      machine_mode ymode, rtx y)

@@ -365,7 +365,8 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vectors_per_tuple () == 4 ? VNx8DImode : VNx4DImode;
-    return e.use_exact_insn (code_for_aarch64_sme_read (mode));
+    rtx res = e.use_exact_insn (code_for_aarch64_sme_read (mode));
+    return aarch64_sve_reinterpret (e.result_mode (), res);
   }
 };
 
@@ -457,7 +458,7 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vectors_per_tuple () == 4 ? VNx8DImode : VNx4DImode;
-    e.args[1] = lowpart_subreg (mode, e.args[1], e.tuple_mode (1));
+    e.args[1] = aarch64_sve_reinterpret (mode, e.args[1]);
     return e.use_exact_insn (code_for_aarch64_sme_write (mode));
   }
 };
