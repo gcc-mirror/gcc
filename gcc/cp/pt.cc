@@ -30020,7 +30020,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	      /* Parms are to have DECL_CHAIN tsubsted, which would be skipped
 		 if cp_unevaluated_operand.  */
 	      cp_evaluated ev;
-	      g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
+	      g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain,
+			       /*use_spec_table=*/false);
 	    }
 	  if (g == error_mark_node)
 	    continue;
