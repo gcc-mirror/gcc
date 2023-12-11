@@ -1575,6 +1575,84 @@ BaseType::is<const CallableTypeInterface> () const
   return this->is<CallableTypeInterface> ();
 }
 
+template <>
+WARN_UNUSED_RESULT inline bool
+BaseType::is<SubstitutionRef> () const
+{
+  auto kind = this->get_kind ();
+  return kind == FNPTR || kind == FNDEF || kind == CLOSURE || kind == ADT
+	 || kind == PROJECTION;
+}
+
+template <>
+WARN_UNUSED_RESULT inline bool
+BaseType::is<const SubstitutionRef> () const
+{
+  return this->is<SubstitutionRef> ();
+}
+
+template <>
+WARN_UNUSED_RESULT inline SubstitutionRef *
+BaseType::as<SubstitutionRef> ()
+{
+  auto kind = this->get_kind ();
+  switch (kind)
+    {
+    case FNDEF:
+      return static_cast<FnType *> (this);
+    case CLOSURE:
+      return static_cast<ClosureType *> (this);
+    case ADT:
+      return static_cast<ADTType *> (this);
+    case PROJECTION:
+      return static_cast<ProjectionType *> (this);
+    default:
+      rust_unreachable ();
+    }
+}
+
+template <>
+WARN_UNUSED_RESULT inline const SubstitutionRef *
+BaseType::as<const SubstitutionRef> () const
+{
+  auto kind = this->get_kind ();
+  switch (kind)
+    {
+    case FNDEF:
+      return static_cast<const FnType *> (this);
+    case CLOSURE:
+      return static_cast<const ClosureType *> (this);
+    case ADT:
+      return static_cast<const ADTType *> (this);
+    case PROJECTION:
+      return static_cast<const ProjectionType *> (this);
+    default:
+      rust_unreachable ();
+    }
+}
+
+template <>
+WARN_UNUSED_RESULT inline SubstitutionRef *
+BaseType::try_as<SubstitutionRef> ()
+{
+  if (this->is<SubstitutionRef> ())
+    {
+      return this->as<SubstitutionRef> ();
+    }
+  return nullptr;
+}
+
+template <>
+WARN_UNUSED_RESULT inline const SubstitutionRef *
+BaseType::try_as<const SubstitutionRef> () const
+{
+  if (this->is<const SubstitutionRef> ())
+    {
+      return this->as<const SubstitutionRef> ();
+    }
+  return nullptr;
+}
+
 } // namespace TyTy
 } // namespace Rust
 
