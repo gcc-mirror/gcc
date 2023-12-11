@@ -2889,6 +2889,13 @@ pass_ipa_strub::execute (function *)
 		&& (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
 		    <= 4 * UNITS_PER_WORD))))
 	{
+	  /* No point in indirecting pointer types.  Presumably they
+	     won't ever pass the size-based test above, but check the
+	     assumption here, because getting this wrong would mess
+	     with attribute access and possibly others.  We deal with
+	     fn spec below.  */
+	  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (nparm)));
+
 	  indirect_nparms.add (nparm);
 
 	  /* ??? Is there any case in which it is not safe to suggest the parms
@@ -2976,7 +2983,9 @@ pass_ipa_strub::execute (function *)
 		}
 	    }
 
-	/* ??? Maybe we could adjust it instead.  */
+	/* ??? Maybe we could adjust it instead.  Note we don't need
+	   to mess with attribute access: pointer-typed parameters are
+	   not modified, so they can remain unchanged.  */
 	if (drop_fnspec)
 	  remove_named_attribute_unsharing ("fn spec",
 					    &TYPE_ATTRIBUTES (nftype));
