@@ -579,6 +579,19 @@
   return loongarch_symbolic_constant_p (op, &type) && type == SYMBOL_PCREL;
 })
 
+(define_predicate "symbolic_pcrel_offset_operand"
+  (and (match_code "plus")
+       (match_operand 0 "symbolic_pcrel_operand")
+       (match_operand 1 "const_int_operand")))
+
+(define_predicate "mem_simple_ldst_operand"
+  (match_code "mem")
+{
+  op = XEXP (op, 0);
+  return (symbolic_pcrel_operand (op, Pmode)
+	  || symbolic_pcrel_offset_operand (op, Pmode));
+})
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
 

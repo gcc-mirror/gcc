@@ -4135,101 +4135,41 @@
 ;;
 ;; And if the pseudo op cannot be relaxed, we'll get a worse result (with
 ;; 3 instructions).
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
-	(mem:LD_AT_LEAST_32_BIT (match_dup 0)))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
+(define_insn_and_rewrite "simple_load<mode>"
+  [(set (match_operand:LD_AT_LEAST_32_BIT 0 "register_operand" "=r,f")
+	(match_operand:LD_AT_LEAST_32_BIT 1 "mem_simple_ldst_operand" ""))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[1] = loongarch_rewrite_mem_for_simple_ldst (operands[1]);
   })
 
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:LD_AT_LEAST_32_BIT 2 "register_operand")
-	(mem:LD_AT_LEAST_32_BIT (plus (match_dup 0)
-				(match_operand 3 "const_int_operand"))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(mem:LD_AT_LEAST_32_BIT (lo_sum:P (match_dup 0) (match_dup 1))))]
-  {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
-	(any_extend:GPR (mem:SUBDI (match_dup 0))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(any_extend:GPR (mem:SUBDI (lo_sum:P (match_dup 0)
-					     (match_dup 1)))))]
-  {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (match_operand:GPR 2 "register_operand")
+(define_insn_and_rewrite "simple_load_<su>ext<SUBDI:mode><GPR:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
 	(any_extend:GPR
-	  (mem:SUBDI (plus (match_dup 0)
-			   (match_operand 3 "const_int_operand")))))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0]) \
-       || REGNO (operands[0]) == REGNO (operands[2]))"
-  [(set (match_dup 2)
-	(any_extend:GPR (mem:SUBDI (lo_sum:P (match_dup 0)
-					     (match_dup 1)))))]
+	  (match_operand:SUBDI 1 "mem_simple_ldst_operand" "")))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[1] = loongarch_rewrite_mem_for_simple_ldst (operands[1]);
   })
 
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:ST_ANY (match_dup 0))
-	(match_operand:ST_ANY 2 "register_operand"))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0])) \
-   && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
+(define_insn_and_rewrite "simple_store<mode>"
+  [(set (match_operand:ST_ANY 0 "mem_simple_ldst_operand" "")
+	(match_operand:ST_ANY 1 "reg_or_0_operand" "r,f"))]
+  "loongarch_pre_reload_split ()
+   && la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO
+   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM)"
+  "#"
+  "&& true"
   {
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
-  })
-
-(define_peephole2
-  [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "symbolic_pcrel_operand"))
-   (set (mem:ST_ANY (plus (match_dup 0)
-			  (match_operand 3 "const_int_operand")))
-	(match_operand:ST_ANY 2 "register_operand"))]
-  "la_opt_explicit_relocs == EXPLICIT_RELOCS_AUTO \
-   && (TARGET_CMODEL_NORMAL || TARGET_CMODEL_MEDIUM) \
-   && (peep2_reg_dead_p (2, operands[0])) \
-   && REGNO (operands[0]) != REGNO (operands[2])"
-  [(set (mem:ST_ANY (lo_sum:P (match_dup 0) (match_dup 1))) (match_dup 2))]
-  {
-    operands[1] = plus_constant (Pmode, operands[1], INTVAL (operands[3]));
-    emit_insn (gen_pcalau12i_gr<P:mode> (operands[0], operands[1]));
+    operands[0] = loongarch_rewrite_mem_for_simple_ldst (operands[0]);
   })
 
 ;; Synchronization instructions.
