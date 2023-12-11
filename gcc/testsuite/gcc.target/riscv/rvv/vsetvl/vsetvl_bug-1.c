@@ -6,9 +6,11 @@ struct a_struct
   unsigned char a_character;
 };
 
+
 struct a_struct an_array[5];
 struct a_struct *a_ptr;
 int yabba = 1;
+
 
 int
 f (a, b)
