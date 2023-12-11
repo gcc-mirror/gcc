@@ -820,9 +820,14 @@ namespace __format
 
 	  if (__conv == 'Y' || __conv == 'C')
 	    {
-	      if (__is_neg)
-		__s.assign(1, _S_plus_minus[1]);
 	      int __ci = __yi / 100;
+	      if (__is_neg) [[unlikely]]
+		{
+		  __s.assign(1, _S_plus_minus[1]);
+		  // For floored division -123//100 is -2 and -100//100 is -1
+		  if ((__ci * 100) != __yi)
+		    ++__ci;
+		}
 	      if (__ci >= 100) [[unlikely]]
 		{
 		  __s += std::format(_S_empty_spec, __ci / 100);
