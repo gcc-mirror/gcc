@@ -615,5 +615,164 @@ test_RotateR_eqz (unsigned long x, unsigned long y, unsigned long z,
   return x;
 }
 
-/* { dg-final { scan-assembler-times {czero\.eqz} 28 } } */
-/* { dg-final { scan-assembler-times {czero\.nez} 28 } } */
+long
+test_AND_ceqz (long x, long y, long z, long c)
+{
+  if (c)
+    x = y & z;
+  else
+    x = y;
+  return x;
+}
+
+long
+test_AND_ceqz_x (long x, long z, long c)
+{
+  if (c)
+    x = x & z;
+
+  return x;
+}
+
+long
+test_AND_nez (long x, long y, long z, long c)
+{
+  if (c)
+    x = y;
+  else
+    x = y & z;
+  return x;
+}
+
+long
+test_AND_nez_x (long x, long z, long c)
+{
+  if (c)
+    {
+    }
+  else
+    x = x & z;
+  return x;
+}
+
+long
+test_AND_nez_2 (long x, long y, long z, long c)
+{
+  if (!c)
+    x = y & z;
+  else
+    x = y;
+  return x;
+}
+
+long
+test_AND_nez_x_2 (long x, long z, long c)
+{
+  if (!c)
+    x = x & z;
+
+  return x;
+}
+
+long
+test_AND_eqz_2 (long x, long y, long z, long c)
+{
+  if (!c)
+    x = y;
+  else
+    x = y & z;
+  return x;
+}
+
+long
+test_AND_eqz_x_2 (long x, long z, long c)
+{
+  if (!c)
+    {
+    }
+  else
+    x = x & z;
+  return x;
+}
+
+long
+test_AND_ceqz_reverse_bin_oprands (long x, long y, long z, long c)
+{
+  if (c)
+    x = z & y;
+  else
+    x = y;
+  return x;
+}
+
+long
+test_AND_ceqz_x_reverse_bin_oprands (long x, long z, long c)
+{
+  if (c)
+    x = z & x;
+
+  return x;
+}
+
+long
+test_AND_nez_reverse_bin_oprands (long x, long y, long z, long c)
+{
+  if (c)
+    x = y;
+  else
+    x = z & y;
+  return x;
+}
+
+long
+test_AND_nez_x_reverse_bin_oprands (long x, long z, long c)
+{
+  if (c)
+    {
+    }
+  else
+    x = z & x;
+  return x;
+}
+
+long
+test_AND_nez_2_reverse_bin_oprands (long x, long y, long z, long c)
+{
+  if (!c)
+    x = z & y;
+  else
+    x = y;
+  return x;
+}
+
+long
+test_AND_nez_x_2_reverse_bin_oprands (long x, long z, long c)
+{
+  if (!c)
+    x = z & x;
+
+  return x;
+}
+
+long
+test_AND_eqz_2_reverse_bin_oprands (long x, long y, long z, long c)
+{
+  if (!c)
+    x = y;
+  else
+    x = z & y;
+  return x;
+}
+
+long
+test_AND_eqz_x_2_reverse_bin_oprands (long x, long z, long c)
+{
+  if (!c)
+    {
+    }
+  else
+    x = z & x;
+  return x;
+}
+/* { dg-final { scan-assembler-times {czero\.eqz} 36 } } */
+/* { dg-final { scan-assembler-times {czero\.nez} 36 } } */

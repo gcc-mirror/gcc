@@ -2922,7 +2922,7 @@ noce_cond_zero_binary_op_supported (rtx op)
 
   if (opcode == PLUS || opcode == MINUS || opcode == IOR || opcode == XOR
       || opcode == ASHIFT || opcode == ASHIFTRT || opcode == LSHIFTRT
-      || opcode == ROTATE || opcode == ROTATERT)
+      || opcode == ROTATE || opcode == ROTATERT || opcode == AND)
     return true;
 
   return false;
@@ -2952,6 +2952,7 @@ get_base_reg (rtx exp)
 
 static bool
 noce_bbs_ok_for_cond_zero_arith (struct noce_if_info *if_info, rtx *common_ptr,
+				 rtx *bin_exp_ptr,
 				 enum rtx_code *czero_code_ptr, rtx *a_ptr,
 				 rtx **to_replace)
 {
@@ -2996,7 +2997,7 @@ noce_bbs_ok_for_cond_zero_arith (struct noce_if_info *if_info, rtx *common_ptr,
     {
       common = b;
       bin_op1 = XEXP (bin_exp, 1);
-      czero_code = reverse
+      czero_code = (reverse ^ (GET_CODE (bin_exp) == AND))
 		     ? noce_reversed_cond_code (if_info)
 		     : GET_CODE (cond);
     }
@@ -3012,6 +3013,7 @@ noce_bbs_ok_for_cond_zero_arith (struct noce_if_info *if_info, rtx *common_ptr,
     return false;
 
   *common_ptr = common;
+  *bin_exp_ptr = bin_exp;
   *czero_code_ptr = czero_code;
   *a_ptr = a;
 
@@ -3025,38 +3027,67 @@ noce_bbs_ok_for_cond_zero_arith (struct noce_if_info *if_info, rtx *common_ptr,
 static int
 noce_try_cond_zero_arith (struct noce_if_info *if_info)
 {
-  rtx target, a;
+  rtx target, rtmp, a;
   rtx_insn *seq;
   machine_mode mode = GET_MODE (if_info->x);
   rtx common = NULL_RTX;
   enum rtx_code czero_code = UNKNOWN;
+  rtx bin_exp = NULL_RTX;
+  enum rtx_code bin_code = UNKNOWN;
   rtx non_zero_op = NULL_RTX;
   rtx *to_replace = NULL;
 
-  if (!noce_bbs_ok_for_cond_zero_arith (if_info, &common, &czero_code, &a,
-					&to_replace))
+  if (!noce_bbs_ok_for_cond_zero_arith (if_info, &common, &bin_exp, &czero_code,
+					&a, &to_replace))
     return false;
-
-  non_zero_op = *to_replace;
 
   start_sequence ();
 
-  /* If x is used in both input and out like x = c ? x + z : x,
-     use a new reg to avoid modifying x  */
-  if (common && rtx_equal_p (common, if_info->x))
-    target = gen_reg_rtx (mode);
-  else
-    target = if_info->x;
+  bin_code = GET_CODE (bin_exp);
 
-  target = noce_emit_czero (if_info, czero_code, non_zero_op, target);
-  if (!target || !to_replace)
+  if (bin_code == AND)
     {
-      end_sequence ();
-      return false;
-    }
+      rtmp = gen_reg_rtx (mode);
+      noce_emit_move_insn (rtmp, a);
 
-  *to_replace = target;
-  noce_emit_move_insn (if_info->x, a);
+      target = noce_emit_czero (if_info, czero_code, common, if_info->x);
+      if (!target)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      target = expand_simple_binop (mode, IOR, rtmp, target, if_info->x, 0,
+				    OPTAB_WIDEN);
+      if (!target)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      if (target != if_info->x)
+	noce_emit_move_insn (if_info->x, target);
+    }
+  else
+    {
+      non_zero_op = *to_replace;
+      /* If x is used in both input and out like x = c ? x + z : x,
+	 use a new reg to avoid modifying x  */
+      if (common && rtx_equal_p (common, if_info->x))
+	target = gen_reg_rtx (mode);
+      else
+	target = if_info->x;
+
+      target = noce_emit_czero (if_info, czero_code, non_zero_op, target);
+      if (!target || !to_replace)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      *to_replace = target;
+      noce_emit_move_insn (if_info->x, a);
+    }
 
   seq = end_ifcvt_sequence (if_info);
   if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
