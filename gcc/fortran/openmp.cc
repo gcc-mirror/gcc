@@ -6251,14 +6251,15 @@ gfc_omp_requires_add_clause (gfc_omp_requires_kind clause,
 	 != (int) clause)
     {
       const char *other;
-      if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
-	other = "seq_cst";
-      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
-	other = "acq_rel";
-      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
-	other = "relaxed";
-      else
-	gcc_unreachable ();
+      switch (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	{
+	case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST: other = "seq_cst"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL: other = "acq_rel"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE: other = "acquire"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED: other = "relaxed"; break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE: other = "release"; break;
+	default: gcc_unreachable ();
+	}
 
       if (module_name)
 	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
@@ -6372,15 +6373,25 @@ gfc_match_omp_requires (void)
 	      clause = "acq_rel";
 	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL;
 	    }
+	  else if (gfc_match (" acquire )") == MATCH_YES)
+	    {
+	      clause = "acquire";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE;
+	    }
 	  else if (gfc_match (" relaxed )") == MATCH_YES)
 	    {
 	      clause = "relaxed";
 	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELAXED;
 	    }
+	  else if (gfc_match (" release )") == MATCH_YES)
+	    {
+	      clause = "release";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELEASE;
+	    }
 	  else
 	    {
-	      gfc_error ("Expected SEQ_CST, ACQ_REL or RELAXED for "
-			 "ATOMIC_DEFAULT_MEM_ORDER clause at %C");
+	      gfc_error ("Expected ACQ_REL, ACQUIRE, RELAXED, RELEASE or "
+			 "SEQ_CST for ATOMIC_DEFAULT_MEM_ORDER clause at %C");
 	      goto error;
 	    }
 	}
@@ -6824,6 +6835,28 @@ gfc_match_omp_atomic (void)
 	    c->memorder = OMP_MEMORDER_ACQ_REL;
 	  else if (c->atomic_op == GFC_OMP_ATOMIC_READ)
 	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  else
+	    c->memorder = OMP_MEMORDER_RELEASE;
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
+	  if (c->atomic_op == GFC_OMP_ATOMIC_WRITE)
+	    {
+	      gfc_error ("!$OMP ATOMIC WRITE at %L incompatible with "
+			 "ACQUIRES clause implicitly provided by a "
+			 "REQUIRES directive", &loc);
+	      c->memorder = OMP_MEMORDER_SEQ_CST;
+	    }
+	  else
+	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
+	  if (c->atomic_op == GFC_OMP_ATOMIC_READ)
+	    {
+	      gfc_error ("!$OMP ATOMIC READ at %L incompatible with "
+			 "RELEASE clause implicitly provided by a "
+			 "REQUIRES directive", &loc);
+	      c->memorder = OMP_MEMORDER_SEQ_CST;
+	    }
 	  else
 	    c->memorder = OMP_MEMORDER_RELEASE;
 	  break;

@@ -42504,6 +42504,28 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok, bool openacc)
 	case OMP_MEMORY_ORDER_SEQ_CST:
 	  memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  break;
+	case OMP_MEMORY_ORDER_ACQUIRE:
+	  if (code == NOP_EXPR)  /* atomic write */
+	    {
+	      error_at (loc, "%<#pragma omp atomic write%> incompatible with "
+			     "%<acquire%> clause implicitly provided by a "
+			     "%<requires%> directive");
+	      memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	    }
+	  else
+	    memory_order = OMP_MEMORY_ORDER_ACQUIRE;
+	  break;
+	case OMP_MEMORY_ORDER_RELEASE:
+	  if (code == OMP_ATOMIC_READ)
+	    {
+	      error_at (loc, "%<#pragma omp atomic read%> incompatible with "
+			     "%<release%> clause implicitly provided by a "
+			     "%<requires%> directive");
+	      memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	    }
+	  else
+	    memory_order = OMP_MEMORY_ORDER_RELEASE;
+	  break;
 	case OMP_MEMORY_ORDER_ACQ_REL:
 	  switch (code)
 	    {
@@ -49194,15 +49216,21 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 		      else if (!strcmp (p, "relaxed"))
 			this_req
 			  = (enum omp_requires) OMP_MEMORY_ORDER_RELAXED;
+		      else if (!strcmp (p, "release"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_RELEASE;
 		      else if (!strcmp (p, "acq_rel"))
 			this_req
 			  = (enum omp_requires) OMP_MEMORY_ORDER_ACQ_REL;
+		      else if (!strcmp (p, "acquire"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_ACQUIRE;
 		    }
 		  if (this_req == 0)
 		    {
 		      error_at (cp_lexer_peek_token (parser->lexer)->location,
-				"expected %<seq_cst%>, %<relaxed%> or "
-				"%<acq_rel%>");
+				"expected %<acq_rel%>, %<acquire%>, "
+				"%<relaxed%>, %<release%> or %<seq_cst%>");
 		      switch (cp_lexer_peek_token (parser->lexer)->type)
 			{
 			case CPP_EOF:

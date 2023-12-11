@@ -7274,9 +7274,17 @@ done:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
       break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQUIRE);
+      break;
     case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELEASE);
       break;
     }
 
