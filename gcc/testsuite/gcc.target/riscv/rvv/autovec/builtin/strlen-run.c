@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-O3 -minline-strlen" } */
 
 int
