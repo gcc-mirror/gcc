@@ -1,3 +1,16 @@
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-12-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93762
+	PR fortran/100651
+	* trans-array.cc (gfc_trans_deferred_array): Add presence check
+	for optional deferred-length character dummy arguments.
+	* trans-expr.cc (gfc_conv_missing_dummy): The character length for
+	deferred-length dummy arguments is passed by reference, so that
+	its value can be returned.  Adjust handling for optional dummies.
+
 2023-11-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
