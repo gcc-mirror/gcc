@@ -1,3 +1,137 @@
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __remove_pointer.
+	* semantics.cc (finish_trait_type): Handle CPTK_REMOVE_POINTER.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_object.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_OBJECT.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_function.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_FUNCTION.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_reference.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_REFERENCE.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_object_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_OBJECT_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_function_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_FUNCTION_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_member_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_MEMBER_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_scoped_enum.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_SCOPED_ENUM.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_bounded_array.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_BOUNDED_ARRAY.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_array.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_ARRAY.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2023-12-10  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_simple_type_specifier): Move trait
+	handling to default label.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* parser.cc (cp_lexer_lookup_trait): Rename to ...
+	(cp_lexer_peek_trait): ... this.  Handle a subsequent token for
+	the corresponding built-in trait.
+	(cp_lexer_lookup_trait_expr): Rename to ...
+	(cp_lexer_peek_trait_expr): ... this.
+	(cp_lexer_lookup_trait_type): Rename to ...
+	(cp_lexer_peek_trait_type): ... this.
+	(cp_lexer_next_token_is_decl_specifier_keyword): Call
+	cp_lexer_peek_trait_type.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_primary_expression): Call cp_lexer_peek_trait_expr.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Remove all RID value
+	cases for built-in traits.  Check for built-in traits via
+	the new cik_trait kind.
+	* cp-tree.h (enum cp_trait_kind): Set its underlying type to
+	addr_space_t.
+	(struct cp_trait): New struct to hold trait information.
+	(cp_traits): New array to hold a mapping to all traits.
+	(cik_reserved_for_udlit): Rename to ...
+	(cik_trait): ... this.
+	(IDENTIFIER_ANY_OP_P): Exclude cik_trait.
+	(IDENTIFIER_TRAIT_P): New macro to detect cik_trait.
+	* lex.cc (cp_traits): Define its values, declared in cp-tree.h.
+	(init_cp_traits): New function to set cik_trait and
+	IDENTIFIER_CP_INDEX for all built-in trait identifiers.
+	(cxx_init): Call init_cp_traits function.
+	* parser.cc (cp_lexer_lookup_trait): New function to look up a
+	built-in trait by IDENTIFIER_CP_INDEX.
+	(cp_lexer_lookup_trait_expr): Likewise, look up an
+	expression-yielding built-in trait.
+	(cp_lexer_lookup_trait_type): Likewise, look up a type-yielding
+	built-in trait.
+	(cp_keyword_starts_decl_specifier_p): Remove all RID value cases
+	for built-in traits.
+	(cp_lexer_next_token_is_decl_specifier_keyword): Handle
+	type-yielding built-in traits.
+	(cp_parser_primary_expression): Remove all RID value cases for
+	built-in traits.  Handle expression-yielding built-in traits.
+	(cp_parser_trait): Handle cp_trait instead of enum rid.
+	(cp_parser_simple_type_specifier): Remove all RID value cases
+	for built-in traits.  Handle type-yielding built-in traits.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* constraint.cc (diagnose_trait_expr): Sort built-in traits
+	alphabetically.
+	* cp-trait.def: Likewise.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	(finish_trait_type): Likewise.
+
 2023-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_statement, cp_parser_expression_statement,

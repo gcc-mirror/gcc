@@ -1,3 +1,9 @@
+2023-12-10  Tom Tromey  <tom@tromey.com>
+
+	* dwarf2.def (DW_IDX_GNU_internal, DW_IDX_GNU_external): Comment.
+	(DW_IDX_GNU_main, DW_IDX_GNU_language, DW_IDX_GNU_linkage_name):
+	New constants.
+
 2023-12-01  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

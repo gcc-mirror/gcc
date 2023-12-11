@@ -1,3 +1,11 @@
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Remove all mappings of
+	built-in traits.
+	* c-common.h (enum rid): Remove all RID values for built-in
+	traits.
+
 2023-12-07  Andrew Pinski  <pinskia@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

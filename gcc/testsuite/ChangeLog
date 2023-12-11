@@ -1,3 +1,141 @@
+2023-12-10  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond_ifcvt_opt.c: Add tests for shift like op.
+
+2023-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/uzp_bf16_x2.c: XFAIL z0_z23 tests
+	for big-endian.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_f64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_s8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_u8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_bf16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_f64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_s8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_u8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_bf16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_f64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_s8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_u8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_bf16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_f64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_s8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_u8_x2.c: Likewise.
+
+2023-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/call_sm_switch_5.c: Restrict tests that
+	contain Z8-Z23 saves to little-endian.
+	* gcc.target/aarch64/sme/call_sm_switch_8.c: Likewise.
+	* gcc.target/aarch64/sme/locally_streaming_1.c: Likewise.
+
+2023-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/call_sm_switch_1.c: Add -funwind-tables.
+	* gcc.target/aarch64/sme/call_sm_switch_3.c: Likewise.
+	* gcc.target/aarch64/sme/call_sm_switch_5.c: Likewise.
+
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111503
+	* gfortran.dg/contiguous_14.f90: New test.
+
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105543
+	* gfortran.dg/contiguous_13.f90: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __remove_pointer.
+	* g++.dg/ext/remove_pointer.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_object.
+	* g++.dg/ext/is_object.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_function.
+	* g++.dg/ext/is_function.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_reference.
+	* g++.dg/ext/is_reference.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_member_object_pointer.
+	* g++.dg/ext/is_member_object_pointer.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_member_function_pointer.
+	* g++.dg/ext/is_member_function_pointer.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_member_pointer.
+	* g++.dg/ext/is_member_pointer.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_scoped_enum.
+	* g++.dg/ext/is_scoped_enum.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_bounded_array.
+	* g++.dg/ext/is_bounded_array.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_array.
+	* g++.dg/ext/is_array.C: New test.
+
+2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Sort built-in traits alphabetically.
+
 2023-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/112887

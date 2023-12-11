@@ -1,3 +1,51 @@
+2023-12-10  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* ifcvt.cc (noce_cond_zero_binary_op_supported): Add support for shift
+	like op.
+
+2023-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112931
+	PR target/112933
+	* config/aarch64/aarch64-protos.h (aarch64_sve_reinterpret): Declare.
+	* config/aarch64/aarch64.cc (aarch64_sve_reinterpret): New function.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (svread_za_impl::expand)
+	(svwrite_za_impl::expand): Use it to cast the SVE register to the
+	right mode.
+
+2023-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/112930
+	* config/aarch64/aarch64.cc (aarch64_sme_mode_switch_regs::add_reg):
+	Force specific SVE modes for single registers as well as structures.
+
+2023-12-10  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (-fpermissive): Mention ObjC++ for -Wnarrowing.
+
+2023-12-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/addsub.md (uaddv<mode>4, usubv<mode>4): New expanders.
+	(uaddv): New define_insn_and_split plus post-reload pattern.
+
+2023-12-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/h8300-protos.h (use_extvsi): Prototype.
+	* config/h8300/combiner.md: Two new define_insn_and_split patterns
+	to implement signed bitfield extractions.
+	* config/h8300/h8300.cc (use_extvsi): New function.
+
+2023-12-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/combiner.md (single bit signed bitfield extraction): Fix
+	length computation when the bit we want is in the low half word.
+
+2023-12-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/h8300.cc (compute_a_shift_length): Fix computation
+	of logical shifts on the H8/SX.
+
 2023-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/112887

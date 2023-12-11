@@ -1,3 +1,18 @@
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/111503
+	* expr.cc (gfc_is_simply_contiguous): Determine characteristics of
+	NULL() from optional MOLD argument, otherwise treat as contiguous.
+	* primary.cc (gfc_variable_attr): Derive attributes of NULL(MOLD)
+	from MOLD.
+
+2023-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105543
+	* resolve.cc (resolve_symbol): For a CLASS-valued function having a
+	RESULT clause, ensure that attr.class_ok is set for its symbol as
+	well as for its resolved result variable.
+
 2023-12-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_ALLOCATE
