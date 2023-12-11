@@ -4284,6 +4284,40 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
   return expand_builtin_memset_args (dest, val, len, target, mode, exp);
 }
 
+/* Check that store_by_pieces allows BITS + LEN (so that we don't
+   expand something too unreasonably long), and every power of 2 in
+   BITS.  It is assumed that LEN has already been tested by
+   itself.  */
+static bool
+can_store_by_multiple_pieces (unsigned HOST_WIDE_INT bits,
+			      by_pieces_constfn constfun,
+			      void *constfundata, unsigned int align,
+			      bool memsetp,
+			      unsigned HOST_WIDE_INT len)
+{
+  if (bits
+      && !can_store_by_pieces (bits + len, constfun, constfundata,
+			       align, memsetp))
+    return false;
+
+  /* BITS set are expected to be generally in the low range and
+     contiguous.  We do NOT want to repeat the test above in case BITS
+     has a single bit set, so we terminate the loop when BITS == BIT.
+     In the unlikely case that BITS has the MSB set, also terminate in
+     case BIT gets shifted out.  */
+  for (unsigned HOST_WIDE_INT bit = 1; bit < bits && bit; bit <<= 1)
+    {
+      if ((bits & bit) == 0)
+	continue;
+
+      if (!can_store_by_pieces (bit, constfun, constfundata,
+				align, memsetp))
+	return false;
+    }
+
+  return true;
+}
+
 /* Try to store VAL (or, if NULL_RTX, VALC) in LEN bytes starting at TO.
    Return TRUE if successful, FALSE otherwise.  TO is assumed to be
    aligned at an ALIGN-bits boundary.  LEN must be a multiple of
@@ -4341,7 +4375,11 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
   else
     /* Huh, max_len < min_len?  Punt.  See pr100843.c.  */
     return false;
-  if (min_len >= blksize)
+  if (min_len >= blksize
+      /* ??? Maybe try smaller fixed-prefix blksizes before
+	 punting?  */
+      && can_store_by_pieces (blksize, builtin_memset_read_str,
+			      &valc, align, true))
     {
       min_len -= blksize;
       min_bits = floor_log2 (min_len);
@@ -4367,8 +4405,9 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
      happen because of the way max_bits and blksize are related, but
      it doesn't hurt to test.  */
   if (blksize > xlenest
-      || !can_store_by_pieces (xlenest, builtin_memset_read_str,
-			       &valc, align, true))
+      || !can_store_by_multiple_pieces (xlenest - blksize,
+					builtin_memset_read_str,
+					&valc, align, true, blksize))
     {
       if (!(flag_inline_stringops & ILSOP_MEMSET))
 	return false;
@@ -4386,17 +4425,17 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 	     of overflow.  */
 	  if (max_bits < orig_max_bits
 	      && xlenest + blksize >= xlenest
-	      && can_store_by_pieces (xlenest + blksize,
-				      builtin_memset_read_str,
-				      &valc, align, true))
+	      && can_store_by_multiple_pieces (xlenest,
+					       builtin_memset_read_str,
+					       &valc, align, true, blksize))
 	    {
 	      max_loop = true;
 	      break;
 	    }
 	  if (blksize
-	      && can_store_by_pieces (xlenest,
-				      builtin_memset_read_str,
-				      &valc, align, true))
+	      && can_store_by_multiple_pieces (xlenest,
+					       builtin_memset_read_str,
+					       &valc, align, true, 0))
 	    {
 	      max_len += blksize;
 	      min_len += blksize;
