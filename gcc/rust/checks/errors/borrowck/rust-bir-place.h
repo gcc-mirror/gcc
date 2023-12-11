@@ -148,9 +148,9 @@ public:
       0);
   }
 
-  [[nodiscard]] PlaceId lookup_or_add_path (Place::Kind kind,
-					    TyTy::BaseType *tyty,
-					    PlaceId parent, size_t id = 0)
+  WARN_UNUSED_RESULT PlaceId lookup_or_add_path (Place::Kind kind,
+						 TyTy::BaseType *tyty,
+						 PlaceId parent, size_t id = 0)
   {
     PlaceId current = 0;
     if (parent < places.size ())
