@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fstrub=strict -fdump-rtl-expand -fno-inline" } */
+/* { dg-options "-O3 -fstrub=strict -fdump-rtl-expand -fno-inline -fno-stack-protector" } */
 /* { dg-require-effective-target strub } */
 
 /* With -fno-inline, none of the strub builtins are inlined.  */

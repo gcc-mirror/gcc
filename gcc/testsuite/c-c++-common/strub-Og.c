@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Og -fstrub=strict -fdump-rtl-expand" } */
+/* { dg-options "-Og -fstrub=strict -fdump-rtl-expand -fno-stack-protector" } */
 /* { dg-require-effective-target strub } */
 
 /* At -Og, without -fno-inline, we fully expand enter, but neither update nor
