@@ -211,7 +211,7 @@ public:
     auto lookup = lookup_variable (id);
     if (lookup != INVALID_PLACE)
       return lookup;
-    places.push_back (
+    add_place (
       {Place::VARIABLE, id, {}, is_type_copy (tyty), false, NO_LIFETIME, tyty});
     return places.size () - 1;
   };
