@@ -1,7 +1,7 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fabi-version=18 -fabi-compat-version=18" }
-// { dg-final { scan-assembler "_Z1gI1XEvT_" } }
-// { dg-final { scan-assembler "_Z1gI1YEvT_" } }
+// { dg-additional-options "-fabi-version=0 -fabi-compat-version=0" }
+// { dg-final { scan-assembler "_Z1gITk1C1YEvT_" } }
+// { dg-final { scan-assembler "_Z1gITk1D1XEvT_" } }
 // { dg-final { scan-assembler "_Z1gIiEvT_" } }
 
 template<typename T>
