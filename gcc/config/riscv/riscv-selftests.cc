@@ -368,7 +368,19 @@ namespace selftest {
 void
 riscv_run_selftests (void)
 {
-  run_poly_int_selftests ();
+  if (!BYTES_PER_RISCV_VECTOR.is_constant ())
+    /* We can know POLY value = [4, 4] when BYTES_PER_RISCV_VECTOR
+       is !is_constant () since we can use csrr vlenb and scalar shift
+       instruction to compute such POLY value and store it into a scalar
+       register.  Wheras, we can't know [4, 4] on it is specified as
+       FIXED-VLMAX since BYTES_PER_RISCV_VECTOR = 16 for -march=rv64gcv
+       and csrr vlenb is 16 which is totally unrelated to any
+       compile-time unknown POLY value.
+
+       Since we never need to compute a compile-time unknown POLY value
+       when --param=riscv-autovec-preference=fixed-vlmax, disable poly
+       selftests in such situation.  */
+    run_poly_int_selftests ();
   run_const_vector_selftests ();
   run_broadcast_selftests ();
 }
