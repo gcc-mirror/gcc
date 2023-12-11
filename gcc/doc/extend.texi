@@ -13045,12 +13045,12 @@ variables to be protected.  The list is ignored by GCC which treats it as
 empty.  GCC interprets an empty list as meaning that all globally
 accessible variables should be protected.
 
-@defbuiltin{@var{type} __sync_fetch_and_add (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_sub (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_or (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_and (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_xor (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_nand (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltin{@var{type} __sync_fetch_and_add (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_sub (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_or (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_and (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_xor (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_nand (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
 These built-in functions perform the operation suggested by the name, and
 returns the value that had previously been in memory.  That is, operations
 on integer operands have the following semantics.  Operations on pointer
@@ -13070,13 +13070,13 @@ type.  It must not be a boolean type.
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 @enddefbuiltin
 
-@defbuiltin{@var{type} __sync_add_and_fetch (@var{type} *ptr, @
-                                             @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_or_and_fetch (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_and_and_fetch (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_xor_and_fetch (@var{type} *ptr, @var{type} value, ...)}
-@defbuiltinx{@var{type} __sync_nand_and_fetch (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltin{@var{type} __sync_add_and_fetch (@var{type} *@var{ptr}, @
+                                             @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_sub_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_or_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_and_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_xor_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_nand_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
 These built-in functions perform the operation suggested by the name, and
 return the new value.  That is, operations on integer operands have
 the following semantics.  Operations on pointer operands are performed as
@@ -13095,8 +13095,8 @@ as @code{*ptr = ~(*ptr & value)} instead of
 @code{*ptr = ~*ptr & value}.
 @enddefbuiltin
 
-@defbuiltin{bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)}
-@defbuiltinx{@var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)}
+@defbuiltin{bool __sync_bool_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
+@defbuiltinx{@var{type} __sync_val_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
 These built-in functions perform an atomic compare and swap.
 That is, if the current
 value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
@@ -13111,7 +13111,7 @@ of @code{*@var{ptr}} before the operation.
 This built-in function issues a full memory barrier.
 @enddefbuiltin
 
-@defbuiltin{@var{type} __sync_lock_test_and_set (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltin{@var{type} __sync_lock_test_and_set (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
 This built-in function, as described by Intel, is not a traditional test-and-set
 operation, but rather an atomic exchange operation.  It writes @var{value}
 into @code{*@var{ptr}}, and returns the previous contents of
@@ -13131,7 +13131,7 @@ be globally visible yet, and previous memory loads may not yet be
 satisfied.
 @enddefbuiltin
 
-@defbuiltin{void __sync_lock_release (@var{type} *ptr, ...)}
+@defbuiltin{void __sync_lock_release (@var{type} *@var{ptr}, ...)}
 This built-in function releases the lock acquired by
 @code{__sync_lock_test_and_set}.
 Normally this means writing the constant 0 to @code{*@var{ptr}}.
@@ -13248,7 +13248,7 @@ reserved for the memory order.  The remainder of the signed int is reserved
 for target use and should be 0.  Use of the predefined atomic values
 ensures proper usage.
 
-@defbuiltin{@var{type} __atomic_load_n (@var{type} *ptr, int memorder)}
+@defbuiltin{@var{type} __atomic_load_n (@var{type} *@var{ptr}, int @var{memorder})}
 This built-in function implements an atomic load operation.  It returns the
 contents of @code{*@var{ptr}}.
 
@@ -13258,13 +13258,13 @@ and @code{__ATOMIC_CONSUME}.
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_load (@var{type} *ptr, @var{type} *ret, int memorder)}
+@defbuiltin{void __atomic_load (@var{type} *@var{ptr}, @var{type} *@var{ret}, int @var{memorder})}
 This is the generic version of an atomic load.  It returns the
 contents of @code{*@var{ptr}} in @code{*@var{ret}}.
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_store_n (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltin{void __atomic_store_n (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
 This built-in function implements an atomic store operation.  It writes 
 @code{@var{val}} into @code{*@var{ptr}}.  
 
@@ -13273,13 +13273,13 @@ The valid memory order variants are
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_store (@var{type} *ptr, @var{type} *val, int memorder)}
+@defbuiltin{void __atomic_store (@var{type} *@var{ptr}, @var{type} *@var{val}, int @var{memorder})}
 This is the generic version of an atomic store.  It stores the value
 of @code{*@var{val}} into @code{*@var{ptr}}.
 
 @enddefbuiltin
 
-@defbuiltin{@var{type} __atomic_exchange_n (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltin{@var{type} __atomic_exchange_n (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
 This built-in function implements an atomic exchange operation.  It writes
 @var{val} into @code{*@var{ptr}}, and returns the previous contents of
 @code{*@var{ptr}}.
@@ -13288,14 +13288,14 @@ All memory order variants are valid.
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_exchange (@var{type} *ptr, @var{type} *val, @var{type} *ret, int memorder)}
+@defbuiltin{void __atomic_exchange (@var{type} *@var{ptr}, @var{type} *@var{val}, @var{type} *@var{ret}, int @var{memorder})}
 This is the generic version of an atomic exchange.  It stores the
 contents of @code{*@var{val}} into @code{*@var{ptr}}. The original value
 of @code{*@var{ptr}} is copied into @code{*@var{ret}}.
 
 @enddefbuiltin
 
-@defbuiltin{bool __atomic_compare_exchange_n (@var{type} *ptr, @var{type} *expected, @var{type} desired, bool weak, int success_memorder, int failure_memorder)}
+@defbuiltin{bool __atomic_compare_exchange_n (@var{type} *@var{ptr}, @var{type} *@var{expected}, @var{type} @var{desired}, bool @var{weak}, int @var{success_memorder}, int @var{failure_memorder})}
 This built-in function implements an atomic compare and exchange operation.
 This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
@@ -13319,7 +13319,7 @@ stronger order than that specified by @var{success_memorder}.
 
 @enddefbuiltin
 
-@defbuiltin{bool __atomic_compare_exchange (@var{type} *ptr, @var{type} *expected, @var{type} *desired, bool weak, int success_memorder, int failure_memorder)}
+@defbuiltin{bool __atomic_compare_exchange (@var{type} *@var{ptr}, @var{type} *@var{expected}, @var{type} *@var{desired}, bool @var{weak}, int @var{success_memorder}, int @var{failure_memorder})}
 This built-in function implements the generic version of
 @code{__atomic_compare_exchange}.  The function is virtually identical to
 @code{__atomic_compare_exchange_n}, except the desired value is also a
@@ -13327,12 +13327,12 @@ pointer.
 
 @enddefbuiltin
 
-@defbuiltin{@var{type} __atomic_add_fetch (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_sub_fetch (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_and_fetch (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_xor_fetch (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltin{@var{type} __atomic_add_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_sub_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_and_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_xor_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_or_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_nand_fetch (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
 These built-in functions perform the operation suggested by the name, and
 return the result of the operation.  Operations on pointer arguments are
 performed as if the operands were of the @code{uintptr_t} type.  That is,
@@ -13348,12 +13348,12 @@ type.  It must not be a boolean type.  All memory orders are valid.
 
 @enddefbuiltin
 
-@defbuiltin{@var{type} __atomic_fetch_add (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_fetch_sub (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_fetch_and (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_fetch_xor (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memorder)}
-@defbuiltinx{@var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltin{@var{type} __atomic_fetch_add (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_fetch_sub (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_fetch_and (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_fetch_xor (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_fetch_or (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
+@defbuiltinx{@var{type} __atomic_fetch_nand (@var{type} *@var{ptr}, @var{type} @var{val}, int @var{memorder})}
 These built-in functions perform the operation suggested by the name, and
 return the value that had previously been in @code{*@var{ptr}}.  Operations
 on pointer arguments are performed as if the operands were of
@@ -13370,7 +13370,7 @@ The same constraints on arguments apply as for the corresponding
 
 @enddefbuiltin
 
-@defbuiltin{bool __atomic_test_and_set (void *ptr, int memorder)}
+@defbuiltin{bool __atomic_test_and_set (void *@var{ptr}, int @var{memorder})}
 
 This built-in function performs an atomic test-and-set operation on
 the byte at @code{*@var{ptr}}.  The byte is set to some implementation
@@ -13383,7 +13383,7 @@ All memory orders are valid.
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_clear (bool *ptr, int memorder)}
+@defbuiltin{void __atomic_clear (bool *@var{ptr}, int @var{memorder})}
 
 This built-in function performs an atomic clear operation on
 @code{*@var{ptr}}.  After the operation, @code{*@var{ptr}} contains 0.
@@ -13398,7 +13398,7 @@ The valid memory order variants are
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_thread_fence (int memorder)}
+@defbuiltin{void __atomic_thread_fence (int @var{memorder})}
 
 This built-in function acts as a synchronization fence between threads
 based on the specified memory order.
@@ -13407,7 +13407,7 @@ All memory orders are valid.
 
 @enddefbuiltin
 
-@defbuiltin{void __atomic_signal_fence (int memorder)}
+@defbuiltin{void __atomic_signal_fence (int @var{memorder})}
 
 This built-in function acts as a synchronization fence between a thread
 and signal handlers based in the same thread.
@@ -13416,7 +13416,7 @@ All memory orders are valid.
 
 @enddefbuiltin
 
-@defbuiltin{bool __atomic_always_lock_free (size_t size,  void *ptr)}
+@defbuiltin{bool __atomic_always_lock_free (size_t @var{size},  void *@var{ptr})}
 
 This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.
@@ -13433,7 +13433,7 @@ if (__atomic_always_lock_free (sizeof (long long), 0))
 
 @enddefbuiltin
 
-@defbuiltin{bool __atomic_is_lock_free (size_t size, void *ptr)}
+@defbuiltin{bool __atomic_is_lock_free (size_t @var{size}, void *@var{ptr})}
 
 This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.  If
@@ -13451,13 +13451,13 @@ compiler may also ignore this parameter.
 The following built-in functions allow performing simple arithmetic operations
 together with checking whether the operations overflowed.
 
-@defbuiltin{bool __builtin_add_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
-@defbuiltinx{bool __builtin_sadd_overflow (int a, int b, int *res)}
-@defbuiltinx{bool __builtin_saddl_overflow (long int a, long int b, long int *res)}
-@defbuiltinx{bool __builtin_saddll_overflow (long long int a, long long int b, long long int *res)}
-@defbuiltinx{bool __builtin_uadd_overflow (unsigned int a, unsigned int b, unsigned int *res)}
-@defbuiltinx{bool __builtin_uaddl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
-@defbuiltinx{bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
+@defbuiltin{bool __builtin_add_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_sadd_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_saddl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_saddll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_uadd_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_uaddl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_uaddll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
 
 These built-in functions promote the first two operands into infinite precision signed
 type and perform addition on those promoted operands.  The result is then
@@ -13477,13 +13477,13 @@ after addition, conditional jump on carry etc.
 
 @enddefbuiltin
 
-@defbuiltin{bool __builtin_sub_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
-@defbuiltinx{bool __builtin_ssub_overflow (int a, int b, int *res)}
-@defbuiltinx{bool __builtin_ssubl_overflow (long int a, long int b, long int *res)}
-@defbuiltinx{bool __builtin_ssubll_overflow (long long int a, long long int b, long long int *res)}
-@defbuiltinx{bool __builtin_usub_overflow (unsigned int a, unsigned int b, unsigned int *res)}
-@defbuiltinx{bool __builtin_usubl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
-@defbuiltinx{bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
+@defbuiltin{bool __builtin_sub_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_ssub_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_ssubl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_ssubll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_usub_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_usubl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_usubll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform subtraction, subtract the second argument
@@ -13491,13 +13491,13 @@ from the first one, instead of addition.
 
 @enddefbuiltin
 
-@defbuiltin{bool __builtin_mul_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
-@defbuiltinx{bool __builtin_smul_overflow (int a, int b, int *res)}
-@defbuiltinx{bool __builtin_smull_overflow (long int a, long int b, long int *res)}
-@defbuiltinx{bool __builtin_smulll_overflow (long long int a, long long int b, long long int *res)}
-@defbuiltinx{bool __builtin_umul_overflow (unsigned int a, unsigned int b, unsigned int *res)}
-@defbuiltinx{bool __builtin_umull_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
-@defbuiltinx{bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
+@defbuiltin{bool __builtin_mul_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_smul_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_smull_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_smulll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_umul_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_umull_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_umulll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform multiplication, instead of addition.
@@ -13507,9 +13507,9 @@ functions above, except they perform multiplication, instead of addition.
 The following built-in functions allow checking if simple arithmetic operation
 would overflow.
 
-@defbuiltin{bool __builtin_add_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
-@defbuiltinx{bool __builtin_sub_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
-@defbuiltinx{bool __builtin_mul_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
+@defbuiltin{bool __builtin_add_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
+@defbuiltinx{bool __builtin_sub_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
+@defbuiltinx{bool __builtin_mul_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
 
 These built-in functions are similar to @code{__builtin_add_overflow},
 @code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
@@ -13549,9 +13549,9 @@ after addition, conditional jump on carry etc.
  
 @enddefbuiltin
 
-@defbuiltin{{unsigned int} __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_addc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
+@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
+@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -13571,9 +13571,9 @@ emitted if one of them (preferrably the third one) has only values
 
 @enddefbuiltin
 
-@defbuiltin{{unsigned int} __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
-@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
-@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+@defbuiltin{{unsigned int} __builtin_subc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
+@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
+@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
 
 These built-in functions are equivalent to:
 @smallexample
@@ -14355,7 +14355,7 @@ for all target libcs, but in all cases they will gracefully fallback to libc
 calls.  These built-in functions appear both with and without the
 @code{__builtin_} prefix.
 
-@defbuiltin{{void *} __builtin_alloca (size_t size)}
+@defbuiltin{{void *} __builtin_alloca (size_t @var{size})}
 The @code{__builtin_alloca} function must be called at block scope.
 The function allocates an object @var{size} bytes large on the stack
 of the calling function.  The object is aligned on the default stack
@@ -14395,7 +14395,7 @@ where GCC provides them as an extension.
 
 @enddefbuiltin
 
-@defbuiltin{{void *} __builtin_alloca_with_align (size_t size, size_t alignment)}
+@defbuiltin{{void *} __builtin_alloca_with_align (size_t @var{size}, size_t @var{alignment})}
 The @code{__builtin_alloca_with_align} function must be called at block
 scope.  The function allocates an object @var{size} bytes large on
 the stack of the calling function.  The allocated object is aligned on
@@ -14442,7 +14442,7 @@ an extension.  @xref{Variable Length}, for details.
 
 @enddefbuiltin
 
-@defbuiltin{{void *} __builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)}
+@defbuiltin{{void *} __builtin_alloca_with_align_and_max (size_t @var{size}, size_t @var{alignment}, size_t @var{max_size})}
 Similar to @code{__builtin_alloca_with_align} but takes an extra argument
 specifying an upper bound for @var{size} in case its value cannot be computed
 at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
@@ -14495,7 +14495,7 @@ recognized in such contexts.
 
 @enddefbuiltin
 
-@defbuiltin{@var{type} __builtin_speculation_safe_value (@var{type} val, @var{type} failval)}
+@defbuiltin{@var{type} __builtin_speculation_safe_value (@var{type} @var{val}, @var{type} @var{failval})}
 
 This built-in function can be used to help mitigate against unsafe
 speculative execution.  @var{type} may be any integral type or any
@@ -15227,7 +15227,7 @@ argument.  GCC treats this parameter as type-generic, which means it
 does not do default promotion from float to double.
 @enddefbuiltin
 
-@defbuiltin{double __builtin_nan (const char *str)}
+@defbuiltin{double __builtin_nan (const char *@var{str})}
 This is an implementation of the ISO C99 function @code{nan}.
 
 Since ISO C99 defines this function in terms of @code{strtod}, which we
@@ -15244,68 +15244,68 @@ consumed by @code{strtol}, is evaluated early enough that it is considered a
 compile-time constant.
 @enddefbuiltin
 
-@defbuiltin{_Decimal32 __builtin_nand32 (const char *str)}
+@defbuiltin{_Decimal32 __builtin_nand32 (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal32}.
 @enddefbuiltin
 
-@defbuiltin{_Decimal64 __builtin_nand64 (const char *str)}
+@defbuiltin{_Decimal64 __builtin_nand64 (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal64}.
 @enddefbuiltin
 
-@defbuiltin{_Decimal128 __builtin_nand128 (const char *str)}
+@defbuiltin{_Decimal128 __builtin_nand128 (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal128}.
 @enddefbuiltin
 
-@defbuiltin{float __builtin_nanf (const char *str)}
+@defbuiltin{float __builtin_nanf (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is @code{float}.
 @enddefbuiltin
 
-@defbuiltin{{long double} __builtin_nanl (const char *str)}
+@defbuiltin{{long double} __builtin_nanl (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 @enddefbuiltin
 
-@defbuiltin{_Float@var{n} __builtin_nanf@var{n} (const char *str)}
+@defbuiltin{_Float@var{n} __builtin_nanf@var{n} (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is
 @code{_Float@var{n}}.
 @enddefbuiltin
 
-@defbuiltin{_Float@var{n}x __builtin_nanf@var{n}x (const char *str)}
+@defbuiltin{_Float@var{n}x __builtin_nanf@var{n}x (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the return type is
 @code{_Float@var{n}x}.
 @enddefbuiltin
 
-@defbuiltin{double __builtin_nans (const char *str)}
+@defbuiltin{double __builtin_nans (const char *@var{str})}
 Similar to @code{__builtin_nan}, except the significand is forced
 to be a signaling NaN@.  The @code{nans} function is proposed by
 @uref{https://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
 @enddefbuiltin
 
-@defbuiltin{_Decimal32 __builtin_nansd32 (const char *str)}
+@defbuiltin{_Decimal32 __builtin_nansd32 (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
 @enddefbuiltin
 
-@defbuiltin{_Decimal64 __builtin_nansd64 (const char *str)}
+@defbuiltin{_Decimal64 __builtin_nansd64 (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
 @enddefbuiltin
 
-@defbuiltin{_Decimal128 __builtin_nansd128 (const char *str)}
+@defbuiltin{_Decimal128 __builtin_nansd128 (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
 @enddefbuiltin
 
-@defbuiltin{float __builtin_nansf (const char *str)}
+@defbuiltin{float __builtin_nansf (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is @code{float}.
 @enddefbuiltin
 
-@defbuiltin{{long double} __builtin_nansl (const char *str)}
+@defbuiltin{{long double} __builtin_nansl (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
 @enddefbuiltin
 
-@defbuiltin{_Float@var{n} __builtin_nansf@var{n} (const char *str)}
+@defbuiltin{_Float@var{n} __builtin_nansf@var{n} (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}}.
 @enddefbuiltin
 
-@defbuiltin{_Float@var{n}x __builtin_nansf@var{n}x (const char *str)}
+@defbuiltin{_Float@var{n}x __builtin_nansf@var{n}x (const char *@var{str})}
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}x}.
 @enddefbuiltin
@@ -15324,32 +15324,32 @@ With @code{-ffinite-math-only} option this built-in function will always
 return 0.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_ffs (int x)}
+@defbuiltin{int __builtin_ffs (int @var{x})}
 Returns one plus the index of the least significant 1-bit of @var{x}, or
 if @var{x} is zero, returns zero.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_clz (unsigned int x)}
+@defbuiltin{int __builtin_clz (unsigned int @var{x})}
 Returns the number of leading 0-bits in @var{x}, starting at the most
 significant bit position.  If @var{x} is 0, the result is undefined.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_ctz (unsigned int x)}
+@defbuiltin{int __builtin_ctz (unsigned int @var{x})}
 Returns the number of trailing 0-bits in @var{x}, starting at the least
 significant bit position.  If @var{x} is 0, the result is undefined.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_clrsb (int x)}
+@defbuiltin{int __builtin_clrsb (int @var{x})}
 Returns the number of leading redundant sign bits in @var{x}, i.e.@: the
 number of bits following the most significant bit that are identical
 to it.  There are no special cases for 0 or other values. 
 @enddefbuiltin
 
-@defbuiltin{int __builtin_popcount (unsigned int x)}
+@defbuiltin{int __builtin_popcount (unsigned int @var{x})}
 Returns the number of 1-bits in @var{x}.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_parity (unsigned int x)}
+@defbuiltin{int __builtin_parity (unsigned int @var{x})}
 Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
 modulo 2.
 @enddefbuiltin
@@ -15582,29 +15582,29 @@ Returns the first argument raised to the power of the second.  Unlike the
 @code{pow} function no guarantees about precision and rounding are made.
 @enddefbuiltin
 
-@defbuiltin{uint16_t __builtin_bswap16 (uint16_t x)}
+@defbuiltin{uint16_t __builtin_bswap16 (uint16_t @var{x})}
 Returns @var{x} with the order of the bytes reversed; for example,
 @code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
 exactly 8 bits.
 @enddefbuiltin
 
-@defbuiltin{uint32_t __builtin_bswap32 (uint32_t x)}
+@defbuiltin{uint32_t __builtin_bswap32 (uint32_t @var{x})}
 Similar to @code{__builtin_bswap16}, except the argument and return types
 are 32-bit.
 @enddefbuiltin
 
-@defbuiltin{uint64_t __builtin_bswap64 (uint64_t x)}
+@defbuiltin{uint64_t __builtin_bswap64 (uint64_t @var{x})}
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64-bit.
 @enddefbuiltin
 
-@defbuiltin{uint128_t __builtin_bswap128 (uint128_t x)}
+@defbuiltin{uint128_t __builtin_bswap128 (uint128_t @var{x})}
 Similar to @code{__builtin_bswap64}, except the argument and return types
 are 128-bit.  Only supported on targets when 128-bit types are supported.
 @enddefbuiltin
 
 
-@defbuiltin{Pmode __builtin_extend_pointer (void * x)}
+@defbuiltin{Pmode __builtin_extend_pointer (void * @var{x})}
 On targets where the user visible pointer size is smaller than the size
 of an actual hardware address this function returns the extended user
 pointer.  Targets where this is true included ILP32 mode on x86_64 or
@@ -15612,12 +15612,12 @@ Aarch64.  This function is mainly useful when writing inline assembly
 code.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_goacc_parlevel_id (int x)}
+@defbuiltin{int __builtin_goacc_parlevel_id (int @var{x})}
 Returns the openacc gang, worker or vector id depending on whether @var{x} is
 0, 1 or 2.
 @enddefbuiltin
 
-@defbuiltin{int __builtin_goacc_parlevel_size (int x)}
+@defbuiltin{int __builtin_goacc_parlevel_size (int @var{x})}
 Returns the openacc gang, worker or vector size depending on whether @var{x} is
 0, 1 or 2.
 @enddefbuiltin
@@ -22920,9 +22920,9 @@ implemented by the @code{vctzdm} instruction.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrl (vector signed char a, unsigned int n);
+@exdent vec_clrl (vector signed char @var{a}, unsigned int @var{n});
 @exdent vector unsigned char
-@exdent vec_clrl (vector unsigned char a, unsigned int n);
+@exdent vec_clrl (vector unsigned char @var{a}, unsigned int @var{n});
 @end smallexample
 Clear the left-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrlb} instruction on a big-endian target
@@ -22932,9 +22932,9 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrr (vector signed char a, unsigned int n);
+@exdent vec_clrr (vector signed char @var{a}, unsigned int @var{n});
 @exdent vector unsigned char
-@exdent vec_clrr (vector unsigned char a, unsigned int n);
+@exdent vec_clrr (vector unsigned char @var{a}, unsigned int @var{n});
 @end smallexample
 Clear the right-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrrb} instruction on a big-endian target
@@ -23388,9 +23388,9 @@ Vector Integer Multiply/Divide/Modulo
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mulh (vector signed int a, vector signed int b);
+@exdent vec_mulh (vector signed int @var{a}, vector signed int @var{b});
 @exdent vector unsigned int
-@exdent vec_mulh (vector unsigned int a, vector unsigned int b);
+@exdent vec_mulh (vector unsigned int @var{a}, vector unsigned int @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer
@@ -23400,9 +23400,9 @@ into word element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mulh (vector signed long long a, vector signed long long b);
+@exdent vec_mulh (vector signed long long @var{a}, vector signed long long @var{b});
 @exdent vector unsigned long long
-@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b);
+@exdent vec_mulh (vector unsigned long long @var{a}, vector unsigned long long @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -23412,9 +23412,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector unsigned long long
-@exdent vec_mul (vector unsigned long long a, vector unsigned long long b);
+@exdent vec_mul (vector unsigned long long @var{a}, vector unsigned long long @var{b});
 @exdent vector signed long long
-@exdent vec_mul (vector signed long long a, vector signed long long b);
+@exdent vec_mul (vector signed long long @var{a}, vector signed long long @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -23424,9 +23424,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_div (vector signed int a, vector signed int b);
+@exdent vec_div (vector signed int @var{a}, vector signed int @var{b});
 @exdent vector unsigned int
-@exdent vec_div (vector unsigned int a, vector unsigned int b);
+@exdent vec_div (vector unsigned int @var{a}, vector unsigned int @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -23437,9 +23437,9 @@ the vector returned. If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_div (vector signed long long a, vector signed long long b);
+@exdent vec_div (vector signed long long @var{a}, vector signed long long @var{b});
 @exdent vector unsigned long long
-@exdent vec_div (vector unsigned long long a, vector unsigned long long b);
+@exdent vec_div (vector unsigned long long @var{a}, vector unsigned long long @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -23451,9 +23451,9 @@ the quotient is undefined.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_dive (vector signed int a, vector signed int b);
+@exdent vec_dive (vector signed int @var{a}, vector signed int @var{b});
 @exdent vector unsigned int
-@exdent vec_dive (vector unsigned int a, vector unsigned int b);
+@exdent vec_dive (vector unsigned int @var{a}, vector unsigned int @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -23465,9 +23465,9 @@ divisions <anything> ÷ 0 then the quotient is undefined.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_dive (vector signed long long a, vector signed long long b);
+@exdent vec_dive (vector signed long long @var{a}, vector signed long long @var{b});
 @exdent vector unsigned long long
-@exdent vec_dive (vector unsigned long long a, vector unsigned long long b);
+@exdent vec_dive (vector unsigned long long @var{a}, vector unsigned long long @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -23479,9 +23479,9 @@ quotient cannot be represented in 64 bits, or if an attempt is made to perform
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mod (vector signed int a, vector signed int b);
+@exdent vec_mod (vector signed int @var{a}, vector signed int @var{b});
 @exdent vector unsigned int
-@exdent vec_mod (vector unsigned int a, vector unsigned int b);
+@exdent vec_mod (vector unsigned int @var{a}, vector unsigned int @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -23492,9 +23492,9 @@ the vector returned.  If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mod (vector signed long long a, vector signed long long b);
+@exdent vec_mod (vector signed long long @var{a}, vector signed long long @var{b});
 @exdent vector unsigned long long
-@exdent vec_mod (vector unsigned long long a, vector unsigned long long b);
+@exdent vec_mod (vector unsigned long long @var{a}, vector unsigned long long @var{b});
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -23509,14 +23509,14 @@ immediate value is either 0, 1, 2 or 3.
 @findex vec_genpcvm
 
 @smallexample
-@exdent vector unsigned __int128 vec_rl (vector unsigned __int128 A,
-                                         vector unsigned __int128 B);
-@exdent vector signed __int128 vec_rl (vector signed __int128 A,
-                                       vector unsigned __int128 B);
+@exdent vector unsigned __int128 vec_rl (vector unsigned __int128 @var{A},
+                                         vector unsigned __int128 @var{B});
+@exdent vector signed __int128 vec_rl (vector signed __int128 @var{A},
+                                       vector unsigned __int128 @var{B});
 @end smallexample
 
-Result value: Each element of R is obtained by rotating the corresponding element
-of A left by the number of bits specified by the corresponding element of B.
+Result value: Each element of @var{R} is obtained by rotating the corresponding element
+of @var{A} left by the number of bits specified by the corresponding element of @var{B}.
 
 
 @smallexample
@@ -23550,28 +23550,28 @@ input.  The shift is obtained from the third input in the 7-bit field bits
 [125:131] where all bits counted from zero at the left.
 
 @smallexample
-@exdent vector unsigned __int128 vec_sl(vector unsigned __int128 A, vector unsigned __int128 B);
-@exdent vector signed __int128 vec_sl(vector signed __int128 A, vector unsigned __int128 B);
+@exdent vector unsigned __int128 vec_sl(vector unsigned __int128 @var{A}, vector unsigned __int128 @var{B});
+@exdent vector signed __int128 vec_sl(vector signed __int128 @var{A}, vector unsigned __int128 @var{B});
 @end smallexample
 
-Result value: Each element of R is obtained by shifting the corresponding element of
-A left by the number of bits specified by the corresponding element of B.
+Result value: Each element of @var{R} is obtained by shifting the corresponding element of
+@var{A} left by the number of bits specified by the corresponding element of @var{B}.
 
 @smallexample
-@exdent vector unsigned __int128 vec_sr(vector unsigned __int128 A, vector unsigned __int128 B);
-@exdent vector signed __int128 vec_sr(vector signed __int128 A, vector unsigned __int128 B);
+@exdent vector unsigned __int128 vec_sr(vector unsigned __int128 @var{A}, vector unsigned __int128 @var{B});
+@exdent vector signed __int128 vec_sr(vector signed __int128 @var{A}, vector unsigned __int128 @var{B});
 @end smallexample
 
-Result value: Each element of R is obtained by shifting the corresponding element of
-A right by the number of bits specified by the corresponding element of B.
+Result value: Each element of @var{R} is obtained by shifting the corresponding element of
+@var{A} right by the number of bits specified by the corresponding element of @var{B}.
 
 @smallexample
-@exdent vector unsigned __int128 vec_sra(vector unsigned __int128 A, vector unsigned __int128 B);
-@exdent vector signed __int128 vec_sra(vector signed __int128 A, vector unsigned __int128 B);
+@exdent vector unsigned __int128 vec_sra(vector unsigned __int128 @var{A}, vector unsigned __int128 @var{B});
+@exdent vector signed __int128 vec_sra(vector signed __int128 @var{A}, vector unsigned __int128 @var{B});
 @end smallexample
 
-Result value: Each element of R is obtained by arithmetic shifting the corresponding
-element of A right by the number of bits specified by the corresponding element of B.
+Result value: Each element of @var{R} is obtained by arithmetic shifting the corresponding
+element of @var{A} right by the number of bits specified by the corresponding element of @var{B}.
 
 @smallexample
 @exdent vector unsigned __int128 vec_mule (vector unsigned long long,
@@ -24350,7 +24350,7 @@ Generates the @code{mvtaclo} machine instruction to set the bottom
 32 bits of the accumulator.
 @enddefbuiltin
 
-@defbuiltin{void __builtin_rx_mvtc (int reg, int val)}
+@defbuiltin{void __builtin_rx_mvtc (int @var{reg}, int @var{val})}
 Generates the @code{mvtc} machine instruction which sets control
 register number @code{reg} to @code{val}.
 @enddefbuiltin
