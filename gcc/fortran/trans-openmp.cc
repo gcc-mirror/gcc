@@ -8381,10 +8381,10 @@ gfc_omp_call_is_alloc (tree ptr)
     {
       fn = build_function_type_list (boolean_type_node, ptr_type_node,
 				     NULL_TREE);
-      fn = build_fn_decl ("GOMP_is_alloc", fn);
       tree att = build_tree_list (NULL_TREE, build_string (4, ". R "));
       att = tree_cons (get_identifier ("fn spec"), att, TYPE_ATTRIBUTES (fn));
       fn = build_type_attribute_variant (fn, att);
+      fn = build_fn_decl ("GOMP_is_alloc", fn);
     }
   return build_call_expr_loc (input_location, fn, 1, ptr);
 }
