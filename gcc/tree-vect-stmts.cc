@@ -11465,26 +11465,70 @@ vectorizable_load (vec_info *vinfo,
 			if (new_vtype != NULL_TREE)
 			  ltype = half_vtype;
 		      }
+		    /* Try to use a single smaller load when we are about
+		       to load excess elements compared to the unrolled
+		       scalar loop.
+		       ???  This should cover the above case as well.  */
+		    else if (known_gt ((vec_num * j + i + 1) * nunits,
+				       (group_size * vf - gap)))
+		      {
+			if (known_ge ((vec_num * j + i + 1) * nunits
+				      - (group_size * vf - gap), nunits))
+			  /* DR will be unused.  */
+			  ltype = NULL_TREE;
+			else if (alignment_support_scheme == dr_aligned)
+			  /* Aligned access to excess elements is OK if
+			     at least one element is accessed in the
+			     scalar loop.  */
+			  ;
+			else
+			  {
+			    auto remain
+			      = ((group_size * vf - gap)
+				 - (vec_num * j + i) * nunits);
+			    /* remain should now be > 0 and < nunits.  */
+			    unsigned num;
+			    if (constant_multiple_p (nunits, remain, &num))
+			      {
+				tree ptype;
+				new_vtype
+				  = vector_vector_composition_type (vectype,
+								    num,
+								    &ptype);
+				if (new_vtype)
+				  ltype = ptype;
+			      }
+			    /* Else use multiple loads or a masked load?  */
+			  }
+		      }
 		    tree offset
 		      = (dataref_offset ? dataref_offset
 					: build_int_cst (ref_type, 0));
-		    if (ltype != vectype
-			&& memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+		    if (!ltype)
+		      ;
+		    else if (ltype != vectype
+			     && memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 		      {
-			unsigned HOST_WIDE_INT gap_offset
-			  = gap * tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
-			tree gapcst = build_int_cst (ref_type, gap_offset);
+			poly_uint64 gap_offset
+			  = (tree_to_poly_uint64 (TYPE_SIZE_UNIT (vectype))
+			     - tree_to_poly_uint64 (TYPE_SIZE_UNIT (ltype)));
+			tree gapcst = build_int_cstu (ref_type, gap_offset);
 			offset = size_binop (PLUS_EXPR, offset, gapcst);
 		      }
-		    data_ref
-		      = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
-		    if (alignment_support_scheme == dr_aligned)
-		      ;
-		    else
-		      TREE_TYPE (data_ref)
-			= build_aligned_type (TREE_TYPE (data_ref),
-					      align * BITS_PER_UNIT);
-		    if (ltype != vectype)
+		    if (ltype)
+		      {
+			data_ref
+			  = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
+			if (alignment_support_scheme == dr_aligned)
+			  ;
+			else
+			  TREE_TYPE (data_ref)
+			    = build_aligned_type (TREE_TYPE (data_ref),
+						  align * BITS_PER_UNIT);
+		      }
+		    if (!ltype)
+		      data_ref = build_constructor (vectype, NULL);
+		    else if (ltype != vectype)
 		      {
 			vect_copy_ref_info (data_ref,
 					    DR_REF (first_dr_info->dr));
@@ -11494,18 +11538,28 @@ vectorizable_load (vec_info *vinfo,
 						     gsi);
 			data_ref = NULL;
 			vec<constructor_elt, va_gc> *v;
-			vec_alloc (v, 2);
+			/* We've computed 'num' above to statically two
+			   or via constant_multiple_p.  */
+			unsigned num
+			  = (exact_div (tree_to_poly_uint64
+					  (TYPE_SIZE_UNIT (vectype)),
+					tree_to_poly_uint64
+					  (TYPE_SIZE_UNIT (ltype)))
+			     .to_constant ());
+			vec_alloc (v, num);
 			if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 			  {
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-						    build_zero_cst (ltype));
+			    while (--num)
+			      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+						      build_zero_cst (ltype));
 			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
 			  }
 			else
 			  {
 			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tem);
-			    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-						    build_zero_cst (ltype));
+			    while (--num)
+			      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+						      build_zero_cst (ltype));
 			  }
 			gcc_assert (new_vtype != NULL_TREE);
 			if (new_vtype == vectype)
