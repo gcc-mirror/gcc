@@ -12,7 +12,11 @@ float d[N];
 int e[N];
 unsigned short f[N];
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(4) notinbranch uniform(b)
+#else
 #pragma omp declare simd simdlen(8) notinbranch uniform(b)
+#endif
 __attribute__((noinline)) float
 foo (float a, float b, float c)
 {

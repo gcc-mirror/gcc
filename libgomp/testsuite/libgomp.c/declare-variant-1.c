@@ -46,8 +46,10 @@ test1 (int x)
      call f03 (score 6), the sse2/avx/avx2 clones too, but avx512f clones
      shall call f01 with score 8.  */
   /* { dg-final { scan-ltrans-tree-dump-not "f04 \\\(x" "optimized" } } */
-  /* { dg-final { scan-ltrans-tree-dump-times "f03 \\\(x" 14 "optimized" } } */
-  /* { dg-final { scan-ltrans-tree-dump-times "f01 \\\(x" 4 "optimized" } } */
+  /* { dg-final { scan-ltrans-tree-dump-times "f03 \\\(x" 14 "optimized" { target { !aarch64*-*-* } } } } } */
+  /* { dg-final { scan-ltrans-tree-dump-times "f01 \\\(x" 4 "optimized" { target { !aarch64*-*-* } } } } } */
+  /* { dg-final { scan-ltrans-tree-dump-times "f03 \\\(x" 10 "optimized" { target { aarch64*-*-* } } } } } */
+  /* { dg-final { scan-ltrans-tree-dump-not "f01 \\\(x" "optimized" { target { aarch64*-*-* } } } } } */
   int a = f04 (x);
   int b = f04 (x);
   return a + b;

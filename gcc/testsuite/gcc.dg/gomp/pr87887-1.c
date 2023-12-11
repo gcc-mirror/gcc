@@ -10,6 +10,7 @@ foo (int x)
 {
   return (struct S) { x };
 }
+/* { dg-warning "unsupported return type ‘struct S’ for ‘simd’ functions" { target aarch64*-*-* } .-4 } */
 
 #pragma omp declare simd
 int
@@ -17,6 +18,7 @@ bar (struct S x)
 {
   return x.n;
 }
+/* { dg-warning "unsupported argument type ‘struct S’ for ‘simd’ functions" { target aarch64*-*-* } .-4 } */
 
 #pragma omp declare simd uniform (x)
 int

@@ -18,7 +18,6 @@ foo1 (int a, int b, float c, S d, int *e, int f, int &g, int &h, int &i, int j, 
 {
   return bar1 (a, b, c, d, e, f, g, h, i, j, k);
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-4 }
 
 #pragma omp declare simd inbranch uniform (b, c, d, e) aligned (e : 16) \
 		    linear (f : 2) linear (ref (g) : 1) \
@@ -29,7 +28,6 @@ foo2 (int a, int b, float c, S d, int *e, int f, int &g, int &h, int &i, int j, 
 {
   return bar2 (a, b, c, d, e, f, g, h, i, j, k);
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-4 }
 
 #pragma omp declare simd notinbranch uniform (b, c, d, e) aligned (e : 16) \
 		    linear (f : 2) linear (ref (g) : 1) \
@@ -40,7 +38,6 @@ foo3 (int a, int b, float c, S d, int *e, int f, int &g, int &h, int &i, int j, 
 {
   return bar3 (a, b, c, d, e, f, g, h, i, j, k);
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-4 }
 
 #pragma omp declare simd inbranch uniform (b, c, d, e) aligned (e : 16) \
 		    linear (f : 2) linear (ref (g) : 1) \
@@ -51,4 +48,3 @@ foo4 (int a, int b, float c, S d, int *e, int f, int &g, int &h, int &i, int j, 
 {
   return bar4 (a, b, c, d, e, f, g, h, i, j, k);
 }
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-4 }

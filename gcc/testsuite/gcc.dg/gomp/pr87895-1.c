@@ -17,4 +17,3 @@ bar (int *x, int y)
   if ((y == 0) ? (*x = 0) : *x)
     return 0;
 }
-/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 } */

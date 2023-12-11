@@ -35,13 +35,15 @@ contains
     integer :: a, b
 
     ! At gimplification time, we can't decide yet which function to call.
-    ! { dg-final { scan-tree-dump-times "f04 \\\(x" 2 "gimple" } }
+    ! { dg-final { scan-tree-dump-times "f04 \\\(x" 2 "gimple" { target { !aarch64*-*-* } } } }
     ! After simd clones are created, the original non-clone test1 shall
     ! call f03 (score 6), the sse2/avx/avx2 clones too, but avx512f clones
     ! shall call f01 with score 8.
     ! { dg-final { scan-tree-dump-not "f04 \\\(x" "optimized" } }
-    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 14 "optimized" } }
-    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 4 "optimized" } }
+    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 14 "optimized" { target { !aarch64*-*-* } } } }
+    ! { dg-final { scan-tree-dump-times "f03 \\\(x" 6 "optimized" { target { aarch64*-*-* } } } }
+    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 4 "optimized" { target { !aarch64*-*-* } } } }
+    ! { dg-final { scan-tree-dump-times "f01 \\\(x" 0 "optimized" { target { aarch64*-*-* } } } }
     a = f04 (x)
     b = f04 (x)
     test1 = a + b

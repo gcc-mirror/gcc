@@ -1,7 +1,7 @@
 ! PR fortran/79154
 ! { dg-do compile }
 
-pure real function foo (a, b)		! { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } }
+pure real function foo (a, b)
 !$omp declare simd(foo)			! { dg-bogus "may not appear in PURE" }
   real, intent(in) :: a, b
   foo = a + b
@@ -20,7 +20,7 @@ pure real function baz (a, b)
   real, intent(in) :: a, b
   baz = a + b
 end function baz
-elemental real function fooe (a, b)	! { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } }
+elemental real function fooe (a, b)
 !$omp declare simd(fooe)		! { dg-bogus "may not appear in PURE" }
   real, intent(in) :: a, b
   fooe = a + b

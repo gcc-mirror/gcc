@@ -2,7 +2,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fopenmp-simd" } */
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(4) notinbranch
+#endif
 int
 foo (const double c1, const double c2)
 {
@@ -17,4 +21,3 @@ foo (const double c1, const double c2)
     }
   return res;
 }
-/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-13 } */
