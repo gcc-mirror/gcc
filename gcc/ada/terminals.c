@@ -1125,6 +1125,9 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #if defined (__APPLE__)
 #   include <util.h>
 #endif
+#if defined (__FreeBSD__)
+#   include <libutil.h>
+#endif
 
 #define CDISABLE _POSIX_VDISABLE
 
@@ -1265,10 +1268,12 @@ allocate_pty_desc (pty_desc **desc) {
 #ifndef NLDLY
 #define NLDLY 0
 #define CRDLY 0
-#define TABDLY 0
 #define BSDLY 0
 #define VTDLY 0
 #define FFDLY 0
+#endif
+#ifndef TABDLY
+#define TABDLY 0
 #endif
 
 /* child_setup_tty - set terminal properties
