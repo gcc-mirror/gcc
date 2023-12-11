@@ -4972,6 +4972,11 @@ rl78_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 }
 
 
+/* The strub runtime uses asms, and physical register allocation won't
+   deal with them, so disable it.  */
+#undef TARGET_HAVE_STRUB_SUPPORT_FOR
+#define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"
