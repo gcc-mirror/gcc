@@ -30,7 +30,8 @@ class BorrowChecker
 
 public:
   explicit BorrowChecker (bool enable_dump_bir)
-    : enable_dump_bir (enable_dump_bir){};
+    : enable_dump_bir (enable_dump_bir)
+  {}
 
   /** Perform borrow-checking using polonius on an entire crate */
   void go (HIR::Crate &crate);
