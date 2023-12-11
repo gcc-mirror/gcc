@@ -5946,6 +5946,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	if (TREE_CODE (def) == SSA_NAME)
 	  {
 	    tree val = SSA_VAL (def, &visited);
+	    if (SSA_NAME_IS_DEFAULT_DEF (def))
+	      visited = true;
 	    if (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK))
 	      def = val;
 	    if (e->flags & EDGE_DFS_BACK)
@@ -6091,7 +6093,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   /* If we saw only undefined values and VN_TOP use one of the
      undefined values.  */
   else if (sameval == VN_TOP)
-    result = seen_undef ? seen_undef : sameval;
+    result = (seen_undef && seen_undef_visited) ? seen_undef : sameval;
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
   else if ((result = vn_phi_lookup (phi, backedges_varying_p)))
