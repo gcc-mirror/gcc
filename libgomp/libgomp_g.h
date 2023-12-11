@@ -366,6 +366,9 @@ extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
 
 /* allocator.c */
 
+extern void GOMP_add_alloc (void *);
+extern bool GOMP_is_alloc (void *);
+
 extern void *GOMP_alloc (size_t, size_t, uintptr_t);
 extern void GOMP_free (void *, uintptr_t);
 
