@@ -4519,7 +4519,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 	  to = change_address (to, QImode, 0);
 	  emit_move_insn (to, val);
 	  if (update_needed)
-	    next_ptr = plus_constant (ptr_mode, ptr, blksize);
+	    next_ptr = plus_constant (GET_MODE (ptr), ptr, blksize);
 	}
       else
 	{
