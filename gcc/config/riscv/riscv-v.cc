@@ -2923,6 +2923,39 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+/* Return the appropriate index mode for gather instructions.  */
+opt_machine_mode
+get_gather_index_mode (struct expand_vec_perm_d *d)
+{
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
+  poly_uint64 nunits = GET_MODE_NUNITS (d->vmode);
+
+  if (GET_MODE_INNER (d->vmode) == QImode)
+    {
+      if (nunits.is_constant ())
+	{
+	  /* If indice is LMUL8 CONST_VECTOR and any element value
+	     exceed the range of 0 ~ 255, Forbid such permutation
+	     since we need vector HI mode to hold such indice and
+	     we don't have it.  */
+	  if (!d->perm.all_in_range_p (0, 255)
+	      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return opt_machine_mode ();
+	}
+      else
+	{
+	  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
+	     Otherwise, it could overflow the index range.  */
+	  if (!get_vector_mode (HImode, nunits).exists (&sel_mode))
+	    return opt_machine_mode ();
+	}
+    }
+  else if (riscv_get_v_regno_alignment (sel_mode) > 1
+	   && GET_MODE_INNER (sel_mode) != HImode)
+    sel_mode = get_vector_mode (HImode, nunits).require ();
+  return sel_mode;
+}
+
 /* Recognize the patterns that we can use merge operation to shuffle the
    vectors. The value of Each element (index i) in selector can only be
    either i or nunits + i.  We will check the pattern is actually monotonic.
@@ -3428,12 +3461,10 @@ shuffle_series_patterns (struct expand_vec_perm_d *d)
   if (!have_series)
     return false;
 
-  /* Get a vector int-mode to be used for the permute selector.  */
-  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
-  insn_code icode = optab_handler (vec_shl_insert_optab, sel_mode);
-
-  /* We need to be able to insert an element and shift the vector.  */
-  if (need_insert && icode == CODE_FOR_nothing)
+  /* Disable shuffle if we can't find an appropriate integer index mode for
+     gather.  */
+  machine_mode sel_mode;
+  if (!get_gather_index_mode (d).exists (&sel_mode))
     return false;
 
   /* Success! */
@@ -3448,7 +3479,12 @@ shuffle_series_patterns (struct expand_vec_perm_d *d)
 
   /* Insert the remaining element if necessary.  */
   if (need_insert)
-    emit_insn (GEN_FCN (icode) (series, series, gen_int_mode (el1, eltmode)));
+    {
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDE1UP, sel_mode);
+      rtx ops[]
+	= {series, series, gen_int_mode (el1, GET_MODE_INNER (sel_mode))};
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+    }
 
   emit_vlmax_gather_insn (d->target, d->op0, series);
 
@@ -3460,36 +3496,16 @@ shuffle_series_patterns (struct expand_vec_perm_d *d)
 static bool
 shuffle_generic_patterns (struct expand_vec_perm_d *d)
 {
-  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
-  poly_uint64 nunits = GET_MODE_NUNITS (d->vmode);
+  machine_mode sel_mode;
 
   /* We don't enable SLP for non-power of 2 NPATTERNS.  */
   if (!pow2p_hwi (d->perm.encoding().npatterns ()))
     return false;
 
-  if (GET_MODE_INNER (d->vmode) == QImode)
-    {
-      if (nunits.is_constant ())
-	{
-	  /* If indice is LMUL8 CONST_VECTOR and any element value
-	     exceed the range of 0 ~ 255, Forbid such permutation
-	     since we need vector HI mode to hold such indice and
-	     we don't have it.  */
-	  if (!d->perm.all_in_range_p (0, 255)
-	      && !get_vector_mode (HImode, nunits).exists (&sel_mode))
-	    return false;
-	}
-      else
-	{
-	  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
-	     Otherwise, it could overflow the index range.  */
-	  if (!get_vector_mode (HImode, nunits).exists (&sel_mode))
-	    return false;
-	}
-    }
-  else if (riscv_get_v_regno_alignment (sel_mode) > 1
-	   && GET_MODE_INNER (sel_mode) != HImode)
-    sel_mode = get_vector_mode (HImode, nunits).require ();
+  /* Disable shuffle if we can't find an appropriate integer index mode for
+     gather.  */
+  if (!get_gather_index_mode (d).exists (&sel_mode))
+    return false;
 
   /* Success! */
   if (d->testing_p)
