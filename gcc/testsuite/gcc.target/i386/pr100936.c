@@ -1,6 +1,7 @@
 /* PR target/100936 */
 /* { dg-do assemble } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target nonpic } */
 
 __seg_gs int var;
 
