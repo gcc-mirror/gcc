@@ -2449,15 +2449,14 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
     }
   emit_move_insn (iter, iter_init);
 
-  scalar_int_mode int_move_mode
-    = smallest_int_mode_for_size (incr * BITS_PER_UNIT);
-  if (GET_MODE_BITSIZE (int_move_mode) != incr * BITS_PER_UNIT)
+  opt_scalar_int_mode int_move_mode
+    = int_mode_for_size (incr * BITS_PER_UNIT, 1);
+  if (!int_move_mode.exists (&move_mode)
+      || GET_MODE_BITSIZE (int_move_mode.require ()) != incr * BITS_PER_UNIT)
     {
       move_mode = BLKmode;
       gcc_checking_assert (can_move_by_pieces (incr, align));
     }
-  else
-    move_mode = int_move_mode;
 
   x_addr = force_operand (XEXP (x, 0), NULL_RTX);
   y_addr = force_operand (XEXP (y, 0), NULL_RTX);
@@ -2701,16 +2700,15 @@ emit_block_cmp_via_loop (rtx x, rtx y, rtx len, tree len_type, rtx target,
   iter = gen_reg_rtx (iter_mode);
   emit_move_insn (iter, iter_init);
 
-  scalar_int_mode int_cmp_mode
-    = smallest_int_mode_for_size (incr * BITS_PER_UNIT);
-  if (GET_MODE_BITSIZE (int_cmp_mode) != incr * BITS_PER_UNIT
-      || !can_compare_p (NE, int_cmp_mode, ccp_jump))
+  opt_scalar_int_mode int_cmp_mode
+    = int_mode_for_size (incr * BITS_PER_UNIT, 1);
+  if (!int_cmp_mode.exists (&cmp_mode)
+      || GET_MODE_BITSIZE (int_cmp_mode.require ()) != incr * BITS_PER_UNIT
+      || !can_compare_p (NE, cmp_mode, ccp_jump))
     {
       cmp_mode = BLKmode;
       gcc_checking_assert (incr != 1);
     }
-  else
-    cmp_mode = int_cmp_mode;
 
   /* Save the base addresses.  */
   x_addr = force_operand (XEXP (x, 0), NULL_RTX);
