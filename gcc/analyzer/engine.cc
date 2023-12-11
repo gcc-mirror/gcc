@@ -4875,6 +4875,7 @@ feasibility_state::feasibility_state (const region_model &model,
 : m_model (model),
   m_snodes_visited (sg.m_nodes.length ())
 {
+  bitmap_clear (m_snodes_visited);
 }
 
 feasibility_state &
