@@ -8152,6 +8152,11 @@ script to place the sections with the @code{.persistent} prefix in the
 right location.  Specifically, some type of non-volatile, writeable
 memory is required.
 
+@cindex @code{no_icf} variable attribute
+@item no_icf
+This variable attribute prevents a variable from being merged with another
+equivalent variable.
+
 @cindex @code{objc_nullability} variable attribute
 @item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
 This attribute applies to pointer variables only.  It allows marking the
