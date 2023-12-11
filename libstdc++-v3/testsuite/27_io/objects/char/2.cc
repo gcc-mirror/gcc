@@ -38,6 +38,8 @@ void test04()
   cout.flush();
 }
 
+// { dg-output "hello fine world" }
+
 int 
 main()
 {
