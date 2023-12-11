@@ -80,6 +80,19 @@ package System.Atomic_Primitives is
 
    generic
       type Atomic_Type is mod <>;
+   procedure Atomic_Store
+     (Ptr   : Address;
+      Value : Atomic_Type;
+      Model : Mem_Model := Seq_Cst);
+   pragma Import (Intrinsic, Atomic_Store, "__atomic_store_n");
+
+   procedure Atomic_Store_8  is new Atomic_Store (uint8);
+   procedure Atomic_Store_16 is new Atomic_Store (uint16);
+   procedure Atomic_Store_32 is new Atomic_Store (uint32);
+   procedure Atomic_Store_64 is new Atomic_Store (uint64);
+
+   generic
+      type Atomic_Type is mod <>;
    function Atomic_Compare_Exchange
      (Ptr           : Address;
       Expected      : Address;

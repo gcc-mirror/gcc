@@ -1238,6 +1238,14 @@ operand_type (tree expr)
   return TREE_TYPE (TREE_OPERAND (expr, 0));
 }
 
+/* Return the second value of a list.  */
+
+static inline tree
+list_second (tree list)
+{
+  return TREE_VALUE (TREE_CHAIN (list));
+}
+
 /* Return the third value of a list.  */
 
 static inline tree

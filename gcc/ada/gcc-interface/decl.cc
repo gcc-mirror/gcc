@@ -6504,6 +6504,28 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			}
 		      break;
 
+		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+		    case BUILT_IN_ATOMIC_STORE_N:
+		      /* This is a generic builtin overloaded on its second
+			 parameter type, so do type resolution based on it.  */
+		      if (list_length (gnu_param_type_list) >= 3
+			  && type_for_atomic_builtin_p
+			       (list_second (gnu_param_type_list)))
+			gnu_builtin_decl
+			  = resolve_atomic_builtin
+			      (fncode, list_second (gnu_param_type_list));
+		      else
+			{
+			  post_error
+			    ("??cannot import type-generic 'G'C'C builtin!",
+			     gnat_subprog);
+			  post_error
+			    ("\\?use a supported second parameter type",
+			     gnat_subprog);
+			  gnu_builtin_decl = NULL_TREE;
+			}
+		      break;
+
 		    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
 		      /* This is a generic builtin overloaded on its third
 			 parameter type, so do type resolution based on it.  */
@@ -6525,9 +6547,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			}
 		      break;
 
-		    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
 		    case BUILT_IN_SYNC_LOCK_RELEASE_N:
-		    case BUILT_IN_ATOMIC_STORE_N:
 		      post_error
 			("??unsupported type-generic 'G'C'C builtin!",
 			 gnat_subprog);
