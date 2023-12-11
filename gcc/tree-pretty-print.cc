@@ -2624,8 +2624,23 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	if (TREE_CLOBBER_P (node))
 	  {
 	    pp_string (pp, "CLOBBER");
-	    if (CLOBBER_KIND (node) == CLOBBER_EOL)
-	      pp_string (pp, "(eol)");
+	    switch (CLOBBER_KIND (node))
+	      {
+	      case CLOBBER_STORAGE_BEGIN:
+		pp_string (pp, "(bos)");
+		break;
+	      case CLOBBER_STORAGE_END:
+		pp_string (pp, "(eos)");
+		break;
+	      case CLOBBER_OBJECT_BEGIN:
+		pp_string (pp, "(bob)");
+		break;
+	      case CLOBBER_OBJECT_END:
+		pp_string (pp, "(eob)");
+		break;
+	      default:
+		break;
+	      }
 	  }
 	else if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
 		 || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)

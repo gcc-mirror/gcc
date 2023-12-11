@@ -9716,7 +9716,7 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
     }
 
   /* A trivial destructor should still clobber the object.  */
-  tree clobber = build_clobber (TREE_TYPE (instance));
+  tree clobber = build_clobber (TREE_TYPE (instance), CLOBBER_OBJECT_END);
   return build2 (MODIFY_EXPR, void_type_node,
 		 instance, clobber);
 }

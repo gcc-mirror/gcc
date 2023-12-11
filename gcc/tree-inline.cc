@@ -5136,7 +5136,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	      && !is_gimple_reg (*varp)
 	      && !(id->debug_map && id->debug_map->get (p)))
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (*varp), CLOBBER_EOL);
+	      tree clobber = build_clobber (TREE_TYPE (*varp),
+					    CLOBBER_STORAGE_END);
 	      gimple *clobber_stmt;
 	      clobber_stmt = gimple_build_assign (*varp, clobber);
 	      gimple_set_location (clobber_stmt, gimple_location (stmt));
@@ -5208,7 +5209,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	  && !is_gimple_reg (id->retvar)
 	  && !stmt_ends_bb_p (stmt))
 	{
-	  tree clobber = build_clobber (TREE_TYPE (id->retvar), CLOBBER_EOL);
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar),
+					CLOBBER_STORAGE_END);
 	  gimple *clobber_stmt;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (old_stmt));

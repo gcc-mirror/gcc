@@ -4364,7 +4364,7 @@ void
 pass_waccess::check_stmt (gimple *stmt)
 {
   if (m_check_dangling_p
-      && gimple_clobber_p (stmt, CLOBBER_EOL))
+      && gimple_clobber_p (stmt, CLOBBER_STORAGE_END))
     {
       /* Ignore clobber statements in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);

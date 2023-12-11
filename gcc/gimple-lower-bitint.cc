@@ -806,7 +806,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	  && m_after_stmt
 	  && bitmap_bit_p (m_single_use_names, SSA_NAME_VERSION (op)))
 	{
-	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]), CLOBBER_EOL);
+	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]),
+					CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (m_vars[p], clobber);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (m_after_stmt);
 	  gsi_insert_after (&gsi, g, GSI_SAME_STMT);
@@ -2063,7 +2064,7 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
       tree ret = build_fold_addr_expr (var);
       if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 	{
-	  tree clobber = build_clobber (atype, CLOBBER_EOL);
+	  tree clobber = build_clobber (atype, CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (var, clobber);
 	  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 	}
@@ -2100,7 +2101,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	      ret = build_fold_addr_expr (var);
 	      if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 		{
-		  tree clobber = build_clobber (m_limb_type, CLOBBER_EOL);
+		  tree clobber = build_clobber (m_limb_type,
+						CLOBBER_STORAGE_END);
 		  g = gimple_build_assign (var, clobber);
 		  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 		}
@@ -3707,7 +3709,7 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
     }
   if (var)
     {
-      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_EOL);
+      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_STORAGE_END);
       g = gimple_build_assign (var, clobber);
       gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
     }
