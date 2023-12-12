@@ -257,10 +257,40 @@ test_width()
 }
 
 void
+test_char()
+{
+  std::string s;
+
+  s = std::format("{}", 'a');
+  VERIFY( s == "a" );
+
+  s = std::format("{:c} {:d} {:o}", 'b', '\x17', '\x3f');
+  VERIFY( s == "b 23 77" );
+
+  s = std::format("{:#d} {:#o}", '\x17', '\x3f');
+  VERIFY( s == "23 077" );
+
+  s = std::format("{:04d} {:04o}", '\x17', '\x3f');
+  VERIFY( s == "0023 0077" );
+
+  s = std::format("{:b} {:B} {:#b} {:#B}", '\xff', '\xa0', '\x17', '\x3f');
+  if constexpr (std::is_unsigned_v<char>)
+    VERIFY( s == "11111111 10100000 0b10111 0B111111" );
+  else
+    VERIFY( s == "-1 -1100000 0b10111 0B111111" );
+
+  s = std::format("{:x} {:#x} {:#X}", '\x12', '\x34', '\x45');
+  VERIFY( s == "12 0x34 0X45" );
+}
+
+void
 test_wchar()
 {
   using namespace std::literals;
   std::wstring s;
+
+  s = std::format(L"{}", L'a');
+  VERIFY( s == L"a" );
 
   s = std::format(L"{} {} {} {} {} {}", L'0', 1, 2LL, 3.4, L"five", L"six"s);
   VERIFY( s == L"0 1 2 3.4 five six" );
@@ -353,6 +383,9 @@ test_pointer()
   const void* pc = p;
   std::string s, str_int;
 
+  s = std::format("{}", p);
+  VERIFY( s == "0x0" );
+
   s = std::format("{} {} {}", p, pc, nullptr);
   VERIFY( s == "0x0 0x0 0x0" );
   s = std::format("{:p} {:p} {:p}", p, pc, nullptr);
@@ -385,6 +418,27 @@ test_pointer()
 #endif
 }
 
+void
+test_bool()
+{
+  std::string s;
+
+  s = std::format("{}", true);
+  VERIFY( s == "true" );
+  s = std::format("{:} {:s}", true, false);
+  VERIFY( s == "true false" );
+  s = std::format("{:b} {:#b}", true, false);
+  VERIFY( s == "1 0b0" );
+  s = std::format("{:B} {:#B}", false, true);
+  VERIFY( s == "0 0B1" );
+  s = std::format("{:d} {:#d}", false, true);
+  VERIFY( s == "0 1" );
+  s = std::format("{:o} {:#o} {:#o}", false, true, false);
+  VERIFY( s == "0 01 0" );
+  s = std::format("{:x} {:#x} {:#X}", false, true, false);
+  VERIFY( s == "0 0x1 0X0" );
+}
+
 int main()
 {
   test_no_args();
@@ -393,8 +447,10 @@ int main()
   test_alternate_forms();
   test_locale();
   test_width();
+  test_char();
   test_wchar();
   test_minmax();
   test_p1652r1();
   test_pointer();
+  test_bool();
 }

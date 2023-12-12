@@ -3968,6 +3968,15 @@ namespace __format
 		      __done = true;
 		    }
 		}
+	      else if constexpr (is_same_v<_Tp, char>)
+		{
+		  if (auto __res = __sink_out._M_reserve(1))
+		    {
+		      *__res.get() = __arg;
+		      __res._M_bump(1);
+		      __done = true;
+		    }
+		}
 	      else if constexpr (is_integral_v<_Tp>)
 		{
 		  make_unsigned_t<_Tp> __uval;
