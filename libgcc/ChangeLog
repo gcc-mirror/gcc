@@ -1,3 +1,13 @@
+2023-12-11  Lipeng Zhu  <lipeng.zhu@intel.com>
+
+	* gthr-posix.h (__GTHREAD_RWLOCK_INIT): New macro.
+	(__gthrw): New function.
+	(__gthread_rwlock_rdlock): New function.
+	(__gthread_rwlock_tryrdlock): New function.
+	(__gthread_rwlock_wrlock): New function.
+	(__gthread_rwlock_trywrlock): New function.
+	(__gthread_rwlock_unlock): New function.
+
 2023-12-08  Florian Weimer  <fweimer@redhat.com>
 
 	* libgcov-interface.c (__gcov_fork): Use __builtin_fork instead

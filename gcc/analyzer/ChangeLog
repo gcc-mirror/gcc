@@ -1,3 +1,14 @@
+2023-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112955
+	* engine.cc (feasibility_state::feasibility_state): Initialize
+	m_snodes_visited.
+
+2023-12-11  Andrew Pinski  <apinski@marvell.com>
+
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare): Remove
+	the check for type being unsigned_char_type_node.
+
 2023-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* sm-taint.cc (taint_state_machine::alt_get_inherited_state): Fix

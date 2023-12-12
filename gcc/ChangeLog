@@ -1,3 +1,224 @@
+2023-12-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.cc (constrain_operands): Pass VOIDmode to
+	strict_memory_address_p for 'p' constraints in asms.
+	* rtl-ssa/changes.cc (recog_level2): Skip redundant constrain_operands
+	for asms.
+
+2023-12-11  Jason Merrill  <jason@redhat.com>
+
+	* common.opt: Add comment.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112784
+	* expr.cc (emit_block_move_via_loop): Call int_mode_for_size
+	for maybe-too-wide sizes.
+	(emit_block_cmp_via_loop): Likewise.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112778
+	* builtins.cc (can_store_by_multiple_pieces): New.
+	(try_store_by_multiple_pieces): Call it.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112804
+	* builtins.cc (try_store_by_multiple_pieces): Use ptr's mode
+	for the increment.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/invoke.texi (multiflags): Add period after @xref to
+	silence warning.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/rl78/rl78.cc (TARGET_HAVE_STRUB_SUPPORT_FOR): Disable.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-strub.cc (pass_ipa_strub::execute): Check that we don't
+	add indirection to pointer parameters, and document attribute
+	access non-interactions.
+
+2023-12-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/112380
+	* combine.cc (expand_field_assignment): Check if gen_lowpart
+	returned a CLOBBER, and avoid calling gen_simplify_binary with
+	it if so.
+
+2023-12-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/111867
+	* config/aarch64/aarch64.cc (aarch64_float_const_representable_p): For BFmode,
+	only accept +0.0.
+
+2023-12-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/111972
+	PR tree-optimization/110637
+	* match.pd (`(convert)(zeroone !=/== CST)`): Match
+	and simplify to ((convert)zeroone){,^1}.
+	* fold-const.cc (fold_binary_loc): Remove
+	transformation of `(~a) & 1` and `(a ^ 1) & 1`
+	into `(convert)(a == 0)`.
+
+2023-12-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/112935
+	* expr.cc (expand_expr_real_2): Use
+	gimple_zero_one_valued_p instead of tree_nonzero_bits
+	to find boolean defined expressions.
+
+2023-12-11  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/112413
+	* config/m68k/linux.h (ASM_RETURN_CASE_JUMP): For
+	TARGET_LONG_JUMP_TABLE_OFFSETS, reference the jump table
+	via its label.
+	* config/m68k/m68kelf.h (ASM_RETURN_CASE_JUMP): Likewise.
+	* config/m68k/netbsd-elf.h (ASM_RETURN_CASE_JUMP): Likewise.
+
+2023-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (lane_size): New function.
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Determine simdlen according to NDS rule
+	and reject combination of simdlen and types that lead to vectors larger than 128bits.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* rtl-ssa/insns.cc (function_info::record_use): Add !ordered_p case.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (get_gather_index_mode): New function.
+	(shuffle_series_patterns): Robostify shuffle index.
+	(shuffle_generic_patterns): Ditto.
+
+2023-12-11  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/arm_neon.h (vldap1_lane_u64): Add
+	`const' to `__builtin_aarch64_simd_di *' cast.
+	(vldap1q_lane_u64): Likewise.
+	(vldap1_lane_s64): Cast __src to `const __builtin_aarch64_simd_di *'.
+	(vldap1q_lane_s64): Likewise.
+	(vldap1_lane_f64): Cast __src to `const __builtin_aarch64_simd_df *'.
+	(vldap1q_lane_f64): Cast __src to `const __builtin_aarch64_simd_df *'.
+	(vldap1_lane_p64): Add `const' to `__builtin_aarch64_simd_di *' cast.
+	(vldap1q_lane_p64): Add `const' to `__builtin_aarch64_simd_di *' cast.
+	(vstl1_lane_u64): remove stray `const'.
+	(vstl1_lane_s64): Cast __src to `__builtin_aarch64_simd_di *'.
+	(vstl1q_lane_s64): Likewise.
+	(vstl1_lane_f64): Cast __src to `const __builtin_aarch64_simd_df *'.
+	(vstl1q_lane_f64): Likewise.
+
+2023-12-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112853
+	* config/riscv/riscv-v.cc (expand_const_vector):  Fix step
+	calculation.
+	(modulo_sel_indices): Also perform modulo for variable-length
+	constants.
+	(shuffle_series): Recognize series permutations.
+	(expand_vec_perm_const_1): Add shuffle_series.
+
+2023-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	* match.pd (VCE (a cmp b ? -1 : 0) < 0) ? c : d ---> (VCE ((a
+	cmp b) ? (VCE:c) : (VCE:d))): New gimple simplication.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highest overlap for wv instructions.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (extract_single_source): Fix ICE.
+
+2023-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (__sync_fetch_and_add, __sync_fetch_and_sub,
+	__sync_fetch_and_or, __sync_fetch_and_and, __sync_fetch_and_xor,
+	__sync_fetch_and_nand, __sync_add_and_fetch, __sync_sub_and_fetch,
+	__sync_or_and_fetch, __sync_and_and_fetch, __sync_xor_and_fetch,
+	__sync_nand_and_fetch, __sync_bool_compare_and_swap,
+	__sync_val_compare_and_swap, __sync_lock_test_and_set,
+	__sync_lock_release, __atomic_load_n, __atomic_load, __atomic_store_n,
+	__atomic_store, __atomic_exchange_n, __atomic_exchange,
+	__atomic_compare_exchange_n, __atomic_compare_exchange,
+	__atomic_add_fetch, __atomic_sub_fetch, __atomic_and_fetch,
+	__atomic_xor_fetch, __atomic_or_fetch, __atomic_nand_fetch,
+	__atomic_fetch_add, __atomic_fetch_sub, __atomic_fetch_and,
+	__atomic_fetch_xor, __atomic_fetch_or, __atomic_fetch_nand,
+	__atomic_test_and_set, __atomic_clear, __atomic_thread_fence,
+	__atomic_signal_fence, __atomic_always_lock_free,
+	__atomic_is_lock_free, __builtin_add_overflow,
+	__builtin_sadd_overflow, __builtin_saddl_overflow,
+	__builtin_saddll_overflow, __builtin_uadd_overflow,
+	__builtin_uaddl_overflow, __builtin_uaddll_overflow,
+	__builtin_sub_overflow, __builtin_ssub_overflow,
+	__builtin_ssubl_overflow, __builtin_ssubll_overflow,
+	__builtin_usub_overflow, __builtin_usubl_overflow,
+	__builtin_usubll_overflow, __builtin_mul_overflow,
+	__builtin_smul_overflow, __builtin_smull_overflow,
+	__builtin_smulll_overflow, __builtin_umul_overflow,
+	__builtin_umull_overflow, __builtin_umulll_overflow,
+	__builtin_add_overflow_p, __builtin_sub_overflow_p,
+	__builtin_mul_overflow_p, __builtin_addc, __builtin_addcl,
+	__builtin_addcll, __builtin_subc, __builtin_subcl, __builtin_subcll,
+	__builtin_alloca, __builtin_alloca_with_align,
+	__builtin_alloca_with_align_and_max, __builtin_speculation_safe_value,
+	__builtin_nan, __builtin_nand32, __builtin_nand64, __builtin_nand128,
+	__builtin_nanf, __builtin_nanl, __builtin_nanf@var{n},
+	__builtin_nanf@var{n}x, __builtin_nans, __builtin_nansd32,
+	__builtin_nansd64, __builtin_nansd128, __builtin_nansf,
+	__builtin_nansl, __builtin_nansf@var{n}, __builtin_nansf@var{n}x,
+	__builtin_ffs, __builtin_clz, __builtin_ctz, __builtin_clrsb,
+	__builtin_popcount, __builtin_parity, __builtin_bswap16,
+	__builtin_bswap32, __builtin_bswap64, __builtin_bswap128,
+	__builtin_extend_pointer, __builtin_goacc_parlevel_id,
+	__builtin_goacc_parlevel_size, vec_clrl, vec_clrr, vec_mulh, vec_mul,
+	vec_div, vec_dive, vec_mod, __builtin_rx_mvtc): Use @var{...} around
+	parameter names.
+	(vec_rl, vec_sl, vec_sr, vec_sra): Likewise.  Use @var{...} also
+	around A, B and R in description.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-selftests.cc (riscv_run_selftests):
+	Remove poly self test when FIXED-VLMAX.
+
+2023-12-11  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* ifcvt.cc (noce_cond_zero_binary_op_supported): Add support for AND.
+	(noce_bbs_ok_for_cond_zero_arith): Likewise.
+	(noce_try_cond_zero_arith): Likewise.
+
+2023-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112904
+	* config/i386/mmx.md (*xop_pcmov_<mode>): New define_insn.
+
+2023-12-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/112707
+	* config/rs6000/rs6000.h (TARGET_FCTID): Define.
+	* config/rs6000/rs6000.md (lrint<mode>di2): Add guard TARGET_FCTID.
+	* (lround<mode>di2): Replace TARGET_FPRND with TARGET_FCTID.
+
+2023-12-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/112707
+	* config/rs6000/rs6000.md (expand lrint<mode>si2): New.
+	(insn lrint<mode>si2): Rename to...
+	(*lrint<mode>si): ...this.
+	(lrint<mode>si_di): New.
+
 2023-12-10  Fei Gao  <gaofei@eswincomputing.com>
 	    Xiao Zeng <zengxiao@eswincomputing.com>
 

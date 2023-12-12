@@ -1,3 +1,8 @@
+2023-12-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* terminals.c [__FreeBSD__]: Include <libutil.h>.
+	(TABDLY): Only define if missing.
+
 2023-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/trans.cc: Include ipa-strub.h.

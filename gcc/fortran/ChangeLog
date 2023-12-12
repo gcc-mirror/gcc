@@ -1,3 +1,25 @@
+2023-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_call_is_alloc): Resolve ICE.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_requires_kind): Add
+	OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE and OMP_REQ_ATOMIC_MEM_ORDER_RELEASE.
+	(gfc_namespace): Add a 7th bit to omp_requires.
+	* module.cc (enum ab_attribute): Add AB_OMP_REQ_MEM_ORDER_ACQUIRE
+	and AB_OMP_REQ_MEM_ORDER_RELEASE
+	(mio_symbol_attribute): Handle it.
+	* openmp.cc (gfc_omp_requires_add_clause): Update for acquire/release.
+	(gfc_match_omp_requires): Likewise.
+	(gfc_match_omp_atomic): Handle them for atomic_default_mem_order.
+	* parse.cc: Likewise.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_call_add_alloc,
+	gfc_omp_call_is_alloc): Set 'fn spec'.
+
 2023-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/111503

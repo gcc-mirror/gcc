@@ -1,3 +1,216 @@
+2023-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/strub-O2fni.c: Add -fno-stack-protector to dg-options.
+	* c-c++-common/strub-O3fni.c: Likewise.
+	* c-c++-common/strub-Os.c: Likewise.
+	* c-c++-common/strub-Og.c: Likewise.
+
+2023-12-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/112488
+	* gcc.dg/pr112488-1.c: New test.
+	* gcc.dg/pr112488-2.c: New test.
+	* gcc.dg/pr112898.c: New test.
+	* gcc.misc-tests/gcov-pr85350.c: Adapt.
+
+2023-12-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/prfm_imm_offset_2.c: New test.
+
+2023-12-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-explicit-inst1.C: Specify ABI v18.
+	* g++.dg/cpp2a/concepts-explicit-inst1a.C: New test.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112784
+	* gcc.target/i386/avx512cd-inline-stringops-pr112784.c: New.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112778
+	* gcc.dg/inline-mem-cmp-pr112778.c: New.
+
+2023-12-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112804
+	* gcc.target/aarch64/inline-mem-set-pr112804.c: New.
+
+2023-12-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/112380
+	* gcc.dg/pr112380.c: New test case.
+
+2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/112297
+	* gcc.target/i386/pr100936.c: Require nonpic target.
+
+2023-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/63378
+	* g++.dg/template/fnspec3.C: New test.
+
+2023-12-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/tree-ssa/pr110637-1.c: New test.
+	* gcc.dg/tree-ssa/pr110637-2.c: New test.
+	* gcc.dg/tree-ssa/pr110637-3.c: New test.
+	* gcc.dg/tree-ssa/pr111972-1.c: New test.
+	* gcc.dg/tree-ssa/pr69270.c: Update testcase.
+	* gcc.target/i386/pr110790-2.c: Update testcase.
+	* gcc.dg/fold-even-1.c: Removed.
+
+2023-12-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* lib/target-supports.exp: Add aarch64 targets to vect_simd_clones.
+	* c-c++-common/gomp/declare-variant-14.c: Adapt test for aarch64.
+	* c-c++-common/gomp/pr60823-1.c: Likewise.
+	* c-c++-common/gomp/pr60823-2.c: Likewise.
+	* c-c++-common/gomp/pr60823-3.c: Likewise.
+	* g++.dg/gomp/attrs-10.C: Likewise.
+	* g++.dg/gomp/declare-simd-1.C: Likewise.
+	* g++.dg/gomp/declare-simd-3.C: Likewise.
+	* g++.dg/gomp/declare-simd-4.C: Likewise.
+	* g++.dg/gomp/declare-simd-7.C: Likewise.
+	* g++.dg/gomp/declare-simd-8.C: Likewise.
+	* g++.dg/gomp/pr88182.C: Likewise.
+	* gcc.dg/declare-simd.c: Likewise.
+	* gcc.dg/gomp/declare-simd-1.c: Likewise.
+	* gcc.dg/gomp/declare-simd-3.c: Likewise.
+	* gcc.dg/gomp/pr87887-1.c: Likewise.
+	* gcc.dg/gomp/pr87895-1.c: Likewise.
+	* gcc.dg/gomp/pr89246-1.c: Likewise.
+	* gcc.dg/gomp/pr99542.c: Likewise.
+	* gcc.dg/gomp/simd-clones-2.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-1.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-2.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-4.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-5.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-6.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-7.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-8.c: Likewise.
+	* gfortran.dg/gomp/declare-simd-2.f90: Likewise.
+	* gfortran.dg/gomp/declare-simd-coarray-lib.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-14.f90: Likewise.
+	* gfortran.dg/gomp/pr79154-1.f90: Likewise.
+	* gfortran.dg/gomp/pr83977.f90: Likewise.
+	* gcc.target/aarch64/declare-simd-1.c: New file.
+	* gcc.target/aarch64/declare-simd-2.c: New file.
+
+2023-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/concept-8.h: New test.
+	* g++.dg/modules/concept-8_a.H: New test.
+	* g++.dg/modules/concept-8_b.C: New test.
+
+2023-12-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/builtin/strcmp-run.c: Adjust test
+	expectation and target selector.
+	* gcc.target/riscv/rvv/autovec/builtin/strlen-run.c: Adjust
+	target selector.
+	* gcc.target/riscv/rvv/autovec/builtin/strncmp-run.c: Ditto.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/requires-3.c: Update for now valid code.
+	* gfortran.dg/gomp/requires-3.f90: Likewise.
+	* gfortran.dg/gomp/requires-2.f90: Update dg-error.
+	* gfortran.dg/gomp/requires-5.f90: Likewise.
+	* c-c++-common/gomp/requires-5.c: New test.
+	* c-c++-common/gomp/requires-6.c: New test.
+	* c-c++-common/gomp/requires-7.c: New test.
+	* c-c++-common/gomp/requires-8.c: New test.
+	* gfortran.dg/gomp/requires-10.f90: New test.
+	* gfortran.dg/gomp/requires-11.f90: New test.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-2.c: New test.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/pr110950.c: Adapt test.
+
+2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* c-c++-common/asan/memcmp-1.c: Adjust pattern on darwin.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_use_bug-1.c: Moved to...
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-1.c: ...here.
+
+2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr112445.c: Require dfp.
+
+2023-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vl-blendv-3.c: New test.
+	* gcc.target/i386/blendv-3.c: New test.
+
+2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/libcall-1.c: Skip on darwin.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-39.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-40.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-41.c: New test.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_use_bug-1.c: New test.
+
+2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/poly-selftest-1.c: New test.
+
+2023-12-11  Fei Gao  <gaofei@eswincomputing.com>
+	    Xiao Zeng <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond_ifcvt_opt.c: Add TCs for AND.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96090
+	PR c++/100470
+	* g++.dg/cpp0x/noexcept81.C: New test.
+	* g++.dg/ext/is_nothrow_constructible7.C: New test.
+	* g++.dg/ext/is_nothrow_constructible8.C: New test.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/104234
+	PR c++/112580
+	* g++.dg/modules/pr104234.C: New test.
+
+2023-12-11  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr112904.C: New test.
+
+2023-12-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/112707
+	* gcc.target/powerpc/pr112707.h: New.
+	* gcc.target/powerpc/pr112707-2.c: New.
+	* gcc.target/powerpc/pr112707-3.c: New.
+	* gcc.target/powerpc/pr88558-p7.c: Check fctid on ilp32 and
+	has_arch_ppc64 as it's now guarded by powerpc64.
+	* gcc.target/powerpc/pr88558-p8.c: Likewise.
+	* gfortran.dg/nint_p7.f90: Add powerpc64 target requirement as
+	lround<mode>di2 is now guarded by powerpc64.
+
+2023-12-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/112707
+	* gcc.target/powerpc/pr112707-1.c: New.
+
 2023-12-10  Fei Gao  <gaofei@eswincomputing.com>
 	    Xiao Zeng <zengxiao@eswincomputing.com>
 

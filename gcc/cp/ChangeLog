@@ -1,3 +1,31 @@
+2023-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (alias_ctad_tweaks): Pass use_spec_table=false to
+	tsubst_decl.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_requires): Handle acquires/release
+	in atomic_default_mem_order clause.
+	(cp_parser_omp_atomic): Update.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96090
+	PR c++/100470
+	* call.cc (build_over_call): Prevent folding of trivial special
+	members when checking for noexcept.
+	* method.cc (constructible_expr): Perform value-initialisation
+	for empty parameter lists.
+	(is_nothrow_xible): Treat as noexcept operator.
+
+2023-12-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/104234
+	PR c++/112580
+	* pt.cc (tsubst_template_decl): Clear
+	DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P.
+
 2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
 
 	* cp-trait.def: Define __remove_pointer.

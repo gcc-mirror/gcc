@@ -1,3 +1,18 @@
+2023-12-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/112488
+	* c-decl.cc (add_decl_expr): Revise.
+	(finish_struct): Create DECL_EXPR.
+	* c-parser.cc (c_parser_struct_or_union_specifier): Call
+	finish_struct with expression for VLA sizes.
+	* c-tree.h (finish_struct): Add argument.
+
+2023-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_requires): Handle acquires/release
+	in atomic_default_mem_order clause.
+	(c_parser_omp_atomic): Update.
+
 2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-decl.cc (std_attribute_table): Add extra braces to work
