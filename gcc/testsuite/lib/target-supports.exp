@@ -13249,6 +13249,18 @@ proc check_effective_target_loongarch_call36_support { } {
   } ""]
 }
 
+# Returns 1 if binutils supports TLS le Relax, 0 otherwise.
+proc check_effective_target_tls_le_relax { } {
+  if [check_effective_target_tls_native] {
+    return [check_no_compiler_messages loongarch_tls_le_relax object {
+        /* Assembly code */
+	lu12i.w $r12, %le_hi20_r(a)
+    }]
+  }
+
+  return 0;
+}
+
 # Appends necessary Python flags to extra-tool-flags if Python.h is supported.
 # Otherwise, modifies dg-do-what.
 proc dg-require-python-h { args } {

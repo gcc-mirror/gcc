@@ -73,6 +73,7 @@
   UNSPEC_LOAD_FROM_GOT
   UNSPEC_PCALAU12I
   UNSPEC_PCALAU12I_GR
+  UNSPEC_ADD_TLS_LE_RELAX
   UNSPEC_ORI_L_LO12
   UNSPEC_LUI_L_HI20
   UNSPEC_LUI_H_LO20
@@ -2502,6 +2503,17 @@
   ""
   "pcalau12i\t%0,%%pc_hi20(%1)"
   [(set_attr "type" "move")])
+
+(define_insn "@add_tls_le_relax<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		   (match_operand:P 2 "register_operand" "r")
+		   (match_operand:P 3 "symbolic_operand")]
+	  UNSPEC_ADD_TLS_LE_RELAX))]
+  "HAVE_AS_TLS_LE_RELAXATION"
+  "add.<d>\t%0,%1,%2,%%le_add_r(%3)"
+  [(set_attr "type" "move")]
+)
 
 (define_insn "@ori_l_lo12<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")

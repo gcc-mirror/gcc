@@ -2997,7 +2997,29 @@ loongarch_legitimize_tls_address (rtx loc)
 
     case TLS_MODEL_LOCAL_EXEC:
 	{
-	  /* la.tls.le; tp-relative add.  */
+	  /* la.tls.le; tp-relative add.
+
+	     normal:
+	      lu12i.w $rd, %le_hi20(sym)
+	      ori $rd, $rd, %le_lo12(sym)
+	      add.{w/d} $rd, $rd, $tp
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)
+
+	     tls le relax:
+	      lu12i.w $rd, %le_hi20_r(sym)
+	      add.{w/d} $rd,$rd,$tp
+	      addi.{w/d} $rd,$rd,%le_lo12_r(sym)
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)
+
+	     extreme (When the code model is set to extreme, the TLS le Relax
+	     instruction sequence is not generated):
+	      lu12i.w $rd, %le_hi20(sym)
+	      ori $rd, $rd, %le_lo12(sym)
+	      lu32i.d $rd, %le64_lo20(sym)
+	      lu52i.d $rd, $rd, %le64_hi12(sym)
+	      add.d $rd, $rd, $tp
+	      (st.{w/d}/ld.{w/d} $rs, $rd, 0)  */
+
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  tmp1 = gen_reg_rtx (Pmode);
 	  dest = gen_reg_rtx (Pmode);
@@ -3008,7 +3030,20 @@ loongarch_legitimize_tls_address (rtx loc)
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
-	      emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
+
+	      /* The assembler does not implement tls le relax support when the
+		 code model is extreme, so when the code model is extreme, the
+		 old symbol address acquisition method is still used.  */
+	      if (HAVE_AS_TLS_LE_RELAXATION && !TARGET_CMODEL_EXTREME)
+		{
+		  emit_insn (gen_add_tls_le_relax (Pmode, dest, high,
+						   tp, loc));
+		  loongarch_emit_move (dest,
+				       gen_rtx_LO_SUM (Pmode, dest, tmp2));
+		  return dest;
+		}
+	      else
+		emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
 
 	      if (TARGET_CMODEL_EXTREME)
 		{
@@ -5940,7 +5975,12 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
 	    gcc_unreachable ();
 	}
       else
-	reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+	{
+	  if (HAVE_AS_TLS_LE_RELAXATION && !TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%le_hi20_r" : "%le_lo12_r";
+	  else
+	    reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+	}
       break;
 
     case SYMBOL_TLSGD:

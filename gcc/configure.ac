@@ -5447,6 +5447,11 @@ x:
        beq $a0,$a1,a],,
       [AC_DEFINE(HAVE_AS_COND_BRANCH_RELAXATION, 1,
 		[Define if your assembler supports conditional branch relaxation.])])
+    gcc_GAS_CHECK_FEATURE([tls le relaxation support],
+      gcc_cv_as_loongarch_tls_le_relaxation_support,,
+      [lu12i.w $t0,%le_hi20_r(a)],,
+      [AC_DEFINE(HAVE_AS_TLS_LE_RELAXATION, 1,
+	  [Define if your assembler supports tls le relocation.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
