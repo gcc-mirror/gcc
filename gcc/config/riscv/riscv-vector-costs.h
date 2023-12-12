@@ -33,13 +33,6 @@ struct stmt_point
 /* Pair typedef used by live range: <start, end>.  */
 typedef std::pair<unsigned int, unsigned int> pair;
 
-struct autovec_info
-{
-  unsigned int initial_lmul;
-  unsigned int current_lmul;
-  bool end_p;
-};
-
 /* rvv-specific vector costs.  */
 class costs : public vector_costs
 {
@@ -56,8 +49,6 @@ private:
 			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
-
-  bool preferred_new_lmul_p (const vector_costs *) const;
 };
 
 } // namespace riscv_vector

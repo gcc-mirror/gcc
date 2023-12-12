@@ -147,4 +147,4 @@ foo (int8_t *__restrict a, int8_t *__restrict b,    int8_t *__restrict c,
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 1" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "Maximum lmul = 1" "vect" } } */

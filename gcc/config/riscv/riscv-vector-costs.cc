@@ -86,7 +86,6 @@ namespace riscv_vector {
 	 2. M8 -> M1(M4) -> MF2(M2) -> MF4(M1) (stop analysis here) -> MF8(MF2)
 	 3. M1(M8) -> MF2(M4) -> MF4(M2) -> MF8(M1)
 */
-static hash_map<class loop *, autovec_info> loop_autovec_infos;
 
 /* Collect all STMTs that are vectorized and compute their program points.
    Note that we don't care about the STMTs that are not vectorized and
@@ -362,13 +361,6 @@ max_number_of_live_regs (const basic_block bb,
   return max_nregs;
 }
 
-/* Return the LMUL of the current analysis.  */
-static int
-get_current_lmul (class loop *loop)
-{
-  return loop_autovec_infos.get (loop)->current_lmul;
-}
-
 /* Get STORE value.  */
 static tree
 get_store_value (gimple *stmt)
@@ -392,6 +384,33 @@ non_contiguous_memory_access_p (stmt_vec_info stmt_info)
     = STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
   return ((type == load_vec_info_type || type == store_vec_info_type)
 	  && !adjacent_dr_p (STMT_VINFO_DATA_REF (stmt_info)));
+}
+
+/* Return the LMUL of the current analysis.  */
+static int
+compute_estimated_lmul (loop_vec_info other_loop_vinfo, machine_mode mode)
+{
+  gcc_assert (GET_MODE_BITSIZE (mode).is_constant ());
+  int regno_alignment
+    = riscv_get_v_regno_alignment (other_loop_vinfo->vector_mode);
+  if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (other_loop_vinfo), 1U))
+    {
+      int estimated_vf = vect_vf_for_cost (other_loop_vinfo);
+      return estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
+	     / TARGET_MIN_VLEN;
+    }
+  else if (regno_alignment > 1)
+    return regno_alignment;
+  else
+    {
+      int ratio;
+      if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
+			   LOOP_VINFO_SLP_UNROLLING_FACTOR (other_loop_vinfo),
+			   &ratio))
+	return TARGET_MAX_LMUL / ratio;
+      else
+	gcc_unreachable ();
+    }
 }
 
 /* Update the live ranges according PHI.
@@ -520,65 +539,25 @@ update_local_live_ranges (
     }
 }
 
-costs::costs (vec_info *vinfo, bool costing_for_scalar)
-  : vector_costs (vinfo, costing_for_scalar)
-{}
-
 /* Return true that the LMUL of new COST model is preferred.  */
-bool
-costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
+static bool
+preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
 {
-  auto other = static_cast<const costs *> (uncast_other);
-  auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
-  auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
-  class loop *loop = LOOP_VINFO_LOOP (this_loop_vinfo);
-
-  if (loop_autovec_infos.get (loop) && loop_autovec_infos.get (loop)->end_p)
-    return false;
-  else if (loop_autovec_infos.get (loop))
-    loop_autovec_infos.get (loop)->current_lmul
-      = loop_autovec_infos.get (loop)->current_lmul / 2;
-  else
-    {
-      int regno_alignment
-	= riscv_get_v_regno_alignment (other_loop_vinfo->vector_mode);
-      if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (other_loop_vinfo), 1U))
-	regno_alignment = RVV_M8;
-      loop_autovec_infos.put (loop, {regno_alignment, regno_alignment, false});
-    }
-
-  int lmul = get_current_lmul (loop);
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "Comparing two main loops (%s at VF %d vs %s at VF %d)\n",
-		     GET_MODE_NAME (this_loop_vinfo->vector_mode),
-		     vect_vf_for_cost (this_loop_vinfo),
-		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
-		     vect_vf_for_cost (other_loop_vinfo));
-
   /* Compute local program points.
      It's a fast and effective computation.  */
   hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
-  compute_local_program_points (other->m_vinfo, program_points_per_bb);
+  compute_local_program_points (other_loop_vinfo, program_points_per_bb);
 
   /* Compute local live ranges.  */
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
   machine_mode biggest_mode
     = compute_local_live_ranges (program_points_per_bb, live_ranges_per_bb);
 
-  /* If we can use simple VLS modes to handle NITERS element.
-     We don't need to use VLA modes with partial vector auto-vectorization.  */
-  if (LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
-      && known_le (tree_to_poly_int64 (LOOP_VINFO_NITERS (this_loop_vinfo))
-		     * GET_MODE_SIZE (biggest_mode).to_constant (),
-		   (int) RVV_M8 * BYTES_PER_RISCV_VECTOR)
-      && pow2p_hwi (LOOP_VINFO_INT_NITERS (this_loop_vinfo)))
-    return vector_costs::better_main_loop_than_p (other);
-
   /* Update live ranges according to PHI.  */
-  update_local_live_ranges (other->m_vinfo, program_points_per_bb,
+  update_local_live_ranges (other_loop_vinfo, program_points_per_bb,
 			    live_ranges_per_bb, &biggest_mode);
 
+  int lmul = compute_estimated_lmul (other_loop_vinfo, biggest_mode);
   /* TODO: We calculate the maximum live vars base on current STMTS
      sequence.  We can support live range shrink if it can give us
      big improvement in the future.  */
@@ -603,12 +582,7 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
 	  live_ranges_per_bb.empty ();
 	}
       live_ranges_per_bb.empty ();
-      if (loop_autovec_infos.get (loop)->current_lmul == RVV_M1
-	  || max_nregs <= V_REG_NUM)
-	loop_autovec_infos.get (loop)->end_p = true;
-      if (loop_autovec_infos.get (loop)->current_lmul > RVV_M1)
-	return max_nregs > V_REG_NUM;
-      return false;
+      return max_nregs > V_REG_NUM;
     }
   if (!program_points_per_bb.is_empty ())
     {
@@ -625,17 +599,34 @@ costs::preferred_new_lmul_p (const vector_costs *uncast_other) const
   return lmul > RVV_M1;
 }
 
+costs::costs (vec_info *vinfo, bool costing_for_scalar)
+  : vector_costs (vinfo, costing_for_scalar)
+{}
+
 bool
 costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 {
   auto other = static_cast<const costs *> (uncast_other);
+  auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
+  auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
 
-  if (riscv_autovec_lmul == RVV_DYNAMIC)
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Comparing two main loops (%s at VF %d vs %s at VF %d)\n",
+		     GET_MODE_NAME (this_loop_vinfo->vector_mode),
+		     vect_vf_for_cost (this_loop_vinfo),
+		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
+		     vect_vf_for_cost (other_loop_vinfo));
+
+  if (!LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
+      && riscv_autovec_lmul == RVV_DYNAMIC)
     {
+      if (!riscv_v_ext_vector_mode_p (this_loop_vinfo->vector_mode))
+	return false;
       bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
       if (!post_dom_available_p)
 	calculate_dominance_info (CDI_POST_DOMINATORS);
-      bool preferred_p = preferred_new_lmul_p (uncast_other);
+      bool preferred_p = preferred_new_lmul_p (other_loop_vinfo);
       if (!post_dom_available_p)
 	free_dominance_info (CDI_POST_DOMINATORS);
       return preferred_p;

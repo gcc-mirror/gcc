@@ -22,6 +22,6 @@ foo (uint8_t *restrict a, uint8_t *restrict b, int n)
 /* { dg-final { scan-assembler {e8,m4} } } */
 /* { dg-final { scan-assembler-times {csrr} 1 } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 8" "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
+/* { dg-final { scan-tree-dump "Maximum lmul = 4" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 2" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 1" "vect" } } */
