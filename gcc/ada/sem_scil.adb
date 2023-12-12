@@ -98,6 +98,7 @@ package body Sem_SCIL is
                --  Interface types are unsupported.
 
                if Is_Interface (Ctrl_Typ)
+                 or else From_Limited_With (Ctrl_Typ)
                  or else Is_RTE (Ctrl_Typ, RE_Interface_Tag)
                  or else (Is_Access_Type (Ctrl_Typ)
                            and then
