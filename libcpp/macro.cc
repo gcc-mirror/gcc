@@ -398,6 +398,8 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
 	       NODE_NAME (op));
 
   pfile->state.angled_headers = true;
+  const auto sav_padding = pfile->state.directive_wants_padding;
+  pfile->state.directive_wants_padding = true;
   const cpp_token *token = cpp_get_token_no_padding (pfile);
   bool paren = token->type == CPP_OPEN_PAREN;
   if (paren)
@@ -406,6 +408,7 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing '(' before \"%s\" operand", NODE_NAME (op));
   pfile->state.angled_headers = false;
+  pfile->state.directive_wants_padding = sav_padding;
 
   bool bracket = token->type != CPP_STRING;
   char *fname = NULL;
