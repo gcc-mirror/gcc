@@ -8,7 +8,7 @@ int foo (__int128 x)
 {
   return x;
 }
-/* { dg-warning "unsupported argument type ‘__int128’ for ‘simd’ functions" { target aarch64*-*-* } .-4 } */
+/* { dg-warning "unsupported argument type ‘__int128’ for ‘simd’ functions" "" { target aarch64*-*-* } .-4 } */
 
 #pragma omp declare simd
 extern int bar (int x);

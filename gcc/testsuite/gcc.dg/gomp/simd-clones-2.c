@@ -16,12 +16,12 @@ float setArray(float *a, float x, int k)
 }
 /* { dg-final { scan-tree-dump {(?n)^__attribute__\(\(omp declare simd \(notinbranch uniform\(0\) aligned\(0:32\) linear\(2:1\)\)\)\)$} "optimized" } } */
 
-/* { dg-final { scan-tree-dump "_ZGVnN2ua32vl_setArray" "optimized { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnN4ua32vl_setArray" "optimized { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnN2vvva32_addit" "optimized { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnN4vvva32_addit" "optimized { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnM2vl66u_addit" "optimized { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnM4vl66u_addit" "optimized { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN2ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN4ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN2vvva32_addit" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnN4vvva32_addit" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnM2vl66u_addit" "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump "_ZGVnM4vl66u_addit" "optimized" { target aarch64*-*-* } } } */
 
 /* { dg-final { scan-tree-dump "_ZGVbN4ua32vl_setArray" "optimized" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVbN4vvva32_addit" "optimized" { target i?86-*-* x86_64-*-* } } } */
