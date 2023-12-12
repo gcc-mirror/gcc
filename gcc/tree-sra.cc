@@ -4219,11 +4219,15 @@ load_assign_lhs_subreplacements (struct access *lacc,
 	  if (racc && racc->grp_to_be_replaced)
 	    {
 	      rhs = get_access_replacement (racc);
+	      bool vce = false;
 	      if (!useless_type_conversion_p (lacc->type, racc->type))
-		rhs = fold_build1_loc (sad->loc, VIEW_CONVERT_EXPR,
-				       lacc->type, rhs);
+		{
+		  rhs = fold_build1_loc (sad->loc, VIEW_CONVERT_EXPR,
+					 lacc->type, rhs);
+		  vce = true;
+		}
 
-	      if (racc->grp_partial_lhs && lacc->grp_partial_lhs)
+	      if (lacc->grp_partial_lhs && (vce || racc->grp_partial_lhs))
 		rhs = force_gimple_operand_gsi (&sad->old_gsi, rhs, true,
 						NULL_TREE, true, GSI_SAME_STMT);
 	    }
