@@ -1403,8 +1403,16 @@ get_memory_rtx (tree exp, tree len)
 
 /* Built-in functions to perform an untyped call and return.  */
 
+#define set_apply_args_size(x) \
+  (this_target_builtins->x_apply_args_size_plus_one = 1 + (x))
+#define get_apply_args_size() \
+  (this_target_builtins->x_apply_args_size_plus_one - 1)
 #define apply_args_mode \
   (this_target_builtins->x_apply_args_mode)
+#define set_apply_result_size(x) \
+  (this_target_builtins->x_apply_result_size_plus_one = 1 + (x))
+#define get_apply_result_size() \
+  (this_target_builtins->x_apply_result_size_plus_one - 1)
 #define apply_result_mode \
   (this_target_builtins->x_apply_result_mode)
 
@@ -1414,7 +1422,7 @@ get_memory_rtx (tree exp, tree len)
 static int
 apply_args_size (void)
 {
-  static int size = -1;
+  int size = get_apply_args_size ();
   int align;
   unsigned int regno;
 
@@ -1447,6 +1455,8 @@ apply_args_size (void)
 	  }
 	else
 	  apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
+
+      set_apply_args_size (size);
     }
   return size;
 }
@@ -1457,7 +1467,7 @@ apply_args_size (void)
 static int
 apply_result_size (void)
 {
-  static int size = -1;
+  int size = get_apply_result_size ();
   int align, regno;
 
   /* The values computed by this function never change.  */
@@ -1489,6 +1499,8 @@ apply_result_size (void)
 #ifdef APPLY_RESULT_SIZE
       size = APPLY_RESULT_SIZE;
 #endif
+
+      set_apply_result_size (size);
     }
   return size;
 }
