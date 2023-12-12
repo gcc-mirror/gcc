@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "backend.h"
 #include "tree-data-ref.h"
+#include "tree-ssa-loop-niter.h"
 
 /* This file should be included last.  */
 #include "riscv-vector-costs.h"
@@ -601,7 +602,101 @@ preferred_new_lmul_p (loop_vec_info other_loop_vinfo)
 
 costs::costs (vec_info *vinfo, bool costing_for_scalar)
   : vector_costs (vinfo, costing_for_scalar)
-{}
+{
+  if (costing_for_scalar)
+    m_cost_type = SCALAR_COST;
+  else if (riscv_v_ext_vector_mode_p (vinfo->vector_mode))
+    m_cost_type = VLA_VECTOR_COST;
+  else
+    m_cost_type = VLS_VECTOR_COST;
+}
+
+/* Do one-time initialization of the costs given that we're
+   costing the loop vectorization described by LOOP_VINFO.  */
+void
+costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
+{
+  /* Record the number of times that the vector loop would execute,
+     if known.  */
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  auto scalar_niters = max_stmt_executions_int (loop);
+  if (scalar_niters >= 0)
+    {
+      unsigned int vf = vect_vf_for_cost (loop_vinfo);
+      if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
+	m_num_vector_iterations = scalar_niters / vf;
+      else
+	m_num_vector_iterations = CEIL (scalar_niters, vf);
+    }
+
+  /* Detect whether we're vectorizing for VLA and should apply the unrolling
+     heuristic described above m_unrolled_vls_niters.  */
+  record_potential_vls_unrolling (loop_vinfo);
+}
+
+/* Decide whether to use the unrolling heuristic described above
+   m_unrolled_vls_niters, updating that field if so.  LOOP_VINFO
+   describes the loop that we're vectorizing.  */
+void
+costs::record_potential_vls_unrolling (loop_vec_info loop_vinfo)
+{
+  /* We only want to apply the heuristic if LOOP_VINFO is being
+     vectorized for VLA.  */
+  if (m_cost_type != VLA_VECTOR_COST)
+    return;
+
+  /* We don't want to apply the heuristic to outer loops, since it's
+     harder to track two levels of unrolling.  */
+  if (LOOP_VINFO_LOOP (loop_vinfo)->inner)
+    return;
+
+  /* Only handle cases in which the number of VLS iterations
+     would be known at compile time but the number of SVE iterations
+     would not.  */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || BYTES_PER_RISCV_VECTOR.is_constant ())
+    return;
+
+  /* Guess how many times the VLS loop would iterate and make
+     sure that it is within the complete unrolling limit.  Even if the
+     number of iterations is small enough, the number of statements might
+     not be, which is why we need to estimate the number of statements too.  */
+  unsigned int vls_vf = vect_vf_for_cost (loop_vinfo);
+  unsigned HOST_WIDE_INT unrolled_vls_niters
+    = LOOP_VINFO_INT_NITERS (loop_vinfo) / vls_vf;
+  if (unrolled_vls_niters > (unsigned int) param_max_completely_peel_times)
+    return;
+
+  /* Record that we're applying the heuristic and should try to estimate
+     the number of statements in the VLS loop.  */
+  m_unrolled_vls_niters = unrolled_vls_niters;
+}
+
+/* Return true if (a) we're applying the VLS vs. VLA unrolling
+   heuristic described above m_unrolled_vls_niters and (b) the heuristic
+   says that we should prefer the VLS loop.  */
+bool
+costs::prefer_unrolled_loop () const
+{
+  if (!m_unrolled_vls_stmts)
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Number of insns in"
+		     " unrolled VLS loop = " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		     m_unrolled_vls_stmts);
+
+  /* The balance here is tricky.  On the one hand, we can't be sure whether
+     the code is vectorizable with VLS or not.  However, even if
+     it isn't vectorizable with VLS, there's a possibility that
+     the scalar code could also be unrolled.  Some of the code might then
+     benefit from SLP, or from using LDP and STP.  We therefore apply
+     the heuristic regardless of can_use_vls_p.  */
+  return (m_unrolled_vls_stmts
+	  && (m_unrolled_vls_stmts
+	      <= (unsigned int) param_max_completely_peeled_insns));
+}
 
 bool
 costs::better_main_loop_than_p (const vector_costs *uncast_other) const
@@ -617,6 +712,21 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 		     vect_vf_for_cost (this_loop_vinfo),
 		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
 		     vect_vf_for_cost (other_loop_vinfo));
+
+  /* Apply the unrolling heuristic described above m_unrolled_vls_niters.  */
+  if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts))
+    {
+      bool this_prefer_unrolled = this->prefer_unrolled_loop ();
+      bool other_prefer_unrolled = other->prefer_unrolled_loop ();
+      if (this_prefer_unrolled != other_prefer_unrolled)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Preferring VLS loop because"
+			     " it can be unrolled\n");
+	  return other_prefer_unrolled;
+	}
+    }
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
       && riscv_autovec_lmul == RVV_DYNAMIC)
@@ -643,6 +753,28 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   /* TODO: Use default STMT cost model.
 	   We will support more accurate STMT cost model later.  */
   int stmt_cost = default_builtin_vectorization_cost (kind, vectype, misalign);
+
+  /* Do one-time initialization based on the vinfo.  */
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
+  if (!m_analyzed_vinfo)
+    {
+      if (loop_vinfo)
+	analyze_loop_vinfo (loop_vinfo);
+
+      m_analyzed_vinfo = true;
+    }
+
+  if (stmt_info)
+    {
+      /* If we're applying the VLA vs. VLS unrolling heuristic,
+	 estimate the number of statements in the unrolled VLS
+	 loop.  For simplicitly, we assume that one iteration of the
+	 VLS loop would need the same number of statements
+	 as one iteration of the VLA loop.  */
+      if (where == vect_body && m_unrolled_vls_niters)
+	m_unrolled_vls_stmts += count * m_unrolled_vls_niters;
+    }
+
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
 }
 
