@@ -644,6 +644,7 @@ LIBQUAD_USE_SYMVER_GNU_FALSE
 LIBQUAD_USE_SYMVER_GNU_TRUE
 LIBQUAD_USE_SYMVER_FALSE
 LIBQUAD_USE_SYMVER_TRUE
+LIBM
 toolexeclibdir
 toolexecdir
 MAINT
@@ -10921,7 +10922,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10924 "configure"
+#line 10925 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11027,7 +11028,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11030 "configure"
+#line 11031 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12258,6 +12259,20 @@ case ${version_specific_libs} in
     ;;
 esac
 
+
+
+# AC_CHECK_LIBM variant which avoids AC_CHECK_LIB (that doesn't work
+# on bare metal).  In the past we've used -lm in Makefile.am unconditionally,
+# let's use it there unless target knows it doesn't need that.
+LIBM=
+case $host in
+*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
+  # These system don't have libm, or don't need it
+  ;;
+*)
+  LIBM=-lm
+  ;;
+esac
 
 
 for ac_header in fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h
