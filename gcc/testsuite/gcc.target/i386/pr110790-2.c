@@ -21,5 +21,5 @@ refmpn_tstbit_bad (mp_srcptr ptr, unsigned long bit)
         shrq    %cl, %rax
         andl	$1, %eax
  */
-/* { dg-final { scan-assembler-times "shrq" 2 { target { lp64 } } } } */
+/* { dg-final { scan-assembler-times "shr\[qx\]" 2 { target { lp64 } } } } */
 /* { dg-final { scan-assembler-times "andl" 2 { target { lp64 } } } } */
