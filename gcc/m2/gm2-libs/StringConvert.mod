@@ -33,7 +33,7 @@ FROM M2RTS IMPORT ErrorMessage ;
 
 IMPORT DynamicStrings ;
 
-FROM DynamicStrings IMPORT String, InitString,
+FROM DynamicStrings IMPORT InitString,
                            InitStringChar, InitStringCharStar,
                            Mark, ConCat, Dup, string,
                            Slice, Index, char, Assign, Length, Mult,

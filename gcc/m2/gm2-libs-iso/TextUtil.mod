@@ -1,6 +1,6 @@
 IMPLEMENTATION MODULE TextUtil ;
 
-IMPORT IOChan, CharClass, IOConsts ;
+IMPORT CharClass, IOConsts ;
 
 (*
    SkipSpaces - skips any spaces.

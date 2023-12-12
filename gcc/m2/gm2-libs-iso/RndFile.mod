@@ -51,7 +51,7 @@ FROM EXCEPTIONS IMPORT ExceptionNumber, RAISE,
                        AllocateSource, ExceptionSource, IsCurrentSource,
                        IsExceptionalExecution ;
 
-IMPORT FIO, SYSTEM, RTio, errno, ErrnoCategory ;
+IMPORT FIO, RTio, errno, ErrnoCategory ;
 
 
 VAR

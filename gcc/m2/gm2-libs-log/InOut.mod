@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE InOut ;
 IMPORT FIO, SFIO, Terminal ;
 FROM FIO IMPORT File, StdIn, StdOut ;
 
-FROM DynamicStrings IMPORT String, InitString, Mark, KillString, ConCat,
+FROM DynamicStrings IMPORT InitString, Mark, KillString, ConCat,
                            RemoveWhitePrefix, char, ConCatChar, Length ;
 
 FROM StringConvert IMPORT CardinalToString, stoc, stoi, ctos, itos ;

@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE SYSTEM ;
 
-FROM libc IMPORT memcpy, memcpy, memset ;
+FROM libc IMPORT memcpy, memset ;
 
 CONST
    BitsPerBitset = MAX(BITSET)+1 ;

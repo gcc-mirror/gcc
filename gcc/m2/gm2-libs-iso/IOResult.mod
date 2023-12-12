@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE IOResult ;
 
-IMPORT IOChan ;
 
 PROCEDURE ReadResult (cid: IOChan.ChanId): ReadResults;
   (* Returns the result for the last read operation on the channel cid. *)

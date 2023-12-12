@@ -36,7 +36,7 @@ IMPLEMENTATION MODULE FIO ;
                  provides a simple buffered file input/output library.
 *)
 
-FROM SYSTEM IMPORT ADR, TSIZE, SIZE, WORD ;
+FROM SYSTEM IMPORT ADR, TSIZE, WORD ;
 FROM ASCII IMPORT nl, nul, tab ;
 FROM StrLib IMPORT StrLen, StrConCat, StrCopy ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;

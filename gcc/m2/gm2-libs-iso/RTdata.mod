@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE RTdata ;
 
-FROM IOLink IMPORT DeviceTablePtr, RAISEdevException ;
+FROM IOLink IMPORT RAISEdevException ;
 FROM RTentity IMPORT Group, InitGroup, PutKey, IsIn, DelKey ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 

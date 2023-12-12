@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE RTgen ;
 
 FROM IOChan IMPORT ChanId, InvalidChan, ChanExceptions ;
 
-FROM IOLink IMPORT DeviceTablePtr, DeviceTablePtrValue,
+FROM IOLink IMPORT DeviceTablePtrValue,
                    RAISEdevException ;
 
 IMPORT ChanConsts ;
@@ -37,10 +37,9 @@ IMPORT IOConsts ;
 IMPORT ErrnoCategory ;
 IMPORT RTgen ;
 
-FROM RTgenif IMPORT GenDevIF, getDID,
+FROM RTgenif IMPORT getDID,
                     doReadChar, doUnReadChar, doGetErrno,
-                    doRBytes, doWBytes,
-                    doWBytes, doWrLn,
+                    doRBytes, doWBytes, doWrLn,
                     isEOF, isError, isEOLN ;
 
 FROM ChanConsts IMPORT FlagSet, readFlag, writeFlag, rawFlag,
