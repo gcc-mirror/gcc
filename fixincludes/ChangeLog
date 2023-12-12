@@ -1,3 +1,10 @@
+2023-12-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (darwin_flt_eval_method): Handle macOS 14 guard
+	variant.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h [DARWIN_FLT_EVAL_METHOD_CHECK]: Update test.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.
