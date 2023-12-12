@@ -2185,8 +2185,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (COMPLETE_TYPE_P (gnu_fat_type))
 	  {
 	    fld = TYPE_FIELDS (gnu_fat_type);
-	    if (TYPE_ALIAS_SET_KNOWN_P (TREE_TYPE (fld)))
-	      ptr_set = TYPE_ALIAS_SET (TREE_TYPE (fld));
+	    if (TYPE_ALIAS_SET_KNOWN_P (TYPE_CANONICAL (TREE_TYPE (fld))))
+	      ptr_set = TYPE_ALIAS_SET (TYPE_CANONICAL (TREE_TYPE (fld)));
 	    TREE_TYPE (fld) = ptr_type_node;
 	    TREE_TYPE (DECL_CHAIN (fld)) = gnu_ptr_template;
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
@@ -2417,7 +2417,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	else
 	  TREE_TYPE (fld) = build_pointer_type (tem);
 	if (ptr_set != -1)
-	  TYPE_ALIAS_SET (TREE_TYPE (fld)) = ptr_set;
+	  TYPE_ALIAS_SET (TYPE_CANONICAL (TREE_TYPE (fld))) = ptr_set;
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
