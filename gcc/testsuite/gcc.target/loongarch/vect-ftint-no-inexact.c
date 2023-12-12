@@ -39,6 +39,5 @@
 /* { dg-final { scan-assembler-not "\txvftintrne\.w\.s" } } */
 /* { dg-final { scan-assembler-not "\txvftintrne\.l\.d" } } */
 
-/* trunc: XFAIL due to PR 107723 */
-/* { dg-final { scan-assembler "bl\t%plt\\(trunc\\)" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "bl\t%plt\\(trunc\\)" } } */
 /* { dg-final { scan-assembler "bl\t%plt\\(truncf\\)" } } */
