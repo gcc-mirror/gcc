@@ -275,11 +275,8 @@ build_artificial_parm (tree fn, tree name, tree type)
   return parm;
 }
 
-/* Constructors for types with virtual baseclasses need an "in-charge" flag
-   saying whether this constructor is responsible for initialization of
-   virtual baseclasses or not.  All destructors also need this "in-charge"
-   flag, which additionally determines whether or not the destructor should
-   free the memory for the object.
+/* 'structors for types with virtual baseclasses need an "in-charge" flag
+   saying whether this function is responsible for virtual baseclasses or not.
 
    This function adds the "in-charge" flag to member function FN if
    appropriate.  It is called from grokclassfn and tsubst.
@@ -302,10 +299,9 @@ maybe_retrofit_in_chrg (tree fn)
   if (processing_template_decl)
     return;
 
-  /* We don't need an in-charge parameter for constructors that don't
+  /* We don't need an in-charge parameter for 'structors that don't
      have virtual bases.  */
-  if (DECL_CONSTRUCTOR_P (fn)
-      && !CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
+  if (!CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     return;
 
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));

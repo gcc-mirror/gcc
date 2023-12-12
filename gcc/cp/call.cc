@@ -11167,7 +11167,9 @@ in_charge_arg_for_name (tree name)
       if (name == complete_dtor_identifier)
 	return integer_two_node;
       else if (name == deleting_dtor_identifier)
-	return integer_three_node;
+	/* The deleting dtor should now be handled by
+	   build_delete_destructor_body.  */
+	gcc_unreachable ();
       gcc_checking_assert (name == base_dtor_identifier);
     }
 

@@ -289,8 +289,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a constructor that does not construct virtual base classes.  */
 #define base_ctor_identifier		cp_global_trees[CPTI_BASE_CTOR_IDENTIFIER]
 /* The name of a destructor that takes an in-charge parameter to
-   decide whether or not to destroy virtual base classes and whether
-   or not to delete the object.  */
+   decide whether or not to destroy virtual base classes.  */
 #define dtor_identifier			cp_global_trees[CPTI_DTOR_IDENTIFIER]
 /* The name of a destructor that destroys virtual base classes.  */
 #define complete_dtor_identifier	cp_global_trees[CPTI_COMPLETE_DTOR_IDENTIFIER]
