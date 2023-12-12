@@ -113,19 +113,34 @@ avl_can_be_propagated_p (rtx_insn *rinsn)
      touching the element with i > AVL.  So, we don't do AVL propagation
      on these following situations:
 
-       - The index of "vrgather dest, source, index" may pick up the
-	 element which has index >= AVL, so we can't strip the elements
-	 that has index >= AVL of source register.
-       - The last element of vslide1down is AVL + 1 according to RVV ISA:
-	 vstart <= i < vl-1    vd[i] = vs2[i+1] if v0.mask[i] enabled
-       - The last multiple elements of vslidedown can be the element
-	 has index >= AVL according to RVV ISA:
-	 0 <= i+OFFSET < VLMAX   src[i] = vs2[i+OFFSET]
-	 vstart <= i < vl vd[i] = src[i] if v0.mask[i] enabled.  */
+       vgather:
+	 - The index of "vrgather dest, source, index" may pick up the
+	   element which has index >= AVL, so we can't strip the elements
+	   that has index >= AVL of source register.
+       vslide1down:
+	 - The last element of vslide1down is AVL + 1 according to RVV ISA:
+	   vstart <= i < vl-1    vd[i] = vs2[i+1] if v0.mask[i] enabled
+	 - The last multiple elements of vslidedown can be the element
+	   has index >= AVL according to RVV ISA:
+	   0 <= i+OFFSET < VLMAX   src[i] = vs2[i+OFFSET]
+	   vstart <= i < vl vd[i] = src[i] if v0.mask[i] enabled.
+       vcompress:
+	 - According to the ISA, the first vl elements of vector register
+	   group vs2 should be extracted and packed for vcompress.  And the
+	   highest element of vs2 vector may be touched by the mask.  For
+	   example, given vlmax = 4 here.
+	   v0 = 0b1000
+	   v1 = {0x1, 0x2, 0x3, 0x4}
+	   v2 = {0x5, 0x6, 0x7, 0x8}
+	   vcompress v1, v2, v0 with avl = 4, v1 = {0x8, 0x2, 0x3, 0x4}.
+	   vcompress v1, v2, v0 with avl = 2, v1 will be unchanged.
+	   Thus, we cannot propagate avl of vcompress because it may has
+	   senmatics change to the result.  */
   return get_attr_type (rinsn) != TYPE_VGATHER
 	 && get_attr_type (rinsn) != TYPE_VSLIDEDOWN
 	 && get_attr_type (rinsn) != TYPE_VISLIDE1DOWN
-	 && get_attr_type (rinsn) != TYPE_VFSLIDE1DOWN;
+	 && get_attr_type (rinsn) != TYPE_VFSLIDE1DOWN
+	 && get_attr_type (rinsn) != TYPE_VCOMPRESS;
 }
 
 static bool
