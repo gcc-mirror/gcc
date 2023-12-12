@@ -165,6 +165,7 @@ set plugin_test_list [list \
 	  taint-CVE-2011-0521-5-fixed.c \
 	  taint-CVE-2011-0521-6.c \
 	  taint-antipatterns-1.c \
+	  taint-modulus.c \
 	  taint-pr112850.c \
 	  taint-pr112850-precise.c \
 	  taint-pr112850-too-complex.c \
