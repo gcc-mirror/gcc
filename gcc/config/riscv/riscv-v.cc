@@ -4927,4 +4927,51 @@ gather_scatter_valid_offset_p (machine_mode mode)
   return true;
 }
 
+/* Implement TARGET_ESTIMATED_POLY_VALUE.
+   Look into the tuning structure for an estimate.
+   KIND specifies the type of requested estimate: min, max or likely.
+   For cores with a known VLA width all three estimates are the same.
+   For generic VLA tuning we want to distinguish the maximum estimate from
+   the minimum and likely ones.
+   The likely estimate is the same as the minimum in that case to give a
+   conservative behavior of auto-vectorizing with VLA when it is a win
+   even for VLA vectorization.
+   When VLA width information is available VAL.coeffs[1] is multiplied by
+   the number of VLA chunks over the initial VLS bits.  */
+HOST_WIDE_INT
+estimated_poly_value (poly_int64 val, unsigned int kind)
+{
+  unsigned int width_source
+    = BITS_PER_RISCV_VECTOR.is_constant ()
+	? (unsigned int) BITS_PER_RISCV_VECTOR.to_constant ()
+	: (unsigned int) RVV_SCALABLE;
+
+  /* If there is no core-specific information then the minimum and likely
+     values are based on TARGET_MIN_VLEN vectors and the maximum is based on
+     the architectural maximum of 65536 bits.  */
+  unsigned int min_vlen_bytes = TARGET_MIN_VLEN / 8 - 1;
+  if (width_source == RVV_SCALABLE)
+    switch (kind)
+      {
+      case POLY_VALUE_MIN:
+      case POLY_VALUE_LIKELY:
+	return val.coeffs[0];
+
+      case POLY_VALUE_MAX:
+	return val.coeffs[0] + val.coeffs[1] * min_vlen_bytes;
+      }
+
+  /* Allow BITS_PER_RISCV_VECTOR to be a bitmask of different VL, treating the
+     lowest as likely.  This could be made more general if future -mtune
+     options need it to be.  */
+  if (kind == POLY_VALUE_MAX)
+    width_source = 1 << floor_log2 (width_source);
+  else
+    width_source = least_bit_hwi (width_source);
+
+  /* If the core provides width information, use that.  */
+  HOST_WIDE_INT over_min_vlen = width_source - TARGET_MIN_VLEN;
+  return val.coeffs[0] + val.coeffs[1] * over_min_vlen / TARGET_MIN_VLEN;
+}
+
 } // namespace riscv_vector

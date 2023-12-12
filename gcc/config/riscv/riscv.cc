@@ -9604,51 +9604,15 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
   return RISCV_DWARF_VLENB;
 }
 
-/* Implement TARGET_ESTIMATED_POLY_VALUE.
-   Look into the tuning structure for an estimate.
-   KIND specifies the type of requested estimate: min, max or likely.
-   For cores with a known RVV width all three estimates are the same.
-   For generic RVV tuning we want to distinguish the maximum estimate from
-   the minimum and likely ones.
-   The likely estimate is the same as the minimum in that case to give a
-   conservative behavior of auto-vectorizing with RVV when it is a win
-   even for 128-bit RVV.
-   When RVV width information is available VAL.coeffs[1] is multiplied by
-   the number of VQ chunks over the initial Advanced SIMD 128 bits.  */
+/* Implement TARGET_ESTIMATED_POLY_VALUE.  */
 
 static HOST_WIDE_INT
 riscv_estimated_poly_value (poly_int64 val,
 			    poly_value_estimate_kind kind = POLY_VALUE_LIKELY)
 {
-  unsigned int width_source = BITS_PER_RISCV_VECTOR.is_constant ()
-    ? (unsigned int) BITS_PER_RISCV_VECTOR.to_constant ()
-    : (unsigned int) RVV_SCALABLE;
-
-  /* If there is no core-specific information then the minimum and likely
-     values are based on 128-bit vectors and the maximum is based on
-     the architectural maximum of 65536 bits.  */
-  if (width_source == RVV_SCALABLE)
-    switch (kind)
-      {
-      case POLY_VALUE_MIN:
-      case POLY_VALUE_LIKELY:
-	return val.coeffs[0];
-
-      case POLY_VALUE_MAX:
-	return val.coeffs[0] + val.coeffs[1] * 15;
-      }
-
-  /* Allow BITS_PER_RISCV_VECTOR to be a bitmask of different VL, treating the
-     lowest as likely.  This could be made more general if future -mtune
-     options need it to be.  */
-  if (kind == POLY_VALUE_MAX)
-    width_source = 1 << floor_log2 (width_source);
-  else
-    width_source = least_bit_hwi (width_source);
-
-  /* If the core provides width information, use that.  */
-  HOST_WIDE_INT over_128 = width_source - 128;
-  return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
+  if (TARGET_VECTOR)
+    return riscv_vector::estimated_poly_value (val, kind);
+  return default_estimated_poly_value (val, kind);
 }
 
 /* Return true if the vector misalignment factor is supported by the
