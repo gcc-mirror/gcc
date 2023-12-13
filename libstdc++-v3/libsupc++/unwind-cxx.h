@@ -167,7 +167,7 @@ struct __cxa_eh_globals
 // throws, and if bad_exception needs to be thrown.  Called from the
 // compiler.
 extern "C" void __cxa_call_unexpected (void *) __attribute__((__noreturn__));
-extern "C" void __cxa_call_terminate (_Unwind_Exception*) throw ()
+extern "C" void __cxa_call_terminate (void*) throw ()
   __attribute__((__noreturn__));
 
 #ifdef __ARM_EABI_UNWINDER__
