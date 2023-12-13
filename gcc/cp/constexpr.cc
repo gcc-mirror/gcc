@@ -3169,6 +3169,19 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      ctx->global->put_value (remapped, arg);
 	      remapped = DECL_CHAIN (remapped);
 	    }
+	  for (; remapped; remapped = TREE_CHAIN (remapped))
+	    if (DECL_NAME (remapped) == in_charge_identifier)
+	      {
+		/* FIXME destructors unnecessarily have in-charge parameters
+		   even in classes without vbases, map it to 0 for now.  */
+		gcc_assert (!CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)));
+		ctx->global->put_value (remapped, integer_zero_node);
+	      }
+	    else
+	      {
+		gcc_assert (seen_error ());
+		*non_constant_p = true;
+	      }
 	  /* Add the RESULT_DECL to the values map, too.  */
 	  gcc_assert (!DECL_BY_REFERENCE (res));
 	  ctx->global->put_value (res, NULL_TREE);
