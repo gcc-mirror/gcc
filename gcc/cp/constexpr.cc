@@ -8651,7 +8651,21 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	}
       if (!object)
 	{
-	  if (TREE_CODE (t) == TARGET_EXPR)
+	  if (TREE_CODE (t) == CALL_EXPR)
+	    {
+	      /* If T is calling a constructor to initialize an object, reframe
+		 it as an AGGR_INIT_EXPR to avoid trying to modify an object
+		 from outside the constant evaluation, which will fail even if
+		 the value is actually constant (is_constant_evaluated3.C).  */
+	      tree fn = cp_get_callee_fndecl_nofold (t);
+	      if (fn && DECL_CONSTRUCTOR_P (fn))
+		{
+		  object = CALL_EXPR_ARG (t, 0);
+		  object = build_fold_indirect_ref (object);
+		  r = build_aggr_init_expr (type, r);
+		}
+	    }
+	  else if (TREE_CODE (t) == TARGET_EXPR)
 	    object = TARGET_EXPR_SLOT (t);
 	  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
 	    object = AGGR_INIT_EXPR_SLOT (t);

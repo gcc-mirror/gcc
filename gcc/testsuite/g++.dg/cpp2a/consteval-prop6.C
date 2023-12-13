@@ -48,7 +48,7 @@ struct X {
   int a = sizeof(undef(0));
   int x = undef(0);
 
-  X() = default; // { dg-error "modification of .x. is not a constant expression" }
+  X() = default; // { dg-error {'consteval int undef\(int\)' used before its definition} }
 };
 
 void
