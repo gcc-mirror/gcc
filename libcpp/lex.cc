@@ -3809,7 +3809,7 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 cpp_token *
 _cpp_lex_direct (cpp_reader *pfile)
 {
-  cppchar_t c;
+  cppchar_t c = 0;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
   bool fallthrough_comment = false;
@@ -3833,6 +3833,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  pfile->state.in_deferred_pragma = false;
 	  if (!pfile->state.pragma_allow_expansion)
 	    pfile->state.prevent_expansion--;
+	  result->src_loc = pfile->line_table->highest_line;
 	  return result;
 	}
       if (!_cpp_get_fresh_line (pfile))
@@ -3849,6 +3850,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
 	      _cpp_pop_buffer (pfile);
 	    }
+	  else if (c == 0)
+	    result->src_loc = pfile->line_table->highest_line;
 	  return result;
 	}
       if (buffer != pfile->buffer)
