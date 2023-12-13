@@ -1503,6 +1503,12 @@ package body Inline is
       --  an unconstrained record type with per-object constraints on component
       --  types.
 
+      function Has_Hide_Unhide_Annotation
+        (Spec_Id, Body_Id : Entity_Id)
+         return Boolean;
+      --  Returns whether the subprogram has an annotation Hide_Info or
+      --  Unhide_Info on its spec or body.
+
       function Has_Skip_Proof_Annotation (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id has an annotation Skip_Proof or
       --  Skip_Flow_And_Proof.
@@ -1705,6 +1711,76 @@ package body Inline is
          return False;
       end Has_Formal_With_Discriminant_Dependent_Fields;
 
+      --------------------------------
+      -- Has_Hide_Unhide_Annotation --
+      --------------------------------
+
+      function Has_Hide_Unhide_Annotation
+        (Spec_Id, Body_Id : Entity_Id)
+         return Boolean
+      is
+         function Has_Hide_Unhide_Pragma (Prag : Node_Id) return Boolean;
+         --  Return whether a pragma Hide/Unhide is present in the list of
+         --  pragmas starting with Prag.
+
+         ----------------------------
+         -- Has_Hide_Unhide_Pragma --
+         ----------------------------
+
+         function Has_Hide_Unhide_Pragma (Prag : Node_Id) return Boolean is
+            Decl : Node_Id := Prag;
+         begin
+            while Present (Decl)
+              and then Nkind (Decl) = N_Pragma
+            loop
+               if Get_Pragma_Id (Decl) = Pragma_Annotate
+                 and then List_Length (Pragma_Argument_Associations (Decl)) = 4
+               then
+                  declare
+                     Arg1      : constant Node_Id :=
+                       First (Pragma_Argument_Associations (Decl));
+                     Arg2      : constant Node_Id := Next (Arg1);
+                     Arg1_Name : constant Name_Id :=
+                       Chars (Get_Pragma_Arg (Arg1));
+                     Arg2_Name : constant String :=
+                       Get_Name_String (Chars (Get_Pragma_Arg (Arg2)));
+                  begin
+                     if Arg1_Name = Name_Gnatprove
+                       and then Arg2_Name in "hide_info" | "unhide_info"
+                     then
+                        return True;
+                     end if;
+                  end;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            return False;
+         end Has_Hide_Unhide_Pragma;
+
+      begin
+         if Present (Spec_Id)
+           and then Has_Hide_Unhide_Pragma
+             (Next (Unit_Declaration_Node (Spec_Id)))
+         then
+            return True;
+
+         elsif Present (Body_Id) then
+            declare
+               Subp_Body : constant N_Subprogram_Body_Id :=
+                 Unit_Declaration_Node (Body_Id);
+            begin
+               return Has_Hide_Unhide_Pragma (Next (Subp_Body))
+                 or else
+                   Has_Hide_Unhide_Pragma (First (Declarations (Subp_Body)));
+            end;
+
+         else
+            return False;
+         end if;
+      end Has_Hide_Unhide_Annotation;
+
       -------------------------------
       -- Has_Skip_Proof_Annotation --
       -------------------------------
@@ -1725,12 +1801,12 @@ package body Inline is
                   Arg1      : constant Node_Id :=
                     First (Pragma_Argument_Associations (Decl));
                   Arg2      : constant Node_Id := Next (Arg1);
-                  Arg1_Name : constant String :=
-                    Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
+                  Arg1_Name : constant Name_Id :=
+                    Chars (Get_Pragma_Arg (Arg1));
                   Arg2_Name : constant String :=
                     Get_Name_String (Chars (Get_Pragma_Arg (Arg2)));
                begin
-                  if Arg1_Name = "gnatprove"
+                  if Arg1_Name = Name_Gnatprove
                     and then Arg2_Name in "skip_proof" | "skip_flow_and_proof"
                   then
                      return True;
@@ -1950,6 +2026,13 @@ package body Inline is
       --  annotation, which should be handled separately.
 
       elsif Has_Skip_Proof_Annotation (Id) then
+         return False;
+
+      --  Do not inline subprograms with the Hide_Info or Unhide_Info
+      --  annotation, since their scope has special visibility on the
+      --  precise definition of some entities.
+
+      elsif Has_Hide_Unhide_Annotation (Spec_Id, Body_Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a
