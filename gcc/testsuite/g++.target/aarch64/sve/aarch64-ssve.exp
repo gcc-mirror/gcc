@@ -27,6 +27,10 @@ if {![istarget aarch64*-*-*] } {
 
 load_lib gcc-defs.exp
 
+if ![gcc_parallel_test_run_p aarch64-ssve] {
+  return
+}
+
 gcc_parallel_test_enable 0
 
 # Code shared by all tests.
