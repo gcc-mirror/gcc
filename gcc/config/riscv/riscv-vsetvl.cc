@@ -2723,8 +2723,7 @@ pre_vsetvl::compute_lcm_local_properties ()
       vsetvl_info &header_info = block_info.get_entry_info ();
       vsetvl_info &footer_info = block_info.get_exit_info ();
 
-      if (header_info.valid_p ()
-	  && (anticipated_exp_p (header_info) || block_info.full_available))
+      if (header_info.valid_p () && anticipated_exp_p (header_info))
 	bitmap_set_bit (m_antloc[bb_index],
 			get_expr_index (m_exprs, header_info));
 
@@ -3221,6 +3220,17 @@ pre_vsetvl::pre_global_vsetvl_info ()
       gcc_assert (info.get_bb () == bb);
       const vsetvl_block_info &block_info = get_block_info (info.get_bb ());
       gcc_assert (block_info.get_entry_info () == info);
+      info.set_delete ();
+    }
+
+  /* Remove vsetvl infos if all precessors are available to the block.  */
+  for (const bb_info *bb : crtl->ssa->bbs ())
+    {
+      vsetvl_block_info &block_info = get_block_info (bb);
+      if (block_info.empty_p () || !block_info.full_available)
+	continue;
+
+      vsetvl_info &info = block_info.get_entry_info ();
       info.set_delete ();
     }
 
