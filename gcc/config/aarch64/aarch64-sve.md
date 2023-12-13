@@ -10950,3 +10950,36 @@
     operands[4] = CONSTM1_RTX (<VPRED>mode);
   }
 )
+
+(define_insn_and_split "@aarch64_sve_get_neonq_<mode>"
+  [(set (match_operand:<V128> 0 "register_operand" "=w")
+	  (vec_select:<V128>
+	    (match_operand:SVE_FULL 1 "register_operand" "w")
+	    (match_operand 2 "descending_int_parallel")))]
+  "TARGET_SVE
+   && BYTES_BIG_ENDIAN
+   && known_eq (INTVAL (XVECEXP (operands[2], 0, 0)),
+		GET_MODE_NUNITS (<V128>mode) - 1)"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    operands[1] = gen_rtx_REG (<V128>mode, REGNO (operands[1]));
+  }
+)
+
+(define_insn "@aarch64_sve_set_neonq_<mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
+      (unspec:SVE_FULL
+	[(match_operand:SVE_FULL 1 "register_operand" "w")
+	(match_operand:<V128> 2 "register_operand" "w")
+	(match_operand:<VPRED> 3 "register_operand" "Upl")]
+	UNSPEC_SET_NEONQ))]
+  "TARGET_SVE
+   && BYTES_BIG_ENDIAN"
+  {
+    operands[2] = lowpart_subreg (<MODE>mode, operands[2],
+                                  GET_MODE (operands[2]));
+    return "sel\t%0.<Vetype>, %3, %2.<Vetype>, %1.<Vetype>";
+  }
+)

@@ -299,6 +299,12 @@ namespace aarch64_sve
     extern const function_base *const svzip2;
     extern const function_base *const svzip2q;
   }
+  namespace neon_sve_bridge_functions
+  {
+    extern const function_base *const svset_neonq;
+    extern const function_base *const svget_neonq;
+    extern const function_base *const svdup_neonq;
+  }
 }
 
 #endif

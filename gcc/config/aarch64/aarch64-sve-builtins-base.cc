@@ -44,6 +44,7 @@
 #include "aarch64-sve-builtins-shapes.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-functions.h"
+#include "aarch64-builtins.h"
 #include "ssa.h"
 #include "gimple-fold.h"
 
@@ -1096,6 +1097,112 @@ public:
     return simplify_gen_subreg (e.vector_mode (0), e.args[0],
 				GET_MODE (e.args[0]),
 				INTVAL (e.args[1]) * BYTES_PER_SVE_VECTOR);
+  }
+};
+
+class svget_neonq_impl : public function_base
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (BYTES_BIG_ENDIAN)
+      return NULL;
+    tree rhs_sve_vector = gimple_call_arg (f.call, 0);
+    tree rhs_vector = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs),
+			     rhs_sve_vector, bitsize_int (128), bitsize_int (0));
+    return gimple_build_assign (f.lhs, rhs_vector);
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    if (BYTES_BIG_ENDIAN)
+      {
+	machine_mode mode = e.vector_mode (0);
+	insn_code icode = code_for_aarch64_sve_get_neonq (mode);
+	unsigned int nunits = 128 / GET_MODE_UNIT_BITSIZE (mode);
+	rtx indices = aarch64_gen_stepped_int_parallel
+	  (nunits, nunits - 1, -1);
+
+	e.add_output_operand (icode);
+	e.add_input_operand (icode, e.args[0]);
+	e.add_fixed_operand (indices);
+	return e.generate_insn (icode);
+      }
+    return simplify_gen_subreg (e.result_mode (), e.args[0],
+				GET_MODE (e.args[0]), 0);
+  }
+};
+
+class svset_neonq_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    rtx_vector_builder builder (VNx16BImode, 16, 2);
+    for (unsigned int i = 0; i < 16; i++)
+      builder.quick_push (CONST1_RTX (BImode));
+    for (unsigned int i = 0; i < 16; i++)
+      builder.quick_push (CONST0_RTX (BImode));
+    e.args.quick_push (builder.build ());
+    if (BYTES_BIG_ENDIAN)
+      return e.use_exact_insn (code_for_aarch64_sve_set_neonq (mode));
+    insn_code icode = code_for_vcond_mask (mode, mode);
+    e.args[1] = lowpart_subreg (mode, e.args[1], GET_MODE (e.args[1]));
+    e.add_output_operand (icode);
+    e.add_input_operand (icode, e.args[1]);
+    e.add_input_operand (icode, e.args[0]);
+    e.add_input_operand (icode, e.args[2]);
+    return e.generate_insn (icode);
+  }
+};
+
+class svdup_neonq_impl : public function_base
+{
+public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    if (BYTES_BIG_ENDIAN)
+      return NULL;
+    tree rhs_vector = gimple_call_arg (f.call, 0);
+    unsigned HOST_WIDE_INT neon_nelts
+      = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs_vector)).to_constant ();
+    poly_uint64 sve_nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    vec_perm_builder builder (sve_nelts, neon_nelts, 1);
+    for (unsigned int i = 0; i < neon_nelts; i++)
+      builder.quick_push (i);
+    vec_perm_indices indices (builder, 1, neon_nelts);
+    tree perm_type = build_vector_type (ssizetype, sve_nelts);
+    return gimple_build_assign (f.lhs, VEC_PERM_EXPR,
+				rhs_vector,
+				rhs_vector,
+				vec_perm_indices_to_tree (perm_type, indices));
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    if (BYTES_BIG_ENDIAN)
+      {
+	insn_code icode = code_for_aarch64_vec_duplicate_vq_be (mode);
+	unsigned int nunits = 128 / GET_MODE_UNIT_BITSIZE (mode);
+	rtx indices = aarch64_gen_stepped_int_parallel
+	  (nunits, nunits - 1, -1);
+
+	e.add_output_operand (icode);
+	e.add_input_operand (icode, e.args[0]);
+	e.add_fixed_operand (indices);
+	return e.generate_insn (icode);
+      }
+    insn_code icode = code_for_aarch64_vec_duplicate_vq_le (mode);
+    e.add_output_operand (icode);
+    e.add_input_operand (icode, e.args[0]);
+    return e.generate_insn (icode);
   }
 };
 
@@ -3122,5 +3229,8 @@ FUNCTION (svzip1q, unspec_based_function, (UNSPEC_ZIP1Q, UNSPEC_ZIP1Q,
 FUNCTION (svzip2, svzip_impl, (1))
 FUNCTION (svzip2q, unspec_based_function, (UNSPEC_ZIP2Q, UNSPEC_ZIP2Q,
 					   UNSPEC_ZIP2Q))
+NEON_SVE_BRIDGE_FUNCTION (svget_neonq, svget_neonq_impl,)
+NEON_SVE_BRIDGE_FUNCTION (svset_neonq, svset_neonq_impl,)
+NEON_SVE_BRIDGE_FUNCTION (svdup_neonq, svdup_neonq_impl,)
 
 } /* end namespace aarch64_sve */

@@ -840,4 +840,8 @@ public:
   namespace { static CONSTEXPR const CLASS NAME##_obj ARGS; } \
   namespace functions { const function_base *const NAME = &NAME##_obj; }
 
+#define NEON_SVE_BRIDGE_FUNCTION(NAME, CLASS, ARGS) \
+  namespace { static CONSTEXPR const CLASS NAME##_obj ARGS; } \
+  namespace neon_sve_bridge_functions { const function_base *const NAME = &NAME##_obj; }
+
 #endif

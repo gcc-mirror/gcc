@@ -806,6 +806,7 @@
     UNSPEC_FTSMUL	; Used in aarch64-sve.md.
     UNSPEC_FTSSEL	; Used in aarch64-sve.md.
     UNSPEC_SMATMUL	; Used in aarch64-sve.md.
+    UNSPEC_SET_NEONQ	; Used in aarch64-sve.md.
     UNSPEC_UMATMUL	; Used in aarch64-sve.md.
     UNSPEC_USMATMUL	; Used in aarch64-sve.md.
     UNSPEC_TRN1Q	; Used in aarch64-sve.md.

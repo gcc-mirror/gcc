@@ -41,6 +41,11 @@
 #define DEF_SVE_FUNCTION_GS(A, B, C, D, E)
 #endif
 
+#ifndef DEF_SVE_NEON_TYPE_SUFFIX
+#define DEF_SVE_NEON_TYPE_SUFFIX(A, B, C, D, E, F, G) \
+  DEF_SVE_TYPE_SUFFIX(A, B, C, D, E)
+#endif
+
 #ifndef DEF_SVE_FUNCTION
 #define DEF_SVE_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
   DEF_SVE_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
@@ -107,23 +112,35 @@ DEF_SVE_TYPE_SUFFIX (b8, svbool_t, bool, 8, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (b16, svbool_t, bool, 16, VNx8BImode)
 DEF_SVE_TYPE_SUFFIX (b32, svbool_t, bool, 32, VNx4BImode)
 DEF_SVE_TYPE_SUFFIX (b64, svbool_t, bool, 64, VNx2BImode)
-DEF_SVE_TYPE_SUFFIX (bf16, svbfloat16_t, bfloat, 16, VNx8BFmode)
 DEF_SVE_TYPE_SUFFIX (c, svcount_t, count, 8, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c8, svcount_t, count, 8, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c16, svcount_t, count, 16, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c32, svcount_t, count, 32, VNx16BImode)
 DEF_SVE_TYPE_SUFFIX (c64, svcount_t, count, 64, VNx16BImode)
-DEF_SVE_TYPE_SUFFIX (f16, svfloat16_t, float, 16, VNx8HFmode)
-DEF_SVE_TYPE_SUFFIX (f32, svfloat32_t, float, 32, VNx4SFmode)
-DEF_SVE_TYPE_SUFFIX (f64, svfloat64_t, float, 64, VNx2DFmode)
-DEF_SVE_TYPE_SUFFIX (s8, svint8_t, signed, 8, VNx16QImode)
-DEF_SVE_TYPE_SUFFIX (s16, svint16_t, signed, 16, VNx8HImode)
-DEF_SVE_TYPE_SUFFIX (s32, svint32_t, signed, 32, VNx4SImode)
-DEF_SVE_TYPE_SUFFIX (s64, svint64_t, signed, 64, VNx2DImode)
-DEF_SVE_TYPE_SUFFIX (u8, svuint8_t, unsigned, 8, VNx16QImode)
-DEF_SVE_TYPE_SUFFIX (u16, svuint16_t, unsigned, 16, VNx8HImode)
-DEF_SVE_TYPE_SUFFIX (u32, svuint32_t, unsigned, 32, VNx4SImode)
-DEF_SVE_TYPE_SUFFIX (u64, svuint64_t, unsigned, 64, VNx2DImode)
+DEF_SVE_NEON_TYPE_SUFFIX (bf16, svbfloat16_t, bfloat, 16, VNx8BFmode,
+			  Bfloat16x4_t, Bfloat16x8_t)
+DEF_SVE_NEON_TYPE_SUFFIX (f16, svfloat16_t, float, 16, VNx8HFmode,
+			  Float16x4_t, Float16x8_t)
+DEF_SVE_NEON_TYPE_SUFFIX (f32, svfloat32_t, float, 32, VNx4SFmode,
+			  Float32x2_t, Float32x4_t)
+DEF_SVE_NEON_TYPE_SUFFIX (f64, svfloat64_t, float, 64, VNx2DFmode,
+			  Float64x1_t, Float64x2_t)
+DEF_SVE_NEON_TYPE_SUFFIX (s8, svint8_t, signed, 8, VNx16QImode,
+			  Int8x8_t, Int8x16_t)
+DEF_SVE_NEON_TYPE_SUFFIX (s16, svint16_t, signed, 16, VNx8HImode,
+			  Int16x4_t, Int16x8_t)
+DEF_SVE_NEON_TYPE_SUFFIX (s32, svint32_t, signed, 32, VNx4SImode,
+			  Int32x2_t, Int32x4_t)
+DEF_SVE_NEON_TYPE_SUFFIX (s64, svint64_t, signed, 64, VNx2DImode,
+			  Int64x1_t, Int64x2_t)
+DEF_SVE_NEON_TYPE_SUFFIX (u8, svuint8_t, unsigned, 8, VNx16QImode,
+			  Uint8x8_t, Uint8x16_t)
+DEF_SVE_NEON_TYPE_SUFFIX (u16, svuint16_t, unsigned, 16, VNx8HImode,
+			  Uint16x4_t, Uint16x8_t)
+DEF_SVE_NEON_TYPE_SUFFIX (u32, svuint32_t, unsigned, 32, VNx4SImode,
+			  Uint32x2_t, Uint32x4_t)
+DEF_SVE_NEON_TYPE_SUFFIX (u64, svuint64_t, unsigned, 64, VNx2DImode,
+			  Uint64x1_t, Uint64x2_t)
 
 /* Associate _za with bytes.  This is needed for svldr_vnum_za and
    svstr_vnum_za, whose ZA offset can be in the range [0, 15], as for za8.  */
@@ -159,6 +176,7 @@ DEF_SVE_GROUP_SUFFIX (vg4x4, 4, 4)
 #undef DEF_SVE_FUNCTION_GS
 #undef DEF_SVE_GROUP_SUFFIX
 #undef DEF_SME_ZA_SUFFIX
+#undef DEF_SVE_NEON_TYPE_SUFFIX
 #undef DEF_SVE_TYPE_SUFFIX
 #undef DEF_SVE_TYPE
 #undef DEF_SVE_MODE

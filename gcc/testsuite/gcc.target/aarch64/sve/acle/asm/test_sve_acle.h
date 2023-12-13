@@ -1,7 +1,7 @@
 #ifndef TEST_SVE_ACLE_H
 #define TEST_SVE_ACLE_H 1
 
-#include <arm_sve.h>
+#include <arm_neon_sve_bridge.h>
 
 #if defined (TEST_OVERLOADS)
 #define INVOKE(CODE1, CODE2) CODE2
@@ -613,6 +613,28 @@
 		    "=Upa" (p12), "=Upa" (p13));		\
     INVOKE (CODE1, CODE2);					\
     __asm volatile ("" :: "Upa" (p4), "Upa" (p8));		\
+  }
+
+#define TEST_SET_NEONQ(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
+  PROTO (NAME, void, (ZTYPE z0, ZTYPE z1, ZTYPE z2, ZTYPE z3,	\
+		      TTYPE z4))				\
+  {								\
+    register TTYPE z24 __asm ("z24");				\
+    register TTYPE z4_res __asm ("z4");				\
+    INVOKE (CODE1, CODE2);					\
+    __asm volatile ("" :: "w" (z24), "w" (z4_res));	\
+  }
+
+#define TEST_DUP_NEONQ(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
+  PROTO (NAME, void, (ZTYPE unused0, ZTYPE unused1,		\
+		      ZTYPE unused2, ZTYPE unused3, TTYPE z4))	\
+  {								\
+    register ZTYPE z0 __asm ("z0");				\
+    register ZTYPE z4_res __asm ("z4");				\
+    register ZTYPE z5_res __asm ("z5");				\
+    INVOKE (CODE1, CODE2);					\
+    __asm volatile ("" :: "w" (z0), "w" (z4_res),		\
+		    "w" (z5_res));				\
   }
 
 #define TEST_TBL2(NAME, TTYPE, ZTYPE, UTYPE, CODE1, CODE2)	\

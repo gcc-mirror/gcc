@@ -351,6 +351,8 @@ aarch64_pragma_aarch64 (cpp_reader *)
     handle_arm_neon_h ();
   else if (strcmp (name, "arm_acle.h") == 0)
     handle_arm_acle_h ();
+  else if (strcmp (name, "arm_neon_sve_bridge.h") == 0)
+    aarch64_sve::handle_arm_neon_sve_bridge_h ();
   else
     error ("unknown %<#pragma GCC aarch64%> option %qs", name);
 }

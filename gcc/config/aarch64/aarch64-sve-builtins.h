@@ -20,6 +20,8 @@
 #ifndef GCC_AARCH64_SVE_BUILTINS_H
 #define GCC_AARCH64_SVE_BUILTINS_H
 
+#include "aarch64-builtins.h"
+
 /* The full name of an SVE ACLE function is the concatenation of:
 
    - the base name ("svadd", etc.)
@@ -229,6 +231,14 @@ struct mode_suffix_info
   units_index displacement_units;
 };
 
+#define ENTRY(E, M, Q, G) E,
+enum aarch64_simd_type
+{
+#include "aarch64-simd-builtin-types.def"
+  ARM_NEON_H_TYPES_LAST
+};
+#undef ENTRY
+
 /* Static information about a type suffix.  */
 struct type_suffix_info
 {
@@ -262,6 +272,11 @@ struct type_suffix_info
 
   /* The associated vector or predicate mode.  */
   machine_mode vector_mode : 16;
+
+  /* The corresponding 64-bit and 128-bit arm_neon.h types, or
+     ARM_NEON_H_TYPES_LAST if none.  */
+  aarch64_simd_type neon64_type;
+  aarch64_simd_type neon128_type;
 };
 
 /* Static information about a group suffix.  */
@@ -498,6 +513,7 @@ public:
   sve_type infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
   type_suffix_index infer_integer_vector_type (unsigned int);
+  type_suffix_index infer_neon128_vector_type (unsigned int);
   type_suffix_index infer_unsigned_vector_type (unsigned int);
   type_suffix_index infer_sd_vector_type (unsigned int);
   sve_type infer_tuple_type (unsigned int);
