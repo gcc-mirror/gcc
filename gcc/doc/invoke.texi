@@ -3328,6 +3328,11 @@ called.  If the handler returns, execution continues normally.
 @item -fcoroutines
 Enable support for the C++ coroutines extension (experimental).
 
+@opindex fdiagnostics-all-candidates
+@item -fdiagnostics-all-candidates
+Permit the C++ front end to note all candidates during overload resolution
+failure, including when a deleted function is selected.
+
 @opindex fno-elide-constructors
 @opindex felide-constructors
 @item -fno-elide-constructors

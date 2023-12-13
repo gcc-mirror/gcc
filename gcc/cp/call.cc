@@ -4090,6 +4090,12 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
     {
       if (only_viable_p.is_true () && candidates->viable != 1)
 	break;
+      if (ignored_candidate_p (candidates) && !flag_diagnostics_all_candidates)
+	{
+	  inform (loc, "some candidates omitted; "
+		       "use %<-fdiagnostics-all-candidates%> to display them");
+	  break;
+	}
       print_z_candidate (loc, N_("candidate:"), candidates);
     }
 }
@@ -9967,7 +9973,18 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (DECL_DELETED_FN (fn))
     {
       if (complain & tf_error)
-	mark_used (fn);
+	{
+	  mark_used (fn);
+	  if (cand->next)
+	    {
+	      if (flag_diagnostics_all_candidates)
+		print_z_candidates (input_location, cand, /*only_viable_p=*/false);
+	      else
+		inform (input_location,
+			"use %<-fdiagnostics-all-candidates%> to display "
+			"considered candidates");
+	    }
+	}
       return error_mark_node;
     }
 
