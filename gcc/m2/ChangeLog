@@ -1,3 +1,40 @@
+2023-12-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112984
+	* gm2-libs-coroutines/SYSTEM.mod: Remove redundant import of memcpy.
+	* gm2-libs-iso/ClientSocket.mod: Remove redundant import of IOConsts.
+	* gm2-libs-iso/IOChan.mod: Remove redundant import of IOConsts.
+	* gm2-libs-iso/IOLink.mod: Remove redundant import of IOChan and SYSTEM.
+	* gm2-libs-iso/IOResult.mod: Remove redundant import of IOChan.
+	* gm2-libs-iso/LongIO.mod: Remove redundant import of writeString.
+	* gm2-libs-iso/LongWholeIO.mod: Remove redundant import of IOChan.
+	* gm2-libs-iso/M2RTS.mod: Remove redundant import of ADDRESS.
+	* gm2-libs-iso/MemStream.mod: Remove redundant import of ADDRESS.
+	* gm2-libs-iso/RTdata.mod: Remove redundant import of DeviceTablePtr.
+	* gm2-libs-iso/RTfio.mod: Remove redundant import of DeviceTablePtr.
+	* gm2-libs-iso/RTgen.mod: Remove redundant import of DeviceTablePtr.
+	* gm2-libs-iso/RealIO.mod: Remove redundant import of writeString.
+	* gm2-libs-iso/RndFile.mod: Remove redundant import of SYSTEM.
+	* gm2-libs-iso/SYSTEM.mod: Remove redundant import of memcpy.
+	* gm2-libs-iso/ShortWholeIO.mod: Remove redundant import of IOConsts.
+	* gm2-libs-iso/TextIO.mod: Remove redundant import of IOChan.
+	* gm2-libs-iso/TextUtil.mod: Remove redundant import of IOChan.
+	* gm2-libs-iso/WholeIO.mod: Remove redundant import of IOChan.
+	* gm2-libs-log/BitByteOps.mod: Remove redundant import of BYTE.
+	* gm2-libs-log/FileSystem.mod: Remove redundant import of BYTE and ADDRESS.
+	* gm2-libs-log/InOut.mod: Remove redundant import of String.
+	* gm2-libs-log/RealConversions.mod: Remove redundant import of StringToLongreal.
+	* gm2-libs/FIO.mod: Remove redundant import of SIZE.
+	* gm2-libs/FormatStrings.mod: Remove redundant import of String
+	and ConCatChar.
+	* gm2-libs/IO.mod: Remove redundant import of SIZE.
+	* gm2-libs/Indexing.mod: Remove redundant import of ADDRESS.
+	* gm2-libs/M2Dependent.mod: Remove redundant import of SIZE.
+	* gm2-libs/M2RTS.mod: Remove redundant import of ADDRESS.
+	* gm2-libs/OptLib.mod: Remove redundant import of DynamicStrings.
+	* gm2-libs/SYSTEM.mod: Remove redundant import of memcpy.
+	* gm2-libs/StringConvert.mod: Remove redundant import of String.
+
 2023-12-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112893

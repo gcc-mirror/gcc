@@ -1,3 +1,442 @@
+2023-12-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (costs::analyze_loop_vinfo): New function.
+	(costs::record_potential_vls_unrolling): Ditto.
+	(costs::prefer_unrolled_loop): Ditto.
+	(costs::better_main_loop_than_p): Ditto.
+	(costs::add_stmt_cost): Ditto.
+	* config/riscv/riscv-vector-costs.h (enum cost_type_enum): New enum.
+	* config/riscv/t-riscv: Add new include files.
+
+2023-12-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-costs.cc (get_current_lmul): Remove it.
+	(compute_estimated_lmul): New function.
+	(costs::costs): Refactor.
+	(costs::preferred_new_lmul_p): Ditto.
+	(preferred_new_lmul_p): Ditto.
+	(costs::better_main_loop_than_p): Ditto.
+	* config/riscv/riscv-vector-costs.h (struct autovec_info): Remove it.
+
+2023-12-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/112822
+	* tree-sra.cc (load_assign_lhs_subreplacements): Invoke
+	force_gimple_operand_gsi also when LHS has partial stores and RHS is a
+	VIEW_CONVERT_EXPR.
+
+2023-12-12  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead   <nathanieloshead@gmail.com>
+
+	* tree-core.h (enum clobber_kind): Rename CLOBBER_EOL to
+	CLOBBER_STORAGE_END.  Add CLOBBER_STORAGE_BEGIN,
+	CLOBBER_OBJECT_BEGIN, CLOBBER_OBJECT_END.
+	* gimple-lower-bitint.cc
+	* gimple-ssa-warn-access.cc
+	* gimplify.cc
+	* tree-inline.cc
+	* tree-ssa-ccp.cc: Adjust for rename.
+	* tree-pretty-print.cc: And handle new values.
+
+2023-12-12  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options): Update.
+	(aarch64_handle_attr_branch_protection): Update.
+	* config/arm/aarch-common-protos.h (aarch_parse_branch_protection):
+	Remove.
+	(aarch_validate_mbranch_protection): Add new argument.
+	* config/arm/aarch-common.cc (aarch_handle_no_branch_protection):
+	Update.
+	(aarch_handle_standard_branch_protection): Update.
+	(aarch_handle_pac_ret_protection): Update.
+	(aarch_handle_pac_ret_leaf): Update.
+	(aarch_handle_pac_ret_b_key): Update.
+	(aarch_handle_bti_protection): Update.
+	(aarch_parse_branch_protection): Remove.
+	(next_tok): New.
+	(aarch_validate_mbranch_protection): Rewrite.
+	* config/arm/aarch-common.h (struct aarch_branch_protect_type):
+	Add field "alone".
+	* config/arm/arm.cc (arm_configure_build_target): Update.
+
+2023-12-12  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options_after_change_1):
+	Do not override branch_protection options.
+	(aarch64_override_options): Remove accepted_branch_protection_string.
+	* config/arm/aarch-common.cc (BRANCH_PROTECT_STR_MAX): Remove.
+	(aarch_parse_branch_protection): Remove
+	accepted_branch_protection_string.
+	* config/arm/arm.cc: Likewise.
+
+2023-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112736
+	* tree-vect-stmts.cc (vectorizable_load): Extend optimization
+	to avoid peeling for gaps to handle single-element non-groups
+	we now allow with SLP.
+
+2023-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/92606
+	* ipa-icf.cc (sem_item_optimizer::merge_classes): Check
+	both source and alias for the no_icf attribute.
+	* doc/extend.texi (no_icf): Document variable attribute.
+
+2023-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112961
+	* tree-if-conv.cc (tree_if_conversion): Instead of excluding
+	the latch block from VN, add a fake entry edge.
+
+2023-12-12  Xi Ruoyao  <xry111@xry111.site>
+
+	PR middle-end/107723
+	* convert.cc (convert_to_integer_1) [case BUILT_IN_TRUNC]: Break
+	early if !flag_fp_int_builtin_inexact and flag_trapping_math.
+
+2023-12-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-avlprop.cc (avl_can_be_propagated_p):
+	Disable the avl propogation for the vcompress.
+
+2023-12-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-opts.h (la_target): Move into #if
+	for loongarch-def.h.
+	(loongarch_init_target): Likewise.
+	(loongarch_config_target): Likewise.
+	(loongarch_update_gcc_opt_status): Likewise.
+
+2023-12-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_explicit_relocs_p):
+	Return true for SYMBOL_PCREL64.  Return true for SYMBOL_GOT_DISP
+	if TARGET_CMODEL_EXTREME.
+	(loongarch_split_symbol): Check for la_opt_explicit_relocs !=
+	EXPLICIT_RELOCS_NONE instead of TARGET_EXPLICIT_RELOCS.
+	(loongarch_print_operand_reloc): Likewise.
+	(loongarch_option_override_internal): Likewise.
+	(loongarch_handle_model_attribute): Likewise.
+	* doc/invoke.texi (-mcmodel=extreme): Update the compatibility
+	between it and -mexplicit-relocs=.
+
+2023-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112939
+	* tree-ssa-sccvn.cc (visit_phi): When all args are undefined
+	make sure we end up with a value that was visited, otherwise
+	fall back to .VN_TOP.
+
+2023-12-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112891
+	* config/i386/i386.cc (ix86_avx_u128_mode_after): Return
+	AVX_U128_ANY if callee_abi doesn't clobber all_sse_regs to
+	align with ix86_avx_u128_mode_needed.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_ClEAN for
+	sibling_call.
+
+2023-12-12  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/112334
+	* builtins.h (target_builtins): Add fields for apply_args_size
+	and apply_result_size.
+	* builtins.cc (apply_args_size, apply_result_size): Cache
+	results in fields rather than in static variables.
+	(get_apply_args_size, set_apply_args_size): New.
+	(get_apply_result_size, set_apply_result_size): New.
+
+2023-12-12  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/112943
+	* config/i386/i386.md (ashl<mode>3): Add TARGET_APX_NDD to
+	ix86_expand_binary_operator call.
+	(<insn><mode>3): Likewise for rshift.
+	(<insn>di3): Likewise for DImode rotate.
+	(<insn><mode>3): Likewise for SWI124 rotate.
+
+2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-functions.def (DEF_RVV_FUNCTION):
+							Add AVAIL argument.
+	(read_vl): Using AVAIL argument default value.
+	(vlenb): Ditto.
+	(vsetvl): Ditto.
+	(vsetvlmax): Ditto.
+	(vle): Ditto.
+	(vse): Ditto.
+	(vlm): Ditto.
+	(vsm): Ditto.
+	(vlse): Ditto.
+	(vsse): Ditto.
+	(vluxei8): Ditto.
+	(vluxei16): Ditto.
+	(vluxei32): Ditto.
+	(vluxei64): Ditto.
+	(vloxei8): Ditto.
+	(vloxei16): Ditto.
+	(vloxei32): Ditto.
+	(vloxei64): Ditto.
+	(vsuxei8): Ditto.
+	(vsuxei16): Ditto.
+	(vsuxei32): Ditto.
+	(vsuxei64): Ditto.
+	(vsoxei8): Ditto.
+	(vsoxei16): Ditto.
+	(vsoxei32): Ditto.
+	(vsoxei64): Ditto.
+	(vleff): Ditto.
+	(vadd): Ditto.
+	(vsub): Ditto.
+	(vrsub): Ditto.
+	(vneg): Ditto.
+	(vwaddu): Ditto.
+	(vwsubu): Ditto.
+	(vwadd): Ditto.
+	(vwsub): Ditto.
+	(vwcvt_x): Ditto.
+	(vwcvtu_x): Ditto.
+	(vzext): Ditto.
+	(vsext): Ditto.
+	(vadc): Ditto.
+	(vmadc): Ditto.
+	(vsbc): Ditto.
+	(vmsbc): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vnot): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vnsrl): Ditto.
+	(vnsra): Ditto.
+	(vncvt_x): Ditto.
+	(vmseq): Ditto.
+	(vmsne): Ditto.
+	(vmsltu): Ditto.
+	(vmslt): Ditto.
+	(vmsleu): Ditto.
+	(vmsle): Ditto.
+	(vmsgtu): Ditto.
+	(vmsgt): Ditto.
+	(vmsgeu): Ditto.
+	(vmsge): Ditto.
+	(vminu): Ditto.
+	(vmin): Ditto.
+	(vmaxu): Ditto.
+	(vmax): Ditto.
+	(vmul): Ditto.
+	(vmulh): Ditto.
+	(vmulhu): Ditto.
+	(vmulhsu): Ditto.
+	(vdivu): Ditto.
+	(vdiv): Ditto.
+	(vremu): Ditto.
+	(vrem): Ditto.
+	(vwmul): Ditto.
+	(vwmulu): Ditto.
+	(vwmulsu): Ditto.
+	(vmacc): Ditto.
+	(vnmsac): Ditto.
+	(vmadd): Ditto.
+	(vnmsub): Ditto.
+	(vwmaccu): Ditto.
+	(vwmacc): Ditto.
+	(vwmaccsu): Ditto.
+	(vwmaccus): Ditto.
+	(vmerge): Ditto.
+	(vmv_v): Ditto.
+	(vsaddu): Ditto.
+	(vsadd): Ditto.
+	(vssubu): Ditto.
+	(vssub): Ditto.
+	(vaaddu): Ditto.
+	(vaadd): Ditto.
+	(vasubu): Ditto.
+	(vasub): Ditto.
+	(vsmul): Ditto.
+	(vssrl): Ditto.
+	(vssra): Ditto.
+	(vnclipu): Ditto.
+	(vnclip): Ditto.
+	(vfadd): Ditto.
+	(vfsub): Ditto.
+	(vfrsub): Ditto.
+	(vfadd_frm): Ditto.
+	(vfsub_frm): Ditto.
+	(vfrsub_frm): Ditto.
+	(vfwadd): Ditto.
+	(vfwsub): Ditto.
+	(vfwadd_frm): Ditto.
+	(vfwsub_frm): Ditto.
+	(vfmul): Ditto.
+	(vfdiv): Ditto.
+	(vfrdiv): Ditto.
+	(vfmul_frm): Ditto.
+	(vfdiv_frm): Ditto.
+	(vfrdiv_frm): Ditto.
+	(vfwmul): Ditto.
+	(vfwmul_frm): Ditto.
+	(vfmacc): Ditto.
+	(vfnmsac): Ditto.
+	(vfmadd): Ditto.
+	(vfnmsub): Ditto.
+	(vfnmacc): Ditto.
+	(vfmsac): Ditto.
+	(vfnmadd): Ditto.
+	(vfmsub): Ditto.
+	(vfmacc_frm): Ditto.
+	(vfnmacc_frm): Ditto.
+	(vfmsac_frm): Ditto.
+	(vfnmsac_frm): Ditto.
+	(vfmadd_frm): Ditto.
+	(vfnmadd_frm): Ditto.
+	(vfmsub_frm): Ditto.
+	(vfnmsub_frm): Ditto.
+	(vfwmacc): Ditto.
+	(vfwnmacc): Ditto.
+	(vfwmsac): Ditto.
+	(vfwnmsac): Ditto.
+	(vfwmacc_frm): Ditto.
+	(vfwnmacc_frm): Ditto.
+	(vfwmsac_frm): Ditto.
+	(vfwnmsac_frm): Ditto.
+	(vfsqrt): Ditto.
+	(vfsqrt_frm): Ditto.
+	(vfrsqrt7): Ditto.
+	(vfrec7): Ditto.
+	(vfrec7_frm): Ditto.
+	(vfmin): Ditto.
+	(vfmax): Ditto.
+	(vfsgnj): Ditto.
+	(vfsgnjn): Ditto.
+	(vfsgnjx): Ditto.
+	(vfneg): Ditto.
+	(vfabs): Ditto.
+	(vmfeq): Ditto.
+	(vmfne): Ditto.
+	(vmflt): Ditto.
+	(vmfle): Ditto.
+	(vmfgt): Ditto.
+	(vmfge): Ditto.
+	(vfclass): Ditto.
+	(vfmerge): Ditto.
+	(vfmv_v): Ditto.
+	(vfcvt_x): Ditto.
+	(vfcvt_xu): Ditto.
+	(vfcvt_rtz_x): Ditto.
+	(vfcvt_rtz_xu): Ditto.
+	(vfcvt_f): Ditto.
+	(vfcvt_x_frm): Ditto.
+	(vfcvt_xu_frm): Ditto.
+	(vfcvt_f_frm): Ditto.
+	(vfwcvt_x): Ditto.
+	(vfwcvt_xu): Ditto.
+	(vfwcvt_rtz_x): Ditto.
+	(vfwcvt_rtz_xu) Ditto.:
+	(vfwcvt_f): Ditto.
+	(vfwcvt_x_frm): Ditto.
+	(vfwcvt_xu_frm) Ditto.:
+	(vfncvt_x): Ditto.
+	(vfncvt_xu): Ditto.
+	(vfncvt_rtz_x): Ditto.
+	(vfncvt_rtz_xu): Ditto.
+	(vfncvt_f): Ditto.
+	(vfncvt_rod_f): Ditto.
+	(vfncvt_x_frm): Ditto.
+	(vfncvt_xu_frm): Ditto.
+	(vfncvt_f_frm): Ditto.
+	(vredsum): Ditto.
+	(vredmaxu): Ditto.
+	(vredmax): Ditto.
+	(vredminu): Ditto.
+	(vredmin): Ditto.
+	(vredand): Ditto.
+	(vredor): Ditto.
+	(vredxor): Ditto.
+	(vwredsum): Ditto.
+	(vwredsumu): Ditto.
+	(vfredusum): Ditto.
+	(vfredosum): Ditto.
+	(vfredmax): Ditto.
+	(vfredmin): Ditto.
+	(vfredusum_frm): Ditto.
+	(vfredosum_frm): Ditto.
+	(vfwredosum): Ditto.
+	(vfwredusum): Ditto.
+	(vfwredosum_frm): Ditto.
+	(vfwredusum_frm): Ditto.
+	(vmand): Ditto.
+	(vmnand): Ditto.
+	(vmandn): Ditto.
+	(vmxor): Ditto.
+	(vmor): Ditto.
+	(vmnor): Ditto.
+	(vmorn): Ditto.
+	(vmxnor): Ditto.
+	(vmmv): Ditto.
+	(vmclr): Ditto.
+	(vmset): Ditto.
+	(vmnot): Ditto.
+	(vcpop): Ditto.
+	(vfirst): Ditto.
+	(vmsbf): Ditto.
+	(vmsif): Ditto.
+	(vmsof): Ditto.
+	(viota): Ditto.
+	(vid): Ditto.
+	(vmv_x): Ditto.
+	(vmv_s): Ditto.
+	(vfmv_f): Ditto.
+	(vfmv_s): Ditto.
+	(vslideup): Ditto.
+	(vslidedown): Ditto.
+	(vslide1up): Ditto.
+	(vslide1down): Ditto.
+	(vfslide1up): Ditto.
+	(vfslide1down): Ditto.
+	(vrgather): Ditto.
+	(vrgatherei16): Ditto.
+	(vcompress): Ditto.
+	(vundefined): Ditto.
+	(vreinterpret): Ditto.
+	(vlmul_ext): Ditto.
+	(vlmul_trunc): Ditto.
+	(vset): Ditto.
+	(vget): Ditto.
+	(vcreate): Ditto.
+	(vlseg): Ditto.
+	(vsseg): Ditto.
+	(vlsseg): Ditto.
+	(vssseg): Ditto.
+	(vluxseg): Ditto.
+	(vloxseg): Ditto.
+	(vsuxseg): Ditto.
+	(vsoxseg): Ditto.
+	(vlsegff): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_FUNCTION): Using variadic macro.
+	* config/riscv/riscv-vector-builtins.h (struct function_group_info):
+					Add avail function interface into struct.
+	* config/riscv/t-riscv: Add dependency
+	* config/riscv/riscv-vector-builtins-avail.h: New file.The definition of AVAIL marco.
+
+2023-12-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (estimated_poly_value): New function.
+	* config/riscv/riscv-v.cc (estimated_poly_value): Ditto.
+	* config/riscv/riscv.cc (riscv_estimated_poly_value): Move RVV POLY
+	VALUE estimation to riscv-v.cc
+
+2023-12-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/loongarch.cc: Do not restore the saved eh_return
+	data registers ($r4-$r7) for a normal return of a function that calls
+	__builtin_eh_return elsewhere.
+	* config/loongarch/loongarch-protos.h: Same.
+	* config/loongarch/loongarch.md: Same.
+
 2023-12-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* recog.cc (constrain_operands): Pass VOIDmode to

@@ -1,3 +1,23 @@
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__do_vformat_to): Handle char separately
+	from other integral types.
+	* testsuite/std/format/functions/format.cc: Check for expected
+	output for char and bool arguments.
+	* testsuite/std/format/string.cc: Check that 0 filling is
+	rejected for character and string formats.
+
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_C_y_Y): Fix
+	rounding for negative centuries.
+	* testsuite/std/time/year/io.cc: Check %C for negative years.
+
+2023-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Remove redundant -std=gnu++11 flags.
+	* src/c++11/Makefile.in: Regenerate.
+
 2023-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/111826

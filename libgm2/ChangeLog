@@ -1,3 +1,12 @@
+2023-12-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Added line breaks.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Added line breaks.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Added line breaks.
+	* libm2pim/Makefile.in: Regenerate.
+
 2023-11-30  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* configure: Regenerate.

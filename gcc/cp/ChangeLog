@@ -1,3 +1,17 @@
+2023-12-12  Jason Merrill  <jason@redhat.com>
+	    Jason Xu  <rxu@DRWHoldings.com>
+
+	* class.cc (propagate_class_warmth_attribute): Handle
+	member templates.
+
+2023-12-12  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead   <nathanieloshead@gmail.com>
+
+	* call.cc (build_trivial_dtor_call): Use CLOBBER_OBJECT_END.
+	* decl.cc (build_clobber_this): Take clobber_kind argument.
+	(start_preparsed_function): Pass CLOBBER_OBJECT_BEGIN.
+	(begin_destructor_body): Pass CLOBBER_OBJECT_END.
+
 2023-12-11  Patrick Palka  <ppalka@redhat.com>
 
 	* pt.cc (alias_ctad_tweaks): Pass use_spec_table=false to

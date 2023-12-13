@@ -1,3 +1,9 @@
+2023-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/92606
+	* c-attribs.cc (handle_noicf_attribute): Also allow the
+	attribute on global variables.
+
 2023-12-10  Ken Matsui  <kmatsui@gcc.gnu.org>
 	    Patrick Palka  <ppalka@redhat.com>
 
