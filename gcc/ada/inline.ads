@@ -146,8 +146,9 @@ package Inline is
     (N    : Node_Id;
      Subp : Entity_Id) return Boolean;
    --  Returns False if the call in node N to subprogram Subp cannot be inlined
-   --  in GNATprove mode, because it may lead to missing a check on type
-   --  conversion of input parameters otherwise. Returns True otherwise.
+   --  in GNATprove mode, because it may otherwise lead to missing a check
+   --  on type conversion of input parameters, or a missing memory leak on
+   --  an output parameter. Returns True otherwise.
 
    function Can_Be_Inlined_In_GNATprove_Mode
      (Spec_Id : Entity_Id;
