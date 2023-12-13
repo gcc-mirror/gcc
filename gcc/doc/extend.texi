@@ -17612,7 +17612,7 @@ int __lsx_bz_v (__m128i);
 int __lsx_bz_w (__m128i);
 __m128i __lsx_vabsd_b (__m128i, __m128i);
 __m128i __lsx_vabsd_bu (__m128i, __m128i);
-__m128i __lsx_vabsd_di (__m128i, __m128i);
+__m128i __lsx_vabsd_d (__m128i, __m128i);
 __m128i __lsx_vabsd_du (__m128i, __m128i);
 __m128i __lsx_vabsd_h (__m128i, __m128i);
 __m128i __lsx_vabsd_hu (__m128i, __m128i);
@@ -17818,14 +17818,14 @@ __m128 __lsx_vfnmsub_s (__m128, __m128, __m128);
 __m128d __lsx_vfrecip_d (__m128d);
 __m128 __lsx_vfrecip_s (__m128);
 __m128d __lsx_vfrint_d (__m128d);
-__m128i __lsx_vfrintrm_d (__m128d);
-__m128i __lsx_vfrintrm_s (__m128);
-__m128i __lsx_vfrintrne_d (__m128d);
-__m128i __lsx_vfrintrne_s (__m128);
-__m128i __lsx_vfrintrp_d (__m128d);
-__m128i __lsx_vfrintrp_s (__m128);
-__m128i __lsx_vfrintrz_d (__m128d);
-__m128i __lsx_vfrintrz_s (__m128);
+__m128d __lsx_vfrintrm_d (__m128d);
+__m128 __lsx_vfrintrm_s (__m128);
+__m128d __lsx_vfrintrne_d (__m128d);
+__m128 __lsx_vfrintrne_s (__m128);
+__m128d __lsx_vfrintrp_d (__m128d);
+__m128 __lsx_vfrintrp_s (__m128);
+__m128d __lsx_vfrintrz_d (__m128d);
+__m128 __lsx_vfrintrz_s (__m128);
 __m128 __lsx_vfrint_s (__m128);
 __m128d __lsx_vfrsqrt_d (__m128d);
 __m128 __lsx_vfrsqrt_s (__m128);
@@ -17894,12 +17894,12 @@ __m128i __lsx_vinsgr2vr_b (__m128i, int, imm0_15);
 __m128i __lsx_vinsgr2vr_d (__m128i, long int, imm0_1);
 __m128i __lsx_vinsgr2vr_h (__m128i, int, imm0_7);
 __m128i __lsx_vinsgr2vr_w (__m128i, int, imm0_3);
-__m128i __lsx_vld (void *, imm_n2048_2047)
-__m128i __lsx_vldi (imm_n1024_1023)
-__m128i __lsx_vldrepl_b (void *, imm_n2048_2047)
-__m128i __lsx_vldrepl_d (void *, imm_n256_255)
-__m128i __lsx_vldrepl_h (void *, imm_n1024_1023)
-__m128i __lsx_vldrepl_w (void *, imm_n512_511)
+__m128i __lsx_vld (void *, imm_n2048_2047);
+__m128i __lsx_vldi (imm_n1024_1023);
+__m128i __lsx_vldrepl_b (void *, imm_n2048_2047);
+__m128i __lsx_vldrepl_d (void *, imm_n256_255);
+__m128i __lsx_vldrepl_h (void *, imm_n1024_1023);
+__m128i __lsx_vldrepl_w (void *, imm_n512_511);
 __m128i __lsx_vldx (void *, long int);
 __m128i __lsx_vmadd_b (__m128i, __m128i, __m128i);
 __m128i __lsx_vmadd_d (__m128i, __m128i, __m128i);
@@ -17935,13 +17935,13 @@ __m128i __lsx_vmax_d (__m128i, __m128i);
 __m128i __lsx_vmax_du (__m128i, __m128i);
 __m128i __lsx_vmax_h (__m128i, __m128i);
 __m128i __lsx_vmax_hu (__m128i, __m128i);
-__m128i __lsx_vmaxi_b (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_b (__m128i, imm_n16_15);
 __m128i __lsx_vmaxi_bu (__m128i, imm0_31);
-__m128i __lsx_vmaxi_d (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_d (__m128i, imm_n16_15);
 __m128i __lsx_vmaxi_du (__m128i, imm0_31);
-__m128i __lsx_vmaxi_h (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_h (__m128i, imm_n16_15);
 __m128i __lsx_vmaxi_hu (__m128i, imm0_31);
-__m128i __lsx_vmaxi_w (__m128i, imm_n16_15)
+__m128i __lsx_vmaxi_w (__m128i, imm_n16_15);
 __m128i __lsx_vmaxi_wu (__m128i, imm0_31);
 __m128i __lsx_vmax_w (__m128i, __m128i);
 __m128i __lsx_vmax_wu (__m128i, __m128i);
@@ -17951,13 +17951,13 @@ __m128i __lsx_vmin_d (__m128i, __m128i);
 __m128i __lsx_vmin_du (__m128i, __m128i);
 __m128i __lsx_vmin_h (__m128i, __m128i);
 __m128i __lsx_vmin_hu (__m128i, __m128i);
-__m128i __lsx_vmini_b (__m128i, imm_n16_15)
+__m128i __lsx_vmini_b (__m128i, imm_n16_15);
 __m128i __lsx_vmini_bu (__m128i, imm0_31);
-__m128i __lsx_vmini_d (__m128i, imm_n16_15)
+__m128i __lsx_vmini_d (__m128i, imm_n16_15);
 __m128i __lsx_vmini_du (__m128i, imm0_31);
-__m128i __lsx_vmini_h (__m128i, imm_n16_15)
+__m128i __lsx_vmini_h (__m128i, imm_n16_15);
 __m128i __lsx_vmini_hu (__m128i, imm0_31);
-__m128i __lsx_vmini_w (__m128i, imm_n16_15)
+__m128i __lsx_vmini_w (__m128i, imm_n16_15);
 __m128i __lsx_vmini_wu (__m128i, imm0_31);
 __m128i __lsx_vmin_w (__m128i, __m128i);
 __m128i __lsx_vmin_wu (__m128i, __m128i);
@@ -18046,11 +18046,11 @@ __m128i __lsx_vpickod_d (__m128i, __m128i);
 __m128i __lsx_vpickod_h (__m128i, __m128i);
 __m128i __lsx_vpickod_w (__m128i, __m128i);
 int __lsx_vpickve2gr_b (__m128i, imm0_15);
-unsinged int __lsx_vpickve2gr_bu (__m128i, imm0_15);
+unsigned int __lsx_vpickve2gr_bu (__m128i, imm0_15);
 long int __lsx_vpickve2gr_d (__m128i, imm0_1);
 unsigned long int __lsx_vpickve2gr_du (__m128i, imm0_1);
 int __lsx_vpickve2gr_h (__m128i, imm0_7);
-unsinged int __lsx_vpickve2gr_hu (__m128i, imm0_7);
+unsigned int __lsx_vpickve2gr_hu (__m128i, imm0_7);
 int __lsx_vpickve2gr_w (__m128i, imm0_3);
 unsigned int __lsx_vpickve2gr_wu (__m128i, imm0_3);
 __m128i __lsx_vreplgr2vr_b (int);
@@ -18113,10 +18113,6 @@ __m128i __lsx_vsigncov_b (__m128i, __m128i);
 __m128i __lsx_vsigncov_d (__m128i, __m128i);
 __m128i __lsx_vsigncov_h (__m128i, __m128i);
 __m128i __lsx_vsigncov_w (__m128i, __m128i);
-__m128i __lsx_vsigncov_b (__m128i, __m128i);
-__m128i __lsx_vsigncov_d (__m128i, __m128i);
-__m128i __lsx_vsigncov_h (__m128i, __m128i);
-__m128i __lsx_vsigncov_w (__m128i, __m128i);
 __m128i __lsx_vsle_b (__m128i, __m128i);
 __m128i __lsx_vsle_bu (__m128i, __m128i);
 __m128i __lsx_vsle_d (__m128i, __m128i);
@@ -18173,7 +18169,7 @@ __m128i __lsx_vsrai_w (__m128i, imm0_31);
 __m128i __lsx_vsran_b_h (__m128i, __m128i);
 __m128i __lsx_vsran_h_w (__m128i, __m128i);
 __m128i __lsx_vsrani_b_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vsrani_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrani_d_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vsrani_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vsrani_w_d (__m128i, __m128i, imm0_63);
 __m128i __lsx_vsran_w_d (__m128i, __m128i);
@@ -18187,7 +18183,7 @@ __m128i __lsx_vsrari_w (__m128i, imm0_31);
 __m128i __lsx_vsrarn_b_h (__m128i, __m128i);
 __m128i __lsx_vsrarn_h_w (__m128i, __m128i);
 __m128i __lsx_vsrarni_b_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vsrarni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrarni_d_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vsrarni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vsrarni_w_d (__m128i, __m128i, imm0_63);
 __m128i __lsx_vsrarn_w_d (__m128i, __m128i);
@@ -18203,7 +18199,7 @@ __m128i __lsx_vsrli_w (__m128i, imm0_31);
 __m128i __lsx_vsrln_b_h (__m128i, __m128i);
 __m128i __lsx_vsrln_h_w (__m128i, __m128i);
 __m128i __lsx_vsrlni_b_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vsrlni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrlni_d_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vsrlni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vsrlni_w_d (__m128i, __m128i, imm0_63);
 __m128i __lsx_vsrln_w_d (__m128i, __m128i);
@@ -18217,7 +18213,7 @@ __m128i __lsx_vsrlri_w (__m128i, imm0_31);
 __m128i __lsx_vsrlrn_b_h (__m128i, __m128i);
 __m128i __lsx_vsrlrn_h_w (__m128i, __m128i);
 __m128i __lsx_vsrlrni_b_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vsrlrni_d_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vsrlrni_d_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vsrlrni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vsrlrni_w_d (__m128i, __m128i, imm0_63);
 __m128i __lsx_vsrlrn_w_d (__m128i, __m128i);
@@ -18229,8 +18225,8 @@ __m128i __lsx_vssran_hu_w (__m128i, __m128i);
 __m128i __lsx_vssran_h_w (__m128i, __m128i);
 __m128i __lsx_vssrani_b_h (__m128i, __m128i, imm0_15);
 __m128i __lsx_vssrani_bu_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vssrani_d_q (__m128i, __m128i, imm0_127)
-__m128i __lsx_vssrani_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrani_d_q (__m128i, __m128i, imm0_127);
+__m128i __lsx_vssrani_du_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vssrani_hu_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrani_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrani_w_d (__m128i, __m128i, imm0_63);
@@ -18243,8 +18239,8 @@ __m128i __lsx_vssrarn_hu_w (__m128i, __m128i);
 __m128i __lsx_vssrarn_h_w (__m128i, __m128i);
 __m128i __lsx_vssrarni_b_h (__m128i, __m128i, imm0_15);
 __m128i __lsx_vssrarni_bu_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vssrarni_d_q (__m128i, __m128i, imm0_127)
-__m128i __lsx_vssrarni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrarni_d_q (__m128i, __m128i, imm0_127);
+__m128i __lsx_vssrarni_du_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vssrarni_hu_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrarni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrarni_w_d (__m128i, __m128i, imm0_63);
@@ -18257,8 +18253,8 @@ __m128i __lsx_vssrln_hu_w (__m128i, __m128i);
 __m128i __lsx_vssrln_h_w (__m128i, __m128i);
 __m128i __lsx_vssrlni_b_h (__m128i, __m128i, imm0_15);
 __m128i __lsx_vssrlni_bu_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vssrlni_d_q (__m128i, __m128i, imm0_127)
-__m128i __lsx_vssrlni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlni_d_q (__m128i, __m128i, imm0_127);
+__m128i __lsx_vssrlni_du_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vssrlni_hu_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrlni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrlni_w_d (__m128i, __m128i, imm0_63);
@@ -18271,8 +18267,8 @@ __m128i __lsx_vssrlrn_hu_w (__m128i, __m128i);
 __m128i __lsx_vssrlrn_h_w (__m128i, __m128i);
 __m128i __lsx_vssrlrni_b_h (__m128i, __m128i, imm0_15);
 __m128i __lsx_vssrlrni_bu_h (__m128i, __m128i, imm0_15);
-__m128i __lsx_vssrlrni_d_q (__m128i, __m128i, imm0_127)
-__m128i __lsx_vssrlrni_du_q (__m128i, __m128i, imm0_127)
+__m128i __lsx_vssrlrni_d_q (__m128i, __m128i, imm0_127);
+__m128i __lsx_vssrlrni_du_q (__m128i, __m128i, imm0_127);
 __m128i __lsx_vssrlrni_hu_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrlrni_h_w (__m128i, __m128i, imm0_31);
 __m128i __lsx_vssrlrni_w_d (__m128i, __m128i, imm0_63);
@@ -18287,12 +18283,12 @@ __m128i __lsx_vssub_h (__m128i, __m128i);
 __m128i __lsx_vssub_hu (__m128i, __m128i);
 __m128i __lsx_vssub_w (__m128i, __m128i);
 __m128i __lsx_vssub_wu (__m128i, __m128i);
-void __lsx_vst (__m128i, void *, imm_n2048_2047)
-void __lsx_vstelm_b (__m128i, void *, imm_n128_127, idx);
-void __lsx_vstelm_d (__m128i, void *, imm_n128_127, idx);
-void __lsx_vstelm_h (__m128i, void *, imm_n128_127, idx);
-void __lsx_vstelm_w (__m128i, void *, imm_n128_127, idx);
-void __lsx_vstx (__m128i, void *, long int)
+void __lsx_vst (__m128i, void *, imm_n2048_2047);
+void __lsx_vstelm_b (__m128i, void *, imm_n128_127, imm0_15);
+void __lsx_vstelm_d (__m128i, void *, imm_n128_127, imm0_1);
+void __lsx_vstelm_h (__m128i, void *, imm_n128_127, imm0_7);
+void __lsx_vstelm_w (__m128i, void *, imm_n128_127, imm0_3);
+void __lsx_vstx (__m128i, void *, long int);
 __m128i __lsx_vsub_b (__m128i, __m128i);
 __m128i __lsx_vsub_d (__m128i, __m128i);
 __m128i __lsx_vsub_h (__m128i, __m128i);
