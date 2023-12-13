@@ -441,7 +441,8 @@ enum rejection_reason_code {
   rr_template_unification,
   rr_invalid_copy,
   rr_inherited_ctor,
-  rr_constraint_failure
+  rr_constraint_failure,
+  rr_ignored,
 };
 
 struct conversion_info {
@@ -2224,6 +2225,35 @@ add_candidate (struct z_candidate **candidates,
   return cand;
 }
 
+/* FN is a function from the overload set that we outright didn't even
+   consider (for some reason); add it to the list as an non-viable "ignored"
+   candidate.  */
+
+static z_candidate *
+add_ignored_candidate (z_candidate **candidates, tree fn)
+{
+  /* No need to dynamically allocate these.  */
+  static const rejection_reason reason_ignored = { rr_ignored, {} };
+
+  struct z_candidate *cand = (struct z_candidate *)
+    conversion_obstack_alloc (sizeof (struct z_candidate));
+
+  cand->fn = fn;
+  cand->reason = const_cast<rejection_reason *> (&reason_ignored);
+  cand->next = *candidates;
+  *candidates = cand;
+
+  return cand;
+}
+
+/* True iff CAND is a candidate added by add_ignored_candidate.  */
+
+static bool
+ignored_candidate_p (const z_candidate *cand)
+{
+  return cand->reason && cand->reason->code == rr_ignored;
+}
+
 /* Return the number of remaining arguments in the parameter list
    beginning with ARG.  */
 
@@ -3471,7 +3501,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
 
   if (len < skip_without_in_chrg)
-    return NULL;
+    return add_ignored_candidate (candidates, tmpl);
 
   if (DECL_CONSTRUCTOR_P (tmpl) && nargs == 2
       && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (first_arg),
@@ -3609,7 +3639,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   if (((flags & (LOOKUP_ONLYCONVERTING|LOOKUP_LIST_INIT_CTOR))
        == LOOKUP_ONLYCONVERTING)
       && DECL_NONCONVERTING_P (fn))
-    return NULL;
+    return add_ignored_candidate (candidates, fn);
 
   if (DECL_CONSTRUCTOR_P (fn) && nargs == 2)
     {
@@ -3724,6 +3754,9 @@ splice_viable (struct z_candidate *cands,
   z_candidate *non_viable = nullptr;
   z_candidate **non_viable_tail = &non_viable;
 
+  z_candidate *non_viable_ignored = nullptr;
+  z_candidate **non_viable_ignored_tail = &non_viable_ignored;
+
   /* Be strict inside templates, since build_over_call won't actually
      do the conversions to get pedwarns.  */
   if (processing_template_decl)
@@ -3742,6 +3775,7 @@ splice_viable (struct z_candidate *cands,
 	 its viability.  */
       auto& tail = (cand->viable == 1 ? strictly_viable_tail
 		    : cand->viable == -1 ? non_strictly_viable_tail
+		    : ignored_candidate_p (cand) ? non_viable_ignored_tail
 		    : non_viable_tail);
       *tail = cand;
       tail = &cand->next;
@@ -3751,7 +3785,8 @@ splice_viable (struct z_candidate *cands,
 		   || (!strict_p && non_strictly_viable != nullptr));
 
   /* Combine the lists.  */
-  *non_viable_tail = nullptr;
+  *non_viable_ignored_tail = nullptr;
+  *non_viable_tail = non_viable_ignored;
   *non_strictly_viable_tail = non_viable;
   *strictly_viable_tail = non_strictly_viable;
 
@@ -3901,6 +3936,8 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%qT (conversion)", msg, fn);
   else if (candidate->viable == -1)
     inform (cloc, "%s%#qD (near match)", msg, fn);
+  else if (ignored_candidate_p (candidate))
+    inform (cloc, "%s%#qD (ignored)", msg, fn);
   else if (DECL_DELETED_FN (fn))
     inform (cloc, "%s%#qD (deleted)", msg, fn);
   else if (candidate->reversed ())
@@ -3979,6 +4016,8 @@ print_z_candidate (location_t loc, const char *msgstr,
 	  inform (cloc, "  an inherited constructor is not a candidate for "
 		  "initialization from an expression of the same or derived "
 		  "type");
+	  break;
+	case rr_ignored:
 	  break;
 	case rr_none:
 	default:
@@ -5023,7 +5062,12 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
 	  // If there is a single (non-viable) function candidate,
 	  // let the error be diagnosed by cp_build_function_call_vec.
 	  if (!any_viable_p && candidates && ! candidates->next
-	      && (TREE_CODE (candidates->fn) == FUNCTION_DECL))
+	      && TREE_CODE (candidates->fn) == FUNCTION_DECL
+	      /* A template-id callee consisting of a single (ignored)
+		 non-template candidate needs to be diagnosed the
+		 ordinary way.  */
+	      && (TREE_CODE (fn) != TEMPLATE_ID_EXPR
+		  || candidates->template_decl))
 	    return cp_build_function_call_vec (candidates->fn, args, complain);
 
 	  // Otherwise, emit notes for non-viable candidates.
@@ -6526,6 +6570,10 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   else /*if (flags & LOOKUP_DEFAULTED)*/
     which = non_templates;
 
+  /* Template candidates that we'll potentially ignore if the
+     perfect candidate optimization succeeds.  */
+  z_candidate *ignored_template_cands = nullptr;
+
   /* During overload resolution, we first consider each function under the
      assumption that we'll eventually find a strictly viable candidate.
      This allows us to circumvent our defacto behavior when checking
@@ -6536,20 +6584,29 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
      This trick is important for pruning member function overloads according
      to their const/ref-qualifiers (since all 'this' conversions are at
      worst bad) without breaking -fpermissive.  */
-  tree bad_fns = NULL_TREE;
+  z_candidate *bad_cands = nullptr;
   bool shortcut_bad_convs = true;
 
  again:
   for (tree fn : lkp_range (fns))
     {
-      if (check_converting && DECL_NONCONVERTING_P (fn))
-	continue;
-      if (check_list_ctor && !is_list_ctor (fn))
-	continue;
       if (which == templates && TREE_CODE (fn) != TEMPLATE_DECL)
-	continue;
+	{
+	  if (template_only)
+	    add_ignored_candidate (candidates, fn);
+	  continue;
+	}
       if (which == non_templates && TREE_CODE (fn) == TEMPLATE_DECL)
-	continue;
+	{
+	  add_ignored_candidate (&ignored_template_cands, fn);
+	  continue;
+	}
+      if ((check_converting && DECL_NONCONVERTING_P (fn))
+	  || (check_list_ctor && !is_list_ctor (fn)))
+	{
+	  add_ignored_candidate (candidates, fn);
+	  continue;
+	}
 
       tree fn_first_arg = NULL_TREE;
       const vec<tree, va_gc> *fn_args = args;
@@ -6606,22 +6663,19 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
-	{
-	  if (!add_template_candidate (candidates,
-				       fn,
-				       ctype,
-				       explicit_targs,
-				       fn_first_arg,
-				       fn_args,
-				       return_type,
-				       access_path,
-				       conversion_path,
-				       flags,
-				       strict,
-				       shortcut_bad_convs,
-				       complain))
-	    continue;
-	}
+	add_template_candidate (candidates,
+				fn,
+				ctype,
+				explicit_targs,
+				fn_first_arg,
+				fn_args,
+				return_type,
+				access_path,
+				conversion_path,
+				flags,
+				strict,
+				shortcut_bad_convs,
+				complain);
       else
 	{
 	  add_function_candidate (candidates,
@@ -6649,13 +6703,14 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	{
 	  /* This candidate has been tentatively marked non-strictly viable,
 	     and we didn't compute all argument conversions for it (having
-	     stopped at the first bad conversion).  Add the function to BAD_FNS
+	     stopped at the first bad conversion).  Move it to BAD_CANDS to
 	     to fully reconsider later if we don't find any strictly viable
 	     candidates.  */
 	  if (complain & (tf_error | tf_conv))
 	    {
-	      bad_fns = lookup_add (fn, bad_fns);
-	      *candidates = (*candidates)->next;
+	      *candidates = cand->next;
+	      cand->next = bad_cands;
+	      bad_cands = cand;
 	    }
 	  else
 	    /* But if we're in a SFINAE context, just mark this candidate as
@@ -6669,20 +6724,43 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   if (which == non_templates && !seen_perfect)
     {
       which = templates;
+      ignored_template_cands = nullptr;
       goto again;
     }
   else if (which == templates
 	   && !seen_strictly_viable
 	   && shortcut_bad_convs
-	   && bad_fns)
+	   && bad_cands)
     {
       /* None of the candidates are strictly viable, so consider again those
-	 functions in BAD_FNS, this time without shortcutting bad conversions
+	 functions in BAD_CANDS, this time without shortcutting bad conversions
 	 so that all their argument conversions are computed.  */
       which = either;
-      fns = bad_fns;
+      fns = NULL_TREE;
+      for (z_candidate *cand = bad_cands; cand; cand = cand->next)
+	{
+	  tree fn = cand->fn;
+	  if (tree ti = cand->template_decl)
+	    fn = TI_TEMPLATE (ti);
+	  fns = ovl_make (fn, fns);
+	}
       shortcut_bad_convs = false;
+      bad_cands = nullptr;
       goto again;
+    }
+
+  if (complain & tf_error)
+    {
+      /* Remember any omitted candidates; we may want to print all candidates
+	 as part of overload resolution failure diagnostics.  */
+      for (z_candidate *omitted_cands : { ignored_template_cands, bad_cands })
+	{
+	  z_candidate **omitted_cands_tail = &omitted_cands;
+	  while (*omitted_cands_tail)
+	    omitted_cands_tail = &(*omitted_cands_tail)->next;
+	  *omitted_cands_tail = *candidates;
+	  *candidates = omitted_cands;
+	}
     }
 }
 
