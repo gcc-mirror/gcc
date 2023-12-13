@@ -825,7 +825,7 @@ namespace __format
 		{
 		  __s.assign(1, _S_plus_minus[1]);
 		  // For floored division -123//100 is -2 and -100//100 is -1
-		  if ((__ci * 100) != __yi)
+		  if (__conv == 'C' && (__ci * 100) != __yi)
 		    ++__ci;
 		}
 	      if (__ci >= 100) [[unlikely]]
