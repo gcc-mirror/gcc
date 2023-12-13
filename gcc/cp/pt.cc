@@ -24964,6 +24964,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       gcc_unreachable ();
 
     case FIELD_DECL:
+    case FUNCTION_DECL:
     case TEMPLATE_DECL:
       /* Matched cases are handled by the ARG == PARM test above.  */
       return unify_template_argument_mismatch (explain_p, parm, arg);
