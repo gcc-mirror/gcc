@@ -172,6 +172,29 @@ gcn_option_override (void)
       /* Allow HSACO_ATTR_ANY silently because that's the default.  */
       flag_xnack = HSACO_ATTR_OFF;
     }
+
+  /* There's no need for XNACK on devices without USM, and there are register
+     allocation problems caused by the early-clobber when AVGPR spills are not
+     available.
+     FIXME: can the regalloc mean the default can be really "any"?  */
+  if (flag_xnack == HSACO_ATTR_DEFAULT)
+    switch (gcn_arch)
+      {
+      case PROCESSOR_FIJI:
+      case PROCESSOR_VEGA10:
+      case PROCESSOR_VEGA20:
+      case PROCESSOR_GFX908:
+	flag_xnack = HSACO_ATTR_OFF;
+	break;
+      case PROCESSOR_GFX90a:
+	flag_xnack = HSACO_ATTR_ANY;
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+  if (flag_sram_ecc == HSACO_ATTR_DEFAULT)
+    flag_sram_ecc = HSACO_ATTR_ANY;
 }
 
 /* }}}  */

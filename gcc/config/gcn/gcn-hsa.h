@@ -75,7 +75,9 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
-#define NO_XNACK "march=fiji:;march=gfx1030:;"
+#define NO_XNACK "march=fiji:;march=gfx1030:;" \
+    /* These match the defaults set in gcn.cc.  */ \
+    "!mxnack*|mxnack=default:%{march=gfx900|march=gfx906|march=gfx908:-mattr=-xnack};"
 #define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
 
 /* In HSACOv4 no attribute setting means the binary supports "any" hardware

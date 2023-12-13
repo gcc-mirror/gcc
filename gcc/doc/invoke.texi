@@ -21628,7 +21628,8 @@ run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 Compile binaries suitable for devices with the XNACK feature enabled, disabled,
 or either mode.  Some devices always require XNACK and some allow the user to
 configure XNACK.  The compiled code must match the device mode.
-The default is @samp{-mxnack=any}.
+The default is @samp{-mxnack=any} on devices that support Unified Shared
+Memory, and @samp{-mxnack=no} otherwise.
 
 @end table
 
