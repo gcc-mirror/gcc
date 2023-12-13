@@ -101,6 +101,7 @@ if BUILD_ISOLIB
 M2DEFS = ChanConsts.def  CharClass.def \
          ClientSocket.def  ComplexMath.def \
          ConvStringLong.def  ConvStringReal.def \
+         ConvStringShort.def \
          ConvTypes.def  COROUTINES.def \
          ErrnoCategory.def  EXCEPTIONS.def \
          GeneralUserExceptions.def  IOChan.def \
@@ -124,7 +125,10 @@ M2DEFS = ChanConsts.def  CharClass.def \
          RTgenif.def  RTio.def \
          Semaphores.def  SeqFile.def \
          ShortComplexMath.def \
-         ShortIO.def  ShortWholeIO.def \
+         ShortConv.def \
+         ShortIO.def \
+         ShortMath.def ShortStr.def \
+         ShortWholeIO.def \
          SimpleCipher.def  SIOResult.def \
          SLongIO.def  SLongWholeIO.def \
          SRawIO.def  SRealIO.def \
@@ -143,6 +147,7 @@ M2DEFS = ChanConsts.def  CharClass.def \
 M2MODS = ChanConsts.mod  CharClass.mod \
          ClientSocket.mod  ComplexMath.mod \
          ConvStringLong.mod  ConvStringReal.mod \
+         ConvStringShort.mod \
          ConvTypes.mod  COROUTINES.mod \
          EXCEPTIONS.mod  GeneralUserExceptions.mod \
          IOChan.mod  IOConsts.mod \
@@ -164,7 +169,10 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          RTgen.mod  RTio.mod \
          Semaphores.mod  SeqFile.mod \
          ShortComplexMath.mod \
-         ShortIO.mod  ShortWholeIO.mod \
+         ShortConv.mod \
+         ShortIO.mod \
+         ShortMath.mod ShortStr.mod \
+         ShortWholeIO.mod \
          SimpleCipher.mod  SIOResult.mod \
          SLongIO.mod  SLongWholeIO.mod \
          SRawIO.mod  SRealIO.mod \

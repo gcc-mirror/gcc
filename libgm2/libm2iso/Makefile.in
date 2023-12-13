@@ -160,7 +160,8 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@am__objects_1 = ChanConsts.lo CharClass.lo \
 @BUILD_ISOLIB_TRUE@	ClientSocket.lo ComplexMath.lo \
 @BUILD_ISOLIB_TRUE@	ConvStringLong.lo ConvStringReal.lo \
-@BUILD_ISOLIB_TRUE@	ConvTypes.lo COROUTINES.lo EXCEPTIONS.lo \
+@BUILD_ISOLIB_TRUE@	ConvStringShort.lo ConvTypes.lo \
+@BUILD_ISOLIB_TRUE@	COROUTINES.lo EXCEPTIONS.lo \
 @BUILD_ISOLIB_TRUE@	GeneralUserExceptions.lo IOChan.lo \
 @BUILD_ISOLIB_TRUE@	IOConsts.lo IOLink.lo IOResult.lo \
 @BUILD_ISOLIB_TRUE@	LongComplexMath.lo LongConv.lo LongIO.lo \
@@ -172,16 +173,16 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	RealIO.lo RealMath.lo RealStr.lo RndFile.lo \
 @BUILD_ISOLIB_TRUE@	RTdata.lo RTentity.lo RTfio.lo RTgenif.lo \
 @BUILD_ISOLIB_TRUE@	RTgen.lo RTio.lo Semaphores.lo SeqFile.lo \
-@BUILD_ISOLIB_TRUE@	ShortComplexMath.lo ShortIO.lo \
-@BUILD_ISOLIB_TRUE@	ShortWholeIO.lo SimpleCipher.lo \
-@BUILD_ISOLIB_TRUE@	SIOResult.lo SLongIO.lo SLongWholeIO.lo \
-@BUILD_ISOLIB_TRUE@	SRawIO.lo SRealIO.lo SShortIO.lo \
-@BUILD_ISOLIB_TRUE@	SShortWholeIO.lo StdChans.lo STextIO.lo \
-@BUILD_ISOLIB_TRUE@	Storage.lo StreamFile.lo StringChan.lo \
-@BUILD_ISOLIB_TRUE@	Strings.lo SWholeIO.lo SysClock.lo \
-@BUILD_ISOLIB_TRUE@	SYSTEM.lo TermFile.lo TERMINATION.lo \
-@BUILD_ISOLIB_TRUE@	TextIO.lo TextUtil.lo WholeConv.lo \
-@BUILD_ISOLIB_TRUE@	WholeIO.lo WholeStr.lo
+@BUILD_ISOLIB_TRUE@	ShortComplexMath.lo ShortConv.lo ShortIO.lo \
+@BUILD_ISOLIB_TRUE@	ShortMath.lo ShortStr.lo ShortWholeIO.lo \
+@BUILD_ISOLIB_TRUE@	SimpleCipher.lo SIOResult.lo SLongIO.lo \
+@BUILD_ISOLIB_TRUE@	SLongWholeIO.lo SRawIO.lo SRealIO.lo \
+@BUILD_ISOLIB_TRUE@	SShortIO.lo SShortWholeIO.lo StdChans.lo \
+@BUILD_ISOLIB_TRUE@	STextIO.lo Storage.lo StreamFile.lo \
+@BUILD_ISOLIB_TRUE@	StringChan.lo Strings.lo SWholeIO.lo \
+@BUILD_ISOLIB_TRUE@	SysClock.lo SYSTEM.lo TermFile.lo \
+@BUILD_ISOLIB_TRUE@	TERMINATION.lo TextIO.lo TextUtil.lo \
+@BUILD_ISOLIB_TRUE@	WholeConv.lo WholeIO.lo WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
 @BUILD_ISOLIB_TRUE@	ErrnoCategory.lo RTco.lo wrapclock.lo \
 @BUILD_ISOLIB_TRUE@	wraptime.lo libm2iso_la-wrapsock.lo
@@ -488,6 +489,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@M2DEFS = ChanConsts.def  CharClass.def \
 @BUILD_ISOLIB_TRUE@         ClientSocket.def  ComplexMath.def \
 @BUILD_ISOLIB_TRUE@         ConvStringLong.def  ConvStringReal.def \
+@BUILD_ISOLIB_TRUE@         ConvStringShort.def \
 @BUILD_ISOLIB_TRUE@         ConvTypes.def  COROUTINES.def \
 @BUILD_ISOLIB_TRUE@         ErrnoCategory.def  EXCEPTIONS.def \
 @BUILD_ISOLIB_TRUE@         GeneralUserExceptions.def  IOChan.def \
@@ -511,7 +513,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         RTgenif.def  RTio.def \
 @BUILD_ISOLIB_TRUE@         Semaphores.def  SeqFile.def \
 @BUILD_ISOLIB_TRUE@         ShortComplexMath.def \
-@BUILD_ISOLIB_TRUE@         ShortIO.def  ShortWholeIO.def \
+@BUILD_ISOLIB_TRUE@         ShortConv.def \
+@BUILD_ISOLIB_TRUE@         ShortIO.def \
+@BUILD_ISOLIB_TRUE@         ShortMath.def ShortStr.def \
+@BUILD_ISOLIB_TRUE@         ShortWholeIO.def \
 @BUILD_ISOLIB_TRUE@         SimpleCipher.def  SIOResult.def \
 @BUILD_ISOLIB_TRUE@         SLongIO.def  SLongWholeIO.def \
 @BUILD_ISOLIB_TRUE@         SRawIO.def  SRealIO.def \
@@ -530,6 +535,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@M2MODS = ChanConsts.mod  CharClass.mod \
 @BUILD_ISOLIB_TRUE@         ClientSocket.mod  ComplexMath.mod \
 @BUILD_ISOLIB_TRUE@         ConvStringLong.mod  ConvStringReal.mod \
+@BUILD_ISOLIB_TRUE@         ConvStringShort.mod \
 @BUILD_ISOLIB_TRUE@         ConvTypes.mod  COROUTINES.mod \
 @BUILD_ISOLIB_TRUE@         EXCEPTIONS.mod  GeneralUserExceptions.mod \
 @BUILD_ISOLIB_TRUE@         IOChan.mod  IOConsts.mod \
@@ -551,7 +557,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         RTgen.mod  RTio.mod \
 @BUILD_ISOLIB_TRUE@         Semaphores.mod  SeqFile.mod \
 @BUILD_ISOLIB_TRUE@         ShortComplexMath.mod \
-@BUILD_ISOLIB_TRUE@         ShortIO.mod  ShortWholeIO.mod \
+@BUILD_ISOLIB_TRUE@         ShortConv.mod \
+@BUILD_ISOLIB_TRUE@         ShortIO.mod \
+@BUILD_ISOLIB_TRUE@         ShortMath.mod ShortStr.mod \
+@BUILD_ISOLIB_TRUE@         ShortWholeIO.mod \
 @BUILD_ISOLIB_TRUE@         SimpleCipher.mod  SIOResult.mod \
 @BUILD_ISOLIB_TRUE@         SLongIO.mod  SLongWholeIO.mod \
 @BUILD_ISOLIB_TRUE@         SRawIO.mod  SRealIO.mod \
