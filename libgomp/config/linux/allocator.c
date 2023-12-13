@@ -50,6 +50,9 @@
 #include <sys/mman.h>
 #include <string.h>
 #include "libgomp.h"
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIu64.  */
+#endif
 
 static void *
 linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
@@ -67,8 +70,13 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 
       if (mlock (addr, size))
 	{
-	  gomp_debug (0, "libgomp: failed to pin %ld bytes of"
-		      " memory (ulimit too low?)\n", size);
+#ifdef HAVE_INTTYPES_H
+	  gomp_debug (0, "libgomp: failed to pin %"PRIu64" bytes of"
+		      " memory (ulimit too low?)\n", (uint64_t) size);
+#else
+	  gomp_debug (0, "libgomp: failed to pin %lu bytes of"
+		      " memory (ulimit too low?)\n", (unsigned long) size);
+#endif
 	  munmap (addr, size);
 	  return NULL;
 	}
