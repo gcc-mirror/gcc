@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "decl.h"
 #include "gcc-rich-location.h"
+#include "tristate.h"
 
 /* The various kinds of conversion.  */
 
@@ -176,7 +177,8 @@ static void op_error (const op_location_t &, enum tree_code, enum tree_code,
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
 							 tsubst_flags_t);
 static void print_z_candidate (location_t, const char *, struct z_candidate *);
-static void print_z_candidates (location_t, struct z_candidate *);
+static void print_z_candidates (location_t, struct z_candidate *,
+				tristate = tristate::unknown ());
 static tree build_this (tree);
 static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
 static bool any_strictly_viable (struct z_candidate *);
@@ -3700,68 +3702,60 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 }
 
 /* The CANDS are the set of candidates that were considered for
-   overload resolution.  Return the set of viable candidates, or CANDS
-   if none are viable.  If any of the candidates were viable, set
+   overload resolution.  Sort CANDS so that the strictly viable
+   candidates appear first, followed by non-strictly viable candidates,
+   followed by non-viable candidates.  Returns the first candidate
+   in this sorted list.  If any of the candidates were viable, set
    *ANY_VIABLE_P to true.  STRICT_P is true if a candidate should be
-   considered viable only if it is strictly viable.  */
+   considered viable only if it is strictly viable when setting
+   *ANY_VIABLE_P.  */
 
 static struct z_candidate*
 splice_viable (struct z_candidate *cands,
 	       bool strict_p,
 	       bool *any_viable_p)
 {
-  struct z_candidate *viable;
-  struct z_candidate **last_viable;
-  struct z_candidate **cand;
-  bool found_strictly_viable = false;
+  z_candidate *strictly_viable = nullptr;
+  z_candidate **strictly_viable_tail = &strictly_viable;
+
+  z_candidate *non_strictly_viable = nullptr;
+  z_candidate **non_strictly_viable_tail = &non_strictly_viable;
+
+  z_candidate *non_viable = nullptr;
+  z_candidate **non_viable_tail = &non_viable;
 
   /* Be strict inside templates, since build_over_call won't actually
      do the conversions to get pedwarns.  */
   if (processing_template_decl)
     strict_p = true;
 
-  viable = NULL;
-  last_viable = &viable;
-  *any_viable_p = false;
-
-  cand = &cands;
-  while (*cand)
+  for (z_candidate *cand = cands; cand; cand = cand->next)
     {
-      struct z_candidate *c = *cand;
       if (!strict_p
-	  && (c->viable == 1 || TREE_CODE (c->fn) == TEMPLATE_DECL))
-	{
-	  /* Be strict in the presence of a viable candidate.  Also if
-	     there are template candidates, so that we get deduction errors
-	     for them instead of silently preferring a bad conversion.  */
-	  strict_p = true;
-	  if (viable && !found_strictly_viable)
-	    {
-	      /* Put any spliced near matches back onto the main list so
-		 that we see them if there is no strict match.  */
-	      *any_viable_p = false;
-	      *last_viable = cands;
-	      cands = viable;
-	      viable = NULL;
-	      last_viable = &viable;
-	    }
-	}
+	  && (cand->viable == 1 || TREE_CODE (cand->fn) == TEMPLATE_DECL))
+	/* Be strict in the presence of a viable candidate.  Also if
+	   there are template candidates, so that we get deduction errors
+	   for them instead of silently preferring a bad conversion.  */
+	strict_p = true;
 
-      if (strict_p ? c->viable == 1 : c->viable)
-	{
-	  *last_viable = c;
-	  *cand = c->next;
-	  c->next = NULL;
-	  last_viable = &c->next;
-	  *any_viable_p = true;
-	  if (c->viable == 1)
-	    found_strictly_viable = true;
-	}
-      else
-	cand = &c->next;
+      /* Move this candidate to the appropriate list according to
+	 its viability.  */
+      auto& tail = (cand->viable == 1 ? strictly_viable_tail
+		    : cand->viable == -1 ? non_strictly_viable_tail
+		    : non_viable_tail);
+      *tail = cand;
+      tail = &cand->next;
     }
 
-  return viable ? viable : cands;
+  *any_viable_p = (strictly_viable != nullptr
+		   || (!strict_p && non_strictly_viable != nullptr));
+
+  /* Combine the lists.  */
+  *non_viable_tail = nullptr;
+  *non_strictly_viable_tail = non_viable;
+  *strictly_viable_tail = non_strictly_viable;
+
+  return strictly_viable;
 }
 
 static bool
@@ -3995,8 +3989,13 @@ print_z_candidate (location_t loc, const char *msgstr,
     }
 }
 
+/* Print information about each overload candidate in CANDIDATES,
+   which is assumed to have gone through splice_viable and tourney
+   (if splice_viable succeeded).  */
+
 static void
-print_z_candidates (location_t loc, struct z_candidate *candidates)
+print_z_candidates (location_t loc, struct z_candidate *candidates,
+		    tristate only_viable_p /* = tristate::unknown () */)
 {
   struct z_candidate *cand1;
   struct z_candidate **cand2;
@@ -4041,8 +4040,19 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
 	}
     }
 
+  /* Unless otherwise specified, if there's a (strictly) viable candidate
+     then we assume we're being called as part of diagnosing ambiguity, in
+     which case we want to print only viable candidates since non-viable
+     candidates couldn't have contributed to the ambiguity.  */
+  if (only_viable_p.is_unknown ())
+    only_viable_p = candidates->viable == 1;
+
   for (; candidates; candidates = candidates->next)
-    print_z_candidate (loc, N_("candidate:"), candidates);
+    {
+      if (only_viable_p.is_true () && candidates->viable != 1)
+	break;
+      print_z_candidate (loc, N_("candidate:"), candidates);
+    }
 }
 
 /* USER_SEQ is a user-defined conversion sequence, beginning with a
@@ -13204,57 +13214,76 @@ tweak:
 /* Given a list of candidates for overloading, find the best one, if any.
    This algorithm has a worst case of O(2n) (winner is last), and a best
    case of O(n/2) (totally ambiguous); much better than a sorting
-   algorithm.  */
+   algorithm.  The candidates list is assumed to be sorted according
+   to viability (via splice_viable).  */
 
 static struct z_candidate *
 tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 {
-  struct z_candidate *champ = candidates, *challenger;
+  struct z_candidate **champ = &candidates, **challenger;
   int fate;
-  struct z_candidate *champ_compared_to_predecessor = nullptr;
+  struct z_candidate *previous_worse_champ = nullptr;
 
   /* Walk through the list once, comparing each current champ to the next
      candidate, knocking out a candidate or two with each comparison.  */
 
-  for (challenger = champ->next; challenger; )
+  for (challenger = &candidates->next; *challenger && (*challenger)->viable; )
     {
-      fate = joust (champ, challenger, 0, complain);
+      fate = joust (*champ, *challenger, 0, complain);
       if (fate == 1)
-	challenger = challenger->next;
+	challenger = &(*challenger)->next;
+      else if (fate == -1)
+	{
+	  previous_worse_champ = *champ;
+	  champ = challenger;
+	  challenger = &(*challenger)->next;
+	}
       else
 	{
-	  if (fate == 0)
+	  previous_worse_champ = nullptr;
+	  champ = &(*challenger)->next;
+	  if (!*champ || !(*champ)->viable)
 	    {
-	      champ = challenger->next;
-	      if (champ == 0)
-		return NULL;
-	      champ_compared_to_predecessor = nullptr;
+	      champ = nullptr;
+	      break;
 	    }
-	  else
-	    {
-	      champ_compared_to_predecessor = champ;
-	      champ = challenger;
-	    }
-
-	  challenger = champ->next;
+	  challenger = &(*champ)->next;
 	}
     }
 
   /* Make sure the champ is better than all the candidates it hasn't yet
      been compared to.  */
 
-  for (challenger = candidates;
-       challenger != champ;
-       challenger = challenger->next)
+  if (champ)
+    for (challenger = &candidates;
+	 challenger != champ;
+	 challenger = &(*challenger)->next)
+      {
+	if (*challenger == previous_worse_champ)
+	  /* We already know this candidate is worse than the champ.  */
+	  continue;
+	fate = joust (*champ, *challenger, 0, complain);
+	if (fate != 1)
+	  {
+	    champ = nullptr;
+	    break;
+	  }
+      }
+
+  if (!champ)
+    return nullptr;
+
+  /* Move the champ to the front of the candidate list.  */
+
+  if (champ != &candidates)
     {
-      if (challenger == champ_compared_to_predecessor)
-	continue;
-      fate = joust (champ, challenger, 0, complain);
-      if (fate != 1)
-	return NULL;
+      z_candidate *saved_champ = *champ;
+      *champ = saved_champ->next;
+      saved_champ->next = candidates;
+      candidates = saved_champ;
     }
 
-  return champ;
+  return candidates;
 }
 
 /* Returns nonzero if things of type FROM can be converted to TO.  */
