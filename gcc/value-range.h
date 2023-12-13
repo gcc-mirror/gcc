@@ -1558,7 +1558,13 @@ range_compatible_p (tree type1, tree type2)
   // types_compatible_p requires conversion in both directions to be useless.
   // GIMPLE only requires a cast one way in order to be compatible.
   // Ranges really only need the sign and precision to be the same.
-  return (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
-	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
+  return TYPE_SIGN (type1) == TYPE_SIGN (type2)
+	 && (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+	     // FIXME: As PR112788 shows, for now on rs6000 _Float128 has
+	     // type precision 128 while long double has type precision 127
+	     // but both have the same mode so their precision is actually
+	     // the same, workaround it temporarily.
+	     || (SCALAR_FLOAT_TYPE_P (type1)
+		 && TYPE_MODE (type1) == TYPE_MODE (type2)));
 }
 #endif // GCC_VALUE_RANGE_H
