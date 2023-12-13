@@ -3170,6 +3170,9 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
       if (TREE_OPERAND (u, 1) == error_mark_node)
 	return error_mark_node;
 
+      if (data.clear_location)
+	SET_EXPR_LOCATION (u, input_location);
+
       /* Replace the old expression with the new version.  */
       *tp = u;
       /* We don't have to go below this point; the recursive call to
