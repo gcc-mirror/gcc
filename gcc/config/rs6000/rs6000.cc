@@ -10521,6 +10521,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c, int *num_insns)
       emit_insn (dest_or_insn);
   };
 
+  if (TARGET_PREFIXED && SIGNED_INTEGER_34BIT_P (c))
+    {
+      /* li/lis/pli */
+      count_or_emit_insn (dest, GEN_INT (c));
+      return;
+    }
+
   if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
       || (ud4 == 0 && ud3 == 0 && ud2 == 0 && !(ud1 & 0x8000)))
     {
