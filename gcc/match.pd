@@ -8505,6 +8505,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_insert @0 (BIT_FIELD_REF@2 @1 @rsize @rpos) @ipos)
  (if (VECTOR_TYPE_P (type)
+      && (VECTOR_MODE_P (TYPE_MODE (type))
+	  || optimize_vectors_before_lowering_p ())
       && types_match (@0, @1)
       && types_match (TREE_TYPE (TREE_TYPE (@0)), TREE_TYPE (@2))
       && TYPE_VECTOR_SUBPARTS (type).is_constant ())
