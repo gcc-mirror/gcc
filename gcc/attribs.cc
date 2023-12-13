@@ -315,7 +315,7 @@ void
 free_attr_data ()
 {
   for (auto x : ignored_attributes_table)
-    delete[] x;
+    delete x;
   ignored_attributes_table.release ();
 }
 
