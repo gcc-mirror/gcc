@@ -19377,7 +19377,10 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     do_shift:
       gcc_assert (n_args >= 2);
       if (!gimple_call_lhs (stmt))
-	break;
+	{
+	  gsi_replace (gsi, gimple_build_nop (), false);
+	  return true;
+	}
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
@@ -19523,7 +19526,10 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case IX86_BUILTIN_PABSD256_MASK:
       gcc_assert (n_args >= 1);
       if (!gimple_call_lhs (stmt))
-	break;
+	{
+	  gsi_replace (gsi, gimple_build_nop (), false);
+	  return true;
+	}
       arg0 = gimple_call_arg (stmt, 0);
       elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
       /* For masked ABS, only optimize if the mask is all ones.  */
