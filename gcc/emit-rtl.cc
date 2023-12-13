@@ -2128,9 +2128,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      tree *orig_base = &attrs.expr;
 	      while (handled_component_p (*orig_base))
 		orig_base = &TREE_OPERAND (*orig_base, 0);
-	      tree aptrt = reference_alias_ptr_type (*orig_base);
-	      *orig_base = build2 (MEM_REF, TREE_TYPE (*orig_base), *namep,
-				   build_int_cst (aptrt, 0));
+	      if (TREE_CODE (*orig_base) == MEM_REF
+		  || TREE_CODE (*orig_base) == TARGET_MEM_REF)
+		TREE_OPERAND (*orig_base, 0) = *namep;
+	      else
+		{
+		  tree aptrt = reference_alias_ptr_type (*orig_base);
+		  *orig_base = build2 (MEM_REF, TREE_TYPE (*orig_base),
+				       *namep, build_int_cst (aptrt, 0));
+		}
 	    }
 	}
 
