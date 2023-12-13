@@ -1,6 +1,7 @@
 /* PR tree-optimization/112822 */
 /* { dg-do compile { target c++17 } } */
 /* { dg-options "-w -O2" } */
+// { dg-do compile { target c++17 } }
 
 /* Verify we do not ICE on the following noisy creduced test case.  */
 
