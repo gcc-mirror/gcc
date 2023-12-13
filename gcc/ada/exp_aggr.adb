@@ -7047,7 +7047,7 @@ package body Exp_Aggr is
       --  Determine whether this is an indexed aggregate (see RM 4.3.5(25/5)).
 
       if Present (New_Indexed_Subp) then
-         if not Present (Add_Unnamed_Subp) then
+         if No (Add_Unnamed_Subp) then
             Is_Indexed_Aggregate := True;
 
          else
@@ -7226,7 +7226,7 @@ package body Exp_Aggr is
             end Expand_Range_Component;
 
          begin
-            pragma Assert (not Present (Expressions (N)));
+            pragma Assert (No (Expressions (N)));
 
             if Siz > 0 then
 
