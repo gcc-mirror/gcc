@@ -20588,8 +20588,8 @@ allocation before or after interprocedural optimization.
 @item -fmultiflags
 This option enables multilib-aware @code{TFLAGS} to be used to build
 target libraries with options different from those the compiler is
-configured to use by default, through the use of specs (@xref{Spec
-Files}.) set up by compiler internals, by the target, or by builders at
+configured to use by default, through the use of specs (@pxref{Spec
+Files}) set up by compiler internals, by the target, or by builders at
 configure time.
 
 Like @code{TFLAGS}, this allows the target libraries to be built for
