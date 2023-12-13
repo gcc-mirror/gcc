@@ -2365,7 +2365,7 @@ constexpr wide_int_bitmask PTA_GRANITERAPIDS = PTA_SAPPHIRERAPIDS | PTA_AMX_FP16
   | PTA_PREFETCHI;
 constexpr wide_int_bitmask PTA_GRANITERAPIDS_D = PTA_GRANITERAPIDS
   | PTA_AMX_COMPLEX;
-constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST | PTA_RAOINT;
+constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
