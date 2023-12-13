@@ -1,3 +1,12 @@
+2023-12-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112891
+	* config/i386/i386.cc (ix86_avx_u128_mode_after): Return
+	AVX_U128_ANY if callee_abi doesn't clobber all_sse_regs to
+	align with ix86_avx_u128_mode_needed.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_ClEAN for
+	sibling_call.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

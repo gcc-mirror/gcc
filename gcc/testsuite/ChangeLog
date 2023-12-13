@@ -1,3 +1,36 @@
+2023-12-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr112891.c: New test.
+	* gcc.target/i386/pr112891-2.c: New test.
+
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110106
+	* g++.dg/cpp0x/noexcept80.C: New test.
+
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112410
+	* g++.dg/cpp23/auto-fncast13.C: New test.
+	* g++.dg/cpp23/auto-fncast14.C: New test.
+
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-14  Marek Polacek  <polacek@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/109876
+	* g++.dg/cpp0x/constexpr-template12.C: New test.
+	* g++.dg/cpp1z/constexpr-template1.C: New test.
+	* g++.dg/cpp1z/constexpr-template2.C: New test.
+
 2023-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,34 @@
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110106
+	* constexpr.cc (potential_constant_expression_1): Try to complete the
+	type when !processing_template_decl.
+
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112410
+	* parser.cc (cp_parser_direct_declarator): Maybe call
+	abort_fully_implicit_template if it turned out the parameter list was
+	ill-formed.
+
+2023-12-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-07-14  Marek Polacek  <polacek@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/109876
+	* decl.cc (cp_finish_decl): Set TREE_CONSTANT when initializing
+	an object of empty class type.
+	* pt.cc (value_dependent_expression_p) <case VAR_DECL>: Treat a
+	constexpr-declared non-constant variable as value-dependent.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
