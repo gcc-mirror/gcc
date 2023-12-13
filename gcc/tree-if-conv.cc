@@ -3734,7 +3734,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   auto_vec <gassign *, 4> reads_to_lower;
   auto_vec <gassign *, 4> writes_to_lower;
   bitmap exit_bbs;
-  edge pe, e;
+  edge pe;
   auto_vec<data_reference_p, 10> refs;
   bool loop_versioned;
 
@@ -3891,27 +3891,21 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       combine_blocks (loop, loop_versioned);
     }
 
-  /* Perform local CSE, this esp. helps the vectorizer analysis if loads
-     and stores are involved.  CSE only the loop body, not the entry
-     PHIs, those are to be kept in sync with the non-if-converted copy.
-     Do this by adding a fake entry edge - we do want to include the
-     latch as otherwise copies on a reduction path cannot be propagated out.
-     ???  We'll still keep dead stores though.  */
-  e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), loop->header, EDGE_FAKE);
-  exit_bbs = BITMAP_ALLOC (NULL);
-  for (edge exit : get_loop_exit_edges (loop))
-    bitmap_set_bit (exit_bbs, exit->dest->index);
-
   std::pair <tree, tree> *name_pair;
   unsigned ssa_names_idx;
   FOR_EACH_VEC_ELT (redundant_ssa_names, ssa_names_idx, name_pair)
     replace_uses_by (name_pair->first, name_pair->second);
   redundant_ssa_names.release ();
 
-  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
-
-  /* Remove the fake edge again.  */
-  remove_edge (e);
+  /* Perform local CSE, this esp. helps the vectorizer analysis if loads
+     and stores are involved.  CSE only the loop body, not the entry
+     PHIs, those are to be kept in sync with the non-if-converted copy.
+     ???  We'll still keep dead stores though.  */
+  exit_bbs = BITMAP_ALLOC (NULL);
+  for (edge exit : get_loop_exit_edges (loop))
+    bitmap_set_bit (exit_bbs, exit->dest->index);
+  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs,
+		     false, true, true);
 
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop);
