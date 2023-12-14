@@ -930,12 +930,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
   (bit_and @0 (negate @1))))
 
-/* Simplify (t * 2) / 2) -> t.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
+ /* Simplify (t * u) / u -> t.  */
  (simplify
   (div (mult:c @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (type))
-   (if (TYPE_OVERFLOW_UNDEFINED (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     @0
 #if GIMPLE
     (with {value_range vr0, vr1;}
@@ -945,7 +945,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       @0))
 #endif
-   ))))
+   )))
+#if GIMPLE
+ /* Simplify (t * u) / v -> t * (u / v) if u is multiple of v.  */
+ (simplify
+  (div (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
+    (mult @0 (div! @1 @2))
+    (with {value_range vr0, vr1;}
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
+      (mult @0 (div! @1 @2))))
+   )))
+#endif
+)
 
 #if GIMPLE
 (for div (trunc_div exact_div)
