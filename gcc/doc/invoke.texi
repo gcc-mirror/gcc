@@ -16583,6 +16583,12 @@ Maximum number of basic blocks for VRP to use a basic cache vector.
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 
+@item fully-pipelined-fma
+Whether the target fully pipelines FMA instructions.  If non-zero,
+reassociation considers the benefit of parallelizing FMA's multiplication
+part and addition part, assuming FMUL and FMA use the same units that can
+also do FADD.
+
 @item sms-loop-average-count-threshold
 A threshold on the average loop count considered by the swing modulo scheduler.
 
