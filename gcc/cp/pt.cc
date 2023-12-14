@@ -223,6 +223,9 @@ static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
 static void mark_template_arguments_used (tree, tree);
 static bool uses_outer_template_parms (tree);
+static tree alias_ctad_tweaks (tree, tree);
+static tree inherited_ctad_tweaks (tree, tree, tsubst_flags_t);
+static tree deduction_guides_for (tree, bool&, tsubst_flags_t);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -29784,8 +29787,6 @@ is_spec_or_derived (tree etype, tree tmpl)
   return !err;
 }
 
-static tree alias_ctad_tweaks (tree, tree);
-
 /* Return a C++20 aggregate deduction candidate for TYPE initialized from
    INIT.  */
 
@@ -29890,7 +29891,13 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 }
 
 /* UGUIDES are the deduction guides for the underlying template of alias
-   template TMPL; adjust them to be deduction guides for TMPL.  */
+   template TMPL; adjust them to be deduction guides for TMPL.
+
+   This routine also handles C++23 inherited CTAD, in which case TMPL is a
+   TREE_LIST representing a synthetic alias template whose TREE_PURPOSE is
+   the template parameter list of the alias template (equivalently, of the
+   derived class) and TREE_VALUE the defining-type-id (equivalently, the
+   base whose guides we're inheriting).  UGUIDES are the base's guides.  */
 
 static tree
 alias_ctad_tweaks (tree tmpl, tree uguides)
@@ -29934,13 +29941,27 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
      * The explicit-specifier of f' is the explicit-specifier of g (if
      any).  */
 
+  enum { alias, inherited } ctad_kind;
+  tree atype, fullatparms, utype;
+  if (TREE_CODE (tmpl) == TEMPLATE_DECL)
+    {
+      ctad_kind = alias;
+      atype = TREE_TYPE (tmpl);
+      fullatparms = DECL_TEMPLATE_PARMS (tmpl);
+      utype = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+    }
+  else
+    {
+      ctad_kind = inherited;
+      atype = NULL_TREE;
+      fullatparms = TREE_PURPOSE (tmpl);
+      utype = TREE_VALUE (tmpl);
+    }
+
   tsubst_flags_t complain = tf_warning_or_error;
-  tree atype = TREE_TYPE (tmpl);
   tree aguides = NULL_TREE;
-  tree fullatparms = DECL_TEMPLATE_PARMS (tmpl);
   tree atparms = INNERMOST_TEMPLATE_PARMS (fullatparms);
   unsigned natparms = TREE_VEC_LENGTH (atparms);
-  tree utype = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
   for (ovl_iterator iter (uguides); iter; ++iter)
     {
       tree f = *iter;
@@ -29978,7 +29999,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 
 	  /* Set current_template_parms as in build_deduction_guide.  */
 	  auto ctp = make_temp_override (current_template_parms);
-	  current_template_parms = copy_node (DECL_TEMPLATE_PARMS (tmpl));
+	  current_template_parms = copy_node (fullatparms);
 	  TREE_VALUE (current_template_parms) = gtparms;
 
 	  j = 0;
@@ -30055,9 +30076,10 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  /* Add a constraint that the return type matches the instantiation of
 	     A with the same template arguments.  */
 	  ret = TREE_TYPE (TREE_TYPE (fprime));
-	  if (!same_type_p (atype, ret)
-	      /* FIXME this should mean they don't compare as equivalent.  */
-	      || dependent_alias_template_spec_p (atype, nt_opaque))
+	  if (ctad_kind == alias
+	      && (!same_type_p (atype, ret)
+		  /* FIXME this should mean they don't compare as equivalent. */
+		  || dependent_alias_template_spec_p (atype, nt_opaque)))
 	    {
 	      tree same = finish_trait_expr (loc, CPTK_IS_DEDUCIBLE, tmpl, ret);
 	      ci = append_constraint (ci, same);
@@ -30074,8 +30096,41 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  /* For a non-template deduction guide, if the arguments of A aren't
 	     deducible from the return type, don't add the candidate.  */
 	non_template:
-	  if (!type_targs_deducible_from (tmpl, ret))
+	  if (ctad_kind == alias
+	      && !type_targs_deducible_from (tmpl, ret))
 	    continue;
+	}
+
+      /* Rewrite the return type of the inherited guide in terms of the
+	 derived class.  This is specified as replacing the return type R
+	 with typename CC<R>::type where the partially specialized CC maps a
+	 base class specialization to a specialization of the derived class
+	 having such a base (inducing substitution failure if no such derived
+	 class exists).
+
+	 As specified this mapping would be done at instantiation time using
+	 non-dependent template arguments, but we do it ahead of time using
+	 the generic arguments.  This seems to be good enough since generic
+	 deduction should succeed only if concrete deduction would.  */
+      if (ctad_kind == inherited)
+	{
+	  processing_template_decl_sentinel ptds (/*reset*/false);
+	  if (TREE_CODE (fprime) == TEMPLATE_DECL)
+	    ++processing_template_decl;
+
+	  tree targs = type_targs_deducible_from (tmpl, ret);
+	  if (!targs)
+	    continue;
+
+	  if (TREE_CODE (f) != TEMPLATE_DECL)
+	    fprime = copy_decl (fprime);
+	  tree fntype = TREE_TYPE (fprime);
+	  ret = lookup_template_class (TPARMS_PRIMARY_TEMPLATE (atparms), targs,
+				       in_decl, NULL_TREE, false, complain);
+	  fntype = build_function_type (ret, TYPE_ARG_TYPES (fntype));
+	  TREE_TYPE (fprime) = fntype;
+	  if (TREE_CODE (fprime) == TEMPLATE_DECL)
+	    TREE_TYPE (DECL_TEMPLATE_RESULT (fprime)) = fntype;
 	}
 
       aguides = lookup_add (fprime, aguides);
@@ -30084,33 +30139,93 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
   return aguides;
 }
 
-/* True iff template arguments for TMPL can be deduced from TYPE.
+/* CTOR is a using-decl inheriting the constructors of some base of the class
+   template TMPL; adjust the base's guides be deduction guides for TMPL.  */
+
+static tree
+inherited_ctad_tweaks (tree tmpl, tree ctor, tsubst_flags_t complain)
+{
+  /* [over.match.class.deduct]: In addition, if C is defined and inherits
+     constructors ([namespace.udecl]) from a direct base class denoted in the
+     base-specifier-list by a class-or-decltype B, let A be an alias template
+     whose template parameter list is that of C and whose defining-type-id is
+     B.  If A is a deducible template ([dcl.type.simple]), the set contains the
+     guides of A with the return type R of each guide replaced with typename
+     CC::type given a class template
+
+     template <typename> class CC;
+
+     whose primary template is not defined and with a single partial
+     specialization whose template parameter list is that of A and whose
+     template argument list is a specialization of A with the template argument
+     list of A ([temp.dep.type]) having a member typedef type designating a
+     template specialization with the template argument list of A but with C as
+     the template.  */
+
+  /* FIXME: Also recognize inherited constructors of the form 'using C::B::B',
+     which seem to be represented with TYPENAME_TYPE C::B as USING_DECL_SCOPE?
+     And recognize constructors inherited from a non-dependent base class, which
+     seem to be missing from the overload set entirely?  */
+  tree scope = USING_DECL_SCOPE (ctor);
+  if (!CLASS_TYPE_P (scope)
+      || !CLASSTYPE_TEMPLATE_INFO (scope)
+      || !PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (scope)))
+    return NULL_TREE;
+
+  tree t = build_tree_list (DECL_TEMPLATE_PARMS (tmpl), scope);
+  bool any_dguides_p;
+  tree uguides = deduction_guides_for (CLASSTYPE_TI_TEMPLATE (scope),
+				       any_dguides_p, complain);
+  return alias_ctad_tweaks (t, uguides);
+}
+
+/* If template arguments for TMPL can be deduced from TYPE, return
+   the deduced arguments, otherwise return NULL_TREE.
    Used to implement CPTK_IS_DEDUCIBLE for alias CTAD according to
    [over.match.class.deduct].
 
    This check is specified in terms of partial specialization, so the behavior
    should be parallel to that of get_partial_spec_bindings.  */
 
-bool
+tree
 type_targs_deducible_from (tree tmpl, tree type)
 {
-  tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
+  tree tparms, ttype;
+  if (TREE_CODE (tmpl) == TEMPLATE_DECL)
+    {
+      /* If tmpl is a class template, this is trivial: it's deducible if
+	 TYPE is a specialization of TMPL.  */
+      if (DECL_CLASS_TEMPLATE_P (tmpl))
+	{
+	  if (CLASS_TYPE_P (type)
+	      && CLASSTYPE_TEMPLATE_INFO (type)
+	      && CLASSTYPE_TI_TEMPLATE (type) == tmpl)
+	    return INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
+	  else
+	    return NULL_TREE;
+	}
+
+      /* Otherwise it's an alias template.  */
+      tparms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
+      ttype = TREE_TYPE (tmpl);
+    }
+  else
+    {
+      /* TMPL is a synthetic alias template represented as a TREE_LIST as
+	 per alias_ctad_tweaks.  */
+      tparms = INNERMOST_TEMPLATE_PARMS (TREE_PURPOSE (tmpl));
+      ttype = TREE_VALUE (tmpl);
+      tmpl = TI_TEMPLATE (TYPE_TEMPLATE_INFO_MAYBE_ALIAS (ttype));
+    }
+
   int len = TREE_VEC_LENGTH (tparms);
   tree targs = make_tree_vec (len);
   bool tried_array_deduction = (cxx_dialect < cxx17);
 
-  /* If tmpl is a class template, this is trivial: it's deducible if TYPE is a
-     specialization of TMPL.  */
-  if (DECL_CLASS_TEMPLATE_P (tmpl))
-    return (CLASS_TYPE_P (type)
-	    && CLASSTYPE_TEMPLATE_INFO (type)
-	    && CLASSTYPE_TI_TEMPLATE (type) == tmpl);
-
-  /* Otherwise it's an alias template.  */
  again:
-  if (unify (tparms, targs, TREE_TYPE (tmpl), type,
+  if (unify (tparms, targs, ttype, type,
 	     UNIFY_ALLOW_NONE, false))
-    return false;
+    return NULL_TREE;
 
   /* We don't fail on an undeduced targ the second time through (like
      get_partial_spec_bindings) because we're going to try defaults.  */
@@ -30123,7 +30238,7 @@ type_targs_deducible_from (tree tmpl, tree type)
 	if (!tried_array_deduction
 	    && TREE_CODE (tparm) == TYPE_DECL)
 	  {
-	    try_array_deduction (tparms, targs, TREE_TYPE (tmpl));
+	    try_array_deduction (tparms, targs, ttype);
 	    tried_array_deduction = true;
 	    if (TREE_VEC_ELT (targs, i))
 	      goto again;
@@ -30152,12 +30267,15 @@ type_targs_deducible_from (tree tmpl, tree type)
      partial specialization can't have default targs.  */
   targs = coerce_template_parms (tparms, targs, tmpl, tf_none);
   if (targs == error_mark_node)
-    return false;
+    return NULL_TREE;
 
   /* I believe we don't need the template_template_parm_bindings_ok_p call
      because coerce_template_parms did coerce_template_template_parms.  */
 
-  return constraints_satisfied_p (tmpl, targs);
+  if (!constraints_satisfied_p (tmpl, targs))
+    return NULL_TREE;
+
+  return targs;
 }
 
 /* Return artificial deduction guides built from the constructors of class
@@ -30173,13 +30291,22 @@ ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
 
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
     {
-      /* Skip inherited constructors.  */
+      /* We handle C++23 inherited CTAD below.  */
       if (iter.using_p ())
 	continue;
 
       tree guide = build_deduction_guide (type, *iter, outer_args, complain);
       cands = lookup_add (guide, cands);
     }
+
+  if (cxx_dialect >= cxx23)
+    for (tree ctor : ovl_range (CLASSTYPE_CONSTRUCTORS (type)))
+      if (TREE_CODE (ctor) == USING_DECL)
+	{
+	  tree uguides = inherited_ctad_tweaks (tmpl, ctor, complain);
+	  if (uguides)
+	    cands = lookup_add (uguides, cands);
+	}
 
   /* Add implicit default constructor deduction guide.  */
   if (!TYPE_HAS_USER_CONSTRUCTOR (type))
@@ -30231,6 +30358,8 @@ deduction_guides_for (tree tmpl, bool &any_dguides_p, tsubst_flags_t complain)
 
   /* Cache the deduction guides for a template.  We also remember the result of
      lookup, and rebuild everything if it changes; should be very rare.  */
+  /* FIXME: Also rebuild if this is a class template that inherits guides from a
+     base class, and lookup for the latter changed.  */
   tree_pair_p cache = NULL;
   if (tree_pair_p &r
       = hash_map_safe_get_or_insert<hm_ggc> (dguide_cache, tmpl))
