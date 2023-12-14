@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "vec.h"
 #include "hash-set.h"
-#include <algorithm>
 #include "ssa-iterators.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
