@@ -16,5 +16,5 @@ int main()
 {
   B b = 42;			// { dg-line init }
   // { dg-prune-output "no matching function" }
-  // { dg-error "class template argument deduction" "" { target c++23_down } init }
+  // { dg-error "class template argument deduction" "" { target c++20_down } init }
 }
