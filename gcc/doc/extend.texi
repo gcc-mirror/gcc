@@ -11728,6 +11728,31 @@ operand as if it were a memory reference.
 @tab @code{%l0}
 @end multitable
 
+@anchor{aarch64Operandmodifiers}
+@subsubsection AArch64 Operand Modifiers
+
+The following table shows the modifiers supported by AArch64 and their effects:
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{w} @tab Print a 32-bit general-purpose register name or, given a
+constant zero operand, the 32-bit zero register (@code{wzr}).
+@item @code{x} @tab Print a 64-bit general-purpose register name or, given a
+constant zero operand, the 64-bit zero register (@code{xzr}).
+@item @code{b} @tab Print an FP/SIMD register name with a @code{b} (byte, 8-bit)
+prefix.
+@item @code{h} @tab Print an FP/SIMD register name with an @code{h} (halfword,
+16-bit) prefix.
+@item @code{s} @tab Print an FP/SIMD register name with an @code{s} (single
+word, 32-bit) prefix.
+@item @code{d} @tab Print an FP/SIMD register name with a @code{d} (doubleword,
+64-bit) prefix.
+@item @code{q} @tab Print an FP/SIMD register name with a @code{q} (quadword,
+128-bit) prefix.
+@item @code{Z} @tab Print an FP/SIMD register name as an SVE register (i.e. with
+a @code{z} prefix).  This is a no-op for SVE register operands.
+@end multitable
+
 @anchor{x86Operandmodifiers}
 @subsubsection x86 Operand Modifiers
 
