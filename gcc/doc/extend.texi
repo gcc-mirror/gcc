@@ -12669,7 +12669,28 @@ situations.
 @enddefbuiltin
 
 @deftypefn {Built-in Function} {void *} __builtin_stack_address ()
-This function returns the value of the stack pointer register.
+This function returns the stack pointer register, offset by
+@code{STACK_POINTER_OFFSET}.
+
+Conceptually, the returned address returned by this built-in function is
+the boundary between the stack area allocated for use by its caller, and
+the area that could be modified by a function call, that the caller
+could safely zero-out before or after (but not during) the call
+sequence.
+
+Arguments for a callee may be preallocated as part of the caller's stack
+frame, or allocated on a per-call basis, depending on the target, so
+they may be on either side of this boundary.
+
+Even if the stack pointer is biased, the result is not.  The register
+save area on SPARC is regarded as modifiable by calls, rather than as
+allocated for use by the caller function, since it is never in use while
+the caller function itself is running.
+
+Red zones that only leaf functions could use are also regarded as
+modifiable by calls, rather than as allocated for use by the caller.
+This is only theoretical, since leaf functions do not issue calls, but a
+constant offset makes this built-in function more predictable.
 @end deftypefn
 
 @node Stack Scrubbing
