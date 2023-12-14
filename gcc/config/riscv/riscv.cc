@@ -355,13 +355,13 @@ static const common_vector_cost generic_vls_vector_cost = {
   1, /* fp_stmt_cost  */
   1, /* gather_load_cost  */
   1, /* scatter_store_cost  */
-  1, /* vec_to_scalar_cost  */
+  2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
-  1, /* permute_cost  */
-  3, /* align_load_cost  */
-  3, /* align_store_cost  */
-  3, /* unalign_load_cost  */
-  3, /* unalign_store_cost  */
+  2, /* permute_cost  */
+  1, /* align_load_cost  */
+  1, /* align_store_cost  */
+  1, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
 };
 
 /* Generic costs for VLA vector operations.  */
@@ -371,13 +371,13 @@ static const scalable_vector_cost generic_vla_vector_cost = {
     1, /* fp_stmt_cost  */
     1, /* gather_load_cost  */
     1, /* scatter_store_cost  */
-    1, /* vec_to_scalar_cost  */
+    2, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
-    1, /* permute_cost  */
-    3, /* align_load_cost  */
-    3, /* align_store_cost  */
-    3, /* unalign_load_cost  */
-    3, /* unalign_store_cost  */
+    2, /* permute_cost  */
+    1, /* align_load_cost  */
+    1, /* align_store_cost  */
+    1, /* unalign_load_cost  */
+    1, /* unalign_store_cost  */
   },
 };
 
