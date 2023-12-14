@@ -745,6 +745,26 @@ build_raise_check (int check, enum exception_info_kind kind)
   return result;
 }
 
+/* Return true if GNAT_NODE, which is an N_Attribute_Reference, is one of the
+   access attributes.  */
+
+static bool
+access_attribute_p (Node_Id gnat_node)
+{
+  switch (Get_Attribute_Id (Attribute_Name (gnat_node)))
+    {
+    case Attr_Access:
+    case Attr_Unchecked_Access:
+    case Attr_Unrestricted_Access:
+      return true;
+
+    default:
+      return false;
+    }
+
+  gcc_unreachable ();
+}
+
 /* Return a positive value if an lvalue is required for GNAT_NODE, which is
    an N_Attribute_Reference.  */
 
@@ -760,7 +780,6 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_Range_Length:
     case Attr_Length:
     case Attr_Object_Size:
-    case Attr_Size:
     case Attr_Value_Size:
     case Attr_Component_Size:
     case Attr_Descriptor_Size:
@@ -786,11 +805,14 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_First_Bit:
     case Attr_Last_Bit:
     case Attr_Bit:
+    case Attr_Size:
     case Attr_Asm_Input:
     case Attr_Asm_Output:
     default:
       return 1;
     }
+
+  gcc_unreachable ();
 }
 
 /* Return a positive value if an lvalue is required for GNAT_NODE.  GNU_TYPE
@@ -8472,7 +8494,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  return slot optimization in this case.
 
        5. If this is a reference to an unconstrained array which is used either
-	  as the prefix of an attribute reference that requires an lvalue or in
+	  as the prefix of an attribute reference for an access attribute or in
 	  a return statement without storage pool, return the result unmodified
 	  because we want to return the original bounds.
 
@@ -8539,7 +8561,7 @@ gnat_to_gnu (Node_Id gnat_node)
   else if (TREE_CODE (TREE_TYPE (gnu_result)) == UNCONSTRAINED_ARRAY_TYPE
 	   && Present (Parent (gnat_node))
 	   && ((Nkind (Parent (gnat_node)) == N_Attribute_Reference
-	        && lvalue_required_for_attribute_p (Parent (gnat_node)))
+	        && access_attribute_p (Parent (gnat_node)))
 	       || (Nkind (Parent (gnat_node)) == N_Simple_Return_Statement
 		   && No (Storage_Pool (Parent (gnat_node))))))
     ;
