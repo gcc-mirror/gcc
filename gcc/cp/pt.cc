@@ -9525,7 +9525,7 @@ template <>
 inline void
 freelist<tree_node>::reinit (tree obj ATTRIBUTE_UNUSED)
 {
-  tree_base *b ATTRIBUTE_UNUSED = &obj->base;
+  tree_common *c ATTRIBUTE_UNUSED = &obj->common;
 
 #ifdef ENABLE_GC_CHECKING
   gcc_checking_assert (TREE_CODE (obj) == TREE_LIST);
@@ -9540,8 +9540,10 @@ freelist<tree_node>::reinit (tree obj ATTRIBUTE_UNUSED)
 #ifdef ENABLE_GC_CHECKING
   TREE_SET_CODE (obj, TREE_LIST);
 #else
-  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (b, sizeof (*b)));
+  TREE_CHAIN (obj) = NULL_TREE;
+  TREE_TYPE (obj) = NULL_TREE;
 #endif
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (c, sizeof (*c)));
 }
 
 /* Point to the first object in the TREE_LIST freelist.  */
