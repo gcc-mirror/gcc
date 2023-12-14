@@ -270,13 +270,13 @@ private:
 /* fileptr_state_machine's ctor.  */
 
 fileptr_state_machine::fileptr_state_machine (logger *logger)
-: state_machine ("file", logger)
+: state_machine ("file", logger),
+  m_unchecked (add_state ("unchecked")),
+  m_null (add_state ("null")),
+  m_nonnull (add_state ("nonnull")),
+  m_closed (add_state ("closed")),
+  m_stop (add_state ("stop"))
 {
-  m_unchecked = add_state ("unchecked");
-  m_null = add_state ("null");
-  m_nonnull = add_state ("nonnull");
-  m_closed = add_state ("closed");
-  m_stop = add_state ("stop");
 }
 
 /* Get a set of functions that are known to take a FILE * that must be open,

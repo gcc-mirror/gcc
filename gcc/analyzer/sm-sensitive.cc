@@ -161,10 +161,10 @@ private:
 /* sensitive_state_machine's ctor.  */
 
 sensitive_state_machine::sensitive_state_machine (logger *logger)
-: state_machine ("sensitive", logger)
+: state_machine ("sensitive", logger),
+  m_sensitive (add_state ("sensitive")),
+  m_stop (add_state ("stop"))
 {
-  m_sensitive = add_state ("sensitive");
-  m_stop = add_state ("stop");
 }
 
 /* Warn about an exposure at NODE and STMT if ARG is in the "sensitive"

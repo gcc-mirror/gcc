@@ -830,13 +830,13 @@ private:
 /* taint_state_machine's ctor.  */
 
 taint_state_machine::taint_state_machine (logger *logger)
-: state_machine ("taint", logger)
+: state_machine ("taint", logger),
+  m_tainted (add_state ("tainted")),
+  m_has_lb (add_state ("has_lb")),
+  m_has_ub (add_state ("has_ub")),
+  m_stop (add_state ("stop")),
+  m_tainted_control_flow (add_state ("tainted-control-flow"))
 {
-  m_tainted = add_state ("tainted");
-  m_has_lb = add_state ("has_lb");
-  m_has_ub = add_state ("has_ub");
-  m_stop = add_state ("stop");
-  m_tainted_control_flow = add_state ("tainted-control-flow");
 }
 
 state_machine::state_t

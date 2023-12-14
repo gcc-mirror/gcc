@@ -241,10 +241,10 @@ private:
 /* va_list_state_machine's ctor.  */
 
 va_list_state_machine::va_list_state_machine (logger *logger)
-: state_machine ("va_list", logger)
+: state_machine ("va_list", logger),
+  m_started (add_state ("started")),
+  m_ended (add_state ("ended"))
 {
-  m_started = add_state ("started");
-  m_ended = add_state ("ended");
 }
 
 /* Implementation of the various "va_*" functions for

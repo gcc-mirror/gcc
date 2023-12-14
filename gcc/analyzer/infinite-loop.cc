@@ -71,7 +71,7 @@ struct infinite_loop
 {
   infinite_loop (const exploded_node &enode,
 		location_t loc,
-		std::vector<const exploded_edge *> eedges,
+		std::vector<const exploded_edge *> &&eedges,
 		logger *logger)
   : m_enode (enode),
     m_loc (loc),
@@ -423,9 +423,9 @@ starts_infinite_loop_p (const exploded_node &enode,
 		  free (filename);
 		}
 	      return ::make_unique<infinite_loop> (enode,
-						  first_loc,
-						  eedges,
-						  logger);
+						   first_loc,
+						   std::move (eedges),
+						   logger);
 	    }
 	  else
 	    {
