@@ -750,9 +750,8 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		      stmt_vec_info stmt_info, slp_tree, tree vectype,
 		      int misalign, vect_cost_model_location where)
 {
-  /* TODO: Use default STMT cost model.
-	   We will support more accurate STMT cost model later.  */
-  int stmt_cost = default_builtin_vectorization_cost (kind, vectype, misalign);
+  int stmt_cost
+    = targetm.vectorize.builtin_vectorization_cost (kind, vectype, misalign);
 
   /* Do one-time initialization based on the vinfo.  */
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
