@@ -1137,7 +1137,7 @@ namespace __format
 	      using rep = typename decltype(__ss)::rep;
 	      if constexpr (is_floating_point_v<rep>)
 		{
-		  __out = std::format_to(__loc, std::move(__out),
+		  __out = std::format_to(std::move(__out), __loc,
 					 _GLIBCXX_WIDEN("{:.{}Lg}"),
 					 __ss.count(),
 					 __hms.fractional_width);
