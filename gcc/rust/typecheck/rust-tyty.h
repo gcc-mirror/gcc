@@ -926,9 +926,6 @@ public:
 
   size_t num_params () const { return params.size (); }
 
-  // DEPRECATED: Use get_param_type_at
-  BaseType *param_at (size_t idx) const { return get_param_type_at (idx); }
-
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
 

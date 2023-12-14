@@ -2123,7 +2123,7 @@ FnPtr::is_equal (const BaseType &other) const
 
   for (size_t i = 0; i < num_params (); i++)
     {
-      if (!param_at (i)->is_equal (*other2.param_at (i)))
+      if (!get_param_type_at (i)->is_equal (*other2.get_param_type_at (i)))
 	return false;
     }
   return true;

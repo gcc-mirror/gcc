@@ -1198,7 +1198,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
     if (base->get_kind () == TyTy::TypeKind::FNPTR)
       {
 	const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (base);
-	*result = fn->param_at (index);
+	*result = fn->get_param_type_at (index);
 
 	return true;
       }

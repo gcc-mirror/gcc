@@ -271,7 +271,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
   for (auto &argument : call.get_arguments ())
     {
       location_t arg_locus = argument->get_locus ();
-      BaseType *fnparam = type.param_at (i);
+      BaseType *fnparam = type.get_param_type_at (i);
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
