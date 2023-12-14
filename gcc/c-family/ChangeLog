@@ -1,3 +1,43 @@
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* c.opt: Add -fdiagnostics-all-candidates.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.cc (check_address_or_pointer_of_packed_member):
+	Rename to check_address_of_packed_member.
+	(check_and_warn_address_or_pointer_of_packed_member):
+	Rename to check_and_warn_address_of_packed_member.
+	(warn_for_address_or_pointer_of_packed_member):
+	Rename to warn_for_address_of_packed_member.
+	* c-common.h: Adjust.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.cc (check_address_or_pointer_of_packed_member):
+	Remove warning based on TYPE_PACKED.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_EXIT_DATA,
+	C_ORT_OMP_EXIT_DATA and C_ORT_ACC_TARGET.
+	(omp_addr_token): Add forward declaration.
+	(c_omp_address_inspector): New class.
+	* c-omp.cc (c_omp_adjust_map_clauses): Mark decls addressable here, but
+	do not change any mapping node types.
+	(c_omp_address_inspector::unconverted_ref_origin,
+	c_omp_address_inspector::component_access_p,
+	c_omp_address_inspector::check_clause,
+	c_omp_address_inspector::get_root_term,
+	c_omp_address_inspector::map_supported_p,
+	c_omp_address_inspector::get_origin,
+	c_omp_address_inspector::maybe_unconvert_ref,
+	c_omp_address_inspector::maybe_zero_length_array_section,
+	c_omp_address_inspector::expand_array_base,
+	c_omp_address_inspector::expand_component_selector,
+	c_omp_address_inspector::expand_map_clause): New methods.
+	(omp_expand_access_chain): New function.
+
 2023-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/92606

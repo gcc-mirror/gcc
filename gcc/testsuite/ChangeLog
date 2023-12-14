@@ -1,3 +1,275 @@
+2023-12-13  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ex1.C: Adjust expected diagnostic line.
+
+2023-12-13  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: Add include
+	arm_neon_sve_bridge header file
+	* gcc.dg/torture/neon-sve-bridge.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_f16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_f64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_s64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_u16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_u32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_u64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/dup_neonq_u8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_f16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_f64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_s64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_u16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_u32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_u64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/get_neonq_u8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_f16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_f64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_s64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_u16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_u32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_u64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/set_neonq_u8.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/dup_neonq_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/get_neonq_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/set_neonq_1.c: New test.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/overload/error6.C: Pass -fdiagnostics-all-candidates.
+	* g++.dg/cpp0x/deleted16.C: New test.
+	* g++.dg/cpp0x/deleted16a.C: New test.
+	* g++.dg/overload/error6a.C: New test.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Rename template
+	function test_7 that (maybe accidentally) shares the same name
+	as its non-template callee.
+	* g++.dg/overload/error6.C: New test.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/overload/error5.C: New test.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99186
+	PR c++/104867
+	* g++.dg/cpp1z/nontype-auto23.C: New test.
+	* g++.dg/cpp1z/nontype-auto24.C: New test.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93740
+	* g++.dg/template/ptrmem34.C: New test.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/Waddress-of-packed-member-1.c: Don't expect
+	a warning on the cast cases.
+	* c-c++-common/pr51628-35.c: Use -Wcast-align=strict.
+	* g++.dg/warn/Waddress-of-packed-member3.C: Likewise.
+	* gcc.dg/pr88928.c: Likewise.
+	* gcc.dg/pr51628-20.c: Removed.
+	* gcc.dg/pr51628-21.c: Removed.
+	* gcc.dg/pr51628-25.c: Removed.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/enter-exit-data-2.f90: New test.
+	* gfortran.dg/goacc/finalize-1.f: Adjust scan output.
+	* gfortran.dg/gomp/map-9.f90: Adjust scan output.
+	* gfortran.dg/gomp/map-subarray-2.f90: New test.
+	* gfortran.dg/gomp/map-subarray.f90: New test.
+	* gfortran.dg/gomp/target-enter-exit-data.f90: New test.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/clauses-2.c: Fix error output.
+	* c-c++-common/gomp/target-implicit-map-2.c: Adjust scan output.
+	* c-c++-common/gomp/target-50.c: Adjust scan output.
+	* c-c++-common/gomp/target-enter-data-1.c: Adjust scan output.
+	* g++.dg/gomp/static-component-1.C: New test.
+	* gcc.dg/gomp/target-3.c: Adjust scan output.
+	* gfortran.dg/gomp/map-9.f90: Adjust scan output.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96997
+	* g++.dg/debug/cleanup2.C: New test.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/pr112822.C: Require C++17.
+
+2023-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112921
+	* gm2/iso/run/pass/shorttest.mod: New test.
+
+2023-12-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/71093
+	* g++.dg/cpp1y/constexpr-lifetime1.C: Improve error message.
+	* g++.dg/cpp1y/constexpr-lifetime2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-lifetime3.C: Likewise.
+	* g++.dg/cpp1y/constexpr-lifetime4.C: Likewise.
+	* g++.dg/cpp2a/bitfield2.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new3.C: Likewise. New check.
+	* g++.dg/cpp1y/constexpr-lifetime7.C: New test.
+	* g++.dg/cpp2a/constexpr-lifetime1.C: New test.
+	* g++.dg/cpp2a/constexpr-lifetime2.C: New test.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108243
+	* g++.dg/cpp2a/consteval-prop6.C: Adjust diagnostic.
+	* g++.dg/opt/is_constant_evaluated3.C: Remove xfails.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-nsdmi7b.C: Adjust line.
+	* g++.dg/template/copy1.C: Likewise.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/pr112822.C: Require C++17.
+
+2023-12-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_18.c: Add \+nopauth\n
+	* gcc.target/aarch64/options_set_7.c: Add \+crc\n
+	* gcc.target/aarch64/options_set_8.c: Add \+crc\+nodotprod\n
+	* gcc.target/aarch64/cpunative/native_cpu_0.c: Add \n
+	* gcc.target/aarch64/cpunative/native_cpu_1.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_2.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_3.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_4.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_5.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_6.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_7.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_8.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_9.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_10.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_11.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_12.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_13.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_14.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_15.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Ditto.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Ditto.
+	* gcc.target/aarch64/options_set_1.c: Ditto.
+	* gcc.target/aarch64/options_set_2.c: Ditto.
+	* gcc.target/aarch64/options_set_3.c: Ditto.
+	* gcc.target/aarch64/options_set_5.c: Ditto.
+	* gcc.target/aarch64/options_set_6.c: Ditto.
+	* gcc.target/aarch64/options_set_9.c: Ditto.
+	* gcc.target/aarch64/options_set_11.c: Ditto.
+	* gcc.target/aarch64/options_set_12.c: Ditto.
+	* gcc.target/aarch64/options_set_13.c: Ditto.
+	* gcc.target/aarch64/options_set_14.c: Ditto.
+	* gcc.target/aarch64/options_set_15.c: Ditto.
+	* gcc.target/aarch64/options_set_16.c: Ditto.
+	* gcc.target/aarch64/options_set_17.c: Ditto.
+	* gcc.target/aarch64/options_set_18.c: Ditto.
+	* gcc.target/aarch64/options_set_19.c: Ditto.
+	* gcc.target/aarch64/options_set_20.c: Ditto.
+	* gcc.target/aarch64/options_set_21.c: Ditto.
+	* gcc.target/aarch64/options_set_22.c: Ditto.
+	* gcc.target/aarch64/options_set_23.c: Ditto.
+	* gcc.target/aarch64/options_set_24.c: Ditto.
+	* gcc.target/aarch64/options_set_25.c: Ditto.
+	* gcc.target/aarch64/options_set_26.c: Ditto.
+
+2023-12-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR tree-optimization/112822
+	* g++.dg/pr112822.C: Add dg-do compile target c++17 directive.
+
+2023-12-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/112929
+	PR target/112988
+	* gcc.target/riscv/rvv/vsetvl/pr112929.c: Moved to...
+	* gcc.target/riscv/rvv/vsetvl/pr112929-1.c: ...here.
+	* gcc.target/riscv/rvv/vsetvl/pr112988.c: Moved to...
+	* gcc.target/riscv/rvv/vsetvl/pr112988-1.c: ...here.
+	* gcc.target/riscv/rvv/vsetvl/pr112929-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr112988-2.c: New test.
+
+2023-12-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-ssve.exp:
+
+2023-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arc/extvsi-1.c: New test case.
+	* gcc.target/arc/extvsi-2.c: Likewise.
+
+2023-12-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112929
+	PR target/112988
+	* gcc.target/riscv/rvv/vsetvl/pr112929.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr112988.c: New test.
+
+2023-12-13  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/riscv_vector.h: New file.
+
+2023-12-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111317
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111317.c: New test.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112940
+	* gcc.dg/bitint-53.c: New test.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112962
+	* gcc.target/i386/pr112962.c: New test.
+
+2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112991
+	PR tree-optimization/112961
+	* gcc.dg/torture/pr112991.c: New testcase.
+
+2023-12-13  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/builtin_pld_pli.c: New.
+	* gcc.target/aarch64/builtin_pld_pli_illegal.c: New.
+
+2023-12-13  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/pr110790-2.c: Change scan-assembler from shrq
+	to shr\[qx\].
+
+2023-12-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const-build-1.c: New test.
+
 2023-12-12  Jason Merrill  <jason@redhat.com>
 	    Jason Xu  <rxu@DRWHoldings.com>
 

@@ -1,3 +1,15 @@
+2023-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112921
+	* gm2-libs-iso/ConvStringShort.def: New file.
+	* gm2-libs-iso/ConvStringShort.mod: New file.
+	* gm2-libs-iso/ShortConv.def: New file.
+	* gm2-libs-iso/ShortConv.mod: New file.
+	* gm2-libs-iso/ShortMath.def: New file.
+	* gm2-libs-iso/ShortMath.mod: New file.
+	* gm2-libs-iso/ShortStr.def: New file.
+	* gm2-libs-iso/ShortStr.mod: New file.
+
 2023-12-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112984

@@ -1,3 +1,12 @@
+2023-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112921
+	* libm2iso/Makefile.am (M2DEFS): Add ConvStringShort.def,
+	ShortConv.def, ShortMath.def and ShortStr.def.
+	(M2MODS): Add ConvStringShort.mod,
+	ShortConv.mod, ShortMath.mod and ShortStr.mod.
+	* libm2iso/Makefile.in: Regenerate.
+
 2023-12-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Added line breaks.

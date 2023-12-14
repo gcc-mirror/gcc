@@ -1,3 +1,308 @@
+2023-12-13  Richard Ball  <richard.ball@arm.com>
+
+	* config.gcc: Adds new header to config.
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_type_qualifiers):
+	Moved to header file.
+	(ENTRY): Likewise.
+	(enum aarch64_simd_type): Likewise.
+	(struct aarch64_simd_type_info): Remove static.
+	(GTY): Likewise.
+	* config/aarch64/aarch64-c.cc (aarch64_pragma_aarch64):
+	Defines pragma for arm_neon_sve_bridge.h.
+	* config/aarch64/aarch64-protos.h:
+	Add handle_arm_neon_sve_bridge_h
+	* config/aarch64/aarch64-sve-builtins-base.h: New intrinsics.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(class svget_neonq_impl): New intrinsic implementation.
+	(class svset_neonq_impl): Likewise.
+	(class svdup_neonq_impl): Likewise.
+	(NEON_SVE_BRIDGE_FUNCTION): New intrinsics.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(NEON_SVE_BRIDGE_FUNCTION): Defines macro for NEON_SVE_BRIDGE
+	functions.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: New shapes.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(parse_element_type): Add NEON element types.
+	(parse_type): Likewise.
+	(struct get_neonq_def): Defines function shape for get_neonq.
+	(struct set_neonq_def): Defines function shape for set_neonq.
+	(struct dup_neonq_def): Defines function shape for dup_neonq.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(DEF_SVE_TYPE_SUFFIX): Changed to be called through
+	SVE_NEON macro.
+	(DEF_SVE_NEON_TYPE_SUFFIX): Defines
+	macro for NEON_SVE_BRIDGE type suffixes.
+	(DEF_NEON_SVE_FUNCTION): Defines
+	macro for NEON_SVE_BRIDGE functions.
+	(function_resolver::infer_neon128_vector_type): Infers type suffix
+	for overloaded functions.
+	(handle_arm_neon_sve_bridge_h): Handles #pragma arm_neon_sve_bridge.h.
+	* config/aarch64/aarch64-sve-builtins.def
+	(DEF_SVE_NEON_TYPE_SUFFIX): Macro for handling neon_sve type suffixes.
+	(bf16): Replace entry with neon-sve entry.
+	(f16): Likewise.
+	(f32): Likewise.
+	(f64): Likewise.
+	(s8): Likewise.
+	(s16): Likewise.
+	(s32): Likewise.
+	(s64): Likewise.
+	(u8): Likewise.
+	(u16): Likewise.
+	(u32): Likewise.
+	(u64): Likewise.
+	* config/aarch64/aarch64-sve-builtins.h
+	(GCC_AARCH64_SVE_BUILTINS_H): Include aarch64-builtins.h.
+	(ENTRY): Add aarch64_simd_type definiton.
+	(enum aarch64_simd_type): Add neon information to type_suffix_info.
+	(struct type_suffix_info): New function.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_sve_get_neonq_<mode>): New intrinsic insn for big endian.
+	(@aarch64_sve_set_neonq_<mode>): Likewise.
+	* config/aarch64/iterators.md: Add UNSPEC_SET_NEONQ.
+	* config/aarch64/aarch64-builtins.h: New file.
+	* config/aarch64/aarch64-neon-sve-bridge-builtins.def: New file.
+	* config/aarch64/arm_neon_sve_bridge.h: New file.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Document
+	-fdiagnostics-all-candidates.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_map_clause_descriptor_p): New function.
+	(build_omp_struct_comp_nodes, omp_get_attachment, omp_group_base): Use
+	above function.
+	(omp_tsort_mapping_groups): Process nodes that have
+	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P set after those that don't.  Add
+	enter_exit_data parameter.
+	(omp_resolve_clause_dependencies): Remove GOMP_MAP_TO_PSET mappings if
+	we're mapping the whole containing derived-type variable.
+	(omp_accumulate_sibling_list): Adjust GOMP_MAP_TO_PSET handling.
+	Remove GOMP_MAP_ALWAYS_POINTER handling.
+	(gimplify_scan_omp_clauses): Pass enter_exit argument to
+	omp_tsort_mapping_groups.  Don't adjust/remove GOMP_MAP_TO_PSET
+	mappings for derived-type components here.
+	* tree.h (OMP_CLAUSE_RELEASE_DESCRIPTOR): New macro.
+	* tree-pretty-print.cc (dump_omp_clause): Show
+	OMP_CLAUSE_RELEASE_DESCRIPTOR in dump output (with
+	GOMP_MAP_TO_PSET-like syntax).
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (build_struct_comp_nodes): Don't process
+	GOMP_MAP_ATTACH_DETACH "middle" nodes here.
+	(omp_mapping_group): Add REPROCESS_STRUCT and FRAGILE booleans for
+	nested struct handling.
+	(omp_strip_components_and_deref, omp_strip_indirections): Remove
+	functions.
+	(omp_get_attachment): Handle GOMP_MAP_DETACH here.
+	(omp_group_last): Handle GOMP_MAP_*, GOMP_MAP_DETACH,
+	GOMP_MAP_ATTACH_DETACH groups for "exit data" of reference-to-pointer
+	component array sections.
+	(omp_gather_mapping_groups_1): Initialise reprocess_struct and fragile
+	fields.
+	(omp_group_base): Handle GOMP_MAP_ATTACH_DETACH after GOMP_MAP_STRUCT.
+	(omp_index_mapping_groups_1): Skip reprocess_struct groups.
+	(omp_get_nonfirstprivate_group, omp_directive_maps_explicitly,
+	omp_resolve_clause_dependencies, omp_first_chained_access_token): New
+	functions.
+	(omp_check_mapping_compatibility): Adjust accepted node combinations
+	for "from" clauses using release instead of alloc.
+	(omp_accumulate_sibling_list): Add GROUP_MAP, ADDR_TOKENS, FRAGILE_P,
+	REPROCESSING_STRUCT, ADDED_TAIL parameters.  Use OMP address tokenizer
+	to analyze addresses.  Reimplement nested struct handling, and
+	implement "fragile groups".
+	(omp_build_struct_sibling_lists): Adjust for changes to
+	omp_accumulate_sibling_list.  Recalculate bias for ATTACH_DETACH nodes
+	after GOMP_MAP_STRUCT nodes.
+	(gimplify_scan_omp_clauses): Call omp_resolve_clause_dependencies.  Use
+	OMP address tokenizer.
+	(gimplify_adjust_omp_clauses_1): Use build_fold_indirect_ref_loc
+	instead of build_simple_mem_ref_loc.
+	* omp-general.cc (omp-general.h, tree-pretty-print.h): Include.
+	(omp_addr_tokenizer): New namespace.
+	(omp_addr_tokenizer::omp_addr_token): New.
+	(omp_addr_tokenizer::omp_parse_component_selector,
+	omp_addr_tokenizer::omp_parse_ref,
+	omp_addr_tokenizer::omp_parse_pointer,
+	omp_addr_tokenizer::omp_parse_access_method,
+	omp_addr_tokenizer::omp_parse_access_methods,
+	omp_addr_tokenizer::omp_parse_structure_base,
+	omp_addr_tokenizer::omp_parse_structured_expr,
+	omp_addr_tokenizer::omp_parse_array_expr,
+	omp_addr_tokenizer::omp_access_chain_p,
+	omp_addr_tokenizer::omp_accessed_addr): New functions.
+	(omp_parse_expr, debug_omp_tokenized_addr): New functions.
+	* omp-general.h (omp_addr_tokenizer::access_method_kinds,
+	omp_addr_tokenizer::structure_base_kinds,
+	omp_addr_tokenizer::token_type,
+	omp_addr_tokenizer::omp_addr_token,
+	omp_addr_tokenizer::omp_access_chain_p,
+	omp_addr_tokenizer::omp_accessed_addr): New.
+	(omp_addr_token, omp_parse_expr): New.
+	* omp-low.cc (scan_sharing_clauses): Skip error check for references
+	to pointers.
+	* tree.h (OMP_CLAUSE_ATTACHMENT_MAPPING_ERASED): New macro.
+
+2023-12-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (NO_XNACK): Change the defaults.
+	* config/gcn/gcn-opts.h (enum hsaco_attr_type): Add HSACO_ATTR_DEFAULT.
+	* config/gcn/gcn.cc (gcn_option_override): Set the default flag_xnack.
+	* config/gcn/gcn.opt: Add -mxnack=default.
+	* doc/invoke.texi: Document the -mxnack default.
+
+2023-12-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (NO_XNACK): Ignore missing -march.
+	(XNACKOPT): Match on/off; ignore any.
+	* config/gcn/gcn-valu.md (gather<mode>_insn_1offset<exec>):
+	Add xnack compatible alternatives.
+	(gather<mode>_insn_2offsets<exec>): Likewise.
+	* config/gcn/gcn.cc (gcn_option_override): Permit -mxnack for devices
+	other than Fiji and gfx1030.
+	(gcn_expand_epilogue): Remove early-clobber problems.
+	(gcn_hsa_declare_function_name): Obey -mxnack setting.
+	* config/gcn/gcn.md (xnack): New attribute.
+	(enabled): Rework to include "xnack" attribute.
+	(*movbi): Add xnack compatible alternatives.
+	(*mov<mode>_insn): Likewise.
+	(*mov<mode>_insn): Likewise.
+	(*mov<mode>_insn): Likewise.
+	(*movti_insn): Likewise.
+	* config/gcn/gcn.opt (-mxnack): Change the default to "any".
+	* doc/invoke.texi: Remove placeholder notice for -mxnack.
+
+2023-12-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/x-aarch64: Add missing dependencies.
+
+2023-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/arc/arc.md (*extvsi_n_0): New define_insn_and_split to
+	implement SImode sign extract using a AND, XOR and MINUS sequence.
+
+2023-12-13  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc: Modify implied ISA info.
+	* config/riscv/arch-canonicalize: Add crypto vector implied info.
+
+2023-12-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112929
+	PR target/112988
+	* config/riscv/riscv-vsetvl.cc
+	(pre_vsetvl::compute_lcm_local_properties): Remove full available.
+	(pre_vsetvl::pre_global_vsetvl_info): Add full available optimization.
+
+2023-12-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111317
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Adjust for COST for decrement IV.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112940
+	* gimple-lower-bitint.cc (struct bitint_large_huge): Add another
+	argument to prepare_data_in_out method defaulted to NULL_TREE.
+	(bitint_large_huge::handle_operand): Pass another argument to
+	prepare_data_in_out instead of emitting an assignment to set it.
+	(bitint_large_huge::prepare_data_in_out): Add VAL_OUT argument.
+	If non-NULL, use it as PHI argument instead of creating a new
+	SSA_NAME.
+	(bitint_large_huge::handle_cast): Pass rext as another argument
+	to 2 prepare_data_in_out calls instead of emitting assignments
+	to set them.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/112953
+	* attribs.cc (free_attr_data): Use delete x rather than delete[] x.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/112962
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): For shifts
+	and abs without lhs replace with nop.
+
+2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	* emit-rtl.cc (set_mem_attributes_minus_bitpos): Preserve
+	the offset when rewriting an exising MEM_REF base for
+	stack slot sharing.
+
+2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112991
+	PR tree-optimization/112961
+	* tree-ssa-sccvn.h (do_rpo_vn): Add skip_entry_phis argument.
+	* tree-ssa-sccvn.cc (do_rpo_vn): Likewise.
+	(do_rpo_vn_1): Likewise, merge with auto-processing.
+	(run_rpo_vn): Adjust.
+	(pass_fre::execute): Likewise.
+	* tree-if-conv.cc (tree_if_conversion): Revert last change.
+	Value-number latch block but disable value-numbering of
+	entry PHIs.
+	* tree-ssa-uninit.cc (execute_early_warn_uninitialized): Adjust.
+
+2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112990
+	* match.pd (bit_insert @0 (BIT_FIELD_REF @1 ..) ..):
+	Restrict to vector modes after lowering.
+
+2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111591
+	* cfgexpand.cc (update_alias_info_with_stack_vars): Document
+	why not adjusting TBAA info on accesses is OK.
+
+2023-12-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/invoke.texi (multiflags): Drop extraneous period, use
+	@pxref instead.
+
+2023-12-13  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc:
+	(AARCH64_PLD): New enum aarch64_builtins entry.
+	(AARCH64_PLDX): Likewise.
+	(AARCH64_PLI): Likewise.
+	(AARCH64_PLIX): Likewise.
+	(aarch64_init_prefetch_builtin): New.
+	(aarch64_general_init_builtins): Call prefetch init function.
+	(aarch64_expand_prefetch_builtin): New.
+	(aarch64_general_expand_builtin):  Add prefetch expansion.
+	(require_const_argument): New.
+	* config/aarch64/aarch64.md (UNSPEC_PLDX): New.
+	(aarch64_pldx): Likewise.
+	* config/aarch64/arm_acle.h (__pld): Likewise.
+	(__pli): Likewise.
+	(__plix): Likewise.
+	(__pldx): Likewise.
+
+2023-12-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/112788
+	* value-range.h (range_compatible_p): Workaround same type mode but
+	different type precision issue for rs6000 scalar float types
+	_Float128 and long double.
+
+2023-12-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Add code to use
+	pli for 34bit constant.
+
+2023-12-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Add new
+	parameter to record number of instructions to build the constant.
+	(num_insns_constant_gpr): Call rs6000_emit_set_long_const to compute
+	num_insn.
+
 2023-12-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vector-costs.cc (costs::analyze_loop_vinfo): New function.

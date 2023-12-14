@@ -1,3 +1,29 @@
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* c-typeck.cc (convert_for_assignment): Adjust call to
+	warn_for_address_of_packed_member.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.cc (c_parser_oacc_all_clauses): Add TARGET_P parameter. Use
+	to select region type for c_finish_omp_clauses call.
+	(c_parser_oacc_loop): Update calls to c_parser_oacc_all_clauses.
+	(c_parser_oacc_compute): Likewise.
+	(c_parser_omp_target_data, c_parser_omp_target_enter_data): Support
+	ATTACH kind.
+	(c_parser_omp_target_exit_data): Support DETACH kind.
+	(check_clauses): Handle GOMP_MAP_POINTER and GOMP_MAP_ATTACH here.
+	* c-typeck.cc (handle_omp_array_sections_1,
+	handle_omp_array_sections, c_finish_omp_clauses): Use
+	c_omp_address_inspector class and OMP address tokenizer to analyze and
+	expand map clause expressions.  Fix some diagnostics.  Fix "is OpenACC"
+	condition for C_ORT_ACC_TARGET addition.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.cc (c_finish_omp_clauses): Add braces and reindent
+	OMP_CLAUSE_TO/OMP_CLAUSE_FROM/OMP_CLAUSE__CACHE_ stanza.
+
 2023-12-11  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/112488

@@ -1,3 +1,124 @@
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (print_z_candidates): Only print ignored candidates
+	when -fdiagnostics-all-candidates is set, otherwise suggest
+	the flag.
+	(build_over_call): When diagnosing deletedness, note
+	other candidates only if -fdiagnostics-all-candidates is
+	set, otherwise suggest the flag.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (enum rejection_reason_code): Add rr_ignored.
+	(add_ignored_candidate): Define.
+	(ignored_candidate_p): Define.
+	(add_template_candidate_real): Do add_ignored_candidate
+	instead of returning NULL.
+	(splice_viable): Put ignored (non-viable) candidates last.
+	(print_z_candidate): Handle ignored candidates.
+	(build_new_function_call): Refine shortcut that calls
+	cp_build_function_call_vec now that non-templates can
+	appear in the candidate list for a template-id call.
+	(add_candidates): Replace 'bad_fns' overload with 'bad_cands'
+	candidate list.  When not considering a candidate, add it
+	to the list as an ignored candidate.  Add all 'bad_cands'
+	to the overload set as well.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc: Include "tristate.h".
+	(splice_viable): Sort the candidate list according to viability.
+	Don't remove non-viable candidates from the list.
+	(print_z_candidates): Add defaulted only_viable_p parameter.
+	By default only print non-viable candidates if there is no
+	viable candidate.
+	(tourney): Ignore non-viable candidates.  Move the true champ to
+	the front of the candidates list, and update 'candidates' to
+	point to the front.  Rename champ_compared_to_predecessor to
+	previous_worse_champ.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99186
+	PR c++/104867
+	* pt.cc (unify) <case INTEGER_CST>: Compare types as well.
+
+2023-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93740
+	* pt.cc (unify) <case FUNCTION_DECL>: Handle it like FIELD_DECL
+	and TEMPLATE_DECL.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (convert_for_arg_passing)
+	* typeck.cc (convert_for_assignment): Adjust call to
+	warn_for_address_of_packed_member.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_all_clauses): Add TARGET_P parameter. Use
+	to select region type for finish_omp_clauses call.
+	(cp_parser_omp_target_data, cp_parser_omp_target_enter_data): Support
+	GOMP_MAP_ATTACH kind.
+	(cp_parser_omp_target_exit_data): Support GOMP_MAP_DETACH kind.
+	(cp_parser_oacc_declare): Update call to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_loop): Update calls to cp_parser_oacc_all_clauses.
+	(cp_parser_oacc_compute): Likewise.
+	* pt.cc (tsubst_expr): Use C_ORT_ACC_TARGET for call to
+	tsubst_omp_clauses for OpenACC compute regions.
+	* semantics.cc (cp_omp_address_inspector): New class, derived from
+	c_omp_address_inspector.
+	(handle_omp_array_sections_1, handle_omp_array_sections,
+	finish_omp_clauses): Use cp_omp_address_inspector class and OMP address
+	tokenizer to analyze and expand OpenMP map clause expressions.  Fix
+	some diagnostics.  Support C_ORT_ACC_TARGET.
+	(finish_omp_target): Handle GOMP_MAP_POINTER.
+
+2023-12-13  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.cc (finish_omp_clause): Add braces and reindent
+	OMP_CLAUSE_TO/OMP_CLAUSE_FROM/OMP_CLAUSE__CACHE_ stanza.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96997
+	* tree.cc (bot_manip): Check data.clear_location for TARGET_EXPR.
+
+2023-12-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/71093
+	* constexpr.cc (constexpr_global_ctx::get_value_ptr): Don't
+	return NULL_TREE for objects we're initializing.
+	(constexpr_global_ctx::destroy_value): Rename from remove_value.
+	Only mark real variables as outside lifetime.
+	(constexpr_global_ctx::clear_value): New function.
+	(destroy_value_checked): New function.
+	(cxx_eval_call_expression): Defer complaining about non-constant
+	arg0 for operator delete. Use remove_value_safe.
+	(cxx_fold_indirect_ref_1): Handle conversion to 'as base' type.
+	(outside_lifetime_error): Include name of object we're
+	accessing.
+	(cxx_eval_store_expression): Handle clobbers. Improve error
+	messages.
+	(cxx_eval_constant_expression): Use remove_value_safe. Clear
+	bind variables before entering body.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Handle missing in-charge
+	argument.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108243
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Turn
+	a constructor CALL_EXPR into a TARGET_EXPR.
+
+2023-12-13  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (build_aggr_init_expr): Copy EXPR_LOCATION.
+
 2023-12-12  Jason Merrill  <jason@redhat.com>
 	    Jason Xu  <rxu@DRWHoldings.com>
 

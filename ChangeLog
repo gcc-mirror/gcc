@@ -1,3 +1,11 @@
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.def (gettext): Disable (via missing)
+	{install-,}{pdf,html,info,dvi} and TAGS targets.  Set no_install
+	to true.  Add --disable-threads --disable-libasprintf.  Drop the
+	lib_path (as there are no shared libs).
+	* Makefile.in: Regenerate.
+
 2023-12-12  Paul Iannetta  <piannetta@kalrayinc.com>
 
 	* MAINTAINERS: Add myself to write after approval
