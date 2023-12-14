@@ -5123,29 +5123,6 @@ loongarch_zero_if_equal (rtx cmp0, rtx cmp1)
 		       OPTAB_DIRECT);
 }
 
-/* Allocate a floating-point condition-code register of mode MODE.  */
-
-static rtx
-loongarch_allocate_fcc (machine_mode mode)
-{
-  unsigned int regno, count;
-
-  gcc_assert (TARGET_HARD_FLOAT);
-
-  if (mode == FCCmode)
-    count = 1;
-  else
-    gcc_unreachable ();
-
-  cfun->machine->next_fcc += -cfun->machine->next_fcc & (count - 1);
-  if (cfun->machine->next_fcc > FCC_REG_LAST - FCC_REG_FIRST)
-    cfun->machine->next_fcc = 0;
-
-  regno = FCC_REG_FIRST + cfun->machine->next_fcc;
-  cfun->machine->next_fcc += count;
-  return gen_rtx_REG (mode, regno);
-}
-
 /* Sign- or zero-extend OP0 and OP1 for integer comparisons.  */
 
 static void
@@ -5260,7 +5237,7 @@ loongarch_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
      operands for FCMP.cond.fmt, instead a reversed condition code is
      required and a test for false.  */
   *code = NE;
-  *op0 = loongarch_allocate_fcc (FCCmode);
+  *op0 = gen_reg_rtx (FCCmode);
 
   *op1 = const0_rtx;
   loongarch_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
@@ -6630,7 +6607,7 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
   enum mode_class mclass;
 
   if (mode == FCCmode)
-    return FCC_REG_P (regno);
+    return FCC_REG_P (regno) || GP_REG_P (regno) || FP_REG_P (regno);
 
   size = GET_MODE_SIZE (mode);
   mclass = GET_MODE_CLASS (mode);
@@ -6845,6 +6822,9 @@ loongarch_move_to_gpr_cost (reg_class_t from)
       /* MOVFR2GR, etc.  */
       return 4;
 
+    case FCC_REGS:
+      return loongarch_cost->movcf2gr;
+
     default:
       return 0;
     }
@@ -6866,6 +6846,9 @@ loongarch_move_from_gpr_cost (reg_class_t to)
     case FP_REGS:
       /* MOVGR2FR, etc.  */
       return 4;
+
+    case FCC_REGS:
+      return loongarch_cost->movgr2cf;
 
     default:
       return 0;
@@ -6900,6 +6883,10 @@ loongarch_register_move_cost (machine_mode mode, reg_class_t from,
     return loongarch_move_from_gpr_cost (to);
   if (to == dregs)
     return loongarch_move_to_gpr_cost (from);
+
+  /* fcc -> fcc, fcc -> fpr, or fpr -> fcc. */
+  if (from == FCC_REGS || to == FCC_REGS)
+    return COSTS_N_INSNS (from == to ? 2 : 1);
 
   /* Handles cases that require a GPR temporary.  */
   cost1 = loongarch_move_to_gpr_cost (from);
@@ -6936,6 +6923,39 @@ loongarch_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   int regno;
 
   regno = true_regnum (x);
+
+  if (mode == FCCmode)
+    {
+      if (reg_class_subset_p (rclass, FCC_REGS) && !FP_REG_P (regno))
+	{
+	  if (FCC_REG_P (regno))
+	    return FP_REGS;
+
+	  auto fn = in_p ? loongarch_move_from_gpr_cost
+			 : loongarch_move_to_gpr_cost;
+
+	  if (fn (FCC_REGS) > fn (FP_REGS) + COSTS_N_INSNS (1))
+	    return FP_REGS;
+
+	  return GP_REG_P (regno) ? NO_REGS : GR_REGS;
+	}
+
+      if (reg_class_subset_p (rclass, GR_REGS) && FCC_REG_P (regno))
+	{
+	  auto fn = in_p ? loongarch_move_to_gpr_cost
+			 : loongarch_move_from_gpr_cost;
+
+	  if (fn (FCC_REGS) > fn (FP_REGS) + COSTS_N_INSNS (1))
+	    return FP_REGS;
+
+	  return NO_REGS;
+	}
+
+      if (reg_class_subset_p (rclass, FP_REGS) && MEM_P (x))
+	return GR_REGS;
+
+      return NO_REGS;
+    }
 
   if (reg_class_subset_p (rclass, FP_REGS))
     {

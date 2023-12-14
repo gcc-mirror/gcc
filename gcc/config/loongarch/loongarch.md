@@ -2283,11 +2283,72 @@
 
 ;; Clear one FCC register
 
-(define_insn "movfcc"
-  [(set (match_operand:FCC 0 "register_operand" "=z")
-	(const_int 0))]
+(define_expand "movfcc"
+  [(set (match_operand:FCC 0 "")
+	(match_operand:FCC 1 ""))]
+  "TARGET_HARD_FLOAT"
+{
+  if (memory_operand (operands[0], FCCmode)
+      && memory_operand (operands[1], FCCmode))
+    operands[1] = force_reg (FCCmode, operands[1]);
+})
+
+(define_insn "movfcc_internal"
+  [(set (match_operand:FCC 0 "nonimmediate_operand"
+			     "=z,z,*f,*f,*r,*r,*m,*f,*r,z,*r")
+	(match_operand:FCC 1 "reg_or_0_operand"
+			     "J,*f,z,*f,J*r,*m,J*r,J*r,*f,*r,z"))]
+  "TARGET_HARD_FLOAT"
+  "@
+   fcmp.caf.s\t%0,$f0,$f0
+   movfr2cf\t%0,%1
+   movcf2fr\t%0,%1
+   fmov.s\t%0,%1
+   or\t%0,%z1,$r0
+   ld.b\t%0,%1
+   st.b\t%z1,%0
+   movgr2fr.w\t%0,%1
+   movfr2gr.s\t%0,%1
+   movgr2cf\t%0,%1
+   movcf2gr\t%0,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "FCC")])
+
+(define_insn "fcc_to_<X:mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(if_then_else:X (ne (match_operand:FCC 1 "register_operand" "0")
+			    (const_int 0))
+			(const_int 1)
+			(const_int 0)))]
+  "TARGET_HARD_FLOAT"
   ""
-  "fcmp.caf.s\t%0,$f0,$f0")
+  [(set_attr "length" "0")
+   (set_attr "type" "ghost")])
+
+(define_expand "cstore<ANYF:mode>4"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "loongarch_fcmp_operator"
+	  [(match_operand:ANYF 2 "register_operand")
+	   (match_operand:ANYF 3 "register_operand")]))]
+  ""
+  {
+    rtx fcc = gen_reg_rtx (FCCmode);
+    rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), FCCmode,
+			      operands[2], operands[3]);
+
+    emit_insn (gen_rtx_SET (fcc, cmp));
+    if (TARGET_64BIT)
+      {
+	rtx gpr = gen_reg_rtx (DImode);
+	emit_insn (gen_fcc_to_di (gpr, fcc));
+	emit_insn (gen_rtx_SET (operands[0],
+				lowpart_subreg (SImode, gpr, DImode)));
+      }
+    else
+      emit_insn (gen_fcc_to_si (operands[0], fcc));
+
+    DONE;
+  })
 
 ;; Conditional move instructions.
 

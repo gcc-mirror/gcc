@@ -101,15 +101,21 @@ loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
     int_mult_di (COSTS_N_INSNS (4)),
     int_div_si (COSTS_N_INSNS (5)),
     int_div_di (COSTS_N_INSNS (5)),
+    movcf2gr (COSTS_N_INSNS (7)),
+    movgr2cf (COSTS_N_INSNS (15)),
     branch_cost (6),
     memory_latency (4) {}
 
 /* The following properties cannot be looked up directly using "cpucfg".
  So it is necessary to provide a default value for "unknown native"
  tune targets (i.e. -mtune=native while PRID does not correspond to
- any known "-mtune" type).  Currently all numbers are default.  */
+ any known "-mtune" type).  */
 array_tune<loongarch_rtx_cost_data> loongarch_cpu_rtx_cost_data =
-  array_tune<loongarch_rtx_cost_data> ();
+  array_tune<loongarch_rtx_cost_data> ()
+    .set (CPU_LA664,
+	  loongarch_rtx_cost_data ()
+	    .movcf2gr_ (COSTS_N_INSNS (1))
+	    .movgr2cf_ (COSTS_N_INSNS (1)));
 
 /* RTX costs to use when optimizing for size.
    We use a value slightly larger than COSTS_N_INSNS (1) for all of them
@@ -125,7 +131,8 @@ const loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size =
     .int_mult_si_ (COST_COMPLEX_INSN)
     .int_mult_di_ (COST_COMPLEX_INSN)
     .int_div_si_ (COST_COMPLEX_INSN)
-    .int_div_di_ (COST_COMPLEX_INSN);
+    .int_div_di_ (COST_COMPLEX_INSN)
+    .movcf2gr_ (COST_COMPLEX_INSN);
 
 array_tune<int> loongarch_cpu_issue_rate = array_tune<int> ()
   .set (CPU_NATIVE, 4)
