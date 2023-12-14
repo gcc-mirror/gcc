@@ -5021,8 +5021,8 @@
   rtx t2 = gen_reg_rtx (V16HImode);
   rtx t3 = gen_reg_rtx (V8SImode);
   emit_insn (gen_lasx_xvabsd_u_bu (t1, operands[1], operands[2]));
-  emit_insn (gen_lasx_xvhaddw_h_b (t2, t1, t1));
-  emit_insn (gen_lasx_xvhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_lasx_xvhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lasx_xvhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));
   DONE;
 })
@@ -5038,8 +5038,8 @@
   rtx t2 = gen_reg_rtx (V16HImode);
   rtx t3 = gen_reg_rtx (V8SImode);
   emit_insn (gen_lasx_xvabsd_s_b (t1, operands[1], operands[2]));
-  emit_insn (gen_lasx_xvhaddw_h_b (t2, t1, t1));
-  emit_insn (gen_lasx_xvhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_lasx_xvhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lasx_xvhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv8si3 (operands[0], t3, operands[3]));
   DONE;
 })

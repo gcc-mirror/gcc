@@ -3385,8 +3385,8 @@
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
   emit_insn (gen_lsx_vabsd_u_bu (t1, operands[1], operands[2]));
-  emit_insn (gen_lsx_vhaddw_h_b (t2, t1, t1));
-  emit_insn (gen_lsx_vhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
   DONE;
 })
@@ -3402,8 +3402,8 @@
   rtx t2 = gen_reg_rtx (V8HImode);
   rtx t3 = gen_reg_rtx (V4SImode);
   emit_insn (gen_lsx_vabsd_s_b (t1, operands[1], operands[2]));
-  emit_insn (gen_lsx_vhaddw_h_b (t2, t1, t1));
-  emit_insn (gen_lsx_vhaddw_w_h (t3, t2, t2));
+  emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
   emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
   DONE;
 })
