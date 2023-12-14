@@ -1009,8 +1009,8 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
 	  {
-	    auto a = ltype->param_at (i);
-	    auto b = type.param_at (i);
+	    auto a = ltype->get_param_type_at (i);
+	    auto b = type.get_param_type_at (i);
 
 	    auto unified_param
 	      = UnifyRules::Resolve (TyTy::TyWithLocation (a),
@@ -1058,7 +1058,7 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
 	  {
-	    auto this_param = ltype->param_at (i);
+	    auto this_param = ltype->get_param_type_at (i);
 	    auto other_param = type.param_at (i).second;
 
 	    auto unified_param
