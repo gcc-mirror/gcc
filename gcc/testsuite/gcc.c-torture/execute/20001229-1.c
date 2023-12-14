@@ -14,6 +14,8 @@ void exit (int);
 #include <asm/sysinfo.h>
 #include <asm/unistd.h>
 
+int syscall (int, ...);
+
 static inline int
 setsysinfo(unsigned long op, void *buffer, unsigned long size,
            int *start, void *arg, unsigned long flag)
