@@ -1867,8 +1867,11 @@ relate_alias_sets (tree new_type, tree old_type, enum alias_set_op op)
 		      && TYPE_NONALIASED_COMPONENT (new_type)
 			 != TYPE_NONALIASED_COMPONENT (old_type)));
 
-      /* The alias set always lives on the TYPE_CANONICAL.  */
-      TYPE_ALIAS_SET (TYPE_CANONICAL (new_type)) = get_alias_set (old_type);
+      /* The alias set is a property of the TYPE_CANONICAL if it exists.  */
+      if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	TYPE_ALIAS_SET (new_type) = get_alias_set (old_type);
+      else
+	TYPE_ALIAS_SET (TYPE_CANONICAL (new_type)) = get_alias_set (old_type);
       break;
 
     case ALIAS_SET_SUBSET:
