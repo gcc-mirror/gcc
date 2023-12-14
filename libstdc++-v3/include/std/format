@@ -346,6 +346,44 @@ namespace __format
     _WP_from_arg // Use a formatting argument for width/prec.
   };
 
+  consteval bool
+  __literal_encoding_is_utf8()
+  {
+#ifdef __GNUC_EXECUTION_CHARSET_NAME
+    const char* __enc = __GNUC_EXECUTION_CHARSET_NAME;
+    // GNU iconv allows "ISO-10646/" prefix (case-insensitive).
+    if (__enc[0] == 'I' || __enc[0] == 'i')
+      {
+	if ((__enc[1] == 'S' || __enc[1] == 's')
+	      && (__enc[2] == 'O' || __enc[2] == 'o'))
+	  {
+	    __enc += 3;
+	    if (string_view(__enc).starts_with("-10646/"))
+	      __enc += 7;
+	    else
+	      return false;
+	  }
+	else
+	  return false;
+      }
+
+    if ((__enc[0] == 'U' || __enc[0] == 'u')
+	  && (__enc[1] == 'T' || __enc[1] == 't')
+	  && (__enc[2] == 'F' || __enc[2] == 'f'))
+      {
+	__enc += 3;
+	if (__enc[0] == '-')
+	  ++__enc;
+	if (__enc[0] == '8')
+	  return __enc[1] == '\0' || string_view(__enc + 1) == "//";
+      }
+#elif defined __clang_literal_encoding__
+    // Clang accepts "-fexec-charset=utf-8" but the macro is still uppercase.
+    return string_view(__clang_literal_encoding__) == "UTF-8";
+#endif
+    return false;
+  }
+
   template<typename _Context>
     size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg);
@@ -2753,6 +2791,21 @@ namespace __format
 	if (this->_M_used().size() != 0)
 	  _Seq_sink::_M_overflow();
 	return std::move(_M_seq);
+      }
+
+      // A writable span that views everything written to the sink.
+      // Will be either a view over _M_seq or the used part of _M_buf.
+      span<_CharT>
+      view()
+      {
+	auto __s = this->_M_used();
+	if (_M_seq.size())
+	  {
+	    if (__s.size() != 0)
+	      _Seq_sink::_M_overflow();
+	    return _M_seq;
+	  }
+	return __s;
       }
     };
 

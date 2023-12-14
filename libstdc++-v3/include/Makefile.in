@@ -441,6 +441,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/memory_resource \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/mutex \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/ostream \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/print \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/queue \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/random \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/regex \

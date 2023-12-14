@@ -85,6 +85,7 @@ std_headers = \
 	${std_srcdir}/memory_resource \
 	${std_srcdir}/mutex \
 	${std_srcdir}/ostream \
+	${std_srcdir}/print \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
 	${std_srcdir}/regex \

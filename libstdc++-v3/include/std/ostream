@@ -39,6 +39,11 @@
 
 #include <ios>
 #include <bits/ostream_insert.h>
+#if __cplusplus > 202002L
+# include <format>
+#endif
+
+# define __glibcxx_want_print
 #include <bits/version.h> // __glibcxx_syncbuf
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -871,6 +876,153 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __os;
     }
 #endif // __glibcxx_syncbuf
+
+#if __cpp_lib_print // C++ >= 23
+
+  inline void
+  vprint_nonunicode(ostream& __os, string_view __fmt, format_args __args)
+  {
+    ostream::sentry __cerb(__os);
+    if (__cerb)
+      {
+	__format::_Str_sink<char> __buf;
+	std::vformat_to(__buf.out(), __os.getloc(), __fmt, __args);
+	auto __out = __buf.view();
+
+	__try
+	  {
+	    const streamsize __w = __os.width();
+	    const streamsize __n = __out.size();
+	    if (__w > __n)
+	      {
+		const bool __left
+		  = (__os.flags() & ios_base::adjustfield) == ios_base::left;
+		if (!__left)
+		  std::__ostream_fill(__os, __w - __n);
+		if (__os.good())
+		  std::__ostream_write(__os, __out.data(), __n);
+		if (__left && __os.good())
+		  std::__ostream_fill(__os, __w - __n);
+	      }
+	    else
+	      std::__ostream_write(__os, __out.data(), __n);
+	  }
+	__catch(const __cxxabiv1::__forced_unwind&)
+	  {
+	    __os._M_setstate(ios_base::badbit);
+	    __throw_exception_again;
+	  }
+	__catch(...)
+	  { __os._M_setstate(ios_base::badbit); }
+      }
+  }
+
+  inline void
+  vprint_unicode(ostream& __os, string_view __fmt, format_args __args)
+  {
+    ostream::sentry __cerb(__os);
+    if (__cerb)
+      {
+
+	const streamsize __w = __os.width();
+	const bool __left
+	  = (__os.flags() & ios_base::adjustfield) == ios_base::left;
+
+	__format::_Str_sink<char> __buf;
+	std::vformat_to(__buf.out(), __os.getloc(), __fmt, __args);
+	auto __out = __buf.view();
+
+#ifdef _WIN32
+	void* __open_terminal(streambuf*);
+	error_code __write_to_terminal(void*, span<char>);
+	// If stream refers to a terminal, write a Unicode string to it.
+	if (auto __term = __open_terminal(__os.rdbuf()))
+	  {
+	    __format::_Str_sink<char> __buf2;
+	    if (__w != 0)
+	      {
+		char __fmt[] = "{0:..{1}}";
+		__fmt[3] == __os.fill();
+		__fmt[4] == __left ? '<' : '>';
+		string_view __str(__out);
+		std::vformat_to(__buf2.out(), // N.B. no need to use getloc()
+				__fmt, std::make_format_args(__str, __w));
+		__out = __buf2.view();
+	      }
+
+	    ios_base::iostate __err = ios_base::goodbit;
+	    __try
+	      {
+		if (__os.rdbuf()->pubsync() == -1)
+		  __err = ios::badbit;
+		else if (auto __e = __write_to_terminal(__term, __out))
+		  if (__e != std::make_error_code(errc::illegal_byte_sequence))
+		    __err = ios::badbit;
+#ifndef _WIN32
+		// __open_terminal(streambuf*) opens a new FILE with fdopen,
+		// so we need to close it here.
+		std::fclose((FILE*)__term);
+#endif
+	      }
+	    __catch(const __cxxabiv1::__forced_unwind&)
+	      {
+		__os._M_setstate(ios_base::badbit);
+		__throw_exception_again;
+	      }
+	    __catch(...)
+	      { __os._M_setstate(ios_base::badbit); }
+
+	    if (__err)
+	      __os.setstate(__err);
+	    return;
+	  }
+#endif
+
+	// Otherwise just insert the string as normal.
+	__try
+	  {
+	    const streamsize __n = __out.size();
+	    if (__w > __n)
+	      {
+		if (!__left)
+		  std::__ostream_fill(__os, __w - __n);
+		if (__os.good())
+		  std::__ostream_write(__os, __out.data(), __n);
+		if (__left && __os.good())
+		  std::__ostream_fill(__os, __w - __n);
+	      }
+	    else
+	      std::__ostream_write(__os, __out.data(), __n);
+	  }
+	__catch(const __cxxabiv1::__forced_unwind&)
+	  {
+	    __os._M_setstate(ios_base::badbit);
+	    __throw_exception_again;
+	  }
+	__catch(...)
+	  { __os._M_setstate(ios_base::badbit); }
+      }
+  }
+
+  template<typename... _Args>
+    inline void
+    print(ostream& __os, format_string<_Args...> __fmt, _Args&&... __args)
+    {
+      auto __fmtargs = std::make_format_args(std::forward<_Args>(__args)...);
+      if constexpr (__format::__literal_encoding_is_utf8())
+	std::vprint_unicode(__os, __fmt.get(), __fmtargs);
+      else
+	std::vprint_nonunicode(__os, __fmt.get(), __fmtargs);
+    }
+
+  template<typename... _Args>
+    inline void
+    println(ostream& __os, format_string<_Args...> __fmt, _Args&&... __args)
+    {
+      std::print(__os, "{}\n",
+		 std::format(__fmt, std::forward<_Args>(__args)...));
+    }
+#endif // __cpp_lib_print
 
 #endif // C++11
 

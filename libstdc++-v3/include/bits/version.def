@@ -1646,6 +1646,15 @@ ftms = {
 };
 
 ftms = {
+  name = print;
+  values = {
+    v = 202211;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = spanstream;
   values = {
     v = 202106;
