@@ -22,4 +22,4 @@ void func (struct foo *f, int n, int m)
 }
 
 /* { dg-final { scan-tree-dump-times {map\(struct:\*f \[len: 1\]\) map\(alloc:[a-z0-9\._]+->vectors \[len: 0\]\) map\(to:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:[a-z0-9\._]+->vectors \[bias: [^\]]+\]\) map\(attach:\*_[0-9]+ \[bias: _[0-9]+\]\)} 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times {map\(struct:\*\(f->bars \+ \(sizetype\) \(\([^\)]+\) n \* 16\)\) \[len: 1\]\) map\(alloc:[a-z0-9\._]+->vectors \[len: 0\]\) map\(to:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:[a-z0-9\._]+->vectors \[bias: [^\]]+\]\)} 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times {map\(struct:\*\(f->bars \+ \(sizetype\) \(\([^\)]+\) n \* (?:16|8)\)\) \[len: 1\]\) map\(alloc:[a-z0-9\._]+->vectors \[len: 0\]\) map\(to:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:[a-z0-9\._]+->vectors \[bias: [^\]]+\]\)} 2 "gimple" } } */
