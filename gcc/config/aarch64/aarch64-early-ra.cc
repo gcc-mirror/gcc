@@ -256,6 +256,8 @@ private:
   struct allocno_info
   {
     allocno_group_info *group ();
+    bool is_shared ();
+    bool is_equiv_to (unsigned int);
 
     // The allocno's unique identifier.
     unsigned int id;
@@ -292,6 +294,10 @@ private:
     // so that it cannot be tied to the destination of the instruction.
     unsigned int is_earlyclobbered : 1;
 
+    // True if this allocno is known to be equivalent to related_allocno
+    // for the whole of this allocno's lifetime.
+    unsigned int is_equiv : 1;
+
     // The inclusive range of program points spanned by the allocno.
     // START_POINT >= END_POINT.
     unsigned int start_point;
@@ -302,9 +308,15 @@ private:
     // See callers of record_copy for what counts as a copy.
     unsigned int copy_dest;
 
-    // If this field is not INVALID_ALLOCNO, this allocno is known to be
-    // equivalent to EQUIV_ALLOCNO for the whole of this allocno's lifetime.
-    unsigned int equiv_allocno;
+    // If this field is not INVALID_ALLOCNO, it indicates one of two things:
+    //
+    // - if is_equiv, this allocno is equivalent to related_allocno for
+    //   the whole of this allocno's lifetime.
+    //
+    // - if !is_equiv, this allocno's live range is a subrange of
+    //   related_allocno's and we have committed to making this allocno
+    //   share whatever register related_allocno uses.
+    unsigned int related_allocno;
 
     union
     {
@@ -319,9 +331,18 @@ private:
       unsigned int chain_next;
     };
 
-    // The previous chained allocno in program order (i.e. at higher
-    // program points), or INVALID_ALLOCNO if none.
-    unsigned int chain_prev;
+    union
+    {
+      // The program point before start_point at which the allocno was
+      // last used, or END_OF_REGION if none.  This is only used temporarily
+      // while recording allocnos; after that, chain_prev below is used
+      // instead.
+      unsigned int last_use_point;
+
+      // The previous chained allocno in program order (i.e. at higher
+      // program points), or INVALID_ALLOCNO if none.
+      unsigned int chain_prev;
+    };
   };
 
   // Information about a full allocno group or a subgroup of it.
@@ -380,6 +401,9 @@ private:
     // The clique's representative group.
     allocno_group_info *group;
 
+    // The number of FPR preferences recorded in fpr_preferences.
+    unsigned int num_fpr_preferences;
+
     // Weights in favor of choosing each FPR as the first register for GROUP.
     int8_t fpr_preferences[32];
   };
@@ -415,7 +439,7 @@ private:
   void record_fpr_def (unsigned int);
   void record_allocno_use (allocno_info *);
   void record_allocno_def (allocno_info *);
-  bool valid_equivalence_p (allocno_info *, allocno_info *);
+  allocno_info *find_related_start (allocno_info *, allocno_info *, bool);
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
@@ -431,6 +455,8 @@ private:
   int rate_chain (allocno_info *, allocno_info *);
   static int cmp_chain_candidates (const void *, const void *);
   void chain_allocnos (unsigned int &, unsigned int &);
+  void merge_fpr_info (allocno_group_info *, allocno_group_info *,
+		       unsigned int);
   void set_single_color_rep (allocno_info *, allocno_group_info *,
 			     unsigned int);
   void set_color_rep (allocno_group_info *, allocno_group_info *,
@@ -445,7 +471,7 @@ private:
 
   void process_copies ();
 
-  static int cmp_decreasing_size (const void *, const void *);
+  static int cmp_allocation_order (const void *, const void *);
   void allocate_colors ();
   allocno_info *find_independent_subchain (allocno_info *);
   color_info *find_oldest_color (unsigned int, unsigned int);
@@ -526,6 +552,9 @@ private:
 
   // All allocnos, by increasing START_POINT.
   auto_vec<allocno_info *> m_sorted_allocnos;
+
+  // Allocnos for which is_shared is true.
+  auto_vec<allocno_info *> m_shared_allocnos;
 
   // All colors, by index.
   auto_vec<color_info *> m_colors;
@@ -704,6 +733,22 @@ early_ra::allocno_info::group ()
   return reinterpret_cast<allocno_group_info *> (chain_end - group_size) - 1;
 }
 
+// Return true if this allocno's live range is a subrange of related_allocno's
+// and if we have committed to making this allocno share whatever register
+// related_allocno uses.
+inline bool
+early_ra::allocno_info::is_shared ()
+{
+  return related_allocno != INVALID_ALLOCNO && !is_equiv;
+}
+
+// Return true if this allocno is known to be equivalent to ALLOCNO.
+inline bool
+early_ra::allocno_info::is_equiv_to (unsigned int allocno)
+{
+  return is_equiv && related_allocno == allocno;
+}
+
 // Return the allocnos in the subgroup.
 inline array_slice<early_ra::allocno_info>
 early_ra::allocno_subgroup::allocnos ()
@@ -859,8 +904,8 @@ early_ra::dump_allocnos ()
     }
 
   fprintf (dump_file, "\nAllocno chains:\n");
-  fprintf (dump_file, "      %5s %12s %12s %5s %5s %5s %5s\n",
-	   "Id", "Regno", "Range ", "Src", "Dest", "Equiv", "FPR");
+  fprintf (dump_file, "      %5s %12s %12s %6s %5s %5s %6s %5s\n",
+	   "Id", "Regno", "Range ", "Src", "Dest", "Equiv", "Shared", "FPR");
   for (unsigned int ai = 0; ai < m_allocnos.length (); ++ai)
     {
       auto *allocno = m_allocnos[ai];
@@ -877,7 +922,7 @@ early_ra::dump_allocnos ()
 	  fprintf (dump_file, " %12s", buffer);
 	  snprintf (buffer, sizeof (buffer), "[%d,%d]",
 		    allocno->start_point, allocno->end_point);
-	  fprintf (dump_file, " %11s%s %5s", buffer,
+	  fprintf (dump_file, " %11s%s %6s", buffer,
 		   allocno->is_earlyclobbered ? "*" : " ",
 		   allocno->is_strong_copy_dest ? "Strong"
 		   : allocno->is_copy_dest ? "Yes" : "-");
@@ -885,10 +930,14 @@ early_ra::dump_allocnos ()
 	    fprintf (dump_file, " %5s", "-");
 	  else
 	    fprintf (dump_file, " %5d", allocno->copy_dest);
-	  if (allocno->equiv_allocno != INVALID_ALLOCNO)
-	    fprintf (dump_file, " %5d", allocno->equiv_allocno);
+	  if (allocno->is_equiv)
+	    fprintf (dump_file, " %5d", allocno->related_allocno);
 	  else
 	    fprintf (dump_file, " %5s", "-");
+	  if (allocno->is_shared ())
+	    fprintf (dump_file, " %6d", allocno->related_allocno);
+	  else
+	    fprintf (dump_file, " %6s", "-");
 	  if (allocno->hard_regno == FIRST_PSEUDO_REGISTER)
 	    fprintf (dump_file, " %5s", "-");
 	  else
@@ -1151,7 +1200,7 @@ early_ra::fpr_preference (unsigned int regno)
     return 3;
   else if (flags & NEEDS_FPR32)
     return 2;
-  else if (!(flags & ALLOWS_FPR32))
+  else if (!(flags & ALLOWS_FPR32) && (flags & ALLOWS_NONFPR))
     return -2;
   else if ((flags & HAS_FPR_COPY) && !(flags & HAS_NONFPR_COPY))
     return 1;
@@ -1230,6 +1279,7 @@ early_ra::start_new_region ()
   m_allocno_copies.truncate (0);
   m_allocnos.truncate (0);
   m_sorted_allocnos.truncate (0);
+  m_shared_allocnos.truncate (0);
   m_colors.truncate (0);
   m_insn_ranges.truncate (0);
   for (auto &fpr_ranges : m_fpr_ranges)
@@ -1291,7 +1341,7 @@ early_ra::create_allocno_group (unsigned int regno, unsigned int size)
 	  allocno->start_point = END_OF_REGION;
 	  allocno->end_point = START_OF_REGION;
 	  allocno->copy_dest = INVALID_ALLOCNO;
-	  allocno->equiv_allocno = INVALID_ALLOCNO;
+	  allocno->related_allocno = INVALID_ALLOCNO;
 	  allocno->chain_next = INVALID_ALLOCNO;
 	  allocno->chain_prev = INVALID_ALLOCNO;
 	  m_allocnos.safe_push (allocno);
@@ -1423,16 +1473,24 @@ early_ra::record_fpr_def (unsigned int regno)
 void
 early_ra::record_allocno_use (allocno_info *allocno)
 {
+  if (allocno->start_point == m_current_point)
+    return;
+
+  gcc_checking_assert (!allocno->is_shared ());
   bitmap_set_bit (m_live_allocnos, allocno->id);
   if (allocno->end_point > m_current_point)
     {
       allocno->end_point = m_current_point;
       allocno->last_def_point = START_OF_REGION;
+      allocno->last_use_point = END_OF_REGION;
     }
+  else
+    allocno->last_use_point = allocno->start_point;
   allocno->start_point = m_current_point;
   allocno->is_copy_dest = false;
-  allocno->is_strong_copy_dest = false;
-  allocno->equiv_allocno = INVALID_ALLOCNO;
+  allocno->is_strong_copy_src = false;
+  allocno->related_allocno = INVALID_ALLOCNO;
+  allocno->is_equiv = false;
 }
 
 // Record a definition of the allocno with index AI at the current program
@@ -1441,37 +1499,89 @@ early_ra::record_allocno_use (allocno_info *allocno)
 void
 early_ra::record_allocno_def (allocno_info *allocno)
 {
+  gcc_checking_assert (!allocno->is_shared ());
+  allocno->last_use_point = allocno->start_point;
   allocno->last_def_point = m_current_point;
   allocno->start_point = m_current_point;
   allocno->num_defs = MIN (allocno->num_defs + 1, 2);
   gcc_checking_assert (!allocno->is_copy_dest
-		       && !allocno->is_strong_copy_dest);
+		       && !allocno->is_strong_copy_src);
   if (!bitmap_clear_bit (m_live_allocnos, allocno->id))
     gcc_unreachable ();
 }
 
-// Return true if a move from SRC_ALLOCNO to DEST_ALLOCNO could be treated
-// as an equivalence.
-bool
-early_ra::valid_equivalence_p (allocno_info *dest_allocno,
-			       allocno_info *src_allocno)
+// SRC_ALLOCNO is copied or tied to DEST_ALLOCNO; IS_EQUIV is true if the
+// two allocnos are known to be equal.  See whether we can mark a chain of
+// allocnos ending at DEST_ALLOCNO as related to SRC_ALLOCNO.   Return the
+// start of the chain if so, otherwise return null.
+//
+// If IS_EQUIV, a chain that contains just DEST_ALLOCNO should be treated
+// as an equivalence.  Otherwise the chain should be shared with SRC_ALLOCNO.
+//
+// Sharing chains are a rather hacky workaround for the fact that we
+// don't collect segmented live ranges, and that in the end we want to do
+// simple interval graph coloring.
+early_ra::allocno_info *
+early_ra::find_related_start (allocno_info *dest_allocno,
+			      allocno_info *src_allocno, bool is_equiv)
 {
-  if (src_allocno->end_point > dest_allocno->end_point)
-    // The src allocno dies first.
-    return false;
-
-  if (src_allocno->num_defs != 0)
+  allocno_info *res = nullptr;
+  for (;;)
     {
-      if (dest_allocno->end_point < m_current_bb_point)
-	// We don't currently track enough information to handle multiple
-	// definitions across basic block boundaries.
-	return false;
+      if (src_allocno->end_point > dest_allocno->end_point)
+	// The src allocno dies first.
+	return res;
 
-      if (src_allocno->last_def_point >= dest_allocno->end_point)
-	// There is another definition during the destination's live range.
-	return false;
+      if (src_allocno->num_defs != 0)
+	{
+	  if (dest_allocno->end_point < m_current_bb_point)
+	    // We don't currently track enough information to handle multiple
+	    // definitions across basic block boundaries.
+	    return res;
+
+	  if (src_allocno->last_def_point >= dest_allocno->end_point)
+	    // There is another definition during the destination's live range.
+	    return res;
+	}
+      if (is_equiv)
+	{
+	  if (dest_allocno->num_defs == 1)
+	    // dest_allocno is equivalent to src_allocno for dest_allocno's
+	    // entire live range.  Fall back to that if we can't establish
+	    // a sharing chain.
+	    res = dest_allocno;
+	}
+      else
+	{
+	  if (src_allocno->last_use_point >= dest_allocno->end_point)
+	    // src_allocno is live during dest_allocno's live range,
+	    // and the two allocnos do not necessarily have the same value.
+	    return res;
+	}
+
+      if (dest_allocno->group_size != 1
+	  || DF_REG_DEF_COUNT (dest_allocno->group ()->regno) != 1)
+	// Currently only single allocnos that are defined once can
+	// share registers with non-equivalent allocnos.  This could be
+	// relaxed, but at the time of writing, aggregates are not valid
+	// SSA names and so generally only use a single pseudo throughout
+	// their lifetime.
+	return res;
+
+      if (dest_allocno->copy_dest == src_allocno->id)
+	// We've found a complete and valid sharing chain.
+	return dest_allocno;
+
+      if (dest_allocno->copy_dest == INVALID_ALLOCNO)
+	return res;
+
+      auto *next_allocno = m_allocnos[dest_allocno->copy_dest];
+      if (!is_chain_candidate (dest_allocno, next_allocno))
+	return res;
+
+      dest_allocno = next_allocno;
+      is_equiv = false;
     }
-  return dest_allocno->num_defs == 1;
 }
 
 // Record any relevant allocno-related information for an actual or imagined
@@ -1558,9 +1668,21 @@ early_ra::record_copy (rtx dest, rtx src, bool from_move_p)
 	      src_allocno->hard_regno = dest_allocno->hard_regno;
 	      dest_allocno->is_copy_dest = 1;
 	    }
-	  else if (from_move_p
-		   && valid_equivalence_p (dest_allocno, src_allocno))
-	    dest_allocno->equiv_allocno = src_allocno->id;
+	  else if (auto *start_allocno = find_related_start (dest_allocno,
+							     src_allocno,
+							     from_move_p))
+	    {
+	      auto *next_allocno = dest_allocno;
+	      for (;;)
+		{
+		  next_allocno->related_allocno = src_allocno->id;
+		  next_allocno->is_equiv = (start_allocno == dest_allocno
+					    && from_move_p);
+		  if (next_allocno == start_allocno)
+		    break;
+		  next_allocno = m_allocnos[next_allocno->copy_dest];
+		}
+	    }
 	}
     }
 }
@@ -1876,13 +1998,13 @@ early_ra::find_strided_accesses ()
 {
   // This function forms a graph of allocnos, linked by equivalences and
   // natural copy chains.  It temporarily uses chain_next to record the
-  // reverse of equivalence edges (equiv_allocno) and chain_prev to record
+  // reverse of equivalence edges (related_allocno) and chain_prev to record
   // the reverse of copy edges (copy_dest).
   unsigned int allocno_info::*links[] = {
     &allocno_info::chain_next,
     &allocno_info::chain_prev,
     &allocno_info::copy_dest,
-    &allocno_info::equiv_allocno
+    &allocno_info::related_allocno
   };
 
   // Set up the temporary reverse edges.  Check for strong copy chains.
@@ -1891,12 +2013,12 @@ early_ra::find_strided_accesses ()
       auto *allocno1 = m_allocnos[i];
       if (allocno1->copy_dest != INVALID_ALLOCNO)
 	m_allocnos[allocno1->copy_dest]->chain_prev = allocno1->id;
-      if (allocno1->equiv_allocno != INVALID_ALLOCNO)
-	m_allocnos[allocno1->equiv_allocno]->chain_next = allocno1->id;
+      if (allocno1->related_allocno != INVALID_ALLOCNO)
+	m_allocnos[allocno1->related_allocno]->chain_next = allocno1->id;
 
       if (allocno1->is_strong_copy_src
-	  && (allocno1->is_copy_dest
-	      || !consider_strong_copy_src_chain (allocno1)))
+	  && !allocno1->is_copy_dest
+	  && !consider_strong_copy_src_chain (allocno1))
 	allocno1->is_strong_copy_src = false;
     }
 
@@ -2062,11 +2184,14 @@ early_ra::cmp_increasing (const void *allocno1_ptr, const void *allocno2_ptr)
 bool
 early_ra::is_chain_candidate (allocno_info *allocno1, allocno_info *allocno2)
 {
-  if (allocno1->equiv_allocno != INVALID_ALLOCNO)
-    allocno1 = m_allocnos[allocno1->equiv_allocno];
+  if (allocno2->is_shared ())
+    return false;
+
+  if (allocno1->is_equiv)
+    allocno1 = m_allocnos[allocno1->related_allocno];
 
   if (allocno2->start_point >= allocno1->end_point
-      && allocno2->equiv_allocno != allocno1->id)
+      && !allocno2->is_equiv_to (allocno1->id))
     return false;
 
   if (allocno2->is_strong_copy_dest)
@@ -2156,18 +2281,30 @@ early_ra::chain_allocnos (unsigned int &headi1, unsigned int &headi2)
 			   && head1->chain_prev == INVALID_ALLOCNO
 			   && head2->chain_prev == INVALID_ALLOCNO);
 
-      if (head1->equiv_allocno != INVALID_ALLOCNO
-	  && m_allocnos[head1->equiv_allocno]->copy_dest == headi2)
+      if (head1->is_equiv
+	  && m_allocnos[head1->related_allocno]->copy_dest == headi2)
 	{
 	  head1->is_copy_dest = head2->is_copy_dest;
 	  head1->is_strong_copy_dest = head2->is_strong_copy_dest;
-	  m_allocnos[head1->equiv_allocno]->copy_dest = headi1;
+	  m_allocnos[head1->related_allocno]->copy_dest = headi1;
 	}
       head1->chain_next = headi2;
       head2->chain_prev = headi1;
 
       headi2 = headi1;
     }
+}
+
+// Add GROUP2's FPR information to GROUP1's, given that GROUP2 starts
+// OFFSET allocnos into GROUP2.
+void
+early_ra::merge_fpr_info (allocno_group_info *group1,
+			  allocno_group_info *group2,
+			  unsigned int offset)
+{
+  group1->fpr_size = std::max (group1->fpr_size, group2->fpr_size);
+  group1->fpr_candidates &= (group2->fpr_candidates
+			     >> (offset * group1->stride));
 }
 
 // Set the color representative of ALLOCNO's group to REP, such that ALLOCNO
@@ -2185,9 +2322,7 @@ early_ra::set_single_color_rep (allocno_info *allocno, allocno_group_info *rep,
   unsigned int factor = group->stride / rep->stride;
   gcc_checking_assert (rep_offset >= allocno->offset * factor);
   group->color_rep_offset = rep_offset - allocno->offset * factor;
-  rep->fpr_size = std::max (rep->fpr_size, group->fpr_size);
-  rep->fpr_candidates &= (group->fpr_candidates
-			  >> (group->color_rep_offset * rep->stride));
+  merge_fpr_info (rep, group, group->color_rep_offset);
 }
 
 // REP1 and REP2 are color representatives.  Change REP1's color representative
@@ -2299,7 +2434,7 @@ early_ra::try_to_chain_allocnos (allocno_info *allocno1,
 	  auto *head2 = m_allocnos[headi2];
 	  if (head1->chain_next != INVALID_ALLOCNO)
 	    return false;
-	  if (head2->equiv_allocno != head1->id
+	  if (!head2->is_equiv_to (head1->id)
 	      && head1->end_point <= head2->start_point)
 	    return false;
 	}
@@ -2429,6 +2564,18 @@ early_ra::form_chains ()
 	    group1->fpr_candidates &= ~fprs >> allocno1->offset;
 	  }
 
+      if (allocno1->is_shared ())
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Allocno %d shares the same hard register"
+		     " as allocno %d\n", allocno1->id,
+		     allocno1->related_allocno);
+	  auto *allocno2 = m_allocnos[allocno1->related_allocno];
+	  merge_fpr_info (allocno2->group (), group1, allocno2->offset);
+	  m_shared_allocnos.safe_push (allocno1);
+	  continue;
+	}
+
       // Find earlier allocnos (in processing order) that could be chained
       // to this one.
       candidates.truncate (0);
@@ -2470,6 +2617,9 @@ early_ra::form_chains ()
   for (unsigned int hi = m_sorted_allocnos.length (); hi-- > 0; )
     {
       auto *allocno = m_sorted_allocnos[hi];
+      if (allocno->is_shared ())
+	continue;
+
       auto *rep = allocno->group ()->color_rep ();
       if (rep->has_color)
 	continue;
@@ -2582,19 +2732,27 @@ early_ra::process_copies ()
       auto *color = m_colors[group->color_rep ()->color];
       color->fpr_preferences[fpr] = MIN (color->fpr_preferences[fpr]
 					 + copy.weight, 127);
+      color->num_fpr_preferences += copy.weight;
     }
 }
 
 // Compare the colors at *COLOR1_PTR and *COLOR2_PTR and return a <=>
-// result that puts colors in order of decreasing size.
+// result that puts colors in allocation order.
 int
-early_ra::cmp_decreasing_size (const void *color1_ptr, const void *color2_ptr)
+early_ra::cmp_allocation_order (const void *color1_ptr, const void *color2_ptr)
 {
   auto *color1 = *(color_info *const *) color1_ptr;
   auto *color2 = *(color_info *const *) color2_ptr;
 
+  // Allocate bigger groups before smaller groups.
   if (color1->group->size != color2->group->size)
     return color1->group->size > color2->group->size ? -1 : 1;
+
+  // Allocate groups with stronger FPR preferences before groups with weaker
+  // FPR preferences.
+  if (color1->num_fpr_preferences != color2->num_fpr_preferences)
+    return color1->num_fpr_preferences > color2->num_fpr_preferences ? -1 : 1;
+
   return (color1->id < color2->id ? -1
 	  : color1->id == color2->id ? 0 : 1);
 }
@@ -2610,7 +2768,7 @@ early_ra::allocate_colors ()
 
   auto_vec<color_info *> sorted_colors;
   sorted_colors.safe_splice (m_colors);
-  sorted_colors.qsort (cmp_decreasing_size);
+  sorted_colors.qsort (cmp_allocation_order);
 
   for (unsigned int i = 0; i < 32; ++i)
     if (!crtl->abi->clobbers_full_reg_p (V0_REGNUM + i))
@@ -2810,12 +2968,16 @@ early_ra::finalize_allocation ()
 {
   for (auto *allocno : m_allocnos)
     {
+      if (allocno->is_shared ())
+	continue;
       auto *group = allocno->group ();
       auto *rep = group->color_rep ();
       auto rep_regno = m_colors[rep->color]->hard_regno;
       auto group_regno = rep_regno + group->color_rep_offset;
       allocno->hard_regno = group_regno + allocno->offset * group->stride;
     }
+  for (auto *allocno : m_shared_allocnos)
+    allocno->hard_regno = m_allocnos[allocno->related_allocno]->hard_regno;
 }
 
 // Replace any allocno references in REFS with the allocated register.
@@ -3094,7 +3256,10 @@ void
 early_ra::process_region ()
 {
   for (auto *allocno : m_allocnos)
-    allocno->chain_next = INVALID_ALLOCNO;
+    {
+      allocno->chain_next = INVALID_ALLOCNO;
+      allocno->chain_prev = INVALID_ALLOCNO;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
