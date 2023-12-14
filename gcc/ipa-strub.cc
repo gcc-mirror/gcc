@@ -3203,7 +3203,6 @@ pass_ipa_strub::execute (function *)
 		   i++, arg = DECL_CHAIN (arg), nparm = DECL_CHAIN (nparm))
 		{
 		  tree save_arg = arg;
-		  tree tmp = arg;
 
 		  /* Arrange to pass indirectly the parms, if we decided to do
 		     so, and revert its type in the wrapper.  */
@@ -3211,10 +3210,9 @@ pass_ipa_strub::execute (function *)
 		    {
 		      tree ref_type = TREE_TYPE (nparm);
 		      TREE_ADDRESSABLE (arg) = true;
-		      tree addr = build1 (ADDR_EXPR, ref_type, arg);
-		      tmp = arg = addr;
+		      arg = build1 (ADDR_EXPR, ref_type, arg);
 		    }
-		  else
+		  else if (!TREE_THIS_VOLATILE (arg))
 		    DECL_NOT_GIMPLE_REG_P (arg) = 0;
 
 		  /* Convert the argument back to the type used by the calling
@@ -3223,16 +3221,31 @@ pass_ipa_strub::execute (function *)
 		     double to be passed on unchanged to the wrapped
 		     function.  */
 		  if (TREE_TYPE (nparm) != DECL_ARG_TYPE (nparm))
-		    arg = fold_convert (DECL_ARG_TYPE (nparm), arg);
+		    {
+		      tree tmp = arg;
+		      /* If ARG is e.g. volatile, we must copy and
+			 convert in separate statements.  ???  Should
+			 we drop volatile from the wrapper
+			 instead?  */
+		      if (!is_gimple_val (arg))
+			{
+			  tmp = create_tmp_reg (TYPE_MAIN_VARIANT
+						(TREE_TYPE (arg)), "arg");
+			  gimple *stmt = gimple_build_assign (tmp, arg);
+			  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+			}
+		      arg = fold_convert (DECL_ARG_TYPE (nparm), tmp);
+		    }
 
 		  if (!is_gimple_val (arg))
 		    {
-		      tmp = create_tmp_reg (TYPE_MAIN_VARIANT
-					    (TREE_TYPE (arg)), "arg");
+		      tree tmp = create_tmp_reg (TYPE_MAIN_VARIANT
+						 (TREE_TYPE (arg)), "arg");
 		      gimple *stmt = gimple_build_assign (tmp, arg);
 		      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		      arg = tmp;
 		    }
-		  vargs.quick_push (tmp);
+		  vargs.quick_push (arg);
 		  arg = save_arg;
 		}
 	    /* These strub arguments are adjusted later.  */
