@@ -1,3 +1,8 @@
+// PR target/112904
+// { dg-do compile }
+// { dg-options "-mxop" }
+// { dg-additional-options "-mmmx" { target ia32 } }
+
 typedef _Float16 v4hf __attribute__((vector_size(8)));
 typedef short v4hi __attribute__((vector_size(8)));
 typedef _Float16 v2hf __attribute__((vector_size(4)));
