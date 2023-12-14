@@ -961,7 +961,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (mult @0 (div! @1 @2))))
    )))
 #endif
-)
+ /* Simplify (t * u) / (t * v) -> (u / v) if u is multiple of v.  */
+ (simplify
+  (div (mult @0 INTEGER_CST@1) (mult @0 INTEGER_CST@2))
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
+    (div @1 @2)
+#if GIMPLE
+    (with {value_range vr0, vr1, vr2;}
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && get_range_query (cfun)->range_of_expr (vr2, @2)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr2))
+      (div @1 @2)))
+#endif
+   ))))
 
 #if GIMPLE
 (for div (trunc_div exact_div)
