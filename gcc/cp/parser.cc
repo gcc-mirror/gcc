@@ -25102,8 +25102,21 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
      committed yet, nor should we.  Pushing here will detect the error
      of redefining a parameter.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
-    for (tree p : pending_decls)
-      pushdecl (p);
+    {
+      for (tree p : pending_decls)
+	pushdecl (p);
+
+      /* Delayed checking of auto parameters.  */
+      if (!parser->auto_is_implicit_function_template_parm_p
+	  && cxx_dialect >= cxx14)
+	for (tree p = parameters; p; p = TREE_CHAIN (p))
+	  if (type_uses_auto (TREE_TYPE (TREE_VALUE (p))))
+	    {
+	      error_at (location_of (TREE_VALUE (p)),
+			"%<auto%> parameter not permitted in this context");
+	      TREE_TYPE (TREE_VALUE (p)) = error_mark_node;
+	    }
+    }
 
   /* Finish the parameter list.  */
   if (!ellipsis_p)
