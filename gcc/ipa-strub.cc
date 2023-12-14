@@ -2881,13 +2881,14 @@ pass_ipa_strub::execute (function *)
 	   parm = DECL_CHAIN (parm),
 	   nparm = DECL_CHAIN (nparm),
 	   nparmt = nparmt ? TREE_CHAIN (nparmt) : NULL_TREE)
-      if (!(0 /* DECL_BY_REFERENCE (narg) */
-	    || is_gimple_reg_type (TREE_TYPE (nparm))
-	    || VECTOR_TYPE_P (TREE_TYPE (nparm))
-	    || TREE_CODE (TREE_TYPE (nparm)) == COMPLEX_TYPE
-	    || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
-		&& (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
-		    <= 4 * UNITS_PER_WORD))))
+      if (TREE_THIS_VOLATILE (parm)
+	  || !(0 /* DECL_BY_REFERENCE (narg) */
+	       || is_gimple_reg_type (TREE_TYPE (nparm))
+	       || VECTOR_TYPE_P (TREE_TYPE (nparm))
+	       || TREE_CODE (TREE_TYPE (nparm)) == COMPLEX_TYPE
+	       || (tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
+		   && (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (nparm)))
+		       <= 4 * UNITS_PER_WORD))))
 	{
 	  /* No point in indirecting pointer types.  Presumably they
 	     won't ever pass the size-based test above, but check the
@@ -3224,9 +3225,7 @@ pass_ipa_strub::execute (function *)
 		    {
 		      tree tmp = arg;
 		      /* If ARG is e.g. volatile, we must copy and
-			 convert in separate statements.  ???  Should
-			 we drop volatile from the wrapper
-			 instead?  */
+			 convert in separate statements.  */
 		      if (!is_gimple_val (arg))
 			{
 			  tmp = create_tmp_reg (TYPE_MAIN_VARIANT
