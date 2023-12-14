@@ -7419,7 +7419,12 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 		      invalid = true;
 		      break;
 		    }
-		  if (chain[i].dt != vect_internal_def)
+		  if (chain[i].dt != vect_internal_def
+		      /* Avoid stmts where the def is not the LHS, like
+			 ASMs.  */
+		      || (gimple_get_lhs (bb_vinfo->lookup_def
+						      (chain[i].op)->stmt)
+			  != chain[i].op))
 		    remain_cnt++;
 		}
 	      if (!invalid && chain.length () - remain_cnt > 1)
@@ -7431,8 +7436,11 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 		    remain.create (remain_cnt);
 		  for (unsigned i = 0; i < chain.length (); ++i)
 		    {
-		      if (chain[i].dt == vect_internal_def)
-			stmts.quick_push (bb_vinfo->lookup_def (chain[i].op));
+		      stmt_vec_info stmt_info;
+		      if (chain[i].dt == vect_internal_def
+			  && ((stmt_info = bb_vinfo->lookup_def (chain[i].op)),
+			      gimple_get_lhs (stmt_info->stmt) == chain[i].op))
+			stmts.quick_push (stmt_info);
 		      else
 			remain.quick_push (chain[i].op);
 		    }
