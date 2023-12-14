@@ -62,8 +62,7 @@ int main() {
   return 0;
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 1 } } */
-/* { dg-final { scan-assembler-times {vsetivli} 1 } } */
-/* { dg-final { scan-assembler-times {vsetivli\tzero,\s*4,\s*e32,\s*m1,\s*t[au],\s*m[au]} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli} 4 } } */
+/* { dg-final { scan-assembler-not {vsetivli} } } */
 /* { dg-final { scan-assembler-times {vsetvli\tzero,\s*[a-x0-9]+,\s*e8,\s*m8,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {li\t[a-x0-9]+,\s*32} 1 } } */
