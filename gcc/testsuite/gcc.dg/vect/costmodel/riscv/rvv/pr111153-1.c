@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize -mtune=generic-ooo" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize -mtune=generic-ooo -ffast-math" } */
 
 #define DEF_REDUC_PLUS(TYPE)                                                   \
   TYPE __attribute__ ((noinline, noclone))                                     \
@@ -11,7 +11,7 @@
     return r;                                                                  \
   }
 
-#define TEST_PLUS(T) T (int)
+#define TEST_PLUS(T) T (int) T (float)
 
 TEST_PLUS (DEF_REDUC_PLUS)
 

@@ -4872,12 +4872,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
 	    unsigned int length_update_cost = 0;
 	    if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
-	      /* For decrement IV style, we use a single SELECT_VL since
-		 beginning to calculate the number of elements need to be
-		 processed in current iteration, and a SHIFT operation to
-		 compute the next memory address instead of adding vectorization
-		 factor.  */
-	      length_update_cost = 2;
+	      /* For decrement IV style, Each only need a single SELECT_VL
+		 or MIN since beginning to calculate the number of elements
+		 need to be processed in current iteration.  */
+	      length_update_cost = 1;
 	    else
 	      /* For increment IV stype, Each may need two MINs and one MINUS to
 		 update lengths in body for next iteration.  */
