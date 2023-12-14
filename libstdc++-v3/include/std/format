@@ -2609,15 +2609,13 @@ namespace __format
       virtual _Reservation
       _M_reserve(size_t __n)
       {
-	auto __avail = _M_unused();
-	if (__n <= __avail.size())
+	if (__n <= _M_unused().size())
 	  return { this };
 
 	if (__n <= _M_span.size()) // Cannot meet the request.
 	  {
 	    _M_overflow(); // Make more space available.
-	    __avail = _M_unused();
-	    if (__n <= __avail.size())
+	    if (__n <= _M_unused().size())
 	      return { this };
 	  }
 	return { nullptr };
@@ -2669,24 +2667,38 @@ namespace __format
       _M_overflow() override
       {
 	auto __s = this->_M_used();
-	if (__s.empty())
-	  return;
+	if (__s.empty()) [[unlikely]]
+	  return; // Nothing in the buffer to transfer to _M_seq.
+
+	// If _M_reserve was called then _M_bump must have been called too.
+	_GLIBCXX_DEBUG_ASSERT(__s.data() != _M_seq.data());
+
 	if constexpr (__is_specialization_of<_Seq, basic_string>)
 	  _M_seq.append(__s.data(), __s.size());
 	else
 	  _M_seq.insert(_M_seq.end(), __s.begin(), __s.end());
+
+	// Make the whole of _M_buf available for the next write:
 	this->_M_rewind();
       }
 
       typename _Sink<_CharT>::_Reservation
       _M_reserve(size_t __n) override
       {
+	// We might already have n characters available in this->_M_unused(),
+	// but the whole point of this function is to be an optimization for
+	// the std::format("{}", x) case. We want to avoid writing to _M_buf
+	// and then copying that into a basic_string if possible, so this
+	// function prefers to create space directly in _M_seq rather than
+	// using _M_buf.
+
 	if constexpr (__is_specialization_of<_Seq, basic_string>
 			|| __is_specialization_of<_Seq, vector>)
 	  {
-	    // Flush the buffer to _M_seq first:
-	    if (this->_M_used().size())
-	      _M_overflow();
+	    // Flush the buffer to _M_seq first (should not be needed).
+	    if (this->_M_used().size()) [[unlikely]]
+	      _Seq_sink::_M_overflow();
+
 	    // Expand _M_seq to make __n new characters available:
 	    const auto __sz = _M_seq.size();
 	    if constexpr (is_same_v<string, _Seq> || is_same_v<wstring, _Seq>)
@@ -2696,12 +2708,14 @@ namespace __format
 					    });
 	    else
 	      _M_seq.resize(__sz + __n);
-	    // Set _M_used() to be a span over the original part of _M_seq:
+
+	    // Set _M_used() to be a span over the original part of _M_seq
+	    // and _M_unused() to be the extra capacity we just created:
 	    this->_M_reset(_M_seq, __sz);
 	    return { this };
 	  }
 	else // Try to use the base class' buffer.
-	  return _Sink<_CharT>::_M_reserve();
+	  return _Sink<_CharT>::_M_reserve(__n);
       }
 
       void
@@ -2710,8 +2724,10 @@ namespace __format
 	if constexpr (__is_specialization_of<_Seq, basic_string>
 			|| __is_specialization_of<_Seq, vector>)
 	  {
+	    auto __s = this->_M_used();
+	    _GLIBCXX_DEBUG_ASSERT(__s.data() == _M_seq.data());
 	    // Truncate the sequence to the part that was actually written to:
-	    _M_seq.resize(this->_M_used().size() + __n);
+	    _M_seq.resize(__s.size() + __n);
 	    // Switch back to using buffer:
 	    this->_M_reset(this->_M_buf);
 	  }
