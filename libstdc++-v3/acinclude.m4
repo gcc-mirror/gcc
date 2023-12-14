@@ -5803,6 +5803,7 @@ AC_LANG_SAVE
   AC_TRY_COMPILE([
   #if defined(_WIN32) && !defined(__CYGWIN__)
   # include <stdint.h>
+  # include <stdio.h>
   # include <io.h>
   #endif
   ],[
@@ -5811,7 +5812,7 @@ AC_LANG_SAVE
     intptr_t crt_handle = _get_osfhandle(fd);
     void* win32_handle = reinterpret_cast<void*>(crt_handle);
   ], [ac_get_osfhandle=yes], [ac_get_osfhandle=no])
-  if test "$ac_objext" = yes; then
+  if test "$ac_get_osfhandle" = yes; then
     AC_DEFINE_UNQUOTED(_GLIBCXX_USE__GET_OSFHANDLE, 1,
       [Define if _get_osfhandle should be used for filebuf::native_handle().])
   fi

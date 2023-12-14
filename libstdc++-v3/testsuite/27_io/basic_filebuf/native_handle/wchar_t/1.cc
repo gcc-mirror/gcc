@@ -10,8 +10,9 @@ using type = std::basic_filebuf<wchar_t>::native_handle_type;
 #if __has_include(<unistd.h>)
 # include <unistd.h> // close(int)
 #endif
-#if __has_include(<handleapi.h>)
-# include <handleapi.h> // CloseHandle(HANDLE)
+#if __has_include(<io.h>)
+# include <io.h> // _open_osfhandle
+# include <fcntl.h> // _O_RDONLY, _O_TEXT
 #endif
 
 #include <testsuite_hooks.h>
@@ -31,8 +32,8 @@ test01()
       ::close(handle); // POSIX
 #endif
 #if __has_include(<handleapi.h>)
-    else if constexpr (std::is_same_v<HandleT, void*>)
-      ::CloseHandle(handle); // Windows
+    else if constexpr (std::is_same_v<HandleT, void*>) // Windows
+      ::_close(::_open_osfhandle((intptr_t)handle, _O_RDONLY|_O_TEXT));
 #endif
     else
       VERIFY( false );

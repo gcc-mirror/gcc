@@ -54476,6 +54476,7 @@ $as_echo_n "checking whether _get_osfhandle is defined in <io.h>... " >&6; }
 
   #if defined(_WIN32) && !defined(__CYGWIN__)
   # include <stdint.h>
+  # include <stdio.h>
   # include <io.h>
   #endif
 
@@ -54498,7 +54499,7 @@ else
   ac_get_osfhandle=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  if test "$ac_objext" = yes; then
+  if test "$ac_get_osfhandle" = yes; then
 
 cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_USE__GET_OSFHANDLE 1
