@@ -649,11 +649,8 @@ Degrees function: @*
 @code{ACOSD(X)} computes the arccosine of @var{X} in degrees (inverse of
 @code{COSD(X)}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -683,7 +680,7 @@ end program test_acosd
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument         @tab Return type     @tab Standard
-@item @code{ACOSD(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab GNU extension
+@item @code{ACOSD(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab Fortran 2023
 @item @code{DACOSD(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
@@ -1369,11 +1366,8 @@ Degrees function: @*
 @code{ASIND(X)} computes the arcsine of its @var{X} in degrees (inverse of
 @code{SIND(X)}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1403,7 +1397,7 @@ end program test_asind
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ASIND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU extension
+@item @code{ASIND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DASIND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
@@ -1413,8 +1407,6 @@ Inverse function: @*
 Radians function: @*
 @ref{ASIN}
 @end table
-
-
 
 @node ASINH
 @section @code{ASINH} --- Inverse hyperbolic sine function
@@ -1620,11 +1612,8 @@ Degrees function: @*
 @code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
 @ref{TAND}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1660,7 +1649,7 @@ end program test_atand
 @item @emph{Specific names}:
 @multitable @columnfractions .23 .23 .20 .30
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU extension
+@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
@@ -1752,11 +1741,8 @@ function of the complex number @math{X + i Y} in degrees.  This function can
 be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1793,7 +1779,7 @@ end program test_atan2d
 @item @emph{Specific names}:
 @multitable @columnfractions .23 .23 .20 .30
 @headitem Name                @tab Argument            @tab Return type    @tab Standard
-@item @code{ATAN2D(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab GNU extension
+@item @code{ATAN2D(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab Fortran 2023
 @item @code{DATAN2D(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
 
@@ -1803,8 +1789,6 @@ Alias: @*
 Radians function: @*
 @ref{ATAN2}
 @end table
-
-
 
 @node ATANH
 @section @code{ATANH} --- Inverse hyperbolic tangent function
@@ -4282,11 +4266,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{COSD(X)} computes the cosine of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -4316,7 +4297,7 @@ end program test_cosd
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{COSD(X)}   @tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab GNU extension
+@item @code{COSD(X)}   @tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DCOSD(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab GNU extension
 @item @code{CCOSD(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab GNU extension
 @item @code{ZCOSD(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
@@ -13298,11 +13279,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{SIND(X)} computes the sine of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -13330,7 +13308,7 @@ end program test_sind
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument             @tab Return type       @tab Standard
-@item @code{SIND(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab GNU extension
+@item @code{SIND(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DSIND(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}    @tab GNU extension
 @item @code{CSIND(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)} @tab GNU extension
 @item @code{ZSIND(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU extension
@@ -13343,8 +13321,6 @@ Inverse function: @*
 Radians function: @*
 @ref{SIN} @*
 @end table
-
-
 
 @node SINH
 @section @code{SINH} --- Hyperbolic sine function 
@@ -14147,11 +14123,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{TAND(X)} computes the tangent of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -14178,7 +14151,7 @@ end program test_tand
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument          @tab Return type     @tab Standard
-@item @code{TAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{TAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab Fortran 2023
 @item @code{DTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
