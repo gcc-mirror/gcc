@@ -4779,7 +4779,7 @@ Andes NDS32 target in big endian mode.
 Nvidia PTX target.
 
 Instead of GNU binutils, you will need to install
-@uref{https://github.com/MentorEmbedded/nvptx-tools/,,nvptx-tools}.
+@uref{https://github.com/SourceryTools/nvptx-tools,,nvptx-tools}.
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
