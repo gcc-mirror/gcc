@@ -516,7 +516,7 @@
 (define_insn "riscv_cv_alu_clip"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
    (unspec:SI [(match_operand:SI 1 "register_operand" "r,r")
-               (match_operand:SI 2 "immediate_register_operand" "CVP2,r")]
+               (match_operand:SI 2 "immediate_register_operand" "CV_alu_pow2,r")]
     UNSPEC_CV_ALU_CLIP))]
 
   "TARGET_XCVALU && !TARGET_64BIT"
@@ -529,7 +529,7 @@
 (define_insn "riscv_cv_alu_clipu"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
    (unspec:SI [(match_operand:SI 1 "register_operand" "r,r")
-               (match_operand:SI 2 "immediate_register_operand" "CVP2,r")]
+               (match_operand:SI 2 "immediate_register_operand" "CV_alu_pow2,r")]
     UNSPEC_CV_ALU_CLIPU))]
 
   "TARGET_XCVALU && !TARGET_64BIT"
