@@ -661,7 +661,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall either be @code{REAL} with a magnitude that is
-less than or equal to one - or the type shall be @code{COMPLEX}.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
@@ -1378,12 +1378,12 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be either @code{REAL} and a magnitude that is
-less than or equal to one - or be @code{COMPLEX}.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-The real part of the result is in degrees and lies in the range
+The result is in degrees and lies in the range
 @math{-90 \leq \Re \asin(x) \leq 90}.
 
 @item @emph{Example}:
@@ -1621,21 +1621,18 @@ Elemental function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{RESULT = ATAND(X)}
-@item @code{RESULT = ATAND(Y, X)}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX};
+@item @var{X} @tab The type shall be @code{REAL};
 if @var{Y} is present, @var{X} shall be REAL.
 @item @var{Y} @tab The type and kind type parameter shall be the same as @var{X}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-If @var{Y} is present, the result is identical to @code{ATAND2(Y,X)}.
-Otherwise, it is the arcus tangent of @var{X}, where the real part of
-the result is in degrees and lies in the range
+The result is in degrees and lies in the range
 @math{-90 \leq \Re \atand(x) \leq 90}.
 
 @item @emph{Example}:
@@ -4277,14 +4274,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or
-@code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of the same type and kind as @var{X}. The real part
-of the result is in degrees.  If @var{X} is of the type @code{REAL},
-the return value lies in the range @math{ -1 \leq \cosd (x) \leq 1}.
+The return value is of the same type and kind as @var{X} and
+lies in the range @math{ -1 \leq \cosd (x) \leq 1}.
 
 @item @emph{Example}:
 @smallexample
@@ -4436,7 +4431,7 @@ Degrees function: @*
 @code{COSD(x)} divided by @code{SIND(x)}, or @code{1 / TAND(x)}.
 
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+GNU extension.
 
 This function is for compatibility only and should be avoided in favor of
 standard constructs wherever possible.
@@ -4449,7 +4444,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -13290,8 +13285,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or
-@code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -14134,16 +14128,16 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{X}, and its value is in degrees.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
 program test_tand
-  real(8) :: x = 0.165_8
+  real(8) :: x = 45_8
   x = tand(x)
 end program test_tand
 @end smallexample

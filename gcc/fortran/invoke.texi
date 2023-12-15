@@ -302,8 +302,11 @@ JIAND, etc...). For a complete list of intrinsics see the full documentation.
 
 @opindex @code{fdec-math}
 @item -fdec-math
-Enable legacy math intrinsics such as COTAN and degree-valued trigonometric
-functions (e.g. TAND, ATAND, etc...) for compatability with older code.
+Obsolete flag.  The purpose of this option was to
+enable legacy math intrinsics such as COTAN and degree-valued trigonometric
+functions (e.g. TAND, ATAND, etc...) for compatability with older code. This
+option is no longer operable. The trigonometric functions are now either 
+part of Fortran 2023 or GNU extensions.
 
 @opindex @code{fdec-static}
 @item -fdec-static
