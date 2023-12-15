@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvl256b -mabi=ilp32d -O3" } */
+/* { dg-additional-options "-march=rv32gcv_zvl256b -mabi=ilp32d -O3 -fno-vect-cost-model" } */
 
 long long a;
 int b, c;
