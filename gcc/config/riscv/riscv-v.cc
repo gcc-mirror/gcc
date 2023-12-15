@@ -2987,20 +2987,63 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
 	&& !d->perm.series_p (i, n_patterns, vec_len + i, n_patterns))
       return false;
 
+  /* We need to use precomputed mask for such situation and such mask
+     can only be computed in compile-time known size modes.  */
+  bool indices_fit_selector_p
+    = GET_MODE_BITSIZE (GET_MODE_INNER (vmode)) > 8 || known_lt (vec_len, 256);
+  if (!indices_fit_selector_p && !vec_len.is_constant ())
+    return false;
+
   if (d->testing_p)
     return true;
 
   machine_mode mask_mode = get_mask_mode (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
 
-  rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
+  if (indices_fit_selector_p)
+    {
+      /* MASK = SELECTOR < NUNTIS ? 1 : 0.  */
+      rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
+      rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
+      insn_code icode = code_for_pred_cmp_scalar (sel_mode);
+      rtx cmp = gen_rtx_fmt_ee (LTU, mask_mode, sel, x);
+      rtx ops[] = {mask, cmp, sel, x};
+      emit_vlmax_insn (icode, COMPARE_OP, ops);
+    }
+  else
+    {
+      /* For EEW8 and NUNITS may be larger than 255, we can't use vmsltu
+	 directly to generate the selector mask, instead, we can only use
+	 precomputed mask.
 
-  /* MASK = SELECTOR < NUNTIS ? 1 : 0.  */
-  rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
-  insn_code icode = code_for_pred_cmp_scalar (sel_mode);
-  rtx cmp = gen_rtx_fmt_ee (LTU, mask_mode, sel, x);
-  rtx ops[] = {mask, cmp, sel, x};
-  emit_vlmax_insn (icode, COMPARE_OP, ops);
+	 E.g. selector = <0, 257, 2, 259> for EEW8 vector with NUNITS = 256, we
+	 don't have a QImode scalar register to hold larger than 255.
+	 We also cannot hold that in a vector QImode register if LMUL = 8, and,
+	 since there is no larger HI mode vector we cannot create a larger
+	 selector.
+
+	 As the mask is a simple {0, 1, ...} pattern and the length is known we
+	 can store it in a scalar register and broadcast it to a mask register.
+       */
+      gcc_assert (vec_len.is_constant ());
+      int size = CEIL (GET_MODE_NUNITS (mask_mode).to_constant (), 8);
+      machine_mode mode = get_vector_mode (QImode, size).require ();
+      rtx tmp = gen_reg_rtx (mode);
+      rvv_builder v (mode, 1, size);
+      for (int i = 0; i < vec_len.to_constant () / 8; i++)
+	{
+	  uint8_t value = 0;
+	  for (int j = 0; j < 8; j++)
+	    {
+	      int index = i * 8 + j;
+	      if (known_lt (d->perm[index], 256))
+		value |= 1 << j;
+	    }
+	  v.quick_push (gen_int_mode (value, QImode));
+	}
+      emit_move_insn (tmp, v.build ());
+      emit_move_insn (mask, gen_lowpart (mask_mode, tmp));
+    }
 
   /* TARGET = MASK ? OP0 : OP1.  */
   /* swap op0 and op1 since the order is opposite to pred_merge.  */
