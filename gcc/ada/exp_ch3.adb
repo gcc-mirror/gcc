@@ -5021,7 +5021,7 @@ package body Exp_Ch3 is
       --  Create the body of TSS primitive Finalize_Address. This automatically
       --  sets the TSS entry for the class-wide type.
 
-      if not Present (Finalize_Address (Typ)) then
+      if No (Finalize_Address (Typ)) then
          Make_Finalize_Address_Body (Typ);
       end if;
    end Expand_Freeze_Class_Wide_Type;
