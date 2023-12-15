@@ -447,8 +447,8 @@ path::_List::reserve(int newcap, bool exact = false)
 
   if (curcap < newcap)
     {
-      if (!exact && newcap < int(1.5 * curcap))
-	newcap = 1.5 * curcap;
+      if (!exact && newcap < curcap + curcap / 2)
+	newcap = curcap + curcap / 2;
 
       void* p = ::operator new(sizeof(_Impl) + newcap * sizeof(value_type));
       std::unique_ptr<_Impl, _Impl_deleter> newptr(::new(p) _Impl{newcap});
