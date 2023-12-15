@@ -49,6 +49,6 @@ end do
 
 end
 
-! { dg-output "(\n|\r|\r\n)" }
-! { dg-output "libgomp: Mapped array elements must be the same .*(\n|\r|\r\n)+" }
+! { dg-output "(\n|\r|\r\n)" { target offload_device_nonshared_as } }
+! { dg-output "libgomp: Mapped array elements must be the same .*(\n|\r|\r\n)+" { target offload_device_nonshared_as } }
 ! { dg-shouldfail "" { offload_device_nonshared_as } }
