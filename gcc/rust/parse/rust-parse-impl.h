@@ -5784,6 +5784,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
       // function or method
       return parse_trait_impl_function_or_method (visibility,
 						  std::move (outer_attrs));
+    case ASYNC:
+      return parse_async_item (visibility, std::move (outer_attrs));
     case CONST:
       // lookahead to resolve production - could be function/method or const
       // item
