@@ -14607,6 +14607,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	= remove_attribute ("visibility", DECL_ATTRIBUTES (r));
     }
   determine_visibility (r);
+  if (DECL_SECTION_NAME (t))
+    set_decl_section_name (r, t);
   if (DECL_DEFAULTED_OUTSIDE_CLASS_P (r)
       && !processing_template_decl)
     defaulted_late_check (r);
@@ -15423,6 +15425,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 		  = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
 	      }
 	    determine_visibility (r);
+	    if ((!local_p || TREE_STATIC (t)) && DECL_SECTION_NAME (t))
+	      set_decl_section_name (r, t);
 	  }
 
 	if (!local_p)
