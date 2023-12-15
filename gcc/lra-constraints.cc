@@ -3951,133 +3951,36 @@ process_address (int nop, bool check_only_p,
   return res;
 }
 
+/* Override the generic address_reload_context in order to
+   control the creation of reload pseudos.  */
+class lra_autoinc_reload_context : public address_reload_context
+{
+  machine_mode mode;
+  enum reg_class rclass;
+
+public:
+  lra_autoinc_reload_context (machine_mode mode, enum reg_class new_rclass)
+    : mode (mode), rclass (new_rclass) {}
+
+  rtx get_reload_reg () const override final
+  {
+    return lra_create_new_reg (mode, NULL_RTX, rclass, NULL, "INC/DEC result");
+  }
+};
+
 /* Emit insns to reload VALUE into a new register.  VALUE is an
    auto-increment or auto-decrement RTX whose operand is a register or
    memory location; so reloading involves incrementing that location.
-   IN is either identical to VALUE, or some cheaper place to reload
-   value being incremented/decremented from.
 
    INC_AMOUNT is the number to increment or decrement by (always
    positive and ignored for POST_MODIFY/PRE_MODIFY).
 
-   Return pseudo containing the result.	 */
+   Return a pseudo containing the result.  */
 static rtx
-emit_inc (enum reg_class new_rclass, rtx in, rtx value, poly_int64 inc_amount)
+emit_inc (enum reg_class new_rclass, rtx value, poly_int64 inc_amount)
 {
-  /* REG or MEM to be copied and incremented.  */
-  rtx incloc = XEXP (value, 0);
-  /* Nonzero if increment after copying.  */
-  int post = (GET_CODE (value) == POST_DEC || GET_CODE (value) == POST_INC
-	      || GET_CODE (value) == POST_MODIFY);
-  rtx_insn *last;
-  rtx inc;
-  rtx_insn *add_insn;
-  int code;
-  rtx real_in = in == value ? incloc : in;
-  rtx result;
-  bool plus_p = true;
-
-  if (GET_CODE (value) == PRE_MODIFY || GET_CODE (value) == POST_MODIFY)
-    {
-      lra_assert (GET_CODE (XEXP (value, 1)) == PLUS
-		  || GET_CODE (XEXP (value, 1)) == MINUS);
-      lra_assert (rtx_equal_p (XEXP (XEXP (value, 1), 0), XEXP (value, 0)));
-      plus_p = GET_CODE (XEXP (value, 1)) == PLUS;
-      inc = XEXP (XEXP (value, 1), 1);
-    }
-  else
-    {
-      if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
-	inc_amount = -inc_amount;
-
-      inc = gen_int_mode (inc_amount, GET_MODE (value));
-    }
-
-  if (! post && REG_P (incloc))
-    result = incloc;
-  else
-    result = lra_create_new_reg (GET_MODE (value), value, new_rclass, NULL,
-				 "INC/DEC result");
-
-  if (real_in != result)
-    {
-      /* First copy the location to the result register.  */
-      lra_assert (REG_P (result));
-      emit_insn (gen_move_insn (result, real_in));
-    }
-
-  /* We suppose that there are insns to add/sub with the constant
-     increment permitted in {PRE/POST)_{DEC/INC/MODIFY}.  At least the
-     old reload worked with this assumption.  If the assumption
-     becomes wrong, we should use approach in function
-     base_plus_disp_to_reg.  */
-  if (in == value)
-    {
-      /* See if we can directly increment INCLOC.  */
-      last = get_last_insn ();
-      add_insn = emit_insn (plus_p
-			    ? gen_add2_insn (incloc, inc)
-			    : gen_sub2_insn (incloc, inc));
-
-      code = recog_memoized (add_insn);
-      if (code >= 0)
-	{
-	  if (! post && result != incloc)
-	    emit_insn (gen_move_insn (result, incloc));
-	  return result;
-	}
-      delete_insns_since (last);
-    }
-
-  /* If couldn't do the increment directly, must increment in RESULT.
-     The way we do this depends on whether this is pre- or
-     post-increment.  For pre-increment, copy INCLOC to the reload
-     register, increment it there, then save back.  */
-  if (! post)
-    {
-      if (real_in != result)
-	emit_insn (gen_move_insn (result, real_in));
-      if (plus_p)
-	emit_insn (gen_add2_insn (result, inc));
-      else
-	emit_insn (gen_sub2_insn (result, inc));
-      if (result != incloc)
-	emit_insn (gen_move_insn (incloc, result));
-    }
-  else
-    {
-      /* Post-increment.
-
-	 Because this might be a jump insn or a compare, and because
-	 RESULT may not be available after the insn in an input
-	 reload, we must do the incrementing before the insn being
-	 reloaded for.
-
-	 We have already copied IN to RESULT.  Increment the copy in
-	 RESULT, save that back, then decrement RESULT so it has
-	 the original value.  */
-      if (plus_p)
-	emit_insn (gen_add2_insn (result, inc));
-      else
-	emit_insn (gen_sub2_insn (result, inc));
-      emit_insn (gen_move_insn (incloc, result));
-      /* Restore non-modified value for the result.  We prefer this
-	 way because it does not require an additional hard
-	 register.  */
-      if (plus_p)
-	{
-	  poly_int64 offset;
-	  if (poly_int_rtx_p (inc, &offset))
-	    emit_insn (gen_add2_insn (result,
-				      gen_int_mode (-offset,
-						    GET_MODE (result))));
-	  else
-	    emit_insn (gen_sub2_insn (result, inc));
-	}
-      else
-	emit_insn (gen_add2_insn (result, inc));
-    }
-  return result;
+  lra_autoinc_reload_context context (GET_MODE (value), new_rclass);
+  return context.emit_autoinc (value, inc_amount);
 }
 
 /* Return true if the current move insn does not need processing as we
@@ -4669,7 +4572,7 @@ curr_insn_transform (bool check_only_p)
 	  rclass = base_reg_class (GET_MODE (op), MEM_ADDR_SPACE (op),
 				   MEM, SCRATCH, curr_insn);
 	  if (GET_RTX_CLASS (code) == RTX_AUTOINC)
-	    new_reg = emit_inc (rclass, *loc, *loc,
+	    new_reg = emit_inc (rclass, *loc,
 				/* This value does not matter for MODIFY.  */
 				GET_MODE_SIZE (GET_MODE (op)));
 	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass,

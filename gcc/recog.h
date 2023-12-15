@@ -398,6 +398,16 @@ struct recog_data_d
 
 extern struct recog_data_d recog_data;
 
+/* RAII class for saving/restoring recog_data.  */
+
+class recog_data_saver
+{
+  recog_data_d m_saved_data;
+public:
+  recog_data_saver () : m_saved_data (recog_data) {}
+  ~recog_data_saver () { recog_data = m_saved_data; }
+};
+
 #ifndef GENERATOR_FILE
 extern const operand_alternative *recog_op_alt;
 
