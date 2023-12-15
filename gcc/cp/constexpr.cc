@@ -5709,7 +5709,8 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 	  }
 
       /* Handle conversion to "as base" type.  */
-      if (CLASSTYPE_AS_BASE (optype) == type)
+      if (CLASS_TYPE_P (optype)
+	  && CLASSTYPE_AS_BASE (optype) == type)
 	return op;
 
       /* Handle conversion to an empty base class, which is represented with a
