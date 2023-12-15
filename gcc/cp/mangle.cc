@@ -530,6 +530,16 @@ get_abi_tags (tree t)
   if (DECL_P (t) && DECL_DECLARES_TYPE_P (t))
     t = TREE_TYPE (t);
 
+  if (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t))
+    {
+      tree tags = get_abi_tags (DECL_TEMPLATE_RESULT (t));
+      /* We used to overlook abi_tag on function and variable templates.  */
+      if (tags && abi_check (19))
+	return tags;
+      else
+	return NULL_TREE;
+    }
+
   tree attrs;
   if (TYPE_P (t))
     attrs = TYPE_ATTRIBUTES (t);
