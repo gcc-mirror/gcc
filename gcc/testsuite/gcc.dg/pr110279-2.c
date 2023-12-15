@@ -6,9 +6,7 @@
 #define LOOP_COUNT 800000000
 typedef double data_e;
 
-#include <stdio.h>
-
-__attribute_noinline__ data_e
+data_e
 foo (data_e in)
 {
   data_e a1, a2, a3, a4;
