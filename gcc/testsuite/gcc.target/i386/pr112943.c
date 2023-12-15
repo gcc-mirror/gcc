@@ -1,5 +1,5 @@
 /* PR target/112943 */
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target { dfp && { ! ia32 } } } } */
 /* { dg-options "-O2 -march=westmere -mapxf" } */
 
 typedef unsigned char __attribute__((__vector_size__(1))) v8u8;
