@@ -160,6 +160,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfa", "f"},
 
+  {"zvfbfmin", "zve32f"},
   {"zvfhmin", "zve32f"},
   {"zvfh", "zve32f"},
   {"zvfh", "zfhmin"},
@@ -322,6 +323,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zfh",       ISA_SPEC_CLASS_NONE, 1, 0},
   {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvfbfmin",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfhmin",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -1666,6 +1668,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
   {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
   {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
+  {"zvfbfmin", &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_BF_16},
   {"zvfhmin",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
   {"zvfh",     &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
 
@@ -1701,6 +1704,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zfhmin",    &gcc_options::x_riscv_zf_subext, MASK_ZFHMIN},
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
+  {"zvfbfmin",  &gcc_options::x_riscv_zf_subext, MASK_ZVFBFMIN},
   {"zvfhmin",   &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
   {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
 
