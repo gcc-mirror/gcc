@@ -39,7 +39,7 @@ FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
 FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4 ;
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert ;
-FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType, SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth, GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray, GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst, IsReallyPointer, IsPointer, IsParameter, ModeOfAddr, GetMode, GetType, IsUnbounded, IsComposite, IsConstructor, IsParameter ;
+FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType, SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth, GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray, GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst, IsReallyPointer, IsPointer, IsParameter, ModeOfAddr, GetMode, GetType, IsUnbounded, IsComposite, IsConstructor, IsParameter, IsConstString ;
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
 FROM M2ALU IMPORT Equ, PushIntegerTree ;
@@ -503,7 +503,7 @@ END isLValue ;
 
 
 (*
-   checkVarEquivalence - this test must be done first as it checks the symbol mode.
+   checkVarEquivalence - this test must be done early as it checks the symbol mode.
                          An LValue is treated as a pointer during assignment and the
                          LValue is attached to a variable.  This function skips the variable
                          and checks the types - after it has considered a possible LValue.
@@ -545,6 +545,63 @@ BEGIN
       RETURN result
    END
 END checkVarEquivalence ;
+
+
+(*
+   checkConstMeta -
+*)
+
+PROCEDURE checkConstMeta  (result: status;
+                           left, right: CARDINAL) : status ;
+VAR
+   typeRight: CARDINAL ;
+BEGIN
+   Assert (IsConst (left)) ;
+   IF isFalse (result)
+   THEN
+      RETURN result
+   ELSIF IsConstString (left)
+   THEN
+      typeRight := GetDType (right) ;
+      IF typeRight = NulSym
+      THEN
+         RETURN result
+      ELSIF IsSet (typeRight) OR IsEnumeration (typeRight)
+      THEN
+         RETURN false
+      END
+   END ;
+   RETURN result
+END checkConstMeta ;
+
+
+(*
+   checkConstEquivalence - this check can be done first as it checks symbols which
+                           may have no type.  Ie constant strings.  These constants
+                           will likely have their type set during quadruple folding.
+                           But we can check the meta type for obvious mismatches
+                           early on.  For example adding a string to an enum or set.
+*)
+
+PROCEDURE checkConstEquivalence (result: status;
+                                 left, right: CARDINAL) : status ;
+BEGIN
+   IF isFalse (result)
+   THEN
+      RETURN result
+   ELSIF (left = NulSym) OR (right = NulSym)
+   THEN
+      (* No option but to return true.  *)
+      RETURN true
+   ELSIF IsConst (left)
+   THEN
+      RETURN checkConstMeta (result, left, right)
+   ELSIF IsConst (right)
+   THEN
+      RETURN checkConstMeta (result, right, left)
+   END ;
+   RETURN result
+END checkConstEquivalence ;
 
 
 (*
@@ -658,28 +715,32 @@ BEGIN
    THEN
       RETURN return (true, tinfo, left, right)
    ELSE
-      result := checkVarEquivalence (unknown, tinfo, left, right) ;
+      result := checkConstEquivalence (unknown, left, right) ;
       IF NOT isKnown (result)
       THEN
-         result := checkSystemEquivalence (unknown, left, right) ;
+         result := checkVarEquivalence (unknown, tinfo, left, right) ;
          IF NOT isKnown (result)
          THEN
-            result := checkSubrangeTypeEquivalence (unknown, tinfo, left, right) ;
+            result := checkSystemEquivalence (unknown, left, right) ;
             IF NOT isKnown (result)
             THEN
-               result := checkBaseTypeEquivalence (unknown, tinfo, left, right) ;
+               result := checkSubrangeTypeEquivalence (unknown, tinfo, left, right) ;
                IF NOT isKnown (result)
                THEN
-                  result := checkTypeEquivalence (unknown, left, right) ;
+                  result := checkBaseTypeEquivalence (unknown, tinfo, left, right) ;
                   IF NOT isKnown (result)
                   THEN
-                     result := checkArrayTypeEquivalence (result, tinfo, left, right) ;
+                     result := checkTypeEquivalence (unknown, left, right) ;
                      IF NOT isKnown (result)
                      THEN
-                        result := checkGenericTypeEquivalence (result, left, right) ;
+                        result := checkArrayTypeEquivalence (result, tinfo, left, right) ;
                         IF NOT isKnown (result)
                         THEN
-                           result := checkTypeKindEquivalence (result, tinfo, left, right)
+                           result := checkGenericTypeEquivalence (result, left, right) ;
+                           IF NOT isKnown (result)
+                           THEN
+                              result := checkTypeKindEquivalence (result, tinfo, left, right)
+                           END
                         END
                      END
                   END
@@ -949,7 +1010,7 @@ BEGIN
    THEN
       RETURN true
    ELSE
-      (* long cascade of all type kinds.  *)
+      (* Long cascade of all type kinds.  *)
       IF IsSet (left) AND IsSet (right)
       THEN
          RETURN checkSetEquivalent (result, tinfo, left, right)
