@@ -1,3 +1,17 @@
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.def: Add libgrust as host & target module.
+	* configure.ac: Add libgrust to host tools list. Add libgrust to
+	noconfigdirs if we're not building target libstdc++.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* MAINTAINERS: Add maintainers for libgrust.
+
 2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
 
 	* Makefile.def (gettext): Disable (via missing)

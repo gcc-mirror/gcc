@@ -1,3 +1,108 @@
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107760
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def (__cpp_lib_print): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (__literal_encoding_is_utf8): New function.
+	(_Seq_sink::view()): New member function.
+	* include/std/ostream (vprintf_nonunicode, vprintf_unicode)
+	(print, println): New functions.
+	* include/std/print: New file.
+	* src/c++23/Makefile.am: Add new source file.
+	* src/c++23/Makefile.in: Regenerate.
+	* src/c++23/print.cc: New file.
+	* testsuite/27_io/basic_ostream/print/1.cc: New test.
+	* testsuite/27_io/print/1.cc: New test.
+	* testsuite/27_io/print/2.cc: New test.
+
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILEBUF_NATIVE_HANDLES): Add
+	missing header to configure test. Check correct variable.
+	* config/io/basic_file_stdio.cc (__basic_file<char>::native_handle):
+	Fix typo.
+	* configure: Regenerate.
+	* testsuite/27_io/basic_filebuf/native_handle/char/1.cc: Do not
+	call CloseHandle on the native handle.
+	* testsuite/27_io/basic_filebuf/native_handle/wchar_t/1.cc:
+	Likewise.
+
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (_Seq_sink): Fix missing argument in
+	discarded statement. Add comments, likely/unlikely attributes
+	and debug assertions as sanity checks.
+
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/objects/char/2.cc: Use dg-output.
+	* testsuite/27_io/objects/wchar_t/2.cc: Use dg-output.
+
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_S): Fix order
+	of arguments to std::format_to.
+	* testsuite/20_util/duration/io.cc: Test subsecond duration with
+	floating-point rep.
+
+2023-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109536
+	* include/bits/c++config (__glibcxx_constexpr_assert): Remove
+	macro.
+	* include/bits/stl_algobase.h (__niter_base, __copy_move_a)
+	(__copy_move_backward_a, __fill_a, __fill_n_a, __equal_aux)
+	(__lexicographical_compare_aux): Add constexpr to overloads for
+	debug mode iterators.
+	* include/debug/helper_functions.h (__unsafe): Add constexpr.
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_COND_AT): Remove
+	macro, folding it into ...
+	(_GLIBCXX_DEBUG_VERIFY_AT_F): ... here. Do not use
+	__glibcxx_constexpr_assert.
+	* include/debug/safe_base.h (_Safe_iterator_base): Add constexpr
+	to some member functions. Omit attaching, detaching and checking
+	operations during constant evaluation.
+	* include/debug/safe_container.h (_Safe_container): Likewise.
+	* include/debug/safe_iterator.h (_Safe_iterator): Likewise.
+	* include/debug/safe_iterator.tcc (__niter_base, __copy_move_a)
+	(__copy_move_backward_a, __fill_a, __fill_n_a, __equal_aux)
+	(__lexicographical_compare_aux): Add constexpr.
+	* include/debug/vector (_Safe_vector, vector): Add constexpr.
+	Omit safe iterator operations during constant evaluation.
+	* testsuite/23_containers/vector/bool/capacity/constexpr.cc:
+	Remove dg-xfail-if for debug mode.
+	* testsuite/23_containers/vector/bool/cmp_c++20.cc: Likewise.
+	* testsuite/23_containers/vector/bool/cons/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/element_access/1.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/assign/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/swap/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/capacity/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cmp_c++20.cc: Likewise.
+	* testsuite/23_containers/vector/cons/constexpr.cc: Likewise.
+	* testsuite/23_containers/vector/data_access/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/element_access/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/swap/constexpr.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error line number.
+
 2023-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/chrono_io.h (__formatter_chrono::_M_C_y_Y): Do

@@ -1,3 +1,37 @@
+2023-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112482
+	* decl.cc (grokdeclarator): Do not issue the auto parameter error while
+	tentatively parsing a function parameter.
+	* parser.cc (cp_parser_parameter_declaration_clause): Check it here.
+
+2023-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/112869
+	* cp-gimplify.cc (cp_fold_immediate_r): Check cp_unevaluated_operand
+	and DECL_IMMEDIATE_FUNCTION_P rather than in_immediate_context.
+
+2023-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (type_targs_deducible_from): Adjust return type.
+	* pt.cc (alias_ctad_tweaks): Also handle C++23 inherited CTAD.
+	(inherited_ctad_tweaks): Define.
+	(type_targs_deducible_from): Return the deduced arguments or
+	NULL_TREE instead of a bool.  Handle 'tmpl' being a TREE_LIST
+	representing a synthetic alias template.
+	(ctor_deduction_guides_for): Do inherited_ctad_tweaks for each
+	USING_DECL in C++23 mode.
+	(deduction_guides_for): Add FIXME for stale cache entries in
+	light of inherited CTAD.
+
+2023-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/112968
+	* pt.cc (freelist<tree_node>::reinit): Make whole obj->common
+	defined for valgrind annotations rather than just obj->base,
+	and do it even for ENABLE_GC_CHECKING.  If not ENABLE_GC_CHECKING,
+	clear TREE_CHAIN (obj) and TREE_TYPE (obj).
+
 2023-12-13  Patrick Palka  <ppalka@redhat.com>
 
 	* call.cc (print_z_candidates): Only print ignored candidates

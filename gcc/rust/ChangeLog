@@ -1,3 +1,9 @@
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-lang.in: Add libgrust as a target module for the rust
+	language.
+
 2023-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* rust-location.h: Include "rich-location.h".

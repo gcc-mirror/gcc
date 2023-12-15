@@ -1,3 +1,12 @@
+2023-12-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/112873
+	* gfortran.texi: Update to reflect the changes.
+	* intrinsic.cc (add_functions): Update the standard that the
+	various  degree trigonometric functions have been described in.
+	(gfc_check_intrinsic_standard): Add an error string for F2023.
+	* intrinsic.texi: Update accordingly.
+
 2023-12-13  Julian Brown  <julian@codesourcery.com>
 
 	* dependency.cc (gfc_omp_expr_prefix_same): New function.

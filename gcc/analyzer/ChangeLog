@@ -1,3 +1,20 @@
+2023-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112655
+	* infinite-loop.cc (infinite_loop::infinite_loop): Pass eedges
+	via rvalue reference rather than by value.
+	(starts_infinite_loop_p): Move eedges when constructing an
+	infinite_loop instance.
+	* sm-file.cc (fileptr_state_machine::fileptr_state_machine): Use
+	initializer list for states.
+	* sm-sensitive.cc
+	(sensitive_state_machine::sensitive_state_machine): Likewise.
+	* sm-signal.cc (signal_state_machine::signal_state_machine):
+	Likewise.
+	* sm-taint.cc (taint_state_machine::taint_state_machine):
+	Likewise.
+	* varargs.cc (va_list_state_machine::va_list_state_machine): Likewise.
+
 2023-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/112955

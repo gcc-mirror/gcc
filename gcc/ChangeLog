@@ -1,3 +1,443 @@
+2023-12-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111260
+	* optabs.cc (emit_conditional_move): Change the modes to be
+	equal before forcing the constant to a register.
+
+2023-12-14  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	PR tree-optimization/110279
+	* doc/invoke.texi: New parameter fully-pipelined-fma.
+	* params.opt: New parameter fully-pipelined-fma.
+	* tree-ssa-reassoc.cc (get_mult_latency_consider_fma): Return
+	the latency of MULT_EXPRs that can't be hidden by the FMAs.
+	(get_reassociation_width): Search for a smaller width
+	considering the benefit of fully pipelined FMA.
+	(rank_ops_for_fma): Return the number of MULT_EXPRs.
+	(reassociate_bb): Pass the number of MULT_EXPRs to
+	get_reassociation_width; avoid calling
+	get_reassociation_width twice.
+
+2023-12-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112999
+	* expmed.cc (extract_bit_field_1):  Ensure better mode
+	has fitting unit_precision.
+
+2023-12-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/112773
+	* config/riscv/autovec.md (vec_extract<mode>bi): New expander
+	calling vec_extract<mode>qi.
+	* config/riscv/riscv-protos.h (riscv_legitimize_poly_move):
+	Export.
+	(emit_vec_extract): Change argument from poly_int64 to rtx.
+	* config/riscv/riscv-v.cc (shuffle_extract_and_slide1up_patterns):
+	Ditto.
+	* config/riscv/riscv.cc (riscv_legitimize_poly_move): Export.
+	(riscv_legitimize_move): Use rtx instead of poly_int64.
+	* expmed.cc (store_bit_field_1): Change BITSIZE to PRECISION.
+	(extract_bit_field_1): Change BITSIZE to PRECISION and use
+	return mode from insn_data as target mode.
+
+2023-12-14  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/extend.texi: Document AArch64 Operand Modifiers.
+
+2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113018
+	* tree-vect-slp.cc (vect_slp_check_for_roots): Only start
+	SLP discovery from stmts with a LHS.
+
+2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112793
+	* tree-vect-slp.cc (vect_schedule_slp_node): Already
+	code-generated constant/external nodes are OK.
+
+2023-12-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc (allocno_info::is_equiv): New
+	member variable.
+	(allocno_info::equiv_allocno): Replace with...
+	(allocno_info::related_allocno): ...this member variable.
+	(allocno_info::chain_prev): Put into an enum with...
+	(allocno_info::last_use_point): ...this new member variable.
+	(color_info::num_fpr_preferences): New member variable.
+	(early_ra::m_shared_allocnos): Likewise.
+	(allocno_info::is_shared): New member function.
+	(allocno_info::is_equiv_to): Likewise.
+	(early_ra::dump_allocnos): Dump sharing information.  Tweak column
+	widths.
+	(early_ra::fpr_preference): Check ALLOWS_NONFPR before returning -2.
+	(early_ra::start_new_region): Handle m_shared_allocnos.
+	(early_ra::create_allocno_group): Set related_allocno rather than
+	equiv_allocno.
+	(early_ra::record_allocno_use): Likewise.  Detect multiple calls
+	for the same program point.  Update last_use_point and is_equiv.
+	Clear is_strong_copy_src rather than is_strong_copy_dest.
+	(early_ra::record_allocno_def): Use related_allocno rather than
+	equiv_allocno.  Update last_use_point.
+	(early_ra::valid_equivalence_p): Replace with...
+	(early_ra::find_related_start): ...this new function.
+	(early_ra::record_copy): Look for cases where a destination copy chain
+	can be shared with the source allocno.
+	(early_ra::find_strided_accesses): Update for equiv_allocno->
+	related_allocno change.  Only call consider_strong_copy_src_chain
+	at the head of a copy chain.
+	(early_ra::is_chain_candidate): Skip shared allocnos.  Update for
+	new representation of equivalent allocnos.
+	(early_ra::chain_allocnos): Update for new representation of
+	equivalent allocnos.
+	(early_ra::try_to_chain_allocnos): Likewise.
+	(early_ra::merge_fpr_info): New function, split out from...
+	(early_ra::set_single_color_rep): ...here.
+	(early_ra::form_chains): Handle shared allocnos.
+	(early_ra::process_copies): Count the number of FPR preferences.
+	(early_ra::cmp_decreasing_size): Rename to...
+	(early_ra::cmp_allocation_order): ...this.  Sort equal-sized groups
+	by the number of FPR preferences.
+	(early_ra::finalize_allocation): Handle shared allocnos.
+	(early_ra::process_region): Reset chain_prev as well as chain_next.
+
+2023-12-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112938
+	* ipa-strub.cc (pass_ipa_strub::execute): Pass volatile args
+	by reference to internal strub wrapped bodies.
+
+2023-12-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112938
+	* ipa-strub.cc (pass_ipa_strub::execute): Handle promoted
+	volatile args in internal strub.  Simplify.
+
+2023-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple-ssa-sccopy.cc: '#define INCLUDE_ALGORITHM' instead of
+	'#include <algorithm>'.
+
+2023-12-14  Feng Wang  <wangfeng@eswincomputing.com>
+
+	Revert:
+	2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-functions.def (DEF_RVV_FUNCTION):
+							Add AVAIL argument.
+	(read_vl): Using AVAIL argument default value.
+	(vlenb): Ditto.
+	(vsetvl): Ditto.
+	(vsetvlmax): Ditto.
+	(vle): Ditto.
+	(vse): Ditto.
+	(vlm): Ditto.
+	(vsm): Ditto.
+	(vlse): Ditto.
+	(vsse): Ditto.
+	(vluxei8): Ditto.
+	(vluxei16): Ditto.
+	(vluxei32): Ditto.
+	(vluxei64): Ditto.
+	(vloxei8): Ditto.
+	(vloxei16): Ditto.
+	(vloxei32): Ditto.
+	(vloxei64): Ditto.
+	(vsuxei8): Ditto.
+	(vsuxei16): Ditto.
+	(vsuxei32): Ditto.
+	(vsuxei64): Ditto.
+	(vsoxei8): Ditto.
+	(vsoxei16): Ditto.
+	(vsoxei32): Ditto.
+	(vsoxei64): Ditto.
+	(vleff): Ditto.
+	(vadd): Ditto.
+	(vsub): Ditto.
+	(vrsub): Ditto.
+	(vneg): Ditto.
+	(vwaddu): Ditto.
+	(vwsubu): Ditto.
+	(vwadd): Ditto.
+	(vwsub): Ditto.
+	(vwcvt_x): Ditto.
+	(vwcvtu_x): Ditto.
+	(vzext): Ditto.
+	(vsext): Ditto.
+	(vadc): Ditto.
+	(vmadc): Ditto.
+	(vsbc): Ditto.
+	(vmsbc): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vnot): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vnsrl): Ditto.
+	(vnsra): Ditto.
+	(vncvt_x): Ditto.
+	(vmseq): Ditto.
+	(vmsne): Ditto.
+	(vmsltu): Ditto.
+	(vmslt): Ditto.
+	(vmsleu): Ditto.
+	(vmsle): Ditto.
+	(vmsgtu): Ditto.
+	(vmsgt): Ditto.
+	(vmsgeu): Ditto.
+	(vmsge): Ditto.
+	(vminu): Ditto.
+	(vmin): Ditto.
+	(vmaxu): Ditto.
+	(vmax): Ditto.
+	(vmul): Ditto.
+	(vmulh): Ditto.
+	(vmulhu): Ditto.
+	(vmulhsu): Ditto.
+	(vdivu): Ditto.
+	(vdiv): Ditto.
+	(vremu): Ditto.
+	(vrem): Ditto.
+	(vwmul): Ditto.
+	(vwmulu): Ditto.
+	(vwmulsu): Ditto.
+	(vmacc): Ditto.
+	(vnmsac): Ditto.
+	(vmadd): Ditto.
+	(vnmsub): Ditto.
+	(vwmaccu): Ditto.
+	(vwmacc): Ditto.
+	(vwmaccsu): Ditto.
+	(vwmaccus): Ditto.
+	(vmerge): Ditto.
+	(vmv_v): Ditto.
+	(vsaddu): Ditto.
+	(vsadd): Ditto.
+	(vssubu): Ditto.
+	(vssub): Ditto.
+	(vaaddu): Ditto.
+	(vaadd): Ditto.
+	(vasubu): Ditto.
+	(vasub): Ditto.
+	(vsmul): Ditto.
+	(vssrl): Ditto.
+	(vssra): Ditto.
+	(vnclipu): Ditto.
+	(vnclip): Ditto.
+	(vfadd): Ditto.
+	(vfsub): Ditto.
+	(vfrsub): Ditto.
+	(vfadd_frm): Ditto.
+	(vfsub_frm): Ditto.
+	(vfrsub_frm): Ditto.
+	(vfwadd): Ditto.
+	(vfwsub): Ditto.
+	(vfwadd_frm): Ditto.
+	(vfwsub_frm): Ditto.
+	(vfmul): Ditto.
+	(vfdiv): Ditto.
+	(vfrdiv): Ditto.
+	(vfmul_frm): Ditto.
+	(vfdiv_frm): Ditto.
+	(vfrdiv_frm): Ditto.
+	(vfwmul): Ditto.
+	(vfwmul_frm): Ditto.
+	(vfmacc): Ditto.
+	(vfnmsac): Ditto.
+	(vfmadd): Ditto.
+	(vfnmsub): Ditto.
+	(vfnmacc): Ditto.
+	(vfmsac): Ditto.
+	(vfnmadd): Ditto.
+	(vfmsub): Ditto.
+	(vfmacc_frm): Ditto.
+	(vfnmacc_frm): Ditto.
+	(vfmsac_frm): Ditto.
+	(vfnmsac_frm): Ditto.
+	(vfmadd_frm): Ditto.
+	(vfnmadd_frm): Ditto.
+	(vfmsub_frm): Ditto.
+	(vfnmsub_frm): Ditto.
+	(vfwmacc): Ditto.
+	(vfwnmacc): Ditto.
+	(vfwmsac): Ditto.
+	(vfwnmsac): Ditto.
+	(vfwmacc_frm): Ditto.
+	(vfwnmacc_frm): Ditto.
+	(vfwmsac_frm): Ditto.
+	(vfwnmsac_frm): Ditto.
+	(vfsqrt): Ditto.
+	(vfsqrt_frm): Ditto.
+	(vfrsqrt7): Ditto.
+	(vfrec7): Ditto.
+	(vfrec7_frm): Ditto.
+	(vfmin): Ditto.
+	(vfmax): Ditto.
+	(vfsgnj): Ditto.
+	(vfsgnjn): Ditto.
+	(vfsgnjx): Ditto.
+	(vfneg): Ditto.
+	(vfabs): Ditto.
+	(vmfeq): Ditto.
+	(vmfne): Ditto.
+	(vmflt): Ditto.
+	(vmfle): Ditto.
+	(vmfgt): Ditto.
+	(vmfge): Ditto.
+	(vfclass): Ditto.
+	(vfmerge): Ditto.
+	(vfmv_v): Ditto.
+	(vfcvt_x): Ditto.
+	(vfcvt_xu): Ditto.
+	(vfcvt_rtz_x): Ditto.
+	(vfcvt_rtz_xu): Ditto.
+	(vfcvt_f): Ditto.
+	(vfcvt_x_frm): Ditto.
+	(vfcvt_xu_frm): Ditto.
+	(vfcvt_f_frm): Ditto.
+	(vfwcvt_x): Ditto.
+	(vfwcvt_xu): Ditto.
+	(vfwcvt_rtz_x): Ditto.
+	(vfwcvt_rtz_xu) Ditto.:
+	(vfwcvt_f): Ditto.
+	(vfwcvt_x_frm): Ditto.
+	(vfwcvt_xu_frm) Ditto.:
+	(vfncvt_x): Ditto.
+	(vfncvt_xu): Ditto.
+	(vfncvt_rtz_x): Ditto.
+	(vfncvt_rtz_xu): Ditto.
+	(vfncvt_f): Ditto.
+	(vfncvt_rod_f): Ditto.
+	(vfncvt_x_frm): Ditto.
+	(vfncvt_xu_frm): Ditto.
+	(vfncvt_f_frm): Ditto.
+	(vredsum): Ditto.
+	(vredmaxu): Ditto.
+	(vredmax): Ditto.
+	(vredminu): Ditto.
+	(vredmin): Ditto.
+	(vredand): Ditto.
+	(vredor): Ditto.
+	(vredxor): Ditto.
+	(vwredsum): Ditto.
+	(vwredsumu): Ditto.
+	(vfredusum): Ditto.
+	(vfredosum): Ditto.
+	(vfredmax): Ditto.
+	(vfredmin): Ditto.
+	(vfredusum_frm): Ditto.
+	(vfredosum_frm): Ditto.
+	(vfwredosum): Ditto.
+	(vfwredusum): Ditto.
+	(vfwredosum_frm): Ditto.
+	(vfwredusum_frm): Ditto.
+	(vmand): Ditto.
+	(vmnand): Ditto.
+	(vmandn): Ditto.
+	(vmxor): Ditto.
+	(vmor): Ditto.
+	(vmnor): Ditto.
+	(vmorn): Ditto.
+	(vmxnor): Ditto.
+	(vmmv): Ditto.
+	(vmclr): Ditto.
+	(vmset): Ditto.
+	(vmnot): Ditto.
+	(vcpop): Ditto.
+	(vfirst): Ditto.
+	(vmsbf): Ditto.
+	(vmsif): Ditto.
+	(vmsof): Ditto.
+	(viota): Ditto.
+	(vid): Ditto.
+	(vmv_x): Ditto.
+	(vmv_s): Ditto.
+	(vfmv_f): Ditto.
+	(vfmv_s): Ditto.
+	(vslideup): Ditto.
+	(vslidedown): Ditto.
+	(vslide1up): Ditto.
+	(vslide1down): Ditto.
+	(vfslide1up): Ditto.
+	(vfslide1down): Ditto.
+	(vrgather): Ditto.
+	(vrgatherei16): Ditto.
+	(vcompress): Ditto.
+	(vundefined): Ditto.
+	(vreinterpret): Ditto.
+	(vlmul_ext): Ditto.
+	(vlmul_trunc): Ditto.
+	(vset): Ditto.
+	(vget): Ditto.
+	(vcreate): Ditto.
+	(vlseg): Ditto.
+	(vsseg): Ditto.
+	(vlsseg): Ditto.
+	(vssseg): Ditto.
+	(vluxseg): Ditto.
+	(vloxseg): Ditto.
+	(vsuxseg): Ditto.
+	(vsoxseg): Ditto.
+	(vlsegff): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_FUNCTION): Using variadic macro.
+	* config/riscv/riscv-vector-builtins.h (struct function_group_info):
+					Add avail function interface into struct.
+	* config/riscv/t-riscv: Add dependency
+	* config/riscv/riscv-vector-builtins-avail.h: New file.The definition of AVAIL marco.
+
+2023-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112994
+	* match.pd ((t * u) / (t * v) -> (u / v)): New simplification.
+
+2023-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/112994
+	* match.pd ((t * 2) / 2 -> t): Adjust comment to use u instead of 2.
+	Punt without range checks if TYPE_OVERFLOW_SANITIZED.
+	((t * u) / v -> t * (u / v)): New simplification.
+
+2023-12-14  Filip Kastl  <fkastl@suse.cz>
+
+	* Makefile.in: Added sccopy pass.
+	* passes.def: Added sccopy pass before LTO streaming and before
+	RTL expansion.
+	* tree-pass.h (make_pass_sccopy): Added sccopy pass.
+	* gimple-ssa-sccopy.cc: New file.
+
+2023-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111807
+	* tree-sra.cc (build_ref_for_model): Allow offset smaller than
+	model->offset when gsi is non-NULL.  Adjust function comment.
+
+2023-12-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/112992
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Don't convert to
+	broadcast for vec_dup{v4di,v8si} when TARGET_AVX2 is not
+	available.
+	(ix86_broadcast_from_constant): Allow broadcast for V4DI/V8SI
+	when !TARGET_AVX2 since it will be forced to memory later.
+	(ix86_expand_vector_move): Force constant to mem for
+	vec_dup{vssi,v4di} when TARGET_AVX2 is not available.
+
+2023-12-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111153
+	* config/riscv/riscv-protos.h (struct common_vector_cost): New struct.
+	(struct scalable_vector_cost): Ditto.
+	(struct cpu_vector_cost): Ditto.
+	* config/riscv/riscv-vector-costs.cc (costs::add_stmt_cost): Add RVV
+	builtin vectorization cost
+	* config/riscv/riscv.cc (struct riscv_tune_param): Ditto.
+	(get_common_costs): New function.
+	(riscv_builtin_vectorization_cost): Ditto.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): New targethook.
+
 2023-12-13  Richard Ball  <richard.ball@arm.com>
 
 	* config.gcc: Adds new header to config.

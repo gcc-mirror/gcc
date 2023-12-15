@@ -1,3 +1,16 @@
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Generate.
+	* configure.ac: New file.
+	* configure: Generate.
+	* aclocal.m4: Generate.
+	* libproc_macro/Makefile.am: New file.
+	* libproc_macro/proc_macro.cc: New file.
+	* libproc_macro/proc_macro.h: New file.
+	* libproc_macro/Makefile.in: Generate.
+
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 
