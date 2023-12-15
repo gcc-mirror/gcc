@@ -891,21 +891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	__try
 	  {
-	    const streamsize __w = __os.width();
-	    const streamsize __n = __out.size();
-	    if (__w > __n)
-	      {
-		const bool __left
-		  = (__os.flags() & ios_base::adjustfield) == ios_base::left;
-		if (!__left)
-		  std::__ostream_fill(__os, __w - __n);
-		if (__os.good())
-		  std::__ostream_write(__os, __out.data(), __n);
-		if (__left && __os.good())
-		  std::__ostream_fill(__os, __w - __n);
-	      }
-	    else
-	      std::__ostream_write(__os, __out.data(), __n);
+	    std::__ostream_write(__os, __out.data(), __out.size());
 	  }
 	__catch(const __cxxabiv1::__forced_unwind&)
 	  {
@@ -923,11 +909,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ostream::sentry __cerb(__os);
     if (__cerb)
       {
-
-	const streamsize __w = __os.width();
-	const bool __left
-	  = (__os.flags() & ios_base::adjustfield) == ios_base::left;
-
 	__format::_Str_sink<char> __buf;
 	std::vformat_to(__buf.out(), __os.getloc(), __fmt, __args);
 	auto __out = __buf.view();
@@ -938,18 +919,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// If stream refers to a terminal, write a Unicode string to it.
 	if (auto __term = __open_terminal(__os.rdbuf()))
 	  {
-	    __format::_Str_sink<char> __buf2;
-	    if (__w != 0)
-	      {
-		char __fmt[] = "{0:..{1}}";
-		__fmt[3] == __os.fill();
-		__fmt[4] == __left ? '<' : '>';
-		string_view __str(__out);
-		std::vformat_to(__buf2.out(), // N.B. no need to use getloc()
-				__fmt, std::make_format_args(__str, __w));
-		__out = __buf2.view();
-	      }
-
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
 	      {
@@ -981,18 +950,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Otherwise just insert the string as normal.
 	__try
 	  {
-	    const streamsize __n = __out.size();
-	    if (__w > __n)
-	      {
-		if (!__left)
-		  std::__ostream_fill(__os, __w - __n);
-		if (__os.good())
-		  std::__ostream_write(__os, __out.data(), __n);
-		if (__left && __os.good())
-		  std::__ostream_fill(__os, __w - __n);
-	      }
-	    else
-	      std::__ostream_write(__os, __out.data(), __n);
+	    std::__ostream_write(__os, __out.data(), __out.size());
 	  }
 	__catch(const __cxxabiv1::__forced_unwind&)
 	  {

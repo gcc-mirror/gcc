@@ -42,14 +42,16 @@ test_print_raw()
 }
 
 void
-test_print_formatted()
+test_print_no_padding()
 {
+  // [ostream.formatted.print] does not say this function "determines padding",
+  // see https://gcc.gnu.org/pipermail/gcc-patches/2023-December/640680.html
   char buf[64];
   std::spanstream os(buf);
-  os << std::setw(20) << std::setfill('*') << std::right;
+  os << std::setw(60) << std::setfill('?') << std::right; // should be ignored
   std::print(os, "{} Luftballons", 99);
   std::string_view txt(os.span());
-  VERIFY( txt == "******99 Luftballons" );
+  VERIFY( txt == "99 Luftballons" );
 }
 
 void
@@ -106,7 +108,7 @@ int main()
   test_print_ostream();
   test_println_ostream();
   test_print_raw();
-  test_print_formatted();
+  test_print_no_padding();
   test_vprint_nonunicode();
   test_locale();
 }
