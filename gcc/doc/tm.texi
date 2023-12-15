@@ -1032,8 +1032,8 @@ applied.
 @deftypefn {Target Hook} bool TARGET_C_BITINT_TYPE_INFO (int @var{n}, struct bitint_info *@var{info})
 This target hook returns true if @code{_BitInt(@var{N})} is supported and
 provides details on it.  @code{_BitInt(@var{N})} is to be represented as
-series of @code{info->limb_mode}
-@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,
+series of @code{info->abi_limb_mode}
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->abi_limb_mode))} limbs,
 ordered from least significant to most significant if
 @code{!info->big_endian}, otherwise from most significant to least
 significant.  If @code{info->extended} is false, the bits above or equal to

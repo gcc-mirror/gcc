@@ -5315,7 +5315,8 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
 	  tree type = TREE_TYPE (exp);
 	  bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
 	  gcc_assert (ok);
-	  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	  scalar_int_mode limb_mode
+	    = as_a <scalar_int_mode> (info.abi_limb_mode);
 	  if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	    {
 	      cst = expand_expr (exp, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);

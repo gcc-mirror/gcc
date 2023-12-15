@@ -6357,8 +6357,8 @@ DEFHOOK
 (bitint_type_info,
  "This target hook returns true if @code{_BitInt(@var{N})} is supported and\n\
 provides details on it.  @code{_BitInt(@var{N})} is to be represented as\n\
-series of @code{info->limb_mode}\n\
-@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,\n\
+series of @code{info->abi_limb_mode}\n\
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->abi_limb_mode))} limbs,\n\
 ordered from least significant to most significant if\n\
 @code{!info->big_endian}, otherwise from most significant to least\n\
 significant.  If @code{info->extended} is false, the bits above or equal to\n\
