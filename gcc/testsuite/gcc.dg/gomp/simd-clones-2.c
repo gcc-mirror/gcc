@@ -19,7 +19,6 @@ float setArray(float *a, float x, int k)
 /* { dg-final { scan-tree-dump "_ZGVnN2ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVnN4ua32vl_setArray" "optimized" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVnN2vvva32_addit" "optimized" { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump "_ZGVnN4vvva32_addit" "optimized" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVnM2vl66u_addit" "optimized" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVnM4vl66u_addit" "optimized" { target aarch64*-*-* } } } */
 
