@@ -39,7 +39,11 @@ as_printed_to_terminal(std::string& s)
 #else
   const auto ec = std::__write_to_terminal(strm, s);
 #endif
-  VERIFY( !ec || ec == std::make_error_code(std::errc::illegal_byte_sequence) );
+  if (ec && ec != std::make_error_code(std::errc::illegal_byte_sequence))
+    {
+      std::println("Failed to : {}", ec.message());
+      VERIFY(!ec);
+    }
   std::fclose(strm);
   std::ifstream in(f.path);
   s.assign(std::istreambuf_iterator<char>(in), {});
@@ -114,6 +118,7 @@ test_utf16_transcoding()
   VERIFY( as_printed_to_terminal(s) );
   VERIFY( utf16_from_bytes(s) == s2 );
 
+  s = (const char*)u8"£🇬🇧 €🇪🇺";
   s += " \xa3 10.99 \xee\xdd";
   VERIFY( ! as_printed_to_terminal(s) );
   std::u16string repl = u"\uFFFD";

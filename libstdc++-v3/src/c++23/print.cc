@@ -35,7 +35,8 @@
 
 #ifdef _WIN32
 # include <stdio.h>   // _fileno
-# include <io.h>      // _get_osfhandle
+# include <io.h>      // _get_osfhandle, _open_osfhandle, _write
+# include <fcntl.h>   // _O_APPEND
 # include <windows.h> // GetLastError, WriteConsoleW
 #elifdef _GLIBCXX_HAVE_UNISTD_H
 # include <stdio.h>   // fileno
@@ -323,6 +324,16 @@ namespace
     u16string wstr;
     if (!to_valid_utf16(str, wstr))
       ec = std::make_error_code(errc::illegal_byte_sequence);
+
+    // This allows us to test this function with a normal file,
+    // see testsuite/27_io/print/2.cc
+    if (!check_for_console(term))
+      {
+	int fd = _open_osfhandle((intptr_t)term, _O_APPEND);
+	if (_write(fd, wstr.data(), wstr.size() * 2) == -1)
+	  ec = {errno, generic_category()};
+	return ec;
+      }
 
     unsigned long nchars = 0;
     WriteConsoleW(term, wstr.data(), wstr.size(), &nchars, nullptr);
