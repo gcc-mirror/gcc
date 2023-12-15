@@ -5641,6 +5641,37 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
     def (live, lhs, graph);
 }
 
+/* If STMT is .{ADD,SUB,MUL}_OVERFLOW with INTEGER_CST arguments,
+   return the largest bitint_prec_kind of them, otherwise return
+   bitint_prec_small.  */
+
+static bitint_prec_kind
+arith_overflow_arg_kind (gimple *stmt)
+{
+  bitint_prec_kind ret = bitint_prec_small;
+  if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+    switch (gimple_call_internal_fn (stmt))
+      {
+      case IFN_ADD_OVERFLOW:
+      case IFN_SUB_OVERFLOW:
+      case IFN_MUL_OVERFLOW:
+	for (int i = 0; i < 2; ++i)
+	  {
+	    tree a = gimple_call_arg (stmt, i);
+	    if (TREE_CODE (a) == INTEGER_CST
+		&& TREE_CODE (TREE_TYPE (a)) == BITINT_TYPE)
+	      {
+		bitint_prec_kind kind = bitint_precision_kind (TREE_TYPE (a));
+		ret = MAX (ret, kind);
+	      }
+	  }
+	break;
+      default:
+	break;
+      }
+  return ret;
+}
+
 /* Entry point for _BitInt(N) operation lowering during optimization.  */
 
 static unsigned int
@@ -5657,7 +5688,12 @@ gimple_lower_bitint (void)
 	continue;
       tree type = TREE_TYPE (s);
       if (TREE_CODE (type) == COMPLEX_TYPE)
-	type = TREE_TYPE (type);
+	{
+	  if (arith_overflow_arg_kind (SSA_NAME_DEF_STMT (s))
+	      != bitint_prec_small)
+	    break;
+	  type = TREE_TYPE (type);
+	}
       if (TREE_CODE (type) == BITINT_TYPE
 	  && bitint_precision_kind (type) != bitint_prec_small)
 	break;
@@ -5745,7 +5781,12 @@ gimple_lower_bitint (void)
 	continue;
       tree type = TREE_TYPE (s);
       if (TREE_CODE (type) == COMPLEX_TYPE)
-	type = TREE_TYPE (type);
+	{
+	  if (arith_overflow_arg_kind (SSA_NAME_DEF_STMT (s))
+	      >= bitint_prec_large)
+	    has_large_huge = true;
+	  type = TREE_TYPE (type);
+	}
       if (TREE_CODE (type) == BITINT_TYPE
 	  && bitint_precision_kind (type) >= bitint_prec_large)
 	{
@@ -6245,8 +6286,7 @@ gimple_lower_bitint (void)
 	      {
 		bitint_prec_kind this_kind
 		  = bitint_precision_kind (TREE_TYPE (t));
-		if (this_kind > kind)
-		  kind = this_kind;
+		kind = MAX (kind, this_kind);
 	      }
 	  if (is_gimple_assign (stmt) && gimple_store_p (stmt))
 	    {
@@ -6255,8 +6295,7 @@ gimple_lower_bitint (void)
 		{
 		  bitint_prec_kind this_kind
 		    = bitint_precision_kind (TREE_TYPE (t));
-		  if (this_kind > kind)
-		    kind = this_kind;
+		  kind = MAX (kind, this_kind);
 		}
 	    }
 	  if (is_gimple_assign (stmt)
@@ -6268,21 +6307,22 @@ gimple_lower_bitint (void)
 		{
 		  bitint_prec_kind this_kind
 		    = bitint_precision_kind (TREE_TYPE (t));
-		  if (this_kind > kind)
-		    kind = this_kind;
+		  kind = MAX (kind, this_kind);
 		}
 	    }
 	  if (is_gimple_call (stmt))
 	    {
 	      t = gimple_call_lhs (stmt);
-	      if (t
-		  && TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-		  && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == BITINT_TYPE)
+	      if (t && TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
 		{
-		  bitint_prec_kind this_kind
-		    = bitint_precision_kind (TREE_TYPE (TREE_TYPE (t)));
-		  if (this_kind > kind)
-		    kind = this_kind;
+		  bitint_prec_kind this_kind = arith_overflow_arg_kind (stmt);
+		  kind = MAX (kind, this_kind);
+		  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == BITINT_TYPE)
+		    {
+		      this_kind
+			= bitint_precision_kind (TREE_TYPE (TREE_TYPE (t)));
+		      kind = MAX (kind, this_kind);
+		    }
 		}
 	    }
 	  if (kind == bitint_prec_small)
