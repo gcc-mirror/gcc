@@ -2690,10 +2690,7 @@
   {
     if (can_create_pseudo_p ()
         && !aarch64_sve_ld1rq_operand (operands[1], <V128>mode))
-      {
-	rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
-	operands[1] = replace_equiv_address (operands[1], addr);
-      }
+      operands[1] = force_reload_address (operands[1]);
     if (GET_CODE (operands[2]) == SCRATCH)
       operands[2] = gen_reg_rtx (VNx16BImode);
     emit_move_insn (operands[2], CONSTM1_RTX (VNx16BImode));
