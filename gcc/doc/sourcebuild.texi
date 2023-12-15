@@ -2485,6 +2485,9 @@ Test system has support for the CORE-V MAC extension.
 @item cv_alu
 Test system has support for the CORE-V ALU extension.
 
+@item cv_elw
+Test system has support for the CORE-V ELW extension.
+
 @end table
 
 @subsubsection Other hardware attributes

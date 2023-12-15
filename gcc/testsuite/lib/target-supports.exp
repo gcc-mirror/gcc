@@ -13144,6 +13144,19 @@ proc check_effective_target_cv_alu { } {
     } "-march=rv32i_xcvalu" ]
 }
 
+# Return 1 if the CORE-V ELW extension is available.
+proc check_effective_target_cv_elw { } {
+    if { !([istarget riscv*-*-*]) } {
+         return 0
+     }
+    return [check_no_compiler_messages cv_elw object {
+        void foo (void)
+        {
+          asm ("cv.elw x0, 0(x0)");
+        }
+    } "-march=rv32i_xcvelw" ]
+}
+
 proc check_effective_target_loongarch_sx { } {
     return [check_no_compiler_messages loongarch_lsx assembly {
        #if !defined(__loongarch_sx)

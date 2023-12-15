@@ -24311,6 +24311,14 @@ Generated assembler @code{cv.subuRN} if the uint8_t operand is a constant and in
 Generated assembler @code{cv.subuRNr} if  the it is a register.
 @end deftypefn
 
+These built-in functions are available for the CORE-V Event Load machine
+architecture. For more information on CORE-V ELW builtins, please see
+@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-event-load-word-builtins-xcvelw}
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_elw_elw (uint32_t *)
+Generated assembler @code{cv.elw}
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in

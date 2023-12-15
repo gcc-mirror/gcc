@@ -24,6 +24,9 @@
   UNSPEC_CV_ALU_CLIPR
   UNSPEC_CV_ALU_CLIPU
   UNSPEC_CV_ALU_CLIPUR
+
+  ;;CORE-V EVENT LOAD
+  UNSPECV_CV_ELW
 ])
 
 ;; XCVMAC extension.
@@ -690,4 +693,16 @@
   cv.suburn\t%0,%1,%2,%3
   cv.suburnr\t%0,%2,%3"
   [(set_attr "type" "arith")
+  (set_attr "mode" "SI")])
+
+;; XCVELW builtins
+(define_insn "riscv_cv_elw_elw_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+   (unspec_volatile [(match_operand:SI 1 "move_operand" "p")]
+     UNSPECV_CV_ELW))]
+
+  "TARGET_XCVELW && !TARGET_64BIT"
+  "cv.elw\t%0,%a1"
+
+  [(set_attr "type" "load")
   (set_attr "mode" "SI")])
