@@ -2875,6 +2875,7 @@ package body Exp_Ch7 is
          Master_Node_Decl   : Node_Id;
          Master_Node_Id     : Entity_Id;
          Master_Node_Ins    : Node_Id;
+         Master_Node_Loc    : Source_Ptr;
          Obj_Ref            : Node_Id;
 
       --  Start of processing for Process_Object_Declaration
@@ -2936,11 +2937,20 @@ package body Exp_Ch7 is
             end if;
 
          else
+            --  For one object, use the Sloc the scope master would have had
+
+            if Counter_Val = 1 then
+               Master_Node_Loc := Sloc (N);
+            else
+               Master_Node_Loc := Loc;
+            end if;
+
             Master_Node_Id :=
-              Make_Defining_Identifier (Loc,
+              Make_Defining_Identifier (Master_Node_Loc,
                 Chars => New_External_Name (Chars (Obj_Id), Suffix => "MN"));
             Master_Node_Decl :=
-              Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
+              Make_Master_Node_Declaration (Master_Node_Loc,
+                Master_Node_Id, Obj_Id);
 
             Push_Scope (Scope (Obj_Id));
             if Counter_Val = 1 then
