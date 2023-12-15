@@ -906,6 +906,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline void
   vprint_unicode(ostream& __os, string_view __fmt, format_args __args)
   {
+#ifndef _WIN32
+    // For most targets we don't need to do anything special to write
+    // Unicode to a terminal.
+    std::vprint_nonunicode(__os, __fmt, __args);
+#else
     ostream::sentry __cerb(__os);
     if (__cerb)
       {
@@ -913,12 +918,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::vformat_to(__buf.out(), __os.getloc(), __fmt, __args);
 	auto __out = __buf.view();
 
-#ifdef _WIN32
 	void* __open_terminal(streambuf*);
 	error_code __write_to_terminal(void*, span<char>);
 	// If stream refers to a terminal, write a Unicode string to it.
 	if (auto __term = __open_terminal(__os.rdbuf()))
 	  {
+#ifndef _WIN32
+	    // For POSIX, __open_terminal(streambuf*) uses fdopen to open a
+	    // new file, so we would need to close it here. This code is not
+	    // actually compiled because it's inside an #ifdef _WIN32 group,
+	    // but just in case that changes in future ...
+	    struct _Guard
+	    {
+	      _Guard(void* __p) : _M_f((FILE*)__p) { }
+	      ~_Guard() { std::fclose(_M_f); }
+	      _Guard(_Guard&&) = delete;
+	      _Guard& operator=(_Guard&&) = delete;
+	      FILE* _M_f;
+	    };
+	    _Guard __g(__term);
+#endif
+
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
 	      {
@@ -927,11 +947,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		else if (auto __e = __write_to_terminal(__term, __out))
 		  if (__e != std::make_error_code(errc::illegal_byte_sequence))
 		    __err = ios::badbit;
-#ifndef _WIN32
-		// __open_terminal(streambuf*) opens a new FILE with fdopen,
-		// so we need to close it here.
-		std::fclose((FILE*)__term);
-#endif
 	      }
 	    __catch(const __cxxabiv1::__forced_unwind&)
 	      {
@@ -945,9 +960,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __os.setstate(__err);
 	    return;
 	  }
-#endif
 
-	// Otherwise just insert the string as normal.
+	// Otherwise just insert the string as vprint_nonunicode does.
 	__try
 	  {
 	    std::__ostream_write(__os, __out.data(), __out.size());
@@ -960,6 +974,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__catch(...)
 	  { __os._M_setstate(ios_base::badbit); }
       }
+#endif // _WIN32
   }
 
   template<typename... _Args>

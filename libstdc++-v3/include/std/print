@@ -64,11 +64,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline void
   vprint_unicode(FILE* __stream, string_view __fmt, format_args __args)
   {
+#ifndef _WIN32
+    // For most targets we don't need to do anything special to write
+    // Unicode to a terminal.
+    std::vprint_nonunicode(__stream, __fmt, __args);
+#else
     __format::_Str_sink<char> __buf;
     std::vformat_to(__buf.out(), __fmt, __args);
     auto __out = __buf.view();
 
-#ifdef _WIN32
     void* __open_terminal(FILE*);
     error_code __write_to_terminal(void*, span<char>);
     // If stream refers to a terminal, write a native Unicode string to it.
@@ -88,11 +92,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __e = error_code(errno, generic_category());
 	_GLIBCXX_THROW_OR_ABORT(system_error(__e, "std::vprint_unicode"));
       }
-#endif
 
-    // Otherwise just write the string to the file.
+    // Otherwise just write the string to the file as vprint_nonunicode does.
     if (std::fwrite(__out.data(), 1, __out.size(), __stream) != __out.size())
       __throw_system_error(EIO);
+#endif
   }
 
   template<typename... _Args>
