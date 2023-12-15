@@ -1290,6 +1290,14 @@ package body Exp_Put_Image is
          Actions := New_List (Sink_Decl, Put_Im, Result_Decl);
       end if;
 
+      --  To avoid leaks, we need to manage the secondary stack, because Get is
+      --  returning a String allocated thereon. It might be cleaner to let the
+      --  normal mechanisms for functions returning on the secondary stack call
+      --  Set_Uses_Sec_Stack, but this expansion of 'Image is happening too
+      --  late for that.
+
+      Set_Uses_Sec_Stack (Current_Scope);
+
       return Make_Expression_With_Actions (Loc,
         Actions    => Actions,
         Expression => New_Occurrence_Of (Result_Entity, Loc));
