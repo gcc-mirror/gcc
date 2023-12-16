@@ -9763,7 +9763,9 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
 	 executable construct containing the reference. This, in fact,
 	 was later deleted by the Combined Techical Corrigenda 1 TO 4 for
 	 fortran 2008 (f08/0011).  */
-      if (!gfc_notification_std (GFC_STD_F2018_DEL) && expr->must_finalize
+      if ((gfc_option.allow_std & (GFC_STD_F2008 | GFC_STD_F2003))
+	  && !(gfc_option.allow_std & GFC_STD_GNU)
+	  && expr->must_finalize
 	  && gfc_may_be_finalized (expr->ts))
 	{
 	  gfc_warning (0, "The structure constructor at %C has been"

@@ -2326,7 +2326,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
      Corrigenda 1 TO 4 for fortran 2008 (f08/0011).
 
      Transmit finalization of this constructor through 'finalblock'. */
-  if (!gfc_notification_std (GFC_STD_F2018_DEL) && finalblock != NULL
+  if ((gfc_option.allow_std & (GFC_STD_F2008 | GFC_STD_F2003))
+      && !(gfc_option.allow_std & GFC_STD_GNU)
+      && finalblock != NULL
       && gfc_may_be_finalized (ts)
       && ctr > 0 && desc != NULL_TREE
       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
