@@ -76,7 +76,7 @@ namespace
 	if (int fd = ::_fileno(f); fd >= 0)
 	  return check_for_console((void*)_get_osfhandle(fd));
 #elifdef _GLIBCXX_HAVE_UNISTD_H
-	if (int fd = ::fileno(f); fd >= 0 && ::isatty(fd))
+	if (int fd = (::fileno)(f); fd >= 0 && ::isatty(fd))
 	  return f;
 #endif
       }
