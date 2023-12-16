@@ -918,6 +918,14 @@ is used to refer to the result of the function in the postcondition expression.
 For a further discussion of the use of this attribute and examples of its use,
 see the description of pragma Postcondition.
 
+Attribute Round
+=====================
+.. index:: Round
+
+In addition to the usage of this attribute in the Ada RM, GNAT
+also permits the use of the ``'Round`` attribute for ordinary
+fixed point types.
+
 Attribute Safe_Emax
 ===================
 .. index:: Ada 83 attributes

@@ -6255,7 +6255,12 @@ package body Sem_Attr is
 
       when Attribute_Round =>
          Check_E1;
-         Check_Decimal_Fixed_Point_Type;
+         Check_Type;
+
+         if not Is_Fixed_Point_Type (P_Type) then
+            Error_Attr_P ("prefix of % attribute must be fixed point type");
+         end if;
+
          Set_Etype (N, P_Base_Type);
 
          --  Because the context is universal_real (3.5.10(12)) it is a
