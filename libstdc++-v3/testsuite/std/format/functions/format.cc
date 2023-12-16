@@ -1,3 +1,4 @@
+// { dg-options "-fexec-charset=UTF-8" }
 // { dg-do run { target c++20 } }
 // { dg-add-options no_pch }
 
@@ -97,6 +98,18 @@ test_std_examples()
     VERIFY(s5 == "   120");
     string s6 = format("{:6}", true);
     VERIFY(s6 == "true  ");
+    string s7 = format("{:*<6.3}", "123456");
+    VERIFY( s7 == "123***" );
+    string s8 = format("{:02}", 1234);
+    VERIFY( s8 == "1234" );
+    string s9 = format("{:*<}", "12");
+    VERIFY( s9 == "12" );
+    string sA = format("{:*<6}", "12345678");
+    VERIFY( sA == "12345678" );
+    string sB = format("{:🤡^6}", "x");
+    VERIFY( sB == "🤡🤡x🤡🤡🤡" );
+    string sC = format("{:*^6}", "🤡🤡🤡");
+    VERIFY( sC == "🤡🤡🤡" );
   }
 
   // sign
@@ -458,6 +471,59 @@ test_bool()
   VERIFY( s == "0 0x1 0X0" );
 }
 
+void
+test_unicode()
+{
+  // Similar to sC example in test_std_examples, but not from the standard.
+  // Verify that the character "🤡" has estimated field width 2,
+  // rather than estimated field width equal to strlen("🤡"), which would be 4.
+  std::string sC = std::format("{:*<3}", "🤡");
+  VERIFY( sC == "🤡*" );
+
+  // Verify that "£" has estimated field width 1, not strlen("£") == 2.
+  std::string sL = std::format("{:*<3}", "£");
+  VERIFY( sL == "£**" );
+
+  // Verify that precision is measured in field width units (column positions)
+  // not bytes. The result should contain complete Unicode characters, not be
+  // truncated in the middle of a multibyte UTF-8 sequence. The string "£" has
+  // field width 1 despite being 2 bytes, and the string "🤡" has field width 2
+  // and so cannot be formatted into a replacement field using .1 precision.
+  std::string sP = std::format("{:1.1} {:*<1.1}", "£", "🤡");
+  VERIFY( sP == "£ *" );
+  sP = std::format("{:*<2.1} {:*<2.1}", "£", "🤡");
+  VERIFY( sP == "£* **" );
+
+  // Verify field width handling for extended grapheme clusters,
+  // and that a cluster gets output as a single item, not truncated.
+  std::string sG = std::format("{:*>2.1}", "\u006f\u0302\u0323!");
+  VERIFY( sG == "*\u006f\u0302\u0323" );
+
+  // Examples from P1868R2
+  // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1868r2.html
+  const char* inputs[][2] = {
+    {"\x41",         "    \u0041"},
+    {"\xC3\x81",     "    \u00c1"},
+    {"\x41\xCC\x81", "    \u0041\u0301"},
+    {"\xc4\xb2", "    \u0132"},
+    {"\xce\x94", "    \u0394"},
+    {"\xd0\xa9", "    \u0429"},
+    {"\xd7\x90", "    \u05D0"},
+    {"\xd8\xb4", "    \u0634"},
+    {"\xe3\x80\x89", "   \u3009"},
+    {"\xe7\x95\x8c", "   \u754C"},
+    {"\xf0\x9f\xa6\x84", "   \U0001F984"},
+    {"\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\x91\xa9\xe2\x80\x8d"
+     "\xf0\x9f\x91\xa7\xe2\x80\x8d\xf0\x9f\x91\xa6",
+     "   \U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466" }
+  };
+  for (auto& input : inputs)
+  {
+    std::string sA = std::format("{:>5}", input[0]);
+    VERIFY( sA == input[1] );
+  }
+}
+
 int main()
 {
   test_no_args();
@@ -472,4 +538,5 @@ int main()
   test_p1652r1();
   test_pointer();
   test_bool();
+  test_unicode();
 }
